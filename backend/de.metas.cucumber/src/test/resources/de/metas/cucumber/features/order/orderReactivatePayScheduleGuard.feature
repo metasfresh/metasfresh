@@ -40,11 +40,14 @@ Feature: PO reactivation guard — downstream-activity check
 
     # pt_od: LC 30% + OD 70% — OrderDate break resolves at completion, OD row immediately WP
     # pt_bl: LC 30% + BL 70% — BillOfLadingDate break resolves only on goods receipt
+    # pt_net5: TC4's proforma term — a real 5-day offset so the proforma's DueDate diverges
+    # from its DateInvoiced, making DueDate diagnostic of whether the LC recompute fired.
     And metasfresh contains C_PaymentTerm
-      | Identifier   |
-      | pt_od        |
-      | pt_bl        |
-      | pt_immediate |
+      | Identifier   | OPT.NetDays |
+      | pt_od        |             |
+      | pt_bl        |             |
+      | pt_immediate |             |
+      | pt_net5      | 5           |
     And metasfresh contains C_PaymentTerm_Break
       | Identifier  | C_PaymentTerm_ID | Percent | OffsetDays | ReferenceDateType | SeqNo |
       | ptb_od_lc   | pt_od            | 30      | 0          | LC                | 10    |
@@ -194,10 +197,11 @@ Feature: PO reactivation guard — downstream-activity check
       | poL1       | po         | product      | 700        |
     And the order identified by po is completed
 
-    # Allocate a proforma invoice to the order (LC row -> Awaiting_Pay)
+    # Allocate a proforma invoice to the order (LC row -> Awaiting_Pay). pt_net5 gives the
+    # proforma a real 5-day offset (DueDate = DateInvoiced + 5), unlike pt_immediate.
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name       | DateInvoiced | IsSOTrx | C_Currency_ID | C_PaymentTerm_ID |
-      | proforma   | vendor        | Proforma-Rechnung (Lieferant) | 2026-04-24   | false   | EUR           | pt_immediate     |
+      | proforma   | vendor        | Proforma-Rechnung (Lieferant) | 2026-04-24   | false   | EUR           | pt_net5          |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price    |
       | proformaL1 | proforma     | product      | 1 PCE       | 21000.00 |
@@ -212,16 +216,20 @@ Feature: PO reactivation guard — downstream-activity check
 
     Then the order identified by po has following pay schedule lines by ReferenceDateType
       | ReferenceDateType | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status |
-      | LC                | 21000.00 | 21000.00      | 2026-04-24    | 2026-04-24 | P      |
+      | LC                | 21000.00 | 21000.00      | 2026-04-24    | 2026-04-29 | P      |
 
     # Reactivate (allowed - proforma allocation no longer blocks) and re-complete the order
     And the order identified by po is reactivated
     And the order identified by po is completed
 
-    # Re-complete must restore the same proforma-derived Paid state
+    # Load-bearing columns: Status, DueAmt_Actual and DueDate actually prove the LC recompute
+    # fired on re-complete (DueDate = proforma.DueDate, 5 days past DateInvoiced — the naive
+    # create-path that only reads LC_Date + pt_od's zero OffsetDays cannot reproduce it).
+    # ReferenceDate and LC_Date coincide with DateInvoiced either way, so they document the
+    # intended state rather than prove the recompute ran.
     Then the order identified by po has following pay schedule lines by ReferenceDateType
       | ReferenceDateType | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status |
-      | LC                | 21000.00 | 21000.00      | 2026-04-24    | 2026-04-24 | P      |
+      | LC                | 21000.00 | 21000.00      | 2026-04-24    | 2026-04-29 | P      |
     And validate the created orders
       | Identifier | LC_Date    |
       | po         | 2026-04-24 |
