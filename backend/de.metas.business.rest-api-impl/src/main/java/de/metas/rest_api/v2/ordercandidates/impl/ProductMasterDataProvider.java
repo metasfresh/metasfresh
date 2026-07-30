@@ -95,6 +95,13 @@ public final class ProductMasterDataProvider
 
 	public ProductInfo getProductInfo(
 			@NonNull final ExternalIdentifier productExternalIdentifier,
+			@NonNull final OrgId orgId)
+	{
+		return getProductInfo(productExternalIdentifier, orgId, null);
+	}
+
+	public ProductInfo getProductInfo(
+			@NonNull final ExternalIdentifier productExternalIdentifier,
 			@NonNull final OrgId orgId,
 			@Nullable final ZonedDateTime date)
 	{

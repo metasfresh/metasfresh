@@ -56,6 +56,14 @@ public class ExternalIdentifierProductLookupService
 	@NonNull
 	public Optional<ProductAndHUPIItemProductId> resolveProductExternalIdentifier(
 			@NonNull final ExternalIdentifier productIdentifier,
+			@NonNull final OrgId orgId)
+	{
+		return resolveProductExternalIdentifier(productIdentifier, orgId, null);
+	}
+
+	@NonNull
+	public Optional<ProductAndHUPIItemProductId> resolveProductExternalIdentifier(
+			@NonNull final ExternalIdentifier productIdentifier,
 			@NonNull final OrgId orgId,
 			@Nullable final ZonedDateTime date)
 	{

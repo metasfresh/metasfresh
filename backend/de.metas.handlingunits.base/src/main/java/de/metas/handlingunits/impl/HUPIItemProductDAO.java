@@ -506,8 +506,8 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_EAN_TU, gtin)
 				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_UPC, gtin);
 
-		// The consolidation process (F5001.1) can leave an M_Product inactive while keeping its PIIP rows active.
-		// Those stale rows must NOT be matched.
+		// A product-consolidation run may deactivate M_Product while leaving the PIIP rows active.
+		// Only rows whose M_Product_ID points to an active product are valid matches.
 		final IQuery<I_M_Product> activeProducts = queryBL.createQueryBuilder(I_M_Product.class)
 				.addOnlyActiveRecordsFilter()
 				.create();
@@ -515,7 +515,6 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		return queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
 				.addOnlyActiveRecordsFilter()
 				.filter(hupiFilter)
-				.addNotNull(I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID)
 				.addInSubQueryFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID, I_M_Product.COLUMNNAME_M_Product_ID, activeProducts)
 				.filter(createValidOnDateFilter(date))
 				.orderBy()
@@ -529,8 +528,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 						HUPIItemProductId.ofRepoId(record.getM_HU_PI_Item_Product_ID())));
 	}
 
-	@Override
-	public IQueryFilter<I_M_HU_PI_Item_Product> createValidOnDateFilter(@Nullable final ZonedDateTime date)
+	private IQueryFilter<I_M_HU_PI_Item_Product> createValidOnDateFilter(@Nullable final ZonedDateTime date)
 	{
 		if (date == null)
 		{

@@ -23,7 +23,6 @@
 package de.metas.handlingunits;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.handlingunits.HUPIItemProductGtinMatch;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -31,7 +30,6 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
@@ -148,25 +146,11 @@ public interface IHUPIItemProductDAO extends ISingletonService
 	I_M_HU_PI_Item_Product retrieveDefaultForProduct(@NonNull ProductId productId, @NonNull ZonedDateTime date);
 
 	/**
-	 * Creates a query filter that restricts {@link I_M_HU_PI_Item_Product} records to those valid on the given date.
-	 * <p>
-	 * The filter enforces: {@code ValidFrom <= date AND (ValidTo >= date OR ValidTo IS NULL)}.
-	 * <p>
-	 * When {@code date} is {@code null}, a match-all filter is returned, preserving the existing behaviour
-	 * of "no date ⇒ no validity filter".
-	 *
-	 * @param date the reference date; may be {@code null}
-	 * @return a query filter for validity date; never {@code null}
-	 */
-	@NonNull
-	IQueryFilter<I_M_HU_PI_Item_Product> createValidOnDateFilter(@Nullable ZonedDateTime date);
-
-	/**
 	 * Finds the first {@link I_M_HU_PI_Item_Product} row matching the given GTIN/EAN_TU/UPC value,
-	 * filtered by the given validity date (using {@link #createValidOnDateFilter}).
+	 * filtered by the given validity date.
 	 * Rows are ordered by {@code ValidFrom DESC} (most recent first) then by ID ascending as a tiebreak.
-	 * Only active records with a non-null {@code M_Product_ID} pointing to an <em>active</em> product
-	 * are considered — stale PIIP rows left behind by the product consolidation process are excluded.
+	 * Only active records with a {@code M_Product_ID} pointing to an <em>active</em> product
+	 * are considered — stale PIIP rows left behind by a product-consolidation run are excluded.
 	 *
 	 * @param gtin the GTIN/EAN_TU/UPC value to match
 	 * @param date the reference date for the validity filter; {@code null} means no validity filter is applied
