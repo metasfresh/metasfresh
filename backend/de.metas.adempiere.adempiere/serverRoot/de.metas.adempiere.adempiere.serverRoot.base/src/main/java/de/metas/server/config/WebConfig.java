@@ -47,6 +47,12 @@ public class WebConfig implements WebMvcConfigurer
 	 * all and are therefore heuristically cacheable - i.e. a client may keep serving a stale operator context
 	 * without ever contacting us. An endpoint that wants caching opts out by setting its own Cache-Control.
 	 * <p>
+	 * A servlet filter registered like de.metas.util.web's other /api filters, and not a HandlerInterceptor: for
+	 * {@code @ResponseBody} / {@code ResponseEntity} methods the response is written and committed before
+	 * {@code postHandle} runs (spring reference, "Handler Interception"), and a {@code preHandle} - a
+	 * {@code WebContentInterceptor} included - only ever sees a request that reaches an MVC handler, so neither the
+	 * 401 from UserAuthTokenFilter nor an audited response served by ApiAuditFilter would be covered.
+	 * <p>
 	 * Runs innermost (hence the explicit order), which leaves de.metas.util.web's ApiAuditFilter - registered on the
 	 * same pattern with order 3 - outside it: an audited request answered from that filter's own response reference
 	 * never enters this chain and still carries no Cache-Control.
@@ -84,54 +90,33 @@ public class WebConfig implements WebMvcConfigurer
 	}
 
 	/**
-	 * Makes the application's <b>first</b> {@code Cache-Control} write REPLACE the default that
-	 * {@link #apiNoStoreCacheControlFilter()} put on the response up-front, instead of appending to it: spring writes
-	 * a {@code ResponseEntity}'s headers with {@link HttpServletResponse#addHeader(String, String)}, so without this
-	 * an opting-out endpoint emits two contradicting values and a cache honours the stricter {@code no-store}.
+	 * Makes an endpoint's own {@code Cache-Control} REPLACE the default that {@link #apiNoStoreCacheControlFilter()}
+	 * put on the response up-front, instead of appending to it: spring writes a {@code ResponseEntity}'s headers with
+	 * {@link HttpServletResponse#addHeader(String, String)}, so without this an opting-out endpoint emits two
+	 * contradicting values and a cache honours the stricter {@code no-store}.
 	 * <p>
-	 * Only the first write replaces, so an endpoint deliberately sending several directives as separate headers still
-	 * gets all of them.
+	 * Only {@code addHeader} needs the treatment; a plain {@code setHeader} replaces already. An endpoint emitting
+	 * several {@code Cache-Control} headers would end up with the last one only - no /api/v2 endpoint does, and
+	 * {@code CacheControl} puts all its directives into one header value.
 	 */
 	private static class CacheControlDefaultReplacingResponse extends HttpServletResponseWrapper
 	{
-		/**
-		 * Not volatile: no /api/v2 endpoint uses async MVC (DeferredResult / Callable / WebAsyncTask), so the response
-		 * is written by the one request thread. Revisit if one ever does.
-		 */
-		private boolean cacheControlSetByApplication = false;
-
 		private CacheControlDefaultReplacingResponse(@NonNull final HttpServletResponse delegate)
 		{
 			super(delegate);
 		}
 
 		@Override
-		public void setHeader(final String name, final String value)
-		{
-			if (isCacheControl(name))
-			{
-				// already replaces, but it has to be remembered so that a following addHeader appends to the
-				// application's value instead of wiping it
-				cacheControlSetByApplication = true;
-			}
-			super.setHeader(name, value);
-		}
-
-		@Override
 		public void addHeader(final String name, final String value)
 		{
-			if (isCacheControl(name) && !cacheControlSetByApplication)
+			if (HttpHeaders.CACHE_CONTROL.equalsIgnoreCase(name))
 			{
-				cacheControlSetByApplication = true;
 				super.setHeader(name, value);
-				return;
 			}
-			super.addHeader(name, value);
-		}
-
-		private static boolean isCacheControl(final String name)
-		{
-			return HttpHeaders.CACHE_CONTROL.equalsIgnoreCase(name);
+			else
+			{
+				super.addHeader(name, value);
+			}
 		}
 	}
 }
