@@ -565,3 +565,136 @@ Feature: Switch to Moving Average Invoice
       | Record_ID | IsStaged | IsReleased |
       | invFirst  | Y        | N          |
       | invSecond | N        | N          |
+
+  @Id:S26253_TC12
+  Scenario: A resume refused because a product joined the population purges nothing on its way to the refusal
+    #
+    # Same isolation technique as the two batched-recompute scenarios above: the driver recomputes EVERY
+    # product of the accounting schema, so this scenario is separated from the shared test database by
+    # ACCOUNTING DATE - it books its post-switch stock counts into the LAST QUARTER of 2027 and recomputes
+    # from 01.09.2027 onwards, disjoint from the 01.2027-03.2027 slice of the resume-after-a-crash scenario
+    # and from the 07.2027-08.2027 slice of the regrouping-resume scenario.
+    # Its slice is the LATEST of the three on purpose: a run's range is open-ended - every document at or
+    # after the start date takes part - so a scenario may only book into dates no EARLIER scenario's range
+    # already reaches into. The range still stays inside 2027, because the test database's fiscal calendar
+    # ends with it.
+    #
+    Given after not more than 60s, the repost queue is drained
+    #
+    # All three products are created in ONE step and therefore in ascending M_Product_ID order, and that
+    # order is what this scenario turns on: the driver cuts its commit-batches by M_Product_ID, so
+    # lateJoiner - created first, hence the LOWEST id of the three - takes over the FIRST batch the moment
+    # it enters the population, pushing every other product one batch up.
+    #
+    And metasfresh contains M_Products:
+      | Identifier        |
+      | lateJoiner        |
+      | doneBatchProduct  |
+      | crashBatchProduct |
+    #
+    # Pre-cut-off history on the prior method (AveragePO) for all three, so the switch has a non-trivial
+    # opening to copy for each of them.
+    #
+    And update current costs
+      | M_Product_ID      | M_CostElement_ID | CurrentCostPrice |
+      | lateJoiner        | AveragePO        | 10 CHF           |
+      | doneBatchProduct  | AveragePO        | 10 CHF           |
+      | crashBatchProduct | AveragePO        | 10 CHF           |
+    And metasfresh contains single line completed inventories
+      | M_Inventory_ID | M_InventoryLine_ID | MovementDate | M_Warehouse_ID | M_Product_ID      | QtyBook | QtyCount | UOM.X12DE355 |
+      | invPreCutLate  | invPreCutLate_l1   | 2025-12-15   | warehouseStd   | lateJoiner        | 0       | 10       | PCE          |
+      | invPreCutDone  | invPreCutDone_l1   | 2025-12-15   | warehouseStd   | doneBatchProduct  | 0       | 10       | PCE          |
+      | invPreCutCrash | invPreCutCrash_l1  | 2025-12-15   | warehouseStd   | crashBatchProduct | 0       | 10       | PCE          |
+    #
+    # Only TWO of the three products get a document inside the recompute's range for now. lateJoiner enters
+    # the population later - between the crash and the resume - and that is the whole situation under test.
+    #
+    When metasfresh contains single line completed inventories
+      | M_Inventory_ID | M_InventoryLine_ID | MovementDate | M_Warehouse_ID | M_Product_ID      | QtyBook | QtyCount | UOM.X12DE355 |
+      | invDone        | invDone_l1         | 2027-10-01   | warehouseStd   | doneBatchProduct  | 10      | 20       | PCE          |
+      | invCrash       | invCrash_l1        | 2027-11-01   | warehouseStd   | crashBatchProduct | 10      | 20       | PCE          |
+    #
+    # Switch to MovingAverageInvoice, back-dated to the 31.12.2025 cut-off - far outside the recompute range.
+    #
+    And metasfresh contains M_CostRevaluation:
+      | Identifier | C_AcctSchema_ID | M_CostElement_ID     | RevaluationSource   | CopyFrom_M_CostElement_ID | EvaluationStartDate | DateAcct   |
+      | switchLate | acctSchema      | MovingAverageInvoice | CopyFromCostElement | AveragePO                 | 2025-12-31          | 2025-12-31 |
+    And create lines for cost revaluation switchLate
+    And the cost revaluation identified by switchLate is completed
+    Then the cost revaluation identified by switchLate seeded opening cost details:
+      | M_Product_ID      | M_CostElement_ID     | DateAcct   | Qty   | Amt   |
+      | lateJoiner        | MovingAverageInvoice | 2025-12-31 | 0 PCE | 0 CHF |
+      | doneBatchProduct  | MovingAverageInvoice | 2025-12-31 | 0 PCE | 0 CHF |
+      | crashBatchProduct | MovingAverageInvoice | 2025-12-31 | 0 PCE | 0 CHF |
+    #
+    # First run, ONE product per commit-batch, dies while staging the second product's stock count: batch 1
+    # (doneBatchProduct) stays committed with its document parked in the staging table.
+    #
+    When the cost recompute driver run dies while staging document invCrash:
+      | C_AcctSchema_ID | M_CostElement_ID | StartDateAcct | ProductsPerCommit | Resume |
+      | acctSchema      | AveragePO        | 2027-09-01    | 1                 | N      |
+    Then the cost recompute run left these documents:
+      | Record_ID | IsStaged | IsReleased |
+      | invDone   | Y        | N          |
+      | invCrash  | N        | N          |
+    #
+    # While the operator investigates the crash, an ordinary new document posts into the recompute's range -
+    # for lateJoiner, the product that had none there yet. Posting explodes into EVERY active material cost
+    # element, so this also gives the MovingAverageInvoice element an in-range cost detail: exactly the kind
+    # of row the driver's purge deletes and commits.
+    #
+    When metasfresh contains single line completed inventories
+      | M_Inventory_ID | M_InventoryLine_ID | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 |
+      | invLate        | invLate_l1         | 2027-12-01   | warehouseStd   | lateJoiner   | 10      | 20       | PCE          |
+    #
+    # Wait for it to be posted: what the refusal below must leave alone only exists once it is.
+    #
+    And after not more than 60s, M_CostDetails are found for product lateJoiner and cost element AveragePO
+      | TableName       | Record_ID        | Amt     | Qty    |
+      | M_InventoryLine | invPreCutLate_l1 | 100 CHF | 10 PCE |
+      | M_InventoryLine | invLate_l1       | 100 CHF | 10 PCE |
+    #
+    # MovingAverageInvoice now carries the seeded opening (10 CHF / 10 PCE / 100 CHF) plus the new document's
+    # movement: 10 CHF / 20 PCE / 200 CHF. This is the state the refused resume must not touch.
+    #
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
+      | acctSchema      | lateJoiner   | MovingAverageInvoice | 10 CHF           | 20 PCE     | 200 CHF      |
+    #
+    # Now the operator resumes with EXACTLY the parameters of the crashed run, so the run-identity check has
+    # nothing to complain about. What changed is the POPULATION: lateJoiner sorts ahead of doneBatchProduct,
+    # so the batch recorded DONE for doneBatchProduct alone now covers lateJoiner instead. Skipping it would
+    # leave lateJoiner un-rewound and its document unstaged while the run reports success, so the resume is
+    # refused, naming both product sets.
+    #
+    When the cost recompute driver run is refused because the product population changed:
+      | C_AcctSchema_ID | M_CostElement_ID | StartDateAcct | ProductsPerCommit | Resume | RecordedProduct  | CurrentProduct |
+      | acctSchema      | AveragePO        | 2027-09-01    | 1                 | Y      | doneBatchProduct | lateJoiner     |
+    #
+    # A refused resume changes NOTHING: it finished no further batch, released nothing to the repost queue,
+    # and left the crashed run's parked document exactly where it was.
+    #
+    Then the cost recompute run finished 0 more batches than the run before it
+    And the cost recompute run left these documents:
+      | Record_ID | IsStaged | IsReleased |
+      | invDone   | Y        | N          |
+      | invCrash  | N        | N          |
+      | invLate   | N        | N          |
+    #
+    # And "nothing" includes the MovingAverageInvoice purge, which is the point: the purge deletes the target
+    # element's in-range cost details and COMMITs, so a refusal that arrives after it has already destroyed
+    # the very rows a later, correct resume needs. lateJoiner's MovingAverageInvoice current cost still
+    # carries its new document's movement on top of the seeded opening - it was not rewound to the opening,
+    # which is what deleting that in-range cost detail would have done.
+    #
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
+      | acctSchema      | lateJoiner   | MovingAverageInvoice | 10 CHF           | 20 PCE     | 200 CHF      |
+    #
+    # The opening anchors are all still there too, for every one of the three products.
+    #
+    And the cost revaluation identified by switchLate seeded opening cost details:
+      | M_Product_ID      | M_CostElement_ID     | DateAcct   | Qty   | Amt   |
+      | lateJoiner        | MovingAverageInvoice | 2025-12-31 | 0 PCE | 0 CHF |
+      | doneBatchProduct  | MovingAverageInvoice | 2025-12-31 | 0 PCE | 0 CHF |
+      | crashBatchProduct | MovingAverageInvoice | 2025-12-31 | 0 PCE | 0 CHF |

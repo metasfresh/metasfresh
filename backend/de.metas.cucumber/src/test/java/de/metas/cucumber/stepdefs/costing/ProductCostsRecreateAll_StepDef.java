@@ -26,10 +26,12 @@ import com.google.common.collect.ImmutableList;
 import de.metas.costing.CostElementId;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.acctschema.C_AcctSchema_StepDefData;
 import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
+import de.metas.product.ProductId;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -89,6 +91,7 @@ public class ProductCostsRecreateAll_StepDef
 
 	@NonNull private final C_AcctSchema_StepDefData acctSchemaTable;
 	@NonNull private final M_CostElement_StepDefData costElementTable;
+	@NonNull private final M_Product_StepDefData productTable;
 	@NonNull private final IdentifiersResolver identifiersResolver;
 
 	/** What the most recent driver run left behind. */
@@ -165,6 +168,60 @@ public class ProductCostsRecreateAll_StepDef
 				.hasStackTraceContaining("Cannot resume")
 				.hasStackTraceContaining("ProductsPerCommit=" + recordedProductsPerCommit)
 				.hasStackTraceContaining("ProductsPerCommit=" + requestedProductsPerCommit);
+	}
+
+	/**
+	 * Runs the cost-recompute driver as a resume and asserts it is REFUSED because the PRODUCT POPULATION has
+	 * changed since the run that recorded the DONE batches — every one of this call's parameters matches that
+	 * run, so the run-identity check has nothing to complain about.
+	 * <p>
+	 * The driver has no product parameter: it derives its product set from the documents in the recompute's
+	 * date range on every call. So a document that posts into that range between the crash and the resume
+	 * brings a new product in, and because the batches are cut by {@code M_Product_ID}, a newcomer with a
+	 * lower id shifts every batch boundary after it. A batch number recorded DONE then names a DIFFERENT set
+	 * of products, which would be skipped: never rewound, never staged, and the run still reports success.
+	 * <p>
+	 * The refusal must arrive BEFORE the driver purges the target element's in-range cost details, because
+	 * that purge is committed and cannot be rolled back — which is what the steps following this one assert.
+	 * The message must name both product sets, so the operator can see which product joined.
+	 * <p>
+	 * The expectation names the two PRODUCTS and deliberately not the batch number: the driver recomputes
+	 * every product of the accounting schema, so how many foreign products sort ahead of these two — and
+	 * therefore which batch number the shift lands on — depends on what the rest of the test database
+	 * contains. The pair of product sets identifies the shifted batch exactly and is stable.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns same as <code>the cost recompute driver runs:</code>, plus<br>
+	 *   <b>RecordedProduct</b> — (required, identifier-ref) the product the shifted batch was recorded for<br>
+	 *   <b>CurrentProduct</b> — (required, identifier-ref) the product that batch covers now<br>
+	 * @cucumber.depends StepDefData: C_AcctSchema_StepDefData, M_CostElement_StepDefData, M_Product_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When the cost recompute driver run is refused because the product population changed:
+	 *   | C_AcctSchema_ID | M_CostElement_ID | StartDateAcct | ProductsPerCommit | Resume | RecordedProduct  | CurrentProduct |
+	 *   | acctSchema      | AveragePO        | 2027-09-01    | 1                 | Y      | doneBatchProduct | lateJoiner     |
+	 * </pre>
+	 */
+	@When("^the cost recompute driver run is refused because the product population changed:$")
+	public void runIsRefused_productPopulationChanged(@NonNull final DataTable dataTable)
+	{
+		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
+		final ProductId recordedProductId = productTable.getId(row.getAsIdentifier("RecordedProduct"));
+		final ProductId currentProductId = productTable.getId(row.getAsIdentifier("CurrentProduct"));
+
+		rememberOutcome(invokeDriver(row, null, true /*runMustFail*/));
+
+		assertThat(getLastRunOutcome().getFailure())
+				.as("resuming must be refused: the batch recorded for product %s now covers product %s",
+						recordedProductId, currentProductId)
+				.isNotNull()
+				// hasStackTraceContaining, not hasMessageContaining: the driver is CALLed through a plain JDBC
+				// statement, so the refusal raised by the procedure is the CAUSE of the exception this step
+				// sees, and the top-level message is only "Failed executing: CALL ...".
+				.hasStackTraceContaining("Cannot resume")
+				.hasStackTraceContaining("the product population changed")
+				.hasStackTraceContaining("was recorded for product(s) {" + recordedProductId.getRepoId()
+						+ "} but now covers product(s) {" + currentProductId.getRepoId() + "}");
 	}
 
 	/**
