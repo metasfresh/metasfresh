@@ -10,5 +10,5 @@ WHERE value = 'Delivery_Via_Rule'
 
 DELETE
 FROM AD_Ref_List
-WHERE AD_Ref_List_ID=544107
+WHERE AD_Ref_List_ID in (544107,544108)
 ;
