@@ -40,4 +40,21 @@ export const ManufacturingJobsListScreen = {
         return match ? match[1] : null;
     },
 
+    expectHeaderProperty: async ({ caption, value }) => await test.step(`${NAME} - Check header property '${caption}'='${value}'`, async () => {
+        const row = await page.locator(
+            `tr:has(th:has-text("${caption}")):has(td:has-text("${value}"))`
+        );
+        await expect(row).toHaveCount(1)
+    }),
+
+    // The operator's current workstation as THIS screen displays it (GET /api/v2/workstation).
+    expectCurrentWorkstation: async (name) => await test.step(`${NAME} - Expect header workstation = '${name}'`, async () => {
+        await ManufacturingJobsListScreen.expectHeaderProperty({ caption: 'Workstation', value: name });
+    }),
+
+    // The operator's current ACTIVE workplace as THIS screen displays it (GET /api/v2/workplace).
+    expectCurrentWorkplace: async (name) => await test.step(`${NAME} - Expect header workplace = '${name}'`, async () => {
+        await ManufacturingJobsListScreen.expectHeaderProperty({ caption: 'Workplace', value: name });
+    }),
+
 };

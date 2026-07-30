@@ -90,6 +90,20 @@ export const Backend = {
         return responseBody;
     }),
 
+    // Assigns the operator to a workstation through the SAME endpoint the app itself posts to when a
+    // workstation QR is scanned. Used to change the assignment while a screen under test stays open —
+    // the deterministic stand-in for the real-world trigger (a second app instance doing the scan).
+    assignWorkstationByQRCode: async ({ qrCode }) => await test.step(`Backend: assign workstation by QR code`, async () => {
+        const backendBaseUrl = await getBackendBaseUrl();
+        const response = await page.request.post(`${backendBaseUrl}/workstation/assign`, {
+            headers: { 'Content-Type': 'application/json', 'Authorization': getAuthToken() },
+            data: { workstationQRCode: qrCode },
+        });
+        const responseBody = await response.json();
+        assertNoErrors({ responseBody });
+        return responseBody;
+    }),
+
     getWFProcess: async ({ wfProcessId }) => {
         const backendBaseUrl = await getBackendBaseUrl();
         const response = await page.request.get(`${backendBaseUrl}/userWorkflows/wfProcess/${wfProcessId}`, {
