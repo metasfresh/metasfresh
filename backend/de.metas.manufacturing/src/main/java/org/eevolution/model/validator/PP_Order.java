@@ -13,6 +13,8 @@ import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.uom.UomId;
@@ -33,6 +35,7 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderCostBL;
@@ -51,6 +54,7 @@ import java.sql.Timestamp;
 public class PP_Order
 {
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
@@ -151,6 +155,27 @@ public class PP_Order
 			final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(ppOrder.getC_OrderLine().getM_AttributeSetInstance_ID());
 			final AttributeSetInstanceId asiIdCopy = asiBL.copy(asiId);
 			ppOrder.setM_AttributeSetInstance_ID(asiIdCopy.getRepoId());
+		}
+
+		//
+		// Default production Plant (S_Resource) and WorkStation from the product's category, if not set yet (gh31188)
+		if (ppOrder.getS_Resource_ID() <= 0 || ppOrder.getWorkStation_ID() <= 0)
+		{
+			final ProductId productId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
+			final ProductCategoryId productCategoryId = productsRepo.retrieveProductCategoryByProductId(productId);
+			if (productCategoryId != null)
+			{
+				final I_M_Product_Category productCategory = productsRepo.getProductCategoryById(productCategoryId);
+
+				if (ppOrder.getS_Resource_ID() <= 0 && productCategory.getS_Resource_ID() > 0)
+				{
+					ppOrder.setS_Resource_ID(productCategory.getS_Resource_ID());
+				}
+				if (ppOrder.getWorkStation_ID() <= 0 && productCategory.getWorkStation_ID() > 0)
+				{
+					ppOrder.setWorkStation_ID(productCategory.getWorkStation_ID());
+				}
+			}
 		}
 
 		//
