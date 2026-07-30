@@ -66,6 +66,7 @@ import de.metas.externalsystem.model.I_ExternalSystem;
 import de.metas.handlingunits.IHUWarehouseDAO;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.IHUShipmentAssignmentBL;
+import de.metas.handlingunits.inout.returns.ReturnsServiceFacade;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.QtyToDeliverMap;
@@ -1175,6 +1176,52 @@ public class M_InOut_StepDef
 				InterfaceWrapperHelper.save(returnLine);
 			}
 
+			final StepDefDataIdentifier returnIdentifier = row.getAsIdentifier("VendorReturn_ID");
+			inoutTable.putOrReplace(returnIdentifier, vendorReturn);
+		});
+	}
+
+	/**
+	 * Create a vendor return via the real HU-producer path ({@link ReturnsServiceFacade#createVendorReturnInOutForHUs}).
+	 * The producer auto-completes the return (DocStatus=CO) and stamps M_HU_PI_Item_Product_ID on each return line.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns <b>M_InOut_ID</b> — (required, identifier-ref) the completed vendor receipt whose HUs to return<br>
+	 * <b>VendorReturn_ID</b> — (required, identifier) alias to store the created vendor-return M_InOut<br>
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData (populated)
+	 * @cucumber.example <pre>
+	 * And generate vendor return from receipt HUs
+	 *   | M_InOut_ID    | VendorReturn_ID    |
+	 *   | receipt_VR_PI | vendorReturn_VR_PI |
+	 * </pre>
+	 */
+	@And("generate vendor return from receipt HUs")
+	public void generateVendorReturnFromReceiptHUs(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row ->
+		{
+			final I_M_InOut receipt = row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID).lookupNotNullIn(inoutTable);
+			final List<I_M_HU> hus = huInOutBL.retrieveHandlingUnits(receipt);
+			assertThat(hus)
+					.as("Receipt %s must have assigned HUs before creating a vendor return via the HU path", receipt.getM_InOut_ID())
+					.isNotEmpty();
+			final List<Integer> receiptLineIds = inOutBL.getLines(receipt).stream()
+					.map(org.compiere.model.I_M_InOutLine::getM_InOutLine_ID)
+					.collect(Collectors.toList());
+			assertThat(receiptLineIds).as("Receipt %s must have lines", receipt.getM_InOut_ID()).isNotEmpty();
+			final ReturnsServiceFacade returnsServiceFacade = SpringContextHolder.instance.getBean(ReturnsServiceFacade.class);
+			returnsServiceFacade.createVendorReturnInOutForHUs(hus, SystemTime.asTimestamp());
+			final Integer vendorReturnId = queryBL.createQueryBuilder(de.metas.inout.model.I_M_InOutLine.class)
+					.addInArrayFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_Return_Origin_InOutLine_ID, receiptLineIds)
+					.orderByDescending(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_M_InOut_ID)
+					.create()
+					.stream()
+					.map(de.metas.inout.model.I_M_InOutLine::getM_InOut_ID)
+					.distinct()
+					.findFirst()
+					.orElseThrow(() -> new AdempiereException("No vendor return found whose lines reference receipt lines: " + receiptLineIds));
+			final I_M_InOut vendorReturn = inOutDAO.getById(InOutId.ofRepoId(vendorReturnId));
+			assertThat(vendorReturn).as("Vendor return %d must exist", vendorReturnId).isNotNull();
 			final StepDefDataIdentifier returnIdentifier = row.getAsIdentifier("VendorReturn_ID");
 			inoutTable.putOrReplace(returnIdentifier, vendorReturn);
 		});
