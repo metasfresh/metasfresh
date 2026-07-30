@@ -3,7 +3,8 @@ SET columnname = 'PackingInstruction_OLD'
 WHERE columnname = 'PackingInstruction'
 ;
 
-UPDATE AD_Ref_List
-SET value = 'Delivery_Via_Rule_OLD'
+DELETE
+FROM AD_Ref_List
 WHERE value = 'Delivery_Via_Rule'
+   OR value = 'Net_Sum'
 ;
