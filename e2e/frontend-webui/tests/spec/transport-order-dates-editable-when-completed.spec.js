@@ -39,7 +39,9 @@ test.describe('Transport order — B/L Date and ETA editable while completed', (
     // land under one heading in the Allure report.
     allure.epic('E0140: Purchasing');
     allure.tag('F00600: Purchase Order');
+    allure.tag('F00600');
     allure.tag('F00994: Multiple Levels of Payment');
+    allure.tag('F00994');
     allure.story('B/L Date and ETA remain editable after the transport order is completed');
     allure.severity('critical');
     allure.description(`
