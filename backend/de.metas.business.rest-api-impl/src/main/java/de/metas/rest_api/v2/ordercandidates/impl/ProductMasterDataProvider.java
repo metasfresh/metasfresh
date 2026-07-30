@@ -114,7 +114,6 @@ public final class ProductMasterDataProvider
 		return productInfoCache.getOrLoad(
 				new ProductCacheKey(orgId, productExternalIdentifier, date),
 				this::getProductInfo0);
-
 	}
 
 	private ProductInfo getProductInfo0(@NonNull final ProductCacheKey key)

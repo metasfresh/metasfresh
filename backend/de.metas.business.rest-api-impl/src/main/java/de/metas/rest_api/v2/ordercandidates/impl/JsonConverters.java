@@ -84,6 +84,7 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -119,10 +120,19 @@ public class JsonConverters
 
 		final OrgId orgId = masterdataProvider.getOrgId(request.getOrgCode());
 
+		// Compute the effective date used for PIIP (M_HU_PI_Item_Product) ValidFrom look-up.
+		// We coalesce dateRequired → dateOrdered → dateCandidate so that future packing
+		// instructions (ValidFrom > effective date) are never matched for past/present orders.
+		final LocalDate dateForPIIPLookup = CoalesceUtil.coalesce(
+				request.getDateRequired(),
+				request.getDateOrdered(),
+				request.getDateCandidate());
+
 		final String jsonProductIdentifier = request.getProductIdentifier();
 		final ExternalIdentifier productIdentifier = ExternalIdentifier.of(jsonProductIdentifier);
-		final ZonedDateTime datePromised = request.getDateRequired() != null
-				? request.getDateRequired().atStartOfDay(masterdataProvider.getOrgTimeZone(orgId))
+		final ZoneId orgTimeZone = masterdataProvider.getOrgTimeZone(orgId);
+		final ZonedDateTime datePromised = dateForPIIPLookup != null
+				? dateForPIIPLookup.atStartOfDay(orgTimeZone)
 				: null;
 		final ProductMasterDataProvider.ProductInfo productInfo = masterdataProvider.getProductInfo(productIdentifier, orgId, datePromised);
 
