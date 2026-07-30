@@ -1,3 +1,4 @@
+-- Source DDL: backend/de.metas.acct.base/src/main/sql/postgresql/ddl/functions/product_costs_recreate_all_from_date.sql
 DROP PROCEDURE IF EXISTS "de_metas_acct".product_costs_recreate_all_from_date(
     p_C_AcctSchema_ID   numeric,
     p_M_CostElement_ID  numeric,
