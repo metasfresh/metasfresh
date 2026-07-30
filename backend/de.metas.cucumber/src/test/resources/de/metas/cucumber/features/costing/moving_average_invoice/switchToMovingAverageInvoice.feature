@@ -486,3 +486,82 @@ Feature: Switch to Moving Average Invoice
       | product1     | MovingAverageInvoice | 2025-12-31 | 0 PCE | 0 CHF |
       | product2     | MovingAverageInvoice | 2025-12-31 | 0 PCE | 0 CHF |
       | product3     | MovingAverageInvoice | 2025-12-31 | 0 PCE | 0 CHF |
+
+  @Id:S26253_TC11
+  Scenario: A resume that regroups the products into different commit-batches is refused
+    #
+    # Same isolation technique as the batched-recompute scenario above: the driver recomputes EVERY product
+    # of the accounting schema, so this scenario is separated from the shared test database by ACCOUNTING
+    # DATE - it books its post-switch stock counts into the SECOND HALF of 2027 and recomputes from
+    # 01.06.2027 onwards, which is disjoint from the 01.2027-03.2027 slice the scenario above uses - and
+    # names the documents it expects instead of counting rows.
+    # The range stays inside 2027 on purpose: the test database's fiscal calendar ends with 2027, so a
+    # later year has no C_Period at all and completing a document there fails with @PeriodClosed@.
+    #
+    Given after not more than 60s, the repost queue is drained
+    And metasfresh contains M_Products:
+      | Identifier   |
+      | resumeFirst  |
+      | resumeSecond |
+    #
+    # Pre-cut-off history on the prior method (AveragePO), so the switch has a non-trivial opening to copy.
+    #
+    And update current costs
+      | M_Product_ID | M_CostElement_ID | CurrentCostPrice |
+      | resumeFirst  | AveragePO        | 10 CHF           |
+      | resumeSecond | AveragePO        | 10 CHF           |
+    And metasfresh contains single line completed inventories
+      | M_Inventory_ID  | M_InventoryLine_ID | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 |
+      | invPreCutFirst  | invPreCutFirst_l1  | 2025-12-15   | warehouseStd   | resumeFirst  | 0       | 10       | PCE          |
+      | invPreCutSecond | invPreCutSecond_l1 | 2025-12-15   | warehouseStd   | resumeSecond | 0       | 10       | PCE          |
+    #
+    # One post-cut-off stock count per product, both inside the recompute's second-half-of-2027 range:
+    # exactly the two commit-batches the crashed run below is cut into.
+    #
+    When metasfresh contains single line completed inventories
+      | M_Inventory_ID | M_InventoryLine_ID | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 |
+      | invFirst       | invFirst_l1        | 2027-08-01   | warehouseStd   | resumeFirst  | 10      | 20       | PCE          |
+      | invSecond      | invSecond_l1       | 2027-07-01   | warehouseStd   | resumeSecond | 10      | 20       | PCE          |
+    #
+    # Switch to MovingAverageInvoice, back-dated to the 31.12.2025 cut-off - far outside the recompute range.
+    #
+    And metasfresh contains M_CostRevaluation:
+      | Identifier   | C_AcctSchema_ID | M_CostElement_ID     | RevaluationSource   | CopyFrom_M_CostElement_ID | EvaluationStartDate | DateAcct   |
+      | switchResume | acctSchema      | MovingAverageInvoice | CopyFromCostElement | AveragePO                 | 2025-12-31          | 2025-12-31 |
+    And create lines for cost revaluation switchResume
+    And the cost revaluation identified by switchResume is completed
+    Then the cost revaluation identified by switchResume seeded opening cost details:
+      | M_Product_ID | M_CostElement_ID     | DateAcct   | Qty   | Amt   |
+      | resumeFirst  | MovingAverageInvoice | 2025-12-31 | 0 PCE | 0 CHF |
+      | resumeSecond | MovingAverageInvoice | 2025-12-31 | 0 PCE | 0 CHF |
+    #
+    # First run, ONE product per commit-batch, dies while staging the second product's stock count. The
+    # batch before it stays committed, and its document stays parked in the staging table.
+    #
+    When the cost recompute driver run dies while staging document invSecond:
+      | C_AcctSchema_ID | M_CostElement_ID | StartDateAcct | ProductsPerCommit | Resume |
+      | acctSchema      | AveragePO        | 2027-06-01    | 1                 | N      |
+    Then the cost recompute run left these documents:
+      | Record_ID | IsStaged | IsReleased |
+      | invFirst  | Y        | N          |
+      | invSecond | N        | N          |
+    #
+    # Now the operator does the natural thing after a crash and resumes with a SMALLER batch count - TWO
+    # products per commit instead of one. That regroups both products into a single batch numbered 1, and
+    # batch 1 is already recorded DONE - for the FIRST product alone. Skipping it would leave the second
+    # product's costs un-rewound and its stock count unstaged, and the run would still report success and
+    # release the first product's document. That silent half-recompute is what the refusal prevents; the
+    # message names both products-per-commit values so the operator can resume with the right one.
+    #
+    When the cost recompute driver run is refused because the recorded run used a different products-per-commit:
+      | C_AcctSchema_ID | M_CostElement_ID | StartDateAcct | ProductsPerCommit | Resume | RecordedProductsPerCommit |
+      | acctSchema      | AveragePO        | 2027-06-01    | 2                 | Y      | 1                         |
+    #
+    # A refused resume changes nothing: it finished no further batch, released nothing to the repost queue,
+    # and left the crashed run's parked document exactly where it was - so resuming correctly is still possible.
+    #
+    Then the cost recompute run finished 0 more batches than the run before it
+    And the cost recompute run left these documents:
+      | Record_ID | IsStaged | IsReleased |
+      | invFirst  | Y        | N          |
+      | invSecond | N        | N          |

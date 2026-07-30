@@ -118,7 +118,53 @@ public class ProductCostsRecreateAll_StepDef
 	@When("^the cost recompute driver runs:$")
 	public void run(@NonNull final DataTable dataTable)
 	{
-		rememberOutcome(invokeDriver(DataTableRows.of(dataTable).singleRow(), null));
+		rememberOutcome(invokeDriver(DataTableRows.of(dataTable).singleRow(), null, false /*runMustFail*/));
+	}
+
+	/**
+	 * Runs the cost-recompute driver as a resume and asserts it is REFUSED because the recorded batches were
+	 * not produced by this call's run — here because that run used a different products-per-commit.
+	 * <p>
+	 * A batch number is not a stable name for a set of products: the driver recomputes it on every call from
+	 * the caller's own {@code p_ProductsPerCommit}. So a resume with a different products-per-commit reads a
+	 * batch number recorded DONE under the old grouping as "already done" for a DIFFERENT set of products —
+	 * which are then never rewound, never staged, and the run reports success. Refusing is the only safe
+	 * answer, and the refusal must name BOTH products-per-commit values: that is what tells the operator
+	 * which parameter to correct in order to actually continue the crashed run.
+	 * <p>
+	 * The run's outcome is still snapshotted and remembered, so the steps after this one can assert that the
+	 * refused run changed nothing.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns same as <code>the cost recompute driver runs:</code>, plus<br>
+	 *   <b>RecordedProductsPerCommit</b> — (required) products-per-commit of the run that recorded the DONE batches; the refusal must name it<br>
+	 * @cucumber.depends StepDefData: C_AcctSchema_StepDefData, M_CostElement_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When the cost recompute driver run is refused because the recorded run used a different products-per-commit:
+	 *   | C_AcctSchema_ID | M_CostElement_ID | StartDateAcct | ProductsPerCommit | Resume | RecordedProductsPerCommit |
+	 *   | acctSchema      | AveragePO        | 2027-06-01    | 2                 | Y      | 1                         |
+	 * </pre>
+	 */
+	@When("^the cost recompute driver run is refused because the recorded run used a different products-per-commit:$")
+	public void runIsRefused_recordedRunUsedADifferentProductsPerCommit(@NonNull final DataTable dataTable)
+	{
+		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
+		final int requestedProductsPerCommit = row.getAsInt("ProductsPerCommit");
+		final int recordedProductsPerCommit = row.getAsInt("RecordedProductsPerCommit");
+
+		rememberOutcome(invokeDriver(row, null, true /*runMustFail*/));
+
+		assertThat(getLastRunOutcome().getFailure())
+				.as("resuming with ProductsPerCommit=%s must be refused, because the recorded batches were produced with ProductsPerCommit=%s",
+						requestedProductsPerCommit, recordedProductsPerCommit)
+				.isNotNull()
+				// hasStackTraceContaining, not hasMessageContaining: the driver is CALLed through a plain JDBC
+				// statement, so the refusal raised by the procedure is the CAUSE of the exception this step
+				// sees, and the top-level message is only "Failed executing: CALL ...".
+				.hasStackTraceContaining("Cannot resume")
+				.hasStackTraceContaining("ProductsPerCommit=" + recordedProductsPerCommit)
+				.hasStackTraceContaining("ProductsPerCommit=" + requestedProductsPerCommit);
 	}
 
 	/**
@@ -135,6 +181,12 @@ public class ProductCostsRecreateAll_StepDef
 	 * pool: a real operator runs the driver in its own {@code psql} session, so a crashed run's advisory lock
 	 * dies with that session — a pooled JDBC connection outlives the failure, so the lock has to be released
 	 * explicitly or the resume run could not acquire it.
+	 * <p>
+	 * The failure's message is asserted to be the INJECTED one, not merely "the run failed": the driver
+	 * recomputes every product of the accounting schema, so it can also die for a reason that has nothing to
+	 * do with this scenario (a foreign document in the recompute's date range whose period has no calendar,
+	 * say). Accepting any failure would let such a run pass this step and then fail several steps later on an
+	 * assertion that looks unrelated, hiding the real cause.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns same as <code>the cost recompute driver runs:</code>
@@ -152,7 +204,7 @@ public class ProductCostsRecreateAll_StepDef
 	{
 		final TableRecordReference dieOnDocument = identifiersResolver.getTableRecordReference(
 				StepDefDataIdentifier.ofString(documentIdentifier));
-		rememberOutcome(invokeDriver(DataTableRows.of(dataTable).singleRow(), dieOnDocument));
+		rememberOutcome(invokeDriver(DataTableRows.of(dataTable).singleRow(), dieOnDocument, true /*runMustFail*/));
 	}
 
 	/**
@@ -301,7 +353,17 @@ public class ProductCostsRecreateAll_StepDef
 		return lastRunOutcome;
 	}
 
-	private RunOutcome invokeDriver(@NonNull final DataTableRow row, @Nullable final TableRecordReference dieOnDocument)
+	/**
+	 * @param dieOnDocument when set, an abort is injected while this document is staged
+	 * @param runMustFail   {@code true} when the failure IS the expected outcome (an injected abort, or a
+	 *                      refusal the calling step asserts on). Only a run that is expected to SUCCEED
+	 *                      rethrows its failure here — otherwise the assertion the caller wants to make
+	 *                      about the failure could never be reached.
+	 */
+	private RunOutcome invokeDriver(
+			@NonNull final DataTableRow row,
+			@Nullable final TableRecordReference dieOnDocument,
+			final boolean runMustFail)
 	{
 		final String callSql = buildCallSql(row);
 		logger.info("Invoking cost-recompute driver: {}", callSql);
@@ -323,8 +385,8 @@ public class ProductCostsRecreateAll_StepDef
 			catch (final Exception ex)
 			{
 				// logged, not only remembered: when the run was expected to succeed the exception is rethrown
-				// below, but when an abort was injected the exception is the expected outcome and its message is
-				// the only clue whether the run died for the injected reason or for an unrelated one.
+				// below, but when the failure IS the expected outcome (an injected abort, or a refusal) its
+				// message is the only clue whether the run died for that reason or for an unrelated one.
 				logger.warn("Cost-recompute driver run failed", ex);
 				failure = ex;
 			}
@@ -338,7 +400,7 @@ public class ProductCostsRecreateAll_StepDef
 				execute(connection, "SELECT pg_advisory_unlock_all()");
 			}
 
-			outcome = takeSnapshot(connection);
+			outcome = takeSnapshot(connection, failure);
 		}
 		finally
 		{
@@ -349,9 +411,13 @@ public class ProductCostsRecreateAll_StepDef
 		{
 			assertThat(failure)
 					.as("cost-recompute driver run must die while staging %s", dieOnDocument)
-					.isNotNull();
+					.isNotNull()
+					// hasStackTraceContaining, not hasMessageContaining: the driver is CALLed through a plain
+					// JDBC statement, so the PostgreSQL error is the CAUSE of the exception this step sees and
+					// the top-level message is only "Failed executing: CALL ...".
+					.hasStackTraceContaining(stagingAbortMessage(dieOnDocument));
 		}
-		else if (failure != null)
+		else if (!runMustFail && failure != null)
 		{
 			throw AdempiereException.wrapIfNeeded(failure);
 		}
@@ -377,6 +443,13 @@ public class ProductCostsRecreateAll_StepDef
 				+ ", p_Resume:='" + resume + "')";
 	}
 
+	/** The message the injected abort raises with — the proof a failed run failed for the injected reason. */
+	private static String stagingAbortMessage(@NonNull final TableRecordReference dieOnDocument)
+	{
+		return "cucumber: cost-recompute run died while staging "
+				+ dieOnDocument.getTableName() + "/" + dieOnDocument.getRecord_ID();
+	}
+
 	private void installStagingAbortTrigger(@NonNull final Connection connection, @NonNull final TableRecordReference dieOnDocument)
 	{
 		execute(connection, "CREATE OR REPLACE FUNCTION " + ABORT_TRIGGER_FUNCTION + "() RETURNS trigger LANGUAGE plpgsql AS $fn$"
@@ -399,7 +472,7 @@ public class ProductCostsRecreateAll_StepDef
 		execute(connection, "DROP FUNCTION IF EXISTS " + ABORT_TRIGGER_FUNCTION + "()");
 	}
 
-	private RunOutcome takeSnapshot(@NonNull final Connection connection)
+	private RunOutcome takeSnapshot(@NonNull final Connection connection, @Nullable final Exception failure)
 	{
 		final ImmutableList.Builder<Integer> doneBatchNos = ImmutableList.builder();
 		final ArrayList<TableRecordReference> stagedDocuments = new ArrayList<>();
@@ -440,7 +513,8 @@ public class ProductCostsRecreateAll_StepDef
 		return new RunOutcome(
 				doneBatchNos.build(),
 				ImmutableList.copyOf(stagedDocuments),
-				ImmutableList.copyOf(queuedDocuments));
+				ImmutableList.copyOf(queuedDocuments),
+				failure);
 	}
 
 	private static int countQueueRows()
@@ -468,5 +542,7 @@ public class ProductCostsRecreateAll_StepDef
 		@NonNull ImmutableList<TableRecordReference> stagedDocuments;
 		/** Documents in the repost queue, ordered by SeqNo, i.e. in the order they will be reposted. */
 		@NonNull ImmutableList<TableRecordReference> queuedDocuments;
+		/** What the run failed with, or {@code null} when it succeeded. */
+		@Nullable Exception failure;
 	}
 }
