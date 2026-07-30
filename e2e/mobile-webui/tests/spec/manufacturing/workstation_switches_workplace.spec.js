@@ -7,6 +7,7 @@ import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScre
 import { WorkstationManagerScreen } from "../../utils/screens/workstationManager/WorkstationManagerScreen";
 import { WorkplaceManagerScreen } from "../../utils/screens/workplaceManager/WorkplaceManagerScreen";
 import { ManufacturingJobsListScreen } from "../../utils/screens/manufacturing/ManufacturingJobsListScreen";
+import { AppLifecycleComponent } from "../../utils/components/AppLifecycleComponent";
 
 const createMasterdata = async () => {
     return await Backend.createMasterdata({
@@ -16,9 +17,11 @@ const createMasterdata = async () => {
             // established purely by scanning, which is exactly what this scenario drives.
             login: { user: { language: "en_US" } },
             // The manufacturing app only reads (and only displays) the operator's workstation when its
-            // config says a resource scan is required — MobileUI_UserProfile_MFG.IsScanResourceRequired,
-            // which the customer runs on, but whose built-in default is off. Set here rather than
-            // inherited, so the Produktion launchers screen really shows a Workstation header row.
+            // config says a resource scan is required — MobileUI_UserProfile_MFG.IsScanResourceRequired
+            // (ManufacturingMobileApplication.java) — whose built-in default is off. It must be on here
+            // to reproduce the reported screen at all: the customer's Produktion screenshots show an
+            // Arbeitsstation header row, which only renders when the workstation is read. Set in this
+            // spec's own masterdata rather than inherited, per the fresh-fixture rule.
             mobileConfig: { manufacturing: { isScanResourceRequired: true } },
             warehouses: {
                 whA: {},
@@ -119,12 +122,7 @@ test('A workstation switch made while the Produktion screen stays open must show
     });
 
     await test.step('Returning to the screen must re-read the operator context — it must not stay on WS1 / A', async () => {
-        // Coming back to an app that stayed open fires exactly these two events; the screen must treat
-        // them as "re-read the operator's context", not keep whatever it loaded when it first mounted.
-        await page.evaluate(() => {
-            document.dispatchEvent(new Event('visibilitychange'));
-            window.dispatchEvent(new Event('focus'));
-        });
+        await AppLifecycleComponent.returnToForeground();
 
         // RED before the fix: both of these still show WS1 / wpA, because the screen read the
         // operator's workstation and workplace once at mount and has no refresh trigger at all.
