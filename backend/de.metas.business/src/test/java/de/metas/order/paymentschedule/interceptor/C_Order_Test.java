@@ -153,14 +153,50 @@ class C_Order_Test
 				.doesNotThrowAnyException();
 	}
 
-	/** NEW: proforma allocation alone (no per-line link) must block reactivation. */
+	/**
+	 * A proforma allocation carries no committed state that a reactivate would orphan: the allocation
+	 * row and its prepayment both survive the reactivate, and re-completion re-derives the pay-schedule
+	 * state from them. So a proforma alone must NOT block reactivation.
+	 */
 	@Test
-	void rejectReactivate_whenProformaAllocationExists()
+	void allowReactivate_whenProformaAllocatedAndNoLineLink()
 	{
 		final I_C_Order order = newOrder();
-		// schedule lines carry NO per-line downstream link — the block must come from the proforma alone
+		// schedule lines carry NO per-line downstream link — only the proforma allocation exists
 		Mockito.when(orderPayScheduleService.getByOrderId(ORDER_ID))
-				.thenReturn(Optional.of(scheduleWithStatuses(OrderPayScheduleStatus.Pending, OrderPayScheduleStatus.Pending)));
+				.thenReturn(Optional.of(scheduleWithStatuses(OrderPayScheduleStatus.Awaiting_Pay, OrderPayScheduleStatus.Pending)));
+		Mockito.when(proformaService.getByOrderId(ORDER_ID))
+				.thenReturn(Optional.of(stubProformaInvoice()));
+
+		assertThatCode(() -> guard.blockReactivateWhenScheduleNotPending(order))
+				.doesNotThrowAnyException();
+	}
+
+	/**
+	 * The proforma no longer blocks, but a goods-receipt link still does — even on the same order.
+	 * Guards against over-correcting the guard into permissiveness.
+	 */
+	@Test
+	void rejectReactivate_whenProformaAllocatedAndLineHasInoutLink()
+	{
+		final I_C_Order order = newOrder();
+		Mockito.when(orderPayScheduleService.getByOrderId(ORDER_ID))
+				.thenReturn(Optional.of(scheduleWithInoutLink(OrderPayScheduleStatus.Awaiting_Pay)));
+		Mockito.when(proformaService.getByOrderId(ORDER_ID))
+				.thenReturn(Optional.of(stubProformaInvoice()));
+
+		assertThatThrownBy(() -> guard.blockReactivateWhenScheduleNotPending(order))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("Order_Reactivate_Blocked_By_PaySchedule_Activity");
+	}
+
+	/** Sibling of the inout case: a matched-invoice link also still blocks, proforma or not. */
+	@Test
+	void rejectReactivate_whenProformaAllocatedAndLineHasInvoiceLink()
+	{
+		final I_C_Order order = newOrder();
+		Mockito.when(orderPayScheduleService.getByOrderId(ORDER_ID))
+				.thenReturn(Optional.of(scheduleWithInvoiceLink(OrderPayScheduleStatus.Paid)));
 		Mockito.when(proformaService.getByOrderId(ORDER_ID))
 				.thenReturn(Optional.of(stubProformaInvoice()));
 
