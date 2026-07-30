@@ -1,5 +1,6 @@
 package de.metas.server.config;
 
+import com.google.common.collect.ImmutableList;
 import lombok.Value;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -95,7 +96,7 @@ class WebConfigApiNoStoreCacheControlFilterTest
 		final Response response = get(TestEndpointsConfig.PATH_PLAIN);
 
 		assertThat(response.statusCode).isEqualTo(200);
-		assertThat(response.cacheControl).isEqualTo("no-store");
+		assertThat(response.cacheControlValues).containsExactly("no-store");
 	}
 
 	@Test
@@ -104,7 +105,9 @@ class WebConfigApiNoStoreCacheControlFilterTest
 		final Response response = get(TestEndpointsConfig.PATH_CACHEABLE);
 
 		assertThat(response.statusCode).isEqualTo(200);
-		assertThat(response.cacheControl).isEqualTo("max-age=10");
+		// on ALL values, not on "the" header value: the append-vs-replace defect this guards against (see
+		// WebConfig.CacheControlDefaultReplacingResponse) shows up only as a second Cache-Control header
+		assertThat(response.cacheControlValues).containsExactly("max-age=10");
 	}
 
 	@Test
@@ -116,7 +119,7 @@ class WebConfigApiNoStoreCacheControlFilterTest
 		assertThat(response.bodySize)
 				.as("the body has to actually exceed the container response buffer, else the test proves nothing")
 				.isEqualTo(LARGE_BODY_SIZE);
-		assertThat(response.cacheControl).isEqualTo("no-store");
+		assertThat(response.cacheControlValues).containsExactly("no-store");
 	}
 
 	private Response get(final String path) throws IOException
@@ -129,14 +132,32 @@ class WebConfigApiNoStoreCacheControlFilterTest
 		try
 		{
 			final int statusCode = connection.getResponseCode();
-			final String cacheControl = connection.getHeaderField(HttpHeaders.CACHE_CONTROL);
+			final ImmutableList<String> cacheControlValues = getHeaderValues(connection, HttpHeaders.CACHE_CONTROL);
 			final int bodySize = drain(connection.getInputStream());
-			return new Response(statusCode, cacheControl, bodySize);
+			return new Response(statusCode, cacheControlValues, bodySize);
 		}
 		finally
 		{
 			connection.disconnect();
 		}
+	}
+
+	/**
+	 * ALL values sent for that header - the duplicate-header case is the whole point, and
+	 * {@link HttpURLConnection#getHeaderField(String)} would hide it: the JDK scans its header list backwards and
+	 * returns only the LAST value, so two Cache-Control headers look exactly like one.
+	 * <p>
+	 * The values come out last-sent-first, because {@code getHeaderFields()} builds its per-key lists by that same
+	 * backwards scan. Left as-is rather than re-ordered here: every expectation in this class is a single value, so
+	 * there is nothing to order, and a re-ordering no test can catch being wrong is worse than none.
+	 */
+	private static ImmutableList<String> getHeaderValues(final HttpURLConnection connection, final String headerName)
+	{
+		return connection.getHeaderFields().entrySet().stream()
+				// HttpURLConnection does not normalise header-name case, so match case-insensitively
+				.filter(entry -> entry.getKey() != null && entry.getKey().equalsIgnoreCase(headerName))
+				.flatMap(entry -> entry.getValue().stream())
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private static int drain(final InputStream in) throws IOException
@@ -162,7 +183,7 @@ class WebConfigApiNoStoreCacheControlFilterTest
 	private static class Response
 	{
 		int statusCode;
-		String cacheControl;
+		ImmutableList<String> cacheControlValues;
 		int bodySize;
 	}
 
