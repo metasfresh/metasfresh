@@ -122,7 +122,7 @@ test('A workstation switch made while the Produktion screen stays open must show
     });
 
     await test.step('Returning to the screen must re-read the operator context — it must not stay on WS1 / A', async () => {
-        await AppLifecycleComponent.returnToForeground();
+        await AppLifecycleComponent.leaveAndReturnToForeground();
 
         // RED before the fix: both of these still show WS1 / wpA, because the screen read the
         // operator's workstation and workplace once at mount and has no refresh trigger at all.
