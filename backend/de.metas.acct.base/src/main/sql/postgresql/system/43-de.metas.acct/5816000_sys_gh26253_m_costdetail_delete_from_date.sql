@@ -1,3 +1,4 @@
+-- Source DDL: backend/de.metas.acct.base/src/main/sql/postgresql/ddl/functions/m_costdetail_delete_from_date.sql
 DROP FUNCTION IF EXISTS "de_metas_acct".m_costdetail_delete_from_date(
     p_C_AcctSchema_ID  numeric,
     p_M_CostElement_ID numeric,
@@ -35,9 +36,6 @@ DECLARE
     v_next_cumulatedqty       numeric;
     v_m_cost_id               numeric;
     v_costingmethod           char(1);
-    --
-    v_anchor_m_product_id     numeric;
-    v_anchor_dateacct         date;
 BEGIN
     RAISE DEBUG 'm_costdetail_delete_from_date: p_C_AcctSchema_ID=%, p_M_CostElement_ID=%, p_M_Product_ID=%, p_AD_Org_ID=%, p_StartDateAcct=%, p_DryRun=%',
         p_C_AcctSchema_ID, p_M_CostElement_ID, p_M_Product_ID, p_AD_Org_ID, p_StartDateAcct, p_DryRun;
@@ -229,56 +227,6 @@ BEGIN
 
     --
     --
-    -- REFUSE when the delete range contains a COST-REVALUATION OPENING ANCHOR
-    --
-    --
-    -- M_CostDetail.M_CostRevaluationLine_ID is a nullable FK set ONLY on a cost detail written by a
-    -- completed M_CostRevaluation line (de.metas.costing.impl.CostDetailRepository#updateRecordFromDocumentRef);
-    -- it is NULL on every other detail. For the CopyFromCostElement switch that detail is the single
-    -- zero-delta OPENING ANCHOR dated AT the cut-off
-    -- (de.metas.costing.impl.CostingService#seedCurrentCostFromOpening).
-    --
-    -- CONCRETE FAILURE SCENARIO THIS PREVENTS: December 2025 is re-opened for year-end adjustments and
-    -- someone recomputes a product from a December document, i.e. from a date at or before the 31.12.2025
-    -- cut-off. The anchor then lies inside the DELETE below and is destroyed - while EVERYTHING STILL LOOKS
-    -- CORRECT, which is exactly what makes it dangerous: the anchor is ischangingcosts='Y' and its prev_*
-    -- ARE the seeded opening (seedCurrentCostFromOpening writes the same opening into M_Cost and into the
-    -- anchor's prev_*), so Approach 1 above picks the anchor as v_firstCostDetail, v_next_costs_found stays
-    -- TRUE and M_Cost is UPDATEd back to the very same numbers. M_Cost therefore SURVIVES unchanged at the
-    -- correct price - nothing visibly breaks - and the real damage is the silent loss of the anchor ROW: the
-    -- M_CostRevaluationLine survives with NO corresponding M_CostDetail, which destroys
-    --   (a) the reversal basis - CostingService#reverseSeededCurrentCost undoes the switch by deleting that
-    --       very anchor, so reversing the switch afterwards has nothing left to reverse;
-    --   (b) the audit / reconstruction record of WHAT the opening balance was and WHERE it came from -
-    --       no other row carries it; and
-    --   (c) the double-seed guard - CostRevaluationService#createDetails skips an already-seeded product by
-    --       exactly this "a detail with M_CostRevaluationLine_ID IS NOT NULL exists" signal
-    --       (CostDetailRepository#retrieveProductIdsWithCostRevaluationSeed), so once the anchor is gone a
-    --       re-run of the switch no longer skips the product and re-seeds an already-in-use cost.
-    -- Refusing costs nothing: the recompute is re-runnable with a start date strictly after the cut-off,
-    -- which is the only correct range anyway - the opening is a given, not something a recompute may replay.
-    --
-    -- Same range predicate as the DELETE below, so the guard fires exactly when the DELETE would hit an anchor.
-    SELECT cd.m_product_id, cd.dateacct::date
-    INTO v_anchor_m_product_id, v_anchor_dateacct
-    FROM m_costdetail_v cd
-    WHERE cd.c_acctschema_id = p_C_AcctSchema_ID
-      AND cd.m_costelement_id = p_M_CostElement_ID
-      AND cd.M_Product_ID = p_M_Product_ID
-      AND cd.ad_client_id = 1000000
-      AND (p_AD_Org_ID IS NULL OR p_AD_Org_ID <= 0 OR cd.ad_org_id = p_AD_Org_ID)
-      AND cd.dateacct >= p_StartDateAcct
-      AND cd.m_costrevaluationline_id IS NOT NULL
-    ORDER BY cd.dateacct, cd.m_costdetail_id
-    LIMIT 1;
-    --
-    IF (v_anchor_dateacct IS NOT NULL) THEN
-        RAISE EXCEPTION 'Cost recompute refused for M_Product_ID=%: the range starting at % contains the cost-revaluation opening anchor M_CostDetail dated %. Deleting that anchor would destroy the only record of the opening balance and the basis for reversing the cost revaluation. Restart the recompute with a start date strictly after %.',
-            v_anchor_m_product_id, p_StartDateAcct::date, v_anchor_dateacct, v_anchor_dateacct;
-    END IF;
-
-    --
-    --
     -- DELETE ALL COST details starting FROM our target DATE (inclusive)
     --
     --
@@ -355,4 +303,4 @@ BEGIN
     RETURN 'OK';
 END;
 $BODY$
-
+;
