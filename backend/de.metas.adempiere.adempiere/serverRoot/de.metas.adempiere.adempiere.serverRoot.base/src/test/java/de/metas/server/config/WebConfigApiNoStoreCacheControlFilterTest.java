@@ -1,5 +1,6 @@
 package de.metas.server.config;
 
+import lombok.Value;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,6 +40,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  * {@link HttpServletResponse#setHeader(String, String)} is a silent no-op once the container flushed the response, and
  * only a real container reproduces that. A {@code MockHttpServletResponse} happily accepts headers after commit, so a
  * MockMvc-level test cannot tell the correct implementation from the broken one.
+ * <p>
+ * Tiers skipped: cucumber/e2e - the behaviour under test is a pure servlet-container buffer-commit semantic with no
+ * business or UI dimension, so a higher tier would have to reimplement this same embedded container to prove anything.
  */
 class WebConfigApiNoStoreCacheControlFilterTest
 {
@@ -46,6 +50,8 @@ class WebConfigApiNoStoreCacheControlFilterTest
 	private static final int LARGE_BODY_CHUNK_SIZE = 4096;
 	private static final int LARGE_BODY_CHUNK_COUNT = 16;
 	private static final int LARGE_BODY_SIZE = LARGE_BODY_CHUNK_SIZE * LARGE_BODY_CHUNK_COUNT; // 64 KB
+
+	private static final int SOCKET_TIMEOUT_MILLIS = 10_000;
 
 	private WebServer webServer;
 	private String baseUrl;
@@ -117,6 +123,9 @@ class WebConfigApiNoStoreCacheControlFilterTest
 	{
 		final HttpURLConnection connection = (HttpURLConnection)new URL(baseUrl + path).openConnection();
 		connection.setRequestMethod("GET");
+		// fail fast instead of hanging forever if the embedded container does not answer
+		connection.setConnectTimeout(SOCKET_TIMEOUT_MILLIS);
+		connection.setReadTimeout(SOCKET_TIMEOUT_MILLIS);
 		try
 		{
 			final int statusCode = connection.getResponseCode();
@@ -149,18 +158,12 @@ class WebConfigApiNoStoreCacheControlFilterTest
 		}
 	}
 
-	private static final class Response
+	@Value
+	private static class Response
 	{
-		private final int statusCode;
-		private final String cacheControl;
-		private final int bodySize;
-
-		private Response(final int statusCode, final String cacheControl, final int bodySize)
-		{
-			this.statusCode = statusCode;
-			this.cacheControl = cacheControl;
-			this.bodySize = bodySize;
-		}
+		int statusCode;
+		String cacheControl;
+		int bodySize;
 	}
 
 	@Configuration
