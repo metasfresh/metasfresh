@@ -428,6 +428,41 @@ public class CostRevaluationService
 	 * The opening is the source's cost <b>as of the cut-off</b> ({@code EvaluationStartDate}) — not its live cost at
 	 * complete time. For a back-dated switch those differ: the live {@code M_Cost} row already reflects every movement
 	 * booked since the cut-off, so copying it would open the target with a value the source never had at the cut-off.
+	 * <p>
+	 * <b>THE "OPENING ANCHOR" — CANONICAL DEFINITION.</b> This is the one place the <i>anchor</i> is created, so this is
+	 * where the term is defined; the Java, SQL and tests of this feature all mean exactly the row described here.
+	 * <p>
+	 * <b>ELI5:</b> a product is moved to a new costing method as of a date in the PAST. Somebody has to write down
+	 * "on that date the product was worth X" — otherwise the new method has nothing to start counting from. The anchor
+	 * is that written-down number.
+	 * <p>
+	 * <b>What it is:</b> the single {@code M_CostDetail} row written here (via
+	 * {@link ICostingService#seedCurrentCostFromOpening}). It is dated AT the cut-off and its {@code Prev_*} fields carry
+	 * the PREVIOUS method's cost <b>as of that date</b> — not that method's later value. It is the new method's
+	 * <b>opening balance</b>.
+	 * <p>
+	 * <b>Why "anchor":</b> it is the fixed point the product's cost history under the new method hangs from — every later
+	 * cost detail is computed forward from it.
+	 * <p>
+	 * <b>How to recognise it:</b> {@code M_CostRevaluationLine_ID IS NOT NULL} (that nullable FK is set only on a cost
+	 * detail written by a completed {@code M_CostRevaluation} line), {@code IsChangingCosts='Y'}, own {@code Qty} and
+	 * {@code Amt} zero, and {@code Prev_*} equal to the seeded opening.
+	 * <p>
+	 * <b>Its three jobs:</b>
+	 * <ol>
+	 *     <li>it is the only record of the opening balance — no other row carries it;</li>
+	 *     <li>it is the row {@link ICostingService#reverseSeededCurrentCost} deletes to undo the switch;</li>
+	 *     <li>it is the marker the double-seed guard keys on — {@link #retrieveAlreadySeededProductIds} →
+	 *         {@code CostDetailRepository#retrieveProductIdsWithCostRevaluationSeed}, i.e. the same
+	 *         {@code M_CostRevaluationLine_ID IS NOT NULL} — so an already-switched product is never re-seeded.</li>
+	 * </ol>
+	 * <p>
+	 * <b>Hence the guard in {@code de_metas_acct.m_costdetail_delete_from_date}:</b> a cost recompute whose start date
+	 * reaches back over the cut-off would delete the anchor, so that function refuses the range instead. Note what is NOT
+	 * the problem: deleting the anchor does not zero-base the new method — the anchor is {@code IsChangingCosts='Y'} and
+	 * its {@code Prev_*} ARE the seeded opening, so the function's "Approach 1" restores {@code M_Cost} to identical
+	 * numbers. The damage is losing the ROW: no opening-balance record, no basis for reversal, and a blind double-seed
+	 * guard that would let a re-switch re-seed an already-in-use cost.
 	 */
 	private void createDetailsForCopyFromCostElement(
 			@NonNull final CostRevaluation costRevaluation,

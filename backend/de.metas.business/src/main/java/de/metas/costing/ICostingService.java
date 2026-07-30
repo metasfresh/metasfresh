@@ -77,6 +77,10 @@ public interface ICostingService
 			@NonNull CostSegmentAndElement costSegmentAndElement,
 			@NonNull Instant asOfDate);
 
+	/**
+	 * Writes the {@code CopyFromCostElement} switch's opening anchor. For what the "anchor" IS and what it is for, see the
+	 * canonical definition on {@code de.metas.costrevaluation.CostRevaluationService#createDetailsForCopyFromCostElement}.
+	 */
 	void seedCurrentCostFromOpening(
 			@NonNull CostSegmentAndElement targetSegmentAndElement,
 			@NonNull CostDetailPreviousAmounts opening,

@@ -582,6 +582,9 @@ public class CostingService implements ICostingService
 	/**
 	 * {@code CopyFromCostElement} complete-time seed: sets the target element's {@code M_Cost} to {@code opening} and
 	 * writes one zero-delta anchor {@code M_CostDetail} carrying the same {@code opening} as its {@code Prev_*}.
+	 * <p>
+	 * Canonical definition of the "anchor" term:
+	 * {@code de.metas.costrevaluation.CostRevaluationService#createDetailsForCopyFromCostElement}.
 	 */
 	@Override
 	public void seedCurrentCostFromOpening(
