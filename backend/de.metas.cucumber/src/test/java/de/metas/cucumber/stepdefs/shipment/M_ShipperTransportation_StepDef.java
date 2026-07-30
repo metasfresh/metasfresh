@@ -64,6 +64,22 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+/**
+ * Step definitions for M_ShipperTransportation, the transport order ("Speditionslieferung"). Allows scenarios to:
+ * <ul>
+ *   <li>Create a transport order and add orders / shipments / packages to it;</li>
+ *   <li>Load the transport order belonging to a shipment, and assert its column values;</li>
+ *   <li>Update its dates (notably {@code BLDate} and {@code ETA}) and complete it, which drives
+ *       {@code M_ShipperTransportation.syncOrderDatesOnEdit} and therefore the pay-schedule due
+ *       dates of the linked orders (scenarios {@code @Id:S30954_1..5}).</li>
+ * </ul>
+ * <p>
+ * Note: these steps write through the model layer ({@code InterfaceWrapperHelper}), never through the
+ * WebUI {@code Document} layer. Field editability — {@code AD_Column.IsAlwaysUpdateable} evaluated by
+ * {@code DocumentReadonly} on a {@code Processed} record — is therefore out of reach here by
+ * construction, and is covered instead by the Playwright spec
+ * {@code transport-order-dates-editable-when-completed.spec.js}.
+ */
 @AllArgsConstructor
 public class M_ShipperTransportation_StepDef
 {
