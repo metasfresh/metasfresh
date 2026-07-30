@@ -26,7 +26,6 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.order.OrderId;
 import de.metas.order.paymentschedule.core.OrderPaySchedule;
 import de.metas.order.paymentschedule.core.service.OrderPayScheduleService;
-import de.metas.order.paymentschedule.referenced_docs.proforma_invoice.OrderPayScheduleProformaService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
@@ -60,9 +59,6 @@ public class C_Order
 	private static final AdMessageKey MSG_OrderReactivateBlocked = AdMessageKey.of("Order_Reactivate_Blocked_By_PaySchedule_Activity");
 
 	@NonNull private final OrderPayScheduleService orderPayScheduleService;
-	// Kept only for constructor-compatibility with the covering unit test; the guard predicate no
-	// longer consults the proforma service (see class Javadoc — a proforma allocation does not block).
-	@NonNull private final OrderPayScheduleProformaService orderPayScheduleProformaService;
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)
 	public void blockReactivateWhenScheduleNotPending(@NonNull final I_C_Order order)

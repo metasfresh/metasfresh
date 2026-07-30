@@ -33,8 +33,6 @@ import de.metas.order.paymentschedule.core.OrderPayScheduleId;
 import de.metas.order.paymentschedule.core.OrderPayScheduleLine;
 import de.metas.order.paymentschedule.core.OrderPayScheduleStatus;
 import de.metas.order.paymentschedule.core.service.OrderPayScheduleService;
-import de.metas.order.paymentschedule.referenced_docs.proforma_invoice.OrderPayScheduleProformaService;
-import de.metas.order.paymentschedule.referenced_docs.proforma_invoice.ProformaInvoice;
 import de.metas.payment.paymentterm.PaymentTermBreakId;
 import de.metas.payment.paymentterm.ReferenceDateType;
 import de.metas.util.lang.Percent;
@@ -57,7 +55,6 @@ class C_Order_Test
 	private static final OrderId ORDER_ID = OrderId.ofRepoId(9001);
 
 	private OrderPayScheduleService orderPayScheduleService;
-	private OrderPayScheduleProformaService proformaService;
 	private C_Order guard;
 
 	@BeforeEach
@@ -66,8 +63,7 @@ class C_Order_Test
 		AdempiereTestHelper.get().init();
 
 		this.orderPayScheduleService = Mockito.mock(OrderPayScheduleService.class);
-		this.proformaService = Mockito.mock(OrderPayScheduleProformaService.class);
-		this.guard = new C_Order(orderPayScheduleService, proformaService);
+		this.guard = new C_Order(orderPayScheduleService);
 	}
 
 	@Test
@@ -76,8 +72,6 @@ class C_Order_Test
 		final I_C_Order order = newOrder();
 		Mockito.when(orderPayScheduleService.getByOrderId(ORDER_ID))
 				.thenReturn(Optional.of(scheduleWithStatuses(OrderPayScheduleStatus.Pending, OrderPayScheduleStatus.Pending)));
-		Mockito.when(proformaService.getByOrderId(ORDER_ID))
-				.thenReturn(Optional.empty());
 
 		assertThatCode(() -> guard.blockReactivateWhenScheduleNotPending(order))
 				.doesNotThrowAnyException();
@@ -94,8 +88,6 @@ class C_Order_Test
 		// schedule has one Awaiting_Pay and one Pending line — but NO downstream links
 		Mockito.when(orderPayScheduleService.getByOrderId(ORDER_ID))
 				.thenReturn(Optional.of(scheduleWithStatuses(OrderPayScheduleStatus.Awaiting_Pay, OrderPayScheduleStatus.Pending)));
-		Mockito.when(proformaService.getByOrderId(ORDER_ID))
-				.thenReturn(Optional.empty());
 
 		assertThatCode(() -> guard.blockReactivateWhenScheduleNotPending(order))
 				.doesNotThrowAnyException();
@@ -113,8 +105,6 @@ class C_Order_Test
 		final I_C_Order order = newOrder();
 		Mockito.when(orderPayScheduleService.getByOrderId(ORDER_ID))
 				.thenReturn(Optional.of(scheduleWithInoutLink(OrderPayScheduleStatus.Awaiting_Pay)));
-		Mockito.when(proformaService.getByOrderId(ORDER_ID))
-				.thenReturn(Optional.empty());
 
 		assertThatThrownBy(() -> guard.blockReactivateWhenScheduleNotPending(order))
 				.isInstanceOf(AdempiereException.class)
@@ -132,8 +122,6 @@ class C_Order_Test
 		final I_C_Order order = newOrder();
 		Mockito.when(orderPayScheduleService.getByOrderId(ORDER_ID))
 				.thenReturn(Optional.of(scheduleWithInvoiceLink(OrderPayScheduleStatus.Paid)));
-		Mockito.when(proformaService.getByOrderId(ORDER_ID))
-				.thenReturn(Optional.empty());
 
 		assertThatThrownBy(() -> guard.blockReactivateWhenScheduleNotPending(order))
 				.isInstanceOf(AdempiereException.class)
@@ -146,63 +134,9 @@ class C_Order_Test
 		final I_C_Order order = newOrder();
 		Mockito.when(orderPayScheduleService.getByOrderId(ORDER_ID))
 				.thenReturn(Optional.empty());
-		Mockito.when(proformaService.getByOrderId(ORDER_ID))
-				.thenReturn(Optional.empty());
 
 		assertThatCode(() -> guard.blockReactivateWhenScheduleNotPending(order))
 				.doesNotThrowAnyException();
-	}
-
-	/**
-	 * A proforma allocation carries no committed state that a reactivate would orphan: the allocation
-	 * row and its prepayment both survive the reactivate, and re-completion re-derives the pay-schedule
-	 * state from them. So a proforma alone must NOT block reactivation.
-	 */
-	@Test
-	void allowReactivate_whenProformaAllocatedAndNoLineLink()
-	{
-		final I_C_Order order = newOrder();
-		// schedule lines carry NO per-line downstream link — only the proforma allocation exists
-		Mockito.when(orderPayScheduleService.getByOrderId(ORDER_ID))
-				.thenReturn(Optional.of(scheduleWithStatuses(OrderPayScheduleStatus.Awaiting_Pay, OrderPayScheduleStatus.Pending)));
-		Mockito.when(proformaService.getByOrderId(ORDER_ID))
-				.thenReturn(Optional.of(stubProformaInvoice()));
-
-		assertThatCode(() -> guard.blockReactivateWhenScheduleNotPending(order))
-				.doesNotThrowAnyException();
-	}
-
-	/**
-	 * The proforma no longer blocks, but a goods-receipt link still does — even on the same order.
-	 * Guards against over-correcting the guard into permissiveness.
-	 */
-	@Test
-	void rejectReactivate_whenProformaAllocatedAndLineHasInoutLink()
-	{
-		final I_C_Order order = newOrder();
-		Mockito.when(orderPayScheduleService.getByOrderId(ORDER_ID))
-				.thenReturn(Optional.of(scheduleWithInoutLink(OrderPayScheduleStatus.Awaiting_Pay)));
-		Mockito.when(proformaService.getByOrderId(ORDER_ID))
-				.thenReturn(Optional.of(stubProformaInvoice()));
-
-		assertThatThrownBy(() -> guard.blockReactivateWhenScheduleNotPending(order))
-				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("Order_Reactivate_Blocked_By_PaySchedule_Activity");
-	}
-
-	/** Sibling of the inout case: a matched-invoice link also still blocks, proforma or not. */
-	@Test
-	void rejectReactivate_whenProformaAllocatedAndLineHasInvoiceLink()
-	{
-		final I_C_Order order = newOrder();
-		Mockito.when(orderPayScheduleService.getByOrderId(ORDER_ID))
-				.thenReturn(Optional.of(scheduleWithInvoiceLink(OrderPayScheduleStatus.Paid)));
-		Mockito.when(proformaService.getByOrderId(ORDER_ID))
-				.thenReturn(Optional.of(stubProformaInvoice()));
-
-		assertThatThrownBy(() -> guard.blockReactivateWhenScheduleNotPending(order))
-				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("Order_Reactivate_Blocked_By_PaySchedule_Activity");
 	}
 
 	/** NEW: even a Pending line carrying an inoutId (goods-receipt link) must block reactivation. */
@@ -212,8 +146,6 @@ class C_Order_Test
 		final I_C_Order order = newOrder();
 		Mockito.when(orderPayScheduleService.getByOrderId(ORDER_ID))
 				.thenReturn(Optional.of(scheduleWithInoutLink(OrderPayScheduleStatus.Pending)));
-		Mockito.when(proformaService.getByOrderId(ORDER_ID))
-				.thenReturn(Optional.empty());
 
 		assertThatThrownBy(() -> guard.blockReactivateWhenScheduleNotPending(order))
 				.isInstanceOf(AdempiereException.class)
@@ -258,17 +190,6 @@ class C_Order_Test
 				.invoiceId(InvoiceId.ofRepoId(600))
 				.build();
 		return OrderPaySchedule.ofList(ORDER_ID, ImmutableList.of(line));
-	}
-
-	/** Minimal real ProformaInvoice instance (ProformaInvoice is @Value/final — cannot be mocked). */
-	private ProformaInvoice stubProformaInvoice()
-	{
-		return ProformaInvoice.builder()
-				.id(InvoiceId.ofRepoId(700))
-				.grandTotal(Money.of(1000, CurrencyId.EUR))
-				.dateInvoiced(LocalDate.of(2026, 1, 1))
-				.dueDate(LocalDate.of(2026, 2, 1))
-				.build();
 	}
 
 	private OrderPayScheduleLine scheduleLine(final int seq, final OrderPayScheduleStatus status)

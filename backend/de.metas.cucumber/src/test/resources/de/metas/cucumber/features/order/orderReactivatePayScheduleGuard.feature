@@ -4,8 +4,8 @@
 @ghActions:run_on_executor1
 Feature: PO reactivation guard — downstream-activity check
   # Guard blocks reactivation only when the pay schedule carries committed downstream
-  # state: a goods-receipt link (M_InOut_ID), a matched-invoice link (C_Invoice_ID),
-  # or a proforma allocation. An Awaiting_Pay line with no downstream must NOT block.
+  # state: a goods-receipt link (M_InOut_ID) or a matched-invoice link (C_Invoice_ID).
+  # An Awaiting_Pay line with no downstream must NOT block.
   # pt_od = LC 30% + OD 70% (OD resolves at completion); pt_bl = LC 30% + BL 70%.
   # PO: 700 PCE × 100 EUR = 70,000 EUR (IsTaxIncluded=Y → GrandTotal = 70,000).
 
