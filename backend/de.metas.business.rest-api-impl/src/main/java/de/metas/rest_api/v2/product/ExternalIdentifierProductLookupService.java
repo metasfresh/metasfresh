@@ -28,8 +28,9 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.product.ProductExternalReferenceType;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
-import de.metas.handlingunits.HUPIItemProductGtinMatch;
+import de.metas.gs1.GTIN;
 import de.metas.handlingunits.IHUPIItemProductDAO;
+import de.metas.handlingunits.ProductAndHUPIItemProductId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
@@ -95,21 +96,26 @@ public class ExternalIdentifierProductLookupService
 		}
 	}
 
+	public static ExternalIdentifierProductLookupService newInstanceForUnitTesting(
+			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService)
+	{
+		return new ExternalIdentifierProductLookupService(externalReferenceRestControllerService);
+	}
+
 	@VisibleForTesting
 	@NonNull
 	Optional<ProductAndHUPIItemProductId> lookupProductByGTIN(
 			@NonNull final ExternalIdentifier productIdentifier,
 			@Nullable final ZonedDateTime date)
 	{
-		final String gtin = productIdentifier.asGTIN();
+		final GTIN gtin = GTIN.ofString(productIdentifier.asGTIN());
 
 		// Branch 1: M_HU_PI_Item_Product — validity-filtered (ValidFrom <= date AND (ValidTo >= date OR ValidTo IS NULL)).
 		// If no valid row exists for the given date, falls through to branch 2.
-		final Optional<HUPIItemProductGtinMatch> hupiOpt = huPIItemProductDAO.findFirstByGtin(gtin, date);
+		final Optional<ProductAndHUPIItemProductId> hupiOpt = huPIItemProductDAO.findFirstByGtin(gtin, date);
 		if (hupiOpt.isPresent())
 		{
-			final HUPIItemProductGtinMatch match = hupiOpt.get();
-			return ProductAndHUPIItemProductId.opt(match.getProductId(), match.getHupiItemProductId());
+			return hupiOpt;
 		}
 
 		// Branch 2: C_BPartner_Product — GTIN / EAN_CU / UPC match.

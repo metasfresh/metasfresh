@@ -7,7 +7,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.rest_api.v2.product.ExternalIdentifierProductLookupService;
-import de.metas.rest_api.v2.product.ProductAndHUPIItemProductId;
+import de.metas.handlingunits.ProductAndHUPIItemProductId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.web.exception.MissingResourceException;
@@ -51,6 +51,12 @@ public final class ProductMasterDataProvider
 	@NonNull private final IProductBL productsBL = Services.get(IProductBL.class);
 
 	@NonNull private final ExternalIdentifierProductLookupService productLookupService;
+
+	public static ProductMasterDataProvider newInstanceForUnitTesting(
+			@NonNull final ExternalIdentifierProductLookupService productLookupService)
+	{
+		return new ProductMasterDataProvider(productLookupService);
+	}
 
 	@Value
 	private static class ProductCacheKey

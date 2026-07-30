@@ -112,5 +112,5 @@ public interface IBPartnerProductDAO extends ISingletonService
 	 * @return the product ID of the first matching row, or {@link Optional#empty()} if none found
 	 */
 	@NonNull
-	Optional<ProductId> findFirstProductIdByGtin(@NonNull String gtin);
+	Optional<ProductId> findFirstProductIdByGtin(@NonNull GTIN gtin);
 }

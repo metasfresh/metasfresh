@@ -680,13 +680,14 @@ public class ProductDAO implements IProductDAO
 
 	@Override
 	@NonNull
-	public Optional<ProductId> findFirstProductIdByGtin(@NonNull final String gtin)
+	public Optional<ProductId> findFirstProductIdByGtin(@NonNull final GTIN gtin)
 	{
+		final String gtinStr = gtin.getAsString();
 		final ICompositeQueryFilter<I_M_Product> pFilter = queryBL.createCompositeQueryFilter(I_M_Product.class)
 				.setJoinOr()
-				.addEqualsFilter(I_M_Product.COLUMNNAME_GTIN, gtin)
-				.addEqualsFilter(I_M_Product.COLUMNNAME_EAN13_ProductCode, gtin)
-				.addEqualsFilter(I_M_Product.COLUMNNAME_UPC, gtin);
+				.addEqualsFilter(I_M_Product.COLUMNNAME_GTIN, gtinStr)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_EAN13_ProductCode, gtinStr)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_UPC, gtinStr);
 
 		final ProductId productId = queryBL.createQueryBuilder(I_M_Product.class)
 				.addOnlyActiveRecordsFilter()

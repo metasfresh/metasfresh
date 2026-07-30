@@ -74,8 +74,8 @@ class ProductMasterDataProviderTest
 				externalReferenceRepository,
 				new ExternalSystemRepository(),
 				new ExternalReferenceTypes());
-		final ExternalIdentifierProductLookupService productLookupService = new ExternalIdentifierProductLookupService(externalReferenceRestControllerService);
-		productMasterDataProvider = new ProductMasterDataProvider(productLookupService);
+		final ExternalIdentifierProductLookupService productLookupService = ExternalIdentifierProductLookupService.newInstanceForUnitTesting(externalReferenceRestControllerService);
+		productMasterDataProvider = ProductMasterDataProvider.newInstanceForUnitTesting(productLookupService);
 	}
 
 	/** Creates a minimal UOM record and returns its ID (needed for product stock UOM lookup). */

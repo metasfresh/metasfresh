@@ -23,6 +23,7 @@
 package de.metas.handlingunits;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.gs1.GTIN;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -154,9 +155,9 @@ public interface IHUPIItemProductDAO extends ISingletonService
 	 *
 	 * @param gtin the GTIN/EAN_TU/UPC value to match
 	 * @param date the reference date for the validity filter; {@code null} means no validity filter is applied
-	 * @return the first matching row as a {@link HUPIItemProductGtinMatch} carrying product and PIIP IDs,
+	 * @return the first matching row as a {@link ProductAndHUPIItemProductId} carrying product and PIIP IDs,
 	 *         or {@link Optional#empty()} if none found
 	 */
 	@NonNull
-	Optional<HUPIItemProductGtinMatch> findFirstByGtin(@NonNull String gtin, @Nullable ZonedDateTime date);
+	Optional<ProductAndHUPIItemProductId> findFirstByGtin(@NonNull GTIN gtin, @Nullable ZonedDateTime date);
 }

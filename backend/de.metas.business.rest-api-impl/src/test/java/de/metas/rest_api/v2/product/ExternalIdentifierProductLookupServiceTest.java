@@ -28,6 +28,7 @@ import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.ProductAndHUPIItemProductId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.product.ProductId;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -58,7 +59,7 @@ public class ExternalIdentifierProductLookupServiceTest
 		final ExternalReferenceRepository externalReferenceRepository = ExternalReferenceRepository.newInstanceForUnitTesting(new ExternalReferenceTypes());
 		final ExternalReferenceRestControllerService externalReferenceRestControllerService = new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystemRepository(), new ExternalReferenceTypes());
 
-		productLookupService = new ExternalIdentifierProductLookupService(externalReferenceRestControllerService);
+		productLookupService = ExternalIdentifierProductLookupService.newInstanceForUnitTesting(externalReferenceRestControllerService);
 	}
 
 	@Test

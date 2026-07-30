@@ -28,9 +28,10 @@ import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.common.util.time.SystemTime;
+import de.metas.gs1.GTIN;
 import de.metas.handlingunits.HUPIItemProduct;
-import de.metas.handlingunits.HUPIItemProductGtinMatch;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.ProductAndHUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUPIItemProductQuery;
@@ -494,17 +495,18 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 
 	@Override
 	@NonNull
-	public Optional<HUPIItemProductGtinMatch> findFirstByGtin(
-			@NonNull final String gtin,
+	public Optional<ProductAndHUPIItemProductId> findFirstByGtin(
+			@NonNull final GTIN gtin,
 			@Nullable final ZonedDateTime date)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+		final String gtinStr = gtin.getAsString();
 		final ICompositeQueryFilter<I_M_HU_PI_Item_Product> hupiFilter = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
 				.setJoinOr()
-				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_GTIN, gtin)
-				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_EAN_TU, gtin)
-				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_UPC, gtin);
+				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_GTIN, gtinStr)
+				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_EAN_TU, gtinStr)
+				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_UPC, gtinStr);
 
 		// A product-consolidation run may deactivate M_Product while leaving the PIIP rows active.
 		// Only rows whose M_Product_ID points to an active product are valid matches.
@@ -523,7 +525,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 				.endOrderBy()
 				.create()
 				.firstOptional()
-				.map(record -> HUPIItemProductGtinMatch.of(
+				.map(record -> ProductAndHUPIItemProductId.of(
 						ProductId.ofRepoId(record.getM_Product_ID()),
 						HUPIItemProductId.ofRepoId(record.getM_HU_PI_Item_Product_ID())));
 	}
