@@ -78,6 +78,14 @@ const translations = {
       appName: 'Picken',
     },
   },
+  launchers: {
+    operatorContext: {
+      error: {
+        title: 'Arbeitsplatz/Arbeitsstation konnte nicht geladen werden',
+        retry: 'Erneut versuchen',
+      },
+    },
+  },
   components: {
     BarcodeScannerComponent: {
       scanTextPlaceholder: 'scan...',

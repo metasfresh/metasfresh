@@ -74,6 +74,14 @@ const translations = {
       appName: 'Picking',
     },
   },
+  launchers: {
+    operatorContext: {
+      error: {
+        title: 'Workplace/workstation could not be loaded',
+        retry: 'Retry',
+      },
+    },
+  },
   components: {
     BarcodeScannerComponent: {
       scanTextPlaceholder: 'scan...',

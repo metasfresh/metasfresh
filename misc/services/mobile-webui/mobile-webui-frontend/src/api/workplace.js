@@ -23,10 +23,11 @@
 import axios from 'axios';
 import { unboxAxiosResponse } from '../utils';
 import { apiBasePath } from '../constants';
-import { toastError } from '../utils/toast';
-import { useEffect, useState } from 'react';
+import { extractUserFriendlyErrorMessageFromAxiosError, toastError } from '../utils/toast';
+import { useCallback, useEffect, useState } from 'react';
 import { parseWorkplaceQRCodeString } from '../utils/qrCode/workplace';
 import { useApplicationInfo } from '../reducers/applications';
+import * as uiTrace from '../utils/ui_trace';
 
 const workplaceAPIBase = `${apiBasePath}/workplace`;
 
@@ -39,17 +40,42 @@ export const useCurrentWorkplace = ({ applicationId }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isWorkplaceRequired, setIsWorkplaceRequired] = useState(false);
   const [workplace, setWorkplace] = useState(null);
+  const [loadErrorMessage, setLoadErrorMessage] = useState(null);
 
-  useEffect(() => {
+  const reloadWorkplace = useCallback(() => {
     setIsLoading(true);
+    setLoadErrorMessage(null);
     getCurrentWorkplaceInfo()
       .then(({ workplaceRequired, assignedWorkplace }) => {
         setIsWorkplaceRequired(workplaceRequired);
         setWorkplace(assignedWorkplace);
       })
-      .catch((axiosError) => toastError({ axiosError }))
+      .catch((axiosError) => {
+        // A server response means the backend answered and retrying the same read won't help, so keep the
+        // toast (existing automation asserts on it). No response at all is the routine warehouse-WiFi blip:
+        // leaving the workplace unset blanks the header row for good — the screen never re-reads it — so
+        // surface it for retry instead.
+        const isNetworkFailure = !axiosError?.response;
+        const message = extractUserFriendlyErrorMessageFromAxiosError({ axiosError });
+        uiTrace.trace({
+          eventName: 'currentWorkplaceLoadFailed',
+          httpStatus: axiosError?.response?.status ?? null,
+          axiosCode: axiosError?.code ?? null,
+          isNetworkFailure,
+          message,
+        });
+        if (isNetworkFailure) {
+          setLoadErrorMessage(message);
+        } else {
+          toastError({ axiosError });
+        }
+      })
       .finally(() => setIsLoading(false));
   }, []);
+
+  useEffect(() => {
+    reloadWorkplace();
+  }, [reloadWorkplace]);
 
   const setWorkplaceByQRCode = (qrCode) => {
     const { workplaceId } = parseWorkplaceQRCodeString(qrCode);
@@ -62,6 +88,8 @@ export const useCurrentWorkplace = ({ applicationId }) => {
     isWorkplaceLoading: isLoading,
     isWorkplaceRequired: requiresWorkplaceIfAvailable && isWorkplaceRequired,
     workplace,
+    workplaceLoadErrorMessage: loadErrorMessage,
+    reloadWorkplace,
     setWorkplaceByQRCode,
   };
 };

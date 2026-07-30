@@ -26,15 +26,49 @@ const WFLaunchersScreen = () => {
   const { url, applicationId } = useMobileLocation();
 
   const { showFilterByQRCode, showFilters } = useApplicationInfo({ applicationId });
-  const { isWorkstationLoading, isWorkstationRequired, workstation, setWorkstationByQRCode } = useCurrentWorkstation({
+  const {
+    isWorkplaceLoading,
+    isWorkplaceRequired,
+    workplace,
+    workplaceLoadErrorMessage,
+    reloadWorkplace,
+    setWorkplaceByQRCode,
+  } = useCurrentWorkplace({ applicationId });
+  const {
+    isWorkstationLoading,
+    isWorkstationRequired,
+    workstation,
+    workstationLoadErrorMessage,
+    reloadWorkstation,
+    setWorkstationByQRCode,
+  } = useCurrentWorkstation({
     applicationId,
-  });
-  const { isWorkplaceLoading, isWorkplaceRequired, workplace, setWorkplaceByQRCode } = useCurrentWorkplace({
-    applicationId,
+    // Assigning a workstation re-assigns the operator's workplace server-side too, so the workplace this
+    // screen shows (and filters its jobs by) has to be re-read — nothing remounts this screen.
+    onWorkstationAssigned: reloadWorkplace,
   });
   const { isTrolleyRequired, isTrolleyLoading, trolley, setTrolleyByScannedCode, clearTrolley } = useCurrentTrolley({
     applicationId,
   });
+
+  const operatorContextLoadErrorMessage = workstationLoadErrorMessage ?? workplaceLoadErrorMessage;
+  const isAskingForWorkstation = isWorkstationRequired && !workstation;
+  const isAskingForWorkplace = isWorkplaceRequired && !workplace;
+  const isAskingForTrolley = isTrolleyRequired && !trolley;
+  // The launchers are filtered server-side by the operator's context (e.g. manufacturing jobs by the
+  // assigned workstation), so fetching them before that context is established returns a list for the
+  // wrong context — and nothing would refetch it once the operator scans. Gate the fetch on the very
+  // conditions that gate rendering the list below; `isEnabled` is a fetch dependency, so the list is
+  // fetched exactly once the context is complete.
+  const isOperatorContextReady =
+    !operatorContextLoadErrorMessage &&
+    !isWorkstationLoading &&
+    !isWorkplaceLoading &&
+    !isTrolleyLoading &&
+    !isAskingForWorkstation &&
+    !isAskingForWorkplace &&
+    !isAskingForTrolley;
+
   const filters = useFilters({ applicationId });
   const facets = useFacets({ applicationId });
   const { isLaunchersLoading, launchers, filterByQRCode, actions } = useLaunchers({
@@ -42,7 +76,7 @@ const WFLaunchersScreen = () => {
     showFilterByQRCode,
     filters,
     facets,
-    isEnabled: !isWorkplaceLoading && !isTrolleyLoading,
+    isEnabled: isOperatorContextReady,
   });
 
   const workplaceName = workplace?.name;
@@ -68,6 +102,31 @@ const WFLaunchersScreen = () => {
   }, [url, workplaceName, workstationName]);
 
   //
+  // Operator context (workplace / workstation) could not be read
+  // Takes over the screen: without it we would either hide the header row for good or ask the operator
+  // to re-scan a workstation/workplace they are in fact still assigned to.
+  if (operatorContextLoadErrorMessage) {
+    return (
+      <div className="container launchers-container">
+        <div className="notification is-danger mt-3" data-testid="operator-context-error-panel">
+          <p className="mb-3">
+            <strong>{trl('launchers.operatorContext.error.title')}</strong>
+          </p>
+          <p className="mb-3">{operatorContextLoadErrorMessage}</p>
+          <ButtonWithIndicator
+            testId="operator-context-error-retry"
+            captionKey="launchers.operatorContext.error.retry"
+            onClick={() => {
+              reloadWorkstation();
+              reloadWorkplace();
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  //
   // Get Workstation
   if (isWorkstationLoading) {
     return (
@@ -75,7 +134,7 @@ const WFLaunchersScreen = () => {
         <Spinner />
       </div>
     );
-  } else if (isWorkstationRequired && !workstation) {
+  } else if (isAskingForWorkstation) {
     return (
       <div className="container launchers-container">
         <BarcodeScannerComponent
@@ -94,7 +153,7 @@ const WFLaunchersScreen = () => {
         <Spinner />
       </div>
     );
-  } else if (isWorkplaceRequired && !workplace) {
+  } else if (isAskingForWorkplace) {
     return (
       <div className="container launchers-container">
         <BarcodeScannerComponent
@@ -113,7 +172,7 @@ const WFLaunchersScreen = () => {
         <Spinner />
       </div>
     );
-  } else if (isTrolleyRequired && !trolley) {
+  } else if (isAskingForTrolley) {
     return (
       <div className="container launchers-container">
         <BarcodeScannerComponent
