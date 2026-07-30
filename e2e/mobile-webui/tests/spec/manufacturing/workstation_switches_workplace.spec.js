@@ -15,6 +15,11 @@ const createMasterdata = async () => {
             // No workplace preassigned to the login user — the operator's active workplace is
             // established purely by scanning, which is exactly what this scenario drives.
             login: { user: { language: "en_US" } },
+            // The manufacturing app only reads (and only displays) the operator's workstation when its
+            // config says a resource scan is required — MobileUI_UserProfile_MFG.IsScanResourceRequired,
+            // which the customer runs on, but whose built-in default is off. Set here rather than
+            // inherited, so the Produktion launchers screen really shows a Workstation header row.
+            mobileConfig: { manufacturing: { isScanResourceRequired: true } },
             warehouses: {
                 whA: {},
                 whB: {},
