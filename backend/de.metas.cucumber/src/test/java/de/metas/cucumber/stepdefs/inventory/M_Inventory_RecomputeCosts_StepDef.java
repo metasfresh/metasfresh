@@ -29,6 +29,7 @@ import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostElementRepository;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.acctschema.C_AcctSchema_StepDefData;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
@@ -44,13 +45,22 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_Inventory;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
+
+/**
+ * Runs the {@code M_Inventory_RecomputeCosts} process — recreating a product's cost details and current cost
+ * from an inventory document's date onwards — and validates its outcome.
+ */
 @RequiredArgsConstructor
 public class M_Inventory_RecomputeCosts_StepDef
 {
@@ -60,6 +70,7 @@ public class M_Inventory_RecomputeCosts_StepDef
 
 	@NonNull private final M_Inventory_StepDefData inventoryTable;
 	@NonNull private final C_AcctSchema_StepDefData acctSchemaTable;
+	@NonNull private final M_Product_StepDefData productTable;
 
 	/**
 	 * Mirrors {@code de.metas.inventory.process.M_Inventory_RecomputeCosts.doIt()} —
@@ -86,6 +97,48 @@ public class M_Inventory_RecomputeCosts_StepDef
 	public void invoke(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(this::invokeOne);
+	}
+
+	/**
+	 * Runs the same recompute as {@link #invoke(DataTable)} — i.e. the {@code M_Inventory_RecomputeCosts}
+	 * process the user starts from an inventory document — and asserts it is REFUSED because the recompute
+	 * range reaches back over a cost-revaluation opening anchor.
+	 * <p>
+	 * The refusal must name the product and the anchor's accounting date: those two facts are what tells the
+	 * operator which product blocks the run and after which date the recompute has to be restarted.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_Inventory_ID</b> — (required, identifier-ref) inventory whose products + MovementDate drive the recompute<br>
+	 *   <b>C_AcctSchema_ID</b> — (required, identifier-ref) accounting schema to recompute<br>
+	 *   <b>CostingMethod</b> — (optional) costing method code; empty = all active material elements<br>
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) product whose ID the refusal must name<br>
+	 *   <b>AnchorDateAcct</b> — (required) accounting date of the opening anchor the refusal must name<br>
+	 * @cucumber.depends StepDefData: M_Inventory_StepDefData, C_AcctSchema_StepDefData, M_Product_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then invoke M_Inventory_RecomputeCosts expecting the cost-revaluation opening anchor to block it:
+	 *   | M_Inventory_ID | C_AcctSchema_ID | CostingMethod | M_Product_ID | AnchorDateAcct |
+	 *   | invDec2025     | acctSchema      | M             | product      | 2025-12-31     |
+	 * </pre>
+	 */
+	@When("invoke M_Inventory_RecomputeCosts expecting the cost-revaluation opening anchor to block it:")
+	public void invoke_expectingOpeningAnchorToBlockIt(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final ProductId productId = row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID).lookupIdIn(productTable);
+			final LocalDate anchorDateAcct = row.getAsLocalDate("AnchorDateAcct");
+
+			// catchThrowable + assertThat, not assertThatThrownBy: the latter fails INSIDE itself when nothing
+			// is thrown, before its .as(...) description is attached — so the "nothing was refused" failure
+			// would print no hint of what the step expected.
+			final Throwable refusal = catchThrowable(() -> invokeOne(row));
+			assertThat(refusal)
+					.as("recompute must be refused because its range covers the opening anchor of %s dated %s", productId, anchorDateAcct)
+					.isNotNull()
+					.hasMessageContaining(String.valueOf(productId.getRepoId()))
+					.hasMessageContaining(anchorDateAcct.toString());
+		});
 	}
 
 	private void invokeOne(@NonNull final DataTableRow row)

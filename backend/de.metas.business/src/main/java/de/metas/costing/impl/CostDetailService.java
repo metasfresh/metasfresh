@@ -291,4 +291,12 @@ public class CostDetailService implements ICostDetailService
 		return costDetailsRepo.firstOnly(query);
 	}
 
+	@Override
+	public Optional<CostDetail> getFirstChangingCostsDetailAfter(
+			@NonNull final CostSegmentAndElement costSegmentAndElement,
+			@NonNull final Instant asOfDate)
+	{
+		return costDetailsRepo.getFirstChangingCostsDetailAfter(costSegmentAndElement, asOfDate);
+	}
+
 }

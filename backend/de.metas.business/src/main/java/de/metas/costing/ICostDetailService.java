@@ -84,4 +84,9 @@ public interface ICostDetailService
 	boolean hasCostDetails(@NonNull CostDetailQuery query);
 
 	Optional<CostDetail> firstOnly(@NonNull CostDetailQuery query);
+
+	/** @see ICostDetailRepository#getFirstChangingCostsDetailAfter(CostSegmentAndElement, Instant) */
+	Optional<CostDetail> getFirstChangingCostsDetailAfter(
+			@NonNull CostSegmentAndElement costSegmentAndElement,
+			@NonNull Instant asOfDate);
 }
