@@ -27,6 +27,7 @@ import { toastError } from '../utils/toast';
 import { useEffect, useState } from 'react';
 import { parseWorkplaceQRCodeString } from '../utils/qrCode/workplace';
 import { useApplicationInfo } from '../reducers/applications';
+import { useReentryKey } from '../hooks/useReentryKey';
 
 const workplaceAPIBase = `${apiBasePath}/workplace`;
 
@@ -36,6 +37,7 @@ export const getCurrentWorkplaceInfo = () => {
 
 export const useCurrentWorkplace = ({ applicationId }) => {
   const { requiresWorkplace: requiresWorkplaceIfAvailable } = useApplicationInfo({ applicationId });
+  const reentryKey = useReentryKey();
   const [isLoading, setIsLoading] = useState(true);
   const [isWorkplaceRequired, setIsWorkplaceRequired] = useState(false);
   const [workplace, setWorkplace] = useState(null);
@@ -49,7 +51,11 @@ export const useCurrentWorkplace = ({ applicationId }) => {
       })
       .catch((axiosError) => toastError({ axiosError }))
       .finally(() => setIsLoading(false));
-  }, []);
+    // reentryKey: re-read when the operator returns to this screen — the active workplace may have
+    // been changed elsewhere (another app instance, or a workstation scan) while the screen stayed
+    // mounted. It also makes a read that failed (offline blip) retry on the next re-entry instead of
+    // leaving the header blank.
+  }, [reentryKey]);
 
   const setWorkplaceByQRCode = (qrCode) => {
     const { workplaceId } = parseWorkplaceQRCodeString(qrCode);

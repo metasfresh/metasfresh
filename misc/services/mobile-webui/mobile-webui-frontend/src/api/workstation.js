@@ -4,6 +4,7 @@ import { unboxAxiosResponse } from '../utils';
 import { useApplicationInfo } from '../reducers/applications';
 import { useEffect, useState } from 'react';
 import { toastError } from '../utils/toast';
+import { useReentryKey } from '../hooks/useReentryKey';
 
 const workstationAPIBase = `${apiBasePath}/workstation`;
 
@@ -13,6 +14,7 @@ export const getCurrentWorkstationInfo = () => {
 
 export const useCurrentWorkstation = ({ applicationId }) => {
   const { requiresWorkstation: requiresWorkstationIfAvailable } = useApplicationInfo({ applicationId });
+  const reentryKey = useReentryKey();
   const [isLoading, setIsLoading] = useState(requiresWorkstationIfAvailable);
   const [workstation, setWorkstation] = useState(null);
 
@@ -28,7 +30,12 @@ export const useCurrentWorkstation = ({ applicationId }) => {
     } else {
       setIsLoading(false);
     }
-  }, []);
+    // reentryKey: re-read when the operator returns to this screen — the assignment may have been
+    // changed elsewhere (another app instance) while the screen stayed mounted. It also makes a read
+    // that failed (offline blip) retry on the next re-entry instead of leaving the header blank.
+    // requiresWorkstationIfAvailable: it arrives from the applications store, so an effect that ran
+    // once while it was still falsy would never fetch at all.
+  }, [reentryKey, requiresWorkstationIfAvailable]);
 
   const setWorkstationByQRCode = (qrCode) => {
     assignWorkstationByQRCode(qrCode)
