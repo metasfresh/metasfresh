@@ -23,6 +23,7 @@
 package de.metas.rest_api.v2.product;
 
 import com.google.common.annotations.VisibleForTesting;
+import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.product.ProductExternalReferenceType;
@@ -37,13 +38,6 @@ import de.metas.util.Services;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy.Direction;
-import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.compiere.model.I_C_BPartner_Product;
-import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -55,8 +49,8 @@ import java.util.Optional;
 public class ExternalIdentifierProductLookupService
 {
 	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
+	@NonNull private final IBPartnerProductDAO bPartnerProductDAO = Services.get(IBPartnerProductDAO.class);
 
 	@NonNull private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
 
@@ -102,105 +96,40 @@ public class ExternalIdentifierProductLookupService
 	{
 		final String gtin = productIdentifier.asGTIN();
 
+		// Branch 1: M_HU_PI_Item_Product — try validity-filtered first, then unfiltered fallback.
 		// Primary query: respect validity (ValidFrom <= date AND (ValidTo >= date OR ValidTo IS NULL)).
-		// This selects the best PIIP that is actually valid on the requested date.
-		I_M_HU_PI_Item_Product hupi = findFirstHupiByGtin(gtin, true, date);
+		final Optional<I_M_HU_PI_Item_Product> hupiOpt = huPIItemProductDAO.findFirstByGtin(gtin, true, date);
 
-		if (hupi == null && date != null)
+		if (hupiOpt.isPresent())
 		{
-			// Fallback: no PIIP is valid on the date (e.g. the only row has ValidFrom in the future).
-			// Resolve the product via the unfiltered query so the product is not lost, but do NOT
-			// attach the out-of-window PIIP — applying a not-yet-valid packing instruction would be wrong.
-			// The downstream caller will use virtual/No-Packing-Item in the absence of a PIIP.
-			final I_M_HU_PI_Item_Product fallbackHupi = findFirstHupiByGtin(gtin, false, null);
-			if (fallbackHupi != null)
-			{
-				return ProductAndHUPIItemProductId.opt(ProductId.ofRepoId(fallbackHupi.getM_Product_ID()));
-			}
-		}
-
-		if (hupi != null)
-		{
+			final I_M_HU_PI_Item_Product hupi = hupiOpt.get();
 			return ProductAndHUPIItemProductId.opt(
 					ProductId.ofRepoId(hupi.getM_Product_ID()),
 					HUPIItemProductId.ofRepoId(hupi.getM_HU_PI_Item_Product_ID()));
 		}
 
-		// TODO refactor this logic and use some BPartnerProductDAO methods
-		final ICompositeQueryFilter<I_C_BPartner_Product> bppFilter = queryBL.createCompositeQueryFilter(I_C_BPartner_Product.class)
-				.setJoinOr()
-				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_GTIN, gtin)
-				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_EAN_CU, gtin)
-				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_UPC, gtin);
-
-		final I_C_BPartner_Product bpp = queryBL.createQueryBuilder(I_C_BPartner_Product.class)
-				.addOnlyActiveRecordsFilter()
-				.filter(bppFilter)
-				.addNotNull(I_C_BPartner_Product.COLUMNNAME_M_Product_ID)
-				.orderBy(I_C_BPartner_Product.COLUMNNAME_C_BPartner_Product_ID)
-				.create().first();
-		if (bpp != null)
+		if (date != null)
 		{
-			return ProductAndHUPIItemProductId.opt(ProductId.ofRepoId(bpp.getM_Product_ID()));
+			// Fallback: no PIIP is valid on the date (e.g. the only row has ValidFrom in the future).
+			// Resolve the product via the unfiltered query so the product is not lost, but do NOT
+			// attach the out-of-window PIIP — applying a not-yet-valid packing instruction would be wrong.
+			// The downstream caller will use virtual/No-Packing-Item in the absence of a PIIP.
+			final Optional<I_M_HU_PI_Item_Product> fallbackHupiOpt = huPIItemProductDAO.findFirstByGtin(gtin, false, null);
+			if (fallbackHupiOpt.isPresent())
+			{
+				return ProductAndHUPIItemProductId.opt(ProductId.ofRepoId(fallbackHupiOpt.get().getM_Product_ID()));
+			}
 		}
 
-		final ICompositeQueryFilter<I_M_Product> pFilter = queryBL.createCompositeQueryFilter(I_M_Product.class)
-				.setJoinOr()
-				.addEqualsFilter(I_M_Product.COLUMNNAME_GTIN, gtin)
-				.addEqualsFilter(I_M_Product.COLUMNNAME_EAN13_ProductCode, gtin)
-				.addEqualsFilter(I_M_Product.COLUMNNAME_UPC, gtin);
-		final I_M_Product p = queryBL.createQueryBuilder(I_M_Product.class)
-				.addOnlyActiveRecordsFilter()
-				.filter(pFilter)
-				.orderBy(I_M_Product.COLUMNNAME_M_Product_ID)
-				.create().first();
-		if (p != null)
+		// Branch 2: C_BPartner_Product — GTIN / EAN_CU / UPC match.
+		final Optional<ProductId> bppProductIdOpt = bPartnerProductDAO.findFirstProductIdByGtin(gtin);
+		if (bppProductIdOpt.isPresent())
 		{
-			return ProductAndHUPIItemProductId.opt(ProductId.ofRepoId(p.getM_Product_ID()));
+			return ProductAndHUPIItemProductId.opt(bppProductIdOpt.get());
 		}
-		return Optional.empty();
+
+		// Branch 3: M_Product — GTIN / EAN13_ProductCode / UPC match.
+		return productDAO.findFirstProductIdByGtin(gtin)
+				.flatMap(ProductAndHUPIItemProductId::opt);
 	}
-
-	/**
-	 * Finds the first {@link I_M_HU_PI_Item_Product} row matching the given GTIN/EAN/UPC value,
-	 * ordered by {@code ValidFrom DESC} (most recent first) then by ID ascending as a tiebreak.
-	 *
-	 * @param gtin           the GTIN/EAN/UPC value to match
-	 * @param applyValidity  when {@code true}, adds a "valid on date" filter so only rows whose
-	 *                       ValidFrom/ValidTo window covers the given date are returned; when {@code false},
-	 *                       no validity filter is applied (fallback to resolve the product even when no row
-	 *                       is valid on the requested date)
-	 * @param date           the date to use for validity filtering; used only when {@code applyValidity} is {@code true}
-	 * @return the first matching row, or {@code null} if none found
-	 */
-	@Nullable
-	private I_M_HU_PI_Item_Product findFirstHupiByGtin(
-			@NonNull final String gtin,
-			final boolean applyValidity,
-			@Nullable final ZonedDateTime date)
-	{
-		final ICompositeQueryFilter<I_M_HU_PI_Item_Product> hupiFilter = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
-				.setJoinOr()
-				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_GTIN, gtin)
-				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_EAN_TU, gtin)
-				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_UPC, gtin);
-
-		final IQueryBuilder<I_M_HU_PI_Item_Product> builder = queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
-				.addOnlyActiveRecordsFilter()
-				.filter(hupiFilter)
-				.addNotNull(I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID);
-
-		if (applyValidity)
-		{
-			builder.filter(huPIItemProductDAO.createValidOnDateFilter(date));
-		}
-
-		return builder.orderBy()
-				.addColumn(I_M_HU_PI_Item_Product.COLUMNNAME_ValidFrom, Direction.Descending, Nulls.Last)
-				.addColumn(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID, Direction.Ascending, Nulls.Last)
-				.endOrderBy()
-				.create()
-				.first();
-	}
-
 }

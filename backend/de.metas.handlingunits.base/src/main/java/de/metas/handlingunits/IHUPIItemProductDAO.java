@@ -159,4 +159,18 @@ public interface IHUPIItemProductDAO extends ISingletonService
 	 */
 	@NonNull
 	IQueryFilter<I_M_HU_PI_Item_Product> createValidOnDateFilter(@Nullable ZonedDateTime date);
+
+	/**
+	 * Finds the first {@link I_M_HU_PI_Item_Product} row matching the given GTIN/EAN_TU/UPC value.
+	 * Rows are ordered by {@code ValidFrom DESC} (most recent first) then by ID ascending as a tiebreak.
+	 * Only active records with a non-null {@code M_Product_ID} are considered.
+	 *
+	 * @param gtin          the GTIN/EAN_TU/UPC value to match
+	 * @param applyValidity when {@code true}, restricts results to rows valid on {@code date}
+	 *                      (using {@link #createValidOnDateFilter}); when {@code false}, no validity filter is applied
+	 * @param date          the reference date for the validity filter; only used when {@code applyValidity} is {@code true}
+	 * @return the first matching row, or {@link Optional#empty()} if none found
+	 */
+	@NonNull
+	Optional<I_M_HU_PI_Item_Product> findFirstByGtin(@NonNull String gtin, boolean applyValidity, @Nullable ZonedDateTime date);
 }

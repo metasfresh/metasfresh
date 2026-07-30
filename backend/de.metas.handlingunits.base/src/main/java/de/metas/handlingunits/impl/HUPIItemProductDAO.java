@@ -492,6 +492,39 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	}
 
 	@Override
+	@NonNull
+	public Optional<I_M_HU_PI_Item_Product> findFirstByGtin(
+			@NonNull final String gtin,
+			final boolean applyValidity,
+			@Nullable final ZonedDateTime date)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final ICompositeQueryFilter<I_M_HU_PI_Item_Product> hupiFilter = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
+				.setJoinOr()
+				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_GTIN, gtin)
+				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_EAN_TU, gtin)
+				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_UPC, gtin);
+
+		final IQueryBuilder<I_M_HU_PI_Item_Product> builder = queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.filter(hupiFilter)
+				.addNotNull(I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID);
+
+		if (applyValidity)
+		{
+			builder.filter(createValidOnDateFilter(date));
+		}
+
+		return builder.orderBy()
+				.addColumn(I_M_HU_PI_Item_Product.COLUMNNAME_ValidFrom, Direction.Descending, Nulls.Last)
+				.addColumn(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID, Direction.Ascending, Nulls.Last)
+				.endOrderBy()
+				.create()
+				.firstOptional();
+	}
+
+	@Override
 	public IQueryFilter<I_M_HU_PI_Item_Product> createValidOnDateFilter(@Nullable final ZonedDateTime date)
 	{
 		if (date == null)

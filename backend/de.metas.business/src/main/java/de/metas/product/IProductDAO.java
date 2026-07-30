@@ -117,6 +117,17 @@ public interface IProductDAO extends ISingletonService
 
 	Optional<ProductId> getProductIdByEAN13ProductCode(@NonNull EAN13ProductCode ean13ProductCode, @NonNull ClientId clientId);
 
+	/**
+	 * Finds the first active {@link org.compiere.model.I_M_Product} row matching the given barcode value
+	 * against {@code GTIN}, {@code EAN13_ProductCode}, or {@code UPC} columns (OR logic).
+	 * Ordered by {@code M_Product_ID} ascending; the first row's product is returned.
+	 *
+	 * @param gtin the GTIN/EAN13/UPC value to match
+	 * @return the product ID of the first matching row, or {@link Optional#empty()} if none found
+	 */
+	@NonNull
+	Optional<ProductId> findFirstProductIdByGtin(@NonNull String gtin);
+
 	Optional<GroupTemplateId> getGroupTemplateIdByProductId(@NonNull ProductId productId);
 
 	Optional<de.metas.product.model.I_M_Product> getProductOfGroupCategory(
