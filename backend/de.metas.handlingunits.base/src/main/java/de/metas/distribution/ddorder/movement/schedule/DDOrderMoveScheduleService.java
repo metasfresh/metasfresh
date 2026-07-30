@@ -1,6 +1,7 @@
 package de.metas.distribution.ddorder.movement.schedule;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.ad_reference.ADRefList;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.distribution.ddorder.DDOrderId;
@@ -74,6 +75,12 @@ public class DDOrderMoveScheduleService
 	public boolean hasInProgressSchedules(@NonNull final DDOrderId ddOrderId)
 	{
 		return ddOrderMoveScheduleRepository.hasInProgressSchedules(ddOrderId);
+	}
+
+	/** The batch flavour of {@link #hasInProgressSchedules(DDOrderId)}, for a caller that has to ask about a whole set of orders. */
+	public ImmutableSet<DDOrderId> retrieveIdsOfOrdersWithInProgressSchedules(@NonNull final Set<DDOrderId> ddOrderIds)
+	{
+		return ddOrderMoveScheduleRepository.retrieveIdsOfOrdersWithInProgressSchedules(ddOrderIds);
 	}
 
 	public void removeNotStarted(@NonNull final DDOrderLineId ddOrderLineId)

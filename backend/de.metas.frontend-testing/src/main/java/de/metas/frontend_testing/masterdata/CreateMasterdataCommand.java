@@ -68,6 +68,7 @@ import de.metas.frontend_testing.masterdata.shipper.JsonCreateShipperResponse;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserRequest;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserResponse;
 import de.metas.frontend_testing.masterdata.user.LoginUserCommand;
+import de.metas.frontend_testing.masterdata.warehouse.ConfigureWarehouseReplenishmentCommand;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseRequest;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseResponse;
 import de.metas.frontend_testing.masterdata.warehouse.WarehouseCommand;
@@ -123,6 +124,10 @@ public class CreateMasterdataCommand
 		final Map<String, JsonPackingInstructionsResponse> packingInstructions = createPackingInstructions();
 		final JsonMobileConfigResponse mobileConfig = createMobileConfiguration();
 		final ImmutableMap<String, JsonCreateShipperResponse> shippers = createShippers();
+		// Post-pass: needs every warehouse (the replenishment source is named by identifier) and the shippers
+		// (the DD_NetworkDistributionLine requires one). Keep it before the sales orders, whose picking-job
+		// schedules trigger the replenishment.
+		configureWarehouseReplenishment();
 		final ImmutableMap<String, JsonCreateHUResponse> hus = createHUs();
 		final ImmutableMap<String, JsonGenerateHUQRCodeResponse> generatedHUQRCodes = generateHUQRCodes();
 		final ImmutableMap<String, JsonSalesOrderCreateResponse> salesOrders = createSalesOrders();
@@ -330,6 +335,18 @@ public class CreateMasterdataCommand
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString(identifier))
+				.build()
+				.execute();
+	}
+
+	private void configureWarehouseReplenishment()
+	{
+		if (request.getWarehouses() == null) {return;}
+
+		ConfigureWarehouseReplenishmentCommand.builder()
+				.distributionNetworkRepository(services.distributionNetworkRepository)
+				.context(context)
+				.requests(request.getWarehouses())
 				.build()
 				.execute();
 	}

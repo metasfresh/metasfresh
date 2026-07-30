@@ -112,4 +112,20 @@ public class WorkplaceService
 				? pickFromLocatorId
 				: warehouseBL.getOrCreateDefaultLocatorId(workplace.getWarehouseId());
 	}
+
+	/**
+	 * Filters to the locator's own warehouse only — safe because a configured pick-from locator is asserted to belong to its workplace's warehouse, so no other warehouse's workplace can resolve to this locator.
+	 */
+	@NonNull
+	public ImmutableSet<WorkplaceId> getWorkplaceIdsByEffectivePickFromLocatorId(@NonNull final LocatorId locatorId)
+	{
+		final WarehouseId warehouseId = locatorId.getWarehouseId();
+
+		return workplaceRepository.getAllActive()
+				.stream()
+				.filter(workplace -> WarehouseId.equals(workplace.getWarehouseId(), warehouseId))
+				.filter(workplace -> LocatorId.equals(getPickFromLocatorIdOrWarehouseDefault(workplace), locatorId))
+				.map(Workplace::getId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
 }
