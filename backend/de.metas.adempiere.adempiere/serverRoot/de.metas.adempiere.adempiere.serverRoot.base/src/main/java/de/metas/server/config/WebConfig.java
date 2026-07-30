@@ -1,7 +1,7 @@
 package de.metas.server.config;
 
+import de.metas.util.web.MetasfreshRestAPIConstants;
 import lombok.NonNull;
-import org.compiere.Adempiere;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -55,7 +55,8 @@ public class WebConfig implements WebMvcConfigurer
 	public FilterRegistrationBean<Filter> apiNoStoreCacheControlFilter()
 	{
 		final FilterRegistrationBean<Filter> registration = new FilterRegistrationBean<>(new ApiNoStoreCacheControlFilter());
-		registration.addUrlPatterns(Adempiere.ENDPOINT_API_V2 + "/*");
+		// the very constant ApiAuditFilter registers on, so "the same pattern" stays true by construction
+		registration.addUrlPatterns(MetasfreshRestAPIConstants.URL_PATTERN_API_V2);
 		// spring's default for a FilterRegistrationBean, pinned because the javadoc above reasons about it
 		registration.setOrder(Ordered.LOWEST_PRECEDENCE);
 		return registration;
