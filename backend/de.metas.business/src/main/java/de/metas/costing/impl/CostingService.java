@@ -141,6 +141,22 @@ public class CostingService implements ICostingService
 	}
 
 	@Override
+	public Optional<CostDetailPreviousAmounts> getCostAsOf(
+			@NonNull final CostSegmentAndElement costSegmentAndElement,
+			@NonNull final Instant asOfDate)
+	{
+		final Optional<CostDetail> firstDetailAfter = costDetailsService.getFirstChangingCostsDetailAfter(costSegmentAndElement, asOfDate);
+		if (firstDetailAfter.isPresent())
+		{
+			// That detail's Prev_* IS the state as of asOfDate: the state right before the first movement booked after it.
+			return firstDetailAfter.map(CostDetail::getPreviousAmounts);
+		}
+
+		// Nothing moved after asOfDate, so the live M_Cost row still carries the state as of asOfDate.
+		return getCurrentCost(costSegmentAndElement).map(CostDetailPreviousAmounts::of);
+	}
+
+	@Override
 	public CostDetailCreateResultsList createCostDetail(@NonNull final CostDetailCreateRequest request)
 	{
 		return createCostDetailOrEmpty(request).orElseThrow();
@@ -566,6 +582,9 @@ public class CostingService implements ICostingService
 	/**
 	 * {@code CopyFromCostElement} complete-time seed: sets the target element's {@code M_Cost} to {@code opening} and
 	 * writes one zero-delta anchor {@code M_CostDetail} carrying the same {@code opening} as its {@code Prev_*}.
+	 * <p>
+	 * Canonical definition of the "anchor" term:
+	 * {@code de.metas.costrevaluation.CostRevaluationService#createDetailsForCopyFromCostElement}.
 	 */
 	@Override
 	public void seedCurrentCostFromOpening(

@@ -28,6 +28,7 @@ import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.allocation.C_AllocationHdr_StepDefData;
 import de.metas.cucumber.stepdefs.costing.M_CostRevaluation_StepDefData;
 import de.metas.cucumber.stepdefs.dunning.C_DunningDoc_StepDefData;
+import de.metas.cucumber.stepdefs.inventory.M_Inventory_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.match_inv.M_MatchInv_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
@@ -36,6 +37,7 @@ import de.metas.cucumber.stepdefs.pporder.PP_Cost_Collector_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.dunning.DunningDocId;
 import de.metas.inout.InOutId;
+import de.metas.inventory.InventoryId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.matchinv.MatchInvId;
 import de.metas.order.OrderId;
@@ -51,6 +53,7 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_CostRevaluation;
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_MatchInv;
 import org.eevolution.model.I_PP_Cost_Collector;
 
@@ -68,6 +71,7 @@ public class IdentifiersResolver
 	@NonNull private final C_AllocationHdr_StepDefData allocationTable;
 	@NonNull private final M_MatchInv_StepDefData matchInvTable;
 	@NonNull private final M_InOut_StepDefData inOutTable;
+	@NonNull private final M_Inventory_StepDefData inventoryTable;
 	@NonNull private final C_Order_StepDefData orderTable;
 	@NonNull private final C_DunningDoc_StepDefData dunningDocTable;
 	@NonNull private final PP_Cost_Collector_StepDefData ppCostCollectorTable;
@@ -111,6 +115,9 @@ public class IdentifiersResolver
 				.ifPresent(result::add);
 		inOutTable.getIdOptional(identifier)
 				.map(InOutId::toRecordRef)
+				.ifPresent(result::add);
+		inventoryTable.getIdOptional(identifier)
+				.map(id -> TableRecordReference.of(I_M_Inventory.Table_Name, id))
 				.ifPresent(result::add);
 		orderTable.getIdOptional(identifier)
 				.map(OrderId::toRecordRef)
@@ -156,6 +163,8 @@ public class IdentifiersResolver
 				return matchInvTable.getFirstIdentifierById(MatchInvId.ofRepoId(recordId));
 			case I_M_InOut.Table_Name:
 				return inOutTable.getFirstIdentifierById(InOutId.ofRepoId(recordId));
+			case I_M_Inventory.Table_Name:
+				return inventoryTable.getFirstIdentifierById(InventoryId.ofRepoId(recordId));
 			default:
 				return Optional.empty();
 		}
