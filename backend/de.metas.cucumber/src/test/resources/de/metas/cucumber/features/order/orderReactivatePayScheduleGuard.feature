@@ -171,3 +171,57 @@ Feature: PO reactivation guard — downstream-activity check
 
     # Guard blocks — pay-schedule line carries a downstream goods-receipt link
     And the order identified by po cannot be reactivated
+
+
+  @from:cucumber
+  @Id:S30621_TC4
+  Scenario: Reactivate then re-complete preserves the paid-proforma pay-schedule state
+    # A buyer completes a PO, allocates a proforma invoice, and pays it in full (payment
+    # carries Proforma_Invoice_ID) — the LC row is Paid with the proforma's actual amount
+    # and dates. Reactivating the order and re-completing it must restore that same Paid
+    # state: the proforma allocation and its completed prepayment both survive reactivation,
+    # so re-complete must re-derive the LC row from them, not just from the payment-term breaks.
+
+    And metasfresh contains organization bank accounts
+      | Identifier      | C_Currency_ID |
+      | org_EUR_account | EUR           |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | C_PaymentTerm_ID |
+      | po         | N       | vendor        | 2026-04-24  | POO         | wh             | pt_od            |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | poL1       | po         | product      | 700        |
+    And the order identified by po is completed
+
+    # Allocate a proforma invoice to the order (LC row -> Awaiting_Pay)
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name       | DateInvoiced | IsSOTrx | C_Currency_ID | C_PaymentTerm_ID |
+      | proforma   | vendor        | Proforma-Rechnung (Lieferant) | 2026-04-24   | false   | EUR           | pt_immediate     |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price    |
+      | proformaL1 | proforma     | product      | 1 PCE       | 21000.00 |
+    And the invoice identified by proforma is completed
+    And I allocate proforma 'proforma' to order 'po'
+
+    # Pay the proforma in full (Proforma_Invoice_ID -> IsPrepayment=Y) — marks the LC row Paid
+    And metasfresh contains C_Payment
+      | Identifier | C_BPartner_ID | PayAmt       | IsReceipt | C_BP_BankAccount_ID | Proforma_Invoice_ID |
+      | payment    | vendor        | 21000.00 EUR | false     | org_EUR_account      | proforma            |
+    And the payment identified by payment is completed
+
+    Then the order identified by po has following pay schedule lines by ReferenceDateType
+      | ReferenceDateType | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status |
+      | LC                | 21000.00 | 21000.00      | 2026-04-24    | 2026-04-24 | P      |
+
+    # Reactivate (allowed - proforma allocation no longer blocks) and re-complete the order
+    And the order identified by po is reactivated
+    And the order identified by po is completed
+
+    # Re-complete must restore the same proforma-derived Paid state
+    Then the order identified by po has following pay schedule lines by ReferenceDateType
+      | ReferenceDateType | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status |
+      | LC                | 21000.00 | 21000.00      | 2026-04-24    | 2026-04-24 | P      |
+    And validate the created orders
+      | Identifier | LC_Date    |
+      | po         | 2026-04-24 |
