@@ -23,11 +23,11 @@
 package de.metas.handlingunits;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HUPIItemProductGtinMatch;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.handlingunits.HUPIItemProductGtinMatch;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
