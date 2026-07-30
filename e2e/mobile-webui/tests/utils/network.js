@@ -20,12 +20,20 @@ export const restoreConnectionFor = async (urlPattern) => await test.step(`Resto
 // The only durable guard is that the responses themselves forbid storing, so assert exactly that on
 // the real end-to-end responses (the servlet filter that sets it also has its own unit test).
 //
-// Records every response whose URL contains `urlSubstring`, from install time on. Install BEFORE the
+// Records every response for exactly the endpoint at `path`, from install time on. Install BEFORE the
 // navigation that triggers the reads; responses that arrive later are still recorded.
-export const recordResponsesFor = (urlSubstring) => {
+// Matched on the exact URL pathname, not a substring, so a future sibling endpoint that merely shares
+// the prefix (`/api/v2/workplaceManager`) cannot be swept silently into the same assertion set.
+export const recordResponsesFor = (path) => {
     const responses = [];
     const handler = (response) => {
-        if (response.url().includes(urlSubstring)) {
+        let pathname;
+        try {
+            pathname = new URL(response.url()).pathname;
+        } catch {
+            return; // not an absolute URL — cannot be the endpoint under test
+        }
+        if (pathname === path) {
             responses.push({
                 url: response.url(),
                 status: response.status(),
@@ -40,8 +48,8 @@ export const recordResponsesFor = (urlSubstring) => {
 
         // Asserts the endpoint was actually reached (a silent zero-response recording would make this
         // guard vacuous) and that every response it produced forbids storing.
-        expectAllForbidStoring: async () => await test.step(`Expect every '${urlSubstring}' response to forbid storing`, async () => {
-            expect(responses.length, `no response recorded for '${urlSubstring}' — the endpoint was never reached`).toBeGreaterThan(0);
+        expectAllForbidStoring: async () => await test.step(`Expect every '${path}' response to forbid storing`, async () => {
+            expect(responses.length, `no response recorded for '${path}' — the endpoint was never reached`).toBeGreaterThan(0);
             for (const { url, status, cacheControl } of responses) {
                 expect(cacheControl, `Cache-Control of ${status} ${url}`).not.toBeNull();
                 expect(cacheControl.toLowerCase(), `Cache-Control of ${status} ${url}`).toContain('no-store');

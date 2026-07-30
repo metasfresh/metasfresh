@@ -35,7 +35,9 @@ test('A workplace that cannot be read because the connection dropped is recovera
     // === ALLURE METADATA ===
     allure.epic('E0160: Manufacturing Execution');
     allure.feature('F8030: MobileUI Manufacturing');
+    allure.tag('F8030');  // Standalone tag for Tags section;
     allure.tag('F8046: Workstation');
+    allure.tag('F8046');  // Standalone tag for Tags section;
     allure.story('A dropped connection must not silently blank the operator context');
     allure.severity('critical');
 
@@ -73,7 +75,9 @@ test('A workstation that cannot be read because the connection dropped is recove
     // === ALLURE METADATA ===
     allure.epic('E0160: Manufacturing Execution');
     allure.feature('F8030: MobileUI Manufacturing');
+    allure.tag('F8030');  // Standalone tag for Tags section;
     allure.tag('F8046: Workstation');
+    allure.tag('F8046');  // Standalone tag for Tags section;
     allure.story('A dropped connection must not look like a lost workstation assignment');
     allure.severity('critical');
 

@@ -39,11 +39,6 @@ export const ManufacturingJobsListScreen = {
         await ManufacturingJobsListScreen.waitForScreen();
     }),
 
-    expectJobListed: async ({ documentNo }) => await test.step(`${NAME} - Expect job '${documentNo}' listed`, async () => {
-        await expect(page.locator('.wflauncher-button').filter({ hasText: documentNo }))
-            .toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
-    }),
-
     expectJobNotListed: async ({ documentNo }) => await test.step(`${NAME} - Expect job '${documentNo}' NOT listed`, async () => {
         await expect(page.locator('.wflauncher-button').filter({ hasText: documentNo }))
             .toHaveCount(0, { timeout: FAST_ACTION_TIMEOUT });

@@ -47,7 +47,9 @@ test('Scanning the workstation on the Production jobs list updates workplace and
     // === ALLURE METADATA ===
     allure.epic('E0160: Manufacturing Execution');
     allure.feature('F8030: MobileUI Manufacturing');
+    allure.tag('F8030');  // Standalone tag for Tags section;
     allure.tag('F8046: Workstation');
+    allure.tag('F8046');  // Standalone tag for Tags section;
     allure.story('The jobs list reflects the workstation the operator just scanned');
     allure.severity('critical');
 

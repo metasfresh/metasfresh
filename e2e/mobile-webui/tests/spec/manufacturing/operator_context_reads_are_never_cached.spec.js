@@ -6,13 +6,14 @@ import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScre
 import { ManufacturingJobsListScreen } from "../../utils/screens/manufacturing/ManufacturingJobsListScreen";
 import { recordResponsesFor } from "../../utils/network";
 
-// End-to-end guard for the cache directives on the operator-context reads. The servlet filter that
-// sets them has its own unit test; this is the other half — proof that a real handheld request really
-// comes back uncacheable, asserted on the response the device actually receives.
+// End-to-end guard for the cache directives on the operator-context reads: proof that a real handheld
+// request comes back uncacheable, asserted on the response the device actually receives.
 //
-// REQUIRES the `no-store` filter on /api/v2 to be present in the branch under test. Until it is, this
-// test fails with `Cache-Control ... Received: null` — a true negative, NOT a flake: the endpoint is
-// reached and answers 200 with no cache directive at all, which is precisely the defect.
+// The servlet filter that sets the directive, and its own unit test, are NOT in this branch - they live
+// in https://github.com/metasfresh/metasfresh/pull/25368, which targets the same base. Until that is
+// merged and this branch picks the base up, this test FAILS with `Cache-Control ... Received: null`.
+// That is a true negative, not a flake: the endpoint is reached and answers 200 with no cache directive
+// at all, which is precisely the defect being guarded against.
 
 // Endpoints the Production screen reads the operator's context from.
 const WORKPLACE_ENDPOINT = '/api/v2/workplace';
@@ -37,7 +38,9 @@ test('The operator context is re-read from the server, never served from the dev
     // === ALLURE METADATA ===
     allure.epic('E0160: Manufacturing Execution');
     allure.feature('F8030: MobileUI Manufacturing');
+    allure.tag('F8030');  // Standalone tag for Tags section;
     allure.tag('F8046: Workstation');
+    allure.tag('F8046');  // Standalone tag for Tags section;
     allure.story('A handheld must never answer the operator-context reads from its own cache');
     allure.severity('critical');
 
