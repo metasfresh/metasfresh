@@ -1,5 +1,6 @@
 import { Backend } from '../../utils/screens/Backend';
 import { test } from '../../../playwright.config';
+import { allure } from 'allure-playwright';
 import { LoginScreen } from '../../utils/screens/LoginScreen';
 import { ApplicationsListScreen } from '../../utils/screens/ApplicationsListScreen';
 import { ManufacturingJobsListScreen } from '../../utils/screens/manufacturing/ManufacturingJobsListScreen';
@@ -7,7 +8,11 @@ import { ManufacturingJobScreen } from '../../utils/screens/manufacturing/Manufa
 import { MaterialReceiptLineScreen } from '../../utils/screens/manufacturing/receipt/MaterialReceiptLineScreen';
 import { expectErrorToast } from '../../utils/common';
 
-const createMasterdata = async () => {
+const createMasterdata = async ({ byProductInfinite = false } = {}) => {
+    const byProductPI = byProductInfinite
+        ? { lu: "LU", qtyTUsPerLU: 20, tu: "TU2", product: "BY_PRODUCT" }
+        : { lu: "LU", qtyTUsPerLU: 20, tu: "TU2", product: "BY_PRODUCT", qtyCUsPerTU: 4 };
+
     return await Backend.createMasterdata({
         language: "en_US",
         request: {
@@ -36,7 +41,7 @@ const createMasterdata = async () => {
             },
             packingInstructions: {
                 "BOM_PI": { lu: "LU", qtyTUsPerLU: 20, tu: "TU", product: "BOM", qtyCUsPerTU: 4 },
-                "BY_PRODUCT_PI": { lu: "LU", qtyTUsPerLU: 20, tu: "TU2", product: "BY_PRODUCT", qtyCUsPerTU: 4 },
+                "BY_PRODUCT_PI": byProductPI,
                 "BY_PRODUCT_PI2": { lu: "LU", qtyTUsPerLU: 20, tu: "TU3", product: "BY_PRODUCT2", qtyCUsPerTU: 4 },
             },
             handlingUnits: {
@@ -63,6 +68,13 @@ const createMasterdata = async () => {
 
 // noinspection JSUnusedLocalSymbols
 test('Receive By-Products from 2 manufacturing orders into same HU', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0160: Manufacturing Execution');
+    allure.tag('F8030: MobileUI Manufacturing');
+        allure.tag('F8030');  // Standalone tag for Tags section;
+    allure.story('Receive by-products into same HU');
+    allure.severity('normal');
+
     const masterdata = await createMasterdata();
 
     await LoginScreen.login(masterdata.login.user);
@@ -106,6 +118,27 @@ test('Receive By-Products from 2 manufacturing orders into same HU', async ({ pa
 
         await ManufacturingJobScreen.goBack();
     });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Infinite-capacity TU is hidden for non-catch-weight by-product', async ({ page }) => {
+    allure.epic('E0160: Manufacturing Execution');
+    allure.tag('F8034: Manufacturing Workflow Activity - Material Receipt');
+    allure.tag('F8034');
+    allure.story('Infinite-capacity TU is gated to catch-weight lines only');
+    allure.severity('normal');
+
+    const masterdata = await createMasterdata({ byProductInfinite: true });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('mfg');
+    await ManufacturingJobsListScreen.waitForScreen();
+    await ManufacturingJobsListScreen.startJob({ documentNo: masterdata.manufacturingOrders.PP1.documentNo });
+
+    await ManufacturingJobScreen.clickReceiveButton({ index: 2 }); // i.e., first by-product (NOT catch-weight)
+    // The infinite-capacity TU must NOT appear here because the line is not catch-weight.
+    await MaterialReceiptLineScreen.expectNewTUTargetNotPresent({ tuPIItemProductTestId: masterdata.packingInstructions.BY_PRODUCT_PI.tuPIItemProductTestId });
 });
 
 // noinspection JSUnusedLocalSymbols

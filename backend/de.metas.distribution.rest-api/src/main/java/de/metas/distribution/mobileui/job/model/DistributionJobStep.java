@@ -8,6 +8,7 @@ import de.metas.workflow.rest_api.model.WFActivityStatus;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.warehouse.LocatorId;
 
 import javax.annotation.Nullable;
 
@@ -23,6 +24,7 @@ public class DistributionJobStep
 	@NonNull Quantity qtyPicked;
 	@Nullable QtyRejectedReasonCode qtyNotPickedReasonCode;
 	boolean isPickedFromLocator;
+	@Nullable LocatorId inTransitLocatorId;
 
 	//
 	// Drop To
@@ -39,6 +41,7 @@ public class DistributionJobStep
 			@NonNull final Quantity qtyPicked,
 			@Nullable final QtyRejectedReasonCode qtyNotPickedReasonCode,
 			final boolean isPickedFromLocator,
+			@Nullable final LocatorId inTransitLocatorId,
 			//
 			final boolean isDroppedToLocator)
 	{
@@ -50,6 +53,7 @@ public class DistributionJobStep
 		this.qtyPicked = qtyPicked;
 		this.qtyNotPickedReasonCode = qtyNotPickedReasonCode;
 		this.isPickedFromLocator = isPickedFromLocator;
+		this.inTransitLocatorId = inTransitLocatorId;
 		this.isDroppedToLocator = isDroppedToLocator;
 
 		this.status = computeStatus(this.isPickedFromLocator, this.isDroppedToLocator);
@@ -67,6 +71,7 @@ public class DistributionJobStep
 		}
 	}
 
+	@NonNull
 	public DDOrderMoveScheduleId getScheduleId() {return getId().toScheduleId();}
 
 	public boolean isInTransit() {return isPickedFromLocator && !isDroppedToLocator;}

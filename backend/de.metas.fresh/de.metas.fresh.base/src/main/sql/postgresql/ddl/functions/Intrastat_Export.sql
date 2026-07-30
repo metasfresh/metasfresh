@@ -51,18 +51,27 @@ $$
 SELECT CustomsTariff                                                    AS CNCode,
        productName                                                      AS GoodsDescription,
        deliveryCountry                                                  AS CountryDestinationConsignment,
-       deliveredFromCountry                                             AS CountryOfOrigin,
+       CASE
+           WHEN p_IntrastatDeclarationType = 'Export' THEN deliveredFromCountry
+           ELSE COALESCE(OriginCountry, deliveryCountry)
+       END                                                              AS CountryOfOrigin,
        p_IntrastaNatureOfTransaction                                    AS IntrastaNatureOfTransaction,
-       TO_CHAR(weight, 'FM9G999D000')                                   AS NetMass,
-       TO_CHAR(movementqty, 'FM9G999D000')                              AS SupplementaryUnits,
-       TO_CHAR(grandtotal, 'FM9G999D00')                                AS InvoiceValue,
-       TO_CHAR(grandtotal, 'FM9G999D00')                                AS StatisticalValue,
-       CASE WHEN p_IntrastatDeclarationType = 'Export' THEN vataxid END AS RecipientVATNo
-FROM de_metas_endcustomer_fresh_reports.M_InOut_V
+       TO_CHAR(weight, 'FM9999999D000')                                 AS NetMass,
+       TO_CHAR(movementqty, 'FM9999999D000')                            AS SupplementaryUnits,
+       TO_CHAR(LineNetAmt, 'FM9999999D00')                              AS InvoiceValue,
+       TO_CHAR(LineNetAmt, 'FM9999999D00')                              AS StatisticalValue,
+       CASE WHEN p_IntrastatDeclarationType = 'Export' THEN vataxid END AS "Recipient-VAT-No"
+FROM de_metas_endcustomer_fresh_reports.Intrastat_Report_V
 WHERE (C_Period_ID = p_C_Period_ID OR p_C_Period_ID = -1)
-  AND (c_year_id = p_c_year_id OR p_c_year_id = -1)
-
-
+  AND (C_Year_ID = p_c_year_id OR p_c_year_id = -1)
+  AND IsSOTrx = CASE WHEN p_IntrastatDeclarationType = 'Export' THEN 'Y' ELSE 'N' END
+  AND IsPackagingmaterial = 'N'
+  -- Exclude products without a customs tariff (CN8 code) and non-stocked items
+  -- (e.g. EU pallets, shipping charges, deposit items).
+  -- Products with missing CN8 codes are visible in the Intrastat detail window (542107)
+  -- where users can zoom to the product and assign the correct tariff.
+  AND CustomsTariff IS NOT NULL
+  AND Product_IsStocked = 'Y'
 $$
     LANGUAGE sql STABLE
 ;

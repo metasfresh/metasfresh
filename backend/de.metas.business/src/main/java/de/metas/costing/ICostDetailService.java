@@ -1,5 +1,6 @@
 package de.metas.costing;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostDetail.CostDetailBuilder;
 import de.metas.product.ProductId;
@@ -9,6 +10,7 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /*
@@ -39,7 +41,14 @@ public interface ICostDetailService
 
 	boolean hasCostDetailsForProductId(ProductId productId);
 
+	ImmutableSet<ProductId> retrieveProductIdsWithCostRevaluationSeed(
+			@NonNull AcctSchemaId acctSchemaId,
+			@NonNull CostElementId costElementId,
+			@NonNull Set<ProductId> productIds);
+
 	List<CostDetail> getExistingCostDetails(CostDetailCreateRequest request);
+
+	AggregatedCostAmount toAggregatedCostAmount(List<CostDetail> costDetails);
 
 	List<CostDetail> getAllForDocument(CostingDocumentRef documentRef);
 
@@ -70,6 +79,9 @@ public interface ICostDetailService
 	void delete(CostDetail costDetail);
 
 	Stream<CostDetail> stream(@NonNull CostDetailQuery query);
+
+	/** @return true if at least one cost detail matches the query */
+	boolean hasCostDetails(@NonNull CostDetailQuery query);
 
 	Optional<CostDetail> firstOnly(@NonNull CostDetailQuery query);
 }

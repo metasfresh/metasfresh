@@ -44,6 +44,8 @@ public class MobileUIPickingUserProfile
 	public static final MobileUIPickingUserProfile DEFAULT = builder()
 			.name("default")
 			.isAllowPickingAnyCustomer(true)
+			.isMassPrinting(false)
+			.isShowQtyAvailableForLines(false)
 			.defaultPickingJobOptions(PickingJobOptions.builder()
 					.aggregationType(PickingJobAggregationType.DEFAULT)
 					.allowedPickToStructures(AllowedPickToStructures.DEFAULT)
@@ -56,32 +58,7 @@ public class MobileUIPickingUserProfile
 					.isShowLastPickedBestBeforeDateForLines(false)
 					.build())
 			.filters(PickingFiltersList.DEFAULT)
-			.fields(ImmutableList.of(
-					PickingJobField.builder()
-							.seqNo(10)
-							.field(PickingJobFieldType.DOCUMENT_NO)
-							.isShowInDetailed(true)
-							.isShowInSummary(true)
-							.build(),
-					PickingJobField.builder()
-							.seqNo(20)
-							.field(PickingJobFieldType.CUSTOMER)
-							.isShowInDetailed(true)
-							.isShowInSummary(true)
-							.build(),
-					PickingJobField.builder()
-							.seqNo(30)
-							.field(PickingJobFieldType.PRODUCT)
-							.isShowInDetailed(true)
-							.isShowInSummary(true)
-							.build(),
-					PickingJobField.builder()
-							.seqNo(40)
-							.field(PickingJobFieldType.QTY_TO_DELIVER)
-							.isShowInDetailed(true)
-							.isShowInSummary(true)
-							.build()
-			))
+			.fields(PickingJobField.DEFAULTS)
 			.build();
 
 	@NonNull String name;
@@ -90,6 +67,8 @@ public class MobileUIPickingUserProfile
 	boolean isActiveWorkplaceRequired;
 	boolean isConsiderOnlyJobScheduledToWorkplace;
 	boolean isAllowQuickPackAll;
+	boolean isMassPrinting;
+	boolean isShowQtyAvailableForLines;
 	@Getter @NonNull PickingCustomerConfigsCollection customerConfigs;
 	@NonNull PickingJobOptions defaultPickingJobOptions;
 	@Getter(AccessLevel.NONE) @NonNull PickingFiltersList filters;
@@ -106,6 +85,8 @@ public class MobileUIPickingUserProfile
 			final boolean isActiveWorkplaceRequired,
 			final boolean isConsiderOnlyJobScheduledToWorkplace,
 			final boolean isAllowQuickPackAll,
+			final boolean isMassPrinting,
+			final boolean isShowQtyAvailableForLines,
 			final @Nullable PickingCustomerConfigsCollection customerConfigs,
 			final @NonNull PickingJobOptions defaultPickingJobOptions,
 			final @Nullable PickingFiltersList filters,
@@ -117,6 +98,8 @@ public class MobileUIPickingUserProfile
 		this.isActiveWorkplaceRequired = isActiveWorkplaceRequired;
 		this.isConsiderOnlyJobScheduledToWorkplace = isConsiderOnlyJobScheduledToWorkplace;
 		this.isAllowQuickPackAll = isAllowQuickPackAll;
+		this.isMassPrinting = isMassPrinting;
+		this.isShowQtyAvailableForLines = isShowQtyAvailableForLines;
 		this.customerConfigs = customerConfigs != null ? customerConfigs : PickingCustomerConfigsCollection.EMPTY;
 		this.defaultPickingJobOptions = defaultPickingJobOptions;
 		this.filters = filters != null ? filters : PickingFiltersList.EMPTY;

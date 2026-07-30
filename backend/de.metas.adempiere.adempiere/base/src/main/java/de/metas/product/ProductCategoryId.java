@@ -29,6 +29,7 @@ import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 import java.util.Optional;
 
 @Value
@@ -65,5 +66,10 @@ public class ProductCategoryId implements RepoIdAware
 	public int getRepoId()
 	{
 		return repoId;
+	}
+
+	public static boolean equals(@Nullable final ProductCategoryId id1, @Nullable final ProductCategoryId id2)
+	{
+		return Objects.equals(id1, id2);
 	}
 }

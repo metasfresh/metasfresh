@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_RV_PP_Product_BOMLine extends org.compiere.model.PO implements I_RV_PP_Product_BOMLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -854433493L;
+	private static final long serialVersionUID = -860601045L;
 
     /** Standard Constructor */
     public X_RV_PP_Product_BOMLine (final Properties ctx, final int RV_PP_Product_BOMLine_ID, @Nullable final String trxName)
@@ -62,21 +62,6 @@ public class X_RV_PP_Product_BOMLine extends org.compiere.model.PO implements I_
 		return get_ValueAsInt(COLUMNNAME_AD_PInstance_ID);
 	}
 
-	@Override
-	public void setC_UOM_ID (final int C_UOM_ID)
-	{
-		if (C_UOM_ID < 1) 
-			set_Value (COLUMNNAME_C_UOM_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_UOM_ID, C_UOM_ID);
-	}
-
-	@Override
-	public int getC_UOM_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
-	}
-
 	/** 
 	 * ComponentType AD_Reference_ID=53225
 	 * Reference name: PP_ComponentType
@@ -114,6 +99,21 @@ public class X_RV_PP_Product_BOMLine extends org.compiere.model.PO implements I_
 	public java.lang.String getComponentType() 
 	{
 		return get_ValueAsString(COLUMNNAME_ComponentType);
+	}
+
+	@Override
+	public void setC_UOM_ID (final int C_UOM_ID)
+	{
+		if (C_UOM_ID < 1) 
+			set_Value (COLUMNNAME_C_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_UOM_ID, C_UOM_ID);
+	}
+
+	@Override
+	public int getC_UOM_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
 	}
 
 	@Override

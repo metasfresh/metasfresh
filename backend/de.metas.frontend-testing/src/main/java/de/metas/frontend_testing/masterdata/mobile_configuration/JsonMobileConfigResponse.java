@@ -46,9 +46,11 @@ public class JsonMobileConfigResponse
 		@Nullable Boolean filterByQRCode;
 		@Nullable Boolean allowCompletingPartialPickingJob;
 		@Nullable Boolean isAnonymousPickHUsOnTheFly;
+		@Nullable Boolean pickingSlotRequired;
 		@Nullable Boolean displayPickingSlotSuggestions;
 		@Nullable Boolean activeWorkplaceRequired;
 		@Nullable Boolean considerOnlyJobScheduledToWorkplace;
+		@Nullable Boolean massPrinting;
 
 		@Nullable List<PickingJobFacetGroup> filters;
 	}
@@ -63,6 +65,7 @@ public class JsonMobileConfigResponse
 	public static class Distribution
 	{
 		@Nullable Boolean allowPickingAnyHU;
+		@Nullable Boolean requireTrolley;
 		@Nullable Boolean requireScanningProductCode;
 		@Nullable Boolean navigateToJobsListAfterPickFromComplete;
 		@Nullable Boolean completeJobAutomatically;
@@ -79,5 +82,6 @@ public class JsonMobileConfigResponse
 	{
 		@Nullable Boolean isScanResourceRequired;
 		@Nullable Boolean isAllowIssuingAnyHU;
+		@Nullable String receiveUnitType;
 	}
 }

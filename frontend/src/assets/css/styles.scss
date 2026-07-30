@@ -454,6 +454,8 @@ body {
   flex-shrink: 0;
   flex-direction: column;
   min-height: auto;
+  padding-top: 1rem !important;
+  padding-bottom: 1rem !important;
 
   .header-element {
     width: 100%;

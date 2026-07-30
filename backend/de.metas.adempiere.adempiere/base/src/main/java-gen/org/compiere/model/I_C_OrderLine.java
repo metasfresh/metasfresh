@@ -265,7 +265,7 @@ public interface I_C_OrderLine
 	String COLUMNNAME_C_BPartner_Location_Value_ID = "C_BPartner_Location_Value_ID";
 
 	/**
-	 * Set C_BPartner_Vendor_ID.
+	 * Set Vendor.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -274,7 +274,7 @@ public interface I_C_OrderLine
 	void setC_BPartner_Vendor_ID (int C_BPartner_Vendor_ID);
 
 	/**
-	 * Get C_BPartner_Vendor_ID.
+	 * Get Vendor.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -983,6 +983,33 @@ public interface I_C_OrderLine
 	String COLUMNNAME_ExternalSeqNo = "ExternalSeqNo";
 
 	/**
+	 * Set Frame agreement with open quantity exists.
+	 * This indicator shows the shipping status of quantities related to a frame agreement. It is displayed in both frame agreements and their related call-off orders within the sales order window. The status is represented using the following color codes:  Red – No quantity from the frame agreement has been shipped.  Yellow – A partial quantity from the frame agreement has been shipped.  Green – The full frame agreement quantity has been shipped.
+	 *
+	 * <br>Type: Color
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setFA_OpenQty_Exists_Color_ID (int FA_OpenQty_Exists_Color_ID);
+
+	/**
+	 * Get Frame agreement with open quantity exists.
+	 * This indicator shows the shipping status of quantities related to a frame agreement. It is displayed in both frame agreements and their related call-off orders within the sales order window. The status is represented using the following color codes:  Red – No quantity from the frame agreement has been shipped.  Yellow – A partial quantity from the frame agreement has been shipped.  Green – The full frame agreement quantity has been shipped.
+	 *
+	 * <br>Type: Color
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	int getFA_OpenQty_Exists_Color_ID();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_FA_OpenQty_Exists_Color_ID = new ModelColumn<>(I_C_OrderLine.class, "FA_OpenQty_Exists_Color_ID", null);
+	String COLUMNNAME_FA_OpenQty_Exists_Color_ID = "FA_OpenQty_Exists_Color_ID";
+
+	/**
 	 * Set Freight Amount.
 	 * Freight Amount
 	 *
@@ -1027,6 +1054,27 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, Object> COLUMN_FrequencyType = new ModelColumn<>(I_C_OrderLine.class, "FrequencyType", null);
 	String COLUMNNAME_FrequencyType = "FrequencyType";
+
+	/**
+	 * Set Gross Weight (Kg).
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setGrossWeightKg (BigDecimal GrossWeightKg);
+
+	/**
+	 * Get Gross Weight (Kg).
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getGrossWeightKg();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_GrossWeightKg = new ModelColumn<>(I_C_OrderLine.class, "GrossWeightKg", null);
+	String COLUMNNAME_GrossWeightKg = "GrossWeightKg";
 
 	/**
 	 * Set Compensation Amount Type.
@@ -1984,6 +2032,27 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, org.eevolution.model.I_PP_Cost_Collector> COLUMN_PP_Cost_Collector_ID = new ModelColumn<>(I_C_OrderLine.class, "PP_Cost_Collector_ID", org.eevolution.model.I_PP_Cost_Collector.class);
 	String COLUMNNAME_PP_Cost_Collector_ID = "PP_Cost_Collector_ID";
+
+	/**
+	 * Set Date ready.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPreparationDate (@Nullable java.sql.Timestamp PreparationDate);
+
+	/**
+	 * Get Date ready.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getPreparationDate();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_PreparationDate = new ModelColumn<>(I_C_OrderLine.class, "PreparationDate", null);
+	String COLUMNNAME_PreparationDate = "PreparationDate";
 
 	/**
 	 * Set Preset Date Invoiced.

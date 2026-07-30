@@ -78,7 +78,7 @@ public class PrintJobLinesAggregatorLegacyTests extends AbstractPrintingTest
 	@BeforeEach
 	public void setUp() throws Exception
 	{
-		printingDataFactory = new PrintingDataFactory(new HardwarePrinterRepository(), new ArchiveFileNameService());
+		printingDataFactory = new PrintingDataFactory(new HardwarePrinterRepository(), ArchiveFileNameService.newInstanceForUnitTesting());
 	}
 
 	@Test

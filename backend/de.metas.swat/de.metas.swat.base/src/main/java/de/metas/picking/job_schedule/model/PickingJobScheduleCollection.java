@@ -96,19 +96,23 @@ public class PickingJobScheduleCollection implements Iterable<PickingJobSchedule
 				.collect(ShipmentScheduleAndJobScheduleIdSet.collect());
 	}
 
-	public boolean isAllProcessed()
-	{
-		return list.stream().allMatch(PickingJobSchedule::isProcessed);
-	}
-
 	public Optional<Quantity> getQtyToPick()
 	{
 		return list.stream()
+				.filter(sched -> !sched.isProcessed())
 				.map(PickingJobSchedule::getQtyToPick)
 				.reduce(Quantity::add);
 	}
 
-	public Optional<PickingJobSchedule> getSingleScheduleByShipmentScheduleId(@NonNull ShipmentScheduleId shipmentScheduleId)
+	public Optional<Quantity> getQtyToPickOfProcessed()
+	{
+		return list.stream()
+				.filter(PickingJobSchedule::isProcessed)
+				.map(PickingJobSchedule::getQtyToPick)
+				.reduce(Quantity::add);
+	}
+
+	public Optional<PickingJobSchedule> getSingleScheduleByShipmentScheduleId(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
 		final ImmutableList<PickingJobSchedule> schedules = byShipmentScheduleId.get(shipmentScheduleId);
 		if (schedules.isEmpty())

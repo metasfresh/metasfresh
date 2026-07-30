@@ -28,6 +28,7 @@ import de.metas.process.PInstanceId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.ASIQueryFilterModifier;
@@ -49,6 +50,12 @@ import java.util.Objects;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+/**
+ * Repository Tables: PP_Order_Candidate, PP_OrderLine_Candidate, PP_OrderCandidate_PP_Order
+ * Repository Cluster: PPOrderCandidateDAO (main reader/writer); also PPMaturingCandidatesViewRepo (read),
+ * CreateUpdateOrderCandidateCommand and PPOrderCandidatePojoConverter (write), PPOrderCandidateAdvisedEventCreator
+ * (read/write), PPOrderCandidateRepository (read; material-planning, dispo-reachable).
+ */
 @Repository
 public class PPOrderCandidateDAO
 {

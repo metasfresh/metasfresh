@@ -1,4 +1,5 @@
 import { test } from "../../../playwright.config";
+import { allure } from 'allure-playwright';
 import { Backend } from '../../utils/screens/Backend';
 import { LoginScreen } from '../../utils/screens/LoginScreen';
 import { ApplicationsListScreen } from '../../utils/screens/ApplicationsListScreen';
@@ -79,6 +80,13 @@ const createMasterdata = async () => {
 
 // noinspection JSUnusedLocalSymbols
 test('Pick one sales order to different workplaces', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');  // Standalone tag for Tags section;
+    allure.story('Pick scheduled to workplace');
+    allure.severity('normal');
+
     const masterdata = await createMasterdata();
 
     await test.step("Picking from workplace1", async () => {
@@ -119,21 +127,24 @@ test('Pick one sales order to different workplaces', async ({ page }) => {
                     shipmentSchedules: {
                         P1: {
                             isScheduledForPicking: true,
-                            qtyScheduledForPicking: 10,
+                            qtyScheduledForPicking: 3,
+                            qtyScheduledForPickingOfProcessed: 7,
                             qtyPicked: [
                                 { qtyPicked: "7 PCE", qtyTUs: 1, qtyLUs: 1, vhu: 'tu11', tu: 'tu11', lu: 'lu1', processed: true, shipmentLineId: 'shipment1_line1' }
                             ]
                         },
                         P2: {
                             isScheduledForPicking: true,
-                            qtyScheduledForPicking: 20,
+                            qtyScheduledForPicking: 9,
+                            qtyScheduledForPickingOfProcessed: 11,
                             qtyPicked: [
                                 { qtyPicked: "11 PCE", qtyTUs: 1, qtyLUs: 1, vhu: 'tu12', tu: 'tu12', lu: 'lu1', processed: true, shipmentLineId: 'shipment1_line2' }
                             ]
                         },
                         P3: {
                             isScheduledForPicking: true,
-                            qtyScheduledForPicking: 30,
+                            qtyScheduledForPicking: 13,
+                            qtyScheduledForPickingOfProcessed: 17,
                             qtyPicked: [
                                 { qtyPicked: "17 PCE", qtyTUs: 1, qtyLUs: 1, vhu: 'tu13', tu: 'tu13', lu: 'lu1', processed: true, shipmentLineId: 'shipment1_line3' }
                             ]
@@ -146,7 +157,7 @@ test('Pick one sales order to different workplaces', async ({ page }) => {
                 [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '993 PCE' } },
                 [masterdata.handlingUnits.HU2.qrCode]: { huStatus: 'A', storages: { P2: '989 PCE' } },
                 [masterdata.handlingUnits.HU3.qrCode]: { huStatus: 'A', storages: { P3: '983 PCE' } },
-                lu1: { huStatus: 'E', storages: { P1: '7 PCE', P2: '11 PCE', P3: '17 PCE' } },
+                lu1: { huStatus: 'E', storages: { P1: '7 PCE', P2: '11 PCE', P3: '17 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
             }
         });
 
@@ -159,6 +170,10 @@ test('Pick one sales order to different workplaces', async ({ page }) => {
 
         await ApplicationsListScreen.startPickingApplication();
         await PickingJobsListScreen.waitForScreen();
+        // Filter to SO1.documentNo before startJob — symmetric with workplace1 branch above (line 98).
+        // Without this, the workplace2 launcher list shows every accumulated job from earlier tests
+        // in the suite and the .tap() on the SO1 button races visibility under the 120s test budget.
+        await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
         const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
 
         await PickingJobScreen.waitForScreen();
@@ -189,24 +204,27 @@ test('Pick one sales order to different workplaces', async ({ page }) => {
                 [pickingJobId]: {
                     shipmentSchedules: {
                         P1: {
-                            isScheduledForPicking: true,
-                            qtyScheduledForPicking: 10,
+                            isScheduledForPicking: false,
+                            qtyScheduledForPicking: 0,
+                            qtyScheduledForPickingOfProcessed: 10,
                             qtyPicked: [
                                 { qtyPicked: "7 PCE", qtyTUs: 1, qtyLUs: 1, vhu: 'tu11', tu: 'tu11', lu: 'lu1', processed: true, shipmentLineId: 'shipment1_line1' },
                                 { qtyPicked: "3 PCE", qtyTUs: 1, qtyLUs: 1, vhu: 'tu21', tu: 'tu21', lu: 'lu2', processed: true, shipmentLineId: 'shipment2_line1' },
                             ]
                         },
                         P2: {
-                            isScheduledForPicking: true,
-                            qtyScheduledForPicking: 20,
+                            isScheduledForPicking: false,
+                            qtyScheduledForPicking: 0,
+                            qtyScheduledForPickingOfProcessed: 20,
                             qtyPicked: [
                                 { qtyPicked: "11 PCE", qtyTUs: 1, qtyLUs: 1, vhu: 'tu12', tu: 'tu12', lu: 'lu1', processed: true, shipmentLineId: 'shipment1_line2' },
                                 { qtyPicked: "9 PCE", qtyTUs: 1, qtyLUs: 1, vhu: 'tu22', tu: 'tu22', lu: 'lu2', processed: true, shipmentLineId: 'shipment2_line2' },
                             ]
                         },
                         P3: {
-                            isScheduledForPicking: true,
-                            qtyScheduledForPicking: 30,
+                            isScheduledForPicking: false,
+                            qtyScheduledForPicking: 0,
+                            qtyScheduledForPickingOfProcessed: 30,
                             qtyPicked: [
                                 { qtyPicked: "17 PCE", qtyTUs: 1, qtyLUs: 1, vhu: 'tu13', tu: 'tu13', lu: 'lu1', processed: true, shipmentLineId: 'shipment1_line3' },
                                 { qtyPicked: "13 PCE", qtyTUs: 1, qtyLUs: 1, vhu: 'tu23', tu: 'tu23', lu: 'lu2', processed: true, shipmentLineId: 'shipment2_line3' },
@@ -220,8 +238,8 @@ test('Pick one sales order to different workplaces', async ({ page }) => {
                 [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '990 PCE' } },
                 [masterdata.handlingUnits.HU2.qrCode]: { huStatus: 'A', storages: { P2: '980 PCE' } },
                 [masterdata.handlingUnits.HU3.qrCode]: { huStatus: 'A', storages: { P3: '970 PCE' } },
-                lu1: { huStatus: 'E', storages: { P1: '7 PCE', P2: '11 PCE', P3: '17 PCE' } },
-                lu2: { huStatus: 'E', storages: { P1: '3 PCE', P2: '9 PCE', P3: '13 PCE' } },
+                lu1: { huStatus: 'E', storages: { P1: '7 PCE', P2: '11 PCE', P3: '17 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+                lu2: { huStatus: 'E', storages: { P1: '3 PCE', P2: '9 PCE', P3: '13 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
             }
         });
 

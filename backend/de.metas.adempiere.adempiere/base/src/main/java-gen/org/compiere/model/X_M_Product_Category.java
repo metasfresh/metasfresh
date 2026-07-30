@@ -576,8 +576,20 @@ public class X_M_Product_Category extends org.compiere.model.PO implements I_M_P
 		@return Search key for the record in the format required - must be unique
 	  */
 	@Override
-	public java.lang.String getValue () 
+	public java.lang.String getValue ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Value);
+	}
+
+	@Override
+	public void setIsExcludeFromForecast (final boolean IsExcludeFromForecast)
+	{
+		set_Value (COLUMNNAME_IsExcludeFromForecast, IsExcludeFromForecast);
+	}
+
+	@Override
+	public boolean isExcludeFromForecast()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsExcludeFromForecast);
 	}
 }

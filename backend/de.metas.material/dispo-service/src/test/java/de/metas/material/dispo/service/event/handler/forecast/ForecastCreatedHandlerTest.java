@@ -47,15 +47,22 @@ import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.material.event.forecast.ForecastLine;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.impl.WarehouseBL;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_ForecastLine;
+import org.compiere.model.I_M_Warehouse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
@@ -63,11 +70,16 @@ import java.util.stream.Collectors;
 
 import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
 import static de.metas.material.event.EventTestHelper.NOW;
+import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
+import static de.metas.material.event.EventTestHelper.createProductDescriptorWithProductId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -78,12 +90,15 @@ public class ForecastCreatedHandlerTest
 	private AvailableToPromiseRepository stockRepository;
 	private PostMaterialEventService postMaterialEventService;
 
-	int forecastLineId;
+	private int forecastLineId;
+	private int forecastLineId2;
 
 	@BeforeEach
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		SpringContextHolder.registerJUnitBean(IWarehouseBL.class, new WarehouseBL());
+		ensureWarehouseExists(WAREHOUSE_ID);
 
 		final DimensionService dimensionService = new DimensionService(ImmutableList.of(
 				new MDCandidateDimensionFactory(),
@@ -95,6 +110,7 @@ public class ForecastCreatedHandlerTest
 		postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 
 		forecastLineId = createForecastLine().getM_ForecastLine_ID();
+		forecastLineId2 = createForecastLine().getM_ForecastLine_ID();
 
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 
@@ -196,6 +212,225 @@ public class ForecastCreatedHandlerTest
 
 		final Forecast forecast = Forecast.builder().forecastId(200)
 				.docStatus("docStatus")
+				.forecastLine(forecastLine)
+				.build();
+
+		return ForecastCreatedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(1, 2))
+				.forecast(forecast)
+				.build();
+	}
+
+	/**
+	 * Forecast with two lines (different products). Each line should create its own STOCK_UP candidate.
+	 * Both fire SupplyRequiredEvents.
+	 */
+	@Test
+	public void testWithMultipleForecastLines()
+	{
+		final ForecastLine line1 = ForecastLine.builder()
+				.forecastLineId(forecastLineId)
+				.materialDescriptor(MaterialDescriptor.builder()
+						.productDescriptor(createProductDescriptorWithProductId(PRODUCT_ID))
+						.warehouseId(WAREHOUSE_ID)
+						.customerId(BPARTNER_ID)
+						.quantity(new BigDecimal("5"))
+						.date(NOW)
+						.build())
+				.build();
+
+		final ForecastLine line2 = ForecastLine.builder()
+				.forecastLineId(forecastLineId2)
+				.materialDescriptor(MaterialDescriptor.builder()
+						.productDescriptor(createProductDescriptorWithProductId(PRODUCT_ID + 10))
+						.warehouseId(WAREHOUSE_ID)
+						.customerId(BPARTNER_ID)
+						.quantity(new BigDecimal("12"))
+						.date(NOW)
+						.build())
+				.build();
+
+		final ForecastCreatedEvent event = ForecastCreatedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(1, 2))
+				.forecast(Forecast.builder()
+						.forecastId(200)
+						.docStatus("CO")
+						.forecastLine(line1)
+						.forecastLine(line2)
+						.build())
+				.build();
+
+		// Mock zero stock for both products
+		final AvailableToPromiseMultiQuery query1 = AvailableToPromiseMultiQuery
+				.forDescriptorAndAllPossibleBPartnerIds(line1.getMaterialDescriptor());
+		when(stockRepository.retrieveAvailableStockQtySum(query1)).thenReturn(BigDecimal.ZERO);
+
+		final AvailableToPromiseMultiQuery query2 = AvailableToPromiseMultiQuery
+				.forDescriptorAndAllPossibleBPartnerIds(line2.getMaterialDescriptor());
+		when(stockRepository.retrieveAvailableStockQtySum(query2)).thenReturn(BigDecimal.ZERO);
+
+		forecastCreatedHandler.handleEvent(event);
+
+		final List<I_MD_Candidate> result = DispoTestUtils.retrieveAllRecords().stream()
+				.sorted(Comparator.comparing(I_MD_Candidate::getSeqNo))
+				.collect(Collectors.toList());
+
+		assertThat(result).hasSize(2);
+		assertThat(result).allSatisfy(r -> assertThat(r.getMD_Candidate_Type()).isEqualTo(CandidateType.STOCK_UP.toString()));
+
+		// Verify two SupplyRequiredEvents were posted
+		final ArgumentCaptor<MaterialEvent> eventCaptor = ArgumentCaptor.forClass(MaterialEvent.class);
+		verify(postMaterialEventService, times(2)).enqueueEventAfterNextCommit(eventCaptor.capture());
+
+		final List<MaterialEvent> postedEvents = eventCaptor.getAllValues();
+		assertThat(postedEvents).hasSize(2);
+		assertThat(postedEvents).allSatisfy(e -> assertThat(e).isInstanceOf(SupplyRequiredEvent.class));
+	}
+
+	/**
+	 * Forecast with qty = 5 and existing stock of 10.
+	 * Since stock > forecast qty, no SupplyRequiredEvent should be fired.
+	 */
+	@Test
+	public void testWithSufficientProjectedQty()
+	{
+		final ForecastCreatedEvent forecastCreatedEvent = createForecastWithQty("5");
+		final MaterialDescriptor descriptor = forecastCreatedEvent
+				.getForecast()
+				.getForecastLines()
+				.get(0)
+				.getMaterialDescriptor();
+
+		final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery
+				.forDescriptorAndAllPossibleBPartnerIds(descriptor);
+
+		when(stockRepository.retrieveAvailableStockQtySum(query))
+				.thenReturn(new BigDecimal("10"));
+
+		forecastCreatedHandler.handleEvent(forecastCreatedEvent);
+
+		final List<I_MD_Candidate> result = DispoTestUtils.retrieveAllRecords();
+		assertThat(result).hasSize(1);
+		assertThat(result.get(0).getMD_Candidate_Type()).isEqualTo(CandidateType.STOCK_UP.toString());
+		assertThat(result.get(0).getQty()).isEqualByComparingTo("5");
+
+		// No event should be fired since stock is sufficient
+		verify(postMaterialEventService, never()).enqueueEventAfterNextCommit(any());
+	}
+
+	/**
+	 * Handle the same forecast event twice (idempotency).
+	 * Should update the existing STOCK_UP candidate, not create a duplicate.
+	 */
+	@Test
+	public void testWithExistingStockUpCandidate()
+	{
+		final ForecastCreatedEvent forecastCreatedEvent = createForecastWithQtyOfEight();
+		final MaterialDescriptor descriptor = forecastCreatedEvent
+				.getForecast()
+				.getForecastLines()
+				.get(0)
+				.getMaterialDescriptor();
+
+		final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery
+				.forDescriptorAndAllPossibleBPartnerIds(descriptor);
+		when(stockRepository.retrieveAvailableStockQtySum(query)).thenReturn(BigDecimal.ZERO);
+
+		// Handle the same event twice
+		forecastCreatedHandler.handleEvent(forecastCreatedEvent);
+		forecastCreatedHandler.handleEvent(forecastCreatedEvent);
+
+		// Should still have only 1 candidate (updated, not duplicated)
+		final List<I_MD_Candidate> result = DispoTestUtils.retrieveAllRecords();
+		assertThat(result).hasSize(1);
+		assertThat(result.get(0).getMD_Candidate_Type()).isEqualTo(CandidateType.STOCK_UP.toString());
+		assertThat(result.get(0).getQty()).isEqualByComparingTo("8");
+	}
+
+	/**
+	 * Two forecast lines on different warehouses: one OK, one excluded via MRP_Exclude=Y.
+	 * Only the OK line should result in a STOCK_UP candidate.
+	 */
+	@Test
+	public void handleEvent_perLineExclusion_onlyExcludedLineIsDropped()
+	{
+		final WarehouseId whOk = createWarehouse(null);      // not excluded
+		final WarehouseId whExcl = createWarehouse("Y");     // MRP_Exclude=Y
+
+		final ForecastLine lineOk = ForecastLine.builder()
+				.forecastLineId(forecastLineId)
+				.materialDescriptor(MaterialDescriptor.builder()
+						.productDescriptor(createProductDescriptor())
+						.warehouseId(whOk)
+						.customerId(BPARTNER_ID)
+						.quantity(new BigDecimal("5"))
+						.date(NOW)
+						.build())
+				.build();
+		final ForecastLine lineExcl = ForecastLine.builder()
+				.forecastLineId(forecastLineId2)
+				.materialDescriptor(MaterialDescriptor.builder()
+						.productDescriptor(createProductDescriptorWithProductId(PRODUCT_ID + 10))
+						.warehouseId(whExcl)
+						.customerId(BPARTNER_ID)
+						.quantity(new BigDecimal("7"))
+						.date(NOW)
+						.build())
+				.build();
+
+		final ForecastCreatedEvent event = ForecastCreatedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(1, 2))
+				.forecast(Forecast.builder()
+						.forecastId(200)
+						.docStatus("CO")
+						.forecastLine(lineOk)
+						.forecastLine(lineExcl)
+						.build())
+				.build();
+
+		// Mock zero stock for the OK line; the excluded line never reaches stockRepository.
+		final AvailableToPromiseMultiQuery queryOk = AvailableToPromiseMultiQuery
+				.forDescriptorAndAllPossibleBPartnerIds(lineOk.getMaterialDescriptor());
+		when(stockRepository.retrieveAvailableStockQtySum(queryOk)).thenReturn(BigDecimal.ZERO);
+
+		forecastCreatedHandler.handleEvent(event);
+
+		final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
+		assertThat(records).hasSize(1);
+		assertThat(records.get(0).getMD_Candidate_Type()).isEqualTo(CandidateType.STOCK_UP.toString());
+		assertThat(records.get(0).getM_Warehouse_ID()).isEqualTo(whOk.getRepoId());
+	}
+
+	private static WarehouseId createWarehouse(@Nullable final String mrpExclude)
+	{
+		final I_M_Warehouse warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
+		warehouse.setMRP_Exclude(mrpExclude);
+		InterfaceWrapperHelper.saveRecord(warehouse);
+		return WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
+	}
+
+	static void ensureWarehouseExists(final WarehouseId warehouseId)
+	{
+		final I_M_Warehouse warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
+		InterfaceWrapperHelper.setValue(warehouse, I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, warehouseId.getRepoId());
+		InterfaceWrapperHelper.saveRecord(warehouse);
+	}
+
+	private ForecastCreatedEvent createForecastWithQty(@NonNull final String qty)
+	{
+		final ForecastLine forecastLine = ForecastLine.builder()
+				.forecastLineId(forecastLineId)
+				.materialDescriptor(MaterialDescriptor.builder()
+						.productDescriptor(createProductDescriptor())
+						.warehouseId(WAREHOUSE_ID)
+						.customerId(BPARTNER_ID)
+						.quantity(new BigDecimal(qty))
+						.date(NOW)
+						.build())
+				.build();
+
+		final Forecast forecast = Forecast.builder().forecastId(200)
+				.docStatus("CO")
 				.forecastLine(forecastLine)
 				.build();
 

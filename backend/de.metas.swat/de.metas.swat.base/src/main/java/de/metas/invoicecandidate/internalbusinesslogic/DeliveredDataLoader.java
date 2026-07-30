@@ -123,7 +123,8 @@ public class DeliveredDataLoader
 		this.defaultQtyDelivered = coalesceNotNull(defaultQtyDelivered, StockQtyAndUOMQtys.createZero(productId, icUomId));
 	}
 
-	DeliveredData loadDeliveredQtys()
+	@NonNull
+	public DeliveredData loadDeliveredQtys()
 	{
 		final DeliveredDataBuilder result = DeliveredData.builder();
 

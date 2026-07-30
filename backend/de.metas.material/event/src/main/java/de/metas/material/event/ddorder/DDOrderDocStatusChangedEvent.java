@@ -10,6 +10,8 @@ import lombok.extern.jackson.Jacksonized;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.eevolution.model.I_DD_Order;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * metasfresh-material-event
@@ -42,6 +44,7 @@ public class DDOrderDocStatusChangedEvent implements MaterialEvent
 	@NonNull EventDescriptor eventDescriptor;
 	int ddOrderId;
 	@NonNull DocStatus newDocStatus;
+	@Nullable DDOrder ddOrder;
 
 	@Override
 	public TableRecordReference getSourceTableReference()

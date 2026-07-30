@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00105_Sales_Order_Document
+@F00105
 @topic:shipmentScheduleExport
 Feature: Shipment schedule updating
+## F00105: Shipment Schedule
   Verifies that M_ShipmentSchedule is properly updated on various cases
 
   Background:
@@ -103,3 +107,40 @@ Feature: Shipment schedule updating
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOnHand | OPT.Processed |
       | schedule_1_S0271                 | 10               | 0                | 10             | 11            | false         |
       | schedule_2_S0271                 | 1                | 0                | 10             | 1             | false         |
+
+
+  @ghActions:run_on_executor7
+  @allure.label.epic:E0100_Sales
+  @allure.label.feature:F00130_Shipment_Schedule
+  @Id:S0271_29118
+  Scenario: Sales order can be reactivated after a 0-qty line processed its shipment schedule
+    # Zeroing an order line (instead of deleting it) and re-completing auto-processes that line's
+    # shipment schedule (Processed=Y, IsClosed=N), which previously blocked any further reactivation
+    # with "ShipmentScheduleAlreadyProcessed".
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | o_29118    | true    | customer_so_S0271        | 2023-05-31  |
+    And metasfresh contains C_OrderLines:
+      | Identifier    | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_zero_29118 | o_29118               | product_S0271           | 10         |
+      | ol_keep_29118 | o_29118               | product_S0271           | 10         |
+    And the order identified by o_29118 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier       | C_OrderLine_ID.Identifier | IsToRecompute |
+      | sched_zero_29118 | ol_zero_29118             | N             |
+
+    # reactivate, zero one line's qty, re-complete -> that line's schedule auto-processes
+    When the order identified by o_29118 is reactivated
+    And update C_OrderLine:
+      | C_OrderLine_ID.Identifier | OPT.QtyEntered | OPT.QtyOrdered |
+      | ol_zero_29118             | 0              | 0              |
+    And the order identified by o_29118 is completed
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyOrdered | OPT.Processed |
+      | sched_zero_29118                 | 0              | true          |
+
+    # the bug: this reactivation was blocked by the processed-but-not-closed schedule
+    Then the order identified by o_29118 is reactivated
+    # full customer recovery: drop the offending line and re-complete cleanly
+    And delete C_OrderLine identified by ol_zero_29118, but keep its id into identifierIds table
+    And the order identified by o_29118 is completed

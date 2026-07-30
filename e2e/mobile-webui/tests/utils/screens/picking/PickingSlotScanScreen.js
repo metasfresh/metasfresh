@@ -1,5 +1,5 @@
 import { test } from "../../../../playwright.config";
-import { page } from "../../common";
+import { page, SLOW_ACTION_TIMEOUT } from "../../common";
 import { expect } from '@playwright/test';
 import { cssEscape } from '../../css';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
@@ -10,7 +10,7 @@ const containerElement = () => page.locator('#ScanScreen');
 
 export const PickingSlotScanScreen = {
     waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
-        await containerElement().waitFor();
+        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     waitForInputFieldToGetEmpty: async () => await test.step(`${NAME} - Wait for input field to get empty`, async () => {
@@ -25,13 +25,13 @@ export const PickingSlotScanScreen = {
         //
         // First, wait until all expected buttons are attached 
         for (const expectation of expectationsArray) {
-            await locatePickingSlotButtons(expectation).waitFor({ state: 'attached' });
+            await locatePickingSlotButtons(expectation).waitFor({ state: 'attached', timeout: SLOW_ACTION_TIMEOUT });
         }
 
         //
         // Check it again to make sure all expected buttons are still there and there is one of each 
         for (const expectation of expectationsArray) {
-            await locatePickingSlotButtons(expectation).waitFor({ state: 'attached' });
+            await locatePickingSlotButtons(expectation).waitFor({ state: 'attached', timeout: SLOW_ACTION_TIMEOUT });
             await expect(locatePickingSlotButtons(expectation)).toHaveCount(1);
         }
 

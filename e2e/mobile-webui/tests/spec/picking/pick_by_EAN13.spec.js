@@ -1,4 +1,5 @@
 import { test } from "../../../playwright.config";
+import { allure } from 'allure-playwright';
 import { Backend } from '../../utils/screens/Backend';
 import { LoginScreen } from '../../utils/screens/LoginScreen';
 import { ApplicationsListScreen } from '../../utils/screens/ApplicationsListScreen';
@@ -61,6 +62,13 @@ const createMasterdata = async () => {
 
 // noinspection JSUnusedLocalSymbols
 test('LU/CU -> top level TU', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');  // Standalone tag for Tags section;
+    allure.story('Pick by EAN13 - LU/CU to top level TU');
+    allure.severity('normal');
+
     const masterdata = await createMasterdata();
 
     await LoginScreen.login(masterdata.login.user);
@@ -122,7 +130,7 @@ test('LU/CU -> top level TU', async ({ page }) => {
             [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '989 PCE' } },
             [masterdata.handlingUnits.HU2.qrCode]: { huStatus: 'A', storages: { P2: '988 PCE' } },
             [masterdata.handlingUnits.HU3.qrCode]: { huStatus: 'A', storages: { P3: '987 PCE' } },
-            tu1: { huStatus: 'S', storages: { P1: '11 PCE', P2: '12 PCE', P3: '13 PCE' } },
+            tu1: { huStatus: 'S', storages: { P1: '11 PCE', P2: '12 PCE', P3: '13 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 
@@ -148,14 +156,21 @@ test('LU/CU -> top level TU', async ({ page }) => {
             [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '989 PCE' } },
             [masterdata.handlingUnits.HU2.qrCode]: { huStatus: 'A', storages: { P2: '988 PCE' } },
             [masterdata.handlingUnits.HU3.qrCode]: { huStatus: 'A', storages: { P3: '987 PCE' } },
-            lu1: { huStatus: 'E', storages: { P1: '11 PCE', P2: '12 PCE', P3: '13 PCE' } },
-            tu1: { huStatus: 'E', storages: { P1: '11 PCE', P2: '12 PCE', P3: '13 PCE' } },
+            lu1: { huStatus: 'E', storages: { P1: '11 PCE', P2: '12 PCE', P3: '13 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+            tu1: { huStatus: 'E', storages: { P1: '11 PCE', P2: '12 PCE', P3: '13 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 });
 
 // noinspection JSUnusedLocalSymbols
 test('LU/CU -> LU/TU1, LU/TU2', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');  // Standalone tag for Tags section;
+    allure.story('Pick by EAN13 - LU/CU to LU/TUs');
+    allure.severity('normal');
+
     const masterdata = await createMasterdata();
 
     await LoginScreen.login(masterdata.login.user);
@@ -219,9 +234,9 @@ test('LU/CU -> LU/TU1, LU/TU2', async ({ page }) => {
             [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '989 PCE' } },
             [masterdata.handlingUnits.HU2.qrCode]: { huStatus: 'A', storages: { P2: '988 PCE' } },
             [masterdata.handlingUnits.HU3.qrCode]: { huStatus: 'A', storages: { P3: '987 PCE' } },
-            lu1: { huStatus: 'S', storages: { P1: '11 PCE', P2: '12 PCE', P3: '13 PCE' } },
-            tu1: { huStatus: 'S', storages: { P1: '11 PCE', P2: '12 PCE' } },
-            tu2: { huStatus: 'S', storages: { P3: '13 PCE' } },
+            lu1: { huStatus: 'S', storages: { P1: '11 PCE', P2: '12 PCE', P3: '13 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+            tu1: { huStatus: 'S', storages: { P1: '11 PCE', P2: '12 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+            tu2: { huStatus: 'S', storages: { P3: '13 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 
@@ -246,15 +261,22 @@ test('LU/CU -> LU/TU1, LU/TU2', async ({ page }) => {
             [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '989 PCE' } },
             [masterdata.handlingUnits.HU2.qrCode]: { huStatus: 'A', storages: { P2: '988 PCE' } },
             [masterdata.handlingUnits.HU3.qrCode]: { huStatus: 'A', storages: { P3: '987 PCE' } },
-            lu1: { huStatus: 'E', storages: { P1: '11 PCE', P2: '12 PCE', P3: '13 PCE' } },
-            tu1: { huStatus: 'E', storages: { P1: '11 PCE', P2: '12 PCE' } },
-            tu2: { huStatus: 'E', storages: { P3: '13 PCE' } },
+            lu1: { huStatus: 'E', storages: { P1: '11 PCE', P2: '12 PCE', P3: '13 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+            tu1: { huStatus: 'E', storages: { P1: '11 PCE', P2: '12 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+            tu2: { huStatus: 'E', storages: { P3: '13 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 });
 
 // noinspection JSUnusedLocalSymbols
 test('LU/CU -> LU/CU', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');  // Standalone tag for Tags section;
+    allure.story('Pick by EAN13 - LU/CU to LU/CU');
+    allure.severity('normal');
+
     const masterdata = await createMasterdata();
 
     await LoginScreen.login(masterdata.login.user);
@@ -309,10 +331,10 @@ test('LU/CU -> LU/CU', async ({ page }) => {
                 [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '989 PCE' } },
                 [masterdata.handlingUnits.HU2.qrCode]: { huStatus: 'A', storages: { P2: '988 PCE' } },
                 [masterdata.handlingUnits.HU3.qrCode]: { huStatus: 'A', storages: { P3: '987 PCE' } },
-                lu1: { huStatus: 'S', storages: { P1: '11 PCE', P2: '12 PCE', P3: '13 PCE', } },
-                vhu1: { huStatus: 'S', storages: { P1: '11 PCE' } },
-                vhu2: { huStatus: 'S', storages: { P2: '12 PCE' } },
-                vhu3: { huStatus: 'S', storages: { P3: '13 PCE' } },
+                lu1: { huStatus: 'S', storages: { P1: '11 PCE', P2: '12 PCE', P3: '13 PCE', }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+                vhu1: { huStatus: 'S', storages: { P1: '11 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+                vhu2: { huStatus: 'S', storages: { P2: '12 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+                vhu3: { huStatus: 'S', storages: { P3: '13 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
             }
         });
     });
@@ -338,16 +360,23 @@ test('LU/CU -> LU/CU', async ({ page }) => {
             [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '989 PCE' } },
             [masterdata.handlingUnits.HU2.qrCode]: { huStatus: 'A', storages: { P2: '988 PCE' } },
             [masterdata.handlingUnits.HU3.qrCode]: { huStatus: 'A', storages: { P3: '987 PCE' } },
-            lu1: { huStatus: 'E', storages: { P1: '11 PCE', P2: '12 PCE', P3: '13 PCE', } },
-            vhu1: { huStatus: 'E', storages: { P1: '11 PCE' } },
-            vhu2: { huStatus: 'E', storages: { P2: '12 PCE' } },
-            vhu3: { huStatus: 'E', storages: { P3: '13 PCE' } },
+            lu1: { huStatus: 'E', storages: { P1: '11 PCE', P2: '12 PCE', P3: '13 PCE', }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+            vhu1: { huStatus: 'E', storages: { P1: '11 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+            vhu2: { huStatus: 'E', storages: { P2: '12 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+            vhu3: { huStatus: 'E', storages: { P3: '13 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 });
 
 // noinspection JSUnusedLocalSymbols
 test('LU/CU -> top level CUs', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');  // Standalone tag for Tags section;
+    allure.story('Pick by EAN13 - LU/CU to top level CUs');
+    allure.severity('normal');
+
     const masterdata = await createMasterdata();
 
     await LoginScreen.login(masterdata.login.user);
@@ -404,9 +433,9 @@ test('LU/CU -> top level CUs', async ({ page }) => {
             [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '989 PCE' } },
             [masterdata.handlingUnits.HU2.qrCode]: { huStatus: 'A', storages: { P2: '988 PCE' } },
             [masterdata.handlingUnits.HU3.qrCode]: { huStatus: 'A', storages: { P3: '987 PCE' } },
-            vhu1: { huStatus: 'S', storages: { P1: '11 PCE' } },
-            vhu2: { huStatus: 'S', storages: { P2: '12 PCE' } },
-            vhu3: { huStatus: 'S', storages: { P3: '13 PCE' } },
+            vhu1: { huStatus: 'S', storages: { P1: '11 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+            vhu2: { huStatus: 'S', storages: { P2: '12 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+            vhu3: { huStatus: 'S', storages: { P3: '13 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 
@@ -432,9 +461,9 @@ test('LU/CU -> top level CUs', async ({ page }) => {
             [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '989 PCE' } },
             [masterdata.handlingUnits.HU2.qrCode]: { huStatus: 'A', storages: { P2: '988 PCE' } },
             [masterdata.handlingUnits.HU3.qrCode]: { huStatus: 'A', storages: { P3: '987 PCE' } },
-            vhu1: { huStatus: 'E', storages: { P1: '11 PCE' } },
-            vhu2: { huStatus: 'E', storages: { P2: '12 PCE' } },
-            vhu3: { huStatus: 'E', storages: { P3: '13 PCE' } },
+            vhu1: { huStatus: 'E', storages: { P1: '11 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+            vhu2: { huStatus: 'E', storages: { P2: '12 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+            vhu3: { huStatus: 'E', storages: { P3: '13 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 });

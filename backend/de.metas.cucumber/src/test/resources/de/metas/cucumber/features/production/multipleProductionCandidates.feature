@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8033_Manufacturing_Workflow_Activity_Raw_Materials_Issue_per_single_product
+@F8033
 @ghActions:run_on_executor6
 Feature: create multiple production candidates
+## F8033: Production
   As a user
   I want to create multiple production candidates for the same Sales Order
 
@@ -61,26 +65,12 @@ Feature: create multiple production candidates
       | Identifier | M_Product_ID | S_Resource_ID | PP_Product_BOMVersions_ID | IsCreatePlan |
       | ppln_1     | p_1          | testResource  | bomVersions_1             | false        |
 
-
-
-
-
-
-
-
-
-
-
-
-
-# ########################################################################################################################################################################
-# ########################################################################################################################################################################
-# ########################################################################################################################################################################
-# ########################################################################################################################################################################
   @Id:S0129.1_140
   @Id:S0212.100
   @from:cucumber
-  @flaky
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8033_Manufacturing_Workflow_Activity_Raw_Materials_Issue_per_single_product
+@F8033
   Scenario:  The manufacturing candidate is created for a sales order line,
   then the sales order is re-opened and the ordered quantity is increased,
   resulting in a second manufacturing candidate to supply the additional demand.
@@ -102,6 +92,7 @@ Feature: create multiple production candidates
     #
     # Complete the sales order and expected the PP_Order_Candidate to be generated.
     When the order identified by o_1 is completed
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed |
       | oc_1       | false     | p_1          | bom_1             | ppln_1                 | testResource  | 10 PCE     | 10 PCE       | 0 PCE        | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
@@ -119,11 +110,12 @@ Feature: create multiple production candidates
     # Expect a new PP_Order_Candidate to be generated for those 2 PCE.
     And the order identified by o_1 is reactivated
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     And update C_OrderLine:
       | C_OrderLine_ID.Identifier | OPT.QtyEntered |
       | ol_1                      | 12             |
     And the order identified by o_1 is completed
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed |
       | oc_1       | false     | p_1          | bom_1             | ppln_1                 | testResource  | 0 PCE      | 0 PCE        | 0 PCE        | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
@@ -147,6 +139,7 @@ Feature: create multiple production candidates
       | PP_Order_Candidate_ID |
       | oc_1                  |
       | oc_2                  |
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     Then after not more than 60s, PP_Orders are found
       | Identifier | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyOrdered | C_BPartner_ID | DatePromised         | DocStatus |
       | ppo_1      | p_1          | bom_1             | ppln_1                 | testResource  | 12 PCE     | 12         | endcustomer_2 | 2021-04-16T21:00:00Z | DR        |
@@ -170,24 +163,10 @@ Feature: create multiple production candidates
       | 6          | SUPPLY            | PRODUCTION                | p_1          | 2021-04-16T21:00:00Z | 12  | 0    | production_WH  |
       | 7          | DEMAND            | PRODUCTION                | p_2          | 2021-04-16T21:00:00Z | 120 | -120 | production_WH  |
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-# ########################################################################################################################################################################
-# ########################################################################################################################################################################
-# ########################################################################################################################################################################
-# ########################################################################################################################################################################
   @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8033_Manufacturing_Workflow_Activity_Raw_Materials_Issue_per_single_product
+@F8033
   @Id:S0212.200
   Scenario:  The manufacturing candidate is created for a sales order line and `Generate PP_Order` process is invoked resulting multiple manufacturing orders
   and the candidate remains open as it still has unprocessed quantity and `autoProcessCandidates` parameter is not set.
@@ -236,19 +215,10 @@ Feature: create multiple production candidates
       | ppOrderCandidate      | ppOrder_2   | 5 PCE      |
       | ppOrderCandidate      | ppOrder_3   | 1 PCE      |
 
-
-
-
-
-
-
-
-# ########################################################################################################################################################################
-# ########################################################################################################################################################################
-# ########################################################################################################################################################################
-# ########################################################################################################################################################################
-  @flaky
   @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8033_Manufacturing_Workflow_Activity_Raw_Materials_Issue_per_single_product
+@F8033
   @Id:S0212.300
   Scenario: The manufacturing candidate is created for a sales order line and then the sales order is re-opened and the ordered quantity is increased,
   resulting in a second manufacturing candidate to supply the additional demand
@@ -276,14 +246,15 @@ Feature: create multiple production candidates
       | Identifier           | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed | SeqNo |
       | ppOrderCandidate_3_1 | false     | p_1          | bom_1             | ppln_1                 | testResource  | 3 PCE      | 3 PCE        | 0 PCE        | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    | 10    |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     And the order identified by o_3 is reactivated
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And update C_OrderLine:
       | C_OrderLine_ID.Identifier | OPT.QtyEntered |
       | ol_3                      | 12             |
     And the order identified by o_3 is completed
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier           | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed | SeqNo |
       | ppOrderCandidate_3_1 | false     | p_1          | bom_1             | ppln_1                 | testResource  | 0 PCE      | 0 PCE        | 0 PCE        | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    | 10    |
@@ -294,7 +265,7 @@ Feature: create multiple production candidates
       | PP_Order_Candidate_ID | QtyToProcess |
       | ppOrderCandidate_3_2  | 4            |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     When generate PP_Order process is invoked for selection, with completeDocument=true and autoProcessCandidateAfterProduction=true
       | PP_Order_Candidate_ID |
@@ -331,18 +302,10 @@ Feature: create multiple production candidates
       | ppOrderCandidate_3_3  | ppOrder_3_1 | 1 PCE      |
       | ppOrderCandidate_3_3  | ppOrder_3_2 | 1 PCE      |
 
-
-
-
-
-
-
-
-# ########################################################################################################################################################################
-# ########################################################################################################################################################################
-# ########################################################################################################################################################################
-# ########################################################################################################################################################################
   @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8033_Manufacturing_Workflow_Activity_Raw_Materials_Issue_per_single_product
+@F8033
   @Id:S0212.400
   Scenario: Production candidates will be manufactured taking into account the SeqNo.
   _Given two PP_Product_Plannings for different products (P1&P2)
@@ -415,4 +378,161 @@ Feature: create multiple production candidates
       | PP_Order_Candidate_ID | PP_Order_ID |
       | ppOrderCandidate_4_2  | ppOrder_4_1 |
       | ppOrderCandidate_4_1  | ppOrder_4_2 |
+
+  @from:cucumber
+@allure.label.epic:E0159_Manufacturing_Planning
+@allure.label.feature:F8016_Manufacturing_Order_Candidate_Manufacture_selection
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8033_Manufacturing_Workflow_Activity_Raw_Materials_Issue_per_single_product
+@ghActions:run_on_executor6
+@Id:S30872_TC1
+  Scenario: Candidates carrying distinct-but-identical-content attributes merge into one PP_Order keeping the shared attribute
+
+    Given metasfresh contains M_Attributes:
+      | Identifier | Value      | AttributeValueType | IsStorageRelevant |
+      | testFlavor | TestFlavor | L                  | true              |
+    And metasfresh contains M_AttributeValues:
+      | Identifier | M_Attribute_ID | Value | IsNullFieldValue |
+      | bio        | testFlavor     | Bio   | false            |
+
+    And metasfresh contains M_AttributeSetInstance with identifier "asiBio1":
+    """
+    {
+      "attributeInstances":[
+        {
+          "attributeCode":"TestFlavor",
+          "valueStr":"Bio"
+        }
+      ]
+    }
+    """
+    And metasfresh contains M_AttributeSetInstance with identifier "asiBio2":
+    """
+    {
+      "attributeInstances":[
+        {
+          "attributeCode":"TestFlavor",
+          "valueStr":"Bio"
+        }
+      ]
+    }
+    """
+
+    And metasfresh contains C_Aggregations:
+      | Identifier | TableName          | EntityType | AggregationUsageLevel |
+      | bioAgg     | PP_Order_Candidate | EE01       | H                     |
+    And metasfresh contains C_AggregationItems:
+      | C_Aggregation_ID | EntityType | Type | ColumnName             |
+      | bioAgg           | EE01       | COL  | M_Warehouse_ID         |
+      | bioAgg           | EE01       | COL  | S_Resource_ID          |
+      | bioAgg           | EE01       | COL  | PP_Product_Planning_ID |
+      | bioAgg           | EE01       | COL  | PP_Product_BOM_ID      |
+      | bioAgg           | EE01       | COL  | M_Product_ID           |
+      | bioAgg           | EE01       | COL  | DatePromised           |
+      | bioAgg           | EE01       | COL  | DateStartSchedule      |
+      | bioAgg           | EE01       | COL  | C_UOM_ID               |
+
+    And update existing PP_Product_Plannings
+      | Identifier | C_Manufacturing_Aggregation_ID |
+      | ppln_1     | bioAgg                         |
+
+    And metasfresh contains PP_Order_Candidates
+      | Identifier | M_Product_ID.Identifier | M_Warehouse_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | OPT.M_AttributeSetInstance_ID.Identifier |
+      | ocBio1     | p_1                     | production_WH             | bom_1                        | ppln_1                            | testResource  | 10         | 10           | 0            | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | asiBio1                                  |
+      | ocBio2     | p_1                     | production_WH             | bom_1                        | ppln_1                            | testResource  | 10         | 10           | 0            | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | asiBio2                                  |
+
+    When generate PP_Order process is invoked for selection, with completeDocument=false and autoProcessCandidateAfterProduction=false
+      | PP_Order_Candidate_ID |
+      | ocBio1                |
+      | ocBio2                |
+
+    Then after not more than 60s, PP_Orders are found
+      | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | DatePromised         | QtyEntered | M_AttributeSetInstance_ID |
+      | p_1          | bom_1             | ppln_1                 | testResource  | 2021-04-16T21:00:00Z | 20 PCE     | asiBio1                   |
+
+  @from:cucumber
+@allure.label.epic:E0159_Manufacturing_Planning
+@allure.label.feature:F8016_Manufacturing_Order_Candidate_Manufacture_selection
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8033_Manufacturing_Workflow_Activity_Raw_Materials_Issue_per_single_product
+@ghActions:run_on_executor6
+@Id:S30872_TC2
+  Scenario: Candidates carrying genuinely different attributes merge into one PP_Order with the attribute nulled
+
+    Given metasfresh contains M_Attributes:
+      | Identifier | Value      | AttributeValueType | IsStorageRelevant |
+      | testFlavor | TestFlavor | L                  | true              |
+      | testNote   | TestNote   | S                  | false             |
+    And metasfresh contains M_AttributeValues:
+      | Identifier    | M_Attribute_ID | Value         | IsNullFieldValue |
+      | bio           | testFlavor     | Bio           | false            |
+      | konventionell | testFlavor     | Konventionell | false            |
+
+    And metasfresh contains M_AttributeSetInstance with identifier "asiBio":
+    """
+    {
+      "attributeInstances":[
+        {
+          "attributeCode":"TestFlavor",
+          "valueStr":"Bio"
+        }
+      ]
+    }
+    """
+    And metasfresh contains M_AttributeSetInstance with identifier "asiKonventionell":
+    """
+    {
+      "attributeInstances":[
+        {
+          "attributeCode":"TestFlavor",
+          "valueStr":"Konventionell"
+        }
+      ]
+    }
+    """
+    # marker ASI: its only attribute (TestNote) is not storage-relevant, so its storage-relevant
+    # AttributesKey is NONE — the same key an ASI conflict resolves to. Used to assert "nulled".
+    And metasfresh contains M_AttributeSetInstance with identifier "asiMarkerEmpty":
+    """
+    {
+      "attributeInstances":[
+        {
+          "attributeCode":"TestNote",
+          "valueStr":"n/a"
+        }
+      ]
+    }
+    """
+
+    And metasfresh contains C_Aggregations:
+      | Identifier | TableName          | EntityType | AggregationUsageLevel |
+      | bioAgg     | PP_Order_Candidate | EE01       | H                     |
+    And metasfresh contains C_AggregationItems:
+      | C_Aggregation_ID | EntityType | Type | ColumnName             |
+      | bioAgg           | EE01       | COL  | M_Warehouse_ID         |
+      | bioAgg           | EE01       | COL  | S_Resource_ID          |
+      | bioAgg           | EE01       | COL  | PP_Product_Planning_ID |
+      | bioAgg           | EE01       | COL  | PP_Product_BOM_ID      |
+      | bioAgg           | EE01       | COL  | M_Product_ID           |
+      | bioAgg           | EE01       | COL  | DatePromised           |
+      | bioAgg           | EE01       | COL  | DateStartSchedule      |
+      | bioAgg           | EE01       | COL  | C_UOM_ID               |
+
+    And update existing PP_Product_Plannings
+      | Identifier | C_Manufacturing_Aggregation_ID |
+      | ppln_1     | bioAgg                         |
+
+    And metasfresh contains PP_Order_Candidates
+      | Identifier | M_Product_ID.Identifier | M_Warehouse_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | OPT.M_AttributeSetInstance_ID.Identifier |
+      | ocKonv1    | p_1                     | production_WH             | bom_1                        | ppln_1                            | testResource  | 10         | 10           | 0            | PCE               | 2021-04-17T21:00:00Z | 2021-04-17T21:00:00Z | asiBio                                   |
+      | ocKonv2    | p_1                     | production_WH             | bom_1                        | ppln_1                            | testResource  | 10         | 10           | 0            | PCE               | 2021-04-17T21:00:00Z | 2021-04-17T21:00:00Z | asiKonventionell                         |
+
+    When generate PP_Order process is invoked for selection, with completeDocument=false and autoProcessCandidateAfterProduction=false
+      | PP_Order_Candidate_ID |
+      | ocKonv1               |
+      | ocKonv2               |
+
+    Then after not more than 60s, PP_Orders are found
+      | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | DatePromised         | QtyEntered | M_AttributeSetInstance_ID |
+      | p_1          | bom_1             | ppln_1                 | testResource  | 2021-04-17T21:00:00Z | 20 PCE     | asiMarkerEmpty            |
 

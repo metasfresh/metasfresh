@@ -189,7 +189,11 @@
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="textField-1" x="154" y="161" width="386" height="13" forecolor="#000000" uuid="ce743195-413e-4016-8405-428ac8e84baf">
-					<printWhenExpression><![CDATA[new Boolean ($F{deliverto} != null && !$F{incoterms}.equals( "EXW" ))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean(
+  $F{deliverto} != null &&
+  ( $F{incoterms} == null || !$F{incoterms}.equals("EXW") )
+)
+]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -204,7 +208,11 @@
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-6" x="37" y="161" width="117" height="13" forecolor="#000000" uuid="c92f9276-6317-4bdd-9067-12af4231a75e">
-					<printWhenExpression><![CDATA[new Boolean ($F{deliverto} != null && !$F{incoterms}.equals( "EXW" ))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean(
+  $F{deliverto} != null &&
+  ( $F{incoterms} == null || !$F{incoterms}.equals("EXW") )
+)
+]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

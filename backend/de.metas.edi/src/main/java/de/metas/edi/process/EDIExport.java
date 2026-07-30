@@ -1,7 +1,5 @@
 package de.metas.edi.process;
 
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
 /*
  * #%L
  * de.metas.edi
@@ -24,65 +22,70 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * #L%
  */
 
-import java.util.List;
-
-import org.adempiere.exceptions.AdempiereException;
-
-import de.metas.edi.api.IEDIDocumentBL;
-import de.metas.edi.model.I_EDI_Document;
-import de.metas.edi.process.export.IExport;
-import de.metas.i18n.IMsgBL;
-import de.metas.process.JavaProcess;
+import de.metas.async.api.IWorkPackageQueue;
+import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.edi.api.EDIExportStatus;
+import de.metas.edi.api.impl.EDIInvoiceDAO;
+import de.metas.edi.async.spi.impl.EDIWorkpackageProcessor;
+import de.metas.edi.model.I_C_Invoice;
+import de.metas.invoice.InvoiceId;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
+import lombok.NonNull;
+
+import de.metas.process.JavaProcess;
+import org.compiere.SpringContextHolder;
 
 /**
- * EDI-Exports a single EDI document. Locally and synchronously, i.e. without an async-workpackage.
+ * EDI-Exports a single EDI document.
  * If there is a validation error, then it updates the record with the error message(s) as well.
  */
-public class EDIExport extends JavaProcess
+public class EDIExport extends JavaProcess implements IProcessPrecondition
 {
-	private int recordId = -1;
-
-	// Services
-	private final IEDIDocumentBL ediDocumentBL = Services.get(IEDIDocumentBL.class);
+	@NonNull private final EDIInvoiceDAO ediInvoiceDAO = SpringContextHolder.instance.getBean(EDIInvoiceDAO.class);
+	@NonNull private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 
 	@Override
-	protected void prepare()
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
 	{
-		recordId = getRecord_ID();
+		if (context.isNoSelection())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
+		}
+
+		if (!context.isSingleSelection())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+		}
+
+		final I_C_Invoice invoice = ediInvoiceDAO.getByIdOutOfTrx(InvoiceId.ofRepoId(context.getSingleSelectedRecordId()));
+		final EDIExportStatus exportStatus = EDIExportStatus.ofCode(invoice.getEDI_ExportStatus());
+		if (!exportStatus.isPendingOrError())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Invoice must be in Pending or Error status (current: " + exportStatus + ")");
+		}
+
+		return ProcessPreconditionsResolution.accept();
 	}
 
 	@Override
 	protected String doIt()
 	{
-		final IExport<? extends I_EDI_Document> export = ediDocumentBL.createExport(
-				getCtx(),
-				getClientID(),
-				getTable_ID(),
-				recordId,
-				get_TrxName());
-		final List<Exception> feedback = export.doExport();
-		if (feedback == null || feedback.isEmpty())
-		{
-			return MSG_OK;
-		}
+		final I_C_Invoice invoice = ediInvoiceDAO.getByIdOutOfTrx(InvoiceId.ofRepoId(getRecord_ID()));
+		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(getCtx(), EDIWorkpackageProcessor.class);
 
-		final String errorTitle = buildAndTrlTitle(export.getTableIdentifier(), export.getDocument());
-		final String errorMessage = ediDocumentBL.buildFeedback(feedback);
+		queue.newWorkPackage()
+				.setPriority(IWorkPackageQueue.PRIORITY_AUTO)
+				.addElement(invoice)
+				.bindToThreadInheritedTrx()
+				.buildAndEnqueue();
 
-		final I_EDI_Document document = export.getDocument();
-		document.setEDIErrorMsg(errorMessage);
-		saveRecord(document);
+		invoice.setEDI_ExportStatus(EDIExportStatus.Enqueued.getCode());
+		ediInvoiceDAO.save(invoice);
 
-		throw new AdempiereException(errorTitle + "\n" + errorMessage).markAsUserValidationError();
+		return MSG_OK;
 	}
 
-	private String buildAndTrlTitle(final String tableNameIdentifier, final I_EDI_Document document)
-	{
-		final StringBuilder titleBuilder = new StringBuilder();
-		titleBuilder.append("@").append(tableNameIdentifier).append("@ ").append(document.getDocumentNo());
-
-		final String tableNameIdentifierTrl = Services.get(IMsgBL.class).parseTranslation(getCtx(), titleBuilder.toString());
-		return tableNameIdentifierTrl;
-	}
 }

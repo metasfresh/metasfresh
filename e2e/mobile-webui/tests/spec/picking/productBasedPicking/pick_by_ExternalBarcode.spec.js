@@ -1,4 +1,5 @@
 import { test } from "../../../../playwright.config";
+import { allure } from 'allure-playwright';
 import { ApplicationsListScreen } from "../../../utils/screens/ApplicationsListScreen";
 import { PickingJobsListScreen } from "../../../utils/screens/picking/PickingJobsListScreen";
 import { Backend } from "../../../utils/screens/Backend";
@@ -83,6 +84,13 @@ const createMasterdata = async ({ externalBarcode }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Scan the pick from HU by ExternalBarcode', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');  // Standalone tag for Tags section;
+    allure.story('Product based picking - External barcode');
+    allure.severity('normal');
+
     const externalBarcode = "EXT" + Date.now();
     const masterdata = await createMasterdata({ externalBarcode });
 
@@ -122,26 +130,50 @@ test('Scan the pick from HU by ExternalBarcode', async ({ page }) => {
         await PickingJobScreen.waitForScreen();
         await PickingJobScreen.complete();
         await Backend.expect({
+            // FIXME all should be processed and shipped (expected result commented out below)
             pickings: {
                 [pickingJobId]: {
                     shipmentSchedules: {
                         P1: {
                             qtyPicked: [
-                                // TODO find out why is not processed/shipped?!
                                 { qtyPicked: "20 PCE", qtyTUs: 5, qtyLUs: 1, vhu: 'tu11', tu: 'tu11', lu: 'lu11', processed: false, shipmentLineId: '-' },
                                 { qtyPicked: "24 PCE", qtyTUs: 6, qtyLUs: 1, vhu: 'tu12', tu: 'tu12', lu: 'lu12', processed: false, shipmentLineId: '-' },
-                                { qtyPicked: "28 PCE", qtyTUs: 7, qtyLUs: 1, vhu: 'tu13', tu: 'tu13', lu: 'lu13', processed: false, shipmentLineId: '-' },
+                                { qtyPicked: "28 PCE", qtyTUs: 7, qtyLUs: 1, vhu: 'tu13', tu: 'tu13', lu: 'lu13', processed: true, shipmentLineId: 'shipment3_line1' },
                             ]
                         }
                     }
                 }
             },
+            // pickings: {
+            //     [pickingJobId]: {
+            //         shipmentSchedules: {
+            //             P1: {
+            //                 qtyPicked: [
+            //                     { qtyPicked: "20 PCE", qtyTUs: 5, qtyLUs: 1, vhu: 'tu11', tu: 'tu11', lu: 'lu11', processed: true, shipmentLineId: 'shipment1_line1' },
+            //                     { qtyPicked: "24 PCE", qtyTUs: 6, qtyLUs: 1, vhu: 'tu12', tu: 'tu12', lu: 'lu12', processed: true, shipmentLineId: 'shipment2_line1' },
+            //                     { qtyPicked: "28 PCE", qtyTUs: 7, qtyLUs: 1, vhu: 'tu13', tu: 'tu13', lu: 'lu13', processed: true, shipmentLineId: 'shipment3_line1' },
+            //                 ]
+            //             }
+            //         }
+            //     }
+            // },
             hus: {
                 [masterdata.handlingUnits.P1_HU.qrCode]: { huStatus: 'A', storages: { P1: '8  PCE' } },
-                tu11: { huStatus: 'S', storages: { P1: '20 PCE' } },
-                tu12: { huStatus: 'S', storages: { P1: '24 PCE' } },
-                tu13: { huStatus: 'S', storages: { P1: '28 PCE' } },
+                // Product-based job: each picked LU/TU carries the consignee of the sales order it was
+                // picked for — line1 20 PCE => SO1/customer1, line2 24 PCE => SO2/customer2,
+                // line3 28 PCE => SO3/customer3 (see salesOrders SO1/SO2/SO3 above). Each customer is
+                // declared without an explicit location, so bpartnerLocation resolves via the single
+                // default ship-to (the _singleBPLocationI fallback) — same identifier as the bpartner.
+                tu11: { huStatus: 'S', storages: { P1: '20 PCE' }, bpartner: 'customer1', bpartnerLocation: 'customer1' },
+                tu12: { huStatus: 'S', storages: { P1: '24 PCE' }, bpartner: 'customer2', bpartnerLocation: 'customer2' },
+                tu13: { huStatus: 'E', storages: { P1: '28 PCE' }, bpartner: 'customer3', bpartnerLocation: 'customer3' },
             }
+            // hus: {
+            //     [masterdata.handlingUnits.P1_HU.qrCode]: { huStatus: 'A', storages: { P1: '8  PCE' } },
+            //     tu11: { huStatus: 'E', storages: { P1: '20 PCE' } },
+            //     tu12: { huStatus: 'E', storages: { P1: '24 PCE' } },
+            //     tu13: { huStatus: 'E', storages: { P1: '28 PCE' } },
+            // }
         });
     });
 

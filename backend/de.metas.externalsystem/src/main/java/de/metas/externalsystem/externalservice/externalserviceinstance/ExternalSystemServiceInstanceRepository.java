@@ -22,6 +22,7 @@
 
 package de.metas.externalsystem.externalservice.externalserviceinstance;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.externalservice.common.ExternalStatus;
 import de.metas.externalsystem.externalservice.model.ExternalSystemServiceId;
@@ -30,8 +31,11 @@ import de.metas.externalsystem.externalservice.model.ExternalSystemServiceReposi
 import de.metas.externalsystem.model.I_ExternalSystem_Service_Instance;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -42,15 +46,20 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Repository
+@RequiredArgsConstructor
 public class ExternalSystemServiceInstanceRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final ExternalSystemServiceRepository serviceRepository;
 
-	public ExternalSystemServiceInstanceRepository(@NonNull final ExternalSystemServiceRepository serviceRepository)
+	@VisibleForTesting
+	public static ExternalSystemServiceInstanceRepository newInstanceForUnitTesting()
 	{
-		this.serviceRepository = serviceRepository;
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(ExternalSystemServiceInstanceRepository.class, () -> new ExternalSystemServiceInstanceRepository(
+						ExternalSystemServiceRepository.newInstanceForUnitTesting()));
 	}
 
 	@NonNull

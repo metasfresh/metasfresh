@@ -11,6 +11,7 @@ import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.model.I_M_Picking_Job;
 import de.metas.handlingunits.model.I_M_Picking_Job_HUAlternative;
 import de.metas.handlingunits.model.I_M_Picking_Job_Line;
@@ -56,10 +57,14 @@ import de.metas.organization.OrgId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
+import de.metas.inoutcandidate.CarrierGoodsTypeId;
+import de.metas.inoutcandidate.CarrierServiceId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.product.ProductId;
+import de.metas.product.ProductValueAndName;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.shipping.CarrierProductId;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.OptionalBoolean;
@@ -91,6 +96,9 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 	private final PickingJobLoaderSupportingServices loadingSupportingServices;
 
 	private final HashMap<PickingJobId, Boolean> hasLocks = new HashMap<>();
+
+	/** Batch-loaded once per {@link #loadRecordsFromDB(Set)} pass, so {@link #loadLine} does not query per line (avoids N+1). */
+	private final HashMap<PickingJobLineId, ImmutableSet<CarrierServiceId>> carrierServicesByLineId = new HashMap<>();
 
 	private PickingJobLoaderAndSaver(@NonNull final PickingJobLoaderSupportingServices loadingSupportingServices)
 	{
@@ -164,6 +172,11 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		pickingJobLines.put(pickingJobId, record);
 	}
 
+	public void assignCarrierServicesToLine(@NonNull final PickingJobLineId lineId, @NonNull final Set<CarrierServiceId> carrierServiceIds)
+	{
+		lineCarrierServiceRepository.assignServicesToLine(lineId, carrierServiceIds);
+	}
+
 	public void addAlreadyLoadedFromDB(final I_M_Picking_Job_Step record)
 	{
 		final PickingJobLineId pickingJobLineId = PickingJobLineId.ofRepoId(record.getM_Picking_Job_Line_ID());
@@ -208,8 +221,40 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 
 		loadingSupportingServices.warmUpSalesOrderDocumentNosCache(extractSalesOrderIdsFromCachedObjects());
 		loadingSupportingServices.warmUpBPartnerNamesCache(extractCustomerIdsFromCachedObjects());
+		loadingSupportingServices.warmUpQRCodesCache(extractHUIdsFromCachedObjects());
+
+		warmUpCarrierServicesByLineId(pickingJobIds);
 
 		hasLocks.putAll(computePickingJobHasLocks(pickingJobIds));
+	}
+
+	/**
+	 * Batch-loads the assigned carrier services for all the just-loaded jobs' lines in ONE query (mirrors how steps are
+	 * batch-loaded in {@link PickingJobSaver#loadRecordsFromDB}), so the per-line {@link #loadLine} can read from the map
+	 * instead of issuing a query per line.
+	 */
+	private void warmUpCarrierServicesByLineId(@NonNull final Set<PickingJobId> pickingJobIds)
+	{
+		// Only the line ids not yet in the map, so repeated calls (loadRecordsFromDB + loadJob) issue at most one query per line id.
+		final ImmutableSet<PickingJobLineId> lineIdsToLoad = pickingJobIds.stream()
+				.flatMap(pickingJobId -> pickingJobLines.get(pickingJobId).stream())
+				.map(line -> PickingJobLineId.ofRepoId(line.getM_Picking_Job_Line_ID()))
+				.filter(lineId -> !carrierServicesByLineId.containsKey(lineId))
+				.collect(ImmutableSet.toImmutableSet());
+
+		if (lineIdsToLoad.isEmpty())
+		{
+			return;
+		}
+
+		final ImmutableSetMultimap<PickingJobLineId, CarrierServiceId> servicesByLineId =
+				lineCarrierServiceRepository.getAssignedServiceIdsMapByLineIds(lineIdsToLoad);
+
+		// IMPORTANT: also map the lines that have NO assigned service to an empty set, so loadLine never falls back to a query.
+		for (final PickingJobLineId lineId : lineIdsToLoad)
+		{
+			carrierServicesByLineId.put(lineId, servicesByLineId.get(lineId));
+		}
 	}
 
 	private ImmutableSet<OrderId> extractSalesOrderIdsFromCachedObjects()
@@ -252,10 +297,56 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		return result.build();
 	}
 
+	/**
+	 * Collects every HU id whose QR code will be resolved while building the loaded picking jobs, so those QR codes can
+	 * be fetched in a single batch (see {@link PickingJobLoaderSupportingServices#warmUpQRCodesCache}) instead of one
+	 * query per HU. Covers every {@code getQRCodeByHUId} call site of the load: the picked HUs, the pick-from HUs of the
+	 * steps and of the step/job HU-alternatives, and the header + line-level LU/TU pick targets. Any id that is missed
+	 * (or has no/ambiguous QR code) still resolves correctly via the single-HU fallback — it just isn't batched.
+	 */
+	private ImmutableSet<HuId> extractHUIdsFromCachedObjects()
+	{
+		final ImmutableSet.Builder<HuId> result = ImmutableSet.builder();
+		final java.util.function.IntConsumer addHuId = repoId -> {
+			final HuId huId = HuId.ofRepoIdOrNull(repoId);
+			if (huId != null)
+			{
+				result.add(huId);
+			}
+		};
+
+		// picked HUs (one per step-picked-HU record) — the dominant N after picking
+		this.pickedHUs.values().forEach(pickedHU -> addHuId.accept(pickedHU.getPicked_HU_ID()));
+
+		// pick-from HUs: step main pick-from, step HU-alternatives, job-level HU-alternatives
+		this.pickingJobSteps.values().forEach(step -> addHuId.accept(step.getPickFrom_HU_ID()));
+		this.pickingJobStepAlternatives.values().forEach(alt -> addHuId.accept(alt.getPickFrom_HU_ID()));
+		this.pickingJobHUAlternatives.values().forEach(alt -> addHuId.accept(alt.getPickFrom_HU_ID()));
+
+		// header LU/TU pick targets
+		this.pickingJobs.values().forEach(pickingJobRecord -> {
+			addHuId.accept(pickingJobRecord.getM_LU_HU_ID());
+			addHuId.accept(pickingJobRecord.getM_TU_HU_ID());
+		});
+
+		// line-level LU/TU pick targets
+		this.pickingJobLines.values().forEach(line -> {
+			addHuId.accept(line.getCurrent_PickTo_LU_ID());
+			addHuId.accept(line.getCurrent_PickTo_TU_ID());
+		});
+
+		return result.build();
+	}
+
 	private PickingJob loadJob(final I_M_Picking_Job record)
 	{
 		final PickingJobId pickingJobId = PickingJobId.ofRepoId(record.getM_Picking_Job_ID());
 		final PickingJobHeader pickingJobHeader = toPickingJobHeader(record);
+
+		// Make sure the line carrier-services are batch-loaded for this job's lines. loadRecordsFromDB already warms
+		// them up, but the create path (PickingJobCreateRepoHelper) populates pickingJobLines via addAlreadyLoadedFromDB
+		// and never goes through loadRecordsFromDB, so warm up here too. Both paths stay single-query (no per-line query).
+		warmUpCarrierServicesByLineId(ImmutableSet.of(pickingJobId));
 
 		return PickingJob.builder()
 				.id(pickingJobId)
@@ -310,9 +401,12 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				.deliveryRenderedAddress(record.getDeliveryToAddress())
 				.isAllowPickingAnyHU(record.isAllowPickingAnyHU())
 				.isAnonymousPickHUsOnTheFly(pickingJobOptions.isAnonymousPickHUsOnTheFly())
+				.isPickingSlotRequired(pickingJobOptions.isPickingSlotRequired())
 				.isDisplayPickingSlotSuggestions(pickingJobOptions.getDisplayPickingSlotSuggestions().orElseFalse())
 				.lockedBy(UserId.ofRepoIdOrNullIfSystem(record.getPicking_User_ID()))
 				.handoverLocationId(BPartnerLocationId.ofRepoIdOrNull(record.getHandOver_Partner_ID(), record.getHandOver_Location_ID()))
+				.carrierProductId(CarrierProductId.ofRepoIdOrNull(record.getCarrier_Product_ID()))
+				.carrierAdviseReadOnly(record.isCarrierAdviseReadOnly())
 				.build();
 	}
 
@@ -369,7 +463,8 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		else if (tuPIId != null)
 		{
 			final String caption = loadingSupportingServices.getPICaption(tuPIId);
-			return TUPickingTarget.ofPackingInstructions(tuPIId, caption);
+			final GRAI grai = GRAI.ofNullableCanonicalString(record.getCurrent_PickTo_TU_GRAI());
+			return TUPickingTarget.ofPackingInstructions(tuPIId, caption, grai);
 		}
 		else
 		{
@@ -404,7 +499,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		final PickingJobOptions pickingJobOptions = getPickingJobOptions(deliveryBPLocationId.getBpartnerId());
 
 		final String salesOrderDocumentNo = loadingSupportingServices.getSalesOrderDocumentNo(salesOrderAndLineId.getOrderId());
-		final ITranslatableString productName = loadingSupportingServices.getProductName(productId);
+		final ProductValueAndName productValueAndName = loadingSupportingServices.getProductValueAndName(productId);
 		final CurrentPickingTarget currentPickingTarget = extractCurrentPickingTarget(record);
 
 		final ITranslatableString caption;
@@ -412,7 +507,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		{
 			case SALES_ORDER:
 			{
-				caption = productName;
+				caption = productValueAndName.getName();
 				break;
 			}
 			case PRODUCT:
@@ -427,7 +522,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 			case DELIVERY_LOCATION:
 			{
 				caption = TranslatableStrings.builder()
-						.append(productName)
+						.append(productValueAndName.getName())
 						.appendIfNotEmpty(", ")
 						.append(salesOrderDocumentNo)
 						.build();
@@ -445,7 +540,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				.productId(productId)
 				.productNo(loadingSupportingServices.getProductNo(productId))
 				.gs1ProductCodes(loadingSupportingServices.getGS1ProductCodes(productId, deliveryBPLocationId.getBpartnerId()).orElse(null))
-				.productName(productName)
+				.productValueAndName(productValueAndName)
 				.productCategoryId(loadingSupportingServices.getProductCategoryId(productId))
 				.packingInfo(packingInfo)
 				.qtyToPick(extractQtyToPick(record))
@@ -463,6 +558,11 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				.pickingUnit(computePickingUnit(UomId.ofRepoIdOrNull(record.getCatch_UOM_ID()), packingInfo, pickingJobOptions))
 				.currentPickingTarget(currentPickingTarget)
 				.pickFromManufacturingOrderId(PPOrderId.ofRepoIdOrNull(record.getPP_Order_ID()))
+				.carrierProductId(CarrierProductId.ofRepoIdOrNull(record.getCarrier_Product_ID()))
+				.carrierAdviseReadOnly(record.isCarrierAdviseReadOnly())
+				.isManual(record.isCarrierAdviseManual())
+				.carrierGoodsTypeId(CarrierGoodsTypeId.ofRepoIdOrNull(record.getCarrier_Goods_Type_ID()))
+				.carrierServices(carrierServicesByLineId.getOrDefault(pickingJobLineId, ImmutableSet.of()))
 				.build();
 	}
 
@@ -523,7 +623,8 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		else if (tuPIId != null)
 		{
 			final String caption = loadingSupportingServices.getPICaption(tuPIId);
-			return TUPickingTarget.ofPackingInstructions(tuPIId, caption);
+			final GRAI grai = GRAI.ofNullableCanonicalString(record.getCurrent_PickTo_TU_GRAI());
+			return TUPickingTarget.ofPackingInstructions(tuPIId, caption, grai);
 		}
 		else
 		{
@@ -582,7 +683,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				//
 				// What?
 				.productId(productId)
-				.productName(loadingSupportingServices.getProductName(productId))
+				.productValueAndName(loadingSupportingServices.getProductValueAndName(productId))
 				.qtyToPick(Quantitys.of(record.getQtyToPick(), uomId))
 				//
 				// Pick From
@@ -808,7 +909,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 			final ProductId productId = extractProductId(line);
 			collector.collect(
 					productId,
-					() -> loadingSupportingServices.getProductName(productId),
+					() -> loadingSupportingServices.getProductValueAndName(productId),
 					extractQtyToPick(line)
 			);
 		}

@@ -540,7 +540,6 @@ class TableRow extends PureComponent {
               ? fieldsByName[property]
               : undefined;
             const isEditable = isCellEditable(item, fieldsByName);
-            const isEdited = edited === property;
             const extendLongText = multilineText ? multilineTextLines : 0;
             const widgetData = getCellWidgetData(
               fieldsByName,
@@ -548,8 +547,9 @@ class TableRow extends PureComponent {
               isEditable,
               supportFieldEdit
             );
-            const isReadonly = widgetData[0].readonly;
-            const isMandatory = widgetData[0].mandatory;
+            const isReadonly = !!widgetData[0].readonly;
+            const isMandatory = !!widgetData[0].mandatory;
+            const isEdited = edited === property && !isReadonly;
             const tdValue = getTdValue({
               widgetData,
               item,
@@ -720,6 +720,7 @@ class TableRow extends PureComponent {
         <tr
           onClick={this.handleClick}
           onDoubleClick={this.handleDoubleClick}
+          data-testid={`table-row-${keyProperty}`}
           className={classnames(dataKey, `table-row row-${keyProperty}`, {
             'row-selected': isSelected,
             'tr-odd': odd,

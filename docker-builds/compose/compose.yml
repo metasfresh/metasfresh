@@ -10,7 +10,7 @@ services:
         mfversion: $mfversion
         dbqualifier: $dbqualifier
     ports:
-      - "15432:5432"
+      - "14432:5432"
     environment:
       - PGDATA=/var/lib/postgresql/data
     healthcheck:
@@ -150,8 +150,8 @@ services:
   webui:
     image: $mfregistry/metas-frontend:$mfversion
     ports:
-      - "80:80"
-      - "443:443"
+      - "3000:80"
+      - "3443:443"
     volumes:
       - ./web-config.js:/usr/share/nginx/html/config.js:ro
     healthcheck:
@@ -172,7 +172,7 @@ services:
   mobile:
     image: $mfregistry/metas-mobile:$mfversion
     ports:
-      - "8880:80"
+      - "3001:80"
     volumes:
       - ./mobile-config.js:/usr/share/nginx/html/config.js:ro
     healthcheck:

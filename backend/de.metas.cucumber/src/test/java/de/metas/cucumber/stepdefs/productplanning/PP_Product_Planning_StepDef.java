@@ -26,6 +26,7 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.aggregation.C_Aggregation_StepDefData;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_BOMVersions_StepDefData;
 import de.metas.cucumber.stepdefs.distribution.DD_NetworkDistribution_StepDefData;
@@ -83,21 +84,41 @@ public class PP_Product_Planning_StepDef
 	@NonNull private final M_Maturing_Configuration_StepDefData maturingConfigurationTable;
 	@NonNull private final M_Maturing_Configuration_Line_StepDefData maturingConfigurationLineTable;
 	@NonNull private final S_Resource_StepDefData resourceTable;
+	@NonNull private final C_Aggregation_StepDefData aggregationTable;
 
 	private static final ResourceId DEFAULT_PLANT_ID = ResourceId.ofRepoId(540006);
 
+	/**
+	 * Creates or updates a {@code PP_Product_Planning} record for each row via {@link IProductPlanningDAO#save(ProductPlanning)}.
+	 * Matches an existing planning by org/warehouse/plant/product; creates a new one if none is found.
+	 * Key columns: {@code M_Product_ID}, {@code IsCreatePlan} (controls auto-enqueue of C_Order generation),
+	 * {@code IsDocComplete} (controls whether the auto-generated C_Order is completed), {@code IsPurchased},
+	 * {@code IsManufactured}, {@code IsAttributeDependant}, {@code PP_Product_BOMVersions_ID},
+	 * {@code DD_NetworkDistribution_ID}, {@code M_Warehouse_ID}, {@code S_Resource_ID},
+	 * {@code OPT.C_Manufacturing_Aggregation_ID.Identifier} (a {@code C_Aggregation} for table
+	 * {@code PP_Order_Candidate}; when set, {@code PPOrderCandidateAggregationFactory} uses it instead of the
+	 * default header aggregation key when grouping candidates into a {@code PP_Order}).
+	 */
 	@Given("metasfresh contains PP_Product_Plannings")
 	public void createOrUpdate(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(row -> createOrUpdate(row));
 	}
 
+	/**
+	 * Updates an existing {@code PP_Product_Planning} record. Throws {@link org.adempiere.exceptions.AdempiereException}
+	 * if no matching planning is found; use {@code metasfresh contains PP_Product_Plannings} if upsert behaviour is needed.
+	 */
 	@Given("update existing PP_Product_Plannings")
 	public void updateExisting(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(this::updateExisting);
 	}
 
+	/**
+	 * Internal implementation used by both {@link #updateExisting(DataTable)} and {@link #createOrUpdate(DataTableRow)}.
+	 * Delegates to {@link IProductPlanningDAO#save(ProductPlanning)} after applying the data table row values to the builder.
+	 */
 	public void updateExisting(@NonNull final DataTableRow row)
 	{
 		final ProductPlanning productPlanning = getExistingProductPlanning(row).orElseThrow(() -> new AdempiereException("No product planning found for " + row));
@@ -130,8 +151,10 @@ public class PP_Product_Planning_StepDef
 		getResourceId(row).ifPresent(builder::plantId);
 		row.getAsOptionalIdentifier(COLUMNNAME_AD_Workflow_ID).map(workflowTable::getId).ifPresent(builder::workflowId);
 		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsCreatePlan).ifPresent(builder::isCreatePlan);
+		row.getAsOptionalInt(I_PP_Product_Planning.COLUMNNAME_DeliveryTime_Promised).ifPresent(builder::leadTimeDays);
 		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsDocComplete).ifPresent(builder::isDocComplete);
 		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsAttributeDependant).ifPresent(builder::isAttributeDependant);
+		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsManufacturedLot4Lot).ifPresent(builder::isManufacturedLot4Lot);
 
 		row.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID)
 				.map(productBomVersionsTable::getId)
@@ -188,6 +211,11 @@ public class PP_Product_Planning_StepDef
 				.map(I_M_Maturing_Configuration_Line::getM_Maturing_Configuration_Line_ID)
 				.map(MaturingConfigLineId::ofRepoId)
 				.ifPresent(builder::maturingConfigLineId);
+
+		row.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_C_Manufacturing_Aggregation_ID)
+				.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+				.map(aggregationTable::getId)
+				.ifPresent(aggregationId -> builder.manufacturingAggregationId(aggregationId.getRepoId()));
 
 		final ProductPlanning productPlanning = productPlanningDAO.save(builder.build());
 

@@ -4,6 +4,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.sequence.DocSequenceId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.attribute.HUAttributeUpdateRequest;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
@@ -86,14 +87,20 @@ public abstract class ReceiptScheduleBasedProcess extends JavaProcess implements
 		)
 		{
 			lotNumberToSet = hu.getValue();
-			huAttributesBL.updateHUAttributeRecursive(HuId.ofRepoId(hu.getM_HU_ID()), AttributeConstants.ATTR_LotNumber, lotNumberToSet, null);
+			huAttributesBL.updateHUAttributeRecursive(HuId.ofRepoId(hu.getM_HU_ID()), HUAttributeUpdateRequest.builder()
+					.attributeCode(AttributeConstants.ATTR_LotNumber)
+					.attributeValue(lotNumberToSet)
+					.build());
 		}
 		else
 		{
 			final String lotNumber = getOrLoadLotNoFromSeq(receiptSchedule);
 			if (Check.isNotBlank(lotNumber))
 			{
-				huAttributesBL.updateHUAttributeRecursive(HuId.ofRepoId(hu.getM_HU_ID()), AttributeConstants.ATTR_LotNumber, lotNumber, null);
+				huAttributesBL.updateHUAttributeRecursive(HuId.ofRepoId(hu.getM_HU_ID()), HUAttributeUpdateRequest.builder()
+						.attributeCode(AttributeConstants.ATTR_LotNumber)
+						.attributeValue(lotNumber)
+						.build());
 			}
 		}
 	}
