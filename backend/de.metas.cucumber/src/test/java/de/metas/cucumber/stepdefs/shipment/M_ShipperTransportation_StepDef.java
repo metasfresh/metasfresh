@@ -305,6 +305,21 @@ public class M_ShipperTransportation_StepDef
 				.ifPresent(packageIdentifier -> packageTable.putOrReplace(packageIdentifier, packageRecord));
 	}
 
+	/**
+	 * Updates the transport order THROUGH THE MODEL LAYER on purpose: {@code saveRecord} fires the real
+	 * {@code @ModelChange} interceptor {@code de.metas.shipping.model.validator.M_ShipperTransportation#syncOrderDatesOnEdit},
+	 * which is what propagates ETA / BLDate onto the linked purchase orders and re-drives their pay schedules.
+	 * Never replace this with a direct SQL/DB write: the propagation would no longer be exercised and the
+	 * scenarios relying on it (S30954_1..S30954_3 in purchaseOrderComplexPaymentTerm.feature) would keep
+	 * passing with the chain broken.
+	 * <p>
+	 * Note this writes straight to the record and therefore bypasses the WebUI Document layer, where a
+	 * completed ({@code Processed='Y'}) transport order is read-only unless the column is always-updateable.
+	 * That gate is covered by the Playwright spec
+	 * {@code e2e/frontend-webui/tests/spec/transport-order-dates-editable-when-completed.spec.js}.
+	 *
+	 * @see de.metas.shipping.model.validator.M_ShipperTransportation
+	 */
 	@And("update transport order")
 	public void update_TransportOrder(@NonNull final DataTable dataTable)
 	{

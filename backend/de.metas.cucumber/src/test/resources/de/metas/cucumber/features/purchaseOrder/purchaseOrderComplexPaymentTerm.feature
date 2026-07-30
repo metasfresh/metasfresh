@@ -247,6 +247,26 @@ Feature: Purchase order with complex payment term
       | PTB32                  | 2025-04-01 | 76.72  | WP     |
 
 
+  # ---------------------------------------------------------------------------------------------
+  # S30954_1..S30954_3 own the BL-date -> pay-schedule propagation. They are the ONLY home for it.
+  #
+  # Why they are meaningful: the "update transport order" step writes through the model layer
+  # (M_ShipperTransportation_StepDef#updateTransportOrder -> record.setBLDate(...) -> saveRecord),
+  # so saving the record fires the real @ModelChange interceptor
+  # de.metas.shipping.model.validator.M_ShipperTransportation#syncOrderDatesOnEdit, which propagates
+  # onto the C_Order and in turn fires C_Order#updateOrderPaySchedules. That is exactly the
+  # production chain — nothing here is stubbed, and no scenario may be rewritten to poke
+  # C_OrderPaySchedule (or any table on the chain) directly: doing so would bypass the very
+  # interceptors these scenarios exist to prove, and they would keep passing after the chain broke.
+  #
+  # What these scenarios deliberately do NOT cover: whether the WebUI even lets a user type the B/L
+  # date once the transport order is completed. The step above goes straight to saveRecord and never
+  # touches the WebUI Document layer, where DocumentReadonly#computeFieldReadonly blanks every field
+  # of a Processed='Y' document unless its AD_Column.IsAlwaysUpdateable='Y'. That read-only gate is
+  # covered — once, in a real browser — by the Playwright spec
+  # e2e/frontend-webui/tests/spec/transport-order-dates-editable-when-completed.spec.js.
+  # Keep the split: model/business chain here, WebUI editability there, no overlap.
+  # ---------------------------------------------------------------------------------------------
   @from:cucumber
 @allure.label.epic:E0140_Purchasing
 @allure.label.feature:F00600_Purchase_Order
