@@ -11,6 +11,7 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -27,6 +28,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_PaymentTerm;
@@ -39,6 +41,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
@@ -542,6 +545,367 @@ public class PurchaseOrderToShipperTransportationServiceTest
 				.isEqualTo(line2.getC_OrderLine_ID());
 	}
 
+	/**
+	 * The five transport-order date fields (ETD, ETA, ATD, ATA, B/L date) must auto-populate from the first assigned purchase order:
+	 * ETA = PO.DatePromised, ETD = PO.PreparationDate (taken as already calculated on the order), ATD = ETD, ATA = ETA, B/L date = ATD.
+	 * <p>
+	 * me03 https://github.com/metasfresh/me03/issues/30956
+	 */
+	@Test
+	public void defaultDates_appliedFromFirstPurchaseOrder()
+	{
+		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
+		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
+
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("VendorDefaults", "addressDefaults");
+		final OrderId orderId = createOrder(bpartnerAndLocation);
+
+		createOrderLine(orderId, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), Money.of(10, chf));
+
+		// the PO already carries its provisioning date (PreparationDate) as computed elsewhere; ETD is taken straight from it
+		final I_C_Order order = load(orderId, I_C_Order.class);
+		final Timestamp preparationDate = TimeUtil.asTimestamp(LocalDate.of(2019, 6, 1), orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID())));
+		order.setPreparationDate(preparationDate);
+		save(order);
+
+		service.addPurchaseOrdersToShipperTransportation(transportationId, Collections.singletonList(orderId));
+
+		final Timestamp expectedEta = order.getDatePromised(); // ETA = promised arrival date
+		final Timestamp expectedEtd = preparationDate;         // ETD = PO's PreparationDate (taken as-is)
+
+		final I_M_ShipperTransportation reloaded = load(transportationId, I_M_ShipperTransportation.class);
+		assertThat(reloaded.getETD()).as("ETD = PO.PreparationDate (taken as already calculated on the order)").isEqualTo(expectedEtd);
+		assertThat(reloaded.getETA()).as("ETA = PO.DatePromised (promised arrival)").isEqualTo(expectedEta);
+		assertThat(reloaded.getATD()).as("ATD = ETD").isEqualTo(expectedEtd);
+		assertThat(reloaded.getATA()).as("ATA = ETA").isEqualTo(expectedEta);
+		assertThat(reloaded.getBLDate()).as("B/L date = ATD").isEqualTo(expectedEtd);
+	}
+
+	/**
+	 * ETD is taken from the purchase order's {@code PreparationDate} (its provisioning date, as already calculated on the order),
+	 * independently of the {@code DatePromised} used for ETA.
+	 */
+	@Test
+	public void defaultDates_etdUsesOrderPreparationDate()
+	{
+		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
+		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
+
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("VendorPrep", "addressPrep");
+		final OrderId orderId = createOrder(bpartnerAndLocation);
+		createOrderLine(orderId, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), Money.of(10, chf));
+
+		final I_C_Order order = load(orderId, I_C_Order.class);
+		final Timestamp datePromised = TimeUtil.asTimestamp(LocalDate.of(2025, 3, 10), orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID())));
+		final Timestamp preparationDate = TimeUtil.asTimestamp(LocalDate.of(2025, 3, 1), orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID())));
+		order.setDatePromised(datePromised);
+		order.setPreparationDate(preparationDate);
+		save(order);
+
+		service.addPurchaseOrdersToShipperTransportation(transportationId, Collections.singletonList(orderId));
+
+		final I_M_ShipperTransportation reloaded = load(transportationId, I_M_ShipperTransportation.class);
+		assertThat(reloaded.getETD()).as("ETD = the PO's PreparationDate").isEqualTo(preparationDate);
+		assertThat(reloaded.getETA()).as("ETA = PO.DatePromised").isEqualTo(datePromised);
+	}
+
+	/**
+	 * When the purchase order carries no {@code PreparationDate}, ETD (and the ATD/B-L date that cascade from it) are left unset;
+	 * ETA is still defaulted from the PO's {@code DatePromised}.
+	 */
+	@Test
+	public void defaultDates_noPreparationDate_etdLeftUnset()
+	{
+		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
+		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
+
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("VendorNoPrep", "addressNoPrep");
+		final OrderId orderId = createOrder(bpartnerAndLocation);
+		createOrderLine(orderId, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), Money.of(10, chf));
+
+		service.addPurchaseOrdersToShipperTransportation(transportationId, Collections.singletonList(orderId));
+
+		final Timestamp expectedEta = load(orderId, I_C_Order.class).getDatePromised();
+		final I_M_ShipperTransportation reloaded = load(transportationId, I_M_ShipperTransportation.class);
+		assertThat(reloaded.getETD()).as("ETD left unset when the PO carries no PreparationDate").isNull();
+		assertThat(reloaded.getATD()).as("ATD cascades from ETD, so also unset").isNull();
+		assertThat(reloaded.getBLDate()).as("B/L date cascades from ATD, so also unset").isNull();
+		assertThat(reloaded.getETA()).as("ETA still defaulted from PO.DatePromised").isEqualTo(expectedEta);
+		assertThat(reloaded.getATA()).as("ATA = ETA").isEqualTo(expectedEta);
+	}
+
+	/**
+	 * Only the FIRST assigned purchase order drives the defaults; assigning further orders (or re-editing) must not overwrite the values.
+	 */
+	@Test
+	public void defaultDates_onlyFirstOrderWins()
+	{
+		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
+		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
+
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("VendorFirstWins", "addressFirstWins");
+
+		final OrderId order1 = createOrder(bpartnerAndLocation);
+		createOrderLine(order1, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), Money.of(10, chf));
+		final I_C_Order order1Record = load(order1, I_C_Order.class);
+		final Timestamp firstOrderPreparationDate = TimeUtil.asTimestamp(LocalDate.of(2019, 5, 5), orgDAO.getTimeZone(OrgId.ofRepoId(order1Record.getAD_Org_ID())));
+		order1Record.setPreparationDate(firstOrderPreparationDate);
+		save(order1Record);
+
+		// second order with a DIFFERENT PreparationDate
+		final OrderId order2 = createOrder(bpartnerAndLocation);
+		createOrderLine(order2, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), Money.of(10, chf));
+		final I_C_Order order2Record = load(order2, I_C_Order.class);
+		order2Record.setPreparationDate(TimeUtil.asTimestamp(LocalDate.of(2020, 1, 1), orgDAO.getTimeZone(OrgId.ofRepoId(order2Record.getAD_Org_ID()))));
+		save(order2Record);
+
+		// assign order1 first, then order2
+		service.addPurchaseOrdersToShipperTransportation(transportationId, Collections.singletonList(order1));
+		service.addPurchaseOrdersToShipperTransportation(transportationId, Collections.singletonList(order2));
+
+		final I_M_ShipperTransportation reloaded = load(transportationId, I_M_ShipperTransportation.class);
+		assertThat(reloaded.getETD())
+				.as("ETD stays derived from the FIRST assigned order, not the second")
+				.isEqualTo(firstOrderPreparationDate);
+	}
+
+	/**
+	 * Regression-safety: the auto-defaulting must NOT run for a sales (SOTrx=Y) transport order, so the existing sales flow is untouched.
+	 */
+	@Test
+	public void defaultDates_notAppliedForSalesTransportOrder()
+	{
+		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
+		shipperTransportation.setIsSOTrx(true);
+		save(shipperTransportation);
+		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
+
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("VendorSales", "addressSales");
+		final OrderId orderId = createOrder(bpartnerAndLocation);
+		createOrderLine(orderId, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), Money.of(10, chf));
+
+		// give the PO a PreparationDate so a PURCHASE transport order would get a non-null ETD — proving the sales guard is what suppresses it
+		final I_C_Order order = load(orderId, I_C_Order.class);
+		order.setPreparationDate(TimeUtil.asTimestamp(LocalDate.of(2019, 6, 1), orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()))));
+		save(order);
+
+		service.addPurchaseOrdersToShipperTransportation(transportationId, Collections.singletonList(orderId));
+
+		final I_M_ShipperTransportation reloaded = load(transportationId, I_M_ShipperTransportation.class);
+		assertThat(reloaded.getETD()).as("ETD must not be defaulted on a sales transport order").isNull();
+		assertThat(reloaded.getETA()).isNull();
+		assertThat(reloaded.getATD()).isNull();
+		assertThat(reloaded.getATA()).isNull();
+		assertThat(reloaded.getBLDate()).isNull();
+	}
+
+	/**
+	 * Assigning via {@code addOrderLinesToShipperTransportation} (which passes only a SELECTED subset of the PO's lines): ETD is
+	 * still taken from the whole purchase order's {@code PreparationDate}, independent of which line subset is assigned.
+	 */
+	@Test
+	public void defaultDates_viaAddOrderLines_usesPurchaseOrderPreparationDate()
+	{
+		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
+		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
+
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("VendorSubset", "addressSubset");
+		final OrderId orderId = createOrder(bpartnerAndLocation);
+
+		final I_C_OrderLine line1 = createOrderLine(orderId, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), Money.of(10, chf));
+		line1.setLine(10);
+		save(line1);
+		final I_C_OrderLine line2 = createOrderLine(orderId, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product2, uom1), Money.of(10, chf));
+		line2.setLine(20);
+		save(line2);
+
+		final I_C_Order order = load(orderId, I_C_Order.class);
+		final Timestamp preparationDate = TimeUtil.asTimestamp(LocalDate.of(2019, 6, 1), orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID())));
+		order.setPreparationDate(preparationDate);
+		save(order);
+
+		// assign ONLY the second line — ETD must still come from the whole PO's PreparationDate
+		service.addOrderLinesToShipperTransportation(transportationId, ImmutableSet.of(OrderLineId.ofRepoId(line2.getC_OrderLine_ID())));
+
+		final Timestamp expectedEta = order.getDatePromised();
+
+		final I_M_ShipperTransportation reloaded = load(transportationId, I_M_ShipperTransportation.class);
+		assertThat(reloaded.getETA()).isEqualTo(expectedEta);
+		assertThat(reloaded.getETD())
+				.as("ETD taken from the PO's PreparationDate, independent of the assigned line subset")
+				.isEqualTo(preparationDate);
+	}
+
+	/**
+	 * Defaults are fill-only-if-unset: a date the user entered BEFORE the first PO was assigned is kept, while the remaining
+	 * unset fields are still populated from the PO.
+	 */
+	@Test
+	public void defaultDates_keepUserPresetField_fillOnlyUnset()
+	{
+		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
+		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
+
+		final Timestamp presetEtd = TimeUtil.asTimestamp(LocalDate.of(2021, 5, 5), orgDAO.getTimeZone(OrgId.ofRepoId(shipperTransportation.getAD_Org_ID())));
+		shipperTransportation.setETD(presetEtd);
+		save(shipperTransportation);
+
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("VendorPreset", "addressPreset");
+		final OrderId orderId = createOrder(bpartnerAndLocation);
+		createOrderLine(orderId, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), Money.of(10, chf));
+
+		final I_C_Order order = load(orderId, I_C_Order.class);
+
+		service.addPurchaseOrdersToShipperTransportation(transportationId, Collections.singletonList(orderId));
+
+		final Timestamp expectedEta = order.getDatePromised(); // ETA = promised arrival date
+
+		final I_M_ShipperTransportation reloaded = load(transportationId, I_M_ShipperTransportation.class);
+		assertThat(reloaded.getETD()).as("pre-set ETD is kept, not overwritten").isEqualTo(presetEtd);
+		assertThat(reloaded.getETA()).as("unset ETA still filled from the PO default (= DatePromised)").isEqualTo(expectedEta);
+		assertThat(reloaded.getATD()).as("ATD = ETD, so it follows the user-preset ETD, not the PO's DatePromised").isEqualTo(presetEtd);
+		assertThat(reloaded.getATA()).as("ATA = ETA").isEqualTo(expectedEta);
+		assertThat(reloaded.getBLDate()).as("B/L date = ATD, which here equals the user-preset ETD").isEqualTo(presetEtd);
+	}
+
+	/**
+	 * B/L date follows ATD (not ETD): when the user pre-sets ATD to a value different from ETD and leaves ETD/BLDate unset,
+	 * the B/L date default must be the (kept) ATD, not the PO-derived ETD.
+	 */
+	@Test
+	public void defaultDates_blDateFollowsPresetAtd_notEtd()
+	{
+		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
+		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
+
+		// user pre-sets ATD only; ETD, ETA, ATA and B/L date are left unset
+		final Timestamp presetAtd = TimeUtil.asTimestamp(LocalDate.of(2025, 1, 15), orgDAO.getTimeZone(OrgId.ofRepoId(shipperTransportation.getAD_Org_ID())));
+		shipperTransportation.setATD(presetAtd);
+		save(shipperTransportation);
+
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("VendorBlAtd", "addressBlAtd");
+		final OrderId orderId = createOrder(bpartnerAndLocation);
+		createOrderLine(orderId, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), Money.of(10, chf));
+
+		// the PO's PreparationDate is deliberately DIFFERENT from the preset ATD, so ETD (= PO's PreparationDate) and ATD (= preset) diverge
+		final I_C_Order order = load(orderId, I_C_Order.class);
+		final Timestamp poPreparationDate = TimeUtil.asTimestamp(LocalDate.of(2025, 2, 1), orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID())));
+		order.setPreparationDate(poPreparationDate);
+		save(order);
+
+		service.addPurchaseOrdersToShipperTransportation(transportationId, Collections.singletonList(orderId));
+
+		final I_M_ShipperTransportation reloaded = load(transportationId, I_M_ShipperTransportation.class);
+		assertThat(reloaded.getETD()).as("unset ETD is filled from the PO's PreparationDate").isEqualTo(poPreparationDate);
+		assertThat(reloaded.getATD()).as("pre-set ATD is kept, not overwritten").isEqualTo(presetAtd);
+		assertThat(reloaded.getBLDate())
+				.as("B/L date = ATD (the kept preset), NOT the PO-derived ETD")
+				.isEqualTo(presetAtd)
+				.isNotEqualTo(poPreparationDate);
+	}
+
+	/**
+	 * When several purchase orders are assigned in a SINGLE call, the "first order" that seeds the default dates must be the one
+	 * with the EARLIEST {@code DatePromised} (ties broken by {@code C_Order_ID}), regardless of the encounter order of the passed
+	 * collection or of the C_Order_IDs. Here the earliest-promised order is deliberately NOT the lowest-id one.
+	 */
+	@Test
+	public void defaultDates_batchAssignment_firstIsEarliestDatePromised()
+	{
+		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
+		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
+
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("VendorBatch", "addressBatch");
+
+		// order1: LOWEST C_Order_ID but the LATEST DatePromised => must NOT seed the dates
+		final OrderId order1 = createOrder(bpartnerAndLocation);
+		createOrderLine(order1, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), Money.of(10, chf));
+		final I_C_Order order1Record = load(order1, I_C_Order.class);
+		order1Record.setDatePromised(TimeUtil.asTimestamp(LocalDate.of(2021, 3, 3), orgDAO.getTimeZone(OrgId.ofRepoId(order1Record.getAD_Org_ID()))));
+		order1Record.setPreparationDate(TimeUtil.asTimestamp(LocalDate.of(2019, 1, 1), orgDAO.getTimeZone(OrgId.ofRepoId(order1Record.getAD_Org_ID()))));
+		save(order1Record);
+
+		final OrderId order2 = createOrder(bpartnerAndLocation);
+		createOrderLine(order2, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), Money.of(10, chf));
+		final I_C_Order order2Record = load(order2, I_C_Order.class);
+		order2Record.setDatePromised(TimeUtil.asTimestamp(LocalDate.of(2020, 2, 2), orgDAO.getTimeZone(OrgId.ofRepoId(order2Record.getAD_Org_ID()))));
+		order2Record.setPreparationDate(TimeUtil.asTimestamp(LocalDate.of(2019, 2, 2), orgDAO.getTimeZone(OrgId.ofRepoId(order2Record.getAD_Org_ID()))));
+		save(order2Record);
+
+		// order3: HIGHEST C_Order_ID but the EARLIEST DatePromised => it must seed the dates
+		final OrderId order3 = createOrder(bpartnerAndLocation);
+		createOrderLine(order3, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), Money.of(10, chf));
+		final I_C_Order order3Record = load(order3, I_C_Order.class);
+		order3Record.setDatePromised(TimeUtil.asTimestamp(LocalDate.of(2019, 1, 1), orgDAO.getTimeZone(OrgId.ofRepoId(order3Record.getAD_Org_ID()))));
+		final Timestamp order3PreparationDate = TimeUtil.asTimestamp(LocalDate.of(2018, 12, 1), orgDAO.getTimeZone(OrgId.ofRepoId(order3Record.getAD_Org_ID())));
+		order3Record.setPreparationDate(order3PreparationDate);
+		save(order3Record);
+
+		// sanity: order3 has the HIGHEST C_Order_ID yet the earliest DatePromised
+		assertThat(order1.getRepoId()).isLessThan(order2.getRepoId()).isLessThan(order3.getRepoId());
+
+		// assign all three at once, in a collection order that does NOT start with order3
+		service.addPurchaseOrdersToShipperTransportation(transportationId, ImmutableSet.of(order3, order2, order1));
+
+		final I_M_ShipperTransportation reloaded = load(transportationId, I_M_ShipperTransportation.class);
+		assertThat(reloaded.getETD())
+				.as("ETD is seeded by the earliest-DatePromised order (order3), not the lowest C_Order_ID or the collection order")
+				.isEqualTo(order3PreparationDate);
+	}
+
+	/**
+	 * Same determinism contract as {@link #defaultDates_batchAssignment_firstIsEarliestDatePromised()} but driven through
+	 * {@code addOrderLinesToShipperTransportation} (the line-level entry point): when a single call carries lines from several
+	 * purchase orders, the "first order" that seeds the default dates must be the one with the EARLIEST {@code DatePromised}
+	 * (ties broken by {@code C_Order_ID}), regardless of the encounter order of the passed line-id set.
+	 */
+	@Test
+	public void defaultDates_viaAddOrderLines_batchAssignment_firstIsEarliestDatePromised()
+	{
+		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
+		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
+
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("VendorBatchLines", "addressBatchLines");
+
+		// order1: LOWEST C_Order_ID but the LATEST DatePromised => must NOT seed the dates
+		final OrderId order1 = createOrder(bpartnerAndLocation);
+		final I_C_OrderLine line1 = createOrderLine(order1, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), Money.of(10, chf));
+		final I_C_Order order1Record = load(order1, I_C_Order.class);
+		order1Record.setDatePromised(TimeUtil.asTimestamp(LocalDate.of(2021, 3, 3), orgDAO.getTimeZone(OrgId.ofRepoId(order1Record.getAD_Org_ID()))));
+		order1Record.setPreparationDate(TimeUtil.asTimestamp(LocalDate.of(2019, 1, 1), orgDAO.getTimeZone(OrgId.ofRepoId(order1Record.getAD_Org_ID()))));
+		save(order1Record);
+
+		final OrderId order2 = createOrder(bpartnerAndLocation);
+		final I_C_OrderLine line2 = createOrderLine(order2, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), Money.of(10, chf));
+		final I_C_Order order2Record = load(order2, I_C_Order.class);
+		order2Record.setDatePromised(TimeUtil.asTimestamp(LocalDate.of(2020, 2, 2), orgDAO.getTimeZone(OrgId.ofRepoId(order2Record.getAD_Org_ID()))));
+		order2Record.setPreparationDate(TimeUtil.asTimestamp(LocalDate.of(2019, 2, 2), orgDAO.getTimeZone(OrgId.ofRepoId(order2Record.getAD_Org_ID()))));
+		save(order2Record);
+
+		// order3: HIGHEST C_Order_ID but the EARLIEST DatePromised => it must seed the dates
+		final OrderId order3 = createOrder(bpartnerAndLocation);
+		final I_C_OrderLine line3 = createOrderLine(order3, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), Money.of(10, chf));
+		final I_C_Order order3Record = load(order3, I_C_Order.class);
+		order3Record.setDatePromised(TimeUtil.asTimestamp(LocalDate.of(2019, 1, 1), orgDAO.getTimeZone(OrgId.ofRepoId(order3Record.getAD_Org_ID()))));
+		final Timestamp order3PreparationDate = TimeUtil.asTimestamp(LocalDate.of(2018, 12, 1), orgDAO.getTimeZone(OrgId.ofRepoId(order3Record.getAD_Org_ID())));
+		order3Record.setPreparationDate(order3PreparationDate);
+		save(order3Record);
+
+		// sanity: order3 has the HIGHEST C_Order_ID yet the earliest DatePromised
+		assertThat(order1.getRepoId()).isLessThan(order2.getRepoId()).isLessThan(order3.getRepoId());
+
+		// assign one line from each order at once, in a set order that does NOT start with order3's line
+		service.addOrderLinesToShipperTransportation(transportationId, ImmutableSet.of(
+				OrderLineId.ofRepoId(line3.getC_OrderLine_ID()),
+				OrderLineId.ofRepoId(line2.getC_OrderLine_ID()),
+				OrderLineId.ofRepoId(line1.getC_OrderLine_ID())));
+
+		final I_M_ShipperTransportation reloaded = load(transportationId, I_M_ShipperTransportation.class);
+		assertThat(reloaded.getETD())
+				.as("ETD is seeded by the earliest-DatePromised order (order3), not the lowest C_Order_ID or the line-id set order")
+				.isEqualTo(order3PreparationDate);
+	}
+
 	private I_M_ShipperTransportation createShipperTransportation()
 	{
 		final I_M_Shipper shipper = createShipper();
@@ -550,6 +914,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 		shipperTransportation.setM_Shipper_ID(shipper.getM_Shipper_ID());
 
 		shipperTransportation.setDateDoc(TimeUtil.asTimestamp(LocalDate.of(2019, 6, 6), orgDAO.getTimeZone(OrgId.ofRepoId(shipper.getAD_Org_ID()))));
+		shipperTransportation.setIsSOTrx(false); // purchase (inbound) transport order
 
 		save(shipperTransportation);
 
@@ -569,8 +934,12 @@ public class PurchaseOrderToShipperTransportationServiceTest
 
 	private BPartnerLocationId createBPartnerAndLocation(final String partnerName, final String address)
 	{
+		final I_C_BP_Group bpGroup = newInstance(I_C_BP_Group.class);
+		save(bpGroup);
+
 		final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
 		bpartnerRecord.setName(partnerName);
+		bpartnerRecord.setC_BP_Group_ID(bpGroup.getC_BP_Group_ID());
 		save(bpartnerRecord);
 
 		final int bpartnerId = bpartnerRecord.getC_BPartner_ID();

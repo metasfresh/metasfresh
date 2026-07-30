@@ -37,6 +37,7 @@ import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
@@ -46,6 +47,10 @@ import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collector;
 
+/**
+ * Repository Tables: DD_NetworkDistribution, DD_NetworkDistributionLine
+ * Repository Cluster: DistributionNetworkRepository
+ */
 @Repository
 public class DistributionNetworkRepository
 {
@@ -59,6 +64,31 @@ public class DistributionNetworkRepository
 	public DistributionNetwork getById(@NonNull final DistributionNetworkId id)
 	{
 		return getMap().getById(id);
+	}
+
+	public DistributionNetworkId createNetwork(@NonNull final CreateDistributionNetworkRequest request)
+	{
+		final I_DD_NetworkDistribution networkRecord = InterfaceWrapperHelper.newInstance(I_DD_NetworkDistribution.class);
+		networkRecord.setAD_Org_ID(request.getOrgId().getRepoId());
+		networkRecord.setValue(request.getName());
+		networkRecord.setName(request.getName());
+		InterfaceWrapperHelper.saveRecord(networkRecord);
+
+		final DistributionNetworkId networkId = DistributionNetworkId.ofRepoId(networkRecord.getDD_NetworkDistribution_ID());
+
+		for (final CreateDistributionNetworkRequest.Line line : request.getLines())
+		{
+			final I_DD_NetworkDistributionLine lineRecord = InterfaceWrapperHelper.newInstance(I_DD_NetworkDistributionLine.class);
+			lineRecord.setAD_Org_ID(request.getOrgId().getRepoId());
+			lineRecord.setDD_NetworkDistribution_ID(networkId.getRepoId());
+			lineRecord.setM_WarehouseSource_ID(line.getSourceWarehouseId().getRepoId());
+			lineRecord.setM_Warehouse_ID(line.getTargetWarehouseId().getRepoId());
+			lineRecord.setM_Shipper_ID(line.getShipperId().getRepoId());
+			lineRecord.setPercent(Percent.ONE_HUNDRED.toBigDecimal());
+			InterfaceWrapperHelper.saveRecord(lineRecord);
+		}
+
+		return networkId;
 	}
 
 	/**

@@ -271,7 +271,7 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
           "Width": 200
         }
       ],
-      "OrderNo": "1",
+      "OrderNo": "00000001",
       "PickupDt": "2025-10-02",
       "ProdConceptID": 10305,
       "References": [

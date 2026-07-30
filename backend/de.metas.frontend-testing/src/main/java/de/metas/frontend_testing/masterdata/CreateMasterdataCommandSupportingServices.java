@@ -12,6 +12,7 @@ import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleSer
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
+import de.metas.material.planning.ddorder.DistributionNetworkRepository;
 import de.metas.mobile.MobileConfigService;
 import de.metas.product.ProductRepository;
 import de.metas.scannable_code.format.service.ScannableCodeFormatService;
@@ -38,6 +39,7 @@ public class CreateMasterdataCommandSupportingServices
 	@NonNull public final CurrencyRepository currencyRepository;
 
 	@NonNull public final DDOrderService ddOrderService;
+	@NonNull public final DistributionNetworkRepository distributionNetworkRepository;
 	@NonNull public final DistributionLauncherCaptionProvider distributionLauncherCaptionProvider;
 	@NonNull public final DistributionJobLoaderSupportingServices distributionJobLoaderSupportingServices;
 
