@@ -163,7 +163,8 @@ export const PickingJobScreen = {
                        isScanDirectly,
                        expectedPickDirectly,
                        expectNextScreen,
-                       switchToManualInput, qtyEntered, expectQtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason
+                       switchToManualInput, qtyEntered, expectQtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason,
+                       expectedError
                    }) => await step(`${NAME} - Scan HU and Pick`, async () => {
         if (isScanDirectly) {
             await BarcodeScannerComponent.type(qrCode);
@@ -174,7 +175,10 @@ export const PickingJobScreen = {
         }
 
         if (!expectedPickDirectly) {
-            await GetQuantityDialog.fillAndPressDone({ switchToManualInput, expectQtyEntered, qtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason });
+            // expectedError: the qty-dialog Done press fires the picking/event POST which the backend
+            // rejects (e.g. a life-cycle-blocked product) — asserted as an error toast; the dialog closes
+            // and we stay on the picking-job screen.
+            await GetQuantityDialog.fillAndPressDone({ switchToManualInput, expectQtyEntered, qtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason, expectedError });
         }
 
         if (!expectNextScreen || expectNextScreen === 'PickingJobScreen') {
