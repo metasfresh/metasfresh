@@ -1,4 +1,10 @@
--- Make the transport order's B/L Date and ETA editable while the document is completed.
+-- Make the transport order's B/L Date and ETA editable once the document is processed.
+--
+-- Note this covers every Processed-derived state, not only Completed: the read-only gate keys on
+-- Processed, which Closed keeps set and Void also sets. Editing either date on a VOIDED transport
+-- order therefore saves but propagates nothing, because the BL/ETA change handler only forwards to
+-- the linked orders when the document is completed or closed. That is the same characteristic the
+-- already-always-updateable sibling fields have had since they were introduced.
 --
 -- A completed M_ShipperTransportation is Processed='Y', and the WebUI renders every field of a
 -- processed document read-only unless its AD_Column.IsAlwaysUpdateable='Y'. Both dates were left
