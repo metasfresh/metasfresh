@@ -50,12 +50,12 @@ public class WebConfig implements WebMvcConfigurer
 	 * A servlet filter registered like de.metas.util.web's other /api filters, and not a HandlerInterceptor: for
 	 * {@code @ResponseBody} / {@code ResponseEntity} methods the response is written and committed before
 	 * {@code postHandle} runs (spring reference, "Handler Interception"), and a {@code preHandle} - a
-	 * {@code WebContentInterceptor} included - only ever sees a request that reaches an MVC handler, so neither the
-	 * 401 from UserAuthTokenFilter nor an audited response served by ApiAuditFilter would be covered.
+	 * {@code WebContentInterceptor} included - only ever sees a request that reaches an MVC handler, so it would
+	 * miss a 404 and every error dispatch, which this filter does cover.
 	 * <p>
-	 * Runs innermost (hence the explicit order), which leaves de.metas.util.web's ApiAuditFilter - registered on the
-	 * same pattern with order 3 - outside it: an audited request answered from that filter's own response reference
-	 * never enters this chain and still carries no Cache-Control.
+	 * Runs innermost (hence the explicit order), which leaves the /api filters registered ahead of it outside:
+	 * UserAuthTokenFilter's sendError(401) (order 2) and a response ApiAuditFilter (order 3) answers from its own
+	 * response reference never enter this chain, and still carry no Cache-Control.
 	 */
 	@Bean
 	public FilterRegistrationBean<Filter> apiNoStoreCacheControlFilter()
