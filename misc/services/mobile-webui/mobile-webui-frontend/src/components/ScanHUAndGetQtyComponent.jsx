@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 
 import { trl } from '../utils/translations';
 import GetQuantityDialog from './dialogs/GetQuantityDialog';
+import YesNoDialog from './dialogs/YesNoDialog';
 import Button from './buttons/Button';
 import { formatQtyToHumanReadable, formatQtyToHumanReadableStr } from '../utils/qtys';
 import { useBooleanSetting } from '../reducers/settings';
@@ -59,6 +60,7 @@ const ScanHUAndGetQtyComponent = ({
   onClose: onCloseCallback,
 }) => {
   const [progressStatus, setProgressStatus] = useState(STATUS_NOT_INITIALIZED);
+  const [confirmationDialogProps, setConfirmationDialogProps] = useState(undefined);
   const { resolvedBarcodeData, setResolvedBarcodeData, updateResolvedBarcodeData, computeNewResolvedBarcodeData } =
     useResolvedBarcodeData({
       userInfo,
@@ -155,17 +157,33 @@ const ScanHUAndGetQtyComponent = ({
     await requestQtyOrReportResult({ resolvedBarcodeData: resolvedBarcodeDataNew });
   };
 
+  const fireOnResult = (onResultPayload) => onResult(onResultPayload)?.catch?.((error) => toastErrorFromObj(error));
+
   const requestQtyOrReportResult = async ({ resolvedBarcodeData }) => {
     if (isAskForQty({ resolvedBarcodeData })) {
       setProgressStatus(STATUS_READ_QTY);
-    } else {
-      await onResult({
-        qty: 0,
-        reason: null,
-        scannedBarcode: resolvedBarcodeData.scannedBarcode,
-        resolvedBarcodeData: resolvedBarcodeData,
-      })?.catch?.((error) => toastErrorFromObj(error));
+      return;
     }
+
+    const onResultPayload = {
+      qty: 0,
+      reason: null,
+      scannedBarcode: resolvedBarcodeData.scannedBarcode,
+      resolvedBarcodeData: resolvedBarcodeData,
+    };
+
+    // There is no qty dialog on this path (the whole scanned TU is booked), so the over-delivery
+    // check GetQuantityDialog performs for the CU path has to happen here, with the same prompt and
+    // the same YesNoDialog. The qty to compare is the TU's own content, fetched into qtyInitial for
+    // exactly this purpose; the qty: 0 above is the booking instruction, not the comparison input.
+    const confirmationPrompt =
+      getConfirmationPromptForQty && (await getConfirmationPromptForQty(resolvedBarcodeData.qtyInitial));
+    if (confirmationPrompt) {
+      setConfirmationDialogProps({ promptQuestion: confirmationPrompt, onResultPayload });
+      return;
+    }
+
+    await fireOnResult(onResultPayload);
   };
 
   const validateQtyEntered = (qtyEntered, uom) => {
@@ -232,6 +250,22 @@ const ScanHUAndGetQtyComponent = ({
   };
 
   const showEligibleBarcodeDebugButton = useBooleanSetting('barcodeScanner.showEligibleBarcodeDebugButton');
+
+  // Early return (after every hook), so the BarcodeScannerComponent below is unmounted while the
+  // operator answers: two mounted scanners would both capture the next hardware scan.
+  // progressStatus is deliberately left untouched, so declining returns to the very step we came from.
+  if (confirmationDialogProps) {
+    return (
+      <YesNoDialog
+        promptQuestion={confirmationDialogProps.promptQuestion}
+        onYes={() => {
+          fireOnResult(confirmationDialogProps.onResultPayload);
+          setConfirmationDialogProps(undefined);
+        }}
+        onNo={() => setConfirmationDialogProps(undefined)}
+      />
+    );
+  }
 
   switch (progressStatus) {
     case STATUS_READ_HU_BARCODE: {

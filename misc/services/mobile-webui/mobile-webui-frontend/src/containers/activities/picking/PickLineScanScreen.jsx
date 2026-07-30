@@ -97,8 +97,10 @@ const PickLineScanScreen = () => {
         isShowPromptWhenOverPicking,
         customQRCodeFormats,
         pickingUnit,
+        wfProcessId,
+        lineId,
       }),
-    [productId, productNo, isShowPromptWhenOverPicking, customQRCodeFormats, pickingUnit]
+    [productId, productNo, isShowPromptWhenOverPicking, customQRCodeFormats, pickingUnit, wfProcessId, lineId]
   );
 
   const onClose = useOnClose({ applicationId, wfProcessId, activity, lineId, next });
@@ -195,6 +197,8 @@ export const convertScannedBarcodeToResolvedResult = async ({
   isShowPromptWhenOverPicking,
   customQRCodeFormats,
   pickingUnit,
+  wfProcessId,
+  lineId,
 }) => {
   let parsedQRCode = parseQRCodeString({
     string: scannedBarcode,
@@ -235,6 +239,8 @@ export const convertScannedBarcodeToResolvedResult = async ({
     huInfoFromBackend,
     expectedProductNo,
     isShowPromptWhenOverPicking,
+    wfProcessId,
+    lineId,
   });
 };
 
@@ -250,6 +256,8 @@ const convertQRCodeObjectToResolvedResult = async ({
   huInfoFromBackend,
   expectedProductNo,
   isShowPromptWhenOverPicking,
+  wfProcessId,
+  lineId,
 }) => {
   const result = {
     qrCode: parsedQRCode,
@@ -293,9 +301,14 @@ const convertQRCodeObjectToResolvedResult = async ({
   // so we need the actual qty to compare against remaining.
   if (parsedQRCode.isTUToBePickedAsWhole === true && isShowPromptWhenOverPicking) {
     try {
-      const huInfo =
-        huInfoFromBackend ??
-        (await getScannedHUQRCodeInfo({ qrCode: toQRCodeString(parsedQRCode), productNo: expectedProductNo }));
+      // The picking job + line are required: a whole-TU label (custom weight label, LMQ, GS1) is not an HU QR
+      // code, so the backend can only resolve it to its HU in the context of the line being picked.
+      const huInfo = await getScannedHUQRCodeInfo({
+        qrCode: toQRCodeString(parsedQRCode),
+        productNo: expectedProductNo,
+        wfProcessId,
+        lineId,
+      });
       if (huInfo?.productQty != null) {
         result.qtyInitial = parseFloat(huInfo.productQty);
       }
