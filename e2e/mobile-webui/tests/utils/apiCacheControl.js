@@ -25,12 +25,16 @@ const apiPathOf = (url) => {
  */
 export const ApiCacheControl = {
     startRecording: () => {
-        const cacheControlByPath = new Map();
+        // every DISTINCT value seen per path, not the last one: an endpoint the app calls repeatedly must not be
+        // able to hide one bad response behind a later good one
+        const cacheControlsByPath = new Map();
 
         page.on('response', (response) => {
             const path = apiPathOf(response.url());
             if (path != null) {
-                cacheControlByPath.set(path, response.headers()['cache-control'] ?? null);
+                const cacheControls = cacheControlsByPath.get(path) ?? new Set();
+                cacheControls.add(response.headers()['cache-control'] ?? null);
+                cacheControlsByPath.set(path, cacheControls);
             }
         });
 
@@ -40,10 +44,12 @@ export const ApiCacheControl = {
              *        assertion would also pass on a recording that never captured anything.
              */
             expectNoApiResponseIsCacheable: async ({ including }) => await test.step(`${NAME} - Expect every ${API_PATH_MARKER}* response to be no-store`, async () => {
-                expect([...cacheControlByPath.keys()]).toEqual(expect.arrayContaining(including));
+                expect([...cacheControlsByPath.keys()]).toEqual(expect.arrayContaining(including));
 
                 // as a map, so a failure names the offending endpoints and what they sent instead
-                const cacheable = [...cacheControlByPath].filter(([, cacheControl]) => cacheControl !== 'no-store');
+                const cacheable = [...cacheControlsByPath]
+                    .map(([path, cacheControls]) => [path, [...cacheControls].filter((cacheControl) => cacheControl !== 'no-store')])
+                    .filter(([, offending]) => offending.length > 0);
                 expect(Object.fromEntries(cacheable)).toEqual({});
             }),
         };
