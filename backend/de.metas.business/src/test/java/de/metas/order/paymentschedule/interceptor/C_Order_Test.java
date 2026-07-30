@@ -78,7 +78,7 @@ class C_Order_Test
 	}
 
 	/**
-	 * A line with status Awaiting_Pay but no downstream link (no inoutId, no invoiceId, no proforma)
+	 * A line with status Awaiting_Pay but no downstream link (no inoutId, no invoiceId)
 	 * must NOT block reactivation under the new semantics.
 	 */
 	@Test
@@ -95,7 +95,7 @@ class C_Order_Test
 
 	/**
 	 * Status Awaiting_Pay without a downstream link must NOT block reactivation — the block requires
-	 * an actual inoutId/invoiceId/proforma. This test drives the block via an inoutId on an
+	 * an actual inoutId/invoiceId link. This test drives the block via an inoutId on an
 	 * Awaiting_Pay line, demonstrating the guard is status-agnostic (blocks on the link, regardless
 	 * of status).
 	 */
@@ -139,7 +139,7 @@ class C_Order_Test
 				.doesNotThrowAnyException();
 	}
 
-	/** NEW: even a Pending line carrying an inoutId (goods-receipt link) must block reactivation. */
+	/** Even a Pending line carrying an inoutId (goods-receipt link) must block reactivation. */
 	@Test
 	void rejectReactivate_whenAnyLineHasInoutLink()
 	{
