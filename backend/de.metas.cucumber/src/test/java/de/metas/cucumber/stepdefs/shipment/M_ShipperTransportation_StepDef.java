@@ -310,8 +310,8 @@ public class M_ShipperTransportation_StepDef
 	 * {@code @ModelChange} interceptor {@code de.metas.shipping.model.validator.M_ShipperTransportation#syncOrderDatesOnEdit},
 	 * which is what propagates ETA / BLDate onto the linked purchase orders and re-drives their pay schedules.
 	 * Never replace this with a direct SQL/DB write: the propagation would no longer be exercised and the
-	 * scenarios relying on it (S30954_1..S30954_3 in purchaseOrderComplexPaymentTerm.feature) would keep
-	 * passing with the chain broken.
+	 * scenarios relying on it (S30954_1..S30954_3 and S30954_5 in purchaseOrderComplexPaymentTerm.feature)
+	 * would keep passing with the chain broken.
 	 * <p>
 	 * Note this writes straight to the record and therefore bypasses the WebUI Document layer, where a
 	 * completed ({@code Processed='Y'}) transport order is read-only unless the column is always-updateable.
