@@ -274,8 +274,9 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | ptc_1      | p_S0469_30              | Normal                      | 101                     | 2000-04-01 |
 
     # dateRequired is intentionally omitted; dateOrdered and dateCandidate are set to 2021-04-15,
-    # which is BEFORE the future row's ValidFrom=2099-01-01. The fix must coalesce to dateOrdered
-    # and select the OLD row (Qty=10, ValidFrom=2020-01-01), not the future row (Qty=6, ValidFrom=2099-01-01).
+    # which is BEFORE the future row's ValidFrom=2099-01-01.
+    # JsonConverters coalesces to dateOrdered and selects the OLD row (Qty=10, ValidFrom=2020-01-01),
+    # not the future row (Qty=6, ValidFrom=2099-01-01).
     And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
   """
 {
@@ -306,10 +307,10 @@ Feature: Process order candidate and automatically generate shipment and invoice
 }
 """
 
-    # Assert the OLCand itself carries the OLD packing instruction (the one valid at 2021-04-15).
-    # QtyItemCapacity=10 comes from the OLD row; the FUTURE row (Qty=6, ValidFrom=2099-01-01) must NOT be selected.
+    # Assert the OLCand was resolved to the OLD packing instruction (ValidFrom=2020-01-01, valid at 2021-04-15).
+    # The FUTURE row (ValidFrom=2099-01-01) must NOT be selected.
     And after not more than 10s, C_OLCand is found
       | C_OLCand_ID.Identifier | M_Product_ID.Identifier | QtyEntered | ExternalSystem.Value | OPT.M_HU_PI_Item_Product_ID.Identifier |
-      | olcand_S0469_30        | p_S0469_30              | 10         | Shopware6            | huItemProduct_S0469_30_OLD              |
+      | olcand_S0469_30        | p_S0469_30              | 10         | Shopware6            | huItemProduct_S0469_30_OLD             |
 
     And set sys config boolean value false for sys config de.metas.ordercandidate.api.OLCandOrderFactory.UseQtyUOMOnManualPrice
