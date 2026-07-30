@@ -6,6 +6,7 @@ import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { WorkstationManagerScreen } from "../../utils/screens/workstationManager/WorkstationManagerScreen";
 import { WorkplaceManagerScreen } from "../../utils/screens/workplaceManager/WorkplaceManagerScreen";
+import { ManufacturingJobsListScreen } from "../../utils/screens/manufacturing/ManufacturingJobsListScreen";
 
 const createMasterdata = async () => {
     return await Backend.createMasterdata({
@@ -25,6 +26,9 @@ const createMasterdata = async () => {
             resources: {
                 // WS1 is a workstation statically linked to workplace A.
                 WS1: { type: 'WS', workplace: 'wpA' },
+                // WS2 belongs to a DIFFERENT workplace (B), so switching to it must move both the
+                // displayed workstation and the displayed active workplace.
+                WS2: { type: 'WS', workplace: 'wpB' },
             },
         }
     });
@@ -74,5 +78,52 @@ test('Re-scanning an already-assigned workstation must re-switch a drifted activ
         // The re-scan must re-assign the workstation and switch the active workplace back to A; a
         // read-only scan leaves it on the drifted workplace B and this assertion fails.
         expect(assignedWorkplace?.name).toBe(masterdata.workplaces.wpA.name);
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('A workstation switch made while the Produktion screen stays open must show on re-entry', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0160: Manufacturing Execution');
+    allure.tag('F8046: Workstation');
+    allure.tag('F8046');  // Standalone tag for Tags section;
+    allure.story('A screen showing the operator\'s workstation re-reads it when the operator returns to it');
+    allure.severity('critical');
+
+    const masterdata = await createMasterdata();
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+
+    await test.step('Scan workstation WS1 (linked to workplace A), then open the manufacturing job list', async () => {
+        await WorkstationManagerScreen.scanWorkstation(masterdata.resources.WS1.qrCode);
+        await WorkstationManagerScreen.goBack();
+        await ApplicationsListScreen.startApplication('mfg');
+        await ManufacturingJobsListScreen.waitForScreen();
+        await ManufacturingJobsListScreen.expectCurrentWorkstation(masterdata.resources.WS1.name);
+        await ManufacturingJobsListScreen.expectCurrentWorkplace(masterdata.workplaces.wpA.name);
+    });
+
+    await test.step('While this screen stays open, the operator\'s workstation switches to WS2 (workplace B)', async () => {
+        // Not a fabricated state: this posts to the very endpoint the workstation app posts to on a
+        // scan. It stands in for the real-world trigger — the operator scanning in a second app
+        // instance (installed PWA plus a browser tab) while this screen remains mounted.
+        await Backend.assignWorkstationByQRCode({ qrCode: masterdata.resources.WS2.qrCode });
+        const { assignedWorkplace } = await Backend.getCurrentWorkplace();
+        expect(assignedWorkplace?.name).toBe(masterdata.workplaces.wpB.name);
+    });
+
+    await test.step('Returning to the screen must re-read the operator context — it must not stay on WS1 / A', async () => {
+        // Coming back to an app that stayed open fires exactly these two events; the screen must treat
+        // them as "re-read the operator's context", not keep whatever it loaded when it first mounted.
+        await page.evaluate(() => {
+            document.dispatchEvent(new Event('visibilitychange'));
+            window.dispatchEvent(new Event('focus'));
+        });
+
+        // RED before the fix: both of these still show WS1 / wpA, because the screen read the
+        // operator's workstation and workplace once at mount and has no refresh trigger at all.
+        await ManufacturingJobsListScreen.expectCurrentWorkstation(masterdata.resources.WS2.name);
+        await ManufacturingJobsListScreen.expectCurrentWorkplace(masterdata.workplaces.wpB.name);
     });
 });
