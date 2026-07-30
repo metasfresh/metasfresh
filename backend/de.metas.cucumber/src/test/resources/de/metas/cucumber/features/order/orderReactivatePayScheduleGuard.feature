@@ -88,10 +88,10 @@ Feature: PO reactivation guard — downstream-activity check
 
   @from:cucumber
   @Id:S30621_TC2
-  Scenario: Reactivate blocked — proforma allocation exists
+  Scenario: Reactivate allowed — proforma allocation exists, nothing committed downstream
     # A buyer allocates a purchase proforma invoice to the order (LC step → Awaiting_Pay).
-    # The guard detects the proforma allocation and blocks reactivation. The buyer must
-    # de-allocate the proforma before they can reactivate.
+    # The allocation link and its prepayment both survive reactivation, so nothing downstream
+    # would be lost — the guard must allow reactivation without requiring a de-allocation first.
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | C_PaymentTerm_ID |
@@ -115,8 +115,8 @@ Feature: PO reactivation guard — downstream-activity check
       | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
       | LC                | 21000.00 | 21000.00      | WP     |
 
-    # Guard blocks — proforma allocation exists; user must de-allocate first
-    And the order identified by po cannot be reactivated
+    # Guard allows reactivation — proforma allocation with no goods-receipt/invoice link does not block
+    And the order identified by po is reactivated
 
 
   @from:cucumber
