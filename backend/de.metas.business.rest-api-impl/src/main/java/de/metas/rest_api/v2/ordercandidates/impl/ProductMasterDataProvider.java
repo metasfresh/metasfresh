@@ -48,7 +48,7 @@ import java.time.ZonedDateTime;
 @RequiredArgsConstructor
 public final class ProductMasterDataProvider
 {
-	private final IProductBL productsBL = Services.get(IProductBL.class);
+	@NonNull private final IProductBL productsBL = Services.get(IProductBL.class);
 
 	@NonNull private final ExternalIdentifierProductLookupService productLookupService;
 
