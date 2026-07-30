@@ -212,6 +212,13 @@ public final class MasterdataProvider
 
 	public ProductInfo getProductInfo(
 			@NonNull final ExternalIdentifier productIdentifier,
+			@NonNull final OrgId orgId)
+	{
+		return productMasterDataProvider.getProductInfo(productIdentifier, orgId);
+	}
+
+	public ProductInfo getProductInfo(
+			@NonNull final ExternalIdentifier productIdentifier,
 			@NonNull final OrgId orgId,
 			@Nullable final ZonedDateTime date)
 	{

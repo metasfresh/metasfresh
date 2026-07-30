@@ -409,9 +409,9 @@ public class ExternalIdentifierProductLookupServiceTest
 	@Test
 	void lookupProductByGTIN_excludes_piip_with_inactive_product()
 	{
-		// given — PIIP is active but points to an inactive product (simulates post-consolidation orphan).
-		// The consolidation process (F5001.1) can deactivate M_Product while leaving its PIIP rows active;
-		// those stale rows must NOT be matched.
+		// given — PIIP is active but points to an inactive product (post-consolidation orphan).
+		// A product-consolidation run may deactivate M_Product while leaving the PIIP rows active;
+		// only PIIPs whose M_Product_ID points to an active product are valid matches.
 		final I_M_Product product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
 		product.setValue("consolidated-away-product");
 		product.setIsActive(false); // Product is inactive — the key difference from lookupProductByGTIN_with_inactive_records

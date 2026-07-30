@@ -304,7 +304,7 @@ public class CreateInvoiceCandidatesService
 			throw new MissingPropertyException("productIdentifier", item);
 		}
 
-		final ProductId productId = masterdataProvider.getProductInfo(productIdentifier, orgId, null)
+		final ProductId productId = masterdataProvider.getProductInfo(productIdentifier, orgId)
 				.getProductId();
 
 		candidate.productId(productId);
