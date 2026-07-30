@@ -28,9 +28,8 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.product.ProductExternalReferenceType;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
-import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.HUPIItemProductGtinMatch;
 import de.metas.handlingunits.IHUPIItemProductDAO;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
@@ -96,29 +95,13 @@ public class ExternalIdentifierProductLookupService
 	{
 		final String gtin = productIdentifier.asGTIN();
 
-		// Branch 1: M_HU_PI_Item_Product — try validity-filtered first, then unfiltered fallback.
-		// Primary query: respect validity (ValidFrom <= date AND (ValidTo >= date OR ValidTo IS NULL)).
-		final Optional<I_M_HU_PI_Item_Product> hupiOpt = huPIItemProductDAO.findFirstByGtin(gtin, true, date);
-
+		// Branch 1: M_HU_PI_Item_Product — validity-filtered (ValidFrom <= date AND (ValidTo >= date OR ValidTo IS NULL)).
+		// If no valid row exists for the given date, falls through to branch 2.
+		final Optional<HUPIItemProductGtinMatch> hupiOpt = huPIItemProductDAO.findFirstByGtin(gtin, date);
 		if (hupiOpt.isPresent())
 		{
-			final I_M_HU_PI_Item_Product hupi = hupiOpt.get();
-			return ProductAndHUPIItemProductId.opt(
-					ProductId.ofRepoId(hupi.getM_Product_ID()),
-					HUPIItemProductId.ofRepoId(hupi.getM_HU_PI_Item_Product_ID()));
-		}
-
-		if (date != null)
-		{
-			// Fallback: no PIIP is valid on the date (e.g. the only row has ValidFrom in the future).
-			// Resolve the product via the unfiltered query so the product is not lost, but do NOT
-			// attach the out-of-window PIIP — applying a not-yet-valid packing instruction would be wrong.
-			// The downstream caller will use virtual/No-Packing-Item in the absence of a PIIP.
-			final Optional<I_M_HU_PI_Item_Product> fallbackHupiOpt = huPIItemProductDAO.findFirstByGtin(gtin, false, null);
-			if (fallbackHupiOpt.isPresent())
-			{
-				return ProductAndHUPIItemProductId.opt(ProductId.ofRepoId(fallbackHupiOpt.get().getM_Product_ID()));
-			}
+			final HUPIItemProductGtinMatch match = hupiOpt.get();
+			return ProductAndHUPIItemProductId.opt(match.getProductId(), match.getHupiItemProductId());
 		}
 
 		// Branch 2: C_BPartner_Product — GTIN / EAN_CU / UPC match.

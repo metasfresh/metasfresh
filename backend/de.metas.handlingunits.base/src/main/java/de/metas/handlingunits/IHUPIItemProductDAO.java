@@ -27,6 +27,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.HUPIItemProductGtinMatch;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -161,16 +162,17 @@ public interface IHUPIItemProductDAO extends ISingletonService
 	IQueryFilter<I_M_HU_PI_Item_Product> createValidOnDateFilter(@Nullable ZonedDateTime date);
 
 	/**
-	 * Finds the first {@link I_M_HU_PI_Item_Product} row matching the given GTIN/EAN_TU/UPC value.
+	 * Finds the first {@link I_M_HU_PI_Item_Product} row matching the given GTIN/EAN_TU/UPC value,
+	 * filtered by the given validity date (using {@link #createValidOnDateFilter}).
 	 * Rows are ordered by {@code ValidFrom DESC} (most recent first) then by ID ascending as a tiebreak.
-	 * Only active records with a non-null {@code M_Product_ID} are considered.
+	 * Only active records with a non-null {@code M_Product_ID} pointing to an <em>active</em> product
+	 * are considered — stale PIIP rows left behind by the product consolidation process are excluded.
 	 *
-	 * @param gtin          the GTIN/EAN_TU/UPC value to match
-	 * @param applyValidity when {@code true}, restricts results to rows valid on {@code date}
-	 *                      (using {@link #createValidOnDateFilter}); when {@code false}, no validity filter is applied
-	 * @param date          the reference date for the validity filter; only used when {@code applyValidity} is {@code true}
-	 * @return the first matching row, or {@link Optional#empty()} if none found
+	 * @param gtin the GTIN/EAN_TU/UPC value to match
+	 * @param date the reference date for the validity filter; {@code null} means no validity filter is applied
+	 * @return the first matching row as a {@link HUPIItemProductGtinMatch} carrying product and PIIP IDs,
+	 *         or {@link Optional#empty()} if none found
 	 */
 	@NonNull
-	Optional<I_M_HU_PI_Item_Product> findFirstByGtin(@NonNull String gtin, boolean applyValidity, @Nullable ZonedDateTime date);
+	Optional<HUPIItemProductGtinMatch> findFirstByGtin(@NonNull String gtin, @Nullable ZonedDateTime date);
 }

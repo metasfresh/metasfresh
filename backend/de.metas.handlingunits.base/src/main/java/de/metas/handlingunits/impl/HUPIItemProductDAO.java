@@ -29,6 +29,7 @@ import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HUPIItemProduct;
+import de.metas.handlingunits.HUPIItemProductGtinMatch;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
@@ -493,9 +494,8 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 
 	@Override
 	@NonNull
-	public Optional<I_M_HU_PI_Item_Product> findFirstByGtin(
+	public Optional<HUPIItemProductGtinMatch> findFirstByGtin(
 			@NonNull final String gtin,
-			final boolean applyValidity,
 			@Nullable final ZonedDateTime date)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -506,22 +506,27 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_EAN_TU, gtin)
 				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_UPC, gtin);
 
-		final IQueryBuilder<I_M_HU_PI_Item_Product> builder = queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
+		// The consolidation process (F5001.1) can leave an M_Product inactive while keeping its PIIP rows active.
+		// Those stale rows must NOT be matched.
+		final IQuery<I_M_Product> activeProducts = queryBL.createQueryBuilder(I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.create();
+
+		return queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
 				.addOnlyActiveRecordsFilter()
 				.filter(hupiFilter)
-				.addNotNull(I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID);
-
-		if (applyValidity)
-		{
-			builder.filter(createValidOnDateFilter(date));
-		}
-
-		return builder.orderBy()
+				.addNotNull(I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID)
+				.addInSubQueryFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID, I_M_Product.COLUMNNAME_M_Product_ID, activeProducts)
+				.filter(createValidOnDateFilter(date))
+				.orderBy()
 				.addColumn(I_M_HU_PI_Item_Product.COLUMNNAME_ValidFrom, Direction.Descending, Nulls.Last)
 				.addColumn(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID, Direction.Ascending, Nulls.Last)
 				.endOrderBy()
 				.create()
-				.firstOptional();
+				.firstOptional()
+				.map(record -> HUPIItemProductGtinMatch.of(
+						ProductId.ofRepoId(record.getM_Product_ID()),
+						HUPIItemProductId.ofRepoId(record.getM_HU_PI_Item_Product_ID())));
 	}
 
 	@Override

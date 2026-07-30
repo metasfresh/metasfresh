@@ -350,19 +350,14 @@ public class ExternalIdentifierProductLookupServiceTest
 	}
 
 	/**
-	 * Regression test for the cucumber scenario @Id:S0469_20 (manualPriceOLCandToInvoice):
-	 * a product whose ONLY M_HU_PI_Item_Product GTIN row has ValidFrom in the FUTURE relative to
-	 * the query date must still resolve — the product must NOT become unresolvable just because
-	 * no PIIP row is valid on the requested date.
+	 * Strict validity test: when the only PIIP row has a {@code ValidFrom} date AFTER the query date,
+	 * branch 1 finds nothing (the row is not yet valid), branches 2 and 3 also find nothing
+	 * (no {@code C_BPartner_Product} or {@code M_Product} carries this GTIN) → result must be empty.
 	 *
-	 * <p>Setup mirrors the fallback case: ValidFrom=2022-01-01, query date=2021-04-15
-	 * (i.e. ValidFrom is AFTER the query date, so the validity-filtered primary query returns nothing).
-	 * Expected: the product resolves (product ID present) but the not-yet-valid PIIP is NOT attached —
-	 * applying a future packing instruction before its ValidFrom would be semantically wrong.
-	 * The downstream caller will fall back to virtual/No-Packing-Item.
+	 * <p>Setup: ValidFrom=2022-01-01, query date=2021-04-15 (ValidFrom is AFTER the query date).
 	 */
 	@Test
-	void gtin_resolves_product_even_when_no_piip_valid_on_date()
+	void gtin_returns_empty_when_only_piip_row_is_not_yet_valid()
 	{
 		// given — one active product with a single PIIP whose ValidFrom is AFTER the query date
 		final I_M_Product product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
@@ -379,21 +374,14 @@ public class ExternalIdentifierProductLookupServiceTest
 		hupiItemProduct.setIsActive(true);
 		InterfaceWrapperHelper.save(hupiItemProduct);
 
-		// when — query date is BEFORE ValidFrom (mirrors the fallback scenario: dateRequired=2021-04-15)
 		final ZonedDateTime queryDate = LocalDate.of(2021, 4, 15).atStartOfDay(ZoneOffset.UTC);
 		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-" + gtin);
 		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, queryDate);
 
-		// then — product must still resolve; the not-yet-valid PIIP must NOT be attached
+		// then — no valid PIIP, no BPartner_Product, no M_Product carrying the GTIN → empty
 		assertThat(result)
-				.as("Product with single future-ValidFrom PIIP must still resolve when queried before that date")
-				.isPresent();
-		assertThat(result.get().getProductId())
-				.as("Product ID must match")
-				.isEqualTo(ProductId.ofRepoId(product.getM_Product_ID()));
-		assertThat(result.get().getHupiItemProductId())
-				.as("Not-yet-valid PIIP must NOT be returned in the fallback — downstream uses virtual/No-Packing-Item")
-				.isEqualTo(HUPIItemProductId.VIRTUAL_HU);
+				.as("No PIIP is valid on the query date and no other source carries the GTIN → must be empty")
+				.isEmpty();
 	}
 
 	@Test
