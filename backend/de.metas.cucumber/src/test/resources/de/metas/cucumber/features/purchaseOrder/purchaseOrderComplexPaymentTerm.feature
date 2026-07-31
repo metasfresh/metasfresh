@@ -247,6 +247,27 @@ Feature: Purchase order with complex payment term
       | PTB32                  | 2025-04-01 | 76.72  | WP     |
 
 
+  # ---------------------------------------------------------------------------------------------
+  # S30954_1..S30954_3 own the BL-date -> pay-schedule propagation, S30954_5 the ETA-date one.
+  # They are the ONLY home for it.
+  #
+  # Why they are meaningful: the "update transport order" step writes through the model layer
+  # (M_ShipperTransportation_StepDef#updateTransportOrder -> record.setBLDate(...)/setETA(...) -> saveRecord),
+  # so saving the record fires the real @ModelChange interceptor
+  # de.metas.shipping.model.validator.M_ShipperTransportation#syncOrderDatesOnEdit, which propagates
+  # onto the C_Order and in turn fires C_Order#updateOrderPaySchedules. That is exactly the
+  # production chain — nothing here is stubbed, and no scenario may be rewritten to poke
+  # C_OrderPaySchedule (or any table on the chain) directly: doing so would bypass the very
+  # interceptors these scenarios exist to prove, and they would keep passing after the chain broke.
+  #
+  # What these scenarios deliberately do NOT cover: whether the WebUI even lets a user type the B/L
+  # or ETA date once the transport order is completed. The step above goes straight to saveRecord and never
+  # touches the WebUI Document layer, where DocumentReadonly#computeFieldReadonly blanks every field
+  # of a Processed='Y' document unless its AD_Column.IsAlwaysUpdateable='Y'. That read-only gate is
+  # covered — once, in a real browser — by the Playwright spec
+  # e2e/frontend-webui/tests/spec/transport-order-dates-editable-when-completed.spec.js.
+  # Keep the split: model/business chain here, WebUI editability there, no overlap.
+  # ---------------------------------------------------------------------------------------------
   @from:cucumber
 @allure.label.epic:E0140_Purchasing
 @allure.label.feature:F00600_Purchase_Order
@@ -410,6 +431,63 @@ Feature: Purchase order with complex payment term
       | C_PaymentTerm_Break_ID | DueDate    | DueAmt | Status |
       | PTB61                  | 2025-10-10 | 10.23  | WP     |
       | PTB62                  | 2025-10-23 | 92.07  | WP     |
+
+
+  @from:cucumber
+@allure.label.epic:E0140_Purchasing
+@allure.label.feature:F00600_Purchase_Order
+@allure.label.feature:F00994_Multiple_Levels_of_Payment
+@F00600
+@Id:S30954_5
+  Scenario: ETA corrected after transport order completion recomputes the shipping line
+    When metasfresh contains C_PaymentTerm
+      | Identifier |
+      | pt_PO_8    |
+    And metasfresh contains C_PaymentTerm_Break
+      | Identifier | C_PaymentTerm_ID | Percent | OffsetDays | ReferenceDateType | SeqNo |
+      | PTB81      | pt_PO_8          | 10      | 1          | OD                | 10    |
+      | PTB82      | pt_PO_8          | 90      | 5          | ET                | 20    |
+    And validate C_PaymentTerm:
+      | Identifier | IsComplex | IsValid |
+      | pt_PO_8    | Y         | Y       |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | C_PaymentTerm_ID |
+      | po8        | N       | vendor        | 2025-10-09  | POO         | wh             | pt_PO_8          |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | po8_l1     | po8        | product      | 10         |
+    And the order identified by po8 is completed
+    Then the order identified by po8 has following pay schedules
+      | C_PaymentTerm_Break_ID | DueDate    | DueAmt | Status |
+      | PTB81                  | 2025-10-10 | 10.23  | WP     |
+      | PTB82                  | 9999-12-01 | 92.07  | PR     |
+
+    And metasfresh contains Transport Order
+      | Identifier      | M_Shipper_ID | Shipper_BPartner_ID | Shipper_Location_ID |
+      | shipperTransp_5 | shipper_DHL  | shipper             | shipperLocation     |
+    And metasfresh contains M_Package
+      | Identifier | M_Shipper_ID |
+      | Pckg5      | shipper_DHL  |
+    And metasfresh contains M_ShippingPackage
+      | Identifier | C_Order_ID | M_ShipperTransportation_ID | M_Package_ID | C_BPartner_Location_ID |
+      | shPckg5    | po8        | shipperTransp_5            | Pckg5        | shipperLocation        |
+    And update transport order
+      | M_ShipperTransportation_ID | ETA        |
+      | shipperTransp_5            | 2025-10-15 |
+    And the transport order identified by shipperTransp_5 is completed
+    Then the order identified by po8 has following pay schedules
+      | C_PaymentTerm_Break_ID | DueDate    | DueAmt | Status |
+      | PTB81                  | 2025-10-10 | 10.23  | WP     |
+      | PTB82                  | 2025-10-20 | 92.07  | WP     |
+
+    And update transport order
+      | M_ShipperTransportation_ID | ETA        |
+      | shipperTransp_5            | 2025-10-22 |
+    Then the order identified by po8 has following pay schedules
+      | C_PaymentTerm_Break_ID | DueDate    | DueAmt | Status |
+      | PTB81                  | 2025-10-10 | 10.23  | WP     |
+      | PTB82                  | 2025-10-27 | 92.07  | WP     |
 
 
   @from:cucumber
