@@ -311,9 +311,21 @@ const convertQRCodeObjectToResolvedResult = async ({
       wfProcessId,
       lineId,
     });
-    if (huInfo?.productQty != null) {
-      result.qtyInitial = parseFloat(huInfo.productQty);
+    if (huInfo?.productQty == null) {
+      // A lookup that resolved an HU but reports no qty for this line's product fails the scan too. It is
+      // not "not applicable": the HU it found holds something other than what this line picks. Reachable
+      // for an LMQ or GS1 label, which PickFromHUQRCodeResolveCommand#findHUByExternalLotNo resolves by
+      // external lot number alone, with no product filter - so the HU it returns need not contain the
+      // line's product at all. Booking it would be the silent, unbounded whole-TU pick this fetch exists
+      // to prevent, so raise the same rejection the product mismatch above raises.
+      console.warn('Scanned barcode resolved to an HU carrying no qty of the expected product', {
+        expectedProductNo,
+        huInfo,
+        parsedQRCode,
+      });
+      throw trl('activities.picking.notEligibleHUBarcode');
     }
+    result.qtyInitial = parseFloat(huInfo.productQty);
   }
 
   // console.log('convertQRCodeObjectToResolvedResult', { result, qrCodeObj: parsedQRCode, pickingUnit });
