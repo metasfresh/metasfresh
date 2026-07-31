@@ -410,3 +410,100 @@ test('Whole HU: scan an HU holding exactly the ordered qty - prompt disabled - n
 
     await pickWholeHUAndExpectNoQuestion({ masterdata, huQRCode, weightLabelQRCode });
 });
+
+//
+// ===== A line that already carries a picked quantity =====
+// The shape the customer reported: the line is ordered 3 and 3 are already picked, and the operator
+// scans one more HU holding a single piece. Nothing about that HU exceeds the order on its own - it is
+// the quantity already picked that makes it an over-delivery, so this is what proves the whole-HU path
+// compares against the quantity still to pick rather than against the ordered quantity.
+//
+
+// noinspection JSUnusedLocalSymbols
+test('Whole HU: scan an HU on a line that is already fully picked - prompt enabled - confirm Yes', async ({ page }) => {
+    allure.epic('E0105: Picking');
+    allure.feature('F00230: MobileUI Picking');
+    allure.tag('F00230');
+    allure.story('Over-picking prompt - whole HU scanned on a line that already carries a picked qty, over-delivery confirmed');
+    allure.severity('critical');
+
+    const masterdata = await createMasterdata_WholeHU({ showPromptWhenOverPicking: true, orderQtyCUs: 3 });
+
+    // 4 digits product code, 1.000 kg, lot 123 resp. 124, produced 2025-04-03, best before 2026-04-10.
+    // Each HU gets its own label, differing only in the LOT part (positions 11-18): the label is stored on
+    // the produced HU as its HU_QRCode attribute, and a scanned label is resolved back to its HU by an exact
+    // match on that attribute (PickingJobHUService.getFirstHUIdByQRCodeAttribute), so two HUs sharing one
+    // label would be interchangeable candidates for either scan.
+    const weightLabelQRCodeHU1 = `${masterdata.products.BOM.productCode}00100000000123250403260410`;
+    const weightLabelQRCodeHU2 = `${masterdata.products.BOM.productCode}00100000000124250403260410`;
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+
+    const huQRCode1 = await produceHU({ masterdata, weightLabelQRCode: weightLabelQRCodeHU1, qtyCUs: 3 });
+    await ApplicationsListScreen.expectVisible();
+    const huQRCode2 = await produceHU({ masterdata, weightLabelQRCode: weightLabelQRCodeHU2, qtyCUs: 1 });
+    await ApplicationsListScreen.expectVisible();
+
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 Stk', qtyPicked: '0 Stk' });
+    await PickingJobScreen.scanPickingSlot({
+        qrCode: masterdata.pickingSlots.slot1.qrCode,
+        expectNextScreen: 'PickLineScanScreen',
+    });
+
+    await test.step('Pick the first whole HU (3 pieces), which takes the line to the ordered qty', async () => {
+        await PickLineScanScreen.waitForScreen();
+        await PickLineScanScreen.typeQRCode(weightLabelQRCodeHU1);
+
+        // Neither questioned nor rejected - this HU is exactly on target. It is only the setup: what it
+        // establishes for the second scan is the non-zero picked quantity the scenario is about.
+        await PickingJobScreen.waitForScreen();
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 Stk', qtyPicked: '3 Stk' });
+    });
+
+    await test.step('Scan a second whole HU (1 piece) onto the fully picked line, confirm the over-delivery', async () => {
+        // Back into the scan step the way the operator gets there once a pick has returned them to the
+        // job screen: open the line, then its Scan button.
+        await PickingJobScreen.clickLineButton({ index: 1 });
+        await PickingJobLineScreen.waitForScreen();
+        await PickingJobLineScreen.clickScanButton();
+        await PickLineScanScreen.waitForScreen();
+        await PickLineScanScreen.typeQRCode(weightLabelQRCodeHU2);
+
+        // The one piece this HU holds stays well inside the 3 the line was ordered, so a comparison
+        // against the ordered quantity raises no question at all. The question can only appear because
+        // the comparison is against what is left to pick, which the first pick took down to 0.
+        await YesNoDialog.waitForDialog();
+        await YesNoDialog.clickYesButton();
+
+        // Confirming books the pick and returns the operator to the line they scanned from.
+        await PickingJobLineScreen.waitForScreen();
+        await PickingJobLineScreen.goBack();
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 Stk', qtyPicked: '4 Stk' });
+    });
+
+    await test.step('Verify the second HU was picked on top of the first, over-delivering the line by 1', async () => {
+        await Backend.expect({
+            pickings: {
+                [pickingJobId]: {
+                    shipmentSchedules: {
+                        BOM: {
+                            qtyPicked: [
+                                { qtyPicked: '3 PCE', processed: false, shipmentLineId: '-' },
+                                { qtyPicked: '1 PCE', processed: false, shipmentLineId: '-' },
+                            ],
+                        },
+                    },
+                },
+            },
+            hus: {
+                [huQRCode1]: { huStatus: 'S', storages: { BOM: '3 PCE' } },
+                [huQRCode2]: { huStatus: 'S', storages: { BOM: '1 PCE' } },
+            },
+        });
+    });
+});
