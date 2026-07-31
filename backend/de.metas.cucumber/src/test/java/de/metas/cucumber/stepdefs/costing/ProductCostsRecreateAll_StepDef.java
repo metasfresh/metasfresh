@@ -313,6 +313,11 @@ public class ProductCostsRecreateAll_StepDef
 	 * computed in. Each of them must appear exactly ONCE, and no document may be staged twice: a resume that
 	 * restarted from the first batch instead of continuing would stage and release an already-done batch's
 	 * document a second time. For the same reason the recorded batch numbers must be free of duplicates.
+	 * <p>
+	 * Shared by both drivers, and the expected <code>IsStaged</code> differs between them: the cost RECOMPUTE driver
+	 * stages a document until every product has been rewound, so it can legitimately be <code>Y</code>; the plain
+	 * REPOST driver rewinds nothing and therefore stages nothing, so a repost row is always <code>N</code> — asserting
+	 * it per document is what proves the repost went to the queue directly.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
