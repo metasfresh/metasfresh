@@ -185,11 +185,9 @@ const ScanHUAndGetQtyComponent = ({
         return;
       }
     } else if (Number.isFinite(resolvedBarcodeData.qtyInitial)) {
-      // Without a qtyInitial there is no number to bound the pick by, so we book as before - the same
-      // as the prompt branch above, where an absent qty raises no confirmation either. On the whole-TU
-      // path that only happens for a caller that resolves no qty at all (every screen other than
-      // PickLineScanScreen); PickLineScanScreen fails the scan whenever its HU lookup yields no usable
-      // productQty - whether it throws or returns without one - so neither case reaches here silently.
+      // Bound the pick whenever the caller resolved a qty; a caller that resolves none books as before,
+      // the same as the prompt branch above, where an absent qty raises no confirmation either. A caller
+      // that wants the pick bounded must therefore fail its own scan rather than resolve without a qty.
       const qtyAboveMaxError = validateQtyAgainstMax({
         qty: resolvedBarcodeData.qtyInitial,
         qtyMax: resolvedBarcodeData.qtyMax,

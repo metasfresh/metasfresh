@@ -3,13 +3,19 @@ import { getScannedHUQRCodeInfo } from '../../../../api/picking';
 import { trl } from '../../../../utils/translations';
 
 jest.mock('../../../../api/picking', () => ({
+  ...jest.requireActual('../../../../api/picking'),
   getScannedHUQRCodeInfo: jest.fn(),
 }));
 
 //
-// A whole-TU label: the custom weight-label format from the picking E2E fixture
-// (e2e/mobile-webui/tests/spec/picking/overPickingPrompt_wholeHU.spec.js). parseCustomQRCode always
-// flags a match as isTUToBePickedAsWhole, so a barcode matching this format takes the whole-TU branch.
+// Tier: Jest rather than Playwright. The state under test - the HU lookup answering with an HU that
+// carries no qty of the line's product - cannot be provoked through the E2E masterdata: the backend
+// resolves such a label by external lot number, an attribute no test fixture (nor JsonCreateHURequest)
+// can set. Mocking the one API call is the only honest way to reach the branch.
+//
+// A whole-TU label: the custom weight-label format from the whole-HU over-picking picking E2E spec.
+// parseCustomQRCode flags every match as isTUToBePickedAsWhole, so a barcode matching this format
+// takes the whole-TU branch.
 const WEIGHT_LABEL_FORMAT = {
   name: 'weight label',
   parts: [
@@ -68,15 +74,18 @@ describe('PickingLineScanScreen', () => {
     });
   });
 
-  it('fails the scan when the whole-TU HU lookup reports no qty of the line product', async () => {
-    // The lookup resolves an HU - it just carries no qty of the product this line picks. The backend
-    // resolves an LMQ/GS1 label by external lot number alone (no product filter), so the HU it returns
-    // need not contain the line's product. Without a qty there is nothing to compare against the
-    // remaining qty, so the whole TU would book unasked and unbounded: the scan has to fail instead.
+  // The lookup resolves an HU - it just carries no pickable qty of the product this line picks. Both
+  // shapes reach the UI: the backend omits productQty when the HU holds none of the product, and reports
+  // 0 for a storage row that has been emptied. Without a positive qty there is nothing to bound the pick
+  // by, so the whole TU would book unasked and unbounded: the scan has to fail instead.
+  it.each([
+    ['reports no qty at all', {}],
+    ['reports a zero qty', { productQty: 0 }],
+  ])('fails the scan when the whole-TU HU lookup %s of the line product', async (_caption, productQtyPart) => {
     getScannedHUQRCodeInfo.mockResolvedValue({
       huQRCode: { code: 'HU#1#{"id":"other-hu"}' },
       qtyTUs: 1,
-      // no productQty
+      ...productQtyPart,
     });
 
     await expect(resolveWeightLabelForLine()).rejects.toEqual(trl('activities.picking.notEligibleHUBarcode'));
@@ -93,7 +102,7 @@ describe('PickingLineScanScreen', () => {
     getScannedHUQRCodeInfo.mockResolvedValue({
       huQRCode: { code: 'HU#1#{"id":"the-hu"}' },
       qtyTUs: 1,
-      productQty: '3',
+      productQty: 3, // JsonHUInfo.productQty is a BigDecimal, so it arrives as a JSON number
     });
 
     const result = await resolveWeightLabelForLine();
