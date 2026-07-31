@@ -771,6 +771,8 @@ public class C_Invoice_Candidate_StepDef
 				.map(productIdentifier -> productIdentifier.lookupNotNullIn(productTable))
 				.ifPresent(product -> queryBuilder.addEqualsFilter(COLUMNNAME_M_Product_ID, product.getM_Product_ID()));
 
+		// firstOnlyOptional throws when >1 IC matches: pass OPT.M_Product_ID.Identifier to narrow the lookup
+		// whenever the return generates several ICs (e.g. HU packing-material lines alongside the product line).
 		final Optional<I_C_Invoice_Candidate> invoiceCandidate = queryBuilder
 				.create()
 				.firstOnlyOptional(I_C_Invoice_Candidate.class);

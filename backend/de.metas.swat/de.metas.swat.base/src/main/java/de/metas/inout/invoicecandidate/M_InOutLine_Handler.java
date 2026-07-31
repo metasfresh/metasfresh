@@ -1036,10 +1036,15 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	 * The line's own PI is read generically because its typed getter lives on the handlingunits {@code I_M_InOutLine},
 	 * which this module cannot import; the order-line PI is read through {@link IOrderDAO} rather than a model getter.
 	 */
+	// The typed getter for this column lives on de.metas.handlingunits.model.I_M_InOutLine, which this module
+	// cannot import; read it generically by column name instead.
+	// @see de.metas.handlingunits.model.I_M_InOutLine#COLUMNNAME_M_HU_PI_Item_Product_ID
+	private static final String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
+
 	@Nullable
 	private static HUPIItemProductId resolvePackingInstruction(@NonNull final org.compiere.model.I_M_InOutLine inOutLine)
 	{
-		final Integer ownPackingInstructionRepoId = getValueOverrideOrValue(inOutLine, "M_HU_PI_Item_Product_ID");
+		final Integer ownPackingInstructionRepoId = getValueOverrideOrValue(inOutLine, COLUMNNAME_M_HU_PI_Item_Product_ID);
 		final HUPIItemProductId ownPackingInstruction = ownPackingInstructionRepoId != null
 				? HUPIItemProductId.ofRepoIdOrNull(ownPackingInstructionRepoId)
 				: null;
@@ -1055,6 +1060,10 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		}
 
 		final de.metas.interfaces.I_C_OrderLine orderLine = Services.get(IOrderDAO.class).getOrderLineById(orderLineId);
+		if (orderLine == null)
+		{
+			return null;
+		}
 		return HUPIItemProductId.ofRepoIdOrNull(orderLine.getM_HU_PI_Item_Product_ID());
 	}
 

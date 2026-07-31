@@ -1217,6 +1217,7 @@ public class M_InOut_StepDef
 			assertThat(receiptLineIds).as("Receipt %s must have lines", receipt.getM_InOut_ID()).isNotEmpty();
 			returnsServiceFacade.createVendorReturnInOutForHUs(hus, SystemTime.asTimestamp());
 			final Integer vendorReturnId = queryBL.createQueryBuilder(de.metas.inout.model.I_M_InOutLine.class)
+					.addOnlyActiveRecordsFilter()
 					.addInArrayFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_Return_Origin_InOutLine_ID, receiptLineIds)
 					.orderByDescending(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_M_InOut_ID)
 					.create()
