@@ -669,7 +669,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 			@NonNull final WFProcessId wfProcessId,
 			@NonNull final PickingJobLineId lineId,
 			@NonNull final ScannedCode scannedCode,
-			final @NotNull UserId callerId)
+			@NonNull final UserId callerId)
 	{
 		return pickingJobRestService.resolvePickFromHU(toPickingJobId(wfProcessId), lineId, scannedCode, callerId);
 	}
