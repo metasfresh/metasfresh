@@ -23,10 +23,6 @@
 package de.metas.rest_api.v2.ordercandidates.impl;
 
 import de.metas.externalreference.ExternalIdentifier;
-import de.metas.externalreference.ExternalReferenceRepository;
-import de.metas.externalreference.ExternalReferenceTypes;
-import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
-import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.organization.OrgId;
@@ -68,14 +64,7 @@ class ProductMasterDataProviderTest
 	void setUp()
 	{
 		AdempiereTestHelper.get().init();
-
-		final ExternalReferenceRepository externalReferenceRepository = ExternalReferenceRepository.newInstanceForUnitTesting(new ExternalReferenceTypes());
-		final ExternalReferenceRestControllerService externalReferenceRestControllerService = new ExternalReferenceRestControllerService(
-				externalReferenceRepository,
-				new ExternalSystemRepository(),
-				new ExternalReferenceTypes());
-		final ExternalIdentifierProductLookupService productLookupService = ExternalIdentifierProductLookupService.newInstanceForUnitTesting(externalReferenceRestControllerService);
-		productMasterDataProvider = ProductMasterDataProvider.newInstanceForUnitTesting(productLookupService);
+		productMasterDataProvider = ProductMasterDataProvider.newInstanceForUnitTesting();
 	}
 
 	/** Creates a minimal UOM record and returns its ID (needed for product stock UOM lookup). */

@@ -38,6 +38,8 @@ import de.metas.util.Services;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -53,6 +55,16 @@ public class ExternalIdentifierProductLookupService
 	@NonNull private final IBPartnerProductDAO bPartnerProductDAO = Services.get(IBPartnerProductDAO.class);
 
 	@NonNull private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
+
+	@VisibleForTesting
+	public static ExternalIdentifierProductLookupService newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(ExternalIdentifierProductLookupService.class,
+				() -> new ExternalIdentifierProductLookupService(ExternalReferenceRestControllerService.newInstanceForUnitTesting()));
+	}
 
 	@NonNull
 	public Optional<ProductAndHUPIItemProductId> resolveProductExternalIdentifier(
@@ -96,12 +108,6 @@ public class ExternalIdentifierProductLookupService
 		}
 	}
 
-	public static ExternalIdentifierProductLookupService newInstanceForUnitTesting(
-			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService)
-	{
-		return new ExternalIdentifierProductLookupService(externalReferenceRestControllerService);
-	}
-
 	@VisibleForTesting
 	@NonNull
 	Optional<ProductAndHUPIItemProductId> lookupProductByGTIN(
@@ -120,13 +126,9 @@ public class ExternalIdentifierProductLookupService
 
 		// Branch 2: C_BPartner_Product — GTIN / EAN_CU / UPC match.
 		final Optional<ProductId> bppProductIdOpt = bPartnerProductDAO.findFirstProductIdByGtin(gtin);
-		if (bppProductIdOpt.isPresent())
-		{
-			return ProductAndHUPIItemProductId.opt(bppProductIdOpt.get());
-		}
+		return bppProductIdOpt.map(ProductAndHUPIItemProductId::opt).orElseGet(() -> productDAO.findFirstProductIdByGtin(gtin)
+				.flatMap(ProductAndHUPIItemProductId::opt));
 
 		// Branch 3: M_Product — GTIN / EAN13_ProductCode / UPC match.
-		return productDAO.findFirstProductIdByGtin(gtin)
-				.flatMap(ProductAndHUPIItemProductId::opt);
 	}
 }

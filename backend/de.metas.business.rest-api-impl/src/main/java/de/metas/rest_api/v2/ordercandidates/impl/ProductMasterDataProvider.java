@@ -1,5 +1,6 @@
 package de.metas.rest_api.v2.ordercandidates.impl;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.cache.CCache;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.handlingunits.HUPIItemProductId;
@@ -16,6 +17,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.With;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
 
@@ -52,10 +55,14 @@ public final class ProductMasterDataProvider
 
 	@NonNull private final ExternalIdentifierProductLookupService productLookupService;
 
-	public static ProductMasterDataProvider newInstanceForUnitTesting(
-			@NonNull final ExternalIdentifierProductLookupService productLookupService)
+	@VisibleForTesting
+	public static ProductMasterDataProvider newInstanceForUnitTesting()
 	{
-		return new ProductMasterDataProvider(productLookupService);
+		Adempiere.assertUnitTestMode();
+
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(ProductMasterDataProvider.class,
+				() -> new ProductMasterDataProvider(ExternalIdentifierProductLookupService.newInstanceForUnitTesting()));
 	}
 
 	@Value
@@ -111,7 +118,7 @@ public final class ProductMasterDataProvider
 			@NonNull final OrgId orgId,
 			@Nullable final ZonedDateTime date)
 	{
-		return productInfoCache.getOrLoad(
+		return productInfoCache.getOrLoadNonNull(
 				new ProductCacheKey(orgId, productExternalIdentifier, date),
 				this::getProductInfo0);
 	}
