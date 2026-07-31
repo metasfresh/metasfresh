@@ -9,11 +9,9 @@ import { recordResponsesFor } from "../../utils/network";
 // End-to-end guard for the cache directives on the operator-context reads: proof that a real handheld
 // request comes back uncacheable, asserted on the response the device actually receives.
 //
-// The servlet filter that sets the directive, and its own unit test, are NOT in this branch - they live
-// in https://github.com/metasfresh/metasfresh/pull/25368, which targets the same base. Until that is
-// merged and this branch picks the base up, this test FAILS with `Cache-Control ... Received: null`.
-// That is a true negative, not a flake: the endpoint is reached and answers 200 with no cache directive
-// at all, which is precisely the defect being guarded against.
+// The servlet filter that sets the directive (https://github.com/metasfresh/metasfresh/pull/25368) is
+// merged into this branch's base, so this is now a genuine end-to-end proof of the no-store contract,
+// not a pending true-negative.
 
 // Endpoints the Production screen reads the operator's context from.
 const WORKPLACE_ENDPOINT = '/api/v2/workplace';
