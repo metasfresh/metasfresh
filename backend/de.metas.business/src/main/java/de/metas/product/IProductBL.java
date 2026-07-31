@@ -43,6 +43,7 @@ import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Category;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -188,6 +189,9 @@ public interface IProductBL extends ISingletonService
 	boolean isASIMandatory(ProductId productId, boolean isSOTrx);
 
 	boolean isProductInCategory(ProductId productId, ProductCategoryId expectedProductCategoryId);
+
+	@Nullable
+	I_M_Product_Category getProductCategoryByProductId(@NonNull ProductId productId);
 
 	String getProductValueAndName(@Nullable ProductId productId);
 

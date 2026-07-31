@@ -19,12 +19,26 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
   const history = useMobileNavigation();
 
   //
-  // If the required process was not loaded, then redirect to home
+  // If the required process was not loaded, then redirect to home.
+  //
+  // A freshly-started workflow is dispatched to the store and navigated to in the same
+  // start-request `.then` (see WFLauncherButton). On React 17 / connected-react-router 6.9 /
+  // react-redux 7.2 the two updates are not batched, so ApplicationLayout can mount on the job
+  // route one render pass BEFORE the store selector observes the just-dispatched process — a
+  // store-vs-router ordering hazard. Bouncing home on that first pass drops the operator on the
+  // root menu mid-start (the observed job-start flake landing on the home menu).
+  //
+  // So defer goHome() one tick instead of firing it synchronously: if the process becomes visible
+  // within the tick, `redirectToHome` flips to false, this effect's cleanup cancels the pending
+  // goHome, and no bounce happens. A genuinely absent process (dead deep-link / page reload) stays
+  // not-loaded, the timer fires, and the operator is still redirected home as before.
   const redirectToHome = isWFProcessRequiredButNotLoaded();
   useEffect(() => {
-    if (redirectToHome) {
-      history.goHome();
+    if (!redirectToHome) {
+      return undefined;
     }
+    const timerId = setTimeout(() => history.goHome(), 0);
+    return () => clearTimeout(timerId);
   }, [redirectToHome]);
 
   const applicationInfo = useApplicationInfo({ applicationId });

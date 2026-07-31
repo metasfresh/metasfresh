@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 import { checkPartialScannedCode, ScanCompleteness } from '../utils/qrCode/common';
 
 // Abandon window for a stuck/truncated streamed QR partial (see the note in the effect below).
@@ -22,7 +22,14 @@ export const useKeyboardBarcodeReader = ({
   const bufferRef = useRef('');
   const lastKeyTimeRef = useRef(0);
 
-  useEffect(() => {
+  // useLayoutEffect (not useEffect) so the window-level keydown listener is attached synchronously
+  // in the commit phase, BEFORE the browser paints — not in a post-paint passive effect. A scanner
+  // screen renders its offscreen input during commit, but a passive useEffect runs a task later, so
+  // a scan fired in the window between "input painted" and "listener attached" is silently dropped
+  // and never routes (repro: e2e scanWorkstation/scanWorkplace timed out ~15% of runs without the
+  // now-removed retry guard; the reader owns document-level keydown, so attaching one frame earlier
+  // has no layout/paint cost and no behavioural change for any consumer).
+  useLayoutEffect(() => {
     // A recognised-but-incomplete streamed QR code (e.g. a long HU QR arriving in chunks over
     // several seconds) is kept buffered across inter-keystroke gaps instead of being flushed as a
     // fragment. If it never completes (genuinely truncated: device disconnect / out-of-range) we
