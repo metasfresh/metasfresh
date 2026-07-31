@@ -52,6 +52,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
@@ -675,6 +676,27 @@ public class ProductDAO implements IProductDAO
 				.idsAsSet(ProductId::ofRepoIdOrNull);
 
 		return productIds.size() == 1 ? Optional.of(productIds.iterator().next()) : Optional.empty();
+	}
+
+	@Override
+	@NonNull
+	public Optional<ProductId> findFirstProductIdByGtin(@NonNull final GTIN gtin)
+	{
+		final String gtinStr = gtin.getAsString();
+		final ICompositeQueryFilter<I_M_Product> pFilter = queryBL.createCompositeQueryFilter(I_M_Product.class)
+				.setJoinOr()
+				.addEqualsFilter(I_M_Product.COLUMNNAME_GTIN, gtinStr)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_EAN13_ProductCode, gtinStr)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_UPC, gtinStr);
+
+		final ProductId productId = queryBL.createQueryBuilder(I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.filter(pFilter)
+				.orderBy(I_M_Product.COLUMNNAME_M_Product_ID)
+				.create()
+				.firstIdOnly(ProductId::ofRepoIdOrNull);
+
+		return Optional.ofNullable(productId);
 	}
 
 	@Override
