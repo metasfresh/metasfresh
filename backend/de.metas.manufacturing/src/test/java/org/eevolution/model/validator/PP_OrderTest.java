@@ -101,8 +101,8 @@ public class PP_OrderTest
 	@Test
 	public void blockedProduct_manufacture_isRejected()
 	{
-		// PRODUCTLIFECYCLESTATUS_Gesperrt = "G" = BLOCKED (blocks every action, incl. MANUFACTURE)
-		final I_M_Product product = createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_Gesperrt);
+		// PRODUCTLIFECYCLESTATUS_Blocked = "G" = BLOCKED (blocks every action, incl. MANUFACTURE)
+		final I_M_Product product = createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_Blocked);
 		final I_PP_Product_BOM bom = createMatchingBOM(product); // BOM matches, so only the guard can reject
 		final I_PP_Order ppOrder = createPPOrder(product, bom);
 

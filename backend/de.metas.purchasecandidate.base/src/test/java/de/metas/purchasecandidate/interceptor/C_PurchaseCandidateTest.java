@@ -85,7 +85,7 @@ class C_PurchaseCandidateTest
 	void blockedProduct_isRejectedForPurchase()
 	{
 		// "G" (Gesperrt) blocks every action, incl. PURCHASE
-		final I_C_PurchaseCandidate candidate = candidateForProductStatus(X_M_Product.PRODUCTLIFECYCLESTATUS_Gesperrt);
+		final I_C_PurchaseCandidate candidate = candidateForProductStatus(X_M_Product.PRODUCTLIFECYCLESTATUS_Blocked);
 		assertThatThrownBy(() -> interceptor.assertProductAllowedForPurchase(candidate))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("M_Product_BBSStatus_ActionBlocked");
@@ -95,7 +95,7 @@ class C_PurchaseCandidateTest
 	void auslaufProduct_isRejectedForPurchase()
 	{
 		// "A" (Auslauf) blocks PURCHASE specifically
-		final I_C_PurchaseCandidate candidate = candidateForProductStatus(X_M_Product.PRODUCTLIFECYCLESTATUS_Auslauf);
+		final I_C_PurchaseCandidate candidate = candidateForProductStatus(X_M_Product.PRODUCTLIFECYCLESTATUS_PhaseOut);
 		assertThatThrownBy(() -> interceptor.assertProductAllowedForPurchase(candidate))
 				.isInstanceOf(AdempiereException.class);
 	}

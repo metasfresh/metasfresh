@@ -59,13 +59,13 @@ public enum BBSStatus implements ReferenceListAwareEnum
 	OK(X_M_Product.PRODUCTLIFECYCLESTATUS_OK, ImmutableSet.of()),
 
 	/** Blocks new purchasing only. */
-	PHASE_OUT(X_M_Product.PRODUCTLIFECYCLESTATUS_Auslauf, ImmutableSet.of(ProductLifeCycleAction.PURCHASE)),
+	PHASE_OUT(X_M_Product.PRODUCTLIFECYCLESTATUS_PhaseOut, ImmutableSet.of(ProductLifeCycleAction.PURCHASE)),
 
 	/** Blocks everything. */
-	BLOCKED(X_M_Product.PRODUCTLIFECYCLESTATUS_Gesperrt, ImmutableSet.copyOf(ProductLifeCycleAction.values())),
+	BLOCKED(X_M_Product.PRODUCTLIFECYCLESTATUS_Blocked, ImmutableSet.copyOf(ProductLifeCycleAction.values())),
 
 	/** Blocks shipping only. */
-	DO_NOT_DELIVER(X_M_Product.PRODUCTLIFECYCLESTATUS_Lieferstopp, ImmutableSet.of(ProductLifeCycleAction.SHIP)),
+	DO_NOT_DELIVER(X_M_Product.PRODUCTLIFECYCLESTATUS_DeliveryStop, ImmutableSet.of(ProductLifeCycleAction.SHIP)),
 	;
 
 	private static final ValuesIndex<BBSStatus> typesByCode = ReferenceListAwareEnums.index(values());

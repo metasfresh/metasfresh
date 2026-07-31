@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Product extends org.compiere.model.PO implements I_M_Product, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -597952211L;
+	private static final long serialVersionUID = 1043539037L;
 
     /** Standard Constructor */
     public X_M_Product (final Properties ctx, final int M_Product_ID, @Nullable final String trxName)
@@ -1449,12 +1449,12 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public static final int PRODUCTLIFECYCLESTATUS_AD_Reference_ID=542123;
 	/** OK = O */
 	public static final String PRODUCTLIFECYCLESTATUS_OK = "O";
-	/** Auslauf = A */
-	public static final String PRODUCTLIFECYCLESTATUS_Auslauf = "A";
-	/** Gesperrt = G */
-	public static final String PRODUCTLIFECYCLESTATUS_Gesperrt = "G";
-	/** Lieferstopp = N */
-	public static final String PRODUCTLIFECYCLESTATUS_Lieferstopp = "N";
+	/** Phase out = A */
+	public static final String PRODUCTLIFECYCLESTATUS_PhaseOut = "A";
+	/** Blocked = G */
+	public static final String PRODUCTLIFECYCLESTATUS_Blocked = "G";
+	/** Delivery stop = N */
+	public static final String PRODUCTLIFECYCLESTATUS_DeliveryStop = "N";
 	@Override
 	public void setProductLifeCycleStatus (final @Nullable java.lang.String ProductLifeCycleStatus)
 	{

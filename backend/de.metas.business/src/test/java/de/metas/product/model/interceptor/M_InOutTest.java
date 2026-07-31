@@ -90,7 +90,7 @@ public class M_InOutTest
 	public void shipment_gesperrtProduct_throws()
 	{
 		final I_M_InOut shipment = createInOut(true, 0);
-		addLine(shipment, createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_Gesperrt)); // "G" blocks SHIP
+		addLine(shipment, createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_Blocked)); // "G" blocks SHIP
 		assertThatThrownBy(() -> interceptor.assertProductsAllowedForShipment(shipment))
 				.isInstanceOf(AdempiereException.class);
 	}
@@ -99,7 +99,7 @@ public class M_InOutTest
 	public void shipment_lieferstoppProduct_throws()
 	{
 		final I_M_InOut shipment = createInOut(true, 0);
-		addLine(shipment, createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_Lieferstopp)); // "N" blocks SHIP specifically
+		addLine(shipment, createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_DeliveryStop)); // "N" blocks SHIP specifically
 		assertThatThrownBy(() -> interceptor.assertProductsAllowedForShipment(shipment))
 				.isInstanceOf(AdempiereException.class);
 	}
@@ -116,7 +116,7 @@ public class M_InOutTest
 	public void receipt_gesperrtProduct_doesNotThrow()
 	{
 		final I_M_InOut receipt = createInOut(false, 0); // isSOTrx=false = receipt, not a shipment
-		addLine(receipt, createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_Gesperrt));
+		addLine(receipt, createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_Blocked));
 		assertDoesNotThrow(() -> interceptor.assertProductsAllowedForShipment(receipt));
 	}
 
@@ -126,7 +126,7 @@ public class M_InOutTest
 		// A reversal document (Reversal_ID set) of an already-completed shipment must never be blocked,
 		// even if the product has since become Gesperrt/Lieferstopp — no retroactive invalidation.
 		final I_M_InOut reversalShipment = createInOut(true, 999);
-		addLine(reversalShipment, createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_Gesperrt));
+		addLine(reversalShipment, createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_Blocked));
 		assertDoesNotThrow(() -> interceptor.assertProductsAllowedForShipment(reversalShipment));
 	}
 }

@@ -86,7 +86,7 @@ public class C_OrderLineTest
 	public void salesLine_gesperrtProduct_throws()
 	{
 		// G (Gesperrt) blocks SELL
-		final I_C_OrderLine orderLine = newOrderLine(true, createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_Gesperrt));
+		final I_C_OrderLine orderLine = newOrderLine(true, createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_Blocked));
 		assertThatThrownBy(() -> interceptor.validateProductIsPurchasedOrSold(orderLine))
 				.isInstanceOf(AdempiereException.class);
 	}
@@ -95,7 +95,7 @@ public class C_OrderLineTest
 	public void purchaseLine_auslaufProduct_throws()
 	{
 		// A (Auslauf) blocks PURCHASE; purchase order line => isSOTrx=false
-		final I_C_OrderLine orderLine = newOrderLine(false, createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_Auslauf));
+		final I_C_OrderLine orderLine = newOrderLine(false, createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_PhaseOut));
 		assertThatThrownBy(() -> interceptor.validateProductIsPurchasedOrSold(orderLine))
 				.isInstanceOf(AdempiereException.class);
 	}
@@ -104,7 +104,7 @@ public class C_OrderLineTest
 	public void salesLine_auslaufProduct_doesNotThrow()
 	{
 		// A allows SELL — must NOT over-block on a sales-order line
-		final I_C_OrderLine orderLine = newOrderLine(true, createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_Auslauf));
+		final I_C_OrderLine orderLine = newOrderLine(true, createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_PhaseOut));
 		assertDoesNotThrow(() -> interceptor.validateProductIsPurchasedOrSold(orderLine));
 	}
 

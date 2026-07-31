@@ -105,7 +105,7 @@ class PickingJobProductServiceTest
 	void assertPickAllowed_blockedStatus_throws()
 	{
 		// "G" (Gesperrt / BLOCKED) blocks every ProductLifeCycleAction, including PICK.
-		final ProductId productId = createProductWithLifeCycleStatus(X_M_Product.PRODUCTLIFECYCLESTATUS_Gesperrt);
+		final ProductId productId = createProductWithLifeCycleStatus(X_M_Product.PRODUCTLIFECYCLESTATUS_Blocked);
 
 		assertThatThrownBy(() -> pickingJobProductService.assertPickAllowed(productId))
 				.isInstanceOf(AdempiereException.class);

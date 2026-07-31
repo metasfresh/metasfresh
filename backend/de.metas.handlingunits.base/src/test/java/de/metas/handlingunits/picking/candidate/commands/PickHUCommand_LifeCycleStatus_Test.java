@@ -74,7 +74,7 @@ public class PickHUCommand_LifeCycleStatus_Test
 	public void blockedStatus_pickThrows()
 	{
 		// "G" (Gesperrt / BLOCKED) blocks every ProductLifeCycleAction, including PICK.
-		final ProductId productId = createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_Gesperrt);
+		final ProductId productId = createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_Blocked);
 
 		assertThatThrownBy(() -> pick(productId)).isInstanceOf(AdempiereException.class);
 	}

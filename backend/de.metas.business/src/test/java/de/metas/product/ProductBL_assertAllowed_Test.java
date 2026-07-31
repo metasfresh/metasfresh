@@ -85,7 +85,7 @@ class ProductBL_assertAllowed_Test
 	@Test
 	void phaseOut_blocksPurchaseOnly()
 	{
-		final ProductId productId = createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_Auslauf);
+		final ProductId productId = createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_PhaseOut);
 
 		assertThat(productBL.isAllowed(productId, ProductLifeCycleAction.PURCHASE)).isFalse();
 		assertThatThrownBy(() -> productBL.assertAllowed(productId, ProductLifeCycleAction.PURCHASE))
@@ -102,7 +102,7 @@ class ProductBL_assertAllowed_Test
 	@Test
 	void blocked_blocksAllActions()
 	{
-		final ProductId productId = createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_Gesperrt);
+		final ProductId productId = createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_Blocked);
 
 		for (final ProductLifeCycleAction action : ProductLifeCycleAction.values())
 		{
@@ -116,7 +116,7 @@ class ProductBL_assertAllowed_Test
 	@Test
 	void doNotDeliver_blocksShipOnly()
 	{
-		final ProductId productId = createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_Lieferstopp);
+		final ProductId productId = createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_DeliveryStop);
 
 		assertThat(productBL.isAllowed(productId, ProductLifeCycleAction.SHIP)).isFalse();
 		assertThatThrownBy(() -> productBL.assertAllowed(productId, ProductLifeCycleAction.SHIP))
