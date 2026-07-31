@@ -22,8 +22,8 @@ import { PickingJobLineScreen } from '../../utils/screens/picking/PickingJobLine
  * exceeds the remaining order quantity, the same Yes/No confirmation the per-piece CU path
  * raises must appear.
  *
- * Split out of overPickingPrompt.spec.js: this suite needs its own BOM/manufacturing masterdata
- * builder, and a spec file should read as "one setup, N tests exercising it" (e2e/CLAUDE.md).
+ * This suite has its own spec file because it needs its own BOM/manufacturing masterdata builder, and
+ * a spec file should read as "one setup, N tests exercising it" (e2e/CLAUDE.md).
  */
 //
 // ===== Whole-HU picking: the operator scans a weight label at the HU-scan step =====
@@ -407,6 +407,88 @@ test('Whole HU: scan an HU holding exactly the ordered qty - prompt disabled - n
     await ApplicationsListScreen.expectVisible();
     const huQRCode = await produceHU({ masterdata, weightLabelQRCode, qtyCUs: 3 });
     await ApplicationsListScreen.expectVisible();
+
+    await pickWholeHUAndExpectNoQuestion({ masterdata, huQRCode, weightLabelQRCode });
+});
+
+//
+// ===== Catch weight far above nominal, piece count exactly on target =====
+// Only the counted quantity is guarded: a weight-only over-delivery must book silently - no confirmation
+// and no ceiling - in either prompt configuration. That is the customer's own exclusion ("due to the
+// weight variance it must be possible to overdeliver the catch quantity"), and the exact shape they
+// reported: a piece nominally weighing ~2 kg booked at ~600 kg while the piece count stayed on target.
+//
+// The whole-TU comparison quantity comes from a backend lookup (getScannedHUQRCodeInfo ->
+// PickingRestController.getHUInfoByQRCode -> JsonHUInfo.productQty), which reports the stock-UOM piece
+// count. Were it ever to report the catch-UOM quantity instead, the HU's 1800 kg would be compared
+// against the 3 pieces still to pick: with the prompt on the operator would be questioned, with it off
+// the scan would be rejected as above max - so both scenarios below would fail.
+//
+// The exactly-on-target pair above cannot show that. Its 3 pieces are labelled 1.000 kg each, so the
+// HU's catch quantity (3.000 kg) coincides with its piece count (3) and neither guard fires whichever
+// of the two the lookup reports.
+//
+
+// 4 digits product code, 600.000 kg, lot 123, produced 2025-04-03, best before 2026-04-10.
+// Against the product's 0.1 KGM-per-PCE catch-UOM rate, 600.000 kg on a single piece is ~6000x nominal.
+const heavyWeightLabelQRCodeFor = (masterdata) => `${masterdata.products.BOM.productCode}60000000000123250403260410`;
+
+// 3 pieces x 600.000 kg. Asserted before picking because it is what makes these two scenarios differ
+// from the exactly-on-target pair above - without the oversized weight actually on the HU they would
+// silently degrade into copies of it.
+const expectHUCarriesTheOversizedWeight = async ({ huQRCode }) =>
+    await test.step('Verify the produced HU carries 3 pieces weighing 1800 kg', async () => {
+        await Backend.expect({
+            hus: {
+                [huQRCode]: { huStatus: 'A', storages: { BOM: '3 PCE' }, attributes: { WeightNet: '1800.000' } },
+            },
+        });
+    });
+
+// noinspection JSUnusedLocalSymbols
+test('Whole HU: scan an HU far above nominal weight but on target by count - prompt enabled - no question asked', async ({
+    page,
+}) => {
+    allure.epic('E0105: Picking');
+    allure.feature('F00230: MobileUI Picking');
+    allure.tag('F00230');
+    allure.story('Over-picking prompt - whole HU over-delivering catch weight only, no prompt fires');
+    allure.severity('normal');
+
+    const masterdata = await createMasterdata_WholeHU({ showPromptWhenOverPicking: true, orderQtyCUs: 3 });
+
+    const weightLabelQRCode = heavyWeightLabelQRCodeFor(masterdata);
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    const huQRCode = await produceHU({ masterdata, weightLabelQRCode, qtyCUs: 3 });
+    await ApplicationsListScreen.expectVisible();
+
+    await expectHUCarriesTheOversizedWeight({ huQRCode });
+
+    await pickWholeHUAndExpectNoQuestion({ masterdata, huQRCode, weightLabelQRCode });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Whole HU: scan an HU far above nominal weight but on target by count - prompt disabled - not blocked', async ({
+    page,
+}) => {
+    allure.epic('E0105: Picking');
+    allure.feature('F00230: MobileUI Picking');
+    allure.tag('F00230');
+    allure.story('Over-picking prompt - whole HU over-delivering catch weight only, the ceiling does not block');
+    allure.severity('normal');
+
+    const masterdata = await createMasterdata_WholeHU({ showPromptWhenOverPicking: false, orderQtyCUs: 3 });
+
+    const weightLabelQRCode = heavyWeightLabelQRCodeFor(masterdata);
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    const huQRCode = await produceHU({ masterdata, weightLabelQRCode, qtyCUs: 3 });
+    await ApplicationsListScreen.expectVisible();
+
+    await expectHUCarriesTheOversizedWeight({ huQRCode });
 
     await pickWholeHUAndExpectNoQuestion({ masterdata, huQRCode, weightLabelQRCode });
 });
