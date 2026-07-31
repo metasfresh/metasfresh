@@ -268,10 +268,25 @@ public class C_Invoice_Candidate_StepDef
 		return invoiceCandidateHolder.getValueNotNull();
 	}
 
+	/**
+	 * Polls (up to {@code timeoutSec}) for the invoice candidate(s) of a vendor/customer return inout and
+	 * stores each under its identifier. Each DataTable row is delegated to {@link #loadCreditMemoCandidate(DataTableRow)}.
+	 *
+	 * <p>Required columns per row:
+	 * <ul>
+	 *   <li>{@code M_InOut_ID.Identifier} – the return inout</li>
+	 *   <li>{@code C_Invoice_Candidate_ID.Identifier} – identifier under which to store the found IC</li>
+	 * </ul>
+	 * <p>Optional columns per row:
+	 * <ul>
+	 *   <li>{@code OPT.M_Product_ID.Identifier} – filters the lookup to this product; required when the return
+	 *       generates several ICs (e.g. HU packing-material lines alongside the product line)</li>
+	 * </ul>
+	 */
 	@And("^after not more than (.*)s, credit memo candidates are found:$")
 	public void find_credit_memo_candidates(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
+		for (final DataTableRow row : DataTableRows.of(dataTable).toList())
 		{
 			StepDefUtil.tryAndWait(timeoutSec, 500, () -> loadCreditMemoCandidate(row));
 		}
@@ -624,6 +639,15 @@ public class C_Invoice_Candidate_StepDef
 									softly.assertThat(finalInvoiceCandidate.getC_Project_ID()).as("C_Project_ID").isEqualTo(project.getC_Project_ID());
 								});
 
+						row.getAsOptionalBoolean(I_C_Invoice_Candidate.COLUMNNAME_IsError)
+								.ifPresent(expected -> softly.assertThat(finalInvoiceCandidate.isError()).as("IsError").isEqualTo(expected));
+
+						row.getAsOptionalString(I_C_Invoice_Candidate.COLUMNNAME_ErrorMsg)
+								.ifPresent(expected -> softly.assertThat(finalInvoiceCandidate.getErrorMsg()).as("ErrorMsg").contains(expected));
+
+						row.getAsOptionalBigDecimal(I_C_Invoice_Candidate.COLUMNNAME_PriceActual)
+								.ifPresent(expected -> softly.assertThat(finalInvoiceCandidate.getPriceActual()).as("PriceActual").isEqualByComparingTo(expected));
+
 						softly.assertAll();
 					}
 					catch (final Throwable e)
@@ -718,13 +742,38 @@ public class C_Invoice_Candidate_StepDef
 
 	}
 
-	private boolean loadCreditMemoCandidate(@NonNull final Map<String, String> row)
+	/**
+	 * Loads the invoice candidate for the given return inout, optionally filtered by product.
+	 *
+	 * <p>Required columns:
+	 * <ul>
+	 *   <li>{@code M_InOut_ID.Identifier} – identifier of the vendor/customer return inout</li>
+	 *   <li>{@code C_Invoice_Candidate_ID.Identifier} – identifier under which to store the found IC</li>
+	 * </ul>
+	 *
+	 * <p>Optional columns:
+	 * <ul>
+	 *   <li>{@code OPT.M_Product_ID.Identifier} – when present, filters ICs by this product; required when
+	 *       the return generates multiple ICs (e.g. packing-material lines alongside the product line)</li>
+	 * </ul>
+	 *
+	 * @return {@code true} if exactly one matching IC was found and stored; {@code false} if none found yet
+	 */
+	private boolean loadCreditMemoCandidate(@NonNull final DataTableRow row)
 	{
-		final String customerReturnIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final int customerReturnId = shipmentTable.get(customerReturnIdentifier).getM_InOut_ID();
+		final int returnInOutId = row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID).lookupNotNullIn(shipmentTable).getM_InOut_ID();
 
-		final Optional<I_C_Invoice_Candidate> invoiceCandidate = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_M_InOut_ID, customerReturnId)
+		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_M_InOut_ID, returnInOutId);
+
+		// Optional product filter — required when the return generates multiple ICs (packing-material lines alongside the product IC)
+		row.getAsOptionalIdentifier(COLUMNNAME_M_Product_ID)
+				.map(productIdentifier -> productIdentifier.lookupNotNullIn(productTable))
+				.ifPresent(product -> queryBuilder.addEqualsFilter(COLUMNNAME_M_Product_ID, product.getM_Product_ID()));
+
+		// firstOnlyOptional throws when >1 IC matches: pass OPT.M_Product_ID.Identifier to narrow the lookup
+		// whenever the return generates several ICs (e.g. HU packing-material lines alongside the product line).
+		final Optional<I_C_Invoice_Candidate> invoiceCandidate = queryBuilder
 				.create()
 				.firstOnlyOptional(I_C_Invoice_Candidate.class);
 
@@ -733,8 +782,7 @@ public class C_Invoice_Candidate_StepDef
 			return false;
 		}
 
-		final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
-		invoiceCandTable.putOrReplace(invoiceCandIdentifier, invoiceCandidate.get());
+		invoiceCandTable.putOrReplace(row.getAsIdentifier(COLUMNNAME_C_Invoice_Candidate_ID), invoiceCandidate.get());
 
 		return true;
 	}
