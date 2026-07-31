@@ -185,7 +185,9 @@ const ScanHUAndGetQtyComponent = ({
         return;
       }
     } else if (Number.isFinite(resolvedBarcodeData.qtyInitial)) {
-      // Implicit invariant: of the eight callers, only PickLineScanScreen's resolveScannedBarcode sets qtyInitial.
+      // Implicit invariant: of the eight callers, only PickLineScanScreen ever resolves a qtyInitial - directly on
+      // its whole-TU branch, and through computeNewResolvedBarcodeData's LU branch below, which no other caller
+      // reaches either, because none of them populates scannedHU.qtyTUs.
       // Bound the pick whenever the caller resolved a qty; a caller that resolves none books as before,
       // the same as the prompt branch above, where an absent qty raises no confirmation either. A caller
       // that wants the pick bounded must therefore fail its own scan rather than resolve without a qty.
