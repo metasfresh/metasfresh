@@ -117,18 +117,18 @@ public class OLCandProductFromPIIPvalidator implements IOLCandValidator
 		}
 
 		final I_M_HU_PI_Item_Product current = huPIItemProductDAO.getRecordById(currentId);
+		final String barcode = CoalesceUtil.firstNotBlank(current.getGTIN(), current.getEAN_TU(), current.getUPC());
+		if (Check.isBlank(barcode))
+		{
+			return; // no barcode to re-resolve by — nothing date-dependent to do (and no DatePromised needed)
+		}
+
 		final ZonedDateTime datePromised = olCandEffectiveValuesBL.getDatePromised_Effective(olCand);
 
 		// The resolved instruction is already valid on DatePromised — keep it. This preserves a
 		// legitimate selection made among several instructions that share one barcode (e.g. the EDI
 		// lookup view's per-BPartner/StoreGLN choice); we only correct one that is NOT valid on the date.
 		if (isValidOnDatePromised(current, datePromised))
-		{
-			return;
-		}
-
-		final String barcode = CoalesceUtil.firstNotBlank(current.getGTIN(), current.getEAN_TU(), current.getUPC());
-		if (Check.isBlank(barcode))
 		{
 			return;
 		}
