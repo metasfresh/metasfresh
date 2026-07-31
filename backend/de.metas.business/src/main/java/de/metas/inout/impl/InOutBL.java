@@ -63,7 +63,9 @@ import de.metas.request.api.RequestCandidate;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.acct.api.IFactAcctBL;
@@ -928,10 +930,23 @@ public class InOutBL implements IInOutBL
 		return docTypeDAO.queryMatchesDocTypeId(docTypeQuery, inOut.getC_DocType_ID());
 	}
 
+	// @see de.metas.handlingunits.model.I_M_InOutLine#COLUMNNAME_M_HU_PI_Item_Product_ID (typed getter not importable from this module)
+	private static final String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
+
 	@Override
-	public boolean isVendorReturn(@NonNull final InOutId inoutId)
+	@Nullable
+	public HUPIItemProductId resolvePIForVendorReturnPricingCtx(@NonNull final I_M_InOutLine returnOriginLine)
 	{
-		return isVendorReturn(getById(inoutId));
+		// A vendor return is re-priced from its bare origin receipt line, which carries no Packvorschrift of its
+		// own; the PI lives on the linked purchase-order line. Take the line's own PI (base/override) if it ever
+		// has one, else the order line's. This is NOT a general "effective PI" resolver — it exists only to feed
+		// the vendor-return pricing context (own PI read generically: the typed getter lives on the handlingunits I_M_InOutLine).
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(returnOriginLine.getC_OrderLine_ID());
+		final de.metas.interfaces.I_C_OrderLine orderLine = orderLineId != null ? orderDAO.getOrderLineById(orderLineId) : null;
+
+		return CoalesceUtil.coalesce(
+				HUPIItemProductId.ofRepoIdOrNull(NumberUtils.asInt(InterfaceWrapperHelper.getValueOverrideOrValue(returnOriginLine, COLUMNNAME_M_HU_PI_Item_Product_ID), 0)),
+				orderLine != null ? HUPIItemProductId.ofRepoIdOrNull(orderLine.getM_HU_PI_Item_Product_ID()) : null);
 	}
 
 	@Override

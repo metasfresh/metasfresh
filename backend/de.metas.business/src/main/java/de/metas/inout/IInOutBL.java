@@ -254,9 +254,16 @@ public interface IInOutBL extends ISingletonService
 
 	boolean isVendorReturn(@NonNull I_M_InOut inOut);
 
-	boolean isVendorReturn(@NonNull InOutId inoutId);
-
 	boolean isEmptiesReturn(I_M_InOut inOut);
+
+	/**
+	 * Resolves the Packvorschrift (M_HU_PI_Item_Product) to feed the pricing context when re-pricing a vendor
+	 * return from its origin receipt line: the line's own PI (base/override) if set, otherwise the linked
+	 * purchase-order line's PI; {@code null} if neither carries one. Specific to vendor-return pricing — not a
+	 * general effective-PI resolver.
+	 */
+	@Nullable
+	HUPIItemProductId resolvePIForVendorReturnPricingCtx(@NonNull I_M_InOutLine returnOriginLine);
 
 	@NonNull
 	BPartnerId getEffectiveDropshipPartnerId(@NonNull I_M_InOut inout);
