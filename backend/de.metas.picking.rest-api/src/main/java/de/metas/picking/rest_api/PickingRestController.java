@@ -274,7 +274,7 @@ public class PickingRestController
 						}
 						catch (final NumberFormatException e)
 						{
-							log.warn("Cannot parse HU product qty '{}' for product {}. Overdelivery prompt will not fire.", p.getQty(), productNo, e);
+							log.warn("Cannot parse HU product qty '{}' for product {}. Response omits productQty, so the mobile client rejects the whole-TU scan and nothing is picked.", p.getQty(), productNo, e);
 						}
 						builder.productUom(p.getUom());
 					});
