@@ -60,6 +60,7 @@ import de.metas.user.UserGroupRepository;
 import de.metas.user.UserRepository;
 import de.metas.order.location.OrderLocationsUpdater;
 import de.metas.order.paymentschedule.core.service.OrderPayScheduleService;
+import de.metas.order.paymentschedule.steps.letter_of_credit.OrderPayScheduleLCStepService;
 import de.metas.promotioncode.PromotionCodeId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -128,6 +129,7 @@ public class C_Order
 	@NonNull private final IDocumentLocationBL documentLocationBL;
 	@NonNull private final PurchaseOrderToShipperTransportationService purchaseOrderToShipperTransportationService;
 	@NonNull private final OrderPayScheduleService orderPayScheduleService;
+	@NonNull private final OrderPayScheduleLCStepService orderPayScheduleLCStepService;
 
 	@VisibleForTesting
 	public static final String AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG = "de.metas.payment.autoAssignToSalesOrderByExternalOrderId.enabled";
@@ -142,7 +144,8 @@ public class C_Order
 			@NonNull final IDocumentLocationBL documentLocationBL,
 			@NonNull final BPartnerSupplierApprovalService partnerSupplierApprovalService,
 			@NonNull final PurchaseOrderToShipperTransportationService purchaseOrderToShipperTransportationService,
-			@NonNull final OrderPayScheduleService orderPayScheduleService)
+			@NonNull final OrderPayScheduleService orderPayScheduleService,
+			@NonNull final OrderPayScheduleLCStepService orderPayScheduleLCStepService)
 	{
 		this.bpartnerBL = bpartnerBL;
 		this.bpartnerEffectiveBL = bpartnerEffectiveBL;
@@ -152,6 +155,7 @@ public class C_Order
 		this.documentLocationBL = documentLocationBL;
 		this.purchaseOrderToShipperTransportationService = purchaseOrderToShipperTransportationService;
 		this.orderPayScheduleService = orderPayScheduleService;
+		this.orderPayScheduleLCStepService = orderPayScheduleLCStepService;
 
 		final IProgramaticCalloutProvider programmaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
 		programmaticCalloutProvider.registerAnnotatedCallout(this);
@@ -170,7 +174,8 @@ public class C_Order
 				DocumentLocationBL.newInstanceForUnitTesting(),
 				new BPartnerSupplierApprovalService(new BPartnerSupplierApprovalRepository(), new UserGroupRepository()),
 				PurchaseOrderToShipperTransportationService.newInstanceForUnitTesting(),
-				OrderPayScheduleService.newInstanceForUnitTesting()));
+				OrderPayScheduleService.newInstanceForUnitTesting(),
+				OrderPayScheduleLCStepService.newInstanceForUnitTesting()));
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_M_PriceList_ID })
@@ -785,6 +790,14 @@ public class C_Order
 	public void createOrderPaySchedules(final I_C_Order order)
 	{
 		orderPayScheduleService.createOrderPaySchedules(order);
+
+		// Reactivate deletes every C_OrderPaySchedule row (see deleteOrderPaySchedules below), so a
+		// reactivate -> re-complete round trip rebuilds the schedule from the payment-term breaks alone,
+		// losing any proforma/prepayment-derived state (Paid/Awaiting_Pay, DueAmt_Actual, ReferenceDate,
+		// DueDate, LC_Date). Re-derive it here from the surviving C_Proforma_Order_Alloc / completed
+		// prepayment so a paid proforma allocation is restored rather than silently dropped.
+		// Only orders that carry a proforma allocation are touched — see the method's javadoc.
+		orderPayScheduleLCStepService.recomputeLCStepAfterOrderCompleted(OrderId.ofRepoId(order.getC_Order_ID()));
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REACTIVATE)
