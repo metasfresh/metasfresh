@@ -43,19 +43,11 @@ public class WebConfig implements WebMvcConfigurer
 	}
 
 	/**
-	 * Forbids caching of the /api/v2 responses, which otherwise carry no freshness information and no validator at
-	 * all and are therefore heuristically cacheable - i.e. a client may keep serving a stale operator context
-	 * without ever contacting us. An endpoint that wants caching opts out by setting its own Cache-Control.
+	 * Forbids caching of the /api/v2 responses, which carry no freshness information at all and are therefore
+	 * heuristically cacheable. An endpoint that wants caching opts out by setting its own Cache-Control.
 	 * <p>
-	 * A servlet filter registered like de.metas.util.web's other /api filters, and not a HandlerInterceptor: for
-	 * {@code @ResponseBody} / {@code ResponseEntity} methods the response is written and committed before
-	 * {@code postHandle} runs (spring reference, "Handler Interception"), and a {@code preHandle} - a
-	 * {@code WebContentInterceptor} included - only ever sees a request that reaches an MVC handler, so it would
-	 * miss a 404 and every error dispatch, which this filter does cover.
-	 * <p>
-	 * Runs innermost (hence the explicit order), which leaves the /api filters registered ahead of it outside:
-	 * UserAuthTokenFilter's sendError(401) (order 2) and a response ApiAuditFilter (order 3) answers from its own
-	 * response reference never enter this chain, and still carry no Cache-Control.
+	 * Knowingly not covered: replies that never reach this innermost filter (UserAuthTokenFilter's 401, an
+	 * audit-matched ApiAuditFilter reply). Reasoning: https://github.com/metasfresh/metasfresh/pull/25368#discussion_r3686441700
 	 */
 	@Bean
 	public FilterRegistrationBean<Filter> apiNoStoreCacheControlFilter()
@@ -90,14 +82,8 @@ public class WebConfig implements WebMvcConfigurer
 	}
 
 	/**
-	 * Makes an endpoint's own {@code Cache-Control} REPLACE the default that {@link #apiNoStoreCacheControlFilter()}
-	 * put on the response up-front, instead of appending to it: spring writes a {@code ResponseEntity}'s headers with
-	 * {@link HttpServletResponse#addHeader(String, String)}, so without this an opting-out endpoint emits two
-	 * contradicting values and a cache honours the stricter {@code no-store}.
-	 * <p>
-	 * Only {@code addHeader} needs the treatment; a plain {@code setHeader} replaces already. An endpoint emitting
-	 * several {@code Cache-Control} headers would end up with the last one only - no /api/v2 endpoint does, and
-	 * {@code CacheControl} puts all its directives into one header value.
+	 * Makes an endpoint's own {@code Cache-Control} REPLACE the up-front default of {@link #apiNoStoreCacheControlFilter()}
+	 * instead of appending to it, so that an opting-out endpoint does not emit two contradicting values.
 	 */
 	private static class CacheControlDefaultReplacingResponse extends HttpServletResponseWrapper
 	{

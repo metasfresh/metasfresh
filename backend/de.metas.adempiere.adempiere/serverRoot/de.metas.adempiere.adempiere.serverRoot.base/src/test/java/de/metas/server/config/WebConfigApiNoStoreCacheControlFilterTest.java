@@ -34,16 +34,9 @@ import java.util.Arrays;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Tests {@link WebConfig#apiNoStoreCacheControlFilter()}.
- * <p>
- * Runs the real filter registration bean (its own url-patterns included) in an embedded tomcat in front of a real
- * {@link DispatcherServlet}, because the behaviour under test is about response <b>commit</b> timing: a
- * {@link HttpServletResponse#setHeader(String, String)} is a silent no-op once the container flushed the response, and
- * only a real container reproduces that. A {@code MockHttpServletResponse} happily accepts headers after commit, so a
- * MockMvc-level test cannot tell the correct implementation from the broken one.
- * <p>
- * Tiers skipped: cucumber/e2e - the behaviour under test is a pure servlet-container buffer-commit semantic with no
- * business or UI dimension, so a higher tier would have to reimplement this same embedded container to prove anything.
+ * Tests {@link WebConfig#apiNoStoreCacheControlFilter()} in an embedded tomcat, because the behaviour under test is a
+ * response-commit semantic that a {@code MockHttpServletResponse} cannot reproduce - and, having no business or UI
+ * dimension, warrants no cucumber/e2e tier.
  */
 class WebConfigApiNoStoreCacheControlFilterTest
 {
