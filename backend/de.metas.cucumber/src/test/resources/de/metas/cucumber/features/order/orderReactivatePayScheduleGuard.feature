@@ -233,3 +233,148 @@ Feature: PO reactivation guard — downstream-activity check
     And validate the created orders
       | Identifier | LC_Date    |
       | po         | 2026-04-24 |
+
+
+  @from:cucumber
+  @Id:S30621_TC5
+  Scenario: Reactivate then re-complete preserves the paid-proforma pay-schedule state on a B/L term
+    # Same reactivate -> re-complete round trip as TC4, but on pt_bl (LC 30% + BL 70%) instead of
+    # pt_od. The BL break resolves only on goods receipt, so — with no receipt in this scenario —
+    # its row stays Pending at the infinite-future sentinel throughout. Proves the LC recompute
+    # restores the paid-proforma state on a B/L term too, and that the untouched BL row survives
+    # the round trip unchanged.
+
+    And metasfresh contains organization bank accounts
+      | Identifier      | C_Currency_ID |
+      | org_EUR_account | EUR           |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | C_PaymentTerm_ID |
+      | po         | N       | vendor        | 2026-04-24  | POO         | wh             | pt_bl            |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | poL1       | po         | product      | 700        |
+    And the order identified by po is completed
+
+    # Allocate a proforma invoice to the order (LC row -> Awaiting_Pay). pt_net5 gives the
+    # proforma a real 5-day offset (DueDate = DateInvoiced + 5), unlike pt_immediate.
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name       | DateInvoiced | IsSOTrx | C_Currency_ID | C_PaymentTerm_ID |
+      | proforma   | vendor        | Proforma-Rechnung (Lieferant) | 2026-04-24   | false   | EUR           | pt_net5          |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price    |
+      | proformaL1 | proforma     | product      | 1 PCE       | 21000.00 |
+    And the invoice identified by proforma is completed
+    And I allocate proforma 'proforma' to order 'po'
+
+    # Pay the proforma in full (Proforma_Invoice_ID -> IsPrepayment=Y) — marks the LC row Paid
+    And metasfresh contains C_Payment
+      | Identifier | C_BPartner_ID | PayAmt       | IsReceipt | C_BP_BankAccount_ID | Proforma_Invoice_ID |
+      | payment    | vendor        | 21000.00 EUR | false     | org_EUR_account      | proforma            |
+    And the payment identified by payment is completed
+
+    # LC: Paid from the proforma. BL: still Pending — no goods receipt exists in this scenario.
+    Then the order identified by po has following pay schedule lines by ReferenceDateType
+      | ReferenceDateType | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status |
+      | LC                | 21000.00 | 21000.00      | 2026-04-24    | 2026-04-29 | P      |
+      | BL                | 49000.00 | null          | null          | 9999-12-01 | PR     |
+
+    # Reactivate (allowed - proforma allocation no longer blocks) and re-complete the order
+    And the order identified by po is reactivated
+    And the order identified by po is completed
+
+    # Load-bearing columns: Status, DueAmt_Actual and DueDate on the LC row actually prove the LC
+    # recompute fired on re-complete (DueDate = proforma.DueDate, 5 days past DateInvoiced — the
+    # naive create-path that only reads LC_Date + pt_bl's zero OffsetDays cannot reproduce it). The
+    # BL row is untouched by the recompute (it targets only the LC/prepaid line) and must come back
+    # exactly as it went in — still Pending at the infinite-future sentinel.
+    Then the order identified by po has following pay schedule lines by ReferenceDateType
+      | ReferenceDateType | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status |
+      | LC                | 21000.00 | 21000.00      | 2026-04-24    | 2026-04-29 | P      |
+      | BL                | 49000.00 | null          | null          | 9999-12-01 | PR     |
+    And validate the created orders
+      | Identifier | LC_Date    |
+      | po         | 2026-04-24 |
+
+
+  @from:cucumber
+  @Id:S30621_TC6
+  Scenario: Reactivate then re-complete preserves the awaiting-pay proforma pay-schedule state
+    # A buyer completes a PO and allocates a proforma invoice but does not pay it — the LC row is
+    # Awaiting_Pay (not Paid), carrying the proforma's own dates and amount but no completed
+    # prepayment. Reactivating and re-completing must restore that same Awaiting_Pay state,
+    # exercising the recompute's awaitingPayment() branch (proforma present, no completed
+    # prepayment) rather than paid().
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | C_PaymentTerm_ID |
+      | po         | N       | vendor        | 2026-04-24  | POO         | wh             | pt_od            |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | poL1       | po         | product      | 700        |
+    And the order identified by po is completed
+
+    # Allocate a proforma invoice to the order (LC row -> Awaiting_Pay). pt_net5 gives the
+    # proforma a real 5-day offset (DueDate = DateInvoiced + 5), unlike pt_immediate.
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name       | DateInvoiced | IsSOTrx | C_Currency_ID | C_PaymentTerm_ID |
+      | proforma   | vendor        | Proforma-Rechnung (Lieferant) | 2026-04-24   | false   | EUR           | pt_net5          |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price    |
+      | proformaL1 | proforma     | product      | 1 PCE       | 21000.00 |
+    And the invoice identified by proforma is completed
+    And I allocate proforma 'proforma' to order 'po'
+
+    # No payment is made — LC row stays Awaiting_Pay, projecting the proforma's own dates/amount.
+    Then the order identified by po has following pay schedule lines by ReferenceDateType
+      | ReferenceDateType | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status |
+      | LC                | 21000.00 | 21000.00      | 2026-04-24    | 2026-04-29 | WP     |
+
+    # Reactivate (allowed - proforma allocation with no downstream link does not block) and
+    # re-complete the order
+    And the order identified by po is reactivated
+    And the order identified by po is completed
+
+    # Load-bearing columns: Status, DueAmt_Actual and DueDate actually prove the LC recompute
+    # fired on re-complete via the awaitingPayment() branch (DueDate = proforma.DueDate, 5 days
+    # past DateInvoiced — the naive create-path that only reads LC_Date + pt_od's zero OffsetDays
+    # cannot reproduce it).
+    Then the order identified by po has following pay schedule lines by ReferenceDateType
+      | ReferenceDateType | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status |
+      | LC                | 21000.00 | 21000.00      | 2026-04-24    | 2026-04-29 | WP     |
+    And validate the created orders
+      | Identifier | LC_Date    |
+      | po         | 2026-04-24 |
+
+
+  @from:cucumber
+  @Id:S30621_TC7
+  Scenario: Reactivate then re-complete leaves an ordinary order's pay schedule untouched
+    # Regression guard: an order with no proforma at all must come back through reactivate ->
+    # re-complete exactly as it went in. Proves the now-unconditional recomputeLCStep call does
+    # not disturb an ordinary order that never had a proforma allocation.
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | C_PaymentTerm_ID |
+      | po         | N       | vendor        | 2026-04-24  | POO         | wh             | pt_od            |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | poL1       | po         | product      | 700        |
+    And the order identified by po is completed
+
+    # OD row: Awaiting_Pay (DateOrdered known at completion); LC row: Pending (no proforma at all)
+    Then the order identified by po has following pay schedule lines by ReferenceDateType
+      | ReferenceDateType | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status |
+      | LC                | 21000.00 | null          | null          | 9999-12-01 | PR     |
+      | OD                | 49000.00 | null          | 2026-04-24    | 2026-04-24 | WP     |
+
+    # Reactivate and re-complete — no proforma exists, so recomputeLCStep is a no-op
+    And the order identified by po is reactivated
+    And the order identified by po is completed
+
+    # Unchanged: the re-created schedule matches the payment-term breaks exactly as before
+    # reactivation — proving the unconditional recompute call does not disturb an ordinary order.
+    Then the order identified by po has following pay schedule lines by ReferenceDateType
+      | ReferenceDateType | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status |
+      | LC                | 21000.00 | null          | null          | 9999-12-01 | PR     |
+      | OD                | 49000.00 | null          | 2026-04-24    | 2026-04-24 | WP     |
