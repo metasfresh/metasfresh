@@ -23,6 +23,7 @@
 package de.metas.handlingunits;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.gs1.GTIN;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -144,4 +145,26 @@ public interface IHUPIItemProductDAO extends ISingletonService
 
 	@Nullable
 	I_M_HU_PI_Item_Product retrieveDefaultForProduct(@NonNull ProductId productId, @NonNull ZonedDateTime date);
+
+	/**
+	 * Finds the first {@link I_M_HU_PI_Item_Product} row matching the given GTIN/EAN_TU/UPC value,
+	 * filtered by the given validity date.
+	 * Rows are ordered by {@code ValidFrom DESC} (most recent first) then by ID ascending as a tiebreak.
+	 * Only active records with a {@code M_Product_ID} pointing to an <em>active</em> product
+	 * are considered — stale PIIP rows left behind by a product-consolidation run are excluded.
+	 *
+	 * @param gtin the GTIN/EAN_TU/UPC value to match
+	 * @param date the reference date for the validity filter; {@code null} means no validity filter is applied
+	 * @return the first matching row as a {@link ProductAndHUPIItemProductId} carrying product and PIIP IDs,
+	 *         or {@link Optional#empty()} if none found
+	 */
+	@NonNull
+	Optional<ProductAndHUPIItemProductId> findFirstByGtin(@NonNull GTIN gtin, @Nullable ZonedDateTime date);
+
+	/**
+	 * @return {@code true} if the packing instruction {@code id} is valid on {@code date} — using the same
+	 *         {@code ValidFrom}/{@code ValidTo} rule as {@link #findFirstByGtin(GTIN, ZonedDateTime)}, so a
+	 *         validity gate built on this cannot diverge from that resolution.
+	 */
+	boolean isValidOnDate(@NonNull HUPIItemProductId id, @NonNull ZonedDateTime date);
 }
