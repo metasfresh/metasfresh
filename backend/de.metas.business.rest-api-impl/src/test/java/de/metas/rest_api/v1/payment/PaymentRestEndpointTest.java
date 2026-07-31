@@ -41,6 +41,7 @@ import lombok.NonNull;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
@@ -74,6 +75,11 @@ class PaymentRestEndpointTest
 	void setUp()
 	{
 		AdempiereTestHelper.get().init();
+
+		// C_Order.newInstanceForUnitTesting() transitively builds OrderPayScheduleLCStepService ->
+		// OrderPayScheduleRegularInvoiceService, whose Services.get(IInvoiceLineBL.class) instantiates
+		// InvoiceLineBL, which pulls ProductTaxCategoryService out of the spring context on construction.
+		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 	}
 
 	@Test
