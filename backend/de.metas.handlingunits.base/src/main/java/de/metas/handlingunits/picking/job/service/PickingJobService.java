@@ -60,12 +60,14 @@ import de.metas.handlingunits.picking.job.service.external.carrieradvise.Picking
 import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.handlingunits.picking.job.service.external.product.PickingJobProductService;
 import de.metas.handlingunits.picking.job.service.external.shipmentschedule.PickingJobShipmentScheduleService;
+import de.metas.handlingunits.picking.job.service.external.shipmentschedule.ShipmentScheduleInfo;
 import de.metas.handlingunits.picking.job.service.external.warehouse.PickingJobWarehouseService;
 import de.metas.handlingunits.picking.job.service.shelflife.PickingShelfLifeCheck;
 import de.metas.handlingunits.picking.job.shipment.PickingShipmentService;
 import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
 import de.metas.handlingunits.picking.requests.ReleasePickingSlotRequest;
 import de.metas.handlingunits.picking.slot.PickingSlotListener;
+import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.logging.LogManager;
@@ -1089,6 +1091,46 @@ public class PickingJobService implements PickingSlotListener
 				.shipmentSchedules(shipmentScheduleService.newLoadingCache())
 				.request(request)
 				.build().execute();
+	}
+
+	/**
+	 * Resolves the HU which {@code scannedCode} identifies for the given picking job line, using exactly the same
+	 * resolution the pick itself performs (see {@code PickingJobHUService#resolvePickFromHUQRCode}).
+	 * <p>
+	 * Needed because a scanned code is not necessarily an {@code HUQRCode}: a custom weight label, an LMQ label or a
+	 * GS1 barcode identifies its HU only relative to the line's product / customer / warehouse. A caller that merely
+	 * wants to inspect the scanned HU (the mobile UI's over-delivery check) must therefore see the very HU the pick
+	 * would pick, instead of re-implementing a looser lookup.
+	 * <p>
+	 * One deliberate divergence from the pick: {@code PickOnTheFlyQRCode} is not special-cased here, because handling
+	 * it means creating inventory ({@code PickingJobPickCommand#createPickFromHUOnTheFly}), which an inspection-only
+	 * call must not do. Unreachable in practice - the codes that reach this method are whole-TU labels (custom weight,
+	 * LMQ, GS1), none of which can be a pick-on-the-fly code.
+	 */
+	public HUInfo resolvePickFromHU(
+			@NonNull final PickingJobId pickingJobId,
+			@NonNull final PickingJobLineId lineId,
+			@NonNull final ScannedCode scannedCode,
+			@NonNull final UserId callerId)
+	{
+		final PickingJob pickingJob = getById(pickingJobId);
+		pickingJob.assertCanBeEditedBy(callerId);
+
+		final PickingJobLine line = pickingJob.getLineById(lineId);
+		final IHUQRCode huQRCode = huService.parsePickFromScannedCode(scannedCode);
+
+		// Product / customer / warehouse are taken from the very same places PickingJobPickCommand takes them
+		// (see its computePickFromHUIdAndQRCode); resolving from a different source could yield a different HU
+		// than the pick will actually pick, which would make the qty we hand to the caller wrong.
+		final ShipmentScheduleId shipmentScheduleId = line.getScheduleId().getShipmentScheduleId();
+		final ShipmentScheduleInfo shipmentScheduleInfo = shipmentScheduleService.getById(shipmentScheduleId);
+
+		return huService.resolvePickFromHUQRCode(
+						huQRCode,
+						line.getProductId(),
+						shipmentScheduleInfo.getBpartnerId(),
+						shipmentScheduleInfo.getWarehouseId())
+				.orElseThrow();
 	}
 
 	/**
