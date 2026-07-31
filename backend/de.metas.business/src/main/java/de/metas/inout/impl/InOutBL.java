@@ -63,7 +63,6 @@ import de.metas.request.api.RequestCandidate;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
