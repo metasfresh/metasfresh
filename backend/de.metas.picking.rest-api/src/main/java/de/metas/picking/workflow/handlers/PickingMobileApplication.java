@@ -35,6 +35,7 @@ import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
+import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
@@ -725,5 +726,14 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	{
 		final PickingJobId pickingJobId = toPickingJobId(WFProcessId.ofString(request.getWfProcessId()));
 		return pickingJobRestService.resolveUnpick(pickingJobId, ScannedCode.ofString(request.getScannedCode()), callerId, adLanguage);
+	}
+
+	public HUInfo resolvePickFromHU(
+			@NonNull final WFProcessId wfProcessId,
+			@NonNull final PickingJobLineId lineId,
+			@NonNull final ScannedCode scannedCode,
+			final @NotNull UserId callerId)
+	{
+		return pickingJobRestService.resolvePickFromHU(toPickingJobId(wfProcessId), lineId, scannedCode, callerId);
 	}
 }
