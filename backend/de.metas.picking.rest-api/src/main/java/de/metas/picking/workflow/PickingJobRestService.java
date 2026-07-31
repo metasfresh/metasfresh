@@ -52,6 +52,7 @@ import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateReque
 import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackRequest;
 import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackResponse;
 import de.metas.picking.qrcode.PickingSlotQRCode;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -281,5 +282,14 @@ public class PickingJobRestService
 	public GetNextEligibleLineToPackResponse getNextEligibleLineToPack(final @NonNull GetNextEligibleLineToPackRequest request)
 	{
 		return pickingJobService.getNextEligibleLineToPack(request);
+	}
+
+	public HUInfo resolvePickFromHU(
+			@NonNull final PickingJobId pickingJobId,
+			@NonNull final PickingJobLineId lineId,
+			@NonNull final ScannedCode scannedCode,
+			@NonNull final UserId callerId)
+	{
+		return pickingJobService.resolvePickFromHU(pickingJobId, lineId, scannedCode, callerId);
 	}
 }
