@@ -185,9 +185,11 @@ const ScanHUAndGetQtyComponent = ({
         return;
       }
     } else if (Number.isFinite(resolvedBarcodeData.qtyInitial)) {
-      // qtyInitial is absent only when the HU lookup returned no productQty at all - there is then no
-      // number to bound the pick by, and we book as before. Same as the prompt branch above, where an
-      // absent qty raises no confirmation either; a lookup that outright fails already fails the scan.
+      // Without a qtyInitial there is no number to bound the pick by, so we book as before - the same
+      // as the prompt branch above, where an absent qty raises no confirmation either. It is absent
+      // either because the caller never resolves one (every screen other than PickLineScanScreen), or
+      // because PickLineScanScreen's HU lookup returned no productQty; a lookup that outright fails
+      // already fails the scan there, so this branch never covers up a failed lookup.
       const qtyAboveMaxError = validateQtyAgainstMax({
         qty: resolvedBarcodeData.qtyInitial,
         qtyMax: resolvedBarcodeData.qtyMax,

@@ -322,3 +322,91 @@ test('Whole HU: scan an HU holding more than ordered - prompt disabled - the pic
         });
     });
 });
+
+//
+// ===== Exactly on target: the HU holds exactly the 3 pieces still ordered =====
+// The negative control for both guards above: neither the confirmation nor the ceiling may fire when
+// the scanned HU does not exceed the order. Run in both profile configurations, because with the
+// prompt on and off the whole-TU path takes two different branches.
+//
+
+const pickWholeHUAndExpectNoQuestion = async ({ masterdata, huQRCode, weightLabelQRCode }) =>
+    await test.step('Scan the whole HU (3 pieces) against an order of 3', async () => {
+        await ApplicationsListScreen.startApplication('picking');
+        await PickingJobsListScreen.waitForScreen();
+        await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+        const { pickingJobId } = await PickingJobsListScreen.startJob({
+            documentNo: masterdata.salesOrders.SO1.documentNo,
+        });
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 Stk', qtyPicked: '0 Stk' });
+        await PickingJobScreen.scanPickingSlot({
+            qrCode: masterdata.pickingSlots.slot1.qrCode,
+            expectNextScreen: 'PickLineScanScreen',
+        });
+
+        await PickLineScanScreen.waitForScreen();
+        await PickLineScanScreen.typeQRCode(weightLabelQRCode);
+
+        // Landing back on the job screen with the line fully picked is what proves the scan was
+        // neither questioned nor rejected: a confirmation would hold the operator on the scan screen,
+        // and a rejected scan would leave the line at 0.
+        await PickingJobScreen.waitForScreen();
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 Stk', qtyPicked: '3 Stk' });
+
+        await Backend.expect({
+            pickings: {
+                [pickingJobId]: {
+                    shipmentSchedules: {
+                        BOM: {
+                            qtyPicked: [{ qtyPicked: '3 PCE', processed: false, shipmentLineId: '-' }],
+                        },
+                    },
+                },
+            },
+            hus: {
+                [huQRCode]: { huStatus: 'S', storages: { BOM: '3 PCE' } },
+            },
+        });
+    });
+
+// noinspection JSUnusedLocalSymbols
+test('Whole HU: scan an HU holding exactly the ordered qty - prompt enabled - no question asked', async ({ page }) => {
+    allure.epic('E0105: Picking');
+    allure.feature('F00230: MobileUI Picking');
+    allure.tag('F00230');
+    allure.story('Over-picking prompt - whole HU scanned at the HU-scan step, exactly on target, no prompt fires');
+    allure.severity('normal');
+
+    const masterdata = await createMasterdata_WholeHU({ showPromptWhenOverPicking: true, orderQtyCUs: 3 });
+
+    // 4 digits product code, 1.000 kg, lot 123, produced 2025-04-03, best before 2026-04-10
+    const weightLabelQRCode = `${masterdata.products.BOM.productCode}00100000000123250403260410`;
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    const huQRCode = await produceHU({ masterdata, weightLabelQRCode, qtyCUs: 3 });
+    await ApplicationsListScreen.expectVisible();
+
+    await pickWholeHUAndExpectNoQuestion({ masterdata, huQRCode, weightLabelQRCode });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Whole HU: scan an HU holding exactly the ordered qty - prompt disabled - not blocked', async ({ page }) => {
+    allure.epic('E0105: Picking');
+    allure.feature('F00230: MobileUI Picking');
+    allure.tag('F00230');
+    allure.story('Over-picking prompt - whole HU scanned at the HU-scan step, exactly on target, ceiling does not block');
+    allure.severity('normal');
+
+    const masterdata = await createMasterdata_WholeHU({ showPromptWhenOverPicking: false, orderQtyCUs: 3 });
+
+    // 4 digits product code, 1.000 kg, lot 123, produced 2025-04-03, best before 2026-04-10
+    const weightLabelQRCode = `${masterdata.products.BOM.productCode}00100000000123250403260410`;
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    const huQRCode = await produceHU({ masterdata, weightLabelQRCode, qtyCUs: 3 });
+    await ApplicationsListScreen.expectVisible();
+
+    await pickWholeHUAndExpectNoQuestion({ masterdata, huQRCode, weightLabelQRCode });
+});
