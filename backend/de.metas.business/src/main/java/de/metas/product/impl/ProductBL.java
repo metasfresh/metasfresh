@@ -476,6 +476,16 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
+	@Nullable
+	public I_M_Product_Category getProductCategoryByProductId(@NonNull final ProductId productId)
+	{
+		final ProductCategoryId productCategoryId = productsRepo.retrieveProductCategoryByProductId(productId);
+		return productCategoryId != null
+				? productsRepo.getProductCategoryById(productCategoryId)
+				: null;
+	}
+
+	@Override
 	public String getProductValueAndName(@Nullable final ProductId productId)
 	{
 		if (productId == null)

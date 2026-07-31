@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for AD_Process
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1946797104L;
+	private static final long serialVersionUID = 577485626L;
 
     /** Standard Constructor */
     public X_AD_Process (final Properties ctx, final int AD_Process_ID, @Nullable final String trxName)
@@ -246,7 +246,7 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
-	public java.lang.String getEntityType()
+	public java.lang.String getEntityType() 
 	{
 		return get_ValueAsString(COLUMNNAME_EntityType);
 	}
@@ -258,7 +258,7 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
-	public java.lang.String getFilenamePattern()
+	public java.lang.String getFilenamePattern() 
 	{
 		return get_ValueAsString(COLUMNNAME_FilenamePattern);
 	}
@@ -318,7 +318,7 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
-	public boolean isFormatExcelFile()
+	public boolean isFormatExcelFile() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsFormatExcelFile);
 	}
@@ -330,7 +330,7 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
-	public boolean isLogWarning()
+	public boolean isLogWarning() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsLogWarning);
 	}
@@ -357,6 +357,18 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	public boolean isOneInstanceOnly() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsOneInstanceOnly);
+	}
+
+	@Override
+	public void setIsPreventConcurrentExecution (final boolean IsPreventConcurrentExecution)
+	{
+		set_Value (COLUMNNAME_IsPreventConcurrentExecution, IsPreventConcurrentExecution);
+	}
+
+	@Override
+	public boolean isPreventConcurrentExecution() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsPreventConcurrentExecution);
 	}
 
 	@Override
@@ -402,7 +414,7 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
-	public boolean isUpdateExportDate()
+	public boolean isUpdateExportDate() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsUpdateExportDate);
 	}

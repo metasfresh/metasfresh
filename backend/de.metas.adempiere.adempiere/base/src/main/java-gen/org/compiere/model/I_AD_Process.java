@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for AD_Process
  *  @author metasfresh (generated) 
@@ -18,7 +17,7 @@ public interface I_AD_Process
 
 
 	/**
-	 * Set Berechtigungsstufe.
+	 * Set Data Access Level.
 	 * Access Level required
 	 *
 	 * <br>Type: List
@@ -28,7 +27,7 @@ public interface I_AD_Process
 	void setAccessLevel (java.lang.String AccessLevel);
 
 	/**
-	 * Get Berechtigungsstufe.
+	 * Get Data Access Level.
 	 * Access Level required
 	 *
 	 * <br>Type: List
@@ -152,7 +151,7 @@ public interface I_AD_Process
 	String COLUMNNAME_AD_Process_ID = "AD_Process_ID";
 
 	/**
-	 * Set Berichts-View.
+	 * Set Report View.
 	 * View used to generate this report
 	 *
 	 * <br>Type: TableDir
@@ -162,7 +161,7 @@ public interface I_AD_Process
 	void setAD_ReportView_ID (int AD_ReportView_ID);
 
 	/**
-	 * Get Berichts-View.
+	 * Get Report View.
 	 * View used to generate this report
 	 *
 	 * <br>Type: TableDir
@@ -201,7 +200,7 @@ public interface I_AD_Process
 	String COLUMNNAME_AD_Workflow_ID = "AD_Workflow_ID";
 
 	/**
-	 * Set Mehrfachausführung erlaubt.
+	 * Set Allow Process Re-Run.
 	 * Allows this process to be executed again. If enabled, the "Back" button will be displayed in process panel.
 	 *
 	 * <br>Type: YesNo
@@ -211,7 +210,7 @@ public interface I_AD_Process
 	void setAllowProcessReRun (boolean AllowProcessReRun);
 
 	/**
-	 * Get Mehrfachausführung erlaubt.
+	 * Get Allow Process Re-Run.
 	 * Allows this process to be executed again. If enabled, the "Back" button will be displayed in process panel.
 	 *
 	 * <br>Type: YesNo
@@ -224,7 +223,7 @@ public interface I_AD_Process
 	String COLUMNNAME_AllowProcessReRun = "AllowProcessReRun";
 
 	/**
-	 * Set Java-Klasse.
+	 * Set Java Class.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -233,7 +232,7 @@ public interface I_AD_Process
 	void setClassname (@Nullable java.lang.String Classname);
 
 	/**
-	 * Get Java-Klasse.
+	 * Get Java Class.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -294,6 +293,7 @@ public interface I_AD_Process
 
 	/**
 	 * Set CSV Field Delimiter.
+	 * To insert [Tab] character you need to copy tab-whitespace from NotePad or other text editor
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -303,6 +303,7 @@ public interface I_AD_Process
 
 	/**
 	 * Get CSV Field Delimiter.
+	 * To insert [Tab] character you need to copy tab-whitespace from NotePad or other text editor
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -335,9 +336,8 @@ public interface I_AD_Process
 	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Entitäts-Art.
-	 * Dictionary Entity Type;
- Determines ownership and synchronization
+	 * Set Entity Type.
+	 * Entity Type
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -346,9 +346,8 @@ public interface I_AD_Process
 	void setEntityType (java.lang.String EntityType);
 
 	/**
-	 * Get Entitäts-Art.
-	 * Dictionary Entity Type;
- Determines ownership and synchronization
+	 * Get Entity Type.
+	 * Entity Type
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -361,7 +360,40 @@ public interface I_AD_Process
 
 	/**
 	 * Set Filename Pattern.
-	 * Pattern for the archive's PDF filename. Placeholders: {orgname}, {orgvalue}, {doctype}, {tablename}, {processname}, {processvalue}, {documentno}, {recordid}, {pinstanceid}, plus ${date:&lt;DateTimeFormatter-pattern&gt;} (e.g. ${date:yyyyMMdd_HHmmss}) in the org's timezone. Unresolvable placeholders are left unchanged. The extension '.pdf' is appended if missing.
+	 * Pattern for the archive's PDF filename for this process. Placeholders: 
+{
+orgname}
+, 
+{
+orgvalue}
+, 
+{
+doctype}
+, 
+{
+tablename}
+, 
+{
+processname}
+, 
+{
+processvalue}
+, 
+{
+documentno}
+, 
+{
+recordid}
+, 
+{
+pinstanceid}
+, plus $
+{
+date:<DateTimeFormatter-pattern>}
+ (e.g. $
+{
+date:yyyyMMdd_HHmmss}
+) in the org's timezone. Unresolvable placeholders are left unchanged. The extension '.pdf' is appended automatically.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -371,7 +403,40 @@ public interface I_AD_Process
 
 	/**
 	 * Get Filename Pattern.
-	 * Pattern for the archive's PDF filename. Placeholders: {orgname}, {orgvalue}, {doctype}, {tablename}, {processname}, {processvalue}, {documentno}, {recordid}, {pinstanceid}, plus ${date:&lt;DateTimeFormatter-pattern&gt;} (e.g. ${date:yyyyMMdd_HHmmss}) in the org's timezone. Unresolvable placeholders are left unchanged. The extension '.pdf' is appended if missing.
+	 * Pattern for the archive's PDF filename for this process. Placeholders: 
+{
+orgname}
+, 
+{
+orgvalue}
+, 
+{
+doctype}
+, 
+{
+tablename}
+, 
+{
+processname}
+, 
+{
+processvalue}
+, 
+{
+documentno}
+, 
+{
+recordid}
+, 
+{
+pinstanceid}
+, plus $
+{
+date:<DateTimeFormatter-pattern>}
+ (e.g. $
+{
+date:yyyyMMdd_HHmmss}
+) in the org's timezone. Unresolvable placeholders are left unchanged. The extension '.pdf' is appended automatically.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -450,7 +515,7 @@ public interface I_AD_Process
 	String COLUMNNAME_IsApplySecuritySettings = "IsApplySecuritySettings";
 
 	/**
-	 * Set Beta-Funktionalität.
+	 * Set Beta Functionality.
 	 * This functionality is considered Beta
 	 *
 	 * <br>Type: YesNo
@@ -460,7 +525,7 @@ public interface I_AD_Process
 	void setIsBetaFunctionality (boolean IsBetaFunctionality);
 
 	/**
-	 * Get Beta-Funktionalität.
+	 * Get Beta Functionality.
 	 * This functionality is considered Beta
 	 *
 	 * <br>Type: YesNo
@@ -520,6 +585,7 @@ public interface I_AD_Process
 
 	/**
 	 * Set Log Warning.
+	 * Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" (max. 5000 chars per warning) will be logged, while the ones returned with "Raise Notice" will be ignored.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -529,6 +595,7 @@ public interface I_AD_Process
 
 	/**
 	 * Get Log Warning.
+	 * Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" (max. 5000 chars per warning) will be logged, while the ones returned with "Raise Notice" will be ignored.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -586,7 +653,28 @@ public interface I_AD_Process
 	String COLUMNNAME_IsOneInstanceOnly = "IsOneInstanceOnly";
 
 	/**
-	 * Set Bericht.
+	 * Set Prevent Concurrent Execution.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPreventConcurrentExecution (boolean IsPreventConcurrentExecution);
+
+	/**
+	 * Get Prevent Concurrent Execution.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPreventConcurrentExecution();
+
+	ModelColumn<I_AD_Process, Object> COLUMN_IsPreventConcurrentExecution = new ModelColumn<>(I_AD_Process.class, "IsPreventConcurrentExecution", null);
+	String COLUMNNAME_IsPreventConcurrentExecution = "IsPreventConcurrentExecution";
+
+	/**
+	 * Set Report.
 	 * Indicates a Report record
 	 *
 	 * <br>Type: YesNo
@@ -596,7 +684,7 @@ public interface I_AD_Process
 	void setIsReport (boolean IsReport);
 
 	/**
-	 * Get Bericht.
+	 * Get Report.
 	 * Indicates a Report record
 	 *
 	 * <br>Type: YesNo
@@ -633,7 +721,7 @@ public interface I_AD_Process
 
 	/**
 	 * Set Translate Excel Headers.
-	 * Wenn angehakt, dann wird metasfresh die jeweiligen Spaltenüberschriften durch Übersetzungen ersetzen, sofern welche in Meldung (AD_Message) oder Element (AD_Element) vorhanden sind.
+	 * If checked, then metasfresh will replace the header name with a translation, if one exists in Message (AD_Message) or Element (AD_Element).
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -643,7 +731,7 @@ public interface I_AD_Process
 
 	/**
 	 * Get Translate Excel Headers.
-	 * Wenn angehakt, dann wird metasfresh die jeweiligen Spaltenüberschriften durch Übersetzungen ersetzen, sofern welche in Meldung (AD_Message) oder Element (AD_Element) vorhanden sind.
+	 * If checked, then metasfresh will replace the header name with a translation, if one exists in Message (AD_Message) or Element (AD_Element).
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -656,6 +744,7 @@ public interface I_AD_Process
 
 	/**
 	 * Set Update Export Date.
+	 * If ticked, the "Export date" field in the "Datev Export v2" window will be updated after a data export.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -665,6 +754,7 @@ public interface I_AD_Process
 
 	/**
 	 * Get Update Export Date.
+	 * If ticked, the "Export date" field in the "Datev Export v2" window will be updated after a data export.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -676,7 +766,7 @@ public interface I_AD_Process
 	String COLUMNNAME_IsUpdateExportDate = "IsUpdateExportDate";
 
 	/**
-	 * Set IsUseBPartnerLanguage.
+	 * Set Use Business Partner Language.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -685,7 +775,7 @@ public interface I_AD_Process
 	void setIsUseBPartnerLanguage (boolean IsUseBPartnerLanguage);
 
 	/**
-	 * Get IsUseBPartnerLanguage.
+	 * Get Use Business Partner Language.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -743,7 +833,7 @@ public interface I_AD_Process
 	/**
 	 * Set JSON Path.
 	 *
-	 * <br>Type: TextLong
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -752,7 +842,7 @@ public interface I_AD_Process
 	/**
 	 * Get JSON Path.
 	 *
-	 * <br>Type: TextLong
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -938,7 +1028,7 @@ public interface I_AD_Process
 	String COLUMNNAME_SQLStatement = "SQLStatement";
 
 	/**
-	 * Set Technical note.
+	 * Set TechnicalNote.
 	 * A note that is not indended for the user documentation, but for developers, customizers etc
 	 *
 	 * <br>Type: Text
@@ -948,7 +1038,7 @@ public interface I_AD_Process
 	void setTechnicalNote (@Nullable java.lang.String TechnicalNote);
 
 	/**
-	 * Get Technical note.
+	 * Get TechnicalNote.
 	 * A note that is not indended for the user documentation, but for developers, customizers etc
 	 *
 	 * <br>Type: Text
