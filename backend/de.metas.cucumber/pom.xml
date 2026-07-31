@@ -224,14 +224,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Allure reporting for Cucumber tests -->
-        <dependency>
-            <groupId>io.qameta.allure</groupId>
-            <artifactId>allure-cucumber7-jvm</artifactId>
-            <version>2.25.0</version>
-            <scope>test</scope>
-        </dependency>
-
         <!-- ZUGFeRD E2E: Mustang validator for asserting factur-x.xml embedding in Mailpit PDFs -->
         <dependency>
             <groupId>org.mustangproject</groupId>
