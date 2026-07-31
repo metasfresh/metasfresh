@@ -1,3 +1,4 @@
+-- Source DDL: backend/de.metas.acct.base/src/main/sql/postgresql/ddl/functions/m_costdetail_delete_from_date.sql
 DROP FUNCTION IF EXISTS "de_metas_acct".m_costdetail_delete_from_date(
     p_C_AcctSchema_ID  numeric,
     p_M_CostElement_ID numeric,
