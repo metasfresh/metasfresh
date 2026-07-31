@@ -814,7 +814,11 @@ Feature: Switch to Moving Average Invoice
       | M_InventoryLine | invPreCutRepost3_l1 | 100 CHF | 10 PCE |
       | M_InventoryLine | invRepost3_l1       | 100 CHF | 10 PCE |
     #
-    # Including the opening anchors the switch created: a repost must never reach back over the cut-off.
+    # Including the opening anchors the switch created: a repost must never reach back over the cut-off. Each one
+    # is still there exactly once and still dated AT the cut-off - surviving the repost is what this asserts.
+    # Their own Qty and Amt are zero BY DESIGN, as in every scenario above: an anchor is value-neutral and books
+    # no GL, so the copied opening lives in M_Cost and in the anchor's Prev_* columns, never in its own delta
+    # (seedCurrentCostFromOpening writes qty/amt as .toZero() and passes the opening as the Prev_* amounts).
     #
     And the cost revaluation identified by switchRepost seeded opening cost details:
       | M_Product_ID | M_CostElement_ID     | DateAcct   | Qty   | Amt   |
