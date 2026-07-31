@@ -160,4 +160,11 @@ public interface IHUPIItemProductDAO extends ISingletonService
 	 */
 	@NonNull
 	Optional<ProductAndHUPIItemProductId> findFirstByGtin(@NonNull GTIN gtin, @Nullable ZonedDateTime date);
+
+	/**
+	 * @return {@code true} if the packing instruction {@code id} is valid on {@code date} — using the same
+	 *         {@code ValidFrom}/{@code ValidTo} rule as {@link #findFirstByGtin(GTIN, ZonedDateTime)}, so a
+	 *         validity gate built on this cannot diverge from that resolution.
+	 */
+	boolean isValidOnDate(@NonNull HUPIItemProductId id, @NonNull ZonedDateTime date);
 }

@@ -39,11 +39,9 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
 import java.time.ZonedDateTime;
 
 @Component
@@ -105,7 +103,7 @@ public class OLCandProductFromPIIPvalidator implements IOLCandValidator
 	 */
 	private void resolveValidPackingInstructionForDatePromised(@NonNull final I_C_OLCand olCand)
 	{
-		if (olCand.getM_HU_PI_Item_Product_Override_ID() > 0)
+		if (HUPIItemProductId.ofRepoIdOrNull(olCand.getM_HU_PI_Item_Product_Override_ID()) != null)
 		{
 			return; // an explicit override is the user's choice — do not re-resolve it
 		}
@@ -125,26 +123,18 @@ public class OLCandProductFromPIIPvalidator implements IOLCandValidator
 
 		final ZonedDateTime datePromised = olCandEffectiveValuesBL.getDatePromised_Effective(olCand);
 
-		// The resolved instruction is already valid on DatePromised — keep it. This preserves a
-		// legitimate selection made among several instructions that share one barcode (e.g. the EDI
-		// lookup view's per-BPartner/StoreGLN choice); we only correct one that is NOT valid on the date.
-		if (isValidOnDatePromised(current, datePromised))
+		// The resolved instruction is already valid on DatePromised — keep it. Uses the SAME validity
+		// rule as the resolution below (one source of truth — the gate cannot diverge from it), and
+		// preserves a legitimate selection among several instructions that share one barcode (e.g. the
+		// EDI lookup view's per-BPartner/StoreGLN choice); we only correct one that is NOT valid.
+		if (huPIItemProductDAO.isValidOnDate(currentId, datePromised))
 		{
 			return;
 		}
 
 		huPIItemProductDAO.findFirstByGtin(GTIN.ofString(barcode), datePromised)
 				.map(ProductAndHUPIItemProductId::getHupiItemProductId)
-				.filter(validId -> !validId.equals(currentId))
+				.filter(validId -> !HUPIItemProductId.equals(validId, currentId))
 				.ifPresent(validId -> olCand.setM_HU_PI_Item_Product_ID(validId.getRepoId()));
-	}
-
-	private static boolean isValidOnDatePromised(@NonNull final I_M_HU_PI_Item_Product piip, @NonNull final ZonedDateTime datePromised)
-	{
-		final Instant date = datePromised.toInstant();
-		final Instant validFrom = TimeUtil.asInstant(piip.getValidFrom());
-		final Instant validTo = TimeUtil.asInstant(piip.getValidTo());
-		return (validFrom == null || !validFrom.isAfter(date))
-				&& (validTo == null || !validTo.isBefore(date));
 	}
 }

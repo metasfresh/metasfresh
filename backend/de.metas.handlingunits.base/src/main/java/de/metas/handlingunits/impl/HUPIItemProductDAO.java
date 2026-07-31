@@ -91,6 +91,8 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 			.tableName(I_M_HU_PI_Item_Product.Table_Name)
 			.build();
 
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@Override
 	@NonNull
 	public HUPIItemProduct getById(@NonNull final HUPIItemProductId id)
@@ -135,7 +137,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	@Override
 	public List<I_M_HU_PI_Item_Product> retrievePIMaterialItemProducts(final I_M_HU_PI_Item itemDef)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_PI_Item_Product.class, itemDef)
+		return queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class, itemDef)
 				.filter(new EqualsQueryFilter<>(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_ID, itemDef.getM_HU_PI_Item_ID()))
 				.create()
 				.setOnlyActiveRecords(true)
@@ -288,9 +290,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	private IQueryFilter<I_M_HU_PI_Item_Product> createQueryFilter(
 			@NonNull final Properties ctx,
 			@NonNull final IHUPIItemProductQuery queryVO)
-	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final String trxName = ITrx.TRXNAME_None;
+	{		final String trxName = ITrx.TRXNAME_None;
 
 		final ICompositeQueryFilter<I_M_HU_PI_Item_Product> filters = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class);
 		filters.setJoinAnd();
@@ -499,8 +499,6 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 			@NonNull final GTIN gtin,
 			@Nullable final ZonedDateTime date)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		final String gtinStr = gtin.getAsString();
 		final ICompositeQueryFilter<I_M_HU_PI_Item_Product> hupiFilter = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
 				.setJoinOr()
@@ -530,14 +528,23 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 						HUPIItemProductId.ofRepoId(record.getM_HU_PI_Item_Product_ID())));
 	}
 
+	@Override
+	public boolean isValidOnDate(@NonNull final HUPIItemProductId id, @NonNull final ZonedDateTime date)
+	{
+		return queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID, id)
+				.filter(createValidOnDateFilter(date))
+				.create()
+				.anyMatch();
+	}
+
 	private IQueryFilter<I_M_HU_PI_Item_Product> createValidOnDateFilter(@Nullable final ZonedDateTime date)
 	{
 		if (date == null)
 		{
 			return ConstantQueryFilter.of(true);
 		}
-
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		final IQueryFilter<I_M_HU_PI_Item_Product> validDateFromFilter = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
 				.addCompareFilter(I_M_HU_PI_Item_Product.COLUMNNAME_ValidFrom, Operator.LESS_OR_EQUAL, date);
@@ -565,7 +572,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		final IQueryOrderByBuilder<I_M_HU_PI_Item_Product> orderByBuilderToUse;
 		if (orderByBuilder == null)
 		{
-			orderByBuilderToUse = Services.get(IQueryBL.class).createQueryOrderByBuilder(I_M_HU_PI_Item_Product.class);
+			orderByBuilderToUse = queryBL.createQueryOrderByBuilder(I_M_HU_PI_Item_Product.class);
 		}
 		else
 		{
@@ -600,7 +607,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	{
 		//
 		// Final Query
-		final IQueryBuilder<I_M_HU_PI_Item_Product> queryBuilder = Services.get(IQueryBL.class)
+		final IQueryBuilder<I_M_HU_PI_Item_Product> queryBuilder = queryBL
 				.createQueryBuilder(I_M_HU_PI_Item_Product.class, ctx, trxName);
 
 		final IQueryFilter<I_M_HU_PI_Item_Product> filter = createQueryFilter(ctx, queryVO);
