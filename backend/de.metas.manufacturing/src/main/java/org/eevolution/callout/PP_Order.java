@@ -13,8 +13,6 @@ import de.metas.material.planning.pporder.IPPRoutingRepository;
 import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
-import de.metas.product.IProductDAO;
-import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
@@ -56,7 +54,6 @@ public class PP_Order extends CalloutEngine
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
 	private final IProductBOMDAO bomsRepo = Services.get(IProductBOMDAO.class);
 	private final ProductBOMVersionsDAO bomVersionsRepo;
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
@@ -112,10 +109,9 @@ public class PP_Order extends CalloutEngine
 
 		//
 		// Plant (Produktionsstätte) and WorkStation (Arbeitsstation) follow the product's category (gh31188)
-		final ProductCategoryId productCategoryId = productsRepo.retrieveProductCategoryByProductId(productId);
-		if (productCategoryId != null)
+		final I_M_Product_Category productCategory = productBL.getProductCategoryByProductId(productId);
+		if (productCategory != null)
 		{
-			final I_M_Product_Category productCategory = productsRepo.getProductCategoryById(productCategoryId);
 			ppOrder.setS_Resource_ID(productCategory.getS_Resource_ID());
 			ppOrder.setWorkStation_ID(productCategory.getWorkStation_ID());
 		}
