@@ -66,6 +66,16 @@ public class JsonCreateMasterdataRequest
 	@Nullable Map<String, JsonUOMRequest> uoms;
 	@Nullable Map<String, JsonCompensationGroupSchemaRequest> compensationGroupSchemas;
 	@Nullable Map<String, JsonCreateProductRequest> products;
+
+	/**
+	 * Updates {@code M_Product.ProductLifeCycleStatus} (BBS-Status) on already-created products:
+	 * product identifier → status code ({@code O}/{@code A}/{@code G}/{@code N}). Applied late
+	 * (after order creation) so a product can be flipped to a blocking status only once its
+	 * order/picking-job setup exists — mirroring the real-life temporal block. See
+	 * {@link de.metas.frontend_testing.masterdata.product.SetProductLifeCycleStatusCommand}.
+	 */
+	@Nullable Map<String, String> productLifeCycleStatuses;
+
 	@Nullable Map<String, JsonCreateResourceRequest> resources;
 	@Nullable Map<String, JsonCreateProductPlanningRequest> productPlannings;
 	@Nullable Map<String, JsonPickingSlotCreateRequest> pickingSlots;

@@ -23,12 +23,14 @@ import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.product.BBSStatus;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.IProductDAO.ProductQuery;
 import de.metas.product.IssuingToleranceSpec;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.product.ProductLifeCycleAction;
 import de.metas.product.ProductType;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -85,6 +87,7 @@ public final class ProductBL implements IProductBL
 	private static final Logger logger = LogManager.getLogger(ProductBL.class);
 	private static final AdMessageKey MSG_M_PRODUCT_NOT_PURCHASED = AdMessageKey.of("MSG_M_Product_NotPurchased");
 	private static final AdMessageKey MSG_M_PRODUCT_NOT_SOLD = AdMessageKey.of("MSG_M_Product_NotSold");
+	private static final AdMessageKey MSG_M_PRODUCT_BBSSTATUS_ACTION_BLOCKED = AdMessageKey.of("M_Product_BBSStatus_ActionBlocked");
 
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
@@ -455,6 +458,31 @@ public final class ProductBL implements IProductBL
 	public boolean isPurchaseSalesEnforcementEnabled(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
 	{
 		return sysConfigBL.getBooleanValue(SYSCONFIG_ENFORCE_PURCHASE_SALES_FLAGS, false, clientId.getRepoId(), orgId.getRepoId());
+	}
+
+	@Override
+	public boolean isAllowed(@NonNull final ProductId productId, @NonNull final ProductLifeCycleAction action)
+	{
+		return isStatusAllowed(getById(productId).getProductLifeCycleStatus(), action);
+	}
+
+	@Override
+	public void assertAllowed(@NonNull final ProductId productId, @NonNull final ProductLifeCycleAction action)
+	{
+		final I_M_Product product = getById(productId);
+		final String code = product.getProductLifeCycleStatus();
+		if (!isStatusAllowed(code, action))
+		{
+			throw new AdempiereException(MSG_M_PRODUCT_BBSSTATUS_ACTION_BLOCKED, product.getValue(), code)
+					.setParameter("product", product.getValue())
+					.setParameter("status", code);
+		}
+	}
+
+	private static boolean isStatusAllowed(@Nullable final String code, @NonNull final ProductLifeCycleAction action)
+	{
+		final BBSStatus status = BBSStatus.ofNullableCode(code);
+		return status == null || status.isAllowed(action);
 	}
 
 	@Override

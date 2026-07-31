@@ -103,6 +103,22 @@ public interface IProductBL extends ISingletonService
 	/** @throws org.adempiere.exceptions.AdempiereException (user validation error) if the product is not flagged IsSold. */
 	void assertSellable(@NonNull ProductId productId);
 
+	/**
+	 * @return {@code true} if the given {@link de.metas.product.ProductLifeCycleAction} is allowed for the product's current
+	 * {@link de.metas.product.BBSStatus} ({@code M_Product.ProductLifeCycleStatus}); {@code null}/{@code OK} status is fully permissive.
+	 * Non-throwing companion to {@link #assertAllowed(ProductId, ProductLifeCycleAction)} — used where a boolean is needed
+	 * (e.g. the purchase-demand matcher) instead of catching an exception.
+	 */
+	boolean isAllowed(@NonNull ProductId productId, @NonNull ProductLifeCycleAction action);
+
+	/**
+	 * Delegates to {@link #isAllowed(ProductId, ProductLifeCycleAction)}.
+	 *
+	 * @throws org.adempiere.exceptions.AdempiereException (user validation error) if the action is blocked by the product's
+	 * current {@link de.metas.product.BBSStatus}.
+	 */
+	void assertAllowed(@NonNull ProductId productId, @NonNull ProductLifeCycleAction action);
+
 	boolean isItemType(@Nullable ProductId productId);
 
 	boolean isDiverse(ProductId productId);

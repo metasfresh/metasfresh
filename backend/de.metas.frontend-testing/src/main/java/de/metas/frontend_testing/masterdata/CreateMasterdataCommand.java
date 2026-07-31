@@ -37,6 +37,7 @@ import de.metas.frontend_testing.masterdata.product.ApplyUOMStdPrecisionsCommand
 import de.metas.frontend_testing.masterdata.product.CreateProductCommand;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductRequest;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductResponse;
+import de.metas.frontend_testing.masterdata.product.SetProductLifeCycleStatusCommand;
 import de.metas.frontend_testing.masterdata.product_planning.CreateProductPlanningCommand;
 import de.metas.frontend_testing.masterdata.product_planning.JsonCreateProductPlanningRequest;
 import de.metas.frontend_testing.masterdata.product_planning.JsonCreateProductPlanningResponse;
@@ -140,6 +141,11 @@ public class CreateMasterdataCommand
 		final ImmutableMap<String, JsonDDOrderResponse> distributionOrders = createDistributionOrders();
 		final ImmutableMap<String, JsonInventoryResponse> inventories = createInventories();
 		createCustomQRCodeFormats();
+
+		// Late pass: flip already-created products to a life-cycle status (e.g. G=Gesperrt). Runs after
+		// order creation so a product can be blocked only once its order/picking-job setup exists (a
+		// blocking status at creation would fail the product's own order/shipment life-cycle guards).
+		applyProductLifeCycleStatuses();
 
 		return JsonCreateMasterdataResponse.builder()
 				.context(context.toJson())
@@ -578,6 +584,22 @@ public class CreateMasterdataCommand
 				.identifier(Identifier.ofString(identifier))
 				.build()
 				.execute();
+	}
+
+	private void applyProductLifeCycleStatuses()
+	{
+		final Map<String, String> statusByProductIdentifier = request.getProductLifeCycleStatuses();
+		if (statusByProductIdentifier == null || statusByProductIdentifier.isEmpty())
+		{
+			return;
+		}
+
+		statusByProductIdentifier.forEach((productIdentifier, statusCode) -> SetProductLifeCycleStatusCommand.builder()
+				.context(context)
+				.identifier(Identifier.ofString(productIdentifier))
+				.statusCode(statusCode)
+				.build()
+				.execute());
 	}
 
 	private void createCustomQRCodeFormats()
