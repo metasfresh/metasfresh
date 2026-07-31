@@ -494,6 +494,116 @@ test('Whole HU: scan an HU far above nominal weight but on target by count - pro
 });
 
 //
+// ===== The operator scans again while the confirmed pick is still on its way to the server =====
+// Confirming the over-delivery sends the pick and takes the question off the screen. Until the server
+// answers, the scan step must not come back: on a handheld over warehouse WiFi the operator sees nothing
+// happen and pulls the trigger again, which would otherwise book the same HU a second time.
+//
+
+// The scenario is about that in-flight window, so it must not depend on how fast the backend answers:
+// against a local server it would be milliseconds. Holding the pick request open until the scenario
+// releases it reproduces the warehouse-WiFi delay the operator actually experiences. Only the first pick
+// is held - a second one, which is exactly what must not happen, would go straight through and show up
+// in the qtyPicked records below.
+const PICK_REQUEST_URL_PATTERN = '**/picking/event';
+
+const holdTheFirstPickRequest = async ({ page }) => {
+    let releasePickRequest;
+    const pickRequestReleased = new Promise((resolve) => (releasePickRequest = resolve));
+    let isFirstPickRequest = true;
+
+    await page.route(PICK_REQUEST_URL_PATTERN, async (route) => {
+        if (isFirstPickRequest) {
+            isFirstPickRequest = false;
+            await pickRequestReleased;
+        }
+        await route.continue();
+    });
+
+    return releasePickRequest;
+};
+
+test('Whole HU: scan again while the confirmed pick is still in flight - it books exactly once', async ({ page }) => {
+    allure.epic('E0105: Picking');
+    allure.feature('F00230: MobileUI Picking');
+    allure.tag('F00230');
+    allure.story('Over-picking prompt - whole HU scanned again while the confirmed pick is in flight, booked only once');
+    allure.severity('critical');
+
+    const masterdata = await createMasterdata_WholeHU({ showPromptWhenOverPicking: true, orderQtyCUs: 2 });
+
+    // 4 digits product code, 1.000 kg, lot 123, produced 2025-04-03, best before 2026-04-10
+    const weightLabelQRCode = `${masterdata.products.BOM.productCode}00100000000123250403260410`;
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+
+    const huQRCode = await produceHU({ masterdata, weightLabelQRCode, qtyCUs: 3 });
+
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '2 Stk', qtyPicked: '0 Stk' });
+    await PickingJobScreen.scanPickingSlot({
+        qrCode: masterdata.pickingSlots.slot1.qrCode,
+        expectNextScreen: 'PickLineScanScreen',
+    });
+
+    const releasePickRequest = await holdTheFirstPickRequest({ page });
+
+    await test.step('Scan the whole HU (3 pieces) against an order of 2 and confirm the over-delivery', async () => {
+        await PickLineScanScreen.waitForScreen();
+        await PickLineScanScreen.typeQRCode(weightLabelQRCode);
+
+        await YesNoDialog.waitForDialog();
+        await YesNoDialog.clickYesButton();
+
+        // Confirming sends the pick. Until the server answers, the operator is shown that it is running
+        // and gets no scan step back - if the scan step returned here, the next scan would book again.
+        await PickLineScanScreen.expectPickInProgress();
+    });
+
+    await test.step('Scan the same HU again while the pick is still running - nothing happens', async () => {
+        await PickLineScanScreen.typeQRCodeWithoutWaitingForScanTarget(weightLabelQRCode);
+
+        // The scan finds nothing listening, so the screen is unchanged: still the running pick, and no
+        // second over-delivery question for the operator to confirm.
+        await PickLineScanScreen.expectPickInProgress();
+        await YesNoDialog.expectNotVisible();
+    });
+
+    await test.step('Let the pick reach the server and verify the line grew by one HU only', async () => {
+        releasePickRequest();
+
+        await PickingJobScreen.waitForScreen();
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '2 Stk', qtyPicked: '3 Stk' });
+
+        await page.unroute(PICK_REQUEST_URL_PATTERN);
+    });
+
+    await test.step('Verify the HU was booked exactly once', async () => {
+        // A single qtyPicked record of 3 pieces. The second scan booking as well would leave two records
+        // here (the expectation list is matched against all records of the schedule, size included).
+        await Backend.expect({
+            pickings: {
+                [pickingJobId]: {
+                    shipmentSchedules: {
+                        BOM: {
+                            qtyPicked: [{ qtyPicked: '3 PCE', processed: false, shipmentLineId: '-' }],
+                        },
+                    },
+                },
+            },
+            hus: {
+                [huQRCode]: { huStatus: 'S', storages: { BOM: '3 PCE' } },
+            },
+        });
+    });
+});
+
+//
 // ===== A line that already carries a picked quantity =====
 // The shape the customer reported: the line is ordered 3 and 3 are already picked, and the operator
 // scans one more HU holding a single piece. Nothing about that HU exceeds the order on its own - it is

@@ -21,208 +21,89 @@ jest.mock('../../utils/toast', () => ({
   toastErrorFromObj: jest.fn(),
 }));
 
-const HU_SCANNER_INPUT = 'scanHUBarcode-input';
+// The operator scans a whole TU holding 3 pieces onto a line with 2 still to pick, so the component
+// raises the over-delivery confirmation, and answering "Ja" fires the pick.
+const QTY_REMAINING = 2;
+const HU_QTY = 3;
+
+const SCANNER_INPUT = 'scanHUBarcode-input';
 const YES_BUTTON = '#yes-button';
-const YES_NO_DIALOG = '.yes-no-dialog';
 const SPINNER = '.loading';
 
-const OVER_PICK_PROMPT = 'Do you really want to pack more than ordered?';
+const COMPONENT_PATH = path.join(__dirname, '../../components/ScanHUAndGetQtyComponent.jsx');
 
-const newDeferred = () => {
-  let resolve;
-  let reject;
-  const promise = new Promise((res, rej) => {
-    resolve = res;
-    reject = rej;
-  });
-  return { promise, resolve, reject };
-};
-
-/**
- * @param isTUToBePickedAsWhole whole-TU scan (books the scanned unit, no qty dialog) vs per-piece CU scan.
- * @param qtyRemaining what is still ordered on the line - the component's qtyMax/qtyTarget.
- * @param huQty the scanned TU's own content, which the whole-TU path compares against qtyRemaining.
- */
-const renderComponent = ({ isTUToBePickedAsWhole, qtyRemaining, huQty, isPromptEnabled, onResult }) => {
-  const getConfirmationPromptForQty = (qtyInput) => (Number(qtyInput) > qtyRemaining ? OVER_PICK_PROMPT : undefined);
-
-  const resolveScannedBarcode = async (scannedBarcode) => ({
-    qrCode: { code: scannedBarcode, isUnique: !isTUToBePickedAsWhole, isTUToBePickedAsWhole },
-    ...(isTUToBePickedAsWhole ? { isTUToBePickedAsWhole: true, qtyInitial: huQty } : {}),
-  });
-
-  return render(
-    <Provider store={createStore(combineReducers({ settings }))}>
-      <ScanHUAndGetQtyComponent
-        qtyMax={qtyRemaining}
-        qtyTarget={qtyRemaining}
-        uom="PCE"
-        resolveScannedBarcode={resolveScannedBarcode}
-        onResult={onResult}
-        getConfirmationPromptForQty={isPromptEnabled ? getConfirmationPromptForQty : undefined}
-      />
-    </Provider>
-  );
-};
-
-/** Feeds a barcode to the HU scanner the screen currently exposes, the way a hardware scan does. */
-const scanHU = async (barcode) => {
-  const input = screen.getByTestId(HU_SCANNER_INPUT);
+/** Feeds a barcode to the HU scanner, the way a hardware scan does. */
+const scanWholeTU = async (barcode) => {
+  const input = screen.getByTestId(SCANNER_INPUT);
   input.value = barcode;
   await act(async () => {
     fireEvent.keyUp(input, { key: 'Enter' });
   });
 };
 
-/**
- * Feeds a barcode to the HU scanner IF the screen still exposes one. That condition is the subject
- * under test: while a pick is in flight the screen must not offer a scan target at all, so the
- * operator's next scan cannot start a second pick.
- */
-const scanHUIfScannerIsArmed = async (barcode) => {
-  if (screen.queryByTestId(HU_SCANNER_INPUT)) {
-    await scanHU(barcode);
-  }
+const confirmTheOverDelivery = async () => {
+  await act(async () => {
+    fireEvent.click(document.querySelector(YES_BUTTON));
+  });
 };
 
-const clickYesIfPromptIsRaised = async () => {
-  const yesButton = document.querySelector(YES_BUTTON);
-  if (yesButton) {
-    await act(async () => {
-      fireEvent.click(yesButton);
-    });
-  }
-};
+const renderComponent = ({ onResult }) =>
+  render(
+    <Provider store={createStore(combineReducers({ settings }))}>
+      <ScanHUAndGetQtyComponent
+        qtyMax={QTY_REMAINING}
+        qtyTarget={QTY_REMAINING}
+        uom="PCE"
+        resolveScannedBarcode={async (scannedBarcode) => ({
+          qrCode: { code: scannedBarcode, isUnique: false, isTUToBePickedAsWhole: true },
+          isTUToBePickedAsWhole: true,
+          qtyInitial: HU_QTY,
+        })}
+        onResult={onResult}
+        getConfirmationPromptForQty={(qty) => (Number(qty) > QTY_REMAINING ? 'Pack more than ordered?' : undefined)}
+      />
+    </Provider>
+  );
 
-//
-//
-// -----------------------------------------------------------------------------
-//
-//
+// The happy path of the in-flight guard - confirming the over-delivery shows the pick running, takes the
+// scan step away, and books exactly once however often the operator scans meanwhile - is driven end to end
+// by e2e/mobile-webui/tests/spec/picking/overPickingPrompt_wholeHU.spec.js. What no E2E drives is a pick
+// that FAILS: the running state has to be cleared then too, or the operator is left on the spinner with
+// nothing to scan into and no way out.
+it('lets the operator scan again after a confirmed pick failed', async () => {
+  let failThePick;
+  const pick = new Promise((resolve, reject) => (failThePick = reject));
+  const onResult = jest.fn(() => pick);
 
-// The over-delivery confirmation's "Ja" fires the pick and drops the dialog, returning the operator
-// to the HU-scan step. Until the pick's POST comes back the screen must not accept another scan:
-// on a handheld over warehouse WiFi the operator's next scan would otherwise book the same line
-// twice. GetQuantityDialog already guards its own confirmation this way (isProcessing + Spinner +
-// disabled confirm); the whole-TU path has to do the same.
-describe('ScanHUAndGetQtyComponent: the confirmed whole-TU pick is in flight', () => {
-  const QTY_REMAINING = 2;
-  const HU_QTY = 32;
+  renderComponent({ onResult });
+  await act(async () => {});
 
-  const startConfirmedWholeTUPick = async () => {
-    const pick = newDeferred();
-    const onResult = jest.fn(() => pick.promise);
+  await scanWholeTU('WHOLE-TU-LABEL-1');
+  await confirmTheOverDelivery();
 
-    renderComponent({
-      isTUToBePickedAsWhole: true,
-      qtyRemaining: QTY_REMAINING,
-      huQty: HU_QTY,
-      isPromptEnabled: true,
-      onResult,
-    });
+  // The pick is running: no scan step, so the operator cannot start a second one.
+  expect(document.querySelector(SPINNER)).not.toBeNull();
+  expect(screen.queryByTestId(SCANNER_INPUT)).toBeNull();
 
-    await act(async () => {});
-    await scanHU('WHOLE-TU-LABEL-1');
-
-    expect(document.querySelector(YES_NO_DIALOG)).not.toBeNull();
-    await act(async () => {
-      fireEvent.click(document.querySelector(YES_BUTTON));
-    });
-    expect(onResult).toHaveBeenCalledTimes(1);
-
-    return { pick, onResult };
-  };
-
-  it('shows the pick in progress and does not re-arm the HU scanner', async () => {
-    const { pick } = await startConfirmedWholeTUPick();
-
-    expect(document.querySelector(SPINNER)).not.toBeNull();
-    expect(screen.queryByTestId(HU_SCANNER_INPUT)).toBeNull();
-
-    await act(async () => {
-      pick.resolve({});
-    });
-
-    expect(document.querySelector(SPINNER)).toBeNull();
-    expect(screen.getByTestId(HU_SCANNER_INPUT)).toBeInTheDocument();
+  await act(async () => {
+    failThePick({ message: 'pick rejected by the server' });
   });
 
-  it('books nothing a second time when the operator scans again', async () => {
-    const { onResult } = await startConfirmedWholeTUPick();
+  // It failed, so the operator gets the scan step back and can pick the HU again.
+  expect(document.querySelector(SPINNER)).toBeNull();
+  expect(screen.getByTestId(SCANNER_INPUT)).toBeInTheDocument();
 
-    await scanHUIfScannerIsArmed('WHOLE-TU-LABEL-2');
-    await clickYesIfPromptIsRaised();
-
-    expect(onResult).toHaveBeenCalledTimes(1);
-  });
-
-  it('clears the in-progress state when the pick fails, so the operator can scan again', async () => {
-    const { pick, onResult } = await startConfirmedWholeTUPick();
-
-    // The in-progress state has to be entered before the error branch can be shown to clear it -
-    // without this the assertions below hold trivially on a component that never enters it at all.
-    expect(document.querySelector(SPINNER)).not.toBeNull();
-
-    await act(async () => {
-      pick.reject({ message: 'pick rejected by the server' });
-    });
-
-    expect(document.querySelector(SPINNER)).toBeNull();
-    expect(screen.getByTestId(HU_SCANNER_INPUT)).toBeInTheDocument();
-
-    await scanHU('WHOLE-TU-LABEL-3');
-    await clickYesIfPromptIsRaised();
-    expect(onResult).toHaveBeenCalledTimes(2);
-  });
+  await scanWholeTU('WHOLE-TU-LABEL-2');
+  await confirmTheOverDelivery();
+  expect(onResult).toHaveBeenCalledTimes(2);
 });
 
-//
-//
-// -----------------------------------------------------------------------------
-//
-//
+// Both paths that book a qty - the typed CU qty and the whole scanned TU - must apply the same
+// over-delivery ceiling. A second copy of that ceiling would behave identically, so no behavioural test
+// could ever see it; what a copy cannot avoid is producing the same "above max" message.
+it('builds the "above max" message in exactly one place, so there is only one ceiling', () => {
+  const componentSource = fs.readFileSync(COMPONENT_PATH, 'utf8');
 
-const COMPONENT_SOURCE = fs.readFileSync(path.join(__dirname, '../../components/ScanHUAndGetQtyComponent.jsx'), 'utf8');
-
-/** The body, braces included, of a module-level `const <name> = (…) => { … }`. */
-const arrowFunctionBody = (name) => {
-  const declarationIndex = COMPONENT_SOURCE.indexOf(`const ${name} = `);
-  if (declarationIndex < 0) {
-    throw new Error(`ScanHUAndGetQtyComponent.jsx declares no "${name}"`);
-  }
-
-  const bodyStart = COMPONENT_SOURCE.indexOf('{', COMPONENT_SOURCE.indexOf('=>', declarationIndex));
-  let depth = 0;
-  for (let i = bodyStart; i < COMPONENT_SOURCE.length; i++) {
-    if (COMPONENT_SOURCE[i] === '{') {
-      depth++;
-    } else if (COMPONENT_SOURCE[i] === '}' && --depth === 0) {
-      return COMPONENT_SOURCE.substring(bodyStart, i + 1);
-    }
-  }
-  throw new Error(`Unbalanced braces in "${name}"`);
-};
-
-const countOccurrences = (haystack, needle) => haystack.split(needle).length - 1;
-
-// The CU and whole-TU paths must stay behaviourally identical, enforced structurally by the single
-// validateQtyAgainstMax both of them call. Hence the structural assertions: re-duplicating the ceiling
-// into two behaviour-identical copies keeps an outcome-only test green, while these fail.
-describe('ScanHUAndGetQtyComponent: the CU and whole-TU ceilings resolve through one helper', () => {
-  it('reaches the ceiling from the CU path via validateQtyAgainstMax', () => {
-    expect(arrowFunctionBody('validateQtyEntered')).toContain('validateQtyAgainstMax(');
-  });
-
-  it('reaches the ceiling from the whole-TU path via the same validateQtyAgainstMax', () => {
-    expect(arrowFunctionBody('requestQtyOrReportResult')).toContain('validateQtyAgainstMax(');
-  });
-
-  it('has exactly one ceiling to reach - nothing outside the helper builds a qtyAboveMax error', () => {
-    expect(countOccurrences(COMPONENT_SOURCE, 'const validateQtyAgainstMax = ')).toBe(1);
-
-    const linesOutsideTheHelper = COMPONENT_SOURCE.replace(arrowFunctionBody('validateQtyAgainstMax'), '')
-      .replace(/^const DEFAULT_MSG_qtyAboveMax = .*$/m, '')
-      .split('\n');
-    expect(linesOutsideTheHelper.filter((line) => line.includes('DEFAULT_MSG_qtyAboveMax'))).toEqual([]);
-  });
+  // The constant itself, plus the single place that turns it into the message.
+  expect(componentSource.match(/DEFAULT_MSG_qtyAboveMax/g)).toHaveLength(2);
 });
