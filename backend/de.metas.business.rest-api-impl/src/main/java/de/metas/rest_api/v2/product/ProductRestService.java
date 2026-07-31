@@ -51,6 +51,7 @@ import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService
 import de.metas.gs1.GTIN;
 import de.metas.gs1.ean13.EAN13;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.ProductAndHUPIItemProductId;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
