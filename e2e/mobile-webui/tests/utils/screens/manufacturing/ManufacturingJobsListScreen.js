@@ -4,6 +4,7 @@ import { ManufacturingJobScreen } from './ManufacturingJobScreen';
 import { expect } from '@playwright/test';
 import { ApplicationsListScreen } from '../ApplicationsListScreen';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
+import { OperatorContextErrorPanel } from '../../components/OperatorContextErrorPanel';
 
 const NAME = 'ManufacturingJobsListScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -32,8 +33,14 @@ export const ManufacturingJobsListScreen = {
         await BarcodeScannerComponent.expectNotAttached({});
     }),
 
-    scanWorkstation: async (qrCode) => await test.step(`${NAME} - Scan workstation QR '${qrCode}'`, async () => {
+    // Scan without asserting the job list takes over — for scenarios where the assign is expected to
+    // fail (e.g. the connection dropped), so the scanner does NOT give way to the job list.
+    typeWorkstationQRCode: async (qrCode) => await test.step(`${NAME} - Scan workstation QR '${qrCode}'`, async () => {
         await BarcodeScannerComponent.type(qrCode);
+    }),
+
+    scanWorkstation: async (qrCode) => await test.step(`${NAME} - Scan workstation QR '${qrCode}' and wait for the job list`, async () => {
+        await ManufacturingJobsListScreen.typeWorkstationQRCode(qrCode);
         // The scanner disappears once the workstation is assigned and the job list takes over.
         await BarcodeScannerComponent.expectNotAttached({ timeout: SLOW_ACTION_TIMEOUT });
         await ManufacturingJobsListScreen.waitForScreen();
@@ -44,18 +51,19 @@ export const ManufacturingJobsListScreen = {
             .toHaveCount(0, { timeout: FAST_ACTION_TIMEOUT });
     }),
 
-    // When the operator's workplace/workstation cannot be read because the connection dropped,
-    // the screen must say so and offer a retry — instead of silently showing no workplace at all.
+    // When the operator's workplace/workstation cannot be read — or assigned from a scan — because
+    // the connection dropped, the screen must say so and offer a retry, instead of silently showing
+    // no workplace at all.
     expectConnectionErrorPanel: async () => await test.step(`${NAME} - Expect operator-context connection error panel`, async () => {
-        await expect(page.getByTestId('operator-context-error-panel')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        await OperatorContextErrorPanel.expectVisible();
     }),
 
     expectNoConnectionErrorPanel: async () => await test.step(`${NAME} - Expect no operator-context connection error panel`, async () => {
-        await expect(page.getByTestId('operator-context-error-panel')).toHaveCount(0, { timeout: FAST_ACTION_TIMEOUT });
+        await OperatorContextErrorPanel.expectNotVisible();
     }),
 
     retryLoadingOperatorContext: async () => await test.step(`${NAME} - Retry loading workplace/workstation`, async () => {
-        await page.getByTestId('operator-context-error-retry').tap();
+        await OperatorContextErrorPanel.tapRetry();
         await ManufacturingJobsListScreen.waitForScreen();
     }),
 

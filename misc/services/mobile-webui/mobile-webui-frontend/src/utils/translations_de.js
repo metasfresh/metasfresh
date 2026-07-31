@@ -81,7 +81,7 @@ const translations = {
   launchers: {
     operatorContext: {
       error: {
-        title: 'Arbeitsplatz/Arbeitsstation konnte nicht geladen werden',
+        title: 'Arbeitsplatz/Arbeitsstation derzeit nicht verfügbar',
         retry: 'Erneut versuchen',
       },
     },

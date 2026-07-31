@@ -77,7 +77,7 @@ const translations = {
   launchers: {
     operatorContext: {
       error: {
-        title: 'Workplace/workstation could not be loaded',
+        title: 'Workplace/workstation is currently unavailable',
         retry: 'Retry',
       },
     },

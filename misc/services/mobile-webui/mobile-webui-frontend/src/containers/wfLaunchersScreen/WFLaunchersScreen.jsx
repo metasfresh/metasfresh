@@ -30,7 +30,8 @@ const WFLaunchersScreen = () => {
     isWorkplaceLoading,
     isWorkplaceRequired,
     workplace,
-    workplaceLoadErrorMessage,
+    workplaceErrorMessage,
+    retryWorkplace,
     reloadWorkplace,
     setWorkplaceByQRCode,
   } = useCurrentWorkplace({ applicationId });
@@ -38,8 +39,8 @@ const WFLaunchersScreen = () => {
     isWorkstationLoading,
     isWorkstationRequired,
     workstation,
-    workstationLoadErrorMessage,
-    reloadWorkstation,
+    workstationErrorMessage,
+    retryWorkstation,
     setWorkstationByQRCode,
   } = useCurrentWorkstation({
     applicationId,
@@ -51,7 +52,7 @@ const WFLaunchersScreen = () => {
     applicationId,
   });
 
-  const operatorContextLoadErrorMessage = workstationLoadErrorMessage ?? workplaceLoadErrorMessage;
+  const operatorContextErrorMessage = workstationErrorMessage ?? workplaceErrorMessage;
   const isAskingForWorkstation = isWorkstationRequired && !workstation;
   const isAskingForWorkplace = isWorkplaceRequired && !workplace;
   const isAskingForTrolley = isTrolleyRequired && !trolley;
@@ -61,7 +62,7 @@ const WFLaunchersScreen = () => {
   // conditions that gate rendering the list below; `isEnabled` is a fetch dependency, so the list is
   // fetched exactly once the context is complete.
   const isOperatorContextReady =
-    !operatorContextLoadErrorMessage &&
+    !operatorContextErrorMessage &&
     !isWorkstationLoading &&
     !isWorkplaceLoading &&
     !isTrolleyLoading &&
@@ -102,24 +103,23 @@ const WFLaunchersScreen = () => {
   }, [url, workplaceName, workstationName]);
 
   //
-  // Operator context (workplace / workstation) could not be read
-  // Takes over the screen: without it we would either hide the header row for good or ask the operator
-  // to re-scan a workstation/workplace they are in fact still assigned to.
-  if (operatorContextLoadErrorMessage) {
+  // Operator context (workplace / workstation) could not be read, or could not be assigned from a scan
+  // Takes over the screen: without it we would either hide the header row for good, ask the operator to
+  // re-scan a workstation/workplace they are in fact still assigned to, or silently swallow their scan.
+  if (operatorContextErrorMessage) {
     return (
       <div className="container launchers-container">
         <div className="notification is-danger mt-3" data-testid="operator-context-error-panel">
           <p className="mb-3">
             <strong>{trl('launchers.operatorContext.error.title')}</strong>
           </p>
-          <p className="mb-3">{operatorContextLoadErrorMessage}</p>
+          <p className="mb-3">{operatorContextErrorMessage}</p>
           <ButtonWithIndicator
             testId="operator-context-error-retry"
             captionKey="launchers.operatorContext.error.retry"
-            onClick={() => {
-              reloadWorkstation();
-              reloadWorkplace();
-            }}
+            // Re-fire only what actually failed — the message above is the workstation's whenever it
+            // has one, so retrying the workplace too would be a wasted request the operator waits on.
+            onClick={workstationErrorMessage ? retryWorkstation : retryWorkplace}
           />
         </div>
       </div>
