@@ -1025,6 +1025,9 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		return inOutBL.getProductPrice(fromInOutLine, explicitPackingInstruction);
 	}
 
+	// @see de.metas.handlingunits.model.I_M_InOutLine#COLUMNNAME_M_HU_PI_Item_Product_ID (typed getter not importable from this module)
+	private static final String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
+
 	/**
 	 * Resolves the effective Packvorschrift (M_HU_PI_Item_Product) to price a vendor return from, mirroring the
 	 * resolution order of {@code InOutLineHUPackingAware} (which lives in de.metas.handlingunits.base and is not
@@ -1036,11 +1039,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	 * The line's own PI is read generically because its typed getter lives on the handlingunits {@code I_M_InOutLine},
 	 * which this module cannot import; the order-line PI is read through {@link IOrderDAO} rather than a model getter.
 	 */
-	// The typed getter for this column lives on de.metas.handlingunits.model.I_M_InOutLine, which this module
-	// cannot import; read it generically by column name instead.
-	// @see de.metas.handlingunits.model.I_M_InOutLine#COLUMNNAME_M_HU_PI_Item_Product_ID
-	private static final String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
-
 	@Nullable
 	private static HUPIItemProductId resolvePackingInstruction(@NonNull final org.compiere.model.I_M_InOutLine inOutLine)
 	{
