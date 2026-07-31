@@ -784,27 +784,6 @@ public interface I_DD_OrderLine
 	String COLUMNNAME_M_LocatorTo_ID = "M_LocatorTo_ID";
 
 	/**
-	 * Set Picking Job Schedule.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_Picking_Job_Schedule_ID (int M_Picking_Job_Schedule_ID);
-
-	/**
-	 * Get Picking Job Schedule.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_Picking_Job_Schedule_ID();
-
-	ModelColumn<I_DD_OrderLine, Object> COLUMN_M_Picking_Job_Schedule_ID = new ModelColumn<>(I_DD_OrderLine.class, "M_Picking_Job_Schedule_ID", null);
-	String COLUMNNAME_M_Picking_Job_Schedule_ID = "M_Picking_Job_Schedule_ID";
-
-	/**
 	 * Set Product.
 	 * Product, Service, Item
 	 *
@@ -825,27 +804,6 @@ public interface I_DD_OrderLine
 	int getM_Product_ID();
 
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
-
-	/**
-	 * Set Shipment Candidate.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
-
-	/**
-	 * Get Shipment Candidate.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_ShipmentSchedule_ID();
-
-	ModelColumn<I_DD_OrderLine, Object> COLUMN_M_ShipmentSchedule_ID = new ModelColumn<>(I_DD_OrderLine.class, "M_ShipmentSchedule_ID", null);
-	String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
 
 	/**
 	 * Set Warehouse.

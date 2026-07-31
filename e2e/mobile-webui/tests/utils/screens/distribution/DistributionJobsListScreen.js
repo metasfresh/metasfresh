@@ -1,5 +1,5 @@
 import { test } from "../../../../playwright.config";
-import { ID_BACK_BUTTON, page, FAST_ACTION_TIMEOUT, SLOW_ACTION_TIMEOUT, VERY_FAST_ACTION_TIMEOUT } from "../../common";
+import { ID_BACK_BUTTON, page, FAST_ACTION_TIMEOUT, SLOW_ACTION_TIMEOUT, VERY_FAST_ACTION_TIMEOUT, holdForCaptureIfEnabled } from "../../common";
 import { DistributionJobScreen } from "./DistributionJobScreen";
 import { DistributionJobsListFiltersScreen } from "./DistributionJobsListFiltersScreen";
 import { ApplicationsListScreen } from '../ApplicationsListScreen';
@@ -65,6 +65,11 @@ export const DistributionJobsListScreen = {
         // Make sure we have the expected number of buttons
         // NOTE: we do this at the end because expect does not wait for the elements to stabilize
         await expect(locateJobButtons()).toHaveCount(expectationsArray.length);
+
+        // Nothing happens here unless a capture run asked for it (UAT_CAPTURE): the offered jobs are
+        // the result this screen exists to show, and the checks above can settle faster than the video
+        // recorder samples a frame, leaving them off the recording.
+        await holdForCaptureIfEnabled();
     }),
 
     // Order-INDEPENDENT variant of expectJobButtons: use for *filtering* assertions (which
