@@ -153,9 +153,7 @@ public class ProductCostsRecreateAll_StepDef
 	public void repostRuns(@NonNull final DataTable dataTable)
 	{
 		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
-		final int acctSchemaId = row.getAsIdentifier(I_C_AcctSchema.COLUMNNAME_C_AcctSchema_ID)
-				.lookupNotNullIn(acctSchemaTable)
-				.getC_AcctSchema_ID();
+		final int acctSchemaId = getAcctSchemaId(row);
 		final LocalDate startDateAcct = row.getAsLocalDate("StartDateAcct");
 
 		final String callSql = "SELECT \"de_metas_acct\".accounting_docs_repost_all_from_date("
@@ -587,11 +585,17 @@ public class ProductCostsRecreateAll_StepDef
 		return outcome;
 	}
 
-	private String buildCallSql(@NonNull final DataTableRow row)
+	/** Resolves the {@code C_AcctSchema_ID} column both drivers take as their first parameter. */
+	private int getAcctSchemaId(@NonNull final DataTableRow row)
 	{
-		final int acctSchemaId = row.getAsIdentifier(I_C_AcctSchema.COLUMNNAME_C_AcctSchema_ID)
+		return row.getAsIdentifier(I_C_AcctSchema.COLUMNNAME_C_AcctSchema_ID)
 				.lookupNotNullIn(acctSchemaTable)
 				.getC_AcctSchema_ID();
+	}
+
+	private String buildCallSql(@NonNull final DataTableRow row)
+	{
+		final int acctSchemaId = getAcctSchemaId(row);
 		final CostElementId costElementId = costElementTable.getSingleId(row.getAsString("M_CostElement_ID"));
 		final LocalDate startDateAcct = row.getAsLocalDate("StartDateAcct");
 		final int productsPerCommit = row.getAsInt("ProductsPerCommit");
