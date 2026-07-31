@@ -1,4 +1,4 @@
-package de.metas.inout.model.validator;
+package de.metas.product.model.interceptor;
 
 /*
  * #%L

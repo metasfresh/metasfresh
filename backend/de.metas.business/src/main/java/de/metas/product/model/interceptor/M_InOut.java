@@ -1,4 +1,4 @@
-package de.metas.inout.model.validator;
+package de.metas.product.model.interceptor;
 
 /*
  * #%L
@@ -34,6 +34,14 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+/**
+ * Product life-cycle status enforcement on {@code M_InOut}.
+ * <p>
+ * Lives in this feature package on purpose: {@code de.metas.inout.model.validator.M_InOut} is already taken by
+ * {@code de.metas.swat.base}, and a second class with that same fully-qualified name would shadow it on the
+ * runtime classpath (only one of the two jars wins), silently unregistering that interceptor's captured-location /
+ * rendered-address, BPartner-balance and void-guard callbacks.
+ */
 @Interceptor(I_M_InOut.class)
 @Component
 public class M_InOut
