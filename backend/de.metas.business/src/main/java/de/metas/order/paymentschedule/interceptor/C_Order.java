@@ -40,7 +40,10 @@ import org.springframework.stereotype.Component;
  * downstream activity — i.e. at least one pay-schedule line has a goods-receipt link
  * ({@code inoutId != null}) or a matched-invoice link ({@code invoiceId != null}).
  *
- * <p>A {@code Paid} line always implies one of the above, so no separate status guard is needed.
+ * <p>The line's status is irrelevant to the block. A {@code Paid} line does <b>not</b> imply a
+ * downstream link — a proforma prepayment marks its row {@code Paid} with neither ID set — and it cuts
+ * both ways: an {@code Awaiting_Pay} line carrying no link does not block, while a still-{@code Pending}
+ * line carrying an {@code M_InOut_ID} does. The block depends solely on those two IDs.
  *
  * <p>A proforma allocation alone does <b>not</b> block reactivation: the allocation link and its
  * prepayment both survive reactivation (only the derived {@link OrderPaySchedule} rows are dropped),
@@ -61,23 +64,14 @@ public class C_Order
 	@NonNull private final OrderPayScheduleService orderPayScheduleService;
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)
-	public void blockReactivateWhenScheduleNotPending(@NonNull final I_C_Order order)
+	public void blockReactivationIfScheduleLinkedToDownstreamDocument(@NonNull final I_C_Order order)
 	{
 		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
 
 		orderPayScheduleService.getByOrderId(orderId)
-				.filter(this::isBlockedByDownstreamActivity)
+				.filter(OrderPaySchedule::hasLineLinkedToDownstreamDocument)
 				.ifPresent(schedule -> {
 					throw new AdempiereException(MSG_OrderReactivateBlocked).markAsUserValidationError();
 				});
-	}
-
-	/**
-	 * True if the schedule carries committed downstream state that a drop-and-rebuild re-completion would
-	 * orphan: a line linked to a goods receipt or matched invoice.
-	 */
-	private boolean isBlockedByDownstreamActivity(@NonNull final OrderPaySchedule schedule)
-	{
-		return schedule.hasLineLinkedToDownstreamDocument();
 	}
 }
