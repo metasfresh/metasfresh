@@ -173,14 +173,32 @@ const ScanHUAndGetQtyComponent = ({
     };
 
     // There is no qty dialog on this path (the whole scanned TU is booked), so the over-delivery
-    // check GetQuantityDialog performs for the CU path has to happen here, with the same prompt and
-    // the same YesNoDialog. The qty to compare is the TU's own content, fetched into qtyInitial for
-    // exactly this purpose; the qty: 0 above is the booking instruction, not the comparison input.
-    const confirmationPrompt =
-      getConfirmationPromptForQty && (await getConfirmationPromptForQty(resolvedBarcodeData.qtyInitial));
-    if (confirmationPrompt) {
-      setConfirmationDialogProps({ promptQuestion: confirmationPrompt, onResultPayload });
-      return;
+    // handling GetQuantityDialog performs for the CU path has to happen here. The qty to compare is
+    // the TU's own content, fetched into qtyInitial for exactly this purpose; the qty: 0 above is the
+    // booking instruction, not the comparison input. Which handling applies depends on the profile,
+    // exactly as on the CU path: with the prompt configured, the same YesNoDialog; without it, the
+    // same qtyAboveMax ceiling - so no configuration leaves this path unbounded.
+    if (getConfirmationPromptForQty) {
+      const confirmationPrompt = await getConfirmationPromptForQty(resolvedBarcodeData.qtyInitial);
+      if (confirmationPrompt) {
+        setConfirmationDialogProps({ promptQuestion: confirmationPrompt, onResultPayload });
+        return;
+      }
+    } else if (Number.isFinite(resolvedBarcodeData.qtyInitial)) {
+      // qtyInitial is absent only when the HU lookup returned no productQty at all - there is then no
+      // number to bound the pick by, and we book as before. Same as the prompt branch above, where an
+      // absent qty raises no confirmation either; a lookup that outright fails already fails the scan.
+      const qtyAboveMaxError = validateQtyAgainstMax({
+        qty: resolvedBarcodeData.qtyInitial,
+        qtyMax: resolvedBarcodeData.qtyMax,
+        uom: resolvedBarcodeData.uom,
+        invalidQtyMessageKey,
+      });
+      if (qtyAboveMaxError) {
+        // Thrown, not toasted: the caller (BarcodeScannerComponent / HUScanner) turns this into the
+        // error beep + toast every other rejected scan produces, and leaves the scanner armed.
+        throw qtyAboveMaxError;
+      }
     }
 
     await fireOnResult(onResultPayload);
@@ -195,16 +213,8 @@ const ScanHUAndGetQtyComponent = ({
     // Qty shall be less than or equal to qtyMax
     // NOTE: skip qtyMax validation when over-pick confirmation prompt is enabled,
     // because the prompt handles the over-delivery scenario instead
-    if (!getConfirmationPromptForQty && resolvedBarcodeData.qtyMax && resolvedBarcodeData.qtyMax > 0) {
-      const { qtyEffective: diff, uomEffective: diffUom } = formatQtyToHumanReadable({
-        qty: qtyEntered - resolvedBarcodeData.qtyMax,
-        uom,
-      });
-
-      if (diff > 0) {
-        const qtyDiff = formatQtyToHumanReadableStr({ qty: diff, uom: diffUom });
-        return trl(invalidQtyMessageKey || DEFAULT_MSG_qtyAboveMax, { qtyDiff });
-      }
+    if (!getConfirmationPromptForQty) {
+      return validateQtyAgainstMax({ qty: qtyEntered, qtyMax: resolvedBarcodeData.qtyMax, uom, invalidQtyMessageKey });
     }
 
     // OK
@@ -390,6 +400,27 @@ export default ScanHUAndGetQtyComponent;
 // -----------------------------------------------------------------------------
 //
 //
+
+/**
+ * The qtyAboveMax ceiling, shared by the two paths that book a qty: the CU path via
+ * validateQtyEntered (qty typed into GetQuantityDialog) and the whole-TU path via
+ * requestQtyOrReportResult (qty read from the scanned TU's own content).
+ *
+ * @returns the translated error message, or null when the qty is within qtyMax.
+ */
+const validateQtyAgainstMax = ({ qty, qtyMax, uom, invalidQtyMessageKey }) => {
+  if (!qtyMax || qtyMax <= 0) {
+    return null;
+  }
+
+  const { qtyEffective: diff, uomEffective: diffUom } = formatQtyToHumanReadable({ qty: qty - qtyMax, uom });
+  if (diff <= 0) {
+    return null;
+  }
+
+  const qtyDiff = formatQtyToHumanReadableStr({ qty: diff, uom: diffUom });
+  return trl(invalidQtyMessageKey || DEFAULT_MSG_qtyAboveMax, { qtyDiff });
+};
 
 const isAskForQty = ({ resolvedBarcodeData }) => {
   const qrCode = resolvedBarcodeData?.qrCode;
