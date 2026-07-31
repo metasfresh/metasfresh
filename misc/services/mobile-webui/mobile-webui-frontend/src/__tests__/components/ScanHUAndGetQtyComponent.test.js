@@ -205,11 +205,9 @@ const arrowFunctionBody = (name) => {
 
 const countOccurrences = (haystack, needle) => haystack.split(needle).length - 1;
 
-// The CU and the whole-TU path must stay behaviourally identical (REQUIREMENTS.md 31290 § 1), and the
-// mechanism that keeps them so is the single validateQtyAgainstMax both of them call. That is a
-// STRUCTURAL property, and it is deliberately asserted structurally: when the ceiling was last
-// duplicated (new_dawn_uat tip 171414313f5) the two copies were behaviour-identical, so an
-// outcome-comparing test was green throughout and would not have caught the re-duplication.
+// The CU and whole-TU paths must stay behaviourally identical, enforced structurally by the single
+// validateQtyAgainstMax both of them call. Hence the structural assertions: re-duplicating the ceiling
+// into two behaviour-identical copies keeps an outcome-only test green, while these fail.
 describe('ScanHUAndGetQtyComponent: the CU and whole-TU ceilings resolve through one helper', () => {
   it('reaches the ceiling from the CU path via validateQtyAgainstMax', () => {
     expect(arrowFunctionBody('validateQtyEntered')).toContain('validateQtyAgainstMax(');

@@ -195,8 +195,8 @@ const ScanHUAndGetQtyComponent = ({
         return;
       }
     } else if (Number.isFinite(resolvedBarcodeData.qtyInitial)) {
-      // Gated on Number.isFinite so the callers that resolve no qtyInitial keep booking exactly as before -
-      // as on the prompt branch above, where an absent qty raises no confirmation either.
+      // Gated on Number.isFinite: with no resolved qtyInitial there is nothing to compare, so the pick books
+      // unchecked - as on the prompt branch above, where an absent qty raises no confirmation either.
       const qtyAboveMaxError = validateQtyAgainstMax({
         qty: resolvedBarcodeData.qtyInitial,
         qtyMax: resolvedBarcodeData.qtyMax,
