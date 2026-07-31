@@ -1,5 +1,7 @@
 import { test } from '../../../playwright.config';
 import { allure } from 'allure-playwright';
+import { expect } from '@playwright/test';
+import { expectErrorToast } from '../../utils/common';
 import { Backend } from '../../utils/screens/Backend';
 import { LoginScreen } from '../../utils/screens/LoginScreen';
 import { ApplicationsListScreen } from '../../utils/screens/ApplicationsListScreen';
@@ -237,6 +239,75 @@ test('Whole HU: scan an HU holding more than ordered - prompt enabled - decline'
     });
 
     await test.step('Verify nothing was picked and the HU is untouched', async () => {
+        await Backend.expect({
+            pickings: {
+                [pickingJobId]: {
+                    shipmentSchedules: {
+                        BOM: { qtyPicked: [] },
+                    },
+                },
+            },
+            hus: {
+                [huQRCode]: { huStatus: 'A', storages: { BOM: '3 PCE' } },
+            },
+        });
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Whole HU: scan an HU holding more than ordered - prompt disabled - the pick is blocked', async ({ page }) => {
+    allure.epic('E0105: Picking');
+    allure.feature('F00230: MobileUI Picking');
+    allure.tag('F00230');
+    allure.story('Over-picking prompt - whole HU scanned at the HU-scan step, prompt disabled, over-delivery blocked');
+    allure.severity('critical');
+
+    const masterdata = await createMasterdata_WholeHU({ showPromptWhenOverPicking: false, orderQtyCUs: 2 });
+
+    // 4 digits product code, 1.000 kg, lot 123, produced 2025-04-03, best before 2026-04-10
+    const weightLabelQRCode = `${masterdata.products.BOM.productCode}00100000000123250403260410`;
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+
+    const huQRCode = await produceHU({ masterdata, weightLabelQRCode, qtyCUs: 3 });
+
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '2 Stk', qtyPicked: '0 Stk' });
+    await PickingJobScreen.scanPickingSlot({
+        qrCode: masterdata.pickingSlots.slot1.qrCode,
+        expectNextScreen: 'PickLineScanScreen',
+    });
+
+    await test.step('Scan the whole HU (3 pieces) against an order of 2 - the scan is rejected', async () => {
+        await PickLineScanScreen.waitForScreen();
+
+        // Without the confirmation prompt the operator gets no way to authorise an over-delivery,
+        // so the same qtyAboveMax ceiling the per-piece CU path enforces applies here: the scan
+        // fails and books nothing, rather than silently booking the whole 3-piece HU.
+        await expectErrorToast(
+            'Whole HU exceeds the ordered qty and the prompt is disabled',
+            async () => {
+                await PickLineScanScreen.typeQRCode(weightLabelQRCode);
+                // Reached only if the pick went through - a booked pick leaves the scan screen
+                // for the job screen. Blocked, the operator stays on the scan screen.
+                await PickingJobScreen.waitForScreen();
+            },
+            ({ textContent }) => {
+                expect(textContent).toContain('above max');
+            }
+        );
+    });
+
+    await test.step('Verify nothing was picked and the HU is untouched', async () => {
+        await PickLineScanScreen.goBack();
+        await PickingJobLineScreen.goBack();
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '2 Stk', qtyPicked: '0 Stk' });
+
         await Backend.expect({
             pickings: {
                 [pickingJobId]: {
