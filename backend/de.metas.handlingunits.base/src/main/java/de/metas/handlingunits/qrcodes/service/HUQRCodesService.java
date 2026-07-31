@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.global_qrcodes.service.QRCodePDFResource;
@@ -243,6 +244,32 @@ public class HUQRCodesService
 		{
 			throw new AdempiereException("No QR Code attached to HU " + huId.getRepoId());
 		}
+	}
+
+	/**
+	 * Batch, cache-warm-up variant of {@link #getQRCodeByHuId(HuId)}: resolves the assigned QR codes for many HUs in a
+	 * single DB round-trip instead of one query per HU.
+	 * <p>
+	 * Returns a mapping only for HUs that have <b>exactly one</b> assigned QR code — the unambiguous, overwhelmingly
+	 * common case. HUs with no assigned QR code, or with more than one, are intentionally omitted so the caller falls
+	 * back to the single-HU {@link #getQRCodeByHuId(HuId)}, which preserves the exact generate-if-missing and
+	 * first-QR-by-id semantics for those edge cases. Because of that fallback this method never changes behaviour; it
+	 * only removes the per-HU query for the common case.
+	 */
+	public Map<HuId, HUQRCode> getSingleQRCodeByHuIds(@NonNull final Collection<HuId> huIds)
+	{
+		final ImmutableSetMultimap<HuId, HUQRCode> qrCodesByHuId = huQRCodesRepository.getQRCodeByHuIds(huIds);
+
+		final ImmutableMap.Builder<HuId, HUQRCode> result = ImmutableMap.builder();
+		for (final HuId huId : qrCodesByHuId.keySet())
+		{
+			final ImmutableSet<HUQRCode> qrCodes = qrCodesByHuId.get(huId);
+			if (qrCodes.size() == 1)
+			{
+				result.put(huId, qrCodes.iterator().next());
+			}
+		}
+		return result.build();
 	}
 
 	@NonNull

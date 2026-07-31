@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -39,6 +40,8 @@ import de.metas.handlingunits.qrcodes.ean13.EAN13HUQRCode;
 import de.metas.handlingunits.qrcodes.gs1.GS1HUQRCode;
 import de.metas.handlingunits.qrcodes.mobile.MobileQRCodeMessages;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
+import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.handlingunits.qrcodes.special.PickOnTheFlyQRCode;
@@ -63,6 +66,8 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -167,6 +172,46 @@ class HUQRCodesServiceTest
 		huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, attributes.getBestBeforeDate() != null ? LocalDate.parse(attributes.getBestBeforeDate()) : null);
 		huAttributes.setValue(AttributeConstants.ATTR_LotNumber, attributes.getLotNumber());
 		huAttributes.setValue(Weightables.ATTR_WeightNet, attributes.getWeightNet() != null ? new BigDecimal(attributes.getWeightNet()) : null);
+	}
+
+	@Nested
+	class getSingleQRCodeByHuIds
+	{
+		private final HUQRCodesRepository repo = new HUQRCodesRepository();
+
+		private HUQRCode newQRCode()
+		{
+			return HUQRCode.builder()
+					.id(HUQRCodeUniqueId.ofUUID(UUID.randomUUID()))
+					.packingInfo(HUQRCodePackingInfo.builder()
+							.huUnitType(HUQRCodeUnitType.TU)
+							.packingInstructionsId(HuPackingInstructionsId.ofRepoId(123))
+							.caption("Some TU")
+							.build())
+					.attributes(ImmutableList.of())
+					.build();
+		}
+
+		@Test
+		void returnsOnlyHUsWithExactlyOneAssignedQRCode()
+		{
+			final HuId huSingle = HuId.ofRepoId(701);
+			final HuId huMulti = HuId.ofRepoId(702);
+			final HuId huNone = HuId.ofRepoId(703);
+
+			final HUQRCode qrSingle = newQRCode();
+			repo.createNew(qrSingle, huSingle);
+			// two distinct QR codes assigned to the same HU -> ambiguous -> must be omitted
+			repo.createNew(newQRCode(), huMulti);
+			repo.createNew(newQRCode(), huMulti);
+			// huNone has no assigned QR code
+
+			final Map<HuId, HUQRCode> result = huQRCodesService.getSingleQRCodeByHuIds(
+					ImmutableList.of(huSingle, huMulti, huNone));
+
+			assertThat(result).containsOnlyKeys(huSingle);
+			assertThat(result.get(huSingle).getId()).isEqualTo(qrSingle.getId());
+		}
 	}
 
 	@Nested
