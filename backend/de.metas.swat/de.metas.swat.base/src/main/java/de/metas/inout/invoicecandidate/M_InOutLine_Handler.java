@@ -25,6 +25,9 @@ import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderLineId;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -93,6 +96,7 @@ import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
+import static org.adempiere.model.InterfaceWrapperHelper.getValueOverrideOrValue;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -354,9 +358,16 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Pricing Informations
-		final boolean isReturnFromOrigin = inOutLineRecord.getReturn_Origin_InOutLine_ID() > 0;
-		final org.compiere.model.I_M_InOutLine inOutLineRecordToUse = isReturnFromOrigin ? inOutLineRecord.getReturn_Origin_InOutLine() : inOutLineRecord;
-		final HUPIItemProductId explicitPackingInstruction = isReturnFromOrigin ? resolveReturnOriginPackingInstruction(inOutLineRecordToUse) : null;
+		final InOutLineId returnOriginLineId = InOutLineId.ofRepoIdOrNull(inOutLineRecord.getReturn_Origin_InOutLine_ID());
+		final org.compiere.model.I_M_InOutLine inOutLineRecordToUse = returnOriginLineId != null
+				? inOutBL.getLineByIdInTrx(returnOriginLineId)
+				: inOutLineRecord;
+		// A vendor return is invoiced via this inout IC (it has no PO IC) and re-priced from the bare origin
+		// receipt line, whose Packvorschrift lives on the linked purchase-order line. Resolve+inject it explicitly
+		// so the PI-keyed price is found; scoped to vendor returns so shipment / customer-return pricing is untouched.
+		final HUPIItemProductId explicitPackingInstruction = inOutBL.isVendorReturn(InOutId.ofRepoId(inOut.getM_InOut_ID()))
+				? resolvePackingInstruction(inOutLineRecordToUse)
+				: null;
 		calculatePriceAndTaxAndUpdate(icRecord, inOutLineRecordToUse, explicitPackingInstruction);
 
 		//
@@ -922,9 +933,13 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	public PriceAndTax calculatePriceAndTax(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
 		final I_M_InOutLine inoutLine = getM_InOutLine(icRecord);
-		final boolean isReturnFromOrigin = inoutLine.getReturn_Origin_InOutLine_ID() > 0;
-		final org.compiere.model.I_M_InOutLine inOutLineRecordToUse = isReturnFromOrigin ? inoutLine.getReturn_Origin_InOutLine() : inoutLine;
-		final HUPIItemProductId explicitPackingInstruction = isReturnFromOrigin ? resolveReturnOriginPackingInstruction(inOutLineRecordToUse) : null;
+		final InOutLineId returnOriginLineId = InOutLineId.ofRepoIdOrNull(inoutLine.getReturn_Origin_InOutLine_ID());
+		final org.compiere.model.I_M_InOutLine inOutLineRecordToUse = returnOriginLineId != null
+				? inOutBL.getLineByIdInTrx(returnOriginLineId)
+				: inoutLine;
+		final HUPIItemProductId explicitPackingInstruction = inOutBL.isVendorReturn(InOutId.ofRepoId(inoutLine.getM_InOut_ID()))
+				? resolvePackingInstruction(inOutLineRecordToUse)
+				: null;
 
 		return calculatePriceAndTax(icRecord, inOutLineRecordToUse, explicitPackingInstruction);
 	}
@@ -1011,21 +1026,35 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	/**
-	 * Resolves the effective Packvorschrift (M_HU_PI_Item_Product) for a return's origin line via its linked
-	 * order line. This mirrors the order-line fallback of {@code InOutLineHUPackingAware} (which lives in
-	 * de.metas.handlingunits.base and is not visible from this module): a vendor-receipt origin line carries
-	 * no PI in its own columns — it lives on the purchase order line — so pricing must recover it there.
-	 * Returns {@code null} when there is no order line or it carries no PI, leaving pricing behaviour
-	 * identical to before (e.g. standalone returns / empties without an order line stay unchanged).
+	 * Resolves the effective Packvorschrift (M_HU_PI_Item_Product) to price a vendor return from, mirroring the
+	 * resolution order of {@code InOutLineHUPackingAware} (which lives in de.metas.handlingunits.base and is not
+	 * visible from this module): prefer the line's <b>own</b> Packvorschrift when it carries one (e.g. a standalone
+	 * vendor-return line the HU return producer stamps), otherwise fall back to the linked purchase-order line,
+	 * where a vendor-receipt origin line keeps the PI (the receipt line itself carries none). Returns {@code null}
+	 * when neither carries a PI (e.g. empties / returns without an order line), leaving pricing unchanged.
+	 * <p>
+	 * The line's own PI is read generically because its typed getter lives on the handlingunits {@code I_M_InOutLine},
+	 * which this module cannot import; the order-line PI is read through {@link IOrderDAO} rather than a model getter.
 	 */
 	@Nullable
-	private static HUPIItemProductId resolveReturnOriginPackingInstruction(@NonNull final org.compiere.model.I_M_InOutLine originLine)
+	private static HUPIItemProductId resolvePackingInstruction(@NonNull final org.compiere.model.I_M_InOutLine inOutLine)
 	{
-		if (originLine.getC_OrderLine_ID() <= 0)
+		final Integer ownPackingInstructionRepoId = getValueOverrideOrValue(inOutLine, "M_HU_PI_Item_Product_ID");
+		final HUPIItemProductId ownPackingInstruction = ownPackingInstructionRepoId != null
+				? HUPIItemProductId.ofRepoIdOrNull(ownPackingInstructionRepoId)
+				: null;
+		if (ownPackingInstruction != null)
+		{
+			return ownPackingInstruction;
+		}
+
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(inOutLine.getC_OrderLine_ID());
+		if (orderLineId == null)
 		{
 			return null;
 		}
-		final de.metas.interfaces.I_C_OrderLine orderLine = create(originLine.getC_OrderLine(), de.metas.interfaces.I_C_OrderLine.class);
+
+		final de.metas.interfaces.I_C_OrderLine orderLine = Services.get(IOrderDAO.class).getOrderLineById(orderLineId);
 		return HUPIItemProductId.ofRepoIdOrNull(orderLine.getM_HU_PI_Item_Product_ID());
 	}
 

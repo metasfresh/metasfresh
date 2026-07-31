@@ -929,6 +929,12 @@ public class InOutBL implements IInOutBL
 	}
 
 	@Override
+	public boolean isVendorReturn(@NonNull final InOutId inoutId)
+	{
+		return isVendorReturn(getById(inoutId));
+	}
+
+	@Override
 	public boolean isEmptiesReturn(final I_M_InOut inOut)
 	{
 		final DocTypeQuery docTypeQuery = createDocTypeQueryBuilder(inOut)

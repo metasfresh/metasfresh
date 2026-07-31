@@ -341,8 +341,8 @@ Feature: Vendor Return from Material Receipt
 
     # Step 5: Create vendor return via the real HU-producer path (auto-completes; no separate complete step needed)
     And generate vendor return from receipt HUs
-      | M_InOut_ID    | VendorReturn_ID    |
-      | receipt_VR_PI | vendorReturn_VR_PI |
+      | M_InOut_ID    | M_HU_ID  | VendorReturn_ID    |
+      | receipt_VR_PI | hu_VR_PI | vendorReturn_VR_PI |
 
     # Step 6: Wait for the product IC (filter by product to exclude packing-material ICs) and assert the price.
     # The return invoice candidate is priced from the origin receipt line (PI null); resolving the PI from the

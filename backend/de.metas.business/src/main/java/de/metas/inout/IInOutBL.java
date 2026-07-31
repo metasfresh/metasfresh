@@ -6,6 +6,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.inout.InOutId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
@@ -252,6 +253,8 @@ public interface IInOutBL extends ISingletonService
 	boolean isCustomerReturn(@NonNull I_M_InOut inOut);
 
 	boolean isVendorReturn(@NonNull I_M_InOut inOut);
+
+	boolean isVendorReturn(@NonNull InOutId inoutId);
 
 	boolean isEmptiesReturn(I_M_InOut inOut);
 
