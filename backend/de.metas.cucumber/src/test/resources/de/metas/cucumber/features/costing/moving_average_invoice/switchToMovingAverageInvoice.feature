@@ -821,3 +821,18 @@ Feature: Switch to Moving Average Invoice
       | repostFirst  | MovingAverageInvoice | 2025-12-31 | 0 PCE | 0 CHF |
       | repostSecond | MovingAverageInvoice | 2025-12-31 | 0 PCE | 0 CHF |
       | repostThird  | MovingAverageInvoice | 2025-12-31 | 0 PCE | 0 CHF |
+    #
+    # And finally what the whole driver exists for: the general ledger. Each reposted stock count carries its
+    # two facts again - the stock going up against the warehouse differences account, valued from the cost
+    # details above. The match is exhaustive per document, so a repost that wiped the ledger, or one that
+    # posted a second time on top of the first, fails here.
+    #
+    And Wait until documents invRepost1, invRepost2, invRepost3 are posted
+    And Fact_Acct records are matching
+      | Record_ID  | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty     |
+      | invRepost1 | P_Asset_Acct          | repostFirst  | 100       | 0         | 10 PCE  |
+      | invRepost1 | W_Differences_Acct    | repostFirst  | 0         | 100       | -10 PCE |
+      | invRepost2 | P_Asset_Acct          | repostSecond | 100       | 0         | 10 PCE  |
+      | invRepost2 | W_Differences_Acct    | repostSecond | 0         | 100       | -10 PCE |
+      | invRepost3 | P_Asset_Acct          | repostThird  | 100       | 0         | 10 PCE  |
+      | invRepost3 | W_Differences_Acct    | repostThird  | 0         | 100       | -10 PCE |
