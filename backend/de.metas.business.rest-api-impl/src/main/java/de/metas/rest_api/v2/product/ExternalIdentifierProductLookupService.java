@@ -126,9 +126,9 @@ public class ExternalIdentifierProductLookupService
 
 		// Branch 2: C_BPartner_Product — GTIN / EAN_CU / UPC match.
 		final Optional<ProductId> bppProductIdOpt = bPartnerProductDAO.findFirstProductIdByGtin(gtin);
-		return bppProductIdOpt.map(ProductAndHUPIItemProductId::opt).orElseGet(() -> productDAO.findFirstProductIdByGtin(gtin)
-				.flatMap(ProductAndHUPIItemProductId::opt));
 
 		// Branch 3: M_Product — GTIN / EAN13_ProductCode / UPC match.
+		return bppProductIdOpt.map(ProductAndHUPIItemProductId::opt).orElseGet(() -> productDAO.findFirstProductIdByGtin(gtin)
+				.flatMap(ProductAndHUPIItemProductId::opt));
 	}
 }
