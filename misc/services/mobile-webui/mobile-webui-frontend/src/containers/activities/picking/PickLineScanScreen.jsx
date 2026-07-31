@@ -300,20 +300,19 @@ const convertQRCodeObjectToResolvedResult = async ({
   // The backend picks the full HU storage qty when isPickWholeTU=true,
   // so we need the actual qty to compare against remaining.
   if (parsedQRCode.isTUToBePickedAsWhole === true && isShowPromptWhenOverPicking) {
-    try {
-      // The picking job + line are required: a whole-TU label (custom weight label, LMQ, GS1) is not an HU QR
-      // code, so the backend can only resolve it to its HU in the context of the line being picked.
-      const huInfo = await getScannedHUQRCodeInfo({
-        qrCode: toQRCodeString(parsedQRCode),
-        productNo: expectedProductNo,
-        wfProcessId,
-        lineId,
-      });
-      if (huInfo?.productQty != null) {
-        result.qtyInitial = parseFloat(huInfo.productQty);
-      }
-    } catch (error) {
-      console.warn('Failed to get HU product qty for overdelivery check. Ignored', error);
+    // The picking job + line are required: a whole-TU label (custom weight label, LMQ, GS1) is not an HU QR
+    // code, so the backend can only resolve it to its HU in the context of the line being picked.
+    // Not guarded: a failure here must surface as a failed scan, exactly like the unparsed-barcode lookup
+    // above. Swallowing it would leave qtyInitial undefined, which compares as 0 against the remaining qty,
+    // so the whole TU would book with no confirmation - the very defect this check exists to prevent.
+    const huInfo = await getScannedHUQRCodeInfo({
+      qrCode: toQRCodeString(parsedQRCode),
+      productNo: expectedProductNo,
+      wfProcessId,
+      lineId,
+    });
+    if (huInfo?.productQty != null) {
+      result.qtyInitial = parseFloat(huInfo.productQty);
     }
   }
 

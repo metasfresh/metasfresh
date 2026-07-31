@@ -772,6 +772,11 @@ public class PickingJobService implements PickingSlotListener
 	 * GS1 barcode identifies its HU only relative to the line's product / customer / warehouse. A caller that merely
 	 * wants to inspect the scanned HU (the mobile UI's over-delivery check) must therefore see the very HU the pick
 	 * would pick, instead of re-implementing a looser lookup.
+	 * <p>
+	 * One deliberate divergence from the pick: {@code PickOnTheFlyQRCode} is not special-cased here, because handling
+	 * it means creating inventory ({@code PickingJobPickCommand#createPickFromHUOnTheFly}), which an inspection-only
+	 * call must not do. Unreachable in practice - the codes that reach this method are whole-TU labels (custom weight,
+	 * LMQ, GS1), none of which can be a pick-on-the-fly code.
 	 */
 	public HUInfo resolvePickFromHU(
 			@NonNull final PickingJobId pickingJobId,
