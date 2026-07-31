@@ -796,7 +796,8 @@ public class C_Order
 		// losing any proforma/prepayment-derived state (Paid/Awaiting_Pay, DueAmt_Actual, ReferenceDate,
 		// DueDate, LC_Date). Re-derive it here from the surviving C_Proforma_Order_Alloc / completed
 		// prepayment so a paid proforma allocation is restored rather than silently dropped.
-		orderPayScheduleLCStepService.recomputeLCStep(OrderId.ofRepoId(order.getC_Order_ID()));
+		// Only orders that carry a proforma allocation are touched — see the method's javadoc.
+		orderPayScheduleLCStepService.recomputeLCStepAfterOrderCompleted(OrderId.ofRepoId(order.getC_Order_ID()));
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REACTIVATE)
