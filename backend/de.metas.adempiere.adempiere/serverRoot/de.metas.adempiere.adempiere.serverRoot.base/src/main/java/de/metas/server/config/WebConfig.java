@@ -47,7 +47,7 @@ public class WebConfig implements WebMvcConfigurer
 	 * heuristically cacheable. An endpoint that wants caching opts out by setting its own Cache-Control.
 	 * <p>
 	 * Knowingly not covered: replies that never reach this innermost filter (UserAuthTokenFilter's 401, an
-	 * audit-matched ApiAuditFilter reply). Reasoning: https://github.com/metasfresh/metasfresh/pull/25368#discussion_r3686441700
+	 * audit-matched ApiAuditFilter reply): both short-circuit at a higher filter precedence, before this one runs.
 	 */
 	@Bean
 	public FilterRegistrationBean<Filter> apiNoStoreCacheControlFilter()
