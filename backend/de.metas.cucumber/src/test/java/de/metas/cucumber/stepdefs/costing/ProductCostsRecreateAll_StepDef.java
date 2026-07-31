@@ -56,9 +56,16 @@ import java.util.ArrayList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Drives {@code de_metas_acct.product_costs_recreate_all_from_date} — the batched, resumable cost-recompute
- * driver that parks every document it wants reposted in a staging table and releases the whole table into
- * {@code de_metas_acct.accounting_docs_to_repost} in document-date order — and asserts what a run left behind.
+ * Drives the two SQL entry points that feed {@code de_metas_acct.accounting_docs_to_repost}, and asserts what a
+ * run left behind:
+ * <ul>
+ * <li>{@code de_metas_acct.product_costs_recreate_all_from_date} — the batched, resumable cost-recompute driver
+ * that parks every document it wants reposted in a staging table and releases the whole table into the queue in
+ * document-date order;</li>
+ * <li>{@code de_metas_acct.accounting_docs_repost_all_from_date} — the plain repost of the same document set,
+ * which recomputes nothing and enqueues in one step.</li>
+ * </ul>
+ * Both are asserted through the same outcome snapshot, which is why they share this class.
  * <p>
  * Three things about this step def are deliberate and load-bearing:
  * <ul>
@@ -122,6 +129,40 @@ public class ProductCostsRecreateAll_StepDef
 	public void run(@NonNull final DataTable dataTable)
 	{
 		rememberOutcome(invokeDriver(DataTableRows.of(dataTable).singleRow(), null, false /*runMustFail*/));
+	}
+
+	/**
+	 * Runs the plain repost driver {@code de_metas_acct.accounting_docs_repost_all_from_date}, which enqueues the
+	 * same documents the cost-recompute driver would cover, but recomputes nothing: no cost detail is deleted, no
+	 * {@code M_Cost} is rewound, nothing is staged. Its only effect is that the enqueued documents are reposted,
+	 * so their GL entries are rewritten from the cost details that already exist.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_AcctSchema_ID</b> — (required, identifier-ref) accounting schema whose documents are reposted<br>
+	 *   <b>StartDateAcct</b> — (required) first accounting date the repost covers (inclusive)<br>
+	 * @cucumber.depends StepDefData: C_AcctSchema_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When the accounting repost driver runs:
+	 *   | C_AcctSchema_ID | StartDateAcct |
+	 *   | acctSchema      | 2027-12-10    |
+	 * </pre>
+	 */
+	@When("^the accounting repost driver runs:$")
+	public void repostRuns(@NonNull final DataTable dataTable)
+	{
+		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
+		final int acctSchemaId = row.getAsIdentifier(I_C_AcctSchema.COLUMNNAME_C_AcctSchema_ID)
+				.lookupNotNullIn(acctSchemaTable)
+				.getC_AcctSchema_ID();
+		final LocalDate startDateAcct = row.getAsLocalDate("StartDateAcct");
+
+		final String callSql = "SELECT \"de_metas_acct\".accounting_docs_repost_all_from_date("
+				+ "p_C_AcctSchema_ID:=" + acctSchemaId
+				+ ", p_StartDateAcct:='" + startDateAcct + "'::date)";
+
+		rememberOutcome(invoke(callSql, null /*dieOnDocument*/, false /*runMustFail*/));
 	}
 
 	/**
@@ -291,6 +332,7 @@ public class ProductCostsRecreateAll_StepDef
 	 * </pre>
 	 */
 	@Then("^the cost recompute run left these documents:$")
+	@Then("^the accounting repost run left these documents:$")
 	public void runLeftTheseDocuments(@NonNull final DataTable dataTable)
 	{
 		final RunOutcome outcome = getLastRunOutcome();
@@ -353,6 +395,54 @@ public class ProductCostsRecreateAll_StepDef
 	public void stagingTableIsEmpty()
 	{
 		assertThat(getLastRunOutcome().getStagedDocuments()).as("staged documents").isEmpty();
+	}
+
+	/**
+	 * Asserts every document the run put on the repost queue carries its own SeqNo. Together with the release
+	 * order asserted by <code>… run left these documents:</code> — which reads the queue ordered by SeqNo — this
+	 * is the statement that SeqNo increases monotonically along the release order.
+	 * <p>
+	 * Not a formality: the poller consumes the queue with <code>ORDER BY SeqNo</code>, and the queue table has no
+	 * uniqueness constraint on it. Two documents sharing a SeqNo are reposted in an order PostgreSQL picks, which
+	 * is exactly the out-of-order reposting these drivers exist to prevent. It is what would happen if the SeqNo
+	 * were left to the column's <code>nextval</code> default inside an <code>INSERT … SELECT … ORDER BY</code>,
+	 * whose row evaluation order — and therefore sequence consumption order — PostgreSQL does not guarantee.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And every document on the repost queue has its own SeqNo
+	 * </pre>
+	 */
+	@Then("^every document on the repost queue has its own SeqNo$")
+	public void queueSeqNosAreDistinct()
+	{
+		assertThat(getLastRunOutcome().getQueuedSeqNos()).as("SeqNos on the repost queue").doesNotHaveDuplicates();
+	}
+
+	/**
+	 * Asserts the number of {@code M_CostDetail} rows is still what it was immediately before the most recent run
+	 * was invoked — the defining property of a PLAIN repost, as opposed to a recompute.
+	 * <p>
+	 * Belongs BOTH right after the repost run (proving the enqueue itself deleted nothing) AND after the queue has
+	 * drained (proving the reposting that follows neither deleted nor created anything, because
+	 * {@code CostingMethodHandlerTemplate#createOrUpdateCost} returns the existing cost details and only refreshes
+	 * their DateAcct). Counting the whole table rather than one product's rows is deliberate: the driver has no
+	 * product parameter, so "nothing anywhere was rebuilt" is the property under test, and a scenario-scoped count
+	 * could not see a foreign product's details being destroyed.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And the M_CostDetail row count is unchanged since the run was invoked
+	 * </pre>
+	 */
+	@Then("^the M_CostDetail row count is unchanged since the run was invoked$")
+	public void costDetailRowCountIsUnchanged()
+	{
+		assertThat(countCostDetailRows())
+				.as("M_CostDetail row count — a plain repost must neither delete nor create cost details")
+				.isEqualTo(getLastRunOutcome().getCostDetailCountBefore());
 	}
 
 	/**
@@ -422,8 +512,19 @@ public class ProductCostsRecreateAll_StepDef
 			@Nullable final TableRecordReference dieOnDocument,
 			final boolean runMustFail)
 	{
-		final String callSql = buildCallSql(row);
-		logger.info("Invoking cost-recompute driver: {}", callSql);
+		return invoke(buildCallSql(row), dieOnDocument, runMustFail);
+	}
+
+	/**
+	 * @param dieOnDocument see {@link #invokeDriver(DataTableRow, TableRecordReference, boolean)}
+	 * @param runMustFail   see {@link #invokeDriver(DataTableRow, TableRecordReference, boolean)}
+	 */
+	private RunOutcome invoke(
+			@NonNull final String callSql,
+			@Nullable final TableRecordReference dieOnDocument,
+			final boolean runMustFail)
+	{
+		logger.info("Invoking: {}", callSql);
 
 		Exception failure = null;
 		final RunOutcome outcome;
@@ -431,6 +532,10 @@ public class ProductCostsRecreateAll_StepDef
 		final Connection connection = DB.createConnection(true /*autoCommit*/, Connection.TRANSACTION_READ_COMMITTED);
 		try
 		{
+			// taken BEFORE the run and on the run's own connection, so a step asserting "the plain repost changed
+			// no cost details" has a baseline the run itself cannot have moved
+			final int costDetailCountBefore = countCostDetailRows(connection);
+
 			if (dieOnDocument != null)
 			{
 				installStagingAbortTrigger(connection, dieOnDocument);
@@ -444,7 +549,7 @@ public class ProductCostsRecreateAll_StepDef
 				// logged, not only remembered: when the run was expected to succeed the exception is rethrown
 				// below, but when the failure IS the expected outcome (an injected abort, or a refusal) its
 				// message is the only clue whether the run died for that reason or for an unrelated one.
-				logger.warn("Cost-recompute driver run failed", ex);
+				logger.warn("Run failed: {}", callSql, ex);
 				failure = ex;
 			}
 			finally
@@ -457,7 +562,7 @@ public class ProductCostsRecreateAll_StepDef
 				execute(connection, "SELECT pg_advisory_unlock_all()");
 			}
 
-			outcome = takeSnapshot(connection, failure);
+			outcome = takeSnapshot(connection, costDetailCountBefore, failure);
 		}
 		finally
 		{
@@ -529,11 +634,15 @@ public class ProductCostsRecreateAll_StepDef
 		execute(connection, "DROP FUNCTION IF EXISTS " + ABORT_TRIGGER_FUNCTION + "()");
 	}
 
-	private RunOutcome takeSnapshot(@NonNull final Connection connection, @Nullable final Exception failure)
+	private RunOutcome takeSnapshot(
+			@NonNull final Connection connection,
+			final int costDetailCountBefore,
+			@Nullable final Exception failure)
 	{
 		final ImmutableList.Builder<Integer> doneBatchNos = ImmutableList.builder();
 		final ArrayList<TableRecordReference> stagedDocuments = new ArrayList<>();
 		final ArrayList<TableRecordReference> queuedDocuments = new ArrayList<>();
+		final ArrayList<Integer> queuedSeqNos = new ArrayList<>();
 
 		try (final Statement statement = connection.createStatement())
 		{
@@ -554,29 +663,51 @@ public class ProductCostsRecreateAll_StepDef
 				}
 			}
 			try (final ResultSet rs = statement.executeQuery(
-					"SELECT tablename, record_id FROM " + TABLE_Queue + " ORDER BY seqno"))
+					"SELECT seqno, tablename, record_id FROM " + TABLE_Queue + " ORDER BY seqno"))
 			{
 				while (rs.next())
 				{
 					queuedDocuments.add(TableRecordReference.of(rs.getString("tablename"), rs.getInt("record_id")));
+					queuedSeqNos.add(rs.getInt("seqno"));
 				}
 			}
 		}
 		catch (final SQLException ex)
 		{
-			throw new AdempiereException("Failed snapshotting the cost-recompute run outcome", ex);
+			throw new AdempiereException("Failed snapshotting the run outcome", ex);
 		}
 
 		return new RunOutcome(
 				doneBatchNos.build(),
 				ImmutableList.copyOf(stagedDocuments),
 				ImmutableList.copyOf(queuedDocuments),
+				ImmutableList.copyOf(queuedSeqNos),
+				costDetailCountBefore,
 				failure);
 	}
 
 	private static int countQueueRows()
 	{
 		return DB.getSQLValueEx(null, "SELECT COUNT(1) FROM " + TABLE_Queue);
+	}
+
+	private static int countCostDetailRows()
+	{
+		return DB.getSQLValueEx(null, "SELECT COUNT(1) FROM M_CostDetail");
+	}
+
+	private static int countCostDetailRows(@NonNull final Connection connection)
+	{
+		try (final Statement statement = connection.createStatement();
+			 final ResultSet rs = statement.executeQuery("SELECT COUNT(1) FROM M_CostDetail"))
+		{
+			rs.next();
+			return rs.getInt(1);
+		}
+		catch (final SQLException ex)
+		{
+			throw new AdempiereException("Failed counting M_CostDetail rows", ex);
+		}
 	}
 
 	private static void execute(@NonNull final Connection connection, @NonNull final String sql)
@@ -599,6 +730,10 @@ public class ProductCostsRecreateAll_StepDef
 		@NonNull ImmutableList<TableRecordReference> stagedDocuments;
 		/** Documents in the repost queue, ordered by SeqNo, i.e. in the order they will be reposted. */
 		@NonNull ImmutableList<TableRecordReference> queuedDocuments;
+		/** The SeqNos of {@link #queuedDocuments}, in the same order. */
+		@NonNull ImmutableList<Integer> queuedSeqNos;
+		/** {@code M_CostDetail} row count immediately BEFORE the run was invoked. */
+		int costDetailCountBefore;
 		/** What the run failed with, or {@code null} when it succeeded. */
 		@Nullable Exception failure;
 	}
