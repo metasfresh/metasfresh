@@ -10,6 +10,7 @@ import { ManufacturingJobsListScreen } from '../../utils/screens/manufacturing/M
 import { ManufacturingJobScreen } from '../../utils/screens/manufacturing/ManufacturingJobScreen';
 import { MaterialReceiptLineScreen } from '../../utils/screens/manufacturing/receipt/MaterialReceiptLineScreen';
 import { PickLineScanScreen } from '../../utils/screens/picking/PickLineScanScreen';
+import { PickingJobLineScreen } from '../../utils/screens/picking/PickingJobLineScreen';
 
 /**
  * Whole-HU over-delivery confirmation in mobile UI picking.
@@ -187,6 +188,65 @@ test('Whole HU: scan an HU holding more than ordered - prompt enabled - confirm 
             },
             hus: {
                 [huQRCode]: { huStatus: 'S', storages: { BOM: '3 PCE' } },
+            },
+        });
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Whole HU: scan an HU holding more than ordered - prompt enabled - decline', async ({ page }) => {
+    allure.epic('E0105: Picking');
+    allure.feature('F00230: MobileUI Picking');
+    allure.tag('F00230');
+    allure.story('Over-picking prompt - whole HU scanned at the HU-scan step, over-delivery declined');
+    allure.severity('normal');
+
+    const masterdata = await createMasterdata_WholeHU({ showPromptWhenOverPicking: true, orderQtyCUs: 2 });
+
+    // 4 digits product code, 1.000 kg, lot 123, produced 2025-04-03, best before 2026-04-10
+    const weightLabelQRCode = `${masterdata.products.BOM.productCode}00100000000123250403260410`;
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+
+    const huQRCode = await produceHU({ masterdata, weightLabelQRCode, qtyCUs: 3 });
+
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '2 Stk', qtyPicked: '0 Stk' });
+    await PickingJobScreen.scanPickingSlot({
+        qrCode: masterdata.pickingSlots.slot1.qrCode,
+        expectNextScreen: 'PickLineScanScreen',
+    });
+
+    await test.step('Scan the whole HU (3 pieces) against an order of 2, decline the over-delivery', async () => {
+        await PickLineScanScreen.waitForScreen();
+        await PickLineScanScreen.typeQRCode(weightLabelQRCode);
+
+        await YesNoDialog.waitForDialog();
+        await YesNoDialog.clickNoButton();
+
+        // Declining returns the operator to the very step the scan came from, ready to scan again.
+        await PickLineScanScreen.waitForScreen();
+        await PickLineScanScreen.goBack();
+        await PickingJobLineScreen.goBack();
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '2 Stk', qtyPicked: '0 Stk' });
+    });
+
+    await test.step('Verify nothing was picked and the HU is untouched', async () => {
+        await Backend.expect({
+            pickings: {
+                [pickingJobId]: {
+                    shipmentSchedules: {
+                        BOM: { qtyPicked: [] },
+                    },
+                },
+            },
+            hus: {
+                [huQRCode]: { huStatus: 'A', storages: { BOM: '3 PCE' } },
             },
         });
     });
