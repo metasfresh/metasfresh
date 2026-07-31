@@ -345,7 +345,6 @@ Feature: import order candidate to metasfresh
   @from:cucumber
 @allure.label.epic:E0292_EDI
 @allure.label.feature:F00350_EDI
-@F00350
   Scenario: M_HU_PI_Item_Product is resolved for the order's DatePromised, not the newest-created row
   _Given two M_HU_PI_Item_Product rows for the same product and UPC on one BPartner: an old one (Qty 9, ValidFrom 2019-01-01) and a newer/future one (Qty 6, ValidFrom 2023-01-01)
   _And the barcode-lookup view has no validity filter, so it resolves the newest-created row (= the future 6-CU one) for both orders

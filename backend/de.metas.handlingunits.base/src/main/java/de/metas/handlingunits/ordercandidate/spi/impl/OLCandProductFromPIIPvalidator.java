@@ -26,7 +26,6 @@ import ch.qos.logback.classic.Level;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.gs1.GTIN;
 import de.metas.handlingunits.HUPIItemProductId;
-import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.ProductAndHUPIItemProductId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -52,9 +51,8 @@ public class OLCandProductFromPIIPvalidator implements IOLCandValidator
 {
 	private final static transient Logger logger = LogManager.getLogger(OLCandProductFromPIIPvalidator.class);
 
-	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
-	private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
-	private final IHUPIItemProductBL hupiItemProductBL = Services.get(IHUPIItemProductBL.class);
+	@NonNull private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
+	@NonNull private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 
 	@Override
 	public int getSeqNo()
@@ -118,7 +116,7 @@ public class OLCandProductFromPIIPvalidator implements IOLCandValidator
 			return;
 		}
 
-		final I_M_HU_PI_Item_Product current = hupiItemProductBL.getRecordById(currentId);
+		final I_M_HU_PI_Item_Product current = huPIItemProductDAO.getRecordById(currentId);
 		final ZonedDateTime datePromised = olCandEffectiveValuesBL.getDatePromised_Effective(olCand);
 
 		// The resolved instruction is already valid on DatePromised — keep it. This preserves a
