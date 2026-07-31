@@ -290,7 +290,8 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	private IQueryFilter<I_M_HU_PI_Item_Product> createQueryFilter(
 			@NonNull final Properties ctx,
 			@NonNull final IHUPIItemProductQuery queryVO)
-	{		final String trxName = ITrx.TRXNAME_None;
+	{
+		final String trxName = ITrx.TRXNAME_None;
 
 		final ICompositeQueryFilter<I_M_HU_PI_Item_Product> filters = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class);
 		filters.setJoinAnd();
