@@ -28,8 +28,10 @@ import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.common.util.time.SystemTime;
+import de.metas.gs1.GTIN;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.ProductAndHUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUPIItemProductQuery;
@@ -51,6 +53,7 @@ import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -87,6 +90,8 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	private final CCache<HUPIItemProductId, HUPIItemProduct> cacheById = CCache.<HUPIItemProductId, HUPIItemProduct>builder()
 			.tableName(I_M_HU_PI_Item_Product.Table_Name)
 			.build();
+
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	@NonNull
@@ -132,7 +137,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	@Override
 	public List<I_M_HU_PI_Item_Product> retrievePIMaterialItemProducts(final I_M_HU_PI_Item itemDef)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_PI_Item_Product.class, itemDef)
+		return queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class, itemDef)
 				.filter(new EqualsQueryFilter<>(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_ID, itemDef.getM_HU_PI_Item_ID()))
 				.create()
 				.setOnlyActiveRecords(true)
@@ -286,7 +291,6 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 			@NonNull final Properties ctx,
 			@NonNull final IHUPIItemProductQuery queryVO)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final String trxName = ITrx.TRXNAME_None;
 
 		final ICompositeQueryFilter<I_M_HU_PI_Item_Product> filters = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class);
@@ -381,21 +385,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 
 		//
 		// Valid From/To Filtering (only if Date is specified in query)
-		final ZonedDateTime date = queryVO.getDate();
-		if (date != null)
-		{
-			final IQueryFilter<I_M_HU_PI_Item_Product> validDateFromFilter = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
-					.addCompareFilter(I_M_HU_PI_Item_Product.COLUMNNAME_ValidFrom, Operator.LESS_OR_EQUAL, date);
-			filters.addFilter(validDateFromFilter);
-
-			final IQueryFilter<I_M_HU_PI_Item_Product> validDateToFilter = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
-					.setJoinOr()
-					.addCompareFilter(I_M_HU_PI_Item_Product.COLUMNNAME_ValidTo, Operator.GREATER_OR_EQUAL, date)
-					// a PLV must have a ValidFrom, but has no ValidTo.
-					// For this reason, ValidTo is not mandatory here neither
-					.addCompareFilter(I_M_HU_PI_Item_Product.COLUMNNAME_ValidTo, Operator.EQUAL, null);
-			filters.addFilter(validDateToFilter);
-		}
+		filters.addFilter(createValidOnDateFilter(queryVO.getDate()));
 
 		//
 		// M_HU_PI_Item Filtering
@@ -504,6 +494,74 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		return filters;
 	}
 
+	@Override
+	@NonNull
+	public Optional<ProductAndHUPIItemProductId> findFirstByGtin(
+			@NonNull final GTIN gtin,
+			@Nullable final ZonedDateTime date)
+	{
+		final String gtinStr = gtin.getAsString();
+		final ICompositeQueryFilter<I_M_HU_PI_Item_Product> hupiFilter = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
+				.setJoinOr()
+				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_GTIN, gtinStr)
+				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_EAN_TU, gtinStr)
+				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_UPC, gtinStr);
+
+		// A product-consolidation run may deactivate M_Product while leaving the PIIP rows active.
+		// Only rows whose M_Product_ID points to an active product are valid matches.
+		final IQuery<I_M_Product> activeProducts = queryBL.createQueryBuilder(I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.create();
+
+		return queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.filter(hupiFilter)
+				.addInSubQueryFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID, I_M_Product.COLUMNNAME_M_Product_ID, activeProducts)
+				.filter(createValidOnDateFilter(date))
+				.orderBy()
+				.addColumn(I_M_HU_PI_Item_Product.COLUMNNAME_ValidFrom, Direction.Descending, Nulls.Last)
+				.addColumn(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID, Direction.Ascending, Nulls.Last)
+				.endOrderBy()
+				.create()
+				.firstOptional()
+				.map(record -> ProductAndHUPIItemProductId.of(
+						ProductId.ofRepoId(record.getM_Product_ID()),
+						HUPIItemProductId.ofRepoId(record.getM_HU_PI_Item_Product_ID())));
+	}
+
+	@Override
+	public boolean isValidOnDate(@NonNull final HUPIItemProductId id, @NonNull final ZonedDateTime date)
+	{
+		return queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID, id)
+				.filter(createValidOnDateFilter(date))
+				.create()
+				.anyMatch();
+	}
+
+	private IQueryFilter<I_M_HU_PI_Item_Product> createValidOnDateFilter(@Nullable final ZonedDateTime date)
+	{
+		if (date == null)
+		{
+			return ConstantQueryFilter.of(true);
+		}
+
+		final IQueryFilter<I_M_HU_PI_Item_Product> validDateFromFilter = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
+				.addCompareFilter(I_M_HU_PI_Item_Product.COLUMNNAME_ValidFrom, Operator.LESS_OR_EQUAL, date);
+
+		final IQueryFilter<I_M_HU_PI_Item_Product> validDateToFilter = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
+				.setJoinOr()
+				.addCompareFilter(I_M_HU_PI_Item_Product.COLUMNNAME_ValidTo, Operator.GREATER_OR_EQUAL, date)
+				// M_HU_PI_Item_Product.ValidTo is optional; null means open-ended validity (no expiry date).
+				// A null ValidTo must count as still-valid on the given date.
+				.addCompareFilter(I_M_HU_PI_Item_Product.COLUMNNAME_ValidTo, Operator.EQUAL, null);
+
+		return queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
+				.addFilter(validDateFromFilter)
+				.addFilter(validDateToFilter);
+	}
+
 	/**
 	 * Create {@link IQueryOrderByBuilder}
 	 *
@@ -515,7 +573,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		final IQueryOrderByBuilder<I_M_HU_PI_Item_Product> orderByBuilderToUse;
 		if (orderByBuilder == null)
 		{
-			orderByBuilderToUse = Services.get(IQueryBL.class).createQueryOrderByBuilder(I_M_HU_PI_Item_Product.class);
+			orderByBuilderToUse = queryBL.createQueryOrderByBuilder(I_M_HU_PI_Item_Product.class);
 		}
 		else
 		{
@@ -550,7 +608,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	{
 		//
 		// Final Query
-		final IQueryBuilder<I_M_HU_PI_Item_Product> queryBuilder = Services.get(IQueryBL.class)
+		final IQueryBuilder<I_M_HU_PI_Item_Product> queryBuilder = queryBL
 				.createQueryBuilder(I_M_HU_PI_Item_Product.class, ctx, trxName);
 
 		final IQueryFilter<I_M_HU_PI_Item_Product> filter = createQueryFilter(ctx, queryVO);

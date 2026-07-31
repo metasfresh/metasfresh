@@ -492,4 +492,26 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 				.listImmutable(I_C_BPartner_Product.class);
 	}
 
+	@Override
+	@NonNull
+	public Optional<ProductId> findFirstProductIdByGtin(@NonNull final GTIN gtin)
+	{
+		final String gtinStr = gtin.getAsString();
+		final ICompositeQueryFilter<I_C_BPartner_Product> bppFilter = queryBL.createCompositeQueryFilter(I_C_BPartner_Product.class)
+				.setJoinOr()
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_GTIN, gtinStr)
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_EAN_CU, gtinStr)
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_UPC, gtinStr);
+
+		final I_C_BPartner_Product bpp = queryBL.createQueryBuilder(I_C_BPartner_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.filter(bppFilter)
+				.addNotNull(I_C_BPartner_Product.COLUMNNAME_M_Product_ID)
+				.orderBy(I_C_BPartner_Product.COLUMNNAME_C_BPartner_Product_ID)
+				.create().first();
+
+		return Optional.ofNullable(bpp)
+				.map(b -> ProductId.ofRepoId(b.getM_Product_ID()));
+	}
+
 }
