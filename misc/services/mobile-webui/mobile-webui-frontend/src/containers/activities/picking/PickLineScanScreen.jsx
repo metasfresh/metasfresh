@@ -259,17 +259,18 @@ const convertQRCodeObjectToResolvedResult = async ({
     qrCode: parsedQRCode,
   };
 
-  if (parsedQRCode.weightNet != null) {
-    result['catchWeight'] = parsedQRCode.weightNet;
-  }
-
-  if (parsedQRCode.isTUToBePickedAsWhole === true) {
-    result['isTUToBePickedAsWhole'] = true;
-  }
-
+  // Every scan-derived value is written on EVERY resolution, including when the scanned code carries
+  // none: ScanHUAndGetQtyComponent merges each resolution over the previous one
+  // (computeNewResolvedBarcodeData), so a field left unwritten keeps the earlier scan's value and
+  // decides a later, unrelated pick. The scanned code - not the screen - owns what it means.
+  result['catchWeight'] = parsedQRCode.weightNet;
+  result['isTUToBePickedAsWhole'] = parsedQRCode.isTUToBePickedAsWhole === true;
   result['bestBeforeDate'] = parsedQRCode.bestBeforeDate;
   result['productionDate'] = parsedQRCode.productionDate;
   result['lotNo'] = parsedQRCode.lotNo;
+  // Only a whole-TU code resolves to an HU quantity (below); every other code has to clear it, or the
+  // qty dialog pre-fills the previous HU's content and one OK books it.
+  result['qtyInitial'] = undefined;
 
   result.scannedHU = {
     huUnitType: parsedQRCode.huUnitType,
