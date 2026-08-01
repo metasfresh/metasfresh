@@ -22,6 +22,8 @@ package de.metas.order.model.interceptor;
  * #L%
  */
 
+import de.metas.ad_reference.ADReferenceService;
+import org.compiere.SpringContextHolder;
 import de.metas.bpartner.BPartnerSupplierApprovalService;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
@@ -54,6 +56,7 @@ public class C_OrderLineTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		SpringContextHolder.registerJUnitBean(ADReferenceService.newMocked());
 
 		interceptor = new C_OrderLine(
 				mock(OrderGroupCompensationChangesHandler.class),

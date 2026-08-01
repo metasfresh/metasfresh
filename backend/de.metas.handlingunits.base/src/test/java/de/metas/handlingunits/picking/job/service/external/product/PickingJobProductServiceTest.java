@@ -1,5 +1,7 @@
 package de.metas.handlingunits.picking.job.service.external.product;
 
+import de.metas.ad_reference.ADReferenceService;
+import org.compiere.SpringContextHolder;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
 import org.adempiere.exceptions.AdempiereException;
@@ -37,6 +39,7 @@ class PickingJobProductServiceTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		SpringContextHolder.registerJUnitBean(ADReferenceService.newMocked());
 		attributesTestHelper = new AttributesTestHelper();
 		pickingJobProductService = PickingJobProductService.newInstanceForUnitTesting();
 	}

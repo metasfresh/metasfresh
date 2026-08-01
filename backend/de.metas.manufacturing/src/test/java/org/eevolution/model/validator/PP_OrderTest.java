@@ -1,5 +1,7 @@
 package org.eevolution.model.validator;
 
+import de.metas.ad_reference.ADReferenceService;
+import org.compiere.SpringContextHolder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
@@ -61,6 +63,7 @@ public class PP_OrderTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		SpringContextHolder.registerJUnitBean(ADReferenceService.newMocked());
 
 		// validateBOMAndProduct uses only the Services.get(...) fields (productBL, productBOMDAO);
 		// the constructor collaborators are irrelevant to it, so mocks suffice.

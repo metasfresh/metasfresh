@@ -1,5 +1,7 @@
 package de.metas.handlingunits.picking.candidate.commands;
 
+import de.metas.ad_reference.ADReferenceService;
+import org.compiere.SpringContextHolder;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.PickFrom;
@@ -40,6 +42,7 @@ public class PickHUCommand_LifeCycleStatus_Test
 	public void beforeEach()
 	{
 		this.helper = new ProcessPickingCandidatesCommandTestHelper();
+		SpringContextHolder.registerJUnitBean(ADReferenceService.newMocked());
 		this.pickingCandidateRepository = helper.pickingCandidateRepository;
 		this.uomEach = helper.uomEach;
 	}

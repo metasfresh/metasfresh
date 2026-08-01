@@ -22,6 +22,8 @@
 
 package de.metas.purchasecandidate.interceptor;
 
+import de.metas.ad_reference.ADReferenceService;
+import org.compiere.SpringContextHolder;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -65,6 +67,7 @@ class C_PurchaseCandidateTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		SpringContextHolder.registerJUnitBean(ADReferenceService.newMocked());
 		interceptor = new C_PurchaseCandidate(Mockito.mock(PurchaseCandidateRepository.class));
 	}
 

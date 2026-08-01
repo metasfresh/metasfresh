@@ -22,9 +22,11 @@
 
 package de.metas.product;
 
+import de.metas.ad_reference.ADReferenceService;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Product;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,6 +49,9 @@ class ProductBL_assertAllowed_Test
 	void setUp()
 	{
 		AdempiereTestHelper.get().init();
+		// assertAllowed resolves the blocked status' human-readable name via ADReferenceService; register a
+		// mocked one (auto-creates ref-lists on demand) so the guard's error path works in the POJO env.
+		SpringContextHolder.registerJUnitBean(ADReferenceService.newMocked());
 		productBL = get(IProductBL.class);
 	}
 
