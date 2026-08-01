@@ -18,8 +18,9 @@ import { createSweepMasterdata } from '../../utils/sweepDistributionMasterdata';
 // that is what exercises the auto-advance carrying the scanned HU forward to the next order.
 //
 // The fixture is built by the factory shared with sweep_scan_HU_after_autoAdvance_anyHU.spec.js, so
-// the two scenarios provably differ in allowPickingAnyHU alone — see sweepDistributionMasterdata.js
-// for the profile and why that identity matters.
+// the two scenarios hold the whole distribution profile and layout constant — see
+// sweepDistributionMasterdata.js for that profile, and for why this scenario stands ONE handling unit
+// at the source locator while the pick-any-HU one stands several.
 //
 
 const createMasterdata = async () =>
@@ -53,7 +54,7 @@ test('Sweep: after auto-advance, the operator scans only the product code (the s
 
     await test.step('Pick DD1 off the staging LU (scan the LU + product P, confirm qty 10) → auto-advance to DD2 pick-from', async () => {
         await DistributionJobScreen.scanHUToMove({
-            huQRCode: masterdata.luExternalBarcode,
+            huQRCode: masterdata.huExternalBarcodes.HU1,
             productScannedCode: masterdata.products.P.gtin,
             expectedQtyToMove: 10,
             expectNextScreen: 'DistributionLinePickFromScreen',
@@ -61,7 +62,7 @@ test('Sweep: after auto-advance, the operator scans only the product code (the s
         await DistributionLinePickFromScreen.expectJobId({ distributionJobId: masterdata.distributionOrders.DD2.jobId });
     });
 
-    // *** REGRESSION GUARD (was THE RED ASSERTION) ***
+    // *** REGRESSION GUARD ***
     // The staging LU was already scanned for DD1 and holds plenty of stock for DD2 too, so the
     // operator does not need to re-scan it — the auto-advanced screen goes straight to the
     // product-code scan. The thunk carries the just-picked HU's QR code forward only when the next
