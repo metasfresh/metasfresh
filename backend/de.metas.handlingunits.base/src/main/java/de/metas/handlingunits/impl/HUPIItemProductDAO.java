@@ -524,25 +524,30 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		queryVO.setOnlyActiveProduct(true);             // exclude consolidation-stale rows (inactive product)
 		queryVO.setAllowInfiniteCapacity(true);         // capacity is not a criterion for a barcode lookup
 
-		final IQueryBuilder<I_M_HU_PI_Item_Product> queryBuilder = createHU_PI_Item_Product_QueryBuilder(Env.getCtx(), queryVO, ITrx.TRXNAME_None);
-		// canonical ordering already applied; append a deterministic id tie-break so "first" is stable
-		queryBuilder.orderBy().addColumn(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID, Direction.Ascending, Nulls.Last);
-
-		return Optional.ofNullable(queryBuilder.create().first(I_M_HU_PI_Item_Product.class))
-				.map(record -> ProductAndHUPIItemProductId.of(
-						ProductId.ofRepoId(record.getM_Product_ID()),
-						HUPIItemProductId.ofRepoId(record.getM_HU_PI_Item_Product_ID())));
-	}
-
-	@Override
-	public boolean isValidOnDate(@NonNull final HUPIItemProductId id, @NonNull final ZonedDateTime date)
-	{
-		return queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID, id)
-				.filter(createValidOnDateFilter(date))
+		// Ordering is intentionally NOT the canonical "default-first" one: a barcode lookup resolves the
+		// packing valid on the date, so among the rows valid on the date the one with the LATEST ValidFrom
+		// (the current version) must win — the product-default flag must not override the reference date.
+		// Partner-specific rows are still preferred over generic (partner-less) ones.
+		// The id tie-break (ASC) only applies when C_BPartner_ID AND ValidFrom are equal — it just makes the
+		// result deterministic (the row established first wins); a genuinely superseding row carries a later
+		// ValidFrom, so it is selected by the ValidFrom order before the tie-break is ever reached.
+		final I_M_HU_PI_Item_Product record = queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
+				.filter(createQueryFilter(queryVO))
+				.orderBy()
+				.addColumn(I_M_HU_PI_Item_Product.COLUMNNAME_C_BPartner_ID, Direction.Descending, Nulls.Last)
+				.addColumn(I_M_HU_PI_Item_Product.COLUMNNAME_ValidFrom, Direction.Descending, Nulls.Last)
+				.addColumn(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID, Direction.Ascending, Nulls.Last)
+				.endOrderBy()
 				.create()
-				.anyMatch();
+				.first(I_M_HU_PI_Item_Product.class);
+
+		if (record == null)
+		{
+			return Optional.empty();
+		}
+		return Optional.of(ProductAndHUPIItemProductId.of(
+				ProductId.ofRepoId(record.getM_Product_ID()),
+				HUPIItemProductId.ofRepoId(record.getM_HU_PI_Item_Product_ID())));
 	}
 
 	/**
