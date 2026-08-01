@@ -119,11 +119,12 @@ public class M_Product_StepDef
 	 *         {@link I_C_CompensationGroup_Schema} (created via
 	 *         "metasfresh contains C_CompensationGroup_Schema:") linking the product to its
 	 *         compensation-group schema.</li>
+	 *      <li>{@code ProductLifeCycleStatus} — (optional) BBS-Status code {@code O}/{@code A}/{@code G}/{@code N}</li>
 	 * </ul>
 	 * <pre>{@code
 	 * Given metasfresh contains M_Products:
 	 *   | Identifier         | Name               | OPT.C_CompensationGroup_Schema_ID.Identifier |
-	 *   | schemaProduct | schemaProduct | compGroupSchema                            |
+	 *   | schemaProduct | schemaProduct | compGroupSchema | ProductLifeCycleStatus |                            |
 	 * }</pre>
 	 */
 	@Given("metasfresh contains M_Products:")
@@ -330,6 +331,8 @@ public class M_Product_StepDef
 				.ifPresent(value -> productRecord.setUPC(nullToken2Null(value)));
 		tableRow.getAsOptionalString(I_M_Product.COLUMNNAME_EAN13_ProductCode)
 				.ifPresent(value -> productRecord.setEAN13_ProductCode(nullToken2Null(value)));
+		tableRow.getAsOptionalString(I_M_Product.COLUMNNAME_ProductLifeCycleStatus)
+				.ifPresent(value -> productRecord.setProductLifeCycleStatus(nullToken2Null(value)));
 
 		tableRow.getAsOptionalQuantity("WeightNet", uomDAO::getByX12DE355)
 				.ifPresent(netWeight -> {

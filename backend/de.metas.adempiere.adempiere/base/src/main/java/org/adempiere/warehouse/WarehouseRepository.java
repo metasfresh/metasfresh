@@ -45,7 +45,11 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_M_Warehouse_SourceHUConfig;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
  * Repository Tables: M_Warehouse, M_Warehouse_SourceHUConfig, M_Locator
@@ -175,6 +179,23 @@ public class WarehouseRepository
 				.locators(locatorsMap.get(warehouseId))
 				.warehouseSourceHUConfigs(WarehouseSourceHUConfigList.ofCollection(sourceHUConfigsMap.get(warehouseId)))
 				.build();
+	}
+
+	public void updateReplenishment(
+			@NonNull final WarehouseId warehouseId,
+			@Nullable final DistributionNetworkId networkId,
+			final boolean autoDistributionOrder)
+	{
+		final I_M_Warehouse warehouseRecord = load(warehouseId, I_M_Warehouse.class);
+
+		if (networkId != null)
+		{
+			warehouseRecord.setDD_NetworkDistribution_ID(networkId.getRepoId());
+		}
+		warehouseRecord.setIsAutoDistributionOrder(autoDistributionOrder);
+
+		// Both columns in one save: M_Warehouse_DDOrderPickingInterceptor rejects IsAutoDistributionOrder without a network.
+		saveRecord(warehouseRecord);
 	}
 
 	@NonNull
