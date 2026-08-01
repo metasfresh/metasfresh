@@ -23,13 +23,13 @@ package de.metas.order.model.interceptor;
  */
 
 import de.metas.ad_reference.ADReferenceService;
-import org.compiere.SpringContextHolder;
 import de.metas.bpartner.BPartnerSupplierApprovalService;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
 import de.metas.order.impl.OrderLineDetailRepository;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Product;

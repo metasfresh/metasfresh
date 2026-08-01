@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.costing.CostingLevel;
@@ -16,7 +17,6 @@ import de.metas.gs1.GS1ProductCodesCollection.GS1ProductCodesCollectionBuilder;
 import de.metas.gs1.GTIN;
 import de.metas.gs1.ean13.EAN13;
 import de.metas.gs1.ean13.EAN13ProductCode;
-import de.metas.ad_reference.ADReferenceService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
@@ -62,8 +62,8 @@ import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.X_M_Product;
 import org.compiere.model.I_M_Product_Category;
+import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
@@ -101,6 +101,7 @@ public final class ProductBL implements IProductBL
 	private final IUOMConversionDAO uomConversionDAO = Services.get(IUOMConversionDAO.class);
 	private final IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final ADReferenceService adReferenceService = ADReferenceService.get();
 
 	@Override
 	public I_M_Product getById(@NonNull final ProductId productId)
@@ -478,7 +479,7 @@ public final class ProductBL implements IProductBL
 			// Show the human-readable, locale-resolved status name (e.g. "Gesperrt" / "Blocked"), not the raw
 			// code. retrieveListNameTranslatableString wraps the lookup lazily (forwardingTo), so it resolves
 			// per the reader's language only when the message is actually rendered.
-			final ITranslatableString statusName = ADReferenceService.get()
+			final ITranslatableString statusName = adReferenceService
 					.retrieveListNameTranslatableString(X_M_Product.PRODUCTLIFECYCLESTATUS_AD_Reference_ID, code);
 			throw new AdempiereException(MSG_M_PRODUCT_BBSSTATUS_ACTION_BLOCKED, product.getValue(), statusName)
 					.setParameter("product", product.getValue())

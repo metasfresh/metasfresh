@@ -23,12 +23,12 @@
 package de.metas.purchasecandidate.interceptor;
 
 import de.metas.ad_reference.ADReferenceService;
-import org.compiere.SpringContextHolder;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_M_Product;

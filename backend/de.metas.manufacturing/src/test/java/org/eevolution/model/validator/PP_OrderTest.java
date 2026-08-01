@@ -1,13 +1,13 @@
 package org.eevolution.model.validator;
 
 import de.metas.ad_reference.ADReferenceService;
-import org.compiere.SpringContextHolder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Product;
 import org.eevolution.api.impl.ProductBOMVersionsDAO;

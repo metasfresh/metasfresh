@@ -1,7 +1,6 @@
 package de.metas.handlingunits.picking.job.service.external.product;
 
 import de.metas.ad_reference.ADReferenceService;
-import org.compiere.SpringContextHolder;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
 import org.adempiere.exceptions.AdempiereException;
@@ -10,6 +9,7 @@ import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.model.X_M_Product;

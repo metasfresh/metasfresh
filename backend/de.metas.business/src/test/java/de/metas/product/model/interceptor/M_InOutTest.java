@@ -23,9 +23,9 @@ package de.metas.product.model.interceptor;
  */
 
 import de.metas.ad_reference.ADReferenceService;
-import org.compiere.SpringContextHolder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
