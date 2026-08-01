@@ -140,7 +140,6 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_D
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Discount_Override;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override;
-import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_IsAutoInvoice;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_IsInDispute;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_IsSOTrx;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_IsToClear;
@@ -885,7 +884,7 @@ public class C_Invoice_Candidate_StepDef
 	 *
 	 * @return {@code true} if exactly one matching IC was found and stored; {@code false} if none found yet
 	 */
-	private boolean loadCreditMemoCandidate(@NonNull final Map<String, String> row)
+	private boolean loadCreditMemoCandidate(@NonNull final DataTableRow row)
 	{
 		final int returnInOutId = row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID).lookupNotNullIn(shipmentTable).getM_InOut_ID();
 
