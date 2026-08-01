@@ -101,7 +101,6 @@ public final class ProductBL implements IProductBL
 	private final IUOMConversionDAO uomConversionDAO = Services.get(IUOMConversionDAO.class);
 	private final IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private final ADReferenceService adReferenceService = ADReferenceService.get();
 
 	@Override
 	public I_M_Product getById(@NonNull final ProductId productId)
@@ -479,7 +478,11 @@ public final class ProductBL implements IProductBL
 			// Show the human-readable, locale-resolved status name (e.g. "Gesperrt" / "Blocked"), not the raw
 			// code. retrieveListNameTranslatableString wraps the lookup lazily (forwardingTo), so it resolves
 			// per the reader's language only when the message is actually rendered.
-			final ITranslatableString statusName = adReferenceService
+			// IMPORTANT: resolve ADReferenceService inline here (request time) — do NOT lift it to a class
+			// field. ServerBoot.main constructs ProductBL before the Spring context is configured, so a
+			// field-initializer ADReferenceService.get() throws "SpringApplicationContext not configured yet"
+			// and crashes app/webapi boot (health-check failure on PR #25393).
+			final ITranslatableString statusName = ADReferenceService.get()
 					.retrieveListNameTranslatableString(X_M_Product.PRODUCTLIFECYCLESTATUS_AD_Reference_ID, code);
 			throw new AdempiereException(MSG_M_PRODUCT_BBSSTATUS_ACTION_BLOCKED, product.getValue(), statusName)
 					.setParameter("product", product.getValue())
