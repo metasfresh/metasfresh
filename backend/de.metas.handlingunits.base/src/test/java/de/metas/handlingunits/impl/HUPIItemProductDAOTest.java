@@ -465,6 +465,24 @@ public class HUPIItemProductDAOTest
 		}
 
 		/**
+		 * On and after a version's switch date both the old and the new row are valid; the row with the
+		 * latest ValidFrom (the new version) must win — even when the OLD row is the product default.
+		 */
+		@Test
+		public void selectsLatestValidFrom_onAndAfterSwitch_evenWhenOldRowIsDefaultForProduct()
+		{
+			final I_M_HU_PI_Item_Product oldRow = piipWithGtin("old", bpartner1, "2019-01-01");
+			oldRow.setIsDefaultForProduct(true);
+			saveRecord(oldRow);
+			final I_M_HU_PI_Item_Product newRow = piipWithGtin("new", bpartner1, "2023-01-01");
+
+			// delivery date on/after the new row's ValidFrom -> both valid -> latest ValidFrom (new) wins
+			final Optional<ProductAndHUPIItemProductId> scoped = dao.findFirstByGtin(sharedGtin, bpartner1, date("2024-01-01"));
+			assertThat(scoped).isPresent();
+			assertThat(scoped.get().getHupiItemProductId()).isEqualTo(HUPIItemProductId.ofRepoId(newRow.getM_HU_PI_Item_Product_ID()));
+		}
+
+		/**
 		 * A partner-specific row wins over a generic one even when the generic row has a later ValidFrom.
 		 */
 		@Test
