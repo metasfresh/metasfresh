@@ -65,7 +65,6 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.IClientDAO;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_PriceList_Version;
@@ -288,24 +287,14 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	}
 
 	private IQueryFilter<I_M_HU_PI_Item_Product> createQueryFilter(
-			@NonNull final Properties ctx,
 			@NonNull final IHUPIItemProductQuery queryVO)
 	{
-		final String trxName = ITrx.TRXNAME_None;
-
 		final ICompositeQueryFilter<I_M_HU_PI_Item_Product> filters = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class);
 		filters.setJoinAnd();
 
 		//
 		// Only active records
 		filters.addOnlyActiveRecordsFilter();
-
-		//
-		// Only for current AD_Client_ID
-		final ICompositeQueryFilter<I_M_HU_PI_Item_Product> adClientFilter = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
-				.setJoinOr()
-				.addOnlyContextClient(ctx);
-		filters.addFilter(adClientFilter);
 
 		//
 		// Product Filtering
@@ -330,20 +319,38 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 						.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID, null)
 						.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_IsAllowAnyProduct, true);
 				productFilter.addFilter(anyProductFilter);
-
-				//
-				// If we allow Any Product, then we can include to accept AD_Client_ID=0
-				final IQueryFilter<I_M_HU_PI_Item_Product> clientSystemFilter = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
-						.setJoinAnd()
-						.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_AD_Client_ID, IClientDAO.SYSTEM_CLIENT_ID)
-						.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_IsAllowAnyProduct, true);
-				adClientFilter.addFilter(clientSystemFilter);
 			}
 
 			if (!productFilter.isEmpty())
 			{
 				filters.addFilter(productFilter);
 			}
+		}
+
+		//
+		// GTIN / TU-EAN / UPC Filtering
+		{
+			final GTIN gtin = queryVO.getGtin();
+			if (gtin != null)
+			{
+				final String gtinStr = gtin.getAsString();
+				filters.addFilter(queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
+						.setJoinOr()
+						.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_GTIN, gtinStr)
+						.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_EAN_TU, gtinStr)
+						.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_UPC, gtinStr));
+			}
+		}
+
+		//
+		// Only rows whose M_Product_ID points to an active product
+		// (a product-consolidation run may deactivate a product while leaving its PIIP rows active)
+		if (queryVO.isOnlyActiveProduct())
+		{
+			final IQuery<I_M_Product> activeProducts = queryBL.createQueryBuilder(I_M_Product.class)
+					.addOnlyActiveRecordsFilter()
+					.create();
+			filters.addInSubQueryFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID, I_M_Product.COLUMNNAME_M_Product_ID, activeProducts);
 		}
 
 		//
@@ -400,13 +407,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		{
 			if (queryVO.getC_BPartner_ID() > 0)
 			{
-				final ICompositeQueryFilter<I_M_HU_PI_Item_Product> bpartnerFilter = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
-						// see javadoc for setJoinOr
-						.setJoinOr()
-						.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_C_BPartner_ID, queryVO.getC_BPartner_ID())
-						.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_C_BPartner_ID, null);
-
-				filters.addFilter(bpartnerFilter);
+				filters.addFilter(createBPartnerOrNullFilter(BPartnerId.ofRepoId(queryVO.getC_BPartner_ID())));
 			}
 			else
 			{
@@ -425,11 +426,11 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 					.addEqualsFilter(I_M_HU_PI_Version.COLUMNNAME_HU_UnitType, huUnitType)
 					.addEqualsFilter(I_M_HU_PI_Version.COLUMNNAME_HU_UnitType, null);
 
-			final IQuery<I_M_HU_PI_Version> piVersionQuery = queryBL.createQueryBuilder(I_M_HU_PI_Version.class, ctx, trxName)
+			final IQuery<I_M_HU_PI_Version> piVersionQuery = queryBL.createQueryBuilder(I_M_HU_PI_Version.class)
 					.filter(piVersionFilter)
 					.create();
 
-			final IQuery<I_M_HU_PI_Item> piItemQuery = queryBL.createQueryBuilder(I_M_HU_PI_Item.class, ctx, trxName)
+			final IQuery<I_M_HU_PI_Item> piItemQuery = queryBL.createQueryBuilder(I_M_HU_PI_Item.class)
 					.addInSubQueryFilter(
 							I_M_HU_PI_Item.COLUMN_M_HU_PI_Version_ID,
 							I_M_HU_PI_Version.COLUMN_M_HU_PI_Version_ID,
@@ -470,7 +471,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		if (queryVO.getM_Product_Packaging_ID() > 0)
 		{
 
-			final IQuery<I_M_HU_PI_Item> packingMaterialQuery = queryBL.createQueryBuilder(I_M_HU_PackingMaterial.class, ctx, trxName)
+			final IQuery<I_M_HU_PI_Item> packingMaterialQuery = queryBL.createQueryBuilder(I_M_HU_PackingMaterial.class)
 					.addEqualsFilter(I_M_HU_PackingMaterial.COLUMNNAME_M_Product_ID, queryVO.getM_Product_Packaging_ID())
 					.addOnlyActiveRecordsFilter()
 					.andCollectChildren(I_M_HU_PI_Item.COLUMN_M_HU_PackingMaterial_ID, I_M_HU_PI_Item.class)
@@ -500,30 +501,34 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 			@NonNull final GTIN gtin,
 			@Nullable final ZonedDateTime date)
 	{
-		final String gtinStr = gtin.getAsString();
-		final ICompositeQueryFilter<I_M_HU_PI_Item_Product> hupiFilter = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
-				.setJoinOr()
-				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_GTIN, gtinStr)
-				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_EAN_TU, gtinStr)
-				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_UPC, gtinStr);
+		return findFirstByGtin(gtin, null, date);
+	}
 
-		// A product-consolidation run may deactivate M_Product while leaving the PIIP rows active.
-		// Only rows whose M_Product_ID points to an active product are valid matches.
-		final IQuery<I_M_Product> activeProducts = queryBL.createQueryBuilder(I_M_Product.class)
-				.addOnlyActiveRecordsFilter()
-				.create();
+	@Override
+	@NonNull
+	public Optional<ProductAndHUPIItemProductId> findFirstByGtin(
+			@NonNull final GTIN gtin,
+			@Nullable final BPartnerId bpartnerId,
+			@Nullable final ZonedDateTime date)
+	{
+		// Barcode-lookup policy: the query dimensions that are relevant when resolving a PIIP by GTIN.
+		// Anything not set here (huUnitType, price-list version, packaging product, …) is deliberately
+		// NOT a criterion for a barcode lookup. The query itself is built by the canonical path, so this
+		// lookup cannot drift from it.
+		final IHUPIItemProductQuery queryVO = createHUPIItemProductQuery();
+		queryVO.setGtin(gtin);                          // match GTIN / TU-EAN / UPC
+		queryVO.setDate(date);                          // valid on this date (null = no date filter)
+		queryVO.setBPartnerId(bpartnerId);              // scope to this partner (and its generic rows)...
+		queryVO.setAllowAnyPartner(bpartnerId == null); // ...unless none is given (e.g. the REST product lookup)
+		queryVO.setAllowAnyProduct(false);              // the GTIN drives the product; not the allow-any-product templates
+		queryVO.setOnlyActiveProduct(true);             // exclude consolidation-stale rows (inactive product)
+		queryVO.setAllowInfiniteCapacity(true);         // capacity is not a criterion for a barcode lookup
 
-		return queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
-				.addOnlyActiveRecordsFilter()
-				.filter(hupiFilter)
-				.addInSubQueryFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID, I_M_Product.COLUMNNAME_M_Product_ID, activeProducts)
-				.filter(createValidOnDateFilter(date))
-				.orderBy()
-				.addColumn(I_M_HU_PI_Item_Product.COLUMNNAME_ValidFrom, Direction.Descending, Nulls.Last)
-				.addColumn(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID, Direction.Ascending, Nulls.Last)
-				.endOrderBy()
-				.create()
-				.firstOptional()
+		final IQueryBuilder<I_M_HU_PI_Item_Product> queryBuilder = createHU_PI_Item_Product_QueryBuilder(Env.getCtx(), queryVO, ITrx.TRXNAME_None);
+		// canonical ordering already applied; append a deterministic id tie-break so "first" is stable
+		queryBuilder.orderBy().addColumn(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID, Direction.Ascending, Nulls.Last);
+
+		return Optional.ofNullable(queryBuilder.create().first(I_M_HU_PI_Item_Product.class))
 				.map(record -> ProductAndHUPIItemProductId.of(
 						ProductId.ofRepoId(record.getM_Product_ID()),
 						HUPIItemProductId.ofRepoId(record.getM_HU_PI_Item_Product_ID())));
@@ -538,6 +543,19 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 				.filter(createValidOnDateFilter(date))
 				.create()
 				.anyMatch();
+	}
+
+	/**
+	 * The partner dimension shared by {@link #createQueryFilter} and {@link #findFirstByGtin(GTIN, BPartnerId, ZonedDateTime)}:
+	 * rows of the given partner OR partner-less (generic) rows.
+	 */
+	private ICompositeQueryFilter<I_M_HU_PI_Item_Product> createBPartnerOrNullFilter(@NonNull final BPartnerId bpartnerId)
+	{
+		return queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
+				// see javadoc for setJoinOr
+				.setJoinOr()
+				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_C_BPartner_ID, bpartnerId)
+				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_C_BPartner_ID, null);
 	}
 
 	private IQueryFilter<I_M_HU_PI_Item_Product> createValidOnDateFilter(@Nullable final ZonedDateTime date)
@@ -611,7 +629,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		final IQueryBuilder<I_M_HU_PI_Item_Product> queryBuilder = queryBL
 				.createQueryBuilder(I_M_HU_PI_Item_Product.class, ctx, trxName);
 
-		final IQueryFilter<I_M_HU_PI_Item_Product> filter = createQueryFilter(ctx, queryVO);
+		final IQueryFilter<I_M_HU_PI_Item_Product> filter = createQueryFilter(queryVO);
 		queryBuilder.filter(filter);
 
 		//
@@ -634,7 +652,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 			return false;
 		}
 
-		final IQueryFilter<I_M_HU_PI_Item_Product> filter = createQueryFilter(ctx, queryVO);
+		final IQueryFilter<I_M_HU_PI_Item_Product> filter = createQueryFilter(queryVO);
 		// NOTE: in this case ordering is not important
 		for (final I_M_HU_PI_Item_Product itemProduct : itemProducts)
 		{

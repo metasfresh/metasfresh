@@ -23,6 +23,7 @@
 package de.metas.handlingunits.ordercandidate.spi.impl;
 
 import ch.qos.logback.classic.Level;
+import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.gs1.GTIN;
 import de.metas.handlingunits.HUPIItemProductId;
@@ -132,7 +133,13 @@ public class OLCandProductFromPIIPvalidator implements IOLCandValidator
 			return;
 		}
 
-		huPIItemProductDAO.findFirstByGtin(GTIN.ofString(barcode), datePromised)
+		// Scope the re-resolution to the order's (ship/consignee) partner — the same partner the EDI lookup
+		// view resolved via StoreGLN — so a barcode shared across partners cannot cross to another partner's PIIP.
+		final BPartnerId shipBPartnerId = olCandEffectiveValuesBL.getDropShipPartnerInfo(olCand)
+				.orElseGet(() -> olCandEffectiveValuesBL.getBuyerPartnerInfo(olCand))
+				.getBpartnerId();
+
+		huPIItemProductDAO.findFirstByGtin(GTIN.ofString(barcode), shipBPartnerId, datePromised)
 				.map(ProductAndHUPIItemProductId::getHupiItemProductId)
 				.filter(validId -> !HUPIItemProductId.equals(validId, currentId))
 				.ifPresent(validId -> olCand.setM_HU_PI_Item_Product_ID(validId.getRepoId()));
