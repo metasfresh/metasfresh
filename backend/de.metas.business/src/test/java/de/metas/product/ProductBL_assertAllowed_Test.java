@@ -33,6 +33,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Product;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static de.metas.util.Services.get;
@@ -110,20 +111,6 @@ class ProductBL_assertAllowed_Test
 	}
 
 	@Test
-	void blocked_blocksAllActions()
-	{
-		final ProductId productId = createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_Blocked);
-
-		for (final ProductLifeCycleAction action : ProductLifeCycleAction.values())
-		{
-			assertThat(productBL.isAllowed(productId, action)).as("action=%s", action).isFalse();
-			assertThatThrownBy(() -> productBL.assertAllowed(productId, action))
-					.as("action=%s", action)
-					.isInstanceOfSatisfying(AdempiereException.class, ex -> assertThat(ex.isUserValidationError()).isTrue());
-		}
-	}
-
-	@Test
 	void doNotDeliver_blocksShipOnly()
 	{
 		final ProductId productId = createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_DeliveryStop);
@@ -140,31 +127,49 @@ class ProductBL_assertAllowed_Test
 		}
 	}
 
-	@Test
-	void blocked_error_resolvesHumanReadableStatusName()
+	@Nested
+	class Blocked
 	{
-		// The action-blocked error must surface the human-readable, locale-resolved status name
-		// ("Gesperrt"), not the raw code "G". Register the ref-list item so the lookup resolves to a
-		// real name instead of falling back to the raw code — the item-found branch the other tests
-		// never exercise (the auto-created mock ref-list has no items).
-		adReferenceService.saveRefList(ADRefListItemCreateRequest.builder()
-				.referenceId(ReferenceId.ofRepoId(X_M_Product.PRODUCTLIFECYCLESTATUS_AD_Reference_ID))
-				.value(X_M_Product.PRODUCTLIFECYCLESTATUS_Blocked)
-				.name(TranslatableStrings.constant("Gesperrt"))
-				.build());
+		@Test
+		void blocksAllActions()
+		{
+			final ProductId productId = createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_Blocked);
 
-		// The exception hands this ITranslatableString to AdempiereException as a message param, so the
-		// blocked message renders "Gesperrt" once the AD_Message template is loaded (verified end-to-end
-		// against the real stack, not here — the POJO harness has no AD_Message so {0}/{1} don't
-		// interpolate; this asserts the resolution the guard relies on).
-		assertThat(adReferenceService
-				.retrieveListNameTranslatableString(X_M_Product.PRODUCTLIFECYCLESTATUS_AD_Reference_ID, X_M_Product.PRODUCTLIFECYCLESTATUS_Blocked)
-				.translate("de_DE"))
-				.as("resolved status name")
-				.isEqualTo("Gesperrt");
+			for (final ProductLifeCycleAction action : ProductLifeCycleAction.values())
+			{
+				assertThat(productBL.isAllowed(productId, action)).as("action=%s", action).isFalse();
+				assertThatThrownBy(() -> productBL.assertAllowed(productId, action))
+						.as("action=%s", action)
+						.isInstanceOfSatisfying(AdempiereException.class, ex -> assertThat(ex.isUserValidationError()).isTrue());
+			}
+		}
 
-		final ProductId productId = createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_Blocked);
-		assertThatThrownBy(() -> productBL.assertAllowed(productId, ProductLifeCycleAction.PICK))
-				.isInstanceOfSatisfying(AdempiereException.class, ex -> assertThat(ex.isUserValidationError()).isTrue());
+		@Test
+		void error_resolvesHumanReadableStatusName()
+		{
+			// The action-blocked error must surface the human-readable, locale-resolved status name
+			// ("Gesperrt"), not the raw code "G". Register the ref-list item so the lookup resolves to a
+			// real name instead of falling back to the raw code — the item-found branch the other tests
+			// never exercise (the auto-created mock ref-list has no items).
+			adReferenceService.saveRefList(ADRefListItemCreateRequest.builder()
+					.referenceId(ReferenceId.ofRepoId(X_M_Product.PRODUCTLIFECYCLESTATUS_AD_Reference_ID))
+					.value(X_M_Product.PRODUCTLIFECYCLESTATUS_Blocked)
+					.name(TranslatableStrings.constant("Gesperrt"))
+					.build());
+
+			// The exception hands this ITranslatableString to AdempiereException as a message param, so the
+			// blocked message renders "Gesperrt" once the AD_Message template is loaded (verified end-to-end
+			// against the real stack, not here — the POJO harness has no AD_Message so {0}/{1} don't
+			// interpolate; this asserts the resolution the guard relies on).
+			assertThat(adReferenceService
+					.retrieveListNameTranslatableString(X_M_Product.PRODUCTLIFECYCLESTATUS_AD_Reference_ID, X_M_Product.PRODUCTLIFECYCLESTATUS_Blocked)
+					.translate("de_DE"))
+					.as("resolved status name")
+					.isEqualTo("Gesperrt");
+
+			final ProductId productId = createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_Blocked);
+			assertThatThrownBy(() -> productBL.assertAllowed(productId, ProductLifeCycleAction.PICK))
+					.isInstanceOfSatisfying(AdempiereException.class, ex -> assertThat(ex.isUserValidationError()).isTrue());
+		}
 	}
 }

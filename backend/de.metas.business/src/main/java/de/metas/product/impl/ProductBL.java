@@ -481,7 +481,7 @@ public final class ProductBL implements IProductBL
 			// IMPORTANT: resolve ADReferenceService inline here (request time) — do NOT lift it to a class
 			// field. ServerBoot.main constructs ProductBL before the Spring context is configured, so a
 			// field-initializer ADReferenceService.get() throws "SpringApplicationContext not configured yet"
-			// and crashes app/webapi boot (health-check failure on PR #25393).
+			// and crashes app/webapi boot.
 			final ITranslatableString statusName = ADReferenceService.get()
 					.retrieveListNameTranslatableString(X_M_Product.PRODUCTLIFECYCLESTATUS_AD_Reference_ID, code);
 			throw new AdempiereException(MSG_M_PRODUCT_BBSSTATUS_ACTION_BLOCKED, product.getValue(), statusName)
