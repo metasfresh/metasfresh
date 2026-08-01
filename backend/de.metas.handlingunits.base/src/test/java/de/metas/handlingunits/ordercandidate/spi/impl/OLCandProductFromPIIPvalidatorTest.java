@@ -83,7 +83,9 @@ public class OLCandProductFromPIIPvalidatorTest
 	void switchesToLatestValidVersion_whenStampedRowIsValidButSuperseded()
 	{
 		// given: one product, one shared barcode, two versions — old (product default, valid from 2019)
-		// and new (valid from 2023)
+		// and new (valid from 2023). The stamped incumbent is set directly below, so the records' relative
+		// id order is irrelevant here (unlike the production EDI view, which picks by MAX id) — this test
+		// isolates the validator's re-resolution, which must key off ValidFrom, not id or the default flag.
 		final I_C_UOM uomRecord = BusinessTestHelper.createUOM("testUOM");
 		final I_M_Product productRecord = BusinessTestHelper.createProduct("testProduct", uomRecord);
 		final GTIN sharedGtin = GTIN.ofString("3333333333336");

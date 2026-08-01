@@ -528,6 +528,9 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		// packing valid on the date, so among the rows valid on the date the one with the LATEST ValidFrom
 		// (the current version) must win — the product-default flag must not override the reference date.
 		// Partner-specific rows are still preferred over generic (partner-less) ones.
+		// The id tie-break (ASC) only applies when C_BPartner_ID AND ValidFrom are equal — it just makes the
+		// result deterministic (the row established first wins); a genuinely superseding row carries a later
+		// ValidFrom, so it is selected by the ValidFrom order before the tie-break is ever reached.
 		final I_M_HU_PI_Item_Product record = queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
 				.filter(createQueryFilter(queryVO))
 				.orderBy()

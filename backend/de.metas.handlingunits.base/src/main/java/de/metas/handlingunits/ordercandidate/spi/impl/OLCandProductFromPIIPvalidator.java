@@ -131,6 +131,11 @@ public class OLCandProductFromPIIPvalidator implements IOLCandValidator
 		// location), while still switching to a newer version once its ValidFrom is reached: "current is valid"
 		// is not enough — a superseded row stays valid forever without a ValidTo, so we always ask for the
 		// latest valid version and switch only if it differs (the filter below skips the no-op write).
+		//
+		// currentPartner == null means the stamped row is a generic (partner-less) one; findFirstByGtin then
+		// re-resolves across any partner (its pre-existing behaviour). In the EDI flow this path is not
+		// reached: the barcode-lookup view always stamps the partner-specific row derived from the StoreGLN,
+		// so a non-virtual generic incumbent does not occur here (the virtual fallback returned above).
 		final BPartnerId currentPartner = BPartnerId.ofRepoIdOrNull(current.getC_BPartner_ID());
 
 		huPIItemProductDAO.findFirstByGtin(GTIN.ofString(barcode), currentPartner, datePromised)
