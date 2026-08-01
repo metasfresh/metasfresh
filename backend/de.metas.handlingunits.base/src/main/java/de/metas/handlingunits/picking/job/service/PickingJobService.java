@@ -60,12 +60,14 @@ import de.metas.handlingunits.picking.job.service.external.carrieradvise.Picking
 import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.handlingunits.picking.job.service.external.product.PickingJobProductService;
 import de.metas.handlingunits.picking.job.service.external.shipmentschedule.PickingJobShipmentScheduleService;
+import de.metas.handlingunits.picking.job.service.external.shipmentschedule.ShipmentScheduleInfo;
 import de.metas.handlingunits.picking.job.service.external.warehouse.PickingJobWarehouseService;
 import de.metas.handlingunits.picking.job.service.shelflife.PickingShelfLifeCheck;
 import de.metas.handlingunits.picking.job.shipment.PickingShipmentService;
 import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
 import de.metas.handlingunits.picking.requests.ReleasePickingSlotRequest;
 import de.metas.handlingunits.picking.slot.PickingSlotListener;
+import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.logging.LogManager;
@@ -1109,4 +1111,36 @@ public class PickingJobService implements PickingSlotListener
 		return unpickProductResolver.resolve(pickingJob, scannedCode);
 	}
 
+	/**
+	 * Resolves the HU which {@code scannedCode} identifies for the given picking job line, taking product / customer /
+	 * warehouse from the same places the pick itself takes them ({@code PickingJobPickCommand#computePickFromHUIdAndQRCode}) -
+	 * a custom weight, LMQ or GS1 label identifies its HU only relative to those, so an inspection-only caller must
+	 * still resolve the very HU the pick would pick.
+	 * <p>
+	 * Deliberate divergence: {@code PickOnTheFlyQRCode} is not special-cased, because handling it creates inventory
+	 * ({@code PickingJobPickCommand#createPickFromHUOnTheFly}), which an inspection-only call must not do. Unreachable
+	 * anyway - the codes reaching this method are whole-TU labels (custom weight, LMQ, GS1), never pick-on-the-fly.
+	 */
+	public HUInfo resolvePickFromHU(
+			@NonNull final PickingJobId pickingJobId,
+			@NonNull final PickingJobLineId lineId,
+			@NonNull final ScannedCode scannedCode,
+			@NonNull final UserId callerId)
+	{
+		final PickingJob pickingJob = getById(pickingJobId);
+		pickingJob.assertCanBeEditedBy(callerId);
+
+		final PickingJobLine line = pickingJob.getLineById(lineId);
+		final IHUQRCode huQRCode = huService.parsePickFromScannedCode(scannedCode);
+
+		final ShipmentScheduleId shipmentScheduleId = line.getScheduleId().getShipmentScheduleId();
+		final ShipmentScheduleInfo shipmentScheduleInfo = shipmentScheduleService.getById(shipmentScheduleId);
+
+		return huService.resolvePickFromHUQRCode(
+						huQRCode,
+						line.getProductId(),
+						shipmentScheduleInfo.getBpartnerId(),
+						shipmentScheduleInfo.getWarehouseId())
+				.orElseThrow();
+	}
 }

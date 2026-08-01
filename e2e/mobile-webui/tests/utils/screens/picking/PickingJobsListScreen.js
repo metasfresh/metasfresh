@@ -7,6 +7,8 @@ import { expect } from '@playwright/test';
 import { ApplicationsListScreen } from '../ApplicationsListScreen';
 import { expectClasses } from '../../expectations';
 import { MassPrintingScanScreen } from './MassPrintingScanScreen';
+import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
+import { OperatorContextErrorPanel } from '../../components/OperatorContextErrorPanel';
 
 const NAME = 'PickingJobsListScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -161,6 +163,34 @@ export const PickingJobsListScreen = {
 
     expectMassPrintingButtonHidden: async () => await test.step(`${NAME} - Expect Mass Printing button hidden`, async () => {
         await page.getByTestId('massPrinting-button').waitFor({ state: 'detached', timeout: VERY_FAST_ACTION_TIMEOUT });
+    }),
+
+    // The jobs list itself asks for a workplace when the picking profile requires an active one and
+    // the operator has none assigned yet: the screen renders its own scanner instead of the job list.
+    expectAsksForWorkplace: async () => await test.step(`${NAME} - Expect the screen to ask for a workplace`, async () => {
+        await PickingJobsListScreen.expectVisible();
+        await BarcodeScannerComponent.expectAttached({});
+    }),
+
+    // Scan without asserting the job list takes over — for scenarios where the assign is expected to
+    // fail (e.g. the connection dropped), so the scanner does NOT give way to the job list.
+    typeWorkplaceQRCode: async (qrCode) => await test.step(`${NAME} - Scan workplace QR '${qrCode}'`, async () => {
+        await BarcodeScannerComponent.type(qrCode);
+    }),
+
+    // When the operator's workplace cannot be read — or assigned from a scan — because the connection
+    // dropped, the screen must say so and offer a retry, instead of silently showing no workplace.
+    expectConnectionErrorPanel: async () => await test.step(`${NAME} - Expect operator-context connection error panel`, async () => {
+        await OperatorContextErrorPanel.expectVisible();
+    }),
+
+    expectNoConnectionErrorPanel: async () => await test.step(`${NAME} - Expect no operator-context connection error panel`, async () => {
+        await OperatorContextErrorPanel.expectNotVisible();
+    }),
+
+    retryLoadingOperatorContext: async () => await test.step(`${NAME} - Retry loading workplace/workstation`, async () => {
+        await OperatorContextErrorPanel.tapRetry();
+        await PickingJobsListScreen.waitForScreen();
     }),
 
     goBack: async () => await test.step(`${NAME} - Go back`, async () => {

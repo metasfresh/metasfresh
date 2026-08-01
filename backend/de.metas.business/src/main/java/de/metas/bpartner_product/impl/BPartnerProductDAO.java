@@ -55,6 +55,7 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_M_BannedManufacturer;
 import org.compiere.model.I_M_Product;
 
@@ -512,6 +513,35 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 				)
 				.create()
 				.listImmutable(I_C_BPartner_Product.class);
+	}
+
+	@Override
+	@NonNull
+	public Optional<ProductId> findFirstProductIdByGtin(@NonNull final GTIN gtin)
+	{
+		final String gtinStr = gtin.getAsString();
+		final ICompositeQueryFilter<I_C_BPartner_Product> bppFilter = queryBL.createCompositeQueryFilter(I_C_BPartner_Product.class)
+				.setJoinOr()
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_GTIN, gtinStr)
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_EAN_CU, gtinStr)
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_UPC, gtinStr);
+
+		// Only match rows that point to an active M_Product. The consolidation process (F5001.1) can leave an
+		// M_Product inactive while keeping its C_BPartner_Product rows active — those stale rows must NOT be matched.
+		final IQuery<I_M_Product> activeProducts = queryBL.createQueryBuilder(I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.create();
+
+		final I_C_BPartner_Product bpp = queryBL.createQueryBuilder(I_C_BPartner_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.filter(bppFilter)
+				.addNotNull(I_C_BPartner_Product.COLUMNNAME_M_Product_ID)
+				.addInSubQueryFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, I_M_Product.COLUMNNAME_M_Product_ID, activeProducts)
+				.orderBy(I_C_BPartner_Product.COLUMNNAME_C_BPartner_Product_ID)
+				.create().first();
+
+		return Optional.ofNullable(bpp)
+				.map(b -> ProductId.ofRepoId(b.getM_Product_ID()));
 	}
 
 }
