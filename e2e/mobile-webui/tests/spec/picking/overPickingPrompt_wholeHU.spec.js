@@ -13,6 +13,7 @@ import { ManufacturingJobScreen } from '../../utils/screens/manufacturing/Manufa
 import { MaterialReceiptLineScreen } from '../../utils/screens/manufacturing/receipt/MaterialReceiptLineScreen';
 import { PickLineScanScreen } from '../../utils/screens/picking/PickLineScanScreen';
 import { PickingJobLineScreen } from '../../utils/screens/picking/PickingJobLineScreen';
+import { GetQuantityDialog } from '../../utils/screens/picking/GetQuantityDialog';
 
 /**
  * Whole-HU over-delivery confirmation in mobile UI picking.
@@ -254,6 +255,27 @@ test('Whole HU: scan an HU holding more than ordered - prompt enabled - decline'
     });
 });
 
+const blockTheOverDeliveryAtTheScanStep = async ({ weightLabelQRCode }) =>
+    await test.step('Scan the whole HU (3 pieces) against an order of 2 - the scan is rejected', async () => {
+        await PickLineScanScreen.waitForScreen();
+
+        // Without the confirmation prompt the operator gets no way to authorise an over-delivery,
+        // so the same qtyAboveMax ceiling the per-piece CU path enforces applies here: the scan
+        // fails and books nothing, rather than silently booking the whole 3-piece HU.
+        await expectErrorToast(
+            'Whole HU exceeds the ordered qty and the prompt is disabled',
+            async () => {
+                await PickLineScanScreen.typeQRCode(weightLabelQRCode);
+                // Reached only if the pick went through - a booked pick leaves the scan screen
+                // for the job screen. Blocked, the operator stays on the scan screen.
+                await PickingJobScreen.waitForScreen();
+            },
+            ({ textContent }) => {
+                expect(textContent).toContain('above max');
+            }
+        );
+    });
+
 // noinspection JSUnusedLocalSymbols
 test('Whole HU: scan an HU holding more than ordered - prompt disabled - the pick is blocked', async ({ page }) => {
     allure.epic('E0105: Picking');
@@ -283,25 +305,7 @@ test('Whole HU: scan an HU holding more than ordered - prompt disabled - the pic
         expectNextScreen: 'PickLineScanScreen',
     });
 
-    await test.step('Scan the whole HU (3 pieces) against an order of 2 - the scan is rejected', async () => {
-        await PickLineScanScreen.waitForScreen();
-
-        // Without the confirmation prompt the operator gets no way to authorise an over-delivery,
-        // so the same qtyAboveMax ceiling the per-piece CU path enforces applies here: the scan
-        // fails and books nothing, rather than silently booking the whole 3-piece HU.
-        await expectErrorToast(
-            'Whole HU exceeds the ordered qty and the prompt is disabled',
-            async () => {
-                await PickLineScanScreen.typeQRCode(weightLabelQRCode);
-                // Reached only if the pick went through - a booked pick leaves the scan screen
-                // for the job screen. Blocked, the operator stays on the scan screen.
-                await PickingJobScreen.waitForScreen();
-            },
-            ({ textContent }) => {
-                expect(textContent).toContain('above max');
-            }
-        );
-    });
+    await blockTheOverDeliveryAtTheScanStep({ weightLabelQRCode });
 
     await test.step('Verify nothing was picked and the HU is untouched', async () => {
         await PickLineScanScreen.goBack();
@@ -697,5 +701,187 @@ test('Whole HU: scan an HU on a line that is already fully picked - prompt enabl
                 [huQRCode2]: { huStatus: 'S', storages: { BOM: '1 PCE' } },
             },
         });
+    });
+});
+
+//
+// ===== A whole-HU scan that booked nothing must not change what the NEXT pick books =====
+// The operator scans the whole-HU label and the pick is stopped before anything is booked - they decline
+// the over-delivery question, or the ceiling refuses the scan outright. Still standing at the same scan
+// step, they then pick from the line the everyday way: scan the HU's own QR code, and scan a single
+// weight label inside the quantity dialog, which asks the line for exactly one piece.
+//
+// The line ordered 2 and the HU holds 3, so the two possible outcomes are told apart by the booked
+// quantity alone: crediting 1 is the piece the operator asked for, crediting 3 is the whole HU of the
+// scan that was supposed to have booked nothing.
+//
+// The operator never leaves the scan step between the two scans - that is the situation being covered.
+// Walking back to the job screen and in again would be a different, easier case.
+//
+
+const declineTheOverDeliveryAtTheScanStep = async ({ weightLabelQRCode }) =>
+    await test.step('Scan the whole HU (3 pieces) against an order of 2 and decline the over-delivery', async () => {
+        await PickLineScanScreen.waitForScreen();
+        await PickLineScanScreen.typeQRCode(weightLabelQRCode);
+
+        await YesNoDialog.waitForDialog();
+        await YesNoDialog.clickNoButton();
+    });
+
+const pickOnePieceThroughTheQtyDialog = async ({ huQRCode, weightLabelQRCode }) =>
+    await test.step('Scan the HU, then scan one weight label in the qty dialog - a request for one piece', async () => {
+        await PickLineScanScreen.waitForScreen();
+        await PickLineScanScreen.typeQRCode(huQRCode);
+
+        // Scanning a weight label inside the dialog is the catch-weight pick the operator makes all day:
+        // one label is one piece, and its weight is the piece's catch weight.
+        await GetQuantityDialog.fillAndPressDone({ catchWeightQRCode: weightLabelQRCode });
+
+        await PickingJobScreen.waitForScreen();
+    });
+
+const expectTheLineWasCreditedTheOnePieceRequested = async ({ pickingJobId }) =>
+    await test.step('Verify the line was credited the single piece that was asked for', async () => {
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '2 Stk', qtyPicked: '1 Stk' });
+
+        // A single record of one piece. The whole HU going onto the line instead shows up here as 3 PCE.
+        await Backend.expect({
+            pickings: {
+                [pickingJobId]: {
+                    shipmentSchedules: {
+                        BOM: {
+                            qtyPicked: [{ qtyPicked: '1 PCE', processed: false, shipmentLineId: '-' }],
+                        },
+                    },
+                },
+            },
+        });
+    });
+
+// noinspection JSUnusedLocalSymbols
+test('Whole HU: after the over-delivery was declined, the next pick books the quantity it asked for', async ({
+    page,
+}) => {
+    allure.epic('E0105: Picking');
+    allure.feature('F00230: MobileUI Picking');
+    allure.tag('F00230');
+    allure.story('Over-picking prompt - a declined whole-HU scan leaves the next pick booking its own quantity');
+    allure.severity('critical');
+
+    const masterdata = await createMasterdata_WholeHU({ showPromptWhenOverPicking: true, orderQtyCUs: 2 });
+
+    // 4 digits product code, 1.000 kg, lot 123, produced 2025-04-03, best before 2026-04-10
+    const weightLabelQRCode = `${masterdata.products.BOM.productCode}00100000000123250403260410`;
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+
+    const huQRCode = await produceHU({ masterdata, weightLabelQRCode, qtyCUs: 3 });
+
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '2 Stk', qtyPicked: '0 Stk' });
+    await PickingJobScreen.scanPickingSlot({
+        qrCode: masterdata.pickingSlots.slot1.qrCode,
+        expectNextScreen: 'PickLineScanScreen',
+    });
+
+    await declineTheOverDeliveryAtTheScanStep({ weightLabelQRCode });
+
+    await pickOnePieceThroughTheQtyDialog({ huQRCode, weightLabelQRCode });
+    await expectTheLineWasCreditedTheOnePieceRequested({ pickingJobId });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Whole HU: after the over-delivery was blocked, the next pick books the quantity it asked for', async ({
+    page,
+}) => {
+    allure.epic('E0105: Picking');
+    allure.feature('F00230: MobileUI Picking');
+    allure.tag('F00230');
+    allure.story('Over-picking prompt - a blocked whole-HU scan leaves the next pick booking its own quantity');
+    allure.severity('critical');
+
+    const masterdata = await createMasterdata_WholeHU({ showPromptWhenOverPicking: false, orderQtyCUs: 2 });
+
+    // 4 digits product code, 1.000 kg, lot 123, produced 2025-04-03, best before 2026-04-10
+    const weightLabelQRCode = `${masterdata.products.BOM.productCode}00100000000123250403260410`;
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+
+    const huQRCode = await produceHU({ masterdata, weightLabelQRCode, qtyCUs: 3 });
+
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '2 Stk', qtyPicked: '0 Stk' });
+    await PickingJobScreen.scanPickingSlot({
+        qrCode: masterdata.pickingSlots.slot1.qrCode,
+        expectNextScreen: 'PickLineScanScreen',
+    });
+
+    await blockTheOverDeliveryAtTheScanStep({ weightLabelQRCode });
+
+    await pickOnePieceThroughTheQtyDialog({ huQRCode, weightLabelQRCode });
+    await expectTheLineWasCreditedTheOnePieceRequested({ pickingJobId });
+});
+
+//
+// ===== The quantity the dialog offers after a whole-HU scan that booked nothing =====
+// Same situation as above, read one step earlier: the operator opens the quantity dialog on the HU and
+// switches to typing a quantity by hand. The quantity waiting in the field is the one they will book
+// with a single OK, so it has to be this line's own remaining quantity (2) - never the 3 pieces of the
+// HU whose scan was declined a moment ago.
+//
+
+// noinspection JSUnusedLocalSymbols
+test('Whole HU: after the over-delivery was declined, the qty dialog offers the line remaining qty', async ({
+    page,
+}) => {
+    allure.epic('E0105: Picking');
+    allure.feature('F00230: MobileUI Picking');
+    allure.tag('F00230');
+    allure.story('Over-picking prompt - after a declined whole-HU scan the qty dialog offers the line remaining qty');
+    allure.severity('critical');
+
+    const masterdata = await createMasterdata_WholeHU({ showPromptWhenOverPicking: true, orderQtyCUs: 2 });
+
+    // 4 digits product code, 1.000 kg, lot 123, produced 2025-04-03, best before 2026-04-10
+    const weightLabelQRCode = `${masterdata.products.BOM.productCode}00100000000123250403260410`;
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+
+    const huQRCode = await produceHU({ masterdata, weightLabelQRCode, qtyCUs: 3 });
+
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '2 Stk', qtyPicked: '0 Stk' });
+    await PickingJobScreen.scanPickingSlot({
+        qrCode: masterdata.pickingSlots.slot1.qrCode,
+        expectNextScreen: 'PickLineScanScreen',
+    });
+
+    await declineTheOverDeliveryAtTheScanStep({ weightLabelQRCode });
+
+    await test.step('Open the qty dialog on the HU and read the quantity it offers', async () => {
+        await PickLineScanScreen.waitForScreen();
+        await PickLineScanScreen.typeQRCode(huQRCode);
+
+        await GetQuantityDialog.waitForDialog();
+        await GetQuantityDialog.clickManual();
+
+        // 2 is what this line still has to be picked. 3 would be the content of the HU from the
+        // declined scan, offered here for the operator to book with one OK.
+        await GetQuantityDialog.expectQtyEntered('2');
     });
 });
