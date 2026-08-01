@@ -298,17 +298,18 @@ const convertQRCodeObjectToResolvedResult = async ({
     qrCode: parsedQRCode,
   };
 
-  if (parsedQRCode.weightNet != null) {
-    result['catchWeight'] = parsedQRCode.weightNet;
-  }
-
-  if (parsedQRCode.isTUToBePickedAsWhole === true) {
-    result['isTUToBePickedAsWhole'] = true;
-  }
-
+  // Every scan-derived value is written on EVERY resolution, including when the scanned code carries
+  // none: ScanHUAndGetQtyComponent merges each resolution over the previous one
+  // (computeNewResolvedBarcodeData), so a field left unwritten keeps the earlier scan's value and
+  // decides a later, unrelated pick. The scanned code - not the screen - owns what it means.
+  result['catchWeight'] = parsedQRCode.weightNet;
+  result['isTUToBePickedAsWhole'] = parsedQRCode.isTUToBePickedAsWhole === true;
   result['bestBeforeDate'] = parsedQRCode.bestBeforeDate;
   result['productionDate'] = parsedQRCode.productionDate;
   result['lotNo'] = parsedQRCode.lotNo;
+  // Only a whole-TU code resolves to an HU quantity (below); every other code has to clear it, or the
+  // qty dialog pre-fills the previous HU's content and one OK books it.
+  result['qtyInitial'] = undefined;
 
   result.scannedHU = {
     huUnitType: parsedQRCode.huUnitType,
@@ -330,29 +331,24 @@ const convertQRCodeObjectToResolvedResult = async ({
     }
   }
 
-  // For whole-TU picks, fetch the actual product qty from the backend so the over-delivery can be
-  // detected at all. The backend picks the full HU storage qty when isPickWholeTU=true, so we need
-  // the actual qty to compare against remaining - with the prompt enabled to raise the confirmation,
-  // and with it disabled to enforce the qtyAboveMax ceiling instead. Both configurations need it, so
-  // this is not gated on isShowPromptWhenOverPicking.
+  // A whole-TU pick books the full HU storage qty, so the over-delivery confirmation and the qtyAboveMax
+  // ceiling both need that qty to compare against remaining.
   //
-  // The picking job + line are required, and are what gates the fetch: a whole-TU label (custom weight
+  // The picking job + line gate the fetch because the lookup requires them: a whole-TU label (custom weight
   // label, LMQ, GS1) is not an HU QR code, so the backend can only resolve it to its HU in the context of
   // the line being picked. PickProductsScanScreen resolves barcodes through here too, without a line and
   // wanting only the parsed QR code - looking the HU up for it would fail the scan it is trying to route.
   if (parsedQRCode.isTUToBePickedAsWhole === true && wfProcessId != null && lineId != null) {
-    // Not guarded: a failure here must surface as a failed scan, exactly like the unparsed-barcode lookup
-    // above. Swallowing it would leave qtyInitial undefined, which compares as 0 against the remaining qty,
-    // so the whole TU would book with no confirmation - the very defect this check exists to prevent.
+    // Deliberately unguarded, like the unparsed-barcode lookup above: swallowing a failure would leave
+    // qtyInitial undefined, which compares as 0 against remaining, so the whole TU would book unasked.
     const huInfo = await getScannedHUQRCodeInfo({
       qrCode: toQRCodeString(parsedQRCode),
       productNo: expectedProductNo,
       wfProcessId,
       lineId,
     });
-    // The resolved HU carries no pickable qty of this line's product, so there is nothing to bound the
-    // whole-TU pick by - reject the scan rather than book it unasked. Number.isFinite is the predicate
-    // ScanHUAndGetQtyComponent gates the qtyMax ceiling on, so anything weaker leaves the pick unbounded.
+    // Number.isFinite is the predicate ScanHUAndGetQtyComponent gates the qtyMax ceiling on, so anything
+    // weaker here leaves the whole-TU pick unbounded.
     const productQty = parseFloat(huInfo?.productQty);
     if (!Number.isFinite(productQty) || productQty <= 0) {
       console.warn('Scanned barcode resolved to an HU carrying no qty of the expected product', {
