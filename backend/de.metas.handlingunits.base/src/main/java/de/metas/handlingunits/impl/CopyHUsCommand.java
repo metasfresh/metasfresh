@@ -68,12 +68,17 @@ public class CopyHUsCommand
 	@Builder
 	private CopyHUsCommand(
 			@NonNull @Singular("huIdToCopy") final ImmutableSet<HuId> huIdsToCopy,
-			@Nullable final WarehouseId targetWarehouseId)
+			@Nullable final WarehouseId targetWarehouseId,
+			@Nullable final LocatorId targetLocatorId)
 	{
 		this.huIdsToCopy = huIdsToCopy;
 		this.huStatus = X_M_HU.HUSTATUS_Planning;
 
-		if (targetWarehouseId != null)
+		if (targetLocatorId != null)
+		{
+			this.targetLocatorId = targetLocatorId;
+		}
+		else if (targetWarehouseId != null)
 		{
 			final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 			this.targetLocatorId = warehouseBL.getOrCreateDefaultLocatorId(targetWarehouseId);

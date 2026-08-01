@@ -190,3 +190,74 @@ Feature: Customer Return from Shipment
     And M_HU are validated:
       | M_HU_ID    | HUStatus | IsActive |
       | return_hu3 | D        | N        |
+
+
+  @from:cucumber
+  @allure.label.epic:E0110_Sales
+  @allure.label.feature:F00200_Sales_Order
+  Scenario: Complete customer return with LU packing structure copies origin HUs
+    # Step 1: LU/TU packing instructions
+    Given metasfresh contains M_HU_PI:
+      | M_HU_PI_ID.Identifier | Name     |
+      | huTU_CR4              | huTU_CR4 |
+      | huLU_CR4              | huLU_CR4 |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | Name            | HU_UnitType | IsCurrent |
+      | piVersionTU_CR4               | huTU_CR4              | piVersionTU_CR4 | TU          | Y         |
+      | piVersionLU_CR4               | huLU_CR4              | piVersionLU_CR4 | LU          | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType | OPT.Included_HU_PI_ID.Identifier |
+      | piItemMI_CR4               | piVersionTU_CR4               | 0   | MI       |                                  |
+      | piItemLU_CR4               | piVersionLU_CR4               | 1   | HU       | huTU_CR4                         |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
+      | piItemProduct_CR4                  | piItemMI_CR4               | product_CR              | 10  | 2022-03-01 |
+
+    # Step 2: Order with TU packing instruction on line
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | OPT.POReference | OPT.M_PricingSystem_ID | OPT.C_BPartner_Location_ID | OPT.DeliveryRule | OPT.DeliveryViaRule |
+      | order_CR4  | Y       | customer_CR   | 2022-06-10  | so_ref_CR4      | ps_CR                  | customer_CR                | F                | S                   |
+    And metasfresh contains C_OrderLines:
+      | Identifier    | C_Order_ID | M_Product_ID | QtyEntered | OPT.M_HU_PI_Item_Product_ID |
+      | orderLine_CR4 | order_CR4  | product_CR   | 10         | piItemProduct_CR4           |
+
+    When the order identified by order_CR4 is completed
+
+    # Step 3: Put stock into the warehouse with the LU structure so that on-the-fly pick can pick it
+    And metasfresh contains single line completed inventories
+      | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_LU_HU_PI_ID | M_HU_ID        |
+      | inventory_CR4  | warehouseStd   | 2022-06-10   | product_CR   | 0 PCE   | 10 PCE   | piItemProduct_CR4       | huLU_CR4      | inventoryLU_CR4 |
+
+    # Step 4: Shipment — on-the-fly pick will grab the LU stock HU
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier   | C_OrderLine_ID | IsToRecompute |
+      | schedule_CR4 | orderLine_CR4  | N             |
+
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday | IsOnTheFlyPickToPackingInstructions |
+      | schedule_CR4          | D            | true                | false       | true                                |
+
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID   |
+      | schedule_CR4          | shipment_CR4 |
+
+    # Step 5: Verify shipment has HUs assigned (precondition)
+    And load HUs assigned to M_InOut
+      | M_InOut_ID   | M_HU_ID      |
+      | shipment_CR4 | shipmentHU_CR4 |
+
+    # Step 6: Full-qty customer return
+    And generate customer return from shipment
+      | M_InOut_ID   | CustomerReturn_ID  |
+      | shipment_CR4 | customerReturn_CR4 |
+
+    And the return inOut identified by customerReturn_CR4 is completed
+
+    # Step 7: Verify return HU is LU-structured (copied from origin)
+    And load HUs assigned to M_InOut
+      | M_InOut_ID         | M_HU_ID      |
+      | customerReturn_CR4 | returnLU_CR4 |
+
+    Then validate M_HUs:
+      | M_HU_ID      | HUStatus | IsActive | M_HU_PI_ID |
+      | returnLU_CR4 | A        | Y        | huLU_CR4   |
