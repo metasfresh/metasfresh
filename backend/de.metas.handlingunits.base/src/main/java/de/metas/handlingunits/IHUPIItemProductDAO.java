@@ -162,6 +162,17 @@ public interface IHUPIItemProductDAO extends ISingletonService
 	Optional<ProductAndHUPIItemProductId> findFirstByGtin(@NonNull GTIN gtin, @Nullable ZonedDateTime date);
 
 	/**
+	 * Like {@link #findFirstByGtin(GTIN, ZonedDateTime)}, but additionally scoped to the given partner:
+	 * only rows whose {@code C_BPartner_ID} equals {@code bpartnerId} (or is unset) are considered, and a
+	 * partner-specific row is preferred over a generic one. This mirrors the partner dimension of val rule
+	 * {@code M_HU_PI_Item_Product_For_Org_and_Product_and_DatePromised} and of the EDI barcode-lookup view,
+	 * so a barcode shared across partners cannot resolve to another partner's packing instruction.
+	 * A {@code null} {@code bpartnerId} applies no partner scoping (identical to the two-arg variant).
+	 */
+	@NonNull
+	Optional<ProductAndHUPIItemProductId> findFirstByGtin(@NonNull GTIN gtin, @Nullable BPartnerId bpartnerId, @Nullable ZonedDateTime date);
+
+	/**
 	 * @return {@code true} if the packing instruction {@code id} is valid on {@code date} — using the same
 	 *         {@code ValidFrom}/{@code ValidTo} rule as {@link #findFirstByGtin(GTIN, ZonedDateTime)}, so a
 	 *         validity gate built on this cannot diverge from that resolution.
