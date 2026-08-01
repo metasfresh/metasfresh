@@ -22,8 +22,10 @@ package de.metas.product.model.interceptor;
  * #L%
  */
 
+import de.metas.ad_reference.ADReferenceService;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
@@ -54,6 +56,7 @@ public class M_InOutTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		SpringContextHolder.registerJUnitBean(ADReferenceService.newMocked());
 		interceptor = new M_InOut();
 	}
 

@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.costing.CostingLevel;
@@ -62,6 +63,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
+import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
@@ -473,7 +475,16 @@ public final class ProductBL implements IProductBL
 		final String code = product.getProductLifeCycleStatus();
 		if (!isStatusAllowed(code, action))
 		{
-			throw new AdempiereException(MSG_M_PRODUCT_BBSSTATUS_ACTION_BLOCKED, product.getValue(), code)
+			// Show the human-readable, locale-resolved status name (e.g. "Gesperrt" / "Blocked"), not the raw
+			// code. retrieveListNameTranslatableString wraps the lookup lazily (forwardingTo), so it resolves
+			// per the reader's language only when the message is actually rendered.
+			// IMPORTANT: resolve ADReferenceService inline here (request time) — do NOT lift it to a class
+			// field. ServerBoot.main constructs ProductBL before the Spring context is configured, so a
+			// field-initializer ADReferenceService.get() throws "SpringApplicationContext not configured yet"
+			// and crashes app/webapi boot.
+			final ITranslatableString statusName = ADReferenceService.get()
+					.retrieveListNameTranslatableString(X_M_Product.PRODUCTLIFECYCLESTATUS_AD_Reference_ID, code);
+			throw new AdempiereException(MSG_M_PRODUCT_BBSSTATUS_ACTION_BLOCKED, product.getValue(), statusName)
 					.setParameter("product", product.getValue())
 					.setParameter("status", code);
 		}
