@@ -27,9 +27,14 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import java.util.Optional;
+
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.gs1.GTIN;
+import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.ProductAndHUPIItemProductId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -400,6 +405,77 @@ public class HUPIItemProductDAOTest
 			assertDefaultForProduct(product1, bpartner3, "2010-10-01").isEmpty();
 			assertDefaultForProduct(product1, bpartner3, "2011-10-01").contains(pip3);
 			assertDefaultForProduct(product1, bpartner3, "2012-10-01").contains(pip3);
+		}
+	}
+
+	@Nested
+	public class findFirstByGtin
+	{
+		private final GTIN sharedGtin = GTIN.ofString("3333333333336");
+
+		private I_M_HU_PI_Item_Product piipWithGtin(final String name, final BPartnerId bpartnerId, final String validFrom)
+		{
+			final I_M_HU_PI_Item_Product piip = huPIItemProduct()
+					.instanceName(name).productId(product1).bpartnerId(bpartnerId)
+					.validFrom(validFrom).huUnitType(X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit).build();
+			piip.setGTIN(sharedGtin.getAsString());
+			saveRecord(piip);
+			return piip;
+		}
+
+		/**
+		 * A barcode shared across partners must not let the DatePromised re-resolution cross to another
+		 * partner's packing instruction. The partner-scoped lookup must stay within the given partner.
+		 */
+		@Test
+		public void scopesToBPartner_whenBarcodeSharedAcrossPartners()
+		{
+			// the order's partner (bpartner1): an old row valid on the date + a future row (newest, invalid on the date)
+			final I_M_HU_PI_Item_Product p1_old = piipWithGtin("p1_old", bpartner1, "2019-01-01");
+			piipWithGtin("p1_future", bpartner1, "2023-01-01");
+			// another partner (bpartner2) shares the barcode; a later ValidFrom makes it win a partner-blind lookup
+			final I_M_HU_PI_Item_Product p2 = piipWithGtin("p2", bpartner2, "2020-01-01");
+
+			final ZonedDateTime datePromised = date("2022-11-20");
+
+			// partner-blind (documents the defect): the OTHER partner's later-ValidFrom row wins
+			final Optional<ProductAndHUPIItemProductId> blind = dao.findFirstByGtin(sharedGtin, datePromised);
+			assertThat(blind).isPresent();
+			assertThat(blind.get().getHupiItemProductId()).isEqualTo(HUPIItemProductId.ofRepoId(p2.getM_HU_PI_Item_Product_ID()));
+
+			// partner-scoped (the fix): stays within bpartner1 -> its old, valid row
+			final Optional<ProductAndHUPIItemProductId> scoped = dao.findFirstByGtin(sharedGtin, bpartner1, datePromised);
+			assertThat(scoped).isPresent();
+			assertThat(scoped.get().getHupiItemProductId()).isEqualTo(HUPIItemProductId.ofRepoId(p1_old.getM_HU_PI_Item_Product_ID()));
+		}
+
+		/**
+		 * When the partner has no own row for the barcode, a generic (partner-less) row is still resolved,
+		 * while another partner's row stays excluded.
+		 */
+		@Test
+		public void fallsBackToGenericRow_whenNoPartnerSpecificOne()
+		{
+			final I_M_HU_PI_Item_Product generic = piipWithGtin("generic", null, "2019-01-01");
+			piipWithGtin("otherPartner", bpartner2, "2020-01-01"); // must stay excluded
+
+			final Optional<ProductAndHUPIItemProductId> scoped = dao.findFirstByGtin(sharedGtin, bpartner1, date("2022-11-20"));
+			assertThat(scoped).isPresent();
+			assertThat(scoped.get().getHupiItemProductId()).isEqualTo(HUPIItemProductId.ofRepoId(generic.getM_HU_PI_Item_Product_ID()));
+		}
+
+		/**
+		 * A partner-specific row wins over a generic one even when the generic row has a later ValidFrom.
+		 */
+		@Test
+		public void prefersPartnerSpecificOverGeneric_whenBothValid()
+		{
+			final I_M_HU_PI_Item_Product partnerSpecific = piipWithGtin("partnerSpecific", bpartner1, "2019-01-01");
+			piipWithGtin("generic", null, "2020-01-01"); // later ValidFrom, but generic -> must not win
+
+			final Optional<ProductAndHUPIItemProductId> scoped = dao.findFirstByGtin(sharedGtin, bpartner1, date("2022-11-20"));
+			assertThat(scoped).isPresent();
+			assertThat(scoped.get().getHupiItemProductId()).isEqualTo(HUPIItemProductId.ofRepoId(partnerSpecific.getM_HU_PI_Item_Product_ID()));
 		}
 	}
 }
