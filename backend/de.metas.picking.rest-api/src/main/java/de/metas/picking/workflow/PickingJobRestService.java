@@ -345,4 +345,13 @@ public class PickingJobRestService
 				.unpickable(result.isUnpickable())
 				.build();
 	}
+
+	public HUInfo resolvePickFromHU(
+			@NonNull final PickingJobId pickingJobId,
+			@NonNull final PickingJobLineId lineId,
+			@NonNull final ScannedCode scannedCode,
+			@NonNull final UserId callerId)
+	{
+		return pickingJobService.resolvePickFromHU(pickingJobId, lineId, scannedCode, callerId);
+	}
 }

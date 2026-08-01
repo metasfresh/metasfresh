@@ -281,16 +281,8 @@ const ScanHUAndGetQtyComponent = ({
     // Qty shall be less than or equal to qtyMax
     // NOTE: skip qtyMax validation when over-pick confirmation prompt is enabled,
     // because the prompt handles the over-delivery scenario instead
-    if (!getConfirmationPromptForQty && resolvedBarcodeData.qtyMax && resolvedBarcodeData.qtyMax > 0) {
-      const { qtyEffective: diff, uomEffective: diffUom } = formatQtyToHumanReadable({
-        qty: qtyEntered - resolvedBarcodeData.qtyMax,
-        uom,
-      });
-
-      if (diff > 0) {
-        const qtyDiff = formatQtyToHumanReadableStr({ qty: diff, uom: diffUom });
-        return trl(invalidQtyMessageKey || DEFAULT_MSG_qtyAboveMax, { qtyDiff });
-      }
+    if (!getConfirmationPromptForQty) {
+      return validateQtyAgainstMax({ qty: qtyEntered, qtyMax: resolvedBarcodeData.qtyMax, uom, invalidQtyMessageKey });
     }
 
     // OK
