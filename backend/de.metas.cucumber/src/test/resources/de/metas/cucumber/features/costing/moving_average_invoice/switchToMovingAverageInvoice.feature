@@ -698,3 +698,145 @@ Feature: Switch to Moving Average Invoice
       | lateJoiner        | MovingAverageInvoice | 2025-12-31 | 0 PCE | 0 CHF |
       | doneBatchProduct  | MovingAverageInvoice | 2025-12-31 | 0 PCE | 0 CHF |
       | crashBatchProduct | MovingAverageInvoice | 2025-12-31 | 0 PCE | 0 CHF |
+
+  @Id:S26253_TC13
+  Scenario: A plain repost enqueues the documents in accounting-date order and rebuilds no cost at all
+    #
+    # Once the accounting schema's costing method has been switched, the already-computed cost details have to
+    # reach the general ledger - and only that. Reposting regenerates Fact_Acct from the cost details that
+    # already exist; recomputing them again would be wrong, because they are what the switch just established.
+    #
+    # Same isolation technique as the batched-recompute scenarios above: this driver also has no product
+    # parameter, so the scenario is separated from the shared test database by ACCOUNTING DATE - it books its
+    # stock counts into the LAST THREE WEEKS of 2027 and reposts from 10.12.2027 onwards, later than every
+    # range the scenarios above reach into. It stays inside 2027, whose end is also the end of the test
+    # database's fiscal calendar.
+    #
+    Given after not more than 60s, the repost queue is drained
+    And metasfresh contains M_Products:
+      | Identifier   |
+      | repostFirst  |
+      | repostSecond |
+      | repostThird  |
+    #
+    # Pre-cut-off history on the prior method (AveragePO), so the switch has a non-trivial opening to copy.
+    #
+    And update current costs
+      | M_Product_ID | M_CostElement_ID | CurrentCostPrice |
+      | repostFirst  | AveragePO        | 10 CHF           |
+      | repostSecond | AveragePO        | 10 CHF           |
+      | repostThird  | AveragePO        | 10 CHF           |
+    And metasfresh contains single line completed inventories
+      | M_Inventory_ID   | M_InventoryLine_ID  | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 |
+      | invPreCutRepost1 | invPreCutRepost1_l1 | 2025-12-15   | warehouseStd   | repostFirst  | 0       | 10       | PCE          |
+      | invPreCutRepost2 | invPreCutRepost2_l1 | 2025-12-15   | warehouseStd   | repostSecond | 0       | 10       | PCE          |
+      | invPreCutRepost3 | invPreCutRepost3_l1 | 2025-12-15   | warehouseStd   | repostThird  | 0       | 10       | PCE          |
+    #
+    # Switch to MovingAverageInvoice, back-dated to the 31.12.2025 cut-off: one opening anchor per product.
+    #
+    And metasfresh contains M_CostRevaluation:
+      | Identifier   | C_AcctSchema_ID | M_CostElement_ID     | RevaluationSource   | CopyFrom_M_CostElement_ID | EvaluationStartDate | DateAcct   |
+      | switchRepost | acctSchema      | MovingAverageInvoice | CopyFromCostElement | AveragePO                 | 2025-12-31          | 2025-12-31 |
+    And create lines for cost revaluation switchRepost
+    And the cost revaluation identified by switchRepost is completed
+    #
+    # One stock count per product inside the repost's range, dated OPPOSITE to the product order: the driver
+    # must release by accounting date, so the two orders have to disagree to prove anything.
+    #
+    When metasfresh contains single line completed inventories
+      | M_Inventory_ID | M_InventoryLine_ID | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 |
+      | invRepost1     | invRepost1_l1      | 2027-12-28   | warehouseStd   | repostFirst  | 10      | 20       | PCE          |
+      | invRepost2     | invRepost2_l1      | 2027-12-20   | warehouseStd   | repostSecond | 10      | 20       | PCE          |
+      | invRepost3     | invRepost3_l1      | 2027-12-12   | warehouseStd   | repostThird  | 10      | 20       | PCE          |
+    #
+    # Wait until they are posted. Their cost details are what the repost has to REUSE - so they must exist
+    # before it runs, and the very same rows must still be there afterwards.
+    #
+    And after not more than 60s, M_CostDetails are found for product repostFirst and cost element AveragePO
+      | TableName       | Record_ID           | Amt     | Qty    |
+      | M_InventoryLine | invPreCutRepost1_l1 | 100 CHF | 10 PCE |
+      | M_InventoryLine | invRepost1_l1       | 100 CHF | 10 PCE |
+    And after not more than 60s, M_CostDetails are found for product repostSecond and cost element AveragePO
+      | TableName       | Record_ID           | Amt     | Qty    |
+      | M_InventoryLine | invPreCutRepost2_l1 | 100 CHF | 10 PCE |
+      | M_InventoryLine | invRepost2_l1       | 100 CHF | 10 PCE |
+    And after not more than 60s, M_CostDetails are found for product repostThird and cost element AveragePO
+      | TableName       | Record_ID           | Amt     | Qty    |
+      | M_InventoryLine | invPreCutRepost3_l1 | 100 CHF | 10 PCE |
+      | M_InventoryLine | invRepost3_l1       | 100 CHF | 10 PCE |
+    And after not more than 60s, the repost queue is drained
+    #
+    # The repost itself. It enqueues the three in-range stock counts - and only them, the pre-cut-off ones lie
+    # before its start date - ordered by accounting date: 12.12. first, 28.12. last. Each gets its own SeqNo,
+    # because the poller consumes the queue by SeqNo and a shared one would repost in an order nobody chose.
+    #
+    When the accounting repost driver runs:
+      | C_AcctSchema_ID | StartDateAcct |
+      | acctSchema      | 2027-12-10    |
+    Then the accounting repost run left these documents:
+      | Record_ID           | IsStaged | IsReleased |
+      | invRepost3          | N        | Y          |
+      | invRepost2          | N        | Y          |
+      | invRepost1          | N        | Y          |
+      | invPreCutRepost1    | N        | N          |
+      | invPreCutRepost2    | N        | N          |
+      | invPreCutRepost3    | N        | N          |
+    And every document on the repost queue has its own SeqNo
+    #
+    # Note the IsStaged column above: every one of them went to the queue DIRECTLY. Staging belongs to the
+    # recompute driver, which has to hold documents back until every product has been rewound; a plain repost
+    # rewinds nothing, so it has nothing to hold. (Asserted per document rather than by emptying the staging
+    # table, which the scenarios above deliberately leave a crashed run's document parked in.)
+    #
+    # It also deleted no cost detail on its way there - that is what makes it a PLAIN repost.
+    #
+    And the M_CostDetail row count is unchanged since the run was invoked
+    #
+    # Now the accounting server drains the queue and reposts. Reposting is where a recompute WOULD rebuild the
+    # costs, so this is the moment the "no recompute" contract is actually tested: cost details are returned
+    # as they are when they already exist, so not a single row may be created or deleted.
+    #
+    And after not more than 120s, the repost queue is drained
+    And the M_CostDetail row count is unchanged since the run was invoked
+    #
+    # Same cost details, same values, for every product - reused, not rebuilt.
+    #
+    And after not more than 60s, M_CostDetails are found for product repostFirst and cost element AveragePO
+      | TableName       | Record_ID           | Amt     | Qty    |
+      | M_InventoryLine | invPreCutRepost1_l1 | 100 CHF | 10 PCE |
+      | M_InventoryLine | invRepost1_l1       | 100 CHF | 10 PCE |
+    And after not more than 60s, M_CostDetails are found for product repostSecond and cost element AveragePO
+      | TableName       | Record_ID           | Amt     | Qty    |
+      | M_InventoryLine | invPreCutRepost2_l1 | 100 CHF | 10 PCE |
+      | M_InventoryLine | invRepost2_l1       | 100 CHF | 10 PCE |
+    And after not more than 60s, M_CostDetails are found for product repostThird and cost element AveragePO
+      | TableName       | Record_ID           | Amt     | Qty    |
+      | M_InventoryLine | invPreCutRepost3_l1 | 100 CHF | 10 PCE |
+      | M_InventoryLine | invRepost3_l1       | 100 CHF | 10 PCE |
+    #
+    # Including the opening anchors the switch created: a repost must never reach back over the cut-off. Each one
+    # is still there exactly once and still dated AT the cut-off - surviving the repost is what this asserts.
+    # Their own Qty and Amt are zero BY DESIGN, as in every scenario above: an anchor is value-neutral and books
+    # no GL, so the copied opening lives in M_Cost and in the anchor's Prev_* columns, never in its own delta
+    # (seedCurrentCostFromOpening writes qty/amt as .toZero() and passes the opening as the Prev_* amounts).
+    #
+    And the cost revaluation identified by switchRepost seeded opening cost details:
+      | M_Product_ID | M_CostElement_ID     | DateAcct   | Qty   | Amt   |
+      | repostFirst  | MovingAverageInvoice | 2025-12-31 | 0 PCE | 0 CHF |
+      | repostSecond | MovingAverageInvoice | 2025-12-31 | 0 PCE | 0 CHF |
+      | repostThird  | MovingAverageInvoice | 2025-12-31 | 0 PCE | 0 CHF |
+    #
+    # And finally what the whole driver exists for: the general ledger. Each reposted stock count carries its
+    # two facts again - the stock going up against the warehouse differences account, valued from the cost
+    # details above. The match is exhaustive per document, so a repost that wiped the ledger, or one that
+    # posted a second time on top of the first, fails here.
+    #
+    And Wait until documents invRepost1, invRepost2, invRepost3 are posted
+    And Fact_Acct records are matching
+      | Record_ID  | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty     |
+      | invRepost1 | P_Asset_Acct          | repostFirst  | 100       | 0         | 10 PCE  |
+      | invRepost1 | W_Differences_Acct    | repostFirst  | 0         | 100       | -10 PCE |
+      | invRepost2 | P_Asset_Acct          | repostSecond | 100       | 0         | 10 PCE  |
+      | invRepost2 | W_Differences_Acct    | repostSecond | 0         | 100       | -10 PCE |
+      | invRepost3 | P_Asset_Acct          | repostThird  | 100       | 0         | 10 PCE  |
+      | invRepost3 | W_Differences_Acct    | repostThird  | 0         | 100       | -10 PCE |
