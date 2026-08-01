@@ -135,7 +135,9 @@ export const GetQuantityDialog = {
 
     clickManual: async () => await test.step(`${NAME} - Press Manual`, async () => {
         await page.getByTestId('switchToManualInput-button').tap();
-        await page.locator('#qty-input').waitFor(); // atm that's the only indicator that we switched to manual input
+        // The quantity field appearing is what tells the operator - and us - that the switch happened;
+        // atm it is also the only indicator.
+        await expect(page.locator('#qty-input')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     expectComponentsDisabled: async () => await test.step(`${NAME} - Expect fields and buttons disabled`, async () => {
