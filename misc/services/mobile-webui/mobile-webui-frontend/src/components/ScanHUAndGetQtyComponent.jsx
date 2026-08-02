@@ -14,6 +14,8 @@ import { toastError, toastErrorFromObj, toastNotification } from '../utils/toast
 import { toQRCodeString } from '../utils/qrCode/hu';
 import HUScanner from './huSelector/HUScanner';
 import BarcodeScannerComponent from './BarcodeScannerComponent';
+import Spinner from './Spinner';
+import { doFinally } from '../utils';
 import { PICK_ON_THE_FLY_QRCODE } from '../containers/activities/picking/PickConfig';
 import { ATTR_isTUToBePickedAsWhole, ATTR_isUnique } from '../utils/qrCode/common';
 
@@ -72,6 +74,7 @@ const ScanHUAndGetQtyComponent = ({
 }) => {
   const [progressStatus, setProgressStatus] = useState(STATUS_NOT_INITIALIZED);
   const [confirmationDialogProps, setConfirmationDialogProps] = useState(undefined);
+  const [isProcessing, setProcessing] = useState(false);
   // GRAI Flow-Through: when graiScanEnabled, the confirmed qty result is stashed here and the GRAI
   // capture is shown inline (non-skippable) before the pick is reported, so qty + GRAIs go out in one
   // atomic onResult call.
@@ -222,7 +225,18 @@ const ScanHUAndGetQtyComponent = ({
     await requestQtyOrReportResult({ resolvedBarcodeData: resolvedBarcodeDataNew });
   };
 
-  const fireOnResult = (onResultPayload) => onResult(onResultPayload)?.catch?.((error) => toastErrorFromObj(error));
+  // Mirrors GetQuantityDialog.fireOnQtyChange: isProcessing is what suppresses the scan target while
+  // the pick's POST is in flight, and it has to be cleared on the error branch too.
+  const fireOnResult = (onResultPayload) => {
+    setProcessing(true);
+    try {
+      const promise = onResult(onResultPayload)?.catch?.((error) => toastErrorFromObj(error));
+      return doFinally(promise, () => setProcessing(false));
+    } catch (error) {
+      setProcessing(false);
+      throw error;
+    }
+  };
 
   const requestQtyOrReportResult = async ({ resolvedBarcodeData }) => {
     if (isAskForQty({ resolvedBarcodeData })) {
@@ -237,12 +251,8 @@ const ScanHUAndGetQtyComponent = ({
       resolvedBarcodeData: resolvedBarcodeData,
     };
 
-    // There is no qty dialog on this path (the whole scanned TU is booked), so the over-delivery
-    // handling GetQuantityDialog performs for the CU path has to happen here. The qty to compare is
-    // the TU's own content, fetched into qtyInitial for exactly this purpose; the qty: 0 above is the
-    // booking instruction, not the comparison input. Which handling applies depends on the profile,
-    // exactly as on the CU path: with the prompt configured, the same YesNoDialog; without it, the
-    // same qtyAboveMax ceiling - so no configuration leaves this path unbounded.
+    // The whole-TU mirror of the over-delivery handling GetQuantityDialog performs for the CU path.
+    // The comparison input is the TU's own content (qtyInitial), not the qty: 0 booking instruction above.
     if (getConfirmationPromptForQty) {
       const confirmationPrompt = await getConfirmationPromptForQty(resolvedBarcodeData.qtyInitial);
       if (confirmationPrompt) {
@@ -250,12 +260,8 @@ const ScanHUAndGetQtyComponent = ({
         return;
       }
     } else if (Number.isFinite(resolvedBarcodeData.qtyInitial)) {
-      // Implicit invariant: of the eight callers, only PickLineScanScreen ever resolves a qtyInitial - directly on
-      // its whole-TU branch, and through computeNewResolvedBarcodeData's LU branch below, which no other caller
-      // reaches either, because none of them populates scannedHU.qtyTUs.
-      // Bound the pick whenever the caller resolved a qty; a caller that resolves none books as before,
-      // the same as the prompt branch above, where an absent qty raises no confirmation either. A caller
-      // that wants the pick bounded must therefore fail its own scan rather than resolve without a qty.
+      // Gated on Number.isFinite: with no resolved qtyInitial there is nothing to compare, so the pick books
+      // unchecked - as on the prompt branch above, where an absent qty raises no confirmation either.
       const qtyAboveMaxError = validateQtyAgainstMax({
         qty: resolvedBarcodeData.qtyInitial,
         qtyMax: resolvedBarcodeData.qtyMax,
@@ -345,6 +351,12 @@ const ScanHUAndGetQtyComponent = ({
   };
 
   const showEligibleBarcodeDebugButton = useBooleanSetting('barcodeScanner.showEligibleBarcodeDebugButton');
+
+  // Early return (after every hook), so the BarcodeScannerComponent below is unmounted while the pick
+  // is in flight: re-arming it would let the next scan book the same line a second time.
+  if (isProcessing) {
+    return <Spinner />;
+  }
 
   // Early return (after every hook), so the BarcodeScannerComponent below is unmounted while the
   // operator answers: two mounted scanners would both capture the next hardware scan.
@@ -533,9 +545,8 @@ export default ScanHUAndGetQtyComponent;
 //
 
 /**
- * The qtyAboveMax ceiling, shared by the two paths that book a qty: the CU path via
- * validateQtyEntered (qty typed into GetQuantityDialog) and the whole-TU path via
- * requestQtyOrReportResult (qty read from the scanned TU's own content).
+ * The one qtyAboveMax ceiling, shared by the CU path (validateQtyEntered) and the whole-TU path
+ * (requestQtyOrReportResult).
  *
  * @returns the translated error message, or null when the qty is within qtyMax.
  */
