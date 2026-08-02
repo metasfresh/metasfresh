@@ -245,6 +245,8 @@ public class PP_Order_StepDef
 	 *   | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | ErrorCode                         |
 	 *   | ppOrder_blocked        | MOP         | blocked                 | 10         | testResource             | 2022-01-05T23:59:00.00Z | 2022-01-05T23:59:00.00Z | 2022-01-05T23:59:00.00Z | M_Product_BBSStatus_ActionBlocked |
 	 * </pre>
+	 *
+	 * @see #compute_PPOrderCreateRequest_to_create_pp_order(io.cucumber.datatable.DataTable) the create step whose full column contract this reuses
 	 */
 	@And("create PP_Order expecting error:")
 	public void create_pp_order_expecting_error(@NonNull final DataTable dataTable)

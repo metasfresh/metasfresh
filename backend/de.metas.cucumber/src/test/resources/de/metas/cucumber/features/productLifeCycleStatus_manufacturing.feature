@@ -13,7 +13,7 @@ Feature: product life-cycle status enforcement on manufacturing orders
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
 
-  @Id:S31039
+  @Id:S31039_TC2
   Scenario: a Gesperrt product's manufacturing order is rejected at creation
     # a blocked finished good plus its component
     And metasfresh contains M_Products:
