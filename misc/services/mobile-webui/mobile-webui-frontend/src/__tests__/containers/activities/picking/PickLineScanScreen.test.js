@@ -68,6 +68,7 @@ describe('PickingLineScanScreen', () => {
         lotNo: '010124',
       },
       catchWeight: 180,
+      isTUToBePickedAsWhole: false,
       bestBeforeDate: '2024-04-10',
       lotNo: '010124',
       scannedHU: { huUnitType: 'V' },

@@ -103,4 +103,16 @@ public interface IBPartnerProductDAO extends ISingletonService
 
 	@NonNull
 	List<I_C_BPartner_Product> retrieveByGTIN(@NonNull GTIN gtin, @NonNull BPartnerId bpartnerId);
+
+	/**
+	 * Finds the first active {@link I_C_BPartner_Product} row matching the given barcode value
+	 * against {@code GTIN}, {@code EAN_CU}, or {@code UPC} columns (OR logic).
+	 * Only rows with a non-null {@code M_Product_ID} are considered.
+	 * Ordered by {@code C_BPartner_Product_ID} ascending; the first row's product is returned.
+	 *
+	 * @param gtin the GTIN/EAN_CU/UPC value to match
+	 * @return the product ID of the first matching row, or {@link Optional#empty()} if none found
+	 */
+	@NonNull
+	Optional<ProductId> findFirstProductIdByGtin(@NonNull GTIN gtin);
 }
