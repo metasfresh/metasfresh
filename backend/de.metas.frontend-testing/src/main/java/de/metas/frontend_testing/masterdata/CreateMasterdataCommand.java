@@ -28,6 +28,8 @@ import de.metas.frontend_testing.masterdata.inventory.JsonInventoryResponse;
 import de.metas.frontend_testing.masterdata.invoice.InvoiceCreateCommand;
 import de.metas.frontend_testing.masterdata.invoice.JsonInvoiceCreateRequest;
 import de.metas.frontend_testing.masterdata.invoice.JsonInvoiceCreateResponse;
+import de.metas.frontend_testing.masterdata.mailbox.CreateMailboxCommand;
+import de.metas.frontend_testing.masterdata.mailbox.JsonMailboxResponse;
 import de.metas.frontend_testing.masterdata.mobile_configuration.JsonMobileConfigResponse;
 import de.metas.frontend_testing.masterdata.mobile_configuration.MobileConfigCommand;
 import de.metas.frontend_testing.masterdata.orgseller.ConfigureOrgSellerCommand;
@@ -72,8 +74,6 @@ import de.metas.frontend_testing.masterdata.warehouse.ConfigureWarehouseReplenis
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseRequest;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseResponse;
 import de.metas.frontend_testing.masterdata.warehouse.WarehouseCommand;
-import de.metas.frontend_testing.masterdata.mailbox.CreateMailboxCommand;
-import de.metas.frontend_testing.masterdata.mailbox.JsonMailboxResponse;
 import de.metas.frontend_testing.masterdata.workplace.CreateWorkplaceCommand;
 import de.metas.frontend_testing.masterdata.workplace.JsonWorkplaceResponse;
 import de.metas.order.OrderId;
@@ -351,7 +351,7 @@ public class CreateMasterdataCommand
 
 		ConfigureWarehouseReplenishmentCommand.builder()
 				.distributionNetworkRepository(services.distributionNetworkRepository)
-				.warehouseReplenishmentRepository(services.warehouseRepository)
+				.warehouseRepository(services.warehouseRepository)
 				.context(context)
 				.requests(request.getWarehouses())
 				.build()

@@ -9,6 +9,7 @@ import de.metas.shipping.ShipperId;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.WarehouseRepository;
 
 import java.util.Map;
 
@@ -23,9 +24,7 @@ public class ConfigureWarehouseReplenishmentCommand
 	@NonNull private final DistributionNetworkRepository distributionNetworkRepository;
 	@NonNull private final MasterdataContext context;
 	@NonNull private final Map<String, JsonWarehouseRequest> requests;
-
-	@Builder.Default
-	@NonNull private final WarehouseReplenishmentRepository warehouseReplenishmentRepository = new WarehouseReplenishmentRepository();
+	@NonNull private final WarehouseRepository warehouseRepository;
 
 	public void execute()
 	{
@@ -47,7 +46,7 @@ public class ConfigureWarehouseReplenishmentCommand
 				? createNetwork(warehouseIdentifier, warehouseId, replenishment)
 				: null;
 
-		warehouseReplenishmentRepository.updateReplenishment(warehouseId, networkId, request.isAutoDistributionOrder());
+		warehouseRepository.updateReplenishment(warehouseId, networkId, request.isAutoDistributionOrder());
 	}
 
 	private DistributionNetworkId createNetwork(
