@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_Product
  *  @author metasfresh (generated) 
@@ -374,6 +373,29 @@ public interface I_M_Product
 	String COLUMNNAME_CustomerLabelName = "CustomerLabelName";
 
 	/**
+	 * Set Deposit Type.
+	 * Deposit type classification: Disposable (NRC) or Reusable (RC) container.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDepositType (@Nullable java.lang.String DepositType);
+
+	/**
+	 * Get Deposit Type.
+	 * Deposit type classification: Disposable (NRC) or Reusable (RC) container.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDepositType();
+
+	ModelColumn<I_M_Product, Object> COLUMN_DepositType = new ModelColumn<>(I_M_Product.class, "DepositType", null);
+	String COLUMNNAME_DepositType = "DepositType";
+
+	/**
 	 * Set Description.
 	 *
 	 * <br>Type: String
@@ -439,29 +461,6 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, Object> COLUMN_DietType = new ModelColumn<>(I_M_Product.class, "DietType", null);
 	String COLUMNNAME_DietType = "DietType";
-
-	/**
-	 * Set Pfandart.
-	 * Einwegpfand / Mehrwegpfand classification used for EDIFACT IMD+C deposit segment emission.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setDepositType (@Nullable java.lang.String DepositType);
-
-	/**
-	 * Get Pfandart.
-	 * Einwegpfand / Mehrwegpfand classification used for EDIFACT IMD+C deposit segment emission.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getDepositType();
-
-	ModelColumn<I_M_Product, Object> COLUMN_DepositType = new ModelColumn<>(I_M_Product.class, "DepositType", null);
-	String COLUMNNAME_DepositType = "DepositType";
 
 	/**
 	 * Set Discontinued.
@@ -1297,6 +1296,7 @@ public interface I_M_Product
 
 	/**
 	 * Set Self Packed.
+	 * Indicates that the goods are already packed ready to ship, so no additional packaging is needed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1306,6 +1306,7 @@ public interface I_M_Product
 
 	/**
 	 * Get Self Packed.
+	 * Indicates that the goods are already packed ready to ship, so no additional packaging is needed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1340,7 +1341,7 @@ public interface I_M_Product
 	String COLUMNNAME_IsSelfService = "IsSelfService";
 
 	/**
-	 * Set Serial No Picked.
+	 * Set Require Serial No. on Picking.
 	 * If enabled, picking this product into a handling unit requires the operator to scan the serial number.
 	 *
 	 * <br>Type: YesNo
@@ -1350,7 +1351,7 @@ public interface I_M_Product
 	void setIsSerialNoPicked (boolean IsSerialNoPicked);
 
 	/**
-	 * Get Serial No Picked.
+	 * Get Require Serial No. on Picking.
 	 * If enabled, picking this product into a handling unit requires the operator to scan the serial number.
 	 *
 	 * <br>Type: YesNo
@@ -1925,6 +1926,7 @@ public interface I_M_Product
 
 	/**
 	 * Set Exclude from MRP.
+	 * Exclude from MRP calculation
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1934,6 +1936,7 @@ public interface I_M_Product
 
 	/**
 	 * Get Exclude from MRP.
+	 * Exclude from MRP calculation
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1967,6 +1970,7 @@ public interface I_M_Product
 
 	/**
 	 * Set Outer packaging weight (kg).
+	 * Weight of the entire outer package (e.g. one cardboard box), not per unit. The per-unit weight is calculated in the report by dividing by the Packaging Instruction Factor.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -1976,6 +1980,7 @@ public interface I_M_Product
 
 	/**
 	 * Get Outer packaging weight (kg).
+	 * Weight of the entire outer package (e.g. one cardboard box), not per unit. The per-unit weight is calculated in the report by dividing by the Packaging Instruction Factor.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -2183,6 +2188,27 @@ public interface I_M_Product
 	String COLUMNNAME_ProcurementStatus = "ProcurementStatus";
 
 	/**
+	 * Set Product Life Cycle Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setProductLifeCycleStatus (@Nullable java.lang.String ProductLifeCycleStatus);
+
+	/**
+	 * Get Product Life Cycle Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getProductLifeCycleStatus();
+
+	ModelColumn<I_M_Product, Object> COLUMN_ProductLifeCycleStatus = new ModelColumn<>(I_M_Product.class, "ProductLifeCycleStatus", null);
+	String COLUMNNAME_ProductLifeCycleStatus = "ProductLifeCycleStatus";
+
+	/**
 	 * Set Product Type.
 	 * Type of product
 	 *
@@ -2385,6 +2411,27 @@ public interface I_M_Product
 	String COLUMNNAME_SalesRep_ID = "SalesRep_ID";
 
 	/**
+	 * Set Seed Cost.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSeedCost (@Nullable BigDecimal SeedCost);
+
+	/**
+	 * Get Seed Cost.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getSeedCost();
+
+	ModelColumn<I_M_Product, Object> COLUMN_SeedCost = new ModelColumn<>(I_M_Product.class, "SeedCost", null);
+	String COLUMNNAME_SeedCost = "SeedCost";
+
+	/**
 	 * Set Expense Type.
 	 * Expense report type
 	 *
@@ -2549,6 +2596,7 @@ public interface I_M_Product
 
 	/**
 	 * Set Small packaging weight (kg).
+	 * Weight of the small (household) packaging per unit in kg.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -2558,6 +2606,7 @@ public interface I_M_Product
 
 	/**
 	 * Get Small packaging weight (kg).
+	 * Weight of the small (household) packaging per unit in kg.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -2866,26 +2915,6 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, Object> COLUMN_Weight = new ModelColumn<>(I_M_Product.class, "Weight", null);
 	String COLUMNNAME_Weight = "Weight";
-
-	/**
-	 * Set Darreichungsform-Einheit .
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setWeight_UOM_ID (int Weight_UOM_ID);
-
-	/**
-	 * Get Darreichungsform-Einheit .
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getWeight_UOM_ID();
-
-	String COLUMNNAME_Weight_UOM_ID = "Weight_UOM_ID";
 
 	/**
 	 * Set Width In Cm.
