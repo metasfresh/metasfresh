@@ -3,10 +3,11 @@ package de.metas.frontend_testing.masterdata.product;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.product.BBSStatus;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Product;
 
 /**
@@ -19,9 +20,8 @@ import org.compiere.model.I_M_Product;
  * those documents exist — typically issued as its own {@code productLifeCycleStatuses} masterdata
  * request once the order/picking-job setup is in place.
  * <p>
- * Mirrors the {@code M_Product} load+save done by
- * {@code CreateMasterdataCommand#linkProductsToCompensationGroupSchemas} (no dedicated DAO method
- * exists for this single-column update).
+ * Loads and saves via {@link IProductDAO} rather than raw {@code InterfaceWrapperHelper}, per this module's
+ * "create/query through DAOs" rule.
  */
 @Builder
 public class SetProductLifeCycleStatusCommand
@@ -35,9 +35,11 @@ public class SetProductLifeCycleStatusCommand
 		// Validate the code against the BBS-Status reference list (fails loudly on a typo).
 		final BBSStatus status = BBSStatus.ofCode(statusCode);
 
+		final IProductDAO productsRepo = Services.get(IProductDAO.class);
+
 		final ProductId productId = context.getId(identifier, ProductId.class);
-		final I_M_Product product = InterfaceWrapperHelper.load(productId, I_M_Product.class);
+		final I_M_Product product = productsRepo.getById(productId);
 		product.setProductLifeCycleStatus(status.getCode());
-		InterfaceWrapperHelper.save(product);
+		productsRepo.save(product);
 	}
 }
