@@ -442,7 +442,7 @@ public class ExternalIdentifierProductLookupServiceTest
 
 		// when
 		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-12345678");
-		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier);
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier,null);
 
 		// then: HUPI is NOT matched because its M_Product is inactive — no other candidate either
 		assertThat(result).isEmpty();
@@ -472,7 +472,7 @@ public class ExternalIdentifierProductLookupServiceTest
 
 		// when
 		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-12345678");
-		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier);
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null);
 
 		// then: the stale HUPI is skipped, BPartner_Product step finds nothing,
 		// and the direct M_Product lookup returns the active product (without a specific HUPI).
@@ -498,7 +498,7 @@ public class ExternalIdentifierProductLookupServiceTest
 
 		// when
 		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-11223344");
-		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier);
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null);
 
 		// then: BPartner_Product is NOT matched because its M_Product is inactive
 		assertThat(result).isEmpty();
