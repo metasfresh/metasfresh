@@ -110,4 +110,30 @@ public class PP_Cost_CollectorTest
 		assertThatCode(() -> interceptor.assertManufacturingAllowedOnReceipt(cc))
 				.doesNotThrowAnyException();
 	}
+
+	@Test
+	public void blockedProduct_coProductReceipt_isRejected()
+	{
+		// A co/by-product receipt (MixVariance) materialises a manufactured product too, so a Blocked
+		// co-product must also be rejected.
+		final I_PP_Cost_Collector cc = receiptCostCollector(createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_Blocked));
+		cc.setCostCollectorType(X_PP_Cost_Collector.COSTCOLLECTORTYPE_MixVariance);
+
+		assertThatThrownBy(() -> interceptor.assertManufacturingAllowedOnReceipt(cc))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("M_Product_BBSStatus_ActionBlocked");
+	}
+
+	@Test
+	public void blockedProduct_reversalReceipt_isAllowed()
+	{
+		// A reversal/void of an already-completed receipt (Reversal_ID set) must NEVER be retroactively
+		// blocked, even if the product is now Blocked — otherwise a legitimately-completed receipt could
+		// not be undone. Mirrors the M_InOut reversal exemption.
+		final I_PP_Cost_Collector cc = receiptCostCollector(createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_Blocked));
+		cc.setReversal_ID(1_000_000); // any existing receipt — POJO does not enforce the FK
+
+		assertThatCode(() -> interceptor.assertManufacturingAllowedOnReceipt(cc))
+				.doesNotThrowAnyException();
+	}
 }

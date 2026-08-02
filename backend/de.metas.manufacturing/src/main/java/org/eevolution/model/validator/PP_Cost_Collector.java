@@ -33,16 +33,26 @@ public class PP_Cost_Collector
 	}
 
 	/**
-	 * Product life-cycle (BBS-status) manufacturing guard on the finished-good receipt: a product whose
-	 * {@code ProductLifeCycleStatus} blocks MANUFACTURE (e.g. G/Gesperrt) must not be received from a
-	 * production order. Covers both the webUI classic receipt and the mobile HU receipt, which both
-	 * create a {@code MaterialReceipt} {@link I_PP_Cost_Collector} through {@code IPPCostCollectorBL.createReceipt}.
+	 * Product life-cycle (BBS-status) manufacturing guard on the finished-good (and co/by-product) receipt:
+	 * a product whose {@code ProductLifeCycleStatus} blocks MANUFACTURE (e.g. G/Gesperrt) must not be
+	 * received from a production order. Covers both the webUI classic receipt and the mobile HU receipt,
+	 * which both create a {@code MaterialReceipt} {@link I_PP_Cost_Collector} through
+	 * {@link org.eevolution.api.IPPCostCollectorBL#createReceipt}.
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
 	public void assertManufacturingAllowedOnReceipt(final I_PP_Cost_Collector cc)
 	{
+		// A reversal/void of an already-completed receipt copies the original's CostCollectorType +
+		// M_Product_ID onto a NEW row (MPPCostCollector.reverseCorrectIt). Never retroactively block
+		// undoing a document that was legitimately completed while the product was still allowed
+		// (mirrors de.metas.product.model.interceptor.M_InOut's reversal exemption).
+		if (cc.getReversal_ID() > 0)
+		{
+			return;
+		}
+
 		final CostCollectorType costCollectorType = CostCollectorType.ofCode(cc.getCostCollectorType());
-		if (costCollectorType.isMaterialReceipt() && cc.getM_Product_ID() > 0)
+		if (costCollectorType.isMaterialReceiptOrCoProduct() && cc.getM_Product_ID() > 0)
 		{
 			productBL.assertAllowed(ProductId.ofRepoId(cc.getM_Product_ID()), ProductLifeCycleAction.MANUFACTURE);
 		}
