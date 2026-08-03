@@ -248,6 +248,49 @@ public class REST_API_StepDef
 		}
 	}
 
+	/**
+	 * Sends a request carrying NO authentication token to the given v2 endpoint and asserts the HTTP status code —
+	 * used to prove an endpoint rejects unauthenticated callers ({@code 401}). An empty {@code Authorization} header
+	 * is trimmed to absent by {@code UserAuthTokenFilter}, so the standard v2 auth rejects the request.
+	 *
+	 * <p><b>Gherkin usage example</b>:
+	 * <pre>{@code
+	 * When a 'GET' request without authentication is sent to metasfresh REST-API 'api/v2/currencyconversion/currencies' expecting status '401'
+	 * }</pre>
+	 */
+	/**
+	 * Stores a REST endpoint path (context-variables resolved) into the test context, so a following
+	 * "... with endpointPath from context ..." step can issue the request. Use for GET endpoints that take
+	 * query parameters inline in the path.
+	 *
+	 * <p><b>Gherkin usage example</b>:
+	 * <pre>{@code
+	 * When store REST endpointPath 'api/v2/currencyconversion/newestRates?fromCurrencyCode=EUR'
+	 * }</pre>
+	 */
+	@When("store REST endpointPath {string}")
+	public void store_rest_endpointPath(@NonNull final String endpointPath)
+	{
+		testContext.setEndpointPath(resolveContextVariables(endpointPath));
+	}
+
+	@When("a {string} request without authentication is sent to metasfresh REST-API {string} expecting status {string}")
+	public void unauthenticated_request(
+			@NonNull final String verb,
+			@NonNull final String endpointPath,
+			@NonNull final String statusCode) throws IOException
+	{
+		performHTTPRequest(
+				APIRequest.builder()
+						.authToken("") // no token -> UserAuthTokenFilter rejects with 401
+						.endpointPath(resolveContextVariables(endpointPath))
+						.method(verb)
+						.payload(verb.equals("PUT") || verb.equals("POST") ? "{}" : null)
+						.expectedStatusCode(Integer.parseInt(statusCode))
+						.build()
+		);
+	}
+
 	@When("invoke {string} {string} with response code {string}")
 	public void invoke_httpMethod_with_url(
 			@NonNull final String verb,
