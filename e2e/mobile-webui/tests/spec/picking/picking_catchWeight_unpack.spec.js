@@ -27,12 +27,12 @@ import { LoginScreen } from "../../utils/screens/LoginScreen";
 //   so the un-pack restores both quantity and catch-weight cleanly.
 //
 // MODELLING NOTES (kept faithful, deliberately robust):
-//   - The duplicate pick is modelled as TWO demand-filling partial picks of 6 CUs each (line
-//     demand = 12). This reproduces the core condition (two aggregate catch-weight picks into the
-//     same pick-to target, then un-pack one) WITHOUT dragging in the over-pick-prompt branch,
-//     which is an unrelated UI surface.
-//   - Both batches are IDENTICAL (6 CUs @ 1.460 kg = 8.76 kg). Un-packing EITHER step therefore
-//     leaves exactly 6 Stk / 8.76 kg, so the assertion is independent of the step ordering.
+//   - Each catch-weight QR scan is its own 1-CU pick and creates its own picking-job step, so a
+//     6-QR pickHU produces 6 one-CU steps. Two 6-QR picks = 12 identical 1-CU steps (line demand 12).
+//     This reproduces the core condition (duplicate catch-weight picks into the same pick-to target,
+//     then un-pack the surplus) WITHOUT dragging in the over-pick-prompt branch (an unrelated surface).
+//   - Un-packing one step returns exactly 1 CU (1.460 kg) to the floor. To un-pack the whole surplus
+//     "batch" of 6 pieces, un-pack 6 steps; all 12 steps are identical, so this lands on 6 Stk / 8.76 kg.
 //   - Catch-weight is entered via the LMQ catch-weight QR path (multi-CU aggregate) — the path
 //     exercised by the "Leich+Mehl" case in picking_catchWeight.spec.js, and the aggregate-HU
 //     shape the defect lives in.
@@ -128,20 +128,25 @@ test('Un-pack surplus of a duplicate-picked catch-weight line restores qty AND c
         await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '12 Stk', qtyPickedCatchWeight: '17.52 kg' });
     });
 
-    await test.step("Un-pack the surplus step (skip scanning a target HU == un-pack to floor)", async () => {
+    await test.step("Un-pack the whole surplus batch (6 pieces = 6 one-CU steps; skip scanning a target HU == un-pack to floor)", async () => {
         await PickingJobScreen.clickLineButton({ index: 1 });
-        await PickingJobLineScreen.waitForScreen();
-        // Each on-the-fly pick created its own step; step index 1 is the surplus (second) pick.
-        // (Both steps are identical, so un-packing either leaves exactly one 6 Stk / 8.76 kg batch.)
-        await PickingJobLineScreen.clickStepButton({ index: 1 });
-        await PickingJobStepScreen.unpick();
+        // Each pick created its own 1-CU step (12 total). Un-packing a step removes it and re-indexes
+        // the list, so un-pack index 0 six times to return the 6 surplus pieces to the floor. All steps
+        // are identical, so this leaves exactly 6 Stk / 8.76 kg regardless of which six are removed.
+        // On the OLD (unfixed) code the FIRST un-pack already throws "QR Code not assigned to HU".
+        for (let i = 0; i < 6; i++) {
+            await PickingJobLineScreen.waitForScreen();
+            await PickingJobLineScreen.clickStepButton({ index: 0 });
+            await PickingJobStepScreen.unpick();
+        }
         await PickingJobLineScreen.goBack();
     });
 
-    // Required end-state after un-packing the surplus: correct piece quantity (6 Stk) AND correct,
-    // un-corrupted catch-weight (8.76 kg — the ONE remaining batch), reached WITHOUT any error toast/screen
-    // (no QR-Code-not-assigned failure — the surrounding step() wrapper fails on any unexpected error).
-    // The bug being guarded against corrupts the remaining catch-weight and/or fails the un-pack.
+    // Required end-state after un-packing the whole surplus batch (6 of 12 pieces): correct piece
+    // quantity (6 Stk) AND correct, un-corrupted catch-weight (8.76 kg for the 6 remaining pieces),
+    // reached WITHOUT any error toast/screen (no QR-Code-not-assigned failure — the surrounding step()
+    // wrapper fails on any unexpected error). The bug guarded against throws on the FIRST un-pack and/or
+    // corrupts the remaining catch-weight.
     await PickingJobScreen.waitForScreen();
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '6 Stk', qtyPickedCatchWeight: '8.76 kg' });
 });
