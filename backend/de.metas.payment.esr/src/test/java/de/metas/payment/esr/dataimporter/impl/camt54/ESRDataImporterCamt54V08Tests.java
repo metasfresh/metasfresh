@@ -7,6 +7,7 @@ import de.metas.payment.esr.dataimporter.ESRStatement;
 import de.metas.payment.esr.dataimporter.ESRTransaction;
 import de.metas.payment.esr.dataimporter.ESRType;
 import de.metas.payment.esr.model.I_ESR_ImportFile;
+import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Condition;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,8 +57,13 @@ public class ESRDataImporterCamt54V08Tests
 
 	private ESRStatement importXML()
 	{
-		final InputStream inputStream = getClass().getResourceAsStream(SAMPLE_FILE);
-		assertThat(inputStream).as("Unable to load %s", SAMPLE_FILE).isNotNull();
+		return importFile(SAMPLE_FILE);
+	}
+
+	private ESRStatement importFile(@NonNull final String xmlResourceName)
+	{
+		final InputStream inputStream = getClass().getResourceAsStream(xmlResourceName);
+		assertThat(inputStream).as("Unable to load %s", xmlResourceName).isNotNull();
 
 		return new ESRDataImporterCamt54(newInstance(I_ESR_ImportFile.class), inputStream).importData();
 	}
@@ -249,5 +255,86 @@ public class ESRDataImporterCamt54V08Tests
 				.filteredOn(t -> t.getType().equals(ESRType.TYPE_QRR))
 				.hasSize(3)
 				.allSatisfy(t -> assertThat(t.getEsrParticipantNo()).isNotEmpty());
+	}
+
+	/**
+	 * Verifies that a reference whose type is the proprietary {@code Prtry = "ISR Reference"} is extracted, just
+	 * like the {@code QRR} spelling the main sample file uses.
+	 */
+	@Test
+	public void testEsrReferenceType()
+	{
+		final ESRStatement importData = importFile("/camt054_v08_ESR.xml");
+
+		assertThat(importData.getErrorMsgs()).isEmpty();
+		assertThat(importData.getTransactions()).hasSize(4);
+
+		assertThat(importData.getTransactions())
+				.filteredOn(t -> t.getErrorMsgs().isEmpty())
+				.as("the three transactions with a declared reference type are ESR and carry their reference")
+				.hasSize(3)
+				.allSatisfy(t -> {
+					assertThat(t.getType()).isEqualTo(ESRType.TYPE_ESR);
+					assertThat(t.getEsrReferenceNumber()).isNotEmpty();
+				});
+
+		assertThat(importData.getCtrlAmount()).isEqualByComparingTo("380");
+	}
+
+	/**
+	 * Verifies that a reference whose type is given through the structured {@code CdtrRefInf/Tp/CdOrPrtry/Cd}
+	 * element with value {@code SCOR} is extracted, with no {@code Prtry} element present at all.
+	 * <p>
+	 * This is the v08 counterpart of {@code ESRDataImporterCamt54V06Tests#testScorReferenceType}. An implementation
+	 * that only inspects {@code Prtry} both loses the reference and risks dereferencing a {@code null} {@code Prtry}.
+	 */
+	@Test
+	public void testScorReferenceType()
+	{
+		final ESRStatement importData = importFile("/camt054_v08_SCOR.xml");
+
+		assertThat(importData.getErrorMsgs()).isEmpty();
+		assertThat(importData.getTransactions()).hasSize(4);
+
+		assertThat(importData.getTransactions())
+				.filteredOn(t -> t.getErrorMsgs().isEmpty())
+				.as("the three transactions with a declared reference type are SCOR and carry their reference")
+				.hasSize(3)
+				.allSatisfy(t -> {
+					assertThat(t.getType()).isEqualTo(ESRType.TYPE_SCOR);
+					assertThat(t.getEsrReferenceNumber()).isNotEmpty();
+				});
+
+		assertThat(importData.getCtrlAmount()).isEqualByComparingTo("380");
+	}
+
+	/**
+	 * Verifies that a transaction carrying no creditor reference at all — not even one to fall back on — is flagged
+	 * with the same message the earlier versions use, instead of failing the whole import.
+	 */
+	@Test
+	public void testMissingEsrReference()
+	{
+		final ESRStatement importData = importFile("/camt054_v08_reference_missing.xml");
+
+		// no errors on "header" level
+		assertThat(importData.getErrorMsgs()).isEmpty();
+		assertThat(importData.getTransactions()).hasSize(4);
+
+		assertThat(importData.getTransactions())
+				.filteredOn(t -> t.getEsrReferenceNumber() == null)
+				.hasSize(1) // guard
+				.allSatisfy(t -> {
+					assertThat(t.getErrorMsgs()).hasSize(1);
+					assertThat(t.getErrorMsgs().get(0)).isEqualTo(ReferenceStringHelper.MSG_MISSING_ESR_REFERENCE.toAD_Message());
+				});
+
+		assertThat(importData.getTransactions())
+				.as("the remaining transactions are unaffected")
+				.filteredOn(t -> t.getEsrReferenceNumber() != null)
+				.hasSize(3)
+				.are(trxHasNoErrors);
+
+		assertThat(importData.getCtrlAmount()).isEqualByComparingTo("380");
 	}
 }
