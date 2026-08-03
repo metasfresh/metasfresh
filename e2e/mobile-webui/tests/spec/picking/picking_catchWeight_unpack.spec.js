@@ -138,13 +138,10 @@ test('Un-pack surplus of a duplicate-picked catch-weight line restores qty AND c
         await PickingJobLineScreen.goBack();
     });
 
-    // === THE DISCRIMINATING ASSERTION ===
     // Required end-state after un-packing the surplus: correct piece quantity (6 Stk) AND correct,
-    // un-corrupted catch-weight (8.76 kg — the ONE remaining batch), reached WITHOUT any "uuups" /
-    // QR-Code-not-assigned error (the surrounding step() wrapper fails on any unexpected error
-    // toast/screen).
-    //   Pre-fix code  -> catch-weight corrupted and/or un-pack throws => RED
-    //   Fixed code    -> qty AND catch-weight restored, no error      => GREEN
+    // un-corrupted catch-weight (8.76 kg — the ONE remaining batch), reached WITHOUT any error toast/screen
+    // (no QR-Code-not-assigned failure — the surrounding step() wrapper fails on any unexpected error).
+    // The bug being guarded against corrupts the remaining catch-weight and/or fails the un-pack.
     await PickingJobScreen.waitForScreen();
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '6 Stk', qtyPickedCatchWeight: '8.76 kg' });
 });

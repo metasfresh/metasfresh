@@ -47,32 +47,27 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Catch-weight un-pack failure on Mobile-UI picking.
+ * Un-packing a catch-weight CU that was picked into a TU must detach and re-activate the leaf CU.
  * <p>
- * TDD RED for the pre-fix code on {@code intensive_care_hotfix}. This is a backend adaptation of the
- * upstream #24989 regression test ({@code PickingJobUnpickToFloorTest}) to the OLD (pre-refactor) command
- * API present on the customer's branch. The OLD {@code UNPICK} {@link PickingJobStepEvent} unpicks a whole
- * step/pickFrom (no {@code unpickProductId}/{@code qtyToUnpick} — those exist only post-refactor), so the
- * un-pack is driven by {@code (pickingStepId, pickFromKey)} with a {@code null} target (drop to floor).
+ * Backend adaptation of {@code PickingJobUnpickToFloorTest} to the pre-refactor {@code UNPICK}
+ * {@link PickingJobStepEvent} command API, where an un-pack targets a whole step/pickFrom (no
+ * {@code unpickProductId}/{@code qtyToUnpick}) and is driven by {@code (pickingStepId, pickFromKey)} with a
+ * {@code null} target (drop to floor).
  * <p>
- * Structure = the customer's shape: a CU is picked <b>into a TU</b> (a reusable transport crate) under a
- * header-level SALES_ORDER aggregation, then the surplus is un-packed. The root cause reproduced here is
- * #24989: {@code PickingJobPickCommand} records the picked-to HU as
- * {@code HUInfo.ofHuIdAndQRCode(cu.getId(), <the container TU's QR>)} (see the OLD
- * {@code toPickingJobStepPickedToHU(tu, cu, ...)} — the QR comes from {@code getOrCreateQRCodesByHuId(tu.getId())}).
- * Because the step points at the container TU rather than the leaf CU, un-pick operates on the TU instead of
- * extracting the leaf CU: the CU is left <b>Picked and nested inside the TU</b> instead of being dropped as a
- * standalone Active (re-pickable) floor HU. That orphaned-Picked-CU side-effect is the root cause and is exactly
- * what this test asserts against (and what the upstream {@code PickingJobUnpickToFloorTest} guards).
+ * Scenario: a CU is picked <b>into a TU</b> (a reusable transport crate) under header-level
+ * {@code SALES_ORDER} aggregation, then un-packed to the floor. The bug this guards against: when the
+ * picking-job step records the picked-to HU as the container TU plus the TU's QR
+ * ({@code HUInfo.ofHuIdAndQRCode(cu.getId(), <the TU's QR>)} via {@code toPickingJobStepPickedToHU(tu, cu, ...)},
+ * QR from {@code getOrCreateQRCodesByHuId(tu.getId())}), un-pick operates on the TU rather than extracting the
+ * leaf CU, leaving the CU <b>Picked and nested inside the TU</b> instead of dropped as a standalone
+ * {@code Active} (re-pickable) floor HU. The correct behaviour records the leaf CU + its own QR on the step, so
+ * un-pick extracts and re-activates that CU.
  * <p>
- * EXPECTED: RED on {@code intensive_care_hotfix} — the unpicked CU stays {@code HUStatus=Picked} / nested
- * instead of {@code Active} / detached; GREEN once the picking-job step records the leaf CU + its own QR, so
- * un-pick extracts and activates that CU. The blocking runtime throw
- * (<b>"QR Code &lt;n&gt; is not assigned to HU HuId(repoId=&lt;cuId&gt;)"</b>) — driven by the SAME stale TU-QR
- * pair via {@code HUTransformService.extractToTopLevel} → {@code assertQRCodeAssignedToHU} — plus the
- * catch-weight corruption both ride the aggregate-HU + surplus/re-pick path that the in-memory harness cannot
- * model (see class-level note in {@code de.metas.handlingunits.base/CLAUDE.md}); they are covered by the mobile
- * Playwright reproduction. This backend test covers the orphaned-Picked-CU side-effect facet.
+ * This test covers the orphaned-Picked-CU status facet. The related runtime failure
+ * ({@code assertQRCodeAssignedToHU} via {@code HUTransformService.extractToTopLevel}, driven by the same stale
+ * TU-QR pair) and the catch-weight-quantity corruption ride the aggregate-HU + surplus/re-pick path that the
+ * in-memory harness cannot model (it materialises picks as plain real HUs, never aggregate HUs); those are covered by the
+ * mobile Playwright reproduction {@code e2e/mobile-webui/tests/spec/picking/picking_catchWeight_unpack.spec.js}.
  */
 @ExtendWith(AdempiereTestWatcher.class)
 class PickingJobUnpickCatchWeightTest
@@ -166,8 +161,8 @@ class PickingJobUnpickCatchWeightTest
 
 		// UN-PACK the picked CU, SKIPPING the target scan (drop to floor: unpickToTargetQRCode == null).
 		// OLD whole-step UNPICK: identified by (pickingStepId, pickFromKey), not by product/qty.
-		// RED on intensive_care_hotfix: extractToTopLevel(cuId, TU-QR) -> assertQRCodeAssignedToHU throws
-		// "QR Code <n> is not assigned to HU HuId(repoId=<cuId>)".
+		// With the picked-to HU recorded as the container TU + its QR, un-pick operates on the TU rather than
+		// extracting the leaf CU, so the CU stays Picked/nested instead of being dropped Active on the floor.
 		pickingJob = helper.pickingJobService.processStepEvent(pickingJob, PickingJobStepEvent.builder()
 				.pickingLineId(line.getId())
 				.pickingStepId(stepId)
@@ -177,7 +172,7 @@ class PickingJobUnpickCatchWeightTest
 				.unpickToTargetQRCode(null) // floor
 				.build());
 
-		// AC1/AC2: the removed CU must be a standalone ACTIVE floor HU, detached from the TU — no orphan Picked CU left.
+		// The removed CU must be a standalone ACTIVE floor HU, detached from the TU — no orphan Picked CU left.
 		final I_M_HU cuAfter = handlingUnitsBL.getById(cuId);
 		assertThat(cuAfter.getHUStatus())
 				.as("unpicked CU dropped on the floor must be Active (re-pickable), not left Picked")
