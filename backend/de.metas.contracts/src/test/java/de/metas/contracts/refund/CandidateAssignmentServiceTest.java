@@ -1,5 +1,7 @@
 package de.metas.contracts.refund;
 
+import static de.metas.contracts.refund.RefundTestTools.CONTRACT_END_DATE;
+import static de.metas.contracts.refund.RefundTestTools.CONTRACT_START_DATE;
 import static de.metas.contracts.refund.RefundTestTools.extractSingleConfig;
 import static de.metas.util.collections.CollectionUtils.singleElement;
 import static java.math.BigDecimal.ONE;
@@ -12,7 +14,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -95,8 +96,6 @@ public class CandidateAssignmentServiceTest
 	private static final BigDecimal SIXTEEN = new BigDecimal("16");
 	private static final BigDecimal TWENTY = new BigDecimal("20");
 	private static final BigDecimal HUNDRED = new BigDecimal("100");
-
-	private static final LocalDate NOW = LocalDate.now();
 
 	private AssignableInvoiceCandidateRepository assignableInvoiceCandidateRepository;
 
@@ -761,8 +760,8 @@ public class CandidateAssignmentServiceTest
 
 		assertThat(POJOLookupMap.get().getRecords(I_C_Flatrate_Term.class)).isEmpty(); // guard
 		final RefundContract refundContract = RefundContract.builder()
-				.startDate(NOW)
-				.endDate(NOW.plusDays(5))
+				.startDate(CONTRACT_START_DATE)
+				.endDate(CONTRACT_END_DATE)
 				.refundConfig(refundConfig1)
 				.refundConfig(refundConfig2)
 				.bPartnerId(RefundTestTools.BPARTNER_ID)
