@@ -162,9 +162,6 @@ public class ReferenceStringHelper
 
 	/**
 	 * extractAndSetEsrReference for version 8 <code>BankToCustomerDebitCreditNotificationV08</code>
-	 *
-	 * @param txDtls
-	 * @param trxBuilder
 	 */
 	public void extractAndSetEsrReference(
 			@NonNull final EntryTransaction10 txDtls,
@@ -300,10 +297,6 @@ public class ReferenceStringHelper
 	 * from a <code>CdtrRefInf</code> element<br>
 	 * that has <code>CdtrRefInf/Tp/CdOrPrtry == "ISR Reference"</code>.
 	 * extractEsrReference for version 8 <code>BankToCustomerDebitCreditNotificationV08</code>
-	 *
-	 * @param txDtls
-	 * @return
-	 * @task https://github.com/metasfresh/metasfresh/issues/2107
 	 */
 	private Optional<String> extractEsrReference(@NonNull final EntryTransaction10 txDtls)
 	{
@@ -319,10 +312,6 @@ public class ReferenceStringHelper
 
 	/**
 	 * extractReferenceFallback for version 8 <code>BankToCustomerDebitCreditNotificationV08</code>
-	 *
-	 * @param txDtls
-	 * @return
-	 * @task https://github.com/metasfresh/metasfresh/issues/2107
 	 */
 	private Optional<String> extractReferenceFallback(@NonNull final EntryTransaction10 txDtls)
 	{
