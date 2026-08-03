@@ -32,7 +32,6 @@ import de.metas.common.externalsystem.IExternalSystemService;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.externalsystem.status.JsonExternalStatus;
 import de.metas.common.externalsystem.status.JsonStatusRequest;
-import jakarta.annotation.PreDestroy;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.apache.camel.Exchange;
@@ -40,14 +39,8 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.attribute.FileAttribute;
-import java.nio.file.attribute.PosixFilePermission;
-import java.nio.file.attribute.PosixFilePermissions;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.DEFAULT_LOCAL_ERROR_DIR;
@@ -74,27 +67,7 @@ public class ScriptedImportConversionSftpRouteBuilder extends RouteBuilder imple
 
 	@NonNull private final ProducerTemplate producerTemplate;
 
-	// Track SSH key temp files for cleanup on disable
-	private final ConcurrentHashMap<String, Path> sshKeyTempFiles = new ConcurrentHashMap<>();
-
 	private JavaScriptExecutorService javaScriptExecutorService;
-
-	@PreDestroy
-	public void cleanupSshKeyTempFiles()
-	{
-		sshKeyTempFiles.forEach((name, path) -> {
-			try
-			{
-				Files.deleteIfExists(path);
-				log.info("Cleaned up SSH key temp file for route '{}': {}", name, path);
-			}
-			catch (final java.io.IOException e)
-			{
-				log.warn("Failed to clean up SSH key temp file for route '{}': {}", name, path, e);
-			}
-		});
-		sshKeyTempFiles.clear();
-	}
 
 	@Override
 	public void configure()
@@ -138,15 +111,35 @@ public class ScriptedImportConversionSftpRouteBuilder extends RouteBuilder imple
 		// different key and stops nothing). endpointName is kept only for display / the archive-file fallback.
 		final String routeKey = requireRouteKey(params);
 
-		// Idempotent replace: tear down any poller (and its ssh-key temp file) already running under this
-		// stable key BEFORE (re)creating it — a re-enable after an endpoint/connection change must not leak
-		// the previous route, nor its ssh-key temp file (which the new enable below would otherwise orphan).
+		// Idempotent replace: tear down any poller (and its in-memory ssh-key bean) already running under this
+		// stable key BEFORE (re)creating it — a re-enable after an endpoint/connection change must not leak the
+		// previous route, nor its ssh-key registry bean (which the new enable below would otherwise orphan).
 		removePollingRoute(routeKey);
 
 		final String endpointName = params.get(ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME);
 		final String scriptIdentifier = params.get(ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_SCRIPT_IDENTIFIER);
 
-		// SFTP connection parameters
+		// LOCAL, transport-agnostic archive folders (never remote — the remote file is consumed by
+		// delete, see below). Default to a container path when the endpoint's dir fields are unset.
+		final String processedDir = params.getOrDefault(ExternalSystemConstants.PARAM_PROCESSED_DIR, DEFAULT_LOCAL_PROCESSED_DIR);
+		final String errorDir = params.getOrDefault(ExternalSystemConstants.PARAM_ERROR_DIR, DEFAULT_LOCAL_ERROR_DIR);
+
+		final String finalSftpUri = buildSftpUri(routeKey, params);
+		// Resolve the script repo path lazily at enable time, not at configure time.
+		final JavaScriptRepo javaScriptRepo = new JavaScriptRepo(
+				getCamelContext().resolvePropertyPlaceholders("{{" + PROPERTY_SCRIPTING_REPO_BASE_DIR + "}}"));
+
+		getCamelContext().addRoutes(new ScriptedImportConversionSftpDynamicRouteBuilder(
+				routeKey, endpointName, finalSftpUri, scriptIdentifier, javaScriptRepo, javaScriptExecutorService, producerTemplate,
+				processedDir, errorDir));
+
+		getCamelContext().getRouteController().startRoute(routeKey);
+		log.info("Dynamic SFTP polling route '{}' started successfully.", routeKey);
+	}
+
+	@NonNull
+	String buildSftpUri(@NonNull final String routeKey, @NonNull final Map<String, String> params)
+	{
 		final String sftpHost = params.get(ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_HOST);
 		final String sftpPort = params.get(ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_PORT);
 		final String sftpUsername = params.get(ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_USERNAME);
@@ -167,12 +160,7 @@ public class ScriptedImportConversionSftpRouteBuilder extends RouteBuilder imple
 		}
 		final String sftpRemotePath = params.getOrDefault(ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_REMOTE_PATH, "/");
 		final String pollingIntervalMs = params.getOrDefault(ExternalSystemConstants.PARAM_SFTP_POLLING_INTERVAL_MS, "60000");
-		// LOCAL, transport-agnostic archive folders (never remote — the remote file is consumed by
-		// delete, see below). Default to a container path when the endpoint's dir fields are unset.
-		final String processedDir = params.getOrDefault(ExternalSystemConstants.PARAM_PROCESSED_DIR, DEFAULT_LOCAL_PROCESSED_DIR);
-		final String errorDir = params.getOrDefault(ExternalSystemConstants.PARAM_ERROR_DIR, DEFAULT_LOCAL_ERROR_DIR);
 
-		// Build SFTP URI
 		final StringBuilder sftpUri = new StringBuilder();
 		sftpUri.append("sftp://").append(sftpHost);
 		if (sftpPort != null && !sftpPort.isEmpty())
@@ -186,14 +174,12 @@ public class ScriptedImportConversionSftpRouteBuilder extends RouteBuilder imple
 		if (ExternalSystemConstants.SFTP_AUTH_TYPE_SSH_KEY.equals(sftpAuthType))
 		{
 			final String sshPrivateKey = params.get(ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_PRIVATE_KEY);
-			final Set<PosixFilePermission> ownerOnly = PosixFilePermissions.fromString("rw-------");
-			final FileAttribute<Set<PosixFilePermission>> attr = PosixFilePermissions.asFileAttribute(ownerOnly);
-			final Path tempKeyFile = Files.createTempFile("sftp_key_" + endpointName + "_", ".pem", attr);
-			Files.writeString(tempKeyFile, sshPrivateKey);
-			// Key the temp-file map on the STABLE route key so disable's cleanup matches regardless of an
-			// endpoint change (mirrors the route id below).
-			sshKeyTempFiles.put(routeKey, tempKeyFile);
-			sftpUri.append("&privateKeyFile=").append(tempKeyFile.toAbsolutePath());
+			// Keep the key in memory: bind its bytes in the Camel registry (keyed on the STABLE route key,
+			// mirroring the route id) and reference them via #bean:<id>, so it never lands on disk.
+			// removePollingRoute unbinds the same id on disable/replace.
+			final String privateKeyBeanId = sshPrivateKeyBeanId(routeKey);
+			getCamelContext().getRegistry().bind(privateKeyBeanId, sshPrivateKey.getBytes(StandardCharsets.UTF_8));
+			sftpUri.append("&privateKey=#bean:").append(privateKeyBeanId);
 		}
 		else
 		{
@@ -203,7 +189,7 @@ public class ScriptedImportConversionSftpRouteBuilder extends RouteBuilder imple
 
 		sftpUri.append("&delay=").append(pollingIntervalMs);
 		// Consume the remote file by DELETE (never a remote move/mkdir) — no remote .done/.error
-		// folders. The payload is instead archived to the LOCAL processedDir/errorDir below (see
+		// folders. The payload is instead archived to the LOCAL processedDir/errorDir (see
 		// ScriptedImportConversionSftpDynamicRouteBuilder, whose onException is handled(true) so this
 		// delete still applies even when the transform fails).
 		sftpUri.append("&delete=true");
@@ -213,17 +199,13 @@ public class ScriptedImportConversionSftpRouteBuilder extends RouteBuilder imple
 		sftpUri.append("&strictHostKeyChecking=no");
 		sftpUri.append("&useUserKnownHostsFile=false");
 
-		// Add the dynamic route (resolve script repo path lazily at enable time, not at configure time)
-		final String finalSftpUri = sftpUri.toString();
-		final JavaScriptRepo javaScriptRepo = new JavaScriptRepo(
-				getCamelContext().resolvePropertyPlaceholders("{{" + PROPERTY_SCRIPTING_REPO_BASE_DIR + "}}"));
+		return sftpUri.toString();
+	}
 
-		getCamelContext().addRoutes(new ScriptedImportConversionSftpDynamicRouteBuilder(
-				routeKey, endpointName, finalSftpUri, scriptIdentifier, javaScriptRepo, javaScriptExecutorService, producerTemplate,
-				processedDir, errorDir));
-
-		getCamelContext().getRouteController().startRoute(routeKey);
-		log.info("Dynamic SFTP polling route '{}' started successfully.", routeKey);
+	@NonNull
+	private static String sshPrivateKeyBeanId(@NonNull final String routeKey)
+	{
+		return "sftpPrivateKey-" + routeKey;
 	}
 
 	private void disableSftpPollingProcessor(@NonNull final Exchange exchange) throws Exception
@@ -256,10 +238,10 @@ public class ScriptedImportConversionSftpRouteBuilder extends RouteBuilder imple
 
 	/**
 	 * Tears down the dynamic SFTP poll route for {@code routeKey}: stops and removes the route if present,
-	 * and deletes + forgets its ssh-key temp file if one was tracked. Idempotent — safe to call when nothing
-	 * is running (used both by disable and by enable's idempotent-replace pre-clean).
+	 * and unbinds its in-memory ssh-key registry bean if one was bound. Idempotent — safe to call when
+	 * nothing is running (used both by disable and by enable's idempotent-replace pre-clean).
 	 */
-	private void removePollingRoute(@NonNull final String routeKey) throws Exception
+	void removePollingRoute(@NonNull final String routeKey) throws Exception
 	{
 		if (getCamelContext().getRoute(routeKey) != null)
 		{
@@ -267,11 +249,8 @@ public class ScriptedImportConversionSftpRouteBuilder extends RouteBuilder imple
 			getCamelContext().removeRoute(routeKey);
 		}
 
-		final Path tempKeyFile = sshKeyTempFiles.remove(routeKey);
-		if (tempKeyFile != null)
-		{
-			Files.deleteIfExists(tempKeyFile);
-		}
+		// Leave no key material behind: drop the in-memory private-key bean (no-op if password auth was used).
+		getCamelContext().getRegistry().unbind(sshPrivateKeyBeanId(routeKey));
 	}
 
 	private void prepareExternalStatusCreateRequest(@NonNull final Exchange exchange, @NonNull final JsonExternalStatus externalStatus)
