@@ -15,16 +15,15 @@ import { LoginScreen } from "../../utils/screens/LoginScreen";
 //
 // SCENARIO DRIVEN (the real mobile flow, end-to-end):
 //   catch-weight product -> pick the line -> pick it AGAIN (duplicate/surplus) -> un-pack the
-//   surplus step (skip scanning a target HU == un-pack to floor).
+//   surplus batch, one 1-CU step at a time (skip scanning a target HU == un-pack to floor).
 //
 // CONTRACT UNDER TEST:
-//   After un-packing ONE of the two identical duplicate picks, the line must show the correct
-//   piece quantity (6 Stk) AND the correct, un-corrupted catch-weight of the ONE remaining batch
-//   (8.76 kg) — reached with NO error toast/screen during the un-pack (no
-//   "QR Code ... is not assigned to HU"). The known failure mode is: the piece quantity reduces
-//   correctly but the catch-weight comes out wrong, and/or a subsequent un-pack throws a
-//   QR-Code-not-assigned error. The fix records the leaf CU + its own QR on the picking-job step,
-//   so the un-pack restores both quantity and catch-weight cleanly.
+//   After un-packing the whole surplus batch (6 of the 12 identical 1-CU picks), the line must show
+//   the correct piece quantity (6 Stk) AND the correct, un-corrupted catch-weight of the 6 remaining
+//   pieces (8.76 kg) — reached with NO error toast/screen during any un-pack (no
+//   "QR Code ... is not assigned to HU"). The known failure mode is: an un-pack throws a
+//   QR-Code-not-assigned error, and/or the remaining catch-weight comes out wrong. The fix records the
+//   leaf CU + its own QR on the picking-job step, so each un-pack restores quantity and catch-weight cleanly.
 //
 // MODELLING NOTES (kept faithful, deliberately robust):
 //   - Each catch-weight QR scan is its own 1-CU pick and creates its own picking-job step, so a
