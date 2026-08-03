@@ -65,7 +65,7 @@ class ConversionRateUpsertServiceTest
 
 		currencyDAO = (PlainCurrencyDAO)Services.get(de.metas.currency.ICurrencyDAO.class);
 
-		conversionRateUpsertService = new ConversionRateUpsertService(currencyDAO);
+		conversionRateUpsertService = new ConversionRateUpsertService();
 	}
 
 	/** Create an <b>active</b> {@code C_Currency} row for the given ISO code and return its id. */

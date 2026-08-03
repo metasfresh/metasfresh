@@ -70,7 +70,7 @@ class NewestConversionRatesServiceTest
 
 		currencyDAO = (PlainCurrencyDAO)Services.get(de.metas.currency.ICurrencyDAO.class);
 
-		newestConversionRatesService = new NewestConversionRatesService(currencyDAO);
+		newestConversionRatesService = new NewestConversionRatesService();
 
 		eur = createActiveCurrency("EUR");
 		cny = createActiveCurrency("CNY");

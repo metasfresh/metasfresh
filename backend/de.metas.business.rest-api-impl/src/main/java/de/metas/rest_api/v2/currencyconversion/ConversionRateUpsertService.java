@@ -74,16 +74,11 @@ import java.util.Set;
 @Slf4j
 public class ConversionRateUpsertService
 {
-	private final ICurrencyDAO currencyDAO;
+	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 
 	/** Scale + rounding for the derived {@code DivideRate = 1 / multiplyRate}. */
 	private static final int DIVIDE_RATE_SCALE = 12;
 	private static final RoundingMode DIVIDE_RATE_ROUNDING = RoundingMode.HALF_UP;
-
-	public ConversionRateUpsertService(@NonNull final ICurrencyDAO currencyDAO)
-	{
-		this.currencyDAO = currencyDAO;
-	}
 
 	@NonNull
 	public JsonResponseConversionRateUpsert upsert(@NonNull final JsonRequestConversionRateUpsert request)

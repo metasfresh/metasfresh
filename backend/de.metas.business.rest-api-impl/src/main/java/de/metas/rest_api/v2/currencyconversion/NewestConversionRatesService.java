@@ -66,12 +66,7 @@ import java.util.Map;
 @Service
 public class NewestConversionRatesService
 {
-	private final ICurrencyDAO currencyDAO;
-
-	public NewestConversionRatesService(@NonNull final ICurrencyDAO currencyDAO)
-	{
-		this.currencyDAO = currencyDAO;
-	}
+	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 
 	@NonNull
 	public List<JsonNewestConversionRate> list(@NonNull final NewestConversionRatesFilter filter)
