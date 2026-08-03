@@ -246,4 +246,4 @@ Feature: Currency-conversion REST API
       """
       { "rates": [ { "fromCurrencyCode": "EUR", "toCurrencyCode": "CNY", "conversionTypeCode": "A", "validFrom": "2026-06-14", "multiplyRate": 7.7 } ] }
       """
-    And the newestRates response has '1' rates
+    And the newestRates response has 1 rate

@@ -22,6 +22,7 @@
 
 package de.metas.rest_api.v2.currencyconversion;
 
+import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.rest_api.v2.currencyconversion.JsonRequestConversionRateUpsert;
 import de.metas.common.rest_api.v2.currencyconversion.JsonRequestConversionRateUpsertItem;
 import de.metas.common.rest_api.v2.currencyconversion.JsonResponseConversionRateUpsert;
@@ -37,6 +38,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_C_Conversion_Rate;
 import org.compiere.model.I_C_Currency;
+import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -65,7 +67,12 @@ class ConversionRateUpsertServiceTest
 
 		currencyDAO = (PlainCurrencyDAO)Services.get(de.metas.currency.ICurrencyDAO.class);
 
-		conversionRateUpsertService = new ConversionRateUpsertService();
+		conversionRateUpsertService = new ConversionRateUpsertService(new CurrencyConversionRepository());
+	}
+
+	private JsonResponseConversionRateUpsert upsert(final JsonRequestConversionRateUpsert request)
+	{
+		return conversionRateUpsertService.upsert(Env.getClientId(), request);
 	}
 
 	/** Create an <b>active</b> {@code C_Currency} row for the given ISO code and return its id. */
@@ -115,7 +122,7 @@ class ConversionRateUpsertServiceTest
 		final CurrencyId eur = createActiveCurrency("EUR");
 		final CurrencyId cny = createActiveCurrency("CNY");
 
-		final JsonResponseConversionRateUpsert response = conversionRateUpsertService.upsert(
+		final JsonResponseConversionRateUpsert response = upsert(
 				JsonRequestConversionRateUpsert.builder()
 						.requestItem(item().build())
 						.build());
@@ -147,7 +154,7 @@ class ConversionRateUpsertServiceTest
 		final CurrencyId eur = createActiveCurrency("EUR");
 		final CurrencyId usd = createActiveCurrency("USD");
 
-		conversionRateUpsertService.upsert(JsonRequestConversionRateUpsert.builder()
+		upsert(JsonRequestConversionRateUpsert.builder()
 				.requestItem(item()
 						.toCurrencyCode("USD")
 						.multiplyRate(new BigDecimal("3")) // 1/3 = 0.333333333333 (HALF_UP at 12)
@@ -168,7 +175,7 @@ class ConversionRateUpsertServiceTest
 		createActiveCurrency("CNY");
 		// "XXX" intentionally not created
 
-		final JsonResponseConversionRateUpsert response = conversionRateUpsertService.upsert(
+		final JsonResponseConversionRateUpsert response = upsert(
 				JsonRequestConversionRateUpsert.builder()
 						.requestItem(item().build()) // valid EUR->CNY
 						.requestItem(item().toCurrencyCode("XXX").build()) // unknown target
@@ -198,7 +205,7 @@ class ConversionRateUpsertServiceTest
 		createActiveCurrency("EUR");
 		createInactiveCurrency("CNY");
 
-		final JsonResponseConversionRateUpsert response = conversionRateUpsertService.upsert(
+		final JsonResponseConversionRateUpsert response = upsert(
 				JsonRequestConversionRateUpsert.builder()
 						.requestItem(item().build())
 						.build());
@@ -214,7 +221,7 @@ class ConversionRateUpsertServiceTest
 		final CurrencyId eur = createActiveCurrency("EUR");
 		final CurrencyId cny = createActiveCurrency("CNY");
 
-		final JsonResponseConversionRateUpsert response = conversionRateUpsertService.upsert(
+		final JsonResponseConversionRateUpsert response = upsert(
 				JsonRequestConversionRateUpsert.builder()
 						.requestItem(item().conversionTypeCode("P").build()) // PeriodEnd, valid
 						.requestItem(item().conversionTypeCode("Z").build()) // unknown code
@@ -239,7 +246,7 @@ class ConversionRateUpsertServiceTest
 		createActiveCurrency("EUR");
 		createActiveCurrency("CNY");
 
-		conversionRateUpsertService.upsert(JsonRequestConversionRateUpsert.builder()
+		upsert(JsonRequestConversionRateUpsert.builder()
 				.requestItem(item().orgCode("1000000").build())
 				.build());
 
@@ -253,13 +260,13 @@ class ConversionRateUpsertServiceTest
 		final CurrencyId eur = createActiveCurrency("EUR");
 		final CurrencyId cny = createActiveCurrency("CNY");
 
-		conversionRateUpsertService.upsert(JsonRequestConversionRateUpsert.builder()
+		upsert(JsonRequestConversionRateUpsert.builder()
 				.requestItem(item().multiplyRate(new BigDecimal("8.00")).build())
 				.build());
 		// forward + auto-reciprocal
 		assertThat(allRates()).hasSize(2);
 
-		final JsonResponseConversionRateUpsert second = conversionRateUpsertService.upsert(
+		final JsonResponseConversionRateUpsert second = upsert(
 				JsonRequestConversionRateUpsert.builder()
 						.requestItem(item().multiplyRate(new BigDecimal("9.00")).build())
 						.build());
@@ -285,7 +292,7 @@ class ConversionRateUpsertServiceTest
 	{
 		createActiveCurrency("EUR");
 
-		final JsonResponseConversionRateUpsert response = conversionRateUpsertService.upsert(
+		final JsonResponseConversionRateUpsert response = upsert(
 				JsonRequestConversionRateUpsert.builder()
 						.requestItem(item().toCurrencyCode("EUR").build())
 						.build());
@@ -300,7 +307,7 @@ class ConversionRateUpsertServiceTest
 		createActiveCurrency("EUR");
 		createActiveCurrency("CNY");
 
-		final JsonResponseConversionRateUpsert response = conversionRateUpsertService.upsert(
+		final JsonResponseConversionRateUpsert response = upsert(
 				JsonRequestConversionRateUpsert.builder()
 						.requestItem(item().multiplyRate(BigDecimal.ZERO).build())
 						.requestItem(item().multiplyRate(new BigDecimal("-1")).build())
@@ -317,7 +324,7 @@ class ConversionRateUpsertServiceTest
 		createActiveCurrency("EUR");
 		createActiveCurrency("CNY");
 
-		final JsonResponseConversionRateUpsert response = conversionRateUpsertService.upsert(
+		final JsonResponseConversionRateUpsert response = upsert(
 				JsonRequestConversionRateUpsert.builder()
 						.requestItem(item().validTo(VALID_FROM.minusDays(1)).build())
 						.build());
@@ -342,7 +349,7 @@ class ConversionRateUpsertServiceTest
 		final CurrencyId cny = createActiveCurrency("CNY");
 
 		// only the forward EUR->CNY @ 8 is supplied; the reverse must be auto-written as 1/8
-		final JsonResponseConversionRateUpsert response = conversionRateUpsertService.upsert(
+		final JsonResponseConversionRateUpsert response = upsert(
 				JsonRequestConversionRateUpsert.builder()
 						.requestItem(item().multiplyRate(new BigDecimal("8.00")).build())
 						.build());
@@ -373,7 +380,7 @@ class ConversionRateUpsertServiceTest
 		final CurrencyId cny = createActiveCurrency("CNY");
 
 		// caller supplies BOTH directions; the reverse rate is deliberately NOT the reciprocal (0.13 != 1/8)
-		final JsonResponseConversionRateUpsert response = conversionRateUpsertService.upsert(
+		final JsonResponseConversionRateUpsert response = upsert(
 				JsonRequestConversionRateUpsert.builder()
 						.requestItem(item()
 								.fromCurrencyCode("EUR").toCurrencyCode("CNY")
@@ -402,15 +409,66 @@ class ConversionRateUpsertServiceTest
 		createActiveCurrency("CNY");
 
 		// forward-only -> forward + auto reciprocal = 2 rows
-		conversionRateUpsertService.upsert(JsonRequestConversionRateUpsert.builder()
+		upsert(JsonRequestConversionRateUpsert.builder()
 				.requestItem(item().multiplyRate(new BigDecimal("8.00")).build())
 				.build());
 		assertThat(allRates()).hasSize(2);
 
 		// re-upsert the same forward-only request -> still exactly 2 rows (update in place, no dup)
-		conversionRateUpsertService.upsert(JsonRequestConversionRateUpsert.builder()
+		upsert(JsonRequestConversionRateUpsert.builder()
 				.requestItem(item().multiplyRate(new BigDecimal("8.00")).build())
 				.build());
 		assertThat(allRates()).hasSize(2);
+	}
+
+	@Test
+	void syncAdvise_dontUpdateOnExisting_isNothingDone_noOverwrite()
+	{
+		final CurrencyId eur = createActiveCurrency("EUR");
+		final CurrencyId cny = createActiveCurrency("CNY");
+
+		// seed an existing rate (default CREATE_OR_MERGE)
+		upsert(JsonRequestConversionRateUpsert.builder()
+				.requestItem(item().multiplyRate(new BigDecimal("8.00")).build())
+				.build());
+		assertThat(allRates()).hasSize(2);
+
+		// re-post the same key with a DONT_UPDATE-on-exists advise (READ_ONLY) and a *different* rate:
+		// the existing row must be left untouched and the outcome must be NOTHING_DONE.
+		final JsonResponseConversionRateUpsert response = upsert(
+				JsonRequestConversionRateUpsert.builder()
+						.syncAdvise(SyncAdvise.READ_ONLY)
+						.requestItem(item().multiplyRate(new BigDecimal("9.99")).build())
+						.build());
+
+		assertThat(response.getResponseItems()).hasSize(1);
+		assertThat(response.getResponseItems().get(0).getSyncOutcome()).isEqualTo(SyncOutcome.NOTHING_DONE);
+		assertThat(response.getResponseItems().get(0).getError()).isNull();
+
+		// still exactly the two seeded rows, and the forward rate was NOT overwritten with 9.99
+		assertThat(allRates()).hasSize(2);
+		final I_C_Conversion_Rate forward = rateFor(eur, cny);
+		assertThat(forward).isNotNull();
+		assertThat(forward.getMultiplyRate()).isEqualByComparingTo("8.00");
+	}
+
+	@Test
+	void syncAdvise_failIfNotExists_onMissingRate_isPerRecordError_noRowWritten()
+	{
+		createActiveCurrency("EUR");
+		createActiveCurrency("CNY");
+
+		// no rate exists yet; a FAIL-if-not-exists advise (READ_ONLY) must produce a per-record error
+		// and write nothing (not even the auto-reciprocal).
+		final JsonResponseConversionRateUpsert response = upsert(
+				JsonRequestConversionRateUpsert.builder()
+						.syncAdvise(SyncAdvise.READ_ONLY)
+						.requestItem(item().build())
+						.build());
+
+		assertThat(response.getResponseItems()).hasSize(1);
+		assertThat(response.getResponseItems().get(0).getSyncOutcome()).isEqualTo(SyncOutcome.ERROR);
+		assertThat(response.getResponseItems().get(0).getError()).isNotNull();
+		assertThat(allRates()).isEmpty();
 	}
 }

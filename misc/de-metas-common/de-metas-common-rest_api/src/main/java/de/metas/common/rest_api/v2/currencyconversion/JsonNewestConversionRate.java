@@ -51,7 +51,7 @@ public class JsonNewestConversionRate
 	String conversionTypeCode;
 
 	@ApiModelProperty(position = 40, value = "The date this rate is valid from (ISO yyyy-MM-dd).")
-	@JsonFormat(shape = JsonFormat.Shape.STRING)
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@NonNull
 	LocalDate validFrom;
 

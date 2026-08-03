@@ -23,6 +23,7 @@
 package de.metas.common.rest_api.v2.currencyconversion;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -52,6 +53,7 @@ public class JsonRequestConversionRateUpsertItem
 	BigDecimal multiplyRate;
 
 	@ApiModelProperty(position = 40, required = true, value = "The date this rate is valid from (ISO yyyy-MM-dd).")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@NonNull
 	LocalDate validFrom;
 
@@ -60,6 +62,7 @@ public class JsonRequestConversionRateUpsertItem
 	String conversionTypeCode;
 
 	@ApiModelProperty(position = 60, value = "The date this rate is valid to; omitted leaves the rate open (no gap).")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@Nullable
 	LocalDate validTo;
 

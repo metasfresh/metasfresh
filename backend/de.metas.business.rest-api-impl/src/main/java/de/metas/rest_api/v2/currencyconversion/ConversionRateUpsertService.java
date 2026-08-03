@@ -22,13 +22,13 @@
 
 package de.metas.rest_api.v2.currencyconversion;
 
+import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.rest_api.v2.currencyconversion.JsonRequestConversionRateUpsert;
 import de.metas.common.rest_api.v2.currencyconversion.JsonRequestConversionRateUpsertItem;
 import de.metas.common.rest_api.v2.currencyconversion.JsonResponseConversionRateUpsert;
 import de.metas.common.rest_api.v2.currencyconversion.JsonResponseConversionRateUpsertItem;
 import de.metas.common.rest_api.v2.currencyconversion.JsonResponseConversionRateUpsertItem.SyncOutcome;
 import de.metas.currency.ConversionTypeMethod;
-import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
@@ -38,12 +38,9 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_Conversion_Rate;
-import org.compiere.model.I_C_Currency;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
@@ -53,7 +50,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -69,21 +66,35 @@ import java.util.Set;
  * Each request item is applied independently: a per-record failure (unknown/inactive currency,
  * unknown conversion-type code, {@code from == to}, non-positive rate, {@code validTo < validFrom})
  * yields an {@code ERROR} response item and never aborts the batch nor auto-creates a currency.
+ * <p>
+ * The batch's {@link SyncAdvise} (default {@code CREATE_OR_MERGE}) governs whether an existing row is
+ * updated ({@code ifExists}) or a missing row is created ({@code ifNotExists}): a don't-update advise on
+ * an existing row yields {@code NOTHING_DONE}; a fail-if-not-exists advise on a missing row yields a
+ * per-record error.
  */
 @Service
 @Slf4j
 public class ConversionRateUpsertService
 {
-	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+	@NonNull private final CurrencyConversionRepository currencyConversionRepository;
 
 	/** Scale + rounding for the derived {@code DivideRate = 1 / multiplyRate}. */
 	private static final int DIVIDE_RATE_SCALE = 12;
 	private static final RoundingMode DIVIDE_RATE_ROUNDING = RoundingMode.HALF_UP;
 
+	public ConversionRateUpsertService(@NonNull final CurrencyConversionRepository currencyConversionRepository)
+	{
+		this.currencyConversionRepository = currencyConversionRepository;
+	}
+
 	@NonNull
-	public JsonResponseConversionRateUpsert upsert(@NonNull final JsonRequestConversionRateUpsert request)
+	public JsonResponseConversionRateUpsert upsert(
+			@NonNull final ClientId clientId,
+			@NonNull final JsonRequestConversionRateUpsert request)
 	{
 		final String adLanguage = Env.getADLanguageOrBaseLanguage();
+		final SyncAdvise syncAdvise = request.getSyncAdvise();
 
 		// First, collect the natural keys the caller explicitly supplied, so that a caller-supplied
 		// reverse is honored untouched (never overwritten by a computed reciprocal). Keys are only
@@ -91,7 +102,7 @@ public class ConversionRateUpsertService
 		final Set<NaturalKey> callerSuppliedKeys = new HashSet<>();
 		for (final JsonRequestConversionRateUpsertItem item : request.getRequestItems())
 		{
-			final NaturalKey key = naturalKeyOrNull(item);
+			final NaturalKey key = naturalKeyOrNull(clientId, item);
 			if (key != null)
 			{
 				callerSuppliedKeys.add(key);
@@ -101,7 +112,7 @@ public class ConversionRateUpsertService
 		final JsonResponseConversionRateUpsert.JsonResponseConversionRateUpsertBuilder responseBuilder = JsonResponseConversionRateUpsert.builder();
 		for (final JsonRequestConversionRateUpsertItem item : request.getRequestItems())
 		{
-			responseBuilder.responseItem(upsertItem(item, adLanguage, callerSuppliedKeys));
+			responseBuilder.responseItem(upsertItem(clientId, item, syncAdvise, adLanguage, callerSuppliedKeys));
 		}
 		return responseBuilder.build();
 	}
@@ -113,16 +124,18 @@ public class ConversionRateUpsertService
 	 * still happens in {@link #upsertItem0}.
 	 */
 	@Nullable
-	private NaturalKey naturalKeyOrNull(@NonNull final JsonRequestConversionRateUpsertItem item)
+	private NaturalKey naturalKeyOrNull(
+			@NonNull final ClientId clientId,
+			@NonNull final JsonRequestConversionRateUpsertItem item)
 	{
 		try
 		{
-			final CurrencyId fromCurrencyId = resolveActiveCurrencyId(item.getFromCurrencyCode());
-			final CurrencyId toCurrencyId = resolveActiveCurrencyId(item.getToCurrencyCode());
+			final CurrencyId fromCurrencyId = currencyConversionRepository.findActiveCurrencyIdByIsoCode(item.getFromCurrencyCode());
+			final CurrencyId toCurrencyId = currencyConversionRepository.findActiveCurrencyIdByIsoCode(item.getToCurrencyCode());
 			final OrgId orgId = resolveOrgId(item.getOrgCode());
 			final CurrencyConversionTypeId conversionTypeId = resolveConversionTypeId(
 					item.getConversionTypeCode(),
-					Env.getClientId(),
+					clientId,
 					orgId,
 					item.getValidFrom());
 			return new NaturalKey(orgId, fromCurrencyId, toCurrencyId, conversionTypeId, item.getValidFrom());
@@ -139,13 +152,15 @@ public class ConversionRateUpsertService
 
 	@NonNull
 	private JsonResponseConversionRateUpsertItem upsertItem(
+			@NonNull final ClientId clientId,
 			@NonNull final JsonRequestConversionRateUpsertItem item,
+			@NonNull final SyncAdvise syncAdvise,
 			@NonNull final String adLanguage,
 			@NonNull final Set<NaturalKey> callerSuppliedKeys)
 	{
 		try
 		{
-			final SyncOutcome outcome = upsertItem0(item, callerSuppliedKeys);
+			final SyncOutcome outcome = upsertItem0(clientId, item, syncAdvise, callerSuppliedKeys);
 			return JsonResponseConversionRateUpsertItem.builder()
 					.fromCurrencyCode(item.getFromCurrencyCode())
 					.toCurrencyCode(item.getToCurrencyCode())
@@ -165,14 +180,15 @@ public class ConversionRateUpsertService
 
 	@NonNull
 	private SyncOutcome upsertItem0(
+			@NonNull final ClientId clientId,
 			@NonNull final JsonRequestConversionRateUpsertItem item,
+			@NonNull final SyncAdvise syncAdvise,
 			@NonNull final Set<NaturalKey> callerSuppliedKeys)
 	{
-		final CurrencyId fromCurrencyId = resolveActiveCurrencyId(item.getFromCurrencyCode());
-		final CurrencyId toCurrencyId = resolveActiveCurrencyId(item.getToCurrencyCode());
+		final CurrencyId fromCurrencyId = currencyConversionRepository.findActiveCurrencyIdByIsoCode(item.getFromCurrencyCode());
+		final CurrencyId toCurrencyId = currencyConversionRepository.findActiveCurrencyIdByIsoCode(item.getToCurrencyCode());
 
 		final OrgId orgId = resolveOrgId(item.getOrgCode());
-		final ClientId clientId = Env.getClientId();
 		final LocalDate validFrom = item.getValidFrom();
 		final CurrencyConversionTypeId conversionTypeId = resolveConversionTypeId(
 				item.getConversionTypeCode(),
@@ -191,10 +207,10 @@ public class ConversionRateUpsertService
 		final SyncOutcome outcome = saveRate(
 				clientId, orgId, fromCurrencyId, toCurrencyId, conversionTypeId, validFrom,
 				multiplyRate, divideRate,
-				item.getValidTo());
+				item.getValidTo(), syncAdvise);
 
 		// Ensure the reverse direction exists. If the caller supplied the reverse itself (same
-		// request), honor it untouched; otherwise auto-write the reciprocal.
+		// request), honor it untouched; otherwise auto-write the reciprocal — subject to the same advise.
 		final NaturalKey reverseKey = new NaturalKey(orgId, toCurrencyId, fromCurrencyId, conversionTypeId, validFrom);
 		if (!callerSuppliedKeys.contains(reverseKey))
 		{
@@ -203,15 +219,15 @@ public class ConversionRateUpsertService
 			saveRate(
 					clientId, orgId, toCurrencyId, fromCurrencyId, conversionTypeId, validFrom,
 					reciprocalMultiplyRate, reciprocalDivideRate,
-					item.getValidTo());
+					item.getValidTo(), syncAdvise);
 		}
 
 		return outcome;
 	}
 
 	/**
-	 * Single-direction find-existing-then-update-or-insert on the natural key. Returns whether the row
-	 * was created or updated.
+	 * Single-direction find-existing-then-update-or-insert on the natural key, honoring the given
+	 * {@link SyncAdvise}. Returns whether the row was created, updated, or left untouched.
 	 */
 	@NonNull
 	private SyncOutcome saveRate(
@@ -223,22 +239,28 @@ public class ConversionRateUpsertService
 			@NonNull final LocalDate validFrom,
 			@NonNull final BigDecimal multiplyRate,
 			@NonNull final BigDecimal divideRate,
-			@Nullable final LocalDate validTo)
+			@Nullable final LocalDate validTo,
+			@NonNull final SyncAdvise syncAdvise)
 	{
-		I_C_Conversion_Rate record = findExistingRate(clientId, orgId, fromCurrencyId, toCurrencyId, conversionTypeId, validFrom);
+		I_C_Conversion_Rate record = currencyConversionRepository.findExistingRate(
+				clientId, orgId, fromCurrencyId, toCurrencyId, conversionTypeId, validFrom);
 		final SyncOutcome outcome;
 		if (record == null)
 		{
-			record = InterfaceWrapperHelper.newInstance(I_C_Conversion_Rate.class);
-			record.setAD_Org_ID(orgId.getRepoId());
-			record.setC_Currency_ID(fromCurrencyId.getRepoId());
-			record.setC_Currency_ID_To(toCurrencyId.getRepoId());
-			record.setC_ConversionType_ID(conversionTypeId.getRepoId());
-			record.setValidFrom(TimeUtil.asTimestamp(validFrom));
+			if (syncAdvise.isFailIfNotExists())
+			{
+				throw new AdempiereException("@NotFound@ @C_Conversion_Rate@: " + fromCurrencyId.getRepoId() + "->" + toCurrencyId.getRepoId())
+						.markAsUserValidationError();
+			}
+			record = currencyConversionRepository.newRate(orgId, fromCurrencyId, toCurrencyId, conversionTypeId, validFrom);
 			outcome = SyncOutcome.CREATED;
 		}
 		else
 		{
+			if (!syncAdvise.getIfExists().isUpdate())
+			{
+				return SyncOutcome.NOTHING_DONE;
+			}
 			outcome = SyncOutcome.UPDATED;
 		}
 
@@ -246,27 +268,9 @@ public class ConversionRateUpsertService
 		record.setDivideRate(divideRate);
 		record.setValidTo(validTo != null ? TimeUtil.asTimestamp(validTo) : null);
 
-		InterfaceWrapperHelper.save(record);
+		currencyConversionRepository.save(record);
 
 		return outcome;
-	}
-
-	@NonNull
-	private CurrencyId resolveActiveCurrencyId(@NonNull final String isoCode)
-	{
-		final I_C_Currency currency = Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(I_C_Currency.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Currency.COLUMNNAME_ISO_Code, isoCode)
-				.create()
-				.first(I_C_Currency.class);
-
-		if (currency == null)
-		{
-			throw new AdempiereException("@NotFound@ @C_Currency_ID@: " + isoCode)
-					.markAsUserValidationError();
-		}
-		return CurrencyId.ofRepoId(currency.getC_Currency_ID());
 	}
 
 	@NonNull
@@ -345,30 +349,9 @@ public class ConversionRateUpsertService
 		return BigDecimal.ONE.divide(rate, DIVIDE_RATE_SCALE, DIVIDE_RATE_ROUNDING);
 	}
 
-	@Nullable
-	private I_C_Conversion_Rate findExistingRate(
-			@NonNull final ClientId clientId,
-			@NonNull final OrgId orgId,
-			@NonNull final CurrencyId fromCurrencyId,
-			@NonNull final CurrencyId toCurrencyId,
-			@NonNull final CurrencyConversionTypeId conversionTypeId,
-			@NonNull final LocalDate validFrom)
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Conversion_Rate.class)
-				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_AD_Client_ID, clientId.getRepoId())
-				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_AD_Org_ID, orgId.getRepoId())
-				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_C_Currency_ID, fromCurrencyId.getRepoId())
-				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_C_Currency_ID_To, toCurrencyId.getRepoId())
-				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_C_ConversionType_ID, conversionTypeId.getRepoId())
-				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_ValidFrom, TimeUtil.asTimestamp(validFrom))
-				.create()
-				.first(I_C_Conversion_Rate.class);
-	}
-
 	private static Instant toInstant(@NonNull final LocalDate localDate)
 	{
-		return localDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
+		return localDate.atStartOfDay(ZoneOffset.UTC).toInstant();
 	}
 
 	/**

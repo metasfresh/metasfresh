@@ -24,16 +24,33 @@ package de.metas.rest_api.v2.currencyconversion;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.common.rest_api.v2.currencyconversion.JsonCurrency;
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_C_Conversion_Rate;
 import org.compiere.model.I_C_Currency;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.List;
 
 /**
  * Thin persistence layer for the currency-conversion REST endpoints: keeps the {@code IQueryBL} query
- * construction out of {@link CurrencyConversionRestController} (persistence primitives belong in a
- * DAO/Repository, not in a controller).
+ * construction and the {@code I_C_Conversion_Rate} save primitives out of the {@code @Service} classes
+ * ({@link ConversionRateUpsertService}, {@link NewestConversionRatesService}) and the
+ * {@link CurrencyConversionRestController} (persistence primitives belong in a DAO/Repository).
+ * <p>
+ * Repository Tables: C_Currency, C_Conversion_Rate
+ * Repository Cluster: CurrencyConversionRepository (sole owner)
  */
 @Repository
 public class CurrencyConversionRepository
@@ -64,5 +81,121 @@ public class CurrencyConversionRepository
 				.currencyCode(currency.getISO_Code())
 				.name(currency.getDescription())
 				.build();
+	}
+
+	/**
+	 * Resolves the id of the single <b>active</b> {@code C_Currency} for the given ISO code, out of transaction.
+	 * Throws a user-validation error when no active currency matches (an unknown or inactive ISO).
+	 */
+	@NonNull
+	public CurrencyId findActiveCurrencyIdByIsoCode(@NonNull final String isoCode)
+	{
+		final I_C_Currency currency = queryBL
+				.createQueryBuilderOutOfTrx(I_C_Currency.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Currency.COLUMNNAME_ISO_Code, isoCode)
+				.create()
+				.first(I_C_Currency.class);
+
+		if (currency == null)
+		{
+			throw new AdempiereException("@NotFound@ @C_Currency_ID@: " + isoCode)
+					.markAsUserValidationError();
+		}
+		return CurrencyId.ofRepoId(currency.getC_Currency_ID());
+	}
+
+	/**
+	 * Single-direction find on the {@code C_Conversion_Rate} natural key
+	 * ({@code AD_Client_ID, AD_Org_ID, C_Currency_ID, C_Currency_ID_To, C_ConversionType_ID, ValidFrom}),
+	 * or {@code null} if none exists.
+	 * <p>
+	 * Returns the {@code I_C_Conversion_Rate} model record on purpose: the sole caller
+	 * ({@link ConversionRateUpsertService}, same package) mutates + saves it via {@link #save(I_C_Conversion_Rate)}.
+	 * The leak is confined to this REST-endpoint package; no other module consumes it.
+	 */
+	@Nullable
+	public I_C_Conversion_Rate findExistingRate(
+			@NonNull final ClientId clientId,
+			@NonNull final OrgId orgId,
+			@NonNull final CurrencyId fromCurrencyId,
+			@NonNull final CurrencyId toCurrencyId,
+			@NonNull final CurrencyConversionTypeId conversionTypeId,
+			@NonNull final LocalDate validFrom)
+	{
+		return queryBL
+				.createQueryBuilder(I_C_Conversion_Rate.class)
+				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_AD_Client_ID, clientId)
+				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_AD_Org_ID, orgId)
+				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_C_Currency_ID, fromCurrencyId)
+				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_C_Currency_ID_To, toCurrencyId)
+				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_C_ConversionType_ID, conversionTypeId)
+				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_ValidFrom, TimeUtil.asTimestamp(validFrom))
+				.create()
+				.first(I_C_Conversion_Rate.class);
+	}
+
+	/** Creates a new, unsaved {@code C_Conversion_Rate} with its natural-key columns set. */
+	@NonNull
+	public I_C_Conversion_Rate newRate(
+			@NonNull final OrgId orgId,
+			@NonNull final CurrencyId fromCurrencyId,
+			@NonNull final CurrencyId toCurrencyId,
+			@NonNull final CurrencyConversionTypeId conversionTypeId,
+			@NonNull final LocalDate validFrom)
+	{
+		final I_C_Conversion_Rate record = InterfaceWrapperHelper.newInstance(I_C_Conversion_Rate.class);
+		record.setAD_Org_ID(orgId.getRepoId());
+		record.setC_Currency_ID(fromCurrencyId.getRepoId());
+		record.setC_Currency_ID_To(toCurrencyId.getRepoId());
+		record.setC_ConversionType_ID(conversionTypeId.getRepoId());
+		record.setValidFrom(TimeUtil.asTimestamp(validFrom));
+		return record;
+	}
+
+	public void save(@NonNull final I_C_Conversion_Rate record)
+	{
+		InterfaceWrapperHelper.save(record);
+	}
+
+	/**
+	 * The active {@code C_Conversion_Rate} rows scoped to {@code (SYSTEM, clientId)} and any org, ordered by
+	 * {@code ValidFrom} descending, narrowed by the optional {@code (from, to, type)} filters. The
+	 * newest-per-combo reduction is done by the caller.
+	 * <p>
+	 * Returns {@code I_C_Conversion_Rate} model rows on purpose: the sole caller
+	 * ({@link NewestConversionRatesService}, same package) only reads their columns to build the JSON DTOs.
+	 * The leak is confined to this REST-endpoint package; no other module consumes it.
+	 */
+	@NonNull
+	public List<I_C_Conversion_Rate> getConversionRatesOrderedByValidFromDesc(
+			@NonNull final ClientId clientId,
+			@Nullable final CurrencyId fromCurrencyId,
+			@Nullable final CurrencyId toCurrencyId,
+			@Nullable final CurrencyConversionTypeId conversionTypeId)
+	{
+		final IQueryBuilder<I_C_Conversion_Rate> queryBuilder = queryBL
+				.createQueryBuilder(I_C_Conversion_Rate.class)
+				.addOnlyActiveRecordsFilter()
+				// session client + SYSTEM, mirroring the runtime rate-lookup client scoping
+				.addInArrayFilter(I_C_Conversion_Rate.COLUMNNAME_AD_Client_ID, ClientId.SYSTEM, clientId);
+
+		if (fromCurrencyId != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_C_Currency_ID, fromCurrencyId);
+		}
+		if (toCurrencyId != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_C_Currency_ID_To, toCurrencyId);
+		}
+		if (conversionTypeId != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_C_ConversionType_ID, conversionTypeId);
+		}
+
+		return queryBuilder
+				.orderByDescending(I_C_Conversion_Rate.COLUMNNAME_ValidFrom)
+				.create()
+				.list(I_C_Conversion_Rate.class);
 	}
 }

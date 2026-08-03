@@ -53,7 +53,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -265,12 +265,12 @@ public class ConversionRate_StepDef
 	/**
 	 * Asserts how many rate entries the last GET-newestRates response body carries.
 	 */
-	@Then("the newestRates response has {string} rate(s)")
-	public void the_newest_rates_response_has_n_rates(@NonNull final String expectedCount)
+	@Then("the newestRates response has {int} rate(s)")
+	public void the_newest_rates_response_has_n_rates(final int expectedCount)
 	{
 		final JsonNode rates = responseTree().at("/rates");
 		assertThat(rates.isArray()).as("newestRates response must carry a 'rates' array").isTrue();
-		assertThat(rates.size()).as("number of rates in newestRates response").isEqualTo(Integer.parseInt(expectedCount));
+		assertThat(rates.size()).as("number of rates in newestRates response").isEqualTo(expectedCount);
 	}
 
 	private java.util.List<String> currencyCodesInResponse()
@@ -315,7 +315,7 @@ public class ConversionRate_StepDef
 	{
 		final CurrencyId fromId = currencyId(fromIsoCode);
 		final CurrencyId toId = currencyId(toIsoCode);
-		final Instant convDate = LocalDate.parse(dateStr).atStartOfDay(ZoneId.systemDefault()).toInstant();
+		final Instant convDate = LocalDate.parse(dateStr).atStartOfDay(ZoneOffset.UTC).toInstant();
 
 		final CurrencyRate rate = currencyBL.getCurrencyRate(
 				fromId, toId, convDate,

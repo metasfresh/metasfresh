@@ -38,6 +38,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.service.ClientId;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
@@ -89,12 +90,13 @@ public class CurrencyConversionRestController
 	public ResponseEntity<?> upsertRates(@RequestBody @NonNull final JsonRequestConversionRateUpsert request)
 	{
 		final String adLanguage = Env.getADLanguageOrBaseLanguage();
+		final ClientId clientId = Env.getClientId();
 		try
 		{
 			// Per-record failures are already reported inside the response (as ERROR items) and never
 			// abort the batch; the batch as a whole succeeds. A thrown exception here is a catastrophic
 			// (non-per-record) failure and becomes a friendly top-level error.
-			final JsonResponseConversionRateUpsert response = conversionRateUpsertService.upsert(request);
+			final JsonResponseConversionRateUpsert response = conversionRateUpsertService.upsert(clientId, request);
 			return ResponseEntity.ok(response);
 		}
 		catch (final Exception ex)
@@ -146,6 +148,7 @@ public class CurrencyConversionRestController
 			@RequestParam(value = "conversionTypeCode", required = false) @Nullable final String conversionTypeCode)
 	{
 		final String adLanguage = Env.getADLanguageOrBaseLanguage();
+		final ClientId clientId = Env.getClientId();
 		try
 		{
 			final NewestConversionRatesFilter filter = NewestConversionRatesFilter.builder()
@@ -154,7 +157,7 @@ public class CurrencyConversionRestController
 					.conversionTypeCode(conversionTypeCode)
 					.build();
 
-			final List<JsonNewestConversionRate> rates = newestConversionRatesService.list(filter);
+			final List<JsonNewestConversionRate> rates = newestConversionRatesService.list(clientId, filter);
 
 			return ResponseEntity.ok(JsonResponseNewestConversionRates.builder()
 					.rates(rates)

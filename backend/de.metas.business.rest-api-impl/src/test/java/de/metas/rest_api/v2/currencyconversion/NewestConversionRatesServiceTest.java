@@ -70,7 +70,7 @@ class NewestConversionRatesServiceTest
 
 		currencyDAO = (PlainCurrencyDAO)Services.get(de.metas.currency.ICurrencyDAO.class);
 
-		newestConversionRatesService = new NewestConversionRatesService();
+		newestConversionRatesService = new NewestConversionRatesService(new CurrencyConversionRepository());
 
 		eur = createActiveCurrency("EUR");
 		cny = createActiveCurrency("CNY");
@@ -118,6 +118,11 @@ class NewestConversionRatesServiceTest
 		return Env.getClientId();
 	}
 
+	private List<JsonNewestConversionRate> list(final NewestConversionRatesService.NewestConversionRatesFilter filter)
+	{
+		return newestConversionRatesService.list(Env.getClientId(), filter);
+	}
+
 	@Test
 	void newestPerCombo_returnsOnlyMaxValidFromRow_perCombo()
 	{
@@ -133,7 +138,7 @@ class NewestConversionRatesServiceTest
 		createRate(clientId, org0, eur, usd, spotTypeId, LocalDate.parse("2026-06-01"), "1.10");
 		createRate(clientId, org0, eur, usd, spotTypeId, LocalDate.parse("2026-06-02"), "1.11");
 
-		final List<JsonNewestConversionRate> result = newestConversionRatesService.list(
+		final List<JsonNewestConversionRate> result = list(
 				NewestConversionRatesService.NewestConversionRatesFilter.builder().build());
 
 		// exactly one row per combo (2 combos), each the newest ValidFrom
@@ -159,7 +164,7 @@ class NewestConversionRatesServiceTest
 		createRate(clientId, org0, eur, cny, spotTypeId, LocalDate.parse("2026-06-02"), "8.10");
 		createRate(clientId, org0, eur, cny, periodEndTypeId, LocalDate.parse("2026-06-02"), "8.15");
 
-		final List<JsonNewestConversionRate> result = newestConversionRatesService.list(
+		final List<JsonNewestConversionRate> result = list(
 				NewestConversionRatesService.NewestConversionRatesFilter.builder().build());
 
 		assertThat(result).hasSize(2);
@@ -177,7 +182,7 @@ class NewestConversionRatesServiceTest
 		createRate(clientId, org0, eur, cny, spotTypeId, LocalDate.parse("2026-06-02"), "8.10");
 		createRate(clientId, org0, usd, cny, spotTypeId, LocalDate.parse("2026-06-02"), "7.00");
 
-		final List<JsonNewestConversionRate> result = newestConversionRatesService.list(
+		final List<JsonNewestConversionRate> result = list(
 				NewestConversionRatesService.NewestConversionRatesFilter.builder()
 						.fromCurrencyCode("USD")
 						.build());
@@ -196,7 +201,7 @@ class NewestConversionRatesServiceTest
 		createRate(clientId, org0, eur, cny, spotTypeId, LocalDate.parse("2026-06-02"), "8.10");
 		createRate(clientId, org0, eur, usd, spotTypeId, LocalDate.parse("2026-06-02"), "1.11");
 
-		final List<JsonNewestConversionRate> result = newestConversionRatesService.list(
+		final List<JsonNewestConversionRate> result = list(
 				NewestConversionRatesService.NewestConversionRatesFilter.builder()
 						.toCurrencyCode("USD")
 						.build());
@@ -214,7 +219,7 @@ class NewestConversionRatesServiceTest
 		createRate(clientId, org0, eur, cny, spotTypeId, LocalDate.parse("2026-06-02"), "8.10");
 		createRate(clientId, org0, eur, cny, periodEndTypeId, LocalDate.parse("2026-06-02"), "8.15");
 
-		final List<JsonNewestConversionRate> result = newestConversionRatesService.list(
+		final List<JsonNewestConversionRate> result = list(
 				NewestConversionRatesService.NewestConversionRatesFilter.builder()
 						.conversionTypeCode("P")
 						.build());
@@ -236,7 +241,7 @@ class NewestConversionRatesServiceTest
 		// a DIFFERENT, later row belonging to another client -> must NOT leak into the result
 		createRate(otherClientId, org0, eur, cny, spotTypeId, LocalDate.parse("2026-06-05"), "9.99");
 
-		final List<JsonNewestConversionRate> result = newestConversionRatesService.list(
+		final List<JsonNewestConversionRate> result = list(
 				NewestConversionRatesService.NewestConversionRatesFilter.builder().build());
 
 		assertThat(result).hasSize(1);
@@ -252,7 +257,7 @@ class NewestConversionRatesServiceTest
 
 		createRate(clientId, org0, eur, cny, spotTypeId, LocalDate.parse("2026-06-02"), "8.00");
 
-		final List<JsonNewestConversionRate> result = newestConversionRatesService.list(
+		final List<JsonNewestConversionRate> result = list(
 				NewestConversionRatesService.NewestConversionRatesFilter.builder().build());
 
 		assertThat(result).hasSize(1);

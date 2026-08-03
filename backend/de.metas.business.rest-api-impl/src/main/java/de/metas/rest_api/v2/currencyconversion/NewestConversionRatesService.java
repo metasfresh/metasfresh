@@ -31,19 +31,15 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.Value;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_Conversion_Rate;
-import org.compiere.model.I_C_Currency;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -66,27 +62,25 @@ import java.util.Map;
 @Service
 public class NewestConversionRatesService
 {
-	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+	@NonNull private final CurrencyConversionRepository currencyConversionRepository;
+
+	public NewestConversionRatesService(@NonNull final CurrencyConversionRepository currencyConversionRepository)
+	{
+		this.currencyConversionRepository = currencyConversionRepository;
+	}
 
 	@NonNull
-	public List<JsonNewestConversionRate> list(@NonNull final NewestConversionRatesFilter filter)
+	public List<JsonNewestConversionRate> list(
+			@NonNull final ClientId clientId,
+			@NonNull final NewestConversionRatesFilter filter)
 	{
-		final ClientId clientId = Env.getClientId();
+		final CurrencyId fromCurrencyId = resolveOptionalCurrencyId(filter.getFromCurrencyCode());
+		final CurrencyId toCurrencyId = resolveOptionalCurrencyId(filter.getToCurrencyCode());
+		final CurrencyConversionTypeId conversionTypeId = resolveOptionalConversionTypeId(filter.getConversionTypeCode());
 
-		final IQueryBuilder<I_C_Conversion_Rate> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Conversion_Rate.class)
-				.addOnlyActiveRecordsFilter()
-				// session client + SYSTEM, mirroring the runtime rate-lookup client scoping
-				.addInArrayFilter(I_C_Conversion_Rate.COLUMNNAME_AD_Client_ID, ClientId.SYSTEM.getRepoId(), clientId.getRepoId());
-
-		applyOptionalCurrencyFilter(queryBuilder, I_C_Conversion_Rate.COLUMNNAME_C_Currency_ID, filter.getFromCurrencyCode());
-		applyOptionalCurrencyFilter(queryBuilder, I_C_Conversion_Rate.COLUMNNAME_C_Currency_ID_To, filter.getToCurrencyCode());
-		applyOptionalConversionTypeFilter(queryBuilder, filter.getConversionTypeCode());
-
-		final List<I_C_Conversion_Rate> rates = queryBuilder
-				.orderByDescending(I_C_Conversion_Rate.COLUMNNAME_ValidFrom)
-				.create()
-				.list(I_C_Conversion_Rate.class);
+		final List<I_C_Conversion_Rate> rates = currencyConversionRepository.getConversionRatesOrderedByValidFromDesc(
+				clientId, fromCurrencyId, toCurrencyId, conversionTypeId);
 
 		// Ordered ValidFrom-descending, so the FIRST row seen per combo is the newest -> first-wins.
 		final Map<ComboKey, I_C_Conversion_Rate> newestByCombo = new LinkedHashMap<>();
@@ -103,26 +97,22 @@ public class NewestConversionRatesService
 		return result;
 	}
 
-	private void applyOptionalCurrencyFilter(
-			@NonNull final IQueryBuilder<I_C_Conversion_Rate> queryBuilder,
-			@NonNull final String columnName,
-			@Nullable final String isoCode)
+	@Nullable
+	private CurrencyId resolveOptionalCurrencyId(@Nullable final String isoCode)
 	{
 		if (isoCode == null || isoCode.trim().isEmpty())
 		{
-			return;
+			return null;
 		}
-		final CurrencyId currencyId = resolveCurrencyId(isoCode.trim());
-		queryBuilder.addEqualsFilter(columnName, currencyId.getRepoId());
+		return currencyConversionRepository.findActiveCurrencyIdByIsoCode(isoCode.trim());
 	}
 
-	private void applyOptionalConversionTypeFilter(
-			@NonNull final IQueryBuilder<I_C_Conversion_Rate> queryBuilder,
-			@Nullable final String conversionTypeCode)
+	@Nullable
+	private CurrencyConversionTypeId resolveOptionalConversionTypeId(@Nullable final String conversionTypeCode)
 	{
 		if (conversionTypeCode == null || conversionTypeCode.trim().isEmpty())
 		{
-			return;
+			return null;
 		}
 		final ConversionTypeMethod method;
 		try
@@ -134,26 +124,7 @@ public class NewestConversionRatesService
 			throw new AdempiereException("@Invalid@ @C_ConversionType_ID@: " + conversionTypeCode)
 					.markAsUserValidationError();
 		}
-		final CurrencyConversionTypeId conversionTypeId = currencyDAO.getConversionTypeId(method);
-		queryBuilder.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_C_ConversionType_ID, conversionTypeId.getRepoId());
-	}
-
-	@NonNull
-	private CurrencyId resolveCurrencyId(@NonNull final String isoCode)
-	{
-		final I_C_Currency currency = Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(I_C_Currency.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Currency.COLUMNNAME_ISO_Code, isoCode)
-				.create()
-				.first(I_C_Currency.class);
-
-		if (currency == null)
-		{
-			throw new AdempiereException("@NotFound@ @C_Currency_ID@: " + isoCode)
-					.markAsUserValidationError();
-		}
-		return CurrencyId.ofRepoId(currency.getC_Currency_ID());
+		return currencyDAO.getConversionTypeId(method);
 	}
 
 	@NonNull
@@ -173,7 +144,7 @@ public class NewestConversionRatesService
 				.build();
 	}
 
-	/** Filter for {@link #list(NewestConversionRatesFilter)}; all fields optional (null = no narrowing). */
+	/** Filter for {@link #list(ClientId, NewestConversionRatesFilter)}; all fields optional (null = no narrowing). */
 	@Value
 	@Builder
 	public static class NewestConversionRatesFilter
@@ -183,24 +154,21 @@ public class NewestConversionRatesService
 		@Nullable String conversionTypeCode;
 	}
 
-	/** The per-combo grouping key: {@code (from, to, type)} by repo id. */
+	/** The per-combo grouping key: {@code (from, to, type)} by typed id. */
+	@RequiredArgsConstructor
 	@EqualsAndHashCode
 	private static final class ComboKey
 	{
-		private final int fromCurrencyId;
-		private final int toCurrencyId;
-		private final int conversionTypeId;
-
-		private ComboKey(final int fromCurrencyId, final int toCurrencyId, final int conversionTypeId)
-		{
-			this.fromCurrencyId = fromCurrencyId;
-			this.toCurrencyId = toCurrencyId;
-			this.conversionTypeId = conversionTypeId;
-		}
+		@NonNull private final CurrencyId fromCurrencyId;
+		@NonNull private final CurrencyId toCurrencyId;
+		@NonNull private final CurrencyConversionTypeId conversionTypeId;
 
 		private static ComboKey ofRate(@NonNull final I_C_Conversion_Rate rate)
 		{
-			return new ComboKey(rate.getC_Currency_ID(), rate.getC_Currency_ID_To(), rate.getC_ConversionType_ID());
+			return new ComboKey(
+					CurrencyId.ofRepoId(rate.getC_Currency_ID()),
+					CurrencyId.ofRepoId(rate.getC_Currency_ID_To()),
+					CurrencyConversionTypeId.ofRepoId(rate.getC_ConversionType_ID()));
 		}
 	}
 }
