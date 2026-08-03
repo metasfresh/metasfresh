@@ -7,9 +7,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class HttpCallSchedulerTest
 {
@@ -113,8 +115,15 @@ class HttpCallSchedulerTest
 			throw new RuntimeException("test error");
 		}));
 
-		// Should complete exceptionally
-		assertThat(failingFuture).isCompletedExceptionally();
+		// Should complete exceptionally.
+		// The supplier throws on the scheduler's pool thread, so completion happens
+		// asynchronously. Block until the future settles (up to 5s) instead of checking
+		// isCompletedExceptionally() synchronously: that check was racy and failed
+		// intermittently on CPU-contended CI runners where the pool thread had not yet
+		// run the throwing supplier at the instant the assertion was evaluated.
+		assertThatThrownBy(() -> failingFuture.get(5, TimeUnit.SECONDS))
+				.isInstanceOf(ExecutionException.class)
+				.hasCauseInstanceOf(RuntimeException.class);
 
 		// Wait a bit for scheduler to settle
 		Thread.sleep(500);
