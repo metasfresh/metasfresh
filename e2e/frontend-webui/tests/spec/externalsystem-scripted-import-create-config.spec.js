@@ -99,6 +99,10 @@ async function fillTextField(page, fieldName, value) {
   const field = page.locator(`.form-field-${fieldName} input[type="text"]`);
   await field.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
   await field.fill(value);
+  // Commit the edit: the WebUI PATCHes a field only on blur, so an uncommitted .fill() never
+  // persists — the exact defect the prior recording hit (mandatory fields left unsaved, the record
+  // stayed invalid "Fill mandatory fields"). Tab out to force the PATCH before moving on.
+  await field.press('Tab');
   await page.waitForTimeout(300);
 }
 
@@ -359,6 +363,18 @@ asserts the endpoint persists bound after a reload.
         reopenedEndpoint,
         'the seeded endpoint must be persisted (bound) on the saved config after reload'
       ).toHaveValue(new RegExp(escapeRegExp(endpointValue)), { timeout: SLOW_ACTION_TIMEOUT });
+
+      // OUTCOME check — prove the create+save persisted the WHOLE record, not just the endpoint FK we
+      // changed. Read the other mandatory fields back from the reopened (server-read) form; each must be
+      // non-empty. A bound-endpoint-only assertion silently passes even when a mandatory .fill() never
+      // committed and the saved row is invalid ("Fill mandatory fields: Import-Benutzer") — see the
+      // metasfresh-test-integrity Review-rule "a spec must assert the OUTCOME it claims".
+      for (const mandatoryField of ['ExternalSystemValue', 'ScriptIdentifier', 'AD_User_Import_ID']) {
+        await expect(
+          page.locator(`.form-field-${mandatoryField} input`).first(),
+          `mandatory field ${mandatoryField} must be persisted (non-empty) on the saved child row after reload`
+        ).not.toHaveValue('', { timeout: SLOW_ACTION_TIMEOUT });
+      }
     });
   });
 
@@ -444,6 +460,17 @@ after a reload.
         page.locator('.form-field-ExternalSystemValue input').first(),
         'the Suchschlüssel (ExternalSystemValue) must be persisted after reload'
       ).toHaveValue(externalSystemValue, { timeout: SLOW_ACTION_TIMEOUT });
+
+      // OUTCOME check — the OTHER mandatory fields persisted too, not just Suchschlüssel + endpoint.
+      // Import-Benutzer (AD_User_Import_ID) is the field whose silent non-commit made the prior
+      // recording save an invalid record; assert it and Skript-Kennung read back non-empty from the
+      // server (metasfresh-test-integrity Review-rule "assert the OUTCOME it claims").
+      for (const mandatoryField of ['ScriptIdentifier', 'AD_User_Import_ID']) {
+        await expect(
+          page.locator(`.form-field-${mandatoryField} input`).first(),
+          `mandatory field ${mandatoryField} must be persisted (non-empty) after reload`
+        ).not.toHaveValue('', { timeout: SLOW_ACTION_TIMEOUT });
+      }
     });
   });
 });
