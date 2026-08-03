@@ -110,11 +110,16 @@ public class ExternalSystemExportStatusService
 				.build());
 	}
 
-	/** The latest attempt row per config for the given source record (all states). */
+	/**
+	 * The current status per config for the given source record: the LATEST attempt row per config
+	 * (one row per config, all states). Deduped via {@link ExternalSystemExportStatusRepository#getLatestPerConfigBySourceRecord}
+	 * — NOT the raw per-attempt history, so a config that has been re-sent (>=2 rows) reports only its
+	 * newest attempt, never a stale earlier one.
+	 */
 	@NonNull
 	public List<ScriptedExportConversionStatus> getLatestStatusesBySourceRecord(@NonNull final TableRecordReference sourceRecord)
 	{
-		return repo.getLatestBySourceRecord(sourceRecord);
+		return repo.getLatestPerConfigBySourceRecord(sourceRecord);
 	}
 
 	/**

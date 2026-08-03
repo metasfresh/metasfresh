@@ -25,7 +25,6 @@ package de.metas.ui.web.externalsystem;
 import com.google.common.collect.ImmutableList;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.externalsystem.ExternalSystemExportStatus;
-import de.metas.externalsystem.model.X_ExternalSystem_ScriptedExportConversion_Status;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
@@ -45,7 +44,7 @@ public class ChangeEpcisExportStatusHelper
 {
 	@NonNull private final ADReferenceService adReferenceService = ADReferenceService.get();
 
-	private final int AD_Reference_ID = X_ExternalSystem_ScriptedExportConversion_Status.EXPORTSTATUS_AD_Reference_ID;
+	private final int AD_Reference_ID = ExternalSystemExportStatus.AD_Reference_ID;
 
 	/**
 	 * Allowed manual target statuses per current status:

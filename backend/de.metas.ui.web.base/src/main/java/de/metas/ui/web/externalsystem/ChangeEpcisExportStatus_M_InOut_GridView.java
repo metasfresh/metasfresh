@@ -67,6 +67,10 @@ public class ChangeEpcisExportStatus_M_InOut_GridView
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
+		// getFromStatus issues one status query per selected shipment. Acceptable for a view action
+		// (operators multi-select a handful of shipments); if bulk multi-selects appear, add a batched
+		// getLatestStatusesBySourceRecords accessor. getFromStatus already dedups to the latest attempt
+		// per config, so there is no per-attempt-row query here.
 		final Set<ExternalSystemExportStatus> statuses = inOutDAO.getByIds(inOutIds, I_M_InOut.class).stream()
 				.filter(I_M_InOut::isSOTrx)
 				.map(inOut -> changeService.getFromStatus(InOutId.ofRepoId(inOut.getM_InOut_ID())))
