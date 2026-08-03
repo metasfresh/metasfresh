@@ -112,8 +112,8 @@ class ConversionRateUpsertServiceTest
 	@Test
 	void singleRate_resolvesCurrencies_derivesDivideRate_defaultTypeAndOrg()
 	{
-		createActiveCurrency("EUR");
-		createActiveCurrency("CNY");
+		final CurrencyId eur = createActiveCurrency("EUR");
+		final CurrencyId cny = createActiveCurrency("CNY");
 
 		final JsonResponseConversionRateUpsert response = conversionRateUpsertService.upsert(
 				JsonRequestConversionRateUpsert.builder()
@@ -125,9 +125,10 @@ class ConversionRateUpsertServiceTest
 		assertThat(responseItem.getSyncOutcome()).isEqualTo(SyncOutcome.CREATED);
 		assertThat(responseItem.getError()).isNull();
 
-		final List<I_C_Conversion_Rate> rates = allRates();
-		assertThat(rates).hasSize(1);
-		final I_C_Conversion_Rate rate = rates.get(0);
+		// forward + auto-written reciprocal
+		assertThat(allRates()).hasSize(2);
+		final I_C_Conversion_Rate rate = rateFor(eur, cny);
+		assertThat(rate).isNotNull();
 		assertThat(rate.getMultiplyRate()).isEqualByComparingTo("8.00");
 		// DivideRate = 1/8 = 0.125 000 000 000 (scale 12, HALF_UP)
 		assertThat(rate.getDivideRate()).isEqualByComparingTo("0.125000000000");
@@ -143,8 +144,8 @@ class ConversionRateUpsertServiceTest
 	@Test
 	void divideRate_isRoundedHalfUpAtScale12()
 	{
-		createActiveCurrency("EUR");
-		createActiveCurrency("USD");
+		final CurrencyId eur = createActiveCurrency("EUR");
+		final CurrencyId usd = createActiveCurrency("USD");
 
 		conversionRateUpsertService.upsert(JsonRequestConversionRateUpsert.builder()
 				.requestItem(item()
@@ -153,7 +154,9 @@ class ConversionRateUpsertServiceTest
 						.build())
 				.build());
 
-		final I_C_Conversion_Rate rate = allRates().get(0);
+		// select the forward row explicitly; the auto-reciprocal also exists (list order is not guaranteed)
+		final I_C_Conversion_Rate rate = rateFor(eur, usd);
+		assertThat(rate).isNotNull();
 		assertThat(rate.getDivideRate()).isEqualByComparingTo("0.333333333333");
 		assertThat(rate.getDivideRate().scale()).isEqualTo(12);
 	}
@@ -181,8 +184,8 @@ class ConversionRateUpsertServiceTest
 		assertThat(err.getError()).isNotNull();
 		assertThat(err.getToCurrencyCode()).isEqualTo("XXX");
 
-		// only the valid record was written; the unknown currency was NOT auto-created
-		assertThat(allRates()).hasSize(1);
+		// only the valid record's two directions were written; the unknown currency was NOT auto-created
+		assertThat(allRates()).hasSize(2);
 		final long xxxCount = POJOLookupMap.get().getRecords(I_C_Currency.class).stream()
 				.filter(c -> "XXX".equals(c.getISO_Code()))
 				.count();
@@ -208,8 +211,8 @@ class ConversionRateUpsertServiceTest
 	@Test
 	void explicitConversionType_isHonored_unknownTypeCode_isError()
 	{
-		createActiveCurrency("EUR");
-		createActiveCurrency("CNY");
+		final CurrencyId eur = createActiveCurrency("EUR");
+		final CurrencyId cny = createActiveCurrency("CNY");
 
 		final JsonResponseConversionRateUpsert response = conversionRateUpsertService.upsert(
 				JsonRequestConversionRateUpsert.builder()
@@ -220,12 +223,14 @@ class ConversionRateUpsertServiceTest
 		assertThat(response.getResponseItems().get(0).getSyncOutcome()).isEqualTo(SyncOutcome.CREATED);
 		assertThat(response.getResponseItems().get(1).getSyncOutcome()).isEqualTo(SyncOutcome.ERROR);
 
-		final List<I_C_Conversion_Rate> rates = allRates();
-		assertThat(rates).hasSize(1);
+		// the valid "P" record wrote its forward + auto-reciprocal (both PeriodEnd); "Z" wrote nothing
+		assertThat(allRates()).hasSize(2);
+		final I_C_Conversion_Rate forward = rateFor(eur, cny);
+		assertThat(forward).isNotNull();
 		// the explicit "P" (PeriodEnd) type differs from the default (Spot); assert it was applied
 		final int periodEndConversionTypeId = currencyDAO
 				.getConversionTypeId(de.metas.currency.ConversionTypeMethod.PeriodEnd).getRepoId();
-		assertThat(rates.get(0).getC_ConversionType_ID()).isEqualTo(periodEndConversionTypeId);
+		assertThat(forward.getC_ConversionType_ID()).isEqualTo(periodEndConversionTypeId);
 	}
 
 	@Test
@@ -245,13 +250,14 @@ class ConversionRateUpsertServiceTest
 	@Test
 	void reUpsert_sameNaturalKey_updatesInPlace_noDuplicate()
 	{
-		createActiveCurrency("EUR");
-		createActiveCurrency("CNY");
+		final CurrencyId eur = createActiveCurrency("EUR");
+		final CurrencyId cny = createActiveCurrency("CNY");
 
 		conversionRateUpsertService.upsert(JsonRequestConversionRateUpsert.builder()
 				.requestItem(item().multiplyRate(new BigDecimal("8.00")).build())
 				.build());
-		assertThat(allRates()).hasSize(1);
+		// forward + auto-reciprocal
+		assertThat(allRates()).hasSize(2);
 
 		final JsonResponseConversionRateUpsert second = conversionRateUpsertService.upsert(
 				JsonRequestConversionRateUpsert.builder()
@@ -259,10 +265,19 @@ class ConversionRateUpsertServiceTest
 						.build());
 
 		assertThat(second.getResponseItems().get(0).getSyncOutcome()).isEqualTo(SyncOutcome.UPDATED);
-		final List<I_C_Conversion_Rate> rates = allRates();
-		assertThat(rates).hasSize(1);
-		assertThat(rates.get(0).getMultiplyRate()).isEqualByComparingTo("9.00");
-		assertThat(rates.get(0).getDivideRate()).isEqualByComparingTo("0.111111111111");
+		// still exactly the same two rows, updated in place
+		assertThat(allRates()).hasSize(2);
+		final I_C_Conversion_Rate forward = rateFor(eur, cny);
+		assertThat(forward).isNotNull();
+		assertThat(forward.getMultiplyRate()).isEqualByComparingTo("9.00");
+		assertThat(forward.getDivideRate()).isEqualByComparingTo("0.111111111111");
+		// the auto-reciprocal was updated in place too: multiplyRate = 1/9 = 0.111111111111 (scale 12,
+		// HALF_UP); its own divideRate = 1/0.111111111111 = 9.000000000009 (derived from the already-
+		// rounded reciprocal, so it is not exactly 9 — this is the value the service actually stores).
+		final I_C_Conversion_Rate reciprocal = rateFor(cny, eur);
+		assertThat(reciprocal).isNotNull();
+		assertThat(reciprocal.getMultiplyRate()).isEqualByComparingTo("0.111111111111");
+		assertThat(reciprocal.getDivideRate()).isEqualByComparingTo("9.000000000009");
 	}
 
 	@Test
@@ -309,5 +324,93 @@ class ConversionRateUpsertServiceTest
 
 		assertThat(response.getResponseItems().get(0).getSyncOutcome()).isEqualTo(SyncOutcome.ERROR);
 		assertThat(allRates()).isEmpty();
+	}
+
+	private I_C_Conversion_Rate rateFor(final CurrencyId fromCurrencyId, final CurrencyId toCurrencyId)
+	{
+		return allRates().stream()
+				.filter(r -> r.getC_Currency_ID() == fromCurrencyId.getRepoId()
+						&& r.getC_Currency_ID_To() == toCurrencyId.getRepoId())
+				.findFirst()
+				.orElse(null);
+	}
+
+	@Test
+	void forwardOnly_autoWritesReciprocal()
+	{
+		final CurrencyId eur = createActiveCurrency("EUR");
+		final CurrencyId cny = createActiveCurrency("CNY");
+
+		// only the forward EUR->CNY @ 8 is supplied; the reverse must be auto-written as 1/8
+		final JsonResponseConversionRateUpsert response = conversionRateUpsertService.upsert(
+				JsonRequestConversionRateUpsert.builder()
+						.requestItem(item().multiplyRate(new BigDecimal("8.00")).build())
+						.build());
+
+		// caller only asked for the forward direction -> one response item
+		assertThat(response.getResponseItems()).hasSize(1);
+		assertThat(response.getResponseItems().get(0).getSyncOutcome()).isEqualTo(SyncOutcome.CREATED);
+
+		// but BOTH directions are stored
+		assertThat(allRates()).hasSize(2);
+
+		final I_C_Conversion_Rate forward = rateFor(eur, cny);
+		assertThat(forward).isNotNull();
+		assertThat(forward.getMultiplyRate()).isEqualByComparingTo("8.00");
+
+		final I_C_Conversion_Rate reverse = rateFor(cny, eur);
+		assertThat(reverse).isNotNull();
+		// reciprocal multiplyRate = 1/8 = 0.125 (scale 12, HALF_UP)
+		assertThat(reverse.getMultiplyRate()).isEqualByComparingTo("0.125000000000");
+		// its own divideRate = 1 / (1/8) = 8
+		assertThat(reverse.getDivideRate()).isEqualByComparingTo("8.000000000000");
+	}
+
+	@Test
+	void bothDirectionsSupplied_callersReverse_isUntouched()
+	{
+		final CurrencyId eur = createActiveCurrency("EUR");
+		final CurrencyId cny = createActiveCurrency("CNY");
+
+		// caller supplies BOTH directions; the reverse rate is deliberately NOT the reciprocal (0.13 != 1/8)
+		final JsonResponseConversionRateUpsert response = conversionRateUpsertService.upsert(
+				JsonRequestConversionRateUpsert.builder()
+						.requestItem(item()
+								.fromCurrencyCode("EUR").toCurrencyCode("CNY")
+								.multiplyRate(new BigDecimal("8.00")).build())
+						.requestItem(item()
+								.fromCurrencyCode("CNY").toCurrencyCode("EUR")
+								.multiplyRate(new BigDecimal("0.13")).build())
+						.build());
+
+		// both supplied items reported
+		assertThat(response.getResponseItems()).hasSize(2);
+
+		// exactly the two supplied rows exist (no synthetic reciprocal added)
+		assertThat(allRates()).hasSize(2);
+
+		final I_C_Conversion_Rate reverse = rateFor(cny, eur);
+		assertThat(reverse).isNotNull();
+		// caller's reverse honored as-is, NOT overwritten with the computed reciprocal 0.125
+		assertThat(reverse.getMultiplyRate()).isEqualByComparingTo("0.13");
+	}
+
+	@Test
+	void reUpsertPair_isIdempotent_noDuplicateReciprocal()
+	{
+		createActiveCurrency("EUR");
+		createActiveCurrency("CNY");
+
+		// forward-only -> forward + auto reciprocal = 2 rows
+		conversionRateUpsertService.upsert(JsonRequestConversionRateUpsert.builder()
+				.requestItem(item().multiplyRate(new BigDecimal("8.00")).build())
+				.build());
+		assertThat(allRates()).hasSize(2);
+
+		// re-upsert the same forward-only request -> still exactly 2 rows (update in place, no dup)
+		conversionRateUpsertService.upsert(JsonRequestConversionRateUpsert.builder()
+				.requestItem(item().multiplyRate(new BigDecimal("8.00")).build())
+				.build());
+		assertThat(allRates()).hasSize(2);
 	}
 }

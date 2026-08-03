@@ -34,7 +34,10 @@ import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -51,18 +54,24 @@ import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Upserts normalized currency-conversion rates into {@code C_Conversion_Rate}.
  * <p>
- * This is the single-direction path only: each request item is resolved and persisted on its own.
- * Auto-reciprocal / explicit-reverse handling is a separate concern (see Task 3).
+ * Each caller-supplied request item is resolved and persisted on its own via the single-direction
+ * path. On top of that, both directions are always ensured: for every successfully-resolvable
+ * forward item whose reverse {@code (to -> from)} is <b>not</b> present in the same request, the
+ * reciprocal ({@code MultiplyRate = 1 / rate}) is auto-written; when the caller supplied the reverse
+ * itself, that reverse is honored untouched (never overwritten with a computed reciprocal).
  * <p>
  * Each request item is applied independently: a per-record failure (unknown/inactive currency,
  * unknown conversion-type code, {@code from == to}, non-positive rate, {@code validTo < validFrom})
  * yields an {@code ERROR} response item and never aborts the batch nor auto-creates a currency.
  */
 @Service
+@Slf4j
 public class ConversionRateUpsertService
 {
 	private final ICurrencyDAO currencyDAO;
@@ -81,22 +90,67 @@ public class ConversionRateUpsertService
 	{
 		final String adLanguage = Env.getADLanguageOrBaseLanguage();
 
+		// First, collect the natural keys the caller explicitly supplied, so that a caller-supplied
+		// reverse is honored untouched (never overwritten by a computed reciprocal). Keys are only
+		// added for items that resolve cleanly; an unresolvable item simply contributes no key.
+		final Set<NaturalKey> callerSuppliedKeys = new HashSet<>();
+		for (final JsonRequestConversionRateUpsertItem item : request.getRequestItems())
+		{
+			final NaturalKey key = naturalKeyOrNull(item);
+			if (key != null)
+			{
+				callerSuppliedKeys.add(key);
+			}
+		}
+
 		final JsonResponseConversionRateUpsert.JsonResponseConversionRateUpsertBuilder responseBuilder = JsonResponseConversionRateUpsert.builder();
 		for (final JsonRequestConversionRateUpsertItem item : request.getRequestItems())
 		{
-			responseBuilder.responseItem(upsertItem(item, adLanguage));
+			responseBuilder.responseItem(upsertItem(item, adLanguage, callerSuppliedKeys));
 		}
 		return responseBuilder.build();
+	}
+
+	/**
+	 * Resolves the natural key of the given request item without side effects, returning {@code null}
+	 * when it cannot be resolved (unknown/inactive currency, unknown type code, invalid org). Used only
+	 * to detect which reverse directions the caller supplied; the authoritative validation + persistence
+	 * still happens in {@link #upsertItem0}.
+	 */
+	@Nullable
+	private NaturalKey naturalKeyOrNull(@NonNull final JsonRequestConversionRateUpsertItem item)
+	{
+		try
+		{
+			final CurrencyId fromCurrencyId = resolveActiveCurrencyId(item.getFromCurrencyCode());
+			final CurrencyId toCurrencyId = resolveActiveCurrencyId(item.getToCurrencyCode());
+			final OrgId orgId = resolveOrgId(item.getOrgCode());
+			final CurrencyConversionTypeId conversionTypeId = resolveConversionTypeId(
+					item.getConversionTypeCode(),
+					Env.getClientId(),
+					orgId,
+					item.getValidFrom());
+			return new NaturalKey(orgId, fromCurrencyId, toCurrencyId, conversionTypeId, item.getValidFrom());
+		}
+		catch (final Exception ex)
+		{
+			// Best-effort probe: an unresolvable item contributes no caller-supplied key (the
+			// authoritative validation + error reporting still happens in upsertItem0). Leave a trace
+			// so a wrong-reciprocal investigation is not a diagnostic black hole.
+			log.debug("naturalKeyOrNull: failed to resolve key for item {}; treating as caller-not-supplied", item, ex);
+			return null;
+		}
 	}
 
 	@NonNull
 	private JsonResponseConversionRateUpsertItem upsertItem(
 			@NonNull final JsonRequestConversionRateUpsertItem item,
-			@NonNull final String adLanguage)
+			@NonNull final String adLanguage,
+			@NonNull final Set<NaturalKey> callerSuppliedKeys)
 	{
 		try
 		{
-			final SyncOutcome outcome = upsertItem0(item);
+			final SyncOutcome outcome = upsertItem0(item, callerSuppliedKeys);
 			return JsonResponseConversionRateUpsertItem.builder()
 					.fromCurrencyCode(item.getFromCurrencyCode())
 					.toCurrencyCode(item.getToCurrencyCode())
@@ -115,7 +169,9 @@ public class ConversionRateUpsertService
 	}
 
 	@NonNull
-	private SyncOutcome upsertItem0(@NonNull final JsonRequestConversionRateUpsertItem item)
+	private SyncOutcome upsertItem0(
+			@NonNull final JsonRequestConversionRateUpsertItem item,
+			@NonNull final Set<NaturalKey> callerSuppliedKeys)
 	{
 		final CurrencyId fromCurrencyId = resolveActiveCurrencyId(item.getFromCurrencyCode());
 		final CurrencyId toCurrencyId = resolveActiveCurrencyId(item.getToCurrencyCode());
@@ -135,8 +191,45 @@ public class ConversionRateUpsertService
 		// per-record error instead of a raw save-path exception.
 		validateInvariants(fromCurrencyId, toCurrencyId, multiplyRate, validFrom, item.getValidTo());
 
-		final BigDecimal divideRate = deriveDivideRate(multiplyRate);
+		final BigDecimal divideRate = reciprocal(multiplyRate);
 
+		final SyncOutcome outcome = saveRate(
+				clientId, orgId, fromCurrencyId, toCurrencyId, conversionTypeId, validFrom,
+				multiplyRate, divideRate,
+				item.getValidTo());
+
+		// Ensure the reverse direction exists. If the caller supplied the reverse itself (same
+		// request), honor it untouched; otherwise auto-write the reciprocal.
+		final NaturalKey reverseKey = new NaturalKey(orgId, toCurrencyId, fromCurrencyId, conversionTypeId, validFrom);
+		if (!callerSuppliedKeys.contains(reverseKey))
+		{
+			final BigDecimal reciprocalMultiplyRate = reciprocal(multiplyRate);
+			final BigDecimal reciprocalDivideRate = reciprocal(reciprocalMultiplyRate);
+			saveRate(
+					clientId, orgId, toCurrencyId, fromCurrencyId, conversionTypeId, validFrom,
+					reciprocalMultiplyRate, reciprocalDivideRate,
+					item.getValidTo());
+		}
+
+		return outcome;
+	}
+
+	/**
+	 * Single-direction find-existing-then-update-or-insert on the natural key. Returns whether the row
+	 * was created or updated.
+	 */
+	@NonNull
+	private SyncOutcome saveRate(
+			@NonNull final ClientId clientId,
+			@NonNull final OrgId orgId,
+			@NonNull final CurrencyId fromCurrencyId,
+			@NonNull final CurrencyId toCurrencyId,
+			@NonNull final CurrencyConversionTypeId conversionTypeId,
+			@NonNull final LocalDate validFrom,
+			@NonNull final BigDecimal multiplyRate,
+			@NonNull final BigDecimal divideRate,
+			@Nullable final LocalDate validTo)
+	{
 		I_C_Conversion_Rate record = findExistingRate(clientId, orgId, fromCurrencyId, toCurrencyId, conversionTypeId, validFrom);
 		final SyncOutcome outcome;
 		if (record == null)
@@ -156,7 +249,7 @@ public class ConversionRateUpsertService
 
 		record.setMultiplyRate(multiplyRate);
 		record.setDivideRate(divideRate);
-		record.setValidTo(item.getValidTo() != null ? TimeUtil.asTimestamp(item.getValidTo()) : null);
+		record.setValidTo(validTo != null ? TimeUtil.asTimestamp(validTo) : null);
 
 		InterfaceWrapperHelper.save(record);
 
@@ -246,10 +339,15 @@ public class ConversionRateUpsertService
 		}
 	}
 
+	/**
+	 * {@code 1 / rate} at scale {@value #DIVIDE_RATE_SCALE}, {@link #DIVIDE_RATE_ROUNDING}. Used both to
+	 * derive a row's {@code DivideRate} from its {@code MultiplyRate} and to compute the reverse
+	 * direction's {@code MultiplyRate} (the reciprocal).
+	 */
 	@NonNull
-	private static BigDecimal deriveDivideRate(@NonNull final BigDecimal multiplyRate)
+	private static BigDecimal reciprocal(@NonNull final BigDecimal rate)
 	{
-		return BigDecimal.ONE.divide(multiplyRate, DIVIDE_RATE_SCALE, DIVIDE_RATE_ROUNDING);
+		return BigDecimal.ONE.divide(rate, DIVIDE_RATE_SCALE, DIVIDE_RATE_ROUNDING);
 	}
 
 	@Nullable
@@ -276,5 +374,21 @@ public class ConversionRateUpsertService
 	private static Instant toInstant(@NonNull final LocalDate localDate)
 	{
 		return localDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
+	}
+
+	/**
+	 * The in-request natural key used to detect whether the caller supplied a given direction.
+	 * Mirrors the persistence natural key columns except {@code AD_Client_ID} (the whole batch runs
+	 * under one session client).
+	 */
+	@RequiredArgsConstructor
+	@EqualsAndHashCode
+	private static final class NaturalKey
+	{
+		@NonNull private final OrgId orgId;
+		@NonNull private final CurrencyId fromCurrencyId;
+		@NonNull private final CurrencyId toCurrencyId;
+		@NonNull private final CurrencyConversionTypeId conversionTypeId;
+		@NonNull private final LocalDate validFrom;
 	}
 }
