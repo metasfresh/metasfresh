@@ -60,15 +60,11 @@ import java.util.Map;
  * is both portable and cheap.
  */
 @Service
+@RequiredArgsConstructor
 public class NewestConversionRatesService
 {
 	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	@NonNull private final CurrencyConversionRepository currencyConversionRepository;
-
-	public NewestConversionRatesService(@NonNull final CurrencyConversionRepository currencyConversionRepository)
-	{
-		this.currencyConversionRepository = currencyConversionRepository;
-	}
 
 	@NonNull
 	public List<JsonNewestConversionRate> list(
