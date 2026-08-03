@@ -131,10 +131,6 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 		return Objects.equals("urn:iso:std:iso:20022:tech:xsd:camt.054.001.02", namespaceURI);
 	}
 
-	/**
-	 * {@code camt.054.001.08} is the ISO 20022 version 2019, which the Swiss banks migrate to by 2026-11-20.
-	 * It is structurally incompatible with the earlier versions, so it needs its own importer.
-	 */
 	private static boolean isVersion8Schema(@NonNull final String namespaceURI)
 	{
 		return Objects.equals("urn:iso:std:iso:20022:tech:xsd:camt.054.001.08", namespaceURI);
@@ -185,9 +181,7 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 			}
 			else
 			{
-				// everything else keeps going to the v06 importer, as before:
-				// camt.054.001.04 and .05 are rewritten to .06 by MultiVersionStreamReaderDelegate,
-				// and .06 files are handled natively.
+				// deliberately a catch-all rather than a .06 check: .04 and .05 arrive here too, rewritten by the delegate above
 				return importCamt54v06(mxsr);
 			}
 
