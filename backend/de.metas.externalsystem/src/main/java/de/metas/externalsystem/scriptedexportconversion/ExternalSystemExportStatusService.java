@@ -92,6 +92,32 @@ public class ExternalSystemExportStatusService
 	}
 
 	/**
+	 * Manually changes the export status of (config, sourceRecord) to {@code targetStatus} by recording a
+	 * NEW attempt row, stamped with the triggering process instance ({@code pInstanceId}) for a who/when
+	 * audit trail. Prior attempt rows are kept as history. Used by the "Change EPCIS Export Status" process.
+	 */
+	public void recordManualStatusChange(
+			@NonNull final ExternalSystemScriptedExportConversionConfigId configId,
+			@NonNull final TableRecordReference sourceRecord,
+			@NonNull final ExternalSystemExportStatus targetStatus,
+			@NonNull final PInstanceId pInstanceId)
+	{
+		repo.insertNewAttempt(ScriptedExportConversionStatusCreateRequest.builder()
+				.configId(configId)
+				.sourceRecord(sourceRecord)
+				.status(targetStatus)
+				.pInstanceId(pInstanceId)
+				.build());
+	}
+
+	/** The latest attempt row per config for the given source record (all states). */
+	@NonNull
+	public List<ScriptedExportConversionStatus> getLatestStatusesBySourceRecord(@NonNull final TableRecordReference sourceRecord)
+	{
+		return repo.getLatestBySourceRecord(sourceRecord);
+	}
+
+	/**
 	 * Records that the source record was included by the config WhereClause.
 	 * Status {@link ExternalSystemExportStatus#Pending}, no PInstance yet.
 	 */
