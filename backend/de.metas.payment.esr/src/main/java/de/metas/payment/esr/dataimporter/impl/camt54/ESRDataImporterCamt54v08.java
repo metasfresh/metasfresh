@@ -84,7 +84,7 @@ import java.util.List;
  */
 public class ESRDataImporterCamt54v08
 {
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@Nullable private final CurrencyCode bankAccountCurrencyCode;
 	@NonNull private final String adLanguage;
@@ -146,7 +146,7 @@ public class ESRDataImporterCamt54v08
 		BigDecimal newCtrlQty = ctrlQty;
 		for (final EntryDetails9 ntryDtl : ntry.getNtryDtls())
 		{
-			if (ESRDataImporterCamt54.CTRL_QTY_AT_LEAST_ONE_NULL.compareTo(ctrlQty) == 0
+			if (ctrlQty.compareTo(ESRDataImporterCamt54.CTRL_QTY_AT_LEAST_ONE_NULL) == 0
 					|| ntryDtl.getBtch() == null || ntryDtl.getBtch().getNbOfTxs() == null)
 			{
 				// the current ntryDtl has no control qty, or an earlier one already didn't have a control qty
