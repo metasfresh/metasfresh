@@ -4,7 +4,6 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.payment.camt054_001_02.EntryTransaction2;
-import de.metas.payment.camt054_001_06.DocumentType3Code;
 import de.metas.payment.camt054_001_06.EntryTransaction8;
 import de.metas.payment.camt054_001_08.EntryTransaction10;
 import de.metas.payment.esr.dataimporter.ESRTransaction.ESRTransactionBuilder;
@@ -76,7 +75,7 @@ public class ReferenceStringHelper
 		{
 			return false;
 		}
-		return DocumentType3Code.SCOR.equals(cd); // Only SCOR is valid from DocumentType3Code
+		return de.metas.payment.camt054_001_02.DocumentType3Code.SCOR.equals(cd); // Only SCOR is valid from DocumentType3Code
 	}
 
 	private static boolean isSupportedESRType(final de.metas.payment.camt054_001_06.CreditorReferenceInformation2 cdtrRefInf)
@@ -98,7 +97,7 @@ public class ReferenceStringHelper
 		{
 			return false;
 		}
-		return DocumentType3Code.SCOR.equals(cd); // Only SCOR is valid from DocumentType3Code
+		return de.metas.payment.camt054_001_06.DocumentType3Code.SCOR.equals(cd); // Only SCOR is valid from DocumentType3Code
 	}
 
 	private static boolean isSupportedESRType(final de.metas.payment.camt054_001_08.CreditorReferenceInformation2 cdtrRefInf)
