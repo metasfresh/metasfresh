@@ -42,6 +42,23 @@
         <testcontainers.version>1.17.6</testcontainers.version>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <!-- Pin the whole io.cucumber artifact set (incl. io.cucumber:messages) to one
+                 consistent version. Without this, grafting allure-cucumber7-jvm leaves
+                 io.cucumber:messages unmanaged: Maven then fetches messages/maven-metadata.xml
+                 and resolves several versions, which makes go-offline-maven-plugin hang for
+                 the whole cucumber image build. Pinned to the branch's own cucumber version. -->
+            <dependency>
+                <groupId>io.cucumber</groupId>
+                <artifactId>cucumber-bom</artifactId>
+                <version>${cucumber.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -149,6 +166,14 @@
             <groupId>org.testcontainers</groupId>
             <artifactId>rabbitmq</artifactId>
             <version>${testcontainers.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Allure reporting for Cucumber tests -->
+        <dependency>
+            <groupId>io.qameta.allure</groupId>
+            <artifactId>allure-cucumber7-jvm</artifactId>
+            <version>2.25.0</version>
             <scope>test</scope>
         </dependency>
 
