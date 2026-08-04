@@ -92,7 +92,6 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.lang.IContextAware;
@@ -1056,8 +1055,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		// The picked-qty allocation may only be split by attributes that are whitelisted for the shipment
 		// line in M_ShipmentSchedule_AttributeConfig — the SAME criterion the downstream M_InOutLine
 		// aggregation applies (see ShipmentScheduleWithHU#computeAttributeValues).
-		final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule =
-				InterfaceWrapperHelper.create(qtyPicked.getM_ShipmentSchedule(), de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class);
+		final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule = qtyPicked.getM_ShipmentSchedule();
 
 		// One pass: for each child VHU compute its UseInASI fingerprint once, then emit one
 		// (fingerprint, productStorage) entry per non-empty product storage of that VHU.
