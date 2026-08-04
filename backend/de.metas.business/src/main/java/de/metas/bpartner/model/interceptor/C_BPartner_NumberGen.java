@@ -66,7 +66,10 @@ public class C_BPartner_NumberGen
 
 		final ClientId clientId = ClientId.ofRepoId(bpartner.getAD_Client_ID());
 		final OrgId orgId = OrgId.ofRepoId(bpartner.getAD_Org_ID());
-		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
+		// At TYPE_BEFORE_NEW, native-sequence mode leaves C_BPartner_ID=0 until saveNew() assigns it.
+		// BPartnerId.ofRepoIdOrNull returns null in that case; BPartnerNumberContext accepts @Nullable.
+		// The sequence branch ignores bPartnerId; the override branch receives null and must handle it.
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(bpartner.getC_BPartner_ID());
 		final boolean isCustomer = bpartner.isCustomer();
 		final boolean isVendor = bpartner.isVendor();
 		final boolean isCompany = bpartner.isCompany();

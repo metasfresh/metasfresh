@@ -53,7 +53,11 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class BPartnerNumberGenerator
 {
-	/** Per-org sysconfig: fully-qualified DB function name used as a number resolver. */
+	/**
+	 * Per-org sysconfig: plain or schema-qualified DB function name used as a number resolver.
+	 * Validated as {@code [A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)?} before use.
+	 * Example: {@code public.fn_bpartner_no}.
+	 */
 	public static final String SYSCONFIG_OVERRIDE = "de.metas.bpartner.NumberResolverOverride";
 	/** Per-org sysconfig: {@code AD_Sequence_ID} (integer) for debtor numbers. */
 	public static final String SYSCONFIG_DEBTOR_SEQ = "de.metas.bpartner.DebtorNoSequence";

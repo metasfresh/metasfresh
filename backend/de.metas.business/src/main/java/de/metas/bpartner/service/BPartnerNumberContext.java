@@ -29,6 +29,8 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.service.ClientId;
 
+import javax.annotation.Nullable;
+
 /**
  * Immutable context object passed to {@link BPartnerNumberGenerator}.
  * Carries all per-request data needed to resolve the right sequence or override function
@@ -51,8 +53,15 @@ public class BPartnerNumberContext
 
 	@NonNull OrgId orgId;
 
-	/** The {@code C_BPartner_ID} of the business partner being processed. */
-	@NonNull BPartnerId bPartnerId;
+	/**
+	 * The {@code C_BPartner_ID} of the business partner being processed.
+	 *
+	 * <p>May be {@code null} when the interceptor fires at {@code TYPE_BEFORE_NEW}:
+	 * in native-sequence mode the primary key is {@code 0} until {@code saveNew()} assigns it,
+	 * so the interceptor cannot provide a valid {@link BPartnerId}.
+	 * Only the override-function branch uses this value; the sequence branch ignores it.
+	 */
+	@Nullable BPartnerId bPartnerId;
 
 	boolean isCustomer;
 	boolean isVendor;

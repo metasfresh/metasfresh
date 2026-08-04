@@ -222,6 +222,22 @@ class BPartnerNumberGeneratorTest
 		}
 
 		@Test
+		void delegatesToDao_whenOverrideConfigured()
+		{
+			when(sysConfigBL.getValue(
+					eq(BPartnerNumberGenerator.SYSCONFIG_OVERRIDE),
+					isNull(),
+					anyInt(),
+					eq(AD_ORG_ID)))
+					.thenReturn("fn_bpartner_no");
+
+			generator.reserveExplicit(debtorCtx(), 12345);
+
+			verify(dao).callOverrideFunction(eq("fn_bpartner_no"), any(BPartnerNumberContext.class), eq(12345));
+			verify(dao, never()).advancePast(any(), anyInt());
+		}
+
+		@Test
 		void throwsOnInvalidOverrideName_rejectingInjection()
 		{
 			final String badName = "fn(bad name)";

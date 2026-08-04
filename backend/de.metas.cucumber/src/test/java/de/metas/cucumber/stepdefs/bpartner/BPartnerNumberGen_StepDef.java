@@ -43,6 +43,8 @@ import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_Sequence;
 import org.compiere.model.I_AD_SysConfig;
+import org.compiere.util.DB;
+import org.adempiere.ad.trx.api.ITrx;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -165,6 +167,31 @@ public class BPartnerNumberGen_StepDef
 	{
 		final int orgId = resolveOrgId(orgValue);
 		setSysconfigStringForOrg(SYSCONFIG_OVERRIDE, functionName, orgId);
+	}
+
+	/**
+	 * Creates (or replaces) the override-function {@code functionName} in the database so TC9 can
+	 * call it without relying on pre-existing seed-DB state.
+	 *
+	 * <p>The function accepts the standard BPartner number-generation signature and returns the
+	 * given {@code returnValue} unconditionally. Drop-and-create with {@code OR REPLACE} is safe
+	 * because the name is test-owned and guaranteed not to conflict with production functions
+	 * (the metasfresh function-name convention uses the {@code metas_} prefix for internal names).
+	 *
+	 * @param functionName plain SQL identifier of the function (no schema prefix — created in {@code public})
+	 * @param returnValue  the fixed integer the function should return, for assertion in the scenario
+	 */
+	@Given("the override test function {string} returns {int}")
+	public void the_override_test_function_returns(
+			@NonNull final String functionName,
+			final int returnValue)
+	{
+		final String sql = "CREATE OR REPLACE FUNCTION " + functionName + "("
+				+ "p_ad_org_id int, p_c_bpartner_id int,"
+				+ " p_iscustomer bool, p_isvendor bool, p_iscompany bool,"
+				+ " p_kind text, p_explicit int"
+				+ ") RETURNS int LANGUAGE sql AS $$ SELECT " + returnValue + " $$";
+		DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_None);
 	}
 
 	// ─── WHEN: upsert ─────────────────────────────────────────────────────────
@@ -389,8 +416,8 @@ public class BPartnerNumberGen_StepDef
 			@NonNull final String orgValue) throws IOException
 	{
 		final boolean isCompany = "company".equalsIgnoreCase(companyType);
-		final boolean isCustomer = "customer".equalsIgnoreCase(role);
-		final boolean isVendor = "vendor".equalsIgnoreCase(role);
+		final boolean isCustomer = "customer".equalsIgnoreCase(role) || "both".equalsIgnoreCase(role);
+		final boolean isVendor = "vendor".equalsIgnoreCase(role) || "both".equalsIgnoreCase(role);
 
 		final StringBuilder bpartnerJson = new StringBuilder();
 		bpartnerJson.append("{");

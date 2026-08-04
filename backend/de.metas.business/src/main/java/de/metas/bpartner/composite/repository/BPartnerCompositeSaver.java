@@ -276,7 +276,7 @@ final class BPartnerCompositeSaver
 		{
 			bpartnerRecord.setLastname(bpartner.getLastName());
 		}
-		// debtorId / creditorId: 0 means "not set" (convention: NumberUtils.greaterThanZeroOrNull on load)
+		// debtorId / creditorId: 0 means "not set" (convention: NumberUtils.graterThanZeroOrNull on load — note the intentional typo in NumberUtils)
 		if (bpartner.getDebtorId() != null)
 		{
 			bpartnerRecord.setDebtorId(bpartner.getDebtorId());

@@ -22,6 +22,7 @@ package de.metas.bpartner.service;
  * #L%
  */
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.document.sequence.DocSequenceId;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
@@ -82,8 +83,10 @@ public class BPartnerNumberSequenceDAO
 				rs -> result.setValue(rs.getInt(1)));
 
 		final int value = result.getValue();
-		if (value < 0)
+		if (value <= 0)
 		{
+			// value=-1 means RETURNING yielded no row (sequence not found).
+			// value=0 means CurrentNext=IncrementNo at draw time — neither can produce a usable number.
 			throw new IllegalStateException("AD_Sequence row not found or RETURNING returned no row for AD_Sequence_ID=" + seqId.getRepoId());
 		}
 		return value;
@@ -143,13 +146,18 @@ public class BPartnerNumberSequenceDAO
 					"Override function name is not a valid SQL identifier (must match [A-Za-z_][A-Za-z0-9_]*(.[A-Za-z_][A-Za-z0-9_]*)? ): " + trimmed);
 		}
 
+		// bPartnerId may be null at TYPE_BEFORE_NEW (native-sequence mode: ID not yet assigned).
+		// Pass 0 in that case — the override function must treat 0 as "not yet known".
+		final BPartnerId bPartnerId = ctx.getBPartnerId();
+		final int bPartnerIdRepoId = bPartnerId != null ? bPartnerId.getRepoId() : 0;
+
 		final String sql = "SELECT " + trimmed
 				+ "(?, ?, ?, ?, ?, CAST(? AS TEXT), ?)";
 		final Integer result = DB.getSQLValueEx(
 				ITrx.TRXNAME_ThreadInherited,
 				sql,
 				ctx.getOrgId().getRepoId(),
-				ctx.getBPartnerId().getRepoId(),
+				bPartnerIdRepoId,
 				ctx.isCustomer(),
 				ctx.isVendor(),
 				ctx.isCompany(),

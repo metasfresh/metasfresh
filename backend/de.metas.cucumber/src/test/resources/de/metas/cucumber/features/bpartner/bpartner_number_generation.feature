@@ -80,9 +80,19 @@ Feature: BPartner debtor/creditor number generation via REST V2 upsert
   @from:cucumber
   @Id:S25082_TC9
   Scenario: TC9 - override function replaces sequence-based generation
-    Given org "001" uses number resolver "metas_bpartner_numbgen_test_override"
+    Given the override test function "metas_bpartner_numbgen_test_override" returns 999
+    And org "001" uses number resolver "metas_bpartner_numbgen_test_override"
     When I upsert a "non-company" "customer" "TC9-override"
     Then responseItems[0].responseBPartnerItem.debtorId is 999
+
+  @from:cucumber
+  @Id:S25082_TC9b
+  Scenario: TC9b - partner who is both customer and vendor gets both debtor and creditor numbers
+    Given a debtor sequence for org "001" starting at 91000
+    And a creditor sequence for org "001" starting at 92000
+    When I upsert a "non-company" "both" "TC9b-both"
+    Then responseItems[0].responseBPartnerItem.debtorId is within 91000..91099
+    And responseItems[0].responseBPartnerItem.creditorId is within 92000..92099
 
   @from:cucumber
   @Id:S25082_TC10

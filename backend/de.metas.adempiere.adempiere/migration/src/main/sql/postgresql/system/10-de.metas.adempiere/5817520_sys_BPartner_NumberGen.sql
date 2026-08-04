@@ -13,7 +13,7 @@
 --   AD_Sequence  556615 (BPartner_DebtorNo_Default)
 --   AD_Sequence  556616 (BPartner_CreditorNo_Default)
 
--- Sysconfig: override switch (blank = no override; set to a class FQN to activate)
+-- Sysconfig: override switch (blank = no override; set to a schema-qualified DB function name to activate)
 INSERT INTO AD_SysConfig (AD_Client_ID, AD_Org_ID, AD_SysConfig_ID, ConfigurationLevel,
                           Created, CreatedBy, Updated, UpdatedBy,
                           EntityType, IsActive, Name, Value, Description)
@@ -23,7 +23,7 @@ SELECT 0, 0, 541842 /*From ID Server*/, 'O',
        'D', 'Y',
        'de.metas.bpartner.NumberResolverOverride',
        '',
-       'Optional FQN of a custom IBPartnerNumberResolver bean. Leave blank to use the default sequence-based resolver.'
+       'SQL function name (plain or schema-qualified, e.g. public.fn_bpartner_no) for custom number resolution. Leave blank to use sequence-based generation.'
 WHERE NOT EXISTS (
     SELECT 1 FROM AD_SysConfig WHERE Name = 'de.metas.bpartner.NumberResolverOverride'
 );
