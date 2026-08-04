@@ -96,6 +96,7 @@ import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
 import org.slf4j.Logger;
@@ -112,6 +113,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -1050,6 +1052,19 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		final IHUStorageFactory storageFactory = huContext.getHUStorageFactory();
 		final IAttributeStorageFactory attrFactory = huContext.getHUAttributeStorageFactory();
 
+		// The picked-qty allocation may only be split by attributes that are whitelisted for the shipment
+		// line in M_ShipmentSchedule_AttributeConfig — the SAME criterion the downstream M_InOutLine
+		// aggregation applies (see ShipmentScheduleWithHU#computeAttributeValues). Without this filter every
+		// UseInASI attribute splits the allocation, including per-piece measurements such as catch-weight
+		// WeightNet whose values differ only by distribution rounding (e.g. 0.333/0.333/0.334) — producing
+		// extra M_ShipmentSchedule_QtyPicked rows that back no distinct shipment line (gh31403).
+		final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule =
+				org.adempiere.model.InterfaceWrapperHelper.create(qtyPicked.getM_ShipmentSchedule(), de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class);
+		final de.metas.inoutcandidate.spi.ShipmentScheduleHandler shipmentScheduleHandler =
+				Services.get(de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL.class).getHandlerFor(shipmentSchedule);
+		final Predicate<I_M_Attribute> attributeMayBePartOfShipmentLine =
+				attribute -> shipmentScheduleHandler.attributeShallBePartOfShipmentLine(shipmentSchedule, attribute);
+
 		// One pass: for each child VHU compute its UseInASI fingerprint once, then emit one
 		// (fingerprint, productStorage) entry per non-empty product storage of that VHU.
 		// Filter by product so VHUs carrying a different product in the same TU are excluded.
@@ -1060,7 +1075,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 				handlingUnitsDAO.retrieveIncludedHUs(huToInspect)
 						.stream()
 						.filter(handlingUnitsBL::isVirtual)
-						.flatMap(vhu -> groupProductStoragesByFingerprint(vhu, productId, storageFactory, attrFactory))
+						.flatMap(vhu -> groupProductStoragesByFingerprint(vhu, productId, storageFactory, attrFactory, attributeMayBePartOfShipmentLine))
 						.collect(ImmutableListMultimap.toImmutableListMultimap(Map.Entry::getKey, Map.Entry::getValue));
 
 		if (storagesByFingerprint.isEmpty())
@@ -1185,20 +1200,22 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			@NonNull final I_M_HU vhu,
 			@NonNull final ProductId productId,
 			@NonNull final IHUStorageFactory storageFactory,
-			@NonNull final IAttributeStorageFactory attrFactory)
+			@NonNull final IAttributeStorageFactory attrFactory,
+			@NonNull final Predicate<I_M_Attribute> attributeMayBePartOfShipmentLine)
 	{
 		final IHUProductStorage productStorage = storageFactory.getStorage(vhu).getProductStorageOrNull(productId);
 		if (productStorage == null || productStorage.isEmpty())
 		{
 			return Stream.empty();
 		}
-		final AttributesKey fingerprint = computeUseInASIFingerprint(vhu, attrFactory);
+		final AttributesKey fingerprint = computeUseInASIFingerprint(vhu, attrFactory, attributeMayBePartOfShipmentLine);
 		return Stream.of(Maps.immutableEntry(fingerprint, productStorage));
 	}
 
 	private static AttributesKey computeUseInASIFingerprint(
 			@NonNull final I_M_HU vhu,
-			@NonNull final IAttributeStorageFactory factory)
+			@NonNull final IAttributeStorageFactory factory,
+			@NonNull final Predicate<I_M_Attribute> attributeMayBePartOfShipmentLine)
 	{
 		// IAttributeStorage does not implement getAttributeValueIdOrNull, so we cannot use
 		// AttributesKeys.createAttributesKeyFromAttributeSet here — list-type attributes
@@ -1208,6 +1225,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 				.getAttributeValues()
 				.stream()
 				.filter(av -> av.isUseInASI() && !av.isEmpty())
+				.filter(av -> attributeMayBePartOfShipmentLine.test(av.getM_Attribute()))
 				.map(HUShipmentScheduleBL::toAttributesKeyPart)
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
