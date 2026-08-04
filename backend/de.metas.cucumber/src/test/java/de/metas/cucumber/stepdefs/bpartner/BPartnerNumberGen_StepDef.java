@@ -101,8 +101,8 @@ public class BPartnerNumberGen_StepDef
 
 	private final TestContext testContext;
 	private final REST_API_StepDef restApiStepDef;
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public BPartnerNumberGen_StepDef(
 			@NonNull final TestContext testContext,

@@ -2,7 +2,6 @@
 @ghActions:run_on_executor3
 @allure.label.epic:E0390_Masterdata_Partner
 @allure.label.feature:F00900_Business_Partner
-@F00900
 Feature: BPartner debtor/creditor number generation via REST V2 upsert
 
   Background:
@@ -66,14 +65,15 @@ Feature: BPartner debtor/creditor number generation via REST V2 upsert
   @from:cucumber
   @Id:S25082_TC8
   Scenario: TC8 - two orgs draw from independent sequences
-    And metasfresh contains AD_Org:
+    Given metasfresh contains AD_Org:
       | AD_Org_ID.Identifier | Name    | Value |
       | org_tc8_a            | TC8OrgA | TC8A  |
       | org_tc8_b            | TC8OrgB | TC8B  |
-    Given a debtor sequence for org "TC8A" starting at 80000
+    And a debtor sequence for org "TC8A" starting at 80000
     And a debtor sequence for org "TC8B" starting at 80000
     When I upsert a "non-company" "customer" "TC8-bpA" in org "TC8A"
-    And I upsert a "non-company" "customer" "TC8-bpB" in org "TC8B"
+    Then responseItems[0].responseBPartnerItem.debtorId is within 80000..80099
+    When I upsert a "non-company" "customer" "TC8-bpB" in org "TC8B"
     Then responseItems[0].responseBPartnerItem.debtorId is within 80000..80099
 
   @from:cucumber
