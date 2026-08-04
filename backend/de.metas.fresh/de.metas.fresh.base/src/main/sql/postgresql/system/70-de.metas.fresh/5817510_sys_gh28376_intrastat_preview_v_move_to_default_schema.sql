@@ -1,25 +1,19 @@
--- Preview view for the Intrastat window — WebUI grid twin of report.Intrastat_Export.
+-- Move Intrastat_Preview_V from de_metas_endcustomer_fresh_reports schema into the default schema.
 --
--- Mirrors the SELECT + WHERE of report.Intrastat_Export so grid rows equal the exported
--- payload for the same (year, period, IsSOTrx='Y') parameter set.
+-- Root cause: migration 5816890 created the view in de_metas_endcustomer_fresh_reports, but the
+-- WebUI generates unqualified SQL (FROM Intrastat_Preview_V master) against AD_Table-backed views.
+-- de_metas_endcustomer_fresh_reports is not on the app-server's search_path, so opening the
+-- Intrastat window fails with "relation intrastat_preview_v does not exist".
 --
--- Differences vs. report.Intrastat_Export:
---   * numeric columns (NetMass / SupplementaryUnits / InvoiceValue / StatisticalValue) are kept
---     as `numeric`, NOT TO_CHAR-formatted — so WebUI sort / filter / summing work naturally.
---   * IntrastaNatureOfTransaction is exposed as a hardcoded '11' constant column (matches the
---     default the export process passes to the function). Turning this into a real filter is a
---     future extension.
---   * CountryOfOrigin uses COALESCE(deliveredFromCountry, OriginCountry, deliveryCountry) —
---     for IsSOTrx='Y' (Export) this equals deliveredFromCountry, matching the function's
---     Export branch verbatim.
+-- Every other AD_Table-backed view in de.metas.fresh.base (Intrastat_Report_Detail_V,
+-- C_Order_M_InOut_C_Invoice_Overview_V, ...) lives in the default schema; only views consumed
+-- purely by SQL functions (which fully-qualify their references) belong in
+-- de_metas_endcustomer_fresh_reports.
 --
--- CHANGE COORDINATION: any change to report.Intrastat_Export's WHERE clauses MUST be mirrored
--- here — otherwise the WebUI grid and the exported RTIC payload diverge.
+-- Fix: drop the misplaced view and recreate it (same SELECT) in the default schema.
+-- Source of truth: backend/de.metas.fresh/de.metas.fresh.base/src/main/sql/postgresql/ddl/views/Intrastat_Preview_V.sql
 
--- Lives in the DEFAULT schema (like sibling AD-backed view Intrastat_Report_Detail_V), NOT in
--- de_metas_endcustomer_fresh_reports: the WebUI generates unqualified SQL against AD_Table-backed
--- views, and de_metas_endcustomer_fresh_reports is not on the app-server's search_path.
-
+DROP VIEW IF EXISTS de_metas_endcustomer_fresh_reports.Intrastat_Preview_V;
 DROP VIEW IF EXISTS Intrastat_Preview_V;
 
 CREATE OR REPLACE VIEW Intrastat_Preview_V AS
