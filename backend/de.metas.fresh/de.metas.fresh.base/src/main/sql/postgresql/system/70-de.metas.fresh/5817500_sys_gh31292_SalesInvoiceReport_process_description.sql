@@ -4,9 +4,6 @@
 --   * invoice lines linked to an invoice candidate -- lines without an invoice candidate get a NULL delivery
 --     date (taken from the candidate) and are dropped by the delivery-date range filter, so manually created
 --     invoice lines never appear.
--- This process has no AD_Element_ID, and no propagation function syncs AD_Process Name/Description/Help from an
--- element (only AD_Process_Para is synced) -- so Description/Help are set directly on AD_Process_Trl here, as in
--- the previous change to this same process. Base language (German) is synced from the de_DE _Trl row.
 
 -- en_US
 UPDATE AD_Process_Trl
