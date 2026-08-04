@@ -217,6 +217,7 @@ class BPartnerNumberGeneratorTest
 				.thenReturn("fn(bad name)");
 
 		assertThatThrownBy(() -> generator.reserveExplicit(debtorCtx(), 1))
-				.isInstanceOf(IllegalArgumentException.class);
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessageContaining("fn(bad name)");
 	}
 }

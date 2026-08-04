@@ -30,6 +30,7 @@ import lombok.Setter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -214,17 +215,14 @@ public class BPartnerNumberGenerator
 	}
 
 	/**
-	 * Returns the AD_Client_ID.
-	 * Uses the system-wide client (0) as a safe default for sysconfig lookups because the
-	 * ISysConfigBL.getValue(name, default, clientId, orgId) overload already applies the
-	 * per-org/per-client hierarchy; client 0 means "system-level fallback applies".
-	 *
-	 * <p>In a full Spring environment this would be injected; for now resolved at call time.
+	 * Returns the AD_Client_ID of the current environment.
+	 * Using {@link Env#getAD_Client_ID()} ensures that a sysconfig override stored at the
+	 * tenant client level (clientId=&lt;tenant&gt;, orgId=X) is found by the ISysConfigBL hierarchy;
+	 * passing 0 here would restrict the fallback chain to (0, orgId) → (0, ANY) and silently
+	 * skip any per-tenant row.
 	 */
 	private static int resolveClientId()
 	{
-		// AD_Client_ID = 0 (System) for sysconfig lookups that have no explicit client context.
-		// The ISysConfigBL hierarchy will find per-client or system-level values correctly.
-		return 0;
+		return Env.getAD_Client_ID();
 	}
 }
