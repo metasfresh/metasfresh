@@ -318,11 +318,16 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 		for (final InvoiceCandidateGenerateRequest request : requests)
 		{
 			// Lock the "model" to make sure nobody else would generate invoice candidates for it.
+			// retryOnFailure: two workpackages can legitimately reach the same model concurrently, and the
+			// lock is held only for this one generate-and-save. Without retries the loser dies on the
+			// t_lock_reference_singleowner unique index (LockOwner.newOwner mints a fresh owner per call,
+			// so they can never share the lock), the workpackage fails, and the candidates are never created.
 			final ILock lock = lockManager.lock()
 					.setOwner(lockOwner)
 					.setRecordByModel(model)
 					.setAutoCleanup(true)
 					.setFailIfAlreadyLocked(true)
+					.retryOnFailure(10)
 					.acquire();
 
 			try (final ILockAutoCloseable ignored = lock.asAutoCloseable())
