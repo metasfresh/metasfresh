@@ -44,6 +44,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_Sequence;
 import org.compiere.model.I_AD_SysConfig;
+import org.compiere.model.I_C_BP_Group;
 import org.compiere.util.DB;
 
 import java.util.regex.Pattern;
@@ -114,6 +115,15 @@ public class BPartnerNumberGen_StepDef
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+	/**
+	 * Per-scenario-instance unique suffix appended to every external identifier, so each run
+	 * creates fresh business partners. The local provided-infrastructure DB is NOT reset between
+	 * runs; without this, an {@code ifExists=UPDATE_MERGE} upsert would resolve a prior run's
+	 * partner and return its already-assigned number (e.g. the "no config" case would see a stale
+	 * number instead of null). On CI's fresh preloaded DB this is harmless.
+	 */
+	private final String runNonce = UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+
 	// ─── GIVEN: sequence / override setup ────────────────────────────────────
 
 	/**
@@ -172,7 +182,27 @@ public class BPartnerNumberGen_StepDef
 			@NonNull final String functionName)
 	{
 		final int orgId = resolveOrgId(orgValue);
-		setSysconfigStringForOrg(SYSCONFIG_OVERRIDE, functionName, orgId);
+		if (functionName.trim().isEmpty())
+		{
+			// Clearing the override: delete the org row (AD_SysConfig.Value is NOT NULL, so a blank
+			// value cannot be stored) — the generator then falls back to the blank System base row.
+			deleteOrgSysconfig(SYSCONFIG_OVERRIDE, orgId);
+		}
+		else
+		{
+			setSysconfigStringForOrg(SYSCONFIG_OVERRIDE, functionName, orgId);
+		}
+	}
+
+	/** Deletes the org-level AD_SysConfig row for a single key + org, then flushes the cache. */
+	private void deleteOrgSysconfig(@NonNull final String name, final int orgId)
+	{
+		queryBL.createQueryBuilder(I_AD_SysConfig.class)
+				.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_Name, name)
+				.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_AD_Org_ID, orgId)
+				.create()
+				.delete();
+		CacheMgt.get().reset(I_AD_SysConfig.Table_Name);
 	}
 
 	/**
@@ -433,7 +463,11 @@ public class BPartnerNumberGen_StepDef
 		bpartnerJson.append("{");
 		bpartnerJson.append("\"name\":\"").append(id).append("\",");
 		bpartnerJson.append("\"language\":\"de\",");
-		bpartnerJson.append("\"group\":\"Standard\",");
+		// Resolve a BP group that exists in the TARGET org (the V2 persister resolves the group
+		// within the partner's org). Org 001 has "Standard"; a secondary org (e.g. 002 in TC8) has
+		// none, so ensure one exists there — otherwise the upsert tries to create "Standard" and hits
+		// the client-wide C_BP_Group.Value unique constraint.
+		bpartnerJson.append("\"group\":\"").append(ensureGroupForOrg(resolveOrgId(orgValue))).append("\",");
 		bpartnerJson.append("\"customer\":").append(isCustomer).append(",");
 		bpartnerJson.append("\"vendor\":").append(isVendor);
 		if (isCompany)
@@ -450,7 +484,10 @@ public class BPartnerNumberGen_StepDef
 		}
 		bpartnerJson.append("}");
 
-		final String externalIdentifier = "ext-numbgen-" + id;
+		// Use the registered "Test_System" external system (proven in sibling bpartner V2 features);
+		// dash-safe reference because scenario ids contain dashes (e.g. "TC1-cust"). The per-scenario
+		// runNonce keeps each run's partners fresh (see field docs).
+		final String externalIdentifier = "ext-Test_System-" + id.replace("-", "_") + "_" + runNonce;
 
 		final String payload = "{"
 				+ "\"requestItems\":["
@@ -559,6 +596,75 @@ public class BPartnerNumberGen_StepDef
 	{
 		sysConfigBL.setValue(name, value, ClientId.METASFRESH, OrgId.ofRepoId(orgId));
 		CacheMgt.get().reset(I_AD_SysConfig.Table_Name);
+	}
+
+	/**
+	 * Isolation reset: blanks the per-org BPartner number-generation sysconfigs (override, debtor-seq,
+	 * creditor-seq) for the orgs the scenarios use ({@code 001} and {@code 002}). Run from the Background
+	 * so a value configured by an earlier scenario cannot leak into a later one on the same executor —
+	 * essential for the "no config means no number" case.
+	 */
+	@Given("the BPartner number-generation config is reset")
+	public void bpartner_number_generation_config_is_reset()
+	{
+		// Delete every org-level (AD_Org_ID != 0) row for the three keys, leaving only the blank
+		// System base rows (AD_Org_ID = 0) the migration ships. The generator then sees "no value"
+		// for every org until a scenario configures one. (Blanking Value to '' is not an option —
+		// AD_SysConfig.Value is NOT NULL and setValue('') stores NULL.)
+		queryBL.createQueryBuilder(I_AD_SysConfig.class)
+				.addInArrayFilter(I_AD_SysConfig.COLUMNNAME_Name, SYSCONFIG_OVERRIDE, SYSCONFIG_DEBTOR_SEQ, SYSCONFIG_CREDITOR_SEQ)
+				.addNotEqualsFilter(I_AD_SysConfig.COLUMNNAME_AD_Org_ID, 0)
+				.create()
+				.delete();
+		CacheMgt.get().reset(I_AD_SysConfig.Table_Name);
+
+		// Free the debtor/creditor numbers held by this feature's partners from earlier runs. The local
+		// provided-infrastructure DB is not reset between runs, so a fixed explicit number (e.g. 41000)
+		// or a sequence value re-drawn at the same StartNo would otherwise collide with a persisted
+		// partner via the (debtorid|creditorid, ad_org_id) unique index. Raw UPDATE bypasses the model
+		// interceptor (no regeneration). On CI's fresh preloaded DB this matches nothing and is a no-op.
+		DB.executeUpdateAndThrowExceptionOnFail(
+				"UPDATE C_BPartner SET DebtorId = 0, CreditorId = 0"
+						+ " WHERE Name LIKE 'TC%'"
+						+ " AND AD_Org_ID IN (SELECT AD_Org_ID FROM AD_Org WHERE Value IN ('001','002'))",
+				ITrx.TRXNAME_ThreadInherited);
+		CacheMgt.get().reset("C_BPartner");
+	}
+
+	/**
+	 * Returns the {@code Value} of a BP group usable in the given org, creating a minimal default
+	 * group for that org when none exists. A secondary seed org (e.g. 002) has no BP groups of its
+	 * own, so the upsert would otherwise try to create the client-wide "Standard" group and hit its
+	 * Value-unique constraint.
+	 */
+	private String ensureGroupForOrg(final int orgId)
+	{
+		I_C_BP_Group group = queryBL.createQueryBuilder(I_C_BP_Group.class)
+				.addEqualsFilter(I_C_BP_Group.COLUMNNAME_AD_Org_ID, orgId)
+				.addEqualsFilter(I_C_BP_Group.COLUMNNAME_IsDefault, true)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.first(I_C_BP_Group.class);
+		if (group == null)
+		{
+			group = queryBL.createQueryBuilder(I_C_BP_Group.class)
+					.addEqualsFilter(I_C_BP_Group.COLUMNNAME_AD_Org_ID, orgId)
+					.addOnlyActiveRecordsFilter()
+					.create()
+					.first(I_C_BP_Group.class);
+		}
+		if (group != null)
+		{
+			return group.getValue();
+		}
+
+		final I_C_BP_Group created = newInstance(I_C_BP_Group.class);
+		created.setAD_Org_ID(orgId);
+		created.setValue("NumGenTestGroup_" + orgId);
+		created.setName("NumGen Test Group " + orgId);
+		created.setIsDefault(true);
+		saveRecord(created);
+		return created.getValue();
 	}
 
 	/**

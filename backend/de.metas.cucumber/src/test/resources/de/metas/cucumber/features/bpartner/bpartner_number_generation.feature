@@ -8,6 +8,7 @@ Feature: BPartner debtor/creditor number generation via REST V2 upsert
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And the BPartner number-generation config is reset
 
   @from:cucumber
   @Id:S25082_TC1
@@ -66,15 +67,14 @@ Feature: BPartner debtor/creditor number generation via REST V2 upsert
   @from:cucumber
   @Id:S25082_TC8
   Scenario: TC8 - two orgs draw from independent sequences
-    Given metasfresh contains AD_Org:
-      | AD_Org_ID.Identifier | Name    | Value |
-      | org_tc8_a            | TC8OrgA | TC8A  |
-      | org_tc8_b            | TC8OrgB | TC8B  |
-    And a debtor sequence for org "TC8A" starting at 80000
-    And a debtor sequence for org "TC8B" starting at 80000
-    When I upsert a "non-company" "customer" "TC8-bpA" in org "TC8A"
+    # Uses the two existing, fully-set-up seed orgs 001 and 002 (a fresh org lacks the
+    # BP-group setup the upsert needs). Both debtor sequences start at 80000; the per-org
+    # unique index (debtorid, ad_org_id) and per-org sysconfig keep them independent.
+    Given a debtor sequence for org "001" starting at 80000
+    And a debtor sequence for org "002" starting at 80000
+    When I upsert a "non-company" "customer" "TC8-bpA" in org "001"
     Then responseItems[0].responseBPartnerItem.debtorId is within 80000..80099
-    When I upsert a "non-company" "customer" "TC8-bpB" in org "TC8B"
+    When I upsert a "non-company" "customer" "TC8-bpB" in org "002"
     Then responseItems[0].responseBPartnerItem.debtorId is within 80000..80099
 
   @from:cucumber
