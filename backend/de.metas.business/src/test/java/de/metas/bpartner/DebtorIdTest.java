@@ -22,6 +22,7 @@ package de.metas.bpartner;
  * #L%
  */
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,24 +30,28 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class DebtorIdTest
 {
-	@Test
-	void ofRepoIdOrNull_returns_null_for_zero()
+	@Nested
+	class OfRepoIdOrNull
 	{
-		assertThat(DebtorId.ofRepoIdOrNull(0)).isNull();
-	}
+		@Test
+		void returns_null_for_zero()
+		{
+			assertThat(DebtorId.ofRepoIdOrNull(0)).isNull();
+		}
 
-	@Test
-	void ofRepoIdOrNull_returns_null_for_negative()
-	{
-		assertThat(DebtorId.ofRepoIdOrNull(-5)).isNull();
-	}
+		@Test
+		void returns_null_for_negative()
+		{
+			assertThat(DebtorId.ofRepoIdOrNull(-5)).isNull();
+		}
 
-	@Test
-	void ofRepoIdOrNull_returns_value_for_positive()
-	{
-		final DebtorId id = DebtorId.ofRepoIdOrNull(10000);
-		assertThat(id).isNotNull();
-		assertThat(id.getRepoId()).isEqualTo(10000);
+		@Test
+		void returns_value_for_positive()
+		{
+			final DebtorId id = DebtorId.ofRepoIdOrNull(10000);
+			assertThat(id).isNotNull();
+			assertThat(id.getRepoId()).isEqualTo(10000);
+		}
 	}
 
 	@Test

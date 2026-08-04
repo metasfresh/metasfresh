@@ -1061,13 +1061,10 @@ public class JsonPersisterService
 			}
 		}
 
-		// debtorId
 		if (jsonBPartner.isDebtorIdSet())
 		{
 			bpartner.setDebtorId(jsonBPartner.getDebtorId());
 		}
-
-		// creditorId
 		if (jsonBPartner.isCreditorIdSet())
 		{
 			bpartner.setCreditorId(jsonBPartner.getCreditorId());

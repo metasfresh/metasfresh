@@ -36,19 +36,19 @@ import javax.annotation.Nullable;
 
 /**
  * BPartner-specific upsert response item.
- * Extends {@link JsonResponseUpsertItem} with auto-generated debtor/creditor numbers.
+ * Extends {@link JsonResponseUpsertItem} with debtor/creditor numbers persisted for this business partner.
  */
 @Value
 @EqualsAndHashCode(callSuper = true)
 public class JsonResponseBPartnerUpsertItem extends JsonResponseUpsertItem
 {
-	@ApiModelProperty(value = "Auto-generated debtor number (C_BPartner.DebtorId).")
+	@ApiModelProperty(value = "Debtor number persisted for this business partner (C_BPartner.DebtorId). Null when not set.")
 	@JsonProperty("debtorId")
 	@JsonInclude(Include.NON_NULL)
 	@Nullable
 	Integer debtorId;
 
-	@ApiModelProperty(value = "Auto-generated creditor number (C_BPartner.CreditorId).")
+	@ApiModelProperty(value = "Creditor number persisted for this business partner (C_BPartner.CreditorId). Null when not set.")
 	@JsonProperty("creditorId")
 	@JsonInclude(Include.NON_NULL)
 	@Nullable

@@ -47,7 +47,10 @@ class JsonResponseBPartnerUpsertItemTest
 
 		final String json = objectMapper.writeValueAsString(item);
 
-		assertThat(json).contains("\"debtorId\":10000");
-		assertThat(json).doesNotContain("creditorId");
+		// round-trip: deserialize back and assert fields — this also validates the @JsonCreator binding
+		final JsonResponseBPartnerUpsertItem roundTripped = objectMapper.readValue(json, JsonResponseBPartnerUpsertItem.class);
+		assertThat(roundTripped.getDebtorId()).isEqualTo(10000);
+		assertThat(roundTripped.getCreditorId()).isNull();
+		assertThat(roundTripped.getMetasfreshId()).isEqualTo(JsonMetasfreshId.of(23));
 	}
 }

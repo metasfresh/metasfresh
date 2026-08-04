@@ -225,7 +225,7 @@ public class JsonRequestBPartner
 	@ApiModelProperty(hidden = true)
 	private boolean debtorIdSet;
 
-	@ApiModelProperty(position = 169, //
+	@ApiModelProperty(position = 170, //
 			value = "Optional; the explicit creditor number to assign to this business partner (C_BPartner.CreditorID). Used during data migration from a legacy system.")
 	private @Nullable Integer creditorId;
 
