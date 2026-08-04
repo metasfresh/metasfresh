@@ -149,7 +149,7 @@ public class BPartnerNumberSequenceDAO
 				ITrx.TRXNAME_ThreadInherited,
 				sql,
 				ctx.getOrgId().getRepoId(),
-				ctx.getBPartnerId(),
+				ctx.getBPartnerId().getRepoId(),
 				ctx.isCustomer(),
 				ctx.isVendor(),
 				ctx.isCompany(),

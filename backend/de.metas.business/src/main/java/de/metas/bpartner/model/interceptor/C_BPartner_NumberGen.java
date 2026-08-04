@@ -22,6 +22,7 @@ package de.metas.bpartner.model.interceptor;
  * #L%
  */
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.CreditorId;
 import de.metas.bpartner.DebtorId;
 import de.metas.bpartner.service.BPartnerNumberContext;
@@ -65,7 +66,7 @@ public class C_BPartner_NumberGen
 
 		final ClientId clientId = ClientId.ofRepoId(bpartner.getAD_Client_ID());
 		final OrgId orgId = OrgId.ofRepoId(bpartner.getAD_Org_ID());
-		final int bpartnerId = bpartner.getC_BPartner_ID();
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
 		final boolean isCustomer = bpartner.isCustomer();
 		final boolean isVendor = bpartner.isVendor();
 		final boolean isCompany = bpartner.isCompany();

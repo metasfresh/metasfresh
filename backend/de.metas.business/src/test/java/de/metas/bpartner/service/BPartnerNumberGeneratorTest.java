@@ -22,6 +22,7 @@ package de.metas.bpartner.service;
  * #L%
  */
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerNumberContext.Kind;
 import de.metas.document.sequence.DocSequenceId;
 import de.metas.interfaces.I_C_BPartner;
@@ -80,7 +81,7 @@ class BPartnerNumberGeneratorTest
 		return BPartnerNumberContext.builder()
 				.clientId(ClientId.ofRepoId(AD_CLIENT_ID))
 				.orgId(OrgId.ofRepoId(AD_ORG_ID))
-				.bPartnerId(42)
+				.bPartnerId(BPartnerId.ofRepoId(42))
 				.isCustomer(true)
 				.isVendor(false)
 				.isCompany(false)
@@ -93,7 +94,7 @@ class BPartnerNumberGeneratorTest
 		return BPartnerNumberContext.builder()
 				.clientId(ClientId.ofRepoId(AD_CLIENT_ID))
 				.orgId(OrgId.ofRepoId(AD_ORG_ID))
-				.bPartnerId(43)
+				.bPartnerId(BPartnerId.ofRepoId(43))
 				.isCustomer(false)
 				.isVendor(true)
 				.isCompany(false)
@@ -101,15 +102,13 @@ class BPartnerNumberGeneratorTest
 				.build();
 	}
 
-	// ─── no-config branch ───────────────────────────────────────────────────
-
 	@Nested
 	class GenerateNext
 	{
 		@Test
 		void returnsEmpty_whenNoConfig()
 		{
-			// no sysconfig stubs → all return null
+			// no sysconfig stubs → all return null / 0
 
 			final Optional<Integer> result = generator.generateNext(debtorCtx());
 
@@ -120,12 +119,12 @@ class BPartnerNumberGeneratorTest
 		@Test
 		void delegatesToDao_whenDebtorSeqConfigured()
 		{
-			when(sysConfigBL.getValue(
+			when(sysConfigBL.getIntValue(
 					eq(BPartnerNumberGenerator.SYSCONFIG_DEBTOR_SEQ),
-					isNull(),
+					eq(-1),
 					anyInt(),
 					eq(AD_ORG_ID)))
-					.thenReturn("540123");
+					.thenReturn(540123);
 
 			when(dao.drawNext(DocSequenceId.ofRepoId(540123))).thenReturn(7);
 
@@ -137,12 +136,12 @@ class BPartnerNumberGeneratorTest
 		@Test
 		void delegatesToDao_whenCreditorSeqConfigured()
 		{
-			when(sysConfigBL.getValue(
+			when(sysConfigBL.getIntValue(
 					eq(BPartnerNumberGenerator.SYSCONFIG_CREDITOR_SEQ),
-					isNull(),
+					eq(-1),
 					anyInt(),
 					eq(AD_ORG_ID)))
-					.thenReturn("540456");
+					.thenReturn(540456);
 
 			when(dao.drawNext(DocSequenceId.ofRepoId(540456))).thenReturn(55);
 
@@ -210,12 +209,12 @@ class BPartnerNumberGeneratorTest
 		@Test
 		void delegatesToDao_whenDebtorSeqConfigured()
 		{
-			when(sysConfigBL.getValue(
+			when(sysConfigBL.getIntValue(
 					eq(BPartnerNumberGenerator.SYSCONFIG_DEBTOR_SEQ),
-					isNull(),
+					eq(-1),
 					anyInt(),
 					eq(AD_ORG_ID)))
-					.thenReturn("540123");
+					.thenReturn(540123);
 
 			generator.reserveExplicit(debtorCtx(), 999);
 
@@ -247,12 +246,12 @@ class BPartnerNumberGeneratorTest
 		@Test
 		void fires_whenIsNew()
 		{
-			when(sysConfigBL.getValue(
+			when(sysConfigBL.getIntValue(
 					eq(BPartnerNumberGenerator.SYSCONFIG_DEBTOR_SEQ),
-					isNull(),
+					eq(-1),
 					anyInt(),
 					eq(AD_ORG_ID)))
-					.thenReturn("540123");
+					.thenReturn(540123);
 
 			final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
 			// isNew=true on a freshly created POJO record

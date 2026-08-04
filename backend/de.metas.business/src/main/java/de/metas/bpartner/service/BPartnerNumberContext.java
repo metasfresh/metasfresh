@@ -22,6 +22,7 @@ package de.metas.bpartner.service;
  * #L%
  */
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -51,7 +52,7 @@ public class BPartnerNumberContext
 	@NonNull OrgId orgId;
 
 	/** The {@code C_BPartner_ID} of the business partner being processed. */
-	int bPartnerId;
+	@NonNull BPartnerId bPartnerId;
 
 	boolean isCustomer;
 	boolean isVendor;

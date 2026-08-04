@@ -44,7 +44,7 @@ import java.util.Optional;
  *       via {@link BPartnerNumberSequenceDAO#callOverrideFunction}.
  *       The DAO validates the function name as a safe SQL identifier; all argument values are bound as parameters.</li>
  *   <li><b>Sequence</b> — sysconfig {@value #SYSCONFIG_DEBTOR_SEQ} or {@value #SYSCONFIG_CREDITOR_SEQ}
- *       holds an {@code AD_Sequence_ID}: delegates to {@link BPartnerNumberSequenceDAO}.</li>
+ *       holds an {@code AD_Sequence_ID} (positive integer): delegates to {@link BPartnerNumberSequenceDAO}.</li>
  *   <li><b>No-op</b> — no config: {@code generateNext} returns {@link Optional#empty()};
  *       {@code reserveExplicit} is a no-op.</li>
  * </ol>
@@ -62,8 +62,6 @@ public class BPartnerNumberGenerator
 
 	@NonNull private final BPartnerNumberSequenceDAO dao;
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-
-	// ─── public API ──────────────────────────────────────────────────────────
 
 	/**
 	 * Allocates the next debtor or creditor number for the given context, or returns
@@ -83,10 +81,9 @@ public class BPartnerNumberGenerator
 		}
 
 		// 2. Sequence branch
-		final String seqConfig = sysConfigBL.getValue(seqSysconfigName(ctx.getKind()), (String)null, adClientId, adOrgId);
-		if (!Check.isBlank(seqConfig))
+		final int seqId = sysConfigBL.getIntValue(seqSysconfigName(ctx.getKind()), -1, adClientId, adOrgId);
+		if (seqId > 0)
 		{
-			final int seqId = Integer.parseInt(seqConfig.trim());
 			return Optional.of(dao.drawNext(DocSequenceId.ofRepoId(seqId)));
 		}
 
@@ -112,10 +109,9 @@ public class BPartnerNumberGenerator
 		}
 
 		// 2. Sequence branch
-		final String seqConfig = sysConfigBL.getValue(seqSysconfigName(ctx.getKind()), (String)null, adClientId, adOrgId);
-		if (!Check.isBlank(seqConfig))
+		final int seqId = sysConfigBL.getIntValue(seqSysconfigName(ctx.getKind()), -1, adClientId, adOrgId);
+		if (seqId > 0)
 		{
-			final int seqId = Integer.parseInt(seqConfig.trim());
 			dao.advancePast(DocSequenceId.ofRepoId(seqId), explicitValue);
 		}
 
@@ -129,10 +125,10 @@ public class BPartnerNumberGenerator
 	 * <p>Intended for use by model interceptors: the change-detection logic ({@link InterfaceWrapperHelper#isValueChanged})
 	 * lives here rather than in the interceptor (architecture §3 — interceptors are thin glue).
 	 *
-	 * @param bpartner   the model record being saved
-	 * @param ctx        the resolved context for this role (debtor or creditor)
-	 * @param isNew      whether this is a new (first-save) record
-	 * @param columnName the column to check for changes (e.g. {@link I_C_BPartner#COLUMNNAME_DebtorId})
+	 * @param bpartner      the model record being saved
+	 * @param ctx           the resolved context for this role (debtor or creditor)
+	 * @param isNew         whether this is a new (first-save) record
+	 * @param columnName    the column to check for changes (e.g. {@link I_C_BPartner#COLUMNNAME_DebtorId})
 	 * @param explicitValue the explicit number already set on the record
 	 */
 	public void reserveExplicitIfChanged(
@@ -147,8 +143,6 @@ public class BPartnerNumberGenerator
 			reserveExplicit(ctx, explicitValue);
 		}
 	}
-
-	// ─── helpers ─────────────────────────────────────────────────────────────
 
 	private static String seqSysconfigName(@NonNull final BPartnerNumberContext.Kind kind)
 	{
