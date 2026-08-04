@@ -6,16 +6,17 @@
 -- description/help via AD_Field.AD_Name_ID -> a NEW AD_Element (585152), leaving the shared element 2015
 -- untouched (it backs every M_Attribute field system-wide).
 --
--- The config controls ONLY shipment-line splitting: an attribute listed here splits the picked-qty
--- allocation + M_InOutLine per distinct value; it makes NO statement about whether the attribute is carried
--- on the HU/stock (that is M_HU_PI_Attribute.UseInASI, an independent setting).
+-- Behaviour documented (kept technical HERE, plain-language in the user-facing text below):
+-- an attribute listed here splits the picked-qty allocation (M_ShipmentSchedule_QtyPicked) and the shipment
+-- line (M_InOutLine) per distinct value; it makes NO statement about whether the attribute is carried on the
+-- HU/stock (that is M_HU_PI_Attribute.UseInASI, an independent setting).
 
 -- 1. New name-only AD_Element (ColumnName NULL; overrides only this field's name/description/help)
 INSERT INTO AD_Element (AD_Client_ID, AD_Element_ID, AD_Org_ID, ColumnName, Created, CreatedBy,
                         Description, EntityType, IsActive, Name, PrintName, Updated, UpdatedBy)
-VALUES (0, 585152, 0, NULL,
+VALUES (0, 585152 /*From ID Server*/, 0, NULL,
         TO_TIMESTAMP('2026-08-04 09:01:00', 'YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', 100,
-        'Merkmale, die Lieferpositionen aufteilen. Kommissionierte Waren, die sich in einem hier aufgeführten Merkmal unterscheiden (z. B. Herkunftsland, Los), werden auf getrennte Lieferpositionen (M_InOutLine) und Mengenbuchungen (M_ShipmentSchedule_QtyPicked) gebucht. Nicht hier aufgeführte Merkmale lösen keine Aufteilung aus.',
+        'Merkmale, die Lieferpositionen aufteilen. Kommissionierte Waren, die sich in einem hier aufgeführten Merkmal unterscheiden (z. B. Herkunftsland, Los), werden auf getrennte Lieferpositionen und Mengenbuchungen gebucht. Nicht hier aufgeführte Merkmale lösen keine Aufteilung aus.',
         'de.metas.inoutcandidate', 'Y',
         'Merkmal', 'Merkmal',
         TO_TIMESTAMP('2026-08-04 09:01:00', 'YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', 100);
@@ -35,17 +36,18 @@ WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y')
   AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt
                   WHERE tt.AD_Language = l.AD_Language AND tt.AD_Element_ID = t.AD_Element_ID);
 
--- 3. Per-language text (de_DE + de_CH = German, en_US = English)
+-- 3. Per-language text (de_DE + de_CH = German, en_US = English). Later timestamp than the element INSERT
+--    so the propagation guard (f.updated <> e_trl.updated) always fires.
 UPDATE AD_Element_Trl SET Name='Merkmal',
-    Description='Merkmale, die Lieferpositionen aufteilen. Kommissionierte Waren, die sich in einem hier aufgeführten Merkmal unterscheiden (z. B. Herkunftsland, Los), werden auf getrennte Lieferpositionen (M_InOutLine) und Mengenbuchungen (M_ShipmentSchedule_QtyPicked) gebucht. Nicht hier aufgeführte Merkmale lösen keine Aufteilung aus.',
-    Help='Merkmale, die Lieferpositionen aufteilen. Kommissionierte Waren, die sich in einem hier aufgeführten Merkmal unterscheiden (z. B. Herkunftsland, Los), werden auf getrennte Lieferpositionen (M_InOutLine) und Mengenbuchungen (M_ShipmentSchedule_QtyPicked) gebucht. Nicht hier aufgeführte Merkmale lösen keine Aufteilung aus. Ob ein Merkmal am HU/Bestand geführt wird, steuert dagegen M_HU_PI_Attribute.UseInASI und ist von dieser Konfiguration unabhängig.',
-    IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-04 09:01:00','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100
+    Description='Merkmale, die Lieferpositionen aufteilen. Kommissionierte Waren, die sich in einem hier aufgeführten Merkmal unterscheiden (z. B. Herkunftsland, Los), werden auf getrennte Lieferpositionen und Mengenbuchungen gebucht. Nicht hier aufgeführte Merkmale lösen keine Aufteilung aus.',
+    Help='Merkmale, die Lieferpositionen aufteilen. Kommissionierte Waren, die sich in einem hier aufgeführten Merkmal unterscheiden (z. B. Herkunftsland, Los), werden auf getrennte Lieferpositionen und Mengenbuchungen gebucht. Nicht hier aufgeführte Merkmale lösen keine Aufteilung aus. Ob ein Merkmal am Bestand geführt wird, wird dagegen in der Packvorschrift eingestellt und ist von dieser Konfiguration unabhängig.',
+    IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-04 09:01:30','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100
 WHERE AD_Element_ID = 585152 AND AD_Language IN ('de_DE','de_CH');
 
 UPDATE AD_Element_Trl SET Name='Attribute',
-    Description='Attributes that split shipment lines. Picked goods that differ in a listed attribute (e.g. Country of Origin, Lot) are booked to separate shipment lines (M_InOutLine) and picked-qty allocations (M_ShipmentSchedule_QtyPicked). Attributes not listed here do not cause a shipment-line split.',
-    Help='Attributes that split shipment lines. Picked goods that differ in a listed attribute (e.g. Country of Origin, Lot) are booked to separate shipment lines (M_InOutLine) and picked-qty allocations (M_ShipmentSchedule_QtyPicked). Attributes not listed here do not cause a shipment-line split. Whether an attribute is carried on the HU/stock is controlled separately by M_HU_PI_Attribute.UseInASI and is independent of this configuration.',
-    IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-04 09:01:00','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100
+    Description='Attributes that split shipment lines. Picked goods that differ in a listed attribute (e.g. Country of Origin, Lot) are booked to separate shipment lines and picked-quantity allocations. Attributes not listed here do not cause a shipment-line split.',
+    Help='Attributes that split shipment lines. Picked goods that differ in a listed attribute (e.g. Country of Origin, Lot) are booked to separate shipment lines and picked-quantity allocations. Attributes not listed here do not cause a shipment-line split. Whether an attribute is carried on stock is configured separately in the packing instruction and is independent of this configuration.',
+    IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-04 09:01:30','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100
 WHERE AD_Element_ID = 585152 AND AD_Language = 'en_US';
 
 -- 4. Propagate element translations
@@ -55,8 +57,8 @@ WHERE AD_Element_ID = 585152 AND AD_Language = 'en_US';
 -- 5. Point the field at the new element (earlier timestamp than the element, so the propagation guard fires)
 UPDATE AD_Field
 SET AD_Name_ID = 585152,
-    Description = 'Merkmale, die Lieferpositionen aufteilen. Kommissionierte Waren, die sich in einem hier aufgeführten Merkmal unterscheiden (z. B. Herkunftsland, Los), werden auf getrennte Lieferpositionen (M_InOutLine) und Mengenbuchungen (M_ShipmentSchedule_QtyPicked) gebucht. Nicht hier aufgeführte Merkmale lösen keine Aufteilung aus.',
-    Help        = 'Merkmale, die Lieferpositionen aufteilen. Kommissionierte Waren, die sich in einem hier aufgeführten Merkmal unterscheiden (z. B. Herkunftsland, Los), werden auf getrennte Lieferpositionen (M_InOutLine) und Mengenbuchungen (M_ShipmentSchedule_QtyPicked) gebucht. Nicht hier aufgeführte Merkmale lösen keine Aufteilung aus. Ob ein Merkmal am HU/Bestand geführt wird, steuert dagegen M_HU_PI_Attribute.UseInASI und ist von dieser Konfiguration unabhängig.',
+    Description = 'Merkmale, die Lieferpositionen aufteilen. Kommissionierte Waren, die sich in einem hier aufgeführten Merkmal unterscheiden (z. B. Herkunftsland, Los), werden auf getrennte Lieferpositionen und Mengenbuchungen gebucht. Nicht hier aufgeführte Merkmale lösen keine Aufteilung aus.',
+    Help        = 'Merkmale, die Lieferpositionen aufteilen. Kommissionierte Waren, die sich in einem hier aufgeführten Merkmal unterscheiden (z. B. Herkunftsland, Los), werden auf getrennte Lieferpositionen und Mengenbuchungen gebucht. Nicht hier aufgeführte Merkmale lösen keine Aufteilung aus. Ob ein Merkmal am Bestand geführt wird, wird dagegen in der Packvorschrift eingestellt und ist von dieser Konfiguration unabhängig.',
     Updated = TO_TIMESTAMP('2026-08-04 09:00:00','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy = 100
 WHERE AD_Field_ID = 563057;
 
