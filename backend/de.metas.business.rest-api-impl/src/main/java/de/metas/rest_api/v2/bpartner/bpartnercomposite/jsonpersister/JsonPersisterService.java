@@ -60,6 +60,8 @@ import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsertItem;
 import de.metas.common.bpartner.v2.request.alberta.JsonCompositeAlbertaBPartner;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsertItem;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsertItem.JsonResponseBPartnerCompositeUpsertItemBuilder;
+import de.metas.common.bpartner.v2.response.JsonResponseBPartnerUpsertItem;
+import de.metas.common.bpartner.v2.response.JsonResponseBPartnerUpsertItem.JsonResponseBPartnerUpsertItemBuilder;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsert;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsert.JsonResponseUpsertBuilder;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem;
@@ -230,7 +232,7 @@ public class JsonPersisterService
 		final Optional<BPartnerComposite> optionalBPartnerComposite = jsonRetrieverService.getBPartnerComposite(orgId, bpartnerIdentifier);
 
 		final JsonResponseBPartnerCompositeUpsertItemUnderConstrunction resultBuilder = new JsonResponseBPartnerCompositeUpsertItemUnderConstrunction();
-		resultBuilder.setJsonResponseBPartnerUpsertItemBuilder(JsonResponseUpsertItem.builder().identifier(rawBpartnerIdentifier));
+		resultBuilder.setJsonResponseBPartnerUpsertItemBuilder(JsonResponseBPartnerUpsertItem.bpartnerUpsertItemBuilder().identifier(rawBpartnerIdentifier));
 
 		final SyncAdvise effectiveSyncAdvise = CoalesceUtil.coalesceNotNull(jsonRequestComposite.getSyncAdvise(), parentSyncAdvise);
 
@@ -280,7 +282,7 @@ public class JsonPersisterService
 	@Data
 	private static final class JsonResponseBPartnerCompositeUpsertItemUnderConstrunction
 	{
-		private JsonResponseUpsertItemBuilder jsonResponseBPartnerUpsertItemBuilder;
+		private JsonResponseBPartnerUpsertItemBuilder jsonResponseBPartnerUpsertItemBuilder;
 		private boolean newBPartner;
 
 		private ImmutableMap<String, JsonResponseUpsertItemBuilder> jsonResponseContactUpsertItems;

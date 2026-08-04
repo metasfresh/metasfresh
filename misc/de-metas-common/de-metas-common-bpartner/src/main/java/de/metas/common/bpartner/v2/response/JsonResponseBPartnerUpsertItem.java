@@ -1,0 +1,122 @@
+/*
+ * #%L
+ * de-metas-common-bpartner
+ * %%
+ * Copyright (C) 2024 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.common.bpartner.v2.response;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+
+/**
+ * BPartner-specific upsert response item.
+ * Extends {@link JsonResponseUpsertItem} with auto-generated debtor/creditor numbers.
+ */
+@Value
+@EqualsAndHashCode(callSuper = true)
+public class JsonResponseBPartnerUpsertItem extends JsonResponseUpsertItem
+{
+	@ApiModelProperty(value = "Auto-generated debtor number (C_BPartner.DebtorId).")
+	@JsonProperty("debtorId")
+	@JsonInclude(Include.NON_NULL)
+	@Nullable
+	Integer debtorId;
+
+	@ApiModelProperty(value = "Auto-generated creditor number (C_BPartner.CreditorId).")
+	@JsonProperty("creditorId")
+	@JsonInclude(Include.NON_NULL)
+	@Nullable
+	Integer creditorId;
+
+	@JsonCreator
+	public JsonResponseBPartnerUpsertItem(
+			@JsonProperty("identifier") @NonNull final String identifier,
+			@JsonProperty("metasfreshId") @Nullable final JsonMetasfreshId metasfreshId,
+			@JsonProperty("syncOutcome") @NonNull final SyncOutcome syncOutcome,
+			@JsonProperty("debtorId") @Nullable final Integer debtorId,
+			@JsonProperty("creditorId") @Nullable final Integer creditorId)
+	{
+		super(identifier, metasfreshId, syncOutcome);
+		this.debtorId = debtorId;
+		this.creditorId = creditorId;
+	}
+
+	public static JsonResponseBPartnerUpsertItemBuilder bpartnerUpsertItemBuilder()
+	{
+		return new JsonResponseBPartnerUpsertItemBuilder();
+	}
+
+	public static final class JsonResponseBPartnerUpsertItemBuilder
+	{
+		private String identifier;
+		private JsonMetasfreshId metasfreshId;
+		private SyncOutcome syncOutcome;
+		private Integer debtorId;
+		private Integer creditorId;
+
+		private JsonResponseBPartnerUpsertItemBuilder()
+		{
+		}
+
+		public JsonResponseBPartnerUpsertItemBuilder identifier(@NonNull final String identifier)
+		{
+			this.identifier = identifier;
+			return this;
+		}
+
+		public JsonResponseBPartnerUpsertItemBuilder metasfreshId(@Nullable final JsonMetasfreshId metasfreshId)
+		{
+			this.metasfreshId = metasfreshId;
+			return this;
+		}
+
+		public JsonResponseBPartnerUpsertItemBuilder syncOutcome(@NonNull final SyncOutcome syncOutcome)
+		{
+			this.syncOutcome = syncOutcome;
+			return this;
+		}
+
+		public JsonResponseBPartnerUpsertItemBuilder debtorId(@Nullable final Integer debtorId)
+		{
+			this.debtorId = debtorId;
+			return this;
+		}
+
+		public JsonResponseBPartnerUpsertItemBuilder creditorId(@Nullable final Integer creditorId)
+		{
+			this.creditorId = creditorId;
+			return this;
+		}
+
+		public JsonResponseBPartnerUpsertItem build()
+		{
+			return new JsonResponseBPartnerUpsertItem(identifier, metasfreshId, syncOutcome, debtorId, creditorId);
+		}
+	}
+}
