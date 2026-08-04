@@ -2,6 +2,7 @@
 @ghActions:run_on_executor3
 @allure.label.epic:E0390_Masterdata_Partner
 @allure.label.feature:F00900_Business_Partner
+@allure.label.feature:F00919_Automatic_DebitorCreditor_Number
 Feature: BPartner debtor/creditor number generation via REST V2 upsert
 
   Background:

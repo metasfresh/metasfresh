@@ -99,8 +99,8 @@ public class BPartnerNumberGen_StepDef
 	/** Value column of the default org in the standard seed DB. */
 	private static final String DEFAULT_ORG_VALUE = "001";
 
-	private final TestContext testContext;
-	private final REST_API_StepDef restApiStepDef;
+	@NonNull private final TestContext testContext;
+	@NonNull private final REST_API_StepDef restApiStepDef;
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
