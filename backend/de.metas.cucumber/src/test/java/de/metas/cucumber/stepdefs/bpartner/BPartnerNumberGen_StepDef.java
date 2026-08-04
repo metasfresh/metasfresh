@@ -81,10 +81,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  *   <b>Given a debtor sequence for org &lt;orgValue&gt; starting at &lt;start&gt;</b> — creates AD_Sequence + sets DebtorNoSequence sysconfig<br>
  *   <b>Given a creditor sequence for org &lt;orgValue&gt; starting at &lt;start&gt;</b> — creates AD_Sequence + sets CreditorNoSequence sysconfig<br>
  *   <b>Given org &lt;orgValue&gt; uses number resolver "&lt;fn&gt;"</b> — sets NumberResolverOverride sysconfig<br>
- *   <b>When I upsert a &lt;company|non-company&gt; &lt;customer|vendor|neither&gt; "&lt;id&gt;"</b><br>
- *   <b>When I upsert a &lt;company|non-company&gt; &lt;customer|vendor&gt; "&lt;id&gt;" with debtorId &lt;n&gt;</b><br>
- *   <b>When I upsert a &lt;company|non-company&gt; &lt;customer|vendor&gt; "&lt;id&gt;" with creditorId &lt;n&gt;</b><br>
- *   <b>When I upsert a &lt;company|non-company&gt; &lt;customer|vendor&gt; "&lt;id&gt;" in org &lt;orgValue&gt;</b><br>
+ *   <b>When I upsert a &lt;company|non-company&gt; &lt;customer|vendor|neither|both&gt; "&lt;id&gt;"</b> — {@code "both"} sets isCustomer=true AND isVendor=true<br>
+ *   <b>When I upsert a &lt;company|non-company&gt; &lt;customer|vendor|both&gt; "&lt;id&gt;" with debtorId &lt;n&gt;</b><br>
+ *   <b>When I upsert a &lt;company|non-company&gt; &lt;customer|vendor|both&gt; "&lt;id&gt;" with creditorId &lt;n&gt;</b><br>
+ *   <b>When I upsert a &lt;company|non-company&gt; &lt;customer|vendor|neither|both&gt; "&lt;id&gt;" in org &lt;orgValue&gt;</b><br>
  *   <b>Then responseItems[&lt;i&gt;].responseBPartnerItem.debtorId is &lt;expected&gt;</b><br>
  *   <b>Then responseItems[&lt;i&gt;].responseBPartnerItem.debtorId is within &lt;from&gt;..&lt;to&gt;</b><br>
  *   <b>Then responseItems[&lt;i&gt;].responseBPartnerItem.debtorId is null</b><br>
