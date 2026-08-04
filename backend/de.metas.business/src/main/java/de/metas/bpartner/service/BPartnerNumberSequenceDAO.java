@@ -39,6 +39,10 @@ import java.util.regex.Pattern;
  * <p>
  * Uses the same {@code UPDATE … RETURNING} SQL pattern as
  * {@link de.metas.document.sequence.impl.DocumentNoBuilder} — no {@code MSequence} model, no schema change.
+ *
+ * <p>Repository Tables: AD_Sequence
+ * <p>Repository Cluster: BPartnerNumberSequenceDAO
+ * (Note: {@link de.metas.document.sequence.impl.DocumentNoBuilder} also writes {@code AD_Sequence} — coordinate changes.)
  */
 @Repository
 public class BPartnerNumberSequenceDAO

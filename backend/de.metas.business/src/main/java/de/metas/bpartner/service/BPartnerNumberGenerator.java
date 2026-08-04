@@ -23,9 +23,12 @@ package de.metas.bpartner.service;
  */
 
 import de.metas.document.sequence.DocSequenceId;
+import de.metas.interfaces.I_C_BPartner;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.springframework.stereotype.Service;
 
@@ -47,6 +50,7 @@ import java.util.Optional;
  * </ol>
  */
 @Service
+@RequiredArgsConstructor
 public class BPartnerNumberGenerator
 {
 	/** Per-org sysconfig: fully-qualified DB function name used as a number resolver. */
@@ -57,11 +61,7 @@ public class BPartnerNumberGenerator
 	public static final String SYSCONFIG_CREDITOR_SEQ = "de.metas.bpartner.CreditorNoSequence";
 
 	@NonNull private final BPartnerNumberSequenceDAO dao;
-
-	public BPartnerNumberGenerator(@NonNull final BPartnerNumberSequenceDAO dao)
-	{
-		this.dao = dao;
-	}
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	// ─── public API ──────────────────────────────────────────────────────────
 
@@ -72,7 +72,6 @@ public class BPartnerNumberGenerator
 	@NonNull
 	public Optional<Integer> generateNext(@NonNull final BPartnerNumberContext ctx)
 	{
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		final int adClientId = ctx.getClientId().getRepoId();
 		final int adOrgId = ctx.getOrgId().getRepoId();
 
@@ -101,7 +100,6 @@ public class BPartnerNumberGenerator
 	 */
 	public void reserveExplicit(@NonNull final BPartnerNumberContext ctx, final int explicitValue)
 	{
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		final int adClientId = ctx.getClientId().getRepoId();
 		final int adOrgId = ctx.getOrgId().getRepoId();
 
@@ -122,6 +120,32 @@ public class BPartnerNumberGenerator
 		}
 
 		// 3. No config → no-op
+	}
+
+	/**
+	 * Advances the configured sequence past {@code explicitValue} if this is a new record or the
+	 * given column has changed in this save cycle. No-op otherwise, or when no config is present.
+	 *
+	 * <p>Intended for use by model interceptors: the change-detection logic ({@link InterfaceWrapperHelper#isValueChanged})
+	 * lives here rather than in the interceptor (architecture §3 — interceptors are thin glue).
+	 *
+	 * @param bpartner   the model record being saved
+	 * @param ctx        the resolved context for this role (debtor or creditor)
+	 * @param isNew      whether this is a new (first-save) record
+	 * @param columnName the column to check for changes (e.g. {@link I_C_BPartner#COLUMNNAME_DebtorId})
+	 * @param explicitValue the explicit number already set on the record
+	 */
+	public void reserveExplicitIfChanged(
+			@NonNull final I_C_BPartner bpartner,
+			@NonNull final BPartnerNumberContext ctx,
+			final boolean isNew,
+			@NonNull final String columnName,
+			final int explicitValue)
+	{
+		if (isNew || InterfaceWrapperHelper.isValueChanged(bpartner, columnName))
+		{
+			reserveExplicit(ctx, explicitValue);
+		}
 	}
 
 	// ─── helpers ─────────────────────────────────────────────────────────────

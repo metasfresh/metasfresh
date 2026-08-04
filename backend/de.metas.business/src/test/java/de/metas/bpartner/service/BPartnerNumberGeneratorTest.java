@@ -24,12 +24,15 @@ package de.metas.bpartner.service;
 
 import de.metas.bpartner.service.BPartnerNumberContext.Kind;
 import de.metas.document.sequence.DocSequenceId;
+import de.metas.interfaces.I_C_BPartner;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -100,168 +103,197 @@ class BPartnerNumberGeneratorTest
 
 	// ─── no-config branch ───────────────────────────────────────────────────
 
-	@Test
-	void generateNext_returnsEmpty_whenNoConfig()
+	@Nested
+	class GenerateNext
 	{
-		// no sysconfig stubs → all return null
+		@Test
+		void returnsEmpty_whenNoConfig()
+		{
+			// no sysconfig stubs → all return null
 
-		final Optional<Integer> result = generator.generateNext(debtorCtx());
+			final Optional<Integer> result = generator.generateNext(debtorCtx());
 
-		assertThat(result).isEmpty();
-		verify(dao, never()).drawNext(any());
+			assertThat(result).isEmpty();
+			verify(dao, never()).drawNext(any());
+		}
+
+		@Test
+		void delegatesToDao_whenDebtorSeqConfigured()
+		{
+			when(sysConfigBL.getValue(
+					eq(BPartnerNumberGenerator.SYSCONFIG_DEBTOR_SEQ),
+					isNull(),
+					anyInt(),
+					eq(AD_ORG_ID)))
+					.thenReturn("540123");
+
+			when(dao.drawNext(DocSequenceId.ofRepoId(540123))).thenReturn(7);
+
+			final Optional<Integer> result = generator.generateNext(debtorCtx());
+
+			assertThat(result).contains(7);
+		}
+
+		@Test
+		void delegatesToDao_whenCreditorSeqConfigured()
+		{
+			when(sysConfigBL.getValue(
+					eq(BPartnerNumberGenerator.SYSCONFIG_CREDITOR_SEQ),
+					isNull(),
+					anyInt(),
+					eq(AD_ORG_ID)))
+					.thenReturn("540456");
+
+			when(dao.drawNext(DocSequenceId.ofRepoId(540456))).thenReturn(55);
+
+			final Optional<Integer> result = generator.generateNext(creditorCtx());
+
+			assertThat(result).contains(55);
+		}
+
+		@Test
+		void takesOverrideBranch_whenOverrideConfigured()
+		{
+			when(sysConfigBL.getValue(
+					eq(BPartnerNumberGenerator.SYSCONFIG_OVERRIDE),
+					isNull(),
+					anyInt(),
+					eq(AD_ORG_ID)))
+					.thenReturn("fn_bpartner_no");
+
+			when(dao.callOverrideFunction(eq("fn_bpartner_no"), any(BPartnerNumberContext.class), isNull()))
+					.thenReturn(Optional.of(42));
+
+			final Optional<Integer> result = generator.generateNext(debtorCtx());
+
+			assertThat(result).contains(42);
+			verify(dao, never()).drawNext(any());
+		}
+
+		/**
+		 * The SQL-injection guard lives in {@link BPartnerNumberSequenceDAO#callOverrideFunction}.
+		 * Validation fires before any DB access, so the real DAO throws without needing a database.
+		 * The generator must propagate that exception.
+		 */
+		@Test
+		void throwsOnInvalidOverrideName_rejectingInjection()
+		{
+			final String badName = "foo; DROP TABLE ad_sequence";
+			when(sysConfigBL.getValue(
+					eq(BPartnerNumberGenerator.SYSCONFIG_OVERRIDE),
+					isNull(),
+					anyInt(),
+					eq(AD_ORG_ID)))
+					.thenReturn(badName);
+
+			final BPartnerNumberGenerator gen = new BPartnerNumberGenerator(new BPartnerNumberSequenceDAO());
+
+			assertThatThrownBy(() -> gen.generateNext(debtorCtx()))
+					.isInstanceOf(IllegalArgumentException.class)
+					.hasMessageContaining(badName);
+		}
 	}
 
-	@Test
-	void reserveExplicit_isNoOp_whenNoConfig()
+	@Nested
+	class ReserveExplicit
 	{
-		// no sysconfig stubs → no-op
+		@Test
+		void isNoOp_whenNoConfig()
+		{
+			// no sysconfig stubs → no-op
 
-		generator.reserveExplicit(debtorCtx(), 12345);
+			generator.reserveExplicit(debtorCtx(), 12345);
 
-		verify(dao, never()).advancePast(any(), anyInt());
+			verify(dao, never()).advancePast(any(), anyInt());
+		}
+
+		@Test
+		void delegatesToDao_whenDebtorSeqConfigured()
+		{
+			when(sysConfigBL.getValue(
+					eq(BPartnerNumberGenerator.SYSCONFIG_DEBTOR_SEQ),
+					isNull(),
+					anyInt(),
+					eq(AD_ORG_ID)))
+					.thenReturn("540123");
+
+			generator.reserveExplicit(debtorCtx(), 999);
+
+			verify(dao).advancePast(DocSequenceId.ofRepoId(540123), 999);
+		}
+
+		@Test
+		void throwsOnInvalidOverrideName_rejectingInjection()
+		{
+			final String badName = "fn(bad name)";
+			when(sysConfigBL.getValue(
+					eq(BPartnerNumberGenerator.SYSCONFIG_OVERRIDE),
+					isNull(),
+					anyInt(),
+					eq(AD_ORG_ID)))
+					.thenReturn(badName);
+
+			final BPartnerNumberGenerator gen = new BPartnerNumberGenerator(new BPartnerNumberSequenceDAO());
+
+			assertThatThrownBy(() -> gen.reserveExplicit(creditorCtx(), 1))
+					.isInstanceOf(IllegalArgumentException.class)
+					.hasMessageContaining(badName);
+		}
 	}
 
-	// ─── debtor sequence branch ──────────────────────────────────────────────
-
-	@Test
-	void generateNext_delegatesToDao_whenDebtorSeqConfigured()
+	@Nested
+	class ReserveExplicitIfChanged
 	{
-		when(sysConfigBL.getValue(
-				eq(BPartnerNumberGenerator.SYSCONFIG_DEBTOR_SEQ),
-				isNull(),
-				anyInt(),
-				eq(AD_ORG_ID)))
-				.thenReturn("540123");
+		@Test
+		void fires_whenIsNew()
+		{
+			when(sysConfigBL.getValue(
+					eq(BPartnerNumberGenerator.SYSCONFIG_DEBTOR_SEQ),
+					isNull(),
+					anyInt(),
+					eq(AD_ORG_ID)))
+					.thenReturn("540123");
 
-		when(dao.drawNext(DocSequenceId.ofRepoId(540123))).thenReturn(7);
+			final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+			// isNew=true on a freshly created POJO record
 
-		final Optional<Integer> result = generator.generateNext(debtorCtx());
+			generator.reserveExplicitIfChanged(bpartner, debtorCtx(), true, I_C_BPartner.COLUMNNAME_DebtorId, 7777);
 
-		assertThat(result).contains(7);
+			verify(dao).advancePast(DocSequenceId.ofRepoId(540123), 7777);
+		}
+
+		@Test
+		void skips_whenNotNewAndColumnUnchanged()
+		{
+			final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+			// isNew=false, column not changed → no-op
+
+			generator.reserveExplicitIfChanged(bpartner, debtorCtx(), false, I_C_BPartner.COLUMNNAME_DebtorId, 7777);
+
+			verify(dao, never()).advancePast(any(), anyInt());
+		}
 	}
 
-	@Test
-	void reserveExplicit_delegatesToDao_whenDebtorSeqConfigured()
+	@Nested
+	class DaoCallOverrideFunction
 	{
-		when(sysConfigBL.getValue(
-				eq(BPartnerNumberGenerator.SYSCONFIG_DEBTOR_SEQ),
-				isNull(),
-				anyInt(),
-				eq(AD_ORG_ID)))
-				.thenReturn("540123");
+		@Test
+		void throwsOnBlankName()
+		{
+			final BPartnerNumberSequenceDAO realDao = new BPartnerNumberSequenceDAO();
+			assertThatThrownBy(() -> realDao.callOverrideFunction("   ", debtorCtx(), null))
+					.isInstanceOf(IllegalArgumentException.class)
+					.hasMessageContaining("blank");
+		}
 
-		generator.reserveExplicit(debtorCtx(), 999);
-
-		verify(dao).advancePast(DocSequenceId.ofRepoId(540123), 999);
-	}
-
-	@Test
-	void generateNext_delegatesToDao_whenCreditorSeqConfigured()
-	{
-		when(sysConfigBL.getValue(
-				eq(BPartnerNumberGenerator.SYSCONFIG_CREDITOR_SEQ),
-				isNull(),
-				anyInt(),
-				eq(AD_ORG_ID)))
-				.thenReturn("540456");
-
-		when(dao.drawNext(DocSequenceId.ofRepoId(540456))).thenReturn(55);
-
-		final Optional<Integer> result = generator.generateNext(creditorCtx());
-
-		assertThat(result).contains(55);
-	}
-
-	// ─── override branch — selection and delegation ──────────────────────────
-
-	@Test
-	void generateNext_takesOverrideBranch_whenOverrideConfigured()
-	{
-		when(sysConfigBL.getValue(
-				eq(BPartnerNumberGenerator.SYSCONFIG_OVERRIDE),
-				isNull(),
-				anyInt(),
-				eq(AD_ORG_ID)))
-				.thenReturn("fn_bpartner_no");
-
-		when(dao.callOverrideFunction(eq("fn_bpartner_no"), any(BPartnerNumberContext.class), isNull()))
-				.thenReturn(Optional.of(42));
-
-		final Optional<Integer> result = generator.generateNext(debtorCtx());
-
-		assertThat(result).contains(42);
-		// DAO sequence draw must NOT be called when override is active
-		verify(dao, never()).drawNext(any());
-	}
-
-	// ─── override branch — identifier validation (tested via DAO directly) ───
-
-	/**
-	 * The SQL-injection guard lives in {@link BPartnerNumberSequenceDAO#callOverrideFunction}.
-	 * Validation is the first thing it does (before any DB access), so calling it with a bad name
-	 * throws {@link IllegalArgumentException} without requiring a real database.
-	 * These tests assert the DAO rejects unsafe names AND that the generator propagates the exception.
-	 */
-	@Test
-	void generateNext_throwsOnInvalidOverrideName_rejectingInjection_debtor()
-	{
-		final String badName = "foo; DROP TABLE ad_sequence";
-		when(sysConfigBL.getValue(
-				eq(BPartnerNumberGenerator.SYSCONFIG_OVERRIDE),
-				isNull(),
-				anyInt(),
-				eq(AD_ORG_ID)))
-				.thenReturn(badName);
-
-		// The real DAO validates and throws; verify the generator propagates that exception.
-		final BPartnerNumberSequenceDAO realDao = new BPartnerNumberSequenceDAO();
-		final BPartnerNumberGenerator gen = new BPartnerNumberGenerator(realDao);
-		Services.registerService(ISysConfigBL.class, sysConfigBL);
-
-		assertThatThrownBy(() -> gen.generateNext(debtorCtx()))
-				.isInstanceOf(IllegalArgumentException.class)
-				.hasMessageContaining(badName);
-	}
-
-	@Test
-	void reserveExplicit_throwsOnInvalidOverrideName_rejectingInjection_creditor()
-	{
-		final String badName = "fn(bad name)";
-		when(sysConfigBL.getValue(
-				eq(BPartnerNumberGenerator.SYSCONFIG_OVERRIDE),
-				isNull(),
-				anyInt(),
-				eq(AD_ORG_ID)))
-				.thenReturn(badName);
-
-		final BPartnerNumberSequenceDAO realDao = new BPartnerNumberSequenceDAO();
-		final BPartnerNumberGenerator gen = new BPartnerNumberGenerator(realDao);
-		Services.registerService(ISysConfigBL.class, sysConfigBL);
-
-		assertThatThrownBy(() -> gen.reserveExplicit(creditorCtx(), 1))
-				.isInstanceOf(IllegalArgumentException.class)
-				.hasMessageContaining(badName);
-	}
-
-	/**
-	 * Direct DAO validation tests — confirm the identifier check fires before any DB access.
-	 */
-	@Test
-	void dao_callOverrideFunction_throwsOnBlankName()
-	{
-		final BPartnerNumberSequenceDAO realDao = new BPartnerNumberSequenceDAO();
-		assertThatThrownBy(() -> realDao.callOverrideFunction("   ", debtorCtx(), null))
-				.isInstanceOf(IllegalArgumentException.class)
-				.hasMessageContaining("blank");
-	}
-
-	@Test
-	void dao_callOverrideFunction_throwsOnInjectionAttempt()
-	{
-		final BPartnerNumberSequenceDAO realDao = new BPartnerNumberSequenceDAO();
-		final String badName = "foo; DROP TABLE ad_sequence";
-		assertThatThrownBy(() -> realDao.callOverrideFunction(badName, debtorCtx(), null))
-				.isInstanceOf(IllegalArgumentException.class)
-				.hasMessageContaining(badName);
+		@Test
+		void throwsOnInjectionAttempt()
+		{
+			final BPartnerNumberSequenceDAO realDao = new BPartnerNumberSequenceDAO();
+			final String badName = "foo; DROP TABLE ad_sequence";
+			assertThatThrownBy(() -> realDao.callOverrideFunction(badName, debtorCtx(), null))
+					.isInstanceOf(IllegalArgumentException.class)
+					.hasMessageContaining(badName);
+		}
 	}
 }

@@ -29,6 +29,7 @@ import de.metas.bpartner.service.BPartnerNumberGenerator;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.organization.OrgId;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -43,20 +44,19 @@ import java.util.Optional;
  * Generates debtor/creditor numbers for new partners and advances sequences past
  * explicitly-supplied values on first save or when the value column changes.
  * <p>
+ * Numbers are assigned at creation only; a later customer/vendor flip does not back-fill an
+ * auto-generated number (see the {@code if (isNew)} guards below).
+ * <p>
  * This interceptor is registered automatically as a Spring {@code @Component}.
  * It complements the existing {@code de.metas.bpartner.model.interceptor.C_BPartner}
  * in the base module (which handles other concerns), focusing solely on number generation.
  */
 @Interceptor(I_C_BPartner.class)
 @Component
+@RequiredArgsConstructor
 public class C_BPartner_NumberGen
 {
 	@NonNull private final BPartnerNumberGenerator bpartnerNumberGenerator;
-
-	public C_BPartner_NumberGen(@NonNull final BPartnerNumberGenerator bpartnerNumberGenerator)
-	{
-		this.bpartnerNumberGenerator = bpartnerNumberGenerator;
-	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void generateOrReserveNumbers(@NonNull final I_C_BPartner bpartner)
@@ -70,7 +70,6 @@ public class C_BPartner_NumberGen
 		final boolean isVendor = bpartner.isVendor();
 		final boolean isCompany = bpartner.isCompany();
 
-		// ── CUSTOMER / DEBTOR ──────────────────────────────────────────────────
 		if (isCustomer)
 		{
 			final BPartnerNumberContext debtorCtx = BPartnerNumberContext.builder()
@@ -95,16 +94,11 @@ public class C_BPartner_NumberGen
 			}
 			else
 			{
-				// Explicit debtor number present: advance sequence past it.
-				// Fire on BEFORE_NEW (first save) OR when the DebtorId column changed on this update.
-				if (isNew || InterfaceWrapperHelper.isValueChanged(bpartner, I_C_BPartner.COLUMNNAME_DebtorId))
-				{
-					bpartnerNumberGenerator.reserveExplicit(debtorCtx, bpartner.getDebtorId());
-				}
+				bpartnerNumberGenerator.reserveExplicitIfChanged(
+						bpartner, debtorCtx, isNew, I_C_BPartner.COLUMNNAME_DebtorId, bpartner.getDebtorId());
 			}
 		}
 
-		// ── VENDOR / CREDITOR ─────────────────────────────────────────────────
 		if (isVendor)
 		{
 			final BPartnerNumberContext creditorCtx = BPartnerNumberContext.builder()
@@ -128,11 +122,8 @@ public class C_BPartner_NumberGen
 			}
 			else
 			{
-				// Explicit creditor number present: advance sequence past it.
-				if (isNew || InterfaceWrapperHelper.isValueChanged(bpartner, I_C_BPartner.COLUMNNAME_CreditorId))
-				{
-					bpartnerNumberGenerator.reserveExplicit(creditorCtx, bpartner.getCreditorId());
-				}
+				bpartnerNumberGenerator.reserveExplicitIfChanged(
+						bpartner, creditorCtx, isNew, I_C_BPartner.COLUMNNAME_CreditorId, bpartner.getCreditorId());
 			}
 		}
 	}
