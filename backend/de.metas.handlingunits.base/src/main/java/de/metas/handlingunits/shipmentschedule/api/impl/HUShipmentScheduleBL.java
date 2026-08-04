@@ -46,6 +46,7 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.AttributesKeyPart;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeValueType;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import de.metas.handlingunits.shipmentschedule.api.AddQtyPickedRequest;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
@@ -114,6 +115,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -170,6 +172,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
 	private final IHUCapacityBL huCapacityBL = Services.get(IHUCapacityBL.class);
+	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
 	private static final String SYSCONFIG_ShipmentConsolidationPeriod = "de.metas.handlingunits.shipmentschedule.api.impl.HUShipmentScheduleBL.ShipmentConsolidationPeriod";
 	private static final String DEFAULT_ShipmentConsolidationPeriod = null;
@@ -1052,10 +1055,9 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		final IHUStorageFactory storageFactory = huContext.getHUStorageFactory();
 		final IAttributeStorageFactory attrFactory = huContext.getHUAttributeStorageFactory();
 
-		// The picked-qty allocation may only be split by attributes that are whitelisted for the shipment
-		// line in M_ShipmentSchedule_AttributeConfig — the SAME criterion the downstream M_InOutLine
-		// aggregation applies (see ShipmentScheduleWithHU#computeAttributeValues).
-		final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule = qtyPicked.getM_ShipmentSchedule();
+		// Split only by attributes whitelisted in M_ShipmentSchedule_AttributeConfig — the same criterion
+		// the M_InOutLine aggregation uses (ShipmentScheduleWithHU#computeAttributeValues).
+		final Predicate<AttributeId> attributeSplitsShipmentLine = attributeSplitsShipmentLinePredicate(qtyPicked);
 
 		// One pass: for each child VHU compute its UseInASI fingerprint once, then emit one
 		// (fingerprint, productStorage) entry per non-empty product storage of that VHU.
@@ -1067,7 +1069,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 				handlingUnitsDAO.retrieveIncludedHUs(huToInspect)
 						.stream()
 						.filter(handlingUnitsBL::isVirtual)
-						.flatMap(vhu -> groupProductStoragesByFingerprint(vhu, productId, storageFactory, attrFactory, shipmentSchedule))
+						.flatMap(vhu -> groupProductStoragesByFingerprint(vhu, productId, storageFactory, attrFactory, attributeSplitsShipmentLine))
 						.collect(ImmutableListMultimap.toImmutableListMultimap(Map.Entry::getKey, Map.Entry::getValue));
 
 		if (storagesByFingerprint.isEmpty())
@@ -1193,39 +1195,53 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			@NonNull final ProductId productId,
 			@NonNull final IHUStorageFactory storageFactory,
 			@NonNull final IAttributeStorageFactory attrFactory,
-			@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule)
+			@NonNull final Predicate<AttributeId> attributeSplitsShipmentLine)
 	{
 		final IHUProductStorage productStorage = storageFactory.getStorage(vhu).getProductStorageOrNull(productId);
 		if (productStorage == null || productStorage.isEmpty())
 		{
 			return Stream.empty();
 		}
-		final AttributesKey fingerprint = computeUseInASIFingerprint(vhu, attrFactory, shipmentSchedule);
+		final AttributesKey fingerprint = computeUseInASIFingerprint(vhu, attrFactory, attributeSplitsShipmentLine);
 		return Stream.of(Maps.immutableEntry(fingerprint, productStorage));
 	}
 
 	private static AttributesKey computeUseInASIFingerprint(
 			@NonNull final I_M_HU vhu,
 			@NonNull final IAttributeStorageFactory factory,
-			@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule)
+			@NonNull final Predicate<AttributeId> attributeSplitsShipmentLine)
 	{
 		// IAttributeStorage does not implement getAttributeValueIdOrNull, so we cannot use
 		// AttributesKeys.createAttributesKeyFromAttributeSet here — list-type attributes
 		// would be silently dropped. Instead, we build the key directly from IAttributeValue,
 		// using the value string for all attribute types (consistent for grouping purposes).
-		// getHandlerForOrNull (not getHandlerFor): this runs eagerly while picking, where a schedule may not
-		// have a resolvable handler yet — then fall back to no restriction (the split is refined at shipment
-		// generation, where the handler resolves and the M_ShipmentSchedule_AttributeConfig whitelist applies).
-		final ShipmentScheduleHandler handler = Services.get(IShipmentScheduleHandlerBL.class).getHandlerForOrNull(shipmentSchedule);
 		final ImmutableSet<AttributesKeyPart> parts = factory.getAttributeStorage(vhu)
 				.getAttributeValues()
 				.stream()
 				.filter(av -> av.isUseInASI() && !av.isEmpty())
-				.filter(av -> handler == null || handler.attributeShallBePartOfShipmentLine(shipmentSchedule, av.getM_Attribute()))
+				.filter(av -> attributeSplitsShipmentLine.test(av.getAttributeId()))
 				.map(HUShipmentScheduleBL::toAttributesKeyPart)
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 		return parts.isEmpty() ? AttributesKey.NONE : AttributesKey.ofParts(parts);
+	}
+
+	/**
+	 * Predicate deciding whether an attribute splits the shipment line, i.e. whether it is whitelisted in
+	 * {@code M_ShipmentSchedule_AttributeConfig} for the schedule's handler — the same rule the M_InOutLine
+	 * aggregation applies. Resolved via {@code getHandlerForOrNull} because this runs eagerly while picking,
+	 * where the schedule may not have a resolvable handler yet; then it falls back to "no restriction" (the
+	 * split is refined at shipment generation, where the handler resolves).
+	 */
+	private Predicate<AttributeId> attributeSplitsShipmentLinePredicate(@NonNull final I_M_ShipmentSchedule_QtyPicked qtyPicked)
+	{
+		final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule = qtyPicked.getM_ShipmentSchedule();
+		final ShipmentScheduleHandler handler = Services.get(IShipmentScheduleHandlerBL.class).getHandlerForOrNull(shipmentSchedule);
+		if (handler == null)
+		{
+			return attributeId -> true;
+		}
+		return attributeId -> handler.attributeShallBePartOfShipmentLine(shipmentSchedule, attributeDAO.getAttributeRecordById(attributeId));
 	}
 
 	@Nullable
