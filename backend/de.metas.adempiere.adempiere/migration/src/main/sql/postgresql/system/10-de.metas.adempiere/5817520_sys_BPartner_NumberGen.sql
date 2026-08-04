@@ -17,7 +17,7 @@
 INSERT INTO AD_SysConfig (AD_Client_ID, AD_Org_ID, AD_SysConfig_ID, ConfigurationLevel,
                           Created, CreatedBy, Updated, UpdatedBy,
                           EntityType, IsActive, Name, Value, Description)
-SELECT 0, 0, 541842 /*From ID Server*/, 'S',
+SELECT 0, 0, 541842 /*From ID Server*/, 'O',
        TO_TIMESTAMP('2026-08-04 10:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
        TO_TIMESTAMP('2026-08-04 10:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
        'D', 'Y',
@@ -32,7 +32,7 @@ WHERE NOT EXISTS (
 INSERT INTO AD_SysConfig (AD_Client_ID, AD_Org_ID, AD_SysConfig_ID, ConfigurationLevel,
                           Created, CreatedBy, Updated, UpdatedBy,
                           EntityType, IsActive, Name, Value, Description)
-SELECT 0, 0, 541843 /*From ID Server*/, 'S',
+SELECT 0, 0, 541843 /*From ID Server*/, 'O',
        TO_TIMESTAMP('2026-08-04 10:00:01', 'YYYY-MM-DD HH24:MI:SS'), 100,
        TO_TIMESTAMP('2026-08-04 10:00:01', 'YYYY-MM-DD HH24:MI:SS'), 100,
        'D', 'Y',
@@ -47,7 +47,7 @@ WHERE NOT EXISTS (
 INSERT INTO AD_SysConfig (AD_Client_ID, AD_Org_ID, AD_SysConfig_ID, ConfigurationLevel,
                           Created, CreatedBy, Updated, UpdatedBy,
                           EntityType, IsActive, Name, Value, Description)
-SELECT 0, 0, 541844 /*From ID Server*/, 'S',
+SELECT 0, 0, 541844 /*From ID Server*/, 'O',
        TO_TIMESTAMP('2026-08-04 10:00:02', 'YYYY-MM-DD HH24:MI:SS'), 100,
        TO_TIMESTAMP('2026-08-04 10:00:02', 'YYYY-MM-DD HH24:MI:SS'), 100,
        'D', 'Y',
