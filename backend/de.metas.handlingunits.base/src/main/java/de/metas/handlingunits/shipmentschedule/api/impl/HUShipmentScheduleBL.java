@@ -173,6 +173,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
 	private final IHUCapacityBL huCapacityBL = Services.get(IHUCapacityBL.class);
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final IShipmentScheduleHandlerBL shipmentScheduleHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
 
 	private static final String SYSCONFIG_ShipmentConsolidationPeriod = "de.metas.handlingunits.shipmentschedule.api.impl.HUShipmentScheduleBL.ShipmentConsolidationPeriod";
 	private static final String DEFAULT_ShipmentConsolidationPeriod = null;
@@ -1229,14 +1230,15 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	/**
 	 * Predicate deciding whether an attribute splits the shipment line, i.e. whether it is whitelisted in
 	 * {@code M_ShipmentSchedule_AttributeConfig} for the schedule's handler — the same rule the M_InOutLine
-	 * aggregation applies. Resolved via {@code getHandlerForOrNull} because this runs eagerly while picking,
-	 * where the schedule may not have a resolvable handler yet; then it falls back to "no restriction" (the
-	 * split is refined at shipment generation, where the handler resolves).
+	 * aggregation applies. Resolved via {@code getHandlerForOrNull}: handlers are registered once at server
+	 * startup ({@code InOutCandidateValidator#onInit}), so during real picking the handler is present and the
+	 * whitelist restricts the split. It is null only in narrow init/test contexts that bypass that
+	 * registration; there we fall back to "no restriction" rather than fail.
 	 */
 	private Predicate<AttributeId> attributeSplitsShipmentLinePredicate(@NonNull final I_M_ShipmentSchedule_QtyPicked qtyPicked)
 	{
 		final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule = qtyPicked.getM_ShipmentSchedule();
-		final ShipmentScheduleHandler handler = Services.get(IShipmentScheduleHandlerBL.class).getHandlerForOrNull(shipmentSchedule);
+		final ShipmentScheduleHandler handler = shipmentScheduleHandlerBL.getHandlerForOrNull(shipmentSchedule);
 		if (handler == null)
 		{
 			return attributeId -> true;
