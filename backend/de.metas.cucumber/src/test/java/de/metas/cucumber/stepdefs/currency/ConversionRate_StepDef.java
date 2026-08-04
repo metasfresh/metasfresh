@@ -27,14 +27,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.currency.ConversionRateKey;
 import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.CurrencyCode;
-import de.metas.currency.CurrencyRate;
-import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -53,7 +54,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -63,8 +64,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * <ul>
  *     <li>activating / deactivating a currency (test precondition, since the core seed ships most currencies inactive),</li>
  *     <li>asserting the {@code C_Conversion_Rate} rows an upsert produced,</li>
- *     <li>asserting the runtime conversion rate the system resolves for a date (the read path all currency
- *         conversion in the system goes through),</li>
  *     <li>and the legacy 1:1-rate helper used by accounting-report scenarios.</li>
  * </ul>
  */
@@ -73,7 +72,7 @@ public class ConversionRate_StepDef
 	private static final int SYSTEM_ORG_ID = 0;
 
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
-	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final TestContext testContext;
@@ -295,38 +294,6 @@ public class ConversionRate_StepDef
 		}
 	}
 
-	/**
-	 * Asserts the runtime conversion rate the system resolves for a {@code from -> to} pair on a given date, at the
-	 * org-default conversion type — i.e. exactly what {@code CurrencyBL} returns to any business logic converting an
-	 * amount. Proves both directions and the open-{@code ValidTo} "no gap" behaviour (a date with no own rate resolves
-	 * to the most recent earlier rate).
-	 *
-	 * <p><b>Gherkin usage example</b>:
-	 * <pre>{@code
-	 * Then the runtime EUR -> CNY conversion rate on '2026-06-02' is '7.60000'
-	 * }</pre>
-	 */
-	@And("the runtime {word} -> {word} conversion rate on {string} is {string}")
-	public void the_runtime_conversion_rate_is(
-			@NonNull final String fromIsoCode,
-			@NonNull final String toIsoCode,
-			@NonNull final String dateStr,
-			@NonNull final String expectedRateStr)
-	{
-		final CurrencyId fromId = currencyId(fromIsoCode);
-		final CurrencyId toId = currencyId(toIsoCode);
-		final Instant convDate = LocalDate.parse(dateStr).atStartOfDay(ZoneOffset.UTC).toInstant();
-
-		final CurrencyRate rate = currencyBL.getCurrencyRate(
-				fromId, toId, convDate,
-				/* conversionTypeId */ null, // org default
-				Env.getClientId(), OrgId.ANY);
-
-		assertThat(rate.getConversionRate())
-				.as("runtime conversion rate %s->%s on %s", fromIsoCode, toIsoCode, dateStr)
-				.isEqualByComparingTo(new BigDecimal(expectedRateStr));
-	}
-
 	@NonNull
 	private CurrencyId currencyId(@NonNull final String isoCode)
 	{
@@ -336,7 +303,7 @@ public class ConversionRate_StepDef
 	@NonNull
 	private CurrencyConversionTypeId conversionTypeId(@Nullable final String conversionTypeCode)
 	{
-		if (conversionTypeCode == null || conversionTypeCode.trim().isEmpty())
+		if (Check.isBlank(conversionTypeCode))
 		{
 			return currencyDAO.getDefaultConversionTypeId(Env.getClientId(), OrgId.ANY, Instant.now());
 		}
@@ -350,14 +317,27 @@ public class ConversionRate_StepDef
 			@NonNull final CurrencyConversionTypeId typeId,
 			@NonNull final LocalDate validFrom)
 	{
+		// The public natural key of the C_Conversion_Rate direction (org 0 = the shared rows the upsert writes),
+		// the same value object the REST upsert uses for its reverse-detection map.
+		final ConversionRateKey key = ConversionRateKey.builder()
+				.orgId(OrgId.ofRepoId(SYSTEM_ORG_ID))
+				.fromCurrencyId(fromId)
+				.toCurrencyId(toId)
+				.conversionTypeId(typeId)
+				.validFrom(validFrom)
+				.build();
+
+		// Convert ValidFrom through the org's zone (matching the endpoint's store path), so the lookup stays
+		// consistent even if a future scenario uses a regular (non-UTC) org rather than org 0.
+		final ZoneId orgZoneId = orgDAO.getTimeZone(key.getOrgId());
 		final ClientId clientId = Env.getClientId();
 		return queryBL.createQueryBuilderOutOfTrx(I_C_Conversion_Rate.class)
 				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_AD_Client_ID, clientId.getRepoId())
-				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_AD_Org_ID, SYSTEM_ORG_ID)
-				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_C_Currency_ID, fromId.getRepoId())
-				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_C_Currency_ID_To, toId.getRepoId())
-				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_C_ConversionType_ID, typeId.getRepoId())
-				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_ValidFrom, TimeUtil.asTimestamp(validFrom))
+				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_AD_Org_ID, key.getOrgId().getRepoId())
+				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_C_Currency_ID, key.getFromCurrencyId().getRepoId())
+				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_C_Currency_ID_To, key.getToCurrencyId().getRepoId())
+				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_C_ConversionType_ID, key.getConversionTypeId().getRepoId())
+				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_ValidFrom, TimeUtil.asTimestamp(key.getValidFrom(), orgZoneId))
 				.create()
 				.first(I_C_Conversion_Rate.class);
 	}

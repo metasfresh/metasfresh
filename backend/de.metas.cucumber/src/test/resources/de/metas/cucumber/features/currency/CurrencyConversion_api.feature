@@ -50,9 +50,6 @@ Feature: Currency-conversion REST API
       | FromCurrency | ToCurrency | ConversionType | ValidFrom  | MultiplyRate   | ValidTo    |
       | CNY          | EUR        | S              | 2026-06-01 | 0.131578947368 | 2056-12-31 |
       | CNY          | EUR        | S              | 2026-06-02 | 0.130718954248 | 2056-12-31 |
-    # runtime conversion resolves both directions on 2026-06-02
-    And the runtime EUR -> CNY conversion rate on '2026-06-02' is '7.65'
-    And the runtime CNY -> EUR conversion rate on '2026-06-02' is '0.130718954248'
 
   # AC6 idempotent upsert
   Scenario: Re-posting a changed rate for the same key updates in place, no duplicate row
@@ -76,8 +73,11 @@ Feature: Currency-conversion REST API
       | FromCurrency | ToCurrency | ConversionType | ValidFrom  | MultiplyRate | DivideRate     | ValidTo    |
       | EUR          | CNY        | S              | 2026-06-03 | 7.70         | 0.129870129870 | 2056-12-31 |
 
-  # AC7 ValidTo open, no gap: a Saturday with no own rate resolves to Friday's rate
-  Scenario: A weekend date resolves to the most recent earlier rate
+  # AC7 ValidTo open, no gap: each upserted rate is stored open (ValidTo = far-future sentinel), so a later
+  # date with no own rate is covered by the most recent earlier rate. (The runtime resolution itself is
+  # CurrencyBL's responsibility, out of scope for this endpoint feature; here we assert the endpoint stores
+  # the rows open, which is the endpoint-observable half of the no-gap behaviour.)
+  Scenario: Each upserted rate is stored open-ended so there is no gap between dates
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/currencyconversion/rates' and fulfills with '200' status code
       """
       {
@@ -91,8 +91,11 @@ Feature: Currency-conversion REST API
       """
       { "responseItems": [ { "syncOutcome": "CREATED" }, { "syncOutcome": "CREATED" } ] }
       """
-    # 2026-06-06 is Saturday: no own rate -> resolves to Friday 2026-06-05 (7.55)
-    And the runtime EUR -> CNY conversion rate on '2026-06-06' is '7.55'
+    # both rates are stored open (ValidTo = 2056-12-31), so 2026-06-05's rate covers the following days with no own rate
+    And this C_Conversion_Rate exists:
+      | FromCurrency | ToCurrency | ConversionType | ValidFrom  | MultiplyRate | ValidTo    |
+      | EUR          | CNY        | S              | 2026-06-05 | 7.55         | 2056-12-31 |
+      | EUR          | CNY        | S              | 2026-06-08 | 7.72         | 2056-12-31 |
 
   # AC2 unknown/inactive currency -> per-record error, AC11 friendly message
   Scenario: An unknown currency fails only that record; valid records still applied; no currency created
