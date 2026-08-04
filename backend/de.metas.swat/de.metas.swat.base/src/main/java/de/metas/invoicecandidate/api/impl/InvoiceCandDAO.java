@@ -1252,9 +1252,22 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 		// Without the newOutOfTrx-context, we had InvoiceCandBL.waitForInvoiceCandidatesUpdated consistently hit the 1hr-timeout on one instance,
 		// although multiple UpdateInvalidInvoiceCandidatesWorkpackageProcessors executed successfully during that hour.
+		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = createInvoiceCandidateQueryBuilderForSelection(invoiceCandidateIdsSelection);
+
+		return queryBuilder
+				.andCollectChildren(I_C_Invoice_Candidate_Recompute.COLUMN_C_Invoice_Candidate_ID)
+				.create()
+				.anyMatch();
+	}
+
+	/**
+	 * Creates an {@link I_C_Invoice_Candidate} query builder (out-of-trx) restricted to the given selection.
+	 * See {@link #hasInvalidInvoiceCandidatesForSelection(InvoiceCandidateIdsSelection)} for why the out-of-trx context matters.
+	 */
+	private IQueryBuilder<I_C_Invoice_Candidate> createInvoiceCandidateQueryBuilderForSelection(@NonNull final InvoiceCandidateIdsSelection invoiceCandidateIdsSelection)
+	{
 		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class, PlainContextAware.newOutOfTrx());
 
-		// apply the invoiceCandidateIdsSelection to our queryBuilder
 		invoiceCandidateIdsSelection.apply(new InvoiceCandidateIdsSelection.CaseMapper()
 		{
 			@Override
@@ -1276,17 +1289,73 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 			}
 		});
 
-		return queryBuilder
-				.andCollectChildren(I_C_Invoice_Candidate_Recompute.COLUMN_C_Invoice_Candidate_ID)
-				.create()
-				.anyMatch();
+		return queryBuilder;
 	}
 
 	@Override
 	public Optional<String> getFailedRecomputeErrorMessage(@NonNull final InvoiceCandidateIdsSelection invoiceCandidateIdsSelection)
 	{
-		// TODO: implement
-		return Optional.empty();
+		if (invoiceCandidateIdsSelection.isEmpty())
+		{
+			return Optional.empty();
+		}
+
+		// The recompute of these ICs runs in an async workpackage that is enqueued under the ICs' C_Async_Batch_ID
+		// (UpdateInvalidInvoiceCandidatesWorkpackageProcessorScheduler#extractAsyncBatchFromItem). Resolve those batch-ids
+		// from the selection's ICs. If none of them carries a *real* batch-id, we cannot attribute any error to this
+		// selection -> return empty -> the wait keeps its unchanged behaviour.
+		final ImmutableSet<AsyncBatchId> asyncBatchIds = retrieveRealAsyncBatchIdsForSelection(invoiceCandidateIdsSelection);
+		if (asyncBatchIds.isEmpty())
+		{
+			return Optional.empty();
+		}
+
+		// Conservative on purpose (feeds a system-wide fast-fail): only report an error when a matching errored
+		// workpackage is actually found for one of the selection's recompute batch-ids.
+		final I_C_Queue_WorkPackage erroredWorkPackage = queryBL.createQueryBuilder(I_C_Queue_WorkPackage.class, PlainContextAware.newOutOfTrx())
+				.addInArrayFilter(I_C_Queue_WorkPackage.COLUMNNAME_C_Async_Batch_ID, asyncBatchIds)
+				.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_IsError, true)
+				.orderBy(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID)
+				.create()
+				.first();
+		if (erroredWorkPackage == null)
+		{
+			return Optional.empty();
+		}
+
+		final List<Integer> stillInvalidInvoiceCandidateIds = retrieveInvalidInvoiceCandidateIdsForSelection(invoiceCandidateIdsSelection);
+
+		final String errorMsg = erroredWorkPackage.getErrorMsg();
+		final String detail = "Errored recompute C_Queue_WorkPackage_ID=" + erroredWorkPackage.getC_Queue_WorkPackage_ID()
+				+ " (C_Async_Batch_ID=" + erroredWorkPackage.getC_Async_Batch_ID() + ")"
+				+ "; ErrorMsg=" + (Check.isBlank(errorMsg) ? "<none>" : errorMsg)
+				+ "; still-invalid C_Invoice_Candidate_IDs=" + stillInvalidInvoiceCandidateIds;
+		return Optional.of(detail);
+	}
+
+	/**
+	 * @return the distinct <b>real</b> {@code C_Async_Batch_ID}s of the selection's ICs, i.e. excluding {@code null}/{@code 0}
+	 * and the {@link AsyncBatchId#NONE_ASYNC_BATCH_ID} sentinel (an errored workpackage under the shared NONE-batch cannot be
+	 * reliably attributed to this selection, so we never fast-fail on it).
+	 */
+	private ImmutableSet<AsyncBatchId> retrieveRealAsyncBatchIdsForSelection(@NonNull final InvoiceCandidateIdsSelection invoiceCandidateIdsSelection)
+	{
+		return createInvoiceCandidateQueryBuilderForSelection(invoiceCandidateIdsSelection)
+				.create()
+				.listDistinct(I_C_Invoice_Candidate.COLUMNNAME_C_Async_Batch_ID, Integer.class)
+				.stream()
+				.map(AsyncBatchId::ofRepoIdOrNull)
+				.filter(Objects::nonNull)
+				.filter(asyncBatchId -> !AsyncBatchId.NONE_ASYNC_BATCH_ID.equals(asyncBatchId))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private List<Integer> retrieveInvalidInvoiceCandidateIdsForSelection(@NonNull final InvoiceCandidateIdsSelection invoiceCandidateIdsSelection)
+	{
+		return createInvoiceCandidateQueryBuilderForSelection(invoiceCandidateIdsSelection)
+				.andCollectChildren(I_C_Invoice_Candidate_Recompute.COLUMN_C_Invoice_Candidate_ID)
+				.create()
+				.listDistinct(I_C_Invoice_Candidate_Recompute.COLUMNNAME_C_Invoice_Candidate_ID, Integer.class);
 	}
 
 	private IQueryBuilder<I_C_Invoice_Candidate> retrieveForBillPartnerQuery(final I_C_BPartner bpartner)
