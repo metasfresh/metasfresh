@@ -37,6 +37,7 @@ import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
@@ -44,7 +45,8 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_Sequence;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.util.DB;
-import org.adempiere.ad.trx.api.ITrx;
+
+import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -102,6 +104,10 @@ public class BPartnerNumberGen_StepDef
 {
 	/** Value column of the default org in the standard seed DB. */
 	private static final String DEFAULT_ORG_VALUE = "001";
+
+	/** Same pattern as {@link de.metas.bpartner.service.BPartnerNumberSequenceDAO} — plain or schema-qualified SQL identifier. */
+	private static final Pattern FUNCTION_NAME_PATTERN =
+			Pattern.compile("[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)?");
 
 	@NonNull private final TestContext testContext;
 	@NonNull private final REST_API_StepDef restApiStepDef;
@@ -186,6 +192,10 @@ public class BPartnerNumberGen_StepDef
 			@NonNull final String functionName,
 			final int returnValue)
 	{
+		if (!FUNCTION_NAME_PATTERN.matcher(functionName).matches())
+		{
+			throw new IllegalArgumentException("Test override function name is not a valid SQL identifier: " + functionName);
+		}
 		final String sql = "CREATE OR REPLACE FUNCTION " + functionName + "("
 				+ "p_ad_org_id int, p_c_bpartner_id int,"
 				+ " p_iscustomer bool, p_isvendor bool, p_iscompany bool,"

@@ -88,7 +88,8 @@ Feature: BPartner debtor/creditor number generation via REST V2 upsert
   @from:cucumber
   @Id:S25082_TC9b
   Scenario: TC9b - partner who is both customer and vendor gets both debtor and creditor numbers
-    Given a debtor sequence for org "001" starting at 91000
+    Given org "001" uses number resolver ""
+    And a debtor sequence for org "001" starting at 91000
     And a creditor sequence for org "001" starting at 92000
     When I upsert a "non-company" "both" "TC9b-both"
     Then responseItems[0].responseBPartnerItem.debtorId is within 91000..91099
