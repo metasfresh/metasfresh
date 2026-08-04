@@ -44,7 +44,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_Sequence;
 import org.compiere.model.I_AD_SysConfig;
-import org.compiere.model.I_C_BP_Group;
 import org.compiere.util.DB;
 
 import java.util.regex.Pattern;
@@ -463,11 +462,11 @@ public class BPartnerNumberGen_StepDef
 		bpartnerJson.append("{");
 		bpartnerJson.append("\"name\":\"").append(id).append("\",");
 		bpartnerJson.append("\"language\":\"de\",");
-		// Resolve a BP group that exists in the TARGET org (the V2 persister resolves the group
-		// within the partner's org). Org 001 has "Standard"; a secondary org (e.g. 002 in TC8) has
-		// none, so ensure one exists there — otherwise the upsert tries to create "Standard" and hits
-		// the client-wide C_BP_Group.Value unique constraint.
-		bpartnerJson.append("\"group\":\"").append(ensureGroupForOrg(resolveOrgId(orgValue))).append("\",");
+		// Let the V2 upsert auto-create a per-org group by Value (idempotent — mirrors the proven
+		// sibling bpartnerV2OrgConsistency.feature). A unique per-org name avoids reusing the
+		// client-wide "Standard" group, whose Value would collide (C_BP_Group.Value unique) when a
+		// freshly-created org (e.g. TC8's 002) tries to re-create it.
+		bpartnerJson.append("\"group\":\"NumGen Test Group ").append(orgValue).append("\",");
 		bpartnerJson.append("\"customer\":").append(isCustomer).append(",");
 		bpartnerJson.append("\"vendor\":").append(isVendor);
 		if (isCompany)
@@ -629,42 +628,6 @@ public class BPartnerNumberGen_StepDef
 						+ " AND AD_Org_ID IN (SELECT AD_Org_ID FROM AD_Org WHERE Value IN ('001','002'))",
 				ITrx.TRXNAME_ThreadInherited);
 		CacheMgt.get().reset("C_BPartner");
-	}
-
-	/**
-	 * Returns the {@code Value} of a BP group usable in the given org, creating a minimal default
-	 * group for that org when none exists. A secondary seed org (e.g. 002) has no BP groups of its
-	 * own, so the upsert would otherwise try to create the client-wide "Standard" group and hit its
-	 * Value-unique constraint.
-	 */
-	private String ensureGroupForOrg(final int orgId)
-	{
-		I_C_BP_Group group = queryBL.createQueryBuilder(I_C_BP_Group.class)
-				.addEqualsFilter(I_C_BP_Group.COLUMNNAME_AD_Org_ID, orgId)
-				.addEqualsFilter(I_C_BP_Group.COLUMNNAME_IsDefault, true)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.first(I_C_BP_Group.class);
-		if (group == null)
-		{
-			group = queryBL.createQueryBuilder(I_C_BP_Group.class)
-					.addEqualsFilter(I_C_BP_Group.COLUMNNAME_AD_Org_ID, orgId)
-					.addOnlyActiveRecordsFilter()
-					.create()
-					.first(I_C_BP_Group.class);
-		}
-		if (group != null)
-		{
-			return group.getValue();
-		}
-
-		final I_C_BP_Group created = newInstance(I_C_BP_Group.class);
-		created.setAD_Org_ID(orgId);
-		created.setValue("NumGenTestGroup_" + orgId);
-		created.setName("NumGen Test Group " + orgId);
-		created.setIsDefault(true);
-		saveRecord(created);
-		return created.getValue();
 	}
 
 	/**

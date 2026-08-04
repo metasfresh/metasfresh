@@ -8,6 +8,14 @@ Feature: BPartner debtor/creditor number generation via REST V2 upsert
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    # Create the records the scenarios depend on — the standard seed has only org 001 and no
+    # "Test_System" external system (a polluted local stack may already carry them; CI does not).
+    And metasfresh contains AD_Org:
+      | AD_Org_ID.Identifier | Name | Value |
+      | org002               | 002  | 002   |
+    And metasfresh contains External System
+      | Name        | Value       |
+      | Test System | Test_System |
     And the BPartner number-generation config is reset
 
   @from:cucumber
