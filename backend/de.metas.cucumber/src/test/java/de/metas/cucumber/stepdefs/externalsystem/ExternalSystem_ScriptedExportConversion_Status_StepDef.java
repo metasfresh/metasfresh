@@ -363,8 +363,8 @@ public class ExternalSystem_ScriptedExportConversion_Status_StepDef
 	 * <p><b>Direct-service invocation (documented exemption).</b> In production this fires when an operator
 	 * runs the "Change EPCIS Export Status" process from the shipment action menu (the
 	 * {@code ChangeEpcisExportStatus_M_InOut_SingleView} AD_Process). That process class lives in
-	 * {@code de.metas.ui.web.base}, which this cucumber module does not (and should not) depend on; the
-	 * process is a thin parameter-reader that delegates to {@link EpcisExportStatusChangeService#changeStatus},
+	 * {@code de.metas.ui.web.base}, which this cucumber module does not (and should not) depend on.
+	 * The process is a thin parameter-reader that delegates to {@link EpcisExportStatusChangeService#changeStatus},
 	 * so invoking that service directly exercises the same transition + who/when-audit behaviour. A real
 	 * {@code AD_PInstance} for the actual process (resolved by its AD_Process Value) is created and passed,
 	 * so the audit stamp on the written row is faithful to production.
