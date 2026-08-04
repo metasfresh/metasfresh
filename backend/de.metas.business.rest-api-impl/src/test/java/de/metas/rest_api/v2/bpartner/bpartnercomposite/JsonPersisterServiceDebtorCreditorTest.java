@@ -137,6 +137,7 @@ class JsonPersisterServiceDebtorCreditorTest
 		// then — response DTO must carry the value back to the caller
 		assertThat(responseItem.getDebtorId()).isEqualTo(12345);
 		// and the value must be persisted to the DB
+		assertThat(responseItem.getMetasfreshId()).as("metasfreshId must be set on CREATED response").isNotNull();
 		final BPartnerComposite result = bpartnerCompositeRepository.getById(BPartnerId.ofRepoId(responseItem.getMetasfreshId().getValue()));
 		assertThat(result.getBpartner().getDebtorId()).isEqualTo(12345);
 	}
@@ -155,6 +156,7 @@ class JsonPersisterServiceDebtorCreditorTest
 		// then — response DTO must carry the value back to the caller
 		assertThat(responseItem.getCreditorId()).isEqualTo(67890);
 		// and the value must be persisted to the DB
+		assertThat(responseItem.getMetasfreshId()).as("metasfreshId must be set on CREATED response").isNotNull();
 		final BPartnerComposite result = bpartnerCompositeRepository.getById(BPartnerId.ofRepoId(responseItem.getMetasfreshId().getValue()));
 		assertThat(result.getBpartner().getCreditorId()).isEqualTo(67890);
 	}
@@ -175,6 +177,7 @@ class JsonPersisterServiceDebtorCreditorTest
 		assertThat(responseItem.getDebtorId()).isEqualTo(12345);
 		assertThat(responseItem.getCreditorId()).isEqualTo(67890);
 		// and both values must be persisted to the DB
+		assertThat(responseItem.getMetasfreshId()).as("metasfreshId must be set on CREATED response").isNotNull();
 		final BPartnerComposite result = bpartnerCompositeRepository.getById(BPartnerId.ofRepoId(responseItem.getMetasfreshId().getValue()));
 		assertThat(result.getBpartner().getDebtorId()).isEqualTo(12345);
 		assertThat(result.getBpartner().getCreditorId()).isEqualTo(67890);
