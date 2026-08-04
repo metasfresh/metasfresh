@@ -29,16 +29,17 @@ import de.metas.common.rest_api.v2.currencyconversion.JsonRequestConversionRateU
 import de.metas.common.rest_api.v2.currencyconversion.JsonResponseConversionRateUpsert;
 import de.metas.common.rest_api.v2.currencyconversion.JsonResponseCurrencies;
 import de.metas.common.rest_api.v2.currencyconversion.JsonResponseNewestConversionRates;
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.rest_api.v2.currencyconversion.NewestConversionRatesService.NewestConversionRatesFilter;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.service.ClientId;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
@@ -89,21 +90,20 @@ public class CurrencyConversionRestController
 	@PutMapping("/rates")
 	public ResponseEntity<?> upsertRates(@RequestBody @NonNull final JsonRequestConversionRateUpsert request)
 	{
-		final String adLanguage = Env.getADLanguageOrBaseLanguage();
-		final ClientId clientId = Env.getClientId();
+		final Language adLanguage = Language.getLanguage(Env.getADLanguageOrBaseLanguage());
 		try
 		{
-			// Per-record failures are already reported inside the response (as ERROR items) and never
-			// abort the batch; the batch as a whole succeeds. A thrown exception here is a catastrophic
-			// (non-per-record) failure and becomes a friendly top-level error.
-			final JsonResponseConversionRateUpsert response = conversionRateUpsertService.upsert(clientId, request);
+			// Per-record failures are already reported inside the response (as ERROR items) and never abort the
+			// batch; the batch as a whole succeeds. A thrown exception here is a catastrophic (non-per-record)
+			// failure and becomes a friendly top-level error.
+			final JsonResponseConversionRateUpsert response = conversionRateUpsertService.upsert(request, adLanguage);
 			return ResponseEntity.ok(response);
 		}
 		catch (final Exception ex)
 		{
 			logger.error(ex.getMessage(), ex);
 			return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-					.body(JsonErrors.ofThrowable(ex, adLanguage));
+					.body(JsonErrors.ofThrowable(ex, adLanguage.getAD_Language()));
 		}
 	}
 
@@ -117,7 +117,7 @@ public class CurrencyConversionRestController
 	@GetMapping("/currencies")
 	public ResponseEntity<?> getCurrencies()
 	{
-		final String adLanguage = Env.getADLanguageOrBaseLanguage();
+		final Language adLanguage = Language.getLanguage(Env.getADLanguageOrBaseLanguage());
 		try
 		{
 			final List<JsonCurrency> currencies = currencyConversionRepository.getActiveCurrencies();
@@ -130,7 +130,7 @@ public class CurrencyConversionRestController
 		{
 			logger.error(ex.getMessage(), ex);
 			return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-					.body(JsonErrors.ofThrowable(ex, adLanguage));
+					.body(JsonErrors.ofThrowable(ex, adLanguage.getAD_Language()));
 		}
 	}
 
@@ -143,21 +143,29 @@ public class CurrencyConversionRestController
 	})
 	@GetMapping("/newestRates")
 	public ResponseEntity<?> getNewestRates(
+			@ApiParam("3-letter ISO source currency code; omitted spans all source currencies.")
 			@RequestParam(value = "fromCurrencyCode", required = false) @Nullable final String fromCurrencyCode,
+
+			@ApiParam("3-letter ISO target currency code; omitted spans all target currencies.")
 			@RequestParam(value = "toCurrencyCode", required = false) @Nullable final String toCurrencyCode,
-			@RequestParam(value = "conversionTypeCode", required = false) @Nullable final String conversionTypeCode)
+
+			@ApiParam("Conversion type code (S/P/A/C); omitted spans all conversion types.")
+			@RequestParam(value = "conversionTypeCode", required = false) @Nullable final String conversionTypeCode,
+
+			@ApiParam("Org code; omitted spans all orgs (incl. the shared org 0 rows).")
+			@RequestParam(value = "orgCode", required = false) @Nullable final String orgCode)
 	{
-		final String adLanguage = Env.getADLanguageOrBaseLanguage();
-		final ClientId clientId = Env.getClientId();
+		final Language adLanguage = Language.getLanguage(Env.getADLanguageOrBaseLanguage());
 		try
 		{
 			final NewestConversionRatesFilter filter = NewestConversionRatesFilter.builder()
 					.fromCurrencyCode(fromCurrencyCode)
 					.toCurrencyCode(toCurrencyCode)
 					.conversionTypeCode(conversionTypeCode)
+					.orgCode(orgCode)
 					.build();
 
-			final List<JsonNewestConversionRate> rates = newestConversionRatesService.list(clientId, filter);
+			final List<JsonNewestConversionRate> rates = newestConversionRatesService.list(filter);
 
 			return ResponseEntity.ok(JsonResponseNewestConversionRates.builder()
 					.rates(rates)
@@ -167,7 +175,7 @@ public class CurrencyConversionRestController
 		{
 			logger.error(ex.getMessage(), ex);
 			return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-					.body(JsonErrors.ofThrowable(ex, adLanguage));
+					.body(JsonErrors.ofThrowable(ex, adLanguage.getAD_Language()));
 		}
 	}
 }

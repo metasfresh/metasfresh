@@ -35,7 +35,6 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_C_Conversion_Rate;
 import org.compiere.model.I_C_Currency;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -70,7 +69,10 @@ class NewestConversionRatesServiceTest
 
 		currencyDAO = (PlainCurrencyDAO)Services.get(de.metas.currency.ICurrencyDAO.class);
 
-		newestConversionRatesService = new NewestConversionRatesService(new CurrencyConversionRepository());
+		final CurrencyConversionRepository currencyConversionRepository = new CurrencyConversionRepository();
+		newestConversionRatesService = new NewestConversionRatesService(
+				currencyConversionRepository,
+				new JsonConversionRateConverters(currencyConversionRepository));
 
 		eur = createActiveCurrency("EUR");
 		cny = createActiveCurrency("CNY");
@@ -115,12 +117,14 @@ class NewestConversionRatesServiceTest
 
 	private ClientId sessionClientId()
 	{
-		return Env.getClientId();
+		// The service scopes reads to AD_Client_ID IN (SYSTEM, METASFRESH); create the in-scope rows under
+		// METASFRESH so the assertions see them.
+		return ClientId.METASFRESH;
 	}
 
 	private List<JsonNewestConversionRate> list(final NewestConversionRatesService.NewestConversionRatesFilter filter)
 	{
-		return newestConversionRatesService.list(Env.getClientId(), filter);
+		return newestConversionRatesService.list(filter);
 	}
 
 	@Test

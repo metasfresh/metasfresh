@@ -29,6 +29,7 @@ import de.metas.common.rest_api.v2.currencyconversion.JsonResponseConversionRate
 import de.metas.common.rest_api.v2.currencyconversion.JsonResponseConversionRateUpsertItem;
 import de.metas.common.rest_api.v2.currencyconversion.JsonResponseConversionRateUpsertItem.SyncOutcome;
 import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.i18n.Language;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
@@ -38,9 +39,10 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_Conversion_Rate;
 import org.compiere.model.I_C_Currency;
-import org.compiere.util.Env;
+import org.compiere.model.X_AD_OrgInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -69,15 +71,23 @@ class ConversionRateUpsertServiceTest
 
 		currencyDAO = (PlainCurrencyDAO)Services.get(de.metas.currency.ICurrencyDAO.class);
 
-		conversionRateUpsertService = new ConversionRateUpsertService(new CurrencyConversionRepository());
+		final CurrencyConversionRepository currencyConversionRepository = new CurrencyConversionRepository();
+		conversionRateUpsertService = new ConversionRateUpsertService(
+				currencyConversionRepository,
+				new JsonConversionRateConverters(currencyConversionRepository));
 	}
 
 	private JsonResponseConversionRateUpsert upsert(final JsonRequestConversionRateUpsert request)
 	{
-		return conversionRateUpsertService.upsert(Env.getClientId(), request);
+		return conversionRateUpsertService.upsert(request, Language.getBaseLanguage());
 	}
 
-	/** Create an <b>active</b> {@code AD_Org} with the given Value and return its id (orgCode resolves by Value). */
+	/**
+	 * Create an <b>active</b> {@code AD_Org} with the given Value + a matching {@code AD_OrgInfo} carrying a
+	 * timezone, and return its id. The Value lets {@code orgCode} resolve by Value; the {@code AD_OrgInfo} lets the
+	 * converter's org-timezone date conversion ({@code OrgDAO.getTimeZone}) resolve a zone for the regular org
+	 * (a regular org with no {@code AD_OrgInfo} would throw {@code @NotFound@ @AD_OrgInfo@}).
+	 */
 	private OrgId createOrg(final String value)
 	{
 		final I_AD_Org org = newInstanceOutOfTrx(I_AD_Org.class);
@@ -85,7 +95,17 @@ class ConversionRateUpsertServiceTest
 		org.setName(value);
 		org.setIsActive(true);
 		saveRecord(org);
-		return OrgId.ofRepoId(org.getAD_Org_ID());
+		final OrgId orgId = OrgId.ofRepoId(org.getAD_Org_ID());
+
+		final I_AD_OrgInfo orgInfo = newInstanceOutOfTrx(I_AD_OrgInfo.class);
+		orgInfo.setAD_Org_ID(orgId.getRepoId());
+		orgInfo.setTimeZone("UTC");
+		// StoreCreditCardData must be a valid code: OrgDAO.toOrgInfo maps it via StoreCreditCardNumberMode.ofCode,
+		// which throws on a null/blank value.
+		orgInfo.setStoreCreditCardData(X_AD_OrgInfo.STORECREDITCARDDATA_Letzte4Stellen);
+		saveRecord(orgInfo);
+
+		return orgId;
 	}
 
 	/** Create an <b>active</b> {@code C_Currency} row for the given ISO code and return its id. */
@@ -267,6 +287,60 @@ class ConversionRateUpsertServiceTest
 
 		final I_C_Conversion_Rate rate = allRates().get(0);
 		assertThat(rate.getAD_Org_ID()).isEqualTo(orgId.getRepoId());
+	}
+
+	@Test
+	void unknownOrgCode_isPerRecordError_noRowWritten()
+	{
+		createActiveCurrency("EUR");
+		createActiveCurrency("CNY");
+		// NO org with Value "orgNOPE" is created: orgCode resolution goes through
+		// RestUtils.retrieveOrgIdOrDefault, which throws for an unknown AD_Org.Value. The service's
+		// per-item try/catch must convert that into a per-record ERROR (not abort the batch), and
+		// nothing must be written.
+
+		final JsonResponseConversionRateUpsert response = upsert(
+				JsonRequestConversionRateUpsert.builder()
+						.requestItem(item().orgCode("orgNOPE").build())
+						.build());
+
+		assertThat(response.getResponseItems()).hasSize(1);
+		final JsonResponseConversionRateUpsertItem err = response.getResponseItems().get(0);
+		assertThat(err.getSyncOutcome()).isEqualTo(SyncOutcome.ERROR);
+		assertThat(err.getError()).isNotNull();
+		assertThat(allRates()).isEmpty();
+	}
+
+	@Test
+	void unknownOrgCode_isPerRecordError_validRecordStillApplied_noBatchAbort()
+	{
+		final CurrencyId eur = createActiveCurrency("EUR");
+		final CurrencyId cny = createActiveCurrency("CNY");
+		// NO org with Value "orgNOPE" is created: orgCode resolution goes through RestUtils.retrieveOrgIdOrDefault,
+		// which throws for an unknown AD_Org.Value. The service's per-item try/catch must convert that into a
+		// per-record ERROR (M2) — NOT abort the batch — while the sibling valid item (default org 0) still applies.
+
+		final JsonResponseConversionRateUpsert response = upsert(
+				JsonRequestConversionRateUpsert.builder()
+						.requestItem(item().build()) // valid, default org 0
+						.requestItem(item().orgCode("orgNOPE").build()) // unknown org Value
+						.build());
+
+		assertThat(response.getResponseItems()).hasSize(2);
+
+		final JsonResponseConversionRateUpsertItem ok = response.getResponseItems().get(0);
+		assertThat(ok.getSyncOutcome()).isEqualTo(SyncOutcome.CREATED);
+		assertThat(ok.getError()).isNull();
+
+		final JsonResponseConversionRateUpsertItem err = response.getResponseItems().get(1);
+		assertThat(err.getSyncOutcome()).isEqualTo(SyncOutcome.ERROR);
+		assertThat(err.getError()).isNotNull();
+
+		// only the valid item's two directions (org 0) were written; the unknown-org item wrote nothing
+		assertThat(allRates()).hasSize(2);
+		final I_C_Conversion_Rate forward = rateFor(eur, cny);
+		assertThat(forward).isNotNull();
+		assertThat(forward.getAD_Org_ID()).isEqualTo(0);
 	}
 
 	@Test
