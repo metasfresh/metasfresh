@@ -75,9 +75,9 @@ Feature: BPartner debtor/creditor number generation via REST V2 upsert
   @from:cucumber
   @Id:S25082_TC8
   Scenario: TC8 - two orgs draw from independent sequences
-    # Uses the two existing, fully-set-up seed orgs 001 and 002 (a fresh org lacks the
-    # BP-group setup the upsert needs). Both debtor sequences start at 80000; the per-org
-    # unique index (debtorid, ad_org_id) and per-org sysconfig keep them independent.
+    # Org 001 (seed) and 002 (created in the Background). Both debtor sequences start at 80000;
+    # the upsert auto-creates each org's group by Value, and the per-org unique index
+    # (debtorid, ad_org_id) plus per-org sysconfig keep the two orgs independent.
     Given a debtor sequence for org "001" starting at 80000
     And a debtor sequence for org "002" starting at 80000
     When I upsert a "non-company" "customer" "TC8-bpA" in org "001"
