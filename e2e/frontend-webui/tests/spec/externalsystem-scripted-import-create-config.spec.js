@@ -42,9 +42,13 @@ const SCRIPTED_IMPORT_EXTERNAL_SYSTEM = 'ScriptedImportConversion';
 // An ACTIVE parent ExternalSystem_Config record used by the dedicated-window test to
 // set the config on the root record before binding the endpoint.
 const ACTIVE_PARENT_CONFIG_NAME = 'print-to-remote-folder';
-// Search term for the mandatory "Benutzerimport" (AD_User_Import_ID) field — matches the
-// stable seeded WebUI system user "Admin, Automatik-Benutzer" (has a WebUI auth token).
-const IMPORT_USER_SEARCH = 'Automatik';
+// Search term for the mandatory "Benutzerimport" (AD_User_Import_ID) field. The lookup is filtered to
+// users that can act as an import user (a valid WebUI auth token) — verified against the live stack, it
+// offers only the "metasfresh" login user (the seeded "…, Automatik-Benutzer" system users are NOT
+// offered on the faithful/seed DB → searching for them returns "No results found." and the mandatory
+// field stayed empty). "metasfresh" is the stable, always-present token-holding user on both the local
+// faithful DB and the CI preloaded seed.
+const IMPORT_USER_SEARCH = 'metasfresh';
 const ROLE_CAPTION_REGEX = /^WebUI, metasfresh, metasfresh AG$/;
 
 /** Escape regex metacharacters so a server-generated value (doc sequence) can be
@@ -83,12 +87,18 @@ async function selectLookupValue(page, fieldName, searchText) {
   await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
   await input.click();
   await page.waitForTimeout(400);
-  await input.fill(searchText);
-  await page.waitForTimeout(1200);
+  // Type char-by-char so the React typeahead fires its (debounced, backend-querying) search — a direct
+  // .fill() sets the value without the keystroke events a user-lookup needs to populate the option list.
+  await input.pressSequentially(searchText, { delay: 60 });
+  await page.waitForTimeout(1500);
   const dropdown = page.locator('.input-dropdown-list');
   await dropdown.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-  await dropdown.locator('.input-dropdown-list-option').first().click();
-  await page.waitForTimeout(800);
+  // Click the option that actually MATCHES the search, not blindly the first row (which may be a
+  // header / a non-matching entry) — the bare "first option" is what left the mandatory field unset.
+  const matching = dropdown.locator('.input-dropdown-list-option').filter({ hasText: searchText });
+  const target = (await matching.count()) > 0 ? matching.first() : dropdown.locator('.input-dropdown-list-option').first();
+  await target.click();
+  await page.waitForTimeout(1000);
 }
 
 /**
@@ -99,6 +109,8 @@ async function fillTextField(page, fieldName, value) {
   const field = page.locator(`.form-field-${fieldName} input[type="text"]`);
   await field.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
   await field.fill(value);
+  // Commit the edit: the WebUI PATCHes a field only on blur, so an uncommitted .fill() never persists.
+  await field.press('Tab');
   await page.waitForTimeout(300);
 }
 
@@ -316,6 +328,15 @@ asserts the endpoint persists bound after a reload.
         .inputValue();
       expect(boundInModal, 'seeded endpoint must be bound in the child-row form before save').toContain(endpointValue);
 
+      // The mandatory Import User must actually be SELECTED in the modal before saving — a lookup
+      // selection that never landed is the defect this test now guards (the row would save invalid,
+      // "Fill mandatory fields: Import User", while a bound-endpoint-only check stayed green).
+      const importUserInModal = await modal
+        .locator('.form-field-AD_User_Import_ID input')
+        .first()
+        .inputValue();
+      expect(importUserInModal, 'Import User must be selected in the child-row form before save').not.toBe('');
+
       // Save/commit the child row. The WebUI auto-saves each field via PATCH; the modal's
       // Done button commits and closes the "Add new" overlay. Select it by its stable
       // data-testid (Modal.js) — never the localized caption (language-independence rule).
@@ -342,6 +363,15 @@ asserts the endpoint persists bound after a reload.
         childRow,
         'the reloaded child grid row must show the bound endpoint (persisted)'
       ).toContainText(endpointValue, { timeout: SLOW_ACTION_TIMEOUT });
+
+      // OUTCOME check — the create+save produced a VALID, complete record, not just a bound endpoint.
+      // The "Fill mandatory fields" banner appears (and survives reload) whenever a mandatory field
+      // (e.g. Import User) did not persist; its absence proves the whole record saved. This is the
+      // assertion a bound-endpoint-only check lacked (metasfresh-test-integrity: assert the OUTCOME).
+      await expect(
+        page.getByText(/Fill mandatory fields/i),
+        'no mandatory-field error may remain after reload — the saved config must be valid/complete'
+      ).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
 
       // Reopen the row into its detail form and re-read the bound endpoint — the explicit
       // persisted-save proof (mirrors the reference save test's re-read).
@@ -414,6 +444,10 @@ after a reload.
       await selectListValue(page, 'ExternalSystem_Config_ID', ACTIVE_PARENT_CONFIG_NAME);
       await selectListValue(page, 'ExternalSystem_Endpoint_ID', endpointValue, { exact: true });
       await fillMandatoryConfigFields(page, externalSystemValue);
+
+      // Import User must actually be selected before saving (same guard as the parent-window test).
+      const importUserSet = await page.locator('.form-field-AD_User_Import_ID input').first().inputValue();
+      expect(importUserSet, 'Import User must be selected before save').not.toBe('');
     });
 
     await test.step('Save the record and assert the endpoint persisted bound after a reload', async () => {
@@ -444,6 +478,12 @@ after a reload.
         page.locator('.form-field-ExternalSystemValue input').first(),
         'the Suchschlüssel (ExternalSystemValue) must be persisted after reload'
       ).toHaveValue(externalSystemValue, { timeout: SLOW_ACTION_TIMEOUT });
+
+      // OUTCOME: no mandatory-field error remains after reload — the record saved valid/complete.
+      await expect(
+        page.getByText(/Fill mandatory fields/i),
+        'no mandatory-field error may remain after reload — the saved config must be valid/complete'
+      ).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
     });
   });
 });
