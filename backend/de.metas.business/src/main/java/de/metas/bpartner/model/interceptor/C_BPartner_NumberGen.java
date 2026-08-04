@@ -32,6 +32,7 @@ import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -62,6 +63,7 @@ public class C_BPartner_NumberGen
 	{
 		final boolean isNew = InterfaceWrapperHelper.isNew(bpartner);
 
+		final ClientId clientId = ClientId.ofRepoId(bpartner.getAD_Client_ID());
 		final OrgId orgId = OrgId.ofRepoId(bpartner.getAD_Org_ID());
 		final int bpartnerId = bpartner.getC_BPartner_ID();
 		final boolean isCustomer = bpartner.isCustomer();
@@ -72,6 +74,7 @@ public class C_BPartner_NumberGen
 		if (isCustomer)
 		{
 			final BPartnerNumberContext debtorCtx = BPartnerNumberContext.builder()
+					.clientId(clientId)
 					.orgId(orgId)
 					.bPartnerId(bpartnerId)
 					.isCustomer(isCustomer)
@@ -105,6 +108,7 @@ public class C_BPartner_NumberGen
 		if (isVendor)
 		{
 			final BPartnerNumberContext creditorCtx = BPartnerNumberContext.builder()
+					.clientId(clientId)
 					.orgId(orgId)
 					.bPartnerId(bpartnerId)
 					.isCustomer(isCustomer)

@@ -26,6 +26,7 @@ import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.service.ClientId;
 
 /**
  * Immutable context object passed to {@link BPartnerNumberGenerator}.
@@ -44,6 +45,8 @@ public class BPartnerNumberContext
 		DEBTOR,
 		CREDITOR
 	}
+
+	@NonNull ClientId clientId;
 
 	@NonNull OrgId orgId;
 
