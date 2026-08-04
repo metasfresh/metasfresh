@@ -147,7 +147,7 @@ public class CostRevaluationServiceTest
 		euroCurrencyId = PlainCurrencyDAO.createCurrency(CurrencyCode.EUR).getId();
 		eachUOM = BusinessTestHelper.createUomEach();
 
-		acctSchemaId = createAcctSchema();
+		acctSchemaId = createAcctSchema(CostingLevel.Client);
 
 		sourceCostElementId = createCostElement("SourceElement", CostingMethod.AveragePO);
 		targetCostElementId = createCostElement("TargetElement", CostingMethod.MovingAverageInvoice);
@@ -166,13 +166,17 @@ public class CostRevaluationServiceTest
 		return CostElementId.ofRepoId(record.getM_CostElement_ID());
 	}
 
-	private AcctSchemaId createAcctSchema()
+	/**
+	 * @param costingLevel the schema's {@code CostingLevel} — {@link CostingLevel#Client} for the default fixture,
+	 * {@link CostingLevel#Organization} for the org-level one (see {@link CopyFromCostElement_OrganizationCostingLevel}).
+	 */
+	private AcctSchemaId createAcctSchema(@NonNull final CostingLevel costingLevel)
 	{
 		final I_C_AcctSchema acctSchemaRecord = newInstance(I_C_AcctSchema.class);
-		acctSchemaRecord.setName("Test AcctSchema");
+		acctSchemaRecord.setName("Test AcctSchema " + costingLevel);
 		acctSchemaRecord.setC_Currency_ID(euroCurrencyId.getRepoId());
 		acctSchemaRecord.setM_CostType_ID(costTypeId.getRepoId());
-		acctSchemaRecord.setCostingLevel(CostingLevel.Client.getCode());
+		acctSchemaRecord.setCostingLevel(costingLevel.getCode());
 		acctSchemaRecord.setCostingMethod(CostingMethod.MovingAverageInvoice.getCode());
 		acctSchemaRecord.setSeparator("-");
 		acctSchemaRecord.setTaxCorrectionType(TaxCorrectionType.NONE.getCode());
@@ -201,6 +205,16 @@ public class CostRevaluationServiceTest
 
 	private ProductId createProduct(@NonNull final String value)
 	{
+		return createProduct(value, acctSchemaId);
+	}
+
+	/**
+	 * @param acctSchemaId the accounting schema the product's category gets its {@code M_Product_Category_Acct} for. The
+	 * product's effective costing level is resolved from that schema (the category record carries no override), so passing
+	 * the org-level schema is what puts the product on {@link CostingLevel#Organization}.
+	 */
+	private ProductId createProduct(@NonNull final String value, @NonNull final AcctSchemaId acctSchemaId)
+	{
 		final I_M_Product_Category productCategory = newInstanceOutOfTrx(I_M_Product_Category.class);
 		saveRecord(productCategory);
 
@@ -221,6 +235,29 @@ public class CostRevaluationServiceTest
 		return ProductId.ofRepoId(product.getM_Product_ID());
 	}
 
+	/**
+	 * Builds the cost segment the fixtures assert against: the default (client-level) one when {@code costingLevel} is
+	 * {@link CostingLevel#Client} / {@code orgId} is {@link OrgId#ANY}, the per-org one otherwise.
+	 */
+	private CostSegmentAndElement costSegmentAndElement(
+			@NonNull final ProductId productId,
+			@NonNull final CostElementId costElementId,
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final CostingLevel costingLevel,
+			@NonNull final OrgId orgId)
+	{
+		return CostSegmentAndElement.builder()
+				.costingLevel(costingLevel)
+				.acctSchemaId(acctSchemaId)
+				.costTypeId(costTypeId)
+				.clientId(ClientId.METASFRESH)
+				.orgId(orgId)
+				.productId(productId)
+				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+				.costElementId(costElementId)
+				.build();
+	}
+
 	/** Seeds a {@code M_Cost} row for {@code sourceCostElementId} directly (bypassing the costing engine). */
 	private void seedSourceCurrentCost(
 			@NonNull final ProductId productId,
@@ -228,16 +265,20 @@ public class CostRevaluationServiceTest
 			@NonNull final String componentsCostPrice,
 			@NonNull final String qty)
 	{
-		final CostSegmentAndElement costSegmentAndElement = CostSegmentAndElement.builder()
-				.costingLevel(CostingLevel.Client)
-				.acctSchemaId(acctSchemaId)
-				.costTypeId(costTypeId)
-				.clientId(ClientId.METASFRESH)
-				.orgId(OrgId.ANY)
-				.productId(productId)
-				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
-				.costElementId(sourceCostElementId)
-				.build();
+		seedSourceCurrentCost(productId, acctSchemaId, CostingLevel.Client, OrgId.ANY, ownCostPrice, componentsCostPrice, qty);
+	}
+
+	/** Org-aware sibling of {@link #seedSourceCurrentCost(ProductId, String, String, String)}. */
+	private void seedSourceCurrentCost(
+			@NonNull final ProductId productId,
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final CostingLevel costingLevel,
+			@NonNull final OrgId orgId,
+			@NonNull final String ownCostPrice,
+			@NonNull final String componentsCostPrice,
+			@NonNull final String qty)
+	{
+		final CostSegmentAndElement costSegmentAndElement = costSegmentAndElement(productId, sourceCostElementId, acctSchemaId, costingLevel, orgId);
 
 		final CostElement sourceCostElement = costElementRepo.getById(sourceCostElementId);
 
@@ -262,16 +303,7 @@ public class CostRevaluationServiceTest
 			@NonNull final String componentsCostPrice,
 			@NonNull final String qty)
 	{
-		final CostSegmentAndElement seg = CostSegmentAndElement.builder()
-				.costingLevel(CostingLevel.Client)
-				.acctSchemaId(acctSchemaId)
-				.costTypeId(costTypeId)
-				.clientId(ClientId.METASFRESH)
-				.orgId(OrgId.ANY)
-				.productId(productId)
-				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
-				.costElementId(sourceCostElementId)
-				.build();
+		final CostSegmentAndElement seg = costSegmentAndElement(productId, sourceCostElementId, acctSchemaId, CostingLevel.Client, OrgId.ANY);
 
 		final CurrentCost currentCost = currentCostsRepo.getOrCreate(seg);
 		currentCost.setFrom(CostDetailPreviousAmounts.builder()
@@ -289,8 +321,16 @@ public class CostRevaluationServiceTest
 
 	private CostRevaluationId createCopyFromCostElementHeader()
 	{
+		return createCopyFromCostElementHeader(acctSchemaId, OrgId.ANY);
+	}
+
+	/** Org-aware sibling of {@link #createCopyFromCostElementHeader()}: the document is booked on {@code orgId}. */
+	private CostRevaluationId createCopyFromCostElementHeader(
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final OrgId orgId)
+	{
 		final I_M_CostRevaluation record = newInstance(I_M_CostRevaluation.class);
-		record.setAD_Org_ID(OrgId.ANY.getRepoId());
+		record.setAD_Org_ID(orgId.getRepoId());
 		record.setC_AcctSchema_ID(acctSchemaId.getRepoId());
 		record.setM_CostElement_ID(targetCostElementId.getRepoId());
 		record.setCopyFrom_M_CostElement_ID(sourceCostElementId.getRepoId());
@@ -556,6 +596,78 @@ public class CostRevaluationServiceTest
 			assertThat(previousAmounts.getCumulatedAmt().toBigDecimal()).isEqualByComparingTo("4000.00");
 			assertThat(previousAmounts.getCumulatedQty().toBigDecimal()).isEqualByComparingTo("200");
 		}
+
+		/**
+		 * The opening is the source's cost AS OF the cut-off ({@code EvaluationStartDate}), not its live (today) cost. A
+		 * switch back-dated to a closed year-end must open the target element with the value the source carried AT that
+		 * year-end; the live {@code M_Cost} row by then already reflects every movement booked since.
+		 * <p>
+		 * Here the source moved after the cut-off: the 2026-03-01 movement's {@code Prev_*} preserve the cut-off state
+		 * (own 10 / LL 2 / qty 100) while the live row already shows own 12 / LL 3 / qty 80. Own price, LL price and qty
+		 * must ALL come from that single as-of snapshot — a fresh LL mixed with a stale own/qty would silently corrupt the
+		 * target's forward-costing base.
+		 */
+		@Test
+		public void seedsTheSourceCostAsOfTheEvaluationStartDate()
+		{
+			final ProductId productWithStock = createProduct("productWithStock");
+
+			// The live source M_Cost carries the POST-cut-off state (what a naive read would copy).
+			seedSourceCurrentCost(productWithStock, "12", "3", "80");
+
+			// The 2026 movement on the source, whose Prev_* preserve the state as of the 2025-12-31 cut-off.
+			createPostCutoffCostEventOnSourceWithPreviousAmounts(productWithStock, "10", "2", "100");
+
+			final CostRevaluationId costRevaluationId = createCopyFromCostElementHeader(); // EvaluationStartDate = 2025-12-31
+			costRevaluationService.createLines(costRevaluationId);
+
+			// The drafted line PREVIEWS the same as-of numbers the complete will write (10 / 100), not the live ones.
+			final List<I_M_CostRevaluationLine> draftedLines = costRevaluationRepository
+					.streamAllLineRecordsByCostRevaluationId(costRevaluationId)
+					.collect(ImmutableList.toImmutableList());
+			final I_M_CostRevaluationLine draftedLine = getLineForProduct(draftedLines, productWithStock);
+			assertThat(draftedLine.getNewCostPrice()).isEqualByComparingTo("10");
+			assertThat(draftedLine.getCurrentQty()).isEqualByComparingTo("100");
+
+			costRevaluationService.createDetails(costRevaluationId);
+
+			final CostSegmentAndElement targetSeg = CostSegmentAndElement.builder()
+					.costingLevel(CostingLevel.Client)
+					.acctSchemaId(acctSchemaId)
+					.costTypeId(costTypeId)
+					.clientId(ClientId.METASFRESH)
+					.orgId(OrgId.ANY)
+					.productId(productWithStock)
+					.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+					.costElementId(targetCostElementId)
+					.build();
+
+			final CurrentCost targetCurrentCost = currentCostsRepo.getOrNull(targetSeg);
+			assertThat(targetCurrentCost).isNotNull();
+			// The CUT-OFF state (10 / 2 / 100), not the live one (12 / 3 / 80).
+			assertThat(targetCurrentCost.getCostPrice().getOwnCostPrice().toBigDecimal()).isEqualByComparingTo("10");
+			assertThat(targetCurrentCost.getCostPrice().getComponentsCostPrice().toBigDecimal()).isEqualByComparingTo("2");
+			assertThat(targetCurrentCost.getCurrentQty().toBigDecimal()).isEqualByComparingTo("100");
+			assertThat(targetCurrentCost.getCumulatedAmt().toBigDecimal()).isEqualByComparingTo("1000");
+			assertThat(targetCurrentCost.getCumulatedQty().toBigDecimal()).isEqualByComparingTo("100");
+
+			final List<CostDetail> anchorDetails = new CostDetailRepository()
+					.stream(CostDetailQuery.builder()
+							.acctSchemaId(acctSchemaId)
+							.costElementId(targetCostElementId)
+							.productId(productWithStock)
+							.build())
+					.collect(ImmutableList.toImmutableList());
+			assertThat(anchorDetails).hasSize(1);
+
+			final CostDetailPreviousAmounts previousAmounts = anchorDetails.get(0).getPreviousAmounts();
+			assertThat(previousAmounts).isNotNull();
+			assertThat(previousAmounts.getCostPrice().getOwnCostPrice().toBigDecimal()).isEqualByComparingTo("10");
+			assertThat(previousAmounts.getCostPrice().getComponentsCostPrice().toBigDecimal()).isEqualByComparingTo("2");
+			assertThat(previousAmounts.getQty().toBigDecimal()).isEqualByComparingTo("100");
+			assertThat(previousAmounts.getCumulatedAmt().toBigDecimal()).isEqualByComparingTo("1000");
+			assertThat(previousAmounts.getCumulatedQty().toBigDecimal()).isEqualByComparingTo("100");
+		}
 	}
 
 	@Nested
@@ -685,6 +797,208 @@ public class CostRevaluationServiceTest
 	}
 
 	/**
+	 * FR9 — <b>organization costing level</b>. Every other fixture in this class runs at {@link CostingLevel#Client}
+	 * ({@link OrgId#ANY}), where {@code CostingLevel.effectiveValue(orgId)} collapses to {@code ANY} and the org filter in
+	 * {@code CostRevaluationService#queryCurrentCosts} can never discriminate. This nested class is the only place that
+	 * exercises it: an accounting schema at {@link CostingLevel#Organization} and <b>two</b> organizations, each carrying
+	 * its own source {@code M_Cost} row for the same product — the customer's real configuration.
+	 * <p>
+	 * <b>Load-bearing</b>: the filter is a plain Java stream predicate ({@code CostSegment#isMatching(OrgId)} — the SQL
+	 * query deliberately does NOT filter by org, "because we don't know the costing level yet"). Were it dropped, a switch
+	 * booked on one org would revalue BOTH orgs' costs; were it inverted, it would revalue the wrong org's. Both fixtures
+	 * below give the two orgs deliberately different numbers, so either mistake fails an assertion.
+	 */
+	@Nested
+	class CopyFromCostElement_OrganizationCostingLevel
+	{
+		private AcctSchemaId orgLevelAcctSchemaId;
+		private OrgId org1;
+		private OrgId org2;
+
+		@BeforeEach
+		public void setUpOrgLevelCostingWithTwoOrgs()
+		{
+			orgLevelAcctSchemaId = createAcctSchema(CostingLevel.Organization);
+			org1 = AdempiereTestHelper.createOrgWithTimeZone("org1", ZONE_ID);
+			org2 = AdempiereTestHelper.createOrgWithTimeZone("org2", ZONE_ID);
+		}
+
+		/** One product, one source M_Cost row per org — 12.50/100 in org1 and 99.00/500 in org2. */
+		private ProductId createProductStockedInBothOrgs()
+		{
+			final ProductId productId = createProduct("productAtOrgCostingLevel", orgLevelAcctSchemaId);
+			seedSourceCurrentCost(productId, orgLevelAcctSchemaId, CostingLevel.Organization, org1, "12.50", "3.75", "100");
+			seedSourceCurrentCost(productId, orgLevelAcctSchemaId, CostingLevel.Organization, org2, "99.00", "9.90", "500");
+			return productId;
+		}
+
+		@Test
+		public void createLines_seedsOnlyTheDocumentOrgsCost()
+		{
+			final ProductId productId = createProductStockedInBothOrgs();
+
+			final CostRevaluationId costRevaluationId = createCopyFromCostElementHeader(orgLevelAcctSchemaId, org1);
+
+			costRevaluationService.createLines(costRevaluationId);
+
+			final List<I_M_CostRevaluationLine> lines = getLineRecords(costRevaluationId);
+			// org2's source cost is NOT picked up, even though it exists for the same product/element/schema.
+			assertThat(lines).hasSize(1);
+
+			final I_M_CostRevaluationLine line = getLineForProduct(lines, productId);
+			assertThat(line.getAD_Org_ID()).as("line booked on the document's org").isEqualTo(org1.getRepoId());
+			assertThat(line.getCostingLevel()).isEqualTo(CostingLevel.Organization.getCode());
+			assertThat(line.getM_CostElement_ID()).isEqualTo(targetCostElementId.getRepoId());
+			assertThat(line.getNewCostPrice()).isEqualByComparingTo("12.50");
+			assertThat(line.getCurrentQty()).isEqualByComparingTo("100");
+		}
+
+		/**
+		 * The mirror of {@link #createLines_seedsOnlyTheDocumentOrgsCost()}: booking the same switch on the OTHER org picks
+		 * that org's numbers. Together the two rule out a filter that is org-blind (2 lines) or picks a fixed org (wrong
+		 * numbers in one of the two directions).
+		 */
+		@Test
+		public void createLines_seedsTheOtherOrgWhenTheDocumentIsBookedThere()
+		{
+			final ProductId productId = createProductStockedInBothOrgs();
+
+			final CostRevaluationId costRevaluationId = createCopyFromCostElementHeader(orgLevelAcctSchemaId, org2);
+
+			costRevaluationService.createLines(costRevaluationId);
+
+			final List<I_M_CostRevaluationLine> lines = getLineRecords(costRevaluationId);
+			assertThat(lines).hasSize(1);
+
+			final I_M_CostRevaluationLine line = getLineForProduct(lines, productId);
+			assertThat(line.getAD_Org_ID()).as("line booked on the document's org").isEqualTo(org2.getRepoId());
+			assertThat(line.getNewCostPrice()).isEqualByComparingTo("99.00");
+			assertThat(line.getCurrentQty()).isEqualByComparingTo("500");
+		}
+
+		/**
+		 * Completing the switch seeds the target element's {@code M_Cost} for the document's org ONLY, and writes exactly
+		 * one opening anchor — on that org. The other org keeps no MAI cost at all: its own switch is a separate document.
+		 */
+		@Test
+		public void createDetails_seedsTheTargetCostOfTheDocumentOrgOnly()
+		{
+			final ProductId productId = createProductStockedInBothOrgs();
+
+			final CostRevaluationId costRevaluationId = createCopyFromCostElementHeader(orgLevelAcctSchemaId, org1);
+			costRevaluationService.createLines(costRevaluationId);
+
+			costRevaluationService.createDetails(costRevaluationId);
+
+			final CurrentCost org1TargetCost = currentCostsRepo.getOrNull(
+					costSegmentAndElement(productId, targetCostElementId, orgLevelAcctSchemaId, CostingLevel.Organization, org1));
+			assertThat(org1TargetCost).isNotNull();
+			assertThat(org1TargetCost.getCostPrice().getOwnCostPrice().toBigDecimal()).isEqualByComparingTo("12.50");
+			assertThat(org1TargetCost.getCostPrice().getComponentsCostPrice().toBigDecimal()).isEqualByComparingTo("3.75");
+			assertThat(org1TargetCost.getCurrentQty().toBigDecimal()).isEqualByComparingTo("100");
+			assertThat(org1TargetCost.getCumulatedAmt().toBigDecimal()).isEqualByComparingTo("1250.00");
+
+			assertThat(currentCostsRepo.getOrNull(
+					costSegmentAndElement(productId, targetCostElementId, orgLevelAcctSchemaId, CostingLevel.Organization, org2)))
+					.as("org2's MAI cost is untouched by a switch booked on org1")
+					.isNull();
+
+			final List<CostDetail> anchorDetails = getCostDetails(orgLevelAcctSchemaId, targetCostElementId, productId);
+			assertThat(anchorDetails).hasSize(1);
+			assertThat(anchorDetails.get(0).getOrgId()).isEqualTo(org1);
+		}
+	}
+
+	/**
+	 * FR9 — <b>negative-stock</b> sibling of the zero-stock coverage in
+	 * {@link CreateLines_CopyFromCostElement#seedsOneLinePerSourceCurrentCost()}. A negative {@code M_Cost.CurrentQty} is a
+	 * reachable production state on the SOURCE element: the average-costing handlers move on-hand through
+	 * {@code CurrentCost#addWeightedAverage}, which — unlike {@code addToCurrentQtyAndCumulate} — does NOT clamp the result
+	 * to zero, so an outbound movement exceeding on-hand leaves the row negative.
+	 * <p>
+	 * <b>Current behaviour, pinned here as correct</b>: the switch carries the negative on-hand through unchanged rather
+	 * than clamping or refusing. That is the value-neutral outcome FR2 demands — a negative on-hand at a positive cost
+	 * price IS a negative inventory asset value, and it is already on the books; clamping the qty to zero would silently
+	 * create {@code price × |qty|} of value with no GL posting to back it.
+	 * <p>
+	 * <b>The concrete regression this prevents</b>: someone "fixing" the negative-stock anomaly by adding a
+	 * {@code toZeroIfNegative()} (or a positive-qty guard) into the seed path — {@code createDetailsForCopyFromCostElement}
+	 * or {@code CurrentCost#setFrom} — which would break value-neutrality for exactly these products and leave the
+	 * discrepancy invisible, since the switch posts nothing to compare against.
+	 */
+	@Nested
+	class CopyFromCostElement_NegativeOnHandStock
+	{
+		@Test
+		public void carriesTheNegativeOnHandIntoTheOpeningBalance()
+		{
+			final ProductId productId = createProduct("productWithNegativeStock");
+			seedSourceCurrentCost(productId, "12.50", "3.75", "-40");
+
+			final CostRevaluationId costRevaluationId = createCopyFromCostElementHeader();
+			costRevaluationService.createLines(costRevaluationId);
+
+			// Not skipped: a negative-on-hand product gets a drafted line previewing the negative qty.
+			final List<I_M_CostRevaluationLine> lines = getLineRecords(costRevaluationId);
+			assertThat(lines).hasSize(1);
+			final I_M_CostRevaluationLine line = getLineForProduct(lines, productId);
+			assertThat(line.getNewCostPrice()).isEqualByComparingTo("12.50");
+			assertThat(line.getCurrentQty()).isEqualByComparingTo("-40");
+
+			costRevaluationService.createDetails(costRevaluationId);
+
+			final CurrentCost targetCurrentCost = currentCostsRepo.getOrNull(
+					costSegmentAndElement(productId, targetCostElementId, acctSchemaId, CostingLevel.Client, OrgId.ANY));
+			assertThat(targetCurrentCost).isNotNull();
+			assertThat(targetCurrentCost.getCostPrice().getOwnCostPrice().toBigDecimal()).isEqualByComparingTo("12.50");
+			assertThat(targetCurrentCost.getCostPrice().getComponentsCostPrice().toBigDecimal()).isEqualByComparingTo("3.75");
+			// NOT clamped to 0 — the negative on-hand is carried through.
+			assertThat(targetCurrentCost.getCurrentQty().toBigDecimal()).isEqualByComparingTo("-40");
+			// ... and so is the negative asset value it implies (12.50 * -40), keeping the switch value-neutral.
+			assertThat(targetCurrentCost.getCumulatedAmt().toBigDecimal()).isEqualByComparingTo("-500.00");
+			assertThat(targetCurrentCost.getCumulatedQty().toBigDecimal()).isEqualByComparingTo("-40");
+
+			final List<CostDetail> anchorDetails = getCostDetails(acctSchemaId, targetCostElementId, productId);
+			assertThat(anchorDetails).hasSize(1);
+
+			final CostDetail anchor = anchorDetails.get(0);
+			// The anchor itself stays a zero-delta row (its job is to CARRY the opening in Prev_*, not to move value).
+			assertThat(anchor.isChangingCosts()).isTrue();
+			assertThat(anchor.getQty().toBigDecimal()).isEqualByComparingTo("0");
+			assertThat(anchor.getAmt().toBigDecimal()).isEqualByComparingTo("0");
+
+			final CostDetailPreviousAmounts previousAmounts = anchor.getPreviousAmounts();
+			assertThat(previousAmounts).isNotNull();
+			assertThat(previousAmounts.getCostPrice().getOwnCostPrice().toBigDecimal()).isEqualByComparingTo("12.50");
+			assertThat(previousAmounts.getCostPrice().getComponentsCostPrice().toBigDecimal()).isEqualByComparingTo("3.75");
+			assertThat(previousAmounts.getQty().toBigDecimal()).isEqualByComparingTo("-40");
+			assertThat(previousAmounts.getCumulatedAmt().toBigDecimal()).isEqualByComparingTo("-500.00");
+			assertThat(previousAmounts.getCumulatedQty().toBigDecimal()).isEqualByComparingTo("-40");
+		}
+	}
+
+	private List<I_M_CostRevaluationLine> getLineRecords(@NonNull final CostRevaluationId costRevaluationId)
+	{
+		return costRevaluationRepository
+				.streamAllLineRecordsByCostRevaluationId(costRevaluationId)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private List<CostDetail> getCostDetails(
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final CostElementId costElementId,
+			@NonNull final ProductId productId)
+	{
+		return new CostDetailRepository()
+				.stream(CostDetailQuery.builder()
+						.acctSchemaId(acctSchemaId)
+						.costElementId(costElementId)
+						.productId(productId)
+						.build())
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	/**
 	 * Directly writes a changing-costs {@code M_CostDetail} on the TARGET (MAI) element with {@code M_CostRevaluationLine_ID}
 	 * set — the broad "already seeded" anchor, standing in for a detail left by a prior completed cost-revaluation line of
 	 * any {@code RevaluationSource}. The referenced line id is a stand-in (nothing joins to it); the skip query only tests
@@ -724,6 +1038,45 @@ public class CostRevaluationServiceTest
 				.documentRef(CostingDocumentRef.ofInventoryLineId(2))
 				.dateAcct(Instant.parse("2025-06-15T00:00:00Z"))
 				.description("pre-cut-off 2025 history (test stand-in)"));
+	}
+
+	/**
+	 * Directly writes a changing-costs {@code M_CostDetail} on the SOURCE (AveragePO) element, dated AFTER the cut-off and
+	 * carrying in its {@code Prev_*} columns the state the source element was in immediately before that movement — i.e.
+	 * its state AS OF the cut-off.
+	 */
+	private void createPostCutoffCostEventOnSourceWithPreviousAmounts(
+			@NonNull final ProductId productId,
+			@NonNull final String prevOwnCostPrice,
+			@NonNull final String prevComponentsCostPrice,
+			@NonNull final String prevQty)
+	{
+		final BigDecimal prevCumulatedAmt = new BigDecimal(prevOwnCostPrice).multiply(new BigDecimal(prevQty));
+
+		new CostDetailRepository().create(CostDetail.builder()
+				.clientId(ClientId.METASFRESH)
+				.orgId(OrgId.ANY)
+				.acctSchemaId(acctSchemaId)
+				.costElementId(sourceCostElementId)
+				.productId(productId)
+				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+				.amtType(CostAmountType.MAIN)
+				.amt(CostAmount.of("24.00", euroCurrencyId))
+				.qty(Quantity.of("2", eachUOM))
+				.changingCosts(true)
+				.previousAmounts(CostDetailPreviousAmounts.builder()
+						.costPrice(CostPrice.builder()
+								.ownCostPrice(CostAmount.of(prevOwnCostPrice, euroCurrencyId))
+								.componentsCostPrice(CostAmount.of(prevComponentsCostPrice, euroCurrencyId))
+								.uomId(UomId.ofRepoId(eachUOM.getC_UOM_ID()))
+								.build())
+						.qty(Quantity.of(prevQty, eachUOM))
+						.cumulatedAmt(CostAmount.of(prevCumulatedAmt, euroCurrencyId))
+						.cumulatedQty(Quantity.of(prevQty, eachUOM))
+						.build())
+				.documentRef(CostingDocumentRef.ofInventoryLineId(3))
+				.dateAcct(Instant.parse("2026-03-01T00:00:00Z"))
+				.description("post-cut-off 2026 source movement (test stand-in)"));
 	}
 
 	/** Directly writes a changing-costs {@code M_CostDetail} on the TARGET (MAI) element, dated after the cut-off. */

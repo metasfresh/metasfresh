@@ -4,6 +4,18 @@ import { expect } from '@playwright/test';
 
 const NAME = 'BarcodeScannerComponent';
 
+// Sends the keystrokes a hardware/wedge scanner sends: keydown/keyup per character, dispatched on
+// document. Shared by type() (which first waits for the app to arm a scan target) and
+// typeWithoutWaitingForScanTarget() (which does not), so both send exactly the same keystrokes.
+const dispatchScanKeystrokes = async (chunk) => {
+    await page.evaluate((code) => {
+        for (const char of code) {
+            document.dispatchEvent(new KeyboardEvent('keydown', { key: char, bubbles: true }));
+            document.dispatchEvent(new KeyboardEvent('keyup', { key: char, bubbles: true }));
+        }
+    }, chunk);
+};
+
 export const BarcodeScannerComponent = {
     waitToAttach: async ({ testId }) => await test.step(`${NAME} - Wait for input element to attach  (${testId})`, async () => {
         let selector = '#input-text';
@@ -80,23 +92,14 @@ export const BarcodeScannerComponent = {
         // NOTE page.keyboard.type is very slow, so we have to send the keyboard events directly,
         // Now a QR code is typed in 30ms instead of 5 seconds.
         // await page.keyboard.type(`${scannedCode}`, { delay: delay != null ? delay : TYPE_DELAY_MILLIS });
-        const dispatchChunk = async (chunk) => {
-            await page.evaluate((code) => {
-                for (const char of code) {
-                    document.dispatchEvent(new KeyboardEvent('keydown', { key: char, bubbles: true }));
-                    document.dispatchEvent(new KeyboardEvent('keyup', { key: char, bubbles: true }));
-                }
-            }, chunk);
-        };
-
         const hasMidScanGap =
             Number.isInteger(gapAtIndex) && gapAtIndex > 0 && gapAtIndex < scannedCode.length && gapMs > 0;
         if (!hasMidScanGap) {
-            await dispatchChunk(scannedCode);
+            await dispatchScanKeystrokes(scannedCode);
         } else {
-            await dispatchChunk(scannedCode.substring(0, gapAtIndex));
+            await dispatchScanKeystrokes(scannedCode.substring(0, gapAtIndex));
             await page.waitForTimeout(gapMs);
-            await dispatchChunk(scannedCode.substring(gapAtIndex));
+            await dispatchScanKeystrokes(scannedCode.substring(gapAtIndex));
         }
 
         // Explicit end-of-scan key (device Enter/Tab suffix): a single non-printable keydown/keyup the
@@ -107,6 +110,19 @@ export const BarcodeScannerComponent = {
                 document.dispatchEvent(new KeyboardEvent('keyup', { key, bubbles: true }));
             }, terminator);
         }
+    }),
+
+    // The operator pulls the scanner trigger without the app having offered a scan target - a hardware
+    // scanner fires its keystrokes whatever the screen is showing. Unlike type() this does NOT wait for a
+    // scan target to be armed, because whether the app takes the scan up at all is the thing being asserted.
+    typeWithoutWaitingForScanTarget: async (scannedCode) => await test.step(`${NAME} - Type scanned code without waiting for a scan target`, async () => {
+        if (!scannedCode) {
+            throw new Error("Invalid scannedCode provided. Must not be empty.");
+        }
+
+        console.log('Scanning scanned code without waiting for a scan target:\n' + scannedCode);
+
+        await dispatchScanKeystrokes(scannedCode);
     }),
 
     typeViaIME: async (params) => await test.step(`${NAME} - Type scanned code via IME`, async () => {

@@ -57,6 +57,30 @@ public interface ICostingService
 
 	Optional<CurrentCost> getCurrentCost(@NonNull CostSegmentAndElement costSegmentAndElement);
 
+	/**
+	 * Point-in-time read of a cost element's cost: the state it was in as of {@code asOfDate}.
+	 * <p>
+	 * The live {@code M_Cost} row only ever carries the LATEST state, so for a cut-off that lies in the past it yields the
+	 * cost AFTER every movement booked since — not the cost AT the cut-off. Therefore the state is reconstructed from the
+	 * {@code Prev_*} columns of the first changing-costs {@code M_CostDetail} dated after {@code asOfDate}: those columns
+	 * hold exactly the state the element was in immediately before that movement. With no such detail, nothing moved after
+	 * the cut-off and the live row IS the state as of {@code asOfDate}.
+	 * <p>
+	 * The boundary is strictly {@code >}, never {@code >=}: a {@code CopyFromCostElement} switch writes its own opening
+	 * anchor dated exactly AT the cut-off, and that anchor must never count as a forward event — otherwise the switch would
+	 * seed itself from its own anchor's {@code Prev_*} instead of from the source element's cost at the cut-off.
+	 *
+	 * @return the cost as of {@code asOfDate}, or empty if the cost element has neither a post-cut-off changing-costs
+	 * detail nor a live {@code M_Cost} row for the segment.
+	 */
+	Optional<CostDetailPreviousAmounts> getCostAsOf(
+			@NonNull CostSegmentAndElement costSegmentAndElement,
+			@NonNull Instant asOfDate);
+
+	/**
+	 * Writes the {@code CopyFromCostElement} switch's opening anchor. For what the "anchor" IS and what it is for, see the
+	 * canonical definition on {@code de.metas.costrevaluation.CostRevaluationService#createDetailsForCopyFromCostElement}.
+	 */
 	void seedCurrentCostFromOpening(
 			@NonNull CostSegmentAndElement targetSegmentAndElement,
 			@NonNull CostDetailPreviousAmounts opening,

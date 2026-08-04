@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.business.rest-api-impl
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2025 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,9 +20,8 @@
  * #L%
  */
 
-package de.metas.rest_api.v2.product;
+package de.metas.handlingunits;
 
-import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 import lombok.Value;
@@ -65,5 +64,12 @@ public class ProductAndHUPIItemProductId
 	public static ProductAndHUPIItemProductId of(@NonNull final ProductId productId)
 	{
 		return new ProductAndHUPIItemProductId(productId, HUPIItemProductId.VIRTUAL_HU);
+	}
+
+	public static ProductAndHUPIItemProductId of(
+			@NonNull final ProductId productId,
+			@NonNull final HUPIItemProductId hupiItemProductId)
+	{
+		return new ProductAndHUPIItemProductId(productId, hupiItemProductId);
 	}
 }
