@@ -56,6 +56,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_BannedManufacturer;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
@@ -503,10 +504,17 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_EAN_CU, gtinStr)
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_UPC, gtinStr);
 
+		// Only match rows whose referenced M_Product is active. A product-consolidation run (F5001.1)
+		// can deactivate an M_Product while leaving its C_BPartner_Product rows active — those stale
+		// rows must NOT resolve an incoming GTIN. (addInSubQueryFilter also excludes null M_Product_ID.)
+		final IQuery<I_M_Product> activeProducts = queryBL.createQueryBuilder(I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.create();
+
 		final I_C_BPartner_Product bpp = queryBL.createQueryBuilder(I_C_BPartner_Product.class)
 				.addOnlyActiveRecordsFilter()
 				.filter(bppFilter)
-				.addNotNull(I_C_BPartner_Product.COLUMNNAME_M_Product_ID)
+				.addInSubQueryFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, I_M_Product.COLUMNNAME_M_Product_ID, activeProducts)
 				.orderBy(I_C_BPartner_Product.COLUMNNAME_C_BPartner_Product_ID)
 				.create().first();
 
