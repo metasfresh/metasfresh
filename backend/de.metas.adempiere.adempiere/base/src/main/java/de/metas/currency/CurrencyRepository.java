@@ -1,6 +1,10 @@
 package de.metas.currency;
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_C_Currency;
 import org.springframework.stereotype.Repository;
+
+import javax.annotation.Nullable;
 
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
@@ -32,6 +36,7 @@ import lombok.NonNull;
 public class CurrencyRepository
 {
 	final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull
 	public Currency getById(@NonNull final CurrencyId currencyId)
@@ -49,6 +54,29 @@ public class CurrencyRepository
 	{
 		final Currency currency = currencyDAO.getByCurrencyCode(currencyCode);
 		return currency.getId();
+	}
+
+	/**
+	 * Resolves the id of the single <b>active</b> {@code C_Currency} whose {@code ISO_Code} equals the given
+	 * three-letter code, or {@code null} if no active currency matches (i.e. the code is unknown or the matching
+	 * currency is inactive).
+	 * <p>
+	 * <b>Active-only, no side effects:</b> this is a plain read filtered by {@code IsActive='Y'} on the ISO code.
+	 * Unlike {@link #getCurrencyIdByCurrencyCode(CurrencyCode)} / {@link ICurrencyDAO#getByCurrencyCode(CurrencyCode)},
+	 * it does <b>not</b> auto-create a missing currency and does not consider inactive rows. Intended for callers
+	 * (e.g. REST upserts) that must surface an unknown/inactive currency as an error rather than silently creating one.
+	 */
+	@Nullable
+	public CurrencyId getActiveCurrencyIdByCurrencyCodeOrNull(@NonNull final CurrencyCode currencyCode)
+	{
+		final I_C_Currency currency = queryBL
+				.createQueryBuilderOutOfTrx(I_C_Currency.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Currency.COLUMNNAME_ISO_Code, currencyCode.toThreeLetterCode())
+				.create()
+				.first(I_C_Currency.class);
+
+		return currency != null ? CurrencyId.ofRepoId(currency.getC_Currency_ID()) : null;
 	}
 
 	public CurrencyCode getCurrencyCodeById(@NonNull final CurrencyId currencyId)
