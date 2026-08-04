@@ -35,6 +35,7 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
@@ -94,6 +95,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Then responseItems[0].responseBPartnerItem.debtorId is within 10000..10099
  * </pre>
  */
+@RequiredArgsConstructor
 public class BPartnerNumberGen_StepDef
 {
 	/** Value column of the default org in the standard seed DB. */
@@ -103,14 +105,6 @@ public class BPartnerNumberGen_StepDef
 	@NonNull private final REST_API_StepDef restApiStepDef;
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-	public BPartnerNumberGen_StepDef(
-			@NonNull final TestContext testContext,
-			@NonNull final REST_API_StepDef restApiStepDef)
-	{
-		this.testContext = testContext;
-		this.restApiStepDef = restApiStepDef;
-	}
 
 	// ─── GIVEN: sequence / override setup ────────────────────────────────────
 
@@ -155,11 +149,11 @@ public class BPartnerNumberGen_StepDef
 	 * Sets {@code de.metas.bpartner.NumberResolverOverride} sysconfig to the given DB function
 	 * name for the given org.
 	 *
-	 * <p><b>Runtime dependency (TC9):</b> the DB function named {@code metas_bpartner_numbgen_test_override}
-	 * must exist in the database before this scenario runs. The function must accept the standard
-	 * signature {@code (p_ad_org_id int, p_c_bpartner_id int, p_iscustomer bool, p_isvendor bool,
+	 * <p><b>Runtime dependency:</b> the DB function named {@code metas_bpartner_numbgen_test_override}
+	 * must exist in the database before any override-function scenario runs. The function must accept the
+	 * standard signature {@code (p_ad_org_id int, p_c_bpartner_id int, p_iscustomer bool, p_isvendor bool,
 	 * p_iscompany bool, p_kind text, p_explicit int)} and return a fixed sentinel value (e.g. 999)
-	 * so TC9 can assert the exact returned number. The function is not created by this step.
+	 * so the caller can assert the exact returned number. The function is not created by this step.
 	 *
 	 * @param orgValue     Value column of the org
 	 * @param functionName plain or schema-qualified SQL identifier of the override function
@@ -237,7 +231,7 @@ public class BPartnerNumberGen_StepDef
 	}
 
 	/**
-	 * Upsert variant under a specific org (TC8 multi-org test).
+	 * Upsert variant that targets a specific org, for multi-org isolation testing.
 	 *
 	 * @param companyType {@code "company"} or {@code "non-company"}
 	 * @param role        {@code "customer"}, {@code "vendor"}, or {@code "neither"}
@@ -376,8 +370,8 @@ public class BPartnerNumberGen_StepDef
 	 * Core upsert implementation: builds the JSON payload and sends the PUT request.
 	 * The response is stored in {@link TestContext} and is available to subsequent assertion steps.
 	 *
-	 * <p>The request is sent <em>without</em> an {@code expectedStatusCode} constraint so TC4
-	 * (which expects a 4xx rejection) can capture the error response via {@link #the_upsert_is_rejected()}.
+	 * <p>The request is sent <em>without</em> an {@code expectedStatusCode} constraint so
+	 * failure-testing scenarios can capture the error response via {@link #the_upsert_is_rejected()}.
 	 *
 	 * @param companyType "company" or "non-company"
 	 * @param role        "customer", "vendor", or "neither"
@@ -438,9 +432,8 @@ public class BPartnerNumberGen_StepDef
 
 		testContext.setRequestPayload(payload);
 
-		// expectedStatusCode is set to null so the HTTP call always completes without asserting
-		// the status here — the assertion steps (debtorId/creditorId checks) validate success cases
-		// and "Then the upsert is rejected" validates TC4-style failure cases.
+		// expectedStatusCode is null — the HTTP call always completes without asserting the status here.
+		// Assertion steps (debtorId/creditorId checks) validate success; "the upsert is rejected" validates failures.
 		restApiStepDef.performHTTPRequest(
 				restApiStepDef.newAPIRequest()
 						.endpointPath("api/v2/bpartner/" + orgValue)
