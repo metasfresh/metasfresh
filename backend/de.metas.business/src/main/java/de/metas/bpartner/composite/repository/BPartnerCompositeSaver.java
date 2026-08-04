@@ -40,6 +40,7 @@ import de.metas.security.permissions2.PermissionServiceFactories;
 import de.metas.tax.api.VATIdentifier;
 import de.metas.title.TitleId;
 import de.metas.user.api.IUserBL;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.ExternalId;
@@ -295,6 +296,9 @@ final class BPartnerCompositeSaver
 		bpartner.setId(BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID()));
 		bpartner.setValue(bpartnerRecord.getValue());
 		bpartner.setCompany(bpartnerRecord.isCompany());
+		// Copy back generated debtor/creditor numbers so the upsert response reflects interceptor-assigned values
+		bpartner.setDebtorId(NumberUtils.graterThanZeroOrNull(bpartnerRecord.getDebtorId()));
+		bpartner.setCreditorId(NumberUtils.graterThanZeroOrNull(bpartnerRecord.getCreditorId()));
 	}
 
 	private void saveBPartnerLocations(@NonNull final BPartnerComposite bPartnerComposite, final boolean validatePermissions)
