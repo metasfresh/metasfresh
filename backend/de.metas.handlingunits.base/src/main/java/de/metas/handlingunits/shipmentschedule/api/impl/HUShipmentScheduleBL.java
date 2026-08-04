@@ -63,11 +63,13 @@ import de.metas.inoutcandidate.api.IInOutCandidateBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.api.ShipmentScheduleLoadingCache;
 import de.metas.inoutcandidate.api.impl.HUShipmentScheduleHeaderAggregationKeyBuilder;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
+import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
 import de.metas.order.IOrderDAO;
@@ -90,6 +92,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.lang.IContextAware;
@@ -170,6 +173,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
 	private final IHUCapacityBL huCapacityBL = Services.get(IHUCapacityBL.class);
+	private final IShipmentScheduleHandlerBL shipmentScheduleHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
 
 	private static final String SYSCONFIG_ShipmentConsolidationPeriod = "de.metas.handlingunits.shipmentschedule.api.impl.HUShipmentScheduleBL.ShipmentConsolidationPeriod";
 	private static final String DEFAULT_ShipmentConsolidationPeriod = null;
@@ -1057,11 +1061,10 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		// aggregation applies (see ShipmentScheduleWithHU#computeAttributeValues). Without this filter every
 		// UseInASI attribute splits the allocation, including per-piece measurements such as catch-weight
 		// WeightNet whose values differ only by distribution rounding (e.g. 0.333/0.333/0.334) — producing
-		// extra M_ShipmentSchedule_QtyPicked rows that back no distinct shipment line (gh31403).
+		// extra M_ShipmentSchedule_QtyPicked rows that back no distinct shipment line.
 		final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule =
-				org.adempiere.model.InterfaceWrapperHelper.create(qtyPicked.getM_ShipmentSchedule(), de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class);
-		final de.metas.inoutcandidate.spi.ShipmentScheduleHandler shipmentScheduleHandler =
-				Services.get(de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL.class).getHandlerFor(shipmentSchedule);
+				InterfaceWrapperHelper.create(qtyPicked.getM_ShipmentSchedule(), de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class);
+		final ShipmentScheduleHandler shipmentScheduleHandler = shipmentScheduleHandlerBL.getHandlerFor(shipmentSchedule);
 		final Predicate<I_M_Attribute> attributeMayBePartOfShipmentLine =
 				attribute -> shipmentScheduleHandler.attributeShallBePartOfShipmentLine(shipmentSchedule, attribute);
 
