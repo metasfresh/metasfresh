@@ -43,6 +43,7 @@ import java.io.InputStream;
 import java.util.Properties;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ROUTE_KEY;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class ScriptedImportConversionSftpRouteBuilderTest extends CamelTestSupport
@@ -131,21 +132,22 @@ public class ScriptedImportConversionSftpRouteBuilderTest extends CamelTestSuppo
 		final JsonExternalSystemRequest invokeExternalSystemRequest = objectMapper
 				.readValue(invokeExternalSystemRequestIS, JsonExternalSystemRequest.class);
 
-		final String endpointName = invokeExternalSystemRequest.getParameters().get(PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME);
+		// The dynamic route is keyed on the STABLE route key (child config id), not the endpoint name.
+		final String routeKey = invokeExternalSystemRequest.getParameters().get(PARAM_SCRIPTEDADAPTER_TO_MF_ROUTE_KEY);
 
-		// Pre-register a dynamic SFTP route so disable can stop it.
+		// Pre-register a dynamic SFTP route (keyed on the stable route key) so disable can stop it.
 		// We use a mock "direct:" route to avoid needing an actual SFTP server.
 		context.addRoutes(new RouteBuilder()
 		{
 			@Override
 			public void configure()
 			{
-				from("direct:" + endpointName)
-						.routeId(endpointName)
+				from("direct:" + routeKey)
+						.routeId(routeKey)
 						.log("mock dynamic sftp route");
 			}
 		});
-		context.getRouteController().startRoute(endpointName);
+		context.getRouteController().startRoute(routeKey);
 
 		// when fire the route
 		template.sendBody("direct:" + ScriptedImportConversionSftpRouteBuilder.DISABLE_SFTP_POLLING_ROUTE_ID, invokeExternalSystemRequest);
@@ -155,7 +157,7 @@ public class ScriptedImportConversionSftpRouteBuilderTest extends CamelTestSuppo
 		assertThat(mockStoreExternalStatusEP.called).isEqualTo(1);
 
 		// route should have been removed
-		assertThat(context.getRoute(endpointName)).isNull();
+		assertThat(context.getRoute(routeKey)).isNull();
 	}
 
 	private void prepareEnableRouteForTesting(@NonNull final MockStoreExternalStatusEP mockStoreExternalStatusEP) throws Exception
