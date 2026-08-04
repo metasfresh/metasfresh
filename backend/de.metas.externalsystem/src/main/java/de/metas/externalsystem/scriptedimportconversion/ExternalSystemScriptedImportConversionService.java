@@ -44,6 +44,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ROUTE_KEY;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_SCRIPT_IDENTIFIER;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_AUTH_TYPE;
@@ -136,6 +137,10 @@ public class ExternalSystemScriptedImportConversionService
 
 		final ExternalSystemEndpoint endpoint = externalSystemEndpointRepository.getById(config.getExternalSystemEndpointId());
 
+		// Stable per-child identity for the camel SFTP poll-route id. Keyed on the child config id (never on
+		// the endpoint Value/host), so changing this child's endpoint later still lets Stop/disable find and
+		// tear down the previously-started poller instead of orphaning it. endpointName stays for display.
+		parameters.put(PARAM_SCRIPTEDADAPTER_TO_MF_ROUTE_KEY, "ScriptedImportConversion-" + config.getId().getRepoId());
 		parameters.put(PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME, endpoint.getValue());
 		parameters.put(PARAM_SCRIPTEDADAPTER_TO_MF_SCRIPT_IDENTIFIER, config.getScriptIdentifier());
 		parameters.put(PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN, token.getAuthToken());
