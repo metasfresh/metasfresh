@@ -34,7 +34,7 @@ import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsertItem;
 import de.metas.common.bpartner.v2.request.JsonRequestComposite;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsert;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsertItem;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.bpartner.v2.response.JsonResponseBPartnerUpsertItem;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.externalsystem.ExternalSystemTestHelper;
 import de.metas.externalsystem.ExternalSystemType;
@@ -132,10 +132,12 @@ class JsonPersisterServiceDebtorCreditorTest
 		bpartner.setGroup(BP_GROUP_RECORD_NAME);
 		bpartner.setDebtorId(12345);
 
-		final JsonMetasfreshId metasfreshId = upsertBPartner("ext-" + EXTERNAL_SYSTEM_NAME + "-debtor1", bpartner);
+		final JsonResponseBPartnerUpsertItem responseItem = upsertBPartner("ext-" + EXTERNAL_SYSTEM_NAME + "-debtor1", bpartner);
 
-		// then
-		final BPartnerComposite result = bpartnerCompositeRepository.getById(BPartnerId.ofRepoId(metasfreshId.getValue()));
+		// then — response DTO must carry the value back to the caller
+		assertThat(responseItem.getDebtorId()).isEqualTo(12345);
+		// and the value must be persisted to the DB
+		final BPartnerComposite result = bpartnerCompositeRepository.getById(BPartnerId.ofRepoId(responseItem.getMetasfreshId().getValue()));
 		assertThat(result.getBpartner().getDebtorId()).isEqualTo(12345);
 	}
 
@@ -148,10 +150,12 @@ class JsonPersisterServiceDebtorCreditorTest
 		bpartner.setGroup(BP_GROUP_RECORD_NAME);
 		bpartner.setCreditorId(67890);
 
-		final JsonMetasfreshId metasfreshId = upsertBPartner("ext-" + EXTERNAL_SYSTEM_NAME + "-creditor1", bpartner);
+		final JsonResponseBPartnerUpsertItem responseItem = upsertBPartner("ext-" + EXTERNAL_SYSTEM_NAME + "-creditor1", bpartner);
 
-		// then
-		final BPartnerComposite result = bpartnerCompositeRepository.getById(BPartnerId.ofRepoId(metasfreshId.getValue()));
+		// then — response DTO must carry the value back to the caller
+		assertThat(responseItem.getCreditorId()).isEqualTo(67890);
+		// and the value must be persisted to the DB
+		final BPartnerComposite result = bpartnerCompositeRepository.getById(BPartnerId.ofRepoId(responseItem.getMetasfreshId().getValue()));
 		assertThat(result.getBpartner().getCreditorId()).isEqualTo(67890);
 	}
 
@@ -165,15 +169,18 @@ class JsonPersisterServiceDebtorCreditorTest
 		bpartner.setDebtorId(12345);
 		bpartner.setCreditorId(67890);
 
-		final JsonMetasfreshId metasfreshId = upsertBPartner("ext-" + EXTERNAL_SYSTEM_NAME + "-both1", bpartner);
+		final JsonResponseBPartnerUpsertItem responseItem = upsertBPartner("ext-" + EXTERNAL_SYSTEM_NAME + "-both1", bpartner);
 
-		// then
-		final BPartnerComposite result = bpartnerCompositeRepository.getById(BPartnerId.ofRepoId(metasfreshId.getValue()));
+		// then — response DTO must carry both values back to the caller
+		assertThat(responseItem.getDebtorId()).isEqualTo(12345);
+		assertThat(responseItem.getCreditorId()).isEqualTo(67890);
+		// and both values must be persisted to the DB
+		final BPartnerComposite result = bpartnerCompositeRepository.getById(BPartnerId.ofRepoId(responseItem.getMetasfreshId().getValue()));
 		assertThat(result.getBpartner().getDebtorId()).isEqualTo(12345);
 		assertThat(result.getBpartner().getCreditorId()).isEqualTo(67890);
 	}
 
-	private JsonMetasfreshId upsertBPartner(final String bpartnerIdentifier, final JsonRequestBPartner bpartner)
+	private JsonResponseBPartnerUpsertItem upsertBPartner(final String bpartnerIdentifier, final JsonRequestBPartner bpartner)
 	{
 		final JsonRequestBPartnerUpsert request = JsonRequestBPartnerUpsert.builder()
 				.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
@@ -188,7 +195,7 @@ class JsonPersisterServiceDebtorCreditorTest
 		final ResponseEntity<JsonResponseBPartnerCompositeUpsert> response = bpartnerRestController.createOrUpdateBPartner(request);
 		assertThat(response.getStatusCode()).isEqualByComparingTo(HttpStatus.CREATED);
 
-		final JsonResponseBPartnerCompositeUpsertItem responseItem = response.getBody().getResponseItems().get(0);
-		return responseItem.getResponseBPartnerItem().getMetasfreshId();
+		final JsonResponseBPartnerCompositeUpsertItem responseCompositeItem = response.getBody().getResponseItems().get(0);
+		return responseCompositeItem.getResponseBPartnerItem();
 	}
 }

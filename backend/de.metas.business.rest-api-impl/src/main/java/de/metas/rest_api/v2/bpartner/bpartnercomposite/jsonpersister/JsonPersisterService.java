@@ -709,6 +709,8 @@ public class JsonPersisterService
 		//
 		// supplement the metasfreshiId which we now have after the "save()"
 		resultBuilder.getJsonResponseBPartnerUpsertItemBuilder().metasfreshId(JsonMetasfreshId.of(BPartnerId.toRepoId(bpartnerComposite.getBpartner().getId())));
+		resultBuilder.getJsonResponseBPartnerUpsertItemBuilder().debtorId(bpartnerComposite.getBpartner().getDebtorId());
+		resultBuilder.getJsonResponseBPartnerUpsertItemBuilder().creditorId(bpartnerComposite.getBpartner().getCreditorId());
 
 		if (jsonRequestComposite.getBpartner() != null)
 		{
