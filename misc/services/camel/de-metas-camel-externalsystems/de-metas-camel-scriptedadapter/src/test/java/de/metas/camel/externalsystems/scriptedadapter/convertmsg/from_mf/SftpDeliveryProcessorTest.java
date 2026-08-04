@@ -31,6 +31,7 @@ import org.apache.camel.support.DefaultExchange;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -38,11 +39,14 @@ import java.util.stream.Stream;
 
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.ROUTE_MSG_FROM_MF_CONTEXT;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class SftpDeliveryProcessorTest
 {
 	private static final String SFTP_USER = "testuser";
 	private static final String SFTP_PASS = "testpass";
+	private static final String PRIVATE_KEY =
+			"-----BEGIN OPENSSH PRIVATE KEY-----\nZm9vYmFyYmF6cXV4\n-----END OPENSSH PRIVATE KEY-----\n";
 
 	@TempDir
 	Path sftpRootDir;
@@ -148,6 +152,115 @@ class SftpDeliveryProcessorTest
 
 			final String fileContent = Files.readString(expectedFile);
 			assertThat(fileContent).isEqualTo("<transformed-order/>");
+		}
+	}
+
+	@Test
+	void sshKeyAuth_buildSftpUri_bindsKeyBytesInRegistry_andReferencesBean_notTempFile() throws Exception
+	{
+		try (final CamelContext camelContext = new DefaultCamelContext())
+		{
+			camelContext.start();
+
+			final JsonExternalSystemEndpoint endpoint = JsonExternalSystemEndpoint.builder()
+					.value("test-endpoint")
+					.transportType("SFTP")
+					.sftpHost("localhost")
+					.sftpPort(22)
+					.sftpUsername(SFTP_USER)
+					.sftpAuthType("SSH_KEY")
+					.sshPrivateKey(PRIVATE_KEY)
+					.sftpRemotePath("outgoing")
+					.sftpFilenamePattern("delivery.json")
+					.build();
+
+			final String beanId = "sftpDeliveryPrivateKey-test";
+			final SftpDeliveryProcessor processor = new SftpDeliveryProcessor();
+
+			final String uri = processor.buildSftpUri(endpoint, 22, "outgoing", SFTP_USER, "SSH_KEY", "delivery.json", camelContext, beanId);
+
+			// the key is referenced in-memory via #bean:<id> — never written to a temp file on disk
+			assertThat(uri).contains("&privateKey=#bean:" + beanId);
+			assertThat(uri).doesNotContain("privateKeyFile");
+			assertThat(uri).doesNotContain(".pem");
+
+			// the key bytes are bound in the Camel registry under the given id
+			final byte[] bound = camelContext.getRegistry().lookupByNameAndType(beanId, byte[].class);
+			assertThat(bound).isEqualTo(PRIVATE_KEY.getBytes(StandardCharsets.UTF_8));
+		}
+	}
+
+	@Test
+	void passwordAuth_buildSftpUri_usesPasswordInUri_andBindsNoKeyBean() throws Exception
+	{
+		try (final CamelContext camelContext = new DefaultCamelContext())
+		{
+			camelContext.start();
+
+			final JsonExternalSystemEndpoint endpoint = JsonExternalSystemEndpoint.builder()
+					.value("test-endpoint")
+					.transportType("SFTP")
+					.sftpHost("localhost")
+					.sftpPort(22)
+					.sftpUsername(SFTP_USER)
+					.sftpAuthType("PASSWORD")
+					.password(SFTP_PASS)
+					.sftpRemotePath("outgoing")
+					.sftpFilenamePattern("delivery.json")
+					.build();
+
+			final String beanId = "sftpDeliveryPrivateKey-test";
+			final SftpDeliveryProcessor processor = new SftpDeliveryProcessor();
+
+			final String uri = processor.buildSftpUri(endpoint, 22, "outgoing", SFTP_USER, "PASSWORD", "delivery.json", camelContext, beanId);
+
+			assertThat(uri).doesNotContain("privateKey");
+			assertThat(camelContext.getRegistry().lookupByNameAndType(beanId, byte[].class)).isNull();
+		}
+	}
+
+	@Test
+	void sshKeyAuth_process_alwaysUnbindsKeyBean_evenWhenDeliveryFails() throws Exception
+	{
+		// The embedded server only accepts PASSWORD auth, so an SSH_KEY delivery to it fails at send time.
+		// The point of the test is the finally-block guarantee: however process() ends, it must leave NO
+		// private-key bytes behind in the registry (no key-material leak on the error path either).
+		try (final EmbeddedSftpServer sftpServer = new EmbeddedSftpServer(sftpRootDir, SFTP_USER, SFTP_PASS);
+			 final CamelContext camelContext = new DefaultCamelContext())
+		{
+			camelContext.start();
+
+			final JsonExternalSystemEndpoint endpoint = JsonExternalSystemEndpoint.builder()
+					.value("test-endpoint")
+					.transportType("SFTP")
+					.sftpHost("localhost")
+					.sftpPort(sftpServer.getPort())
+					.sftpUsername(SFTP_USER)
+					.sftpAuthType("SSH_KEY")
+					.sshPrivateKey(PRIVATE_KEY)
+					.sftpRemotePath("")
+					.sftpFilenamePattern("delivery.json")
+					.build();
+
+			final MsgFromMfContext context = MsgFromMfContext.builder()
+					.orgCode("testOrg")
+					.scriptingRequestBody("{}")
+					.scriptIdentifier("testScript")
+					.endpointParameters(endpoint)
+					.outboundRecordTableName("C_Order")
+					.outboundRecordId("789")
+					.build();
+			context.setScriptReturnValue("{\"transformed\": \"output\"}");
+
+			final Exchange exchange = new DefaultExchange(camelContext);
+			exchange.setProperty(ROUTE_MSG_FROM_MF_CONTEXT, context);
+
+			final SftpDeliveryProcessor processor = new SftpDeliveryProcessor();
+
+			assertThatThrownBy(() -> processor.process(exchange)).isInstanceOf(Exception.class);
+
+			final String beanId = "sftpDeliveryPrivateKey-" + exchange.getExchangeId();
+			assertThat(camelContext.getRegistry().lookupByNameAndType(beanId, byte[].class)).isNull();
 		}
 	}
 }
