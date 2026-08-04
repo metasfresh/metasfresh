@@ -32,6 +32,7 @@ import de.metas.currency.ConversionRateKey;
 import de.metas.currency.CurrencyConversionRates;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.rest_api.utils.v2.JsonErrors;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -166,7 +167,7 @@ public class ConversionRateUpsertService
 
 		// Ensure the reverse direction exists. If the caller supplied the reverse itself (same request), honor it
 		// untouched; otherwise auto-write the reciprocal — subject to the same advise.
-		final ConversionRateKey reverseKey = forward.getKey().getReverseKey();
+		final ConversionRateKey reverseKey = forward.getReverseKey();
 		if (!callerSuppliedKeys.contains(reverseKey))
 		{
 			final ConversionRate reverse = forward.toBuilder()
@@ -220,7 +221,7 @@ public class ConversionRateUpsertService
 
 	private static void validateInvariants(@NonNull final ConversionRate rate)
 	{
-		if (rate.getFromCurrencyId().equals(rate.getToCurrencyId()))
+		if (CurrencyId.equals(rate.getFromCurrencyId(), rate.getToCurrencyId()))
 		{
 			throw new AdempiereException("@C_Currency_ID@ = @C_Currency_ID@").markAsUserValidationError();
 		}

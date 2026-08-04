@@ -32,6 +32,10 @@ import lombok.NonNull;
  * #L%
  */
 
+/**
+ * Repository Tables: C_Currency
+ * Repository Cluster: CurrencyRepository
+ */
 @Repository
 public class CurrencyRepository
 {

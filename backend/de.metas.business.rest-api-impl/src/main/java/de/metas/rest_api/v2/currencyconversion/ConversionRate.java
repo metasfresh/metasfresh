@@ -100,4 +100,11 @@ public class ConversionRate
 				.validFrom(validFrom)
 				.build();
 	}
+
+	/** The persistence key of the opposite direction ({@code to -> from}). */
+	@NonNull
+	public ConversionRateKey getReverseKey()
+	{
+		return getKey().getReverseKey();
+	}
 }
