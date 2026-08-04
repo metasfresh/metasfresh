@@ -1213,12 +1213,15 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		// AttributesKeys.createAttributesKeyFromAttributeSet here — list-type attributes
 		// would be silently dropped. Instead, we build the key directly from IAttributeValue,
 		// using the value string for all attribute types (consistent for grouping purposes).
-		final ShipmentScheduleHandler handler = Services.get(IShipmentScheduleHandlerBL.class).getHandlerFor(shipmentSchedule);
+		// getHandlerForOrNull (not getHandlerFor): this runs eagerly while picking, where a schedule may not
+		// have a resolvable handler yet — then fall back to no restriction (the split is refined at shipment
+		// generation, where the handler resolves and the M_ShipmentSchedule_AttributeConfig whitelist applies).
+		final ShipmentScheduleHandler handler = Services.get(IShipmentScheduleHandlerBL.class).getHandlerForOrNull(shipmentSchedule);
 		final ImmutableSet<AttributesKeyPart> parts = factory.getAttributeStorage(vhu)
 				.getAttributeValues()
 				.stream()
 				.filter(av -> av.isUseInASI() && !av.isEmpty())
-				.filter(av -> handler.attributeShallBePartOfShipmentLine(shipmentSchedule, av.getM_Attribute()))
+				.filter(av -> handler == null || handler.attributeShallBePartOfShipmentLine(shipmentSchedule, av.getM_Attribute()))
 				.map(HUShipmentScheduleBL::toAttributesKeyPart)
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
