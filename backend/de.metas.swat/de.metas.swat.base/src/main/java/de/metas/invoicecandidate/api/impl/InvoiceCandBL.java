@@ -2710,7 +2710,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			TryAndWaitUtil.tryAndWait(
 					3600 /*let's wait a full hour*/,
 					1000 /*check once a second*/,
-					() -> !invoiceCandDAO.hasInvalidInvoiceCandidatesForSelection(invoiceCandidateIdsSelection),
+					() -> isSelectionUpdated_failFastOnRecomputeError(invoiceCandidateIdsSelection),
 					null);
 		}
 		catch (final InterruptedException e)
@@ -2723,6 +2723,43 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			Loggables.withLogger(logger, Level.DEBUG).addLog("InvoiceCandidateEnqueuer - Stop waiting for ICs to be updated async-queue; Selection={}", invoiceCandidateIdsSelection);
 		}
+	}
+
+	/**
+	 * The {@link TryAndWaitUtil#tryAndWait(long, long, java.util.function.Supplier, Runnable) worker} of
+	 * {@link #waitForInvoiceCandidatesUpdated(InvoiceCandidateIdsSelection)}, extracted for unit-testing.
+	 * <p>
+	 * Purely-additive fast-fail: behaves exactly like the former {@code !hasInvalidInvoiceCandidatesForSelection(..)}
+	 * check, except that when there are still-invalid ICs <b>and</b> the async recompute for the selection has
+	 * <b>definitely</b> errored (an errored {@code C_Queue_WorkPackage} exists for the selection's recompute
+	 * {@code C_Async_Batch_ID}s), it throws instead of silently polling for the full hour. When it cannot prove a
+	 * definite error, it keeps waiting exactly as before (returns {@code false}) — so the worst case is unchanged.
+	 *
+	 * @return {@code true} once no invalid IC remains (done); {@code false} while ICs are still invalid but no definite
+	 * recompute error is proven (keep waiting).
+	 * @throws AdempiereException when the recompute has definitely errored.
+	 */
+	@VisibleForTesting
+	boolean isSelectionUpdated_failFastOnRecomputeError(@NonNull final InvoiceCandidateIdsSelection invoiceCandidateIdsSelection)
+	{
+		if (!invoiceCandDAO.hasInvalidInvoiceCandidatesForSelection(invoiceCandidateIdsSelection))
+		{
+			return true; // all ICs updated -> done
+		}
+
+		// There are still-invalid ICs. Keep waiting unless the recompute has *definitely* errored.
+		final Optional<String> recomputeError = invoiceCandDAO.getFailedRecomputeErrorMessage(invoiceCandidateIdsSelection);
+		if (recomputeError.isPresent())
+		{
+			throw new AdempiereException(
+					"The async recompute of invoice candidates failed; aborting the wait early instead of polling for a full hour."
+							+ " " + recomputeError.get()
+							+ " Check AD_Issue for the full stacktrace.")
+					.appendParametersToMessage()
+					.setParameter("InvoiceCandidateIdsSelection (ICs-selection)", invoiceCandidateIdsSelection);
+		}
+
+		return false; // still invalid, but no definite error -> keep waiting exactly as before
 	}
 
 	// TODO: would be nice to use de.metas.ui.web.view.descriptor.SqlAndParams but that is in module webui-api, and here we don't have access to it

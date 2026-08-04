@@ -60,6 +60,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -109,6 +110,22 @@ public interface IInvoiceCandDAO extends ISingletonService
 	boolean hasInvalidInvoiceCandidates(@NonNull Collection<InvoiceCandidateId> invoiceCandidateIds);
 
 	boolean hasInvalidInvoiceCandidatesForSelection(@NonNull InvoiceCandidateIdsSelection selectionId);
+
+	/**
+	 * Detects whether the async recompute for the given selection has <b>definitely</b> errored.
+	 * <p>
+	 * The recompute of a selection's ICs runs in an async workpackage that is enqueued under the ICs' {@code C_Async_Batch_ID}.
+	 * This method resolves those batch-ids from the selection's ICs and checks whether there is a
+	 * {@link de.metas.async.model.I_C_Queue_WorkPackage} with {@code IsError='Y'} for any of them.
+	 * <p>
+	 * Conservative on purpose (this feeds a fast-fail on the system-wide enqueue wait-path): it returns a non-empty
+	 * result <b>only</b> when a matching errored workpackage is actually found. If the selection is empty, none of its
+	 * ICs carries a {@code C_Async_Batch_ID}, or no errored workpackage exists, it returns {@link Optional#empty()}.
+	 *
+	 * @return a human-readable error detail (errored workpackage's {@code ErrorMsg} + the still-invalid
+	 * {@code C_Invoice_Candidate_ID}s), or empty when there is no definite recompute error.
+	 */
+	Optional<String> getFailedRecomputeErrorMessage(@NonNull InvoiceCandidateIdsSelection invoiceCandidateIdsSelection);
 
 	List<I_C_InvoiceLine> retrieveIlForIc(I_C_Invoice_Candidate invoiceCand);
 

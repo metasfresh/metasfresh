@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.async.AsyncBatchId;
+import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.annotation.CacheCtx;
@@ -133,6 +134,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
@@ -1278,6 +1280,13 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.andCollectChildren(I_C_Invoice_Candidate_Recompute.COLUMN_C_Invoice_Candidate_ID)
 				.create()
 				.anyMatch();
+	}
+
+	@Override
+	public Optional<String> getFailedRecomputeErrorMessage(@NonNull final InvoiceCandidateIdsSelection invoiceCandidateIdsSelection)
+	{
+		// TODO: implement
+		return Optional.empty();
 	}
 
 	private IQueryBuilder<I_C_Invoice_Candidate> retrieveForBillPartnerQuery(final I_C_BPartner bpartner)
