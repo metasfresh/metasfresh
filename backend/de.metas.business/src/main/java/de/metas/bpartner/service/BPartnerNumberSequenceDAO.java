@@ -151,8 +151,11 @@ public class BPartnerNumberSequenceDAO
 		final BPartnerId bPartnerId = ctx.getBPartnerId();
 		final int bPartnerIdRepoId = bPartnerId != null ? bPartnerId.getRepoId() : 0;
 
+		// The metasfresh DB layer sends a Java boolean as 'Y'/'N' varchar and a null Integer as
+		// 'unknown'; cast each param to its intended SQL type so PostgreSQL resolves the override
+		// function unambiguously (booleans -> boolean, kind -> text, nullable explicit -> int).
 		final String sql = "SELECT " + trimmed
-				+ "(?, ?, ?, ?, ?, CAST(? AS TEXT), ?)";
+				+ "(?, ?, CAST(? AS BOOLEAN), CAST(? AS BOOLEAN), CAST(? AS BOOLEAN), CAST(? AS TEXT), CAST(? AS INT))";
 		final Integer result = DB.getSQLValueEx(
 				ITrx.TRXNAME_ThreadInherited,
 				sql,
