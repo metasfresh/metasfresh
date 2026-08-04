@@ -22,6 +22,7 @@
 
 package de.metas.rest_api.v2.currencyconversion;
 
+import de.metas.RestUtils;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.rest_api.v2.currencyconversion.JsonRequestConversionRateUpsert;
 import de.metas.common.rest_api.v2.currencyconversion.JsonRequestConversionRateUpsertItem;
@@ -29,10 +30,12 @@ import de.metas.common.rest_api.v2.currencyconversion.JsonResponseConversionRate
 import de.metas.common.rest_api.v2.currencyconversion.JsonResponseConversionRateUpsertItem;
 import de.metas.common.rest_api.v2.currencyconversion.JsonResponseConversionRateUpsertItem.SyncOutcome;
 import de.metas.currency.ConversionTypeMethod;
+import de.metas.currency.CurrencyConversionRates;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -47,7 +50,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -79,10 +81,6 @@ public class ConversionRateUpsertService
 {
 	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	@NonNull private final CurrencyConversionRepository currencyConversionRepository;
-
-	/** Scale + rounding for the derived {@code DivideRate = 1 / multiplyRate}. */
-	private static final int DIVIDE_RATE_SCALE = 12;
-	private static final RoundingMode DIVIDE_RATE_ROUNDING = RoundingMode.HALF_UP;
 
 	@NonNull
 	public JsonResponseConversionRateUpsert upsert(
@@ -198,57 +196,58 @@ public class ConversionRateUpsertService
 		// per-record error instead of a raw save-path exception.
 		validateInvariants(fromCurrencyId, toCurrencyId, multiplyRate, validFrom, item.getValidTo());
 
-		final BigDecimal divideRate = reciprocal(multiplyRate);
-
-		final SyncOutcome outcome = saveRate(
-				clientId, orgId, fromCurrencyId, toCurrencyId, conversionTypeId, validFrom,
-				multiplyRate, divideRate,
-				item.getValidTo(), syncAdvise);
+		final SyncOutcome outcome = saveRate(ConversionRateUpsertRequest.builder()
+				.clientId(clientId)
+				.orgId(orgId)
+				.fromCurrencyId(fromCurrencyId)
+				.toCurrencyId(toCurrencyId)
+				.conversionTypeId(conversionTypeId)
+				.validFrom(validFrom)
+				.validTo(item.getValidTo())
+				.multiplyRate(multiplyRate)
+				.syncAdvise(syncAdvise)
+				.build());
 
 		// Ensure the reverse direction exists. If the caller supplied the reverse itself (same
 		// request), honor it untouched; otherwise auto-write the reciprocal — subject to the same advise.
 		final NaturalKey reverseKey = new NaturalKey(orgId, toCurrencyId, fromCurrencyId, conversionTypeId, validFrom);
 		if (!callerSuppliedKeys.contains(reverseKey))
 		{
-			final BigDecimal reciprocalMultiplyRate = reciprocal(multiplyRate);
-			final BigDecimal reciprocalDivideRate = reciprocal(reciprocalMultiplyRate);
-			saveRate(
-					clientId, orgId, toCurrencyId, fromCurrencyId, conversionTypeId, validFrom,
-					reciprocalMultiplyRate, reciprocalDivideRate,
-					item.getValidTo(), syncAdvise);
+			saveRate(ConversionRateUpsertRequest.builder()
+					.clientId(clientId)
+					.orgId(orgId)
+					.fromCurrencyId(toCurrencyId)
+					.toCurrencyId(fromCurrencyId)
+					.conversionTypeId(conversionTypeId)
+					.validFrom(validFrom)
+					.validTo(item.getValidTo())
+					.multiplyRate(CurrencyConversionRates.reciprocal(multiplyRate))
+					.syncAdvise(syncAdvise)
+					.build());
 		}
 
 		return outcome;
 	}
 
 	/**
-	 * Single-direction find-existing-then-update-or-insert on the natural key, honoring the given
+	 * Single-direction find-existing-then-update-or-insert on the natural key, honoring the request's
 	 * {@link SyncAdvise}. Returns whether the row was created, updated, or left untouched.
 	 */
 	@NonNull
-	private SyncOutcome saveRate(
-			@NonNull final ClientId clientId,
-			@NonNull final OrgId orgId,
-			@NonNull final CurrencyId fromCurrencyId,
-			@NonNull final CurrencyId toCurrencyId,
-			@NonNull final CurrencyConversionTypeId conversionTypeId,
-			@NonNull final LocalDate validFrom,
-			@NonNull final BigDecimal multiplyRate,
-			@NonNull final BigDecimal divideRate,
-			@Nullable final LocalDate validTo,
-			@NonNull final SyncAdvise syncAdvise)
+	private SyncOutcome saveRate(@NonNull final ConversionRateUpsertRequest request)
 	{
-		I_C_Conversion_Rate record = currencyConversionRepository.findExistingRate(
-				clientId, orgId, fromCurrencyId, toCurrencyId, conversionTypeId, validFrom);
+		final SyncAdvise syncAdvise = request.getSyncAdvise();
+		I_C_Conversion_Rate record = currencyConversionRepository.findExistingRate(request);
 		final SyncOutcome outcome;
 		if (record == null)
 		{
 			if (syncAdvise.isFailIfNotExists())
 			{
-				throw new AdempiereException("@NotFound@ @C_Conversion_Rate@: " + fromCurrencyId.getRepoId() + "->" + toCurrencyId.getRepoId())
+				throw new AdempiereException("@NotFound@ @C_Conversion_Rate@: "
+						+ request.getFromCurrencyId().getRepoId() + "->" + request.getToCurrencyId().getRepoId())
 						.markAsUserValidationError();
 			}
-			record = currencyConversionRepository.newRate(orgId, fromCurrencyId, toCurrencyId, conversionTypeId, validFrom);
+			record = currencyConversionRepository.newRate(request);
 			outcome = SyncOutcome.CREATED;
 		}
 		else
@@ -260,8 +259,9 @@ public class ConversionRateUpsertService
 			outcome = SyncOutcome.UPDATED;
 		}
 
-		record.setMultiplyRate(multiplyRate);
-		record.setDivideRate(divideRate);
+		record.setMultiplyRate(request.getMultiplyRate());
+		record.setDivideRate(request.getDivideRate());
+		final LocalDate validTo = request.getValidTo();
 		record.setValidTo(validTo != null ? TimeUtil.asTimestamp(validTo) : null);
 
 		currencyConversionRepository.save(record);
@@ -272,19 +272,14 @@ public class ConversionRateUpsertService
 	@NonNull
 	private OrgId resolveOrgId(@Nullable final String orgCode)
 	{
-		if (orgCode == null || orgCode.trim().isEmpty())
+		// Preserve the documented "omitted orgCode -> org 0 (shared)" semantics (REQUIREMENTS §3.1 / AC8).
+		// RestUtils.retrieveOrgIdOrDefault falls back to the context org (Env.getOrgId()) when blank, not to
+		// OrgId.ANY, so only its non-blank path (resolve by AD_Org.Value) is reused here.
+		if (Check.isBlank(orgCode))
 		{
-			return OrgId.ANY; // org 0 (shared)
+			return OrgId.ANY;
 		}
-		try
-		{
-			return OrgId.ofRepoId(Integer.parseInt(orgCode.trim()));
-		}
-		catch (final NumberFormatException ex)
-		{
-			throw new AdempiereException("@Invalid@ @AD_Org_ID@: " + orgCode)
-					.markAsUserValidationError();
-		}
+		return RestUtils.retrieveOrgIdOrDefault(orgCode);
 	}
 
 	@NonNull
@@ -294,7 +289,7 @@ public class ConversionRateUpsertService
 			@NonNull final OrgId orgId,
 			@NonNull final LocalDate validFrom)
 	{
-		if (conversionTypeCode == null || conversionTypeCode.trim().isEmpty())
+		if (Check.isBlank(conversionTypeCode))
 		{
 			return currencyDAO.getDefaultConversionTypeId(clientId, orgId, toInstant(validFrom));
 		}
@@ -332,17 +327,6 @@ public class ConversionRateUpsertService
 			throw new AdempiereException("@ValidTo@ < @ValidFrom@: " + validTo + " < " + validFrom)
 					.markAsUserValidationError();
 		}
-	}
-
-	/**
-	 * {@code 1 / rate} at scale {@value #DIVIDE_RATE_SCALE}, {@link #DIVIDE_RATE_ROUNDING}. Used both to
-	 * derive a row's {@code DivideRate} from its {@code MultiplyRate} and to compute the reverse
-	 * direction's {@code MultiplyRate} (the reciprocal).
-	 */
-	@NonNull
-	private static BigDecimal reciprocal(@NonNull final BigDecimal rate)
-	{
-		return BigDecimal.ONE.divide(rate, DIVIDE_RATE_SCALE, DIVIDE_RATE_ROUNDING);
 	}
 
 	private static Instant toInstant(@NonNull final LocalDate localDate)

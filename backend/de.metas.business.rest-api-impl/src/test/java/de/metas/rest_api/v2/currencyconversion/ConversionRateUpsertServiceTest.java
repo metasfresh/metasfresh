@@ -30,12 +30,14 @@ import de.metas.common.rest_api.v2.currencyconversion.JsonResponseConversionRate
 import de.metas.common.rest_api.v2.currencyconversion.JsonResponseConversionRateUpsertItem.SyncOutcome;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Conversion_Rate;
 import org.compiere.model.I_C_Currency;
 import org.compiere.util.Env;
@@ -73,6 +75,17 @@ class ConversionRateUpsertServiceTest
 	private JsonResponseConversionRateUpsert upsert(final JsonRequestConversionRateUpsert request)
 	{
 		return conversionRateUpsertService.upsert(Env.getClientId(), request);
+	}
+
+	/** Create an <b>active</b> {@code AD_Org} with the given Value and return its id (orgCode resolves by Value). */
+	private OrgId createOrg(final String value)
+	{
+		final I_AD_Org org = newInstanceOutOfTrx(I_AD_Org.class);
+		org.setValue(value);
+		org.setName(value);
+		org.setIsActive(true);
+		saveRecord(org);
+		return OrgId.ofRepoId(org.getAD_Org_ID());
 	}
 
 	/** Create an <b>active</b> {@code C_Currency} row for the given ISO code and return its id. */
@@ -245,13 +258,15 @@ class ConversionRateUpsertServiceTest
 	{
 		createActiveCurrency("EUR");
 		createActiveCurrency("CNY");
+		// orgCode resolves by AD_Org.Value (RestUtils.retrieveOrgIdOrDefault), not by numeric id
+		final OrgId orgId = createOrg("orgABC");
 
 		upsert(JsonRequestConversionRateUpsert.builder()
-				.requestItem(item().orgCode("1000000").build())
+				.requestItem(item().orgCode("orgABC").build())
 				.build());
 
 		final I_C_Conversion_Rate rate = allRates().get(0);
-		assertThat(rate.getAD_Org_ID()).isEqualTo(1000000);
+		assertThat(rate.getAD_Org_ID()).isEqualTo(orgId.getRepoId());
 	}
 
 	@Test

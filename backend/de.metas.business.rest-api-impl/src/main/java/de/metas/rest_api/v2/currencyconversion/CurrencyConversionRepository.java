@@ -40,7 +40,6 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
-import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -86,6 +85,11 @@ public class CurrencyConversionRepository
 	/**
 	 * Resolves the id of the single <b>active</b> {@code C_Currency} for the given ISO code, out of transaction.
 	 * Throws a user-validation error when no active currency matches (an unknown or inactive ISO).
+	 * <p>
+	 * Kept as a direct active-only query on purpose (not {@code ICurrencyDAO.getByCurrencyCode}): the endpoint
+	 * must surface an unknown/inactive ISO as a per-record error and must NOT auto-create a currency, but
+	 * {@code PlainCurrencyDAO.getByCurrencyCode} (the unit-test double) auto-creates a missing currency and the
+	 * shared map path does not filter inactive out of an unknown-vs-inactive distinction.
 	 */
 	@NonNull
 	public CurrencyId findActiveCurrencyIdByIsoCode(@NonNull final String isoCode)
@@ -108,48 +112,39 @@ public class CurrencyConversionRepository
 	/**
 	 * Single-direction find on the {@code C_Conversion_Rate} natural key
 	 * ({@code AD_Client_ID, AD_Org_ID, C_Currency_ID, C_Currency_ID_To, C_ConversionType_ID, ValidFrom}),
-	 * or {@code null} if none exists.
+	 * or {@code null} if none exists. The {@code AD_Client_ID} is the caller-supplied session client (captured
+	 * at the controller boundary), matching the canonical read path's client scoping.
 	 * <p>
 	 * Returns the {@code I_C_Conversion_Rate} model record on purpose: the sole caller
 	 * ({@link ConversionRateUpsertService}, same package) mutates + saves it via {@link #save(I_C_Conversion_Rate)}.
 	 * The leak is confined to this REST-endpoint package; no other module consumes it.
 	 */
 	@Nullable
-	public I_C_Conversion_Rate findExistingRate(
-			@NonNull final ClientId clientId,
-			@NonNull final OrgId orgId,
-			@NonNull final CurrencyId fromCurrencyId,
-			@NonNull final CurrencyId toCurrencyId,
-			@NonNull final CurrencyConversionTypeId conversionTypeId,
-			@NonNull final LocalDate validFrom)
+	public I_C_Conversion_Rate findExistingRate(@NonNull final ConversionRateUpsertRequest request)
 	{
 		return queryBL
 				.createQueryBuilder(I_C_Conversion_Rate.class)
-				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_AD_Client_ID, clientId)
-				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_AD_Org_ID, orgId)
-				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_C_Currency_ID, fromCurrencyId)
-				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_C_Currency_ID_To, toCurrencyId)
-				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_C_ConversionType_ID, conversionTypeId)
-				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_ValidFrom, TimeUtil.asTimestamp(validFrom))
+				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_AD_Client_ID, request.getClientId())
+				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_AD_Org_ID, request.getOrgId())
+				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_C_Currency_ID, request.getFromCurrencyId())
+				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_C_Currency_ID_To, request.getToCurrencyId())
+				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_C_ConversionType_ID, request.getConversionTypeId())
+				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_ValidFrom, TimeUtil.asTimestamp(request.getValidFrom()))
 				.create()
 				.first(I_C_Conversion_Rate.class);
 	}
 
-	/** Creates a new, unsaved {@code C_Conversion_Rate} with its natural-key columns set. */
+	/** Creates a new, unsaved {@code C_Conversion_Rate} with its natural-key columns (incl. the caller-supplied client) set. */
 	@NonNull
-	public I_C_Conversion_Rate newRate(
-			@NonNull final OrgId orgId,
-			@NonNull final CurrencyId fromCurrencyId,
-			@NonNull final CurrencyId toCurrencyId,
-			@NonNull final CurrencyConversionTypeId conversionTypeId,
-			@NonNull final LocalDate validFrom)
+	public I_C_Conversion_Rate newRate(@NonNull final ConversionRateUpsertRequest request)
 	{
 		final I_C_Conversion_Rate record = InterfaceWrapperHelper.newInstance(I_C_Conversion_Rate.class);
-		record.setAD_Org_ID(orgId.getRepoId());
-		record.setC_Currency_ID(fromCurrencyId.getRepoId());
-		record.setC_Currency_ID_To(toCurrencyId.getRepoId());
-		record.setC_ConversionType_ID(conversionTypeId.getRepoId());
-		record.setValidFrom(TimeUtil.asTimestamp(validFrom));
+		InterfaceWrapperHelper.setValue(record, I_C_Conversion_Rate.COLUMNNAME_AD_Client_ID, request.getClientId().getRepoId());
+		record.setAD_Org_ID(request.getOrgId().getRepoId());
+		record.setC_Currency_ID(request.getFromCurrencyId().getRepoId());
+		record.setC_Currency_ID_To(request.getToCurrencyId().getRepoId());
+		record.setC_ConversionType_ID(request.getConversionTypeId().getRepoId());
+		record.setValidFrom(TimeUtil.asTimestamp(request.getValidFrom()));
 		return record;
 	}
 
@@ -161,7 +156,9 @@ public class CurrencyConversionRepository
 	/**
 	 * The active {@code C_Conversion_Rate} rows scoped to {@code (SYSTEM, clientId)} and any org, ordered by
 	 * {@code ValidFrom} descending, narrowed by the optional {@code (from, to, type)} filters. The
-	 * newest-per-combo reduction is done by the caller.
+	 * newest-per-combo reduction is done by the caller. The {@code clientId} is the caller-supplied session client
+	 * (captured at the controller boundary), matching the canonical read path {@code CurrencyDAO.retrieveRateQuery}:
+	 * {@code AD_Client_ID IN (SYSTEM, <client>)}.
 	 * <p>
 	 * Returns {@code I_C_Conversion_Rate} model rows on purpose: the sole caller
 	 * ({@link NewestConversionRatesService}, same package) only reads their columns to build the JSON DTOs.

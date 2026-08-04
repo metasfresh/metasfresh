@@ -27,6 +27,7 @@ import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -96,7 +97,7 @@ public class NewestConversionRatesService
 	@Nullable
 	private CurrencyId resolveOptionalCurrencyId(@Nullable final String isoCode)
 	{
-		if (isoCode == null || isoCode.trim().isEmpty())
+		if (Check.isBlank(isoCode))
 		{
 			return null;
 		}
@@ -106,7 +107,7 @@ public class NewestConversionRatesService
 	@Nullable
 	private CurrencyConversionTypeId resolveOptionalConversionTypeId(@Nullable final String conversionTypeCode)
 	{
-		if (conversionTypeCode == null || conversionTypeCode.trim().isEmpty())
+		if (Check.isBlank(conversionTypeCode))
 		{
 			return null;
 		}
