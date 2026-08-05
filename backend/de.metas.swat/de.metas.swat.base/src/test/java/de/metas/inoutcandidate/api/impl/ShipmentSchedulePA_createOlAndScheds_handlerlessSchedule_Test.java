@@ -1,5 +1,27 @@
 package de.metas.inoutcandidate.api.impl;
 
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,37 +47,13 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.util.Services;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2026 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 /**
- * gh31289: a single {@link I_M_ShipmentSchedule} whose {@code AD_Table_ID} has no registered
- * {@link ShipmentScheduleHandler} must NOT abort the whole recompute batch.
- * <p>
- * Before the fix {@link ShipmentSchedulePA#createOlAndScheds(List)} let the "No shipment schedule handler
- * defined for ..." exception propagate, so one bad row (the self-referential test-seed rows from #25200, or
- * genuine data corruption) rolled back the entire {@code UpdateInvalidShipmentSchedules} batch and jammed
- * every other schedule in the recompute queue. After the fix the handler-less schedule is skipped (and
- * surfaced as an {@code AD_Issue}) while the resolvable schedules are still processed.
+ * A single {@link I_M_ShipmentSchedule} whose {@code AD_Table_ID} has no registered
+ * {@link ShipmentScheduleHandler} must NOT abort the whole recompute batch:
+ * {@link ShipmentSchedulePA#createOlAndScheds(List)} must skip the handler-less schedule (surfaced as an
+ * {@code AD_Issue}) and still process the resolvable schedules in the same batch, rather than letting the
+ * "No shipment schedule handler defined for ..." exception propagate and roll back the entire
+ * {@code UpdateInvalidShipmentSchedules} batch (which would jam every other schedule in the recompute queue).
  */
 class ShipmentSchedulePA_createOlAndScheds_handlerlessSchedule_Test
 {
@@ -88,7 +86,7 @@ class ShipmentSchedulePA_createOlAndScheds_handlerlessSchedule_Test
 		final I_M_ShipmentSchedule sched = newInstance(I_M_ShipmentSchedule.class);
 		sched.setAD_Table_ID(adTableId);
 		saveRecord(sched);
-		// self-referential Record_ID, exactly like the #25200 seed step (not read by createOlAndScheds)
+		// self-referential Record_ID, like the recompute-batching seed fixture (not read by createOlAndScheds)
 		sched.setRecord_ID(sched.getM_ShipmentSchedule_ID());
 		saveRecord(sched);
 		return sched;
@@ -103,7 +101,7 @@ class ShipmentSchedulePA_createOlAndScheds_handlerlessSchedule_Test
 		final I_M_ShipmentSchedule resolvable = createScheduleFor(resolvableTableId);
 
 		// handler-less: a self-referential M_ShipmentSchedule table id with NO registered handler
-		// (mirrors the #25200 seedShipmentSchedulesWithUntaggedRecomputeMarker poison row)
+		// (mirrors the seedShipmentSchedulesWithUntaggedRecomputeMarker poison row)
 		final int handlerlessTableId = createTable(I_M_ShipmentSchedule.Table_Name);
 		final I_M_ShipmentSchedule handlerless = createScheduleFor(handlerlessTableId);
 

@@ -137,8 +137,8 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -179,8 +179,8 @@ public class M_ShipmentSchedule_StepDef
 	private final Map<String, PInstanceId> recomputeSelectionsByIdentifier = new HashMap<>();
 
 	/**
-	 * gh31289: M_ShipmentSchedule_IDs seeded by {@link #seedShipmentSchedulesWithUntaggedRecomputeMarker}.
-	 * They carry a self-referential AD_Table_ID with no registered handler; {@link #deleteSeededRecomputeSchedules()}
+	 * M_ShipmentSchedule_IDs seeded by {@link #seedShipmentSchedulesWithUntaggedRecomputeMarker}. They carry
+	 * a self-referential AD_Table_ID with no registered handler; {@link #deleteSeededRecomputeSchedules()}
 	 * removes them (markers + rows) after the scenario so they cannot leak into another scenario's recompute
 	 * sweep and jam the whole UpdateInvalidShipmentSchedules batch.
 	 */
@@ -360,11 +360,11 @@ public class M_ShipmentSchedule_StepDef
 	}
 
 	/**
-	 * gh31289: remove the schedules seeded by {@link #seedShipmentSchedulesWithUntaggedRecomputeMarker} (and
-	 * their recompute markers, any tag state) after each scenario. Those rows have a self-referential
-	 * AD_Table_ID with no registered handler; if they survive into a later scenario in the same JVM/DB, the
-	 * always-on UpdateInvalidShipmentSchedulesWorkpackageProcessor sweeps them and (pre-fix) aborts the whole
-	 * recompute batch, so unrelated features' schedules never get recomputed. No-op when nothing was seeded.
+	 * Remove the schedules seeded by {@link #seedShipmentSchedulesWithUntaggedRecomputeMarker} (and their
+	 * recompute markers, any tag state) after each scenario. Those rows have a self-referential AD_Table_ID
+	 * with no registered handler; if they survive into a later scenario in the same JVM/DB, the always-on
+	 * UpdateInvalidShipmentSchedulesWorkpackageProcessor sweeps them and aborts the whole recompute batch, so
+	 * unrelated features' schedules never get recomputed. No-op when nothing was seeded.
 	 */
 	@After
 	public void deleteSeededRecomputeSchedules()

@@ -1,5 +1,6 @@
 package de.metas.inoutcandidate.api.impl;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -7,15 +8,14 @@ import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.error.IErrorManager;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOutLine;
-import de.metas.error.IErrorManager;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
-import com.google.common.annotations.VisibleForTesting;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
@@ -326,10 +326,10 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 		for (final I_M_ShipmentSchedule schedule : shipmentSchedules)
 		{
-			// gh31289: a schedule whose AD_Table_ID has no registered handler cannot be recomputed. Skip it
-			// (surfaced as an AD_Issue) instead of letting OlAndSched -> getHandlerFor throw and abort the
-			// WHOLE batch -- one such row (a #25200 self-referential test-seed row, or genuine data
-			// corruption) would otherwise jam every other schedule in the recompute queue.
+			// A schedule whose AD_Table_ID has no registered handler cannot be recomputed. Skip it (surfaced
+			// as an AD_Issue) instead of letting OlAndSched -> getHandlerFor throw and abort the WHOLE batch --
+			// one such row (a self-referential test-seed row, or genuine data corruption) would otherwise jam
+			// every other schedule in the recompute queue.
 			if (shipmentScheduleHandlerBL.getHandlerForOrNull(schedule) == null)
 			{
 				reportHandlerlessScheduleAndSkip(schedule);
@@ -361,7 +361,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	}
 
 	/**
-	 * gh31289: report (as an AD_Issue) a shipment schedule whose {@code AD_Table_ID} has no registered
+	 * Report (as an AD_Issue) a shipment schedule whose {@code AD_Table_ID} has no registered
 	 * {@link de.metas.inoutcandidate.spi.ShipmentScheduleHandler}, so it stays visible while the recompute
 	 * batch continues. Its {@code M_ShipmentSchedule_Recompute} marker is cleared with the rest of the batch
 	 * (tagged with this pass's selection) at the end of the pass, so it is not re-swept forever.
@@ -373,9 +373,9 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 						+ " (it cannot be recomputed): " + schedule);
 		logger.warn(issue.getLocalizedMessage(), issue);
 
-		// Before gh31289 the thrown exception aborted the workpackage and was recorded as an AD_Issue by the
-		// async error handler; now that we no longer abort, raise the AD_Issue explicitly. Best-effort:
-		// creating the issue must never itself break the recompute pass.
+		// A handler-less schedule cannot be recomputed; since the pass no longer aborts on it, raise the
+		// AD_Issue explicitly to keep it visible. Best-effort: creating the issue must never itself break
+		// the recompute pass.
 		try
 		{
 			Services.get(IErrorManager.class).createIssue(issue);
