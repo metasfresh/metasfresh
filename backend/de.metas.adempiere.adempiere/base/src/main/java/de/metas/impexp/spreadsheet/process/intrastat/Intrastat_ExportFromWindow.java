@@ -22,20 +22,19 @@
 
 package de.metas.impexp.spreadsheet.process.intrastat;
 
-import de.metas.impexp.spreadsheet.csv.JdbcCSVExporter;
+import de.metas.impexp.spreadsheet.excel.JdbcExcelExporter;
 import de.metas.impexp.spreadsheet.service.SpreadsheetExporterService;
 import de.metas.process.JavaProcess;
 import de.metas.process.PInstanceId;
 import de.metas.process.SpreadsheetExportOptions;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
-import org.compiere.util.Env;
 import org.compiere.util.Evaluatees;
 
 import java.io.File;
 
 /**
- * Selection-driven Intrastat CSV export invoked from the Intrastat preview window
+ * Selection-driven Intrastat Excel export invoked from the Intrastat preview window
  * ({@code AD_Process 585647}, backed by {@code AD_Table Intrastat_Preview_V}).
  * <p>
  * Behaviour by row selection ({@code T_Selection}, scoped to the current {@code AD_PInstance_ID}):
@@ -44,11 +43,11 @@ import java.io.File;
  *   <li>No row checked → the WebUI still populates {@code T_Selection} with the currently-filtered
  *       set, and those are exported.</li>
  *   <li>No {@code T_Selection} row at all (defensive fallback) → export the whole view rather than
- *       silently produce empty CSV.</li>
+ *       silently produce empty output.</li>
  * </ul>
  * <p>
  * Number formatting for the 10 shared columns mirrors {@code report.Intrastat_Export}
- * ({@code TO_CHAR('FM9999999D000' / 'FM9999999D00')}) so the extended CSV stays byte-compatible
+ * ({@code TO_CHAR('FM9999999D000' / 'FM9999999D00')}) so the extended sheet stays byte-compatible
  * with the AT RTIC payload on those columns. The two extra columns ({@code UOM}, {@code Currency})
  * are plain text and appended at the end.
  */
@@ -77,7 +76,7 @@ public class Intrastat_ExportFromWindow extends JavaProcess
 			"      (SELECT T_Selection_ID FROM T_Selection WHERE AD_PInstance_ID = %1$d)",
 			// Fallback: no T_Selection row was populated for this AD_PInstance_ID
 			// (unusual — the WebUI normally seeds it). Export the whole view rather than
-			// silently produce an empty CSV.
+			// silently produce an empty sheet.
 			"   OR NOT EXISTS",
 			"      (SELECT 1 FROM T_Selection WHERE AD_PInstance_ID = %1$d)");
 
@@ -86,21 +85,19 @@ public class Intrastat_ExportFromWindow extends JavaProcess
 	{
 		final PInstanceId pinstanceId = getPinstanceId();
 		final String sql = String.format(SQL_TEMPLATE, pinstanceId.getRepoId());
-		final File csv = runCsvExport(sql);
+		final File xlsx = runExcelExport(sql);
 
-		getResult().setReportData(csv);
+		getResult().setReportData(xlsx);
 		return MSG_OK;
 	}
 
-	private File runCsvExport(@NonNull final String sql)
+	private File runExcelExport(@NonNull final String sql)
 	{
 		final SpreadsheetExportOptions options = getProcessInfo().getSpreadsheetExportOptions();
-		final JdbcCSVExporter exporter = JdbcCSVExporter.builder()
-				.adLanguage(Env.getADLanguageOrBaseLanguage(getCtx()))
+		final JdbcExcelExporter exporter = JdbcExcelExporter.builder()
+				.ctx(getCtx())
 				.translateHeaders(options.isTranslateHeaders())
-				.fieldDelimiter(options.getCsvFieldDelimiter())
-				.fieldQualifier(options.getCsvFieldQualifier())
-				.includeHeader(options.isIncludeCSVHeaderRow())
+				.applyFormatting(options.isExcelApplyFormatting())
 				.build();
 
 		spreadsheetExporterService.processDataFromSQL(sql, Evaluatees.ofCtx(getCtx()), exporter);

@@ -1,34 +1,21 @@
--- Preview view for the Intrastat window — WebUI grid twin of report.Intrastat_Export.
+-- Intrastat_Preview_V — review fixes (PR review 2026-08-05):
+--   * LEFT JOIN C_InvoiceLine → INNER JOIN (semantic clarity — downstream C_Invoice join
+--     already excludes NULL invoice lines)
+--   * C_Period join gets `AND per.PeriodType = 'S'` guard (prevents double-counting
+--     when calendars carry overlapping adjustment periods)
+--   * KGM UOM lookup extracted into a WITH kgm_uom CTE (evaluated once instead of thrice
+--     per row)
+--   * Prominent sync warning added to comments (keep in step with Intrastat_Report_V)
+--   * Inline comments on StatisticalValue == InvoiceValue and hardcoded
+--     IntrastaNatureOfTransaction='11' simplifications
+-- Source of truth: backend/de.metas.fresh/de.metas.fresh.base/src/main/sql/postgresql/ddl/views/Intrastat_Preview_V.sql
 --
--- Lives in the DEFAULT schema (like sibling AD-backed view Intrastat_Report_Detail_V), NOT in
--- de_metas_endcustomer_fresh_reports: the WebUI generates unqualified SQL against AD_Table-backed
--- views, and de_metas_endcustomer_fresh_reports is not on the app-server's search_path.
---
--- Aggregation granularity: PER-PRODUCT rows (M_Product_ID in GROUP BY + synthetic PK). This is
--- finer than report.Intrastat_Export's per-CN-code output — multiple products sharing a CN code
--- appear as multiple grid rows so the user can zoom into each product via M_Product_ID
--- (Table Direct). The AT RTIC payload (AD_Process 585508, unchanged) aggregates further to
--- CN-code granularity via Intrastat_Report_V's own GROUP BY.
---
--- Semantic invariant: SUM(NetMass), SUM(SupplementaryUnits), SUM(InvoiceValue) grouped-back
--- by CN-code equal the AT RTIC row for that CN code — the preview aggregation is a
--- REFINEMENT of the AT RTIC aggregation, not a different data source.
---
--- ⚠ KEEP IN SYNC with Intrastat_Report_V's inner SELECT.
--- This view's inner SELECT is a hand-copy of Intrastat_Report_V's inner SELECT + the three ID
--- columns (M_Product_ID, C_UOM_ID, C_Currency_ID) needed for AD_Table Table-Direct references.
--- Intrastat_Report_V is NOT modified (it is shared source of the AT RTIC export function).
--- Any change to its filters (EU-only, partner-country != org-country, DocStatus, packaging /
--- customs / stocked flags) MUST be mirrored here, and vice versa. Divergence causes the
--- WebUI grid to disagree with the RTIC file. See
--- backend/de.metas.fresh/de.metas.fresh.base/src/main/sql/postgresql/ddl/views/Intrastat_Report_V.sql
+-- Also: AD_Process 585647 output was migrated from CSV to Excel — description updated to reflect that.
 
 DROP VIEW IF EXISTS Intrastat_Preview_V;
 
 CREATE OR REPLACE VIEW Intrastat_Preview_V AS
 WITH kgm_uom AS (
-    -- Guaranteed single-row lookup for the KG UOM (`X12DE355='KGM'`) — extracted to a CTE
-    -- so PostgreSQL evaluates it once instead of once per row per call-site.
     SELECT C_UOM_ID
     FROM C_UOM
     WHERE x12de355 = 'KGM'
@@ -37,8 +24,6 @@ WITH kgm_uom AS (
     LIMIT 1
 )
 SELECT
-    -- Synthetic PK — MD5 of the aggregation key (32-bit hash, negligible collision risk
-    -- at the expected row counts of hundreds to low-thousands per period).
     ABS(('x' || SUBSTR(MD5(CONCAT_WS('#',
         CustomsTariff,
         deliveryCountry,
@@ -54,7 +39,6 @@ SELECT
         vataxid
     )), 1, 10))::bit(32)::int) AS Intrastat_Preview_V_ID,
 
-    -- Standard AD framework columns
     1000000::numeric(10,0)                                          AS AD_Client_ID,
     AD_Org_ID,
     'Y'::char(1)                                                    AS IsActive,
@@ -63,28 +47,18 @@ SELECT
     now()                                                           AS Updated,
     0                                                               AS UpdatedBy,
 
-    -- Filter / context columns (surfaced as grid filters)
     IsSOTrx,
     C_Year_ID,
     C_Period_ID,
 
-    -- Preview columns
     CustomsTariff                                                   AS CNCode,
     M_Product_ID,
     deliveryCountry                                                 AS CountryDestinationConsignment,
     COALESCE(deliveredFromCountry, OriginCountry, deliveryCountry)  AS CountryOfOrigin,
-    -- Nature-of-transaction is hardcoded to '11' (standard sale/purchase) — same simplification
-    -- as report.Intrastat_Export. Returns (21), processing under contract (41), etc. are a
-    -- known limitation and captured as follow-up F1 in the plan.
     '11'::varchar                                                   AS IntrastaNatureOfTransaction,
     SUM(weight)                                                     AS NetMass,
     SUM(movementqty)                                                AS SupplementaryUnits,
     C_UOM_ID,
-    -- StatisticalValue == InvoiceValue: same simplification as report.Intrastat_Export.
-    -- EU regulations allow statistical value to include freight/insurance (CIF for imports);
-    -- the AT RTIC submission accepts InvoiceValue as StatisticalValue for goods without
-    -- freight/insurance stated separately. Diverging here would also break byte-parity with
-    -- report.Intrastat_Export, which the grid promises to match by CN-code roll-up.
     SUM(linenetamt)                                                 AS InvoiceValue,
     SUM(linenetamt)                                                 AS StatisticalValue,
     C_Currency_ID,
@@ -109,7 +83,6 @@ FROM (
         C_Period_ID,
         io.AD_Org_ID,
         ct.value                                                    AS CustomsTariff,
-        -- Per-line weight: catch weight first, then UOM conversion to KG, then product weight fallback
         COALESCE(
             COALESCE(iol.qtydeliveredcatch,
                      uomConvert(iol.M_Product_ID, iol.C_UOM_ID,
@@ -131,9 +104,6 @@ FROM (
         LEFT JOIN C_Location wl ON wl.C_Location_ID = w.C_Location_ID
         LEFT JOIN C_Country wlc ON wlc.C_Country_ID = wl.C_Country_ID
         JOIN M_InOutLine iol ON iol.M_InOut_ID = io.M_InOut_ID
-        -- INNER JOIN — the downstream JOIN on C_Invoice would exclude NULL invoice lines
-        -- anyway (null=null is false), so making this explicit prevents a future maintainer
-        -- from adding `WHERE il.C_InvoiceLine_ID IS NULL` expecting to find uninvoiced movements.
         JOIN C_InvoiceLine il ON il.M_InOutLine_ID = iol.M_InOutLine_ID
         JOIN C_Invoice i ON i.C_Invoice_ID = il.C_Invoice_ID AND i.DocStatus IN ('CO','CL')
         JOIN M_Product p ON p.M_Product_ID = iol.M_Product_ID
@@ -142,12 +112,9 @@ FROM (
         JOIN C_BPartner_Location bpl ON bpl.C_BPartner_Location_ID = io.C_BPartner_Location_ID
         JOIN C_Location l ON l.C_Location_ID = bpl.C_Location_ID
         JOIN C_Country co ON co.C_Country_ID = l.C_Country_ID
-        -- PeriodType='S' avoids double-counting when the calendar also contains overlapping
-        -- adjustment periods ('A') covering the same DateInvoiced range.
         JOIN C_Period per ON i.DateInvoiced >= per.StartDate AND i.DateInvoiced <= per.EndDate
                          AND per.PeriodType = 'S'
         LEFT JOIN M_CustomsTariff ct ON ct.M_CustomsTariff_ID = p.M_CustomsTariff_ID
-        -- Only intra-EU trade: partner country must be EU member at time of invoice
         JOIN C_CountryArea_Assign eu_partner
             ON eu_partner.C_Country_ID = co.C_Country_ID
            AND eu_partner.C_CountryArea_ID = (SELECT C_CountryArea_ID FROM C_CountryArea WHERE value = 'EU' AND isactive = 'Y')
@@ -175,3 +142,23 @@ GROUP BY
     c_year_id,
     IsSOTrx
 ;
+
+-- AD_Process 585647: switch description from CSV to Excel (output format changed with
+-- the Java class refactor to JdbcExcelExporter). No column signature change on the process.
+UPDATE AD_Process
+   SET Description = 'Exportiert die im Fenster ausgewählten Zeilen (bzw. bei fehlender Auswahl den gefilterten Satz) als Excel-Datei im INTRASTAT-RTIC-Format, erweitert um die Spalten Maßeinheit und Währung.',
+       Updated     = TO_TIMESTAMP('2026-08-05 14:00:00','YYYY-MM-DD HH24:MI:SS'),
+       UpdatedBy   = 100
+ WHERE AD_Process_ID = 585647;
+
+UPDATE AD_Process_Trl
+   SET Description = 'Exports the rows selected in the window (or the filtered set when no row is checked) as an Excel file in the INTRASTAT RTIC format, extended with the UOM and Currency columns.',
+       Updated     = TO_TIMESTAMP('2026-08-05 14:00:01','YYYY-MM-DD HH24:MI:SS'),
+       UpdatedBy   = 100
+ WHERE AD_Process_ID = 585647 AND AD_Language = 'en_US';
+
+UPDATE AD_Process_Trl
+   SET Description = 'Exportiert die im Fenster ausgewählten Zeilen (bzw. bei fehlender Auswahl den gefilterten Satz) als Excel-Datei im INTRASTAT-RTIC-Format, erweitert um die Spalten Masseinheit und Währung.',
+       Updated     = TO_TIMESTAMP('2026-08-05 14:00:02','YYYY-MM-DD HH24:MI:SS'),
+       UpdatedBy   = 100
+ WHERE AD_Process_ID = 585647 AND AD_Language = 'de_CH';

@@ -12,55 +12,12 @@
 -- (added by Task 18 in the same branch).
 
 -- =====================================================================
--- 1. AD_Element for the process caption
+-- AD_Process — parameterless, Java-driven, Excel export
 -- =====================================================================
-INSERT INTO AD_Element (AD_Client_ID, AD_Element_ID, AD_Org_ID, ColumnName,
-    Created, CreatedBy, EntityType, IsActive, Name, PrintName, Updated, UpdatedBy)
-VALUES (0, 585154 /*From ID Server*/, 0, 'Intrastat_Export_FromWindow',
-    TO_TIMESTAMP('2026-08-05 12:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
-    'D', 'Y', 'INTRASTAT RTIC Datei (AT) — Auswahl', 'INTRASTAT RTIC Datei (AT) — Auswahl',
-    TO_TIMESTAMP('2026-08-05 12:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100);
-
--- Seed _Trl skeleton for every system language
-INSERT INTO AD_Element_Trl (AD_Language, AD_Element_ID,
-    CommitWarning, Description, Help, Name,
-    PO_Description, PO_Help, PO_Name, PO_PrintName, PrintName,
-    WEBUI_NameBrowse, WEBUI_NameNew, WEBUI_NameNewBreadcrumb,
-    IsTranslated, AD_Client_ID, AD_Org_ID,
-    Created, CreatedBy, Updated, UpdatedBy, IsActive)
-SELECT l.AD_Language, t.AD_Element_ID,
-    t.CommitWarning, t.Description, t.Help, t.Name,
-    t.PO_Description, t.PO_Help, t.PO_Name, t.PO_PrintName, t.PrintName,
-    t.WEBUI_NameBrowse, t.WEBUI_NameNew, t.WEBUI_NameNewBreadcrumb,
-    'N', t.AD_Client_ID, t.AD_Org_ID,
-    t.Created, t.CreatedBy, t.Updated, t.UpdatedBy, 'Y'
-FROM AD_Language l, AD_Element t
-WHERE l.IsActive = 'Y'
-  AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y')
-  AND t.AD_Element_ID = 585154
-  AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt
-                  WHERE tt.AD_Language = l.AD_Language AND tt.AD_Element_ID = t.AD_Element_ID);
-
--- en_US translation
-UPDATE AD_Element_Trl
-   SET IsTranslated = 'Y',
-       Name         = 'INTRASTAT RTIC File (AT) — Selection',
-       PrintName    = 'INTRASTAT RTIC File (AT) — Selection',
-       Updated      = TO_TIMESTAMP('2026-08-05 12:00:01', 'YYYY-MM-DD HH24:MI:SS'),
-       UpdatedBy    = 100
- WHERE AD_Element_ID = 585154 AND AD_Language = 'en_US';
-
--- de_DE + de_CH: base language is de_DE; mark as translated (no ß in Name/PrintName so de_CH == de_DE)
-UPDATE AD_Element_Trl
-   SET IsTranslated = 'Y',
-       Updated      = TO_TIMESTAMP('2026-08-05 12:00:01', 'YYYY-MM-DD HH24:MI:SS'),
-       UpdatedBy    = 100
- WHERE AD_Element_ID = 585154 AND AD_Language IN ('de_DE', 'de_CH');
-
--- =====================================================================
--- 2. AD_Process — parameterless, Java-driven, CSV export
--- =====================================================================
-INSERT INTO AD_Process (AccessLevel, AD_Client_ID, AD_Element_ID, AD_Org_ID, AD_Process_ID,
+-- Name/Description/PrintName live directly on the AD_Process row (translations in
+-- AD_Process_Trl below). AD_Process has no AD_Element_ID column — the caption is not
+-- routed through AD_Element the way an AD_Field label is.
+INSERT INTO AD_Process (AccessLevel, AD_Client_ID, AD_Org_ID, AD_Process_ID,
     AllowProcessReRun, Classname, CopyFromProcess,
     Created, CreatedBy, Description, EntityType,
     IsActive, IsApplySecuritySettings, IsBetaFunctionality, IsDirectPrint,
@@ -68,19 +25,18 @@ INSERT INTO AD_Process (AccessLevel, AD_Client_ID, AD_Element_ID, AD_Org_ID, AD_
     IsReport, IsTranslateExcelHeaders, IsUpdateExportDate, IsUseBPartnerLanguage,
     LockWaitTimeout, Name, PostgrestResponseFormat,
     RefreshAllAfterExecution, ShowHelp, SpreadsheetFormat,
-    CSVFieldDelimiter, Type, Updated, UpdatedBy, Value)
-VALUES ('3', 0, 585154, 0, 585647 /*From ID Server*/,
+    Type, Updated, UpdatedBy, Value)
+VALUES ('3', 0, 0, 585647 /*From ID Server*/,
     'Y', 'de.metas.impexp.spreadsheet.process.intrastat.Intrastat_ExportFromWindow', 'N',
     TO_TIMESTAMP('2026-08-05 12:00:02', 'YYYY-MM-DD HH24:MI:SS'), 100,
-    'Exportiert die im Fenster ausgewählten Zeilen (bzw. bei fehlender Auswahl den gefilterten Satz) als CSV im INTRASTAT-RTIC-Format, erweitert um die Spalten Maßeinheit und Währung.',
+    'Exportiert die im Fenster ausgewählten Zeilen (bzw. bei fehlender Auswahl den gefilterten Satz) als Excel-Datei im INTRASTAT-RTIC-Format, erweitert um die Spalten Maßeinheit und Währung.',
     'D',
     'Y', 'N', 'N', 'N',
     'Y', 'N', 'N', 'N', 'N',
     'Y', 'N', 'Y', 'N',
     0, 'INTRASTAT RTIC Datei (AT) — Auswahl', 'json',
     'N', 'N', 'xls',
-    E'\t', 'Excel', TO_TIMESTAMP('2026-08-05 12:00:02', 'YYYY-MM-DD HH24:MI:SS'), 100, 'Intrastat_Export_FromWindow');
--- IsIncludeCSVHeaderRow='N': RTIC upload does not accept a header row (same as AD_Process 585508).
+    'Excel', TO_TIMESTAMP('2026-08-05 12:00:02', 'YYYY-MM-DD HH24:MI:SS'), 100, 'Intrastat_Export_FromWindow');
 
 -- Seed _Trl skeleton
 INSERT INTO AD_Process_Trl (AD_Language, AD_Process_ID,
