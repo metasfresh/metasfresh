@@ -9,10 +9,13 @@ import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.error.IErrorManager;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
+import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
@@ -301,7 +304,8 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		return OrderAndLineId.ofRepoIdsOrNull(shipmentSchedule.getC_Order_ID(), shipmentSchedule.getC_OrderLine_ID());
 	}
 
-	private List<OlAndSched> createOlAndScheds(final List<I_M_ShipmentSchedule> shipmentSchedules)
+	@VisibleForTesting
+	List<OlAndSched> createOlAndScheds(final List<I_M_ShipmentSchedule> shipmentSchedules)
 	{
 		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
@@ -318,8 +322,20 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 		final List<OlAndSched> result = new ArrayList<>();
 
+		final IShipmentScheduleHandlerBL shipmentScheduleHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
+
 		for (final I_M_ShipmentSchedule schedule : shipmentSchedules)
 		{
+			// gh31289: a schedule whose AD_Table_ID has no registered handler cannot be recomputed. Skip it
+			// (surfaced as an AD_Issue) instead of letting OlAndSched -> getHandlerFor throw and abort the
+			// WHOLE batch -- one such row (a #25200 self-referential test-seed row, or genuine data
+			// corruption) would otherwise jam every other schedule in the recompute queue.
+			if (shipmentScheduleHandlerBL.getHandlerForOrNull(schedule) == null)
+			{
+				reportHandlerlessScheduleAndSkip(schedule);
+				continue;
+			}
+
 			final OrderAndLineId orderLineId = extractOrderAndLineId(schedule);
 			final I_C_OrderLine orderLine;
 			final I_C_Order order;
@@ -342,6 +358,32 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			result.add(olAndSched);
 		}
 		return result;
+	}
+
+	/**
+	 * gh31289: report (as an AD_Issue) a shipment schedule whose {@code AD_Table_ID} has no registered
+	 * {@link de.metas.inoutcandidate.spi.ShipmentScheduleHandler}, so it stays visible while the recompute
+	 * batch continues. Its {@code M_ShipmentSchedule_Recompute} marker is cleared with the rest of the batch
+	 * (tagged with this pass's selection) at the end of the pass, so it is not re-swept forever.
+	 */
+	private void reportHandlerlessScheduleAndSkip(@NonNull final I_M_ShipmentSchedule schedule)
+	{
+		final AdempiereException issue = new AdempiereException(
+				"Skipping M_ShipmentSchedule with no registered ShipmentScheduleHandler for its AD_Table_ID"
+						+ " (it cannot be recomputed): " + schedule);
+		logger.warn(issue.getLocalizedMessage(), issue);
+
+		// Before gh31289 the thrown exception aborted the workpackage and was recorded as an AD_Issue by the
+		// async error handler; now that we no longer abort, raise the AD_Issue explicitly. Best-effort:
+		// creating the issue must never itself break the recompute pass.
+		try
+		{
+			Services.get(IErrorManager.class).createIssue(issue);
+		}
+		catch (final Exception issueCreationFailed)
+		{
+			logger.warn("Failed to create AD_Issue for handler-less M_ShipmentSchedule", issueCreationFailed);
+		}
 	}
 
 	@Override
