@@ -52,7 +52,7 @@ import java.util.Set;
  * Upserts normalized currency-conversion rates into {@code C_Conversion_Rate}.
  * <p>
  * Each caller-supplied request item is resolved (by {@link JsonConversionRateConverters}) into a domain
- * {@link ConversionRate} and persisted on its own via the single-direction path. On top of that, both directions
+ * {@link ConversionRateCreateRequest} and persisted on its own via the single-direction path. On top of that, both directions
  * are always ensured: for every successfully-resolvable forward item whose reverse {@code (to -> from)} is
  * <b>not</b> present in the same request, the reciprocal ({@code MultiplyRate = 1 / rate}) is auto-written; when
  * the caller supplied the reverse itself, that reverse is honored untouched (never overwritten with a computed

@@ -61,14 +61,17 @@ public class ConversionRateRepository
 	 * or {@code null} if none exists. The {@code AD_Client_ID} is {@link ClientId#METASFRESH}, matching the
 	 * canonical read path's client scoping. {@code ValidFrom} is converted through the request's org timezone
 	 * ({@link ConversionRateCreateRequest#getValidFromTimestamp()}), so lookup and store use the same zone.
+	 * <p>
+	 * Deliberately <b>not</b> {@code addOnlyActiveRecordsFilter} and <b>not</b> out-of-trx: this is the
+	 * find-then-upsert lookup, so it must see an inactive row with the same natural key (to update it in place
+	 * rather than insert a duplicate) and any row just written earlier in the same transaction (batch).
 	 */
 	@Nullable
 	public I_C_Conversion_Rate findExisting(@NonNull final ConversionRateCreateRequest request)
 	{
 		final ConversionRateKey key = request.getKey();
 		return queryBL
-				.createQueryBuilderOutOfTrx(I_C_Conversion_Rate.class)
-				.addOnlyActiveRecordsFilter()
+				.createQueryBuilder(I_C_Conversion_Rate.class)
 				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
 				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_AD_Org_ID, key.getOrgId())
 				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_C_Currency_ID, key.getFromCurrencyId())
