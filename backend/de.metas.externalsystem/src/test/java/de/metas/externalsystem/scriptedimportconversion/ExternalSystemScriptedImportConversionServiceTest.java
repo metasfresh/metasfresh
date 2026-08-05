@@ -48,6 +48,7 @@ import java.util.Map;
 import org.adempiere.exceptions.AdempiereException;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ROUTE_KEY;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_INTERVAL_MS;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PROCESSED_DIR;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ERROR_DIR;
@@ -151,6 +152,9 @@ class ExternalSystemScriptedImportConversionServiceTest
 
 		// then
 		assertThat(parameters.get(PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME)).isEqualTo("eddyson-orders");
+		// and the stable per-child route key is derived from the child config id (NOT the endpoint value),
+		// so a later endpoint change cannot orphan the previously-started camel poll route.
+		assertThat(parameters.get(PARAM_SCRIPTEDADAPTER_TO_MF_ROUTE_KEY)).isEqualTo("ScriptedImportConversion-1");
 	}
 
 	@Test

@@ -8,6 +8,7 @@
   "traceId": "123",
   "parameters": {
     "endpointName": "sftpEndpoint",
+    "scriptedImportRouteKey": "ScriptedImportConversion-1",
     "scriptIdentifier": "scriptIdentifier",
     "sftpHost": "localhost",
     "sftpPort": "22",

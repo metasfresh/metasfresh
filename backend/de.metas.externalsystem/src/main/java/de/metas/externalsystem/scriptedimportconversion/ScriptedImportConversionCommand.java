@@ -28,6 +28,8 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
+
 @AllArgsConstructor
 public enum ScriptedImportConversionCommand
 {
@@ -41,6 +43,50 @@ public enum ScriptedImportConversionCommand
 
 	@Getter
 	private final String value;
+
+	@NonNull
+	public static ScriptedImportConversionCommand ofCode(@NonNull final String value)
+	{
+		final ScriptedImportConversionCommand command = ofCodeOrNull(value);
+		if (command == null)
+		{
+			throw new AdempiereException("No ScriptedImportConversionCommand for code")
+					.appendParametersToMessage()
+					.setParameter("code", value);
+		}
+		return command;
+	}
+
+	@Nullable
+	public static ScriptedImportConversionCommand ofCodeOrNull(@Nullable final String value)
+	{
+		for (final ScriptedImportConversionCommand command : values())
+		{
+			if (command.value.equals(value))
+			{
+				return command;
+			}
+		}
+		return null;
+	}
+
+	@NonNull
+	public ScriptedImportConversionIntent getIntent()
+	{
+		switch (this)
+		{
+			case EnableRestAPI:
+			case EnableSftpPolling:
+				return ScriptedImportConversionIntent.Start;
+			case DisableRestAPI:
+			case DisableSftpPolling:
+				return ScriptedImportConversionIntent.Stop;
+			default:
+				throw new AdempiereException("Unhandled ScriptedImportConversionCommand")
+						.appendParametersToMessage()
+						.setParameter("command", this);
+		}
+	}
 
 	/**
 	 * Derive the concrete command from the user's Start/Stop intent and the child's endpoint
