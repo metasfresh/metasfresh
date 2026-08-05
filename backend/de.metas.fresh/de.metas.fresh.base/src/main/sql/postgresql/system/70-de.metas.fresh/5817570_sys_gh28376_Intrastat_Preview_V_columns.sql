@@ -1,28 +1,16 @@
--- Preview view for the Intrastat window — WebUI grid twin of report.Intrastat_Export.
+-- Intrastat_Preview_V: add M_Product_ID / C_UOM_ID / C_Currency_ID (Table Direct refs);
+-- drop the GoodsDescription column (was productName).
 --
--- Lives in the DEFAULT schema (like sibling AD-backed view Intrastat_Report_Detail_V), NOT in
--- de_metas_endcustomer_fresh_reports: the WebUI generates unqualified SQL against AD_Table-backed
--- views, and de_metas_endcustomer_fresh_reports is not on the app-server's search_path.
+-- Aggregation granularity now per-product-per-UoM-per-currency (not per-CN-code), so each
+-- grid row is about ONE product and can zoom into it. AT RTIC CSV (AD_Process 585508)
+-- remains per-CN-code (unchanged).
 --
--- Aggregation granularity: PER-PRODUCT rows (M_Product_ID in GROUP BY + synthetic PK). This is
--- finer than report.Intrastat_Export's per-CN-code output — multiple products sharing a CN code
--- appear as multiple grid rows so the user can zoom into each product via M_Product_ID
--- (Table Direct). The AT RTIC CSV (AD_Process 585508, unchanged) aggregates further to CN-code
--- granularity via Intrastat_Report_V's own GROUP BY.
---
--- Semantic invariant: SUM(NetMass), SUM(SupplementaryUnits), SUM(InvoiceValue) grouped-back
--- by CN-code equals the AT RTIC CSV row for that CN code — the preview aggregation is a
--- REFINEMENT of the AT RTIC aggregation, not a different data source.
---
--- Inner SELECT mirrors Intrastat_Report_V's inner SELECT so filters (EU-only, partner-country
--- != org-country, DocStatus IN ('CO','CL')) stay in sync; Intrastat_Report_V itself is not
--- modified (it is a shared source view).
+-- Source of truth: backend/de.metas.fresh/de.metas.fresh.base/src/main/sql/postgresql/ddl/views/Intrastat_Preview_V.sql
 
 DROP VIEW IF EXISTS Intrastat_Preview_V;
 
 CREATE OR REPLACE VIEW Intrastat_Preview_V AS
 SELECT
-    -- Synthetic PK — MD5 of the aggregation key
     ABS(('x' || SUBSTR(MD5(CONCAT_WS('#',
         CustomsTariff,
         deliveryCountry,
@@ -36,7 +24,6 @@ SELECT
         C_Currency_ID::text
     )), 1, 10))::bit(32)::int) AS Intrastat_Preview_V_ID,
 
-    -- Standard AD framework columns
     1000000::numeric(10,0)                                          AS AD_Client_ID,
     AD_Org_ID,
     'Y'::char(1)                                                    AS IsActive,
@@ -45,12 +32,10 @@ SELECT
     now()                                                           AS Updated,
     0                                                               AS UpdatedBy,
 
-    -- Filter / context columns (surfaced as grid filters)
     IsSOTrx,
     C_Year_ID,
     C_Period_ID,
 
-    -- Preview columns
     CustomsTariff                                                   AS CNCode,
     M_Product_ID,
     deliveryCountry                                                 AS CountryDestinationConsignment,
@@ -65,8 +50,6 @@ SELECT
     vataxid                                                         AS RecipientVATNo
 
 FROM (
-    -- Mirror of Intrastat_Report_V's inner SELECT + additional ID columns (M_Product_ID,
-    -- C_UOM_ID, C_Currency_ID) needed for AD_Table Table-Direct references.
     SELECT
         p.M_Product_ID,
         iol.C_UOM_ID,
@@ -85,7 +68,6 @@ FROM (
         C_Period_ID,
         io.AD_Org_ID,
         ct.value                                                    AS CustomsTariff,
-        -- Per-line weight: catch weight first, then UOM conversion to KG, then product weight fallback
         COALESCE(
             COALESCE(iol.qtydeliveredcatch,
                      uomConvert(iol.M_Product_ID, iol.C_UOM_ID,
@@ -117,7 +99,6 @@ FROM (
         JOIN C_Country co ON co.C_Country_ID = l.C_Country_ID
         JOIN C_Period per ON i.DateInvoiced >= per.StartDate AND i.DateInvoiced <= per.EndDate
         LEFT JOIN M_CustomsTariff ct ON ct.M_CustomsTariff_ID = p.M_CustomsTariff_ID
-        -- Only intra-EU trade: partner country must be EU member at time of invoice
         JOIN C_CountryArea_Assign eu_partner
             ON eu_partner.C_Country_ID = co.C_Country_ID
            AND eu_partner.C_CountryArea_ID = (SELECT C_CountryArea_ID FROM C_CountryArea WHERE value = 'EU' AND isactive = 'Y')
