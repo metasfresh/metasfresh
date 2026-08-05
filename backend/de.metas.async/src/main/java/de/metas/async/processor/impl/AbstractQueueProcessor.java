@@ -179,7 +179,13 @@ public abstract class AbstractQueueProcessor implements IQueueProcessor
 		{
 			if (!success)
 			{
-				logger.info("processLockedWorkPackage was not successful for workPackage={}. LockedAt will be cleared by WorkpackageProcessorTask.", workPackage);
+				// dev-note: we must clear LockedAt ourselves here. WorkpackageProcessorTask would do it, but on this
+				// path it was never created - we bailed out before processWorkPackage(..). Leaving LockedAt set hides
+				// the workpackage from QueueDAO's polling query until the 10-minute stale-lock recovery kicks in,
+				// which is longer than the 5-minute de.metas.async.AsyncBatchObserver.WaitTimeOutMS a caller waiting
+				// on this workpackage's async batch will tolerate.
+				logger.info("processLockedWorkPackage was not successful for workPackage={}; clearing LockedAt so it can be polled again.", workPackage);
+				WorkPackageLockHelper.unlockNoFail(workPackage);
 			}
 
 			mainLock.unlock();

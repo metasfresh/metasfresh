@@ -155,7 +155,9 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 				return;
 			}
 
-			throw AdempiereException.wrapIfNeeded(timeoutException);
+			throw AdempiereException.wrapIfNeeded(timeoutException)
+					.appendParametersToMessage()
+					.setParameter("AsyncBatchId", id);
 		}
 		catch (final Exception e)
 		{
