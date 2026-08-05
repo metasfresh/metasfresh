@@ -124,3 +124,11 @@ WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y'
 SELECT update_TRL_Tables_On_AD_Element_TRL_Update(454); -- M_Product_ID → propagate to AD_Field_Trl
 SELECT update_TRL_Tables_On_AD_Element_TRL_Update(215); -- C_UOM_ID
 SELECT update_TRL_Tables_On_AD_Element_TRL_Update(193); -- C_Currency_ID
+
+-- =====================================================================
+-- 9. Create AD_Element_Link rows so element-link bookkeeping is complete
+--    (same pattern as the original field-creation migration 5816990).
+-- =====================================================================
+SELECT AD_Element_Link_Create_Missing_Field(781883); -- M_Product_ID
+SELECT AD_Element_Link_Create_Missing_Field(781884); -- C_UOM_ID
+SELECT AD_Element_Link_Create_Missing_Field(781885); -- C_Currency_ID
