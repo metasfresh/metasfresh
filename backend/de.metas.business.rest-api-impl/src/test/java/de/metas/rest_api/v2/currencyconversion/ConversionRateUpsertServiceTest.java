@@ -23,6 +23,7 @@
 package de.metas.rest_api.v2.currencyconversion;
 
 import de.metas.common.rest_api.v2.SyncAdvise;
+import de.metas.common.rest_api.v2.currencyconversion.BatchSyncOutcome;
 import de.metas.common.rest_api.v2.currencyconversion.JsonRequestConversionRateUpsert;
 import de.metas.common.rest_api.v2.currencyconversion.JsonRequestConversionRateUpsertItem;
 import de.metas.common.rest_api.v2.currencyconversion.JsonResponseConversionRateUpsert;
@@ -161,6 +162,8 @@ class ConversionRateUpsertServiceTest
 						.requestItem(item().build())
 						.build());
 
+		// all-valid batch -> aggregate SUCCESS
+		assertThat(response.getSyncOutcome()).isEqualTo(BatchSyncOutcome.SUCCESS);
 		assertThat(response.getResponseItems()).hasSize(1);
 		final JsonResponseConversionRateUpsertItem responseItem = response.getResponseItems().get(0);
 		assertThat(responseItem.getSyncOutcome()).isEqualTo(SyncOutcome.CREATED);
@@ -215,6 +218,8 @@ class ConversionRateUpsertServiceTest
 						.requestItem(item().toCurrencyCode("XXX").build()) // unknown target
 						.build());
 
+		// one bad + one good item -> aggregate PARTIAL_SUCCESS
+		assertThat(response.getSyncOutcome()).isEqualTo(BatchSyncOutcome.PARTIAL_SUCCESS);
 		assertThat(response.getResponseItems()).hasSize(2);
 
 		final JsonResponseConversionRateUpsertItem ok = response.getResponseItems().get(0);
@@ -403,6 +408,8 @@ class ConversionRateUpsertServiceTest
 						.requestItem(item().multiplyRate(new BigDecimal("-1")).build())
 						.build());
 
+		// all-bad batch -> aggregate ERROR
+		assertThat(response.getSyncOutcome()).isEqualTo(BatchSyncOutcome.ERROR);
 		assertThat(response.getResponseItems().get(0).getSyncOutcome()).isEqualTo(SyncOutcome.ERROR);
 		assertThat(response.getResponseItems().get(1).getSyncOutcome()).isEqualTo(SyncOutcome.ERROR);
 		assertThat(allRates()).isEmpty();

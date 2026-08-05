@@ -23,6 +23,7 @@
 package de.metas.rest_api.v2.currencyconversion;
 
 import de.metas.common.rest_api.v2.SyncAdvise;
+import de.metas.common.rest_api.v2.currencyconversion.BatchSyncOutcome;
 import de.metas.common.rest_api.v2.currencyconversion.JsonRequestConversionRateUpsert;
 import de.metas.common.rest_api.v2.currencyconversion.JsonRequestConversionRateUpsertItem;
 import de.metas.common.rest_api.v2.currencyconversion.JsonResponseConversionRateUpsert;
@@ -45,7 +46,9 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -95,12 +98,48 @@ public class ConversionRateUpsertService
 			}
 		}
 
-		final JsonResponseConversionRateUpsert.JsonResponseConversionRateUpsertBuilder responseBuilder = JsonResponseConversionRateUpsert.builder();
+		final List<JsonResponseConversionRateUpsertItem> responseItems = new ArrayList<>();
 		for (final JsonRequestConversionRateUpsertItem item : request.getRequestItems())
 		{
-			responseBuilder.responseItem(upsertItem(item, syncAdvise, adLanguage, callerSuppliedKeys));
+			responseItems.add(upsertItem(item, syncAdvise, adLanguage, callerSuppliedKeys));
 		}
-		return responseBuilder.build();
+
+		return JsonResponseConversionRateUpsert.builder()
+				.responseItems(responseItems)
+				.syncOutcome(computeAggregate(responseItems))
+				.build();
+	}
+
+	/**
+	 * Aggregates the per-item outcomes into a single top-level {@link BatchSyncOutcome} (the controller maps this to
+	 * an HTTP status: {@code ERROR -> 422}, else {@code 200}). An item is "failed" iff its per-item outcome is
+	 * {@code ERROR} ({@code NOTHING_DONE} counts as applied, not failed).
+	 */
+	@NonNull
+	private static BatchSyncOutcome computeAggregate(@NonNull final List<JsonResponseConversionRateUpsertItem> responseItems)
+	{
+		// Degenerate no-op: an empty batch has nothing to fail, so it is SUCCESS (-> 200).
+		if (responseItems.isEmpty())
+		{
+			return BatchSyncOutcome.SUCCESS;
+		}
+
+		final long failedCount = responseItems.stream()
+				.filter(item -> item.getSyncOutcome() == SyncOutcome.ERROR)
+				.count();
+
+		if (failedCount == 0)
+		{
+			return BatchSyncOutcome.SUCCESS;
+		}
+		else if (failedCount == responseItems.size())
+		{
+			return BatchSyncOutcome.ERROR;
+		}
+		else
+		{
+			return BatchSyncOutcome.PARTIAL_SUCCESS;
+		}
 	}
 
 	/**

@@ -37,7 +37,8 @@ Feature: Currency-conversion REST API
       """
     Then the metasfresh REST-API responds with
       """
-      { "responseItems": [ { "fromCurrencyCode": "EUR", "toCurrencyCode": "CNY", "syncOutcome": "CREATED" },
+      { "syncOutcome": "SUCCESS",
+        "responseItems": [ { "fromCurrencyCode": "EUR", "toCurrencyCode": "CNY", "syncOutcome": "CREATED" },
                            { "fromCurrencyCode": "EUR", "toCurrencyCode": "CNY", "syncOutcome": "CREATED" } ] }
       """
     # forward rows, with DivideRate = 1/multiply (scale 12, HALF_UP)
@@ -59,7 +60,8 @@ Feature: Currency-conversion REST API
       """
     Then the metasfresh REST-API responds with
       """
-      { "responseItems": [ { "fromCurrencyCode": "EUR", "toCurrencyCode": "CNY", "syncOutcome": "CREATED" } ] }
+      { "syncOutcome": "SUCCESS",
+        "responseItems": [ { "fromCurrencyCode": "EUR", "toCurrencyCode": "CNY", "syncOutcome": "CREATED" } ] }
       """
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/currencyconversion/rates' and fulfills with '200' status code
       """
@@ -67,7 +69,8 @@ Feature: Currency-conversion REST API
       """
     Then the metasfresh REST-API responds with
       """
-      { "responseItems": [ { "fromCurrencyCode": "EUR", "toCurrencyCode": "CNY", "syncOutcome": "UPDATED" } ] }
+      { "syncOutcome": "SUCCESS",
+        "responseItems": [ { "fromCurrencyCode": "EUR", "toCurrencyCode": "CNY", "syncOutcome": "UPDATED" } ] }
       """
     And this C_Conversion_Rate exists:
       | FromCurrency | ToCurrency | ConversionType | ValidFrom  | MultiplyRate | DivideRate     | ValidTo    |
@@ -89,7 +92,8 @@ Feature: Currency-conversion REST API
       """
     Then the metasfresh REST-API responds with
       """
-      { "responseItems": [ { "syncOutcome": "CREATED" }, { "syncOutcome": "CREATED" } ] }
+      { "syncOutcome": "SUCCESS",
+        "responseItems": [ { "syncOutcome": "CREATED" }, { "syncOutcome": "CREATED" } ] }
       """
     # both rates are stored open (ValidTo = 2056-12-31), so 2026-06-05's rate covers the following days with no own rate
     And this C_Conversion_Rate exists:
@@ -99,7 +103,7 @@ Feature: Currency-conversion REST API
 
   # AC2 unknown/inactive currency -> per-record error, AC11 friendly message
   Scenario: An unknown currency fails only that record; valid records still applied; no currency created
-    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/currencyconversion/rates' and fulfills with '207' status code
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/currencyconversion/rates' and fulfills with '200' status code
       """
       {
         "requestItems": [
@@ -111,6 +115,7 @@ Feature: Currency-conversion REST API
     Then the metasfresh REST-API responds with
       """
       {
+        "syncOutcome": "PARTIAL_SUCCESS",
         "responseItems": [
           { "fromCurrencyCode": "EUR", "toCurrencyCode": "CNY", "syncOutcome": "CREATED" },
           { "fromCurrencyCode": "EUR", "toCurrencyCode": "XXX", "syncOutcome": "ERROR", "error": { "userFriendlyError": true } }
@@ -128,7 +133,7 @@ Feature: Currency-conversion REST API
 
   # AC5 conversion type default vs explicit; unknown code -> per-record error
   Scenario: Omitted conversion type uses the org default; explicit type is honored; unknown code errors
-    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/currencyconversion/rates' and fulfills with '207' status code
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/currencyconversion/rates' and fulfills with '200' status code
       """
       {
         "requestItems": [
@@ -141,6 +146,7 @@ Feature: Currency-conversion REST API
     Then the metasfresh REST-API responds with
       """
       {
+        "syncOutcome": "PARTIAL_SUCCESS",
         "responseItems": [
           { "fromCurrencyCode": "EUR", "toCurrencyCode": "CNY", "syncOutcome": "CREATED" },
           { "fromCurrencyCode": "EUR", "toCurrencyCode": "JPY", "syncOutcome": "CREATED" },
@@ -172,6 +178,7 @@ Feature: Currency-conversion REST API
     Then the metasfresh REST-API responds with
       """
       {
+        "syncOutcome": "ERROR",
         "responseItems": [
           { "fromCurrencyCode": "EUR", "toCurrencyCode": "EUR", "syncOutcome": "ERROR", "error": { "userFriendlyError": true } },
           { "fromCurrencyCode": "EUR", "toCurrencyCode": "CNY", "syncOutcome": "ERROR", "error": { "userFriendlyError": true } },
@@ -204,7 +211,8 @@ Feature: Currency-conversion REST API
       """
     Then the metasfresh REST-API responds with
       """
-      { "responseItems": [ { "syncOutcome": "CREATED" }, { "syncOutcome": "CREATED" }, { "syncOutcome": "CREATED" } ] }
+      { "syncOutcome": "SUCCESS",
+        "responseItems": [ { "syncOutcome": "CREATED" }, { "syncOutcome": "CREATED" }, { "syncOutcome": "CREATED" } ] }
       """
     # caller supplied both EUR->CNY and CNY->EUR: the supplied reverse (0.140) is kept, NOT overwritten by 1/7.60
     And this C_Conversion_Rate exists:
@@ -240,7 +248,8 @@ Feature: Currency-conversion REST API
       """
     Then the metasfresh REST-API responds with
       """
-      { "responseItems": [ { "syncOutcome": "CREATED" }, { "syncOutcome": "CREATED" } ] }
+      { "syncOutcome": "SUCCESS",
+        "responseItems": [ { "syncOutcome": "CREATED" }, { "syncOutcome": "CREATED" } ] }
       """
     # filter to EUR->CNY type A: only the newest (2026-06-14, 7.70) row is returned, not the 2026-06-13 one
     When store REST endpointPath 'api/v2/currencyconversion/newestRates?fromCurrencyCode=EUR&toCurrencyCode=CNY&conversionTypeCode=A'

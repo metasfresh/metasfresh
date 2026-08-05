@@ -23,11 +23,11 @@
 package de.metas.rest_api.v2.currencyconversion;
 
 import de.metas.Profiles;
+import de.metas.common.rest_api.v2.currencyconversion.BatchSyncOutcome;
 import de.metas.common.rest_api.v2.currencyconversion.JsonCurrency;
 import de.metas.common.rest_api.v2.currencyconversion.JsonNewestConversionRate;
 import de.metas.common.rest_api.v2.currencyconversion.JsonRequestConversionRateUpsert;
 import de.metas.common.rest_api.v2.currencyconversion.JsonResponseConversionRateUpsert;
-import de.metas.common.rest_api.v2.currencyconversion.JsonResponseConversionRateUpsertItem;
 import de.metas.common.rest_api.v2.currencyconversion.JsonResponseCurrencies;
 import de.metas.common.rest_api.v2.currencyconversion.JsonResponseNewestConversionRates;
 import de.metas.i18n.Language;
@@ -83,11 +83,10 @@ public class CurrencyConversionRestController
 
 	@ApiOperation("Batch-upsert normalized currency-conversion rates into C_Conversion_Rate.")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "All records applied; the response reports the per-record outcome"),
-			@ApiResponse(code = 207, message = "Partial success: some records applied, at least one failed; the response reports the per-record outcomes (failed records carry an ERROR outcome)"),
+			@ApiResponse(code = 200, message = "Batch processed; the top-level syncOutcome is SUCCESS or PARTIAL_SUCCESS and each record reports its own outcome"),
 			@ApiResponse(code = 401, message = "You are not authorized to invoke this endpoint"),
 			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
-			@ApiResponse(code = 422, message = "No records were applied — either every record failed (the response reports the per-record outcomes) or the request could not be processed")
+			@ApiResponse(code = 422, message = "No records were applied — either every record failed (syncOutcome=ERROR; the response reports the per-record outcomes) or the request could not be processed")
 	})
 	@PutMapping("/rates")
 	public ResponseEntity<?> upsertRates(@RequestBody @NonNull final JsonRequestConversionRateUpsert request)
@@ -96,28 +95,15 @@ public class CurrencyConversionRestController
 		try
 		{
 			// Per-record failures are reported inside the response (as ERROR items) and never abort the batch.
-			// The HTTP status summarizes the batch so a caller inspecting only the status still knows what
-			// happened: 200 = every record applied; 207 Multi-Status = partial (some applied, some failed);
-			// 422 = nothing applied (every record failed). A thrown exception is a catastrophic (non-per-record)
+			// The service computes a top-level aggregate syncOutcome over the per-record outcomes, and the HTTP
+			// status is derived from that single value so a caller inspecting only the status still knows what
+			// happened: SUCCESS (none failed) or PARTIAL_SUCCESS (some applied, some failed) -> 200; ERROR
+			// (nothing applied — every record failed) -> 422. A thrown exception is a catastrophic (non-per-record)
 			// failure and also becomes a friendly 422 top-level error.
 			final JsonResponseConversionRateUpsert response = conversionRateUpsertService.upsert(request, adLanguage);
-			final List<JsonResponseConversionRateUpsertItem> items = response.getResponseItems();
-			final long failedCount = items.stream()
-					.filter(item -> item.getSyncOutcome() == JsonResponseConversionRateUpsertItem.SyncOutcome.ERROR)
-					.count();
-			final HttpStatus status;
-			if (failedCount == 0)
-			{
-				status = HttpStatus.OK;                    // every record applied
-			}
-			else if (failedCount == items.size())
-			{
-				status = HttpStatus.UNPROCESSABLE_ENTITY;  // nothing applied — every record failed
-			}
-			else
-			{
-				status = HttpStatus.MULTI_STATUS;          // partial — some applied, some failed
-			}
+			final HttpStatus status = response.getSyncOutcome() == BatchSyncOutcome.ERROR
+					? HttpStatus.UNPROCESSABLE_ENTITY
+					: HttpStatus.OK;
 			return ResponseEntity.status(status).body(response);
 		}
 		catch (final Exception ex)

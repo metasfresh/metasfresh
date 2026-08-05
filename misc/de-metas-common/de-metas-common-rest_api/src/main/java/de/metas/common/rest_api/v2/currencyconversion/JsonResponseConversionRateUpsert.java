@@ -25,19 +25,28 @@ package de.metas.common.rest_api.v2.currencyconversion;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
-@ApiModel("Per-item outcome of a conversion-rate batch upsert.")
+@ApiModel("Outcome of a conversion-rate batch upsert: the top-level aggregate syncOutcome plus the per-item outcomes.")
 @Value
 @Builder
 @JsonDeserialize(builder = JsonResponseConversionRateUpsert.JsonResponseConversionRateUpsertBuilder.class)
 public class JsonResponseConversionRateUpsert
 {
+	@ApiModelProperty(position = 10, value = "Top-level aggregate outcome over the response items: SUCCESS (none failed), "
+			+ "PARTIAL_SUCCESS (some failed, not all), or ERROR (every record failed). Maps to HTTP 200 (SUCCESS/PARTIAL_SUCCESS) or 422 (ERROR).")
+	@Nullable
+	@JsonProperty("syncOutcome")
+	BatchSyncOutcome syncOutcome;
+
 	@Singular
+	@ApiModelProperty(position = 20, value = "The per-item outcome for each request item.")
 	@JsonProperty("responseItems")
 	List<JsonResponseConversionRateUpsertItem> responseItems;
 }
