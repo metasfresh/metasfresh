@@ -71,10 +71,11 @@ class ConversionRateUpsertServiceTest
 
 		currencyDAO = (PlainCurrencyDAO)Services.get(de.metas.currency.ICurrencyDAO.class);
 
-		final CurrencyConversionRepository currencyConversionRepository = new CurrencyConversionRepository();
+		final de.metas.currency.CurrencyRepository currencyRepository = new de.metas.currency.CurrencyRepository();
+		final de.metas.currency.ConversionRateRepository conversionRateRepository = new de.metas.currency.ConversionRateRepository();
 		conversionRateUpsertService = new ConversionRateUpsertService(
-				currencyConversionRepository,
-				new JsonConversionRateConverters(currencyConversionRepository));
+				conversionRateRepository,
+				new JsonConversionRateConverters(currencyRepository, conversionRateRepository));
 	}
 
 	private JsonResponseConversionRateUpsert upsert(final JsonRequestConversionRateUpsert request)

@@ -24,13 +24,12 @@ package de.metas.rest_api.v2.currencyconversion;
 
 import de.metas.RestUtils;
 import de.metas.common.rest_api.v2.currencyconversion.JsonNewestConversionRate;
+import de.metas.currency.ConversionRateRepository;
 import de.metas.currency.ConversionTypeMethod;
-import de.metas.currency.ICurrencyDAO;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
-import de.metas.util.Services;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -64,8 +63,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class NewestConversionRatesService
 {
-	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
-	@NonNull private final CurrencyConversionRepository currencyConversionRepository;
+	@NonNull private final ConversionRateRepository conversionRateRepository;
 	@NonNull private final JsonConversionRateConverters jsonConverters;
 
 	@NonNull
@@ -76,7 +74,7 @@ public class NewestConversionRatesService
 		final CurrencyId toCurrencyId = resolveOptionalCurrencyId(filter.getToCurrencyCode());
 		final CurrencyConversionTypeId conversionTypeId = resolveOptionalConversionTypeId(filter.getConversionTypeCode());
 
-		final List<I_C_Conversion_Rate> rates = currencyConversionRepository.getConversionRatesOrderedByValidFromDesc(
+		final List<I_C_Conversion_Rate> rates = conversionRateRepository.getNewestRatesOrderedByValidFromDesc(
 				orgId, fromCurrencyId, toCurrencyId, conversionTypeId);
 
 		// Ordered ValidFrom-descending, so the FIRST row seen per combo is the newest -> first-wins.
@@ -111,7 +109,7 @@ public class NewestConversionRatesService
 		{
 			return null;
 		}
-		return currencyConversionRepository.getActiveCurrencyId(isoCode.trim());
+		return jsonConverters.getActiveCurrencyId(isoCode.trim());
 	}
 
 	@Nullable
@@ -131,7 +129,7 @@ public class NewestConversionRatesService
 			throw new AdempiereException("@Invalid@ @C_ConversionType_ID@: " + conversionTypeCode)
 					.markAsUserValidationError();
 		}
-		return currencyDAO.getConversionTypeId(method);
+		return conversionRateRepository.getConversionTypeId(method);
 	}
 
 	/** Filter for {@link #list(NewestConversionRatesFilter)}; all fields optional (null = no narrowing). */

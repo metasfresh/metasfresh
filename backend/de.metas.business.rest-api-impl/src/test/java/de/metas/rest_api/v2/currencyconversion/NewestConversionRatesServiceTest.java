@@ -69,10 +69,11 @@ class NewestConversionRatesServiceTest
 
 		currencyDAO = (PlainCurrencyDAO)Services.get(de.metas.currency.ICurrencyDAO.class);
 
-		final CurrencyConversionRepository currencyConversionRepository = new CurrencyConversionRepository();
+		final de.metas.currency.CurrencyRepository currencyRepository = new de.metas.currency.CurrencyRepository();
+		final de.metas.currency.ConversionRateRepository conversionRateRepository = new de.metas.currency.ConversionRateRepository();
 		newestConversionRatesService = new NewestConversionRatesService(
-				currencyConversionRepository,
-				new JsonConversionRateConverters(currencyConversionRepository));
+				conversionRateRepository,
+				new JsonConversionRateConverters(currencyRepository, conversionRateRepository));
 
 		eur = createActiveCurrency("EUR");
 		cny = createActiveCurrency("CNY");

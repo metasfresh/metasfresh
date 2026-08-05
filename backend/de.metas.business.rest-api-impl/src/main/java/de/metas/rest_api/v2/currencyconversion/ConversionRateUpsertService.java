@@ -28,7 +28,9 @@ import de.metas.common.rest_api.v2.currencyconversion.JsonRequestConversionRateU
 import de.metas.common.rest_api.v2.currencyconversion.JsonResponseConversionRateUpsert;
 import de.metas.common.rest_api.v2.currencyconversion.JsonResponseConversionRateUpsertItem;
 import de.metas.common.rest_api.v2.currencyconversion.JsonResponseConversionRateUpsertItem.SyncOutcome;
+import de.metas.currency.ConversionRateCreateRequest;
 import de.metas.currency.ConversionRateKey;
+import de.metas.currency.ConversionRateRepository;
 import de.metas.currency.CurrencyConversionRates;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
@@ -70,7 +72,7 @@ public class ConversionRateUpsertService
 {
 	private static final Logger logger = LogManager.getLogger(ConversionRateUpsertService.class);
 
-	@NonNull private final CurrencyConversionRepository currencyConversionRepository;
+	@NonNull private final ConversionRateRepository conversionRateRepository;
 	@NonNull private final JsonConversionRateConverters jsonConverters;
 
 	@NonNull
@@ -157,7 +159,7 @@ public class ConversionRateUpsertService
 			@NonNull final SyncAdvise syncAdvise,
 			@NonNull final Set<ConversionRateKey> callerSuppliedKeys)
 	{
-		final ConversionRate forward = jsonConverters.fromJson(item);
+		final ConversionRateCreateRequest forward = jsonConverters.fromJson(item);
 
 		// Validate the interceptor invariants explicitly so a bad record becomes a friendly per-record error
 		// instead of a raw save-path exception.
@@ -170,7 +172,7 @@ public class ConversionRateUpsertService
 		final ConversionRateKey reverseKey = forward.getReverseKey();
 		if (!callerSuppliedKeys.contains(reverseKey))
 		{
-			final ConversionRate reverse = forward.toBuilder()
+			final ConversionRateCreateRequest reverse = forward.toBuilder()
 					.fromCurrencyId(forward.getToCurrencyId())
 					.toCurrencyId(forward.getFromCurrencyId())
 					.multiplyRate(CurrencyConversionRates.reciprocal(forward.getMultiplyRate()))
@@ -186,11 +188,11 @@ public class ConversionRateUpsertService
 	 * {@link SyncAdvise}. Returns whether the row was created, updated, or left untouched.
 	 */
 	@NonNull
-	private SyncOutcome saveRate(@NonNull final ConversionRate rate, @NonNull final SyncAdvise syncAdvise)
+	private SyncOutcome saveRate(@NonNull final ConversionRateCreateRequest rate, @NonNull final SyncAdvise syncAdvise)
 	{
-		I_C_Conversion_Rate record = currencyConversionRepository.findExistingRate(rate);
+		final I_C_Conversion_Rate existingRecord = conversionRateRepository.findExisting(rate);
 		final SyncOutcome outcome;
-		if (record == null)
+		if (existingRecord == null)
 		{
 			if (syncAdvise.isFailIfNotExists())
 			{
@@ -198,7 +200,6 @@ public class ConversionRateUpsertService
 						+ rate.getFromCurrencyId().getRepoId() + "->" + rate.getToCurrencyId().getRepoId())
 						.markAsUserValidationError();
 			}
-			record = currencyConversionRepository.newRate(rate);
 			outcome = SyncOutcome.CREATED;
 		}
 		else
@@ -210,16 +211,12 @@ public class ConversionRateUpsertService
 			outcome = SyncOutcome.UPDATED;
 		}
 
-		record.setMultiplyRate(rate.getMultiplyRate());
-		record.setDivideRate(rate.getDivideRate());
-		record.setValidTo(rate.getValidToTimestamp());
-
-		currencyConversionRepository.save(record);
+		conversionRateRepository.save(existingRecord, rate);
 
 		return outcome;
 	}
 
-	private static void validateInvariants(@NonNull final ConversionRate rate)
+	private static void validateInvariants(@NonNull final ConversionRateCreateRequest rate)
 	{
 		if (CurrencyId.equals(rate.getFromCurrencyId(), rate.getToCurrencyId()))
 		{

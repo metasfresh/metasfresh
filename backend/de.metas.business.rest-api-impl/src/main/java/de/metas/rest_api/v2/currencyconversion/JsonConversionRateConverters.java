@@ -22,11 +22,16 @@
 
 package de.metas.rest_api.v2.currencyconversion;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.RestUtils;
+import de.metas.common.rest_api.v2.currencyconversion.JsonCurrency;
 import de.metas.common.rest_api.v2.currencyconversion.JsonNewestConversionRate;
 import de.metas.common.rest_api.v2.currencyconversion.JsonRequestConversionRateUpsertItem;
+import de.metas.currency.ConversionRateCreateRequest;
+import de.metas.currency.ConversionRateRepository;
 import de.metas.currency.ConversionTypeMethod;
-import de.metas.currency.ICurrencyDAO;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyRepository;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.ClientAndOrgId;
@@ -36,9 +41,11 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_Conversion_Rate;
+import org.compiere.model.I_C_Currency;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
@@ -48,10 +55,12 @@ import java.time.ZoneId;
 
 /**
  * The single place that translates between the currency-conversion JSON DTOs and the domain
- * {@link ConversionRate}, modelled on {@code de.metas.rest_api.v2.ordercandidates.impl.JsonConverters#fromJson}:
- * <b>all</b> resolution (currency code -> {@link CurrencyId}, org, conversion type, {@link ClientAndOrgId},
- * and org-timezone {@code validFrom}/{@code validTo} date conversion) happens here, so the service operates on
- * fully-resolved domain objects only.
+ * {@link ConversionRateCreateRequest}, modelled on
+ * {@code de.metas.rest_api.v2.ordercandidates.impl.JsonConverters#fromJson}: <b>all</b> resolution (currency
+ * code -> {@link CurrencyId} via {@link CurrencyRepository}, org, conversion type via
+ * {@link ConversionRateRepository}, {@link ClientAndOrgId}, and org-timezone {@code validFrom}/{@code validTo}
+ * date conversion) happens here, so the service operates on fully-resolved domain objects only. This REST module
+ * never references {@code ICurrencyDAO} directly.
  * <p>
  * An unknown/inactive currency, an unknown org code, or an unknown conversion-type code raises a
  * {@code markAsUserValidationError} exception so the offending request item becomes a per-record {@code ERROR}
@@ -61,31 +70,58 @@ import java.time.ZoneId;
 @RequiredArgsConstructor
 public class JsonConversionRateConverters
 {
-	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	@NonNull private final CurrencyConversionRepository currencyConversionRepository;
+	@NonNull private final CurrencyRepository currencyRepository;
+	@NonNull private final ConversionRateRepository conversionRateRepository;
 
 	/**
-	 * Resolves a single JSON upsert item into the fully-resolved domain {@link ConversionRate}. The client is
-	 * always {@link ClientId#METASFRESH} (the sole {@code ClientId.METASFRESH} reference of the whole feature, so
-	 * that the service never threads a client): the request carries only an org code, never a client.
+	 * The active currencies, ordered by ISO code, mapped to {@link JsonCurrency} ({@code currencyCode} =
+	 * ISO code, {@code name} = {@code Description}).
 	 */
 	@NonNull
-	public ConversionRate fromJson(@NonNull final JsonRequestConversionRateUpsertItem item)
+	public ImmutableList<JsonCurrency> getActiveCurrencies()
+	{
+		return queryBL
+				.createQueryBuilder(I_C_Currency.class)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_C_Currency.COLUMNNAME_ISO_Code)
+				.create()
+				.stream()
+				.map(JsonConversionRateConverters::toJsonCurrency)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private static JsonCurrency toJsonCurrency(@NonNull final I_C_Currency currency)
+	{
+		return JsonCurrency.builder()
+				.currencyCode(currency.getISO_Code())
+				.name(currency.getDescription())
+				.build();
+	}
+
+	/**
+	 * Resolves a single JSON upsert item into the fully-resolved domain {@link ConversionRateCreateRequest}. The
+	 * client is always {@link ClientId#METASFRESH} (the sole {@code ClientId.METASFRESH} reference of the whole
+	 * feature, so that the service never threads a client): the request carries only an org code, never a client.
+	 */
+	@NonNull
+	public ConversionRateCreateRequest fromJson(@NonNull final JsonRequestConversionRateUpsertItem item)
 	{
 		final OrgId orgId = resolveOrgId(item.getOrgCode());
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, orgId);
 		final ZoneId orgZoneId = orgDAO.getTimeZone(orgId);
 
-		final CurrencyId fromCurrencyId = currencyConversionRepository.getActiveCurrencyId(item.getFromCurrencyCode());
-		final CurrencyId toCurrencyId = currencyConversionRepository.getActiveCurrencyId(item.getToCurrencyCode());
+		final CurrencyId fromCurrencyId = getActiveCurrencyId(item.getFromCurrencyCode());
+		final CurrencyId toCurrencyId = getActiveCurrencyId(item.getToCurrencyCode());
 		final CurrencyConversionTypeId conversionTypeId = resolveConversionTypeId(
 				item.getConversionTypeCode(),
 				clientAndOrgId,
 				item.getValidFrom(),
 				orgZoneId);
 
-		return ConversionRate.builder()
+		return ConversionRateCreateRequest.builder()
 				.clientAndOrgId(clientAndOrgId)
 				.fromCurrencyId(fromCurrencyId)
 				.toCurrencyId(toCurrencyId)
@@ -95,6 +131,27 @@ public class JsonConversionRateConverters
 				.multiplyRate(item.getMultiplyRate())
 				.orgZoneId(orgZoneId)
 				.build();
+	}
+
+	/**
+	 * Resolves the id of the single <b>active</b> {@code C_Currency} for the given ISO code.
+	 * Throws a user-validation error when no active currency matches (an unknown or inactive ISO).
+	 * <p>
+	 * Delegates to {@link CurrencyRepository#getActiveCurrencyIdByCurrencyCodeOrNull(CurrencyCode)} (active-only,
+	 * no auto-create) on purpose — not {@code ICurrencyDAO.getByCurrencyCode}, which auto-creates a missing
+	 * currency (in the {@code PlainCurrencyDAO} test double) and does not filter inactive rows: the endpoint must
+	 * surface an unknown/inactive ISO as a per-record error and must NOT auto-create a currency.
+	 */
+	@NonNull
+	public CurrencyId getActiveCurrencyId(@NonNull final String isoCode)
+	{
+		final CurrencyId currencyId = currencyRepository.getActiveCurrencyIdByCurrencyCodeOrNull(CurrencyCode.ofThreeLetterCode(isoCode));
+		if (currencyId == null)
+		{
+			throw new AdempiereException("@NotFound@ @C_Currency_ID@: " + isoCode)
+					.markAsUserValidationError();
+		}
+		return currencyId;
 	}
 
 	/**
@@ -110,9 +167,9 @@ public class JsonConversionRateConverters
 		final ZoneId orgZoneId = orgDAO.getTimeZone(OrgId.ofRepoId(rate.getAD_Org_ID()));
 
 		return JsonNewestConversionRate.builder()
-				.fromCurrencyCode(currencyDAO.getCurrencyCodeById(fromCurrencyId).toThreeLetterCode())
-				.toCurrencyCode(currencyDAO.getCurrencyCodeById(toCurrencyId).toThreeLetterCode())
-				.conversionTypeCode(currencyDAO.getConversionTypeMethodById(conversionTypeId).getCode())
+				.fromCurrencyCode(currencyRepository.getCurrencyCodeById(fromCurrencyId).toThreeLetterCode())
+				.toCurrencyCode(currencyRepository.getCurrencyCodeById(toCurrencyId).toThreeLetterCode())
+				.conversionTypeCode(conversionRateRepository.getConversionTypeMethodById(conversionTypeId).getCode())
 				.validFrom(TimeUtil.asLocalDate(rate.getValidFrom(), orgZoneId))
 				.multiplyRate(rate.getMultiplyRate())
 				.divideRate(rate.getDivideRate())
@@ -141,7 +198,7 @@ public class JsonConversionRateConverters
 	{
 		if (Check.isBlank(conversionTypeCode))
 		{
-			return currencyDAO.getDefaultConversionTypeId(
+			return conversionRateRepository.getDefaultConversionTypeId(
 					clientAndOrgId.getClientId(),
 					clientAndOrgId.getOrgId(),
 					validFrom.atStartOfDay(orgZoneId).toInstant());
@@ -157,6 +214,6 @@ public class JsonConversionRateConverters
 			throw new AdempiereException("@Invalid@ @C_ConversionType_ID@: " + conversionTypeCode)
 					.markAsUserValidationError();
 		}
-		return currencyDAO.getConversionTypeId(method);
+		return conversionRateRepository.getConversionTypeId(method);
 	}
 }

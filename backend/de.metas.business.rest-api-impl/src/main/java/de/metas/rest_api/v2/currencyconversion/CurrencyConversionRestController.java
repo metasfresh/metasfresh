@@ -78,7 +78,7 @@ public class CurrencyConversionRestController
 
 	private final @NonNull ConversionRateUpsertService conversionRateUpsertService;
 	private final @NonNull NewestConversionRatesService newestConversionRatesService;
-	private final @NonNull CurrencyConversionRepository currencyConversionRepository;
+	private final @NonNull JsonConversionRateConverters jsonConverters;
 
 	@ApiOperation("Batch-upsert normalized currency-conversion rates into C_Conversion_Rate.")
 	@ApiResponses(value = {
@@ -120,7 +120,7 @@ public class CurrencyConversionRestController
 		final Language adLanguage = Language.getLanguage(Env.getADLanguageOrBaseLanguage());
 		try
 		{
-			final List<JsonCurrency> currencies = currencyConversionRepository.getActiveCurrencies();
+			final List<JsonCurrency> currencies = jsonConverters.getActiveCurrencies();
 
 			return ResponseEntity.ok(JsonResponseCurrencies.builder()
 					.currencies(currencies)
