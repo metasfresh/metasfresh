@@ -159,7 +159,7 @@ Feature: Currency-conversion REST API
 
   # AC9 interceptor invariants via the API, AC11 friendly message; no row written
   Scenario: Invariant-violating records each fail with a per-record error and write no row
-    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/currencyconversion/rates' and fulfills with '207' status code
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/currencyconversion/rates' and fulfills with '422' status code
       """
       {
         "requestItems": [

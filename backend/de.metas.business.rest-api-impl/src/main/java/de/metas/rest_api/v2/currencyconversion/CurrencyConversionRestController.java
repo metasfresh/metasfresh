@@ -84,10 +84,10 @@ public class CurrencyConversionRestController
 	@ApiOperation("Batch-upsert normalized currency-conversion rates into C_Conversion_Rate.")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "All records applied; the response reports the per-record outcome"),
-			@ApiResponse(code = 207, message = "Partial success: at least one record failed; the response reports the per-record outcomes (failed records carry an ERROR outcome)"),
+			@ApiResponse(code = 207, message = "Partial success: some records applied, at least one failed; the response reports the per-record outcomes (failed records carry an ERROR outcome)"),
 			@ApiResponse(code = 401, message = "You are not authorized to invoke this endpoint"),
 			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
-			@ApiResponse(code = 422, message = "The request could not be processed")
+			@ApiResponse(code = 422, message = "No records were applied — either every record failed (the response reports the per-record outcomes) or the request could not be processed")
 	})
 	@PutMapping("/rates")
 	public ResponseEntity<?> upsertRates(@RequestBody @NonNull final JsonRequestConversionRateUpsert request)
@@ -95,15 +95,30 @@ public class CurrencyConversionRestController
 		final Language adLanguage = Language.getLanguage(Env.getADLanguageOrBaseLanguage());
 		try
 		{
-			// Per-record failures are reported inside the response (as ERROR items) and never abort the batch;
-			// the valid records are still applied. A mixed batch (at least one ERROR item) returns 207
-			// Multi-Status so a caller that inspects only the HTTP status still sees it was not fully applied;
-			// an all-clean batch returns 200. A thrown exception here is a catastrophic (non-per-record) failure
-			// and becomes a friendly 422 top-level error.
+			// Per-record failures are reported inside the response (as ERROR items) and never abort the batch.
+			// The HTTP status summarizes the batch so a caller inspecting only the status still knows what
+			// happened: 200 = every record applied; 207 Multi-Status = partial (some applied, some failed);
+			// 422 = nothing applied (every record failed). A thrown exception is a catastrophic (non-per-record)
+			// failure and also becomes a friendly 422 top-level error.
 			final JsonResponseConversionRateUpsert response = conversionRateUpsertService.upsert(request, adLanguage);
-			final boolean anyRecordFailed = response.getResponseItems().stream()
-					.anyMatch(item -> item.getSyncOutcome() == JsonResponseConversionRateUpsertItem.SyncOutcome.ERROR);
-			return ResponseEntity.status(anyRecordFailed ? HttpStatus.MULTI_STATUS : HttpStatus.OK).body(response);
+			final List<JsonResponseConversionRateUpsertItem> items = response.getResponseItems();
+			final long failedCount = items.stream()
+					.filter(item -> item.getSyncOutcome() == JsonResponseConversionRateUpsertItem.SyncOutcome.ERROR)
+					.count();
+			final HttpStatus status;
+			if (failedCount == 0)
+			{
+				status = HttpStatus.OK;                    // every record applied
+			}
+			else if (failedCount == items.size())
+			{
+				status = HttpStatus.UNPROCESSABLE_ENTITY;  // nothing applied — every record failed
+			}
+			else
+			{
+				status = HttpStatus.MULTI_STATUS;          // partial — some applied, some failed
+			}
+			return ResponseEntity.status(status).body(response);
 		}
 		catch (final Exception ex)
 		{
