@@ -98,7 +98,10 @@ public class ConversionRateRepository
 		return getByQuery(ConversionRateQuery.of(key));
 	}
 
-	/** Deletes the {@code C_Conversion_Rate} rows for the given exact natural {@code keys} (no-op per absent key). */
+	/**
+	 * Deletes the {@code C_Conversion_Rate} rows for the given exact natural {@code keys} (no-op per absent key).
+	 * One SELECT+DELETE per key — for bounded sets (its caller is a test cleanup); a large purge would want a set-based delete.
+	 */
 	public void deleteByKeys(@NonNull final Collection<ConversionRateKey> keys)
 	{
 		for (final ConversionRateKey key : keys)

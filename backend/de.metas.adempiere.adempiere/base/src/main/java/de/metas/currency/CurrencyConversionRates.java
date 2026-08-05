@@ -39,7 +39,7 @@ public class CurrencyConversionRates
 	private static final RoundingMode RATE_ROUNDING = RoundingMode.HALF_UP;
 
 	/**
-	 * {@code 1 / rate}.
+	 * {@code 1 / rate} at scale {@value #RATE_SCALE}, {@link #RATE_ROUNDING}.
 	 *
 	 * @throws ArithmeticException if {@code rate} is zero (callers must guard with {@code signum() == 0} first).
 	 */
