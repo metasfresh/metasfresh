@@ -81,6 +81,14 @@ public class ConversionRateUpsertService
 	@NonNull private final ConversionRateRepository conversionRateRepository;
 	@NonNull private final JsonConversionRateConverters jsonConverters;
 
+	/** The wired repository — for tests to drive the same instance the service holds (see {@link #newInstanceForUnitTesting()}). */
+	@VisibleForTesting
+	@NonNull
+	ConversionRateRepository getConversionRateRepository()
+	{
+		return conversionRateRepository;
+	}
+
 	/**
 	 * Test-only factory mirroring {@code CustomColumnService.newInstanceForUnitTesting}: asserts unit-test mode and
 	 * wires the collaborators (repository + JSON converters) so a test gets a ready-to-use service in one call

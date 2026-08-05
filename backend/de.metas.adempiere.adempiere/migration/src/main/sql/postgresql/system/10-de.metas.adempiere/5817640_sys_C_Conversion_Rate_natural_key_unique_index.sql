@@ -13,8 +13,8 @@
 
 DROP INDEX IF EXISTS c_conversionrate_once;
 
--- ValidFrom leads (high-selectivity; the newest-rate reads filter and sort on it), then the
--- business currency/type columns, and the low-cardinality AD_Org_ID last (composite-index
--- ordering rule).
+-- ValidFrom leads (the newest-rate read's leading ORDER BY / DISTINCT-ON sort column, and the
+-- natural lead for future ValidFrom range queries), then the business currency/type columns, and
+-- the low-cardinality AD_Org_ID last (composite-index ordering rule).
 CREATE UNIQUE INDEX c_conversion_rate_natural_key_uq
     ON c_conversion_rate (validfrom, c_currency_id, c_currency_id_to, c_conversiontype_id, ad_org_id);

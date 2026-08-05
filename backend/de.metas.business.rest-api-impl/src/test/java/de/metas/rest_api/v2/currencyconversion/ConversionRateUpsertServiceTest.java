@@ -73,7 +73,7 @@ class ConversionRateUpsertServiceTest
 		// Wire the service via its test-only factory (mirrors CustomColumnService.newInstanceForUnitTesting),
 		// then reuse the same repository it wired so the test drives the repository — not the low-level DAO.
 		conversionRateUpsertService = ConversionRateUpsertService.newInstanceForUnitTesting();
-		conversionRateRepository = new ConversionRateRepository();
+		conversionRateRepository = conversionRateUpsertService.getConversionRateRepository();
 	}
 
 	private JsonResponseConversionRateUpsert upsert(final JsonRequestConversionRateUpsert request)

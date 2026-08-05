@@ -1,6 +1,7 @@
 package de.metas.currency;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.currency.impl.CurrencyDAO;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_Currency;
 import org.springframework.stereotype.Repository;
@@ -121,7 +122,7 @@ public class CurrencyRepository
 				.orderBy(I_C_Currency.COLUMNNAME_ISO_Code)
 				.create()
 				.stream()
-				.map(de.metas.currency.impl.CurrencyDAO::toCurrency)
+				.map(CurrencyDAO::toCurrency)
 				.collect(ImmutableList.toImmutableList());
 	}
 

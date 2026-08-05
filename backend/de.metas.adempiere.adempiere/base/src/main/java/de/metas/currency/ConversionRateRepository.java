@@ -32,16 +32,25 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_Conversion_Rate;
+import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Owns {@code C_Conversion_Rate} persistence for the currency domain: the {@code IQueryBL} query construction and
@@ -133,8 +142,8 @@ public class ConversionRateRepository
 	/**
 	 * Builds the {@code C_Conversion_Rate} query for the given {@link ConversionRateQuery}: each non-null field
 	 * narrows on its column; a null field is not filtered. The single place the narrowing filters are assembled,
-	 * reused by {@link #getRecord} (the read path behind {@code findExisting} / {@code getByQuery}) and
-	 * {@link #getNewestRatesOrderedByValidFromDesc}. Client scope is NOT set here. Runs thread-inherited (in-trx):
+	 * reused by {@link #getRecord} (the read path behind {@code findExisting} / {@code getByQuery}).
+	 * Client scope is NOT set here. Runs thread-inherited (in-trx):
 	 * {@code findExisting} needs to see rows written earlier in the same batch, and the GET reads run identically on
 	 * a stateless request (no active write transaction to join).
 	 */
@@ -231,31 +240,111 @@ public class ConversionRateRepository
 	}
 
 	/**
-	 * The active {@code C_Conversion_Rate} rows scoped to {@code (SYSTEM, METASFRESH)} client, ordered by
-	 * {@code ValidFrom} descending, narrowed by the query's optional {@code (org, from, to, type)} filters and
-	 * mapped to {@link CurrencyConversionRate} POJOs. The newest-per-combo reduction is done by the caller. The client scope
-	 * {@code AD_Client_ID IN (SYSTEM, METASFRESH)} mirrors the canonical read path {@code CurrencyDAO.retrieveRateQuery}
-	 * (so the query's own {@code clientId} is ignored here on purpose). A {@code null} {@code orgId} spans all orgs;
-	 * a non-null one narrows to that org (the optional {@code orgCode} GET filter).
+	 * The newest active {@code C_Conversion_Rate} row per {@code (from, to, type)} combo, scoped to the
+	 * {@code (SYSTEM, METASFRESH)} client, narrowed by the query's optional {@code (org, from, to, type)} filters and
+	 * mapped to {@link CurrencyConversionRate} POJOs. The newest-per-combo reduction is done <b>DB-side</b> so the
+	 * DB returns exactly one row per combo — never the full row set (guards against the all-rows load / OOME).
+	 * The client scope {@code AD_Client_ID IN (SYSTEM, METASFRESH)} mirrors the canonical read path
+	 * {@code CurrencyDAO.retrieveRateQuery} (so the query's own {@code clientId} is ignored here on purpose). A
+	 * {@code null} {@code orgId} spans all orgs; a non-null one narrows to that org (the optional {@code orgCode} GET filter).
+	 * <p>
+	 * <b>Raw SQL is used deliberately here.</b> The DB-side newest-per-combo reduction needs PostgreSQL
+	 * {@code DISTINCT ON}, which the {@code IQueryBuilder} API cannot express; the {@code DISTINCT ON} keys
+	 * {@code (from, to, type)} match the leading {@code ORDER BY} columns, and the trailing
+	 * {@code ORDER BY ValidFrom DESC, AD_Org_ID DESC, C_Conversion_Rate_ID DESC} picks the newest / most-specific-org /
+	 * highest-PK row per combo — reproducing the former Java {@code ComboKey=(from,to,type)} first-wins reduction
+	 * exactly. Precedent for a native-SQL read in this codebase:
+	 * {@code de.metas.order.stats.purchase_max_price.PurchaseLastMaxPriceProvider#computeNow}.
 	 */
 	@NonNull
 	public ImmutableList<CurrencyConversionRate> getNewestRatesOrderedByValidFromDesc(@NonNull final ConversionRateQuery query)
 	{
-		// Reuse the shared narrowing filters (org/from/to/type); ValidFrom is not part of the newest-scan narrowing,
-		// so the query carries a null validFrom here. Client scope is the fixed (SYSTEM, METASFRESH) below.
-		// Out-of-trx: this is a GET-path read with no active write transaction (same as getByQuery).
-		final IQueryBuilder<I_C_Conversion_Rate> queryBuilder = createQueryBuilder(
-				query.toBuilder().validFrom(null).build())
-				.addOnlyActiveRecordsFilter()
-				// METASFRESH client + SYSTEM, mirroring the runtime rate-lookup client scoping
-				.addInArrayFilter(I_C_Conversion_Rate.COLUMNNAME_AD_Client_ID, ClientId.SYSTEM, ClientId.METASFRESH);
+		final List<Object> sqlParams = new ArrayList<>();
+		final StringBuilder sql = new StringBuilder(
+				"SELECT DISTINCT ON (cr.C_Currency_ID, cr.C_Currency_ID_To, cr.C_ConversionType_ID)"
+						+ " cr.AD_Org_ID, cr.C_Currency_ID, cr.C_Currency_ID_To, cr.C_ConversionType_ID,"
+						+ " cr.ValidFrom, cr.ValidTo, cr.MultiplyRate, cr.DivideRate"
+						+ " FROM C_Conversion_Rate cr"
+						+ " WHERE cr.IsActive='Y'"
+						// METASFRESH client + SYSTEM, mirroring the runtime rate-lookup client scoping
+						+ " AND cr.AD_Client_ID IN (?, ?)");
+		sqlParams.add(ClientId.SYSTEM.getRepoId());
+		sqlParams.add(ClientId.METASFRESH.getRepoId());
 
-		return queryBuilder
-				.orderByDescending(I_C_Conversion_Rate.COLUMNNAME_ValidFrom)
-				.create()
-				.stream(I_C_Conversion_Rate.class)
-				.map(this::toConversionRate)
-				.collect(ImmutableList.toImmutableList());
+		if (query.getOrgId() != null)
+		{
+			sql.append(" AND cr.AD_Org_ID = ?");
+			sqlParams.add(query.getOrgId().getRepoId());
+		}
+		if (query.getFromCurrencyId() != null)
+		{
+			sql.append(" AND cr.C_Currency_ID = ?");
+			sqlParams.add(query.getFromCurrencyId().getRepoId());
+		}
+		if (query.getToCurrencyId() != null)
+		{
+			sql.append(" AND cr.C_Currency_ID_To = ?");
+			sqlParams.add(query.getToCurrencyId().getRepoId());
+		}
+		if (query.getConversionTypeId() != null)
+		{
+			sql.append(" AND cr.C_ConversionType_ID = ?");
+			sqlParams.add(query.getConversionTypeId().getRepoId());
+		}
+
+		// DISTINCT ON keys (from, to, type) MUST be the leading ORDER BY columns; the trailing ValidFrom DESC,
+		// AD_Org_ID DESC, PK DESC picks the newest / most-specific-org / highest-PK row per combo.
+		sql.append(" ORDER BY cr.C_Currency_ID, cr.C_Currency_ID_To, cr.C_ConversionType_ID,"
+				+ " cr.ValidFrom DESC, cr.AD_Org_ID DESC, cr.C_Conversion_Rate_ID DESC");
+
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			// Out-of-trx (thread-inherited): a GET-path read with no active write transaction (same as getByQuery).
+			pstmt = DB.prepareStatement(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+			DB.setParameters(pstmt, sqlParams);
+			rs = pstmt.executeQuery();
+
+			final ImmutableList.Builder<CurrencyConversionRate> result = ImmutableList.builder();
+			while (rs.next())
+			{
+				result.add(toConversionRate(rs));
+			}
+			return result.build();
+		}
+		catch (final SQLException ex)
+		{
+			throw new DBException(ex, sql.toString(), sqlParams);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+		}
+	}
+
+	/**
+	 * Maps one row of the {@link #getNewestRatesOrderedByValidFromDesc} native result set into a typed
+	 * {@link CurrencyConversionRate}, mirroring {@link #toConversionRate(I_C_Conversion_Rate)}: typed ids via
+	 * {@code ofRepoId}, and {@code ValidFrom}/{@code ValidTo} converted through the row's org time zone
+	 * ({@code ValidTo} is nullable).
+	 */
+	@NonNull
+	private CurrencyConversionRate toConversionRate(@NonNull final ResultSet rs) throws SQLException
+	{
+		final OrgId orgId = OrgId.ofRepoId(rs.getInt("AD_Org_ID"));
+		final ZoneId orgZoneId = orgDAO.getTimeZone(orgId);
+		final Timestamp validTo = rs.getTimestamp("ValidTo");
+		return CurrencyConversionRate.builder()
+				.orgId(orgId)
+				.fromCurrencyId(CurrencyId.ofRepoId(rs.getInt("C_Currency_ID")))
+				.toCurrencyId(CurrencyId.ofRepoId(rs.getInt("C_Currency_ID_To")))
+				.conversionTypeId(CurrencyConversionTypeId.ofRepoId(rs.getInt("C_ConversionType_ID")))
+				.validFrom(TimeUtil.asLocalDate(rs.getTimestamp("ValidFrom"), orgZoneId))
+				.validTo(validTo != null ? TimeUtil.asLocalDate(validTo, orgZoneId) : null)
+				.multiplyRate(rs.getBigDecimal("MultiplyRate"))
+				.divideRate(rs.getBigDecimal("DivideRate"))
+				.build();
 	}
 
 	/** Resolves the {@code C_ConversionType_ID} for the given method (delegates to {@link ICurrencyDAO}). */

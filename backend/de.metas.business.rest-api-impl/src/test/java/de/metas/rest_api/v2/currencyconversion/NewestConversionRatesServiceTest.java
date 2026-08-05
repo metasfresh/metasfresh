@@ -22,248 +22,36 @@
 
 package de.metas.rest_api.v2.currencyconversion;
 
-import de.metas.common.rest_api.v2.currencyconversion.JsonNewestConversionRate;
 import de.metas.currency.ConversionRateQuery;
 import de.metas.currency.ConversionRateRepository;
-import de.metas.currency.ConversionTypeMethod;
-import de.metas.money.CurrencyConversionTypeId;
-import de.metas.money.CurrencyId;
-import de.metas.organization.OrgId;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.model.I_C_Conversion_Rate;
-import org.compiere.model.I_C_Currency;
-import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
-
-import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assertions.tuple;
 
+/**
+ * The newest-rates behavior (newest-per-combo reduction, org/from/to/type filters, client scoping) is now done
+ * DB-side via native {@code DISTINCT ON} SQL in {@link ConversionRateRepository#getNewestRatesOrderedByValidFromDesc},
+ * which the in-memory POJO query layer used by unit tests cannot run. That behavior is covered by the cucumber
+ * {@code CurrencyConversion_api} {@code GET newestRates} scenario (exercised against a real DB).
+ * <p>
+ * What remains here is the pure-Java guard on the repository read path ({@link #getByQuery_emptyQuery_isRejected}),
+ * which is POJO-runnable.
+ */
 @ExtendWith(AdempiereTestWatcher.class)
 class NewestConversionRatesServiceTest
 {
-	private NewestConversionRatesService newestConversionRatesService;
-	private JsonConversionRateConverters jsonConverters;
 	private ConversionRateRepository conversionRateRepository;
-
-	private CurrencyId eur;
-	private CurrencyId cny;
-	private CurrencyId usd;
-	private CurrencyConversionTypeId spotTypeId;
-	private CurrencyConversionTypeId periodEndTypeId;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		AdempiereTestHelper.setupContext_AD_Client_IfNotSet();
-
-		// Wire the service via its test-only factory (mirrors CustomColumnService.newInstanceForUnitTesting),
-		// then take the collaborators it wired so the test drives the same repository + converters.
-		newestConversionRatesService = NewestConversionRatesService.newInstanceForUnitTesting();
-		conversionRateRepository = newestConversionRatesService.getConversionRateRepository();
-		jsonConverters = newestConversionRatesService.getJsonConverters();
-
-		eur = createActiveCurrency("EUR");
-		cny = createActiveCurrency("CNY");
-		usd = createActiveCurrency("USD");
-		spotTypeId = conversionRateRepository.getConversionTypeId(ConversionTypeMethod.Spot);
-		periodEndTypeId = conversionRateRepository.getConversionTypeId(ConversionTypeMethod.PeriodEnd);
-	}
-
-	private CurrencyId createActiveCurrency(final String isoCode)
-	{
-		final I_C_Currency record = newInstanceOutOfTrx(I_C_Currency.class);
-		record.setISO_Code(isoCode);
-		record.setCurSymbol(isoCode);
-		record.setStdPrecision(2);
-		record.setCostingPrecision(4);
-		record.setIsActive(true);
-		saveRecord(record);
-		return CurrencyId.ofRepoId(record.getC_Currency_ID());
-	}
-
-	private void createRate(
-			final ClientId clientId,
-			final OrgId orgId,
-			final CurrencyId fromCurrencyId,
-			final CurrencyId toCurrencyId,
-			final CurrencyConversionTypeId conversionTypeId,
-			final LocalDate validFrom,
-			final String multiplyRate)
-	{
-		final I_C_Conversion_Rate record = newInstanceOutOfTrx(I_C_Conversion_Rate.class);
-		InterfaceWrapperHelper.setValue(record, I_C_Conversion_Rate.COLUMNNAME_AD_Client_ID, clientId.getRepoId());
-		record.setAD_Org_ID(orgId.getRepoId());
-		record.setC_Currency_ID(fromCurrencyId.getRepoId());
-		record.setC_Currency_ID_To(toCurrencyId.getRepoId());
-		record.setC_ConversionType_ID(conversionTypeId.getRepoId());
-		record.setValidFrom(TimeUtil.asTimestamp(validFrom));
-		record.setMultiplyRate(new BigDecimal(multiplyRate));
-		record.setDivideRate(BigDecimal.ONE.divide(new BigDecimal(multiplyRate), 12, java.math.RoundingMode.HALF_UP));
-		record.setIsActive(true);
-		saveRecord(record);
-	}
-
-	private ClientId sessionClientId()
-	{
-		// The service scopes reads to AD_Client_ID IN (SYSTEM, METASFRESH); create the in-scope rows under
-		// METASFRESH so the assertions see them.
-		return ClientId.METASFRESH;
-	}
-
-	/**
-	 * Mirrors the production controller: wrap the raw request-param strings into the typed filter via the converter
-	 * (so the test still exercises string -> typed-id resolution), then call the service.
-	 */
-	private List<JsonNewestConversionRate> list(
-			final String fromCurrencyCode,
-			final String toCurrencyCode,
-			final String conversionTypeCode,
-			final String orgCode)
-	{
-		return newestConversionRatesService.list(
-				jsonConverters.toNewestRatesFilter(fromCurrencyCode, toCurrencyCode, conversionTypeCode, orgCode));
-	}
-
-	@Test
-	void newestPerCombo_returnsOnlyMaxValidFromRow_perCombo()
-	{
-		final ClientId clientId = sessionClientId();
-		final OrgId org0 = OrgId.ANY;
-
-		// EUR->CNY spot: three posted dates; newest = 2026-06-03
-		createRate(clientId, org0, eur, cny, spotTypeId, LocalDate.parse("2026-06-01"), "8.00");
-		createRate(clientId, org0, eur, cny, spotTypeId, LocalDate.parse("2026-06-02"), "8.10");
-		createRate(clientId, org0, eur, cny, spotTypeId, LocalDate.parse("2026-06-03"), "8.20");
-
-		// EUR->USD spot: two dates; newest = 2026-06-02
-		createRate(clientId, org0, eur, usd, spotTypeId, LocalDate.parse("2026-06-01"), "1.10");
-		createRate(clientId, org0, eur, usd, spotTypeId, LocalDate.parse("2026-06-02"), "1.11");
-
-		final List<JsonNewestConversionRate> result = list(null, null, null, null);
-
-		// exactly one row per combo (2 combos), each the newest ValidFrom
-		assertThat(result).hasSize(2);
-		assertThat(result)
-				.extracting(
-						JsonNewestConversionRate::getFromCurrencyCode,
-						JsonNewestConversionRate::getToCurrencyCode,
-						JsonNewestConversionRate::getConversionTypeCode,
-						JsonNewestConversionRate::getValidFrom,
-						JsonNewestConversionRate::getMultiplyRate)
-				.containsExactlyInAnyOrder(
-						tuple("EUR", "CNY", "S", LocalDate.parse("2026-06-03"), new BigDecimal("8.20")),
-						tuple("EUR", "USD", "S", LocalDate.parse("2026-06-02"), new BigDecimal("1.11")));
-	}
-
-	@Test
-	void sameCurrencyPair_differentType_areDistinctCombos()
-	{
-		final ClientId clientId = sessionClientId();
-		final OrgId org0 = OrgId.ANY;
-
-		createRate(clientId, org0, eur, cny, spotTypeId, LocalDate.parse("2026-06-02"), "8.10");
-		createRate(clientId, org0, eur, cny, periodEndTypeId, LocalDate.parse("2026-06-02"), "8.15");
-
-		final List<JsonNewestConversionRate> result = list(null, null, null, null);
-
-		assertThat(result).hasSize(2);
-		assertThat(result)
-				.extracting(JsonNewestConversionRate::getConversionTypeCode)
-				.containsExactlyInAnyOrder("S", "P");
-	}
-
-	@Test
-	void fromCurrencyFilter_narrowsResult()
-	{
-		final ClientId clientId = sessionClientId();
-		final OrgId org0 = OrgId.ANY;
-
-		createRate(clientId, org0, eur, cny, spotTypeId, LocalDate.parse("2026-06-02"), "8.10");
-		createRate(clientId, org0, usd, cny, spotTypeId, LocalDate.parse("2026-06-02"), "7.00");
-
-		final List<JsonNewestConversionRate> result = list("USD", null, null, null);
-
-		assertThat(result).hasSize(1);
-		assertThat(result.get(0).getFromCurrencyCode()).isEqualTo("USD");
-		assertThat(result.get(0).getToCurrencyCode()).isEqualTo("CNY");
-	}
-
-	@Test
-	void toCurrencyFilter_narrowsResult()
-	{
-		final ClientId clientId = sessionClientId();
-		final OrgId org0 = OrgId.ANY;
-
-		createRate(clientId, org0, eur, cny, spotTypeId, LocalDate.parse("2026-06-02"), "8.10");
-		createRate(clientId, org0, eur, usd, spotTypeId, LocalDate.parse("2026-06-02"), "1.11");
-
-		final List<JsonNewestConversionRate> result = list(null, "USD", null, null);
-
-		assertThat(result).hasSize(1);
-		assertThat(result.get(0).getToCurrencyCode()).isEqualTo("USD");
-	}
-
-	@Test
-	void conversionTypeFilter_narrowsResult()
-	{
-		final ClientId clientId = sessionClientId();
-		final OrgId org0 = OrgId.ANY;
-
-		createRate(clientId, org0, eur, cny, spotTypeId, LocalDate.parse("2026-06-02"), "8.10");
-		createRate(clientId, org0, eur, cny, periodEndTypeId, LocalDate.parse("2026-06-02"), "8.15");
-
-		final List<JsonNewestConversionRate> result = list(null, null, "P", null);
-
-		assertThat(result).hasSize(1);
-		assertThat(result.get(0).getConversionTypeCode()).isEqualTo("P");
-		assertThat(result.get(0).getMultiplyRate()).isEqualByComparingTo("8.15");
-	}
-
-	@Test
-	void otherClientRows_areExcluded_clientScopingRespected()
-	{
-		final ClientId clientId = sessionClientId();
-		final OrgId org0 = OrgId.ANY;
-		final ClientId otherClientId = ClientId.ofRepoId(clientId.getRepoId() + 1000);
-
-		// session client's row
-		createRate(clientId, org0, eur, cny, spotTypeId, LocalDate.parse("2026-06-02"), "8.10");
-		// a DIFFERENT, later row belonging to another client -> must NOT leak into the result
-		createRate(otherClientId, org0, eur, cny, spotTypeId, LocalDate.parse("2026-06-05"), "9.99");
-
-		final List<JsonNewestConversionRate> result = list(null, null, null, null);
-
-		assertThat(result).hasSize(1);
-		assertThat(result.get(0).getValidFrom()).isEqualTo(LocalDate.parse("2026-06-02"));
-		assertThat(result.get(0).getMultiplyRate()).isEqualByComparingTo("8.10");
-	}
-
-	@Test
-	void divideRate_isMappedThrough()
-	{
-		final ClientId clientId = sessionClientId();
-		final OrgId org0 = OrgId.ANY;
-
-		createRate(clientId, org0, eur, cny, spotTypeId, LocalDate.parse("2026-06-02"), "8.00");
-
-		final List<JsonNewestConversionRate> result = list(null, null, null, null);
-
-		assertThat(result).hasSize(1);
-		// 1/8 = 0.125 000 000 000 (scale 12, HALF_UP)
-		assertThat(result.get(0).getDivideRate()).isEqualByComparingTo("0.125000000000");
+		conversionRateRepository = new ConversionRateRepository();
 	}
 
 	@Test

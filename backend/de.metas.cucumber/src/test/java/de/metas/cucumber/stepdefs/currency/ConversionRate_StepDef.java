@@ -75,7 +75,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class ConversionRate_StepDef
 {
-	private static final int SYSTEM_ORG_ID = 0;
 
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final CurrencyRepository currencyRepository = new CurrencyRepository();
@@ -450,7 +449,7 @@ public class ConversionRate_StepDef
 			@NonNull final Timestamp validTo)
 	{
 		final I_C_Conversion_Rate rate = InterfaceWrapperHelper.newInstance(I_C_Conversion_Rate.class);
-		rate.setAD_Org_ID(SYSTEM_ORG_ID);
+		rate.setAD_Org_ID(OrgId.ANY.getRepoId());
 		rate.setC_ConversionType_ID(conversionTypeId.getRepoId());
 		rate.setC_Currency_ID(fromId.getRepoId());
 		rate.setC_Currency_ID_To(toId.getRepoId());

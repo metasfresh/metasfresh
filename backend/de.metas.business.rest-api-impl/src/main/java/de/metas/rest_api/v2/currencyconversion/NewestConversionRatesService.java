@@ -28,18 +28,13 @@ import de.metas.currency.CurrencyConversionRate;
 import de.metas.currency.ConversionRateQuery;
 import de.metas.currency.ConversionRateRepository;
 import de.metas.currency.CurrencyRepository;
-import de.metas.money.CurrencyConversionTypeId;
-import de.metas.money.CurrencyId;
-import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.compiere.Adempiere;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Reads the <b>newest</b> stored conversion rate per {@code (from, to, type)} combo from
@@ -51,9 +46,9 @@ import java.util.Map;
  * (or the one org the optional {@code orgCode} filter selects). Optional {@code from}/{@code to}/{@code type}
  * filters narrow the result further.
  * <p>
- * The newest-per-combo reduction is done in Java over a {@code ValidFrom}-descending query rather than via SQL
- * {@code DISTINCT ON}: the in-memory POJO query layer used by the unit tests does not support {@code DISTINCT ON},
- * and the rate table is small per combo, so an ordered scan + first-wins reduction is both portable and cheap.
+ * The newest-per-combo reduction is done <b>DB-side</b> by
+ * {@link ConversionRateRepository#getNewestRatesOrderedByValidFromDesc} (native {@code DISTINCT ON}), so the repository
+ * already returns exactly one row per combo — this service only maps each row to its JSON DTO.
  */
 @Service
 @RequiredArgsConstructor
@@ -95,38 +90,15 @@ public class NewestConversionRatesService
 	@NonNull
 	public List<JsonNewestConversionRate> list(@NonNull final ConversionRateQuery query)
 	{
+		// The repository already reduces to exactly one row per (from, to, type) combo (DB-side DISTINCT ON),
+		// so this only maps each returned rate to its JSON DTO.
 		final List<CurrencyConversionRate> rates = conversionRateRepository.getNewestRatesOrderedByValidFromDesc(query);
 
-		// Ordered ValidFrom-descending, so the FIRST row seen per combo is the newest -> first-wins.
-		final Map<ComboKey, CurrencyConversionRate> newestByCombo = new LinkedHashMap<>();
+		final List<JsonNewestConversionRate> result = new ArrayList<>(rates.size());
 		for (final CurrencyConversionRate rate : rates)
-		{
-			newestByCombo.putIfAbsent(ComboKey.ofRate(rate), rate);
-		}
-
-		final List<JsonNewestConversionRate> result = new ArrayList<>(newestByCombo.size());
-		for (final CurrencyConversionRate rate : newestByCombo.values())
 		{
 			result.add(jsonConverters.toJsonNewestConversionRate(rate));
 		}
 		return result;
-	}
-
-	/** The per-combo grouping key: {@code (from, to, type)} by typed id. */
-	@RequiredArgsConstructor
-	@EqualsAndHashCode
-	private static final class ComboKey
-	{
-		@NonNull private final CurrencyId fromCurrencyId;
-		@NonNull private final CurrencyId toCurrencyId;
-		@NonNull private final CurrencyConversionTypeId conversionTypeId;
-
-		private static ComboKey ofRate(@NonNull final CurrencyConversionRate rate)
-		{
-			return new ComboKey(
-					rate.getFromCurrencyId(),
-					rate.getToCurrencyId(),
-					rate.getConversionTypeId());
-		}
 	}
 }
