@@ -51,6 +51,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class AbstractQueueProcessor_UnlockOnNotProcessed_Test extends QueueProcessorTestBase
 {
+	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
+
 	@Test
 	public void givenProcessorHasNoPermitsLeft_whenProcessLockedWorkPackage_thenLockedAtIsCleared()
 	{
@@ -58,7 +60,7 @@ public class AbstractQueueProcessor_UnlockOnNotProcessed_Test extends QueueProce
 		final I_C_Queue_Processor processorDef = helper.createQueueProcessor("test", 1, 1000);
 		helper.assignPackageProcessor(processorDef, StaticMockedWorkpackageProcessor.class);
 
-		final IWorkPackageQueue queue = Services.get(IWorkPackageQueueFactory.class)
+		final IWorkPackageQueue queue = workPackageQueueFactory
 				.getQueueForEnqueuing(ctx, StaticMockedWorkpackageProcessor.class);
 
 		// dev-note: isAvailableToWork() is overridden rather than the semaphore being drained for real.
