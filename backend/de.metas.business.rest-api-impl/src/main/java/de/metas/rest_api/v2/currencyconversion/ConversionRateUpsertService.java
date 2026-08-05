@@ -111,9 +111,8 @@ public class ConversionRateUpsertService
 	}
 
 	/**
-	 * Aggregates the per-item outcomes into a single top-level {@link BatchSyncOutcome} (the controller maps this to
-	 * an HTTP status: {@code ERROR -> 422}, else {@code 200}). An item is "failed" iff its per-item outcome is
-	 * {@code ERROR} ({@code NOTHING_DONE} counts as applied, not failed).
+	 * Aggregates the per-item outcomes into a single top-level {@link BatchSyncOutcome}. An item is "failed" iff its
+	 * per-item outcome is {@code ERROR} ({@code NOTHING_DONE} counts as applied, not failed).
 	 */
 	@NonNull
 	private static BatchSyncOutcome computeAggregate(@NonNull final List<JsonResponseConversionRateUpsertItem> responseItems)

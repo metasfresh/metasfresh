@@ -27,10 +27,10 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 @ApiModel("Outcome of a conversion-rate batch upsert: the top-level aggregate syncOutcome plus the per-item outcomes.")
@@ -41,7 +41,7 @@ public class JsonResponseConversionRateUpsert
 {
 	@ApiModelProperty(position = 10, value = "Top-level aggregate outcome over the response items: SUCCESS (none failed), "
 			+ "PARTIAL_SUCCESS (some failed, not all), or ERROR (every record failed). Maps to HTTP 200 (SUCCESS/PARTIAL_SUCCESS) or 422 (ERROR).")
-	@Nullable
+	@NonNull
 	@JsonProperty("syncOutcome")
 	BatchSyncOutcome syncOutcome;
 

@@ -249,6 +249,8 @@ class ConversionRateUpsertServiceTest
 						.requestItem(item().build())
 						.build());
 
+		// 1-item all-failed batch -> aggregate ERROR
+		assertThat(response.getSyncOutcome()).isEqualTo(BatchSyncOutcome.ERROR);
 		assertThat(response.getResponseItems()).hasSize(1);
 		assertThat(response.getResponseItems().get(0).getSyncOutcome()).isEqualTo(SyncOutcome.ERROR);
 		assertThat(allRates()).isEmpty();
@@ -310,6 +312,8 @@ class ConversionRateUpsertServiceTest
 						.requestItem(item().orgCode("orgNOPE").build())
 						.build());
 
+		// 1-item all-failed batch -> aggregate ERROR
+		assertThat(response.getSyncOutcome()).isEqualTo(BatchSyncOutcome.ERROR);
 		assertThat(response.getResponseItems()).hasSize(1);
 		final JsonResponseConversionRateUpsertItem err = response.getResponseItems().get(0);
 		assertThat(err.getSyncOutcome()).isEqualTo(SyncOutcome.ERROR);
@@ -392,6 +396,8 @@ class ConversionRateUpsertServiceTest
 						.requestItem(item().toCurrencyCode("EUR").build())
 						.build());
 
+		// 1-item all-failed batch -> aggregate ERROR
+		assertThat(response.getSyncOutcome()).isEqualTo(BatchSyncOutcome.ERROR);
 		assertThat(response.getResponseItems().get(0).getSyncOutcome()).isEqualTo(SyncOutcome.ERROR);
 		assertThat(allRates()).isEmpty();
 	}
@@ -426,6 +432,8 @@ class ConversionRateUpsertServiceTest
 						.requestItem(item().validTo(VALID_FROM.minusDays(1)).build())
 						.build());
 
+		// 1-item all-failed batch -> aggregate ERROR
+		assertThat(response.getSyncOutcome()).isEqualTo(BatchSyncOutcome.ERROR);
 		assertThat(response.getResponseItems().get(0).getSyncOutcome()).isEqualTo(SyncOutcome.ERROR);
 		assertThat(allRates()).isEmpty();
 	}
@@ -538,6 +546,8 @@ class ConversionRateUpsertServiceTest
 						.requestItem(item().multiplyRate(new BigDecimal("9.99")).build())
 						.build());
 
+		// NOTHING_DONE counts as applied, not failed -> aggregate SUCCESS
+		assertThat(response.getSyncOutcome()).isEqualTo(BatchSyncOutcome.SUCCESS);
 		assertThat(response.getResponseItems()).hasSize(1);
 		assertThat(response.getResponseItems().get(0).getSyncOutcome()).isEqualTo(SyncOutcome.NOTHING_DONE);
 		assertThat(response.getResponseItems().get(0).getError()).isNull();
@@ -563,9 +573,24 @@ class ConversionRateUpsertServiceTest
 						.requestItem(item().build())
 						.build());
 
+		// 1-item all-failed batch -> aggregate ERROR
+		assertThat(response.getSyncOutcome()).isEqualTo(BatchSyncOutcome.ERROR);
 		assertThat(response.getResponseItems()).hasSize(1);
 		assertThat(response.getResponseItems().get(0).getSyncOutcome()).isEqualTo(SyncOutcome.ERROR);
 		assertThat(response.getResponseItems().get(0).getError()).isNotNull();
+		assertThat(allRates()).isEmpty();
+	}
+
+	@Test
+	void emptyBatch_isSuccess()
+	{
+		// a batch with no request items has nothing to fail -> aggregate SUCCESS, no response items, nothing written
+		final JsonResponseConversionRateUpsert response = upsert(
+				JsonRequestConversionRateUpsert.builder()
+						.build());
+
+		assertThat(response.getSyncOutcome()).isEqualTo(BatchSyncOutcome.SUCCESS);
+		assertThat(response.getResponseItems()).isEmpty();
 		assertThat(allRates()).isEmpty();
 	}
 }
