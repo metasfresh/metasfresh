@@ -41,12 +41,9 @@ import java.time.ZoneId;
  * as its natural key ({@code clientAndOrgId, from, to, conversionType, validFrom}) plus the payload
  * ({@code multiplyRate}, {@code validTo}).
  * <p>
- * The {@code DivideRate} is <b>not</b> a field — it is derived from {@link #getMultiplyRate()} via
- * {@link #getDivideRate()} (the canonical {@link CurrencyConversionRates#reciprocal(BigDecimal)}). Distinct
- * from {@link CurrencyRate}, which is the conversion-execution type ({@code convertAmount}): that carries a
- * single rate + precisions + a conversionDate but no {@code validFrom}/{@code validTo}/org and is the wrong
- * shape for a row-to-persist. This type deliberately does <b>not</b> reuse the near-collision name
- * {@code CurrencyRate}.
+ * {@code DivideRate} — a {@code C_Conversion_Rate} DB column — is not carried as a field here: it is derived
+ * from {@link #getMultiplyRate()} via {@link #getDivideRate()} (the canonical
+ * {@link CurrencyConversionRates#reciprocal(BigDecimal)}).
  * <p>
  * The resolved {@link #orgZoneId} (the org's timezone, from {@code OrgDAO.getTimeZone}) is carried on the object
  * so that <b>all</b> {@code validFrom}/{@code validTo} {@code LocalDate -> Timestamp} conversions go through the

@@ -35,8 +35,9 @@ import java.time.LocalDate;
 /**
  * The narrowing query the {@link ConversionRateRepository} takes to read {@code C_Conversion_Rate} rows: the
  * {@code (org, from, to, type, validFrom)} coordinates. Every field is nullable — a {@code null} field means
- * "do not narrow on this column". Client scope is not a query field: it is a fixed domain policy the repository
- * applies per read path (METASFRESH for the exact read, SYSTEM+METASFRESH for the newest-rates scan).
+ * "do not narrow on this column". Client is not a query field and is intentionally not filtered on any read
+ * path — the client-less natural-key unique index ({@code validFrom, from, to, type, org}) guarantees at most
+ * one row per key regardless of client, so no client scope is needed.
  */
 @Value
 @Builder(toBuilder = true)

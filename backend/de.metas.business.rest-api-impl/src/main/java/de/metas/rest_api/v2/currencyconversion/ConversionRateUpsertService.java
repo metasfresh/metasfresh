@@ -253,15 +253,15 @@ public class ConversionRateUpsertService
 	 * <p>
 	 * The in-trx exists-check (must see a row written earlier in the same batch) drives BOTH the outcome policy
 	 * (CREATED / UPDATED / NOTHING_DONE / FAIL) and the create-vs-update decision — kept here, in the service,
-	 * because both are policy. The repository's {@link ConversionRateRepository#save} is a pure mutate-and-save, so
-	 * this method resolves the target row itself: mutate the found row, or {@code newRate} a fresh one to insert.
+	 * because both are policy. The repository exposes two persisting primitives ({@link ConversionRateRepository#create}
+	 * for the insert, {@link ConversionRateRepository#update} for the mutate-in-place); each persists on its own, so
+	 * this method only decides which one to invoke (their {@link de.metas.currency.CurrencyConversionRate} return is
+	 * ignored — only the outcome is needed here).
 	 */
 	@NonNull
 	private SyncOutcome saveRate(@NonNull final CurrencyConversionUpsertRequest rate, @NonNull final SyncAdvise syncAdvise)
 	{
 		final I_C_Conversion_Rate existingRecord = conversionRateRepository.findExisting(rate);
-		final SyncOutcome outcome;
-		final I_C_Conversion_Rate target;
 		if (existingRecord == null)
 		{
 			if (syncAdvise.isFailIfNotExists())
@@ -270,22 +270,16 @@ public class ConversionRateUpsertService
 						+ rate.getFromCurrencyId().getRepoId() + "->" + rate.getToCurrencyId().getRepoId())
 						.markAsUserValidationError();
 			}
-			outcome = SyncOutcome.CREATED;
-			target = conversionRateRepository.newRate(rate);
+			conversionRateRepository.create(rate);
+			return SyncOutcome.CREATED;
 		}
-		else
+
+		if (!syncAdvise.getIfExists().isUpdate())
 		{
-			if (!syncAdvise.getIfExists().isUpdate())
-			{
-				return SyncOutcome.NOTHING_DONE;
-			}
-			outcome = SyncOutcome.UPDATED;
-			target = existingRecord;
+			return SyncOutcome.NOTHING_DONE;
 		}
-
-		conversionRateRepository.save(target, rate);
-
-		return outcome;
+		conversionRateRepository.update(existingRecord, rate);
+		return SyncOutcome.UPDATED;
 	}
 
 	private static void validateInvariants(@NonNull final CurrencyConversionUpsertRequest rate)
