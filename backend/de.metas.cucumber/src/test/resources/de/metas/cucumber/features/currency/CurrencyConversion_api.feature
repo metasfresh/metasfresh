@@ -99,7 +99,7 @@ Feature: Currency-conversion REST API
 
   # AC2 unknown/inactive currency -> per-record error, AC11 friendly message
   Scenario: An unknown currency fails only that record; valid records still applied; no currency created
-    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/currencyconversion/rates' and fulfills with '200' status code
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/currencyconversion/rates' and fulfills with '207' status code
       """
       {
         "requestItems": [
@@ -128,7 +128,7 @@ Feature: Currency-conversion REST API
 
   # AC5 conversion type default vs explicit; unknown code -> per-record error
   Scenario: Omitted conversion type uses the org default; explicit type is honored; unknown code errors
-    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/currencyconversion/rates' and fulfills with '200' status code
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/currencyconversion/rates' and fulfills with '207' status code
       """
       {
         "requestItems": [
@@ -159,7 +159,7 @@ Feature: Currency-conversion REST API
 
   # AC9 interceptor invariants via the API, AC11 friendly message; no row written
   Scenario: Invariant-violating records each fail with a per-record error and write no row
-    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/currencyconversion/rates' and fulfills with '200' status code
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/currencyconversion/rates' and fulfills with '207' status code
       """
       {
         "requestItems": [

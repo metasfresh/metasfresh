@@ -27,6 +27,7 @@ import de.metas.common.rest_api.v2.currencyconversion.JsonCurrency;
 import de.metas.common.rest_api.v2.currencyconversion.JsonNewestConversionRate;
 import de.metas.common.rest_api.v2.currencyconversion.JsonRequestConversionRateUpsert;
 import de.metas.common.rest_api.v2.currencyconversion.JsonResponseConversionRateUpsert;
+import de.metas.common.rest_api.v2.currencyconversion.JsonResponseConversionRateUpsertItem;
 import de.metas.common.rest_api.v2.currencyconversion.JsonResponseCurrencies;
 import de.metas.common.rest_api.v2.currencyconversion.JsonResponseNewestConversionRates;
 import de.metas.i18n.Language;
@@ -93,11 +94,15 @@ public class CurrencyConversionRestController
 		final Language adLanguage = Language.getLanguage(Env.getADLanguageOrBaseLanguage());
 		try
 		{
-			// Per-record failures are already reported inside the response (as ERROR items) and never abort the
-			// batch; the batch as a whole succeeds. A thrown exception here is a catastrophic (non-per-record)
-			// failure and becomes a friendly top-level error.
+			// Per-record failures are reported inside the response (as ERROR items) and never abort the batch;
+			// the valid records are still applied. A mixed batch (at least one ERROR item) returns 207
+			// Multi-Status so a caller that inspects only the HTTP status still sees it was not fully applied;
+			// an all-clean batch returns 200. A thrown exception here is a catastrophic (non-per-record) failure
+			// and becomes a friendly 422 top-level error.
 			final JsonResponseConversionRateUpsert response = conversionRateUpsertService.upsert(request, adLanguage);
-			return ResponseEntity.ok(response);
+			final boolean anyRecordFailed = response.getResponseItems().stream()
+					.anyMatch(item -> item.getSyncOutcome() == JsonResponseConversionRateUpsertItem.SyncOutcome.ERROR);
+			return ResponseEntity.status(anyRecordFailed ? HttpStatus.MULTI_STATUS : HttpStatus.OK).body(response);
 		}
 		catch (final Exception ex)
 		{
