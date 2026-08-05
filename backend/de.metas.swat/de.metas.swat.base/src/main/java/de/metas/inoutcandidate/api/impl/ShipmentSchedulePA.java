@@ -67,6 +67,8 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 {
 	private final static Logger logger = LogManager.getLogger(ShipmentSchedulePA.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IShipmentScheduleHandlerBL shipmentScheduleHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
+	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 
 	/**
 	 * When mass cache invalidation, above this threshold we will invalidate ALL shipment schedule records instead of particular IDS
@@ -322,8 +324,6 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 		final List<OlAndSched> result = new ArrayList<>();
 
-		final IShipmentScheduleHandlerBL shipmentScheduleHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
-
 		for (final I_M_ShipmentSchedule schedule : shipmentSchedules)
 		{
 			// A schedule whose AD_Table_ID has no registered handler cannot be recomputed. Skip it (surfaced
@@ -378,7 +378,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		// the recompute pass.
 		try
 		{
-			Services.get(IErrorManager.class).createIssue(issue);
+			errorManager.createIssue(issue);
 		}
 		catch (final Exception issueCreationFailed)
 		{
