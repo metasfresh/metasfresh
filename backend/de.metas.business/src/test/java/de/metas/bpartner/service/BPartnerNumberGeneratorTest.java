@@ -157,7 +157,6 @@ class BPartnerNumberGeneratorTest
 		{
 			when(sysConfigBL.getValue(
 					eq(BPartnerNumberGenerator.SYSCONFIG_OVERRIDE),
-					isNull(),
 					eq(CLIENT_AND_ORG_ID)))
 					.thenReturn("fn_bpartner_no");
 
@@ -181,7 +180,6 @@ class BPartnerNumberGeneratorTest
 			final String badName = "foo; DROP TABLE ad_sequence";
 			when(sysConfigBL.getValue(
 					eq(BPartnerNumberGenerator.SYSCONFIG_OVERRIDE),
-					isNull(),
 					eq(CLIENT_AND_ORG_ID)))
 					.thenReturn(badName);
 
@@ -225,7 +223,6 @@ class BPartnerNumberGeneratorTest
 		{
 			when(sysConfigBL.getValue(
 					eq(BPartnerNumberGenerator.SYSCONFIG_OVERRIDE),
-					isNull(),
 					eq(CLIENT_AND_ORG_ID)))
 					.thenReturn("fn_bpartner_no");
 
@@ -241,7 +238,6 @@ class BPartnerNumberGeneratorTest
 			final String badName = "fn(bad name)";
 			when(sysConfigBL.getValue(
 					eq(BPartnerNumberGenerator.SYSCONFIG_OVERRIDE),
-					isNull(),
 					eq(CLIENT_AND_ORG_ID)))
 					.thenReturn(badName);
 

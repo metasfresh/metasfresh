@@ -25,46 +25,65 @@ package de.metas.bpartner;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
-import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 
 /**
  * Typed value object wrapping the integer creditor number from {@code C_BPartner.CreditorId}.
- * This is a plain number holder, not a table-row foreign key.
+ * This is a plain business-account number, not a table-row foreign key.
+ * <p>
+ * The convention {@code 0} (or any non-positive value) means "not set"; use
+ * {@link #ofNullableNo(Integer)} to normalise incoming integers from DB columns.
  */
 @Value
-public class CreditorId implements RepoIdAware
+public class CreditorId
 {
+	/**
+	 * Creates a {@link CreditorId} from a positive integer.
+	 *
+	 * @throws IllegalArgumentException if {@code no} is {@code <= 0}
+	 */
 	@JsonCreator
-	public static CreditorId ofRepoId(final int repoId)
+	public static CreditorId ofNo(final int no)
 	{
-		return new CreditorId(repoId);
+		return new CreditorId(no);
 	}
 
+	/**
+	 * Returns {@code null} when {@code no} is {@code null} or {@code <= 0} (the "≤0 = unset"
+	 * normalisation), or a {@link CreditorId} otherwise.
+	 * <p>
+	 * This is NOT a {@code RepoIdAware}-style {@code ofRepoIdOrNull} — it encapsulates the
+	 * business-account-number convention that non-positive values mean "not set".
+	 */
 	@Nullable
-	public static CreditorId ofRepoIdOrNull(final int repoId)
+	public static CreditorId ofNullableNo(@Nullable final Integer no)
 	{
-		return repoId > 0 ? new CreditorId(repoId) : null;
+		return no != null && no > 0 ? new CreditorId(no) : null;
 	}
 
-	public static int toRepoId(@Nullable final CreditorId id)
-	{
-		return id != null ? id.getRepoId() : -1;
-	}
-
-	int repoId;
-
-	private CreditorId(final int repoId)
-	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "CreditorId");
-	}
-
-	@Override
+	/** Returns the wrapped number as a plain {@code int}. */
 	@JsonValue
-	public int getRepoId()
+	public int toInt()
 	{
-		return repoId;
+		return no;
+	}
+
+	/**
+	 * Converts a (possibly {@code null}) {@link CreditorId} to a nullable {@code Integer}.
+	 * Useful when copying a value-type back to a raw DB/model integer column.
+	 */
+	@Nullable
+	public static Integer toIntOrNull(@Nullable final CreditorId creditorId)
+	{
+		return creditorId != null ? creditorId.no : null;
+	}
+
+	int no;
+
+	private CreditorId(final int no)
+	{
+		this.no = Check.assumeGreaterThanZero(no, "CreditorId");
 	}
 }

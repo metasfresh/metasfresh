@@ -78,7 +78,7 @@ public class BPartnerNumberGenerator
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(ctx.getClientId(), ctx.getOrgId());
 
 		// 1. Override branch
-		final String overrideFn = sysConfigBL.getValue(SYSCONFIG_OVERRIDE, (String)null, clientAndOrgId);
+		final String overrideFn = sysConfigBL.getValue(SYSCONFIG_OVERRIDE, clientAndOrgId);
 		if (!Check.isBlank(overrideFn))
 		{
 			return dao.callOverrideFunction(overrideFn, ctx, null);
@@ -104,7 +104,7 @@ public class BPartnerNumberGenerator
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(ctx.getClientId(), ctx.getOrgId());
 
 		// 1. Override branch
-		final String overrideFn = sysConfigBL.getValue(SYSCONFIG_OVERRIDE, (String)null, clientAndOrgId);
+		final String overrideFn = sysConfigBL.getValue(SYSCONFIG_OVERRIDE, clientAndOrgId);
 		if (!Check.isBlank(overrideFn))
 		{
 			dao.callOverrideFunction(overrideFn, ctx, explicitValue);

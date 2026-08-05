@@ -31,33 +31,57 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class CreditorIdTest
 {
 	@Nested
-	class OfRepoIdOrNull
+	class OfNullableNo
 	{
 		@Test
 		void returns_null_for_zero()
 		{
-			assertThat(CreditorId.ofRepoIdOrNull(0)).isNull();
+			assertThat(CreditorId.ofNullableNo(0)).isNull();
 		}
 
 		@Test
 		void returns_null_for_negative()
 		{
-			assertThat(CreditorId.ofRepoIdOrNull(-5)).isNull();
+			assertThat(CreditorId.ofNullableNo(-5)).isNull();
+		}
+
+		@Test
+		void returns_null_for_null_input()
+		{
+			assertThat(CreditorId.ofNullableNo(null)).isNull();
 		}
 
 		@Test
 		void returns_value_for_positive()
 		{
-			final CreditorId id = CreditorId.ofRepoIdOrNull(10000);
+			final CreditorId id = CreditorId.ofNullableNo(10000);
 			assertThat(id).isNotNull();
-			assertThat(id.getRepoId()).isEqualTo(10000);
+			assertThat(id.toInt()).isEqualTo(10000);
 		}
 	}
 
 	@Test
-	void ofRepoId_throws_for_zero()
+	void ofNo_returns_correct_value()
 	{
-		assertThatThrownBy(() -> CreditorId.ofRepoId(0))
+		assertThat(CreditorId.ofNo(10000).toInt()).isEqualTo(10000);
+	}
+
+	@Test
+	void ofNo_throws_for_zero()
+	{
+		assertThatThrownBy(() -> CreditorId.ofNo(0))
 				.isInstanceOf(Exception.class);
+	}
+
+	@Test
+	void toIntOrNull_returns_null_for_null()
+	{
+		assertThat(CreditorId.toIntOrNull(null)).isNull();
+	}
+
+	@Test
+	void toIntOrNull_returns_value_for_non_null()
+	{
+		assertThat(CreditorId.toIntOrNull(CreditorId.ofNo(10000))).isEqualTo(10000);
 	}
 }

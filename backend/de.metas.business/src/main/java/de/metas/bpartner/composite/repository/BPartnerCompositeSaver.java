@@ -6,6 +6,8 @@ import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.CreditorId;
+import de.metas.bpartner.DebtorId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.OrgMappingId;
 import de.metas.bpartner.composite.BPartner;
@@ -40,7 +42,6 @@ import de.metas.security.permissions2.PermissionServiceFactories;
 import de.metas.tax.api.VATIdentifier;
 import de.metas.title.TitleId;
 import de.metas.user.api.IUserBL;
-import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.ExternalId;
@@ -276,7 +277,7 @@ final class BPartnerCompositeSaver
 		{
 			bpartnerRecord.setLastname(bpartner.getLastName());
 		}
-		// debtorId / creditorId: 0 means "not set" (convention: NumberUtils.graterThanZeroOrNull on load — note the intentional typo in NumberUtils)
+		// debtorId / creditorId: 0 means "not set" (convention: ≤0 = unset, encapsulated by DebtorId/CreditorId.ofNullableNo)
 		if (bpartner.getDebtorId() != null)
 		{
 			bpartnerRecord.setDebtorId(bpartner.getDebtorId());
@@ -296,9 +297,10 @@ final class BPartnerCompositeSaver
 		bpartner.setId(BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID()));
 		bpartner.setValue(bpartnerRecord.getValue());
 		bpartner.setCompany(bpartnerRecord.isCompany());
-		// Copy back generated debtor/creditor numbers so the upsert response reflects interceptor-assigned values
-		bpartner.setDebtorId(NumberUtils.graterThanZeroOrNull(bpartnerRecord.getDebtorId()));
-		bpartner.setCreditorId(NumberUtils.graterThanZeroOrNull(bpartnerRecord.getCreditorId()));
+		// Copy back generated debtor/creditor numbers so the upsert response reflects interceptor-assigned values.
+		// Route normalization through the value type (encapsulates the "≤0 = unset" convention).
+		bpartner.setDebtorId(DebtorId.toIntOrNull(DebtorId.ofNullableNo(bpartnerRecord.getDebtorId())));
+		bpartner.setCreditorId(CreditorId.toIntOrNull(CreditorId.ofNullableNo(bpartnerRecord.getCreditorId())));
 	}
 
 	private void saveBPartnerLocations(@NonNull final BPartnerComposite bPartnerComposite, final boolean validatePermissions)

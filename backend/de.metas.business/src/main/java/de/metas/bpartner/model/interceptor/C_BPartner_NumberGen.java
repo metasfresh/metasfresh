@@ -86,7 +86,7 @@ public class C_BPartner_NumberGen
 					.kind(BPartnerNumberContext.Kind.DEBTOR)
 					.build();
 
-			if (DebtorId.ofRepoIdOrNull(bpartner.getDebtorId()) == null)
+			if (DebtorId.ofNullableNo(bpartner.getDebtorId()) == null)
 			{
 				// No explicit debtor number: generate one, but only for new records.
 				// On BEFORE_CHANGE with an unset value, do nothing — generation happens at creation only.
@@ -115,7 +115,7 @@ public class C_BPartner_NumberGen
 					.kind(BPartnerNumberContext.Kind.CREDITOR)
 					.build();
 
-			if (CreditorId.ofRepoIdOrNull(bpartner.getCreditorId()) == null)
+			if (CreditorId.ofNullableNo(bpartner.getCreditorId()) == null)
 			{
 				// No explicit creditor number: generate one, but only for new records.
 				if (isNew)
