@@ -36,17 +36,18 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 /**
- * DAO for atomically drawing and advancing an {@code AD_Sequence} row.
+ * DAO for atomically drawing and advancing an {@code AD_Sequence} row,
+ * and for delegating to a DB override function.
  * <p>
  * Uses the same {@code UPDATE … RETURNING} SQL pattern as
  * {@link de.metas.document.sequence.impl.DocumentNoBuilder} — no {@code MSequence} model, no schema change.
  *
  * <p>Repository Tables: AD_Sequence
- * <p>Repository Cluster: BPartnerNumberSequenceDAO
+ * <p>Repository Cluster: BPartnerNumberDAO
  * (Note: {@link de.metas.document.sequence.impl.DocumentNoBuilder} also writes {@code AD_Sequence} — coordinate changes.)
  */
 @Repository
-public class BPartnerNumberSequenceDAO
+public class BPartnerNumberDAO
 {
 	private static final int QUERY_TIME_OUT = MSequence.QUERY_TIME_OUT;
 

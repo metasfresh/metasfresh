@@ -105,7 +105,7 @@ public class BPartnerNumberGen_StepDef
 	/** Value column of the default org in the standard seed DB. */
 	private static final String DEFAULT_ORG_VALUE = "001";
 
-	/** Same pattern as {@link de.metas.bpartner.service.BPartnerNumberSequenceDAO} — plain or schema-qualified SQL identifier. */
+	/** Same pattern as {@link de.metas.bpartner.service.BPartnerNumberDAO} — plain or schema-qualified SQL identifier. */
 	private static final Pattern FUNCTION_NAME_PATTERN =
 			Pattern.compile("[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)?");
 

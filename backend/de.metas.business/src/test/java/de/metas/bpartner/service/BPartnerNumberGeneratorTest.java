@@ -26,6 +26,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerNumberContext.Kind;
 import de.metas.document.sequence.DocSequenceId;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -52,16 +53,19 @@ import static org.mockito.Mockito.when;
 /**
  * Unit tests for {@link BPartnerNumberGenerator}.
  * <p>
- * The DB-executing override path is tested via a mocked {@link BPartnerNumberSequenceDAO}.
+ * The DB-executing override path is tested via a mocked {@link BPartnerNumberDAO}.
  * No live DB required.
  */
 class BPartnerNumberGeneratorTest
 {
 	private static final int AD_CLIENT_ID = 1000001;
 	private static final int AD_ORG_ID = 1000000;
+	private static final ClientAndOrgId CLIENT_AND_ORG_ID = ClientAndOrgId.ofClientAndOrg(
+			ClientId.ofRepoId(AD_CLIENT_ID),
+			OrgId.ofRepoId(AD_ORG_ID));
 
 	private ISysConfigBL sysConfigBL;
-	private BPartnerNumberSequenceDAO dao;
+	private BPartnerNumberDAO dao;
 	private BPartnerNumberGenerator generator;
 
 	@BeforeEach
@@ -72,7 +76,7 @@ class BPartnerNumberGeneratorTest
 		sysConfigBL = mock(ISysConfigBL.class);
 		Services.registerService(ISysConfigBL.class, sysConfigBL);
 
-		dao = mock(BPartnerNumberSequenceDAO.class);
+		dao = mock(BPartnerNumberDAO.class);
 		generator = new BPartnerNumberGenerator(dao);
 	}
 
@@ -122,8 +126,7 @@ class BPartnerNumberGeneratorTest
 			when(sysConfigBL.getIntValue(
 					eq(BPartnerNumberGenerator.SYSCONFIG_DEBTOR_SEQ),
 					eq(-1),
-					anyInt(),
-					eq(AD_ORG_ID)))
+					eq(CLIENT_AND_ORG_ID)))
 					.thenReturn(540123);
 
 			when(dao.drawNext(DocSequenceId.ofRepoId(540123))).thenReturn(7);
@@ -139,8 +142,7 @@ class BPartnerNumberGeneratorTest
 			when(sysConfigBL.getIntValue(
 					eq(BPartnerNumberGenerator.SYSCONFIG_CREDITOR_SEQ),
 					eq(-1),
-					anyInt(),
-					eq(AD_ORG_ID)))
+					eq(CLIENT_AND_ORG_ID)))
 					.thenReturn(540456);
 
 			when(dao.drawNext(DocSequenceId.ofRepoId(540456))).thenReturn(55);
@@ -156,8 +158,7 @@ class BPartnerNumberGeneratorTest
 			when(sysConfigBL.getValue(
 					eq(BPartnerNumberGenerator.SYSCONFIG_OVERRIDE),
 					isNull(),
-					anyInt(),
-					eq(AD_ORG_ID)))
+					eq(CLIENT_AND_ORG_ID)))
 					.thenReturn("fn_bpartner_no");
 
 			when(dao.callOverrideFunction(eq("fn_bpartner_no"), any(BPartnerNumberContext.class), isNull()))
@@ -170,7 +171,7 @@ class BPartnerNumberGeneratorTest
 		}
 
 		/**
-		 * The SQL-injection guard lives in {@link BPartnerNumberSequenceDAO#callOverrideFunction}.
+		 * The SQL-injection guard lives in {@link BPartnerNumberDAO#callOverrideFunction}.
 		 * Validation fires before any DB access, so the real DAO throws without needing a database.
 		 * The generator must propagate that exception.
 		 */
@@ -181,11 +182,10 @@ class BPartnerNumberGeneratorTest
 			when(sysConfigBL.getValue(
 					eq(BPartnerNumberGenerator.SYSCONFIG_OVERRIDE),
 					isNull(),
-					anyInt(),
-					eq(AD_ORG_ID)))
+					eq(CLIENT_AND_ORG_ID)))
 					.thenReturn(badName);
 
-			final BPartnerNumberGenerator gen = new BPartnerNumberGenerator(new BPartnerNumberSequenceDAO());
+			final BPartnerNumberGenerator gen = new BPartnerNumberGenerator(new BPartnerNumberDAO());
 
 			assertThatThrownBy(() -> gen.generateNext(debtorCtx()))
 					.isInstanceOf(IllegalArgumentException.class)
@@ -212,8 +212,7 @@ class BPartnerNumberGeneratorTest
 			when(sysConfigBL.getIntValue(
 					eq(BPartnerNumberGenerator.SYSCONFIG_DEBTOR_SEQ),
 					eq(-1),
-					anyInt(),
-					eq(AD_ORG_ID)))
+					eq(CLIENT_AND_ORG_ID)))
 					.thenReturn(540123);
 
 			generator.reserveExplicit(debtorCtx(), 999);
@@ -227,8 +226,7 @@ class BPartnerNumberGeneratorTest
 			when(sysConfigBL.getValue(
 					eq(BPartnerNumberGenerator.SYSCONFIG_OVERRIDE),
 					isNull(),
-					anyInt(),
-					eq(AD_ORG_ID)))
+					eq(CLIENT_AND_ORG_ID)))
 					.thenReturn("fn_bpartner_no");
 
 			generator.reserveExplicit(debtorCtx(), 12345);
@@ -244,11 +242,10 @@ class BPartnerNumberGeneratorTest
 			when(sysConfigBL.getValue(
 					eq(BPartnerNumberGenerator.SYSCONFIG_OVERRIDE),
 					isNull(),
-					anyInt(),
-					eq(AD_ORG_ID)))
+					eq(CLIENT_AND_ORG_ID)))
 					.thenReturn(badName);
 
-			final BPartnerNumberGenerator gen = new BPartnerNumberGenerator(new BPartnerNumberSequenceDAO());
+			final BPartnerNumberGenerator gen = new BPartnerNumberGenerator(new BPartnerNumberDAO());
 
 			assertThatThrownBy(() -> gen.reserveExplicit(creditorCtx(), 1))
 					.isInstanceOf(IllegalArgumentException.class)
@@ -265,8 +262,7 @@ class BPartnerNumberGeneratorTest
 			when(sysConfigBL.getIntValue(
 					eq(BPartnerNumberGenerator.SYSCONFIG_DEBTOR_SEQ),
 					eq(-1),
-					anyInt(),
-					eq(AD_ORG_ID)))
+					eq(CLIENT_AND_ORG_ID)))
 					.thenReturn(540123);
 
 			final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
@@ -295,7 +291,7 @@ class BPartnerNumberGeneratorTest
 		@Test
 		void throwsOnBlankName()
 		{
-			final BPartnerNumberSequenceDAO realDao = new BPartnerNumberSequenceDAO();
+			final BPartnerNumberDAO realDao = new BPartnerNumberDAO();
 			assertThatThrownBy(() -> realDao.callOverrideFunction("   ", debtorCtx(), null))
 					.isInstanceOf(IllegalArgumentException.class)
 					.hasMessageContaining("blank");
@@ -304,7 +300,7 @@ class BPartnerNumberGeneratorTest
 		@Test
 		void throwsOnInjectionAttempt()
 		{
-			final BPartnerNumberSequenceDAO realDao = new BPartnerNumberSequenceDAO();
+			final BPartnerNumberDAO realDao = new BPartnerNumberDAO();
 			final String badName = "foo; DROP TABLE ad_sequence";
 			assertThatThrownBy(() -> realDao.callOverrideFunction(badName, debtorCtx(), null))
 					.isInstanceOf(IllegalArgumentException.class)

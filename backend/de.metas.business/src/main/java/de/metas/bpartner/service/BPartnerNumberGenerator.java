@@ -24,6 +24,7 @@ package de.metas.bpartner.service;
 
 import de.metas.document.sequence.DocSequenceId;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -41,10 +42,10 @@ import java.util.Optional;
  * <ol>
  *   <li><b>Override</b> — sysconfig {@value #SYSCONFIG_OVERRIDE} is set to a DB function name:
  *       delegates entirely to {@code SELECT <fn>(p_ad_org_id, p_c_bpartner_id, p_iscustomer, p_isvendor, p_iscompany, p_kind, p_explicit)}
- *       via {@link BPartnerNumberSequenceDAO#callOverrideFunction}.
+ *       via {@link BPartnerNumberDAO#callOverrideFunction}.
  *       The DAO validates the function name as a safe SQL identifier; all argument values are bound as parameters.</li>
  *   <li><b>Sequence</b> — sysconfig {@value #SYSCONFIG_DEBTOR_SEQ} or {@value #SYSCONFIG_CREDITOR_SEQ}
- *       holds an {@code AD_Sequence_ID} (positive integer): delegates to {@link BPartnerNumberSequenceDAO}.</li>
+ *       holds an {@code AD_Sequence_ID} (positive integer): delegates to {@link BPartnerNumberDAO}.</li>
  *   <li><b>No-op</b> — no config: {@code generateNext} returns {@link Optional#empty()};
  *       {@code reserveExplicit} is a no-op.</li>
  * </ol>
@@ -64,7 +65,7 @@ public class BPartnerNumberGenerator
 	/** Per-org sysconfig: {@code AD_Sequence_ID} (integer) for creditor numbers. */
 	public static final String SYSCONFIG_CREDITOR_SEQ = "de.metas.bpartner.CreditorNoSequence";
 
-	@NonNull private final BPartnerNumberSequenceDAO dao;
+	@NonNull private final BPartnerNumberDAO dao;
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	/**
@@ -74,18 +75,17 @@ public class BPartnerNumberGenerator
 	@NonNull
 	public Optional<Integer> generateNext(@NonNull final BPartnerNumberContext ctx)
 	{
-		final int adClientId = ctx.getClientId().getRepoId();
-		final int adOrgId = ctx.getOrgId().getRepoId();
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(ctx.getClientId(), ctx.getOrgId());
 
 		// 1. Override branch
-		final String overrideFn = sysConfigBL.getValue(SYSCONFIG_OVERRIDE, (String)null, adClientId, adOrgId);
+		final String overrideFn = sysConfigBL.getValue(SYSCONFIG_OVERRIDE, (String)null, clientAndOrgId);
 		if (!Check.isBlank(overrideFn))
 		{
 			return dao.callOverrideFunction(overrideFn, ctx, null);
 		}
 
 		// 2. Sequence branch
-		final int seqId = sysConfigBL.getIntValue(seqSysconfigName(ctx.getKind()), -1, adClientId, adOrgId);
+		final int seqId = sysConfigBL.getIntValue(seqSysconfigName(ctx.getKind()), -1, clientAndOrgId);
 		if (seqId > 0)
 		{
 			return Optional.of(dao.drawNext(DocSequenceId.ofRepoId(seqId)));
@@ -101,11 +101,10 @@ public class BPartnerNumberGenerator
 	 */
 	public void reserveExplicit(@NonNull final BPartnerNumberContext ctx, final int explicitValue)
 	{
-		final int adClientId = ctx.getClientId().getRepoId();
-		final int adOrgId = ctx.getOrgId().getRepoId();
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(ctx.getClientId(), ctx.getOrgId());
 
 		// 1. Override branch
-		final String overrideFn = sysConfigBL.getValue(SYSCONFIG_OVERRIDE, (String)null, adClientId, adOrgId);
+		final String overrideFn = sysConfigBL.getValue(SYSCONFIG_OVERRIDE, (String)null, clientAndOrgId);
 		if (!Check.isBlank(overrideFn))
 		{
 			dao.callOverrideFunction(overrideFn, ctx, explicitValue);
@@ -113,7 +112,7 @@ public class BPartnerNumberGenerator
 		}
 
 		// 2. Sequence branch
-		final int seqId = sysConfigBL.getIntValue(seqSysconfigName(ctx.getKind()), -1, adClientId, adOrgId);
+		final int seqId = sysConfigBL.getIntValue(seqSysconfigName(ctx.getKind()), -1, clientAndOrgId);
 		if (seqId > 0)
 		{
 			dao.advancePast(DocSequenceId.ofRepoId(seqId), explicitValue);
