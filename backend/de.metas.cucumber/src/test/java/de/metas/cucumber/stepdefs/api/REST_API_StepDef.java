@@ -131,6 +131,33 @@ public class REST_API_StepDef
 		);
 	}
 
+	/**
+	 * Sends a payload-less request (typically a {@code GET}) to the endpoint path given inline, resolving context
+	 * variables in the path, and asserts the HTTP status code — all in a single step. Use for GET endpoints whose
+	 * query params are written inline in the path; the previous two-step {@code store REST endpointPath} + {@code
+	 * ... with endpointPath from context ...} dance is unnecessary when the path does not need to be reused later.
+	 *
+	 * <p><b>Gherkin usage example</b>:
+	 * <pre>{@code
+	 * When a 'GET' request is sent to metasfresh REST-API 'api/v2/currencyconversion/newestRates?fromCurrencyCode=EUR' and fulfills with '200' status code
+	 * }</pre>
+	 */
+	@When("a {string} request is sent to metasfresh REST-API {string} and fulfills with {string} status code")
+	public void metasfresh_rest_api_endpoint_receives_a_request_responds_with_code(
+			@NonNull final String verb,
+			@NonNull final String endpointPath,
+			@NonNull final String statusCode) throws IOException
+	{
+		performHTTPRequest(
+				newAPIRequest()
+						.endpointPath(resolveContextVariables(endpointPath))
+						.method(verb)
+						.expectedStatusCode(Integer.parseInt(statusCode))
+						.additionalHeaders(testContext.getHttpHeaders())
+						.build()
+		);
+	}
+
 	@When("the metasfresh REST-API endpoint path {string} receives a {string} request with the payload")
 	public void metasfresh_rest_api_endpoint_api_external_ref_receives_get_request_with_the_payload(
 			@NonNull final String endpointPath,

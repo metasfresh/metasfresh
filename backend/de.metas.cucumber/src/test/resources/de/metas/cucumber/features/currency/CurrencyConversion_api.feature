@@ -17,6 +17,14 @@ Feature: Currency-conversion REST API
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2026-06-01T08:00:00+01:00[Europe/Berlin]
+    # Remember the prior active-state of every currency this feature toggles, so the shared executor DB is restored
+    # afterwards and sibling features are not polluted (RUB is toggled inactive by the GET-currencies scenario).
+    And I remember the active-state of the following currencies:
+      | ISO_Code |
+      | EUR      |
+      | CNY      |
+      | JPY      |
+      | RUB      |
     # The core seed ships these currencies inactive; a currency must be active before a rate for it can be upserted.
     And the following currencies are active:
       | ISO_Code |
@@ -24,7 +32,6 @@ Feature: Currency-conversion REST API
       | CNY      |
       | JPY      |
 
-  # AC1 batch upsert + per-record outcome, AC3 DivideRate derived, AC4 both directions
   Scenario: Batch upsert of daily EUR-CNY rates stores both directions with derived DivideRate
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/currencyconversion/rates' and fulfills with '200' status code
       """
@@ -52,7 +59,7 @@ Feature: Currency-conversion REST API
       | CNY          | EUR        | S              | 2026-06-01 | 0.131578947368 | 2056-12-31 |
       | CNY          | EUR        | S              | 2026-06-02 | 0.130718954248 | 2056-12-31 |
 
-  # AC6 idempotent upsert
+  # idempotent upsert
   Scenario: Re-posting a changed rate for the same key updates in place, no duplicate row
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/currencyconversion/rates' and fulfills with '200' status code
       """
@@ -76,7 +83,7 @@ Feature: Currency-conversion REST API
       | FromCurrency | ToCurrency | ConversionType | ValidFrom  | MultiplyRate | DivideRate     | ValidTo    |
       | EUR          | CNY        | S              | 2026-06-03 | 7.70         | 0.129870129870 | 2056-12-31 |
 
-  # AC7 ValidTo open, no gap: each upserted rate is stored open (ValidTo = far-future sentinel), so a later
+  # ValidTo open, no gap: each upserted rate is stored open (ValidTo = far-future sentinel), so a later
   # date with no own rate is covered by the most recent earlier rate. (The runtime resolution itself is
   # CurrencyBL's responsibility, out of scope for this endpoint feature; here we assert the endpoint stores
   # the rows open, which is the endpoint-observable half of the no-gap behaviour.)
@@ -101,7 +108,7 @@ Feature: Currency-conversion REST API
       | EUR          | CNY        | S              | 2026-06-05 | 7.55         | 2056-12-31 |
       | EUR          | CNY        | S              | 2026-06-08 | 7.72         | 2056-12-31 |
 
-  # AC2 unknown/inactive currency -> per-record error, AC11 friendly message
+  # unknown/inactive currency -> per-record error with a friendly message
   Scenario: An unknown currency fails only that record; valid records still applied; no currency created
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/currencyconversion/rates' and fulfills with '207' status code
       """
@@ -131,7 +138,7 @@ Feature: Currency-conversion REST API
       | ISO_Code |
       | XXX      |
 
-  # AC5 conversion type default vs explicit; unknown code -> per-record error
+  # conversion type default vs explicit; unknown code -> per-record error
   Scenario: Omitted conversion type uses the org default; explicit type is honored; unknown code errors
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/currencyconversion/rates' and fulfills with '207' status code
       """
@@ -163,7 +170,7 @@ Feature: Currency-conversion REST API
       | FromCurrency | ToCurrency | ConversionType | ValidFrom  | MultiplyRate | ValidTo    |
       | EUR          | JPY        | P              | 2026-06-10 | 160.0        | 2056-12-31 |
 
-  # AC9 interceptor invariants via the API, AC11 friendly message; no row written
+  # interceptor invariants via the API; friendly message; no row written
   Scenario: Invariant-violating records each fail with a per-record error and write no row
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/currencyconversion/rates' and fulfills with '422' status code
       """
@@ -191,13 +198,13 @@ Feature: Currency-conversion REST API
       | EUR          | CNY        | S              | 2026-06-11 |
       | EUR          | CNY        | S              | 2026-06-18 |
 
-  # AC10 auth: each of the three endpoints returns 401 without credentials
+  # auth: each of the three endpoints returns 401 without credentials
   Scenario: The three endpoints reject unauthenticated callers
     When a 'PUT' request without authentication is sent to metasfresh REST-API 'api/v2/currencyconversion/rates' expecting status '401'
     When a 'GET' request without authentication is sent to metasfresh REST-API 'api/v2/currencyconversion/currencies' expecting status '401'
     When a 'GET' request without authentication is sent to metasfresh REST-API 'api/v2/currencyconversion/newestRates' expecting status '401'
 
-  # AC4 reverse-map: forward-only auto-creates the reciprocal; a supplied reverse is kept untouched
+  # reverse-map: forward-only auto-creates the reciprocal; a supplied reverse is kept untouched
   Scenario: A forward-only rate auto-creates its reciprocal; a caller-supplied reverse is honored as-is
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/currencyconversion/rates' and fulfills with '200' status code
       """
@@ -223,17 +230,16 @@ Feature: Currency-conversion REST API
       | FromCurrency | ToCurrency | ConversionType | ValidFrom  | MultiplyRate   | ValidTo    |
       | JPY          | EUR        | S              | 2026-06-12 | 0.006250000000 | 2056-12-31 |
 
-  # AC12 GET currencies = active set (code + name), excludes inactive
+  # GET currencies = active set (code + name), excludes inactive
   Scenario: GET currencies returns the active currencies and excludes an inactive one
     Given the following currencies are inactive:
       | ISO_Code |
       | RUB      |
-    When store REST endpointPath 'api/v2/currencyconversion/currencies'
-    And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
+    When a 'GET' request is sent to metasfresh REST-API 'api/v2/currencyconversion/currencies' and fulfills with '200' status code
     Then the currencies response contains 'CNY'
     And the currencies response does not contain 'RUB'
 
-  # AC13 GET newestRates = newest per combo; optional filter narrows the result
+  # GET newestRates = newest per combo; optional filter narrows the result
   # Uses conversion type A (Average) so the (EUR,CNY,A) combo is unique to this scenario, isolated from
   # the S-type rows other scenarios create.
   Scenario: GET newestRates returns only the newest row per combo and honors a filter
@@ -252,10 +258,57 @@ Feature: Currency-conversion REST API
         "responseItems": [ { "syncOutcome": "CREATED" }, { "syncOutcome": "CREATED" } ] }
       """
     # filter to EUR->CNY type A: only the newest (2026-06-14, 7.70) row is returned, not the 2026-06-13 one
-    When store REST endpointPath 'api/v2/currencyconversion/newestRates?fromCurrencyCode=EUR&toCurrencyCode=CNY&conversionTypeCode=A'
-    And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
+    When a 'GET' request is sent to metasfresh REST-API 'api/v2/currencyconversion/newestRates?fromCurrencyCode=EUR&toCurrencyCode=CNY&conversionTypeCode=A' and fulfills with '200' status code
     Then the metasfresh REST-API responds with
       """
       { "rates": [ { "fromCurrencyCode": "EUR", "toCurrencyCode": "CNY", "conversionTypeCode": "A", "validFrom": "2026-06-14", "multiplyRate": 7.7 } ] }
       """
     And the newestRates response has 1 rate
+
+  # syncAdvise ifExists=DONT_UPDATE: an existing rate is left untouched and reports NOTHING_DONE
+  Scenario: A re-PUT with ifExists DONT_UPDATE leaves the existing rate unchanged
+    # seed the rate with the default advise
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/currencyconversion/rates' and fulfills with '200' status code
+      """
+      { "requestItems": [ { "fromCurrencyCode": "EUR", "toCurrencyCode": "CNY", "multiplyRate": 7.60, "validFrom": "2026-06-20", "conversionTypeCode": "S" } ] }
+      """
+    Then the metasfresh REST-API responds with
+      """
+      { "syncOutcome": "SUCCESS",
+        "responseItems": [ { "fromCurrencyCode": "EUR", "toCurrencyCode": "CNY", "syncOutcome": "CREATED" } ] }
+      """
+    # re-PUT the same key with a DIFFERENT rate under ifExists=DONT_UPDATE: nothing must change
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/currencyconversion/rates' and fulfills with '200' status code
+      """
+      {
+        "syncAdvise": { "ifExists": "DONT_UPDATE" },
+        "requestItems": [ { "fromCurrencyCode": "EUR", "toCurrencyCode": "CNY", "multiplyRate": 9.99, "validFrom": "2026-06-20", "conversionTypeCode": "S" } ]
+      }
+      """
+    Then the metasfresh REST-API responds with
+      """
+      { "syncOutcome": "SUCCESS",
+        "responseItems": [ { "fromCurrencyCode": "EUR", "toCurrencyCode": "CNY", "syncOutcome": "NOTHING_DONE" } ] }
+      """
+    # the seeded 7.60 rate is untouched, NOT overwritten with 9.99
+    And this C_Conversion_Rate exists:
+      | FromCurrency | ToCurrency | ConversionType | ValidFrom  | MultiplyRate | ValidTo    |
+      | EUR          | CNY        | S              | 2026-06-20 | 7.60         | 2056-12-31 |
+
+  # syncAdvise ifNotExists=FAIL: a missing rate yields a per-record error and writes no row
+  Scenario: A PUT with ifNotExists FAIL for a non-existing key fails that record and writes nothing
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/currencyconversion/rates' and fulfills with '422' status code
+      """
+      {
+        "syncAdvise": { "ifNotExists": "FAIL" },
+        "requestItems": [ { "fromCurrencyCode": "EUR", "toCurrencyCode": "CNY", "multiplyRate": 7.60, "validFrom": "2026-06-22", "conversionTypeCode": "S" } ]
+      }
+      """
+    Then the metasfresh REST-API responds with
+      """
+      { "syncOutcome": "ERROR",
+        "responseItems": [ { "fromCurrencyCode": "EUR", "toCurrencyCode": "CNY", "syncOutcome": "ERROR", "error": { "userFriendlyError": true } } ] }
+      """
+    And no C_Conversion_Rate exists:
+      | FromCurrency | ToCurrency | ConversionType | ValidFrom  |
+      | EUR          | CNY        | S              | 2026-06-22 |

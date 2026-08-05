@@ -23,7 +23,6 @@
 package de.metas.rest_api.v2.currencyconversion;
 
 import de.metas.Profiles;
-import de.metas.common.rest_api.v2.currencyconversion.BatchSyncOutcome;
 import de.metas.common.rest_api.v2.currencyconversion.JsonCurrency;
 import de.metas.common.rest_api.v2.currencyconversion.JsonNewestConversionRate;
 import de.metas.common.rest_api.v2.currencyconversion.JsonRequestConversionRateUpsert;
@@ -32,8 +31,8 @@ import de.metas.common.rest_api.v2.currencyconversion.JsonResponseCurrencies;
 import de.metas.common.rest_api.v2.currencyconversion.JsonResponseNewestConversionRates;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import de.metas.currency.ConversionRateQuery;
 import de.metas.rest_api.utils.v2.JsonErrors;
-import de.metas.rest_api.v2.currencyconversion.NewestConversionRatesService.NewestConversionRatesFilter;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -180,10 +179,10 @@ public class CurrencyConversionRestController
 		final Language adLanguage = Language.getLanguage(Env.getADLanguageOrBaseLanguage());
 		try
 		{
-			final NewestConversionRatesFilter filter = jsonConverters.toNewestRatesFilter(
+			final ConversionRateQuery query = jsonConverters.toNewestRatesFilter(
 					fromCurrencyCode, toCurrencyCode, conversionTypeCode, orgCode);
 
-			final List<JsonNewestConversionRate> rates = newestConversionRatesService.list(filter);
+			final List<JsonNewestConversionRate> rates = newestConversionRatesService.list(query);
 
 			return ResponseEntity.ok(JsonResponseNewestConversionRates.builder()
 					.rates(rates)

@@ -27,35 +27,41 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.currency.ConversionRate;
 import de.metas.currency.ConversionRateKey;
+import de.metas.currency.ConversionRateRepository;
 import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyRepository;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
-import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_Conversion_Rate;
 import org.compiere.model.I_C_Currency;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -72,8 +78,24 @@ public class ConversionRate_StepDef
 	private static final int SYSTEM_ORG_ID = 0;
 
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final CurrencyRepository currencyRepository = new CurrencyRepository();
+	private final ConversionRateRepository conversionRateRepository = new ConversionRateRepository();
+
+	/**
+	 * Natural keys of the {@code C_Conversion_Rate} rows this scenario asserts into existence (captured during the
+	 * scenario, when the DB context is up — a {@code @Before} would run before the infrastructure step). Each key's
+	 * reverse is added too, so the auto-created reciprocal is cleaned even when the scenario only asserts the forward
+	 * direction. {@link #cleanup_created_conversion_rates} deletes them so the shared executor DB is left as found.
+	 */
+	private final Set<ConversionRateKey> createdRateKeys = new HashSet<>();
+
+	/**
+	 * Per-ISO snapshot of {@code C_Currency.IsActive} taken by {@link #remember_currency_active_state} before the
+	 * scenario toggles it, so {@link #restore_currency_active_state} can put the shared executor DB back the way it
+	 * found it (this feature activates/deactivates currencies on the shared DB, which would otherwise leak into
+	 * sibling features on the same executor). Insertion-ordered for deterministic restore.
+	 */
+	private final Map<String, Boolean> rememberedActiveByIsoCode = new LinkedHashMap<>();
 
 	private final TestContext testContext;
 
@@ -97,7 +119,7 @@ public class ConversionRate_StepDef
 	 * }</pre>
 	 */
 	@Given("the following currencies are active:")
-	public void the_following_currencies_are_active(@NonNull final io.cucumber.datatable.DataTable dataTable)
+	public void the_following_currencies_are_active(@NonNull final DataTable dataTable)
 	{
 		setCurrenciesActive(dataTable, true);
 	}
@@ -115,27 +137,82 @@ public class ConversionRate_StepDef
 	 * }</pre>
 	 */
 	@Given("the following currencies are inactive:")
-	public void the_following_currencies_are_inactive(@NonNull final io.cucumber.datatable.DataTable dataTable)
+	public void the_following_currencies_are_inactive(@NonNull final DataTable dataTable)
 	{
 		setCurrenciesActive(dataTable, false);
 	}
 
-	private void setCurrenciesActive(@NonNull final io.cucumber.datatable.DataTable dataTable, final boolean active)
+	private void setCurrenciesActive(@NonNull final DataTable dataTable, final boolean active)
 	{
 		DataTableRows.of(dataTable).forEach(row -> {
 			final String isoCode = row.getAsString("ISO_Code");
-			final I_C_Currency currency = queryBL.createQueryBuilderOutOfTrx(I_C_Currency.class)
-					.addEqualsFilter(I_C_Currency.COLUMNNAME_ISO_Code, isoCode)
-					.create()
-					.firstNotNull(I_C_Currency.class);
+			final I_C_Currency currency = currencyRepository.getRecordByCurrencyCodeOrNull(CurrencyCode.ofThreeLetterCode(isoCode));
+			assertThat(currency).as("C_Currency with ISO_Code=%s must exist", isoCode).isNotNull();
 			currency.setIsActive(active);
 			InterfaceWrapperHelper.saveRecord(currency);
 		});
 	}
 
 	/**
+	 * Records the current {@code C_Currency.IsActive} of each listed ISO code, so a later
+	 * {@code Then the remembered currency active-states are restored} step can put the shared executor DB back to its
+	 * original state. Call this in the {@code Background} BEFORE the scenario activates/deactivates any currency, so
+	 * this feature does not leak an activation into sibling features that run on the same executor DB.
+	 *
+	 * <p><b>Gherkin usage example</b>:
+	 * <pre>{@code
+	 * And I remember the active-state of the following currencies:
+	 *   | ISO_Code |
+	 *   | EUR      |
+	 *   | CNY      |
+	 * }</pre>
+	 */
+	@Given("I remember the active-state of the following currencies:")
+	public void remember_currency_active_state(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final String isoCode = row.getAsString("ISO_Code");
+			final I_C_Currency currency = currencyRepository.getRecordByCurrencyCodeOrNull(CurrencyCode.ofThreeLetterCode(isoCode));
+			assertThat(currency).as("C_Currency with ISO_Code=%s must exist", isoCode).isNotNull();
+			rememberedActiveByIsoCode.put(isoCode, currency.isActive());
+		});
+	}
+
+	/**
+	 * Deletes the {@code C_Conversion_Rate} rows this scenario asserted into existence (and their reciprocals),
+	 * captured in {@link #createdRateKeys}, so the shared executor DB is left as found and re-runs start clean (rates
+	 * upsert as CREATED, not UPDATED). Runs after the scenario (DB context up); a no-op when nothing was captured.
+	 */
+	@After
+	public void cleanup_created_conversion_rates()
+	{
+		conversionRateRepository.deleteByKeys(createdRateKeys);
+		createdRateKeys.clear();
+	}
+
+	/**
+	 * Restores every currency remembered by {@link #remember_currency_active_state} to its recorded
+	 * {@code IsActive}, undoing the scenario's activations/deactivations on the shared executor DB — so the feature
+	 * file stays free of teardown plumbing and no scenario can forget to restore. A no-op when nothing was remembered
+	 * (a scenario with no {@code I remember ...} step).
+	 */
+	@After
+	public void restore_currency_active_state()
+	{
+		rememberedActiveByIsoCode.forEach((isoCode, wasActive) -> {
+			final I_C_Currency currency = currencyRepository.getRecordByCurrencyCodeOrNull(CurrencyCode.ofThreeLetterCode(isoCode));
+			if (currency != null)
+			{
+				currency.setIsActive(wasActive);
+				InterfaceWrapperHelper.saveRecord(currency);
+			}
+		});
+	}
+
+	/**
 	 * Asserts that exactly one {@code C_Conversion_Rate} row exists for the given natural key, with the given rates
-	 * and open/closed {@code ValidTo}. Scope: the session client + org 0 (the shared rows the upsert writes).
+	 * and open/closed {@code ValidTo}. The key uses org 0 (the shared rows the upsert writes); client is not part of
+	 * the rate's identity (the read is client-less, per the natural-key unique index).
 	 *
 	 * <p><b>Gherkin usage example</b>:
 	 * <pre>{@code
@@ -149,7 +226,7 @@ public class ConversionRate_StepDef
 	 * {@code null} (or an omitted cell) instead asserts a genuinely NULL ValidTo.
 	 */
 	@Then("this C_Conversion_Rate exists:")
-	public void this_conversion_rate_exists(@NonNull final io.cucumber.datatable.DataTable dataTable)
+	public void this_conversion_rate_exists(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(row -> {
 			final CurrencyId fromId = currencyId(row.getAsString("FromCurrency"));
@@ -157,7 +234,18 @@ public class ConversionRate_StepDef
 			final CurrencyConversionTypeId typeId = conversionTypeId(row.getAsOptionalString("ConversionType").orElse(null));
 			final LocalDate validFrom = row.getAsLocalDate("ValidFrom");
 
-			final I_C_Conversion_Rate rate = findRate(fromId, toId, typeId, validFrom);
+			final ConversionRateKey key = ConversionRateKey.builder()
+					.orgId(OrgId.ofRepoId(SYSTEM_ORG_ID))
+					.fromCurrencyId(fromId)
+					.toCurrencyId(toId)
+					.conversionTypeId(typeId)
+					.validFrom(validFrom)
+					.build();
+			// Remember this key (and its reverse, for the auto-created reciprocal) so the @After cleanup deletes it.
+			createdRateKeys.add(key);
+			createdRateKeys.add(key.getReverseKey());
+
+			final ConversionRate rate = conversionRateRepository.getByKey(key);
 			assertThat(rate)
 					.as("C_Conversion_Rate %s->%s type=%s validFrom=%s must exist",
 							row.getAsString("FromCurrency"), row.getAsString("ToCurrency"), typeId.getRepoId(), validFrom)
@@ -175,7 +263,7 @@ public class ConversionRate_StepDef
 					.map(LocalDate::parse);
 			if (expectedValidTo.isPresent())
 			{
-				assertThat(TimeUtil.asLocalDate(rate.getValidTo()))
+				assertThat(rate.getValidTo())
 						.as("ValidTo of %s->%s", row.getAsString("FromCurrency"), row.getAsString("ToCurrency"))
 						.isEqualTo(expectedValidTo.get());
 			}
@@ -200,7 +288,7 @@ public class ConversionRate_StepDef
 	 * }</pre>
 	 */
 	@Then("no C_Conversion_Rate exists:")
-	public void no_conversion_rate_exists(@NonNull final io.cucumber.datatable.DataTable dataTable)
+	public void no_conversion_rate_exists(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(row -> {
 			final CurrencyId fromId = currencyId(row.getAsString("FromCurrency"));
@@ -227,15 +315,13 @@ public class ConversionRate_StepDef
 	 * }</pre>
 	 */
 	@Then("the following currencies do not exist:")
-	public void the_following_currencies_do_not_exist(@NonNull final io.cucumber.datatable.DataTable dataTable)
+	public void the_following_currencies_do_not_exist(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(row -> {
 			final String isoCode = row.getAsString("ISO_Code");
-			final I_C_Currency currency = queryBL.createQueryBuilderOutOfTrx(I_C_Currency.class)
-					.addEqualsFilter(I_C_Currency.COLUMNNAME_ISO_Code, isoCode)
-					.create()
-					.first(I_C_Currency.class);
-			assertThat(currency).as("no C_Currency with ISO_Code=%s must exist", isoCode).isNull();
+			assertThat(currencyRepository.existsByCurrencyCode(CurrencyCode.ofThreeLetterCode(isoCode)))
+					.as("no C_Currency with ISO_Code=%s must exist", isoCode)
+					.isFalse();
 		});
 	}
 
@@ -272,11 +358,11 @@ public class ConversionRate_StepDef
 		assertThat(rates.size()).as("number of rates in newestRates response").isEqualTo(expectedCount);
 	}
 
-	private java.util.List<String> currencyCodesInResponse()
+	private List<String> currencyCodesInResponse()
 	{
 		final JsonNode currencies = responseTree().at("/currencies");
 		assertThat(currencies.isArray()).as("GET currencies response must carry a 'currencies' array").isTrue();
-		final java.util.List<String> codes = new java.util.ArrayList<>();
+		final List<String> codes = new ArrayList<>();
 		currencies.forEach(node -> codes.add(node.path("currencyCode").asText()));
 		return codes;
 	}
@@ -311,14 +397,15 @@ public class ConversionRate_StepDef
 	}
 
 	@Nullable
-	private I_C_Conversion_Rate findRate(
+	private ConversionRate findRate(
 			@NonNull final CurrencyId fromId,
 			@NonNull final CurrencyId toId,
 			@NonNull final CurrencyConversionTypeId typeId,
 			@NonNull final LocalDate validFrom)
 	{
-		// The public natural key of the C_Conversion_Rate direction (org 0 = the shared rows the upsert writes),
-		// the same value object the REST upsert uses for its reverse-detection map.
+		// The exact-key lookup on the C_Conversion_Rate direction (org 0 = the shared rows the upsert writes).
+		// The repository owns the ValidFrom-in-org-zone conversion and the typed-id -> repo-int mapping (and the
+		// read is client-less, per the natural-key unique index), so this passes the typed ids straight through.
 		final ConversionRateKey key = ConversionRateKey.builder()
 				.orgId(OrgId.ofRepoId(SYSTEM_ORG_ID))
 				.fromCurrencyId(fromId)
@@ -327,19 +414,7 @@ public class ConversionRate_StepDef
 				.validFrom(validFrom)
 				.build();
 
-		// Convert ValidFrom through the org's zone (matching the endpoint's store path), so the lookup stays
-		// consistent even if a future scenario uses a regular (non-UTC) org rather than org 0.
-		final ZoneId orgZoneId = orgDAO.getTimeZone(key.getOrgId());
-		final ClientId clientId = Env.getClientId();
-		return queryBL.createQueryBuilderOutOfTrx(I_C_Conversion_Rate.class)
-				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_AD_Client_ID, clientId.getRepoId())
-				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_AD_Org_ID, key.getOrgId().getRepoId())
-				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_C_Currency_ID, key.getFromCurrencyId().getRepoId())
-				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_C_Currency_ID_To, key.getToCurrencyId().getRepoId())
-				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_C_ConversionType_ID, key.getConversionTypeId().getRepoId())
-				.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_ValidFrom, TimeUtil.asTimestamp(key.getValidFrom(), orgZoneId))
-				.create()
-				.first(I_C_Conversion_Rate.class);
+		return conversionRateRepository.getByKey(key);
 	}
 
 	/**

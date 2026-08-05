@@ -23,12 +23,13 @@
 package de.metas.rest_api.v2.currencyconversion;
 
 import de.metas.common.rest_api.v2.currencyconversion.JsonNewestConversionRate;
+import de.metas.currency.ConversionRateQuery;
+import de.metas.currency.ConversionRateRepository;
 import de.metas.currency.ConversionTypeMethod;
-import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.currency.CurrencyRepository;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
-import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
@@ -47,6 +48,7 @@ import java.util.List;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 
 @ExtendWith(AdempiereTestWatcher.class)
@@ -54,7 +56,7 @@ class NewestConversionRatesServiceTest
 {
 	private NewestConversionRatesService newestConversionRatesService;
 	private JsonConversionRateConverters jsonConverters;
-	private PlainCurrencyDAO currencyDAO;
+	private ConversionRateRepository conversionRateRepository;
 
 	private CurrencyId eur;
 	private CurrencyId cny;
@@ -68,10 +70,8 @@ class NewestConversionRatesServiceTest
 		AdempiereTestHelper.get().init();
 		AdempiereTestHelper.setupContext_AD_Client_IfNotSet();
 
-		currencyDAO = (PlainCurrencyDAO)Services.get(de.metas.currency.ICurrencyDAO.class);
-
-		final de.metas.currency.CurrencyRepository currencyRepository = new de.metas.currency.CurrencyRepository();
-		final de.metas.currency.ConversionRateRepository conversionRateRepository = new de.metas.currency.ConversionRateRepository();
+		final CurrencyRepository currencyRepository = new CurrencyRepository();
+		conversionRateRepository = new ConversionRateRepository();
 		jsonConverters = new JsonConversionRateConverters(currencyRepository, conversionRateRepository);
 		newestConversionRatesService = new NewestConversionRatesService(
 				conversionRateRepository,
@@ -80,8 +80,8 @@ class NewestConversionRatesServiceTest
 		eur = createActiveCurrency("EUR");
 		cny = createActiveCurrency("CNY");
 		usd = createActiveCurrency("USD");
-		spotTypeId = currencyDAO.getConversionTypeId(ConversionTypeMethod.Spot);
-		periodEndTypeId = currencyDAO.getConversionTypeId(ConversionTypeMethod.PeriodEnd);
+		spotTypeId = conversionRateRepository.getConversionTypeId(ConversionTypeMethod.Spot);
+		periodEndTypeId = conversionRateRepository.getConversionTypeId(ConversionTypeMethod.PeriodEnd);
 	}
 
 	private CurrencyId createActiveCurrency(final String isoCode)
@@ -266,5 +266,17 @@ class NewestConversionRatesServiceTest
 		assertThat(result).hasSize(1);
 		// 1/8 = 0.125 000 000 000 (scale 12, HALF_UP)
 		assertThat(result.get(0).getDivideRate()).isEqualByComparingTo("0.125000000000");
+	}
+
+	@Test
+	void getByQuery_emptyQuery_isRejected()
+	{
+		// EMPTY is exactly the default-built query, and an empty query would match every row → reject it.
+		assertThat(ConversionRateQuery.builder().build()).isEqualTo(ConversionRateQuery.EMPTY);
+
+		assertThatThrownBy(() -> conversionRateRepository.getByQuery(ConversionRateQuery.EMPTY))
+				.as("an empty query must be rejected (it would match every row)")
+				.isInstanceOf(RuntimeException.class)
+				.hasMessageContaining("non-empty query");
 	}
 }

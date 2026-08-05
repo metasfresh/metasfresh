@@ -1,5 +1,6 @@
 package de.metas.currency;
 
+import com.google.common.collect.ImmutableList;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_Currency;
 import org.springframework.stereotype.Repository;
@@ -8,7 +9,9 @@ import javax.annotation.Nullable;
 
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -103,5 +106,69 @@ public class CurrencyRepository
 	public CurrencyPrecision getCostingPrecision(@NonNull final CurrencyId currencyId)
 	{
 		return getById(currencyId).getCostingPrecision();
+	}
+
+	/**
+	 * The <b>active</b> currencies, ordered by ISO code, as the minimal {@link ActiveCurrency} data the REST
+	 * currency listing needs ({@code ISO_Code}, {@code Description}, {@link CurrencyId}). The domain {@link Currency}
+	 * object is deliberately not returned here: it does not carry the {@code Description} the {@code JsonCurrency}
+	 * name field is built from (it has a {@code symbol}, not a description), so this returns a purpose-built record.
+	 */
+	@NonNull
+	public ImmutableList<ActiveCurrency> getActiveCurrenciesOrderedByCode()
+	{
+		return queryBL
+				.createQueryBuilderOutOfTrx(I_C_Currency.class)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_C_Currency.COLUMNNAME_ISO_Code)
+				.create()
+				.stream()
+				.map(CurrencyRepository::toActiveCurrency)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private static ActiveCurrency toActiveCurrency(@NonNull final I_C_Currency record)
+	{
+		return ActiveCurrency.builder()
+				.id(CurrencyId.ofRepoId(record.getC_Currency_ID()))
+				.isoCode(record.getISO_Code())
+				.description(record.getDescription())
+				.build();
+	}
+
+	/**
+	 * The {@code C_Currency} record for the given ISO code (any active state), or {@code null} if none exists.
+	 * Out-of-trx read on {@code ISO_Code}; not active-filtered on purpose, so a caller (e.g. a test toggling
+	 * {@code IsActive}) can obtain and mutate an inactive currency too.
+	 */
+	@Nullable
+	public I_C_Currency getRecordByCurrencyCodeOrNull(@NonNull final CurrencyCode currencyCode)
+	{
+		return queryBL
+				.createQueryBuilderOutOfTrx(I_C_Currency.class)
+				.addEqualsFilter(I_C_Currency.COLUMNNAME_ISO_Code, currencyCode.toThreeLetterCode())
+				.create()
+				.first(I_C_Currency.class);
+	}
+
+	/** {@code true} iff a {@code C_Currency} row exists for the given ISO code (any active state). */
+	public boolean existsByCurrencyCode(@NonNull final CurrencyCode currencyCode)
+	{
+		return getRecordByCurrencyCodeOrNull(currencyCode) != null;
+	}
+
+	/**
+	 * The minimal read-only projection of an <b>active</b> {@code C_Currency} the REST currency listing builds its
+	 * {@code JsonCurrency} from: the ISO {@code code}, the {@code description} (the listing's {@code name}), and the
+	 * typed {@link CurrencyId}.
+	 */
+	@Value
+	@Builder
+	public static class ActiveCurrency
+	{
+		@NonNull CurrencyId id;
+		@NonNull String isoCode;
+		@Nullable String description;
 	}
 }

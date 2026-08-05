@@ -23,19 +23,16 @@
 package de.metas.rest_api.v2.currencyconversion;
 
 import de.metas.common.rest_api.v2.currencyconversion.JsonNewestConversionRate;
+import de.metas.currency.ConversionRate;
+import de.metas.currency.ConversionRateQuery;
 import de.metas.currency.ConversionRateRepository;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
-import de.metas.organization.OrgId;
-import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
-import org.compiere.model.I_C_Conversion_Rate;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -63,39 +60,23 @@ public class NewestConversionRatesService
 	@NonNull private final JsonConversionRateConverters jsonConverters;
 
 	@NonNull
-	public List<JsonNewestConversionRate> list(@NonNull final NewestConversionRatesFilter filter)
+	public List<JsonNewestConversionRate> list(@NonNull final ConversionRateQuery query)
 	{
-		final List<I_C_Conversion_Rate> rates = conversionRateRepository.getNewestRatesOrderedByValidFromDesc(
-				filter.getOrgId(), filter.getFromCurrencyId(), filter.getToCurrencyId(), filter.getConversionTypeId());
+		final List<ConversionRate> rates = conversionRateRepository.getNewestRatesOrderedByValidFromDesc(query);
 
 		// Ordered ValidFrom-descending, so the FIRST row seen per combo is the newest -> first-wins.
-		final Map<ComboKey, I_C_Conversion_Rate> newestByCombo = new LinkedHashMap<>();
-		for (final I_C_Conversion_Rate rate : rates)
+		final Map<ComboKey, ConversionRate> newestByCombo = new LinkedHashMap<>();
+		for (final ConversionRate rate : rates)
 		{
 			newestByCombo.putIfAbsent(ComboKey.ofRate(rate), rate);
 		}
 
 		final List<JsonNewestConversionRate> result = new ArrayList<>(newestByCombo.size());
-		for (final I_C_Conversion_Rate rate : newestByCombo.values())
+		for (final ConversionRate rate : newestByCombo.values())
 		{
 			result.add(jsonConverters.toJsonNewestConversionRate(rate));
 		}
 		return result;
-	}
-
-	/**
-	 * Typed filter for {@link #list(NewestConversionRatesFilter)}; all fields optional ({@code null} = no
-	 * narrowing). The raw request-param strings are resolved to these typed ids at the controller boundary via
-	 * {@link JsonConversionRateConverters#toNewestRatesFilter}, so this service does no String -> id resolution.
-	 */
-	@Value
-	@Builder
-	public static class NewestConversionRatesFilter
-	{
-		@Nullable OrgId orgId;
-		@Nullable CurrencyId fromCurrencyId;
-		@Nullable CurrencyId toCurrencyId;
-		@Nullable CurrencyConversionTypeId conversionTypeId;
 	}
 
 	/** The per-combo grouping key: {@code (from, to, type)} by typed id. */
@@ -107,12 +88,12 @@ public class NewestConversionRatesService
 		@NonNull private final CurrencyId toCurrencyId;
 		@NonNull private final CurrencyConversionTypeId conversionTypeId;
 
-		private static ComboKey ofRate(@NonNull final I_C_Conversion_Rate rate)
+		private static ComboKey ofRate(@NonNull final ConversionRate rate)
 		{
 			return new ComboKey(
-					CurrencyId.ofRepoId(rate.getC_Currency_ID()),
-					CurrencyId.ofRepoId(rate.getC_Currency_ID_To()),
-					CurrencyConversionTypeId.ofRepoId(rate.getC_ConversionType_ID()));
+					rate.getFromCurrencyId(),
+					rate.getToCurrencyId(),
+					rate.getConversionTypeId());
 		}
 	}
 }

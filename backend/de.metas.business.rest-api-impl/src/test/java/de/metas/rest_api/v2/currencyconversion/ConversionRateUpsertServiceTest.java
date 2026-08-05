@@ -23,7 +23,7 @@
 package de.metas.rest_api.v2.currencyconversion;
 
 import de.metas.common.rest_api.v2.SyncAdvise;
-import de.metas.common.rest_api.v2.currencyconversion.BatchSyncOutcome;
+import de.metas.common.rest_api.v2.currencyconversion.JsonResponseConversionRateUpsert.BatchSyncOutcome;
 import de.metas.common.rest_api.v2.currencyconversion.JsonRequestConversionRateUpsert;
 import de.metas.common.rest_api.v2.currencyconversion.JsonRequestConversionRateUpsertItem;
 import de.metas.common.rest_api.v2.currencyconversion.JsonResponseConversionRateUpsert;

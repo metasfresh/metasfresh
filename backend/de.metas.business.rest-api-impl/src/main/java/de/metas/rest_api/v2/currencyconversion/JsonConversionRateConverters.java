@@ -27,7 +27,9 @@ import de.metas.RestUtils;
 import de.metas.common.rest_api.v2.currencyconversion.JsonCurrency;
 import de.metas.common.rest_api.v2.currencyconversion.JsonNewestConversionRate;
 import de.metas.common.rest_api.v2.currencyconversion.JsonRequestConversionRateUpsertItem;
+import de.metas.currency.ConversionRate;
 import de.metas.currency.ConversionRateCreateRequest;
+import de.metas.currency.ConversionRateQuery;
 import de.metas.currency.ConversionRateRepository;
 import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.CurrencyCode;
@@ -37,17 +39,12 @@ import de.metas.money.CurrencyId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
-import de.metas.rest_api.v2.currencyconversion.NewestConversionRatesService.NewestConversionRatesFilter;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
-import org.compiere.model.I_C_Conversion_Rate;
-import org.compiere.model.I_C_Currency;
-import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -71,33 +68,29 @@ import java.time.ZoneId;
 @RequiredArgsConstructor
 public class JsonConversionRateConverters
 {
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final CurrencyRepository currencyRepository;
 	@NonNull private final ConversionRateRepository conversionRateRepository;
 
 	/**
 	 * The active currencies, ordered by ISO code, mapped to {@link JsonCurrency} ({@code currencyCode} =
-	 * ISO code, {@code name} = {@code Description}).
+	 * ISO code, {@code name} = {@code Description}). The active-only, ISO-ordered read is owned by
+	 * {@link CurrencyRepository#getActiveCurrenciesOrderedByCode()}.
 	 */
 	@NonNull
 	public ImmutableList<JsonCurrency> getActiveCurrencies()
 	{
-		return queryBL
-				.createQueryBuilder(I_C_Currency.class)
-				.addOnlyActiveRecordsFilter()
-				.orderBy(I_C_Currency.COLUMNNAME_ISO_Code)
-				.create()
+		return currencyRepository.getActiveCurrenciesOrderedByCode()
 				.stream()
 				.map(JsonConversionRateConverters::toJsonCurrency)
 				.collect(ImmutableList.toImmutableList());
 	}
 
 	@NonNull
-	private static JsonCurrency toJsonCurrency(@NonNull final I_C_Currency currency)
+	private static JsonCurrency toJsonCurrency(@NonNull final CurrencyRepository.ActiveCurrency currency)
 	{
 		return JsonCurrency.builder()
-				.currencyCode(currency.getISO_Code())
+				.currencyCode(currency.getIsoCode())
 				.name(currency.getDescription())
 				.build();
 	}
@@ -157,19 +150,20 @@ public class JsonConversionRateConverters
 
 	/**
 	 * Wraps the four raw {@code GET /newestRates} request params into the fully-resolved, typed
-	 * {@link NewestConversionRatesFilter} at the controller boundary, so raw strings never travel into the service.
+	 * {@link ConversionRateQuery} at the controller boundary, so raw strings never travel into the service.
 	 * Each param is optional: a blank/omitted value resolves to {@code null} (no narrowing — spans all). A non-blank
 	 * value is resolved to its typed id here; an unknown currency ISO or conversion-type code raises the same
 	 * {@code markAsUserValidationError} as the upsert path (surfaced by the controller as a friendly {@code 422}).
+	 * {@code validFrom}/{@code clientId} are not part of the newest-rates narrowing, so they are left {@code null}.
 	 */
 	@NonNull
-	public NewestConversionRatesFilter toNewestRatesFilter(
+	public ConversionRateQuery toNewestRatesFilter(
 			@Nullable final String fromCurrencyCode,
 			@Nullable final String toCurrencyCode,
 			@Nullable final String conversionTypeCode,
 			@Nullable final String orgCode)
 	{
-		return NewestConversionRatesFilter.builder()
+		return ConversionRateQuery.builder()
 				.orgId(resolveOptionalOrgId(orgCode))
 				.fromCurrencyId(resolveOptionalCurrencyId(fromCurrencyCode))
 				.toCurrencyId(resolveOptionalCurrencyId(toCurrencyCode))
@@ -208,22 +202,18 @@ public class JsonConversionRateConverters
 	}
 
 	/**
-	 * Maps a stored {@code C_Conversion_Rate} row to its response DTO. {@code ValidFrom} is read back through the
-	 * <b>org's</b> zone (matching the store path), so store-and-read use the same org zone consistently.
+	 * Maps a stored {@link ConversionRate} POJO to its response DTO. The POJO already carries the typed ids and a
+	 * {@link LocalDate} {@code validFrom} converted through the org's zone by the repository (matching the store
+	 * path), so store-and-read use the same org zone consistently.
 	 */
 	@NonNull
-	public JsonNewestConversionRate toJsonNewestConversionRate(@NonNull final I_C_Conversion_Rate rate)
+	public JsonNewestConversionRate toJsonNewestConversionRate(@NonNull final ConversionRate rate)
 	{
-		final CurrencyId fromCurrencyId = CurrencyId.ofRepoId(rate.getC_Currency_ID());
-		final CurrencyId toCurrencyId = CurrencyId.ofRepoId(rate.getC_Currency_ID_To());
-		final CurrencyConversionTypeId conversionTypeId = CurrencyConversionTypeId.ofRepoId(rate.getC_ConversionType_ID());
-		final ZoneId orgZoneId = orgDAO.getTimeZone(OrgId.ofRepoId(rate.getAD_Org_ID()));
-
 		return JsonNewestConversionRate.builder()
-				.fromCurrencyCode(currencyRepository.getCurrencyCodeById(fromCurrencyId).toThreeLetterCode())
-				.toCurrencyCode(currencyRepository.getCurrencyCodeById(toCurrencyId).toThreeLetterCode())
-				.conversionTypeCode(conversionRateRepository.getConversionTypeMethodById(conversionTypeId).getCode())
-				.validFrom(TimeUtil.asLocalDate(rate.getValidFrom(), orgZoneId))
+				.fromCurrencyCode(currencyRepository.getCurrencyCodeById(rate.getFromCurrencyId()).toThreeLetterCode())
+				.toCurrencyCode(currencyRepository.getCurrencyCodeById(rate.getToCurrencyId()).toThreeLetterCode())
+				.conversionTypeCode(conversionRateRepository.getConversionTypeMethodById(rate.getConversionTypeId()).getCode())
+				.validFrom(rate.getValidFrom())
 				.multiplyRate(rate.getMultiplyRate())
 				.divideRate(rate.getDivideRate())
 				.build();
