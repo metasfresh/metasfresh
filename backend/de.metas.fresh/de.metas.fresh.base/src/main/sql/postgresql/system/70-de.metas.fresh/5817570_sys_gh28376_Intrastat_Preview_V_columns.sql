@@ -21,7 +21,9 @@ SELECT
         IsSOTrx,
         M_Product_ID::text,
         C_UOM_ID::text,
-        C_Currency_ID::text
+        C_Currency_ID::text,
+        AD_Org_ID::text,
+        vataxid
     )), 1, 10))::bit(32)::int) AS Intrastat_Preview_V_ID,
 
     1000000::numeric(10,0)                                          AS AD_Client_ID,
