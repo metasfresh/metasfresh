@@ -30,7 +30,7 @@ import de.pentabyte.springfox.ApiEnum;
  * outcome is {@code ERROR} ({@code NOTHING_DONE} counts as applied, not failed).
  * <ul>
  *     <li>{@link #SUCCESS} — no item failed (including the degenerate empty batch); HTTP 200.</li>
- *     <li>{@link #PARTIAL_SUCCESS} — some items failed but not all; HTTP 200.</li>
+ *     <li>{@link #PARTIAL_SUCCESS} — some items failed but not all; HTTP 207 Multi-Status.</li>
  *     <li>{@link #ERROR} — every item failed (non-empty batch); HTTP 422.</li>
  * </ul>
  */
