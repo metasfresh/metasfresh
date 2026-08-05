@@ -28,6 +28,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Value;
@@ -54,6 +55,7 @@ public class JsonResponseBPartnerUpsertItem extends JsonResponseUpsertItem
 	@Nullable
 	Integer creditorId;
 
+	@Builder(builderMethodName = "bpartnerUpsertItemBuilder")
 	@JsonCreator
 	public JsonResponseBPartnerUpsertItem(
 			@JsonProperty("identifier") @NonNull final String identifier,
@@ -65,58 +67,5 @@ public class JsonResponseBPartnerUpsertItem extends JsonResponseUpsertItem
 		super(identifier, metasfreshId, syncOutcome);
 		this.debtorId = debtorId;
 		this.creditorId = creditorId;
-	}
-
-	public static JsonResponseBPartnerUpsertItemBuilder bpartnerUpsertItemBuilder()
-	{
-		return new JsonResponseBPartnerUpsertItemBuilder();
-	}
-
-	public static final class JsonResponseBPartnerUpsertItemBuilder
-	{
-		private String identifier;
-		private JsonMetasfreshId metasfreshId;
-		private SyncOutcome syncOutcome;
-		private Integer debtorId;
-		private Integer creditorId;
-
-		private JsonResponseBPartnerUpsertItemBuilder()
-		{
-		}
-
-		public JsonResponseBPartnerUpsertItemBuilder identifier(@NonNull final String identifier)
-		{
-			this.identifier = identifier;
-			return this;
-		}
-
-		public JsonResponseBPartnerUpsertItemBuilder metasfreshId(@Nullable final JsonMetasfreshId metasfreshId)
-		{
-			this.metasfreshId = metasfreshId;
-			return this;
-		}
-
-		public JsonResponseBPartnerUpsertItemBuilder syncOutcome(@NonNull final SyncOutcome syncOutcome)
-		{
-			this.syncOutcome = syncOutcome;
-			return this;
-		}
-
-		public JsonResponseBPartnerUpsertItemBuilder debtorId(@Nullable final Integer debtorId)
-		{
-			this.debtorId = debtorId;
-			return this;
-		}
-
-		public JsonResponseBPartnerUpsertItemBuilder creditorId(@Nullable final Integer creditorId)
-		{
-			this.creditorId = creditorId;
-			return this;
-		}
-
-		public JsonResponseBPartnerUpsertItem build()
-		{
-			return new JsonResponseBPartnerUpsertItem(identifier, metasfreshId, syncOutcome, debtorId, creditorId);
-		}
 	}
 }

@@ -1,10 +1,12 @@
--- BPartner number-generation feature — core sysconfig gates and deactivated default sequences.
--- Three AD_SysConfig rows (blank value, client 0 / org 0) ship the sysconfig keys the
--- BPartner number-generation service reads; blank value means the feature is off for every
--- tenant until a customer explicitly sets the value via set_sysconfig_value().
--- Two AD_Sequence rows at AD_Org_ID=1000000 are inert scaffolding: they are not referenced
--- by any sysconfig row here; a customer wires them up by writing the sequence name into the
--- DebtorNoSequence / CreditorNoSequence sysconfigs.
+-- BPartner number-generation feature — core sysconfig gates and pre-wired default sequences.
+-- Three AD_SysConfig rows (client 0 / org 0) ship the sysconfig keys the BPartner number-generation
+-- service reads.
+--   NumberResolverOverride ships blank + IsActive='Y' (no shipped default; customer sets a DB function name).
+--   DebtorNoSequence / CreditorNoSequence ship Value=AD_Sequence_ID of the default sequence + IsActive='N'.
+--     IsActive='N' means SysConfigDAO's active-filtered lookup treats the row as "not configured"
+--     (feature off) until a customer flips IsActive='Y', which activates the shipped default sequence
+--     with no additional id-lookup step.
+-- Two AD_Sequence rows at AD_Org_ID=1000000 are the default sequences pre-wired into the sysconfigs above.
 --
 -- IDs allocated from idserver.metas.de on 2026-08-04:
 --   AD_SysConfig 541842 (de.metas.bpartner.NumberResolverOverride)
@@ -28,32 +30,38 @@ WHERE NOT EXISTS (
     SELECT 1 FROM AD_SysConfig WHERE Name = 'de.metas.bpartner.NumberResolverOverride'
 );
 
--- Sysconfig: name of the AD_Sequence to use for debtor numbers (blank = feature off)
+-- Sysconfig: AD_Sequence_ID to use for debtor numbers (IsActive='N' = feature off until customer activates)
+-- Value=556615 is the AD_Sequence_ID of BPartner_DebtorNo_Default (created below in this script).
+-- IsActive='N': SysConfigDAO filters WHERE IsActive='Y', so this row is invisible until a customer
+-- sets IsActive='Y', which activates the shipped default sequence with no further id-lookup step.
 INSERT INTO AD_SysConfig (AD_Client_ID, AD_Org_ID, AD_SysConfig_ID, ConfigurationLevel,
                           Created, CreatedBy, Updated, UpdatedBy,
                           EntityType, IsActive, Name, Value, Description)
 SELECT 0, 0, 541843 /*From ID Server*/, 'O',
        TO_TIMESTAMP('2026-08-04 10:00:01', 'YYYY-MM-DD HH24:MI:SS'), 100,
        TO_TIMESTAMP('2026-08-04 10:00:01', 'YYYY-MM-DD HH24:MI:SS'), 100,
-       'D', 'Y',
+       'D', 'N',
        'de.metas.bpartner.DebtorNoSequence',
-       '',
-       'Name of the AD_Sequence to use for auto-generating debtor numbers. Leave blank to disable auto-generation.'
+       '556615',
+       'AD_Sequence_ID to use for auto-generating debtor numbers. Set IsActive=Y to activate the shipped default sequence (ID 556615 = BPartner_DebtorNo_Default).'
 WHERE NOT EXISTS (
     SELECT 1 FROM AD_SysConfig WHERE Name = 'de.metas.bpartner.DebtorNoSequence'
 );
 
--- Sysconfig: name of the AD_Sequence to use for creditor numbers (blank = feature off)
+-- Sysconfig: AD_Sequence_ID to use for creditor numbers (IsActive='N' = feature off until customer activates)
+-- Value=556616 is the AD_Sequence_ID of BPartner_CreditorNo_Default (created below in this script).
+-- IsActive='N': SysConfigDAO filters WHERE IsActive='Y', so this row is invisible until a customer
+-- sets IsActive='Y', which activates the shipped default sequence with no further id-lookup step.
 INSERT INTO AD_SysConfig (AD_Client_ID, AD_Org_ID, AD_SysConfig_ID, ConfigurationLevel,
                           Created, CreatedBy, Updated, UpdatedBy,
                           EntityType, IsActive, Name, Value, Description)
 SELECT 0, 0, 541844 /*From ID Server*/, 'O',
        TO_TIMESTAMP('2026-08-04 10:00:02', 'YYYY-MM-DD HH24:MI:SS'), 100,
        TO_TIMESTAMP('2026-08-04 10:00:02', 'YYYY-MM-DD HH24:MI:SS'), 100,
-       'D', 'Y',
+       'D', 'N',
        'de.metas.bpartner.CreditorNoSequence',
-       '',
-       'Name of the AD_Sequence to use for auto-generating creditor numbers. Leave blank to disable auto-generation.'
+       '556616',
+       'AD_Sequence_ID to use for auto-generating creditor numbers. Set IsActive=Y to activate the shipped default sequence (ID 556616 = BPartner_CreditorNo_Default).'
 WHERE NOT EXISTS (
     SELECT 1 FROM AD_SysConfig WHERE Name = 'de.metas.bpartner.CreditorNoSequence'
 );
