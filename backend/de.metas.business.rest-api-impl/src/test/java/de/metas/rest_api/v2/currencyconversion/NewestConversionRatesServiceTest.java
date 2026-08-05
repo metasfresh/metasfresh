@@ -53,6 +53,7 @@ import static org.assertj.core.api.Assertions.tuple;
 class NewestConversionRatesServiceTest
 {
 	private NewestConversionRatesService newestConversionRatesService;
+	private JsonConversionRateConverters jsonConverters;
 	private PlainCurrencyDAO currencyDAO;
 
 	private CurrencyId eur;
@@ -71,9 +72,10 @@ class NewestConversionRatesServiceTest
 
 		final de.metas.currency.CurrencyRepository currencyRepository = new de.metas.currency.CurrencyRepository();
 		final de.metas.currency.ConversionRateRepository conversionRateRepository = new de.metas.currency.ConversionRateRepository();
+		jsonConverters = new JsonConversionRateConverters(currencyRepository, conversionRateRepository);
 		newestConversionRatesService = new NewestConversionRatesService(
 				conversionRateRepository,
-				new JsonConversionRateConverters(currencyRepository, conversionRateRepository));
+				jsonConverters);
 
 		eur = createActiveCurrency("EUR");
 		cny = createActiveCurrency("CNY");
@@ -123,9 +125,18 @@ class NewestConversionRatesServiceTest
 		return ClientId.METASFRESH;
 	}
 
-	private List<JsonNewestConversionRate> list(final NewestConversionRatesService.NewestConversionRatesFilter filter)
+	/**
+	 * Mirrors the production controller: wrap the raw request-param strings into the typed filter via the converter
+	 * (so the test still exercises string -> typed-id resolution), then call the service.
+	 */
+	private List<JsonNewestConversionRate> list(
+			final String fromCurrencyCode,
+			final String toCurrencyCode,
+			final String conversionTypeCode,
+			final String orgCode)
 	{
-		return newestConversionRatesService.list(filter);
+		return newestConversionRatesService.list(
+				jsonConverters.toNewestRatesFilter(fromCurrencyCode, toCurrencyCode, conversionTypeCode, orgCode));
 	}
 
 	@Test
@@ -143,8 +154,7 @@ class NewestConversionRatesServiceTest
 		createRate(clientId, org0, eur, usd, spotTypeId, LocalDate.parse("2026-06-01"), "1.10");
 		createRate(clientId, org0, eur, usd, spotTypeId, LocalDate.parse("2026-06-02"), "1.11");
 
-		final List<JsonNewestConversionRate> result = list(
-				NewestConversionRatesService.NewestConversionRatesFilter.builder().build());
+		final List<JsonNewestConversionRate> result = list(null, null, null, null);
 
 		// exactly one row per combo (2 combos), each the newest ValidFrom
 		assertThat(result).hasSize(2);
@@ -169,8 +179,7 @@ class NewestConversionRatesServiceTest
 		createRate(clientId, org0, eur, cny, spotTypeId, LocalDate.parse("2026-06-02"), "8.10");
 		createRate(clientId, org0, eur, cny, periodEndTypeId, LocalDate.parse("2026-06-02"), "8.15");
 
-		final List<JsonNewestConversionRate> result = list(
-				NewestConversionRatesService.NewestConversionRatesFilter.builder().build());
+		final List<JsonNewestConversionRate> result = list(null, null, null, null);
 
 		assertThat(result).hasSize(2);
 		assertThat(result)
@@ -187,10 +196,7 @@ class NewestConversionRatesServiceTest
 		createRate(clientId, org0, eur, cny, spotTypeId, LocalDate.parse("2026-06-02"), "8.10");
 		createRate(clientId, org0, usd, cny, spotTypeId, LocalDate.parse("2026-06-02"), "7.00");
 
-		final List<JsonNewestConversionRate> result = list(
-				NewestConversionRatesService.NewestConversionRatesFilter.builder()
-						.fromCurrencyCode("USD")
-						.build());
+		final List<JsonNewestConversionRate> result = list("USD", null, null, null);
 
 		assertThat(result).hasSize(1);
 		assertThat(result.get(0).getFromCurrencyCode()).isEqualTo("USD");
@@ -206,10 +212,7 @@ class NewestConversionRatesServiceTest
 		createRate(clientId, org0, eur, cny, spotTypeId, LocalDate.parse("2026-06-02"), "8.10");
 		createRate(clientId, org0, eur, usd, spotTypeId, LocalDate.parse("2026-06-02"), "1.11");
 
-		final List<JsonNewestConversionRate> result = list(
-				NewestConversionRatesService.NewestConversionRatesFilter.builder()
-						.toCurrencyCode("USD")
-						.build());
+		final List<JsonNewestConversionRate> result = list(null, "USD", null, null);
 
 		assertThat(result).hasSize(1);
 		assertThat(result.get(0).getToCurrencyCode()).isEqualTo("USD");
@@ -224,10 +227,7 @@ class NewestConversionRatesServiceTest
 		createRate(clientId, org0, eur, cny, spotTypeId, LocalDate.parse("2026-06-02"), "8.10");
 		createRate(clientId, org0, eur, cny, periodEndTypeId, LocalDate.parse("2026-06-02"), "8.15");
 
-		final List<JsonNewestConversionRate> result = list(
-				NewestConversionRatesService.NewestConversionRatesFilter.builder()
-						.conversionTypeCode("P")
-						.build());
+		final List<JsonNewestConversionRate> result = list(null, null, "P", null);
 
 		assertThat(result).hasSize(1);
 		assertThat(result.get(0).getConversionTypeCode()).isEqualTo("P");
@@ -246,8 +246,7 @@ class NewestConversionRatesServiceTest
 		// a DIFFERENT, later row belonging to another client -> must NOT leak into the result
 		createRate(otherClientId, org0, eur, cny, spotTypeId, LocalDate.parse("2026-06-05"), "9.99");
 
-		final List<JsonNewestConversionRate> result = list(
-				NewestConversionRatesService.NewestConversionRatesFilter.builder().build());
+		final List<JsonNewestConversionRate> result = list(null, null, null, null);
 
 		assertThat(result).hasSize(1);
 		assertThat(result.get(0).getValidFrom()).isEqualTo(LocalDate.parse("2026-06-02"));
@@ -262,8 +261,7 @@ class NewestConversionRatesServiceTest
 
 		createRate(clientId, org0, eur, cny, spotTypeId, LocalDate.parse("2026-06-02"), "8.00");
 
-		final List<JsonNewestConversionRate> result = list(
-				NewestConversionRatesService.NewestConversionRatesFilter.builder().build());
+		final List<JsonNewestConversionRate> result = list(null, null, null, null);
 
 		assertThat(result).hasSize(1);
 		// 1/8 = 0.125 000 000 000 (scale 12, HALF_UP)

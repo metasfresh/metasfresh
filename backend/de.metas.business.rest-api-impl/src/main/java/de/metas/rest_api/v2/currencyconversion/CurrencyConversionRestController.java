@@ -76,9 +76,9 @@ public class CurrencyConversionRestController
 {
 	private static final Logger logger = LogManager.getLogger(CurrencyConversionRestController.class);
 
-	private final @NonNull ConversionRateUpsertService conversionRateUpsertService;
-	private final @NonNull NewestConversionRatesService newestConversionRatesService;
-	private final @NonNull JsonConversionRateConverters jsonConverters;
+	@NonNull private final ConversionRateUpsertService conversionRateUpsertService;
+	@NonNull private final NewestConversionRatesService newestConversionRatesService;
+	@NonNull private final JsonConversionRateConverters jsonConverters;
 
 	@ApiOperation("Batch-upsert normalized currency-conversion rates into C_Conversion_Rate.")
 	@ApiResponses(value = {
@@ -158,12 +158,8 @@ public class CurrencyConversionRestController
 		final Language adLanguage = Language.getLanguage(Env.getADLanguageOrBaseLanguage());
 		try
 		{
-			final NewestConversionRatesFilter filter = NewestConversionRatesFilter.builder()
-					.fromCurrencyCode(fromCurrencyCode)
-					.toCurrencyCode(toCurrencyCode)
-					.conversionTypeCode(conversionTypeCode)
-					.orgCode(orgCode)
-					.build();
+			final NewestConversionRatesFilter filter = jsonConverters.toNewestRatesFilter(
+					fromCurrencyCode, toCurrencyCode, conversionTypeCode, orgCode);
 
 			final List<JsonNewestConversionRate> rates = newestConversionRatesService.list(filter);
 

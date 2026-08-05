@@ -22,20 +22,16 @@
 
 package de.metas.rest_api.v2.currencyconversion;
 
-import de.metas.RestUtils;
 import de.metas.common.rest_api.v2.currencyconversion.JsonNewestConversionRate;
 import de.metas.currency.ConversionRateRepository;
-import de.metas.currency.ConversionTypeMethod;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
-import de.metas.util.Check;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Conversion_Rate;
 import org.springframework.stereotype.Service;
 
@@ -69,13 +65,8 @@ public class NewestConversionRatesService
 	@NonNull
 	public List<JsonNewestConversionRate> list(@NonNull final NewestConversionRatesFilter filter)
 	{
-		final OrgId orgId = resolveOptionalOrgId(filter.getOrgCode());
-		final CurrencyId fromCurrencyId = resolveOptionalCurrencyId(filter.getFromCurrencyCode());
-		final CurrencyId toCurrencyId = resolveOptionalCurrencyId(filter.getToCurrencyCode());
-		final CurrencyConversionTypeId conversionTypeId = resolveOptionalConversionTypeId(filter.getConversionTypeCode());
-
 		final List<I_C_Conversion_Rate> rates = conversionRateRepository.getNewestRatesOrderedByValidFromDesc(
-				orgId, fromCurrencyId, toCurrencyId, conversionTypeId);
+				filter.getOrgId(), filter.getFromCurrencyId(), filter.getToCurrencyId(), filter.getConversionTypeId());
 
 		// Ordered ValidFrom-descending, so the FIRST row seen per combo is the newest -> first-wins.
 		final Map<ComboKey, I_C_Conversion_Rate> newestByCombo = new LinkedHashMap<>();
@@ -92,55 +83,19 @@ public class NewestConversionRatesService
 		return result;
 	}
 
-	@Nullable
-	private OrgId resolveOptionalOrgId(@Nullable final String orgCode)
-	{
-		if (Check.isBlank(orgCode))
-		{
-			return null;
-		}
-		return RestUtils.retrieveOrgIdOrDefault(orgCode.trim());
-	}
-
-	@Nullable
-	private CurrencyId resolveOptionalCurrencyId(@Nullable final String isoCode)
-	{
-		if (Check.isBlank(isoCode))
-		{
-			return null;
-		}
-		return jsonConverters.getActiveCurrencyId(isoCode.trim());
-	}
-
-	@Nullable
-	private CurrencyConversionTypeId resolveOptionalConversionTypeId(@Nullable final String conversionTypeCode)
-	{
-		if (Check.isBlank(conversionTypeCode))
-		{
-			return null;
-		}
-		final ConversionTypeMethod method;
-		try
-		{
-			method = ConversionTypeMethod.forCode(conversionTypeCode.trim());
-		}
-		catch (final IllegalArgumentException ex)
-		{
-			throw new AdempiereException("@Invalid@ @C_ConversionType_ID@: " + conversionTypeCode)
-					.markAsUserValidationError();
-		}
-		return conversionRateRepository.getConversionTypeId(method);
-	}
-
-	/** Filter for {@link #list(NewestConversionRatesFilter)}; all fields optional (null = no narrowing). */
+	/**
+	 * Typed filter for {@link #list(NewestConversionRatesFilter)}; all fields optional ({@code null} = no
+	 * narrowing). The raw request-param strings are resolved to these typed ids at the controller boundary via
+	 * {@link JsonConversionRateConverters#toNewestRatesFilter}, so this service does no String -> id resolution.
+	 */
 	@Value
 	@Builder
 	public static class NewestConversionRatesFilter
 	{
-		@Nullable String orgCode;
-		@Nullable String fromCurrencyCode;
-		@Nullable String toCurrencyCode;
-		@Nullable String conversionTypeCode;
+		@Nullable OrgId orgId;
+		@Nullable CurrencyId fromCurrencyId;
+		@Nullable CurrencyId toCurrencyId;
+		@Nullable CurrencyConversionTypeId conversionTypeId;
 	}
 
 	/** The per-combo grouping key: {@code (from, to, type)} by typed id. */

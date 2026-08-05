@@ -27,6 +27,7 @@ import de.metas.RestUtils;
 import de.metas.common.rest_api.v2.currencyconversion.JsonCurrency;
 import de.metas.common.rest_api.v2.currencyconversion.JsonNewestConversionRate;
 import de.metas.common.rest_api.v2.currencyconversion.JsonRequestConversionRateUpsertItem;
+import de.metas.rest_api.v2.currencyconversion.NewestConversionRatesService.NewestConversionRatesFilter;
 import de.metas.currency.ConversionRateCreateRequest;
 import de.metas.currency.ConversionRateRepository;
 import de.metas.currency.ConversionTypeMethod;
@@ -155,6 +156,58 @@ public class JsonConversionRateConverters
 	}
 
 	/**
+	 * Wraps the four raw {@code GET /newestRates} request params into the fully-resolved, typed
+	 * {@link NewestConversionRatesFilter} at the controller boundary, so raw strings never travel into the service.
+	 * Each param is optional: a blank/omitted value resolves to {@code null} (no narrowing — spans all). A non-blank
+	 * value is resolved to its typed id here; an unknown currency ISO or conversion-type code raises the same
+	 * {@code markAsUserValidationError} as the upsert path (surfaced by the controller as a friendly {@code 422}).
+	 */
+	@NonNull
+	public NewestConversionRatesFilter toNewestRatesFilter(
+			@Nullable final String fromCurrencyCode,
+			@Nullable final String toCurrencyCode,
+			@Nullable final String conversionTypeCode,
+			@Nullable final String orgCode)
+	{
+		return NewestConversionRatesFilter.builder()
+				.orgId(resolveOptionalOrgId(orgCode))
+				.fromCurrencyId(resolveOptionalCurrencyId(fromCurrencyCode))
+				.toCurrencyId(resolveOptionalCurrencyId(toCurrencyCode))
+				.conversionTypeId(resolveOptionalConversionTypeId(conversionTypeCode))
+				.build();
+	}
+
+	@Nullable
+	private OrgId resolveOptionalOrgId(@Nullable final String orgCode)
+	{
+		if (Check.isBlank(orgCode))
+		{
+			return null;
+		}
+		return RestUtils.retrieveOrgIdOrDefault(orgCode.trim());
+	}
+
+	@Nullable
+	private CurrencyId resolveOptionalCurrencyId(@Nullable final String isoCode)
+	{
+		if (Check.isBlank(isoCode))
+		{
+			return null;
+		}
+		return getActiveCurrencyId(isoCode.trim());
+	}
+
+	@Nullable
+	private CurrencyConversionTypeId resolveOptionalConversionTypeId(@Nullable final String conversionTypeCode)
+	{
+		if (Check.isBlank(conversionTypeCode))
+		{
+			return null;
+		}
+		return conversionRateRepository.getConversionTypeId(parseConversionTypeMethod(conversionTypeCode));
+	}
+
+	/**
 	 * Maps a stored {@code C_Conversion_Rate} row to its response DTO. {@code ValidFrom} is read back through the
 	 * <b>org's</b> zone (matching the store path), so store-and-read use the same org zone consistently.
 	 */
@@ -204,16 +257,26 @@ public class JsonConversionRateConverters
 					validFrom.atStartOfDay(orgZoneId).toInstant());
 		}
 
-		final ConversionTypeMethod method;
+		return conversionRateRepository.getConversionTypeId(parseConversionTypeMethod(conversionTypeCode));
+	}
+
+	/**
+	 * Parses a non-blank conversion-type code into its {@link ConversionTypeMethod}, raising the shared
+	 * {@code markAsUserValidationError} on an unknown code. The single place the {@code ConversionTypeMethod.forCode}
+	 * + user-validation-error logic lives, reused by both the upsert path ({@link #resolveConversionTypeId}) and the
+	 * optional newest-rates filter ({@link #resolveOptionalConversionTypeId}).
+	 */
+	@NonNull
+	private static ConversionTypeMethod parseConversionTypeMethod(@NonNull final String conversionTypeCode)
+	{
 		try
 		{
-			method = ConversionTypeMethod.forCode(conversionTypeCode.trim());
+			return ConversionTypeMethod.forCode(conversionTypeCode.trim());
 		}
 		catch (final IllegalArgumentException ex)
 		{
 			throw new AdempiereException("@Invalid@ @C_ConversionType_ID@: " + conversionTypeCode)
 					.markAsUserValidationError();
 		}
-		return conversionRateRepository.getConversionTypeId(method);
 	}
 }
