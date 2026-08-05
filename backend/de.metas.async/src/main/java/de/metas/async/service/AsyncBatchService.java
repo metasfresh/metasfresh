@@ -28,6 +28,7 @@ import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IAsyncBatchDAO;
 import de.metas.async.api.IEnqueueResult;
+import de.metas.async.api.IWorkpackageProcessorContextFactory;
 import de.metas.async.eventbus.AsyncBatchEventBusService;
 import de.metas.async.eventbus.AsyncBatchNotifyRequest;
 import de.metas.async.model.I_C_Async_Batch;
@@ -66,6 +67,24 @@ public class AsyncBatchService
 	{
 		this.asyncBatchObserver = asyncBatchObserver;
 		this.asyncBatchEventBusService = asyncBatchEventBusService;
+	}
+
+	/**
+	 * @return {@code false} if the calling thread is itself processing a workpackage. Waiting for an async batch
+	 *         from such a thread blocks a queue-processor thread until the wait times out, so the awaited
+	 *         workpackages cannot be processed by that processor in the meantime.
+	 *         <p>
+	 *         Concrete failure this detects (measured 2026-08-04):
+	 *         {@code ProcessOLCandsWorkpackageProcessor} runs with {@code C_Queue_Processor.PoolSize = 1}; its
+	 *         workpackage reached {@link #executeBatch(Supplier, AsyncBatchId)} via
+	 *         {@code ShipmentService.generateShipments} and blocked that processor's only thread for the full
+	 *         {@code de.metas.async.AsyncBatchObserver.WaitTimeOutMS} (300 000 ms), ending in a
+	 *         {@code TimeoutException} that surfaced as HTTP 400 from
+	 *         {@code PUT api/v2/orders/sales/candidates/process}.
+	 */
+	public static boolean isWaitingForAsyncBatchAllowed()
+	{
+		return Services.get(IWorkpackageProcessorContextFactory.class).getThreadInheritedWorkpackageAsyncBatch() == null;
 	}
 
 	public void checkProcessed(@NonNull final AsyncBatchId asyncBatchId, @Nullable final String trxName)
@@ -114,6 +133,19 @@ public class AsyncBatchService
 	 */
 	public <T extends IEnqueueResult> T executeBatch(@NonNull final Supplier<T> supplier, @NonNull final AsyncBatchId asyncBatchId)
 	{
+		if (!isWaitingForAsyncBatchAllowed())
+		{
+			// dev-note: not thrown, because callers doing exactly this exist today (AutoProcessingOLCandService's
+			// order/shipment/invoice steps all run inside a ProcessOLCands workpackage). Deliberately WARN and not
+			// DEBUG: this pattern holds a queue processor's thread for up to WaitTimeOutMS and is how a processor
+			// runs out of permits in the first place - it must stay visible until the call sites are reworked.
+			Loggables.withLogger(logger, Level.WARN).addLog(
+					"*** executeBatch: waiting for C_Async_Batch_ID: {} from a thread that is itself processing workpackage-batch {}."
+							+ " This blocks a queue-processor thread until the batch completes or times out.",
+					asyncBatchId.getRepoId(),
+					Services.get(IWorkpackageProcessorContextFactory.class).getThreadInheritedWorkpackageAsyncBatch());
+		}
+
 		final T result;
 		try
 		{
