@@ -26,6 +26,7 @@ import de.metas.impexp.spreadsheet.csv.JdbcCSVExporter;
 import de.metas.impexp.spreadsheet.service.SpreadsheetExporterService;
 import de.metas.process.JavaProcess;
 import de.metas.process.SpreadsheetExportOptions;
+import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatees;
@@ -51,8 +52,7 @@ import java.io.File;
  */
 public class Intrastat_ExportFromWindow extends JavaProcess
 {
-	private final SpreadsheetExporterService spreadsheetExporterService =
-			SpringContextHolder.instance.getBean(SpreadsheetExporterService.class);
+	@NonNull private final SpreadsheetExporterService spreadsheetExporterService = SpringContextHolder.instance.getBean(SpreadsheetExporterService.class);
 
 	@Override
 	protected String doIt()
@@ -78,15 +78,10 @@ public class Intrastat_ExportFromWindow extends JavaProcess
 		return MSG_OK;
 	}
 
-	/**
-	 * Build the SELECT for the extended 12-column CSV.
-	 *
-	 * <p>Uses the current {@code AD_PInstance_ID}'s {@code T_Selection} as the row filter.
-	 * If that selection is empty (no {@code T_Selection} row for this instance) the entire
-	 * {@code Intrastat_Preview_V} is exported instead.</p>
-	 */
+	// Build the 12-column SELECT with T_Selection filter (or full view fallback).
 	private String buildSql(final int adPInstanceId)
 	{
+		final String pInstance = String.valueOf(adPInstanceId);
 		return "SELECT pv.CNCode,"
 				+ " p.Name                                                       AS \"GoodsDescription\","
 				+ " pv.CountryDestinationConsignment,"
@@ -105,9 +100,11 @@ public class Intrastat_ExportFromWindow extends JavaProcess
 				+ " LEFT JOIN C_Currency cur ON cur.C_Currency_ID = pv.C_Currency_ID"
 				+ " WHERE ("
 				+ "    pv.Intrastat_Preview_V_ID IN"
-				+ "      (SELECT T_Selection_ID FROM T_Selection WHERE AD_PInstance_ID = " + adPInstanceId + ")"
+				+ "      (SELECT T_Selection_ID FROM T_Selection WHERE AD_PInstance_ID = " + pInstance + ")"
+				// Fallback: no selection rows for this AD_PInstance_ID (e.g. WebUI did not populate
+				// T_Selection at all) → export the full view rather than silently produce empty CSV.
 				+ "    OR NOT EXISTS"
-				+ "      (SELECT 1 FROM T_Selection WHERE AD_PInstance_ID = " + adPInstanceId + ")"
+				+ "      (SELECT 1 FROM T_Selection WHERE AD_PInstance_ID = " + pInstance + ")"
 				+ " )";
 	}
 }

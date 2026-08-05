@@ -50,12 +50,12 @@ UPDATE AD_Element_Trl
        UpdatedBy    = 100
  WHERE AD_Element_ID = 585154 AND AD_Language = 'en_US';
 
--- de_CH mirrors de_DE for this label (no ß in Name/PrintName); mark translated
+-- de_DE + de_CH: base language is de_DE; mark as translated (no ß in Name/PrintName so de_CH == de_DE)
 UPDATE AD_Element_Trl
    SET IsTranslated = 'Y',
        Updated      = TO_TIMESTAMP('2026-08-05 12:00:01', 'YYYY-MM-DD HH24:MI:SS'),
        UpdatedBy    = 100
- WHERE AD_Element_ID = 585154 AND AD_Language = 'de_CH';
+ WHERE AD_Element_ID = 585154 AND AD_Language IN ('de_DE', 'de_CH');
 
 -- =====================================================================
 -- 2. AD_Process — parameterless, Java-driven, CSV export
@@ -64,7 +64,7 @@ INSERT INTO AD_Process (AccessLevel, AD_Client_ID, AD_Element_ID, AD_Org_ID, AD_
     AllowProcessReRun, Classname, CopyFromProcess,
     Created, CreatedBy, Description, EntityType,
     IsActive, IsApplySecuritySettings, IsBetaFunctionality, IsDirectPrint,
-    IsFormatExcelFile, IsLogWarning, IsNotifyUserAfterExecution, IsOneInstanceOnly,
+    IsFormatExcelFile, IsIncludeCSVHeaderRow, IsLogWarning, IsNotifyUserAfterExecution, IsOneInstanceOnly,
     IsReport, IsTranslateExcelHeaders, IsUpdateExportDate, IsUseBPartnerLanguage,
     LockWaitTimeout, Name, PostgrestResponseFormat,
     RefreshAllAfterExecution, ShowHelp, SpreadsheetFormat,
@@ -75,11 +75,12 @@ VALUES ('3', 0, 585154, 0, 585647 /*From ID Server*/,
     'Exportiert die im Fenster ausgewählten Zeilen (bzw. bei fehlender Auswahl den gefilterten Satz) als CSV im INTRASTAT-RTIC-Format, erweitert um die Spalten Maßeinheit und Währung.',
     'D',
     'Y', 'N', 'N', 'N',
-    'Y', 'N', 'N', 'N',
+    'Y', 'N', 'N', 'N', 'N',
     'Y', 'N', 'Y', 'N',
     0, 'INTRASTAT RTIC Datei (AT) — Auswahl', 'json',
     'N', 'N', 'xls',
-    '	', 'Excel', TO_TIMESTAMP('2026-08-05 12:00:02', 'YYYY-MM-DD HH24:MI:SS'), 100, 'Intrastat_Export_FromWindow');
+    E'\t', 'Excel', TO_TIMESTAMP('2026-08-05 12:00:02', 'YYYY-MM-DD HH24:MI:SS'), 100, 'Intrastat_Export_FromWindow');
+-- IsIncludeCSVHeaderRow='N': RTIC upload does not accept a header row (same as AD_Process 585508).
 
 -- Seed _Trl skeleton
 INSERT INTO AD_Process_Trl (AD_Language, AD_Process_ID,
