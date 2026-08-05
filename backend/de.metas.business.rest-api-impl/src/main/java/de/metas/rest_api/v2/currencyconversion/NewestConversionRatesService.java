@@ -22,15 +22,18 @@
 
 package de.metas.rest_api.v2.currencyconversion;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.common.rest_api.v2.currencyconversion.JsonNewestConversionRate;
-import de.metas.currency.ConversionRate;
+import de.metas.currency.CurrencyConversionRate;
 import de.metas.currency.ConversionRateQuery;
 import de.metas.currency.ConversionRateRepository;
+import de.metas.currency.CurrencyRepository;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.compiere.Adempiere;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -59,20 +62,50 @@ public class NewestConversionRatesService
 	@NonNull private final ConversionRateRepository conversionRateRepository;
 	@NonNull private final JsonConversionRateConverters jsonConverters;
 
+	/**
+	 * Test-only factory mirroring {@code CustomColumnService.newInstanceForUnitTesting}: asserts unit-test mode and
+	 * wires the collaborators (repository + JSON converters). The collaborators are reachable via
+	 * {@link #getConversionRateRepository()} / {@link #getJsonConverters()} so a test can drive both the service and
+	 * its collaborators from a single factory call.
+	 */
+	@VisibleForTesting
+	@NonNull
+	public static NewestConversionRatesService newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		final ConversionRateRepository conversionRateRepository = new ConversionRateRepository();
+		final JsonConversionRateConverters jsonConverters = new JsonConversionRateConverters(new CurrencyRepository(), conversionRateRepository);
+		return new NewestConversionRatesService(conversionRateRepository, jsonConverters);
+	}
+
+	@VisibleForTesting
+	@NonNull
+	public ConversionRateRepository getConversionRateRepository()
+	{
+		return conversionRateRepository;
+	}
+
+	@VisibleForTesting
+	@NonNull
+	public JsonConversionRateConverters getJsonConverters()
+	{
+		return jsonConverters;
+	}
+
 	@NonNull
 	public List<JsonNewestConversionRate> list(@NonNull final ConversionRateQuery query)
 	{
-		final List<ConversionRate> rates = conversionRateRepository.getNewestRatesOrderedByValidFromDesc(query);
+		final List<CurrencyConversionRate> rates = conversionRateRepository.getNewestRatesOrderedByValidFromDesc(query);
 
 		// Ordered ValidFrom-descending, so the FIRST row seen per combo is the newest -> first-wins.
-		final Map<ComboKey, ConversionRate> newestByCombo = new LinkedHashMap<>();
-		for (final ConversionRate rate : rates)
+		final Map<ComboKey, CurrencyConversionRate> newestByCombo = new LinkedHashMap<>();
+		for (final CurrencyConversionRate rate : rates)
 		{
 			newestByCombo.putIfAbsent(ComboKey.ofRate(rate), rate);
 		}
 
 		final List<JsonNewestConversionRate> result = new ArrayList<>(newestByCombo.size());
-		for (final ConversionRate rate : newestByCombo.values())
+		for (final CurrencyConversionRate rate : newestByCombo.values())
 		{
 			result.add(jsonConverters.toJsonNewestConversionRate(rate));
 		}
@@ -88,7 +121,7 @@ public class NewestConversionRatesService
 		@NonNull private final CurrencyId toCurrencyId;
 		@NonNull private final CurrencyConversionTypeId conversionTypeId;
 
-		private static ComboKey ofRate(@NonNull final ConversionRate rate)
+		private static ComboKey ofRate(@NonNull final CurrencyConversionRate rate)
 		{
 			return new ComboKey(
 					rate.getFromCurrencyId(),

@@ -8,25 +8,13 @@
 -- filter, so the single-row-per-key invariant must cover active AND inactive rows: no partial
 -- WHERE IsActive predicate here.
 --
--- Fail loudly if the (client-less) natural key already has duplicates on this instance, so a bad
--- rollout is caught here rather than silently picking an arbitrary row at runtime.
-DO $$
-DECLARE
-    v_dupes int;
-BEGIN
-    SELECT count(*) INTO v_dupes FROM (
-        SELECT 1
-        FROM c_conversion_rate
-        GROUP BY ad_org_id, c_currency_id, c_currency_id_to, c_conversiontype_id, validfrom
-        HAVING count(*) > 1
-    ) d;
-    IF v_dupes > 0 THEN
-        RAISE EXCEPTION 'C_Conversion_Rate has % duplicate natural key(s) on (ad_org_id, c_currency_id, c_currency_id_to, c_conversiontype_id, validfrom); resolve the duplicates before this unique index can be created', v_dupes;
-    END IF;
-END $$;
+-- The CREATE UNIQUE INDEX itself fails loudly if the (client-less) natural key already has
+-- duplicates on this instance, so a bad rollout is caught here — no separate duplicate-guard needed.
 
 DROP INDEX IF EXISTS c_conversionrate_once;
 
--- Selective business columns first, low-cardinality AD_Org_ID last (composite-index ordering rule).
+-- ValidFrom leads (high-selectivity; the newest-rate reads filter and sort on it), then the
+-- business currency/type columns, and the low-cardinality AD_Org_ID last (composite-index
+-- ordering rule).
 CREATE UNIQUE INDEX c_conversion_rate_natural_key_uq
-    ON c_conversion_rate (c_currency_id, c_currency_id_to, c_conversiontype_id, validfrom, ad_org_id);
+    ON c_conversion_rate (validfrom, c_currency_id, c_currency_id_to, c_conversiontype_id, ad_org_id);

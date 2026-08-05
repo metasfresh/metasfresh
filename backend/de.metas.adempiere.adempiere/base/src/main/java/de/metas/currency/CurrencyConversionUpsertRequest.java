@@ -55,7 +55,7 @@ import java.time.ZoneId;
  */
 @Value
 @Builder(toBuilder = true)
-public class ConversionRateCreateRequest
+public class CurrencyConversionUpsertRequest
 {
 	@NonNull ClientAndOrgId clientAndOrgId;
 	@NonNull CurrencyId fromCurrencyId;

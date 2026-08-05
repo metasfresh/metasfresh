@@ -29,10 +29,12 @@ import de.metas.common.rest_api.v2.currencyconversion.JsonResponseConversionRate
 import de.metas.common.rest_api.v2.currencyconversion.JsonResponseConversionRateUpsert.BatchSyncOutcome;
 import de.metas.common.rest_api.v2.currencyconversion.JsonResponseConversionRateUpsertItem;
 import de.metas.common.rest_api.v2.currencyconversion.JsonResponseConversionRateUpsertItem.SyncOutcome;
-import de.metas.currency.ConversionRateCreateRequest;
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.currency.CurrencyConversionUpsertRequest;
 import de.metas.currency.ConversionRateKey;
 import de.metas.currency.ConversionRateRepository;
 import de.metas.currency.CurrencyConversionRates;
+import de.metas.currency.CurrencyRepository;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
@@ -40,6 +42,7 @@ import de.metas.rest_api.utils.v2.JsonErrors;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_Conversion_Rate;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -55,7 +58,7 @@ import java.util.Set;
  * Upserts normalized currency-conversion rates into {@code C_Conversion_Rate}.
  * <p>
  * Each caller-supplied request item is resolved (by {@link JsonConversionRateConverters}) into a domain
- * {@link ConversionRateCreateRequest} and persisted on its own via the single-direction path. On top of that, both directions
+ * {@link CurrencyConversionUpsertRequest} and persisted on its own via the single-direction path. On top of that, both directions
  * are always ensured: for every successfully-resolvable forward item whose reverse {@code (to -> from)} is
  * <b>not</b> present in the same request, the reciprocal ({@code MultiplyRate = 1 / rate}) is auto-written; when
  * the caller supplied the reverse itself, that reverse is honored untouched (never overwritten with a computed
@@ -77,6 +80,21 @@ public class ConversionRateUpsertService
 
 	@NonNull private final ConversionRateRepository conversionRateRepository;
 	@NonNull private final JsonConversionRateConverters jsonConverters;
+
+	/**
+	 * Test-only factory mirroring {@code CustomColumnService.newInstanceForUnitTesting}: asserts unit-test mode and
+	 * wires the collaborators (repository + JSON converters) so a test gets a ready-to-use service in one call
+	 * rather than hand-assembling the graph.
+	 */
+	@VisibleForTesting
+	@NonNull
+	public static ConversionRateUpsertService newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		final ConversionRateRepository conversionRateRepository = new ConversionRateRepository();
+		final JsonConversionRateConverters jsonConverters = new JsonConversionRateConverters(new CurrencyRepository(), conversionRateRepository);
+		return new ConversionRateUpsertService(conversionRateRepository, jsonConverters);
+	}
 
 	@NonNull
 	public JsonResponseConversionRateUpsert upsert(
@@ -197,7 +215,7 @@ public class ConversionRateUpsertService
 			@NonNull final SyncAdvise syncAdvise,
 			@NonNull final Set<ConversionRateKey> callerSuppliedKeys)
 	{
-		final ConversionRateCreateRequest forward = jsonConverters.fromJson(item);
+		final CurrencyConversionUpsertRequest forward = jsonConverters.fromJson(item);
 
 		// Validate the interceptor invariants explicitly so a bad record becomes a friendly per-record error
 		// instead of a raw save-path exception.
@@ -210,7 +228,7 @@ public class ConversionRateUpsertService
 		final ConversionRateKey reverseKey = forward.getReverseKey();
 		if (!callerSuppliedKeys.contains(reverseKey))
 		{
-			final ConversionRateCreateRequest reverse = forward.toBuilder()
+			final CurrencyConversionUpsertRequest reverse = forward.toBuilder()
 					.fromCurrencyId(forward.getToCurrencyId())
 					.toCurrencyId(forward.getFromCurrencyId())
 					.multiplyRate(CurrencyConversionRates.reciprocal(forward.getMultiplyRate()))
@@ -222,14 +240,20 @@ public class ConversionRateUpsertService
 	}
 
 	/**
-	 * Single-direction find-existing-then-update-or-insert on the natural key, honoring the batch's
-	 * {@link SyncAdvise}. Returns whether the row was created, updated, or left untouched.
+	 * Single-direction upsert on the natural key, honoring the batch's {@link SyncAdvise}. Returns whether the row
+	 * was created, updated, or left untouched.
+	 * <p>
+	 * The in-trx exists-check (must see a row written earlier in the same batch) drives BOTH the outcome policy
+	 * (CREATED / UPDATED / NOTHING_DONE / FAIL) and the create-vs-update decision — kept here, in the service,
+	 * because both are policy. The repository's {@link ConversionRateRepository#save} is a pure mutate-and-save, so
+	 * this method resolves the target row itself: mutate the found row, or {@code newRate} a fresh one to insert.
 	 */
 	@NonNull
-	private SyncOutcome saveRate(@NonNull final ConversionRateCreateRequest rate, @NonNull final SyncAdvise syncAdvise)
+	private SyncOutcome saveRate(@NonNull final CurrencyConversionUpsertRequest rate, @NonNull final SyncAdvise syncAdvise)
 	{
 		final I_C_Conversion_Rate existingRecord = conversionRateRepository.findExisting(rate);
 		final SyncOutcome outcome;
+		final I_C_Conversion_Rate target;
 		if (existingRecord == null)
 		{
 			if (syncAdvise.isFailIfNotExists())
@@ -239,6 +263,7 @@ public class ConversionRateUpsertService
 						.markAsUserValidationError();
 			}
 			outcome = SyncOutcome.CREATED;
+			target = conversionRateRepository.newRate(rate);
 		}
 		else
 		{
@@ -247,14 +272,15 @@ public class ConversionRateUpsertService
 				return SyncOutcome.NOTHING_DONE;
 			}
 			outcome = SyncOutcome.UPDATED;
+			target = existingRecord;
 		}
 
-		conversionRateRepository.save(existingRecord, rate);
+		conversionRateRepository.save(target, rate);
 
 		return outcome;
 	}
 
-	private static void validateInvariants(@NonNull final ConversionRateCreateRequest rate)
+	private static void validateInvariants(@NonNull final CurrencyConversionUpsertRequest rate)
 	{
 		if (CurrencyId.equals(rate.getFromCurrencyId(), rate.getToCurrencyId()))
 		{

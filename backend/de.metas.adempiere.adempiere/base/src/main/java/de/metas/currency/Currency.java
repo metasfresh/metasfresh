@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.business
@@ -40,6 +42,13 @@ public class Currency
 
 	@NonNull
 	ITranslatableString symbol;
+
+	/**
+	 * The {@code C_Currency.Description} (the currency's display name, e.g. the REST currency listing's
+	 * {@code name}). Nullable: the column is optional and unit-test-created currencies leave it unset.
+	 */
+	@Nullable
+	String description;
 
 	@NonNull
 	CurrencyPrecision precision;

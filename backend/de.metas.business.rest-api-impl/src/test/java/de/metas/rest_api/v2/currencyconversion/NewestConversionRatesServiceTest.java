@@ -26,7 +26,6 @@ import de.metas.common.rest_api.v2.currencyconversion.JsonNewestConversionRate;
 import de.metas.currency.ConversionRateQuery;
 import de.metas.currency.ConversionRateRepository;
 import de.metas.currency.ConversionTypeMethod;
-import de.metas.currency.CurrencyRepository;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
@@ -70,12 +69,11 @@ class NewestConversionRatesServiceTest
 		AdempiereTestHelper.get().init();
 		AdempiereTestHelper.setupContext_AD_Client_IfNotSet();
 
-		final CurrencyRepository currencyRepository = new CurrencyRepository();
-		conversionRateRepository = new ConversionRateRepository();
-		jsonConverters = new JsonConversionRateConverters(currencyRepository, conversionRateRepository);
-		newestConversionRatesService = new NewestConversionRatesService(
-				conversionRateRepository,
-				jsonConverters);
+		// Wire the service via its test-only factory (mirrors CustomColumnService.newInstanceForUnitTesting),
+		// then take the collaborators it wired so the test drives the same repository + converters.
+		newestConversionRatesService = NewestConversionRatesService.newInstanceForUnitTesting();
+		conversionRateRepository = newestConversionRatesService.getConversionRateRepository();
+		jsonConverters = newestConversionRatesService.getJsonConverters();
 
 		eur = createActiveCurrency("EUR");
 		cny = createActiveCurrency("CNY");

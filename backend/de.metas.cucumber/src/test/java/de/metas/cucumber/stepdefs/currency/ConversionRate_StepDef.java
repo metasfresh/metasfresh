@@ -27,7 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.context.TestContext;
-import de.metas.currency.ConversionRate;
+import de.metas.currency.CurrencyConversionRate;
 import de.metas.currency.ConversionRateKey;
 import de.metas.currency.ConversionRateRepository;
 import de.metas.currency.ConversionTypeMethod;
@@ -235,7 +235,7 @@ public class ConversionRate_StepDef
 			final LocalDate validFrom = row.getAsLocalDate("ValidFrom");
 
 			final ConversionRateKey key = ConversionRateKey.builder()
-					.orgId(OrgId.ofRepoId(SYSTEM_ORG_ID))
+					.orgId(OrgId.ANY)
 					.fromCurrencyId(fromId)
 					.toCurrencyId(toId)
 					.conversionTypeId(typeId)
@@ -245,7 +245,7 @@ public class ConversionRate_StepDef
 			createdRateKeys.add(key);
 			createdRateKeys.add(key.getReverseKey());
 
-			final ConversionRate rate = conversionRateRepository.getByKey(key);
+			final CurrencyConversionRate rate = conversionRateRepository.getByKey(key);
 			assertThat(rate)
 					.as("C_Conversion_Rate %s->%s type=%s validFrom=%s must exist",
 							row.getAsString("FromCurrency"), row.getAsString("ToCurrency"), typeId.getRepoId(), validFrom)
@@ -397,7 +397,7 @@ public class ConversionRate_StepDef
 	}
 
 	@Nullable
-	private ConversionRate findRate(
+	private CurrencyConversionRate findRate(
 			@NonNull final CurrencyId fromId,
 			@NonNull final CurrencyId toId,
 			@NonNull final CurrencyConversionTypeId typeId,
@@ -407,7 +407,7 @@ public class ConversionRate_StepDef
 		// The repository owns the ValidFrom-in-org-zone conversion and the typed-id -> repo-int mapping (and the
 		// read is client-less, per the natural-key unique index), so this passes the typed ids straight through.
 		final ConversionRateKey key = ConversionRateKey.builder()
-				.orgId(OrgId.ofRepoId(SYSTEM_ORG_ID))
+				.orgId(OrgId.ANY)
 				.fromCurrencyId(fromId)
 				.toCurrencyId(toId)
 				.conversionTypeId(typeId)

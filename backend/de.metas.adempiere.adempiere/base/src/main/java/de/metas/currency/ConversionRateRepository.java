@@ -46,7 +46,7 @@ import java.util.Collection;
 /**
  * Owns {@code C_Conversion_Rate} persistence for the currency domain: the {@code IQueryBL} query construction and
  * the {@code I_C_Conversion_Rate} save primitives, kept out of the REST-endpoint services so that a caller works
- * against the domain {@link ConversionRateCreateRequest} rather than the raw model record.
+ * against the domain {@link CurrencyConversionUpsertRequest} rather than the raw model record.
  * <p>
  * Conversion-type resolution is <b>delegated</b> to {@link ICurrencyDAO} (kept an implementation detail behind
  * this repository), so callers use the repository and never {@code ICurrencyDAO} directly.
@@ -69,18 +69,18 @@ public class ConversionRateRepository
 	 * Shares the read with {@link #getByQuery} via {@link #getRecord}.
 	 */
 	@Nullable
-	public I_C_Conversion_Rate findExisting(@NonNull final ConversionRateCreateRequest request)
+	public I_C_Conversion_Rate findExisting(@NonNull final CurrencyConversionUpsertRequest request)
 	{
 		return getRecord(ConversionRateQuery.of(request.getKey()));
 	}
 
 	/**
-	 * The single {@code C_Conversion_Rate} matching the given {@code query}, mapped to a {@link ConversionRate} POJO,
+	 * The single {@code C_Conversion_Rate} matching the given {@code query}, mapped to a {@link CurrencyConversionRate} POJO,
 	 * or {@code null} if no row matches. Rejects an empty query: with no filter it would match every row and
 	 * {@code first()} would return an arbitrary one — so callers must narrow on at least one field.
 	 */
 	@Nullable
-	public ConversionRate getByQuery(@NonNull final ConversionRateQuery query)
+	public CurrencyConversionRate getByQuery(@NonNull final ConversionRateQuery query)
 	{
 		Check.assume(!ConversionRateQuery.EMPTY.equals(query), "getByQuery requires a non-empty query: {}", query);
 
@@ -88,9 +88,9 @@ public class ConversionRateRepository
 		return record != null ? toConversionRate(record) : null;
 	}
 
-	/** The single {@code C_Conversion_Rate} for the exact natural {@code key}, mapped to a {@link ConversionRate} POJO, or {@code null}. */
+	/** The single {@code C_Conversion_Rate} for the exact natural {@code key}, mapped to a {@link CurrencyConversionRate} POJO, or {@code null}. */
 	@Nullable
-	public ConversionRate getByKey(@NonNull final ConversionRateKey key)
+	public CurrencyConversionRate getByKey(@NonNull final ConversionRateKey key)
 	{
 		return getByQuery(ConversionRateQuery.of(key));
 	}
@@ -171,13 +171,13 @@ public class ConversionRateRepository
 		return queryBuilder;
 	}
 
-	/** Maps a raw {@code I_C_Conversion_Rate} model into the typed {@link ConversionRate} POJO. */
+	/** Maps a raw {@code I_C_Conversion_Rate} model into the typed {@link CurrencyConversionRate} POJO. */
 	@NonNull
-	private ConversionRate toConversionRate(@NonNull final I_C_Conversion_Rate record)
+	private CurrencyConversionRate toConversionRate(@NonNull final I_C_Conversion_Rate record)
 	{
 		final OrgId orgId = OrgId.ofRepoId(record.getAD_Org_ID());
 		final ZoneId orgZoneId = orgDAO.getTimeZone(orgId);
-		return ConversionRate.builder()
+		return CurrencyConversionRate.builder()
 				.orgId(orgId)
 				.fromCurrencyId(CurrencyId.ofRepoId(record.getC_Currency_ID()))
 				.toCurrencyId(CurrencyId.ofRepoId(record.getC_Currency_ID_To()))
@@ -190,31 +190,34 @@ public class ConversionRateRepository
 	}
 
 	/**
-	 * Upserts the payload of {@code request} onto the {@code C_Conversion_Rate} row identified by {@code record}:
-	 * creates a new natural-key row when {@code record} is {@code null}, otherwise mutates the given one. Returns
-	 * the saved record.
+	 * Persists the payload of {@code request} onto the given {@code record} and returns it. This is a <b>pure
+	 * mutate-and-save</b>: it carries <b>no</b> find-or-create branching — the create-vs-update decision (and the
+	 * in-trx exists-check it needs for the sync-advise outcome) belongs to the caller, which resolves {@code record}
+	 * up front via {@link #findExisting} (update in place) or {@link #newRate} (insert). Splitting the decision from
+	 * the persist keeps this method a single coherent operation ("write these values onto this row").
 	 * <p>
 	 * The {@code C_Conversion_Rate} interceptor fills the remaining {@code DivideRate}-free defaults and the
 	 * {@code ValidTo} far-future default on save.
 	 */
 	@NonNull
 	public I_C_Conversion_Rate save(
-			@Nullable final I_C_Conversion_Rate record,
-			@NonNull final ConversionRateCreateRequest request)
+			@NonNull final I_C_Conversion_Rate record,
+			@NonNull final CurrencyConversionUpsertRequest request)
 	{
-		final I_C_Conversion_Rate target = record != null ? record : newRate(request);
+		record.setMultiplyRate(request.getMultiplyRate());
+		record.setDivideRate(request.getDivideRate());
+		record.setValidTo(request.getValidToTimestamp());
 
-		target.setMultiplyRate(request.getMultiplyRate());
-		target.setDivideRate(request.getDivideRate());
-		target.setValidTo(request.getValidToTimestamp());
-
-		InterfaceWrapperHelper.save(target);
-		return target;
+		InterfaceWrapperHelper.save(record);
+		return record;
 	}
 
-	/** Creates a new, unsaved {@code C_Conversion_Rate} with its natural-key columns (client = {@link ClientId#METASFRESH}) set. */
+	/**
+	 * Creates a new, unsaved {@code C_Conversion_Rate} with its natural-key columns (client =
+	 * {@link ClientId#METASFRESH}) set — the insert half of the caller-owned upsert (pair with {@link #save}).
+	 */
 	@NonNull
-	private I_C_Conversion_Rate newRate(@NonNull final ConversionRateCreateRequest request)
+	public I_C_Conversion_Rate newRate(@NonNull final CurrencyConversionUpsertRequest request)
 	{
 		final ConversionRateKey key = request.getKey();
 		final I_C_Conversion_Rate record = InterfaceWrapperHelper.newInstance(I_C_Conversion_Rate.class);
@@ -230,13 +233,13 @@ public class ConversionRateRepository
 	/**
 	 * The active {@code C_Conversion_Rate} rows scoped to {@code (SYSTEM, METASFRESH)} client, ordered by
 	 * {@code ValidFrom} descending, narrowed by the query's optional {@code (org, from, to, type)} filters and
-	 * mapped to {@link ConversionRate} POJOs. The newest-per-combo reduction is done by the caller. The client scope
+	 * mapped to {@link CurrencyConversionRate} POJOs. The newest-per-combo reduction is done by the caller. The client scope
 	 * {@code AD_Client_ID IN (SYSTEM, METASFRESH)} mirrors the canonical read path {@code CurrencyDAO.retrieveRateQuery}
 	 * (so the query's own {@code clientId} is ignored here on purpose). A {@code null} {@code orgId} spans all orgs;
 	 * a non-null one narrows to that org (the optional {@code orgCode} GET filter).
 	 */
 	@NonNull
-	public ImmutableList<ConversionRate> getNewestRatesOrderedByValidFromDesc(@NonNull final ConversionRateQuery query)
+	public ImmutableList<CurrencyConversionRate> getNewestRatesOrderedByValidFromDesc(@NonNull final ConversionRateQuery query)
 	{
 		// Reuse the shared narrowing filters (org/from/to/type); ValidFrom is not part of the newest-scan narrowing,
 		// so the query carries a null validFrom here. Client scope is the fixed (SYSTEM, METASFRESH) below.

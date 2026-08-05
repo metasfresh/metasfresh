@@ -37,14 +37,14 @@ import java.time.LocalDate;
  * A single stored {@code C_Conversion_Rate} row as a typed domain POJO: the natural-key coordinates
  * ({@code org, from, to, type, validFrom}) plus the two rate values ({@code multiplyRate}, {@code divideRate}).
  * <p>
- * Read-side counterpart to {@link ConversionRateCreateRequest} (the write-side row-to-persist): the
+ * Read-side counterpart to {@link CurrencyConversionUpsertRequest} (the write-side row-to-persist): the
  * {@link ConversionRateRepository} maps the raw {@code I_C_Conversion_Rate} model into this POJO — doing the
  * {@code CurrencyId.ofRepoId} / {@code validFrom}-in-org-zone conversions inside the repo — so callers work
  * against typed ids and a {@link LocalDate} {@code validFrom} rather than repo-ints and a {@code Timestamp}.
  */
 @Value
 @Builder
-public class ConversionRate
+public class CurrencyConversionRate
 {
 	@NonNull OrgId orgId;
 	@NonNull CurrencyId fromCurrencyId;

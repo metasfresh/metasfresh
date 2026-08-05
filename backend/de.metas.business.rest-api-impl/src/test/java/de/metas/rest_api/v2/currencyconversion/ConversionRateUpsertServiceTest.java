@@ -29,7 +29,7 @@ import de.metas.common.rest_api.v2.currencyconversion.JsonRequestConversionRateU
 import de.metas.common.rest_api.v2.currencyconversion.JsonResponseConversionRateUpsert;
 import de.metas.common.rest_api.v2.currencyconversion.JsonResponseConversionRateUpsertItem;
 import de.metas.common.rest_api.v2.currencyconversion.JsonResponseConversionRateUpsertItem.SyncOutcome;
-import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.currency.ConversionRateRepository;
 import de.metas.i18n.Language;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
@@ -60,7 +60,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ConversionRateUpsertServiceTest
 {
 	private ConversionRateUpsertService conversionRateUpsertService;
-	private PlainCurrencyDAO currencyDAO;
+	private ConversionRateRepository conversionRateRepository;
 
 	private static final LocalDate VALID_FROM = LocalDate.parse("2026-06-02");
 
@@ -70,13 +70,10 @@ class ConversionRateUpsertServiceTest
 		AdempiereTestHelper.get().init();
 		AdempiereTestHelper.setupContext_AD_Client_IfNotSet();
 
-		currencyDAO = (PlainCurrencyDAO)Services.get(de.metas.currency.ICurrencyDAO.class);
-
-		final de.metas.currency.CurrencyRepository currencyRepository = new de.metas.currency.CurrencyRepository();
-		final de.metas.currency.ConversionRateRepository conversionRateRepository = new de.metas.currency.ConversionRateRepository();
-		conversionRateUpsertService = new ConversionRateUpsertService(
-				conversionRateRepository,
-				new JsonConversionRateConverters(currencyRepository, conversionRateRepository));
+		// Wire the service via its test-only factory (mirrors CustomColumnService.newInstanceForUnitTesting),
+		// then reuse the same repository it wired so the test drives the repository — not the low-level DAO.
+		conversionRateUpsertService = ConversionRateUpsertService.newInstanceForUnitTesting();
+		conversionRateRepository = new ConversionRateRepository();
 	}
 
 	private JsonResponseConversionRateUpsert upsert(final JsonRequestConversionRateUpsert request)
@@ -276,7 +273,7 @@ class ConversionRateUpsertServiceTest
 		final I_C_Conversion_Rate forward = rateFor(eur, cny);
 		assertThat(forward).isNotNull();
 		// the explicit "P" (PeriodEnd) type differs from the default (Spot); assert it was applied
-		final int periodEndConversionTypeId = currencyDAO
+		final int periodEndConversionTypeId = conversionRateRepository
 				.getConversionTypeId(de.metas.currency.ConversionTypeMethod.PeriodEnd).getRepoId();
 		assertThat(forward.getC_ConversionType_ID()).isEqualTo(periodEndConversionTypeId);
 	}

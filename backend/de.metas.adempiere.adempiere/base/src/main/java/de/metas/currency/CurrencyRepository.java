@@ -9,9 +9,7 @@ import javax.annotation.Nullable;
 
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
-import lombok.Builder;
 import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
@@ -109,13 +107,13 @@ public class CurrencyRepository
 	}
 
 	/**
-	 * The <b>active</b> currencies, ordered by ISO code, as the minimal {@link ActiveCurrency} data the REST
-	 * currency listing needs ({@code ISO_Code}, {@code Description}, {@link CurrencyId}). The domain {@link Currency}
-	 * object is deliberately not returned here: it does not carry the {@code Description} the {@code JsonCurrency}
-	 * name field is built from (it has a {@code symbol}, not a description), so this returns a purpose-built record.
+	 * The <b>active</b> currencies, ordered by ISO code, as the domain {@link Currency} objects the REST currency
+	 * listing needs. {@code Currency} now carries the {@code C_Currency.Description} (mapped in
+	 * {@code CurrencyDAO.toCurrency}), which is the {@code JsonCurrency} {@code name}, so no purpose-built record is
+	 * needed anymore.
 	 */
 	@NonNull
-	public ImmutableList<ActiveCurrency> getActiveCurrenciesOrderedByCode()
+	public ImmutableList<Currency> getActiveCurrenciesOrderedByCode()
 	{
 		return queryBL
 				.createQueryBuilderOutOfTrx(I_C_Currency.class)
@@ -123,18 +121,8 @@ public class CurrencyRepository
 				.orderBy(I_C_Currency.COLUMNNAME_ISO_Code)
 				.create()
 				.stream()
-				.map(CurrencyRepository::toActiveCurrency)
+				.map(de.metas.currency.impl.CurrencyDAO::toCurrency)
 				.collect(ImmutableList.toImmutableList());
-	}
-
-	@NonNull
-	private static ActiveCurrency toActiveCurrency(@NonNull final I_C_Currency record)
-	{
-		return ActiveCurrency.builder()
-				.id(CurrencyId.ofRepoId(record.getC_Currency_ID()))
-				.isoCode(record.getISO_Code())
-				.description(record.getDescription())
-				.build();
 	}
 
 	/**
@@ -156,19 +144,5 @@ public class CurrencyRepository
 	public boolean existsByCurrencyCode(@NonNull final CurrencyCode currencyCode)
 	{
 		return getRecordByCurrencyCodeOrNull(currencyCode) != null;
-	}
-
-	/**
-	 * The minimal read-only projection of an <b>active</b> {@code C_Currency} the REST currency listing builds its
-	 * {@code JsonCurrency} from: the ISO {@code code}, the {@code description} (the listing's {@code name}), and the
-	 * typed {@link CurrencyId}.
-	 */
-	@Value
-	@Builder
-	public static class ActiveCurrency
-	{
-		@NonNull CurrencyId id;
-		@NonNull String isoCode;
-		@Nullable String description;
 	}
 }

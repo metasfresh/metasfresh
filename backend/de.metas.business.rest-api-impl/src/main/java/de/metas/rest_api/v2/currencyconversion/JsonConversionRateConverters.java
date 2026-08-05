@@ -27,8 +27,9 @@ import de.metas.RestUtils;
 import de.metas.common.rest_api.v2.currencyconversion.JsonCurrency;
 import de.metas.common.rest_api.v2.currencyconversion.JsonNewestConversionRate;
 import de.metas.common.rest_api.v2.currencyconversion.JsonRequestConversionRateUpsertItem;
-import de.metas.currency.ConversionRate;
-import de.metas.currency.ConversionRateCreateRequest;
+import de.metas.currency.Currency;
+import de.metas.currency.CurrencyConversionRate;
+import de.metas.currency.CurrencyConversionUpsertRequest;
 import de.metas.currency.ConversionRateQuery;
 import de.metas.currency.ConversionRateRepository;
 import de.metas.currency.ConversionTypeMethod;
@@ -53,7 +54,7 @@ import java.time.ZoneId;
 
 /**
  * The single place that translates between the currency-conversion JSON DTOs and the domain
- * {@link ConversionRateCreateRequest}, modelled on
+ * {@link CurrencyConversionUpsertRequest}, modelled on
  * {@code de.metas.rest_api.v2.ordercandidates.impl.JsonConverters#fromJson}: <b>all</b> resolution (currency
  * code -> {@link CurrencyId} via {@link CurrencyRepository}, org, conversion type via
  * {@link ConversionRateRepository}, {@link ClientAndOrgId}, and org-timezone {@code validFrom}/{@code validTo}
@@ -87,21 +88,21 @@ public class JsonConversionRateConverters
 	}
 
 	@NonNull
-	private static JsonCurrency toJsonCurrency(@NonNull final CurrencyRepository.ActiveCurrency currency)
+	private static JsonCurrency toJsonCurrency(@NonNull final Currency currency)
 	{
 		return JsonCurrency.builder()
-				.currencyCode(currency.getIsoCode())
+				.currencyCode(currency.getCurrencyCode().toThreeLetterCode())
 				.name(currency.getDescription())
 				.build();
 	}
 
 	/**
-	 * Resolves a single JSON upsert item into the fully-resolved domain {@link ConversionRateCreateRequest}. The
+	 * Resolves a single JSON upsert item into the fully-resolved domain {@link CurrencyConversionUpsertRequest}. The
 	 * client is always {@link ClientId#METASFRESH} (the sole {@code ClientId.METASFRESH} reference of the whole
 	 * feature, so that the service never threads a client): the request carries only an org code, never a client.
 	 */
 	@NonNull
-	public ConversionRateCreateRequest fromJson(@NonNull final JsonRequestConversionRateUpsertItem item)
+	public CurrencyConversionUpsertRequest fromJson(@NonNull final JsonRequestConversionRateUpsertItem item)
 	{
 		final OrgId orgId = resolveOrgId(item.getOrgCode());
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, orgId);
@@ -115,7 +116,7 @@ public class JsonConversionRateConverters
 				item.getValidFrom(),
 				orgZoneId);
 
-		return ConversionRateCreateRequest.builder()
+		return CurrencyConversionUpsertRequest.builder()
 				.clientAndOrgId(clientAndOrgId)
 				.fromCurrencyId(fromCurrencyId)
 				.toCurrencyId(toCurrencyId)
@@ -202,12 +203,12 @@ public class JsonConversionRateConverters
 	}
 
 	/**
-	 * Maps a stored {@link ConversionRate} POJO to its response DTO. The POJO already carries the typed ids and a
+	 * Maps a stored {@link CurrencyConversionRate} POJO to its response DTO. The POJO already carries the typed ids and a
 	 * {@link LocalDate} {@code validFrom} converted through the org's zone by the repository (matching the store
 	 * path), so store-and-read use the same org zone consistently.
 	 */
 	@NonNull
-	public JsonNewestConversionRate toJsonNewestConversionRate(@NonNull final ConversionRate rate)
+	public JsonNewestConversionRate toJsonNewestConversionRate(@NonNull final CurrencyConversionRate rate)
 	{
 		return JsonNewestConversionRate.builder()
 				.fromCurrencyCode(currencyRepository.getCurrencyCodeById(rate.getFromCurrencyId()).toThreeLetterCode())
