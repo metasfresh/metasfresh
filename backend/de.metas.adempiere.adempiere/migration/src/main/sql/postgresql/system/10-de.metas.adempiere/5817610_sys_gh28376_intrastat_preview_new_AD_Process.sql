@@ -1,6 +1,6 @@
 -- Intrastat preview window — new parameterless AD_Process for the in-window export.
--- Reads the user's grid selection via T_Selection and writes them to CSV with the extended
--- column set (10 AT RTIC columns + UOM + Currency). No AD_Process_Para rows: parameterless.
+-- Reads the user's grid selection via T_Selection and writes them to an Excel file with the
+-- extended column set (10 AT RTIC columns + UOM + Currency). No AD_Process_Para rows: parameterless.
 --
 -- The existing AD_Process 585508 (INTRASTAT RTIC Datei (AT)) is unchanged — it remains wired
 -- to AD_Menu 542261 with its parameter dialog + fixed 10-column AT RTIC CSV.
@@ -58,7 +58,7 @@ WHERE l.IsActive = 'Y'
 UPDATE AD_Process_Trl
    SET IsTranslated = 'Y',
        Name         = 'INTRASTAT RTIC File (AT) — Selection',
-       Description  = 'Exports the rows selected in the window (or the filtered set when no row is checked) as CSV in the INTRASTAT RTIC format, extended with the UOM and Currency columns.',
+       Description  = 'Exports the rows selected in the window (or the filtered set when no row is checked) as an Excel file in the INTRASTAT RTIC format, extended with the UOM and Currency columns.',
        Updated      = TO_TIMESTAMP('2026-08-05 12:00:03', 'YYYY-MM-DD HH24:MI:SS'),
        UpdatedBy    = 100
  WHERE AD_Language = 'en_US' AND AD_Process_ID = 585647;
@@ -66,7 +66,7 @@ UPDATE AD_Process_Trl
 -- de_CH: Swiss convention Maßeinheit → Masseinheit (ß → ss)
 UPDATE AD_Process_Trl
    SET IsTranslated = 'Y',
-       Description  = 'Exportiert die im Fenster ausgewählten Zeilen (bzw. bei fehlender Auswahl den gefilterten Satz) als CSV im INTRASTAT-RTIC-Format, erweitert um die Spalten Masseinheit und Währung.',
+       Description  = 'Exportiert die im Fenster ausgewählten Zeilen (bzw. bei fehlender Auswahl den gefilterten Satz) als Excel-Datei im INTRASTAT-RTIC-Format, erweitert um die Spalten Masseinheit und Währung.',
        Updated      = TO_TIMESTAMP('2026-08-05 12:00:03', 'YYYY-MM-DD HH24:MI:SS'),
        UpdatedBy    = 100
  WHERE AD_Language = 'de_CH' AND AD_Process_ID = 585647;
