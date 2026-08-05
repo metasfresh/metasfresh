@@ -83,7 +83,8 @@ public class CurrencyConversionRestController
 
 	@ApiOperation("Batch-upsert normalized currency-conversion rates into C_Conversion_Rate.")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "The batch was processed; the response reports the per-record outcome"),
+			@ApiResponse(code = 200, message = "All records applied; the response reports the per-record outcome"),
+			@ApiResponse(code = 207, message = "Partial success: at least one record failed; the response reports the per-record outcomes (failed records carry an ERROR outcome)"),
 			@ApiResponse(code = 401, message = "You are not authorized to invoke this endpoint"),
 			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
 			@ApiResponse(code = 422, message = "The request could not be processed")
