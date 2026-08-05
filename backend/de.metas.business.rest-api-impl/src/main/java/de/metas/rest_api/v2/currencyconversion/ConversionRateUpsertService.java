@@ -117,7 +117,7 @@ public class ConversionRateUpsertService
 	@NonNull
 	private static BatchSyncOutcome computeAggregate(@NonNull final List<JsonResponseConversionRateUpsertItem> responseItems)
 	{
-		// Degenerate no-op: an empty batch has nothing to fail, so it is SUCCESS (-> 200).
+		// Degenerate no-op: an empty batch has nothing to fail, so it is SUCCESS.
 		if (responseItems.isEmpty())
 		{
 			return BatchSyncOutcome.SUCCESS;
