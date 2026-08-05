@@ -55,22 +55,14 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Upserts normalized currency-conversion rates into {@code C_Conversion_Rate}.
+ * Upserts normalized currency-conversion rates into {@code C_Conversion_Rate}. Each request item is resolved (by
+ * {@link JsonConversionRateConverters}) into a {@link CurrencyConversionUpsertRequest} and persisted independently —
+ * a per-item failure yields an {@code ERROR} item and never aborts the batch nor auto-creates a currency.
  * <p>
- * Each caller-supplied request item is resolved (by {@link JsonConversionRateConverters}) into a domain
- * {@link CurrencyConversionUpsertRequest} and persisted on its own via the single-direction path. On top of that, both directions
- * are always ensured: for every successfully-resolvable forward item whose reverse {@code (to -> from)} is
- * <b>not</b> present in the same request, the reciprocal ({@code MultiplyRate = 1 / rate}) is auto-written; when
- * the caller supplied the reverse itself, that reverse is honored untouched (never overwritten with a computed
- * reciprocal).
- * <p>
- * Each request item is applied independently: a per-record failure (unknown/inactive currency, unknown
- * conversion-type code, {@code from == to}, non-positive rate, {@code validTo < validFrom}) yields an
- * {@code ERROR} response item and never aborts the batch nor auto-creates a currency.
- * <p>
- * The batch's {@link SyncAdvise} (default {@code CREATE_OR_MERGE}) governs whether an existing row is updated
- * ({@code ifExists}) or a missing row is created ({@code ifNotExists}): a don't-update advise on an existing row
- * yields {@code NOTHING_DONE}; a fail-if-not-exists advise on a missing row yields a per-record error.
+ * Both directions are always ensured: for a forward item whose reverse {@code (to -> from)} is not in the same
+ * request, the reciprocal is auto-written; a caller-supplied reverse is honored untouched. The batch's
+ * {@link SyncAdvise} governs update-if-exists / create-if-missing (don't-update -> {@code NOTHING_DONE};
+ * fail-if-not-exists on a missing row -> per-item error).
  */
 @Service
 @RequiredArgsConstructor
@@ -89,11 +81,7 @@ public class ConversionRateUpsertService
 		return conversionRateRepository;
 	}
 
-	/**
-	 * Test-only factory mirroring {@code CustomColumnService.newInstanceForUnitTesting}: asserts unit-test mode and
-	 * wires the collaborators (repository + JSON converters) so a test gets a ready-to-use service in one call
-	 * rather than hand-assembling the graph.
-	 */
+	/** Test-only factory (mirrors {@code CustomColumnService.newInstanceForUnitTesting}): asserts unit-test mode and wires the collaborators. */
 	@VisibleForTesting
 	@NonNull
 	public static ConversionRateUpsertService newInstanceForUnitTesting()
@@ -111,9 +99,7 @@ public class ConversionRateUpsertService
 	{
 		final SyncAdvise syncAdvise = request.getSyncAdvise();
 
-		// First, collect the natural keys the caller explicitly supplied, so that a caller-supplied reverse is
-		// honored untouched (never overwritten by a computed reciprocal). Keys are only added for items that
-		// resolve cleanly; an unresolvable item simply contributes no key.
+		// Collect caller-supplied keys first, so a caller-supplied reverse is honored untouched (not overwritten by a computed reciprocal). Unresolvable items contribute no key.
 		final Set<ConversionRateKey> callerSuppliedKeys = new HashSet<>();
 		for (final JsonRequestConversionRateUpsertItem item : request.getRequestItems())
 		{
@@ -136,14 +122,10 @@ public class ConversionRateUpsertService
 				.build();
 	}
 
-	/**
-	 * Aggregates the per-item outcomes into a single top-level {@link BatchSyncOutcome}. An item is "failed" iff its
-	 * per-item outcome is {@code ERROR} ({@code NOTHING_DONE} counts as applied, not failed).
-	 */
+	/** Aggregates per-item outcomes into the top-level {@link BatchSyncOutcome} (an item fails iff its outcome is {@code ERROR}). */
 	@NonNull
 	private static BatchSyncOutcome computeAggregate(@NonNull final List<JsonResponseConversionRateUpsertItem> responseItems)
 	{
-		// Degenerate no-op: an empty batch has nothing to fail, so it is SUCCESS.
 		if (responseItems.isEmpty())
 		{
 			return BatchSyncOutcome.SUCCESS;
@@ -168,10 +150,8 @@ public class ConversionRateUpsertService
 	}
 
 	/**
-	 * Resolves the natural key of the given request item without side effects, returning {@code null} when it
-	 * cannot be resolved (unknown/inactive currency, unknown type code, invalid org). Used only to detect which
-	 * reverse directions the caller supplied; the authoritative validation + persistence still happens in
-	 * {@link #upsertItem0}.
+	 * The natural key of the item without side effects, or {@code null} if unresolvable — used only to detect which
+	 * reverse directions the caller supplied (authoritative validation happens in {@link #upsertItem0}).
 	 */
 	@Nullable
 	private ConversionRateKey resolveKeyOrNull(@NonNull final JsonRequestConversionRateUpsertItem item)
@@ -182,9 +162,7 @@ public class ConversionRateUpsertService
 		}
 		catch (final Exception ex)
 		{
-			// Best-effort probe: an unresolvable item contributes no caller-supplied key (the authoritative
-			// validation + error reporting still happens in upsertItem0). Leave a trace so a wrong-reciprocal
-			// investigation is not a diagnostic black hole.
+			// Best-effort probe; authoritative validation + error reporting happens in upsertItem0. Trace for wrong-reciprocal investigations.
 			logger.debug("resolveKeyOrNull: failed to resolve key for item {}; treating as caller-not-supplied", item, ex);
 			return null;
 		}
@@ -225,14 +203,12 @@ public class ConversionRateUpsertService
 	{
 		final CurrencyConversionUpsertRequest forward = jsonConverters.fromJson(item);
 
-		// Validate the interceptor invariants explicitly so a bad record becomes a friendly per-record error
-		// instead of a raw save-path exception.
+		// Validate explicitly so a bad record is a friendly per-item error, not a raw save-path exception.
 		validateInvariants(forward);
 
 		final SyncOutcome outcome = saveRate(forward, syncAdvise);
 
-		// Ensure the reverse direction exists. If the caller supplied the reverse itself (same request), honor it
-		// untouched; otherwise auto-write the reciprocal — subject to the same advise.
+		// Ensure the reverse direction: honor a caller-supplied reverse untouched, else auto-write the reciprocal (same advise).
 		final ConversionRateKey reverseKey = forward.getReverseKey();
 		if (!callerSuppliedKeys.contains(reverseKey))
 		{
@@ -248,15 +224,9 @@ public class ConversionRateUpsertService
 	}
 
 	/**
-	 * Single-direction upsert on the natural key, honoring the batch's {@link SyncAdvise}. Returns whether the row
-	 * was created, updated, or left untouched.
-	 * <p>
-	 * The in-trx exists-check (must see a row written earlier in the same batch) drives BOTH the outcome policy
-	 * (CREATED / UPDATED / NOTHING_DONE / FAIL) and the create-vs-update decision — kept here, in the service,
-	 * because both are policy. The repository exposes two persisting primitives ({@link ConversionRateRepository#create}
-	 * for the insert, {@link ConversionRateRepository#update} for the mutate-in-place); each persists on its own, so
-	 * this method only decides which one to invoke (their {@link de.metas.currency.CurrencyConversionRate} return is
-	 * ignored — only the outcome is needed here).
+	 * Single-direction upsert on the natural key, honoring {@link SyncAdvise}: decides create / update /
+	 * {@code NOTHING_DONE} / FAIL — the policy stays here in the service; the repo just persists via
+	 * {@link ConversionRateRepository#create} / {@link ConversionRateRepository#update}.
 	 */
 	@NonNull
 	private SyncOutcome saveRate(@NonNull final CurrencyConversionUpsertRequest rate, @NonNull final SyncAdvise syncAdvise)

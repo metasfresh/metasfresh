@@ -37,18 +37,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Reads the <b>newest</b> stored conversion rate per {@code (from, to, type)} combo from
- * {@code C_Conversion_Rate}.
- * <p>
- * For every distinct {@code (C_Currency_ID, C_Currency_ID_To, C_ConversionType_ID)} combo, exactly one row is
- * returned — the one with the maximum {@code ValidFrom} (the most recently imported rate). Scope is the
- * {@code METASFRESH} client (plus the {@code SYSTEM} client, matching the runtime rate-lookup path) and any org
- * (or the one org the optional {@code orgCode} filter selects). Optional {@code from}/{@code to}/{@code type}
- * filters narrow the result further.
- * <p>
- * The newest-per-combo reduction is done <b>DB-side</b> by
- * {@link ConversionRateRepository#getNewestRatesOrderedByValidFromDesc} (native {@code DISTINCT ON}), so the repository
- * already returns exactly one row per combo — this service only maps each row to its JSON DTO.
+ * Reads the newest stored conversion rate (max {@code ValidFrom}) per {@code (from, to, type)} combo from
+ * {@code C_Conversion_Rate}. The newest-per-combo reduction is done DB-side (native {@code DISTINCT ON}) by
+ * {@link ConversionRateRepository#getNewestRatesOrderedByValidFromDesc}; this service only maps each row to its JSON DTO.
  */
 @Service
 @RequiredArgsConstructor
@@ -57,12 +48,6 @@ public class NewestConversionRatesService
 	@NonNull private final ConversionRateRepository conversionRateRepository;
 	@NonNull private final JsonConversionRateConverters jsonConverters;
 
-	/**
-	 * Test-only factory mirroring {@code CustomColumnService.newInstanceForUnitTesting}: asserts unit-test mode and
-	 * wires the collaborators (repository + JSON converters). The collaborators are reachable via
-	 * {@link #getConversionRateRepository()} / {@link #getJsonConverters()} so a test can drive both the service and
-	 * its collaborators from a single factory call.
-	 */
 	@VisibleForTesting
 	@NonNull
 	public static NewestConversionRatesService newInstanceForUnitTesting()
@@ -90,8 +75,6 @@ public class NewestConversionRatesService
 	@NonNull
 	public List<JsonNewestConversionRate> list(@NonNull final ConversionRateQuery query)
 	{
-		// The repository already reduces to exactly one row per (from, to, type) combo (DB-side DISTINCT ON),
-		// so this only maps each returned rate to its JSON DTO.
 		final List<CurrencyConversionRate> rates = conversionRateRepository.getNewestRatesOrderedByValidFromDesc(query);
 
 		final List<JsonNewestConversionRate> result = new ArrayList<>(rates.size());

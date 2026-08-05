@@ -53,12 +53,9 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Owns {@code C_Conversion_Rate} persistence for the currency domain: the {@code IQueryBL} query construction and
- * the {@code I_C_Conversion_Rate} save primitives, kept out of the REST-endpoint services so that a caller works
- * against the domain {@link CurrencyConversionUpsertRequest} rather than the raw model record.
- * <p>
- * Conversion-type resolution is <b>delegated</b> to {@link ICurrencyDAO} (kept an implementation detail behind
- * this repository), so callers use the repository and never {@code ICurrencyDAO} directly.
+ * Owns {@code C_Conversion_Rate} persistence so callers work against the domain
+ * {@link CurrencyConversionUpsertRequest} rather than the raw model record. Conversion-type resolution is
+ * delegated to {@link ICurrencyDAO}, kept behind this repository.
  * <p>
  * Repository Tables: C_Conversion_Rate
  * Repository Cluster: ConversionRateRepository (sole owner)
@@ -71,11 +68,9 @@ public class ConversionRateRepository
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	/**
-	 * Single-direction find on the {@code C_Conversion_Rate} natural key, or {@code null} if none exists — the
-	 * find-then-upsert lookup. Runs <b>in-trx</b> (must see a row written earlier in the same batch) and returns the
-	 * <b>raw model</b> so the caller (service) can hand it to {@link #update}, which mutates it in place; deliberately
-	 * <b>not</b> {@code addOnlyActiveRecordsFilter} (must find an inactive row to update in place rather than insert a
-	 * duplicate). Shares the read with {@link #getByQuery} via {@link #getRecord}.
+	 * The {@code C_Conversion_Rate} for the request's natural key, or {@code null} — the find half of the upsert.
+	 * Returns the mutable model (for {@link #update}) and includes inactive rows, so an inactive match is updated in
+	 * place rather than duplicated.
 	 */
 	@Nullable
 	public I_C_Conversion_Rate findExisting(@NonNull final CurrencyConversionUpsertRequest request)
@@ -84,9 +79,8 @@ public class ConversionRateRepository
 	}
 
 	/**
-	 * The single {@code C_Conversion_Rate} matching the given {@code query}, mapped to a {@link CurrencyConversionRate} POJO,
-	 * or {@code null} if no row matches. Rejects an empty query: with no filter it would match every row and
-	 * {@code first()} would return an arbitrary one — so callers must narrow on at least one field.
+	 * The single {@code C_Conversion_Rate} matching {@code query} as a {@link CurrencyConversionRate}, or {@code null}.
+	 * Rejects an empty query (would match every row).
 	 */
 	@Nullable
 	public CurrencyConversionRate getByQuery(@NonNull final ConversionRateQuery query)
@@ -97,18 +91,14 @@ public class ConversionRateRepository
 		return record != null ? toConversionRate(record) : null;
 	}
 
-	/** The single {@code C_Conversion_Rate} for the exact natural {@code key}, mapped to a {@link CurrencyConversionRate} POJO, or {@code null}. */
+	/** The {@code C_Conversion_Rate} for the exact natural {@code key} as a {@link CurrencyConversionRate}, or {@code null}. */
 	@Nullable
 	public CurrencyConversionRate getByKey(@NonNull final ConversionRateKey key)
 	{
 		return getByQuery(ConversionRateQuery.of(key));
 	}
 
-	/**
-	 * Deletes the {@code C_Conversion_Rate} rows for the given exact natural {@code keys} (each a no-op if absent).
-	 * Finds-then-deletes per key, reusing {@link #getRecord}'s org-zone ValidFrom conversion — intended for bounded
-	 * key sets (its current caller is a test cleanup); a large-set bulk purge would warrant a single set-based delete.
-	 */
+	/** Deletes the {@code C_Conversion_Rate} rows for the given exact natural {@code keys} (no-op per absent key). */
 	public void deleteByKeys(@NonNull final Collection<ConversionRateKey> keys)
 	{
 		for (final ConversionRateKey key : keys)
@@ -122,12 +112,8 @@ public class ConversionRateRepository
 	}
 
 	/**
-	 * The single {@code C_Conversion_Rate} for an <b>exact</b> natural key — the one read path shared by
-	 * {@link #findExisting} (returns the mutable model) and {@link #getByQuery} (maps to a POJO). Both callers
-	 * narrow on the full natural key, so at most one row can match (the client-less natural-key unique index
-	 * guarantees a single row per {@code (validFrom, from, to, type, org)}); a plain {@code first()} suffices and
-	 * no ORDER BY is needed. Client is not part of the rate's identity (see that same unique index), so this does
-	 * not filter on it.
+	 * The single {@code C_Conversion_Rate} for an exact natural key, shared by {@link #findExisting} (mutable model)
+	 * and {@link #getByQuery} (POJO). The full key matches at most one row, so a plain {@code first()} suffices.
 	 */
 	@Nullable
 	private I_C_Conversion_Rate getRecord(@NonNull final ConversionRateQuery query)
@@ -137,14 +123,7 @@ public class ConversionRateRepository
 				.first(I_C_Conversion_Rate.class);
 	}
 
-	/**
-	 * Builds the {@code C_Conversion_Rate} query for the given {@link ConversionRateQuery}: each non-null field
-	 * narrows on its column; a null field is not filtered. The single place the narrowing filters are assembled,
-	 * reused by {@link #getRecord} (the read path behind {@code findExisting} / {@code getByQuery}).
-	 * Client scope is NOT set here. Runs thread-inherited (in-trx):
-	 * {@code findExisting} needs to see rows written earlier in the same batch, and the GET reads run identically on
-	 * a stateless request (no active write transaction to join).
-	 */
+	/** Builds the {@code C_Conversion_Rate} query: each non-null {@link ConversionRateQuery} field narrows on its column. */
 	@NonNull
 	private IQueryBuilder<I_C_Conversion_Rate> createQueryBuilder(@NonNull final ConversionRateQuery query)
 	{
@@ -168,8 +147,7 @@ public class ConversionRateRepository
 		}
 		if (query.getValidFrom() != null)
 		{
-			// ValidFrom is stored as a Timestamp at start-of-day in the org's zone; convert through the same zone.
-			// orgId is required to resolve that zone — never fall back to the machine default (docs/coding-rules/java-time.md).
+			// ValidFrom is a start-of-day Timestamp in the org's zone; convert through that zone, never the machine default (docs/coding-rules/java-time.md).
 			Check.assumeNotNull(query.getOrgId(), "orgId must be set when validFrom is set (needed to resolve the ValidFrom time zone): {}", query);
 			final ZoneId orgZoneId = orgDAO.getTimeZone(query.getOrgId());
 			queryBuilder.addEqualsFilter(I_C_Conversion_Rate.COLUMNNAME_ValidFrom, TimeUtil.asTimestamp(query.getValidFrom(), orgZoneId));
@@ -197,16 +175,8 @@ public class ConversionRateRepository
 	}
 
 	/**
-	 * Inserts a new {@code C_Conversion_Rate} for {@code request}: builds a fresh record with its natural-key
-	 * columns set (org / from / to / type / validFrom), applies the payload, saves it, and returns the persisted
-	 * row mapped to a {@link CurrencyConversionRate} POJO. The insert half of the caller-owned upsert (pair with
-	 * {@link #update}); the caller (service) owns the create-vs-update decision via {@link #findExisting}.
-	 * <p>
-	 * {@code AD_Client_ID} is intentionally <b>not</b> set here: the PO layer stamps it from the session context on
-	 * save, and client is not part of the rate's identity (client-less natural-key unique index).
-	 * <p>
-	 * The {@code C_Conversion_Rate} interceptor fills the remaining defaults and the {@code ValidTo} far-future
-	 * default on save.
+	 * Inserts a new {@code C_Conversion_Rate} for {@code request} (natural-key columns + payload), returned as a
+	 * {@link CurrencyConversionRate}. The insert half of the upsert; pair with {@link #update}.
 	 */
 	@NonNull
 	public CurrencyConversionRate create(@NonNull final CurrencyConversionUpsertRequest request)
@@ -225,10 +195,8 @@ public class ConversionRateRepository
 	}
 
 	/**
-	 * Applies the payload of {@code request} onto the given already-existing {@code existingRecord}, saves it, and
-	 * returns the persisted row mapped to a {@link CurrencyConversionRate} POJO. The update half of the caller-owned
-	 * upsert (pair with {@link #create}); the caller (service) resolves {@code existingRecord} via
-	 * {@link #findExisting} and owns the create-vs-update decision.
+	 * Applies {@code request}'s payload onto {@code existingRecord} and saves it, returned as a
+	 * {@link CurrencyConversionRate}. The update half of the upsert; pair with {@link #create}.
 	 */
 	@NonNull
 	public CurrencyConversionRate update(
@@ -240,10 +208,7 @@ public class ConversionRateRepository
 		return toConversionRate(existingRecord);
 	}
 
-	/**
-	 * Writes the request payload ({@code MultiplyRate}, {@code DivideRate}, {@code ValidTo}) onto {@code record} —
-	 * shared by {@link #create} and {@link #update}.
-	 */
+	/** Writes {@code request}'s payload ({@code MultiplyRate}, {@code DivideRate}, {@code ValidTo}) onto {@code record}. */
 	private void applyPayload(
 			@NonNull final I_C_Conversion_Rate record,
 			@NonNull final CurrencyConversionUpsertRequest request)
@@ -254,21 +219,12 @@ public class ConversionRateRepository
 	}
 
 	/**
-	 * The newest active {@code C_Conversion_Rate} row per {@code (from, to, type)} combo, narrowed by the query's
-	 * optional {@code (org, from, to, type)} filters and mapped to {@link CurrencyConversionRate} POJOs. The
-	 * newest-per-combo reduction is done <b>DB-side</b> so the DB returns exactly one row per combo — never the full
-	 * row set (guards against the all-rows load / OOME). Client is <b>intentionally not filtered</b>: it is not part
-	 * of the rate's identity (the client-less natural-key unique index guarantees one row per
-	 * {@code (validFrom, from, to, type, org)} regardless of client), so no client scope is needed. A {@code null}
-	 * {@code orgId} spans all orgs; a non-null one narrows to that org (the optional {@code orgCode} GET filter).
+	 * The newest active {@code C_Conversion_Rate} per {@code (from, to, type)}, narrowed by the query's optional
+	 * {@code (org, from, to, type)} filters. The newest-per-combo reduction runs DB-side (one row per combo returned,
+	 * never the full set — guards against an all-rows load / OOME).
 	 * <p>
-	 * <b>Raw SQL is used deliberately here.</b> The DB-side newest-per-combo reduction needs PostgreSQL
-	 * {@code DISTINCT ON}, which the {@code IQueryBuilder} API cannot express; the {@code DISTINCT ON} keys
-	 * {@code (from, to, type)} match the leading {@code ORDER BY} columns, and the trailing
-	 * {@code ORDER BY ValidFrom DESC, AD_Org_ID DESC, C_Conversion_Rate_ID DESC} picks the newest / most-specific-org /
-	 * highest-PK row per combo — reproducing the former Java {@code ComboKey=(from,to,type)} first-wins reduction
-	 * exactly. Precedent for a native-SQL read in this codebase:
-	 * {@code de.metas.order.stats.purchase_max_price.PurchaseLastMaxPriceProvider#computeNow}.
+	 * Raw SQL because the reduction needs PostgreSQL {@code DISTINCT ON}, which {@code IQueryBuilder} cannot express.
+	 * Precedent: {@code de.metas.order.stats.purchase_max_price.PurchaseLastMaxPriceProvider#computeNow}.
 	 */
 	@NonNull
 	public ImmutableList<CurrencyConversionRate> getNewestRatesOrderedByValidFromDesc(@NonNull final ConversionRateQuery query)
@@ -302,8 +258,7 @@ public class ConversionRateRepository
 			sqlParams.add(query.getConversionTypeId().getRepoId());
 		}
 
-		// DISTINCT ON keys (from, to, type) MUST be the leading ORDER BY columns; the trailing ValidFrom DESC,
-		// AD_Org_ID DESC, PK DESC picks the newest / most-specific-org / highest-PK row per combo.
+		// DISTINCT ON keys must lead the ORDER BY; the trailing ValidFrom/AD_Org_ID/PK DESC picks newest / most-specific-org / highest-PK per combo.
 		sql.append(" ORDER BY cr.C_Currency_ID, cr.C_Currency_ID_To, cr.C_ConversionType_ID,"
 				+ " cr.ValidFrom DESC, cr.AD_Org_ID DESC, cr.C_Conversion_Rate_ID DESC");
 
@@ -311,7 +266,6 @@ public class ConversionRateRepository
 		ResultSet rs = null;
 		try
 		{
-			// Out-of-trx (thread-inherited): a GET-path read with no active write transaction (same as getByQuery).
 			pstmt = DB.prepareStatement(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 			DB.setParameters(pstmt, sqlParams);
 			rs = pstmt.executeQuery();
@@ -333,12 +287,7 @@ public class ConversionRateRepository
 		}
 	}
 
-	/**
-	 * Maps one row of the {@link #getNewestRatesOrderedByValidFromDesc} native result set into a typed
-	 * {@link CurrencyConversionRate}, mirroring {@link #toConversionRate(I_C_Conversion_Rate)}: typed ids via
-	 * {@code ofRepoId}, and {@code ValidFrom}/{@code ValidTo} converted through the row's org time zone
-	 * ({@code ValidTo} is nullable).
-	 */
+	/** Maps one native-result row into a {@link CurrencyConversionRate} (mirrors {@link #toConversionRate(I_C_Conversion_Rate)}). */
 	@NonNull
 	private CurrencyConversionRate toConversionRate(@NonNull final ResultSet rs) throws SQLException
 	{

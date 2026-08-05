@@ -56,17 +56,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 /**
- * v2 REST endpoints for the currency-conversion integration:
- * <ul>
- *     <li>{@code PUT .../rates} — batch upsert of normalized conversion rates.</li>
- *     <li>{@code GET .../currencies} — the active currencies the caller should fetch rates for.</li>
- *     <li>{@code GET .../newestRates} — the newest stored rate per {@code (from, to, type)} combo.</li>
- * </ul>
- * <p>
- * Authentication is the standard metasfresh v2 REST auth applied to every {@code ENDPOINT_API_V2}
- * endpoint (unauthenticated callers get {@code 401}); this controller follows the same class-level
- * {@code @RestController} + {@code @RequestMapping(ENDPOINT_API_V2 + ...)} + {@code @Profile(App)}
- * convention as {@code ProductsRestController} and does not add a bespoke auth scheme.
+ * v2 REST endpoints for the currency-conversion integration (rates upsert, active currencies, newest rates).
  */
 @RestController
 @RequestMapping(value = { MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/currencyconversion" })
@@ -94,15 +84,7 @@ public class CurrencyConversionRestController
 		final Language adLanguage = Language.getLanguage(Env.getADLanguageOrBaseLanguage());
 		try
 		{
-			// Per-record failures are reported inside the response (as ERROR items) and never abort the batch.
-			// The service computes a top-level aggregate syncOutcome over the per-record outcomes, and the HTTP
-			// status is derived from that single value so a caller inspecting only the status still knows what
-			// happened: SUCCESS (none failed) -> 200; PARTIAL_SUCCESS (some applied, some failed) -> 207
-			// Multi-Status; ERROR (nothing applied — every record failed) -> 422. A thrown exception is a
-			// catastrophic (non-per-record) failure and also becomes a friendly 422 top-level error.
-			// This mirrors the house multi-response mapping in the scripted-adapter's
-			// ScriptedImportConversionRestAPIRouteBuilder#handleMultipleResponses (which uses 500 for all-failed;
-			// here all-failed is a client-side per-record validation failure, so 422 is used instead of 500).
+			// HTTP status is derived from the aggregate syncOutcome: SUCCESS -> 200, PARTIAL_SUCCESS -> 207, ERROR -> 422.
 			final JsonResponseConversionRateUpsert response = conversionRateUpsertService.upsert(request, adLanguage);
 			final HttpStatus status;
 			switch (response.getSyncOutcome())

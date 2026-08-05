@@ -34,13 +34,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 /**
- * A single stored {@code C_Conversion_Rate} row as a typed domain POJO: the natural-key coordinates
- * ({@code org, from, to, type, validFrom}) plus the two rate values ({@code multiplyRate}, {@code divideRate}).
- * <p>
- * Read-side counterpart to {@link CurrencyConversionUpsertRequest} (the write-side row-to-persist): the
- * {@link ConversionRateRepository} maps the raw {@code I_C_Conversion_Rate} model into this POJO — doing the
- * {@code CurrencyId.ofRepoId} / {@code validFrom}-in-org-zone conversions inside the repo — so callers work
- * against typed ids and a {@link LocalDate} {@code validFrom} rather than repo-ints and a {@code Timestamp}.
+ * A stored {@code C_Conversion_Rate} row as a typed domain POJO — natural-key coordinates plus the rate values.
+ * Read-side counterpart to {@link CurrencyConversionUpsertRequest}; {@link ConversionRateRepository} maps the raw
+ * {@code I_C_Conversion_Rate} model into this (typed ids, {@link LocalDate} {@code validFrom}).
  */
 @Value
 @Builder

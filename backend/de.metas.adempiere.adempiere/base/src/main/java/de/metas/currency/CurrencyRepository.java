@@ -63,14 +63,8 @@ public class CurrencyRepository
 	}
 
 	/**
-	 * Resolves the id of the single <b>active</b> {@code C_Currency} whose {@code ISO_Code} equals the given
-	 * three-letter code, or {@code null} if no active currency matches (i.e. the code is unknown or the matching
-	 * currency is inactive).
-	 * <p>
-	 * <b>Active-only, no side effects:</b> this is a plain read filtered by {@code IsActive='Y'} on the ISO code.
-	 * Unlike {@link #getCurrencyIdByCurrencyCode(CurrencyCode)} / {@link ICurrencyDAO#getByCurrencyCode(CurrencyCode)},
-	 * it does <b>not</b> auto-create a missing currency and does not consider inactive rows. Intended for callers
-	 * (e.g. REST upserts) that must surface an unknown/inactive currency as an error rather than silently creating one.
+	 * The id of the single active {@code C_Currency} for the ISO code, or {@code null} if none matches.
+	 * Unlike {@link #getCurrencyIdByCurrencyCode(CurrencyCode)}, does not auto-create a missing currency.
 	 */
 	@Nullable
 	public CurrencyId getActiveCurrencyIdByCurrencyCodeOrNull(@NonNull final CurrencyCode currencyCode)
@@ -107,12 +101,7 @@ public class CurrencyRepository
 		return getById(currencyId).getCostingPrecision();
 	}
 
-	/**
-	 * The <b>active</b> currencies, ordered by ISO code, as the domain {@link Currency} objects the REST currency
-	 * listing needs. {@code Currency} now carries the {@code C_Currency.Description} (mapped in
-	 * {@code CurrencyDAO.toCurrency}), which is the {@code JsonCurrency} {@code name}, so no purpose-built record is
-	 * needed anymore.
-	 */
+	/** The active currencies, ordered by ISO code. */
 	@NonNull
 	public ImmutableList<Currency> getActiveCurrenciesOrderedByCode()
 	{
@@ -128,8 +117,7 @@ public class CurrencyRepository
 
 	/**
 	 * The {@code C_Currency} record for the given ISO code (any active state), or {@code null} if none exists.
-	 * Out-of-trx read on {@code ISO_Code}; not active-filtered on purpose, so a caller (e.g. a test toggling
-	 * {@code IsActive}) can obtain and mutate an inactive currency too.
+	 * Not active-filtered on purpose, so a caller can obtain and mutate an inactive currency too.
 	 */
 	@Nullable
 	public I_C_Currency getRecordByCurrencyCodeOrNull(@NonNull final CurrencyCode currencyCode)

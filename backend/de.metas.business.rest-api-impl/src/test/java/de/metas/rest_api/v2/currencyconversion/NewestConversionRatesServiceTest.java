@@ -34,13 +34,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * The newest-rates behavior (newest-per-combo reduction, org/from/to/type filters, client scoping) is now done
- * DB-side via native {@code DISTINCT ON} SQL in {@link ConversionRateRepository#getNewestRatesOrderedByValidFromDesc},
- * which the in-memory POJO query layer used by unit tests cannot run. That behavior is covered by the cucumber
- * {@code CurrencyConversion_api} {@code GET newestRates} scenario (exercised against a real DB).
- * <p>
- * What remains here is the pure-Java guard on the repository read path ({@link #getByQuery_emptyQuery_isRejected}),
- * which is POJO-runnable.
+ * The newest-rates behavior is done DB-side (native {@code DISTINCT ON}), which the in-memory POJO query layer
+ * cannot run, so it is covered by the cucumber {@code CurrencyConversion_api} {@code GET newestRates} scenario.
+ * Only the pure-Java empty-query guard is POJO-runnable and lives here.
  */
 @ExtendWith(AdempiereTestWatcher.class)
 class NewestConversionRatesServiceTest
@@ -57,7 +53,6 @@ class NewestConversionRatesServiceTest
 	@Test
 	void getByQuery_emptyQuery_isRejected()
 	{
-		// EMPTY is exactly the default-built query, and an empty query would match every row → reject it.
 		assertThat(ConversionRateQuery.builder().build()).isEqualTo(ConversionRateQuery.EMPTY);
 
 		assertThatThrownBy(() -> conversionRateRepository.getByQuery(ConversionRateQuery.EMPTY))

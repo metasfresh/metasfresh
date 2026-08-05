@@ -34,11 +34,6 @@ import java.time.LocalDate;
 /**
  * The natural key of a {@code C_Conversion_Rate} direction:
  * {@code (AD_Org_ID, C_Currency_ID, C_Currency_ID_To, C_ConversionType_ID, ValidFrom)}.
- * <p>
- * {@code AD_Client_ID} is deliberately not part of this key: it identifies a single rate <i>direction</i>
- * within one client scope (the callers that use it — the REST upsert's reverse-detection map and the
- * cucumber assertions — operate within one session client). {@link #getReverseKey()} yields the opposite
- * direction ({@code from}/{@code to} swapped), keeping the other columns unchanged.
  */
 @Value
 @Builder(toBuilder = true)

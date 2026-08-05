@@ -37,18 +37,10 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 
 /**
- * The immutable, fully-resolved single-direction rate to persist: a {@code C_Conversion_Rate} row modelled
- * as its natural key ({@code clientAndOrgId, from, to, conversionType, validFrom}) plus the payload
- * ({@code multiplyRate}, {@code validTo}).
- * <p>
- * {@code DivideRate} — a {@code C_Conversion_Rate} DB column — is not carried as a field here: it is derived
- * from {@link #getMultiplyRate()} via {@link #getDivideRate()} (the canonical
- * {@link CurrencyConversionRates#reciprocal(BigDecimal)}).
- * <p>
- * The resolved {@link #orgZoneId} (the org's timezone, from {@code OrgDAO.getTimeZone}) is carried on the object
- * so that <b>all</b> {@code validFrom}/{@code validTo} {@code LocalDate -> Timestamp} conversions go through the
- * one org zone — {@link #getValidFromTimestamp()} / {@link #getValidToTimestamp()} are the single place the
- * {@link ConversionRateRepository} store path reads them from.
+ * The immutable, fully-resolved single-direction rate to persist: a {@code C_Conversion_Rate} row as its natural
+ * key ({@code clientAndOrgId, from, to, conversionType, validFrom}) plus payload ({@code multiplyRate}, {@code validTo}).
+ * {@code DivideRate} is derived from {@link #getMultiplyRate()}, not stored as a field. The resolved
+ * {@link #orgZoneId} carries the org timezone so all {@code validFrom}/{@code validTo} conversions go through one zone.
  */
 @Value
 @Builder(toBuilder = true)
@@ -84,7 +76,7 @@ public class CurrencyConversionUpsertRequest
 		return validTo != null ? TimeUtil.asTimestamp(validTo, orgZoneId) : null;
 	}
 
-	/** The persistence natural key of this direction (org-scoped; excludes {@code AD_Client_ID}). */
+	/** The persistence natural key of this direction. */
 	@NonNull
 	public ConversionRateKey getKey()
 	{

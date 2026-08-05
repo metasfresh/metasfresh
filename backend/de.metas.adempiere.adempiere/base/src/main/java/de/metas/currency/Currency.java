@@ -43,10 +43,7 @@ public class Currency
 	@NonNull
 	ITranslatableString symbol;
 
-	/**
-	 * The optional {@code C_Currency.Description} display-name column. Nullable: the column is optional and
-	 * unit-test-created currencies leave it unset.
-	 */
+	/** The optional {@code C_Currency.Description} display-name column. */
 	@Nullable
 	String description;
 

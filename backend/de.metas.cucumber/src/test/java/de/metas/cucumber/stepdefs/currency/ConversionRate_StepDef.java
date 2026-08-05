@@ -81,18 +81,14 @@ public class ConversionRate_StepDef
 	private final ConversionRateRepository conversionRateRepository = new ConversionRateRepository();
 
 	/**
-	 * Natural keys of the {@code C_Conversion_Rate} rows this scenario asserts into existence (captured during the
-	 * scenario, when the DB context is up — a {@code @Before} would run before the infrastructure step). Each key's
-	 * reverse is added too, so the auto-created reciprocal is cleaned even when the scenario only asserts the forward
-	 * direction. {@link #cleanup_created_conversion_rates} deletes them so the shared executor DB is left as found.
+	 * Natural keys asserted into existence, cleaned up in {@link #cleanup_created_conversion_rates} so the shared
+	 * executor DB is left as found. Each key's reverse is added too, to also clean the auto-created reciprocal.
 	 */
 	private final Set<ConversionRateKey> createdRateKeys = new HashSet<>();
 
 	/**
-	 * Per-ISO snapshot of {@code C_Currency.IsActive} taken by {@link #remember_currency_active_state} before the
-	 * scenario toggles it, so {@link #restore_currency_active_state} can put the shared executor DB back the way it
-	 * found it (this feature activates/deactivates currencies on the shared DB, which would otherwise leak into
-	 * sibling features on the same executor). Insertion-ordered for deterministic restore.
+	 * Per-ISO {@code C_Currency.IsActive} snapshot, restored in {@link #restore_currency_active_state} so this
+	 * feature's activations do not leak into siblings on the same executor. Insertion-ordered for deterministic restore.
 	 */
 	private final Map<String, Boolean> rememberedActiveByIsoCode = new LinkedHashMap<>();
 
@@ -104,10 +100,8 @@ public class ConversionRate_StepDef
 	}
 
 	/**
-	 * Sets {@code IsActive='Y'} on the given ISO currencies. Real-world trigger: activating a currency is a
-	 * master-data configuration a key user performs (or a migration ships); the core seed ships most currencies
-	 * (e.g. CNY) inactive, so a scenario that upserts rates for such a currency must activate it first rather than
-	 * depend on a customer activation migration.
+	 * Sets {@code IsActive='Y'} on the given ISO currencies. The core seed ships most currencies (e.g. CNY)
+	 * inactive, so a scenario upserting rates for such a currency must activate it first.
 	 *
 	 * <p><b>Gherkin usage example</b>:
 	 * <pre>{@code
@@ -124,9 +118,8 @@ public class ConversionRate_StepDef
 	}
 
 	/**
-	 * Sets {@code IsActive='N'} on the given ISO currencies. Real-world trigger: deactivating a currency is a
-	 * master-data configuration a key user performs; used to establish a known-inactive currency so a scenario can
-	 * prove the active-only currency listing excludes it.
+	 * Sets {@code IsActive='N'} on the given ISO currencies, to establish a known-inactive currency the active-only
+	 * currency listing must exclude.
 	 *
 	 * <p><b>Gherkin usage example</b>:
 	 * <pre>{@code
@@ -153,10 +146,8 @@ public class ConversionRate_StepDef
 	}
 
 	/**
-	 * Records the current {@code C_Currency.IsActive} of each listed ISO code, so a later
-	 * {@code Then the remembered currency active-states are restored} step can put the shared executor DB back to its
-	 * original state. Call this in the {@code Background} BEFORE the scenario activates/deactivates any currency, so
-	 * this feature does not leak an activation into sibling features that run on the same executor DB.
+	 * Records the current {@code C_Currency.IsActive} of each listed ISO code for later restore. Call this in the
+	 * {@code Background} BEFORE the scenario toggles any currency, so activations do not leak into sibling features.
 	 *
 	 * <p><b>Gherkin usage example</b>:
 	 * <pre>{@code
@@ -177,11 +168,7 @@ public class ConversionRate_StepDef
 		});
 	}
 
-	/**
-	 * Deletes the {@code C_Conversion_Rate} rows this scenario asserted into existence (and their reciprocals),
-	 * captured in {@link #createdRateKeys}, so the shared executor DB is left as found and re-runs start clean (rates
-	 * upsert as CREATED, not UPDATED). Runs after the scenario (DB context up); a no-op when nothing was captured.
-	 */
+	/** Deletes the {@link #createdRateKeys} rows (and reciprocals) so re-runs start clean (CREATED, not UPDATED). */
 	@After
 	public void cleanup_created_conversion_rates()
 	{
@@ -189,12 +176,7 @@ public class ConversionRate_StepDef
 		createdRateKeys.clear();
 	}
 
-	/**
-	 * Restores every currency remembered by {@link #remember_currency_active_state} to its recorded
-	 * {@code IsActive}, undoing the scenario's activations/deactivations on the shared executor DB — so the feature
-	 * file stays free of teardown plumbing and no scenario can forget to restore. A no-op when nothing was remembered
-	 * (a scenario with no {@code I remember ...} step).
-	 */
+	/** Restores every currency remembered by {@link #remember_currency_active_state} to its recorded {@code IsActive}. */
 	@After
 	public void restore_currency_active_state()
 	{
@@ -210,8 +192,7 @@ public class ConversionRate_StepDef
 
 	/**
 	 * Asserts that exactly one {@code C_Conversion_Rate} row exists for the given natural key, with the given rates
-	 * and open/closed {@code ValidTo}. The key uses org 0 (the shared rows the upsert writes); client is not part of
-	 * the rate's identity (the read is client-less, per the natural-key unique index).
+	 * and open/closed {@code ValidTo}. The key uses org 0 (the shared rows the upsert writes).
 	 *
 	 * <p><b>Gherkin usage example</b>:
 	 * <pre>{@code
@@ -240,7 +221,7 @@ public class ConversionRate_StepDef
 					.conversionTypeId(typeId)
 					.validFrom(validFrom)
 					.build();
-			// Remember this key (and its reverse, for the auto-created reciprocal) so the @After cleanup deletes it.
+			// also remember the reverse, for the auto-created reciprocal, so the @After cleanup deletes it
 			createdRateKeys.add(key);
 			createdRateKeys.add(key.getReverseKey());
 
@@ -402,9 +383,8 @@ public class ConversionRate_StepDef
 			@NonNull final CurrencyConversionTypeId typeId,
 			@NonNull final LocalDate validFrom)
 	{
-		// The exact-key lookup on the C_Conversion_Rate direction (org 0 = the shared rows the upsert writes).
-		// The repository owns the ValidFrom-in-org-zone conversion and the typed-id -> repo-int mapping (and the
-		// read is client-less, per the natural-key unique index), so this passes the typed ids straight through.
+		// exact-key lookup (org 0 = the shared rows the upsert writes); the repository owns the
+		// ValidFrom-in-org-zone conversion and the typed-id -> repo-int mapping, so pass the typed ids through
 		final ConversionRateKey key = ConversionRateKey.builder()
 				.orgId(OrgId.ANY)
 				.fromCurrencyId(fromId)

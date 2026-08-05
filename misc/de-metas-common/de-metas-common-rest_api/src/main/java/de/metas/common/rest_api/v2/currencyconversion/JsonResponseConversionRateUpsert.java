@@ -40,16 +40,7 @@ import java.util.List;
 @JsonDeserialize(builder = JsonResponseConversionRateUpsert.JsonResponseConversionRateUpsertBuilder.class)
 public class JsonResponseConversionRateUpsert
 {
-	/**
-	 * Top-level aggregate outcome of a conversion-rate batch upsert, computed over the per-item outcomes
-	 * ({@link JsonResponseConversionRateUpsertItem.SyncOutcome}). An item counts as "failed" iff its per-item
-	 * outcome is {@code ERROR} ({@code NOTHING_DONE} counts as applied, not failed).
-	 * <ul>
-	 *     <li>{@link #SUCCESS} — no item failed (including the degenerate empty batch); HTTP 200.</li>
-	 *     <li>{@link #PARTIAL_SUCCESS} — some items failed but not all; HTTP 207 Multi-Status.</li>
-	 *     <li>{@link #ERROR} — every item failed (non-empty batch); HTTP 422.</li>
-	 * </ul>
-	 */
+	/** An item counts as failed iff its per-item outcome is {@code ERROR} ({@code NOTHING_DONE} counts as applied). */
 	public enum BatchSyncOutcome
 	{
 		@ApiEnum("No record failed; the batch fully applied (also the degenerate empty batch).")

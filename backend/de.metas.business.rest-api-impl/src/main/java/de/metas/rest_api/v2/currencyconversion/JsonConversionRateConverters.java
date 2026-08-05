@@ -53,16 +53,10 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 
 /**
- * The single place that translates between the currency-conversion JSON DTOs and the domain
- * {@link CurrencyConversionUpsertRequest}, modelled on
- * {@code de.metas.rest_api.v2.ordercandidates.impl.JsonConverters#fromJson}: <b>all</b> resolution (currency
- * code -> {@link CurrencyId} via {@link CurrencyRepository}, org, conversion type via
- * {@link ConversionRateRepository}, {@link ClientAndOrgId}, and org-timezone {@code validFrom}/{@code validTo}
- * date conversion) happens here, so the service operates on fully-resolved domain objects only. This REST module
- * never references {@code ICurrencyDAO} directly.
- * <p>
- * An unknown/inactive currency, an unknown org code, or an unknown conversion-type code raises a
- * {@code markAsUserValidationError} exception so the offending request item becomes a per-record {@code ERROR}
+ * Translates between the currency-conversion JSON DTOs and the domain {@link CurrencyConversionUpsertRequest}
+ * (modelled on {@code JsonConverters#fromJson}): all resolution — currency code, org, conversion type, dates —
+ * happens here, so the service operates on fully-resolved domain objects. An unknown/inactive currency, org, or
+ * conversion-type code raises a {@code markAsUserValidationError} so the item becomes a per-item {@code ERROR}
  * rather than aborting the batch or auto-creating master data.
  */
 @Component
@@ -73,11 +67,7 @@ public class JsonConversionRateConverters
 	@NonNull private final CurrencyRepository currencyRepository;
 	@NonNull private final ConversionRateRepository conversionRateRepository;
 
-	/**
-	 * The active currencies, ordered by ISO code, mapped to {@link JsonCurrency} ({@code currencyCode} =
-	 * ISO code, {@code name} = {@code Description}). The active-only, ISO-ordered read is owned by
-	 * {@link CurrencyRepository#getActiveCurrenciesOrderedByCode()}.
-	 */
+	/** The active currencies (ISO-ordered) as {@link JsonCurrency} ({@code name} = {@code Description}). */
 	@NonNull
 	public ImmutableList<JsonCurrency> getActiveCurrencies()
 	{
@@ -96,11 +86,7 @@ public class JsonConversionRateConverters
 				.build();
 	}
 
-	/**
-	 * Resolves a single JSON upsert item into the fully-resolved domain {@link CurrencyConversionUpsertRequest}. The
-	 * client is always {@link ClientId#METASFRESH} (the sole {@code ClientId.METASFRESH} reference of the whole
-	 * feature, so that the service never threads a client): the request carries only an org code, never a client.
-	 */
+	/** Resolves a JSON upsert item into the domain {@link CurrencyConversionUpsertRequest}. */
 	@NonNull
 	public CurrencyConversionUpsertRequest fromJson(@NonNull final JsonRequestConversionRateUpsertItem item)
 	{
@@ -129,13 +115,9 @@ public class JsonConversionRateConverters
 	}
 
 	/**
-	 * Resolves the id of the single <b>active</b> {@code C_Currency} for the given ISO code.
-	 * Throws a user-validation error when no active currency matches (an unknown or inactive ISO).
-	 * <p>
-	 * Delegates to {@link CurrencyRepository#getActiveCurrencyIdByCurrencyCodeOrNull(CurrencyCode)} (active-only,
-	 * no auto-create) on purpose — not {@code ICurrencyDAO.getByCurrencyCode}, which auto-creates a missing
-	 * currency (in the {@code PlainCurrencyDAO} test double) and does not filter inactive rows: the endpoint must
-	 * surface an unknown/inactive ISO as a per-record error and must NOT auto-create a currency.
+	 * The id of the single active {@code C_Currency} for the ISO code, or a user-validation error if none.
+	 * Uses {@link CurrencyRepository#getActiveCurrencyIdByCurrencyCodeOrNull} (active-only, no auto-create) — not
+	 * {@code ICurrencyDAO.getByCurrencyCode}, which auto-creates and ignores inactive: the endpoint must not auto-create.
 	 */
 	@NonNull
 	public CurrencyId getActiveCurrencyId(@NonNull final String isoCode)
@@ -150,12 +132,9 @@ public class JsonConversionRateConverters
 	}
 
 	/**
-	 * Wraps the four raw {@code GET /newestRates} request params into the fully-resolved, typed
-	 * {@link ConversionRateQuery} at the controller boundary, so raw strings never travel into the service.
-	 * Each param is optional: a blank/omitted value resolves to {@code null} (no narrowing — spans all). A non-blank
-	 * value is resolved to its typed id here; an unknown currency ISO or conversion-type code raises the same
-	 * {@code markAsUserValidationError} as the upsert path (surfaced by the controller as a friendly {@code 422}).
-	 * {@code validFrom}/{@code clientId} are not part of the newest-rates narrowing, so they are left {@code null}.
+	 * Resolves the four raw {@code GET /newestRates} params into a typed {@link ConversionRateQuery} at the controller
+	 * boundary. Each param is optional (blank -> {@code null} = no narrowing); an unknown currency/type code raises the
+	 * same {@code markAsUserValidationError} as the upsert path.
 	 */
 	@NonNull
 	public ConversionRateQuery toNewestRatesFilter(
@@ -202,11 +181,7 @@ public class JsonConversionRateConverters
 		return conversionRateRepository.getConversionTypeId(parseConversionTypeMethod(conversionTypeCode));
 	}
 
-	/**
-	 * Maps a stored {@link CurrencyConversionRate} POJO to its response DTO. The POJO already carries the typed ids and a
-	 * {@link LocalDate} {@code validFrom} converted through the org's zone by the repository (matching the store
-	 * path), so store-and-read use the same org zone consistently.
-	 */
+	/** Maps a stored {@link CurrencyConversionRate} to its response DTO. */
 	@NonNull
 	public JsonNewestConversionRate toJsonNewestConversionRate(@NonNull final CurrencyConversionRate rate)
 	{
@@ -223,9 +198,7 @@ public class JsonConversionRateConverters
 	@NonNull
 	private OrgId resolveOrgId(@Nullable final String orgCode)
 	{
-		// A blank orgCode means the shared, cross-org rate: org 0 (OrgId.ANY).
-		// RestUtils.retrieveOrgIdOrDefault falls back to the context org (Env.getOrgId()) when blank, not to
-		// OrgId.ANY, so only its non-blank path (resolve by AD_Org.Value) is reused here.
+		// Blank orgCode = the shared cross-org rate (OrgId.ANY). RestUtils.retrieveOrgIdOrDefault falls back to the context org when blank, not ANY, so only its non-blank path is reused.
 		if (Check.isBlank(orgCode))
 		{
 			return OrgId.ANY;
@@ -251,12 +224,7 @@ public class JsonConversionRateConverters
 		return conversionRateRepository.getConversionTypeId(parseConversionTypeMethod(conversionTypeCode));
 	}
 
-	/**
-	 * Parses a non-blank conversion-type code into its {@link ConversionTypeMethod}, raising the shared
-	 * {@code markAsUserValidationError} on an unknown code. The single place the {@code ConversionTypeMethod.forCode}
-	 * + user-validation-error logic lives, reused by both the upsert path ({@link #resolveConversionTypeId}) and the
-	 * optional newest-rates filter ({@link #resolveOptionalConversionTypeId}).
-	 */
+	/** Parses a non-blank conversion-type code into its {@link ConversionTypeMethod}, raising {@code markAsUserValidationError} on an unknown code. */
 	@NonNull
 	private static ConversionTypeMethod parseConversionTypeMethod(@NonNull final String conversionTypeCode)
 	{

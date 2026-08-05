@@ -29,24 +29,19 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 /**
- * Shared helpers for the {@code C_Conversion_Rate} {@code MultiplyRate}/{@code DivideRate} pair.
- * <p>
- * Single source of the canonical {@code 1 / rate} formula ({@value #RATE_SCALE} scale,
- * {@link #RATE_ROUNDING}) used both by the {@code C_Conversion_Rate} field callout and the
- * currency-conversion REST upsert.
+ * Single source of the canonical {@code 1 / rate} formula for the {@code C_Conversion_Rate}
+ * {@code MultiplyRate}/{@code DivideRate} pair, shared by the field callout and the REST upsert.
  */
 @UtilityClass
 public class CurrencyConversionRates
 {
-	/** Scale + rounding of the derived {@code DivideRate = 1 / MultiplyRate} (and vice-versa). */
 	private static final int RATE_SCALE = 12;
 	private static final RoundingMode RATE_ROUNDING = RoundingMode.HALF_UP;
 
 	/**
-	 * {@code 1 / rate} at scale {@value #RATE_SCALE}, {@link #RATE_ROUNDING}.
+	 * {@code 1 / rate}.
 	 *
-	 * @throws ArithmeticException if {@code rate} is zero (callers that accept a possibly-zero rate must
-	 *         guard with {@code signum() == 0} first).
+	 * @throws ArithmeticException if {@code rate} is zero (callers must guard with {@code signum() == 0} first).
 	 */
 	@NonNull
 	public static BigDecimal reciprocal(@NonNull final BigDecimal rate)

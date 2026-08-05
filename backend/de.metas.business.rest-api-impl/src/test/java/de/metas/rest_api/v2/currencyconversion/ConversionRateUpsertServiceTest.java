@@ -69,8 +69,6 @@ class ConversionRateUpsertServiceTest
 	{
 		AdempiereTestHelper.get().init();
 
-		// Wire the service via its test-only factory (mirrors CustomColumnService.newInstanceForUnitTesting),
-		// then reuse the same repository it wired so the test drives the repository — not the low-level DAO.
 		conversionRateUpsertService = ConversionRateUpsertService.newInstanceForUnitTesting();
 		conversionRateRepository = conversionRateUpsertService.getConversionRateRepository();
 	}
@@ -81,10 +79,9 @@ class ConversionRateUpsertServiceTest
 	}
 
 	/**
-	 * Create an <b>active</b> {@code AD_Org} with the given Value + a matching {@code AD_OrgInfo} carrying a
-	 * timezone, and return its id. The Value lets {@code orgCode} resolve by Value; the {@code AD_OrgInfo} lets the
-	 * converter's org-timezone date conversion ({@code OrgDAO.getTimeZone}) resolve a zone for the regular org
-	 * (a regular org with no {@code AD_OrgInfo} would throw {@code @NotFound@ @AD_OrgInfo@}).
+	 * Active {@code AD_Org} + matching {@code AD_OrgInfo} carrying a timezone.
+	 * The {@code AD_OrgInfo} is required: the converter's date conversion ({@code OrgDAO.getTimeZone}) throws
+	 * {@code @NotFound@ @AD_OrgInfo@} for a regular org without one.
 	 */
 	private OrgId createOrg(final String value)
 	{
@@ -158,7 +155,6 @@ class ConversionRateUpsertServiceTest
 						.requestItem(item().build())
 						.build());
 
-		// all-valid batch -> aggregate SUCCESS
 		assertThat(response.getSyncOutcome()).isEqualTo(BatchSyncOutcome.SUCCESS);
 		assertThat(response.getResponseItems()).hasSize(1);
 		final JsonResponseConversionRateUpsertItem responseItem = response.getResponseItems().get(0);
@@ -170,12 +166,9 @@ class ConversionRateUpsertServiceTest
 		final I_C_Conversion_Rate rate = rateFor(eur, cny);
 		assertThat(rate).isNotNull();
 		assertThat(rate.getMultiplyRate()).isEqualByComparingTo("8.00");
-		// DivideRate = 1/8 = 0.125 000 000 000 (scale 12, HALF_UP)
 		assertThat(rate.getDivideRate()).isEqualByComparingTo("0.125000000000");
 		assertThat(rate.getDivideRate().scale()).isEqualTo(12);
-		// default org 0
 		assertThat(rate.getAD_Org_ID()).isEqualTo(0);
-		// default conversion type resolved (non-zero)
 		assertThat(rate.getC_ConversionType_ID()).isGreaterThan(0);
 		// ValidTo left null by the service (interceptor would default it on the real save path)
 		assertThat(rate.getValidTo()).isNull();
@@ -194,7 +187,6 @@ class ConversionRateUpsertServiceTest
 						.build())
 				.build());
 
-		// select the forward row explicitly; the auto-reciprocal also exists (list order is not guaranteed)
 		final I_C_Conversion_Rate rate = rateFor(eur, usd);
 		assertThat(rate).isNotNull();
 		assertThat(rate.getDivideRate()).isEqualByComparingTo("0.333333333333");
@@ -210,11 +202,10 @@ class ConversionRateUpsertServiceTest
 
 		final JsonResponseConversionRateUpsert response = upsert(
 				JsonRequestConversionRateUpsert.builder()
-						.requestItem(item().build()) // valid EUR->CNY
-						.requestItem(item().toCurrencyCode("XXX").build()) // unknown target
+						.requestItem(item().build())
+						.requestItem(item().toCurrencyCode("XXX").build())
 						.build());
 
-		// one bad + one good item -> aggregate PARTIAL_SUCCESS
 		assertThat(response.getSyncOutcome()).isEqualTo(BatchSyncOutcome.PARTIAL_SUCCESS);
 		assertThat(response.getResponseItems()).hasSize(2);
 
@@ -226,7 +217,7 @@ class ConversionRateUpsertServiceTest
 		assertThat(err.getError()).isNotNull();
 		assertThat(err.getToCurrencyCode()).isEqualTo("XXX");
 
-		// only the valid record's two directions were written; the unknown currency was NOT auto-created
+		// the unknown currency was NOT auto-created
 		assertThat(allRates()).hasSize(2);
 		final long xxxCount = POJOLookupMap.get().getRecords(I_C_Currency.class).stream()
 				.filter(c -> "XXX".equals(c.getISO_Code()))
@@ -245,7 +236,6 @@ class ConversionRateUpsertServiceTest
 						.requestItem(item().build())
 						.build());
 
-		// 1-item all-failed batch -> aggregate ERROR
 		assertThat(response.getSyncOutcome()).isEqualTo(BatchSyncOutcome.ERROR);
 		assertThat(response.getResponseItems()).hasSize(1);
 		assertThat(response.getResponseItems().get(0).getSyncOutcome()).isEqualTo(SyncOutcome.ERROR);
@@ -267,7 +257,6 @@ class ConversionRateUpsertServiceTest
 		assertThat(response.getResponseItems().get(0).getSyncOutcome()).isEqualTo(SyncOutcome.CREATED);
 		assertThat(response.getResponseItems().get(1).getSyncOutcome()).isEqualTo(SyncOutcome.ERROR);
 
-		// the valid "P" record wrote its forward + auto-reciprocal (both PeriodEnd); "Z" wrote nothing
 		assertThat(allRates()).hasSize(2);
 		final I_C_Conversion_Rate forward = rateFor(eur, cny);
 		assertThat(forward).isNotNull();
@@ -298,17 +287,13 @@ class ConversionRateUpsertServiceTest
 	{
 		createActiveCurrency("EUR");
 		createActiveCurrency("CNY");
-		// NO org with Value "orgNOPE" is created: orgCode resolution goes through
-		// RestUtils.retrieveOrgIdOrDefault, which throws for an unknown AD_Org.Value. The service's
-		// per-item try/catch must convert that into a per-record ERROR (not abort the batch), and
-		// nothing must be written.
+		// no org with Value "orgNOPE": the unknown-org throw must become a per-record ERROR, writing nothing
 
 		final JsonResponseConversionRateUpsert response = upsert(
 				JsonRequestConversionRateUpsert.builder()
 						.requestItem(item().orgCode("orgNOPE").build())
 						.build());
 
-		// 1-item all-failed batch -> aggregate ERROR
 		assertThat(response.getSyncOutcome()).isEqualTo(BatchSyncOutcome.ERROR);
 		assertThat(response.getResponseItems()).hasSize(1);
 		final JsonResponseConversionRateUpsertItem err = response.getResponseItems().get(0);
@@ -322,9 +307,7 @@ class ConversionRateUpsertServiceTest
 	{
 		final CurrencyId eur = createActiveCurrency("EUR");
 		final CurrencyId cny = createActiveCurrency("CNY");
-		// NO org with Value "orgNOPE" is created: orgCode resolution goes through RestUtils.retrieveOrgIdOrDefault,
-		// which throws for an unknown AD_Org.Value. The service's per-item try/catch must convert that into a
-		// per-record ERROR (M2) — NOT abort the batch — while the sibling valid item (default org 0) still applies.
+		// unknown org must ERROR per-record without aborting the batch; the sibling valid item still applies
 
 		final JsonResponseConversionRateUpsert response = upsert(
 				JsonRequestConversionRateUpsert.builder()
@@ -342,7 +325,6 @@ class ConversionRateUpsertServiceTest
 		assertThat(err.getSyncOutcome()).isEqualTo(SyncOutcome.ERROR);
 		assertThat(err.getError()).isNotNull();
 
-		// only the valid item's two directions (org 0) were written; the unknown-org item wrote nothing
 		assertThat(allRates()).hasSize(2);
 		final I_C_Conversion_Rate forward = rateFor(eur, cny);
 		assertThat(forward).isNotNull();
@@ -358,7 +340,6 @@ class ConversionRateUpsertServiceTest
 		upsert(JsonRequestConversionRateUpsert.builder()
 				.requestItem(item().multiplyRate(new BigDecimal("8.00")).build())
 				.build());
-		// forward + auto-reciprocal
 		assertThat(allRates()).hasSize(2);
 
 		final JsonResponseConversionRateUpsert second = upsert(
@@ -373,9 +354,8 @@ class ConversionRateUpsertServiceTest
 		assertThat(forward).isNotNull();
 		assertThat(forward.getMultiplyRate()).isEqualByComparingTo("9.00");
 		assertThat(forward.getDivideRate()).isEqualByComparingTo("0.111111111111");
-		// the auto-reciprocal was updated in place too: multiplyRate = 1/9 = 0.111111111111 (scale 12,
-		// HALF_UP); its own divideRate = 1/0.111111111111 = 9.000000000009 (derived from the already-
-		// rounded reciprocal, so it is not exactly 9 — this is the value the service actually stores).
+		// reciprocal divideRate = 1/0.111111111111 = 9.000000000009 (derived from the already-rounded
+		// reciprocal, so not exactly 9 — this is what the service stores).
 		final I_C_Conversion_Rate reciprocal = rateFor(cny, eur);
 		assertThat(reciprocal).isNotNull();
 		assertThat(reciprocal.getMultiplyRate()).isEqualByComparingTo("0.111111111111");
@@ -392,7 +372,6 @@ class ConversionRateUpsertServiceTest
 						.requestItem(item().toCurrencyCode("EUR").build())
 						.build());
 
-		// 1-item all-failed batch -> aggregate ERROR
 		assertThat(response.getSyncOutcome()).isEqualTo(BatchSyncOutcome.ERROR);
 		assertThat(response.getResponseItems().get(0).getSyncOutcome()).isEqualTo(SyncOutcome.ERROR);
 		assertThat(allRates()).isEmpty();
@@ -410,7 +389,6 @@ class ConversionRateUpsertServiceTest
 						.requestItem(item().multiplyRate(new BigDecimal("-1")).build())
 						.build());
 
-		// all-bad batch -> aggregate ERROR
 		assertThat(response.getSyncOutcome()).isEqualTo(BatchSyncOutcome.ERROR);
 		assertThat(response.getResponseItems().get(0).getSyncOutcome()).isEqualTo(SyncOutcome.ERROR);
 		assertThat(response.getResponseItems().get(1).getSyncOutcome()).isEqualTo(SyncOutcome.ERROR);
@@ -428,7 +406,6 @@ class ConversionRateUpsertServiceTest
 						.requestItem(item().validTo(VALID_FROM.minusDays(1)).build())
 						.build());
 
-		// 1-item all-failed batch -> aggregate ERROR
 		assertThat(response.getSyncOutcome()).isEqualTo(BatchSyncOutcome.ERROR);
 		assertThat(response.getResponseItems().get(0).getSyncOutcome()).isEqualTo(SyncOutcome.ERROR);
 		assertThat(allRates()).isEmpty();
@@ -455,11 +432,9 @@ class ConversionRateUpsertServiceTest
 						.requestItem(item().multiplyRate(new BigDecimal("8.00")).build())
 						.build());
 
-		// caller only asked for the forward direction -> one response item
+		// one supplied direction -> one response item, but both directions stored
 		assertThat(response.getResponseItems()).hasSize(1);
 		assertThat(response.getResponseItems().get(0).getSyncOutcome()).isEqualTo(SyncOutcome.CREATED);
-
-		// but BOTH directions are stored
 		assertThat(allRates()).hasSize(2);
 
 		final I_C_Conversion_Rate forward = rateFor(eur, cny);
@@ -468,9 +443,7 @@ class ConversionRateUpsertServiceTest
 
 		final I_C_Conversion_Rate reverse = rateFor(cny, eur);
 		assertThat(reverse).isNotNull();
-		// reciprocal multiplyRate = 1/8 = 0.125 (scale 12, HALF_UP)
 		assertThat(reverse.getMultiplyRate()).isEqualByComparingTo("0.125000000000");
-		// its own divideRate = 1 / (1/8) = 8
 		assertThat(reverse.getDivideRate()).isEqualByComparingTo("8.000000000000");
 	}
 
@@ -480,7 +453,7 @@ class ConversionRateUpsertServiceTest
 		final CurrencyId eur = createActiveCurrency("EUR");
 		final CurrencyId cny = createActiveCurrency("CNY");
 
-		// caller supplies BOTH directions; the reverse rate is deliberately NOT the reciprocal (0.13 != 1/8)
+		// reverse rate deliberately NOT the reciprocal (0.13 != 1/8) to prove a caller-supplied reverse is kept as-is
 		final JsonResponseConversionRateUpsert response = upsert(
 				JsonRequestConversionRateUpsert.builder()
 						.requestItem(item()
@@ -491,15 +464,12 @@ class ConversionRateUpsertServiceTest
 								.multiplyRate(new BigDecimal("0.13")).build())
 						.build());
 
-		// both supplied items reported
 		assertThat(response.getResponseItems()).hasSize(2);
-
 		// exactly the two supplied rows exist (no synthetic reciprocal added)
 		assertThat(allRates()).hasSize(2);
 
 		final I_C_Conversion_Rate reverse = rateFor(cny, eur);
 		assertThat(reverse).isNotNull();
-		// caller's reverse honored as-is, NOT overwritten with the computed reciprocal 0.125
 		assertThat(reverse.getMultiplyRate()).isEqualByComparingTo("0.13");
 	}
 
@@ -509,13 +479,12 @@ class ConversionRateUpsertServiceTest
 		createActiveCurrency("EUR");
 		createActiveCurrency("CNY");
 
-		// forward-only -> forward + auto reciprocal = 2 rows
 		upsert(JsonRequestConversionRateUpsert.builder()
 				.requestItem(item().multiplyRate(new BigDecimal("8.00")).build())
 				.build());
 		assertThat(allRates()).hasSize(2);
 
-		// re-upsert the same forward-only request -> still exactly 2 rows (update in place, no dup)
+		// re-upsert the same request -> still exactly 2 rows (update in place, no dup)
 		upsert(JsonRequestConversionRateUpsert.builder()
 				.requestItem(item().multiplyRate(new BigDecimal("8.00")).build())
 				.build());
@@ -534,8 +503,7 @@ class ConversionRateUpsertServiceTest
 				.build());
 		assertThat(allRates()).hasSize(2);
 
-		// re-post the same key with a DONT_UPDATE-on-exists advise (READ_ONLY) and a *different* rate:
-		// the existing row must be left untouched and the outcome must be NOTHING_DONE.
+		// re-post the same key with READ_ONLY (don't-update-on-exists) and a different rate
 		final JsonResponseConversionRateUpsert response = upsert(
 				JsonRequestConversionRateUpsert.builder()
 						.syncAdvise(SyncAdvise.READ_ONLY)
@@ -548,7 +516,7 @@ class ConversionRateUpsertServiceTest
 		assertThat(response.getResponseItems().get(0).getSyncOutcome()).isEqualTo(SyncOutcome.NOTHING_DONE);
 		assertThat(response.getResponseItems().get(0).getError()).isNull();
 
-		// still exactly the two seeded rows, and the forward rate was NOT overwritten with 9.99
+		// the forward rate was NOT overwritten with 9.99
 		assertThat(allRates()).hasSize(2);
 		final I_C_Conversion_Rate forward = rateFor(eur, cny);
 		assertThat(forward).isNotNull();
@@ -561,15 +529,13 @@ class ConversionRateUpsertServiceTest
 		createActiveCurrency("EUR");
 		createActiveCurrency("CNY");
 
-		// no rate exists yet; a FAIL-if-not-exists advise (READ_ONLY) must produce a per-record error
-		// and write nothing (not even the auto-reciprocal).
+		// no rate exists yet; READ_ONLY (fail-if-not-exists) must error and write nothing (not even the reciprocal)
 		final JsonResponseConversionRateUpsert response = upsert(
 				JsonRequestConversionRateUpsert.builder()
 						.syncAdvise(SyncAdvise.READ_ONLY)
 						.requestItem(item().build())
 						.build());
 
-		// 1-item all-failed batch -> aggregate ERROR
 		assertThat(response.getSyncOutcome()).isEqualTo(BatchSyncOutcome.ERROR);
 		assertThat(response.getResponseItems()).hasSize(1);
 		assertThat(response.getResponseItems().get(0).getSyncOutcome()).isEqualTo(SyncOutcome.ERROR);
@@ -580,7 +546,7 @@ class ConversionRateUpsertServiceTest
 	@Test
 	void emptyBatch_isSuccess()
 	{
-		// a batch with no request items has nothing to fail -> aggregate SUCCESS, no response items, nothing written
+		// a batch with no items has nothing to fail -> aggregate SUCCESS
 		final JsonResponseConversionRateUpsert response = upsert(
 				JsonRequestConversionRateUpsert.builder()
 						.build());

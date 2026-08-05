@@ -33,17 +33,14 @@ import javax.annotation.Nullable;
 import java.time.LocalDate;
 
 /**
- * The narrowing query the {@link ConversionRateRepository} takes to read {@code C_Conversion_Rate} rows: the
- * {@code (org, from, to, type, validFrom)} coordinates. Every field is nullable — a {@code null} field means
- * "do not narrow on this column". Client is not a query field and is intentionally not filtered on any read
- * path — the client-less natural-key unique index ({@code validFrom, from, to, type, org}) guarantees at most
- * one row per key regardless of client, so no client scope is needed.
+ * The narrowing query {@link ConversionRateRepository} reads {@code C_Conversion_Rate} by: the
+ * {@code (org, from, to, type, validFrom)} coordinates, each nullable ({@code null} = do not narrow on that column).
  */
 @Value
 @Builder(toBuilder = true)
 public class ConversionRateQuery
 {
-	/** The all-restriction-free query: matches every row. The repository's getByQuery rejects it. */
+	/** The restriction-free query (matches every row); rejected by getByQuery. */
 	public static final ConversionRateQuery EMPTY = builder().build();
 
 	@Nullable OrgId orgId;
