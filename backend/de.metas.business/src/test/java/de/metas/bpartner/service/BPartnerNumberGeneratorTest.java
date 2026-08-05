@@ -24,7 +24,9 @@ package de.metas.bpartner.service;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerNumberContext.Kind;
+import de.metas.document.IDocumentSequenceDAO;
 import de.metas.document.sequence.DocSequenceId;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
@@ -53,7 +55,7 @@ import static org.mockito.Mockito.when;
 /**
  * Unit tests for {@link BPartnerNumberGenerator}.
  * <p>
- * The DB-executing override path is tested via a mocked {@link BPartnerNumberDAO}.
+ * The DB-executing override path is tested via a mocked {@link BPartnerNumberService}.
  * No live DB required.
  */
 class BPartnerNumberGeneratorTest
@@ -65,7 +67,7 @@ class BPartnerNumberGeneratorTest
 			OrgId.ofRepoId(AD_ORG_ID));
 
 	private ISysConfigBL sysConfigBL;
-	private BPartnerNumberDAO dao;
+	private BPartnerNumberService numberService;
 	private BPartnerNumberGenerator generator;
 
 	@BeforeEach
@@ -76,8 +78,14 @@ class BPartnerNumberGeneratorTest
 		sysConfigBL = mock(ISysConfigBL.class);
 		Services.registerService(ISysConfigBL.class, sysConfigBL);
 
-		dao = mock(BPartnerNumberDAO.class);
-		generator = new BPartnerNumberGenerator(dao);
+		// The real BPartnerNumberService resolves IDocumentSequenceDAO via Services.get; register a mock so the
+		// validation-only tests (which build a real service — see ServiceCallOverrideFunction) can construct it
+		// without a Spring context. IDocumentNoBuilderFactory is constructor-injected (a mock is passed in below).
+		// Either way the function-name guard fires before any collaborator is touched.
+		Services.registerService(IDocumentSequenceDAO.class, mock(IDocumentSequenceDAO.class));
+
+		numberService = mock(BPartnerNumberService.class);
+		generator = new BPartnerNumberGenerator(numberService);
 	}
 
 	private BPartnerNumberContext debtorCtx()
@@ -117,7 +125,7 @@ class BPartnerNumberGeneratorTest
 			final Optional<Integer> result = generator.generateNext(debtorCtx());
 
 			assertThat(result).isEmpty();
-			verify(dao, never()).drawNext(any());
+			verify(numberService, never()).drawNext(any(), any());
 		}
 
 		@Test
@@ -129,7 +137,7 @@ class BPartnerNumberGeneratorTest
 					eq(CLIENT_AND_ORG_ID)))
 					.thenReturn(540123);
 
-			when(dao.drawNext(DocSequenceId.ofRepoId(540123))).thenReturn(7);
+			when(numberService.drawNext(ClientId.ofRepoId(AD_CLIENT_ID), DocSequenceId.ofRepoId(540123))).thenReturn(7);
 
 			final Optional<Integer> result = generator.generateNext(debtorCtx());
 
@@ -145,7 +153,7 @@ class BPartnerNumberGeneratorTest
 					eq(CLIENT_AND_ORG_ID)))
 					.thenReturn(540456);
 
-			when(dao.drawNext(DocSequenceId.ofRepoId(540456))).thenReturn(55);
+			when(numberService.drawNext(ClientId.ofRepoId(AD_CLIENT_ID), DocSequenceId.ofRepoId(540456))).thenReturn(55);
 
 			final Optional<Integer> result = generator.generateNext(creditorCtx());
 
@@ -160,17 +168,17 @@ class BPartnerNumberGeneratorTest
 					eq(CLIENT_AND_ORG_ID)))
 					.thenReturn("fn_bpartner_no");
 
-			when(dao.callOverrideFunction(eq("fn_bpartner_no"), any(BPartnerNumberContext.class), isNull()))
+			when(numberService.callOverrideFunction(eq("fn_bpartner_no"), any(BPartnerNumberContext.class), isNull()))
 					.thenReturn(Optional.of(42));
 
 			final Optional<Integer> result = generator.generateNext(debtorCtx());
 
 			assertThat(result).contains(42);
-			verify(dao, never()).drawNext(any());
+			verify(numberService, never()).drawNext(any(), any());
 		}
 
 		/**
-		 * The SQL-injection guard lives in {@link BPartnerNumberDAO#callOverrideFunction}.
+		 * The SQL-injection guard lives in {@link BPartnerNumberService#callOverrideFunction}.
 		 * Validation fires before any DB access, so the real DAO throws without needing a database.
 		 * The generator must propagate that exception.
 		 */
@@ -183,7 +191,7 @@ class BPartnerNumberGeneratorTest
 					eq(CLIENT_AND_ORG_ID)))
 					.thenReturn(badName);
 
-			final BPartnerNumberGenerator gen = new BPartnerNumberGenerator(new BPartnerNumberDAO());
+			final BPartnerNumberGenerator gen = new BPartnerNumberGenerator(new BPartnerNumberService(mock(IDocumentNoBuilderFactory.class)));
 
 			assertThatThrownBy(() -> gen.generateNext(debtorCtx()))
 					.isInstanceOf(IllegalArgumentException.class)
@@ -201,7 +209,7 @@ class BPartnerNumberGeneratorTest
 
 			generator.reserveExplicit(debtorCtx(), 12345);
 
-			verify(dao, never()).advancePast(any(), anyInt());
+			verify(numberService, never()).advancePast(any(), anyInt());
 		}
 
 		@Test
@@ -215,7 +223,7 @@ class BPartnerNumberGeneratorTest
 
 			generator.reserveExplicit(debtorCtx(), 999);
 
-			verify(dao).advancePast(DocSequenceId.ofRepoId(540123), 999);
+			verify(numberService).advancePast(DocSequenceId.ofRepoId(540123), 999);
 		}
 
 		@Test
@@ -228,8 +236,8 @@ class BPartnerNumberGeneratorTest
 
 			generator.reserveExplicit(debtorCtx(), 12345);
 
-			verify(dao).callOverrideFunction(eq("fn_bpartner_no"), any(BPartnerNumberContext.class), eq(12345));
-			verify(dao, never()).advancePast(any(), anyInt());
+			verify(numberService).callOverrideFunction(eq("fn_bpartner_no"), any(BPartnerNumberContext.class), eq(12345));
+			verify(numberService, never()).advancePast(any(), anyInt());
 		}
 
 		@Test
@@ -241,7 +249,7 @@ class BPartnerNumberGeneratorTest
 					eq(CLIENT_AND_ORG_ID)))
 					.thenReturn(badName);
 
-			final BPartnerNumberGenerator gen = new BPartnerNumberGenerator(new BPartnerNumberDAO());
+			final BPartnerNumberGenerator gen = new BPartnerNumberGenerator(new BPartnerNumberService(mock(IDocumentNoBuilderFactory.class)));
 
 			assertThatThrownBy(() -> gen.reserveExplicit(creditorCtx(), 1))
 					.isInstanceOf(IllegalArgumentException.class)
@@ -266,7 +274,7 @@ class BPartnerNumberGeneratorTest
 
 			generator.reserveExplicitIfChanged(bpartner, debtorCtx(), true, I_C_BPartner.COLUMNNAME_DebtorId, 7777);
 
-			verify(dao).advancePast(DocSequenceId.ofRepoId(540123), 7777);
+			verify(numberService).advancePast(DocSequenceId.ofRepoId(540123), 7777);
 		}
 
 		@Test
@@ -277,18 +285,18 @@ class BPartnerNumberGeneratorTest
 
 			generator.reserveExplicitIfChanged(bpartner, debtorCtx(), false, I_C_BPartner.COLUMNNAME_DebtorId, 7777);
 
-			verify(dao, never()).advancePast(any(), anyInt());
+			verify(numberService, never()).advancePast(any(), anyInt());
 		}
 	}
 
 	@Nested
-	class DaoCallOverrideFunction
+	class ServiceCallOverrideFunction
 	{
 		@Test
 		void throwsOnBlankName()
 		{
-			final BPartnerNumberDAO realDao = new BPartnerNumberDAO();
-			assertThatThrownBy(() -> realDao.callOverrideFunction("   ", debtorCtx(), null))
+			final BPartnerNumberService realService = new BPartnerNumberService(mock(IDocumentNoBuilderFactory.class));
+			assertThatThrownBy(() -> realService.callOverrideFunction("   ", debtorCtx(), null))
 					.isInstanceOf(IllegalArgumentException.class)
 					.hasMessageContaining("blank");
 		}
@@ -296,9 +304,9 @@ class BPartnerNumberGeneratorTest
 		@Test
 		void throwsOnInjectionAttempt()
 		{
-			final BPartnerNumberDAO realDao = new BPartnerNumberDAO();
+			final BPartnerNumberService realService = new BPartnerNumberService(mock(IDocumentNoBuilderFactory.class));
 			final String badName = "foo; DROP TABLE ad_sequence";
-			assertThatThrownBy(() -> realDao.callOverrideFunction(badName, debtorCtx(), null))
+			assertThatThrownBy(() -> realService.callOverrideFunction(badName, debtorCtx(), null))
 					.isInstanceOf(IllegalArgumentException.class)
 					.hasMessageContaining(badName);
 		}

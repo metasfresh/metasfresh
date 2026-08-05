@@ -42,10 +42,10 @@ import java.util.Optional;
  * <ol>
  *   <li><b>Override</b> — sysconfig {@value #SYSCONFIG_OVERRIDE} is set to a DB function name:
  *       delegates entirely to {@code SELECT <fn>(p_ad_org_id, p_c_bpartner_id, p_iscustomer, p_isvendor, p_iscompany, p_kind, p_explicit)}
- *       via {@link BPartnerNumberDAO#callOverrideFunction}.
- *       The DAO validates the function name as a safe SQL identifier; all argument values are bound as parameters.</li>
+ *       via {@link BPartnerNumberService#callOverrideFunction}.
+ *       The service validates the function name as a safe SQL identifier; all argument values are bound as parameters.</li>
  *   <li><b>Sequence</b> — sysconfig {@value #SYSCONFIG_DEBTOR_SEQ} or {@value #SYSCONFIG_CREDITOR_SEQ}
- *       holds an {@code AD_Sequence_ID} (positive integer): delegates to {@link BPartnerNumberDAO}.</li>
+ *       holds an {@code AD_Sequence_ID} (positive integer): delegates to {@link BPartnerNumberService}.</li>
  *   <li><b>No-op</b> — no config: {@code generateNext} returns {@link Optional#empty()};
  *       {@code reserveExplicit} is a no-op.</li>
  * </ol>
@@ -65,7 +65,7 @@ public class BPartnerNumberGenerator
 	/** Per-org sysconfig: {@code AD_Sequence_ID} (integer) for creditor numbers. */
 	public static final String SYSCONFIG_CREDITOR_SEQ = "de.metas.bpartner.CreditorNoSequence";
 
-	@NonNull private final BPartnerNumberDAO dao;
+	@NonNull private final BPartnerNumberService numberService;
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	/**
@@ -81,14 +81,14 @@ public class BPartnerNumberGenerator
 		final String overrideFn = sysConfigBL.getValue(SYSCONFIG_OVERRIDE, clientAndOrgId);
 		if (!Check.isBlank(overrideFn))
 		{
-			return dao.callOverrideFunction(overrideFn, ctx, null);
+			return numberService.callOverrideFunction(overrideFn, ctx, null);
 		}
 
 		// 2. Sequence branch
 		final int seqId = sysConfigBL.getIntValue(seqSysconfigName(ctx.getKind()), -1, clientAndOrgId);
 		if (seqId > 0)
 		{
-			return Optional.of(dao.drawNext(DocSequenceId.ofRepoId(seqId)));
+			return Optional.of(numberService.drawNext(ctx.getClientId(), DocSequenceId.ofRepoId(seqId)));
 		}
 
 		// 3. No config → no number
@@ -107,7 +107,7 @@ public class BPartnerNumberGenerator
 		final String overrideFn = sysConfigBL.getValue(SYSCONFIG_OVERRIDE, clientAndOrgId);
 		if (!Check.isBlank(overrideFn))
 		{
-			dao.callOverrideFunction(overrideFn, ctx, explicitValue);
+			numberService.callOverrideFunction(overrideFn, ctx, explicitValue);
 			return;
 		}
 
@@ -115,7 +115,7 @@ public class BPartnerNumberGenerator
 		final int seqId = sysConfigBL.getIntValue(seqSysconfigName(ctx.getKind()), -1, clientAndOrgId);
 		if (seqId > 0)
 		{
-			dao.advancePast(DocSequenceId.ofRepoId(seqId), explicitValue);
+			numberService.advancePast(DocSequenceId.ofRepoId(seqId), explicitValue);
 		}
 
 		// 3. No config → no-op

@@ -256,4 +256,18 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 
 		return docTypeSequenceMapBuilder.build();
 	}
+
+	@Override
+	public void advanceCurrentNextPast(@NonNull final DocSequenceId sequenceId, final int value)
+	{
+		// Single atomic statement: GREATEST keeps CurrentNext monotonic (a racing advance can never lower it),
+		// and the row-level write lock serializes it against concurrent draws/advances of the same sequence.
+		final String sql = "UPDATE " + I_AD_Sequence.Table_Name
+				+ " SET " + I_AD_Sequence.COLUMNNAME_CurrentNext + " = GREATEST(" + I_AD_Sequence.COLUMNNAME_CurrentNext + ", ?)"
+				+ " WHERE " + I_AD_Sequence.COLUMNNAME_AD_Sequence_ID + " = ?";
+		DB.executeUpdateAndThrowExceptionOnFail(
+				sql,
+				new Object[] { value + 1, sequenceId.getRepoId() },
+				ITrx.TRXNAME_ThreadInherited);
+	}
 }
