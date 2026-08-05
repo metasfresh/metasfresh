@@ -83,7 +83,8 @@ public class CurrencyConversionRestController
 
 	@ApiOperation("Batch-upsert normalized currency-conversion rates into C_Conversion_Rate.")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Batch processed; the top-level syncOutcome is SUCCESS or PARTIAL_SUCCESS and each record reports its own outcome"),
+			@ApiResponse(code = 200, message = "All records applied (syncOutcome=SUCCESS); each record reports its own outcome"),
+			@ApiResponse(code = 207, message = "Partial success (syncOutcome=PARTIAL_SUCCESS): some records applied, at least one failed; the response reports the per-record outcomes"),
 			@ApiResponse(code = 401, message = "You are not authorized to invoke this endpoint"),
 			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
 			@ApiResponse(code = 422, message = "No records were applied — either every record failed (syncOutcome=ERROR; the response reports the per-record outcomes) or the request could not be processed")
@@ -97,13 +98,27 @@ public class CurrencyConversionRestController
 			// Per-record failures are reported inside the response (as ERROR items) and never abort the batch.
 			// The service computes a top-level aggregate syncOutcome over the per-record outcomes, and the HTTP
 			// status is derived from that single value so a caller inspecting only the status still knows what
-			// happened: SUCCESS (none failed) or PARTIAL_SUCCESS (some applied, some failed) -> 200; ERROR
-			// (nothing applied — every record failed) -> 422. A thrown exception is a catastrophic (non-per-record)
-			// failure and also becomes a friendly 422 top-level error.
+			// happened: SUCCESS (none failed) -> 200; PARTIAL_SUCCESS (some applied, some failed) -> 207
+			// Multi-Status; ERROR (nothing applied — every record failed) -> 422. A thrown exception is a
+			// catastrophic (non-per-record) failure and also becomes a friendly 422 top-level error.
+			// This mirrors the house multi-response mapping in the scripted-adapter's
+			// ScriptedImportConversionRestAPIRouteBuilder#handleMultipleResponses (which uses 500 for all-failed;
+			// here all-failed is a client-side per-record validation failure, so 422 is used instead of 500).
 			final JsonResponseConversionRateUpsert response = conversionRateUpsertService.upsert(request, adLanguage);
-			final HttpStatus status = response.getSyncOutcome() == BatchSyncOutcome.ERROR
-					? HttpStatus.UNPROCESSABLE_ENTITY
-					: HttpStatus.OK;
+			final HttpStatus status;
+			switch (response.getSyncOutcome())
+			{
+				case SUCCESS:
+					status = HttpStatus.OK;
+					break;
+				case PARTIAL_SUCCESS:
+					status = HttpStatus.MULTI_STATUS;
+					break;
+				case ERROR:
+				default:
+					status = HttpStatus.UNPROCESSABLE_ENTITY;
+					break;
+			}
 			return ResponseEntity.status(status).body(response);
 		}
 		catch (final Exception ex)
