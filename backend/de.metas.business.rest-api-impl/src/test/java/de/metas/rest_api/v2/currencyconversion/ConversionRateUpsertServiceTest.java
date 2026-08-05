@@ -68,7 +68,6 @@ class ConversionRateUpsertServiceTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		AdempiereTestHelper.setupContext_AD_Client_IfNotSet();
 
 		// Wire the service via its test-only factory (mirrors CustomColumnService.newInstanceForUnitTesting),
 		// then reuse the same repository it wired so the test drives the repository — not the low-level DAO.
