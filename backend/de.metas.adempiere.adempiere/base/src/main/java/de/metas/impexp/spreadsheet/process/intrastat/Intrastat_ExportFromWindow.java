@@ -25,6 +25,7 @@ package de.metas.impexp.spreadsheet.process.intrastat;
 import de.metas.impexp.spreadsheet.csv.JdbcCSVExporter;
 import de.metas.impexp.spreadsheet.service.SpreadsheetExporterService;
 import de.metas.process.JavaProcess;
+import de.metas.process.PInstanceId;
 import de.metas.process.SpreadsheetExportOptions;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
@@ -34,35 +35,67 @@ import org.compiere.util.Evaluatees;
 import java.io.File;
 
 /**
- * Selection-driven Intrastat CSV export invoked from the Intrastat preview window.
- *
- * <p>Reads the user's row selection via {@code T_Selection} filtered by the current
- * {@code AD_PInstance_ID} and writes the matching {@code Intrastat_Preview_V} rows to CSV
- * with the extended column set (10 AT RTIC columns + UOM + Currency).</p>
- *
- * <p>Selection semantics are the standard metasfresh {@code T_Selection} behavior:
- * checked rows if any, else whatever the WebUI populated as the currently-filtered set.
- * When {@code T_Selection} is empty for this {@code AD_PInstance_ID}, the SQL falls back
- * to the full view (belt-and-braces so an unexpected empty selection does not silently
- * produce an empty CSV).</p>
- *
- * <p>Number formatting for the 10 shared columns mirrors {@code report.Intrastat_Export}
- * so the extended CSV stays byte-compatible with the AT RTIC payload on those columns
- * (the two new columns UOM + Currency are text and appended at the end).</p>
+ * Selection-driven Intrastat CSV export invoked from the Intrastat preview window
+ * ({@code AD_Process 585647}, backed by {@code AD_Table Intrastat_Preview_V}).
+ * <p>
+ * Behaviour by row selection ({@code T_Selection}, scoped to the current {@code AD_PInstance_ID}):
+ * <ul>
+ *   <li>Checked rows → export those.</li>
+ *   <li>No row checked → the WebUI still populates {@code T_Selection} with the currently-filtered
+ *       set, and those are exported.</li>
+ *   <li>No {@code T_Selection} row at all (defensive fallback) → export the whole view rather than
+ *       silently produce empty CSV.</li>
+ * </ul>
+ * <p>
+ * Number formatting for the 10 shared columns mirrors {@code report.Intrastat_Export}
+ * ({@code TO_CHAR('FM9999999D000' / 'FM9999999D00')}) so the extended CSV stays byte-compatible
+ * with the AT RTIC payload on those columns. The two extra columns ({@code UOM}, {@code Currency})
+ * are plain text and appended at the end.
  */
 public class Intrastat_ExportFromWindow extends JavaProcess
 {
 	@NonNull private final SpreadsheetExporterService spreadsheetExporterService = SpringContextHolder.instance.getBean(SpreadsheetExporterService.class);
 
+	private static final String SQL_TEMPLATE = String.join("\n",
+			"SELECT pv.CNCode,",
+			"       p.Name                                                        AS \"GoodsDescription\",",
+			"       pv.CountryDestinationConsignment,",
+			"       pv.CountryOfOrigin,",
+			"       pv.IntrastaNatureOfTransaction,",
+			"       TO_CHAR(pv.NetMass,            'FM9999999D000')                AS \"NetMass\",",
+			"       TO_CHAR(pv.SupplementaryUnits, 'FM9999999D000')                AS \"SupplementaryUnits\",",
+			"       TO_CHAR(pv.InvoiceValue,       'FM9999999D00')                 AS \"InvoiceValue\",",
+			"       TO_CHAR(pv.StatisticalValue,   'FM9999999D00')                 AS \"StatisticalValue\",",
+			"       CASE WHEN pv.IsSOTrx = 'Y' THEN pv.RecipientVATNo END          AS \"Recipient-VAT-No\",",
+			"       uom.UOMSymbol                                                  AS \"UOM\",",
+			"       cur.ISO_Code                                                   AS \"Currency\"",
+			"FROM Intrastat_Preview_V pv",
+			"LEFT JOIN M_Product  p   ON p.M_Product_ID    = pv.M_Product_ID",
+			"LEFT JOIN C_UOM      uom ON uom.C_UOM_ID      = pv.C_UOM_ID",
+			"LEFT JOIN C_Currency cur ON cur.C_Currency_ID = pv.C_Currency_ID",
+			"WHERE pv.Intrastat_Preview_V_ID IN",
+			"      (SELECT T_Selection_ID FROM T_Selection WHERE AD_PInstance_ID = %1$d)",
+			// Fallback: no T_Selection row was populated for this AD_PInstance_ID
+			// (unusual — the WebUI normally seeds it). Export the whole view rather than
+			// silently produce an empty CSV.
+			"   OR NOT EXISTS",
+			"      (SELECT 1 FROM T_Selection WHERE AD_PInstance_ID = %1$d)");
+
 	@Override
 	protected String doIt()
 	{
-		final int adPInstanceId = getPinstanceId().getRepoId();
-		final String sql = buildSql(adPInstanceId);
+		final PInstanceId pinstanceId = getPinstanceId();
+		final String sql = String.format(SQL_TEMPLATE, pinstanceId.getRepoId());
+		final File csv = runCsvExport(sql);
 
+		getResult().setReportData(csv);
+		return MSG_OK;
+	}
+
+	private File runCsvExport(@NonNull final String sql)
+	{
 		final SpreadsheetExportOptions options = getProcessInfo().getSpreadsheetExportOptions();
-
-		final JdbcCSVExporter csvExporter = JdbcCSVExporter.builder()
+		final JdbcCSVExporter exporter = JdbcCSVExporter.builder()
 				.adLanguage(Env.getADLanguageOrBaseLanguage(getCtx()))
 				.translateHeaders(options.isTranslateHeaders())
 				.fieldDelimiter(options.getCsvFieldDelimiter())
@@ -70,41 +103,7 @@ public class Intrastat_ExportFromWindow extends JavaProcess
 				.includeHeader(options.isIncludeCSVHeaderRow())
 				.build();
 
-		spreadsheetExporterService.processDataFromSQL(sql, Evaluatees.ofCtx(getCtx()), csvExporter);
-
-		final File resultFile = csvExporter.getResultFile();
-		getResult().setReportData(resultFile);
-
-		return MSG_OK;
-	}
-
-	// Build the 12-column SELECT with T_Selection filter (or full view fallback).
-	private String buildSql(final int adPInstanceId)
-	{
-		final String pInstance = String.valueOf(adPInstanceId);
-		return "SELECT pv.CNCode,"
-				+ " p.Name                                                       AS \"GoodsDescription\","
-				+ " pv.CountryDestinationConsignment,"
-				+ " pv.CountryOfOrigin,"
-				+ " pv.IntrastaNatureOfTransaction,"
-				+ " TO_CHAR(pv.NetMass,            'FM9999999D000')               AS \"NetMass\","
-				+ " TO_CHAR(pv.SupplementaryUnits, 'FM9999999D000')               AS \"SupplementaryUnits\","
-				+ " TO_CHAR(pv.InvoiceValue,       'FM9999999D00')                AS \"InvoiceValue\","
-				+ " TO_CHAR(pv.StatisticalValue,   'FM9999999D00')                AS \"StatisticalValue\","
-				+ " CASE WHEN pv.IsSOTrx = 'Y' THEN pv.RecipientVATNo END         AS \"Recipient-VAT-No\","
-				+ " uom.UOMSymbol                                                 AS \"UOM\","
-				+ " cur.ISO_Code                                                  AS \"Currency\""
-				+ " FROM Intrastat_Preview_V pv"
-				+ " LEFT JOIN M_Product  p   ON p.M_Product_ID   = pv.M_Product_ID"
-				+ " LEFT JOIN C_UOM      uom ON uom.C_UOM_ID     = pv.C_UOM_ID"
-				+ " LEFT JOIN C_Currency cur ON cur.C_Currency_ID = pv.C_Currency_ID"
-				+ " WHERE ("
-				+ "    pv.Intrastat_Preview_V_ID IN"
-				+ "      (SELECT T_Selection_ID FROM T_Selection WHERE AD_PInstance_ID = " + pInstance + ")"
-				// Fallback: no selection rows for this AD_PInstance_ID (e.g. WebUI did not populate
-				// T_Selection at all) → export the full view rather than silently produce empty CSV.
-				+ "    OR NOT EXISTS"
-				+ "      (SELECT 1 FROM T_Selection WHERE AD_PInstance_ID = " + pInstance + ")"
-				+ " )";
+		spreadsheetExporterService.processDataFromSQL(sql, Evaluatees.ofCtx(getCtx()), exporter);
+		return exporter.getResultFile();
 	}
 }

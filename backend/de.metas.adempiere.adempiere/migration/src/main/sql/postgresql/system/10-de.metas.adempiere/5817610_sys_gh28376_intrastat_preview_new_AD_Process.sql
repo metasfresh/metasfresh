@@ -114,3 +114,10 @@ UPDATE AD_Process_Trl
        Updated      = TO_TIMESTAMP('2026-08-05 12:00:03', 'YYYY-MM-DD HH24:MI:SS'),
        UpdatedBy    = 100
  WHERE AD_Language = 'de_CH' AND AD_Process_ID = 585647;
+
+-- de_DE: base-language row — mark as translated for data consistency
+UPDATE AD_Process_Trl
+   SET IsTranslated = 'Y',
+       Updated      = TO_TIMESTAMP('2026-08-05 12:00:03', 'YYYY-MM-DD HH24:MI:SS'),
+       UpdatedBy    = 100
+ WHERE AD_Language = 'de_DE' AND AD_Process_ID = 585647;
