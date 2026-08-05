@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business.rest-api-impl
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2026 metas GmbH
  * %%
@@ -20,10 +20,8 @@
  * #L%
  */
 
-package de.metas.rest_api.v2.currencyconversion;
+package de.metas.currency;
 
-import de.metas.currency.ConversionRateKey;
-import de.metas.currency.CurrencyConversionRates;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.ClientAndOrgId;
@@ -45,18 +43,19 @@ import java.time.ZoneId;
  * <p>
  * The {@code DivideRate} is <b>not</b> a field — it is derived from {@link #getMultiplyRate()} via
  * {@link #getDivideRate()} (the canonical {@link CurrencyConversionRates#reciprocal(BigDecimal)}). Distinct
- * from {@link de.metas.currency.CurrencyRate}, which is the conversion-execution type ({@code convertAmount}):
- * that carries a single rate + precisions + a conversionDate but no {@code validFrom}/{@code validTo}/org and is
- * the wrong shape for a row-to-persist.
+ * from {@link CurrencyRate}, which is the conversion-execution type ({@code convertAmount}): that carries a
+ * single rate + precisions + a conversionDate but no {@code validFrom}/{@code validTo}/org and is the wrong
+ * shape for a row-to-persist. This type deliberately does <b>not</b> reuse the near-collision name
+ * {@code CurrencyRate}.
  * <p>
  * The resolved {@link #orgZoneId} (the org's timezone, from {@code OrgDAO.getTimeZone}) is carried on the object
  * so that <b>all</b> {@code validFrom}/{@code validTo} {@code LocalDate -> Timestamp} conversions go through the
  * one org zone — {@link #getValidFromTimestamp()} / {@link #getValidToTimestamp()} are the single place the
- * repository store path reads them from.
+ * {@link ConversionRateRepository} store path reads them from.
  */
 @Value
 @Builder(toBuilder = true)
-public class ConversionRate
+public class ConversionRateCreateRequest
 {
 	@NonNull ClientAndOrgId clientAndOrgId;
 	@NonNull CurrencyId fromCurrencyId;
