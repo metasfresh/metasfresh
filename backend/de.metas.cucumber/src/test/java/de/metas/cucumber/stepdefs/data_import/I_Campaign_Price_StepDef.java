@@ -69,6 +69,7 @@ public class I_Campaign_Price_StepDef
 
 			record.setI_IsImported("N");
 			record.setISO_Code("EUR");
+			record.setDescription("EUR");
 			record.setValidFrom(de.metas.common.util.time.SystemTime.asDayTimestamp());
 			record.setValidTo(de.metas.common.util.time.SystemTime.asDayTimestamp());
 			record.setInvoicableQtyBasedOn("Nominal");

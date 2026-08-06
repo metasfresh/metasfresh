@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business.rest-api-impl
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2026 metas GmbH
  * %%
@@ -20,10 +20,8 @@
  * #L%
  */
 
-package de.metas.rest_api.v2.currencyconversion;
+package de.metas.currency;
 
-import de.metas.currency.ConversionRateQuery;
-import de.metas.currency.ConversionRateRepository;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,12 +32,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * The newest-rates behavior is done DB-side (native {@code DISTINCT ON}), which the in-memory POJO query layer
- * cannot run, so it is covered by the cucumber {@code CurrencyConversion_api} {@code GET newestRates} scenario.
- * Only the pure-Java empty-query guard is POJO-runnable and lives here.
+ * The newest-rates read is done DB-side (native {@code DISTINCT ON}), which the in-memory POJO layer cannot run,
+ * so it is covered by the cucumber {@code CurrencyConversion_api} {@code GET newestRates} scenario. Only the
+ * pure-Java empty-query guard is POJO-runnable and lives here.
  */
 @ExtendWith(AdempiereTestWatcher.class)
-class NewestConversionRatesServiceTest
+class ConversionRateRepositoryTest
 {
 	private ConversionRateRepository conversionRateRepository;
 

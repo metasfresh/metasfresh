@@ -108,6 +108,7 @@ class ConversionRateUpsertServiceTest
 	{
 		final I_C_Currency record = newInstanceOutOfTrx(I_C_Currency.class);
 		record.setISO_Code(isoCode);
+		record.setDescription(isoCode);
 		record.setCurSymbol(isoCode);
 		record.setStdPrecision(2);
 		record.setCostingPrecision(4);
@@ -120,6 +121,7 @@ class ConversionRateUpsertServiceTest
 	{
 		final I_C_Currency record = newInstanceOutOfTrx(I_C_Currency.class);
 		record.setISO_Code(isoCode);
+		record.setDescription(isoCode);
 		record.setCurSymbol(isoCode);
 		record.setStdPrecision(2);
 		record.setCostingPrecision(4);
