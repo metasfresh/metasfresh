@@ -22,20 +22,16 @@ package de.metas.bpartner.service;
  * #L%
  */
 
-import com.google.common.annotations.VisibleForTesting;
 import de.metas.common.util.NumberUtils;
 import de.metas.document.IDocumentSequenceDAO;
 import de.metas.document.sequence.DocSequenceId;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
-import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ClientId;
-import org.compiere.Adempiere;
-import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -81,15 +77,6 @@ public class BPartnerNumberService
 	 */
 	@NonNull private final IDocumentNoBuilderFactory documentNoBuilderFactory;
 	@NonNull private final IDocumentSequenceDAO documentSequenceDAO = Services.get(IDocumentSequenceDAO.class);
-
-	@VisibleForTesting
-	public static BPartnerNumberService newInstanceForUnitTesting()
-	{
-		Adempiere.assertUnitTestMode();
-		//noinspection DataFlowIssue
-		return SpringContextHolder.getBeanOrSupply(BPartnerNumberService.class,
-				() -> new BPartnerNumberService(DocumentNoBuilderFactory.newInstanceForUnitTesting()));
-	}
 
 	/**
 	 * Draws the next value from the given sequence via the framework document-no builder.
