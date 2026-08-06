@@ -34,8 +34,8 @@ import org.compiere.util.Evaluatees;
 import java.io.File;
 
 /**
- * Selection-driven Intrastat Excel export invoked from the Intrastat preview window
- * ({@code AD_Process 585647}, backed by {@code AD_Table Intrastat_Preview_V}).
+ * Selection-driven Intrastat Excel export invoked from the Intrastat window
+ * ({@code AD_Process 585647}, backed by {@code AD_Table Intrastat_Report_Detail_V}).
  * <p>
  * Behaviour by row selection ({@code T_Selection}, scoped to the current {@code AD_PInstance_ID}):
  * <ul>
@@ -49,30 +49,29 @@ import java.io.File;
  * Number formatting for the 10 shared columns mirrors {@code report.Intrastat_Export}
  * ({@code TO_CHAR('FM9999999D000' / 'FM9999999D00')}) so the extended sheet stays byte-compatible
  * with the AT RTIC payload on those columns. The two extra columns ({@code UOM}, {@code Currency})
- * are plain text and appended at the end.
+ * are appended at the end.
  */
 public class Intrastat_ExportFromWindow extends JavaProcess
 {
 	@NonNull private final SpreadsheetExporterService spreadsheetExporterService = SpringContextHolder.instance.getBean(SpreadsheetExporterService.class);
 
 	private static final String SQL_TEMPLATE = String.join("\n",
-			"SELECT pv.CNCode,",
-			"       p.Name                                                        AS \"GoodsDescription\",",
-			"       pv.CountryDestinationConsignment,",
-			"       pv.CountryOfOrigin,",
-			"       pv.IntrastaNatureOfTransaction,",
-			"       TO_CHAR(pv.NetMass,            'FM9999999D000')                AS \"NetMass\",",
-			"       TO_CHAR(pv.SupplementaryUnits, 'FM9999999D000')                AS \"SupplementaryUnits\",",
-			"       TO_CHAR(pv.InvoiceValue,       'FM9999999D00')                 AS \"InvoiceValue\",",
-			"       TO_CHAR(pv.StatisticalValue,   'FM9999999D00')                 AS \"StatisticalValue\",",
-			"       CASE WHEN pv.IsSOTrx = 'Y' THEN pv.RecipientVATNo END          AS \"Recipient-VAT-No\",",
-			"       uom.UOMSymbol                                                  AS \"UOM\",",
-			"       cur.ISO_Code                                                   AS \"Currency\"",
-			"FROM Intrastat_Preview_V pv",
-			"LEFT JOIN M_Product  p   ON p.M_Product_ID    = pv.M_Product_ID",
-			"LEFT JOIN C_UOM      uom ON uom.C_UOM_ID      = pv.C_UOM_ID",
-			"LEFT JOIN C_Currency cur ON cur.C_Currency_ID = pv.C_Currency_ID",
-			"WHERE pv.Intrastat_Preview_V_ID IN",
+			"SELECT d.CustomsTariff                                                            AS \"CNCode\",",
+			"       p.Name                                                                     AS \"GoodsDescription\",",
+			"       d.DeliveryCountry                                                          AS \"CountryDestinationConsignment\",",
+			"       COALESCE(d.DeliveredFromCountry, d.OriginCountry, d.DeliveryCountry)       AS \"CountryOfOrigin\",",
+			"       '11'                                                                       AS \"IntrastaNatureOfTransaction\",",
+			"       TO_CHAR(d.Weight,       'FM9999999D000')                                   AS \"NetMass\",",
+			"       TO_CHAR(d.MovementQty,  'FM9999999D000')                                   AS \"SupplementaryUnits\",",
+			"       TO_CHAR(d.LineNetAmt,   'FM9999999D00')                                    AS \"InvoiceValue\",",
+			"       TO_CHAR(d.LineNetAmt,   'FM9999999D00')                                    AS \"StatisticalValue\",",
+			"       CASE WHEN d.IsSOTrx = 'Y' THEN bp.vataxid END                              AS \"Recipient-VAT-No\",",
+			"       d.UOMSymbol                                                                AS \"UOM\",",
+			"       d.CurSymbol                                                                AS \"Currency\"",
+			"FROM Intrastat_Report_Detail_V d",
+			"LEFT JOIN M_Product  p  ON p.M_Product_ID   = d.M_Product_ID",
+			"LEFT JOIN C_BPartner bp ON bp.C_BPartner_ID = d.C_BPartner_ID",
+			"WHERE d.Intrastat_Report_Detail_V_ID IN",
 			"      (SELECT T_Selection_ID FROM T_Selection WHERE AD_PInstance_ID = %1$d)",
 			// Fallback: no T_Selection row was populated for this AD_PInstance_ID
 			// (unusual — the WebUI normally seeds it). Export the whole view rather than
