@@ -192,9 +192,9 @@ public class BPartner
 	@Nullable private final CampaignId campaignId;
 
 	// non-final so @Data generates a setter: the v2 BPartner REST persister sets it from the request's creditorId
-	@Nullable private CreditorId creditorId;
+	private @Nullable CreditorId creditorId;
 	// non-final so @Data generates a setter: the v2 BPartner REST persister sets it from the request's debtorId
-	@Nullable private DebtorId debtorId;
+	private @Nullable DebtorId debtorId;
 
 	/**
 	 * They are all nullable because we can create a completely empty instance which we then fill.
