@@ -54,4 +54,10 @@ public class WorkpackageProcessorContextFactory implements IWorkpackageProcessor
 		return threadLocalWorkpackageAsyncBatch.get();
 	}
 
+	@Override
+	public boolean isProcessingWorkpackage()
+	{
+		return threadLocalWorkpackageAsyncBatch.get() != null;
+	}
+
 }

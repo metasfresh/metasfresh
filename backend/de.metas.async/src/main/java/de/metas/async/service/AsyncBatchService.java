@@ -57,7 +57,7 @@ public class AsyncBatchService
 	private final IAsyncBatchDAO asyncBatchDAO = Services.get(IAsyncBatchDAO.class);
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final IWorkpackageProcessorContextFactory workpackageProcessorContextFactory = Services.get(IWorkpackageProcessorContextFactory.class);
+	@NonNull private final IWorkpackageProcessorContextFactory workpackageProcessorContextFactory = Services.get(IWorkpackageProcessorContextFactory.class);
 
 	private final AsyncBatchObserver asyncBatchObserver;
 	private final AsyncBatchEventBusService asyncBatchEventBusService;
@@ -116,8 +116,7 @@ public class AsyncBatchService
 	 */
 	public <T extends IEnqueueResult> T executeBatch(@NonNull final Supplier<T> supplier, @NonNull final AsyncBatchId asyncBatchId)
 	{
-		final AsyncBatchId enclosingWorkpackageAsyncBatchId = workpackageProcessorContextFactory.getThreadInheritedWorkpackageAsyncBatch();
-		if (enclosingWorkpackageAsyncBatchId != null)
+		if (workpackageProcessorContextFactory.isProcessingWorkpackage())
 		{
 			// dev-note: not thrown, because callers doing exactly this exist today (AutoProcessingOLCandService's
 			// order/shipment/invoice steps all run inside a ProcessOLCands workpackage). Deliberately WARN and not
@@ -127,7 +126,7 @@ public class AsyncBatchService
 					"*** executeBatch: waiting for C_Async_Batch_ID: {} from a thread that is itself processing workpackage-batch {}."
 							+ " This blocks a queue-processor thread until the batch completes or times out.",
 					asyncBatchId.getRepoId(),
-					enclosingWorkpackageAsyncBatchId.getRepoId());
+					AsyncBatchId.toRepoId(workpackageProcessorContextFactory.getThreadInheritedWorkpackageAsyncBatch()));
 		}
 
 		final T result;

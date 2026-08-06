@@ -30,6 +30,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.common.util.time.SystemTime;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.junit.Test;
 
@@ -51,7 +52,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class AbstractQueueProcessor_UnlockOnNotProcessed_Test extends QueueProcessorTestBase
 {
-	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
+	@NonNull private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 
 	@Test
 	public void givenProcessorHasNoPermitsLeft_whenProcessLockedWorkPackage_thenLockedAtIsCleared()
