@@ -23,7 +23,6 @@ package de.metas.bpartner.service;
  */
 
 import com.google.common.annotations.VisibleForTesting;
-import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.NumberUtils;
 import de.metas.document.IDocumentSequenceDAO;
 import de.metas.document.sequence.DocSequenceId;
@@ -135,7 +134,7 @@ public class BPartnerNumberService
 
 	/**
 	 * Validates {@code functionName} as a safe SQL identifier, then calls
-	 * {@code SELECT <functionName>(p_ad_org_id, p_c_bpartner_id, p_iscustomer, p_isvendor, p_iscompany, p_kind, p_explicit)}.
+	 * {@code SELECT <functionName>(p_ad_org_id, p_iscompany, p_kind, p_explicit)}.
 	 *
 	 * <p>The function name is validated against an anchored identifier pattern before interpolation;
 	 * all argument values are bound as {@code ?} parameters (no value interpolation).
@@ -191,23 +190,17 @@ public class BPartnerNumberService
 					"Override function name is not a valid SQL identifier (must match [A-Za-z_][A-Za-z0-9_]*(.[A-Za-z_][A-Za-z0-9_]*)? ): " + trimmed);
 		}
 
-		// Generation runs at TYPE_BEFORE_NEW, so C_BPartner_ID is not yet assigned (0) for a brand-new
-		// partner — the native sequence sets it during the INSERT, after this interceptor. Pass 0; the
-		// override resolver must not key on p_c_bpartner_id (resolution is by org / kind / company-flag).
-		final BPartnerId bPartnerId = ctx.getBPartnerId();
-
-		// The metasfresh DB layer sends a Java boolean as 'Y'/'N' varchar and a null Integer as
-		// 'unknown'; cast each param to its intended SQL type so PostgreSQL resolves the override
-		// function unambiguously (booleans -> boolean, kind -> text, nullable explicit -> int).
+		// The override is called once per role (kind = DEBTOR|CREDITOR), so p_kind alone identifies the
+		// customer/vendor side — the isCustomer/isVendor flags and the (not-yet-assigned) C_BPartner_ID
+		// are redundant and no longer passed. Resolution is by org, kind and the company flag.
+		// The metasfresh DB layer sends a Java boolean as 'Y'/'N' varchar and a null Integer as 'unknown';
+		// cast each param to its intended SQL type so PostgreSQL resolves the override function unambiguously.
 		sqlParams.add(ctx.getOrgId().getRepoId());
-		sqlParams.add(bPartnerId != null ? bPartnerId.getRepoId() : 0);
-		sqlParams.add(ctx.isCustomer());
-		sqlParams.add(ctx.isVendor());
 		sqlParams.add(ctx.isCompany());
 		sqlParams.add(ctx.getKind().name());
 		sqlParams.add(explicitValue);
 
 		return "SELECT " + trimmed
-				+ "(?, ?, CAST(? AS BOOLEAN), CAST(? AS BOOLEAN), CAST(? AS BOOLEAN), CAST(? AS TEXT), CAST(? AS INT))";
+				+ "(?, CAST(? AS BOOLEAN), CAST(? AS TEXT), CAST(? AS INT))";
 	}
 }

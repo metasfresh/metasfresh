@@ -221,9 +221,7 @@ public class BPartnerNumberGen_StepDef
 		// No framework API creates a DB function in a test — raw DDL is required here (the function name is
 		// validated above; returnValue is an int, not interpolated user text).
 		final String sql = "CREATE OR REPLACE FUNCTION " + functionName + "("
-				+ "p_ad_org_id int, p_c_bpartner_id int,"
-				+ " p_iscustomer bool, p_isvendor bool, p_iscompany bool,"
-				+ " p_kind text, p_explicit int"
+				+ "p_ad_org_id int, p_iscompany bool, p_kind text, p_explicit int"
 				+ ") RETURNS int LANGUAGE sql AS $$ SELECT " + returnValue + " $$";
 		DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_None);
 	}
@@ -245,9 +243,7 @@ public class BPartnerNumberGen_StepDef
 		}
 		// plpgsql (not sql) so the body can RAISE; raw DDL — no framework API creates a function in a test.
 		final String sql = "CREATE OR REPLACE FUNCTION " + functionName + "("
-				+ "p_ad_org_id int, p_c_bpartner_id int,"
-				+ " p_iscustomer bool, p_isvendor bool, p_iscompany bool,"
-				+ " p_kind text, p_explicit int"
+				+ "p_ad_org_id int, p_iscompany bool, p_kind text, p_explicit int"
 				+ ") RETURNS int LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'bpartner number override failed (test)'; END $$";
 		DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_None);
 	}

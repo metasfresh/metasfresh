@@ -22,7 +22,6 @@ package de.metas.bpartner.service;
  * #L%
  */
 
-import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerNumberContext.Kind;
 import de.metas.document.IDocumentSequenceDAO;
 import de.metas.document.sequence.DocSequenceId;
@@ -37,7 +36,6 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -92,9 +90,6 @@ class BPartnerNumberGeneratorTest
 		return BPartnerNumberContext.builder()
 				.clientId(ClientId.ofRepoId(AD_CLIENT_ID))
 				.orgId(OrgId.ofRepoId(AD_ORG_ID))
-				.bPartnerId(BPartnerId.ofRepoId(42))
-				.isCustomer(true)
-				.isVendor(false)
 				.isCompany(false)
 				.kind(Kind.DEBTOR)
 				.build();
@@ -105,9 +100,6 @@ class BPartnerNumberGeneratorTest
 		return BPartnerNumberContext.builder()
 				.clientId(ClientId.ofRepoId(AD_CLIENT_ID))
 				.orgId(OrgId.ofRepoId(AD_ORG_ID))
-				.bPartnerId(BPartnerId.ofRepoId(43))
-				.isCustomer(false)
-				.isVendor(true)
 				.isCompany(false)
 				.kind(Kind.CREDITOR)
 				.build();

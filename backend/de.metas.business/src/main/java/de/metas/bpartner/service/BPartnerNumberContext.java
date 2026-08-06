@@ -22,15 +22,12 @@ package de.metas.bpartner.service;
  * #L%
  */
 
-import de.metas.bpartner.BPartnerId;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.service.ClientId;
-
-import javax.annotation.Nullable;
 
 /**
  * Immutable context object passed to {@link BPartnerNumberGenerator}.
@@ -54,27 +51,15 @@ public class BPartnerNumberContext
 
 	@NonNull OrgId orgId;
 
-	/**
-	 * The {@code C_BPartner_ID} of the business partner being processed.
-	 *
-	 * <p>May be {@code null} when the interceptor fires at {@code TYPE_BEFORE_NEW}:
-	 * in native-sequence mode the primary key is {@code 0} until {@code saveNew()} assigns it,
-	 * so the interceptor cannot provide a valid {@link BPartnerId}.
-	 * Only the override-function branch uses this value; the sequence branch ignores it.
-	 */
-	@Nullable BPartnerId bPartnerId;
-
-	boolean isCustomer;
-	boolean isVendor;
+	/** Whether the partner is a company (vs an individual) — a customer override may split ranges on it. */
 	boolean isCompany;
 
 	@NonNull Kind kind;
 
 	/**
-	 * Builds the context for one role directly from a {@code C_BPartner} record.
-	 * <p>
-	 * {@code bPartnerId} is {@code null} when {@code C_BPartner_ID=0} (native-sequence mode at
-	 * {@code TYPE_BEFORE_NEW}, before {@code saveNew()} assigns the key) — see {@link #bPartnerId}.
+	 * Builds the context for one role directly from a {@code C_BPartner} record. The role is carried by
+	 * {@code kind} (DEBTOR = customer side, CREDITOR = vendor side) — the override is called once per role,
+	 * so the customer/vendor flags and the (not-yet-assigned) partner id are not needed here.
 	 *
 	 * @param bpartner the record being saved
 	 * @param kind     debtor (customer side) or creditor (vendor side)
@@ -84,9 +69,6 @@ public class BPartnerNumberContext
 		return builder()
 				.clientId(ClientId.ofRepoId(bpartner.getAD_Client_ID()))
 				.orgId(OrgId.ofRepoId(bpartner.getAD_Org_ID()))
-				.bPartnerId(BPartnerId.ofRepoIdOrNull(bpartner.getC_BPartner_ID()))
-				.isCustomer(bpartner.isCustomer())
-				.isVendor(bpartner.isVendor())
 				.isCompany(bpartner.isCompany())
 				.kind(kind)
 				.build();

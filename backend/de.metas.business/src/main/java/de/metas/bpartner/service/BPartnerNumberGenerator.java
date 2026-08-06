@@ -45,7 +45,7 @@ import java.util.Optional;
  * <h3>Selection logic (highest priority first)</h3>
  * <ol>
  *   <li><b>Override</b> — sysconfig {@value #SYSCONFIG_OVERRIDE} is set to a DB function name:
- *       delegates entirely to {@code SELECT <fn>(p_ad_org_id, p_c_bpartner_id, p_iscustomer, p_isvendor, p_iscompany, p_kind, p_explicit)}
+ *       delegates entirely to {@code SELECT <fn>(p_ad_org_id, p_iscompany, p_kind, p_explicit)}
  *       via {@link BPartnerNumberService#callOverrideFunction}.
  *       The service validates the function name as a safe SQL identifier; all argument values are bound as parameters.</li>
  *   <li><b>Sequence</b> — sysconfig {@value #SYSCONFIG_DEBTOR_SEQ} or {@value #SYSCONFIG_CREDITOR_SEQ}
