@@ -26,7 +26,6 @@ import de.metas.bpartner.CreditorId;
 import de.metas.bpartner.DebtorId;
 import de.metas.bpartner.service.BPartnerNumberContext;
 import de.metas.bpartner.service.BPartnerNumberGenerator;
-import de.metas.bpartner.service.BPartnerNumbers;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.organization.ClientAndOrgId;
 import lombok.NonNull;
@@ -80,29 +79,9 @@ public class C_BPartner_NumberGen
 		}
 
 		// One pass generates both roles (a partner can be customer AND vendor); explicitly-supplied
-		// numbers are reserved (not re-generated) inside generateNumbers.
-		final BPartnerNumbers numbers = bpartnerNumberGenerator.generateNumbers(bpartner);
-
-		for (final BPartnerNumberContext.Kind kind : BPartnerNumberContext.Kind.values())
-		{
-			// unwrap to the raw int only here, at the model-column boundary; BEFORE_NEW ⇒ written by the INSERT
-			numbers.getNo(kind).ifPresent(no -> applyNo(bpartner, kind, no));
-		}
-	}
-
-	private static void applyNo(@NonNull final I_C_BPartner bpartner, @NonNull final BPartnerNumberContext.Kind kind, final int no)
-	{
-		switch (kind)
-		{
-			case DEBTOR:
-				bpartner.setDebtorId(no);
-				break;
-			case CREDITOR:
-				bpartner.setCreditorId(no);
-				break;
-			default:
-				throw new IllegalArgumentException("Unsupported kind: " + kind);
-		}
+		// numbers are reserved (not re-generated) inside generateNumbers. BEFORE_NEW ⇒ the values
+		// applyTo() sets are written by the INSERT (no re-save).
+		bpartnerNumberGenerator.generateNumbers(bpartner).applyTo(bpartner);
 	}
 
 	/**

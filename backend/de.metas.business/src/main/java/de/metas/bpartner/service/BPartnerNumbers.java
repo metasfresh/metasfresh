@@ -25,6 +25,7 @@ package de.metas.bpartner.service;
 import de.metas.bpartner.CreditorId;
 import de.metas.bpartner.DebtorId;
 import de.metas.bpartner.service.BPartnerNumberContext.Kind;
+import de.metas.interfaces.I_C_BPartner;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -62,5 +63,16 @@ public class BPartnerNumbers
 			default:
 				throw new IllegalArgumentException("Unsupported kind: " + kind);
 		}
+	}
+
+	/**
+	 * Writes the generated number(s) onto the record — debtor and/or creditor. The typed value is
+	 * unwrapped to the raw {@code int} model column here, i.e. at the model boundary; a role with no
+	 * generated number is left untouched.
+	 */
+	public void applyTo(@NonNull final I_C_BPartner bpartner)
+	{
+		getNo(Kind.DEBTOR).ifPresent(bpartner::setDebtorId);
+		getNo(Kind.CREDITOR).ifPresent(bpartner::setCreditorId);
 	}
 }
