@@ -28,6 +28,7 @@ import de.metas.cache.CacheMgt;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsert;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsertItem;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartnerUpsertItem;
+import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.api.REST_API_StepDef;
 import de.metas.organization.OrgId;
@@ -100,9 +101,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RequiredArgsConstructor
 public class BPartnerNumberGen_StepDef
 {
-	/** Value column of the default org in the standard seed DB. */
-	private static final String DEFAULT_ORG_VALUE = "001";
-
 	@NonNull private final TestContext testContext;
 	@NonNull private final REST_API_StepDef restApiStepDef;
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -266,7 +264,7 @@ public class BPartnerNumberGen_StepDef
 	 *   <li>{@code "neither"}  → {@code "customer": false, "vendor": false}</li>
 	 * </ul>
 	 * Company mapping: {@code "company"} adds {@code "companyName"}; {@code "non-company"} omits it.
-	 * The request uses org {@value #DEFAULT_ORG_VALUE}.
+	 * The request uses org {@value StepDefConstants#ORG_VALUE}.
 	 *
 	 * @param companyType {@code "company"} or {@code "non-company"}
 	 * @param role        {@code "customer"}, {@code "vendor"}, or {@code "neither"}
@@ -278,7 +276,7 @@ public class BPartnerNumberGen_StepDef
 			@NonNull final String role,
 			@NonNull final String id) throws IOException
 	{
-		doUpsert(companyType, role, id, null, null, DEFAULT_ORG_VALUE);
+		doUpsert(companyType, role, id, null, null, StepDefConstants.ORG_VALUE);
 	}
 
 	/**
@@ -296,7 +294,7 @@ public class BPartnerNumberGen_StepDef
 			@NonNull final String id,
 			final int debtorId) throws IOException
 	{
-		doUpsert(companyType, role, id, debtorId, null, DEFAULT_ORG_VALUE);
+		doUpsert(companyType, role, id, debtorId, null, StepDefConstants.ORG_VALUE);
 	}
 
 	/**
@@ -314,7 +312,7 @@ public class BPartnerNumberGen_StepDef
 			@NonNull final String id,
 			final int creditorId) throws IOException
 	{
-		doUpsert(companyType, role, id, null, creditorId, DEFAULT_ORG_VALUE);
+		doUpsert(companyType, role, id, null, creditorId, StepDefConstants.ORG_VALUE);
 	}
 
 	/**
