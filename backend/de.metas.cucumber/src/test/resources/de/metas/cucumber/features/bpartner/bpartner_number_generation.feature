@@ -115,7 +115,6 @@ Feature: BPartner debtor/creditor number generation via REST V2 upsert
     Then responseItems[0].responseBPartnerItem.debtorId is 15001
 
   @from:cucumber
-  @from:cucumber
   @Id:S25082_TC12
   Scenario: TC12 - an error raised by the override function surfaces as a rejected upsert (not swallowed)
     Given the override test function "metas_bpartner_numbgen_test_raise" raises an error
