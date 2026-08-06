@@ -30,6 +30,7 @@ import de.metas.common.rest_api.v2.currencyconversion.JsonResponseConversionRate
 import de.metas.common.rest_api.v2.currencyconversion.JsonResponseConversionRateUpsertItem;
 import de.metas.common.rest_api.v2.currencyconversion.JsonResponseConversionRateUpsertItem.SyncOutcome;
 import de.metas.currency.ConversionRateRepository;
+import de.metas.currency.ConversionTypeMethod;
 import de.metas.i18n.Language;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
@@ -70,7 +71,7 @@ class ConversionRateUpsertServiceTest
 		AdempiereTestHelper.get().init();
 
 		conversionRateUpsertService = ConversionRateUpsertService.newInstanceForUnitTesting();
-		conversionRateRepository = conversionRateUpsertService.getConversionRateRepository();
+		conversionRateRepository = ConversionRateRepository.newInstanceForUnitTesting();
 	}
 
 	private JsonResponseConversionRateUpsert upsert(final JsonRequestConversionRateUpsert request)
@@ -264,7 +265,7 @@ class ConversionRateUpsertServiceTest
 		assertThat(forward).isNotNull();
 		// the explicit "P" (PeriodEnd) type differs from the default (Spot); assert it was applied
 		final int periodEndConversionTypeId = conversionRateRepository
-				.getConversionTypeId(de.metas.currency.ConversionTypeMethod.PeriodEnd).getRepoId();
+				.getConversionTypeId(ConversionTypeMethod.PeriodEnd).getRepoId();
 		assertThat(forward.getC_ConversionType_ID()).isEqualTo(periodEndConversionTypeId);
 	}
 

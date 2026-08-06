@@ -34,7 +34,6 @@ import de.metas.currency.CurrencyConversionUpsertRequest;
 import de.metas.currency.ConversionRateKey;
 import de.metas.currency.ConversionRateRepository;
 import de.metas.currency.CurrencyConversionRates;
-import de.metas.currency.CurrencyRepository;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
@@ -43,6 +42,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Conversion_Rate;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -73,23 +73,17 @@ public class ConversionRateUpsertService
 	@NonNull private final ConversionRateRepository conversionRateRepository;
 	@NonNull private final JsonConversionRateConverters jsonConverters;
 
-	/** The wired repository — for tests to drive the same instance the service holds (see {@link #newInstanceForUnitTesting()}). */
-	@VisibleForTesting
-	@NonNull
-	ConversionRateRepository getConversionRateRepository()
-	{
-		return conversionRateRepository;
-	}
-
-	/** Test-only factory (mirrors {@code CustomColumnService.newInstanceForUnitTesting}): asserts unit-test mode and wires the collaborators. */
+	/** Test-only factory: asserts unit-test mode and wires the collaborators via each bean's own {@code newInstanceForUnitTesting}. */
 	@VisibleForTesting
 	@NonNull
 	public static ConversionRateUpsertService newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
-		final ConversionRateRepository conversionRateRepository = new ConversionRateRepository();
-		final JsonConversionRateConverters jsonConverters = new JsonConversionRateConverters(new CurrencyRepository(), conversionRateRepository);
-		return new ConversionRateUpsertService(conversionRateRepository, jsonConverters);
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(ConversionRateUpsertService.class,
+				() -> new ConversionRateUpsertService(
+						ConversionRateRepository.newInstanceForUnitTesting(),
+						JsonConversionRateConverters.newInstanceForUnitTesting()));
 	}
 
 	@NonNull

@@ -87,8 +87,9 @@ public class ConversionRate_StepDef
 	private final Set<ConversionRateKey> createdRateKeys = new HashSet<>();
 
 	/**
-	 * Per-ISO {@code C_Currency.IsActive} snapshot, restored in {@link #restore_currency_active_state} so this
-	 * feature's activations do not leak into siblings on the same executor. Insertion-ordered for deterministic restore.
+	 * Per-ISO ORIGINAL {@code C_Currency.IsActive}, snapshotted once by {@link #setCurrenciesActive} before it toggles a
+	 * currency and restored in {@link #restore_currency_active_state}, so this feature's activations do not leak into
+	 * siblings on the same executor. Insertion-ordered for deterministic restore.
 	 */
 	private final Map<String, Boolean> rememberedActiveByIsoCode = new LinkedHashMap<>();
 
@@ -140,31 +141,12 @@ public class ConversionRate_StepDef
 			final String isoCode = row.getAsString("ISO_Code");
 			final I_C_Currency currency = currencyRepository.getRecordByCurrencyCodeOrNull(CurrencyCode.ofThreeLetterCode(isoCode));
 			assertThat(currency).as("C_Currency with ISO_Code=%s must exist", isoCode).isNotNull();
+			// Snapshot the ORIGINAL IsActive once, so restore_currency_active_state resets it afterwards.
+			// putIfAbsent (not put) is deliberate: repeated toggles of the same currency must not overwrite the
+			// pre-scenario value with an intermediate one.
+			rememberedActiveByIsoCode.putIfAbsent(isoCode, currency.isActive());
 			currency.setIsActive(active);
 			InterfaceWrapperHelper.saveRecord(currency);
-		});
-	}
-
-	/**
-	 * Records the current {@code C_Currency.IsActive} of each listed ISO code for later restore. Call this in the
-	 * {@code Background} BEFORE the scenario toggles any currency, so activations do not leak into sibling features.
-	 *
-	 * <p><b>Gherkin usage example</b>:
-	 * <pre>{@code
-	 * And I remember the active-state of the following currencies:
-	 *   | ISO_Code |
-	 *   | EUR      |
-	 *   | CNY      |
-	 * }</pre>
-	 */
-	@Given("I remember the active-state of the following currencies:")
-	public void remember_currency_active_state(@NonNull final DataTable dataTable)
-	{
-		DataTableRows.of(dataTable).forEach(row -> {
-			final String isoCode = row.getAsString("ISO_Code");
-			final I_C_Currency currency = currencyRepository.getRecordByCurrencyCodeOrNull(CurrencyCode.ofThreeLetterCode(isoCode));
-			assertThat(currency).as("C_Currency with ISO_Code=%s must exist", isoCode).isNotNull();
-			rememberedActiveByIsoCode.put(isoCode, currency.isActive());
 		});
 	}
 
@@ -176,7 +158,7 @@ public class ConversionRate_StepDef
 		createdRateKeys.clear();
 	}
 
-	/** Restores every currency remembered by {@link #remember_currency_active_state} to its recorded {@code IsActive}. */
+	/** Restores every currency snapshotted by {@link #setCurrenciesActive} to its original {@code IsActive}. */
 	@After
 	public void restore_currency_active_state()
 	{

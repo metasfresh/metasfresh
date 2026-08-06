@@ -27,10 +27,10 @@ import de.metas.common.rest_api.v2.currencyconversion.JsonNewestConversionRate;
 import de.metas.currency.CurrencyConversionRate;
 import de.metas.currency.ConversionRateQuery;
 import de.metas.currency.ConversionRateRepository;
-import de.metas.currency.CurrencyRepository;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -53,23 +53,11 @@ public class NewestConversionRatesService
 	public static NewestConversionRatesService newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
-		final ConversionRateRepository conversionRateRepository = new ConversionRateRepository();
-		final JsonConversionRateConverters jsonConverters = new JsonConversionRateConverters(new CurrencyRepository(), conversionRateRepository);
-		return new NewestConversionRatesService(conversionRateRepository, jsonConverters);
-	}
-
-	@VisibleForTesting
-	@NonNull
-	public ConversionRateRepository getConversionRateRepository()
-	{
-		return conversionRateRepository;
-	}
-
-	@VisibleForTesting
-	@NonNull
-	public JsonConversionRateConverters getJsonConverters()
-	{
-		return jsonConverters;
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(NewestConversionRatesService.class,
+				() -> new NewestConversionRatesService(
+						ConversionRateRepository.newInstanceForUnitTesting(),
+						JsonConversionRateConverters.newInstanceForUnitTesting()));
 	}
 
 	@NonNull

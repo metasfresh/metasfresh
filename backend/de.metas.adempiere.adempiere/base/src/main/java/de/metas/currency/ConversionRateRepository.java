@@ -22,6 +22,7 @@
 
 package de.metas.currency;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
@@ -36,6 +37,8 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Conversion_Rate;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
@@ -66,6 +69,14 @@ public class ConversionRateRepository
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+
+	@VisibleForTesting
+	public static ConversionRateRepository newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(ConversionRateRepository.class, ConversionRateRepository::new);
+	}
 
 	/**
 	 * The {@code C_Conversion_Rate} for the request's natural key, or {@code null} — the find half of the upsert.

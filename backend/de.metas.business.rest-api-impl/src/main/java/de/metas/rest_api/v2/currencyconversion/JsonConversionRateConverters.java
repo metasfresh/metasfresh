@@ -22,6 +22,7 @@
 
 package de.metas.rest_api.v2.currencyconversion;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.RestUtils;
 import de.metas.common.rest_api.v2.currencyconversion.JsonCurrency;
@@ -46,6 +47,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -66,6 +69,17 @@ public class JsonConversionRateConverters
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final CurrencyRepository currencyRepository;
 	@NonNull private final ConversionRateRepository conversionRateRepository;
+
+	@VisibleForTesting
+	public static JsonConversionRateConverters newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(JsonConversionRateConverters.class,
+				() -> new JsonConversionRateConverters(
+						CurrencyRepository.newInstanceForUnitTesting(),
+						ConversionRateRepository.newInstanceForUnitTesting()));
+	}
 
 	/** The active currencies (ISO-ordered) as {@link JsonCurrency} ({@code name} = {@code Description}). */
 	@NonNull

@@ -1,8 +1,11 @@
 package de.metas.currency;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.currency.impl.CurrencyDAO;
 import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Currency;
 import org.springframework.stereotype.Repository;
 
@@ -43,6 +46,14 @@ public class CurrencyRepository
 {
 	final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	@VisibleForTesting
+	public static CurrencyRepository newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(CurrencyRepository.class, CurrencyRepository::new);
+	}
 
 	@NonNull
 	public Currency getById(@NonNull final CurrencyId currencyId)

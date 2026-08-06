@@ -17,15 +17,9 @@ Feature: Currency-conversion REST API
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2026-06-01T08:00:00+01:00[Europe/Berlin]
-    # Remember the prior active-state of every currency this feature toggles, so the shared executor DB is restored
-    # afterwards and sibling features are not polluted (RUB is toggled inactive by the GET-currencies scenario).
-    And I remember the active-state of the following currencies:
-      | ISO_Code |
-      | EUR      |
-      | CNY      |
-      | JPY      |
-      | RUB      |
     # The core seed ships these currencies inactive; a currency must be active before a rate for it can be upserted.
+    # The active/inactive steps snapshot each currency's original IsActive and restore it after the scenario, so
+    # sibling features on the shared executor are not polluted (RUB is toggled inactive by the GET-currencies scenario).
     And the following currencies are active:
       | ISO_Code |
       | EUR      |
