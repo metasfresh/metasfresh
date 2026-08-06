@@ -44,7 +44,7 @@ import lombok.NonNull;
 @Repository
 public class CurrencyRepository
 {
-	final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+	@NonNull final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@VisibleForTesting

@@ -48,6 +48,7 @@ public class NewestConversionRatesService
 	@NonNull private final ConversionRateRepository conversionRateRepository;
 	@NonNull private final JsonConversionRateConverters jsonConverters;
 
+	/** Per-bean test factory (no JUnit yet — {@code list()} is cucumber-covered via GET newestRates). */
 	@VisibleForTesting
 	@NonNull
 	public static NewestConversionRatesService newInstanceForUnitTesting()
