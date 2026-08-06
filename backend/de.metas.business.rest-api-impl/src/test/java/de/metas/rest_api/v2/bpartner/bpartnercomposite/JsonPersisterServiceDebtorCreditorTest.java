@@ -23,6 +23,8 @@
 package de.metas.rest_api.v2.bpartner.bpartnercomposite;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.CreditorId;
+import de.metas.bpartner.DebtorId;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
@@ -139,7 +141,7 @@ class JsonPersisterServiceDebtorCreditorTest
 		// and the value must be persisted to the DB
 		assertThat(responseItem.getMetasfreshId()).as("metasfreshId must be set on CREATED response").isNotNull();
 		final BPartnerComposite result = bpartnerCompositeRepository.getById(BPartnerId.ofRepoId(responseItem.getMetasfreshId().getValue()));
-		assertThat(result.getBpartner().getDebtorId()).isEqualTo(12345);
+		assertThat(result.getBpartner().getDebtorId()).isEqualTo(DebtorId.ofNo(12345));
 	}
 
 	@Test
@@ -158,7 +160,7 @@ class JsonPersisterServiceDebtorCreditorTest
 		// and the value must be persisted to the DB
 		assertThat(responseItem.getMetasfreshId()).as("metasfreshId must be set on CREATED response").isNotNull();
 		final BPartnerComposite result = bpartnerCompositeRepository.getById(BPartnerId.ofRepoId(responseItem.getMetasfreshId().getValue()));
-		assertThat(result.getBpartner().getCreditorId()).isEqualTo(67890);
+		assertThat(result.getBpartner().getCreditorId()).isEqualTo(CreditorId.ofNo(67890));
 	}
 
 	@Test
@@ -179,8 +181,8 @@ class JsonPersisterServiceDebtorCreditorTest
 		// and both values must be persisted to the DB
 		assertThat(responseItem.getMetasfreshId()).as("metasfreshId must be set on CREATED response").isNotNull();
 		final BPartnerComposite result = bpartnerCompositeRepository.getById(BPartnerId.ofRepoId(responseItem.getMetasfreshId().getValue()));
-		assertThat(result.getBpartner().getDebtorId()).isEqualTo(12345);
-		assertThat(result.getBpartner().getCreditorId()).isEqualTo(67890);
+		assertThat(result.getBpartner().getDebtorId()).isEqualTo(DebtorId.ofNo(12345));
+		assertThat(result.getBpartner().getCreditorId()).isEqualTo(CreditorId.ofNo(67890));
 	}
 
 	private JsonResponseBPartnerUpsertItem upsertBPartner(final String bpartnerIdentifier, final JsonRequestBPartner bpartner)

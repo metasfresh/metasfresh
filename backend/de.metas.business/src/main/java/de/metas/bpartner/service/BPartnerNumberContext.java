@@ -23,6 +23,7 @@ package de.metas.bpartner.service;
  */
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.interfaces.I_C_BPartner;
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -68,4 +69,36 @@ public class BPartnerNumberContext
 	boolean isCompany;
 
 	@NonNull Kind kind;
+
+	/**
+	 * Builds the context for one role directly from a {@code C_BPartner} record.
+	 * <p>
+	 * {@code bPartnerId} is {@code null} when {@code C_BPartner_ID=0} (native-sequence mode at
+	 * {@code TYPE_BEFORE_NEW}, before {@code saveNew()} assigns the key) — see {@link #bPartnerId}.
+	 *
+	 * @param bpartner the record being saved
+	 * @param kind     debtor (customer side) or creditor (vendor side)
+	 */
+	public static BPartnerNumberContext ofBPartner(@NonNull final I_C_BPartner bpartner, @NonNull final Kind kind)
+	{
+		return builder()
+				.clientId(ClientId.ofRepoId(bpartner.getAD_Client_ID()))
+				.orgId(OrgId.ofRepoId(bpartner.getAD_Org_ID()))
+				.bPartnerId(BPartnerId.ofRepoIdOrNull(bpartner.getC_BPartner_ID()))
+				.isCustomer(bpartner.isCustomer())
+				.isVendor(bpartner.isVendor())
+				.isCompany(bpartner.isCompany())
+				.kind(kind)
+				.build();
+	}
+
+	public boolean isDebtor()
+	{
+		return kind == Kind.DEBTOR;
+	}
+
+	public boolean isCreditor()
+	{
+		return kind == Kind.CREDITOR;
+	}
 }

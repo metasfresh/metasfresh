@@ -22,19 +22,16 @@ package de.metas.bpartner.model.interceptor;
  * #L%
  */
 
-import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.CreditorId;
 import de.metas.bpartner.DebtorId;
 import de.metas.bpartner.service.BPartnerNumberContext;
 import de.metas.bpartner.service.BPartnerNumberGenerator;
 import de.metas.interfaces.I_C_BPartner;
-import de.metas.organization.OrgId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -64,27 +61,9 @@ public class C_BPartner_NumberGen
 	{
 		final boolean isNew = InterfaceWrapperHelper.isNew(bpartner);
 
-		final ClientId clientId = ClientId.ofRepoId(bpartner.getAD_Client_ID());
-		final OrgId orgId = OrgId.ofRepoId(bpartner.getAD_Org_ID());
-		// At TYPE_BEFORE_NEW, native-sequence mode leaves C_BPartner_ID=0 until saveNew() assigns it.
-		// BPartnerId.ofRepoIdOrNull returns null in that case; BPartnerNumberContext accepts @Nullable.
-		// The sequence branch ignores bPartnerId; the override branch receives null and must handle it.
-		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(bpartner.getC_BPartner_ID());
-		final boolean isCustomer = bpartner.isCustomer();
-		final boolean isVendor = bpartner.isVendor();
-		final boolean isCompany = bpartner.isCompany();
-
-		if (isCustomer)
+		if (bpartner.isCustomer())
 		{
-			final BPartnerNumberContext debtorCtx = BPartnerNumberContext.builder()
-					.clientId(clientId)
-					.orgId(orgId)
-					.bPartnerId(bpartnerId)
-					.isCustomer(isCustomer)
-					.isVendor(isVendor)
-					.isCompany(isCompany)
-					.kind(BPartnerNumberContext.Kind.DEBTOR)
-					.build();
+			final BPartnerNumberContext debtorCtx = BPartnerNumberContext.ofBPartner(bpartner, BPartnerNumberContext.Kind.DEBTOR);
 
 			if (DebtorId.ofNullableNo(bpartner.getDebtorId()) == null)
 			{
@@ -103,17 +82,9 @@ public class C_BPartner_NumberGen
 			}
 		}
 
-		if (isVendor)
+		if (bpartner.isVendor())
 		{
-			final BPartnerNumberContext creditorCtx = BPartnerNumberContext.builder()
-					.clientId(clientId)
-					.orgId(orgId)
-					.bPartnerId(bpartnerId)
-					.isCustomer(isCustomer)
-					.isVendor(isVendor)
-					.isCompany(isCompany)
-					.kind(BPartnerNumberContext.Kind.CREDITOR)
-					.build();
+			final BPartnerNumberContext creditorCtx = BPartnerNumberContext.ofBPartner(bpartner, BPartnerNumberContext.Kind.CREDITOR);
 
 			if (CreditorId.ofNullableNo(bpartner.getCreditorId()) == null)
 			{

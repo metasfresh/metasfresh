@@ -31,6 +31,8 @@ import de.metas.bpartner.BPGroupService;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.CreditorId;
+import de.metas.bpartner.DebtorId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.BPartner;
@@ -709,8 +711,8 @@ public class JsonPersisterService
 		//
 		// supplement the metasfreshiId which we now have after the "save()"
 		resultBuilder.getJsonResponseBPartnerUpsertItemBuilder().metasfreshId(JsonMetasfreshId.of(BPartnerId.toRepoId(bpartnerComposite.getBpartner().getId())));
-		resultBuilder.getJsonResponseBPartnerUpsertItemBuilder().debtorId(bpartnerComposite.getBpartner().getDebtorId());
-		resultBuilder.getJsonResponseBPartnerUpsertItemBuilder().creditorId(bpartnerComposite.getBpartner().getCreditorId());
+		resultBuilder.getJsonResponseBPartnerUpsertItemBuilder().debtorId(DebtorId.toIntOrNull(bpartnerComposite.getBpartner().getDebtorId()));
+		resultBuilder.getJsonResponseBPartnerUpsertItemBuilder().creditorId(CreditorId.toIntOrNull(bpartnerComposite.getBpartner().getCreditorId()));
 
 		if (jsonRequestComposite.getBpartner() != null)
 		{
@@ -1063,11 +1065,11 @@ public class JsonPersisterService
 
 		if (jsonBPartner.isDebtorIdSet())
 		{
-			bpartner.setDebtorId(jsonBPartner.getDebtorId());
+			bpartner.setDebtorId(DebtorId.ofNullableNo(jsonBPartner.getDebtorId()));
 		}
 		if (jsonBPartner.isCreditorIdSet())
 		{
-			bpartner.setCreditorId(jsonBPartner.getCreditorId());
+			bpartner.setCreditorId(CreditorId.ofNullableNo(jsonBPartner.getCreditorId()));
 		}
 
 		return BooleanWithReason.TRUE;

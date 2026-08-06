@@ -280,11 +280,11 @@ final class BPartnerCompositeSaver
 		// debtorId / creditorId: 0 means "not set" (convention: ≤0 = unset, encapsulated by DebtorId/CreditorId.ofNullableNo)
 		if (bpartner.getDebtorId() != null)
 		{
-			bpartnerRecord.setDebtorId(bpartner.getDebtorId());
+			bpartnerRecord.setDebtorId(bpartner.getDebtorId().toInt());
 		}
 		if (bpartner.getCreditorId() != null)
 		{
-			bpartnerRecord.setCreditorId(bpartner.getCreditorId());
+			bpartnerRecord.setCreditorId(bpartner.getCreditorId().toInt());
 		}
 		if (validatePermissions)
 		{
@@ -298,9 +298,9 @@ final class BPartnerCompositeSaver
 		bpartner.setValue(bpartnerRecord.getValue());
 		bpartner.setCompany(bpartnerRecord.isCompany());
 		// Copy back generated debtor/creditor numbers so the upsert response reflects interceptor-assigned values.
-		// Route normalization through the value type (encapsulates the "≤0 = unset" convention).
-		bpartner.setDebtorId(DebtorId.toIntOrNull(DebtorId.ofNullableNo(bpartnerRecord.getDebtorId())));
-		bpartner.setCreditorId(CreditorId.toIntOrNull(CreditorId.ofNullableNo(bpartnerRecord.getCreditorId())));
+		// ofNullableNo encapsulates the "≤0 = unset" convention.
+		bpartner.setDebtorId(DebtorId.ofNullableNo(bpartnerRecord.getDebtorId()));
+		bpartner.setCreditorId(CreditorId.ofNullableNo(bpartnerRecord.getCreditorId()));
 	}
 
 	private void saveBPartnerLocations(@NonNull final BPartnerComposite bPartnerComposite, final boolean validatePermissions)

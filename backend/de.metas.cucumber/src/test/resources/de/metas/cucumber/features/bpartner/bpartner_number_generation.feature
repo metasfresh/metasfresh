@@ -23,14 +23,14 @@ Feature: BPartner debtor/creditor number generation via REST V2 upsert
   Scenario: TC1 - customer gets next debtor number; response carries it
     Given a debtor sequence for org "001" starting at 10000
     When I upsert a "non-company" "customer" "TC1-cust"
-    Then responseItems[0].responseBPartnerItem.debtorId is within 10000..10099
+    Then responseItems[0].responseBPartnerItem.debtorId is 10000
 
   @from:cucumber
   @Id:S25082_TC2
   Scenario: TC2 - vendor gets next creditor number; response carries it
     Given a creditor sequence for org "001" starting at 20000
     When I upsert a "non-company" "vendor" "TC2-vend"
-    Then responseItems[0].responseBPartnerItem.creditorId is within 20000..20099
+    Then responseItems[0].responseBPartnerItem.creditorId is 20000
 
   @from:cucumber
   @Id:S25082_TC3
@@ -53,9 +53,9 @@ Feature: BPartner debtor/creditor number generation via REST V2 upsert
   Scenario: TC5 - update of existing partner leaves debtor number unchanged, sequence not consumed
     Given a debtor sequence for org "001" starting at 50000
     When I upsert a "non-company" "customer" "TC5-update"
-    Then responseItems[0].responseBPartnerItem.debtorId is within 50000..50099
+    Then responseItems[0].responseBPartnerItem.debtorId is 50000
     When I upsert a "non-company" "customer" "TC5-update"
-    Then responseItems[0].responseBPartnerItem.debtorId is within 50000..50099
+    Then responseItems[0].responseBPartnerItem.debtorId is 50000
 
   @from:cucumber
   @Id:S25082_TC6
@@ -81,9 +81,9 @@ Feature: BPartner debtor/creditor number generation via REST V2 upsert
     Given a debtor sequence for org "001" starting at 80000
     And a debtor sequence for org "002" starting at 80000
     When I upsert a "non-company" "customer" "TC8-bpA" in org "001"
-    Then responseItems[0].responseBPartnerItem.debtorId is within 80000..80099
+    Then responseItems[0].responseBPartnerItem.debtorId is 80000
     When I upsert a "non-company" "customer" "TC8-bpB" in org "002"
-    Then responseItems[0].responseBPartnerItem.debtorId is within 80000..80099
+    Then responseItems[0].responseBPartnerItem.debtorId is 80000
 
   @from:cucumber
   @Id:S25082_TC9
@@ -100,8 +100,8 @@ Feature: BPartner debtor/creditor number generation via REST V2 upsert
     And a debtor sequence for org "001" starting at 91000
     And a creditor sequence for org "001" starting at 92000
     When I upsert a "non-company" "both" "TC9b-both"
-    Then responseItems[0].responseBPartnerItem.debtorId is within 91000..91099
-    And responseItems[0].responseBPartnerItem.creditorId is within 92000..92099
+    Then responseItems[0].responseBPartnerItem.debtorId is 91000
+    And responseItems[0].responseBPartnerItem.creditorId is 92000
 
   @from:cucumber
   @Id:S25082_TC10
@@ -110,4 +110,4 @@ Feature: BPartner debtor/creditor number generation via REST V2 upsert
     When I upsert a "non-company" "customer" "TC10-advance" with debtorId 15000
     Then responseItems[0].responseBPartnerItem.debtorId is 15000
     When I upsert a "non-company" "customer" "TC10-next"
-    Then responseItems[0].responseBPartnerItem.debtorId is within 15001..15099
+    Then responseItems[0].responseBPartnerItem.debtorId is 15001
