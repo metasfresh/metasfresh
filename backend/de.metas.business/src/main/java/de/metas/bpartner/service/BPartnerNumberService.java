@@ -24,6 +24,7 @@ package de.metas.bpartner.service;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.NumberUtils;
 import de.metas.document.IDocumentSequenceDAO;
 import de.metas.document.sequence.DocSequenceId;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
@@ -115,16 +116,9 @@ public class BPartnerNumberService
 			throw new IllegalStateException("AD_Sequence_ID=" + seqId.getRepoId()
 					+ " returned no number; a debtor/creditor sequence must have IsAutoSequence='Y'");
 		}
-		try
-		{
-			// Debtor/creditor sequences are plain numeric (no prefix/suffix/decimal pattern), so build() yields a bare integer string.
-			return Integer.parseInt(documentNo.trim());
-		}
-		catch (final NumberFormatException e)
-		{
-			throw new IllegalStateException("AD_Sequence_ID=" + seqId.getRepoId()
-					+ " did not yield a plain integer (got '" + documentNo + "'); a debtor/creditor sequence must have no prefix, suffix or decimal pattern", e);
-		}
+		// Debtor/creditor sequences are plain numeric (no prefix/suffix/decimal pattern), so build() yields a bare
+		// integer string; NumberUtils.asInt trims and fails loudly (naming the offending value) if it is not numeric.
+		return NumberUtils.asInt(documentNo);
 	}
 
 	/**
