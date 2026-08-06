@@ -62,10 +62,8 @@ public class C_BPartner_NumberGen
 	 * has its {@code createNew} flag set until {@code saveFinish}, so {@code save()} re-enters as a new
 	 * record — {@code "Object is already involved in a model change event … AFTER_NEW, BEFORE_NEW"}.)
 	 * <p>
-	 * Consequence: {@code C_BPartner_ID} is still {@code 0} here (the native sequence assigns it during the
-	 * INSERT, after this interceptor), so the override resolver receives {@code 0} for {@code p_c_bpartner_id}.
-	 * That is acceptable because the resolver does not key on it — number resolution is by org, kind and
-	 * company-flag, not by the not-yet-existing partner id.
+	 * At this timing {@code C_BPartner_ID} is not yet assigned (the native sequence sets it during the INSERT),
+	 * which is fine: number resolution is by org, kind and company-flag, not by the partner id.
 	 * <p>
 	 * When an explicit number was supplied at creation, the sequence is advanced past it instead (inside
 	 * {@link BPartnerNumberGenerator#generateNumbers}).

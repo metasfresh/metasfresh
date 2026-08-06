@@ -140,7 +140,7 @@ public class BPartnerNumberService
 	 * all argument values are bound as {@code ?} parameters (no value interpolation).
 	 *
 	 * @param functionName  the fully-qualified DB function name (e.g. {@code public.fn_bpartner_no})
-	 * @param ctx           the request context; supplies orgId, bPartnerId, role flags, and kind
+	 * @param ctx           the request context; supplies orgId, the company flag, and kind
 	 * @param explicitValue {@code null} for draw-next; the explicit value to reserve for advance-past
 	 * @return <b>draw mode</b> ({@code explicitValue == null}): the allocated number.
 	 *         <b>advance-past mode</b> ({@code explicitValue != null}): by contract the {@code AD_Sequence_ID}
