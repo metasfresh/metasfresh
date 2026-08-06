@@ -414,8 +414,19 @@ public class ConversionRate_StepDef
 		final CurrencyConversionTypeId spotTypeId = currencyDAO.getConversionTypeId(ConversionTypeMethod.Spot);
 		final CurrencyId fromId = currencyId(fromIsoCode);
 		final CurrencyId toId = currencyId(toIsoCode);
-		final Timestamp validFrom = Timestamp.valueOf(LocalDate.parse(validFromStr).atStartOfDay());
+		final LocalDate validFromDate = LocalDate.parse(validFromStr);
+		final Timestamp validFrom = Timestamp.valueOf(validFromDate.atStartOfDay());
 		final Timestamp validTo = Timestamp.valueOf(LocalDate.parse(validToStr).atStartOfDay());
+
+		final ConversionRateKey key = ConversionRateKey.builder()
+				.orgId(OrgId.ANY)
+				.fromCurrencyId(fromId)
+				.toCurrencyId(toId)
+				.conversionTypeId(spotTypeId)
+				.validFrom(validFromDate)
+				.build();
+		createdRateKeys.add(key);
+		createdRateKeys.add(key.getReverseKey());
 
 		createRate(spotTypeId, fromId, toId, validFrom, validTo);
 		createRate(spotTypeId, toId, fromId, validFrom, validTo);
