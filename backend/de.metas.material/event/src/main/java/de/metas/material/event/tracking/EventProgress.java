@@ -57,8 +57,13 @@ public class EventProgress
 
 	public boolean areAllEventsProcessed()
 	{
-		// eventId2Status.values().stream().allMatch(..) is vacuously true on an empty map; a trace for which
-		// nothing was ever enqueue()d must not be reported as "all processed".
+		// allMatch(..) is vacuously true on an empty map, and an empty map IS reachable here: the completion check
+		// runs from a deferred AFTER_COMMIT handler that re-looks-up the EventProgress by traceId at fire time
+		// (MaterialEventObserver.notifyIfAllEventsProcessed) rather than closing over the instance it was registered
+		// for. So if that traceId was meanwhile removed (awaitProcessing's finally, e.g. on timeout) and then
+		// re-observed -- trace ids do get reused, e.g. via DD_Order_Candidate's persisted DYNATTR_TraceId -- the
+		// lookup finds a FRESH, still-empty progress, and reporting that as "all processed" would announce
+		// completion for work the new trace has not even enqueued yet.
 		return !eventId2Status.isEmpty()
 				&& eventId2Status.values()
 						.stream()

@@ -100,7 +100,7 @@ public class MaterialEventObserverTest
 	}
 
 	/**
-	 * TC2: {@link MaterialEventHandlerRegistry#onEvent(MaterialEvent)} calls {@code reportEventProcessed} for every
+	 * {@link MaterialEventHandlerRegistry#onEvent(MaterialEvent)} calls {@code reportEventProcessed} for every
 	 * event class that has at least one registered handler -- including {@link AllEventsProcessedEvent} itself, which
 	 * always has the (real, production) {@link AllEventsProcessedEventHandler} registered. That bookkeeping event is
 	 * not "work" that was ever enqueued for the trace; counting it as processed work pollutes
@@ -110,7 +110,7 @@ public class MaterialEventObserverTest
 	void allEventsProcessedEvent_isNotCountedAsWork()
 	{
 		// given: an observed trace with one ordinary work event still outstanding (enqueued, not yet processed)
-		final String traceId = "tc2-trace-id";
+		final String traceId = "observed-trace-with-outstanding-work";
 		materialEventObserver.observe(traceId);
 
 		final MaterialEvent workEvent = DeactivateAllSimulatedCandidatesEvent.builder()
@@ -144,26 +144,19 @@ public class MaterialEventObserverTest
 	}
 
 	/**
-	 * TC3: {@link EventProgress#areAllEventsProcessed()} is {@code eventId2Status.values().stream().allMatch(...)},
-	 * which is vacuously {@code true} on an empty map. A trace for which nothing was ever enqueued must not be
+	 * {@link EventProgress#areAllEventsProcessed()} is {@code eventId2Status.values().stream().allMatch(...)},
+	 * which is vacuously {@code true} on an empty map. A progress for which nothing was ever enqueued must not be
 	 * reported as "all processed".
 	 */
 	@Test
 	void emptyProgress_isNotAllProcessed()
 	{
-		// given: an observed trace with nothing ever enqueued
-		final String traceId = "tc3-trace-id";
-		materialEventObserver.observe(traceId);
-
-		final EventProgress eventProgress = getTraceId2EventProgress(materialEventObserver).get(traceId);
-		assertThat(eventProgress).isNotNull();
-
-		// then
-		assertThat(eventProgress.areAllEventsProcessed()).isFalse();
+		// a freshly observed trace's progress, before anything was enqueued for it
+		assertThat(new EventProgress().areAllEventsProcessed()).isFalse();
 	}
 
 	/**
-	 * TC4: regression test for the normal completion path. Observes a trace, enqueues two ordinary work events,
+	 * Regression test for the normal completion path. Observes a trace, enqueues two ordinary work events,
 	 * reports both processed, and verifies: exactly one completion signal is posted, the caller awaiting that trace
 	 * is released, and -- since {@link MaterialEventObserver#awaitProcessing(String)} removes the entry in its
 	 * {@code finally} block -- the tracking entry is gone afterwards.
@@ -177,7 +170,7 @@ public class MaterialEventObserverTest
 	void normalCompletionPath_releasesAwaiterAndPostsOnce() throws Exception
 	{
 		// given: an observed trace with two outstanding work events
-		final String traceId = "tc4-trace-id";
+		final String traceId = "observed-trace-two-work-events";
 		materialEventObserver.observe(traceId);
 
 		final MaterialEvent workEvent1 = DeactivateAllSimulatedCandidatesEvent.builder()
@@ -199,6 +192,9 @@ public class MaterialEventObserverTest
 			materialEventObserver.awaitProcessing(traceId);
 			awaiterReleased.countDown();
 		});
+		// daemon: in the very regression this test guards against (awaiter never released) the latch below fails fast,
+		// but this thread would stay blocked in awaitProcessing for the full WaitTimeOutMS (5 min by default).
+		awaiterThread.setDaemon(true);
 		awaiterThread.start();
 
 		// when: both outstanding work events are reported processed
