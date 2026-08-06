@@ -26,7 +26,9 @@ import de.metas.bpartner.CreditorId;
 import de.metas.bpartner.DebtorId;
 import de.metas.bpartner.service.BPartnerNumberContext;
 import de.metas.bpartner.service.BPartnerNumberGenerator;
+import de.metas.bpartner.service.BPartnerNumbers;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.organization.ClientAndOrgId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -34,8 +36,6 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
-
-import java.util.Optional;
 
 /**
  * Wires BPartner number generation into the model-save lifecycle.
@@ -56,50 +56,92 @@ public class C_BPartner_NumberGen
 {
 	@NonNull private final BPartnerNumberGenerator bpartnerNumberGenerator;
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
-	public void generateOrReserveNumbers(@NonNull final I_C_BPartner bpartner)
+	/**
+	 * On creation: generate the debtor/creditor number(s) and set them on the record so they are written
+	 * by the INSERT. Runs at {@code TYPE_BEFORE_NEW} — the only timing at which a value set on the record
+	 * is persisted without a second save. (A re-save at {@code TYPE_AFTER_NEW} is illegal: the PO still
+	 * has its {@code createNew} flag set until {@code saveFinish}, so {@code save()} re-enters as a new
+	 * record — {@code "Object is already involved in a model change event … AFTER_NEW, BEFORE_NEW"}.)
+	 * <p>
+	 * Consequence: {@code C_BPartner_ID} is still {@code 0} here (the native sequence assigns it during the
+	 * INSERT, after this interceptor), so the override resolver receives {@code 0} for {@code p_c_bpartner_id}.
+	 * That is acceptable because the resolver does not key on it — number resolution is by org, kind and
+	 * company-flag, not by the not-yet-existing partner id.
+	 * <p>
+	 * When an explicit number was supplied at creation, the sequence is advanced past it instead (inside
+	 * {@link BPartnerNumberGenerator#generateNumbers}).
+	 */
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
+	public void generateOnNew(@NonNull final I_C_BPartner bpartner)
 	{
-		final boolean isNew = InterfaceWrapperHelper.isNew(bpartner);
-
-		if (bpartner.isCustomer())
+		if (!enabledFor(bpartner))
 		{
-			final BPartnerNumberContext debtorCtx = BPartnerNumberContext.ofBPartner(bpartner, BPartnerNumberContext.Kind.DEBTOR);
-
-			if (DebtorId.ofNullableNo(bpartner.getDebtorId()) == null)
-			{
-				// No explicit debtor number: generate one, but only for new records.
-				// On BEFORE_CHANGE with an unset value, do nothing — generation happens at creation only.
-				if (isNew)
-				{
-					final Optional<Integer> generated = bpartnerNumberGenerator.generateNext(debtorCtx);
-					generated.ifPresent(bpartner::setDebtorId);
-				}
-			}
-			else
-			{
-				bpartnerNumberGenerator.reserveExplicitIfChanged(
-						bpartner, debtorCtx, isNew, I_C_BPartner.COLUMNNAME_DebtorId, bpartner.getDebtorId());
-			}
+			return;
 		}
 
-		if (bpartner.isVendor())
-		{
-			final BPartnerNumberContext creditorCtx = BPartnerNumberContext.ofBPartner(bpartner, BPartnerNumberContext.Kind.CREDITOR);
+		// One pass generates both roles (a partner can be customer AND vendor); explicitly-supplied
+		// numbers are reserved (not re-generated) inside generateNumbers.
+		final BPartnerNumbers numbers = bpartnerNumberGenerator.generateNumbers(bpartner);
 
-			if (CreditorId.ofNullableNo(bpartner.getCreditorId()) == null)
-			{
-				// No explicit creditor number: generate one, but only for new records.
-				if (isNew)
-				{
-					final Optional<Integer> generated = bpartnerNumberGenerator.generateNext(creditorCtx);
-					generated.ifPresent(bpartner::setCreditorId);
-				}
-			}
-			else
-			{
-				bpartnerNumberGenerator.reserveExplicitIfChanged(
-						bpartner, creditorCtx, isNew, I_C_BPartner.COLUMNNAME_CreditorId, bpartner.getCreditorId());
-			}
+		for (final BPartnerNumberContext.Kind kind : BPartnerNumberContext.Kind.values())
+		{
+			// unwrap to the raw int only here, at the model-column boundary; BEFORE_NEW ⇒ written by the INSERT
+			numbers.getNo(kind).ifPresent(no -> applyNo(bpartner, kind, no));
 		}
+	}
+
+	private static void applyNo(@NonNull final I_C_BPartner bpartner, @NonNull final BPartnerNumberContext.Kind kind, final int no)
+	{
+		switch (kind)
+		{
+			case DEBTOR:
+				bpartner.setDebtorId(no);
+				break;
+			case CREDITOR:
+				bpartner.setCreditorId(no);
+				break;
+			default:
+				throw new IllegalArgumentException("Unsupported kind: " + kind);
+		}
+	}
+
+	/**
+	 * On change of an explicitly-set debtor/creditor number on an existing partner: advance the
+	 * sequence past it so a later generated number cannot collide. Generation happens at creation
+	 * only (see {@link #generateOnNew}).
+	 */
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
+			ifColumnsChanged = { I_C_BPartner.COLUMNNAME_DebtorId, I_C_BPartner.COLUMNNAME_CreditorId })
+	public void reserveOnChange(@NonNull final I_C_BPartner bpartner)
+	{
+		if (!enabledFor(bpartner))
+		{
+			return;
+		}
+
+		final DebtorId debtorId = DebtorId.ofNullableNo(bpartner.getDebtorId());
+		if (bpartner.isCustomer()
+				&& debtorId != null
+				&& InterfaceWrapperHelper.isValueChanged(bpartner, I_C_BPartner.COLUMNNAME_DebtorId))
+		{
+			bpartnerNumberGenerator.reserveExplicit(
+					BPartnerNumberContext.ofBPartner(bpartner, BPartnerNumberContext.Kind.DEBTOR), debtorId.toInt());
+		}
+
+		final CreditorId creditorId = CreditorId.ofNullableNo(bpartner.getCreditorId());
+		if (bpartner.isVendor()
+				&& creditorId != null
+				&& InterfaceWrapperHelper.isValueChanged(bpartner, I_C_BPartner.COLUMNNAME_CreditorId))
+		{
+			bpartnerNumberGenerator.reserveExplicit(
+					BPartnerNumberContext.ofBPartner(bpartner, BPartnerNumberContext.Kind.CREDITOR), creditorId.toInt());
+		}
+	}
+
+	/** Master on/off switch (default off) — checked first so the interceptor is a no-op on instances not using the feature. */
+	private boolean enabledFor(@NonNull final I_C_BPartner bpartner)
+	{
+		return bpartnerNumberGenerator.isEnabled(
+				ClientAndOrgId.ofClientAndOrg(bpartner.getAD_Client_ID(), bpartner.getAD_Org_ID()));
 	}
 }

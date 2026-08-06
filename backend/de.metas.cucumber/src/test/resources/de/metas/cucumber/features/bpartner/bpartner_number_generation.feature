@@ -17,6 +17,8 @@ Feature: BPartner debtor/creditor number generation via REST V2 upsert
       | Name        | Value       |
       | Test System | Test_System |
     And the BPartner number-generation config is reset
+    # The master switch ships default-off; enable it (System level) so the interceptor runs for these scenarios.
+    And set sys config boolean value true for sys config de.metas.bpartner.NumberGeneration_Enabled
 
   @from:cucumber
   @Id:S25082_TC1
@@ -111,3 +113,10 @@ Feature: BPartner debtor/creditor number generation via REST V2 upsert
     Then responseItems[0].responseBPartnerItem.debtorId is 15000
     When I upsert a "non-company" "customer" "TC10-next"
     Then responseItems[0].responseBPartnerItem.debtorId is 15001
+
+  @from:cucumber
+  @Id:S25082_TC11
+  Scenario: TC11 - cleanup - disable the feature toggle so it does not leak to sibling features on this executor
+    # The toggle is a System-level (0,0) row; the Background re-enables it per scenario, so this final
+    # scenario turns it back off, leaving the shared executor DB in its default-off state.
+    Given set sys config boolean value false for sys config de.metas.bpartner.NumberGeneration_Enabled

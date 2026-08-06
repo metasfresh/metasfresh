@@ -172,16 +172,16 @@ public class BPartnerNumberService
 					"Override function name is not a valid SQL identifier (must match [A-Za-z_][A-Za-z0-9_]*(.[A-Za-z_][A-Za-z0-9_]*)? ): " + trimmed);
 		}
 
-		// bPartnerId may be null at TYPE_BEFORE_NEW (native-sequence mode: ID not yet assigned).
-		// Pass 0 in that case — the override function must treat 0 as "not yet known".
+		// Generation runs at TYPE_BEFORE_NEW, so C_BPartner_ID is not yet assigned (0) for a brand-new
+		// partner — the native sequence sets it during the INSERT, after this interceptor. Pass 0; the
+		// override resolver must not key on p_c_bpartner_id (resolution is by org / kind / company-flag).
 		final BPartnerId bPartnerId = ctx.getBPartnerId();
-		final int bPartnerIdRepoId = bPartnerId != null ? bPartnerId.getRepoId() : 0;
 
 		// The metasfresh DB layer sends a Java boolean as 'Y'/'N' varchar and a null Integer as
 		// 'unknown'; cast each param to its intended SQL type so PostgreSQL resolves the override
 		// function unambiguously (booleans -> boolean, kind -> text, nullable explicit -> int).
 		sqlParams.add(ctx.getOrgId().getRepoId());
-		sqlParams.add(bPartnerIdRepoId);
+		sqlParams.add(bPartnerId != null ? bPartnerId.getRepoId() : 0);
 		sqlParams.add(ctx.isCustomer());
 		sqlParams.add(ctx.isVendor());
 		sqlParams.add(ctx.isCompany());

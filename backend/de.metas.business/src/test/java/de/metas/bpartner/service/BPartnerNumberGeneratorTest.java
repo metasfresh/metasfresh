@@ -114,22 +114,40 @@ class BPartnerNumberGeneratorTest
 				.build();
 	}
 
+	private I_C_BPartner bpartner(final boolean isCustomer, final boolean isVendor)
+	{
+		final I_C_BPartner bp = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		// AD_Client_ID has no model setter (context-driven) — set it generically, as other tests do.
+		InterfaceWrapperHelper.setValue(bp, I_C_BPartner.COLUMNNAME_AD_Client_ID, AD_CLIENT_ID);
+		bp.setAD_Org_ID(AD_ORG_ID);
+		bp.setIsCustomer(isCustomer);
+		bp.setIsVendor(isVendor);
+		return bp;
+	}
+
+	/**
+	 * Unit-level coverage of the resolver's branch selection (override / sequence / no-config) and the
+	 * SQL-injection guard. The end-to-end behaviour — the interceptor firing on a real {@code C_BPartner}
+	 * save, drawing from a real sequence, and a customer-AND-vendor partner getting BOTH numbers — is
+	 * proven by the cucumber feature {@code bpartner_number_generation.feature}, not here against mocks.
+	 */
 	@Nested
-	class GenerateNext
+	class GenerateNumbers
 	{
 		@Test
 		void returnsEmpty_whenNoConfig()
 		{
 			// no sysconfig stubs → all return null / 0
 
-			final Optional<Integer> result = generator.generateNext(debtorCtx());
+			final BPartnerNumbers result = generator.generateNumbers(bpartner(true, false));
 
-			assertThat(result).isEmpty();
+			assertThat(result.getDebtorId()).isNull();
+			assertThat(result.getCreditorId()).isNull();
 			verify(numberService, never()).drawNext(any(), any());
 		}
 
 		@Test
-		void delegatesToDao_whenDebtorSeqConfigured()
+		void generatesDebtor_whenDebtorSeqConfigured()
 		{
 			when(sysConfigBL.getIntValue(
 					eq(BPartnerNumberGenerator.SYSCONFIG_DEBTOR_SEQ),
@@ -139,13 +157,14 @@ class BPartnerNumberGeneratorTest
 
 			when(numberService.drawNext(ClientId.ofRepoId(AD_CLIENT_ID), DocSequenceId.ofRepoId(540123))).thenReturn(7);
 
-			final Optional<Integer> result = generator.generateNext(debtorCtx());
+			final BPartnerNumbers result = generator.generateNumbers(bpartner(true, false));
 
-			assertThat(result).contains(7);
+			assertThat(result.getNo(Kind.DEBTOR)).hasValue(7);
+			assertThat(result.getNo(Kind.CREDITOR)).isEmpty();
 		}
 
 		@Test
-		void delegatesToDao_whenCreditorSeqConfigured()
+		void generatesCreditor_whenCreditorSeqConfigured()
 		{
 			when(sysConfigBL.getIntValue(
 					eq(BPartnerNumberGenerator.SYSCONFIG_CREDITOR_SEQ),
@@ -155,9 +174,10 @@ class BPartnerNumberGeneratorTest
 
 			when(numberService.drawNext(ClientId.ofRepoId(AD_CLIENT_ID), DocSequenceId.ofRepoId(540456))).thenReturn(55);
 
-			final Optional<Integer> result = generator.generateNext(creditorCtx());
+			final BPartnerNumbers result = generator.generateNumbers(bpartner(false, true));
 
-			assertThat(result).contains(55);
+			assertThat(result.getNo(Kind.CREDITOR)).hasValue(55);
+			assertThat(result.getNo(Kind.DEBTOR)).isEmpty();
 		}
 
 		@Test
@@ -171,9 +191,9 @@ class BPartnerNumberGeneratorTest
 			when(numberService.callOverrideFunction(eq("fn_bpartner_no"), any(BPartnerNumberContext.class), isNull()))
 					.thenReturn(Optional.of(42));
 
-			final Optional<Integer> result = generator.generateNext(debtorCtx());
+			final BPartnerNumbers result = generator.generateNumbers(bpartner(true, false));
 
-			assertThat(result).contains(42);
+			assertThat(result.getNo(Kind.DEBTOR)).hasValue(42);
 			verify(numberService, never()).drawNext(any(), any());
 		}
 
@@ -193,7 +213,7 @@ class BPartnerNumberGeneratorTest
 
 			final BPartnerNumberGenerator gen = new BPartnerNumberGenerator(new BPartnerNumberService(mock(IDocumentNoBuilderFactory.class)));
 
-			assertThatThrownBy(() -> gen.generateNext(debtorCtx()))
+			assertThatThrownBy(() -> gen.generateNumbers(bpartner(true, false)))
 					.isInstanceOf(IllegalArgumentException.class)
 					.hasMessageContaining(badName);
 		}
@@ -254,38 +274,6 @@ class BPartnerNumberGeneratorTest
 			assertThatThrownBy(() -> gen.reserveExplicit(creditorCtx(), 1))
 					.isInstanceOf(IllegalArgumentException.class)
 					.hasMessageContaining(badName);
-		}
-	}
-
-	@Nested
-	class ReserveExplicitIfChanged
-	{
-		@Test
-		void fires_whenIsNew()
-		{
-			when(sysConfigBL.getIntValue(
-					eq(BPartnerNumberGenerator.SYSCONFIG_DEBTOR_SEQ),
-					eq(-1),
-					eq(CLIENT_AND_ORG_ID)))
-					.thenReturn(540123);
-
-			final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
-			// isNew=true on a freshly created POJO record
-
-			generator.reserveExplicitIfChanged(bpartner, debtorCtx(), true, I_C_BPartner.COLUMNNAME_DebtorId, 7777);
-
-			verify(numberService).advancePast(DocSequenceId.ofRepoId(540123), 7777);
-		}
-
-		@Test
-		void skips_whenNotNewAndColumnUnchanged()
-		{
-			final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
-			// isNew=false, column not changed → no-op
-
-			generator.reserveExplicitIfChanged(bpartner, debtorCtx(), false, I_C_BPartner.COLUMNNAME_DebtorId, 7777);
-
-			verify(numberService, never()).advancePast(any(), anyInt());
 		}
 	}
 

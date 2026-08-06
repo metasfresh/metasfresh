@@ -86,17 +86,15 @@ import static org.assertj.core.api.Assertions.assertThat;
  *   <b>When I upsert a &lt;company|non-company&gt; &lt;customer|vendor|both&gt; "&lt;id&gt;" with creditorId &lt;n&gt;</b><br>
  *   <b>When I upsert a &lt;company|non-company&gt; &lt;customer|vendor|neither|both&gt; "&lt;id&gt;" in org &lt;orgValue&gt;</b><br>
  *   <b>Then responseItems[&lt;i&gt;].responseBPartnerItem.debtorId is &lt;expected&gt;</b><br>
- *   <b>Then responseItems[&lt;i&gt;].responseBPartnerItem.debtorId is within &lt;from&gt;..&lt;to&gt;</b><br>
  *   <b>Then responseItems[&lt;i&gt;].responseBPartnerItem.debtorId is null</b><br>
  *   <b>Then responseItems[&lt;i&gt;].responseBPartnerItem.creditorId is &lt;expected&gt;</b><br>
- *   <b>Then responseItems[&lt;i&gt;].responseBPartnerItem.creditorId is within &lt;from&gt;..&lt;to&gt;</b><br>
  *   <b>Then responseItems[&lt;i&gt;].responseBPartnerItem.creditorId is null</b><br>
  *   <b>Then the upsert is rejected</b><br>
  * @cucumber.example
  * <pre>
  * Given a debtor sequence for org "001" starting at 10000
  * When I upsert a "non-company" "customer" "TC1-cust"
- * Then responseItems[0].responseBPartnerItem.debtorId is within 10000..10099
+ * Then responseItems[0].responseBPartnerItem.debtorId is 10000
  * </pre>
  */
 @RequiredArgsConstructor
@@ -105,7 +103,7 @@ public class BPartnerNumberGen_StepDef
 	/** Value column of the default org in the standard seed DB. */
 	private static final String DEFAULT_ORG_VALUE = "001";
 
-	/** Same pattern as {@link de.metas.bpartner.service.BPartnerNumberDAO} — plain or schema-qualified SQL identifier. */
+	/** Same pattern as {@link de.metas.bpartner.service.BPartnerNumberService} — plain or schema-qualified SQL identifier. */
 	private static final Pattern FUNCTION_NAME_PATTERN =
 			Pattern.compile("[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)?");
 
@@ -332,26 +330,6 @@ public class BPartnerNumberGen_StepDef
 	}
 
 	/**
-	 * Asserts that {@code responseItems[index].responseBPartnerItem.debtorId} is in the inclusive range [{@code from}..{@code to}].
-	 *
-	 * @param index zero-based index
-	 * @param from  inclusive lower bound
-	 * @param to    inclusive upper bound
-	 */
-	@Then("responseItems[{int}].responseBPartnerItem.debtorId is within {int}..{int}")
-	public void responseItems_responseBPartnerItem_debtorId_is_within(
-			final int index,
-			final int from,
-			final int to) throws JsonProcessingException
-	{
-		final Integer debtorId = getResponseBPartnerUpsertItem(index).getDebtorId();
-		assertThat(debtorId)
-				.as("responseItems[%d].responseBPartnerItem.debtorId in [%d..%d]", index, from, to)
-				.isNotNull()
-				.isBetween(from, to);
-	}
-
-	/**
 	 * Asserts that {@code responseItems[index].responseBPartnerItem.debtorId} is {@code null} (not set).
 	 *
 	 * @param index zero-based index
@@ -377,26 +355,6 @@ public class BPartnerNumberGen_StepDef
 	{
 		final Integer creditorId = getResponseBPartnerUpsertItem(index).getCreditorId();
 		assertThat(creditorId).as("responseItems[%d].responseBPartnerItem.creditorId", index).isEqualTo(expected);
-	}
-
-	/**
-	 * Asserts that {@code responseItems[index].responseBPartnerItem.creditorId} is in the inclusive range [{@code from}..{@code to}].
-	 *
-	 * @param index zero-based index
-	 * @param from  inclusive lower bound
-	 * @param to    inclusive upper bound
-	 */
-	@Then("responseItems[{int}].responseBPartnerItem.creditorId is within {int}..{int}")
-	public void responseItems_responseBPartnerItem_creditorId_is_within(
-			final int index,
-			final int from,
-			final int to) throws JsonProcessingException
-	{
-		final Integer creditorId = getResponseBPartnerUpsertItem(index).getCreditorId();
-		assertThat(creditorId)
-				.as("responseItems[%d].responseBPartnerItem.creditorId in [%d..%d]", index, from, to)
-				.isNotNull()
-				.isBetween(from, to);
 	}
 
 	/**
@@ -601,7 +559,8 @@ public class BPartnerNumberGen_StepDef
 	 * Isolation reset: blanks the per-org BPartner number-generation sysconfigs (override, debtor-seq,
 	 * creditor-seq) for the orgs the scenarios use ({@code 001} and {@code 002}). Run from the Background
 	 * so a value configured by an earlier scenario cannot leak into a later one on the same executor —
-	 * essential for the "no config means no number" case.
+	 * essential for the "no config means no number" case. (The master on/off toggle is handled in the
+	 * feature file via the standard {@code set sys config} step, not here.)
 	 */
 	@Given("the BPartner number-generation config is reset")
 	public void bpartner_number_generation_config_is_reset()
