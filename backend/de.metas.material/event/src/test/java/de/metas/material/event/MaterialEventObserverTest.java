@@ -48,6 +48,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -158,6 +160,78 @@ public class MaterialEventObserverTest
 
 		// then
 		assertThat(eventProgress.areAllEventsProcessed()).isFalse();
+	}
+
+	/**
+	 * TC4: regression test for the normal completion path. Observes a trace, enqueues two ordinary work events,
+	 * reports both processed, and verifies: exactly one completion signal is posted, the caller awaiting that trace
+	 * is released, and -- since {@link MaterialEventObserver#awaitProcessing(String)} removes the entry in its
+	 * {@code finally} block -- the tracking entry is gone afterwards.
+	 * <p>
+	 * The completion signal ({@link AllEventsProcessedEvent}) only releases the awaiter once it round-trips back
+	 * through {@link MaterialEventHandlerRegistry#onEvent(MaterialEvent)} (as it would via the real, distributed
+	 * event bus in production) and reaches the real {@link AllEventsProcessedEventHandler}. This test simulates that
+	 * round-trip explicitly instead of asserting it away.
+	 */
+	@Test
+	void normalCompletionPath_releasesAwaiterAndPostsOnce() throws Exception
+	{
+		// given: an observed trace with two outstanding work events
+		final String traceId = "tc4-trace-id";
+		materialEventObserver.observe(traceId);
+
+		final MaterialEvent workEvent1 = DeactivateAllSimulatedCandidatesEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientOrgAndTraceId(EventTestHelper.CLIENT_AND_ORG_ID, traceId))
+				.build();
+		final MaterialEvent workEvent2 = DeactivateAllSimulatedCandidatesEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientOrgAndTraceId(EventTestHelper.CLIENT_AND_ORG_ID, traceId))
+				.build();
+
+		materialEventObserver.reportEventEnqueued(workEvent1);
+		materialEventObserver.reportEventEnqueued(workEvent2);
+
+		final EventProgress eventProgress = getTraceId2EventProgress(materialEventObserver).get(traceId);
+		assertThat(eventProgress).isNotNull();
+
+		// and: a caller awaiting that trace's completion, on its own thread (awaitProcessing blocks)
+		final CountDownLatch awaiterReleased = new CountDownLatch(1);
+		final Thread awaiterThread = new Thread(() -> {
+			materialEventObserver.awaitProcessing(traceId);
+			awaiterReleased.countDown();
+		});
+		awaiterThread.start();
+
+		// when: both outstanding work events are reported processed
+		materialEventObserver.reportEventProcessed(workEvent1);
+		materialEventObserver.reportEventProcessed(workEvent2);
+
+		// then: exactly one completion signal was posted to the bus, for this trace
+		final List<MaterialEvent> postedEvents = postMaterialEventService.getPostedEvents();
+		assertThat(postedEvents).hasSize(1);
+		assertThat(postedEvents.get(0)).isInstanceOf(AllEventsProcessedEvent.class);
+		final AllEventsProcessedEvent allEventsProcessedEvent = (AllEventsProcessedEvent)postedEvents.get(0);
+		assertThat(allEventsProcessedEvent.getTraceId()).isEqualTo(traceId);
+
+		// and: the awaiter is NOT released yet -- posting to the bus alone doesn't complete the local future;
+		// only the round-trip delivery back through the registry does (see below)
+		assertThat(eventProgress.getCompletableFuture()).isNotDone();
+
+		// when: the completion signal is delivered back, exactly as the real (distributed) event bus would do
+		final MaterialEventHandlerRegistry registry = new MaterialEventHandlerRegistry(
+				Optional.of(ImmutableList.of(new AllEventsProcessedEventHandler(materialEventObserver))),
+				new EventLogUserService(),
+				materialEventObserver);
+		deliverThroughRegistry(registry, allEventsProcessedEvent);
+
+		// then: the awaiting caller is released
+		assertThat(awaiterReleased.await(10, TimeUnit.SECONDS)).isTrue();
+		awaiterThread.join(TimeUnit.SECONDS.toMillis(10));
+
+		// and: delivering the completion signal back did not cause a repost (still exactly one)
+		assertThat(postMaterialEventService.getPostedEvents()).hasSize(1);
+
+		// and: the tracking entry was removed once awaitProcessing returned
+		assertThat(getTraceId2EventProgress(materialEventObserver)).doesNotContainKey(traceId);
 	}
 
 	/**
