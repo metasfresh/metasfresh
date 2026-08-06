@@ -1,7 +1,8 @@
 -- Intrastat window — new parameterless AD_Process for the in-window selection-driven CSV export.
 -- Reads the user's grid selection via T_Selection and writes them to CSV (no header row, matching
--- the AT RTIC-file convention) with 12 columns = the 10 AT RTIC columns + UOM + Currency.
--- No AD_Process_Para rows: parameterless.
+-- the AT RTIC-file convention) with the 10 AT RTIC columns. Column list + number formats +
+-- direction-conditional logic match report.Intrastat_Export exactly; only the row source
+-- differs (T_Selection vs. year/period parameters). No AD_Process_Para rows: parameterless.
 --
 -- Attached to AD_Table 542587 (Intrastat_Report_Detail_V) via AD_Table_Process — see the
 -- companion migration in this batch.
@@ -26,7 +27,7 @@ INSERT INTO AD_Process (AccessLevel, AD_Client_ID, AD_Org_ID, AD_Process_ID,
 VALUES ('3', 0, 0, 585647 /*From ID Server*/,
     'Y', 'de.metas.impexp.spreadsheet.process.intrastat.Intrastat_ExportFromWindow', 'N',
     TO_TIMESTAMP('2026-08-06 09:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
-    'Exportiert die im Fenster ausgewählten Zeilen (bzw. bei fehlender Auswahl den gefilterten Satz) als CSV-Datei ohne Kopfzeile im INTRASTAT-RTIC-Format, erweitert um die Spalten Maßeinheit und Währung.',
+    'Exportiert die im Fenster ausgewählten Zeilen (bzw. bei fehlender Auswahl den gefilterten Satz) als CSV-Datei ohne Kopfzeile im INTRASTAT-RTIC-Format (identisch zum Report Intrastat_Export).',
     'D',
     'Y', 'N', 'N', 'N',
     'N', 'N', 'N', 'N', 'N',
@@ -55,7 +56,7 @@ WHERE l.IsActive = 'Y'
 UPDATE AD_Process_Trl
    SET IsTranslated = 'Y',
        Name         = 'INTRASTAT RTIC File (AT) — Selection',
-       Description  = 'Exports the rows selected in the window (or the filtered set when no row is checked) as a CSV file without header row, in the INTRASTAT RTIC format, extended with the UOM and Currency columns.',
+       Description  = 'Exports the rows selected in the window (or the filtered set when no row is checked) as a CSV file without header row, in the INTRASTAT RTIC format (identical to the Intrastat_Export report).',
        Updated      = TO_TIMESTAMP('2026-08-06 09:00:01', 'YYYY-MM-DD HH24:MI:SS'),
        UpdatedBy    = 100
  WHERE AD_Language = 'en_US' AND AD_Process_ID = 585647;
@@ -63,7 +64,7 @@ UPDATE AD_Process_Trl
 -- de_CH: Swiss convention Maßeinheit → Masseinheit (ß → ss)
 UPDATE AD_Process_Trl
    SET IsTranslated = 'Y',
-       Description  = 'Exportiert die im Fenster ausgewählten Zeilen (bzw. bei fehlender Auswahl den gefilterten Satz) als CSV-Datei ohne Kopfzeile im INTRASTAT-RTIC-Format, erweitert um die Spalten Masseinheit und Währung.',
+       Description  = 'Exportiert die im Fenster ausgewählten Zeilen (bzw. bei fehlender Auswahl den gefilterten Satz) als CSV-Datei ohne Kopfzeile im INTRASTAT-RTIC-Format (identisch zum Report Intrastat_Export).',
        Updated      = TO_TIMESTAMP('2026-08-06 09:00:01', 'YYYY-MM-DD HH24:MI:SS'),
        UpdatedBy    = 100
  WHERE AD_Language = 'de_CH' AND AD_Process_ID = 585647;

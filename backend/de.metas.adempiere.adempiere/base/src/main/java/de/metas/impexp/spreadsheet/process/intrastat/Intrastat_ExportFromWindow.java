@@ -38,7 +38,15 @@ import java.io.File;
  * Selection-driven Intrastat CSV export invoked from the Intrastat window
  * ({@code AD_Process 585647}, backed by {@code AD_Table Intrastat_Report_Detail_V}).
  * <p>
- * Behaviour by row selection ({@code T_Selection}, scoped to the current {@code AD_PInstance_ID}):
+ * Output shape mirrors {@code report.Intrastat_Export} exactly — same 10 columns, same
+ * {@code TO_CHAR} number formats, same direction-conditional logic for
+ * {@code CountryOfOrigin} and {@code Recipient-VAT-No}, and the same row filters
+ * ({@code IsPackagingMaterial='N'}, {@code CustomsTariff IS NOT NULL},
+ * {@code Product.IsStocked='Y'}). The only difference is the row source: this process
+ * takes the user's {@code T_Selection} in the debug window; the report function takes
+ * year/period/direction parameters and reads the aggregated view. CSV, no header row.
+ * <p>
+ * Selection semantics ({@code T_Selection}, scoped to the current {@code AD_PInstance_ID}):
  * <ul>
  *   <li>Checked rows → export those.</li>
  *   <li>No row checked → the WebUI still populates {@code T_Selection} with the currently-filtered
@@ -47,14 +55,8 @@ import java.io.File;
  *       silently produce empty output.</li>
  * </ul>
  * <p>
- * Output format: CSV, no header row (matches the AT RTIC-file convention; the tax-authority upload
- * rejects a header row). Number formatting mirrors {@code report.Intrastat_Export}
- * ({@code TO_CHAR('FM9999999D000' / 'FM9999999D00')}). The two extra columns ({@code UOM},
- * {@code Currency}) are appended at the end.
- * <p>
- * Nature-of-transaction is hardcoded to {@code '11'} (standard sale/purchase) — same simplification
- * as {@code report.Intrastat_Export}. Return codes (21), processing under contract (41), etc. are
- * a known limitation.
+ * {@code IntrastaNatureOfTransaction} is hardcoded to {@code '11'} — same simplification as
+ * the report function's default parameter value.
  */
 public class Intrastat_ExportFromWindow extends JavaProcess
 {
@@ -64,25 +66,30 @@ public class Intrastat_ExportFromWindow extends JavaProcess
 			"SELECT d.CustomsTariff                                                            AS \"CNCode\",",
 			"       p.Name                                                                     AS \"GoodsDescription\",",
 			"       d.DeliveryCountry                                                          AS \"CountryDestinationConsignment\",",
-			"       COALESCE(d.DeliveredFromCountry, d.OriginCountry, d.DeliveryCountry)       AS \"CountryOfOrigin\",",
+			"       CASE",
+			"           WHEN d.IsSOTrx = 'Y' THEN d.DeliveredFromCountry",
+			"           ELSE COALESCE(d.OriginCountry, d.DeliveryCountry)",
+			"       END                                                                        AS \"CountryOfOrigin\",",
 			"       '11'                                                                       AS \"IntrastaNatureOfTransaction\",",
 			"       TO_CHAR(d.Weight,       'FM9999999D000')                                   AS \"NetMass\",",
 			"       TO_CHAR(d.MovementQty,  'FM9999999D000')                                   AS \"SupplementaryUnits\",",
 			"       TO_CHAR(d.LineNetAmt,   'FM9999999D00')                                    AS \"InvoiceValue\",",
 			"       TO_CHAR(d.LineNetAmt,   'FM9999999D00')                                    AS \"StatisticalValue\",",
-			"       CASE WHEN d.IsSOTrx = 'Y' THEN bp.vataxid END                              AS \"Recipient-VAT-No\",",
-			"       d.UOMSymbol                                                                AS \"UOM\",",
-			"       d.CurSymbol                                                                AS \"Currency\"",
+			"       CASE WHEN d.IsSOTrx = 'Y' THEN bp.VATaxID END                              AS \"Recipient-VAT-No\"",
 			"FROM  Intrastat_Report_Detail_V d",
 			"LEFT JOIN M_Product  p  ON p.M_Product_ID   = d.M_Product_ID",
 			"LEFT JOIN C_BPartner bp ON bp.C_BPartner_ID = d.C_BPartner_ID",
-			"WHERE d.Intrastat_Report_Detail_V_ID IN",
-			"      (SELECT T_Selection_ID FROM T_Selection WHERE AD_PInstance_ID = %1$d)",
+			"WHERE (d.Intrastat_Report_Detail_V_ID IN",
+			"       (SELECT T_Selection_ID FROM T_Selection WHERE AD_PInstance_ID = %1$d)",
 			// Fallback: no T_Selection row was populated for this AD_PInstance_ID
 			// (unusual — the WebUI normally seeds it). Export the whole view rather than
 			// silently produce an empty file.
-			"   OR NOT EXISTS",
-			"      (SELECT 1 FROM T_Selection WHERE AD_PInstance_ID = %1$d)");
+			"       OR NOT EXISTS",
+			"       (SELECT 1 FROM T_Selection WHERE AD_PInstance_ID = %1$d))",
+			// Match report.Intrastat_Export's stricter filters — the view alone lets in null-
+			// tariff rows (non-zero amount) and non-stocked products for its debugging use case.
+			"  AND d.CustomsTariff IS NOT NULL",
+			"  AND p.IsStocked = 'Y'");
 
 	@Override
 	protected String doIt()
