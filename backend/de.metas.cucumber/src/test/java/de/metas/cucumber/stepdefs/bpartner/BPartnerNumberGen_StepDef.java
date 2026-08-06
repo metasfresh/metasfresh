@@ -230,6 +230,30 @@ public class BPartnerNumberGen_StepDef
 		DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_None);
 	}
 
+	/**
+	 * Creates (or replaces) an override function that unconditionally {@code RAISE EXCEPTION}s — a proxy
+	 * for a real resolver hitting an error (e.g. a per-range ceiling). Proves the {@code RAISE} surfaces:
+	 * it becomes a {@code SQLException} → {@code DBException} in {@code BPartnerNumberService.callOverrideFunction},
+	 * which propagates out of the {@code C_BPartner} save and rejects the upsert (rather than being swallowed).
+	 *
+	 * @param functionName plain SQL identifier (no schema prefix — created in {@code public})
+	 */
+	@Given("the override test function {string} raises an error")
+	public void the_override_test_function_raises_an_error(@NonNull final String functionName)
+	{
+		if (!BPartnerNumberService.FUNCTION_NAME_PATTERN.matcher(functionName).matches())
+		{
+			throw new IllegalArgumentException("Test override function name is not a valid SQL identifier: " + functionName);
+		}
+		// plpgsql (not sql) so the body can RAISE; raw DDL — no framework API creates a function in a test.
+		final String sql = "CREATE OR REPLACE FUNCTION " + functionName + "("
+				+ "p_ad_org_id int, p_c_bpartner_id int,"
+				+ " p_iscustomer bool, p_isvendor bool, p_iscompany bool,"
+				+ " p_kind text, p_explicit int"
+				+ ") RETURNS int LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'bpartner number override failed (test)'; END $$";
+		DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_None);
+	}
+
 	// ─── WHEN: upsert ─────────────────────────────────────────────────────────
 
 	/**

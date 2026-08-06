@@ -115,6 +115,15 @@ Feature: BPartner debtor/creditor number generation via REST V2 upsert
     Then responseItems[0].responseBPartnerItem.debtorId is 15001
 
   @from:cucumber
+  @from:cucumber
+  @Id:S25082_TC12
+  Scenario: TC12 - an error raised by the override function surfaces as a rejected upsert (not swallowed)
+    Given the override test function "metas_bpartner_numbgen_test_raise" raises an error
+    And org "001" uses number resolver "metas_bpartner_numbgen_test_raise"
+    When I upsert a "non-company" "customer" "TC12-raise"
+    Then the upsert is rejected
+
+  @from:cucumber
   @Id:S25082_TC11
   Scenario: TC11 - cleanup - disable the feature toggle so it does not leak to sibling features on this executor
     # The toggle is a System-level (0,0) row; the Background re-enables it per scenario, so this final
