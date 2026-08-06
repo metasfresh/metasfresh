@@ -265,6 +265,8 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 		final String sql = "UPDATE " + I_AD_Sequence.Table_Name
 				+ " SET " + I_AD_Sequence.COLUMNNAME_CurrentNext + " = GREATEST(" + I_AD_Sequence.COLUMNNAME_CurrentNext + ", ?)"
 				+ " WHERE " + I_AD_Sequence.COLUMNNAME_AD_Sequence_ID + " = ?";
+		logger.debug("advanceCurrentNextPast: advancing AD_Sequence_ID={} past {} (CurrentNext set to at least {})",
+				sequenceId.getRepoId(), value, value + 1);
 		DB.executeUpdateAndThrowExceptionOnFail(
 				sql,
 				new Object[] { value + 1, sequenceId.getRepoId() },
