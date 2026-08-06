@@ -1,22 +1,19 @@
--- Intrastat preview window — new parameterless AD_Process for the in-window export.
--- Reads the user's grid selection via T_Selection and writes them to an Excel file with the
--- extended column set (10 AT RTIC columns + UOM + Currency). No AD_Process_Para rows: parameterless.
+-- Intrastat window — new parameterless AD_Process for the in-window selection-driven CSV export.
+-- Reads the user's grid selection via T_Selection and writes them to CSV (no header row, matching
+-- the AT RTIC-file convention) with 12 columns = the 10 AT RTIC columns + UOM + Currency.
+-- No AD_Process_Para rows: parameterless.
+--
+-- Attached to AD_Table 542587 (Intrastat_Report_Detail_V) via AD_Table_Process — see the
+-- companion migration in this batch.
 --
 -- The existing AD_Process 585508 (INTRASTAT RTIC Datei (AT)) is unchanged — it remains wired
 -- to AD_Menu 542261 with its parameter dialog + fixed 10-column AT RTIC CSV.
 --
--- Rewiring of AD_Table_Process (removing 585508 from Intrastat_Preview_V, attaching this new
--- process instead) is the next migration (Task 19).
---
 -- Java class: de.metas.impexp.spreadsheet.process.intrastat.Intrastat_ExportFromWindow
--- (added by Task 18 in the same branch).
 
 -- =====================================================================
--- AD_Process — parameterless, Java-driven, Excel export
+-- AD_Process — parameterless, Java-driven, CSV export (no header row)
 -- =====================================================================
--- Name/Description/PrintName live directly on the AD_Process row (translations in
--- AD_Process_Trl below). AD_Process has no AD_Element_ID column — the caption is not
--- routed through AD_Element the way an AD_Field label is.
 INSERT INTO AD_Process (AccessLevel, AD_Client_ID, AD_Org_ID, AD_Process_ID,
     AllowProcessReRun, Classname, CopyFromProcess,
     Created, CreatedBy, Description, EntityType,
@@ -25,18 +22,18 @@ INSERT INTO AD_Process (AccessLevel, AD_Client_ID, AD_Org_ID, AD_Process_ID,
     IsReport, IsTranslateExcelHeaders, IsUpdateExportDate, IsUseBPartnerLanguage,
     LockWaitTimeout, Name, PostgrestResponseFormat,
     RefreshAllAfterExecution, ShowHelp, SpreadsheetFormat,
-    Type, Updated, UpdatedBy, Value)
+    CSVFieldDelimiter, Type, Updated, UpdatedBy, Value)
 VALUES ('3', 0, 0, 585647 /*From ID Server*/,
     'Y', 'de.metas.impexp.spreadsheet.process.intrastat.Intrastat_ExportFromWindow', 'N',
-    TO_TIMESTAMP('2026-08-05 12:00:02', 'YYYY-MM-DD HH24:MI:SS'), 100,
-    'Exportiert die im Fenster ausgewählten Zeilen (bzw. bei fehlender Auswahl den gefilterten Satz) als Excel-Datei im INTRASTAT-RTIC-Format, erweitert um die Spalten Maßeinheit und Währung.',
+    TO_TIMESTAMP('2026-08-06 09:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
+    'Exportiert die im Fenster ausgewählten Zeilen (bzw. bei fehlender Auswahl den gefilterten Satz) als CSV-Datei ohne Kopfzeile im INTRASTAT-RTIC-Format, erweitert um die Spalten Maßeinheit und Währung.',
     'D',
     'Y', 'N', 'N', 'N',
-    'Y', 'N', 'N', 'N', 'N',
+    'N', 'N', 'N', 'N', 'N',
     'Y', 'N', 'Y', 'N',
     0, 'INTRASTAT RTIC Datei (AT) — Auswahl', 'json',
-    'N', 'N', 'xls',
-    'Excel', TO_TIMESTAMP('2026-08-05 12:00:02', 'YYYY-MM-DD HH24:MI:SS'), 100, 'Intrastat_Export_FromWindow');
+    'N', 'N', 'csv',
+    E'\t', 'CSV', TO_TIMESTAMP('2026-08-06 09:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100, 'Intrastat_Export_FromWindow');
 
 -- Seed _Trl skeleton
 INSERT INTO AD_Process_Trl (AD_Language, AD_Process_ID,
@@ -54,26 +51,26 @@ WHERE l.IsActive = 'Y'
   AND NOT EXISTS (SELECT 1 FROM AD_Process_Trl tt
                   WHERE tt.AD_Language = l.AD_Language AND tt.AD_Process_ID = t.AD_Process_ID);
 
--- en_US translation
+-- en_US
 UPDATE AD_Process_Trl
    SET IsTranslated = 'Y',
        Name         = 'INTRASTAT RTIC File (AT) — Selection',
-       Description  = 'Exports the rows selected in the window (or the filtered set when no row is checked) as an Excel file in the INTRASTAT RTIC format, extended with the UOM and Currency columns.',
-       Updated      = TO_TIMESTAMP('2026-08-05 12:00:03', 'YYYY-MM-DD HH24:MI:SS'),
+       Description  = 'Exports the rows selected in the window (or the filtered set when no row is checked) as a CSV file without header row, in the INTRASTAT RTIC format, extended with the UOM and Currency columns.',
+       Updated      = TO_TIMESTAMP('2026-08-06 09:00:01', 'YYYY-MM-DD HH24:MI:SS'),
        UpdatedBy    = 100
  WHERE AD_Language = 'en_US' AND AD_Process_ID = 585647;
 
 -- de_CH: Swiss convention Maßeinheit → Masseinheit (ß → ss)
 UPDATE AD_Process_Trl
    SET IsTranslated = 'Y',
-       Description  = 'Exportiert die im Fenster ausgewählten Zeilen (bzw. bei fehlender Auswahl den gefilterten Satz) als Excel-Datei im INTRASTAT-RTIC-Format, erweitert um die Spalten Masseinheit und Währung.',
-       Updated      = TO_TIMESTAMP('2026-08-05 12:00:03', 'YYYY-MM-DD HH24:MI:SS'),
+       Description  = 'Exportiert die im Fenster ausgewählten Zeilen (bzw. bei fehlender Auswahl den gefilterten Satz) als CSV-Datei ohne Kopfzeile im INTRASTAT-RTIC-Format, erweitert um die Spalten Masseinheit und Währung.',
+       Updated      = TO_TIMESTAMP('2026-08-06 09:00:01', 'YYYY-MM-DD HH24:MI:SS'),
        UpdatedBy    = 100
  WHERE AD_Language = 'de_CH' AND AD_Process_ID = 585647;
 
 -- de_DE: base-language row — mark as translated for data consistency
 UPDATE AD_Process_Trl
    SET IsTranslated = 'Y',
-       Updated      = TO_TIMESTAMP('2026-08-05 12:00:03', 'YYYY-MM-DD HH24:MI:SS'),
+       Updated      = TO_TIMESTAMP('2026-08-06 09:00:01', 'YYYY-MM-DD HH24:MI:SS'),
        UpdatedBy    = 100
  WHERE AD_Language = 'de_DE' AND AD_Process_ID = 585647;

@@ -22,19 +22,20 @@
 
 package de.metas.impexp.spreadsheet.process.intrastat;
 
-import de.metas.impexp.spreadsheet.excel.JdbcExcelExporter;
+import de.metas.impexp.spreadsheet.csv.JdbcCSVExporter;
 import de.metas.impexp.spreadsheet.service.SpreadsheetExporterService;
 import de.metas.process.JavaProcess;
 import de.metas.process.PInstanceId;
 import de.metas.process.SpreadsheetExportOptions;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
+import org.compiere.util.Env;
 import org.compiere.util.Evaluatees;
 
 import java.io.File;
 
 /**
- * Selection-driven Intrastat Excel export invoked from the Intrastat window
+ * Selection-driven Intrastat CSV export invoked from the Intrastat window
  * ({@code AD_Process 585647}, backed by {@code AD_Table Intrastat_Report_Detail_V}).
  * <p>
  * Behaviour by row selection ({@code T_Selection}, scoped to the current {@code AD_PInstance_ID}):
@@ -46,10 +47,14 @@ import java.io.File;
  *       silently produce empty output.</li>
  * </ul>
  * <p>
- * Number formatting for the 10 shared columns mirrors {@code report.Intrastat_Export}
- * ({@code TO_CHAR('FM9999999D000' / 'FM9999999D00')}) so the extended sheet stays byte-compatible
- * with the AT RTIC payload on those columns. The two extra columns ({@code UOM}, {@code Currency})
- * are appended at the end.
+ * Output format: CSV, no header row (matches the AT RTIC-file convention; the tax-authority upload
+ * rejects a header row). Number formatting mirrors {@code report.Intrastat_Export}
+ * ({@code TO_CHAR('FM9999999D000' / 'FM9999999D00')}). The two extra columns ({@code UOM},
+ * {@code Currency}) are appended at the end.
+ * <p>
+ * Nature-of-transaction is hardcoded to {@code '11'} (standard sale/purchase) — same simplification
+ * as {@code report.Intrastat_Export}. Return codes (21), processing under contract (41), etc. are
+ * a known limitation.
  */
 public class Intrastat_ExportFromWindow extends JavaProcess
 {
@@ -68,14 +73,14 @@ public class Intrastat_ExportFromWindow extends JavaProcess
 			"       CASE WHEN d.IsSOTrx = 'Y' THEN bp.vataxid END                              AS \"Recipient-VAT-No\",",
 			"       d.UOMSymbol                                                                AS \"UOM\",",
 			"       d.CurSymbol                                                                AS \"Currency\"",
-			"FROM Intrastat_Report_Detail_V d",
+			"FROM  Intrastat_Report_Detail_V d",
 			"LEFT JOIN M_Product  p  ON p.M_Product_ID   = d.M_Product_ID",
 			"LEFT JOIN C_BPartner bp ON bp.C_BPartner_ID = d.C_BPartner_ID",
 			"WHERE d.Intrastat_Report_Detail_V_ID IN",
 			"      (SELECT T_Selection_ID FROM T_Selection WHERE AD_PInstance_ID = %1$d)",
 			// Fallback: no T_Selection row was populated for this AD_PInstance_ID
 			// (unusual — the WebUI normally seeds it). Export the whole view rather than
-			// silently produce an empty sheet.
+			// silently produce an empty file.
 			"   OR NOT EXISTS",
 			"      (SELECT 1 FROM T_Selection WHERE AD_PInstance_ID = %1$d)");
 
@@ -84,19 +89,21 @@ public class Intrastat_ExportFromWindow extends JavaProcess
 	{
 		final PInstanceId pinstanceId = getPinstanceId();
 		final String sql = String.format(SQL_TEMPLATE, pinstanceId.getRepoId());
-		final File xlsx = runExcelExport(sql);
+		final File csv = runCsvExport(sql);
 
-		getResult().setReportData(xlsx);
+		getResult().setReportData(csv);
 		return MSG_OK;
 	}
 
-	private File runExcelExport(@NonNull final String sql)
+	private File runCsvExport(@NonNull final String sql)
 	{
 		final SpreadsheetExportOptions options = getProcessInfo().getSpreadsheetExportOptions();
-		final JdbcExcelExporter exporter = JdbcExcelExporter.builder()
-				.ctx(getCtx())
-				.translateHeaders(options.isTranslateHeaders())
-				.applyFormatting(options.isExcelApplyFormatting())
+		final JdbcCSVExporter exporter = JdbcCSVExporter.builder()
+				.adLanguage(Env.getADLanguageOrBaseLanguage(getCtx()))
+				.translateHeaders(false)
+				.fieldDelimiter(options.getCsvFieldDelimiter())
+				.fieldQualifier(options.getCsvFieldQualifier())
+				.includeHeader(false)
 				.build();
 
 		spreadsheetExporterService.processDataFromSQL(sql, Evaluatees.ofCtx(getCtx()), exporter);
