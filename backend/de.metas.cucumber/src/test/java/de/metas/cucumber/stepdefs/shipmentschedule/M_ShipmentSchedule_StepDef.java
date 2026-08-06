@@ -96,6 +96,7 @@ import de.metas.util.Services;
 
 import java.time.ZoneId;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -136,6 +137,7 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -175,6 +177,14 @@ public class M_ShipmentSchedule_StepDef
 
 	/** Recompute selection ids created by {@link #tagInvalidShipmentSchedulesForRecompute}, keyed by the scenario's selection identifier. */
 	private final Map<String, PInstanceId> recomputeSelectionsByIdentifier = new HashMap<>();
+
+	/**
+	 * M_ShipmentSchedule_IDs seeded by {@link #seedShipmentSchedulesWithUntaggedRecomputeMarker}. They carry
+	 * a self-referential AD_Table_ID with no registered handler; {@link #deleteSeededRecomputeSchedules()}
+	 * removes them (markers + rows) after the scenario so they cannot leak into another scenario's recompute
+	 * sweep and jam the whole UpdateInvalidShipmentSchedules batch.
+	 */
+	private final List<Integer> seededRecomputeScheduleIds = new ArrayList<>();
 
 	@NonNull private final AD_User_StepDefData userTable;
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
@@ -350,6 +360,35 @@ public class M_ShipmentSchedule_StepDef
 	}
 
 	/**
+	 * Remove the schedules seeded by {@link #seedShipmentSchedulesWithUntaggedRecomputeMarker} (and their
+	 * recompute markers, any tag state) after each scenario. Those rows have a self-referential AD_Table_ID
+	 * with no registered handler; if they survive into a later scenario in the same JVM/DB, the always-on
+	 * UpdateInvalidShipmentSchedulesWorkpackageProcessor sweeps them and aborts the whole recompute batch, so
+	 * unrelated features' schedules never get recomputed. No-op when nothing was seeded.
+	 */
+	@After
+	public void deleteSeededRecomputeSchedules()
+	{
+		if (seededRecomputeScheduleIds.isEmpty())
+		{
+			return;
+		}
+
+		// markers first (they reference M_ShipmentSchedule), then the schedule rows; deleteDirectly issues a
+		// single bulk DELETE (M_ShipmentSchedule_Recompute is a keyless queue table -- see the sibling method).
+		queryBL.createQueryBuilder(I_M_ShipmentSchedule_Recompute.class)
+				.addInArrayFilter(I_M_ShipmentSchedule_Recompute.COLUMNNAME_M_ShipmentSchedule_ID, seededRecomputeScheduleIds)
+				.create()
+				.deleteDirectly();
+		queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, seededRecomputeScheduleIds)
+				.create()
+				.deleteDirectly();
+
+		seededRecomputeScheduleIds.clear();
+	}
+
+	/**
 	 * Seeds the whole-product recompute-batching fixture DIRECTLY: each DataTable row inserts one minimal
 	 * {@code M_ShipmentSchedule} for the given product plus exactly one UNTAGGED
 	 * {@code M_ShipmentSchedule_Recompute} marker ({@code AD_PInstance_ID IS NULL}), and stores the schedule
@@ -434,6 +473,7 @@ public class M_ShipmentSchedule_StepDef
 					.firstOnlyNotNull(I_M_ShipmentSchedule.class);
 
 			shipmentScheduleTable.put(row.getAsIdentifier(), schedule);
+			seededRecomputeScheduleIds.add(shipmentScheduleId);
 		});
 	}
 
