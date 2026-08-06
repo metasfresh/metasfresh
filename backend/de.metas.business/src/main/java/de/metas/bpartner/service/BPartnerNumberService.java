@@ -26,18 +26,19 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.document.IDocumentSequenceDAO;
 import de.metas.document.sequence.DocSequenceId;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ClientId;
 import org.compiere.util.DB;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.regex.Pattern;
 
 /**
@@ -61,16 +62,20 @@ public class BPartnerNumberService
 	 * Allows a plain or single-schema-qualified SQL identifier — same pattern as
 	 * {@code DBFunctionSequenceNoProvider} (see {@code FUNCTION_NAME_PATTERN} there).
 	 * {@code Matcher.matches()} anchors the whole string, so anything outside [A-Za-z0-9_.] is rejected.
+	 * Public so the cucumber step def validates test function names against the exact same rule.
 	 */
-	private static final Pattern FUNCTION_NAME_PATTERN =
+	public static final Pattern FUNCTION_NAME_PATTERN =
 			Pattern.compile("[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)?");
 
-	// Spring-injected: DocumentNoBuilderFactory is a @Service with a non-default constructor, so it can only be
-	// supplied by Spring. Injecting it (rather than an eager Services.get field) also lets Spring order bean
-	// creation correctly — an eager Services.get here runs during this bean's construction, before the
-	// Services->Spring bridge is ready, and fails with "DocumentNoBuilderFactory has no default constructor".
+	private static final Logger logger = LogManager.getLogger(BPartnerNumberService.class);
+
+	/**
+	 * Spring-injected because {@code DocumentNoBuilderFactory} is a {@code @Service} with a non-default
+	 * constructor, so it can only be supplied by Spring. An eager {@code Services.get} field here would run
+	 * during this bean's construction — before the Services→Spring bridge is ready — and fail with
+	 * "DocumentNoBuilderFactory has no default constructor".
+	 */
 	@NonNull private final IDocumentNoBuilderFactory documentNoBuilderFactory;
-	// Not constructor-injected like the factory above: IDocumentSequenceDAO is a plain ISingletonService, so there is no Spring bean to inject.
 	@NonNull private final IDocumentSequenceDAO documentSequenceDAO = Services.get(IDocumentSequenceDAO.class);
 
 	/**
@@ -131,11 +136,12 @@ public class BPartnerNumberService
 	 * @param functionName  the fully-qualified DB function name (e.g. {@code public.fn_bpartner_no})
 	 * @param ctx           the request context; supplies orgId, bPartnerId, role flags, and kind
 	 * @param explicitValue {@code null} for draw-next; the explicit value to reserve for advance-past
-	 * @return the number the function returns, wrapped in {@link Optional} (never empty — see the NULL note below)
+	 * @return <b>draw mode</b> ({@code explicitValue == null}): the allocated number.
+	 *         <b>advance-past mode</b> ({@code explicitValue != null}): by contract the {@code AD_Sequence_ID}
+	 *         the override advanced — logged here so the override branch is as observable as the sequence branch.
 	 * @throws IllegalArgumentException if {@code functionName} is blank or not a valid SQL identifier
 	 */
-	@NonNull
-	public Optional<Integer> callOverrideFunction(
+	public int callOverrideFunction(
 			@NonNull final String functionName,
 			@NonNull final BPartnerNumberContext ctx,
 			@Nullable final Integer explicitValue)
@@ -143,11 +149,17 @@ public class BPartnerNumberService
 		final List<Object> sqlParams = new ArrayList<>();
 		final String sql = buildOverrideFunctionSql(functionName, ctx, explicitValue, sqlParams);
 
-		// getSQLValueEx returns a primitive int (0 for a SQL-NULL function result — there is no wasNull check),
-		// so the result is never null. A 0 from a NULL-returning override is normalized to "no number" downstream
-		// by DebtorId/CreditorId.ofNullableNo, so the REST response is null either way.
+		// getSQLValueEx returns a primitive int (0 for a SQL-NULL function result — there is no wasNull check).
+		// Draw mode (explicitValue == null): the result is the allocated number; a 0 from a NULL-returning override
+		// is normalized to "no number" downstream by DebtorId/CreditorId.ofNullableNo.
+		// Advance-past mode (explicitValue != null): by contract the result is the AD_Sequence_ID the override
+		// advanced, logged below with the same shape as IDocumentSequenceDAO.advanceCurrentNextPast.
 		final int result = DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql, sqlParams);
-		return Optional.of(result);
+		if (explicitValue != null)
+		{
+			logger.debug("callOverrideFunction: override {} advanced AD_Sequence_ID={} past {}", functionName, result, explicitValue);
+		}
+		return result;
 	}
 
 	/**

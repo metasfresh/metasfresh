@@ -46,11 +46,12 @@ import org.compiere.model.I_AD_Sequence;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.util.DB;
 
-import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.UUID;
+
+import de.metas.bpartner.service.BPartnerNumberService;
 
 import static de.metas.bpartner.service.BPartnerNumberGenerator.SYSCONFIG_CREDITOR_SEQ;
 import static de.metas.bpartner.service.BPartnerNumberGenerator.SYSCONFIG_DEBTOR_SEQ;
@@ -102,10 +103,6 @@ public class BPartnerNumberGen_StepDef
 {
 	/** Value column of the default org in the standard seed DB. */
 	private static final String DEFAULT_ORG_VALUE = "001";
-
-	/** Same pattern as {@link de.metas.bpartner.service.BPartnerNumberService} — plain or schema-qualified SQL identifier. */
-	private static final Pattern FUNCTION_NAME_PATTERN =
-			Pattern.compile("[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)?");
 
 	@NonNull private final TestContext testContext;
 	@NonNull private final REST_API_StepDef restApiStepDef;
@@ -219,10 +216,13 @@ public class BPartnerNumberGen_StepDef
 			@NonNull final String functionName,
 			final int returnValue)
 	{
-		if (!FUNCTION_NAME_PATTERN.matcher(functionName).matches())
+		// Validate with the exact same rule the production caller uses (reused, not re-declared).
+		if (!BPartnerNumberService.FUNCTION_NAME_PATTERN.matcher(functionName).matches())
 		{
 			throw new IllegalArgumentException("Test override function name is not a valid SQL identifier: " + functionName);
 		}
+		// No framework API creates a DB function in a test — raw DDL is required here (the function name is
+		// validated above; returnValue is an int, not interpolated user text).
 		final String sql = "CREATE OR REPLACE FUNCTION " + functionName + "("
 				+ "p_ad_org_id int, p_c_bpartner_id int,"
 				+ " p_iscustomer bool, p_isvendor bool, p_iscompany bool,"

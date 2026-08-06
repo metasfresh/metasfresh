@@ -277,7 +277,6 @@ final class BPartnerCompositeSaver
 		{
 			bpartnerRecord.setLastname(bpartner.getLastName());
 		}
-		// debtorId / creditorId: 0 means "not set" (convention: ≤0 = unset, encapsulated by DebtorId/CreditorId.ofNullableNo)
 		if (bpartner.getDebtorId() != null)
 		{
 			bpartnerRecord.setDebtorId(bpartner.getDebtorId().toInt());
@@ -298,7 +297,6 @@ final class BPartnerCompositeSaver
 		bpartner.setValue(bpartnerRecord.getValue());
 		bpartner.setCompany(bpartnerRecord.isCompany());
 		// Copy back generated debtor/creditor numbers so the upsert response reflects interceptor-assigned values.
-		// ofNullableNo encapsulates the "≤0 = unset" convention.
 		bpartner.setDebtorId(DebtorId.ofNullableNo(bpartnerRecord.getDebtorId()));
 		bpartner.setCreditorId(CreditorId.ofNullableNo(bpartnerRecord.getCreditorId()));
 	}

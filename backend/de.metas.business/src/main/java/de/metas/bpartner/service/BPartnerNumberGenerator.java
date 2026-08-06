@@ -149,7 +149,7 @@ public class BPartnerNumberGenerator
 		final String overrideFn = sysConfigBL.getValue(SYSCONFIG_OVERRIDE, clientAndOrgId);
 		if (!Check.isBlank(overrideFn))
 		{
-			return numberService.callOverrideFunction(overrideFn, ctx, null);
+			return Optional.of(numberService.callOverrideFunction(overrideFn, ctx, null));
 		}
 
 		// 2. Sequence branch

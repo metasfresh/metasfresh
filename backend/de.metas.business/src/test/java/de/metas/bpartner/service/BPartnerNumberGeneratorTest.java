@@ -39,7 +39,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -189,7 +188,7 @@ class BPartnerNumberGeneratorTest
 					.thenReturn("fn_bpartner_no");
 
 			when(numberService.callOverrideFunction(eq("fn_bpartner_no"), any(BPartnerNumberContext.class), isNull()))
-					.thenReturn(Optional.of(42));
+					.thenReturn(42);
 
 			final BPartnerNumbers result = generator.generateNumbers(bpartner(true, false));
 
