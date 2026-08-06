@@ -9,6 +9,8 @@ import de.metas.util.ISingletonService;
 import org.adempiere.ad.dao.QueryLimit;
 import org.compiere.model.I_C_OrderLine;
 
+import javax.annotation.Nullable;
+
 import java.util.Properties;
 import java.util.Set;
 
@@ -76,6 +78,10 @@ public interface IShipmentScheduleHandlerBL extends ISingletonService
 	IDeliverRequest createDeliverRequest(I_M_ShipmentSchedule sched, final I_C_OrderLine salesOrderLine);
 
 	ShipmentScheduleHandler getHandlerFor(I_M_ShipmentSchedule sched);
+
+	/** @return the handler for the given schedule, or {@code null} if none is registered for its table (e.g. a schedule that carries no handler context yet). */
+	@Nullable
+	ShipmentScheduleHandler getHandlerForOrNull(I_M_ShipmentSchedule sched);
 
 	void updateShipmentScheduleFromReferencedRecord(I_M_ShipmentSchedule shipmentScheduleRecord);
 }
