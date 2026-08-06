@@ -42,4 +42,11 @@ public interface IWorkpackageProcessorContextFactory extends ISingletonService
 	 * Get batch id from the inherited thread or {@code null}
 	 */
 	AsyncBatchId getThreadInheritedWorkpackageAsyncBatch();
+
+	/**
+	 * @return {@code true} if the current thread is itself processing a workpackage, i.e. it is a queue-processor
+	 *         thread inside {@code WorkpackageProcessorTask}. Blocking such a thread - for instance by waiting for
+	 *         another async batch to complete - holds one of that processor's pool slots for the whole duration.
+	 */
+	boolean isProcessingWorkpackage();
 }

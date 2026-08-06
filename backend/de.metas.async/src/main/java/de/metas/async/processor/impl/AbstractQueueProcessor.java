@@ -179,11 +179,18 @@ public abstract class AbstractQueueProcessor implements IQueueProcessor
 		{
 			if (!success)
 			{
-				// dev-note: we must clear LockedAt ourselves here. WorkpackageProcessorTask would do it, but on this
-				// path it was never created - we bailed out before processWorkPackage(..). Leaving LockedAt set hides
-				// the workpackage from QueueDAO's polling query until the 10-minute stale-lock recovery kicks in,
-				// which is longer than the 5-minute de.metas.async.AsyncBatchObserver.WaitTimeOutMS a caller waiting
-				// on this workpackage's async batch will tolerate.
+				// dev-note: we must clear LockedAt ourselves here. WorkpackageProcessorTask would do it, but on the
+				// !isAvailableToWork() path above it was never created - we returned before processWorkPackage(..).
+				// Leaving LockedAt set hides the workpackage from QueueDAO's polling query until the 10-minute
+				// stale-lock recovery kicks in, which is longer than the 5-minute
+				// de.metas.async.AsyncBatchObserver.WaitTimeOutMS a caller waiting on this workpackage's async batch
+				// will tolerate - so the workpackage was effectively lost.
+				//
+				// On the exception path processWorkPackage(..) has already unlocked in its own finally, so this is a
+				// second unlockNoFail on the same instance. That is a safe no-op rather than a redundant UPDATE: after
+				// the first save PO resets its old/new value maps, so is_ValueChanged() is false and PO.savePrepare()
+				// returns early without issuing SQL. Do NOT "simplify" this to a single unlock - the early return
+				// above never reaches processWorkPackage(..), so this is the ONLY unlock covering that path.
 				logger.info("processLockedWorkPackage was not successful for workPackage={}; clearing LockedAt so it can be polled again.", workPackage);
 				WorkPackageLockHelper.unlockNoFail(workPackage);
 			}
