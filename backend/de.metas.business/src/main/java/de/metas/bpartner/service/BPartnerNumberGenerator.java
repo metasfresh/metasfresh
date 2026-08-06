@@ -22,6 +22,7 @@ package de.metas.bpartner.service;
  * #L%
  */
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.CreditorId;
 import de.metas.bpartner.DebtorId;
 import de.metas.document.sequence.DocSequenceId;
@@ -32,6 +33,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -74,6 +77,15 @@ public class BPartnerNumberGenerator
 
 	@NonNull private final BPartnerNumberService numberService;
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+	@VisibleForTesting
+	public static BPartnerNumberGenerator newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(BPartnerNumberGenerator.class,
+				() -> new BPartnerNumberGenerator(BPartnerNumberService.newInstanceForUnitTesting()));
+	}
 
 	/**
 	 * Master on/off switch, default {@code false}. When off, the {@code C_BPartner} interceptor

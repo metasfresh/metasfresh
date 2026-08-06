@@ -26,7 +26,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerNumberContext.Kind;
 import de.metas.document.IDocumentSequenceDAO;
 import de.metas.document.sequence.DocSequenceId;
-import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
@@ -77,12 +76,13 @@ class BPartnerNumberGeneratorTest
 		sysConfigBL = mock(ISysConfigBL.class);
 		Services.registerService(ISysConfigBL.class, sysConfigBL);
 
-		// The real BPartnerNumberService resolves IDocumentSequenceDAO via Services.get; register a mock so the
-		// validation-only tests (which build a real service — see ServiceCallOverrideFunction) can construct it
-		// without a Spring context. IDocumentNoBuilderFactory is constructor-injected (a mock is passed in below).
-		// Either way the function-name guard fires before any collaborator is touched.
+		// The real BPartnerNumberService (built via newInstanceForUnitTesting in the validation-only tests —
+		// see ServiceCallOverrideFunction) resolves IDocumentSequenceDAO via Services.get; register a mock so it
+		// constructs without a Spring context. The function-name guard fires before any collaborator is touched.
 		Services.registerService(IDocumentSequenceDAO.class, mock(IDocumentSequenceDAO.class));
 
+		// Branch-selection tests need a MOCK collaborator to stub/verify the service calls, so the generator is
+		// wired with a mock here (not newInstanceForUnitTesting, which wires a real, DB-touching service).
 		numberService = mock(BPartnerNumberService.class);
 		generator = new BPartnerNumberGenerator(numberService);
 	}
@@ -210,7 +210,7 @@ class BPartnerNumberGeneratorTest
 					eq(CLIENT_AND_ORG_ID)))
 					.thenReturn(badName);
 
-			final BPartnerNumberGenerator gen = new BPartnerNumberGenerator(new BPartnerNumberService(mock(IDocumentNoBuilderFactory.class)));
+			final BPartnerNumberGenerator gen = BPartnerNumberGenerator.newInstanceForUnitTesting();
 
 			assertThatThrownBy(() -> gen.generateNumbers(bpartner(true, false)))
 					.isInstanceOf(IllegalArgumentException.class)
@@ -268,7 +268,7 @@ class BPartnerNumberGeneratorTest
 					eq(CLIENT_AND_ORG_ID)))
 					.thenReturn(badName);
 
-			final BPartnerNumberGenerator gen = new BPartnerNumberGenerator(new BPartnerNumberService(mock(IDocumentNoBuilderFactory.class)));
+			final BPartnerNumberGenerator gen = BPartnerNumberGenerator.newInstanceForUnitTesting();
 
 			assertThatThrownBy(() -> gen.reserveExplicit(creditorCtx(), 1))
 					.isInstanceOf(IllegalArgumentException.class)
@@ -282,7 +282,7 @@ class BPartnerNumberGeneratorTest
 		@Test
 		void throwsOnBlankName()
 		{
-			final BPartnerNumberService realService = new BPartnerNumberService(mock(IDocumentNoBuilderFactory.class));
+			final BPartnerNumberService realService = BPartnerNumberService.newInstanceForUnitTesting();
 			assertThatThrownBy(() -> realService.callOverrideFunction("   ", debtorCtx(), null))
 					.isInstanceOf(IllegalArgumentException.class)
 					.hasMessageContaining("blank");
@@ -291,7 +291,7 @@ class BPartnerNumberGeneratorTest
 		@Test
 		void throwsOnInjectionAttempt()
 		{
-			final BPartnerNumberService realService = new BPartnerNumberService(mock(IDocumentNoBuilderFactory.class));
+			final BPartnerNumberService realService = BPartnerNumberService.newInstanceForUnitTesting();
 			final String badName = "foo; DROP TABLE ad_sequence";
 			assertThatThrownBy(() -> realService.callOverrideFunction(badName, debtorCtx(), null))
 					.isInstanceOf(IllegalArgumentException.class)

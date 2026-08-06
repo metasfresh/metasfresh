@@ -27,9 +27,6 @@ import de.metas.bpartner.CreditorId;
 import de.metas.bpartner.DebtorId;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
-import de.metas.bpartner.service.BPartnerCreditLimitRepository;
-import de.metas.bpartner.service.impl.BPartnerBL;
-import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartner;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsertItem;
@@ -46,7 +43,6 @@ import de.metas.organization.OrgInfoUpdateRequest;
 import de.metas.rest_api.v2.bpartner.BPartnerEndpointService;
 import de.metas.rest_api.v2.bpartner.BpartnerRestController;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
-import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import de.metas.vertical.healthcare.alberta.bpartner.AlbertaBPartnerCompositeService;
 import org.adempiere.ad.table.MockLogEntriesRepository;
@@ -90,11 +86,7 @@ class JsonPersisterServiceDebtorCreditorTest
 
 		final MockLogEntriesRepository logEntriesRepository = new MockLogEntriesRepository();
 
-		bpartnerCompositeRepository = new BPartnerCompositeRepository(
-				new BPartnerBL(new UserRepository()),
-				logEntriesRepository,
-				new UserRoleRepository(),
-				new BPartnerCreditLimitRepository());
+		bpartnerCompositeRepository = BPartnerCompositeRepository.newInstanceForUnitTesting(logEntriesRepository);
 
 		final JsonServiceFactory jsonServiceFactory = JsonServiceFactory.newInstanceForUnitTesting(
 				logEntriesRepository,
