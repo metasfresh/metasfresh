@@ -22,14 +22,20 @@
 
 package de.metas.material.event;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
 import de.metas.event.Topic;
+import de.metas.event.log.EventLogEntryCollector;
+import de.metas.event.log.EventLogUserService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.eventbus.MaterialEventConverter;
 import de.metas.material.event.eventbus.MetasfreshEventBusService;
 import de.metas.material.event.simulation.DeactivateAllSimulatedCandidatesEvent;
+import de.metas.material.event.tracking.AllEventsProcessedEvent;
+import de.metas.material.event.tracking.AllEventsProcessedEventHandler;
 import de.metas.material.event.tracking.EventProgress;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
@@ -41,6 +47,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -88,6 +95,67 @@ public class MaterialEventObserverTest
 
 		// and: the tracker holds no entry for that traceId
 		assertThat(getTraceId2EventProgress(materialEventObserver)).doesNotContainKey(traceId);
+	}
+
+	/**
+	 * TC2: {@link MaterialEventHandlerRegistry#onEvent(MaterialEvent)} calls {@code reportEventProcessed} for every
+	 * event class that has at least one registered handler -- including {@link AllEventsProcessedEvent} itself, which
+	 * always has the (real, production) {@link AllEventsProcessedEventHandler} registered. That bookkeeping event is
+	 * not "work" that was ever enqueued for the trace; counting it as processed work pollutes
+	 * {@link de.metas.material.event.tracking.EventProgress} with an entry the trace never asked about.
+	 */
+	@Test
+	void allEventsProcessedEvent_isNotCountedAsWork()
+	{
+		// given: an observed trace with one ordinary work event still outstanding (enqueued, not yet processed)
+		final String traceId = "tc2-trace-id";
+		materialEventObserver.observe(traceId);
+
+		final MaterialEvent workEvent = DeactivateAllSimulatedCandidatesEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientOrgAndTraceId(EventTestHelper.CLIENT_AND_ORG_ID, traceId))
+				.build();
+		materialEventObserver.reportEventEnqueued(workEvent);
+
+		// and: a registry with the real AllEventsProcessedEventHandler registered, so dispatch is not vacuous
+		final MaterialEventHandlerRegistry registry = new MaterialEventHandlerRegistry(
+				Optional.of(ImmutableList.of(new AllEventsProcessedEventHandler(materialEventObserver))),
+				new EventLogUserService(),
+				materialEventObserver);
+
+		final AllEventsProcessedEvent allEventsProcessedEvent = AllEventsProcessedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientOrgAndTraceId(EventTestHelper.CLIENT_AND_ORG_ID, traceId))
+				.build();
+
+		// when: the bookkeeping event is delivered through the registry, exactly like the real event bus would do
+		deliverThroughRegistry(registry, allEventsProcessedEvent);
+
+		// then: the handler still ran (proves dispatch is unaffected): it completed the trace's future
+		final EventProgress eventProgress = getTraceId2EventProgress(materialEventObserver).get(traceId);
+		assertThat(eventProgress).isNotNull();
+		assertThat(eventProgress.getCompletableFuture()).isDone();
+
+		// and: the bookkeeping event's own eventId was NOT recorded as tracked work for that trace
+		assertThat(eventProgress.getEventId2Status()).doesNotContainKey(allEventsProcessedEvent.getEventId());
+
+		// and: the trace is not treated as complete (the outstanding work event was never processed)
+		assertThat(eventProgress.areAllEventsProcessed()).isFalse();
+	}
+
+	/**
+	 * Delivers {@code event} through {@code registry.onEvent(event)} the same way the real (distributed) event bus
+	 * would: {@link de.metas.event.impl.EventBus} marks a to-be-logged event as "was logged" and wraps delivery with
+	 * an {@link EventLogEntryCollector} thread-local before invoking the listener -- {@link EventLogUserService}
+	 * (used inside {@link MaterialEventHandlerRegistry#onEvent(MaterialEvent)}) requires that thread-local to exist.
+	 */
+	private static void deliverThroughRegistry(
+			@NonNull final MaterialEventHandlerRegistry registry,
+			@NonNull final MaterialEvent event)
+	{
+		final Event busEvent = new MaterialEventConverter().fromMaterialEvent(event).withStatusWasLogged();
+		try (final EventLogEntryCollector ignored = EventLogEntryCollector.createThreadLocalForEvent(busEvent))
+		{
+			registry.onEvent(event);
+		}
 	}
 
 	/**
