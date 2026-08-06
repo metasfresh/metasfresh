@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.bpartner;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import de.metas.bpartner.service.BPartnerNumberService;
 import de.metas.cache.CacheMgt;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsert;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsertItem;
@@ -50,8 +51,6 @@ import org.compiere.util.DB;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.UUID;
-
-import de.metas.bpartner.service.BPartnerNumberService;
 
 import static de.metas.bpartner.service.BPartnerNumberGenerator.SYSCONFIG_CREDITOR_SEQ;
 import static de.metas.bpartner.service.BPartnerNumberGenerator.SYSCONFIG_DEBTOR_SEQ;
