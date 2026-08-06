@@ -142,6 +142,25 @@ public class MaterialEventObserverTest
 	}
 
 	/**
+	 * TC3: {@link EventProgress#areAllEventsProcessed()} is {@code eventId2Status.values().stream().allMatch(...)},
+	 * which is vacuously {@code true} on an empty map. A trace for which nothing was ever enqueued must not be
+	 * reported as "all processed".
+	 */
+	@Test
+	void emptyProgress_isNotAllProcessed()
+	{
+		// given: an observed trace with nothing ever enqueued
+		final String traceId = "tc3-trace-id";
+		materialEventObserver.observe(traceId);
+
+		final EventProgress eventProgress = getTraceId2EventProgress(materialEventObserver).get(traceId);
+		assertThat(eventProgress).isNotNull();
+
+		// then
+		assertThat(eventProgress.areAllEventsProcessed()).isFalse();
+	}
+
+	/**
 	 * Delivers {@code event} through {@code registry.onEvent(event)} the same way the real (distributed) event bus
 	 * would: {@link de.metas.event.impl.EventBus} marks a to-be-logged event as "was logged" and wraps delivery with
 	 * an {@link EventLogEntryCollector} thread-local before invoking the listener -- {@link EventLogUserService}

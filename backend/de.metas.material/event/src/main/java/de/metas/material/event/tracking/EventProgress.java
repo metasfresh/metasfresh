@@ -57,8 +57,11 @@ public class EventProgress
 
 	public boolean areAllEventsProcessed()
 	{
-		return eventId2Status.values()
-				.stream()
-				.allMatch(PROCESSED::equals);
+		// eventId2Status.values().stream().allMatch(..) is vacuously true on an empty map; a trace for which
+		// nothing was ever enqueue()d must not be reported as "all processed".
+		return !eventId2Status.isEmpty()
+				&& eventId2Status.values()
+						.stream()
+						.allMatch(PROCESSED::equals);
 	}
 }
