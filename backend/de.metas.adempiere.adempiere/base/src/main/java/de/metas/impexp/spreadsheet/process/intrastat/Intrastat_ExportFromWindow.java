@@ -62,6 +62,10 @@ public class Intrastat_ExportFromWindow extends JavaProcess
 {
 	@NonNull private final SpreadsheetExporterService spreadsheetExporterService = SpringContextHolder.instance.getBean(SpreadsheetExporterService.class);
 
+	// SELECT + WHERE + GROUP BY mirror report.Intrastat_Export exactly.
+	// The underlying source (per-line Intrastat_Report_Detail_V) is per-invoice-line, so we
+	// aggregate here to the same granularity as the report (which reads the pre-aggregated
+	// Intrastat_Report_V). GROUP BY key = the same set of columns Intrastat_Report_V groups by.
 	private static final String SQL_TEMPLATE = String.join("\n",
 			"SELECT d.CustomsTariff                                                            AS \"CNCode\",",
 			"       p.Name                                                                     AS \"GoodsDescription\",",
@@ -71,10 +75,10 @@ public class Intrastat_ExportFromWindow extends JavaProcess
 			"           ELSE COALESCE(d.OriginCountry, d.DeliveryCountry)",
 			"       END                                                                        AS \"CountryOfOrigin\",",
 			"       '11'                                                                       AS \"IntrastaNatureOfTransaction\",",
-			"       TO_CHAR(d.Weight,       'FM9999999D000')                                   AS \"NetMass\",",
-			"       TO_CHAR(d.MovementQty,  'FM9999999D000')                                   AS \"SupplementaryUnits\",",
-			"       TO_CHAR(d.LineNetAmt,   'FM9999999D00')                                    AS \"InvoiceValue\",",
-			"       TO_CHAR(d.LineNetAmt,   'FM9999999D00')                                    AS \"StatisticalValue\",",
+			"       TO_CHAR(SUM(d.Weight),       'FM9999999D000')                              AS \"NetMass\",",
+			"       TO_CHAR(SUM(d.MovementQty),  'FM9999999D000')                              AS \"SupplementaryUnits\",",
+			"       TO_CHAR(SUM(d.LineNetAmt),   'FM9999999D00')                               AS \"InvoiceValue\",",
+			"       TO_CHAR(SUM(d.LineNetAmt),   'FM9999999D00')                               AS \"StatisticalValue\",",
 			"       CASE WHEN d.IsSOTrx = 'Y' THEN bp.VATaxID END                              AS \"Recipient-VAT-No\"",
 			"FROM  Intrastat_Report_Detail_V d",
 			"LEFT JOIN M_Product  p  ON p.M_Product_ID   = d.M_Product_ID",
@@ -89,7 +93,17 @@ public class Intrastat_ExportFromWindow extends JavaProcess
 			// Match report.Intrastat_Export's stricter filters — the view alone lets in null-
 			// tariff rows (non-zero amount) and non-stocked products for its debugging use case.
 			"  AND d.CustomsTariff IS NOT NULL",
-			"  AND p.IsStocked = 'Y'");
+			"  AND p.IsStocked = 'Y'",
+			"GROUP BY d.CustomsTariff,",
+			"         p.Name,",
+			"         d.DeliveryCountry,",
+			"         d.DeliveredFromCountry,",
+			"         d.OriginCountry,",
+			"         d.IsSOTrx,",
+			"         bp.VATaxID,",
+			"         d.C_Period_ID,",
+			"         d.C_Year_ID,",
+			"         d.AD_Org_ID");
 
 	@Override
 	protected String doIt()
