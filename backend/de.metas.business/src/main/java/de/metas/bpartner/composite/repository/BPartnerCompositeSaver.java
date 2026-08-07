@@ -6,6 +6,8 @@ import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.CreditorId;
+import de.metas.bpartner.DebtorId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.OrgMappingId;
 import de.metas.bpartner.composite.BPartner;
@@ -275,6 +277,14 @@ final class BPartnerCompositeSaver
 		{
 			bpartnerRecord.setLastname(bpartner.getLastName());
 		}
+		if (bpartner.getDebtorId() != null)
+		{
+			bpartnerRecord.setDebtorId(bpartner.getDebtorId().toInt());
+		}
+		if (bpartner.getCreditorId() != null)
+		{
+			bpartnerRecord.setCreditorId(bpartner.getCreditorId().toInt());
+		}
 		if (validatePermissions)
 		{
 			assertCanCreateOrUpdate(bpartnerRecord);
@@ -286,6 +296,9 @@ final class BPartnerCompositeSaver
 		bpartner.setId(BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID()));
 		bpartner.setValue(bpartnerRecord.getValue());
 		bpartner.setCompany(bpartnerRecord.isCompany());
+		// Copy back generated debtor/creditor numbers so the upsert response reflects interceptor-assigned values.
+		bpartner.setDebtorId(DebtorId.ofNullableNo(bpartnerRecord.getDebtorId()));
+		bpartner.setCreditorId(CreditorId.ofNullableNo(bpartnerRecord.getCreditorId()));
 	}
 
 	private void saveBPartnerLocations(@NonNull final BPartnerComposite bPartnerComposite, final boolean validatePermissions)
