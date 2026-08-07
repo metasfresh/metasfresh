@@ -34,12 +34,11 @@ VALUES ('3', 0, 0, 585647 /*From ID Server*/,
     'Y', 'N', 'Y', 'N',
     0, 'INTRASTAT RTIC Datei (AT) — Auswahl', 'json',
     'N', 'N', 'xls',
-    E'\t', 'Excel', TO_TIMESTAMP('2026-08-06 09:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100, 'Intrastat_Export_FromWindow');
--- Note: Type='Excel' + SpreadsheetFormat='xls' are the AD_Process.ProcessType enum values the
--- framework uses to dispatch the runnable. The actual output file format (CSV, no header) is
--- controlled by the Java class Intrastat_ExportFromWindow via JdbcCSVExporter — same pattern as
--- AD_Process 585508 (INTRASTAT RTIC Datei (AT)), which is also Type='Excel' + xls but outputs
--- tab-delimited CSV. ProcessType has no 'CSV' enum value.
+    E'\t', 'Java', TO_TIMESTAMP('2026-08-06 09:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100, 'Intrastat_Export_FromWindow');
+-- Note: Type='Java' — this is a custom JavaProcess subclass. Type='Excel' would cause the AD_Process
+-- interceptor (setClassnameForProcessType) to overwrite Classname with ExportToSpreadsheetProcess
+-- whenever the record is saved through the WebUI/PO path, wiping our custom Classname. The output
+-- file format (CSV, no header, delimiter) is controlled by the Java class via JdbcCSVExporter.
 
 -- Seed _Trl skeleton
 INSERT INTO AD_Process_Trl (AD_Language, AD_Process_ID,
