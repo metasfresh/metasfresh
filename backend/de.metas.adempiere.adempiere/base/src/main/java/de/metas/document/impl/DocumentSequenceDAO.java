@@ -1,5 +1,6 @@
 package de.metas.document.impl;
 
+import ch.qos.logback.classic.Level;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.document.DocTypeSequenceMap;
 import de.metas.document.DocumentSequenceInfo;
@@ -11,6 +12,7 @@ import de.metas.javaclasses.JavaClassId;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -265,7 +267,9 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 		final String sql = "UPDATE " + I_AD_Sequence.Table_Name
 				+ " SET " + I_AD_Sequence.COLUMNNAME_CurrentNext + " = GREATEST(" + I_AD_Sequence.COLUMNNAME_CurrentNext + ", ?)"
 				+ " WHERE " + I_AD_Sequence.COLUMNNAME_AD_Sequence_ID + " = ?";
-		logger.debug("advanceCurrentNextPast: advancing AD_Sequence_ID={} past {} (CurrentNext set to at least {})",
+		// Loggables (not the slf4j logger directly) so this advance lands in API_Request_Audit_Log when the
+		// caller runs under an audit-enrolled request; falls back to the slf4j logger otherwise.
+		Loggables.withLogger(logger, Level.DEBUG).addLog("advanceCurrentNextPast: advancing AD_Sequence_ID={} past {} (CurrentNext set to at least {})",
 				sequenceId.getRepoId(), value, value + 1);
 		DB.executeUpdateAndThrowExceptionOnFail(
 				sql,

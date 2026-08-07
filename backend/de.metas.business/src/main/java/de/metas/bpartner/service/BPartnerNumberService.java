@@ -22,11 +22,13 @@ package de.metas.bpartner.service;
  * #L%
  */
 
+import ch.qos.logback.classic.Level;
 import de.metas.common.util.NumberUtils;
 import de.metas.document.IDocumentSequenceDAO;
 import de.metas.document.sequence.DocSequenceId;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.logging.LogManager;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -116,6 +118,7 @@ public class BPartnerNumberService
 	 */
 	public void advancePast(@NonNull final DocSequenceId seqId, final int value)
 	{
+		// The metasfresh sequence-path advance is logged (audit-visibly) inside advanceCurrentNextPast itself.
 		documentSequenceDAO.advanceCurrentNextPast(seqId, value);
 	}
 
@@ -148,9 +151,19 @@ public class BPartnerNumberService
 		// Advance-past mode (explicitValue != null): by contract the result is the AD_Sequence_ID the override
 		// advanced, logged below with the same shape as IDocumentSequenceDAO.advanceCurrentNextPast.
 		final int result = DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql, sqlParams);
+		// Log via Loggables (not the slf4j logger) so the override call lands in API_Request_Audit_Log when
+		// the upsert is audit-enrolled — otherwise the custom path is invisible in the audit trail.
 		if (explicitValue != null)
 		{
-			logger.debug("callOverrideFunction: override {} advanced AD_Sequence_ID={} past {}", functionName, result, explicitValue);
+			// custom (override) advance-past
+			Loggables.withLogger(logger, Level.DEBUG).addLog(
+					"callOverrideFunction: override {} advanced AD_Sequence_ID={} past explicit {}", functionName, result, explicitValue);
+		}
+		else
+		{
+			// override draw
+			Loggables.withLogger(logger, Level.DEBUG).addLog(
+					"callOverrideFunction: override {} drew {} for org {} kind {}", functionName, result, ctx.getOrgId().getRepoId(), ctx.getKind());
 		}
 		return result;
 	}
