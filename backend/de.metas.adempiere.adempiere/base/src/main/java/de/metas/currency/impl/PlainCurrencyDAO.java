@@ -212,6 +212,7 @@ public class PlainCurrencyDAO extends CurrencyDAO
 
 		record.setISO_Code(currencyCode.toThreeLetterCode());
 		record.setCurSymbol(currencyCode.toThreeLetterCode());
+		record.setDescription(currencyCode.toThreeLetterCode());
 		record.setIsEuro(currencyCode.isEuro());
 
 		record.setStdPrecision(precisionToUse.toInt());

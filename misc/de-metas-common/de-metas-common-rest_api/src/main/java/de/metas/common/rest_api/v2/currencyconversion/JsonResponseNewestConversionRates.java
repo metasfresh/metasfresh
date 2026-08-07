@@ -1,16 +1,8 @@
-package de.metas.currency;
-
-import de.metas.i18n.ITranslatableString;
-import de.metas.money.CurrencyId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
 /*
  * #%L
- * de.metas.business
+ * de-metas-common-rest_api
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,25 +20,24 @@ import lombok.Value;
  * #L%
  */
 
+package de.metas.common.rest_api.v2.currencyconversion;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import io.swagger.annotations.ApiModel;
+import lombok.Builder;
+import lombok.Singular;
+import lombok.Value;
+
+import java.util.List;
+
+@ApiModel("The newest stored conversion rate per (from, to, type) combo.")
 @Value
 @Builder
-public class Currency
+@JsonDeserialize(builder = JsonResponseNewestConversionRates.JsonResponseNewestConversionRatesBuilder.class)
+public class JsonResponseNewestConversionRates
 {
-	@NonNull
-	CurrencyId id;
-
-	@NonNull
-	CurrencyCode currencyCode;
-
-	@NonNull
-	ITranslatableString symbol;
-
-	@NonNull
-	String description;
-
-	@NonNull
-	CurrencyPrecision precision;
-
-	@NonNull
-	CurrencyPrecision costingPrecision;
+	@Singular
+	@JsonProperty("rates")
+	List<JsonNewestConversionRate> rates;
 }

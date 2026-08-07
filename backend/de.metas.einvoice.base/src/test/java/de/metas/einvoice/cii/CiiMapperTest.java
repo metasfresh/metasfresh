@@ -141,6 +141,7 @@ public class CiiMapperTest
 		// === Currency ===
 		final I_C_Currency currency = newInstance(I_C_Currency.class);
 		currency.setISO_Code("EUR");
+		currency.setDescription("EUR");
 		saveRecord(currency);
 
 		// === DocType (ARI = commercial invoice, code 380) ===
@@ -373,6 +374,7 @@ public class CiiMapperTest
 			// === Currency + DocType ===
 			final I_C_Currency currency = newInstance(I_C_Currency.class);
 			currency.setISO_Code("EUR");
+			currency.setDescription("EUR");
 			saveRecord(currency);
 			final I_C_DocType docType = newInstance(I_C_DocType.class);
 			docType.setDocBaseType("ARI");
@@ -457,6 +459,7 @@ public class CiiMapperTest
 		// Currency
 		final I_C_Currency currency = newInstance(I_C_Currency.class);
 		currency.setISO_Code("EUR");
+		currency.setDescription("EUR");
 		saveRecord(currency);
 
 		// Preceding (original) invoice — referenced by BT-25/BT-26
@@ -569,6 +572,7 @@ public class CiiMapperTest
 		// === Currency ===
 		final I_C_Currency currency = newInstance(I_C_Currency.class);
 		currency.setISO_Code("EUR");
+		currency.setDescription("EUR");
 		saveRecord(currency);
 
 		// === DocType ===
@@ -710,6 +714,7 @@ public class CiiMapperTest
 		// === Currency + DocType ===
 		final I_C_Currency currency = newInstance(I_C_Currency.class);
 		currency.setISO_Code("EUR");
+		currency.setDescription("EUR");
 		saveRecord(currency);
 		final I_C_DocType docType = newInstance(I_C_DocType.class);
 		docType.setDocBaseType("ARI");
@@ -820,6 +825,7 @@ public class CiiMapperTest
 		// === Currency + DocType ===
 		final I_C_Currency currency = newInstance(I_C_Currency.class);
 		currency.setISO_Code("EUR");
+		currency.setDescription("EUR");
 		saveRecord(currency);
 		final I_C_DocType docType = newInstance(I_C_DocType.class);
 		docType.setDocBaseType("ARI");
@@ -924,6 +930,7 @@ public class CiiMapperTest
 		// === Currency + DocType ===
 		final I_C_Currency currency = newInstance(I_C_Currency.class);
 		currency.setISO_Code("EUR");
+		currency.setDescription("EUR");
 		saveRecord(currency);
 		final I_C_DocType docType = newInstance(I_C_DocType.class);
 		docType.setDocBaseType("ARI");
@@ -1017,6 +1024,7 @@ public class CiiMapperTest
 		// === Seller bank account with IBAN (required for BR-61: code 30 must carry BT-84) ===
 		final I_C_Currency currency = newInstance(I_C_Currency.class);
 		currency.setISO_Code("EUR");
+		currency.setDescription("EUR");
 		saveRecord(currency);
 
 		final I_C_BP_BankAccount sellerBankAccount = newInstance(I_C_BP_BankAccount.class);
@@ -1224,6 +1232,7 @@ public class CiiMapperTest
 		// === Currency + DocType ===
 		final I_C_Currency currency = newInstance(I_C_Currency.class);
 		currency.setISO_Code("EUR");
+		currency.setDescription("EUR");
 		saveRecord(currency);
 		final I_C_DocType docType = newInstance(I_C_DocType.class);
 		docType.setDocBaseType("ARI");
@@ -1361,6 +1370,7 @@ public class CiiMapperTest
 		// === Currency + DocType ===
 		final I_C_Currency currency = newInstance(I_C_Currency.class);
 		currency.setISO_Code("EUR");
+		currency.setDescription("EUR");
 		saveRecord(currency);
 		final I_C_DocType docType = newInstance(I_C_DocType.class);
 		docType.setDocBaseType("ARI");
@@ -1471,6 +1481,7 @@ public class CiiMapperTest
 		// === Currency + DocType ===
 		final I_C_Currency currency = newInstance(I_C_Currency.class);
 		currency.setISO_Code("EUR");
+		currency.setDescription("EUR");
 		saveRecord(currency);
 		final I_C_DocType docType = newInstance(I_C_DocType.class);
 		docType.setDocBaseType("ARI");
@@ -1686,6 +1697,7 @@ public class CiiMapperTest
 		// === Currency + DocType ===
 		final I_C_Currency currency = newInstance(I_C_Currency.class);
 		currency.setISO_Code("EUR");
+		currency.setDescription("EUR");
 		saveRecord(currency);
 		final I_C_DocType docType = newInstance(I_C_DocType.class);
 		docType.setDocBaseType("ARI");
@@ -1789,6 +1801,7 @@ public class CiiMapperTest
 		// === Currency + DocType ===
 		final I_C_Currency currency = newInstance(I_C_Currency.class);
 		currency.setISO_Code("EUR");
+		currency.setDescription("EUR");
 		saveRecord(currency);
 		final I_C_DocType docType = newInstance(I_C_DocType.class);
 		docType.setDocBaseType("ARI");
@@ -1872,6 +1885,7 @@ public class CiiMapperTest
 		// === Currency + DocType ===
 		final I_C_Currency currency = newInstance(I_C_Currency.class);
 		currency.setISO_Code("EUR");
+		currency.setDescription("EUR");
 		saveRecord(currency);
 		final I_C_DocType docType = newInstance(I_C_DocType.class);
 		docType.setDocBaseType("ARI");
@@ -1981,6 +1995,7 @@ public class CiiMapperTest
 		// === Currency + DocType ===
 		final I_C_Currency currency = newInstance(I_C_Currency.class);
 		currency.setISO_Code("EUR");
+		currency.setDescription("EUR");
 		saveRecord(currency);
 		final I_C_DocType docType = newInstance(I_C_DocType.class);
 		docType.setDocBaseType("ARI");
@@ -2029,6 +2044,7 @@ public class CiiMapperTest
 		// Seller has its OWN default IBAN — must NOT be the one used on a factored invoice
 		final I_C_Currency currency = newInstance(I_C_Currency.class);
 		currency.setISO_Code("EUR");
+		currency.setDescription("EUR");
 		saveRecord(currency);
 		final I_C_BP_BankAccount sellerBankAccount = newInstance(I_C_BP_BankAccount.class);
 		sellerBankAccount.setC_BPartner_ID(fx.sellerBP.getC_BPartner_ID());
@@ -2081,6 +2097,7 @@ public class CiiMapperTest
 
 		final I_C_Currency currency = newInstance(I_C_Currency.class);
 		currency.setISO_Code("EUR");
+		currency.setDescription("EUR");
 		saveRecord(currency);
 		final I_C_BP_BankAccount sellerBankAccount = newInstance(I_C_BP_BankAccount.class);
 		sellerBankAccount.setC_BPartner_ID(fx.sellerBP.getC_BPartner_ID());
@@ -2115,6 +2132,7 @@ public class CiiMapperTest
 
 		final I_C_Currency currency = newInstance(I_C_Currency.class);
 		currency.setISO_Code("EUR");
+		currency.setDescription("EUR");
 		saveRecord(currency);
 		final I_C_BP_BankAccount sellerBankAccount = newInstance(I_C_BP_BankAccount.class);
 		sellerBankAccount.setC_BPartner_ID(fx.sellerBP.getC_BPartner_ID());
@@ -2148,6 +2166,7 @@ public class CiiMapperTest
 
 		final I_C_Currency currency = newInstance(I_C_Currency.class);
 		currency.setISO_Code("EUR");
+		currency.setDescription("EUR");
 		saveRecord(currency);
 		final I_C_BP_BankAccount sellerBankAccount = newInstance(I_C_BP_BankAccount.class);
 		sellerBankAccount.setC_BPartner_ID(fx.sellerBP.getC_BPartner_ID());
@@ -2190,6 +2209,7 @@ public class CiiMapperTest
 
 		final I_C_Currency currency = newInstance(I_C_Currency.class);
 		currency.setISO_Code("EUR");
+		currency.setDescription("EUR");
 		saveRecord(currency);
 		final I_C_BP_BankAccount sellerBankAccount = newInstance(I_C_BP_BankAccount.class);
 		sellerBankAccount.setC_BPartner_ID(fx.sellerBP.getC_BPartner_ID());
@@ -2278,6 +2298,7 @@ public class CiiMapperTest
 		// === Currency + DocType ===
 		final I_C_Currency currency = newInstance(I_C_Currency.class);
 		currency.setISO_Code("EUR");
+		currency.setDescription("EUR");
 		saveRecord(currency);
 		final I_C_DocType docType = newInstance(I_C_DocType.class);
 		docType.setDocBaseType("ARI");
@@ -2356,6 +2377,7 @@ public class CiiMapperTest
 		// === Currency + DocType ===
 		final I_C_Currency currency = newInstance(I_C_Currency.class);
 		currency.setISO_Code("EUR");
+		currency.setDescription("EUR");
 		currency.setStdPrecision(2);
 		saveRecord(currency);
 		final I_C_DocType docType = newInstance(I_C_DocType.class);
@@ -2502,6 +2524,7 @@ public class CiiMapperTest
 		// === Currency + DocType ===
 		final I_C_Currency currency = newInstance(I_C_Currency.class);
 		currency.setISO_Code("EUR");
+		currency.setDescription("EUR");
 		currency.setStdPrecision(2);
 		saveRecord(currency);
 		final I_C_DocType docType = newInstance(I_C_DocType.class);
@@ -2663,6 +2686,7 @@ public class CiiMapperTest
 		// === Currency + DocType ===
 		final I_C_Currency currency = newInstance(I_C_Currency.class);
 		currency.setISO_Code("EUR");
+		currency.setDescription("EUR");
 		currency.setStdPrecision(2);
 		saveRecord(currency);
 		final I_C_DocType docType = newInstance(I_C_DocType.class);
@@ -2783,6 +2807,7 @@ public class CiiMapperTest
 		// === Currency + DocType ===
 		final I_C_Currency currency = newInstance(I_C_Currency.class);
 		currency.setISO_Code("EUR");
+		currency.setDescription("EUR");
 		currency.setStdPrecision(2);
 		saveRecord(currency);
 		final I_C_DocType docType = newInstance(I_C_DocType.class);
@@ -2898,6 +2923,7 @@ public class CiiMapperTest
 		// === Currency + DocType ===
 		final I_C_Currency currency = newInstance(I_C_Currency.class);
 		currency.setISO_Code("EUR");
+		currency.setDescription("EUR");
 		currency.setStdPrecision(2);
 		saveRecord(currency);
 		final I_C_DocType docType = newInstance(I_C_DocType.class);
@@ -3037,6 +3063,7 @@ public class CiiMapperTest
 		// === Currency + DocType ===
 		final I_C_Currency currency = newInstance(I_C_Currency.class);
 		currency.setISO_Code("EUR");
+		currency.setDescription("EUR");
 		currency.setStdPrecision(2);
 		saveRecord(currency);
 		final I_C_DocType docType = newInstance(I_C_DocType.class);
