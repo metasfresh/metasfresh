@@ -25,6 +25,7 @@ package de.metas.impexp.spreadsheet.process.intrastat;
 import de.metas.impexp.spreadsheet.csv.JdbcCSVExporter;
 import de.metas.impexp.spreadsheet.service.SpreadsheetExporterService;
 import de.metas.process.JavaProcess;
+import de.metas.process.PInstanceId;
 import de.metas.process.SpreadsheetExportOptions;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
@@ -34,12 +35,18 @@ import org.compiere.util.Evaluatees;
 import java.io.File;
 
 /**
- * Intrastat CSV export invoked from the Intrastat window ({@code AD_Process 585647}, backed by
- * {@code AD_Table Intrastat_Report_Detail_V}).
+ * Selection-driven Intrastat CSV export invoked from the Intrastat window
+ * ({@code AD_Process 585647}, backed by {@code AD_Table Intrastat_Report_Detail_V}).
  * <p>
- * Exports EVERY row of {@code Intrastat_Report_Detail_V} (after the same filters as
- * {@code report.Intrastat_Export}), regardless of window selection or grid filters. The process
- * ignores {@code T_Selection}.
+ * Exports only what the user sees in the window — i.e. the rows the WebUI has populated into
+ * {@code T_Selection} for the current {@code AD_PInstance_ID}:
+ * <ul>
+ *   <li>User ticked rows in the grid → export those.</li>
+ *   <li>Nothing ticked → the WebUI still populates {@code T_Selection} with the currently-filtered
+ *       set, and those are exported.</li>
+ *   <li>{@code T_Selection} empty → export is empty (no defensive fallback to the whole view —
+ *       exporting rows the user did not see would violate intent).</li>
+ * </ul>
  * <p>
  * Output shape mirrors {@code report.Intrastat_Export} exactly — same 10 columns, same
  * {@code TO_CHAR} number formats, same direction-conditional logic for
@@ -55,7 +62,7 @@ public class Intrastat_ExportFromWindow extends JavaProcess
 {
 	@NonNull private final SpreadsheetExporterService spreadsheetExporterService = SpringContextHolder.instance.getBean(SpreadsheetExporterService.class);
 
-	private static final String SQL = String.join("\n",
+	private static final String SQL_TEMPLATE = String.join("\n",
 			"SELECT d.CustomsTariff                                                            AS \"CNCode\",",
 			"       p.Name                                                                     AS \"GoodsDescription\",",
 			"       d.DeliveryCountry                                                          AS \"CountryDestinationConsignment\",",
@@ -72,9 +79,11 @@ public class Intrastat_ExportFromWindow extends JavaProcess
 			"FROM  Intrastat_Report_Detail_V d",
 			"LEFT JOIN M_Product  p  ON p.M_Product_ID   = d.M_Product_ID",
 			"LEFT JOIN C_BPartner bp ON bp.C_BPartner_ID = d.C_BPartner_ID",
+			"WHERE d.Intrastat_Report_Detail_V_ID IN",
+			"      (SELECT T_Selection_ID FROM T_Selection WHERE AD_PInstance_ID = %1$d)",
 			// Match report.Intrastat_Export's stricter filters — the view alone lets in null-
 			// tariff rows (non-zero amount) and non-stocked products for its debugging use case.
-			"WHERE d.CustomsTariff IS NOT NULL",
+			"  AND d.CustomsTariff IS NOT NULL",
 			"  AND p.IsStocked = 'Y'",
 			"GROUP BY d.CustomsTariff,",
 			"         p.Name,",
@@ -90,7 +99,10 @@ public class Intrastat_ExportFromWindow extends JavaProcess
 	@Override
 	protected String doIt()
 	{
-		final File csv = runCsvExport(SQL);
+		final PInstanceId pinstanceId = getPinstanceId();
+		final String sql = String.format(SQL_TEMPLATE, pinstanceId.getRepoId());
+		final File csv = runCsvExport(sql);
+
 		getResult().setReportData(csv);
 		return MSG_OK;
 	}
