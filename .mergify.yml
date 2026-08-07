@@ -36,6 +36,7 @@ merge_protections:
 
 merge_queue:
   max_parallel_checks: 1
+  queue_controls_comment: false # disable because there is no general default queue rule "@mergifyio queue"
 
 queue_rules:
   - name: squash-queue

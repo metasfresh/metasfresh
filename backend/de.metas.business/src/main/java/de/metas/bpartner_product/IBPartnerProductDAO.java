@@ -36,6 +36,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -75,6 +76,7 @@ public interface IBPartnerProductDAO extends ISingletonService
 	 *
 	 * @return first entry, order by BP vendor and org_ID, nulls last
 	 */
+	@Nullable
 	I_C_BPartner_Product retrieveBPProductForCustomer(@NonNull I_C_BPartner customerPartner, @NonNull I_M_Product product, @NonNull OrgId orgId);
 
 	List<I_C_BPartner_Product> retrieveForProductIds(Set<ProductId> productIds);

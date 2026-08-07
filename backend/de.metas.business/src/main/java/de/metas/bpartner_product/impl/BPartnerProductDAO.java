@@ -53,9 +53,9 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
-import org.compiere.model.IQuery;
 import org.compiere.model.I_M_BannedManufacturer;
 import org.compiere.model.I_M_Product;
 
@@ -286,6 +286,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 	}
 
 	@Override
+	@Nullable
 	public I_C_BPartner_Product retrieveBPProductForCustomer(
 			@NonNull final I_C_BPartner partner,
 			@NonNull final I_M_Product product,
@@ -320,7 +321,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 				.addColumn(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID, Direction.Descending, Nulls.Last)
 				.createQueryOrderBy();
 
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_C_BPartner_Product.class, partner)
 				.addOnlyActiveRecordsFilter()
 				.filter(queryFilters)
@@ -389,7 +390,6 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_BPartner_Product.class)
-				.addOnlyContextClient()
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_IsExcludedFromSale, true)
 				.create()
@@ -400,6 +400,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 
 	private static ProductExclude toProductExclude(@NonNull final I_C_BPartner_Product bpartnerProduct)
 	{
+		Check.assumeNotNull(bpartnerProduct.getExclusionFromSaleReason(), "bpartnerProduct has ExclusionFromSaleReason if IsExcludedFromSale");
 		return ProductExclude.builder()
 				.productId(ProductId.ofRepoId(bpartnerProduct.getM_Product_ID()))
 				.bpartnerId(BPartnerId.ofRepoId(bpartnerProduct.getC_BPartner_ID()))
@@ -433,7 +434,6 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 	{
 		return queryBL
 				.createQueryBuilderOutOfTrx(I_C_BPartner_Product.class)
-				.addOnlyContextClient()
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_IsExcludedFromSale, true)
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, productId.getRepoId())
@@ -452,7 +452,6 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 	{
 		return queryBL
 				.createQueryBuilderOutOfTrx(I_C_BPartner_Product.class)
-				.addOnlyContextClient()
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_IsExcludedFromPurchase, true)
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, productId.getRepoId())
@@ -474,7 +473,6 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 
 		return queryBL
 				.createQueryBuilderOutOfTrx(I_M_BannedManufacturer.class)
-				.addOnlyContextClient()
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_BannedManufacturer.COLUMNNAME_C_BPartner_ID, partnerId.getRepoId())
 				.addEqualsFilter(I_M_BannedManufacturer.COLUMNNAME_Manufacturer_ID, manufacturerId == null ? -1 : manufacturerId.getRepoId())
@@ -499,7 +497,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 	}
 
 	@Override
-	public @NonNull List<I_C_BPartner_Product> retrieveByGTIN(@NonNull GTIN gtin, @NonNull final BPartnerId bpartnerId)
+	public @NonNull List<I_C_BPartner_Product> retrieveByGTIN(@NonNull final GTIN gtin, @NonNull final BPartnerId bpartnerId)
 	{
 		return queryBL.createQueryBuilder(I_C_BPartner_Product.class)
 				.addOnlyActiveRecordsFilter()
@@ -526,8 +524,8 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_EAN_CU, gtinStr)
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_UPC, gtinStr);
 
-		// Only match rows that point to an active M_Product. The consolidation process (F5001.1) can leave an
-		// M_Product inactive while keeping its C_BPartner_Product rows active — those stale rows must NOT be matched.
+		// Only consider rows pointing to an active M_Product: the consolidation process (F5001.1) can
+		// deactivate an M_Product while leaving its C_BPartner_Product rows active — those must not match.
 		final IQuery<I_M_Product> activeProducts = queryBL.createQueryBuilder(I_M_Product.class)
 				.addOnlyActiveRecordsFilter()
 				.create();
@@ -535,7 +533,6 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 		final I_C_BPartner_Product bpp = queryBL.createQueryBuilder(I_C_BPartner_Product.class)
 				.addOnlyActiveRecordsFilter()
 				.filter(bppFilter)
-				.addNotNull(I_C_BPartner_Product.COLUMNNAME_M_Product_ID)
 				.addInSubQueryFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, I_M_Product.COLUMNNAME_M_Product_ID, activeProducts)
 				.orderBy(I_C_BPartner_Product.COLUMNNAME_C_BPartner_Product_ID)
 				.create().first();

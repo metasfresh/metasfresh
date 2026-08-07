@@ -14,6 +14,7 @@ import de.metas.order.IOrderBL;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.product.ProductLifeCycleAction;
 import de.metas.project.ProjectId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -270,6 +271,8 @@ public class PP_Order
 			ifColumnsChanged = { I_PP_Order.COLUMNNAME_M_Product_ID, I_PP_Order.COLUMNNAME_PP_Product_BOM_ID })
 	public void validateBOMAndProduct(@NonNull final I_PP_Order ppOrder)
 	{
+		productBL.assertAllowed(ProductId.ofRepoId(ppOrder.getM_Product_ID()), ProductLifeCycleAction.MANUFACTURE);
+
 		final ProductBOMId bomId = ProductBOMId.ofRepoId(ppOrder.getPP_Product_BOM_ID());
 
 		final ProductId productIdOfBOM = productBOMDAO.getBOMProductId(bomId);

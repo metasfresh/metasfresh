@@ -124,22 +124,21 @@ public class OLCandProductFromPIIPvalidator implements IOLCandValidator
 
 		final ZonedDateTime datePromised = olCandEffectiveValuesBL.getDatePromised_Effective(olCand);
 
-		// The resolved instruction is already valid on DatePromised — keep it. Uses the SAME validity
-		// rule as the resolution below (one source of truth — the gate cannot diverge from it), and
-		// preserves a legitimate selection among several instructions that share one barcode (e.g. the
-		// EDI lookup view's per-BPartner/StoreGLN choice); we only correct one that is NOT valid.
-		if (huPIItemProductDAO.isValidOnDate(currentId, datePromised))
-		{
-			return;
-		}
+		// Re-resolve to the LATEST packing instruction valid on DatePromised, staying within the SAME business
+		// partner the barcode-lookup view already resolved — i.e. the current row's own C_BPartner_ID, which
+		// the view derived from the incoming StoreGLN. This preserves the per-partner selection when a barcode
+		// is shared across partners (re-deriving the order's ship partner can differ when partners share a
+		// location), while still switching to a newer version once its ValidFrom is reached: "current is valid"
+		// is not enough — a superseded row stays valid forever without a ValidTo, so we always ask for the
+		// latest valid version and switch only if it differs (the filter below skips the no-op write).
+		//
+		// currentPartner == null means the stamped row is a generic (partner-less) one; findFirstByGtin then
+		// re-resolves across any partner (its pre-existing behaviour). In the EDI flow this path is not
+		// reached: the barcode-lookup view always stamps the partner-specific row derived from the StoreGLN,
+		// so a non-virtual generic incumbent does not occur here (the virtual fallback returned above).
+		final BPartnerId currentPartner = BPartnerId.ofRepoIdOrNull(current.getC_BPartner_ID());
 
-		// Scope the re-resolution to the order's (ship/consignee) partner — the same partner the EDI lookup
-		// view resolved via StoreGLN — so a barcode shared across partners cannot cross to another partner's PIIP.
-		final BPartnerId shipBPartnerId = olCandEffectiveValuesBL.getDropShipPartnerInfo(olCand)
-				.orElseGet(() -> olCandEffectiveValuesBL.getBuyerPartnerInfo(olCand))
-				.getBpartnerId();
-
-		huPIItemProductDAO.findFirstByGtin(GTIN.ofString(barcode), shipBPartnerId, datePromised)
+		huPIItemProductDAO.findFirstByGtin(GTIN.ofString(barcode), currentPartner, datePromised)
 				.map(ProductAndHUPIItemProductId::getHupiItemProductId)
 				.filter(validId -> !HUPIItemProductId.equals(validId, currentId))
 				.ifPresent(validId -> olCand.setM_HU_PI_Item_Product_ID(validId.getRepoId()));

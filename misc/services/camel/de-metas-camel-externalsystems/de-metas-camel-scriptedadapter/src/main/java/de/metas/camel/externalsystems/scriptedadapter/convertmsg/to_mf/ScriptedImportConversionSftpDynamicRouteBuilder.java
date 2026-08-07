@@ -41,7 +41,14 @@ public class ScriptedImportConversionSftpDynamicRouteBuilder extends AbstractScr
 {
 	@NonNull private final String sftpUri;
 
+	/**
+	 * Stable per-child route id. Keyed on the child config id (never on the endpoint host/{@code Value}),
+	 * so enable/disable can find and tear down the running poller even after the child's endpoint changed.
+	 */
+	@NonNull private final String routeKey;
+
 	public ScriptedImportConversionSftpDynamicRouteBuilder(
+			@NonNull final String routeKey,
 			@NonNull final String endpointName,
 			@NonNull final String sftpUri,
 			@NonNull final String scriptIdentifier,
@@ -52,6 +59,7 @@ public class ScriptedImportConversionSftpDynamicRouteBuilder extends AbstractScr
 			@NonNull final String errorDir)
 	{
 		super(endpointName, scriptIdentifier, javaScriptRepo, javaScriptExecutorService, producerTemplate, processedDir, errorDir);
+		this.routeKey = routeKey;
 		this.sftpUri = sftpUri;
 	}
 
@@ -70,7 +78,7 @@ public class ScriptedImportConversionSftpDynamicRouteBuilder extends AbstractScr
 
 		//@formatter:off
 		from(sftpUri)
-				.routeId(endpointName)
+				.routeId(routeKey)
 				.group(CamelRoutesGroup.START_ON_DEMAND.getCode())
 				.log("SFTP file received: ${header.CamelFileName}")
 				.convertBodyTo(String.class)

@@ -34,6 +34,8 @@ import de.metas.greeting.GreetingRepository;
 import de.metas.money.CurrencyId;
 import de.metas.order.BPartnerOrderParamsRepository;
 import de.metas.order.model.interceptor.C_Order;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.exceptions.AdempiereException;
@@ -67,6 +69,10 @@ public class OrderTest
 
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 		SpringContextHolder.registerJUnitBean(BPartnerOrderParamsRepository.newInstanceForUnitTesting());
+		// C_Order.newInstanceForUnitTesting() transitively builds OrderPayScheduleLCStepService ->
+		// OrderPayScheduleRegularInvoiceService, whose Services.get(IInvoiceLineBL.class) instantiates
+		// InvoiceLineBL, which pulls ProductTaxCategoryService out of the spring context on construction.
+		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(C_Order.newInstanceForUnitTesting());
 
