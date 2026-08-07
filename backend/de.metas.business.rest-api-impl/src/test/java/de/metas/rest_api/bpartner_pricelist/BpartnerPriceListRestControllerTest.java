@@ -167,6 +167,7 @@ public class BpartnerPriceListRestControllerTest
 	{
 		final I_C_Currency record = newInstance(I_C_Currency.class);
 		record.setISO_Code(currencyCode.toThreeLetterCode());
+		record.setDescription(currencyCode.toThreeLetterCode());
 		saveRecord(record);
 		return CurrencyId.ofRepoId(record.getC_Currency_ID());
 	}

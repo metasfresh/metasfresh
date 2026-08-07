@@ -61,6 +61,7 @@ public class SEPATestHelper
 	{
 		currency = newInstance(I_C_Currency.class);
 		currency.setISO_Code(CurrencyCode.USD.toThreeLetterCode());
+		currency.setDescription(CurrencyCode.USD.toThreeLetterCode());
 		save(currency);
 
 		final I_C_Country country = newInstance(I_C_Country.class);
