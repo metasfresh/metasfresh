@@ -78,6 +78,14 @@ const translations = {
       appName: 'Picken',
     },
   },
+  launchers: {
+    operatorContext: {
+      error: {
+        title: 'Arbeitsplatz/Arbeitsstation derzeit nicht verfügbar',
+        retry: 'Erneut versuchen',
+      },
+    },
+  },
   components: {
     BarcodeScannerComponent: {
       scanTextPlaceholder: 'scan...',

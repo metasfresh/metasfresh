@@ -23,6 +23,7 @@
 package de.metas.handlingunits;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.gs1.GTIN;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -144,4 +145,30 @@ public interface IHUPIItemProductDAO extends ISingletonService
 
 	@Nullable
 	I_M_HU_PI_Item_Product retrieveDefaultForProduct(@NonNull ProductId productId, @NonNull ZonedDateTime date);
+
+	/**
+	 * Finds the first {@link I_M_HU_PI_Item_Product} row matching the given GTIN/EAN_TU/UPC value,
+	 * filtered by the given validity date.
+	 * Rows are ordered by {@code ValidFrom DESC} (most recent first) then by ID ascending as a tiebreak.
+	 * Only active records with a {@code M_Product_ID} pointing to an <em>active</em> product
+	 * are considered — stale PIIP rows left behind by a product-consolidation run are excluded.
+	 *
+	 * @param gtin the GTIN/EAN_TU/UPC value to match
+	 * @param date the reference date for the validity filter; {@code null} means no validity filter is applied
+	 * @return the first matching row as a {@link ProductAndHUPIItemProductId} carrying product and PIIP IDs,
+	 *         or {@link Optional#empty()} if none found
+	 */
+	@NonNull
+	Optional<ProductAndHUPIItemProductId> findFirstByGtin(@NonNull GTIN gtin, @Nullable ZonedDateTime date);
+
+	/**
+	 * Like {@link #findFirstByGtin(GTIN, ZonedDateTime)}, but additionally scoped to the given partner:
+	 * only rows whose {@code C_BPartner_ID} equals {@code bpartnerId} (or is unset) are considered, and a
+	 * partner-specific row is preferred over a generic one. This mirrors the partner dimension of val rule
+	 * {@code M_HU_PI_Item_Product_For_Org_and_Product_and_DatePromised} and of the EDI barcode-lookup view,
+	 * so a barcode shared across partners cannot resolve to another partner's packing instruction.
+	 * A {@code null} {@code bpartnerId} applies no partner scoping (identical to the two-arg variant).
+	 */
+	@NonNull
+	Optional<ProductAndHUPIItemProductId> findFirstByGtin(@NonNull GTIN gtin, @Nullable BPartnerId bpartnerId, @Nullable ZonedDateTime date);
 }

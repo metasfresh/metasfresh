@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 
 import { trl } from '../utils/translations';
 import GetQuantityDialog from './dialogs/GetQuantityDialog';
+import YesNoDialog from './dialogs/YesNoDialog';
 import Button from './buttons/Button';
 import { formatQtyToHumanReadable, formatQtyToHumanReadableStr } from '../utils/qtys';
 import { useBooleanSetting } from '../reducers/settings';
@@ -10,6 +11,8 @@ import { toastError, toastErrorFromObj } from '../utils/toast';
 import { toQRCodeString } from '../utils/qrCode/hu';
 import HUScanner from './huSelector/HUScanner';
 import BarcodeScannerComponent from './BarcodeScannerComponent';
+import Spinner from './Spinner';
+import { doFinally } from '../utils';
 import { PICK_ON_THE_FLY_QRCODE } from '../containers/activities/picking/PickConfig';
 import { ATTR_isTUToBePickedAsWhole, ATTR_isUnique } from '../utils/qrCode/common';
 
@@ -59,6 +62,8 @@ const ScanHUAndGetQtyComponent = ({
   onClose: onCloseCallback,
 }) => {
   const [progressStatus, setProgressStatus] = useState(STATUS_NOT_INITIALIZED);
+  const [confirmationDialogProps, setConfirmationDialogProps] = useState(undefined);
+  const [isProcessing, setProcessing] = useState(false);
   const { resolvedBarcodeData, setResolvedBarcodeData, updateResolvedBarcodeData, computeNewResolvedBarcodeData } =
     useResolvedBarcodeData({
       userInfo,
@@ -155,17 +160,57 @@ const ScanHUAndGetQtyComponent = ({
     await requestQtyOrReportResult({ resolvedBarcodeData: resolvedBarcodeDataNew });
   };
 
+  // Mirrors GetQuantityDialog.fireOnQtyChange: isProcessing is what suppresses the scan target while
+  // the pick's POST is in flight, and it has to be cleared on the error branch too.
+  const fireOnResult = (onResultPayload) => {
+    setProcessing(true);
+    try {
+      const promise = onResult(onResultPayload)?.catch?.((error) => toastErrorFromObj(error));
+      return doFinally(promise, () => setProcessing(false));
+    } catch (error) {
+      setProcessing(false);
+      throw error;
+    }
+  };
+
   const requestQtyOrReportResult = async ({ resolvedBarcodeData }) => {
     if (isAskForQty({ resolvedBarcodeData })) {
       setProgressStatus(STATUS_READ_QTY);
-    } else {
-      await onResult({
-        qty: 0,
-        reason: null,
-        scannedBarcode: resolvedBarcodeData.scannedBarcode,
-        resolvedBarcodeData: resolvedBarcodeData,
-      })?.catch?.((error) => toastErrorFromObj(error));
+      return;
     }
+
+    const onResultPayload = {
+      qty: 0,
+      reason: null,
+      scannedBarcode: resolvedBarcodeData.scannedBarcode,
+      resolvedBarcodeData: resolvedBarcodeData,
+    };
+
+    // The whole-TU mirror of the over-delivery handling GetQuantityDialog performs for the CU path.
+    // The comparison input is the TU's own content (qtyInitial), not the qty: 0 booking instruction above.
+    if (getConfirmationPromptForQty) {
+      const confirmationPrompt = await getConfirmationPromptForQty(resolvedBarcodeData.qtyInitial);
+      if (confirmationPrompt) {
+        setConfirmationDialogProps({ promptQuestion: confirmationPrompt, onResultPayload });
+        return;
+      }
+    } else if (Number.isFinite(resolvedBarcodeData.qtyInitial)) {
+      // Gated on Number.isFinite: with no resolved qtyInitial there is nothing to compare, so the pick books
+      // unchecked - as on the prompt branch above, where an absent qty raises no confirmation either.
+      const qtyAboveMaxError = validateQtyAgainstMax({
+        qty: resolvedBarcodeData.qtyInitial,
+        qtyMax: resolvedBarcodeData.qtyMax,
+        uom: resolvedBarcodeData.uom,
+        invalidQtyMessageKey,
+      });
+      if (qtyAboveMaxError) {
+        // Thrown, not toasted: the caller (BarcodeScannerComponent / HUScanner) turns this into the
+        // error beep + toast every other rejected scan produces, and leaves the scanner armed.
+        throw qtyAboveMaxError;
+      }
+    }
+
+    await fireOnResult(onResultPayload);
   };
 
   const validateQtyEntered = (qtyEntered, uom) => {
@@ -177,16 +222,8 @@ const ScanHUAndGetQtyComponent = ({
     // Qty shall be less than or equal to qtyMax
     // NOTE: skip qtyMax validation when over-pick confirmation prompt is enabled,
     // because the prompt handles the over-delivery scenario instead
-    if (!getConfirmationPromptForQty && resolvedBarcodeData.qtyMax && resolvedBarcodeData.qtyMax > 0) {
-      const { qtyEffective: diff, uomEffective: diffUom } = formatQtyToHumanReadable({
-        qty: qtyEntered - resolvedBarcodeData.qtyMax,
-        uom,
-      });
-
-      if (diff > 0) {
-        const qtyDiff = formatQtyToHumanReadableStr({ qty: diff, uom: diffUom });
-        return trl(invalidQtyMessageKey || DEFAULT_MSG_qtyAboveMax, { qtyDiff });
-      }
+    if (!getConfirmationPromptForQty) {
+      return validateQtyAgainstMax({ qty: qtyEntered, qtyMax: resolvedBarcodeData.qtyMax, uom, invalidQtyMessageKey });
     }
 
     // OK
@@ -232,6 +269,28 @@ const ScanHUAndGetQtyComponent = ({
   };
 
   const showEligibleBarcodeDebugButton = useBooleanSetting('barcodeScanner.showEligibleBarcodeDebugButton');
+
+  // Early return (after every hook), so the BarcodeScannerComponent below is unmounted while the pick
+  // is in flight: re-arming it would let the next scan book the same line a second time.
+  if (isProcessing) {
+    return <Spinner />;
+  }
+
+  // Early return (after every hook), so the BarcodeScannerComponent below is unmounted while the
+  // operator answers: two mounted scanners would both capture the next hardware scan.
+  // progressStatus is deliberately left untouched, so declining returns to the very step we came from.
+  if (confirmationDialogProps) {
+    return (
+      <YesNoDialog
+        promptQuestion={confirmationDialogProps.promptQuestion}
+        onYes={() => {
+          fireOnResult(confirmationDialogProps.onResultPayload);
+          setConfirmationDialogProps(undefined);
+        }}
+        onNo={() => setConfirmationDialogProps(undefined)}
+      />
+    );
+  }
 
   switch (progressStatus) {
     case STATUS_READ_HU_BARCODE: {
@@ -356,6 +415,26 @@ export default ScanHUAndGetQtyComponent;
 // -----------------------------------------------------------------------------
 //
 //
+
+/**
+ * The one qtyAboveMax ceiling, shared by the CU path (validateQtyEntered) and the whole-TU path
+ * (requestQtyOrReportResult).
+ *
+ * @returns the translated error message, or null when the qty is within qtyMax.
+ */
+const validateQtyAgainstMax = ({ qty, qtyMax, uom, invalidQtyMessageKey }) => {
+  if (!qtyMax || qtyMax <= 0) {
+    return null;
+  }
+
+  const { qtyEffective: diff, uomEffective: diffUom } = formatQtyToHumanReadable({ qty: qty - qtyMax, uom });
+  if (diff <= 0) {
+    return null;
+  }
+
+  const qtyDiff = formatQtyToHumanReadableStr({ qty: diff, uom: diffUom });
+  return trl(invalidQtyMessageKey || DEFAULT_MSG_qtyAboveMax, { qtyDiff });
+};
 
 const isAskForQty = ({ resolvedBarcodeData }) => {
   const qrCode = resolvedBarcodeData?.qrCode;

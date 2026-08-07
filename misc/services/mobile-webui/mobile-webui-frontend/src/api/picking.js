@@ -154,9 +154,9 @@ export const getClosedLUs = ({ wfProcessId, lineId }) => {
     .then((response) => unboxAxiosResponse(response));
 };
 
-export const getScannedHUQRCodeInfo = ({ qrCode, productNo }) => {
+export const getScannedHUQRCodeInfo = ({ qrCode, productNo, wfProcessId, lineId }) => {
   return axios
-    .post(`${apiBasePath}/picking/hu/byScannedCode`, { scannedCode: qrCode, productNo })
+    .post(`${apiBasePath}/picking/hu/byScannedCode`, { scannedCode: qrCode, productNo, wfProcessId, lineId })
     .then((response) => unboxAxiosResponse(response));
 };
 
