@@ -1,11 +1,12 @@
 package de.metas.currency.callout;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.compiere.model.I_C_Conversion_Rate;
+
+import de.metas.currency.CurrencyConversionRates;
 
 /*
  * #%L
@@ -46,7 +47,7 @@ public class C_Conversion_Rate
 		final BigDecimal divideRate;
 		if (multiplyRate.signum() != 0)
 		{
-			divideRate = BigDecimal.ONE.divide(multiplyRate, 12, RoundingMode.HALF_UP);
+			divideRate = CurrencyConversionRates.reciprocal(multiplyRate);
 		}
 		else
 		{
@@ -70,7 +71,7 @@ public class C_Conversion_Rate
 		final BigDecimal multiplyRate;
 		if (divideRate.signum() != 0)
 		{
-			multiplyRate = BigDecimal.ONE.divide(divideRate, 12, RoundingMode.HALF_UP);
+			multiplyRate = CurrencyConversionRates.reciprocal(divideRate);
 		}
 		else
 		{
