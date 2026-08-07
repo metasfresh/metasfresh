@@ -25,7 +25,6 @@ package de.metas.impexp.spreadsheet.process.intrastat;
 import de.metas.impexp.spreadsheet.csv.JdbcCSVExporter;
 import de.metas.impexp.spreadsheet.service.SpreadsheetExporterService;
 import de.metas.process.JavaProcess;
-import de.metas.process.PInstanceId;
 import de.metas.process.SpreadsheetExportOptions;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
@@ -35,25 +34,19 @@ import org.compiere.util.Evaluatees;
 import java.io.File;
 
 /**
- * Selection-driven Intrastat CSV export invoked from the Intrastat window
- * ({@code AD_Process 585647}, backed by {@code AD_Table Intrastat_Report_Detail_V}).
+ * Intrastat CSV export invoked from the Intrastat window ({@code AD_Process 585647}, backed by
+ * {@code AD_Table Intrastat_Report_Detail_V}).
+ * <p>
+ * Exports EVERY row of {@code Intrastat_Report_Detail_V} (after the same filters as
+ * {@code report.Intrastat_Export}), regardless of window selection or grid filters. The process
+ * ignores {@code T_Selection}.
  * <p>
  * Output shape mirrors {@code report.Intrastat_Export} exactly — same 10 columns, same
  * {@code TO_CHAR} number formats, same direction-conditional logic for
- * {@code CountryOfOrigin} and {@code Recipient-VAT-No}, and the same row filters
- * ({@code IsPackagingMaterial='N'}, {@code CustomsTariff IS NOT NULL},
- * {@code Product.IsStocked='Y'}). The only difference is the row source: this process
- * takes the user's {@code T_Selection} in the debug window; the report function takes
- * year/period/direction parameters and reads the aggregated view. CSV, no header row.
- * <p>
- * Selection semantics ({@code T_Selection}, scoped to the current {@code AD_PInstance_ID}):
- * <ul>
- *   <li>Checked rows → export those.</li>
- *   <li>No row checked → the WebUI still populates {@code T_Selection} with the currently-filtered
- *       set, and those are exported.</li>
- *   <li>No {@code T_Selection} row at all (defensive fallback) → export the whole view rather than
- *       silently produce empty output.</li>
- * </ul>
+ * {@code CountryOfOrigin} and {@code Recipient-VAT-No}, same row filters
+ * ({@code IsPackagingMaterial='N'} — inherited from the view, {@code CustomsTariff IS NOT NULL},
+ * {@code Product.IsStocked='Y'}), and the same aggregation granularity
+ * (GROUP BY on the columns {@code Intrastat_Report_V} groups by). CSV, no header row.
  * <p>
  * {@code IntrastaNatureOfTransaction} is hardcoded to {@code '11'} — same simplification as
  * the report function's default parameter value.
@@ -62,11 +55,7 @@ public class Intrastat_ExportFromWindow extends JavaProcess
 {
 	@NonNull private final SpreadsheetExporterService spreadsheetExporterService = SpringContextHolder.instance.getBean(SpreadsheetExporterService.class);
 
-	// SELECT + WHERE + GROUP BY mirror report.Intrastat_Export exactly.
-	// The underlying source (per-line Intrastat_Report_Detail_V) is per-invoice-line, so we
-	// aggregate here to the same granularity as the report (which reads the pre-aggregated
-	// Intrastat_Report_V). GROUP BY key = the same set of columns Intrastat_Report_V groups by.
-	private static final String SQL_TEMPLATE = String.join("\n",
+	private static final String SQL = String.join("\n",
 			"SELECT d.CustomsTariff                                                            AS \"CNCode\",",
 			"       p.Name                                                                     AS \"GoodsDescription\",",
 			"       d.DeliveryCountry                                                          AS \"CountryDestinationConsignment\",",
@@ -83,16 +72,9 @@ public class Intrastat_ExportFromWindow extends JavaProcess
 			"FROM  Intrastat_Report_Detail_V d",
 			"LEFT JOIN M_Product  p  ON p.M_Product_ID   = d.M_Product_ID",
 			"LEFT JOIN C_BPartner bp ON bp.C_BPartner_ID = d.C_BPartner_ID",
-			"WHERE (d.Intrastat_Report_Detail_V_ID IN",
-			"       (SELECT T_Selection_ID FROM T_Selection WHERE AD_PInstance_ID = %1$d)",
-			// Fallback: no T_Selection row was populated for this AD_PInstance_ID
-			// (unusual — the WebUI normally seeds it). Export the whole view rather than
-			// silently produce an empty file.
-			"       OR NOT EXISTS",
-			"       (SELECT 1 FROM T_Selection WHERE AD_PInstance_ID = %1$d))",
 			// Match report.Intrastat_Export's stricter filters — the view alone lets in null-
 			// tariff rows (non-zero amount) and non-stocked products for its debugging use case.
-			"  AND d.CustomsTariff IS NOT NULL",
+			"WHERE d.CustomsTariff IS NOT NULL",
 			"  AND p.IsStocked = 'Y'",
 			"GROUP BY d.CustomsTariff,",
 			"         p.Name,",
@@ -108,10 +90,7 @@ public class Intrastat_ExportFromWindow extends JavaProcess
 	@Override
 	protected String doIt()
 	{
-		final PInstanceId pinstanceId = getPinstanceId();
-		final String sql = String.format(SQL_TEMPLATE, pinstanceId.getRepoId());
-		final File csv = runCsvExport(sql);
-
+		final File csv = runCsvExport(SQL);
 		getResult().setReportData(csv);
 		return MSG_OK;
 	}
