@@ -10,7 +10,7 @@
 -- The existing AD_Process 585508 (INTRASTAT RTIC Datei (AT)) is unchanged — it remains wired
 -- to AD_Menu 542261 with its parameter dialog + fixed 10-column AT RTIC CSV.
 --
--- Java class: de.metas.impexp.spreadsheet.process.intrastat.Intrastat_ExportFromWindow
+-- Java class: de.metas.ui.web.impexp.intrastat.process.Intrastat_ExportFromWindow
 
 -- =====================================================================
 -- AD_Process — parameterless, Java-driven, CSV export (no header row)
@@ -25,7 +25,7 @@ INSERT INTO AD_Process (AccessLevel, AD_Client_ID, AD_Org_ID, AD_Process_ID,
     RefreshAllAfterExecution, ShowHelp, SpreadsheetFormat,
     CSVFieldDelimiter, Type, Updated, UpdatedBy, Value)
 VALUES ('3', 0, 0, 585647 /*From ID Server*/,
-    'Y', 'de.metas.impexp.spreadsheet.process.intrastat.Intrastat_ExportFromWindow', 'N',
+    'Y', 'de.metas.ui.web.impexp.intrastat.process.Intrastat_ExportFromWindow', 'N',
     TO_TIMESTAMP('2026-08-06 09:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
     'Exportiert die im Fenster ausgewählten Zeilen (bzw. bei fehlender Auswahl den gefilterten Satz) als CSV-Datei ohne Kopfzeile im INTRASTAT-RTIC-Format (identisch zum Report Intrastat_Export).',
     'D',

@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * metasfresh-webui-api
  * %%
  * Copyright (C) 2026 metas GmbH
  * %%
@@ -20,45 +20,40 @@
  * #L%
  */
 
-package de.metas.impexp.spreadsheet.process.intrastat;
+package de.metas.ui.web.impexp.intrastat.process;
 
 import de.metas.impexp.spreadsheet.csv.JdbcCSVExporter;
 import de.metas.impexp.spreadsheet.service.SpreadsheetExporterService;
-import de.metas.process.JavaProcess;
-import de.metas.process.PInstanceId;
 import de.metas.process.SpreadsheetExportOptions;
+import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.SpringContextHolder;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatees;
 
 import java.io.File;
+import java.util.Set;
 
 /**
  * Selection-driven Intrastat CSV export invoked from the Intrastat window
  * ({@code AD_Process 585647}, backed by {@code AD_Table Intrastat_Report_Detail_V}).
  * <p>
- * Exports only what the user sees in the window — i.e. the rows the WebUI has populated into
- * {@code T_Selection} for the current {@code AD_PInstance_ID}:
- * <ul>
- *   <li>User ticked rows in the grid → export those.</li>
- *   <li>Nothing ticked → the WebUI still populates {@code T_Selection} with the currently-filtered
- *       set, and those are exported.</li>
- *   <li>{@code T_Selection} empty → export is empty (no defensive fallback to the whole view —
- *       exporting rows the user did not see would violate intent).</li>
- * </ul>
+ * Extends {@link ViewBasedProcessTemplate} so the WebUI's view / selection context is
+ * available. The user's ticked rows (or the WebUI-populated filtered set if nothing is
+ * ticked) are copied into {@code T_Selection} for this {@code AD_PInstance_ID}, then the
+ * SQL below filters against that.
  * <p>
  * Output shape mirrors {@code report.Intrastat_Export} exactly — same 10 columns, same
- * {@code TO_CHAR} number formats, same direction-conditional logic for
- * {@code CountryOfOrigin} and {@code Recipient-VAT-No}, same row filters
- * ({@code IsPackagingMaterial='N'} — inherited from the view, {@code CustomsTariff IS NOT NULL},
- * {@code Product.IsStocked='Y'}), and the same aggregation granularity
- * (GROUP BY on the columns {@code Intrastat_Report_V} groups by). CSV, no header row.
- * <p>
- * {@code IntrastaNatureOfTransaction} is hardcoded to {@code '11'} — same simplification as
- * the report function's default parameter value.
+ * {@code TO_CHAR} number formats, direction-conditional {@code CountryOfOrigin} and
+ * {@code Recipient-VAT-No}, same row filters ({@code IsPackagingMaterial='N'} inherited
+ * from the view, {@code CustomsTariff IS NOT NULL}, {@code Product.IsStocked='Y'}), and
+ * the same aggregation granularity (GROUP BY on the columns {@code Intrastat_Report_V}
+ * groups by). CSV, no header row. {@code IntrastaNatureOfTransaction} is hardcoded to
+ * {@code '11'} — same simplification as the report function's default parameter value.
  */
-public class Intrastat_ExportFromWindow extends JavaProcess
+public class Intrastat_ExportFromWindow extends ViewBasedProcessTemplate
 {
 	@NonNull private final SpreadsheetExporterService spreadsheetExporterService = SpringContextHolder.instance.getBean(SpreadsheetExporterService.class);
 
@@ -81,8 +76,6 @@ public class Intrastat_ExportFromWindow extends JavaProcess
 			"LEFT JOIN C_BPartner bp ON bp.C_BPartner_ID = d.C_BPartner_ID",
 			"WHERE d.Intrastat_Report_Detail_V_ID IN",
 			"      (SELECT T_Selection_ID FROM T_Selection WHERE AD_PInstance_ID = %1$d)",
-			// Match report.Intrastat_Export's stricter filters — the view alone lets in null-
-			// tariff rows (non-zero amount) and non-stocked products for its debugging use case.
 			"  AND d.CustomsTariff IS NOT NULL",
 			"GROUP BY d.CustomsTariff,",
 			"         p.Name,",
@@ -98,8 +91,10 @@ public class Intrastat_ExportFromWindow extends JavaProcess
 	@Override
 	protected String doIt()
 	{
-		final PInstanceId pinstanceId = getPinstanceId();
-		final String sql = String.format(SQL_TEMPLATE, pinstanceId.getRepoId());
+		final Set<Integer> selectedIds = getSelectedRowIds().toIntSet();
+		DB.createT_Selection(getPinstanceId(), selectedIds, ITrx.TRXNAME_None);
+
+		final String sql = String.format(SQL_TEMPLATE, getPinstanceId().getRepoId());
 		final File csv = runCsvExport(sql);
 
 		getResult().setReportData(csv);
