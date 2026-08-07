@@ -77,14 +77,13 @@ public class Intrastat_ExportFromWindow extends JavaProcess
 			"       TO_CHAR(SUM(d.LineNetAmt),   'FM9999999D00')                               AS \"StatisticalValue\",",
 			"       CASE WHEN d.IsSOTrx = 'Y' THEN bp.VATaxID END                              AS \"Recipient-VAT-No\"",
 			"FROM  Intrastat_Report_Detail_V d",
-			"LEFT JOIN M_Product  p  ON p.M_Product_ID   = d.M_Product_ID",
+			"JOIN M_Product  p  ON p.M_Product_ID   = d.M_Product_ID AND p.IsStocked = 'Y'",
 			"LEFT JOIN C_BPartner bp ON bp.C_BPartner_ID = d.C_BPartner_ID",
 			"WHERE d.Intrastat_Report_Detail_V_ID IN",
 			"      (SELECT T_Selection_ID FROM T_Selection WHERE AD_PInstance_ID = %1$d)",
 			// Match report.Intrastat_Export's stricter filters — the view alone lets in null-
 			// tariff rows (non-zero amount) and non-stocked products for its debugging use case.
 			"  AND d.CustomsTariff IS NOT NULL",
-			"  AND p.IsStocked = 'Y'",
 			"GROUP BY d.CustomsTariff,",
 			"         p.Name,",
 			"         d.DeliveryCountry,",
