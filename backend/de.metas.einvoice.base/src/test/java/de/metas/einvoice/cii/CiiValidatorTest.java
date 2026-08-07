@@ -116,6 +116,7 @@ public class CiiValidatorTest
 		// === Currency ===
 		final I_C_Currency currency = newInstance(I_C_Currency.class);
 		currency.setISO_Code("EUR");
+		currency.setDescription("EUR");
 		saveRecord(currency);
 
 		// === Seller bank account (IBAN for BR-61) ===
@@ -281,6 +282,7 @@ public class CiiValidatorTest
 		// === Currency ===
 		final I_C_Currency currency = newInstance(I_C_Currency.class);
 		currency.setISO_Code("EUR");
+		currency.setDescription("EUR");
 		currency.setStdPrecision(2);
 		saveRecord(currency);
 
