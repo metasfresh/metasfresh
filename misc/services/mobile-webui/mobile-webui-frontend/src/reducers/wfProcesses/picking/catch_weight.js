@@ -46,8 +46,17 @@ export const computeCatchWeightsArrayForLine = ({ line }) => {
  * from the value itself (`countDecimalPlaces`) and renders all 15 decimals verbatim into the UI.
  */
 const sumQtys = (qty1, qty2) => {
+  const sum = qty1 + qty2;
   const decimals = Math.max(countDecimalPlaces(qty1), countDecimalPlaces(qty2));
-  return parseFloat((qty1 + qty2).toFixed(decimals));
+
+  // `countDecimalPlaces` inspects `String(num)`, and JS switches to exponential notation below 1e-6
+  // ("1e-7" has no decimal point), so it reports 0 decimals for such a value. Rounding to 0 decimals
+  // there would truncate the quantity away entirely, so leave a sum of non-integer operands unrounded.
+  if (decimals === 0 && !(Number.isInteger(qty1) && Number.isInteger(qty2))) {
+    return sum;
+  }
+
+  return parseFloat(sum.toFixed(decimals));
 };
 
 const addCatchWeightToMap = (catchWeightsMap, catchWeight) => {

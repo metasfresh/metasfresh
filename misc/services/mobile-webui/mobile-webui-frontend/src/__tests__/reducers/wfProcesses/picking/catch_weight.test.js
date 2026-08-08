@@ -39,6 +39,23 @@ describe('picking catch_weight', () => {
       ]);
     });
 
+    // Every addition is (accumulator, nextStepQty), so the decimals must come from BOTH operands: keying
+    // only off the accumulator (1 decimal here) would round 1.501 back to 1.5 and lose every later step.
+    it('keeps the more precise operand precision when the step precisions differ', () => {
+      const steps = [1.5, 0.001, 0.001, 0.001, 0.001, 0.001];
+      expect(computeCatchWeightsArrayForLine({ line: lineWithCatchWeightSteps(...steps) })).toEqual([
+        { qty: 1.505, uom: 'kg' },
+      ]);
+    });
+
+    // Below 1e-6 String(num) yields exponential notation, so countDecimalPlaces reports 0 decimals;
+    // rounding to 0 there would truncate the quantity to nothing.
+    it('does not truncate sub-microgram-scale quantities to zero', () => {
+      expect(computeCatchWeightsArrayForLine({ line: lineWithCatchWeightSteps(1e-7, 1e-7) })).toEqual([
+        { qty: 2e-7, uom: 'kg' },
+      ]);
+    });
+
     it('keeps catch weights of different UOMs apart', () => {
       const line = {
         steps: {
