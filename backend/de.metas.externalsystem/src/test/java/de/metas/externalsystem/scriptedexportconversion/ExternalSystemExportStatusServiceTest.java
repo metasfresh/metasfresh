@@ -401,6 +401,92 @@ public class ExternalSystemExportStatusServiceTest
 		assertThat(result).containsExactly(configId);
 	}
 
+	// -----------------------------------------------------------------------
+	// recordManualStatusChange — writes a NEW, PInstance-stamped attempt row; prior rows are history
+	// -----------------------------------------------------------------------
+
+	/**
+	 * A manual status change (the "Change EPCIS Export Status" process) must append a NEW attempt row
+	 * stamped with the process PInstance (who/when audit) and leave the prior attempt untouched.
+	 */
+	@Test
+	void recordManualStatusChange_appendsNewStampedRow_priorAttemptUntouched()
+	{
+		final TableRecordReference ref = newInOutRef();
+		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
+		final PInstanceId sendP = PInstanceId.ofRepoId(1301);
+		final PInstanceId manualP = PInstanceId.ofRepoId(1302);
+
+		// a prior, successfully-sent attempt ...
+		service.recordPending(configId, ref);
+		service.markEnqueued(configId, ref, sendP);
+		service.markSent(sendP, HttpStatus.OK);
+
+		// ... then an operator sets it to DontSend via the process
+		service.recordManualStatusChange(configId, ref, ExternalSystemExportStatus.DontSend, manualP);
+
+		final List<ScriptedExportConversionStatus> rows = repo.getByConfigId(configId);
+		assertThat(rows).hasSize(2); // prior Sent + the new DontSend — nothing overwritten
+
+		final ScriptedExportConversionStatus latest = repo.getLatestByConfigAndRecord(configId, ref).get();
+		assertThat(latest.getStatus()).isEqualTo(ExternalSystemExportStatus.DontSend);
+		assertThat(latest.getPInstanceId()).isEqualTo(manualP);
+	}
+
+	// -----------------------------------------------------------------------
+	// getLatestStatusesBySourceRecord — MUST dedupe to the latest attempt PER config
+	// -----------------------------------------------------------------------
+
+	/**
+	 * REGRESSION: getLatestStatusesBySourceRecord must return exactly ONE row per config — the newest
+	 * attempt — not the whole per-attempt history. A config that errored and was then re-sent
+	 * successfully (>=2 rows) must report only its latest (Sent); returning both rows made the WebUI
+	 * "from status" ambiguous (2 distinct statuses -> null) and disabled the change process.
+	 */
+	@Test
+	void getLatestStatusesBySourceRecord_dedupesToLatestAttemptPerConfig()
+	{
+		final TableRecordReference ref = newInOutRef();
+		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
+
+		// older attempt errored ...
+		repo.insertNewAttempt(ScriptedExportConversionStatusCreateRequest.builder()
+				.configId(configId).sourceRecord(ref).status(ExternalSystemExportStatus.Error).build());
+		// ... latest attempt (a successful re-send) is Sent
+		repo.insertNewAttempt(ScriptedExportConversionStatusCreateRequest.builder()
+				.configId(configId).sourceRecord(ref).status(ExternalSystemExportStatus.Sent).build());
+
+		final List<ScriptedExportConversionStatus> latest = service.getLatestStatusesBySourceRecord(ref);
+		assertThat(latest).hasSize(1);
+		assertThat(latest.get(0).getStatus()).isEqualTo(ExternalSystemExportStatus.Sent);
+	}
+
+	/**
+	 * With several configs each carrying multiple attempts, getLatestStatusesBySourceRecord returns one
+	 * row per config, each being that config's newest attempt.
+	 */
+	@Test
+	void getLatestStatusesBySourceRecord_onePerConfig_acrossConfigs()
+	{
+		final TableRecordReference ref = newInOutRef();
+
+		// config A: errored then re-sent Sent
+		final ExternalSystemScriptedExportConversionConfigId idA = newConfigId();
+		repo.insertNewAttempt(ScriptedExportConversionStatusCreateRequest.builder()
+				.configId(idA).sourceRecord(ref).status(ExternalSystemExportStatus.Error).build());
+		repo.insertNewAttempt(ScriptedExportConversionStatusCreateRequest.builder()
+				.configId(idA).sourceRecord(ref).status(ExternalSystemExportStatus.Sent).build());
+
+		// config B: single Pending attempt
+		final ExternalSystemScriptedExportConversionConfigId idB = newConfigId();
+		service.recordPending(idB, ref);
+
+		final List<ScriptedExportConversionStatus> latest = service.getLatestStatusesBySourceRecord(ref);
+		assertThat(latest).hasSize(2);
+		assertThat(latest).extracting(ScriptedExportConversionStatus::getStatus)
+				.containsExactlyInAnyOrder(ExternalSystemExportStatus.Sent, ExternalSystemExportStatus.Pending);
+	}
+
 	private int getM_InOutTableId()
 	{
 		return Services.get(IADTableDAO.class).retrieveTableId(I_M_InOut.Table_Name);
