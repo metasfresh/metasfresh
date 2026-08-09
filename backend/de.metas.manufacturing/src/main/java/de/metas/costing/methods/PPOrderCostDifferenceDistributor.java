@@ -144,6 +144,44 @@ public class PPOrderCostDifferenceDistributor
 				residualAndQty.getManufacturedQty());
 	}
 
+	/**
+	 * Recomputes the capitalize/COGS split for the given order for posting purposes ({@code Doc_PPCostCollector}),
+	 * WITHOUT moving the finished good's {@link CurrentCost} price: the price was already moved when the
+	 * order's {@code CostDifferenceDistribution} cost collector was created (see {@link #distribute}).
+	 * <p>
+	 * Unlike {@link #distribute}, this method is read-only: it calls the read-only {@link #computeSplit}, never
+	 * {@link #distributeOnto} (which mutates the price), and never saves the {@link CurrentCost} — calling it
+	 * repeatedly (e.g. on a repost) does not double-move the price.
+	 *
+	 * @return a zero split ({@link CostAmountDetailed#zero}) when there is nothing to discharge, matching
+	 * {@link #distribute}'s no-op case
+	 */
+	public CostAmountDetailed computeSplitForPosting(@NonNull final PPOrderId orderId)
+	{
+		final I_PP_Order order = ppOrdersRepo.getById(orderId);
+
+		final ClientId clientId = ClientId.ofRepoId(order.getAD_Client_ID());
+		final AcctSchemaId acctSchemaId = acctSchemasRepo.getPrimaryAcctSchemaId(clientId);
+		final AcctSchema acctSchema = acctSchemasRepo.getById(acctSchemaId);
+		final CostingMethod costingMethod = acctSchema.getCosting().getCostingMethod();
+		final CostElementId materialCostElementId = getMaterialCostElementId(costingMethod);
+
+		final PPOrderCosts orderCosts = ppOrderCostsService.getByOrderId(orderId);
+		final ResidualAndManufacturedQty residualAndQty = computeResidualAndManufacturedQty(orderCosts, acctSchemaId, materialCostElementId);
+
+		if (residualAndQty.getResidual().isZero())
+		{
+			return CostAmountDetailed.zero(residualAndQty.getResidual().getCurrencyId());
+		}
+
+		final CurrentCost currentCost = currentCostsRepo.getOrCreate(residualAndQty.getMainProductCostSegment());
+
+		// read-only: computeSplit only reads currentCost's currentQty/precision/currencyId; it never mutates
+		// or saves it (distributeOnto, which does move the price via addWeightedAverage, is used only at
+		// distribution time by #distribute).
+		return computeSplit(residualAndQty.getResidual(), residualAndQty.getManufacturedQty(), currentCost);
+	}
+
 	private boolean isAlreadyDistributed(@NonNull final PPOrderId orderId)
 	{
 		return costCollectorsService.getByOrderId(orderId).stream()

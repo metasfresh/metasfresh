@@ -22,6 +22,7 @@ package de.metas.manufacturing.acct;
  * #L%
  */
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.Account;
 import de.metas.acct.accounts.ProductAcctType;
@@ -31,16 +32,21 @@ import de.metas.acct.doc.AcctDocContext;
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElement;
+import de.metas.costing.methods.CostAmountDetailed;
+import de.metas.costing.methods.PPOrderCostDifferenceDistributor;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocBaseType;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.Value;
+import org.compiere.SpringContextHolder;
 import org.compiere.acct.Doc;
 import org.compiere.acct.Fact;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.PPCostCollectorQuantities;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Cost_Collector;
 
 import javax.annotation.Nullable;
@@ -61,6 +67,7 @@ import java.util.List;
 public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 {
 	private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
+	private final PPOrderCostDifferenceDistributor costDifferenceDistributor = SpringContextHolder.instance.getBean(PPOrderCostDifferenceDistributor.class);
 
 	/**
 	 * Pseudo Line
@@ -159,6 +166,10 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		else if (CostCollectorType.ActivityControl.equals(costCollectorType))
 		{
 			facts.addAll(createFacts_ActivityControl(as));
+		}
+		else if (CostCollectorType.CostDifferenceDistribution.equals(costCollectorType))
+		{
+			facts.addAll(createFacts_CostDifferenceDistribution(as));
 		}
 		else
 		{
@@ -387,5 +398,110 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		}
 
 		return facts;
+	}
+
+	/**
+	 * <pre>
+	 * residual > 0 (Eg1):
+	 *   Product Asset (capitalized)   DR
+	 *   COGS (already-shipped spill)  DR
+	 *   WIP                                CR
+	 * residual < 0 (Eg2): reverse (DR WIP / CR Product Asset).
+	 * </pre>
+	 * The split is recomputed from {@code PP_Order_Cost} at posting time via
+	 * {@link PPOrderCostDifferenceDistributor#computeSplitForPosting} (read-only — the current cost price was
+	 * already moved when the order's {@code CostDifferenceDistribution} collector was created by the
+	 * "Distribute" action). The amount is controller-triggered, not derived via {@code docLine.getCreateCosts}.
+	 */
+	private List<Fact> createFacts_CostDifferenceDistribution(final AcctSchema as)
+	{
+		final PPOrderId orderId = PPOrderId.ofRepoId(getPP_Cost_Collector().getPP_Order_ID());
+		final CostAmountDetailed split = costDifferenceDistributor.computeSplitForPosting(orderId);
+
+		final ImmutableList<CostDifferenceDistributionLeg> legs = costDifferenceDistributionLegs(split);
+		if (legs.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final DocLine_CostCollector docLine = getLine();
+		final Quantity qty = getMovementQty();
+
+		final Fact fact = new Fact(this, as, PostingType.Actual);
+		for (final CostDifferenceDistributionLeg leg : legs)
+		{
+			final Account account = docLine.getAccount(leg.getAcctType(), as);
+			final CostAmount absAmt = leg.getAbsAmt();
+			fact.createLine()
+					.setDocLine(docLine)
+					.setAccount(account)
+					.setAmtSource(absAmt.getCurrencyId(),
+							leg.isDebit() ? absAmt.toBigDecimal() : null,
+							leg.isDebit() ? null : absAmt.toBigDecimal())
+					.setQty(leg.isDebit() ? qty : qty.negate())
+					.additionalDescription("CostDifferenceDistribution")
+					.projectId(docLine.getC_Project_ID())
+					.activityId(docLine.getActivityId())
+					.campaignId(docLine.getC_Campaign_ID())
+					.locatorId(docLine.getM_Locator_ID())
+					.buildAndAdd();
+		}
+
+		return ImmutableList.of(fact);
+	}
+
+	/**
+	 * Decomposes the capitalize/COGS {@code split} into the (at most 3) balanced fact legs for
+	 * {@link #createFacts_CostDifferenceDistribution}: {@code P_Asset_Acct} (capitalized), {@code P_COGS_Acct}
+	 * (already-shipped spill) and {@code P_WIP_Acct} (the residual, opposite sign) — zero-amount legs are
+	 * omitted. Debit/credit is routed purely by sign (positive = debit, negative = credit); since
+	 * {@code capitalized + cogs == residual} by construction, the legs always sum to zero (balanced).
+	 * <p>
+	 * Pure/DB-free by design so the sign-routing logic can be unit-tested without the full {@code Doc_}/{@code Fact}
+	 * posting machinery (see {@code Doc_PPCostCollectorCostDifferenceDistributionTest}).
+	 */
+	@VisibleForTesting
+	static ImmutableList<CostDifferenceDistributionLeg> costDifferenceDistributionLegs(@NonNull final CostAmountDetailed split)
+	{
+		final CostAmount residual = split.getMainAmt();
+		if (residual.isZero())
+		{
+			return ImmutableList.of();
+		}
+
+		final ImmutableList.Builder<CostDifferenceDistributionLeg> legs = ImmutableList.builder();
+		addLegIfNotZero(legs, ProductAcctType.P_Asset_Acct, split.getCostAdjustmentAmt());
+		addLegIfNotZero(legs, ProductAcctType.P_COGS_Acct, split.getAlreadyShippedAmt());
+		addLegIfNotZero(legs, ProductAcctType.P_WIP_Acct, residual.negate());
+		return legs.build();
+	}
+
+	private static void addLegIfNotZero(
+			@NonNull final ImmutableList.Builder<CostDifferenceDistributionLeg> legs,
+			@NonNull final ProductAcctType acctType,
+			@NonNull final CostAmount amt)
+	{
+		if (!amt.isZero())
+		{
+			legs.add(new CostDifferenceDistributionLeg(acctType, amt));
+		}
+	}
+
+	@Value
+	static class CostDifferenceDistributionLeg
+	{
+		@NonNull ProductAcctType acctType;
+		/** positive =&gt; debit; negative =&gt; credit. */
+		@NonNull CostAmount amt;
+
+		boolean isDebit()
+		{
+			return amt.signum() > 0;
+		}
+
+		CostAmount getAbsAmt()
+		{
+			return amt.signum() < 0 ? amt.negate() : amt;
+		}
 	}
 }
