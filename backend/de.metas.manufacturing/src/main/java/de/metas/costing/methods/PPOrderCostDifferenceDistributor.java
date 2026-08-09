@@ -101,7 +101,7 @@ public class PPOrderCostDifferenceDistributor
 		// time. The order stays Completed after distribution, so the "Distribute" action would remain offered.
 		if (isAlreadyDistributed(orderId))
 		{
-			throw new AdempiereException("@Already@ @Processed@")
+			throw new AdempiereException("@Processed@")
 					.setParameter("PP_Order_ID", orderId)
 					.appendParametersToMessage();
 		}
