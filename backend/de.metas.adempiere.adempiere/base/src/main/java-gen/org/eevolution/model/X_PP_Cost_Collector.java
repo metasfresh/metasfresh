@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_Cost_Collector, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1396466864L;
+	private static final long serialVersionUID = -449150006L;
 
     /** Standard Constructor */
     public X_PP_Cost_Collector (final Properties ctx, final int PP_Cost_Collector_ID, @Nullable final String trxName)
@@ -137,6 +137,39 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 		return get_ValueAsInt(COLUMNNAME_C_DocTypeTarget_ID);
 	}
 
+	/** 
+	 * CostCollectorType AD_Reference_ID=53287
+	 * Reference name: PP_CostCollectorType Transaction Manufacturing Management
+	 */
+	public static final int COSTCOLLECTORTYPE_AD_Reference_ID=53287;
+	/** Material Receipt = 100 */
+	public static final String COSTCOLLECTORTYPE_MaterialReceipt = "100";
+	/** Component Issue = 110 */
+	public static final String COSTCOLLECTORTYPE_ComponentIssue = "110";
+	/** Usege Variance = 120 */
+	public static final String COSTCOLLECTORTYPE_UsegeVariance = "120";
+	/** Method Change Variance = 130 */
+	public static final String COSTCOLLECTORTYPE_MethodChangeVariance = "130";
+	/** Rate Variance = 140 */
+	public static final String COSTCOLLECTORTYPE_RateVariance = "140";
+	/** Mix Variance = 150 */
+	public static final String COSTCOLLECTORTYPE_MixVariance = "150";
+	/** Activity Control = 160 */
+	public static final String COSTCOLLECTORTYPE_ActivityControl = "160";
+	/** CostDifferenceDistribution = 170 */
+	public static final String COSTCOLLECTORTYPE_CostDifferenceDistribution = "170";
+	@Override
+	public void setCostCollectorType (final java.lang.String CostCollectorType)
+	{
+		set_Value (COLUMNNAME_CostCollectorType, CostCollectorType);
+	}
+
+	@Override
+	public java.lang.String getCostCollectorType() 
+	{
+		return get_ValueAsString(COLUMNNAME_CostCollectorType);
+	}
+
 	@Override
 	public void setC_Project_ID (final int C_Project_ID)
 	{
@@ -165,37 +198,6 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 	public int getC_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
-	}
-
-	/** 
-	 * CostCollectorType AD_Reference_ID=53287
-	 * Reference name: PP_CostCollectorType Transaction Manufacturing Management
-	 */
-	public static final int COSTCOLLECTORTYPE_AD_Reference_ID=53287;
-	/** Material Receipt = 100 */
-	public static final String COSTCOLLECTORTYPE_MaterialReceipt = "100";
-	/** Component Issue = 110 */
-	public static final String COSTCOLLECTORTYPE_ComponentIssue = "110";
-	/** Usege Variance = 120 */
-	public static final String COSTCOLLECTORTYPE_UsegeVariance = "120";
-	/** Method Change Variance = 130 */
-	public static final String COSTCOLLECTORTYPE_MethodChangeVariance = "130";
-	/** Rate Variance = 140 */
-	public static final String COSTCOLLECTORTYPE_RateVariance = "140";
-	/** Mix Variance = 150 */
-	public static final String COSTCOLLECTORTYPE_MixVariance = "150";
-	/** Activity Control = 160 */
-	public static final String COSTCOLLECTORTYPE_ActivityControl = "160";
-	@Override
-	public void setCostCollectorType (final java.lang.String CostCollectorType)
-	{
-		set_Value (COLUMNNAME_CostCollectorType, CostCollectorType);
-	}
-
-	@Override
-	public java.lang.String getCostCollectorType() 
-	{
-		return get_ValueAsString(COLUMNNAME_CostCollectorType);
 	}
 
 	@Override
@@ -431,6 +433,31 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 	}
 
 	@Override
+	public void setMovementDate (final java.sql.Timestamp MovementDate)
+	{
+		set_Value (COLUMNNAME_MovementDate, MovementDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getMovementDate() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_MovementDate);
+	}
+
+	@Override
+	public void setMovementQty (final BigDecimal MovementQty)
+	{
+		set_Value (COLUMNNAME_MovementQty, MovementQty);
+	}
+
+	@Override
+	public BigDecimal getMovementQty() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_MovementQty);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setM_Picking_Candidate_ID (final int M_Picking_Candidate_ID)
 	{
 		if (M_Picking_Candidate_ID < 1) 
@@ -473,31 +500,6 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 	public int getM_Warehouse_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
-	}
-
-	@Override
-	public void setMovementDate (final java.sql.Timestamp MovementDate)
-	{
-		set_Value (COLUMNNAME_MovementDate, MovementDate);
-	}
-
-	@Override
-	public java.sql.Timestamp getMovementDate() 
-	{
-		return get_ValueAsTimestamp(COLUMNNAME_MovementDate);
-	}
-
-	@Override
-	public void setMovementQty (final BigDecimal MovementQty)
-	{
-		set_Value (COLUMNNAME_MovementQty, MovementQty);
-	}
-
-	@Override
-	public BigDecimal getMovementQty() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_MovementQty);
-		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -715,6 +717,32 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 	}
 
 	@Override
+	public void setScrappedQty (final @Nullable BigDecimal ScrappedQty)
+	{
+		set_Value (COLUMNNAME_ScrappedQty, ScrappedQty);
+	}
+
+	@Override
+	public BigDecimal getScrappedQty() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ScrappedQty);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setSetupTimeReal (final @Nullable BigDecimal SetupTimeReal)
+	{
+		set_Value (COLUMNNAME_SetupTimeReal, SetupTimeReal);
+	}
+
+	@Override
+	public BigDecimal getSetupTimeReal() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_SetupTimeReal);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public org.compiere.model.I_S_Resource getS_Resource()
 	{
 		return get_ValueAsPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class);
@@ -739,32 +767,6 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 	public int getS_Resource_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_S_Resource_ID);
-	}
-
-	@Override
-	public void setScrappedQty (final @Nullable BigDecimal ScrappedQty)
-	{
-		set_Value (COLUMNNAME_ScrappedQty, ScrappedQty);
-	}
-
-	@Override
-	public BigDecimal getScrappedQty() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ScrappedQty);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setSetupTimeReal (final @Nullable BigDecimal SetupTimeReal)
-	{
-		set_Value (COLUMNNAME_SetupTimeReal, SetupTimeReal);
-	}
-
-	@Override
-	public BigDecimal getSetupTimeReal() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_SetupTimeReal);
-		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override

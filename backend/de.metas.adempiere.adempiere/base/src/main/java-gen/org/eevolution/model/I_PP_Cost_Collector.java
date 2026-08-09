@@ -167,7 +167,7 @@ public interface I_PP_Cost_Collector
 	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
 	/**
-	 * Set Zielbelegart.
+	 * Set Document Type.
 	 * Target document type for conversing documents
 	 *
 	 * <br>Type: Table
@@ -177,7 +177,7 @@ public interface I_PP_Cost_Collector
 	void setC_DocTypeTarget_ID (int C_DocTypeTarget_ID);
 
 	/**
-	 * Get Zielbelegart.
+	 * Get Document Type.
 	 * Target document type for conversing documents
 	 *
 	 * <br>Type: Table
@@ -187,50 +187,6 @@ public interface I_PP_Cost_Collector
 	int getC_DocTypeTarget_ID();
 
 	String COLUMNNAME_C_DocTypeTarget_ID = "C_DocTypeTarget_ID";
-
-	/**
-	 * Set Project.
-	 * Financial Project
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Project_ID (int C_Project_ID);
-
-	/**
-	 * Get Project.
-	 * Financial Project
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Project_ID();
-
-	String COLUMNNAME_C_Project_ID = "C_Project_ID";
-
-	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Cost Collector Type.
@@ -256,6 +212,28 @@ public interface I_PP_Cost_Collector
 	String COLUMNNAME_CostCollectorType = "CostCollectorType";
 
 	/**
+	 * Set Project.
+	 * Financial Project
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Project_ID (int C_Project_ID);
+
+	/**
+	 * Get Project.
+	 * Financial Project
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Project_ID();
+
+	String COLUMNNAME_C_Project_ID = "C_Project_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -279,6 +257,28 @@ public interface I_PP_Cost_Collector
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Accounting Date.
@@ -326,7 +326,7 @@ public interface I_PP_Cost_Collector
 
 	/**
 	 * Set Process Batch.
-	 * The targeted status of the document
+	 * Der zukünftige Status des Belegs
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -336,7 +336,7 @@ public interface I_PP_Cost_Collector
 
 	/**
 	 * Get Process Batch.
-	 * The targeted status of the document
+	 * Der zukünftige Status des Belegs
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -550,6 +550,50 @@ public interface I_PP_Cost_Collector
 	String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
 
 	/**
+	 * Set Date.
+	 * Date a product was moved in or out of inventory
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setMovementDate (java.sql.Timestamp MovementDate);
+
+	/**
+	 * Get Date.
+	 * Date a product was moved in or out of inventory
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getMovementDate();
+
+	ModelColumn<I_PP_Cost_Collector, Object> COLUMN_MovementDate = new ModelColumn<>(I_PP_Cost_Collector.class, "MovementDate", null);
+	String COLUMNNAME_MovementDate = "MovementDate";
+
+	/**
+	 * Set Qty.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setMovementQty (BigDecimal MovementQty);
+
+	/**
+	 * Get Qty.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getMovementQty();
+
+	ModelColumn<I_PP_Cost_Collector, Object> COLUMN_MovementQty = new ModelColumn<>(I_PP_Cost_Collector.class, "MovementQty", null);
+	String COLUMNNAME_MovementQty = "MovementQty";
+
+	/**
 	 * Set Picking candidate.
 	 *
 	 * <br>Type: Search
@@ -613,50 +657,6 @@ public interface I_PP_Cost_Collector
 	int getM_Warehouse_ID();
 
 	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
-
-	/**
-	 * Set Bewegungs-Datum.
-	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setMovementDate (java.sql.Timestamp MovementDate);
-
-	/**
-	 * Get Bewegungs-Datum.
-	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getMovementDate();
-
-	ModelColumn<I_PP_Cost_Collector, Object> COLUMN_MovementDate = new ModelColumn<>(I_PP_Cost_Collector.class, "MovementDate", null);
-	String COLUMNNAME_MovementDate = "MovementDate";
-
-	/**
-	 * Set Qty.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setMovementQty (BigDecimal MovementQty);
-
-	/**
-	 * Get Qty.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getMovementQty();
-
-	ModelColumn<I_PP_Cost_Collector, Object> COLUMN_MovementQty = new ModelColumn<>(I_PP_Cost_Collector.class, "MovementQty", null);
-	String COLUMNNAME_MovementQty = "MovementQty";
 
 	/**
 	 * Set Posting status.
@@ -917,35 +917,7 @@ public interface I_PP_Cost_Collector
 	String COLUMNNAME_Reversal_ID = "Reversal_ID";
 
 	/**
-	 * Set Ressource.
-	 * Resource
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setS_Resource_ID (int S_Resource_ID);
-
-	/**
-	 * Get Ressource.
-	 * Resource
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getS_Resource_ID();
-
-	org.compiere.model.I_S_Resource getS_Resource();
-
-	void setS_Resource(org.compiere.model.I_S_Resource S_Resource);
-
-	ModelColumn<I_PP_Cost_Collector, org.compiere.model.I_S_Resource> COLUMN_S_Resource_ID = new ModelColumn<>(I_PP_Cost_Collector.class, "S_Resource_ID", org.compiere.model.I_S_Resource.class);
-	String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
-
-	/**
-	 * Set Verworfene Menge.
-	 * The Quantity scrapped due to QA issues
+	 * Set Qty Scrapped.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -954,8 +926,7 @@ public interface I_PP_Cost_Collector
 	void setScrappedQty (@Nullable BigDecimal ScrappedQty);
 
 	/**
-	 * Get Verworfene Menge.
-	 * The Quantity scrapped due to QA issues
+	 * Get Qty Scrapped.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -986,6 +957,33 @@ public interface I_PP_Cost_Collector
 
 	ModelColumn<I_PP_Cost_Collector, Object> COLUMN_SetupTimeReal = new ModelColumn<>(I_PP_Cost_Collector.class, "SetupTimeReal", null);
 	String COLUMNNAME_SetupTimeReal = "SetupTimeReal";
+
+	/**
+	 * Set Resource.
+	 * Resource
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setS_Resource_ID (int S_Resource_ID);
+
+	/**
+	 * Get Resource.
+	 * Resource
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getS_Resource_ID();
+
+	org.compiere.model.I_S_Resource getS_Resource();
+
+	void setS_Resource(org.compiere.model.I_S_Resource S_Resource);
+
+	ModelColumn<I_PP_Cost_Collector, org.compiere.model.I_S_Resource> COLUMN_S_Resource_ID = new ModelColumn<>(I_PP_Cost_Collector.class, "S_Resource_ID", org.compiere.model.I_S_Resource.class);
+	String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
 
 	/**
 	 * Get Updated.
