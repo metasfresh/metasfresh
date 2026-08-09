@@ -181,6 +181,13 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 				return CostDetailCreateResultsList.ofNullable(createUsageVariance(request.withProductIdAndQty(actualResourceProductId, qty)));
 			}
 		}
+		else if (costCollectorType.isCostDifferenceDistribution())
+		{
+			// The WIP cost-difference distribution (capitalize on-hand qty / spill remainder to COGS) is computed
+			// against M_Cost directly by the distributor service that creates this collector; no CostDetail is
+			// created here (no-op) - this handler only reacts to qty/price-driven cost detail requests.
+			return CostDetailCreateResultsList.EMPTY;
+		}
 		else
 		{
 			throw new AdempiereException("Unknown cost collector type: " + costCollectorType);

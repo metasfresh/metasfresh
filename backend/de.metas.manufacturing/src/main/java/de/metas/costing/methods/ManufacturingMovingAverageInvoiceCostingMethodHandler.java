@@ -99,6 +99,15 @@ public class ManufacturingMovingAverageInvoiceCostingMethodHandler implements Co
 			currentCost = null;
 			result = null;
 		}
+		else if (costCollectorType.isCostDifferenceDistribution())
+		{
+			// The WIP cost-difference distribution (capitalize on-hand qty / spill remainder to COGS) is computed
+			// against M_Cost directly by the distributor service that creates this collector; this method-specific
+			// handler does not move any cost here (no-op), independent of the manufacturing costing method.
+			orderCosts = null;
+			currentCost = null;
+			result = null;
+		}
 		else
 		{
 			orderCosts = null;

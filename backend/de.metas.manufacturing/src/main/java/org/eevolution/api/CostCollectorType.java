@@ -43,7 +43,8 @@ public enum CostCollectorType
 	MethodChangeVariance(X_PP_Cost_Collector.COSTCOLLECTORTYPE_MethodChangeVariance), //
 	RateVariance(X_PP_Cost_Collector.COSTCOLLECTORTYPE_RateVariance), //
 	MixVariance(X_PP_Cost_Collector.COSTCOLLECTORTYPE_MixVariance), //
-	ActivityControl(X_PP_Cost_Collector.COSTCOLLECTORTYPE_ActivityControl) //
+	ActivityControl(X_PP_Cost_Collector.COSTCOLLECTORTYPE_ActivityControl), //
+	CostDifferenceDistribution(X_PP_Cost_Collector.COSTCOLLECTORTYPE_CostDifferenceDistribution) //
 	;
 
 	@Getter
@@ -151,5 +152,15 @@ public enum CostCollectorType
 	public boolean isMaterialMethodChangeVariance(@Nullable final PPOrderBOMLineId orderBOMLineId)
 	{
 		return this == MethodChangeVariance && orderBOMLineId != null;
+	}
+
+	/**
+	 * WIP cost-difference distribution (capitalize on-hand / spill to COGS), created by the explicit "Distribute"
+	 * action on a completed-but-not-closed order. Not a variance, not a material movement, not an activity-control
+	 * collector: it carries an already-computed amount rather than deriving one from qty x price.
+	 */
+	public boolean isCostDifferenceDistribution()
+	{
+		return this == CostDifferenceDistribution;
 	}
 }
