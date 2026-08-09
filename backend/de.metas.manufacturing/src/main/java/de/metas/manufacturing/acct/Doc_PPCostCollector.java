@@ -408,6 +408,10 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	 *   WIP                                CR
 	 * residual < 0 (Eg2): reverse (DR WIP / CR Product Asset).
 	 * </pre>
+	 * Routing is purely sign-based per leg (see {@link #costDifferenceDistributionLegs}), so a negative residual
+	 * with a nonzero COGS spill also produces a 3-leg fact (CR Product Asset + CR COGS / DR WIP) — not only the
+	 * 2-leg case shown above for Eg2 (where the COGS leg happens to be zero).
+	 * <p>
 	 * The split is recomputed from {@code PP_Order_Cost} at posting time via
 	 * {@link PPOrderCostDifferenceDistributor#computeSplitForPosting} (read-only — the current cost price was
 	 * already moved when the order's {@code CostDifferenceDistribution} collector was created by the
@@ -416,7 +420,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	private List<Fact> createFacts_CostDifferenceDistribution(final AcctSchema as)
 	{
 		final PPOrderId orderId = PPOrderId.ofRepoId(getPP_Cost_Collector().getPP_Order_ID());
-		final CostAmountDetailed split = costDifferenceDistributor.computeSplitForPosting(orderId);
+		final CostAmountDetailed split = costDifferenceDistributor.computeSplitForPosting(orderId, as.getId());
 
 		final ImmutableList<CostDifferenceDistributionLeg> legs = costDifferenceDistributionLegs(split);
 		if (legs.isEmpty())

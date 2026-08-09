@@ -109,6 +109,32 @@ class Doc_PPCostCollectorCostDifferenceDistributionTest
 	}
 
 	@Test
+	void negativeResidual_withCogsSpill_threeLegs_assetAndCogsCredit_wipDebit()
+	{
+		// residual=-40, capitalized=-32, cogs=-8 (partial shipment on a negative residual too)
+		final CostAmountDetailed split = split("-40", "-32", "-8");
+
+		final ImmutableList<Doc_PPCostCollector.CostDifferenceDistributionLeg> legs =
+				Doc_PPCostCollector.costDifferenceDistributionLegs(split);
+
+		assertThat(legs).hasSize(3);
+
+		final Doc_PPCostCollector.CostDifferenceDistributionLeg asset = legByAcctType(legs, ProductAcctType.P_Asset_Acct);
+		assertThat(asset.isDebit()).isFalse(); // credit
+		assertThat(asset.getAbsAmt().toBigDecimal()).isEqualTo("32");
+
+		final Doc_PPCostCollector.CostDifferenceDistributionLeg cogs = legByAcctType(legs, ProductAcctType.P_COGS_Acct);
+		assertThat(cogs.isDebit()).isFalse(); // credit
+		assertThat(cogs.getAbsAmt().toBigDecimal()).isEqualTo("8");
+
+		final Doc_PPCostCollector.CostDifferenceDistributionLeg wip = legByAcctType(legs, ProductAcctType.P_WIP_Acct);
+		assertThat(wip.isDebit()).isTrue(); // debit
+		assertThat(wip.getAbsAmt().toBigDecimal()).isEqualTo("40");
+
+		assertThat(sumDr(legs).subtract(sumCr(legs))).isEqualTo(BigDecimal.ZERO); // balanced
+	}
+
+	@Test
 	void zeroResidual_noLegs()
 	{
 		final CostAmountDetailed split = split("0", "0", "0");

@@ -110,12 +110,8 @@ public class PPOrderCostDifferenceDistributor
 
 		final ClientId clientId = ClientId.ofRepoId(order.getAD_Client_ID());
 		final AcctSchemaId acctSchemaId = acctSchemasRepo.getPrimaryAcctSchemaId(clientId);
-		final AcctSchema acctSchema = acctSchemasRepo.getById(acctSchemaId);
-		final CostingMethod costingMethod = acctSchema.getCosting().getCostingMethod();
-		final CostElementId materialCostElementId = getMaterialCostElementId(costingMethod);
 
-		final PPOrderCosts orderCosts = ppOrderCostsService.getByOrderId(orderId);
-		final ResidualAndManufacturedQty residualAndQty = computeResidualAndManufacturedQty(orderCosts, acctSchemaId, materialCostElementId);
+		final ResidualAndManufacturedQty residualAndQty = computeResidualAndManufacturedQtyForOrder(orderId, acctSchemaId);
 
 		if (residualAndQty.getResidual().isZero())
 		{
@@ -145,41 +141,61 @@ public class PPOrderCostDifferenceDistributor
 	}
 
 	/**
-	 * Recomputes the capitalize/COGS split for the given order for posting purposes ({@code Doc_PPCostCollector}),
-	 * WITHOUT moving the finished good's {@link CurrentCost} price: the price was already moved when the
-	 * order's {@code CostDifferenceDistribution} cost collector was created (see {@link #distribute}).
+	 * Recomputes the capitalize/COGS split for the given order + {@link AcctSchemaId}, for posting purposes
+	 * ({@code Doc_PPCostCollector.createFacts(AcctSchema)} — which is invoked once per every {@code AcctSchema}
+	 * configured for the client, not only the primary one, so the caller MUST pass the schema it is posting to;
+	 * this method never re-derives "the" primary schema itself). It does NOT move the finished good's
+	 * {@link CurrentCost} price: the price was already moved (on the primary schema) when the order's
+	 * {@code CostDifferenceDistribution} cost collector was created (see {@link #distribute}).
 	 * <p>
 	 * Unlike {@link #distribute}, this method is read-only: it calls the read-only {@link #computeSplit}, never
-	 * {@link #distributeOnto} (which mutates the price), and never saves the {@link CurrentCost} — calling it
-	 * repeatedly (e.g. on a repost) does not double-move the price.
+	 * {@link #distributeOnto} (which mutates the price), and never creates or saves a {@link CurrentCost} row —
+	 * calling it repeatedly (e.g. on a repost) does not double-move the price. It throws if the {@link CurrentCost}
+	 * row is missing (expected to already exist from {@link #distribute}) rather than silently fabricating one.
 	 *
 	 * @return a zero split ({@link CostAmountDetailed#zero}) when there is nothing to discharge, matching
 	 * {@link #distribute}'s no-op case
 	 */
-	public CostAmountDetailed computeSplitForPosting(@NonNull final PPOrderId orderId)
+	public CostAmountDetailed computeSplitForPosting(@NonNull final PPOrderId orderId, @NonNull final AcctSchemaId acctSchemaId)
 	{
-		final I_PP_Order order = ppOrdersRepo.getById(orderId);
-
-		final ClientId clientId = ClientId.ofRepoId(order.getAD_Client_ID());
-		final AcctSchemaId acctSchemaId = acctSchemasRepo.getPrimaryAcctSchemaId(clientId);
-		final AcctSchema acctSchema = acctSchemasRepo.getById(acctSchemaId);
-		final CostingMethod costingMethod = acctSchema.getCosting().getCostingMethod();
-		final CostElementId materialCostElementId = getMaterialCostElementId(costingMethod);
-
-		final PPOrderCosts orderCosts = ppOrderCostsService.getByOrderId(orderId);
-		final ResidualAndManufacturedQty residualAndQty = computeResidualAndManufacturedQty(orderCosts, acctSchemaId, materialCostElementId);
+		final ResidualAndManufacturedQty residualAndQty = computeResidualAndManufacturedQtyForOrder(orderId, acctSchemaId);
 
 		if (residualAndQty.getResidual().isZero())
 		{
 			return CostAmountDetailed.zero(residualAndQty.getResidual().getCurrencyId());
 		}
 
-		final CurrentCost currentCost = currentCostsRepo.getOrCreate(residualAndQty.getMainProductCostSegment());
+		final CostSegmentAndElement mainProductCostSegment = residualAndQty.getMainProductCostSegment();
+		final CurrentCost currentCost = currentCostsRepo.getOrNull(mainProductCostSegment);
+		if (currentCost == null)
+		{
+			// Read-only: unlike distribute()/getOrCreate, never fabricate a new (zero-qty) CurrentCost row here —
+			// that would silently misroute the whole residual to COGS (qtyInStock would read 0).
+			throw new AdempiereException("CurrentCost record not found for " + mainProductCostSegment
+					+ " — expected to already exist from the 'Distribute' action");
+		}
 
 		// read-only: computeSplit only reads currentCost's currentQty/precision/currencyId; it never mutates
 		// or saves it (distributeOnto, which does move the price via addWeightedAverage, is used only at
 		// distribution time by #distribute).
 		return computeSplit(residualAndQty.getResidual(), residualAndQty.getManufacturedQty(), currentCost);
+	}
+
+	/**
+	 * Shared by {@link #distribute} and {@link #computeSplitForPosting}: resolves the material cost element for
+	 * the given {@code acctSchemaId}'s costing method, then recomputes the residual/manufactured-qty from the
+	 * order's {@code PP_Order_Cost} rows for that exact schema.
+	 */
+	private ResidualAndManufacturedQty computeResidualAndManufacturedQtyForOrder(
+			@NonNull final PPOrderId orderId,
+			@NonNull final AcctSchemaId acctSchemaId)
+	{
+		final AcctSchema acctSchema = acctSchemasRepo.getById(acctSchemaId);
+		final CostingMethod costingMethod = acctSchema.getCosting().getCostingMethod();
+		final CostElementId materialCostElementId = getMaterialCostElementId(costingMethod);
+
+		final PPOrderCosts orderCosts = ppOrderCostsService.getByOrderId(orderId);
+		return computeResidualAndManufacturedQty(orderCosts, acctSchemaId, materialCostElementId);
 	}
 
 	private boolean isAlreadyDistributed(@NonNull final PPOrderId orderId)
