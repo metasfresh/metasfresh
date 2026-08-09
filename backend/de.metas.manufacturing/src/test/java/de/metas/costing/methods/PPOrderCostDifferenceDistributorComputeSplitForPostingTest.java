@@ -29,6 +29,7 @@ import de.metas.ad_reference.ADReferenceService;
 import de.metas.business.BusinessTestHelper;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElement;
+import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostTypeId;
@@ -43,6 +44,7 @@ import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -122,7 +124,7 @@ class PPOrderCostDifferenceDistributorComputeSplitForPostingTest
 				.build();
 	}
 
-	private CostSegmentAndElement segment(final ProductId productId, final AcctSchemaId acctSchemaId, final de.metas.costing.CostElementId costElementId)
+	private CostSegmentAndElement segment(final ProductId productId, final AcctSchemaId acctSchemaId, final CostElementId costElementId)
 	{
 		return CostSegmentAndElement.builder()
 				.costingLevel(CostingLevel.Client)
@@ -141,7 +143,7 @@ class PPOrderCostDifferenceDistributorComputeSplitForPostingTest
 		return CostPrice.builder()
 				.ownCostPrice(CostAmount.of(new BigDecimal(ownCostPrice), currencyId))
 				.componentsCostPrice(CostAmount.zero(currencyId))
-				.uomId(de.metas.uom.UomId.ofRepoId(uomEach.getC_UOM_ID()))
+				.uomId(UomId.ofRepoId(uomEach.getC_UOM_ID()))
 				.build();
 	}
 
@@ -153,7 +155,7 @@ class PPOrderCostDifferenceDistributorComputeSplitForPostingTest
 	private void addPPOrderCosts(
 			final ImmutableList.Builder<PPOrderCost> costs,
 			final AcctSchemaId acctSchemaId,
-			final de.metas.costing.CostElementId costElementId,
+			final CostElementId costElementId,
 			final String issuedPrice,
 			final String issuedQty,
 			final String receivedPrice,
@@ -186,7 +188,7 @@ class PPOrderCostDifferenceDistributorComputeSplitForPostingTest
 
 	private void saveCurrentCost(
 			final AcctSchemaId acctSchemaId,
-			final de.metas.costing.CostElementId costElementId,
+			final CostElementId costElementId,
 			final String currentQty)
 	{
 		final I_M_Cost cost = InterfaceWrapperHelper.newInstance(I_M_Cost.class);
