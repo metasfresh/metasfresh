@@ -1,0 +1,305 @@
+/*
+ * #%L
+ * de.metas.manufacturing
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.costing.methods;
+
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.costing.CostAmount;
+import de.metas.costing.CostElement;
+import de.metas.costing.CostElementId;
+import de.metas.costing.CostSegmentAndElement;
+import de.metas.costing.CostingMethod;
+import de.metas.costing.CurrentCost;
+import de.metas.costing.ICostElementRepository;
+import de.metas.costing.impl.CurrentCostsRepository;
+import de.metas.money.CurrencyId;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.QuantityUOMConverter;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+import org.eevolution.api.CostCollectorType;
+import org.eevolution.api.IPPCostCollectorBL;
+import org.eevolution.api.IPPOrderCostBL;
+import org.eevolution.api.IPPOrderDAO;
+import org.eevolution.api.PPOrderCost;
+import org.eevolution.api.PPOrderCostTrxType;
+import org.eevolution.api.PPOrderCosts;
+import org.eevolution.api.PPOrderId;
+import org.eevolution.model.I_PP_Cost_Collector;
+import org.eevolution.model.I_PP_Order;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+
+/**
+ * Discharges the WIP cost residual of a completed-but-not-closed manufacturing order:
+ * the in-stock portion is capitalized onto the finished good's current cost price, the
+ * already-shipped remainder spills to COGS. Driven by the explicit "Distribute" action.
+ * <p>
+ * {@code residual = issued - received} is recomputed in Java from the order's {@code PP_Order_Cost}
+ * rows. It uses the same two sums as the {@code PP_Order.CostDifference} display column but with the
+ * <b>opposite sign</b>: that column shows {@code received - issued} (so it reads negative when a make
+ * costs more than it received), whereas the amount to discharge into inventory/COGS is
+ * {@code issued - received = -CostDifference}. Do not read the virtual column value.
+ * <p>
+ * The split math is method-independent (Standard / AveragePO / MovingAverageInvoice all settle
+ * through {@link CurrentCost}); it mirrors
+ * {@code MovingAverageInvoiceCostingMethodHandler.computeCostAmountDetailedForMatchInv} with
+ * {@code amtDifference = residual}, {@code receiptQty = manufacturedQty} and
+ * {@code on-hand = M_Cost.CurrentQty}.
+ */
+@Component
+@RequiredArgsConstructor
+public class PPOrderCostDifferenceDistributor
+{
+	private final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
+	private final IPPOrderCostBL ppOrderCostsService = Services.get(IPPOrderCostBL.class);
+	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
+	private final IPPCostCollectorBL costCollectorsService = Services.get(IPPCostCollectorBL.class);
+
+	@NonNull private final ICostElementRepository costElementsRepo;
+	@NonNull private final CurrentCostsRepository currentCostsRepo;
+	@NonNull private final CostingMethodHandlerUtils utils;
+
+	/**
+	 * Distributes the WIP cost residual of the given (completed, not-closed) order: capitalizes the
+	 * in-stock portion onto the finished good's {@link CurrentCost} and creates a
+	 * {@code CostDifferenceDistribution} cost collector. No-op when the residual is zero.
+	 */
+	public void distribute(@NonNull final PPOrderId orderId)
+	{
+		// Idempotency: this collector type is a no-op in every costing handler (it creates no PP_Order_Cost
+		// row), so re-running would recompute the identical residual and capitalize CurrentCostPrice a second
+		// time. The order stays Completed after distribution, so the "Distribute" action would remain offered.
+		if (isAlreadyDistributed(orderId))
+		{
+			throw new AdempiereException("@Already@ @Processed@")
+					.setParameter("PP_Order_ID", orderId)
+					.appendParametersToMessage();
+		}
+
+		final I_PP_Order order = ppOrdersRepo.getById(orderId);
+
+		final ClientId clientId = ClientId.ofRepoId(order.getAD_Client_ID());
+		final AcctSchemaId acctSchemaId = acctSchemasRepo.getPrimaryAcctSchemaId(clientId);
+		final AcctSchema acctSchema = acctSchemasRepo.getById(acctSchemaId);
+		final CostingMethod costingMethod = acctSchema.getCosting().getCostingMethod();
+		final CostElementId materialCostElementId = getMaterialCostElementId(costingMethod);
+
+		final PPOrderCosts orderCosts = ppOrderCostsService.getByOrderId(orderId);
+		final ResidualAndManufacturedQty residualAndQty = computeResidualAndManufacturedQty(orderCosts, acctSchemaId, materialCostElementId);
+
+		if (residualAndQty.getResidual().isZero())
+		{
+			// nothing to discharge
+			return;
+		}
+
+		final CurrentCost currentCost = currentCostsRepo.getOrCreate(residualAndQty.getMainProductCostSegment());
+
+		final CostAmountDetailed split = distributeOnto(
+				residualAndQty.getResidual(),
+				residualAndQty.getManufacturedQty(),
+				currentCost,
+				utils.getQuantityUOMConverter());
+
+		if (!split.getCostAdjustmentAmt().isZero())
+		{
+			currentCostsRepo.save(currentCost);
+		}
+
+		// Marker collector for the discharge; PP_Cost_Collector carries no monetary field (the residual/split is
+		// recomputed from PP_Order_Cost). Links the order + finished good, movement qty = manufactured qty.
+		costCollectorsService.createCostDifferenceDistribution(
+				order,
+				ProductId.ofRepoId(order.getM_Product_ID()),
+				residualAndQty.getManufacturedQty());
+	}
+
+	private boolean isAlreadyDistributed(@NonNull final PPOrderId orderId)
+	{
+		return costCollectorsService.getByOrderId(orderId).stream()
+				.map(I_PP_Cost_Collector::getCostCollectorType)
+				.map(CostCollectorType::ofNullableCode)
+				.anyMatch(type -> type != null && type.isCostDifferenceDistribution());
+	}
+
+	private CostElementId getMaterialCostElementId(@NonNull final CostingMethod costingMethod)
+	{
+		final List<CostElement> materialElements = costElementsRepo.getMaterialCostingElementsForCostingMethod(costingMethod);
+		return materialElements.stream()
+				.map(CostElement::getId)
+				.collect(GuavaCollectors.singleElementOrThrow(
+						() -> new AdempiereException("Expected exactly one material cost element for costing method " + costingMethod + " but got " + materialElements)));
+	}
+
+	/**
+	 * Splits the residual into the capitalize (ADJUSTMENT) and COGS (ALREADY_SHIPPED) legs and
+	 * moves the current cost price by capitalizing the ADJUSTMENT leg (weighted-average, qty delta = 0).
+	 * Mutates the given {@code currentCost}.
+	 *
+	 * @return the split ({@code mainAmt = residual}, {@code costAdjustmentAmt = capitalized}, {@code alreadyShippedAmt = COGS})
+	 */
+	@VisibleForTesting
+	static CostAmountDetailed distributeOnto(
+			@NonNull final CostAmount residual,
+			@NonNull final Quantity manufacturedQty,
+			@NonNull final CurrentCost currentCost,
+			@NonNull final QuantityUOMConverter uomConverter)
+	{
+		final CostAmountDetailed split = computeSplit(residual, manufacturedQty, currentCost);
+
+		final CostAmount capitalized = split.getCostAdjustmentAmt();
+		if (!capitalized.isZero())
+		{
+			// qty delta = 0 => reprices the existing on-hand qty by the capitalized amount
+			currentCost.addWeightedAverage(capitalized, manufacturedQty.toZero(), uomConverter);
+		}
+
+		return split;
+	}
+
+	/**
+	 * Computes the capitalize/COGS split. Mirrors the reference invoice-match algorithm with
+	 * {@code amtDifference = residual}, {@code receiptQty = manufacturedQty},
+	 * {@code qtyStillInStock = M_Cost.CurrentQty.min(manufacturedQty)}.
+	 */
+	@VisibleForTesting
+	static CostAmountDetailed computeSplit(
+			@NonNull final CostAmount residual,
+			@NonNull final Quantity manufacturedQty,
+			@NonNull final CurrentCost currentCost)
+	{
+		final CurrencyId currencyId = currentCost.getCurrencyId();
+		final Quantity qtyInStock = currentCost.getCurrentQty().min(manufacturedQty);
+
+		final CostAmount capitalized;
+		final CostAmount cogs;
+		if (residual.isZero())
+		{
+			capitalized = CostAmount.zero(currencyId);
+			cogs = CostAmount.zero(currencyId);
+		}
+		else if (manufacturedQty.isZero())
+		{
+			// nothing in stock to capitalize onto => all to COGS
+			capitalized = CostAmount.zero(currencyId);
+			cogs = residual;
+		}
+		else if (manufacturedQty.equalsIgnoreSource(qtyInStock))
+		{
+			// everything manufactured is still in stock => capitalize the whole residual
+			capitalized = residual;
+			cogs = CostAmount.zero(currencyId);
+		}
+		else
+		{
+			final CostAmount perUnit = residual.divide(manufacturedQty, currentCost.getPrecision());
+			capitalized = perUnit.multiply(qtyInStock);
+			cogs = residual.subtract(capitalized);
+		}
+
+		return CostAmountDetailed.builder()
+				.mainAmt(residual)
+				.costAdjustmentAmt(capitalized)
+				.alreadyShippedAmt(cogs)
+				.build();
+	}
+
+	/**
+	 * Recomputes {@code residual = issued - received} and the manufactured qty from the order's
+	 * {@code PP_Order_Cost} rows, for the given accounting schema and material cost element (recomputed
+	 * in Java, not read from the virtual {@code CostDifference} column):
+	 * <ul>
+	 *     <li>{@code issued}   = &Sigma; over MaterialIssue rows of {@code -accumulatedQty x (own + components price)}</li>
+	 *     <li>{@code received} = &Sigma; over MainProduct / CoProduct / ByProduct rows of {@code postCalculationAmount}</li>
+	 * </ul>
+	 * {@code manufacturedQty} = the MainProduct row's accumulated (received) qty.
+	 */
+	@VisibleForTesting
+	static ResidualAndManufacturedQty computeResidualAndManufacturedQty(
+			@NonNull final PPOrderCosts orderCosts,
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final CostElementId materialCostElementId)
+	{
+		final PPOrderCost mainProductCost = getMainProductCost(orderCosts, acctSchemaId, materialCostElementId);
+		final CurrencyId currencyId = mainProductCost.getPrice().getCurrencyId();
+
+		CostAmount issued = CostAmount.zero(currencyId);
+		CostAmount received = CostAmount.zero(currencyId);
+		for (final PPOrderCost cost : orderCosts.toCollection())
+		{
+			if (!acctSchemaId.equals(cost.getAcctSchemaId())
+					|| !materialCostElementId.equals(cost.getCostElementId()))
+			{
+				continue;
+			}
+
+			final PPOrderCostTrxType trxType = cost.getTrxType();
+			if (trxType == PPOrderCostTrxType.MaterialIssue)
+			{
+				// -cumulatedqty x (currentcostprice + currentcostpricell)
+				issued = issued.add(cost.getPrice().multiply(cost.getAccumulatedQty()).negate());
+			}
+			else if (trxType == PPOrderCostTrxType.MainProduct
+					|| trxType == PPOrderCostTrxType.CoProduct
+					|| trxType == PPOrderCostTrxType.ByProduct)
+			{
+				received = received.add(cost.getPostCalculationAmount());
+			}
+		}
+
+		final CostAmount residual = issued.subtract(received);
+		return ResidualAndManufacturedQty.of(residual, mainProductCost.getAccumulatedQty(), mainProductCost.getCostSegmentAndElement());
+	}
+
+	private static PPOrderCost getMainProductCost(
+			@NonNull final PPOrderCosts orderCosts,
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final CostElementId materialCostElementId)
+	{
+		return orderCosts.toCollection().stream()
+				.filter(cost -> acctSchemaId.equals(cost.getAcctSchemaId()))
+				.filter(cost -> materialCostElementId.equals(cost.getCostElementId()))
+				.filter(PPOrderCost::isMainProduct)
+				.collect(GuavaCollectors.singleElementOrThrow(
+						() -> new AdempiereException("Expected exactly one main-product PP_Order_Cost row for acctSchema=" + acctSchemaId
+								+ ", costElement=" + materialCostElementId + " in " + orderCosts)));
+	}
+
+	@Value(staticConstructor = "of")
+	static class ResidualAndManufacturedQty
+	{
+		@NonNull CostAmount residual;
+		@NonNull Quantity manufacturedQty;
+		@NonNull CostSegmentAndElement mainProductCostSegment;
+	}
+}

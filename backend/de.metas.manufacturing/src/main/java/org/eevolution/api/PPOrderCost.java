@@ -1,5 +1,6 @@
 package org.eevolution.api;
 
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
@@ -130,6 +131,11 @@ public class PPOrderCost
 	public CostElementId getCostElementId()
 	{
 		return getCostSegmentAndElement().getCostElementId();
+	}
+
+	public AcctSchemaId getAcctSchemaId()
+	{
+		return getCostSegmentAndElement().getAcctSchemaId();
 	}
 
 	public boolean isInboundCost()

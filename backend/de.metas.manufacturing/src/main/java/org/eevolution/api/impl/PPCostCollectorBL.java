@@ -298,6 +298,29 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 	}
 
 	@Override
+	@NonNull
+	public I_PP_Cost_Collector createCostDifferenceDistribution(
+			@NonNull final I_PP_Order order,
+			@NonNull final ProductId productId,
+			@NonNull final Quantity qty)
+	{
+		final LocatorId locatorId = warehouseDAO.getLocatorIdByRepoIdOrNull(order.getM_Locator_ID());
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(order.getM_AttributeSetInstance_ID());
+
+		return createCollector(
+				CostCollectorCreateRequest.builder()
+						.costCollectorType(CostCollectorType.CostDifferenceDistribution)
+						.order(order)
+						.productId(productId)
+						.locatorId(locatorId)
+						.attributeSetInstanceId(asiId)
+						.resourceId(ResourceId.ofRepoId(order.getS_Resource_ID()))
+						.movementDate(SystemTime.asZonedDateTime())
+						.qty(qty)
+						.build());
+	}
+
+	@Override
 	public boolean isReversal(final I_PP_Cost_Collector cc)
 	{
 		Check.assumeNotNull(cc, "cc not null");
