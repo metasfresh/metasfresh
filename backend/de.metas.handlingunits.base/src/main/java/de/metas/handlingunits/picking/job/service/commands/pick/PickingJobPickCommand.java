@@ -1039,8 +1039,9 @@ public class PickingJobPickCommand
 		// TU's QR left the CU un-QR'd → the unpick's extract asserted the wrong HU and the CU was stranded
 		// Picked inside the TU.
 		final List<HUQRCode> huQRCodes = huService.getOrCreateQRCodesByHuId(cu.getId());
-		// Consumes only the first code (get(0) below); assertEnoughQRCodes tolerates a surplus (rationale in its Javadoc).
-		assertEnoughQRCodes(huQRCodes, 1);
+		// Same surplus tolerance as the aggregate-TU path: this path uses only the first code (get(0) below),
+		// tolerates a surplus (rationale in its Javadoc).
+			assertEnoughQRCodes(huQRCodes, 1);
 		final HUQRCode huQRCode = huQRCodes.get(0);
 
 		return ImmutableList.of(
