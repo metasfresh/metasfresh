@@ -259,7 +259,7 @@ public class JsonRetrieverService
 		this.externalReferenceService = externalReferenceService;
 		this.identifier = identifier;
 
-		this.cache = new BPartnerCompositeCacheByLookupKey(identifier);
+		this.cache = new BPartnerCompositeCacheByLookupKey();
 	}
 
 	public Optional<JsonResponseComposite> getJsonBPartnerComposite(
