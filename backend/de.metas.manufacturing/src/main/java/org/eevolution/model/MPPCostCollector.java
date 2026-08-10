@@ -38,6 +38,7 @@ package org.eevolution.model;
  * #L%
  */
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
@@ -245,6 +246,17 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 		{
 			completeIt_MethodChangedVariance();
 		}
+		else if (costCollectorType.isCostDifferenceDistribution())
+		{
+			// Forward completion is a no-op: the marker collector carries no PP_Order_Cost row; the finished
+			// good's cost-price move and the balanced posting happen in
+			// PPOrderCostDifferenceDistributor.distribute() / Doc_PPCostCollector.
+			//
+			// A reversal is NOT refused here on purpose: on the reversal document isReversal() is false (its
+			// Reversal_ID points to the lower-id original, and isReversal() tests Reversal_ID > own id), so a
+			// completeIt-time isReversal() guard would never fire. The reversal is refused at the reversal entry
+			// point instead — see reverseCorrectIt().
+		}
 
 		//
 		// Create Rate and Method Variances
@@ -430,6 +442,30 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 		// }
 	}
 
+	/**
+	 * Refuses {@code reverseCorrectIt()} for a {@code CostDifferenceDistribution} cost collector.
+	 * <p>
+	 * {@link #reverseCorrectIt()} creates a mirrored collector and completes it, which re-runs
+	 * {@code Doc_PPCostCollector.createFacts_CostDifferenceDistribution}. That posting recomputes the SAME
+	 * non-negated capitalize/COGS split (it never checks whether the collector is a reversal), so reversing would
+	 * post the identical DR-Asset/COGS / CR-WIP facts AGAIN — DOUBLING the GL instead of undoing it. Full
+	 * negated-reversal support is deferred (it requires reopening + redistributing the order). Until then, refuse
+	 * the reversal at its entry point.
+	 * <p>
+	 * Guarded here (in {@code reverseCorrectIt}) rather than in {@code completeIt}: the reversal is completed on the
+	 * mirrored document, whose {@code isReversal()} is false (its {@code Reversal_ID} points to the lower-id
+	 * original), so a {@code completeIt}-time {@code isReversal()} check would never fire. {@code reverseCorrectIt}
+	 * is called exactly once per reverse attempt, so a type check here fires reliably.
+	 */
+	@VisibleForTesting
+	static void assertReverseCorrectSupported(final CostCollectorType costCollectorType)
+	{
+		if (costCollectorType.isCostDifferenceDistribution())
+		{
+			throw new LiberoException("Reversing a Cost Difference Distribution is not supported");
+		}
+	}
+
 	@Override
 	public boolean voidIt()
 	{
@@ -446,6 +482,8 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 	@Override
 	public boolean reverseCorrectIt()
 	{
+		assertReverseCorrectSupported(CostCollectorType.ofCode(getCostCollectorType()));
+
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSECORRECT);
 
 		//
