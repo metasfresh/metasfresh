@@ -53,7 +53,9 @@ public class WorkPackageQueueUtil
 	 * <p>
 	 * Deliberately excludes not-ready workpackages ({@code IsReadyForProcessing=false}): a workpackage bound to
 	 * a rolled-back transaction never becomes ready, so counting/waiting on it would turn an intermittent flake
-	 * into a deterministic timeout.
+	 * into a deterministic timeout. A workpackage that is currently BEING processed IS still counted — the queue
+	 * clears {@code IsReadyForProcessing} only while building the workpackage, never during processing — so a
+	 * caller waiting for this count to reach zero really does wait out an in-flight run. Keep it that way.
 	 *
 	 * @param processorShortName e.g. {@code CreateMissingShipmentSchedules} or {@code UpdateInvalidShipmentSchedules}
 	 */

@@ -367,8 +367,8 @@ public class M_ShipmentSchedule_StepDef
 	 * <p>
 	 * The wait closes a real race: a recompute pass enqueued by an earlier scenario claims markers through the
 	 * same DB function this feature asserts on, and that claiming SQL is unconditionally global. Both processors
-	 * are checked in ONE predicate so they are zero at the same poll — a create-missing run enqueues a recompute
-	 * pass.
+	 * are checked in ONE predicate so they are zero at the same poll: a create-missing run enqueues a recompute
+	 * pass, so checking them one after the other could pass on a queue that is not quiet.
 	 * <p>
 	 * Do NOT widen {@link WorkPackageQueueUtil#countPendingWorkPackages(String)} to not-ready workpackages: one
 	 * bound to a rolled-back transaction never becomes ready, so waiting on it would turn this intermittent flake
