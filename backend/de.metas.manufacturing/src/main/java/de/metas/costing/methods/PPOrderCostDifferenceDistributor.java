@@ -26,7 +26,6 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
-import de.metas.organization.OrgId;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
@@ -36,6 +35,7 @@ import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostElementRepository;
 import de.metas.costing.impl.CurrentCostsRepository;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityUOMConverter;
@@ -149,7 +149,7 @@ public class PPOrderCostDifferenceDistributor
 	 * ({@code Doc_PPCostCollector.createFacts(AcctSchema)} — which is invoked once per every {@code AcctSchema}
 	 * configured for the client, not only the primary one, so the caller MUST pass the schema it is posting to;
 	 * this method never re-derives "the" primary schema itself). It does NOT move the finished good's
-	 * {@link CurrentCost} price: the price was already moved (on the primary schema) when the order's
+	 * {@link CurrentCost} price: the price was already moved (on the order's org acct schema) when the order's
 	 * {@code CostDifferenceDistribution} cost collector was created (see {@link #distribute}).
 	 * <p>
 	 * Unlike {@link #distribute}, this method is read-only: it calls the read-only {@link #computeSplit}, never
