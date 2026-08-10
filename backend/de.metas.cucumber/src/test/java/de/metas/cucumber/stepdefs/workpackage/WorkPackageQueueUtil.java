@@ -27,7 +27,6 @@ import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.util.Services;
 import lombok.NonNull;
-import lombok.experimental.UtilityClass;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 
@@ -35,11 +34,14 @@ import org.adempiere.ad.dao.IQueryBuilder;
  * Shared queries over {@link I_C_Queue_WorkPackage} for cucumber step defs that need to know how many
  * workpackages are still pending for a given {@link I_C_Queue_PackageProcessor}, identified by its short name
  * (e.g. {@code CreateMissingShipmentSchedules} for {@code CreateMissingShipmentSchedulesWorkpackageProcessor}).
+ * <p>
+ * A plain PicoContainer-managed instance (see {@code cucumber-picocontainer}), constructor-injected into step
+ * defs the same way {@link de.metas.cucumber.stepdefs.util.IdentifiersResolver} is — never a
+ * {@code @UtilityClass}/static-field shape (forbidden by {@code docs/coding-rules/service-injection.md} §2).
  */
-@UtilityClass
 public class WorkPackageQueueUtil
 {
-	private static final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private static final String WORKPACKAGE_PROCESSOR_CLASS_SUFFIX = "WorkpackageProcessor";
 

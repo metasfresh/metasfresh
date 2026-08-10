@@ -76,19 +76,22 @@ public class C_Queue_WorkPackage_StepDef
 	@NonNull private final C_Queue_Element_StepDefData queueElementTable;
 	@NonNull private final C_OLCand_StepDefData candidateTable;
 	@NonNull private final IdentifiersResolver identifiersResolver;
+	@NonNull private final WorkPackageQueueUtil workPackageQueueUtil;
 
 	public C_Queue_WorkPackage_StepDef(
 			@NonNull final C_Queue_Processor_StepDefData processorTable,
 			@NonNull final C_Queue_WorkPackage_StepDefData workPackageTable,
 			@NonNull final C_Queue_Element_StepDefData queueElementTable,
 			@NonNull final C_OLCand_StepDefData candidateTable,
-			@NonNull final IdentifiersResolver identifiersResolver)
+			@NonNull final IdentifiersResolver identifiersResolver,
+			@NonNull final WorkPackageQueueUtil workPackageQueueUtil)
 	{
 		this.processorTable = processorTable;
 		this.workPackageTable = workPackageTable;
 		this.queueElementTable = queueElementTable;
 		this.candidateTable = candidateTable;
 		this.identifiersResolver = identifiersResolver;
+		this.workPackageQueueUtil = workPackageQueueUtil;
 	}
 
 	@And("locate last C_Queue_WorkPackage by enqueued element")
@@ -410,7 +413,7 @@ public class C_Queue_WorkPackage_StepDef
 	@And("^there (?:is|are) (\\d+) pending \"(.*)\" workpackages?$")
 	public void assert_pending_workpackage_count(final int expectedCount, @NonNull final String processorShortName)
 	{
-		final int actualCount = WorkPackageQueueUtil.countPendingWorkPackages(processorShortName);
+		final int actualCount = workPackageQueueUtil.countPendingWorkPackages(processorShortName);
 		assertThat(actualCount)
 				.as("Number of pending C_Queue_WorkPackage for processor %s", processorShortName)
 				.isEqualTo(expectedCount);
@@ -418,13 +421,13 @@ public class C_Queue_WorkPackage_StepDef
 
 	private Optional<I_C_Queue_WorkPackage> retrieveOldestPendingWorkPackage(@NonNull final String processorShortName)
 	{
-		final ImmutableSet<Integer> packageProcessorIds = WorkPackageQueueUtil.resolvePackageProcessorIds(processorShortName);
+		final ImmutableSet<Integer> packageProcessorIds = workPackageQueueUtil.resolvePackageProcessorIds(processorShortName);
 		if (packageProcessorIds.isEmpty())
 		{
 			return Optional.empty();
 		}
 
-		return WorkPackageQueueUtil.pendingWorkPackagesQuery(packageProcessorIds)
+		return workPackageQueueUtil.pendingWorkPackagesQuery(packageProcessorIds)
 				.orderBy(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID)
 				.create()
 				.firstOptional(I_C_Queue_WorkPackage.class);
