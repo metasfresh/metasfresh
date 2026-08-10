@@ -280,8 +280,9 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 -- UI Element: Lieferplanung Import(541671,D) -> Lieferplanung Import(546796,D) -> main -> 10 -> main.Verarbeitet
 -- Column: I_DeliveryPlanning.Processed
 -- 2023-02-02T17:38:26.523Z
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,712047,0,546796,550332,615516,'F',TO_TIMESTAMP('2023-02-02 19:38:26','YYYY-MM-DD HH24:MI:SS'),100,'Checkbox sagt aus, ob der Datensatz verarbeitet wurde. ','Verarbeitete Datensatz dürfen in der Regel nich mehr geändert werden.','Y','N','N','Y','N','N','N',0,'Verarbeitet',30,0,0,TO_TIMESTAMP('2023-02-02 19:38:26','YYYY-MM-DD HH24:MI:SS'),100)
-;
+-- [DP port] SectionCode dropped: element 615516 is master's SectionCode-field slot (master's repurpose-to-712048 line is omitted here). Creating it strands a Field-type UI element with a NULL AD_Field_ID -> breaks the "Import Delivery Planning Data" window layout (ViewHealthRestController). Field 712047 "Verarbeitet" stays shown via element 615518. Commented out (not deleted) to complete the SectionCode strip.
+-- INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,712047,0,546796,550332,615516,'F',TO_TIMESTAMP('2023-02-02 19:38:26','YYYY-MM-DD HH24:MI:SS'),100,'Checkbox sagt aus, ob der Datensatz verarbeitet wurde. ','Verarbeitete Datensatz dürfen in der Regel nich mehr geändert werden.','Y','N','N','Y','N','N','N',0,'Verarbeitet',30,0,0,TO_TIMESTAMP('2023-02-02 19:38:26','YYYY-MM-DD HH24:MI:SS'),100)
+-- ;
 
 -- UI Section: Lieferplanung Import(541671,D) -> Lieferplanung Import(546796,D) -> main
 -- UI Column: 20
@@ -315,8 +316,9 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 
 -- UI Element: Lieferplanung Import(541671,D) -> Lieferplanung Import(546796,D) -> main -> 10 -> main.Verarbeitet
 -- 2023-02-02T17:40:16.783Z
-UPDATE AD_UI_Element SET AD_Field_ID=NULL,Updated=TO_TIMESTAMP('2023-02-02 19:40:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=615516
-;
+-- [DP port] SectionCode dropped: element 615516 is master's SectionCode-field slot (master's repurpose-to-712048 line is omitted here). Creating it strands a Field-type UI element with a NULL AD_Field_ID -> breaks the "Import Delivery Planning Data" window layout (ViewHealthRestController). Field 712047 "Verarbeitet" stays shown via element 615518. Commented out (not deleted) to complete the SectionCode strip.
+-- UPDATE AD_UI_Element SET AD_Field_ID=NULL,Updated=TO_TIMESTAMP('2023-02-02 19:40:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=615516
+-- ;
 
 -- Field: Lieferplanung Import(541671,D) -> Lieferplanung Import(546796,D) -> Import-Zeitpunkt
 -- Column: I_DeliveryPlanning.Imported
