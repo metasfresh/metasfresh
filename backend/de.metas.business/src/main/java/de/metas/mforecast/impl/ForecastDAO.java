@@ -29,10 +29,15 @@ import de.metas.mforecast.ForecastRequest;
 import de.metas.mforecast.ForecastRequest.ForecastLineRequest;
 import de.metas.mforecast.IForecastDAO;
 import de.metas.pricing.PriceListId;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -43,12 +48,16 @@ import org.adempiere.ad.dao.impl.ActiveRecordQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
 import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
 
+import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -56,6 +65,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class ForecastDAO implements IForecastDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	@Override
 	@NonNull
@@ -74,6 +86,19 @@ public class ForecastDAO implements IForecastDAO
 
 	public List<ForecastId> listIdsByQuery(@NonNull final ForecastQuery forecastQuery)
 	{
+		return buildForecastLineQuery(forecastQuery)
+				.andCollect(I_M_ForecastLine.COLUMN_M_Forecast_ID)
+				.create()
+				.listIds(ForecastId::ofRepoId);
+	}
+
+	/**
+	 * The shared forecast-line filter behind {@link #listIdsByQuery(ForecastQuery)} and
+	 * {@link #sumQtyByForecastId(ForecastQuery)}: active lines matching the query's product / ASI / warehouse / org,
+	 * optionally restricted to non-zero quantities.
+	 */
+	private IQueryBuilder<I_M_ForecastLine> buildForecastLineQuery(@NonNull final ForecastQuery forecastQuery)
+	{
 		final IQueryBuilder<I_M_ForecastLine> builder = queryBL.createQueryBuilder(I_M_ForecastLine.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_ForecastLine.COLUMNNAME_M_Product_ID, ProductId.toRepoId(forecastQuery.getProductId()))
@@ -84,10 +109,31 @@ public class ForecastDAO implements IForecastDAO
 		{
 			builder.addNotEqualsFilter(I_M_ForecastLine.COLUMNNAME_Qty, 0);
 		}
-		return builder
-				.andCollect(I_M_ForecastLine.COLUMN_M_Forecast_ID)
+		return builder;
+	}
+
+	@Override
+	@NonNull
+	public Map<ForecastId, Quantity> sumQtyByForecastId(@NonNull final ForecastQuery forecastQuery)
+	{
+		final ProductId productId = forecastQuery.getProductId();
+		final I_C_UOM stockUOM = productBL.getStockUOM(productId);
+		final UOMConversionContext conversionCtx = UOMConversionContext.of(productId);
+
+		final Map<ForecastId, Quantity> result = new HashMap<>();
+		buildForecastLineQuery(forecastQuery)
 				.create()
-				.listIds(ForecastId::ofRepoId);
+				.stream()
+				.forEach(line -> {
+					final I_C_UOM lineUOM = uomDAO.getById(UomId.ofRepoId(line.getC_UOM_ID()));
+					final BigDecimal qtyInStockUOM = uomConversionBL.convertQtyToProductUOM(conversionCtx, line.getQty(), lineUOM);
+					final Quantity lineQty = Quantity.of(qtyInStockUOM, stockUOM);
+					result.merge(
+							ForecastId.ofRepoId(line.getM_Forecast_ID()),
+							lineQty,
+							Quantity::add);
+				});
+		return result;
 	}
 
 	@Override
