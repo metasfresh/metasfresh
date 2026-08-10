@@ -60,6 +60,7 @@ import de.metas.cucumber.stepdefs.shipper.Carrier_Product_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.Carrier_Service_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
+import de.metas.cucumber.stepdefs.workpackage.WorkPackageQueueUtil;
 import de.metas.handlingunits.shipmentschedule.api.GenerateShipmentsForSchedulesRequest;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
@@ -70,6 +71,8 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.CarrierAdviseStatus;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
+import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
+import de.metas.inoutcandidate.async.UpdateInvalidShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.model.I_M_Picking_Job_Schedule;
@@ -163,6 +166,27 @@ public class M_ShipmentSchedule_StepDef
 	private static final String SHIP_BPARTNER = "shipBPartner";
 	private static final String BILL_BPARTNER = "billBPartner";
 
+	/**
+	 * The two workpackage processors that can touch {@code M_ShipmentSchedule_Recompute} behind a scenario's back
+	 * (see {@link #deleteAllUntaggedRecomputeMarkers()}): the recompute pass itself, and the create-missing run
+	 * whose newly created schedules get invalidated — which both INSERTS markers and enqueues a recompute pass.
+	 */
+	private static final ImmutableList<String> RECOMPUTE_QUEUE_PROCESSOR_SHORT_NAMES = ImmutableList.of(
+			UpdateInvalidShipmentSchedulesWorkpackageProcessor.class.getSimpleName(),
+			CreateMissingShipmentSchedulesWorkpackageProcessor.class.getSimpleName());
+
+	/**
+	 * Timeout of the queue drain in {@link #deleteAllUntaggedRecomputeMarkers()}: this module's standard wait budget,
+	 * and ~120 polls of a queue whose planner picks up work every 500ms ({@code CucumberLifeCycleSupport} sets
+	 * {@code QueueProcessorPlanner.SYSCONFIG_POLLINTERVAL_MILLIS=500}), so it expires only when the queue is genuinely
+	 * stuck, never when it is merely slow. When it does expire, {@link #logPendingRecomputeWorkPackages()} names the
+	 * processor that is still busy and its pending count, so the failure is diagnosable rather than just a timeout.
+	 */
+	private static final int RECOMPUTE_QUEUE_DRAIN_TIMEOUT_SEC = 60;
+
+	/** Poll interval of the queue drain — the planner's own poll interval; polling faster only adds queries. */
+	private static final long RECOMPUTE_QUEUE_DRAIN_POLL_MS = 500;
+
 	@NonNull private final JsonAttributeService jsonAttributeService = SpringContextHolder.instance.getBean(JsonAttributeService.class);
 	@NonNull private final ShipmentService shipmentService = SpringContextHolder.instance.getBean(ShipmentService.class);
 	@NonNull private final IShipmentScheduleInvalidateRepository shipmentScheduleInvalidateRepository = Services.get(IShipmentScheduleInvalidateRepository.class);
@@ -203,6 +227,7 @@ public class M_ShipmentSchedule_StepDef
 	@NonNull private final Carrier_Service_StepDefData carrierServiceTable;
 	@NonNull private final C_Project_StepDefData projectTable;
 	@NonNull private final M_Picking_Job_Schedule_StepDefData pickingJobScheduleTable;
+	@NonNull private final WorkPackageQueueUtil workPackageQueueUtil;
 
 	private final TestContext testContext;
 
@@ -336,10 +361,18 @@ public class M_ShipmentSchedule_StepDef
 	}
 
 	/**
-	 * Isolation cleanup: removes any leftover untagged {@code M_ShipmentSchedule_Recompute} markers
-	 * ({@code AD_PInstance_ID IS NULL}) that a prior scenario sharing this DB may have left behind, so a
-	 * whole-product recompute-batching scenario starts from a known, empty recompute backlog. Belongs at the
+	 * Isolation cleanup: waits until the shipment-schedule work queue is drained, then deletes any leftover
+	 * untagged {@code M_ShipmentSchedule_Recompute} markers ({@code AD_PInstance_ID IS NULL}). Belongs at the
 	 * start of the Background.
+	 * <p>
+	 * The wait closes a real race: a recompute pass enqueued by an earlier scenario claims markers through the
+	 * same DB function this feature asserts on, and that claiming SQL is unconditionally global. Both processors
+	 * are checked in ONE predicate so they are zero at the same poll — a create-missing run enqueues a recompute
+	 * pass.
+	 * <p>
+	 * Do NOT widen {@link WorkPackageQueueUtil#countPendingWorkPackages(String)} to not-ready workpackages: one
+	 * bound to a rolled-back transaction never becomes ready, so waiting on it would turn this intermittent flake
+	 * into a deterministic timeout.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
@@ -348,8 +381,10 @@ public class M_ShipmentSchedule_StepDef
 	 * </pre>
 	 */
 	@And("all untagged M_ShipmentSchedule_Recompute markers are deleted")
-	public void deleteAllUntaggedRecomputeMarkers()
+	public void deleteAllUntaggedRecomputeMarkers() throws InterruptedException
 	{
+		waitForRecomputeWorkQueueToDrain();
+
 		// deleteDirectly (bulk filter-based DELETE), NOT delete(): M_ShipmentSchedule_Recompute is a keyless
 		// queue table (no single-column PK), so the PO-by-PO delete() builds an empty WHERE and fails with a
 		// SQL syntax error. deleteDirectly() issues one DELETE FROM ... WHERE AD_PInstance_ID IS NULL.
@@ -357,6 +392,36 @@ public class M_ShipmentSchedule_StepDef
 				.addEqualsFilter(I_M_ShipmentSchedule_Recompute.COLUMNNAME_AD_PInstance_ID, null)
 				.create()
 				.deleteDirectly();
+	}
+
+	/**
+	 * Waits until no {@link #RECOMPUTE_QUEUE_PROCESSOR_SHORT_NAMES} workpackage is pending any more; see
+	 * {@link #deleteAllUntaggedRecomputeMarkers()} for the race this closes.
+	 */
+	private void waitForRecomputeWorkQueueToDrain() throws InterruptedException
+	{
+		StepDefUtil.tryAndWait(
+				RECOMPUTE_QUEUE_DRAIN_TIMEOUT_SEC,
+				RECOMPUTE_QUEUE_DRAIN_POLL_MS,
+				() -> countPendingRecomputeWorkPackages() == 0,
+				this::logPendingRecomputeWorkPackages);
+	}
+
+	private int countPendingRecomputeWorkPackages()
+	{
+		return RECOMPUTE_QUEUE_PROCESSOR_SHORT_NAMES.stream()
+				.mapToInt(workPackageQueueUtil::countPendingWorkPackages)
+				.sum();
+	}
+
+	private void logPendingRecomputeWorkPackages()
+	{
+		final StringBuilder message = new StringBuilder();
+		RECOMPUTE_QUEUE_PROCESSOR_SHORT_NAMES.forEach(processorShortName -> message
+				.append(processorShortName).append(" : ").append(workPackageQueueUtil.countPendingWorkPackages(processorShortName))
+				.append(" pending C_Queue_WorkPackage(s)").append("\n"));
+
+		logger.error("*** Error while waiting for the shipment-schedule work queue to drain, see current context: \n" + message);
 	}
 
 	/**
