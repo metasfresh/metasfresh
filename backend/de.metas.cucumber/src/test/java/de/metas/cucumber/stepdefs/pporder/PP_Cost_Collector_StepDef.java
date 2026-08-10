@@ -38,6 +38,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_Product;
+import org.eevolution.api.CostCollectorType;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -50,6 +51,7 @@ import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.*;
+import static org.eevolution.model.I_PP_Cost_Collector.COLUMNNAME_CostCollectorType;
 import static org.eevolution.model.I_PP_Cost_Collector.COLUMNNAME_DocStatus;
 import static org.eevolution.model.I_PP_Cost_Collector.COLUMNNAME_M_Product_ID;
 import static org.eevolution.model.I_PP_Cost_Collector.COLUMNNAME_MovementQty;
@@ -97,6 +99,10 @@ public class PP_Cost_Collector_StepDef
 	 *   <li>{@code M_Product_ID.Identifier} — identifier of the product; used to disambiguate when a single PP_Order
 	 *   has multiple cost collectors with the same DocStatus (e.g., one for component issue and one for finished-good
 	 *   receipt). If omitted, only PP_Order_ID and DocStatus are used to match the record.</li>
+	 *   <li>{@code CostCollectorType} — {@link CostCollectorType} enum name (e.g. {@code CostDifferenceDistribution});
+	 *   used to disambiguate when a single PP_Order has multiple completed cost collectors for the same product
+	 *   (e.g. a MainProduct receipt and a later CostDifferenceDistribution collector, both for the finished good).
+	 *   If omitted, the type is not used to filter or assert.</li>
 	 * </ul>
 	 *
 	 * <p>Example:
@@ -135,6 +141,12 @@ public class PP_Cost_Collector_StepDef
 
 			assertThat(ppCostCollector.getMovementQty()).isEqualTo(movementQty);
 			assertThat(ppCostCollector.getDocStatus()).isEqualTo(status);
+
+			final String costCollectorTypeName = DataTableUtil.extractStringOrNullForColumnName(tableRow, COLUMNNAME_CostCollectorType);
+			if (costCollectorTypeName != null)
+			{
+				assertThat(ppCostCollector.getCostCollectorType()).isEqualTo(CostCollectorType.valueOf(costCollectorTypeName).getCode());
+			}
 		}
 	}
 
@@ -167,6 +179,15 @@ public class PP_Cost_Collector_StepDef
 		if (productIdentifier != null)
 		{
 			queryBuilder.addEqualsFilter(COLUMNNAME_M_Product_ID, productTable.get(productIdentifier).getM_Product_ID());
+		}
+
+		// When a single order has several completed cost collectors for the same product (e.g. a MainProduct
+		// receipt and a later CostDifferenceDistribution collector, both for the finished good), disambiguate
+		// by the collector type so each row matches exactly one record.
+		final String costCollectorTypeName = DataTableUtil.extractStringOrNullForColumnName(tableRow, COLUMNNAME_CostCollectorType);
+		if (costCollectorTypeName != null)
+		{
+			queryBuilder.addEqualsFilter(COLUMNNAME_CostCollectorType, CostCollectorType.valueOf(costCollectorTypeName).getCode());
 		}
 
 		final Optional<I_PP_Cost_Collector> ppCostCollector = queryBuilder

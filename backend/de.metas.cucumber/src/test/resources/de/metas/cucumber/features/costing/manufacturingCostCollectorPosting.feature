@@ -216,3 +216,122 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
     And the manufacturing order identified by ppOrder is closed
 
     Then after not more than 60s, all ActivityControl PP_Cost_Collector for PP_Order ppOrder are posted with no Fact_Acct
+
+  @from:cucumber
+  @Id:S30811_TC1
+  Scenario: Distribute capitalizes the in-stock cost residual and spills the shipped portion to COGS
+    # compProd is consumed at 34 CHF/PCE - pricier than its Background seed - so the component cost
+    # exceeds the receipt valuation, leaving a WIP residual for the Distribute action to discharge.
+    And update current costs
+      | M_Product_ID | CurrentCostPrice |
+      | compProd     | 34 CHF           |
+
+    # finProd already holds 8 PCE at 30 CHF/PCE, decoupled from the BOM rollup, so the receipt of
+    # 10 more units posts at its own standing cost, not the component cost.
+    And metasfresh contains single line completed inventories
+      | M_Inventory_ID | M_InventoryLine_ID | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 | CostPrice | M_HU_ID |
+      | finInventory   | finInventoryLine    | 2024-03-20   | 540008         | finProd      | 0       | 8        | PCE          | 30        | finHU   |
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty |
+      | acctSchema      | finProd      | AveragePO        | 30 CHF           | 8 PCE      |
+
+    And create PP_Order:
+      | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument | OPT.PP_Product_Planning_ID.Identifier |
+      | ppOrder                | MOP         | finProd                 | 10         | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | prodPlan                              |
+    And after not more than 60s, PP_Order_BomLines are found
+      | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
+      | ppOrderBomLine                 | ppOrder                | compProd                | 10           | false           | PCE               | CO            |
+    When complete planning for PP_Order:
+      | PP_Order_ID.Identifier |
+      | ppOrder                |
+
+    And create JsonWFProcessStartRequest for manufacturing and store it in context as request payload:
+      | PP_Order_ID.Identifier |
+      | ppOrder                |
+    And the metasfresh REST-API endpoint path 'api/v2/userWorkflows/wfProcess/start' receives a 'POST' request with the payload from context and responds with '200' status code
+
+    And process response and extract manufacturing step and issueTo HU manufacturing candidate:
+      | WorkflowProcess.Identifier | WorkflowActivity.Identifier | WorkflowStep.Identifier | WorkflowStepQRCode.Identifier |
+      | mfgWorkflow                | issueActivity               | issueStep               | issueQRCode                   |
+    And process response and extract manufacturing line and receiving target values:
+      | WorkflowProcess.Identifier | WorkflowActivity.Identifier | WorkflowLine.Identifier | WorkflowReceivingTargetValues.Identifier |
+      | mfgWorkflow                | receiptActivity             | receiptLine             | receivingTargetValues                    |
+
+    # Issue the 10 PCE of the component the BOM requires
+    And create JsonManufacturingOrderEvent and store it in context as request payload:
+      | Event   | WorkflowProcess.Identifier | WorkflowActivity.Identifier | WorkflowStep.Identifier | WorkflowStepQRCode.Identifier |
+      | IssueTo | mfgWorkflow                | issueActivity               | issueStep               | issueQRCode                   |
+    And the metasfresh REST-API endpoint path 'api/v2/manufacturing/event' receives a 'POST' request with the payload from context and responds with '200' status code
+
+    # Receive the 10 PCE of the finished good
+    And create JsonManufacturingOrderEvent and store it in context as request payload:
+      | Event       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | WorkflowLine.Identifier | WorkflowReceivingTargetValues.Identifier |
+      | ReceiveFrom | mfgWorkflow                | receiptActivity             | receiptLine             | receivingTargetValues                    |
+    And the metasfresh REST-API endpoint path 'api/v2/manufacturing/event' receives a 'POST' request with the payload from context and responds with '200' status code
+
+    And after not more than 60s, PP_Cost_Collector are found:
+      | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus |
+      | issueCostCollector              | ppOrder                | compProd                | 10          | CO        |
+      | receiptCostCollector            | ppOrder                | finProd                 | 10          | CO        |
+    And Wait until documents issueCostCollector, receiptCostCollector are posted
+
+    # The component is consumed at 34 CHF/PCE and the finished good is received at its own 30 CHF/PCE:
+    # issued 340 - received 300 = a 40 CHF WIP residual for the Distribute action to discharge.
+    And Fact_Acct records are matching
+      | Record_ID            | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr |
+      | issueCostCollector   | P_WIP_Acct            | compProd     | 340       | 0         |
+      | issueCostCollector   | P_Asset_Acct          | compProd     | 0         | 340       |
+      | receiptCostCollector | P_Asset_Acct          | finProd      | 300       | 0         |
+      | receiptCostCollector | P_WIP_Acct            | finProd      | 0         | 300       |
+
+    # Sell 10 of the 18 PCE now on hand (8 pre-existing + 10 manufactured), leaving 8 PCE in stock -
+    # the qty the Distribute action will capitalize onto the finished good's current cost.
+    And metasfresh contains M_PricingSystems
+      | Identifier |
+      | salesPS    |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx |
+      | salesPL    | salesPS             | CH           | CHF           | true  |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID |
+      | salesPLV   | salesPL        |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | salesPLV                | finProd      | 40       | PCE      |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID |
+      | customer   | N        | Y          | salesPS             |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier       | C_BPartner_ID | C_Country_ID | IsShipToDefault | IsBillToDefault |
+      | customerLocation | customer      | CH           | Y               | Y               |
+    And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
+    And for costing, create completed order with one line
+      | C_OrderLine_ID | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | M_Product_ID | QtyEntered | Price |
+      | so1_l1         | customer      | 2024-03-26  | SOO         | 540008         | finProd      | 10         | 40    |
+    And for costing, create completed shipment with one line
+      | C_OrderLine_ID | M_InOutLine_ID |
+      | so1_l1         | shipment1_l1   |
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty |
+      | acctSchema      | finProd      | AveragePO        | 30 CHF           | 8 PCE      |
+
+    # Drive the "Distribute" action on the completed-but-not-closed order.
+    And the manufacturing order identified by ppOrder is distributed
+
+    And after not more than 60s, PP_Cost_Collector are found:
+      | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType          |
+      | distributionCostCollector       | ppOrder                | finProd                 | 10          | CO        | CostDifferenceDistribution |
+    And Wait until documents distributionCostCollector are posted
+
+    # Balanced WIP discharge: DR P_Asset (32, capitalized onto finProd's current cost) + DR P_COGS
+    # (8, spilled - already shipped) / CR P_WIP (40, the residual computed above).
+    And Fact_Acct records are matching
+      | Record_ID                 | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr |
+      | distributionCostCollector | P_Asset_Acct          | finProd      | 32        | 0         |
+      | distributionCostCollector | P_COGS_Acct           | finProd      | 8         | 0         |
+      | distributionCostCollector | P_WIP_Acct            | finProd      | 0         | 40        |
+
+    # The capitalized 32 CHF raised finProd's current cost from 30 to 34 CHF/PCE (272 CHF over 8 PCE).
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty |
+      | acctSchema      | finProd      | AveragePO        | 34 CHF           | 8 PCE      |

@@ -59,7 +59,10 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.ProcessInfo;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
@@ -99,6 +102,7 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_OrderCandidate_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Order_Candidate;
+import org.eevolution.process.PP_Order_Distribute;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -123,6 +127,7 @@ public class PP_Order_StepDef
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 	private final IADPInstanceDAO pinstanceDAO = Services.get(IADPInstanceDAO.class);
+	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
@@ -410,6 +415,28 @@ public class PP_Order_StepDef
 						.appendParametersToMessage()
 						.setParameter("action:", action);
 		}
+	}
+
+	/**
+	 * Runs the "Distribute" action ({@link PP_Order_Distribute}) on the given completed-but-not-closed
+	 * manufacturing order: discharges its WIP cost residual by capitalizing the in-stock portion onto the
+	 * finished good's current cost and spilling the already-shipped portion to COGS. Not a document
+	 * action (it does not change {@code DocStatus}), so it is invoked as a plain {@code AD_Process}
+	 * rather than through {@link #order_action}.
+	 */
+	@And("^the manufacturing order identified by (.*) is distributed$")
+	public void distributeOrder(@NonNull final String orderIdentifier)
+	{
+		final I_PP_Order orderRecord = ppOrderTable.get(orderIdentifier);
+
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(PP_Order_Distribute.class);
+
+		ProcessInfo.builder()
+				.setCtx(Env.getCtx())
+				.setAD_Process_ID(processId)
+				.setRecord(TableRecordReference.of(orderRecord))
+				.buildAndPrepareExecution()
+				.executeSync();
 	}
 
 	private void validatePP_Order_BomLine(final int timeoutSec, @NonNull final DataTableRow row) throws InterruptedException
