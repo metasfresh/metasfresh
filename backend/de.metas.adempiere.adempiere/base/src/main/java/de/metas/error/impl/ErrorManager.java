@@ -100,11 +100,7 @@ public class ErrorManager implements IErrorManager
 	@Override
 	public AdIssueId createIssue(@NonNull final IssueCreateRequest request)
 	{
-		// Persisting the AD_Issue is itself a DB write inside the trx manager. If it fails, the trx manager logs the
-		// failure through the ambient ILoggable, which — for an audited API request — turns the throwable into yet
-		// another AD_Issue, whose save fails the same way. Suppressing AD_Issue creation for the duration bounds that
-		// recursion at one level; without it the nesting is unbounded and each level carries the stacktrace of the
-		// level below, so the strings grow until the JVM dies with an OutOfMemoryError.
+		// Bounds the recursion when this save fails and the trx manager logs the failure through the ambient loggable.
 		try (final IAutoCloseable ignored = LoggableWithThrowableUtil.suppressAdIssueCreation())
 		{
 			return trxManager.callInNewTrx(() -> createIssueInTrx(request));
