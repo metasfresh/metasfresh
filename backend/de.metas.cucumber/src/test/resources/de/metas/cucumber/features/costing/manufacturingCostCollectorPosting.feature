@@ -270,9 +270,9 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
     And the metasfresh REST-API endpoint path 'api/v2/manufacturing/event' receives a 'POST' request with the payload from context and responds with '200' status code
 
     And after not more than 60s, PP_Cost_Collector are found:
-      | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus |
-      | issueCostCollector              | ppOrder                | compProd                | 10          | CO        |
-      | receiptCostCollector            | ppOrder                | finProd                 | 10          | CO        |
+      | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType |
+      | issueCostCollector              | ppOrder                | compProd                | 10          | CO        | ComponentIssue    |
+      | receiptCostCollector            | ppOrder                | finProd                 | 10          | CO        | MaterialReceipt   |
     And Wait until documents issueCostCollector, receiptCostCollector are posted
 
     # The component is consumed at 34 CHF/PCE and the finished good is received at its own 30 CHF/PCE:
