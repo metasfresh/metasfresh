@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.util.ILoggable;
 import de.metas.util.Services;
+import org.adempiere.util.lang.IAutoCloseable;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.Value;
@@ -42,6 +43,32 @@ public class LoggableWithThrowableUtil
 
 	private static final Logger logger = LogManager.getLogger(LoggableWithThrowableUtil.class);
 
+	private static final ThreadLocal<Boolean> adIssueCreationSuppressed = ThreadLocal.withInitial(() -> Boolean.FALSE);
+
+	/**
+	 * While the returned {@link IAutoCloseable} is open, this class will NOT turn a logged {@link Throwable} into an
+	 * AD_Issue on the current thread; it only logs it.
+	 * <p>
+	 * Needed because persisting an AD_Issue is itself a database write that runs inside the transaction manager. If
+	 * that write fails, the transaction manager logs the failure through the ambient {@link ILoggable} — and if that
+	 * loggable routes throwables back into AD_Issue creation, each failed attempt creates another AD_Issue whose save
+	 * fails the same way. The recursion is unbounded and every level carries the stacktrace of the level below it, so
+	 * the strings grow until the JVM dies with an OutOfMemoryError.
+	 * <p>
+	 * {@code de.metas.error.impl.ErrorManager} opens this region around issue creation, which bounds the depth at one.
+	 */
+	public IAutoCloseable suppressAdIssueCreation()
+	{
+		final Boolean previous = adIssueCreationSuppressed.get();
+		adIssueCreationSuppressed.set(Boolean.TRUE);
+		return () -> adIssueCreationSuppressed.set(previous);
+	}
+
+	public boolean isAdIssueCreationSuppressed()
+	{
+		return Boolean.TRUE.equals(adIssueCreationSuppressed.get());
+	}
+
 	public FormattedMsgWithAdIssueId extractMsgAndAdIssue(@NonNull final String msg, final Object... msgParameters)
 	{
 		final IErrorManager errorManager = Services.get(IErrorManager.class);
@@ -49,7 +76,14 @@ public class LoggableWithThrowableUtil
 		final Throwable exception = LoggableWithThrowableUtil.extractThrowable(msgParameters);
 		Object[] msgParametersEffective = msgParameters;
 		AdIssueId adIssueId = null;
-		if (exception != null)
+		if (exception != null && isAdIssueCreationSuppressed())
+		{
+			// We are already creating an AD_Issue on this thread and something failed while doing so.
+			// Creating another AD_Issue for that failure would recurse into the very code that is failing.
+			logger.warn("Failed while creating an AD_Issue; logging the nested exception instead of creating another AD_Issue.", exception);
+			msgParametersEffective = LoggableWithThrowableUtil.removeLastElement(msgParameters);
+		}
+		else if (exception != null)
 		{
 			try
 			{
