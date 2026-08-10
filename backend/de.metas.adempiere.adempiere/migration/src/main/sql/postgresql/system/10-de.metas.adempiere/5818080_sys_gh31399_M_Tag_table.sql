@@ -5,9 +5,11 @@
 --
 -- IDs allocated from idserver.metas.de:
 --   AD_Table 542636
---   AD_Elements: 585159 (M_Tag_ID key column), 585160 (Value business column)
+--   AD_Elements: 585159 (M_Tag_ID key column). 585160 (originally for Value) skipped —
+--     AD_Element.ColumnName has a unique constraint and element 620 already covers 'Value'
+--     (Name='Suchschlüssel', en_US='Search Key'), so we reuse it instead.
 --   Reused existing AD_Elements: 102 AD_Client_ID, 113 AD_Org_ID, 245 Created, 246 CreatedBy,
---     275 Description, 348 IsActive, 469 Name, 607 Updated, 608 UpdatedBy
+--     275 Description, 348 IsActive, 469 Name, 607 Updated, 608 UpdatedBy, 620 Value
 --   AD_Columns 593110..593120
 
 -- AD_Table -------------------------------------------------------------------
@@ -35,19 +37,8 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Produkt-Label', PrintName='Pro
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585159,'de_CH')
 ;
 
--- Value column element (Value) ---------------------------------------------
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,585160 /*From ID Server*/,0,'Value',TO_TIMESTAMP('2026-08-10 15:20:03','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Suchschlüssel','Suchschlüssel',TO_TIMESTAMP('2026-08-10 15:20:03','YYYY-MM-DD HH24:MI:SS'),100)
-;
-INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=585160 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
-;
-UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Search Key', PrintName='Search Key',Updated=TO_TIMESTAMP('2026-08-10 15:20:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=585160 AND AD_Language='en_US'
-;
-UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Suchschlüssel', PrintName='Suchschlüssel',Updated=TO_TIMESTAMP('2026-08-10 15:20:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=585160 AND AD_Language='de_CH'
-;
-/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585160,'en_US')
-;
-/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585160,'de_CH')
-;
+-- Value column reuses existing AD_Element 620 (ColumnName='Value', Name='Suchschlüssel', en='Search Key').
+-- AD_Element.ColumnName has a unique constraint, so we MUST reuse.
 
 -- Standard columns -----------------------------------------------------------
 -- AD_Client_ID
@@ -104,8 +95,8 @@ INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Refe
 INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N') AND t.AD_Column_ID=593118 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
 ;
 
--- Business column: Value (String, reference 10, unique per client) --------
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsSyncDatabase,IsTranslated,IsUpdateable,Name,PersonalDataCategory,SeqNo,Updated,UpdatedBy,Version) VALUES (0,593119 /*From ID Server*/,585160,0,10,542636,'Value',TO_TIMESTAMP('2026-08-10 15:20:14','YYYY-MM-DD HH24:MI:SS'),100,'D',60,'Y','Y','N','N','Y','N','Y','N','Y','Y','N','Y','Suchschlüssel','NP',0,TO_TIMESTAMP('2026-08-10 15:20:14','YYYY-MM-DD HH24:MI:SS'),100,0)
+-- Business column: Value (String, reference 10, unique per client) — reuses existing AD_Element 620
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsSyncDatabase,IsTranslated,IsUpdateable,Name,PersonalDataCategory,SeqNo,Updated,UpdatedBy,Version) VALUES (0,593119 /*From ID Server*/,620,0,10,542636,'Value',TO_TIMESTAMP('2026-08-10 15:20:14','YYYY-MM-DD HH24:MI:SS'),100,'D',60,'Y','Y','N','N','Y','N','Y','N','Y','Y','N','Y','Suchschlüssel','NP',0,TO_TIMESTAMP('2026-08-10 15:20:14','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N') AND t.AD_Column_ID=593119 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
 ;
