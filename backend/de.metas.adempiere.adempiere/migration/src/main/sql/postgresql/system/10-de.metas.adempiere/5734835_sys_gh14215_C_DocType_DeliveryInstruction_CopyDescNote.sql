@@ -11,5 +11,5 @@
 -- Placed after 5734832 (sub-slot 5) because that script DROPs IsCopyDescriptionToDocument on both
 -- substrates -- so the WHERE keys on C_DocType_ID, not the now-nonexistent old column.
 select backup_table('c_doctype');
-UPDATE C_DocType SET CopyDescriptionAndDocumentNote='CD' WHERE C_DocType_ID=541085
+UPDATE C_DocType SET CopyDescriptionAndDocumentNote='CD',Updated=TO_TIMESTAMP('2026-08-10 12:00:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_DocType_ID=541085
 ;
