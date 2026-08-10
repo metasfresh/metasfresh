@@ -44,7 +44,6 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -71,7 +70,6 @@ public class C_Queue_WorkPackage_StepDef
 	private final IWorkpackageProcessorFactory workpackageProcessorFactory = Services.get(IWorkpackageProcessorFactory.class);
 
 	private static final String MAIL_WP_PROCESSOR_INTERNAL_NAME = "MailWorkpackageProcessor";
-	private static final String WORKPACKAGE_PROCESSOR_CLASS_SUFFIX = "WorkpackageProcessor";
 
 	@NonNull private final C_Queue_Processor_StepDefData processorTable;
 	@NonNull private final C_Queue_WorkPackage_StepDefData workPackageTable;
@@ -412,7 +410,7 @@ public class C_Queue_WorkPackage_StepDef
 	@And("^there (?:is|are) (\\d+) pending \"(.*)\" workpackages?$")
 	public void assert_pending_workpackage_count(final int expectedCount, @NonNull final String processorShortName)
 	{
-		final int actualCount = countPendingWorkPackages(processorShortName);
+		final int actualCount = WorkPackageQueueUtil.countPendingWorkPackages(processorShortName);
 		assertThat(actualCount)
 				.as("Number of pending C_Queue_WorkPackage for processor %s", processorShortName)
 				.isEqualTo(expectedCount);
@@ -420,58 +418,15 @@ public class C_Queue_WorkPackage_StepDef
 
 	private Optional<I_C_Queue_WorkPackage> retrieveOldestPendingWorkPackage(@NonNull final String processorShortName)
 	{
-		final ImmutableSet<Integer> packageProcessorIds = resolvePackageProcessorIds(processorShortName);
+		final ImmutableSet<Integer> packageProcessorIds = WorkPackageQueueUtil.resolvePackageProcessorIds(processorShortName);
 		if (packageProcessorIds.isEmpty())
 		{
 			return Optional.empty();
 		}
 
-		return pendingWorkPackagesQuery(packageProcessorIds)
+		return WorkPackageQueueUtil.pendingWorkPackagesQuery(packageProcessorIds)
 				.orderBy(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID)
 				.create()
 				.firstOptional(I_C_Queue_WorkPackage.class);
-	}
-
-	private int countPendingWorkPackages(@NonNull final String processorShortName)
-	{
-		final ImmutableSet<Integer> packageProcessorIds = resolvePackageProcessorIds(processorShortName);
-		if (packageProcessorIds.isEmpty())
-		{
-			return 0;
-		}
-
-		return pendingWorkPackagesQuery(packageProcessorIds)
-				.create()
-				.count();
-	}
-
-	private IQueryBuilder<I_C_Queue_WorkPackage> pendingWorkPackagesQuery(@NonNull final ImmutableSet<Integer> packageProcessorIds)
-	{
-		return queryBL.createQueryBuilder(I_C_Queue_WorkPackage.class)
-				.addInArrayFilter(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_PackageProcessor_ID, packageProcessorIds)
-				.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_Processed, false)
-				.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_IsError, false)
-				.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_IsReadyForProcessing, true);
-	}
-
-	/**
-	 * Resolves the {@code C_Queue_PackageProcessor_ID}s whose {@code Classname} simple name matches the given
-	 * short name (with a {@value WORKPACKAGE_PROCESSOR_CLASS_SUFFIX} suffix appended if not already present) —
-	 * e.g. {@code CreateMissingShipmentSchedules} resolves {@code CreateMissingShipmentSchedulesWorkpackageProcessor}.
-	 */
-	private ImmutableSet<Integer> resolvePackageProcessorIds(@NonNull final String processorShortName)
-	{
-		final String processorSimpleClassName = processorShortName.endsWith(WORKPACKAGE_PROCESSOR_CLASS_SUFFIX)
-				? processorShortName
-				: processorShortName + WORKPACKAGE_PROCESSOR_CLASS_SUFFIX;
-		final String classnameSuffix = "." + processorSimpleClassName;
-
-		return queryBL.createQueryBuilder(I_C_Queue_PackageProcessor.class)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.stream()
-				.filter(packageProcessor -> packageProcessor.getClassname() != null && packageProcessor.getClassname().endsWith(classnameSuffix))
-				.map(I_C_Queue_PackageProcessor::getC_Queue_PackageProcessor_ID)
-				.collect(ImmutableSet.toImmutableSet());
 	}
 }
