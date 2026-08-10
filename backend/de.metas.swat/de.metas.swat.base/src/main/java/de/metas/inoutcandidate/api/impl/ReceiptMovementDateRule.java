@@ -39,6 +39,8 @@ public final class ReceiptMovementDateRule
 	public static final ReceiptMovementDateRule EXTERNAL_DATE_IF_AVAIL = new ReceiptMovementDateRule(Type.EXTERNAL_DATE_IF_AVAIL, null);
 	public static final ReceiptMovementDateRule CURRENT_DATE = new ReceiptMovementDateRule(Type.CURRENT_DATE, null);
 
+	public static ReceiptMovementDateRule fixedDate(@NonNull final Instant fixedDate) {return new ReceiptMovementDateRule(Type.FIXED_DATE, fixedDate);}
+
 	private enum Type
 	{
 		ORDER_DATE_PROMISED,
