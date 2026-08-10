@@ -27,7 +27,14 @@ INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTra
 
 
 -- 2023-01-12T13:50:44.727Z
-INSERT INTO C_DocType (AD_Client_ID,AD_Org_ID,C_DocType_ID,Created,CreatedBy,DocBaseType,DocumentCopies,EntityType,GL_Category_ID,HasCharges,HasProforma,IsActive,CopyDescriptionAndDocumentNote,IsCreateCounter,IsDefault,IsDefaultCounterDoc,IsDocNoControlled,IsExcludeFromCommision,IsIndexed,IsInTransit,IsOverwriteDateOnComplete,IsOverwriteSeqOnComplete,IsPickQAConfirm,IsShipConfirm,IsSOTrx,IsSplitWhenDifference,Name,PrintName,Updated,UpdatedBy) VALUES (1000000,0,541085,TO_TIMESTAMP('2023-01-12 15:50:44','YYYY-MM-DD HH24:MI:SS'),100,'MST',1,'D',1000000,'N','N','Y','CD','Y','N','N','Y','N','N','N','N','N','N','N','N','N','Delivery Instruction','Delivery Instruction',TO_TIMESTAMP('2023-01-12 15:50:44','YYYY-MM-DD HH24:MI:SS'),100)
+-- DP port NOTE: the copy-description column is intentionally OMITTED from this INSERT.
+--   Core transform 5734830/5734831/5734832 renames IsCopyDescriptionToDocument ->
+--   CopyDescriptionAndDocumentNote and DROPs the old column. This script must apply on BOTH
+--   a fresh CICD in-order build (only the OLD column exists here) AND an instance rollout where the
+--   transform is already applied (only the NEW column exists here) -- so it references neither name.
+--   The old column defaults to 'Y' and the new column is nullable, so omitting is safe on both.
+--   Final value is set post-transform in 5734835_sys_gh14215_C_DocType_DeliveryInstruction_CopyDescNote.sql.
+INSERT INTO C_DocType (AD_Client_ID,AD_Org_ID,C_DocType_ID,Created,CreatedBy,DocBaseType,DocumentCopies,EntityType,GL_Category_ID,HasCharges,HasProforma,IsActive,IsCreateCounter,IsDefault,IsDefaultCounterDoc,IsDocNoControlled,IsExcludeFromCommision,IsIndexed,IsInTransit,IsOverwriteDateOnComplete,IsOverwriteSeqOnComplete,IsPickQAConfirm,IsShipConfirm,IsSOTrx,IsSplitWhenDifference,Name,PrintName,Updated,UpdatedBy) VALUES (1000000,0,541085,TO_TIMESTAMP('2023-01-12 15:50:44','YYYY-MM-DD HH24:MI:SS'),100,'MST',1,'D',1000000,'N','N','Y','Y','N','N','Y','N','N','N','N','N','N','N','N','N','Delivery Instruction','Delivery Instruction',TO_TIMESTAMP('2023-01-12 15:50:44','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2023-01-12T13:50:44.772Z
