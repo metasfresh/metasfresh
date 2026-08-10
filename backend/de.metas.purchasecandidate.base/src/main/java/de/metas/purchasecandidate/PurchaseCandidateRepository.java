@@ -207,7 +207,7 @@ public class PurchaseCandidateRepository
 				.andCollectChildren(I_C_PurchaseCandidate.COLUMN_C_OrderLineSO_ID)
 				// only manually-created candidates (Purchase Planning view); material-disposition candidates must not be auto-ordered on sales-order completion.
 				// IsAggregatePO reflects the vendor's aggregate setting, not manual-vs-dispo, so it alone is not a reliable "manual" marker.
-				.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_Source, PurchaseCandidateSource.SalesOrder.getCode())
+				.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_Source, PurchaseCandidateSource.SalesOrder)
 				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_IsAggregatePO, false)
 				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_Processed, false)
 				.addCompareFilter(I_C_PurchaseCandidate.COLUMN_QtyToPurchase, Operator.GREATER, BigDecimal.ZERO)
@@ -237,7 +237,7 @@ public class PurchaseCandidateRepository
 				.andCollectChildren(I_C_PurchaseCandidate.COLUMN_C_OrderLineSO_ID)
 				// only manually-created candidates (Purchase Planning view); material-disposition candidates must not be auto-ordered on sales-order completion.
 				// IsAggregatePO reflects the vendor's aggregate setting, not manual-vs-dispo, so it alone is not a reliable "manual" marker.
-				.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_Source, PurchaseCandidateSource.SalesOrder.getCode())
+				.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_Source, PurchaseCandidateSource.SalesOrder)
 				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_IsAggregatePO, false)
 				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_Processed, false)
 				.addCompareFilter(I_C_PurchaseCandidate.COLUMN_QtyToPurchase, Operator.GREATER, BigDecimal.ZERO)
