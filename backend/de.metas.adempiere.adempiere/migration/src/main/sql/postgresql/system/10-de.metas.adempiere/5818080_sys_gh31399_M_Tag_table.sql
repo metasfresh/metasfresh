@@ -32,6 +32,8 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Produkt-Label', PrintName='Pro
 ;
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585159,'en_US')
 ;
+/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585159,'de_CH')
+;
 
 -- Value column element (Value) ---------------------------------------------
 INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,585160 /*From ID Server*/,0,'Value',TO_TIMESTAMP('2026-08-10 15:20:03','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Suchschlüssel','Suchschlüssel',TO_TIMESTAMP('2026-08-10 15:20:03','YYYY-MM-DD HH24:MI:SS'),100)
@@ -43,6 +45,8 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Search Key', PrintName='Search
 UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Suchschlüssel', PrintName='Suchschlüssel',Updated=TO_TIMESTAMP('2026-08-10 15:20:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=585160 AND AD_Language='de_CH'
 ;
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585160,'en_US')
+;
+/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585160,'de_CH')
 ;
 
 -- Standard columns -----------------------------------------------------------

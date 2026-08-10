@@ -8,7 +8,7 @@
 --   AD_Element: 585162 (M_Product_Tag_ID key column)
 --   Reused existing AD_Elements: 102 AD_Client_ID, 113 AD_Org_ID, 245 Created, 246 CreatedBy,
 --     348 IsActive, 454 M_Product_ID, 607 Updated, 608 UpdatedBy, 585159 M_Tag_ID (from 5818080)
---   AD_Columns 593122..593130
+--   AD_Columns 593121..593130 (593121 = M_Tag_ID FK, inserted last in file but allocated earlier from server block; std cols + PK + M_Product_ID = 593122..593130)
 
 -- AD_Table -------------------------------------------------------------------
 INSERT INTO AD_Table (AccessLevel,ACTriggerLength,AD_Client_ID,AD_Org_ID,AD_Table_ID,CopyColumnsFromTable,Created,CreatedBy,Description,EntityType,ImportTable,IsActive,IsAutocomplete,IsChangeLog,IsDeleteable,IsDLM,IsEnableRemoteCacheInvalidation,IsHighVolume,IsSecurityEnabled,IsView,LoadSeq,Name,PersonalDataCategory,ReplicationType,TableName,Updated,UpdatedBy) VALUES ('4',0,0,0,542637 /*From ID Server*/,'N',TO_TIMESTAMP('2026-08-10 15:25:00','YYYY-MM-DD HH24:MI:SS'),100,'Produkt-Label Zuordnung','D','N','Y','N','N','Y','N','N','N','N','N',0,'Product Tag Assignment','NP','L','M_Product_Tag',TO_TIMESTAMP('2026-08-10 15:25:00','YYYY-MM-DD HH24:MI:SS'),100)
@@ -27,6 +27,8 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Product Tag Assignment', Print
 UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Produkt-Label Zuordnung', PrintName='Produkt-Label Zuordnung',Updated=TO_TIMESTAMP('2026-08-10 15:25:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=585162 AND AD_Language='de_CH'
 ;
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585162,'en_US')
+;
+/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585162,'de_CH')
 ;
 
 -- Standard columns -----------------------------------------------------------
