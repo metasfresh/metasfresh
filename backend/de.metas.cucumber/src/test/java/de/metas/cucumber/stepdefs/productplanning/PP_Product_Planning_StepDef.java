@@ -225,7 +225,14 @@ public class PP_Product_Planning_StepDef
 			return Optional.of(productPlanning);
 		}
 
-		final StepDefDataIdentifier identifier = row.getAsIdentifier(I_PP_Product_Planning.COLUMNNAME_M_Product_ID);
+		// No M_Product column → a generic planning that applies to all products; there is nothing to look up an existing one by.
+		final StepDefDataIdentifier identifier = row.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_M_Product_ID)
+				.filter(id -> !id.isNullPlaceholder())
+				.orElse(null);
+		if (identifier == null)
+		{
+			return Optional.empty();
+		}
 		final I_M_Product productRecord = identifier.lookupIn(productTable);
 		assertThat(productRecord).as("Missing M_Product for identifier=%s", identifier.getAsString()).isNotNull();
 
