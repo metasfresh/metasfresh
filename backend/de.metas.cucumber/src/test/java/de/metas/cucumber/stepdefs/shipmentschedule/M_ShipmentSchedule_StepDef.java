@@ -361,39 +361,18 @@ public class M_ShipmentSchedule_StepDef
 	}
 
 	/**
-	 * Isolation cleanup: waits until the shipment-schedule work queue is drained, then removes any leftover untagged
-	 * {@code M_ShipmentSchedule_Recompute} markers ({@code AD_PInstance_ID IS NULL}) that a prior scenario sharing
-	 * this DB may have left behind, so a whole-product recompute-batching scenario starts from a known, empty
-	 * recompute backlog that stays empty. Belongs at the start of the Background.
+	 * Isolation cleanup: waits until the shipment-schedule work queue is drained, then deletes any leftover
+	 * untagged {@code M_ShipmentSchedule_Recompute} markers ({@code AD_PInstance_ID IS NULL}). Belongs at the
+	 * start of the Background.
 	 * <p>
-	 * <b>Why the wait — the concrete failure it prevents.</b> A REAL recompute pass enqueued by an earlier scenario
-	 * on this executor is picked up by the background queue planner (500ms poll interval, see
-	 * {@code CucumberLifeCycleSupport}) and can still be in flight while this feature seeds its fixture and counts
-	 * markers GLOBALLY. That pass claims markers through the same {@code M_ShipmentSchedule_TagToRecompute} DB
-	 * function the feature asserts on, and the claiming SQL is unconditionally global — it tags whatever untagged
-	 * markers exist, so the fixture cannot be made invisible to it and draining first is the only test-side fix.
-	 * Reproduced 3 red out of 10 runs with a pass enqueued in the Background, in both variants:
-	 * <ul>
-	 *   <li>the concurrent pass tag-claimed the seeded markers —
-	 *       {@code [Number of untagged M_ShipmentSchedule_Recompute markers remaining] expected: 6 but was: 1}</li>
-	 *   <li>it had already claimed (and its recompute deleted) them before the scenario's own tagging call —
-	 *       {@code [Number of M_ShipmentSchedule_Recompute markers tagged for selection recomputePass (the count the
-	 *       DB function returns)] Expected size: 2 but was: 0 in: []}</li>
-	 * </ul>
-	 * <b>Both</b> processors in {@link #RECOMPUTE_QUEUE_PROCESSOR_SHORT_NAMES} must be quiet, checked in ONE
-	 * predicate so they are zero at the same poll — a create-missing run enqueues a recompute pass, so clearing them
-	 * one after the other could pass on a queue that is not quiet. Once quiet, the queue stays quiet for the rest of
-	 * the scenario: a pass is only ever enqueued on transaction commit
-	 * ({@code UpdateInvalidShipmentSchedulesWorkpackageProcessorScheduler} extends
-	 * {@code WorkpackagesOnCommitSchedulerTemplate}), this feature completes no document, and
-	 * {@link #seedShipmentSchedulesWithUntaggedRecomputeMarker} inserts its rows with raw SQL, enqueueing nothing.
+	 * The wait closes a real race: a recompute pass enqueued by an earlier scenario claims markers through the
+	 * same DB function this feature asserts on, and that claiming SQL is unconditionally global. Both processors
+	 * are checked in ONE predicate so they are zero at the same poll — a create-missing run enqueues a recompute
+	 * pass.
 	 * <p>
-	 * <b>Do not widen the pending-workpackage filter.</b> {@link WorkPackageQueueUtil#countPendingWorkPackages(String)}
-	 * deliberately counts only {@code IsReadyForProcessing=Y} rows. A workpackage bound to a rolled-back transaction
-	 * never becomes ready, so including not-ready rows would trade this intermittent flake for a DETERMINISTIC
-	 * {@value #RECOMPUTE_QUEUE_DRAIN_TIMEOUT_SEC}s timeout on every run where an earlier scenario rolled back. A
-	 * workpackage that is currently BEING processed is still counted (the queue clears {@code IsReadyForProcessing}
-	 * only while building the workpackage, never during processing), so an in-flight pass is waited for, not missed.
+	 * Do NOT widen {@link WorkPackageQueueUtil#countPendingWorkPackages(String)} to not-ready workpackages: one
+	 * bound to a rolled-back transaction never becomes ready, so waiting on it would turn this intermittent flake
+	 * into a deterministic timeout.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
@@ -417,9 +396,7 @@ public class M_ShipmentSchedule_StepDef
 
 	/**
 	 * Waits until no {@link #RECOMPUTE_QUEUE_PROCESSOR_SHORT_NAMES} workpackage is pending any more; see
-	 * {@link #deleteAllUntaggedRecomputeMarkers()} for the race this closes. On an already-quiet queue — the
-	 * expected case — the underlying executor's first optimistic try returns immediately, so the step costs two
-	 * count queries and no sleep.
+	 * {@link #deleteAllUntaggedRecomputeMarkers()} for the race this closes.
 	 */
 	private void waitForRecomputeWorkQueueToDrain() throws InterruptedException
 	{
