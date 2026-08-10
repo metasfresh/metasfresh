@@ -1,15 +1,11 @@
 package de.metas.rest_api.v1.bpartner.bpartnercomposite;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.cache.CCacheStats;
 import de.metas.cache.CacheLabel;
 import de.metas.cache.CacheMgt;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -56,28 +52,18 @@ class BPartnerCompositeCacheByLookupKeyTest
 	void cacheLabels_doNotGrow_whenManyInstancesAreCreated()
 	{
 		// the first instance legitimately introduces this cache's labels; measure from there
-		final List<BPartnerCompositeCacheByLookupKey> held = new ArrayList<>();
-		held.add(new BPartnerCompositeCacheByLookupKey());
-		final Set<CacheLabel> labelsAfterFirstInstance = distinctLabelsOfLiveCaches();
+		new BPartnerCompositeCacheByLookupKey();
+		final Set<CacheLabel> labelsAfterFirstInstance = CacheMgt.get().getCacheLabels();
 
 		for (int i = 0; i < 100; i++)
 		{
-			// keep them reachable: CacheMgt holds its caches weakly, and a collected cache would hide the leak
-			held.add(new BPartnerCompositeCacheByLookupKey());
+			new BPartnerCompositeCacheByLookupKey();
 		}
 
-		assertThat(distinctLabelsOfLiveCaches())
+		// getCacheLabels() returns the keys of CacheMgt's label map, i.e. exactly what leaked: those keys survive
+		// even after the caches they hold have been collected, so no instance needs to be kept alive here.
+		assertThat(CacheMgt.get().getCacheLabels())
 				.as("creating further instances must not introduce additional cache labels")
 				.isEqualTo(labelsAfterFirstInstance);
-		assertThat(held).hasSize(101); // keep `held` strongly referenced until the assertions are done
-	}
-
-	private static Set<CacheLabel> distinctLabelsOfLiveCaches()
-	{
-		return CacheMgt.get()
-				.streamStats()
-				.map(CCacheStats::getLabels)
-				.flatMap(Set::stream)
-				.collect(ImmutableSet.toImmutableSet());
 	}
 }
