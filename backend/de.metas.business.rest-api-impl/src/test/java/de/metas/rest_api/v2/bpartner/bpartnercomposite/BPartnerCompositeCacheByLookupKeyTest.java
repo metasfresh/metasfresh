@@ -1,9 +1,16 @@
 package de.metas.rest_api.v2.bpartner.bpartnercomposite;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.cache.CCacheStats;
+import de.metas.cache.CacheLabel;
 import de.metas.cache.CacheMgt;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -40,27 +47,37 @@ class BPartnerCompositeCacheByLookupKeyTest
 	/**
 	 * One of these caches is created per {@code JsonRetrieverService}, i.e. once per BPartner REST API call.
 	 * <p>
-	 * {@link CacheMgt} keeps one {@code CachesGroup} per distinct {@link de.metas.cache.CacheLabel} for the lifetime of
-	 * the JVM: the group holds its caches weakly, so a dead cache is collected, but the group itself is a strong value
-	 * in {@code cachesByLabel} and is never removed. Therefore the label must NOT depend on the instance — otherwise
+	 * {@link CacheMgt} keeps one {@code CachesGroup} per distinct {@link CacheLabel} for the lifetime of the JVM: the
+	 * group holds its caches weakly, so a dead cache is collected, but the group itself is a strong value in
+	 * {@code cachesByLabel} and is never removed. Therefore the label must NOT depend on the instance — otherwise
 	 * every API call leaks one group (~1kB of guava-map scaffolding) that nothing can ever reclaim.
 	 */
 	@Test
 	void cacheLabels_doNotGrow_whenManyInstancesAreCreated()
 	{
-		final CacheMgt cacheMgt = CacheMgt.get();
-
 		// the first instance legitimately introduces this cache's labels; measure from there
-		new BPartnerCompositeCacheByLookupKey();
-		final int labelsAfterFirstInstance = cacheMgt.getCacheLabels().size();
+		final List<BPartnerCompositeCacheByLookupKey> held = new ArrayList<>();
+		held.add(new BPartnerCompositeCacheByLookupKey());
+		final Set<CacheLabel> labelsAfterFirstInstance = distinctLabelsOfLiveCaches();
 
 		for (int i = 0; i < 100; i++)
 		{
-			new BPartnerCompositeCacheByLookupKey();
+			// keep them reachable: CacheMgt holds its caches weakly, and a collected cache would hide the leak
+			held.add(new BPartnerCompositeCacheByLookupKey());
 		}
 
-		assertThat(cacheMgt.getCacheLabels())
-				.as("creating further instances must not register additional cache labels")
-				.hasSize(labelsAfterFirstInstance);
+		assertThat(distinctLabelsOfLiveCaches())
+				.as("creating further instances must not introduce additional cache labels")
+				.isEqualTo(labelsAfterFirstInstance);
+		assertThat(held).hasSize(101); // keep `held` strongly referenced until the assertions are done
+	}
+
+	private static Set<CacheLabel> distinctLabelsOfLiveCaches()
+	{
+		return CacheMgt.get()
+				.streamStats()
+				.map(CCacheStats::getLabels)
+				.flatMap(Set::stream)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }

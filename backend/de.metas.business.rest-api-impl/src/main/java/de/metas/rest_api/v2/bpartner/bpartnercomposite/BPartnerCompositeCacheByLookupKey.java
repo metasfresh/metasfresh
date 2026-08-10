@@ -52,9 +52,10 @@ public final class BPartnerCompositeCacheByLookupKey
 	 * {@code CacheLabel} from this name and keeps one {@code CachesGroup} per distinct label for the lifetime of the
 	 * JVM — the group holds its caches weakly, but the group itself is never removed. An instance-specific name would
 	 * therefore leak one group per API call. The {@code #} matters: without it the whole name (not the table name)
-	 * becomes the label.
+	 * becomes the label. The suffix keeps v1 and v2 distinguishable in cache stats while leaving the label
+	 * (everything before the first {@code #}) identical.
 	 */
-	private static final String CACHE_NAME = I_C_BPartner.Table_Name + "#by#BPartnerCompositeLookupKey";
+	private static final String CACHE_NAME = I_C_BPartner.Table_Name + "#by#BPartnerCompositeLookupKey_v2";
 
 	private final transient CCache<OrgAndBPartnerCompositeLookupKey, BPartnerComposite> cache;
 
