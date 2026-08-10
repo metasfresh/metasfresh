@@ -26,6 +26,7 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.organization.OrgId;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
@@ -109,7 +110,10 @@ public class PPOrderCostDifferenceDistributor
 		final I_PP_Order order = ppOrdersRepo.getById(orderId);
 
 		final ClientId clientId = ClientId.ofRepoId(order.getAD_Client_ID());
-		final AcctSchemaId acctSchemaId = acctSchemasRepo.getPrimaryAcctSchemaId(clientId);
+		// Use the acct schema of the order's org (the one CreatePPOrderCostsCommand created the PP_Order_Cost
+		// rows for and Doc_PPCostCollector recomputes/posts against) — NOT necessarily the client's primary schema.
+		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
+		final AcctSchemaId acctSchemaId = acctSchemasRepo.getByClientAndOrg(clientId, orgId).getId();
 
 		final ResidualAndManufacturedQty residualAndQty = computeResidualAndManufacturedQtyForOrder(orderId, acctSchemaId);
 
