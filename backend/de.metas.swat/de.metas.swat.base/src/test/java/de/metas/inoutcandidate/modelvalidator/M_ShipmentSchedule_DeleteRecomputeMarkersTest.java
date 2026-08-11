@@ -92,16 +92,9 @@ class M_ShipmentSchedule_DeleteRecomputeMarkersTest
 	}
 
 	/**
-	 * Registers the interceptor's collaborators via {@link Services#registerService}, which writes straight into
-	 * the service cache, and NOT via {@code SpringContextHolder.registerJUnitBean}.
-	 * <p>
-	 * Both are Spring beans with constructor-injected collaborators, so {@code Services.get(...)} cannot
-	 * reflectively default-construct them here. The JUnit-bean fallback would normally cover that, but it is
-	 * reached only through Services' external provider -- and any {@code @SpringBootTest} elsewhere in this
-	 * module permanently replaces that provider with one bound to its own throwaway context, which
-	 * {@code AdempiereTestHelper.init()} does not restore. So the fallback works when this class runs alone and
-	 * silently stops working once the full module suite runs it after such a test. Registering the instances
-	 * directly bypasses the provider entirely and behaves the same either way.
+	 * Registers the collaborators via {@link Services#registerService} -- NOT
+	 * {@code SpringContextHolder.registerJUnitBean}, which is silently inert here once any
+	 * {@code @SpringBootTest} has run earlier in the same fork.
 	 */
 	private static void registerInterceptorUnderTest()
 	{
