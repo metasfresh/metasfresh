@@ -109,14 +109,8 @@ public interface IShipmentScheduleInvalidateRepository extends ISingletonService
 	void deleteRecomputeMarkersOutOfTrx(PInstanceId adPInstanceId);
 
 	/**
-	 * Delete every M_ShipmentSchedule_Recompute record of the given schedule, tagged or not.
-	 * <p>
-	 * Called when the schedule itself is deleted: there is no FK between the two tables, so a marker left
-	 * behind becomes an ORPHAN that no recompute pass can ever tag (both branches of
-	 * {@code M_ShipmentSchedule_TagToRecompute} require the schedule row to exist). Deleting the markers with
-	 * the schedule stops orphans being created in the first place; {@code m_shipmentschedule_recompute_reap_orphans()}
-	 * remains the backstop for orphans already in the database and for any deletion path that bypasses the
-	 * model layer.
+	 * Deletes every M_ShipmentSchedule_Recompute record of the given schedule, including tagged ones -- once the
+	 * schedule is gone, no marker of it can ever be tagged again, so leaving one behind only creates an orphan.
 	 */
 	void deleteRecomputeMarkers(ShipmentScheduleId shipmentScheduleId);
 

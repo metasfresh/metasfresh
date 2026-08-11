@@ -656,9 +656,14 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		// deleteDirectly (bulk filter-based DELETE), NOT delete(): M_ShipmentSchedule_Recompute is a keyless
 		// queue table, so the PO-by-PO delete() builds an empty WHERE and fails.
 		//
-		// Deliberately NOT restricted to untagged markers. The schedule row is going away, so no marker of it
-		// can ever be meaningful again -- a tagged one would only be dropped later anyway, by its own pass's
-		// deleteRecomputeMarkersOutOfTrx. Leaving any behind is what creates the orphan.
+		// Deliberately NOT restricted to untagged markers: there is no FK between the two tables, so any marker
+		// left behind after the schedule row is gone becomes an ORPHAN that no recompute pass can ever tag
+		// (both branches of M_ShipmentSchedule_TagToRecompute require the schedule row to exist) -- that orphan
+		// then keeps existsUntaggedRecomputeMarkers() answering "yes", so every bounded pass reports limit-reached,
+		// enqueues a follow-up, tags nothing, and repeats: an endless re-enqueue loop (observed at ~2
+		// workpackages/second until the marker was removed by hand). m_shipmentschedule_recompute_reap_orphans()
+		// remains the backstop for orphans already in the database and for any deletion path that bypasses the
+		// model layer.
 		queryBL.createQueryBuilder(I_M_ShipmentSchedule_Recompute.class)
 				.addEqualsFilter(I_M_ShipmentSchedule_Recompute.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
 				.create()
