@@ -207,9 +207,3 @@ AND NOT EXISTS (SELECT * FROM AD_TreeNodeMM e WHERE e.AD_Tree_ID=t.AD_Tree_ID AN
 /* DDL */ select update_menu_translation_from_ad_element(585159)
 ;
 
--- ===========================================================================
--- Propagate any still-missing translations
--- ===========================================================================
-
-SELECT add_missing_translations()
-;

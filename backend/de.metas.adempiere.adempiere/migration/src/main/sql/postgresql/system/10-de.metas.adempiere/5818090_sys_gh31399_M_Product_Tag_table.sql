@@ -100,6 +100,3 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */ CREATE UNIQUE INDEX M_Product_Tag_uc ON public.M_Product_Tag (AD_Client_ID, M_Product_ID, M_Tag_ID) WHERE IsActive='Y'
 ;
 
--- Propagate any still-missing translations for the new table/columns.
-SELECT add_missing_translations()
-;

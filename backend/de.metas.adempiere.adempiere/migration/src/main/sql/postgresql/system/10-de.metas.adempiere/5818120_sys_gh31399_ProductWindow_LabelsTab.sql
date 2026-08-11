@@ -131,9 +131,3 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 VALUES (0,781901,0,549362,555537,652814 /*From ID Server*/,'F',TO_TIMESTAMP('2026-08-11 10:00:31','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N','Aktiv',20,20,0,TO_TIMESTAMP('2026-08-11 10:00:31','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
--- ===========================================================================
--- Propagate any still-missing translations
--- ===========================================================================
-
-SELECT add_missing_translations()
-;
