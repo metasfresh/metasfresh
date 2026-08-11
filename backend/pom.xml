@@ -196,6 +196,8 @@
         <module>de.metas.util</module>
         <module>de.metas.util.web</module>
 
+        <module>de.metas.vatid</module>
+
         <module>de.metas.vendor.gateway.api</module>
 
         <module>de.metas.datev</module>
