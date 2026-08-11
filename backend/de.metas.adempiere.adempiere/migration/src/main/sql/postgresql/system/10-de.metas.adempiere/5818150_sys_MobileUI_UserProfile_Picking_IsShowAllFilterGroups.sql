@@ -21,7 +21,7 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description
 
 -- Element: IsShowAllFilterGroups (de_CH)
 -- 2026-08-11T08:40:31.000Z
-UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2026-08-11 08:40:31.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=585163 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET IsTranslated='N',Updated=TO_TIMESTAMP('2026-08-11 08:40:31.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=585163 AND AD_Language='de_CH'
 ;
 
 -- 2026-08-11T08:40:31.010Z
@@ -34,7 +34,7 @@ UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2026-08-11 08:4
 
 -- Element: IsShowAllFilterGroups (de_DE, base language)
 -- 2026-08-11T08:40:32.000Z
-UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2026-08-11 08:40:32.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=585163 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET IsTranslated='N',Updated=TO_TIMESTAMP('2026-08-11 08:40:32.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=585163 AND AD_Language='de_DE'
 ;
 
 -- 2026-08-11T08:40:32.100Z
