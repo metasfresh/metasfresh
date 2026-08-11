@@ -114,7 +114,3 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 -- Unique index on Value per client, active rows only -------------------------
 /* DDL */ CREATE UNIQUE INDEX M_Tag_Value_uc ON public.M_Tag (AD_Client_ID, LOWER(Value)) WHERE IsActive='Y'
 ;
-
--- Propagate any still-missing translations for the new table/columns.
-SELECT add_missing_translations()
-;
