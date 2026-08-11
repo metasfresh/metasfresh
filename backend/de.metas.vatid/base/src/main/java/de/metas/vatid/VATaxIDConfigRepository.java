@@ -31,18 +31,20 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_VATaxID_Config;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 
 /**
  * Repository Tables: {@code VATaxID_Config}.
  *
+ * <p>Repository Cluster: sole owner of {@code VATaxID_Config}.
+ *
  * <p>Reads the single active per-organisation VAT-ID check configuration (one active row per
  * {@code AD_Org_ID}, enforced by a DB partial unique index — see
  * {@code metasfresh-persistence-layer} skill § "Repository Query Defaults").
  */
-@Component
+@Repository
 public class VATaxIDConfigRepository
 {
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -59,9 +61,17 @@ public class VATaxIDConfigRepository
 	}
 
 	/**
-	 * @return the active {@code VATaxID_Config} for the given org, or {@code null} if that org has none
-	 * (per {@code REQUIREMENTS.md} § 3, an org with no record keeps today's behaviour unchanged — that
-	 * fallback is applied by the caller, not by this repository).
+	 * @return the active {@code VATaxID_Config} for the given org, or {@code null} if that org has none.
+	 *
+	 * <p><b>Contract for the {@code null} case:</b> {@code REQUIREMENTS.md} § 3 states
+	 * <em>"An organisation with no {@code VATaxID_Config} record keeps today's behaviour exactly: format
+	 * check on, VIES check off"</em> — backed by the {@code VATaxID_Config.IsFormatCheckEnabledByDefault}
+	 * SysConfig. Applying that default is deliberately <b>not</b> done here: this repository is a thin
+	 * query layer over one table, whereas the default is a business rule with its own SysConfig lookup,
+	 * shared by several future callers (the save-time interceptor, the nightly recheck process, tax
+	 * determination) that do not exist yet. Resolving it once, in a single service-layer place, is a
+	 * later task's responsibility. <b>Every current and future caller of this method that must show
+	 * "no config" behaviour MUST apply that exact default itself</b> until such a service exists.
 	 */
 	@Nullable
 	public VATaxIDConfig getByOrgId(@NonNull final OrgId orgId)

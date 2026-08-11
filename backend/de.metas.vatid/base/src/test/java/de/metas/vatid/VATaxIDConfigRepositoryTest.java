@@ -37,7 +37,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * Covers: a saved active {@code VATaxID_Config} record is read back with every field intact
  * (AC13's "format check and VIES check can each be switched on/off per organisation" needs both flags
- * to round-trip independently), an org with no record returns {@code null} rather than another org's
+ * to round-trip independently), both {@link VATaxIDOnServiceUnavailableAction} values round-trip through
+ * {@code OnServiceUnavailable}, an org with no record returns {@code null} rather than another org's
  * config, and an inactive record for the org is not returned (the "one active row per org" contract).
  */
 class VATaxIDConfigRepositoryTest
@@ -45,6 +46,7 @@ class VATaxIDConfigRepositoryTest
 	private static final OrgId ORG_WITH_CONFIG = OrgId.ofRepoId(1000001);
 	private static final OrgId ORG_WITHOUT_CONFIG = OrgId.ofRepoId(1000002);
 	private static final OrgId ORG_WITH_ONLY_INACTIVE_CONFIG = OrgId.ofRepoId(1000003);
+	private static final OrgId ORG_WITH_FAIL_CLOSED_CONFIG = OrgId.ofRepoId(1000004);
 
 	private VATaxIDConfigRepository vataxIDConfigRepository;
 
@@ -55,7 +57,7 @@ class VATaxIDConfigRepositoryTest
 		vataxIDConfigRepository = VATaxIDConfigRepository.newInstanceForUnitTesting();
 	}
 
-	private I_VATaxID_Config createConfigRecord(final OrgId orgId, final boolean isActive)
+	private I_VATaxID_Config createConfigRecord(final OrgId orgId, final boolean isActive, final String onServiceUnavailable)
 	{
 		final I_VATaxID_Config record = InterfaceWrapperHelper.newInstance(I_VATaxID_Config.class);
 		record.setAD_Org_ID(orgId.getRepoId());
@@ -66,7 +68,7 @@ class VATaxIDConfigRepositoryTest
 		record.setRequesterMemberStateCode("DE");
 		record.setRequesterNumber("123456789");
 		record.setRecheckAfterDays(90);
-		record.setOnServiceUnavailable(X_VATaxID_Config.ONSERVICEUNAVAILABLE_ServiceUnavailable);
+		record.setOnServiceUnavailable(onServiceUnavailable);
 		InterfaceWrapperHelper.saveRecord(record);
 		return record;
 	}
@@ -74,7 +76,7 @@ class VATaxIDConfigRepositoryTest
 	@Test
 	void getByOrgId_returnsTheActiveConfig_withEveryFieldIntact()
 	{
-		final I_VATaxID_Config record = createConfigRecord(ORG_WITH_CONFIG, true);
+		final I_VATaxID_Config record = createConfigRecord(ORG_WITH_CONFIG, true, X_VATaxID_Config.ONSERVICEUNAVAILABLE_ServiceUnavailable);
 
 		final VATaxIDConfig config = vataxIDConfigRepository.getByOrgId(ORG_WITH_CONFIG);
 
@@ -87,12 +89,25 @@ class VATaxIDConfigRepositoryTest
 		assertThat(config.getRequesterNumber()).isEqualTo("123456789");
 		assertThat(config.getRecheckAfterDays()).isEqualTo(90);
 		assertThat(config.getOnServiceUnavailable()).isEqualTo(VATaxIDOnServiceUnavailableAction.ServiceUnavailable);
+		assertThat(config.getOnServiceUnavailable().toVATaxIDStatus()).isEqualTo(VATaxIDStatus.ServiceUnavailable);
+	}
+
+	@Test
+	void getByOrgId_returnsTheActiveConfig_withTheFailClosedOnServiceUnavailableValue()
+	{
+		createConfigRecord(ORG_WITH_FAIL_CLOSED_CONFIG, true, X_VATaxID_Config.ONSERVICEUNAVAILABLE_Invalid);
+
+		final VATaxIDConfig config = vataxIDConfigRepository.getByOrgId(ORG_WITH_FAIL_CLOSED_CONFIG);
+
+		assertThat(config).isNotNull();
+		assertThat(config.getOnServiceUnavailable()).isEqualTo(VATaxIDOnServiceUnavailableAction.Invalid);
+		assertThat(config.getOnServiceUnavailable().toVATaxIDStatus()).isEqualTo(VATaxIDStatus.Invalid);
 	}
 
 	@Test
 	void getByOrgId_returnsNull_whenOrgHasNoConfigRecord()
 	{
-		createConfigRecord(ORG_WITH_CONFIG, true);
+		createConfigRecord(ORG_WITH_CONFIG, true, X_VATaxID_Config.ONSERVICEUNAVAILABLE_ServiceUnavailable);
 
 		assertThat(vataxIDConfigRepository.getByOrgId(ORG_WITHOUT_CONFIG)).isNull();
 	}
@@ -100,7 +115,7 @@ class VATaxIDConfigRepositoryTest
 	@Test
 	void getByOrgId_ignoresAnInactiveRecord()
 	{
-		createConfigRecord(ORG_WITH_ONLY_INACTIVE_CONFIG, false);
+		createConfigRecord(ORG_WITH_ONLY_INACTIVE_CONFIG, false, X_VATaxID_Config.ONSERVICEUNAVAILABLE_ServiceUnavailable);
 
 		assertThat(vataxIDConfigRepository.getByOrgId(ORG_WITH_ONLY_INACTIVE_CONFIG)).isNull();
 	}

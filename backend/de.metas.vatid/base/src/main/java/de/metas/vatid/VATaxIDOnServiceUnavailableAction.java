@@ -40,10 +40,12 @@ import java.util.Optional;
  * check is older than the configured {@code RecheckAfterDays}.
  *
  * <p>This is deliberately a fail-open/fail-closed choice, not a raw flag: {@link #ServiceUnavailable} is
- * fail-open (the VAT-ID keeps counting as holding a tax certificate, mirroring {@link VATaxIDStatus#ServiceUnavailable}),
- * while {@link #Invalid} is fail-closed (no tax certificate, mirroring {@link VATaxIDStatus#Invalid}).
- * {@link #hasTaxCertificate()} intentionally mirrors {@link VATaxIDStatus#hasTaxCertificate()} so that,
- * once a later task applies the chosen action, the tax-certificate outcome is already known here.
+ * fail-open (applying it produces {@link VATaxIDStatus#ServiceUnavailable}, which keeps the VAT-ID
+ * counting as holding a tax certificate), while {@link #Invalid} is fail-closed (produces
+ * {@link VATaxIDStatus#Invalid}, no tax certificate). {@link #toVATaxIDStatus()} is the single mapping
+ * from this configuration choice to the resulting status; the tax-certificate predicate itself stays
+ * owned by {@link VATaxIDStatus#hasTaxCertificate()} — callers needing it call
+ * {@code action.toVATaxIDStatus().hasTaxCertificate()} rather than a second copy of that logic here.
  */
 @RequiredArgsConstructor
 @Getter
@@ -70,7 +72,8 @@ public enum VATaxIDOnServiceUnavailableAction implements ReferenceListAwareEnum
 	public String toJson() {return code;}
 
 	/**
-	 * Fail-open ({@link #ServiceUnavailable}) vs. fail-closed ({@link #Invalid}); see the class javadoc.
+	 * The {@link VATaxIDStatus} this configuration choice produces once applied; see the class javadoc.
 	 */
-	public boolean hasTaxCertificate() {return this == ServiceUnavailable;}
+	@NonNull
+	public VATaxIDStatus toVATaxIDStatus() {return this == ServiceUnavailable ? VATaxIDStatus.ServiceUnavailable : VATaxIDStatus.Invalid;}
 }
