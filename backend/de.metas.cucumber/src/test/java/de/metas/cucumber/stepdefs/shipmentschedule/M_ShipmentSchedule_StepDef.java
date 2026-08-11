@@ -361,14 +361,17 @@ public class M_ShipmentSchedule_StepDef
 	}
 
 	/**
-	 * Isolation cleanup: waits until the shipment-schedule work queue is drained, then deletes any leftover
-	 * untagged {@code M_ShipmentSchedule_Recompute} markers ({@code AD_PInstance_ID IS NULL}). Belongs at the
-	 * start of the Background.
+	 * Isolation cleanup: deletes any leftover untagged {@code M_ShipmentSchedule_Recompute} markers
+	 * ({@code AD_PInstance_ID IS NULL}), waits until the shipment-schedule work queue is drained, then deletes
+	 * once more. Belongs at the start of the Background.
 	 * <p>
-	 * The wait closes a real race: a recompute pass enqueued by an earlier scenario claims markers through the
-	 * same DB function this feature asserts on, and that claiming SQL is unconditionally global. Both processors
-	 * are checked in ONE predicate so they are zero at the same poll: a create-missing run enqueues a recompute
-	 * pass, so checking them one after the other could pass on a queue that is not quiet.
+	 * Deleting first means the wait no longer depends on the size of the untagged backlog this step removes
+	 * anyway -- it waits only for genuinely in-flight work; the trailing delete catches markers created by a pass
+	 * that completed during the drain. The wait closes a real race: a recompute pass enqueued by an earlier
+	 * scenario claims markers through the same DB function this feature asserts on, and that claiming SQL is
+	 * unconditionally global. Both processors are checked in ONE predicate so they are zero at the same poll: a
+	 * create-missing run enqueues a recompute pass, so checking them one after the other could pass on a queue
+	 * that is not quiet.
 	 * <p>
 	 * Do NOT widen {@link WorkPackageQueueUtil#countPendingWorkPackages(String)} to not-ready workpackages: one
 	 * bound to a rolled-back transaction never becomes ready, so waiting on it would turn this intermittent flake
@@ -383,8 +386,15 @@ public class M_ShipmentSchedule_StepDef
 	@And("all untagged M_ShipmentSchedule_Recompute markers are deleted")
 	public void deleteAllUntaggedRecomputeMarkers() throws InterruptedException
 	{
+		deleteUntaggedRecomputeMarkers();
+
 		waitForRecomputeWorkQueueToDrain();
 
+		deleteUntaggedRecomputeMarkers();
+	}
+
+	private void deleteUntaggedRecomputeMarkers()
+	{
 		// deleteDirectly (bulk filter-based DELETE), NOT delete(): M_ShipmentSchedule_Recompute is a keyless
 		// queue table (no single-column PK), so the PO-by-PO delete() builds an empty WHERE and fails with a
 		// SQL syntax error. deleteDirectly() issues one DELETE FROM ... WHERE AD_PInstance_ID IS NULL.
