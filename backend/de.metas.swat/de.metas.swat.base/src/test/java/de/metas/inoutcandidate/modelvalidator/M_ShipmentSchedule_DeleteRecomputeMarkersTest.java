@@ -35,7 +35,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -93,20 +92,21 @@ class M_ShipmentSchedule_DeleteRecomputeMarkersTest
 	}
 
 	/**
-	 * IShipmentScheduleInvalidateBL and IShipmentScheduleUpdater are Spring beans with constructor-injected
-	 * collaborators, so Services.get(...) cannot reflectively default-construct them in this no-Spring-context
-	 * test; register real instances (their own collaborators either self-construct or are irrelevant to the
-	 * path under test) so the interceptor's field initializers resolve, then register the interceptor itself.
+	 * Registers the interceptor's collaborators via {@link Services#registerService}, which writes straight into
+	 * the service cache, and NOT via {@code SpringContextHolder.registerJUnitBean}.
+	 * <p>
+	 * Both are Spring beans with constructor-injected collaborators, so {@code Services.get(...)} cannot
+	 * reflectively default-construct them here. The JUnit-bean fallback would normally cover that, but it is
+	 * reached only through Services' external provider -- and any {@code @SpringBootTest} elsewhere in this
+	 * module permanently replaces that provider with one bound to its own throwaway context, which
+	 * {@code AdempiereTestHelper.init()} does not restore. So the fallback works when this class runs alone and
+	 * silently stops working once the full module suite runs it after such a test. Registering the instances
+	 * directly bypasses the provider entirely and behaves the same either way.
 	 */
 	private static void registerInterceptorUnderTest()
 	{
-		SpringContextHolder.registerJUnitBean(IShipmentScheduleInvalidateBL.class, new ShipmentScheduleInvalidateBL(new PickingBOMService()));
-		SpringContextHolder.registerJUnitBean(IShipmentScheduleUpdater.class, ShipmentScheduleUpdater.newInstanceForUnitTesting());
-
-		System.out.println("DEBUG unitTestMode=" + org.compiere.Adempiere.isUnitTestMode()
-				+ " appCtx=" + SpringContextHolder.instance.getApplicationContext()
-				+ " beanFound=" + SpringContextHolder.instance.getBeanOr(IShipmentScheduleInvalidateBL.class, null));
-		System.out.println("DEBUG servicesGet=" + Services.get(IShipmentScheduleInvalidateBL.class));
+		Services.registerService(IShipmentScheduleInvalidateBL.class, new ShipmentScheduleInvalidateBL(new PickingBOMService()));
+		Services.registerService(IShipmentScheduleUpdater.class, ShipmentScheduleUpdater.newInstanceForUnitTesting());
 
 		POJOLookupMap.get().addModelValidator(new M_ShipmentSchedule());
 	}
