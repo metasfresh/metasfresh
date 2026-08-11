@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.bpartner.vatid;
+package de.metas.vatid;
 
 import de.metas.i18n.AdMessageKey;
 import lombok.AccessLevel;

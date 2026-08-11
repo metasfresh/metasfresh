@@ -22,7 +22,7 @@
 
 package de.metas.bpartner.model.interceptor;
 
-import de.metas.bpartner.vatid.VATaxIDValidationUtil;
+import de.metas.vatid.VATaxIDValidationUtil;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;

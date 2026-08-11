@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.bpartner.vatid;
+package de.metas.vatid;
 
 import com.google.common.collect.ImmutableMap;
 import de.metas.logging.LogManager;

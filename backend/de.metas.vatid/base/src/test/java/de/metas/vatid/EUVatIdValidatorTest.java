@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.bpartner.vatid;
+package de.metas.vatid;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

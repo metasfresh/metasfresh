@@ -7,7 +7,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
-import de.metas.bpartner.vatid.VATaxIDValidationUtil;
+import de.metas.vatid.VATaxIDValidationUtil;
 import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
