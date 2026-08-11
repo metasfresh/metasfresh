@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_VATaxID_Config extends org.compiere.model.PO implements I_VATaxID_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -517157295L;
+	private static final long serialVersionUID = 244687414L;
 
     /** Standard Constructor */
     public X_VATaxID_Config (final Properties ctx, final int VATaxID_Config_ID, @Nullable final String trxName)
@@ -59,22 +59,14 @@ public class X_VATaxID_Config extends org.compiere.model.PO implements I_VATaxID
 	}
 
 	/** 
-	 * OnServiceUnavailable AD_Reference_ID=542125
-	 * Reference name: USt-IdNr.-Prüfstatus
+	 * OnServiceUnavailable AD_Reference_ID=542126
+	 * Reference name: USt-IdNr.: Verhalten bei Dienstausfall
 	 */
-	public static final int ONSERVICEUNAVAILABLE_AD_Reference_ID=542125;
-	/** NotChecked = NotChecked */
-	public static final String ONSERVICEUNAVAILABLE_NotChecked = "NotChecked";
-	/** RequestSent = RequestSent */
-	public static final String ONSERVICEUNAVAILABLE_RequestSent = "RequestSent";
-	/** Valid = Valid */
-	public static final String ONSERVICEUNAVAILABLE_Valid = "Valid";
-	/** Invalid = Invalid */
-	public static final String ONSERVICEUNAVAILABLE_Invalid = "Invalid";
-	/** NotSupported = NotSupported */
-	public static final String ONSERVICEUNAVAILABLE_NotSupported = "NotSupported";
+	public static final int ONSERVICEUNAVAILABLE_AD_Reference_ID=542126;
 	/** ServiceUnavailable = ServiceUnavailable */
 	public static final String ONSERVICEUNAVAILABLE_ServiceUnavailable = "ServiceUnavailable";
+	/** Invalid = Invalid */
+	public static final String ONSERVICEUNAVAILABLE_Invalid = "Invalid";
 	@Override
 	public void setOnServiceUnavailable (final java.lang.String OnServiceUnavailable)
 	{
