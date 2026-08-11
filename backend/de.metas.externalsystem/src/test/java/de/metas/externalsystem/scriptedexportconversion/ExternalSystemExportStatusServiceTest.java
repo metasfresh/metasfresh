@@ -301,7 +301,8 @@ public class ExternalSystemExportStatusServiceTest
 	}
 
 	// -----------------------------------------------------------------------
-	// getResendableConfigsBySourceRecord — Error/Invalid/DontSend (isResendable) filter
+	// getResendableConfigsBySourceRecord — Error/Invalid/DontSend, plus an operator-parked
+	// (PInstance-stamped) Pending; a transient auto-flow Pending is excluded
 	// -----------------------------------------------------------------------
 
 	/**
