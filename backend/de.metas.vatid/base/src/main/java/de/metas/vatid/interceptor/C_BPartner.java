@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.vatid.interceptor
+ * de.metas.vatid
  * %%
  * Copyright (C) 2026 metas GmbH
  * %%
