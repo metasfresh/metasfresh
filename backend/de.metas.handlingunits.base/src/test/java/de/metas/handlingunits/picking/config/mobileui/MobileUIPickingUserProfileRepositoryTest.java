@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits.picking.config.mobileui;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.picking.job.model.facets.PickingJobFacetGroup;
 import de.metas.picking.model.I_PickingProfile_Filter;
 import de.metas.picking.model.X_PickingProfile_Filter;
@@ -112,6 +113,24 @@ class MobileUIPickingUserProfileRepositoryTest
 
 			assertThat(profile.getFilterGroupsInOrder())
 					.containsExactly(PickingJobFacetGroup.CUSTOMER, PickingJobFacetGroup.DELIVERY_DATE);
+		}
+
+		/**
+		 * TC1's second half: the order must still hold once the profile has been saved back, which
+		 * deletes and recreates the filter rows and resets their sequence numbers.
+		 */
+		@Test
+		void tiedSeqNo_survivesAProfileEdit()
+		{
+			final I_MobileUI_UserProfile_Picking profileRecord = newProfileRecord();
+			saveRecord(profileRecord);
+			newFilterRecord(profileRecord, X_PickingProfile_Filter.FILTERTYPE_DeliveryDate, 0);
+			newFilterRecord(profileRecord, X_PickingProfile_Filter.FILTERTYPE_Customer, 0);
+			final ImmutableList<PickingJobFacetGroup> before = repository.getProfile().getFilterGroupsInOrder();
+
+			repository.update(profile -> profile.toBuilder().isMassPrinting(true).build());
+
+			assertThat(repository.getProfile().getFilterGroupsInOrder()).isEqualTo(before);
 		}
 
 		@Test
