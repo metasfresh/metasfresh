@@ -92,7 +92,10 @@ public interface IShipmentScheduleInvalidateRepository extends ISingletonService
 
 	/**
 	 * @return {@code true} if at least one {@code M_ShipmentSchedule_Recompute} row is still untagged
-	 *         (i.e. {@code AD_PInstance_ID IS NULL}) -- i.e. there is more backlog pending a recompute pass.
+	 *         (i.e. {@code AD_PInstance_ID IS NULL}) <b>and taggable</b> (its {@code M_ShipmentSchedule} still
+	 *         exists, which is what {@link #markAllToRecomputeOutOfTrx(PInstanceId, QueryLimit)} requires) --
+	 *         i.e. there is more backlog a follow-up recompute pass could actually pick up. An orphaned marker
+	 *         (no schedule row; there is no FK) can never be tagged and is deliberately not counted.
 	 *         This is the correct signal for "should a follow-up bounded run be enqueued", as opposed to
 	 *         comparing a pass's recomputed count against its {@code maxToProcess} (which, because the tag
 	 *         unit is a whole product, is not reliable: a pass can recompute more or fewer schedules than
@@ -104,6 +107,12 @@ public interface IShipmentScheduleInvalidateRepository extends ISingletonService
 	 * Delete M_ShipmentSchedule_Recompute records for given tag
 	 */
 	void deleteRecomputeMarkersOutOfTrx(PInstanceId adPInstanceId);
+
+	/**
+	 * Deletes every M_ShipmentSchedule_Recompute record of the given schedule, including tagged ones -- once the
+	 * schedule is gone, no marker of it can ever be tagged again, so leaving one behind only creates an orphan.
+	 */
+	void deleteRecomputeMarkers(ShipmentScheduleId shipmentScheduleId);
 
 	/**
 	 * Untag M_ShipmentSchedule_Recompute records which were tagged with given tag
