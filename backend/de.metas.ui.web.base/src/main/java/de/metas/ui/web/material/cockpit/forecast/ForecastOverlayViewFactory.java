@@ -19,10 +19,13 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
+
+import static de.metas.ui.web.view.SqlViewFactory.MSG_NO_RELATED_DOCS_FOUND;
 
 /**
  * Launched-view factory for the {@code Sprung zu Prognose} overlay. Seeded (via
@@ -63,7 +66,17 @@ public class ForecastOverlayViewFactory implements IViewFactory
 				.onlyNonZeroQty(true)
 				.build();
 
+		// Iteration order is guaranteed stable by the DAO (DatePromised, then M_Forecast_ID), so the rows are rendered
+		// in the order they arrive.
 		final Map<ForecastId, Quantity> qtyByForecastId = forecastDAO.sumQtyByForecastId(forecastQuery);
+
+		// Nothing forecast for this product: keep the pre-existing behaviour of the jump, which opened no window at all
+		// when no forecast matched, rather than presenting an empty overlay. Same message and layer as the equivalent
+		// no-results case in SqlViewFactory.
+		if (qtyByForecastId.isEmpty())
+		{
+			throw new AdempiereException(MSG_NO_RELATED_DOCS_FOUND);
+		}
 
 		final List<ForecastOverlayRow> rows = qtyByForecastId.entrySet()
 				.stream()

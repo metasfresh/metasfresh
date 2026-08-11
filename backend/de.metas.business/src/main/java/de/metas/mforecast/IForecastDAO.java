@@ -65,7 +65,9 @@ public interface IForecastDAO extends ISingletonService
 	 * lines are stored in different UOMs still yields a correct, single-UOM total.
 	 *
 	 * @return one entry per forecast document that has at least one matching line; the {@link Quantity} value is expressed
-	 * in the product's stock UOM. Documents without a matching line are absent from the map.
+	 * in the product's stock UOM. Documents without a matching line are absent from the map. Iteration order is stable
+	 * across calls — by the lines' {@code DatePromised}, then {@code M_Forecast_ID} — so a caller may render the entries
+	 * in the order it receives them.
 	 */
 	@NonNull
 	Map<ForecastId, Quantity> sumQtyByForecastId(@NonNull ForecastQuery forecastQuery);

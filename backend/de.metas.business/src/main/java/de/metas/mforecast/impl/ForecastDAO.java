@@ -22,6 +22,7 @@ package de.metas.mforecast.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.marketing.base.model.CampaignId;
@@ -55,7 +56,7 @@ import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -120,8 +121,13 @@ public class ForecastDAO implements IForecastDAO
 		final I_C_UOM stockUOM = productBL.getStockUOM(productId);
 		final UOMConversionContext conversionCtx = UOMConversionContext.of(productId);
 
-		final Map<ForecastId, Quantity> result = new HashMap<>();
+		// LinkedHashMap + an ordered query: the caller renders the entries in iteration order, so the order has to be
+		// stable across calls. A HashMap would order the rows by ForecastId hash, i.e. arbitrarily and differently
+		// from the M_Forecast window the jump used to open.
+		final Map<ForecastId, Quantity> result = new LinkedHashMap<>();
 		buildForecastLineQuery(forecastQuery)
+				.orderBy(I_M_ForecastLine.COLUMNNAME_DatePromised)
+				.orderBy(I_M_ForecastLine.COLUMNNAME_M_Forecast_ID)
 				.create()
 				.stream()
 				.forEach(line -> {
@@ -133,7 +139,7 @@ public class ForecastDAO implements IForecastDAO
 							lineQty,
 							Quantity::add);
 				});
-		return result;
+		return ImmutableMap.copyOf(result);
 	}
 
 	@Override
