@@ -26,11 +26,13 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
+import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleSegments;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler_Log;
@@ -137,6 +139,23 @@ public class M_ShipmentSchedule
 				.addEqualsFilter(I_M_IolCandHandler_Log.COLUMNNAME_AD_Table_ID, shipmentSchedule.getAD_Table_ID())
 				.addEqualsFilter(I_M_IolCandHandler_Log.COLUMN_Record_ID, shipmentSchedule.getRecord_ID())
 				.create();
+	}
+
+	/**
+	 * Deletes the schedule's {@code M_ShipmentSchedule_Recompute} markers along with the schedule.
+	 * <p>
+	 * The concrete failure this prevents: there is no FK between the two tables, so a marker that outlives its
+	 * schedule becomes an ORPHAN which no recompute pass can tag (both branches of
+	 * {@code M_ShipmentSchedule_TagToRecompute} require the schedule row). Before this, such a marker kept
+	 * {@code existsUntaggedRecomputeMarkers()} answering "yes, there is more to do", so every bounded pass
+	 * reported limit-reached, enqueued a follow-up, tagged nothing, and repeated -- an endless re-enqueue loop
+	 * (observed at ~2 workpackages/second until the marker was removed by hand).
+	 */
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
+	public void deleteRecomputeMarkers(final I_M_ShipmentSchedule schedule)
+	{
+		Services.get(IShipmentScheduleInvalidateRepository.class)
+				.deleteRecomputeMarkers(ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID()));
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })

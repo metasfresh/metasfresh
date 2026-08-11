@@ -651,6 +651,21 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	}
 
 	@Override
+	public void deleteRecomputeMarkers(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		// deleteDirectly (bulk filter-based DELETE), NOT delete(): M_ShipmentSchedule_Recompute is a keyless
+		// queue table, so the PO-by-PO delete() builds an empty WHERE and fails.
+		//
+		// Deliberately NOT restricted to untagged markers. The schedule row is going away, so no marker of it
+		// can ever be meaningful again -- a tagged one would only be dropped later anyway, by its own pass's
+		// deleteRecomputeMarkersOutOfTrx. Leaving any behind is what creates the orphan.
+		queryBL.createQueryBuilder(I_M_ShipmentSchedule_Recompute.class)
+				.addEqualsFilter(I_M_ShipmentSchedule_Recompute.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
+				.create()
+				.deleteDirectly();
+	}
+
+	@Override
 	public void deleteRecomputeMarkersOutOfTrx(@NonNull final PInstanceId pinstanceId)
 	{
 		final String sql = "DELETE FROM " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " WHERE AD_Pinstance_ID=? RETURNING M_ShipmentSchedule_ID";
