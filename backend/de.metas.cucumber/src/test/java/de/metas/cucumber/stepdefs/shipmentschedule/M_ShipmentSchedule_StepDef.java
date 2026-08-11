@@ -204,7 +204,7 @@ public class M_ShipmentSchedule_StepDef
 	private final Map<String, PInstanceId> recomputeSelectionsByIdentifier = new HashMap<>();
 
 	/**
-	 * gh31502 regression coverage: orphaned {@code M_ShipmentSchedule_ID}s seeded by
+	 * Regression coverage: orphaned {@code M_ShipmentSchedule_ID}s seeded by
 	 * {@link #seedOrphanedUntaggedRecomputeMarker}, keyed by the scenario's identifier, so
 	 * {@link #assertOrphanedRecomputeMarkerReaped} can look the id back up.
 	 */
@@ -369,7 +369,7 @@ public class M_ShipmentSchedule_StepDef
 	}
 
 	/**
-	 * gh31502 regression coverage: seeds one orphaned, untagged {@code M_ShipmentSchedule_Recompute} marker. A
+	 * Regression coverage: seeds one orphaned, untagged {@code M_ShipmentSchedule_Recompute} marker. A
 	 * minimal {@code M_ShipmentSchedule} row is inserted, an untagged marker is inserted for it, then the
 	 * schedule row itself is deleted directly -- leaving the marker behind with no matching schedule. This is
 	 * possible only because {@code M_ShipmentSchedule_Recompute} carries NO FK to {@code M_ShipmentSchedule}
@@ -445,13 +445,22 @@ public class M_ShipmentSchedule_StepDef
 	}
 
 	/**
-	 * gh31502 regression coverage: enqueues one bounded shipment-schedule recompute pass via the real
+	 * Regression coverage: enqueues one bounded shipment-schedule recompute pass via the real
 	 * production entry point, {@link UpdateInvalidShipmentSchedulesWorkpackageProcessor#schedule()} (the same
 	 * static method every real invalidation calls internally). The pass is bounded exactly as in production by
 	 * the {@code UpdateInvalidShipmentSchedulesWorkpackageProcessor.MaxToProcess} sysconfig (default 500 -- a
 	 * real, non-zero limit; nothing in this test module overrides it to unbounded), so
 	 * {@code maxToProcess.isLimited()} is {@code true} and the livelock branch in
 	 * {@code ShipmentScheduleUpdater#updateShipmentSchedules} is reachable.
+	 * <p>
+	 * Two consequences of driving the REAL pipeline (this is the only step in this feature that does):
+	 * the Background's fixture schedules are handler-less (self-referential {@code AD_Table_ID}, no registered
+	 * {@code ShipmentScheduleHandler}), so {@code ShipmentSchedulePA#createOlAndScheds} skips them via its
+	 * defensive report-and-skip path rather than running per-schedule business logic against minimal rows --
+	 * which keeps this pass fast, but also means each run logs one {@code AD_Issue} per skipped fixture
+	 * schedule. Those {@code AD_Issue} rows are an EXPECTED side effect, not a failure. And if that skip path
+	 * were ever removed, this scenario would start failing for a reason unrelated to the orphan it guards --
+	 * look there first before suspecting the reaper or the probe.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
@@ -466,7 +475,7 @@ public class M_ShipmentSchedule_StepDef
 	}
 
 	/**
-	 * gh31502 regression assertion: waits until no untagged ({@code AD_PInstance_ID IS NULL})
+	 * Regression assertion: waits until no untagged ({@code AD_PInstance_ID IS NULL})
 	 * {@code M_ShipmentSchedule_Recompute} marker remains for the schedule id seeded under {@code identifier}
 	 * by {@link #seedOrphanedUntaggedRecomputeMarker} -- i.e. the orphan was reaped rather than left to
 	 * accumulate forever in the queue table. Polls instead of checking once: the marker is removed
@@ -499,7 +508,7 @@ public class M_ShipmentSchedule_StepDef
 	}
 
 	/**
-	 * gh31502 regression assertion: the strongest available livelock signal -- waits until no
+	 * Regression assertion: the strongest available livelock signal -- waits until no
 	 * {@link #RECOMPUTE_QUEUE_PROCESSOR_SHORT_NAMES} workpackage remains pending, i.e. the shipment-schedule
 	 * recompute queue actually drains to zero within the module's standard wait budget. Before the fix, a
 	 * bounded pass that could never make progress on an untaggable (orphaned) marker kept reporting
