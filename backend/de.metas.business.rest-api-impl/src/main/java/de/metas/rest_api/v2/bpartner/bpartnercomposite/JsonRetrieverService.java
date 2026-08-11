@@ -31,6 +31,8 @@ import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.CreditorId;
+import de.metas.bpartner.DebtorId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.GlnWithLabel;
 import de.metas.bpartner.composite.BPartner;
@@ -465,8 +467,8 @@ public class JsonRetrieverService
 				.customerIncoterms(toJson(customerIncoterms))
 				.changeInfo(jsonChangeInfo)
 				.metasfreshUrl(TableRecordUtil.getMetasfreshUrl(bPartnerRecordRef))
-				.creditorId(bpartner.getCreditorId())
-				.debtorId(bpartner.getDebtorId())
+				.creditorId(CreditorId.toIntOrNull(bpartner.getCreditorId()))
+				.debtorId(DebtorId.toIntOrNull(bpartner.getDebtorId()))
 				.extendedProps(getExtendedPropsOrNull(bpartnerRecord))
 				.build();
 	}

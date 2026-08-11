@@ -1,5 +1,6 @@
 package de.metas.inoutcandidate.api.impl;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -7,9 +8,11 @@ import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.error.IErrorManager;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
+import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
@@ -64,6 +67,8 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 {
 	private final static Logger logger = LogManager.getLogger(ShipmentSchedulePA.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IShipmentScheduleHandlerBL shipmentScheduleHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
+	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 
 	/**
 	 * When mass cache invalidation, above this threshold we will invalidate ALL shipment schedule records instead of particular IDS
@@ -301,7 +306,8 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		return OrderAndLineId.ofRepoIdsOrNull(shipmentSchedule.getC_Order_ID(), shipmentSchedule.getC_OrderLine_ID());
 	}
 
-	private List<OlAndSched> createOlAndScheds(final List<I_M_ShipmentSchedule> shipmentSchedules)
+	@VisibleForTesting
+	List<OlAndSched> createOlAndScheds(final List<I_M_ShipmentSchedule> shipmentSchedules)
 	{
 		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
@@ -320,6 +326,16 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 		for (final I_M_ShipmentSchedule schedule : shipmentSchedules)
 		{
+			// A schedule whose AD_Table_ID has no registered handler cannot be recomputed. Skip it (surfaced
+			// as an AD_Issue) instead of letting OlAndSched -> getHandlerFor throw and abort the WHOLE batch --
+			// one such row (a self-referential test-seed row, or genuine data corruption) would otherwise jam
+			// every other schedule in the recompute queue.
+			if (shipmentScheduleHandlerBL.getHandlerForOrNull(schedule) == null)
+			{
+				reportHandlerlessScheduleAndSkip(schedule);
+				continue;
+			}
+
 			final OrderAndLineId orderLineId = extractOrderAndLineId(schedule);
 			final I_C_OrderLine orderLine;
 			final I_C_Order order;
@@ -342,6 +358,32 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			result.add(olAndSched);
 		}
 		return result;
+	}
+
+	/**
+	 * Report (as an AD_Issue) a shipment schedule whose {@code AD_Table_ID} has no registered
+	 * {@link de.metas.inoutcandidate.spi.ShipmentScheduleHandler}, so it stays visible while the recompute
+	 * batch continues. Its {@code M_ShipmentSchedule_Recompute} marker is cleared with the rest of the batch
+	 * (tagged with this pass's selection) at the end of the pass, so it is not re-swept forever.
+	 */
+	private void reportHandlerlessScheduleAndSkip(@NonNull final I_M_ShipmentSchedule schedule)
+	{
+		final AdempiereException issue = new AdempiereException(
+				"Skipping M_ShipmentSchedule with no registered ShipmentScheduleHandler for its AD_Table_ID"
+						+ " (it cannot be recomputed): " + schedule);
+		logger.warn(issue.getLocalizedMessage(), issue);
+
+		// A handler-less schedule cannot be recomputed; since the pass no longer aborts on it, raise the
+		// AD_Issue explicitly to keep it visible. Best-effort: creating the issue must never itself break
+		// the recompute pass.
+		try
+		{
+			errorManager.createIssue(issue);
+		}
+		catch (final Exception issueCreationFailed)
+		{
+			logger.warn("Failed to create AD_Issue for handler-less M_ShipmentSchedule", issueCreationFailed);
+		}
 	}
 
 	@Override
