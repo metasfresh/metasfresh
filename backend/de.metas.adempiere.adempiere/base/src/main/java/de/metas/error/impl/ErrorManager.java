@@ -8,7 +8,6 @@ import de.metas.error.InsertRemoteIssueRequest;
 import de.metas.error.IssueCategory;
 import de.metas.error.IssueCountersByCategory;
 import de.metas.error.IssueCreateRequest;
-import de.metas.error.LoggableWithThrowableUtil;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
 import de.metas.process.PInstanceId;
@@ -24,7 +23,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.IssueReportableExceptions;
-import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.util.DB;
@@ -100,11 +98,7 @@ public class ErrorManager implements IErrorManager
 	@Override
 	public AdIssueId createIssue(@NonNull final IssueCreateRequest request)
 	{
-		// Bounds the recursion when this save fails and the trx manager logs the failure through the ambient loggable.
-		try (final IAutoCloseable ignored = LoggableWithThrowableUtil.suppressAdIssueCreation())
-		{
-			return trxManager.callInNewTrx(() -> createIssueInTrx(request));
-		}
+		return trxManager.callInNewTrx(() -> createIssueInTrx(request));
 	}
 
 	private AdIssueId createIssueInTrx(@NonNull final IssueCreateRequest request)
