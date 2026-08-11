@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implements I_MobileUI_UserProfile_Picking, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 899214859L;
+	private static final long serialVersionUID = -657563801L;
 
     /** Standard Constructor */
     public X_MobileUI_UserProfile_Picking (final Properties ctx, final int MobileUI_UserProfile_Picking_ID, @Nullable final String trxName)
@@ -321,6 +321,18 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	public boolean isShipOnCloseLU() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsShipOnCloseLU);
+	}
+
+	@Override
+	public void setIsShowAllFilterGroups (final boolean IsShowAllFilterGroups)
+	{
+		set_Value (COLUMNNAME_IsShowAllFilterGroups, IsShowAllFilterGroups);
+	}
+
+	@Override
+	public boolean isShowAllFilterGroups() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsShowAllFilterGroups);
 	}
 
 	@Override
