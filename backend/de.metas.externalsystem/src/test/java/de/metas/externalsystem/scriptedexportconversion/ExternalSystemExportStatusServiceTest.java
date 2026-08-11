@@ -305,11 +305,14 @@ public class ExternalSystemExportStatusServiceTest
 	// -----------------------------------------------------------------------
 
 	/**
-	 * A config with an in-flight (Pending) status must NOT be returned by the re-send
-	 * selection, to prevent double-sending a record that is already queued.
+	 * A config whose latest attempt is a resting Pending MUST be returned by the re-send selection:
+	 * Pending means not-yet-sent with nothing in flight, so a re-send is the first send (not a
+	 * duplicate). An operator can park a shipment in Pending via the "Change EPCIS Export Status"
+	 * action and must then be able to Re-send it. (Only the actively-in-flight Enqueued/SendingStarted
+	 * and already-Sent are excluded — covered by the "succeeded" test below.)
 	 */
 	@Test
-	void getResendableConfigs_excludes_pendingConfig()
+	void getResendableConfigs_includes_pendingConfig()
 	{
 		final TableRecordReference ref = newInOutRef();
 		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
@@ -319,7 +322,7 @@ public class ExternalSystemExportStatusServiceTest
 		final List<ExternalSystemScriptedExportConversionConfigId> result =
 				service.getResendableConfigsBySourceRecord(ref);
 
-		assertThat(result).isEmpty();
+		assertThat(result).containsExactly(configId);
 	}
 
 	/**
