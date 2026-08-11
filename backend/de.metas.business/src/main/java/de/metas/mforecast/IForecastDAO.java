@@ -55,8 +55,6 @@ public interface IForecastDAO extends ISingletonService
 
 	void save(@NonNull I_M_Forecast forecastRecord);
 
-	List<ForecastId> listIdsByQuery(@NonNull final ForecastQuery forecastQuery);
-
 	/**
 	 * Sums, per matching forecast document, the quantity of that document's forecast lines that match the given query
 	 * (product / ASI / warehouse / org, honouring {@code onlyNonZeroQty}).

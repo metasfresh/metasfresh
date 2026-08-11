@@ -85,18 +85,9 @@ public class ForecastDAO implements IForecastDAO
 				.stream(I_M_Forecast.class);
 	}
 
-	public List<ForecastId> listIdsByQuery(@NonNull final ForecastQuery forecastQuery)
-	{
-		return buildForecastLineQuery(forecastQuery)
-				.andCollect(I_M_ForecastLine.COLUMN_M_Forecast_ID)
-				.create()
-				.listIds(ForecastId::ofRepoId);
-	}
-
 	/**
-	 * The shared forecast-line filter behind {@link #listIdsByQuery(ForecastQuery)} and
-	 * {@link #sumQtyByForecastId(ForecastQuery)}: active lines matching the query's product / ASI / warehouse / org,
-	 * optionally restricted to non-zero quantities.
+	 * The forecast-line filter behind {@link #sumQtyByForecastId(ForecastQuery)}: active lines matching the query's
+	 * product / ASI / warehouse / org, optionally restricted to non-zero quantities.
 	 */
 	private IQueryBuilder<I_M_ForecastLine> buildForecastLineQuery(@NonNull final ForecastQuery forecastQuery)
 	{
