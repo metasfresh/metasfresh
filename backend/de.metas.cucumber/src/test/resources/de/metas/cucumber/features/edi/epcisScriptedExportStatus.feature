@@ -294,10 +294,9 @@ Feature: EPCIS scripted-export status — success, error and re-send flows
   @Id:S30088_060
   Scenario: S30088_060 — Re-send picks up a shipment parked in Pending (a resting Pending IS resendable)
     ## An operator resets a stuck in-flight EPCIS export to "Not yet sent" (Pending) via the Change EPCIS
-    ## Export Status action, then runs Re-send. Pending is not-in-flight (nothing is being sent), so the
-    ## Re-send MUST pick it up — it is the first send, not a double-send. Before the fix the Re-send
-    ## ignored Pending (it was grouped with the actively-in-flight states), so parking a shipment in
-    ## Pending was a dead end.
+    ## Export Status action, then runs Re-send. An operator-parked Pending is not-in-flight (nothing is
+    ## being sent) and is stamped with the process instance, so Re-send picks it up as the first send —
+    ## not a double-send.
 
     # EPCIS-classified config (its outbound-data process IS the EPCIS export) so the Change EPCIS Export
     # Status action applies; no WhereClause → the export enqueues on any completion (reaches in-flight U).
@@ -337,8 +336,8 @@ Feature: EPCIS scripted-export status — success, error and re-send flows
       | M_InOut_ID | ExternalSystem_Config_ScriptedExportConversion_ID | ExportStatus | HasAD_PInstance |
       | io_060     | scriptedCfg_060                                   | P            | Y               |
 
-    # The fix: Re-send MUST pick up the Pending shipment → a NEW attempt row (IsResend=Y) reaching at
-    # least Enqueued. (Before the fix this process was a no-op on a Pending shipment.)
+    # Re-send picks up the operator-parked Pending shipment → a NEW attempt row (IsResend=Y) reaching at
+    # least Enqueued.
     When M_InOut_ReSend_ScriptedExportConversion process is run for shipment io_060
     Then after not more than 30s, ExternalSystem_ScriptedExportConversion_Status is found:
       | M_InOut_ID | ExternalSystem_Config_ScriptedExportConversion_ID | ExportStatus | IsResend |

@@ -88,16 +88,18 @@ public enum ExternalSystemExportStatus implements ReferenceListAwareEnum
 	public boolean isErrorOrInvalid() {return isError() || isInvalid();}
 
 	/**
-	 * Resendable states: the manual Re-send may re-trigger a config whose latest attempt is a resting
-	 * {@link #Pending} (not yet sent, nothing in flight), a terminal failure ({@link #Error}/{@link
-	 * #Invalid}), or was suppressed as {@link #DontSend} ("shall not be sent" — e.g. every SSCC already
-	 * in the ledger). Re-sending a DontSend re-evaluates relevance, so a record that later has something
-	 * new to export can be sent. {@link #Pending} is resendable because nothing is in flight — the
-	 * re-send is the first send, not a duplicate (an operator can park a shipment in Pending via the
-	 * "Change EPCIS Export Status" action). The actively-in-flight states ({@link #Enqueued}/{@link
-	 * #SendingStarted}) and already-{@link #Sent} are NOT resendable (re-sending would double-send).
+	 * Resendable states (status-only): the manual Re-send may re-trigger a config whose latest attempt is
+	 * a terminal failure ({@link #Error}/{@link #Invalid}) OR was suppressed as {@link #DontSend} ("shall
+	 * not be sent" — e.g. every SSCC already in the ledger). Re-sending a DontSend re-evaluates relevance,
+	 * so a record that later has something new to export can be sent. In-flight ({@link #Pending}/{@link
+	 * #Enqueued}/{@link #SendingStarted}) and already-{@link #Sent} are NOT resendable on status alone.
+	 *
+	 * <p>{@link #Pending} is resendable ONLY when it is an operator-parked attempt (carries an
+	 * {@code AD_PInstance_ID}), never a transient auto-flow Pending awaiting Enqueued. That distinction is
+	 * per-row (the PInstance), not per-status, so it cannot live in this stateless predicate — it is
+	 * applied by {@code ExternalSystemExportStatusService#getResendableConfigsBySourceRecord}.
 	 */
-	public boolean isResendable() {return isPending() || isError() || isInvalid() || isDontSend();}
+	public boolean isResendable() {return isError() || isInvalid() || isDontSend();}
 
 	/** Enqueued OR SendingStarted OR Sent */
 	public boolean isInProgressOrSend() {return isEnqueued() || isSendingStarted() || isSent();}

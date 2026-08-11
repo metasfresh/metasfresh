@@ -220,21 +220,19 @@ class ExternalSystemExportStatusTest
 	}
 
 	/**
-	 * isResendable() — the manual Re-send may re-trigger a config whose latest attempt is a resting
-	 * Pending (not-yet-sent, nothing in flight), a terminal failure (Error/Invalid), or a suppressed
-	 * DontSend. Pending IS resendable: nothing is in flight, so re-sending it is the first send, not a
-	 * duplicate — an operator can park a shipment in Pending via the "Change EPCIS Export Status"
-	 * action, and Re-send must then pick it up. The actively-in-flight states (Enqueued/SendingStarted)
-	 * and already-Sent are NOT resendable (re-sending would double-send / re-deliver).
+	 * isResendable() is status-only: Error/Invalid/DontSend qualify. Pending is NOT resendable on status
+	 * alone — an operator-parked Pending becomes resendable only via the per-row PInstance gate in
+	 * ExternalSystemExportStatusService#getResendableConfigsBySourceRecord (see its test), never here.
+	 * The in-flight Enqueued/SendingStarted and already-Sent are never resendable.
 	 */
 	@Test
 	void testIsResendable()
 	{
-		assertThat(ExternalSystemExportStatus.Pending.isResendable()).isTrue();
 		assertThat(ExternalSystemExportStatus.Error.isResendable()).isTrue();
 		assertThat(ExternalSystemExportStatus.Invalid.isResendable()).isTrue();
 		assertThat(ExternalSystemExportStatus.DontSend.isResendable()).isTrue();
 
+		assertThat(ExternalSystemExportStatus.Pending.isResendable()).isFalse();
 		assertThat(ExternalSystemExportStatus.Enqueued.isResendable()).isFalse();
 		assertThat(ExternalSystemExportStatus.SendingStarted.isResendable()).isFalse();
 		assertThat(ExternalSystemExportStatus.Sent.isResendable()).isFalse();
