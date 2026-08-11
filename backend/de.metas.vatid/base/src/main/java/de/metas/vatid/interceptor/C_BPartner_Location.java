@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.vatid.interceptor
  * %%
  * Copyright (C) 2026 metas GmbH
  * %%
@@ -20,10 +20,10 @@
  * #L%
  */
 
-package de.metas.bpartner.model.interceptor;
+package de.metas.vatid.interceptor;
 
-import de.metas.vatid.VATaxIDValidationUtil;
 import de.metas.util.Services;
+import de.metas.vatid.VATaxIDValidationUtil;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;

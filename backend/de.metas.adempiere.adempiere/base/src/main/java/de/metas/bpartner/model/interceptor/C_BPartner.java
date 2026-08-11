@@ -7,7 +7,6 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
-import de.metas.vatid.VATaxIDValidationUtil;
 import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
@@ -20,7 +19,6 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BP_PrintFormat;
@@ -64,7 +62,6 @@ public class C_BPartner
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final static Logger logger = LogManager.getLogger(C_BPartner.class);
 
@@ -202,15 +199,5 @@ public class C_BPartner
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(partner.getC_BPartner_ID());
 		final BPartnerId salesRepId = BPartnerId.ofRepoIdOrNull(partner.getC_BPartner_SalesRep_ID());
 		bPartnerBL.validateSalesRep(bPartnerId, salesRepId);
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = I_C_BPartner.COLUMNNAME_VATaxID)
-	public void validateVATaxID(@NonNull final I_C_BPartner bpartner)
-	{
-		if (sysConfigBL.getBooleanValue(VATaxIDValidationUtil.SYSCONFIG_validateVATaxID, true))
-		{
-			VATaxIDValidationUtil.validate(bpartner.getVATaxID());
-		}
 	}
 }
