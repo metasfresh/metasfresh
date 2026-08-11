@@ -424,10 +424,11 @@ public class PurchaseCandidateRepository
 		}
 		record.setPOReference(purchaseCandidate.getPOReference());
 
-		if (purchaseCandidate.getSource() != null)
-		{
-			record.setSource(purchaseCandidate.getSource().getCode());
-		}
+		// Source is mandatory: every persisted candidate must carry its origin so the sales-order interceptor
+		// can distinguish manual (SalesOrder) from material-disposition candidates. Fail loudly rather than
+		// silently persisting a null (which the DB NOT NULL constraint would otherwise reject with a cryptic error).
+		final PurchaseCandidateSource source = Check.assumeNotNull(purchaseCandidate.getSource(), "Source must be set on purchase candidate: {}", purchaseCandidate);
+		record.setSource(source.getCode());
 		record.setPriceInternal(purchaseCandidate.getPriceInternal());
 		record.setPriceEntered(purchaseCandidate.getPrice());
 		record.setPriceEffective(purchaseCandidate.getPriceEnteredEff());

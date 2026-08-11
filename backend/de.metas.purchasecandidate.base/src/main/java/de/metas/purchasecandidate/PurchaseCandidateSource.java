@@ -37,7 +37,9 @@ public enum PurchaseCandidateSource implements ReferenceListAwareEnum
 {
 	MaterialDisposition(X_C_PurchaseCandidate.SOURCE_MaterialDisposition),
 	SalesOrder(X_C_PurchaseCandidate.SOURCE_SalesOrder),
-	Api(X_C_PurchaseCandidate.SOURCE_API);
+	Api(X_C_PurchaseCandidate.SOURCE_API),
+	/** Origin not recorded — candidates created before the Source column existed (backfilled). Never auto-ordered by the sales-order interceptor. */
+	Unknown(X_C_PurchaseCandidate.SOURCE_Unknown);
 
 	String code;
 	private static final ImmutableMap<String, PurchaseCandidateSource> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), PurchaseCandidateSource::getCode);
