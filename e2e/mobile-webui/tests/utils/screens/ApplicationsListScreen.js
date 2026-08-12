@@ -1,4 +1,4 @@
-import { page } from "../common";
+import { page, SLOW_ACTION_TIMEOUT } from "../common";
 import { test } from "../../../playwright.config";
 import { expect } from "@playwright/test";
 import { LoginScreen } from "./LoginScreen";
@@ -11,10 +11,7 @@ const NAME = 'HOME';
 const containerElement = () => page.locator('#ApplicationsListScreen');
 
 export const ApplicationsListScreen = {
-    // `timeout` is optional and passed straight through: callers that omit it keep the
-    // playwright default (bounded only by the test timeout), while a caller landing here after a
-    // known-slow async commit can give the transition its own explicit budget.
-    waitForScreen: async ({ timeout } = {}) => await test.step(`${NAME} - Wait for screen`, async () => {
+    waitForScreen: async ({ timeout = SLOW_ACTION_TIMEOUT } = {}) => await test.step(`${NAME} - Wait for screen`, async () => {
         await containerElement().waitFor({ timeout });
         await page.locator('.loading').waitFor({ state: 'detached', timeout });
     }),
