@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_VATaxID_CheckLog extends org.compiere.model.PO implements I_VATaxID_CheckLog, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1435818294L;
+	private static final long serialVersionUID = -1752318648L;
 
     /** Standard Constructor */
     public X_VATaxID_CheckLog (final Properties ctx, final int VATaxID_CheckLog_ID, @Nullable final String trxName)
@@ -68,9 +68,9 @@ public class X_VATaxID_CheckLog extends org.compiere.model.PO implements I_VATax
 	public void setC_BPartner_ID (final int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
-			set_Value (COLUMNNAME_C_BPartner_ID, null);
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
 	}
 
 	@Override
@@ -83,9 +83,9 @@ public class X_VATaxID_CheckLog extends org.compiere.model.PO implements I_VATax
 	public void setC_BPartner_Location_ID (final int C_BPartner_Location_ID)
 	{
 		if (C_BPartner_Location_ID < 1) 
-			set_Value (COLUMNNAME_C_BPartner_Location_ID, null);
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_Location_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_BPartner_Location_ID, C_BPartner_Location_ID);
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_Location_ID, C_BPartner_Location_ID);
 	}
 
 	@Override
