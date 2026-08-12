@@ -379,6 +379,21 @@ public class ESRDataLoaderUtil
 		importLine.setMatchErrorMsg(addMsgToString(importLine.getMatchErrorMsg(), msg));
 	}
 
+	/**
+	 * Like {@link #addMatchErrorMsg(I_ESR_ImportLine, String)}, but a no-op if the line's {@code MatchErrorMsg} already
+	 * contains the given message. For callers that may run more than once for the same line and would otherwise
+	 * accumulate the very same message again and again.
+	 */
+	public void addMatchErrorMsgIfNotPresent(@NonNull final I_ESR_ImportLine importLine, final String msg)
+	{
+		final String currentMsg = importLine.getMatchErrorMsg();
+		if (!Check.isEmpty(msg, true) && currentMsg != null && currentMsg.contains(msg))
+		{
+			return;
+		}
+		addMatchErrorMsg(importLine, msg);
+	}
+
 	public void addImportErrorMsg(@NonNull final I_ESR_ImportLine importLine, final String msg)
 	{
 		importLine.setImportErrorMsg(addMsgToString(importLine.getImportErrorMsg(), msg));

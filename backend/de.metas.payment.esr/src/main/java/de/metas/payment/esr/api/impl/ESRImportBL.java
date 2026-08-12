@@ -1144,14 +1144,12 @@ public class ESRImportBL implements IESRImportBL
 
 			if (invoice.isPaid() && !paymentBL.isMatchInvoice(payment, invoice))
 			{
-				ESRDataLoaderUtil.addMatchErrorMsg(importLine, "Rechnung " + invoice.getDocumentNo() + " wurde im System als bereits bezahlt markiert");
-				importLine.setESR_Document_Status(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched);
+				markInvoiceAlreadyPaid(importLine, invoice);
 			}
 		}
 		else if (invoice.isPaid())
 		{
-			ESRDataLoaderUtil.addMatchErrorMsg(importLine, "Rechnung " + invoice.getDocumentNo() + " wurde im System als bereits bezahlt markiert");
-			importLine.setESR_Document_Status(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched);
+			markInvoiceAlreadyPaid(importLine, invoice);
 		}
 
 		if (invoice.getAD_Org_ID() != importLine.getAD_Org_ID())
@@ -1172,6 +1170,21 @@ public class ESRImportBL implements IESRImportBL
 
 		importLine.setESR_Invoice_Grandtotal(invoice.getGrandTotal());
 
+	}
+
+	/**
+	 * Notes on the given line that its invoice is already flagged as paid, and downgrades the line's document status
+	 * accordingly.
+	 * <p>
+	 * {@link #setInvoice(I_ESR_ImportLine, I_C_Invoice)} is re-entrant for one and the same line: besides being called
+	 * while the line is evaluated, it also runs again from the {@code C_Payment_ID} model interceptor once the line's own
+	 * payment is created. The document status it derives is idempotent, so the note has to be too - otherwise the very
+	 * same sentence ends up in {@code MatchErrorMsg} once per pass.
+	 */
+	private void markInvoiceAlreadyPaid(@NonNull final I_ESR_ImportLine importLine, @NonNull final I_C_Invoice invoice)
+	{
+		ESRDataLoaderUtil.addMatchErrorMsgIfNotPresent(importLine, "Rechnung " + invoice.getDocumentNo() + " wurde im System als bereits bezahlt markiert");
+		importLine.setESR_Document_Status(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched);
 	}
 
 	@Override
