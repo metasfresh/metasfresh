@@ -33,20 +33,30 @@ import org.compiere.model.I_M_Product;
 import java.util.List;
 import java.util.Set;
 
-public class M_HU_Trace_Report_Excel extends M_HU_Trace_Report_Template
+/**
+ * HU Trace Report for Retailers - Focus on IFS compliance and sales control
+ * This report is designed for retailers and focuses on:
+ * - Receipt and shipment information (no production data)
+ * - Customer/recipient details
+ * - Sales order and invoice references
+ * - Shipper and delivery information
+ * - Complete supply chain traceability
+ * Used for IFS Food Safety compliance and sales control.
+ */
+public class M_HU_Trace_Report_Retailer_Excel extends M_HU_Trace_Report_Template
 {
 	@NonNull
 	@Override
 	protected Set<HUTraceType> getTraceTypes()
 	{
-		return HUTraceType.typesToReport();
+		return HUTraceType.typesToReportForRetailer();
 	}
 
 	@NonNull
 	@Override
 	protected String getSql(@NonNull final PInstanceId pinstanceId)
 	{
-		return " SELECT  * FROM M_HU_Trace_Report(" + pinstanceId.getRepoId() + ")";
+		return " SELECT  * FROM M_HU_Trace_Report_Retailer(" + pinstanceId.getRepoId() + ")";
 	}
 
 	@NonNull
@@ -58,25 +68,24 @@ public class M_HU_Trace_Report_Excel extends M_HU_Trace_Report_Template
 				I_M_HU_Trace.COLUMNNAME_HUTraceType,
 				I_M_HU_Trace.COLUMNNAME_M_Product_ID,
 				I_M_HU_Trace.COLUMNNAME_M_InOut_ID,
-				I_M_HU_Trace.COLUMNNAME_PP_Order_ID,
-				I_M_HU_Trace.COLUMNNAME_M_Inventory_ID,
-				I_M_InOut.COLUMNNAME_MovementDate,
+				"DocumentDate",
 				I_M_HU_Trace.COLUMNNAME_Qty,
 				I_M_Product.COLUMNNAME_C_UOM_ID,
-				"Detail_Type",
-				"Finished_Product_No",
-				"Finished_Product_Name",
-				"Finished_Product_Qty",
-				"Finished_Product_UOM",
-				"Finished_Product_Lot",
-				"Vendor_Lot",
-				"Finished_Product_Mhd",
-				"Finished_Product_Clearance",
-				"Customer_Vendor_No",
-				"Customer_Vendor",
-				"ShipmentQty",
-				"Shipment_Note",
-				"Shipment_Date",
+				"MHD",
+				"SubProducer",
+				"NetWeight",
+				"GrossWeight",
+				"BPValue",
+				"BPName",
+				I_M_InOut.COLUMNNAME_BPartnerAddress,
+				"CountryName",
+				"OrderDocumentNo",
+				"InvoiceDocumentNo",
+				"PriceActual",
+				"LineNetAmt",
+				"PaymentTerm",
+				"ShipperName",
+				"WarehouseName",
 				"Prod_Stock",
 				"TraceId",
 				"ReportDate"

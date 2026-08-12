@@ -85,6 +85,10 @@ public enum HUTraceType
 																					 MATERIAL_SHIPMENT,
 																					 MATERIAL_INVENTORY);
 
+	private static final ImmutableSet<HUTraceType> TYPES_TO_REPORT_FOR_RETAILER = ImmutableSet.of(MATERIAL_RECEIPT,
+																									 MATERIAL_SHIPMENT,
+																									 MATERIAL_INVENTORY);
+
 	public static HUTraceType ofCode(final String code)
 	{
 		return valueOf(code);
@@ -98,6 +102,11 @@ public enum HUTraceType
 	public static Set<HUTraceType> typesToReport()
 	{
 		return TYPES_TO_REPORT;
+	}
+
+	public static Set<HUTraceType> typesToReportForRetailer()
+	{
+		return TYPES_TO_REPORT_FOR_RETAILER;
 	}
 
 }
