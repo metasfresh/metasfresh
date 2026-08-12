@@ -6,9 +6,10 @@
 -- The reference DOES carry a real foreign key, unlike VATaxID_CheckLog.AD_PInstance_ID /
 -- AD_Session_ID: those two are FK-less because their targets (AD_PInstance, AD_Session) are purge
 -- targets, so an FK would block or cascade away evidence that must survive the purge.
--- VATaxID_CheckLog itself has no retention limit and is never purged (append-only, deleted only
--- by nothing), so pointing at it carries no such risk -- a plain FK is safe and gives the DB an
--- extra integrity guarantee for free.
+-- VATaxID_CheckLog itself is append-only legal evidence: it has no retention limit, and no purge
+-- job or retention configuration registers it (verified -- the only reference to deletion is the
+-- table's own COMMENT, "never deleted"). Pointing at it therefore carries no such risk: a plain FK
+-- is safe and gives the DB an extra integrity guarantee for free.
 
 -- IDs allocated from idserver.metas.de:
 --   AD_Element  585210 (1: VATaxIDCheckedAt, new; VATaxIDStatus and the check-log reference reuse
