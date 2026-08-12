@@ -10,7 +10,7 @@ import { BooleanWidget } from '../utils/widgets/BooleanWidget';
 import { TextWidget } from '../utils/widgets/TextWidget';
 import { NumericWidget } from '../utils/widgets/NumericWidget';
 import { ListWidget } from '../utils/widgets/ListWidget';
-import { assertRecordIsValid, getFieldData } from '../utils/WebAPIValidation';
+import { assertRecordIsValid, getFieldData, WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
 
 /**
  * VAT-ID check configuration window (table VATaxID_Config).
@@ -359,27 +359,22 @@ unrelated text elsewhere on the page.
 });
 
 /**
- * Delete a record via the WebUI REST DELETE endpoint. Best-effort cleanup so
- * the partial-unique index (AD_Org_ID) WHERE IsActive='Y' does not block
+ * Delete a record via the WebAPI DELETE endpoint (absolute WEBAPI_BASE_URL, same
+ * request path used by assertRecordIsValid/getFieldData above — a same-origin
+ * relative fetch from the page only reaches the webapi when frontend+webapi share
+ * an origin, which is not the case for a local split-port dev server). Best-effort
+ * cleanup so the partial-unique index (AD_Org_ID WHERE IsActive='Y') does not block
  * re-runs. Swallows errors (e.g. record was never actually persisted).
- * Same pattern as view-invalidate-config-window.spec.js.
  */
 async function deleteRecord(page, windowId, recordId) {
   if (!recordId || recordId === 'NEW') return;
-  return page.evaluate(
-    async ({ windowId, recordId }) => {
-      try {
-        await fetch(`/rest/api/window/${windowId}/${recordId}`, {
-          method: 'DELETE',
-          credentials: 'include',
-          headers: { Accept: 'application/json' },
-        });
-      } catch (e) {
-        // ignore — best-effort cleanup
-      }
-    },
-    { windowId, recordId }
-  );
+  try {
+    await page.request.delete(`${WEBAPI_BASE_URL}/window/${windowId}/${recordId}`, {
+      headers: { Accept: 'application/json' },
+    });
+  } catch (e) {
+    // ignore — best-effort cleanup
+  }
 }
 
 /**
