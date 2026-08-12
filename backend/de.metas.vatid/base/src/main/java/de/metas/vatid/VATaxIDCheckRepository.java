@@ -28,7 +28,10 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
@@ -41,18 +44,25 @@ import org.springframework.stereotype.Repository;
  *
  * <p>Repository Cluster: sole owner of {@code VATaxID_CheckLog}.
  *
- * <p>Persists the individual VAT-ID online check attempts that are the feature's legal evidence
- * (AC12, {@code DESIGN.md} § 3). The table is <b>append-only, with exactly one exception</b>: a row is
- * first written at {@link VATaxIDStatus#RequestSent} and, later, that same row — and only that row — is
- * updated to its final status when the VIES answer arrives. No other update path exists on purpose:
- * offering a general "update any field of any row" method would invite bypassing that single-transition
- * rule and corrupting the evidence trail. The two methods below are exactly the two moves the lifecycle
- * allows: {@link #writeRequestSent(VATaxIDCheckRequest)} appends, {@link #completeCheck(VATaxIDCheckLogId, VATaxIDCheckResult)}
- * completes.
+ * <p>Persists the individual VAT-ID online check attempts that are the feature's legal evidence. The
+ * table is <b>append-only, with exactly one exception</b>: a row is first written at
+ * {@link VATaxIDStatus#RequestSent} and, later, that same row — and only that row — is updated to its
+ * final status when the VIES answer arrives. This repository exposes exactly the two moves that
+ * lifecycle allows — {@link #writeRequestSent(VATaxIDCheckRequest)} appends,
+ * {@link #completeCheck(VATaxIDCheckLogId, VATaxIDCheckResult)} completes — and no general "update any
+ * field of any row" method, so <b>no bypass path is exposed by this repository's own API</b>: every
+ * caller reaching the table through this class can only append or complete, never issue an arbitrary
+ * update. That guarantee is scoped to this class's API only — {@code I_VATaxID_CheckLog} is still a
+ * public generated model interface, so the invariant's actual enforcement against a caller that skips
+ * this repository entirely (e.g. loading and saving the model directly) is not the type system but the
+ * codebase-wide review convention that persistence primitives for a model live only in that model's
+ * authoritative repository.
  */
 @Repository
 public class VATaxIDCheckRepository
 {
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@VisibleForTesting
 	public static VATaxIDCheckRepository newInstanceForUnitTesting()
 	{
@@ -90,12 +100,17 @@ public class VATaxIDCheckRepository
 	/**
 	 * Completes the one row identified by {@code checkLogId} — which must currently be at
 	 * {@link VATaxIDStatus#RequestSent} — with the VIES outcome. This is the log's single allowed update:
-	 * it never touches any other row, and it refuses to run twice on the same row (once completed, a row
-	 * is immutable evidence, per {@code DESIGN.md} § 3's "nothing else ever updates a row").
+	 * it never touches any other row, and it refuses to run twice on the same row, because once completed
+	 * a row is immutable evidence.
+	 *
+	 * <p>The guard is an atomic conditional {@code UPDATE ... WHERE VATaxID_CheckLog_ID = ? AND
+	 * VATaxIDStatus = 'RequestSent'}, not a load-then-save check, so two concurrent calls for the same
+	 * {@code checkLogId} cannot both succeed: at most one {@code UPDATE} matches the row, the other
+	 * affects zero rows and throws.
 	 *
 	 * @throws org.adempiere.exceptions.AdempiereException if {@code checkLogId} does not currently point
-	 * at a {@link VATaxIDStatus#RequestSent} row — either it was already completed, or it never was a
-	 * request-sent row to begin with.
+	 * at a {@link VATaxIDStatus#RequestSent} row — either it was already completed (including by a
+	 * concurrent caller that won the race), or it never was a request-sent row to begin with.
 	 */
 	public void completeCheck(@NonNull final VATaxIDCheckLogId checkLogId, @NonNull final VATaxIDCheckResult result)
 	{
@@ -103,17 +118,23 @@ public class VATaxIDCheckRepository
 				result.getStatus() != VATaxIDStatus.RequestSent,
 				"A check can only be completed with a final status, not {}; checkLogId={}", VATaxIDStatus.RequestSent, checkLogId);
 
-		final I_VATaxID_CheckLog record = InterfaceWrapperHelper.load(checkLogId, I_VATaxID_CheckLog.class);
+		final ICompositeQueryUpdater<I_VATaxID_CheckLog> updater = queryBL
+				.createCompositeQueryUpdater(I_VATaxID_CheckLog.class)
+				.addSetColumnValue(I_VATaxID_CheckLog.COLUMNNAME_VATaxIDStatus, result.getStatus().getCode())
+				.addSetColumnValue(I_VATaxID_CheckLog.COLUMNNAME_ResponseDate, TimeUtil.asTimestampNotNull(SystemTime.asInstant()))
+				.addSetColumnValue(I_VATaxID_CheckLog.COLUMNNAME_RequestIdentifier, result.getRequestIdentifier())
+				.addSetColumnValue(I_VATaxID_CheckLog.COLUMNNAME_RawResponse, result.getRawResponse());
+
+		final int updatedCount = queryBL
+				.createQueryBuilder(I_VATaxID_CheckLog.class)
+				.addEqualsFilter(I_VATaxID_CheckLog.COLUMNNAME_VATaxID_CheckLog_ID, checkLogId.getRepoId())
+				.addEqualsFilter(I_VATaxID_CheckLog.COLUMNNAME_VATaxIDStatus, VATaxIDStatus.RequestSent.getCode())
+				.create()
+				.updateDirectly(updater);
+
 		Check.assume(
-				VATaxIDStatus.RequestSent.getCode().equals(record.getVATaxIDStatus()),
-				"Only a row still at {} can be completed, but checkLogId={} is already at {}",
-				VATaxIDStatus.RequestSent, checkLogId, record.getVATaxIDStatus());
-
-		record.setVATaxIDStatus(result.getStatus().getCode());
-		record.setResponseDate(TimeUtil.asTimestampNotNull(SystemTime.asInstant()));
-		record.setRequestIdentifier(result.getRequestIdentifier());
-		record.setRawResponse(result.getRawResponse());
-
-		InterfaceWrapperHelper.saveRecord(record);
+				updatedCount == 1,
+				"Only a row still at {} can be completed, but checkLogId={} is not — either it was already completed or it does not exist",
+				VATaxIDStatus.RequestSent, checkLogId);
 	}
 }
