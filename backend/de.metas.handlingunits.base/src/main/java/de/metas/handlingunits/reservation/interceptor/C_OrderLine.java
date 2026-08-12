@@ -7,11 +7,11 @@ import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.model.I_C_Order;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.order.IOrderDAO;
+import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
-import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
-import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
@@ -63,7 +63,7 @@ public class C_OrderLine
 	private final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 	private final IHUPIItemProductBL hupiItemProductBL = Services.get(IHUPIItemProductBL.class);
 	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
-	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
+	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
 	@Init
 	public void registerCallouts()
@@ -83,25 +83,43 @@ public class C_OrderLine
 	@CalloutMethod(columnNames = de.metas.interfaces.I_C_OrderLine.COLUMNNAME_M_Product_ID)
 	public void onProductSetOrChanged(final de.metas.interfaces.I_C_OrderLine orderLine)
 	{
-		final ZonedDateTime date = TimeUtil.asZonedDateTime(orderLine.getDatePromised());
-
 		final Optional<HUPIItemProductId> huPiItemProductId = hupiItemProductDAO.retrieveDefaultIdForProduct(
 				ProductId.ofRepoId(orderLine.getM_Product_ID()),
 				BPartnerId.ofRepoId(orderLine.getC_BPartner_ID()),
-				date,
-				getPriceListVersionIdOrNull(orderLine, date));
+				extractPriceDate(orderLine),
+				getPriceListVersionIdOrNull(orderLine));
 		final Properties ctx = Env.getCtx();
 		final I_M_HU_PI_Item_Product noPackingItemProduct = hupiItemProductDAO.retrieveVirtualPIMaterialItemProduct(ctx);
 		orderLine.setM_HU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(huPiItemProductId.orElse(HUPIItemProductId.ofRepoId(noPackingItemProduct.getM_HU_PI_Item_Product_ID()))));
 	}
 
 	/**
+	 * {@code C_OrderLine.DatePromised} is nullable — a line whose date has not been set yet is normal, and
+	 * reading that column alone would blow up here. Coalesce to the order header, which is exactly what
+	 * {@code OrderLineBL}'s own price-date resolution does, and for the same reason.
+	 */
+	@NonNull
+	private ZonedDateTime extractPriceDate(@NonNull final de.metas.interfaces.I_C_OrderLine orderLine)
+	{
+		final ZonedDateTime lineDatePromised = TimeUtil.asZonedDateTime(orderLine.getDatePromised());
+		if (lineDatePromised != null)
+		{
+			return lineDatePromised;
+		}
+
+		final org.compiere.model.I_C_Order order = getOrder(orderLine);
+		return Check.assumeNotNull(
+				TimeUtil.asZonedDateTime(order.getDatePromised()),
+				"C_Order {} has a DatePromised", order.getC_Order_ID());
+	}
+
+	/**
 	 * @return the order's price list version, which restricts the default lookup to packing instructions
 	 *         that a product price references — or {@code null} to leave the lookup unrestricted.
 	 *         <p>
-	 *         Null is returned both when the rule is not enforced and when the price list version cannot
-	 *         be resolved: an order that has no price list yet must keep today's behaviour rather than
-	 *         silently lose its packing instruction.
+	 *         Null is returned both when the rule is not enforced and when there is no price list to
+	 *         resolve one from: an order that has no price list yet must keep today's behaviour rather
+	 *         than silently lose its packing instruction.
 	 *         <p>
 	 *         Note this site cannot simply skip the lookup the way the quick-input helper does. That
 	 *         helper has a price-list step ahead of the fallback which has already returned any priced
@@ -109,25 +127,32 @@ public class C_OrderLine
 	 *         skipping it would also strip the default where a product price legitimately references it.
 	 */
 	@Nullable
-	private PriceListVersionId getPriceListVersionIdOrNull(
-			@NonNull final de.metas.interfaces.I_C_OrderLine orderLine,
-			@NonNull final ZonedDateTime date)
+	private PriceListVersionId getPriceListVersionIdOrNull(@NonNull final de.metas.interfaces.I_C_OrderLine orderLine)
 	{
 		if (!hupiItemProductBL.isEnforcePrecisePricePerHUItemProduct(ClientId.ofRepoId(orderLine.getAD_Client_ID())))
 		{
 			return null;
 		}
 
-		final PriceListId priceListId = PriceListId.ofRepoIdOrNull(
-				ordersRepo.getById(OrderId.ofRepoId(orderLine.getC_Order_ID())).getM_PriceList_ID());
-		if (priceListId == null)
+		// orderLineBL.getPriceListVersion throws when there is neither a line-level override nor an order
+		// price list, so bail out to "unrestricted" first rather than let an incomplete order fail here.
+		if (orderLine.getM_PriceList_Version_ID() <= 0 && getOrder(orderLine).getM_PriceList_ID() <= 0)
 		{
 			return null;
 		}
 
-		final I_M_PriceList_Version priceListVersion = priceListsRepo.retrievePriceListVersionOrNull(priceListId, date, null);
+		// Deliberately the shared BL rather than a local re-resolution: it honours the line-level price
+		// list version override, picks DatePromised vs DateOrdered by the document's SOTrx, and resolves
+		// the price date in the order's org timezone.
+		final I_M_PriceList_Version priceListVersion = orderLineBL.getPriceListVersion(orderLine);
 		return priceListVersion == null
 				? null
 				: PriceListVersionId.ofRepoId(priceListVersion.getM_PriceList_Version_ID());
+	}
+
+	@NonNull
+	private org.compiere.model.I_C_Order getOrder(@NonNull final de.metas.interfaces.I_C_OrderLine orderLine)
+	{
+		return ordersRepo.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 	}
 }

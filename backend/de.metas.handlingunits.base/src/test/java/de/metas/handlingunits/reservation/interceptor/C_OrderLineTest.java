@@ -155,9 +155,46 @@ public class C_OrderLineTest
 		assertThat(orderLine.getM_HU_PI_Item_Product_ID()).isEqualTo(piip.getM_HU_PI_Item_Product_ID());
 	}
 
+	/**
+	 * {@code C_OrderLine.DatePromised} is nullable and a freshly created line commonly has none yet, so
+	 * reading it unguarded blew up here — for every caller, whether or not the rule is enforced. The date
+	 * falls back to the order header, as the shared price-date resolution does.
+	 */
+	@Test
+	public void lineHasNoDatePromised_enforceOn_fallsBackToTheOrderHeaderDate()
+	{
+		setEnforcePrecisePrice(true);
+		createDefaultForProductPackingInstruction();
+		createProductPrice(null);
+		clearOrderLineDatePromised();
+
+		interceptor.onProductSetOrChanged(orderLine);
+
+		assertThat(orderLine.getM_HU_PI_Item_Product_ID()).isEqualTo(HUPIItemProductId.VIRTUAL_HU.getRepoId());
+	}
+
+	@Test
+	public void lineHasNoDatePromised_enforceOff_fallsBackToTheOrderHeaderDate()
+	{
+		setEnforcePrecisePrice(false);
+		final I_M_HU_PI_Item_Product piip = createDefaultForProductPackingInstruction();
+		createProductPrice(null);
+		clearOrderLineDatePromised();
+
+		interceptor.onProductSetOrChanged(orderLine);
+
+		assertThat(orderLine.getM_HU_PI_Item_Product_ID()).isEqualTo(piip.getM_HU_PI_Item_Product_ID());
+	}
+
 	//
 	// Fixture
 	//
+
+	private void clearOrderLineDatePromised()
+	{
+		orderLine.setDatePromised(null);
+		saveRecord(orderLine);
+	}
 
 	private void setEnforcePrecisePrice(final boolean value)
 	{

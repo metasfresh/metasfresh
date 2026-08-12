@@ -104,7 +104,6 @@ public class PackingItemProductFieldHelper
 		final ClientId clientId = defaultPackingItemCriteria.getClientId();
 		final boolean enforcePrecisePricePerHUItemProduct = huPIItemProductBL.isEnforcePrecisePricePerHUItemProduct(clientId);
 
-
 		// TODO: check ASI too
 		final IHUPIItemProductDAO piItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 		final IHUPIItemProductQuery queryVO = piItemProductDAO.createHUPIItemProductQuery();
