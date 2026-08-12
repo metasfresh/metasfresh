@@ -130,6 +130,14 @@ Closes a mandatory Playwright-coverage gap for a newly created WebUI window
     // e2e/frontend-webui CLAUDE.md via the playwright-run skill).
     await LoginPage.expectLoggedIn();
 
+    // The table permits only ONE active VATaxID_Config row per org (partial unique
+    // index on AD_Org_ID WHERE IsActive='Y'). Wrap record creation + assertions in
+    // try/finally so the created record is always deleted afterwards (best-effort,
+    // robust even if an earlier step throws) — otherwise the next run's Alt+N record
+    // collides with this run's leftover active row. Same pattern as
+    // view-invalidate-config-window.spec.js's deleteRecord/try-finally.
+    let recordId;
+    try {
     // === STEP 2: Open the window and create a new record ===
     await page.goto(`${FRONTEND_BASE_URL}/window/${VATID_CONFIG_WINDOW_ID}`);
     await page.locator('.document-list-wrapper, .document-list').waitFor({
@@ -147,7 +155,7 @@ Closes a mandatory Playwright-coverage gap for a newly created WebUI window
     await page.locator('.rotating, .indicator-pending').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
     await page.waitForTimeout(1000);
 
-    const recordId = page.url().split('/').pop();
+    recordId = page.url().split('/').pop();
     console.log(`[INFO] New VATaxID_Config record created: ${recordId}`);
 
     await assertRecordIsValid(VATID_CONFIG_WINDOW_ID, recordId, 'after create');
@@ -266,6 +274,12 @@ Closes a mandatory Playwright-coverage gap for a newly created WebUI window
     });
 
     console.log('[PASS] VATaxID_Config window (542182): all fields visible+editable, OnServiceUnavailable has exactly 2 options, record persists.');
+    } finally {
+      // Best-effort cleanup so the partial-unique index (AD_Org_ID WHERE IsActive='Y')
+      // does not block the next run — runs regardless of pass/fail.
+      await deleteRecord(page, VATID_CONFIG_WINDOW_ID, recordId);
+      console.log(`[INFO] Cleanup: deleted record ${recordId}`);
+    }
   });
 
   test('The config window is reachable by browsing the main menu tree (Finanzen -> Einstellungen)', async ({ page }) => {
@@ -343,6 +357,30 @@ unrelated text elsewhere on the page.
     });
   });
 });
+
+/**
+ * Delete a record via the WebUI REST DELETE endpoint. Best-effort cleanup so
+ * the partial-unique index (AD_Org_ID) WHERE IsActive='Y' does not block
+ * re-runs. Swallows errors (e.g. record was never actually persisted).
+ * Same pattern as view-invalidate-config-window.spec.js.
+ */
+async function deleteRecord(page, windowId, recordId) {
+  if (!recordId || recordId === 'NEW') return;
+  return page.evaluate(
+    async ({ windowId, recordId }) => {
+      try {
+        await fetch(`/rest/api/window/${windowId}/${recordId}`, {
+          method: 'DELETE',
+          credentials: 'include',
+          headers: { Accept: 'application/json' },
+        });
+      } catch (e) {
+        // ignore — best-effort cleanup
+      }
+    },
+    { windowId, recordId }
+  );
+}
 
 /**
  * Read a field's raw (language-invariant) value via the WebAPI.
