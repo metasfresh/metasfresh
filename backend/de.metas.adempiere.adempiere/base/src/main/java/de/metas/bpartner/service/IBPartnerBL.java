@@ -22,6 +22,7 @@
 
 package de.metas.bpartner.service;
 
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -32,6 +33,8 @@ import de.metas.location.CountryId;
 import de.metas.location.LocationId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.pricing.PricingSystemId;
+import de.metas.shipping.ShipperId;
 import de.metas.tax.api.VATIdentifier;
 import de.metas.user.User;
 import de.metas.user.UserId;
@@ -196,6 +199,32 @@ public interface IBPartnerBL extends ISingletonService
 	I_C_BPartner_Location getBPartnerLocationByIdEvenInactive(@NonNull BPartnerLocationId bpartnerLocationId);
 
 	List<I_C_BPartner_Location> getBPartnerLocationsByIds(Set<BPartnerLocationId> ids);
+
+	@Nullable
+	I_AD_User retrieveContact(
+			Properties ctx,
+			int bpartnerId,
+			boolean isSOTrx,
+			String trxName);
+
+	@Nullable
+	I_C_BPartner_Location retrieveBPartnerLocation(@NonNull IBPartnerDAO.BPartnerLocationQuery query);
+
+	@Nullable
+	I_C_BPartner_Location getBPartnerLocationById(@NonNull BPartnerLocationId bpartnerLocationId);
+
+	@Nullable
+	I_C_BPartner_Location getBPartnerLocationByIdInTrx(@NonNull BPartnerLocationId bpartnerLocationId);
+
+	@Nullable
+	String getContactLocationEmail(@Nullable BPartnerContactId contactId);
+
+	@Nullable
+	PricingSystemId retrievePricingSystemIdOrNull(@NonNull BPartnerId bpartnerId, SOTrx soTrx);
+
+	@Nullable
+	ShipperId getEffectiveShipperId(@Nullable BPartnerLocationId bPartnerDropShipLocationId,
+									@NonNull BPartnerLocationId bPartnerLocationId);
 
 	@Value
 	@Builder

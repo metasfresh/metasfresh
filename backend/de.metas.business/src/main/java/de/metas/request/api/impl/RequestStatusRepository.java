@@ -23,6 +23,7 @@
 package de.metas.request.api.impl;
 
 import de.metas.request.RequestStatusCategoryId;
+import de.metas.request.RequestStatusId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -33,6 +34,14 @@ import org.springframework.stereotype.Repository;
 public class RequestStatusRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	public I_R_Status getById(@NonNull final RequestStatusId statusId)
+	{
+		return queryBL.createQueryBuilder(I_R_Status.class)
+				.addEqualsFilter(I_R_Status.COLUMNNAME_R_Status_ID, statusId)
+				.create()
+				.firstOnlyNotNull(I_R_Status.class);
+	}
 
 	public I_R_Status getByCategoryAndName(@NonNull final RequestStatusCategoryId categoryId, @NonNull final String name)
 	{

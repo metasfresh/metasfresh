@@ -85,6 +85,7 @@
         <assertj.version>3.27.2</assertj.version>
         <xmlunit-assertj3.version>2.10.0</xmlunit-assertj3.version>
         <xmlunit.version>2.10.0</xmlunit.version>
+        <archunit.version>1.4.2</archunit.version>
 
         <mockito.version>2.7.22</mockito.version>
         <byte-buddy.version>1.12.20</byte-buddy.version>
@@ -163,6 +164,25 @@
                 <scope>test</scope>
             </dependency>
 
+            <!-- ArchUnit — architecture enforcement library. Runs on Java 8.
+                 Core artifact (not archunit-junit5): rules run from plain Jupiter @Test methods, so there is
+                 no archunit JUnit-Platform engine to clash with the junit-platform version pinned here.
+                 slf4j-api is excluded: ArchUnit 1.4.x pulls slf4j-api 2.x transitively, but the backend runs
+                 on slf4j-api 1.7.x — ArchUnit uses only the stable Logger API, so it runs fine on 1.7.x and
+                 this avoids dragging slf4j 2.x onto consuming modules' test classpaths. -->
+            <dependency>
+                <groupId>com.tngtech.archunit</groupId>
+                <artifactId>archunit</artifactId>
+                <version>${archunit.version}</version>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
             <dependency>
                 <groupId>net.sf.jasperreports</groupId>
                 <artifactId>jasperreports</artifactId>
@@ -215,6 +235,13 @@
                 <groupId>org.jetbrains</groupId>
                 <artifactId>annotations</artifactId>
                 <version>17.0.0</version>
+            </dependency>
+
+            <!-- Adobe XMP library required by JasperReports for PDF/A XMP metadata (ZUGFeRD) -->
+            <dependency>
+                <groupId>com.adobe.xmp</groupId>
+                <artifactId>xmpcore</artifactId>
+                <version>6.1.11</version>
             </dependency>
 
         </dependencies>
@@ -342,6 +369,12 @@
                     <groupId>org.jvnet.jaxb2.maven2</groupId>
                     <artifactId>maven-jaxb2-plugin</artifactId>
                     <version>0.14.0</version>
+                    <configuration>
+                        <!-- Suppress timestamp in generated file headers to avoid unnecessary git changes -->
+                        <args>
+                            <arg>-no-header</arg>
+                        </args>
+                    </configuration>
                 </plugin>
 
                 <plugin>
@@ -670,47 +703,6 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
             </build>
         </profile>
 
-        <profile>
-            <!-- If there is a sql directory, then this profile will activate and
-                zip up the migration SQL files in that directory. Note the property "migration-sql-basedir"
-                needs to be defined in that case -->
-            <id>postgres</id>
-            <activation>
-                <file>
-                    <exists>src/main/sql/postgresql/system</exists>
-                </file>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-assembly-plugin</artifactId>
-                        <dependencies>
-                            <dependency>
-                                <groupId>de.metas</groupId>
-                                <artifactId>metasfresh-assemblies</artifactId>
-                                <!-- version>${metasfresh.assembly.descriptor.version}</version -->
-                                <version>10.0.0</version>
-                            </dependency>
-                        </dependencies>
-                        <executions>
-                            <execution>
-                                <id>make-postgresql-assembly</id> <!-- this is used for inheritance merges -->
-                                <phase>package</phase> <!-- bind to the packaging phase -->
-                                <goals>
-                                    <goal>single</goal>
-                                </goals>
-                                <configuration>
-                                    <descriptorRefs>
-                                        <descriptorRef>migration_postgresql_system</descriptorRef>
-                                    </descriptorRefs>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
         <!--
             Local build defaults profile - activated when BUILD_NUMBER is not set.
             Provides default values for build properties to enable local development builds.
@@ -839,6 +831,7 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
                                             <directory>src/main/jasperreports</directory>
                                             <excludes>
                                                 <exclude>**/*.jrxml</exclude>
+                                                <exclude>**/*.md</exclude>
                                             </excludes>
                                         </resource>
                                     </resources>

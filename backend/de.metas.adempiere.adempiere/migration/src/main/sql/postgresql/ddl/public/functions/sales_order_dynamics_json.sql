@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.migration-sql
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 SELECT db_drop_functions('*.sales_order_dynamics_json')
 ;
 
@@ -7,13 +29,12 @@ CREATE OR REPLACE FUNCTION sales_order_dynamics_json(p_order_id text)
                 "orgCode"           text,
                 "orderNumber"       numeric,
                 "dateOrdered"       date,
-
                 "datePromised"      date,
                 "partnerIdentifier" text,
                 "partnerValue"      text,
                 "partnerName"       text,
                 "currency"          text,
-                "Lines"             jsonb,
+                "lines"             jsonb,
                 "charges"           jsonb
             )
     LANGUAGE sql
@@ -37,10 +58,10 @@ WITH dynamics_system AS (SELECT externalsystem_id
                                                     'productName', product.name,
                                                     'productDescription', product.description,
                                                     'productIdentifier', product.value
-                                                ) ORDER BY ol.line
-                                        ),
+                                            ) ORDER BY ol.line
+                                    ),
                                     '[]'::jsonb
-                                ) AS json_data
+                            ) AS json_data
                      FROM c_orderline ol
                               INNER JOIN m_product product ON product.m_product_id = ol.m_product_id
                               INNER JOIN c_uom ouom ON ouom.c_uom_id = ol.c_uom_id
@@ -53,10 +74,10 @@ WITH dynamics_system AS (SELECT externalsystem_id
                                               JSONB_BUILD_OBJECT(
                                                       'chargeIdentifier', ol.c_orderline_id,
                                                       'price', ol.priceactual
-                                                  ) ORDER BY ol.line
-                                          ),
+                                              ) ORDER BY ol.line
+                                      ),
                                       '[]'::jsonb
-                                  ) AS json_data
+                              ) AS json_data
                        FROM c_orderline ol
                                 INNER JOIN m_product product ON product.m_product_id = ol.m_product_id
                        WHERE product.producttype != 'I'

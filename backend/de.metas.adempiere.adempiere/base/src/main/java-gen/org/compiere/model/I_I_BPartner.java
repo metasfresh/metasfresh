@@ -389,6 +389,48 @@ public interface I_I_BPartner
 	String COLUMNNAME_Birthday = "Birthday";
 
 	/**
+	 * Set Partner Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBPartnerName (@Nullable java.lang.String BPartnerName);
+
+	/**
+	 * Get Partner Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getBPartnerName();
+
+	ModelColumn<I_I_BPartner, Object> COLUMN_BPartnerName = new ModelColumn<>(I_I_BPartner.class, "BPartnerName", null);
+	String COLUMNNAME_BPartnerName = "BPartnerName";
+
+	/**
+	 * Set Name of BPartner 2.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBPartnerName2 (@Nullable java.lang.String BPartnerName2);
+
+	/**
+	 * Get Name of BPartner 2.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getBPartnerName2();
+
+	ModelColumn<I_I_BPartner, Object> COLUMN_BPartnerName2 = new ModelColumn<>(I_I_BPartner.class, "BPartnerName2", null);
+	String COLUMNNAME_BPartnerName2 = "BPartnerName2";
+
+	/**
 	 * Set BP Contact Greeting.
 	 * Greeting for Business Partner Contact
 	 *

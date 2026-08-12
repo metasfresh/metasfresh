@@ -3,9 +3,9 @@ package de.metas.shipper.gateway.commons;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.inoutcandidate.CarrierGoodsTypeId;
-import de.metas.inoutcandidate.CarrierProductId;
+import de.metas.shipping.CarrierProductId;
 import de.metas.inoutcandidate.CarrierServiceId;
-import de.metas.inoutcandidate.CarrierShipmentScheduleServiceRepository;
+import de.metas.inoutcandidate.ShipmentScheduleCarrierServiceRepository;
 import de.metas.inoutcandidate.ShipmentSchedule;
 import de.metas.inoutcandidate.ShipmentScheduleRepository;
 import de.metas.product.PackageDimensions;
@@ -26,6 +26,7 @@ import de.metas.shipping.mpackage.PackageId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMPrecision;
 import de.metas.uom.X12DE355;
+import de.metas.user.UserId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -76,7 +77,7 @@ public class ShipperGatewayFacade
 	@NonNull private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final ShipperGatewayServicesRegistry shipperRegistry;
-	@NonNull private final CarrierShipmentScheduleServiceRepository carrierServiceRepository;
+	@NonNull private final ShipmentScheduleCarrierServiceRepository carrierServiceRepository;
 	@NonNull private final ShipmentScheduleRepository shipmentScheduleRepository;
 
 	private final UOMPrecision kgPrecision = uomDAO.getStandardPrecision(uomDAO.getUomIdByX12DE355(X12DE355.KILOGRAM));
@@ -133,6 +134,7 @@ public class ShipperGatewayFacade
 				.fromOrgId(mpackage.getAD_Org_ID())
 				.deliverToBPartnerId(mpackage.getC_BPartner_ID())
 				.deliverToBPartnerLocationId(mpackage.getC_BPartner_Location_ID())
+				.deliverToContactId(UserId.ofRepoIdOrNull(mpackage.getAD_User_ID()))
 				.pickupDate(pickupDate)
 				.timeFrom(timeFrom)
 				.timeTo(timeTo)

@@ -12,10 +12,14 @@ import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
+import de.metas.handlingunits.grai.HUGraiService;
+import de.metas.handlingunits.grai.HUPIGraiRepository;
+import de.metas.handlingunits.picking.job.service.PickingJobGraiTargetService;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -36,12 +40,14 @@ import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job.service.PickingJobLockService;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
+import de.metas.handlingunits.picking.job.service.PickingJobUnpickProductResolver;
 import de.metas.handlingunits.picking.job.service.external.bpartner.PickingJobBPartnerService;
 import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.handlingunits.picking.job.service.external.product.PickingJobProductService;
 import de.metas.handlingunits.picking.job.service.external.salesorder.PickingJobSalesOrderService;
 import de.metas.handlingunits.picking.job.service.external.shipmentschedule.PickingJobShipmentScheduleService;
 import de.metas.handlingunits.picking.job.service.external.warehouse.PickingJobWarehouseService;
+import de.metas.handlingunits.picking.job.service.shelflife.PickingShelfLifeCheck;
 import de.metas.handlingunits.picking.job.shipment.PickingShipmentService;
 import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
 import de.metas.handlingunits.picking.job_schedule.service.commands.CreateOrUpdatePickingJobSchedulesRequest;
@@ -61,7 +67,6 @@ import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.handlingunits.util.HUTracerInstance;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -105,8 +110,11 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
+import de.metas.inout.ShipmentScheduleId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.mockito.Mockito;
 
 import javax.annotation.Nullable;
@@ -150,6 +158,9 @@ public class PickingJobTestHelper
 	public final BPartnerLocationId shipToBPLocationId;
 	public final PickingSlotId pickingSlotId;
 	public final Workplace workplace;
+
+	/** Exposes the single internal {@link HUTestHelper} so tests share ONE AdempiereTestHelper context (a second instance would re-init and wipe the master data created here, e.g. the locator). */
+	public HUTestHelper getHuTestHelper() {return huTestHelper;}
 
 	public PickingJobTestHelper()
 	{
@@ -201,21 +212,24 @@ public class PickingJobTestHelper
 				new HULabelConfigService(new HULabelConfigRepository()),
 				huQRCodeService
 		);
+		final PickingJobProductService productService = PickingJobProductService.newInstanceForUnitTesting();
 
 		this.huService = new PickingJobHUService(
 				configService,
 				warehouseService,
+				productService,
 				huQRCodeService,
 				huLabelService,
 				huReservationService,
-				inventoryService);
+				inventoryService,
+				new HUGraiService(new HUPIGraiRepository()));
 
 		final DefaultPickingJobLoaderSupportingServicesFactory defaultPickingJobLoaderSupportingServicesFactory = new DefaultPickingJobLoaderSupportingServicesFactory(
 				configService,
 				new PickingJobSalesOrderService(),
 				warehouseService,
 				bpartnerService,
-				new PickingJobProductService(),
+				productService,
 				pickingJobSlotService,
 				pickingJobLockService,
 				huService
@@ -224,8 +238,8 @@ public class PickingJobTestHelper
 		pickingJobService = new PickingJobService(
 				bpartnerService,
 				warehouseService,
-				new PickingJobProductService(),
-				new PickingJobShipmentScheduleService(),
+				productService,
+				PickingJobShipmentScheduleService.newInstanceForUnitTesting(),
 				pickingJobRepository,
 				pickingJobLockService,
 				pickingJobSlotService,
@@ -234,7 +248,10 @@ public class PickingJobTestHelper
 				PickingShipmentService.newInstanceForUnitTesting(),
 				configService,
 				pickingJobScheduleService,
-				huService
+				huService,
+				new PickingJobGraiTargetService(huService),
+				new PickingJobUnpickProductResolver(huService, productService),
+				new PickingShelfLifeCheck(productService, bpartnerService)
 		);
 
 		huTracer = new HUTracerInstance()
@@ -299,7 +316,7 @@ public class PickingJobTestHelper
 		return LocatorId.ofRepoId(warehouseId, locator.getM_Locator_ID());
 	}
 
-	public void updateMobileProfile(UnaryOperator<MobileUIPickingUserProfile> updater)
+	public void updateMobileProfile(final UnaryOperator<MobileUIPickingUserProfile> updater)
 	{
 		configService.update(updater);
 	}
@@ -334,7 +351,7 @@ public class PickingJobTestHelper
 			@NonNull final String qtyToDeliver,
 			@Nullable final Instant date,
 			@Nullable final UserId lockedBy,
-			boolean assignToWorkplace)
+			final boolean assignToWorkplace)
 	{
 		final BPartnerLocationId shipToBPLocationIdEffective = shipToBPLocationId != null ? shipToBPLocationId : this.shipToBPLocationId;
 		final BigDecimal qtyToDeliverBD = new BigDecimal(qtyToDeliver);
@@ -377,6 +394,7 @@ public class PickingJobTestHelper
 		final String bpName = bpartnerService.getBPartnerName(shipToBPLocationId.getBpartnerId());
 
 		final ProductId productId = ProductId.ofRepoId(sched.getM_Product_ID());
+		final I_M_Product product = productBL.getById(productId);
 		final UomId uomId = productBL.getStockUOMId(productId);
 
 		final I_M_Packageable_V item = InterfaceWrapperHelper.newInstance(I_M_Packageable_V.class);
@@ -394,6 +412,8 @@ public class PickingJobTestHelper
 		item.setM_Warehouse_ID(sched.getM_Warehouse_ID());
 		item.setShipmentAllocation_BestBefore_Policy(ShipmentAllocationBestBeforePolicy.Expiring_First.getCode());
 		item.setM_Product_ID(productId.getRepoId());
+		item.setProductValue(product.getValue());
+		item.setProductName(product.getName());
 		item.setPackTo_HU_PI_Item_Product_ID(CoalesceUtil.firstGreaterThanZero(
 				sched.getM_HU_PI_Item_Product_Override_ID(),
 				sched.getM_HU_PI_Item_Product_ID()));
@@ -526,5 +546,56 @@ public class PickingJobTestHelper
 	public void assignCurrentUserToWorkplace()
 	{
 		workplaceService.assignWorkplace(Env.getLoggedUserId(), workplace.getId());
+	}
+
+	/**
+	 * Sets the {@code isWarnShelfLifeUndercut} flag on the picking profile and creates a workplace assigned to the given user.
+	 * The guard is now driven by the picking profile ({@link de.metas.handlingunits.picking.config.mobileui.PickingJobOptions#isWarnShelfLifeUndercut()});
+	 * the workplace itself no longer carries this flag.
+	 */
+	public Workplace createWorkplaceWithShelfLifeFlag(
+			final boolean warnShelfLifeUndercut,
+			@NonNull final UserId userId)
+	{
+		// Set the flag on the picking profile so the guard reads it from there.
+		configService.update(profile -> profile.toBuilder()
+				.defaultPickingJobOptions(profile.getDefaultPickingJobOptions().toBuilder()
+						.isWarnShelfLifeUndercut(warnShelfLifeUndercut)
+						.build())
+				.build());
+
+		final Workplace wp = workplaceService.create(WorkplaceCreateRequest.builder()
+				.name("workplace-shelflife-" + warnShelfLifeUndercut)
+				.warehouseId(shipFromLocatorId.getWarehouseId())
+				.build());
+		workplaceService.assignWorkplace(userId, wp.getId());
+		return wp;
+	}
+
+	/**
+	 * Sets the virtual {@code DeliveryDate_Effective} column on the given shipment schedule record.
+	 * In the in-memory test environment this column is not computed by SQL, so we set it directly.
+	 */
+	public void setShipmentScheduleDeliveryDateEffective(
+			@NonNull final ShipmentScheduleId scheduleId,
+			@NonNull final LocalDate deliveryDate)
+	{
+		final I_M_ShipmentSchedule sched = InterfaceWrapperHelper.load(scheduleId, I_M_ShipmentSchedule.class);
+		InterfaceWrapperHelper.setValue(sched, I_M_ShipmentSchedule.COLUMNNAME_DeliveryDate_Effective, TimeUtil.asTimestamp(deliveryDate));
+		save(sched);
+	}
+
+	/**
+	 * Sets the HU_BestBeforeDate attribute on the given HU.
+	 * Uses the in-memory attribute storage (same mechanism as {@link de.metas.handlingunits.qrcodes.service.HUQRCodesServiceTest}).
+	 */
+	public void setHUBestBeforeDate(@NonNull final HuId huId, @NonNull final LocalDate bestBeforeDate)
+	{
+		final I_M_HU hu = huTestHelper.handlingUnitsBL().getById(huId);
+		final IAttributeStorage attributeStorage = huTestHelper.createMutableHUContext()
+				.getHUAttributeStorageFactory()
+				.getAttributeStorage(hu);
+		attributeStorage.setSaveOnChange(true);
+		attributeStorage.setValue(AttributeConstants.ATTR_BestBeforeDate, bestBeforeDate);
 	}
 }

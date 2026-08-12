@@ -61,13 +61,26 @@ public class MDiscountSchemaImportTableSqlUpdater
 
 	private void dbUpdateBPartners(@NonNull final ImportRecordsSelection selection)
 	{
+		// Set BPartner only when exactly one match exists; leave NULL when ambiguous
 		StringBuilder sql = new StringBuilder("UPDATE I_DiscountSchema i ")
-				.append("SET C_BPartner_ID=(SELECT MAX(C_BPartner_ID) FROM C_BPartner bp ")
-				.append(" WHERE i.BPartner_Value=bp.Value AND i.AD_Client_ID=bp.AD_Client_ID) ")
+				.append("SET C_BPartner_ID=CASE WHEN (SELECT count(*) FROM C_BPartner bp")
+				.append(" WHERE i.BPartner_Value=bp.Value AND i.AD_Client_ID=bp.AD_Client_ID AND bp.IsActive='Y') > 1 THEN NULL")
+				.append(" ELSE (SELECT MAX(C_BPartner_ID) FROM C_BPartner bp")
+				.append(" WHERE i.BPartner_Value=bp.Value AND i.AD_Client_ID=bp.AD_Client_ID AND bp.IsActive='Y') END ")
 				.append("WHERE C_BPartner_ID IS NULL AND BPartner_Value IS NOT NULL ")
-				.append("AND I_IsImported<>'Y'  ")
+				.append("AND I_IsImported<>'Y' ")
 				.append(selection.toSqlWhereClause("i"));
 		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+
+		// Mark ambiguous rows as errors
+		final StringBuilder sqlError = new StringBuilder("UPDATE I_DiscountSchema i ")
+				.append("SET I_IsImported='E', I_ErrorMsg=COALESCE(I_ErrorMsg,'')")
+				.append("||'ERR: Multiple BPartners found for BPartner_Value=\"'||i.BPartner_Value||'\"' ")
+				.append("WHERE C_BPartner_ID IS NULL AND BPartner_Value IS NOT NULL ")
+				.append("AND I_IsImported<>'Y' ")
+				.append("AND (SELECT count(*) FROM C_BPartner bp WHERE i.BPartner_Value=bp.Value AND i.AD_Client_ID=bp.AD_Client_ID AND bp.IsActive='Y') > 1 ")
+				.append(selection.toSqlWhereClause("i"));
+		DB.executeUpdateAndThrowExceptionOnFail(sqlError.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateDiscountSchema(@NonNull final ImportRecordsSelection selection)

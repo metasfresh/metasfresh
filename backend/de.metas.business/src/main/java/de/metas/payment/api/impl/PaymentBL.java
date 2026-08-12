@@ -25,6 +25,10 @@ package de.metas.payment.api.impl;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.DocumentPostRequest;
+import de.metas.acct.api.IAcctSchemaBL;
+import de.metas.acct.api.IPostingService;
 import de.metas.acct.gljournal_sap.SAPGLJournalId;
 import de.metas.acct.gljournal_sap.SAPGLJournalLineId;
 import de.metas.allocation.api.IAllocationBL;
@@ -76,6 +80,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
@@ -119,6 +124,8 @@ public class PaymentBL implements IPaymentBL
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
+	private final IPostingService postingService = Services.get(IPostingService.class);
 
 	private static final AdMessageKey MSG_PaymentDocTypeInvoiceInconsistent = AdMessageKey.of("PaymentDocTypeInvoiceInconsistent");
 
@@ -413,7 +420,6 @@ public class PaymentBL implements IPaymentBL
 	{
 		return DefaultPaymentBuilder.newBuilderOfOrder(order);
 	}
-
 
 	@Override
 	public boolean isMatchInvoice(final I_C_Payment payment, final I_C_Invoice invoice)
@@ -844,6 +850,29 @@ public class PaymentBL implements IPaymentBL
 		payment.setReconciledBy_SAP_GLJournalLine_ID(SAPGLJournalLineId.toRepoId(glJournalLineId));
 
 		paymentDAO.save(payment);
+
+		repostPaymentIfForeignCurrency(payment);
+	}
+
+	private void repostPaymentIfForeignCurrency(@NonNull final I_C_Payment payment)
+	{
+		final CurrencyId paymentCurrencyId = CurrencyId.ofRepoId(payment.getC_Currency_ID());
+
+		final ClientId clientId = ClientId.ofRepoId(payment.getAD_Client_ID());
+
+		final AcctSchema primaryAcctSchema = acctSchemaBL.getPrimaryAcctSchema(clientId);
+		final CurrencyId acctSchemaCurrencyId = primaryAcctSchema.getCurrencyId();
+
+		if(!CurrencyId.equals(paymentCurrencyId, acctSchemaCurrencyId))
+		{
+			logger.debug("Scheduling repost for payment {} because currency {} differs from accounting schema currency {}",
+					payment.getC_Payment_ID(), paymentCurrencyId, acctSchemaCurrencyId);
+
+			postingService.schedule(DocumentPostRequest.builder()
+					.record(TableRecordReference.of(I_C_Payment.Table_Name, payment.getC_Payment_ID()))
+					.clientId(clientId)
+					.build());
+		}
 	}
 
 	@VisibleForTesting

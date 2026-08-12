@@ -508,6 +508,7 @@ public class JsonShipmentService
 		{
 			return bPartnerDAO.retrieveBPartnerIdBy(BPartnerQuery.builder()
 					.bpartnerValue(bPartnerValue)
+					.isCustomerFilter(true)
 					.build());
 		}
 	}

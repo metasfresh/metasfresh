@@ -97,7 +97,7 @@ class InventoryRepositoryTest
 		final I_M_Warehouse warehouseRecord = newInstance(I_M_Warehouse.class);
 		saveRecord(warehouseRecord);
 		locatorRecord = newInstance(I_M_Locator.class);
-		locatorRecord.setM_Warehouse(warehouseRecord);
+		locatorRecord.setM_Warehouse_ID(warehouseRecord.getM_Warehouse_ID());
 		saveRecord(locatorRecord);
 
 		inventoryRepository = new InventoryRepository();

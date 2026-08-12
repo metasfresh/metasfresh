@@ -95,6 +95,9 @@ public class C_PaymentTerm_StepDef
 		paymentTermRecord.setValue(valueAndName.getValue());
 		paymentTermRecord.setName(valueAndName.getName());
 
+		row.getAsOptionalInt(I_C_PaymentTerm.COLUMNNAME_NetDays).ifPresent(paymentTermRecord::setNetDays);
+		row.getAsOptionalBoolean(I_C_PaymentTerm.COLUMNNAME_IsAllowOverrideDueDate).ifPresent(paymentTermRecord::setIsAllowOverrideDueDate);
+
 		saveRecord(paymentTermRecord);
 
 		row.getAsOptionalIdentifier()

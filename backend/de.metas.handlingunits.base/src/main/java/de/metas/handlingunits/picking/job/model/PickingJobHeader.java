@@ -24,6 +24,7 @@ public class PickingJobHeader
 	@Nullable String deliveryRenderedAddress;
 	boolean isAllowPickingAnyHU;
 	boolean isAnonymousPickHUsOnTheFly;
+	boolean isPickingSlotRequired;
 	boolean isDisplayPickingSlotSuggestions;
 	@Nullable UserId lockedBy;
 	@Nullable BPartnerLocationId handoverLocationId;

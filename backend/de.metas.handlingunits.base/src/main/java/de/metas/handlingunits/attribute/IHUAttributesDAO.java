@@ -10,6 +10,7 @@ import org.adempiere.mm.attributes.AttributeId;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Note: there are multiple implementations of this API. One (the "default" one) of them is returned by {@link de.metas.util.Services#get(Class)}, the others are only instantiated and returned by
@@ -27,6 +28,8 @@ public interface IHUAttributesDAO extends ISingletonService
 	void delete(I_M_HU_Attribute huAttribute);
 
 	List<I_M_HU_Attribute> retrieveAllAttributesNoCache(Collection<HuId> huIds);
+
+	Optional<String> extractCommonStringAttributeValue(Collection<HuId> huIds, AttributeId attributeId);
 
 	/**
 	 * Load the given <code>hu</code>'s attributes, ordered by their <code>M_HU_PI_Attribute</code>'s <code>SeqNo</code> (see {@link HUAttributesBySeqNoComparator}).

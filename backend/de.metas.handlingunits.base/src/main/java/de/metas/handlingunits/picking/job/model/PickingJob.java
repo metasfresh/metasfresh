@@ -34,13 +34,12 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStrings;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.product.ProductId;
+import de.metas.product.ProductValueAndName;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
@@ -200,6 +199,8 @@ public final class PickingJob implements PickingJobHeaderOrLine
 	{
 		return getCurrentPickingTargetEffectiveValue(lineId, CurrentPickingTarget::getPickingSlotId);
 	}
+
+	public boolean isPickingSlotRequired() {return header.isPickingSlotRequired();}
 
 	public boolean isDisplayPickingSlotSuggestions() {return header.isDisplayPickingSlotSuggestions();}
 
@@ -471,11 +472,23 @@ public final class PickingJob implements PickingJobHeaderOrLine
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	@NonNull
-	public ITranslatableString getSingleProductNameOrEmpty()
+	@Nullable
+	public Quantity getPackedQty(@NonNull final ProductId productId)
+	{
+		return streamSteps()
+				.filter(step -> ProductId.equals(step.getProductId(), productId))
+				.map(PickingJobStep::getPackedQty)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.reduce(Quantity::add)
+				.orElse(null);
+	}
+
+	@Nullable
+	public ProductValueAndName getSingleProductValueAndName()
 	{
 		ProductId productId = null;
-		ITranslatableString productName = TranslatableStrings.empty();
+		ProductValueAndName productValueAndName = null;
 		for (final PickingJobLine line : lines)
 		{
 			if (productId == null)
@@ -485,13 +498,13 @@ public final class PickingJob implements PickingJobHeaderOrLine
 			else if (!ProductId.equals(productId, line.getProductId()))
 			{
 				// found different products
-				return TranslatableStrings.empty();
+				return null;
 			}
 
-			productName = line.getProductName();
+			productValueAndName = line.getProductValueAndName();
 		}
 
-		return productName;
+		return productValueAndName;
 	}
 
 	@Nullable

@@ -14,7 +14,9 @@ export const getLaunchers = ({
   filters,
   facetIds: facetIdsParam,
   facets: facetsParam,
+  excludeAlreadyStarted,
   countOnly = false,
+  limit,
 }) => {
   let facetIds = null;
   if (facetIdsParam) {
@@ -29,7 +31,9 @@ export const getLaunchers = ({
       applicationId,
       filterByQRCode: filterByQRCodeString,
       facetIds,
+      excludeAlreadyStarted,
       countOnly,
+      limit,
     })
     .then((response) => unboxAxiosResponse(response));
 };

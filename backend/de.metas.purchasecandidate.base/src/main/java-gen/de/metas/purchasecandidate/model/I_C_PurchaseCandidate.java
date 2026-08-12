@@ -217,6 +217,31 @@ public interface I_C_PurchaseCandidate
 	String COLUMNNAME_C_PurchaseCandidate_ID = "C_PurchaseCandidate_ID";
 
 	/**
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_Created = new ModelColumn<>(I_C_PurchaseCandidate.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCreatedBy();
+
+	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
 	 * Set Tax Category.
 	 * Tax Category
 	 *
@@ -242,7 +267,7 @@ public interface I_C_PurchaseCandidate
 	 * Set UOM.
 	 * Unit of Measure
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -252,38 +277,13 @@ public interface I_C_PurchaseCandidate
 	 * Get UOM.
 	 * Unit of Measure
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getC_UOM_ID();
 
 	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
-	 * Get Created.
-	 * Date this record was created
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getCreated();
-
-	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_Created = new ModelColumn<>(I_C_PurchaseCandidate.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
-
-	/**
-	 * Get Created By.
-	 * User who created this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getCreatedBy();
-
-	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Bedarfs-ID.
@@ -374,6 +374,66 @@ public interface I_C_PurchaseCandidate
 	String COLUMNNAME_DiscountInternal = "DiscountInternal";
 
 	/**
+	 * Set Ship Business Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDropShip_BPartner_ID(int DropShip_BPartner_ID);
+
+	/**
+	 * Get Ship Business Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getDropShip_BPartner_ID();
+
+	String COLUMNNAME_DropShip_BPartner_ID = "DropShip_BPartner_ID";
+
+	/**
+	 * Set Ship Location.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDropShip_Location_ID(int DropShip_Location_ID);
+
+	/**
+	 * Get Ship Location.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getDropShip_Location_ID();
+
+	String COLUMNNAME_DropShip_Location_ID = "DropShip_Location_ID";
+
+	/**
+	 * Set Ship Contact.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDropShip_User_ID(int DropShip_User_ID);
+
+	/**
+	 * Get Ship Contact.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getDropShip_User_ID();
+
+	String COLUMNNAME_DropShip_User_ID = "DropShip_User_ID";
+
+	/**
 	 * Set External Header ID.
 	 *
 	 * <br>Type: String
@@ -439,6 +499,27 @@ public interface I_C_PurchaseCandidate
 	String COLUMNNAME_ExternalPurchaseOrderURL = "ExternalPurchaseOrderURL";
 
 	/**
+	 * Set External System.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSystem_ID (int ExternalSystem_ID);
+
+	/**
+	 * Get External System.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getExternalSystem_ID();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_ExternalSystem_ID = new ModelColumn<>(I_C_PurchaseCandidate.class, "ExternalSystem_ID", null);
+	String COLUMNNAME_ExternalSystem_ID = "ExternalSystem_ID";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -481,6 +562,29 @@ public interface I_C_PurchaseCandidate
 
 	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_IsAggregatePO = new ModelColumn<>(I_C_PurchaseCandidate.class, "IsAggregatePO", null);
 	String COLUMNNAME_IsAggregatePO = "IsAggregatePO";
+
+	/**
+	 * Set Different shipping address.
+	 * Drop Shipments are sent from the Vendor directly to the Customer
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDropShip(boolean IsDropShip);
+
+	/**
+	 * Get Different shipping address.
+	 * Drop Shipments are sent from the Vendor directly to the Customer
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDropShip();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_IsDropShip = new ModelColumn<>(I_C_PurchaseCandidate.class, "IsDropShip", null);
+	String COLUMNNAME_IsDropShip = "IsDropShip";
 
 	/**
 	 * Set Discount Manual.
@@ -692,6 +796,48 @@ public interface I_C_PurchaseCandidate
 	String COLUMNNAME_M_ForecastLine_ID = "M_ForecastLine_ID";
 
 	/**
+	 * Set Packing Item.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_HU_PI_Item_Product_ID (int M_HU_PI_Item_Product_ID);
+
+	/**
+	 * Get Packing Item.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_HU_PI_Item_Product_ID();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_M_HU_PI_Item_Product_ID = new ModelColumn<>(I_C_PurchaseCandidate.class, "M_HU_PI_Item_Product_ID", Object.class);
+	String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
+
+	/**
+	 * Set Qty TU.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyEnteredTU (@Nullable BigDecimal QtyEnteredTU);
+
+	/**
+	 * Get Qty TU.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable BigDecimal getQtyEnteredTU();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_QtyEnteredTU = new ModelColumn<>(I_C_PurchaseCandidate.class, "QtyEnteredTU", Object.class);
+	String COLUMNNAME_QtyEnteredTU = "QtyEnteredTU";
+
+	/**
 	 * Set Product.
 	 * Product, Service, Item
 	 *
@@ -755,26 +901,6 @@ public interface I_C_PurchaseCandidate
 
 	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_POReference = new ModelColumn<>(I_C_PurchaseCandidate.class, "POReference", null);
 	String COLUMNNAME_POReference = "POReference";
-
-	/**
-	 * Set Price Unit.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPrice_UOM_ID (int Price_UOM_ID);
-
-	/**
-	 * Get Price Unit.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getPrice_UOM_ID();
-
-	String COLUMNNAME_Price_UOM_ID = "Price_UOM_ID";
 
 	/**
 	 * Set Price diff..
@@ -865,6 +991,26 @@ public interface I_C_PurchaseCandidate
 
 	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_PriceInternal = new ModelColumn<>(I_C_PurchaseCandidate.class, "PriceInternal", null);
 	String COLUMNNAME_PriceInternal = "PriceInternal";
+
+	/**
+	 * Set Price Unit.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPrice_UOM_ID(int Price_UOM_ID);
+
+	/**
+	 * Get Price Unit.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPrice_UOM_ID();
+
+	String COLUMNNAME_Price_UOM_ID = "Price_UOM_ID";
 
 	/**
 	 * Set Processed.
@@ -1249,6 +1395,27 @@ public interface I_C_PurchaseCandidate
 
 	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_UserElementString7 = new ModelColumn<>(I_C_PurchaseCandidate.class, "UserElementString7", null);
 	String COLUMNNAME_UserElementString7 = "UserElementString7";
+
+	/**
+	 * Set Ready for PO Creation.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsReadyForPOCreation (boolean IsReadyForPOCreation);
+
+	/**
+	 * Get Ready for PO Creation.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isReadyForPOCreation();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_IsReadyForPOCreation = new ModelColumn<>(I_C_PurchaseCandidate.class, "IsReadyForPOCreation", null);
+	String COLUMNNAME_IsReadyForPOCreation = "IsReadyForPOCreation";
 
 	/**
 	 * Set Vendor.

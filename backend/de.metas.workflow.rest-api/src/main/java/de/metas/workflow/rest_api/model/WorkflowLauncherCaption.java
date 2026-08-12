@@ -148,8 +148,8 @@ public class WorkflowLauncherCaption
 		final String field = orderBy.getField();
 		final Function<WorkflowLauncherCaption, Comparable<?>> keyExtractor = caption -> caption.getFieldComparingKey(field, adLanguage);
 
-		//noinspection unchecked
-		Comparator<Comparable<?>> keyComparator = (Comparator<Comparable<?>>)Comparator.naturalOrder();
+		//noinspection unchecked,rawtypes
+		Comparator<Comparable> keyComparator = Comparator.naturalOrder();
 		if (!orderBy.isAscending())
 		{
 			keyComparator = keyComparator.reversed();

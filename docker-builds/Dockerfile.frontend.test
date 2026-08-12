@@ -21,5 +21,7 @@ RUN npx playwright install --with-deps chromium
 COPY e2e/frontend-webui/ .
 
 #
-# Start command
-CMD ["npm", "test"]
+# Start command — supports optional sharding via PLAYWRIGHT_SHARD env var
+# Without PLAYWRIGHT_SHARD: runs all tests (current behavior)
+# With PLAYWRIGHT_SHARD=1/3: runs `npx playwright test --shard=1/3`
+CMD ["sh", "-c", "npx playwright test ${PLAYWRIGHT_SHARD:+--shard=$PLAYWRIGHT_SHARD}"]

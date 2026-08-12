@@ -204,6 +204,29 @@ public interface I_Carrier_Config
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Create Draft Shipment Only.
+	 * When checked, shipments are saved as drafts via the SaveShipment endpoint instead of being submitted to the carrier.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsCreateDraftShipmentOnly (boolean IsCreateDraftShipmentOnly);
+
+	/**
+	 * Get Create Draft Shipment Only.
+	 * When checked, shipments are saved as drafts via the SaveShipment endpoint instead of being submitted to the carrier.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isCreateDraftShipmentOnly();
+
+	ModelColumn<I_Carrier_Config, Object> COLUMN_IsCreateDraftShipmentOnly = new ModelColumn<>(I_Carrier_Config.class, "IsCreateDraftShipmentOnly", null);
+	String COLUMNNAME_IsCreateDraftShipmentOnly = "IsCreateDraftShipmentOnly";
+
+	/**
 	 * Set Shipper.
 	 * Method or manner of product delivery
 	 *

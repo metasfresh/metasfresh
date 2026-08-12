@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking.job.service.commands.pick;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
@@ -18,6 +19,8 @@ import de.metas.handlingunits.allocation.transfer.LUTUResult.TU;
 import de.metas.handlingunits.allocation.transfer.LUTUResult.TUPart;
 import de.metas.handlingunits.allocation.transfer.LUTUResult.TUsList;
 import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.grai.GRAI;
+import de.metas.handlingunits.grai.GRAISet;
 import de.metas.handlingunits.inventory.CreateVirtualInventoryWithQtyReq;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.PackToSpec;
@@ -50,10 +53,13 @@ import de.metas.handlingunits.picking.job.service.external.product.PickingJobPro
 import de.metas.handlingunits.picking.job.service.external.shipmentschedule.PickingJobShipmentScheduleService;
 import de.metas.handlingunits.picking.job.service.external.shipmentschedule.ShipmentScheduleInfo;
 import de.metas.handlingunits.picking.job.service.external.warehouse.PickingJobWarehouseService;
+import de.metas.handlingunits.picking.job.service.shelflife.PickingShelfLifeCheck;
+import de.metas.handlingunits.picking.job.service.shelflife.ShelfLifeTooShortException;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsGetRequest;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsSupplier;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
+import de.metas.handlingunits.serialno.SerialNoSet;
 import de.metas.handlingunits.qrcodes.special.PickOnTheFlyQRCode;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.shipmentschedule.api.AddQtyPickedRequest;
@@ -68,19 +74,23 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
+import de.metas.workplace.Workplace;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -116,9 +126,9 @@ public class PickingJobPickCommand
 	@NonNull private final PickingJobRepository pickingJobRepository;
 	@NonNull private final PickingJobSlotService pickingSlotService;
 	@NonNull private final PickingJobHUService huService;
+	@NonNull private final PickingShelfLifeCheck shelfLifeCheck;
 	//
 	@NonNull private final PackToHUsProducer packToHUsProducer;
-	@NonNull private final PickFromHUQRCodeResolver pickFromHUQRCodeResolver;
 	@NonNull private final PickedHUAttributesUpdater pickedHUAttributesUpdater;
 
 	//
@@ -134,7 +144,15 @@ public class PickingJobPickCommand
 	private final boolean checkIfAlreadyPacked;
 	private final boolean createInventoryForMissingQty;
 	private final boolean isCloseTarget;
+	private final boolean isSetGrais;
+	@Nullable private final GRAISet graiCodes;
+	private final boolean isPickingSlotRequired;
+	/** When {@code true} the picker has acknowledged the shelf-life warning; the guard is skipped. */
+	private final boolean isShelfLifeConfirmed;
+	/** When {@code true} the picking profile requires a shelf-life undercut warning before the pick can be confirmed. */
+	private final boolean isWarnShelfLifeUndercut;
 	@NonNull private final PickAttributes _manualPickAttributes;
+	private final boolean serialNoPickingEnabled;
 
 	//
 	// State
@@ -155,6 +173,7 @@ public class PickingJobPickCommand
 			final @NonNull PickingJobRepository pickingJobRepository,
 			final @NonNull PickingJobSlotService pickingSlotService,
 			final @NonNull PickingJobHUService huService,
+			final @NonNull PickingShelfLifeCheck shelfLifeCheck,
 			//
 			final @NonNull PickingJob pickingJob,
 			//
@@ -173,7 +192,12 @@ public class PickingJobPickCommand
 			final @Nullable LocalDate bestBeforeDate,
 			final boolean isSetLotNo,
 			final @Nullable String lotNo,
-			final boolean isCloseTarget)
+			final boolean isSetGrais,
+			final @Nullable GRAISet graiCodes,
+			final boolean isSetSerialNos,
+			final @Nullable SerialNoSet serialNos,
+			final boolean isCloseTarget,
+			final boolean isShelfLifeConfirmed)
 	{
 		Check.assumeGreaterOrEqualToZero(qtyToPickBD, "qtyToPickBD");
 
@@ -184,11 +208,8 @@ public class PickingJobPickCommand
 		this.pickingJobRepository = pickingJobRepository;
 		this.pickingSlotService = pickingSlotService;
 		this.huService = huService;
+		this.shelfLifeCheck = shelfLifeCheck;
 		this.packToHUsProducer = huService.newPackToHUsProducer(pickingJob.getId());
-		this.pickFromHUQRCodeResolver = PickFromHUQRCodeResolver.builder()
-				.productService(productService)
-				.huService(huService)
-				.build();
 		this.pickedHUAttributesUpdater = PickedHUAttributesUpdater.builder()
 				.uomConversionBL(Services.get(IUOMConversionBL.class))
 				.build();
@@ -197,7 +218,7 @@ public class PickingJobPickCommand
 		this._lineId = pickingJobLineId;
 		this._stepId = pickingJobStepId;
 		this.stepPickFromKey = pickFromKey != null ? pickFromKey : PickingJobStepPickFromKey.MAIN;
-		this.pickFromHUQRCode = pickFromQRCode != null ? huService.parse(pickFromQRCode) : null;
+		this.pickFromHUQRCode = pickFromQRCode != null ? huService.parsePickFromScannedCode(pickFromQRCode) : null;
 
 		final PickingJobLine line = getLine();
 		final PickingJobStep step = pickingJobStepId != null ? pickingJob.getStepById(pickingJobStepId) : null;
@@ -206,11 +227,14 @@ public class PickingJobPickCommand
 		this.checkIfAlreadyPacked = checkIfAlreadyPacked != null ? checkIfAlreadyPacked : true;
 		this.createInventoryForMissingQty = createInventoryForMissingQty;
 
+		final PickingJobOptions pickingJobOptions = configService.getPickingJobOptions(line.getCustomerId());
+
 		this.pickingUnit = line.getPickingUnit();
 		if (this.pickingUnit.isTU())
 		{
 			final TUPickingTarget tuPickingTarget = pickingJob.getTuPickingTargetEffective(this._lineId).orElse(null);
-			if (tuPickingTarget != null)
+			// Block picking into a pre-existing physical TU; a new (GRAI-based) target is materialised lazily after the pick.
+			if (tuPickingTarget != null && !tuPickingTarget.isNewTU())
 			{
 				throw new AdempiereException(TU_CANNOT_BE_PICKED_ERROR_MSG)
 						.appendParametersToMessage()
@@ -220,7 +244,6 @@ public class PickingJobPickCommand
 
 			this.qtyToPickTUs = QtyTU.ofBigDecimal(qtyToPickBD);
 
-			final PickingJobOptions pickingJobOptions = configService.getPickingJobOptions(line.getCustomerId());
 			this.qtyToPickCUs = computeQtyToPickCUs(pickingJobOptions, line, qtyToPickTUs);
 
 			if (qtyRejectedReasonCode != null)
@@ -269,9 +292,17 @@ public class PickingJobPickCommand
 						: null)
 				.isSetBestBeforeDate(isSetBestBeforeDate).bestBeforeDate(bestBeforeDate)
 				.isSetLotNo(isSetLotNo).lotNo(lotNo)
+				.isSetSerialNos(isSetSerialNos).serialNos(serialNos)
 				.build();
 
+		this.serialNoPickingEnabled = productService.isSerialNoPickingEnabled(line.getProductId());
+
 		this.isCloseTarget = isCloseTarget;
+		this.isSetGrais = isSetGrais;
+		this.graiCodes = graiCodes;
+		this.isPickingSlotRequired = pickingJobOptions.isPickingSlotRequired();
+		this.isShelfLifeConfirmed = isShelfLifeConfirmed;
+		this.isWarnShelfLifeUndercut = pickingJobOptions.isWarnShelfLifeUndercut();
 	}
 
 	private static Quantity computeQtyRejectedCUs(
@@ -333,11 +364,14 @@ public class PickingJobPickCommand
 
 		validatePickFromHU();
 
+		checkShelfLifeIfNeeded();
+
 		final List<PickingJobStepPickedToHU> pickedHUs;
 		try (final IAutoCloseable ignored = huService.temporarySetNewHContextForProcessing())
 		{
 
 			pickedHUs = splitOutPickToHUs();
+			stampGraisIfRequired();
 		}
 
 		changeStep(step -> updateStepFromPickedHUs(step, pickedHUs));
@@ -399,6 +433,11 @@ public class PickingJobPickCommand
 
 	private void checkOrAllocatePickingSlot()
 	{
+		if (!isPickingSlotRequired)
+		{
+			return;
+		}
+
 		if (isLineLevelPickTarget())
 		{
 			changeLine(line -> {
@@ -490,18 +529,72 @@ public class PickingJobPickCommand
 			{
 				if (result.isSingleTopLevelTUOnly())
 				{
-					setPickingTUTarget(result.getSingleTopLevelTU());
+					final TU tu = result.getSingleTopLevelTU();
+					stampGraiIfPresent(tuPickingTarget, tu.getId());
+					setPickingTUTarget(tu);
 				}
 				else if (result.isSingleLU())
 				{
 					final LU lu = result.getSingleLU();
 					if (lu.getTus().isSingleTU())
 					{
-						setPickingTUTarget(lu.getTus().getSingleTU());
+						final TU tu = lu.getTus().getSingleTU();
+						stampGraiIfPresent(tuPickingTarget, tu.getId());
+						setPickingTUTarget(tu);
 					}
 				}
 			}
 		}
+	}
+
+	/**
+	 * Stamps the GRAI carried by a new-TU picking target onto the physical TU that the framework just materialized,
+	 * so the operator-scanned GRAI ends up on the real HU. No-op when the source target carries no GRAI.
+	 */
+	private void stampGraiIfPresent(@NonNull final TUPickingTarget sourceTarget, @NonNull final HuId newTuId)
+	{
+		final GRAI grai = sourceTarget.getGrai();
+		if (grai != null)
+		{
+			// Must be called inside the pick transaction so the attribute write commits together with the pick.
+			huService.setGrais(newTuId, GRAISet.of(grai));
+		}
+	}
+
+	/**
+	 * Stamps the event's {@code graiCodes} onto the picked LU's TU slots, unioned with the GRAIs already on the LU.
+	 * Must be called inside the ambient pick HU context so the attribute writes commit with the pick transaction.
+	 * No-op when {@code isSetGrais} is false or {@code graiCodes} is empty.
+	 */
+	private void stampGraisIfRequired()
+	{
+		if (!isSetGrais || graiCodes == null || graiCodes.isEmpty())
+		{
+			return;
+		}
+
+		// Resolve the picked LU via the current line's effective target (after splitOutPickToHUs → updatePickingTarget):
+		// PRODUCT-agg → the line's just-materialised LU; SALES_ORDER/DELIVERY_LOCATION-agg → the header LU. Resolving
+		// per current line (not findFirst over all lines) avoids stamping the wrong LU in a multi-line PRODUCT-agg job
+		// where a prior line's LU is already materialised.
+		final HuId pickedLuId = _pickingJob.getLuPickingTargetEffective(_lineId)
+				.filter(LUPickingTarget::isExistingLU)
+				.map(LUPickingTarget::getLuIdNotNull)
+				.orElse(null);
+
+		if (pickedLuId == null)
+		{
+			// No materialised LU for this line (e.g. CU-only pick without an LU target) — nothing to stamp.
+			return;
+		}
+
+		// Union with the GRAIs already on the LU: setGrais treats its argument as the LU's COMPLETE desired set
+		// (HUGraiSnapshot.computeDelta), so on a shared SALES_ORDER-agg LU a later product's pick would otherwise
+		// WIPE an earlier product's GRAIs. Existing-first preserves each VHU's slot order; for a single-product LU
+		// the existing set is empty, so the union is a no-op.
+		final GRAISet existingGrais = huService.getGrais(pickedLuId);
+		final GRAISet desiredGrais = existingGrais.union(graiCodes);
+		huService.setGrais(pickedLuId, desiredGrais);
 	}
 
 	private void closeLUAndTUPickingTargets()
@@ -528,6 +621,21 @@ public class PickingJobPickCommand
 	private Optional<PickingJobStepId> getStepIdIfExists()
 	{
 		return Optional.ofNullable(this._stepId);
+	}
+
+	private ImmutableSet<HuId> getAllowedReservedVhuIds()
+	{
+		return getReservationDocRef()
+				.map(huService::getVHUIdsByDocumentRef)
+				.orElseGet(ImmutableSet::of);
+	}
+
+	private Optional<HUReservationDocRef> getReservationDocRef()
+	{
+		return Optionals.firstPresentOfSuppliers(
+				() -> getStepIdIfExists().map(HUReservationDocRef::ofPickingJobStepId),
+				() -> getShipmentScheduleInfo().getSalesOrderLineId().map(HUReservationDocRef::ofSalesOrderLineId)
+		);
 	}
 
 	private PickingJobStepId createStep()
@@ -628,7 +736,8 @@ public class PickingJobPickCommand
 			final ShipmentScheduleInfo shipmentScheduleInfo = getShipmentScheduleInfo();
 			final BPartnerId customerId = shipmentScheduleInfo.getBpartnerId();
 			final WarehouseId warehouseId = shipmentScheduleInfo.getWarehouseId();
-			return pickFromHUQRCodeResolver.resolve(pickFromHUQRCode, productId, customerId, warehouseId);
+			return huService.resolvePickFromHUQRCode(pickFromHUQRCode, productId, customerId, warehouseId)
+					.orElseThrow();
 		}
 	}
 
@@ -668,7 +777,6 @@ public class PickingJobPickCommand
 		if (qtyToPickCUs.isZero() && !isPickWholeTU)
 		{
 			throw new AdempiereException("qtyToPickCUs shall not be zero if isPickWholeTU is false");
-			// return ImmutableList.of();
 		}
 
 		final PickingJobStep step = getStep();
@@ -721,7 +829,20 @@ public class PickingJobPickCommand
 
 		updatePickingTarget(packedHUs);
 		addToPickingSlotQueue(packedHUs);
-		pickedHUAttributesUpdater.updateHUs(packedHUs, getPickAttributes(), productId);
+
+		// Authoritative serial-no count check: one distinct serial per picked unit (N serials for N CUs).
+		// Only when the product opts into serial-no picking and the operator actually entered serials
+		// (a whole-TU pick enters none); the picked CU qty is the unit count.
+		if (serialNoPickingEnabled && getPickAttributes().isSetSerialNos())
+		{
+			final SerialNoSet serialNos = getPickAttributes().getSerialNos();
+			if (serialNos.size() != qtyToPickCUs.toBigDecimal().intValueExact())
+			{
+				throw new AdempiereException(PickAttributes.ERR_SerialNoRequired);
+			}
+		}
+
+		pickedHUAttributesUpdater.updateHUs(packedHUs, getPickAttributes(), productId, serialNoPickingEnabled);
 
 		//
 		// Add shipment schedule QtyPicked records
@@ -773,6 +894,7 @@ public class PickingJobPickCommand
 
 	private void addShipmentScheduleQtyPicked(@NonNull final TU tu, @NonNull final Quantity qtyPicked)
 	{
+		// Record the destination TU; createCandidatesForQtyPicked expands it into per-VHU COO candidates at shipment generation time.
 		addShipmentScheduleQtyPicked(tu.toHU(), qtyPicked);
 	}
 
@@ -790,7 +912,7 @@ public class PickingJobPickCommand
 				.scheduleId(getScheduleId())
 				.cachedShipmentSchedule(shipmentScheduleInfo.getRecord())
 				.qtyPicked(CatchWeightHelper.extractQtys(huContext, getProductId(), qtyPicked, hu))
-				.tuOrVHU(hu)
+				.hu(hu)
 				.huContext(huContext)
 				.anonymousHuPickedOnTheFly(false)
 				.build());
@@ -831,10 +953,8 @@ public class PickingJobPickCommand
 	{
 
 		final List<HUQRCode> huQRCodes = huService.getOrCreateQRCodesByHuId(tu.getId());
-		if (huQRCodes.size() != tu.getQtyTU().toInt())
-		{
-			throw new AdempiereException(INVALID_NUMBER_QR_CODES_ERROR_MSG, tu.getQtyTU(), huQRCodes.size());
-		}
+		// Consumes only the first qtyTU codes; assertEnoughQRCodes tolerates a surplus (rationale in its Javadoc).
+		assertEnoughQRCodes(huQRCodes, tu.getQtyTU().toInt());
 
 		final List<Quantity> qtyPickedPerTU = qtyPicked.spreadEqually(tu.getQtyTU().toInt());
 
@@ -864,10 +984,8 @@ public class PickingJobPickCommand
 	{
 
 		final List<HUQRCode> huQRCodes = huService.getOrCreateQRCodesByHuId(tu1.getId());
-		if (huQRCodes.size() != 1)
-		{
-			throw new AdempiereException(INVALID_NUMBER_QR_CODES_ERROR_MSG, 1, huQRCodes.size());
-		}
+		// Consumes only the first code (get(0) below); assertEnoughQRCodes tolerates a surplus (rationale in its Javadoc).
+		assertEnoughQRCodes(huQRCodes, 1);
 		final HUQRCode huQRCode = huQRCodes.get(0);
 
 		return ImmutableList.of(
@@ -881,12 +999,35 @@ public class PickingJobPickCommand
 		);
 	}
 
+	/**
+	 * The QR-code count guard for picking, shared by both {@code toPickingJobStepPickedToHU} overloads.
+	 * <p>
+	 * An aggregate HU can hold MORE active QR codes than its current TU count (codes are generated one-per-TU and
+	 * are never trimmed when TUs are split/picked out), so the pick must TOLERATE a surplus and only ever consume
+	 * the first {@code requiredCount} codes. It errors only on a DEFICIT — strictly fewer codes than needed
+	 * ({@code < requiredCount}) — never on a surplus. An equality check ({@code != requiredCount}) would instead
+	 * throw on a surplus with "Erwartet {0} QR-Codes, aber nur {1} erhalten".
+	 * <p>
+	 * Package-visible so {@code PickingJobPickCommand_QRCodeSurplusToleranceTest} exercises the real production
+	 * predicate (reverting the operator here fails that test).
+	 */
+	@VisibleForTesting
+	static void assertEnoughQRCodes(@NonNull final List<HUQRCode> huQRCodes, final int requiredCount)
+	{
+		if (huQRCodes.size() < requiredCount)
+		{
+			throw new AdempiereException(INVALID_NUMBER_QR_CODES_ERROR_MSG, requiredCount, huQRCodes.size());
+		}
+	}
+
 	private LUTUResult pickWholeTUs(
 			@NonNull final ProductId productId,
 			@NonNull final I_M_HU pickFromHU,
 			@NonNull final QtyTU qtyToPickTUs)
 	{
-		final HUTransformService huTransformService = HUTransformService.newInstance();
+		final HUTransformService huTransformService = HUTransformService.builder()
+				.allowedReservedVhuIds(getAllowedReservedVhuIds())
+				.build();
 
 		final LUPickingTarget pickingTarget = getLUPickingTarget().orElse(null);
 		final LUTUResult result;
@@ -984,8 +1125,49 @@ public class PickingJobPickCommand
 						.documentRef(getLineId().toTableRecordReference())
 						.checkIfAlreadyPacked(checkIfAlreadyPacked)
 						.createInventoryForMissingQty(createInventoryForMissingQty)
+						.allowedReservedVhuIds(getAllowedReservedVhuIds())
 						.build()
 		);
+	}
+
+	/**
+	 * Throws {@link ShelfLifeTooShortException} if:
+	 * <ol>
+	 *   <li>the picker has NOT yet confirmed the shelf-life warning ({@code isShelfLifeConfirmed == false}), AND</li>
+	 *   <li>the picking profile has the "warn on shelf-life undercut" flag set ({@link PickingJobOptions#isWarnShelfLifeUndercut()}), AND</li>
+	 *   <li>the shelf-life check determines the picked HU's best-before date is too short for the delivery date.</li>
+	 * </ol>
+	 * The exception rolls back the transaction; no stock or schedule records are changed.
+	 */
+	private void checkShelfLifeIfNeeded()
+	{
+		if (isShelfLifeConfirmed)
+		{
+			return;
+		}
+
+		if (!isWarnShelfLifeUndercut)
+		{
+			return;
+		}
+
+		final ShipmentScheduleInfo ssi = getShipmentScheduleInfo();
+
+		final I_M_HU pickFromHU = huService.getById(getPickFromHUIdAndQRCode().getId());
+		final LocalDate bestBefore = huService.getAttributeValueIfExists(pickFromHU, AttributeConstants.ATTR_BestBeforeDate)
+				.map(attrValue -> TimeUtil.asLocalDate(attrValue.getValueAsDate()))
+				.orElse(null);
+
+		final LocalDate deliveryDate = TimeUtil.asLocalDate(ssi.getRecord().getDeliveryDate_Effective());
+		if (deliveryDate == null)
+		{
+			return;
+		}
+
+		if (shelfLifeCheck.isRemainingShelfLifeTooShort(ssi.getProductId(), ssi.getBpartnerId(), ssi.getClientAndOrgId().getOrgId(), bestBefore, deliveryDate))
+		{
+			throw new ShelfLifeTooShortException();
+		}
 	}
 
 	private void validatePickFromHU()

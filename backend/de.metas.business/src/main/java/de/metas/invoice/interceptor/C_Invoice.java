@@ -8,23 +8,33 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.location.IDocumentLocationBL;
+import de.metas.i18n.AdMessageKey;
+import de.metas.inout.InOutLineId;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.IsPartialInvoice;
+import de.metas.invoice.due_date.InvoiceDueDateProviderService;
 import de.metas.invoice.export.async.C_Invoice_CreateExportData;
 import de.metas.invoice.location.InvoiceLocationsUpdater;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
 import de.metas.payment.reservation.PaymentReservationCaptureRequest;
 import de.metas.payment.reservation.PaymentReservationService;
 import de.metas.pricing.PriceListId;
@@ -37,30 +47,44 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Objects;
 
 @Interceptor(I_C_Invoice.class)
 @Component
 @RequiredArgsConstructor
 public class C_Invoice // 03771
 {
+	private static final Logger log = LogManager.getLogger(C_Invoice.class);
+
+	/**
+	 * Error key for the readonly-after-Complete guard on IsPartialInvoice.
+	 */
+	static final AdMessageKey MSG_IsPartialInvoiceReadOnlyAfterComplete = AdMessageKey.of("de.metas.invoice.IsPartialInvoiceReadOnlyAfterComplete");
+
 	@NonNull private final PaymentReservationService paymentReservationService;
 	@NonNull private final IDocumentLocationBL documentLocationBL;
+	@NonNull private final InvoiceDueDateProviderService invoiceDueDateProviderService;
 
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 	@NonNull private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	@NonNull private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	@NonNull private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
@@ -70,6 +94,91 @@ public class C_Invoice // 03771
 	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+
+	// ==========================================================================
+	// Default IsPartialInvoice from C_DocType on BEFORE_NEW
+	// ==========================================================================
+
+	/**
+	 * Defaults {@code IsPartialInvoice} on a new invoice from its document type.
+	 * <p>
+	 * The safe-default direction is Partial: forgetting to mark Final only strands prepay
+	 * (visible, recoverable); forgetting to mark Partial on the wrong default would silently
+	 * consume all prepay on the first invoice.
+	 */
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
+	public void defaultIsPartialInvoiceFromDocType_interceptor(@NonNull final I_C_Invoice invoice)
+	{
+		defaultIsPartialInvoiceFromDocType(invoice);
+	}
+
+	/**
+	 * Package-private instance helper — testable via a constructed {@link C_Invoice} interceptor.
+	 * Copies the doctype's {@code IsPartialInvoice} (Y / N / NULL = NA) to the invoice — see
+	 * {@link de.metas.invoice.IsPartialInvoice}. Leaves the field as NULL (= NA, legacy semantic)
+	 * when no doctype is set, or when the doctype's flag is itself NULL.
+	 *
+	 * <p>The 3-state nullable redesign (migration {@code 5801950}) means the absence of explicit
+	 * intent is the correct default — legacy behaviour was a hardcoded "safe default: Partial",
+	 * which masked the design intent and propagated spurious {@code 'Y'} values into all invoices
+	 * created without a matching doctype.
+	 *
+	 * <p>Skips the defaulting when the caller already set {@code IsPartialInvoice} explicitly
+	 * (detected via {@link InterfaceWrapperHelper#isValueChanged}). This lets callers — e.g.
+	 * the IC pipeline or Cucumber step defs — set a specific flag without it being silently
+	 * overwritten by the BEFORE_NEW interceptor.
+	 */
+	void defaultIsPartialInvoiceFromDocType(@NonNull final I_C_Invoice invoice)
+	{
+		// Skip if already explicitly set by the caller before the first save
+		if (InterfaceWrapperHelper.isValueChanged(invoice, org.compiere.model.I_C_Invoice.COLUMNNAME_IsPartialInvoice))
+		{
+			return;
+		}
+
+		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(invoice.getC_DocType_ID());
+		if (docTypeId != null)
+		{
+			final I_C_DocType docType = docTypeDAO.getById(docTypeId);
+			final IsPartialInvoice docTypeIntent = IsPartialInvoice.fromValue(docType.getIsPartialInvoice());
+			invoice.setIsPartialInvoice(docTypeIntent.toCode());
+		}
+		// else: no doctype → leave NULL (= NA = legacy behaviour in closePartiallyInvoiced_InvoiceCandidates)
+	}
+
+	// ==========================================================================
+	// IsPartialInvoice readonly after Complete
+	// ==========================================================================
+
+	/**
+	 * Rejects changes to {@code IsPartialInvoice} once the invoice is no longer in
+	 * Drafted ({@code DR}) or In-Progress ({@code IP}) state.
+	 * <p>
+	 * The field is editable while {@code DocStatus IN ('DR','IP')}; readonly otherwise.
+	 * Server-side guard complements the AD_Field ReadOnlyLogic that controls the UI.
+	 */
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE },
+			// FQ required: COLUMNNAME_IsPartialInvoice on org.compiere base, simple name shadowed by de.metas extension
+			ifColumnsChanged = org.compiere.model.I_C_Invoice.COLUMNNAME_IsPartialInvoice)
+	public void rejectIsPartialInvoiceChangeAfterComplete_interceptor(@NonNull final I_C_Invoice invoice)
+	{
+		assertIsPartialInvoiceEditableForDocStatus(DocStatus.ofNullableCodeOrUnknown(invoice.getDocStatus()));
+	}
+
+	/**
+	 * Package-private static helper — testable without Spring context.
+	 * Throws {@link AdempiereException} if the given {@code docStatus} is not editable
+	 * (i.e., not {@code DR} or {@code IP}).
+	 */
+	static void assertIsPartialInvoiceEditableForDocStatus(@NonNull final DocStatus docStatus)
+	{
+		if (!docStatus.isDraftedOrInProgress())
+		{
+			throw new AdempiereException(MSG_IsPartialInvoiceReadOnlyAfterComplete)
+					.markAsUserValidationError();
+		}
+	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void onAfterComplete(final I_C_Invoice invoice)
@@ -411,6 +520,109 @@ public class C_Invoice // 03771
 		if (orderId != null && invoice.getDateInvoiced() != null)
 		{
 			orderBL.syncDateInvoicedFromInvoice(orderId, invoice);
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_C_Invoice.COLUMNNAME_C_DocTypeTarget_ID, I_C_Invoice.COLUMNNAME_C_DocType_ID })
+	public void onDocTypeChange(@NonNull final I_C_Invoice invoice)
+	{
+		invoice.setIsFinancial(invoiceBL.getInvoiceDocBaseType(invoice).isFinancial());
+	}
+
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
+	public void validateNonFinancialInvoices(@NonNull final I_C_Invoice invoice)
+	{
+		if (invoice.isFinancial())
+		{
+			return;
+		}
+		final OrderId orderId = OrderId.ofRepoIdOrNull(invoice.getC_Order_ID());
+		if (orderId != null)
+		{
+			throw new AdempiereException("Non-financial (proforma) invoices must not have OrderId set.")
+					.setParameter("C_Invoice_ID", invoice.getC_Invoice_ID());
+		}
+		invoiceBL.getLines(InvoiceId.ofRepoId(invoice.getC_Invoice_ID())).forEach(this::assertNoOrderLineSet);
+	}
+
+	private void assertNoOrderLineSet(@NonNull final I_C_InvoiceLine invoiceLine)
+	{
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(invoiceLine.getC_OrderLine_ID());
+		final OrderId orderId = OrderId.ofRepoIdOrNull(invoiceLine.getC_Order_ID());
+		final InOutLineId inOutLineId = InOutLineId.ofRepoIdOrNull(invoiceLine.getM_InOutLine_ID());
+		if (orderLineId != null || orderId != null || inOutLineId != null)
+		{
+			throw new AdempiereException("Non-financial (proforma) invoices must not have OrderId, OrderLineId and InOutLineId set.")
+					.setParameter("C_InvoiceLine_ID", invoiceLine.getC_InvoiceLine_ID())
+					.setParameter("C_Order_ID", invoiceLine.getC_Order_ID())
+					.setParameter("M_InOutLine_ID", invoiceLine.getM_InOutLine_ID());
+		}
+	}
+
+	/**
+	 * Sets the DueDate on the invoice at AFTER_PREPARE, honouring the payment term's
+	 * IsAllowOverrideDueDate flag and writing with the org's timezone.
+	 */
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_PREPARE })
+	public void setDueDate(final I_C_Invoice invoice)
+	{
+		final Timestamp dueDateBefore = invoice.getDueDate();
+		setDueDateOnInvoice(invoice, invoiceDueDateProviderService, paymentTermRepository, orgDAO);
+		if (!Objects.equals(dueDateBefore, invoice.getDueDate()))
+		{
+			InterfaceWrapperHelper.save(invoice);
+		}
+	}
+
+	/**
+	 * When DueDate is null, it is computed via the provider chain and written using the org's timezone.
+	 * When DueDate is already set and the payment term does not allow overriding it (IsAllowOverrideDueDate=N),
+	 * the computed value replaces the stored one.
+	 * UI readonly logic is client-side only; REST/EDI calls and stale drafts bypass it and
+	 * can store a value that does not match the payment term. Enforcing here keeps the stored
+	 * date consistent with the payment term regardless of how the invoice was completed.
+	 * When IsAllowOverrideDueDate=Y, the user-supplied date is left untouched — the override is intentional.
+	 * When no payment term is set, flag enforcement is skipped; the provider chain owns fallbacks
+	 * for the null-DueDate case.
+	 */
+	static void setDueDateOnInvoice(
+			@NonNull final I_C_Invoice invoice,
+			@NonNull final InvoiceDueDateProviderService invoiceDueDateProviderService,
+			@NonNull final IPaymentTermRepository paymentTermRepository,
+			@NonNull final IOrgDAO orgDAO)
+	{
+		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
+		final ZoneId orgZone = orgDAO.getTimeZone(OrgId.ofRepoId(invoice.getAD_Org_ID()));
+
+		if (invoice.getDueDate() == null)
+		{
+			final LocalDate computed = invoiceDueDateProviderService.provideDueDateFor(invoiceId);
+			invoice.setDueDate(TimeUtil.asTimestamp(computed, orgZone));
+			return;
+		}
+
+		// DueDate already set — only enforce the flag when a payment term is present
+		final PaymentTermId paymentTermId = PaymentTermId.ofRepoIdOrNull(invoice.getC_PaymentTerm_ID());
+		if (paymentTermId == null)
+		{
+			// Defensive: no payment term → nothing to enforce
+			return;
+		}
+
+		if (paymentTermRepository.isAllowOverrideDueDate(paymentTermId))
+		{
+			return;
+		}
+
+		// flag=N — recompute and replace if the stored value differs
+		final LocalDate computed = invoiceDueDateProviderService.provideDueDateFor(invoiceId);
+		final Timestamp computedTs = TimeUtil.asTimestamp(computed, orgZone);
+		if (!computedTs.equals(invoice.getDueDate()))
+		{
+			log.info("Overriding DueDate on invoice {} because IsAllowOverrideDueDate=N: {} -> {}",
+					invoiceId, invoice.getDueDate(), computedTs);
+			invoice.setDueDate(computedTs);
 		}
 	}
 }

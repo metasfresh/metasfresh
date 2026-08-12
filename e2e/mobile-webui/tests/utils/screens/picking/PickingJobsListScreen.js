@@ -1,4 +1,4 @@
-import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, VERY_FAST_ACTION_TIMEOUT } from "../../common";
+import { FAST_ACTION_TIMEOUT, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, VERY_FAST_ACTION_TIMEOUT } from "../../common";
 import { test } from "../../../../playwright.config";
 import { PickingJobScreen } from "./PickingJobScreen";
 import { PickingJobsListFiltersScreen } from "./PickingJobsListFiltersScreen";
@@ -6,6 +6,7 @@ import { PickingJobsListScanScreen } from './PickingJobsListScanScreen';
 import { expect } from '@playwright/test';
 import { ApplicationsListScreen } from '../ApplicationsListScreen';
 import { expectClasses } from '../../expectations';
+import { MassPrintingScanScreen } from './MassPrintingScanScreen';
 
 const NAME = 'PickingJobsListScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -19,6 +20,39 @@ export const PickingJobsListScreen = {
 
     expectVisible: async () => await test.step(`${NAME} - Expect screen to be displayed`, async () => {
         await expect(containerElement()).toBeVisible();
+    }),
+
+    // Wait until a specific job launcher is visible in the list. The list is websocket-driven and
+    // populates a moment after the screen renders, so callers that act on the list (e.g. opening the
+    // filter, whose facets are computed from the listed jobs) must wait for the job to be present first.
+    // Locate by an exact data attribute (e.g. customerId) — never by a documentNo substring, which
+    // collides with other jobs in a shared/full-suite run.
+    waitForJobVisible: async ({ documentNo, salesOrderId, customerId, customerLocationId } = {}) => await test.step(`${NAME} - Wait for job visible`, async () => {
+        await locateJobButtons({ documentNo, salesOrderId, customerId, customerLocationId }).waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    /**
+     * Reads a single job launcher's caption (the " | "-joined display fields) and asserts on it.
+     * Locate the job by an exact data attribute (customerId / salesOrderId / customerLocationId) —
+     * documentNo is only a caption substring and collides with other jobs in a full-suite run.
+     * @param contains - substrings that must all be present in the caption
+     * @param fieldCount - if set, the expected number of non-empty " | "-separated caption fields
+     * @returns the caption text (also logged, to aid assertion tuning)
+     */
+    expectJobCaption: async ({ documentNo, salesOrderId, customerId, customerLocationId, contains = [], fieldCount } = {}) => await test.step(`${NAME} - Expect job caption`, async () => {
+        const button = locateJobButtons({ documentNo, salesOrderId, customerId, customerLocationId });
+        await button.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+        await expect(button).toHaveCount(1);
+        const caption = (await button.innerText()).trim();
+        console.log(`${NAME} - job caption = ${JSON.stringify(caption)}`);
+        for (const text of contains) {
+            expect(caption, `caption should contain "${text}"`).toContain(text);
+        }
+        if (fieldCount != null) {
+            const fields = caption.split('|').map(s => s.trim()).filter(s => s.length > 0);
+            expect(fields.length, `expected ${fieldCount} non-empty caption fields, caption was: ${caption}`).toBe(fieldCount);
+        }
+        return caption;
     }),
 
     clickFilterButton: async () => await test.step(`${NAME} - Click filter button`, async () => {
@@ -73,7 +107,7 @@ export const PickingJobsListScreen = {
     expectJobButtons: async (expectationsArray) => await test.step(`${NAME} - Expect ${expectationsArray.length} job buttons`, async () => {
         await test.step(`Wait for all expected buttons to be attached`, async () => {
             for (const expectation of expectationsArray) {
-                await locateJobButtons(expectation).waitFor({ state: 'attached' });
+                await locateJobButtons(expectation).waitFor({ state: 'attached', timeout: SLOW_ACTION_TIMEOUT });
             }
         });
 
@@ -94,6 +128,18 @@ export const PickingJobsListScreen = {
         await expect(locateJobButtons()).toHaveCount(expectationsArray.length);
     }),
 
+    clickMassPrintingButton: async () => await test.step(`${NAME} - Click Mass Printing button`, async () => {
+        const button = page.getByTestId('massPrinting-button');
+        await button.waitFor({ state: 'attached', timeout: SLOW_ACTION_TIMEOUT });
+        await expect(button).toBeEnabled();
+        await button.tap();
+        await MassPrintingScanScreen.waitForScreen();
+    }),
+
+    expectMassPrintingButtonHidden: async () => await test.step(`${NAME} - Expect Mass Printing button hidden`, async () => {
+        await page.getByTestId('massPrinting-button').waitFor({ state: 'detached', timeout: VERY_FAST_ACTION_TIMEOUT });
+    }),
+
     goBack: async () => await test.step(`${NAME} - Go back`, async () => {
         await PickingJobsListScreen.expectVisible();
         await page.locator(ID_BACK_BUTTON).tap();
@@ -102,10 +148,13 @@ export const PickingJobsListScreen = {
 
 };
 
-const locateJobButtons = ({ documentNo, index, salesOrderId, qtyToDeliver, productId, customerLocationId } = {}) => {
+const locateJobButtons = ({ documentNo, index, salesOrderId, customerId, qtyToDeliver, productId, customerLocationId, caption } = {}) => {
     let selector = '.wflauncher-button';
     if (salesOrderId != null) {
         selector += `[data-salesorderid="${salesOrderId}"]`;
+    }
+    if (customerId != null) {
+        selector += `[data-customerid="${customerId}"]`;
     }
     if (qtyToDeliver != null) {
         selector += `[data-qtytodeliver="${qtyToDeliver}"]`;
@@ -125,6 +174,10 @@ const locateJobButtons = ({ documentNo, index, salesOrderId, qtyToDeliver, produ
 
     if (index != null) {
         locator = locator.nth(index - 1);
+    }
+
+    if (caption != null) {
+        locator = locator.filter({ hasText: caption })
     }
 
     return locator;

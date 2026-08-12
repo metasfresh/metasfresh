@@ -13,6 +13,7 @@ import * as uiTrace from '../../utils/ui_trace';
 import { useMobileNavigation } from '../../hooks/useMobileNavigation';
 import { computeId } from '../../utils/testing_support';
 import { useMobileLocation } from '../../hooks/useMobileLocation';
+import ShelfLifeConfirmDialogHost from '../../apps/picking/ShelfLifeConfirmDialogHost';
 
 export const ApplicationLayout = ({ applicationId, Component }) => {
   const history = useMobileNavigation();
@@ -45,6 +46,7 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
       <div className="app-container app-container-fullscreen">
         <Component />
         <ScreenToaster />
+        <ShelfLifeConfirmDialogHost />
       </div>
     );
   }
@@ -67,6 +69,7 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
         <ViewHeader />
         <Component />
         <ScreenToaster />
+        <ShelfLifeConfirmDialogHost />
       </div>
       <div className="app-footer">
         <div className="columns is-mobile">

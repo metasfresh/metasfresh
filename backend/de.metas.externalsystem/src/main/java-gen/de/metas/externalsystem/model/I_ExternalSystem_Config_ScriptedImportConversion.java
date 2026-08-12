@@ -119,6 +119,29 @@ public interface I_ExternalSystem_Config_ScriptedImportConversion
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set ExternalSystem Endpoint.
+	 * Endpoint configuration for SFTP transport
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSystem_Endpoint_ID (int ExternalSystem_Endpoint_ID);
+
+	/**
+	 * Get ExternalSystem Endpoint.
+	 * Endpoint configuration for SFTP transport
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getExternalSystem_Endpoint_ID();
+
+	ModelColumn<I_ExternalSystem_Config_ScriptedImportConversion, I_ExternalSystem_Endpoint> COLUMN_ExternalSystem_Endpoint_ID = new ModelColumn<>(I_ExternalSystem_Config_ScriptedImportConversion.class, "ExternalSystem_Endpoint_ID", I_ExternalSystem_Endpoint.class);
+	String COLUMNNAME_ExternalSystem_Endpoint_ID = "ExternalSystem_Endpoint_ID";
+
+	/**
 	 * Set Description.
 	 *
 	 * <br>Type: String
@@ -245,6 +268,21 @@ public interface I_ExternalSystem_Config_ScriptedImportConversion
 
 	ModelColumn<I_ExternalSystem_Config_ScriptedImportConversion, Object> COLUMN_IsActive = new ModelColumn<>(I_ExternalSystem_Config_ScriptedImportConversion.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	// SftpPollingIntervalMs
+	String COLUMNNAME_SftpPollingIntervalMs = "SftpPollingIntervalMs";
+	void setSftpPollingIntervalMs (int SftpPollingIntervalMs);
+	int getSftpPollingIntervalMs();
+
+	// SftpProcessedDirectory
+	String COLUMNNAME_SftpProcessedDirectory = "SftpProcessedDirectory";
+	void setSftpProcessedDirectory (@Nullable String SftpProcessedDirectory);
+	@Nullable String getSftpProcessedDirectory();
+
+	// SftpErrorDirectory
+	String COLUMNNAME_SftpErrorDirectory = "SftpErrorDirectory";
+	void setSftpErrorDirectory (@Nullable String SftpErrorDirectory);
+	@Nullable String getSftpErrorDirectory();
 
 	/**
 	 * Set Script Identifier.

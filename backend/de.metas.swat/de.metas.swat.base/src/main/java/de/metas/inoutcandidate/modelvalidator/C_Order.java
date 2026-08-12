@@ -1,16 +1,27 @@
 package de.metas.inoutcandidate.modelvalidator;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
+import de.metas.inoutcandidate.ShipmentConstraintId;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
-import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.shipmentconstraint.ShipmentConstraintService;
+import de.metas.inoutcandidate.qty_reservation.QtyReservationService;
+import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
+import de.metas.order.model.I_C_Order;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_Order;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -39,25 +50,34 @@ public class C_Order
 {
 	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	// ShipmentConstraintService is a Spring @Service; this validator is instantiated as a plain
+	// object by InOutCandidateValidator, so we resolve via the Spring context.
+	private final ShipmentConstraintService shipmentConstraintService = SpringContextHolder.instance.getBean(ShipmentConstraintService.class);
+	private final SpringContextHolder.Lazy<QtyReservationService> qtyReservationService = SpringContextHolder.lazyBean(QtyReservationService.class);
 
 	private static final AdMessageKey MSG_CannotCompleteOrder_DeliveryStop = AdMessageKey.of("CannotCompleteOrder_DeliveryStop");
 	private static final AdMessageKey MSG_PO_REACTIVATION_VOID_NOT_ALLOWED = AdMessageKey.of("purchaseorder.shipmentschedule.exported");
+	private static final AdMessageKey ERR_ORDER_MODIFICATION_NOT_ALLOWED_RECEIPT_EXISTS = AdMessageKey.of("ERR_ORDER_MODIFICATION_NOT_ALLOWED_RECEIPT_EXISTS");
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_PREPARE)
 	public void assertNotDeliveryStopped(final I_C_Order order)
 	{
-		// Makes sense only for sales orders
-		if (!order.isSOTrx())
+		// For sales orders, check the bill partner; for purchase orders, check the vendor
+		final int partnerIdToCheckRepo = order.isSOTrx()
+				? order.getBill_BPartner_ID()
+				: order.getC_BPartner_ID();
+
+		final BPartnerId partnerIdToCheck = BPartnerId.ofRepoIdOrNull(partnerIdToCheckRepo);
+		if (partnerIdToCheck == null)
 		{
 			return;
 		}
 
-		final int billPartnerId = order.getBill_BPartner_ID();
-		final int deliveryStopShipmentConstraintId = Services.get(IShipmentConstraintsBL.class).getDeliveryStopShipmentConstraintId(billPartnerId);
-		final boolean isDeliveryStop = deliveryStopShipmentConstraintId > 0;
-		if (isDeliveryStop)
+		final Optional<ShipmentConstraintId> constraintId = shipmentConstraintService.getDeliveryStopConstraintIdFor(partnerIdToCheck);
+		if (constraintId.isPresent())
 		{
-			throw new AdempiereException(MSG_CannotCompleteOrder_DeliveryStop)
+			throw new AdempiereException(MSG_CannotCompleteOrder_DeliveryStop, partnerIdToCheck.getRepoId(), constraintId.get().getRepoId())
 					.markAsUserValidationError();
 		}
 	}
@@ -81,5 +101,59 @@ public class C_Order
 						.markAsUserValidationError();
 			}
 		}
+	}
+
+	/**
+	 * Prevents altering a PO if it has receipts and has been reactivated via the `PO_AllowReactivationIfReceiptsCreated` sysconfig.
+	 * If that's the case, prevent any meaningful changes.
+	 */
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
+			ignoreColumnsChanged = {
+					I_C_Order.COLUMNNAME_DocStatus,
+					I_C_Order.COLUMNNAME_DocAction,
+					I_C_Order.COLUMNNAME_Processing,
+					I_C_Order.COLUMNNAME_Processed,
+					I_C_Order.COLUMNNAME_IsApproved,
+					I_C_Order.COLUMNNAME_QtyOrdered,
+					I_C_Order.COLUMNNAME_QtyInvoiced,
+					I_C_Order.COLUMNNAME_InvoiceDate,
+					I_C_Order.COLUMNNAME_QtyMoved,
+					I_C_Order.COLUMNNAME_GrandTotal,
+					I_C_Order.COLUMNNAME_TotalLines,
+					I_C_Order.COLUMNNAME_Weight,
+					I_C_Order.COLUMNNAME_Posted,
+					I_C_Order.COLUMNNAME_Updated,
+					I_C_Order.COLUMNNAME_UpdatedBy })
+	public void assertChangeAllowed(@NonNull final I_C_Order order)
+	{
+		if (!InterfaceWrapperHelper.isUIAction(order))
+		{
+			// do nothing if the modification was triggered from the application, not by the user
+			return;
+		}
+		if (order.getQtyMoved().signum() == 0 || orderBL.isSalesOrder(order))
+		{
+			// not a PO or has no receipts
+			return;
+		}
+		final DocStatus docStatus = DocStatus.ofCode(order.getDocStatus());
+		if (!docStatus.isInProgress())
+		{
+			// document has not been reactivated
+			return;
+		}
+
+		throw new AdempiereException(ERR_ORDER_MODIFICATION_NOT_ALLOWED_RECEIPT_EXISTS)
+				.markAsUserValidationError();
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
+	public void reconcileQtyReservations(final I_C_Order order)
+	{
+		if (!order.isSOTrx())
+		{
+			return;
+		}
+		qtyReservationService.get().reconcileToOrderedQty(OrderId.ofRepoId(order.getC_Order_ID()));
 	}
 }

@@ -75,7 +75,7 @@ public class ExternalReferenceRestControllerService
 	private final ExternalSystemRepository externalSystemRepository;
 	private final ExternalReferenceTypes externalReferenceTypes;
 
-	public static ExternalReferenceRestControllerService newInstanceForJUnitTesting()
+	public static ExternalReferenceRestControllerService newInstanceForUnitTesting()
 	{
 		return new ExternalReferenceRestControllerService(ExternalReferenceRepository.newInstanceForUnitTesting(new ExternalReferenceTypes()),
 				new ExternalSystemRepository(),
@@ -125,7 +125,7 @@ public class ExternalReferenceRestControllerService
 			@NonNull final ExternalIdentifier externalIdentifier,
 			@NonNull final IExternalReferenceType externalReferenceType)
 	{
-		final OrgId orgIdToUse = CoalesceUtil.coalesceSuppliers(() -> orgId, () -> Env.getOrgId());
+		final OrgId orgIdToUse = CoalesceUtil.coalesceSuppliers(() -> orgId, Env::getOrgId);
 
 		final JsonExternalSystemName externalSystemName = JsonExternalSystemName.of(externalIdentifier.asExternalValueAndSystem().getExternalSystem());
 

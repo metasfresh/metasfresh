@@ -79,28 +79,6 @@ public interface I_RV_PP_Product_BOMLine
 	String COLUMNNAME_AD_PInstance_ID = "AD_PInstance_ID";
 
 	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
 	 * Set Component Type.
 	 * Component Type for a Bill of Material or Formula
 	 *
@@ -147,6 +125,28 @@ public interface I_RV_PP_Product_BOMLine
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Description.
@@ -239,7 +239,7 @@ public interface I_RV_PP_Product_BOMLine
 	String COLUMNNAME_IsCritical = "IsCritical";
 
 	/**
-	 * Set Is Qty Percentage.
+	 * Set Is %.
 	 * Indicate that this component is based in % Quantity
 	 *
 	 * <br>Type: YesNo
@@ -249,7 +249,7 @@ public interface I_RV_PP_Product_BOMLine
 	void setIsQtyPercentage (boolean IsQtyPercentage);
 
 	/**
-	 * Get Is Qty Percentage.
+	 * Get Is %.
 	 * Indicate that this component is based in % Quantity
 	 *
 	 * <br>Type: YesNo
@@ -451,7 +451,7 @@ public interface I_RV_PP_Product_BOMLine
 	String COLUMNNAME_PP_Product_BOMLine_ID = "PP_Product_BOMLine_ID";
 
 	/**
-	 * Set Quantity in %.
+	 * Set % Qty.
 	 * Indicate the Quantity % use in this Formula
 	 *
 	 * <br>Type: Quantity
@@ -461,7 +461,7 @@ public interface I_RV_PP_Product_BOMLine
 	void setQtyBatch (BigDecimal QtyBatch);
 
 	/**
-	 * Get Quantity in %.
+	 * Get % Qty.
 	 * Indicate the Quantity % use in this Formula
 	 *
 	 * <br>Type: Quantity
@@ -474,7 +474,7 @@ public interface I_RV_PP_Product_BOMLine
 	String COLUMNNAME_QtyBatch = "QtyBatch";
 
 	/**
-	 * Set Quantity.
+	 * Set Qty.
 	 * Indicate the Quantity  use in this BOM
 	 *
 	 * <br>Type: Quantity
@@ -484,7 +484,7 @@ public interface I_RV_PP_Product_BOMLine
 	void setQtyBOM (@Nullable BigDecimal QtyBOM);
 
 	/**
-	 * Get Quantity.
+	 * Get Qty.
 	 * Indicate the Quantity  use in this BOM
 	 *
 	 * <br>Type: Quantity
@@ -498,7 +498,7 @@ public interface I_RV_PP_Product_BOMLine
 
 	/**
 	 * Set % Scrap.
-	 * Indicate the % Scrap  for calculate the Scrap Quantity
+	 * Indicate the Scrap %  for calculate the Scrap Quantity
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -508,7 +508,7 @@ public interface I_RV_PP_Product_BOMLine
 
 	/**
 	 * Get % Scrap.
-	 * Indicate the % Scrap  for calculate the Scrap Quantity
+	 * Indicate the Scrap %  for calculate the Scrap Quantity
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false

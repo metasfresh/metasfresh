@@ -209,6 +209,18 @@ public class X_C_PaymentTerm extends org.compiere.model.PO implements I_C_Paymen
 	}
 
 	@Override
+	public void setIsAllowOverrideDueDate (final boolean IsAllowOverrideDueDate)
+	{
+		set_Value (COLUMNNAME_IsAllowOverrideDueDate, IsAllowOverrideDueDate);
+	}
+
+	@Override
+	public boolean isAllowOverrideDueDate()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowOverrideDueDate);
+	}
+
+	@Override
 	public void setIsComplex (final boolean IsComplex)
 	{
 		set_Value (COLUMNNAME_IsComplex, IsComplex);

@@ -22,6 +22,7 @@
 
 package de.metas.ordercandidate.api.impl;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryCreateRequest;
@@ -29,6 +30,7 @@ import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.error.AdIssueId;
@@ -66,6 +68,7 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
+import de.metas.user.UserRepository;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -78,6 +81,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_User;
@@ -120,6 +124,22 @@ public class OLCandBL implements IOLCandBL
 	{
 		this.bpartnerBL = bpartnerBL;
 		this.bPartnerOrderParamsRepository = bPartnerOrderParamsRepository;
+	}
+
+	/**
+	 * Registers (and returns) an {@link IOLCandBL} for unit tests under the interface key that consumers
+	 * resolve via {@code Services.get(IOLCandBL.class)} — call it once in setup; no extra registerJUnitBean needed.
+	 */
+	@VisibleForTesting
+	public static IOLCandBL newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(
+				IOLCandBL.class,
+				() -> new OLCandBL(
+						new BPartnerBL(new UserRepository()),
+						BPartnerOrderParamsRepository.newInstanceForUnitTesting()));
 	}
 
 	@Override
@@ -292,12 +312,18 @@ public class OLCandBL implements IOLCandBL
 	}
 
 	@Override
+	@Nullable
 	public ShipperId getShipperId(
 			@Nullable final BPartnerOrderParams bPartnerOrderParams,
 			@Nullable final OLCandOrderDefaults orderDefaults,
 			@Nullable final I_C_OLCand orderCandidateRecord)
 	{
 		final ShipperId orderCandiateShipperId = orderCandidateRecord == null ? null : ShipperId.ofRepoIdOrNull(orderCandidateRecord.getM_Shipper_ID());
+
+		final ShipperId locationShipperId = orderCandidateRecord == null ? null : bpartnerBL.getEffectiveShipperId(
+				effectiveValuesBL.getDropShipLocationEffectiveId(orderCandidateRecord),
+						effectiveValuesBL.getLocationEffectiveId(orderCandidateRecord)
+		);
 
 		final ShipperId bpartnerOrderParamsShipperId = bPartnerOrderParams == null ? null
 				: bPartnerOrderParams.getShipperId().orElse(null);
@@ -306,6 +332,7 @@ public class OLCandBL implements IOLCandBL
 				: orderDefaults.getShipperId();
 
 		return coalesce(orderCandiateShipperId,
+				locationShipperId,
 				bpartnerOrderParamsShipperId,
 				orderDefaultsShipperId);
 	}
@@ -324,6 +351,7 @@ public class OLCandBL implements IOLCandBL
 				orderDefaultsDocTypeId);
 	}
 
+	@Nullable
 	@Override
 	public I_C_OLCand invokeOLCandCreator(final PO po, final IOLCandCreator olCandCreator)
 	{
@@ -453,6 +481,7 @@ public class OLCandBL implements IOLCandBL
 		return pricingResult;
 	}
 
+	@NonNull
 	@Override
 	public BPartnerOrderParams getBPartnerOrderParams(@NonNull final I_C_OLCand olCandRecord)
 	{

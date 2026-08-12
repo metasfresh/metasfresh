@@ -27,6 +27,7 @@ public class MobileApplicationInfo
 	boolean isAllowStartNextJobOnly;
 	boolean requiresWorkstation;
 	boolean requiresWorkplace;
+	boolean requiresTrolley;
 	boolean showFilterByQRCode;
 	boolean showFilters;
 	boolean showFilterByDocumentNo;
@@ -47,6 +48,7 @@ public class MobileApplicationInfo
 			final boolean isAllowStartNextJobOnly,
 			final boolean requiresWorkstation,
 			final boolean requiresWorkplace,
+			final boolean requiresTrolley,
 			final boolean showFilterByQRCode,
 			final boolean showFilters,
 			final boolean showFilterByDocumentNo,
@@ -63,6 +65,7 @@ public class MobileApplicationInfo
 		this.isAllowStartNextJobOnly = isAllowStartNextJobOnly;
 		this.requiresWorkstation = requiresWorkstation;
 		this.requiresWorkplace = requiresWorkplace;
+		this.requiresTrolley = requiresTrolley;
 		this.showFilterByQRCode = showFilterByQRCode;
 		this.showFilters = showFilters;
 		this.showFilterByDocumentNo = showFilterByDocumentNo;

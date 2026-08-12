@@ -154,6 +154,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	private final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
 	private final IHUPackageDAO huPackageDAO = Services.get(IHUPackageDAO.class);
 	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+	private final IInOutCandidateBL inOutCandidateBL = Services.get(IInOutCandidateBL.class);
 
 	@Override
 	public I_M_ReceiptSchedule getById(@NonNull final ReceiptScheduleId id)
@@ -376,8 +377,24 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	 * <p>
 	 * At this point we assume that we have a thread inherited transaction.
 	 */
-	private InOutGenerateResult processReceiptSchedules0(@NonNull final CreateReceiptsParameters parameters)
+	private InOutGenerateResult processReceiptSchedules0(@NonNull final CreateReceiptsParameters parametersIn)
 	{
+		// gh#28631: drop any delivery-stopped receipt schedules before doing any HU work.
+		// This is the central HU receipt entry point — gating here covers manual-run, async-run,
+		// and shipper-transportation callers.
+		final List<de.metas.inoutcandidate.model.I_M_ReceiptSchedule> kept = parametersIn.getReceiptSchedules().stream()
+				.filter(rs -> !rs.isDeliveryStop())
+				.collect(Collectors.toList());
+
+		if (kept.isEmpty())
+		{
+			return inOutCandidateBL.createEmptyInOutGenerateResult(false);
+		}
+
+		final CreateReceiptsParameters parameters = kept.size() == parametersIn.getReceiptSchedules().size()
+				? parametersIn
+				: parametersIn.toBuilder().receiptSchedules(kept).build();
+
 		final List<I_M_ReceiptSchedule> receiptSchedules = createList(parameters.getReceiptSchedules(), I_M_ReceiptSchedule.class);
 
 		final Set<HuId> selectedHuIds = parameters.getSelectedHuIds() != null
@@ -415,6 +432,9 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		return result;
 	}
 
+	/**
+	 * Supports the case that there are no packages, because no shipper-transportation was created for the purchase-order.
+	 */
 	private void matchHUsToPackages(@NonNull final Set<HuId> selectedHuIds, @NonNull final ImmutableMap<HuId, I_M_HU> husByIdMap, final List<I_M_ReceiptSchedule> receiptSchedules)
 	{
 		final List<I_M_ReceiptSchedule> luQtySchedules = retainLUQtySchedules(receiptSchedules);
@@ -429,10 +449,6 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 
 		final Map<String, Package> mutableSSCCToPackageMap = new HashMap<>(packages.stream()
 				.collect(ImmutableMap.toImmutableMap(Package::getSscc, Function.identity())));
-		if (selectedLUQtyHUs.size() > packages.size())
-		{
-			throw new AdempiereException(MSG_PackageNumberNotMatching);
-		}
 
 		final Map<HuId, String> huIdToSscc18Map = selectedLUQtyHUs.stream()
 				.collect(HashMap::new,
@@ -446,35 +462,41 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 						HashMap::putAll);
 
 		final Set<HuId> seenHUIds = new HashSet<>();
-		huIdToSscc18Map.keySet()
-				.stream()
-				.filter(huId -> huIdToSscc18Map.get(huId) != null)
-				.forEach(huId -> {
-					final String sscc = huIdToSscc18Map.get(huId);
-					final Package packageBySSCC = mutableSSCCToPackageMap.remove(sscc);
-					if (packageBySSCC != null)
-					{
-						seenHUIds.add(huId);
-						//huId matches packageBySSCC
-						huPackageBL.assignPackageToHuId(packageBySSCC, huId);
-					}
-					else
-					{
-						throw new AdempiereException("No package found for SSCC: " + sscc + " set on HU: " + huId);
-					}
-				});
+		for (final HuId huId : huIdToSscc18Map.keySet())
+		{
+			if (huIdToSscc18Map.get(huId) == null) {continue;}
+
+			final String sscc = huIdToSscc18Map.get(huId);
+			final Package packageBySSCC = mutableSSCCToPackageMap.remove(sscc);
+			if (packageBySSCC != null)
+			{
+				seenHUIds.add(huId);
+				//huId matches packageBySSCC
+				huPackageBL.assignPackageToHuId(packageBySSCC, huId);
+			}
+			else
+			{
+				throw new AdempiereException("No package found for SSCC: " + sscc + " set on HU: " + huId);
+			}
+		}
 
 		//copy SSCC from first matching Package
-		selectedLUQtyHUs.stream()
-				.filter(huId -> !seenHUIds.contains(huId))
-				.forEach(huId ->
-						{
-							final String sscc = mutableSSCCToPackageMap.keySet().stream().findFirst().orElseThrow(() -> new AdempiereException("No available package left to copy SSCC from for HUId:" + huId));
-							huAttributesBL.updateHUAttribute(huId, AttributeConstants.ATTR_SSCC18_Value, sscc);
-							huPackageBL.assignPackageToHuId(mutableSSCCToPackageMap.remove(sscc), huId);
-							seenHUIds.add(huId);
-						}
-				);
+		for (final HuId huId : selectedLUQtyHUs)
+		{
+			if (seenHUIds.contains(huId)) {continue;}
+
+			final String sscc = mutableSSCCToPackageMap.keySet().stream().findFirst().orElse(null);
+			if (sscc != null)
+			{
+				huAttributesBL.updateHUAttribute(huId, AttributeConstants.ATTR_SSCC18_Value, sscc);
+				huPackageBL.assignPackageToHuId(mutableSSCCToPackageMap.remove(sscc), huId);
+			}
+			else
+			{
+				Loggables.addLog("No available M_Package left to copy SSCC from for HUId:" + huId);
+			}
+			seenHUIds.add(huId);
+		}
 	}
 
 	private @NonNull List<HuId> retainLUQtyHUIds(final @NonNull Set<HuId> selectedHuIds, final List<I_M_ReceiptSchedule> luQtySchedules)
@@ -547,7 +569,6 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	private InOutGenerateResult createReceipts(@NonNull final CreateReceiptsParameters parameters)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		final IInOutCandidateBL inOutCandidateBL = Services.get(IInOutCandidateBL.class);
 
 		// Get the transaction to be used
 		final ITrx threadTrx;

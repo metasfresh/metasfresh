@@ -71,6 +71,8 @@ public class JsonResponseLocation
 
 	public static final String VAT_ID = "vatId";
 
+	public static final String ATTENTION = "attention";
+
 	public static final String EPHEMERAL = "ephemeral";
 
 	@ApiModelProperty(dataType = "java.lang.Integer")
@@ -157,6 +159,9 @@ public class JsonResponseLocation
 	String vatId;
 
 	@JsonInclude(Include.NON_NULL)
+	@Nullable String attention;
+
+	@JsonInclude(Include.NON_NULL)
 	@ApiModelProperty(position = 20) // shall be last
 	JsonChangeInfo changeInfo;
 
@@ -194,6 +199,8 @@ public class JsonResponseLocation
 			@JsonProperty(REPLICATION_LOOKUP_DEFAULT)  final boolean replicationLookupDefault,
 
 			@JsonProperty(VAT_ID) @Nullable final String vatId,
+
+			@JsonProperty(ATTENTION) @Nullable final String attention,
 
 			@JsonProperty("changeInfo") @Nullable final JsonChangeInfo changeInfo)
 	{
@@ -234,8 +241,10 @@ public class JsonResponseLocation
 
 		this.vatId = vatId;
 
+		this.attention = attention;
+
 		this.ephemeral = ephemeral;
-		
+
 		this.changeInfo = changeInfo;
 	}
 }

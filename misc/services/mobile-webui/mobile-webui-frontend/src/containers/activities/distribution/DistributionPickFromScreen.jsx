@@ -1,19 +1,19 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { getNextEligiblePickFromLine, postDistributionPickFrom } from '../../../api/distribution';
+import { getNextEligiblePickFromLine } from '../../../api/distribution';
 import { toQRCodeString } from '../../../utils/qrCode/hu';
-import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { trl } from '../../../utils/translations';
 import { distributionJobScreenLocation, distributionLineScreenLocation } from '../../../routes/distribution';
 import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
 import { resolveDistributionScannedBarcodeToParsedQRCode } from '../../../apps/distribution/services/barcodeResolverService';
 import { useSearchParams } from '../../../hooks/useSearchParams';
-import { formatQtyToHumanReadableStr } from '../../../utils/qtys';
 import { useMobileLocation } from '../../../hooks/useMobileLocation';
 import { getLineByIdFromActivity, useWFActivity } from '../../../reducers/wfProcesses';
 import { computeQtyToPickRemaining } from '../../../reducers/wfProcesses/distribution/computeQtyToPickRemaining';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { isRequireScanningProductCode } from '../../../reducers/wfProcesses/distribution/getDistributionJobCompleteStatus';
+import { postDistributionPickFromThunk } from '../../../apps/distribution/redux/postDistributionPickFromThunk';
+import { useDistributionLineHeaders } from './DistributionLineScreen';
 
 const DistributionPickFromScreen = () => {
   const {
@@ -36,16 +36,37 @@ const DistributionPickFromScreen = () => {
       throw trl('activities.distribution.qrcode.differentProduct');
     }
 
+    const huScannedCode = toQRCodeString(parsedQRCode);
+    const isScanProductCodeRequired = lineIdParam == null || isRequireScanningProductCode({ activity });
+
+    // Without this cap the dialog would default to the whole outstanding line qty even when the scanned HU
+    // holds less. We can only resolve the HU's qty here when no product scan is required (the line is known);
+    // otherwise the qty is resolved later in resolveProductScannedCode.
+    let qtyTarget = qtyToPickRemaining;
+    let qtyMax;
+    if (!isScanProductCodeRequired) {
+      const { qtyAvailable } = await getNextEligiblePickFromLine({
+        wfProcessId,
+        huQRCode: huScannedCode,
+        lineId: lineIdParam,
+      });
+      if (qtyAvailable != null) {
+        qtyTarget = Math.min(qtyAvailable, qtyToPickRemaining);
+        qtyMax = qtyTarget;
+      }
+    }
+
     return {
-      scannedBarcode: toQRCodeString(parsedQRCode),
-      isScanProductCodeRequired: lineIdParam == null || isRequireScanningProductCode({ activity }),
-      qtyTarget: qtyToPickRemaining,
+      scannedBarcode: huScannedCode,
+      isScanProductCodeRequired,
+      qtyTarget,
+      qtyMax,
       uom,
     };
   };
 
   const resolveProductScannedCode = async ({ huScannedCode, productScannedCode }) => {
-    const { lineId } = await getNextEligiblePickFromLine({
+    const { lineId, qtyAvailable } = await getNextEligiblePickFromLine({
       wfProcessId,
       huQRCode: huScannedCode,
       productScannedCode,
@@ -64,25 +85,26 @@ const DistributionPickFromScreen = () => {
       return {};
     }
 
+    // Cap the proposed move-qty to what the scanned HU actually holds: min(HU available qty, line remaining).
+    const qtyTarget = qtyAvailable != null ? Math.min(qtyAvailable, qtyToPickRemaining) : qtyToPickRemaining;
     return {
-      qtyTarget: qtyToPickRemaining,
+      qtyTarget,
+      qtyMax: qtyTarget,
       uom,
     };
   };
 
   const onResult = ({ qty, scannedBarcode: huScannedCode, lineId: lineIdParam }) => {
-    return postDistributionPickFrom({
-      wfProcessId,
-      activityId,
-      lineId: lineIdParam ? lineIdParam : lineId,
-      pickFrom: {
-        qrCode: toQRCodeString(huScannedCode),
-        qtyPicked: qty,
-      },
-    }).then((wfProcess) => {
-      dispatch(updateWFProcess({ wfProcess }));
-      history.goBack();
-    });
+    return dispatch(
+      postDistributionPickFromThunk({
+        history,
+        wfProcessId,
+        activityId,
+        lineId: lineIdParam ? lineIdParam : lineId,
+        huScannedCode,
+        qty,
+      })
+    );
   };
 
   return (
@@ -120,6 +142,7 @@ const getLineInfo = ({ activity, lineId }) => {
     uom: line.uom,
     qtyToMove: line.qtyToMove,
     qtyToPickRemaining: computeQtyToPickRemaining({ line }),
+    pickFromLocator: line.pickFromLocator,
   };
 };
 
@@ -130,29 +153,15 @@ const useDistributionScreenDefinition = () => {
   const huQRCode = urlParams.get('huQRCode');
 
   const activity = useWFActivity({ wfProcessId, activityId });
-  const { productName, uom, qtyToMove } = getLineInfo({ activity, lineId });
+  const headers = useDistributionLineHeaders({ wfProcessId, activityId, lineId });
 
   const { history } = useScreenDefinition({
     screenId: 'DistributionLinePickFromScreen',
     captionKey: 'activities.distribution.scanHU',
-    back:
-      lineId != null
-        ? distributionLineScreenLocation({ applicationId, wfProcessId, activityId, lineId })
-        : distributionJobScreenLocation({ applicationId, wfProcessId, activityId }),
-    values: [
-      {
-        caption: trl('general.Product'),
-        value: productName,
-        bold: true,
-        hidden: productName == null,
-      },
-      {
-        caption: trl('general.QtyToMove'),
-        value: qtyToMove != null ? formatQtyToHumanReadableStr({ qty: qtyToMove, uom }) : null,
-        bold: true,
-        hidden: qtyToMove == null,
-      },
-    ],
+    back: lineId
+      ? distributionLineScreenLocation({ applicationId, wfProcessId, activityId, lineId })
+      : distributionJobScreenLocation({ applicationId, wfProcessId, activityId }),
+    values: headers,
   });
 
   return { history, applicationId, wfProcessId, activityId, activity, lineId, huQRCode };

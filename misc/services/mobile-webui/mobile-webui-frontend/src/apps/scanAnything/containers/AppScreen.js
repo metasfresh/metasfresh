@@ -25,7 +25,7 @@ const AppScreen = () => {
     });
   };
 
-  return <BarcodeScannerComponent onResolvedResult={onResolvedResult} continuousRunning={true} />;
+  return <BarcodeScannerComponent onResolvedResult={onResolvedResult} />;
 };
 
 export default AppScreen;

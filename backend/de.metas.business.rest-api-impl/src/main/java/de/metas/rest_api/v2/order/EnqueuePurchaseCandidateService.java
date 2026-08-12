@@ -22,26 +22,24 @@
 
 package de.metas.rest_api.v2.order;
 
+import de.metas.common.rest_api.v2.JsonPurchaseCandidatesRequest;
+import de.metas.externalsystem.ExternalSystemIdWithExternalIds;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.async.C_PurchaseCandidates_GeneratePurchaseOrders;
-import de.metas.common.rest_api.v2.JsonPurchaseCandidatesRequest;
-import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import de.metas.util.web.exception.InvalidEntityException;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class EnqueuePurchaseCandidateService
 {
-	private final PurchaseCandidateRepository purchaseCandidateRepo;
-
-	public EnqueuePurchaseCandidateService(final PurchaseCandidateRepository purchaseCandidateRepo)
-	{
-		this.purchaseCandidateRepo = purchaseCandidateRepo;
-	}
+	@NonNull private final PurchaseCandidateRepository purchaseCandidateRepo;
+	@NonNull private final POJsonConverters poJsonConverters;
 
 	public void enqueue(@NonNull final JsonPurchaseCandidatesRequest request)
 	{
@@ -50,8 +48,8 @@ public class EnqueuePurchaseCandidateService
 			throw new InvalidEntityException(TranslatableStrings.constant("The request's purchaseCandidates array may not be empty"));
 		}
 
-		final List<ExternalHeaderIdWithExternalLineIds> headerAndLineIds = POJsonConverters.fromJson(request.getPurchaseCandidates());
+		final List<ExternalSystemIdWithExternalIds> externalSystemIdWithExternalIds = poJsonConverters.fromJson(request.getPurchaseCandidates());
 
-		C_PurchaseCandidates_GeneratePurchaseOrders.enqueue(purchaseCandidateRepo.getIdsByExternal(headerAndLineIds));
+		C_PurchaseCandidates_GeneratePurchaseOrders.enqueue(purchaseCandidateRepo.getIdsByExternal(externalSystemIdWithExternalIds));
 	}
 }

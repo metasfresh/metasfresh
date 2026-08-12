@@ -242,6 +242,25 @@ public class ProductLookupDescriptorTest
 		}
 	}
 
+	@Test
+	public void explodeLookupValuesByAvailableStockGroups_emptyGroups_returnsOriginalProducts()
+	{
+		final LookupValuesList initialLookupValues = LookupValuesList.fromCollection(ImmutableList.of(
+				IntegerLookupValue.of(1, "Product1"),
+				IntegerLookupValue.of(2, "Product2")));
+
+		final LookupValuesList result = ProductLookupDescriptor.explodeLookupValuesByAvailableStockGroups(
+				initialLookupValues,
+				ImmutableList.of(),
+				/* displayATPOnlyIfPositive */false,
+				adLanguage);
+
+		assertThat(toIdAndDisplayNamesList(result))
+				.containsExactly(
+						IdAndDisplayName.of(1, "Product1"),
+						IdAndDisplayName.of(2, "Product2"));
+	}
+
 	@Value(staticConstructor = "of")
 	private static class IdAndDisplayName
 	{

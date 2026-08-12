@@ -6,6 +6,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.model.IQuery;
 
@@ -38,6 +39,8 @@ import java.util.Set;
 public interface IShipmentScheduleInvalidateRepository extends ISingletonService
 {
 	boolean isFlaggedForRecompute(ShipmentScheduleId shipmentScheduleId);
+
+	boolean isAllValid(@NonNull Set<ShipmentScheduleId> shipmentScheduleIds);
 
 	/**
 	 * Invalidate all shipment schedules for give product.

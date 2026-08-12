@@ -5,6 +5,10 @@ import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.model.I_C_Order;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
+import de.metas.order.IOrderBL;
+import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -51,6 +55,8 @@ import java.util.Properties;
 public class C_OrderLine
 {
 	private final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
 
 	@Init
 	public void registerCallouts()
@@ -58,10 +64,20 @@ public class C_OrderLine
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
 
+	// Note: receipt schedule cleanup belongs conceptually in de.metas.business, but adding
+	// IReceiptScheduleDAO there would create a circular Maven dependency
+	// (de.metas.handlingunits.base → de.metas.swat.base → de.metas.business).
+	// This interceptor lives in de.metas.handlingunits.base, which already depends on
+	// de.metas.swat.base, making it the lowest layer where the call is possible.
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
-	public void deleteReservation(@NonNull final I_C_OrderLine orderLineRecord)
+	public void beforeOrderLineDeleted(@NonNull final I_C_OrderLine orderLineRecord)
 	{
-		// TODO
+		// Receipt schedules only exist for purchase order lines
+		if (orderBL.isSalesOrder(OrderId.ofRepoId(orderLineRecord.getC_Order_ID())))
+		{
+			return;
+		}
+		receiptScheduleDAO.deleteByOrderLineId(OrderLineId.ofRepoId(orderLineRecord.getC_OrderLine_ID()));
 	}
 
 	@ModelChange( //

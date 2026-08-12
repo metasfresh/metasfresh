@@ -5,6 +5,7 @@ import de.metas.distribution.mobileui.DistributionMobileApplication;
 import de.metas.distribution.mobileui.external_services.hu.DistributionHUService;
 import de.metas.distribution.mobileui.rest_api.json.JsonDistributionEvent;
 import de.metas.distribution.mobileui.rest_api.json.JsonDropAllRequest;
+import de.metas.distribution.mobileui.rest_api.json.JsonGetHUInfoByScannedCodeRequest;
 import de.metas.distribution.mobileui.rest_api.json.JsonGetNextEligiblePickFromLineRequest;
 import de.metas.distribution.mobileui.rest_api.json.JsonGetNextEligiblePickFromLineResponse;
 import de.metas.distribution.mobileui.rest_api.json.JsonHUInfo;
@@ -21,14 +22,13 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.compiere.util.Env;
 import org.springframework.context.annotation.Profile;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import static org.compiere.util.Env.getADLanguageOrBaseLanguage;
 import static org.compiere.util.Env.getLoggedUserId;
 
 @RequestMapping(MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/distribution")
@@ -48,11 +48,11 @@ public class DistributionRestController
 		mobileApplicationService.assertAccess(distributionMobileApplication.getApplicationId(), permissions);
 	}
 
-	@GetMapping("/hu/byScannedCode")
-	public @NonNull JsonHUInfo getHUInfoByQRCode(@RequestParam("scannedCode") @NonNull final String scannedCodeStr)
+	@PostMapping("/hu/byScannedCode")
+	public @NonNull JsonHUInfo getHUInfoByQRCode(@RequestBody @NonNull final JsonGetHUInfoByScannedCodeRequest request)
 	{
 		assertApplicationAccess();
-		final HUQRCode huQRCode = huService.resolveHUQRCode(ScannedCode.ofString(scannedCodeStr));
+		final HUQRCode huQRCode = huService.resolveHUQRCode(ScannedCode.ofString(request.getScannedCode()));
 		return JsonHUInfo.of(huQRCode.toRenderedJson());
 	}
 
@@ -83,6 +83,22 @@ public class DistributionRestController
 	{
 		assertApplicationAccess();
 		return distributionMobileApplication.complete(WFProcessId.ofString(wfProcessIdStr), getLoggedUserId());
+	}
+
+	@PostMapping("/job/{wfProcessId}/switchPickFromLocatorToNext")
+	public JsonWFProcess switchPickFromLocatorToNext(@PathVariable("wfProcessId") final String wfProcessIdStr)
+	{
+		assertApplicationAccess();
+		final WFProcess wfProcess = distributionMobileApplication.switchPickFromLocatorToNext(WFProcessId.ofString(wfProcessIdStr), getLoggedUserId());
+		// toJson carries the activity detail with the switched locator; a raw WFProcess serializes summary-only.
+		return workflowRestController.toJson(wfProcess);
+	}
+
+	@PostMapping("/print/materialInTransitReport")
+	public void printMaterialInTransitReport()
+	{
+		assertApplicationAccess();
+		distributionMobileApplication.printMaterialInTransitReport(getLoggedUserId(), getADLanguageOrBaseLanguage());
 	}
 
 }

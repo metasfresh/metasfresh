@@ -118,13 +118,13 @@ public class ManufacturingLastPOCostingMethodHandler implements CostingMethodHan
 		if (costCollectorType.isMaterialReceiptOrCoProduct())
 		{
 			orderCosts = ppOrderCostsService.getByOrderId(orderId);
-			currentCost = utils.getCurrentCost(request);
+			currentCost = utils.getCurrentCostForUpdate(request);
 			result = createMainProductOrCoProductReceipt(request, currentCost, orderCosts);
 		}
 		else if (costCollectorType.isAnyComponentIssue(orderBOMLineId))
 		{
 			orderCosts = ppOrderCostsService.getByOrderId(orderId);
-			currentCost = utils.getCurrentCost(request);
+			currentCost = utils.getCurrentCostForUpdate(request);
 			result = createComponentIssue(request, currentCost, orderCosts);
 		}
 		else if (costCollectorType.isActivityControl())
@@ -193,12 +193,18 @@ public class ManufacturingLastPOCostingMethodHandler implements CostingMethodHan
 		final CostDetailCreateRequest requestEffective;
 		if (!request.isReversal())
 		{
-			final CostPrice price = orderCosts.getPriceByCostSegmentAndElement(costSegmentAndElement)
-					.orElseThrow(() -> new AdempiereException("No cost price found for " + costSegmentAndElement + " in " + orderCosts));
-
+			// Value the receipt at the product's CURRENT M_Cost, not the frozen BOM-rollup price.
+			// Any make-vs-average delta is intentionally left in WIP (not forced to zero).
+			final CostPrice price = currentCost.getCostPrice();
 			final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), costSegmentAndElement.getProductId());
 			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCost.getPrecision());
 			requestEffective = request.withAmountAndQty(amt, qty);
+			// Persisted only on this non-reversal path. A reversal leaves the persisted price unchanged,
+			// which is harmless: nothing reads PP_Order_Cost.price between a reversal and the next receipt
+			// (updatePostCalculationAmountsForCostElement reads only accumulatedAmount/postCalculationAmount,
+			// and Doc_PPCostCollector posts from M_CostDetail, never from PP_Order_Cost.price); the next
+			// non-reversal receipt overwrites it.
+			orderCosts.updatePriceForCostSegmentAndElement(costSegmentAndElement, price);
 		}
 		else
 		{

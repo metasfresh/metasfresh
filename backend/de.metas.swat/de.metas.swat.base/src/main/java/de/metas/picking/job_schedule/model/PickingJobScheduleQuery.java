@@ -9,6 +9,8 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
 @Builder
 public class PickingJobScheduleQuery
@@ -18,6 +20,7 @@ public class PickingJobScheduleQuery
 	@NonNull @Singular ImmutableSet<WorkplaceId> workplaceIds;
 	@NonNull @Singular ImmutableSet<PickingJobScheduleId> excludeJobScheduleIds;
 	@NonNull @Singular ImmutableSet<ShipmentScheduleId> onlyShipmentScheduleIds;
+	@Nullable Boolean isProcessed;
 
 	public boolean isAny()
 	{

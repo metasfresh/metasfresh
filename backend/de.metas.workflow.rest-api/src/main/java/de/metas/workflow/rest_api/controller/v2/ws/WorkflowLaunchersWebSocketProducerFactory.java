@@ -71,6 +71,7 @@ public class WorkflowLaunchersWebSocketProducerFactory implements WebSocketProdu
 					.filterByDocumentNo(DocumentNoFilter.ofNullableString(queryParams.getFirst(TOPIC_PARAM_documentNo)))
 					.filterByQtyAvailableAtPickFromLocator(StringUtils.toOptionalBoolean(queryParams.getFirst(TOPIC_PARAM_filterByQtyAvailableAtPickFromLocator)).orElseFalse())
 					.facetIds(extractFacetIdsFromQueryParams(queryParams))
+					.computeActions(true)
 					.build();
 		}
 		catch (Exception ex)

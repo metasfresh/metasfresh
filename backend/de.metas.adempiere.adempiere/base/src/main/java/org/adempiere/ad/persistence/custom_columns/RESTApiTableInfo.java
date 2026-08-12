@@ -13,6 +13,9 @@ import org.compiere.model.POInfoColumn;
 public class RESTApiTableInfo
 {
 	@NonNull String tableName;
+	/** Original (canonical-case) column names as supplied, e.g. "MyCustom_Column". */
+	@NonNull ImmutableSet<String> customRestAPIColumnNames;
+	/** Upper-cased for fast case-insensitive membership checks. */
 	@NonNull @Getter(AccessLevel.NONE) ImmutableSet<String> customRestAPIColumnNamesUC;
 
 	@Builder
@@ -21,6 +24,7 @@ public class RESTApiTableInfo
 			@NonNull @Singular final ImmutableSet<String> customRestAPIColumnNames)
 	{
 		this.tableName = tableName;
+		this.customRestAPIColumnNames = customRestAPIColumnNames;
 		this.customRestAPIColumnNamesUC = customRestAPIColumnNames.stream()
 				.map(String::toUpperCase)
 				.collect(ImmutableSet.toImmutableSet());

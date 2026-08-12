@@ -1,31 +1,8 @@
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2025 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package de.metas.invoicecandidate.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Invoice_Candidate
  *  @author metasfresh (generated) 
@@ -885,7 +862,6 @@ public interface I_C_Invoice_Candidate
 	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_OrderLine_ID", org.compiere.model.I_C_OrderLine.class);
 	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
 
-
 	/**
 	 * Set Sales Order.
 	 *
@@ -910,6 +886,7 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_Order> COLUMN_C_OrderSO_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_OrderSO_ID", org.compiere.model.I_C_Order.class);
 	String COLUMNNAME_C_OrderSO_ID = "C_OrderSO_ID";
+
 	/**
 	 * Set Zahlungsbedingung eff..
 	 *
@@ -997,6 +974,56 @@ public interface I_C_Invoice_Candidate
 	int getC_Project_ID();
 
 	String COLUMNNAME_C_Project_ID = "C_Project_ID";
+
+	/**
+	 * Set Promotion Code 2.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_PromotionCode2_ID (int C_PromotionCode2_ID);
+
+	/**
+	 * Get Promotion Code 2.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_PromotionCode2_ID();
+
+	@Nullable org.compiere.model.I_C_PromotionCode getC_PromotionCode2();
+
+	void setC_PromotionCode2(@Nullable org.compiere.model.I_C_PromotionCode C_PromotionCode2);
+
+	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_PromotionCode> COLUMN_C_PromotionCode2_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_PromotionCode2_ID", org.compiere.model.I_C_PromotionCode.class);
+	String COLUMNNAME_C_PromotionCode2_ID = "C_PromotionCode2_ID";
+
+	/**
+	 * Set Promotion Code.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_PromotionCode_ID (int C_PromotionCode_ID);
+
+	/**
+	 * Get Promotion Code.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_PromotionCode_ID();
+
+	@Nullable org.compiere.model.I_C_PromotionCode getC_PromotionCode();
+
+	void setC_PromotionCode(@Nullable org.compiere.model.I_C_PromotionCode C_PromotionCode);
+
+	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_PromotionCode> COLUMN_C_PromotionCode_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_PromotionCode_ID", org.compiere.model.I_C_PromotionCode.class);
+	String COLUMNNAME_C_PromotionCode_ID = "C_PromotionCode_ID";
 
 	/**
 	 * Get Created.
@@ -1090,6 +1117,7 @@ public interface I_C_Invoice_Candidate
 
 	/**
 	 * Set Tax override.
+	 * Overrides the automatically determined tax rate for invoicing.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1099,6 +1127,7 @@ public interface I_C_Invoice_Candidate
 
 	/**
 	 * Get Tax override.
+	 * Overrides the automatically determined tax rate for invoicing.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1292,7 +1321,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_DateToInvoice_Override = "DateToInvoice_Override";
 
 	/**
-	 * Set Shipmentdate.
+	 * Set Delivery Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1301,7 +1330,7 @@ public interface I_C_Invoice_Candidate
 	void setDeliveryDate (@Nullable java.sql.Timestamp DeliveryDate);
 
 	/**
-	 * Get Shipmentdate.
+	 * Get Delivery Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1570,6 +1599,31 @@ public interface I_C_Invoice_Candidate
 	int getFirst_Ship_BPLocation_ID();
 
 	String COLUMNNAME_First_Ship_BPLocation_ID = "First_Ship_BPLocation_ID";
+
+	/**
+	 * Set Grand Total.
+	 * Total amount of document
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setGrandTotal (@Nullable BigDecimal GrandTotal);
+
+	/**
+	 * Get Grand Total.
+	 * Total amount of document
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	BigDecimal getGrandTotal();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_GrandTotal = new ModelColumn<>(I_C_Invoice_Candidate.class, "GrandTotal", null);
+	String COLUMNNAME_GrandTotal = "GrandTotal";
 
 	/**
 	 * Set Compensation Amount Type.
@@ -1989,42 +2043,25 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_IsDeliveryClosed = "IsDeliveryClosed";
 
 	/**
-	 * Set Document to be sent via EDI.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsEdiEnabled (boolean IsEdiEnabled);
-
-	/**
-	 * Get Document to be sent via EDI.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isEdiEnabled();
-
-	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsEdiEnabled = new ModelColumn<>(I_C_Invoice_Candidate.class, "IsEdiEnabled", null);
-	String COLUMNNAME_IsEdiEnabled = "IsEdiEnabled";
-
-	/**
 	 * Set EDI INVOIC Receipient.
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	void setIsEdiInvoicRecipient (boolean IsEdiInvoicRecipient);
 
 	/**
 	 * Get EDI INVOIC Receipient.
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	boolean isEdiInvoicRecipient();
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsEdiInvoicRecipient = new ModelColumn<>(I_C_Invoice_Candidate.class, "IsEdiInvoicRecipient", null);
@@ -2385,6 +2422,27 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsToRecompute = new ModelColumn<>(I_C_Invoice_Candidate.class, "IsToRecompute", null);
 	String COLUMNNAME_IsToRecompute = "IsToRecompute";
+
+	/**
+	 * Set Without Charge.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsWithoutCharge (boolean IsWithoutCharge);
+
+	/**
+	 * Get Without Charge.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isWithoutCharge();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsWithoutCharge = new ModelColumn<>(I_C_Invoice_Candidate.class, "IsWithoutCharge", null);
+	String COLUMNNAME_IsWithoutCharge = "IsWithoutCharge";
 
 	/**
 	 * Set SeqNo..
@@ -3098,32 +3156,6 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_ProductType = "ProductType";
 
 	/**
-	 * Set Purchaser.
-	 * Purchasing Responsible
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	void setPurchaser_User_ID (int Purchaser_User_ID);
-
-	/**
-	 * Get Purchaser.
-	 * Purchasing Responsible
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
-	 */
-	@Deprecated
-	int getPurchaser_User_ID();
-
-	String COLUMNNAME_Purchaser_User_ID = "Purchaser_User_ID";
-
-	/**
 	 * Set Shipped Qty.
 	 *
 	 * <br>Type: Quantity
@@ -3684,6 +3716,27 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_QualityNote_ReceiptSchedule = "QualityNote_ReceiptSchedule";
 
 	/**
+	 * Set Reason.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setReason (@Nullable java.lang.String Reason);
+
+	/**
+	 * Get Reason.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getReason();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_Reason = new ModelColumn<>(I_C_Invoice_Candidate.class, "Reason", null);
+	String COLUMNNAME_Reason = "Reason";
+
+	/**
 	 * Set Quality Discount Reason.
 	 *
 	 * <br>Type: String
@@ -3726,6 +3779,32 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_Record_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "Record_ID", null);
 	String COLUMNNAME_Record_ID = "Record_ID";
+
+	/**
+	 * Set Account manager.
+	 * Sales Representative or Company Agent
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setSalesRep_ID (int SalesRep_ID);
+
+	/**
+	 * Get Account manager.
+	 * Sales Representative or Company Agent
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	int getSalesRep_ID();
+
+	String COLUMNNAME_SalesRep_ID = "SalesRep_ID";
 
 	/**
 	 * Set Update Status.

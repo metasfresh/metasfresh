@@ -151,6 +151,28 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 	}
 
 	@Override
+	public Optional<Integer> getDeliveryTimePromised(
+			@NonNull final BPartnerId vendorId,
+			@NonNull final ProductId productId,
+			@NonNull final OrgId orgId)
+	{
+		final I_C_BPartner_Product record = queryBL
+				.createQueryBuilderOutOfTrx(I_C_BPartner_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY)
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID, vendorId)
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, productId)
+				.orderByDescending(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID)
+				.create()
+				.first(I_C_BPartner_Product.class);
+		if (record == null || InterfaceWrapperHelper.isNull(record, I_C_BPartner_Product.COLUMNNAME_DeliveryTime_Promised))
+		{
+			return Optional.empty();
+		}
+		return Optional.of(record.getDeliveryTime_Promised());
+	}
+
+	@Override
 	public Map<BPartnerId, I_C_BPartner_Product> retrieveByVendorIds(
 			@NonNull final Set<BPartnerId> vendorIds,
 			@NonNull final ProductId productId,

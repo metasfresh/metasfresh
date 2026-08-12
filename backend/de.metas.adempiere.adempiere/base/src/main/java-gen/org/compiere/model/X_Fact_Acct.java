@@ -16,7 +16,7 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1854972367L;
+	private static final long serialVersionUID = -1604280384L;
 
     /** Standard Constructor */
     public X_Fact_Acct (Properties ctx, int Fact_Acct_ID, String trxName)
@@ -1757,9 +1757,25 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	/** Get VAT Code.
 		@return VAT Code	  */
 	@Override
-	public java.lang.String getVATCode () 
+	public java.lang.String getVATCode ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_VATCode);
+	}
+
+	/** Set VAT Code Amount Type.
+		@param VATCodeAmountType VAT Code Amount Type	  */
+	@Override
+	public void setVATCodeAmountType (java.lang.String VATCodeAmountType)
+	{
+		set_Value (COLUMNNAME_VATCodeAmountType, VATCodeAmountType);
+	}
+
+	/** Get VAT Code Amount Type.
+		@return VAT Code Amount Type	  */
+	@Override
+	public java.lang.String getVATCodeAmountType ()
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_VATCodeAmountType);
 	}
 
 	@Override
@@ -1844,5 +1860,59 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	public java.lang.String getUserElementString7()
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString7);
+	}
+
+	@Override
+	public org.compiere.model.I_C_CostClassification_Category getC_CostClassification_Category()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_CostClassification_Category_ID, org.compiere.model.I_C_CostClassification_Category.class);
+	}
+
+	@Override
+	public void setC_CostClassification_Category(final org.compiere.model.I_C_CostClassification_Category C_CostClassification_Category)
+	{
+		set_ValueFromPO(COLUMNNAME_C_CostClassification_Category_ID, org.compiere.model.I_C_CostClassification_Category.class, C_CostClassification_Category);
+	}
+
+	@Override
+	public void setC_CostClassification_Category_ID (final int C_CostClassification_Category_ID)
+	{
+		if (C_CostClassification_Category_ID < 1)
+			set_Value (COLUMNNAME_C_CostClassification_Category_ID, null);
+		else
+			set_Value (COLUMNNAME_C_CostClassification_Category_ID, C_CostClassification_Category_ID);
+	}
+
+	@Override
+	public int getC_CostClassification_Category_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_CostClassification_Category_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_CostClassification getC_CostClassification()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_CostClassification_ID, org.compiere.model.I_C_CostClassification.class);
+	}
+
+	@Override
+	public void setC_CostClassification(final org.compiere.model.I_C_CostClassification C_CostClassification)
+	{
+		set_ValueFromPO(COLUMNNAME_C_CostClassification_ID, org.compiere.model.I_C_CostClassification.class, C_CostClassification);
+	}
+
+	@Override
+	public void setC_CostClassification_ID (final int C_CostClassification_ID)
+	{
+		if (C_CostClassification_ID < 1)
+			set_Value (COLUMNNAME_C_CostClassification_ID, null);
+		else
+			set_Value (COLUMNNAME_C_CostClassification_ID, C_CostClassification_ID);
+	}
+
+	@Override
+	public int getC_CostClassification_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_CostClassification_ID);
 	}
 }

@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_UserProfile_DD extends org.compiere.model.PO implements I_MobileUI_UserProfile_DD, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -653375513L;
+	private static final long serialVersionUID = -1507138603L;
 
     /** Standard Constructor */
     public X_MobileUI_UserProfile_DD (final Properties ctx, final int MobileUI_UserProfile_DD_ID, @Nullable final String trxName)
@@ -71,6 +71,30 @@ public class X_MobileUI_UserProfile_DD extends org.compiere.model.PO implements 
 	}
 
 	@Override
+	public void setIsNavigateToJobsListAfterPickFromComplete (final boolean IsNavigateToJobsListAfterPickFromComplete)
+	{
+		set_Value (COLUMNNAME_IsNavigateToJobsListAfterPickFromComplete, IsNavigateToJobsListAfterPickFromComplete);
+	}
+
+	@Override
+	public boolean isNavigateToJobsListAfterPickFromComplete()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsNavigateToJobsListAfterPickFromComplete);
+	}
+
+	@Override
+	public void setIsPrintDDOrderOnComplete (final boolean IsPrintDDOrderOnComplete)
+	{
+		set_Value (COLUMNNAME_IsPrintDDOrderOnComplete, IsPrintDDOrderOnComplete);
+	}
+
+	@Override
+	public boolean isPrintDDOrderOnComplete()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsPrintDDOrderOnComplete);
+	}
+
+	@Override
 	public void setIsRequireScanningProductCode (final boolean IsRequireScanningProductCode)
 	{
 		set_Value (COLUMNNAME_IsRequireScanningProductCode, IsRequireScanningProductCode);
@@ -80,6 +104,18 @@ public class X_MobileUI_UserProfile_DD extends org.compiere.model.PO implements 
 	public boolean isRequireScanningProductCode() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsRequireScanningProductCode);
+	}
+
+	@Override
+	public void setIsRequireTrolley (final boolean IsRequireTrolley)
+	{
+		set_Value (COLUMNNAME_IsRequireTrolley, IsRequireTrolley);
+	}
+
+	@Override
+	public boolean isRequireTrolley() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsRequireTrolley);
 	}
 
 	@Override

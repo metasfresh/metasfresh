@@ -4,7 +4,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-import de.metas.distribution.ddorder.movement.schedule.DDOrderDropToRequest;
+import de.metas.dao.ValueRestriction;
+import de.metas.distribution.ddorder.DDOrderId;
+import de.metas.distribution.ddorder.DDOrderQuery;
+import de.metas.distribution.ddorder.movement.schedule.commands.drop_to.DDOrderDropToRequest;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedule;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleId;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
@@ -43,6 +46,7 @@ public class DistributionJobDropToCommand
 	@NonNull private final UserId userId;
 	@Nullable final DistributionJobId onlyJobId;
 	@Nullable private final DistributionJobStepId onlyStepId;
+	@Nullable private final LocatorId inTransitLocatorId;
 	@Nullable private final ScannedCode dropToQRCode;
 	private final boolean completeJobsIfFullyMoved;
 
@@ -60,6 +64,7 @@ public class DistributionJobDropToCommand
 			@NonNull final UserId userId,
 			@Nullable final DistributionJobId onlyJobId,
 			@Nullable final DistributionJobStepId onlyStepId,
+			@Nullable final LocatorId inTransitLocatorId,
 			@Nullable final ScannedCode dropToQRCode,
 			final boolean completeJobsIfFullyMoved)
 	{
@@ -77,6 +82,7 @@ public class DistributionJobDropToCommand
 		this.userId = userId;
 		this.onlyJobId = onlyJobId;
 		this.onlyStepId = onlyStepId;
+		this.inTransitLocatorId = inTransitLocatorId;
 		this.dropToQRCode = dropToQRCode;
 		this.completeJobsIfFullyMoved = completeJobsIfFullyMoved;
 	}
@@ -91,7 +97,7 @@ public class DistributionJobDropToCommand
 		List<DistributionJob> jobs = retrieveJobs();
 		final ImmutableSet<DDOrderMoveScheduleId> scheduleIds = getScheduleIds(jobs);
 
-		final List<DDOrderMoveSchedule> schedules = dropToLocator(scheduleIds);
+		final ImmutableList<DDOrderMoveSchedule> schedules = dropToLocator(scheduleIds);
 
 		jobs = updateJobsFromSchedules(jobs, schedules);
 
@@ -103,7 +109,7 @@ public class DistributionJobDropToCommand
 		return DistributionJobDropToResponse.ofList(jobs);
 	}
 
-	private List<DDOrderMoveSchedule> dropToLocator(@NonNull final Set<DDOrderMoveScheduleId> scheduleIds)
+	private ImmutableList<DDOrderMoveSchedule> dropToLocator(@NonNull final Set<DDOrderMoveScheduleId> scheduleIds)
 	{
 		Check.assumeNotEmpty(scheduleIds, "scheduleIds is not empty");
 
@@ -117,26 +123,55 @@ public class DistributionJobDropToCommand
 
 	private List<DistributionJob> retrieveJobs()
 	{
-		final List<DistributionJob> jobs;
+		final Set<DDOrderId> onlyDDOrderIds = getOnlyDDOrderIds();
 
-		if (onlyJobId != null)
+		final DDOrderQuery.DDOrderQueryBuilder queryBuilder = DistributionJobQueries.newDDOrdersQuery()
+				.onlyDDOrderIds(onlyDDOrderIds);
+		if (onlyDDOrderIds.isEmpty())
 		{
-			final DistributionJob job = distributionJobService.getJobById(onlyJobId);
-			jobs = ImmutableList.of(job);
+			queryBuilder.responsibleId(ValueRestriction.equalsTo(userId));
 		}
 		else
 		{
-			jobs = distributionJobService.listJobs(DistributionJobQueries.ddOrdersAssignedToUser(userId));
+			queryBuilder.responsibleId(ValueRestriction.equalsToOrNull(userId));
 		}
 
+		final List<DistributionJob> jobs = distributionJobService.listJobs(queryBuilder.build());
 		if (jobs.isEmpty())
 		{
-			throw new AdempiereException("Nothing to move");
+			throw new AdempiereException("Nothing to move"); // TODO trl
 		}
 
-		jobs.forEach(job -> job.assertCanEdit(userId));
+		jobs.forEach(job -> {
+			if (job.getResponsibleId() != null)
+			{
+				job.assertCanEdit(userId);
+			}
+		});
 
 		return jobs;
+	}
+
+	@NonNull
+	private Set<DDOrderId> getOnlyDDOrderIds()
+	{
+		if (onlyJobId != null)
+		{
+			return ImmutableSet.of(onlyJobId.toDDOrderId());
+		}
+		else if (inTransitLocatorId != null)
+		{
+			final Set<DDOrderId> onlyDDOrderIds = ddOrderMoveScheduleService.retrieveDDOrderIdsInTransit(inTransitLocatorId);
+			if (onlyDDOrderIds.isEmpty())
+			{
+				throw new AdempiereException("Nothing to move"); // TODO trl
+			}
+			return onlyDDOrderIds;
+		}
+		else
+		{
+			return ImmutableSet.of();
+		}
 	}
 
 	private ImmutableSet<DDOrderMoveScheduleId> getScheduleIds(final List<DistributionJob> jobs)
@@ -156,31 +191,36 @@ public class DistributionJobDropToCommand
 
 	private ImmutableSet<DDOrderMoveScheduleId> getScheduleIds(final DistributionJob job)
 	{
-		if (onlyJobId != null)
-		{
-			if (!DistributionJobId.equals(job.getId(), onlyJobId))
-			{
-				return ImmutableSet.of(); // shall not happen
-			}
+		return job.streamSteps()
+				.filter(this::isStepEligible)
+				.map(DistributionJobStep::getScheduleId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
 
+	private boolean isStepEligible(final DistributionJobStep step)
+	{
+		if (onlyStepId != null && !DistributionJobStepId.equals(step.getId(), onlyStepId))
+		{
+			return false;
+		}
+
+		if (!step.isInTransit())
+		{
 			if (onlyStepId != null)
 			{
-				final DistributionJobStep step = job.getStepById(onlyStepId);
-				if (!step.isInTransit())
-				{
-					throw new AdempiereException("Step " + onlyStepId + " is not in transit"); // shall not happen
-				}
-				return ImmutableSet.of(step.getScheduleId());
+				throw new AdempiereException("Step " + onlyStepId + " is not in transit"); // shall not happen
 			}
-			else
-			{
-				return job.getInTransitScheduleIds();
-			}
+
+			return false;
 		}
-		else
+
+		//noinspection RedundantIfStatement
+		if (inTransitLocatorId != null && !LocatorId.equals(step.getInTransitLocatorId(), inTransitLocatorId))
 		{
-			return job.getInTransitScheduleIds();
+			return false;
 		}
+
+		return true;
 	}
 
 	@Nullable
@@ -199,7 +239,7 @@ public class DistributionJobDropToCommand
 		return dropToLocatorId;
 	}
 
-	private List<DistributionJob> updateJobsFromSchedules(final List<DistributionJob> jobs, final List<DDOrderMoveSchedule> schedules)
+	private ImmutableList<DistributionJob> updateJobsFromSchedules(final List<DistributionJob> jobs, final ImmutableList<DDOrderMoveSchedule> schedules)
 	{
 		final ImmutableMap<DistributionJobStepId, DDOrderMoveSchedule> schedulesByStepId = Maps.uniqueIndex(schedules, schedule -> DistributionJobStepId.ofScheduleId(schedule.getId()));
 

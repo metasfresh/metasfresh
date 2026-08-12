@@ -32,6 +32,7 @@ class ScannedCodeTest
 		return Stream.of(
 				Arguments.of("{ \"scannedCode\": 123 }", "123"),
 				Arguments.of("{ \"scannedCode\": \"123\" }", "123"),
+				Arguments.of("{ \"scannedCode\": \"  123   \" }", "123"),
 				Arguments.of("{ \"scannedCode\": \"\" }", null),
 				Arguments.of("{ \"scannedCode\": \"      \" }", null),
 				Arguments.of("{ \"scannedCode\": null }", null)

@@ -12,6 +12,7 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.order.OrderLineReasonForWithoutCharge;
 import de.metas.order.compensationGroup.Group.GroupBuilder;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.product.ProductId;
@@ -781,6 +782,13 @@ public class OrderGroupRepository implements GroupRepository
 		orderLine.setIsAllowSeparateInvoicing(from.isAllowSeparateInvoicing());
 
 		orderLine.setIsHideWhenPrinting(from.isHideWhenPrinting());
+
+		if (from.isWithoutCharge())
+		{
+			orderLine.setIsWithoutCharge(true);
+			orderLine.setReason(OrderLineReasonForWithoutCharge.BundleComponent.getCode());
+		}
+
 		orderLineBL.save(orderLine);
 
 		return orderLine;

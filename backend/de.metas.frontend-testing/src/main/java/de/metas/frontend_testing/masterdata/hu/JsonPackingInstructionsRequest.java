@@ -31,6 +31,15 @@ public class JsonPackingInstructionsRequest
 	@Nullable Identifier lu;
 	int qtyTUsPerLU;
 
+	//
+	// GRAI mapping
+	/**
+	 * When true, a random canonical GRAI is generated and an {@code M_HU_PI_GRAI} row is created
+	 * mapping that GRAI's (companyPrefix, assetType) to the TU packing instruction created by this command.
+	 * The generated scannable GRAI is returned via {@link JsonPackingInstructionsResponse#getGrai()}.
+	 */
+	boolean graiMapping;
+
 	public Identifier getTuNotNull() {return Check.assumeNotNull(tu, "tu must be set");}
 
 	public Identifier getProductNotNull() {return Check.assumeNotNull(product, "product must be set");}

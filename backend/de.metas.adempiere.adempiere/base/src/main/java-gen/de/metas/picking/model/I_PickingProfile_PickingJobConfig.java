@@ -181,10 +181,6 @@ public interface I_PickingProfile_PickingJobConfig
 	 */
 	int getMobileUI_UserProfile_Picking_ID();
 
-	org.compiere.model.I_MobileUI_UserProfile_Picking getMobileUI_UserProfile_Picking();
-
-	void setMobileUI_UserProfile_Picking(org.compiere.model.I_MobileUI_UserProfile_Picking MobileUI_UserProfile_Picking);
-
 	ModelColumn<I_PickingProfile_PickingJobConfig, org.compiere.model.I_MobileUI_UserProfile_Picking> COLUMN_MobileUI_UserProfile_Picking_ID = new ModelColumn<>(I_PickingProfile_PickingJobConfig.class, "MobileUI_UserProfile_Picking_ID", org.compiere.model.I_MobileUI_UserProfile_Picking.class);
 	String COLUMNNAME_MobileUI_UserProfile_Picking_ID = "MobileUI_UserProfile_Picking_ID";
 

@@ -28,9 +28,17 @@ class MobileConfigDistributionCommand
 
 	public JsonMobileConfigResponse.Distribution execute()
 	{
+		updateConfigAndSave();
+		return createResponse();
+	}
+
+	private void updateConfigAndSave()
+	{
 		final MobileUIDistributionConfig.MobileUIDistributionConfigBuilder newConfigBuilder = mobileDistributionConfigRepository.getConfig().toBuilder();
-		newConfigBuilder.isCompleteJobAutomatically(request.getCompleteJobAutomatically() != null && request.getCompleteJobAutomatically());
+		newConfigBuilder.isRequireTrolley(request.getRequireTrolley() != null && request.getRequireTrolley());
 		newConfigBuilder.isRequireScanningProductCode(request.getRequireScanningProductCode() != null && request.getRequireScanningProductCode());
+		newConfigBuilder.isNavigateToJobsListAfterPickFromComplete(request.getNavigateToJobsListAfterPickFromComplete() != null && request.getNavigateToJobsListAfterPickFromComplete());
+		newConfigBuilder.isCompleteJobAutomatically(request.getCompleteJobAutomatically() != null && request.getCompleteJobAutomatically());
 		if (request.getAllowPickingAnyHU() != null)
 		{
 			newConfigBuilder.allowPickingAnyHU(request.getAllowPickingAnyHU());
@@ -50,11 +58,18 @@ class MobileConfigDistributionCommand
 
 		final MobileUIDistributionConfig newConfig = newConfigBuilder.build();
 		mobileDistributionConfigRepository.save(newConfig);
+	}
+
+	private JsonMobileConfigResponse.Distribution createResponse()
+	{
+		final MobileUIDistributionConfig config = mobileDistributionConfigRepository.getConfig();
 
 		return JsonMobileConfigResponse.Distribution.builder()
-				.allowPickingAnyHU(newConfig.isAllowPickingAnyHU())
-				.requireScanningProductCode(newConfig.isRequireScanningProductCode())
-				.completeJobAutomatically(newConfig.isCompleteJobAutomatically())
+				.allowPickingAnyHU(config.isAllowPickingAnyHU())
+				.requireTrolley(config.isRequireTrolley())
+				.requireScanningProductCode(config.isRequireScanningProductCode())
+				.navigateToJobsListAfterPickFromComplete(config.isNavigateToJobsListAfterPickFromComplete())
+				.completeJobAutomatically(config.isCompleteJobAutomatically())
 				.build();
 	}
 

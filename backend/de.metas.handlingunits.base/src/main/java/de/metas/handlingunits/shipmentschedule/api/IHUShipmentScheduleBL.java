@@ -4,6 +4,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.impl.TULoader;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
@@ -13,6 +14,7 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.ShipmentScheduleLoadingCache;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -24,6 +26,7 @@ import org.adempiere.warehouse.WarehouseId;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -49,6 +52,41 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	 * And finally update the given {@code tuOrVHU}'s status to "Picked".
 	 */
 	ShipmentScheduleWithHU addQtyPickedAndUpdateHU(AddQtyPickedRequest request);
+
+	/**
+	 * Try to add the request's qty into a single existing un-shipped {@link I_M_ShipmentSchedule_QtyPicked}
+	 * row for the same {@code (M_ShipmentSchedule_ID, VHU_ID)} pair instead of creating a new row.
+	 * <p>
+	 * Scope is intentionally narrow — only HU-trx-listener-shaped picks are eligible:
+	 * the request must have no {@code PickingJobScheduleId}, must not be marked as
+	 * {@code anonymousHuPickedOnTheFly}, and the HU must be a virtual HU. The candidate
+	 * row is also filtered to {@code M_Picking_Job_Schedule_ID IS NULL} and
+	 * {@code IsAnonymousHuPickedOnTheFly = N} so that genuine multi-job picks on the same
+	 * VHU are never collapsed.
+	 * <p>
+	 * Used by {@code ShipmentScheduleHUTrxListener.trxLineProcessed} to defuse the duplicate-row
+	 * pattern produced when an aggregate HU's snapshot is replayed (one VHU node receives
+	 * multiple HU-trx lines in one transaction).
+	 *
+	 * @return {@code true} if a matching row was found and the qty was merged into it (caller
+	 *         should skip the regular new-row path); {@code false} otherwise (caller should fall
+	 *         through to {@link #addQtyPickedAndUpdateHU(AddQtyPickedRequest)}).
+	 */
+	boolean tryMergeQtyPickedIntoExistingForVHU(AddQtyPickedRequest request);
+
+	/**
+	 * Shipment-reverse safety net. Given the (now-deactivated) consolidated {@code M_ShipmentSchedule_QtyPicked}
+	 * rows that were assigned to a just-reversed shipment, ensure each {@code (M_ShipmentSchedule_ID, VHU_ID)}
+	 * still has an active, not-yet-shipped picked row — re-creating one (a direct copy of the reversed
+	 * allocation, with the VHU set back to {@code Picked}) when none survives.
+	 * <p>
+	 * The picking-job reopen ({@code PickingJobReopenCommand}) only restores picked qty for a <b>Completed</b>
+	 * job. When a shipment was recreated via "Generate Shipments" the job is left <b>Drafted</b>, so a subsequent
+	 * reverse restores nothing and the shipment can no longer be recreated (me03#29561). This net closes that gap
+	 * without step-replay (so no {@code tryMerge} qty inflation) and only fires when nothing was restored, so the
+	 * Completed-job path and unrelated in-progress jobs are unaffected.
+	 */
+	void restoreUnshippedQtyPickedIfMissing(Collection<I_M_ShipmentSchedule_QtyPicked> reversedAllocations);
 
 	/**
 	 * Creates a producer which will create shipments ({@link I_M_InOut}) from {@link ShipmentScheduleWithHU}s.
@@ -141,4 +179,29 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	void flagForRecompute(@NonNull Set<ShipmentScheduleId> shipmentScheduleIds);
 
 	ShipmentScheduleLoadingCache<de.metas.handlingunits.model.I_M_ShipmentSchedule> newLoadingCache();
+
+	/**
+	 * Extracts a common projectId from the given shipment schedules. Null projectIds are not considered distinct values. So that:
+	 * (G1, null) => G1
+	 * (G1, G2) => null
+	 * (null, null) => null
+	 */
+	@Nullable
+	ProjectId extractSingleProjectIdOrNull(@NonNull List<ShipmentScheduleWithHU> candidates);
+
+	/**
+	 * Creates shipment candidates for a QtyPicked record, expanding mixed-origin TUs into
+	 * per-VHU or per-COO-group candidates so each gets its own InOutLine with the correct ASI.
+	 */
+	List<ShipmentScheduleWithHU> createCandidatesForQtyPicked(
+			@NonNull I_M_ShipmentSchedule_QtyPicked qtyPicked,
+			@NonNull IHUContext huContext,
+			@NonNull M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse);
+
+	/**
+	 * Retrieves all undelivered shipment schedule candidates for a list of top-level HUs,
+	 * expanding any mixed-origin TUs into per-COO candidates.
+	 * Each HU in the list must be a top-level HU.
+	 */
+	List<ShipmentScheduleWithHU> retrieveShipmentSchedulesWithHUsFromHUs(@NonNull List<I_M_HU> hus);
 }

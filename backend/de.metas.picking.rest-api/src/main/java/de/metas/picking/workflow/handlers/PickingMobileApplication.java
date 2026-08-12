@@ -29,6 +29,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.IDocument;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.grai.GRAISet;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
@@ -44,11 +45,16 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepEventType;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
+import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackRequest;
+import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackResponse;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.serialno.SerialNoSet;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.mobile.application.MobileApplicationId;
 import de.metas.mobile.application.MobileApplicationInfo;
+import de.metas.picking.rest_api.json.JsonGetNextEligibleLineRequest;
+import de.metas.picking.rest_api.json.JsonGetNextEligibleLineResponse;
 import de.metas.picking.rest_api.json.JsonLUPickingTarget;
 import de.metas.picking.rest_api.json.JsonPickingEventsList;
 import de.metas.picking.rest_api.json.JsonPickingJobAvailableTargets;
@@ -67,6 +73,9 @@ import de.metas.picking.workflow.handlers.activity_handlers.SetPickingSlotWFActi
 import de.metas.picking.workflow.lauchers.PickingWorkflowLaunchersProvider;
 import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupList;
 import de.metas.rest_workflows.facets.WorkflowLaunchersFacetQuery;
+import de.metas.picking.rest_api.json.JsonUnpickResolveRequest;
+import de.metas.picking.rest_api.json.JsonUnpickResolveResponse;
+import de.metas.product.ProductId;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.user.UserId;
 import de.metas.util.StringUtils;
@@ -87,6 +96,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -142,6 +152,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.showFilterByQRCode(profile.isFilterByBarcode())
 				.showFilterByQtyAvailableAtPickFromLocator(true)
 				.applicationParameter("allowQuickPackAll", profile.isAllowQuickPackAll())
+				.applicationParameter("massPrinting", profile.isMassPrinting())
 				.build();
 	}
 
@@ -298,9 +309,19 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 		}
 	}
 
+	private static ImmutableList<WFActivity> toWFActivitiesList(@Nullable WFActivity... wfActivities)
+	{
+		if (wfActivities == null || wfActivities.length == 0)
+		{
+			return ImmutableList.of();
+		}
+
+		return Arrays.stream(wfActivities).filter(Objects::nonNull).collect(ImmutableList.toImmutableList());
+	}
+
 	private static ImmutableList<WFActivity> toWFActivities_SalesOrderBasedAggregation(@NonNull final PickingJob pickingJob)
 	{
-		return ImmutableList.of(
+		return toWFActivitiesList(
 				toWActivity_ScanPickingSlot(pickingJob),
 				toWFActivity_PickLines(pickingJob),
 				toWFActivity_Complete(pickingJob)
@@ -309,7 +330,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 
 	private static ImmutableList<WFActivity> toWFActivities_DeliveryLocationBasedAggregation(@NonNull final PickingJob pickingJob)
 	{
-		return ImmutableList.of(
+		return toWFActivitiesList(
 				toWActivity_ScanPickingSlot(pickingJob),
 				toWFActivity_PickLines(pickingJob),
 				toWFActivity_Complete(pickingJob)
@@ -318,7 +339,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 
 	private static ImmutableList<WFActivity> toWFActivities_ProductBasedAggregation(@NonNull final PickingJob pickingJob)
 	{
-		return ImmutableList.of(
+		return toWFActivitiesList(
 				toWActivity_PickFromHU(pickingJob),
 				toWActivity_ScanPickingSlot(pickingJob),
 				toWFActivity_PickLines(pickingJob),
@@ -337,8 +358,14 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.build();
 	}
 
+	@Nullable
 	private static WFActivity toWActivity_ScanPickingSlot(final @NotNull PickingJob pickingJob)
 	{
+		if (!pickingJob.isPickingSlotRequired())
+		{
+			return null;
+		}
+
 		return WFActivity.builder()
 				.id(ACTIVITY_ID_ScanPickingSlot)
 				.caption(TranslatableStrings.adMessage(MSG_Caption_ScanPickingSlot))
@@ -456,11 +483,20 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.bestBeforeDate(json.getBestBeforeDate())
 				.isSetLotNo(json.isSetLotNo())
 				.lotNo(json.getLotNo())
+				.isSetSerialNos(json.isSetSerialNos())
+				.serialNos(json.getSerialNos() != null ? SerialNoSet.parseStrings(json.getSerialNos()) : null)
 				.isCloseTarget(json.isCloseTarget())
+				.isSetGrais(json.isSetGrais())
+				// Parse the raw scanned strings (canonical or GS1 AI 8003) into a GRAISet once, here at the
+				// REST→domain boundary, so the picking command works with a typed GRAISet instead of re-parsing.
+				.graiCodes(json.getGraiCodes() != null ? GRAISet.parseStrings(json.getGraiCodes()) : null)
+				.isShelfLifeConfirmed(json.isShelfLifeConfirmed())
 				//
 				.unpickToTargetQRCode(StringUtils.trimBlankToOptional(json.getUnpickToTargetQRCode())
 						.map(HUQRCode::fromGlobalQRCodeJsonString)
 						.orElse(null))
+				.unpickProductId(ProductId.ofNullableString(json.getUnpickProductId()))
+				.qtyToUnpick(json.getUnpickQty())
 				.build();
 	}
 
@@ -548,6 +584,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 						.stream()
 						.map(JsonTUPickingTarget::of)
 						.collect(ImmutableList.toImmutableList()))
+				.graiScanEnabled(pickingJobRestService.isGraiScanEnabled(pickingJob))
 				.build();
 	}
 
@@ -579,6 +616,20 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 					return pickingJobRestService.setTUPickingTarget(pickingJob, lineId, target);
 				});
 
+	}
+
+	public WFProcess setTUPickingTargetFromGRAI(
+			@NonNull final WFProcessId wfProcessId,
+			@Nullable final PickingJobLineId lineId,
+			@NonNull final ScannedCode scannedGrai,
+			@NonNull final UserId callerId)
+	{
+		return changeWFProcessById(
+				wfProcessId,
+				(wfProcess, pickingJob) -> {
+					wfProcess.assertHasAccess(callerId);
+					return pickingJobRestService.setTUPickingTargetFromGRAI(pickingJob, lineId, scannedGrai);
+				});
 	}
 
 	public WFProcess closeLUPickingTarget(
@@ -640,5 +691,32 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	{
 		final PickingJobId pickingJobId = toPickingJobId(wfProcessId);
 		return pickingJobRestService.getQtyAvailable(pickingJobId, callerId);
+	}
+
+	public JsonGetNextEligibleLineResponse getNextEligibleLineToPack(final @NonNull JsonGetNextEligibleLineRequest request, final @NotNull UserId callerId)
+	{
+		final GetNextEligibleLineToPackResponse response = pickingJobRestService.getNextEligibleLineToPack(
+				GetNextEligibleLineToPackRequest.builder()
+						.callerId(callerId)
+						.pickingJobId(toPickingJobId(request.getWfProcessId()))
+						.excludeLineId(request.getExcludeLineId())
+						.huScannedCode(request.getHuScannedCode())
+						.build()
+		);
+
+		return JsonGetNextEligibleLineResponse.builder()
+				.lineId(response.getLineId())
+				.logs(response.getLogs())
+				.build();
+	}
+
+	@NonNull
+	public JsonUnpickResolveResponse resolveUnpick(
+			@NonNull final JsonUnpickResolveRequest request,
+			@NonNull final UserId callerId,
+			@NonNull final String adLanguage)
+	{
+		final PickingJobId pickingJobId = toPickingJobId(WFProcessId.ofString(request.getWfProcessId()));
+		return pickingJobRestService.resolveUnpick(pickingJobId, ScannedCode.ofString(request.getScannedCode()), callerId, adLanguage);
 	}
 }

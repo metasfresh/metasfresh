@@ -8,6 +8,7 @@ import { expect } from '@playwright/test';
 import { expectClasses } from '../../expectations';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
 import { DistributionLinePickFromScreen } from './DistributionLinePickFromScreen';
+import { DistributionUtils } from './DistributionUtils';
 
 const NAME = 'DistributionJobScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -16,20 +17,36 @@ const containerElement = () => page.locator('#WFProcessScreen');
 export const DistributionJobScreen = {
     waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
         await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
+        await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
     }),
 
-    scanHUToMove: async ({ huQRCode, productScannedCode, expectQuantityDialog = true, expectedQtyToMove }) => await test.step(`${NAME} - Scan HU to move`, async () => {
+    expectJobId: async ({ distributionJobId }) => await test.step(`${NAME} - Expect jobId=${distributionJobId}`, async () => {
+        await DistributionJobScreen.waitForScreen();
+        await DistributionUtils.expectJobId({ distributionJobId });
+    }),
+
+    // `exact` defaults to false (substring value match) to preserve the long-standing behaviour of
+    // this method's existing callers. The shared helper additionally requires the row to be visible.
+    expectHeaderProperty: async ({ caption, value, exact = false }) => await test.step(`${NAME} - Check header property '${caption}'='${value}'${exact ? '' : ' (substring)'}`, async () => {
+        await DistributionUtils.expectHeaderProperty({ caption, value, exact });
+    }),
+
+    scanHUToMove: async ({ huQRCode, productScannedCode, expectQuantityDialog = true, expectedQtyToMove, expectNextScreen }) => await test.step(`${NAME} - Scan HU to move`, async () => {
+        await BarcodeScannerComponent.type({ scannedCode: huQRCode });
+        await DistributionLinePickFromScreen.scanHUToMove({
+            // huQRCode: null,
+            productScannedCode,
+            expectQuantityDialog,
+            expectedQtyToMove,
+            expectNextScreen
+        })
+    }),
+
+    // Split variant of scanHUToMove: use when the product-code scan must be asserted
+    // on its own (e.g. wrapped in expectErrorToast).
+    scanHU: async ({ huQRCode }) => await test.step(`${NAME} - Scan HU ${huQRCode}`, async () => {
         await BarcodeScannerComponent.type({ scannedCode: huQRCode });
         await DistributionLinePickFromScreen.waitForScreen();
-        await DistributionLinePickFromScreen.typeProductCode(productScannedCode);
-        
-        if(expectQuantityDialog) {
-            await DistributionLinePickFromScreen.fillQuantityDialog({
-                expectedQtyToMove,
-            });
-        }
-        
-        await DistributionJobScreen.waitForScreen();
     }),
 
     clickLineButton: async ({ index }) => await test.step(`${NAME} - Click line ${index}`, async () => {
@@ -70,6 +87,43 @@ export const DistributionJobScreen = {
             } else {
                 await expect(dropAllButton).toBeDisabled({ timeout: VERY_FAST_ACTION_TIMEOUT });
             }
+        }
+    }),
+
+    expectSwitchPickFromLocatorButton: async ({ visible }) => await test.step(`${NAME} - Expect Switch Pick-From Locator button visible=${visible}`, async () => {
+        const button = switchPickFromLocatorButtonLocator();
+        if (visible) {
+            await expect(button).toBeVisible({ timeout: FAST_ACTION_TIMEOUT });
+        } else {
+            await expect(button).toHaveCount(0, { timeout: FAST_ACTION_TIMEOUT });
+        }
+    }),
+
+    getPickFromLocator: async () => await test.step(`${NAME} - Get current pick-from locator`, async () => {
+        const button = switchPickFromLocatorButtonLocator();
+        await expect(button).toBeVisible({ timeout: FAST_ACTION_TIMEOUT });
+        return await button.getAttribute('data-pickfromlocator');
+    }),
+
+    switchPickFromLocator: async ({ expectNextLocatorId } = {}) => await test.step(`${NAME} - Switch pick-from locator to next`, async () => {
+        const button = switchPickFromLocatorButtonLocator();
+        await expect(button).toBeEnabled({ timeout: FAST_ACTION_TIMEOUT });
+        // Set up the response listener immediately before the tap so we don't return
+        // while the (spinner-less) switch POST is still in flight.
+        const responsePromise = page.waitForResponse(
+            (response) => response.url().includes('/switchPickFromLocatorToNext') && response.request().method() === 'POST',
+            { timeout: SLOW_ACTION_TIMEOUT }
+        );
+        await button.tap();
+        await responsePromise;
+        await DistributionJobScreen.waitForScreen();
+
+        if (expectNextLocatorId !== undefined) {
+            // The thunk dispatches the redux update after the POST resolves, so the rendered attribute
+            // settles a render-tick later — poll until it reflects the expected locator id.
+            await expect
+                .poll(async () => await DistributionJobScreen.getPickFromLocator(), { timeout: FAST_ACTION_TIMEOUT })
+                .toEqual(String(expectNextLocatorId));
         }
     }),
 
@@ -114,6 +168,10 @@ const expectLineButtonAttribute = async ({ lineButton, attribute, value }) => aw
 
 const dropAllButtonLocator = () => {
     return page.getByTestId('scanDropToLocator-button');
+};
+
+const switchPickFromLocatorButtonLocator = () => {
+    return page.getByTestId('switchPickFromLocator-button');
 };
 
 const clickCompleteButton = async () => await test.step(`${NAME} - Click Complete button`, async () => {

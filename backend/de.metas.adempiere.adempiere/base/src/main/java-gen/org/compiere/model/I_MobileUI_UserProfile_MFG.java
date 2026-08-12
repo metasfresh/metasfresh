@@ -121,7 +121,8 @@ public interface I_MobileUI_UserProfile_MFG
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Allow issuing any HU.
+	 * Set No Raw Material Check.
+	 * Allows scanning and issuing HUs that are not in the manufacturing issue plan
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -130,7 +131,8 @@ public interface I_MobileUI_UserProfile_MFG
 	void setIsAllowIssuingAnyHU (@Nullable java.lang.String IsAllowIssuingAnyHU);
 
 	/**
-	 * Get Allow issuing any HU.
+	 * Get No Raw Material Check.
+	 * Allows scanning and issuing HUs that are not in the manufacturing issue plan
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -142,8 +144,54 @@ public interface I_MobileUI_UserProfile_MFG
 	String COLUMNNAME_IsAllowIssuingAnyHU = "IsAllowIssuingAnyHU";
 
 	/**
-	 * Set Scan Resource QR Code.
-	 * User needs to scan the resource QR code first
+	 * Set Best Before Date editable.
+	 * Allows editing the Best-Before-Date (MHD) when receiving finished goods in mobile manufacturing.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsBestBeforeDateEditable (@Nullable java.lang.String IsBestBeforeDateEditable);
+
+	/**
+	 * Get Best Before Date editable.
+	 * Allows editing the Best-Before-Date (MHD) when receiving finished goods in mobile manufacturing.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsBestBeforeDateEditable();
+
+	ModelColumn<I_MobileUI_UserProfile_MFG, Object> COLUMN_IsBestBeforeDateEditable = new ModelColumn<>(I_MobileUI_UserProfile_MFG.class, "IsBestBeforeDateEditable", null);
+	String COLUMNNAME_IsBestBeforeDateEditable = "IsBestBeforeDateEditable";
+
+	/**
+	 * Set Lot Number editable.
+	 * Allows editing the Lot Number when receiving finished goods in mobile manufacturing.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsLotNumberEditable (@Nullable java.lang.String IsLotNumberEditable);
+
+	/**
+	 * Get Lot Number editable.
+	 * Allows editing the Lot Number when receiving finished goods in mobile manufacturing.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsLotNumberEditable();
+
+	ModelColumn<I_MobileUI_UserProfile_MFG, Object> COLUMN_IsLotNumberEditable = new ModelColumn<>(I_MobileUI_UserProfile_MFG.class, "IsLotNumberEditable", null);
+	String COLUMNNAME_IsLotNumberEditable = "IsLotNumberEditable";
+
+	/**
+	 * Set Workstation Scan Required.
+	 * User must scan a workstation QR code before starting manufacturing work. Only orders for the assigned workstation are displayed.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -152,8 +200,8 @@ public interface I_MobileUI_UserProfile_MFG
 	void setIsScanResourceRequired (@Nullable java.lang.String IsScanResourceRequired);
 
 	/**
-	 * Get Scan Resource QR Code.
-	 * User needs to scan the resource QR code first
+	 * Get Workstation Scan Required.
+	 * User must scan a workstation QR code before starting manufacturing work. Only orders for the assigned workstation are displayed.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -184,6 +232,29 @@ public interface I_MobileUI_UserProfile_MFG
 
 	ModelColumn<I_MobileUI_UserProfile_MFG, Object> COLUMN_MobileUI_UserProfile_MFG_ID = new ModelColumn<>(I_MobileUI_UserProfile_MFG.class, "MobileUI_UserProfile_MFG_ID", null);
 	String COLUMNNAME_MobileUI_UserProfile_MFG_ID = "MobileUI_UserProfile_MFG_ID";
+
+	/**
+	 * Set Receive Unit Type.
+	 * Determines whether the receive quantity is entered in CU or TU
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setReceiveUnitType (@Nullable java.lang.String ReceiveUnitType);
+
+	/**
+	 * Get Receive Unit Type.
+	 * Determines whether the receive quantity is entered in CU or TU
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getReceiveUnitType();
+
+	ModelColumn<I_MobileUI_UserProfile_MFG, Object> COLUMN_ReceiveUnitType = new ModelColumn<>(I_MobileUI_UserProfile_MFG.class, "ReceiveUnitType", null);
+	String COLUMNNAME_ReceiveUnitType = "ReceiveUnitType";
 
 	/**
 	 * Get Updated.

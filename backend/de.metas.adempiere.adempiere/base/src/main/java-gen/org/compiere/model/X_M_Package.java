@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_Package
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_Package extends org.compiere.model.PO implements I_M_Package, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -238746487L;
+	private static final long serialVersionUID = -311654532L;
 
     /** Standard Constructor */
     public X_M_Package (final Properties ctx, final int M_Package_ID, @Nullable final String trxName)
@@ -33,6 +33,21 @@ public class X_M_Package extends org.compiere.model.PO implements I_M_Package, o
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setAD_User_ID (final int AD_User_ID)
+	{
+		if (AD_User_ID < 0) 
+			set_Value (COLUMNNAME_AD_User_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_User_ID, AD_User_ID);
+	}
+
+	@Override
+	public int getAD_User_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_User_ID);
 	}
 
 	@Override

@@ -22,6 +22,9 @@
 
 package org.adempiere.mm.attributes.keys;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 import com.jgoodies.common.base.Objects;
 import de.metas.material.event.commons.AttributeKeyPartType;
@@ -40,8 +43,9 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @EqualsAndHashCode(doNotUseGetters = true)
-final class AttributesKeyPartPattern implements Comparable<AttributesKeyPartPattern>
+public final class AttributesKeyPartPattern implements Comparable<AttributesKeyPartPattern>
 {
 	static final AttributesKeyPartPattern ALL = newOfPart(AttributesKeyPart.ALL);
 	static final AttributesKeyPartPattern OTHER = newOfPart(AttributesKeyPart.OTHER);
@@ -199,13 +203,14 @@ final class AttributesKeyPartPattern implements Comparable<AttributesKeyPartPatt
 	@Getter
 	private final String sqlLikePart;
 
+	@JsonCreator
 	private AttributesKeyPartPattern(
-			@NonNull final AttributeKeyPartPatternType type,
-			@NonNull final String sqlLikePart,
-			final int specialCode,
-			final AttributeValueId attributeValueId,
-			final AttributeId attributeId,
-			final String value)
+			@NonNull @JsonProperty("type") final AttributeKeyPartPatternType type,
+			@NonNull @JsonProperty("sqlLikePart") final String sqlLikePart,
+			@JsonProperty("specialCode") final int specialCode,
+			@JsonProperty("attributeValueId") final AttributeValueId attributeValueId,
+			@JsonProperty("attributeId") final AttributeId attributeId,
+			@JsonProperty("value") final String value)
 	{
 		this.type = type;
 		this.sqlLikePart = sqlLikePart;
@@ -275,7 +280,7 @@ final class AttributesKeyPartPattern implements Comparable<AttributesKeyPartPatt
 		}
 		else if (type == AttributeKeyPartPatternType.AttributeIdAndValue)
 		{
-			return attributeId + "=" + String.valueOf(value);
+			return attributeId + "=" + value;
 		}
 		else if (type == AttributeKeyPartPatternType.AttributeId)
 		{

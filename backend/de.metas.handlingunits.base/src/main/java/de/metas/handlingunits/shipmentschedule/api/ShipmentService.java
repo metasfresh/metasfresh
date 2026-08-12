@@ -289,6 +289,9 @@ public class ShipmentService implements IShipmentService
 
 		if (nowInstant != null)
 		{
+			// Per-line "hold each line until its own date" gate. PreparationDate and DatePromised are per line in
+			// M_Packageable_V (DatePromised = the override-inclusive per-line date — see the view); IsFixedPreparationDate
+			// and IsFixedDatePromised are header flags that apply to ALL lines of the order.
 			final IQuery<I_M_Packageable_V> subQueryPackageable = queryBL.createQueryBuilder(I_M_Packageable_V.class)
 					.filter(queryBL.createCompositeQueryFilter(I_M_Packageable_V.class)
 							.setJoinOr()
@@ -348,9 +351,28 @@ public class ShipmentService implements IShipmentService
 				.createWorkpackages(workPackageParameters);
 	}
 
+	/** Groups the given schedules by async-batch (assigning a fresh {@code C_Async_Batch_ID} where missing). */
+	@SuppressWarnings("deprecation") // intentional callInNewTrx — see the inline rationale below
 	@NonNull
 	public ImmutableMap<AsyncBatchId, ShipmentScheduleAndJobScheduleIdSet> groupSchedulesByAsyncBatch(@NonNull final ShipmentScheduleAndJobScheduleIdSet scheduleIds)
 	{
+		// callInNewTrx (NOT the caller's trx) — verified, and NOT a deadlock workaround:
+		// The async-batch assignment written below (M_ShipmentSchedule.C_Async_Batch_ID) must be COMMITTED
+		// before the consumers that read it run, and those consumers run in SEPARATE transactions:
+		//   - the shipment-generation workpackage enqueued right after (processed async by the WP processor), and
+		//   - EDI/DESADV pack creation, which re-queries the schedule's C_Async_Batch grouping.
+		// If this ran in the caller's still-open trx the assignment would be invisible to them and EDI breaks:
+		// ediExport.feature regressed (EDI_Exp_Desadv_Pack null / stale QtyCUsPerTU) when this was
+		// callInThreadInheritedTrx — confirmed by CI run 27154568913, cucumber profile5 (failure);
+		// restoring callInNewTrx fixed it.
+		// NO M_ShipmentSchedule row-lock self-deadlock exists here (an earlier revision claimed one and forced
+		// callInThreadInheritedTrx for mass-printing): PickingJobCompleteCommand releases its picking-job
+		// schedule locks BEFORE calling shipment generation and holds no RowExclusiveLock on M_ShipmentSchedule
+		// at that point — verified by local reproduction (mass-printing runs under callInNewTrx with no hang).
+		// To drop this dedicated trx someday (remove the cross-trx visibility dependency): either pass the
+		// computed async-batch grouping in-memory to the shipment WP + DESADV-pack creation instead of
+		// re-querying C_Async_Batch_ID from the DB, or trigger shipment generation only AFTER the caller's
+		// trx commits (a trx after-commit hook) so the assignment is already committed.
 		return trxManager.callInNewTrx(() -> groupSchedulesByAsyncBatch0(scheduleIds));
 	}
 

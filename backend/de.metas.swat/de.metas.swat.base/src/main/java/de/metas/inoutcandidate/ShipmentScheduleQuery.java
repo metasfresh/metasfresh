@@ -58,7 +58,7 @@ public class ShipmentScheduleQuery
 	@Nullable OrgId orgId;
 	@Nullable AttributesKey attributesKey;
 	@Nullable ProductId productId;
-	@Nullable WarehouseId warehouseId;
+	@NonNull @Singular ImmutableSet<WarehouseId> warehouseIds;
 	@Nullable ShipperId shipperId;
 	@Builder.Default boolean includeWithQtyToDeliverZero = true;
 	@Builder.Default boolean includeInvalid = true;
@@ -66,6 +66,7 @@ public class ShipmentScheduleQuery
 	boolean fromCompleteOrderOrNullOrder;
 	boolean orderByOrderId;
 	boolean onlyNonZeroReservedQty;
+	@Nullable Boolean isScheduledForPicking;
 	@Nullable LocalDate preparationDate;
 
 	/**

@@ -1,4 +1,5 @@
 import { test } from "../../../playwright.config";
+import { allure } from 'allure-playwright';
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsListScreen";
 import { Backend } from "../../utils/screens/Backend";
@@ -60,6 +61,13 @@ const createMasterdata = async ({ allowQuickPackAll = true } = {}) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Pick using Pick All button', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');  // Standalone tag for Tags section;
+    allure.story('Pick All button');
+    allure.severity('normal');
+
     const masterdata = await createMasterdata({ allowQuickPackAll: true });
 
     await LoginScreen.login(masterdata.login.user);
@@ -93,6 +101,67 @@ test('Pick using Pick All button', async ({ page }) => {
             HU1: { huStatus: 'A', storages: { P1: '990 PCE' } },
             HU2: { huStatus: 'A', storages: { P2: '990 PCE' } },
             HU3: { huStatus: 'A', storages: { P3: '990 PCE' } },
+            vhu1: { huStatus: 'E', storages: { P1: '10 PCE' }, bpartner: 'customer1', bpartnerLocation: 'customer1' },
+            vhu2: { huStatus: 'E', storages: { P2: '10 PCE' }, bpartner: 'customer1', bpartnerLocation: 'customer1' },
+            vhu3: { huStatus: 'E', storages: { P3: '10 PCE' }, bpartner: 'customer1', bpartnerLocation: 'customer1' },
+        }
+    });
+
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Pick All completes a job that already has a fully-picked line', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0105: Picking');
+    allure.tag('F00246: Quickpack');
+        allure.tag('F00246');  // Standalone tag for Tags section;
+    allure.story('Pick All button');
+    allure.severity('normal');
+
+    const masterdata = await createMasterdata({ allowQuickPackAll: true });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+
+    // Pick the first line (P1) manually to full BEFORE using Quick Pack.
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode, expectNextScreen: 'PickLineScanScreen', gotoPickingJobScreen: true });
+    await PickingJobScreen.pickHU({
+        qrCode: masterdata.handlingUnits.HU1.qrCode,
+        isScanDirectly: true,
+        expectQtyEntered: '10',
+    });
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '10 Stk', qtyPicked: '10 Stk', waitForColor: 'green' });
+
+    // Quick Pack must finish the remaining lines and complete the job — it must NOT abort
+    // because the already-picked P1 line has nothing left to pick.
+    await PickingJobScreen.clickPickAllButton();
+    await PickingJobsListScreen.expectJobButtons([]);
+
+    await Backend.expect({
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: {
+                        qtyPicked: [{ qtyPicked: "10 PCE", qtyTUs: 0, qtyLUs: 0, vhu: 'vhu1', tu: '-', lu: '-', processed: true, shipmentLineId: 'shipmentLineId1' }]
+                    },
+                    P2: {
+                        qtyPicked: [{ qtyPicked: "10 PCE", qtyTUs: 0, qtyLUs: 0, vhu: 'vhu2', tu: '-', lu: '-', processed: true, shipmentLineId: 'shipmentLineId2' }]
+                    },
+                    P3: {
+                        qtyPicked: [{ qtyPicked: "10 PCE", qtyTUs: 0, qtyLUs: 0, vhu: 'vhu3', tu: '-', lu: '-', processed: true, shipmentLineId: 'shipmentLineId3' }]
+                    }
+                }
+            }
+        },
+        pickingSlots: { [masterdata.pickingSlots.slot1.qrCode]: { queue: [] } },
+        hus: {
+            HU1: { huStatus: 'A', storages: { P1: '990 PCE' } },
+            HU2: { huStatus: 'A', storages: { P2: '990 PCE' } },
+            HU3: { huStatus: 'A', storages: { P3: '990 PCE' } },
             vhu1: { huStatus: 'E', storages: { P1: '10 PCE' } },
             vhu2: { huStatus: 'E', storages: { P2: '10 PCE' } },
             vhu3: { huStatus: 'E', storages: { P3: '10 PCE' } },
@@ -103,6 +172,13 @@ test('Pick using Pick All button', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Expect Pick All button hidden when feature is not active', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');  // Standalone tag for Tags section;
+    allure.story('Pick All button');
+    allure.severity('normal');
+
     const masterdata = await createMasterdata({ allowQuickPackAll: false });
 
     await LoginScreen.login(masterdata.login.user);

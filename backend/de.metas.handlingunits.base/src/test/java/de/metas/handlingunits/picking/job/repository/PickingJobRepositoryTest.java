@@ -9,9 +9,13 @@ import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.model.I_M_Picking_Job;
+import de.metas.handlingunits.model.I_M_Picking_Job_Line;
 import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.job.model.PickingJob;
+import de.metas.handlingunits.picking.job.model.PickingJobDocStatus;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
@@ -25,8 +29,10 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
+import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJONextIdSuppliers;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.assertj.core.api.Assertions;
@@ -147,5 +153,68 @@ class PickingJobRepositoryTest
 		Assertions.assertThat(jobLoaded)
 				.usingRecursiveComparison()
 				.isEqualTo(jobCreated);
+	}
+
+	private int createPickingJobWithLine(
+			@NonNull final PickingJobDocStatus docStatus,
+			@NonNull final ShipmentScheduleId scheduleId)
+	{
+		final I_M_Picking_Job job = InterfaceWrapperHelper.newInstance(I_M_Picking_Job.class);
+		job.setAD_Org_ID(orgId.getRepoId());
+		job.setDocStatus(docStatus.getCode());
+		job.setIsActive(true);
+		InterfaceWrapperHelper.saveRecord(job);
+
+		final I_M_Picking_Job_Line line = InterfaceWrapperHelper.newInstance(I_M_Picking_Job_Line.class);
+		line.setAD_Org_ID(orgId.getRepoId());
+		line.setM_Picking_Job_ID(job.getM_Picking_Job_ID());
+		line.setM_ShipmentSchedule_ID(scheduleId.getRepoId());
+		line.setIsActive(true);
+		InterfaceWrapperHelper.saveRecord(line);
+
+		return job.getM_Picking_Job_ID();
+	}
+
+	@Test
+	void existsActivePickingJobLineForSchedule_voidedJob_isNotBusy()
+	{
+		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(101);
+		createPickingJobWithLine(PickingJobDocStatus.Voided, scheduleId);
+
+		Assertions.assertThat(pickingJobRepository.existsActivePickingJobLineForSchedule(scheduleId))
+				.as("a voided picking job must NOT count as busy")
+				.isFalse();
+	}
+
+	@Test
+	void existsActivePickingJobLineForSchedule_completedJob_isNotBusy()
+	{
+		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(102);
+		createPickingJobWithLine(PickingJobDocStatus.Completed, scheduleId);
+
+		Assertions.assertThat(pickingJobRepository.existsActivePickingJobLineForSchedule(scheduleId))
+				.as("a completed picking job must NOT count as busy")
+				.isFalse();
+	}
+
+	@Test
+	void existsActivePickingJobLineForSchedule_draftedJob_isBusy()
+	{
+		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(103);
+		createPickingJobWithLine(PickingJobDocStatus.Drafted, scheduleId);
+
+		Assertions.assertThat(pickingJobRepository.existsActivePickingJobLineForSchedule(scheduleId))
+				.as("a drafted (in-progress) picking job must count as busy")
+				.isTrue();
+	}
+
+	@Test
+	void existsActivePickingJobLineForSchedule_noLine_isNotBusy()
+	{
+		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(104);
+
+		Assertions.assertThat(pickingJobRepository.existsActivePickingJobLineForSchedule(scheduleId))
+				.as("no picking job line for the schedule must NOT count as busy")
+				.isFalse();
 	}
 }

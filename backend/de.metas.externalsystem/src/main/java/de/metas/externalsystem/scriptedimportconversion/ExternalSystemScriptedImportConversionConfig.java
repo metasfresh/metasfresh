@@ -24,6 +24,7 @@ package de.metas.externalsystem.scriptedimportconversion;
 
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.IExternalSystemChildConfig;
+import de.metas.externalsystem.endpoint.ExternalSystemEndpointId;
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -42,6 +43,10 @@ public class ExternalSystemScriptedImportConversionConfig implements IExternalSy
 	@NonNull String scriptIdentifier;
 	@NonNull UserId userImportId;
 	@Nullable String description;
+	@Nullable ExternalSystemEndpointId externalSystemEndpointId;
+	@Nullable Integer sftpPollingIntervalMs;
+	@Nullable String sftpProcessedDirectory;
+	@Nullable String sftpErrorDirectory;
 
 	public static ExternalSystemScriptedImportConversionConfig cast(@NonNull final IExternalSystemChildConfig childConfig)
 	{

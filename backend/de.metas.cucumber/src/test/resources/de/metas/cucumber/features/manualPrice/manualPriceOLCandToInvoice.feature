@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
 @topic:orderCandidate
 Feature: Process order candidate and automatically generate shipment and invoice for it, using a product without product price
+## F32000: Pricing
   As a user
   I create an order candidate, using a product without product price
   and the process EP will automatically generate shipment schedule, shipment, invoice candidate and invoice
@@ -13,6 +17,9 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
   @Id:S0469_10
   @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
   @topic:orderCandidate
   Scenario: Order candidate to shipment and invoice flow and closed order
     Given set sys config boolean value true for sys config de.metas.ordercandidate.api.OLCandOrderFactory.UseQtyUOMOnManualPrice
@@ -110,6 +117,9 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
   @Id:S0469_20
   @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
   @topic:orderCandidate
   Scenario: Order candidate to shipment and invoice flow and closed order. Like the first one, but here the product is identified by a TU-GTIN
     Given set sys config boolean value true for sys config de.metas.ordercandidate.api.OLCandOrderFactory.UseQtyUOMOnManualPrice

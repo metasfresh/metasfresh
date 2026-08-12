@@ -1,5 +1,6 @@
 import { test } from "../../../playwright.config";
 import { Backend } from "../../utils/screens/Backend";
+import { allure } from 'allure-playwright';
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { DistributionJobsListScreen } from "../../utils/screens/distribution/DistributionJobsListScreen";
@@ -76,6 +77,12 @@ const createMasterdata = async ({ qtyToMove }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Pick multiple HUs (by HU code) and drop them all together in one step (using locator code)', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5114.2');
+    allure.story('Drop all button from launchers');
+    allure.severity('normal');
+
     const masterdata = await createMasterdata({ qtyToMove: 100 });
 
     await LoginScreen.login(masterdata.login.user);

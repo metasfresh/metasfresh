@@ -111,11 +111,18 @@ public class M_Inventory_RecomputeCosts extends JavaProcess implements IProcessP
 			@NonNull final PInstanceId productsSelectionId,
 			@NonNull final Instant startDate)
 	{
+		// IMPORTANT: pass 'DD' explicitly so the repost queue is reordered per-day, not per-month.
+		// With monthly truncation ('MM'), all documents of a calendar month share one bucket and
+		// are ordered inside it by tablename_prio — which puts M_Inventory after M_InOut sales.
+		// A cost-update inventory dated mid-month then re-posts AFTER same-month shipments, so
+		// those shipments compute their COGS from the pre-recompute running cost (often 0).
+		// Day-level truncation guarantees the inventory's day is strictly before any later-dated
+		// shipment in the same month.
 		DB.executeFunctionCallEx(getTrxName()
 				, "select \"de_metas_acct\".product_costs_recreate_from_date( p_C_AcctSchema_ID :=" + getAccountingSchemaId().getRepoId()
 						+ ", p_M_CostElement_ID:=" + costElement.getId().getRepoId()
 						+ ", p_m_product_selection_id:=" + productsSelectionId.getRepoId()
-						+ " , p_ReorderDocs_DateAcct_Trunc:='MM'"
+						+ " , p_ReorderDocs_DateAcct_Trunc:='DD'"
 						+ ", p_StartDateAcct:=" + DB.TO_SQL(startDate) + "::date)"  //
 				, null //
 		);

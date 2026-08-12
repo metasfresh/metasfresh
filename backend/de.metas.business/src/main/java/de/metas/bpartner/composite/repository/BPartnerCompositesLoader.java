@@ -26,6 +26,7 @@ import de.metas.bpartner.composite.BPartnerLocationAddressPart;
 import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.composite.SalesRep;
 import de.metas.bpartner.composite.SalesRepContact;
+import de.metas.bpartner.service.BPBankAcctUse;
 import de.metas.bpartner.service.BPartnerCreditLimitId;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.CreditLimitType;
@@ -336,6 +337,7 @@ final class BPartnerCompositesLoader
 				.salesPartnerCode(trimBlankToNull(bpartnerRecord.getSalesPartnerCode()))
 				.salesRep(getSalesRep(bpartnerRecord))
 				.salesRepContact(getSalesRepContact(bpartnerRecord))
+				.discountPrinted(bpartnerRecord.isDiscountPrinted())
 				.paymentRule(PaymentRule.ofNullableCode(bpartnerRecord.getPaymentRule()))
 				.internalName(trimBlankToNull(bpartnerRecord.getInternalName()))
 				.vatId(trimBlankToNull(bpartnerRecord.getVATaxID()))
@@ -399,6 +401,7 @@ final class BPartnerCompositesLoader
 				.ephemeral(bPartnerLocationRecord.isEphemeral())
 				.phone(trimBlankToNull(bPartnerLocationRecord.getPhone()))
 				.email(trimBlankToNull(bPartnerLocationRecord.getEMail()))
+				.attention(trimBlankToNull(bPartnerLocationRecord.getAttention()))
 				.vatTaxId(VATIdentifier.ofNullable(bPartnerLocationRecord.getVATaxID()))
 				.build();
 
@@ -621,6 +624,7 @@ final class BPartnerCompositesLoader
 				.accountZip(bankAccountRecord.getA_Zip())
 				.accountCity(bankAccountRecord.getA_City())
 				.accountCountry(bankAccountRecord.getA_Country())
+				.bpBankAcctUse(BPBankAcctUse.ofCodeOrNull(bankAccountRecord.getBPBankAcctUse()))
 				.build();
 	}
 

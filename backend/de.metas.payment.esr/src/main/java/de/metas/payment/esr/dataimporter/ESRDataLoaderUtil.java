@@ -5,6 +5,7 @@ import de.metas.banking.BankAccountId;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.impl.BPartnerDAO;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
@@ -28,6 +29,8 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Org;
@@ -236,7 +239,18 @@ public class ESRDataLoaderUtil
 		I_C_BPartner bpartner = null;
 		if (!Check.isEmpty(formattedBPValue, true))
 		{
-			bpartner = Services.get(IBPartnerDAO.class).retrieveBPartnerByValue(Env.getCtx(), formattedBPValue);
+			try
+			{
+				bpartner = Services.get(IBPartnerDAO.class).retrieveBPartnerByValue(Env.getCtx(), formattedBPValue);
+			}
+			catch (final DBMoreThanOneRecordsFoundException e)
+			{
+				final AdempiereException ex = new AdempiereException(
+						BPartnerDAO.MSG_BPARTNER_VALUE_NOT_UNIQUE,
+						formattedBPValue, e.getMessage());
+				ex.initCause(e);
+				throw ex.markAsUserValidationError();
+			}
 		}
 
 		importLine.setBPartner_Value(bpValue);

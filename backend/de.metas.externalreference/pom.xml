@@ -13,7 +13,6 @@
     <artifactId>de.metas.externalreference</artifactId>
 
     <properties>
-        <migration-sql-basedir/>
         <metasfresh.version>10.0.0</metasfresh.version>
         <metasfresh-common.version>10.0.0</metasfresh-common.version>
     </properties>

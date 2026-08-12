@@ -64,14 +64,32 @@ public class JasperEngine extends AbstractReportEngine
 	{
 		try
 		{
+			final boolean isPdfA3Output = resolvePdfA3Flag(reportContext.getAD_Process_ID());
 			final JasperPrint jasperPrint = createJasperPrint(reportContext);
-			return createOutput(jasperPrint, reportContext.getOutputType());
+			return createOutput(jasperPrint, reportContext.getOutputType(), isPdfA3Output);
 		}
 		catch (final Exception e)
 		{
 			throw AdempiereException.wrapIfNeeded(e);
 		}
+	}
 
+	/**
+	 * Returns {@code true} when the AD_Process identified by {@code adProcessId} has
+	 * {@code IsPdfA3Output = 'Y'}, {@code false} otherwise (including when the process cannot be loaded).
+	 */
+	private boolean resolvePdfA3Flag(@NonNull final AdProcessId adProcessId)
+	{
+		try
+		{
+			final I_AD_Process process = adProcessDAO.getById(adProcessId);
+			return process.isPdfA3Output();
+		}
+		catch (final Exception e)
+		{
+			logger.warn("Failed to read IsPdfA3Output for AD_Process_ID={}; defaulting to plain PDF", adProcessId, e);
+			return false;
+		}
 	}
 
 	private JasperPrint createJasperPrint(final ReportContext reportContext) throws JRException
@@ -291,7 +309,10 @@ public class JasperEngine extends AbstractReportEngine
 		}
 	}
 
-	private ReportResult createOutput(final JasperPrint jasperPrint, OutputType outputType) throws JRException, IOException
+	private ReportResult createOutput(
+			final JasperPrint jasperPrint,
+			OutputType outputType,
+			final boolean isPdfA3Output) throws JRException, IOException
 	{
 		if (outputType == null)
 		{
@@ -303,7 +324,9 @@ public class JasperEngine extends AbstractReportEngine
 		{
 			if (OutputType.PDF == outputType)
 			{
-				final byte[] data = JasperExportManager.exportReportToPdf(jasperPrint);
+				final byte[] data = isPdfA3Output
+						? JasperPdfA3Exporter.exportAsPdfA3(jasperPrint)
+						: JasperPdfA3Exporter.exportAsPlainPdf(jasperPrint);
 				return ReportResult.builder()
 						.outputType(outputType)
 						.reportContentBase64(Util.encodeBase64(data))

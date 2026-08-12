@@ -132,7 +132,7 @@ public interface I_PP_Order_Candidate
 	 * Set UOM.
 	 * Unit of Measure
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -142,7 +142,7 @@ public interface I_PP_Order_Candidate
 	 * Get UOM.
 	 * Unit of Measure
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -719,6 +719,27 @@ public interface I_PP_Order_Candidate
 
 	ModelColumn<I_PP_Order_Candidate, org.compiere.model.I_S_Resource> COLUMN_S_Resource_ID = new ModelColumn<>(I_PP_Order_Candidate.class, "S_Resource_ID", org.compiere.model.I_S_Resource.class);
 	String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
+
+	/**
+	 * Set StorageAttributesKey (technical).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setStorageAttributesKey (@Nullable java.lang.String StorageAttributesKey);
+
+	/**
+	 * Get StorageAttributesKey (technical).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getStorageAttributesKey();
+
+	ModelColumn<I_PP_Order_Candidate, Object> COLUMN_StorageAttributesKey = new ModelColumn<>(I_PP_Order_Candidate.class, "StorageAttributesKey", null);
+	String COLUMNNAME_StorageAttributesKey = "StorageAttributesKey";
 
 	/**
 	 * Get Updated.

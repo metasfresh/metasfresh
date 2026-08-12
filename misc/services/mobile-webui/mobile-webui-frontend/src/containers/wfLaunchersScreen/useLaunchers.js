@@ -13,7 +13,7 @@ export const useLaunchers = ({ applicationId, showFilterByQRCode, facets, filter
   const [loading, setLoading] = useState(false);
 
   const { maxStartedLaunchers, allowStartNextJobOnly } = useApplicationInfo({ applicationId });
-  const { requestTimestamp, launchers } = useApplicationLaunchers({ applicationId });
+  const { requestTimestamp, launchers, actions } = useApplicationLaunchers({ applicationId });
 
   const { filterByQRCode: currentFilterByQRCode } = useFilterByQRCode({ applicationId });
 
@@ -58,6 +58,7 @@ export const useLaunchers = ({ applicationId, showFilterByQRCode, facets, filter
     isLaunchersLoading: loading,
     launchers: computeFinalLaunchers({ launchers, allowStartNextJobOnly, maxStartedLaunchers }),
     filterByQRCode,
+    actions,
   };
 };
 

@@ -68,7 +68,7 @@ class JsonRetrieverServiceTest
 		AdempiereTestHelper.get().init();
 		POJOLookupMap.setNextIdSupplier_PerTableSequence();
 		
-		final de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory jsonServiceFactory = JsonServiceFactory.newInstanceForJUnitTesting(
+		final de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory jsonServiceFactory = JsonServiceFactory.newInstanceForUnitTesting(
 				new MockLogEntriesRepository(),
 				Mockito.mock(AlbertaBPartnerCompositeService.class)
 		);

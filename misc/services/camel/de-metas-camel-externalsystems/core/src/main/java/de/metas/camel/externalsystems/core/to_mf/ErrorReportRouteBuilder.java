@@ -78,7 +78,7 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 				.multicast()
 					.parallelProcessing(true)
 					.doTry()
-						.to(direct(ERROR_WRITE_TO_FILE), direct(ERROR_SEND_LOG_MESSAGE))
+						.to(direct(ERROR_WRITE_TO_FILE), direct(ERROR_SEND_LOG_MESSAGE), direct(ERROR_WRITE_TO_ADISSUE))
 					.endDoTry()
 					.doCatch(Exception.class)
 						.log(LoggingLevel.ERROR, "Failed to handle error!")

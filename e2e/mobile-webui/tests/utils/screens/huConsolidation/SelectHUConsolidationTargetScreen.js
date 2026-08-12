@@ -10,7 +10,7 @@ const containerElement = () => page.locator('#SelectHUConsolidationTargetScreen'
 
 export const SelectHUConsolidationTargetScreen = {
     waitForScreen: async () => await step(`${NAME} - Wait for screen`, async () => {
-        await containerElement().waitFor();
+        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
         await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
     }),
 

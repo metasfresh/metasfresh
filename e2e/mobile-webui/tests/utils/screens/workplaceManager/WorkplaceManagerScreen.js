@@ -1,4 +1,4 @@
-import { ID_BACK_BUTTON, page } from "../../common";
+import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT } from "../../common";
 import { test } from "../../../../playwright.config";
 import { expect } from "@playwright/test";
 import { ApplicationsListScreen } from '../ApplicationsListScreen';
@@ -9,8 +9,8 @@ const containerElement = () => page.locator('#WorkplaceManagerScreen');
 
 export const WorkplaceManagerScreen = {
     waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
-        await containerElement().waitFor();
-        await page.locator('.loading').waitFor({ state: 'detached' });
+        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
+        await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     expectVisible: async () => await test.step(`${NAME} - Expect to be displayed`, async () => {
@@ -19,7 +19,7 @@ export const WorkplaceManagerScreen = {
 
     clickAssignButton: async () => await test.step(`${NAME} - Click Assign button`, async () => {
         await page.getByTestId('assign-button').tap();
-        await page.getByTestId('assign-button').waitFor({ state: 'detached' });
+        await page.getByTestId('assign-button').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
         await WorkplaceManagerScreen.waitForScreen();
     }),
 

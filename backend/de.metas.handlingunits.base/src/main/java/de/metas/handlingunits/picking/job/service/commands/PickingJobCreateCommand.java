@@ -25,6 +25,7 @@ import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHU;
 import de.metas.handlingunits.picking.plan.model.PickingPlan;
 import de.metas.handlingunits.picking.plan.model.PickingPlanLine;
 import de.metas.handlingunits.picking.plan.model.PickingPlanLineType;
+import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderId;
@@ -281,6 +282,10 @@ public class PickingJobCreateCommand
 					.setParameter("plan", plan);
 		}
 
+		// Compute once for all steps (all lines share the same SO line within a ScheduledPackageableList)
+		final ImmutableSet<HuId> allowedReservedVhuIds = huService.getVHUIdsByDocumentRef(
+				HUReservationDocRef.ofSalesOrderLineId(items.getSingleSalesOrderLineId()));
+
 		return PickingJobCreateRepoRequest.Line.builder()
 				.productId(items.getSingleProductId())
 				.huPIItemProductId(items.getSinglePackToHUPIItemProductId())
@@ -290,7 +295,7 @@ public class PickingJobCreateCommand
 				.scheduleId(items.getSingleScheduleIdIfUnique().orElse(null))
 				.catchWeightUomId(items.getSingleCatchWeightUomIdIfUnique().orElse(null))
 				.steps(lines.stream()
-						.map(this::createStepRequest)
+						.map(planLine -> createStepRequest(planLine, allowedReservedVhuIds))
 						.collect(ImmutableList.toImmutableList()))
 				.pickFromAlternatives(plan.getAlternatives()
 						.stream()
@@ -313,14 +318,16 @@ public class PickingJobCreateCommand
 				.build();
 	}
 
-	private PickingJobCreateRepoRequest.Step createStepRequest(@NonNull final PickingPlanLine planLine)
+	private PickingJobCreateRepoRequest.Step createStepRequest(
+			@NonNull final PickingPlanLine planLine,
+			@NonNull final ImmutableSet<HuId> allowedReservedVhuIds)
 	{
 		final PickingPlanLineType type = planLine.getType();
 		switch (type)
 		{
 			case PICK_FROM_HU:
 			{
-				return createStepRequest_PickFromHU(planLine);
+				return createStepRequest_PickFromHU(planLine, allowedReservedVhuIds);
 			}
 			case UNALLOCABLE:
 			{
@@ -335,7 +342,9 @@ public class PickingJobCreateCommand
 		}
 	}
 
-	private PickingJobCreateRepoRequest.Step createStepRequest_PickFromHU(final @NonNull PickingPlanLine planLine)
+	private PickingJobCreateRepoRequest.Step createStepRequest_PickFromHU(
+			final @NonNull PickingPlanLine planLine,
+			final @NonNull ImmutableSet<HuId> allowedReservedVhuIds)
 	{
 		final ProductId productId = planLine.getProductId();
 		final Quantity qtyToPick = planLine.getQty();
@@ -344,7 +353,7 @@ public class PickingJobCreateCommand
 
 		final PickingJobCreateRepoRequest.StepPickFrom mainPickFrom = PickingJobCreateRepoRequest.StepPickFrom.builder()
 				.pickFromLocatorId(pickFromHU.getLocatorId())
-				.pickFromHUId(extractTopLevelCUIfNeeded(pickFromHU.getTopLevelHUId(), productId, qtyToPick))
+				.pickFromHUId(extractTopLevelCUIfNeeded(pickFromHU.getTopLevelHUId(), productId, qtyToPick, allowedReservedVhuIds))
 				.build();
 
 		final ImmutableSet<PickingJobCreateRepoRequest.StepPickFrom> pickFromAlternatives = pickFromHU.getAlternatives()
@@ -380,8 +389,9 @@ public class PickingJobCreateCommand
 	private HuId extractTopLevelCUIfNeeded(
 			@NonNull final HuId pickFromHUId,
 			@NonNull final ProductId productId,
-			@NonNull final Quantity qtyToPick)
+			@NonNull final Quantity qtyToPick,
+			@NonNull final ImmutableSet<HuId> allowedReservedVhuIds)
 	{
-		return huService.extractTopLevelCUIfNeeded(pickFromHUId, productId, qtyToPick);
+		return huService.extractTopLevelCUIfNeeded(pickFromHUId, productId, qtyToPick, allowedReservedVhuIds);
 	}
 }

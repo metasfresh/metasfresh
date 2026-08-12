@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.esb.edi.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for EDI_Desadv
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 635426762L;
+	private static final long serialVersionUID = 1296407058L;
 
     /** Standard Constructor */
     public X_EDI_Desadv (final Properties ctx, final int EDI_Desadv_ID, @Nullable final String trxName)
@@ -234,7 +234,7 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 	/** DontSend = N */
 	public static final String EDI_EXPORTSTATUS_DontSend = "N";
 	@Override
-	public void setEDI_ExportStatus (final @Nullable java.lang.String EDI_ExportStatus)
+	public void setEDI_ExportStatus (final java.lang.String EDI_ExportStatus)
 	{
 		set_Value (COLUMNNAME_EDI_ExportStatus, EDI_ExportStatus);
 	}
@@ -389,6 +389,17 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 	public java.lang.String getShipment_DocumentNo() 
 	{
 		return get_ValueAsString(COLUMNNAME_Shipment_DocumentNo);
+	}
+
+	@Override
+	public void setShipmentDocumentNo (final @Nullable java.lang.String ShipmentDocumentNo)
+	{
+		throw new IllegalArgumentException ("ShipmentDocumentNo is virtual column");	}
+
+	@Override
+	public java.lang.String getShipmentDocumentNo() 
+	{
+		return get_ValueAsString(COLUMNNAME_ShipmentDocumentNo);
 	}
 
 	@Override

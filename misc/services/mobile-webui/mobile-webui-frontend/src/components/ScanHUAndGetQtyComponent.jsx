@@ -1,9 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 
 import { trl } from '../utils/translations';
 import GetQuantityDialog from './dialogs/GetQuantityDialog';
 import Button from './buttons/Button';
+import ButtonWithIndicator from './buttons/ButtonWithIndicator';
+import GraiCapturePanel from './GraiCapturePanel';
+import { getAssignedGrais, getExtraGrais, mergeGraiArrays } from '../utils/grai';
 import { formatQtyToHumanReadable, formatQtyToHumanReadableStr } from '../utils/qtys';
 import { useBooleanSetting } from '../reducers/settings';
 import { toastError, toastErrorFromObj } from '../utils/toast';
@@ -17,6 +20,7 @@ const STATUS_NOT_INITIALIZED = 'NOT_INITIALIZED';
 const STATUS_READ_HU_BARCODE = 'READ_HU_BARCODE';
 const STATUS_READ_PRODUCT_BARCODE = 'READ_PRODUCT_BARCODE';
 const STATUS_READ_QTY = 'READ_QTY';
+const STATUS_READ_GRAI = 'READ_GRAI';
 
 const DEFAULT_MSG_qtyAboveMax = 'activities.picking.qtyAboveMax';
 const DEFAULT_MSG_notPositiveQtyNotAllowed = 'activities.picking.notPositiveQtyNotAllowed';
@@ -54,11 +58,26 @@ const ScanHUAndGetQtyComponent = ({
   invalidBarcodeMessageKey,
   invalidQtyMessageKey,
   //
+  graiScanEnabled = false,
+  //
   getConfirmationPromptForQty,
   onResult,
   onClose: onCloseCallback,
 }) => {
   const [progressStatus, setProgressStatus] = useState(STATUS_NOT_INITIALIZED);
+  // GRAI Flow-Through: when graiScanEnabled, the confirmed qty result is stashed here and the GRAI
+  // capture is shown inline (non-skippable) before the pick is reported, so qty + GRAIs go out in one
+  // atomic onResult call. graiCodes holds the in-progress capture.
+  const [pendingGraiResult, setPendingGraiResult] = useState(null);
+  const [graiCodes, setGraiCodes] = useState([]);
+  // Stable handler identities (matching the HU-Manager useGrais hook): an inline arrow here would be
+  // a new function every render, so GraiCapturePanel's onResolvedResult useCallback would change each
+  // render and BarcodeScannerComponent would re-subscribe its keyboard listener mid-scan — dropping
+  // codes during a rapid RFID burst (multiple GRAIs scanned back-to-back). All three only use the
+  // stable setGraiCodes setter, so [] deps are correct.
+  const handleAddGrais = useCallback((newGrais) => setGraiCodes((prev) => mergeGraiArrays(prev, newGrais)), []);
+  const handleRemoveGrai = useCallback((grai) => setGraiCodes((prev) => prev.filter((g) => g !== grai)), []);
+  const handleClearAllGrais = useCallback(() => setGraiCodes([]), []);
   const { resolvedBarcodeData, setResolvedBarcodeData, updateResolvedBarcodeData, computeNewResolvedBarcodeData } =
     useResolvedBarcodeData({
       userInfo,
@@ -84,7 +103,12 @@ const ScanHUAndGetQtyComponent = ({
   // IMPORTANT: this shall be called after the "Init / reset resolvedBarcodeData" effect
   useEffect(() => {
     if (scannedBarcodeParam) {
-      handleResolveHUScannedBarcode({ scannedBarcode: scannedBarcodeParam }).then(onHUBarcodeResolvedResult);
+      handleResolveHUScannedBarcode({ scannedBarcode: scannedBarcodeParam })
+        .then(onHUBarcodeResolvedResult)
+        .catch((error) => {
+          toastErrorFromObj(error);
+          setProgressStatus(STATUS_READ_HU_BARCODE);
+        });
     } else {
       setProgressStatus(STATUS_READ_HU_BARCODE);
     }
@@ -93,6 +117,9 @@ const ScanHUAndGetQtyComponent = ({
   const handleResolveHUScannedBarcode = async ({ scannedBarcode, huId }) => {
     // If an eligible barcode was provided, make sure the scanned barcode is matching it
     if (eligibleBarcode && scannedBarcode !== eligibleBarcode) {
+      console.warn(
+        `Scanned barcode (${scannedBarcode}) does not match the provided eligible barcode (${eligibleBarcode})`
+      );
       return {
         error: trl(invalidBarcodeMessageKey ?? DEFAULT_MSG_notEligibleHUBarcode),
       };
@@ -167,7 +194,9 @@ const ScanHUAndGetQtyComponent = ({
     }
 
     // Qty shall be less than or equal to qtyMax
-    if (resolvedBarcodeData.qtyMax && resolvedBarcodeData.qtyMax > 0) {
+    // NOTE: skip qtyMax validation when over-pick confirmation prompt is enabled,
+    // because the prompt handles the over-delivery scenario instead
+    if (!getConfirmationPromptForQty && resolvedBarcodeData.qtyMax && resolvedBarcodeData.qtyMax > 0) {
       const { qtyEffective: diff, uomEffective: diffUom } = formatQtyToHumanReadable({
         qty: qtyEntered - resolvedBarcodeData.qtyMax,
         uom,
@@ -192,12 +221,13 @@ const ScanHUAndGetQtyComponent = ({
     bestBeforeDate,
     productionDate,
     lotNo,
+    serialNos,
     productNo,
     barcodeType,
     isCloseTarget = false,
     isDone = true,
   }) => {
-    return onResult({
+    const result = {
       qty: qtyEnteredAndValidated,
       qtyRejected,
       reason: qtyRejectedReason,
@@ -210,10 +240,26 @@ const ScanHUAndGetQtyComponent = ({
       bestBeforeDate,
       productionDate,
       lotNo,
+      serialNos,
       productNo,
       isCloseTarget,
       isDone,
-    });
+    };
+
+    // GRAI Flow-Through: when GRAI scanning is required, do not report the pick yet — auto-invoke the
+    // inline GRAI capture (one GRAI per picked crate) and report qty + GRAIs together on save. This
+    // applies to BOTH the plain "OK" and the "OK und LU schließen" (isCloseTarget) completion paths:
+    // the close-LU result carries isCloseTarget through pendingGraiResult, so on save the backend
+    // stamps the GRAIs and then closes the LU within the same atomic pick. Closing the LU must never
+    // be a way to skip the GRAI scan for a GRAI-required partner.
+    if (graiScanEnabled && qtyEnteredAndValidated > 0) {
+      setGraiCodes([]);
+      setPendingGraiResult(result);
+      setProgressStatus(STATUS_READ_GRAI);
+      return undefined;
+    }
+
+    return onResult(result);
   };
 
   const onCloseDialog = () => {
@@ -291,6 +337,42 @@ const ScanHUAndGetQtyComponent = ({
         />
       );
     }
+    case STATUS_READ_GRAI: {
+      // Coerce to a number: the entered qty can arrive as a string, and `length === expectedCount`
+      // (and thus canSave) would silently fail the strict-equality check against a string.
+      const expectedCount = Number(pendingGraiResult.qty);
+      const assignedGrais = getAssignedGrais(graiCodes, expectedCount);
+      const extraGrais = getExtraGrais(graiCodes, expectedCount);
+      // Save only when exactly N (= picked crates) GRAIs are captured, no extras.
+      const canSave = graiCodes.length === expectedCount;
+      return (
+        <GraiCapturePanel
+          graiCodes={graiCodes}
+          assignedGrais={assignedGrais}
+          extraGrais={extraGrais}
+          expectedCount={expectedCount}
+          countKey="activities.picking.graiScan.count"
+          countExtraKey="activities.picking.graiScan.countExtra"
+          clearAllButtonKey="activities.picking.graiScan.clearAll.buttonCaption"
+          clearAllConfirmKey="activities.picking.graiScan.clearAll.confirmQuestion"
+          onAddGrais={handleAddGrais}
+          onRemoveGrai={handleRemoveGrai}
+          onClearAll={handleClearAllGrais}
+        >
+          <ButtonWithIndicator
+            captionKey="activities.picking.graiScan.save.buttonCaption"
+            testId="grai-save-button"
+            disabled={!canSave}
+            onClick={() =>
+              onResult({ ...pendingGraiResult, setGrais: true, graiCodes: assignedGrais })?.catch?.((error) =>
+                toastErrorFromObj(error)
+              )
+            }
+            additionalCssClass="action-button"
+          />
+        </GraiCapturePanel>
+      );
+    }
     default: {
       return null;
     }
@@ -332,6 +414,10 @@ ScanHUAndGetQtyComponent.propTypes = {
   // Error messages:
   invalidBarcodeMessageKey: PropTypes.string,
   invalidQtyMessageKey: PropTypes.string,
+  //
+  // GRAI Flow-Through: when true, an inline GRAI capture is auto-invoked after qty entry and the
+  // captured codes are reported on the same onResult call (setGrais/graiCodes).
+  graiScanEnabled: PropTypes.bool,
   //
   // Functions
   getConfirmationPromptForQty: PropTypes.func,

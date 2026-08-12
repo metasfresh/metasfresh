@@ -22,73 +22,39 @@
 
 package de.metas.inoutcandidate.process;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
-import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLineId;
-import de.metas.process.IProcessPrecondition;
-import de.metas.process.IProcessPreconditionsContext;
-import de.metas.process.JavaProcess;
-import de.metas.process.Param;
-import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.shipping.PurchaseOrderToShipperTransportationService;
-import de.metas.shipping.model.I_M_ShipperTransportation;
-import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.shipping.process.AddOrderLinesToShipperTransportation;
 import de.metas.util.Services;
-import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.compiere.SpringContextHolder;
 
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class M_ReceiptSchedule_AddTo_M_ShipperTransportation extends JavaProcess implements IProcessPrecondition
+public class M_ReceiptSchedule_AddTo_M_ShipperTransportation extends AddOrderLinesToShipperTransportation
 {
-	private static final int MAX_SELECTION_SIZE = 100;
-
-	private final PurchaseOrderToShipperTransportationService orderToShipperTransportationService = SpringContextHolder.instance.getBean(PurchaseOrderToShipperTransportationService.class);
+	private static final AdMessageKey MSG_RECEIPT_SCHEDULE_ASSIGNED_TO_PROCESSED_TRANSPORTATION_ORDER = AdMessageKey.of("ReceiptScheduleAssignedToProcessedTransportationOrder");
 	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
 
-	@Param(parameterName = I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID)
-	private ShipperTransportationId p_M_ShipperTransportation_ID;
-
 	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
-	{
-		if (context.isNoSelection())
-		{
-			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
-		}
-		if (context.isMoreThanAllowedSelected(MAX_SELECTION_SIZE))
-		{
-			return ProcessPreconditionsResolution.rejectBecauseTooManyRecordsSelected(MAX_SELECTION_SIZE);
-		}
-
-		return ProcessPreconditionsResolution.accept();
-	}
-
-	@Override
-	protected String doIt() throws Exception
-	{
-		final Set<OrderAndLineId> orderAndLineIds = getOrderAndLineIds();
-		final Set<OrderLineId> orderLineIds = orderAndLineIds.stream()
-				.map(OrderAndLineId::getOrderLineId)
-				.collect(Collectors.toSet());
-		orderToShipperTransportationService.deleteShippingPackagesForOrderLines(orderLineIds);
-
-		orderToShipperTransportationService.addOrderLinesToShipperTransportation(p_M_ShipperTransportation_ID, orderAndLineIds);
-
-		return MSG_OK;
-	}
-
-	private Set<OrderAndLineId> getOrderAndLineIds()
+	protected Set<OrderLineId> getOrderLineIds()
 	{
 		final IQueryFilter<I_M_ReceiptSchedule> queryFilterOrElseFalse = getProcessInfo().getQueryFilterOrElseFalse();
 		return receiptScheduleDAO.createQueryForReceiptScheduleSelection(getCtx(), queryFilterOrElseFalse)
 				.create()
 				.stream()
-				.map(rs -> OrderAndLineId.ofRepoIds(rs.getC_Order_ID(), rs.getC_OrderLine_ID()))
+				.map(rs -> OrderLineId.ofRepoIdOrNull(rs.getC_OrderLine_ID()))
+				.filter(Objects::nonNull)
 				.collect(Collectors.toSet());
+	}
+
+	@Override
+	protected AdMessageKey getFailureMessage()
+	{
+		return MSG_RECEIPT_SCHEDULE_ASSIGNED_TO_PROCESSED_TRANSPORTATION_ORDER;
 	}
 
 }

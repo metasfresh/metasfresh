@@ -32,9 +32,7 @@ import org.adempiere.mm.attributes.api.impl.BPartnerAwareAttributeUpdater;
 import org.adempiere.mm.attributes.api.impl.OrderLineBPartnerAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 
-import de.metas.edi.api.IEDIOLCandBL;
 import de.metas.interfaces.I_C_OrderLine;
-import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 import de.metas.util.Services;
 import org.springframework.stereotype.Component;
@@ -58,7 +56,7 @@ public class OrderLineAllocADRModelAttributeSetInstanceListener implements IMode
 	 * Updates the ASI of the <code>C_Order_Line_Alloc</code>'s <code>C_OrderLine</code> with the BPartner's ADR attribute, <b>if</b> that order line is a purchase order line.
 	 */
 	@Override
-	public void modelChanged(Object model)
+	public void modelChanged(final Object model)
 	{
 		final I_C_Order_Line_Alloc alloc = InterfaceWrapperHelper.create(model, I_C_Order_Line_Alloc.class);
 		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(alloc.getC_OrderLine(), I_C_OrderLine.class);
@@ -72,15 +70,5 @@ public class OrderLineAllocADRModelAttributeSetInstanceListener implements IMode
 				.setSourceModel(orderLine)
 				.setForceApplyForSOTrx(forceApply)
 				.updateASI();
-	}
-
-	@SuppressWarnings("unused")
-	private boolean isEDIInput(final I_C_Order_Line_Alloc alloc)
-	{
-		// Services
-		final IEDIOLCandBL ediOLCandBL = Services.get(IEDIOLCandBL.class);
-
-		final I_C_OLCand olCand = alloc.getC_OLCand();
-		return ediOLCandBL.isEDIInput(olCand);
 	}
 }

@@ -3,16 +3,21 @@ package de.metas.distribution.mobileui.external_services.sourcedoc;
 import de.metas.common.util.pair.ImmutablePair;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
+import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 import org.eevolution.api.IPPOrderBL;
+import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.I_PP_Order_BOMLine;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -84,5 +89,15 @@ public class DistributionSourceDocService
 				.id(ppOrderId)
 				.documentNo(ppOrder.getDocumentNo())
 				.build();
+	}
+
+	@NonNull
+	public ITranslatableString getPickingInstruction(@NonNull final PPOrderBOMLineId ppOrderBOMLineId)
+	{
+		final I_PP_Order_BOMLine orderBOMLine = ppOrderBL.getOrderBOMLineById(ppOrderBOMLineId);
+		final IModelTranslationMap trl = InterfaceWrapperHelper.getModelTranslationMap(orderBOMLine);
+
+		final ITranslatableString pickingInstruction = trl.getColumnTrl(I_PP_Order_BOMLine.COLUMNNAME_PickingInstruction, orderBOMLine.getPickingInstruction());
+		return TranslatableStrings.blankToEmpty(pickingInstruction);
 	}
 }

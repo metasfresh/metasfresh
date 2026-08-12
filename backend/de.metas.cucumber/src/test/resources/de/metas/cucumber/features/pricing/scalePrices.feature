@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
 @ghActions:run_on_executor6
 Feature: scale prices
+## F32000: Pricing
 
   Background:
     Given infrastructure and metasfresh are running
@@ -22,6 +26,9 @@ Feature: scale prices
       | bpartner_1 | BPartnerTest | Y              | defaultPricingSystem          |
 
   @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
   @Id:S0144.2_130
   Scenario: scale price with 'Use scale price' set on product price
     Given metasfresh contains M_Products:
@@ -65,6 +72,9 @@ Feature: scale prices
       | ol_3                      | o_1                   | 2022-05-17      | salesProduct_180520225_1 | 150        | 0            | 0           | 4     | 0        | EUR          | false     | huPIItemProduct_180520225_1            |
 
   @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
   Scenario: scale price with 'Don't use scale price' set on product price
     Given metasfresh contains M_Products:
       | Identifier               | Name                     |
@@ -94,6 +104,9 @@ Feature: scale prices
 
 
   @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
   Scenario: scale price with 'Use scale price, fallback product price' set on product price
     Given metasfresh contains M_Products:
       | Identifier               | Name                     |

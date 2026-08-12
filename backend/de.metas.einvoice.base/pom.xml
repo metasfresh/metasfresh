@@ -1,0 +1,162 @@
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<artifactId>de.metas.parent</artifactId>
+		<groupId>de.metas</groupId>
+		<version>10.0.0</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+
+	<groupId>de.metas.einvoice</groupId>
+	<artifactId>de.metas.einvoice.base</artifactId>
+	<version>10.0.0</version>
+	<packaging>jar</packaging>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>de.metas.business</groupId>
+			<artifactId>de.metas.business</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.document.archive</groupId>
+			<artifactId>de.metas.document.archive.base</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.util</groupId>
+			<artifactId>de.metas.util</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>${project.version}</version>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.xmlunit</groupId>
+			<artifactId>xmlunit-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.xmlunit</groupId>
+			<artifactId>xmlunit-assertj</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!--
+			EN16931 Schematron validation via ph-schematron (Apache-2.0).
+			Version 6.3.4 is the last release that targets Java 1.8 (confirmed: maven.compiler.source=8
+			in ph-schematron-parent-pom-6.3.4.pom).
+			ph-schematron-xslt provides SchematronResourceXSLT for running precompiled XSLT-based rules.
+			Saxon-HE 9.9.1-8 provides XSLT 2.0 support required by the EN16931-CII-validation.xslt;
+			it also targets Java 1.8 (maven.compiler.source=1.8 in Saxon-HE-9.9.1-8.pom).
+		-->
+		<dependency>
+			<groupId>com.helger.schematron</groupId>
+			<artifactId>ph-schematron-xslt</artifactId>
+			<version>6.3.4</version>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.saxon</groupId>
+			<artifactId>Saxon-HE</artifactId>
+			<version>9.9.1-8</version>
+		</dependency>
+
+		<!--
+			Mustangproject — ZUGFeRD/Factur-X PDF assembly and validation (Apache-2.0).
+			Version 2.11.0 is the last release that targets Java 1.8 (confirmed: maven.compiler.source=8
+			in library-2.11.0.pom and validator-2.11.0.pom).
+			library: ZUGFeRDExporterFromA3 — embeds EN16931 CII XML into an existing PDF as a
+			         Factur-X attachment (factur-x.xml, AFRelationship=Alternative, Factur-X XMP).
+			validator: ZUGFeRDValidator — validates the assembled PDF against the ZUGFeRD/Factur-X
+			           EN16931 profile (schema + schematron).
+		-->
+		<dependency>
+			<groupId>org.mustangproject</groupId>
+			<artifactId>library</artifactId>
+			<version>2.11.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mustangproject</groupId>
+			<artifactId>validator</artifactId>
+			<version>2.11.0</version>
+			<scope>test</scope>
+		</dependency>
+
+	</dependencies>
+
+	<profiles>
+		<profile>
+			<!--
+			    Regenerate JAXB sources from XSD schemas in src/main/resources/**/*.xsd.
+			    XSD source: Factur-X 1.08 EN16931 CII schema set, bundled from the
+			    akretion/factur-x package (https://github.com/akretion/factur-x), BSD licence.
+			    The XSDs are from the public Factur-X / ZUGFeRD 2.x EN16931 standard
+			    (UN/CEFACT CII syntax, identical to XRechnung's CII variant).
+			    Run this profile whenever a schema file changes:
+			      mvn generate-sources -Pregenerate-jaxb-sources
+			    Or regenerate all JAXB modules at once:
+			      ./misc/dev-support/scripts/regenerate-jaxb-sources.sh
+			    After regeneration, commit the changed java-xjc files together with the XSD change.
+			-->
+			<id>regenerate-jaxb-sources</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.jvnet.jaxb2.maven2</groupId>
+						<artifactId>maven-jaxb2-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>generate-einvoice-cii-model</id>
+								<phase>generate-sources</phase>
+								<goals>
+									<goal>generate</goal>
+								</goals>
+								<configuration>
+									<args>
+										<arg>-no-header</arg>
+										<!-- needed to avoid java class name collisions across multiple XSDs -->
+										<arg>-XautoNameResolution</arg>
+										<!-- do not create package-info.java; we supply our own if needed -->
+										<arg>-npa</arg>
+									</args>
+									<schemaDirectory>${project.basedir}/src/main/resources/de/metas/einvoice/cii/model</schemaDirectory>
+									<generatePackage>de.metas.einvoice.cii.model</generatePackage>
+									<generateDirectory>${project.basedir}/src/main/java-xjc</generateDirectory>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+</project>

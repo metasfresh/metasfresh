@@ -12,6 +12,7 @@ const containerElement = () => page.locator('#WFProcessScreen');
 export const InventoryJobScreen = {
     waitForScreen: async () => await step(`${NAME} - Wait for screen`, async () => {
         await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
+        await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     getJobId: async () => {
@@ -27,6 +28,14 @@ export const InventoryJobScreen = {
         await InventoryScanScreen.waitForScreen();
 
         await InventoryScanScreen.countHU({ locatorQRCode, huQRCode, expectQtyBooked, qtyCount, attributes });
+    }),
+
+    openScanHUStep: async ({ locatorQRCode }) => await step(`${NAME} - Navigate to Scan HU step`, async () => {
+        await page.getByTestId('scanQRCode-button').tap();
+        await InventoryScanScreen.waitForScreen();
+        await InventoryScanScreen.waitForPanel('ScanLocator');
+        await InventoryScanScreen.typeQRCode(locatorQRCode);
+        await InventoryScanScreen.waitForPanel('ScanHU');
     }),
 
     expectLineButton: async ({ productId, locatorId, qtyBooked, qtyCount }) => await test.step(`${NAME} - Expect job button by productId=${productId}, locatorId=${locatorId}`, async () => {

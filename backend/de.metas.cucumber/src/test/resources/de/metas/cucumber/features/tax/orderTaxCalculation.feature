@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E2200_Automatic_Tax_Determination
+@allure.label.feature:F2200
 @ghActions:run_on_executor7
 Feature: Validate tax calculation for orders taking into account dropship location
+## F2200: Tax
 
   Background:
     Given infrastructure and metasfresh are running

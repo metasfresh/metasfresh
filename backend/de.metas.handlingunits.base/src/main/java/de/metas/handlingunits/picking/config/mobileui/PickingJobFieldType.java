@@ -22,13 +22,14 @@
 
 package de.metas.handlingunits.picking.config.mobileui;
 
-import com.google.common.collect.ImmutableMap;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.ad_reference.ReferenceId;
-import de.metas.common.util.Check;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
+import de.metas.util.lang.ReferenceListAwareEnums.ValuesIndex;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
@@ -42,7 +43,8 @@ import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJO
 import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJOBFIELD_DeliveryAddress;
 import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJOBFIELD_DocumentNo;
 import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJOBFIELD_HandoverLocation;
-import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJOBFIELD_Product;
+import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJOBFIELD_ProductName;
+import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJOBFIELD_ProductNo;
 import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJOBFIELD_QtyToDeliver;
 import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJOBFIELD_RuestplatzNr;
 
@@ -56,29 +58,27 @@ public enum PickingJobFieldType implements ReferenceListAwareEnum
 	DATE_READY(PICKINGJOBFIELD_DateReady),
 	HANDOVER_LOCATION(PICKINGJOBFIELD_HandoverLocation),
 	RUESTPLATZ_NR(PICKINGJOBFIELD_RuestplatzNr),
-	PRODUCT(PICKINGJOBFIELD_Product),
+	PRODUCT_NO(PICKINGJOBFIELD_ProductNo),
+	PRODUCT_NAME(PICKINGJOBFIELD_ProductName),
 	QTY_TO_DELIVER(PICKINGJOBFIELD_QtyToDeliver),
 	;
 
-	private static final ReferenceId PICKING_JOB_FIELD_REFERENCE_ID = ReferenceId.ofRepoId(PICKINGJOBFIELD_AD_Reference_ID);
+	private static final ValuesIndex<PickingJobFieldType> index = ReferenceListAwareEnums.index(values());
 
-	private final String code;
+	private static final ReferenceId PICKING_JOB_FIELD_REFERENCE_ID = ReferenceId.ofRepoId(PICKINGJOBFIELD_AD_Reference_ID);
+	@NonNull private final String code;
 
 	@NonNull
-	public static PickingJobFieldType ofCode(@NonNull final String code)
-	{
-		return Check.assumeNotNull(typesByCode.get(code), "No Type found for code=" + code);
-	}
+	public static PickingJobFieldType ofCode(@NonNull final String code) {return index.ofCode(code);}
 
-	private static final ImmutableMap<String, PickingJobFieldType> typesByCode = ReferenceListAwareEnums.indexByCode(values());
+	@NonNull
+	@JsonCreator
+	public static PickingJobFieldType ofCodeOrName(@NonNull final String code) {return index.ofCodeOrName(code);}
 
-	public ITranslatableString getCaption()
-	{
-		return TranslatableStrings.adRefList(PickingJobFieldType.PICKING_JOB_FIELD_REFERENCE_ID, code);
-	}
+	@JsonValue
+	public String toJson() {return getCode();}
 
-	public static boolean equals(@Nullable PickingJobFieldType type1, @Nullable PickingJobFieldType type2)
-	{
-		return Objects.equals(type1, type2);
-	}
+	public ITranslatableString getCaption() {return TranslatableStrings.adRefList(PickingJobFieldType.PICKING_JOB_FIELD_REFERENCE_ID, code);}
+
+	public static boolean equals(@Nullable PickingJobFieldType type1, @Nullable PickingJobFieldType type2) {return Objects.equals(type1, type2);}
 }

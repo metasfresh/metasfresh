@@ -36,6 +36,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Map;
 
 @Value
 @ApiModel(description = "Note that given the respective use-case, either one of both properties migh be `null`, but not both at once.")
@@ -64,6 +65,7 @@ public class JsonResponseBPartner
 	public static final String SALES_PARTNER_CODE = "salesPartnerCode";
 	public static final String SALES_PARTNER = "salesPartner";
 	public static final String SALESTREPID = "salesRepId";
+	public static final String DISCOUNT_PRINTED = "discountPrinted";
 	public static final String PAYMENT_RULE = "paymentRule";
 	public static final String INTERNAL_NAME = "internalName";
 	public static final String COMPANY = "company";
@@ -76,6 +78,7 @@ public class JsonResponseBPartner
 	public static final String CUSTOMER_PAYMENTTERM = "customerPaymentTerm";
 	public static final String VENDOR_PAYMENTTERM = "vendorPaymentTerm";
 	public static final String CUSTOMER_INCOTERMS = "customerIncoterms";
+	public static final String EXTENDED_PROPS = "extendedProps";
 
 	private static final String CHANGE_INFO = "changeInfo";
 
@@ -197,6 +200,10 @@ public class JsonResponseBPartner
 	@JsonInclude(Include.NON_NULL)
 	JsonResponseSalesRepContact salesRepContact;
 
+	@ApiModelProperty(value = "Translates to `C_BPartner.IsDiscountPrinted`.")
+	@JsonProperty(DISCOUNT_PRINTED)
+	boolean discountPrinted;
+
 	@JsonProperty(PAYMENT_RULE)
 	@JsonInclude(Include.NON_NULL)
 	JSONPaymentRule paymentRule;
@@ -259,6 +266,13 @@ public class JsonResponseBPartner
 	@JsonInclude(Include.NON_NULL)
 	JsonResponseIncoterms customerIncoterms;
 
+	@ApiModelProperty(position = 168,
+			value = "Values of custom REST-API columns (AD_Column.IsRestAPICustomColumn='Y') on C_BPartner.")
+	@JsonProperty(EXTENDED_PROPS)
+	@JsonInclude(Include.NON_NULL)
+	@Nullable
+	Map<String, Object> extendedProps;
+
 	@ApiModelProperty(position = 9999) // shall be last
 	@JsonProperty(CHANGE_INFO)
 	@JsonInclude(Include.NON_NULL)
@@ -289,6 +303,7 @@ public class JsonResponseBPartner
 			@JsonProperty(SALES_PARTNER_CODE) @Nullable final String salesPartnerCode,
 			@JsonProperty(SALES_PARTNER) @Nullable final JsonResponseSalesRep responseSalesRep,
 			@JsonProperty(SALESTREPID) @Nullable final JsonResponseSalesRepContact salesRepContact,
+			@JsonProperty(DISCOUNT_PRINTED) final boolean discountPrinted,
 			@JsonProperty(PAYMENT_RULE) @Nullable final JSONPaymentRule paymentRule,
 			@JsonProperty(INTERNAL_NAME) @Nullable final String internalName,
 			@JsonProperty(COMPANY) @NonNull final Boolean company,
@@ -301,6 +316,7 @@ public class JsonResponseBPartner
 			@JsonProperty(CUSTOMER_PAYMENTTERM) @Nullable final JsonResponsePaymentTerm customerPaymentTerm,
 			@JsonProperty(VENDOR_PAYMENTTERM) @Nullable final JsonResponsePaymentTerm vendorPaymentTerm,
 			@JsonProperty(CUSTOMER_INCOTERMS) @Nullable final JsonResponseIncoterms customerIncoterms,
+			@JsonProperty(EXTENDED_PROPS) @Nullable final Map<String, Object> extendedProps,
 
 			//
 			@JsonProperty(CHANGE_INFO) @Nullable final JsonChangeInfo changeInfo)
@@ -334,6 +350,7 @@ public class JsonResponseBPartner
 		this.salesPartnerCode = salesPartnerCode;
 		this.responseSalesRep = responseSalesRep;
 		this.salesRepContact = salesRepContact;
+		this.discountPrinted = discountPrinted;
 		this.paymentRule = paymentRule;
 		this.internalName = internalName;
 		this.company = company;
@@ -350,6 +367,7 @@ public class JsonResponseBPartner
 		this.customerPaymentTerm = customerPaymentTerm;
 		this.vendorPaymentTerm = vendorPaymentTerm;
 		this.customerIncoterms = customerIncoterms;
+		this.extendedProps = extendedProps;
 
 		this.changeInfo = changeInfo;
 	}

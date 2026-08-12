@@ -40,7 +40,6 @@ import de.metas.security.permissions2.PermissionServiceFactories;
 import de.metas.tax.api.VATIdentifier;
 import de.metas.title.TitleId;
 import de.metas.user.api.IUserBL;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.ExternalId;
@@ -173,7 +172,7 @@ final class BPartnerCompositeSaver
 				|| !isBlank(bpartner.getCompanyName())) // kept this logic here for legacy purpose
 		{
 			bpartnerRecord.setIsCompany(true);
-			bpartnerRecord.setCompanyName(bpartner.getCompanyName().trim());
+			bpartnerRecord.setCompanyName(StringUtils.trimBlankToNull(bpartner.getCompanyName()));
 		}
 		else
 		{
@@ -257,6 +256,8 @@ final class BPartnerCompositeSaver
 		bpartnerRecord.setExcludeFromPromotions(bpartner.isExcludeFromPromotions());
 		bpartnerRecord.setReferrer(bpartner.getReferrer());
 		bpartnerRecord.setMKTG_Campaign_ID(CampaignId.toRepoId(bpartner.getCampaignId()));
+
+		bpartnerRecord.setIsDiscountPrinted(bpartner.isDiscountPrinted());
 
 		if (bpartner.getPaymentRule() != null)
 		{
@@ -350,11 +351,11 @@ final class BPartnerCompositeSaver
 			bpartnerLocationRecord.setPhone2(partnerLocation.getMobile());
 			bpartnerLocationRecord.setFax(partnerLocation.getFax());
 			bpartnerLocationRecord.setEMail(partnerLocation.getEmail());
+			bpartnerLocationRecord.setAttention(partnerLocation.getAttention());
 
 			bpartnerLocationRecord.setSetup_Place_No(partnerLocation.getSetupPlaceNo());
 			bpartnerLocationRecord.setIsHandOverLocation(partnerLocation.isHandOverLocation());
 			bpartnerLocationRecord.setIsRemitTo(partnerLocation.isRemitTo());
-			bpartnerLocationRecord.setVisitorsAddress(partnerLocation.isVisitorsAddress());
 			bpartnerLocationRecord.setIsReplicationLookupDefault(partnerLocation.isReplicationLookupDefault());
 
 			final BPartnerLocationType locationType = partnerLocation.getLocationType();
@@ -399,53 +400,30 @@ final class BPartnerCompositeSaver
 	{
 		if (bpartnerLocation.isAddressSpecifiedByExistingLocationIdOnly())
 		{
-			final LocationId existingLocationId = Check.assumeNotNull(
-					bpartnerLocation.getExistingLocationId(),
-					"existingLocationId not null: {}", bpartnerLocation);
-
-			final I_C_Location existingLocationRecord = locationDAO.getById(existingLocationId);
+			final I_C_Location existingLocationRecord = locationDAO.getById(bpartnerLocation.getExistingLocationIdNotNull());
 			return BPartnerCompositesLoader.toBPartnerLocationAddressPart(
-					existingLocationRecord,
-					locationDAO,
-					countryDAO);
-		}
-
-		final BPartnerLocationAddressPart oldAddress;
-		if (bpartnerLocation.getExistingLocationId() != null)
-		{
-			final I_C_Location existingLocationRecord = locationDAO.getById(bpartnerLocation.getExistingLocationId());
-			oldAddress = BPartnerCompositesLoader.toBPartnerLocationAddressPart(
 					existingLocationRecord,
 					locationDAO,
 					countryDAO);
 		}
 		else
 		{
-			oldAddress = null;
+			return createOrReuseLocationRecord(bpartnerLocation.toAddress());
 		}
-
-		BPartnerLocationAddressPart newAddress = bpartnerLocation.toAddress();
-		if (oldAddress == null || !BPartnerLocationAddressPart.equals(oldAddress, newAddress))
-		{
-			newAddress = createNewLocationRecord(newAddress);
-		}
-
-		return newAddress;
 	}
 
-	private BPartnerLocationAddressPart createNewLocationRecord(@NonNull final BPartnerLocationAddressPart address)
+	private BPartnerLocationAddressPart createOrReuseLocationRecord(@NonNull final BPartnerLocationAddressPart address)
 	{
 		final LocationCreateRequest.LocationCreateRequestBuilder requestBuilder = LocationCreateRequest.builder()
+				.existingLocationId(address.getExistingLocationId())
 				.address1(address.getAddress1())
 				.address2(address.getAddress2())
 				.address3(address.getAddress3())
 				.address4(address.getAddress4());
 
-		if (address.getCountryCode() != null && !isBlank(address.getCountryCode()))
-		{
-			final CountryId countryId = countryDAO.getCountryIdByCountryCode(address.getCountryCode());
-			requestBuilder.countryId(countryId);
-		}
+		StringUtils.trimBlankToOptional(address.getCountryCode())
+				.map(countryDAO::getCountryIdByCountryCode)
+				.ifPresent(requestBuilder::countryId);
 
 		boolean postalDataSetFromPostalRecord = false;
 		final I_C_Postal postalRecord = retrievePostal(address);
@@ -469,7 +447,7 @@ final class BPartnerCompositeSaver
 
 		requestBuilder.poBox(address.getPoBox());
 
-		final LocationId newLocationId = locationDAO.createLocation(requestBuilder.build());
+		final LocationId newLocationId = locationDAO.createOrReuseLocation(requestBuilder.build());
 		return address.withExistingLocationId(newLocationId);
 	}
 
@@ -580,6 +558,12 @@ final class BPartnerCompositeSaver
 			bpartnerContactRecord.setExternalId(ExternalId.toValue(bpartnerContact.getExternalId()));
 			bpartnerContactRecord.setIsActive(bpartnerContact.isActive());
 			bpartnerContactRecord.setC_BPartner_ID(bpartnerId.getRepoId());
+			// FIXME: disabled — AD_User.Value has no unique constraint, and BPartnerDAO.getBPartnerContactIdBy queries by Value
+			// using firstOnlyOrNull which would throw on duplicates. Add a unique constraint on AD_User.Value before enabling.
+			// if (!isBlank(bpartnerContact.getValue()))
+			// {
+			// 	bpartnerContactRecord.setValue(bpartnerContact.getValue());
+			// }
 
 			final String name = CoalesceUtil.coalesce(
 					StringUtils.trimBlankToNull(bpartnerContact.getName()),

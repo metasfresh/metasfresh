@@ -1,41 +1,8 @@
-package de.metas.material.dispo.service.event.handler.shipmentschedule;
-
-import com.google.common.collect.ImmutableList;
-import de.metas.document.dimension.DimensionService;
-import de.metas.document.dimension.MDCandidateDimensionFactory;
-import de.metas.material.dispo.commons.DispoTestUtils;
-import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.CandidateQtyDetailsRepository;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
-import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailRepo;
-import de.metas.material.dispo.model.I_MD_Candidate;
-import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
-import de.metas.material.dispo.service.candidatechange.StockCandidateService;
-import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
-import de.metas.material.dispo.service.candidatechange.handler.SupplyCandidateHandler;
-import de.metas.material.event.PostMaterialEventService;
-import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
-import de.metas.material.event.shipmentschedule.ShipmentScheduleDetail;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.SpringContextHolder;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
-import java.util.List;
-
-import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
-import static java.math.BigDecimal.ZERO;
-import static org.assertj.core.api.Assertions.assertThat;
-
 /*
  * #%L
  * metasfresh-material-dispo-service
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -53,6 +20,52 @@ import static org.assertj.core.api.Assertions.assertThat;
  * #L%
  */
 
+package de.metas.material.dispo.service.event.handler.shipmentschedule;
+
+import com.google.common.collect.ImmutableList;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.MDCandidateDimensionFactory;
+import de.metas.material.dispo.commons.DispoTestUtils;
+import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.repository.CandidateQtyDetailsRepository;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
+import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailRepo;
+import de.metas.material.dispo.model.I_MD_Candidate;
+import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
+import de.metas.material.dispo.service.candidatechange.StockCandidateService;
+import de.metas.material.dispo.service.candidatechange.handler.DemandCandidateHandler;
+import de.metas.material.dispo.service.candidatechange.handler.SupplyCandidateHandler;
+import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
+import de.metas.material.event.shipmentschedule.ShipmentScheduleDetail;
+import de.metas.material.planning.event.MaterialPlanningContextHelper;
+import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.impl.WarehouseBL;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_Warehouse;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.List;
+
+import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
+import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
+import static de.metas.material.event.EventTestHelper.NOW;
+import static de.metas.material.event.EventTestHelper.createProductDescriptor;
+import static java.math.BigDecimal.ZERO;
+import static org.assertj.core.api.Assertions.assertThat;
+
 public class ShipmentScheduleDeletedHandlerTests
 {
 	private AvailableToPromiseRepository atpRepository;
@@ -67,6 +80,8 @@ public class ShipmentScheduleDeletedHandlerTests
 
 		final DimensionService dimensionService = new DimensionService(ImmutableList.of(new MDCandidateDimensionFactory()));
 		SpringContextHolder.registerJUnitBean(dimensionService);
+		SpringContextHolder.registerJUnitBean(IWarehouseBL.class, new WarehouseBL());
+		ShipmentScheduleCreatedHandlerTests.ensureWarehouseExists(WarehouseId.ofRepoId(30));
 
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 
@@ -85,13 +100,15 @@ public class ShipmentScheduleDeletedHandlerTests
 		final SupplyCandidateHandler supplyCandidateHandler = new SupplyCandidateHandler(candidateRepositoryCommands, stockCandidateService);
 
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
-				new DemandCandiateHandler(
+				new DemandCandidateHandler(
 						candidateRepositoryRetrieval,
 						candidateRepositoryCommands,
 						postMaterialEventService,
 						atpRepository,
 						stockCandidateService,
-						supplyCandidateHandler)));
+						supplyCandidateHandler,
+						Mockito.mock(MaterialPlanningContextHelper.class),
+						new PPOrderCandidateDemandMatcher())));
 
 		shipmentScheduleCreatedHandler = new ShipmentScheduleCreatedHandler(
 				candidateChangeHandler,
@@ -109,6 +126,13 @@ public class ShipmentScheduleDeletedHandlerTests
 		final ShipmentScheduleDeletedEvent shipmentScheduleDeletedEvent = ShipmentScheduleDeletedEvent
 				.builder()
 				.eventDescriptor(eventDescriptor)
+				.materialDescriptor(MaterialDescriptor.builder()
+						.date(NOW)
+						.productDescriptor(createProductDescriptor())
+						.customerId(BPARTNER_ID)
+						.quantity(BigDecimal.TEN)
+						.warehouseId(WarehouseId.ofRepoId(30))
+						.build())
 				.shipmentScheduleId(shipmentScheduleId)
 				.shipmentScheduleDetail(ShipmentScheduleDetail.builder()
 												.orderedQuantity(ZERO)
@@ -131,5 +155,42 @@ public class ShipmentScheduleDeletedHandlerTests
 
 		assertThat(demandRecord.getQty()).isEqualByComparingTo(ZERO);
 		assertThat(stockRecord.getQty()).isEqualByComparingTo(ZERO);
+	}
+
+	@Test
+	public void handleEvent_isIgnoreInMaterialDispo_shortCircuits()
+	{
+		final WarehouseId excludedWarehouseId = createWarehouse("Y");
+
+		final ShipmentScheduleDeletedEvent event = ShipmentScheduleDeletedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_AND_ORG_ID))
+				.materialDescriptor(MaterialDescriptor.builder()
+						.date(NOW)
+						.productDescriptor(createProductDescriptor())
+						.customerId(BPARTNER_ID)
+						.quantity(BigDecimal.TEN)
+						.warehouseId(excludedWarehouseId)
+						.build())
+				.shipmentScheduleId(76)
+				.shipmentScheduleDetail(ShipmentScheduleDetail.builder()
+						.orderedQuantity(ZERO)
+						.orderedQuantityDelta(ZERO)
+						.reservedQuantity(ZERO)
+						.reservedQuantityDelta(ZERO)
+						.build())
+				.build();
+
+		shipmentScheduleDeletedHandler.handleEvent(event);
+
+		// short-circuit: no MD_Candidate records must have been touched
+		assertThat(DispoTestUtils.retrieveAllRecords()).isEmpty();
+	}
+
+	private static WarehouseId createWarehouse(@Nullable final String mrpExclude)
+	{
+		final I_M_Warehouse warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
+		warehouse.setMRP_Exclude(mrpExclude);
+		InterfaceWrapperHelper.saveRecord(warehouse);
+		return WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
 	}
 }

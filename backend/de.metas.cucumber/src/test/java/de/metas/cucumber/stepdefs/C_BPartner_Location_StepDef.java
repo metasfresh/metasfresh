@@ -35,15 +35,19 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
@@ -51,7 +55,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_Location_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID;
 
 @RequiredArgsConstructor
@@ -68,20 +72,78 @@ public class C_BPartner_Location_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
+	@Nullable private AdempiereException lastUpdateException = null;
+
 	@Given("metasfresh contains C_BPartner_Locations:")
 	public void createC_BPartner_Location(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(this::createC_BPartner_Location);
 	}
 
+	/**
+	 * Updates existing {@code C_BPartner_Location} records.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns <b>C_BPartner_Location_ID.Identifier</b> — (required) step-def identifier of the C_BPartner_Location to update<br>
+	 *                   <b>EMail</b> — (optional) new email address; use {@code null} token to clear<br>
+	 *                   <b>GLN</b> — (optional) new GLN; use {@code null} token to clear<br>
+	 *                   <b>VATaxID</b> — (optional) new VAT-ID value; use {@code null} token to clear<br>
+	 * @cucumber.example
+	 * <pre>
+	 * And update C_BPartner_Location:
+	 *   | C_BPartner_Location_ID.Identifier | OPT.GLN       |
+	 *   | bpLocation                        | 1234567890123 |
+	 * </pre>
+	 */
 	@Given("update C_BPartner_Location:")
 	public void update_C_BPartner_Location(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
+		DataTableRows.of(dataTable).forEach(this::updateCBPartnerLocation);
+	}
+
+	/**
+	 * Attempts to update a C_BPartner_Location and expects an {@link AdempiereException} to be thrown.
+	 * The exception is stored in {@link #lastUpdateException} for subsequent assertion steps.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns <b>C_BPartner_Location_ID.Identifier</b> — (required) step-def identifier of the C_BPartner_Location to update<br>
+	 *                   <b>VATaxID</b> — (optional) new VAT-ID value (expected to fail validation)<br>
+	 * @cucumber.example
+	 * <pre>
+	 * When update C_BPartner_Location expecting error:
+	 *   | C_BPartner_Location_ID.Identifier | VATaxID  |
+	 *   | bpl_tc1                           | ATU1234  |
+	 * </pre>
+	 */
+	@When("update C_BPartner_Location expecting error:")
+	public void update_c_bpartner_location_expecting_error(@NonNull final DataTable dataTable)
+	{
+		lastUpdateException = null;
+		try
 		{
-			updateCBPartnerLocation(tableRow);
+			DataTableRows.of(dataTable).forEach(this::updateCBPartnerLocation);
 		}
+		catch (final AdempiereException e)
+		{
+			lastUpdateException = e;
+		}
+	}
+
+	/**
+	 * Asserts that the most recent {@code update C_BPartner_Location expecting error:} step did throw an {@link AdempiereException}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then an AdempiereException was thrown during the last C_BPartner_Location update
+	 * </pre>
+	 */
+	@Then("an AdempiereException was thrown during the last C_BPartner_Location update")
+	public void assertLastLocationUpdateExceptionWasThrown()
+	{
+		assertThat(lastUpdateException)
+				.as("Expected an AdempiereException to be thrown during the last C_BPartner_Location update, but none was thrown")
+				.isNotNull();
 	}
 
 	@Given("update C_Location of the following C_BPartner_Location")
@@ -183,6 +245,9 @@ public class C_BPartner_Location_StepDef
 			bPartnerLocationRecord.setPhone(phone);
 		}
 
+		tableRow.getAsOptionalString(I_C_BPartner_Location.COLUMNNAME_Attention)
+				.ifPresent(bPartnerLocationRecord::setAttention);
+
 		final Integer bpartnerLocationId = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID);
 		if (bpartnerLocationId != null && bpartnerLocationId > 0)
 		{
@@ -222,28 +287,26 @@ public class C_BPartner_Location_StepDef
 		bPartnerLocationTable.put(bpartnerLocationIdentifier, bpartnerLocation);
 	}
 
-	private void updateCBPartnerLocation(@NonNull final Map<String, String> tableRow)
+	private void updateCBPartnerLocation(@NonNull final DataTableRow row)
 	{
-		final String bPartnerLocationIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final StepDefDataIdentifier bPartnerLocationIdentifier = row.getAsIdentifier(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID);
 
 		final Integer bPartnerLocationID = bPartnerLocationTable.getOptional(bPartnerLocationIdentifier)
 				.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
-				.orElseGet(() -> Integer.parseInt(bPartnerLocationIdentifier));
+				.orElseGet(() -> Integer.parseInt(bPartnerLocationIdentifier.getAsString()));
 
 		final I_C_BPartner_Location bPartnerLocation = InterfaceWrapperHelper.load(bPartnerLocationID, I_C_BPartner_Location.class);
 
-		final String email = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_EMail);
-		if (Check.isNotBlank(email))
-		{
-			bPartnerLocation.setEMail(DataTableUtil.nullToken2Null(email));
-		}
+		row.getAsOptionalString(I_C_BPartner_Location.COLUMNNAME_EMail)
+				.filter(Check::isNotBlank)
+				.ifPresent(email -> bPartnerLocation.setEMail(DataTableUtil.nullToken2Null(email)));
 
-		final String gln = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_GLN);
+		row.getAsOptionalString(I_C_BPartner_Location.COLUMNNAME_GLN)
+				.filter(Check::isNotBlank)
+				.ifPresent(gln -> bPartnerLocation.setGLN(DataTableUtil.nullToken2Null(gln)));
 
-		if (Check.isNotBlank(gln))
-		{
-			bPartnerLocation.setGLN(DataTableUtil.nullToken2Null(gln));
-		}
+		row.getAsOptionalString(I_C_BPartner_Location.COLUMNNAME_VATaxID)
+				.ifPresent(vataxId -> bPartnerLocation.setVATaxID(DataTableUtil.nullToken2Null(vataxId)));
 
 		saveRecord(bPartnerLocation);
 		bPartnerLocationTable.putOrReplace(bPartnerLocationIdentifier, bPartnerLocation);
@@ -288,30 +351,34 @@ public class C_BPartner_Location_StepDef
 	@And("validate C_BPartner_Location:")
 	public void validate_C_BPartner_Location(@NonNull final DataTable dataTable)
 	{
-		final SoftAssertions softly = new SoftAssertions();
-
-		for (final Map<String, String> row : dataTable.asMaps())
+		DataTableRows.of(dataTable).forEach(row ->
 		{
-			final String bpLocationIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final SoftAssertions softly = new SoftAssertions();
+
+			final StepDefDataIdentifier bpLocationIdentifier = row.getAsIdentifier(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID);
 			final I_C_BPartner_Location bpLocation = bPartnerLocationTable.get(bpLocationIdentifier);
 
-			final String bpIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			final I_C_BPartner bPartnerRecord = bPartnerTable.get(bpIdentifier);
-			softly.assertThat(bpLocation.getC_BPartner_ID()).as("C_BPartner_ID").isEqualTo(bPartnerRecord.getC_BPartner_ID());
+			row.getAsOptionalIdentifier(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID)
+					.ifPresent(bpId -> softly.assertThat(bpLocation.getC_BPartner_ID()).as("C_BPartner_ID")
+							.isEqualTo(bPartnerTable.get(bpId).getC_BPartner_ID()));
 
-			final String address = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BPartner_Location.COLUMNNAME_Address);
-			if (Check.isNotBlank(address))
-			{
-				softly.assertThat(bpLocation.getAddress()).as("Address").isEqualTo(address);
-			}
+			row.getAsOptionalString(I_C_BPartner_Location.COLUMNNAME_Name)
+					.map(DataTableUtil::nullToken2Null)
+					.ifPresent(v -> softly.assertThat(bpLocation.getName()).as("Name").isEqualTo(v));
 
-			final String name = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BPartner_Location.COLUMNNAME_Name);
-			if (Check.isNotBlank(name))
-			{
-				softly.assertThat(bpLocation.getName()).as("Name").isEqualTo(name);
-			}
-		}
+			row.getAsOptionalString(I_C_BPartner_Location.COLUMNNAME_GLN)
+					.map(DataTableUtil::nullToken2Null)
+					.ifPresent(v -> softly.assertThat(bpLocation.getGLN()).as("GLN").isEqualTo(v));
 
-		softly.assertAll();
+			row.getAsOptionalString(I_C_BPartner_Location.COLUMNNAME_VATaxID)
+					.map(DataTableUtil::nullToken2Null)
+					.ifPresent(v -> softly.assertThat(bpLocation.getVATaxID()).as("VATaxID").isEqualTo(v));
+
+			row.getAsOptionalString(I_C_BPartner_Location.COLUMNNAME_Attention)
+					.map(DataTableUtil::nullToken2Null)
+					.ifPresent(v -> softly.assertThat(bpLocation.getAttention()).as("Attention").isEqualTo(v));
+
+			softly.assertAll();
+		});
 	}
 }

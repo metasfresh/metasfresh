@@ -31,6 +31,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
@@ -69,6 +70,41 @@ public class PP_Cost_Collector_StepDef
 		this.bomLineTable = bomLineTable;
 	}
 
+	/**
+	 * Loads PP_Cost_Collector records from the database by matching the given DataTable rows,
+	 * with a timeout to account for asynchronous cost collector creation.
+	 *
+	 * <p>Each DataTable row describes one PP_Cost_Collector to load and assert. The step waits up to
+	 * {@code timeoutSec} for the record to appear in the database, then verifies its properties match
+	 * the expected values.
+	 *
+	 * <p>Required columns:
+	 * <ul>
+	 *   <li>{@code PP_Cost_Collector_ID.Identifier} — identifier to store the loaded record (for later reference)</li>
+	 *   <li>{@code PP_Order_ID.Identifier} — identifier of the parent production order</li>
+	 *   <li>{@code MovementQty} — expected movement quantity (must match the loaded record)</li>
+	 *   <li>{@code DocStatus} — expected document status, e.g. "Drafted" or "Completed" (must match the loaded record)</li>
+	 * </ul>
+	 *
+	 * <p>Optional columns:
+	 * <ul>
+	 *   <li>{@code M_Product_ID.Identifier} — identifier of the product; used to disambiguate when a single PP_Order
+	 *   has multiple cost collectors with the same DocStatus (e.g., one for component issue and one for finished-good
+	 *   receipt). If omitted, only PP_Order_ID and DocStatus are used to match the record.</li>
+	 * </ul>
+	 *
+	 * <p>Example:
+	 * <pre>
+	 * And after not more than 5s, PP_Cost_Collector are found:
+	 *   | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus |
+	 *   | cc_1                            | order_1                | product_fg              | 100         | Completed |
+	 *   | cc_2                            | order_1                | product_comp            | -50         | Drafted   |
+	 * </pre>
+	 *
+	 * @param timeoutSec maximum seconds to wait for each PP_Cost_Collector record to appear
+	 * @param dataTable the table defining PP_Cost_Collector records to load and assert
+	 * @throws InterruptedException if the wait is interrupted
+	 */
 	@And("^after not more than (.*)s, PP_Cost_Collector are found:$")
 	public void load_PP_Cost_Collector(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
@@ -80,19 +116,34 @@ public class PP_Cost_Collector_StepDef
 			final I_PP_Cost_Collector ppCostCollector = ppCostCollectorTable.get(ppCostCollectorIdentifier);
 			assertThat(ppCostCollector).isNotNull();
 
-			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_Product product = productTable.get(productIdentifier);
-			assertThat(product).isNotNull();
+			final String productIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (productIdentifier != null)
+			{
+				final I_M_Product product = productTable.get(productIdentifier);
+				assertThat(product).isNotNull();
+				assertThat(ppCostCollector.getM_Product_ID()).isEqualTo(product.getM_Product_ID());
+			}
 
 			final BigDecimal movementQty = DataTableUtil.extractBigDecimalForColumnName(tableRow, COLUMNNAME_MovementQty);
 			final String status = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_DocStatus);
 
-			assertThat(ppCostCollector.getM_Product_ID()).isEqualTo(product.getM_Product_ID());
 			assertThat(ppCostCollector.getMovementQty()).isEqualTo(movementQty);
 			assertThat(ppCostCollector.getDocStatus()).isEqualTo(status);
 		}
 	}
 
+	/**
+	 * Loads a single PP_Cost_Collector record from the database by matching the given table row.
+	 *
+	 * <p>Queries for a PP_Cost_Collector matching the PP_Order_ID and DocStatus from the row.
+	 * If a product identifier is provided, further filters by product to disambiguate when one order
+	 * has multiple cost collectors with the same status. Stores the found record in the
+	 * {@code ppCostCollectorTable} for later reference.
+	 *
+	 * @param tableRow a single DataTable row with required columns:
+	 *        {@code PP_Order_ID.Identifier}, {@code DocStatus}, and optional {@code M_Product_ID.Identifier}
+	 * @return {@code true} if the record was found and stored; {@code false} if not found (caller will retry)
+	 */
 	@NonNull
 	private Boolean loadPPCostCollector(@NonNull final Map<String, String> tableRow)
 	{
@@ -100,9 +151,19 @@ public class PP_Cost_Collector_StepDef
 		final I_PP_Order ppOrder = ppOrderTable.get(ppOrderIdentifier);
 		final String status = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_DocStatus);
 
-		final Optional<I_PP_Cost_Collector> ppCostCollector = queryBL.createQueryBuilder(I_PP_Cost_Collector.class)
+		final IQueryBuilder<I_PP_Cost_Collector> queryBuilder = queryBL.createQueryBuilder(I_PP_Cost_Collector.class)
 				.addEqualsFilter(I_PP_Cost_Collector.COLUMNNAME_PP_Order_ID, ppOrder.getPP_Order_ID())
-				.addEqualsFilter(COLUMNNAME_DocStatus, status)
+				.addEqualsFilter(COLUMNNAME_DocStatus, status);
+
+		// When a single order has several cost collectors with the same DocStatus (e.g. a component issue
+		// and a finished-good receipt), disambiguate by the product so each row matches exactly one record.
+		final String productIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (productIdentifier != null)
+		{
+			queryBuilder.addEqualsFilter(COLUMNNAME_M_Product_ID, productTable.get(productIdentifier).getM_Product_ID());
+		}
+
+		final Optional<I_PP_Cost_Collector> ppCostCollector = queryBuilder
 				.create()
 				.firstOnlyOptional(I_PP_Cost_Collector.class);
 

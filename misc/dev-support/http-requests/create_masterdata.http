@@ -1,0 +1,37 @@
+POST {{baseURL}}/api/v2/frontendTesting
+Content-Type: application/json;charset=UTF-8
+accept: application/json;charset=UTF-8
+
+{
+  "login": {
+    "user": {
+      "language": "en_US",
+      "login": "TESTUSER_{{$timestamp}}",
+      "password": "TESTUSER",
+      "firstname": "first",
+      "lastname": "last"
+    }
+  },
+  "bpartners": {
+    "CUSTOMER1": {
+      "isVendor": false,
+      "isCustomer": true,
+      "isSoPriceList": true,
+      "bpartnerCode": "CUST01_{{$timestamp}}",
+      "name": "customerName_{{$timestamp}}"
+    }
+  },
+  "products": {
+    "Product1": {
+      "name": "TestProd_{{$timestamp}}",
+      "value": "PROD01_{{$timestamp}}",
+      "type": "Item",
+      "prices": [
+        {
+          "price": 50.0,
+          "currencyCode": "EUR"
+        }
+      ]
+    }
+  }
+}

@@ -24,7 +24,7 @@ package de.metas.shipper.gateway.commons.process;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.inoutcandidate.CarrierGoodsTypeId;
-import de.metas.inoutcandidate.CarrierProductId;
+import de.metas.shipping.CarrierProductId;
 import de.metas.inoutcandidate.CarrierServiceId;
 import de.metas.inoutcandidate.ShipmentScheduleQuery;
 import lombok.Builder;

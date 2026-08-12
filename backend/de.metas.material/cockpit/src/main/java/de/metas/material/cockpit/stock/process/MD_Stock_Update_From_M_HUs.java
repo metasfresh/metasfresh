@@ -16,9 +16,11 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
@@ -50,39 +52,150 @@ import static java.math.BigDecimal.ZERO;
  */
 
 /**
- * Reset the {@link I_MD_Stock} table.
+ * Reset the {@link I_MD_Stock} table from the actual HU storage truth.
  * May be run in parallel to "normal" production stock changes.
+ * <p>
+ * The diverging rows are processed as a <b>batched drain</b>: each iteration fetches the top
+ * {@link #BATCH_SIZE} still-diverging rows of {@code MD_Stock_From_HUs_V} (NOT an OFFSET page),
+ * and then re-queries. Because this process is {@code @RunOutOfTrx}, each
+ * {@code handleDataUpdateRequest()} call commits immediately and fires its
+ * {@code StockChangedEvent} immediately — there is no ambient transaction to wait for.
+ * The committed corrections set those rows' {@code QtyOnHandChange} to zero, so they drop out of
+ * the {@code <> 0} filter and the shrinking set drains to empty. Memory stays flat because only
+ * {@link #BATCH_SIZE} rows are ever held at once (the {@code LIMIT} fetch), avoiding the
+ * {@link OutOfMemoryError} the previous "load everything into one List" implementation suffered
+ * on large backlogs.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class MD_Stock_Update_From_M_HUs extends JavaProcess
 {
+	/** Number of diverging rows fetched and corrected per iteration. */
+	private static final int BATCH_SIZE = 500;
+
+	/**
+	 * Infinite-loop backstop. Set well above any plausible number of diverging rows; it is NOT a
+	 * coverage cap (the drain empties naturally long before this). It only guards against the set
+	 * never emptying - e.g. concurrent production stock changes (this process is explicitly designed
+	 * to run in parallel to them) or UOM-rounding epsilon - so the run cannot spin forever.
+	 */
+	private static final int MAX_LOOPS = 100_000;
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	private final StockDataUpdateRequestHandler dataUpdateRequestHandler = SpringContextHolder.instance.getBean(StockDataUpdateRequestHandler.class);
+	private final StockDataUpdateRequestHandler dataUpdateRequestHandler;
+
+	/** Seam — in production: {@link #retrieveHuData(int)}. */
+	private final BatchSource batchSource;
+
+	/** Seam — in production: {@link #createAndHandleDataUpdateRequests(List)}. */
+	private final BatchProcessor batchProcessor;
+
+	private final int maxLoops;
+
+	/** Supplies the next batch of still-diverging {@code MD_Stock_From_HUs_V} rows. */
+	@FunctionalInterface
+	interface BatchSource
+	{
+		@NonNull List<I_MD_Stock_From_HUs_V> getNextBatch(int batchSize);
+	}
+
+	/** Applies the corrections for one fetched batch. */
+	@FunctionalInterface
+	interface BatchProcessor
+	{
+		void process(@NonNull List<I_MD_Stock_From_HUs_V> batch);
+	}
+
+	/** Production constructor: invoked by the process framework via reflection. */
+	@SuppressWarnings("unused")
+	public MD_Stock_Update_From_M_HUs()
+	{
+		this.dataUpdateRequestHandler = SpringContextHolder.instance.getBean(StockDataUpdateRequestHandler.class);
+		this.batchSource = this::retrieveHuData;
+		this.batchProcessor = this::createAndHandleDataUpdateRequests;
+		this.maxLoops = MAX_LOOPS;
+	}
+
+	/** Test constructor: lets a unit test substitute the loop's seams and shrink the backstop. */
+	MD_Stock_Update_From_M_HUs(
+			@NonNull final BatchSource batchSource,
+			@NonNull final BatchProcessor batchProcessor,
+			final int maxLoops)
+	{
+		this.dataUpdateRequestHandler = null;       // not used through the injected seams
+		this.batchSource = batchSource;
+		this.batchProcessor = batchProcessor;
+		this.maxLoops = maxLoops;
+	}
 
 	@Override
 	@RunOutOfTrx
 	protected String doIt()
 	{
-		final List<I_MD_Stock_From_HUs_V> huBasedDataRecords = retrieveHuData();
-
-		addLog("Retrieved {} MD_Stock_From_HUs_V records", huBasedDataRecords.size());
-
-		createAndHandleDataUpdateRequests(huBasedDataRecords);
-		addLog("Created and handled DataUpdateRequests for all MD_Stock_From_HUs_V records");
-
+		drainInBatches();
 		return MSG_OK;
 	}
 
-	private List<I_MD_Stock_From_HUs_V> retrieveHuData()
+	/**
+	 * Runs the batched drain loop.
+	 *
+	 * @return the number of corrected rows when the set drained to empty; the number corrected up to
+	 * the backstop trip otherwise (after logging a warning).
+	 */
+	int drainInBatches()
 	{
-		addLog("Performing a select for Records to correct on MD_Stock_From_HUs_V");
+		int total = 0;
+		for (int loop = 1; loop <= maxLoops; loop++)
+		{
+			final List<I_MD_Stock_From_HUs_V> batch = batchSource.getNextBatch(BATCH_SIZE);
+			if (batch.isEmpty())
+			{
+				Loggables.addLog("MD_Stock_From_HUs_V drained, {} rows corrected", total);
+				return total;
+			}
+
+			batchProcessor.process(batch);
+			total += batch.size();
+			Loggables.addLog("MD_Stock_From_HUs_V: corrected {} rows so far", total);
+		}
+
+		// Backstop tripped: the diverging set never emptied within maxLoops iterations.
+		Loggables.addLog("WARNING: MD_Stock_Update_From_M_HUs hit MAX_LOOPS={} after correcting {} rows; {} rows still diverge - investigate",
+				maxLoops, total, countDivergingRows());
+		return total;
+	}
+
+	private int countDivergingRows()
+	{
 		return queryBL
 				.createQueryBuilder(I_MD_Stock_From_HUs_V.class)
 				.addNotEqualsFilter(I_MD_Stock_From_HUs_V.COLUMNNAME_QtyOnHandChange, ZERO)
 				.create()
+				.count();
+	}
+
+	/**
+	 * Fetches the top {@code batchSize} still-diverging rows, ordered by the view's grouping columns.
+	 * <p>
+	 * This is a DRAIN, NOT an OFFSET page: every call returns the top-N of whatever still diverges.
+	 * Once a batch is corrected those rows leave the {@code QtyOnHandChange <> 0} set, so re-querying
+	 * the top-N walks the shrinking set down to empty. An OFFSET would instead skip {@code batchSize}
+	 * real rows on each iteration and never correct them.
+	 */
+	private List<I_MD_Stock_From_HUs_V> retrieveHuData(final int batchSize)
+	{
+		return queryBL
+				.createQueryBuilder(I_MD_Stock_From_HUs_V.class)
+				.addNotEqualsFilter(I_MD_Stock_From_HUs_V.COLUMNNAME_QtyOnHandChange, ZERO)
+				.orderBy(I_MD_Stock_From_HUs_V.COLUMNNAME_AD_Client_ID)
+				.orderBy(I_MD_Stock_From_HUs_V.COLUMNNAME_AD_Org_ID)
+				.orderBy(I_MD_Stock_From_HUs_V.COLUMNNAME_M_Warehouse_ID)
+				.orderBy(I_MD_Stock_From_HUs_V.COLUMNNAME_M_Product_ID)
+				.orderBy(I_MD_Stock_From_HUs_V.COLUMNNAME_C_UOM_ID)
+				.orderBy(I_MD_Stock_From_HUs_V.COLUMNNAME_AttributesKey)
+				.create()
+				.setLimit(QueryLimit.ofInt(batchSize))
 				.list();
 	}
 
@@ -97,7 +210,7 @@ public class MD_Stock_Update_From_M_HUs extends JavaProcess
 			final StockDataUpdateRequest dataUpdateRequest = createDataUpdatedRequest(
 					huBasedDataRecord,
 					info);
-			addLog("Handling corrective dataUpdateRequest={}", dataUpdateRequest);
+			Loggables.addLog("Handling corrective dataUpdateRequest={}", dataUpdateRequest);
 			dataUpdateRequestHandler.handleDataUpdateRequest(dataUpdateRequest);
 		}
 	}

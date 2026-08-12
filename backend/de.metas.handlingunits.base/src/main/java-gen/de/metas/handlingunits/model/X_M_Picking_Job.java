@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_Picking_Job extends org.compiere.model.PO implements I_M_Picking_Job, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -385561628L;
+	private static final long serialVersionUID = -1271990746L;
 
     /** Standard Constructor */
     public X_M_Picking_Job (final Properties ctx, final int M_Picking_Job_ID, @Nullable final String trxName)
@@ -65,18 +65,6 @@ public class X_M_Picking_Job extends org.compiere.model.PO implements I_M_Pickin
 	}
 
 	@Override
-	public org.compiere.model.I_C_Order getC_Order()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class);
-	}
-
-	@Override
-	public void setC_Order(final org.compiere.model.I_C_Order C_Order)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class, C_Order);
-	}
-
-	@Override
 	public void setC_Order_ID (final int C_Order_ID)
 	{
 		if (C_Order_ID < 1) 
@@ -89,6 +77,18 @@ public class X_M_Picking_Job extends org.compiere.model.PO implements I_M_Pickin
 	public int getC_Order_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Order_ID);
+	}
+
+	@Override
+	public void setCurrent_PickTo_TU_GRAI (final @Nullable java.lang.String Current_PickTo_TU_GRAI)
+	{
+		set_Value (COLUMNNAME_Current_PickTo_TU_GRAI, Current_PickTo_TU_GRAI);
+	}
+
+	@Override
+	public java.lang.String getCurrent_PickTo_TU_GRAI() 
+	{
+		return get_ValueAsString(COLUMNNAME_Current_PickTo_TU_GRAI);
 	}
 
 	@Override
@@ -199,18 +199,6 @@ public class X_M_Picking_Job extends org.compiere.model.PO implements I_M_Pickin
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU getM_LU_HU()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_LU_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
-	}
-
-	@Override
-	public void setM_LU_HU(final de.metas.handlingunits.model.I_M_HU M_LU_HU)
-	{
-		set_ValueFromPO(COLUMNNAME_M_LU_HU_ID, de.metas.handlingunits.model.I_M_HU.class, M_LU_HU);
-	}
-
-	@Override
 	public void setM_LU_HU_ID (final int M_LU_HU_ID)
 	{
 		if (M_LU_HU_ID < 1) 
@@ -223,18 +211,6 @@ public class X_M_Picking_Job extends org.compiere.model.PO implements I_M_Pickin
 	public int getM_LU_HU_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_LU_HU_ID);
-	}
-
-	@Override
-	public de.metas.handlingunits.model.I_M_HU_PI getM_LU_HU_PI()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_LU_HU_PI_ID, de.metas.handlingunits.model.I_M_HU_PI.class);
-	}
-
-	@Override
-	public void setM_LU_HU_PI(final de.metas.handlingunits.model.I_M_HU_PI M_LU_HU_PI)
-	{
-		set_ValueFromPO(COLUMNNAME_M_LU_HU_PI_ID, de.metas.handlingunits.model.I_M_HU_PI.class, M_LU_HU_PI);
 	}
 
 	@Override
@@ -283,18 +259,6 @@ public class X_M_Picking_Job extends org.compiere.model.PO implements I_M_Pickin
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU getM_TU_HU()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_TU_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
-	}
-
-	@Override
-	public void setM_TU_HU(final de.metas.handlingunits.model.I_M_HU M_TU_HU)
-	{
-		set_ValueFromPO(COLUMNNAME_M_TU_HU_ID, de.metas.handlingunits.model.I_M_HU.class, M_TU_HU);
-	}
-
-	@Override
 	public void setM_TU_HU_ID (final int M_TU_HU_ID)
 	{
 		if (M_TU_HU_ID < 1) 
@@ -310,18 +274,6 @@ public class X_M_Picking_Job extends org.compiere.model.PO implements I_M_Pickin
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU_PI getM_TU_HU_PI()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_TU_HU_PI_ID, de.metas.handlingunits.model.I_M_HU_PI.class);
-	}
-
-	@Override
-	public void setM_TU_HU_PI(final de.metas.handlingunits.model.I_M_HU_PI M_TU_HU_PI)
-	{
-		set_ValueFromPO(COLUMNNAME_M_TU_HU_PI_ID, de.metas.handlingunits.model.I_M_HU_PI.class, M_TU_HU_PI);
-	}
-
-	@Override
 	public void setM_TU_HU_PI_ID (final int M_TU_HU_PI_ID)
 	{
 		if (M_TU_HU_PI_ID < 1) 
@@ -334,18 +286,6 @@ public class X_M_Picking_Job extends org.compiere.model.PO implements I_M_Pickin
 	public int getM_TU_HU_PI_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_TU_HU_PI_ID);
-	}
-
-	@Override
-	public de.metas.handlingunits.model.I_M_HU getPickFrom_HU()
-	{
-		return get_ValueAsPO(COLUMNNAME_PickFrom_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
-	}
-
-	@Override
-	public void setPickFrom_HU(final de.metas.handlingunits.model.I_M_HU PickFrom_HU)
-	{
-		set_ValueFromPO(COLUMNNAME_PickFrom_HU_ID, de.metas.handlingunits.model.I_M_HU.class, PickFrom_HU);
 	}
 
 	@Override

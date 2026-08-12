@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00183
 @ghActions:run_on_executor7
 Feature: picking rest controller tests
+## F00183: Workflow
 
   Background:
     Given infrastructure and metasfresh are running
@@ -66,6 +69,8 @@ Feature: picking rest controller tests
       | PS_1       | 063.1       | Y         |
 
   @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00183
   Scenario: start a fresh picking job, do the picking, complete the picking => ship the goods
     And create JsonWFProcessStartRequest for picking and store it in context as request payload:
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier |
@@ -88,7 +93,7 @@ Feature: picking rest controller tests
 
     And the metasfresh REST-API endpoint path 'api/v2/picking/event' receives a 'POST' request with the payload from context and responds with '200' status code
 
-    And validate M_ShipmentSchedule_Lock record for
+    And validate M_ShipmentSchedule_Lock record for:
       | M_ShipmentSchedule_ID.Identifier | Login      | Exists |
       | pickingShipmentSchedule          | metasfresh | Y      |
     And store workflow endpointPath api/v2/userWorkflows/wfProcess/@wf1@/@CompletePickingActivity@/userConfirmation in context
@@ -98,6 +103,8 @@ Feature: picking rest controller tests
       | pickingShipmentSchedule          | shipment_1            | CO            |
 
   @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00183
   Scenario: start a fresh picking job, do the picking, log out, log back in with the same user, complete the picking => ship the goods
     And create JsonWFProcessStartRequest for picking and store it in context as request payload:
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier |
@@ -120,7 +127,7 @@ Feature: picking rest controller tests
 
     And the metasfresh REST-API endpoint path 'api/v2/picking/event' receives a 'POST' request with the payload from context and responds with '200' status code
 
-    And validate M_ShipmentSchedule_Lock record for
+    And validate M_ShipmentSchedule_Lock record for:
       | M_ShipmentSchedule_ID.Identifier | Login      | Exists |
       | pickingShipmentSchedule          | metasfresh | Y      |
 
@@ -128,7 +135,7 @@ Feature: picking rest controller tests
     And validate workflow process
       | WorkflowProcess.Identifier | DocStatus |
       | wf1                        | DR        |
-    And validate M_ShipmentSchedule_Lock record for
+    And validate M_ShipmentSchedule_Lock record for:
       | M_ShipmentSchedule_ID.Identifier | Login      | Exists |
       | pickingShipmentSchedule          | metasfresh | N      |
 
@@ -137,7 +144,7 @@ Feature: picking rest controller tests
     And store workflow endpointPath api/v2/userWorkflows/wfProcess/@wf1@/continue in context
     And a 'POST' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
-    And validate M_ShipmentSchedule_Lock record for
+    And validate M_ShipmentSchedule_Lock record for:
       | M_ShipmentSchedule_ID.Identifier | Login      | Exists |
       | pickingShipmentSchedule          | metasfresh | Y      |
 
@@ -149,9 +156,11 @@ Feature: picking rest controller tests
       | pickingShipmentSchedule          | shipment_1            | CO            |
 
   @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00183
   Scenario: start a fresh picking job, do the whole picking, log out, log back in with a different user, complete the picking => ship the goods
     Given metasfresh contains AD_Users:
-      | Identifier     | Name           | OPT.EMail                | OPT.Login      | OPT.Role_ID |
+      | Identifier     | Name           | EMail                    | Login          | AD_Role_ID  |
       | testUser_17497 | testUser_17497 | testUser_17497@email.com | testUser_17497 | 540024      |
     And create JsonWFProcessStartRequest for picking and store it in context as request payload:
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier |
@@ -173,7 +182,7 @@ Feature: picking rest controller tests
 
     And the metasfresh REST-API endpoint path 'api/v2/picking/event' receives a 'POST' request with the payload from context and responds with '200' status code
 
-    And validate M_ShipmentSchedule_Lock record for
+    And validate M_ShipmentSchedule_Lock record for:
       | M_ShipmentSchedule_ID.Identifier | Login      | Exists |
       | pickingShipmentSchedule          | metasfresh | Y      |
 
@@ -181,7 +190,7 @@ Feature: picking rest controller tests
     And validate workflow process
       | WorkflowProcess.Identifier | DocStatus |
       | wf1                        | DR        |
-    And validate M_ShipmentSchedule_Lock record for
+    And validate M_ShipmentSchedule_Lock record for:
       | M_ShipmentSchedule_ID.Identifier | Login      | Exists |
       | pickingShipmentSchedule          | metasfresh | N      |
 
@@ -190,7 +199,7 @@ Feature: picking rest controller tests
     And store workflow endpointPath api/v2/userWorkflows/wfProcess/@wf1@/continue in context
     And a 'POST' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
-    And validate M_ShipmentSchedule_Lock record for
+    And validate M_ShipmentSchedule_Lock record for:
       | M_ShipmentSchedule_ID.Identifier | Login          | Exists |
       | pickingShipmentSchedule          | testUser_17497 | Y      |
 
@@ -202,9 +211,11 @@ Feature: picking rest controller tests
       | pickingShipmentSchedule          | shipment_1            | CO            |
 
   @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00183
   Scenario: start a fresh picking job, do nothing, log out, log back in with a different user, do the whole picking, complete the picking => ship the goods
     Given metasfresh contains AD_Users:
-      | Identifier     | Name           | OPT.EMail                | OPT.Login      | OPT.Role_ID |
+      | Identifier     | Name           | EMail                    | Login          | AD_Role_ID  |
       | testUser_17497 | testUser_17497 | testUser_17497@email.com | testUser_17497 | 540024      |
     And create JsonWFProcessStartRequest for picking and store it in context as request payload:
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier |
@@ -213,11 +224,11 @@ Feature: picking rest controller tests
     And process response and extract picking step and main HU picking candidate:
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | PickingStep.Identifier | PickingStepQRCode.Identifier |
       | wf1                        | a1                          | line1                  | step1                  | QR                           |
-    And validate M_ShipmentSchedule_Lock record for
+    And validate M_ShipmentSchedule_Lock record for:
       | M_ShipmentSchedule_ID.Identifier | Login      | Exists |
       | pickingShipmentSchedule          | metasfresh | Y      |
     And the metasfresh REST-API endpoint path 'api/v2/userWorkflows/logout' receives a 'POST' request with the payload from context and responds with '200' status code
-    And validate M_ShipmentSchedule_Lock record for
+    And validate M_ShipmentSchedule_Lock record for:
       | M_ShipmentSchedule_ID.Identifier | Login      | Exists |
       | pickingShipmentSchedule          | metasfresh | N      |
     And validate workflow process
@@ -237,7 +248,7 @@ Feature: picking rest controller tests
     And process response and extract activityId:
       | componentType        | WorkflowActivity.Identifier |
       | common/confirmButton | CompletePickingActivityWf2  |
-    And validate M_ShipmentSchedule_Lock record for
+    And validate M_ShipmentSchedule_Lock record for:
       | M_ShipmentSchedule_ID.Identifier | Login          | Exists |
       | pickingShipmentSchedule          | testUser_17497 | Y      |
     And create JsonPickingEventsList and store it in context as request payload:
@@ -251,9 +262,11 @@ Feature: picking rest controller tests
       | pickingShipmentSchedule          | shipment_1            | CO            |
 
   @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00183
   Scenario: start a fresh picking job, do a partial pick, log out, log back in with a different user, do the picking, complete the picking => ship the goods
     Given metasfresh contains AD_Users:
-      | Identifier     | Name           | OPT.EMail                | OPT.Login      | OPT.Role_ID |
+      | Identifier     | Name           | EMail                    | Login          | AD_Role_ID  |
       | testUser_17497 | testUser_17497 | testUser_17497@email.com | testUser_17497 | 540024      |
     And set mobile UI picking profile
       | IsAllowPickingAnyHU | CreateShipmentPolicy |
@@ -271,7 +284,7 @@ Feature: picking rest controller tests
     And process response and extract activityId:
       | componentType        | WorkflowActivity.Identifier |
       | common/confirmButton | CompletePickingActivity     |
-    And validate M_ShipmentSchedule_Lock record for
+    And validate M_ShipmentSchedule_Lock record for:
       | M_ShipmentSchedule_ID.Identifier | Login      | Exists |
       | pickingShipmentSchedule          | metasfresh | Y      |
     And generate QR Codes for HUs
@@ -282,7 +295,7 @@ Feature: picking rest controller tests
       | wf1                        | a1                          | line1                  | huToPickQR          | 1         |
     And the metasfresh REST-API endpoint path 'api/v2/picking/event' receives a 'POST' request with the payload from context and responds with '200' status code
     And the metasfresh REST-API endpoint path 'api/v2/userWorkflows/logout' receives a 'POST' request with the payload from context and responds with '200' status code
-    And validate M_ShipmentSchedule_Lock record for
+    And validate M_ShipmentSchedule_Lock record for:
       | M_ShipmentSchedule_ID.Identifier | Login      | Exists |
       | pickingShipmentSchedule          | metasfresh | N      |
     And validate workflow process
@@ -291,7 +304,7 @@ Feature: picking rest controller tests
     And the existing user with login 'testUser_17497' receives a random a API token for the existing role with name 'WebUI'
     And store workflow endpointPath api/v2/userWorkflows/wfProcess/@wf1@/continue in context
     And a 'POST' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
-    And validate M_ShipmentSchedule_Lock record for
+    And validate M_ShipmentSchedule_Lock record for:
       | M_ShipmentSchedule_ID.Identifier | Login          | Exists |
       | pickingShipmentSchedule          | testUser_17497 | Y      |
     And create JsonPickingEventsList and store it in context as request payload:

@@ -1,8 +1,15 @@
 @from:cucumber
+@allure.label.epic:E0140_Purchasing
+@allure.label.feature:F00640_Procurement_conditions_Excel_report
+@F00640
 @ghActions:run_on_executor6
 Feature: metasfresh communicates with the procurement-WebUI via RabbitMQ
+## F00640: Procurement WebUI
 
   @from:cucumber
+@allure.label.epic:E0140_Purchasing
+@allure.label.feature:F00640_Procurement_conditions_Excel_report
+@F00640
   Scenario: metasfresh provides bpartner data to the procurement-WebUI
     Given infrastructure and metasfresh are running
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION

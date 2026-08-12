@@ -117,6 +117,7 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 
 		addFilterByShipmentScheduleAndJobScheduleIds(sqlQueryBuilder.getCompositeFilter(), query.getScheduleIds());
 		addAlreadyShippedFilter(sqlQueryBuilder.getCompositeFilter(), query.getAlreadyShipped());
+		addProcessedFilter(sqlQueryBuilder, query.getProcessed());
 
 		if (query.getOnlyLUIds() != null && !query.getOnlyLUIds().isEmpty())
 		{
@@ -153,6 +154,14 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 		{
 			scheduleFilters.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, entireShipmentScheduleIds);
 		}
+	}
+
+	private static void addProcessedFilter(
+			@NonNull final IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> sqlQueryBuilder,
+			@Nullable final Boolean processed)
+	{
+		if (processed == null) {return;}
+		sqlQueryBuilder.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_Processed, processed);
 	}
 
 	private static void addAlreadyShippedFilter(@NonNull final ICompositeQueryFilter<I_M_ShipmentSchedule_QtyPicked> filter, @Nullable final Boolean onShipmentLine)
@@ -369,6 +378,23 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 						record -> ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()),
 						record -> record
 				));
+	}
+
+	@Override
+	public ImmutableSet<ShipmentScheduleId> getScheduleIdsWithDraftShipmentAllocations(@NonNull final Set<ShipmentScheduleId> scheduleIds)
+	{
+		if (scheduleIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return stream(ShipmentScheduleAllocQuery.builder()
+				.scheduleIds(ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(scheduleIds))
+				.alreadyShipped(true) // M_InOutLine_ID IS NOT NULL
+				.processed(false) // Processed='N'
+				.build())
+				.map(record -> ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()))
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@NonNull

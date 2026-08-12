@@ -65,7 +65,9 @@ import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.IProductBL;
@@ -114,6 +116,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 
 	private static final AdMessageKey MSG_ERROR_INVOICE_CANDIDATE_IS_PROCESSED = AdMessageKey.of("C_OrderLine.onProductChanged.Msg_Error_Invoice_Candidate_Is_Processed");
 
@@ -349,9 +352,16 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		setIncoterms(ic, orderLine);
 
+		setPromotionCodes(ic, orderLine);
+
 		setC_Flatrate_Term_ID(ic, orderLine);
 
 		setPaymentRule(ic, orderLine);
+
+		// F00127.1 — propagate free-of-charge flag. Lives in setOrderedData so amendments
+		// to the order line after IC creation also flow through.
+		ic.setIsWithoutCharge(orderLine.isWithoutCharge());
+		ic.setReason(orderLine.isWithoutCharge() ? orderLine.getReason() : null);
 	}
 
 	public static void assertOrderLineProductNotChangedIfInvoiceCandidateIsProcessed(final I_C_Invoice_Candidate ic, final org.compiere.model.I_C_OrderLine orderLine)
@@ -398,12 +408,33 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setIncotermLocation(order.getIncotermLocation());
 	}
 
+	private void setPromotionCodes(@NonNull final I_C_Invoice_Candidate ic,
+								   @NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
+		ic.setC_PromotionCode_ID(order.getC_PromotionCode_ID());
+		ic.setC_PromotionCode2_ID(order.getC_PromotionCode2_ID());
+	}
+
 	private void setC_PaymentTerm(
 			@NonNull final I_C_Invoice_Candidate ic,
 			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		final PaymentTermId paymentTermId = Services.get(IOrderLineBL.class).getPaymentTermId(orderLine);
 		ic.setC_PaymentTerm_ID(paymentTermId.getRepoId());
+
+		// me03 #29369: complex-term orders → use Immediate payment term on the IC,
+		// so partial-delivery invoices get a single-line pay-schedule (= invoice's
+		// own GrandTotal as DueAmt). Without this, the IC inherits the order's
+		// complex schedule and partial invoices show inflated OpenAmt.
+		final PaymentTerm paymentTerm = paymentTermRepository.getById(paymentTermId);
+		if (paymentTerm.isComplex())
+		{
+			final ClientId clientId = ClientId.ofRepoId(ic.getAD_Client_ID());
+			final OrgId orgId = OrgId.ofRepoId(ic.getAD_Org_ID());
+			paymentTermRepository.getImmediatePaymentTermId(clientId, orgId)
+					.ifPresent(immediateTermId -> ic.setC_PaymentTerm_ID(immediateTermId.getRepoId()));
+		}
 	}
 
 	/**

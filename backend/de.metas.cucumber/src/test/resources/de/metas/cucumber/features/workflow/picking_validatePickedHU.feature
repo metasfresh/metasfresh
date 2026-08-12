@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00183
 @ghActions:run_on_executor7
+@ignore
 Feature: Picking workflow - validate picked HU
+## F00183: Workflow
 
   Background:
     Given infrastructure and metasfresh are running
@@ -62,6 +66,8 @@ Feature: Picking workflow - validate picked HU
 
 
   @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00183
   @Id:S0406_70
   Scenario: Pick an already picked HU => error
     Given set mobile UI picking profile
@@ -126,6 +132,8 @@ Feature: Picking workflow - validate picked HU
     # END
 
   @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00183
   @Id:S0406_80
   Scenario: Pick an already shipped HU => error
     Given set mobile UI picking profile
@@ -201,6 +209,8 @@ Feature: Picking workflow - validate picked HU
     # END
 
   @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00183
   @Id:S0406_90
   Scenario: Pick a destroyed HU => success
     Given set mobile UI picking profile
@@ -290,6 +300,8 @@ Feature: Picking workflow - validate picked HU
     # END
 
   @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00183
   @Id:S0406_100
   Scenario: Pick more than specified on shipment schedule in 2 sessions => success
     Given set mobile UI picking profile

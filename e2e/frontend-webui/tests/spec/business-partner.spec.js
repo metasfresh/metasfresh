@@ -1,5 +1,6 @@
 import { expect } from '@playwright/test';
 import { test } from '../../playwright.config';
+import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
@@ -11,9 +12,26 @@ const BUSINESS_PARTNER_WINDOW_ID = 123;
 /**
  * Business Partner window test suite.
  * Tests viewing and interacting with the Business Partner master data window.
+ *
+ * Features tested (from Google Sheets):
+ * - F00900: Business Partner
  */
 test.describe('Business Partner Window', () => {
   test('View Business Partner window', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0390: Masterdata Partner');
+    allure.tag('F00900: Business Partner');
+    allure.tag('F00900');  // Standalone tag for Tags section
+    allure.story('View business partner list');
+    allure.severity('normal');
+    allure.description(`
+## E0390: Masterdata Partner
+## F00900: Business Partner
+
+### Test Scenario
+View business partner list in master data window.
+    `);
+
     // Create test data: user and business partners
     const masterdata = await Backend.createMasterdata({
       request: {
@@ -45,6 +63,20 @@ test.describe('Business Partner Window', () => {
   });
 
   test('Open Business Partner detail view', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0390: Masterdata Partner');
+    allure.tag('F00900: Business Partner');
+    allure.tag('F00900');  // Standalone tag for Tags section
+    allure.story('Open business partner detail view');
+    allure.severity('normal');
+    allure.description(`
+## E0390: Masterdata Partner
+## F00900: Business Partner
+
+### Test Scenario
+Open business partner detail view from list.
+    `);
+
     // Create test data: user and a business partner
     const masterdata = await Backend.createMasterdata({
       request: {

@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits.picking.config.mobileui;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
@@ -50,6 +51,11 @@ import java.util.Objects;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+/**
+ * Repository Tables: MobileUI_UserProfile_Picking, MobileUI_UserProfile_Picking_BPartner,
+ * MobileUI_UserProfile_Picking_Job, PickingProfile_PickingJobConfig, PickingProfile_Filter
+ * Repository Cluster: MobileUIPickingUserProfileRepository
+ */
 @Repository
 public class MobileUIPickingUserProfileRepository
 {
@@ -105,6 +111,7 @@ public class MobileUIPickingUserProfileRepository
 				.isActiveWorkplaceRequired(profileRecord.isActiveWorkplaceRequired())
 				.isConsiderOnlyJobScheduledToWorkplace(profileRecord.isConsideredOnlyScheduledJobs())
 				.isAllowQuickPackAll(profileRecord.isAllowQuickPackAll())
+				.isMassPrinting(profileRecord.isMassPrinting())
 				.customerConfigs(retrievePickingCustomerConfigsCollection(profileId))
 				.defaultPickingJobOptions(extractPickingJobOptions(profileRecord))
 				.filters(retrieveFilters(profileId))
@@ -128,6 +135,8 @@ public class MobileUIPickingUserProfileRepository
 				.isAllowCompletingPartialPickingJob(profileRecord.isAllowCompletingPartialPickingJob())
 				.isShowLastPickedBestBeforeDateForLines(profileRecord.isShowLastPickedBestBeforeDateForLines())
 				.isAnonymousPickHUsOnTheFly(profileRecord.isAnonymousHuPickedOnTheFly())
+				.pickingSlotRequired(OptionalBoolean.ofBoolean(profileRecord.isPickingSlotRequired()))
+				.isWarnShelfLifeUndercut(profileRecord.isWarnShelfLifeUndercut())
 				.displayPickingSlotSuggestions(OptionalBoolean.ofBoolean(profileRecord.isDisplayPickingSlotSuggestions()))
 				.createShipmentPolicy(CreateShipmentPolicy.ofCode(profileRecord.getCreateShipmentPolicy()))
 				.completeJobAutomatically(OptionalBoolean.ofBoolean(profileRecord.isCompleteJobAutomatically()))
@@ -216,6 +225,7 @@ public class MobileUIPickingUserProfileRepository
 		final MobileUIPickingUserProfileId profileId = save_Header(profile);
 		save_CustomerConfigs(profile.getCustomerConfigs(), profileId);
 		save_Filters(profile.getFilterGroupsInOrder(), profileId);
+		save_Fields(profile.getFields(), profileId);
 	}
 
 	@NonNull
@@ -271,7 +281,42 @@ public class MobileUIPickingUserProfileRepository
 		}
 
 		InterfaceWrapperHelper.deleteAll(filterRecords.values());
+	}
 
+	private void save_Fields(final @NonNull ImmutableList<PickingJobField> fields, final MobileUIPickingUserProfileId profileId)
+	{
+		final ArrayListMultimap<PickingJobFieldType, I_PickingProfile_PickingJobConfig> recordsByFieldType = streamFieldRecords(profileId)
+				.collect(GuavaCollectors.toArrayListMultimapByKey(record -> PickingJobFieldType.ofCode(record.getPickingJobField())));
+
+		for (final PickingJobField field : fields)
+		{
+			final PickingJobFieldType fieldType = field.getField();
+			final I_PickingProfile_PickingJobConfig record;
+			if (recordsByFieldType.containsKey(fieldType))
+			{
+				record = recordsByFieldType.get(fieldType).get(0);
+				recordsByFieldType.remove(fieldType, record);
+			}
+			else
+			{
+				record = InterfaceWrapperHelper.newInstance(I_PickingProfile_PickingJobConfig.class);
+				record.setMobileUI_UserProfile_Picking_ID(profileId.getRepoId());
+			}
+
+			updateRecord(record, field);
+			InterfaceWrapperHelper.saveRecord(record);
+		}
+
+		InterfaceWrapperHelper.deleteAll(recordsByFieldType.values());
+	}
+
+	private void updateRecord(final I_PickingProfile_PickingJobConfig record, final PickingJobField from)
+	{
+		record.setPickingJobField(from.getField().getCode());
+		record.setSeqNo(from.getSeqNo());
+		record.setIsDisplayInSummary(from.isShowInSummary());
+		record.setIsDisplayInDetailed(from.isShowInDetailed());
+		record.setFormatPattern(from.getPattern());
 	}
 
 	private static void updateRecord(@NonNull final I_MobileUI_UserProfile_Picking_BPartner record, @NonNull final PickingCustomerConfig from)
@@ -290,6 +335,7 @@ public class MobileUIPickingUserProfileRepository
 		record.setIsActiveWorkplaceRequired(from.isActiveWorkplaceRequired());
 		record.setIsConsideredOnlyScheduledJobs(from.isConsiderOnlyJobScheduledToWorkplace());
 		record.setIsAllowQuickPackAll(from.isAllowQuickPackAll());
+		record.setIsMassPrinting(from.isMassPrinting());
 		updateRecord(record, from.getDefaultPickingJobOptions());
 	}
 
@@ -308,6 +354,8 @@ public class MobileUIPickingUserProfileRepository
 		record.setIsShowConfirmationPromptWhenOverPick(from.isShowConfirmationPromptWhenOverPick());
 		record.setIsShowLastPickedBestBeforeDateForLines(from.isShowLastPickedBestBeforeDateForLines());
 		record.setIsAnonymousHuPickedOnTheFly(from.isAnonymousPickHUsOnTheFly());
+		record.setIsPickingSlotRequired(from.isPickingSlotRequired());
+		record.setIsWarnShelfLifeUndercut(from.isWarnShelfLifeUndercut());
 		record.setIsDisplayPickingSlotSuggestions(from.getDisplayPickingSlotSuggestions().orElse(false));
 		record.setCreateShipmentPolicy(from.getCreateShipmentPolicy().getCode());
 		record.setIsCompleteJobAutomatically(from.getCompleteJobAutomatically().orElse(false));
@@ -354,15 +402,20 @@ public class MobileUIPickingUserProfileRepository
 	@NonNull
 	private ImmutableList<PickingJobField> retrieveFields(@NonNull final MobileUIPickingUserProfileId profileId)
 	{
-		final ImmutableList<PickingJobField> fields = queryBL.createQueryBuilder(I_PickingProfile_PickingJobConfig.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_PickingProfile_PickingJobConfig.COLUMNNAME_MobileUI_UserProfile_Picking_ID, profileId)
-				.create()
-				.stream()
+		final ImmutableList<PickingJobField> fields = streamFieldRecords(profileId)
 				.map(MobileUIPickingUserProfileRepository::fromRecord)
 				.collect(ImmutableList.toImmutableList());
 
 		return !fields.isEmpty() ? fields : MobileUIPickingUserProfile.DEFAULT.getFields();
+	}
+
+	private Stream<I_PickingProfile_PickingJobConfig> streamFieldRecords(final @NonNull MobileUIPickingUserProfileId profileId)
+	{
+		return queryBL.createQueryBuilder(I_PickingProfile_PickingJobConfig.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_PickingProfile_PickingJobConfig.COLUMNNAME_MobileUI_UserProfile_Picking_ID, profileId)
+				.create()
+				.stream();
 	}
 
 	private static PickingJobField fromRecord(final I_PickingProfile_PickingJobConfig record)
@@ -405,6 +458,7 @@ public class MobileUIPickingUserProfileRepository
 				.createShipmentPolicy(CreateShipmentPolicy.ofCode(record.getCreateShipmentPolicy()))
 				.isAllowCompletingPartialPickingJob(record.isAllowCompletingPartialPickingJob())
 				.isAnonymousPickHUsOnTheFly(record.isAnonymousHuPickedOnTheFly())
+				.pickingSlotRequired(OptionalBoolean.ofNullableString(record.getIsPickingSlotRequired()))
 				.displayPickingSlotSuggestions(OptionalBoolean.ofNullableString(record.getIsDisplayPickingSlotSuggestions()))
 				.pickingLineGroupBy(PickingLineGroupBy.ofNullableCode(record.getPickingLineGroupBy()))
 				.pickingLineSortBy(PickingLineSortBy.ofNullableCode(record.getPickingLineSortBy()))

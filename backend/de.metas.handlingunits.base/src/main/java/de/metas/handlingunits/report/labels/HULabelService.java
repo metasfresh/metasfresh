@@ -18,6 +18,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Process;
 import org.springframework.stereotype.Service;
 
@@ -38,6 +39,16 @@ public class HULabelService
 			.tableName(I_AD_Process.Table_Name)
 			.initialCapacity(1)
 			.build();
+
+	public static HULabelService newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+
+		return new HULabelService(
+				new HULabelConfigService(new HULabelConfigRepository()),
+				HUQRCodesService.newInstanceForUnitTesting()
+		);
+	}
 
 	public ExplainedOptional<HULabelConfig> getFirstMatching(final HULabelConfigQuery query)
 	{
@@ -85,7 +96,7 @@ public class HULabelService
 	@NonNull
 	public HULabelPrintProcessesList getHULabelPrintFormatProcesses()
 	{
-		return printProcessesCache.getOrLoad(0, this::retrieveHULabelPrintFormatProcesses);
+		return printProcessesCache.getOrLoadNonNull(0, this::retrieveHULabelPrintFormatProcesses);
 	}
 
 	private HULabelPrintProcessesList retrieveHULabelPrintFormatProcesses()

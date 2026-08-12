@@ -28,6 +28,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.exceptions.BPartnerNoBillToAddressException;
 import de.metas.bpartner.exceptions.BPartnerNoShipToAddressException;
+import de.metas.bpartner.effective.BPartnerEffective;
+import de.metas.bpartner.effective.BPartnerEffectiveBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
@@ -73,7 +75,8 @@ import de.metas.product.ProductId;
 import de.metas.report.DocumentReportService;
 import de.metas.report.ReportResultData;
 import de.metas.report.StandardDocumentReportType;
-import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.CalculateTaxResult;
+import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxUtils;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -134,6 +137,7 @@ public class MOrder extends X_C_Order implements IDocument
 	private final IWarehouseAdvisor warehouseAdvisor = Services.get(IWarehouseAdvisor.class);
 	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+	@NonNull private final SpringContextHolder.Lazy<BPartnerEffectiveBL> bpartnerEffectiveBL = SpringContextHolder.lazyBean(BPartnerEffectiveBL.class);
 
 	/**************************************************************************
 	 * Default Constructor
@@ -452,14 +456,16 @@ public class MOrder extends X_C_Order implements IDocument
 			setDeliveryViaRule(ss);
 		}
 		// Default Invoice/Payment Rule
-
-		final InvoiceRule invoiceRule = isSOTrx() ?
-				InvoiceRule.ofNullableCode(bp.getInvoiceRule()) :
-				InvoiceRule.ofNullableCode(bp.getPO_InvoiceRule());
-
-		if (invoiceRule != null)
+		// Use effective bill partner so group-chain InvoiceRule / IsAutoInvoice are resolved — mirrors OrderBL.setBPartner.
+		// setC_BPartner_ID is called above, so getEffectiveBillPartnerId coalesces correctly.
 		{
-			setInvoiceRule(invoiceRule.getCode());
+			final BPartnerId billBPartnerId = Check.assumeNotNull(
+					orderBL.getEffectiveBillPartnerId(this),
+					"billBPartnerId not null; setC_BPartner_ID must be called before this block");
+			final BPartnerEffective bpEffective = bpartnerEffectiveBL.get().getById(billBPartnerId);
+			final SOTrx soTrx = SOTrx.ofBoolean(isSOTrx());
+			setInvoiceRule(bpEffective.getInvoiceRule(soTrx).getCode());
+			setIsAutoInvoice(bpEffective.isAutoInvoice(soTrx));
 		}
 
 		if (isSOTrx() && Check.isNotBlank(bp.getPaymentRule()))
@@ -955,8 +961,8 @@ public class MOrder extends X_C_Order implements IDocument
 		orderBL.setM_PricingSystem_ID(this, false); // overridePricingSystem=false
 
 		//
-		// Default Currency
-		if (getC_Currency_ID() <= 0)
+		// Default Currency: take it from the price list when the currency is not set yet, or when the price list was just changed
+		if (getC_Currency_ID() <= 0 || is_ValueChanged(COLUMNNAME_M_PriceList_ID))
 		{
 			final PriceListId priceListId = PriceListId.ofRepoIdOrNull(getM_PriceList_ID());
 			final I_M_PriceList priceList = priceListId != null
@@ -968,7 +974,7 @@ public class MOrder extends X_C_Order implements IDocument
 			{
 				setC_Currency_ID(currencyId);
 			}
-			else
+			else if (getC_Currency_ID() <= 0)
 			{
 				setC_Currency_ID(Env.getContextAsInt(getCtx(), "#C_Currency_ID"));
 			}
@@ -1072,7 +1078,12 @@ public class MOrder extends X_C_Order implements IDocument
 				{
 					line.setDateOrdered(getDateOrdered());
 				}
-				if (is_ValueChanged(MOrder.COLUMNNAME_DatePromised))
+				// Propagate the header DatePromised to the line only on a UI action (a user editing the header
+				// expects all lines to follow) or when the line has no own date yet. A line that already carries
+				// its own DatePromised - e.g. a per-line delivery date set programmatically, or a cloned line -
+				// keeps it, so the header value cannot clobber an intentional per-line date.
+				if (is_ValueChanged(MOrder.COLUMNNAME_DatePromised)
+						&& (InterfaceWrapperHelper.isUIAction(this) || line.getDatePromised() == null))
 				{
 					line.setDatePromised(getDatePromised());
 				}
@@ -1510,30 +1521,29 @@ public class MOrder extends X_C_Order implements IDocument
 			final MTax tax = oTax.getTax();
 			if (tax.isSummary())
 			{
-				final MTax[] cTaxes = tax.getChildTaxes(false);
-				for (final MTax cTax : cTaxes)
+				for (final I_C_Tax childTaxRecord : tax.getChildTaxes(false))
 				{
+					final Tax childTax = TaxUtils.from(childTaxRecord);
 					final CurrencyPrecision taxPrecision = orderBL.getTaxPrecision(this);
-					final boolean taxIncluded = orderBL.isTaxIncluded(this, TaxUtils.from(cTax));
-					final BigDecimal taxAmt = Services.get(ITaxBL.class).calculateTaxAmt(cTax, oTax.getTaxBaseAmt(), taxIncluded, taxPrecision.toInt());
+					final boolean taxIncluded = orderBL.isTaxIncluded(this, childTax);
+					final CalculateTaxResult calculateTaxResult = childTax.calculateTax(oTax.getTaxBaseAmt(), taxIncluded, taxPrecision.toInt());
 					//
 					final MOrderTax newOTax = new MOrderTax(getCtx(), 0, trxName);
 					newOTax.setClientOrg(this);
 					newOTax.setC_Order_ID(getC_Order_ID());
-					newOTax.setC_Tax_ID(cTax.getC_Tax_ID());
+					newOTax.setC_Tax_ID(childTaxRecord.getC_Tax_ID());
 					newOTax.setPrecision(taxPrecision.toInt());
 					newOTax.setIsTaxIncluded(taxIncluded);
-					newOTax.setIsDocumentLevel(cTax.isDocumentLevel());
+					newOTax.setIsDocumentLevel(childTaxRecord.isDocumentLevel());
+					newOTax.setIsReverseCharge(childTax.isReverseCharge());
 					newOTax.setTaxBaseAmt(oTax.getTaxBaseAmt());
-					newOTax.setTaxAmt(taxAmt);
-					if (!newOTax.save(trxName))
-					{
-						return false;
-					}
+					newOTax.setTaxAmt(calculateTaxResult.getTaxAmount());
+					newOTax.setReverseChargeTaxAmt(calculateTaxResult.getReverseChargeAmt());
+					InterfaceWrapperHelper.save(newOTax);
 					//
 					if (!newOTax.isTaxIncluded())
 					{
-						grandTotal = grandTotal.add(taxAmt);
+						grandTotal = grandTotal.add(calculateTaxResult.getTaxAmount());
 					}
 				}
 				if (!oTax.delete(true, trxName))

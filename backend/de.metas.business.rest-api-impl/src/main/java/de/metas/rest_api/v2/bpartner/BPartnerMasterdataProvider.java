@@ -35,24 +35,29 @@ import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
+import de.metas.incoterms.Incoterms;
+import de.metas.incoterms.IncotermsRepository;
 import de.metas.lang.SOTrx;
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class BPartnerMasterdataProvider
 {
-	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-	private final ExternalReferenceRestControllerService externalReferenceService;
-	private final BPartnerEffectiveBL bPartnerEffectiveBL;
+	@NonNull private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+	@NonNull private final ExternalReferenceRestControllerService externalReferenceService;
+	@NonNull private final BPartnerEffectiveBL bPartnerEffectiveBL;
+	@NonNull private final IncotermsRepository incotermsRepository;
 
 	@NonNull
 	public Optional<BPartnerId> resolveBPartnerExternalBusinessKey(@NonNull final OrgId orgId, @NonNull final ExternalBusinessKey externalBusinessKey)
@@ -174,5 +179,29 @@ public class BPartnerMasterdataProvider
 			return request.getIsAutoInvoice();
 		}
 		return bPartnerEffectiveBL.getById(bpartnerId).isAutoInvoice(SOTrx.SALES);
+	}
+
+	@Nullable
+	public Incoterms getIncoterms(@NonNull final JsonOLCandCreateRequest request,
+								  @NonNull final OrgId orgId,
+								  @NonNull final BPartnerId bPartnerId)
+	{
+		final Incoterms incoterms;
+		if(request.getIncotermsValue() != null)
+		{
+			incoterms = incotermsRepository.getByValue(request.getIncotermsValue(), orgId);
+		}
+		else
+		{
+			incoterms = bPartnerEffectiveBL.getById(bPartnerId).getIncoterms(SOTrx.SALES);
+		}
+
+		if(incoterms == null)
+		{
+			return null;
+		}
+
+		return StringUtils.trimBlankToNull(request.getIncotermsLocation()) == null ? incoterms
+				: incoterms.withLocationEffective(request.getIncotermsLocation());
 	}
 }

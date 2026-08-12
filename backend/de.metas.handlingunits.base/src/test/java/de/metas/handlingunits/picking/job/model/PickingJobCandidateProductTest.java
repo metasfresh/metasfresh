@@ -3,6 +3,7 @@ package de.metas.handlingunits.picking.job.model;
 import de.metas.business.BusinessTestHelper;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.product.ProductId;
+import de.metas.product.ProductValueAndName;
 import de.metas.quantity.Quantity;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
@@ -34,7 +35,7 @@ class PickingJobCandidateProductTest
 		{
 			return PickingJobCandidateProduct.builder()
 					.productId(ProductId.ofRepoId(1))
-					.productName(TranslatableStrings.anyLanguage("product"))
+					.productValueAndName(ProductValueAndName.of("productValue", TranslatableStrings.anyLanguage("product")))
 					.qtyToDeliver(qty(qtyToDeliver))
 					.qtyAvailableToPick(qty(qtyAvailable))
 					.build();

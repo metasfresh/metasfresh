@@ -256,29 +256,6 @@ public interface I_AD_InputDataSource
     public static final String COLUMNNAME_IsDestination = "IsDestination";
 
 	/**
-	 * Set Beleg soll per EDI übermittelt werden.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsEdiEnabled (boolean IsEdiEnabled);
-
-	/**
-	 * Get Beleg soll per EDI übermittelt werden.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isEdiEnabled();
-
-    /** Column definition for IsEdiEnabled */
-    public static final org.adempiere.model.ModelColumn<I_AD_InputDataSource, Object> COLUMN_IsEdiEnabled = new org.adempiere.model.ModelColumn<>(I_AD_InputDataSource.class, "IsEdiEnabled", null);
-    /** Column name IsEdiEnabled */
-    public static final String COLUMNNAME_IsEdiEnabled = "IsEdiEnabled";
-
-	/**
 	 * Set Name.
 	 *
 	 * <br>Type: String

@@ -41,6 +41,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.ASIQueryFilterModifier;
 import org.adempiere.ad.dao.impl.ActiveRecordQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
@@ -146,6 +147,7 @@ public class ForecastDAO implements IForecastDAO
 		forecastLineRecord.setQty(request.getQuantity().toBigDecimal());
 		forecastLineRecord.setC_UOM_ID(request.getQuantity().getUomId().getRepoId());
 		forecastLineRecord.setM_Product_ID(request.getProductId().getRepoId());
+		forecastLineRecord.setM_AttributeSetInstance_ID(AttributeSetInstanceId.toRepoId(request.getAttributeSetInstanceId()));
 		forecastLineRecord.setC_Activity_ID(ActivityId.toRepoId(request.getActivityId()));
 		forecastLineRecord.setC_Campaign_ID(CampaignId.toRepoId(request.getCampaignId()));
 		forecastLineRecord.setC_Project_ID(ProjectId.toRepoId(request.getProjectId()));

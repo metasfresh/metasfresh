@@ -36,13 +36,16 @@ public class C_Order_ShipmentSchedule
 	private final IShipmentScheduleInvalidateRepository scheduleInvalidateRepository = Services.get(IShipmentScheduleInvalidateRepository.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
-	private final @NonNull AdMessageKey ERR_NoReactivationIfNotVoidedNotReversedShipments= AdMessageKey.of("ERR_NoReactivationIfNotVoidedNotReversedShipments");
-
-
+	private final @NonNull AdMessageKey ERR_NoReactivationIfNotVoidedNotReversedShipments = AdMessageKey.of("ERR_NoReactivationIfNotVoidedNotReversedShipments");
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REACTIVATE)
 	public void closeExistingScheds(@NonNull final I_C_Order orderRecord)
 	{
+		if (!isEligibleForShipmentSchedule(orderRecord))
+		{
+			return;
+		}
+
 		final ImmutableList<TableRecordReference> orderLineRecordRefs = orderDAO
 				.retrieveAllOrderLineIds(OrderId.ofRepoId(orderRecord.getC_Order_ID()))
 				.stream()
@@ -56,6 +59,11 @@ public class C_Order_ShipmentSchedule
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void openExistingScheds(@NonNull final I_C_Order orderRecord)
 	{
+		if (!isEligibleForShipmentSchedule(orderRecord))
+		{
+			return;
+		}
+
 		final ImmutableList<TableRecordReference> orderLineRecordRefs = orderDAO
 				.retrieveAllOrderLineIds(OrderId.ofRepoId(orderRecord.getC_Order_ID()))
 				.stream()
@@ -79,6 +87,11 @@ public class C_Order_ShipmentSchedule
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE })
 	public void reactivateIfNoActiveShipment(final I_C_Order order)
 	{
+		if (!isEligibleForShipmentSchedule(order))
+		{
+			return;
+		}
+
 		final ImmutableSet<I_M_InOut> activeShipments = inOutBL.getNotVoidedNotReversedForOrderId(OrderId.ofRepoId(order.getC_Order_ID()));
 
 		if (!activeShipments.isEmpty())
@@ -87,5 +100,11 @@ public class C_Order_ShipmentSchedule
 					ERR_NoReactivationIfNotVoidedNotReversedShipments,
 					activeShipments.stream().map(I_M_InOut::getDocumentNo).collect(Collectors.joining(", ")));
 		}
+	}
+
+	public static boolean isEligibleForShipmentSchedule(@NonNull final I_C_Order order)
+	{
+		// Only Sales Orders are handled
+		return order.isSOTrx();
 	}
 }

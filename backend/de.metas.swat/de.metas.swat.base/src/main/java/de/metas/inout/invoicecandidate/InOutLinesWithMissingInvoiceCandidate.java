@@ -33,14 +33,14 @@ public class InOutLinesWithMissingInvoiceCandidate
 	/**
 	 * Add additional filters to allow other modules restricting the set of order lines for which the system automatically creates invoice candidates.
 	 */
-	public void addAdditionalFilter(IQueryFilter<I_M_InOutLine> filter)
+	public void addAdditionalFilter(final IQueryFilter<I_M_InOutLine> filter)
 	{
 		additionalFilters.add(filter);
 	}
 
 	/**
 	 * Get all {@link I_M_InOutLine}s which are not linked to an {@link I_C_OrderLine} and there is no invoice candidate already generated for them.
-	 * 
+	 * <p>
 	 * NOTE: this method will be used to identify those inout lines for which {@link M_InOutLine_Handler} will generate invoice candidates.
 	 */
 	public Iterator<I_M_InOutLine> retrieveLinesThatNeedAnInvoiceCandidate(@NonNull final QueryLimit limit)

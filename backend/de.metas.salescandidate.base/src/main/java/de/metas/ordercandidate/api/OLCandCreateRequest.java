@@ -22,6 +22,7 @@
 
 package de.metas.ordercandidate.api;
 
+import com.google.common.collect.ImmutableMap;
 import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
@@ -29,6 +30,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.externalsystem.ExternalSystemId;
 import de.metas.impexp.InputDataSourceId;
+import de.metas.incoterms.IncotermsId;
 import de.metas.money.CurrencyId;
 import de.metas.order.InvoiceRule;
 import de.metas.order.OrderLineGroup;
@@ -37,6 +39,7 @@ import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
+import de.metas.promotioncode.PromotionCodeId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.UomId;
@@ -49,6 +52,7 @@ import org.adempiere.warehouse.WarehouseId;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Map;
 
 @Value
 public class OLCandCreateRequest
@@ -112,8 +116,6 @@ public class OLCandCreateRequest
 	WarehouseId warehouseId;
 	WarehouseId warehouseDestId;
 
-	ShipperId shipperId;
-
 	BPartnerId salesRepId;
 
 	@Nullable InvoiceRule invoiceRule;
@@ -128,8 +130,11 @@ public class OLCandCreateRequest
 
 	Boolean isManualPrice;
 
-	String deliveryViaRule;
-	String deliveryRule;
+	@Nullable ShipperId shipperId;
+	@Nullable String deliveryViaRule;
+	@Nullable String deliveryRule;
+	@Nullable IncotermsId incotermsId;
+	@Nullable String incotermsLocation;
 
 	String importWarningMessage;
 
@@ -147,6 +152,16 @@ public class OLCandCreateRequest
 	String bpartnerName;
 	String email;
 	String phone;
+
+	@NonNull Map<String, Object> extendedProps;
+
+	@Nullable PromotionCodeId promotionCodeId;
+
+	@Nullable PromotionCodeId promotionCode2Id;
+
+	boolean isWithoutCharge;
+
+	@Nullable String reason;
 
 	@Builder
 	private OLCandCreateRequest(
@@ -180,7 +195,6 @@ public class OLCandCreateRequest
 			final Percent discount,
 			@Nullable final WarehouseId warehouseId,
 			@Nullable final WarehouseId warehouseDestId,
-			@Nullable final ShipperId shipperId,
 			@Nullable final BPartnerId salesRepId,
 			@Nullable final InvoiceRule invoiceRule,
 			final boolean isAutoInvoice,
@@ -191,8 +205,11 @@ public class OLCandCreateRequest
 			@Nullable final Integer line,
 			@Nullable final String description,
 			@Nullable final Boolean isManualPrice,
+			@Nullable final ShipperId shipperId,
 			@Nullable final String deliveryViaRule,
 			@Nullable final String deliveryRule,
+			@Nullable final IncotermsId incotermsId,
+			@Nullable final String incotermsLocation,
 			@Nullable final String importWarningMessage,
 			@Nullable final AsyncBatchId asyncBatchId,
 			@Nullable final BigDecimal qtyShipped,
@@ -202,7 +219,12 @@ public class OLCandCreateRequest
 			@Nullable final BPartnerId salesRepInternalId,
 			@Nullable final String bpartnerName,
 			@Nullable final String email,
-			@Nullable final String phone)
+			@Nullable final String phone,
+			@Nullable final Map<String, Object> extendedProps,
+			@Nullable final PromotionCodeId promotionCodeId,
+			@Nullable final PromotionCodeId promotionCode2Id,
+			final boolean isWithoutCharge,
+			@Nullable final String reason)
 	{
 		// Check.assume(qty.signum() > 0, "qty > 0"); qty might very well also be <= 0
 
@@ -243,7 +265,6 @@ public class OLCandCreateRequest
 		this.currencyId = currencyId;
 		this.discount = discount;
 
-		this.shipperId = shipperId;
 		this.salesRepId = salesRepId;
 
 		this.warehouseId = warehouseId;
@@ -258,8 +279,11 @@ public class OLCandCreateRequest
 		this.line = line;
 		this.description = description;
 		this.isManualPrice = isManualPrice;
+		this.shipperId = shipperId;
 		this.deliveryViaRule = deliveryViaRule;
 		this.deliveryRule = deliveryRule;
+		this.incotermsId = incotermsId;
+		this.incotermsLocation = incotermsLocation;
 		this.importWarningMessage = importWarningMessage;
 		this.asyncBatchId = asyncBatchId;
 		this.qtyShipped = qtyShipped;
@@ -272,5 +296,10 @@ public class OLCandCreateRequest
 		this.bpartnerName = bpartnerName;
 		this.email = email;
 		this.phone = phone;
+		this.extendedProps = extendedProps != null ? ImmutableMap.copyOf(extendedProps) : ImmutableMap.of();
+		this.promotionCodeId = promotionCodeId;
+		this.promotionCode2Id = promotionCode2Id;
+		this.isWithoutCharge = isWithoutCharge;
+		this.reason = reason;
 	}
 }

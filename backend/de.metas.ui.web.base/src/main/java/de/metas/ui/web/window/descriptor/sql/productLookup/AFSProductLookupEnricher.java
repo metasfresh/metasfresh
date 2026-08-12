@@ -22,31 +22,25 @@
 
 package de.metas.ui.web.window.descriptor.sql.productLookup;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesConfig;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesConfigRepo;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesMultiQuery;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesQuery;
-import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.material.adapter.AvailabilityInfoResultForWebui;
 import de.metas.ui.web.material.adapter.AvailableForSaleAdapter;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.mm.attributes.keys.AttributesKeyPattern;
 import org.adempiere.mm.attributes.keys.AttributesKeyPatternsUtil;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Collection;
@@ -58,14 +52,9 @@ import java.util.stream.Collectors;
  */
 public class AFSProductLookupEnricher
 {
-	@NonNull
-	final ZonedDateTime dateOrNull;
-	@Nullable
-	final WarehouseId warehouseId;
-	@NonNull
-	final ClientId clientId;
-	@NonNull
-	final OrgId orgId;
+	@NonNull final ZonedDateTime dateOrNull;
+	@Nullable final WarehouseId warehouseId;
+	@NonNull final ClientAndOrgId clientAndOrgId;
 	private final AvailableForSaleAdapter availableForSaleAdapter;
 	private final AvailableForSalesConfigRepo availableForSalesConfigRepo;
 
@@ -81,8 +70,7 @@ public class AFSProductLookupEnricher
 	{
 		this.dateOrNull = dateOrNull;
 		this.warehouseId = warehouseId;
-		this.clientId = clientId;
-		this.orgId = orgId;
+		this.clientAndOrgId = ClientAndOrgId.ofClientAndOrg(clientId, orgId);
 		this.availableForSaleAdapter = availableForSaleAdapter;
 		this.availableForSalesConfigRepo = availableForSalesConfigRepo;
 	}
@@ -108,16 +96,11 @@ public class AFSProductLookupEnricher
 			@NonNull final ProductId productId,
 			@NonNull final Instant dateOfInterest)
 	{
-		final AvailableForSalesConfig config = availableForSalesConfigRepo.getConfig(
-				AvailableForSalesConfigRepo.ConfigQuery.builder()
-						.clientId(clientId)
-						.orgId(orgId)
-						.build());
-		
+		final AvailableForSalesConfig config = availableForSalesConfigRepo.getConfig(clientAndOrgId);
 		final AvailableForSalesMultiQuery.AvailableForSalesMultiQueryBuilder result = AvailableForSalesMultiQuery.builder();
 
 		final AvailableForSalesQuery.AvailableForSalesQueryBuilder queryBuilder = AvailableForSalesQuery.builder()
-				.orgId(orgId)
+				.clientAndOrgId(clientAndOrgId)
 				.productId(productId)
 				.dateOfInterest(dateOfInterest)
 				.salesOrderLookBehindHours(config.getSalesOrderLookBehindHours())
@@ -142,21 +125,5 @@ public class AFSProductLookupEnricher
 			result.availableForSalesQuery(query);
 		}
 		return result.build();
-	}
-
-	private ImmutableList<AttributesKey> retrieveAttributesKeys(@Nullable final WarehouseId warehouseId, @NonNull final ProductId productId)
-	{
-		final IQueryBuilder<I_MD_Stock> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Stock.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Product_ID, productId.getRepoId())
-				.addCompareFilter(I_MD_Stock.COLUMN_QtyOnHand, CompareQueryFilter.Operator.GREATER, BigDecimal.ZERO);
-		if (warehouseId != null)
-		{
-			queryBuilder.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Warehouse_ID, warehouseId.getRepoId());
-		}
-		return queryBuilder
-				.create()
-				.stream().map(s -> AttributesKey.ofString(s.getAttributesKey()))
-				.collect(ImmutableList.toImmutableList());
 	}
 }

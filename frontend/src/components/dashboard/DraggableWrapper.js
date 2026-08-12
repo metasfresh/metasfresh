@@ -1,11 +1,11 @@
-import produce from 'immer';
+import React, { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import counterpart from 'counterpart';
+import produce from 'immer';
 
-import { connectWS, disconnectWS } from '../../utils/websockets';
+import { useWebsocket } from '../../hooks/useWebsocket';
 import {
   addDashboardWidget,
   changeKPIItem,
@@ -23,148 +23,161 @@ import Sidenav from './Sidenav';
 import EntityType from './EntityType';
 import { ChartOptions } from './ChartOptions';
 
-export class DraggableWrapper extends Component {
-  state = {
-    indicatorsLoaded: false,
-    idMaximized: null,
-    websocketEndpoint: null,
-    editingDashboardItemId: null,
-  };
+const DraggableWrapper = ({ editmode }) => {
+  // Separate useState for each logical piece of state
+  const [indicatorsLoaded, setIndicatorsLoaded] = useState(false);
+  const [idMaximized, setIdMaximized] = useState(null);
+  const [websocketEndpoint, setWebsocketEndpoint] = useState(null);
+  const [editingDashboardItemId, setEditingDashboardItemId] = useState(null);
+  const [targetIndicators, setTargetIndicators] = useState([]);
+  const [kpis, setKpis] = useState([]);
 
-  componentDidMount = () => {
-    this.loadKPIs();
-    this.loadTargetIndicators();
-  };
-
-  componentDidUpdate = (prevProps, prevState) => {
-    const { websocketEndpoint } = this.state;
-    if (
-      websocketEndpoint !== null &&
-      prevState.websocketEndpoint !== websocketEndpoint
-    ) {
-      connectWS.call(this, websocketEndpoint, (msg) => {
-        msg.events.map((event) => this.onWebsocketEvent(event));
-      });
-    }
-  };
-
-  componentWillUnmount = () => {
-    disconnectWS.call(this);
-  };
-
-  onWebsocketEvent = (event) => {
-    switch (event.changeType) {
-      case 'itemDataChanged':
-        this.onDashboardItemDataChanged(event);
-        break;
-      case 'dashboardChanged':
-      case 'itemChanged':
-        this.onDashboardStructureChanged(event);
-        break;
-    }
-  };
-
-  onDashboardItemDataChanged = (wsEvent) => {
-    const indicators = this.state[EntityType.TARGET_INDICATOR] ?? [];
-    const kpis = this.state[EntityType.KPI] ?? [];
-
-    const indicatorsNew = produce(indicators, (draft) => {
-      const index = draft.findIndex(
-        (indicator) => indicator.id === wsEvent.itemId
-      );
-      if (index !== -1) {
-        draft[index] = { ...draft[index], data: wsEvent.data };
-      }
-    });
-
-    const kpisNew = produce(kpis, (draft) => {
-      const index = kpis.findIndex((kpi) => kpi.id === wsEvent.itemId);
-      if (index !== -1) {
-        draft[index] = { ...draft[index], data: wsEvent.data };
-      }
-    });
-
-    this.setState({
-      [EntityType.TARGET_INDICATOR]: indicatorsNew,
-      [EntityType.KPI]: kpisNew,
-    });
-  };
-
-  onDashboardStructureChanged = (wsEvent) => {
-    switch (wsEvent.widgetType) {
-      case 'TargetIndicator':
-        this.loadTargetIndicators();
-        break;
-      case 'KPI':
-        this.loadKPIs();
-        break;
-    }
-  };
-
-  loadTargetIndicators = () => {
+  // Data loading functions - useCallback to prevent useEffect infinite loops
+  const loadTargetIndicators = useCallback(() => {
     getTargetIndicatorsDashboard().then((response) => {
-      this.setState({
-        [EntityType.TARGET_INDICATOR]: response.data.items,
-        indicatorsLoaded: true,
-      });
+      setTargetIndicators(response.data.items);
+      setIndicatorsLoaded(true);
     });
-  };
+  }, []);
 
-  loadKPIs = () => {
+  const loadKPIs = useCallback(() => {
     getKPIsDashboard().then((response) => {
-      this.setState({
-        [EntityType.KPI]: response.data.items,
-        websocketEndpoint: response.data.websocketEndpoint,
-      });
+      setKpis(response.data.items);
+      setWebsocketEndpoint(response.data.websocketEndpoint);
     });
-  };
+  }, []);
 
-  getType = (entity) => {
-    return entity === EntityType.KPI ? 'kpis' : 'targetIndicators';
-  };
+  // WebSocket event handlers - useCallback for complex state updates
+  const onDashboardItemDataChanged = useCallback((wsEvent) => {
+    setTargetIndicators((prevIndicators) =>
+      produce(prevIndicators, (draft) => {
+        const index = draft.findIndex(
+          (indicator) => indicator.id === wsEvent.itemId
+        );
+        if (index !== -1) {
+          draft[index] = { ...draft[index], data: wsEvent.data };
+        }
+      })
+    );
 
-  onDrop = ({ entity, id, isNew, droppedOverId }) => {
-    const position =
-      this.state[entity]?.findIndex((item) => item.id === droppedOverId) ?? -1;
+    setKpis((prevKpis) =>
+      produce(prevKpis, (draft) => {
+        const index = draft.findIndex((kpi) => kpi.id === wsEvent.itemId);
+        if (index !== -1) {
+          draft[index] = { ...draft[index], data: wsEvent.data };
+        }
+      })
+    );
+  }, []);
 
-    console.log('onDrop', {
-      entity,
-      id,
-      isNew,
-      droppedOverId,
-      position,
-      state: this.state,
-    });
-
-    if (isNew) {
-      addDashboardWidget(this.getType(entity), id, position);
-      // NOTE: will be updated via websockets
-    } else {
-      if (entity === EntityType.KPI) {
-        changeKPIItem(id, { position });
-        // NOTE: will be updated via websockets
-      } else if (entity === EntityType.TARGET_INDICATOR) {
-        changeTargetIndicatorsItem(id, { position });
-        // NOTE: will be updated via websockets
-      } else {
-        console.warn(`Unknown entity: ${entity}`);
+  const onDashboardStructureChanged = useCallback(
+    (wsEvent) => {
+      switch (wsEvent.widgetType) {
+        case 'TargetIndicator':
+          loadTargetIndicators();
+          break;
+        case 'KPI':
+          loadKPIs();
+          break;
       }
+    },
+    [loadTargetIndicators, loadKPIs]
+  );
+
+  const onWebsocketEvent = useCallback(
+    (event) => {
+      switch (event.changeType) {
+        case 'itemDataChanged':
+          onDashboardItemDataChanged(event);
+          break;
+        case 'dashboardChanged':
+        case 'itemChanged':
+          onDashboardStructureChanged(event);
+          break;
+      }
+    },
+    [onDashboardItemDataChanged, onDashboardStructureChanged]
+  );
+
+  // Event handlers passed to child components - useCallback to prevent child re-renders
+  const onDrop = useCallback(
+    ({ entity, id, isNew, droppedOverId }) => {
+      const currentItems = entity === EntityType.KPI ? kpis : targetIndicators;
+      const position =
+        currentItems.findIndex((item) => item.id === droppedOverId) ?? -1;
+
+      console.log('onDrop', {
+        entity,
+        id,
+        isNew,
+        droppedOverId,
+        position,
+      });
+
+      if (isNew) {
+        const type = entity === EntityType.KPI ? 'kpis' : 'targetIndicators';
+        addDashboardWidget(type, id, position);
+      } else {
+        if (entity === EntityType.KPI) {
+          changeKPIItem(id, { position });
+        } else if (entity === EntityType.TARGET_INDICATOR) {
+          changeTargetIndicatorsItem(id, { position });
+        } else {
+          console.warn(`Unknown entity: ${entity}`);
+        }
+      }
+    },
+    [kpis, targetIndicators]
+  );
+
+  const onRemove = useCallback((entity, index, id) => {
+    const type = entity === EntityType.KPI ? 'kpis' : 'targetIndicators';
+    removeDashboardWidget(type, id);
+  }, []);
+
+  // Simple functions - no useCallback needed
+  const maximizeWidget = (id) => {
+    setIdMaximized(id);
+  };
+
+  const openChartOptions = (editingDashboardItemId) => {
+    setEditingDashboardItemId(editingDashboardItemId);
+  };
+
+  const closeChartOptions = () => {
+    setEditingDashboardItemId(null);
+  };
+
+  const getDashboardItemById = (id) => {
+    const indicator = targetIndicators.find((item) => item.id === id);
+    if (indicator) {
+      return { ...indicator, isIndicator: true };
     }
+
+    const kpi = kpis.find((item) => item.id === id);
+    if (kpi) {
+      return { ...kpi, isIndicator: false };
+    }
+
+    return null;
   };
 
-  onRemove = (entity, index, id) => {
-    removeDashboardWidget(this.getType(entity), id);
-    // NOTE: will be updated via websockets
-  };
+  // WebSocket connection
+  useWebsocket({
+    topic: websocketEndpoint,
+    onMessage: (msg) => {
+      msg.event.events.map((event) => onWebsocketEvent(event));
+    },
+  });
 
-  maximizeWidget = (id) => {
-    this.setState({ idMaximized: id });
-  };
+  // Initial data loading
+  useEffect(() => {
+    loadKPIs();
+    loadTargetIndicators();
+  }, [loadKPIs, loadTargetIndicators]);
 
-  renderIndicators = () => {
-    const { editmode } = this.props;
-    const targetIndicators = this.state[EntityType.TARGET_INDICATOR] ?? [];
-
+  // Render functions
+  const renderIndicators = () => {
     if (targetIndicators.length <= 0) {
       if (editmode) {
         return (
@@ -175,7 +188,7 @@ export class DraggableWrapper extends Component {
               entity={EntityType.TARGET_INDICATOR}
               placeholder={true}
               transparent={false}
-              onDrop={this.onDrop}
+              onDrop={onDrop}
             >
               <Placeholder
                 entity={EntityType.TARGET_INDICATOR}
@@ -200,27 +213,23 @@ export class DraggableWrapper extends Component {
               entity={EntityType.TARGET_INDICATOR}
               transparent={!editmode}
               className="indicator-card"
-              onDrop={this.onDrop}
-              onRemove={this.onRemove}
+              onDrop={onDrop}
+              onRemove={onRemove}
             >
-              {
-                <RawChart
-                  key={indicator.id}
-                  id={indicator.id}
-                  index={index}
-                  caption={indicator.caption}
-                  fields={indicator.kpi.fields}
-                  zoomToDetailsAvailable={
-                    !!indicator.kpi.zoomToDetailsAvailable
-                  }
-                  chartType={'Indicator'}
-                  kpi={false}
-                  data={indicator.data}
-                  noData={indicator.fetchOnDrop}
-                  openChartOptions={this.openChartOptions}
-                  editmode={editmode}
-                />
-              }
+              <RawChart
+                key={indicator.id}
+                id={indicator.id}
+                index={index}
+                caption={indicator.caption}
+                fields={indicator.kpi.fields}
+                zoomToDetailsAvailable={!!indicator.kpi.zoomToDetailsAvailable}
+                chartType={'Indicator'}
+                kpi={false}
+                data={indicator.data}
+                noData={indicator.fetchOnDrop}
+                openChartOptions={openChartOptions}
+                editmode={editmode}
+              />
             </DndWidget>
           ))}
         </div>
@@ -228,10 +237,7 @@ export class DraggableWrapper extends Component {
     }
   };
 
-  renderEmptyPage = () => {
-    const { editmode } = this.props;
-    const { indicatorsLoaded } = this.state;
-
+  const renderEmptyPage = () => {
     // Don't show logo if edit mode is active
     if (editmode) return null;
 
@@ -239,11 +245,9 @@ export class DraggableWrapper extends Component {
     if (!indicatorsLoaded) return null;
 
     // Don't show logo if we have Target Indicators
-    const indicators = this.state[EntityType.TARGET_INDICATOR] ?? [];
-    if (indicators.length > 0) return null;
+    if (targetIndicators.length > 0) return null;
 
     // Don't show logo if we have KPIs
-    const kpis = this.state[EntityType.KPI] ?? [];
     if (kpis.length > 0) return null;
 
     return (
@@ -255,11 +259,7 @@ export class DraggableWrapper extends Component {
     );
   };
 
-  renderKpis = () => {
-    const { editmode } = this.props;
-    const { idMaximized } = this.state;
-    const kpis = this.state[EntityType.KPI] ?? [];
-
+  const renderKpis = () => {
     if (kpis.length <= 0) {
       if (editmode) {
         return (
@@ -270,7 +270,7 @@ export class DraggableWrapper extends Component {
               placeholder={true}
               entity={EntityType.KPI}
               transparent={false}
-              onDrop={this.onDrop}
+              onDrop={onDrop}
             >
               <Placeholder
                 entity={EntityType.KPI}
@@ -299,8 +299,8 @@ export class DraggableWrapper extends Component {
                   (idMaximized === item.id ? 'draggable-widget-maximize ' : '')
                 }
                 transparent={!editmode}
-                onDrop={this.onDrop}
-                onRemove={this.onRemove}
+                onDrop={onDrop}
+                onRemove={onRemove}
               >
                 <ChartWidget
                   key={item.id}
@@ -311,11 +311,11 @@ export class DraggableWrapper extends Component {
                   fields={item.kpi.fields}
                   groupBy={item.kpi.groupByField}
                   idMaximized={idMaximized}
-                  maximizeWidget={this.maximizeWidget}
+                  maximizeWidget={maximizeWidget}
                   text={item.caption}
                   data={item.data}
                   noData={item.fetchOnDrop}
-                  openChartOptions={this.openChartOptions}
+                  openChartOptions={openChartOptions}
                   editmode={editmode}
                 />
               </DndWidget>
@@ -326,61 +326,33 @@ export class DraggableWrapper extends Component {
     }
   };
 
-  getDashboardItemById = (id) => {
-    const indicatorsArray = this.state[EntityType.TARGET_INDICATOR] ?? [];
-    const indicator = indicatorsArray.find((item) => item.id === id);
-    if (indicator) {
-      return { ...indicator, isIndicator: true };
-    }
+  // Main render
+  const dashboardItem =
+    editingDashboardItemId > 0
+      ? getDashboardItemById(editingDashboardItemId)
+      : null;
 
-    const kpisArray = this.state[EntityType.KPI] ?? [];
-    const kpi = kpisArray.find((item) => item.id === id);
-    if (kpi) {
-      return { ...kpi, isIndicator: false };
-    }
-
-    return null;
-  };
-
-  openChartOptions = (editingDashboardItemId) => {
-    this.setState({ editingDashboardItemId });
-  };
-
-  closeChartOptions = () => {
-    this.setState({ editingDashboardItemId: null });
-  };
-
-  render() {
-    const { editmode } = this.props;
-    const { editingDashboardItemId } = this.state;
-
-    const dashboardItem =
-      editingDashboardItemId > 0
-        ? this.getDashboardItemById(editingDashboardItemId)
-        : null;
-
-    return (
-      <DndProvider backend={HTML5Backend}>
-        <div className="dashboard-cards-wrapper">
-          {dashboardItem && (
-            <ChartOptions
-              id={dashboardItem.id}
-              caption={dashboardItem.caption}
-              isIndicator={dashboardItem.isIndicator}
-              onClose={() => this.closeChartOptions()}
-            />
-          )}
-          <div className={editmode ? 'dashboard-edit-mode' : 'dashboard-cards'}>
-            {this.renderIndicators()}
-            {this.renderKpis()}
-          </div>
-          {editmode && <Sidenav />}
-          {this.renderEmptyPage()}
+  return (
+    <DndProvider backend={HTML5Backend}>
+      <div className="dashboard-cards-wrapper">
+        {dashboardItem && (
+          <ChartOptions
+            id={dashboardItem.id}
+            caption={dashboardItem.caption}
+            isIndicator={dashboardItem.isIndicator}
+            onClose={closeChartOptions}
+          />
+        )}
+        <div className={editmode ? 'dashboard-edit-mode' : 'dashboard-cards'}>
+          {renderIndicators()}
+          {renderKpis()}
         </div>
-      </DndProvider>
-    );
-  }
-}
+        {editmode && <Sidenav />}
+        {renderEmptyPage()}
+      </div>
+    </DndProvider>
+  );
+};
 
 DraggableWrapper.propTypes = {
   editmode: PropTypes.bool,

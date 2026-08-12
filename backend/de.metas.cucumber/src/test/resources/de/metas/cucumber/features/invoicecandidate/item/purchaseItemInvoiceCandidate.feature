@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
 @ghActions:run_on_executor5
 Feature: Product items invoice candidates: receipts
+## F00701: Invoice Candidates
 
   Background:
     Given infrastructure and metasfresh are running
@@ -51,6 +55,9 @@ Feature: Product items invoice candidates: receipts
 
   @Id:03082022-PIC.200
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Receive 100, complete receipt
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
@@ -92,6 +99,9 @@ Feature: Product items invoice candidates: receipts
 
   @Id:03082022-PIC.210
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Receive 100, complete receipt then reactivate it
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
@@ -145,6 +155,9 @@ Feature: Product items invoice candidates: receipts
 
   @Id:03082022-PIC.220
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Receive 100, complete receipt then reactivate it, complete it again
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
@@ -200,6 +213,9 @@ Feature: Product items invoice candidates: receipts
 
   @Id:03082022-PIC.230
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Receive 100, complete receipt then void it
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
@@ -255,6 +271,9 @@ Feature: Product items invoice candidates: receipts
 
   @Id:03082022-PIC.240
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Receive 100, complete receipt then revert it
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
@@ -308,6 +327,9 @@ Feature: Product items invoice candidates: receipts
 
   @Id:03082022-PIC.250
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Receive 100, complete receipt then close it
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
@@ -361,6 +383,9 @@ Feature: Product items invoice candidates: receipts
 
   @Id:03082022-PIC.260
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Receive 42 with quality discount 5%
     When metasfresh contains M_HU_PI:
       | M_HU_PI_ID.Identifier | Name            |

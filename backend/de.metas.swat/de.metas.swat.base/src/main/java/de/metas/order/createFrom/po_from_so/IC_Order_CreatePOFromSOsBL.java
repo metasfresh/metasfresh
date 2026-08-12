@@ -49,4 +49,11 @@ public interface IC_Order_CreatePOFromSOsBL extends ISingletonService
 	 * @return <code>QtyOrdered</code> or <code>QtyReserved</code>. Never anything else.
 	 */
 	String getConfigPurchaseQtySource();
+
+	/**
+	 * @return whether a dropship purchase order auto-created from a sales order should be completed (default {@code true}).
+	 * When {@code false}, the created dropship PO is left in DocStatus=Drafted for manual review.
+	 * Controlled by SysConfig {@code de.metas.order.C_Order_CreatePOFromSOs.CompleteDropshipPO}.
+	 */
+	boolean isCompleteDropshipPO();
 }

@@ -1,7 +1,8 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
+import UnpickPanel from './unpick/UnpickPanel';
 import ButtonQuantityProp from '../../../components/buttons/ButtonQuantityProp';
 import {
   pickingJobsListLocation,
@@ -47,13 +48,16 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
 
   const { onBarcodeScanned } = usePickProductsScan({ applicationId, wfProcessId, activityId });
 
+  const [isUnpicking, setUnpicking] = useState(false);
+
   const isUserEditable = isUserEditableFunc({ activity });
   const isAllowPickingAnyHU = isAllowPickingAnyHUOnHeaderLevel({ activity });
 
-  const groupedLines = useMemo(() => {
-    const lines = getLinesArrayFromActivity(activity);
-    return groupLinesByDisplayKey(lines);
-  }, [activity]);
+  const lines = useMemo(() => getLinesArrayFromActivity(activity), [activity]);
+  const groupedLines = useMemo(() => groupLinesByDisplayKey([...lines]), [lines]);
+
+  const isAnyLinePicked = lines.some((line) => line.qtyPicked > 0);
+  const firstLineId = lines[0]?.pickingLineId;
 
   const onScanButtonClick = () => {
     history.push(pickingScanScreenLocation({ applicationId, wfProcessId, activityId }));
@@ -65,6 +69,17 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
     return groupedLines.some((lines) => lines.some((line) => isLineReadOnly({ activity, line })));
   };
 
+  if (isUnpicking) {
+    return (
+      <UnpickPanel
+        wfProcessId={wfProcessId}
+        activityId={activityId}
+        lineId={firstLineId}
+        onClose={() => setUnpicking(false)}
+      />
+    );
+  }
+
   return (
     <div className="mt-5">
       <SelectCurrentLUTUButtons
@@ -74,6 +89,15 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
         isUserEditable={isUserEditable}
       />
       <br />
+
+      {isUserEditable && (
+        <ButtonWithIndicator
+          testId="unpick-item-button"
+          captionKey="activities.picking.unpick.unpickItemBtn"
+          disabled={!isAnyLinePicked}
+          onClick={() => setUnpicking(true)}
+        />
+      )}
 
       {isAllowPickingAnyHU && (
         <BarcodeScannerButton

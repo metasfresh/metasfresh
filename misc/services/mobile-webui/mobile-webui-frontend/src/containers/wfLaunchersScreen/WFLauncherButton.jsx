@@ -52,8 +52,8 @@ const WFLauncherButton = ({
       additionalCssClass="wflauncher-button"
       caption={caption}
       showWarningSign={showWarningSign}
-      indicator1={indicator}
-      indicator2={startedWFProcessId ? WorkflowLauncherIndicator.JOB_ALREADY_STARTED : null}
+      indicator1={indicator ?? '-'}
+      indicator2={startedWFProcessId ? WorkflowLauncherIndicator.JOB_ALREADY_STARTED : '-'}
       disabled={disabled}
       onClick={handleClick}
     />

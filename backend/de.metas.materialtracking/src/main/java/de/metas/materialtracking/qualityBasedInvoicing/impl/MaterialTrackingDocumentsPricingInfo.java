@@ -167,8 +167,14 @@ import java.util.TreeMap;
 				final I_M_PriceList_Version plv = plvAndIols.getLeft();
 				if (plv == null)
 				{
-					// this shouldn't happen, unless the PP_Order was closed without any previous issue
-					// OR! unless we have a pruned-down database dump that lacks M_HUs
+					// Happens in two cases:
+					//   1) the PP_Order was closed without any previous component issue, OR
+					//   2) the DB is a reduced staging copy where either M_HU or M_HU_Attribute
+					//      has been truncated. Truncating M_HU breaks the CC->HU chain;
+					//      truncating M_HU_Attribute breaks HUInOutDAO.retrieveCompletedReceiptLineOrNull,
+					//      which reads the ATTR_ReceiptInOutLine_ID attribute row to locate the
+					//      originating receipt IOL. In either sub-case, the chain that feeds plv
+					//      is silently empty here - no exception, no ICs created.
 					continue;
 				}
 

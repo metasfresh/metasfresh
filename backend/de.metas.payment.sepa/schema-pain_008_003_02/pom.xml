@@ -13,31 +13,39 @@
 
 	<description>SEPA Payments - schema - pain_008_003_02 (Direct Debit)</description>
 
-	<properties>
-		<migration-sql-basedir></migration-sql-basedir>
-	</properties>
-
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.jvnet.jaxb2.maven2</groupId>
-				<artifactId>maven-jaxb2-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>generate-de.metas.payment.sepa.jaxb.sct.schema-pain_008_003_02</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-						<configuration>
-							<schemaDirectory>src/main/xsd</schemaDirectory>
-							<generatePackage>de.metas.payment.sepa.jaxb.sct.pain_008_003_02</generatePackage>
-							<generateDirectory>${project.basedir}/src/main/java-xjc</generateDirectory>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
+	<profiles>
+		<profile>
+			<!--
+			    Regenerate JAXB sources from XSD schemas in src/main/xsd/.
+			    Run this profile whenever a schema file changes:
+			      mvn generate-sources -Pregenerate-jaxb-sources
+			    Or regenerate all JAXB modules at once:
+			      ./misc/dev-support/scripts/regenerate-jaxb-sources.sh
+			    After regeneration, commit the changed java-xjc files together with the XSD change.
+			-->
+			<id>regenerate-jaxb-sources</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.jvnet.jaxb2.maven2</groupId>
+						<artifactId>maven-jaxb2-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>generate-de.metas.payment.sepa.jaxb.sct.schema-pain_008_003_02</id>
+								<phase>generate-sources</phase>
+								<goals>
+									<goal>generate</goal>
+								</goals>
+								<configuration>
+									<schemaDirectory>src/main/xsd</schemaDirectory>
+									<generatePackage>de.metas.payment.sepa.jaxb.sct.pain_008_003_02</generatePackage>
+									<generateDirectory>${project.basedir}/src/main/java-xjc</generateDirectory>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>

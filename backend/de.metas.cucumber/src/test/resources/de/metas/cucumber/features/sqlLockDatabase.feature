@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00184
 @ghActions:run_on_executor7
 Feature: DB-Based Locking
+## F00184: Database Locking
   As a developer
   I want to use a locking mechanism for data records
 
@@ -9,12 +12,16 @@ Feature: DB-Based Locking
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
   @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00184
   Scenario: Acquiring a lock on an not-yet-locked record succeeds
     Given I_AD_PInstance with id 123124 is created
     When a lock on the record with AD_Table 'AD_PInstance' and Record_ID 123124 is requested for a lock owner with prefix 'cucumber1a'
     Then the lock request was successful and the lock owner has the prefix 'cucumber1a'
 
   @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00184
   Scenario: Acquiring a lock on an already-locked record fails
     Given I_AD_PInstance with id 123125 is created
     And a lock on the record with AD_Table 'AD_PInstance' and Record_ID 123125 is requested for a lock owner with prefix 'cucumber1b'

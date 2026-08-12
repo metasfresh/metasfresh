@@ -3,6 +3,7 @@ package de.metas.document.archive.spi.impl;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.document.archive.api.impl.DocOutboundService;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRegistry;
 import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
@@ -36,9 +37,7 @@ public class DocOutboundArchiveEventListenerTest
 	{
 		AdempiereTestHelper.get().init();
 
-		archiveBL = new DocOutboundArchiveEventListener(
-				AttachmentEntryService.createInstanceForUnitTesting(),
-				new DocOutboundLogMailRecipientRegistry(Optional.empty()));
+		archiveBL = DocOutboundArchiveEventListener.newInstanceForUnitTesting();
 		Services.get(IArchiveEventManager.class).registerArchiveEventListener(archiveBL);
 	}
 

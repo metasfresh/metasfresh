@@ -17,7 +17,7 @@ import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
-import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
+import de.metas.material.dispo.service.candidatechange.handler.DemandCandidateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandidateHandler;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
@@ -28,6 +28,8 @@ import de.metas.material.event.pporder.PPOrderCreatedEvent;
 import de.metas.material.event.pporder.PPOrderData;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.event.pporder.PPOrderLineData;
+import de.metas.material.planning.event.MaterialPlanningContextHelper;
+import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -35,8 +37,11 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.impl.WarehouseBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_OrgInfo;
+import org.compiere.model.I_M_Warehouse;
 import org.eevolution.api.PPOrderId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -109,6 +114,13 @@ public class PPOrderCreatedHandlerTests
 
 		final DimensionService dimensionService = new DimensionService(ImmutableList.of(new MDCandidateDimensionFactory()));
 		SpringContextHolder.registerJUnitBean(dimensionService);
+		SpringContextHolder.registerJUnitBean(IWarehouseBL.class, new WarehouseBL());
+		// Pre-create the warehouse so WarehouseBL.isIgnoreInMaterialDispo can load it.
+		{
+			final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
+			org.adempiere.model.InterfaceWrapperHelper.setValue(warehouse, I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, intermediateWarehouseId.getRepoId());
+			saveRecord(warehouse);
+		}
 
 		final PostMaterialEventService postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 
@@ -127,13 +139,15 @@ public class PPOrderCreatedHandlerTests
 		final SupplyCandidateHandler supplyCandidateHandler = new SupplyCandidateHandler(candidateRepositoryWriteService, stockCandidateService);
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
 				supplyCandidateHandler,
-				new DemandCandiateHandler(
+				new DemandCandidateHandler(
 						candidateRepositoryRetrieval,
 						candidateRepositoryWriteService,
 						postMaterialEventService,
 						availableToPromiseRepository,
 						stockCandidateService,
-						supplyCandidateHandler)));
+						supplyCandidateHandler,
+						Mockito.mock(MaterialPlanningContextHelper.class),
+						new PPOrderCandidateDemandMatcher())));
 
 		ppOrderCreatedHandler = new PPOrderCreatedHandler(
 				candidateChangeHandler,
@@ -151,7 +165,7 @@ public class PPOrderCreatedHandlerTests
 		assert_data_after_ppOrderEvent(ppOrderCreatedEvent);
 	}
 
-	private MaterialDispoGroupId assert_data_after_ppOrderEvent(@NonNull final PPOrderCreatedEvent ppOrderEvent)
+	private void assert_data_after_ppOrderEvent(@NonNull final PPOrderCreatedEvent ppOrderEvent)
 	{
 		assertThat(DispoTestUtils.filter(CandidateType.SUPPLY)).hasSize(1); // for the produced qty
 		assertThat(DispoTestUtils.filter(CandidateType.DEMAND)).hasSize(2); // for the consumed qty (we have 2 bom components )
@@ -236,7 +250,30 @@ public class PPOrderCreatedHandlerTests
 					.allSatisfy(d -> assertThat(d.getM_ShipmentSchedule_ID()).isEqualTo(SHIPMENT_SCHEDULE_ID));
 		}
 
-		return supplyDemandGroupId;
+	}
+
+	@Test
+	public void handleEvent_excludedWarehouse_shortCircuits()
+	{
+		final I_M_Warehouse excludedWarehouse = newInstance(I_M_Warehouse.class);
+		excludedWarehouse.setMRP_Exclude("Y");
+		saveRecord(excludedWarehouse);
+		final WarehouseId excludedWarehouseId = WarehouseId.ofRepoId(excludedWarehouse.getM_Warehouse_ID());
+
+		final PPOrderCreatedEvent baseEvent = createPPOrderCreatedEvent(30, MaterialDispoGroupId.ofInt(40));
+		final PPOrder rebuilt = baseEvent.getPpOrder().toBuilder()
+				.ppOrderData(baseEvent.getPpOrder().getPpOrderData().toBuilder()
+						.warehouseId(excludedWarehouseId)
+						.build())
+				.build();
+		final PPOrderCreatedEvent event = PPOrderCreatedEvent.builder()
+				.eventDescriptor(baseEvent.getEventDescriptor())
+				.ppOrder(rebuilt)
+				.build();
+
+		ppOrderCreatedHandler.handleEvent(event);
+
+		assertThat(DispoTestUtils.retrieveAllRecords()).isEmpty();
 	}
 
 	@Test

@@ -40,6 +40,8 @@ import de.metas.util.lang.UIDStringUtil;
 import de.metas.vertical.healthcare.alberta.bpartner.AlbertaBPartnerCompositeService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.persistence.custom_columns.CustomColumnRepository;
+import org.adempiere.ad.persistence.custom_columns.CustomColumnService;
 import org.adempiere.ad.table.LogEntriesRepository;
 import org.compiere.Adempiere;
 import org.springframework.stereotype.Service;
@@ -61,9 +63,10 @@ public class JsonServiceFactory
 	private final @NonNull IncotermsRepository incotermsRepository;
 	private final @NonNull ExternalReferenceRestControllerService externalReferenceService;
 	private final @NonNull AlbertaBPartnerCompositeService albertaBPartnerCompositeService;
+	private final @NonNull CustomColumnService customColumnService;
 
 	@VisibleForTesting
-	public static JsonServiceFactory newInstanceForJUnitTesting(
+	public static JsonServiceFactory newInstanceForUnitTesting(
 			@NonNull final LogEntriesRepository logEntriesRepository,
 			@NonNull final AlbertaBPartnerCompositeService albertaBPartnerCompositeService)
 	{
@@ -72,7 +75,7 @@ public class JsonServiceFactory
 		return new JsonServiceFactory(
 				new JsonRequestConsolidateService(),
 				new BPartnerQueryService(),
-				BPartnerCompositeRepository.newInstanceForJUnitTesting(logEntriesRepository),
+				BPartnerCompositeRepository.newInstanceForUnitTesting(logEntriesRepository),
 		        bpGroupRepository,
 				new BPGroupService(bpGroupRepository),
 				new GreetingRepository(),
@@ -81,8 +84,9 @@ public class JsonServiceFactory
 				new JobRepository(),
 				new PaymentTermService(),
 				IncotermsRepository.newInstanceForUnitTesting(),
-				ExternalReferenceRestControllerService.newInstanceForJUnitTesting(),
-				albertaBPartnerCompositeService
+				ExternalReferenceRestControllerService.newInstanceForUnitTesting(),
+				albertaBPartnerCompositeService,
+				new CustomColumnService(new CustomColumnRepository())
 		);
 	}
 
@@ -100,6 +104,7 @@ public class JsonServiceFactory
 				currencyRepository,
 				externalReferenceService,
 				albertaBPartnerCompositeService,
+				customColumnService,
 				identifier);
 	}
 
@@ -121,6 +126,7 @@ public class JsonServiceFactory
 				paymentTermService,
 				incotermsRepository,
 				externalReferenceService,
+				customColumnService,
 				identifier);
 	}
 }

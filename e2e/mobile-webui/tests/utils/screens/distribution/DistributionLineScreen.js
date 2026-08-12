@@ -1,5 +1,5 @@
 import { test } from '../../../../playwright.config';
-import { FAST_ACTION_TIMEOUT, ID_BACK_BUTTON, page } from '../../common';
+import { FAST_ACTION_TIMEOUT, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT } from '../../common';
 import { DistributionLinePickFromScreen } from './DistributionLinePickFromScreen';
 import { DistributionStepScreen } from './DistributionStepScreen';
 import { expect } from '@playwright/test';
@@ -12,7 +12,8 @@ const containerElement = () => page.locator('#DistributionLineScreen');
 
 export const DistributionLineScreen = {
     waitForScreen: async () => await test.step(`${NAME} - Wait for Screen`, async () => {
-        await containerElement().waitFor();
+        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
+        await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     expectVisible: async () => await test.step(`${NAME} - Expect screen to be displayed`, async () => {
@@ -43,6 +44,11 @@ export const DistributionLineScreen = {
     expectNoStepButton: async () => await test.step(`${NAME} - Expect no step buttons`, async () => {
         await DistributionLineScreen.expectVisible();
         await expect(page.getByTestId('step-0-button')).toHaveCount(0);
+    }),
+
+    openPickFromScreen: async () => await test.step(`${NAME} - Open Pick From Screen`, async () => {
+        await page.getByTestId('scanQRCode-button').tap();
+        await DistributionLinePickFromScreen.waitForScreen();
     }),
 
     goBack: async () => await test.step(`${NAME} - Go back`, async () => {

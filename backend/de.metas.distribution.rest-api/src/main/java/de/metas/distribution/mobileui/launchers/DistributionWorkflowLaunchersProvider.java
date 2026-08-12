@@ -1,10 +1,10 @@
 package de.metas.distribution.mobileui.launchers;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.mobileui.DistributionMobileApplication;
-import de.metas.distribution.mobileui.config.DistributionJobSorting;
 import de.metas.distribution.mobileui.config.MobileUIDistributionConfig;
 import de.metas.distribution.mobileui.config.MobileUIDistributionConfigRepository;
 import de.metas.distribution.mobileui.external_services.product.DistributionProductService;
@@ -30,6 +30,8 @@ import de.metas.workplace.Workplace;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -46,6 +48,9 @@ public class DistributionWorkflowLaunchersProvider
 	@NonNull private final DistributionProductService productService;
 	@NonNull private final DistributionSourceDocService sourceDocService;
 
+	private static final String ACTION_DROP_ALL = "dropAll";
+	private static final String ACTION_PRINT_IN_TRANSIT_REPORT = "printMaterialInTransitReport";
+
 	public WorkflowLaunchersList provideLaunchers(@NonNull WorkflowLaunchersQuery query)
 	{
 		query.assertNoFilterByQRCode();
@@ -56,9 +61,18 @@ public class DistributionWorkflowLaunchersProvider
 				newDDOrderReferenceQuery(query.getUserId())
 						.suggestedLimit(query.getLimit().orElse(config.getMaxLaunchers()))
 						.activeFacetIds(DistributionFacetIdsCollection.ofWorkflowLaunchersFacetIds(query.getFacetIds()))
+						.excludeAlreadyStarted(query.isExcludeAlreadyStarted())
 						.build()
 		);
-		return toWorkflowLaunchersList(jobReferences);
+
+		return WorkflowLaunchersList.builder()
+				.timestamp(SystemTime.asInstant())
+				.launchers(jobReferences.stream().map(this::toWorkflowLauncher).collect(ImmutableList.toImmutableList()))
+				.orderByFields(config.getSorting().toWorkflowLauncherCaptionOrderBys())
+				.actions(query.isComputeActions()
+						? computeActions(jobReferences, query.getUserId())
+						: null)
+				.build();
 	}
 
 	private MobileUIDistributionConfig getConfig()
@@ -82,22 +96,22 @@ public class DistributionWorkflowLaunchersProvider
 		final MobileUIDistributionConfig config = getConfig();
 		final Workplace workplace = warehouseService.getWorkplaceByUserId(userId).orElse(null);
 
-		return DDOrderReferenceQuery.builder()
+		final DDOrderReferenceQueryBuilder builder = DDOrderReferenceQuery.builder()
 				.sorting(config.getSorting())
 				.responsibleId(userId)
-				.warehouseToId(workplace != null ? workplace.getWarehouseId() : null)
-				.locatorToId(workplace != null ? workplace.getPickFromLocatorId() : null);
-	}
+				.workplaceWarehouseId(workplace != null ? workplace.getWarehouseId() : null)
+				.workplacePickFromLocatorId(workplace != null ? workplace.getPickFromLocatorId() : null);
 
-	private WorkflowLaunchersList toWorkflowLaunchersList(final List<DDOrderReference> jobReferences)
-	{
-		final DistributionJobSorting sorting = getConfig().getSorting();
+		if (workplace != null && !workplace.isPackingPlace())
+		{
+			builder.excludeLocatorToIds(warehouseService.getAllPackingPlacePickFromLocatorIds());
+		}
+		else
+		{
+			builder.workplacePickFromLocatorId(workplace != null ? workplace.getPickFromLocatorId() : null);
+		}
 
-		return WorkflowLaunchersList.builder()
-				.launchers(jobReferences.stream().map(this::toWorkflowLauncher).collect(ImmutableList.toImmutableList()))
-				.orderByFields(sorting.toWorkflowLauncherCaptionOrderBys())
-				.timestamp(SystemTime.asInstant())
-				.build();
+		return builder;
 	}
 
 	private WorkflowLauncher toWorkflowLauncher(@NonNull final DDOrderReference ddOrderReference)
@@ -153,8 +167,11 @@ public class DistributionWorkflowLaunchersProvider
 	{
 		//
 		// Already started jobs
-		ddOrderService.streamDDOrders(DistributionJobQueries.ddOrdersAssignedToUser(query))
-				.forEach(collector::collect);
+		if (!query.isExcludeAlreadyStarted())
+		{
+			ddOrderService.streamDDOrders(DistributionJobQueries.ddOrdersAssignedToUser(query))
+					.forEach(collector::collect);
+		}
 
 		//
 		// New possible jobs
@@ -167,4 +184,41 @@ public class DistributionWorkflowLaunchersProvider
 		}
 	}
 
+	@NonNull
+	private ImmutableSet<String> computeActions(
+			@NonNull final List<DDOrderReference> jobReferences,
+			@NonNull final UserId userId)
+	{
+		final ImmutableSet.Builder<String> actions = ImmutableSet.builder();
+
+		if (hasInTransitSchedules(jobReferences, userId))
+		{
+			actions.add(ACTION_DROP_ALL);
+
+			if (warehouseService.getTrolleyByUserId(userId).isPresent())
+			{
+				actions.add(ACTION_PRINT_IN_TRANSIT_REPORT);
+			}
+		}
+
+		return actions.build();
+	}
+
+	private boolean hasInTransitSchedules(
+			@NonNull final List<DDOrderReference> jobReferences,
+			@NonNull final UserId userId)
+	{
+		final LocatorId inTransitLocatorId = warehouseService.getTrolleyByUserId(userId)
+				.map(LocatorQRCode::getLocatorId)
+				.orElse(null);
+
+		if (inTransitLocatorId != null)
+		{
+			return loadingSupportServices.hasInTransitSchedules(inTransitLocatorId);
+		}
+		else
+		{
+			return jobReferences.stream().anyMatch(DDOrderReference::isInTransit);
+		}
+	}
 }

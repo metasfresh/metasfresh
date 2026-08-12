@@ -30,6 +30,8 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.compiere.model.X_C_BP_BankAccount;
 
+import javax.annotation.Nullable;
+
 @Getter
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public enum BPBankAcctUse implements ReferenceListAwareEnum
@@ -50,6 +52,12 @@ public enum BPBankAcctUse implements ReferenceListAwareEnum
 	public static BPBankAcctUse ofCode(@NonNull final String code)
 	{
 		return typesByCode.ofCode(code);
+	}
+
+	@Nullable
+	public static BPBankAcctUse ofCodeOrNull(@Nullable final String code)
+	{
+		return code == null ? null : ofCode(code);
 	}
 
 }

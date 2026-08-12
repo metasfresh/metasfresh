@@ -41,6 +41,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.Env;
@@ -165,6 +166,12 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	@Override
+	public void save(@NonNull final I_C_BP_BankAccount bankAccount)
+	{
+		InterfaceWrapperHelper.saveRecord(bankAccount);
+	}
+
 	@NonNull
 	private BPartnerBankAccount of(@NonNull final I_C_BP_BankAccount record)
 	{
@@ -181,6 +188,7 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 				.accountZip(record.getA_Zip())
 				.accountCity(record.getA_City())
 				.accountCountry(record.getA_Country())
+				.bpBankAcctUse(BPBankAcctUse.ofCodeOrNull(record.getBPBankAcctUse()))
 				//.changeLog()
 				.build();
 	}

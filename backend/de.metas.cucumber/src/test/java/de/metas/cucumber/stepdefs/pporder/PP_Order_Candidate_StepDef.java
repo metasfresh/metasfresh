@@ -160,7 +160,7 @@ public class PP_Order_Candidate_StepDef
 	public void validatePP_Order_Candidate(final int timeoutSec, @NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable)
-				.setAdditionalRowIdentifierColumnName("PP_Order_Candidate_ID")
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_PP_Order_Candidate_ID)
 				.forEach(row -> validatePP_Order_Candidate(timeoutSec, row));
 	}
 
@@ -311,19 +311,22 @@ public class PP_Order_Candidate_StepDef
 		InterfaceWrapperHelperUtils.unset_ManualUserAction(record);
 	}
 
+	@NonNull
 	private I_PP_Order_Candidate getPPOrderCandidate(@NonNull final DataTableRow row)
 	{
-		return getPPOrderCandidateIdentifier(row).lookupIn(ppOrderCandidateTable);
+		return getPPOrderCandidateIdentifier(row).lookupNotNullIn(ppOrderCandidateTable);
 	}
 
+	@NonNull
 	private Set<PPOrderCandidateId> getPPOrderCandidateIds(final @NonNull DataTable table)
 	{
 		return DataTableRows.of(table).stream().map(this::getPPOrderCandidateId).collect(ImmutableSet.toImmutableSet());
 	}
 
+	@NonNull
 	private PPOrderCandidateId getPPOrderCandidateId(@NonNull final DataTableRow row)
 	{
-		return getPPOrderCandidateIdentifier(row).lookupIdIn(ppOrderCandidateTable);
+		return getPPOrderCandidateIdentifier(row).lookupNotNullIdIn(ppOrderCandidateTable);
 	}
 
 	private static StepDefDataIdentifier getPPOrderCandidateIdentifier(final @NonNull DataTableRow row)
@@ -672,13 +675,5 @@ public class PP_Order_Candidate_StepDef
 				.resourceTable(resourceTable)
 				.productBOMTable(productBOMTable)
 				.build();
-	}
-
-	@And("^after not more than (.*)s, the following PP_Order_Candidates exist")
-	public void verifyPPOrderCandidatesAreUpdated(final int timeoutSec, @NonNull final DataTable dataTable)
-	{
-		DataTableRows.of(dataTable)
-				.setAdditionalRowIdentifierColumnName("PP_Order_Candidate_ID")
-				.forEach(row -> this.validatePP_Order_Candidate(timeoutSec, row));
 	}
 }

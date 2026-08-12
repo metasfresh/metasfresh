@@ -21,7 +21,7 @@ import java.util.Properties;
  * Developer Model BL Implementation
  *
  * @author tsa
- * See http://dewiki908/mediawiki/index.php/02664:_Introduce_ADempiere_Developer_Mode_%282012040510000121%29
+ * See mediawiki/index.php/02664:_Introduce_ADempiere_Developer_Mode_%282012040510000121%29
  */
 public class DeveloperModeBL implements IDeveloperModeBL
 {
@@ -57,7 +57,7 @@ public class DeveloperModeBL implements IDeveloperModeBL
 			}
 			return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_DeveloperMode, false);
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			logger.warn("Failed retrieving the DeveloperMode sysconfig. Considering not enabled.", e);
 			return false;

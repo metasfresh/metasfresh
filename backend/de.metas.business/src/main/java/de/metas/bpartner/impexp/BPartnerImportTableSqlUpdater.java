@@ -344,21 +344,55 @@ public class BPartnerImportTableSqlUpdater
 
 	private void dbUpdateCbPartnerIdsFromValue(final ImportRecordsSelection selection)
 	{
-
-		final StringBuilder sql = new StringBuilder("UPDATE " + I_I_BPartner.Table_Name + " i " + "SET "
-				+ COLUMNNAME_C_BPartner_ID + " = bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID
+		// Step 1: resolve where exactly one BPartner matches (unambiguous)
+		final StringBuilder sqlUnique = new StringBuilder("UPDATE " + I_I_BPartner.Table_Name + " i " + "SET "
+				+ COLUMNNAME_C_BPartner_ID + " = ("
+				+ "SELECT MAX(bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID + ")"
 				+ " FROM " + I_C_BPartner.Table_Name + " bp"
-				+ " WHERE i." + COLUMNNAME_C_BPartner_ID + " IS NULL "
-				+ " AND i." + I_I_BPartner.COLUMNNAME_BPValue + " IS NOT NULL "
-				+ " AND bp." + I_C_BPartner.COLUMNNAME_Value + " = i." + I_I_BPartner.COLUMNNAME_BPValue
+				+ " WHERE bp." + I_C_BPartner.COLUMNNAME_Value + " = i." + I_I_BPartner.COLUMNNAME_BPValue
 				+ " AND bp." + I_C_BPartner.COLUMNNAME_AD_Client_ID + " = i." + I_I_BPartner.COLUMNNAME_AD_Client_ID
 				+ " AND bp." + I_C_BPartner.COLUMNNAME_AD_Org_ID + " = i." + I_I_BPartner.COLUMNNAME_AD_Org_ID
 				+ " AND bp." + I_C_BPartner.COLUMNNAME_IsActive + " = 'Y'"
+				+ " HAVING count(*)=1"
+				+ ")"
+				+ " WHERE i." + COLUMNNAME_C_BPartner_ID + " IS NULL "
+				+ " AND i." + I_I_BPartner.COLUMNNAME_BPValue + " IS NOT NULL "
 				+ " AND i." + I_I_BPartner.COLUMNNAME_I_IsImported + " <> 'Y'")
-
 						.append(selection.toSqlWhereClause("i"));
+		executeUpdate("Set BPartner by Value (unique)", sqlUnique);
 
-		executeUpdate("Set BPartner by Value", sql);
+		// Step 2: disambiguate using I_BPartner.IsCustomer/IsVendor flags
+		final StringBuilder sqlDisambiguate = new StringBuilder("UPDATE " + I_I_BPartner.Table_Name + " i " + "SET "
+				+ COLUMNNAME_C_BPartner_ID + " = ("
+				+ "SELECT MAX(bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID + ")"
+				+ " FROM " + I_C_BPartner.Table_Name + " bp"
+				+ " WHERE bp." + I_C_BPartner.COLUMNNAME_Value + " = i." + I_I_BPartner.COLUMNNAME_BPValue
+				+ " AND bp." + I_C_BPartner.COLUMNNAME_AD_Client_ID + " = i." + I_I_BPartner.COLUMNNAME_AD_Client_ID
+				+ " AND bp." + I_C_BPartner.COLUMNNAME_AD_Org_ID + " = i." + I_I_BPartner.COLUMNNAME_AD_Org_ID
+				+ " AND bp." + I_C_BPartner.COLUMNNAME_IsActive + " = 'Y'"
+				+ " AND ((i.IsCustomer = 'Y' AND bp.IsCustomer = 'Y') OR (i.IsVendor = 'Y' AND bp.IsVendor = 'Y'))"
+				+ " HAVING count(*)=1"
+				+ ")"
+				+ " WHERE i." + COLUMNNAME_C_BPartner_ID + " IS NULL "
+				+ " AND i." + I_I_BPartner.COLUMNNAME_BPValue + " IS NOT NULL "
+				+ " AND i." + I_I_BPartner.COLUMNNAME_I_IsImported + " <> 'Y'")
+						.append(selection.toSqlWhereClause("i"));
+		executeUpdate("Set BPartner by Value (disambiguated)", sqlDisambiguate);
+
+		// Step 3: mark remaining ambiguous rows as errors
+		final StringBuilder sqlError = new StringBuilder("UPDATE " + I_I_BPartner.Table_Name + " i "
+				+ "SET " + I_I_BPartner.COLUMNNAME_I_IsImported + "='E',"
+				+ " I_ErrorMsg=COALESCE(I_ErrorMsg,'')||'ERR: Multiple BPartners found for Value=\"'||i." + I_I_BPartner.COLUMNNAME_BPValue + "||'\"' "
+				+ " WHERE i." + COLUMNNAME_C_BPartner_ID + " IS NULL "
+				+ " AND i." + I_I_BPartner.COLUMNNAME_BPValue + " IS NOT NULL "
+				+ " AND i." + I_I_BPartner.COLUMNNAME_I_IsImported + " <> 'Y'"
+				+ " AND (SELECT count(*) FROM " + I_C_BPartner.Table_Name + " bp"
+				+ " WHERE bp." + I_C_BPartner.COLUMNNAME_Value + " = i." + I_I_BPartner.COLUMNNAME_BPValue
+				+ " AND bp." + I_C_BPartner.COLUMNNAME_AD_Client_ID + " = i." + I_I_BPartner.COLUMNNAME_AD_Client_ID
+				+ " AND bp." + I_C_BPartner.COLUMNNAME_AD_Org_ID + " = i." + I_I_BPartner.COLUMNNAME_AD_Org_ID
+				+ " AND bp." + I_C_BPartner.COLUMNNAME_IsActive + " = 'Y') > 1")
+						.append(selection.toSqlWhereClause("i"));
+		executeUpdate("Mark ambiguous BPartner Value rows", sqlError);
 	}
 
 	private void dbUpdateCbPartnerIdsFromC_BPartner_ExternalId(final ImportRecordsSelection selection)

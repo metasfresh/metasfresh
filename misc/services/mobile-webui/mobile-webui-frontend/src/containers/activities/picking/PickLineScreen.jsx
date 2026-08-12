@@ -128,7 +128,7 @@ const PickLineScreen = () => {
       .then((wfProcess) => {
         dispatch(updateWFProcess({ wfProcess }));
       })
-      .then(() => history.goBack); // go back to Picking Job
+      .then(() => history.goBack()); // go back to Picking Job
   };
 
   const onReOpen = () => {
@@ -180,7 +180,9 @@ const PickLineScreen = () => {
                 activityId={activityId}
                 lineId={lineId}
                 stepId={stepItem.pickingStepId}
-                pickFromAlternatives={stepItem.pickFromAlternatives}
+                pickFromAlternatives={
+                  stepItem.pickFromAlternatives ? Object.values(stepItem.pickFromAlternatives) : null
+                }
                 catchWeightUOM={catchWeightUOM}
                 //
                 uom={stepItem.uom}
@@ -204,7 +206,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
   const stepsById = line?.steps ?? {};
 
   return {
-    caption: line?.caption,
+    caption: line?.caption, // aka productName
     pickFromHUQRCode: getCurrentPickFromHUQRCode({ activity }),
     pickFromManufacturingOrder: line?.pickFromManufacturingOrder,
     allowPickingAnyHU: isAllowPickingAnyHUForLine({ line }),

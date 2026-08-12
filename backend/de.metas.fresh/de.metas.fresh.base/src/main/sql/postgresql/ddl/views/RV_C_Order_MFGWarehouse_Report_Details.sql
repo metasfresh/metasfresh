@@ -1,80 +1,86 @@
-drop view if exists report.RV_C_Order_MFGWarehouse_Report_Details;
-create or replace view report.RV_C_Order_MFGWarehouse_Report_Details
+DROP VIEW IF EXISTS report.RV_C_Order_MFGWarehouse_Report_Details
+;
+
+CREATE OR REPLACE VIEW report.RV_C_Order_MFGWarehouse_Report_Details
 AS
-SELECT
-	ol.line,
-	att.Attributes,
-	COALESCE(NULLIF(trim(bpp.ProductNo),''), p.value) AS ProductValue,
-	COALESCE(NULLIF(trim(bpp.ProductName),''), p.Name) AS ProductName,
-	COALESCE(NULLIF(trim(bpp.UPC),''), p.UPC) AS EAN,
-	-- Rounding these columns is important to have them in one group
-	-- Jasper groups by comparing the BigDecimals. In that logic, 1.00 is not the same as 1
-	round(ol.pricelist, 3) AS PriceList,
-	round(ip.qty, 3) AS Capacity,
-	round(ol.Priceactual, 3) AS PriceActual,
-	ol.QtyEnteredTU,
-	ol.QtyEntered,
-	pm.name as Container,
-	uom.UOMSymbol AS UOMSymbol,
-	--
-	-- Filtering columns
-	report.C_Order_MFGWarehouse_Report_ID,
-	report.DocumentType as ReportDocumentType,
-	reportLine.C_Order_MFGWarehouse_ReportLine_ID,
-	o.C_Order_ID,
-	ol.C_OrderLine_ID,
-	report.M_Warehouse_ID,
-	report.PP_Plant_ID,
-	o.C_BPartner_ID,
-	o.DatePromised,
-	reportLine.barcode AS barcode 
-FROM
-	C_Order_MFGWarehouse_Report report
-	INNER JOIN C_Order o on (report.C_Order_ID=o.C_Order_ID) AND o.isActive = 'Y'
-	INNER JOIN C_Order_MFGWarehouse_ReportLine reportLine on (reportLine.C_Order_MFGWarehouse_Report_ID=report.C_Order_MFGWarehouse_Report_ID)
-	INNER JOIN C_OrderLine ol ON (ol.C_OrderLine_ID = reportLine.C_OrderLine_ID) AND ol.isActive = 'Y'
-	--
-	LEFT OUTER JOIN C_BPartner bp ON ol.C_BPartner_ID =  bp.C_BPartner_ID AND bp.isActive = 'Y'
-	LEFT OUTER JOIN M_HU_PI_Item_Product ip ON ol.M_HU_PI_Item_Product_ID = ip.M_HU_PI_Item_Product_ID AND ip.isActive = 'Y'
-	LEFT OUTER JOIN M_HU_PI_Item pii ON ip.M_HU_PI_Item_ID = pii.M_HU_PI_Item_ID AND pii.isActive = 'Y'
-	LEFT OUTER JOIN M_HU_PI_Item pmi ON pmi.M_HU_PI_Version_ID = pii.M_HU_PI_Version_ID  AND pmi.isActive = 'Y'
-		AND pmi.ItemType= 'PM'
-	LEFT OUTER JOIN M_HU_PackingMaterial pm ON pmi.M_HU_PackingMaterial_ID = pm.M_HU_PackingMaterial_ID AND pm.isActive = 'Y'
-	-- Product and its translation
-	LEFT OUTER JOIN M_Product p ON ol.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+SELECT ol.line,
+       COALESCE(NULLIF(TRIM(bpp.ProductNo), ''), p.value)  AS ProductValue,
+       COALESCE(NULLIF(TRIM(bpp.ProductName), ''), p.Name) AS ProductName,
+       COALESCE(NULLIF(TRIM(bpp.UPC), ''), p.UPC)          AS EAN,
+       -- Rounding these columns is important to have them in one group
+       -- Jasper groups by comparing the BigDecimals. In that logic, 1.00 is not the same as 1
+       ROUND(ol.pricelist, 3)                              AS PriceList,
+       ROUND(ip.qty, 3)                                    AS Capacity,
+       ROUND(ol.Priceactual, 3)                            AS PriceActual,
+       ol.QtyEnteredTU,
+       ol.QtyEntered,
+       pm.name                                             AS Container,
+       uom.UOMSymbol                                       AS UOMSymbol,
+       --
+       -- Filtering columns
+       report.C_Order_MFGWarehouse_Report_ID,
+       report.DocumentType                                 AS ReportDocumentType,
+       reportLine.C_Order_MFGWarehouse_ReportLine_ID,
+       o.C_Order_ID,
+       ol.C_OrderLine_ID,
+       report.M_Warehouse_ID,
+       report.PP_Plant_ID,
+       o.C_BPartner_ID,
+       o.DatePromised,
+       reportLine.barcode                                  AS barcode,
+       TO_CHAR(att.best_before_date :: DATE, 'dd.MM.YYYY') AS best_before_date,
+       att.lotno,
+       CASE
+           WHEN LENGTH(att.Attributes) > 15
+               THEN att.Attributes || E'\n'
+               ELSE att.Attributes
+       END                                                 AS Attributes,
+       report.getQtyPattern(uom.StdPrecision)              AS QtyPattern,
+       p.description                                       AS p_description
+FROM C_Order_MFGWarehouse_Report report
+         INNER JOIN C_Order o ON (report.C_Order_ID = o.C_Order_ID)
+         INNER JOIN C_Order_MFGWarehouse_ReportLine reportLine ON (reportLine.C_Order_MFGWarehouse_Report_ID = report.C_Order_MFGWarehouse_Report_ID)
+         INNER JOIN C_OrderLine ol ON (ol.C_OrderLine_ID = reportLine.C_OrderLine_ID)
+    --
+         LEFT OUTER JOIN C_BPartner bp ON ol.C_BPartner_ID = bp.C_BPartner_ID
+         LEFT OUTER JOIN M_HU_PI_Item_Product ip ON ol.M_HU_PI_Item_Product_ID = ip.M_HU_PI_Item_Product_ID
+         LEFT OUTER JOIN M_HU_PI_Item pii ON ip.M_HU_PI_Item_ID = pii.M_HU_PI_Item_ID
+         LEFT OUTER JOIN M_HU_PI_Item pmi ON pmi.M_HU_PI_Version_ID = pii.M_HU_PI_Version_ID
+    AND pmi.ItemType = 'PM'
+         LEFT OUTER JOIN M_HU_PackingMaterial pm ON pmi.M_HU_PackingMaterial_ID = pm.M_HU_PackingMaterial_ID
+    -- Product and its translation
+         LEFT OUTER JOIN M_Product p ON ol.M_Product_ID = p.M_Product_ID
 
-	LEFT OUTER JOIN C_BPartner_Product bpp ON bp.C_BPartner_ID = bpp.C_BPartner_ID AND bpp.isActive='Y'
-		AND p.M_Product_ID = bpp.M_Product_ID
-	LEFT OUTER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
-	-- Unit of measurement and its translation
-	LEFT OUTER JOIN C_UOM uom ON ol.C_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
-	-- ADR Attribute
-	LEFT OUTER JOIN	LATERAL(
-		SELECT 	String_agg ( ai_value, ', ' ) AS Attributes, M_AttributeSetInstance_ID
-		FROM 	Report.fresh_Attributes
-		WHERE	at_Value IN ( '1000015', '1000001', '1000002' ) -- Marke (ADR), task 08891: also Herkunft, task 2237: also Label
-			AND M_AttributeSetInstance_ID = ol.M_AttributeSetInstance_ID AND  ol.M_AttributeSetInstance_ID != 0
-		GROUP BY	M_AttributeSetInstance_ID
-	) att ON TRUE
-WHERE
-	1=1
-	AND report.IsActive='Y' and reportLine.IsActive='Y'
-	AND COALESCE(pc.M_Product_Category_ID, -1) != getSysConfigAsNumeric('PackingMaterialProductCategoryID', ol.AD_Client_ID, ol.AD_Org_ID)
-	AND o.IsSOTrx != 'N'
-	AND o.DocStatus = 'CO'
+         LEFT OUTER JOIN C_BPartner_Product bpp ON bp.C_BPartner_ID = bpp.C_BPartner_ID
+    AND p.M_Product_ID = bpp.M_Product_ID
+         LEFT OUTER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID
+    -- Unit of measurement and its translation
+         LEFT OUTER JOIN C_UOM uom ON ol.C_UOM_ID = uom.C_UOM_ID
+    -- Attributes
+         LEFT OUTER JOIN LATERAL (SELECT STRING_AGG(AT.ai_value, ', '
+                                         ORDER BY LENGTH(AT.ai_value), AT.ai_value)
+                                         FILTER (WHERE AT.at_value NOT IN ('HU_BestBeforeDate', 'Lot-Nummer'))
+                                                                                      AS Attributes,
 
-/*
-ORDER BY
-	CASE WHEN $P{c_order_id} IS NOT NULL THEN ol.line ELSE 0 END,
-	-- When no order document is given, sort to aggregate
-	p.name,
-	att.Attributes,
-	uom.UOMSymbol,
-	ol.Pricelist,
-	ol.PriceActual,
-	pm.name,
-	ip.qty
-*/
+                                         AT.M_AttributeSetInstance_ID,
+                                         STRING_AGG(REPLACE(AT.ai_value, 'MHD: ', ''), ', ')
+                                         FILTER (WHERE AT.at_value LIKE 'HU_BestBeforeDate')
+                                                                                      AS best_before_date,
+                                         STRING_AGG(ai_value, ', ')
+                                         FILTER (WHERE AT.at_value LIKE 'Lot-Nummer') AS lotno
+
+                                  FROM Report.fresh_Attributes(ol.M_AttributeSetInstance_ID) AT
+                                  WHERE AT.IsPrintedInDocument = 'Y'
+                                  GROUP BY AT.M_AttributeSetInstance_ID) att ON TRUE
+
+
+WHERE 1 = 1
+  AND report.IsActive = 'Y'
+  AND reportLine.IsActive = 'Y'
+  AND COALESCE(pc.M_Product_Category_ID, -1) != getSysConfigAsNumeric('PackingMaterialProductCategoryID', ol.AD_Client_ID, ol.AD_Org_ID)
+  AND o.IsSOTrx != 'N'
+  AND o.DocStatus = 'CO'
+
 ;
 
 

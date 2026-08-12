@@ -24,22 +24,29 @@ package de.metas.shipper.gateway.nshift;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.i18n.Language;
+import de.metas.customstariff.CustomsTariffId;
+import de.metas.customstariff.CustomsTariffRepository;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.location.ILocationDAO;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import de.metas.location.LocationId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.IOrderDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
-import de.metas.product.IProductDAO;
+import de.metas.product.Product;
 import de.metas.product.ProductId;
+import de.metas.product.ProductRepository;
 import de.metas.quantity.Quantity;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.commons.model.CarrierGoodsTypeRepository;
@@ -55,20 +62,23 @@ import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipping.PurchaseOrderToShipperTransportationRepository;
 import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipping.mpackage.PackageItem;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
+import de.metas.user.User;
+import de.metas.user.UserRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
-import org.compiere.model.I_M_Product;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Optional;
@@ -80,39 +90,52 @@ import static de.metas.shipper.gateway.commons.DeliveryOrderUtil.getPOReferences
 @RequiredArgsConstructor
 public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 {
-	private final @NonNull CarrierProductRepository carrierProductRepository;
-	private final @NonNull CarrierGoodsTypeRepository carrierGoodsTypeRepository;
-	private final @NonNull CarrierShipmentOrderServiceRepository carrierServiceRepository;
-	// @NonNull private final ExternalSystemMessageSender externalSystemMessageSender;
-	private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
-	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
-	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
-	private final IProductDAO productDAO = Services.get(IProductDAO.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	private final PurchaseOrderToShipperTransportationRepository purchaseOrderToShipperTransportationRepository;
+	@NonNull private final CarrierProductRepository carrierProductRepository;
+	@NonNull private final CarrierGoodsTypeRepository carrierGoodsTypeRepository;
+	@NonNull private final CarrierShipmentOrderServiceRepository carrierServiceRepository;
+	@NonNull private final PurchaseOrderToShipperTransportationRepository purchaseOrderToShipperTransportationRepository;
+	@NonNull private final UserRepository userRepository;
+	@NonNull private final ProductRepository productRepository;
+	@NonNull private final CustomsTariffRepository customsTariffRepository;
+
+	@NonNull private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
+	@NonNull private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	@NonNull private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
+
 
 	private static final BigDecimal DEFAULT_PackageWeightInKg = BigDecimal.ONE;
 
+	@NonNull
 	@Override
 	public ShipperGatewayId getShipperGatewayId() {return NShiftConstants.SHIPPER_GATEWAY_ID;}
 
 	@NonNull
 	@Override
-	public @NotNull DeliveryOrder createDraftDeliveryOrder(@NonNull final CreateDraftDeliveryOrderRequest request)
+	public DeliveryOrder createDraftDeliveryOrder(@NonNull final CreateDraftDeliveryOrderRequest request)
 	{
 		final DeliveryOrderKey deliveryOrderKey = request.getDeliveryOrderKey();
 
 		final I_C_BPartner pickupFromBPartner = bpartnerOrgBL.retrieveLinkedBPartner(deliveryOrderKey.getFromOrgId());
-		final I_C_Location pickupFromLocation = bpartnerOrgBL.retrieveOrgLocation(OrgId.ofRepoId(deliveryOrderKey.getFromOrgId()));
+		final I_C_BPartner_Location pickupFromBPLocation = bpartnerOrgBL.retrieveOrgBPLocation(OrgId.ofRepoId(deliveryOrderKey.getFromOrgId()));
+		final I_C_Location pickupFromLocation = locationDAO.getById(LocationId.ofRepoId(pickupFromBPLocation.getC_Location_ID()));
+		final User pickupFromContact = bpartnerBL.retrieveContactOrNull(IBPartnerBL.RetrieveContactRequest.builder()
+						.contactType(IBPartnerBL.RetrieveContactRequest.ContactType.SHIP_TO_DEFAULT)
+						.onlyActive(true)
+						.bpartnerId(BPartnerId.ofRepoId(pickupFromBPartner.getC_BPartner_ID()))
+						.ifNotFound(IBPartnerBL.RetrieveContactRequest.IfNotFound.RETURN_DEFAULT_CONTACT)
+				.build());
 		final LocalDate pickupDate = deliveryOrderKey.getPickupDate();
 
 		final BPartnerLocationId deliverToBPartnerLocationId = BPartnerLocationId.ofRepoId(deliveryOrderKey.getDeliverToBPartnerId(), deliveryOrderKey.getDeliverToBPartnerLocationId());
 		final I_C_BPartner deliverToBPartner = bpartnerBL.getById(deliverToBPartnerLocationId.getBpartnerId());
 		final I_C_BPartner_Location deliverToBPLocation = Check.assumeNotNull(bpartnerDAO.getBPartnerLocationByIdInTrx(deliverToBPartnerLocationId), "bp location not null");
 		final I_C_Location deliverToLocation = locationDAO.getById(LocationId.ofRepoId(deliverToBPLocation.getC_Location_ID()));
+		final User deliverToContact = deliveryOrderKey.getDeliverContactId() != null ? userRepository.getByIdInTrx(deliveryOrderKey.getDeliverContactId()) : null;
 
 		final ShipperId shipperId = deliveryOrderKey.getShipperId();
 
@@ -126,7 +149,8 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 				.receiverEORI(deliverToBPartner.getEORI())
 				//
 				// Pickup aka Shipper
-				.pickupAddress(toPickFromAddress(pickupFromBPartner, pickupFromLocation))
+				.pickupAddress(toPickFromAddress(pickupFromBPartner, pickupFromLocation, pickupFromBPLocation))
+				.pickupContact(toContact(pickupFromBPartner, pickupFromBPLocation, pickupFromContact))
 				.pickupDate(PickupDate.builder()
 						.date(pickupDate)
 						.timeFrom(deliveryOrderKey.getTimeFrom())
@@ -134,8 +158,8 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 						.build())
 				//
 				// Delivery aka Receiver
-				.deliveryAddress(toDeliverToAddress(deliverToBPartner, deliverToLocation))
-				.deliveryContact(toDeliverToContact(deliverToBPartner, deliverToBPLocation))
+				.deliveryAddress(toDeliverToAddress(deliverToBPartner, deliverToLocation, deliverToBPLocation))
+				.deliveryContact(toContact(deliverToBPartner, deliverToBPLocation, deliverToContact))
 				//
 				// Delivery content
 				.deliveryOrderParcels(toDeliveryOrderLines(request.getPackageInfos()))
@@ -147,39 +171,37 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 
 	}
 
-	private static Address toPickFromAddress(final I_C_BPartner pickupFromBPartner, final I_C_Location pickupFromLocation)
+	@NonNull
+	private static Address toPickFromAddress(@NonNull final I_C_BPartner pickupFromBPartner, @NonNull final I_C_Location pickupFromLocation, @NonNull final I_C_BPartner_Location pickupFromBPLocation)
 	{
-		return DeliveryOrderUtil.prepareAddressFromLocationBP(pickupFromLocation , pickupFromBPartner)
+		return DeliveryOrderUtil.prepareAddressFromLocationBP(pickupFromLocation, pickupFromBPartner, pickupFromBPLocation)
 				.build();
 	}
 
-	private static Address toDeliverToAddress(final I_C_BPartner deliverToBPartner, final I_C_Location deliverToLocation)
+	@NonNull
+	private static Address toDeliverToAddress(@NonNull final I_C_BPartner deliverToBPartner, @NonNull final I_C_Location deliverToLocation, @NonNull final I_C_BPartner_Location deliverToBPLocation)
 	{
-		return DeliveryOrderUtil.prepareAddressFromLocationBP(deliverToLocation , deliverToBPartner)
-				.bpartnerId(deliverToBPartner.getC_BPartner_ID()) // afaics used only for logging
+		return DeliveryOrderUtil.prepareAddressFromLocationBP(deliverToLocation, deliverToBPartner, deliverToBPLocation)
+				.bpartnerId(deliverToBPartner.getC_BPartner_ID()) // used for label archive
 				.build();
 	}
 
-	private static ContactPerson toDeliverToContact(final I_C_BPartner deliverToBPartner, final I_C_BPartner_Location deliverToBPLocation)
+	@NonNull
+	private static ContactPerson toContact(@NonNull final I_C_BPartner bPartner,
+										   @NonNull final I_C_BPartner_Location bPLocation,
+										   @Nullable final User contact)
 	{
-		final String deliverToPhoneNumber = CoalesceUtil.firstNotEmptyTrimmed(deliverToBPLocation.getPhone(), deliverToBPLocation.getPhone2(), deliverToBPartner.getPhone2());
-
-		final Language bpLanguage = Language.asLanguage(deliverToBPartner.getAD_Language());
-		return ContactPerson.builder()
-				.name(deliverToBPartner.getName())
-				.emailAddress(deliverToBPartner.getEMail())
-				.simplePhoneNumber(deliverToPhoneNumber)
-				.languageCode(bpLanguage != null ? bpLanguage.getLanguageCode() : null)
-				.build();
+		return DeliveryOrderUtil.getContactPerson(bPartner, bPLocation, contact);
 	}
 
-	private ImmutableList<DeliveryOrderParcel> toDeliveryOrderLines(@NotNull final Set<CreateDraftDeliveryOrderRequest.PackageInfo> packageInfos)
+	@NonNull
+	private ImmutableList<DeliveryOrderParcel> toDeliveryOrderLines(@NonNull final Set<CreateDraftDeliveryOrderRequest.PackageInfo> packageInfos)
 	{
 		return packageInfos.stream()
 				.map(packageInfo -> {
 					final ImmutableList<DeliveryOrderItem> deliveryOrderItems = purchaseOrderToShipperTransportationRepository.getPackageById(packageInfo.getPackageId()).getPackageContents()
 							.stream()
-							.map(this::createDeliveryOrderItems)
+							.map(this::createDeliveryOrderItem)
 							.collect(ImmutableList.toImmutableList());
 					return DeliveryOrderParcel.builder()
 							.packageDimensions(packageInfo.getPackageDimension())
@@ -192,11 +214,12 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private DeliveryOrderItem createDeliveryOrderItems(final PackageItem packageItem)
+	@NonNull
+	private DeliveryOrderItem createDeliveryOrderItem(@NonNull final PackageItem packageItem)
 	{
 		Check.assumeNotNull(packageItem.getQuantity(), "quantity must not be null, for packageItem " + packageItem);
 		final ProductId productId = packageItem.getProductId();
-		final I_M_Product product = productDAO.getById(productId);
+		final Product product = productRepository.getById(productId);
 		final BigDecimal weightInKg = computeNominalGrossWeightInKg(packageItem).orElse(BigDecimal.ZERO);
 		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(packageItem.getOrderLineId());
 
@@ -206,9 +229,16 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 		final Money unitPrice = Money.of(orderLine.getPriceEntered(), CurrencyId.ofRepoId(orderLine.getC_Currency_ID()));
 		final Money totalPackageValue = unitPrice.multiply(quantity.toBigDecimal());
 
+		final CustomsTariffId customsTariffId = product.getCustomsTariffId();
+		final String customsTariff = customsTariffId != null ? customsTariffRepository.getById(customsTariffId).getValue() : null;
+
+		final String countryOfOrigin = readCountryOfOrigin(packageItem);
+
 		return DeliveryOrderItem.builder()
-				.productName(product.getName())
+				.productName(product.getName().getDefaultValue())
 				.productValue(product.getValue())
+				.customsTariff(customsTariff)
+				.countryOfOrigin(countryOfOrigin)
 				.totalWeightInKg(weightInKg)
 				.shippedQuantity(packageItem.getQuantity())
 				.unitPrice(unitPrice)
@@ -216,7 +246,26 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 				.build();
 	}
 
-	private Optional<BigDecimal> computeNominalGrossWeightInKg(final PackageItem packageItem)
+	private static final AttributeCode ATTR_COUNTRY_OF_ORIGIN = HUAttributeConstants.ATTR_CountryOfOrigin;
+
+	@Nullable
+	private String readCountryOfOrigin(@NonNull final PackageItem packageItem)
+	{
+		final AttributeSetInstanceId asiId = packageItem.getInOutLineASIId();
+		if (asiId.isNone())
+		{
+			return null;
+		}
+		final ImmutableAttributeSet attributeSet = asiBL.getImmutableAttributeSetById(asiId);
+		if (!attributeSet.hasAttribute(ATTR_COUNTRY_OF_ORIGIN))
+		{
+			return null;
+		}
+		return attributeSet.getValueAsStringOrNull(ATTR_COUNTRY_OF_ORIGIN);
+	}
+
+	@NonNull
+	private Optional<BigDecimal> computeNominalGrossWeightInKg(@NonNull final PackageItem packageItem)
 	{
 		final ProductId productId = packageItem.getProductId();
 		final Quantity quantity = packageItem.getQuantity();

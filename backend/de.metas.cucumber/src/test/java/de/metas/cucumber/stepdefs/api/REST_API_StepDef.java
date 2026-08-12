@@ -77,7 +77,7 @@ public class REST_API_StepDef
 
 		performHTTPRequest(
 				newAPIRequest()
-						.endpointPath(endpointPath)
+						.endpointPath(resolveContextVariables(endpointPath))
 						.method(verb)
 						.expectedStatusCode(Integer.parseInt(statusCode))
 						.payload(payloadResolved)
@@ -171,7 +171,7 @@ public class REST_API_StepDef
 	{
 		performHTTPRequest(
 				newAPIRequest()
-						.endpointPath(endpointPath)
+						.endpointPath(resolveContextVariables(endpointPath))
 						.method(verb)
 						.build()
 		);
@@ -185,7 +185,7 @@ public class REST_API_StepDef
 	{
 		performHTTPRequest(
 				newAPIRequest()
-						.endpointPath(endpointPath)
+						.endpointPath(resolveContextVariables(endpointPath))
 						.method(verb)
 						.additionalHeaders(testContext.getHttpHeaders())
 						.expectedStatusCode(Integer.parseInt(status))
@@ -255,18 +255,29 @@ public class REST_API_StepDef
 	{
 		performHTTPRequest(
 				newAPIRequest()
-						.endpointPath(endpointPath)
+						.endpointPath(resolveContextVariables(endpointPath))
 						.method(verb)
 						.expectedStatusCode(Integer.parseInt(responseCode))
 						.build()
 		);
 	}
 
+	@And("the returned request body of type {string} is:")
+	public void validateWithCustomClass(@NonNull final String className, @NonNull final String expectedResponseBodyString) throws JsonProcessingException, ClassNotFoundException
+	{
+		final Class<?> expectedClass = Class.forName(className);
+
+		final Object actualResponseBody = testContext.getApiResponseBodyAs(expectedClass);
+		final Object expectedResponseBody = JsonObjectMapperHolder.sharedJsonObjectMapper().readValue(resolveContextVariables(expectedResponseBodyString), expectedClass);
+
+		assertThat(actualResponseBody).isEqualTo(expectedResponseBody);
+	}
+
 	@And("the actual response body is")
 	public void validate_response_body(@NonNull final String expectedResponseBodyString) throws JsonProcessingException
 	{
 		final JsonTestResponse actualResponseBody = testContext.getApiResponseBodyAs(JsonTestResponse.class);
-		final JsonTestResponse expectedResponseBody = JsonObjectMapperHolder.sharedJsonObjectMapper().readValue(expectedResponseBodyString, JsonTestResponse.class);
+		final JsonTestResponse expectedResponseBody = JsonObjectMapperHolder.sharedJsonObjectMapper().readValue(resolveContextVariables(expectedResponseBodyString), JsonTestResponse.class);
 
 		assertThat(actualResponseBody.getMessageBody()).isEqualTo(expectedResponseBody.getMessageBody());
 	}

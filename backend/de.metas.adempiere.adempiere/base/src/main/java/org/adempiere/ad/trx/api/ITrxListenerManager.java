@@ -5,6 +5,7 @@ import com.google.common.base.MoreObjects.ToStringHelper;
 import lombok.Getter;
 import lombok.NonNull;
 
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -205,6 +206,13 @@ public interface ITrxListenerManager
 		newEventListener(TrxEventTiming.AFTER_ROLLBACK)
 				.invokeMethodJustOnce(true)
 				.registerHandlingMethod(trx -> runnable.run());
+	}
+
+	default void runAfterClose(@NonNull final Consumer<ITrx> runnable)
+	{
+		newEventListener(TrxEventTiming.AFTER_CLOSE)
+				.invokeMethodJustOnce(true)
+				.registerHandlingMethod(runnable::accept);
 	}
 
 	/**

@@ -23,6 +23,8 @@
 package de.metas.rest_api.v2.ordercandidates.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
@@ -50,6 +52,8 @@ import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.impexp.InputDataSourceId;
+import de.metas.incoterms.Incoterms;
+import de.metas.incoterms.IncotermsId;
 import de.metas.money.CurrencyId;
 import de.metas.order.InvoiceRule;
 import de.metas.order.OrderLineGroup;
@@ -57,12 +61,15 @@ import de.metas.order.impl.DocTypeService;
 import de.metas.ordercandidate.api.AssignSalesRepRule;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
+import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.IProductBL;
+import de.metas.promotioncode.PromotionCodeId;
+import de.metas.promotioncode.PromotionCodeRepository;
 import de.metas.quantity.Quantitys;
 import de.metas.rest_api.utils.CurrencyService;
 import de.metas.rest_api.utils.IdentifierString;
@@ -76,7 +83,10 @@ import de.metas.util.lang.Percent;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.persistence.custom_columns.CustomColumnService;
+import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
@@ -84,7 +94,9 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -101,6 +113,8 @@ public class JsonConverters
 	@NonNull private final ExternalSystemRepository externalSystemRepository;
 	@NonNull private final CurrencyService currencyService;
 	@NonNull private final DocTypeService docTypeService;
+	@NonNull private final CustomColumnService customColumnService;
+	@NonNull private final PromotionCodeRepository promotionCodeRepository;
 
 	@NonNull
 	public final OLCandCreateRequest fromJson(
@@ -214,6 +228,18 @@ public class JsonConverters
 		final boolean isAutoInvoice = billBPartnerInfo != null ? masterdataProvider.isAutoInvoice(request, billBPartnerInfo.getBpartnerId())
 				: masterdataProvider.isAutoInvoice(request, bPartnerInfo.getBpartnerId());
 
+		final Incoterms incoterms = masterdataProvider.getIncoterms(request, orgId, bPartnerInfo.getBpartnerId());
+		final IncotermsId incotermsId = incoterms != null ? incoterms.getId() : null;
+		final String incotermsLocation = incoterms != null ? incoterms.getLocationEffective() : null;
+
+		final PromotionCodeId promotionCodeId = !Check.isBlank(request.getPromotionCode())
+				? promotionCodeRepository.getPromotionCodeIdByValue(request.getPromotionCode())
+				: null;
+
+		final PromotionCodeId promotionCode2Id = !Check.isBlank(request.getPromotionCode2())
+				? promotionCodeRepository.getPromotionCodeIdByValue(request.getPromotionCode2())
+				: null;
+
 		return OLCandCreateRequest.builder()
 				//
 				.orgId(orgId)
@@ -260,6 +286,10 @@ public class JsonConverters
 				.warehouseId(warehouseId)
 
 				.shipperId(shipperId)
+				.deliveryRule(deliveryRule)
+				.deliveryViaRule(request.getDeliveryViaRule())
+				.incotermsId(incotermsId)
+				.incotermsLocation(incotermsLocation)
 
 				.isAutoInvoice(isAutoInvoice)
 				.invoiceRule(InvoiceRule.ofNullableCode(request.getInvoiceRule()))
@@ -275,8 +305,6 @@ public class JsonConverters
 				.line(request.getLine())
 				.isManualPrice(request.getIsManualPrice())
 				.importWarningMessage(request.getImportWarningMessage())
-				.deliveryRule(deliveryRule)
-				.deliveryViaRule(request.getDeliveryViaRule())
 				.qtyShipped(request.getQtyShipped())
 
 				//
@@ -285,6 +313,11 @@ public class JsonConverters
 				.bpartnerName(request.getBpartnerName())
 				.email(request.getEmail())
 				.phone(request.getPhone())
+				.extendedProps(request.getExtendedProps())
+				.promotionCodeId(promotionCodeId)
+				.promotionCode2Id(promotionCode2Id)
+				.isWithoutCharge(Boolean.TRUE.equals(request.getIsWithoutCharge()))
+				.reason(request.getReason())
 				.build()
 				;
 	}
@@ -343,8 +376,17 @@ public class JsonConverters
 			@NonNull final List<OLCand> olCands,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
+		// batch-load promotion-code values up front, so the per-item conversion below avoids an N+1 round-trip
+		final ImmutableSet<PromotionCodeId> promotionCodeIds = olCands.stream()
+				.flatMap(olCand -> Stream.of(
+						PromotionCodeId.ofRepoIdOrNull(olCand.unbox().getC_PromotionCode_ID()),
+						PromotionCodeId.ofRepoIdOrNull(olCand.unbox().getC_PromotionCode2_ID())))
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+		final ImmutableMap<PromotionCodeId, String> promotionCodeValuesById = promotionCodeRepository.getValuesByIds(promotionCodeIds);
+
 		final List<JsonOLCand> jsonOLCands = olCands.stream()
-				.map(olCand -> toJson(olCand, masterdataProvider))
+				.map(olCand -> toJson(olCand, masterdataProvider, promotionCodeValuesById))
 				.collect(ImmutableList.toImmutableList());
 
 		final List<JsonErrorItem> errorItems = olCands.stream()
@@ -367,7 +409,8 @@ public class JsonConverters
 
 	private JsonOLCand toJson(
 			@NonNull final OLCand olCand,
-			@NonNull final MasterdataProvider masterdataProvider)
+			@NonNull final MasterdataProvider masterdataProvider,
+			@NonNull final ImmutableMap<PromotionCodeId, String> promotionCodeValuesById)
 	{
 		final OrgId orgId = OrgId.ofRepoId(olCand.getAD_Org_ID());
 		final ZoneId orgTimeZone = masterdataProvider.getOrgTimeZone(orgId);
@@ -420,7 +463,27 @@ public class JsonConverters
 						.map(JsonMetasfreshId::of)
 						.orElse(null))
 				.line(olCand.getLine())
+				//
+				.extendedProps(getExtendedPropsOrNull(olCand))
+				.promotionCode(promotionCodeValuesById.get(PromotionCodeId.ofRepoIdOrNull(olCand.unbox().getC_PromotionCode_ID())))
+				.promotionCode2(promotionCodeValuesById.get(PromotionCodeId.ofRepoIdOrNull(olCand.unbox().getC_PromotionCode2_ID())))
+				.isWithoutCharge(olCand.unbox().isWithoutCharge())
+				.reason(olCand.unbox().getReason())
+				//
 				.build();
+	}
+
+	@Nullable
+	private ImmutableMap<String, Object> getExtendedPropsOrNull(@NonNull final OLCand olCand)
+	{
+		final I_C_OLCand olCandRecord = olCand.unbox();
+		if (POJOWrapper.isHandled(olCandRecord))
+		{
+			return null;  // POJOWrapper doesn't expose a PO, so custom columns are unavailable
+		}
+		final ImmutableMap<String, Object> extProps =
+				customColumnService.getCustomColumnsJsonValues(InterfaceWrapperHelper.getPO(olCandRecord)).toMap();
+		return extProps.isEmpty() ? null : extProps;
 	}
 
 	@NonNull

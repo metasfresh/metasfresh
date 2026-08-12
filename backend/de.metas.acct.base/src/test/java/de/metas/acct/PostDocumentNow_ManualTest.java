@@ -30,6 +30,7 @@ import de.metas.banking.accounting.BankAccountAcctRepository;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.api.BankRepository;
 import de.metas.cache.model.ModelCacheInvalidationService;
+import de.metas.cost.classification.CostClassificationRepository;
 import de.metas.costing.impl.CostDetailRepository;
 import de.metas.costing.impl.CostDetailService;
 import de.metas.costing.impl.CostElementRepository;
@@ -193,6 +194,7 @@ public class PostDocumentNow_ManualTest
 		return new AcctDocRequiredServicesFacade(
 				modelCacheInvalidationService,
 				elementValueService,
+				new CostClassificationRepository(),
 				new GLCategoryRepository(),
 				bankAccountService,
 				accountProviderFactory,

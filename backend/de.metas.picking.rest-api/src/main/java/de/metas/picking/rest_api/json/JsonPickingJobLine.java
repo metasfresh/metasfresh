@@ -23,6 +23,8 @@
 package de.metas.picking.rest_api.json;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.picking.config.mobileui.PickAttribute;
 import de.metas.handlingunits.picking.job.model.CurrentPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingUnit;
@@ -41,6 +43,7 @@ import lombok.extern.jackson.Jacksonized;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -77,6 +80,9 @@ public class JsonPickingJobLine
 	@Nullable String salesOrderDocumentNo;
 	int orderLineSeqNo;
 	@Nullable JsonWFProcessHeaderProperties additionalHeaderProperties;
+	// Per-line pick attributes the mobile UI should prompt for; extends (does not replace) the job-level
+	// JsonPickingJob.readAttributes by adding SerialNo for serial-no products.
+	@Builder.Default @NonNull Set<PickAttribute> readAttributes = ImmutableSet.of();
 
 	public static JsonPickingJobLineBuilder builderFrom(
 			@NonNull final PickingJobLine line,
@@ -133,7 +139,7 @@ public class JsonPickingJobLine
 						: null)
 				.steps(line.getSteps()
 						.stream()
-						.map(step -> JsonPickingJobStep.of(step, jsonOpts, getUOMSymbolById))
+						.map(step -> JsonPickingJobStep.of(step, line, jsonOpts, getUOMSymbolById))
 						.collect(ImmutableList.toImmutableList()))
 				.completeStatus(JsonCompleteStatus.of(line.getProgress()))
 				.manuallyClosed(line.isManuallyClosed())

@@ -1,0 +1,15 @@
+{
+  "name": "metasfresh-flaky-metric",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Extract metasfresh CI test failures from GitHub Actions artifacts, classify them by root-cause bucket, and upsert a flakyness metric into a Google Sheet. Tracks me03#30024.",
+  "type": "commonjs",
+  "scripts": {
+    "extract": "node scripts/extract.js",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "fast-xml-parser": "^4.5.0",
+    "googleapis": "^144.0.0"
+  }
+}

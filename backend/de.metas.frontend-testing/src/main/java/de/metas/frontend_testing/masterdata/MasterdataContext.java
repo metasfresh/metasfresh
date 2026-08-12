@@ -109,6 +109,58 @@ public class MasterdataContext
 		return Optional.ofNullable(id);
 	}
 
+	/**
+	 * Suffix used when registering a BPartner's single default location.
+	 * When a BPartner is created without explicit locations, a default location
+	 * is created and registered with this suffix appended to the BPartner identifier.
+	 *
+	 * @see de.metas.frontend_testing.masterdata.bpartner.CreateBPartnerCommand
+	 */
+	public static final String SINGLE_BP_LOCATION_SUFFIX = "_singleBPLocationI";
+
+	/**
+	 * Resolves a BPartnerLocationId by identifier, with automatic fallback to the
+	 * {@code _singleBPLocationI} suffix for BPartners that have a single default location.
+	 * <p>
+	 * When a BPartner is created without explicit locations, a default location is created
+	 * and registered with the identifier {@code <bpIdentifier>_singleBPLocationI}.
+	 * This method handles that pattern transparently.
+	 *
+	 * @param identifier the identifier to resolve (can be either a direct BPartnerLocationId
+	 *                   identifier or a BPartnerId identifier that has a single default location)
+	 * @return the resolved BPartnerLocationId, or empty if not found
+	 */
+	public Optional<BPartnerLocationId> getOptionalBPartnerLocationId(@NonNull final Identifier identifier)
+	{
+		// Try direct lookup first
+		final Optional<BPartnerLocationId> directLookup = getOptionalId(identifier, BPartnerLocationId.class);
+		if (directLookup.isPresent())
+		{
+			return directLookup;
+		}
+
+		// Fallback: try with _singleBPLocationI suffix (for single-location BPartners)
+		return getOptionalId(
+				Identifier.ofString(identifier.getAsString() + SINGLE_BP_LOCATION_SUFFIX),
+				BPartnerLocationId.class);
+	}
+
+	/**
+	 * Resolves a BPartnerLocationId by identifier, throwing if not found.
+	 *
+	 * @param identifier the identifier to resolve
+	 * @return the resolved BPartnerLocationId
+	 * @throws IllegalArgumentException if no BPartnerLocationId is found for the identifier
+	 * @see #getOptionalBPartnerLocationId(Identifier)
+	 */
+	public BPartnerLocationId getBPartnerLocationId(@NonNull final Identifier identifier)
+	{
+		return getOptionalBPartnerLocationId(identifier)
+				.orElseThrow(() -> new IllegalArgumentException(
+						"No BPartnerLocationId found for identifier: " + identifier
+								+ " (also tried: " + identifier.getAsString() + SINGLE_BP_LOCATION_SUFFIX + ")"));
+	}
+
 	public <T extends RepoIdAware> T getIdOfType(@NonNull final Class<T> idClass)
 	{
 		final List<T> result = getIdsOfType(idClass);
