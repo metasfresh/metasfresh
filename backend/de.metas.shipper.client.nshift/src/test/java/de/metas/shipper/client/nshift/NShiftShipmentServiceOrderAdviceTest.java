@@ -50,7 +50,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 
 import java.math.BigDecimal;
-import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -77,8 +76,6 @@ public class NShiftShipmentServiceOrderAdviceTest
 	@Autowired
 	@Qualifier(NShiftClientConfig.NSHIFT_OBJECT_MAPPER)
 	private ObjectMapper nShiftObjectMapper;
-
-	private static final Pattern EMPTY_JSON_ARRAY = Pattern.compile("\\[\\s*\\]");
 
 	@SuppressWarnings("unused") // injected by SnapshotExtension via reflection
 	private Expect expect;
@@ -231,13 +228,7 @@ public class NShiftShipmentServiceOrderAdviceTest
 	{
 		final JsonShipmentRequest request = NShiftShipmentService.buildOrderAdviceShipmentRequest(DELIVERY_REQUEST);
 		final String json = nShiftObjectMapper.writeValueAsString(request);
-		assertNoEmptyJsonArrays(json);
-	}
-
-	private static void assertNoEmptyJsonArrays(final String json)
-	{
-		assertFalse(EMPTY_JSON_ARRAY.matcher(json).find(),
-				"nShift request must not serialize empty lists (nShift fails with 'list index out of range'):\n" + json);
+		NShiftTestAssertions.assertNoEmptyJsonArrays(json);
 	}
 
 	@Test
