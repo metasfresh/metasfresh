@@ -129,6 +129,8 @@ public class ESRImportBL implements IESRImportBL
 
 	private static final AdMessageKey ESR_NO_HAS_WRONG_ORG_2P = AdMessageKey.of("de.metas.payment.esr.EsrNoHasWrongOrg");
 
+	private static final AdMessageKey ESR_INVOICE_ALREADY_PAID_1P = AdMessageKey.of("de.metas.payment.esr.InvoiceAlreadyPaid");
+
 	/**
 	 * Filled by {@link #registerActionHandler(String, IESRActionHandler)}.
 	 */
@@ -1178,7 +1180,9 @@ public class ESRImportBL implements IESRImportBL
 	 */
 	private void markInvoiceAlreadyPaid(@NonNull final I_ESR_ImportLine importLine, @NonNull final I_C_Invoice invoice)
 	{
-		ESRDataLoaderUtil.addMatchErrorMsgIfNotPresent(importLine, "Rechnung " + invoice.getDocumentNo() + " wurde im System als bereits bezahlt markiert");
+		final Properties ctx = getCtx(importLine);
+		ESRDataLoaderUtil.addMatchErrorMsgIfNotPresent(importLine,
+														msgBL.getMsg(ctx, ESR_INVOICE_ALREADY_PAID_1P, new Object[] { invoice.getDocumentNo() }));
 		importLine.setESR_Document_Status(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched);
 	}
 

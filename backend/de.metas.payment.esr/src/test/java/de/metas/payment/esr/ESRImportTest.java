@@ -1680,7 +1680,10 @@ public class ESRImportTest extends ESRTestBase
 				   esrImportLine2.isProcessed(), is(false));
 		assertThat(esrImportLine2.getESR_Document_Status(), is(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched));
 		assertThat(esrImportLine2.getImportErrorMsg(), nullValue());
-		assertThat(esrImportLine2.getMatchErrorMsg(), is("Rechnung " + invDocNo + " wurde im System als bereits bezahlt markiert"));
+		// note text now comes from msgBL.getMsg(ESR_INVOICE_ALREADY_PAID_1P, ...); in this no-DB test env
+		// an AD_Message with no registered row resolves to "<key>_[<params>]" (see ESRImportBLTest#test_setInvoice_wrongOrg
+		// for the same fallback shape with 2 params)
+		assertThat(esrImportLine2.getMatchErrorMsg(), is("de.metas.payment.esr.InvoiceAlreadyPaid_[" + invDocNo + "]"));
 
 		// check the payment: the duplicate-flagged line must have its OWN payment, not the first line's
 		assertThat("the duplicate line must not carry the first line's C_Payment_ID",
