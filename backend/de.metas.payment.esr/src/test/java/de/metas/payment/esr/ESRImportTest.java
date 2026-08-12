@@ -1792,4 +1792,58 @@ public class ESRImportTest extends ESRTestBase
 		assertThat("the duplicate payment must not be allocated to the invoice", esrLine2Payment.isAllocated(), is(false));
 	}
 
+	/**
+	 * Re-processing the SAME already-processed ESR import must be idempotent.
+	 * <ul>
+	 * <li>invoice 50, one ESR line pays it in full
+	 * <li>{@code esrImportBL.process(esrImport)} is called a SECOND time on the very same, already-processed import
+	 * <li>production code refuses the second call (the header's {@code Processed=Y} guard throws
+	 * {@code AdempiereException}) -- that guard IS the idempotency protection this test pins
+	 * <li>the line must keep its original payment (no new {@code C_Payment_ID})
+	 * <li>exactly ONE {@code C_Payment} must exist for the partner, counted from the actual table, not merely
+	 * re-read from the line's FK
+	 * </ul>
+	 */
+	@Test
+	public void testReprocessSameImport_createsNoSecondPayment()
+	{
+		final String grandTotal = "50";
+		final String esrLineText = "01201067789300000001060012345600654321400000050009072  030014040914041014041100001006800000000000090                          ";
+		final String completeRef = ESRTransactionLineMatcherUtil.extractReferenceNumberStr(esrLineText);
+
+		final String partnerValue = "123456";
+		final String invDocNo = "654321";
+		final String ESR_Rendered_AccountNo = "01-067789-3";
+
+		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine(invDocNo, grandTotal, false, completeRef, /* refNo, */ ESR_Rendered_AccountNo, partnerValue, "50", false);
+		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
+
+		esrImportBL.process(esrImport);
+
+		refresh(esrImportLine, true);
+		assertThat(esrImportLine.isProcessed(), is(true));
+		final int originalPaymentId = esrImportLine.getC_Payment_ID();
+		assertThat("first processing must have created a payment", originalPaymentId, is(not(0)));
+
+		// process the very same, already-processed import a second time: the header-level
+		// "Processed=Y" guard in ESRImportBL#processAndCountLines refuses the call outright
+		org.junit.jupiter.api.Assertions.assertThrows(
+				org.adempiere.exceptions.AdempiereException.class,
+				() -> esrImportBL.process(esrImport),
+				"re-processing an already-processed import must be refused by the Processed=Y guard");
+
+		// the line must still point to its original payment, not a new one
+		refresh(esrImportLine, true);
+		assertThat("re-processing must not swap in a new payment", esrImportLine.getC_Payment_ID(), is(originalPaymentId));
+
+		// load-bearing assertion: count the partner's actual C_Payment rows, not just the line's FK,
+		// so a stray second payment created for the same partner would be caught even if the line's FK was untouched
+		final int partnerId = esrImportLine.getC_Invoice().getC_BPartner_ID();
+		final List<I_C_Payment> partnerPayments = POJOLookupMap.get().getRecords(I_C_Payment.class)
+				.stream()
+				.filter(payment -> payment.getC_BPartner_ID() == partnerId)
+				.collect(java.util.stream.Collectors.toList());
+		assertThat("exactly one C_Payment must exist for the partner after re-processing", partnerPayments.size(), is(1));
+	}
+
 }
