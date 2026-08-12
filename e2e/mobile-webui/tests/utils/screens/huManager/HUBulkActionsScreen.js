@@ -1,5 +1,5 @@
 import { test } from '../../../../playwright.config';
-import { page, FAST_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../../common';
+import { page, FAST_ACTION_TIMEOUT, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../../common';
 import { expect } from '@playwright/test';
 import { ApplicationsListScreen } from '../ApplicationsListScreen';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
@@ -26,7 +26,7 @@ export const HUBulkActionsScreen = {
         await page.getByTestId('toggle-target-scanner-button').tap();
         // Wait for button text to change to "Close scanner" - ensures React re-render complete
         // and useKeyboardBarcodeReader hook has attached its event listener
-        await page.getByTestId('toggle-target-scanner-button').getByText('Close scanner').waitFor();
+        await page.getByTestId('toggle-target-scanner-button').getByText('Close scanner').waitFor({ timeout: SLOW_ACTION_TIMEOUT });
 
         // The keyboard-scanner hook's window listener attaches asynchronously (useEffect after
         // the React commit), so a single instantaneous scan can be dropped; re-scan until the
