@@ -189,6 +189,42 @@ Feature: Jasper Report Tests
       | Value        | Record_ID    |
       | C_DunningDoc | dunningDoc_1 |
 
+  @S0471_300
+  @from:cucumber
+@allure.label.epic:E0191_System_Reporting
+@allure.label.feature:F00400_System_Reporting
+@F00400
+  Scenario: Delivery Instruction Report Test
+    And set sys config boolean value true for sys config de.metas.deliveryplanning.DeliveryPlanningService.M_Delivery_Planning_CreateAutomatically
+    And load M_Warehouse:
+      | M_Warehouse_ID.Identifier | Value        | OPT.C_BPartner_Location_ID.Identifier |
+      | warehouseStd              | StdWarehouse | warehouseStdLocation                  |
+    And contains M_Shippers
+      | Identifier  |
+      | shipper_DHL |
+    When metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | OPT.DatePromised     | M_Warehouse_ID | M_PricingSystem_ID |
+      | so_di      | true    | customer      | 2025-04-01  | 2025-04-10T00:00:00Z | warehouseStd   | ps_1               |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | so_di_l1   | so_di      | product      | 10         | shipper_DHL                 |
+    And the order identified by so_di is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier          | C_OrderLine_ID | IsToRecompute | M_Warehouse_ID |
+      | shipmentSchedule_di | so_di_l1       | N             | warehouseStd   |
+    And after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID.Identifiers | C_OrderLine_ID.Identifier |
+      | deliveryPlanning_di                | so_di_l1                  |
+    And generate M_ShipperTransportation for M_Delivery_Planning:
+      | M_ShipperTransportation_ID.Identifier | M_Delivery_Planning_ID.Identifier |
+      | deliveryInstruction_di                | deliveryPlanning_di               |
+    And validate M_ShipperTransportation:
+      | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DocStatus |
+      | deliveryInstruction_di                | shipper_DHL             | customer                       | customerLocation               | CO            |
+    And The jasper process is run
+      | Value                         | Record_ID              |
+      | Delivery instructions(Jasper) | deliveryInstruction_di |
+
   @from:cucumber
 @allure.label.epic:E0191_System_Reporting
 @allure.label.feature:F00400_System_Reporting

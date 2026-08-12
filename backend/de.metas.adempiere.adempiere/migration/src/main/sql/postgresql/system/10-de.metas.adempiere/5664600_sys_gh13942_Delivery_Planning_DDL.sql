@@ -1,8 +1,9 @@
 -- 2022-11-16T13:59:17.005Z
 /* DDL */
 
-SELECT public.db_alter_table('M_Product', 'ALTER TABLE public.M_Product ADD COLUMN Grade VARCHAR(250)')
-;
+-- Grade removed (not-feature-related global-master addition) — added physical M_Product.Grade VARCHAR(250) column
+-- SELECT public.db_alter_table('M_Product', 'ALTER TABLE public.M_Product ADD COLUMN Grade VARCHAR(250)')
+-- ;
 
 -- 2022-11-24T14:37:37.776Z
 /* DDL */

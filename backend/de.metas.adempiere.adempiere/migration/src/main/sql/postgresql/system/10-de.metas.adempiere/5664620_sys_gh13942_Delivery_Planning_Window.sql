@@ -486,27 +486,32 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=708087
 /* DDL */ select AD_Element_Link_Create_Missing_Field(708087)
 ;
 
--- Field: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> Grade
--- Column: M_Delivery_Planning.Grade
--- 2022-11-16T15:11:31.218Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,585017,708088,0,546674,TO_TIMESTAMP('2022-11-16 17:11:30','YYYY-MM-DD HH24:MI:SS'),100,250,'D','Y','Y','N','N','N','N','N','Grade',TO_TIMESTAMP('2022-11-16 17:11:30','YYYY-MM-DD HH24:MI:SS'),100)
-;
+-- Grade removed (not-feature-related global-master addition) — AD_Field 708088 (Grade) on Delivery Planning tab 546674
+-- -- Field: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> Grade
+-- -- Column: M_Delivery_Planning.Grade
+-- -- 2022-11-16T15:11:31.218Z
+-- INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,585017,708088,0,546674,TO_TIMESTAMP('2022-11-16 17:11:30','YYYY-MM-DD HH24:MI:SS'),100,250,'D','Y','Y','N','N','N','N','N','Grade',TO_TIMESTAMP('2022-11-16 17:11:30','YYYY-MM-DD HH24:MI:SS'),100)
+-- ;
 
--- 2022-11-16T15:11:31.246Z
-INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=708088 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
-;
+-- Grade removed (not-feature-related global-master addition) — AD_Field_Trl seed for field 708088
+-- -- 2022-11-16T15:11:31.246Z
+-- INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=708088 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+-- ;
 
--- 2022-11-16T15:11:31.274Z
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(581693) 
-;
+-- Grade removed (not-feature-related global-master addition) — field-translation refresh for element 581693 (field 708088)
+-- -- 2022-11-16T15:11:31.274Z
+-- /* DDL */  select update_FieldTranslation_From_AD_Name_Element(581693)
+-- ;
 
--- 2022-11-16T15:11:31.306Z
-DELETE FROM AD_Element_Link WHERE AD_Field_ID=708088
-;
+-- Grade removed (not-feature-related global-master addition) — AD_Element_Link maintenance for Grade field 708088
+-- -- 2022-11-16T15:11:31.306Z
+-- DELETE FROM AD_Element_Link WHERE AD_Field_ID=708088
+-- ;
 
--- 2022-11-16T15:11:31.339Z
-/* DDL */ select AD_Element_Link_Create_Missing_Field(708088)
-;
+-- Grade removed (not-feature-related global-master addition) — AD_Element_Link maintenance for Grade field 708088
+-- -- 2022-11-16T15:11:31.339Z
+-- /* DDL */ select AD_Element_Link_Create_Missing_Field(708088)
+-- ;
 
 -- Field: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> Qty Ordered
 -- Column: M_Delivery_Planning.QtyOrdered
@@ -1201,11 +1206,12 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,708087,0,546674,550028,613492,'F',TO_TIMESTAMP('2022-11-16 17:18:35','YYYY-MM-DD HH24:MI:SS'),100,'Product identifier; "val-<search key>", "ext-<external id>" or internal M_Product_ID','','Y','N','Y','Y','N','Product Value',180,180,0,TO_TIMESTAMP('2022-11-16 17:18:35','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
--- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 10 -> default.Grade
--- Column: M_Delivery_Planning.Grade
--- 2022-11-16T15:18:36.485Z
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,708088,0,546674,550028,613493,'F',TO_TIMESTAMP('2022-11-16 17:18:36','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N','Grade',190,190,0,TO_TIMESTAMP('2022-11-16 17:18:36','YYYY-MM-DD HH24:MI:SS'),100)
-;
+-- Grade removed (not-feature-related global-master addition) — AD_UI_Element 613493 (Grade) placed on tab 546674
+-- -- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 10 -> default.Grade
+-- -- Column: M_Delivery_Planning.Grade
+-- -- 2022-11-16T15:18:36.485Z
+-- INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,708088,0,546674,550028,613493,'F',TO_TIMESTAMP('2022-11-16 17:18:36','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N','Grade',190,190,0,TO_TIMESTAMP('2022-11-16 17:18:36','YYYY-MM-DD HH24:MI:SS'),100)
+-- ;
 
 -- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 10 -> default.Qty Ordered
 -- Column: M_Delivery_Planning.QtyOrdered
@@ -1669,11 +1675,12 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=90,Updated=TO_TIMESTAMP(
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=100,Updated=TO_TIMESTAMP('2022-11-16 17:34:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613492
 ;
 
--- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 10 -> default.Grade
--- Column: M_Delivery_Planning.Grade
--- 2022-11-16T15:34:28.602Z
-UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=110,Updated=TO_TIMESTAMP('2022-11-16 17:34:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613493
-;
+-- Grade removed (not-feature-related global-master addition) — grid-display flags on Grade AD_UI_Element 613493
+-- -- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 10 -> default.Grade
+-- -- Column: M_Delivery_Planning.Grade
+-- -- 2022-11-16T15:34:28.602Z
+-- UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=110,Updated=TO_TIMESTAMP('2022-11-16 17:34:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613493
+-- ;
 
 -- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 20 -> qtys.Qty Ordered
 -- Column: M_Delivery_Planning.QtyOrdered
@@ -2354,11 +2361,12 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=100,Updated=TO_TIMESTAMP
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=110,Updated=TO_TIMESTAMP('2022-11-24 15:51:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613492
 ;
 
--- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 10 -> default.Grade
--- Column: M_Delivery_Planning.Grade
--- 2022-11-24T13:51:16.018Z
-UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=120,Updated=TO_TIMESTAMP('2022-11-24 15:51:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613493
-;
+-- Grade removed (not-feature-related global-master addition) — grid-display flags on Grade AD_UI_Element 613493
+-- -- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 10 -> default.Grade
+-- -- Column: M_Delivery_Planning.Grade
+-- -- 2022-11-24T13:51:16.018Z
+-- UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=120,Updated=TO_TIMESTAMP('2022-11-24 15:51:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613493
+-- ;
 
 -- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 20 -> qtys.Qty Ordered
 -- Column: M_Delivery_Planning.QtyOrdered

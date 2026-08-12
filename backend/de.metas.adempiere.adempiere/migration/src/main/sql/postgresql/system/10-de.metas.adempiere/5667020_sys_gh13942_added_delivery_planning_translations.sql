@@ -52,32 +52,38 @@ UPDATE AD_Element_Trl SET Name='Lieferadresse', PrintName='Lieferadresse',Update
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581681,'nl_NL') 
 ;
 
--- Element: Grade
--- 2022-12-05T09:07:23.475Z
-UPDATE AD_Element_Trl SET Name='Produktsorte', PrintName='Produktsorte',Updated=TO_TIMESTAMP('2022-12-05 11:07:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581693 AND AD_Language='de_CH'
-;
+-- Grade removed (not-feature-related global-master addition) — de_CH translation 'Produktsorte' for element 581693
+-- -- Element: Grade
+-- -- 2022-12-05T09:07:23.475Z
+-- UPDATE AD_Element_Trl SET Name='Produktsorte', PrintName='Produktsorte',Updated=TO_TIMESTAMP('2022-12-05 11:07:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581693 AND AD_Language='de_CH'
+-- ;
 
--- 2022-12-05T09:07:23.558Z
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581693,'de_CH') 
-;
+-- Grade removed (not-feature-related global-master addition) — de_CH TRL-tables refresh for element 581693
+-- -- 2022-12-05T09:07:23.558Z
+-- /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581693,'de_CH')
+-- ;
 
--- Element: Grade
--- 2022-12-05T09:07:29.167Z
-UPDATE AD_Element_Trl SET Name='Produktsorte', PrintName='Produktsorte',Updated=TO_TIMESTAMP('2022-12-05 11:07:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581693 AND AD_Language='de_DE'
-;
+-- Grade removed (not-feature-related global-master addition) — de_DE translation 'Produktsorte' for element 581693
+-- -- Element: Grade
+-- -- 2022-12-05T09:07:29.167Z
+-- UPDATE AD_Element_Trl SET Name='Produktsorte', PrintName='Produktsorte',Updated=TO_TIMESTAMP('2022-12-05 11:07:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581693 AND AD_Language='de_DE'
+-- ;
 
--- 2022-12-05T09:07:29.249Z
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581693,'de_DE') 
-;
+-- Grade removed (not-feature-related global-master addition) — de_DE TRL-tables refresh for element 581693
+-- -- 2022-12-05T09:07:29.249Z
+-- /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581693,'de_DE')
+-- ;
 
--- Element: Grade
--- 2022-12-05T09:07:35.055Z
-UPDATE AD_Element_Trl SET Name='Produktsorte', PrintName='Produktsorte',Updated=TO_TIMESTAMP('2022-12-05 11:07:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581693 AND AD_Language='nl_NL'
-;
+-- Grade removed (not-feature-related global-master addition) — nl_NL translation 'Produktsorte' for element 581693
+-- -- Element: Grade
+-- -- 2022-12-05T09:07:35.055Z
+-- UPDATE AD_Element_Trl SET Name='Produktsorte', PrintName='Produktsorte',Updated=TO_TIMESTAMP('2022-12-05 11:07:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581693 AND AD_Language='nl_NL'
+-- ;
 
--- 2022-12-05T09:07:35.197Z
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581693,'nl_NL') 
-;
+-- Grade removed (not-feature-related global-master addition) — nl_NL TRL-tables refresh for element 581693
+-- -- 2022-12-05T09:07:35.197Z
+-- /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581693,'nl_NL')
+-- ;
 
 -- Element: QtyTotalOpen
 -- 2022-12-05T09:10:33.086Z

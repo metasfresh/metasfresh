@@ -631,45 +631,52 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 
 
--- 2022-11-16T09:45:26.251Z
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) 
-VALUES (0,581693,0,'Grade',TO_TIMESTAMP('2022-11-16 11:45:25','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Grade','Grade',TO_TIMESTAMP('2022-11-16 11:45:25','YYYY-MM-DD HH24:MI:SS'),100)
-;
+-- Grade removed (not-feature-related global-master addition) — AD_Element 581693 'Grade' insert
+-- -- 2022-11-16T09:45:26.251Z
+-- INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy)
+-- VALUES (0,581693,0,'Grade',TO_TIMESTAMP('2022-11-16 11:45:25','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Grade','Grade',TO_TIMESTAMP('2022-11-16 11:45:25','YYYY-MM-DD HH24:MI:SS'),100)
+-- ;
 
--- 2022-11-16T09:45:26.280Z
-INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=581693 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
-;
-
-
-
-
--- Column: M_Delivery_Planning.ab182_Grade
--- 2022-11-15T17:30:01.850Z
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version)
- VALUES (0,585017,581693,0,10,542259,'Grade',TO_TIMESTAMP('2022-11-15 19:30:01','YYYY-MM-DD HH24:MI:SS'),100,'N','D',0,250,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Grade',0,0,TO_TIMESTAMP('2022-11-15 19:30:01','YYYY-MM-DD HH24:MI:SS'),100,0)
-;
-
--- 2022-11-15T17:30:01.880Z
-INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') 
-AND t.AD_Column_ID=585017 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
-;
-
--- 2022-11-15T17:30:01.937Z
-/* DDL */  select update_Column_Translation_From_AD_Element(581693) 
-;
+-- Grade removed (not-feature-related global-master addition) — AD_Element_Trl seed for element 581693
+-- -- 2022-11-16T09:45:26.280Z
+-- INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=581693 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+-- ;
 
 
 
 
--- Column: M_Delivery_Planning.Grade
--- 2022-11-16T09:45:40.521Z
-UPDATE AD_Column SET AD_Element_ID=581693,
- ColumnName='Grade', Description=NULL, EntityType='D', Help=NULL, Name='Grade',Updated=TO_TIMESTAMP('2022-11-16 11:45:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585017
-;
+-- Grade removed (not-feature-related global-master addition) — AD_Column 585017 M_Delivery_Planning.Grade insert
+-- -- Column: M_Delivery_Planning.ab182_Grade
+-- -- 2022-11-15T17:30:01.850Z
+-- INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version)
+--  VALUES (0,585017,581693,0,10,542259,'Grade',TO_TIMESTAMP('2022-11-15 19:30:01','YYYY-MM-DD HH24:MI:SS'),100,'N','D',0,250,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Grade',0,0,TO_TIMESTAMP('2022-11-15 19:30:01','YYYY-MM-DD HH24:MI:SS'),100,0)
+-- ;
 
--- 2022-11-16T09:45:40.551Z
-/* DDL */  select update_Column_Translation_From_AD_Element(581693)
-;
+-- Grade removed (not-feature-related global-master addition) — AD_Column_Trl seed for column 585017
+-- -- 2022-11-15T17:30:01.880Z
+-- INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y')
+-- AND t.AD_Column_ID=585017 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+-- ;
+
+-- Grade removed (not-feature-related global-master addition) — column-translation refresh for element 581693
+-- -- 2022-11-15T17:30:01.937Z
+-- /* DDL */  select update_Column_Translation_From_AD_Element(581693)
+-- ;
+
+
+
+
+-- Grade removed (not-feature-related global-master addition) — AD_Column 585017 rename/link to Grade element 581693
+-- -- Column: M_Delivery_Planning.Grade
+-- -- 2022-11-16T09:45:40.521Z
+-- UPDATE AD_Column SET AD_Element_ID=581693,
+--  ColumnName='Grade', Description=NULL, EntityType='D', Help=NULL, Name='Grade',Updated=TO_TIMESTAMP('2022-11-16 11:45:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585017
+-- ;
+
+-- Grade removed (not-feature-related global-master addition) — column-translation refresh for element 581693
+-- -- 2022-11-16T09:45:40.551Z
+-- /* DDL */  select update_Column_Translation_From_AD_Element(581693)
+-- ;
 
 -- 2022-11-16T09:46:29.082Z
 -- OriginCountry AD_Element 584667 shared with 5794280_sys_gh28336_Intrastat_Window.sql — created idempotently (reused, not duplicated).
@@ -975,24 +982,28 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 -- /* DDL */ CREATE TABLE public.M_Delivery_Planning (ActualDeliveredQty NUMERIC, ActualDeliveryDate TIMESTAMP WITHOUT TIME ZONE, ActualLoadingDate TIMESTAMP WITHOUT TIME ZONE, ActualLoadQty NUMERIC, AD_Client_ID NUMERIC(10) NOT NULL, AD_Org_ID NUMERIC(10) NOT NULL, Batch VARCHAR(250), C_BPartner_ID NUMERIC(10), C_BPartner_Location_ID NUMERIC(10), C_Incoterms_ID NUMERIC(10), C_Order_ID NUMERIC(10), Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, Forwarder VARCHAR(1000), Grade VARCHAR(250), IsActive CHAR(1) DEFAULT 'Y' CHECK (IsActive IN ('Y','N')) NOT NULL, IsB2B CHAR(1) DEFAULT 'N' CHECK (IsB2B IN ('Y','N')) NOT NULL, M_Delivery_Planning_ID NUMERIC(10) NOT NULL, M_Delivery_Planning_Type VARCHAR(250), MeansOfTransportation VARCHAR(250), M_Product_ID NUMERIC(10), M_ReceiptSchedule_ID NUMERIC(10), M_ShipmentSchedule_ID NUMERIC(10), M_ShipperTransportation_ID NUMERIC(10), M_Warehouse_ID NUMERIC(10), OrderDocumentNo VARCHAR(250), OrderStatus VARCHAR(250), OriginCountry VARCHAR(250), PlannedDeliveryDate TIMESTAMP WITHOUT TIME ZONE, PlannedLoadingDate TIMESTAMP WITHOUT TIME ZONE, POReference VARCHAR(250), QtyOrdered NUMERIC, QtyTotalOpen NUMERIC, ReleaseNo VARCHAR(250), TransportDetails VARCHAR(5000), Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, WayBillNo VARCHAR(15), CONSTRAINT CBPartner_MDeliveryPlanning FOREIGN KEY (C_BPartner_ID) REFERENCES public.C_BPartner DEFERRABLE INITIALLY DEFERRED, CONSTRAINT CBPartnerLocation_MDeliveryPlanning FOREIGN KEY (C_BPartner_Location_ID) REFERENCES public.C_BPartner_Location DEFERRABLE INITIALLY DEFERRED, CONSTRAINT CIncoterms_MDeliveryPlanning FOREIGN KEY (C_Incoterms_ID) REFERENCES public.C_Incoterms DEFERRABLE INITIALLY DEFERRED, CONSTRAINT COrder_MDeliveryPlanning FOREIGN KEY (C_Order_ID) REFERENCES public.C_Order DEFERRABLE INITIALLY DEFERRED, CONSTRAINT M_Delivery_Planning_Key PRIMARY KEY (M_Delivery_Planning_ID), CONSTRAINT MProduct_MDeliveryPlanning FOREIGN KEY (M_Product_ID) REFERENCES public.M_Product DEFERRABLE INITIALLY DEFERRED, CONSTRAINT MReceiptSchedule_MDeliveryPlanning FOREIGN KEY (M_ReceiptSchedule_ID) REFERENCES public.M_ReceiptSchedule DEFERRABLE INITIALLY DEFERRED, CONSTRAINT MShipmentSchedule_MDeliveryPlanning FOREIGN KEY (M_ShipmentSchedule_ID) REFERENCES public.M_ShipmentSchedule DEFERRABLE INITIALLY DEFERRED, CONSTRAINT MShipperTransportation_MDeliveryPlanning FOREIGN KEY (M_ShipperTransportation_ID) REFERENCES public.M_ShipperTransportation DEFERRABLE INITIALLY DEFERRED, CONSTRAINT MWarehouse_MDeliveryPlanning FOREIGN KEY (M_Warehouse_ID) REFERENCES public.M_Warehouse DEFERRABLE INITIALLY DEFERRED)
 -- ;
 
--- Column: M_Product.Grade
--- 2022-11-16T13:59:08.062Z
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,585050,581693,0,10,208,'Grade',TO_TIMESTAMP('2022-11-16 15:59:07','YYYY-MM-DD HH24:MI:SS'),100,'N','D',0,250,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Grade',0,0,TO_TIMESTAMP('2022-11-16 15:59:07','YYYY-MM-DD HH24:MI:SS'),100,0)
-;
+-- Grade removed (not-feature-related global-master addition) — AD_Column 585050 M_Product.Grade insert
+-- -- Column: M_Product.Grade
+-- -- 2022-11-16T13:59:08.062Z
+-- INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,585050,581693,0,10,208,'Grade',TO_TIMESTAMP('2022-11-16 15:59:07','YYYY-MM-DD HH24:MI:SS'),100,'N','D',0,250,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Grade',0,0,TO_TIMESTAMP('2022-11-16 15:59:07','YYYY-MM-DD HH24:MI:SS'),100,0)
+-- ;
 
--- 2022-11-16T13:59:08.092Z
-INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=585050 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
-;
+-- Grade removed (not-feature-related global-master addition) — AD_Column_Trl seed for column 585050
+-- -- 2022-11-16T13:59:08.092Z
+-- INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=585050 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+-- ;
 
--- 2022-11-16T13:59:08.148Z
-/* DDL */  select update_Column_Translation_From_AD_Element(581693) 
-;
+-- Grade removed (not-feature-related global-master addition) — column-translation refresh for element 581693
+-- -- 2022-11-16T13:59:08.148Z
+-- /* DDL */  select update_Column_Translation_From_AD_Element(581693)
+-- ;
 
--- Column: M_Delivery_Planning.Grade
--- 2022-11-16T14:00:08.561Z
-UPDATE AD_Column SET ColumnSQL='(SELECT p.Grade from M_Product p where p.M_Product_ID=M_Delivery_Planning.M_Product_ID)', IsLazyLoading='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2022-11-16 16:00:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100
- WHERE AD_Column_ID=585017
-;
+-- Grade removed (not-feature-related global-master addition) — set virtual ColumnSQL of M_Delivery_Planning.Grade (585017) to read M_Product.Grade
+-- -- Column: M_Delivery_Planning.Grade
+-- -- 2022-11-16T14:00:08.561Z
+-- UPDATE AD_Column SET ColumnSQL='(SELECT p.Grade from M_Product p where p.M_Product_ID=M_Delivery_Planning.M_Product_ID)', IsLazyLoading='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2022-11-16 16:00:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100
+--  WHERE AD_Column_ID=585017
+-- ;
 
 -- Column: M_Delivery_Planning.OrderDocumentNo
 -- 2022-11-16T14:01:28.305Z
@@ -1161,10 +1172,11 @@ UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMEST
 UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2022-11-24 15:33:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585046
 ;
 
--- Column: M_Delivery_Planning.Grade
--- 2022-11-24T13:33:59.683Z
-UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2022-11-24 15:33:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585017
-;
+-- Grade removed (not-feature-related global-master addition) — filter/selection flags on M_Delivery_Planning.Grade (585017)
+-- -- Column: M_Delivery_Planning.Grade
+-- -- 2022-11-24T13:33:59.683Z
+-- UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2022-11-24 15:33:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585017
+-- ;
 
 -- Column: M_Delivery_Planning.MeansOfTransportation
 -- 2022-11-24T13:34:26.602Z
@@ -1236,10 +1248,11 @@ UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=50,Updated=TO_T
 UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=60,Updated=TO_TIMESTAMP('2022-11-24 15:39:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585046
 ;
 
--- Column: M_Delivery_Planning.Grade
--- 2022-11-24T13:39:43.786Z
-UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=70,Updated=TO_TIMESTAMP('2022-11-24 15:39:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585017
-;
+-- Grade removed (not-feature-related global-master addition) — selection-column seqno on M_Delivery_Planning.Grade (585017)
+-- -- Column: M_Delivery_Planning.Grade
+-- -- 2022-11-24T13:39:43.786Z
+-- UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=70,Updated=TO_TIMESTAMP('2022-11-24 15:39:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585017
+-- ;
 
 -- Column: M_Delivery_Planning.C_Country_ID
 -- 2022-11-24T13:39:44.132Z

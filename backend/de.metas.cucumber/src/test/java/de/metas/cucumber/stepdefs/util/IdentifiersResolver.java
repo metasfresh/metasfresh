@@ -32,12 +32,14 @@ import de.metas.cucumber.stepdefs.match_inv.M_MatchInv_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
+import de.metas.cucumber.stepdefs.shipment.M_ShipperTransportation_StepDefData;
 import de.metas.dunning.DunningDocId;
 import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.matchinv.MatchInvId;
 import de.metas.order.OrderId;
 import de.metas.payment.PaymentId;
+import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -66,6 +68,7 @@ public class IdentifiersResolver
 	@NonNull private final M_InOut_StepDefData inOutTable;
 	@NonNull private final C_Order_StepDefData orderTable;
 	@NonNull private final C_DunningDoc_StepDefData dunningDocTable;
+	@NonNull private final M_ShipperTransportation_StepDefData shipperTransportationTable;
 
 	@NonNull
 	public ImmutableSet<TableRecordReference> getTableRecordReferencesOfCommaSeparatedIdentifiers(@Nullable final String commaSeparatedIdentifiers)
@@ -111,6 +114,9 @@ public class IdentifiersResolver
 				.ifPresent(result::add);
 		dunningDocTable.getIdOptional(identifier)
 				.map(DunningDocId::toRecordRef)
+				.ifPresent(result::add);
+		shipperTransportationTable.getIdOptional(identifier)
+				.map(id -> TableRecordReference.of(I_M_ShipperTransportation.Table_Name, id))
 				.ifPresent(result::add);
 
 		if (result.isEmpty())

@@ -121,7 +121,6 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_DeliveryInstr
             qtyordered                numeric,
             productValue              varchar,
             productName               varchar,
-            grade                     varchar,
             uom                       varchar
         )
     STABLE
@@ -133,7 +132,6 @@ SELECT wh.name                                  AS warehouseName,
        dp.qtyordered,
        p.value                                  AS productValue,
        p.name                                   AS productName,
-       p.grade,
        COALESCE(uomt.uomsymbol, uomt.uomsymbol) AS uom
 FROM M_ShipperTransportation st
          JOIN m_delivery_planning dp ON dp.releaseno = st.documentno
