@@ -22,13 +22,19 @@
 
 package de.metas.vatid;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.cache.CacheInterface;
+import de.metas.cache.CacheLabel;
+import de.metas.cache.CacheMgt;
 import de.metas.common.util.time.SystemTime;
 import de.metas.process.PInstanceId;
 import de.metas.user.UserId;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_VATaxID_CheckLog;
 import org.compiere.model.X_VATaxID_CheckLog;
 import org.compiere.util.Env;
@@ -37,6 +43,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.ZonedDateTime;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -166,14 +174,15 @@ class VATaxIDCheckRepositoryTest
 	}
 
 	/**
-	 * Pins the query filter's status predicate via observable behaviour rather than the query's internal
-	 * shape: the harness backing repository calls in unit-test mode ({@code POJOQuery}) never builds real
-	 * SQL, so there is no WHERE-clause artifact a test could inspect. Instead, the row is pushed out of
-	 * {@link VATaxIDStatus#RequestSent} through a path independent of {@link VATaxIDCheckRepository#completeCheck}
-	 * itself (a direct save, not a prior {@code completeCheck} call, unlike
-	 * {@link #completeCheck_refusesToRunTwiceOnTheSameRow()}), then {@code completeCheck} must still refuse
-	 * and must not have written any of its four completion fields — if a future edit dropped the status
-	 * predicate from the query builder, this call would instead succeed and overwrite them.
+	 * Pins the in-Java status check that guards the row lock via observable behaviour rather than the
+	 * query's internal shape: the harness backing repository calls in unit-test mode ({@code POJOQuery})
+	 * never builds real SQL, so there is no {@code FOR UPDATE}/{@code WHERE}-clause artifact a test could
+	 * inspect. Instead, the row is pushed out of {@link VATaxIDStatus#RequestSent} through a path
+	 * independent of {@link VATaxIDCheckRepository#completeCheck} itself (a direct save, not a prior
+	 * {@code completeCheck} call, unlike {@link #completeCheck_refusesToRunTwiceOnTheSameRow()}), then
+	 * {@code completeCheck} must still refuse and must not have written any of its four completion fields —
+	 * if a future edit dropped the post-lock status check, this call would instead succeed and overwrite
+	 * them.
 	 */
 	@Test
 	void completeCheck_refusesWhenTheRowIsNotAtRequestSent_andLeavesItUntouched()
@@ -224,5 +233,84 @@ class VATaxIDCheckRepositoryTest
 		assertThat(afterRecord.getUpdated()).isNotEqualTo(beforeRecord.getUpdated());
 		assertThat(afterRecord.getUpdated()).isEqualTo(java.sql.Timestamp.from(java.time.Instant.parse("2026-01-02T11:00:00Z")));
 		assertThat(afterRecord.getUpdatedBy()).isEqualTo(completingUser.getRepoId());
+	}
+
+	/**
+	 * Pins that completing a check invalidates any cached copy of the completed row: {@link RecordingCache}
+	 * plays the role of a real {@code CCache} keyed on {@code VATaxID_CheckLog}, and {@link CacheMgt} calls
+	 * {@link CacheInterface#resetForRecordId} on every registered cache for a table whenever a row of that
+	 * table is saved (see {@code POJOLookupMap.save}, which is exactly what the unit-test backing exercises
+	 * here).
+	 *
+	 * <p><b>What this test deliberately does NOT claim to prove</b>: that this is a regression test against
+	 * the previous raw-{@code UPDATE} implementation. It is not, and cannot be, in this harness — verified
+	 * by running it against that implementation, where it also passed. The reason is
+	 * {@code POJOQuery.updateDirectly}, the unit-test backing for {@code IQuery.updateDirectly}: unlike the
+	 * real {@code TypedSqlQuery} (which takes the {@code ISqlQueryUpdater} branch straight to a raw SQL
+	 * {@code UPDATE} with no {@code PO}/{@code CacheMgt} involvement at all), {@code POJOQuery.updateDirectly}
+	 * has no raw-SQL path to fall back to, so it degrades to loading each matched row and calling
+	 * {@code InterfaceWrapperHelper.save} on it — which invalidates the cache regardless of whether the
+	 * production code goes through the model layer or bypasses it with a raw update. This is the same class
+	 * of harness gap {@code completeCheck_refusesWhenTheRowIsNotAtRequestSent_andLeavesItUntouched}'s javadoc
+	 * documents for the {@code WHERE}/{@code FOR UPDATE} clause: {@code POJOQuery} never builds real SQL, so
+	 * a property that only differs in the *SQL shape* of the write — raw {@code UPDATE} vs. row-locked
+	 * load-then-save — cannot be told apart by this harness. What this test still pins, and is worth pinning,
+	 * is that {@code completeCheck} keeps going through a save-shaped path at all (a future refactor that
+	 * stopped mutating the loaded record, e.g. by short-circuiting before the save, would fail it) — the
+	 * change-log/cache guarantee itself rests on code inspection (this repository's javadoc, and the
+	 * commit that introduced this fix), not on this or any other unit test in this module, because it is
+	 * genuinely a database-only behaviour with no in-memory artifact to assert on.
+	 */
+	@Test
+	void completeCheck_invalidatesTheCacheForTheCompletedRow()
+	{
+		final VATaxIDCheckLogId checkLogId = vataxIDCheckRepository.writeRequestSent(
+				VATaxIDCheckRequest.builder().bpartnerId(BPARTNER_ID).vataxID("DE777777777").build());
+
+		final RecordingCache cache = RecordingCache.newForTableName(I_VATaxID_CheckLog.Table_Name);
+		CacheMgt.get().register(cache);
+
+		vataxIDCheckRepository.completeCheck(
+				checkLogId,
+				VATaxIDCheckResult.builder().status(VATaxIDStatus.Valid).build());
+
+		cache.assertRecordInvalidated(TableRecordReference.of(I_VATaxID_CheckLog.Table_Name, checkLogId.getRepoId()));
+	}
+
+	/**
+	 * Minimal fake {@link CacheInterface}, mirroring the harness pattern in
+	 * {@code de.metas.cache.CacheMgtTest}: records every {@code (tableName, recordId)} it was asked to
+	 * invalidate, so a test can assert that a specific row's cache entry was actually reset.
+	 */
+	private static class RecordingCache implements CacheInterface
+	{
+		private static final java.util.concurrent.atomic.AtomicLong NEXT_CACHE_ID = new java.util.concurrent.atomic.AtomicLong(1);
+
+		static RecordingCache newForTableName(final String tableName) {return new RecordingCache(tableName);}
+
+		private final long cacheId = NEXT_CACHE_ID.getAndIncrement();
+		private final String tableName;
+		private final LinkedHashSet<TableRecordReference> resetRecords = new LinkedHashSet<>();
+
+		private RecordingCache(@NonNull final String tableName) {this.tableName = tableName;}
+
+		@Override public long getCacheId() {return cacheId;}
+
+		@Override public Set<CacheLabel> getLabels() {return ImmutableSet.of(CacheLabel.ofTableName(tableName));}
+
+		@Override public long resetForRecordId(final TableRecordReference recordRef)
+		{
+			resetRecords.add(recordRef);
+			return 1;
+		}
+
+		@Override public long reset() {return 1;}
+
+		@Override public long size() {return 1;}
+
+		void assertRecordInvalidated(final TableRecordReference recordRef)
+		{
+			assertThat(resetRecords).as("cache reset was called for record %s", recordRef).contains(recordRef);
+		}
 	}
 }

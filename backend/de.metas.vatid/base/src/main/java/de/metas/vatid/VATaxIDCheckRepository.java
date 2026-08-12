@@ -27,17 +27,16 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.process.PInstanceId;
-import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.ICompositeQueryUpdater;
+import org.adempiere.ad.dao.ForUpdate;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_VATaxID_CheckLog;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
@@ -64,6 +63,7 @@ import org.springframework.stereotype.Repository;
 public class VATaxIDCheckRepository
 {
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@VisibleForTesting
 	public static VATaxIDCheckRepository newInstanceForUnitTesting()
@@ -105,12 +105,16 @@ public class VATaxIDCheckRepository
 	 * it never touches any other row, and it refuses to run twice on the same row, because once completed
 	 * a row is immutable evidence.
 	 *
-	 * <p>The guard is an atomic conditional {@code UPDATE ... WHERE VATaxID_CheckLog_ID = ? AND
-	 * VATaxIDStatus = 'RequestSent'}, not a load-then-save check, so two concurrent calls for the same
-	 * {@code checkLogId} cannot both succeed: at most one {@code UPDATE} matches the row, the other
-	 * affects zero rows and throws. Because this bypasses {@code InterfaceWrapperHelper.saveRecord}, the
-	 * {@code Updated}/{@code UpdatedBy} audit columns are not refreshed automatically and are stamped
-	 * explicitly here, the same way the persistence layer would on a normal save.
+	 * <p>The guard is a {@code SELECT ... FOR NO KEY UPDATE} row lock on the targeted row, taken inside a
+	 * transaction that is either joined from the caller or opened here for exactly this method
+	 * ({@link ITrxManager#runInThreadInheritedTrx(Runnable)}), followed by an in-Java status check and then
+	 * an ordinary {@link InterfaceWrapperHelper#saveRecord}. This is deliberately not a raw conditional
+	 * {@code UPDATE}: going through the model layer means the completion is change-logged (the table is
+	 * {@code IsChangeLog='Y'}) and invalidates any cached copy of the row, both of which a raw
+	 * {@code UPDATE} would silently skip. Atomicity is not weakened by loading first — a second concurrent
+	 * call for the same {@code checkLogId} blocks on the row lock until the first call's transaction
+	 * commits or rolls back, then observes the now-final status and fails the same way a losing raw
+	 * {@code UPDATE} would, without overwriting the winner's evidence.
 	 *
 	 * @throws org.adempiere.exceptions.AdempiereException if {@code checkLogId} does not currently point
 	 * at a {@link VATaxIDStatus#RequestSent} row — either it was already completed (including by a
@@ -122,25 +126,29 @@ public class VATaxIDCheckRepository
 				result.getStatus() != VATaxIDStatus.RequestSent,
 				"A check can only be completed with a final status, not {}; checkLogId={}", VATaxIDStatus.RequestSent, checkLogId);
 
-		final ICompositeQueryUpdater<I_VATaxID_CheckLog> updater = queryBL
-				.createCompositeQueryUpdater(I_VATaxID_CheckLog.class)
-				.addSetColumnValue(I_VATaxID_CheckLog.COLUMNNAME_VATaxIDStatus, result.getStatus().getCode())
-				.addSetColumnValue(I_VATaxID_CheckLog.COLUMNNAME_ResponseDate, TimeUtil.asTimestampNotNull(SystemTime.asInstant()))
-				.addSetColumnValue(I_VATaxID_CheckLog.COLUMNNAME_RequestIdentifier, result.getRequestIdentifier())
-				.addSetColumnValue(I_VATaxID_CheckLog.COLUMNNAME_RawResponse, result.getRawResponse())
-				.addSetColumnValue(I_VATaxID_CheckLog.COLUMNNAME_Updated, TimeUtil.asTimestampNotNull(SystemTime.asInstant()))
-				.addSetColumnValue(I_VATaxID_CheckLog.COLUMNNAME_UpdatedBy, Env.getLoggedUserIdIfExists().orElse(UserId.SYSTEM));
+		trxManager.runInThreadInheritedTrx(() -> completeCheckInTrx(checkLogId, result));
+	}
 
-		final int updatedCount = queryBL
+	private void completeCheckInTrx(@NonNull final VATaxIDCheckLogId checkLogId, @NonNull final VATaxIDCheckResult result)
+	{
+		final I_VATaxID_CheckLog record = queryBL
 				.createQueryBuilder(I_VATaxID_CheckLog.class)
-				.addEqualsFilter(I_VATaxID_CheckLog.COLUMNNAME_VATaxID_CheckLog_ID, checkLogId.getRepoId())
-				.addEqualsFilter(I_VATaxID_CheckLog.COLUMNNAME_VATaxIDStatus, VATaxIDStatus.RequestSent.getCode())
+				.addEqualsFilter(I_VATaxID_CheckLog.COLUMNNAME_VATaxID_CheckLog_ID, checkLogId)
 				.create()
-				.updateDirectly(updater);
+				.setForUpdate(ForUpdate.FOR_NO_KEY_UPDATE) // lock the row now; the PK never changes here (see javadoc on ForUpdate.FOR_NO_KEY_UPDATE)
+				.firstOnly(I_VATaxID_CheckLog.class);
 
+		final boolean isStillAtRequestSent = record != null && VATaxIDStatus.ofCode(record.getVATaxIDStatus()) == VATaxIDStatus.RequestSent;
 		Check.assume(
-				updatedCount == 1,
+				isStillAtRequestSent,
 				"Only a row still at {} can be completed, but checkLogId={} is not — either it was already completed or it does not exist",
 				VATaxIDStatus.RequestSent, checkLogId);
+
+		record.setVATaxIDStatus(result.getStatus().getCode());
+		record.setResponseDate(TimeUtil.asTimestampNotNull(SystemTime.asInstant()));
+		record.setRequestIdentifier(result.getRequestIdentifier());
+		record.setRawResponse(result.getRawResponse());
+
+		InterfaceWrapperHelper.saveRecord(record);
 	}
 }
