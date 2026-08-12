@@ -301,25 +301,43 @@ public class ExternalSystemExportStatusServiceTest
 	}
 
 	// -----------------------------------------------------------------------
-	// getResendableConfigsBySourceRecord — Error/Invalid/DontSend (isResendable) filter
+	// getResendableConfigsBySourceRecord — Error/Invalid/DontSend, plus an operator-parked
+	// (PInstance-stamped) Pending; a transient auto-flow Pending is excluded
 	// -----------------------------------------------------------------------
 
 	/**
-	 * A config with an in-flight (Pending) status must NOT be returned by the re-send
-	 * selection, to prevent double-sending a record that is already queued.
+	 * A config whose latest attempt is an OPERATOR-PARKED Pending — one carrying an AD_PInstance, set via
+	 * the "Change EPCIS Export Status" action — MUST be returned by the re-send selection: nothing is in
+	 * flight, so a re-send is the first send. An operator parks a stuck shipment in Pending and must then
+	 * be able to Re-send it.
 	 */
 	@Test
-	void getResendableConfigs_excludes_pendingConfig()
+	void getResendableConfigs_includes_manuallyParkedPendingConfig()
 	{
 		final TableRecordReference ref = newInOutRef();
 		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
 
-		service.recordPending(configId, ref); // stays Pending
+		// operator parks it in Pending via the Change action -> stamped with the process PInstance
+		service.recordManualStatusChange(configId, ref, ExternalSystemExportStatus.Pending, PInstanceId.ofRepoId(1201));
 
-		final List<ExternalSystemScriptedExportConversionConfigId> result =
-				service.getResendableConfigsBySourceRecord(ref);
+		assertThat(service.getResendableConfigsBySourceRecord(ref)).containsExactly(configId);
+	}
 
-		assertThat(result).isEmpty();
+	/**
+	 * A config whose latest attempt is a TRANSIENT auto-flow Pending — no AD_PInstance, the momentary
+	 * state the normal export flow writes just before flipping to Enqueued — must NOT be returned: it is
+	 * already on its way to being sent, so offering it for re-send would double-send. Only an
+	 * operator-parked Pending (with a PInstance) is resendable.
+	 */
+	@Test
+	void getResendableConfigs_excludes_transientPendingConfig()
+	{
+		final TableRecordReference ref = newInOutRef();
+		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
+
+		service.recordPending(configId, ref); // auto-flow Pending, no PInstance
+
+		assertThat(service.getResendableConfigsBySourceRecord(ref)).isEmpty();
 	}
 
 	/**
