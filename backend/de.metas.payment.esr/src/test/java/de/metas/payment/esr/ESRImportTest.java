@@ -5,6 +5,7 @@ package de.metas.payment.esr;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.IPeriodBL;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.impl.PlainCurrencyDAO;
@@ -44,6 +45,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.ISysConfigDAO;
 import org.adempiere.util.trxConstraints.api.IOpenTrxBL;
@@ -74,6 +76,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * This class tests the entire module of importing ESR
@@ -1827,10 +1830,10 @@ public class ESRImportTest extends ESRTestBase
 
 		// process the very same, already-processed import a second time: the header-level
 		// "Processed=Y" guard in ESRImportBL#processAndCountLines refuses the call outright
-		org.junit.jupiter.api.Assertions.assertThrows(
-				org.adempiere.exceptions.AdempiereException.class,
-				() -> esrImportBL.process(esrImport),
-				"re-processing an already-processed import must be refused by the Processed=Y guard");
+		final AdempiereException thrown = assertThrows(
+				AdempiereException.class,
+				() -> esrImportBL.process(esrImport));
+		assertThat(thrown.getMessage()).contains("Processed");
 
 		// the line must still point to its original payment, not a new one
 		refresh(esrImportLine, true);
@@ -1839,11 +1842,8 @@ public class ESRImportTest extends ESRTestBase
 		// load-bearing assertion: count the partner's actual C_Payment rows, not just the line's FK,
 		// so a stray second payment created for the same partner would be caught even if the line's FK was untouched
 		final int partnerId = esrImportLine.getC_Invoice().getC_BPartner_ID();
-		final List<I_C_Payment> partnerPayments = POJOLookupMap.get().getRecords(I_C_Payment.class)
-				.stream()
-				.filter(payment -> payment.getC_BPartner_ID() == partnerId)
-				.collect(java.util.stream.Collectors.toList());
-		assertThat("exactly one C_Payment must exist for the partner after re-processing", partnerPayments.size(), is(1));
+		final long partnerPaymentCount = paymentDAO.streamPaymentIdsByBPartnerId(BPartnerId.ofRepoId(partnerId)).count();
+		assertThat("exactly one C_Payment must exist for the partner after re-processing", partnerPaymentCount, is(1L));
 	}
 
 }
