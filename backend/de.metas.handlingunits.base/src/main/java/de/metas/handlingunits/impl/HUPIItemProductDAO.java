@@ -868,7 +868,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	public Optional<I_M_HU_PI_Item_Product> retrieveDefaultForProduct(
 			@NonNull final ProductId productId,
 			@Nullable final BPartnerId bpartnerId,
-			@NonNull final ZonedDateTime date,
+			@Nullable final ZonedDateTime date,
 			@Nullable final PriceListVersionId priceListVersionId)
 	{
 		final IHUPIItemProductQuery query = createHUPIItemProductQuery();
@@ -896,7 +896,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	public Optional<HUPIItemProductId> retrieveDefaultIdForProduct(
 			@NonNull final ProductId productId,
 			@Nullable final BPartnerId bpartnerId,
-			@NonNull final ZonedDateTime date,
+			@Nullable final ZonedDateTime date,
 			@Nullable final PriceListVersionId priceListVersionId)
 	{
 		return retrieveDefaultForProduct(productId, bpartnerId, date, priceListVersionId)

@@ -204,9 +204,51 @@ public class C_OrderLineTest
 		assertThat(orderLine.getM_HU_PI_Item_Product_ID()).isEqualTo(piip.getM_HU_PI_Item_Product_ID());
 	}
 
+	/**
+	 * Neither the line nor the order header carries a DatePromised. An AD {@code Mandatory} flag is only
+	 * enforced on persist, so a pre-save interceptor/callout can genuinely see both unset — and must not
+	 * throw. With no date there is no price list version to restrict against either, so this falls back
+	 * to today's unrestricted behaviour rather than stripping the packing instruction.
+	 */
+	@Test
+	public void noDatePromisedAnywhere_enforceOn_doesNotThrowAndKeepsTodaysBehaviour()
+	{
+		setEnforcePrecisePrice(true);
+		final I_M_HU_PI_Item_Product piip = createDefaultForProductPackingInstruction();
+		createProductPrice(null);
+		clearOrderLineDatePromised();
+		clearOrderDatePromised();
+
+		interceptor.onProductSetOrChanged(orderLine);
+
+		assertThat(orderLine.getM_HU_PI_Item_Product_ID()).isEqualTo(piip.getM_HU_PI_Item_Product_ID());
+	}
+
+	@Test
+	public void noDatePromisedAnywhere_purchaseOrder_doesNotThrowAndKeepsTodaysBehaviour()
+	{
+		setEnforcePrecisePrice(true);
+		final I_M_HU_PI_Item_Product piip = createDefaultForProductPackingInstruction();
+		createProductPrice(null);
+		clearOrderLineDatePromised();
+		clearOrderDatePromised();
+		makeOrderAPurchaseOrder();
+
+		interceptor.onProductSetOrChanged(orderLine);
+
+		assertThat(orderLine.getM_HU_PI_Item_Product_ID()).isEqualTo(piip.getM_HU_PI_Item_Product_ID());
+	}
+
 	//
 	// Fixture
 	//
+
+	private void clearOrderDatePromised()
+	{
+		final I_C_Order order = load(orderLine.getC_Order_ID(), I_C_Order.class);
+		order.setDatePromised(null);
+		saveRecord(order);
+	}
 
 	private void makeOrderAPurchaseOrder()
 	{

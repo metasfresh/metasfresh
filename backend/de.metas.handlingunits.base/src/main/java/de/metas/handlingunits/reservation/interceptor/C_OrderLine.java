@@ -11,7 +11,6 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.product.ProductId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
@@ -85,38 +84,37 @@ public class C_OrderLine
 	{
 		final org.compiere.model.I_C_Order order = ordersRepo.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 
+		final ZonedDateTime date = extractPriceDate(orderLine, order);
+
 		final Optional<HUPIItemProductId> huPiItemProductId = hupiItemProductDAO.retrieveDefaultIdForProduct(
 				ProductId.ofRepoId(orderLine.getM_Product_ID()),
 				BPartnerId.ofRepoId(orderLine.getC_BPartner_ID()),
-				extractPriceDate(orderLine, order),
-				getPriceListVersionIdOrNull(orderLine, order));
+				date,
+				getPriceListVersionIdOrNull(orderLine, order, date));
 		final Properties ctx = Env.getCtx();
 		final I_M_HU_PI_Item_Product noPackingItemProduct = hupiItemProductDAO.retrieveVirtualPIMaterialItemProduct(ctx);
 		orderLine.setM_HU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(huPiItemProductId.orElse(HUPIItemProductId.ofRepoId(noPackingItemProduct.getM_HU_PI_Item_Product_ID()))));
 	}
 
 	/**
-	 * {@code C_OrderLine.DatePromised} is nullable — a line whose date has not been set yet is normal, and
-	 * reading that column alone would blow up here. Coalesce to the order header, mirroring the sales
-	 * branch of {@code OrderLineBL}'s own price-date resolution, and for the same reason.
+	 * The packing instruction's validity date, DatePromised-based for sales and purchase alike.
 	 * <p>
-	 * This is the packing instruction's validity date and is deliberately DatePromised-based for sales and
-	 * purchase alike, exactly as before this change — only the price-list restriction below is scoped.
+	 * {@code C_OrderLine.DatePromised} is nullable — a line whose date has not been set yet is normal — so
+	 * coalesce to the order header, mirroring the sales branch of {@code OrderLineBL}'s own price-date
+	 * resolution. Both being unset is possible too: this runs as a pre-save interceptor and callout, and
+	 * an AD {@code Mandatory} flag is only enforced when the record is persisted, not while it is being
+	 * edited. That case returns {@code null}, meaning "no validity filter" — never an exception, because
+	 * refusing to default a packing instruction must not break product selection.
 	 */
-	@NonNull
+	@Nullable
 	private static ZonedDateTime extractPriceDate(
 			@NonNull final de.metas.interfaces.I_C_OrderLine orderLine,
 			@NonNull final org.compiere.model.I_C_Order order)
 	{
 		final ZonedDateTime lineDatePromised = TimeUtil.asZonedDateTime(orderLine.getDatePromised());
-		if (lineDatePromised != null)
-		{
-			return lineDatePromised;
-		}
-
-		return Check.assumeNotNull(
-				TimeUtil.asZonedDateTime(order.getDatePromised()),
-				"C_Order {} has a DatePromised", order.getC_Order_ID());
+		return lineDatePromised != null
+				? lineDatePromised
+				: TimeUtil.asZonedDateTime(order.getDatePromised());
 	}
 
 	/**
@@ -135,8 +133,16 @@ public class C_OrderLine
 	@Nullable
 	private PriceListVersionId getPriceListVersionIdOrNull(
 			@NonNull final de.metas.interfaces.I_C_OrderLine orderLine,
-			@NonNull final org.compiere.model.I_C_Order order)
+			@NonNull final org.compiere.model.I_C_Order order,
+			@Nullable final ZonedDateTime date)
 	{
+		if (date == null)
+		{
+			// No date anywhere on the line or its order, so there is no price list version to speak of.
+			// orderLineBL.getPriceListVersion would throw on exactly this input; stay unrestricted.
+			return null;
+		}
+
 		if (!order.isSOTrx())
 		{
 			// Sales only, matching the quick-input helper, which reaches its IsDefaultForProduct fallback
