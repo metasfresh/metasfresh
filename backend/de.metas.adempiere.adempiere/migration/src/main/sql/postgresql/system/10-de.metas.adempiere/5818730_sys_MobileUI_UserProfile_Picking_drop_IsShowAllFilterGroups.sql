@@ -14,37 +14,51 @@
 
 SELECT backup_table('mobileui_userprofile_picking', '_drop_isshowallfiltergroups');
 
--- UI element on the picking-profile window
+-- Every AD_Field that exposes the column, on any window - including a customer override window that
+-- this branch cannot see. Anchored by AD_Column_ID rather than a hardcoded AD_Field_ID so the cleanup
+-- covers those too, per the AD_Field teardown recipe in the metasfresh-application-dictionary skill.
 -- 2026-08-12T10:10:00.000Z
-DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=652815
+DELETE FROM AD_UI_Element WHERE AD_Field_ID IN
+    (SELECT AD_Field_ID FROM AD_Field WHERE AD_Column_ID = 593131)
+;
+
+-- 2026-08-12T10:10:00.050Z
+DELETE FROM AD_UI_Element WHERE Labels_Selector_Field_ID IN
+    (SELECT AD_Field_ID FROM AD_Field WHERE AD_Column_ID = 593131)
 ;
 
 -- 2026-08-12T10:10:00.100Z
-DELETE FROM AD_Element_Link WHERE AD_Field_ID=781902
+DELETE FROM AD_Element_Link WHERE AD_Field_ID IN
+    (SELECT AD_Field_ID FROM AD_Field WHERE AD_Column_ID = 593131)
 ;
 
 -- 2026-08-12T10:10:00.200Z
-DELETE FROM AD_UI_ElementField WHERE AD_Field_ID=781902
+DELETE FROM AD_UI_ElementField WHERE AD_Field_ID IN
+    (SELECT AD_Field_ID FROM AD_Field WHERE AD_Column_ID = 593131)
 ;
 
 -- 2026-08-12T10:10:00.300Z
-DELETE FROM AD_Field_ContextMenu WHERE AD_Field_ID=781902
+DELETE FROM AD_Field_ContextMenu WHERE AD_Field_ID IN
+    (SELECT AD_Field_ID FROM AD_Field WHERE AD_Column_ID = 593131)
 ;
 
 -- 2026-08-12T10:10:00.400Z
-DELETE FROM AD_Field_Trl WHERE AD_Field_ID=781902
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID IN
+    (SELECT AD_Field_ID FROM AD_Field WHERE AD_Column_ID = 593131)
 ;
 
 -- 2026-08-12T10:10:00.450Z
-DELETE FROM AD_UserDef_Field WHERE AD_Field_ID=781902
+DELETE FROM AD_UserDef_Field WHERE AD_Field_ID IN
+    (SELECT AD_Field_ID FROM AD_Field WHERE AD_Column_ID = 593131)
 ;
 
 -- 2026-08-12T10:10:00.460Z
-DELETE FROM AD_User_SortPref_Line WHERE AD_Field_ID=781902
+DELETE FROM AD_User_SortPref_Line WHERE AD_Field_ID IN
+    (SELECT AD_Field_ID FROM AD_Field WHERE AD_Column_ID = 593131)
 ;
 
 -- 2026-08-12T10:10:00.500Z
-DELETE FROM AD_Field WHERE AD_Field_ID=781902
+DELETE FROM AD_Field WHERE AD_Column_ID = 593131
 ;
 
 -- Column
