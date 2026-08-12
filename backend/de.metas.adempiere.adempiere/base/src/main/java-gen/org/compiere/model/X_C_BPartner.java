@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 573935048L;
+	private static final long serialVersionUID = -101354762L;
 
     /** Standard Constructor */
     public X_C_BPartner (final Properties ctx, final int C_BPartner_ID, @Nullable final String trxName)
@@ -2587,6 +2587,74 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getVATaxID() 
 	{
 		return get_ValueAsString(COLUMNNAME_VATaxID);
+	}
+
+	@Override
+	public void setVATaxIDCheckedAt (final @Nullable java.sql.Timestamp VATaxIDCheckedAt)
+	{
+		set_Value (COLUMNNAME_VATaxIDCheckedAt, VATaxIDCheckedAt);
+	}
+
+	@Override
+	public java.sql.Timestamp getVATaxIDCheckedAt() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_VATaxIDCheckedAt);
+	}
+
+	@Override
+	public org.compiere.model.I_VATaxID_CheckLog getVATaxID_CheckLog()
+	{
+		return get_ValueAsPO(COLUMNNAME_VATaxID_CheckLog_ID, org.compiere.model.I_VATaxID_CheckLog.class);
+	}
+
+	@Override
+	public void setVATaxID_CheckLog(final org.compiere.model.I_VATaxID_CheckLog VATaxID_CheckLog)
+	{
+		set_ValueFromPO(COLUMNNAME_VATaxID_CheckLog_ID, org.compiere.model.I_VATaxID_CheckLog.class, VATaxID_CheckLog);
+	}
+
+	@Override
+	public void setVATaxID_CheckLog_ID (final int VATaxID_CheckLog_ID)
+	{
+		if (VATaxID_CheckLog_ID < 1) 
+			set_Value (COLUMNNAME_VATaxID_CheckLog_ID, null);
+		else 
+			set_Value (COLUMNNAME_VATaxID_CheckLog_ID, VATaxID_CheckLog_ID);
+	}
+
+	@Override
+	public int getVATaxID_CheckLog_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_VATaxID_CheckLog_ID);
+	}
+
+	/** 
+	 * VATaxIDStatus AD_Reference_ID=542125
+	 * Reference name: USt-IdNr.-Prüfstatus
+	 */
+	public static final int VATAXIDSTATUS_AD_Reference_ID=542125;
+	/** NotChecked = NotChecked */
+	public static final String VATAXIDSTATUS_NotChecked = "NotChecked";
+	/** RequestSent = RequestSent */
+	public static final String VATAXIDSTATUS_RequestSent = "RequestSent";
+	/** Valid = Valid */
+	public static final String VATAXIDSTATUS_Valid = "Valid";
+	/** Invalid = Invalid */
+	public static final String VATAXIDSTATUS_Invalid = "Invalid";
+	/** NotSupported = NotSupported */
+	public static final String VATAXIDSTATUS_NotSupported = "NotSupported";
+	/** ServiceUnavailable = ServiceUnavailable */
+	public static final String VATAXIDSTATUS_ServiceUnavailable = "ServiceUnavailable";
+	@Override
+	public void setVATaxIDStatus (final java.lang.String VATaxIDStatus)
+	{
+		set_Value (COLUMNNAME_VATaxIDStatus, VATaxIDStatus);
+	}
+
+	@Override
+	public java.lang.String getVATaxIDStatus() 
+	{
+		return get_ValueAsString(COLUMNNAME_VATaxIDStatus);
 	}
 
 	@Override
