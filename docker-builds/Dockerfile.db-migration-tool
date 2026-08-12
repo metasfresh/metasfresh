@@ -1,8 +1,9 @@
 ARG REFNAME=local
 ARG REGISTRY=ghcr.io/
+
 FROM ${REGISTRY}metasfresh/metas-mvn-backend:$REFNAME AS backend
 
-FROM eclipse-temurin:17.0.7_7-jdk AS runtime
+FROM eclipse-temurin:17.0.7_7-jdk as runtime
 
 RUN apt-get -y update && apt-get -y install locales netcat postgresql-client && rm -rf /var/lib/apt/lists/*
 
@@ -12,9 +13,8 @@ ENV TZ=Europe/Berlin
 
 WORKDIR /migrations
 COPY docker-builds/metadata/build-info.properties .
-COPY docker-builds/db/init-preloaded/migrate.properties .
 COPY --from=backend /backend/metasfresh-dist/dist/target/dist/install/lib .
 COPY --from=backend /backend/metasfresh-dist/dist/target/dist/sql sql/
 
 # this image expects database settings mounted to /migrations/settings.properties to properly run
-CMD ["java", "-jar", "de.metas.migration.cli.jar", "-d", ".", "-s", "migrate.properties"]
+CMD ["java", "-jar", "de.metas.migration.cli.jar", "-d", ".", "-s", "settings.properties"]
