@@ -301,25 +301,43 @@ public class ExternalSystemExportStatusServiceTest
 	}
 
 	// -----------------------------------------------------------------------
-	// getResendableConfigsBySourceRecord — Error/Invalid/DontSend (isResendable) filter
+	// getResendableConfigsBySourceRecord — Error/Invalid/DontSend, plus an operator-parked
+	// (PInstance-stamped) Pending; a transient auto-flow Pending is excluded
 	// -----------------------------------------------------------------------
 
 	/**
-	 * A config with an in-flight (Pending) status must NOT be returned by the re-send
-	 * selection, to prevent double-sending a record that is already queued.
+	 * A config whose latest attempt is an OPERATOR-PARKED Pending — one carrying an AD_PInstance, set via
+	 * the "Change EPCIS Export Status" action — MUST be returned by the re-send selection: nothing is in
+	 * flight, so a re-send is the first send. An operator parks a stuck shipment in Pending and must then
+	 * be able to Re-send it.
 	 */
 	@Test
-	void getResendableConfigs_excludes_pendingConfig()
+	void getResendableConfigs_includes_manuallyParkedPendingConfig()
 	{
 		final TableRecordReference ref = newInOutRef();
 		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
 
-		service.recordPending(configId, ref); // stays Pending
+		// operator parks it in Pending via the Change action -> stamped with the process PInstance
+		service.recordManualStatusChange(configId, ref, ExternalSystemExportStatus.Pending, PInstanceId.ofRepoId(1201));
 
-		final List<ExternalSystemScriptedExportConversionConfigId> result =
-				service.getResendableConfigsBySourceRecord(ref);
+		assertThat(service.getResendableConfigsBySourceRecord(ref)).containsExactly(configId);
+	}
 
-		assertThat(result).isEmpty();
+	/**
+	 * A config whose latest attempt is a TRANSIENT auto-flow Pending — no AD_PInstance, the momentary
+	 * state the normal export flow writes just before flipping to Enqueued — must NOT be returned: it is
+	 * already on its way to being sent, so offering it for re-send would double-send. Only an
+	 * operator-parked Pending (with a PInstance) is resendable.
+	 */
+	@Test
+	void getResendableConfigs_excludes_transientPendingConfig()
+	{
+		final TableRecordReference ref = newInOutRef();
+		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
+
+		service.recordPending(configId, ref); // auto-flow Pending, no PInstance
+
+		assertThat(service.getResendableConfigsBySourceRecord(ref)).isEmpty();
 	}
 
 	/**
@@ -399,6 +417,92 @@ public class ExternalSystemExportStatusServiceTest
 				service.getResendableConfigsBySourceRecord(ref);
 
 		assertThat(result).containsExactly(configId);
+	}
+
+	// -----------------------------------------------------------------------
+	// recordManualStatusChange — writes a NEW, PInstance-stamped attempt row; prior rows are history
+	// -----------------------------------------------------------------------
+
+	/**
+	 * A manual status change (the "Change EPCIS Export Status" process) must append a NEW attempt row
+	 * stamped with the process PInstance (who/when audit) and leave the prior attempt untouched.
+	 */
+	@Test
+	void recordManualStatusChange_appendsNewStampedRow_priorAttemptUntouched()
+	{
+		final TableRecordReference ref = newInOutRef();
+		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
+		final PInstanceId sendP = PInstanceId.ofRepoId(1301);
+		final PInstanceId manualP = PInstanceId.ofRepoId(1302);
+
+		// a prior, successfully-sent attempt ...
+		service.recordPending(configId, ref);
+		service.markEnqueued(configId, ref, sendP);
+		service.markSent(sendP, HttpStatus.OK);
+
+		// ... then an operator sets it to DontSend via the process
+		service.recordManualStatusChange(configId, ref, ExternalSystemExportStatus.DontSend, manualP);
+
+		final List<ScriptedExportConversionStatus> rows = repo.getByConfigId(configId);
+		assertThat(rows).hasSize(2); // prior Sent + the new DontSend — nothing overwritten
+
+		final ScriptedExportConversionStatus latest = repo.getLatestByConfigAndRecord(configId, ref).get();
+		assertThat(latest.getStatus()).isEqualTo(ExternalSystemExportStatus.DontSend);
+		assertThat(latest.getPInstanceId()).isEqualTo(manualP);
+	}
+
+	// -----------------------------------------------------------------------
+	// getLatestStatusesBySourceRecord — MUST dedupe to the latest attempt PER config
+	// -----------------------------------------------------------------------
+
+	/**
+	 * REGRESSION: getLatestStatusesBySourceRecord must return exactly ONE row per config — the newest
+	 * attempt — not the whole per-attempt history. A config that errored and was then re-sent
+	 * successfully (>=2 rows) must report only its latest (Sent); returning both rows made the WebUI
+	 * "from status" ambiguous (2 distinct statuses -> null) and disabled the change process.
+	 */
+	@Test
+	void getLatestStatusesBySourceRecord_dedupesToLatestAttemptPerConfig()
+	{
+		final TableRecordReference ref = newInOutRef();
+		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
+
+		// older attempt errored ...
+		repo.insertNewAttempt(ScriptedExportConversionStatusCreateRequest.builder()
+				.configId(configId).sourceRecord(ref).status(ExternalSystemExportStatus.Error).build());
+		// ... latest attempt (a successful re-send) is Sent
+		repo.insertNewAttempt(ScriptedExportConversionStatusCreateRequest.builder()
+				.configId(configId).sourceRecord(ref).status(ExternalSystemExportStatus.Sent).build());
+
+		final List<ScriptedExportConversionStatus> latest = service.getLatestStatusesBySourceRecord(ref);
+		assertThat(latest).hasSize(1);
+		assertThat(latest.get(0).getStatus()).isEqualTo(ExternalSystemExportStatus.Sent);
+	}
+
+	/**
+	 * With several configs each carrying multiple attempts, getLatestStatusesBySourceRecord returns one
+	 * row per config, each being that config's newest attempt.
+	 */
+	@Test
+	void getLatestStatusesBySourceRecord_onePerConfig_acrossConfigs()
+	{
+		final TableRecordReference ref = newInOutRef();
+
+		// config A: errored then re-sent Sent
+		final ExternalSystemScriptedExportConversionConfigId idA = newConfigId();
+		repo.insertNewAttempt(ScriptedExportConversionStatusCreateRequest.builder()
+				.configId(idA).sourceRecord(ref).status(ExternalSystemExportStatus.Error).build());
+		repo.insertNewAttempt(ScriptedExportConversionStatusCreateRequest.builder()
+				.configId(idA).sourceRecord(ref).status(ExternalSystemExportStatus.Sent).build());
+
+		// config B: single Pending attempt
+		final ExternalSystemScriptedExportConversionConfigId idB = newConfigId();
+		service.recordPending(idB, ref);
+
+		final List<ScriptedExportConversionStatus> latest = service.getLatestStatusesBySourceRecord(ref);
+		assertThat(latest).hasSize(2);
+		assertThat(latest).extracting(ScriptedExportConversionStatus::getStatus)
+				.containsExactlyInAnyOrder(ExternalSystemExportStatus.Sent, ExternalSystemExportStatus.Pending);
 	}
 
 	private int getM_InOutTableId()

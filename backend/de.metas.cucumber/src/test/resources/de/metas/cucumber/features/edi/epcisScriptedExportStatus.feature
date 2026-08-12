@@ -227,6 +227,135 @@ Feature: EPCIS scripted-export status — success, error and re-send flows
   @from:cucumber
   @allure.label.epic:E0292_EDI
   @allure.label.feature:F00353_EDI_DESADV_InOut_Link
+  @Id:S30088_050
+  Scenario: S30088_050 — Change-EPCIS-Export-Status action writes a new audited DontSend attempt and releases the in-flight reverse block
+    ## An operator uses the shipment "Change EPCIS Export Status" action to mark a stuck in-flight export as
+    ## DontSend. This writes a NEW, process-instance-stamped attempt row (who/when audit; the prior in-flight
+    ## attempt is kept as history). Because the shipment's LATEST EPCIS status is then no longer in-flight, the
+    ## reverse/reactivate guard that was blocking the shipment (in-flight → SSCC may already be at the receiver)
+    ## is released and the shipment can be reversed.
+
+    # EPCIS-classified scripted-export config: its outbound-data process IS the EPCIS export
+    # (M_InOut_EPCIS_Export_JSON), so EpcisExportConfigMatcher classifies it as an EPCIS config — which
+    # both the reverse guard and the Change-EPCIS-Export-Status service require. No restrictive WhereClause
+    # → the export enqueues on any completion (reaches in-flight U). Overrides the Background's non-EPCIS
+    # scriptedCfg_es for M_InOut (table-scoped takeover).
+    And metasfresh contains ExternalSystem_Config with ScriptedExportConversion and StatusColumn:
+      | ExternalSystem_Config_ID | ExternalSystem_Config_ScriptedExportConversion_ID | AD_Process_OutboundData_ID.Value | TableName |
+      | esConfig_050             | scriptedCfg_050                                   | M_InOut_EPCIS_Export_JSON        | M_InOut   |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | POReference          |
+      | o_050      | true    | bp_es         | 2026-06-09  | PO_S30088_050_@Date@ |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | ol_050     | o_050      | product_es   | 10         | pip_es                  |
+    When the order identified by o_050 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_050     | ol_050         | N             |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
+      | ss_050                | D            | true                | false       |
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | ss_050                | io_050     |
+
+    # Drain async material/DESADV workpackages from shipment generation (avoid spilling into sibling executor tests).
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    # Shipment completion enqueues the EPCIS export → the attempt row is Enqueued (U, in-flight)
+    Then after not more than 30s, ExternalSystem_ScriptedExportConversion_Status is found:
+      | M_InOut_ID | ExternalSystem_Config_ScriptedExportConversion_ID | ExportStatus |
+      | io_050     | scriptedCfg_050                                   | U            |
+
+    # In-flight → reversing the shipment is blocked (re-completing could re-transmit an SSCC already at the receiver)
+    And the shipment identified by io_050 is reversed expecting error
+      | AD_Message_ID |
+      |               |
+
+    # Operator marks it DontSend via the shipment "Change EPCIS Export Status" action
+    When Change EPCIS Export Status process is run for shipment io_050 with target status DontSend
+
+    # A NEW attempt row (DontSend=N) is now the latest, stamped with the process AD_PInstance_ID (who/when audit);
+    # the prior in-flight (U) attempt is retained as history (per-attempt history, newest-first).
+    Then after not more than 10s, ExternalSystem_ScriptedExportConversion_Status is found:
+      | M_InOut_ID | ExternalSystem_Config_ScriptedExportConversion_ID | ExportStatus | HasAD_PInstance |
+      | io_050     | scriptedCfg_050                                   | N            | Y               |
+      | io_050     | scriptedCfg_050                                   | U            |                 |
+
+    # Latest EPCIS status is no longer in-flight → the reverse guard releases; the shipment can now be reversed.
+    And the shipment identified by io_050 is reversed
+
+
+  @from:cucumber
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00353_EDI_DESADV_InOut_Link
+  @Id:S30088_060
+  Scenario: S30088_060 — Re-send picks up a shipment parked in Pending (a resting Pending IS resendable)
+    ## An operator resets a stuck in-flight EPCIS export to "Not yet sent" (Pending) via the Change EPCIS
+    ## Export Status action, then runs Re-send. An operator-parked Pending is not-in-flight (nothing is
+    ## being sent) and is stamped with the process instance, so Re-send picks it up as the first send —
+    ## not a double-send.
+
+    # EPCIS-classified config (its outbound-data process IS the EPCIS export) so the Change EPCIS Export
+    # Status action applies; no WhereClause → the export enqueues on any completion (reaches in-flight U).
+    And metasfresh contains ExternalSystem_Config with ScriptedExportConversion and StatusColumn:
+      | ExternalSystem_Config_ID | ExternalSystem_Config_ScriptedExportConversion_ID | AD_Process_OutboundData_ID.Value | TableName |
+      | esConfig_060             | scriptedCfg_060                                   | M_InOut_EPCIS_Export_JSON        | M_InOut   |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | POReference          |
+      | o_060      | true    | bp_es         | 2026-06-09  | PO_S30088_060_@Date@ |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | ol_060     | o_060      | product_es   | 10         | pip_es                  |
+    When the order identified by o_060 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_060     | ol_060         | N             |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
+      | ss_060                | D            | true                | false       |
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | ss_060                | io_060     |
+
+    # Drain async material/DESADV workpackages from shipment generation.
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    # Completion enqueues the EPCIS export → in-flight (U)
+    Then after not more than 30s, ExternalSystem_ScriptedExportConversion_Status is found:
+      | M_InOut_ID | ExternalSystem_Config_ScriptedExportConversion_ID | ExportStatus |
+      | io_060     | scriptedCfg_060                                   | U            |
+
+    # Operator resets it to "Not yet sent" (Pending) via the Change EPCIS Export Status action → a NEW
+    # process-instance-stamped attempt row; the prior in-flight (U) attempt is kept as history.
+    When Change EPCIS Export Status process is run for shipment io_060 with target status Pending
+    Then after not more than 10s, ExternalSystem_ScriptedExportConversion_Status is found:
+      | M_InOut_ID | ExternalSystem_Config_ScriptedExportConversion_ID | ExportStatus | HasAD_PInstance |
+      | io_060     | scriptedCfg_060                                   | P            | Y               |
+
+    # Re-send picks up the operator-parked Pending shipment → a NEW attempt row (IsResend=Y) reaching at
+    # least Enqueued.
+    When M_InOut_ReSend_ScriptedExportConversion process is run for shipment io_060
+    Then after not more than 30s, ExternalSystem_ScriptedExportConversion_Status is found:
+      | M_InOut_ID | ExternalSystem_Config_ScriptedExportConversion_ID | ExportStatus | IsResend |
+      | io_060     | scriptedCfg_060                                   | U            | Y        |
+
+    # Simulate /ok → the resend attempt reaches Sent.
+    When the scripted-export /ok callback is posted for shipment io_060 with HTTP code 200
+    Then after not more than 10s, ExternalSystem_ScriptedExportConversion_Status is found:
+      | M_InOut_ID | ExternalSystem_Config_ScriptedExportConversion_ID | ExportStatus | IsResend |
+      | io_060     | scriptedCfg_060                                   | S            | Y        |
+    And after not more than 10s, M_InOut EPCIS_ExportStatus is:
+      | M_InOut_ID | EPCIS_ExportStatus |
+      | io_060     | S                  |
+
+
+  @from:cucumber
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00353_EDI_DESADV_InOut_Link
   @Id:S30279_040
   Scenario: S30279_040 — a WhereClause that depends on the committed-complete state still matches at trigger time
     ## Reproduces the complete-time eligibility timing bug fixed in this change.

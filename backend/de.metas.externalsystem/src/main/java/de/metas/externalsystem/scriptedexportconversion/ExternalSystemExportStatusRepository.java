@@ -251,6 +251,26 @@ public class ExternalSystemExportStatusRepository
 	}
 
 	/**
+	 * Returns the LATEST attempt row PER config for the given source record (one row per config, all
+	 * states). {@link #getLatestBySourceRecord} returns ALL historical rows newest-first, so
+	 * {@code putIfAbsent} keeps the newest per config — the same latest-per-config reduction used by
+	 * {@link #getConfigsWithNonSentAttemptBySourceRecord} / {@link #getInflightConfigsBySourceRecord}.
+	 * Callers that want "the current status" MUST use this, not the raw {@link #getLatestBySourceRecord}
+	 * (which would surface stale earlier attempts once a config has &gt;=2 rows, e.g. after a re-send).
+	 */
+	@NonNull
+	public List<ScriptedExportConversionStatus> getLatestPerConfigBySourceRecord(@NonNull final TableRecordReference sourceRecord)
+	{
+		final LinkedHashMap<ExternalSystemScriptedExportConversionConfigId, ScriptedExportConversionStatus> latestPerConfig =
+				new LinkedHashMap<>();
+		for (final ScriptedExportConversionStatus entry : getLatestBySourceRecord(sourceRecord))
+		{
+			latestPerConfig.putIfAbsent(entry.getConfigId(), entry);
+		}
+		return ImmutableList.copyOf(latestPerConfig.values());
+	}
+
+	/**
 	 * Returns all status rows for the given source record, ordered newest-first.
 	 */
 	@NonNull
