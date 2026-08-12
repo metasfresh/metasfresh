@@ -23,14 +23,20 @@
 package de.metas.vatid;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.process.PInstanceId;
+import de.metas.user.UserId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_VATaxID_CheckLog;
 import org.compiere.model.X_VATaxID_CheckLog;
+import org.compiere.util.Env;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.time.ZonedDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -56,6 +62,12 @@ class VATaxIDCheckRepositoryTest
 	{
 		AdempiereTestHelper.get().init();
 		vataxIDCheckRepository = VATaxIDCheckRepository.newInstanceForUnitTesting();
+	}
+
+	@AfterEach
+	void afterEach()
+	{
+		SystemTime.resetTimeSource();
 	}
 
 	private I_VATaxID_CheckLog loadRecord(final VATaxIDCheckLogId id)
@@ -151,5 +163,66 @@ class VATaxIDCheckRepositoryTest
 
 		final I_VATaxID_CheckLog record = loadRecord(checkLogId);
 		assertThat(record.getVATaxIDStatus()).isEqualTo(X_VATaxID_CheckLog.VATAXIDSTATUS_RequestSent);
+	}
+
+	/**
+	 * Pins the query filter's status predicate via observable behaviour rather than the query's internal
+	 * shape: the harness backing repository calls in unit-test mode ({@code POJOQuery}) never builds real
+	 * SQL, so there is no WHERE-clause artifact a test could inspect. Instead, the row is pushed out of
+	 * {@link VATaxIDStatus#RequestSent} through a path independent of {@link VATaxIDCheckRepository#completeCheck}
+	 * itself (a direct save, not a prior {@code completeCheck} call, unlike
+	 * {@link #completeCheck_refusesToRunTwiceOnTheSameRow()}), then {@code completeCheck} must still refuse
+	 * and must not have written any of its four completion fields — if a future edit dropped the status
+	 * predicate from the query builder, this call would instead succeed and overwrite them.
+	 */
+	@Test
+	void completeCheck_refusesWhenTheRowIsNotAtRequestSent_andLeavesItUntouched()
+	{
+		final VATaxIDCheckLogId checkLogId = vataxIDCheckRepository.writeRequestSent(
+				VATaxIDCheckRequest.builder().bpartnerId(BPARTNER_ID).vataxID("DE555555555").build());
+
+		final I_VATaxID_CheckLog record = loadRecord(checkLogId);
+		record.setVATaxIDStatus(X_VATaxID_CheckLog.VATAXIDSTATUS_Invalid);
+		InterfaceWrapperHelper.saveRecord(record);
+
+		assertThatThrownBy(() -> vataxIDCheckRepository.completeCheck(
+				checkLogId,
+				VATaxIDCheckResult.builder()
+						.status(VATaxIDStatus.Valid)
+						.requestIdentifier("SHOULD-NOT-BE-WRITTEN")
+						.rawResponse("<should-not-be-written/>")
+						.build()))
+				.isInstanceOf(AdempiereException.class);
+
+		final I_VATaxID_CheckLog reloaded = loadRecord(checkLogId);
+		assertThat(reloaded.getVATaxIDStatus()).isEqualTo(X_VATaxID_CheckLog.VATAXIDSTATUS_Invalid);
+		assertThat(reloaded.getRequestIdentifier()).isNull();
+		assertThat(reloaded.getRawResponse()).isNull();
+	}
+
+	@Test
+	void completeCheck_refreshesTheUpdatedAndUpdatedByAuditColumns()
+	{
+		final UserId requestingUser = UserId.ofRepoId(3000002);
+		final UserId completingUser = UserId.ofRepoId(3000003);
+
+		SystemTime.setFixedTimeSource(ZonedDateTime.parse("2026-01-01T10:00:00Z"));
+		Env.setLoggedUserId(Env.getCtx(), requestingUser);
+		final VATaxIDCheckLogId checkLogId = vataxIDCheckRepository.writeRequestSent(
+				VATaxIDCheckRequest.builder().bpartnerId(BPARTNER_ID).vataxID("DE666666666").build());
+
+		final I_VATaxID_CheckLog beforeRecord = loadRecord(checkLogId);
+		assertThat(beforeRecord.getUpdatedBy()).isEqualTo(requestingUser.getRepoId());
+
+		SystemTime.setFixedTimeSource(ZonedDateTime.parse("2026-01-02T11:00:00Z"));
+		Env.setLoggedUserId(Env.getCtx(), completingUser);
+		vataxIDCheckRepository.completeCheck(
+				checkLogId,
+				VATaxIDCheckResult.builder().status(VATaxIDStatus.Valid).build());
+
+		final I_VATaxID_CheckLog afterRecord = loadRecord(checkLogId);
+		assertThat(afterRecord.getUpdated()).isNotEqualTo(beforeRecord.getUpdated());
+		assertThat(afterRecord.getUpdated()).isEqualTo(java.sql.Timestamp.from(java.time.Instant.parse("2026-01-02T11:00:00Z")));
+		assertThat(afterRecord.getUpdatedBy()).isEqualTo(completingUser.getRepoId());
 	}
 }
