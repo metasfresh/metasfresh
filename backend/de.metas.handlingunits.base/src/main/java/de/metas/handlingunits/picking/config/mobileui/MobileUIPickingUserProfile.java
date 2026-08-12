@@ -46,7 +46,6 @@ public class MobileUIPickingUserProfile
 			.isAllowPickingAnyCustomer(true)
 			.isMassPrinting(false)
 			.isShowQtyAvailableForLines(false)
-			.isShowAllFilterGroups(false)
 			.defaultPickingJobOptions(PickingJobOptions.builder()
 					.aggregationType(PickingJobAggregationType.DEFAULT)
 					.allowedPickToStructures(AllowedPickToStructures.DEFAULT)
@@ -70,8 +69,6 @@ public class MobileUIPickingUserProfile
 	boolean isAllowQuickPackAll;
 	boolean isMassPrinting;
 	boolean isShowQtyAvailableForLines;
-	/** offer every configured filter group at once instead of revealing them as the operator narrows down */
-	boolean isShowAllFilterGroups;
 	@Getter @NonNull PickingCustomerConfigsCollection customerConfigs;
 	@NonNull PickingJobOptions defaultPickingJobOptions;
 	@Getter(AccessLevel.NONE) @NonNull PickingFiltersList filters;
@@ -90,7 +87,6 @@ public class MobileUIPickingUserProfile
 			final boolean isAllowQuickPackAll,
 			final boolean isMassPrinting,
 			final boolean isShowQtyAvailableForLines,
-			final boolean isShowAllFilterGroups,
 			final @Nullable PickingCustomerConfigsCollection customerConfigs,
 			final @NonNull PickingJobOptions defaultPickingJobOptions,
 			final @Nullable PickingFiltersList filters,
@@ -104,7 +100,6 @@ public class MobileUIPickingUserProfile
 		this.isAllowQuickPackAll = isAllowQuickPackAll;
 		this.isMassPrinting = isMassPrinting;
 		this.isShowQtyAvailableForLines = isShowQtyAvailableForLines;
-		this.isShowAllFilterGroups = isShowAllFilterGroups;
 		this.customerConfigs = customerConfigs != null ? customerConfigs : PickingCustomerConfigsCollection.EMPTY;
 		this.defaultPickingJobOptions = defaultPickingJobOptions;
 		this.filters = filters != null ? filters : PickingFiltersList.EMPTY;

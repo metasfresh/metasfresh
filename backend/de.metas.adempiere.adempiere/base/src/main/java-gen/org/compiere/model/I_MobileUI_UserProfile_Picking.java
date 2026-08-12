@@ -598,27 +598,6 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsShipOnCloseLU = "IsShipOnCloseLU";
 
 	/**
-	 * Set Show all filter groups at once.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsShowAllFilterGroups (boolean IsShowAllFilterGroups);
-
-	/**
-	 * Get Show all filter groups at once.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isShowAllFilterGroups();
-
-	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsShowAllFilterGroups = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsShowAllFilterGroups", null);
-	String COLUMNNAME_IsShowAllFilterGroups = "IsShowAllFilterGroups";
-
-	/**
 	 * Set Allow over-pick with prompt.
 	 * When enabled, the picker can record more than the ordered qty;
  the over-delivery must be confirmed via a prompt. When disabled, over-picking is hard-blocked in the frontend ("N above max").
