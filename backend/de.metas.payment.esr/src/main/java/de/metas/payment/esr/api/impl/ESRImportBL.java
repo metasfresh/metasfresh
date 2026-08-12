@@ -644,11 +644,12 @@ public class ESRImportBL implements IESRImportBL
 		final PaymentId paymentId = fetchDuplicatePaymentIfExists(line);
 		if (paymentId != null)
 		{
+			// Flag the line so the accountant still sees the duplicate, but do not attach the payment we
+			// just found: that payment belongs to the earlier transaction, while this line is money that
+			// arrived a second time and needs its own C_Payment. Falling through to the regular handling
+			// lets processLinesWithPaymentNoInvoice create it (unallocated, since the invoice is paid).
 			line.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment);
-			handleUnsupportedTrxType(line);
-			line.setC_Payment_ID(paymentId.getRepoId());
 			esrImportDAO.save(line);
-			return true;
 		}
 		return false;
 	}
