@@ -1674,8 +1674,16 @@ public class ESRImportTest extends ESRTestBase
 		assertThat(esrImportLine2.getImportErrorMsg(), nullValue());
 		assertThat(esrImportLine2.getMatchErrorMsg(), is("Rechnung " + invDocNo + " wurde im System als bereits bezahlt markiert"));
 
-		// check the payment
-		assertThat(esrImportLine2.getC_Payment_ID(), is(esrImportLine2.getC_Payment_ID()));
+		// check the payment: the duplicate-flagged line must have its OWN payment, not the first line's
+		assertThat("the duplicate line must not carry the first line's C_Payment_ID",
+				   esrImportLine2.getC_Payment_ID(), is(not(esrImportLine1.getC_Payment_ID())));
+
+		final PaymentId esrImportLine2PaymentId = PaymentId.ofRepoIdOrNull(esrImportLine2.getC_Payment_ID());
+		final I_C_Payment esrLine2Payment = esrImportLine2PaymentId == null ? null
+				: paymentDAO.getById(esrImportLine2PaymentId);
+		assertThat("the duplicate-flagged line must have created its own payment", esrLine2Payment, notNullValue());
+		assertThat(esrLine2Payment.getPayAmt(), comparesEqualTo(new BigDecimal("50")));
+		assertThat("the duplicate payment must not be allocated to the invoice", esrLine2Payment.isAllocated(), is(false));
 	}
 
 	/**
