@@ -166,7 +166,7 @@ public class PurchaseCandidate
 			final boolean aggregatePOs,
 			@Nullable final ForecastLineId forecastLineId,
 			@Nullable final Dimension dimension,
-			@Nullable final PurchaseCandidateSource source,
+			@NonNull final PurchaseCandidateSource source,
 			@Nullable final BigDecimal price,
 			@Nullable final BigDecimal priceInternal,
 			@Nullable final BigDecimal priceActual,

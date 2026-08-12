@@ -424,9 +424,7 @@ public class PurchaseCandidateRepository
 		}
 		record.setPOReference(purchaseCandidate.getPOReference());
 
-		// Fail loudly on a null Source rather than silently persisting it (the DB NOT NULL would otherwise reject it with a cryptic error).
-		final PurchaseCandidateSource source = Check.assumeNotNull(purchaseCandidate.getSource(), "Source must be set on purchase candidate: {}", purchaseCandidate);
-		record.setSource(source.getCode());
+		record.setSource(purchaseCandidate.getSource().getCode());
 		record.setPriceInternal(purchaseCandidate.getPriceInternal());
 		record.setPriceEntered(purchaseCandidate.getPrice());
 		record.setPriceEffective(purchaseCandidate.getPriceEnteredEff());
@@ -545,7 +543,7 @@ public class PurchaseCandidateRepository
 				.externalHeaderId(ExternalId.ofOrNull(record.getExternalHeaderId()))
 				.poReference(record.getPOReference())
 
-				.source(PurchaseCandidateSource.ofCodeOrNull(record.getSource()))
+				.source(PurchaseCandidateSource.ofCode(record.getSource()))
 				//
 				.qtyToPurchase(qtyToPurchase)
 				//

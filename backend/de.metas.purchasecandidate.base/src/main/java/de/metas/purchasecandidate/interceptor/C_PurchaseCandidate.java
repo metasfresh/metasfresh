@@ -18,6 +18,8 @@ import de.metas.order.grossprofit.model.I_C_OrderLine;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
+import de.metas.purchasecandidate.PurchaseCandidateSource;
+import org.adempiere.exceptions.AdempiereException;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import de.metas.util.lang.Percent;
@@ -78,5 +80,21 @@ public class C_PurchaseCandidate
 				.orElse(ZERO);
 		salesOrderLineRecord.setProfitPercent(value);
 		saveRecord(salesOrderLineRecord);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
+	public void rejectLegacyUnknownSourceOnNew(@NonNull final I_C_PurchaseCandidate purchaseCandidateRecord)
+	{
+		// 'Unknown' is a backfill-only marker for candidates created before the Source column existed.
+		// A new candidate must carry a real origin: an Unknown one would be excluded from both the
+		// sales-order interceptor (which filters Source=SalesOrder) and dispo auto-ordering, so a
+		// genuine purchase demand would silently never be ordered.
+		if (PurchaseCandidateSource.Unknown.getCode().equals(purchaseCandidateRecord.getSource()))
+		{
+			throw new AdempiereException("Source=" + PurchaseCandidateSource.Unknown
+					+ " is reserved for legacy backfilled candidates and must not be set on new records")
+					.appendParametersToMessage()
+					.setParameter("C_PurchaseCandidate", purchaseCandidateRecord);
+		}
 	}
 }
