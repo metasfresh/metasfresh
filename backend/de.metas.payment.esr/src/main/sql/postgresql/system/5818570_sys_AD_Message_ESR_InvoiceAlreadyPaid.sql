@@ -1,5 +1,5 @@
--- AD_Message for ESRImportBL.markInvoiceAlreadyPaid() — the "invoice already paid" note
--- written to ESR_ImportLine.MatchErrorMsg, previously a hardcoded German literal.
+-- AD_Message for the note put on an ESR import line whose invoice is already flagged as paid,
+-- shown to the accountant in ESR_ImportLine.MatchErrorMsg. Previously a hardcoded German literal.
 
 -- 1. the message (base text = German)
 INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value)
