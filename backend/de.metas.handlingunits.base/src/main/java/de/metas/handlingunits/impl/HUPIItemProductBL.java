@@ -48,6 +48,8 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
@@ -65,6 +67,13 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+	@Override
+	public boolean isEnforcePrecisePricePerHUItemProduct(@NonNull final ClientId clientId)
+	{
+		return sysConfigBL.getBooleanValue(SYSCONFIG_EnforcePrecisePricePerHUItemProduct, false, clientId.getRepoId());
+	}
 
 	@Override
 	public HUPIItemProduct getById(@NonNull final HUPIItemProductId id) {return huPIItemProductDAO.getById(id);}

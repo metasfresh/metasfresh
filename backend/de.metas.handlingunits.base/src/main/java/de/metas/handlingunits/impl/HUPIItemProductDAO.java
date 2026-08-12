@@ -45,6 +45,7 @@ import de.metas.handlingunits.model.I_M_ProductPrice;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.i18n.IModelTranslationMap;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
@@ -860,11 +861,23 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 			@Nullable final BPartnerId bpartnerId,
 			@NonNull final ZonedDateTime date)
 	{
+		return retrieveDefaultForProduct(productId, bpartnerId, date, null);
+	}
+
+	@Override
+	public Optional<I_M_HU_PI_Item_Product> retrieveDefaultForProduct(
+			@NonNull final ProductId productId,
+			@Nullable final BPartnerId bpartnerId,
+			@NonNull final ZonedDateTime date,
+			@Nullable final PriceListVersionId priceListVersionId)
+	{
 		final IHUPIItemProductQuery query = createHUPIItemProductQuery();
 		query.setBPartnerId(bpartnerId);
 		query.setProductId(productId);
 		query.setDate(date);
 		query.setDefaultForProduct(true);
+		// null means "don't restrict"; the filter in buildQueryFilters is guarded by a null check
+		query.setPriceListVersionId(priceListVersionId);
 
 		final I_M_HU_PI_Item_Product huPIItemProduct = retrieveFirst(Env.getCtx(), query, ITrx.TRXNAME_None);
 		return Optional.ofNullable(huPIItemProduct);
@@ -876,7 +889,17 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 			@Nullable final BPartnerId bpartnerId,
 			@NonNull final ZonedDateTime date)
 	{
-		return retrieveDefaultForProduct(productId, bpartnerId, date)
+		return retrieveDefaultIdForProduct(productId, bpartnerId, date, null);
+	}
+
+	@Override
+	public Optional<HUPIItemProductId> retrieveDefaultIdForProduct(
+			@NonNull final ProductId productId,
+			@Nullable final BPartnerId bpartnerId,
+			@NonNull final ZonedDateTime date,
+			@Nullable final PriceListVersionId priceListVersionId)
+	{
+		return retrieveDefaultForProduct(productId, bpartnerId, date, priceListVersionId)
 				.map(huPiItemProduct -> HUPIItemProductId.ofRepoIdOrNull(huPiItemProduct.getM_HU_PI_Item_Product_ID()));
 	}
 
