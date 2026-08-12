@@ -3,10 +3,10 @@
 -- OnServiceUnavailable at AD_Reference 542125 (the full VATaxIDStatus check-result list), which
 -- admits transitional/positive values (e.g. RequestSent, Valid, NotChecked) that are meaningless
 -- as a static configuration fallback for "VIES stayed unreachable past the recheck interval".
--- Per REQUIREMENTS.md, the only two outcomes that make sense there are: keep the VAT-ID's tax
--- certificate as if the service were still merely unavailable (fail-open, the shipped default),
--- or withdraw it as if VIES had answered "invalid" (fail-closed). 5818220 is already applied to
--- live databases, so it is corrected here with a new migration rather than edited in place.
+-- Only two outcomes are meaningful for this fallback: keep the VAT-ID's tax certificate as if the
+-- service were still merely unavailable (fail-open, the shipped default), or withdraw it as if VIES
+-- had answered "invalid" (fail-closed). 5818220 is already applied to live databases, so it is
+-- corrected here with a new migration rather than edited in place.
 --
 -- IDs allocated from idserver.metas.de:
 --   AD_Reference 542126

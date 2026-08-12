@@ -1,8 +1,7 @@
--- VAT-ID online check: drop the redundant physical CHECK on VATaxIDStatus.
--- AD_Column 593175 already binds VATaxIDStatus to AD_Reference_ID=17 (List) /
--- AD_Reference_Value_ID=542125, which is the single source of truth for the value set. The physical
--- CHECK constraint added by migration 5818420 hardcodes the same six values a second time; if the
--- reference list ever gains or loses a value, the CHECK would silently reject legitimate data with no
--- AD-level signal. Removing it leaves the reference list as the sole authority.
-
-SELECT db_alter_table('VATaxID_CheckLog', 'ALTER TABLE VATaxID_CheckLog DROP CONSTRAINT IF EXISTS vataxid_checklog_vataxidstatus_check');
+-- VAT-ID online check: keep the physical CHECK on VATaxIDStatus (reversing this script's original
+-- decision to drop it). A belt-and-braces CHECK alongside the AD_Reference_ID=17 list binding is the
+-- mandated pattern for every reference-list-backed column, matching what VATaxID_Config.OnServiceUnavailable
+-- already keeps for the sibling table (see 5818250). The CHECK is the defensive second layer for any
+-- write path that bypasses AD-level validation (e.g. a raw SQL update), not a redundant duplicate to be
+-- cleaned up. This script is now a no-op: the constraint it used to drop stays in place, as created by
+-- migration 5818420.

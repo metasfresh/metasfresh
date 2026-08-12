@@ -14,7 +14,7 @@ VALUES (585173 /*From ID Server*/, 0, 0, 'Y',
         TO_TIMESTAMP('2026-08-11 16:45:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
         TO_TIMESTAMP('2026-08-11 16:45:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
         'REST API URL', 'REST API URL',
-        'Basis-URL des VIES-REST-Dienstes für die USt-IdNr.-Prüfung. Im Regelfall nicht ändern.', 'D');
+        'Basis-URL des VIES-REST-Dienstes für die USt-IdNr.-Prüfung. Muss vor der ersten Prüfung konfiguriert werden; es gibt keinen vorbelegten Wert.', 'D');
 
 INSERT INTO AD_Element_Trl (AD_Language, AD_Element_ID, Name, PrintName, Description, IsTranslated, AD_Client_ID, AD_Org_ID, Created, Createdby, Updated, UpdatedBy)
 SELECT l.AD_Language, t.AD_Element_ID, t.Name, t.PrintName, t.Description, 'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.Createdby, t.Updated, t.UpdatedBy
@@ -23,7 +23,7 @@ WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND t.AD_Element_ID = 585173
   AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Element_ID = t.AD_Element_ID);
 
 UPDATE AD_Element_Trl
-SET Description = 'Base URL of the VIES REST service used for VAT-ID checks. Normally leave at the default.',
+SET Description = 'Base URL of the VIES REST service used for VAT-ID checks. Must be configured before the first check; there is no pre-filled value.',
     IsTranslated = 'Y', Updated = TO_TIMESTAMP('2026-08-11 16:45:10', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
 WHERE AD_Language = 'en_US' AND AD_Element_ID = 585173;
 

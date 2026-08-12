@@ -4,11 +4,12 @@
 -- Corpus precedent for a STANDALONE read-only log/audit window (its own menu entry, not a tab
 -- embedded in a config window) is a direct child of its domain's top-level folder, never nested
 -- inside that domain's "Einstellungen" configuration subfolder: PayPal_Log sits under "PayPal",
--- M_Securpharm_Log under "Pharma", AD_Replication_Log under "Replication Data", AD_WF_EventAudit
--- under "Workflow", C_Doc_Outbound_Log under "Archive"/"CRM", AD_ChangeLog/AD_Issue under
--- "System"/"Sicherheit"/"System-Administration". Within "Finanzen" itself, "Document Accounting Log"
--- (SeqNo=36) and the "Buchführungs-Details"/Fact_Acct posting log (SeqNo=10) already sit as direct
--- children of "Finanzen", confirming the pattern for this exact domain. "Finanzen -> Einstellungen"
+-- M_Securpharm_Log under "Pharma", C_Doc_Outbound_Log under "Archive"/"CRM", AD_ChangeLog/AD_Issue
+-- under "System"/"Sicherheit"/"System-Administration". Within "Finanzen" itself, "Document
+-- Accounting Log" (SeqNo=36) and the "Buchführungs-Details"/Fact_Acct posting log (SeqNo=10) already
+-- sit as direct children of "Finanzen", confirming the pattern for this exact domain. (AD_Replication_Log
+-- and AD_WF_EventAudit are NOT standalone log windows — verified live, they are embedded detail tabs on
+-- windows 284/297 respectively — so they are not precedents here.) "Finanzen -> Einstellungen"
 -- (1000072), by contrast, holds only configuration/master-data windows (verified: all 21 remaining
 -- siblings). VATaxID_CheckLog is moved to match.
 --

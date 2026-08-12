@@ -137,7 +137,8 @@ VALUES
      'RawResponse', 'VIES-Rohantwort', 'VIES-Rohantwort',
      'Unverarbeitete Antwort des VIES-Dienstes, zur Nachvollziehbarkeit im Streitfall.', 'D'),
     -- VATaxIDStatus: same column name/element as will be used on C_BPartner / C_BPartner_Location (follow-up task) —
-    -- created here first and meant to be reused there, per the design's "same column name, deliberately".
+    -- created here first and meant to be reused there deliberately, so the eventual C_BPartner /
+    -- C_BPartner_Location columns share this element instead of each minting their own.
     (585194 /*From ID Server*/, 0, 0, 'Y',
      TO_TIMESTAMP('2026-08-12 10:00:18', 'YYYY-MM-DD HH24:MI:SS'), 100,
      TO_TIMESTAMP('2026-08-12 10:00:18', 'YYYY-MM-DD HH24:MI:SS'), 100,

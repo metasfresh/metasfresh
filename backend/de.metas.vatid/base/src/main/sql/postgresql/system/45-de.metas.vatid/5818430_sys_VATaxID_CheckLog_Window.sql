@@ -3,7 +3,7 @@
 -- status, dates, VIES consultation number); left/secondary = the not-yet-used qualified-check +
 -- evidence fields (Advanced Edit only, per metasfresh-window-design-rules); right/flags =
 -- IsActive; right/org = AD_Org_ID then AD_Client_ID (cornerstones). Every field is read-only —
--- rows are written exclusively by the repository (Task 6b), never by a user in this window.
+-- rows are written exclusively by the application, never by a user in this window.
 -- Grid shows exactly the columns an operator needs to scan a partner's check history at a glance
 -- (BPartner, VATaxID, status, request/response dates, VIES consultation number); the not-yet-used
 -- qualified-check fields and the evidence-only process/session references stay out of the grid.
