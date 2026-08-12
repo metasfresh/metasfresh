@@ -29,11 +29,11 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
+import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUPIItemProductQuery;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -48,10 +48,8 @@ import lombok.NonNull;
 public class PackingItemProductFieldHelper
 {
 	private final IHUPIItemProductDAO huPIItemProductsRepo = Services.get(IHUPIItemProductDAO.class);
+	private final IHUPIItemProductBL huPIItemProductBL = Services.get(IHUPIItemProductBL.class);
 	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	
-	private static final String SYSCONFIG_EnforcePrecisePricePerHUItemProduct = "de.metas.ui.web.quickinput.field.PackingItemProductFieldHelper.EnforcePrecisePricePerHUItemProduct";
 
 	public Optional<I_M_HU_PI_Item_Product> getDefaultPackingMaterial(@NonNull final DefaultPackingItemCriteria defaultPackingItemCriteria)
 	{
@@ -62,18 +60,26 @@ public class PackingItemProductFieldHelper
 			return defaultPIProduct;
 		}
 
-		if (SOTrx.SALES.equals(defaultPackingItemCriteria.getSoTrx()))
-		{
-			// Sales Orders: if no Packing Instruction is set on Product Price, check the default Packing Item for Product (set in CU-TU Allocations)
-			return huPIItemProductsRepo.retrieveDefaultForProduct(defaultPackingItemCriteria.getProductId(),
-					defaultPackingItemCriteria.getBPartnerLocationId().getBpartnerId(), defaultPackingItemCriteria.getDate());
-		}
-		else
+		if (!SOTrx.SALES.equals(defaultPackingItemCriteria.getSoTrx()))
 		{
 			// Purchase Orders: only the Packing Instructions which are set on Purchase Product Prices are used.
 			// Therefore at this step we return nothing.
 			return Optional.empty();
 		}
+
+		if (huPIItemProductBL.isEnforcePrecisePricePerHUItemProduct(defaultPackingItemCriteria.getClientId()))
+		{
+			// The price list step above already returned every packing instruction that a product price of
+			// this price list version references. So the IsDefaultForProduct fallback below could only ever
+			// yield one that no product price references -- which is exactly what this setting forbids, and
+			// such a packing instruction makes the order line uncompletable ("Produkt ist nicht auf der
+			// Preisliste"), because pricing matches on it.
+			return Optional.empty();
+		}
+
+		// Sales Orders: if no Packing Instruction is set on Product Price, check the default Packing Item for Product (set in CU-TU Allocations)
+		return huPIItemProductsRepo.retrieveDefaultForProduct(defaultPackingItemCriteria.getProductId(),
+				defaultPackingItemCriteria.getBPartnerLocationId().getBpartnerId(), defaultPackingItemCriteria.getDate());
 	}
 
 	private Optional<I_M_HU_PI_Item_Product> getDefaultPackingMaterialFromPriceList(@NonNull final DefaultPackingItemCriteria defaultPackingItemCriteria)
@@ -96,8 +102,9 @@ public class PackingItemProductFieldHelper
 		}
 
 		final ClientId clientId = defaultPackingItemCriteria.getClientId();
-		final boolean enforcePrecisePricePerHUItemProduct = sysConfigBL.getBooleanValue(SYSCONFIG_EnforcePrecisePricePerHUItemProduct, false, clientId.getRepoId());
-		
+		final boolean enforcePrecisePricePerHUItemProduct = huPIItemProductBL.isEnforcePrecisePricePerHUItemProduct(clientId);
+
+
 		// TODO: check ASI too
 		final IHUPIItemProductDAO piItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 		final IHUPIItemProductQuery queryVO = piItemProductDAO.createHUPIItemProductQuery();
