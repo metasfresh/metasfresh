@@ -23,6 +23,7 @@
 package de.metas.shipper.client.nshift;
 
 import au.com.origin.snapshots.Expect;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import lombok.NonNull;
 import au.com.origin.snapshots.junit5.SnapshotExtension;
@@ -44,12 +45,14 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -147,6 +150,12 @@ public class NShiftShipAdvisorServiceTest
 	@NonNull
 	private NShiftShipAdvisorService nShiftShipAdvisorService;
 
+	@Autowired
+	@Qualifier(NShiftClientConfig.NSHIFT_OBJECT_MAPPER)
+	private ObjectMapper nShiftObjectMapper;
+
+	private static final Pattern EMPTY_JSON_ARRAY = Pattern.compile("\\[\\s*\\]");
+
 	@SuppressWarnings("unused") // injected by SnapshotExtension via reflection
 	private Expect expect;
 
@@ -183,6 +192,20 @@ public class NShiftShipAdvisorServiceTest
 							.countryOfOrigin("DE")
 							.build()))
 			.build();
+
+	@Test
+	void serializedRequestHasNoEmptyLists() throws Exception
+	{
+		final JsonShipAdvisorRequest request = NShiftShipAdvisorService.buildRequest(ADVISOR_REQUEST);
+		final String json = nShiftObjectMapper.writeValueAsString(request);
+		assertNoEmptyJsonArrays(json);
+	}
+
+	private static void assertNoEmptyJsonArrays(final String json)
+	{
+		assertFalse(EMPTY_JSON_ARRAY.matcher(json).find(),
+				"nShift request must not serialize empty lists (nShift fails with 'list index out of range'):\n" + json);
+	}
 
 	@Test
 	void build_request_test()

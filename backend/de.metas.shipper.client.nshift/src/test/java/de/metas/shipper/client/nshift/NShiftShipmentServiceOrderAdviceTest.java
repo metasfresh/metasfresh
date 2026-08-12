@@ -24,6 +24,7 @@ package de.metas.shipper.client.nshift;
 
 import au.com.origin.snapshots.Expect;
 import au.com.origin.snapshots.junit5.SnapshotExtension;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.delivery.v1.json.JsonAddress;
 import de.metas.common.delivery.v1.json.JsonContact;
@@ -44,10 +45,12 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 
 import java.math.BigDecimal;
+import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -70,6 +73,12 @@ public class NShiftShipmentServiceOrderAdviceTest
 	@Autowired
 	@NonNull
 	private NShiftShipmentService nShiftShipmentService;
+
+	@Autowired
+	@Qualifier(NShiftClientConfig.NSHIFT_OBJECT_MAPPER)
+	private ObjectMapper nShiftObjectMapper;
+
+	private static final Pattern EMPTY_JSON_ARRAY = Pattern.compile("\\[\\s*\\]");
 
 	@SuppressWarnings("unused") // injected by SnapshotExtension via reflection
 	private Expect expect;
@@ -216,6 +225,20 @@ public class NShiftShipmentServiceOrderAdviceTest
 					.build())
 			.mappingConfigs(NShiftTestMappingConfigs.SHARED_TEST)
 			.build();
+
+	@Test
+	void serializedRequestHasNoEmptyLists() throws Exception
+	{
+		final JsonShipmentRequest request = NShiftShipmentService.buildOrderAdviceShipmentRequest(DELIVERY_REQUEST);
+		final String json = nShiftObjectMapper.writeValueAsString(request);
+		assertNoEmptyJsonArrays(json);
+	}
+
+	private static void assertNoEmptyJsonArrays(final String json)
+	{
+		assertFalse(EMPTY_JSON_ARRAY.matcher(json).find(),
+				"nShift request must not serialize empty lists (nShift fails with 'list index out of range'):\n" + json);
+	}
 
 	@Test
 	void build_order_advice_request_test()
