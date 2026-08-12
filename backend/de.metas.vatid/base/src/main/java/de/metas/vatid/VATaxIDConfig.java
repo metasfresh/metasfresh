@@ -32,7 +32,7 @@ import javax.annotation.Nullable;
  * Immutable per-organisation VAT-ID check configuration, read from a single active {@code VATaxID_Config}
  * record (see {@code de.metas.vatid.VATaxIDConfigRepository}).
  *
- * <p>Field meanings are per {@code REQUIREMENTS.md} § 3 "Configuration":
+ * <p>Field meanings:
  * <ul>
  *   <li>{@link #isFormatCheckEnabled()} — run the local structure + check-digit validation.</li>
  *   <li>{@link #isVIESCheckEnabled()} — run the online VIES check.</li>

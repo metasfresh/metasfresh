@@ -35,9 +35,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Tests for {@link VATaxIDConfigRepository}.
  *
- * Covers: a saved active {@code VATaxID_Config} record is read back with every field intact
- * (AC13's "format check and VIES check can each be switched on/off per organisation" needs both flags
- * to round-trip independently), both {@link VATaxIDOnServiceUnavailableAction} values round-trip through
+ * Covers: a saved active {@code VATaxID_Config} record is read back with every field intact (format
+ * check and VIES check can each be switched on/off per organisation, so both flags need to round-trip
+ * independently), both {@link VATaxIDOnServiceUnavailableAction} values round-trip through
  * {@code OnServiceUnavailable}, an org with no record returns {@code null} rather than another org's
  * config, and an inactive record for the org is not returned (the "one active row per org" contract).
  */
