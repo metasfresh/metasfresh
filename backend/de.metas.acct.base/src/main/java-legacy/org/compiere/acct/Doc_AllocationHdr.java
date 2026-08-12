@@ -856,15 +856,14 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		{
 			factLineBuilder.setAccount(getCustomerAccount(BPartnerCustomerAccountType.C_Receivable, as));
 
-			// ARC: a credit memo reduces the receivable, so its allocation leg is a DEBIT —
-			// whether or not it is matched against another invoice. Qualifying this on
-			// "no counter line" put the ARC leg of a matched pair on the credit side, which
-			// made it add to the discount leg instead of offsetting it (mirrors the APC branch below).
-			if (line.isCreditMemoInvoice())
+			final DocLine_Allocation counterLine = line.getCounterDocLine();
+
+			// ARC that is not allocated against another invoice
+			if (line.isCreditMemoInvoice() && counterLine == null)
 			{
 				factLineBuilder.setAmtSource(allocationSource, null);
 			}
-			// ARI
+			// ARI or ARC that is allocated against the other invoice
 			else
 			{
 				factLineBuilder.setAmtSource(null, allocationSource);
