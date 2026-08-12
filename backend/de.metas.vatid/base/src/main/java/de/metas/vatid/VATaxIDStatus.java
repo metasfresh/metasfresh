@@ -29,6 +29,7 @@ import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.compiere.model.X_VATaxID_CheckLog;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -36,10 +37,9 @@ import java.util.Optional;
 /**
  * Status of a VAT-ID's online check via the VIES service ({@code AD_Reference_ID=542125}).
  *
- * <p>No {@code AD_Column} is wired to the backing {@code AD_Reference} yet, so this enum has no
- * generated {@code X_*} model class to source its codes from; the constants below are hand-kept and
- * must stay byte-for-byte identical to the {@code AD_Ref_List.Value} column of the corresponding
- * migration (see {@code 5818210_sys_VATaxIDStatus_ReferenceList.sql}).
+ * <p>{@code AD_Column} 593175 ({@code VATaxID_CheckLog.VATaxIDStatus}) is wired to this
+ * {@code AD_Reference}, so the codes below are sourced from the generated
+ * {@code X_VATaxID_CheckLog.VATAXIDSTATUS_*} constants rather than hand-kept.
  *
  * <p>{@link #hasTaxCertificate()} implements the "counts as holding a tax certificate" predicate from
  * the feature's requirements: every status keeps today's presence-only treatment except {@link #Invalid},
@@ -49,22 +49,13 @@ import java.util.Optional;
 @Getter
 public enum VATaxIDStatus implements ReferenceListAwareEnum
 {
-	NotChecked(VATaxIDStatus.VALUE_NotChecked),
-	RequestSent(VATaxIDStatus.VALUE_RequestSent),
-	Valid(VATaxIDStatus.VALUE_Valid),
-	Invalid(VATaxIDStatus.VALUE_Invalid),
-	NotSupported(VATaxIDStatus.VALUE_NotSupported),
-	ServiceUnavailable(VATaxIDStatus.VALUE_ServiceUnavailable),
+	NotChecked(X_VATaxID_CheckLog.VATAXIDSTATUS_NotChecked),
+	RequestSent(X_VATaxID_CheckLog.VATAXIDSTATUS_RequestSent),
+	Valid(X_VATaxID_CheckLog.VATAXIDSTATUS_Valid),
+	Invalid(X_VATaxID_CheckLog.VATAXIDSTATUS_Invalid),
+	NotSupported(X_VATaxID_CheckLog.VATAXIDSTATUS_NotSupported),
+	ServiceUnavailable(X_VATaxID_CheckLog.VATAXIDSTATUS_ServiceUnavailable),
 	;
-
-	// TODO model shall be generated: once an AD_Column is wired to AD_Reference_ID=542125, replace
-	// these with the generated X_<Table>.VATAXIDSTATUS_* constants (must match AD_Ref_List.Value exactly).
-	private static final String VALUE_NotChecked = "NotChecked";
-	private static final String VALUE_RequestSent = "RequestSent";
-	private static final String VALUE_Valid = "Valid";
-	private static final String VALUE_Invalid = "Invalid";
-	private static final String VALUE_NotSupported = "NotSupported";
-	private static final String VALUE_ServiceUnavailable = "ServiceUnavailable";
 
 	@NonNull private static final ReferenceListAwareEnums.ValuesIndex<VATaxIDStatus> index = ReferenceListAwareEnums.index(values());
 
