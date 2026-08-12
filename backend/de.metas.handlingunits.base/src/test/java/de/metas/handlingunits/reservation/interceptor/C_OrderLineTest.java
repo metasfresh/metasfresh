@@ -275,8 +275,8 @@ public class C_OrderLineTest
 	private ProductId createProduct()
 	{
 		final I_M_Product product = newInstance(I_M_Product.class);
-		product.setValue("100024");
-		product.setName("Emmentaler AOP extra");
+		product.setValue("TestProduct");
+		product.setName("Test Product");
 		saveRecord(product);
 		return ProductId.ofRepoId(product.getM_Product_ID());
 	}
@@ -284,7 +284,7 @@ public class C_OrderLineTest
 	private PriceListId createPriceList()
 	{
 		final I_M_PriceList priceList = newInstance(I_M_PriceList.class);
-		priceList.setName("Fromagerie CHF");
+		priceList.setName("Test Sales Price List");
 		priceList.setIsSOPriceList(true);
 		saveRecord(priceList);
 		return PriceListId.ofRepoId(priceList.getM_PriceList_ID());
@@ -303,7 +303,7 @@ public class C_OrderLineTest
 	private de.metas.interfaces.I_C_OrderLine createOrderLine(@NonNull final PriceListId priceListId)
 	{
 		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
-		bpartner.setName("Fromagerie");
+		bpartner.setName("Test Partner");
 		saveRecord(bpartner);
 
 		final I_C_Order order = newInstance(I_C_Order.class);
@@ -361,13 +361,13 @@ public class C_OrderLineTest
 	}
 
 	/**
-	 * The customer's shape: a Standard-Packvorschrift with infinite capacity and no business partner,
+	 * The reported shape: a Standard-Packvorschrift with infinite capacity and no business partner,
 	 * created so that mobileUI production works.
 	 */
 	private I_M_HU_PI_Item_Product createDefaultForProductPackingInstruction()
 	{
 		final I_M_HU_PI huPI = newInstance(I_M_HU_PI.class);
-		huPI.setName("SBB Rahmen");
+		huPI.setName("Test Frame PI");
 		saveRecord(huPI);
 
 		final I_M_HU_PI_Version huPIVersion = newInstance(I_M_HU_PI_Version.class);
