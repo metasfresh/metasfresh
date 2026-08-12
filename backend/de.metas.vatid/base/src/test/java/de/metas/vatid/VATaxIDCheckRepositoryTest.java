@@ -42,7 +42,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * appends a {@link VATaxIDStatus#RequestSent} row, and {@link VATaxIDCheckRepository#completeCheck}
  * updates exactly that row to its final status — leaving a second, unrelated row untouched — and refuses
  * to run a second time on an already-completed row, which is what makes the "append-only except one
- * transition" lifecycle from {@code DESIGN.md} § 3 actually hold.
+ * transition" lifecycle actually hold.
  */
 class VATaxIDCheckRepositoryTest
 {

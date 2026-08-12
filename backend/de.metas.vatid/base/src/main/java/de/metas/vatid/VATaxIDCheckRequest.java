@@ -36,9 +36,9 @@ import javax.annotation.Nullable;
  * {@link VATaxIDStatus#RequestSent}, i.e. to record that a VIES check was just sent — see
  * {@link VATaxIDCheckRepository#writeRequestSent(VATaxIDCheckRequest)}.
  *
- * <p>Per {@code DESIGN.md} § 3, exactly one of {@link #getPinstanceId()} / {@link #getAdSessionId()}
- * identifies what caused the check (a process run vs. a user session triggered by an after-commit
- * save), or both are {@code null} for a check that has neither (e.g. triggered from a unit test).
+ * <p>Exactly one of {@link #getPinstanceId()} / {@link #getAdSessionId()} identifies what caused the
+ * check (a process run vs. a user session triggered by an after-commit save), or both are {@code null}
+ * for a check that has neither (e.g. triggered from a unit test).
  */
 @Value
 @Builder
