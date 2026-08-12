@@ -282,7 +282,7 @@ Closes a mandatory Playwright-coverage gap for a newly created WebUI window
     }
   });
 
-  test('The config window is reachable by browsing the main menu tree (Finanzen -> Einstellungen)', async ({ page }) => {
+  test('The config window is reachable via the main menu search (Alt+2 quick-nav)', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.story('VATaxID_Config window (542182) — menu-tree reachability');
     allure.severity('critical');
@@ -292,25 +292,33 @@ Closes a mandatory Playwright-coverage gap for a newly created WebUI window
 
 ### Why this test exists
 A prior fix added an AD_Menu/AD_TreeNodeMM entry so the window is reachable from the
-menu at all, but the entry was mis-parented under a developer/schema-maintenance
-branch ("Application-Dictionary") where the configuring (accounting/admin) user would
-never look. A follow-up migration re-parented the entry to the business-facing
-"Finanzen -> Einstellungen" folder, alongside the adjacent Steuersatz/Steuerkategorie
-tax settings. This test proves reachability THROUGH THE MENU TREE (not a direct URL),
-so a future re-mis-parenting (or a dropped menu entry) is caught here rather than only
-by the direct-URL test above, which would still pass either way.
+menu at all. This test proves reachability THROUGH THE MENU SYSTEM (not a direct URL),
+so a dropped or mis-parented menu entry is caught here rather than only by the
+direct-URL test above, which would still pass either way.
+
+The quick-nav popup's own top-level breadcrumb (the folders shown immediately after
+Alt+2) is hard-capped to the first 10 root branches (\`HOME_MENU_USER_MAX_ITEMS\` in
+\`frontend/src/constants/Constants.js\`) — a pre-existing, permission-independent
+product behaviour, unrelated to this feature, under which the VAT-ID window's parent
+folder (root position 13 of 22) can never appear for any role. The popup's own search
+box is NOT subject to that cap (backed by the unlimited \`queryPathsRequest\`), and is
+the mechanism a real user relies on to find a window without scrolling the top-level
+folders — so this test drives that surface instead of the capped breadcrumb.
 
 ### What it proves
-The configuring user can open the main menu, drill into Finance -> Settings, and click
-"VAT-ID Check Configuration" to land on window 542182 — i.e. the menu entry both EXISTS
-and is parented under the correct business folder.
+The configuring user can open the main menu (Alt+2), type the window's name into the
+overlay's own search box, and click the single matching result to land on window
+542182 — i.e. the menu entry both EXISTS and is indexed/discoverable under its
+registered name.
 
 ### Note on selectors
-Menu items (\`MenuOverlayItem.js\`) carry no \`data-testid\`/id-bearing DOM attribute —
-only the rendered caption text is selectable. This test therefore pins the login
-language to en_US (matching this spec's other test and the suite default) and selects
-on the English captions, scoped within \`.menu-overlay .js-menu-item\` to avoid matching
-unrelated text elsewhere on the page.
+The search input and result item are matched structurally
+(\`.menu-overlay-query input.input-field\` / \`.menu-overlay-query .js-menu-item\`) —
+neither carries a \`data-testid\`, per \`MenuOverlayItem.js\`. The window's display name
+is used as the search **input** (not an assertion), pinning the login language to
+en_US as this spec's other test does. The end result is asserted only on the
+language-invariant window id in the URL and a structural DOM marker — see
+e2e/frontend-webui/CLAUDE.md "Specs MUST be language-independent".
     `);
 
     test.setTimeout(60000);
@@ -331,20 +339,15 @@ unrelated text elsewhere on the page.
       await page.locator('.menu-overlay').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
     });
 
-    await test.step('Drill into Finance -> Settings', async () => {
-      const financeItem = page.locator('.menu-overlay .js-menu-item', { hasText: 'Finance' }).first();
-      await financeItem.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      await financeItem.click();
+    await test.step('Search the overlay for the window by name and open the single result', async () => {
+      const searchInput = page.locator('.menu-overlay-query input.input-field');
+      await searchInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      // Input value only (not an assertion) — the window's own display name.
+      await searchInput.fill('VAT-ID Check Configuration');
 
-      const settingsItem = page.locator('.menu-overlay .js-menu-item', { hasText: 'Settings' }).first();
-      await settingsItem.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      await settingsItem.click();
-    });
-
-    await test.step('Click "VAT-ID Check Configuration" and assert the window opens', async () => {
-      const configItem = page.locator('.menu-overlay .js-menu-item', { hasText: 'VAT-ID Check Configuration' }).first();
-      await configItem.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      await configItem.click();
+      const resultItem = page.locator('.menu-overlay-query .js-menu-item').first();
+      await resultItem.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await resultItem.click();
 
       await page.waitForURL(new RegExp(`/window/${VATID_CONFIG_WINDOW_ID}(/|$)`), { timeout: SLOW_ACTION_TIMEOUT });
       await page.locator('.document-list-wrapper, .document-list').waitFor({
@@ -353,7 +356,7 @@ unrelated text elsewhere on the page.
       });
 
       expect(page.url()).toContain(`/window/${VATID_CONFIG_WINDOW_ID}`);
-      console.log(`[PASS] Reached VATaxID_Config window (${VATID_CONFIG_WINDOW_ID}) by browsing Finance -> Settings in the main menu`);
+      console.log(`[PASS] Reached VATaxID_Config window (${VATID_CONFIG_WINDOW_ID}) via the main menu overlay search`);
     });
   });
 });
