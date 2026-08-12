@@ -1,0 +1,166 @@
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.handlingunits.picking.job.model.facets;
+
+import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
+import de.metas.document.location.IDocumentLocationBL;
+import de.metas.document.location.RenderedAddressProvider;
+import de.metas.handlingunits.picking.job.model.PickingJobQuery;
+import de.metas.handlingunits.picking.job.model.facets.customer.CustomerFacet;
+import de.metas.handlingunits.picking.job.model.facets.delivery_day.DeliveryDayFacet;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.OrgId;
+import de.metas.picking.api.Packageable;
+import de.metas.product.ProductId;
+import de.metas.product.ProductValueAndName;
+import de.metas.quantity.Quantity;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_UOM;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.time.LocalDate;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Stream;
+
+import static de.metas.common.util.time.SystemTime.zoneId;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+
+@ExtendWith(AdempiereTestWatcher.class)
+class PickingJobFacetsAccumulatorTest
+{
+	private static final OrgId ORG_ID = OrgId.ofRepoId(1);
+
+	private static final BPartnerId CUSTOMER_1 = BPartnerId.ofRepoId(1_000_001);
+	private static final BPartnerId CUSTOMER_2 = BPartnerId.ofRepoId(1_000_002);
+	private static final LocalDate DAY_1 = LocalDate.of(2026, 8, 11);
+	private static final LocalDate DAY_2 = LocalDate.of(2026, 8, 12);
+
+	private static final ImmutableList<PickingJobFacetGroup> CUSTOMER_THEN_DELIVERY_DATE =
+			ImmutableList.of(PickingJobFacetGroup.CUSTOMER, PickingJobFacetGroup.DELIVERY_DATE);
+
+	@BeforeEach
+	void setUp()
+	{
+		AdempiereTestHelper.get().init();
+	}
+
+	@Test
+	void byDefault_onlyTheFirstGroupIsOffered()
+	{
+		final PickingJobFacets facets = collect(parameters(false, PickingJobQuery.Facets.EMPTY));
+
+		assertThat(customerIdsOf(facets)).containsExactlyInAnyOrder(CUSTOMER_1, CUSTOMER_2);
+		assertThat(deliveryDaysOf(facets)).isEmpty();
+	}
+
+	@Test
+	void showAllFilterGroups_everyGroupIsOfferedUpFront()
+	{
+		final PickingJobFacets facets = collect(parameters(true, PickingJobQuery.Facets.EMPTY));
+
+		assertThat(customerIdsOf(facets)).containsExactlyInAnyOrder(CUSTOMER_1, CUSTOMER_2);
+		assertThat(deliveryDaysOf(facets)).containsExactlyInAnyOrder(DAY_1, DAY_2);
+	}
+
+	@Test
+	void showAllFilterGroups_selectingACustomerStillNarrowsTheOthers()
+	{
+		final PickingJobQuery.Facets customer1Selected = PickingJobQuery.Facets.builder().customerId(CUSTOMER_1).build();
+
+		final PickingJobFacets facets = collect(parameters(true, customer1Selected));
+
+		assertThat(customerIdsOf(facets)).containsExactlyInAnyOrder(CUSTOMER_1, CUSTOMER_2);
+		assertThat(deliveryDaysOf(facets)).containsExactly(DAY_1);
+	}
+
+	private PickingJobFacets collect(final CollectingParameters parameters)
+	{
+		return Stream.of(
+						packageable(CUSTOMER_1, DAY_1),
+						packageable(CUSTOMER_2, DAY_2))
+				.collect(PickingJobFacetsAccumulator.collect(parameters));
+	}
+
+	private static CollectingParameters parameters(final boolean isShowAllFilterGroups, final PickingJobQuery.Facets activeFacets)
+	{
+		return CollectingParameters.builder()
+				.addressProvider(RenderedAddressProvider.builder().documentLocationBL(mock(IDocumentLocationBL.class)).build())
+				.groupsInOrder(CUSTOMER_THEN_DELIVERY_DATE)
+				.activeFacets(activeFacets)
+				.isShowAllFilterGroups(isShowAllFilterGroups)
+				.build();
+	}
+
+	private static Iterable<BPartnerId> customerIdsOf(final PickingJobFacets facets)
+	{
+		return facets.toList(CustomerFacet.class, CustomerFacet::getBpartnerId);
+	}
+
+	private static Iterable<LocalDate> deliveryDaysOf(final PickingJobFacets facets)
+	{
+		return facets.toList(DeliveryDayFacet.class, DeliveryDayFacet::getDeliveryDate);
+	}
+
+	private static Packageable packageable(final BPartnerId customerId, final LocalDate deliveryDay)
+	{
+		final I_C_UOM uomRecord = newInstanceOutOfTrx(I_C_UOM.class);
+		uomRecord.setUOMSymbol("PCE");
+		final Quantity zero = Quantity.zero(uomRecord);
+
+		return Packageable.builder()
+				.orgId(ORG_ID)
+				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(customerId.getRepoId()))
+				.qtyOrdered(zero)
+				.qtyToDeliver(zero)
+				.qtyDelivered(zero)
+				.qtyPickedAndDelivered(zero)
+				.qtyPickedNotDelivered(zero)
+				.qtyPickedPlanned(zero)
+				.customerId(customerId)
+				.customerBPValue("BP" + customerId.getRepoId())
+				.customerName("Customer " + customerId.getRepoId())
+				.customerLocationId(BPartnerLocationId.ofRepoId(customerId.getRepoId(), 1))
+				.handoverLocationId(BPartnerLocationId.ofRepoId(customerId.getRepoId(), 1))
+				.warehouseId(WarehouseId.ofRepoId(1))
+				.bestBeforePolicy(Optional.of(ShipmentAllocationBestBeforePolicy.Expiring_First))
+				.productId(ProductId.ofRepoId(1))
+				.productValueAndName(ProductValueAndName.of("P1", TranslatableStrings.constant("Product 1")))
+				.asiId(AttributeSetInstanceId.NONE)
+				.deliveryDate(InstantAndOrgId.ofInstant(
+						Objects.requireNonNull(deliveryDay).atStartOfDay(zoneId()).toInstant(), ORG_ID))
+				.build();
+	}
+}
