@@ -25,6 +25,7 @@ package de.metas.vatid;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.process.PInstanceId;
+import de.metas.tax.api.VATIdentifier;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -48,7 +49,7 @@ public class VATaxIDCheckRequest
 
 	@Nullable BPartnerLocationId bpartnerLocationId;
 
-	@NonNull String vataxID;
+	@NonNull VATIdentifier vataxID;
 
 	@Nullable PInstanceId pinstanceId;
 

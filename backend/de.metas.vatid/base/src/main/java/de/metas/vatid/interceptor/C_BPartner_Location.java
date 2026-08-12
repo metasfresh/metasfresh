@@ -22,6 +22,7 @@
 
 package de.metas.vatid.interceptor;
 
+import de.metas.tax.api.VATIdentifier;
 import de.metas.util.Services;
 import de.metas.vatid.VATaxIDValidationUtil;
 import lombok.NonNull;
@@ -44,7 +45,7 @@ public class C_BPartner_Location
 	{
 		if (sysConfigBL.getBooleanValue(VATaxIDValidationUtil.SYSCONFIG_validateVATaxID, true))
 		{
-			VATaxIDValidationUtil.validate(bpLocation.getVATaxID());
+			VATaxIDValidationUtil.validate(VATIdentifier.ofNullable(bpLocation.getVATaxID()));
 		}
 	}
 }

@@ -88,7 +88,7 @@ public class VATaxIDCheckRepository
 		final I_VATaxID_CheckLog record = InterfaceWrapperHelper.newInstance(I_VATaxID_CheckLog.class);
 		record.setC_BPartner_ID(BPartnerId.toRepoId(request.getBpartnerId()));
 		record.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(request.getBpartnerLocationId()));
-		record.setVATaxID(request.getVataxID());
+		record.setVATaxID(request.getVataxID().getAsString());
 		record.setVATaxIDStatus(VATaxIDStatus.RequestSent.getCode());
 		record.setRequestDate(TimeUtil.asTimestampNotNull(SystemTime.asInstant()));
 		record.setAD_PInstance_ID(PInstanceId.toRepoId(request.getPinstanceId()));

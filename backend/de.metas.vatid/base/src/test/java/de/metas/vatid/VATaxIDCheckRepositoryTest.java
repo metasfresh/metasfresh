@@ -29,6 +29,7 @@ import de.metas.cache.CacheLabel;
 import de.metas.cache.CacheMgt;
 import de.metas.common.util.time.SystemTime;
 import de.metas.process.PInstanceId;
+import de.metas.tax.api.VATIdentifier;
 import de.metas.user.UserId;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -88,7 +89,7 @@ class VATaxIDCheckRepositoryTest
 	{
 		final VATaxIDCheckRequest request = VATaxIDCheckRequest.builder()
 				.bpartnerId(BPARTNER_ID)
-				.vataxID("DE123456789")
+				.vataxID(VATIdentifier.of("DE123456789"))
 				.pinstanceId(PInstanceId.ofRepoId(2000001))
 				.adSessionId(3000001)
 				.build();
@@ -112,9 +113,9 @@ class VATaxIDCheckRepositoryTest
 	void completeCheck_updatesOnlyTheTargetedRow_toItsFinalStatus()
 	{
 		final VATaxIDCheckLogId targetId = vataxIDCheckRepository.writeRequestSent(
-				VATaxIDCheckRequest.builder().bpartnerId(BPARTNER_ID).vataxID("DE111111111").build());
+				VATaxIDCheckRequest.builder().bpartnerId(BPARTNER_ID).vataxID(VATIdentifier.of("DE111111111")).build());
 		final VATaxIDCheckLogId otherId = vataxIDCheckRepository.writeRequestSent(
-				VATaxIDCheckRequest.builder().bpartnerId(OTHER_BPARTNER_ID).vataxID("DE222222222").build());
+				VATaxIDCheckRequest.builder().bpartnerId(OTHER_BPARTNER_ID).vataxID(VATIdentifier.of("DE222222222")).build());
 
 		vataxIDCheckRepository.completeCheck(
 				targetId,
@@ -142,7 +143,7 @@ class VATaxIDCheckRepositoryTest
 	void completeCheck_refusesToRunTwiceOnTheSameRow()
 	{
 		final VATaxIDCheckLogId checkLogId = vataxIDCheckRepository.writeRequestSent(
-				VATaxIDCheckRequest.builder().bpartnerId(BPARTNER_ID).vataxID("DE333333333").build());
+				VATaxIDCheckRequest.builder().bpartnerId(BPARTNER_ID).vataxID(VATIdentifier.of("DE333333333")).build());
 
 		vataxIDCheckRepository.completeCheck(
 				checkLogId,
@@ -162,7 +163,7 @@ class VATaxIDCheckRepositoryTest
 	void completeCheck_refusesAFinalStatusOfRequestSent()
 	{
 		final VATaxIDCheckLogId checkLogId = vataxIDCheckRepository.writeRequestSent(
-				VATaxIDCheckRequest.builder().bpartnerId(BPARTNER_ID).vataxID("DE444444444").build());
+				VATaxIDCheckRequest.builder().bpartnerId(BPARTNER_ID).vataxID(VATIdentifier.of("DE444444444")).build());
 
 		assertThatThrownBy(() -> vataxIDCheckRepository.completeCheck(
 				checkLogId,
@@ -188,7 +189,7 @@ class VATaxIDCheckRepositoryTest
 	void completeCheck_refusesWhenTheRowIsNotAtRequestSent_andLeavesItUntouched()
 	{
 		final VATaxIDCheckLogId checkLogId = vataxIDCheckRepository.writeRequestSent(
-				VATaxIDCheckRequest.builder().bpartnerId(BPARTNER_ID).vataxID("DE555555555").build());
+				VATaxIDCheckRequest.builder().bpartnerId(BPARTNER_ID).vataxID(VATIdentifier.of("DE555555555")).build());
 
 		final I_VATaxID_CheckLog record = loadRecord(checkLogId);
 		record.setVATaxIDStatus(X_VATaxID_CheckLog.VATAXIDSTATUS_Invalid);
@@ -218,7 +219,7 @@ class VATaxIDCheckRepositoryTest
 		SystemTime.setFixedTimeSource(ZonedDateTime.parse("2026-01-01T10:00:00Z"));
 		Env.setLoggedUserId(Env.getCtx(), requestingUser);
 		final VATaxIDCheckLogId checkLogId = vataxIDCheckRepository.writeRequestSent(
-				VATaxIDCheckRequest.builder().bpartnerId(BPARTNER_ID).vataxID("DE666666666").build());
+				VATaxIDCheckRequest.builder().bpartnerId(BPARTNER_ID).vataxID(VATIdentifier.of("DE666666666")).build());
 
 		final I_VATaxID_CheckLog beforeRecord = loadRecord(checkLogId);
 		assertThat(beforeRecord.getUpdatedBy()).isEqualTo(requestingUser.getRepoId());
@@ -265,7 +266,7 @@ class VATaxIDCheckRepositoryTest
 	void completeCheck_invalidatesTheCacheForTheCompletedRow()
 	{
 		final VATaxIDCheckLogId checkLogId = vataxIDCheckRepository.writeRequestSent(
-				VATaxIDCheckRequest.builder().bpartnerId(BPARTNER_ID).vataxID("DE777777777").build());
+				VATaxIDCheckRequest.builder().bpartnerId(BPARTNER_ID).vataxID(VATIdentifier.of("DE777777777")).build());
 
 		final RecordingCache cache = RecordingCache.newForTableName(I_VATaxID_CheckLog.Table_Name);
 		CacheMgt.get().register(cache);
