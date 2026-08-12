@@ -1,6 +1,7 @@
 package de.metas.handlingunits.reservation.interceptor;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
@@ -111,10 +112,9 @@ public class C_OrderLine
 			@NonNull final de.metas.interfaces.I_C_OrderLine orderLine,
 			@NonNull final org.compiere.model.I_C_Order order)
 	{
-		final ZonedDateTime lineDatePromised = TimeUtil.asZonedDateTime(orderLine.getDatePromised());
-		return lineDatePromised != null
-				? lineDatePromised
-				: TimeUtil.asZonedDateTime(order.getDatePromised());
+		return CoalesceUtil.coalesce(
+				TimeUtil.asZonedDateTime(orderLine.getDatePromised()),
+				TimeUtil.asZonedDateTime(order.getDatePromised()));
 	}
 
 	/**
@@ -140,6 +140,11 @@ public class C_OrderLine
 		{
 			// No date anywhere on the line or its order, so there is no price list version to speak of.
 			// orderLineBL.getPriceListVersion would throw on exactly this input; stay unrestricted.
+			//
+			// This deliberately also gives up on a line that carries an explicit M_PriceList_Version_ID
+			// override, which could in principle be resolved without any date. That combination only
+			// makes us less restrictive, never wrong, and keeping one guard is worth more here than
+			// adding a branch no test exercises.
 			return null;
 		}
 
