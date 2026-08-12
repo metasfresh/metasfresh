@@ -27,6 +27,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.process.PInstanceId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -36,6 +37,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_VATaxID_CheckLog;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
@@ -106,7 +108,9 @@ public class VATaxIDCheckRepository
 	 * <p>The guard is an atomic conditional {@code UPDATE ... WHERE VATaxID_CheckLog_ID = ? AND
 	 * VATaxIDStatus = 'RequestSent'}, not a load-then-save check, so two concurrent calls for the same
 	 * {@code checkLogId} cannot both succeed: at most one {@code UPDATE} matches the row, the other
-	 * affects zero rows and throws.
+	 * affects zero rows and throws. Because this bypasses {@code InterfaceWrapperHelper.saveRecord}, the
+	 * {@code Updated}/{@code UpdatedBy} audit columns are not refreshed automatically and are stamped
+	 * explicitly here, the same way the persistence layer would on a normal save.
 	 *
 	 * @throws org.adempiere.exceptions.AdempiereException if {@code checkLogId} does not currently point
 	 * at a {@link VATaxIDStatus#RequestSent} row — either it was already completed (including by a
@@ -123,7 +127,9 @@ public class VATaxIDCheckRepository
 				.addSetColumnValue(I_VATaxID_CheckLog.COLUMNNAME_VATaxIDStatus, result.getStatus().getCode())
 				.addSetColumnValue(I_VATaxID_CheckLog.COLUMNNAME_ResponseDate, TimeUtil.asTimestampNotNull(SystemTime.asInstant()))
 				.addSetColumnValue(I_VATaxID_CheckLog.COLUMNNAME_RequestIdentifier, result.getRequestIdentifier())
-				.addSetColumnValue(I_VATaxID_CheckLog.COLUMNNAME_RawResponse, result.getRawResponse());
+				.addSetColumnValue(I_VATaxID_CheckLog.COLUMNNAME_RawResponse, result.getRawResponse())
+				.addSetColumnValue(I_VATaxID_CheckLog.COLUMNNAME_Updated, TimeUtil.asTimestampNotNull(SystemTime.asInstant()))
+				.addSetColumnValue(I_VATaxID_CheckLog.COLUMNNAME_UpdatedBy, Env.getLoggedUserIdIfExists().orElse(UserId.SYSTEM));
 
 		final int updatedCount = queryBL
 				.createQueryBuilder(I_VATaxID_CheckLog.class)
