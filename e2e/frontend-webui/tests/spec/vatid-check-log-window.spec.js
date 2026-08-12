@@ -4,6 +4,7 @@ import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
+import { BusinessPartnerPage } from '../utils/pages/BusinessPartnerPage';
 import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
 
 /**
@@ -13,13 +14,13 @@ import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from
  * deliberately locked down: AD_Tab.IsReadOnly='Y', AD_Tab.IsInsertRecord='N',
  * AD_Table.IsDeleteable='N', and every column IsUpdateable='N'.
  *
- * Purpose of this spec: no production code writes check-log rows yet (the
- * consumer that performs the actual VAT-ID check arrives in a later task), so
- * the table has zero rows on every stack, including this one (verified via
- * `select count(*) from VATaxID_CheckLog` = 0 locally). This spec therefore does
- * NOT fabricate a row through a path the real system would never use — that
- * would only prove a state the system cannot actually reach. Instead it asserts
- * the properties that are true and valuable today:
+ * Purpose of this spec: no production trigger writes check-log rows yet (the
+ * consumer that automatically performs a VAT-ID check on save arrives in a
+ * later task), so the table has zero rows on every stack by default. Tests 1
+ * and 2 below deliberately do NOT fabricate a row through a path the real
+ * system would never use — that would only prove a state the system cannot
+ * actually reach — and instead assert the properties that are true and
+ * valuable on an empty table:
  *   1. Menu reachability (same overlay-search mechanism as the sibling
  *      VATaxID_Config spec, for the same permission-independent reason).
  *   2. The window opens and its tab renders, with the grid-displayed columns
@@ -29,6 +30,11 @@ import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from
  *      new-record route does not result in a created record — proving the
  *      guarantee at the point where a user would try to break it, not merely
  *      by reading AD_Tab metadata.
+ * Test 3 below is different: it seeds one real row through
+ * VATaxIDCheckRepository.writeRequestSent(...) — the actual production
+ * writer, not raw SQL — via the `vatIdChecks` masterdata command, because
+ * that write path already exists on this branch independent of the later
+ * automatic-trigger task (see the KNOWN GAP paragraph below).
  *
  * NOT asserted here, and why: per-field editability inside an open record
  * (AD_Column.IsUpdateable / the tab-wide IsReadOnly rendering fields disabled)
@@ -38,33 +44,37 @@ import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from
  * itself the stronger form of the same guarantee, and is what test 2 below
  * proves via the failed create-attempt.
  *
- * KNOWN GAP — reverse-zoom (Alt+6 Related-Documents) reachability from
- * C_BPartner / C_BPartner_Location is NOT covered by any test in this file,
- * and cannot honestly be covered here. The acceptance criterion requires the
- * check-log to be "reachable from the partner and from the address" via the
- * standard Related-Documents zoom mechanism, enabled by flipping
- * AD_Column.IsExcludeFromZoomTargets='N' on VATaxID_CheckLog.C_BPartner_ID
- * (593172) and .C_BPartner_Location_ID (593173) — this part is metadata-only
- * verified today (confirmed by direct `psql` against `ad_table_related_windows_v`
- * returning a row for both source tables targeting window 542183; not
- * exercised by any automated test). It is NOT provable end-to-end via the
- * actual Alt+6 SSE surface: traced through
- * DocumentReferencesRestController.evaluateAndPublishNow ->
+ * KNOWN GAP — reverse-zoom (Alt+6 Related-Documents) is proven here only for
+ * C_BPartner, not for C_BPartner_Location ("the address"). The acceptance
+ * criterion requires the check-log to be "reachable from the partner and
+ * from the address" via the standard Related-Documents zoom mechanism,
+ * enabled by flipping AD_Column.IsExcludeFromZoomTargets='N' on
+ * VATaxID_CheckLog.C_BPartner_ID (593172) and .C_BPartner_Location_ID
+ * (593173). The Alt+6 SSE endpoint gates every candidate on a real
+ * `SELECT COUNT(1) FROM VATaxID_CheckLog WHERE C_BPartner_ID=...`
+ * (DocumentReferencesRestController.evaluateAndPublishNow ->
  * WebuiDocumentReferenceCandidate.evaluateAndStream ->
- * RelatedDocumentsCandidateGroup.evaluateOrNull, a candidate is dropped
- * whenever GenericRelatedDocumentsCountSupplier.getRecordsCount() (a real
- * `SELECT COUNT(1) FROM VATaxID_CheckLog WHERE C_BPartner_ID=...`) returns
- * <=0 — and the table has zero rows on every stack (see above), so that
- * count is always 0 and the candidate is always dropped before it can ever
- * reach the SSE stream. An earlier version of this file asserted
- * `targetWindowId":"542183"` would appear in that SSE stream; that assertion
- * was wrong — it cannot hold under any circumstances while the table is
- * empty, independent of any other defect — and has been removed rather than
- * kept as a permanently-red or fabricated-data test. Proving the UI-level
- * half of this acceptance criterion requires a real check-log row, which
- * requires the consumer that performs the actual VAT-ID check (a later
- * task, per the top-of-file note); the reverse-zoom E2E test belongs with
- * that task, once it can create a real row through the real system.
+ * RelatedDocumentsCandidateGroup.evaluateOrNull ->
+ * GenericRelatedDocumentsCountSupplier.getRecordsCount()), so an empty table
+ * can never satisfy that assertion — that is NOT a later-task limitation:
+ * VATaxIDCheckRepository.writeRequestSent(...) already exists on this
+ * branch, is unit-tested, and needs no VIES call, so a real check-log row
+ * can be (and below, is) seeded today through the production writer via the
+ * `vatIdChecks` masterdata command, exactly the way the eventual VAT-ID-check
+ * consumer will create one. What genuinely remains unprovable here is the
+ * address half: the desktop WebUI's Alt+6 shortcut (SideList.js ->
+ * DocumentReferences.js) always queries at the HEADER document level
+ * (windowId/docId from the page's own URL), never wiring a tabId/rowId into
+ * the request, and C_BPartner_Location has no standalone window of its own
+ * (verified: no AD_Window with a tab at tablevel=0 for that table) — so there
+ * is no Alt+6-reachable page for "the address" as its own document. The
+ * row-level SSE endpoint (`/{windowId}/{documentId}/{tabId}/{rowId}/references/sse`)
+ * exists and is used, but only by the grid's right-click context menu
+ * (TableContextMenu.js), a different UI surface than Alt+6, and is not
+ * driven by this spec. Live DB confirms the metadata-level mechanism also
+ * covers the address (`ad_table_related_windows_v` returns a row for
+ * source_tablename='C_BPartner_Location' targeting window 542183, same as
+ * for C_BPartner) — only the end-to-end UI proof is missing.
  *
  * Language independence: every assertion is on the DB ColumnName (via the grid
  * header's `data-testid="column-<Column>"`, set by TableHeader.js from the
@@ -268,16 +278,118 @@ true today without fabricating a row the real system cannot yet produce.
     console.log('[PASS] VATaxID_CheckLog window (542183): renders with its grid columns, no create affordance, no-insert guarantee holds.');
   });
 
-  // NOTE: There is intentionally no third test here asserting reverse-zoom
-  // (Alt+6 Related-Documents) reachability from a Business Partner. See the
-  // "KNOWN GAP" paragraph in the file-level comment above for why: the
-  // Alt+6 SSE endpoint gates every candidate on a live
-  // `SELECT COUNT(1) FROM VATaxID_CheckLog ...` and drops it when that count
-  // is 0, which it always is on this branch, so no assertion against that
-  // SSE stream can ever pass here — not a flake, not conditional on the
-  // unrelated Backend.createMasterdata timing issue, but unsatisfiable by
-  // construction while the table is empty. Proving this acceptance-criterion
-  // clause end-to-end needs a real check-log row, which needs the consumer
-  // that performs the actual VAT-ID check — that arrives in a later task,
-  // and the reverse-zoom E2E test belongs there, not here.
+  test('The check-log window is offered as a related-document zoom target when opening a Business Partner with a real check-log row', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.story('VATaxID_CheckLog window (542183) — reverse-zoom reachability from C_BPartner');
+    allure.severity('critical');
+    allure.tag('VATaxID_CheckLog');
+    allure.description(`
+## VATaxID_CheckLog reverse-zoom reachability (AD_Column_ID 593172, C_BPartner_ID)
+
+### Why this test exists
+
+The check-log's acceptance criterion requires every check attempt to be
+"reachable from the partner and from the address" via the standard
+Related-Documents (Alt+6) zoom mechanism, enabled by flipping
+\`AD_Column.IsExcludeFromZoomTargets='N'\` on \`VATaxID_CheckLog.C_BPartner_ID\`
+(593172) and \`VATaxID_CheckLog.C_BPartner_Location_ID\` (593173). The Alt+6
+SSE endpoint only ever offers a candidate whose backing table actually has a
+matching row (a live \`SELECT COUNT(1)\`), so this test seeds one through the
+masterdata \`vatIdChecks\` command — which itself only wraps the real
+production writer \`VATaxIDCheckRepository.writeRequestSent(...)\` (no VIES
+call, no raw SQL) — before opening the partner.
+
+### What it proves — and what it does not
+
+Creates a Business Partner plus a check-log row for that partner, opens the
+partner record, presses Alt+6 (the same shortcut and DOM surface
+\`document-references.spec.js\` uses for order documents), captures the
+backend's Server-Sent-Events response for that panel, and asserts that one of
+the streamed reference entries carries \`targetWindowId: "542183"\` — i.e. the
+VATaxID_CheckLog window is genuinely offered as a zoom target for a Business
+Partner that actually has a check-log row.
+
+**Only the partner half is covered here.** See the file-level "KNOWN GAP"
+comment above: the desktop WebUI's Alt+6 shortcut never wires a row-level
+address document into the request, so the address half of this
+acceptance-criterion clause remains untested by Playwright.
+
+### Language independence
+
+The SSE payload asserted on is the raw JSON contract
+(\`JSONDocumentReference.targetWindowId\`), never the rendered caption or the
+\`data-cy\` (which — for this window specifically — would embed the window's
+German \`AD_Window.Name\`, since no \`AD_Window.InternalName\` is set for
+542183). No caption/label is read or asserted anywhere in this test.
+    `);
+
+    // This stack's bpartner masterdata creation has been observed taking
+    // 60-90s+ on its own (see the app-server log's cache-reset gaps around
+    // each Backend.createMasterdata bpartners call) — well above the
+    // config-default 60s, so this test raises its own timeout per the
+    // playwright-run skill's "multi-step spec must raise its own per-test
+    // timeout" rule.
+    test.setTimeout(180000);
+
+    const masterdata = await Backend.createMasterdata({
+      request: {
+        login: { user: { language: 'en_US', firstname: 'E2E', lastname: 'VatidZoomTarget' } },
+        bpartners: {
+          PARTNER1: { isVendor: false, isCustomer: true, name: 'E2E VatidZoomTarget Partner' },
+        },
+        vatIdChecks: {
+          CHECK1: { bpartner: 'PARTNER1' },
+        },
+      },
+    });
+    allure.attachment('Test Data', JSON.stringify(masterdata, null, 2), 'application/json');
+
+    const bpartnerId = masterdata.bpartners.PARTNER1.id;
+    expect(bpartnerId, 'Masterdata must return the created BPartner id').toBeTruthy();
+
+    await LoginPage.goto();
+    await LoginPage.login(masterdata.login.user);
+    await LoginPage.expectLoggedIn();
+
+    await BusinessPartnerPage.gotoRecord(bpartnerId);
+
+    // The browser's own EventSource client closes the underlying connection once it has what it
+    // needs, which the network stack reports as an aborted request — and an aborted request's body
+    // is not retrievable via a `page.on('response')` listener's `.text()` (it resolves empty).
+    // Route interception avoids the race: `route.fetch()` performs OUR OWN buffered fetch of the
+    // exact same request (same session cookie, same URL) and hands the real, complete body back to
+    // the page via `route.fulfill()`, so the UI behaves identically while we keep a reliable copy.
+    let sseBody = '';
+    let sseSeen = false;
+    await page.route('**/references/sse', async (route) => {
+      const response = await route.fetch();
+      sseBody = await response.text();
+      sseSeen = true;
+      await route.fulfill({ response });
+    });
+
+    await test.step('Open the Related Documents panel (Alt+6) on the Business Partner record', async () => {
+      await page.locator('body').click();
+      await page.waitForTimeout(200);
+      await page.keyboard.press('Alt+6');
+      await page.locator('.order-list-panel-open').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    });
+
+    await test.step('Wait for the intercepted references SSE response to be captured', async () => {
+      const deadline = Date.now() + VERY_SLOW_ACTION_TIMEOUT;
+      while (!sseSeen && Date.now() < deadline) {
+        await page.waitForTimeout(500);
+      }
+    });
+
+    await page.unroute('**/references/sse');
+
+    const checkLogTargetSeen = sseBody.includes(`"targetWindowId":"${VATID_CHECKLOG_WINDOW_ID}"`);
+
+    expect(
+      checkLogTargetSeen,
+      `The Related-Documents SSE stream for Business Partner ${bpartnerId} must include a reference with targetWindowId="${VATID_CHECKLOG_WINDOW_ID}" (VATaxID_CheckLog)`
+    ).toBe(true);
+    console.log(`[PASS] VATaxID_CheckLog (${VATID_CHECKLOG_WINDOW_ID}) offered as a related-document zoom target for Business Partner ${bpartnerId}, backed by a real check-log row`);
+  });
 });
