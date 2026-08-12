@@ -3,6 +3,7 @@ import { test } from '../../playwright.config';
 import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
+import { DashboardPage } from '../utils/pages/DashboardPage';
 import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT, getPage } from '../utils/common';
 import { WidgetCommon } from '../utils/widgets/WidgetCommon';
 import { BooleanWidget } from '../utils/widgets/BooleanWidget';
@@ -265,6 +266,81 @@ Closes a mandatory Playwright-coverage gap for a newly created WebUI window
     });
 
     console.log('[PASS] VATaxID_Config window (542182): all fields visible+editable, OnServiceUnavailable has exactly 2 options, record persists.');
+  });
+
+  test('The config window is reachable by browsing the main menu tree (Finanzen -> Einstellungen)', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.story('VATaxID_Config window (542182) — menu-tree reachability');
+    allure.severity('critical');
+    allure.tag('VATaxID_Config');
+    allure.description(`
+## VATaxID_Config menu placement (AD_Menu_ID 542356)
+
+### Why this test exists
+A prior fix added an AD_Menu/AD_TreeNodeMM entry so the window is reachable from the
+menu at all, but the entry was mis-parented under a developer/schema-maintenance
+branch ("Application-Dictionary") where the configuring (accounting/admin) user would
+never look. A follow-up migration re-parented the entry to the business-facing
+"Finanzen -> Einstellungen" folder, alongside the adjacent Steuersatz/Steuerkategorie
+tax settings. This test proves reachability THROUGH THE MENU TREE (not a direct URL),
+so a future re-mis-parenting (or a dropped menu entry) is caught here rather than only
+by the direct-URL test above, which would still pass either way.
+
+### What it proves
+The configuring user can open the main menu, drill into Finance -> Settings, and click
+"VAT-ID Check Configuration" to land on window 542182 — i.e. the menu entry both EXISTS
+and is parented under the correct business folder.
+
+### Note on selectors
+Menu items (\`MenuOverlayItem.js\`) carry no \`data-testid\`/id-bearing DOM attribute —
+only the rendered caption text is selectable. This test therefore pins the login
+language to en_US (matching this spec's other test and the suite default) and selects
+on the English captions, scoped within \`.menu-overlay .js-menu-item\` to avoid matching
+unrelated text elsewhere on the page.
+    `);
+
+    test.setTimeout(60000);
+
+    const masterdata = await Backend.createMasterdata({
+      request: { login: { user: { language: 'en_US', firstname: 'E2E', lastname: 'VatidConfigMenu' } } },
+    });
+    allure.attachment('Test Data', JSON.stringify(masterdata, null, 2), 'application/json');
+
+    await LoginPage.goto();
+    await LoginPage.login(masterdata.login.user);
+    await DashboardPage.expectVisible();
+
+    await test.step('Open the main menu (Alt+2)', async () => {
+      await page.locator('body').click();
+      await page.waitForTimeout(200);
+      await page.keyboard.press('Alt+2');
+      await page.locator('.menu-overlay').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    });
+
+    await test.step('Drill into Finance -> Settings', async () => {
+      const financeItem = page.locator('.menu-overlay .js-menu-item', { hasText: 'Finance' }).first();
+      await financeItem.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await financeItem.click();
+
+      const settingsItem = page.locator('.menu-overlay .js-menu-item', { hasText: 'Settings' }).first();
+      await settingsItem.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await settingsItem.click();
+    });
+
+    await test.step('Click "VAT-ID Check Configuration" and assert the window opens', async () => {
+      const configItem = page.locator('.menu-overlay .js-menu-item', { hasText: 'VAT-ID Check Configuration' }).first();
+      await configItem.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await configItem.click();
+
+      await page.waitForURL(new RegExp(`/window/${VATID_CONFIG_WINDOW_ID}(/|$)`), { timeout: SLOW_ACTION_TIMEOUT });
+      await page.locator('.document-list-wrapper, .document-list').waitFor({
+        state: 'visible',
+        timeout: VERY_SLOW_ACTION_TIMEOUT,
+      });
+
+      expect(page.url()).toContain(`/window/${VATID_CONFIG_WINDOW_ID}`);
+      console.log(`[PASS] Reached VATaxID_Config window (${VATID_CONFIG_WINDOW_ID}) by browsing Finance -> Settings in the main menu`);
+    });
   });
 });
 
