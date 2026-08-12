@@ -389,7 +389,7 @@ public class PurchaseCandidate
 		return state.isReqCreated();
 	}
 
-	public @Nullable
+	public @NonNull
 	PurchaseCandidateSource getSource()
 	{
 		return getImmutableFields().getSource();
