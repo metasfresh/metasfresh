@@ -64,9 +64,9 @@ public class VATaxIDConfigRepository
 	 * @return the active {@code VATaxID_Config} for the given org, or {@code null} if that org has none.
 	 *
 	 * <p><b>Contract for the {@code null} case:</b> an organisation with no {@code VATaxID_Config} record
-	 * keeps today's behaviour exactly: format check on, VIES check off — backed by the
-	 * {@code VATaxID_Config.IsFormatCheckEnabledByDefault} SysConfig. Applying that default is
-	 * deliberately <b>not</b> done here: this repository is a thin
+	 * keeps today's behaviour exactly: format check on, VIES check off. Today that default is a hardcoded
+	 * literal in each caller — there is no SysConfig or other configurable source for it yet. Applying that
+	 * default is deliberately <b>not</b> done here: this repository is a thin
 	 * query layer over one table, whereas the default is a business rule with its own SysConfig lookup,
 	 * shared by several future callers (the save-time interceptor, the nightly recheck process, tax
 	 * determination) that do not exist yet. Resolving it once, in a single service-layer place, is a
