@@ -644,10 +644,9 @@ public class ESRImportBL implements IESRImportBL
 		final PaymentId paymentId = fetchDuplicatePaymentIfExists(line);
 		if (paymentId != null)
 		{
-			// Flag the line so the accountant still sees the duplicate, but do not attach the payment we
-			// just found: that payment belongs to the earlier transaction, while this line is money that
-			// arrived a second time and needs its own C_Payment. Falling through to the regular handling
-			// lets processLinesWithPaymentNoInvoice create it (unallocated, since the invoice is paid).
+			// Flag the duplicate for the accountant, but deliberately do NOT attach the payment we found: it
+			// belongs to the earlier transaction, while this line is money that arrived a second time and
+			// needs its own C_Payment. Returning false lets the regular handling create it.
 			line.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment);
 			esrImportDAO.save(line);
 		}
@@ -1173,13 +1172,9 @@ public class ESRImportBL implements IESRImportBL
 	}
 
 	/**
-	 * Notes on the given line that its invoice is already flagged as paid, and downgrades the line's document status
-	 * accordingly.
-	 * <p>
-	 * {@link #setInvoice(I_ESR_ImportLine, I_C_Invoice)} is re-entrant for one and the same line: besides being called
-	 * while the line is evaluated, it also runs again from the {@code C_Payment_ID} model interceptor once the line's own
-	 * payment is created. The document status it derives is idempotent, so the note has to be too - otherwise the very
-	 * same sentence ends up in {@code MatchErrorMsg} once per pass.
+	 * {@code setInvoice} runs twice for one line — once while it is evaluated, once from the
+	 * {@code C_Payment_ID} interceptor after the line's payment is created — so this note has to be as
+	 * idempotent as the document status it accompanies.
 	 */
 	private void markInvoiceAlreadyPaid(@NonNull final I_ESR_ImportLine importLine, @NonNull final I_C_Invoice invoice)
 	{
