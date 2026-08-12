@@ -7,6 +7,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mockito;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -56,11 +58,12 @@ public class C_PurchaseCandidateTest
 				.isInstanceOf(AdempiereException.class);
 	}
 
-	@Test
-	public void allowsRealSourceOnNew()
+	@ParameterizedTest
+	@EnumSource(value = PurchaseCandidateSource.class, names = "Unknown", mode = EnumSource.Mode.EXCLUDE)
+	public void allowsRealSourceOnNew(final PurchaseCandidateSource source)
 	{
 		final I_C_PurchaseCandidate record = newInstance(I_C_PurchaseCandidate.class);
-		record.setSource(PurchaseCandidateSource.SalesOrder.getCode());
+		record.setSource(source.getCode());
 
 		assertThatCode(() -> interceptor.rejectLegacyUnknownSourceOnNew(record))
 				.doesNotThrowAnyException();

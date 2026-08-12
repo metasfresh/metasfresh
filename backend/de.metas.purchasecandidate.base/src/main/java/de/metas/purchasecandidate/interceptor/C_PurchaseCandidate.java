@@ -85,10 +85,9 @@ public class C_PurchaseCandidate
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
 	public void rejectLegacyUnknownSourceOnNew(@NonNull final I_C_PurchaseCandidate purchaseCandidateRecord)
 	{
-		// 'Unknown' is a backfill-only marker for candidates created before the Source column existed.
-		// A new candidate must carry a real origin: an Unknown one would be excluded from both the
-		// sales-order interceptor (which filters Source=SalesOrder) and dispo auto-ordering, so a
-		// genuine purchase demand would silently never be ordered.
+		// 'Unknown' is a backfill-only marker for pre-Source-column candidates. A new one carrying it
+		// would be excluded from both the sales-order interceptor and dispo auto-ordering, so a genuine
+		// purchase demand would never be ordered.
 		if (PurchaseCandidateSource.Unknown.getCode().equals(purchaseCandidateRecord.getSource()))
 		{
 			throw new AdempiereException("Source=" + PurchaseCandidateSource.Unknown
