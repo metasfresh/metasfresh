@@ -186,9 +186,34 @@ public class C_OrderLineTest
 		assertThat(orderLine.getM_HU_PI_Item_Product_ID()).isEqualTo(piip.getM_HU_PI_Item_Product_ID());
 	}
 
+	/**
+	 * The price requirement is scoped to sales order lines — the same scope the quick-input helper applies,
+	 * where the IsDefaultForProduct fallback sits behind an {@code SOTrx.SALES} guard. A purchase order line
+	 * must keep today's behaviour even with the rule enforced and no product price referencing the default.
+	 */
+	@Test
+	public void purchaseOrder_enforceOn_noProductPriceReferencesTheDefault_stillSetsThatDefault()
+	{
+		setEnforcePrecisePrice(true);
+		final I_M_HU_PI_Item_Product piip = createDefaultForProductPackingInstruction();
+		createProductPrice(null);
+		makeOrderAPurchaseOrder();
+
+		interceptor.onProductSetOrChanged(orderLine);
+
+		assertThat(orderLine.getM_HU_PI_Item_Product_ID()).isEqualTo(piip.getM_HU_PI_Item_Product_ID());
+	}
+
 	//
 	// Fixture
 	//
+
+	private void makeOrderAPurchaseOrder()
+	{
+		final I_C_Order order = load(orderLine.getC_Order_ID(), I_C_Order.class);
+		order.setIsSOTrx(false);
+		saveRecord(order);
+	}
 
 	private void clearOrderLineDatePromised()
 	{
