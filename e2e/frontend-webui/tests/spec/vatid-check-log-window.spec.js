@@ -85,6 +85,48 @@ import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from
 
 const VATID_CHECKLOG_WINDOW_ID = 542183;
 
+/**
+ * Recursively collect the leaf nodes of a `/menu/queryPaths` response tree —
+ * the same shape `flattenLastElem` (MenuActions.js) reduces to the rendered
+ * `.js-menu-item` array, in the same order. A node with no `children` is a leaf.
+ */
+function flattenMenuOverlayLeaves(node) {
+  if (node.children) {
+    return node.children.flatMap(flattenMenuOverlayLeaves);
+  }
+  return [node];
+}
+
+/**
+ * Fill the menu-overlay search box and click the result for `targetElementId`
+ * — located by its position in the backend's OWN `/menu/queryPaths` response,
+ * never by DOM position (`.first()`). "VAT-ID Check" and shorter prefixes of
+ * this window's name match BOTH VATaxID_Config (542182) and VATaxID_CheckLog
+ * (542183), with 542182 sorted first in the AD_Menu tree — so a `.first()`
+ * click during any transiently-rendered ambiguous/partial result set would
+ * silently land on the wrong window. Keying on the elementId the response
+ * itself carries is correct regardless of how many entries render or in what
+ * order — order-independent by construction, not by picking a longer search
+ * string (which only narrows, never eliminates, the underlying ambiguity).
+ */
+async function clickMenuOverlaySearchResult(page, searchTerm, targetElementId) {
+  const searchInput = page.locator('.menu-overlay-query input.input-field');
+  await searchInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+  const [response] = await Promise.all([
+    page.waitForResponse((r) => r.url().includes('/menu/queryPaths'), { timeout: SLOW_ACTION_TIMEOUT }),
+    searchInput.fill(searchTerm),
+  ]);
+
+  const leaves = flattenMenuOverlayLeaves(await response.json());
+  const targetIndex = leaves.findIndex((leaf) => leaf.elementId === String(targetElementId));
+  expect(targetIndex, `Menu overlay search for "${searchTerm}" must return a result for window ${targetElementId}`).toBeGreaterThanOrEqual(0);
+
+  const resultItem = page.locator('.menu-overlay-query .js-menu-item').nth(targetIndex);
+  await resultItem.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  await resultItem.click();
+}
+
 // The complete set of AD_Field.IsDisplayedGrid='Y' columns on tab 549365,
 // verified live against localhost:22532 (`select columnname from ad_field
 // join ad_column ... where ad_tab_id=549365 and isdisplayedgrid='Y'`): all 8
@@ -142,8 +184,13 @@ The search input and result item are matched structurally
 (\`.menu-overlay-query input.input-field\` / \`.menu-overlay-query .js-menu-item\`)
 — neither carries a \`data-testid\`, per \`MenuOverlayItem.js\`. The window's
 display name is used as the search **input** (not an assertion), pinning the
-login language to en_US. The end result is asserted only on the
-language-invariant window id in the URL and a structural DOM marker.
+login language to en_US. The result item to click is located by its position
+in the backend's own \`/menu/queryPaths\` response (matched on \`elementId\`),
+never by DOM position (\`.first()\`) — "VAT-ID Check" and shorter prefixes of
+this window's name also match the sibling VATaxID_Config window (542182),
+sorted first in the AD_Menu tree, so a positional click is order-dependent.
+The end result is asserted only on the language-invariant window id in the
+URL and a structural DOM marker.
     `);
 
     test.setTimeout(60000);
@@ -164,15 +211,9 @@ language-invariant window id in the URL and a structural DOM marker.
       await page.locator('.menu-overlay').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
     });
 
-    await test.step('Search the overlay for the window by name and open the single result', async () => {
-      const searchInput = page.locator('.menu-overlay-query input.input-field');
-      await searchInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    await test.step('Search the overlay for the window by name and open the matching result', async () => {
       // Input value only (not an assertion) — the window's own display name.
-      await searchInput.fill('VAT-ID Check Log');
-
-      const resultItem = page.locator('.menu-overlay-query .js-menu-item').first();
-      await resultItem.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      await resultItem.click();
+      await clickMenuOverlaySearchResult(page, 'VAT-ID Check Log', VATID_CHECKLOG_WINDOW_ID);
 
       await page.waitForURL(new RegExp(`/window/${VATID_CHECKLOG_WINDOW_ID}(/|$)`), { timeout: SLOW_ACTION_TIMEOUT });
       await page.locator('.document-list-wrapper, .document-list').waitFor({

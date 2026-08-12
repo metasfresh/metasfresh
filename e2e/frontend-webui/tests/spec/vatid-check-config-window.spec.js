@@ -41,6 +41,47 @@ import { assertRecordIsValid, getFieldData, WEBAPI_BASE_URL } from '../utils/Web
 
 const VATID_CONFIG_WINDOW_ID = 542182;
 
+/**
+ * Recursively collect the leaf nodes of a `/menu/queryPaths` response tree —
+ * the same shape `flattenLastElem` (MenuActions.js) reduces to the rendered
+ * `.js-menu-item` array, in the same order. A node with no `children` is a leaf.
+ */
+function flattenMenuOverlayLeaves(node) {
+  if (node.children) {
+    return node.children.flatMap(flattenMenuOverlayLeaves);
+  }
+  return [node];
+}
+
+/**
+ * Fill the menu-overlay search box and click the result for `targetElementId`
+ * — located by its position in the backend's OWN `/menu/queryPaths` response,
+ * never by DOM position (`.first()`). "VAT-ID Check" and shorter prefixes of
+ * this window's name also match the sibling VATaxID_CheckLog window (542183)
+ * — 542182 happens to sort first in the AD_Menu tree, so a `.first()` click
+ * here would have passed only by luck (see vatid-check-log-window.spec.js,
+ * where the same pattern picks the wrong window because it sorts second).
+ * Keying on the elementId the response itself carries is correct regardless
+ * of how many entries render or in what order.
+ */
+async function clickMenuOverlaySearchResult(page, searchTerm, targetElementId) {
+  const searchInput = page.locator('.menu-overlay-query input.input-field');
+  await searchInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+  const [response] = await Promise.all([
+    page.waitForResponse((r) => r.url().includes('/menu/queryPaths'), { timeout: SLOW_ACTION_TIMEOUT }),
+    searchInput.fill(searchTerm),
+  ]);
+
+  const leaves = flattenMenuOverlayLeaves(await response.json());
+  const targetIndex = leaves.findIndex((leaf) => leaf.elementId === String(targetElementId));
+  expect(targetIndex, `Menu overlay search for "${searchTerm}" must return a result for window ${targetElementId}`).toBeGreaterThanOrEqual(0);
+
+  const resultItem = page.locator('.menu-overlay-query .js-menu-item').nth(targetIndex);
+  await resultItem.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  await resultItem.click();
+}
+
 // AD_Reference_ID 542126 — must contain EXACTLY these two values (Value column,
 // language-invariant). Historically this was miswired to a six-value list.
 const ON_SERVICE_UNAVAILABLE_EXPECTED_OPTIONS = ['ServiceUnavailable', 'Invalid'];
@@ -316,8 +357,11 @@ The search input and result item are matched structurally
 (\`.menu-overlay-query input.input-field\` / \`.menu-overlay-query .js-menu-item\`) —
 neither carries a \`data-testid\`, per \`MenuOverlayItem.js\`. The window's display name
 is used as the search **input** (not an assertion), pinning the login language to
-en_US as this spec's other test does. The end result is asserted only on the
-language-invariant window id in the URL and a structural DOM marker — see
+en_US as this spec's other test does. The result item to click is located by its
+position in the backend's own \`/menu/queryPaths\` response (matched on \`elementId\`),
+never by DOM position (\`.first()\`) — shorter prefixes of this window's name also
+match the sibling VATaxID_CheckLog window (542183). The end result is asserted only
+on the language-invariant window id in the URL and a structural DOM marker — see
 e2e/frontend-webui/CLAUDE.md "Specs MUST be language-independent".
     `);
 
@@ -339,15 +383,9 @@ e2e/frontend-webui/CLAUDE.md "Specs MUST be language-independent".
       await page.locator('.menu-overlay').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
     });
 
-    await test.step('Search the overlay for the window by name and open the single result', async () => {
-      const searchInput = page.locator('.menu-overlay-query input.input-field');
-      await searchInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    await test.step('Search the overlay for the window by name and open the matching result', async () => {
       // Input value only (not an assertion) — the window's own display name.
-      await searchInput.fill('VAT-ID Check Configuration');
-
-      const resultItem = page.locator('.menu-overlay-query .js-menu-item').first();
-      await resultItem.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      await resultItem.click();
+      await clickMenuOverlaySearchResult(page, 'VAT-ID Check Configuration', VATID_CONFIG_WINDOW_ID);
 
       await page.waitForURL(new RegExp(`/window/${VATID_CONFIG_WINDOW_ID}(/|$)`), { timeout: SLOW_ACTION_TIMEOUT });
       await page.locator('.document-list-wrapper, .document-list').waitFor({
