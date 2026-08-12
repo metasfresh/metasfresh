@@ -124,7 +124,17 @@ async function clickMenuOverlaySearchResult(page, searchTerm, targetElementId) {
 
   const resultItem = page.locator('.menu-overlay-query .js-menu-item').nth(targetIndex);
   await resultItem.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-  await resultItem.click();
+
+  // Click the element the onClick handler is actually bound to
+  // (MenuOverlayItem.js: `.query-clickable-link` / `.query-clickable-group`,
+  // wrapping only the caption — the icon is a sibling, outside it), never the
+  // outer `.js-menu-item` row, which carries no onClick at all (only onKeyDown) —
+  // that row is full-width, so its centre falls in dead space past the
+  // caption whenever the caption is short (e.g. "VAT-ID Check Log"), and a
+  // click there fires no handler at all. This is independent of caption
+  // length, font metrics, or viewport by construction.
+  const clickTarget = resultItem.locator('.query-clickable-link, .query-clickable-group');
+  await clickTarget.click();
 }
 
 // The complete set of AD_Field.IsDisplayedGrid='Y' columns on tab 549365,
@@ -215,7 +225,13 @@ URL and a structural DOM marker.
       // Input value only (not an assertion) — the window's own display name.
       await clickMenuOverlaySearchResult(page, 'VAT-ID Check Log', VATID_CHECKLOG_WINDOW_ID);
 
-      await page.waitForURL(new RegExp(`/window/${VATID_CHECKLOG_WINDOW_ID}(/|$)`), { timeout: SLOW_ACTION_TIMEOUT });
+      // Boundary accepts '/', '?' or end-of-string after the id — the app can
+      // land on the bare path or (once the list view attaches its viewId)
+      // directly on a query-string URL; `page.url()` may already be past the
+      // bare-path state by the time this call checks it (SPA route + viewId
+      // attach can both complete before this line runs), so '?' must be an
+      // accepted terminator too, not only a future-navigation target.
+      await page.waitForURL(new RegExp(`/window/${VATID_CHECKLOG_WINDOW_ID}(/|\\?|$)`), { timeout: SLOW_ACTION_TIMEOUT });
       await page.locator('.document-list-wrapper, .document-list').waitFor({
         state: 'visible',
         timeout: VERY_SLOW_ACTION_TIMEOUT,
