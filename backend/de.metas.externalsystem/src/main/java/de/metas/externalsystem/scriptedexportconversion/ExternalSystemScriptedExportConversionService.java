@@ -342,10 +342,12 @@ public class ExternalSystemScriptedExportConversionService
 	}
 
 	/**
-	 * Returns all config IDs in a re-triggerable terminal state for the given source record.
-	 * Includes {@link de.metas.externalsystem.ExternalSystemExportStatus#Sent} (re-send even when previously
-	 * successful); excludes {@link de.metas.externalsystem.ExternalSystemExportStatus#DontSend} and in-flight
-	 * states (Pending, Enqueued, SendingStarted) to avoid duplicate concurrent sends.
+	 * Returns all config IDs in a re-triggerable state for the given source record, judged on each config's
+	 * LATEST attempt. Includes {@link de.metas.externalsystem.ExternalSystemExportStatus#Sent} (re-send even
+	 * when previously successful) and an operator-parked
+	 * {@link de.metas.externalsystem.ExternalSystemExportStatus#Pending}; excludes
+	 * {@link de.metas.externalsystem.ExternalSystemExportStatus#DontSend} and the actively-in-flight states
+	 * (Enqueued, SendingStarted, and a transient auto-flow Pending) to avoid duplicate concurrent sends.
 	 *
 	 * @see ExternalSystemExportStatusService#getMatchingConfigIdsBySourceRecord(TableRecordReference)
 	 */

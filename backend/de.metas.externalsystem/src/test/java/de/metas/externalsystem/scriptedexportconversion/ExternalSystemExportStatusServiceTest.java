@@ -518,6 +518,57 @@ public class ExternalSystemExportStatusServiceTest
 		assertThat(service.getMatchingConfigIdsBySourceRecord(ref)).isEmpty();
 	}
 
+	/**
+	 * An errored config is not in flight and was not delivered, so the force-resend mode must offer it too —
+	 * it is a superset of the not-yet-sent-only mode in everything but DontSend.
+	 */
+	@Test
+	void getMatchingConfigIds_includes_errorConfig()
+	{
+		final TableRecordReference ref = newInOutRef();
+		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
+		final PInstanceId pInstanceId = PInstanceId.ofRepoId(1601);
+
+		service.recordPending(configId, ref);
+		service.markEnqueued(configId, ref, pInstanceId);
+		service.markError(pInstanceId, AdIssueId.ofRepoId(99), "connection refused");
+
+		assertThat(service.getMatchingConfigIdsBySourceRecord(ref)).containsExactly(configId);
+	}
+
+	/**
+	 * Same for an Invalid config — nothing is in flight, so it may be re-triggered.
+	 */
+	@Test
+	void getMatchingConfigIds_includes_invalidConfig()
+	{
+		final TableRecordReference ref = newInOutRef();
+		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
+		final PInstanceId pInstanceId = PInstanceId.ofRepoId(1701);
+
+		service.recordPending(configId, ref);
+		service.markEnqueued(configId, ref, pInstanceId);
+		service.markInvalid(pInstanceId, "bad data");
+
+		assertThat(service.getMatchingConfigIdsBySourceRecord(ref)).containsExactly(configId);
+	}
+
+	/**
+	 * SendingStarted is the second actively-in-flight state (dispatched, awaiting the external system's
+	 * callback) and must be excluded for the same reason as Enqueued: re-triggering would double-send.
+	 */
+	@Test
+	void getMatchingConfigIds_excludes_sendingStartedConfig()
+	{
+		final TableRecordReference ref = newInOutRef();
+		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
+
+		repo.insertNewAttempt(ScriptedExportConversionStatusCreateRequest.builder()
+				.configId(configId).sourceRecord(ref).status(ExternalSystemExportStatus.SendingStarted).build());
+
+		assertThat(service.getMatchingConfigIdsBySourceRecord(ref)).isEmpty();
+	}
+
 	// -----------------------------------------------------------------------
 	// recordManualStatusChange — writes a NEW, PInstance-stamped attempt row; prior rows are history
 	// -----------------------------------------------------------------------

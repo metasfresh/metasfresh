@@ -218,6 +218,11 @@ public class ExternalSystemExportStatusService
 	 * An operator-parked Pending ({@link #isOperatorParkedPending}) is NOT in flight and IS included — as in
 	 * {@link #getResendableConfigsBySourceRecord}; otherwise this broader mode would send LESS than the
 	 * not-yet-sent-only mode and silently skip a shipment the operator had parked.
+	 * <p>
+	 * DontSend is the one state this mode deliberately does NOT share with
+	 * {@link #getResendableConfigsBySourceRecord}: there it is re-offered so a re-send can RE-EVALUATE a
+	 * suppressed record against the WhereClause, whereas this mode re-transmits without re-evaluating — and
+	 * the WhereClause explicitly excluded that record, so firing the export anyway would contradict the config.
 	 */
 	@NonNull
 	public List<ExternalSystemScriptedExportConversionConfigId> getMatchingConfigIdsBySourceRecord(
