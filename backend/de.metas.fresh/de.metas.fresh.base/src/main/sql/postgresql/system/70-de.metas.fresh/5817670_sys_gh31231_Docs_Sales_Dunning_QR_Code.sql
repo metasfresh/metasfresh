@@ -1,3 +1,5 @@
+-- Source DDL: backend/de.metas.fresh/de.metas.fresh.base/src/main/sql/postgresql/ddl/functions/Docs_Sales_Dunning_QR_Code.sql
+
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Dunning_QR_Code (IN p_C_DunningDoc_ID numeric);
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Dunning_QR_Code(IN p_C_DunningDoc_ID numeric)
     RETURNS TABLE
