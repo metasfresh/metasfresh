@@ -1,6 +1,6 @@
---
--- IMPORTANT: when changing the structure of this view, please also check/adjust AD_ViewSource definitions.
---
+-- Source DDL: backend/de.metas.adempiere.adempiere/migration/src/main/sql/postgresql/ddl/public/views/M_Delivery_Planning_Delivery_Instructions_V.sql
+-- Fix: join delivery instructions to delivery plannings via m_shippertransportation_id (was: documentno = releaseno which always produced empty results)
+-- Also: exclude voided/re-generated instructions (docstatus NOT IN ('VO', 'RE'))
 
 DROP VIEW IF EXISTS M_Delivery_Planning_Delivery_Instructions_V$new
 ;
@@ -43,7 +43,7 @@ SELECT db_alter_view(
                'm_delivery_planning_delivery_instructions_v',
                (SELECT view_definition
                 FROM information_schema.views
-                WHERE views.table_name = 'm_delivery_planning_delivery_instructions_v$new')
+                WHERE lower(views.table_name) = lower('m_delivery_planning_delivery_instructions_v$new'))
            )
 ;
 
