@@ -50,9 +50,19 @@ public class C_BPartner_Location
 
 	/**
 	 * Unchanged synchronous format check: still {@code BEFORE_NEW}/{@code BEFORE_CHANGE}, still throws
-	 * hard on a malformed value, still gated by the same {@code C_BPartner.validateVATaxID} SysConfig. Not
-	 * touched by the after-commit trigger below — a value this rejects never reaches a save at all, let
-	 * alone the online check.
+	 * hard on a malformed value, still gated by the same {@code C_BPartner.validateVATaxID} SysConfig.
+	 *
+	 * <p><b>{@link #scheduleVATaxIDCheck(I_C_BPartner_Location)} must not assume this ran.</b> The framework
+	 * does order {@code BEFORE_*} before {@code AFTER_*} within one save, but that guarantees only that this
+	 * <em>method</em> was invoked — not that it <em>validated</em> anything: the SysConfig above can make it a
+	 * no-op, and inter-class interceptor ordering is not guaranteed, so another interceptor's
+	 * {@code BEFORE_*} handler could in principle set {@code VATaxID} after this one already looked at it (no
+	 * production interceptor does today — only test step-defs write the column). So a malformed value can
+	 * reach the after-commit path. That is safe, but only because
+	 * {@code VATaxIDCheckService#check(de.metas.vatid.VATaxIDCheckRequest)} re-runs the format check itself
+	 * and {@link VATaxIDCheckTrigger} logs rather than propagates the resulting throw: the outcome is a
+	 * skipped check with a warning, never a failed save and never a check-log row claiming a malformed value
+	 * was checked.
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = I_C_BPartner_Location.COLUMNNAME_VATaxID)
