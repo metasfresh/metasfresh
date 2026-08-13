@@ -39,7 +39,6 @@ import de.metas.util.ISingletonService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -59,13 +58,6 @@ public interface IHUPIItemProductBL extends ISingletonService
 	 */
 	String SYSCONFIG_EnforcePrecisePricePerHUItemProduct =
 			"de.metas.ui.web.quickinput.field.PackingItemProductFieldHelper.EnforcePrecisePricePerHUItemProduct";
-
-	/**
-	 * @return {@code true} if a packing instruction may only be auto-defaulted onto a document line when a
-	 *         product price of the relevant price list version references it. Defaults to {@code false}
-	 *         when the setting is absent.
-	 */
-	boolean isEnforcePrecisePricePerHUItemProduct(@NonNull ClientId clientId);
 
 	HUPIItemProduct getById(@NonNull HUPIItemProductId id);
 

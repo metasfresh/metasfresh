@@ -21,6 +21,7 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.ModelValidator;
@@ -61,9 +62,9 @@ import java.util.Properties;
 public class C_OrderLine
 {
 	private final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
-	private final IHUPIItemProductBL hupiItemProductBL = Services.get(IHUPIItemProductBL.class);
 	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@Init
 	public void registerCallouts()
@@ -156,7 +157,10 @@ public class C_OrderLine
 			return null;
 		}
 
-		if (!hupiItemProductBL.isEnforcePrecisePricePerHUItemProduct(ClientId.ofRepoId(orderLine.getAD_Client_ID())))
+		if (!sysConfigBL.getBooleanValue(
+				IHUPIItemProductBL.SYSCONFIG_EnforcePrecisePricePerHUItemProduct,
+				false,
+				ClientId.ofRepoId(orderLine.getAD_Client_ID()).getRepoId()))
 		{
 			return null;
 		}

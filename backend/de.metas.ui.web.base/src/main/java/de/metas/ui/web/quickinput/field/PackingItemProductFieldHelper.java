@@ -29,6 +29,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
@@ -48,8 +49,8 @@ import lombok.NonNull;
 public class PackingItemProductFieldHelper
 {
 	private final IHUPIItemProductDAO huPIItemProductsRepo = Services.get(IHUPIItemProductDAO.class);
-	private final IHUPIItemProductBL huPIItemProductBL = Services.get(IHUPIItemProductBL.class);
 	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	public Optional<I_M_HU_PI_Item_Product> getDefaultPackingMaterial(@NonNull final DefaultPackingItemCriteria defaultPackingItemCriteria)
 	{
@@ -67,7 +68,7 @@ public class PackingItemProductFieldHelper
 			return Optional.empty();
 		}
 
-		if (huPIItemProductBL.isEnforcePrecisePricePerHUItemProduct(defaultPackingItemCriteria.getClientId()))
+		if (isEnforcePrecisePricePerHUItemProduct(defaultPackingItemCriteria.getClientId()))
 		{
 			// The price list step above already returned every packing instruction that a product price of
 			// this price list version references. So the IsDefaultForProduct fallback below could only ever
@@ -102,11 +103,10 @@ public class PackingItemProductFieldHelper
 		}
 
 		final ClientId clientId = defaultPackingItemCriteria.getClientId();
-		final boolean enforcePrecisePricePerHUItemProduct = huPIItemProductBL.isEnforcePrecisePricePerHUItemProduct(clientId);
+		final boolean enforcePrecisePricePerHUItemProduct = isEnforcePrecisePricePerHUItemProduct(clientId);
 
 		// TODO: check ASI too
-		final IHUPIItemProductDAO piItemProductDAO = Services.get(IHUPIItemProductDAO.class);
-		final IHUPIItemProductQuery queryVO = piItemProductDAO.createHUPIItemProductQuery();
+		final IHUPIItemProductQuery queryVO = huPIItemProductsRepo.createHUPIItemProductQuery();
 		queryVO.setM_Product_ID(defaultPackingItemCriteria.getProductId().getRepoId());
 		queryVO.setBPartnerId(defaultPackingItemCriteria.getBPartnerLocationId().getBpartnerId());
 		queryVO.setAllowVirtualPI(false);
@@ -117,8 +117,18 @@ public class PackingItemProductFieldHelper
 		{
 			queryVO.setPriceListVersionId(PriceListVersionId.ofRepoId(priceListVersion.getM_PriceList_Version_ID()));
 		}
-		final List<I_M_HU_PI_Item_Product> itemProducts = piItemProductDAO.retrieveHUItemProducts(Env.getCtx(), queryVO, ITrx.TRXNAME_ThreadInherited);
+		final List<I_M_HU_PI_Item_Product> itemProducts = huPIItemProductsRepo.retrieveHUItemProducts(Env.getCtx(), queryVO, ITrx.TRXNAME_ThreadInherited);
 		return itemProducts.stream().findFirst();
+	}
+
+	/**
+	 * @return {@code true} if a packing instruction may only be auto-defaulted when a product price of the
+	 *         relevant price list version references it. Defaults to {@code false} when unset.
+	 */
+	private boolean isEnforcePrecisePricePerHUItemProduct(@NonNull final ClientId clientId)
+	{
+		return sysConfigBL.getBooleanValue(
+				IHUPIItemProductBL.SYSCONFIG_EnforcePrecisePricePerHUItemProduct, false, clientId.getRepoId());
 	}
 
 	@Nullable
