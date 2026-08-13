@@ -57,6 +57,7 @@ Feature: The VAT-ID check process runs on a selection of Business Partners
       | VATaxID     | VATaxIDStatus | AD_PInstance_ID |
       | ATU13585627 | Valid         | true            |
     And validate VATaxID_CheckLog records of C_BPartner 'bp_check3':
+      | VATaxID | VATaxIDStatus |
     And the VAT-ID check process run reports 1 pending checks
 
   @from:cucumber
