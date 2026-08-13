@@ -48,7 +48,12 @@ import javax.annotation.Nullable;
 @Builder
 public class VATaxIDConfig
 {
-	@NonNull VATaxIDConfigId id;
+	/**
+	 * {@code null} on the synthetic configuration an organisation without a {@code VATaxID_Config} record
+	 * effectively has — there is no record to point at. Every configuration read from an actual record
+	 * carries its id; see {@code VATaxIDCheckService}, the single place that resolves that default.
+	 */
+	@Nullable VATaxIDConfigId id;
 
 	boolean formatCheckEnabled;
 	boolean viesCheckEnabled;

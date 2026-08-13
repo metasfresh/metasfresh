@@ -23,10 +23,12 @@
 package de.metas.vatid;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.process.PInstanceId;
+import de.metas.tax.api.VATIdentifier;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -39,6 +41,9 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_VATaxID_CheckLog;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
+
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
 
 /**
  * Repository Tables: {@code VATaxID_CheckLog}.
@@ -62,6 +67,12 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class VATaxIDCheckRepository
 {
+	/** The statuses that count as a check having produced a statement — see {@link #getLastConclusiveCheck(VATIdentifier)}. */
+	private static final ImmutableSet<VATaxIDStatus> CONCLUSIVE_STATUSES = ImmutableSet.of(
+			VATaxIDStatus.Valid,
+			VATaxIDStatus.Invalid,
+			VATaxIDStatus.NotSupported);
+
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
@@ -92,11 +103,60 @@ public class VATaxIDCheckRepository
 		record.setVATaxIDStatus(VATaxIDStatus.RequestSent.getCode());
 		record.setRequestDate(TimeUtil.asTimestampNotNull(SystemTime.asInstant()));
 		record.setAD_PInstance_ID(PInstanceId.toRepoId(request.getPinstanceId()));
-		record.setAD_Session_ID(request.getAdSessionId() != null ? request.getAdSessionId() : 0);
+		// -1, the same "no id" sentinel PInstanceId.toRepoId(null) yields above: the PO layer stores it as SQL
+		// NULL, whereas a 0 would be persisted as a literal zero AD_Session_ID.
+		record.setAD_Session_ID(request.getAdSessionId() != null ? request.getAdSessionId() : -1);
 
 		InterfaceWrapperHelper.saveRecord(record);
 
 		return VATaxIDCheckLogId.ofRepoId(record.getVATaxID_CheckLog_ID());
+	}
+
+	/**
+	 * The most recent <b>conclusive</b> check of one VAT-ID <b>value</b> — the lookup de-duplication is
+	 * built on, and what the {@code (VATaxID, RequestDate)} index exists for.
+	 *
+	 * <p>Keyed on the value and not on a partner or a location: the same VAT-ID anywhere is the same
+	 * question to the online service, and asking it twice is exactly what de-duplication avoids.
+	 *
+	 * <p><b>Conclusive</b> means the check ended in a statement about the VAT-ID:
+	 * {@link VATaxIDStatus#Valid}, {@link VATaxIDStatus#Invalid} or {@link VATaxIDStatus#NotSupported}.
+	 * {@link VATaxIDStatus#RequestSent} rows (a check whose outcome was never learned) and
+	 * {@link VATaxIDStatus#ServiceUnavailable} rows (no answer obtained) are deliberately skipped: counting
+	 * them would let one failed attempt suppress every retry for the whole re-check interval — the opposite
+	 * of what an unreachable service must lead to.
+	 *
+	 * <p>Freshness is deliberately NOT decided here: {@code RecheckAfterDays} lives in
+	 * {@code VATaxID_Config}, so the caller holding the configuration compares the age.
+	 *
+	 * @return the newest conclusive row for that value, or {@code null} if the value has never been
+	 * conclusively checked.
+	 */
+	@Nullable
+	public VATaxIDLastCheck getLastConclusiveCheck(@NonNull final VATIdentifier vataxID)
+	{
+		final I_VATaxID_CheckLog record = queryBL
+				.createQueryBuilder(I_VATaxID_CheckLog.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_VATaxID_CheckLog.COLUMNNAME_VATaxID, vataxID.getAsString())
+				.addInArrayFilter(I_VATaxID_CheckLog.COLUMNNAME_VATaxIDStatus, CONCLUSIVE_STATUSES)
+				.orderByDescending(I_VATaxID_CheckLog.COLUMNNAME_RequestDate)
+				// tie-breaker: two rows can share a RequestDate, and "the last check" must still be one row
+				.orderByDescending(I_VATaxID_CheckLog.COLUMNNAME_VATaxID_CheckLog_ID)
+				.create()
+				.first(I_VATaxID_CheckLog.class);
+
+		if (record == null)
+		{
+			return null;
+		}
+
+		final Timestamp responseDate = record.getResponseDate();
+		return VATaxIDLastCheck.builder()
+				.checkLogId(VATaxIDCheckLogId.ofRepoId(record.getVATaxID_CheckLog_ID()))
+				.status(VATaxIDStatus.ofCode(record.getVATaxIDStatus()))
+				.checkedAt(TimeUtil.asInstantNonNull(responseDate != null ? responseDate : record.getRequestDate()))
+				.build();
 	}
 
 	/**

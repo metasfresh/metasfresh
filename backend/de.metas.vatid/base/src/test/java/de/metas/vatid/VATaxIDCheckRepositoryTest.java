@@ -43,6 +43,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -107,6 +108,28 @@ class VATaxIDCheckRepositoryTest
 		assertThat(record.getAD_Session_ID()).isEqualTo(3000001);
 		assertThat(record.getRequestIdentifier()).isNull();
 		assertThat(record.getRawResponse()).isNull();
+	}
+
+	/**
+	 * Pins the "no id" sentinel written for a check that has neither cause id — the case
+	 * {@link #writeRequestSent_appendsARequestSentRow_withTheCauseIdsPersisted()} does not reach, since it
+	 * supplies both. Both columns must be cleared with {@code -1}, which the PO layer stores as SQL NULL;
+	 * a {@code 0} would be persisted as a literal zero {@code AD_Session_ID} / {@code AD_PInstance_ID} and
+	 * make "no session" indistinguishable from the zero-id trap. Without this test neither value is pinned,
+	 * so a regression back to {@code 0} would go unnoticed.
+	 */
+	@Test
+	void writeRequestSent_clearsBothCauseIds_whenTheCheckHasNeither()
+	{
+		final VATaxIDCheckLogId checkLogId = vataxIDCheckRepository.writeRequestSent(
+				VATaxIDCheckRequest.builder()
+						.bpartnerId(BPARTNER_ID)
+						.vataxID(VATIdentifier.of("DE123456789"))
+						.build());
+
+		final I_VATaxID_CheckLog record = loadRecord(checkLogId);
+		assertThat(record.getAD_PInstance_ID()).isEqualTo(-1);
+		assertThat(record.getAD_Session_ID()).isEqualTo(-1);
 	}
 
 	@Test
@@ -208,6 +231,68 @@ class VATaxIDCheckRepositoryTest
 		assertThat(reloaded.getVATaxIDStatus()).isEqualTo(X_VATaxID_CheckLog.VATAXIDSTATUS_Invalid);
 		assertThat(reloaded.getRequestIdentifier()).isNull();
 		assertThat(reloaded.getRawResponse()).isNull();
+	}
+
+	/**
+	 * The de-duplication lookup must only see checks that actually produced a statement. This is the rule
+	 * cucumber cannot reach: a {@link VATaxIDStatus#ServiceUnavailable} or still-{@link VATaxIDStatus#RequestSent}
+	 * row counting as "a result" would let one failed attempt suppress every retry for the whole re-check
+	 * interval — exactly the opposite of what an unreachable service must lead to.
+	 */
+	@Test
+	void getLastConclusiveCheck_ignoresRequestSentAndServiceUnavailableRows()
+	{
+		final VATIdentifier vataxID = VATIdentifier.of("DE888888888");
+
+		SystemTime.setFixedTimeSource(ZonedDateTime.parse("2026-01-01T10:00:00Z"));
+		final VATaxIDCheckLogId validId = writeRequestSent(vataxID);
+		vataxIDCheckRepository.completeCheck(validId, VATaxIDCheckResult.builder().status(VATaxIDStatus.Valid).build());
+
+		// newer, but its outcome was never learned
+		SystemTime.setFixedTimeSource(ZonedDateTime.parse("2026-02-01T10:00:00Z"));
+		writeRequestSent(vataxID);
+
+		// newest, but the service could not answer
+		SystemTime.setFixedTimeSource(ZonedDateTime.parse("2026-03-01T10:00:00Z"));
+		final VATaxIDCheckLogId unavailableId = writeRequestSent(vataxID);
+		vataxIDCheckRepository.completeCheck(unavailableId, VATaxIDCheckResult.builder().status(VATaxIDStatus.ServiceUnavailable).build());
+
+		final VATaxIDLastCheck lastCheck = vataxIDCheckRepository.getLastConclusiveCheck(vataxID);
+		assertThat(lastCheck).isNotNull();
+		assertThat(lastCheck.getCheckLogId()).isEqualTo(validId);
+		assertThat(lastCheck.getStatus()).isEqualTo(VATaxIDStatus.Valid);
+		assertThat(lastCheck.getCheckedAt()).isEqualTo(Instant.parse("2026-01-01T10:00:00Z"));
+	}
+
+	@Test
+	void getLastConclusiveCheck_returnsTheNewestConclusiveRow()
+	{
+		final VATIdentifier vataxID = VATIdentifier.of("DE999999999");
+
+		SystemTime.setFixedTimeSource(ZonedDateTime.parse("2026-01-01T10:00:00Z"));
+		final VATaxIDCheckLogId olderId = writeRequestSent(vataxID);
+		vataxIDCheckRepository.completeCheck(olderId, VATaxIDCheckResult.builder().status(VATaxIDStatus.Valid).build());
+
+		SystemTime.setFixedTimeSource(ZonedDateTime.parse("2026-02-01T10:00:00Z"));
+		final VATaxIDCheckLogId newerId = writeRequestSent(vataxID);
+		vataxIDCheckRepository.completeCheck(newerId, VATaxIDCheckResult.builder().status(VATaxIDStatus.Invalid).build());
+
+		final VATaxIDLastCheck lastCheck = vataxIDCheckRepository.getLastConclusiveCheck(vataxID);
+		assertThat(lastCheck).isNotNull();
+		assertThat(lastCheck.getCheckLogId()).isEqualTo(newerId);
+		assertThat(lastCheck.getStatus()).isEqualTo(VATaxIDStatus.Invalid);
+	}
+
+	@Test
+	void getLastConclusiveCheck_returnsNullForANeverCheckedValue()
+	{
+		assertThat(vataxIDCheckRepository.getLastConclusiveCheck(VATIdentifier.of("DE000000000"))).isNull();
+	}
+
+	private VATaxIDCheckLogId writeRequestSent(@NonNull final VATIdentifier vataxID)
+	{
+		return vataxIDCheckRepository.writeRequestSent(
+				VATaxIDCheckRequest.builder().bpartnerId(BPARTNER_ID).vataxID(vataxID).build());
 	}
 
 	@Test
