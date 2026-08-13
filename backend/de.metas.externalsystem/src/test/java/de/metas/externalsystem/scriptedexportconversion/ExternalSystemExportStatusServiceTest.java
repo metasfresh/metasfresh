@@ -419,6 +419,38 @@ public class ExternalSystemExportStatusServiceTest
 		assertThat(result).containsExactly(configId);
 	}
 
+	/**
+	 * An Enqueued config is actively in flight and must NOT be offered — re-sending would double-send.
+	 * (Asserted here at service level, not only through {@code ExternalSystemExportStatus.isResendable()},
+	 * so the exclusion holds even if the predicate composition in {@code isResendableAttempt} changes.)
+	 */
+	@Test
+	void getResendableConfigs_excludes_enqueuedConfig()
+	{
+		final TableRecordReference ref = newInOutRef();
+		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
+
+		service.recordPending(configId, ref);
+		service.markEnqueued(configId, ref, PInstanceId.ofRepoId(1801));
+
+		assertThat(service.getResendableConfigsBySourceRecord(ref)).isEmpty();
+	}
+
+	/**
+	 * Same for SendingStarted — dispatched to the external system, awaiting its callback.
+	 */
+	@Test
+	void getResendableConfigs_excludes_sendingStartedConfig()
+	{
+		final TableRecordReference ref = newInOutRef();
+		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
+
+		repo.insertNewAttempt(ScriptedExportConversionStatusCreateRequest.builder()
+				.configId(configId).sourceRecord(ref).status(ExternalSystemExportStatus.SendingStarted).build());
+
+		assertThat(service.getResendableConfigsBySourceRecord(ref)).isEmpty();
+	}
+
 	// -----------------------------------------------------------------------
 	// getMatchingConfigIdsBySourceRecord — the force-resend selection (Re-send process with
 	// IsOnlyNotSentSuccessfully=N): everything except DontSend and the actively-in-flight attempts
