@@ -65,7 +65,11 @@ test.describe('Sales order quick entry - default packing instruction', () => {
     allure.tag('F00101.10');
   });
 
-  test('no product price references the Standard-Packvorschrift - not defaulted, order completes', async () => {
+  // `page` is destructured but not referenced: the page objects and Backend read the page the custom
+  // fixture in playwright.config.js publishes as `global.currentPage`, and Playwright only runs that
+  // fixture for a test that actually requests `page`. Omitting it leaves the global unset.
+  // eslint-disable-next-line no-unused-vars
+  test('no product price references the Standard-Packvorschrift - not defaulted, order completes', async ({ page }) => {
     const masterdata = await createFixture(false);
     const customer = masterdata.bpartners.CUSTOMER.bpartnerCode;
     const product = masterdata.products.PROD.productName;
@@ -96,7 +100,8 @@ test.describe('Sales order quick entry - default packing instruction', () => {
     expect(docStatus.value?.key ?? docStatus.value).toBe('CO');
   });
 
-  test('a product price references the packing instruction - still defaulted, order completes', async () => {
+  // eslint-disable-next-line no-unused-vars
+  test('a product price references the packing instruction - still defaulted, order completes', async ({ page }) => {
     const masterdata = await createFixture(true);
     const customer = masterdata.bpartners.CUSTOMER.bpartnerCode;
     const product = masterdata.products.PROD.productName;
