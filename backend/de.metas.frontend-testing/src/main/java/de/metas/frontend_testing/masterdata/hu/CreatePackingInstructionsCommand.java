@@ -50,7 +50,7 @@ public class CreatePackingInstructionsCommand
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	@NonNull private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
+	@NonNull private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	@NonNull private final MasterdataContext context;
 	@NonNull private final JsonPackingInstructionsRequest request;
 	@NonNull private final Identifier identifier;
@@ -250,7 +250,7 @@ public class CreatePackingInstructionsCommand
 		// Fails with "No identifier found for PriceListVersionId" when the request has no bpartners section:
 		// the price list version is created as a side effect of creating a bpartner.
 		final PriceListVersionId priceListVersionId = context.getIdOfType(PriceListVersionId.class);
-		final I_M_PriceList_Version priceListVersion = priceListsRepo.getPriceListVersionById(priceListVersionId);
+		final I_M_PriceList_Version priceListVersion = priceListDAO.getPriceListVersionById(priceListVersionId);
 
 		final List<I_M_ProductPrice> productPrices = ProductPrices.newQuery(priceListVersion)
 				.setProductId(productId)

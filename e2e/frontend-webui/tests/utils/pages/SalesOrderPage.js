@@ -203,6 +203,25 @@ export class SalesOrderPage {
    */
   static async addOrderLine({ product, quantity, recordId }) {
     return await test.step(`SalesOrderPage - Add order line: ${product} x ${quantity}`, async () => {
+      await this.openQuickEntryAndSelectProduct({ product, recordId });
+      await this.submitQuickEntryLine({ quantity });
+    });
+  }
+
+  /**
+   * Open the batch-entry (quick input) form and select a product, then STOP — leaving the form open so
+   * the caller can inspect what the backend defaulted into it.
+   *
+   * This is the first half of {@link addOrderLine}, which submits and closes the form and so cannot be
+   * used to read a defaulted field. Keeping it as the single implementation means both callers get the
+   * same spinner handling rather than two copies drifting apart.
+   *
+   * @param {Object} params
+   * @param {string} params.product - Product code or name
+   * @param {string} params.recordId - Optional record ID (extracted from the URL if not provided)
+   */
+  static async openQuickEntryAndSelectProduct({ product, recordId }) {
+    return await test.step(`SalesOrderPage - Open quick entry and select: ${product}`, async () => {
       const page = getPage();
 
       // Get record ID if not provided
@@ -271,67 +290,6 @@ export class SalesOrderPage {
 
       // Click the option by text - finds element containing the product code
       // This avoids clicking on "Search for more..." or other non-record options
-      await page.locator('.input-dropdown-list-option').getByText(product).first().click();
-
-      // Wait for product to be selected and form to update
-      await page.waitForTimeout(500);
-
-      // Fill quantity using spinbutton role (language-independent)
-      await page.getByRole('spinbutton').fill(quantity.toString());
-
-      // Press Enter to add the line (as instructed by the UI: "Press 'Enter' to add")
-      await page.keyboard.press('Enter');
-
-      // Wait for the line to be added
-      await page.waitForTimeout(500);
-
-      // Close the batch entry modal
-      // Language-independent: Use data-testid from TableFilter.js
-      const closeButton = page.getByTestId('batch-entry-toggle');
-      await closeButton.click();
-
-      // Wait for the modal to close
-      await page.waitForTimeout(500);
-    });
-  }
-
-  /**
-   * Open the batch-entry (quick input) form and select a product, then STOP — leaving the form open so
-   * the caller can inspect what the backend defaulted into it.
-   *
-   * `addOrderLine` submits and closes the form, so it cannot be used to read a defaulted field.
-   *
-   * @param {Object} params
-   * @param {string} params.product - Product code or name
-   * @param {string} params.recordId - Optional record ID (extracted from the URL if not provided)
-   */
-  static async openQuickEntryAndSelectProduct({ product, recordId }) {
-    return await test.step(`SalesOrderPage - Open quick entry and select: ${product}`, async () => {
-      const page = getPage();
-
-      const effectiveRecordId = recordId || this.getRecordId();
-      await waitForTabAllowsNew(SALES_ORDER_WINDOW_ID, effectiveRecordId, 'AD_Tab-187', {
-        maxRetries: 15,
-        retryDelayMs: 1000,
-      });
-
-      const batchEntryButton = page.getByTestId('batch-entry-toggle');
-      await batchEntryButton.scrollIntoViewIfNeeded();
-      await batchEntryButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      await batchEntryButton.click();
-
-      await page.locator('.quick-input-container').waitFor({
-        state: 'visible',
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
-
-      const productInput = page.locator('#lookup_M_Product_ID input.input-field');
-      await productInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      await productInput.click();
-      await page.waitForTimeout(300);
-      await productInput.fill(product);
-      await page.waitForTimeout(500);
-
       await page.locator('.input-dropdown-list-option').getByText(product).first().click();
 
       // The product callout runs server-side and patches the quick-input document; give it time to
