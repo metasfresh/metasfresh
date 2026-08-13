@@ -58,9 +58,13 @@ class ErrorManagerTest
 			final String methodName,
 			final int lineNo)
 	{
+		return throwableWithStackFrames(new StackTraceElement(className, methodName, "SomeSource.java", lineNo));
+	}
+
+	private static Throwable throwableWithStackFrames(final StackTraceElement... frames)
+	{
 		final Throwable throwable = new RuntimeException("boom");
-		throwable.setStackTrace(new StackTraceElement[] {
-				new StackTraceElement(className, methodName, "SomeSource.java", lineNo) });
+		throwable.setStackTrace(frames);
 		return throwable;
 	}
 
@@ -105,6 +109,50 @@ class ErrorManagerTest
 					.build());
 
 			assertThat(issue.getIssueSummary()).isEqualTo("the request payload could not be processed");
+		}
+
+		/**
+		 * The frame that identifies the failing code is normally a {@code de.metas} one — the legacy
+		 * {@code org.adempiere} / {@code org.compiere} packages are mostly framework plumbing now. Selecting frames by
+		 * the substring {@code "adempiere"} therefore skips the application code entirely and reports the first
+		 * framework frame below it, which is identical for every failure routed through that framework.
+		 */
+		@Test
+		void picksTheApplicationFrameRatherThanTheFrameworkOneBelowIt()
+		{
+			final I_AD_Issue issue = createIssueAndLoad(IssueCreateRequest.builder()
+					.throwable(throwableWithStackFrames(
+							new StackTraceElement("de.metas.order.compensationGroup.GroupCompensationAmtType",
+									"ofAD_Ref_List_Value", "GroupCompensationAmtType.java", 48),
+							new StackTraceElement("de.metas.order.compensationGroup.OrderGroupRepository",
+									"toGroupCompensationLine", "OrderGroupRepository.java", 343),
+							new StackTraceElement("org.adempiere.ad.callout.api.impl.CalloutExecutor",
+									"execute", "CalloutExecutor.java", 258)))
+					.build());
+
+			assertThat(issue.getSourceClassName()).isEqualTo("de.metas.order.compensationGroup.GroupCompensationAmtType");
+			assertThat(issue.getSourceMethodName()).isEqualTo("ofAD_Ref_List_Value");
+			assertThat(issue.getLineNo()).isEqualTo(48);
+			assertThat(issue.getErrorTrace())
+					.as("the application frames belong in the trace, not just the framework ones")
+					.contains("GroupCompensationAmtType.ofAD_Ref_List_Value")
+					.contains("OrderGroupRepository.toGroupCompensationLine");
+		}
+
+		/** The legacy packages are still metasfresh code and must keep being selected. */
+		@Test
+		void stillPicksLegacyAdempiereAndCompiereFrames()
+		{
+			final I_AD_Issue issue = createIssueAndLoad(IssueCreateRequest.builder()
+					.throwable(throwableWithStackFrames(
+							new StackTraceElement("java.util.Optional", "orElseThrow", "Optional.java", 408),
+							new StackTraceElement("org.compiere.model.MTree", "loadNodes", "MTree.java", 290),
+							new StackTraceElement("org.adempiere.ad.callout.api.impl.CalloutExecutor",
+									"execute", "CalloutExecutor.java", 258)))
+					.build());
+
+			assertThat(issue.getSourceClassName()).isEqualTo("org.compiere.model.MTree");
+			assertThat(issue.getSourceMethodName()).isEqualTo("loadNodes");
 		}
 
 		/** A summary that genuinely adds information is still appended to the throwable's message. */

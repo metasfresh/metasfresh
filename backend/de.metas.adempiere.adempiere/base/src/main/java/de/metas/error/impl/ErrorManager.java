@@ -136,10 +136,9 @@ public class ErrorManager implements IErrorManager
 				int count = 0;
 				for (final StackTraceElement element : throwable.getStackTrace())
 				{
-					final String s = element.toString();
-					if (s.contains("adempiere"))
+					if (isMetasfreshFrame(element))
 					{
-						errorTrace.append(s).append("\n");
+						errorTrace.append(element).append("\n");
 						if (count == 0)
 						{
 							issue.setSourceClassName(element.getClassName());
@@ -200,6 +199,20 @@ public class ErrorManager implements IErrorManager
 		}
 
 		return adIssueId;
+	}
+
+	/**
+	 * Tells whether the frame belongs to metasfresh code, i.e. is worth reporting as the origin of the error.
+	 * Matching on the substring {@code "adempiere"} selects neither {@code de.metas} (where the application code lives)
+	 * nor {@code org.compiere}, so it reports the topmost framework frame instead of the code that actually failed.
+	 */
+	private static boolean isMetasfreshFrame(@NonNull final StackTraceElement element)
+	{
+		final String className = element.getClassName();
+		return className.startsWith("de.metas.")
+				|| className.startsWith("org.adempiere.")
+				|| className.startsWith("org.compiere.")
+				|| className.startsWith("org.eevolution.");
 	}
 
 	private static String buildIssueSummary(final IssueCreateRequest request)
