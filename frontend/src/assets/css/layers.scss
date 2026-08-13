@@ -10,6 +10,12 @@
 * - 400 - screen-freeze
 */
 
+/* Over static content, so a row context menu is never occluded by a table's own
+ * in-content overlays -- notably `.column-resize-handle` (table.scss), a full-height 5px
+ * strip at z-index 3 on every header-cell boundary. Both used to sit at 3, which left the
+ * hit test to DOM order and let the invisible handle swallow clicks on menu items. */
+$z-index-context-menu: 50;
+
 $z-index-backdrop: 200;
 $z-index-spinner-overlay: 200;
 $z-index-header-menu: 201;
