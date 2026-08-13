@@ -49,6 +49,22 @@ SET IsTranslated = 'Y',
 WHERE AD_Language = 'en_US' AND AD_Process_ID = 585650
 ;
 
+-- de_DE / de_CH already carry the base (German) text from the skeleton insert -- just flip IsTranslated,
+-- mirroring the AD_Element_Trl treatment below.
+UPDATE AD_Process_Trl
+SET IsTranslated = 'Y',
+    Updated      = TO_TIMESTAMP('2026-08-13 17:10:11', 'YYYY-MM-DD HH24:MI:SS'),
+    UpdatedBy    = 100
+WHERE AD_Language = 'de_DE' AND AD_Process_ID = 585650
+;
+
+UPDATE AD_Process_Trl
+SET IsTranslated = 'Y',
+    Updated      = TO_TIMESTAMP('2026-08-13 17:10:12', 'YYYY-MM-DD HH24:MI:SS'),
+    UpdatedBy    = 100
+WHERE AD_Language = 'de_CH' AND AD_Process_ID = 585650
+;
+
 -- 4. AD_Element for the MaxChecksPerRun parameter -- its Description is the user-facing statement of the
 --    empty-or-<=0-means-no-limit rule (AD_Process_Para.Description renders as the field's tooltip).
 INSERT INTO AD_Element (AD_Element_ID, AD_Client_ID, AD_Org_ID, ColumnName, Created, CreatedBy, Description,

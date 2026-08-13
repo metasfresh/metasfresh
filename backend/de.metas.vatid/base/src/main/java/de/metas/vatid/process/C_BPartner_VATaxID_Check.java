@@ -146,7 +146,8 @@ public class C_BPartner_VATaxID_Check extends JavaProcess implements IProcessPre
 	 * {@link RunOutOfTrx}, so there is no caller transaction to inherit anyway, and the whole point here is
 	 * that each partner's check must commit (or fail) completely independently of every other partner's —
 	 * a throwing online checker or a rejected malformed value must not roll back, delay or block any
-	 * partner already checked or still queued in this same run.
+	 * partner already checked or still queued in this same run. This would only go away if per-partner
+	 * commit isolation were no longer required — not expected to change.
 	 */
 	private void checkOneInOwnTrx(@NonNull final PInstanceId pinstanceId, @NonNull final I_C_BPartner bpartnerRecord)
 	{
