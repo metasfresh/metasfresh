@@ -572,6 +572,9 @@ public class C_Invoice_Candidate_StepDef
 	 *   <li>{@code Reason} (optional)</li>
 	 *   <li>{@code IsAutoInvoice} (optional) — expected auto-invoice flag</li>
 	 *   <li>{@code InvoiceRule} (optional) — expected invoice-rule code (e.g. {@code D} = AfterDelivery, {@code I} = Immediate)</li>
+	 *   <li>{@code InvoiceRule_Override} (optional, null-allowed) — expected invoice-rule override; pass {@code null} to assert that no override is set</li>
+	 *   <li>{@code IsFreightCost} (optional) — expected freight-cost flag, derived from the product's ProductType</li>
+	 *   <li>{@code DeliveryDate} (optional) — expected delivery date</li>
 	 * </ul>
 	 *
 	 * <p>Example:
@@ -716,6 +719,17 @@ public class C_Invoice_Candidate_StepDef
 
 						row.getAsOptionalBigDecimal(I_C_Invoice_Candidate.COLUMNNAME_PriceActual)
 								.ifPresent(expected -> softly.assertThat(finalInvoiceCandidate.getPriceActual()).as("PriceActual").isEqualByComparingTo(expected));
+
+						row.getAsOptionalString(I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override)
+								.ifPresent(invoiceRuleOverride -> softly.assertThat(finalInvoiceCandidate.getInvoiceRule_Override())
+										.as("InvoiceRule_Override")
+										.isEqualTo(DataTableUtil.nullToken2Null(invoiceRuleOverride)));
+
+						row.getAsOptionalBoolean(I_C_Invoice_Candidate.COLUMNNAME_IsFreightCost)
+								.ifPresent(isFreightCost -> softly.assertThat(finalInvoiceCandidate.isFreightCost()).as("IsFreightCost").isEqualTo(isFreightCost));
+
+						row.getAsOptionalLocalDate(I_C_Invoice_Candidate.COLUMNNAME_DeliveryDate)
+								.ifPresent(deliveryDate -> softly.assertThat(TimeUtil.asLocalDate(finalInvoiceCandidate.getDeliveryDate())).as("DeliveryDate").isEqualTo(deliveryDate));
 
 						softly.assertAll();
 					}
