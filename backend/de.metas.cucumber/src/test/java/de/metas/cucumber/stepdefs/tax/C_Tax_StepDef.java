@@ -92,7 +92,8 @@ public class C_Tax_StepDef
 	 *     <li>{@code TypeOfDestCountry}, {@code ValidFrom} — as documented in {@link I_C_Tax}</li>
 	 *     <li>{@code RequiresTaxCertificate} — {@code Y}/{@code N}/{@code true}/{@code false}; tri-state column
 	 *         (blank/omitted leaves it unset, i.e. matches regardless) — this tax only applies to a BPartner
-	 *         that holds (or lacks) a tax certificate, per {@code TaxDAO.getTaxQueryBuilder}</li>
+	 *         that holds (or lacks) a tax certificate, as resolved during tax determination in
+	 *         {@code TaxDAO}</li>
 	 * </ul>
 	 *
 	 * <p>Re-running this step for an existing identifier acts as an upsert — applying the new
