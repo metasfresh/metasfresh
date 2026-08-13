@@ -8,13 +8,6 @@
 -- New AD_ViewSource 540002: source=M_ShipperTransportation, parent_link=M_Delivery_Planning_Delivery_Instructions_V.M_ShipperTransportation_ID (585501),
 --                            source_link=M_ShipperTransportation.M_ShipperTransportation_ID (540426)
 
-INSERT INTO AD_MigrationScript(AD_MigrationScript_ID, Name, Description, Script_Type, IsActive, Created, CreatedBy, Updated, UpdatedBy)
-VALUES(5818990 /*From ID Server*/, '5818990_sys_gh30630_fix_M_Delivery_Planning_Delivery_Instructions_V_viewsources',
-       'Sync AD_ViewSource after view join rewrite: deactivate stale ReleaseNo ViewSource_Column, add M_ShipperTransportation ViewSource',
-       'SQL', 'Y',
-       TO_TIMESTAMP('2026-08-13 10:01:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
-       TO_TIMESTAMP('2026-08-13 10:01:00', 'YYYY-MM-DD HH24:MI:SS'), 100);
-
 -- Deactivate stale AD_ViewSource_Column for M_Delivery_Planning.ReleaseNo
 -- (was the join key in old view; new view joins via M_ShipperTransportation_ID instead)
 UPDATE AD_ViewSource_Column
