@@ -24,6 +24,7 @@ package de.metas.shipper.client.nshift;
 
 import de.metas.common.delivery.v1.json.DeliveryMappingConstants;
 import de.metas.common.delivery.v1.json.JsonContact;
+import de.metas.common.delivery.v1.json.request.JsonCarrierService;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
 import de.metas.common.util.Check;
 import de.metas.shipper.client.nshift.json.JsonAddress;
@@ -32,6 +33,7 @@ import de.metas.shipper.client.nshift.json.JsonDetail;
 import de.metas.shipper.client.nshift.json.JsonDetailGroup;
 import de.metas.shipper.client.nshift.json.JsonDetailRow;
 import de.metas.shipper.client.nshift.json.JsonLine;
+import de.metas.shipper.client.nshift.json.response.JsonShipmentResponse;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -40,15 +42,36 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @UtilityClass
 public class NShiftUtil
 {
+	/**
+	 * Extracts the resolved carrier services from an nShift shipment / order-advice response. nShift returns them
+	 * as bare numeric ids under {@code Services}; the id is used as the name as well. Shared by the shipment
+	 * (booking) and order-advise paths so both map the response services identically.
+	 */
+	public static Set<JsonCarrierService> extractResolvedServices(@NonNull final JsonShipmentResponse response)
+	{
+		if (response.getServices() == null)
+		{
+			return Collections.emptySet();
+		}
+		return response.getServices().stream()
+				.map(svcId -> {
+					final String id = String.valueOf(svcId);
+					return JsonCarrierService.builder().id(id).name(id).build();
+				})
+				.collect(Collectors.toCollection(LinkedHashSet::new));
+	}
+
 	/**
 	 * Display name for a carrier product resolved from an nShift response:
 	 * {@code "<CarrierFullName> - <ProdName>"} (e.g. "UPS Rest API - UPS Standard®").
