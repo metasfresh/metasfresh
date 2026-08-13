@@ -167,6 +167,10 @@ public class VATaxIDCheck_StepDef
 	}
 
 	/**
+	 * Asserts the status the service RETURNED, which is not the same assertion as the status it
+	 * PERSISTED — a dedup skip returns the previous result without writing anything, so checking only
+	 * the stored column would pass even if the service had returned something else.
+	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
 	 * <pre>

@@ -47,6 +47,10 @@ public class VATaxID_Config_StepDef
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	/**
+	 * Upserts the organisation's VAT-ID configuration. An UPSERT rather than an insert on purpose: one
+	 * active row per organisation is enforced by a partial unique index, and the local cucumber DB is
+	 * never reset between runs, so a second run would otherwise collide on that index.
+	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
 	 *   <b>IsFormatCheckEnabled</b>     — (required) run the offline format + check-digit validation<br>
