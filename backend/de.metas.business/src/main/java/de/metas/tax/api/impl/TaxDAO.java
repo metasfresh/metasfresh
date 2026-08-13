@@ -3,6 +3,7 @@ package de.metas.tax.api.impl;
 import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
@@ -32,6 +33,7 @@ import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
+import de.metas.vatid.VATaxIDStatus;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -393,12 +395,24 @@ public class TaxDAO implements ITaxDAO
 
 		final BPartnerId bpartnerId = taxQuery.getBPartnerId();
 
-		final VATIdentifier bpVATaxID = Optional.ofNullable( taxQuery.getBPartnerLocationId())
-				.map(BPartnerLocationAndCaptureId::getBpartnerLocationId)
+		final Optional<BPartnerLocationId> bpartnerLocationId = Optional.ofNullable(taxQuery.getBPartnerLocationId())
+				.map(BPartnerLocationAndCaptureId::getBpartnerLocationId);
+
+		final VATIdentifier bpVATaxID = bpartnerLocationId
 				.flatMap(bpartnerBL::getVATTaxId)
 				.orElse(null);
 
-		final boolean bPartnerHasTaxCertificate = bpVATaxID != null;
+		// A present VAT-ID keeps the tax certificate unless its VATaxIDStatus is explicitly Invalid.
+		// The status is read from the SAME record that supplied bpVATaxID (location, else partner) --
+		// see BPartnerBL#resolveVATaxIDSource, which both getVATTaxId and getVATaxIDStatusCode share.
+		// A missing/blank status (pre-migration data, or never checked) defaults to "has certificate"
+		// via orElse(true), which is exactly today's presence-only behaviour (TC6's regression).
+		final boolean bPartnerHasTaxCertificate = bpVATaxID != null
+				&& bpartnerLocationId
+						.flatMap(bpartnerBL::getVATaxIDStatusCode)
+						.flatMap(VATaxIDStatus::optionalOfNullableCode)
+						.map(VATaxIDStatus::hasTaxCertificate)
+						.orElse(true);
 		loggable.addLog("BPartner has tax certificate={}", bPartnerHasTaxCertificate);
 		queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_RequiresTaxCertificate, StringUtils.ofBoolean(bPartnerHasTaxCertificate), null);
 

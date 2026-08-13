@@ -304,4 +304,18 @@ public interface IBPartnerBL extends ISingletonService
 	 */
 	@NonNull
 	Optional<VATIdentifier> getVATTaxId(@NonNull BPartnerLocationId bpartnerLocationId);
+
+	/**
+	 * Gets the raw {@code VATaxIDStatus} column value of whichever record actually supplied the
+	 * VAT-ID returned by {@link #getVATTaxId(BPartnerLocationId)} — the SAME resolution (location,
+	 * else, unless {@value #SYS_CONFIG_IgnorePartnerVATID}, the partner) — so a caller that needs
+	 * "is this VAT-ID valid" reads the status off the record whose value it is actually using, never
+	 * a different one.
+	 *
+	 * <p>Returns the raw column code (not the {@code de.metas.vatid.VATaxIDStatus} enum): that type
+	 * lives in a module which depends on this one, so this module must not depend back on it. Empty
+	 * when no record supplied a VAT-ID at all (same case in which {@link #getVATTaxId} is empty).
+	 */
+	@NonNull
+	Optional<String> getVATaxIDStatusCode(@NonNull BPartnerLocationId bpartnerLocationId);
 }
