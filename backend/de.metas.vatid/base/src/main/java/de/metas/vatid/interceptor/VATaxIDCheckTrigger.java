@@ -110,20 +110,12 @@ public class VATaxIDCheckTrigger
 		}
 		catch (final Exception ex)
 		{
-			// This catch is not optional and not cargo-cult: on the AUTOCOMMIT path — no ambient transaction
-			// when the triggering save ran, e.g. a save outside any explicit trx — ITrxManager#runAfterCommit
-			// resolves to AutoCommitTrxListenerManager, whose registerListener() calls this Runnable
-			// SYNCHRONOUSLY and wraps-and-rethrows any exception it throws (see
-			// AutoCommitTrxListenerManager#execute). Without this catch, a throwing online checker — or a
+			// Without this catch, a throwing online checker — or a
 			// malformed VAT-ID that only this format re-check rejects — would propagate straight back into
-			// the caller's save and fail it, even though the row is already committed. On the transactional
-			// path this catch is a no-op safety net: TrxListenerManager#fireAfterCommit already fires
-			// listeners with OnError.LogAndSkip, discarding a thrown exception itself. Either way, the save
-			// must never fail because of what happens here.
-			Loggables.addLog("VAT-ID check for bpartnerId={}, bpartnerLocationId={}, VATaxID={} failed after commit: {}",
-					bpartnerId, bpartnerLocationId, vataxID.getAsString(), ex.getMessage());
-			logger.warn("VAT-ID after-commit check failed for bpartnerId={}, bpartnerLocationId={}, VATaxID={}",
-					bpartnerId, bpartnerLocationId, vataxID.getAsString(), ex);
+			// the caller's save and fail it, even though the row is already committed.
+			Loggables.withWarnLoggerToo(logger)
+					.addLog("VAT-ID check for bpartnerId={}, bpartnerLocationId={}, VATaxID={} failed after commit: {}",
+							bpartnerId, bpartnerLocationId, vataxID.getAsString(), ex.getMessage());
 		}
 	}
 }
