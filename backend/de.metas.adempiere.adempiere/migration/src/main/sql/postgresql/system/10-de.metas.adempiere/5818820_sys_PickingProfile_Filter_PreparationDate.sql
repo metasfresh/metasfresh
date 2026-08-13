@@ -30,14 +30,17 @@ INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Ref_List_ID,AD_Reference_ID,C
 INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Ref_List_ID=544338 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
 ;
 
--- en_US: 'Date Ready' — the wording AD_Reference 541850 already uses for this same date, so the two
--- references read identically. (That row is the precedent for the WORDING only; its own IsTranslated
--- flag is 'N', as are all three existing rows on this reference.)
+-- en_US: 'Date Ready' — the wording AD_Reference 541850 (row 543623) already uses for this same
+-- date, so the two references read identically. That row is the precedent for the WORDING only:
+-- its own IsTranslated flag is 'N', as are all three pre-existing rows on THIS reference, 541849
+-- (543617 Customer, 543618 DeliveryDate, 543619 HandoverLocation).
 --
--- IsTranslated='Y' is nevertheless deliberate. Per metasfresh-designing-windows § "Translations via
--- AD_Element", the flag "is often set wrong in both directions" and correctness is judged
--- semantically, not copied from neighbours: 'Bereitstellungsdatum' <-> 'Date Ready' is a faithful
--- pair, so the row IS translated. Matching the siblings' 'N' would propagate their error.
+-- IsTranslated='Y' here is the documented convention, not a deviation: seed every system language
+-- with the base text and 'N', "then UPDATE ... SET IsTranslated='Y' only for the languages whose
+-- text is final (typically en_US, de_DE, de_CH)" — metasfresh-application-dictionary, the CRITICAL
+-- Review-rule on seeding *_Trl tables. 'Bereitstellungsdatum' <-> 'Date Ready' is a faithful pair,
+-- so those three languages are final. The siblings' 'N' is the un-finalised state, not a standard
+-- to copy.
 -- 2026-08-13T10:00:01.000Z
 UPDATE AD_Ref_List_Trl SET Name='Date Ready', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-13 10:00:01','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Ref_List_ID=544338 AND AD_Language='en_US'
 ;
