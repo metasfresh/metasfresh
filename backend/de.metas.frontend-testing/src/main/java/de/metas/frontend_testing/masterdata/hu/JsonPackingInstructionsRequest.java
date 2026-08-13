@@ -31,6 +31,22 @@ public class JsonPackingInstructionsRequest
 	@Nullable Identifier lu;
 	int qtyTUsPerLU;
 
+	/**
+	 * Sets {@code M_HU_PI_Item_Product.IsDefaultForProduct} on the created CU-TU allocation — the
+	 * "Standard-Packvorschrift" that gets auto-defaulted onto document lines for this product.
+	 */
+	boolean isDefaultForProduct;
+
+	/**
+	 * Points the product's existing product price(s) on the current price list version at the created
+	 * CU-TU allocation, i.e. makes the packing instruction one that a price references.
+	 * <p>
+	 * The link is expressed here rather than on the product request because products are created before
+	 * packing instructions ({@code CreateMasterdataCommand}), so at price-creation time the packing
+	 * instruction does not exist yet.
+	 */
+	boolean referencedByProductPrice;
+
 	public Identifier getTuNotNull() {return Check.assumeNotNull(tu, "tu must be set");}
 
 	public Identifier getProductNotNull() {return Check.assumeNotNull(product, "product must be set");}
