@@ -23,7 +23,9 @@
 package de.metas.vatid.process;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.logging.LogManager;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -39,12 +41,19 @@ import de.metas.vatid.VATaxIDCheckRequest;
 import de.metas.vatid.VATaxIDCheckService;
 import de.metas.vatid.VATaxIDOrderTaxRefresher;
 import de.metas.vatid.VATaxIDStatus;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.function.Function;
 
 /**
  * The manual/scheduled VAT-ID check: available on the Business Partner window (table {@code C_BPartner}),
@@ -54,17 +63,35 @@ import org.slf4j.Logger;
  * {@link VATaxIDCheckService#check(VATaxIDCheckRequest)}, which alone owns the format-check-first, the
  * not-supported short-circuit, de-duplication, evidence, and the parent-status refresh.
  *
+ * <p><b>Selecting a partner also covers its locations.</b> The Business Partner window's selection is of
+ * {@code C_BPartner} records — a user cannot select an address directly — so "check the VAT-IDs of the
+ * selected partners" is read as "check the selected partners' own VAT-IDs <em>and</em> every VAT-ID on one
+ * of their locations", not "the partner header only". {@link #retrieveCheckTargets()} builds exactly that
+ * combined set: every selected partner's own header (if it carries a VAT-ID) plus every location of every
+ * selected partner that carries one — regardless of whether that location's owning partner itself has a
+ * VAT-ID.
+ *
  * <p><b>{@code MaxChecksPerRun}</b> throttles a selection that is bigger than the organisation wants to hit
  * the online service with in one go: empty or {@code <= 0} means no limit at all (see the parameter's own
- * {@code AD_Element} description, which is the authoritative statement of that rule). The rest of the
- * selection is left completely untouched — still {@code NotChecked} or whatever it already was — and the
- * run logs how many were left pending, so a re-run (manual or the next nightly pass) picks them up.
+ * {@code AD_Element} description, which is the authoritative statement of that rule). It bounds the
+ * <em>combined</em> partner+location work, not each type separately — a run does not check up to
+ * {@code MaxChecksPerRun} partners and then, on top, up to {@code MaxChecksPerRun} locations. The rest of
+ * the combined set is left completely untouched — still {@code NotChecked} or whatever it already was —
+ * and the run logs how many were left pending, so a re-run (manual or the next nightly pass) picks them up.
  *
- * <p><b>{@code @RunOutOfTrx}</b>: {@link #doIt()} runs with no ambient transaction, and each partner's check
- * — together with the order-line-tax refresh a status change triggers — is additionally wrapped in its own
- * new transaction (see {@link #checkOneInOwnTrx}) so that one partner's failure — a throwing checker, a
- * malformed value the format re-check rejects, a refresh failure — can never affect any other partner
- * already checked or still to be checked in the same run.
+ * <p><b>Deterministic ordering under throttling.</b> {@link #retrieveCheckTargets()} orders the combined set
+ * by {@code C_BPartner_ID} first — exactly the ordering the partner-only selection used before locations
+ * existed — and, within one partner, the partner's own header check (if it has a VAT-ID) before that
+ * partner's locations (ordered by {@code C_BPartner_Location_ID}). A throttled run therefore always
+ * processes the same deterministic prefix of the same selection: it is stable under a wider
+ * {@code MaxChecksPerRun} (the prefix only grows) and reproducible across repeated runs of the same
+ * selection.
+ *
+ * <p><b>{@code @RunOutOfTrx}</b>: {@link #doIt()} runs with no ambient transaction, and each check target's
+ * check — together with the order-line-tax refresh a status change triggers — is additionally wrapped in
+ * its own new transaction (see {@link #checkOneInOwnTrx}) so that one target's failure — a throwing
+ * checker, a malformed value the format re-check rejects, a refresh failure — can never affect any other
+ * target already checked or still to be checked in the same run.
  */
 public class C_BPartner_VATaxID_Check extends JavaProcess implements IProcessPrecondition
 {
@@ -75,6 +102,7 @@ public class C_BPartner_VATaxID_Check extends JavaProcess implements IProcessPre
 	@NonNull private final VATaxIDCheckService checkService = SpringContextHolder.instance.getBean(VATaxIDCheckService.class);
 	@NonNull private final VATaxIDOrderTaxRefresher orderTaxRefresher = SpringContextHolder.instance.getBean(VATaxIDOrderTaxRefresher.class);
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	/**
 	 * Empty or {@code <= 0} means no limit — see the {@code AD_Process_Para}'s own description, which this
@@ -100,59 +128,114 @@ public class C_BPartner_VATaxID_Check extends JavaProcess implements IProcessPre
 	protected String doIt()
 	{
 		final PInstanceId pinstanceId = getPinstanceId();
-		final ImmutableList<I_C_BPartner> bpartnersToCheck = retrieveBPartnersWithVATaxID();
+		final ImmutableList<CheckTarget> checkTargets = retrieveCheckTargets();
 
 		final int maxChecksPerRun = p_MaxChecksPerRun;
 		final boolean unlimited = maxChecksPerRun <= 0;
-		final int checksAllowed = unlimited ? bpartnersToCheck.size() : Math.min(maxChecksPerRun, bpartnersToCheck.size());
+		final int checksAllowed = unlimited ? checkTargets.size() : Math.min(maxChecksPerRun, checkTargets.size());
 
 		int checkedCount = 0;
-		for (final I_C_BPartner bpartnerRecord : bpartnersToCheck)
+		for (final CheckTarget checkTarget : checkTargets)
 		{
 			if (checkedCount >= checksAllowed)
 			{
 				break;
 			}
 
-			checkOneInOwnTrx(pinstanceId, bpartnerRecord);
+			checkOneInOwnTrx(pinstanceId, checkTarget);
 			checkedCount++;
 		}
 
-		final int pendingCount = bpartnersToCheck.size() - checkedCount;
+		final int pendingCount = checkTargets.size() - checkedCount;
 		if (pendingCount > 0)
 		{
 			Loggables.addLog("VAT-ID check: checked {} of {} selected, MaxChecksPerRun={}, pendingCount={}",
-					checkedCount, bpartnersToCheck.size(), maxChecksPerRun, pendingCount);
+					checkedCount, checkTargets.size(), maxChecksPerRun, pendingCount);
 		}
 
 		return checkedCount + " checked, " + pendingCount + " pending";
 	}
 
 	/**
-	 * @return every selected (or single-record) {@code C_BPartner} that actually carries a VAT-ID, ordered
-	 * by {@code C_BPartner_ID} so a run throttled by {@code MaxChecksPerRun} always processes the same
-	 * deterministic prefix of the selection. A partner with no VAT-ID has nothing to check and is not
-	 * counted towards either the checked or the pending count.
+	 * @return every VAT-ID to check for this run's selection: the header of every selected {@code C_BPartner}
+	 * that carries one, plus every {@code C_BPartner_Location} of every selected partner that carries one —
+	 * regardless of whether that location's own partner header has a VAT-ID (see the class javadoc,
+	 * "Selecting a partner also covers its locations").
+	 *
+	 * <p>Ordered by {@code C_BPartner_ID} first and, within one partner, the header before that partner's
+	 * locations (themselves ordered by {@code C_BPartner_Location_ID}) — see the class javadoc, "Deterministic
+	 * ordering under throttling". A partner with neither its own VAT-ID nor any location VAT-ID contributes
+	 * nothing and is not counted towards either the checked or the pending count.
 	 */
 	@NonNull
-	private ImmutableList<I_C_BPartner> retrieveBPartnersWithVATaxID()
+	private ImmutableList<CheckTarget> retrieveCheckTargets()
 	{
-		return retrieveSelectedRecordsQueryBuilder(I_C_BPartner.class)
-				.addNotNull(I_C_BPartner.COLUMNNAME_VATaxID)
-				.addNotEqualsFilter(I_C_BPartner.COLUMNNAME_VATaxID, "")
+		final ImmutableList<I_C_BPartner> selectedBPartners = retrieveSelectedRecordsQueryBuilder(I_C_BPartner.class)
 				.orderBy(I_C_BPartner.COLUMNNAME_C_BPartner_ID)
 				.create()
 				.listImmutable(I_C_BPartner.class);
+
+		final ImmutableList<Integer> selectedBPartnerIds = selectedBPartners.stream()
+				.map(I_C_BPartner::getC_BPartner_ID)
+				.collect(ImmutableList.toImmutableList());
+
+		final ImmutableListMultimap<Integer, I_C_BPartner_Location> locationsByBPartnerId = retrieveBPartnerLocationsWithVATaxID(selectedBPartnerIds)
+				.stream()
+				.collect(ImmutableListMultimap.toImmutableListMultimap(I_C_BPartner_Location::getC_BPartner_ID, Function.identity()));
+
+		final ImmutableList.Builder<CheckTarget> checkTargets = ImmutableList.builder();
+		for (final I_C_BPartner bpartnerRecord : selectedBPartners)
+		{
+			if (hasVATaxID(bpartnerRecord.getVATaxID()))
+			{
+				checkTargets.add(CheckTarget.ofPartner(bpartnerRecord));
+			}
+
+			for (final I_C_BPartner_Location bpartnerLocationRecord : locationsByBPartnerId.get(bpartnerRecord.getC_BPartner_ID()))
+			{
+				checkTargets.add(CheckTarget.ofLocation(bpartnerLocationRecord));
+			}
+		}
+		return checkTargets.build();
 	}
 
 	/**
-	 * Runs one partner's check — and, where it changed the status, the resulting order-line-tax refresh —
-	 * in its own, brand-new transaction — deliberately {@code callInNewTrx} (normally a hack, per
+	 * @return every active {@code C_BPartner_Location} of one of {@code selectedBPartnerIds} that carries a
+	 * VAT-ID, ordered by {@code C_BPartner_ID} then {@code C_BPartner_Location_ID} — the same ordering
+	 * {@link #retrieveCheckTargets()} groups locations under their partner by.
+	 */
+	@NonNull
+	private ImmutableList<I_C_BPartner_Location> retrieveBPartnerLocationsWithVATaxID(@NonNull final ImmutableList<Integer> selectedBPartnerIds)
+	{
+		if (selectedBPartnerIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return queryBL.createQueryBuilder(I_C_BPartner_Location.class)
+				.addInArrayFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, selectedBPartnerIds)
+				.addOnlyActiveRecordsFilter()
+				.addNotNull(I_C_BPartner_Location.COLUMNNAME_VATaxID)
+				.addNotEqualsFilter(I_C_BPartner_Location.COLUMNNAME_VATaxID, "")
+				.orderBy(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID)
+				.orderBy(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID)
+				.create()
+				.listImmutable(I_C_BPartner_Location.class);
+	}
+
+	private static boolean hasVATaxID(@Nullable final String vataxID)
+	{
+		return vataxID != null && !vataxID.isEmpty();
+	}
+
+	/**
+	 * Runs one check target's check — and, where it changed the status, the resulting order-line-tax refresh
+	 * — in its own, brand-new transaction — deliberately {@code callInNewTrx} (normally a hack, per
 	 * {@code docs/coding-rules/java-general.md}): {@link #doIt()} is {@link RunOutOfTrx}, so there is no
-	 * caller transaction to inherit anyway, and the whole point here is that each partner's <em>whole</em>
-	 * unit of work must commit (or fail) completely independently of every other partner's — a throwing
-	 * online checker or a rejected malformed value must not roll back, delay or block any partner already
-	 * checked or still queued in this same run. This would only go away if per-partner commit isolation
+	 * caller transaction to inherit anyway, and the whole point here is that each target's <em>whole</em>
+	 * unit of work must commit (or fail) completely independently of every other target's — a throwing
+	 * online checker or a rejected malformed value must not roll back, delay or block any target already
+	 * checked or still queued in this same run. This would only go away if per-target commit isolation
 	 * were no longer required — not expected to change.
 	 *
 	 * <p>The check and the order-line-tax refresh it may trigger are deliberately ONE transaction, not two:
@@ -163,47 +246,40 @@ public class C_BPartner_VATaxID_Check extends JavaProcess implements IProcessPre
 	 * it if the check's own write had failed, an inconsistency worse than the alternative (a refresh failure
 	 * rolling back an otherwise-successful check, to be retried on the next run).
 	 */
-	private void checkOneInOwnTrx(@NonNull final PInstanceId pinstanceId, @NonNull final I_C_BPartner bpartnerRecord)
+	private void checkOneInOwnTrx(@NonNull final PInstanceId pinstanceId, @NonNull final CheckTarget checkTarget)
 	{
-		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID());
-		final VATaxIDStatus previousStatus = VATaxIDStatus.optionalOfNullableCode(bpartnerRecord.getVATaxIDStatus())
-				.orElse(VATaxIDStatus.NotChecked);
-
 		try
 		{
-			// Isolation from every OTHER partner's transaction in this run (see the method javadoc above) —
-			// each partner's check-plus-refresh must commit or fail as its own independent unit.
-			trxManager.callInNewTrx(() -> checkAndRefreshIfStatusChanged(pinstanceId, bpartnerId, bpartnerRecord, previousStatus));
+			// Isolation from every OTHER target's transaction in this run (see the method javadoc above) —
+			// each target's check-plus-refresh must commit or fail as its own independent unit.
+			trxManager.callInNewTrx(() -> checkAndRefreshIfStatusChanged(pinstanceId, checkTarget));
 		}
 		catch (final Exception ex)
 		{
-			// One partner's failure (a throwing checker, a value the format re-check rejects, or — per the
+			// One target's failure (a throwing checker, a value the format re-check rejects, or — per the
 			// message wrapping below — a refresh failure) must not abort the run for the rest of the
 			// selection. Deliberately worded to not claim the check itself failed: the wrapped message below
 			// already says so explicitly when that is not what happened.
 			Loggables.withWarnLoggerToo(logger)
-					.addLog("VAT-ID check processing failed for C_BPartner_ID={}: {}", bpartnerRecord.getC_BPartner_ID(), ex.getMessage());
+					.addLog("VAT-ID check processing failed for {}: {}", checkTarget.getLogLabel(), ex.getMessage());
 		}
 	}
 
 	@NonNull
-	private VATaxIDStatus checkAndRefreshIfStatusChanged(
-			@NonNull final PInstanceId pinstanceId,
-			@NonNull final BPartnerId bpartnerId,
-			@NonNull final I_C_BPartner bpartnerRecord,
-			@NonNull final VATaxIDStatus previousStatus)
+	private VATaxIDStatus checkAndRefreshIfStatusChanged(@NonNull final PInstanceId pinstanceId, @NonNull final CheckTarget checkTarget)
 	{
 		final VATaxIDStatus newStatus = checkService.check(VATaxIDCheckRequest.builder()
-				.bpartnerId(bpartnerId)
-				.vataxID(VATIdentifier.of(bpartnerRecord.getVATaxID()))
+				.bpartnerId(checkTarget.getBpartnerId())
+				.bpartnerLocationId(checkTarget.getBpartnerLocationId())
+				.vataxID(checkTarget.getVataxID())
 				.pinstanceId(pinstanceId)
 				.build());
 
-		if (newStatus != previousStatus)
+		if (newStatus != checkTarget.getPreviousStatus())
 		{
 			try
 			{
-				orderTaxRefresher.refreshOrderLinesTaxForBPartner(bpartnerId);
+				orderTaxRefresher.refreshOrderLinesTaxForBPartner(checkTarget.getBpartnerId());
 			}
 			catch (final Exception ex)
 			{
@@ -211,13 +287,60 @@ public class C_BPartner_VATaxID_Check extends JavaProcess implements IProcessPre
 				// together (see the method javadoc). Wrapped so the outer catch's log line still names the
 				// check as having succeeded, rather than being misread as a check failure.
 				throw new AdempiereException(
-						"VAT-ID check for C_BPartner_ID=" + bpartnerRecord.getC_BPartner_ID()
-								+ " succeeded (status " + previousStatus + " -> " + newStatus
+						"VAT-ID check for " + checkTarget.getLogLabel()
+								+ " succeeded (status " + checkTarget.getPreviousStatus() + " -> " + newStatus
 								+ "), but refreshing its open orders' tax failed: " + ex.getMessage(),
 						ex);
 			}
 		}
 
 		return newStatus;
+	}
+
+	/**
+	 * One VAT-ID to check: either a partner header ({@link #bpartnerLocationId} {@code null}) or one of its
+	 * locations. Carries everything {@link #checkAndRefreshIfStatusChanged} needs so that method no longer
+	 * has to branch on which table the record came from — the branch happens once, when a {@code CheckTarget}
+	 * is built from the underlying {@code I_C_BPartner} / {@code I_C_BPartner_Location} record.
+	 */
+	@Value
+	@Builder
+	private static class CheckTarget
+	{
+		@NonNull BPartnerId bpartnerId;
+
+		@Nullable BPartnerLocationId bpartnerLocationId;
+
+		@NonNull VATIdentifier vataxID;
+
+		@NonNull VATaxIDStatus previousStatus;
+
+		@NonNull String logLabel;
+
+		@NonNull
+		private static CheckTarget ofPartner(@NonNull final I_C_BPartner bpartnerRecord)
+		{
+			return CheckTarget.builder()
+					.bpartnerId(BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID()))
+					.bpartnerLocationId(null)
+					.vataxID(VATIdentifier.of(bpartnerRecord.getVATaxID()))
+					.previousStatus(VATaxIDStatus.optionalOfNullableCode(bpartnerRecord.getVATaxIDStatus()).orElse(VATaxIDStatus.NotChecked))
+					.logLabel("C_BPartner_ID=" + bpartnerRecord.getC_BPartner_ID())
+					.build();
+		}
+
+		@NonNull
+		private static CheckTarget ofLocation(@NonNull final I_C_BPartner_Location bpartnerLocationRecord)
+		{
+			final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartnerLocationRecord.getC_BPartner_ID());
+			return CheckTarget.builder()
+					.bpartnerId(bpartnerId)
+					.bpartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, bpartnerLocationRecord.getC_BPartner_Location_ID()))
+					.vataxID(VATIdentifier.of(bpartnerLocationRecord.getVATaxID()))
+					.previousStatus(VATaxIDStatus.optionalOfNullableCode(bpartnerLocationRecord.getVATaxIDStatus()).orElse(VATaxIDStatus.NotChecked))
+					.logLabel("C_BPartner_ID=" + bpartnerLocationRecord.getC_BPartner_ID()
+							+ ", C_BPartner_Location_ID=" + bpartnerLocationRecord.getC_BPartner_Location_ID())
+					.build();
+		}
 	}
 }
