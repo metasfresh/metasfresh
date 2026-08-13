@@ -23,19 +23,18 @@
 package de.metas.order.vatid;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.document.engine.DocStatus;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderId;
 import de.metas.util.Services;
 import de.metas.vatid.VATaxIDOrderTaxRefresher;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
+import java.util.Set;
 
 /**
  * The {@code de.metas.business} implementation of {@code de.metas.vatid}'s
@@ -51,26 +50,35 @@ import java.util.List;
 @Component
 public class OrderLineTaxRefreshOnVATaxIDStatusChange implements VATaxIDOrderTaxRefresher
 {
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@Override
 	public void refreshOrderLinesTaxForBPartner(@NonNull final BPartnerId bpartnerId)
 	{
-		final List<I_C_Order> notCompletedOrders = queryBL.createQueryBuilder(I_C_Order.class)
-				.addEqualsFilter(I_C_Order.COLUMNNAME_C_BPartner_ID, bpartnerId)
-				.addNotInArrayFilter(I_C_Order.COLUMNNAME_DocStatus, DocStatus.completedOrClosedStatuses())
-				.create()
-				.list();
-
-		for (final I_C_Order order : notCompletedOrders)
+		final Set<OrderId> notCompletedOrderIds = orderDAO.retrieveNotCompletedOrderIds(bpartnerId);
+		if (notCompletedOrderIds.isEmpty())
 		{
-			for (final I_C_OrderLine orderLine : orderDAO.retrieveOrderLines(order))
-			{
-				orderLineBL.setTax(orderLine);
-				InterfaceWrapperHelper.saveRecord(orderLine);
-			}
+			return;
+		}
+
+		// Thread-inherited, deliberately NOT a new transaction: the check process runs each partner's check
+		// in its own per-item transaction (see C_BPartner_VATaxID_Check#checkOneInOwnTrx), and this refresh
+		// is called from inside that same still-open transaction. The refresh must be atomic WITH the
+		// status change that caused it — if the check's own commit later fails for any reason, the refresh
+		// must roll back with it, or an order line ends up carrying a tax that no recorded check justifies.
+		// A brand-new transaction would defeat exactly that: it would commit independently of the caller's
+		// transaction, so a refresh could survive a check that never actually committed.
+		trxManager.runInThreadInheritedTrx(() -> refreshInTrx(notCompletedOrderIds));
+	}
+
+	private void refreshInTrx(@NonNull final Set<OrderId> notCompletedOrderIds)
+	{
+		for (final I_C_OrderLine orderLine : orderDAO.retrieveOrderLinesByOrderIds(notCompletedOrderIds))
+		{
+			orderLineBL.setTax(orderLine);
+			InterfaceWrapperHelper.saveRecord(orderLine);
 		}
 	}
 }

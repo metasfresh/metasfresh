@@ -11,6 +11,7 @@ import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocSubType;
+import de.metas.document.engine.DocStatus;
 import de.metas.externalsystem.ExternalSystemId;
 import de.metas.impexp.InputDataSourceId;
 import de.metas.interfaces.I_C_OrderLine;
@@ -345,6 +346,16 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.create()
 				.idsAsSet(OrderId::ofRepoId)
 				.stream();
+	}
+
+	@Override
+	public Set<OrderId> retrieveNotCompletedOrderIds(@NonNull final BPartnerId bpartnerId)
+	{
+		return createQueryBuilder()
+				.addEqualsFilter(I_C_Order.COLUMNNAME_C_BPartner_ID, bpartnerId)
+				.addNotInArrayFilter(I_C_Order.COLUMNNAME_DocStatus, DocStatus.completedOrClosedStatuses())
+				.create()
+				.idsAsSet(OrderId::ofRepoId);
 	}
 
 	private IQueryBuilder<I_C_Order> createQueryBuilder()

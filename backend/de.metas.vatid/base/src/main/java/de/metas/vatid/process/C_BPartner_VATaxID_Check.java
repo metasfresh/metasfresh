@@ -41,6 +41,7 @@ import de.metas.vatid.VATaxIDOrderTaxRefresher;
 import de.metas.vatid.VATaxIDStatus;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.slf4j.Logger;
@@ -60,9 +61,10 @@ import org.slf4j.Logger;
  * run logs how many were left pending, so a re-run (manual or the next nightly pass) picks them up.
  *
  * <p><b>{@code @RunOutOfTrx}</b>: {@link #doIt()} runs with no ambient transaction, and each partner's check
- * is additionally wrapped in its own {@code runInNewTrx} (see {@link #checkOneInOwnTrx}) so that one
- * partner's failure — a throwing checker, a malformed value the format re-check rejects — can never affect
- * any other partner already checked or still to be checked in the same run.
+ * — together with the order-line-tax refresh a status change triggers — is additionally wrapped in its own
+ * new transaction (see {@link #checkOneInOwnTrx}) so that one partner's failure — a throwing checker, a
+ * malformed value the format re-check rejects, a refresh failure — can never affect any other partner
+ * already checked or still to be checked in the same run.
  */
 public class C_BPartner_VATaxID_Check extends JavaProcess implements IProcessPrecondition
 {
@@ -144,19 +146,22 @@ public class C_BPartner_VATaxID_Check extends JavaProcess implements IProcessPre
 	}
 
 	/**
-	 * Runs one partner's check in its own, brand-new transaction — deliberately {@code runInNewTrx}
-	 * (normally a hack, per {@code docs/coding-rules/java-general.md}): {@link #doIt()} is
-	 * {@link RunOutOfTrx}, so there is no caller transaction to inherit anyway, and the whole point here is
-	 * that each partner's check must commit (or fail) completely independently of every other partner's —
-	 * a throwing online checker or a rejected malformed value must not roll back, delay or block any
-	 * partner already checked or still queued in this same run. This would only go away if per-partner
-	 * commit isolation were no longer required — not expected to change.
+	 * Runs one partner's check — and, where it changed the status, the resulting order-line-tax refresh —
+	 * in its own, brand-new transaction — deliberately {@code callInNewTrx} (normally a hack, per
+	 * {@code docs/coding-rules/java-general.md}): {@link #doIt()} is {@link RunOutOfTrx}, so there is no
+	 * caller transaction to inherit anyway, and the whole point here is that each partner's <em>whole</em>
+	 * unit of work must commit (or fail) completely independently of every other partner's — a throwing
+	 * online checker or a rejected malformed value must not roll back, delay or block any partner already
+	 * checked or still queued in this same run. This would only go away if per-partner commit isolation
+	 * were no longer required — not expected to change.
 	 *
-	 * <p>Where the check actually changed the partner's status (AC7), {@link #orderTaxRefresher} is asked to
-	 * refresh {@code C_OrderLine.C_Tax_ID} on that partner's not-yet-completed orders — deliberately a
-	 * second, separate step outside the check's own transaction: a refresh failure must not undo the
-	 * already-committed check, and a partner whose status did not change (the common case on a nightly
-	 * re-check pass) never pays for a refresh at all.
+	 * <p>The check and the order-line-tax refresh it may trigger are deliberately ONE transaction, not two:
+	 * {@link #orderTaxRefresher} is called from inside this same {@code callInNewTrx} block (its own
+	 * {@code refreshOrderLinesTaxForBPartner} joins it via {@code runInThreadInheritedTrx}), so they commit
+	 * or roll back together. A separate, later transaction for the refresh would let it commit independently
+	 * of the check that triggered it — leaving refreshed order-line tax with no committed check to justify
+	 * it if the check's own write had failed, an inconsistency worse than the alternative (a refresh failure
+	 * rolling back an otherwise-successful check, to be retried on the next run).
 	 */
 	private void checkOneInOwnTrx(@NonNull final PInstanceId pinstanceId, @NonNull final I_C_BPartner bpartnerRecord)
 	{
@@ -164,42 +169,52 @@ public class C_BPartner_VATaxID_Check extends JavaProcess implements IProcessPre
 		final VATaxIDStatus previousStatus = VATaxIDStatus.optionalOfNullableCode(bpartnerRecord.getVATaxIDStatus())
 				.orElse(VATaxIDStatus.NotChecked);
 
-		final VATaxIDStatus newStatus;
 		try
 		{
-			// Deliberately callInNewTrx (see the method javadoc): the return value is needed to detect a
-			// status change, which runInNewTrx's void Runnable cannot express.
-			newStatus = trxManager.callInNewTrx(() -> checkService.check(VATaxIDCheckRequest.builder()
-					.bpartnerId(bpartnerId)
-					.vataxID(VATIdentifier.of(bpartnerRecord.getVATaxID()))
-					.pinstanceId(pinstanceId)
-					.build()));
+			trxManager.callInNewTrx(() -> checkAndRefreshIfStatusChanged(pinstanceId, bpartnerId, bpartnerRecord, previousStatus));
 		}
 		catch (final Exception ex)
 		{
-			// One partner's failure (a throwing checker, a value the format re-check rejects) must not
-			// abort the run for the rest of the selection.
+			// One partner's failure (a throwing checker, a value the format re-check rejects, or — per the
+			// message wrapping below — a refresh failure) must not abort the run for the rest of the
+			// selection.
 			Loggables.withWarnLoggerToo(logger)
 					.addLog("VAT-ID check failed for C_BPartner_ID={}: {}", bpartnerRecord.getC_BPartner_ID(), ex.getMessage());
-			return;
+		}
+	}
+
+	@NonNull
+	private VATaxIDStatus checkAndRefreshIfStatusChanged(
+			@NonNull final PInstanceId pinstanceId,
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final I_C_BPartner bpartnerRecord,
+			@NonNull final VATaxIDStatus previousStatus)
+	{
+		final VATaxIDStatus newStatus = checkService.check(VATaxIDCheckRequest.builder()
+				.bpartnerId(bpartnerId)
+				.vataxID(VATIdentifier.of(bpartnerRecord.getVATaxID()))
+				.pinstanceId(pinstanceId)
+				.build());
+
+		if (newStatus != previousStatus)
+		{
+			try
+			{
+				orderTaxRefresher.refreshOrderLinesTaxForBPartner(bpartnerId);
+			}
+			catch (final Exception ex)
+			{
+				// Re-thrown (not swallowed): the whole transaction — check included — must roll back
+				// together (see the method javadoc). Wrapped so the outer catch's log line still names the
+				// check as having succeeded, rather than being misread as a check failure.
+				throw new AdempiereException(
+						"VAT-ID check for C_BPartner_ID=" + bpartnerRecord.getC_BPartner_ID()
+								+ " succeeded (status " + previousStatus + " -> " + newStatus
+								+ "), but refreshing its open orders' tax failed: " + ex.getMessage(),
+						ex);
+			}
 		}
 
-		if (newStatus == previousStatus)
-		{
-			return;
-		}
-
-		try
-		{
-			orderTaxRefresher.refreshOrderLinesTaxForBPartner(bpartnerId);
-		}
-		catch (final Exception ex)
-		{
-			// The check itself already committed successfully; a refresh failure must not be reported as
-			// (and must not be confused with) a failed check.
-			Loggables.withWarnLoggerToo(logger)
-					.addLog("VAT-ID check for C_BPartner_ID={} succeeded (status {} -> {}), but refreshing its open orders' tax failed: {}",
-							bpartnerRecord.getC_BPartner_ID(), previousStatus, newStatus, ex.getMessage());
-		}
+		return newStatus;
 	}
 }

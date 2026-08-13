@@ -147,6 +147,12 @@ public interface IOrderDAO extends ISingletonService
 
 	Stream<OrderId> streamOrderIdsByBPartnerId(BPartnerId bpartnerId);
 
+	/**
+	 * @return the ids of every order of {@code bpartnerId} that is not yet {@code Completed} or
+	 * {@code Closed} — the orders whose {@code C_OrderLine.C_Tax_ID} may still legitimately be recomputed.
+	 */
+	Set<OrderId> retrieveNotCompletedOrderIds(BPartnerId bpartnerId);
+
 	void delete(org.compiere.model.I_C_OrderLine orderLine);
 
 	void deleteByLineId(OrderAndLineId orderAndLineId);

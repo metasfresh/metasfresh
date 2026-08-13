@@ -41,9 +41,10 @@ import lombok.NonNull;
  * ({@link VATaxIDStatus#NotChecked} to any other status) — never on a re-check that only reconfirms the
  * previous status, since nothing about the partner's tax situation changed then.
  *
- * <p>Invoice candidates are deliberately out of scope here: the invoice-candidate half of the original
- * corrective idea was removed from AC7 on 2026-08-13 and now lives with the postponed AC10 alone. This seam
- * is order lines only.
+ * <p>Invoice candidates are deliberately out of scope here — this seam is order lines only. Invalidating a
+ * partner's unprocessed invoice candidates on the same status change is a separate, not-yet-scheduled
+ * concern with its own machinery ({@code IInvoiceCandDAO#invalidateCandsForBPartner}); nothing here should
+ * be extended to cover it without that being a deliberate, separately reviewed decision.
  */
 public interface VATaxIDOrderTaxRefresher
 {
