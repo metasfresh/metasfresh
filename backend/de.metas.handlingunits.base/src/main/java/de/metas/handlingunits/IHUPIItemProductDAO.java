@@ -28,6 +28,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -141,7 +142,34 @@ public interface IHUPIItemProductDAO extends ISingletonService
 
 	Optional<I_M_HU_PI_Item_Product> retrieveDefaultForProduct(ProductId productId, BPartnerId bpartnerId, ZonedDateTime date);
 
+	/**
+	 * Like {@link #retrieveDefaultForProduct(ProductId, BPartnerId, ZonedDateTime)}, but when
+	 * {@code priceListVersionId} is not {@code null}, only a packing instruction that an
+	 * {@code M_ProductPrice} of that price list version references is returned.
+	 * <p>
+	 * Use this from a pricing-aware caller: a packing instruction that no product price references cannot
+	 * be priced, so defaulting it onto a document line makes that line uncompletable.
+	 * <p>
+	 * Unlike the older overloads, {@code date} is nullable here and means "no validity filter" — a
+	 * pre-save callout or interceptor can legitimately run before any date column is populated, and must
+	 * not be made to blow up over it.
+	 */
+	Optional<I_M_HU_PI_Item_Product> retrieveDefaultForProduct(
+			ProductId productId,
+			@Nullable BPartnerId bpartnerId,
+			@Nullable ZonedDateTime date,
+			@Nullable PriceListVersionId priceListVersionId);
+
 	Optional<HUPIItemProductId> retrieveDefaultIdForProduct(ProductId productId, BPartnerId bpartnerId, ZonedDateTime date);
+
+	/**
+	 * @see #retrieveDefaultForProduct(ProductId, BPartnerId, ZonedDateTime, PriceListVersionId)
+	 */
+	Optional<HUPIItemProductId> retrieveDefaultIdForProduct(
+			ProductId productId,
+			@Nullable BPartnerId bpartnerId,
+			@Nullable ZonedDateTime date,
+			@Nullable PriceListVersionId priceListVersionId);
 
 	@Nullable
 	I_M_HU_PI_Item_Product retrieveDefaultForProduct(@NonNull ProductId productId, @NonNull ZonedDateTime date);
