@@ -68,7 +68,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryFilter;
-import javax.annotation.Nullable;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.service.ClientId;
@@ -80,6 +79,8 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Delivery_Planning;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
