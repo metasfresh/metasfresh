@@ -23,7 +23,6 @@
 package de.metas.util.web.exception;
 
 import ch.qos.logback.classic.Level;
-import com.google.common.annotations.VisibleForTesting;
 import de.metas.Profiles;
 import de.metas.bpartner.service.BPartnerIdNotFoundException;
 import de.metas.common.rest_api.v1.JsonError;
@@ -135,7 +134,7 @@ public class RestResponseEntityExceptionHandler
 				() -> detail,
 				e::getMessage,
 				() -> e.getClass().getSimpleName());
-		Loggables.withFallbackToLogger(logger, logLevelForStatus(status)).addLog(logMessage, e);
+		Loggables.withFallbackToLogger(logger, Level.ERROR).addLog(logMessage, e);
 
 		final String adLanguage = Env.getADLanguageOrBaseLanguage();
 
@@ -143,19 +142,5 @@ public class RestResponseEntityExceptionHandler
 				.error(JsonErrors.ofThrowable(e, adLanguage, TranslatableStrings.constant(detail)))
 				.build();
 		return new ResponseEntity<>(error, status);
-	}
-
-	/**
-	 * The log level decides whether this response also becomes an {@code AD_Issue} record, because
-	 * {@code MetasfreshIssueAppender} persists every {@code ERROR}.
-	 */
-	@VisibleForTesting
-	static Level logLevelForStatus(@NonNull final HttpStatus status)
-	{
-		// A rejected request is the caller's problem: worth a log line, but not a server-side error record carrying
-		// the whole rejected payload.
-		return status.is5xxServerError()
-				? Level.ERROR
-				: Level.WARN;
 	}
 }
