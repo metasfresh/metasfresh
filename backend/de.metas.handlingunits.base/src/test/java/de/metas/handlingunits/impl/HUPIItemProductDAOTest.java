@@ -20,6 +20,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.assertj.core.api.OptionalAssert;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,12 +42,17 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.handlingunits.model.I_M_ProductPrice;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.Builder;
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 @ExtendWith(AdempiereTestWatcher.class)
 public class HUPIItemProductDAOTest
@@ -406,6 +412,81 @@ public class HUPIItemProductDAOTest
 			assertDefaultForProduct(product1, bpartner3, "2011-10-01").contains(pip3);
 			assertDefaultForProduct(product1, bpartner3, "2012-10-01").contains(pip3);
 		}
+
+		/**
+		 * A packing instruction that no product price of the given price list version references must not be
+		 * offered as a default — it cannot be priced, so a document line carrying it cannot be completed.
+		 */
+		@Test
+		public void priceListVersionGiven_noProductPriceReferencesIt_returnsEmpty()
+		{
+			final I_M_HU_PI_Item_Product pip = huPIItemProduct()
+					.productId(product1).bpartnerId(null).validFrom("2011-10-01")
+					.huUnitType(X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit).defaultForProduct(true).build();
+			final PriceListVersionId plvId = createPriceListVersion();
+			createProductPrice(plvId, product1, null); // a price, but with no packing instruction
+
+			assertThat(dao.retrieveDefaultForProduct(product1, bpartner1, date("2011-10-01"), plvId)).isEmpty();
+			assertThat(dao.retrieveDefaultIdForProduct(product1, bpartner1, date("2011-10-01"), plvId)).isEmpty();
+
+			// the unrestricted overloads are unchanged
+			assertThat(dao.retrieveDefaultForProduct(product1, bpartner1, date("2011-10-01"))).contains(pip);
+			assertThat(dao.retrieveDefaultForProduct(product1, bpartner1, date("2011-10-01"), null)).contains(pip);
+		}
+
+		@Test
+		public void priceListVersionGiven_aProductPriceReferencesIt_returnsIt()
+		{
+			final I_M_HU_PI_Item_Product pip = huPIItemProduct()
+					.productId(product1).bpartnerId(null).validFrom("2011-10-01")
+					.huUnitType(X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit).defaultForProduct(true).build();
+			final PriceListVersionId plvId = createPriceListVersion();
+			createProductPrice(plvId, product1, pip);
+
+			assertThat(dao.retrieveDefaultForProduct(product1, bpartner1, date("2011-10-01"), plvId)).contains(pip);
+			assertThat(dao.retrieveDefaultIdForProduct(product1, bpartner1, date("2011-10-01"), plvId))
+					.contains(HUPIItemProductId.ofRepoId(pip.getM_HU_PI_Item_Product_ID()));
+		}
+
+		/**
+		 * The price of a <em>different</em> price list version must not qualify a packing instruction.
+		 */
+		@Test
+		public void priceListVersionGiven_onlyAnotherVersionsPriceReferencesIt_returnsEmpty()
+		{
+			final I_M_HU_PI_Item_Product pip = huPIItemProduct()
+					.productId(product1).bpartnerId(null).validFrom("2011-10-01")
+					.huUnitType(X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit).defaultForProduct(true).build();
+			final PriceListVersionId plvId = createPriceListVersion();
+			final PriceListVersionId otherPlvId = createPriceListVersion();
+			createProductPrice(otherPlvId, product1, pip);
+
+			assertThat(dao.retrieveDefaultForProduct(product1, bpartner1, date("2011-10-01"), plvId)).isEmpty();
+			assertThat(dao.retrieveDefaultForProduct(product1, bpartner1, date("2011-10-01"), otherPlvId)).contains(pip);
+		}
+	}
+
+	private PriceListVersionId createPriceListVersion()
+	{
+		final I_M_PriceList_Version plv = newInstance(I_M_PriceList_Version.class);
+		plv.setIsActive(true);
+		saveRecord(plv);
+		return PriceListVersionId.ofRepoId(plv.getM_PriceList_Version_ID());
+	}
+
+	private void createProductPrice(
+			@NonNull final PriceListVersionId priceListVersionId,
+			@NonNull final ProductId productId,
+			@Nullable final I_M_HU_PI_Item_Product huPiItemProduct)
+	{
+		final I_M_ProductPrice productPrice = newInstance(I_M_ProductPrice.class);
+		productPrice.setM_PriceList_Version_ID(priceListVersionId.getRepoId());
+		productPrice.setM_Product_ID(productId.getRepoId());
+		if (huPiItemProduct != null)
+		{
+			productPrice.setM_HU_PI_Item_Product(huPiItemProduct);
+		}
+		saveRecord(productPrice);
 	}
 
 	@Nested
