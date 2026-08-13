@@ -820,6 +820,17 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			return;
 		}
 
+		// A sales credit memo which is matched against a sales invoice: its receivable is cleared in full by
+		// createCreditMemoCompensationFacts, while the invoice line is iterated. What is left here is this line's own
+		// discount/write-off, which is already booked by createInvoiceDiscountFacts/createInvoiceWriteOffFacts and
+		// which that clearing entry already absorbs (see below). Booking it again would post the credit memo's
+		// receivable a second time, on the same side as the discount leg, so the fact would not balance in source
+		// currency and Fact.balanceSource() would push the difference onto the suspense balancing account.
+		if (line.isSalesCreditMemoWithInvoiceCounterLine())
+		{
+			return;
+		}
+
 		final AcctSchema as = fact.getAcctSchema();
 		if (!as.isAccrual())
 		{
@@ -1039,6 +1050,19 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			currencyConversionCtx = counterLine.getInvoiceCurrencyConversionCtx();
 		}
 
+		// A sales credit memo books its own discount/write-off on the same side as the clearing entry below, while its
+		// own line is iterated (createInvoiceDiscountFacts/createInvoiceWriteOffFacts). The clearing entry must
+		// therefore carry the credit memo's NET amount, so that it absorbs those legs instead of adding to them; the
+		// credit memo's own createInvoiceFacts stands down accordingly, see
+		// DocLine_Allocation.isSalesCreditMemoWithInvoiceCounterLine(). Emitting the absorbed amount as a fact line of
+		// its own is not an option: it would be a second debit line for the same clearing, which
+		// FactTrxLines.extractType rejects.
+		// For a purchase credit memo those legs already land opposite the clearing entry, so there is nothing to absorb.
+		final BigDecimal counterLineAbsorbedAmtSource = counterLine.isSOTrxInvoice()
+				? counterLine.getDiscountAmt().toBigDecimal().add(counterLine.getWriteOffAmt().toBigDecimal())
+				: BigDecimal.ZERO;
+		final BigDecimal clearingAmtSource = compensationAmtSource.subtract(counterLineAbsorbedAmtSource);
+
 		// Create fact line for the counter credit memo
 		final FactLineBuilder factLineBuilder = fact.createLine()
 				.setDocLine(counterLine)
@@ -1052,13 +1076,13 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		{
 			factLineBuilder.setAccount(getCustomerAccount(BPartnerCustomerAccountType.C_Receivable, as));
 			// ARC: DR to clear the credit memo's receivable
-			factLineBuilder.setAmtSource(compensationAmtSource, null);
+			factLineBuilder.setAmtSource(clearingAmtSource, null);
 		}
 		else
 		{
 			factLineBuilder.setAccount(getVendorAccount(BPartnerVendorAccountType.V_Liability, as));
 			// APC: CR to clear the credit memo's liability
-			factLineBuilder.setAmtSource(null, compensationAmtSource.negate());
+			factLineBuilder.setAmtSource(null, clearingAmtSource.negate());
 		}
 
 		final FactLine factLine = factLineBuilder.buildAndAddNotNull();
@@ -1067,7 +1091,25 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		line.markAsCreditMemoInvoiceCompensated(as);
 		counterLine.markAsCreditMemoInvoiceCompensated(as);
 
-		return factLine.getAmtSourceAndAcctDrOrCr();
+		final AmountSourceAndAcct clearingAmtSourceAndAcct = factLine.getAmtSourceAndAcctDrOrCr();
+		if (counterLineAbsorbedAmtSource.signum() == 0)
+		{
+			return clearingAmtSourceAndAcct;
+		}
+
+		// This compensation settles this line's invoice by its whole allocated amount: partly by the clearing entry
+		// above, and partly by the amount it absorbed from the counter line. Reporting only the clearing entry would
+		// make createInvoiceFacts book this invoice's receivable short by the difference.
+		final BigDecimal currencyRate = factLine.getCurrencyRate();
+		final BigDecimal counterLineAbsorbedAmtAcct = currencyRate.signum() == 0 || currencyRate.compareTo(BigDecimal.ONE) == 0
+				? counterLineAbsorbedAmtSource
+				: factLine.getCurrencyRateFromDocumentToAcctCurrency().convertAmount(counterLineAbsorbedAmtSource);
+
+		return AmountSourceAndAcct.builder()
+				.add(clearingAmtSourceAndAcct)
+				.addAmtSource(counterLineAbsorbedAmtSource)
+				.addAmtAcct(counterLineAbsorbedAmtAcct)
+				.build();
 	}
 
 	/**
