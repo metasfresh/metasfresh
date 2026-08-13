@@ -30,9 +30,12 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.session.ISessionBL;
+import org.adempiere.ad.session.MFSession;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 @Interceptor(I_C_BPartner.class)
@@ -40,7 +43,8 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class C_BPartner
 {
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final ISessionBL sessionBL = Services.get(ISessionBL.class);
 
 	@NonNull private final VATaxIDCheckTrigger vataxIDCheckTrigger;
 
@@ -65,14 +69,25 @@ public class C_BPartner
 	 * {@code AFTER_CHANGE}, not {@code BEFORE_*}: on {@code BEFORE_NEW} the partner has no
 	 * {@code C_BPartner_ID} yet, and {@link de.metas.vatid.VATaxIDCheckRequest#getBpartnerId()} is
 	 * {@code @NonNull}.
+	 *
+	 * <p>The acting {@code AD_Session_ID} is resolved <b>here</b>, not inside {@link VATaxIDCheckTrigger}:
+	 * this {@code @ModelChange} method is the near-user, save-time boundary — the same role a callout or a
+	 * REST controller plays elsewhere — so it is the one place allowed to read {@link Env#getCtx()}
+	 * (service-injection rule: a shared {@code @Component} never reads ambient thread-local context
+	 * itself). Resolved eagerly, on the thread doing the save, and passed down as a plain
+	 * {@code Integer}.
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE },
 			ifColumnsChanged = I_C_BPartner.COLUMNNAME_VATaxID)
 	public void scheduleVATaxIDCheck(@NonNull final I_C_BPartner bpartner)
 	{
+		final MFSession currentSession = sessionBL.getCurrentSession(Env.getCtx());
+		final Integer adSessionId = currentSession != null ? currentSession.getAD_Session_ID() : null;
+
 		vataxIDCheckTrigger.scheduleCheckAfterCommit(
 				BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()),
 				null,
-				bpartner.getVATaxID());
+				bpartner.getVATaxID(),
+				adSessionId);
 	}
 }

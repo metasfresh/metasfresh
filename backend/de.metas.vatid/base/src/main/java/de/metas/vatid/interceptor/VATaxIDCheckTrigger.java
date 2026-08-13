@@ -32,10 +32,7 @@ import de.metas.vatid.VATaxIDCheckRequest;
 import de.metas.vatid.VATaxIDCheckService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.session.ISessionBL;
-import org.adempiere.ad.session.MFSession;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
@@ -52,6 +49,11 @@ import javax.annotation.Nullable;
  * whom</em> a check gets scheduled from a save — which is deliberately separate from the two model
  * interceptors (they only know their own table) and from {@link VATaxIDCheckService} (it only knows how
  * to run one check, not when to schedule one).
+ *
+ * <p>Deliberately does <b>not</b> read {@code Env.getCtx()} itself: a shared {@code @Component} reading
+ * ambient thread-local context is exactly what the service-injection rule on {@code Env.get*} forbids.
+ * The caller — each interceptor's {@code @ModelChange} method, the actual near-user save-time boundary —
+ * resolves the acting {@code AD_Session_ID} and passes it in as a plain {@code Integer}.
  */
 @Component
 @RequiredArgsConstructor
@@ -61,7 +63,6 @@ public class VATaxIDCheckTrigger
 
 	@NonNull private final VATaxIDCheckService checkService;
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	@NonNull private final ISessionBL sessionBL = Services.get(ISessionBL.class);
 
 	/**
 	 * Schedules the check of {@code vataxIDValue} for the given partner/location once the current save
@@ -71,11 +72,14 @@ public class VATaxIDCheckTrigger
 	 * @param bpartnerLocationId the location the VAT-ID lives on, or {@code null} when it lives on the
 	 * partner header
 	 * @param vataxIDValue the new value of the {@code VATaxID} column as it was saved
+	 * @param adSessionId the acting {@code AD_Session_ID}, already resolved by the caller (or {@code null}
+	 * if there is none) — see the class javadoc for why this trigger never resolves it itself
 	 */
 	public void scheduleCheckAfterCommit(
 			@NonNull final BPartnerId bpartnerId,
 			@Nullable final BPartnerLocationId bpartnerLocationId,
-			@Nullable final String vataxIDValue)
+			@Nullable final String vataxIDValue,
+			@Nullable final Integer adSessionId)
 	{
 		final VATIdentifier vataxID = VATIdentifier.ofNullable(vataxIDValue);
 		if (vataxID == null)
@@ -85,18 +89,6 @@ public class VATaxIDCheckTrigger
 			// legitimate save (e.g. correcting a wrongly-entered value), not a save that failed validation.
 			return;
 		}
-
-		// Captured HERE — inside the interceptor's own model-change callback, i.e. still on the thread that
-		// is doing the save — and not inside the after-commit Runnable below. Verified against the actual
-		// dispatch code rather than assumed: both paths that ever run this Runnable
-		// (TrxListenerManager#fireAfterCommit and AutoCommitTrxListenerManager#execute) invoke it
-		// synchronously, on the same thread that triggered the commit, so a lazy read inside the Runnable
-		// would see the identical Env.getCtx(). Capturing eagerly is still the safer choice: it records
-		// unambiguously "the session that performed the save", before any other code gets a chance to run
-		// between commit and the Runnable firing, and it does not silently start depending on same-thread
-		// dispatch staying true if that ever changes.
-		final MFSession currentSession = sessionBL.getCurrentSession(Env.getCtx());
-		final Integer adSessionId = currentSession != null ? currentSession.getAD_Session_ID() : null;
 
 		trxManager.runAfterCommit(() -> runCheckSwallowingExceptions(bpartnerId, bpartnerLocationId, vataxID, adSessionId));
 	}
