@@ -296,6 +296,83 @@ export class SalesOrderPage {
   }
 
   /**
+   * Open the batch-entry (quick input) form and select a product, then STOP — leaving the form open so
+   * the caller can inspect what the backend defaulted into it.
+   *
+   * `addOrderLine` submits and closes the form, so it cannot be used to read a defaulted field.
+   *
+   * @param {Object} params
+   * @param {string} params.product - Product code or name
+   * @param {string} params.recordId - Optional record ID (extracted from the URL if not provided)
+   */
+  static async openQuickEntryAndSelectProduct({ product, recordId }) {
+    return await test.step(`SalesOrderPage - Open quick entry and select: ${product}`, async () => {
+      const page = getPage();
+
+      const effectiveRecordId = recordId || this.getRecordId();
+      await waitForTabAllowsNew(SALES_ORDER_WINDOW_ID, effectiveRecordId, 'AD_Tab-187', {
+        maxRetries: 15,
+        retryDelayMs: 1000,
+      });
+
+      const batchEntryButton = page.getByTestId('batch-entry-toggle');
+      await batchEntryButton.scrollIntoViewIfNeeded();
+      await batchEntryButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await batchEntryButton.click();
+
+      await page.locator('.quick-input-container').waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+
+      const productInput = page.locator('#lookup_M_Product_ID input.input-field');
+      await productInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await productInput.click();
+      await page.waitForTimeout(300);
+      await productInput.fill(product);
+      await page.waitForTimeout(500);
+
+      await page.locator('.input-dropdown-list-option').getByText(product).first().click();
+
+      // The product callout runs server-side and patches the quick-input document; give it time to
+      // come back before the caller reads any field it may have defaulted.
+      await page.waitForTimeout(1500);
+    });
+  }
+
+  /**
+   * @returns {Promise<string>} the displayed value of the packing-instruction
+   *   (`M_HU_PI_Item_Product_ID`) field in the open quick-entry form — empty string when unset.
+   *   Call after {@link openQuickEntryAndSelectProduct}.
+   */
+  static async getQuickEntryPackingInstruction() {
+    return await test.step('SalesOrderPage - Read quick-entry packing instruction', async () => {
+      const page = getPage();
+
+      const field = page.locator('.quick-input-container #lookup_M_HU_PI_Item_Product_ID input.input-field');
+      await field.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      return (await field.inputValue()).trim();
+    });
+  }
+
+  /**
+   * Submit the order line from the quick-entry form opened by
+   * {@link openQuickEntryAndSelectProduct}, then close the form.
+   */
+  static async submitQuickEntryLine({ quantity }) {
+    return await test.step(`SalesOrderPage - Submit quick-entry line qty ${quantity}`, async () => {
+      const page = getPage();
+
+      await page.getByRole('spinbutton').fill(quantity.toString());
+      await page.keyboard.press('Enter');
+      await page.waitForTimeout(500);
+
+      await page.getByTestId('batch-entry-toggle').click();
+      await page.waitForTimeout(500);
+    });
+  }
+
+  /**
    * Complete the sales order.
    */
   static async complete() {
