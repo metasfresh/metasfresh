@@ -197,7 +197,7 @@ public class C_BPartner_VATaxID_Check extends JavaProcess implements IProcessPre
 
 			if (!Check.isEmpty(bpartnerRecord.getVATaxID()))
 			{
-				checkTargets.add(CheckTarget.ofPartner(bpartnerRecord));
+				checkTargets.add(CheckTarget.ofPartner(bpartnerId, bpartnerRecord));
 			}
 
 			for (final I_C_BPartner_Location bpartnerLocationRecord : locationsByBPartnerId.get(bpartnerId))
@@ -298,10 +298,10 @@ public class C_BPartner_VATaxID_Check extends JavaProcess implements IProcessPre
 		@NonNull String logLabel;
 
 		@NonNull
-		private static CheckTarget ofPartner(@NonNull final I_C_BPartner bpartnerRecord)
+		private static CheckTarget ofPartner(@NonNull final BPartnerId bpartnerId, @NonNull final I_C_BPartner bpartnerRecord)
 		{
 			return CheckTarget.builder()
-					.bpartnerId(BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID()))
+					.bpartnerId(bpartnerId)
 					.bpartnerLocationId(null)
 					.vataxID(VATIdentifier.of(bpartnerRecord.getVATaxID()))
 					.previousStatus(resolvePreviousStatus(bpartnerRecord.getVATaxIDStatus()))
