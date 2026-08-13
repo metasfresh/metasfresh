@@ -90,6 +90,11 @@ public class PickingJobQuery
 	}
 
 	@NonNull
+	public ImmutableSet<LocalDate> getPreparationDays()
+	{
+		return facets != null ? facets.getPreparationDays() : ImmutableSet.of();
+	}
+
 	public ImmutableSet<LocalDate> getDeliveryDays()
 	{
 		return facets != null ? facets.getDeliveryDays() : ImmutableSet.of();
@@ -131,6 +136,12 @@ public class PickingJobQuery
 		if (!deliveryDays.isEmpty())
 		{
 			builder.deliveryDays(deliveryDays);
+		}
+
+		final ImmutableSet<LocalDate> preparationDays = this.getPreparationDays();
+		if (!preparationDays.isEmpty())
+		{
+			builder.preparationDays(preparationDays);
 		}
 
 		final ImmutableSet<BPartnerLocationId> locationIds = this.getOnlyHandoverLocationIds();
@@ -181,6 +192,7 @@ public class PickingJobQuery
 
 		@NonNull @Singular ImmutableSet<BPartnerId> customerIds;
 		@NonNull @Singular ImmutableSet<LocalDate> deliveryDays;
+		@NonNull @Singular ImmutableSet<LocalDate> preparationDays;
 		@NonNull @Singular ImmutableSet<BPartnerLocationId> handoverLocationIds;
 
 		public Facets add(@NonNull final Facets other)
@@ -202,6 +214,7 @@ public class PickingJobQuery
 				{
 					builder.customerIds(other.customerIds);
 					builder.deliveryDays(other.deliveryDays);
+					builder.preparationDays(other.preparationDays);
 					builder.handoverLocationIds(other.handoverLocationIds);
 				}
 				return builder.build();
@@ -210,7 +223,7 @@ public class PickingJobQuery
 
 		public boolean isEmpty()
 		{
-			return customerIds.isEmpty() && deliveryDays.isEmpty() && handoverLocationIds.isEmpty();
+			return customerIds.isEmpty() && deliveryDays.isEmpty() && preparationDays.isEmpty() && handoverLocationIds.isEmpty();
 		}
 
 		public boolean isMatching(final PickingJobReference pickingJobReference)
@@ -237,6 +250,8 @@ public class PickingJobQuery
 
 		private boolean isDeliveryDateMatching(final LocalDate deliveryDay) {return deliveryDays.isEmpty() || deliveryDays.contains(deliveryDay);}
 
+		private boolean isPreparationDateMatching(final LocalDate preparationDay) {return preparationDays.isEmpty() || preparationDays.contains(preparationDay);}
+
 		private boolean isHandoverLocationMatching(final PickingJobReference pickingJobReference) {return isHandoverLocationMatching(Optional.ofNullable(pickingJobReference.getHandoverLocationId()).orElse(pickingJobReference.getDeliveryBPLocationId()));}
 
 		private boolean isHandoverLocationMatching(final BPartnerLocationId handoverLocationId) {return handoverLocationIds.isEmpty() || handoverLocationIds.contains(handoverLocationId);}
@@ -253,6 +268,7 @@ public class PickingJobQuery
 			return Streams.concat(
 							customerIds.stream().map(customerId -> Facets.builder().customerId(customerId).build()),
 							deliveryDays.stream().map(deliveryDay -> Facets.builder().deliveryDay(deliveryDay).build()),
+							preparationDays.stream().map(preparationDay -> Facets.builder().preparationDay(preparationDay).build()),
 							handoverLocationIds.stream().map(handoverLocationId -> Facets.builder().handoverLocationId(handoverLocationId).build())
 					)
 					.collect(ImmutableSet.toImmutableSet());
