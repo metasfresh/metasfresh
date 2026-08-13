@@ -386,5 +386,4 @@ public class NShiftShipmentService
 				})
 				.collect(Collectors.toCollection(LinkedHashSet::new));
 	}
-
 }

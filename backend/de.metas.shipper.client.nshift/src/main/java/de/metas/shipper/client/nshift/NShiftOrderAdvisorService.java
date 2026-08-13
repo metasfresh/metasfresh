@@ -127,6 +127,7 @@ public class NShiftOrderAdvisorService
 				.build();
 	}
 
+	@VisibleForTesting
 	static JsonDeliveryAdvisorResponse buildJsonDeliveryAdvisorResponse(@NonNull final JsonOrderAdviceResponse response, @NonNull final String requestId)
 	{
 		// OrderAdvice wraps the advised shipment under "Shipment". The carrier PRODUCT IDENTITY is the product
