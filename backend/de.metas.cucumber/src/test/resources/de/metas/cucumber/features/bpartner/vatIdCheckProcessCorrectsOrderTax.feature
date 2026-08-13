@@ -47,7 +47,7 @@ Feature: The VAT-ID check process corrects order-line tax on a status change
       | location_france          | FR          |
 
   @Id:S31060_TC9
-  Scenario: Correcting an invalid VAT-ID to a valid one refreshes an open order's tax and leaves a completed order untouched
+  Scenario: Correcting an invalid VAT-ID to a valid one refreshes an open order's tax and leaves completed and closed orders untouched
     Given no VATaxID_CheckLog records exist for VATaxID 'FR83404833048'
     And no VATaxID_CheckLog records exist for VATaxID 'FR92918273645'
     And metasfresh contains VATaxID_Config:
@@ -74,18 +74,23 @@ Feature: The VAT-ID check process corrects order-line tax on a status change
       | Identifier     | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier |
       | orderOpen      | true    | bp_correct               | 2026-08-13  | bpl_correct                           | warehouseStd                  |
       | orderCompleted | true    | bp_correct               | 2026-08-13  | bpl_correct                           | warehouseStd                  |
+      | orderClosed    | true    | bp_correct               | 2026-08-13  | bpl_correct                           | warehouseStd                  |
     And metasfresh contains C_OrderLines:
       | Identifier    | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | lineOpen      | orderOpen             | product                 | 1          |
       | lineCompleted | orderCompleted        | product                 | 1          |
+      | lineClosed    | orderClosed           | product                 | 1          |
 
-    # Both lines already reflect the Invalid status at creation time (OrderLineBL#setTax runs on every save).
+    # All three lines already reflect the Invalid status at creation time (OrderLineBL#setTax runs on every save).
     And validate C_OrderLine:
       | Identifier    | OPT.C_Tax_ID.Identifier |
       | lineOpen      | taxCorrectStandard19    |
       | lineCompleted | taxCorrectStandard19    |
+      | lineClosed    | taxCorrectStandard19    |
 
     When the order identified by orderCompleted is completed
+    And the order identified by orderClosed is completed
+    And the order identified by orderClosed is closed
 
     # Correct the VAT-ID while the online check is disabled, so the after-commit trigger does not consume
     # the status change itself: the check process below must be the one that discovers it.
@@ -118,3 +123,4 @@ Feature: The VAT-ID check process corrects order-line tax on a status change
       | Identifier    | OPT.C_Tax_ID.Identifier |
       | lineOpen      | taxCorrectCert0         |
       | lineCompleted | taxCorrectStandard19    |
+      | lineClosed    | taxCorrectStandard19    |

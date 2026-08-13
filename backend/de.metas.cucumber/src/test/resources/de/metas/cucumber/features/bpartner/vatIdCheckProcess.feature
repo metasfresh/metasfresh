@@ -97,3 +97,38 @@ Feature: The VAT-ID check process runs on a selection of Business Partners
       | MaxChecksPerRun |
       |                 |
       | 0               |
+
+  @from:cucumber
+  @Id:S31060_3
+  Scenario: Selecting a partner also covers its location's VAT-ID, not only the partner header
+    # The partner header itself carries no VATaxID at all -- only its location does. Selecting the
+    # partner (the only selection the Business Partner window offers) must still reach the location.
+    Given no VATaxID_CheckLog records exist for VATaxID 'ATU13585627'
+    And metasfresh contains VATaxID_Config:
+      | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
+      | true                 | false              | 30               | ServiceUnavailable   |
+    And metasfresh contains C_BPartners:
+      | Identifier  | Value        |
+      | bp_checkLoc | ProcLocTest1 |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier   | C_BPartner_ID | GLN           |
+      | bpl_checkLoc | bp_checkLoc   | 0123456789043 |
+    And update C_BPartner_Location:
+      | C_BPartner_Location_ID.Identifier | VATaxID     |
+      | bpl_checkLoc                      | ATU13585627 |
+    Then validate C_BPartner_Location VAT-ID status:
+      | C_BPartner_Location_ID | VATaxIDStatus |
+      | bpl_checkLoc           | NotChecked    |
+
+    And metasfresh contains VATaxID_Config:
+      | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
+      | true                 | true               | 30               | ServiceUnavailable   |
+    And the VAT-ID online checker is stubbed to answer:
+      | VATaxID     | VATaxIDStatus |
+      | ATU13585627 | Valid         |
+    When the C_BPartner_VATaxID_Check process is run for selection with MaxChecksPerRun '':
+      | C_BPartner_ID |
+      | bp_checkLoc   |
+    Then validate C_BPartner_Location VAT-ID status:
+      | C_BPartner_Location_ID | VATaxIDStatus | HasTaxCertificate |
+      | bpl_checkLoc           | Valid         | true              |
