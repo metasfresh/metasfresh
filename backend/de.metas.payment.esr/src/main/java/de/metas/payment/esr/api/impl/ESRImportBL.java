@@ -127,6 +127,8 @@ public class ESRImportBL implements IESRImportBL
 
 	private static final AdMessageKey ESR_NO_HAS_WRONG_ORG_2P = AdMessageKey.of("de.metas.payment.esr.EsrNoHasWrongOrg");
 
+	private static final AdMessageKey ESR_INVOICE_ALREADY_PAID_1P = AdMessageKey.of("de.metas.payment.esr.InvoiceAlreadyPaid");
+
 	/**
 	 * Filled by {@link #registerActionHandler(String, IESRActionHandler)}.
 	 */
@@ -660,11 +662,11 @@ public class ESRImportBL implements IESRImportBL
 		final PaymentId paymentId = fetchDuplicatePaymentIfExists(line);
 		if (paymentId != null)
 		{
+			// Flag the duplicate for the accountant, but deliberately do NOT attach the payment we found: it
+			// belongs to the earlier transaction, while this line is money that arrived a second time and
+			// needs its own C_Payment. Returning false lets the regular handling create it.
 			line.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment);
-			handleUnsupportedTrxType(line);
-			line.setC_Payment_ID(paymentId.getRepoId());
 			esrImportDAO.save(line);
-			return true;
 		}
 		return false;
 	}
@@ -1157,14 +1159,12 @@ public class ESRImportBL implements IESRImportBL
 
 			if (invoice.isPaid() && !paymentBL.isMatchInvoice(payment, invoice))
 			{
-				ESRDataLoaderUtil.addMatchErrorMsg(importLine, "Rechnung " + invoice.getDocumentNo() + " wurde im System als bereits bezahlt markiert");
-				importLine.setESR_Document_Status(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched);
+				markInvoiceAlreadyPaid(importLine, invoice);
 			}
 		}
 		else if (invoice.isPaid())
 		{
-			ESRDataLoaderUtil.addMatchErrorMsg(importLine, "Rechnung " + invoice.getDocumentNo() + " wurde im System als bereits bezahlt markiert");
-			importLine.setESR_Document_Status(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched);
+			markInvoiceAlreadyPaid(importLine, invoice);
 		}
 
 		if (invoice.getAD_Org_ID() != importLine.getAD_Org_ID())
@@ -1185,6 +1185,19 @@ public class ESRImportBL implements IESRImportBL
 
 		importLine.setESR_Invoice_Grandtotal(invoice.getGrandTotal());
 
+	}
+
+	/**
+	 * {@code setInvoice} runs twice for one line — once while it is evaluated, once from the
+	 * {@code C_Payment_ID} interceptor after the line's payment is created — so this note has to be as
+	 * idempotent as the document status it accompanies.
+	 */
+	private void markInvoiceAlreadyPaid(@NonNull final I_ESR_ImportLine importLine, @NonNull final I_C_Invoice invoice)
+	{
+		final Properties ctx = getCtx(importLine);
+		ESRDataLoaderUtil.addMatchErrorMsgIfNotPresent(importLine,
+														msgBL.getMsg(ctx, ESR_INVOICE_ALREADY_PAID_1P, new Object[] { invoice.getDocumentNo() }));
+		importLine.setESR_Document_Status(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched);
 	}
 
 	@Override
