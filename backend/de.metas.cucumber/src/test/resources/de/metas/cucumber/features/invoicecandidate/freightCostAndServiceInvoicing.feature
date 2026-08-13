@@ -1,7 +1,6 @@
 @from:cucumber
 @allure.label.epic:E0340_Invoicing
 @allure.label.feature:F00703_Invoice_Rule
-@F00703
 @ghActions:run_on_executor6
 Feature: Invoicing of non-item lines on a sales order with invoice rule "after delivery"
 ## F00703: Invoice Rule
@@ -36,10 +35,6 @@ Feature: Invoicing of non-item lines on a sales order with invoice rule "after d
       | Identifier       | M_PriceList_ID.Identifier | ValidFrom  |
       | priceListVersion | priceList                 | 2021-04-01 |
 
-  @from:cucumber
-@allure.label.epic:E0340_Invoicing
-@allure.label.feature:F00703_Invoice_Rule
-@F00703
   @Id:S31036_10
   Scenario: Freight cost is not invoiced before the goods are delivered and lands on the invoice of the first delivery
     Given metasfresh contains M_Products:
@@ -109,10 +104,6 @@ Feature: Invoicing of non-item lines on a sales order with invoice rule "after d
       | firstInvoice | goods        | 40          |
       | firstInvoice | freightCost  | 1           |
 
-  @from:cucumber
-@allure.label.epic:E0340_Invoicing
-@allure.label.feature:F00703_Invoice_Rule
-@F00703
   @Id:S31036_20
   Scenario: A service line is invoiced immediately, without waiting for the goods to be delivered
     Given metasfresh contains M_Products:
