@@ -108,6 +108,13 @@ public class ShipperDeliveryService
 
 		final I_M_Shipper shipper = shipperDAO.getById(shipperId);
 
+		if (createOneTransportationOrderPerDay && shipper.isCreateDeliveryPlanning())
+		{
+			Loggables.withLogger(logger, Level.INFO).addLog(
+					"Skipping daily transport order for shipper with IsCreateDeliveryPlanning=Y, m_inout_id: {}", inOutId);
+			return;
+		}
+
 		final BPartnerLocationAndCaptureId shipFromBPWarehouseLocation = warehouseDAO.getWarehouseLocationById(WarehouseId.ofRepoId(shipment.getM_Warehouse_ID()));
 
 		final CreateShipperTransportationRequest createShipperTransportationRequest = CreateShipperTransportationRequest
