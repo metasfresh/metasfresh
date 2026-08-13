@@ -259,7 +259,11 @@ class VIESClientTest
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("RestApiBaseURL");
 
-		server.verify(); // and no request was attempted in either case
+		// What proves no HTTP was attempted is the exception TYPE above, not this verify(): with no
+		// expectations registered, MockRestServiceServer throws on any unexpected request, so an attempted
+		// call would surface as an AssertionError and fail the isInstanceOf(AdempiereException) check.
+		// verify() is kept as a cheap belt-and-braces, but it is a no-op when nothing was expected.
+		server.verify();
 	}
 
 	@Test
