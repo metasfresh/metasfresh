@@ -239,7 +239,7 @@ public class MetasfreshIssueAppender extends UnsynchronizedAppenderBase<ILogging
 	static IssueCreateRequest toIssueCreateRequest(final ILoggingEvent event)
 	{
 		return IssueCreateRequest.builder()
-				// the rendered message, not the raw SLF4J template: the arguments ARE the diagnostic content
+				// NOT getMessage(): that returns the raw SLF4J template, storing literal {} and dropping every argument
 				.summary(event.getFormattedMessage())
 				.sourceClassname(extractSourceClassName(event))
 				.sourceMethodName(extractSourceMethodName(event))

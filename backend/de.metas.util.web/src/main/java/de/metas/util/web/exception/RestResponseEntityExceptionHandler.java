@@ -153,7 +153,7 @@ public class RestResponseEntityExceptionHandler
 	static Level logLevelForStatus(@NonNull final HttpStatus status)
 	{
 		// A rejected request is the caller's problem: worth a log line, but not a server-side error record carrying
-		// the whole rejected payload. Only a genuine server fault stays at ERROR.
+		// the whole rejected payload.
 		return status.is5xxServerError()
 				? Level.ERROR
 				: Level.WARN;
