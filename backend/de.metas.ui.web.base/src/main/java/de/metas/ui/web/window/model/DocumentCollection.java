@@ -49,6 +49,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
 import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
@@ -375,6 +376,15 @@ public class DocumentCollection
 			throw new InvalidDocumentPathException("documentId cannot be NEW");
 		}
 
+		final DocumentFieldDescriptor singleIdField = entityDescriptor.getSingleIdFieldOrNull();
+		if (!documentIdCanMatchKey(
+				singleIdField != null,
+				singleIdField != null && String.class.equals(singleIdField.getValueClass()),
+				documentKey.getDocumentId().isInt()))
+		{
+			throw new DocumentNotFoundException(documentKey.getDocumentPath());
+		}
+
 		final Document document = DocumentQuery.ofRecordId(entityDescriptor, documentKey.getDocumentId())
 				.setChangesCollector(NullDocumentChangesCollector.instance)
 				.retriveDocumentOrNull();
@@ -384,6 +394,32 @@ public class DocumentCollection
 		}
 
 		return document;
+	}
+
+	/**
+	 * Tells whether a document id can address a record of the entity at all.
+	 * <p>
+	 * A non-numeric id cannot match a single-column integer key, so the record does not exist. Answering that here
+	 * keeps a stale or malformed id — the frontend emits both a {@code notfound} sentinel and, when a route parameter
+	 * is unset, the literal {@code undefined} — from reaching the SQL layer, where it surfaces as a server error
+	 * instead of a 404.
+	 *
+	 * @param hasSingleIdField           the entity is keyed by exactly one column; a composed key is left alone
+	 * @param singleIdFieldIsStringTyped that single key column is string-typed, so a non-numeric id is legitimate
+	 * @param documentIdIsInt            the incoming id is numeric
+	 */
+	static boolean documentIdCanMatchKey(
+			final boolean hasSingleIdField,
+			final boolean singleIdFieldIsStringTyped,
+			final boolean documentIdIsInt)
+	{
+		if (documentIdIsInt)
+		{
+			return true;
+		}
+
+		// Only the single-key path converts the id to an int, so a composed key is unaffected.
+		return !hasSingleIdField || singleIdFieldIsStringTyped;
 	}
 
 	public String cacheReset(final boolean forgetNotSavedDocuments)
