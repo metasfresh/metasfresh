@@ -491,7 +491,7 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsConsiderSalesOrderCapacity = "IsConsiderSalesOrderCapacity";
 
 	/**
-	 * Set Show Picking Slot Suggestions.
+	 * Set Show Picking Tray Suggestions.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -500,7 +500,7 @@ public interface I_MobileUI_UserProfile_Picking
 	void setIsDisplayPickingSlotSuggestions (boolean IsDisplayPickingSlotSuggestions);
 
 	/**
-	 * Get Show Picking Slot Suggestions.
+	 * Get Show Picking Tray Suggestions.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -556,7 +556,7 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsMassPrinting = "IsMassPrinting";
 
 	/**
-	 * Set Picking Slot required.
+	 * Set Kommissionierfach erforderlich.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -565,7 +565,7 @@ public interface I_MobileUI_UserProfile_Picking
 	void setIsPickingSlotRequired (boolean IsPickingSlotRequired);
 
 	/**
-	 * Get Picking Slot required.
+	 * Get Kommissionierfach erforderlich.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -596,6 +596,27 @@ public interface I_MobileUI_UserProfile_Picking
 
 	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsShipOnCloseLU = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsShipOnCloseLU", null);
 	String COLUMNNAME_IsShipOnCloseLU = "IsShipOnCloseLU";
+
+	/**
+	 * Set Show all filter groups at once.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsShowAllFilterGroups (boolean IsShowAllFilterGroups);
+
+	/**
+	 * Get Show all filter groups at once.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isShowAllFilterGroups();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsShowAllFilterGroups = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsShowAllFilterGroups", null);
+	String COLUMNNAME_IsShowAllFilterGroups = "IsShowAllFilterGroups";
 
 	/**
 	 * Set Allow over-pick with prompt.

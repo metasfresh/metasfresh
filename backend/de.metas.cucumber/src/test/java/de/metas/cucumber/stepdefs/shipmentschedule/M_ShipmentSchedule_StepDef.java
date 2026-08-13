@@ -60,6 +60,7 @@ import de.metas.cucumber.stepdefs.shipper.Carrier_Product_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.Carrier_Service_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
+import de.metas.cucumber.stepdefs.workpackage.WorkPackageQueueUtil;
 import de.metas.handlingunits.shipmentschedule.api.GenerateShipmentsForSchedulesRequest;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
@@ -70,6 +71,8 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.CarrierAdviseStatus;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
+import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
+import de.metas.inoutcandidate.async.UpdateInvalidShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.model.I_M_Picking_Job_Schedule;
@@ -96,7 +99,9 @@ import de.metas.util.Services;
 
 import java.time.ZoneId;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.Builder;
@@ -136,6 +141,7 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -161,6 +167,27 @@ public class M_ShipmentSchedule_StepDef
 	private static final String SHIP_BPARTNER = "shipBPartner";
 	private static final String BILL_BPARTNER = "billBPartner";
 
+	/**
+	 * The two workpackage processors that can touch {@code M_ShipmentSchedule_Recompute} behind a scenario's back
+	 * (see {@link #deleteAllUntaggedRecomputeMarkers()}): the recompute pass itself, and the create-missing run
+	 * whose newly created schedules get invalidated — which both INSERTS markers and enqueues a recompute pass.
+	 */
+	private static final ImmutableList<String> RECOMPUTE_QUEUE_PROCESSOR_SHORT_NAMES = ImmutableList.of(
+			UpdateInvalidShipmentSchedulesWorkpackageProcessor.class.getSimpleName(),
+			CreateMissingShipmentSchedulesWorkpackageProcessor.class.getSimpleName());
+
+	/**
+	 * Timeout of the queue drain in {@link #deleteAllUntaggedRecomputeMarkers()}: this module's standard wait budget,
+	 * and ~120 polls of a queue whose planner picks up work every 500ms ({@code CucumberLifeCycleSupport} sets
+	 * {@code QueueProcessorPlanner.SYSCONFIG_POLLINTERVAL_MILLIS=500}), so it expires only when the queue is genuinely
+	 * stuck, never when it is merely slow. When it does expire, {@link #logPendingRecomputeWorkPackages()} names the
+	 * processor that is still busy and its pending count, so the failure is diagnosable rather than just a timeout.
+	 */
+	private static final int RECOMPUTE_QUEUE_DRAIN_TIMEOUT_SEC = 60;
+
+	/** Poll interval of the queue drain — the planner's own poll interval; polling faster only adds queries. */
+	private static final long RECOMPUTE_QUEUE_DRAIN_POLL_MS = 500;
+
 	@NonNull private final JsonAttributeService jsonAttributeService = SpringContextHolder.instance.getBean(JsonAttributeService.class);
 	@NonNull private final ShipmentService shipmentService = SpringContextHolder.instance.getBean(ShipmentService.class);
 	@NonNull private final IShipmentScheduleInvalidateRepository shipmentScheduleInvalidateRepository = Services.get(IShipmentScheduleInvalidateRepository.class);
@@ -175,6 +202,21 @@ public class M_ShipmentSchedule_StepDef
 
 	/** Recompute selection ids created by {@link #tagInvalidShipmentSchedulesForRecompute}, keyed by the scenario's selection identifier. */
 	private final Map<String, PInstanceId> recomputeSelectionsByIdentifier = new HashMap<>();
+
+	/**
+	 * Regression coverage: orphaned {@code M_ShipmentSchedule_ID}s seeded by
+	 * {@link #seedOrphanedUntaggedRecomputeMarker}, keyed by the scenario's identifier, so
+	 * {@link #assertOrphanedRecomputeMarkerReaped} can look the id back up.
+	 */
+	private final Map<String, Integer> orphanedRecomputeMarkerScheduleIdsByIdentifier = new HashMap<>();
+
+	/**
+	 * M_ShipmentSchedule_IDs seeded by {@link #seedShipmentSchedulesWithUntaggedRecomputeMarker}. They carry
+	 * a self-referential AD_Table_ID with no registered handler; {@link #deleteSeededRecomputeSchedules()}
+	 * removes them (markers + rows) after the scenario so they cannot leak into another scenario's recompute
+	 * sweep and jam the whole UpdateInvalidShipmentSchedules batch.
+	 */
+	private final List<Integer> seededRecomputeScheduleIds = new ArrayList<>();
 
 	@NonNull private final AD_User_StepDefData userTable;
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
@@ -193,6 +235,7 @@ public class M_ShipmentSchedule_StepDef
 	@NonNull private final Carrier_Service_StepDefData carrierServiceTable;
 	@NonNull private final C_Project_StepDefData projectTable;
 	@NonNull private final M_Picking_Job_Schedule_StepDefData pickingJobScheduleTable;
+	@NonNull private final WorkPackageQueueUtil workPackageQueueUtil;
 
 	private final TestContext testContext;
 
@@ -326,10 +369,189 @@ public class M_ShipmentSchedule_StepDef
 	}
 
 	/**
-	 * Isolation cleanup: removes any leftover untagged {@code M_ShipmentSchedule_Recompute} markers
-	 * ({@code AD_PInstance_ID IS NULL}) that a prior scenario sharing this DB may have left behind, so a
-	 * whole-product recompute-batching scenario starts from a known, empty recompute backlog. Belongs at the
-	 * start of the Background.
+	 * Regression coverage: seeds one orphaned, untagged {@code M_ShipmentSchedule_Recompute} marker. A
+	 * minimal {@code M_ShipmentSchedule} row is inserted, an untagged marker is inserted for it, then the
+	 * schedule row itself is deleted directly -- leaving the marker behind with no matching schedule. This is
+	 * possible only because {@code M_ShipmentSchedule_Recompute} carries NO FK to {@code M_ShipmentSchedule}
+	 * (verified against the live local DB); its only FK is to {@code C_Async_Batch}.
+	 * <p>
+	 * Why raw SQL, not the DAO layer: every DAO insertion path for this marker (e.g.
+	 * {@code IShipmentScheduleInvalidateRepository#invalidateShipmentSchedules}) INSERTs
+	 * {@code FROM M_ShipmentSchedule WHERE M_ShipmentSchedule_ID IN (...)}, so it can never produce a marker
+	 * whose schedule does not exist -- the DAO layer is designed to prevent exactly the state this step needs.
+	 * Raw SQL is the only way to create it; this mirrors {@link #seedShipmentSchedulesWithUntaggedRecomputeMarker}'s
+	 * own raw INSERT, plus one raw DELETE to orphan it.
+	 * <p>
+	 * The seeded id is remembered under {@code identifier} for {@link #assertOrphanedRecomputeMarkerReaped}, and
+	 * tracked in {@link #seededRecomputeScheduleIds} so the existing {@link #deleteSeededRecomputeSchedules()}
+	 * cleanup also removes it if it survives the scenario (a harmless no-op once the fix has reaped it).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>identifier</b> — (required) alias to remember the orphaned schedule's id under, for the later
+	 *     "no untagged marker remains" assertion<br>
+	 * @cucumber.example
+	 * <pre>
+	 * Given an orphaned untagged M_ShipmentSchedule_Recompute marker exists for "orphanSchedule"
+	 * </pre>
+	 */
+	@Given("an orphaned untagged M_ShipmentSchedule_Recompute marker exists for {string}")
+	public void seedOrphanedUntaggedRecomputeMarker(@NonNull final String identifier)
+	{
+		final int shipmentScheduleTableId = InterfaceWrapperHelper.getTableId(I_M_ShipmentSchedule.class);
+		final int orphanScheduleId = DB.getNextID(StepDefConstants.CLIENT_ID.getRepoId(), I_M_ShipmentSchedule.Table_Name);
+		final int fillerProductId = DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT M_Product_ID FROM M_Product ORDER BY M_Product_ID LIMIT 1");
+
+		// Minimal M_ShipmentSchedule row -- same filler pattern as seedShipmentSchedulesWithUntaggedRecomputeMarker.
+		DB.executeUpdateAndThrowExceptionOnFail(
+				"INSERT INTO M_ShipmentSchedule ("
+						+ " M_ShipmentSchedule_ID, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy,"
+						+ " M_Product_ID, M_Warehouse_ID, C_BPartner_ID, C_BPartner_Location_ID, Bill_BPartner_ID,"
+						+ " DeliveryRule, DeliveryViaRule, BPartnerAddress, AD_Table_ID, Record_ID)"
+						+ " VALUES (?, ?, ?, now(), ?, now(), ?, ?, ?, ?, ?, ?, 'F', 'D', '.', ?, ?)",
+				new Object[] {
+						orphanScheduleId,
+						StepDefConstants.CLIENT_ID.getRepoId(),
+						StepDefConstants.ORG_ID.getRepoId(),
+						UserId.METASFRESH.getRepoId(),
+						UserId.METASFRESH.getRepoId(),
+						fillerProductId,
+						StepDefConstants.WAREHOUSE_ID.getRepoId(),
+						StepDefConstants.METASFRESH_AG_BPARTNER_ID.getRepoId(),
+						StepDefConstants.METASFRESH_AG_BPARTNER_LOCATION_ID.getRepoId(),
+						StepDefConstants.METASFRESH_AG_BPARTNER_ID.getRepoId(),
+						shipmentScheduleTableId,
+						orphanScheduleId },
+				ITrx.TRXNAME_ThreadInherited);
+
+		// One untagged marker for it (keyless queue table -- see seedShipmentSchedulesWithUntaggedRecomputeMarker).
+		DB.executeUpdateAndThrowExceptionOnFail(
+				"INSERT INTO M_ShipmentSchedule_Recompute (M_ShipmentSchedule_ID) VALUES (?)",
+				new Object[] { orphanScheduleId },
+				ITrx.TRXNAME_ThreadInherited);
+
+		// Orphan it: delete the schedule row, leaving the marker with no matching M_ShipmentSchedule. No FK
+		// exists between the two tables, so this delete succeeds and the marker survives untouched.
+		DB.executeUpdateAndThrowExceptionOnFail(
+				"DELETE FROM M_ShipmentSchedule WHERE M_ShipmentSchedule_ID = ?",
+				new Object[] { orphanScheduleId },
+				ITrx.TRXNAME_ThreadInherited);
+
+		orphanedRecomputeMarkerScheduleIdsByIdentifier.put(identifier, orphanScheduleId);
+
+		// Track it so the existing @After cleanup (deleteSeededRecomputeSchedules) removes the leftover marker
+		// too -- the M_ShipmentSchedule delete there is a harmless no-op (the row is already gone).
+		seededRecomputeScheduleIds.add(orphanScheduleId);
+	}
+
+	/**
+	 * Regression coverage: enqueues one bounded shipment-schedule recompute pass via the real
+	 * production entry point, {@link UpdateInvalidShipmentSchedulesWorkpackageProcessor#schedule()} (the same
+	 * static method every real invalidation calls internally). The pass is bounded exactly as in production by
+	 * the {@code UpdateInvalidShipmentSchedulesWorkpackageProcessor.MaxToProcess} sysconfig (default 500 -- a
+	 * real, non-zero limit; nothing in this test module overrides it to unbounded), so
+	 * {@code maxToProcess.isLimited()} is {@code true} and the livelock branch in
+	 * {@code ShipmentScheduleUpdater#updateShipmentSchedules} is reachable.
+	 * <p>
+	 * Two consequences of driving the REAL pipeline (this is the only step in this feature that does):
+	 * the Background's fixture schedules are handler-less (self-referential {@code AD_Table_ID}, no registered
+	 * {@code ShipmentScheduleHandler}), so {@code ShipmentSchedulePA#createOlAndScheds} skips them via its
+	 * defensive report-and-skip path rather than running per-schedule business logic against minimal rows --
+	 * which keeps this pass fast, but also means each run logs one {@code AD_Issue} per skipped fixture
+	 * schedule. Those {@code AD_Issue} rows are an EXPECTED side effect, not a failure. And if that skip path
+	 * were ever removed, this scenario would start failing for a reason unrelated to the orphan it guards --
+	 * look there first before suspecting the reaper or the probe.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When a shipment-schedule recompute pass is enqueued
+	 * </pre>
+	 */
+	@When("a shipment-schedule recompute pass is enqueued")
+	public void enqueueBoundedRecomputePass()
+	{
+		UpdateInvalidShipmentSchedulesWorkpackageProcessor.schedule();
+	}
+
+	/**
+	 * Regression assertion: waits until no untagged ({@code AD_PInstance_ID IS NULL})
+	 * {@code M_ShipmentSchedule_Recompute} marker remains for the schedule id seeded under {@code identifier}
+	 * by {@link #seedOrphanedUntaggedRecomputeMarker} -- i.e. the orphan was reaped rather than left to
+	 * accumulate forever in the queue table. Polls instead of checking once: the marker is removed
+	 * asynchronously by the enqueued recompute pass (see the module's async-wait rule).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>identifier</b> — (required) the alias {@link #seedOrphanedUntaggedRecomputeMarker} stored the orphaned schedule's id under<br>
+	 * @cucumber.example
+	 * <pre>
+	 * Then no untagged M_ShipmentSchedule_Recompute marker remains for "orphanSchedule"
+	 * </pre>
+	 */
+	@Then("no untagged M_ShipmentSchedule_Recompute marker remains for {string}")
+	public void assertOrphanedRecomputeMarkerReaped(@NonNull final String identifier) throws InterruptedException
+	{
+		final int orphanScheduleId = getOrphanedRecomputeMarkerScheduleId(identifier);
+
+		final Supplier<Boolean> markerReaped = () -> queryBL.createQueryBuilder(I_M_ShipmentSchedule_Recompute.class)
+				.addEqualsFilter(I_M_ShipmentSchedule_Recompute.COLUMNNAME_M_ShipmentSchedule_ID, orphanScheduleId)
+				.addEqualsFilter(I_M_ShipmentSchedule_Recompute.COLUMNNAME_AD_PInstance_ID, null)
+				.create()
+				.noneMatch();
+
+		StepDefUtil.tryAndWait(RECOMPUTE_QUEUE_DRAIN_TIMEOUT_SEC, RECOMPUTE_QUEUE_DRAIN_POLL_MS, markerReaped);
+
+		assertThat(markerReaped.get())
+				.as("Untagged M_ShipmentSchedule_Recompute marker for orphaned schedule %s (identifier %s) -- expected it to be reaped", orphanScheduleId, identifier)
+				.isTrue();
+	}
+
+	/**
+	 * Regression assertion: the strongest available livelock signal -- waits until no
+	 * {@link #RECOMPUTE_QUEUE_PROCESSOR_SHORT_NAMES} workpackage remains pending, i.e. the shipment-schedule
+	 * recompute queue actually drains to zero within the module's standard wait budget. Before the fix, a
+	 * bounded pass that could never make progress on an untaggable (orphaned) marker kept reporting
+	 * {@code limitReached=true} and re-enqueueing a follow-up workpackage forever, so this wait would time out
+	 * instead of observing the queue reach zero. Delegates to {@link #waitForRecomputeWorkQueueToDrain()} -- the
+	 * same signal and wait budget the Background's isolation cleanup already relies on.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And the shipment-schedule recompute work queue drains to zero pending workpackages
+	 * </pre>
+	 */
+	@And("the shipment-schedule recompute work queue drains to zero pending workpackages")
+	public void assertRecomputeWorkQueueDrains() throws InterruptedException
+	{
+		waitForRecomputeWorkQueueToDrain();
+	}
+
+	private int getOrphanedRecomputeMarkerScheduleId(@NonNull final String identifier)
+	{
+		final Integer orphanScheduleId = orphanedRecomputeMarkerScheduleIdsByIdentifier.get(identifier);
+		assertThat(orphanScheduleId)
+				.as("No orphaned M_ShipmentSchedule_Recompute marker was seeded for identifier %s -- call the seeding step first", identifier)
+				.isNotNull();
+		return orphanScheduleId;
+	}
+
+	/**
+	 * Isolation cleanup: deletes any leftover untagged {@code M_ShipmentSchedule_Recompute} markers
+	 * ({@code AD_PInstance_ID IS NULL}), waits until the shipment-schedule work queue is drained, then deletes
+	 * once more. Belongs at the start of the Background.
+	 * <p>
+	 * Deleting first keeps the wait independent of the untagged backlog this step removes anyway; the trailing
+	 * delete catches markers a pass completing during the drain created. The wait closes a real race: a recompute
+	 * pass enqueued by an earlier scenario claims markers through the same DB function this feature asserts on,
+	 * and that claiming SQL is unconditionally global. Both processors are checked in ONE predicate so they are
+	 * zero at the same poll: a create-missing run enqueues a recompute pass, so checking them one after the other
+	 * could pass on a queue that is not quiet.
+	 * <p>
+	 * Do NOT widen {@link WorkPackageQueueUtil#countPendingWorkPackages(String)} to not-ready workpackages: one
+	 * bound to a rolled-back transaction never becomes ready, so waiting on it would turn this intermittent flake
+	 * into a deterministic timeout.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
@@ -338,7 +560,16 @@ public class M_ShipmentSchedule_StepDef
 	 * </pre>
 	 */
 	@And("all untagged M_ShipmentSchedule_Recompute markers are deleted")
-	public void deleteAllUntaggedRecomputeMarkers()
+	public void deleteAllUntaggedRecomputeMarkers() throws InterruptedException
+	{
+		deleteUntaggedRecomputeMarkers();
+
+		waitForRecomputeWorkQueueToDrain();
+
+		deleteUntaggedRecomputeMarkers();
+	}
+
+	private void deleteUntaggedRecomputeMarkers()
 	{
 		// deleteDirectly (bulk filter-based DELETE), NOT delete(): M_ShipmentSchedule_Recompute is a keyless
 		// queue table (no single-column PK), so the PO-by-PO delete() builds an empty WHERE and fails with a
@@ -347,6 +578,65 @@ public class M_ShipmentSchedule_StepDef
 				.addEqualsFilter(I_M_ShipmentSchedule_Recompute.COLUMNNAME_AD_PInstance_ID, null)
 				.create()
 				.deleteDirectly();
+	}
+
+	/**
+	 * Waits until no {@link #RECOMPUTE_QUEUE_PROCESSOR_SHORT_NAMES} workpackage is pending any more; see
+	 * {@link #deleteAllUntaggedRecomputeMarkers()} for the race this closes.
+	 */
+	private void waitForRecomputeWorkQueueToDrain() throws InterruptedException
+	{
+		StepDefUtil.tryAndWait(
+				RECOMPUTE_QUEUE_DRAIN_TIMEOUT_SEC,
+				RECOMPUTE_QUEUE_DRAIN_POLL_MS,
+				() -> countPendingRecomputeWorkPackages() == 0,
+				this::logPendingRecomputeWorkPackages);
+	}
+
+	private int countPendingRecomputeWorkPackages()
+	{
+		return RECOMPUTE_QUEUE_PROCESSOR_SHORT_NAMES.stream()
+				.mapToInt(workPackageQueueUtil::countPendingWorkPackages)
+				.sum();
+	}
+
+	private void logPendingRecomputeWorkPackages()
+	{
+		final StringBuilder message = new StringBuilder();
+		RECOMPUTE_QUEUE_PROCESSOR_SHORT_NAMES.forEach(processorShortName -> message
+				.append(processorShortName).append(" : ").append(workPackageQueueUtil.countPendingWorkPackages(processorShortName))
+				.append(" pending C_Queue_WorkPackage(s)").append("\n"));
+
+		logger.error("*** Error while waiting for the shipment-schedule work queue to drain, see current context: \n" + message);
+	}
+
+	/**
+	 * Remove the schedules seeded by {@link #seedShipmentSchedulesWithUntaggedRecomputeMarker} (and their
+	 * recompute markers, any tag state) after each scenario. Those rows have a self-referential AD_Table_ID
+	 * with no registered handler; if they survive into a later scenario in the same JVM/DB, the always-on
+	 * UpdateInvalidShipmentSchedulesWorkpackageProcessor sweeps them and aborts the whole recompute batch, so
+	 * unrelated features' schedules never get recomputed. No-op when nothing was seeded.
+	 */
+	@After
+	public void deleteSeededRecomputeSchedules()
+	{
+		if (seededRecomputeScheduleIds.isEmpty())
+		{
+			return;
+		}
+
+		// markers first (they reference M_ShipmentSchedule), then the schedule rows; deleteDirectly issues a
+		// single bulk DELETE (M_ShipmentSchedule_Recompute is a keyless queue table -- see the sibling method).
+		queryBL.createQueryBuilder(I_M_ShipmentSchedule_Recompute.class)
+				.addInArrayFilter(I_M_ShipmentSchedule_Recompute.COLUMNNAME_M_ShipmentSchedule_ID, seededRecomputeScheduleIds)
+				.create()
+				.deleteDirectly();
+		queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, seededRecomputeScheduleIds)
+				.create()
+				.deleteDirectly();
+
+		seededRecomputeScheduleIds.clear();
 	}
 
 	/**
@@ -434,6 +724,7 @@ public class M_ShipmentSchedule_StepDef
 					.firstOnlyNotNull(I_M_ShipmentSchedule.class);
 
 			shipmentScheduleTable.put(row.getAsIdentifier(), schedule);
+			seededRecomputeScheduleIds.add(shipmentScheduleId);
 		});
 	}
 

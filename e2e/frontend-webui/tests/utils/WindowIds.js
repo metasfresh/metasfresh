@@ -6,7 +6,7 @@
  * 2. For tables with both sales/purchase contexts, use po_window_id column
  * 3. Otherwise, find AD_Tab with seqno=0 for the table and get its ad_window_id
  *
- * Last updated: 2025-11-28 via metasfresh-application-dictionary skill
+ * Last updated: 2026-07-30 via metasfresh-application-dictionary skill
  */
 
 // ============================================================================
@@ -36,9 +36,26 @@ export const VENDOR_INVOICE_WINDOW_ID = 183;
  */
 export const INVOICE_CANDIDATE_WINDOW_ID = 540983;
 
+/**
+ * Transport Order window (Transport Auftrag)
+ * Table: M_ShipperTransportation
+ * Window ID: 540020
+ * Description: Transport orders (freight bookings); tab 540096 "Speditionslieferung" carries the
+ * logistics dates ETD/ETA/ATD/ATA/B-L date.
+ */
+export const TRANSPORT_ORDER_WINDOW_ID = 540020;
+
 // ============================================================================
 // MASTER DATA WINDOWS
 // ============================================================================
+
+/**
+ * Shipper window (Lieferweg)
+ * Table: M_Shipper
+ * Window ID: 142
+ * Description: Carriers/shipping methods; M_Shipper.C_BPartner_ID links the carrier partner.
+ */
+export const SHIPPER_WINDOW_ID = 142;
 
 /**
  * Business Partner window

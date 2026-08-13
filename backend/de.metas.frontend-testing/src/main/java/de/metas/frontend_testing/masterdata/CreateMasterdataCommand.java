@@ -25,8 +25,13 @@ import de.metas.frontend_testing.masterdata.huQRCodes.JsonGenerateHUQRCodeRespon
 import de.metas.frontend_testing.masterdata.inventory.InventoryCreateCommand;
 import de.metas.frontend_testing.masterdata.inventory.JsonInventoryRequest;
 import de.metas.frontend_testing.masterdata.inventory.JsonInventoryResponse;
+import de.metas.frontend_testing.masterdata.invoice.InvoiceCreateCommand;
+import de.metas.frontend_testing.masterdata.invoice.JsonInvoiceCreateRequest;
+import de.metas.frontend_testing.masterdata.invoice.JsonInvoiceCreateResponse;
 import de.metas.frontend_testing.masterdata.mobile_configuration.JsonMobileConfigResponse;
 import de.metas.frontend_testing.masterdata.mobile_configuration.MobileConfigCommand;
+import de.metas.frontend_testing.masterdata.orgseller.ConfigureOrgSellerCommand;
+import de.metas.frontend_testing.masterdata.orgseller.JsonOrgSellerRequest;
 import de.metas.frontend_testing.masterdata.picking_slot.JsonPickingSlotCreateRequest;
 import de.metas.frontend_testing.masterdata.picking_slot.JsonPickingSlotCreateResponse;
 import de.metas.frontend_testing.masterdata.picking_slot.PickingSlotCreateCommand;
@@ -37,33 +42,29 @@ import de.metas.frontend_testing.masterdata.product.ApplyUOMStdPrecisionsCommand
 import de.metas.frontend_testing.masterdata.product.CreateProductCommand;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductRequest;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductResponse;
+import de.metas.frontend_testing.masterdata.product.SetProductLifeCycleStatusCommand;
 import de.metas.frontend_testing.masterdata.product_planning.CreateProductPlanningCommand;
 import de.metas.frontend_testing.masterdata.product_planning.JsonCreateProductPlanningRequest;
 import de.metas.frontend_testing.masterdata.product_planning.JsonCreateProductPlanningResponse;
-import de.metas.frontend_testing.masterdata.resource.CreateResourceCommand;
-import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceRequest;
-import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceResponse;
-import de.metas.frontend_testing.masterdata.invoice.InvoiceCreateCommand;
-import de.metas.frontend_testing.masterdata.invoice.JsonInvoiceCreateRequest;
-import de.metas.frontend_testing.masterdata.invoice.JsonInvoiceCreateResponse;
 import de.metas.frontend_testing.masterdata.purchase_order.JsonPurchaseOrderCreateRequest;
 import de.metas.frontend_testing.masterdata.purchase_order.JsonPurchaseOrderCreateResponse;
 import de.metas.frontend_testing.masterdata.purchase_order.PurchaseOrderCreateCommand;
 import de.metas.frontend_testing.masterdata.receipt.JsonReceiptCreateRequest;
 import de.metas.frontend_testing.masterdata.receipt.JsonReceiptCreateResponse;
 import de.metas.frontend_testing.masterdata.receipt.ReceiptCreateCommand;
+import de.metas.frontend_testing.masterdata.resource.CreateResourceCommand;
+import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceRequest;
+import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceResponse;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateRequest;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateResponse;
 import de.metas.frontend_testing.masterdata.sales_order.SalesOrderCreateCommand;
 import de.metas.frontend_testing.masterdata.shipment.JsonShipmentCreateRequest;
 import de.metas.frontend_testing.masterdata.shipment.JsonShipmentCreateResponse;
 import de.metas.frontend_testing.masterdata.shipment.ShipmentCreateCommand;
-import de.metas.frontend_testing.masterdata.orgseller.ConfigureOrgSellerCommand;
-import de.metas.frontend_testing.masterdata.orgseller.JsonOrgSellerRequest;
-import de.metas.frontend_testing.masterdata.sysconfig.SysconfigCommand;
 import de.metas.frontend_testing.masterdata.shipper.CreateShipperCommand;
 import de.metas.frontend_testing.masterdata.shipper.JsonCreateShipperRequest;
 import de.metas.frontend_testing.masterdata.shipper.JsonCreateShipperResponse;
+import de.metas.frontend_testing.masterdata.sysconfig.SysconfigCommand;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserRequest;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserResponse;
 import de.metas.frontend_testing.masterdata.user.LoginUserCommand;
@@ -140,6 +141,11 @@ public class CreateMasterdataCommand
 		final ImmutableMap<String, JsonDDOrderResponse> distributionOrders = createDistributionOrders();
 		final ImmutableMap<String, JsonInventoryResponse> inventories = createInventories();
 		createCustomQRCodeFormats();
+
+		// Late pass: flip already-created products to a life-cycle status (e.g. G=Gesperrt). Runs after
+		// order creation so a product can be blocked only once its order/picking-job setup exists (a
+		// blocking status at creation would fail the product's own order/shipment life-cycle guards).
+		applyProductLifeCycleStatuses();
 
 		return JsonCreateMasterdataResponse.builder()
 				.context(context.toJson())
@@ -339,6 +345,7 @@ public class CreateMasterdataCommand
 
 		ConfigureWarehouseReplenishmentCommand.builder()
 				.distributionNetworkRepository(services.distributionNetworkRepository)
+				.warehouseReplenishmentRepository(services.warehouseRepository)
 				.context(context)
 				.requests(request.getWarehouses())
 				.build()
@@ -578,6 +585,22 @@ public class CreateMasterdataCommand
 				.identifier(Identifier.ofString(identifier))
 				.build()
 				.execute();
+	}
+
+	private void applyProductLifeCycleStatuses()
+	{
+		final Map<String, String> statusByProductIdentifier = request.getProductLifeCycleStatuses();
+		if (statusByProductIdentifier == null || statusByProductIdentifier.isEmpty())
+		{
+			return;
+		}
+
+		statusByProductIdentifier.forEach((productIdentifier, statusCode) -> SetProductLifeCycleStatusCommand.builder()
+				.context(context)
+				.identifier(Identifier.ofString(productIdentifier))
+				.statusCode(statusCode)
+				.build()
+				.execute());
 	}
 
 	private void createCustomQRCodeFormats()

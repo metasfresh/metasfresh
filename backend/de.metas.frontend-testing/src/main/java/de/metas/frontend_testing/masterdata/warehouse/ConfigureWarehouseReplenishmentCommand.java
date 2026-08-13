@@ -9,12 +9,9 @@ import de.metas.shipping.ShipperId;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_M_Warehouse;
+import org.adempiere.warehouse.WarehouseRepository;
 
 import java.util.Map;
-
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
  * Post-pass over the {@code warehouses} section, applying {@link JsonWarehouseRequest#getReplenishment()} and
@@ -27,6 +24,7 @@ public class ConfigureWarehouseReplenishmentCommand
 	@NonNull private final DistributionNetworkRepository distributionNetworkRepository;
 	@NonNull private final MasterdataContext context;
 	@NonNull private final Map<String, JsonWarehouseRequest> requests;
+	@NonNull private final WarehouseRepository warehouseReplenishmentRepository;
 
 	public void execute()
 	{
@@ -43,16 +41,12 @@ public class ConfigureWarehouseReplenishmentCommand
 
 		final Identifier warehouseIdentifier = Identifier.ofString(warehouseIdentifierStr);
 		final WarehouseId warehouseId = context.getId(warehouseIdentifier, WarehouseId.class);
-		final I_M_Warehouse warehouseRecord = load(warehouseId, I_M_Warehouse.class);
 
-		if (replenishment != null)
-		{
-			warehouseRecord.setDD_NetworkDistribution_ID(createNetwork(warehouseIdentifier, warehouseId, replenishment).getRepoId());
-		}
-		warehouseRecord.setIsAutoDistributionOrder(request.isAutoDistributionOrder());
+		final DistributionNetworkId networkId = replenishment != null
+				? createNetwork(warehouseIdentifier, warehouseId, replenishment)
+				: null;
 
-		// Both columns in one save: M_Warehouse_DDOrderPickingInterceptor rejects IsAutoDistributionOrder without a network.
-		saveRecord(warehouseRecord);
+		warehouseReplenishmentRepository.updateReplenishment(warehouseId, networkId, request.isAutoDistributionOrder());
 	}
 
 	private DistributionNetworkId createNetwork(

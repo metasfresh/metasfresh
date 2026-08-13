@@ -22,6 +22,11 @@
 
 package de.metas.handlingunits.picking.config.mobileui;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.picking.job.model.facets.PickingJobFacetGroup;
+import de.metas.picking.model.I_PickingProfile_Filter;
+import de.metas.picking.model.X_PickingProfile_Filter;
+import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJONextIdSuppliers;
 import org.adempiere.test.AdempiereTestHelper;
@@ -59,6 +64,130 @@ class MobileUIPickingUserProfileRepositoryTest
 		record.setPickingJobAggregationType(X_MobileUI_UserProfile_Picking.PICKINGJOBAGGREGATIONTYPE_Sales_order);
 		record.setCreateShipmentPolicy(X_MobileUI_UserProfile_Picking.CREATESHIPMENTPOLICY_DO_NOT_CREATE);
 		return record;
+	}
+
+	private void newFilterRecord(
+			@NonNull final I_MobileUI_UserProfile_Picking profileRecord,
+			@NonNull final String filterType,
+			final int seqNo)
+	{
+		final I_PickingProfile_Filter record = newInstance(I_PickingProfile_Filter.class);
+		record.setIsActive(true);
+		record.setMobileUI_UserProfile_Picking_ID(profileRecord.getMobileUI_UserProfile_Picking_ID());
+		record.setFilterType(filterType);
+		record.setSeqNo(seqNo);
+		saveRecord(record);
+	}
+
+	@Nested
+	class FilterGroupOrder
+	{
+		/**
+		 * Two filter rows sharing a sequence number must not let the order in which they happen to be
+		 * stored decide the order the operator sees. Both saving orders must produce the same result,
+		 * i.e. the tie is broken by the group itself, in its declaration order.
+		 */
+		@Test
+		void tiedSeqNo_customerStoredFirst_ordersByGroup()
+		{
+			final I_MobileUI_UserProfile_Picking profileRecord = newProfileRecord();
+			saveRecord(profileRecord);
+			newFilterRecord(profileRecord, X_PickingProfile_Filter.FILTERTYPE_Customer, 0);
+			newFilterRecord(profileRecord, X_PickingProfile_Filter.FILTERTYPE_DeliveryDate, 0);
+
+			final MobileUIPickingUserProfile profile = repository.getProfile();
+
+			assertThat(profile.getFilterGroupsInOrder())
+					.containsExactly(PickingJobFacetGroup.CUSTOMER, PickingJobFacetGroup.DELIVERY_DATE);
+		}
+
+		@Test
+		void tiedSeqNo_deliveryDateStoredFirst_ordersByGroup()
+		{
+			final I_MobileUI_UserProfile_Picking profileRecord = newProfileRecord();
+			saveRecord(profileRecord);
+			newFilterRecord(profileRecord, X_PickingProfile_Filter.FILTERTYPE_DeliveryDate, 0);
+			newFilterRecord(profileRecord, X_PickingProfile_Filter.FILTERTYPE_Customer, 0);
+
+			final MobileUIPickingUserProfile profile = repository.getProfile();
+
+			assertThat(profile.getFilterGroupsInOrder())
+					.containsExactly(PickingJobFacetGroup.CUSTOMER, PickingJobFacetGroup.DELIVERY_DATE);
+		}
+
+		/**
+		 * TC1's second half: the order must still hold once the profile has been saved back, which
+		 * deletes and recreates the filter rows and resets their sequence numbers.
+		 */
+		@Test
+		void tiedSeqNo_survivesAProfileEdit()
+		{
+			final I_MobileUI_UserProfile_Picking profileRecord = newProfileRecord();
+			saveRecord(profileRecord);
+			newFilterRecord(profileRecord, X_PickingProfile_Filter.FILTERTYPE_DeliveryDate, 0);
+			newFilterRecord(profileRecord, X_PickingProfile_Filter.FILTERTYPE_Customer, 0);
+			final ImmutableList<PickingJobFacetGroup> before = repository.getProfile().getFilterGroupsInOrder();
+
+			repository.update(profile -> profile.toBuilder().isMassPrinting(true).build());
+
+			assertThat(repository.getProfile().getFilterGroupsInOrder()).isEqualTo(before);
+		}
+
+		@Test
+		void distinctSeqNo_ordersBySeqNo()
+		{
+			final I_MobileUI_UserProfile_Picking profileRecord = newProfileRecord();
+			saveRecord(profileRecord);
+			newFilterRecord(profileRecord, X_PickingProfile_Filter.FILTERTYPE_Customer, 20);
+			newFilterRecord(profileRecord, X_PickingProfile_Filter.FILTERTYPE_DeliveryDate, 10);
+
+			final MobileUIPickingUserProfile profile = repository.getProfile();
+
+			assertThat(profile.getFilterGroupsInOrder())
+					.containsExactly(PickingJobFacetGroup.DELIVERY_DATE, PickingJobFacetGroup.CUSTOMER);
+		}
+	}
+
+	@Nested
+	class IsShowAllFilterGroups
+	{
+		@Test
+		void set_returnsTrue()
+		{
+			final I_MobileUI_UserProfile_Picking record = newProfileRecord();
+			record.setIsShowAllFilterGroups(true);
+			saveRecord(record);
+
+			assertThat(repository.getProfile().isShowAllFilterGroups()).isTrue();
+		}
+
+		@Test
+		void unset_returnsFalse()
+		{
+			final I_MobileUI_UserProfile_Picking record = newProfileRecord();
+			record.setIsShowAllFilterGroups(false);
+			saveRecord(record);
+
+			assertThat(repository.getProfile().isShowAllFilterGroups()).isFalse();
+		}
+
+		@Test
+		void noProfileRecord_returnsFalse()
+		{
+			// the default profile keeps today's progressive-narrowing behaviour
+			assertThat(repository.getProfile().isShowAllFilterGroups()).isFalse();
+		}
+
+		@Test
+		void roundTripsThroughSave()
+		{
+			final I_MobileUI_UserProfile_Picking record = newProfileRecord();
+			saveRecord(record);
+
+			repository.update(profile -> profile.toBuilder().isShowAllFilterGroups(true).build());
+
+			assertThat(repository.getProfile().isShowAllFilterGroups()).isTrue();
+		}
 	}
 
 	@Nested

@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -137,6 +138,15 @@ public class M_ShipmentSchedule
 				.addEqualsFilter(I_M_IolCandHandler_Log.COLUMNNAME_AD_Table_ID, shipmentSchedule.getAD_Table_ID())
 				.addEqualsFilter(I_M_IolCandHandler_Log.COLUMN_Record_ID, shipmentSchedule.getRecord_ID())
 				.create();
+	}
+
+	/**
+	 * Deletes the schedule's {@code M_ShipmentSchedule_Recompute} markers so none survive the schedule as orphans.
+	 */
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
+	public void deleteRecomputeMarkers(final I_M_ShipmentSchedule schedule)
+	{
+		invalidSchedulesService.deleteRecomputeMarkers(ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID()));
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })

@@ -1,8 +1,8 @@
 package de.metas.frontend_testing.masterdata;
 
 import de.metas.currency.CurrencyRepository;
-import de.metas.distribution.mobileui.config.MobileUIDistributionConfigRepository;
 import de.metas.distribution.ddorder.DDOrderService;
+import de.metas.distribution.mobileui.config.MobileUIDistributionConfigRepository;
 import de.metas.distribution.mobileui.job.service.DistributionJobLoaderSupportingServices;
 import de.metas.distribution.mobileui.launchers.DistributionLauncherCaptionProvider;
 import de.metas.frontend_testing.expectations.AssertExpectationsCommandServices;
@@ -20,6 +20,7 @@ import de.metas.util.web.security.UserAuthTokenService;
 import de.metas.workplace.WorkplaceService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.warehouse.WarehouseRepository;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -46,4 +47,5 @@ public class CreateMasterdataCommandSupportingServices
 	@NonNull public final ScannableCodeFormatService scannableCodeFormatService;
 	@NonNull public final AssertExpectationsCommandServices assertExpectationsCommandServices;
 	@NonNull public final PickingJobScheduleService pickingJobScheduleService;
+	@NonNull public final WarehouseRepository warehouseRepository;
 }

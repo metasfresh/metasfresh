@@ -26,7 +26,6 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.order.OrderId;
 import de.metas.order.paymentschedule.core.OrderPaySchedule;
 import de.metas.order.paymentschedule.core.service.OrderPayScheduleService;
-import de.metas.order.paymentschedule.referenced_docs.proforma_invoice.OrderPayScheduleProformaService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
@@ -38,20 +37,22 @@ import org.springframework.stereotype.Component;
 
 /**
  * Blocks reactivation of a {@code C_Order} whose {@link OrderPaySchedule} reflects committed
- * downstream activity — i.e. at least one of:
- * <ul>
- *   <li>any pay-schedule line has a goods-receipt link ({@code inoutId != null}), or</li>
- *   <li>any pay-schedule line has a matched-invoice link ({@code invoiceId != null}), or</li>
- *   <li>a proforma allocation exists for the order (detected via
- *       {@link OrderPayScheduleProformaService#getByOrderId}; the LC/proforma row carries no
- *       per-line link, so it must be detected through the proforma service).</li>
- * </ul>
+ * downstream activity — i.e. at least one pay-schedule line has a goods-receipt link
+ * ({@code inoutId != null}) or a matched-invoice link ({@code invoiceId != null}).
  *
- * <p>A {@code Paid} line always implies one of the above, so no separate status guard is needed.
+ * <p>The line's status is irrelevant to the block. A {@code Paid} line does <b>not</b> imply a
+ * downstream link — a proforma prepayment marks its row {@code Paid} with neither ID set — and it cuts
+ * both ways: an {@code Awaiting_Pay} line carrying no link does not block, while a still-{@code Pending}
+ * line carrying an {@code M_InOut_ID} does. The block depends solely on those two IDs.
  *
- * <p>Reactivation is allowed when no pay-schedule line carries any downstream link AND no proforma
- * allocation exists — meaning nothing has been committed yet and the standard drop-and-rebuild
- * reactivation path is safe. Reactivation is also allowed when the order has no pay-schedule at all.
+ * <p>A proforma allocation alone does <b>not</b> block reactivation: the allocation link and its
+ * prepayment both survive reactivation (only the derived {@link OrderPaySchedule} rows are dropped),
+ * so re-completion can re-derive the proforma-driven schedule state from them. Only a goods receipt
+ * or a matched invoice actually commits state a drop-and-rebuild reactivation would orphan.
+ *
+ * <p>Reactivation is allowed when no pay-schedule line carries any downstream link — meaning nothing
+ * has been committed yet and the standard drop-and-rebuild reactivation path is safe. Reactivation is
+ * also allowed when the order has no pay-schedule at all.
  */
 @Interceptor(I_C_Order.class)
 @Component
@@ -61,32 +62,16 @@ public class C_Order
 	private static final AdMessageKey MSG_OrderReactivateBlocked = AdMessageKey.of("Order_Reactivate_Blocked_By_PaySchedule_Activity");
 
 	@NonNull private final OrderPayScheduleService orderPayScheduleService;
-	@NonNull private final OrderPayScheduleProformaService orderPayScheduleProformaService;
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)
-	public void blockReactivateWhenScheduleNotPending(@NonNull final I_C_Order order)
+	public void blockReactivationIfScheduleLinkedToDownstreamDocument(@NonNull final I_C_Order order)
 	{
 		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
 
-		// The proforma check inside reflectsDownstreamActivity is reached only when a pay-schedule
-		// exists. That is safe because an allocated LC/proforma always creates at least one
-		// pay-schedule line (OrderPayScheduleLCStepService), so "a proforma exists but there is no
-		// pay-schedule" is not a producible state — an order with no pay-schedule at all has nothing
-		// downstream to protect and is always reactivatable.
 		orderPayScheduleService.getByOrderId(orderId)
-				.filter(schedule -> isBlockedByDownstreamActivity(orderId, schedule))
+				.filter(OrderPaySchedule::hasLineLinkedToDownstreamDocument)
 				.ifPresent(schedule -> {
 					throw new AdempiereException(MSG_OrderReactivateBlocked).markAsUserValidationError();
 				});
-	}
-
-	/**
-	 * True if the schedule carries committed downstream state that a drop-and-rebuild re-completion would
-	 * orphan: a line linked to a goods receipt or matched invoice, or a proforma allocation on the order.
-	 */
-	private boolean isBlockedByDownstreamActivity(@NonNull final OrderId orderId, @NonNull final OrderPaySchedule schedule)
-	{
-		return schedule.hasLineLinkedToDownstreamDocument()
-				|| orderPayScheduleProformaService.getByOrderId(orderId).isPresent();
 	}
 }
