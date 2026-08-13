@@ -21,13 +21,10 @@ import de.metas.handlingunits.model.I_M_HU_PI_GRAI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
-import de.metas.handlingunits.model.I_M_ProductPrice;
 import de.metas.logging.LogManager;
 import de.metas.manufacturing.workflows_api.activity_handlers.generateHUQRCodes.GenerateHUQRCodesActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.MaterialReceiptActivityHandler;
 import de.metas.pricing.PriceListVersionId;
-import de.metas.pricing.service.IPriceListDAO;
-import de.metas.pricing.service.ProductPrices;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
@@ -42,14 +39,12 @@ import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_PriceList_Version;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -64,7 +59,7 @@ public class CreatePackingInstructionsCommand
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	@NonNull private final HUPIGraiRepository huPIGraiRepository = new HUPIGraiRepository();
-	@NonNull private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	@NonNull private final ProductPricePackingInstructionRepository productPricePackingInstructionRepository = new ProductPricePackingInstructionRepository();
 	@NonNull private final MasterdataContext context;
 	@NonNull private final JsonPackingInstructionsRequest request;
 	@NonNull private final Identifier identifier;
@@ -406,21 +401,13 @@ public class CreatePackingInstructionsCommand
 		// Fails with "No identifier found for PriceListVersionId" when the request has no bpartners section:
 		// the price list version is created as a side effect of creating a bpartner.
 		final PriceListVersionId priceListVersionId = context.getIdOfType(PriceListVersionId.class);
-		final I_M_PriceList_Version priceListVersion = priceListDAO.getPriceListVersionById(priceListVersionId);
 
-		final List<I_M_ProductPrice> productPrices = ProductPrices.newQuery(priceListVersion)
-				.setProductId(productId)
-				.list(I_M_ProductPrice.class);
+		final int updatedCount = productPricePackingInstructionRepository
+				.pointProductPricesAt(priceListVersionId, productId, piItemProduct);
 
-		Check.assumeNotEmpty(productPrices,
+		Check.assume(updatedCount > 0,
 				"referencedByProductPrice needs product {} to have a price on price list version {} — give the product a price in the same request",
 				productId, priceListVersionId);
-
-		for (final I_M_ProductPrice productPrice : productPrices)
-		{
-			productPrice.setM_HU_PI_Item_Product(piItemProduct);
-			saveRecord(productPrice);
-		}
 	}
 
 	private void renamePreviousEANs()
