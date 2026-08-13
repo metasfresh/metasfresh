@@ -373,6 +373,12 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 		}
 	}
 
+	@Override
+	public void deleteRecomputeMarkers(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		invalidSchedulesRepo.deleteRecomputeMarkers(shipmentScheduleId);
+	}
+
 	@VisibleForTesting
 	Stream<IShipmentScheduleSegment> explodeByPickingBOMs(final IShipmentScheduleSegment segment)
 	{

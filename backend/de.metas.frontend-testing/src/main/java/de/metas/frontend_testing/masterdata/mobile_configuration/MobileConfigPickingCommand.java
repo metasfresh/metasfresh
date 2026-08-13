@@ -51,7 +51,8 @@ class MobileConfigPickingCommand
 					.isConsiderOnlyJobScheduledToWorkplace(request.getConsiderOnlyJobScheduledToWorkplace() != null ? request.getConsiderOnlyJobScheduledToWorkplace() : false)
 					.isAllowQuickPackAll(request.getAllowQuickPackAll() != null ? request.getAllowQuickPackAll() : false)
 					.isMassPrinting(request.getMassPrinting() != null ? request.getMassPrinting() : false)
-					.isShowQtyAvailableForLines(request.getShowQtyAvailableForLines() != null ? request.getShowQtyAvailableForLines() : false);
+					.isShowQtyAvailableForLines(request.getShowQtyAvailableForLines() != null ? request.getShowQtyAvailableForLines() : false)
+					.isShowAllFilterGroups(request.getShowAllFilterGroups() != null ? request.getShowAllFilterGroups() : false);
 
 			if (request.getAllowPickingAnyCustomer() != null)
 			{
