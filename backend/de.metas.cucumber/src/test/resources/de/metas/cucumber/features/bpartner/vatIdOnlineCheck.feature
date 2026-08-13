@@ -90,14 +90,18 @@ Feature: VAT-ID is checked against the online validation service
   @from:cucumber
   @Id:S0614_040
   Scenario: TC7 — service unreachable while the last result is inside the re-check interval keeps that result
+    # The clock is set BEFORE the checker is stubbed and the partner is created, not after: since Task 12
+    # wired an after-commit trigger, "metasfresh contains C_BPartners" itself now schedules a check as soon
+    # as it commits — the clock has to already read 2026-06-17 at that point, or that auto-triggered check
+    # would land its evidence row on the Background's 2026-06-19 instead.
     Given no VATaxID_CheckLog records exist for VATaxID 'EE100594102'
+    And metasfresh has date and time 2026-06-17T10:00:00+02:00[Europe/Berlin]
     And the VAT-ID online checker is stubbed to answer:
       | VATaxID     | VATaxIDStatus |
       | EE100594102 | Valid         |
     And metasfresh contains C_BPartners:
       | Identifier | Value       | VATaxID     |
       | bp_vies4   | ViesTC7Test | EE100594102 |
-    And metasfresh has date and time 2026-06-17T10:00:00+02:00[Europe/Berlin]
     And the VAT-ID check runs for C_BPartner:
       | C_BPartner_ID |
       | bp_vies4      |
@@ -126,17 +130,20 @@ Feature: VAT-ID is checked against the online validation service
     # certificate) or fail closed (Invalid, no tax certificate). Both configured values are covered, because
     # this is the one setting that can remove a tax certificate without VIES ever saying "invalid".
     # The first check is 49 days before the second, i.e. beyond the configured RecheckAfterDays of 30.
+    # The clock is set BEFORE the checker is stubbed and the partner is created (see TC7's comment above):
+    # otherwise the after-commit trigger's own check — fired the moment "metasfresh contains C_BPartners"
+    # commits — would land its evidence row on the Background's 2026-06-19 instead of 2026-05-01.
     Given no VATaxID_CheckLog records exist for VATaxID '<VATaxID>'
     And metasfresh contains VATaxID_Config:
       | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable   |
       | true                 | true               | 30               | <OnServiceUnavailable> |
+    And metasfresh has date and time 2026-05-01T10:00:00+02:00[Europe/Berlin]
     And the VAT-ID online checker is stubbed to answer:
       | VATaxID   | VATaxIDStatus |
       | <VATaxID> | Valid         |
     And metasfresh contains C_BPartners:
       | Identifier | Value          | VATaxID   |
       | bp_vies5   | <BPartnerName> | <VATaxID> |
-    And metasfresh has date and time 2026-05-01T10:00:00+02:00[Europe/Berlin]
     And the VAT-ID check runs for C_BPartner:
       | C_BPartner_ID |
       | bp_vies5      |
@@ -161,3 +168,68 @@ Feature: VAT-ID is checked against the online validation service
       | OnServiceUnavailable | VATaxID      | BPartnerName    | ExpectedStatus     | HasTaxCertificate |
       | ServiceUnavailable   | SI50223054   | ViesTC8FailOpen | ServiceUnavailable | true              |
       | Invalid              | SK2022749619 | ViesTC8Closed   | Invalid            | false             |
+
+  @from:cucumber
+  @Id:S0614_060
+  Scenario: TC9 — saving a new C_BPartner with a VAT-ID schedules a check automatically, after commit
+    # No "the VAT-ID check runs for C_BPartner" step anywhere in this scenario: the check below is proven to
+    # come from the save itself (the after-commit trigger), not from an explicit call.
+    Given no VATaxID_CheckLog records exist for VATaxID 'FR40303265045'
+    And metasfresh has a current user session
+    And the VAT-ID online checker is stubbed to answer:
+      | VATaxID       | VATaxIDStatus | RequestIdentifier |
+      | FR40303265045 | Valid         | WAPIAAAATrigNew1  |
+    When metasfresh contains C_BPartners:
+      | Identifier | Value       | VATaxID       |
+      | bp_vies6   | ViesTC9Test | FR40303265045 |
+    Then the VAT-ID online checker was called for VATaxID 'FR40303265045'
+    And validate C_BPartner VAT-ID status:
+      | C_BPartner_ID | VATaxIDStatus | VATaxIDCheckedAt    | HasTaxCertificate |
+      | bp_vies6      | Valid         | 2026-06-19T10:00:00 | true              |
+    And validate VATaxID_CheckLog records of C_BPartner 'bp_vies6':
+      | VATaxID       | VATaxIDStatus | RequestDate         | ResponseDate        | RequestIdentifier | AD_Session_ID | AD_PInstance_ID |
+      | FR40303265045 | Valid         | 2026-06-19T10:00:00 | 2026-06-19T10:00:00 | WAPIAAAATrigNew1  | true          | false           |
+
+  @from:cucumber
+  @Id:S0614_070
+  Scenario: TC10 — saving a changed VAT-ID on a C_BPartner_Location schedules a check automatically
+    # Covers the C_BPartner_Location branch: every other scenario in this feature drives C_BPartner only.
+    Given no VATaxID_CheckLog records exist for VATaxID 'BE0428759497'
+    And the VAT-ID online checker is stubbed to answer:
+      | VATaxID      | VATaxIDStatus | RequestIdentifier |
+      | BE0428759497 | Valid         | WAPIAAAATrigLoc1  |
+    And metasfresh contains C_BPartners:
+      | Identifier  | Value        |
+      | bp_vies_loc | ViesTC10Test |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier   | C_BPartner_ID | GLN           |
+      | bpl_vies_loc | bp_vies_loc   | 0285601009991 |
+    When update C_BPartner_Location:
+      | C_BPartner_Location_ID.Identifier | VATaxID      |
+      | bpl_vies_loc                      | BE0428759497 |
+    Then the VAT-ID online checker was called for VATaxID 'BE0428759497'
+    And validate C_BPartner_Location VAT-ID status:
+      | C_BPartner_Location_ID | VATaxIDStatus | VATaxIDCheckedAt    | HasTaxCertificate |
+      | bpl_vies_loc           | Valid         | 2026-06-19T10:00:00 | true              |
+    And validate VATaxID_CheckLog records of C_BPartner 'bp_vies_loc':
+      | VATaxID      | VATaxIDStatus | RequestDate         | ResponseDate        | RequestIdentifier |
+      | BE0428759497 | Valid         | 2026-06-19T10:00:00 | 2026-06-19T10:00:00 | WAPIAAAATrigLoc1  |
+
+  @from:cucumber
+  @Id:S0614_080
+  Scenario: TC11 — the online checker throwing an exception does not fail the save
+    # The client-blew-up case (as opposed to a normal ServiceUnavailable answer, covered by TC7/TC8): the
+    # save must succeed and the checker must still have been asked, even though it throws instead of
+    # answering.
+    Given no VATaxID_CheckLog records exist for VATaxID 'IE6433435F'
+    And the VAT-ID online checker is stubbed to throw an exception
+    When metasfresh contains C_BPartners:
+      | Identifier | Value        | VATaxID    |
+      | bp_vies7   | ViesTC11Test | IE6433435F |
+    Then the VAT-ID online checker was called for VATaxID 'IE6433435F'
+    And validate C_BPartner:
+      | C_BPartner_ID | Value        | VATaxID    |
+      | bp_vies7      | ViesTC11Test | IE6433435F |
+    And validate C_BPartner VAT-ID status:
+      | C_BPartner_ID | VATaxIDStatus |
+      | bp_vies7      | NotChecked    |

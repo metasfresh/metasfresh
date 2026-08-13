@@ -22,10 +22,12 @@
 
 package de.metas.vatid.interceptor;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.tax.api.VATIdentifier;
 import de.metas.util.Services;
 import de.metas.vatid.VATaxIDValidationUtil;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.service.ISysConfigBL;
@@ -35,10 +37,19 @@ import org.springframework.stereotype.Component;
 
 @Interceptor(I_C_BPartner.class)
 @Component
+@RequiredArgsConstructor
 public class C_BPartner
 {
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
+	@NonNull private final VATaxIDCheckTrigger vataxIDCheckTrigger;
+
+	/**
+	 * Unchanged synchronous format check: still {@code BEFORE_NEW}/{@code BEFORE_CHANGE}, still throws
+	 * hard on a malformed value, still gated by the same {@code C_BPartner.validateVATaxID} SysConfig. Not
+	 * touched by the after-commit trigger below — a value this rejects never reaches a save at all, let
+	 * alone the online check.
+	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = I_C_BPartner.COLUMNNAME_VATaxID)
 	public void validateVATaxID(@NonNull final I_C_BPartner bpartner)
@@ -47,5 +58,21 @@ public class C_BPartner
 		{
 			VATaxIDValidationUtil.validate(VATIdentifier.ofNullable(bpartner.getVATaxID()));
 		}
+	}
+
+	/**
+	 * Schedules the online VAT-ID check once the save commits. Deliberately {@code AFTER_NEW}/
+	 * {@code AFTER_CHANGE}, not {@code BEFORE_*}: on {@code BEFORE_NEW} the partner has no
+	 * {@code C_BPartner_ID} yet, and {@link de.metas.vatid.VATaxIDCheckRequest#getBpartnerId()} is
+	 * {@code @NonNull}.
+	 */
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE },
+			ifColumnsChanged = I_C_BPartner.COLUMNNAME_VATaxID)
+	public void scheduleVATaxIDCheck(@NonNull final I_C_BPartner bpartner)
+	{
+		vataxIDCheckTrigger.scheduleCheckAfterCommit(
+				BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()),
+				null,
+				bpartner.getVATaxID());
 	}
 }

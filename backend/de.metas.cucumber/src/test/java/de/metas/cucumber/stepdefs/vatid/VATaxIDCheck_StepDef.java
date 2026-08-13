@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.vatid;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
@@ -39,6 +40,7 @@ import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
@@ -46,6 +48,7 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_VATaxID_CheckLog;
+import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
@@ -69,11 +72,36 @@ public class VATaxIDCheck_StepDef
 {
 	@NonNull private final VATaxIDCheckService vataxIDCheckService = SpringContextHolder.instance.getBean(VATaxIDCheckService.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final ISessionBL sessionBL = Services.get(ISessionBL.class);
 
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
+	@NonNull private final C_BPartner_Location_StepDefData bpartnerLocationTable;
 
 	/** The status {@link VATaxIDCheckService#check(VATaxIDCheckRequest)} returned, per partner identifier. */
 	@NonNull private final Map<StepDefDataIdentifier, VATaxIDStatus> returnedStatuses = new HashMap<>();
+
+	/**
+	 * Establishes a real {@code AD_Session} on the current (gluecode) thread, the way an interactive
+	 * WebUI/API save always has one already — direct-DB step defs such as {@code metasfresh contains
+	 * C_BPartners:} otherwise run with no session in {@link Env#getCtx()} at all, which would make the
+	 * after-commit trigger's {@code AD_Session_ID} capture vacuously null and unable to prove anything.
+	 *
+	 * <p>Test setup only: production code (the after-commit trigger) deliberately never creates a session
+	 * itself — see {@code ISessionBL#getCurrentOrCreateNewSession} vs. {@code #getCurrentSession} on the
+	 * trigger. This step plays the role of "a user is already logged in", which is exactly the
+	 * precondition the trigger's capture relies on.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Given metasfresh has a current user session
+	 * </pre>
+	 */
+	@Given("metasfresh has a current user session")
+	public void metasfresh_has_a_current_user_session()
+	{
+		sessionBL.getCurrentOrCreateNewSession(Env.getCtx());
+	}
 
 	/**
 	 * Removes the {@code VATaxID_CheckLog} rows of one VAT-ID <b>value</b>, so a scenario starts from a
@@ -245,6 +273,63 @@ public class VATaxIDCheck_StepDef
 	}
 
 	/**
+	 * The {@code C_BPartner_Location} counterpart of {@link #validate_C_BPartner_VATaxID_status(DataTable)}
+	 * — same three denormalised columns, same assertions, on the location instead of the partner header.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_BPartner_Location_ID</b> — (required, identifier-ref) the location to validate<br>
+	 *   <b>VATaxIDStatus</b>          — (required) expected status code<br>
+	 *   <b>VATaxIDCheckedAt</b>       — (optional) expected check timestamp<br>
+	 *   <b>HasTaxCertificate</b>      — (optional) expected {@code VATaxIDStatus.hasTaxCertificate()} of the
+	 *                                   stored status<br>
+	 *   <b>VATaxID_CheckLog_ID</b>    — (optional) {@code true} if the zoom reference to the latest check
+	 *                                   record must be set
+	 * @cucumber.depends StepDefData: C_BPartner_Location_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then validate C_BPartner_Location VAT-ID status:
+	 *   | C_BPartner_Location_ID | VATaxIDStatus | VATaxIDCheckedAt    | HasTaxCertificate |
+	 *   | bpl_vies1              | Valid         | 2026-06-19T10:00:00 | true              |
+	 * </pre>
+	 */
+	@Then("validate C_BPartner_Location VAT-ID status:")
+	public void validate_C_BPartner_Location_VATaxID_status(@NonNull final DataTable dataTable)
+	{
+		final SoftAssertions softly = new SoftAssertions();
+
+		DataTableRows.of(dataTable).forEach(row -> {
+			final StepDefDataIdentifier identifier = row.getAsIdentifier(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID);
+			final I_C_BPartner_Location bpartnerLocationRecord = bpartnerLocationTable.get(identifier);
+			// the service writes in its own transaction, so the cached model instance is stale by now
+			InterfaceWrapperHelper.refresh(bpartnerLocationRecord);
+
+			final VATaxIDStatus actualStatus = VATaxIDStatus.ofNullableCode(bpartnerLocationRecord.getVATaxIDStatus());
+
+			softly.assertThat(actualStatus)
+					.as("VATaxIDStatus of C_BPartner_Location `%s`", identifier)
+					.isEqualTo(row.getAsEnum(I_C_BPartner_Location.COLUMNNAME_VATaxIDStatus, VATaxIDStatus.class));
+
+			row.getAsOptionalInstant(I_C_BPartner_Location.COLUMNNAME_VATaxIDCheckedAt)
+					.ifPresent(expectedCheckedAt -> softly.assertThat(toInstantOrNull(bpartnerLocationRecord.getVATaxIDCheckedAt()))
+							.as("VATaxIDCheckedAt of C_BPartner_Location `%s`", identifier)
+							.isEqualTo(expectedCheckedAt));
+
+			row.getAsOptionalBoolean("HasTaxCertificate")
+					.ifPresent(expectedHasTaxCertificate -> softly.assertThat(actualStatus != null && actualStatus.hasTaxCertificate())
+							.as("hasTaxCertificate() of VATaxIDStatus `%s` of C_BPartner_Location `%s`", actualStatus, identifier)
+							.isEqualTo(expectedHasTaxCertificate));
+
+			row.getAsOptionalBoolean(I_C_BPartner_Location.COLUMNNAME_VATaxID_CheckLog_ID)
+					.ifPresent(expectedSet -> softly.assertThat(bpartnerLocationRecord.getVATaxID_CheckLog_ID() > 0)
+							.as("VATaxID_CheckLog_ID is set on C_BPartner_Location `%s`", identifier)
+							.isEqualTo(expectedSet));
+		});
+
+		softly.assertAll();
+	}
+
+	/**
 	 * Asserts the complete, ordered list of {@code VATaxID_CheckLog} rows of one partner. The row count is
 	 * asserted too — that is how a scenario proves no additional check was recorded (de-duplication) as well
 	 * as that the evidence row exists at all.
@@ -255,7 +340,14 @@ public class VATaxIDCheck_StepDef
 	 *   <b>VATaxIDStatus</b>     — (required) the recorded status<br>
 	 *   <b>RequestDate</b>       — (optional) when the request was sent<br>
 	 *   <b>ResponseDate</b>      — (optional) when the answer arrived<br>
-	 *   <b>RequestIdentifier</b> — (optional) the consultation number
+	 *   <b>RequestIdentifier</b> — (optional) the consultation number<br>
+	 *   <b>AD_Session_ID</b>     — (optional) {@code true} if the row must carry the acting user session
+	 *                              (a save-driven, after-commit check), {@code false} if it must be empty
+	 *                              (e.g. a check run explicitly by this feature's own step, or by a process
+	 *                              via {@code AD_PInstance_ID} instead)<br>
+	 *   <b>AD_PInstance_ID</b>   — (optional) {@code true} if the row must carry the process instance that
+	 *                              caused it, {@code false} if it must be empty — a save-driven check never
+	 *                              sets this, only a process run does
 	 * @cucumber.depends StepDefData: C_BPartner_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -309,6 +401,16 @@ public class VATaxIDCheck_StepDef
 					.ifPresent(expectedRequestIdentifier -> softly.assertThat(checkLogRecord.getRequestIdentifier())
 							.as("RequestIdentifier of check log #%s", rowIndex)
 							.isEqualTo(expectedRequestIdentifier));
+
+			row.getAsOptionalBoolean(I_VATaxID_CheckLog.COLUMNNAME_AD_Session_ID)
+					.ifPresent(expectedSet -> softly.assertThat(checkLogRecord.getAD_Session_ID() > 0)
+							.as("AD_Session_ID is set on check log #%s", rowIndex)
+							.isEqualTo(expectedSet));
+
+			row.getAsOptionalBoolean(I_VATaxID_CheckLog.COLUMNNAME_AD_PInstance_ID)
+					.ifPresent(expectedSet -> softly.assertThat(checkLogRecord.getAD_PInstance_ID() > 0)
+							.as("AD_PInstance_ID is set on check log #%s", rowIndex)
+							.isEqualTo(expectedSet));
 		});
 
 		softly.assertAll();

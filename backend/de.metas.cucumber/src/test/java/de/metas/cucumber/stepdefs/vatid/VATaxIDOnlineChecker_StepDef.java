@@ -40,6 +40,8 @@ import org.compiere.model.I_VATaxID_CheckLog;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
@@ -140,5 +142,45 @@ public class VATaxIDOnlineChecker_StepDef
 	public void onlineCheckerWasNotCalled()
 	{
 		verify(onlineCheckerMock, never()).check(any(VATIdentifier.class), any(VATaxIDConfig.class));
+	}
+
+	/**
+	 * Asserts the online checker WAS asked about {@code vataxID} — the direct evidence that a check was
+	 * actually attempted, as opposed to the after-commit trigger having been wired but never firing.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then the VAT-ID online checker was called for VATaxID 'DE136695976'
+	 * </pre>
+	 */
+	@Then("the VAT-ID online checker was called for VATaxID {string}")
+	public void onlineCheckerWasCalled(@NonNull final String vataxID)
+	{
+		verify(onlineCheckerMock, atLeastOnce())
+				.check(argThat(checked -> checked != null && checked.getAsString().equals(vataxID)), any(VATaxIDConfig.class));
+	}
+
+	/**
+	 * Stubs the online checker to THROW instead of answering — the "client blew up" case, as opposed to
+	 * {@link #stubOnlineCheckerUnreachable()} which answers {@link VATaxIDStatus#ServiceUnavailable}, a
+	 * normal SPI outcome {@link de.metas.vatid.VATaxIDCheckService} already knows how to record. Used to
+	 * prove that the after-commit trigger's own try/catch keeps such an exception from failing the save
+	 * that scheduled the check.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Given the VAT-ID online checker is stubbed to throw an exception
+	 * </pre>
+	 */
+	@Given("the VAT-ID online checker is stubbed to throw an exception")
+	public void stubOnlineCheckerThrows()
+	{
+		reset(onlineCheckerMock);
+
+		when(onlineCheckerMock.check(any(VATIdentifier.class), any(VATaxIDConfig.class)))
+				.thenThrow(new RuntimeException("Simulated online checker failure (test-only, VATaxIDOnlineChecker_StepDef)"));
+		when(onlineCheckerMock.getUnavailableCountryCodes(any(VATaxIDConfig.class))).thenReturn(ImmutableSet.of());
 	}
 }
