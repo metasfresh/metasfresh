@@ -171,15 +171,18 @@ public class C_BPartner_VATaxID_Check extends JavaProcess implements IProcessPre
 
 		try
 		{
+			// Isolation from every OTHER partner's transaction in this run (see the method javadoc above) —
+			// each partner's check-plus-refresh must commit or fail as its own independent unit.
 			trxManager.callInNewTrx(() -> checkAndRefreshIfStatusChanged(pinstanceId, bpartnerId, bpartnerRecord, previousStatus));
 		}
 		catch (final Exception ex)
 		{
 			// One partner's failure (a throwing checker, a value the format re-check rejects, or — per the
 			// message wrapping below — a refresh failure) must not abort the run for the rest of the
-			// selection.
+			// selection. Deliberately worded to not claim the check itself failed: the wrapped message below
+			// already says so explicitly when that is not what happened.
 			Loggables.withWarnLoggerToo(logger)
-					.addLog("VAT-ID check failed for C_BPartner_ID={}: {}", bpartnerRecord.getC_BPartner_ID(), ex.getMessage());
+					.addLog("VAT-ID check processing failed for C_BPartner_ID={}: {}", bpartnerRecord.getC_BPartner_ID(), ex.getMessage());
 		}
 	}
 

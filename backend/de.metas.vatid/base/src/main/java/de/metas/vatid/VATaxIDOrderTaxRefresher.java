@@ -43,8 +43,8 @@ import lombok.NonNull;
  *
  * <p>Invoice candidates are deliberately out of scope here — this seam is order lines only. Invalidating a
  * partner's unprocessed invoice candidates on the same status change is a separate, not-yet-scheduled
- * concern with its own machinery ({@code IInvoiceCandDAO#invalidateCandsForBPartner}); nothing here should
- * be extended to cover it without that being a deliberate, separately reviewed decision.
+ * concern with its own machinery elsewhere in the codebase; nothing here should be extended to cover it
+ * without that being a deliberate, separately reviewed decision.
  */
 public interface VATaxIDOrderTaxRefresher
 {
