@@ -113,7 +113,6 @@ public class MobileUIPickingUserProfileRepository
 				.isAllowQuickPackAll(profileRecord.isAllowQuickPackAll())
 				.isMassPrinting(profileRecord.isMassPrinting())
 				.isShowQtyAvailableForLines(profileRecord.isShowQtyAvailableForLines())
-				.isShowAllFilterGroups(profileRecord.isShowAllFilterGroups())
 				.customerConfigs(retrievePickingCustomerConfigsCollection(profileId))
 				.defaultPickingJobOptions(extractPickingJobOptions(profileRecord))
 				.filters(retrieveFilters(profileId))
@@ -338,7 +337,6 @@ public class MobileUIPickingUserProfileRepository
 		record.setIsAllowQuickPackAll(from.isAllowQuickPackAll());
 		record.setIsMassPrinting(from.isMassPrinting());
 		record.setIsShowQtyAvailableForLines(from.isShowQtyAvailableForLines());
-		record.setIsShowAllFilterGroups(from.isShowAllFilterGroups());
 		updateRecord(record, from.getDefaultPickingJobOptions());
 	}
 

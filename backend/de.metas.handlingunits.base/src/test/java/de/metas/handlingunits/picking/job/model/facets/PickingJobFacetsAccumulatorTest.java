@@ -80,30 +80,10 @@ class PickingJobFacetsAccumulatorTest
 	@Test
 	void byDefault_onlyTheFirstGroupIsOffered()
 	{
-		final PickingJobFacets facets = collect(parameters(false, PickingJobQuery.Facets.EMPTY));
+		final PickingJobFacets facets = collect(parameters(PickingJobQuery.Facets.EMPTY));
 
 		assertThat(customerIdsOf(facets)).containsExactlyInAnyOrder(CUSTOMER_1, CUSTOMER_2);
 		assertThat(deliveryDaysOf(facets)).isEmpty();
-	}
-
-	@Test
-	void showAllFilterGroups_everyGroupIsOfferedUpFront()
-	{
-		final PickingJobFacets facets = collect(parameters(true, PickingJobQuery.Facets.EMPTY));
-
-		assertThat(customerIdsOf(facets)).containsExactlyInAnyOrder(CUSTOMER_1, CUSTOMER_2);
-		assertThat(deliveryDaysOf(facets)).containsExactlyInAnyOrder(DAY_1, DAY_2);
-	}
-
-	@Test
-	void showAllFilterGroups_selectingACustomerStillNarrowsTheOthers()
-	{
-		final PickingJobQuery.Facets customer1Selected = PickingJobQuery.Facets.builder().customerId(CUSTOMER_1).build();
-
-		final PickingJobFacets facets = collect(parameters(true, customer1Selected));
-
-		assertThat(customerIdsOf(facets)).containsExactlyInAnyOrder(CUSTOMER_1, CUSTOMER_2);
-		assertThat(deliveryDaysOf(facets)).containsExactly(DAY_1);
 	}
 
 	private PickingJobFacets collect(final CollectingParameters parameters)
@@ -114,13 +94,12 @@ class PickingJobFacetsAccumulatorTest
 				.collect(PickingJobFacetsAccumulator.collect(parameters));
 	}
 
-	private static CollectingParameters parameters(final boolean isShowAllFilterGroups, final PickingJobQuery.Facets activeFacets)
+	private static CollectingParameters parameters(final PickingJobQuery.Facets activeFacets)
 	{
 		return CollectingParameters.builder()
 				.addressProvider(RenderedAddressProvider.builder().documentLocationBL(mock(IDocumentLocationBL.class)).build())
 				.groupsInOrder(CUSTOMER_THEN_DELIVERY_DATE)
 				.activeFacets(activeFacets)
-				.isShowAllFilterGroups(isShowAllFilterGroups)
 				.build();
 	}
 

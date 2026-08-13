@@ -63,7 +63,6 @@ public class JsonMobileConfigRequest
 		@Nullable Boolean massPrinting;
 		@Nullable Boolean showQtyAvailableForLines;
 		@Nullable Boolean showPromptWhenOverPicking;
-		@Nullable Boolean showAllFilterGroups;
 
 		@Nullable List<Customer> customers;
 		

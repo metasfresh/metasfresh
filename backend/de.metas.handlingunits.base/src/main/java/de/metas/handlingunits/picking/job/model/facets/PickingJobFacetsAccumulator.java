@@ -143,11 +143,7 @@ class PickingJobFacetsAccumulator
 			//
 			// If user didn't activate any facet on this group, stop collecting facets here.
 			// Let him/her active some facets on this group, and then we can continue collecting for next groups
-			// ...unless the profile asks for every configured group to be offered right away, in which case we
-			// keep going. Note this only skips the early exit: activeFacetsOfPreviousGroups below still
-			// accumulates, so ticking a facet in one group keeps narrowing the ones offered in the others.
-			if (!parameters.isShowAllFilterGroups()
-					&& collectedGroupFacets.stream().noneMatch(PickingJobFacet::isActive))
+			if (collectedGroupFacets.stream().noneMatch(PickingJobFacet::isActive))
 			{
 				break;
 			}
