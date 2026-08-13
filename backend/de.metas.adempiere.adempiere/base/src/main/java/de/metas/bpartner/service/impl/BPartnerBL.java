@@ -942,9 +942,9 @@ public class BPartnerBL implements IBPartnerBL
 	/**
 	 * The single resolution shared by {@link #getVATTaxId(BPartnerLocationId)} and
 	 * {@link #getVATaxIDStatusCode(BPartnerLocationId)}: which record — the location, or (unless
-	 * {@value #SYS_CONFIG_IgnorePartnerVATID}) the partner — actually supplies the VAT-ID. Both public
-	 * methods read off the SAME resolved record, so a caller combining them never mismatches a VAT-ID
-	 * from one record with the status of the other.
+	 * AD_SysConfig {@value #SYS_CONFIG_IgnorePartnerVATID} is set to Y) the partner — actually
+	 * supplies the VAT-ID. Both public methods read off the SAME resolved record, so a caller
+	 * combining them never mismatches a VAT-ID from one record with the status of the other.
 	 */
 	@NonNull
 	private Optional<VATaxIDSource> resolveVATaxIDSource(@NonNull final BPartnerLocationId bpartnerLocationId)

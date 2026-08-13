@@ -395,12 +395,13 @@ public class TaxDAO implements ITaxDAO
 
 		final BPartnerId bpartnerId = taxQuery.getBPartnerId();
 
-		final Optional<BPartnerLocationId> bpartnerLocationId = Optional.ofNullable(taxQuery.getBPartnerLocationId())
-				.map(BPartnerLocationAndCaptureId::getBpartnerLocationId);
-
-		final VATIdentifier bpVATaxID = bpartnerLocationId
-				.flatMap(bpartnerBL::getVATTaxId)
+		final BPartnerLocationId bpartnerLocationId = Optional.ofNullable(taxQuery.getBPartnerLocationId())
+				.map(BPartnerLocationAndCaptureId::getBpartnerLocationId)
 				.orElse(null);
+
+		final VATIdentifier bpVATaxID = bpartnerLocationId != null
+				? bpartnerBL.getVATTaxId(bpartnerLocationId).orElse(null)
+				: null;
 
 		// A present VAT-ID keeps the tax certificate unless its VATaxIDStatus is explicitly Invalid.
 		// getVATaxIDStatusCode(...) is guaranteed (see its Javadoc) to read the status off the SAME
@@ -408,8 +409,7 @@ public class TaxDAO implements ITaxDAO
 		// (pre-migration data, or never checked) defaults to "has certificate" via orElse(true),
 		// which is exactly today's presence-only behaviour.
 		final boolean bPartnerHasTaxCertificate = bpVATaxID != null
-				&& bpartnerLocationId
-						.flatMap(bpartnerBL::getVATaxIDStatusCode)
+				&& bpartnerBL.getVATaxIDStatusCode(bpartnerLocationId)
 						.flatMap(VATaxIDStatus::optionalOfNullableCode)
 						.map(VATaxIDStatus::hasTaxCertificate)
 						.orElse(true);

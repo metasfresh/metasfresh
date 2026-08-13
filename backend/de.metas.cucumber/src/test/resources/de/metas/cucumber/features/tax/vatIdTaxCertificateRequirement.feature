@@ -78,16 +78,16 @@ Feature: Tax determination requires a valid VAT-ID for the tax-certificate rate
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier |
-      | o_tc5      | true    | bp_vatinvalid            | 2026-08-13  | bpl_vatinvalid                        | warehouseStd                  |
+      | order      | true    | bp_vatinvalid            | 2026-08-13  | bpl_vatinvalid                        | warehouseStd                  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | ol_tc5     | o_tc5                 | product                 | 1          |
+      | orderLine  | order                 | product                 | 1          |
 
-    When the order identified by o_tc5 is completed
+    When the order identified by order is completed
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.C_Tax_ID.Identifier |
-      | ol_tc5                    | o_tc5                 | product                 | 1          | taxEuStandard19         |
+      | orderLine                 | order                 | product                 | 1          | taxEuStandard19         |
 
   @Id:S31060_TC6
   Scenario: TC6 - order for a French customer whose VAT-ID was never checked still gets the 0% tax-certificate rate (today's behaviour, unchanged)
@@ -108,13 +108,13 @@ Feature: Tax determination requires a valid VAT-ID for the tax-certificate rate
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier |
-      | o_tc6      | true    | bp_vatnotchecked         | 2026-08-13  | bpl_vatnotchecked                     | warehouseStd                  |
+      | order      | true    | bp_vatnotchecked         | 2026-08-13  | bpl_vatnotchecked                     | warehouseStd                  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | ol_tc6     | o_tc6                 | product                 | 1          |
+      | orderLine  | order                 | product                 | 1          |
 
-    When the order identified by o_tc6 is completed
+    When the order identified by order is completed
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.C_Tax_ID.Identifier |
-      | ol_tc6                    | o_tc6                 | product                 | 1          | taxEuCert0              |
+      | orderLine                 | order                 | product                 | 1          | taxEuCert0              |
