@@ -234,7 +234,7 @@ public class MetasfreshIssueAppender extends UnsynchronizedAppenderBase<ILogging
 		errorManager.createIssue(toIssueCreateRequest(event));
 	}
 
-	/** Extracted from {@link #reportAD_Issue(ILoggingEvent)}, which needs a database connection while this mapping does not. */
+	/** Maps the event without needing a database connection, unlike {@link #reportAD_Issue(ILoggingEvent)}. */
 	@VisibleForTesting
 	static IssueCreateRequest toIssueCreateRequest(final ILoggingEvent event)
 	{

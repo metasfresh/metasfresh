@@ -202,14 +202,15 @@ public class ErrorManager implements IErrorManager
 	}
 
 	/**
-	 * Tells whether the frame belongs to metasfresh code, i.e. is worth reporting as the origin of the error.
-	 * Matching on the substring {@code "adempiere"} selects neither {@code de.metas} (where the application code lives)
-	 * nor {@code org.compiere}, so it reports the topmost framework frame instead of the code that actually failed.
+	 * Tells whether the frame belongs to metasfresh code, and is therefore worth reporting as the origin of the error.
+	 * The excluded roots {@code org.apache.ecs} and {@code it.cnr} are vendored third-party libraries.
 	 */
 	private static boolean isMetasfreshFrame(@NonNull final StackTraceElement element)
 	{
 		final String className = element.getClassName();
 		return className.startsWith("de.metas.")
+				|| className.startsWith("de.adempiere.")
+				|| className.startsWith("de.schaeffer.")
 				|| className.startsWith("org.adempiere.")
 				|| className.startsWith("org.compiere.")
 				|| className.startsWith("org.eevolution.");

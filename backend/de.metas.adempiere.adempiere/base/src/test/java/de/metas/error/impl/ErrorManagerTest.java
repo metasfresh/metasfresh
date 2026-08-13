@@ -30,6 +30,8 @@ import org.compiere.model.I_AD_Issue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -50,8 +52,8 @@ class ErrorManagerTest
 
 	/**
 	 * Builds a throwable with a synthetic stacktrace instead of relying on the frames this test actually runs in:
-	 * {@code createIssueInTrx} only inspects frames whose {@code toString()} contains {@code "adempiere"}, and a
-	 * JUnit-invoked test method produces none.
+	 * {@code createIssueInTrx} reports the topmost metasfresh frame, and the frames a JUnit-invoked test method
+	 * produces are not the ones under test.
 	 */
 	private static Throwable throwableWithStackFrame(
 			final String className,
@@ -139,20 +141,32 @@ class ErrorManagerTest
 					.contains("OrderGroupRepository.toGroupCompensationLine");
 		}
 
-		/** The legacy packages are still metasfresh code and must keep being selected. */
-		@Test
-		void stillPicksLegacyAdempiereAndCompiereFrames()
+		/**
+		 * Every package root that holds metasfresh production code has to be selected — the legacy ones just as much
+		 * as {@code de.metas} — while JDK and vendored third-party frames are skipped.
+		 */
+		@ParameterizedTest
+		@ValueSource(strings = {
+				"de.metas.order.compensationGroup.OrderGroupRepository",
+				"de.adempiere.model.ProductQty",
+				"de.schaeffer.compiere.mt940.Parser",
+				"org.adempiere.ad.dao.impl.TypedSqlQuery",
+				"org.compiere.model.MTree",
+				"org.eevolution.api.IPPOrderBL" })
+		void picksAnyMetasfreshFrameAndSkipsThirdPartyOnes(final String metasfreshClassName)
 		{
 			final I_AD_Issue issue = createIssueAndLoad(IssueCreateRequest.builder()
 					.throwable(throwableWithStackFrames(
 							new StackTraceElement("java.util.Optional", "orElseThrow", "Optional.java", 408),
-							new StackTraceElement("org.compiere.model.MTree", "loadNodes", "MTree.java", 290),
-							new StackTraceElement("org.adempiere.ad.callout.api.impl.CalloutExecutor",
-									"execute", "CalloutExecutor.java", 258)))
+							new StackTraceElement("it.cnr.imaa.essi.lablib.gui.checkboxtree.CheckboxTree",
+									"setCheckingPaths", "CheckboxTree.java", 120),
+							new StackTraceElement("org.apache.ecs.Doctype", "toString", "Doctype.java", 34),
+							new StackTraceElement(metasfreshClassName, "doTheThing", "SomeSource.java", 99)))
 					.build());
 
-			assertThat(issue.getSourceClassName()).isEqualTo("org.compiere.model.MTree");
-			assertThat(issue.getSourceMethodName()).isEqualTo("loadNodes");
+			assertThat(issue.getSourceClassName()).isEqualTo(metasfreshClassName);
+			assertThat(issue.getSourceMethodName()).isEqualTo("doTheThing");
+			assertThat(issue.getLineNo()).isEqualTo(99);
 		}
 
 		/** A summary that genuinely adds information is still appended to the throwable's message. */
