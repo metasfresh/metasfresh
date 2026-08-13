@@ -143,7 +143,7 @@ public class ErrorManager implements IErrorManager
 						if (count == 0)
 						{
 							issue.setSourceClassName(element.getClassName());
-							issue.setSourceClassName(element.getMethodName());
+							issue.setSourceMethodName(element.getMethodName());
 							issue.setLineNo(element.getLineNumber());
 						}
 						count++;
@@ -211,7 +211,9 @@ public class ErrorManager implements IErrorManager
 		{
 			final String throwableMessage = AdempiereException.extractMessage(throwable);
 
-			summary = Check.isNotBlank(summary)
+			// A caller that logged the throwable's own message (every REST error does) must not get it stored twice;
+			// that message can be large, e.g. when it embeds the rejected request payload.
+			summary = Check.isNotBlank(summary) && !summary.equals(throwableMessage)
 					? throwableMessage + " " + summary
 					: throwableMessage;
 		}
