@@ -23,6 +23,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * <p>
  * The HU-flavoured {@code de.metas.handlingunits.model.I_M_ProductPrice} is used deliberately: only it exposes
  * {@code setM_HU_PI_Item_Product}, because {@code de.metas.business} cannot depend on the handling-units module.
+ * That is also why this is a second writer of {@code M_ProductPrice} alongside
+ * {@code de.metas.pricing.productprice.ProductPriceRepository}: this one is scoped to the HU column only.
+ * <p>
+ * Repository Tables: M_ProductPrice
+ * Repository Cluster: ProductPricePackingInstructionRepository
  */
 public class ProductPricePackingInstructionRepository
 {
