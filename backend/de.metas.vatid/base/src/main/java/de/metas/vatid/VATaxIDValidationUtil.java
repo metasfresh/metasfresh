@@ -41,6 +41,21 @@ import javax.annotation.Nullable;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class VATaxIDValidationUtil
 {
+	/**
+	 * Whether saving a malformed VAT-ID is rejected.
+	 *
+	 * <p>{@code Y} — the save-time format check is enforced: saving a {@code VATaxID} on
+	 * {@code C_BPartner} or {@code C_BPartner_Location} whose format is wrong for its country prefix
+	 * fails with a user error and the record is not stored. {@code N} — the check is skipped, so any
+	 * value can be saved; useful for importing legacy data that would otherwise be unsavable.
+	 *
+	 * <p>Absent or unset counts as {@code Y}: the callers pass {@code true} as the default, and the
+	 * shipped row is a single System-level {@code Y} with no organisation override. So the check is on
+	 * unless someone deliberately turns it off.
+	 *
+	 * <p>Note this gates only the <em>save-time</em> check. It does not gate the format check inside
+	 * {@code VATaxIDCheckService}, which the per-organisation {@code VATaxID_Config} governs instead.
+	 */
 	public static final String SYSCONFIG_validateVATaxID = "C_BPartner.validateVATaxID";
 	private static final AdMessageKey MSG_VATaxID_Invalid_Format = AdMessageKey.of("VATaxID_Invalid_Format");
 
