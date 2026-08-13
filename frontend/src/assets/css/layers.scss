@@ -10,11 +10,19 @@
 * - 400 - screen-freeze
 */
 
-/* Over static content, so a row context menu is never occluded by a table's own
- * in-content overlays -- notably `.column-resize-handle` (table.scss), a full-height 5px
- * strip at z-index 3 on every header-cell boundary. Both used to sit at 3, which left the
- * hit test to DOM order and let the invisible handle swallow clicks on menu items. */
-$z-index-context-menu: 50;
+/* Over static content, so a row context menu is never occluded by an overlay that can be
+ * open at the same time. It must outrank, in the <100 band:
+ *   3  `.column-resize-handle` (table.scss) - a full-height 5px strip on every header-cell
+ *      boundary; both sat at 3, so the hit test fell to DOM order and the invisible handle
+ *      swallowed clicks on menu items. That is the bug this value exists to prevent.
+ *   50 `.attributes-dropdown` (attributes.scss) - rendered INSIDE table cells, so it can be
+ *      open in the same subtree as the menu.
+ *   50 `.click-overlay` (screen-freeze.scss) - the outside-click catcher of a raw modal, which
+ *      can host a grid; below it, a click on the menu would close the modal instead.
+ * and stay under 99 (spinner / tabs / inputs / status-list) and 100 (header). 51-98 is
+ * otherwise unoccupied - keep it that way rather than reusing 50, or the equal-z-index /
+ * DOM-order coin flip simply moves to a different pair of elements. */
+$z-index-context-menu: 60;
 
 $z-index-backdrop: 200;
 $z-index-spinner-overlay: 200;
