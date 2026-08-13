@@ -1,10 +1,16 @@
 package de.metas.handlingunits.reservation.interceptor;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.model.I_C_Order;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.order.IOrderDAO;
+import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderId;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -14,12 +20,17 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -51,6 +62,9 @@ import java.util.Properties;
 public class C_OrderLine
 {
 	private final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
+	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
+	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@Init
 	public void registerCallouts()
@@ -70,11 +84,99 @@ public class C_OrderLine
 	@CalloutMethod(columnNames = de.metas.interfaces.I_C_OrderLine.COLUMNNAME_M_Product_ID)
 	public void onProductSetOrChanged(final de.metas.interfaces.I_C_OrderLine orderLine)
 	{
-		final Optional<HUPIItemProductId> huPiItemProductId = hupiItemProductDAO.retrieveDefaultIdForProduct(ProductId.ofRepoId(orderLine.getM_Product_ID()),
+		final org.compiere.model.I_C_Order order = ordersRepo.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+
+		final ZonedDateTime date = extractPriceDate(orderLine, order);
+
+		final Optional<HUPIItemProductId> huPiItemProductId = hupiItemProductDAO.retrieveDefaultIdForProduct(
+				ProductId.ofRepoId(orderLine.getM_Product_ID()),
 				BPartnerId.ofRepoId(orderLine.getC_BPartner_ID()),
-				TimeUtil.asZonedDateTime(orderLine.getDatePromised()));
+				date,
+				getPriceListVersionIdOrNull(orderLine, order, date));
 		final Properties ctx = Env.getCtx();
 		final I_M_HU_PI_Item_Product noPackingItemProduct = hupiItemProductDAO.retrieveVirtualPIMaterialItemProduct(ctx);
 		orderLine.setM_HU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(huPiItemProductId.orElse(HUPIItemProductId.ofRepoId(noPackingItemProduct.getM_HU_PI_Item_Product_ID()))));
+	}
+
+	/**
+	 * The packing instruction's validity date, DatePromised-based for sales and purchase alike.
+	 * <p>
+	 * {@code C_OrderLine.DatePromised} is nullable — a line whose date has not been set yet is normal — so
+	 * coalesce to the order header, mirroring the sales branch of {@code OrderLineBL}'s own price-date
+	 * resolution. Both being unset is possible too: this runs as a pre-save interceptor and callout, and
+	 * an AD {@code Mandatory} flag is only enforced when the record is persisted, not while it is being
+	 * edited. That case returns {@code null}, meaning "no validity filter" — never an exception, because
+	 * refusing to default a packing instruction must not break product selection.
+	 */
+	@Nullable
+	private static ZonedDateTime extractPriceDate(
+			@NonNull final de.metas.interfaces.I_C_OrderLine orderLine,
+			@NonNull final org.compiere.model.I_C_Order order)
+	{
+		return CoalesceUtil.coalesce(
+				TimeUtil.asZonedDateTime(orderLine.getDatePromised()),
+				TimeUtil.asZonedDateTime(order.getDatePromised()));
+	}
+
+	/**
+	 * @return the order's price list version, which restricts the default lookup to packing instructions
+	 *         that a product price references — or {@code null} to leave the lookup unrestricted.
+	 *         <p>
+	 *         Null is returned when the document is not a sales order, when the rule is not enforced, and
+	 *         when there is no price list to resolve one from: an order that has no price list yet must
+	 *         keep today's behaviour rather than silently lose its packing instruction.
+	 *         <p>
+	 *         Note this site cannot simply skip the lookup the way the quick-input helper does. That
+	 *         helper has a price-list step ahead of the fallback which has already returned any priced
+	 *         packing instruction; here the {@code IsDefaultForProduct} lookup is the only source, so
+	 *         skipping it would also strip the default where a product price legitimately references it.
+	 */
+	@Nullable
+	private PriceListVersionId getPriceListVersionIdOrNull(
+			@NonNull final de.metas.interfaces.I_C_OrderLine orderLine,
+			@NonNull final org.compiere.model.I_C_Order order,
+			@Nullable final ZonedDateTime date)
+	{
+		if (date == null)
+		{
+			// No date anywhere on the line or its order, so there is no price list version to speak of.
+			// orderLineBL.getPriceListVersion would throw on exactly this input; stay unrestricted.
+			//
+			// This deliberately also gives up on a line that carries an explicit M_PriceList_Version_ID
+			// override, which could in principle be resolved without any date. That combination only
+			// makes us less restrictive, never wrong, and keeping one guard is worth more here than
+			// adding a branch no test exercises.
+			return null;
+		}
+
+		if (!order.isSOTrx())
+		{
+			// Sales only, matching the quick-input helper, which reaches its IsDefaultForProduct fallback
+			// under an SOTrx.SALES guard. Purchase order lines keep today's behaviour untouched. Whether
+			// purchase should follow the same rule is a separate question, deliberately not decided here.
+			return null;
+		}
+
+		if (!sysConfigBL.getBooleanValue(
+				IHUPIItemProductBL.SYSCONFIG_EnforcePrecisePricePerHUItemProduct,
+				false,
+				ClientId.ofRepoId(orderLine.getAD_Client_ID()).getRepoId()))
+		{
+			return null;
+		}
+
+		// orderLineBL.getPriceListVersion throws when there is neither a line-level override nor an order
+		// price list, so bail out to "unrestricted" first rather than let an incomplete order fail here.
+		if (orderLine.getM_PriceList_Version_ID() <= 0 && order.getM_PriceList_ID() <= 0)
+		{
+			return null;
+		}
+
+		// Deliberately the shared BL rather than a local re-resolution: it honours the line-level price
+		// list version override and resolves the price date in the order's org timezone.
+		final I_M_PriceList_Version priceListVersion = orderLineBL.getPriceListVersion(orderLine);
+		return priceListVersion == null
+				? null
+				: PriceListVersionId.ofRepoId(priceListVersion.getM_PriceList_Version_ID());
 	}
 }
