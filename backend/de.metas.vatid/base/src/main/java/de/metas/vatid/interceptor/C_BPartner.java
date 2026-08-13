@@ -31,7 +31,6 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.session.ISessionBL;
-import org.adempiere.ad.session.MFSession;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.ModelValidator;
@@ -71,18 +70,18 @@ public class C_BPartner
 	 * {@code @NonNull}.
 	 *
 	 * <p>The acting {@code AD_Session_ID} is resolved <b>here</b>, not inside {@link VATaxIDCheckTrigger}:
-	 * this {@code @ModelChange} method is the near-user, save-time boundary — the same role a callout or a
-	 * REST controller plays elsewhere — so it is the one place allowed to read {@link Env#getCtx()}
-	 * (service-injection rule: a shared {@code @Component} never reads ambient thread-local context
-	 * itself). Resolved eagerly, on the thread doing the save, and passed down as a plain
-	 * {@code Integer}.
+	 * {@link VATaxIDCheckTrigger} is a shared {@code @Component} with no single caller, so it must not read
+	 * ambient thread-local context itself (service-injection rule on {@code Env.get*}); this
+	 * {@code @ModelChange} method is the actual call site of this particular save, so it resolves
+	 * {@code Env.getCtx()} once, on the thread doing the save, and passes the result down as a plain
+	 * {@code Integer} — {@code null} on a save with no logged-in session (batch/import), which is exactly
+	 * what {@link de.metas.vatid.VATaxIDCheckRequest#getAdSessionId()} allows.
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE },
 			ifColumnsChanged = I_C_BPartner.COLUMNNAME_VATaxID)
 	public void scheduleVATaxIDCheck(@NonNull final I_C_BPartner bpartner)
 	{
-		final MFSession currentSession = sessionBL.getCurrentSession(Env.getCtx());
-		final Integer adSessionId = currentSession != null ? currentSession.getAD_Session_ID() : null;
+		final Integer adSessionId = sessionBL.getCurrentSessionIdOrNull(Env.getCtx());
 
 		vataxIDCheckTrigger.scheduleCheckAfterCommit(
 				BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()),

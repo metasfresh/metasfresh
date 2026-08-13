@@ -32,7 +32,6 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.session.ISessionBL;
-import org.adempiere.ad.session.MFSession;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.ModelValidator;
@@ -79,8 +78,7 @@ public class C_BPartner_Location
 			ifColumnsChanged = I_C_BPartner_Location.COLUMNNAME_VATaxID)
 	public void scheduleVATaxIDCheck(@NonNull final I_C_BPartner_Location bpLocation)
 	{
-		final MFSession currentSession = sessionBL.getCurrentSession(Env.getCtx());
-		final Integer adSessionId = currentSession != null ? currentSession.getAD_Session_ID() : null;
+		final Integer adSessionId = sessionBL.getCurrentSessionIdOrNull(Env.getCtx());
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpLocation.getC_BPartner_ID());
 		vataxIDCheckTrigger.scheduleCheckAfterCommit(

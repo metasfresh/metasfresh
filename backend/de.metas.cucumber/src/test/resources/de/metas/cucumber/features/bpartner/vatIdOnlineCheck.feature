@@ -90,10 +90,10 @@ Feature: VAT-ID is checked against the online validation service
   @from:cucumber
   @Id:S0614_040
   Scenario: TC7 — service unreachable while the last result is inside the re-check interval keeps that result
-    # The clock is set BEFORE the checker is stubbed and the partner is created, not after: since Task 12
-    # wired an after-commit trigger, "metasfresh contains C_BPartners" itself now schedules a check as soon
-    # as it commits — the clock has to already read 2026-06-17 at that point, or that auto-triggered check
-    # would land its evidence row on the Background's 2026-06-19 instead.
+    # The clock is set BEFORE the checker is stubbed and the partner is created, not after: an after-commit
+    # trigger schedules a check the moment "metasfresh contains C_BPartners" commits, so the clock has to
+    # already read 2026-06-17 at that point, or that auto-triggered check would land its evidence row on
+    # the Background's 2026-06-19 instead.
     Given no VATaxID_CheckLog records exist for VATaxID 'EE100594102'
     And metasfresh has date and time 2026-06-17T10:00:00+02:00[Europe/Berlin]
     And the VAT-ID online checker is stubbed to answer:
@@ -194,7 +194,10 @@ Feature: VAT-ID is checked against the online validation service
   @Id:S0614_070
   Scenario: TC10 — saving a changed VAT-ID on a C_BPartner_Location schedules a check automatically
     # Covers the C_BPartner_Location branch: every other scenario in this feature drives C_BPartner only.
+    # Also proves the C_BPartner_Location interceptor's own AD_Session_ID capture (a separate code path
+    # from C_BPartner's, exercised by TC9) — same session step, same assertion columns as TC9.
     Given no VATaxID_CheckLog records exist for VATaxID 'BE0428759497'
+    And metasfresh has a current user session
     And the VAT-ID online checker is stubbed to answer:
       | VATaxID      | VATaxIDStatus | RequestIdentifier |
       | BE0428759497 | Valid         | WAPIAAAATrigLoc1  |
@@ -212,8 +215,8 @@ Feature: VAT-ID is checked against the online validation service
       | C_BPartner_Location_ID | VATaxIDStatus | VATaxIDCheckedAt    | HasTaxCertificate |
       | bpl_vies_loc           | Valid         | 2026-06-19T10:00:00 | true              |
     And validate VATaxID_CheckLog records of C_BPartner 'bp_vies_loc':
-      | VATaxID      | VATaxIDStatus | RequestDate         | ResponseDate        | RequestIdentifier |
-      | BE0428759497 | Valid         | 2026-06-19T10:00:00 | 2026-06-19T10:00:00 | WAPIAAAATrigLoc1  |
+      | VATaxID      | VATaxIDStatus | RequestDate         | ResponseDate        | RequestIdentifier | AD_Session_ID | AD_PInstance_ID |
+      | BE0428759497 | Valid         | 2026-06-19T10:00:00 | 2026-06-19T10:00:00 | WAPIAAAATrigLoc1  | true          | false           |
 
   @from:cucumber
   @Id:S0614_080
