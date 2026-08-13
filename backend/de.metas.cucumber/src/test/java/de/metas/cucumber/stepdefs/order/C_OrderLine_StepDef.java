@@ -327,16 +327,13 @@ public class C_OrderLine_StepDef
 			@NonNull final String linkedOrderIdentifier,
 			@NonNull final DataTable dataTable)
 	{
-		final I_C_Order purchaseOrder = queryBL
-				.createQueryBuilder(I_C_Order.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Order.COLUMNNAME_Link_Order_ID, orderTable.get(linkedOrderIdentifier).getC_Order_ID())
-				.create().firstOnly(I_C_Order.class);
+		// If the order was already registered (e.g. by a preceding "the order is created:" step),
+		// reuse it directly to avoid ambiguity when multiple POs share the same Link_Order_ID
+		// (e.g. an older voided PO plus the current one after SO reactivation + re-completion).
+		final I_C_Order purchaseOrder = orderTable.getOptional(orderIdentifier)
+				.orElseGet(() -> queryPurchaseOrderFromDb(linkedOrderIdentifier, orderIdentifier));
 
-		assertThat(purchaseOrder).isNotNull();
-		orderTable.putOrReplace(orderIdentifier, purchaseOrder);
-
-		thePurchaseOrderLinkedToOrderO_HasLines(docSubType, linkedOrderIdentifier, dataTable);
+		assertPurchaseOrderHasLines(purchaseOrder, docSubType, dataTable);
 	}
 
 	@Then("the purchase order with document subtype {string} linked to order {string} has lines:")
@@ -349,6 +346,12 @@ public class C_OrderLine_StepDef
 				.create().firstOnly(I_C_Order.class);
 
 		assertThat(purchaseOrder).isNotNull();
+
+		assertPurchaseOrderHasLines(purchaseOrder, docSubType, dataTable);
+	}
+
+	private void assertPurchaseOrderHasLines(@NonNull final I_C_Order purchaseOrder, @Nullable final String docSubType, @NonNull final DataTable dataTable)
+	{
 
 		final I_C_DocType docType = queryBL
 				.createQueryBuilder(I_C_DocType.class)
@@ -1092,5 +1095,23 @@ public class C_OrderLine_StepDef
 			return isNullPlaceholder() ? null : LocalDate.parse(value);
 		}
 
+	}
+
+	/**
+	 * Queries the database for a purchase order linked to the given SO.
+	 * Registers the found PO under the provided identifier and returns it.
+	 */
+	private I_C_Order queryPurchaseOrderFromDb(
+			@NonNull final String linkedOrderIdentifier,
+			@NonNull final String orderIdentifier)
+	{
+		final I_C_Order foundPO = queryBL
+				.createQueryBuilder(I_C_Order.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Order.COLUMNNAME_Link_Order_ID, orderTable.get(linkedOrderIdentifier).getC_Order_ID())
+				.create().firstOnly(I_C_Order.class);
+		assertThat(foundPO).isNotNull();
+		orderTable.putOrReplace(orderIdentifier, foundPO);
+		return foundPO;
 	}
 }

@@ -38,6 +38,7 @@ Feature: Order to delivery instructions
       | shipper_DHL |
       | shipper_DPD |
 
+  @Id:S23918_TC1
   Scenario: Order to delivery instructions.
   _Given initial SO with 2 order lines : QtyEntered = 2, different delivery dates in the future and attributes assigned
   _When the SO is completed
@@ -96,8 +97,8 @@ Feature: Order to delivery instructions
   }
   """
     And metasfresh contains C_OrderLines:
-      | Identifier  | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.DateOrdered | OPT.DatePromised     | OPT.M_AttributeSetInstance_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_Currency_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
-      | orderLine_1 | orderSO_Unchanged     | product                 | 2          | 2023-02-03      | 2023-05-10T00:00:00Z | line1ASI                                 | customer                     | currency                     | customerLocation                      |
+      | Identifier  | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.DateOrdered | OPT.DatePromised     | OPT.M_AttributeSetInstance_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_Currency_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.C_BPartner_Vendor_ID.Identifier |
+      | orderLine_1 | orderSO_Unchanged     | product                 | 2          | 2023-02-03      | 2023-05-10T00:00:00Z | line1ASI                                 | customer                     | currency                     | customerLocation                      | vendor                              |
 
     And metasfresh contains M_AttributeSetInstance with identifier "line2ASI":
   """
@@ -112,8 +113,8 @@ Feature: Order to delivery instructions
   """
 
     And metasfresh contains C_OrderLines:
-      | Identifier  | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.DateOrdered | OPT.DatePromised     | OPT.M_AttributeSetInstance_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_Currency_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
-      | orderLine_2 | orderSO_Unchanged     | product                 | 2          | 2023-02-03      | 2023-04-10T00:00:00Z | line2ASI                                 | customer                     | currency                     | customerLocation                      |
+      | Identifier  | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.DateOrdered | OPT.DatePromised     | OPT.M_AttributeSetInstance_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_Currency_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.C_BPartner_Vendor_ID.Identifier |
+      | orderLine_2 | orderSO_Unchanged     | product                 | 2          | 2023-02-03      | 2023-04-10T00:00:00Z | line2ASI                                 | customer                     | currency                     | customerLocation                      | vendor                              |
 
     When the order identified by orderSO_Unchanged is completed
 
@@ -135,19 +136,13 @@ Feature: Order to delivery instructions
       | deliveryPlanningSO_line1          | shipper_DHL                 |
       | deliveryPlanningSO_line2          | shipper_DPD                 |
 
-    When generate PO from SO is invoked with parameters:
-      | C_BPartner_ID.Identifier | C_Order_ID.Identifier | PurchaseType |
-      | vendor                   | orderSO_Unchanged     | Dropship     |
-
     Then the order is created:
-      | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | DocSubType | OPT.IsDropShip | OPT.DocStatus | OPT.DropShip_BPartner_ID.Identifier |
-      | orderSO_Unchanged        | false   | POO         |            | true           | DR            | customer                            |
+      | OPT.Identifier | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | DocSubType | OPT.IsDropShip | OPT.DocStatus | OPT.DropShip_BPartner_ID.Identifier |
+      | orderPO        | orderSO_Unchanged        | false   | POO         |            | true           | CO            | customer                            |
     And the purchase order 'orderPO' with document subtype '' linked to order 'orderSO_Unchanged' has lines:
       | OPT.C_OrderLine_ID.Identifier | QtyOrdered | LineNetAmt | M_Product_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DatePromised     |
       | orderLinePO_1                 | 2          | 10         | product                 | vendor                       | dropShipWarehouse             | 2023-05-10T00:00:00Z |
       | orderLinePO_2                 | 2          | 10         | product                 | vendor                       | dropShipWarehouse             | 2023-04-10T00:00:00Z |
-
-    When the order identified by orderPO is completed
 
     Then after not more than 30s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
@@ -247,6 +242,7 @@ Feature: Order to delivery instructions
       | shippingPackagePO_2             | packageLinePO_2         | deliveryInstructionPO_2               | dropShipWarehouseLocation         | 2             | vendor                       | product                     | orderLinePO_2                 |
 
 
+  @Id:S23918_TC2
   Scenario: Order to delivery instructions. Delivery planning management when SO is changed.
   _Given initial SO with one order line : QtyEntered = 2, delivery date in the future and attribute assigned
   _When the SO is completed
@@ -309,8 +305,8 @@ Feature: Order to delivery instructions
   }
   """
     And metasfresh contains C_OrderLines:
-      | Identifier    | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.DateOrdered | OPT.DatePromised     | OPT.M_AttributeSetInstance_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_Currency_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
-      | orderLine_7.1 | orderSO_7             | product_7               | 2          | 2023-02-09      | 2023-05-10T00:00:00Z | lineASI_7.1                              | customer                     | currency                     | customerLocation                      |
+      | Identifier    | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.DateOrdered | OPT.DatePromised     | OPT.M_AttributeSetInstance_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_Currency_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.C_BPartner_Vendor_ID.Identifier |
+      | orderLine_7.1 | orderSO_7             | product_7               | 2          | 2023-02-09      | 2023-05-10T00:00:00Z | lineASI_7.1                              | customer                     | currency                     | customerLocation                      | vendor_7                            |
 
     When the order identified by orderSO_7 is completed
 
@@ -323,6 +319,11 @@ Feature: Order to delivery instructions
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | M_Delivery_Planning_Type | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.PlannedDeliveryDate | OPT.IsClosed | OPT.Processed | OPT.M_Warehouse_ID.Identifier |
       | deliveryPlanningSO_7.1            | 2          | 2            | Outgoing                 | orderSO_7                 | orderLine_7.1                 | customer                     | product_7                   | customerLocation                      | 2023-05-10              | false        | false         | dropShipWarehouse_7           |
+
+    Then the order is created:
+      | OPT.Identifier   | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | DocSubType | OPT.IsDropShip | OPT.DocStatus | OPT.DropShip_BPartner_ID.Identifier |
+      | orderPO_7_first  | orderSO_7                | false   | POO         |            | true           | CO            | customer                            |
+    And the order identified by orderPO_7_first is voided
 
     When the order identified by orderSO_7 is reactivated
 
@@ -338,8 +339,8 @@ Feature: Order to delivery instructions
   }
   """
     And metasfresh contains C_OrderLines:
-      | Identifier    | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.DateOrdered | OPT.DatePromised     | OPT.M_AttributeSetInstance_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_Currency_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
-      | orderLine_7.2 | orderSO_7             | product_7               | 4          | 2023-02-09      | 2023-04-10T00:00:00Z | lineASI_7.2                              | customer                     | currency                     | customerLocation                      |
+      | Identifier    | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.DateOrdered | OPT.DatePromised     | OPT.M_AttributeSetInstance_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_Currency_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.C_BPartner_Vendor_ID.Identifier |
+      | orderLine_7.2 | orderSO_7             | product_7               | 4          | 2023-02-09      | 2023-04-10T00:00:00Z | lineASI_7.2                              | customer                     | currency                     | customerLocation                      | vendor_7                            |
 
     When the order identified by orderSO_7 is completed
 
@@ -362,19 +363,13 @@ Feature: Order to delivery instructions
       | deliveryPlanningSO_7.1            | shipper_DHL                 |
       | deliveryPlanningSO_7.2            | shipper_DPD                 |
 
-    When generate PO from SO is invoked with parameters:
-      | C_BPartner_ID.Identifier | C_Order_ID.Identifier | PurchaseType |
-      | vendor_7                 | orderSO_7             | Dropship     |
-
     Then the order is created:
-      | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | DocSubType | OPT.IsDropShip | OPT.DocStatus | OPT.DropShip_BPartner_ID.Identifier |
-      | orderSO_7                | false   | POO         |            | true           | DR            | customer                            |
+      | OPT.Identifier | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | DocSubType | OPT.IsDropShip | OPT.DocStatus | OPT.DropShip_BPartner_ID.Identifier |
+      | orderPO_7      | orderSO_7                | false   | POO         |            | true           | CO            | customer                            |
     And the purchase order 'orderPO_7' with document subtype '' linked to order 'orderSO_7' has lines:
       | OPT.C_OrderLine_ID.Identifier | QtyOrdered | LineNetAmt | M_Product_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DatePromised     |
       | orderLinePO_7.1               | 2          | 10         | product_7               | vendor_7                     | dropShipWarehouse_7           | 2023-05-10T00:00:00Z |
       | orderLinePO_7.2               | 4          | 20         | product_7               | vendor_7                     | dropShipWarehouse_7           | 2023-04-10T00:00:00Z |
-
-    When the order identified by orderPO_7 is completed
 
     Then after not more than 30s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
