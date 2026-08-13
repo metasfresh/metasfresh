@@ -275,6 +275,12 @@ public interface IBPartnerDAO extends ISingletonService
 	List<I_C_BPartner_Location> retrieveBPartnerLocationsByIds(Set<BPartnerLocationId> ids);
 
 	/**
+	 * @return every active {@code C_BPartner_Location} of one of {@code bpartnerIds} that carries a
+	 * non-blank {@code VATaxID}, ordered by {@code C_BPartner_ID} then {@code C_BPartner_Location_ID}.
+	 */
+	ImmutableList<I_C_BPartner_Location> retrieveBPartnerLocationsWithVATaxID(@NonNull Collection<BPartnerId> bpartnerIds);
+
+	/**
 	 * Performs an non-strict search (e.g. if BP has only one address, it returns it even if it's not flagged as the default ShipTo address).
 	 *
 	 * @return bp location or null

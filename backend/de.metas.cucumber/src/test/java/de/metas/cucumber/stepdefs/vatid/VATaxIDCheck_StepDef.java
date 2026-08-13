@@ -114,6 +114,21 @@ public class VATaxIDCheck_StepDef
 	 *
 	 * <p>Any {@code C_BPartner} / {@code C_BPartner_Location} still pointing at one of those rows has its
 	 * zoom reference cleared first: it is a real foreign key, so the delete would otherwise be impossible.
+	 * <b>Its denormalised {@code VATaxIDStatus} / {@code VATaxIDCheckedAt} are reset to
+	 * {@code NotChecked} / {@code null} in the same step</b> — leaving them at whatever the now-deleted log
+	 * row last said would be evidence-free state, and would make a scenario that asserts a fresh
+	 * {@code NotChecked} starting point (proving a re-check actually changed something) pass on a first run
+	 * and silently fail on a second run against the same never-reset local database, since a reused
+	 * {@code C_BPartner}/{@code C_BPartner_Location} identifier (upserted by {@code Value}/{@code GLN}) would
+	 * still carry the PREVIOUS run's final status.
+	 *
+	 * <p>The same reset is also applied to any {@code C_BPartner}/{@code C_BPartner_Location} whose
+	 * <b>current</b> {@code VATaxID} column equals this value, independently of the zoom reference above —
+	 * this value is shared across several scenarios/feature files (e.g. re-used well-formed VAT-IDs), and an
+	 * earlier scenario's own cleanup call for the same value can already have released a still-relevant
+	 * record's zoom reference (setting it to {@code 0} without — before this fix — resetting the status),
+	 * leaving that record's status stranded with no matching log row to find it by. Matching on the current
+	 * value directly is what still catches that record here.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
@@ -135,6 +150,8 @@ public class VATaxIDCheck_StepDef
 		clearCheckLogReferencesOnBPartnerLocations(checkLogQuery);
 
 		checkLogQuery.delete();
+
+		resetStatusOnCurrentHoldersOfValue(vataxID);
 	}
 
 	private void clearCheckLogReferencesOnBPartners(@NonNull final IQuery<I_VATaxID_CheckLog> checkLogQuery)
@@ -143,10 +160,7 @@ public class VATaxIDCheck_StepDef
 				.addInSubQueryFilter(I_C_BPartner.COLUMNNAME_VATaxID_CheckLog_ID, I_VATaxID_CheckLog.COLUMNNAME_VATaxID_CheckLog_ID, checkLogQuery)
 				.create()
 				.list()
-				.forEach(bpartnerRecord -> {
-					bpartnerRecord.setVATaxID_CheckLog_ID(0);
-					InterfaceWrapperHelper.saveRecord(bpartnerRecord);
-				});
+				.forEach(this::resetDenormalisedStatus);
 	}
 
 	private void clearCheckLogReferencesOnBPartnerLocations(@NonNull final IQuery<I_VATaxID_CheckLog> checkLogQuery)
@@ -155,10 +169,44 @@ public class VATaxIDCheck_StepDef
 				.addInSubQueryFilter(I_C_BPartner_Location.COLUMNNAME_VATaxID_CheckLog_ID, I_VATaxID_CheckLog.COLUMNNAME_VATaxID_CheckLog_ID, checkLogQuery)
 				.create()
 				.list()
-				.forEach(locationRecord -> {
-					locationRecord.setVATaxID_CheckLog_ID(0);
-					InterfaceWrapperHelper.saveRecord(locationRecord);
-				});
+				.forEach(this::resetDenormalisedStatus);
+	}
+
+	/**
+	 * See the class javadoc on {@link #no_check_log_records_exist(String)}, second paragraph: catches a
+	 * record whose zoom reference was already released by an <em>earlier</em> scenario's cleanup call for
+	 * this same shared VAT-ID value, which (before this record's status is reset here too) would leave its
+	 * status stranded with no checklog row left to find it by.
+	 */
+	private void resetStatusOnCurrentHoldersOfValue(@NonNull final String vataxID)
+	{
+		queryBL.createQueryBuilder(I_C_BPartner.class)
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_VATaxID, vataxID)
+				.create()
+				.list()
+				.forEach(this::resetDenormalisedStatus);
+
+		queryBL.createQueryBuilder(I_C_BPartner_Location.class)
+				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_VATaxID, vataxID)
+				.create()
+				.list()
+				.forEach(this::resetDenormalisedStatus);
+	}
+
+	private void resetDenormalisedStatus(@NonNull final I_C_BPartner bpartnerRecord)
+	{
+		bpartnerRecord.setVATaxID_CheckLog_ID(0);
+		bpartnerRecord.setVATaxIDStatus(VATaxIDStatus.NotChecked.getCode());
+		bpartnerRecord.setVATaxIDCheckedAt(null);
+		InterfaceWrapperHelper.saveRecord(bpartnerRecord);
+	}
+
+	private void resetDenormalisedStatus(@NonNull final I_C_BPartner_Location bpartnerLocationRecord)
+	{
+		bpartnerLocationRecord.setVATaxID_CheckLog_ID(0);
+		bpartnerLocationRecord.setVATaxIDStatus(VATaxIDStatus.NotChecked.getCode());
+		bpartnerLocationRecord.setVATaxIDCheckedAt(null);
+		InterfaceWrapperHelper.saveRecord(bpartnerLocationRecord);
 	}
 
 	/**

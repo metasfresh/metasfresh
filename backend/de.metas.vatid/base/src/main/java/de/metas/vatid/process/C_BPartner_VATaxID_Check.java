@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.logging.LogManager;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -35,6 +36,7 @@ import de.metas.process.PInstanceId;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.tax.api.VATIdentifier;
+import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.vatid.VATaxIDCheckRequest;
@@ -44,7 +46,6 @@ import de.metas.vatid.VATaxIDStatus;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
@@ -102,7 +103,7 @@ public class C_BPartner_VATaxID_Check extends JavaProcess implements IProcessPre
 	@NonNull private final VATaxIDCheckService checkService = SpringContextHolder.instance.getBean(VATaxIDCheckService.class);
 	@NonNull private final VATaxIDOrderTaxRefresher orderTaxRefresher = SpringContextHolder.instance.getBean(VATaxIDOrderTaxRefresher.class);
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	/**
 	 * Empty or {@code <= 0} means no limit — see the {@code AD_Process_Para}'s own description, which this
@@ -175,57 +176,36 @@ public class C_BPartner_VATaxID_Check extends JavaProcess implements IProcessPre
 				.create()
 				.listImmutable(I_C_BPartner.class);
 
-		final ImmutableList<Integer> selectedBPartnerIds = selectedBPartners.stream()
-				.map(I_C_BPartner::getC_BPartner_ID)
+		final ImmutableList<BPartnerId> selectedBPartnerIds = selectedBPartners.stream()
+				.map(bpartnerRecord -> BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID()))
 				.collect(ImmutableList.toImmutableList());
 
-		final ImmutableListMultimap<Integer, I_C_BPartner_Location> locationsByBPartnerId = retrieveBPartnerLocationsWithVATaxID(selectedBPartnerIds)
+		// The persistence access to C_BPartner_Location belongs on IBPartnerDAO, which already owns it
+		// (retrieveBPartnerLocations, retrieveBPartnerLocationsByIds, …) — a JavaProcess must not build its
+		// own IQueryBL query for another module's table (docs/REVIEW.md).
+		final ImmutableListMultimap<BPartnerId, I_C_BPartner_Location> locationsByBPartnerId = bpartnerDAO
+				.retrieveBPartnerLocationsWithVATaxID(selectedBPartnerIds)
 				.stream()
-				.collect(ImmutableListMultimap.toImmutableListMultimap(I_C_BPartner_Location::getC_BPartner_ID, Function.identity()));
+				.collect(ImmutableListMultimap.toImmutableListMultimap(
+						locationRecord -> BPartnerId.ofRepoId(locationRecord.getC_BPartner_ID()),
+						Function.identity()));
 
 		final ImmutableList.Builder<CheckTarget> checkTargets = ImmutableList.builder();
 		for (final I_C_BPartner bpartnerRecord : selectedBPartners)
 		{
-			if (hasVATaxID(bpartnerRecord.getVATaxID()))
+			final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID());
+
+			if (!Check.isEmpty(bpartnerRecord.getVATaxID()))
 			{
 				checkTargets.add(CheckTarget.ofPartner(bpartnerRecord));
 			}
 
-			for (final I_C_BPartner_Location bpartnerLocationRecord : locationsByBPartnerId.get(bpartnerRecord.getC_BPartner_ID()))
+			for (final I_C_BPartner_Location bpartnerLocationRecord : locationsByBPartnerId.get(bpartnerId))
 			{
 				checkTargets.add(CheckTarget.ofLocation(bpartnerLocationRecord));
 			}
 		}
 		return checkTargets.build();
-	}
-
-	/**
-	 * @return every active {@code C_BPartner_Location} of one of {@code selectedBPartnerIds} that carries a
-	 * VAT-ID, ordered by {@code C_BPartner_ID} then {@code C_BPartner_Location_ID} — the same ordering
-	 * {@link #retrieveCheckTargets()} groups locations under their partner by.
-	 */
-	@NonNull
-	private ImmutableList<I_C_BPartner_Location> retrieveBPartnerLocationsWithVATaxID(@NonNull final ImmutableList<Integer> selectedBPartnerIds)
-	{
-		if (selectedBPartnerIds.isEmpty())
-		{
-			return ImmutableList.of();
-		}
-
-		return queryBL.createQueryBuilder(I_C_BPartner_Location.class)
-				.addInArrayFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, selectedBPartnerIds)
-				.addOnlyActiveRecordsFilter()
-				.addNotNull(I_C_BPartner_Location.COLUMNNAME_VATaxID)
-				.addNotEqualsFilter(I_C_BPartner_Location.COLUMNNAME_VATaxID, "")
-				.orderBy(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID)
-				.orderBy(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID)
-				.create()
-				.listImmutable(I_C_BPartner_Location.class);
-	}
-
-	private static boolean hasVATaxID(@Nullable final String vataxID)
-	{
-		return vataxID != null && !vataxID.isEmpty();
 	}
 
 	/**
@@ -324,7 +304,7 @@ public class C_BPartner_VATaxID_Check extends JavaProcess implements IProcessPre
 					.bpartnerId(BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID()))
 					.bpartnerLocationId(null)
 					.vataxID(VATIdentifier.of(bpartnerRecord.getVATaxID()))
-					.previousStatus(VATaxIDStatus.optionalOfNullableCode(bpartnerRecord.getVATaxIDStatus()).orElse(VATaxIDStatus.NotChecked))
+					.previousStatus(resolvePreviousStatus(bpartnerRecord.getVATaxIDStatus()))
 					.logLabel("C_BPartner_ID=" + bpartnerRecord.getC_BPartner_ID())
 					.build();
 		}
@@ -337,10 +317,20 @@ public class C_BPartner_VATaxID_Check extends JavaProcess implements IProcessPre
 					.bpartnerId(bpartnerId)
 					.bpartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, bpartnerLocationRecord.getC_BPartner_Location_ID()))
 					.vataxID(VATIdentifier.of(bpartnerLocationRecord.getVATaxID()))
-					.previousStatus(VATaxIDStatus.optionalOfNullableCode(bpartnerLocationRecord.getVATaxIDStatus()).orElse(VATaxIDStatus.NotChecked))
+					.previousStatus(resolvePreviousStatus(bpartnerLocationRecord.getVATaxIDStatus()))
 					.logLabel("C_BPartner_ID=" + bpartnerLocationRecord.getC_BPartner_ID()
 							+ ", C_BPartner_Location_ID=" + bpartnerLocationRecord.getC_BPartner_Location_ID())
 					.build();
+		}
+
+		/**
+		 * A blank status column (a record never checked before) reads as {@link VATaxIDStatus#NotChecked},
+		 * which is what it means — mirrors {@code VATaxIDParentStatusRepository#extractStatus}.
+		 */
+		@NonNull
+		private static VATaxIDStatus resolvePreviousStatus(@Nullable final String statusCode)
+		{
+			return VATaxIDStatus.optionalOfNullableCode(statusCode).orElse(VATaxIDStatus.NotChecked);
 		}
 	}
 }
