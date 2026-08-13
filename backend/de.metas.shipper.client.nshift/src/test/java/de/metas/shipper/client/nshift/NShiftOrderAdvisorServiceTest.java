@@ -47,6 +47,7 @@ import org.springframework.test.context.TestPropertySource;
 import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -167,8 +168,8 @@ public class NShiftOrderAdvisorServiceTest
 				NShiftOrderAdvisorService.buildJsonDeliveryAdvisorResponse(response, "reqId");
 
 		assertThat(advisorResponse.getShipperProductServices())
-				.extracting(JsonCarrierService::getId)
-				.containsExactlyInAnyOrder("972053", "972054");
+				.extracting(JsonCarrierService::getId, JsonCarrierService::getName)
+				.containsExactlyInAnyOrder(tuple("972053", "972053"), tuple("972054", "972054"));
 	}
 
 	@Test
