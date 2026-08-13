@@ -200,8 +200,8 @@ Feature: Jasper Report Tests
       | M_Warehouse_ID.Identifier | Value        | OPT.C_BPartner_Location_ID.Identifier |
       | warehouseStd              | StdWarehouse | warehouseStdLocation                  |
     And contains M_Shippers
-      | Identifier  |
-      | shipper_DHL |
+      | Identifier  | OPT.IsCreateDeliveryPlanning |
+      | shipper_DHL | true                         |
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | OPT.DatePromised     | M_Warehouse_ID | M_PricingSystem_ID |
       | so_di      | true    | customer      | 2025-04-01  | 2025-04-10T00:00:00Z | warehouseStd   | ps_1               |

@@ -34,9 +34,9 @@ Feature: Order to delivery instructions
       | M_Product_Category_ID.Identifier | OPT.M_AttributeSet_ID.Identifier |
       | standardCategory                 | attributeSetConvenienceSalate    |
     And contains M_Shippers
-      | Identifier  |
-      | shipper_DHL |
-      | shipper_DPD |
+      | Identifier  | OPT.IsCreateDeliveryPlanning |
+      | shipper_DHL | true                         |
+      | shipper_DPD | true                         |
 
   @Id:S23918_TC1
   Scenario: Order to delivery instructions.
