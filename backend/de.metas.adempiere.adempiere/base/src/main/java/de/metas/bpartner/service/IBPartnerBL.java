@@ -314,7 +314,10 @@ public interface IBPartnerBL extends ISingletonService
 	 *
 	 * <p>Returns the raw column code (not the {@code de.metas.vatid.VATaxIDStatus} enum): that type
 	 * lives in a module which depends on this one, so this module must not depend back on it. Empty
-	 * when no record supplied a VAT-ID at all (same case in which {@link #getVATTaxId} is empty).
+	 * whenever no record supplied a VAT-ID at all ({@link #getVATTaxId} is then empty too), and ALSO
+	 * whenever a VAT-ID was found but the resolved record's {@code VATaxIDStatus} column is itself
+	 * {@code null} — unlike {@link #getVATTaxId}, which stays non-empty in that second case. A caller
+	 * must not treat "empty" here as proof that no VAT-ID was found.
 	 */
 	@NonNull
 	Optional<String> getVATaxIDStatusCode(@NonNull BPartnerLocationId bpartnerLocationId);

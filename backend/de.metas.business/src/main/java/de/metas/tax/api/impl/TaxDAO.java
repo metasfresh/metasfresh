@@ -403,10 +403,10 @@ public class TaxDAO implements ITaxDAO
 				.orElse(null);
 
 		// A present VAT-ID keeps the tax certificate unless its VATaxIDStatus is explicitly Invalid.
-		// The status is read from the SAME record that supplied bpVATaxID (location, else partner) --
-		// see BPartnerBL#resolveVATaxIDSource, which both getVATTaxId and getVATaxIDStatusCode share.
-		// A missing/blank status (pre-migration data, or never checked) defaults to "has certificate"
-		// via orElse(true), which is exactly today's presence-only behaviour (TC6's regression).
+		// getVATaxIDStatusCode(...) is guaranteed (see its Javadoc) to read the status off the SAME
+		// record that supplied bpVATaxID -- never a different one. A missing/blank status
+		// (pre-migration data, or never checked) defaults to "has certificate" via orElse(true),
+		// which is exactly today's presence-only behaviour.
 		final boolean bPartnerHasTaxCertificate = bpVATaxID != null
 				&& bpartnerLocationId
 						.flatMap(bpartnerBL::getVATaxIDStatusCode)
