@@ -7,7 +7,7 @@ Feature: Tax determination requires a valid VAT-ID for the tax-certificate rate
   carry RequiresTaxCertificate=Y model that 0% rate; C_Tax rows with RequiresTaxCertificate=N model
   the standard rate that applies when the buyer's VAT-ID does not check out. TaxDAO decides which one
   applies based on the stored VATaxIDStatus of whichever record (location, else partner) supplied the
-  VAT-ID -- see BPartnerBL#resolveVATaxIDSource.
+  VAT-ID in the first place.
 
   Both scenarios use a French customer of a German-org seller, each with its own VATaxID_Config so
   neither scenario depends on the other's ordering or on ambient state left by a sibling feature.
