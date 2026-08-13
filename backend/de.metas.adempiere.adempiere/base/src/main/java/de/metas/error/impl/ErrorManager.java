@@ -202,8 +202,11 @@ public class ErrorManager implements IErrorManager
 	}
 
 	/**
-	 * Tells whether the frame belongs to metasfresh code, and is therefore worth reporting as the origin of the error.
-	 * The excluded roots {@code org.apache.ecs} and {@code it.cnr} are vendored third-party libraries.
+	 * Tells whether the frame belongs to a metasfresh package root, and is therefore worth reporting as the origin of
+	 * the error. The remaining production roots are deliberately excluded because they are third-party namespaces:
+	 * {@code org.apache.ecs} and {@code it.cnr} are vendored libraries, {@code com.dpd} is generated from a carrier's
+	 * WSDL, and {@code com.mchange} is c3p0's own package — a handful of metasfresh helpers sit there only to reach
+	 * its package-private internals, and matching that root would pull in every c3p0 frame.
 	 */
 	private static boolean isMetasfreshFrame(@NonNull final StackTraceElement element)
 	{
