@@ -230,6 +230,7 @@ public class PickingJobQuery
 		{
 			return isCustomerMatching(pickingJobReference)
 					&& isDeliveryDateMatching(pickingJobReference)
+					&& isPreparationDateMatching(pickingJobReference)
 					&& isHandoverLocationMatching(pickingJobReference);
 		}
 
@@ -249,6 +250,24 @@ public class PickingJobQuery
 		}
 
 		private boolean isDeliveryDateMatching(final LocalDate deliveryDay) {return deliveryDays.isEmpty() || deliveryDays.contains(deliveryDay);}
+
+		/**
+		 * NOTE the ordering: the "no filter active" check comes FIRST, so a job carrying no preparation
+		 * date is not excluded when the operator has selected nothing. Once a day IS selected the match is
+		 * strict, matching the SQL-side filter in {@code PackagingDAO}. (The sibling
+		 * {@link #isDeliveryDateMatching(PickingJobReference)} tests {@code != null} before consulting the
+		 * filter, so an already-started job with no delivery date never reaches the launcher even with no
+		 * filter active — a separate, pre-existing defect, deliberately not changed here.)
+		 */
+		private boolean isPreparationDateMatching(final PickingJobReference pickingJobReference)
+		{
+			if (preparationDays.isEmpty())
+			{
+				return true;
+			}
+			final ZonedDateTime preparationDate = pickingJobReference.getPreparationDate();
+			return preparationDate != null && isPreparationDateMatching(preparationDate.toLocalDate());
+		}
 
 		private boolean isPreparationDateMatching(final LocalDate preparationDay) {return preparationDays.isEmpty() || preparationDays.contains(preparationDay);}
 
