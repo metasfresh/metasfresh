@@ -52,7 +52,7 @@ import java.util.function.Function;
  * Runs a whole {@link VATaxIDCheckRunRequest}: the combined partner+location target selection and its
  * deterministic ordering, the {@code MaxChecksPerRun} throttling, the per-target check-and-refresh, and the
  * pending/checked reporting. The single collaborator behind {@code C_BPartner_VATaxID_Check} (the manual
- * process) and, from task 16 onward, the {@code AD_Scheduler} entry point too — both callers select
+ * process) and any future {@code AD_Scheduler} entry point too — both callers select
  * {@code C_BPartner_ID}s their own way and hand the resulting ids to {@link #run(VATaxIDCheckRunRequest)}
  * unchanged.
  *
@@ -182,8 +182,8 @@ public class VATaxIDCheckRunService
 			if (bpartnerRecord == null)
 			{
 				// Selected by the caller but no longer resolvable by the time this run fetched it (e.g. the
-				// record was deleted or deactivated in between) — nothing to check for it, and skipping is
-				// the only way to avoid an NPE from a null bpartnerRecord below.
+				// record was deleted in between) — nothing to check for it, and skipping is the only way to
+				// avoid an NPE from a null bpartnerRecord below.
 				continue;
 			}
 
