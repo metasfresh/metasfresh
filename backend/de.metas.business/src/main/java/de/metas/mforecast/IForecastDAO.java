@@ -25,15 +25,12 @@ package de.metas.mforecast;
 import com.google.common.collect.ImmutableSet;
 import de.metas.mforecast.ForecastRequest.ForecastLineRequest;
 import de.metas.mforecast.impl.ForecastId;
-import de.metas.mforecast.impl.ForecastQuery;
-import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Stream;
 
 public interface IForecastDAO extends ISingletonService
@@ -54,19 +51,4 @@ public interface IForecastDAO extends ISingletonService
 	I_M_Forecast getById(@NonNull ForecastId forecastId);
 
 	void save(@NonNull I_M_Forecast forecastRecord);
-
-	/**
-	 * Sums, per matching forecast document, the quantity of that document's forecast lines that match the given query
-	 * (product / ASI / warehouse / org, honouring {@code onlyNonZeroQty}).
-	 * <p>
-	 * Each line's {@code Qty} is converted to the query product's stock UOM before summing, so a document whose matching
-	 * lines are stored in different UOMs still yields a correct, single-UOM total.
-	 *
-	 * @return one entry per forecast document that has at least one matching line; the {@link Quantity} value is expressed
-	 * in the product's stock UOM. Documents without a matching line are absent from the map. Iteration order is stable
-	 * across calls — by the lines' {@code DatePromised}, then {@code M_Forecast_ID} — so a caller may render the entries
-	 * in the order it receives them.
-	 */
-	@NonNull
-	Map<ForecastId, Quantity> sumQtyByForecastId(@NonNull ForecastQuery forecastQuery);
 }
