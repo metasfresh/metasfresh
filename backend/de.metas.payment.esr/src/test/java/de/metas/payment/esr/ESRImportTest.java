@@ -1699,7 +1699,7 @@ public class ESRImportTest extends ESRTestBase
 		@Test
 		void arrivingOnTheSameDay()
 		{
-			assertDuplicateGetsOwnPayment(0);
+			assertDuplicateGetsOwnPayment(0, X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment);
 		}
 
 		/**
@@ -1711,56 +1711,14 @@ public class ESRImportTest extends ESRTestBase
 		@Test
 		void arrivingOnALaterDay()
 		{
-			final String grandTotal = "50";
-			final String esrLineText = "01201067789300000001060012345600654321400000050009072  030014040914041014041100001006800000000000090                          ";
-			final String completeRef = ESRTransactionLineMatcherUtil.extractReferenceNumberStr(esrLineText);
-
-			final String partnerValue = "123456";
-			final String invDocNo = "654321";
-			final String ESR_Rendered_AccountNo = "01-067789-3";
-
-			final I_ESR_ImportLine esrImportLine1 = setupESR_ImportLine(invDocNo, grandTotal, false, completeRef, /* refNo, */ ESR_Rendered_AccountNo, partnerValue, "50", false);
-			esrImportLine1.setESRLineText(esrLineText);
-			final Timestamp paymentDate1 = TimeUtil.getDay(2024, 1, 10);
-			esrImportLine1.setPaymentDate(paymentDate1);
-			save(esrImportLine1);
-
-			final I_ESR_Import esrImport = esrImportLine1.getESR_Import();
-
-			esrImportBL.process(esrImport);
-
-			final I_ESR_ImportLine esrImportLine2 = createESR_ImportLineFromOtherLine(esrImportLine1);
-			esrImportLine2.setESRLineText(esrLineText);
-			final Timestamp paymentDate2 = TimeUtil.addDays(paymentDate1, 1);
-			esrImportLine2.setPaymentDate(paymentDate2);
-			save(esrImportLine2);
-			final I_ESR_Import esrImport2 = esrImportLine2.getESR_Import();
-			esrImportBL.process(esrImport2);
-
-			// check first import line: unaffected, still fully matched and paid
-			refresh(esrImportLine1, true);
-			assertThat(esrImportLine1.isProcessed()).isTrue();
-			assertThat(esrImportLine1.getESR_Payment_Action()).isEqualTo(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Fit_Amounts);
-
-			// check second import line: the cross-day duplicate search misses the earlier payment, so no
-			// Duplicate_Payment flag is set here -- this is the known, branch-specific gap
-			refresh(esrImportLine2, true);
-			assertThat(esrImportLine2.getESR_Payment_Action()).isNull();
-
-			// ... but the line must still have its OWN payment, not the first line's -- the money that
-			// arrived a second time is booked, which is the guarantee this port exists to provide
-			assertThat(esrImportLine2.getC_Payment_ID()).as("the cross-day line must not carry the first line's C_Payment_ID").isNotEqualTo(esrImportLine1.getC_Payment_ID());
-
-			final PaymentId esrImportLine2PaymentId = PaymentId.ofRepoIdOrNull(esrImportLine2.getC_Payment_ID());
-			final I_C_Payment esrLine2Payment = esrImportLine2PaymentId == null ? null
-					: paymentDAO.getById(esrImportLine2PaymentId);
-			assertThat(esrLine2Payment).as("the cross-day line must have created its own payment").isNotNull();
-			assertThat(esrLine2Payment.getPayAmt()).isEqualByComparingTo("50");
-			assertThat(esrLine2Payment.isAllocated()).as("the payment must not be allocated to the invoice").isFalse();
-			assertThat(esrLine2Payment.getC_Invoice_ID()).as("the payment must not be linked to the invoice").isEqualTo(0);
+			assertDuplicateGetsOwnPayment(1, null);
 		}
 
-		private void assertDuplicateGetsOwnPayment(final int daysAfterFirstPayment)
+		/**
+		 * @param expectedPaymentAction the second line's expected {@code ESR_Payment_Action}, or {@code null} if it
+		 * is expected to stay unflagged (see {@link #arrivingOnALaterDay()}).
+		 */
+		private void assertDuplicateGetsOwnPayment(final int daysAfterFirstPayment, final String expectedPaymentAction)
 		{
 			final String grandTotal = "50";
 			final String esrLineText = "01201067789300000001060012345600654321400000050009072  030014040914041014041100001006800000000000090                          ";
@@ -1793,22 +1751,32 @@ public class ESRImportTest extends ESRTestBase
 			assertThat(esrImportLine1.isProcessed()).isTrue();
 			assertThat(esrImportLine1.getESR_Payment_Action()).isEqualTo(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Fit_Amounts);
 
-			// check second import line: flagged as a duplicate payment, and remains unprocessed for the accountant
+			// check second import line
 			refresh(esrImportLine2, true);
-			assertThat(esrImportLine2.getESR_Payment_Action()).isEqualTo(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment);
-			assertThat(esrImportLine2.isProcessed()).as("the duplicate line must stay unprocessed so the accountant still sees it").isFalse();
-			assertThat(esrImportLine2.getESR_Document_Status()).isEqualTo(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched);
+			if (expectedPaymentAction == null)
+			{
+				// cross-day: the date-scoped duplicate search misses the earlier payment, so no flag is set
+				assertThat(esrImportLine2.getESR_Payment_Action()).isNull();
+			}
+			else
+			{
+				// same-day: flagged as a duplicate payment, and remains unprocessed for the accountant
+				assertThat(esrImportLine2.getESR_Payment_Action()).isEqualTo(expectedPaymentAction);
+				assertThat(esrImportLine2.isProcessed()).as("the duplicate line must stay unprocessed so the accountant still sees it").isFalse();
+				assertThat(esrImportLine2.getESR_Document_Status()).isEqualTo(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched);
+			}
 
-			// ... but it must have its OWN payment, not the first line's
-			assertThat(esrImportLine2.getC_Payment_ID()).as("the duplicate line must not carry the first line's C_Payment_ID").isNotEqualTo(esrImportLine1.getC_Payment_ID());
+			// ... but it must have its OWN payment, not the first line's -- the money that arrived a second
+			// time is booked either way, which is the guarantee this port exists to provide
+			assertThat(esrImportLine2.getC_Payment_ID()).as("the second line must not carry the first line's C_Payment_ID").isNotEqualTo(esrImportLine1.getC_Payment_ID());
 
 			final PaymentId esrImportLine2PaymentId = PaymentId.ofRepoIdOrNull(esrImportLine2.getC_Payment_ID());
 			final I_C_Payment esrLine2Payment = esrImportLine2PaymentId == null ? null
 					: paymentDAO.getById(esrImportLine2PaymentId);
-			assertThat(esrLine2Payment).as("the duplicate-flagged line must have created its own payment").isNotNull();
+			assertThat(esrLine2Payment).as("the second line must have created its own payment").isNotNull();
 			assertThat(esrLine2Payment.getPayAmt()).isEqualByComparingTo("50");
-			assertThat(esrLine2Payment.isAllocated()).as("the duplicate payment must not be allocated to the invoice").isFalse();
-			assertThat(esrLine2Payment.getC_Invoice_ID()).as("the duplicate payment must not be linked to the invoice").isEqualTo(0);
+			assertThat(esrLine2Payment.isAllocated()).as("the payment must not be allocated to the invoice").isFalse();
+			assertThat(esrLine2Payment.getC_Invoice_ID()).as("the payment must not be linked to the invoice").isEqualTo(0);
 		}
 	}
 
