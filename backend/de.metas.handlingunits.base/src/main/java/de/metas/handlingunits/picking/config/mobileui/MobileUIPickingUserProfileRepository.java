@@ -397,6 +397,8 @@ public class MobileUIPickingUserProfileRepository
 		return queryBL.createQueryBuilder(I_PickingProfile_Filter.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_PickingProfile_Filter.COLUMNNAME_MobileUI_UserProfile_Picking_ID, profileId)
+				// deliberately unordered: both callers are order-insensitive (retrieveFilters re-sorts via
+				// PickingFiltersList, save_Filters collects into a map keyed by facet group)
 				.create()
 				.stream();
 	}
