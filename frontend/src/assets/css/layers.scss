@@ -4,24 +4,35 @@
 * Layers
 * - 0 - default - all static elements like tables or forms
 * - < 100 - elements that are over static content (order list)
-* - 100 - header
 * - 200 - backdrop
-* - 200 < - elements that are over backdrop (header expanded)
+* - 200 < - elements that are over backdrop (header expanded), incl. the header itself at 201
 * - 400 - screen-freeze
+*
+* The "100 - header" line that used to sit in this list was stale and has been removed: the
+* header is `$z-index-header-menu` (201, below), and the literal 100s in the codebase belong to
+* unrelated elements (`.panel-size-button`, `.draggable-widget-menu`, `.react-tagsinput--focused`,
+* `.modal-content-wrapper`). It is removed rather than corrected in place because it was read as
+* ground truth when choosing a value below and produced a wrong constraint.
 */
 
-/* Over static content, so a row context menu is never occluded by an overlay that can be
- * open at the same time. It must outrank, in the <100 band:
+/* Over static content, so a row context menu is never occluded by an overlay that can be open
+ * at the same time and in the same stacking context. It must outrank:
  *   3  `.column-resize-handle` (table.scss) - a full-height 5px strip on every header-cell
  *      boundary; both sat at 3, so the hit test fell to DOM order and the invisible handle
  *      swallowed clicks on menu items. That is the bug this value exists to prevent.
  *   50 `.attributes-dropdown` (attributes.scss) - rendered INSIDE table cells, so it can be
  *      open in the same subtree as the menu.
- *   50 `.click-overlay` (screen-freeze.scss) - the outside-click catcher of a raw modal, which
- *      can host a grid; below it, a click on the menu would close the modal instead.
- * and stay under 99 (spinner / tabs / inputs / status-list) and 100 (header). 51-98 is
- * otherwise unoccupied - keep it that way rather than reusing 50, or the equal-z-index /
- * DOM-order coin flip simply moves to a different pair of elements. */
+ * Ceiling: stay under 99 (`.spinner .icon`, `.tabs-fullscreen`, `.input-dropdown-list`,
+ * `.dropdown-status-list`), which should stay above the menu. 51-98 is otherwise unoccupied -
+ * keep it that way rather than reusing an in-use value, or the equal-z-index / DOM-order coin
+ * flip simply moves to a different pair of elements.
+ *
+ * NOT a constraint, recorded so it is not "helpfully" added back: `.click-overlay`
+ * (screen-freeze.scss, z-index 50), a raw modal's outside-click catcher. A raw modal can host a
+ * grid, but `.screen-freeze` is `display: flex` and its `.modal-content-wrapper` child carries
+ * `z-index: 100` with no `position`; per CSS Flexbox 5.4 a flex item with a non-auto z-index
+ * forms a stacking context even when statically positioned, so the wrapper paints atomically
+ * above `.click-overlay` and every descendant menu wins there regardless of its own value. */
 $z-index-context-menu: 60;
 
 $z-index-backdrop: 200;
