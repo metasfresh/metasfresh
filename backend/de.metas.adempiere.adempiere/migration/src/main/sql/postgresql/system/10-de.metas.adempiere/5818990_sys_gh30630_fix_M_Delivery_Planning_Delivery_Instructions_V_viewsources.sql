@@ -5,7 +5,7 @@
 --
 -- AD_ViewSource 540000: source=M_Delivery_Planning, view=M_Delivery_Planning_Delivery_Instructions_V
 -- AD_ViewSource_Column 540000: M_Delivery_Planning.ReleaseNo (585025) — no longer the join key
--- New AD_ViewSource 540002: source=M_ShipperTransportation, parent_link=M_Delivery_Planning.M_ShipperTransportation_ID (585602),
+-- New AD_ViewSource 540002: source=M_ShipperTransportation, parent_link=M_Delivery_Planning_Delivery_Instructions_V.M_ShipperTransportation_ID (585501),
 --                            source_link=M_ShipperTransportation.M_ShipperTransportation_ID (540426)
 
 INSERT INTO AD_MigrationScript(AD_MigrationScript_ID, Name, Description, Script_Type, IsActive, Created, CreatedBy, Updated, UpdatedBy)
@@ -38,7 +38,7 @@ VALUES (0, 0,
         540002 /*From ID Server*/,
         TO_TIMESTAMP('2026-08-13 10:01:02', 'YYYY-MM-DD HH24:MI:SS'), 100, 'Y',
         'Y', 'N', 'N', 'Y', 'N',
-        585602,   -- Parent_LinkColumn_ID: M_Delivery_Planning.M_ShipperTransportation_ID
+        585501,   -- Parent_LinkColumn_ID: M_Delivery_Planning_Delivery_Instructions_V.M_ShipperTransportation_ID
         540426,   -- Source_LinkColumn_ID: M_ShipperTransportation.M_ShipperTransportation_ID
         540030,   -- Source_Table_ID: M_ShipperTransportation
         TO_TIMESTAMP('2026-08-13 10:01:02', 'YYYY-MM-DD HH24:MI:SS'), 100);
