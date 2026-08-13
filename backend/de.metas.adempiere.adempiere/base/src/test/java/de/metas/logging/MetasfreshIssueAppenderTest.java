@@ -22,9 +22,12 @@
 
 package de.metas.logging;
 
-import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.spi.LoggingEvent;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 
@@ -35,49 +38,83 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class MetasfreshIssueAppenderTest
 {
-	private static LoggingEvent errorEvent(final String message, final Object... arguments)
+	private Logger logger;
+	private ListAppender<ILoggingEvent> logAppender;
+
+	@BeforeEach
+	void init()
 	{
-		final Logger logger = (Logger)LoggerFactory.getLogger(MetasfreshIssueAppenderTest.class);
-		return new LoggingEvent(Logger.FQCN, logger, Level.ERROR, message, null, arguments);
+		logger = (Logger)LoggerFactory.getLogger(MetasfreshIssueAppenderTest.class);
+		logAppender = new ListAppender<>();
+		logAppender.start();
+		logger.addAppender(logAppender);
 	}
 
-	/**
-	 * The summary has to be the rendered message. Storing the raw SLF4J template instead keeps the literal
-	 * <code>{}</code> placeholders and drops every argument — which is the whole diagnostic content of the row.
-	 */
-	@Test
-	void toIssueCreateRequest_rendersTheMessageArguments()
+	@AfterEach
+	void tearDown()
 	{
-		final LoggingEvent event = errorEvent("Nodes w/o parent - adding to root - {}", "[node-1, node-2]");
-
-		assertThat(MetasfreshIssueAppender.toIssueCreateRequest(event).getSummary())
-				.isEqualTo("Nodes w/o parent - adding to root - [node-1, node-2]");
+		logger.detachAppender(logAppender);
+		logAppender.stop();
 	}
 
-	@Test
-	void toIssueCreateRequest_rendersSeveralArguments()
+	/** Captures the event logback itself builds, so the test never hand-encodes the event's argument contract. */
+	private ILoggingEvent errorEvent(final String message, final Object... arguments)
 	{
-		final LoggingEvent event = errorEvent("No LookupInfo for {} on table {}", "C_BPartner_ID", "C_Order");
-
-		assertThat(MetasfreshIssueAppender.toIssueCreateRequest(event).getSummary())
-				.isEqualTo("No LookupInfo for C_BPartner_ID on table C_Order");
+		logAppender.list.clear();
+		logger.error(message, arguments);
+		return logAppender.list.get(0);
 	}
 
-	@Test
-	void toIssueCreateRequest_keepsAMessageWithoutArgumentsUnchanged()
+	@Nested
+	class ToIssueCreateRequest
 	{
-		final LoggingEvent event = errorEvent("No Provider Selected");
+		/**
+		 * The summary has to be the rendered message. Storing the raw SLF4J template instead keeps the literal
+		 * <code>{}</code> placeholders and drops every argument — which is the whole diagnostic content of the row.
+		 */
+		@Test
+		void rendersTheMessageArguments()
+		{
+			final ILoggingEvent event = errorEvent("Nodes w/o parent - adding to root - {}", "[node-1, node-2]");
 
-		assertThat(MetasfreshIssueAppender.toIssueCreateRequest(event).getSummary())
-				.isEqualTo("No Provider Selected");
-	}
+			assertThat(MetasfreshIssueAppender.toIssueCreateRequest(event).getSummary())
+					.isEqualTo("Nodes w/o parent - adding to root - [node-1, node-2]");
+		}
 
-	@Test
-	void toIssueCreateRequest_carriesTheLoggerName()
-	{
-		final LoggingEvent event = errorEvent("whatever");
+		@Test
+		void rendersSeveralArguments()
+		{
+			final ILoggingEvent event = errorEvent("No LookupInfo for {} on table {}", "C_BPartner_ID", "C_Order");
 
-		assertThat(MetasfreshIssueAppender.toIssueCreateRequest(event).getLoggerName())
-				.isEqualTo(MetasfreshIssueAppenderTest.class.getName());
+			assertThat(MetasfreshIssueAppender.toIssueCreateRequest(event).getSummary())
+					.isEqualTo("No LookupInfo for C_BPartner_ID on table C_Order");
+		}
+
+		@Test
+		void keepsAMessageWithoutArgumentsUnchanged()
+		{
+			final ILoggingEvent event = errorEvent("No Provider Selected");
+
+			assertThat(MetasfreshIssueAppender.toIssueCreateRequest(event).getSummary())
+					.isEqualTo("No Provider Selected");
+		}
+
+		@Test
+		void carriesTheThrowable()
+		{
+			final RuntimeException cause = new RuntimeException("boom");
+			final ILoggingEvent event = errorEvent("Failed for {}", "C_Order", cause);
+
+			assertThat(MetasfreshIssueAppender.toIssueCreateRequest(event).getThrowable()).isSameAs(cause);
+		}
+
+		@Test
+		void carriesTheLoggerName()
+		{
+			final ILoggingEvent event = errorEvent("whatever");
+
+			assertThat(MetasfreshIssueAppender.toIssueCreateRequest(event).getLoggerName())
+					.isEqualTo(MetasfreshIssueAppenderTest.class.getName());
+		}
 	}
 }

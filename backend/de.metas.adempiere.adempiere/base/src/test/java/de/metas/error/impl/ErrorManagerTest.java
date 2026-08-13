@@ -28,6 +28,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_Issue;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.*;
@@ -63,55 +64,59 @@ class ErrorManagerTest
 		return throwable;
 	}
 
-	@Test
-	void createIssue()
+	@Nested
+	class CreateIssue
 	{
-		final AdIssueId issueId = new ErrorManager().createIssue(new NullPointerException());
-		assertThat(issueId).isNotNull();
-	}
+		@Test
+		void returnsAnIssueId()
+		{
+			final AdIssueId issueId = new ErrorManager().createIssue(new NullPointerException());
+			assertThat(issueId).isNotNull();
+		}
 
-	/**
-	 * The class name and the method name of the failing frame each have to land in their own column. Writing both to
-	 * {@code SourceClassName} in sequence overwrites the class name with the method name and leaves
-	 * {@code SourceMethodName} empty, which makes both columns useless for triaging AD_Issue.
-	 */
-	@Test
-	void createIssue_splitsSourceClassNameAndSourceMethodName()
-	{
-		final I_AD_Issue issue = createIssueAndLoad(IssueCreateRequest.builder()
-				.throwable(throwableWithStackFrame("org.adempiere.example.SomeService", "doTheThing", 42))
-				.build());
+		/**
+		 * The class name and the method name of the failing frame each have to land in their own column. Writing both
+		 * to {@code SourceClassName} in sequence overwrites the class name with the method name and leaves
+		 * {@code SourceMethodName} empty, which makes both columns useless for triaging AD_Issue.
+		 */
+		@Test
+		void splitsSourceClassNameAndSourceMethodName()
+		{
+			final I_AD_Issue issue = createIssueAndLoad(IssueCreateRequest.builder()
+					.throwable(throwableWithStackFrame("org.adempiere.example.SomeService", "doTheThing", 42))
+					.build());
 
-		assertThat(issue.getSourceClassName()).isEqualTo("org.adempiere.example.SomeService");
-		assertThat(issue.getSourceMethodName()).isEqualTo("doTheThing");
-		assertThat(issue.getLineNo()).isEqualTo(42);
-	}
+			assertThat(issue.getSourceClassName()).isEqualTo("org.adempiere.example.SomeService");
+			assertThat(issue.getSourceMethodName()).isEqualTo("doTheThing");
+			assertThat(issue.getLineNo()).isEqualTo(42);
+		}
 
-	/**
-	 * A caller that logs exactly the throwable's own message must not get that message stored twice. Every REST error
-	 * takes this path via {@code RestResponseEntityExceptionHandler}, and the message there carries the whole rejected
-	 * request payload — so the duplication doubles the largest rows in AD_Issue.
-	 */
-	@Test
-	void createIssue_doesNotDuplicateSummaryThatAlreadyEqualsTheThrowableMessage()
-	{
-		final I_AD_Issue issue = createIssueAndLoad(IssueCreateRequest.builder()
-				.throwable(new RuntimeException("the request payload could not be processed"))
-				.summary("the request payload could not be processed")
-				.build());
+		/**
+		 * A caller that logged the throwable's own message must not get that message stored twice. Every REST error
+		 * takes this path via {@code RestResponseEntityExceptionHandler}, and the message there carries the whole
+		 * rejected request payload — so the duplication doubles the largest rows in AD_Issue.
+		 */
+		@Test
+		void doesNotDuplicateASummaryThatAlreadyEqualsTheThrowableMessage()
+		{
+			final I_AD_Issue issue = createIssueAndLoad(IssueCreateRequest.builder()
+					.throwable(new RuntimeException("the request payload could not be processed"))
+					.summary("the request payload could not be processed")
+					.build());
 
-		assertThat(issue.getIssueSummary()).isEqualTo("the request payload could not be processed");
-	}
+			assertThat(issue.getIssueSummary()).isEqualTo("the request payload could not be processed");
+		}
 
-	/** A summary that genuinely adds information is still appended to the throwable's message. */
-	@Test
-	void createIssue_keepsASummaryThatAddsInformation()
-	{
-		final I_AD_Issue issue = createIssueAndLoad(IssueCreateRequest.builder()
-				.throwable(new RuntimeException("the throwable message"))
-				.summary("extra context")
-				.build());
+		/** A summary that genuinely adds information is still appended to the throwable's message. */
+		@Test
+		void keepsASummaryThatAddsInformation()
+		{
+			final I_AD_Issue issue = createIssueAndLoad(IssueCreateRequest.builder()
+					.throwable(new RuntimeException("the throwable message"))
+					.summary("extra context")
+					.build());
 
-		assertThat(issue.getIssueSummary()).isEqualTo("the throwable message extra context");
+			assertThat(issue.getIssueSummary()).isEqualTo("the throwable message extra context");
+		}
 	}
 }
