@@ -37,6 +37,8 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.vatid.VATaxIDCheckRequest;
 import de.metas.vatid.VATaxIDCheckService;
+import de.metas.vatid.VATaxIDOrderTaxRefresher;
+import de.metas.vatid.VATaxIDStatus;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.SpringContextHolder;
@@ -69,6 +71,7 @@ public class C_BPartner_VATaxID_Check extends JavaProcess implements IProcessPre
 	private static final String PARA_MaxChecksPerRun = "MaxChecksPerRun";
 
 	@NonNull private final VATaxIDCheckService checkService = SpringContextHolder.instance.getBean(VATaxIDCheckService.class);
+	@NonNull private final VATaxIDOrderTaxRefresher orderTaxRefresher = SpringContextHolder.instance.getBean(VATaxIDOrderTaxRefresher.class);
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	/**
@@ -148,13 +151,26 @@ public class C_BPartner_VATaxID_Check extends JavaProcess implements IProcessPre
 	 * a throwing online checker or a rejected malformed value must not roll back, delay or block any
 	 * partner already checked or still queued in this same run. This would only go away if per-partner
 	 * commit isolation were no longer required — not expected to change.
+	 *
+	 * <p>Where the check actually changed the partner's status (AC7), {@link #orderTaxRefresher} is asked to
+	 * refresh {@code C_OrderLine.C_Tax_ID} on that partner's not-yet-completed orders — deliberately a
+	 * second, separate step outside the check's own transaction: a refresh failure must not undo the
+	 * already-committed check, and a partner whose status did not change (the common case on a nightly
+	 * re-check pass) never pays for a refresh at all.
 	 */
 	private void checkOneInOwnTrx(@NonNull final PInstanceId pinstanceId, @NonNull final I_C_BPartner bpartnerRecord)
 	{
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID());
+		final VATaxIDStatus previousStatus = VATaxIDStatus.optionalOfNullableCode(bpartnerRecord.getVATaxIDStatus())
+				.orElse(VATaxIDStatus.NotChecked);
+
+		final VATaxIDStatus newStatus;
 		try
 		{
-			trxManager.runInNewTrx(() -> checkService.check(VATaxIDCheckRequest.builder()
-					.bpartnerId(BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID()))
+			// Deliberately callInNewTrx (see the method javadoc): the return value is needed to detect a
+			// status change, which runInNewTrx's void Runnable cannot express.
+			newStatus = trxManager.callInNewTrx(() -> checkService.check(VATaxIDCheckRequest.builder()
+					.bpartnerId(bpartnerId)
 					.vataxID(VATIdentifier.of(bpartnerRecord.getVATaxID()))
 					.pinstanceId(pinstanceId)
 					.build()));
@@ -165,6 +181,25 @@ public class C_BPartner_VATaxID_Check extends JavaProcess implements IProcessPre
 			// abort the run for the rest of the selection.
 			Loggables.withWarnLoggerToo(logger)
 					.addLog("VAT-ID check failed for C_BPartner_ID={}: {}", bpartnerRecord.getC_BPartner_ID(), ex.getMessage());
+			return;
+		}
+
+		if (newStatus == previousStatus)
+		{
+			return;
+		}
+
+		try
+		{
+			orderTaxRefresher.refreshOrderLinesTaxForBPartner(bpartnerId);
+		}
+		catch (final Exception ex)
+		{
+			// The check itself already committed successfully; a refresh failure must not be reported as
+			// (and must not be confused with) a failed check.
+			Loggables.withWarnLoggerToo(logger)
+					.addLog("VAT-ID check for C_BPartner_ID={} succeeded (status {} -> {}), but refreshing its open orders' tax failed: {}",
+							bpartnerRecord.getC_BPartner_ID(), previousStatus, newStatus, ex.getMessage());
 		}
 	}
 }
