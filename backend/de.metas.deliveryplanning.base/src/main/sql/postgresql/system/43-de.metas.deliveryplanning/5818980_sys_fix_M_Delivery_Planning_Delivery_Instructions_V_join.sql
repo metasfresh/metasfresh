@@ -1,6 +1,6 @@
 -- Source DDL: backend/de.metas.adempiere.adempiere/migration/src/main/sql/postgresql/ddl/public/views/M_Delivery_Planning_Delivery_Instructions_V.sql
 -- Fix: join delivery instructions to delivery plannings via m_shippertransportation_id (was: documentno = releaseno which always produced empty results)
--- Also: exclude voided/re-generated instructions (docstatus NOT IN ('VO', 'RE'))
+-- Also: exclude voided/reversed instructions (docstatus NOT IN ('VO', 'RE'))
 
 DROP VIEW IF EXISTS M_Delivery_Planning_Delivery_Instructions_V$new
 ;

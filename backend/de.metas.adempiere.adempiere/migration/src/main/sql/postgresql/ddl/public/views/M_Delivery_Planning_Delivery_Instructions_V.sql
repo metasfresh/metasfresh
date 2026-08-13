@@ -43,7 +43,7 @@ SELECT db_alter_view(
                'm_delivery_planning_delivery_instructions_v',
                (SELECT view_definition
                 FROM information_schema.views
-                WHERE views.table_name = 'm_delivery_planning_delivery_instructions_v$new')
+                WHERE lower(views.table_name) = lower('m_delivery_planning_delivery_instructions_v$new'))
            )
 ;
 
