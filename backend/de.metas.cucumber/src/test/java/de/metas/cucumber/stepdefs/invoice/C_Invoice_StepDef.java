@@ -282,7 +282,7 @@ public class C_Invoice_StepDef
 				.setContext(Env.getCtx())
 				.setFailIfNothingEnqueued(true)
 				.setInvoicingParams(invoicingParams)
-				.prepareAndEnqueueSelection(invoiceCandidatesSelectionId);
+				.enqueueSelection(invoiceCandidatesSelectionId);
 
 		//wait for the invoice to be created
 		final Supplier<Boolean> invoiceCreated = () ->

@@ -35,6 +35,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_M_Warehouse;
 
 import java.util.List;
@@ -106,8 +107,6 @@ public class M_Warehouse_StepDef
 
 			final boolean isIssueWarehouse = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_M_Warehouse.COLUMNNAME_IsIssueWarehouse, false);
 
-			final boolean isInTransit = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_M_Warehouse.COLUMNNAME_IsInTransit, false);
-
 			final int bPartnerId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Warehouse.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER))
 					.map(bPartnerTable::get)
 					.map(I_C_BPartner::getC_BPartner_ID)
@@ -117,6 +116,8 @@ public class M_Warehouse_StepDef
 					.map(bPartnerLocationTable::get)
 					.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
 					.orElse(StepDefConstants.METASFRESH_AG_BPARTNER_LOCATION_ID.getRepoId());
+
+			final boolean isInTransit = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_M_Warehouse.COLUMNNAME_IsInTransit, false);
 
 			warehouseRecord.setValue(value);
 			warehouseRecord.setName(name);

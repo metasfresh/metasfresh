@@ -718,7 +718,7 @@ public class C_Invoice_Candidate_StepDef
 						.setContext(Env.getCtx())
 						.setFailIfNothingEnqueued(true)
 						.setInvoicingParams(invoicingParams)
-						.prepareAndEnqueueSelection(invoiceCandidatesSelectionId);
+						.enqueueSelection(invoiceCandidatesSelectionId);
 			}
 			catch (final AdempiereException adempiereException)
 			{
