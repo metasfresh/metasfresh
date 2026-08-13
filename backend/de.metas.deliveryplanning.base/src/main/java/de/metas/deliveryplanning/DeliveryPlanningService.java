@@ -57,6 +57,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -67,6 +68,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryFilter;
+import javax.annotation.Nullable;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.service.ClientId;
@@ -109,6 +111,7 @@ public class DeliveryPlanningService
 	public static final String PARAM_AdditionalLines = "AdditionalLines";
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
@@ -143,6 +146,30 @@ public class DeliveryPlanningService
 	public boolean isAutoCreateEnabled(@NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		return sysConfigBL.getBooleanValue(SYSCONFIG_M_Delivery_Planning_CreateAutomatically, false, clientAndOrgId);
+	}
+
+	/**
+	 * Gate for per-shipper auto-creation (AC-13a).
+	 *
+	 * <p>Returns {@code true} only when ALL of the following hold:
+	 * <ol>
+	 *     <li>the global sysconfig master switch is enabled (AND-gate, not replaced)</li>
+	 *     <li>a non-null {@code shipperId} is given</li>
+	 *     <li>the resolved shipper's {@code IsCreateDeliveryPlanning} flag is {@code true}</li>
+	 * </ol>
+	 */
+	public boolean isAutoCreateEnabled(@NonNull final ClientAndOrgId clientAndOrgId, @Nullable final ShipperId shipperId)
+	{
+		if (!isAutoCreateEnabled(clientAndOrgId))
+		{
+			return false; // global master-off switch
+		}
+		if (shipperId == null)
+		{
+			return false; // no shipper → skip
+		}
+		final org.compiere.model.I_M_Shipper shipper = shipperDAO.getById(shipperId);
+		return shipper.isCreateDeliveryPlanning();
 	}
 
 	private DeliveryStatusColorPalette getColorPalette()
