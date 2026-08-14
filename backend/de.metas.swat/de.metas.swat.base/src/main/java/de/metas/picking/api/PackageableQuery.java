@@ -58,7 +58,17 @@ public class PackageableQuery
 	@Nullable WarehouseTypeId warehouseTypeId;
 	@Nullable WarehouseId warehouseId;
 	@NonNull @Singular ImmutableSet<LocalDate> deliveryDays;
-	@Nullable LocalDate preparationDate;
+	/**
+	 * Filter on PreparationDate. Multi-value via Lombok {@code @Singular}: the mobile picking filter bar
+	 * adds several days ({@code preparationDays(...)}), the desktop Picking-V2 view adds exactly one
+	 * ({@code preparationDay(...)}). Empty means no filter.
+	 * <p>
+	 * STRICT, unlike {@link #deliveryDays} above: a row whose PreparationDate is unset does NOT pass.
+	 * That keeps the desktop view's long-standing behaviour unchanged, and "I filtered to the 11th" not
+	 * showing undated rows is what the operator expects. The asymmetry with {@code deliveryDays} is
+	 * deliberate and worth revisiting only with data on how often PreparationDate is actually unset.
+	 */
+	@NonNull @Singular ImmutableSet<LocalDate> preparationDays;
 	@Nullable ZonedDateTime maximumFixedPreparationDate;
 	@Nullable ZonedDateTime maximumFixedPromisedDate;
 	@Nullable ShipperId shipperId;
