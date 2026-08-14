@@ -52,7 +52,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -285,14 +284,17 @@ public class NShiftShipmentServiceTest
 
 		final JsonShipmentRequest shipmentRequest = NShiftShipmentService.buildShipmentRequest(request);
 
-		final List<de.metas.shipper.client.nshift.json.JsonAddress> addresses = shipmentRequest.getData().getAddresses();
-		final de.metas.shipper.client.nshift.json.JsonAddress sender = addresses.stream()
-				.filter(a -> a.getKind() == JsonAddressKind.SENDER).findFirst().orElseThrow(() -> new AssertionError("no sender address"));
-		final de.metas.shipper.client.nshift.json.JsonAddress receiver = addresses.stream()
-				.filter(a -> a.getKind() == JsonAddressKind.RECEIVER).findFirst().orElseThrow(() -> new AssertionError("no receiver address"));
+		assertEquals(consigneeId, custNoOf(shipmentRequest, JsonAddressKind.SENDER), "Sender CustNo must come from the CustomValueString1 config value");
+		assertEquals(consigneeId, custNoOf(shipmentRequest, JsonAddressKind.RECEIVER), "Receiver CustNo must come from the CustomValueString1 config value");
+	}
 
-		assertEquals(consigneeId, sender.getCustNo(), "Sender CustNo must come from the CustomValueString1 config value");
-		assertEquals(consigneeId, receiver.getCustNo(), "Receiver CustNo must come from the CustomValueString1 config value");
+	private static String custNoOf(final JsonShipmentRequest request, final JsonAddressKind kind)
+	{
+		return request.getData().getAddresses().stream()
+				.filter(a -> a.getKind() == kind)
+				.findFirst()
+				.orElseThrow(() -> new AssertionError("no " + kind + " address"))
+				.getCustNo();
 	}
 
 }

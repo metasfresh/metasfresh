@@ -22,6 +22,7 @@
 
 package de.metas.shipper.gateway.commons.mapping;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.common.delivery.v1.json.DeliveryMappingConstants;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
@@ -97,4 +98,7 @@ public enum AttributeValue implements ReferenceListAwareEnum
 	{
 		return index.ofCode(code);
 	}
+
+	@JsonValue
+	public String toJson() {return getCode();}
 }
