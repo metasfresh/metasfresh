@@ -257,28 +257,30 @@ Feature: The VAT-ID check process runs on a selection of Business Partners
   @from:cucumber
   @Id:S31060_8
   Scenario: A persistently-failing check target does not starve the nightly queue on the next run
-    # bp_broken's VATaxID is malformed and bypasses the save-time gate (validateVATaxID switched off just
-    # for its creation), so the online check's OWN format re-validation throws on every single attempt --
-    # the record can never advance past NotChecked/VATaxIDCheckedAt=null, and would otherwise sort first
-    # of every future nightly run forever. bp_pending is a genuinely healthy, never-yet-checked partner
-    # sitting right behind it. The manual selection run below targets ONLY bp_broken -- one attempt,
-    # scoped, so this scenario is immune to whatever else the shared database's nightly candidate pool
-    # already contains -- and it must fail and leave bp_broken NotChecked. The ordering assertion that
-    # follows is the actual point: a target whose one attempt failed must no longer outrank a target that
-    # was never attempted at all -- proving the failure did not re-earn bp_broken the front of the queue.
+    # bp_broken's VATaxID is malformed and bypasses the save-time gate (its organisation's own
+    # VATaxID_Config has the format check switched off just for its creation), so the online check's OWN
+    # format re-validation throws on every single attempt -- the record can never advance past
+    # NotChecked/VATaxIDCheckedAt=null, and would otherwise sort first of every future nightly run forever.
+    # bp_pending is a genuinely healthy, never-yet-checked partner sitting right behind it. The manual
+    # selection run below targets ONLY bp_broken -- one attempt, scoped, so this scenario is immune to
+    # whatever else the shared database's nightly candidate pool already contains -- and it must fail and
+    # leave bp_broken NotChecked. The ordering assertion that follows is the actual point: a target whose
+    # one attempt failed must no longer outrank a target that was never attempted at all -- proving the
+    # failure did not re-earn bp_broken the front of the queue.
     # Reset any leftover status/attempt state from an earlier run of this same scenario against a
     # never-reset local database: bp_broken/bp_pending are upserted by Value, so without this both
     # VATaxID values could still carry a previous run's final status/attempt timestamp.
     Given no VATaxID_CheckLog records exist for VATaxID 'NOTAVATID'
     And no VATaxID_CheckLog records exist for VATaxID 'LU15027442'
-    And set sys config boolean value false for sys config C_BPartner.validateVATaxID
     And metasfresh contains VATaxID_Config:
       | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
-      | true                 | false              | 30               | ServiceUnavailable   |
+      | false                | false              | 30               | ServiceUnavailable   |
     And metasfresh contains C_BPartners:
       | Identifier | Value          | VATaxID   |
       | bp_broken  | ProcStarveBrk1 | NOTAVATID |
-    Given set sys config boolean value true for sys config C_BPartner.validateVATaxID
+    Given metasfresh contains VATaxID_Config:
+      | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
+      | true                 | false              | 30               | ServiceUnavailable   |
     And metasfresh contains C_BPartners:
       | Identifier | Value          | VATaxID    |
       | bp_pending | ProcStarvePnd1 | LU15027442 |

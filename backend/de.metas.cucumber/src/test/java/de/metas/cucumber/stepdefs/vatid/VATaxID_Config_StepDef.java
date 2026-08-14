@@ -49,13 +49,17 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
  * save-time after-commit trigger ({@code VATaxIDCheckTrigger}) live for every later feature's plain
  * {@code C_BPartner}/{@code C_BPartner_Location} save carrying a VAT-ID — which then hits whatever this
  * scenario's online-checker stub was last programmed with, throwing "Unexpected online check for VAT-ID
- * ..." out of an unrelated feature. {@link #disableVIESCheckAfterScenario()} closes that for every scenario
- * that touches this step def, unconditionally and regardless of whether the scenario itself passed, failed
- * or errored — a plain extra Gherkin step at the end of the scenario would NOT do that, because Cucumber
- * skips every remaining step once one step fails, so a step-based "cleanup" placed after the scenario's own
- * assertions never runs on the run that actually needs it. An {@code @After} hook is Cucumber's own
- * guaranteed-execution mechanism (same pattern as e.g. {@code ShipperServiceLevelConfig_StepDef}), so it
- * runs on every outcome.
+ * ..." out of an unrelated feature. Symmetrically, a scenario that disables {@code IsFormatCheckEnabled} and
+ * never re-enables it leaves the save-time format gate silently off for every later feature that saves a
+ * VAT-ID for this organisation without setting up its own config — since
+ * {@code de.metas.vatid.VATaxIDConfigRepository#getByOrgId} now resolves the save-time gate from THIS
+ * record whenever one is active, unconditionally. {@link #resetToSafeDefaultsAfterScenario()} closes both
+ * for every scenario that touches this step def, unconditionally and regardless of whether the scenario
+ * itself passed, failed or errored — a plain extra Gherkin step at the end of the scenario would NOT do
+ * that, because Cucumber skips every remaining step once one step fails, so a step-based "cleanup" placed
+ * after the scenario's own assertions never runs on the run that actually needs it. An {@code @After} hook
+ * is Cucumber's own guaranteed-execution mechanism (same pattern as e.g.
+ * {@code ShipperServiceLevelConfig_StepDef}), so it runs on every outcome.
  */
 public class VATaxID_Config_StepDef
 {
@@ -121,10 +125,12 @@ public class VATaxID_Config_StepDef
 	/**
 	 * Guaranteed-execution cleanup — see the class javadoc. A no-op for the vast majority of scenarios
 	 * (every one that never called {@link #metasfresh_contains_VATaxID_Config}), so this carries no cost for
-	 * the rest of the suite.
+	 * the rest of the suite. Resets BOTH flags to the safe defaults (format check ON, VIES check OFF) —
+	 * i.e. today's behaviour for a config-less organisation — so no scenario's own setting can leak into a
+	 * later feature on the same executor that never sets up its own config.
 	 */
 	@After
-	public void disableVIESCheckAfterScenario()
+	public void resetToSafeDefaultsAfterScenario()
 	{
 		if (!touchedByThisScenario)
 		{
@@ -138,9 +144,25 @@ public class VATaxID_Config_StepDef
 				.create()
 				.firstOnly(I_VATaxID_Config.class);
 
-		if (existingRecord != null && existingRecord.isVIESCheckEnabled())
+		if (existingRecord == null)
+		{
+			return;
+		}
+
+		boolean changed = false;
+		if (existingRecord.isVIESCheckEnabled())
 		{
 			existingRecord.setIsVIESCheckEnabled(false);
+			changed = true;
+		}
+		if (!existingRecord.isFormatCheckEnabled())
+		{
+			existingRecord.setIsFormatCheckEnabled(true);
+			changed = true;
+		}
+
+		if (changed)
+		{
 			InterfaceWrapperHelper.saveRecord(existingRecord);
 		}
 	}
