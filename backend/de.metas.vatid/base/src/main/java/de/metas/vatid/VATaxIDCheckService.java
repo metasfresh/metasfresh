@@ -52,7 +52,7 @@ import java.time.Instant;
  *     <li><b>De-duplication</b>: if the same VAT-ID value already has a result younger than
  *         {@link VATaxIDConfig#getRecheckAfterDays()}, that result is kept and no new request is sent —
  *         which is what collapses a bulk import and repeated saves of one record to a single call, and
- *         what makes an unreachable service harmless while the last result is still fresh (AC8).</li>
+ *         what makes an unreachable service harmless while the last result is still fresh.</li>
  *     <li><b>Write {@link VATaxIDStatus#RequestSent}</b> via
  *         {@link VATaxIDCheckRepository#writeRequestSent(VATaxIDCheckRequest)} <em>before</em> the call, so
  *         a check whose outcome is never learned (crash, timeout, killed container) still leaves evidence
@@ -80,7 +80,7 @@ import java.time.Instant;
  *
  * An {@link VATaxIDStatus#Invalid} that {@link VATaxIDOnServiceUnavailableAction#Invalid} produced from an
  * unreachable service is stored under the <b>same status code</b> as a VAT-ID VIES actually rejected: the
- * schema (DESIGN § 3) has no reason column, and the {@code OnServiceUnavailable} value in force at the time
+ * table carries no reason column, and the {@code OnServiceUnavailable} value in force at the time
  * is not recorded either. The two are still reconstructable from the evidence, at the cost of knowing the
  * VIES payload shape — <b>read the {@code RawResponse} of the {@code VATaxID_CheckLog} row the parent's
  * {@code VATaxID_CheckLog_ID} points at</b>:
@@ -124,8 +124,8 @@ public class VATaxIDCheckService
 {
 	/**
 	 * The configuration an organisation with <b>no</b> {@code VATaxID_Config} record effectively has:
-	 * <b>format check on, online check off</b> — today's behaviour exactly (REQUIREMENTS § 3, DESIGN § 3),
-	 * so switching the module on changes nothing at all for an unconfigured organisation.
+	 * <b>format check on, online check off</b> — today's behaviour exactly, so switching the module on
+	 * changes nothing at all for an unconfigured organisation.
 	 *
 	 * <p>Resolved here because {@link VATaxIDConfigRepository#getByOrgId(OrgId)} is a thin query layer over
 	 * one table and deliberately leaves this business rule to its caller — this constant is that single
@@ -137,7 +137,7 @@ public class VATaxIDCheckService
 	 *
 	 * <p>Deliberately a plain constant rather than a configuration lookup: the SysConfig that will govern
 	 * the format-check half for unconfigured organisations
-	 * ({@code VATaxID_Config.IsFormatCheckEnabledByDefault}, REQUIREMENTS § 3) does not exist yet — it
+	 * ({@code VATaxID_Config.IsFormatCheckEnabledByDefault}) does not exist yet — it
 	 * replaces the shipped {@code C_BPartner.validateVATaxID} gate, which until then still governs the
 	 * save-time check in the interceptors. When it lands, only this one line changes.
 	 *

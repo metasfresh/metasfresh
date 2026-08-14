@@ -50,7 +50,7 @@ import javax.annotation.Nullable;
  *
  * <p><b>Both parent types are handled here, not by the caller.</b> A VAT-ID lives either on the partner
  * header or on one of its locations, and both tables carry the three columns under identical names
- * (DESIGN § 3) while sharing no model interface. That forces a branch on the record type somewhere; it
+ * while sharing no model interface. That forces a branch on the record type somewhere; it
  * belongs on this side of the persistence boundary, so {@link VATaxIDCheckService} states <em>which
  * record</em> it means (by passing the {@link VATaxIDCheckRequest} that already identifies it) and never
  * how either table is loaded or saved.

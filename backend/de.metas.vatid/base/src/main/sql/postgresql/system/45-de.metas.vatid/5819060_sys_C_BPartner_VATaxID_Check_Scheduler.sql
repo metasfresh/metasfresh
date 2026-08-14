@@ -8,6 +8,11 @@
 -- C_BPartner/C_BPartner_Location live at this client, so the scheduler that checks them belongs to it
 -- too, matching the precedent set by other per-client AD_Scheduler rows (e.g. migration 5586040). The
 -- AD_Process definition itself stays System-level (like most AD_Process rows), shared across clients.
+--
+-- AD_Role_ID=540024 (WebUI, client 1000000): same precedent migration 5586040 pins a real role rather
+-- than leaving it 0, and the cucumber test that exercises this exact "no selection" branch resolves the
+-- same WebUI role to simulate the scheduled run -- the shipped scheduler and the test now agree on which
+-- role actually runs the process.
 
 -- IDs allocated from idserver.metas.de:
 --   AD_Scheduler       550129
@@ -18,7 +23,7 @@ INSERT INTO AD_Scheduler (AD_Client_ID, AD_Org_ID, AD_Process_ID, AD_Role_ID, AD
                            CronPattern, EntityType, Frequency, FrequencyType, IsActive, IsIgnoreProcessingTime,
                            KeepLogDays, ManageScheduler, Name, Processing, SchedulerProcessType, ScheduleType,
                            Status, Supervisor_ID, Updated, UpdatedBy)
-VALUES (1000000, 0, 585650, 0, 550129 /*From ID Server*/,
+VALUES (1000000, 0, 585650, 540024, 550129 /*From ID Server*/,
         TO_TIMESTAMP('2026-08-14 08:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
         '0 3 * * *', 'D', 0, 'D', 'Y', 'N',
         7, 'N', 'VAT-ID check scheduler', 'N', 'P', 'C',

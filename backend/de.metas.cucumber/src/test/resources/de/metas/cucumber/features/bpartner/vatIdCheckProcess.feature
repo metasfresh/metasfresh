@@ -148,8 +148,8 @@ Feature: The VAT-ID check process runs on a selection of Business Partners
     And metasfresh contains VATaxID_Config:
       | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
       | true                 | true               | 30               | Invalid              |
-    # OnServiceUnavailable=Invalid is the trap TC12 exists to guard: a skipped member state must never
-    # be funnelled into this fail-closed policy. DE136695976 is deliberately the only VATaxID stubbed to
+    # OnServiceUnavailable=Invalid is the trap this scenario exists to guard: a skipped member state must
+    # never be funnelled into this fail-closed policy. DE136695976 is deliberately the only VATaxID stubbed to
     # answer, so a run that (wrongly) called the checker for the skipped Greek VAT-ID fails loudly.
     And the VAT-ID online checker is stubbed to report member state 'EL' unavailable, and to answer:
       | VATaxID     | VATaxIDStatus |
@@ -209,19 +209,22 @@ Feature: The VAT-ID check process runs on a selection of Business Partners
   @Id:S31060_6
   Scenario: The nightly schedule's own selection covers every VAT-ID system-wide, not only a selection
     Given no VATaxID_CheckLog records exist for VATaxID 'IT00743110157'
-    And metasfresh contains VATaxID_Config:
-      | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
-      | true                 | true               | 30               | ServiceUnavailable   |
     And metasfresh contains C_BPartners:
       | Identifier   | Value         | VATaxID       |
       | bp_scheduled | ProcSchedRun1 | IT00743110157 |
-    # bp_scheduled is never put in any selection below -- the scheduled run has none at all -- so its
-    # presence in the nightly selection proves the selection reaches every VAT-ID system-wide, not only a
-    # selected few. The online check is ON only long enough for the read-only assertion right below --
-    # which never executes a real check, so nothing is called while it is -- and is switched back OFF
-    # before the actual scheduled run further down: a "no selection" sweep reaches every OTHER feature's
-    # VAT-ID-bearing fixtures on this shared database too, and this is the only way to prove the selection
-    # and the branch without actually checking any of them -- see the step-defs' own javadoc.
+    # bp_scheduled is created while the online check is still OFF for this organisation (the ambient
+    # state left by the previous scenario's teardown) -- exactly like every earlier scenario in this file
+    # -- so its save never schedules a real after-commit check. Only once it exists is the check flipped
+    # ON, and only long enough for the read-only assertion right below, which queries the selection
+    # directly and never executes a check itself. It is switched back OFF before the actual scheduled run
+    # further down: a "no selection" sweep reaches every OTHER feature's VAT-ID-bearing fixtures on this
+    # shared database too, and this is the only way to prove the selection and the branch without actually
+    # checking any of them -- see the step-defs' own javadoc. bp_scheduled is never put in any selection
+    # below -- the scheduled run has none at all -- so its presence in the nightly selection proves the
+    # selection reaches every VAT-ID system-wide, not only a selected few.
+    And metasfresh contains VATaxID_Config:
+      | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
+      | true                 | true               | 30               | ServiceUnavailable   |
     Then the C_BPartner_VATaxID_Check nightly selection includes C_BPartner 'bp_scheduled'
     And metasfresh contains VATaxID_Config:
       | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
