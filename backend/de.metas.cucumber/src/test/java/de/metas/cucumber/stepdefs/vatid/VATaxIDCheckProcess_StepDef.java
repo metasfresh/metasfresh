@@ -178,6 +178,28 @@ public class VATaxIDCheckProcess_StepDef
 	@When("the C_BPartner_VATaxID_Check process is run as scheduled")
 	public void runProcessAsScheduled()
 	{
+		runProcessAsScheduled(null);
+	}
+
+	/**
+	 * {@link #runProcessAsScheduled()}, but with an explicit {@code MaxChecksPerRun} — needed to demonstrate
+	 * the nightly run's own throttling and ordering (e.g. a persistently-failing target must not occupy the
+	 * whole budget night after night) without waiting for a naturally-sized selection.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When the C_BPartner_VATaxID_Check process is run as scheduled with MaxChecksPerRun '1'
+	 * </pre>
+	 */
+	@When("the C_BPartner_VATaxID_Check process is run as scheduled with MaxChecksPerRun {string}")
+	public void runProcessAsScheduledWithMaxChecksPerRun(@NonNull final String maxChecksPerRunText)
+	{
+		runProcessAsScheduled(Integer.parseInt(maxChecksPerRunText.trim()));
+	}
+
+	private void runProcessAsScheduled(@Nullable final Integer maxChecksPerRun)
+	{
 		final AdProcessId processId = adProcessDAO.retrieveProcessIdByValue(PROCESS_VALUE);
 		assertThat(processId).as("AD_Process with Value=%s must exist", PROCESS_VALUE).isNotNull();
 
@@ -189,13 +211,20 @@ public class VATaxIDCheckProcess_StepDef
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("WebUI role not found for user " + loggedUserId));
 
-		final ProcessExecutor executor = ProcessInfo.builder()
+		final ProcessInfo.ProcessInfoBuilder builder = ProcessInfo.builder()
 				.setAD_Process_ID(processId.getRepoId())
 				.setClientId(ClientId.METASFRESH)
 				.setRoleId(roleId)
-				.setCreateTemporaryCtx()
-				// deliberately no setTableName/setWhereClause/setRecord_ID: a scheduled run selects nothing,
-				// per the class javadoc.
+				.setCreateTemporaryCtx();
+		// deliberately no setTableName/setWhereClause/setRecord_ID: a scheduled run selects nothing,
+		// per the class javadoc.
+
+		if (maxChecksPerRun != null)
+		{
+			builder.addParameter(PARA_MaxChecksPerRun, maxChecksPerRun);
+		}
+
+		final ProcessExecutor executor = builder
 				.buildAndPrepareExecution()
 				.switchContextWhenRunning()
 				.executeSync();
@@ -338,6 +367,46 @@ public class VATaxIDCheckProcess_StepDef
 		assertThat(nightlySelection)
 				.as("C_BPartner_VATaxID_Check nightly selection must NOT include C_BPartner `%s` (%s)", bpartnerIdentifier, expectedId)
 				.doesNotContain(expectedId);
+	}
+
+	/**
+	 * Asserts the RELATIVE ORDER of two entries in the nightly candidate list, rather than which absolute
+	 * slot either occupies — the shared cucumber database can carry an arbitrary number of OTHER VAT-ID
+	 * fixtures from other scenarios at the time this runs, and this assertion is immune to however many
+	 * of those sort in between the two named entries. This is what makes it possible to prove a priority
+	 * INVERSION (a target that failed its check attempt no longer outranks one that was never attempted at
+	 * all) without needing to control, or reason about, the whole database's candidate pool.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_BPartner_ID</b> (first)  — (required, identifier-ref) partner expected to sort earlier<br>
+	 *   <b>C_BPartner_ID</b> (second) — (required, identifier-ref) partner expected to sort later
+	 * @cucumber.depends StepDefData: C_BPartner_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then the C_BPartner_VATaxID_Check nightly selection lists C_BPartner 'bp_pending' before C_BPartner 'bp_broken'
+	 * </pre>
+	 */
+	@Then("the C_BPartner_VATaxID_Check nightly selection lists C_BPartner {string} before C_BPartner {string}")
+	public void assertNightlySelectionOrder(@NonNull final String earlierBPartnerIdentifier, @NonNull final String laterBPartnerIdentifier)
+	{
+		final BPartnerId earlierId = resolveBPartnerId(earlierBPartnerIdentifier);
+		final BPartnerId laterId = resolveBPartnerId(laterBPartnerIdentifier);
+		final ImmutableList<BPartnerId> nightlySelection = checkRunService.retrieveAllBPartnerIdsWithVATaxID();
+
+		final int earlierIndex = nightlySelection.indexOf(earlierId);
+		final int laterIndex = nightlySelection.indexOf(laterId);
+
+		assertThat(earlierIndex)
+				.as("C_BPartner `%s` (%s) must be in the nightly selection", earlierBPartnerIdentifier, earlierId)
+				.isNotEqualTo(-1);
+		assertThat(laterIndex)
+				.as("C_BPartner `%s` (%s) must be in the nightly selection", laterBPartnerIdentifier, laterId)
+				.isNotEqualTo(-1);
+		assertThat(earlierIndex)
+				.as("C_BPartner `%s` (%s) must sort BEFORE C_BPartner `%s` (%s) in the nightly selection",
+						earlierBPartnerIdentifier, earlierId, laterBPartnerIdentifier, laterId)
+				.isLessThan(laterIndex);
 	}
 
 	@NonNull

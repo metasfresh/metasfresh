@@ -157,6 +157,48 @@ public class VATaxIDOnlineChecker_StepDef
 	}
 
 	/**
+	 * Stubs the online checker leniently: every VAT-ID listed in {@code dataTable} gets its ordinary
+	 * answer, and any VAT-ID NOT listed gets {@link VATaxIDStatus#ServiceUnavailable} instead of the loud
+	 * failure {@link #stubOnlineChecker(DataTable)} uses. For a scenario that runs the check process with
+	 * no selection at all (the nightly-schedule shape, see {@code VATaxIDCheckProcess_StepDef}) and can
+	 * therefore reach every VAT-ID already in the local database, not only the ones it created itself —
+	 * {@link VATaxIDStatus#ServiceUnavailable} is harmless there for any {@code VATaxID_Config} whose
+	 * {@code OnServiceUnavailable} is left at its fail-open default.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>VATaxID</b>       — (required) a VAT-ID the service is expected to be asked about<br>
+	 *   <b>VATaxIDStatus</b> — (required) the status the service answers with for that VAT-ID
+	 * @cucumber.example
+	 * <pre>
+	 * Given the VAT-ID online checker is stubbed to answer known VAT-IDs, and to report unavailable for the rest:
+	 *   | VATaxID     | VATaxIDStatus |
+	 *   | DE136695976 | Valid         |
+	 * </pre>
+	 */
+	@Given("the VAT-ID online checker is stubbed to answer known VAT-IDs, and to report unavailable for the rest:")
+	public void stubOnlineCheckerLeniently(@NonNull final DataTable dataTable)
+	{
+		final ImmutableMap.Builder<String, VATaxIDCheckResult> resultsByVATaxID = ImmutableMap.builder();
+		DataTableRows.of(dataTable).forEach(row -> resultsByVATaxID.put(
+				row.getAsString(I_VATaxID_CheckLog.COLUMNNAME_VATaxID),
+				VATaxIDCheckResult.builder()
+						.status(row.getAsEnum(I_VATaxID_CheckLog.COLUMNNAME_VATaxIDStatus, VATaxIDStatus.class))
+						.build()));
+		final Map<String, VATaxIDCheckResult> results = resultsByVATaxID.build();
+
+		reset(onlineCheckerMock);
+
+		when(onlineCheckerMock.check(any(VATIdentifier.class), any(VATaxIDConfig.class)))
+				.thenAnswer(invocation -> {
+					final VATIdentifier vatId = invocation.getArgument(0);
+					final VATaxIDCheckResult result = results.get(vatId.getAsString());
+					return result != null ? result : VATaxIDCheckResult.builder().status(VATaxIDStatus.ServiceUnavailable).build();
+				});
+		when(onlineCheckerMock.getUnavailableCountryCodes(any(VATaxIDConfig.class))).thenReturn(ImmutableSet.of());
+	}
+
+	/**
 	 * Asserts no VAT-ID was checked against the online service since the last stub step — the direct
 	 * evidence that de-duplication skipped the call rather than making it and discarding the answer.
 	 *

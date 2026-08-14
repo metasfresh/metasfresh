@@ -250,3 +250,84 @@ Feature: The VAT-ID check process runs on a selection of Business Partners
     # front of every night's selection and could consume the whole MaxChecksPerRun budget without ever
     # making progress, starving out every other, checkable record behind it.
     Then the C_BPartner_VATaxID_Check nightly selection does not include C_BPartner 'bp_viesOff'
+
+  @from:cucumber
+  @Id:S31060_8
+  Scenario: A persistently-failing check target does not starve the nightly queue on the next run
+    # bp_broken's VATaxID is malformed and bypasses the save-time gate (validateVATaxID switched off just
+    # for its creation), so the online check's OWN format re-validation throws on every single attempt --
+    # the record can never advance past NotChecked/VATaxIDCheckedAt=null, and would otherwise sort first
+    # of every future nightly run forever. bp_pending is a genuinely healthy, never-yet-checked partner
+    # sitting right behind it. The manual selection run below targets ONLY bp_broken -- one attempt,
+    # scoped, so this scenario is immune to whatever else the shared database's nightly candidate pool
+    # already contains -- and it must fail and leave bp_broken NotChecked. The ordering assertion that
+    # follows is the actual point: a target whose one attempt failed must no longer outrank a target that
+    # was never attempted at all -- proving the failure did not re-earn bp_broken the front of the queue.
+    Given set sys config boolean value false for sys config C_BPartner.validateVATaxID
+    And metasfresh contains VATaxID_Config:
+      | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
+      | true                 | false              | 30               | ServiceUnavailable   |
+    And metasfresh contains C_BPartners:
+      | Identifier | Value          | VATaxID   |
+      | bp_broken  | ProcStarveBrk1 | NOTAVATID |
+    Given set sys config boolean value true for sys config C_BPartner.validateVATaxID
+    And metasfresh contains C_BPartners:
+      | Identifier | Value          | VATaxID    |
+      | bp_pending | ProcStarvePnd1 | LU15027442 |
+    And metasfresh contains VATaxID_Config:
+      | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
+      | true                 | true               | 30               | ServiceUnavailable   |
+    # No online-service stub needed for bp_broken's own attempt below: the malformed value throws
+    # during VATaxIDValidationUtil's format re-check, strictly before the online service is ever reached.
+    # Stubbed unreachable purely so the availability pre-filter's getUnavailableCountryCodes() call has a
+    # definite (empty) answer rather than an unprogrammed one.
+    Given the VAT-ID online checker is stubbed to be unreachable
+    When the C_BPartner_VATaxID_Check process is run for selection with MaxChecksPerRun '':
+      | C_BPartner_ID |
+      | bp_broken     |
+    Then validate C_BPartner VAT-ID status:
+      | C_BPartner_ID | VATaxIDStatus |
+      | bp_broken     | NotChecked    |
+    Then the C_BPartner_VATaxID_Check nightly selection lists C_BPartner 'bp_pending' before C_BPartner 'bp_broken'
+    # Behavioural confirmation, not only the internal ordering: a real scheduled run (lenient stub, so
+    # whatever else the shared database happens to also reach resolves harmlessly instead of crashing the
+    # scenario) must actually advance bp_pending while bp_broken keeps failing every attempt.
+    And the VAT-ID online checker is stubbed to answer known VAT-IDs, and to report unavailable for the rest:
+      | VATaxID    | VATaxIDStatus |
+      | LU15027442 | Valid         |
+    When the C_BPartner_VATaxID_Check process is run as scheduled
+    Then validate C_BPartner VAT-ID status:
+      | C_BPartner_ID | VATaxIDStatus |
+      | bp_broken     | NotChecked    |
+      | bp_pending    | Valid         |
+
+  @from:cucumber
+  @Id:S31060_9
+  Scenario: The nightly run reaches a location's own stale VAT-ID even when its header carries none
+    # bp_mixed's HEADER carries no VATaxID at all, so it is never itself a nightly candidate by header
+    # staleness -- the only reason it must be swept is that its LOCATION carries a stale, never-checked
+    # VAT-ID. Before the fix, retrieveAllBPartnerIdsWithVATaxID() only ever looked at headers, so this
+    # partner -- and its location -- would never be reached by the nightly run at all.
+    Given metasfresh contains VATaxID_Config:
+      | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
+      | true                 | false              | 30               | ServiceUnavailable   |
+    And metasfresh contains C_BPartners:
+      | Identifier | Value         |
+      | bp_mixed   | ProcMixedLoc1 |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier | C_BPartner_ID | GLN           |
+      | bpl_mixed  | bp_mixed      | 0123456789050 |
+    And update C_BPartner_Location:
+      | C_BPartner_Location_ID.Identifier | VATaxID    |
+      | bpl_mixed                         | DK13585628 |
+    And metasfresh contains VATaxID_Config:
+      | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
+      | true                 | true               | 30               | ServiceUnavailable   |
+    Then the C_BPartner_VATaxID_Check nightly selection includes C_BPartner 'bp_mixed'
+    And the VAT-ID online checker is stubbed to answer known VAT-IDs, and to report unavailable for the rest:
+      | VATaxID    | VATaxIDStatus |
+      | DK13585628 | Valid         |
+    When the C_BPartner_VATaxID_Check process is run as scheduled
+    Then validate C_BPartner_Location VAT-ID status:
+      | C_BPartner_Location_ID | VATaxIDStatus |
+      | bpl_mixed              | Valid         |
