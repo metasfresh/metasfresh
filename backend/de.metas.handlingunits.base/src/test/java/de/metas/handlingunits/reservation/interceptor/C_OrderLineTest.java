@@ -268,26 +268,32 @@ public class C_OrderLineTest
 	public void productCleared_doesNotThrowAndLeavesThePackingInstructionAlone()
 	{
 		setEnforcePrecisePrice(true);
-		createDefaultForProductPackingInstruction();
+		final I_M_HU_PI_Item_Product piip = createDefaultForProductPackingInstruction();
 		createProductPrice(null);
-		final int packingInstructionBefore = orderLine.getM_HU_PI_Item_Product_ID();
+		givenTheLineAlreadyHasPackingInstruction(piip);
 		clearOrderLineProduct();
 
 		assertThatCode(() -> interceptor.onProductSetOrChanged(orderLine)).doesNotThrowAnyException();
 
-		assertThat(orderLine.getM_HU_PI_Item_Product_ID()).isEqualTo(packingInstructionBefore);
+		assertThat(orderLine.getM_HU_PI_Item_Product_ID()).isEqualTo(piip.getM_HU_PI_Item_Product_ID());
 	}
 
-	/** The business partner is read on the same lookup call and is just as unset-able while editing. */
+	/**
+	 * The business partner is read on the same lookup call and is just as unset-able while editing. Unlike the
+	 * product it needs no early return — the lookup accepts no partner and simply drops that filter — so the
+	 * default must still be applied rather than merely not throwing.
+	 */
 	@Test
-	public void bpartnerCleared_doesNotThrow()
+	public void bpartnerCleared_stillAppliesTheDefault()
 	{
 		setEnforcePrecisePrice(true);
-		createDefaultForProductPackingInstruction();
-		createProductPrice(null);
+		final I_M_HU_PI_Item_Product piip = createDefaultForProductPackingInstruction();
+		createProductPrice(piip);
 		clearOrderLineBPartner();
 
-		assertThatCode(() -> interceptor.onProductSetOrChanged(orderLine)).doesNotThrowAnyException();
+		interceptor.onProductSetOrChanged(orderLine);
+
+		assertThat(orderLine.getM_HU_PI_Item_Product_ID()).isEqualTo(piip.getM_HU_PI_Item_Product_ID());
 	}
 
 	private void clearOrderLineDatePromised()
@@ -434,6 +440,12 @@ public class C_OrderLineTest
 			productPrice.setM_HU_PI_Item_Product(huPiItemProduct);
 		}
 		saveRecord(productPrice);
+	}
+
+	private void givenTheLineAlreadyHasPackingInstruction(@NonNull final I_M_HU_PI_Item_Product piip)
+	{
+		orderLine.setM_HU_PI_Item_Product_ID(piip.getM_HU_PI_Item_Product_ID());
+		saveRecord(orderLine);
 	}
 
 	private void clearOrderLineProduct()
