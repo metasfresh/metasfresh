@@ -23,12 +23,14 @@
 --   AD_Table_Process     541664 (exposes the process on VATaxID_Config, table 542638)
 
 -- 1. The report function
+DROP FUNCTION IF EXISTS VATaxID_Config_Report(NUMERIC);
+
 CREATE OR REPLACE FUNCTION VATaxID_Config_Report(p_VATaxID_Config_ID NUMERIC)
     RETURNS TABLE
             (
                 SeqNo                 NUMERIC,
                 Section                VARCHAR,
-                EntityType             VARCHAR,
+                RecordType             VARCHAR,
                 C_BPartner_ID          NUMERIC,
                 BPartnerValue          VARCHAR,
                 BPartnerName           VARCHAR,
@@ -62,11 +64,11 @@ BEGIN
     RETURN QUERY
 
         -- 1. Count of VAT-IDs per status, partner headers and addresses counted separately
-        SELECT 10::NUMERIC, '1 - Count per status'::VARCHAR, s.EntityType,
+        SELECT 10::NUMERIC, '1 - Count per status'::VARCHAR, s.RecordType,
                NULL::NUMERIC, NULL::VARCHAR, NULL::VARCHAR, NULL::NUMERIC, NULL::VARCHAR, NULL::VARCHAR,
                s.VATaxIDStatus, NULL::TIMESTAMP, s.Cnt::NUMERIC, NULL::VARCHAR
         FROM (
-                 SELECT 'Partner'::VARCHAR AS EntityType, bp.VATaxIDStatus, COUNT(*) AS Cnt
+                 SELECT 'Partner'::VARCHAR AS RecordType, bp.VATaxIDStatus, COUNT(*) AS Cnt
                  FROM C_BPartner bp
                  WHERE bp.AD_Org_ID = v_ad_org_id
                    AND bp.IsActive = 'Y'
@@ -83,11 +85,11 @@ BEGIN
         UNION ALL
 
         -- 2. Partners and addresses with no VAT-ID at all
-        SELECT 20::NUMERIC, '2 - No VAT-ID at all'::VARCHAR, n.EntityType,
+        SELECT 20::NUMERIC, '2 - No VAT-ID at all'::VARCHAR, n.RecordType,
                n.C_BPartner_ID, n.BPartnerValue, n.BPartnerName, n.C_BPartner_Location_ID, n.LocationCity,
                NULL::VARCHAR, NULL::VARCHAR, NULL::TIMESTAMP, NULL::NUMERIC, NULL::VARCHAR
         FROM (
-                 SELECT 'Partner'::VARCHAR AS EntityType, bp.C_BPartner_ID, bp.Value AS BPartnerValue,
+                 SELECT 'Partner'::VARCHAR AS RecordType, bp.C_BPartner_ID, bp.Value AS BPartnerValue,
                         bp.Name AS BPartnerName, NULL::NUMERIC AS C_BPartner_Location_ID,
                         NULL::VARCHAR AS LocationCity
                  FROM C_BPartner bp
@@ -108,11 +110,11 @@ BEGIN
         UNION ALL
 
         -- 3. Checked, but the result is older than the organisation's configured re-check interval
-        SELECT 30::NUMERIC, '3 - Older than re-check interval'::VARCHAR, o.EntityType,
+        SELECT 30::NUMERIC, '3 - Older than re-check interval'::VARCHAR, o.RecordType,
                o.C_BPartner_ID, o.BPartnerValue, o.BPartnerName, o.C_BPartner_Location_ID, o.LocationCity,
                o.VATaxID, o.VATaxIDStatus, o.VATaxIDCheckedAt, NULL::NUMERIC, NULL::VARCHAR
         FROM (
-                 SELECT 'Partner'::VARCHAR AS EntityType, bp.C_BPartner_ID, bp.Value AS BPartnerValue,
+                 SELECT 'Partner'::VARCHAR AS RecordType, bp.C_BPartner_ID, bp.Value AS BPartnerValue,
                         bp.Name AS BPartnerName, NULL::NUMERIC AS C_BPartner_Location_ID,
                         NULL::VARCHAR AS LocationCity, bp.VATaxID, bp.VATaxIDStatus, bp.VATaxIDCheckedAt
                  FROM C_BPartner bp
@@ -137,11 +139,11 @@ BEGIN
         UNION ALL
 
         -- 4. A VAT-ID is present but has never been checked at all
-        SELECT 40::NUMERIC, '4 - Never checked'::VARCHAR, c.EntityType,
+        SELECT 40::NUMERIC, '4 - Never checked'::VARCHAR, c.RecordType,
                c.C_BPartner_ID, c.BPartnerValue, c.BPartnerName, c.C_BPartner_Location_ID, c.LocationCity,
                c.VATaxID, c.VATaxIDStatus, c.VATaxIDCheckedAt, NULL::NUMERIC, NULL::VARCHAR
         FROM (
-                 SELECT 'Partner'::VARCHAR AS EntityType, bp.C_BPartner_ID, bp.Value AS BPartnerValue,
+                 SELECT 'Partner'::VARCHAR AS RecordType, bp.C_BPartner_ID, bp.Value AS BPartnerValue,
                         bp.Name AS BPartnerName, NULL::NUMERIC AS C_BPartner_Location_ID,
                         NULL::VARCHAR AS LocationCity, bp.VATaxID, bp.VATaxIDStatus, bp.VATaxIDCheckedAt
                  FROM C_BPartner bp
@@ -164,11 +166,11 @@ BEGIN
         UNION ALL
 
         -- 5. VAT-ID prefix outside VIES's coverage (offline format check governs instead)
-        SELECT 50::NUMERIC, '5 - Outside VIES coverage'::VARCHAR, u.EntityType,
+        SELECT 50::NUMERIC, '5 - Outside VIES coverage'::VARCHAR, u.RecordType,
                u.C_BPartner_ID, u.BPartnerValue, u.BPartnerName, u.C_BPartner_Location_ID, u.LocationCity,
                u.VATaxID, u.VATaxIDStatus, u.VATaxIDCheckedAt, NULL::NUMERIC, NULL::VARCHAR
         FROM (
-                 SELECT 'Partner'::VARCHAR AS EntityType, bp.C_BPartner_ID, bp.Value AS BPartnerValue,
+                 SELECT 'Partner'::VARCHAR AS RecordType, bp.C_BPartner_ID, bp.Value AS BPartnerValue,
                         bp.Name AS BPartnerName, NULL::NUMERIC AS C_BPartner_Location_ID,
                         NULL::VARCHAR AS LocationCity, bp.VATaxID, bp.VATaxIDStatus, bp.VATaxIDCheckedAt
                  FROM C_BPartner bp
@@ -235,11 +237,11 @@ BEGIN
         --    address) -- always a data-entry problem, never legitimate. COUNT(DISTINCT ...) cannot be a
         --    window function in Postgres, so the duplicate count is a plain GROUP BY joined back onto the
         --    holder rows, not a window function over them.
-        SELECT 80::NUMERIC, '8 - Duplicate VAT-ID across partners'::VARCHAR, h.EntityType,
+        SELECT 80::NUMERIC, '8 - Duplicate VAT-ID across partners'::VARCHAR, h.RecordType,
                h.C_BPartner_ID, h.BPartnerValue, h.BPartnerName, h.C_BPartner_Location_ID, NULL::VARCHAR,
                h.VATaxID, NULL::VARCHAR, NULL::TIMESTAMP, dc.PartnerCount::NUMERIC, NULL::VARCHAR
         FROM (
-                 SELECT 'Partner'::VARCHAR AS EntityType, bp.C_BPartner_ID, bp.Value AS BPartnerValue,
+                 SELECT 'Partner'::VARCHAR AS RecordType, bp.C_BPartner_ID, bp.Value AS BPartnerValue,
                         bp.Name AS BPartnerName, NULL::NUMERIC AS C_BPartner_Location_ID, bp.VATaxID
                  FROM C_BPartner bp
                  WHERE bp.AD_Org_ID = v_ad_org_id
