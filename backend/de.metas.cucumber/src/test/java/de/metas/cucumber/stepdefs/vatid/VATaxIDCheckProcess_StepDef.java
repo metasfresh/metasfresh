@@ -296,9 +296,10 @@ public class VATaxIDCheckProcess_StepDef
 	 * Asserts that {@code C_BPartner} is included in the nightly schedule's own selection — every VAT-ID
 	 * system-wide, per {@link VATaxIDCheckRunService#retrieveAllBPartnerIdsWithVATaxID()} — without
 	 * actually running a check on anyone. This is the read-only counterpart to
-	 * {@link #runProcessAsScheduled()}: that step only proves the branch does not crash, this step proves
-	 * WHAT it selects, so the two together cover the nightly path without either one needing to execute a
-	 * real online check against the shared cucumber database's other features' fixtures.
+	 * {@link #runProcessAsScheduled()}: this step proves WHAT the nightly sweep selects, independently of
+	 * whichever of that step's two uses (no-op-safe or genuinely-executing, see its own javadoc) a scenario
+	 * chooses to also run — so a scenario can pin down the selection without needing the online check
+	 * switched on at all.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
