@@ -97,8 +97,8 @@ Feature: Order to delivery instructions
   }
   """
     And metasfresh contains C_OrderLines:
-      | Identifier  | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.DateOrdered | OPT.DatePromised     | OPT.M_AttributeSetInstance_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_Currency_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.C_BPartner_Vendor_ID.Identifier |
-      | orderLine_1 | orderSO_Unchanged     | product                 | 2          | 2023-02-03      | 2023-05-10T00:00:00Z | line1ASI                                 | customer                     | currency                     | customerLocation                      | vendor                              |
+      | Identifier  | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.DateOrdered | OPT.DatePromised     | OPT.M_AttributeSetInstance_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_Currency_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.C_BPartner_Vendor_ID.Identifier | OPT.M_Shipper_ID.Identifier |
+      | orderLine_1 | orderSO_Unchanged     | product                 | 2          | 2023-02-03      | 2023-05-10T00:00:00Z | line1ASI                                 | customer                     | currency                     | customerLocation                      | vendor                              | shipper_DHL                 |
 
     And metasfresh contains M_AttributeSetInstance with identifier "line2ASI":
   """
@@ -113,8 +113,8 @@ Feature: Order to delivery instructions
   """
 
     And metasfresh contains C_OrderLines:
-      | Identifier  | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.DateOrdered | OPT.DatePromised     | OPT.M_AttributeSetInstance_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_Currency_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.C_BPartner_Vendor_ID.Identifier |
-      | orderLine_2 | orderSO_Unchanged     | product                 | 2          | 2023-02-03      | 2023-04-10T00:00:00Z | line2ASI                                 | customer                     | currency                     | customerLocation                      | vendor                              |
+      | Identifier  | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.DateOrdered | OPT.DatePromised     | OPT.M_AttributeSetInstance_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_Currency_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.C_BPartner_Vendor_ID.Identifier | OPT.M_Shipper_ID.Identifier |
+      | orderLine_2 | orderSO_Unchanged     | product                 | 2          | 2023-02-03      | 2023-04-10T00:00:00Z | line2ASI                                 | customer                     | currency                     | customerLocation                      | vendor                              | shipper_DPD                 |
 
     When the order identified by orderSO_Unchanged is completed
 
@@ -305,8 +305,8 @@ Feature: Order to delivery instructions
   }
   """
     And metasfresh contains C_OrderLines:
-      | Identifier    | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.DateOrdered | OPT.DatePromised     | OPT.M_AttributeSetInstance_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_Currency_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.C_BPartner_Vendor_ID.Identifier |
-      | orderLine_7.1 | orderSO_7             | product_7               | 2          | 2023-02-09      | 2023-05-10T00:00:00Z | lineASI_7.1                              | customer                     | currency                     | customerLocation                      | vendor_7                            |
+      | Identifier    | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.DateOrdered | OPT.DatePromised     | OPT.M_AttributeSetInstance_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_Currency_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.C_BPartner_Vendor_ID.Identifier | OPT.M_Shipper_ID.Identifier |
+      | orderLine_7.1 | orderSO_7             | product_7               | 2          | 2023-02-09      | 2023-05-10T00:00:00Z | lineASI_7.1                              | customer                     | currency                     | customerLocation                      | vendor_7                            | shipper_DHL                 |
 
     When the order identified by orderSO_7 is completed
 
@@ -339,8 +339,8 @@ Feature: Order to delivery instructions
   }
   """
     And metasfresh contains C_OrderLines:
-      | Identifier    | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.DateOrdered | OPT.DatePromised     | OPT.M_AttributeSetInstance_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_Currency_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.C_BPartner_Vendor_ID.Identifier |
-      | orderLine_7.2 | orderSO_7             | product_7               | 4          | 2023-02-09      | 2023-04-10T00:00:00Z | lineASI_7.2                              | customer                     | currency                     | customerLocation                      | vendor_7                            |
+      | Identifier    | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.DateOrdered | OPT.DatePromised     | OPT.M_AttributeSetInstance_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_Currency_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.C_BPartner_Vendor_ID.Identifier | OPT.M_Shipper_ID.Identifier |
+      | orderLine_7.2 | orderSO_7             | product_7               | 4          | 2023-02-09      | 2023-04-10T00:00:00Z | lineASI_7.2                              | customer                     | currency                     | customerLocation                      | vendor_7                            | shipper_DPD                 |
 
     When the order identified by orderSO_7 is completed
 
