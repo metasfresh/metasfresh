@@ -129,6 +129,11 @@ public class JsonDeliveryRequest
 				return externalSystemValue;
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_IS_PRE_ADVICE_REQUIRED:
 				return preAdviceRequired;
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_CUSTOM_VALUE_STRING_1:
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_CUSTOM_VALUE_STRING_2:
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_CUSTOM_VALUE_STRING_3:
+				// the attribute value name IS the Carrier_Config column / shipper-config property key
+				return shipperConfig.getAdditionalProperty(attributeValue);
 			default:
 				return null; // attribute not available at request level — filtered out by caller
 		}

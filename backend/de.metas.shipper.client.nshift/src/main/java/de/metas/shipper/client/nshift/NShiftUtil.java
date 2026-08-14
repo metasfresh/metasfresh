@@ -145,9 +145,20 @@ public class NShiftUtil
 		Check.assumeNotEmpty(contact != null ? contact.getEmailAddress() : null, IllegalStateException.class,
 				role + " Email is mandatory but is missing or blank.");
 
-		return buildNShiftAddressBuilder(commonAddress, contact, kind)
-				.attention(attention)
-				.build();
+		// Optional CustNo, resolved from mapping rules (e.g. a CustomValueString1 shipper-config value routed via a
+		// SenderCustNo / ReceiverCustNo rule). Unset -> getSingleValue returns "" -> omitted (JsonAddress is NON_NULL).
+		final String custNoAttributeType = kind == JsonAddressKind.SENDER
+				? DeliveryMappingConstants.ATTRIBUTE_TYPE_SENDER_CUSTNO
+				: DeliveryMappingConstants.ATTRIBUTE_TYPE_RECEIVER_CUSTNO;
+		final String custNo = mappingConfigs.getSingleValue(custNoAttributeType, valueProvider);
+
+		final JsonAddress.JsonAddressBuilder addressBuilder = buildNShiftAddressBuilder(commonAddress, contact, kind)
+				.attention(attention);
+		if (Check.isNotBlank(custNo))
+		{
+			addressBuilder.custNo(custNo);
+		}
+		return addressBuilder.build();
 	}
 
 	/**

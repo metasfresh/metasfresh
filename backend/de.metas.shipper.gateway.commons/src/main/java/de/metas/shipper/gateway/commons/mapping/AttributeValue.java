@@ -53,6 +53,10 @@ public enum AttributeValue implements ReferenceListAwareEnum
 	IS_PRE_ADVICE_REQUIRED(DeliveryMappingConstants.ATTRIBUTE_VALUE_IS_PRE_ADVICE_REQUIRED),
 	INCOTERMS_VALUE(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_IncotermsValue),
 	EXTERNAL_SYSTEM_VALUE(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ExternalSystemValue),
+	// Generic values read from Carrier_Config additional properties; seeded as AD_Ref_List values by migration 5819100.
+	CUSTOM_VALUE_STRING_1(DeliveryMappingConstants.ATTRIBUTE_VALUE_CUSTOM_VALUE_STRING_1),
+	CUSTOM_VALUE_STRING_2(DeliveryMappingConstants.ATTRIBUTE_VALUE_CUSTOM_VALUE_STRING_2),
+	CUSTOM_VALUE_STRING_3(DeliveryMappingConstants.ATTRIBUTE_VALUE_CUSTOM_VALUE_STRING_3),
 
 	// From parcel
 	TOP_LEVEL_TYPE(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_TopLevelType),
