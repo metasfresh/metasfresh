@@ -344,7 +344,7 @@ Feature: The VAT-ID check process runs on a selection of Business Partners
   @from:cucumber
   @Id:S31060_10
   Scenario: The RequestSent evidence row survives a check whose outcome is never learned
-    # AC12: VATaxID_CheckLog is the feature's legal evidence that a check was attempted, even when the
+    # VATaxID_CheckLog is the feature's legal evidence that a check was attempted, even when the
     # answer never arrives. writeRequestSent must therefore commit BEFORE the online service is even
     # called, independently of the per-item transaction the check-and-refresh unit runs in -- otherwise
     # the online checker throwing (or a later order-tax refresh failing) rolls the whole unit back,
