@@ -340,3 +340,32 @@ Feature: The VAT-ID check process runs on a selection of Business Partners
     Then validate C_BPartner_Location VAT-ID status:
       | C_BPartner_Location_ID | VATaxIDStatus |
       | bpl_mixed              | Valid         |
+
+  @from:cucumber
+  @Id:S31060_10
+  Scenario: The RequestSent evidence row survives a check whose outcome is never learned
+    # AC12: VATaxID_CheckLog is the feature's legal evidence that a check was attempted, even when the
+    # answer never arrives. writeRequestSent must therefore commit BEFORE the online service is even
+    # called, independently of the per-item transaction the check-and-refresh unit runs in -- otherwise
+    # the online checker throwing (or a later order-tax refresh failing) rolls the whole unit back,
+    # taking the evidence row with it even though the request really was sent.
+    Given no VATaxID_CheckLog records exist for VATaxID 'HU12892312'
+    And metasfresh contains VATaxID_Config:
+      | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
+      | true                 | false              | 30               | ServiceUnavailable   |
+    And metasfresh contains C_BPartners:
+      | Identifier  | Value         | VATaxID    |
+      | bp_evidence | ProcEvidence1 | HU12892312 |
+    And metasfresh contains VATaxID_Config:
+      | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
+      | true                 | true               | 30               | ServiceUnavailable   |
+    And the VAT-ID online checker is stubbed to throw an exception
+    When the C_BPartner_VATaxID_Check process is run for selection with MaxChecksPerRun '':
+      | C_BPartner_ID |
+      | bp_evidence   |
+    Then validate C_BPartner VAT-ID status:
+      | C_BPartner_ID | VATaxIDStatus |
+      | bp_evidence   | NotChecked    |
+    And validate VATaxID_CheckLog records of C_BPartner 'bp_evidence':
+      | VATaxID    | VATaxIDStatus |
+      | HU12892312 | RequestSent   |
