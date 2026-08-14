@@ -164,8 +164,8 @@ Feature: The VAT-ID check process runs on a selection of Business Partners
       | bp_deChecked  | Valid         |
     And the VAT-ID check process run reports member state 'EL' skipped 1 VAT-IDs
     # Both are each's own first-ever check (NotChecked -> its result), so neither logs a per-record
-    # status-changed line -- proving both halves of AC16's per-record policy in one run: the skipped
-    # target (never checked at all) and the first-run suppression (checked, but still no line).
+    # status-changed line -- proving both halves of the per-record logging policy in one run: the
+    # skipped target (never checked at all) and the first-run suppression (checked, but still no line).
     And the VAT-ID check process run reports no status-changed line for VATaxID 'EL094259216'
     And the VAT-ID check process run reports no status-changed line for VATaxID 'DE136695976'
 
@@ -211,18 +211,39 @@ Feature: The VAT-ID check process runs on a selection of Business Partners
     Given no VATaxID_CheckLog records exist for VATaxID 'IT00743110157'
     And metasfresh contains VATaxID_Config:
       | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
-      | true                 | false              | 30               | ServiceUnavailable   |
+      | true                 | true               | 30               | ServiceUnavailable   |
     And metasfresh contains C_BPartners:
       | Identifier   | Value         | VATaxID       |
       | bp_scheduled | ProcSchedRun1 | IT00743110157 |
     # bp_scheduled is never put in any selection below -- the scheduled run has none at all -- so its
     # presence in the nightly selection proves the selection reaches every VAT-ID system-wide, not only a
-    # selected few. The online check stays OFF for this organisation throughout: a "no selection" sweep
-    # reaches every OTHER feature's VAT-ID-bearing fixtures on this shared database too, and this is the
-    # only way to prove the selection and the branch without actually checking any of them -- see the
-    # step-defs' own javadoc.
+    # selected few. The online check is ON only long enough for the read-only assertion right below --
+    # which never executes a real check, so nothing is called while it is -- and is switched back OFF
+    # before the actual scheduled run further down: a "no selection" sweep reaches every OTHER feature's
+    # VAT-ID-bearing fixtures on this shared database too, and this is the only way to prove the selection
+    # and the branch without actually checking any of them -- see the step-defs' own javadoc.
     Then the C_BPartner_VATaxID_Check nightly selection includes C_BPartner 'bp_scheduled'
+    And metasfresh contains VATaxID_Config:
+      | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
+      | true                 | false              | 30               | ServiceUnavailable   |
     When the C_BPartner_VATaxID_Check process is run as scheduled
     Then validate C_BPartner VAT-ID status:
       | C_BPartner_ID | VATaxIDStatus |
       | bp_scheduled  | NotChecked    |
+
+  @from:cucumber
+  @Id:S31060_7
+  Scenario: The nightly schedule's own selection excludes an organisation that has the online check switched off
+    Given metasfresh contains VATaxID_Config:
+      | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
+      | true                 | false              | 30               | ServiceUnavailable   |
+    And metasfresh contains C_BPartners:
+      | Identifier | Value        | VATaxID        |
+      | bp_viesOff | ProcViesOff1 | NL004495445B01 |
+    # bp_viesOff's own organisation has the online check switched off, so an actual check of it can never
+    # do anything: VATaxIDCheckService#check returns before touching the online service or writing
+    # anything, and the record stays NotChecked forever. A never-checked record sorts first of all in the
+    # nightly candidate list -- if such a record were still LISTED as due, it would permanently occupy the
+    # front of every night's selection and could consume the whole MaxChecksPerRun budget without ever
+    # making progress, starving out every other, checkable record behind it.
+    Then the C_BPartner_VATaxID_Check nightly selection does not include C_BPartner 'bp_viesOff'

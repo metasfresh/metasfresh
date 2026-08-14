@@ -224,7 +224,7 @@ public class VATaxIDCheckProcess_StepDef
 
 	/**
 	 * Asserts that the last process run logged exactly the given call count and average response time —
-	 * the AC16 run-summary line ("calls made, and average response time").
+	 * the run-summary line reporting how many online calls the run made.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
@@ -259,9 +259,9 @@ public class VATaxIDCheckProcess_StepDef
 	/**
 	 * Asserts that the last process run logged NO status-changed line for {@code vataxID} — the absence
 	 * that proves both "no line for an unchanged record" (a re-check that reconfirms the same status) and
-	 * "no status lines at all on a first run" (every record's very first check), per AC16. A test that
-	 * only checked the presence of the run-summary lines would pass even against a logger that logs every
-	 * record unconditionally; this is the assertion that would actually catch that.
+	 * "no status lines at all on a first run" (every record's very first check). A test that only checked
+	 * the presence of the run-summary lines would pass even against a logger that logs every record
+	 * unconditionally; this is the assertion that would actually catch that.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
@@ -302,14 +302,49 @@ public class VATaxIDCheckProcess_StepDef
 	@Then("the C_BPartner_VATaxID_Check nightly selection includes C_BPartner {string}")
 	public void assertNightlySelectionIncludes(@NonNull final String bpartnerIdentifier)
 	{
-		final I_C_BPartner bpartnerRecord = bpartnerTable.get(bpartnerIdentifier);
-		final BPartnerId expectedId = BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID());
-
+		final BPartnerId expectedId = resolveBPartnerId(bpartnerIdentifier);
 		final ImmutableList<BPartnerId> nightlySelection = checkRunService.retrieveAllBPartnerIdsWithVATaxID();
 
 		assertThat(nightlySelection)
 				.as("C_BPartner_VATaxID_Check nightly selection must include C_BPartner `%s` (%s)", bpartnerIdentifier, expectedId)
 				.contains(expectedId);
+	}
+
+	/**
+	 * The negation of {@link #assertNightlySelectionIncludes(String)}: proves a record is kept OUT of the
+	 * nightly candidate list, not merely deprioritised within it. This matters because the nightly selection
+	 * is ordered least-recently-checked-first with never-checked records sorting first of all (see
+	 * {@code VATaxIDCheckRunService#retrieveAllBPartnerIdsWithVATaxID()}) — a record that can never actually
+	 * be checked (its own organisation has the online check switched off) but is still LISTED as due would
+	 * permanently sort to the front and could occupy the whole {@code MaxChecksPerRun} budget every night
+	 * without ever making progress, starving out every other, checkable record behind it. Excluding such a
+	 * record from the list entirely, rather than just leaving it low priority, is what this step verifies.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_BPartner_ID</b> — (required, identifier-ref) partner expected to be absent from the nightly selection
+	 * @cucumber.depends StepDefData: C_BPartner_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then the C_BPartner_VATaxID_Check nightly selection does not include C_BPartner 'bp_viesOff'
+	 * </pre>
+	 */
+	@Then("the C_BPartner_VATaxID_Check nightly selection does not include C_BPartner {string}")
+	public void assertNightlySelectionExcludes(@NonNull final String bpartnerIdentifier)
+	{
+		final BPartnerId expectedId = resolveBPartnerId(bpartnerIdentifier);
+		final ImmutableList<BPartnerId> nightlySelection = checkRunService.retrieveAllBPartnerIdsWithVATaxID();
+
+		assertThat(nightlySelection)
+				.as("C_BPartner_VATaxID_Check nightly selection must NOT include C_BPartner `%s` (%s)", bpartnerIdentifier, expectedId)
+				.doesNotContain(expectedId);
+	}
+
+	@NonNull
+	private BPartnerId resolveBPartnerId(@NonNull final String bpartnerIdentifier)
+	{
+		final I_C_BPartner bpartnerRecord = bpartnerTable.get(bpartnerIdentifier);
+		return BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID());
 	}
 
 	private void assertLastRunLogContains(@NonNull final String expectedSuffix)
