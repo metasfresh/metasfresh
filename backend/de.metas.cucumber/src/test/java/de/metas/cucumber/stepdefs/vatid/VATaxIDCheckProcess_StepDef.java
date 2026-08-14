@@ -158,16 +158,24 @@ public class VATaxIDCheckProcess_StepDef
 	 * run (no table, no where-clause, no single record), as opposed to
 	 * {@link #runProcessForSelection(String, DataTable)}, which always carries one.
 	 *
-	 * <p><b>Only proves the branch does not throw {@code @NoSelection@}</b> — it deliberately does NOT
-	 * assert anything that depends on what the run actually processed. The nightly path reaches every
-	 * VAT-ID system-wide (see {@link VATaxIDCheckRunService#retrieveAllBPartnerIdsWithVATaxID()}), which
-	 * on the shared cucumber database includes every other feature's VAT-ID-bearing fixtures, not only
-	 * this scenario's own — so a scenario using this step must run with the online check switched OFF for
-	 * this organisation, making the run a guaranteed no-op for every record it reaches (format
-	 * re-validation of an already-saved, already-valid value, or — for a leftover value that bypassed the
-	 * save-time gate — a caught-and-logged warning with no write at all; see
-	 * {@link #assertNightlySelectionIncludes(String)} for how the selection itself is verified instead,
-	 * without executing a real check on anyone).
+	 * <p>The nightly path reaches every VAT-ID system-wide (see
+	 * {@link VATaxIDCheckRunService#retrieveAllBPartnerIdsWithVATaxID()}), which on the shared cucumber
+	 * database includes every other feature's VAT-ID-bearing fixtures, not only this scenario's own. Two
+	 * genuinely different uses of this step therefore coexist, and the caller picks the one matching its
+	 * intent:
+	 * <ul>
+	 *   <li><b>No-op-safe use</b> — run with the online check switched OFF for this organisation. Every
+	 *   record the sweep reaches is skipped before any online call, so the run is a real, but harmless,
+	 *   pass over the whole database. Combine with {@link #assertNightlySelectionIncludes(String)} /
+	 *   {@link #assertNightlySelectionExcludes(String)} to verify what the selection contains without ever
+	 *   executing a check on anyone.</li>
+	 *   <li><b>Genuinely-executing use</b> — run with the online check switched ON and the checker stubbed
+	 *   leniently ({@code the VAT-ID online checker is stubbed to answer known VAT-IDs, and to report
+	 *   unavailable for the rest}), which answers every VAT-ID the sweep reaches — including sibling
+	 *   scenarios' own leftover fixtures — instead of failing loudly on an unprogrammed one. This is how
+	 *   {@code S31060_6}/{@code _8}/{@code _9} prove the run actually persists a real outcome
+	 *   ({@code bp_scheduled}/{@code bp_pending}/{@code bpl_mixed} → {@code Valid}).</li>
+	 * </ul>
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
@@ -177,28 +185,6 @@ public class VATaxIDCheckProcess_StepDef
 	 */
 	@When("the C_BPartner_VATaxID_Check process is run as scheduled")
 	public void runProcessAsScheduled()
-	{
-		runProcessAsScheduled(null);
-	}
-
-	/**
-	 * {@link #runProcessAsScheduled()}, but with an explicit {@code MaxChecksPerRun} — needed to demonstrate
-	 * the nightly run's own throttling and ordering (e.g. a persistently-failing target must not occupy the
-	 * whole budget night after night) without waiting for a naturally-sized selection.
-	 *
-	 * @cucumber.stepdef
-	 * @cucumber.example
-	 * <pre>
-	 * When the C_BPartner_VATaxID_Check process is run as scheduled with MaxChecksPerRun '1'
-	 * </pre>
-	 */
-	@When("the C_BPartner_VATaxID_Check process is run as scheduled with MaxChecksPerRun {string}")
-	public void runProcessAsScheduledWithMaxChecksPerRun(@NonNull final String maxChecksPerRunText)
-	{
-		runProcessAsScheduled(Integer.parseInt(maxChecksPerRunText.trim()));
-	}
-
-	private void runProcessAsScheduled(@Nullable final Integer maxChecksPerRun)
 	{
 		final AdProcessId processId = adProcessDAO.retrieveProcessIdByValue(PROCESS_VALUE);
 		assertThat(processId).as("AD_Process with Value=%s must exist", PROCESS_VALUE).isNotNull();
@@ -218,11 +204,6 @@ public class VATaxIDCheckProcess_StepDef
 				.setCreateTemporaryCtx();
 		// deliberately no setTableName/setWhereClause/setRecord_ID: a scheduled run selects nothing,
 		// per the class javadoc.
-
-		if (maxChecksPerRun != null)
-		{
-			builder.addParameter(PARA_MaxChecksPerRun, maxChecksPerRun);
-		}
 
 		final ProcessExecutor executor = builder
 				.buildAndPrepareExecution()
