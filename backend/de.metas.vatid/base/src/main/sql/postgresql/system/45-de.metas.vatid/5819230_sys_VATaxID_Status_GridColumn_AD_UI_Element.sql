@@ -34,10 +34,25 @@
 --   tab 220    (window 123, C_BPartner)          -- ..., AD_Language 80, AD_Org_ID 90   -> 85
 --   tab 222    (window 123, C_BPartner_Location) -- ..., VisitorsAddress 110, AD_Org_ID 120 -> 115
 --   tab 540843 (window 540354, C_BPartner)       -- ..., URL 120, no AD_Org_ID column   -> 130
--- Note for tab 540843: this window keeps its VAT-ID behind the advanced-edit toggle
--- (AD_UI_Element.IsAdvancedField='Y'). The grid layout does not filter on IsAdvancedField, so the
--- column renders; the status is readable in the grid while the VAT-ID itself stays in advanced edit,
--- which is the point of a status column.
+-- OPEN ITEM for tab 540843 -- the UPDATE below is currently a NO-OP and needs a design decision.
+-- This window keeps its whole VAT-ID block behind the advanced-edit toggle
+-- (AD_UI_Element.IsAdvancedField='Y'), and an advanced field can NEVER become a grid column in the
+-- WebUI: the grid-layout builder itself does not filter on IsAdvancedField, but the layer that
+-- serialises a view layout for the client drops every advanced element, and the list-view layout has
+-- no way to ask for them. Measured against a running WebUI, not inferred: with this script applied,
+-- the rendered grid of window 540354 still shows its 12 pre-existing columns and no VATaxIDStatus,
+-- while windows/tabs whose element is IsAdvancedField='N' (tabs 220 and 222 below) do show it. Three
+-- unrelated core windows behave the same way -- 134/tab 249 (Help), 108/tab 118 (Description),
+-- 232/tab 402 (Priority, DueType) each carry an element with IsAdvancedField='Y' AND
+-- IsDisplayedGrid='Y', and none of those columns renders either. 73 such elements exist in core, so
+-- the combination is common and has always been inert.
+-- Resolving it requires a choice that is outside the "make the status a grid column" decision:
+--   (a) also set IsAdvancedField='N' on element 652921 -- the column then renders, but the status
+--       additionally appears on this window's normal single-row form, in a section that today shows
+--       nothing outside advanced edit, and it stops mirroring VATaxID's own placement here; or
+--   (b) accept that this window has no status grid column while its VAT-ID lives in advanced edit,
+--       and set IsDisplayedGrid back to 'N' for honesty.
+-- The UPDATE is left in place because it is the required half of (a) and harmless under (b).
 --
 -- The one VATaxIDStatus placement that was already correct is left untouched: on the VAT-ID check-log
 -- window the AD_UI_Element row was created with IsDisplayedGrid='Y' / SeqNoGrid=40 from the start.
@@ -58,7 +73,8 @@ SET IsDisplayedGrid = 'Y', SeqNoGrid = 115,
     Updated = TO_TIMESTAMP('2026-08-14 19:30:11', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
 WHERE AD_UI_Element_ID = 652915;
 
--- tab 540843 "Geschäftspartner" of window 540354 -- appended after URL (120)
+-- tab 540843 "Geschäftspartner" of window 540354 -- appended after URL (120).
+-- NO-OP until the advanced-edit question above is decided; see "OPEN ITEM for tab 540843".
 UPDATE AD_UI_Element
 SET IsDisplayedGrid = 'Y', SeqNoGrid = 130,
     Updated = TO_TIMESTAMP('2026-08-14 19:30:12', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100

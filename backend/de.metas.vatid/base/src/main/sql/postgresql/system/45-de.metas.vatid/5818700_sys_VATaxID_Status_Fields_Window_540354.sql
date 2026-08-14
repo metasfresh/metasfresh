@@ -21,9 +21,14 @@
 -- AD_UI_Element -- the rows with IsDisplayedGrid='Y', ordered by AD_UI_Element.SeqNoGrid.
 -- AD_Field.IsDisplayedGrid and AD_Field.SeqNoGrid have no WebUI consumer; they are read by the
 -- generator process that seeds AD_UI_Element rows from AD_Field rows, and by the legacy Swing client.
--- So the grid decision below did not take effect. Script 5819230 implements it by setting
--- AD_UI_Element.IsDisplayedGrid='Y' plus a real SeqNoGrid on the VATaxIDStatus AD_UI_Element row
--- created here. VATaxID's own grid visibility is left as core has it -- out of scope for this change.
+-- So the grid decision below did not take effect. Script 5819230 sets AD_UI_Element.IsDisplayedGrid='Y'
+-- plus a real SeqNoGrid on the VATaxIDStatus AD_UI_Element row created here -- but on THIS window that
+-- is still not enough, and 5819230 documents the open item: the whole VAT-ID block sits in the
+-- advanced-edit group here (IsAdvancedField='Y'), and an advanced element is dropped when a view
+-- layout is serialised for the client, so it can never be a grid column. Making the status a grid
+-- column on window 540354 additionally requires taking it out of advanced edit, which would stop it
+-- mirroring VATaxID's placement on this window -- a design decision, not a flag fix. VATaxID's own
+-- grid visibility is left as core has it -- out of scope for this change.
 --
 -- Values mirrored from VATaxID on tab 540843, read live from the DB before writing:
 --   AD_Field       IsDisplayed Y, IsDisplayedGrid Y, SeqNo 110, SeqNoGrid 80
