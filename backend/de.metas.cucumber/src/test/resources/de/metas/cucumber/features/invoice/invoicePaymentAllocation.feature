@@ -3357,6 +3357,7 @@ Feature: invoice payment allocation
   @allure.label.feature:F00700_Invoicing
   @allure.label.epic:E0225_Accounting
   @allure.label.feature:F01010_Automatic_Accounting
+  @allure.label.feature:F01010.5_Customer_Invoice_and_Credit_Memo
   @F00700
   Scenario: sales credit memo with early-payment discount allocated against sales invoice - allocation must balance
     # The customer's payment term grants 1% Skonto.
