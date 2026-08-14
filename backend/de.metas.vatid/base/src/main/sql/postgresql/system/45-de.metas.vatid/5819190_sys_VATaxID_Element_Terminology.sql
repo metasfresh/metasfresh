@@ -2,16 +2,15 @@
 -- already used in the AD_Message text and throughout this issue's own artefacts. Before this
 -- script the element read "Umsatzsteuer ID" in de_DE and "Umsatzsteuer-ID" in de_CH.
 --
--- Usage enumerated on both the workspace stack (22532) and the customer-faithful DB (34860)
--- before mutating, per metasfresh-designing-windows Sec.4 -- 9 AD_Column rows (C_BPartner,
+-- Usage was enumerated against the live DB before mutating: 9 AD_Column rows (C_BPartner,
 -- C_BPartner_Location, C_BPartner_QuickInput, C_Fiscal_Representation, C_VAT_SmallBusiness,
 -- EDI_cctop_119_v, EDI_cctop_invoic_v, Intrastat_Report_Detail_V, and this module's own
 -- VATaxID_CheckLog) plus 1 AD_Process_Para (Initial Setup Wizard's VATaxID parameter). No
 -- AD_Field.AD_Name_ID override, no AD_Window, no AD_Tab reference this element. *USt-IdNr.*
 -- reads correctly in every one of those 10 usages, so the shared element is mutated, not forked.
 --
--- en_US already reads "VAT ID" with IsTranslated='Y' on both DBs -- left untouched. de_CH gets
--- the identical de_DE text (no Eszett involved, so no Swiss-convention transform is needed).
+-- en_US already reads "VAT ID" with IsTranslated='Y' -- left untouched. de_CH gets the
+-- identical de_DE text (no Eszett involved, so no Swiss-convention transform is needed).
 
 -- IDs allocated from idserver.metas.de:
 --   AD_MigrationScript 5819190 (this file's prefix)
