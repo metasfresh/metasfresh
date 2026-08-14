@@ -510,32 +510,48 @@ public class VATaxIDCheckRunService
 	 * of the check that triggered it — leaving refreshed order-line tax with no committed check to justify
 	 * it if the check's own write had failed, an inconsistency worse than the alternative (a refresh failure
 	 * rolling back an otherwise-successful check, to be retried on the next run).
+	 *
+	 * <p><b>Two separate {@code try}/{@code catch} blocks, not one</b> — the stamp attempt and the
+	 * check-and-refresh unit fail in ways an operator needs to tell apart. A stamp-write failure means the
+	 * check for this target was never even attempted (see {@link #stampAttemptInOwnTrx}'s own javadoc for
+	 * why that is an accepted residual risk, not a defended-against one) and leaves no other trace anywhere
+	 * — no {@code VATaxID_CheckLog} row exists either, since {@code writeRequestSent} runs only once the
+	 * check itself starts. A check-and-refresh failure, by contrast, means the attempt WAS made and is
+	 * already durably recorded. Logging both under the same message would make the more useful, rarer
+	 * signal indistinguishable from the routine one.
 	 */
 	private void checkOneInOwnTrx(@Nullable final PInstanceId pinstanceId, @NonNull final CheckTarget checkTarget)
 	{
 		try
 		{
-			// The attempt stamp is DELIBERATELY inside this same try/catch, even though it runs in its own,
-			// separately-committed transaction (see stampAttemptInOwnTrx's javadoc) — the isolation that
-			// method's javadoc documents is about surviving the CHECK's rollback, not about being exempt
-			// from this target's own failure containment. Without this, a transient failure stamping just
-			// ONE target (e.g. a row deleted concurrently between selection and here, a DB hiccup opening
-			// the new transaction) would propagate out of this method, out of the run() loop — which has no
-			// try/catch of its own — and abort the ENTIRE run for every target still queued behind it: the
-			// same "one bad record breaks it for everyone behind it" shape this whole mechanism exists to
-			// prevent, just relocated from "starves the budget" to "hard-aborts the run".
 			stampAttemptInOwnTrx(checkTarget);
+		}
+		catch (final Exception ex)
+		{
+			// The stamp write itself failed -- the check-and-refresh unit below never even starts, so
+			// neither VATaxIDCheckedAt nor VATaxIDLastAttemptedAt advances for this target this run (see
+			// stampAttemptInOwnTrx's javadoc). Reported distinctly from an ordinary check failure (below):
+			// this log line is the ONLY place this failure can surface at all.
+			Loggables.withWarnLoggerToo(logger).addLog(
+					"VAT-ID check attempt-stamp write failed for {}: {} -- the check for this target was NOT "
+							+ "attempted this run; it will keep sorting to the front of the nightly queue and "
+							+ "waste one MaxChecksPerRun slot every run until the stamp write succeeds.",
+					checkTarget.getLogLabel(), ex.getMessage());
+			return;
+		}
 
+		try
+		{
 			// Isolation from every OTHER target's transaction in this run (see the method javadoc above) —
 			// each target's check-plus-refresh must commit or fail as its own independent unit.
 			trxManager.callInNewTrx(() -> checkAndRefreshIfStatusChanged(pinstanceId, checkTarget));
 		}
 		catch (final Exception ex)
 		{
-			// One target's failure (a throwing checker, a value the format re-check rejects, a failure to
-			// stamp the attempt, or — per the message wrapping below — a refresh failure) must not abort the
-			// run for the rest of the selection. Deliberately worded to not claim the check itself failed:
-			// the wrapped message below already says so explicitly when that is not what happened.
+			// One target's failure (a throwing checker, a value the format re-check rejects, or — per the
+			// message wrapping below — a refresh failure) must not abort the run for the rest of the
+			// selection. Deliberately worded to not claim the check itself failed: the wrapped message below
+			// already says so explicitly when that is not what happened.
 			Loggables.withWarnLoggerToo(logger)
 					.addLog("VAT-ID check processing failed for {}: {}", checkTarget.getLogLabel(), ex.getMessage());
 		}
@@ -554,6 +570,18 @@ public class VATaxIDCheckRunService
 	 * {@code callInNewTrx} block — a rolled-back check would erase the very evidence that an attempt was
 	 * made, reproducing the exact defect this mechanism exists to prevent. A genuinely independent,
 	 * already-committed transaction is therefore not a shortcut here; it is the mechanism.
+	 *
+	 * <p><b>This method's own chronic failure is an accepted residual risk, not a defended-against one.</b>
+	 * If this write itself fails on every attempt for one target — row-lock contention with an unrelated job
+	 * touching the same record, or a save-veto interceptor unconnected to VAT-ID checking — that target's
+	 * {@code VATaxIDLastAttemptedAt} never advances either, and {@link #checkOneInOwnTrx} logs it distinctly
+	 * from an ordinary check failure rather than retrying it differently. Because due-ness and ordering are
+	 * decoupled (class javadoc, "Attempt vs success"), such a target sorts first on every run but consumes
+	 * only its own {@code MaxChecksPerRun} slot each time — it does not crowd out any other target, unlike
+	 * the original defect this whole mechanism exists to prevent. Not hardened further (e.g. an exclude-
+	 * after-N-failures counter): ordinary Postgres constraint semantics make a write failure on an
+	 * already-selectable row — updating one nullable column — genuinely rare, and a chronic occurrence is
+	 * meant to be diagnosed from the run log this method's caller writes, not auto-excluded.
 	 */
 	private void stampAttemptInOwnTrx(@NonNull final CheckTarget checkTarget)
 	{
