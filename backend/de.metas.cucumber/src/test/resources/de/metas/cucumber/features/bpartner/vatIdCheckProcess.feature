@@ -208,27 +208,30 @@ Feature: The VAT-ID check process runs on a selection of Business Partners
   @from:cucumber
   @Id:S31060_6
   Scenario: The nightly schedule runs the process with no selection, covering every VAT-ID system-wide
-    Given no VATaxID_CheckLog records exist for VATaxID 'EE100594102'
+    Given no VATaxID_CheckLog records exist for VATaxID 'IT00743110157'
     And metasfresh contains VATaxID_Config:
       | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
       | true                 | false              | 30               | ServiceUnavailable   |
     And metasfresh contains C_BPartners:
-      | Identifier   | Value         | VATaxID     |
-      | bp_scheduled | ProcSchedRun1 | EE100594102 |
+      | Identifier   | Value         | VATaxID       |
+      | bp_scheduled | ProcSchedRun1 | IT00743110157 |
     And metasfresh contains VATaxID_Config:
       | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
       | true                 | true               | 30               | ServiceUnavailable   |
     # bp_scheduled is never put in any selection below -- the scheduled run has none at all -- so its
     # status flipping proves the run reached every VAT-ID system-wide, not only a selected few. Every
     # OTHER VAT-ID this system-wide run happens to reach (leftover fixtures of earlier scenarios) gets
-    # the lenient default instead of failing the scenario outright.
+    # the lenient default instead of failing the scenario outright. IT00743110157 is unique to this
+    # scenario -- unlike a value shared with an earlier scenario in this file, it cannot be reused by
+    # de-duplication against some OTHER leftover partner's fresh check, which would attribute the check
+    # log row to that partner instead of bp_scheduled.
     And the VAT-ID online checker is stubbed to answer known VAT-IDs, and to report unavailable for the rest:
-      | VATaxID     | VATaxIDStatus |
-      | EE100594102 | Valid         |
+      | VATaxID       | VATaxIDStatus |
+      | IT00743110157 | Valid         |
     When the C_BPartner_VATaxID_Check process is run as scheduled
     Then validate C_BPartner VAT-ID status:
       | C_BPartner_ID | VATaxIDStatus |
       | bp_scheduled  | Valid         |
     And validate VATaxID_CheckLog records of C_BPartner 'bp_scheduled':
-      | VATaxID     | VATaxIDStatus | AD_PInstance_ID |
-      | EE100594102 | Valid         | true            |
+      | VATaxID       | VATaxIDStatus | AD_PInstance_ID |
+      | IT00743110157 | Valid         | true            |

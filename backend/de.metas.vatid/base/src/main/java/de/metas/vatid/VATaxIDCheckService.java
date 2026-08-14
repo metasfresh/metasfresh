@@ -22,8 +22,10 @@
 
 package de.metas.vatid;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.organization.OrgId;
+import de.metas.process.PInstanceId;
 import de.metas.tax.api.VATIdentifier;
 import de.metas.util.Loggables;
 import lombok.NonNull;
@@ -213,7 +215,11 @@ public class VATaxIDCheckService
 				.checkedAt(SystemTime.asInstant())
 				.build());
 
-		if (result.getStatus() != parentStatus.getStatus())
+		// Suppressed on a first-ever check (previous status NotChecked, AC16/DESIGN.md §5): the initial
+		// rollout would otherwise produce one line per record -- every VAT-ID "changes" the first time it
+		// is checked at all -- drowning the handful of genuine re-check flips a run summary exists to
+		// surface. A real re-check flip (Valid -> Invalid, ServiceUnavailable -> Valid, ...) still logs.
+		if (result.getStatus() != parentStatus.getStatus() && parentStatus.getStatus() != VATaxIDStatus.NotChecked)
 		{
 			Loggables.addLog("VAT-ID {}: status {} -> {}", vataxID.getAsString(), parentStatus.getStatus(), result.getStatus());
 		}
@@ -229,6 +235,40 @@ public class VATaxIDCheckService
 	{
 		final VATaxIDConfig config = configRepository.getByOrgId(orgId);
 		return config != null ? config : CONFIG_DEFAULT_WITHOUT_RECORD;
+	}
+
+	/**
+	 * @return the member-state codes {@code orgId}'s online checker currently reports as unavailable, or
+	 * an empty set when the organisation has the online check switched off — asking would burn a service
+	 * call for information nothing consults, since {@link #check(VATaxIDCheckRequest)} already skips the
+	 * online service entirely for such an organisation. See {@link VATaxIDOnlineChecker#getUnavailableCountryCodes}
+	 * for why this is asked once per run rather than once per VAT-ID: the caller (the check-run service)
+	 * consults this <em>before</em> looping over its selection and skips any VAT-ID whose member state is
+	 * in the returned set, rather than discovering the outage one {@link #check} call at a time.
+	 */
+	@NonNull
+	public ImmutableSet<String> getUnavailableCountryCodes(@NonNull final OrgId orgId)
+	{
+		final VATaxIDConfig config = getEffectiveConfig(orgId);
+		if (!config.isViesCheckEnabled())
+		{
+			return ImmutableSet.of();
+		}
+
+		return onlineChecker.getUnavailableCountryCodes(config);
+	}
+
+	/**
+	 * @return how many online calls the run identified by {@code pinstanceId} made, and their average
+	 * response time — see {@link VATaxIDCheckRepository#getCallStatsForRun(PInstanceId)}, which this
+	 * delegates to unchanged: {@link #checkRepository} is this table's sole owner (see its own class
+	 * javadoc), so the check-run service reaches the evidence through this pass-through rather than
+	 * depending on the repository directly.
+	 */
+	@NonNull
+	public VATaxIDCheckCallStats getCallStatsForRun(@NonNull final PInstanceId pinstanceId)
+	{
+		return checkRepository.getCallStatsForRun(pinstanceId);
 	}
 
 	/**

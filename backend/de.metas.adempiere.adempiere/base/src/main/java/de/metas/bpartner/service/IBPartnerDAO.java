@@ -281,6 +281,14 @@ public interface IBPartnerDAO extends ISingletonService
 	ImmutableList<I_C_BPartner_Location> retrieveBPartnerLocationsWithVATaxID(@NonNull Collection<BPartnerId> bpartnerIds);
 
 	/**
+	 * @return every active {@code C_BPartner} with a non-blank header {@code VATaxID}, ordered by
+	 * {@code C_BPartner_ID} — system-wide, not scoped to any selection or client. This is the nightly
+	 * schedule's own selection (as opposed to a user-triggered run's selection of specific partners):
+	 * a scheduled run has no selection to read at all, so it checks every VAT-ID there is instead.
+	 */
+	ImmutableList<BPartnerId> retrieveBPartnerIdsWithVATaxID();
+
+	/**
 	 * Performs an non-strict search (e.g. if BP has only one address, it returns it even if it's not flagged as the default ShipTo address).
 	 *
 	 * @return bp location or null

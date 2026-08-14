@@ -39,16 +39,24 @@ import org.compiere.model.I_C_BPartner;
 
 /**
  * The manual/scheduled VAT-ID check: available on the Business Partner window (table {@code C_BPartner}),
- * runnable on a single partner or on a selection alike (via {@link #retrieveSelectedRecordsQueryBuilder}) —
- * the same as the nightly schedule (a separate task wires the {@code AD_Scheduler}) and the same code path
- * a user runs by hand.
+ * runnable on a single partner or on a selection alike (via {@link #retrieveSelectedRecordsQueryBuilder}),
+ * and wired to the nightly {@code AD_Scheduler} — the same code path a user runs by hand.
  *
- * <p>Thin glue only: resolves the selected {@code C_BPartner} ids (the one piece of work that genuinely
- * needs a {@code JavaProcess} — reading this run's own selection) and the {@code MaxChecksPerRun}
- * parameter, then delegates the entire run to
+ * <p>Thin glue only: resolves the {@code C_BPartner} ids this run covers (the one piece of work that
+ * genuinely needs a {@code JavaProcess} — reading this run's own selection, or recognising that it has
+ * none) and the {@code MaxChecksPerRun} parameter, then delegates the entire run to
  * {@link VATaxIDCheckRunService#run(VATaxIDCheckRunRequest)} — the combined partner+location target
  * selection, its deterministic ordering, the throttling, the per-target check-and-refresh, and the
  * pending/checked reporting all live there. See that method's javadoc for the full behaviour.
+ *
+ * <p><b>Selection vs. the nightly schedule.</b> A user-triggered run (single record or a selection) always
+ * carries a table/selection on its {@code ProcessInfo}; the scheduler builds none at all (it invokes the
+ * process with no table, no where-clause and no single record — see
+ * {@code org.compiere.server.Scheduler#createProcessInfo}). {@link #getTableName()} distinguishes the two:
+ * non-null means "read the selection", null means "the nightly run — cover every VAT-ID there is" via
+ * {@link VATaxIDCheckRunService#retrieveAllBPartnerIdsWithVATaxID()}. Reading {@code retrieveSelectedRecordsQueryBuilder}
+ * with no selection and no table at all throws {@code @NoSelection@} — this branch is what keeps the
+ * scheduled run from hitting that.
  */
 public class C_BPartner_VATaxID_Check extends JavaProcess implements IProcessPrecondition
 {
@@ -79,13 +87,9 @@ public class C_BPartner_VATaxID_Check extends JavaProcess implements IProcessPre
 	@RunOutOfTrx
 	protected String doIt()
 	{
-		final ImmutableList<BPartnerId> selectedBPartnerIds = retrieveSelectedRecordsQueryBuilder(I_C_BPartner.class)
-				.orderBy(I_C_BPartner.COLUMNNAME_C_BPartner_ID)
-				.create()
-				.listImmutable(I_C_BPartner.class)
-				.stream()
-				.map(bpartnerRecord -> BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID()))
-				.collect(ImmutableList.toImmutableList());
+		final ImmutableList<BPartnerId> selectedBPartnerIds = getTableName() != null
+				? retrieveSelectedBPartnerIds()
+				: checkRunService.retrieveAllBPartnerIdsWithVATaxID();
 
 		final VATaxIDCheckRunResult result = checkRunService.run(VATaxIDCheckRunRequest.builder()
 				.selectedBPartnerIds(selectedBPartnerIds)
@@ -94,5 +98,23 @@ public class C_BPartner_VATaxID_Check extends JavaProcess implements IProcessPre
 				.build());
 
 		return result.getCheckedCount() + " checked, " + result.getPendingCount() + " pending";
+	}
+
+	/**
+	 * The {@code C_BPartner_ID}s this run's own selection covers — a single record or a multi-record
+	 * selection alike, per {@link #retrieveSelectedRecordsQueryBuilder}. Only ever called when
+	 * {@link #getTableName()} is non-null (see {@link #doIt()}), so this never hits the
+	 * {@code @NoSelection@} branch that method throws for a genuinely selection-less run.
+	 */
+	@NonNull
+	private ImmutableList<BPartnerId> retrieveSelectedBPartnerIds()
+	{
+		return retrieveSelectedRecordsQueryBuilder(I_C_BPartner.class)
+				.orderBy(I_C_BPartner.COLUMNNAME_C_BPartner_ID)
+				.create()
+				.listImmutable(I_C_BPartner.class)
+				.stream()
+				.map(bpartnerRecord -> BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID()))
+				.collect(ImmutableList.toImmutableList());
 	}
 }

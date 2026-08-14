@@ -28,8 +28,9 @@ import lombok.Value;
 /**
  * What {@link VATaxIDCheckRunService#run(VATaxIDCheckRunRequest)} did with one
  * {@link VATaxIDCheckRunRequest}: how much of the combined partner+location selection it actually checked,
- * and how much it left untouched because {@link VATaxIDCheckRunRequest#getMaxChecksPerRun()} throttled the
- * run.
+ * how much it left untouched because {@link VATaxIDCheckRunRequest#getMaxChecksPerRun()} throttled the run,
+ * and — the AC16 run summary — how many online calls it actually made and their average response time (see
+ * {@link VATaxIDCheckCallStats}, which this extends rather than duplicating).
  */
 @Value
 @Builder
@@ -38,4 +39,10 @@ public class VATaxIDCheckRunResult
 	int checkedCount;
 
 	int pendingCount;
+
+	/** How many online calls this run made — see {@link VATaxIDCheckCallStats#getCallCount()}. */
+	int callCount;
+
+	/** See {@link VATaxIDCheckCallStats#getAverageResponseTimeMillis()}. */
+	long averageResponseTimeMillis;
 }

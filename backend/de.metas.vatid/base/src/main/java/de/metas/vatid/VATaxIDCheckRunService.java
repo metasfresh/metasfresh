@@ -25,10 +25,12 @@ package de.metas.vatid;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.tax.api.VATIdentifier;
 import de.metas.util.Check;
@@ -46,6 +48,8 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 
 /**
@@ -92,6 +96,18 @@ import java.util.function.Function;
  * (the process) already runs outside any ambient transaction — the point is not "there is no caller
  * transaction to escape", it is that each target's <em>whole</em> unit of work must commit or fail
  * completely independently of every other target's.
+ *
+ * <p><b>Availability pre-filter</b> ({@code GET /check-status}, DESIGN.md §5): before checking anything,
+ * {@link #run(VATaxIDCheckRunRequest)} asks {@link VATaxIDCheckService#getUnavailableCountryCodes(OrgId)}
+ * once per distinct organisation among the selection's targets — not once per VAT-ID — and skips every
+ * target whose {@link VATIdentifier#getCountryCodePrefix()} is in the returned set. A skipped target is
+ * never checked, never recorded as checked, and its stored status stands: it is never funnelled into
+ * {@link VATaxIDConfig#getOnServiceUnavailable()}'s policy, which is reached only from inside an actual
+ * {@link VATaxIDCheckService#check(VATaxIDCheckRequest)} call. This is what keeps a member-state outage
+ * from mass-marking that country's partners {@code Invalid} under a fail-closed policy — the very
+ * failure mode the pre-filter exists to prevent. Skipped targets do not count toward
+ * {@link VATaxIDCheckRunResult#getPendingCount()} either: {@code MaxChecksPerRun} throttles the
+ * remaining, actually-checkable targets, not the ones the pre-filter already removed.
  */
 @Service
 @RequiredArgsConstructor
@@ -114,13 +130,14 @@ public class VATaxIDCheckRunService
 	public VATaxIDCheckRunResult run(@NonNull final VATaxIDCheckRunRequest request)
 	{
 		final ImmutableList<CheckTarget> checkTargets = retrieveCheckTargets(request.getSelectedBPartnerIds());
+		final ImmutableList<CheckTarget> eligibleTargets = skipUnavailableMemberStates(checkTargets);
 
 		final int maxChecksPerRun = request.getMaxChecksPerRun();
 		final boolean unlimited = maxChecksPerRun <= 0;
-		final int checksAllowed = unlimited ? checkTargets.size() : Math.min(maxChecksPerRun, checkTargets.size());
+		final int checksAllowed = unlimited ? eligibleTargets.size() : Math.min(maxChecksPerRun, eligibleTargets.size());
 
 		int checkedCount = 0;
-		for (final CheckTarget checkTarget : checkTargets)
+		for (final CheckTarget checkTarget : eligibleTargets)
 		{
 			if (checkedCount >= checksAllowed)
 			{
@@ -131,17 +148,92 @@ public class VATaxIDCheckRunService
 			checkedCount++;
 		}
 
-		final int pendingCount = checkTargets.size() - checkedCount;
+		final int pendingCount = eligibleTargets.size() - checkedCount;
 		if (pendingCount > 0)
 		{
 			Loggables.addLog("VAT-ID check: checked {} of {} selected, MaxChecksPerRun={}, pendingCount={}",
-					checkedCount, checkTargets.size(), maxChecksPerRun, pendingCount);
+					checkedCount, eligibleTargets.size(), maxChecksPerRun, pendingCount);
 		}
+
+		final VATaxIDCheckCallStats callStats = reportCallStats(request.getPinstanceId());
 
 		return VATaxIDCheckRunResult.builder()
 				.checkedCount(checkedCount)
 				.pendingCount(pendingCount)
+				.callCount(callStats.getCallCount())
+				.averageResponseTimeMillis(callStats.getAverageResponseTimeMillis())
 				.build();
+	}
+
+	/**
+	 * Availability pre-filter (see the class javadoc): removes every target whose member state
+	 * {@link VATaxIDCheckService#getUnavailableCountryCodes(OrgId)} currently reports as unavailable,
+	 * logging one summary line per skipped member state rather than one per skipped VAT-ID — the same
+	 * "a handful of meaningful lines, not thousands" reasoning as the per-record status-change log.
+	 * {@link #checkService} is asked at most once per distinct {@link CheckTarget#getOrgId()} in
+	 * {@code checkTargets}, not once per target.
+	 */
+	@NonNull
+	private ImmutableList<CheckTarget> skipUnavailableMemberStates(@NonNull final ImmutableList<CheckTarget> checkTargets)
+	{
+		final Map<OrgId, ImmutableSet<String>> unavailableCountryCodesByOrg = new HashMap<>();
+		final ImmutableListMultimap.Builder<String, CheckTarget> skippedByCountryCode = ImmutableListMultimap.builder();
+		final ImmutableList.Builder<CheckTarget> eligibleTargets = ImmutableList.builder();
+
+		for (final CheckTarget checkTarget : checkTargets)
+		{
+			final ImmutableSet<String> unavailableCountryCodes = unavailableCountryCodesByOrg
+					.computeIfAbsent(checkTarget.getOrgId(), checkService::getUnavailableCountryCodes);
+			final String countryCode = checkTarget.getVataxID().getCountryCodePrefix();
+
+			if (unavailableCountryCodes.contains(countryCode))
+			{
+				skippedByCountryCode.put(countryCode, checkTarget);
+			}
+			else
+			{
+				eligibleTargets.add(checkTarget);
+			}
+		}
+
+		skippedByCountryCode.build().asMap().forEach((countryCode, skippedTargets) ->
+				Loggables.addLog("VAT-ID check: member state {} reports itself unavailable, skipped {} VAT-IDs",
+						countryCode, skippedTargets.size()));
+
+		return eligibleTargets.build();
+	}
+
+	/**
+	 * Logs, and returns, {@link VATaxIDCheckService#getCallStatsForRun(PInstanceId)} for this run — the
+	 * AC16 "calls made, and average response time" summary line. Reported even when {@code 0} calls were
+	 * made: a run over a fully de-duplicated selection making zero calls is exactly the signal DESIGN.md
+	 * §5 calls out ("exposes whether de-duplication is working"). No pinstance (e.g. a unit test or a
+	 * REST-triggered run outside any process) means nothing to attribute the log rows to — reported as
+	 * zero rather than queried, since {@code Loggables} is a no-op outside a process anyway.
+	 */
+	@NonNull
+	private VATaxIDCheckCallStats reportCallStats(@Nullable final PInstanceId pinstanceId)
+	{
+		if (pinstanceId == null)
+		{
+			return VATaxIDCheckCallStats.builder().callCount(0).averageResponseTimeMillis(0).build();
+		}
+
+		final VATaxIDCheckCallStats callStats = checkService.getCallStatsForRun(pinstanceId);
+		Loggables.addLog("VAT-ID check: calls={}, averageResponseTimeMillis={}",
+				callStats.getCallCount(), callStats.getAverageResponseTimeMillis());
+		return callStats;
+	}
+
+	/**
+	 * The nightly schedule's own selection (see the class javadoc on {@code CheckTarget}'s caller,
+	 * {@code C_BPartner_VATaxID_Check}): every {@code C_BPartner_ID} with a non-blank VAT-ID, system-wide,
+	 * as opposed to a user-triggered run's selection of specific partners.
+	 */
+	@NonNull
+	public ImmutableList<BPartnerId> retrieveAllBPartnerIdsWithVATaxID()
+	{
+		return bpartnerDAO.retrieveBPartnerIdsWithVATaxID();
 	}
 
 	/**
@@ -194,7 +286,7 @@ public class VATaxIDCheckRunService
 
 			for (final I_C_BPartner_Location bpartnerLocationRecord : locationsByBPartnerId.get(bpartnerId))
 			{
-				checkTargets.add(CheckTarget.ofLocation(bpartnerLocationRecord));
+				checkTargets.add(CheckTarget.ofLocation(bpartnerRecord, bpartnerLocationRecord));
 			}
 		}
 		return checkTargets.build();
@@ -288,6 +380,16 @@ public class VATaxIDCheckRunService
 
 		@NonNull String logLabel;
 
+		/**
+		 * The organisation whose {@link VATaxIDConfig} governs this target's check — always the owning
+		 * partner's, even for a location target: locations do not carry a materially different
+		 * organisation in practice, and {@code CheckTarget} otherwise has no independent org of its own to
+		 * resolve. Used only by the availability pre-filter (see the class javadoc), to ask
+		 * {@link VATaxIDCheckService#getUnavailableCountryCodes(OrgId)} once per organisation rather than
+		 * once per target.
+		 */
+		@NonNull OrgId orgId;
+
 		@NonNull
 		private static CheckTarget ofPartner(@NonNull final BPartnerId bpartnerId, @NonNull final I_C_BPartner bpartnerRecord)
 		{
@@ -297,11 +399,14 @@ public class VATaxIDCheckRunService
 					.vataxID(VATIdentifier.of(bpartnerRecord.getVATaxID()))
 					.previousStatus(resolvePreviousStatus(bpartnerRecord.getVATaxIDStatus()))
 					.logLabel("C_BPartner_ID=" + bpartnerRecord.getC_BPartner_ID())
+					.orgId(OrgId.ofRepoId(bpartnerRecord.getAD_Org_ID()))
 					.build();
 		}
 
 		@NonNull
-		private static CheckTarget ofLocation(@NonNull final I_C_BPartner_Location bpartnerLocationRecord)
+		private static CheckTarget ofLocation(
+				@NonNull final I_C_BPartner bpartnerRecord,
+				@NonNull final I_C_BPartner_Location bpartnerLocationRecord)
 		{
 			final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartnerLocationRecord.getC_BPartner_ID());
 			return CheckTarget.builder()
@@ -311,6 +416,7 @@ public class VATaxIDCheckRunService
 					.previousStatus(resolvePreviousStatus(bpartnerLocationRecord.getVATaxIDStatus()))
 					.logLabel("C_BPartner_ID=" + bpartnerLocationRecord.getC_BPartner_ID()
 							+ ", C_BPartner_Location_ID=" + bpartnerLocationRecord.getC_BPartner_Location_ID())
+					.orgId(OrgId.ofRepoId(bpartnerRecord.getAD_Org_ID()))
 					.build();
 		}
 

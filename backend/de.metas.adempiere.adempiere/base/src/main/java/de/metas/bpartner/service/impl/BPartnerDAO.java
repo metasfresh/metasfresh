@@ -677,6 +677,18 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
+	public ImmutableList<BPartnerId> retrieveBPartnerIdsWithVATaxID()
+	{
+		return queryBL.createQueryBuilder(I_C_BPartner.class)
+				.addOnlyActiveRecordsFilter()
+				.addNotNull(I_C_BPartner.COLUMNNAME_VATaxID)
+				.addNotEqualsFilter(I_C_BPartner.COLUMNNAME_VATaxID, "")
+				.orderBy(I_C_BPartner.COLUMNNAME_C_BPartner_ID)
+				.create()
+				.listIds(BPartnerId::ofRepoId);
+	}
+
+	@Override
 	public I_C_BPartner_Location getDefaultShipToLocation(@NonNull final BPartnerId bpartnerId)
 	{
 		final List<I_C_BPartner_Location> bpLocations = retrieveBPartnerLocations(bpartnerId);

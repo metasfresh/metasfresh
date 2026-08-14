@@ -23,6 +23,7 @@
 package de.metas.vatid;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -210,5 +211,40 @@ public class VATaxIDCheckRepository
 		record.setRawResponse(result.getRawResponse());
 
 		InterfaceWrapperHelper.saveRecord(record);
+	}
+
+	/**
+	 * @return how many {@code VATaxID_CheckLog} rows one run ({@code pinstanceId}) wrote — every one is
+	 * a call the online service was actually asked, regardless of the answer — and the average time
+	 * between {@code RequestDate} and {@code ResponseDate} over the ones that got one. Computed over
+	 * the rows this run wrote, keyed by its own {@code AD_PInstance_ID} (DESIGN.md §5: "calls made, and
+	 * average response time … both are computed over the rows this run wrote").
+	 */
+	@NonNull
+	public VATaxIDCheckCallStats getCallStatsForRun(@NonNull final PInstanceId pinstanceId)
+	{
+		final ImmutableList<I_VATaxID_CheckLog> rows = queryBL
+				.createQueryBuilder(I_VATaxID_CheckLog.class)
+				.addEqualsFilter(I_VATaxID_CheckLog.COLUMNNAME_AD_PInstance_ID, pinstanceId)
+				.create()
+				.listImmutable(I_VATaxID_CheckLog.class);
+
+		long totalResponseMillis = 0L;
+		int answeredCount = 0;
+		for (final I_VATaxID_CheckLog row : rows)
+		{
+			final Timestamp responseDate = row.getResponseDate();
+			if (responseDate != null)
+			{
+				totalResponseMillis += responseDate.getTime() - row.getRequestDate().getTime();
+				answeredCount++;
+			}
+		}
+
+		final long averageResponseTimeMillis = answeredCount > 0 ? totalResponseMillis / answeredCount : 0L;
+		return VATaxIDCheckCallStats.builder()
+				.callCount(rows.size())
+				.averageResponseTimeMillis(averageResponseTimeMillis)
+				.build();
 	}
 }
