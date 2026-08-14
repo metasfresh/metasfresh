@@ -34,7 +34,7 @@
 --   tab 220    (window 123, C_BPartner)          -- ..., AD_Language 80, AD_Org_ID 90   -> 85
 --   tab 222    (window 123, C_BPartner_Location) -- ..., VisitorsAddress 110, AD_Org_ID 120 -> 115
 --   tab 540843 (window 540354, C_BPartner)       -- ..., URL 120, no AD_Org_ID column   -> 130
--- OPEN ITEM for tab 540843 -- the UPDATE below is currently a NO-OP and needs a design decision.
+-- RESOLVED for tab 540843 -- the UPDATE below was a NO-OP and is REVERTED by 5819250.
 -- This window keeps its whole VAT-ID block behind the advanced-edit toggle
 -- (AD_UI_Element.IsAdvancedField='Y'), and an advanced field can NEVER become a grid column in the
 -- WebUI: on the primary path that builds a grid layout from the tab's IsDisplayedGrid rows there is no
@@ -48,13 +48,17 @@
 -- each carry at least one element with IsAdvancedField='Y' AND IsDisplayedGrid='Y', and none of those
 -- columns renders either. 73 such elements exist in core, so the combination is common and has always
 -- been inert.
--- Resolving it requires a choice that is outside the "make the status a grid column" decision:
+-- Resolving it required a choice outside the "make the status a grid column" decision:
 --   (a) also set IsAdvancedField='N' on element 652921 -- the column then renders, but the status
 --       additionally appears on this window's normal single-row form, in a section that today shows
 --       nothing outside advanced edit, and it stops mirroring VATaxID's own placement here; or
 --   (b) accept that this window has no status grid column while its VAT-ID lives in advanced edit,
---       and set IsDisplayedGrid back to 'N' for honesty.
--- The UPDATE is left in place because it is the required half of (a) and harmless under (b).
+--       and set IsDisplayedGrid back to 'N' so the metadata stops claiming a column that is not shown.
+-- (b) WAS CHOSEN and is carried out by 5819250, which reverts the tab-540843 UPDATE below to
+-- IsDisplayedGrid='N' / SeqNoGrid=0. Reason: this is the B2C Business Partner window, whose VAT-ID is
+-- behind advanced edit precisely because private-consumer partners usually have no VAT-ID at all, so
+-- (a) would spend normal-form space to surface a read-only status that is empty on most of this
+-- window's records. The tab-220 and tab-222 UPDATEs below are unaffected and do render.
 --
 -- The one VATaxIDStatus placement that was already correct is left untouched: on the VAT-ID check-log
 -- window the AD_UI_Element row was created with IsDisplayedGrid='Y' / SeqNoGrid=40 from the start.
@@ -76,7 +80,7 @@ SET IsDisplayedGrid = 'Y', SeqNoGrid = 115,
 WHERE AD_UI_Element_ID = 652915;
 
 -- tab 540843 "Geschäftspartner" of window 540354 -- appended after URL (120).
--- NO-OP until the advanced-edit question above is decided; see "OPEN ITEM for tab 540843".
+-- This UPDATE is a NO-OP (see "RESOLVED for tab 540843" above) and is reverted by 5819250.
 UPDATE AD_UI_Element
 SET IsDisplayedGrid = 'Y', SeqNoGrid = 130,
     Updated = TO_TIMESTAMP('2026-08-14 19:30:12', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100

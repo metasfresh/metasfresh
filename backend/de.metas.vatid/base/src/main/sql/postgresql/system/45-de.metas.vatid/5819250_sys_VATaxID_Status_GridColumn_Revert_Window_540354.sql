@@ -1,0 +1,52 @@
+-- VAT-ID online check: take VATaxIDStatus back out of the grid on the Business Partner B2C window
+-- 540354. Reverts the one UPDATE of 5819230 that never took effect, restoring
+-- AD_UI_Element.IsDisplayedGrid='N' / SeqNoGrid=0 on tab 540843's VATaxIDStatus element.
+--
+-- WHY THE COLUMN CANNOT RENDER THERE. On tab 540843 the whole VAT-ID block sits in the advanced-edit
+-- group, i.e. its AD_UI_Element rows carry IsAdvancedField='Y'. An advanced element can never become a
+-- grid column in the WebUI: on the primary path that builds a grid layout from the tab's
+-- IsDisplayedGrid='Y' rows there is no IsAdvancedField filter (the zero-grid-columns fallback path does
+-- have one, but it never engages on a tab that already has grid columns) -- yet the layer that
+-- serialises a view layout for the client drops every advanced element, and the list-view layout has no
+-- way to ask for them. Measured against a running WebUI: with 5819230 applied, window 540354 still
+-- rendered its 12 pre-existing grid columns and no VATaxIDStatus, while tabs 220 and 222 of window 123
+-- -- whose elements are IsAdvancedField='N' -- did render it.
+--
+-- This is a GENERAL fact about the two flags, not something specific to this feature:
+-- IsDisplayedGrid='Y' combined with IsAdvancedField='Y' is inert. 73 active AD_UI_Element rows in core
+-- carry that combination, and none of those columns renders -- reproduced on three unrelated core
+-- windows: 134/tab 249 (Help), 108/tab 118 (Description) and 232/tab 402 (Priority, DueType,
+-- Kostenstelle).
+--
+-- WHY REVERT RATHER THAN LEAVE THE FLAG SET. An IsDisplayedGrid='Y' that renders nothing is exactly the
+-- trap this whole change set exists to remove: the next reader queries the metadata, sees 'Y', and
+-- concludes the column is shown. Leaving it would re-create that defect one table over. After this
+-- script, the metadata and the rendered grid agree on every tab.
+--
+-- WHAT A FUTURE READER WHO WANTS THE COLUMN HERE MUST DO. The prerequisite is NOT flipping the grid
+-- flag -- that is what this script undoes. It is taking the VAT-ID block out of advanced edit on this
+-- tab (AD_UI_Element.IsAdvancedField='N'), which is a deliberate layout change: it surfaces the field
+-- on this window's normal single-row form, in a section that today shows nothing outside advanced edit,
+-- and it stops the status mirroring VATaxID's own placement on this window. That trade was evaluated and
+-- declined: this is the B2C Business Partner window, whose VAT-ID is behind advanced edit precisely
+-- because private-consumer partners usually have no VAT-ID at all -- so the change would spend normal-
+-- form space to surface a read-only status that is empty on most records of this window.
+--
+-- Unchanged by this script, deliberately:
+--   * tabs 220 and 222 of window 123 keep the grid column 5819230 gave them (SeqNoGrid 85 and 115) --
+--     verified rendering.
+--   * VATaxID's own grid visibility everywhere. That it does not appear in these grids is pre-existing
+--     core behaviour, outside the scope of this change.
+--   * the three fields' single-row placement on tab 540843. They stay in the advanced-edit group,
+--     exactly mirroring VATaxID there, which is what 5818700 intended.
+--   * VATaxIDCheckedAt and VATaxID_CheckLog_ID, which are IsDisplayedGrid='N' on every tab already.
+--
+-- IDs allocated from idserver.metas.de:
+--   AD_MigrationScript 5819250 (this file's prefix)
+-- No new AD rows are created; AD_UI_Element 652921 was allocated by 5818700.
+
+-- tab 540843 "Geschäftspartner" of window 540354
+UPDATE AD_UI_Element
+SET IsDisplayedGrid = 'N', SeqNoGrid = 0,
+    Updated = TO_TIMESTAMP('2026-08-14 21:10:10', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
+WHERE AD_UI_Element_ID = 652921;
