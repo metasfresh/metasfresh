@@ -185,7 +185,7 @@ public class ExternalSystemExportStatusRepository
 	}
 
 	/**
-	 * Returns the distinct config IDs whose status row for the given source record is
+	 * Returns the distinct config IDs whose LATEST status row for the given source record is
 	 * not yet fully processed (i.e. neither {@link ExternalSystemExportStatus#Sent} nor
 	 * {@link ExternalSystemExportStatus#DontSend}).
 	 */
@@ -193,18 +193,9 @@ public class ExternalSystemExportStatusRepository
 	public List<ExternalSystemScriptedExportConversionConfigId> getConfigsWithNonSentAttemptBySourceRecord(
 			@NonNull final TableRecordReference sourceRecord)
 	{
-		final List<ScriptedExportConversionStatus> allEntries = getLatestBySourceRecord(sourceRecord);
-
-		final LinkedHashMap<ExternalSystemScriptedExportConversionConfigId, ScriptedExportConversionStatus> latestPerConfig =
-				new LinkedHashMap<>();
-		for (final ScriptedExportConversionStatus entry : allEntries)
-		{
-			latestPerConfig.putIfAbsent(entry.getConfigId(), entry);
-		}
-
-		return latestPerConfig.entrySet().stream()
-				.filter(e -> !e.getValue().getStatus().isProcessed())
-				.map(Map.Entry::getKey)
+		return getLatestPerConfigBySourceRecord(sourceRecord).stream()
+				.filter(latest -> !latest.getStatus().isProcessed())
+				.map(ScriptedExportConversionStatus::getConfigId)
 				.collect(ImmutableList.toImmutableList());
 	}
 
