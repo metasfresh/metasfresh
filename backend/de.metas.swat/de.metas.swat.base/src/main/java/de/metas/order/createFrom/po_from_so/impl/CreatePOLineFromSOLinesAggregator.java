@@ -74,7 +74,7 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 	private final transient IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	private final transient IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
+	@NonNull private final transient IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 
 	private final I_C_Order purchaseOrder;
 
@@ -172,10 +172,7 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 
 		copyUserIdFromSalesToPurchaseOrderLine(salesOrderLine, purchaseOrderLine);
 
-		// For dropship PO lines, propagate the SO line's shipper when that shipper has
-		// IsCreateDeliveryPlanning='Y'. The receipt-schedule interceptor reads
-		// C_OrderLine.M_Shipper_ID from the PO line to resolve the shipper for incoming
-		// delivery-planning auto-creation. Non-DP shippers leave the vendor-derived shipper intact.
+		// Propagate SO shipper only when it drives delivery planning.
 		if (PurchaseTypeEnum.DROPSHIP.equals(purchaseType))
 		{
 			copyDPShipperFromSOLineToPOLine(salesOrderLine, purchaseOrderLine);
@@ -190,10 +187,12 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 	/**
 	 * Propagates the SO line's M_Shipper_ID to the PO line when the shipper has
 	 * {@code IsCreateDeliveryPlanning='Y'}. Only called in the DROPSHIP branch.
-	 *
-	 * <p>The receipt-schedule interceptor resolves the shipper for incoming delivery-planning
-	 * auto-creation from {@code C_OrderLine.M_Shipper_ID} of the PO line (C2 gate). When the
-	 * shipper is NOT a DP-shipper the vendor-derived shipper on the PO line is left unchanged.</p>
+	 * <p>
+	 * Why this is needed: the {@code M_ReceiptSchedule} interceptor reads {@code C_OrderLine.M_Shipper_ID}
+	 * from the generated PO line to resolve the shipper for incoming delivery-planning auto-creation
+	 * (the C2 gate in {@code DeliveryPlanningService.isAutoCreateEnabled}). Without the shipper on the PO
+	 * line, the shipper-less dropship receipt schedule would create no incoming delivery planning.
+	 * When the shipper is NOT a DP-shipper the vendor-derived shipper on the PO line is left unchanged.
 	 */
 	private void copyDPShipperFromSOLineToPOLine(
 			@NonNull final I_C_OrderLine salesOrderLine,
@@ -202,7 +201,7 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 		final ShipperId soShipperId = ShipperId.ofRepoIdOrNull(salesOrderLine.getM_Shipper_ID());
 		if (soShipperId == null)
 		{
-			return; // no shipper on SO line — nothing to propagate
+			return;
 		}
 
 		final boolean isDPShipper = shipperDAO.getById(soShipperId).isCreateDeliveryPlanning();

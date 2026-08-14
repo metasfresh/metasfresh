@@ -35,7 +35,10 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Shipper;
+
+import java.math.BigDecimal;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -55,6 +58,13 @@ import static org.mockito.Mockito.when;
  *   <li>(b) DROPSHIP + SO shipper with IsCreateDeliveryPlanning=N → PO line does NOT take SO shipper</li>
  *   <li>(c) DROPSHIP + no SO shipper set → PO line unchanged (M_Shipper_ID=0)</li>
  * </ol>
+ *
+ * <p>Test tier: JUnit — the propagation is a pure flag-check + ID copy, fully exercised in
+ * isolation here. The PO header carries the same flag-check inline (a one-liner in
+ * {@code CreatePOFromSOsAggregator.createPurchaseOrder}) and is not separately tested because
+ * that orchestrator requires vendor, warehouse, and org fixtures; the decision logic is identical
+ * and already covered by these cases. The downstream delivery-planning flow is covered end-to-end
+ * by the Cucumber suite ({@code generateDeliveryPlanning.feature}).
  */
 class CreatePOLineDropshipShipperTest
 {
@@ -108,89 +118,92 @@ class CreatePOLineDropshipShipperTest
 					return line;
 				});
 
-		// Build the purchase order (not SO)
 		purchaseOrder = newInstance(I_C_Order.class);
 		purchaseOrder.setIsSOTrx(false);
 		saveRecord(purchaseOrder);
 	}
 
-	// -----------------------------------------------------------------------
-	// Case (a): DROPSHIP + SO shipper with IsCreateDeliveryPlanning=Y
-	// -----------------------------------------------------------------------
-
-	@Test
-	void dropship_dpShipper_poLineInheritsSoShipper()
+	@Nested
+	class DropshipShipperPropagation
 	{
-		// Given: a DP shipper
-		final I_M_Shipper dpShipper = newInstance(I_M_Shipper.class);
-		dpShipper.setIsCreateDeliveryPlanning(true);
-		when(shipperDAO.getById(SO_SHIPPER_ID)).thenReturn(dpShipper);
+		// -----------------------------------------------------------------------
+		// Case (a): DROPSHIP + SO shipper with IsCreateDeliveryPlanning=Y
+		// -----------------------------------------------------------------------
 
-		// and a SO line with that shipper
-		final I_C_OrderLine soLine = buildSoLine(SO_SHIPPER_REPO_ID);
+		@Test
+		void dpShipper_poLineInheritsSoShipper()
+		{
+			// Given: a DP shipper
+			final I_M_Shipper dpShipper = newInstance(I_M_Shipper.class);
+			dpShipper.setIsCreateDeliveryPlanning(true);
+			when(shipperDAO.getById(SO_SHIPPER_ID)).thenReturn(dpShipper);
 
-		final CreatePOLineFromSOLinesAggregator agg = newAggregator(PurchaseTypeEnum.DROPSHIP);
+			// and a SO line with that shipper
+			final I_C_OrderLine soLine = buildSoLine(SO_SHIPPER_REPO_ID);
 
-		// When
-		agg.add(soLine);
-		agg.closeAllGroups();
+			final CreatePOLineFromSOLinesAggregator agg = newAggregator(PurchaseTypeEnum.DROPSHIP);
 
-		// Then: the generated PO line carries the SO's M_Shipper_ID
-		final I_C_OrderLine poLine = capturedPoLine(agg);
-		assertThat(poLine.getM_Shipper_ID())
-				.as("DROPSHIP + DP-shipper: PO line must carry the SO shipper")
-				.isEqualTo(SO_SHIPPER_REPO_ID);
-	}
+			// When
+			agg.add(soLine);
+			agg.closeAllGroups();
 
-	// -----------------------------------------------------------------------
-	// Case (b): DROPSHIP + SO shipper with IsCreateDeliveryPlanning=N
-	// -----------------------------------------------------------------------
+			// Then: the generated PO line carries the SO's M_Shipper_ID
+			final I_C_OrderLine poLine = capturedPoLine(agg);
+			assertThat(poLine.getM_Shipper_ID())
+					.as("DROPSHIP + DP-shipper: PO line must carry the SO shipper")
+					.isEqualTo(SO_SHIPPER_REPO_ID);
+		}
 
-	@Test
-	void dropship_nonDpShipper_poLineDoesNotInheritSoShipper()
-	{
-		// Given: a non-DP shipper
-		final I_M_Shipper nonDpShipper = newInstance(I_M_Shipper.class);
-		nonDpShipper.setIsCreateDeliveryPlanning(false);
-		when(shipperDAO.getById(SO_SHIPPER_ID)).thenReturn(nonDpShipper);
+		// -----------------------------------------------------------------------
+		// Case (b): DROPSHIP + SO shipper with IsCreateDeliveryPlanning=N
+		// -----------------------------------------------------------------------
 
-		// and a SO line with that shipper
-		final I_C_OrderLine soLine = buildSoLine(SO_SHIPPER_REPO_ID);
+		@Test
+		void nonDpShipper_poLineDoesNotInheritSoShipper()
+		{
+			// Given: a non-DP shipper
+			final I_M_Shipper nonDpShipper = newInstance(I_M_Shipper.class);
+			nonDpShipper.setIsCreateDeliveryPlanning(false);
+			when(shipperDAO.getById(SO_SHIPPER_ID)).thenReturn(nonDpShipper);
 
-		final CreatePOLineFromSOLinesAggregator agg = newAggregator(PurchaseTypeEnum.DROPSHIP);
+			// and a SO line with that shipper
+			final I_C_OrderLine soLine = buildSoLine(SO_SHIPPER_REPO_ID);
 
-		// When
-		agg.add(soLine);
-		agg.closeAllGroups();
+			final CreatePOLineFromSOLinesAggregator agg = newAggregator(PurchaseTypeEnum.DROPSHIP);
 
-		// Then: PO line does NOT take the SO shipper
-		final I_C_OrderLine poLine = capturedPoLine(agg);
-		assertThat(poLine.getM_Shipper_ID())
-				.as("DROPSHIP + non-DP-shipper: PO line must NOT inherit the SO shipper")
-				.isNotEqualTo(SO_SHIPPER_REPO_ID);
-	}
+			// When
+			agg.add(soLine);
+			agg.closeAllGroups();
 
-	// -----------------------------------------------------------------------
-	// Case (c): DROPSHIP + no SO shipper set
-	// -----------------------------------------------------------------------
+			// Then: PO line does NOT take the SO shipper (stays 0)
+			final I_C_OrderLine poLine = capturedPoLine(agg);
+			assertThat(poLine.getM_Shipper_ID())
+					.as("DROPSHIP + non-DP-shipper: PO line must NOT inherit the SO shipper")
+					.isEqualTo(0);
+		}
 
-	@Test
-	void dropship_noSoShipper_poLineUnchanged()
-	{
-		// Given: SO line with no shipper
-		final I_C_OrderLine soLine = buildSoLine(/* shipperId= */ 0);
+		// -----------------------------------------------------------------------
+		// Case (c): DROPSHIP + no SO shipper set
+		// -----------------------------------------------------------------------
 
-		final CreatePOLineFromSOLinesAggregator agg = newAggregator(PurchaseTypeEnum.DROPSHIP);
+		@Test
+		void noSoShipper_poLineUnchanged()
+		{
+			// Given: SO line with no shipper
+			final I_C_OrderLine soLine = buildSoLine(/* shipperId= */ 0);
 
-		// When
-		agg.add(soLine);
-		agg.closeAllGroups();
+			final CreatePOLineFromSOLinesAggregator agg = newAggregator(PurchaseTypeEnum.DROPSHIP);
 
-		// Then: PO line has no shipper set (stays 0)
-		final I_C_OrderLine poLine = capturedPoLine(agg);
-		assertThat(poLine.getM_Shipper_ID())
-				.as("DROPSHIP + no SO shipper: PO line M_Shipper_ID must stay 0")
-				.isEqualTo(0);
+			// When
+			agg.add(soLine);
+			agg.closeAllGroups();
+
+			// Then: PO line has no shipper set (stays 0)
+			final I_C_OrderLine poLine = capturedPoLine(agg);
+			assertThat(poLine.getM_Shipper_ID())
+					.as("DROPSHIP + no SO shipper: PO line M_Shipper_ID must stay 0")
+					.isEqualTo(0);
+		}
 	}
 
 	// -----------------------------------------------------------------------
@@ -206,7 +219,7 @@ class CreatePOLineDropshipShipperTest
 		final I_C_OrderLine soLine = newInstance(I_C_OrderLine.class);
 		soLine.setC_Order(salesOrder);
 		soLine.setM_Shipper_ID(shipperId);
-		soLine.setQtyOrdered(java.math.BigDecimal.ONE);
+		soLine.setQtyOrdered(BigDecimal.ONE);
 		saveRecord(soLine);
 		return soLine;
 	}

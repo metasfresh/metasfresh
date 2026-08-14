@@ -82,7 +82,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
+	@NonNull private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 
 	final Map<String, CreatePOLineFromSOLinesAggregator> orderKey2OrderLineAggregator = new HashMap<>();
 
@@ -340,9 +340,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 				Loggables.addLog("@Missing@ @AD_OrgInfo@ @DropShip_Warehouse_ID@ — defaulting to SO's warehouse");
 			}
 
-			// Propagate the SO header's shipper to the PO header when it is a DP-shipper.
-			// This is secondary to the PO LINE propagation (which is what the receipt-schedule
-			// interceptor reads), but keeps the PO header consistent for UI display.
+			// Keep PO header M_Shipper_ID consistent with the SO for UI display (DP-shippers only).
 			final ShipperId soShipperId = ShipperId.ofRepoIdOrNull(salesOrder.getM_Shipper_ID());
 			if (soShipperId != null && shipperDAO.getById(soShipperId).isCreateDeliveryPlanning())
 			{
