@@ -308,7 +308,6 @@ public class PickingWorkflowLaunchersProvider
 						.addressProvider(bpartnerService.newRenderedAddressProvider())
 						.groupsInOrder(groups)
 						.activeFacets(activeFacets)
-						.isShowAllFilterGroups(profile.isShowAllFilterGroups())
 						.build());
 
 		return PickingJobFacetHandlers.toWorkflowLaunchersFacetGroupList(pickingFacets, profile);

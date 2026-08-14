@@ -14,6 +14,4 @@ public class CollectingParameters
 	@NonNull RenderedAddressProvider addressProvider;
 	@NonNull ImmutableList<PickingJobFacetGroup> groupsInOrder;
 	@NonNull PickingJobQuery.Facets activeFacets;
-	/** offer every configured group at once instead of revealing them as the operator narrows down */
-	boolean isShowAllFilterGroups;
 }

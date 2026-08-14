@@ -31,6 +31,7 @@ import de.metas.document.location.RenderedAddressProvider;
 import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.facets.customer.CustomerFacet;
 import de.metas.handlingunits.picking.job.model.facets.delivery_day.DeliveryDayFacet;
+import de.metas.handlingunits.picking.job.model.facets.preparation_day.PreparationDayFacet;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.organization.InstantAndOrgId;
@@ -80,30 +81,42 @@ class PickingJobFacetsAccumulatorTest
 	@Test
 	void byDefault_onlyTheFirstGroupIsOffered()
 	{
-		final PickingJobFacets facets = collect(parameters(false, PickingJobQuery.Facets.EMPTY));
+		final PickingJobFacets facets = collect(parameters(PickingJobQuery.Facets.EMPTY));
 
 		assertThat(customerIdsOf(facets)).containsExactlyInAnyOrder(CUSTOMER_1, CUSTOMER_2);
 		assertThat(deliveryDaysOf(facets)).isEmpty();
 	}
 
+	/**
+	 * The preparation-date group placed FIRST is offered straight away, with nothing selected — which is
+	 * what lets a profile put a date filter in front of the operator without them picking a customer
+	 * first. Progressive disclosure is unchanged; only the configured order decides what comes first.
+	 */
 	@Test
-	void showAllFilterGroups_everyGroupIsOfferedUpFront()
+	void preparationDateFirst_isOfferedWithNothingSelected()
 	{
-		final PickingJobFacets facets = collect(parameters(true, PickingJobQuery.Facets.EMPTY));
+		final PickingJobFacets facets = collect(parameters(
+				PickingJobQuery.Facets.EMPTY,
+				ImmutableList.of(PickingJobFacetGroup.PREPARATION_DATE, PickingJobFacetGroup.CUSTOMER)));
 
-		assertThat(customerIdsOf(facets)).containsExactlyInAnyOrder(CUSTOMER_1, CUSTOMER_2);
-		assertThat(deliveryDaysOf(facets)).containsExactlyInAnyOrder(DAY_1, DAY_2);
+		assertThat(preparationDaysOf(facets)).containsExactlyInAnyOrder(DAY_1, DAY_2);
+		assertThat(customerIdsOf(facets)).isEmpty();
 	}
 
+	/**
+	 * Selecting a preparation date narrows the group that follows it — the composition half of the
+	 * feature. Without {@code FacetAwareItem.isMatching} consulting preparationDays this passes the
+	 * visibility check above yet silently offers both customers.
+	 */
 	@Test
-	void showAllFilterGroups_selectingACustomerStillNarrowsTheOthers()
+	void selectingAPreparationDate_narrowsTheFollowingGroup()
 	{
-		final PickingJobQuery.Facets customer1Selected = PickingJobQuery.Facets.builder().customerId(CUSTOMER_1).build();
+		final PickingJobFacets facets = collect(parameters(
+				PickingJobQuery.Facets.builder().preparationDay(DAY_1).build(),
+				ImmutableList.of(PickingJobFacetGroup.PREPARATION_DATE, PickingJobFacetGroup.CUSTOMER)));
 
-		final PickingJobFacets facets = collect(parameters(true, customer1Selected));
-
-		assertThat(customerIdsOf(facets)).containsExactlyInAnyOrder(CUSTOMER_1, CUSTOMER_2);
-		assertThat(deliveryDaysOf(facets)).containsExactly(DAY_1);
+		assertThat(preparationDaysOf(facets)).containsExactlyInAnyOrder(DAY_1, DAY_2);
+		assertThat(customerIdsOf(facets)).containsExactly(CUSTOMER_1);
 	}
 
 	private PickingJobFacets collect(final CollectingParameters parameters)
@@ -114,13 +127,19 @@ class PickingJobFacetsAccumulatorTest
 				.collect(PickingJobFacetsAccumulator.collect(parameters));
 	}
 
-	private static CollectingParameters parameters(final boolean isShowAllFilterGroups, final PickingJobQuery.Facets activeFacets)
+	private static CollectingParameters parameters(final PickingJobQuery.Facets activeFacets)
+	{
+		return parameters(activeFacets, CUSTOMER_THEN_DELIVERY_DATE);
+	}
+
+	private static CollectingParameters parameters(
+			final PickingJobQuery.Facets activeFacets,
+			final ImmutableList<PickingJobFacetGroup> groupsInOrder)
 	{
 		return CollectingParameters.builder()
 				.addressProvider(RenderedAddressProvider.builder().documentLocationBL(mock(IDocumentLocationBL.class)).build())
-				.groupsInOrder(CUSTOMER_THEN_DELIVERY_DATE)
+				.groupsInOrder(groupsInOrder)
 				.activeFacets(activeFacets)
-				.isShowAllFilterGroups(isShowAllFilterGroups)
 				.build();
 	}
 
@@ -132,6 +151,11 @@ class PickingJobFacetsAccumulatorTest
 	private static Iterable<LocalDate> deliveryDaysOf(final PickingJobFacets facets)
 	{
 		return facets.toList(DeliveryDayFacet.class, DeliveryDayFacet::getDeliveryDate);
+	}
+
+	private static Iterable<LocalDate> preparationDaysOf(final PickingJobFacets facets)
+	{
+		return facets.toList(PreparationDayFacet.class, PreparationDayFacet::getPreparationDate);
 	}
 
 	private static Packageable packageable(final BPartnerId customerId, final LocalDate deliveryDay)
@@ -161,6 +185,10 @@ class PickingJobFacetsAccumulatorTest
 				.asiId(AttributeSetInstanceId.NONE)
 				.deliveryDate(InstantAndOrgId.ofInstant(
 						Objects.requireNonNull(deliveryDay).atStartOfDay(zoneId()).toInstant(), ORG_ID))
+				// same day as the delivery date: this fixture feeds BOTH date groups, so a
+				// preparation-date assertion is not silently comparing against an absent value
+				.preparationDate(InstantAndOrgId.ofInstant(
+						deliveryDay.atStartOfDay(zoneId()).toInstant(), ORG_ID))
 				.build();
 	}
 }

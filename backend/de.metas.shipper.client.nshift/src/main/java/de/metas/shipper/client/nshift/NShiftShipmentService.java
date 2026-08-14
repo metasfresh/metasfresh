@@ -28,7 +28,6 @@ import de.metas.common.delivery.v1.json.DeliveryMappingConstants;
 import de.metas.common.delivery.v1.json.JsonPackageDimensions;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryOrderParcel;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
-import de.metas.common.delivery.v1.json.request.JsonCarrierService;
 import de.metas.common.delivery.v1.json.request.JsonGoodsType;
 import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
 import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
@@ -333,7 +332,7 @@ public class NShiftShipmentService
 				.shipperProduct(extractResolvedShipperProduct(response));
 
 		extractResolvedGoodsTypes(responseLines).forEach(responseBuilder::resolvedGoodsType);
-		extractResolvedServices(response).forEach(responseBuilder::resolvedService);
+		NShiftUtil.extractResolvedServices(response).forEach(responseBuilder::resolvedService);
 
 		return responseBuilder.build();
 	}
@@ -384,21 +383,6 @@ public class NShiftShipmentService
 							.id(id)
 							.name(line.getGoodsTypeName() != null ? line.getGoodsTypeName() : id)
 							.build();
-				})
-				.collect(Collectors.toCollection(LinkedHashSet::new));
-	}
-
-	private static Set<JsonCarrierService> extractResolvedServices(@NonNull final JsonShipmentResponse response)
-	{
-		if (response.getServices() == null)
-		{
-			return Collections.emptySet();
-		}
-		// services come back as bare ids; use the id as the name as well
-		return response.getServices().stream()
-				.map(svcId -> {
-					final String id = String.valueOf(svcId);
-					return JsonCarrierService.builder().id(id).name(id).build();
 				})
 				.collect(Collectors.toCollection(LinkedHashSet::new));
 	}

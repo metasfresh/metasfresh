@@ -132,3 +132,28 @@ de.metas.shipper.client.nshift.NShiftOrderAdvisorServiceTest.build_request_test=
     }
   }
 ]
+
+
+de.metas.shipper.client.nshift.NShiftOrderAdvisorServiceTest.build_response_test=[
+  {
+    "goodsType": {
+      "id": "5",
+      "name": "Packet"
+    },
+    "requestId": "reqId",
+    "shipperProduct": {
+      "code": "9303",
+      "name": "UPS Rest API - UPS Standard"
+    },
+    "shipperProductServices": [
+      {
+        "id": "972053",
+        "name": "972053"
+      },
+      {
+        "id": "972054",
+        "name": "972054"
+      }
+    ]
+  }
+]

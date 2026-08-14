@@ -149,48 +149,6 @@ class MobileUIPickingUserProfileRepositoryTest
 	}
 
 	@Nested
-	class IsShowAllFilterGroups
-	{
-		@Test
-		void set_returnsTrue()
-		{
-			final I_MobileUI_UserProfile_Picking record = newProfileRecord();
-			record.setIsShowAllFilterGroups(true);
-			saveRecord(record);
-
-			assertThat(repository.getProfile().isShowAllFilterGroups()).isTrue();
-		}
-
-		@Test
-		void unset_returnsFalse()
-		{
-			final I_MobileUI_UserProfile_Picking record = newProfileRecord();
-			record.setIsShowAllFilterGroups(false);
-			saveRecord(record);
-
-			assertThat(repository.getProfile().isShowAllFilterGroups()).isFalse();
-		}
-
-		@Test
-		void noProfileRecord_returnsFalse()
-		{
-			// the default profile keeps today's progressive-narrowing behaviour
-			assertThat(repository.getProfile().isShowAllFilterGroups()).isFalse();
-		}
-
-		@Test
-		void roundTripsThroughSave()
-		{
-			final I_MobileUI_UserProfile_Picking record = newProfileRecord();
-			saveRecord(record);
-
-			repository.update(profile -> profile.toBuilder().isShowAllFilterGroups(true).build());
-
-			assertThat(repository.getProfile().isShowAllFilterGroups()).isTrue();
-		}
-	}
-
-	@Nested
 	class IsMassPrinting
 	{
 		@Test

@@ -24,6 +24,7 @@ package de.metas.shipper.client.nshift;
 
 import au.com.origin.snapshots.Expect;
 import au.com.origin.snapshots.junit5.SnapshotExtension;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.delivery.v1.json.JsonAddress;
 import de.metas.common.delivery.v1.json.JsonContact;
@@ -44,6 +45,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 
@@ -70,6 +72,10 @@ public class NShiftShipmentServiceOrderAdviceTest
 	@Autowired
 	@NonNull
 	private NShiftShipmentService nShiftShipmentService;
+
+	@Autowired
+	@Qualifier(NShiftClientConfig.NSHIFT_OBJECT_MAPPER)
+	private ObjectMapper nShiftObjectMapper;
 
 	@SuppressWarnings("unused") // injected by SnapshotExtension via reflection
 	private Expect expect;
@@ -216,6 +222,14 @@ public class NShiftShipmentServiceOrderAdviceTest
 					.build())
 			.mappingConfigs(NShiftTestMappingConfigs.SHARED_TEST)
 			.build();
+
+	@Test
+	void serializedRequestHasNoEmptyLists() throws Exception
+	{
+		final JsonShipmentRequest request = NShiftShipmentService.buildOrderAdviceShipmentRequest(DELIVERY_REQUEST);
+		final String json = nShiftObjectMapper.writeValueAsString(request);
+		NShiftTestAssertions.assertNoEmptyJsonArrays(json);
+	}
 
 	@Test
 	void build_order_advice_request_test()

@@ -6,15 +6,27 @@ import { ApplicationsListScreen } from '../../utils/screens/ApplicationsListScre
 import { PickingJobsListScreen } from '../../utils/screens/picking/PickingJobsListScreen';
 import { PickingJobsListFiltersScreen } from '../../utils/screens/picking/PickingJobsListFiltersScreen';
 
-const DELIVERY_DATE = '2025-03-01';
-
-const createMasterdata = async () => {
-    const salesOrderOf = (bpartner, datePromised) => ({
-        bpartner,
-        warehouse: 'wh',
-        datePromised,
-        lines: [{ product: 'P1', qty: 10, workplace: 'workplace1' }]
-    });
+/**
+ * Companion to facets.spec.js, which pins the same reveal behaviour with the customer group first.
+ * Here the ready-date group is configured first, which is the point of having it: an operator can
+ * narrow by the date the launcher entry shows them, without picking a customer beforehand.
+ *
+ * facets.spec.js is deliberately left untouched — it specifies the reveal behaviour itself, and this
+ * feature only adds a group that can take the first position.
+ */
+const createMasterdata = async ({ salesOrders }) => {
+    const salesOrdersEffective = {};
+    Object.keys(salesOrders)
+        .forEach(key => salesOrdersEffective[key] = {
+            bpartner: salesOrders[key].bpartner,
+            warehouse: 'wh',
+            datePromised: salesOrders[key].datePromised,
+            lines: [{
+                product: 'P1',
+                qty: 10,
+                workplace: 'workplace1'
+            }]
+        });
 
     return await Backend.createMasterdata({
         language: "en_US",
@@ -35,8 +47,8 @@ const createMasterdata = async () => {
                         { customer: "customer1" },
                         { customer: "customer2" },
                     ],
-                    filters: ['Customer', 'DeliveryDate'],
-                    showAllFilterGroups: true,
+                    // the ready-date group FIRST — the ordering this feature exists to make possible
+                    filters: ['PreparationDate', 'Customer']
                 }
             },
             bpartners: {
@@ -50,23 +62,25 @@ const createMasterdata = async () => {
             handlingUnits: {
                 "HU1": { product: 'P1', warehouse: 'wh', qty: 1000 },
             },
-            salesOrders: {
-                'SO1': salesOrderOf('customer1', `${DELIVERY_DATE}T05:00:00.000+02:00`),
-                'SO2': salesOrderOf('customer2', `${DELIVERY_DATE}T05:00:00.000+02:00`),
-            },
+            salesOrders: salesOrdersEffective,
         }
     })
 }
 
 // noinspection JSUnusedLocalSymbols
-test('Check facets when all filter groups are offered at once', async ({ page }) => {
+test('Check facets when the ready date is the first filter group', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0105: Picking');
     allure.tag('F00240');
     allure.story('Picking facets');
     allure.severity('normal');
 
-    const masterdata = await createMasterdata();
+    const masterdata = await createMasterdata({
+        salesOrders: {
+            'SO1': { bpartner: 'customer1', datePromised: '2025-03-01T05:00:00.000+02:00' },
+            'SO2': { bpartner: 'customer2', datePromised: '2025-03-02T05:00:00.000+02:00' },
+        }
+    });
 
     await LoginScreen.login(masterdata.login.user1);
 
@@ -75,33 +89,31 @@ test('Check facets when all filter groups are offered at once', async ({ page })
     await PickingJobsListScreen.waitForScreen();
     await PickingJobsListScreen.clickFilterButton();
 
-    await test.step('The delivery date is offered without picking a customer first', async () => {
+    await test.step('Check initial facets', async () => {
         await PickingJobsListFiltersScreen.expectFacets([
-            { facetId: 'Customer_' + masterdata.bpartners.customer1.id, isChecked: false },
-            { facetId: 'Customer_' + masterdata.bpartners.customer2.id, isChecked: false },
-            { facetId: 'DeliveryDate_' + DELIVERY_DATE, isChecked: false },
+            { facetId: 'PreparationDate_2025-03-01', isChecked: false },
+            { facetId: 'PreparationDate_2025-03-02', isChecked: false },
         ]);
         await PickingJobsListFiltersScreen.expectShowResults({ hitCount: 2 });
     });
 
-    await test.step('Tick the delivery date straight away', async () => {
-        await PickingJobsListFiltersScreen.clickFacet({ facetId: 'DeliveryDate_' + DELIVERY_DATE });
+    await test.step('Tick the first ready date', async () => {
+        await PickingJobsListFiltersScreen.clickFacet({ facetId: 'PreparationDate_2025-03-01' });
         await PickingJobsListFiltersScreen.expectFacets([
+            { facetId: 'PreparationDate_2025-03-01', isChecked: true },
+            { facetId: 'PreparationDate_2025-03-02', isChecked: false },
             { facetId: 'Customer_' + masterdata.bpartners.customer1.id, isChecked: false },
-            { facetId: 'Customer_' + masterdata.bpartners.customer2.id, isChecked: false },
-            { facetId: 'DeliveryDate_' + DELIVERY_DATE, isChecked: true },
-        ]);
-        await PickingJobsListFiltersScreen.expectShowResults({ hitCount: 2 });
-    });
-
-    await test.step('Tick one customer and see the other options narrow', async () => {
-        await PickingJobsListFiltersScreen.clickFacet({ facetId: 'Customer_' + masterdata.bpartners.customer1.id });
-        await PickingJobsListFiltersScreen.expectFacets([
-            { facetId: 'Customer_' + masterdata.bpartners.customer1.id, isChecked: true },
-            { facetId: 'Customer_' + masterdata.bpartners.customer2.id, isChecked: false },
-            { facetId: 'DeliveryDate_' + DELIVERY_DATE, isChecked: true },
         ]);
         await PickingJobsListFiltersScreen.expectShowResults({ hitCount: 1 });
+    });
+
+    await test.step('Untick the first ready date', async () => {
+        await PickingJobsListFiltersScreen.clickFacet({ facetId: 'PreparationDate_2025-03-01' });
+        await PickingJobsListFiltersScreen.expectFacets([
+            { facetId: 'PreparationDate_2025-03-01', isChecked: false },
+            { facetId: 'PreparationDate_2025-03-02', isChecked: false },
+        ]);
+        await PickingJobsListFiltersScreen.expectShowResults({ hitCount: 2 });
     });
 
     await test.step('Go back and logout', async () => {
