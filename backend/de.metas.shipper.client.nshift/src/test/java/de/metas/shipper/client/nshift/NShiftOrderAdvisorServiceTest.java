@@ -33,7 +33,10 @@ import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestItem;
 import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryAdvisorResponse;
+import de.metas.shipper.client.nshift.json.JsonLine;
 import de.metas.shipper.client.nshift.json.request.JsonShipAdvisorRequest;
+import de.metas.shipper.client.nshift.json.response.JsonOrderAdviceResponse;
+import de.metas.shipper.client.nshift.json.response.JsonShipmentResponse;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -145,6 +148,31 @@ public class NShiftOrderAdvisorServiceTest
 	{
 		final JsonShipAdvisorRequest request = NShiftOrderAdvisorService.buildRequest(ADVISOR_REQUEST);
 		expect.serializer("orderedJson").toMatchSnapshot(request);
+	}
+
+	@Test
+	void build_response_test()
+	{
+		// The OrderAdvice response wraps the advised shipment; buildJsonDeliveryAdvisorResponse must map the
+		// product (code=ProdConceptID, name=CarrierFullName+ProdName), the goods type (first line), and the
+		// resolved services (bare ids under Shipment.Services, id used as name — same as the ship path).
+		final JsonOrderAdviceResponse response = JsonOrderAdviceResponse.builder()
+				.shipment(JsonShipmentResponse.builder()
+						.prodConceptID(9303)
+						.carrierFullName("UPS Rest API")
+						.prodName("UPS Standard")
+						.lines(ImmutableList.of(JsonLine.builder()
+								.goodsTypeID(5)
+								.goodsTypeName("Packet")
+								.build()))
+						.services(ImmutableList.of(972053, 972054))
+						.build())
+				.build();
+
+		final JsonDeliveryAdvisorResponse advisorResponse =
+				NShiftOrderAdvisorService.buildJsonDeliveryAdvisorResponse(response, "reqId");
+
+		expect.serializer("orderedJson").toMatchSnapshot(advisorResponse);
 	}
 
 	@Test
