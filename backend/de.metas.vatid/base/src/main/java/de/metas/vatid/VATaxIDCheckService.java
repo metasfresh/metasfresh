@@ -107,9 +107,8 @@ import java.time.Instant;
  * without this knowledge; it is deliberately out of the approved schema.
  *
  * <p>An organisation with no {@code VATaxID_Config} record keeps today's behaviour exactly — format check
- * on, online check off. This service is the single place that resolves that default; see
- * {@link VATaxIDConfigRepository#getByOrgId(de.metas.organization.OrgId)} and
- * {@link #CONFIG_DEFAULT_WITHOUT_RECORD}.
+ * on, online check off. {@link VATaxIDConfigRepository#getByOrgId(de.metas.organization.OrgId)} is the
+ * single place that resolves that default; this service never applies it itself.
  *
  * <h2>Logging</h2>
  *
@@ -126,42 +125,6 @@ import java.time.Instant;
 @RequiredArgsConstructor
 public class VATaxIDCheckService
 {
-	/**
-	 * The configuration an organisation with <b>no</b> {@code VATaxID_Config} record effectively has:
-	 * <b>format check on, online check off</b> — today's behaviour exactly, so switching the module on
-	 * changes nothing at all for an unconfigured organisation.
-	 *
-	 * <p>Resolved here because {@link VATaxIDConfigRepository#getByOrgId(OrgId)} is a thin query layer over
-	 * one table and deliberately leaves this business rule to its caller — this constant is that single
-	 * place, so no caller of the repository has to re-invent the default.
-	 *
-	 * <p>{@code recheckAfterDays} and {@code onServiceUnavailable} are unreachable while
-	 * {@code viesCheckEnabled} is {@code false}; they carry the fail-open values rather than being left to
-	 * look meaningful.
-	 *
-	 * <p>Deliberately a plain constant rather than a configuration lookup: the SysConfig that will govern
-	 * the format-check half for unconfigured organisations
-	 * ({@code VATaxID_Config.IsFormatCheckEnabledByDefault}) does not exist yet — it
-	 * replaces the shipped {@code C_BPartner.validateVATaxID} gate, which until then still governs the
-	 * save-time check in the interceptors. When it lands, only this one line changes.
-	 *
-	 * <p><b>Known divergence until then</b>: {@code formatCheckEnabled} is a static {@code true} here, whereas
-	 * the save-time check in {@code de.metas.vatid.interceptor.C_BPartner} /
-	 * {@code C_BPartner_Location} reads the live {@code C_BPartner.validateVATaxID} SysConfig. Were that
-	 * SysConfig ever set to {@code N}, a malformed VAT-ID would pass the save while
-	 * {@link #check(VATaxIDCheckRequest)} would still throw on it. Dormant as shipped — that SysConfig exists
-	 * as a single System-level row ({@code ConfigurationLevel='S'}) with value {@code Y} and no
-	 * organisation-level override — and resolved by the task that replaces the SysConfig gate, which makes
-	 * both halves read the same configured value. Deliberately not worked around here: the configuration this
-	 * constant would have to read does not exist yet.
-	 */
-	private static final VATaxIDConfig CONFIG_DEFAULT_WITHOUT_RECORD = VATaxIDConfig.builder()
-			.formatCheckEnabled(true)
-			.viesCheckEnabled(false)
-			.recheckAfterDays(0)
-			.onServiceUnavailable(VATaxIDOnServiceUnavailableAction.ServiceUnavailable)
-			.build();
-
 	@NonNull private final VATaxIDConfigRepository configRepository;
 	@NonNull private final VATaxIDCheckRepository checkRepository;
 	@NonNull private final VATaxIDParentStatusRepository parentStatusRepository;
@@ -180,7 +143,7 @@ public class VATaxIDCheckService
 	{
 		final VATIdentifier vataxID = request.getVataxID();
 		final VATaxIDParentStatus parentStatus = parentStatusRepository.getParentStatus(request);
-		final VATaxIDConfig config = getEffectiveConfig(parentStatus.getOrgId());
+		final VATaxIDConfig config = configRepository.getByOrgId(parentStatus.getOrgId());
 
 		if (config.isFormatCheckEnabled())
 		{
@@ -232,16 +195,6 @@ public class VATaxIDCheckService
 	}
 
 	/**
-	 * @return the organisation's configuration, or {@link #CONFIG_DEFAULT_WITHOUT_RECORD} where it has none.
-	 */
-	@NonNull
-	private VATaxIDConfig getEffectiveConfig(@NonNull final OrgId orgId)
-	{
-		final VATaxIDConfig config = configRepository.getByOrgId(orgId);
-		return config != null ? config : CONFIG_DEFAULT_WITHOUT_RECORD;
-	}
-
-	/**
 	 * @return the member-state codes {@code orgId}'s online checker currently reports as unavailable, or
 	 * an empty set when the organisation has the online check switched off — asking would burn a service
 	 * call for information nothing consults, since {@link #check(VATaxIDCheckRequest)} already skips the
@@ -253,7 +206,7 @@ public class VATaxIDCheckService
 	@NonNull
 	public ImmutableSet<String> getUnavailableCountryCodes(@NonNull final OrgId orgId)
 	{
-		final VATaxIDConfig config = getEffectiveConfig(orgId);
+		final VATaxIDConfig config = configRepository.getByOrgId(orgId);
 		if (!config.isViesCheckEnabled())
 		{
 			return ImmutableSet.of();
@@ -276,28 +229,30 @@ public class VATaxIDCheckService
 	}
 
 	/**
-	 * @return {@code orgId}'s own {@code RecheckAfterDays} (or {@link #CONFIG_DEFAULT_WITHOUT_RECORD}'s
-	 * where it has none) — the same window {@link #check(VATaxIDCheckRequest)} itself applies for
-	 * de-duplication. Exposed so the nightly selection can pre-filter to records that are actually due,
-	 * without duplicating the organisation-config lookup this service already owns.
+	 * @return {@code orgId}'s own {@code RecheckAfterDays} (or the SysConfig-backed default's {@code 0}
+	 * where it has no {@code VATaxID_Config} record — see {@link VATaxIDConfigRepository#getByOrgId(OrgId)})
+	 * — the same window {@link #check(VATaxIDCheckRequest)} itself applies for de-duplication. Exposed so
+	 * the nightly selection can pre-filter to records that are actually due, without duplicating the
+	 * organisation-config lookup this service already owns.
 	 */
 	public int getRecheckAfterDays(@NonNull final OrgId orgId)
 	{
-		return getEffectiveConfig(orgId).getRecheckAfterDays();
+		return configRepository.getByOrgId(orgId).getRecheckAfterDays();
 	}
 
 	/**
-	 * @return whether {@code orgId} has the online check switched on at all (or
-	 * {@link #CONFIG_DEFAULT_WITHOUT_RECORD}'s {@code false} where it has no configuration). Exposed so the
-	 * nightly selection can exclude records that can never actually be checked: {@link #check} returns
-	 * before doing anything at all — no service call, no write, no {@code VATaxIDCheckedAt} update — once it
-	 * resolves this same flag {@code false}, so such a record would otherwise stay {@code NotChecked} with a
-	 * {@code null VATaxIDCheckedAt} forever, sorting to the very front of every future nightly run and
-	 * potentially occupying its whole budget without ever making progress.
+	 * @return whether {@code orgId} has the online check switched on at all (or the SysConfig-backed
+	 * default's {@code false} where it has no {@code VATaxID_Config} record — see
+	 * {@link VATaxIDConfigRepository#getByOrgId(OrgId)}). Exposed so the nightly selection can exclude
+	 * records that can never actually be checked: {@link #check} returns before doing anything at all — no
+	 * service call, no write, no {@code VATaxIDCheckedAt} update — once it resolves this same flag
+	 * {@code false}, so such a record would otherwise stay {@code NotChecked} with a {@code null
+	 * VATaxIDCheckedAt} forever, sorting to the very front of every future nightly run and potentially
+	 * occupying its whole budget without ever making progress.
 	 */
 	public boolean isViesCheckEnabled(@NonNull final OrgId orgId)
 	{
-		return getEffectiveConfig(orgId).isViesCheckEnabled();
+		return configRepository.getByOrgId(orgId).isViesCheckEnabled();
 	}
 
 	/**

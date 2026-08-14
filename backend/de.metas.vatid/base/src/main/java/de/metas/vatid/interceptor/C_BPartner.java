@@ -23,15 +23,17 @@
 package de.metas.vatid.interceptor;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.organization.OrgId;
 import de.metas.tax.api.VATIdentifier;
 import de.metas.util.Services;
+import de.metas.vatid.VATaxIDConfig;
+import de.metas.vatid.VATaxIDConfigRepository;
 import de.metas.vatid.VATaxIDValidationUtil;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.session.ISessionBL;
-import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
@@ -42,19 +44,23 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class C_BPartner
 {
-	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull private final ISessionBL sessionBL = Services.get(ISessionBL.class);
 
 	@NonNull private final VATaxIDCheckTrigger vataxIDCheckTrigger;
+	@NonNull private final VATaxIDConfigRepository configRepository;
 
 	/**
 	 * Unchanged synchronous format check: still {@code BEFORE_NEW}/{@code BEFORE_CHANGE}, still throws
-	 * hard on a malformed value, still gated by the same {@code C_BPartner.validateVATaxID} SysConfig.
+	 * hard on a malformed value, still gated — now by {@link VATaxIDConfigRepository#getByOrgId(OrgId)},
+	 * the same resolver {@code VATaxIDCheckService} uses, so this organisation's own
+	 * {@code VATaxID_Config.IsFormatCheckEnabled} (or, absent a record, the
+	 * {@code VATaxID_Config.IsFormatCheckEnabledByDefault} SysConfig) can never diverge from what the
+	 * after-commit online check enforces.
 	 *
 	 * <p><b>{@link #scheduleVATaxIDCheck(I_C_BPartner)} must not assume this ran.</b> The framework does
 	 * order {@code BEFORE_*} before {@code AFTER_*} within one save, but that guarantees only that this
-	 * <em>method</em> was invoked — not that it <em>validated</em> anything: the SysConfig above can make it
-	 * a no-op, and inter-class interceptor ordering is not guaranteed, so another interceptor's
+	 * <em>method</em> was invoked — not that it <em>validated</em> anything: the resolved config above can
+	 * make it a no-op, and inter-class interceptor ordering is not guaranteed, so another interceptor's
 	 * {@code BEFORE_*} handler could in principle set {@code VATaxID} after this one already looked at it
 	 * (no production interceptor does today — only test step-defs write the column). So a malformed value
 	 * can reach the after-commit path. That is safe, but only because
@@ -67,7 +73,8 @@ public class C_BPartner
 			ifColumnsChanged = I_C_BPartner.COLUMNNAME_VATaxID)
 	public void validateVATaxID(@NonNull final I_C_BPartner bpartner)
 	{
-		if (sysConfigBL.getBooleanValue(VATaxIDValidationUtil.SYSCONFIG_validateVATaxID, true))
+		final VATaxIDConfig config = configRepository.getByOrgId(OrgId.ofRepoId(bpartner.getAD_Org_ID()));
+		if (config.isFormatCheckEnabled())
 		{
 			VATaxIDValidationUtil.validate(VATIdentifier.ofNullable(bpartner.getVATaxID()));
 		}

@@ -28,12 +28,12 @@ import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_VATaxID_Config;
 import org.springframework.stereotype.Repository;
-
-import javax.annotation.Nullable;
 
 /**
  * Repository Tables: {@code VATaxID_Config}.
@@ -47,10 +47,29 @@ import javax.annotation.Nullable;
 @Repository
 public class VATaxIDConfigRepository
 {
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	/**
+	 * Governs the save-time and online-check format gate for an organisation that has <b>no</b>
+	 * {@code VATaxID_Config} record. Has no effect on an organisation that has one — that record's own
+	 * {@code IsFormatCheckEnabled} column governs instead. System-level only by design (no per-org
+	 * override is part of this SysConfig's contract); see {@link #getByOrgId(OrgId)}.
+	 */
+	@VisibleForTesting
+	public static final String SYSCONFIG_IsFormatCheckEnabledByDefault = "VATaxID_Config.IsFormatCheckEnabledByDefault";
 
-	@NonNull private final CCache<OrgId, VATaxIDConfig> configsByOrgId =
-			CCache.newCache(I_VATaxID_Config.Table_Name, 10, CCache.EXPIREMINUTES_Never);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+	@NonNull private final CCache<OrgId, VATaxIDConfig> configsByOrgId = CCache.<OrgId, VATaxIDConfig>builder()
+			.tableName(I_VATaxID_Config.Table_Name)
+			.initialCapacity(10)
+			.expireMinutes(CCache.EXPIREMINUTES_Never)
+			// The synthesized no-record default (below) reads AD_SysConfig, so a value composed for a
+			// cached org must also be dropped when that second table changes — see the
+			// metasfresh-persistence-layer skill § "Don't manually CacheMgt.reset(...)" and its
+			// WarehouseDAO.allWarehousePickingGroups precedent (a cache whose value is itself composed
+			// from a second table, not merely indexed by it — same mechanism).
+			.additionalTableNameToResetFor(I_AD_SysConfig.Table_Name)
+			.build();
 
 	@VisibleForTesting
 	public static VATaxIDConfigRepository newInstanceForUnitTesting()
@@ -61,25 +80,27 @@ public class VATaxIDConfigRepository
 	}
 
 	/**
-	 * @return the active {@code VATaxID_Config} for the given org, or {@code null} if that org has none.
+	 * @return the organisation's VAT-ID check configuration — <b>never {@code null}</b>. An organisation
+	 * with an active {@code VATaxID_Config} record gets that record, unchanged. An organisation with
+	 * <b>none</b> gets a synthesized configuration: {@link VATaxIDConfig#isFormatCheckEnabled()} follows
+	 * {@link #SYSCONFIG_IsFormatCheckEnabledByDefault} (System-level, {@code Y} as shipped), while
+	 * {@link VATaxIDConfig#isViesCheckEnabled()} is always {@code false} — that SysConfig governs only the
+	 * <em>format</em> half, so a config-less organisation can never end up with the online check on.
+	 * {@link VATaxIDConfig#getId()} is {@code null} on the synthesized configuration — there is no record
+	 * to point at.
 	 *
-	 * <p><b>Contract for the {@code null} case:</b> an organisation with no {@code VATaxID_Config} record
-	 * keeps today's behaviour exactly: format check on, VIES check off. Today that default is a hardcoded
-	 * literal in each caller — there is no SysConfig or other configurable source for it yet. Applying that
-	 * default is deliberately <b>not</b> done here: this repository is a thin
-	 * query layer over one table, whereas the default is a business rule with its own SysConfig lookup,
-	 * shared by several future callers (the save-time interceptor, the nightly recheck process, tax
-	 * determination) that do not exist yet. Resolving it once, in a single service-layer place, is a
-	 * later task's responsibility. <b>Every current and future caller of this method that must show
-	 * "no config" behaviour MUST apply that exact default itself</b> until such a service exists.
+	 * <p>This is the single place that resolves that default: every caller — both save-time interceptors
+	 * ({@code de.metas.vatid.interceptor.C_BPartner} / {@code C_BPartner_Location}) and
+	 * {@code VATaxIDCheckService} — calls this method and cannot resolve the "no config" case any other
+	 * way, which is what keeps them from diverging again on the same business question.
 	 */
-	@Nullable
+	@NonNull
 	public VATaxIDConfig getByOrgId(@NonNull final OrgId orgId)
 	{
 		return configsByOrgId.getOrLoad(orgId, () -> retrieveByOrgId(orgId));
 	}
 
-	@Nullable
+	@NonNull
 	private VATaxIDConfig retrieveByOrgId(@NonNull final OrgId orgId)
 	{
 		final I_VATaxID_Config record = queryBL
@@ -91,10 +112,27 @@ public class VATaxIDConfigRepository
 
 		if (record == null)
 		{
-			return null;
+			return synthesizeDefaultWithoutRecord();
 		}
 
 		return toVATaxIDConfig(record);
+	}
+
+	/**
+	 * The configuration an organisation with no {@code VATaxID_Config} record effectively has:
+	 * {@code recheckAfterDays} and {@code onServiceUnavailable} are unreachable while
+	 * {@code viesCheckEnabled} is {@code false}; they carry the fail-open values rather than being left to
+	 * look meaningful.
+	 */
+	@NonNull
+	private VATaxIDConfig synthesizeDefaultWithoutRecord()
+	{
+		return VATaxIDConfig.builder()
+				.formatCheckEnabled(sysConfigBL.getBooleanValue(SYSCONFIG_IsFormatCheckEnabledByDefault, true))
+				.viesCheckEnabled(false)
+				.recheckAfterDays(0)
+				.onServiceUnavailable(VATaxIDOnServiceUnavailableAction.ServiceUnavailable)
+				.build();
 	}
 
 	@NonNull
