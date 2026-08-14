@@ -691,14 +691,25 @@ async function configureVatIdCheck(page, { restApiBaseURL, orgId }) {
   // half-rewritten towards the stub with its captured originals discarded. Silent
   // corruption of a record shared with every other spec on the stack.
   //
-  // The steps ABOVE this line need no such protection, and specifically `Alt+N`
-  // does not: it only opens an in-memory draft in the webapi's document
-  // collection, so nothing is persisted that a teardown could have to undo.
-  // Measured, not assumed — `Alt+N` was driven on this window and left to sit:
-  // the URL took id 1000003 while `VATaxID_Config` still held exactly its one
-  // pre-existing row. The row is INSERTed only by the first valid save, which is
-  // also why the earlier unique-index failures on ids 1000001/1000002 left no
-  // rows behind. So a throw between `Alt+N` and this line leaks nothing.
+  // The steps ABOVE this line need no such protection, on two separate grounds —
+  // stated separately because they rest on different kinds of evidence:
+  //
+  //   MEASURED: `Alt+N` persists nothing. It was driven on this window and the run
+  //   left to sit at exactly this point — the URL took document id 1000003 while
+  //   `VATaxID_Config` still held exactly its one pre-existing row. It opens an
+  //   in-memory draft in the webapi's document collection; the row is INSERTed only
+  //   by the first valid save. That is also why the earlier unique-index failures on
+  //   document ids 1000001/1000002 left no rows behind. A document id in the URL is
+  //   therefore NOT evidence that a row exists.
+  //
+  //   READ: the three statements between `Alt+N` and here — the URL wait, the
+  //   pending-indicator wait and the field-container wait — are navigation/DOM waits
+  //   that issue no write, so they cannot add persistence risk to that window.
+  //
+  // No runtime assertion is added here on purpose. It could only ever fire if a
+  // future frontend change made record creation eager, which is a hypothetical
+  // rather than a failure mode reachable today — and the teardown it would guard
+  // has nothing to undo in the state it would detect.
   pendingConfigTeardown = { recordId, wasCreated, original: null };
 
   await assertRecordIsValid(VATID_CONFIG_WINDOW_ID, recordId, 'VAT-ID check configuration record');
