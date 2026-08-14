@@ -216,9 +216,9 @@ public class VATaxIDCheckRepository
 	/**
 	 * @return how many {@code VATaxID_CheckLog} rows one run ({@code pinstanceId}) wrote — every one is
 	 * a call the online service was actually asked, regardless of the answer — and the average time
-	 * between {@code RequestDate} and {@code ResponseDate} over the ones that got one. Computed over
-	 * the rows this run wrote, keyed by its own {@code AD_PInstance_ID} (DESIGN.md §5: "calls made, and
-	 * average response time … both are computed over the rows this run wrote").
+	 * between {@code RequestDate} and {@code ResponseDate} over the ones that got one. Deliberately
+	 * computed only over the rows carrying that one run's own {@code AD_PInstance_ID}, not a running
+	 * total across every run there has ever been.
 	 */
 	@NonNull
 	public VATaxIDCheckCallStats getCallStatsForRun(@NonNull final PInstanceId pinstanceId)

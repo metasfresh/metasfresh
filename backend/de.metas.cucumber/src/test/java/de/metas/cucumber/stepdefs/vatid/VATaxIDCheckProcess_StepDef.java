@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.vatid;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
@@ -39,6 +40,7 @@ import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.vatid.VATaxIDCheckRunService;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -46,6 +48,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 
@@ -71,6 +74,7 @@ public class VATaxIDCheckProcess_StepDef
 	@NonNull private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	@NonNull private final IADPInstanceDAO pInstanceDAO = Services.get(IADPInstanceDAO.class);
 	@NonNull private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
+	@NonNull private final VATaxIDCheckRunService checkRunService = SpringContextHolder.instance.getBean(VATaxIDCheckRunService.class);
 
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
 
@@ -153,6 +157,17 @@ public class VATaxIDCheckProcess_StepDef
 	 * {@code org.compiere.server.Scheduler#createProcessInfo} builds for a nightly {@code AD_Scheduler}
 	 * run (no table, no where-clause, no single record), as opposed to
 	 * {@link #runProcessForSelection(String, DataTable)}, which always carries one.
+	 *
+	 * <p><b>Only proves the branch does not throw {@code @NoSelection@}</b> — it deliberately does NOT
+	 * assert anything that depends on what the run actually processed. The nightly path reaches every
+	 * VAT-ID system-wide (see {@link VATaxIDCheckRunService#retrieveAllBPartnerIdsWithVATaxID()}), which
+	 * on the shared cucumber database includes every other feature's VAT-ID-bearing fixtures, not only
+	 * this scenario's own — so a scenario using this step must run with the online check switched OFF for
+	 * this organisation, making the run a guaranteed no-op for every record it reaches (format
+	 * re-validation of an already-saved, already-valid value, or — for a leftover value that bypassed the
+	 * save-time gate — a caught-and-logged warning with no write at all; see
+	 * {@link #assertNightlySelectionIncludes(String)} for how the selection itself is verified instead,
+	 * without executing a real check on anyone).
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
@@ -265,6 +280,36 @@ public class VATaxIDCheckProcess_StepDef
 		assertThat(logs)
 				.as("AD_PInstance_Log of PInstance %s must contain NO status-changed line for VATaxID '%s'", lastPInstanceId, vataxID)
 				.noneMatch(log -> log.getP_Msg() != null && log.getP_Msg().contains(forbiddenInfix));
+	}
+
+	/**
+	 * Asserts that {@code C_BPartner} is included in the nightly schedule's own selection — every VAT-ID
+	 * system-wide, per {@link VATaxIDCheckRunService#retrieveAllBPartnerIdsWithVATaxID()} — without
+	 * actually running a check on anyone. This is the read-only counterpart to
+	 * {@link #runProcessAsScheduled()}: that step only proves the branch does not crash, this step proves
+	 * WHAT it selects, so the two together cover the nightly path without either one needing to execute a
+	 * real online check against the shared cucumber database's other features' fixtures.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_BPartner_ID</b> — (required, identifier-ref) partner expected to be in the nightly selection
+	 * @cucumber.depends StepDefData: C_BPartner_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then the C_BPartner_VATaxID_Check nightly selection includes C_BPartner 'bp_scheduled'
+	 * </pre>
+	 */
+	@Then("the C_BPartner_VATaxID_Check nightly selection includes C_BPartner {string}")
+	public void assertNightlySelectionIncludes(@NonNull final String bpartnerIdentifier)
+	{
+		final I_C_BPartner bpartnerRecord = bpartnerTable.get(bpartnerIdentifier);
+		final BPartnerId expectedId = BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID());
+
+		final ImmutableList<BPartnerId> nightlySelection = checkRunService.retrieveAllBPartnerIdsWithVATaxID();
+
+		assertThat(nightlySelection)
+				.as("C_BPartner_VATaxID_Check nightly selection must include C_BPartner `%s` (%s)", bpartnerIdentifier, expectedId)
+				.contains(expectedId);
 	}
 
 	private void assertLastRunLogContains(@NonNull final String expectedSuffix)

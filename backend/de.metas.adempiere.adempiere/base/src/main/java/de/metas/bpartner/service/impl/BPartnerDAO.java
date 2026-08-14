@@ -681,6 +681,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	{
 		return queryBL.createQueryBuilder(I_C_BPartner.class)
 				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
 				.addNotNull(I_C_BPartner.COLUMNNAME_VATaxID)
 				.addNotEqualsFilter(I_C_BPartner.COLUMNNAME_VATaxID, "")
 				.orderBy(I_C_BPartner.COLUMNNAME_C_BPartner_ID)

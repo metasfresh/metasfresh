@@ -281,10 +281,21 @@ public interface IBPartnerDAO extends ISingletonService
 	ImmutableList<I_C_BPartner_Location> retrieveBPartnerLocationsWithVATaxID(@NonNull Collection<BPartnerId> bpartnerIds);
 
 	/**
-	 * @return every active {@code C_BPartner} with a non-blank header {@code VATaxID}, ordered by
-	 * {@code C_BPartner_ID} — system-wide, not scoped to any selection or client. This is the nightly
-	 * schedule's own selection (as opposed to a user-triggered run's selection of specific partners):
-	 * a scheduled run has no selection to read at all, so it checks every VAT-ID there is instead.
+	 * @return every active {@code C_BPartner} of the current context client with a non-blank header
+	 * {@code VATaxID}, ordered by {@code C_BPartner_ID} — not scoped to any selection, but scoped to the
+	 * calling client like the rest of this DAO's queries. This is the nightly schedule's own selection (as
+	 * opposed to a user-triggered run's selection of specific partners): a scheduled run has no selection
+	 * to read at all, so it checks every VAT-ID of its own client instead.
+	 *
+	 * <p><b>Not further scoped by organisation, and that is deliberate, not an oversight.</b> This is a
+	 * plain, cheap listing — it does not itself decide what happens to any of the ids it returns. The
+	 * caller (<code>de.metas.vatid.VATaxIDCheckRunService</code>) resolves each partner's <em>own</em>
+	 * organisation's configuration before touching it, so an organisation that never enabled the online
+	 * check pays only for an in-memory offline format re-check of a value that already passed the
+	 * save-time gate to exist at all — never a network call, never a write, never funnelled into any
+	 * other organisation's policy. Narrowing this query to "organisations with the check enabled" would
+	 * save that negligible re-check cost but cannot change what is safe to return, since that safety is
+	 * already enforced per-partner downstream, not here.
 	 */
 	ImmutableList<BPartnerId> retrieveBPartnerIdsWithVATaxID();
 

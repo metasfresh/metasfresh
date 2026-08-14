@@ -29,6 +29,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.time.SystemTime;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
@@ -48,8 +49,13 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
 /**
@@ -97,7 +103,7 @@ import java.util.function.Function;
  * transaction to escape", it is that each target's <em>whole</em> unit of work must commit or fail
  * completely independently of every other target's.
  *
- * <p><b>Availability pre-filter</b> ({@code GET /check-status}, DESIGN.md §5): before checking anything,
+ * <p><b>Availability pre-filter</b> ({@code GET /check-status}): before checking anything,
  * {@link #run(VATaxIDCheckRunRequest)} asks {@link VATaxIDCheckService#getUnavailableCountryCodes(OrgId)}
  * once per distinct organisation among the selection's targets — not once per VAT-ID — and skips every
  * target whose {@link VATIdentifier#getCountryCodePrefix()} is in the returned set. A skipped target is
@@ -205,11 +211,12 @@ public class VATaxIDCheckRunService
 
 	/**
 	 * Logs, and returns, {@link VATaxIDCheckService#getCallStatsForRun(PInstanceId)} for this run — the
-	 * AC16 "calls made, and average response time" summary line. Reported even when {@code 0} calls were
-	 * made: a run over a fully de-duplicated selection making zero calls is exactly the signal DESIGN.md
-	 * §5 calls out ("exposes whether de-duplication is working"). No pinstance (e.g. a unit test or a
-	 * REST-triggered run outside any process) means nothing to attribute the log rows to — reported as
-	 * zero rather than queried, since {@code Loggables} is a no-op outside a process anyway.
+	 * "calls made, and average response time" summary line. Reported even when {@code 0} calls were made:
+	 * a run over a fully de-duplicated selection making zero calls is itself useful information, since it
+	 * shows the de-duplication window is doing its job rather than the run having done nothing. No
+	 * pinstance (e.g. a unit test or a REST-triggered run outside any process) means nothing to attribute
+	 * the log rows to — reported as zero rather than queried, since {@code Loggables} is a no-op outside a
+	 * process anyway.
 	 */
 	@NonNull
 	private VATaxIDCheckCallStats reportCallStats(@Nullable final PInstanceId pinstanceId)
@@ -227,13 +234,96 @@ public class VATaxIDCheckRunService
 
 	/**
 	 * The nightly schedule's own selection (see the class javadoc on {@code CheckTarget}'s caller,
-	 * {@code C_BPartner_VATaxID_Check}): every {@code C_BPartner_ID} with a non-blank VAT-ID, system-wide,
-	 * as opposed to a user-triggered run's selection of specific partners.
+	 * {@code C_BPartner_VATaxID_Check}): every {@code C_BPartner_ID} that is either never checked or due
+	 * for a re-check under its own organisation's {@code RecheckAfterDays} — the same staleness window
+	 * {@link VATaxIDCheckService#check} itself applies, now also applied at selection time rather than
+	 * left entirely to that per-record de-duplication — ordered least-recently-checked first (a record
+	 * never checked at all sorts before any record that was, however long ago).
+	 *
+	 * <p><b>Why the ordering matters, not just the filter.</b> Without either, a nightly run throttled by
+	 * {@code MaxChecksPerRun} always takes the same {@code C_BPartner_ID}-ordered prefix: the lowest ids
+	 * get re-visited every single night (mostly finding themselves still fresh and no-opping), while a
+	 * higher-id record that has never been checked, or has been stale for weeks, never advances past the
+	 * throttle at all. Filtering to only the currently-due records already shrinks that prefix to
+	 * something meaningful, and the ordering on top makes sure that when the due set is ITSELF larger than
+	 * {@code MaxChecksPerRun}, the most-overdue records win the run's budget rather than whichever happen
+	 * to sort first by id.
+	 *
+	 * <p>Scoped to the caller's own client (see {@link IBPartnerDAO#retrieveBPartnerIdsWithVATaxID()},
+	 * which this delegates to), but deliberately not further scoped by organisation or
+	 * {@code VATaxID_Config} existence — an organisation that never enabled the online check is safe, not
+	 * merely cheap, to still list here: the correctness (whether it is checked at all) and the safety
+	 * (whether checking it can affect anything else) both live downstream, per target, never in this
+	 * selection.
 	 */
 	@NonNull
 	public ImmutableList<BPartnerId> retrieveAllBPartnerIdsWithVATaxID()
 	{
-		return bpartnerDAO.retrieveBPartnerIdsWithVATaxID();
+		final ImmutableList<BPartnerId> allIdsWithVATaxID = bpartnerDAO.retrieveBPartnerIdsWithVATaxID();
+		if (allIdsWithVATaxID.isEmpty())
+		{
+			return allIdsWithVATaxID;
+		}
+
+		final ImmutableMap<BPartnerId, I_C_BPartner> bpartnersById = bpartnerDAO.getByIds(allIdsWithVATaxID)
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						bpartnerRecord -> BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID()),
+						Function.identity()));
+
+		final Instant now = SystemTime.asInstant();
+		final Map<OrgId, Integer> recheckAfterDaysByOrg = new HashMap<>();
+
+		return allIdsWithVATaxID.stream()
+				.map(bpartnersById::get)
+				.filter(Objects::nonNull)
+				.filter(bpartnerRecord -> isDueForNightlyRecheck(bpartnerRecord, now, recheckAfterDaysByOrg))
+				.sorted(Comparator.comparing(
+						VATaxIDCheckRunService::extractCheckedAtOrNull,
+						Comparator.nullsFirst(Comparator.naturalOrder())))
+				.map(bpartnerRecord -> BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID()))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	/**
+	 * @return whether {@code bpartnerRecord}'s own header VAT-ID is due for the nightly run: never
+	 * checked, or its own organisation's {@code RecheckAfterDays} has elapsed since it last was. Mirrors
+	 * {@link VATaxIDCheckService#check}'s own de-duplication window exactly — this is a cheaper, coarser
+	 * pre-filter over the same rule, not a competing one; {@code check} still runs its own, authoritative
+	 * de-duplication against the check-log evidence for whatever passes this filter.
+	 */
+	private boolean isDueForNightlyRecheck(
+			@NonNull final I_C_BPartner bpartnerRecord,
+			@NonNull final Instant now,
+			@NonNull final Map<OrgId, Integer> recheckAfterDaysByOrg)
+	{
+		final VATaxIDStatus status = VATaxIDStatus.optionalOfNullableCode(bpartnerRecord.getVATaxIDStatus()).orElse(VATaxIDStatus.NotChecked);
+		if (status == VATaxIDStatus.NotChecked)
+		{
+			return true;
+		}
+
+		final Instant checkedAt = extractCheckedAtOrNull(bpartnerRecord);
+		if (checkedAt == null)
+		{
+			return true;
+		}
+
+		final OrgId orgId = OrgId.ofRepoId(bpartnerRecord.getAD_Org_ID());
+		final int recheckAfterDays = recheckAfterDaysByOrg.computeIfAbsent(orgId, checkService::getRecheckAfterDays);
+		if (recheckAfterDays <= 0)
+		{
+			return true;
+		}
+
+		return checkedAt.isBefore(now.minus(Duration.ofDays(recheckAfterDays)));
+	}
+
+	@Nullable
+	private static Instant extractCheckedAtOrNull(@NonNull final I_C_BPartner bpartnerRecord)
+	{
+		final Timestamp checkedAt = bpartnerRecord.getVATaxIDCheckedAt();
+		return checkedAt != null ? checkedAt.toInstant() : null;
 	}
 
 	/**

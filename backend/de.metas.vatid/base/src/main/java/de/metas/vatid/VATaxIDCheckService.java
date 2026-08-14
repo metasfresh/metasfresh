@@ -215,10 +215,10 @@ public class VATaxIDCheckService
 				.checkedAt(SystemTime.asInstant())
 				.build());
 
-		// Suppressed on a first-ever check (previous status NotChecked, AC16/DESIGN.md §5): the initial
-		// rollout would otherwise produce one line per record -- every VAT-ID "changes" the first time it
-		// is checked at all -- drowning the handful of genuine re-check flips a run summary exists to
-		// surface. A real re-check flip (Valid -> Invalid, ServiceUnavailable -> Valid, ...) still logs.
+		// Suppressed on a first-ever check (previous status NotChecked): the initial rollout would
+		// otherwise produce one line per record -- every VAT-ID "changes" the first time it is checked at
+		// all -- drowning the handful of genuine re-check flips a run summary exists to surface. A real
+		// re-check flip (Valid -> Invalid, ServiceUnavailable -> Valid, ...) still logs.
 		if (result.getStatus() != parentStatus.getStatus() && parentStatus.getStatus() != VATaxIDStatus.NotChecked)
 		{
 			Loggables.addLog("VAT-ID {}: status {} -> {}", vataxID.getAsString(), parentStatus.getStatus(), result.getStatus());
@@ -269,6 +269,17 @@ public class VATaxIDCheckService
 	public VATaxIDCheckCallStats getCallStatsForRun(@NonNull final PInstanceId pinstanceId)
 	{
 		return checkRepository.getCallStatsForRun(pinstanceId);
+	}
+
+	/**
+	 * @return {@code orgId}'s own {@code RecheckAfterDays} (or {@link #CONFIG_DEFAULT_WITHOUT_RECORD}'s
+	 * where it has none) — the same window {@link #check(VATaxIDCheckRequest)} itself applies for
+	 * de-duplication. Exposed so the nightly selection can pre-filter to records that are actually due,
+	 * without duplicating the organisation-config lookup this service already owns.
+	 */
+	public int getRecheckAfterDays(@NonNull final OrgId orgId)
+	{
+		return getEffectiveConfig(orgId).getRecheckAfterDays();
 	}
 
 	/**
