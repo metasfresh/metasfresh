@@ -91,26 +91,45 @@ public class VATaxIDCheckRepository
 	 * there is no separate "already known" final-status creation path, because every check — successful,
 	 * failed or never answered — starts life as a sent request.
 	 *
+	 * <p><b>Commits in its own, immediately-committing transaction — deliberately, not a shortcut.</b>
+	 * {@code callInNewTrx} is normally a hack (every new use needs an inline justification, per
+	 * {@code docs/coding-rules/java-general.md} / {@code ITrxManager}'s own deprecation policy on the
+	 * method): here it is the entire point. This row IS the feature's legal evidence that a check was
+	 * attempted at all (see the class javadoc). Its caller — {@code VATaxIDCheckService#check} — runs
+	 * inside a per-item transaction the check-run service opens (see
+	 * {@code VATaxIDCheckRunService#checkOneInOwnTrx}); if this append joined that transaction (the
+	 * default for a plain {@code saveRecord} with no explicit transaction), a later failure in the SAME
+	 * check-and-refresh unit — the online checker throwing, or a triggered order-tax refresh rolling the
+	 * whole unit back — would erase this row along with everything else, even though the request really
+	 * was sent. Committing independently, before the online service is even called, means the row survives
+	 * that rollback: exactly what lets {@link #completeCheck(VATaxIDCheckLogId, VATaxIDCheckResult)}'s later
+	 * update — which correctly DOES join the ambient transaction, see that method's own javadoc — roll back
+	 * on its own without erasing the evidence that an attempt was made. A row left at
+	 * {@link VATaxIDStatus#RequestSent} after such a rollback is not a bug: it is exactly what that status
+	 * means — "a check is in flight, or its outcome was never learned."
+	 *
 	 * @return the id of the newly written row, to be passed to {@link #completeCheck(VATaxIDCheckLogId, VATaxIDCheckResult)}
 	 * once (or if) the answer arrives.
 	 */
 	@NonNull
 	public VATaxIDCheckLogId writeRequestSent(@NonNull final VATaxIDCheckRequest request)
 	{
-		final I_VATaxID_CheckLog record = InterfaceWrapperHelper.newInstance(I_VATaxID_CheckLog.class);
-		record.setC_BPartner_ID(BPartnerId.toRepoId(request.getBpartnerId()));
-		record.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(request.getBpartnerLocationId()));
-		record.setVATaxID(request.getVataxID().getAsString());
-		record.setVATaxIDStatus(VATaxIDStatus.RequestSent.getCode());
-		record.setRequestDate(TimeUtil.asTimestampNotNull(SystemTime.asInstant()));
-		record.setAD_PInstance_ID(PInstanceId.toRepoId(request.getPinstanceId()));
-		// -1, the same "no id" sentinel PInstanceId.toRepoId(null) yields above: the PO layer stores it as SQL
-		// NULL, whereas a 0 would be persisted as a literal zero AD_Session_ID.
-		record.setAD_Session_ID(request.getAdSessionId() != null ? request.getAdSessionId() : -1);
+		return trxManager.callInNewTrx(() -> {
+			final I_VATaxID_CheckLog record = InterfaceWrapperHelper.newInstance(I_VATaxID_CheckLog.class);
+			record.setC_BPartner_ID(BPartnerId.toRepoId(request.getBpartnerId()));
+			record.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(request.getBpartnerLocationId()));
+			record.setVATaxID(request.getVataxID().getAsString());
+			record.setVATaxIDStatus(VATaxIDStatus.RequestSent.getCode());
+			record.setRequestDate(TimeUtil.asTimestampNotNull(SystemTime.asInstant()));
+			record.setAD_PInstance_ID(PInstanceId.toRepoId(request.getPinstanceId()));
+			// -1, the same "no id" sentinel PInstanceId.toRepoId(null) yields above: the PO layer stores it as SQL
+			// NULL, whereas a 0 would be persisted as a literal zero AD_Session_ID.
+			record.setAD_Session_ID(request.getAdSessionId() != null ? request.getAdSessionId() : -1);
 
-		InterfaceWrapperHelper.saveRecord(record);
+			InterfaceWrapperHelper.saveRecord(record);
 
-		return VATaxIDCheckLogId.ofRepoId(record.getVATaxID_CheckLog_ID());
+			return VATaxIDCheckLogId.ofRepoId(record.getVATaxID_CheckLog_ID());
+		});
 	}
 
 	/**

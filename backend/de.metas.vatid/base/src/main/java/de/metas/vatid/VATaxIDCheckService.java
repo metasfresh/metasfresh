@@ -55,8 +55,12 @@ import java.time.Instant;
  *         what makes an unreachable service harmless while the last result is still fresh.</li>
  *     <li><b>Write {@link VATaxIDStatus#RequestSent}</b> via
  *         {@link VATaxIDCheckRepository#writeRequestSent(VATaxIDCheckRequest)} <em>before</em> the call, so
- *         a check whose outcome is never learned (crash, timeout, killed container) still leaves evidence
- *         that it was asked.</li>
+ *         a check whose outcome is never learned — a crash, a timeout, a killed container, the online
+ *         checker throwing, or a later order-tax refresh rolling the whole check-and-refresh unit back —
+ *         still leaves evidence that it was asked. This genuinely holds because that write commits in its
+ *         own, independent transaction (see that method's own javadoc) rather than joining whatever
+ *         per-item transaction the caller happens to be running in — a plain save sharing that transaction
+ *         would be erased by exactly the failures this guarantee exists to survive.</li>
  *     <li><b>Call {@link VATaxIDOnlineChecker#check(de.metas.tax.api.VATIdentifier, VATaxIDConfig)}</b>.</li>
  *     <li><b>Complete the log row</b> with the final status
  *         ({@link VATaxIDCheckRepository#completeCheck(VATaxIDCheckLogId, VATaxIDCheckResult)}) and
