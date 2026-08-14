@@ -3348,6 +3348,71 @@ Feature: invoice payment allocation
       | V_Liability_Acct      | 5.95 EUR      |
 
 
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+  @Id:S0465_CMA_170
+  @from:cucumber
+  @allure.label.epic:E0340_Invoicing
+  @allure.label.feature:F00700_Invoicing
+  @allure.label.epic:E0225_Accounting
+  @allure.label.feature:F01010_Automatic_Accounting
+  @F00700
+  Scenario: sales credit memo with early-payment discount allocated against sales invoice - allocation must balance
+    # The customer's payment term grants 1% Skonto.
+    # Credit memo GrandTotal = 100.00 EUR (net 84.03 + 19% VAT 15.97), discount = 1.00 EUR.
+    # Allocated amount = GrandTotal + discount = 101.00 EUR.
+    # The discount leg and its receivable counter-leg must land on OPPOSITE sides.
+    # Both on the same side leaves the allocation unbalanced in source currency, and the
+    # residual is then pushed onto the suspense-balancing account.
+    Given metasfresh contains M_Products:
+      | Identifier |
+      | product    |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | salesPLV               | product      | 84.03    | PCE      |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier     | IsCustomer | IsVendor | M_PricingSystem_ID | C_PaymentTerm_ID.Value |
+      | skontoCustomer | Y          | N        | pricingSystem      | 10 Tage 1 %            |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier             | C_BPartner_ID  | IsShipToDefault | IsBillToDefault |
+      | skontoCustomerLocation | skontoCustomer | Y               | Y               |
+
+    # Sales invoice, large enough to absorb the credit memo
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID  | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | invoice    | skontoCustomer | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | invoice      | product      | 10 PCE      |
+    And the invoice identified by invoice is completed
+
+    # Credit memo: 1 PCE => GrandTotal 100.00 EUR
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID  | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | creditMemo | skontoCustomer | Gutschrift              | 2022-05-11   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | creditMemo   | product      | 1 PCE       |
+    And the invoice identified by creditMemo is completed
+
+    And allocate invoices (credit memo/purchase) to invoices
+      | C_Invoice_ID | CreditMemo.C_Invoice_ID |
+      | invoice      | creditMemo              |
+
+    # The credit-memo line carries the discount; the invoice line carries none.
+    And validate C_AllocationLines
+      | C_Invoice_ID | Amount  | DiscountAmt | WriteOffAmt | C_AllocationHdr_ID |
+      | invoice      | 101.00  | 0           | 0           | alloc              |
+      | creditMemo   | -101.00 | 1.00        | 0           | alloc              |
+
+    # The allocation's receivable movements of +101.00 and -101.00 cancel, so the balance is
+    # exactly the discount counter-leg. It must be a DEBIT of -1.00 => balance -1.00 EUR.
+    And Fact_Acct records balances for documents alloc are matching
+      | AccountConceptualName | SourceBalance |
+      | C_Receivable_Acct     | -1.00 EUR     |
+
+
 
 
 
