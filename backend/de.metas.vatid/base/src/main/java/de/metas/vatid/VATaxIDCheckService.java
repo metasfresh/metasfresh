@@ -283,6 +283,20 @@ public class VATaxIDCheckService
 	}
 
 	/**
+	 * @return whether {@code orgId} has the online check switched on at all (or
+	 * {@link #CONFIG_DEFAULT_WITHOUT_RECORD}'s {@code false} where it has no configuration). Exposed so the
+	 * nightly selection can exclude records that can never actually be checked: {@link #check} returns
+	 * before doing anything at all — no service call, no write, no {@code VATaxIDCheckedAt} update — once it
+	 * resolves this same flag {@code false}, so such a record would otherwise stay {@code NotChecked} with a
+	 * {@code null VATaxIDCheckedAt} forever, sorting to the very front of every future nightly run and
+	 * potentially occupying its whole budget without ever making progress.
+	 */
+	public boolean isViesCheckEnabled(@NonNull final OrgId orgId)
+	{
+		return getEffectiveConfig(orgId).isViesCheckEnabled();
+	}
+
+	/**
 	 * @return the last conclusive check of {@code vataxID} if it is still younger than
 	 * {@link VATaxIDConfig#getRecheckAfterDays()}, else {@code null} — i.e. {@code null} means "send a
 	 * request". A {@code RecheckAfterDays} of zero or less is no de-duplication window at all: every check

@@ -250,11 +250,13 @@ public class VATaxIDCheckRunService
 	 * to sort first by id.
 	 *
 	 * <p>Scoped to the caller's own client (see {@link IBPartnerDAO#retrieveBPartnerIdsWithVATaxID()},
-	 * which this delegates to), but deliberately not further scoped by organisation or
-	 * {@code VATaxID_Config} existence — an organisation that never enabled the online check is safe, not
-	 * merely cheap, to still list here: the correctness (whether it is checked at all) and the safety
-	 * (whether checking it can affect anything else) both live downstream, per target, never in this
-	 * selection.
+	 * which this delegates to). {@link #isDueForNightlyRecheck} additionally excludes any record whose own
+	 * organisation has the online check switched off entirely: such a record can never actually be checked
+	 * ({@link VATaxIDCheckService#check} returns before doing anything once it resolves that same flag),
+	 * so it would otherwise stay {@code NotChecked} forever and permanently sort to the very front of this
+	 * list (a never-checked record sorts first of all) — occupying the whole {@code MaxChecksPerRun} budget,
+	 * every single night, without ever making progress, and starving out every other, checkable record
+	 * behind it.
 	 */
 	@NonNull
 	public ImmutableList<BPartnerId> retrieveAllBPartnerIdsWithVATaxID()
@@ -286,17 +288,30 @@ public class VATaxIDCheckRunService
 	}
 
 	/**
-	 * @return whether {@code bpartnerRecord}'s own header VAT-ID is due for the nightly run: never
-	 * checked, or its own organisation's {@code RecheckAfterDays} has elapsed since it last was. Mirrors
+	 * @return whether {@code bpartnerRecord}'s own header VAT-ID is due for the nightly run: its own
+	 * organisation has the online check switched on at all, AND it is either never checked or its own
+	 * organisation's {@code RecheckAfterDays} has elapsed since it last was. The staleness half mirrors
 	 * {@link VATaxIDCheckService#check}'s own de-duplication window exactly — this is a cheaper, coarser
 	 * pre-filter over the same rule, not a competing one; {@code check} still runs its own, authoritative
 	 * de-duplication against the check-log evidence for whatever passes this filter.
+	 *
+	 * <p>The VIES-enabled check comes first and short-circuits everything else, including the
+	 * never-checked case: {@code check} itself does nothing at all for such an organisation, so a record
+	 * under it must never be reported "due" no matter how long it has sat {@code NotChecked} — see the
+	 * class javadoc on {@link #retrieveAllBPartnerIdsWithVATaxID()} for why leaving it in would starve the
+	 * nightly budget.
 	 */
 	private boolean isDueForNightlyRecheck(
 			@NonNull final I_C_BPartner bpartnerRecord,
 			@NonNull final Instant now,
 			@NonNull final Map<OrgId, Integer> recheckAfterDaysByOrg)
 	{
+		final OrgId orgId = OrgId.ofRepoId(bpartnerRecord.getAD_Org_ID());
+		if (!checkService.isViesCheckEnabled(orgId))
+		{
+			return false;
+		}
+
 		final VATaxIDStatus status = VATaxIDStatus.optionalOfNullableCode(bpartnerRecord.getVATaxIDStatus()).orElse(VATaxIDStatus.NotChecked);
 		if (status == VATaxIDStatus.NotChecked)
 		{
@@ -309,7 +324,6 @@ public class VATaxIDCheckRunService
 			return true;
 		}
 
-		final OrgId orgId = OrgId.ofRepoId(bpartnerRecord.getAD_Org_ID());
 		final int recheckAfterDays = recheckAfterDaysByOrg.computeIfAbsent(orgId, checkService::getRecheckAfterDays);
 		if (recheckAfterDays <= 0)
 		{
