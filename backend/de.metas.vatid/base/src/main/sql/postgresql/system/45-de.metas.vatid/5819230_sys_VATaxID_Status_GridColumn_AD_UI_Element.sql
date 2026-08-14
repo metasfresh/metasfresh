@@ -37,15 +37,17 @@
 -- OPEN ITEM for tab 540843 -- the UPDATE below is currently a NO-OP and needs a design decision.
 -- This window keeps its whole VAT-ID block behind the advanced-edit toggle
 -- (AD_UI_Element.IsAdvancedField='Y'), and an advanced field can NEVER become a grid column in the
--- WebUI: the grid-layout builder itself does not filter on IsAdvancedField, but the layer that
--- serialises a view layout for the client drops every advanced element, and the list-view layout has
--- no way to ask for them. Measured against a running WebUI, not inferred: with this script applied,
--- the rendered grid of window 540354 still shows its 12 pre-existing columns and no VATaxIDStatus,
--- while windows/tabs whose element is IsAdvancedField='N' (tabs 220 and 222 below) do show it. Three
--- unrelated core windows behave the same way -- 134/tab 249 (Help), 108/tab 118 (Description),
--- 232/tab 402 (Priority, DueType) each carry an element with IsAdvancedField='Y' AND
--- IsDisplayedGrid='Y', and none of those columns renders either. 73 such elements exist in core, so
--- the combination is common and has always been inert.
+-- WebUI: on the primary path that builds a grid layout from the tab's IsDisplayedGrid rows there is no
+-- filter on IsAdvancedField (the zero-grid-columns fallback path does have one, but it never engages on
+-- a tab that already has grid columns) -- yet the layer that serialises a view layout for the client
+-- drops every advanced element, and the list-view layout has no way to ask for them. Measured against a
+-- running WebUI, not inferred: with this script applied, the rendered grid of window 540354 still shows
+-- its 12 pre-existing columns and no VATaxIDStatus, while windows/tabs whose element is
+-- IsAdvancedField='N' (tabs 220 and 222 below) do show it. Three unrelated core windows behave the same
+-- way -- 134/tab 249 (Help), 108/tab 118 (Description), 232/tab 402 (Priority, DueType, Kostenstelle)
+-- each carry at least one element with IsAdvancedField='Y' AND IsDisplayedGrid='Y', and none of those
+-- columns renders either. 73 such elements exist in core, so the combination is common and has always
+-- been inert.
 -- Resolving it requires a choice that is outside the "make the status a grid column" decision:
 --   (a) also set IsAdvancedField='N' on element 652921 -- the column then renders, but the status
 --       additionally appears on this window's normal single-row form, in a section that today shows
