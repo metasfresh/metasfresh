@@ -59,6 +59,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 /**
  * Covers the manual sales order line path: setting or changing the product on an order line must only
@@ -257,6 +258,44 @@ public class C_OrderLineTest
 		saveRecord(order);
 	}
 
+	/**
+	 * Clearing the product on the line fires this callout with {@code M_Product_ID} unset. There is no
+	 * product to default a packing instruction for, and the callout must not throw — an AD
+	 * {@code Mandatory} flag is only enforced on persist, so a pre-save callout genuinely sees the cleared
+	 * value, exactly as it does for an unset DatePromised above.
+	 */
+	@Test
+	public void productCleared_doesNotThrowAndLeavesThePackingInstructionAlone()
+	{
+		setEnforcePrecisePrice(true);
+		final I_M_HU_PI_Item_Product piip = createDefaultForProductPackingInstruction();
+		createProductPrice(null);
+		givenTheLineAlreadyHasPackingInstruction(piip);
+		clearOrderLineProduct();
+
+		assertThatCode(() -> interceptor.onProductSetOrChanged(orderLine)).doesNotThrowAnyException();
+
+		assertThat(orderLine.getM_HU_PI_Item_Product_ID()).isEqualTo(piip.getM_HU_PI_Item_Product_ID());
+	}
+
+	/**
+	 * The business partner is read on the same lookup call and is just as unset-able while editing. Unlike the
+	 * product it needs no early return — the lookup accepts no partner and simply drops that filter — so the
+	 * default must still be applied rather than merely not throwing.
+	 */
+	@Test
+	public void bpartnerCleared_stillAppliesTheDefault()
+	{
+		setEnforcePrecisePrice(true);
+		final I_M_HU_PI_Item_Product piip = createDefaultForProductPackingInstruction();
+		createProductPrice(piip);
+		clearOrderLineBPartner();
+
+		interceptor.onProductSetOrChanged(orderLine);
+
+		assertThat(orderLine.getM_HU_PI_Item_Product_ID()).isEqualTo(piip.getM_HU_PI_Item_Product_ID());
+	}
+
 	private void clearOrderLineDatePromised()
 	{
 		orderLine.setDatePromised(null);
@@ -401,5 +440,23 @@ public class C_OrderLineTest
 			productPrice.setM_HU_PI_Item_Product(huPiItemProduct);
 		}
 		saveRecord(productPrice);
+	}
+
+	private void givenTheLineAlreadyHasPackingInstruction(@NonNull final I_M_HU_PI_Item_Product piip)
+	{
+		orderLine.setM_HU_PI_Item_Product_ID(piip.getM_HU_PI_Item_Product_ID());
+		saveRecord(orderLine);
+	}
+
+	private void clearOrderLineProduct()
+	{
+		orderLine.setM_Product_ID(0);
+		saveRecord(orderLine);
+	}
+
+	private void clearOrderLineBPartner()
+	{
+		orderLine.setC_BPartner_ID(0);
+		saveRecord(orderLine);
 	}
 }
