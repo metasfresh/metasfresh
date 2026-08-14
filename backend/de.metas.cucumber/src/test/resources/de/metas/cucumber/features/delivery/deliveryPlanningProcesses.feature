@@ -30,8 +30,8 @@ Feature: Delivery planning processes interaction
       | Identifier       | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipToDefault |
       | customerLocation | 1234568110599 | customer                 | true                | true                |
     And contains M_Shippers
-      | Identifier  |
-      | shipper_DHL |
+      | Identifier  | OPT.IsCreateDeliveryPlanning |
+      | shipper_DHL | true                         |
 
   Scenario: Create additional delivery plannings
 

@@ -32,8 +32,8 @@ Feature: Delete delivery planning
       | Identifier       | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipToDefault |
       | customerLocation | 1230367890599 | customer                 | true                | true                |
     And contains M_Shippers
-      | Identifier  |
-      | shipper_DHL |
+      | Identifier  | OPT.IsCreateDeliveryPlanning |
+      | shipper_DHL | true                         |
     And metasfresh contains C_Orders:
       | Identifier  | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier |
       | orderDelete | true    | customer                 | 2023-02-03  | 2023-02-25T00:00:00Z | customerLocation                      |
