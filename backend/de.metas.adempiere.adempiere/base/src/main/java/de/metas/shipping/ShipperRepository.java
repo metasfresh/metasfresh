@@ -113,6 +113,7 @@ public class ShipperRepository
 				.id(ShipperId.ofRepoId(record.getM_Shipper_ID()))
 				.name(record.getName())
 				.apiCarrierAdvise(record.isApiCarrierAdvise())
+				.createDeliveryPlanning(record.isCreateDeliveryPlanning())
 				.trackingUrl(record.getTrackingURL())
 				.pickupTimeFrom(TimeUtil.asLocalTime(record.getPickupTimeFrom()))
 				.pickupTimeTo(TimeUtil.asLocalTime(record.getPickupTimeTo()))
