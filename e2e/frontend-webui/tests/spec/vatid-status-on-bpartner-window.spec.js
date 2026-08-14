@@ -515,8 +515,8 @@ async function setVatIdAndAwaitPersisted({ scope, vatIdValue, readRecordData, la
 }
 
 /**
- * The id of the organisation's existing active VAT-ID check configuration, or
- * `null` when it has none.
+ * The id of `orgId`'s existing active VAT-ID check configuration, or `null` when
+ * that organisation has none.
  *
  * Asked of the BACKEND — the same view request the list view itself issues —
  * rather than counted in the rendered grid. A `locator.count()` on the list view
@@ -527,7 +527,7 @@ async function setVatIdAndAwaitPersisted({ scope, vatIdValue, readRecordData, la
  * no race at all, and hand back the record id directly, so the reuse branch needs
  * no grid interaction whatsoever.
  */
-async function findExistingConfigRecordId(page) {
+async function findExistingConfigRecordId(page, orgId) {
   const viewResponse = await page.request.post(`${WEBAPI_BASE_URL}/documentView/${VATID_CONFIG_WINDOW_ID}`, {
     data: { documentType: String(VATID_CONFIG_WINDOW_ID), viewType: 'grid', filters: [] },
     headers: { 'Content-Type': 'application/json' },
@@ -551,14 +551,27 @@ async function findExistingConfigRecordId(page) {
     );
   }
   const rows = (await rowsResponse.json()).result ?? [];
-  if (rows.length === 0) {
+
+  // Filter to the organisation whose configuration actually governs this run,
+  // rather than assuming the view holds at most one row. The unique index is
+  // per-organisation (`AD_Org_ID WHERE IsActive='Y'`), so a stack with several
+  // organisations legitimately has several rows, and "the only row" would then be
+  // both wrong and a spurious failure. `AD_Org_ID` is a grid column of this
+  // window, so each row carries it, and its `key` is the language-invariant id.
+  const rowsForOrg = rows.filter((row) => {
+    const orgValue = row.fieldsByName?.AD_Org_ID?.value;
+    const rowOrgId = typeof orgValue === 'object' && orgValue !== null ? orgValue.key : orgValue;
+    return String(rowOrgId) === String(orgId);
+  });
+
+  if (rowsForOrg.length === 0) {
     return null;
   }
   expect(
-    rows.length,
-    `Only one active VAT-ID check configuration can exist per organisation, found ${rows.length}`
+    rowsForOrg.length,
+    `Only ONE active VAT-ID check configuration can exist for organisation ${orgId} (partial unique index), found ${rowsForOrg.length}`
   ).toBe(1);
-  return String(rows[0].id);
+  return String(rowsForOrg[0].id);
 }
 
 /**
@@ -573,8 +586,8 @@ async function findExistingConfigRecordId(page) {
  * `finally`, and a record this spec created is deleted there — otherwise the next
  * run collides with this run's leftovers.
  */
-async function configureVatIdCheck(page, { restApiBaseURL }) {
-  const existingRecordId = await findExistingConfigRecordId(page);
+async function configureVatIdCheck(page, { restApiBaseURL, orgId }) {
+  const existingRecordId = await findExistingConfigRecordId(page, orgId);
 
   let recordId;
   let wasCreated;
@@ -874,8 +887,17 @@ left in the check log.
       });
 
       await test.step('Enable the online check for this organisation, pointed at the stub server', async () => {
+        // The organisation is READ OFF THE PARTNER rather than hardcoded: the
+        // check resolves its configuration by the checked record's own
+        // AD_Org_ID (VATaxIDCheckService -> VATaxIDConfigRepository#getByOrgId),
+        // so the configuration this test edits must be that same organisation's
+        // or the run would configure one org and check another.
+        const partnerOrg = readListFieldKeyAndCaption(await getPartnerRecordData(bpartnerId), 'AD_Org_ID');
+        expect(partnerOrg.key, "The partner's organisation must be resolvable").toBeTruthy();
+
         configuration = await configureVatIdCheck(page, {
           restApiBaseURL: `${WIREMOCK_BASE_URL}${VIES_STUB_PATH}`,
+          orgId: partnerOrg.key,
         });
       });
 
