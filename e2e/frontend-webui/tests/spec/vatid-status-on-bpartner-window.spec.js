@@ -1,0 +1,1075 @@
+import { expect } from '@playwright/test';
+import { test } from '../../playwright.config';
+import { allure } from 'allure-playwright';
+import { Backend } from '../utils/Backend';
+import { LoginPage } from '../utils/pages/LoginPage';
+import { BusinessPartnerPage } from '../utils/pages/BusinessPartnerPage';
+import { WidgetCommon } from '../utils/widgets/WidgetCommon';
+import { BooleanWidget } from '../utils/widgets/BooleanWidget';
+import { TextWidget } from '../utils/widgets/TextWidget';
+import { NumericWidget } from '../utils/widgets/NumericWidget';
+import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT, getPage } from '../utils/common';
+import { assertRecordIsValid, getRecordData, WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
+
+/**
+ * VAT-ID online-check status on the core Business Partner window (AD_Window_ID 123).
+ *
+ * The check writes three denormalised columns onto the record whose VAT-ID was
+ * checked — `VATaxIDStatus`, `VATaxIDCheckedAt`, `VATaxID_CheckLog_ID` — on
+ * `C_BPartner` (tab 220) and on `C_BPartner_Location` (tab 222) alike. All three
+ * are placed in `VATaxID`'s own AD_UI_ElementGroup, directly after it, and are
+ * `AD_Field.IsReadOnly='Y'`: they are outcomes of a check, never user input.
+ *
+ * What this spec proves, and why each part is here:
+ *
+ *  1. STRUCTURAL ADJACENCY, not mere co-presence. "The status is shown next to
+ *     the VAT-ID" is a statement about layout, so it is asserted as one: the
+ *     status field must sit in the SAME rendered element-group container as
+ *     `VATaxID` and be the element line IMMEDIATELY after it (and the timestamp
+ *     and check-log reference the two after that). An assertion that merely
+ *     found both fields somewhere on the page would still pass if a later
+ *     migration moved the status into an unrelated group at the bottom of the
+ *     window — which is exactly the regression worth catching.
+ *  2. BOTH GRAINS. Partner header AND address. On the address the pairing lives
+ *     in the location's own detail form (see "Where the address VAT-ID actually
+ *     renders" below), which is the only place the location's `VATaxID` is shown
+ *     at all — so the status is exactly as reachable as the VAT-ID it annotates.
+ *  3. READ-ONLY, asserted with a discriminating signal. `VATaxIDStatus` is a
+ *     List widget, and `RawList.js` renders its `<input>` with `readOnly` and
+ *     `tabIndex={-1}` UNCONDITIONALLY (selection happens through the dropdown,
+ *     never by typing). The generic readonly-attribute check therefore returns
+ *     `true` for an editable dropdown too and proves nothing here. The one DOM
+ *     signal that tracks the field's actual read-only flag 1:1 is the
+ *     `.input-disabled` class on the widget's `div.input-dropdown-container`
+ *     (`RawList.js` — the same flag that nulls the container's `onClick` and
+ *     hides the clear icon). To show that this signal really discriminates
+ *     rather than being always-present, the same assertion is run as a NEGATIVE
+ *     CONTROL against `AD_Language` — another List widget on the same rendered
+ *     record, editable (`readonly: false` in the document JSON) — which must NOT
+ *     carry the class.
+ *  4. THE STATUS FOLLOWS A REAL CHECK. The second test does not fabricate status
+ *     values (they are read-only, so no widget can set them, and hand-writing
+ *     the columns would prove rendering while proving nothing about the
+ *     feature). It configures the organisation's `VATaxID_Config` through the
+ *     real configuration window, points `RestApiBaseURL` at the WireMock stub
+ *     server the local/CI stack already runs, and then types VAT-IDs into the
+ *     real `VATaxID` widget. Each save's after-commit check calls the stub and
+ *     writes the status back — the same path a user's save takes in production.
+ *  5. AT A GLANCE. Four statuses are driven through one record — NotChecked (the
+ *     column default, before any check), Valid, Invalid and NotSupported — and
+ *     the rendered captions must all differ from one another. Comparing the
+ *     rendered captions against EACH OTHER (never against a literal) is what
+ *     keeps this language-independent while still asserting what the user sees;
+ *     the identity of each status is pinned separately on the language-invariant
+ *     `AD_Ref_List.Value` read from the WebAPI.
+ *
+ * Where the address VAT-ID actually renders: tab 222 is an included tab whose
+ * grid columns are exactly its `AD_UI_Element.IsDisplayedGrid='Y'` set, and
+ * `VATaxID` is not one of them — verified live against the tab's own layout
+ * endpoint, whose `elements` array holds those 13 columns and no VAT-ID field.
+ * The location's `VATaxID` is reached the way a user reaches it: select the
+ * address row and open its advanced edit from the ROW's context menu, which
+ * renders that tab's single-row layout — where `VATaxID` is followed directly by
+ * the three status fields. Note this is NOT the `Alt+E` chord, which belongs to
+ * the partner header and opens a look-alike form; see
+ * `openAddressRowAdvancedEdit` for why that distinction is load-bearing here.
+ *
+ * KNOWN GAP — the status is NOT reachable in any grid, and this spec asserts
+ * nothing about grid columns. `AD_Field.IsDisplayedGrid='Y'` is set for
+ * `VATaxIDStatus` on tabs 220, 222 and 540843, but the rendered grid is built
+ * from `AD_UI_Element.IsDisplayedGrid`, which is `'N'` for all three (mirroring
+ * `VATaxID`'s own element there). Verified live: window 123's list-view layout
+ * returns exactly 9 columns — `Value, Name, Name2, Name3, IsActive, IsCompany,
+ * C_BP_Group_ID, AD_Language, AD_Org_ID` — which is precisely the tab's
+ * `AD_UI_Element.IsDisplayedGrid='Y'` set, while 46 of its `AD_Field` rows carry
+ * that flag; neither `VATaxID` nor `VATaxIDStatus` appears. So a grid assertion
+ * either way would be wrong to write here: asserting presence would fail, and
+ * asserting absence would freeze the current state as intended. This gap is
+ * reported for a decision rather than encoded in a test.
+ *
+ * Language independence: in the two status tests every identity assertion is on a
+ * DB ColumnName (`.form-field-<Column>`), a structural class, a window/tab id, or
+ * an `AD_Ref_List.Value` read from the WebAPI — never a caption or button label;
+ * the only captions they read are compared to one another, never to a literal.
+ * See e2e/frontend-webui/CLAUDE.md "Specs MUST be language-independent". The one
+ * exception is the last, explicitly language-parameterised test, where the
+ * translated caption IS the subject under test and is asserted per `AD_Language`
+ * in both languages — see its own comment.
+ */
+
+const BPARTNER_WINDOW_ID = 123;
+const LOCATION_TAB_ID = 'AD_Tab-222';
+const VATID_CONFIG_WINDOW_ID = 542182;
+
+/**
+ * VAT-ID values chosen so that each drives a DIFFERENT outcome through the real
+ * check, and every one of them passes the offline format check first (a value the
+ * format check rejects is refused at save time and never reaches the online
+ * service, so it could not be used here at all).
+ *
+ * All three are structurally valid AND check-digit valid per `EUVatIdValidator`
+ * (`DE` = mod-11,10 over the 9 digits; `CHE` = the Swiss UID algorithm with a
+ * mandatory VAT marker). `CHE…MWST` additionally has a prefix the online service
+ * does not cover, which is a definite answer — `NotSupported`, decided by the
+ * client without sending a request — and therefore needs no stub.
+ */
+const VATID_VALID = 'DE136695976';
+const VATID_INVALID = 'DE111111117';
+const VATID_NOT_SUPPORTED = 'CHE100155212MWST';
+
+/**
+ * Base URL of the WireMock stub server, as seen BY THE BACKEND (it is the
+ * app/webapi JVM that calls it, not the browser). Same resolution the DHL
+ * shipper stubs use in `mobile-webui/tests/spec/picking/picking.spec.js`: the
+ * CI compose sets `WIREMOCK_BASE_URL=http://wiremock:8080` (docker-internal),
+ * and a local run falls back to the infra stack's mapped host port.
+ */
+const WIREMOCK_BASE_URL = process.env.WIREMOCK_BASE_URL || 'http://localhost:18080';
+
+/**
+ * Sub-path under WireMock that stands in for the VIES REST API. Namespaced
+ * rather than mounted at the root so these stubs can never collide with the
+ * other stub families the same server hosts (DHL's OAuth + order endpoints).
+ * The client appends `/check-vat-number` to whatever `RestApiBaseURL` holds.
+ */
+const VIES_STUB_PATH = '/vies';
+
+/**
+ * Register one stub with WireMock and return its id so it can be removed again.
+ * Stubs are registered through the admin API rather than committed as mapping
+ * files because these two response bodies are fixtures OF THIS SPEC: registering
+ * them here makes the run fail loudly at setup if the stub server is not
+ * reachable, instead of silently exercising an unstubbed endpoint, and it cannot
+ * be defeated by a stale mappings directory in an already-running container.
+ */
+async function registerWireMockStub(stub) {
+  const page = getPage();
+  const response = await page.request.post(`${WIREMOCK_BASE_URL}/__admin/mappings`, {
+    data: stub,
+    headers: { 'Content-Type': 'application/json' },
+  });
+  if (!response.ok()) {
+    throw new Error(
+      `Failed to register WireMock stub at ${WIREMOCK_BASE_URL}: HTTP ${response.status()} ${response.statusText()}`
+    );
+  }
+  const body = await response.json();
+  return body.id;
+}
+
+async function removeWireMockStub(stubId) {
+  if (!stubId) return;
+  try {
+    await getPage().request.delete(`${WIREMOCK_BASE_URL}/__admin/mappings/${stubId}`);
+  } catch (e) {
+    // best-effort cleanup
+  }
+}
+
+/**
+ * A stub answering the online service's `POST /check-vat-number` for exactly one
+ * VAT number, with the verdict `valid` carries. Matched on the request BODY (the
+ * VAT number is not in the URL), so the two verdicts below can share one path.
+ * The body shape mirrors the real service's documented response, because the
+ * check log stores it verbatim as the evidence of what was answered.
+ */
+function viesCheckVatNumberStub({ countryCode, vatNumber, valid }) {
+  return {
+    priority: 5,
+    request: {
+      method: 'POST',
+      url: `${VIES_STUB_PATH}/check-vat-number`,
+      bodyPatterns: [{ matchesJsonPath: `$[?(@.vatNumber == '${vatNumber}')]` }],
+    },
+    response: {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+      jsonBody: {
+        countryCode,
+        vatNumber,
+        valid,
+        requestIdentifier: `E2E-${valid ? 'VALID' : 'INVALID'}-${vatNumber}`,
+        name: valid ? 'E2E TRADER' : '---',
+        address: valid ? 'TESTSTR 1, 10115 BERLIN' : '---',
+        traderNameMatch: 'NOT_PROCESSED',
+        traderAddressMatch: 'NOT_PROCESSED',
+      },
+    },
+  };
+}
+
+/**
+ * The rendered element-group container of `fieldName`, i.e. the DOM node that an
+ * AD_UI_ElementGroup becomes (`ElementGroup.js`: `div.panel.panel-spaced…`).
+ * Every AD_UI_Element inside it renders as one `div.elements-line` child, in
+ * `AD_UI_Element.SeqNo` order (`LayoutFactory.layoutSingleRow_ElementLines` /
+ * `ADWindowDAO`, which orders by SeqNo), each holding one
+ * `div.form-group…form-field-<Column>`.
+ */
+function elementGroupContaining(scope, fieldName) {
+  return scope
+    .locator('div.panel.panel-spaced')
+    .filter({ has: scope.page().locator(`.form-field-${fieldName}`) });
+}
+
+/**
+ * The ordered list of `form-field-<Column>` class sets, one entry per element
+ * line directly inside `groupLocator` — the rendered order of that element
+ * group. Non-displayed elements are dropped by the layout factory and empty
+ * lines by the renderer, so positions are compared RELATIVE to each other, never
+ * against a raw SeqNo ordinal.
+ */
+async function readElementLineFieldOrder(groupLocator) {
+  return await groupLocator.evaluate((groupEl) =>
+    Array.from(groupEl.querySelectorAll(':scope > .elements-line')).map((line) => {
+      const formGroup = line.querySelector('.form-group');
+      if (!formGroup) return '';
+      return Array.from(formGroup.classList)
+        .filter((cssClass) => cssClass.startsWith('form-field-'))
+        .join(' ');
+    })
+  );
+}
+
+/**
+ * Assert that, inside one rendered element group, `VATaxID` is followed
+ * immediately by the three status fields in that order.
+ */
+async function expectStatusFieldsDirectlyAfterVatId(scope, grainLabel) {
+  const group = elementGroupContaining(scope, 'VATaxID');
+  await expect(group, `${grainLabel}: exactly one element group must hold VATaxID`).toHaveCount(1);
+
+  const lineFields = await readElementLineFieldOrder(group);
+  const indexOfField = (fieldName) =>
+    lineFields.findIndex((classes) => classes.split(' ').includes(`form-field-${fieldName}`));
+
+  const vatIdIndex = indexOfField('VATaxID');
+  expect(vatIdIndex, `${grainLabel}: VATaxID must render as an element line of its group`).toBeGreaterThanOrEqual(0);
+
+  const expectedFollowers = ['VATaxIDStatus', 'VATaxIDCheckedAt', 'VATaxID_CheckLog_ID'];
+  expectedFollowers.forEach((fieldName, offset) => {
+    expect(
+      indexOfField(fieldName),
+      `${grainLabel}: ${fieldName} must be element line ${offset + 1} after VATaxID inside the SAME group ` +
+        `(rendered order: ${JSON.stringify(lineFields)})`
+    ).toBe(vatIdIndex + offset + 1);
+  });
+
+  console.log(`[PASS] ${grainLabel}: VATaxID is directly followed by ${expectedFollowers.join(', ')} in its own element group`);
+}
+
+/**
+ * Assert `VATaxIDStatus` renders read-only, and that the signal used to say so
+ * actually discriminates: the same check must come out FALSE for `AD_Language`,
+ * an editable List widget on the same rendered record.
+ */
+async function expectStatusReadOnlyWithEditableControl(scope, grainLabel, { editableListField }) {
+  const statusDropdown = scope.locator('.form-field-VATaxIDStatus div.input-dropdown-container');
+  await expect(statusDropdown, `${grainLabel}: VATaxIDStatus must render a dropdown container`).toHaveCount(1);
+  await expect(
+    statusDropdown,
+    `${grainLabel}: VATaxIDStatus must render read-only (input-disabled on its dropdown container)`
+  ).toHaveClass(/input-disabled/);
+
+  if (editableListField) {
+    const editableDropdown = scope.locator(`.form-field-${editableListField} div.input-dropdown-container`);
+    await expect(
+      editableDropdown,
+      `${grainLabel}: negative control ${editableListField} must render a dropdown container`
+    ).toHaveCount(1);
+    await expect(
+      editableDropdown,
+      `${grainLabel}: negative control ${editableListField} is editable, so it must NOT carry input-disabled ` +
+        `— otherwise the class proves nothing about VATaxIDStatus`
+    ).not.toHaveClass(/input-disabled/);
+  }
+
+  console.log(`[PASS] ${grainLabel}: VATaxIDStatus renders read-only${editableListField ? ` (control ${editableListField} editable)` : ''}`);
+}
+
+/**
+ * Open the address row's own detail form and return its modal locator.
+ *
+ * The route matters, and the obvious one is wrong. Selecting the row and pressing
+ * `Alt+E` opens the **partner header's** advanced edit, not the row's:
+ * `GlobalContextShortcuts` claims that chord and calls `openModal` with no
+ * `tabId`/`rowId`. The header form contains a `VATaxID` followed by the same three
+ * status fields, so every assertion in this file passed against it while proving
+ * nothing whatsoever about the address grain — caught only because the address
+ * save then landed on `PATCH /window/123/<partnerId>?advanced=true` in the run's
+ * trace instead of on the location. The row-level form is the one
+ * `containers/Table.js#handleAdvancedEdit` opens (with `tabId`, `rowId` and
+ * `isAdvanced`), reachable from the row's context menu — which is what this does.
+ *
+ * The menu item is located structurally, never by caption (its caption is
+ * translated): among the context menu's items it is the only one carrying BOTH
+ * the edit icon and a shortcut hint — the sibling "edit field" item has the same
+ * icon but no shortcut, and the items that do have shortcuts carry other icons.
+ *
+ * The modal is then verified to be the LOCATION's form via `C_Location_ID`, a
+ * column that exists on `C_BPartner_Location` and not on `C_BPartner`, so the
+ * header form cannot satisfy it. That check is what turns "wrong form opened"
+ * into an immediate, named failure instead of a puzzling timeout further down.
+ */
+async function openAddressRowAdvancedEdit(page) {
+  await BusinessPartnerPage.clickTab(BusinessPartnerPage.TAB_IDS.LOCATION);
+
+  // The partner was created with exactly one location, so asserting the count
+  // first turns `.first()` from a guess into the only possible choice — and the
+  // context-menu item itself is gated on exactly one selected row.
+  const addressRows = page.locator('.tabs-wrapper table tbody tr');
+  await expect(addressRows, 'The partner must have exactly one address row').toHaveCount(1, {
+    timeout: SLOW_ACTION_TIMEOUT,
+  });
+  const addressRow = addressRows.first();
+  await addressRow.click();
+
+  await addressRow.locator('td[data-cy^="cell-"]').first().click({ button: 'right' });
+  const contextMenu = page.locator('.context-menu.context-menu-open');
+  await contextMenu.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+  const advancedEditItem = contextMenu
+    .locator('.context-menu-item')
+    .filter({ has: page.locator('i.meta-icon-edit') })
+    .filter({ has: page.locator('span.tooltip-inline') });
+  await expect(
+    advancedEditItem,
+    "The address row's context menu must offer exactly one advanced-edit item (edit icon + shortcut hint)"
+  ).toHaveCount(1);
+  await advancedEditItem.click();
+
+  const modal = page.locator('.panel-modal-content');
+  await modal.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  await expect(
+    modal.locator('.form-field-C_Location_ID'),
+    "The opened detail form must be the ADDRESS's (C_Location_ID is a C_BPartner_Location column, absent from the partner header form)"
+  ).toHaveCount(1);
+  await modal.locator('.form-field-VATaxID').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+  return modal;
+}
+
+/** The language-invariant `AD_Ref_List.Value` of a List field, plus its rendered caption. */
+function readListFieldKeyAndCaption(recordData, fieldName) {
+  const field = recordData.fieldsByName?.[fieldName];
+  const value = field?.value;
+  if (value === null || value === undefined) {
+    return { key: null, caption: null };
+  }
+  return typeof value === 'object' ? { key: value.key, caption: value.caption } : { key: value, caption: null };
+}
+
+/** Read the header document (C_BPartner) of window 123. */
+async function getPartnerRecordData(bpartnerId) {
+  return await getRecordData(BPARTNER_WINDOW_ID, bpartnerId);
+}
+
+/**
+ * Read a row of an included tab. `getRecordData` only addresses header
+ * documents, while the location is a child row, whose document lives at
+ * `/window/{windowId}/{documentId}/{tabId}/{rowId}` — the same shape the WebUI
+ * itself uses for a child row.
+ */
+async function getLocationRecordData(bpartnerId, bpartnerLocationId) {
+  const response = await getPage().request.get(
+    `${WEBAPI_BASE_URL}/window/${BPARTNER_WINDOW_ID}/${bpartnerId}/${LOCATION_TAB_ID}/${bpartnerLocationId}`,
+    { headers: { 'Content-Type': 'application/json' } }
+  );
+  if (!response.ok()) {
+    throw new Error(
+      `Failed to read location ${bpartnerLocationId} of partner ${bpartnerId}: HTTP ${response.status()} ${response.statusText()}`
+    );
+  }
+  const body = await response.json();
+  return Array.isArray(body) ? body[0] : body;
+}
+
+/**
+ * Poll until `VATaxIDStatus` reaches `expectedKey`, and return its rendered
+ * caption alongside.
+ *
+ * Polling — rather than a fixed wait — because the check is scheduled to run
+ * AFTER the save's transaction commits (that is what keeps a slow or dead
+ * service from ever failing a user's save), so the status is written a moment
+ * after the save response the UI already got. The read goes through the WebAPI,
+ * which is also how the caption is obtained language-invariantly next to its
+ * key.
+ */
+async function waitForVatIdStatus({ readRecordData, expectedKey, label, timeout = VERY_SLOW_ACTION_TIMEOUT }) {
+  const page = getPage();
+  const deadline = Date.now() + timeout;
+  let observed = { key: null, caption: null };
+
+  while (Date.now() < deadline) {
+    observed = readListFieldKeyAndCaption(await readRecordData(), 'VATaxIDStatus');
+    if (observed.key === expectedKey) {
+      console.log(`[PASS] ${label}: VATaxIDStatus is "${expectedKey}" (rendered caption: "${observed.caption}")`);
+      return observed;
+    }
+    await page.waitForTimeout(1000);
+  }
+
+  throw new Error(
+    `${label}: VATaxIDStatus never reached "${expectedKey}" within ${timeout}ms (last observed: "${observed.key}")`
+  );
+}
+
+/**
+ * Type `vatIdValue` into a `VATaxID` widget and return only once THE RECORD
+ * ITSELF holds that value.
+ *
+ * Why the postcondition and not the save event. The obvious form — arm
+ * `page.waitForResponse` on the field's `PATCH`, then fill and blur — was tried
+ * first and is genuinely unreliable here: the widget paints as soon as the
+ * LAYOUT arrives, while the document's DATA lands a moment later and re-renders
+ * the input from the server value. A fill landing inside that window is
+ * overwritten before the blur, so the widget sees no change, **no PATCH is sent
+ * at all**, and the step waits for an event that can never arrive. Verified from
+ * the run's own trace: a failing attempt contained six `PATCH`es to the
+ * configuration window and not one to the partner. Gating on "the widget shows
+ * the persisted value" does not fix it either — on the first, legitimate save
+ * the persisted value is the empty string, so that gate is satisfied by the very
+ * pre-hydration state it is supposed to exclude.
+ *
+ * Reading the record back instead asserts the outcome the step exists to
+ * produce, and it is a STRICTLY STRONGER grain discriminator than the PATCH URL
+ * was: `readRecordData` addresses one specific document (the partner header, or
+ * one specific `C_BPartner_Location` row), so a value that landed on the wrong
+ * grain cannot satisfy it. The retype is bounded and only ever repeats a
+ * no-op-so-far edit; a save the server actually REFUSED is not retried into a
+ * timeout but raised immediately, from the record's own `validStatus`.
+ */
+async function setVatIdAndAwaitPersisted({ scope, vatIdValue, readRecordData, label }) {
+  const page = getPage();
+  const input = scope.locator('.form-field-VATaxID input').first();
+  await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+  const deadline = Date.now() + VERY_SLOW_ACTION_TIMEOUT;
+  let attempts = 0;
+  let persisted;
+
+  // The widget only saves on blur when its own `isFocused` state is already
+  // true, and it sets that state inside a `setTimeout` on focus
+  // (`RawWidget.js#handleFocus` → `handleBlurWithParams`, which returns without
+  // patching when `isFocused` is false). A fast focus-type-Tab sequence can
+  // therefore blur BEFORE that timeout has run, and the edit is dropped in
+  // silence — no PATCH, no error, the field just snaps back. That is what made
+  // this step fail intermittently on the third value while the first two passed.
+  // `div.input-body-container` carries a `focused` class rendered straight from
+  // that same state, so waiting for the class is a deterministic gate on the
+  // widget being genuinely ready to accept and save an edit.
+  const inputBody = scope.locator('.form-field-VATaxID div.input-body-container');
+
+  while (Date.now() < deadline) {
+    attempts++;
+    await input.click();
+
+    const focusRegistered = await inputBody
+      .evaluate((el) => el.classList.contains('focused'))
+      .catch(() => false);
+    if (!focusRegistered) {
+      await page.waitForTimeout(250);
+      continue;
+    }
+
+    await page.keyboard.press('Control+a');
+    await input.fill(vatIdValue);
+
+    // Blur only while the input still holds exactly what was typed: the widget
+    // is re-rendered from the server document whenever fresh data arrives, and a
+    // fill overwritten in that instant would blur the OLD text (again no change,
+    // again no PATCH).
+    const readyToSave = await inputBody
+      .evaluate(
+        (el, expected) => el.classList.contains('focused') && el.querySelector('input')?.value === expected,
+        vatIdValue
+      )
+      .catch(() => false);
+    if (!readyToSave) {
+      await page.waitForTimeout(250);
+      continue;
+    }
+
+    await WidgetCommon.triggerBlur();
+    await WidgetCommon.waitForSaveComplete();
+
+    const recordData = await readRecordData();
+    if (recordData.validStatus && recordData.validStatus.valid === false) {
+      throw new Error(
+        `${label}: the server REFUSED VATaxID="${vatIdValue}": ${recordData.validStatus.reason}`
+      );
+    }
+
+    persisted = recordData.fieldsByName?.VATaxID?.value ?? '';
+    if (persisted === vatIdValue) {
+      console.log(`[INFO] ${label}: VATaxID persisted as ${vatIdValue} (attempt ${attempts})`);
+      return;
+    }
+
+    await page.waitForTimeout(1000);
+  }
+
+  throw new Error(
+    `${label}: VATaxID never persisted as "${vatIdValue}" after ${attempts} attempt(s) (record still holds "${persisted}")`
+  );
+}
+
+/**
+ * The id of the organisation's existing active VAT-ID check configuration, or
+ * `null` when it has none.
+ *
+ * Asked of the BACKEND — the same view request the list view itself issues —
+ * rather than counted in the rendered grid. A `locator.count()` on the list view
+ * is a single non-retrying read that resolves as soon as the grid CONTAINER is
+ * visible, which is before its rows have been fetched: it returned 0 with a row
+ * present, the spec took the create branch, and the save was then refused by the
+ * one-active-row-per-organisation index. Two HTTP responses give the answer with
+ * no race at all, and hand back the record id directly, so the reuse branch needs
+ * no grid interaction whatsoever.
+ */
+async function findExistingConfigRecordId(page) {
+  const viewResponse = await page.request.post(`${WEBAPI_BASE_URL}/documentView/${VATID_CONFIG_WINDOW_ID}`, {
+    data: { documentType: String(VATID_CONFIG_WINDOW_ID), viewType: 'grid', filters: [] },
+    headers: { 'Content-Type': 'application/json' },
+  });
+  if (!viewResponse.ok()) {
+    throw new Error(
+      `Failed to open a view on window ${VATID_CONFIG_WINDOW_ID}: HTTP ${viewResponse.status()} ${viewResponse.statusText()}`
+    );
+  }
+  const view = await viewResponse.json();
+  if (!view.size) {
+    return null;
+  }
+
+  const rowsResponse = await page.request.get(
+    `${WEBAPI_BASE_URL}/documentView/${VATID_CONFIG_WINDOW_ID}/${view.viewId}?firstRow=0&pageLength=20`
+  );
+  if (!rowsResponse.ok()) {
+    throw new Error(
+      `Failed to read view ${view.viewId} of window ${VATID_CONFIG_WINDOW_ID}: HTTP ${rowsResponse.status()} ${rowsResponse.statusText()}`
+    );
+  }
+  const rows = (await rowsResponse.json()).result ?? [];
+  if (rows.length === 0) {
+    return null;
+  }
+  expect(
+    rows.length,
+    `Only one active VAT-ID check configuration can exist per organisation, found ${rows.length}`
+  ).toBe(1);
+  return String(rows[0].id);
+}
+
+/**
+ * Point the organisation's VAT-ID check configuration at the stub server, through
+ * the real configuration window.
+ *
+ * Reuse-or-create, with an unconditional restore, because the table permits only
+ * ONE active row per organisation (partial unique index on `AD_Org_ID WHERE
+ * IsActive='Y'`): a stack that already has one (a cucumber run leaves one behind)
+ * cannot take a second, and a stack that has none must get one. The original
+ * field values of a reused record are captured and written back in the caller's
+ * `finally`, and a record this spec created is deleted there — otherwise the next
+ * run collides with this run's leftovers.
+ */
+async function configureVatIdCheck(page, { restApiBaseURL }) {
+  const existingRecordId = await findExistingConfigRecordId(page);
+
+  let recordId;
+  let wasCreated;
+  if (existingRecordId) {
+    await page.goto(`${FRONTEND_BASE_URL}/window/${VATID_CONFIG_WINDOW_ID}/${existingRecordId}`);
+    wasCreated = false;
+  } else {
+    await page.goto(`${FRONTEND_BASE_URL}/window/${VATID_CONFIG_WINDOW_ID}`);
+    await page.locator('.document-list-wrapper, .document-list').waitFor({
+      state: 'visible',
+      timeout: VERY_SLOW_ACTION_TIMEOUT,
+    });
+    await page.locator('body').click();
+    await page.waitForTimeout(200);
+    await page.keyboard.press('Alt+N');
+    await page.waitForURL(/\/window\/\d+\/\d+/, { timeout: SLOW_ACTION_TIMEOUT });
+    wasCreated = true;
+  }
+  await page.locator('.rotating, .indicator-pending').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+  await WidgetCommon.getFieldContainer('RestApiBaseURL').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+  // On the reuse branch the id is already known from the view; on the create
+  // branch it only exists in the URL the new record landed on (query string
+  // stripped — the SPA may have attached one by now).
+  recordId = wasCreated ? page.url().split('?')[0].split('/').pop() : existingRecordId;
+  await assertRecordIsValid(VATID_CONFIG_WINDOW_ID, recordId, 'VAT-ID check configuration record');
+
+  const before = await getRecordData(VATID_CONFIG_WINDOW_ID, recordId);
+  const original = {
+    isViesCheckEnabled: before.fieldsByName?.IsVIESCheckEnabled?.value,
+    restApiBaseURL: before.fieldsByName?.RestApiBaseURL?.value,
+    recheckAfterDays: before.fieldsByName?.RecheckAfterDays?.value,
+  };
+
+  // Zero re-check window: every save must actually send a request, so the run can
+  // never pass on a de-duplicated result an earlier run left in the check log.
+  await applyConfigFields(recordId, {
+    RestApiBaseURL: restApiBaseURL,
+    RecheckAfterDays: 0,
+    IsVIESCheckEnabled: true,
+  });
+  await assertRecordIsValid(VATID_CONFIG_WINDOW_ID, recordId, 'after enabling the online check');
+
+  console.log(`[INFO] VAT-ID check configuration ${recordId} (${wasCreated ? 'created' : 'reused'}) -> ${restApiBaseURL}`);
+  return { recordId, wasCreated, original };
+}
+
+/**
+ * Write the given configuration fields and return only once the RECORD shows each
+ * of them.
+ *
+ * The widget helpers are subject to the same silent-drop race as any other field
+ * on this stack (`setVatIdAndAwaitPersisted` documents the mechanism: the widget
+ * only patches on blur once its own focus state has been committed). A dropped
+ * write here is especially damaging in both directions — a dropped
+ * `RecheckAfterDays` would leave de-duplication on, letting the test pass on a
+ * result an earlier run recorded rather than on one this run obtained; and a
+ * dropped write during CLEANUP leaves the shared stack altered, which is exactly
+ * how this spec's own first green runs left `RecheckAfterDays` at 0 instead of
+ * the 30 they found. So every field is verified against the record and retried.
+ */
+async function applyConfigFields(recordId, fields) {
+  const page = getPage();
+  const deadline = Date.now() + VERY_SLOW_ACTION_TIMEOUT;
+  let mismatches = [];
+
+  while (Date.now() < deadline) {
+    for (const [fieldName, value] of Object.entries(fields)) {
+      if (typeof value === 'boolean') {
+        await (value ? BooleanWidget.setTrue(fieldName) : BooleanWidget.setFalse(fieldName));
+      } else if (typeof value === 'number') {
+        await NumericWidget.setValue(fieldName, value);
+      } else {
+        await TextWidget.setValue(fieldName, value ?? '');
+      }
+    }
+    await WidgetCommon.waitForSaveComplete();
+
+    const recordData = await getRecordData(VATID_CONFIG_WINDOW_ID, recordId);
+    mismatches = Object.entries(fields).filter(([fieldName, value]) => {
+      const observed = recordData.fieldsByName?.[fieldName]?.value;
+      // Loose equality on purpose: the WebAPI may return a numeric field as a
+      // string, and an empty text field as null rather than ''.
+      if (typeof value === 'number') return Number(observed) !== value;
+      if (typeof value === 'boolean') return observed !== value;
+      return (observed ?? '') !== (value ?? '');
+    });
+    if (mismatches.length === 0) {
+      return;
+    }
+
+    await page.waitForTimeout(500);
+  }
+
+  throw new Error(
+    `VAT-ID check configuration ${recordId}: could not persist ${mismatches
+      .map(([fieldName, value]) => `${fieldName}=${JSON.stringify(value)}`)
+      .join(', ')}`
+  );
+}
+
+/**
+ * Undo whatever `configureVatIdCheck` did — always, pass or fail.
+ *
+ * A failure here must not fail the test (the assertions have already run), but it
+ * must be loud: unrestored values persist on a shared stack and silently become
+ * the next run's baseline.
+ */
+async function restoreVatIdCheckConfiguration(page, config) {
+  if (!config) return;
+  try {
+    if (config.wasCreated) {
+      await page.request.delete(`${WEBAPI_BASE_URL}/window/${VATID_CONFIG_WINDOW_ID}/${config.recordId}`, {
+        headers: { Accept: 'application/json' },
+      });
+      console.log(`[INFO] Cleanup: deleted VAT-ID check configuration ${config.recordId}`);
+      return;
+    }
+
+    await page.goto(`${FRONTEND_BASE_URL}/window/${VATID_CONFIG_WINDOW_ID}/${config.recordId}`);
+    await WidgetCommon.getFieldContainer('RestApiBaseURL').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    await applyConfigFields(config.recordId, {
+      RestApiBaseURL: config.original.restApiBaseURL ?? '',
+      RecheckAfterDays: Number(config.original.recheckAfterDays ?? 0),
+      IsVIESCheckEnabled: config.original.isViesCheckEnabled === true,
+    });
+    console.log(`[INFO] Cleanup: restored VAT-ID check configuration ${config.recordId}`);
+  } catch (e) {
+    console.log(`[WARN] Cleanup of VAT-ID check configuration ${config.recordId} FAILED, the stack may be left altered: ${e.message}`);
+  }
+}
+
+test.describe('VAT-ID check status on the Business Partner window (123)', () => {
+  test('The status fields render directly next to the VAT-ID, read-only, on the partner and on its address', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.story('VAT-ID check status placement on C_BPartner (tab 220) and C_BPartner_Location (tab 222)');
+    allure.severity('critical');
+    allure.tag('VATaxIDStatus');
+    allure.description(`
+## VAT-ID check status placement (AD_Window_ID 123, tabs 220 + 222)
+
+### Why this test exists
+
+The check result is only useful where the user already looks — beside the VAT-ID
+it belongs to. That is a claim about the rendered layout, so it is asserted
+structurally: \`VATaxIDStatus\`, \`VATaxIDCheckedAt\` and \`VATaxID_CheckLog_ID\`
+must be the three element lines immediately following \`VATaxID\` INSIDE THE SAME
+rendered AD_UI_ElementGroup. Asserting only that the fields exist somewhere on
+the page would still pass after a migration moved them into an unrelated group.
+
+### What it proves
+
+1. Partner header (tab 220): the three status fields directly follow \`VATaxID\`
+   in its own element group.
+2. Address (tab 222): the same, in the location's own detail form — reached by
+   selecting the address row and opening Advanced Edit, which is where the
+   location's \`VATaxID\` itself is shown (it is not a grid column of that tab).
+3. \`VATaxIDStatus\` renders READ-ONLY on both grains, asserted on the one DOM
+   signal that tracks the flag (\`.input-disabled\` on the List widget's dropdown
+   container) — with \`AD_Language\`, an editable List widget on the same record,
+   as the negative control that the signal discriminates at all.
+4. A partner that was never checked carries the \`NotChecked\` status rather than
+   an empty field, so the column reads as a state and not as missing data.
+    `);
+
+    test.setTimeout(180000);
+
+    const masterdata = await Backend.createMasterdata({
+      request: {
+        login: { user: { language: 'en_US', firstname: 'E2E', lastname: 'VatidStatusPlacement' } },
+        bpartners: { PARTNER1: { isCustomer: true, name: 'E2E VatidStatusPlacement Partner' } },
+      },
+    });
+    allure.attachment('Test Data', JSON.stringify(masterdata, null, 2), 'application/json');
+
+    const bpartnerId = masterdata.bpartners.PARTNER1.id;
+    const bpartnerLocationId = masterdata.bpartners.PARTNER1.bpartnerLocationId;
+    expect(bpartnerId, 'Masterdata must return the created BPartner id').toBeTruthy();
+    expect(bpartnerLocationId, 'Masterdata must return the created BPartner location id').toBeTruthy();
+
+    await LoginPage.goto();
+    await LoginPage.login(masterdata.login.user);
+    // Deliberate URL check instead of DashboardPage.expectVisible(): the
+    // dashboard's STOMP/KPI polling keeps the network permanently busy, so its
+    // networkidle wait never settles.
+    await LoginPage.expectLoggedIn();
+
+    await BusinessPartnerPage.gotoRecord(bpartnerId);
+
+    await test.step('Partner header: the three status fields directly follow VATaxID in its element group', async () => {
+      const header = page.locator('.sections-wrapper');
+      await header.locator('.form-field-VATaxID').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await expectStatusFieldsDirectlyAfterVatId(header, 'partner header (tab 220)');
+    });
+
+    await test.step('Partner header: VATaxIDStatus is read-only while an editable List widget on the same record is not', async () => {
+      await expectStatusReadOnlyWithEditableControl(page.locator('.sections-wrapper'), 'partner header (tab 220)', {
+        editableListField: 'AD_Language',
+      });
+    });
+
+    await test.step('An unchecked partner reads as NotChecked, not as an empty field', async () => {
+      const { key, caption } = readListFieldKeyAndCaption(await getPartnerRecordData(bpartnerId), 'VATaxIDStatus');
+      expect(key, 'A partner that was never checked must carry the NotChecked status').toBe('NotChecked');
+      expect(caption, 'The NotChecked status must render a non-empty caption').toBeTruthy();
+      console.log(`[PASS] partner header (tab 220): unchecked partner reads NotChecked (caption: "${caption}")`);
+    });
+
+    await test.step('Address: the same pairing holds in the location detail form', async () => {
+      const modal = await openAddressRowAdvancedEdit(page);
+
+      await expectStatusFieldsDirectlyAfterVatId(modal, 'address (tab 222)');
+      await expectStatusReadOnlyWithEditableControl(modal, 'address (tab 222)', { editableListField: null });
+
+      const { key } = readListFieldKeyAndCaption(await getLocationRecordData(bpartnerId, bpartnerLocationId), 'VATaxIDStatus');
+      expect(key, 'An unchecked address must carry the NotChecked status').toBe('NotChecked');
+
+      const screenshot = await page.screenshot({ fullPage: true });
+      await allure.attachment('Address detail form with the VAT-ID status fields', screenshot, 'image/png');
+    });
+
+    console.log('[PASS] VAT-ID status fields render next to the VAT-ID, read-only, on both the partner and its address');
+  });
+
+  test('A real check writes a status the user can tell apart at a glance, on the partner and on its address', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.story('VAT-ID check status values driven through the real after-commit check');
+    allure.severity('critical');
+    allure.tag('VATaxIDStatus');
+    allure.description(`
+## VAT-ID check status values (AD_Window_ID 123, tabs 220 + 222)
+
+### Why this test exists
+
+\`VATaxIDStatus\` is read-only, so no widget can set it and no test may
+hand-write it: a spec that seeded the column would prove the field renders while
+proving nothing about the feature that fills it. This test instead drives the
+production path — configure the organisation's \`VATaxID_Config\` through its own
+window, point \`RestApiBaseURL\` at the WireMock stub server the stack already
+runs, then type VAT-IDs into the real \`VATaxID\` widget and let each save's
+after-commit check write the status back.
+
+### What it proves
+
+1. A VAT-ID the service confirms lands as \`Valid\`; one the service rejects lands
+   as \`Invalid\`; one whose member state the service does not cover lands as
+   \`NotSupported\` (decided without a request).
+2. Those three, plus the \`NotChecked\` the record started from, render four
+   captions that all differ from one another — i.e. an invalid VAT-ID is
+   distinguishable at a glance from valid, unchecked and not-verifiable.
+3. The same holds for the address grain: setting the location's own \`VATaxID\`
+   drives the location's own status.
+
+### Notes
+
+Each status is identified by its language-invariant \`AD_Ref_List.Value\` read
+from the WebAPI; the captions are only ever compared to EACH OTHER, never to a
+literal, so the test is language-independent. \`RecheckAfterDays\` is set to 0 so
+every save really sends a request instead of re-using a result an earlier run
+left in the check log.
+    `);
+
+    test.setTimeout(300000);
+
+    const masterdata = await Backend.createMasterdata({
+      request: {
+        login: { user: { language: 'en_US', firstname: 'E2E', lastname: 'VatidStatusCheck' } },
+        bpartners: { PARTNER1: { isCustomer: true, name: 'E2E VatidStatusCheck Partner' } },
+      },
+    });
+    allure.attachment('Test Data', JSON.stringify(masterdata, null, 2), 'application/json');
+
+    const bpartnerId = masterdata.bpartners.PARTNER1.id;
+    const bpartnerLocationId = masterdata.bpartners.PARTNER1.bpartnerLocationId;
+    expect(bpartnerId, 'Masterdata must return the created BPartner id').toBeTruthy();
+    expect(bpartnerLocationId, 'Masterdata must return the created BPartner location id').toBeTruthy();
+
+    await LoginPage.goto();
+    await LoginPage.login(masterdata.login.user);
+    await LoginPage.expectLoggedIn();
+
+    const stubIds = [];
+    let configuration;
+    try {
+      await test.step('Stub the online VAT-ID service with one confirming and one rejecting answer', async () => {
+        stubIds.push(
+          await registerWireMockStub(
+            viesCheckVatNumberStub({ countryCode: 'DE', vatNumber: VATID_VALID.substring(2), valid: true })
+          )
+        );
+        stubIds.push(
+          await registerWireMockStub(
+            viesCheckVatNumberStub({ countryCode: 'DE', vatNumber: VATID_INVALID.substring(2), valid: false })
+          )
+        );
+        console.log(`[INFO] Registered ${stubIds.length} WireMock stubs at ${WIREMOCK_BASE_URL}${VIES_STUB_PATH}`);
+      });
+
+      await test.step('Enable the online check for this organisation, pointed at the stub server', async () => {
+        configuration = await configureVatIdCheck(page, {
+          restApiBaseURL: `${WIREMOCK_BASE_URL}${VIES_STUB_PATH}`,
+        });
+      });
+
+      await BusinessPartnerPage.gotoRecord(bpartnerId);
+      const header = page.locator('.sections-wrapper');
+      await header.locator('.form-field-VATaxID').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await assertRecordIsValid(BPARTNER_WINDOW_ID, bpartnerId, 'before setting the partner VAT-ID');
+
+      const readPartner = () => getPartnerRecordData(bpartnerId);
+      const captionsByStatus = {};
+
+      captionsByStatus.NotChecked = readListFieldKeyAndCaption(await readPartner(), 'VATaxIDStatus').caption;
+      expect(captionsByStatus.NotChecked, 'The starting NotChecked status must render a caption').toBeTruthy();
+
+      await test.step(`A VAT-ID the service confirms becomes Valid`, async () => {
+        await setVatIdAndAwaitPersisted({
+          scope: header,
+          vatIdValue: VATID_VALID,
+          readRecordData: readPartner,
+          label: 'partner header',
+        });
+        captionsByStatus.Valid = (
+          await waitForVatIdStatus({ readRecordData: readPartner, expectedKey: 'Valid', label: 'partner header' })
+        ).caption;
+      });
+
+      // No page.reload() between the three values, deliberately. A reload
+      // re-mounts the widget from the LAYOUT first and hydrates it from the
+      // document a moment later, and typing into that gap is silently discarded
+      // (see setVatIdAndAwaitPersisted). Nothing needs the reload: each status is
+      // read back from the record itself, so staying on the already-hydrated form
+      // removes the race instead of retrying through it.
+      await test.step(`A VAT-ID the service rejects becomes Invalid`, async () => {
+        await setVatIdAndAwaitPersisted({
+          scope: header,
+          vatIdValue: VATID_INVALID,
+          readRecordData: readPartner,
+          label: 'partner header',
+        });
+        captionsByStatus.Invalid = (
+          await waitForVatIdStatus({ readRecordData: readPartner, expectedKey: 'Invalid', label: 'partner header' })
+        ).caption;
+      });
+
+      await test.step(`A VAT-ID from a member state the service does not cover becomes NotSupported`, async () => {
+        await setVatIdAndAwaitPersisted({
+          scope: header,
+          vatIdValue: VATID_NOT_SUPPORTED,
+          readRecordData: readPartner,
+          label: 'partner header',
+        });
+        captionsByStatus.NotSupported = (
+          await waitForVatIdStatus({ readRecordData: readPartner, expectedKey: 'NotSupported', label: 'partner header' })
+        ).caption;
+      });
+
+      await test.step('The four statuses render four captions that all differ from one another', async () => {
+        const captions = Object.values(captionsByStatus);
+        console.log(`[INFO] Rendered status captions: ${JSON.stringify(captionsByStatus)}`);
+        expect(
+          new Set(captions).size,
+          `NotChecked, Valid, Invalid and NotSupported must each render a distinct caption, got ${JSON.stringify(captionsByStatus)}`
+        ).toBe(captions.length);
+
+        const screenshot = await page.screenshot({ fullPage: true });
+        await allure.attachment('Partner after the check reported NotSupported', screenshot, 'image/png');
+      });
+
+      await test.step('Setting the address VAT-ID drives the address status', async () => {
+        const modal = await openAddressRowAdvancedEdit(page);
+
+        await setVatIdAndAwaitPersisted({
+          scope: modal,
+          vatIdValue: VATID_VALID,
+          readRecordData: () => getLocationRecordData(bpartnerId, bpartnerLocationId),
+          label: 'address',
+        });
+
+        const observed = await waitForVatIdStatus({
+          readRecordData: () => getLocationRecordData(bpartnerId, bpartnerLocationId),
+          expectedKey: 'Valid',
+          label: 'address',
+        });
+        expect(
+          observed.caption,
+          'The address must render the same caption for Valid as the partner does — the status is one shared reference list'
+        ).toBe(captionsByStatus.Valid);
+
+        const screenshot = await page.screenshot({ fullPage: true });
+        await allure.attachment('Address detail form after the check reported Valid', screenshot, 'image/png');
+      });
+
+      console.log('[PASS] The real check drove Valid / Invalid / NotSupported on the partner and Valid on its address, each distinguishable at a glance');
+    } finally {
+      await restoreVatIdCheckConfiguration(page, configuration);
+      for (const stubId of stubIds) {
+        await removeWireMockStub(stubId);
+      }
+    }
+  });
+  /**
+   * The German caption of the VAT-ID element was relabelled from "USt-ID" to
+   * "USt-IdNr." (de_DE and de_CH alike) across every `VATaxID` field placement.
+   * `metasfresh-window-design-rules` § "Verification — MANDATORY Playwright test"
+   * requires a field-translation change to be verified by running the scenario in
+   * BOTH languages and asserting the caption per language, so this test does
+   * exactly that for the two placements this spec already opens: the partner
+   * header (tab 220) and the address detail form (tab 222).
+   *
+   * This is the ONE deliberate exception in this file to "specs must not assert
+   * localized text" (e2e/frontend-webui/CLAUDE.md): here the localized text IS the
+   * subject under test. It is kept honest by construction — the expectation comes
+   * from a table keyed by `AD_Language` and the SAME assertion runs for both
+   * languages, so it cannot pass by accident in one language, and no other
+   * assertion in this file reads a caption as a literal.
+   *
+   * Read from the rendered `<label>` rather than from the layout endpoint,
+   * deliberately: the rule is about what the user actually sees.
+   *
+   * NOT covered here: the `C_Fiscal_Representation` placement on window 110. That
+   * table has no records on the test stacks, so there is no record to open and no
+   * caption to render; covering it would mean inventing a fixture for a window
+   * this spec is not about.
+   */
+  const VATID_CAPTION_BY_LANGUAGE = {
+    de_DE: 'USt-IdNr.',
+    en_US: 'VAT ID',
+  };
+
+  Object.entries(VATID_CAPTION_BY_LANGUAGE).forEach(([language, expectedCaption]) => {
+    test(`The VAT-ID field caption reads "${expectedCaption}" on the partner and on its address (${language})`, async ({ page }) => {
+      // === ALLURE METADATA ===
+      allure.story(`VAT-ID field caption per language (${language})`);
+      allure.severity('normal');
+      allure.tag('VATaxIDStatus');
+      allure.description(`
+## VAT-ID field caption (AD_Element 502388, AD_Window_ID 123, tabs 220 + 222)
+
+### Why this test exists
+
+The VAT-ID element's German caption was relabelled to "USt-IdNr." across every
+placement. A field-translation change must be verified in the rendered UI in both
+languages, per \`metasfresh-window-design-rules\`, otherwise a half-applied
+relabel (one language, or one placement) ships unnoticed.
+
+### What it proves
+
+Logged in as a ${language} user, the label rendered next to the VAT-ID input
+reads "${expectedCaption}" — on the partner header AND in the address detail
+form, i.e. both placements this window carries.
+      `);
+
+      test.setTimeout(180000);
+
+      const masterdata = await Backend.createMasterdata({
+        request: {
+          login: { user: { language, firstname: 'E2E', lastname: 'VatidCaption' } },
+          bpartners: { PARTNER1: { isCustomer: true, name: 'E2E VatidCaption Partner' } },
+        },
+      });
+      allure.attachment('Test Data', JSON.stringify(masterdata, null, 2), 'application/json');
+
+      const bpartnerId = masterdata.bpartners.PARTNER1.id;
+      expect(bpartnerId, 'Masterdata must return the created BPartner id').toBeTruthy();
+
+      await LoginPage.goto();
+      await LoginPage.login(masterdata.login.user);
+      await LoginPage.expectLoggedIn();
+
+      await BusinessPartnerPage.gotoRecord(bpartnerId);
+
+      await test.step(`Partner header: the VAT-ID label reads "${expectedCaption}"`, async () => {
+        const label = page.locator('.sections-wrapper .form-field-VATaxID > label.form-control-label');
+        await expect(label, 'The partner header must render exactly one VAT-ID label').toHaveCount(1);
+        await expect(
+          label,
+          `partner header (tab 220): the VAT-ID caption must read "${expectedCaption}" in ${language}`
+        ).toHaveText(expectedCaption);
+        console.log(`[PASS] partner header (tab 220): VAT-ID caption reads "${expectedCaption}" (${language})`);
+      });
+
+      await test.step(`Address: the VAT-ID label reads "${expectedCaption}"`, async () => {
+        const modal = await openAddressRowAdvancedEdit(page);
+        const label = modal.locator('.form-field-VATaxID > label.form-control-label');
+        await expect(label, 'The address detail form must render exactly one VAT-ID label').toHaveCount(1);
+        await expect(
+          label,
+          `address (tab 222): the VAT-ID caption must read "${expectedCaption}" in ${language}`
+        ).toHaveText(expectedCaption);
+        console.log(`[PASS] address (tab 222): VAT-ID caption reads "${expectedCaption}" (${language})`);
+
+        const screenshot = await page.screenshot({ fullPage: true });
+        await allure.attachment(`Address detail form (${language})`, screenshot, 'image/png');
+      });
+    });
+  });
+});
