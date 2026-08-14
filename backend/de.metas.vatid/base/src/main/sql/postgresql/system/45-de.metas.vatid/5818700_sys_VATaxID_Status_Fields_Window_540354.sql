@@ -15,6 +15,16 @@
 -- AD_Field.IsDisplayedGrid='Y' (SeqNoGrid 80) while its AD_UI_Element.IsDisplayedGrid='N'
 -- (SeqNoGrid 0); mirroring that literally is what the values below do.
 --
+-- CORRECTION (comment-only; this script is already applied, so the fix lives in 5819230). 5818690
+-- justified that mirror by claiming VATaxID appears in the grid and that AD_Field.IsDisplayedGrid is
+-- therefore the effective flag; that premise is FALSE. The WebUI builds a tab's grid layout from
+-- AD_UI_Element -- the rows with IsDisplayedGrid='Y', ordered by AD_UI_Element.SeqNoGrid.
+-- AD_Field.IsDisplayedGrid and AD_Field.SeqNoGrid have no WebUI consumer; they are read by the
+-- generator process that seeds AD_UI_Element rows from AD_Field rows, and by the legacy Swing client.
+-- So the grid decision below did not take effect. Script 5819230 implements it by setting
+-- AD_UI_Element.IsDisplayedGrid='Y' plus a real SeqNoGrid on the VATaxIDStatus AD_UI_Element row
+-- created here. VATaxID's own grid visibility is left as core has it -- out of scope for this change.
+--
 -- Values mirrored from VATaxID on tab 540843, read live from the DB before writing:
 --   AD_Field       IsDisplayed Y, IsDisplayedGrid Y, SeqNo 110, SeqNoGrid 80
 --   AD_UI_Element  group 540893 "advanced edit", SeqNo 50, IsAdvancedField Y, IsDisplayedGrid N

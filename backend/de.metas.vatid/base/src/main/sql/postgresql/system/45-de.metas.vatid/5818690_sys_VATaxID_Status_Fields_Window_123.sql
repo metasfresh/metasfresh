@@ -16,10 +16,21 @@
 -- zoom reference cost grid width and earn nothing at a glance.
 -- Note which flag that means. Read live off the DB, core's VATaxID carries the two grid flags
 -- INCONSISTENTLY on these tabs: AD_Field.IsDisplayedGrid='Y' (SeqNoGrid 80/200) while
--- AD_UI_Element.IsDisplayedGrid='N' (SeqNoGrid 0). VATaxID demonstrably does appear in the grid, so
--- AD_Field.IsDisplayedGrid is the effective flag here. Mirroring VATaxID literally therefore means
--- AD_Field.IsDisplayedGrid='Y' + AD_UI_Element.IsDisplayedGrid='N' for the status, which is what
--- this script writes -- deliberately NOT "both Y", which would diverge from every neighbour column.
+-- AD_UI_Element.IsDisplayedGrid='N' (SeqNoGrid 0). This script mirrors that literally, writing
+-- AD_Field.IsDisplayedGrid='Y' + AD_UI_Element.IsDisplayedGrid='N' for the status.
+--
+-- CORRECTION (comment-only; this script is already applied, so the fix lives in 5819230). The
+-- reasoning above originally justified that combination by claiming VATaxID "demonstrably does appear
+-- in the grid", and concluded AD_Field.IsDisplayedGrid was the effective flag. That premise is FALSE.
+-- The WebUI builds a tab's grid layout from AD_UI_Element: it takes the tab's AD_UI_Element rows with
+-- IsDisplayedGrid='Y' and orders the columns by AD_UI_Element.SeqNoGrid. AD_Field.IsDisplayedGrid and
+-- AD_Field.SeqNoGrid have no WebUI consumer at all -- they are read by the generator process that
+-- seeds AD_UI_Element rows from AD_Field rows, and by the legacy Swing client. VATaxID does NOT in
+-- fact render in the grid on tab 220 or 222; the two-table inconsistency is pre-existing core state
+-- that never took effect either way. Consequence: the "only VATaxIDStatus in the grid" decision below
+-- did not take effect. Script 5819230 implements it, by setting AD_UI_Element.IsDisplayedGrid='Y' plus
+-- a real SeqNoGrid on the VATaxIDStatus AD_UI_Element rows created here. VATaxID's own grid
+-- visibility is left as core has it -- changing it is out of scope for this change.
 --
 -- Values mirrored from VATaxID, all read live from the DB before writing:
 --   tab 220 Geschäftspartner  -- AD_Field Y/grid Y (SeqNoGrid 80); AD_UI_Element grp 1000013 SeqNo 30, IsAdvancedField N
