@@ -384,8 +384,8 @@ public class SqlDocumentQueryBuilder
 			}
 
 			// Single primary key
-			// NOTE: DocumentCollection.documentIdCanMatchKey rejects a non-numeric id before it reaches this
-			// conversion; keep the two in step if the branch below ever starts converting too.
+			// NOTE: for a root document loaded via DocumentCollection, documentIdCanMatchKey rejects a non-numeric
+			// id before it reaches this conversion; keep the two in step if the branch below ever starts converting too.
 			if (keyFields.size() == 1)
 			{
 				final String singleKeyColumnName = keyFields.get(0).getColumnName();
