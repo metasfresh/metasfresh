@@ -11,6 +11,8 @@ import de.metas.order.createFrom.po_from_so.PurchaseTypeEnum;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.shipping.IShipperDAO;
+import de.metas.shipping.ShipperId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.collections.MapReduceAggregator;
@@ -80,6 +82,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 
 	final Map<String, CreatePOLineFromSOLinesAggregator> orderKey2OrderLineAggregator = new HashMap<>();
 
@@ -335,6 +338,15 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 				// fires on PO completion, suppressing MD_Candidate creation.
 				purchaseOrder.setM_Warehouse_ID(salesOrder.getM_Warehouse_ID());
 				Loggables.addLog("@Missing@ @AD_OrgInfo@ @DropShip_Warehouse_ID@ — defaulting to SO's warehouse");
+			}
+
+			// Propagate the SO header's shipper to the PO header when it is a DP-shipper.
+			// This is secondary to the PO LINE propagation (which is what the receipt-schedule
+			// interceptor reads), but keeps the PO header consistent for UI display.
+			final ShipperId soShipperId = ShipperId.ofRepoIdOrNull(salesOrder.getM_Shipper_ID());
+			if (soShipperId != null && shipperDAO.getById(soShipperId).isCreateDeliveryPlanning())
+			{
+				purchaseOrder.setM_Shipper_ID(soShipperId.getRepoId());
 			}
 		}
 
