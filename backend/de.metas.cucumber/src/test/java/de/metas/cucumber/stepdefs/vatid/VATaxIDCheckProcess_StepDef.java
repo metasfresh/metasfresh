@@ -149,6 +149,48 @@ public class VATaxIDCheckProcess_StepDef
 	}
 
 	/**
+	 * Runs the {@code C_BPartner_VATaxID_Check} process with NO selection at all — the exact shape
+	 * {@code org.compiere.server.Scheduler#createProcessInfo} builds for a nightly {@code AD_Scheduler}
+	 * run (no table, no where-clause, no single record), as opposed to
+	 * {@link #runProcessForSelection(String, DataTable)}, which always carries one.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When the C_BPartner_VATaxID_Check process is run as scheduled
+	 * </pre>
+	 */
+	@When("the C_BPartner_VATaxID_Check process is run as scheduled")
+	public void runProcessAsScheduled()
+	{
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByValue(PROCESS_VALUE);
+		assertThat(processId).as("AD_Process with Value=%s must exist", PROCESS_VALUE).isNotNull();
+
+		final UserId loggedUserId = Env.getLoggedUserId();
+		final RoleId roleId = roleDAO.getUserRoles(loggedUserId)
+				.stream()
+				.filter(r -> "WebUI".equals(r.getName()))
+				.map(Role::getId)
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("WebUI role not found for user " + loggedUserId));
+
+		final ProcessExecutor executor = ProcessInfo.builder()
+				.setAD_Process_ID(processId.getRepoId())
+				.setClientId(ClientId.METASFRESH)
+				.setRoleId(roleId)
+				.setCreateTemporaryCtx()
+				// deliberately no setTableName/setWhereClause/setRecord_ID: a scheduled run selects nothing,
+				// per the class javadoc.
+				.buildAndPrepareExecution()
+				.switchContextWhenRunning()
+				.executeSync();
+
+		executor.getResult().propagateErrorIfAny();
+
+		lastPInstanceId = executor.getProcessInfo().getPinstanceId();
+	}
+
+	/**
 	 * Asserts that the last {@link #runProcessForSelection(String, DataTable)} run logged the given number
 	 * of VAT-IDs left pending because the selection exceeded {@code MaxChecksPerRun}.
 	 *
@@ -161,10 +203,75 @@ public class VATaxIDCheckProcess_StepDef
 	@Then("the VAT-ID check process run reports {int} pending checks")
 	public void assertPendingCountLogged(final int expectedPendingCount)
 	{
+		final String expectedSuffix = "pendingCount=" + expectedPendingCount;
+		assertLastRunLogContains(expectedSuffix);
+	}
+
+	/**
+	 * Asserts that the last process run logged exactly the given call count and average response time —
+	 * the AC16 run-summary line ("calls made, and average response time").
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then the VAT-ID check process run reports 2 calls with average response time 0ms
+	 * </pre>
+	 */
+	@Then("the VAT-ID check process run reports {int} calls with average response time {int}ms")
+	public void assertCallStatsLogged(final int expectedCallCount, final int expectedAverageResponseTimeMillis)
+	{
+		final String expectedSuffix = "calls=" + expectedCallCount + ", averageResponseTimeMillis=" + expectedAverageResponseTimeMillis;
+		assertLastRunLogContains(expectedSuffix);
+	}
+
+	/**
+	 * Asserts that the last process run logged the given member state as skipped because it reported
+	 * itself unavailable, and how many VAT-IDs that skip covered.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then the VAT-ID check process run reports member state 'EL' skipped 1 VAT-IDs
+	 * </pre>
+	 */
+	@Then("the VAT-ID check process run reports member state {string} skipped {int} VAT-IDs")
+	public void assertMemberStateSkipLogged(@NonNull final String countryCode, final int expectedSkippedCount)
+	{
+		final String expectedSuffix = "member state " + countryCode + " reports itself unavailable, skipped " + expectedSkippedCount + " VAT-IDs";
+		assertLastRunLogContains(expectedSuffix);
+	}
+
+	/**
+	 * Asserts that the last process run logged NO status-changed line for {@code vataxID} — the absence
+	 * that proves both "no line for an unchanged record" (a re-check that reconfirms the same status) and
+	 * "no status lines at all on a first run" (every record's very first check), per AC16. A test that
+	 * only checked the presence of the run-summary lines would pass even against a logger that logs every
+	 * record unconditionally; this is the assertion that would actually catch that.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then the VAT-ID check process run reports no status-changed line for VATaxID 'DE136695976'
+	 * </pre>
+	 */
+	@Then("the VAT-ID check process run reports no status-changed line for VATaxID {string}")
+	public void assertNoStatusChangedLineLogged(@NonNull final String vataxID)
+	{
 		assertThat(lastPInstanceId).as("a C_BPartner_VATaxID_Check process must have run first").isNotNull();
 
 		final List<ProcessInfoLog> logs = pInstanceDAO.retrieveProcessInfoLogs(lastPInstanceId);
-		final String expectedSuffix = "pendingCount=" + expectedPendingCount;
+		final String forbiddenInfix = "VAT-ID " + vataxID + ": status ";
+
+		assertThat(logs)
+				.as("AD_PInstance_Log of PInstance %s must contain NO status-changed line for VATaxID '%s'", lastPInstanceId, vataxID)
+				.noneMatch(log -> log.getP_Msg() != null && log.getP_Msg().contains(forbiddenInfix));
+	}
+
+	private void assertLastRunLogContains(@NonNull final String expectedSuffix)
+	{
+		assertThat(lastPInstanceId).as("a C_BPartner_VATaxID_Check process must have run first").isNotNull();
+
+		final List<ProcessInfoLog> logs = pInstanceDAO.retrieveProcessInfoLogs(lastPInstanceId);
 
 		assertThat(logs)
 				.as("AD_PInstance_Log of PInstance %s must contain a line ending with '%s'", lastPInstanceId, expectedSuffix)

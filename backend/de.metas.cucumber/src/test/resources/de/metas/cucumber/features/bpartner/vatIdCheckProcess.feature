@@ -132,3 +132,103 @@ Feature: The VAT-ID check process runs on a selection of Business Partners
     Then validate C_BPartner_Location VAT-ID status:
       | C_BPartner_Location_ID | VATaxIDStatus | HasTaxCertificate |
       | bpl_checkLoc           | Valid         | true              |
+
+  @from:cucumber
+  @Id:S31060_4
+  Scenario: A member state reports itself unavailable, so its VAT-IDs are skipped and never marked Invalid
+    Given no VATaxID_CheckLog records exist for VATaxID 'EL094259216'
+    And no VATaxID_CheckLog records exist for VATaxID 'DE136695976'
+    And metasfresh contains VATaxID_Config:
+      | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
+      | true                 | false              | 30               | Invalid              |
+    And metasfresh contains C_BPartners:
+      | Identifier   | Value        | VATaxID     |
+      | bp_elSkip    | ProcSkipEL1  | EL094259216 |
+      | bp_deChecked | ProcSkipDE1  | DE136695976 |
+    And metasfresh contains VATaxID_Config:
+      | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
+      | true                 | true               | 30               | Invalid              |
+    # OnServiceUnavailable=Invalid is the trap TC12 exists to guard: a skipped member state must never
+    # be funnelled into this fail-closed policy. DE136695976 is deliberately the only VATaxID stubbed to
+    # answer, so a run that (wrongly) called the checker for the skipped Greek VAT-ID fails loudly.
+    And the VAT-ID online checker is stubbed to report member state 'EL' unavailable, and to answer:
+      | VATaxID     | VATaxIDStatus |
+      | DE136695976 | Valid         |
+    When the C_BPartner_VATaxID_Check process is run for selection with MaxChecksPerRun '':
+      | C_BPartner_ID |
+      | bp_elSkip     |
+      | bp_deChecked  |
+    Then validate C_BPartner VAT-ID status:
+      | C_BPartner_ID | VATaxIDStatus |
+      | bp_elSkip     | NotChecked    |
+      | bp_deChecked  | Valid         |
+    And the VAT-ID check process run reports member state 'EL' skipped 1 VAT-IDs
+    # Both are each's own first-ever check (NotChecked -> its result), so neither logs a per-record
+    # status-changed line -- proving both halves of AC16's per-record policy in one run: the skipped
+    # target (never checked at all) and the first-run suppression (checked, but still no line).
+    And the VAT-ID check process run reports no status-changed line for VATaxID 'EL094259216'
+    And the VAT-ID check process run reports no status-changed line for VATaxID 'DE136695976'
+
+  @from:cucumber
+  @Id:S31060_5
+  Scenario: A run reports its calls and average response time, and logs no line for an unchanged re-check
+    Given no VATaxID_CheckLog records exist for VATaxID 'ATU13585627'
+    And metasfresh contains VATaxID_Config:
+      | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
+      | true                 | false              | 0                | ServiceUnavailable   |
+    And metasfresh contains C_BPartners:
+      | Identifier | Value         | VATaxID     |
+      | bp_recheck | ProcRecheck1  | ATU13585627 |
+    And metasfresh contains VATaxID_Config:
+      | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
+      | true                 | true               | 0                | ServiceUnavailable   |
+    # RecheckAfterDays=0 disables de-duplication entirely, so the SECOND run below sends a genuine
+    # request rather than reusing the first run's still-fresh result.
+    And the VAT-ID online checker is stubbed to answer:
+      | VATaxID     | VATaxIDStatus |
+      | ATU13585627 | Valid         |
+    When the C_BPartner_VATaxID_Check process is run for selection with MaxChecksPerRun '':
+      | C_BPartner_ID |
+      | bp_recheck    |
+    Then validate C_BPartner VAT-ID status:
+      | C_BPartner_ID | VATaxIDStatus |
+      | bp_recheck    | Valid         |
+    And the VAT-ID online checker is stubbed to answer:
+      | VATaxID     | VATaxIDStatus |
+      | ATU13585627 | Valid         |
+    When the C_BPartner_VATaxID_Check process is run for selection with MaxChecksPerRun '':
+      | C_BPartner_ID |
+      | bp_recheck    |
+    Then validate C_BPartner VAT-ID status:
+      | C_BPartner_ID | VATaxIDStatus |
+      | bp_recheck    | Valid         |
+    And the VAT-ID check process run reports 1 calls with average response time 0ms
+    And the VAT-ID check process run reports no status-changed line for VATaxID 'ATU13585627'
+
+  @from:cucumber
+  @Id:S31060_6
+  Scenario: The nightly schedule runs the process with no selection, covering every VAT-ID system-wide
+    Given no VATaxID_CheckLog records exist for VATaxID 'EE100594102'
+    And metasfresh contains VATaxID_Config:
+      | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
+      | true                 | false              | 30               | ServiceUnavailable   |
+    And metasfresh contains C_BPartners:
+      | Identifier   | Value         | VATaxID     |
+      | bp_scheduled | ProcSchedRun1 | EE100594102 |
+    And metasfresh contains VATaxID_Config:
+      | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
+      | true                 | true               | 30               | ServiceUnavailable   |
+    # bp_scheduled is never put in any selection below -- the scheduled run has none at all -- so its
+    # status flipping proves the run reached every VAT-ID system-wide, not only a selected few. Every
+    # OTHER VAT-ID this system-wide run happens to reach (leftover fixtures of earlier scenarios) gets
+    # the lenient default instead of failing the scenario outright.
+    And the VAT-ID online checker is stubbed to answer known VAT-IDs, and to report unavailable for the rest:
+      | VATaxID     | VATaxIDStatus |
+      | EE100594102 | Valid         |
+    When the C_BPartner_VATaxID_Check process is run as scheduled
+    Then validate C_BPartner VAT-ID status:
+      | C_BPartner_ID | VATaxIDStatus |
+      | bp_scheduled  | Valid         |
+    And validate VATaxID_CheckLog records of C_BPartner 'bp_scheduled':
+      | VATaxID     | VATaxIDStatus | AD_PInstance_ID |
+      | EE100594102 | Valid         | true            |
