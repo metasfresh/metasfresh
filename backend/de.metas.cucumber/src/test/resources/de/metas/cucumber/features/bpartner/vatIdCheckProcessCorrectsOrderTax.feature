@@ -57,9 +57,17 @@ Feature: The VAT-ID check process corrects order-line tax on a status change
       | VATaxID       | VATaxIDStatus |
       | FR83404833048 | Invalid       |
 
+    # No Value/Name given on purpose: a fixed literal here would make C_BPartner_StepDef upsert-by-Value
+    # reuse the SAME partner row across local reruns (the local DB is never reset between runs). A reused
+    # partner keeps every never-completed "orderOpen" order from earlier runs, and when the check below
+    # flips its status, refreshOrderLinesTaxForBPartner tries to refresh ALL of its open orders (not just
+    # this scenario's) -- including those old orders' tax category, which a later run's C_Tax upsert-by-Name
+    # has since repointed elsewhere, so no matching C_Tax exists any more: TaxNotFoundException, which rolls
+    # back the whole check transaction and silently reverts the status. Omitting Value/Name (like every
+    # other fixture in this Background) makes bp_correct scenario-unique, so it is never reused.
     And metasfresh contains C_BPartners without locations:
-      | Identifier | Value              | Name                    | M_PricingSystem_ID.Identifier | IsCustomer | VATaxID       |
-      | bp_correct | vatcorrect_partner | FrenchCustomer_VATFixed | ps_1                          | Y          | FR83404833048 |
+      | Identifier | M_PricingSystem_ID.Identifier | IsCustomer | VATaxID       |
+      | bp_correct | ps_1                          | Y          | FR83404833048 |
     And metasfresh contains C_BPartner_Locations:
       | Identifier  | GLN           | C_BPartner_ID.Identifier | IsShipToDefault | IsBillToDefault | OPT.C_Location_ID.Identifier |
       | bpl_correct | 0123456789041 | bp_correct               | Y               | Y               | location_france              |

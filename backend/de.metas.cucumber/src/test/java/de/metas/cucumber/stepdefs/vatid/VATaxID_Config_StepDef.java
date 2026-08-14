@@ -27,6 +27,7 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.util.Services;
 import de.metas.vatid.VATaxIDOnServiceUnavailableAction;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -41,10 +42,26 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
  * <p>Deliberately an <b>upsert</b>, not a plain insert: the table allows only one active record per
  * organisation (partial unique index), and the local cucumber database is not reset between runs, so a
  * second run of the same feature would otherwise violate that index.
+ *
+ * <p>{@code VATaxID_Config} is per-organisation, not per-scenario: on a shared {@code @ghActions:run_on_executorN}
+ * DB, whatever a scenario leaves it at outlives that scenario for every feature that runs after it on the
+ * same executor. A scenario that enables {@code IsVIESCheckEnabled} and never disables it again leaves the
+ * save-time after-commit trigger ({@code VATaxIDCheckTrigger}) live for every later feature's plain
+ * {@code C_BPartner}/{@code C_BPartner_Location} save carrying a VAT-ID — which then hits whatever this
+ * scenario's online-checker stub was last programmed with, throwing "Unexpected online check for VAT-ID
+ * ..." out of an unrelated feature. {@link #disableVIESCheckAfterScenario()} closes that for every scenario
+ * that touches this step def, unconditionally and regardless of whether the scenario itself passed, failed
+ * or errored — a plain extra Gherkin step at the end of the scenario would NOT do that, because Cucumber
+ * skips every remaining step once one step fails, so a step-based "cleanup" placed after the scenario's own
+ * assertions never runs on the run that actually needs it. An {@code @After} hook is Cucumber's own
+ * guaranteed-execution mechanism (same pattern as e.g. {@code ShipperServiceLevelConfig_StepDef}), so it
+ * runs on every outcome.
  */
 public class VATaxID_Config_StepDef
 {
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	private boolean touchedByThisScenario = false;
 
 	/**
 	 * Upserts the organisation's VAT-ID configuration. An UPSERT rather than an insert on purpose: one
@@ -97,5 +114,34 @@ public class VATaxID_Config_StepDef
 		record.setRequesterNumber(row.getAsOptionalString(I_VATaxID_Config.COLUMNNAME_RequesterNumber).orElse(null));
 
 		InterfaceWrapperHelper.saveRecord(record);
+
+		touchedByThisScenario = true;
+	}
+
+	/**
+	 * Guaranteed-execution cleanup — see the class javadoc. A no-op for the vast majority of scenarios
+	 * (every one that never called {@link #metasfresh_contains_VATaxID_Config}), so this carries no cost for
+	 * the rest of the suite.
+	 */
+	@After
+	public void disableVIESCheckAfterScenario()
+	{
+		if (!touchedByThisScenario)
+		{
+			return;
+		}
+
+		final I_VATaxID_Config existingRecord = queryBL
+				.createQueryBuilder(I_VATaxID_Config.class)
+				.addEqualsFilter(I_VATaxID_Config.COLUMNNAME_AD_Org_ID, ORG_ID)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.firstOnly(I_VATaxID_Config.class);
+
+		if (existingRecord != null && existingRecord.isVIESCheckEnabled())
+		{
+			existingRecord.setIsVIESCheckEnabled(false);
+			InterfaceWrapperHelper.saveRecord(existingRecord);
+		}
 	}
 }
