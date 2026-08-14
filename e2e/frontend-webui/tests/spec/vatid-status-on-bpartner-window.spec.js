@@ -609,11 +609,17 @@ async function findExistingConfigRecordId(page, orgId) {
   // up empty, and the function would silently take the CREATE branch even with an
   // active row present — surfacing much later as "the newly created record is
   // invalid", nowhere near the cause. Fail here instead, naming the cause.
-  if (rows.length > 0 && rows.every((row) => row.fieldsByName?.AD_Org_ID === undefined)) {
-    throw new Error(
-      `Window ${VATID_CONFIG_WINDOW_ID}'s view no longer exposes AD_Org_ID, so this run cannot tell which` +
-        ` organisation's VAT-ID check configuration is which. Re-check AD_UI_Element.IsDisplayedGrid for that column.`
-    );
+  // Both premises are guarded, symmetrically — `IsActive` is relied on just below
+  // to skip deactivated history, and is grid-displayed today for the same reason
+  // (`AD_UI_Element.IsDisplayedGrid='Y'`, SeqNoGrid 10, verified by query).
+  for (const requiredField of ['AD_Org_ID', 'IsActive']) {
+    if (rows.length > 0 && rows.every((row) => row.fieldsByName?.[requiredField] === undefined)) {
+      throw new Error(
+        `Window ${VATID_CONFIG_WINDOW_ID}'s view no longer exposes ${requiredField}, so this run cannot tell which` +
+          ` organisation's active VAT-ID check configuration is which.` +
+          ` Re-check AD_UI_Element.IsDisplayedGrid for that column.`
+      );
+    }
   }
 
   const rowsForOrg = rows.filter((row) => {
@@ -684,6 +690,15 @@ async function configureVatIdCheck(page, { restApiBaseURL, orgId }) {
   // state at all: a created row leaked permanently, or worse, a REUSED row stayed
   // half-rewritten towards the stub with its captured originals discarded. Silent
   // corruption of a record shared with every other spec on the stack.
+  //
+  // The steps ABOVE this line need no such protection, and specifically `Alt+N`
+  // does not: it only opens an in-memory draft in the webapi's document
+  // collection, so nothing is persisted that a teardown could have to undo.
+  // Measured, not assumed — `Alt+N` was driven on this window and left to sit:
+  // the URL took id 1000003 while `VATaxID_Config` still held exactly its one
+  // pre-existing row. The row is INSERTed only by the first valid save, which is
+  // also why the earlier unique-index failures on ids 1000001/1000002 left no
+  // rows behind. So a throw between `Alt+N` and this line leaks nothing.
   pendingConfigTeardown = { recordId, wasCreated, original: null };
 
   await assertRecordIsValid(VATID_CONFIG_WINDOW_ID, recordId, 'VAT-ID check configuration record');
@@ -787,9 +802,17 @@ async function restoreVatIdCheckConfiguration(page, state) {
   if (!state) return;
   try {
     if (state.wasCreated) {
-      await page.request.delete(`${WEBAPI_BASE_URL}/window/${VATID_CONFIG_WINDOW_ID}/${state.recordId}`, {
-        headers: { Accept: 'application/json' },
-      });
+      // `response.ok()` is checked, not assumed: `page.request.delete` rejects only
+      // on a network-level failure, so a REFUSED delete (a 4xx/5xx from a
+      // constraint, say) would otherwise be logged as a success and leak the row
+      // this spec created — which then becomes the next run's "existing" row.
+      const deleteResponse = await page.request.delete(
+        `${WEBAPI_BASE_URL}/window/${VATID_CONFIG_WINDOW_ID}/${state.recordId}`,
+        { headers: { Accept: 'application/json' } }
+      );
+      if (!deleteResponse.ok()) {
+        throw new Error(`HTTP ${deleteResponse.status()} ${deleteResponse.statusText()} deleting the record`);
+      }
       console.log(`[INFO] Cleanup: deleted VAT-ID check configuration ${state.recordId}`);
       return;
     }
