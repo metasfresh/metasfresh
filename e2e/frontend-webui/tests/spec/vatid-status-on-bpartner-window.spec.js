@@ -444,6 +444,17 @@ async function setVatIdAndAwaitPersisted({ scope, vatIdValue, readRecordData, la
   const input = scope.locator('.form-field-VATaxID input').first();
   await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
+  // Refuse to "succeed" on a value that was already there. The success condition
+  // below is "the record holds `vatIdValue`", which a record that ALREADY held it
+  // satisfies without this step doing anything at all — the step would then pass
+  // with the widget completely broken. Asserting the precondition is what makes
+  // the postcondition evidence of THIS edit.
+  const valueBefore = (await readRecordData()).fieldsByName?.VATaxID?.value ?? '';
+  expect(
+    valueBefore,
+    `${label}: the record must NOT already hold "${vatIdValue}" — otherwise reaching that value proves nothing about this step`
+  ).not.toBe(vatIdValue);
+
   const deadline = Date.now() + VERY_SLOW_ACTION_TIMEOUT;
   let attempts = 0;
   let persisted;
