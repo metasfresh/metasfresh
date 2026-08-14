@@ -267,12 +267,14 @@ public class VATaxIDCheckRunService
 	 * has at least one due location VAT-ID — "due" meaning never checked, or stale past its own
 	 * organisation's {@code RecheckAfterDays}, the same staleness window {@link VATaxIDCheckService#check}
 	 * itself applies (now also applied at selection time rather than left entirely to that per-record
-	 * de-duplication). Ordered by the header's own {@code VATaxIDLastAttemptedAt}, nulls first (see the
-	 * class javadoc, "Attempt vs success"); a partner reached only through a due location — its own header
-	 * has no VAT-ID at all, so no header attempt exists — sorts at the front, which is harmless: this
-	 * method is a coarse selection surface, not the actual throttled work queue. The real per-target
-	 * throttling and ordering happens downstream in {@link #filterAndOrderForNightlyRun}, which operates at
-	 * header-or-location grain rather than partner grain.
+	 * de-duplication). Header-due ids are ordered by the header's own {@code VATaxIDLastAttemptedAt}, nulls
+	 * first (see the class javadoc, "Attempt vs success"); a partner reached only through a due location —
+	 * its own header has no VAT-ID at all, so no header attempt exists to sort by — is appended after them
+	 * in whatever order the location query returned it. Neither detail matters: this method is a coarse
+	 * selection surface, not the actual throttled work queue, and its own internal order is never read by
+	 * anything downstream. The real per-target throttling and ordering happens in
+	 * {@link #filterAndOrderForNightlyRun}, which re-derives it from each resolved {@code CheckTarget}'s own
+	 * attempt timestamp at header-or-location grain, independently of this list's order.
 	 *
 	 * <p><b>Location due-ness must be checked independently of header due-ness.</b> A location's own
 	 * staleness must be visible to this selection even when its owning partner's header carries no VAT-ID
@@ -511,20 +513,29 @@ public class VATaxIDCheckRunService
 	 */
 	private void checkOneInOwnTrx(@Nullable final PInstanceId pinstanceId, @NonNull final CheckTarget checkTarget)
 	{
-		stampAttemptInOwnTrx(checkTarget);
-
 		try
 		{
+			// The attempt stamp is DELIBERATELY inside this same try/catch, even though it runs in its own,
+			// separately-committed transaction (see stampAttemptInOwnTrx's javadoc) — the isolation that
+			// method's javadoc documents is about surviving the CHECK's rollback, not about being exempt
+			// from this target's own failure containment. Without this, a transient failure stamping just
+			// ONE target (e.g. a row deleted concurrently between selection and here, a DB hiccup opening
+			// the new transaction) would propagate out of this method, out of the run() loop — which has no
+			// try/catch of its own — and abort the ENTIRE run for every target still queued behind it: the
+			// same "one bad record breaks it for everyone behind it" shape this whole mechanism exists to
+			// prevent, just relocated from "starves the budget" to "hard-aborts the run".
+			stampAttemptInOwnTrx(checkTarget);
+
 			// Isolation from every OTHER target's transaction in this run (see the method javadoc above) —
 			// each target's check-plus-refresh must commit or fail as its own independent unit.
 			trxManager.callInNewTrx(() -> checkAndRefreshIfStatusChanged(pinstanceId, checkTarget));
 		}
 		catch (final Exception ex)
 		{
-			// One target's failure (a throwing checker, a value the format re-check rejects, or — per the
-			// message wrapping below — a refresh failure) must not abort the run for the rest of the
-			// selection. Deliberately worded to not claim the check itself failed: the wrapped message below
-			// already says so explicitly when that is not what happened.
+			// One target's failure (a throwing checker, a value the format re-check rejects, a failure to
+			// stamp the attempt, or — per the message wrapping below — a refresh failure) must not abort the
+			// run for the rest of the selection. Deliberately worded to not claim the check itself failed:
+			// the wrapped message below already says so explicitly when that is not what happened.
 			Loggables.withWarnLoggerToo(logger)
 					.addLog("VAT-ID check processing failed for {}: {}", checkTarget.getLogLabel(), ex.getMessage());
 		}
