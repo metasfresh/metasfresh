@@ -3408,9 +3408,18 @@ Feature: invoice payment allocation
 
     # The allocation's receivable movements of +101.00 and -101.00 cancel, so the balance is
     # exactly the discount counter-leg. It must be a DEBIT of -1.00 => balance -1.00 EUR.
+    #
+    # The SuspenseBalancing_Acct row is the customer-reported symptom itself: an allocation that
+    # does not balance in source currency gets its residual pushed onto that account by
+    # Fact.balanceSource(). The account is absent from a correctly posted allocation, and an
+    # absent account resolves to a zero balance, so this row passes while the posting is right and
+    # fails the moment a residual reappears. It is asserted explicitly because the balance step
+    # only checks the accounts listed in this table — an extra fact line on an unlisted account
+    # would otherwise go unnoticed.
     And Fact_Acct records balances for documents alloc are matching
-      | AccountConceptualName | SourceBalance |
-      | C_Receivable_Acct     | -1.00 EUR     |
+      | AccountConceptualName  | SourceBalance |
+      | C_Receivable_Acct      | -1.00 EUR     |
+      | SuspenseBalancing_Acct | 0.00 EUR      |
 
 
 
