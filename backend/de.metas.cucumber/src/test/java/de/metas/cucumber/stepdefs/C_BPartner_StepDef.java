@@ -33,6 +33,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
 import de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg;
 import de.metas.cucumber.stepdefs.aggregation.C_Aggregation_StepDefData;
+import de.metas.cucumber.stepdefs.bpgroup.C_BP_Group_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.discountschema.M_DiscountSchema_StepDefData;
 import de.metas.cucumber.stepdefs.dunning.C_Dunning_StepDefData;
@@ -120,6 +121,7 @@ public class C_BPartner_StepDef
 	public static final int BP_GROUP_ID = BPGroupId.ofRepoId(1000000).getRepoId();
 
 	@NonNull private final C_BPartner_StepDefData bPartnerTable;
+	@NonNull private final C_BP_Group_StepDefData bpGroupTable;
 	@NonNull private final C_BPartner_Location_StepDefData bPartnerLocationTable;
 	@NonNull private final M_PricingSystem_StepDefData pricingSystemTable;
 	@NonNull private final M_Product_StepDefData productTable;
@@ -224,7 +226,10 @@ public class C_BPartner_StepDef
 	{
 		final ValueAndName valueAndName = row.suggestValueAndName();
 
-		final int bpGroupId = row.getAsOptionalInt(COLUMNNAME_C_BP_Group_ID).orElse(BP_GROUP_ID);
+		final int bpGroupId = row.getAsOptionalIdentifier(COLUMNNAME_C_BP_Group_ID)
+				.flatMap(bpGroupTable::getIdOptional)
+				.map(BPGroupId::getRepoId)
+				.orElseGet(() -> row.getAsOptionalInt(COLUMNNAME_C_BP_Group_ID).orElse(BP_GROUP_ID));
 
 		final int orgId = row.getAsOptionalIdentifier(I_C_BPartner.COLUMNNAME_AD_Org_ID)
 				.map(orgTable::get)
