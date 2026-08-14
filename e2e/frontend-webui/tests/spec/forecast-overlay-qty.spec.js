@@ -309,8 +309,30 @@ has nothing to do with the product they jumped from.
       `Menge must be the cockpit product's ${QTY_COCKPIT_PRODUCT}, not the document total ${QTY_DOCUMENT_TOTAL} (cell read: "${qtyText}")`
     ).toBe(QTY_COCKPIT_PRODUCT);
 
-    // The UOM travels with the quantity, so the figure is unambiguous.
-    await expect(firstRow.locator('[data-cy="cell-C_UOM_ID"]'), 'the Menge is qualified by its UOM').toHaveCount(1);
+    // Maßeinheit is deliberately NOT a column: the quantity is always in the product's own UOM, which
+    // the product already carries, so the column only duplicated information.
+    await expect(
+      firstRow.locator('[data-cy="cell-C_UOM_ID"]'),
+      'Maßeinheit duplicates the product UOM and must not be a column'
+    ).toHaveCount(0);
+
+    // The requested column order. The row's cells appear in the grid's own order, so their data-cy
+    // suffixes are the order — asserted as a whole list, because a per-cell check cannot catch a swap.
+    const columnOrder = await firstRow
+      .locator('[data-cy^="cell-"]')
+      .evaluateAll((cells) => cells.map((cell) => cell.getAttribute('data-cy').replace(/^cell-/, '')));
+    expect(columnOrder, 'Menge sits between Belegstatus and Zugesagter Termin').toEqual([
+      'M_Forecast_ID',
+      'DocStatus',
+      'Qty',
+      'DatePromised',
+      'AD_Org_ID',
+    ]);
+
+    // Stichtag is a header-level date. Rendering it as Date+Time appended a meaningless 00:00:00 to
+    // every row, so assert the de_DE date-only shape rather than merely a non-empty cell.
+    const dateText = (await firstRow.locator('[data-cy="cell-DatePromised"]').innerText()).trim();
+    expect(dateText, 'Zugesagter Termin renders date-only, with no time part').toMatch(/^\d{2}\.\d{2}\.\d{4}$/);
 
     // --- AC5: the Prognose column still zooms into the forecast document -----------------------
     await test.step('the listed forecast opens as its document', async () => {
