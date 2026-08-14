@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_BPartner_Location, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 644967411L;
+	private static final long serialVersionUID = 1727319638L;
 
     /** Standard Constructor */
     public X_C_BPartner_Location (final Properties ctx, final int C_BPartner_Location_ID, @Nullable final String trxName)
@@ -679,6 +679,18 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	public int getVATaxID_CheckLog_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_VATaxID_CheckLog_ID);
+	}
+
+	@Override
+	public void setVATaxIDLastAttemptedAt (final @Nullable java.sql.Timestamp VATaxIDLastAttemptedAt)
+	{
+		set_Value (COLUMNNAME_VATaxIDLastAttemptedAt, VATaxIDLastAttemptedAt);
+	}
+
+	@Override
+	public java.sql.Timestamp getVATaxIDLastAttemptedAt() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_VATaxIDLastAttemptedAt);
 	}
 
 	/** 

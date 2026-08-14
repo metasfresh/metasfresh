@@ -87,14 +87,16 @@ public class C_BPartner_VATaxID_Check extends JavaProcess implements IProcessPre
 	@RunOutOfTrx
 	protected String doIt()
 	{
-		final ImmutableList<BPartnerId> selectedBPartnerIds = getTableName() != null
-				? retrieveSelectedBPartnerIds()
-				: checkRunService.retrieveAllBPartnerIdsWithVATaxID();
+		final boolean nightlyRun = getTableName() == null;
+		final ImmutableList<BPartnerId> selectedBPartnerIds = nightlyRun
+				? checkRunService.retrieveAllBPartnerIdsWithVATaxID()
+				: retrieveSelectedBPartnerIds();
 
 		final VATaxIDCheckRunResult result = checkRunService.run(VATaxIDCheckRunRequest.builder()
 				.selectedBPartnerIds(selectedBPartnerIds)
 				.maxChecksPerRun(p_MaxChecksPerRun)
 				.pinstanceId(getPinstanceId())
+				.nightlyRun(nightlyRun)
 				.build());
 
 		return result.getCheckedCount() + " checked, " + result.getPendingCount() + " pending";

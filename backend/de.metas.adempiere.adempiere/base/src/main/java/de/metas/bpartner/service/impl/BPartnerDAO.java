@@ -101,6 +101,7 @@ import org.compiere.model.I_C_Location;
 import org.compiere.model.X_C_Location;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -108,6 +109,7 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -687,6 +689,36 @@ public class BPartnerDAO implements IBPartnerDAO
 				.orderBy(I_C_BPartner.COLUMNNAME_C_BPartner_ID)
 				.create()
 				.listIds(BPartnerId::ofRepoId);
+	}
+
+	@Override
+	public ImmutableList<I_C_BPartner_Location> retrieveBPartnerLocationsWithVATaxID()
+	{
+		return queryBL.createQueryBuilder(I_C_BPartner_Location.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addNotNull(I_C_BPartner_Location.COLUMNNAME_VATaxID)
+				.addNotEqualsFilter(I_C_BPartner_Location.COLUMNNAME_VATaxID, "")
+				.orderBy(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID)
+				.orderBy(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID)
+				.create()
+				.listImmutable(I_C_BPartner_Location.class);
+	}
+
+	@Override
+	public void stampVATaxIDCheckAttempt(@NonNull final BPartnerId bpartnerId, @NonNull final Instant attemptedAt)
+	{
+		final I_C_BPartner bpartnerRecord = load(bpartnerId, I_C_BPartner.class);
+		bpartnerRecord.setVATaxIDLastAttemptedAt(TimeUtil.asTimestampNotNull(attemptedAt));
+		InterfaceWrapperHelper.saveRecord(bpartnerRecord);
+	}
+
+	@Override
+	public void stampVATaxIDCheckAttempt(@NonNull final BPartnerLocationId bpartnerLocationId, @NonNull final Instant attemptedAt)
+	{
+		final I_C_BPartner_Location bpartnerLocationRecord = load(bpartnerLocationId, I_C_BPartner_Location.class);
+		bpartnerLocationRecord.setVATaxIDLastAttemptedAt(TimeUtil.asTimestampNotNull(attemptedAt));
+		InterfaceWrapperHelper.saveRecord(bpartnerLocationRecord);
 	}
 
 	@Override

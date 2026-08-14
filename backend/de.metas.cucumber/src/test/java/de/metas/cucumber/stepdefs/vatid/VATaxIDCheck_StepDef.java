@@ -198,6 +198,11 @@ public class VATaxIDCheck_StepDef
 		bpartnerRecord.setVATaxID_CheckLog_ID(0);
 		bpartnerRecord.setVATaxIDStatus(VATaxIDStatus.NotChecked.getCode());
 		bpartnerRecord.setVATaxIDCheckedAt(null);
+		// VATaxIDLastAttemptedAt is DIFFERENT from VATaxIDCheckedAt (advances on every attempt, success or
+		// failure -- see VATaxIDCheckRunService's class javadoc, "Attempt vs success") and must be reset
+		// here too, or a scenario asserting fresh due-ness after this cleanup would still see a stale
+		// attempt timestamp survive from an earlier run against the same never-reset local database.
+		bpartnerRecord.setVATaxIDLastAttemptedAt(null);
 		InterfaceWrapperHelper.saveRecord(bpartnerRecord);
 	}
 
@@ -206,6 +211,8 @@ public class VATaxIDCheck_StepDef
 		bpartnerLocationRecord.setVATaxID_CheckLog_ID(0);
 		bpartnerLocationRecord.setVATaxIDStatus(VATaxIDStatus.NotChecked.getCode());
 		bpartnerLocationRecord.setVATaxIDCheckedAt(null);
+		// See the C_BPartner overload above.
+		bpartnerLocationRecord.setVATaxIDLastAttemptedAt(null);
 		InterfaceWrapperHelper.saveRecord(bpartnerLocationRecord);
 	}
 

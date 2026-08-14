@@ -263,7 +263,12 @@ Feature: The VAT-ID check process runs on a selection of Business Partners
     # already contains -- and it must fail and leave bp_broken NotChecked. The ordering assertion that
     # follows is the actual point: a target whose one attempt failed must no longer outrank a target that
     # was never attempted at all -- proving the failure did not re-earn bp_broken the front of the queue.
-    Given set sys config boolean value false for sys config C_BPartner.validateVATaxID
+    # Reset any leftover status/attempt state from an earlier run of this same scenario against a
+    # never-reset local database: bp_broken/bp_pending are upserted by Value, so without this both
+    # VATaxID values could still carry a previous run's final status/attempt timestamp.
+    Given no VATaxID_CheckLog records exist for VATaxID 'NOTAVATID'
+    And no VATaxID_CheckLog records exist for VATaxID 'LU15027442'
+    And set sys config boolean value false for sys config C_BPartner.validateVATaxID
     And metasfresh contains VATaxID_Config:
       | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
       | true                 | false              | 30               | ServiceUnavailable   |
@@ -308,7 +313,8 @@ Feature: The VAT-ID check process runs on a selection of Business Partners
     # staleness -- the only reason it must be swept is that its LOCATION carries a stale, never-checked
     # VAT-ID. Before the fix, retrieveAllBPartnerIdsWithVATaxID() only ever looked at headers, so this
     # partner -- and its location -- would never be reached by the nightly run at all.
-    Given metasfresh contains VATaxID_Config:
+    Given no VATaxID_CheckLog records exist for VATaxID 'DK13585628'
+    And metasfresh contains VATaxID_Config:
       | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
       | true                 | false              | 30               | ServiceUnavailable   |
     And metasfresh contains C_BPartners:

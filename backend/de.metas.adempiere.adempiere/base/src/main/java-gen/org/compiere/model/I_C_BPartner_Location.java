@@ -1139,6 +1139,29 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_VATaxID_CheckLog_ID = "VATaxID_CheckLog_ID";
 
 	/**
+	 * Set VAT-ID Last Attempted On.
+	 * Point in time of the most recent VAT-ID check attempt, regardless of outcome (internal scheduling only).
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setVATaxIDLastAttemptedAt (@Nullable java.sql.Timestamp VATaxIDLastAttemptedAt);
+
+	/**
+	 * Get VAT-ID Last Attempted On.
+	 * Point in time of the most recent VAT-ID check attempt, regardless of outcome (internal scheduling only).
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getVATaxIDLastAttemptedAt();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_VATaxIDLastAttemptedAt = new ModelColumn<>(I_C_BPartner_Location.class, "VATaxIDLastAttemptedAt", null);
+	String COLUMNNAME_VATaxIDLastAttemptedAt = "VATaxIDLastAttemptedAt";
+
+	/**
 	 * Set VAT-ID Check Status.
 	 * Result of the VAT-ID check.
 	 *

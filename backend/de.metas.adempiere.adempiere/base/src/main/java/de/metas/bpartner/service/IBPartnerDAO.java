@@ -56,6 +56,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -298,6 +299,31 @@ public interface IBPartnerDAO extends ISingletonService
 	 * already enforced per-partner downstream, not here.
 	 */
 	ImmutableList<BPartnerId> retrieveBPartnerIdsWithVATaxID();
+
+	/**
+	 * @return every active {@code C_BPartner_Location} of the current context client with a non-blank
+	 * {@code VATaxID}, ordered by {@code C_BPartner_ID} — the location-grain counterpart of
+	 * {@link #retrieveBPartnerIdsWithVATaxID()}, for the same nightly-schedule caller. Needed because a
+	 * location's own staleness must be visible to the nightly sweep even when its owning partner's header
+	 * carries no VAT-ID at all (see {@code de.metas.vatid.VATaxIDCheckRunService}).
+	 */
+	ImmutableList<I_C_BPartner_Location> retrieveBPartnerLocationsWithVATaxID();
+
+	/**
+	 * Stamps {@code C_BPartner.VATaxIDLastAttemptedAt} to {@code attemptedAt} — unconditionally, regardless
+	 * of whether the check that follows succeeds, fails, or throws. Distinct from
+	 * {@code VATaxIDCheckedAt}, which advances only on a completed, non-rolled-back check: a target whose
+	 * check always fails would otherwise never advance a "last touched" timestamp at all, permanently
+	 * sorting first in a least-recently-touched-first nightly ordering. The caller is responsible for
+	 * committing this write in its own transaction, separate from the check-and-refresh unit that follows
+	 * it, so it survives that unit's rollback (see {@code de.metas.vatid.VATaxIDCheckRunService}).
+	 */
+	void stampVATaxIDCheckAttempt(@NonNull BPartnerId bpartnerId, @NonNull Instant attemptedAt);
+
+	/**
+	 * The {@code C_BPartner_Location} counterpart of {@link #stampVATaxIDCheckAttempt(BPartnerId, Instant)}.
+	 */
+	void stampVATaxIDCheckAttempt(@NonNull BPartnerLocationId bpartnerLocationId, @NonNull Instant attemptedAt);
 
 	/**
 	 * Performs an non-strict search (e.g. if BP has only one address, it returns it even if it's not flagged as the default ShipTo address).
