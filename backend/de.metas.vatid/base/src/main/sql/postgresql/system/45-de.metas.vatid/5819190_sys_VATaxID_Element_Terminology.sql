@@ -5,9 +5,15 @@
 -- Usage was enumerated against the live DB before mutating: 9 AD_Column rows (C_BPartner,
 -- C_BPartner_Location, C_BPartner_QuickInput, C_Fiscal_Representation, C_VAT_SmallBusiness,
 -- EDI_cctop_119_v, EDI_cctop_invoic_v, Intrastat_Report_Detail_V, and this module's own
--- VATaxID_CheckLog) plus 1 AD_Process_Para (Initial Setup Wizard's VATaxID parameter). No
--- AD_Field.AD_Name_ID override, no AD_Window, no AD_Tab reference this element. *USt-IdNr.*
--- reads correctly in every one of those 10 usages, so the shared element is mutated, not forked.
+-- VATaxID_CheckLog) plus 1 AD_Process_Para (Initial Setup Wizard's VATaxID parameter). Nothing
+-- references *this* element via AD_Field.AD_Name_ID, AD_Window or AD_Tab. *USt-IdNr.* reads
+-- correctly in every one of those 10 usages, so the shared element is mutated, not forked.
+--
+-- That is NOT the same as "every VAT-ID caption now reads USt-IdNr.": AD_Field 645211 (window 110,
+-- tab 543900) overrides its caption to a *different*, dedicated AD_Element (579135), which this
+-- script does not touch and which still read "USt-ID". Script
+-- 5819210_sys_VATaxID_Element_Terminology_Field_Override.sql relabels that element and completes
+-- the change.
 --
 -- en_US already reads "VAT ID" with IsTranslated='Y' -- left untouched. de_CH gets the
 -- identical de_DE text (no Eszett involved, so no Swiss-convention transform is needed).
