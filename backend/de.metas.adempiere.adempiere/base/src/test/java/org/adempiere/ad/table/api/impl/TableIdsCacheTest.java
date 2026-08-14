@@ -38,7 +38,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class TableIdsCacheTest
 {
-	private static final AdTableId EXISTING_TABLE_ID = AdTableId.ofRepoId(318);
+	private static final AdTableId EXISTING_TABLE_ID = AdTableId.ofRepoId(259);
 	private static final String EXISTING_TABLE_NAME = "C_Order";
 	private static final AdTableId MISSING_TABLE_ID = AdTableId.ofRepoId(999_999);
 	private static final String MISSING_TABLE_NAME = "NoSuchTable";
