@@ -2,11 +2,14 @@
 --
 -- Resulting order, form and grid alike: Prognose, Belegstatus, Menge, Zugesagter Termin, Sektion.
 --
+-- German labels below are the window's own captions; their en_US equivalents are Forecast, Status,
+-- Quantity, Date Promised, Organisation and UOM.
+--
 -- Three changes:
---   1. Menge moves behind Belegstatus (it previously sat directly behind Prognose).
---   2. Maßeinheit is hidden -- the quantity is always in the product's own UOM, which the product
---      already carries, so the column only duplicated information.
---   3. Zugesagter Termin becomes a date-only field. The overlay presents the forecast HEADER's
+--   1. Menge (Quantity) moves behind Belegstatus (Status); it previously sat directly behind Prognose.
+--   2. Maßeinheit (UOM) is hidden -- the quantity is always in the product's own UOM, which the
+--      product already carries, so the column only duplicated information.
+--   3. Zugesagter Termin (Date Promised) becomes a date-only field. The overlay presents the HEADER's
 --      DatePromised, and M_Forecast.DatePromised is AD_Reference_ID=15 (Date). The view column was
 --      created with 16 (Date+Time), copied from M_ForecastLine.DatePromised, so the grid rendered a
 --      meaningless 00:00:00 on every row.
