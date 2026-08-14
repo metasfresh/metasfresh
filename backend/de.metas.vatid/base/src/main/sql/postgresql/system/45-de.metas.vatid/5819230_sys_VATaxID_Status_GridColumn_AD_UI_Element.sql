@@ -46,8 +46,10 @@
 -- IsAdvancedField='N' (tabs 220 and 222 below) do show it. Three unrelated core windows behave the same
 -- way -- 134/tab 249 (Help), 108/tab 118 (Description), 232/tab 402 (Priority, DueType, Kostenstelle)
 -- each carry at least one element with IsAdvancedField='Y' AND IsDisplayedGrid='Y', and none of those
--- columns renders either. 73 such elements exist in core, so the combination is common and has always
--- been inert.
+-- columns renders either. 72 such elements exist in core (counted excluding this feature's own rows,
+-- which is the correction: an earlier count of 73 had included a row this migration had itself just
+-- set, i.e. treated our own change as pre-existing evidence). So the combination is common and has
+-- always been inert.
 -- Resolving it required a choice outside the "make the status a grid column" decision:
 --   (a) also set IsAdvancedField='N' on element 652921 -- the column then renders, but the status
 --       additionally appears on this window's normal single-row form, in a section that today shows

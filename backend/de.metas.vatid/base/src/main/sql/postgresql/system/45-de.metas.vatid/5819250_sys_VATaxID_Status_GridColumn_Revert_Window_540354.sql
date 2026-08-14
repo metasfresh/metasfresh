@@ -13,7 +13,8 @@
 -- -- whose elements are IsAdvancedField='N' -- did render it.
 --
 -- This is a GENERAL fact about the two flags, not something specific to this feature:
--- IsDisplayedGrid='Y' combined with IsAdvancedField='Y' is inert. 73 active AD_UI_Element rows in core
+-- IsDisplayedGrid='Y' combined with IsAdvancedField='Y' is inert. 72 active AD_UI_Element rows in core
+-- (excluding this feature's own rows -- an earlier count of 73 wrongly included one this branch had set)
 -- carry that combination, and none of those columns renders -- reproduced on three unrelated core
 -- windows: 134/tab 249 (Help), 108/tab 118 (Description) and 232/tab 402 (Priority, DueType,
 -- Kostenstelle).
