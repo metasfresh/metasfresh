@@ -132,9 +132,9 @@ public class NShiftUtil
 			@NonNull final NShiftMappingConfigs mappingConfigs,
 			@NonNull final Function<String, String> valueProvider)
 	{
-		final String role = kind == JsonAddressKind.SENDER ? "Sender" : "Receiver";
+		final String role = kind.isSender() ? "Sender" : "Receiver";
 
-		final String attentionAttributeType = kind == JsonAddressKind.SENDER
+		final String attentionAttributeType = kind.isSender()
 				? DeliveryMappingConstants.ATTRIBUTE_TYPE_SENDER_ATTENTION
 				: DeliveryMappingConstants.ATTRIBUTE_TYPE_RECEIVER_ATTENTION;
 		final String attention = mappingConfigs.getSingleValue(attentionAttributeType, valueProvider);
@@ -147,7 +147,7 @@ public class NShiftUtil
 
 		// Optional CustNo, resolved from mapping rules (e.g. a CustomValueString1 shipper-config value routed via a
 		// SenderCustNo / ReceiverCustNo rule). Unset -> getSingleValue returns "" -> omitted (JsonAddress is NON_NULL).
-		final String custNoAttributeType = kind == JsonAddressKind.SENDER
+		final String custNoAttributeType = kind.isSender()
 				? DeliveryMappingConstants.ATTRIBUTE_TYPE_SENDER_CUSTNO
 				: DeliveryMappingConstants.ATTRIBUTE_TYPE_RECEIVER_CUSTNO;
 		final String custNo = mappingConfigs.getSingleValue(custNoAttributeType, valueProvider);

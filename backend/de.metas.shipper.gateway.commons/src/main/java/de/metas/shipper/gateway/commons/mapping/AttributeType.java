@@ -23,7 +23,6 @@
 package de.metas.shipper.gateway.commons.mapping;
 
 import com.fasterxml.jackson.annotation.JsonValue;
-import de.metas.common.delivery.v1.json.DeliveryMappingConstants;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
@@ -37,11 +36,9 @@ public enum AttributeType implements ReferenceListAwareEnum
 	// Keep in sync with de.metas.common.delivery.v1.json.DeliveryMappingConstants
 	SENDER_ATTENTION(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTETYPE_SenderAttention),
 	RECEIVER_ATTENTION(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTETYPE_ReceiverAttention),
-	// CustNo mapping targets (address CustNo of sender / receiver). Value uses DeliveryMappingConstants, not a
-	// generated X_ constant, to avoid a model regeneration — the code is defined once in DeliveryMappingConstants and
-	// seeded as an AD_Ref_List value by migration 5819100.
-	SENDER_CUSTNO(DeliveryMappingConstants.ATTRIBUTE_TYPE_SENDER_CUSTNO),
-	RECEIVER_CUSTNO(DeliveryMappingConstants.ATTRIBUTE_TYPE_RECEIVER_CUSTNO),
+	// CustNo mapping targets (address CustNo of sender / receiver)
+	SENDER_CUSTNO(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTETYPE_SenderCustNo),
+	RECEIVER_CUSTNO(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTETYPE_ReceiverCustNo),
 	REFERENCE(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTETYPE_Reference),
 	LINE_REFERENCE(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTETYPE_LineReference),
 	LINE_DETAIL_GROUP(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTETYPE_LineDetailGroup),
