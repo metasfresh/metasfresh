@@ -51,13 +51,13 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
-import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.Shipper;
 import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -111,7 +111,7 @@ public class DeliveryPlanningService
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
+	private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final ShipperRepository shipperRepository;
@@ -143,21 +143,24 @@ public class DeliveryPlanningService
 	}
 
 	/**
-	 * Gate for per-shipper auto-creation (AC-13a).
+	 * Gate for per-shipper auto-creation.
 	 *
 	 * <p>Returns {@code true} only when:
 	 * <ol>
 	 *     <li>a non-null {@code shipperId} is given</li>
+	 *     <li>the resolved shipper exists and is active</li>
 	 *     <li>the resolved shipper's {@code IsCreateDeliveryPlanning} flag is {@code true}</li>
 	 * </ol>
 	 */
-	public boolean isAutoCreateEnabled(@NonNull final ClientAndOrgId clientAndOrgId, @Nullable final ShipperId shipperId)
+	public boolean isAutoCreateEnabled(@Nullable final ShipperId shipperId)
 	{
 		if (shipperId == null)
 		{
 			return false; // no shipper → skip
 		}
-		return shipperRepository.getById(shipperId).isCreateDeliveryPlanning();
+		return shipperRepository.findById(shipperId)
+				.map(Shipper::isCreateDeliveryPlanning)
+				.orElse(false); // inactive or missing shipper → skip
 	}
 
 	private DeliveryStatusColorPalette getColorPalette()

@@ -4,7 +4,6 @@ import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.deliveryplanning.async.M_ShipmentSchedule_Create_M_Delivery_Planning;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.organization.ClientAndOrgId;
 import de.metas.shipping.ShipperId;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -27,9 +26,7 @@ public class M_ShipmentSchedule
 	public void createDeliveryPlanning(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		final ShipperId shipperId = ShipperId.ofRepoIdOrNull(sched.getM_Shipper_ID());
-		final boolean autoCreateEnabled = deliveryPlanningService.isAutoCreateEnabled(
-				ClientAndOrgId.ofClientAndOrg(sched.getAD_Client_ID(), sched.getAD_Org_ID()),
-				shipperId);
+		final boolean autoCreateEnabled = deliveryPlanningService.isAutoCreateEnabled(shipperId);
 
 		if (!autoCreateEnabled)
 		{

@@ -36,6 +36,7 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -55,6 +56,12 @@ public class ShipperRepository
 	public Shipper getById(@NonNull final ShipperId shipperId)
 	{
 		return getMap().getById(shipperId);
+	}
+
+	@NonNull
+	public Optional<Shipper> findById(@NonNull final ShipperId shipperId)
+	{
+		return getMap().findById(shipperId);
 	}
 
 	@NonNull
@@ -139,6 +146,12 @@ public class ShipperRepository
 				throw new AdempiereException("No shipper found for " + shipperId);
 			}
 			return shipper;
+		}
+
+		@NonNull
+		public Optional<Shipper> findById(@NonNull final ShipperId shipperId)
+		{
+			return Optional.ofNullable(byId.get(shipperId));
 		}
 
 		@NonNull

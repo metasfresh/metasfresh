@@ -1,10 +1,11 @@
 package de.metas.deliveryplanning;
 
-import de.metas.organization.ClientAndOrgId;
 import de.metas.shipping.ShipperId;
+import de.metas.document.dimension.DimensionService;
 import de.metas.shipping.ShipperRepository;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.mockito.Mockito;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Shipper;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,23 +14,20 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Unit tests for the shipper-based delivery planning auto-create gate (AC-13a).
+ * Unit tests for the shipper-based delivery planning auto-create gate.
  *
  * Gate logic:
  * <ul>
- *     <li>a non-null shipper must exist</li>
+ *     <li>a non-null, active shipper must exist</li>
  *     <li>the shipper's {@code IsCreateDeliveryPlanning} flag must be 'Y'</li>
  * </ul>
  */
 public class DeliveryPlanningAutoCreateGateTest
 {
-	private ClientAndOrgId clientAndOrgId;
-
 	@BeforeEach
 	void setUp()
 	{
 		AdempiereTestHelper.get().init();
-		clientAndOrgId = ClientAndOrgId.ofClientAndOrg(1, 0);
 	}
 
 	// ------------------------------------------------------------------ helpers
@@ -47,10 +45,10 @@ public class DeliveryPlanningAutoCreateGateTest
 	private DeliveryPlanningService buildService()
 	{
 		final ShipperRepository shipperRepository = new ShipperRepository();
-		final DeliveryPlanningRepository repo = org.mockito.Mockito.mock(DeliveryPlanningRepository.class);
-		final DeliveryStatusColorPaletteService colorPaletteService = org.mockito.Mockito.mock(DeliveryStatusColorPaletteService.class);
-		final de.metas.document.dimension.DimensionService dimensionService = org.mockito.Mockito.mock(de.metas.document.dimension.DimensionService.class);
-		final MeansOfTransportationService meansOfTransportationService = org.mockito.Mockito.mock(MeansOfTransportationService.class);
+		final DeliveryPlanningRepository repo = Mockito.mock(DeliveryPlanningRepository.class);
+		final DeliveryStatusColorPaletteService colorPaletteService = Mockito.mock(DeliveryStatusColorPaletteService.class);
+		final DimensionService dimensionService = Mockito.mock(DimensionService.class);
+		final MeansOfTransportationService meansOfTransportationService = Mockito.mock(MeansOfTransportationService.class);
 		return new DeliveryPlanningService(shipperRepository, repo, colorPaletteService, dimensionService, meansOfTransportationService);
 	}
 
@@ -65,7 +63,7 @@ public class DeliveryPlanningAutoCreateGateTest
 		final ShipperId shipperId = createShipper(true);
 		final DeliveryPlanningService service = buildService();
 
-		final boolean result = service.isAutoCreateEnabled(clientAndOrgId, shipperId);
+		final boolean result = service.isAutoCreateEnabled(shipperId);
 
 		assertThat(result).isTrue();
 	}
@@ -79,7 +77,7 @@ public class DeliveryPlanningAutoCreateGateTest
 		final ShipperId shipperId = createShipper(false);
 		final DeliveryPlanningService service = buildService();
 
-		final boolean result = service.isAutoCreateEnabled(clientAndOrgId, shipperId);
+		final boolean result = service.isAutoCreateEnabled(shipperId);
 
 		assertThat(result).isFalse();
 	}
@@ -92,7 +90,7 @@ public class DeliveryPlanningAutoCreateGateTest
 	{
 		final DeliveryPlanningService service = buildService();
 
-		final boolean result = service.isAutoCreateEnabled(clientAndOrgId, null);
+		final boolean result = service.isAutoCreateEnabled(null);
 
 		assertThat(result).isFalse();
 	}
