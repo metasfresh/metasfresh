@@ -135,6 +135,23 @@ const WIREMOCK_BASE_URL = process.env.WIREMOCK_BASE_URL || 'http://localhost:180
 const VIES_STUB_PATH = '/vies';
 
 /**
+ * Teardown state, deliberately module-scoped rather than local to a test.
+ *
+ * `VATaxID_Config` is a SHARED, one-active-row-per-organisation record, and this
+ * spec points it at the stub server and switches the online check ON. If that is
+ * not undone, the modified configuration escapes into every later spec and every
+ * later run against the same stack — a leak this branch has already paid for once
+ * (a cucumber failure root-caused to `IsVIESCheckEnabled='Y'` surviving from one
+ * feature into another). A trailing call at the end of the test body is NOT
+ * enough: a test that times out never reaches it, and neither does one that
+ * throws before the setup function has returned its state. So the state is
+ * published to module scope the moment anything mutable has been touched, and
+ * `test.afterEach` — which the runner guarantees — is what consumes it.
+ */
+let pendingConfigTeardown = null;
+let pendingStubIds = [];
+
+/**
  * Register one stub with WireMock and return its id so it can be removed again.
  * Stubs are registered through the admin API rather than committed as mapping
  * files because these two response bodies are fixtures OF THIS SPEC: registering
@@ -154,6 +171,9 @@ async function registerWireMockStub(stub) {
     );
   }
   const body = await response.json();
+  // Recorded here, not by the caller: a throw between two registrations must still
+  // leave the first one removable by the guaranteed teardown.
+  pendingStubIds.push(body.id);
   return body.id;
 }
 
@@ -221,13 +241,21 @@ function elementGroupContaining(scope, fieldName) {
  */
 async function readElementLineFieldOrder(groupLocator) {
   return await groupLocator.evaluate((groupEl) =>
-    Array.from(groupEl.querySelectorAll(':scope > .elements-line')).map((line) => {
-      const formGroup = line.querySelector('.form-group');
-      if (!formGroup) return '';
-      return Array.from(formGroup.classList)
-        .filter((cssClass) => cssClass.startsWith('form-field-'))
-        .join(' ');
-    })
+    Array.from(groupEl.querySelectorAll(':scope > .elements-line')).map((line) =>
+      // EVERY form-group on the line, not just the first. `ElementsLine.js` maps
+      // over `elementsLineLayout.elements`, so one line CAN render several
+      // elements and therefore several `.form-group`s. Keeping only the first
+      // would silently drop or misplace a field if a future migration ever packed
+      // two onto one line — exactly the change this adjacency check exists to
+      // catch. (Live layouts today: 0 of 35 lines on tab 220 and 0 of 34 on tab
+      // 222 carry more than one element, so this costs nothing and removes the
+      // dependency on that staying true.)
+      Array.from(line.querySelectorAll('.form-group'))
+        .flatMap((formGroup) =>
+          Array.from(formGroup.classList).filter((cssClass) => cssClass.startsWith('form-field-'))
+        )
+        .join(' ')
+    )
   );
 }
 
@@ -303,8 +331,10 @@ async function expectStatusReadOnlyWithEditableControl(scope, grainLabel, { edit
  *
  * The menu item is located structurally, never by caption (its caption is
  * translated): among the context menu's items it is the only one carrying BOTH
- * the edit icon and a shortcut hint — the sibling "edit field" item has the same
- * icon but no shortcut, and the items that do have shortcuts carry other icons.
+ * the edit icon and a shortcut hint — the other items that carry a shortcut hint
+ * carry a different icon. (The similarly-iconed "edit field" item cannot even
+ * co-render here: `TableContextMenu.js` gates it on `mainTable` while gating
+ * advanced-edit on `!mainTable`, so the two are mutually exclusive.)
  *
  * The modal is then verified to be the LOCATION's form via `C_Location_ID`, a
  * column that exists on `C_BPartner_Location` and not on `C_BPartner`, so the
@@ -349,8 +379,11 @@ async function openAddressRowAdvancedEdit(page) {
   return modal;
 }
 
-/** The language-invariant `AD_Ref_List.Value` of a List field, plus its rendered caption. */
-function readListFieldKeyAndCaption(recordData, fieldName) {
+/**
+ * The language-invariant key of a List or Lookup field, plus its rendered caption.
+ * Both widget types serve `{ key, caption }`; a plain scalar is returned as the key.
+ */
+function readFieldKeyAndCaption(recordData, fieldName) {
   const field = recordData.fieldsByName?.[fieldName];
   const value = field?.value;
   if (value === null || value === undefined) {
@@ -401,7 +434,7 @@ async function waitForVatIdStatus({ readRecordData, expectedKey, label, timeout 
   let observed = { key: null, caption: null };
 
   while (Date.now() < deadline) {
-    observed = readListFieldKeyAndCaption(await readRecordData(), 'VATaxIDStatus');
+    observed = readFieldKeyAndCaption(await readRecordData(), 'VATaxIDStatus');
     if (observed.key === expectedKey) {
       console.log(`[PASS] ${label}: VATaxIDStatus is "${expectedKey}" (rendered caption: "${observed.caption}")`);
       return observed;
@@ -569,10 +602,29 @@ async function findExistingConfigRecordId(page, orgId) {
   // organisations legitimately has several rows, and "the only row" would then be
   // both wrong and a spurious failure. `AD_Org_ID` is a grid column of this
   // window, so each row carries it, and its `key` is the language-invariant id.
+  // Defend the premise instead of only asserting it in a comment. `AD_Org_ID` is
+  // grid-displayed on this tab today (`AD_UI_Element.IsDisplayedGrid='Y'`,
+  // SeqNoGrid 60, verified by query), so every row carries it. Were that ever to
+  // change, `orgValue` would be `undefined` for every row, the filter would come
+  // up empty, and the function would silently take the CREATE branch even with an
+  // active row present — surfacing much later as "the newly created record is
+  // invalid", nowhere near the cause. Fail here instead, naming the cause.
+  if (rows.length > 0 && rows.every((row) => row.fieldsByName?.AD_Org_ID === undefined)) {
+    throw new Error(
+      `Window ${VATID_CONFIG_WINDOW_ID}'s view no longer exposes AD_Org_ID, so this run cannot tell which` +
+        ` organisation's VAT-ID check configuration is which. Re-check AD_UI_Element.IsDisplayedGrid for that column.`
+    );
+  }
+
   const rowsForOrg = rows.filter((row) => {
     const orgValue = row.fieldsByName?.AD_Org_ID?.value;
     const rowOrgId = typeof orgValue === 'object' && orgValue !== null ? orgValue.key : orgValue;
-    return String(rowOrgId) === String(orgId);
+    if (String(rowOrgId) !== String(orgId)) {
+      return false;
+    }
+    // The invariant is one ACTIVE row per organisation, so inactive history must
+    // not count — rather than assuming the view filters it out for us.
+    return row.fieldsByName?.IsActive?.value !== false;
   });
 
   if (rowsForOrg.length === 0) {
@@ -624,10 +676,24 @@ async function configureVatIdCheck(page, { restApiBaseURL, orgId }) {
   // branch it only exists in the URL the new record landed on (query string
   // stripped — the SPA may have attached one by now).
   recordId = wasCreated ? page.url().split('?')[0].split('/').pop() : existingRecordId;
+
+  // Publish the teardown state HERE — before anything is asserted or written, and
+  // the moment a record exists that teardown might have to undo. Returning it only
+  // at the end (as this function first did) meant any throw in between — a failed
+  // `assertRecordIsValid`, an `applyConfigFields` timeout — left the caller with no
+  // state at all: a created row leaked permanently, or worse, a REUSED row stayed
+  // half-rewritten towards the stub with its captured originals discarded. Silent
+  // corruption of a record shared with every other spec on the stack.
+  pendingConfigTeardown = { recordId, wasCreated, original: null };
+
   await assertRecordIsValid(VATID_CONFIG_WINDOW_ID, recordId, 'VAT-ID check configuration record');
 
+  // Captured BEFORE the first write, and stored raw: `RestApiBaseURL` is genuinely
+  // `null` on an untouched record, and null vs '' are indistinguishable on screen
+  // yet different in the DB — so the restore replays exactly what was read here,
+  // never a re-typed literal.
   const before = await getRecordData(VATID_CONFIG_WINDOW_ID, recordId);
-  const original = {
+  pendingConfigTeardown.original = {
     isViesCheckEnabled: before.fieldsByName?.IsVIESCheckEnabled?.value,
     restApiBaseURL: before.fieldsByName?.RestApiBaseURL?.value,
     recheckAfterDays: before.fieldsByName?.RecheckAfterDays?.value,
@@ -643,7 +709,6 @@ async function configureVatIdCheck(page, { restApiBaseURL, orgId }) {
   await assertRecordIsValid(VATID_CONFIG_WINDOW_ID, recordId, 'after enabling the online check');
 
   console.log(`[INFO] VAT-ID check configuration ${recordId} (${wasCreated ? 'created' : 'reused'}) -> ${restApiBaseURL}`);
-  return { recordId, wasCreated, original };
 }
 
 /**
@@ -701,37 +766,96 @@ async function applyConfigFields(recordId, fields) {
 }
 
 /**
- * Undo whatever `configureVatIdCheck` did — always, pass or fail.
+ * Undo whatever `configureVatIdCheck` did. Invoked from `test.afterEach`, so it
+ * runs whether the test passed, failed, or timed out.
  *
- * A failure here must not fail the test (the assertions have already run), but it
- * must be loud: unrestored values persist on a shared stack and silently become
- * the next run's baseline.
+ * Driven through the WebAPI rather than the widgets, deliberately — teardown has
+ * different requirements from the setup it undoes. It must work when the page is
+ * on an arbitrary URL (or already torn down after a timeout); it must not depend
+ * on the widget focus race that setup has to retry around; and it must be able to
+ * write a genuine `null` back, which typing into a text widget cannot express.
+ * Verified end-to-end against this window: a `replace` op with `value: null`
+ * leaves the column `NULL`, not `''`.
+ *
+ * Idempotent by construction: it replays absolute captured values (or deletes a
+ * record this spec created), so running it twice, or after a partially-applied
+ * setup, converges on the same original state. A failure must NOT fail the test —
+ * the assertions have already run — but must be loud, because an unrestored value
+ * silently becomes the next run's baseline.
  */
-async function restoreVatIdCheckConfiguration(page, config) {
-  if (!config) return;
+async function restoreVatIdCheckConfiguration(page, state) {
+  if (!state) return;
   try {
-    if (config.wasCreated) {
-      await page.request.delete(`${WEBAPI_BASE_URL}/window/${VATID_CONFIG_WINDOW_ID}/${config.recordId}`, {
+    if (state.wasCreated) {
+      await page.request.delete(`${WEBAPI_BASE_URL}/window/${VATID_CONFIG_WINDOW_ID}/${state.recordId}`, {
         headers: { Accept: 'application/json' },
       });
-      console.log(`[INFO] Cleanup: deleted VAT-ID check configuration ${config.recordId}`);
+      console.log(`[INFO] Cleanup: deleted VAT-ID check configuration ${state.recordId}`);
       return;
     }
 
-    await page.goto(`${FRONTEND_BASE_URL}/window/${VATID_CONFIG_WINDOW_ID}/${config.recordId}`);
-    await WidgetCommon.getFieldContainer('RestApiBaseURL').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-    await applyConfigFields(config.recordId, {
-      RestApiBaseURL: config.original.restApiBaseURL ?? '',
-      RecheckAfterDays: Number(config.original.recheckAfterDays ?? 0),
-      IsVIESCheckEnabled: config.original.isViesCheckEnabled === true,
+    if (!state.original) {
+      // Captured before the first write, so a null `original` means nothing was
+      // written yet and there is nothing to undo.
+      console.log(`[INFO] Cleanup: VAT-ID check configuration ${state.recordId} was never modified`);
+      return;
+    }
+
+    const restored = {
+      RestApiBaseURL: state.original.restApiBaseURL ?? null,
+      RecheckAfterDays: Number(state.original.recheckAfterDays ?? 0),
+      IsVIESCheckEnabled: state.original.isViesCheckEnabled === true,
+    };
+    const response = await page.request.patch(
+      `${WEBAPI_BASE_URL}/window/${VATID_CONFIG_WINDOW_ID}/${state.recordId}`,
+      {
+        data: Object.entries(restored).map(([path, value]) => ({ op: 'replace', path, value })),
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+    if (!response.ok()) {
+      throw new Error(`HTTP ${response.status()} ${response.statusText()}`);
+    }
+
+    // Read back: a teardown that only fired the request would report success on a
+    // silently-rejected restore, which is how an altered value escapes unnoticed.
+    const after = await getRecordData(VATID_CONFIG_WINDOW_ID, state.recordId);
+    const mismatches = Object.entries(restored).filter(([fieldName, value]) => {
+      const observed = after.fieldsByName?.[fieldName]?.value;
+      if (typeof value === 'number') return Number(observed) !== value;
+      if (typeof value === 'boolean') return observed !== value;
+      return (observed ?? null) !== (value ?? null);
     });
-    console.log(`[INFO] Cleanup: restored VAT-ID check configuration ${config.recordId}`);
+    if (mismatches.length > 0) {
+      throw new Error(
+        `read-back mismatch on ${mismatches.map(([f, v]) => `${f} (wanted ${JSON.stringify(v)})`).join(', ')}`
+      );
+    }
+
+    console.log(`[INFO] Cleanup: restored VAT-ID check configuration ${state.recordId}`);
   } catch (e) {
-    console.log(`[WARN] Cleanup of VAT-ID check configuration ${config.recordId} FAILED, the stack may be left altered: ${e.message}`);
+    console.log(
+      `[WARN] Cleanup of VAT-ID check configuration ${state.recordId} FAILED, the stack may be left altered: ${e.message}`
+    );
   }
 }
 
 test.describe('VAT-ID check status on the Business Partner window (123)', () => {
+  // Guaranteed teardown. Playwright runs `afterEach` even when the test body
+  // throws OR times out, which a trailing call in the body does not — and this
+  // spec mutates a record shared by every other spec on the stack.
+  test.afterEach(async ({ page }) => {
+    const configState = pendingConfigTeardown;
+    const stubIds = pendingStubIds;
+    pendingConfigTeardown = null;
+    pendingStubIds = [];
+
+    await restoreVatIdCheckConfiguration(page, configState);
+    for (const stubId of stubIds) {
+      await removeWireMockStub(stubId);
+    }
+  });
+
   test('The status fields render directly next to the VAT-ID, read-only, on the partner and on its address', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.story('VAT-ID check status placement on C_BPartner (tab 220) and C_BPartner_Location (tab 222)');
@@ -801,7 +925,7 @@ the page would still pass after a migration moved them into an unrelated group.
     });
 
     await test.step('An unchecked partner reads as NotChecked, not as an empty field', async () => {
-      const { key, caption } = readListFieldKeyAndCaption(await getPartnerRecordData(bpartnerId), 'VATaxIDStatus');
+      const { key, caption } = readFieldKeyAndCaption(await getPartnerRecordData(bpartnerId), 'VATaxIDStatus');
       expect(key, 'A partner that was never checked must carry the NotChecked status').toBe('NotChecked');
       expect(caption, 'The NotChecked status must render a non-empty caption').toBeTruthy();
       console.log(`[PASS] partner header (tab 220): unchecked partner reads NotChecked (caption: "${caption}")`);
@@ -813,7 +937,7 @@ the page would still pass after a migration moved them into an unrelated group.
       await expectStatusFieldsDirectlyAfterVatId(modal, 'address (tab 222)');
       await expectStatusReadOnlyWithEditableControl(modal, 'address (tab 222)', { editableListField: null });
 
-      const { key } = readListFieldKeyAndCaption(await getLocationRecordData(bpartnerId, bpartnerLocationId), 'VATaxIDStatus');
+      const { key } = readFieldKeyAndCaption(await getLocationRecordData(bpartnerId, bpartnerLocationId), 'VATaxIDStatus');
       expect(key, 'An unchecked address must carry the NotChecked status').toBe('NotChecked');
 
       const screenshot = await page.screenshot({ fullPage: true });
@@ -861,7 +985,9 @@ every save really sends a request instead of re-using a result an earlier run
 left in the check log.
     `);
 
-    test.setTimeout(300000);
+    // Headroom over the theoretical worst case: up to eight sequential polls that
+    // each allow VERY_SLOW_ACTION_TIMEOUT, plus login and configuration overhead.
+    test.setTimeout(480000);
 
     const masterdata = await Backend.createMasterdata({
       request: {
@@ -880,134 +1006,127 @@ left in the check log.
     await LoginPage.login(masterdata.login.user);
     await LoginPage.expectLoggedIn();
 
-    const stubIds = [];
-    let configuration;
-    try {
-      await test.step('Stub the online VAT-ID service with one confirming and one rejecting answer', async () => {
-        stubIds.push(
-          await registerWireMockStub(
-            viesCheckVatNumberStub({ countryCode: 'DE', vatNumber: VATID_VALID.substring(2), valid: true })
-          )
-        );
-        stubIds.push(
-          await registerWireMockStub(
-            viesCheckVatNumberStub({ countryCode: 'DE', vatNumber: VATID_INVALID.substring(2), valid: false })
-          )
-        );
-        console.log(`[INFO] Registered ${stubIds.length} WireMock stubs at ${WIREMOCK_BASE_URL}${VIES_STUB_PATH}`);
+    // No try/finally here: teardown of BOTH the stubs and the shared configuration
+    // record is owned by `test.afterEach`, which the runner also runs after a
+    // timeout — the one case a trailing `finally` in the body never reaches.
+    await test.step('Stub the online VAT-ID service with one confirming and one rejecting answer', async () => {
+      await registerWireMockStub(
+        viesCheckVatNumberStub({ countryCode: 'DE', vatNumber: VATID_VALID.substring(2), valid: true })
+      );
+      await registerWireMockStub(
+        viesCheckVatNumberStub({ countryCode: 'DE', vatNumber: VATID_INVALID.substring(2), valid: false })
+      );
+      console.log(`[INFO] Registered ${pendingStubIds.length} WireMock stubs at ${WIREMOCK_BASE_URL}${VIES_STUB_PATH}`);
+    });
+
+    await test.step('Enable the online check for this organisation, pointed at the stub server', async () => {
+      // The organisation is READ OFF THE PARTNER rather than hardcoded: the
+      // check resolves its configuration by the checked record's own
+      // AD_Org_ID (VATaxIDCheckService -> VATaxIDConfigRepository#getByOrgId),
+      // so the configuration this test edits must be that same organisation's
+      // or the run would configure one org and check another.
+      const partnerOrg = readFieldKeyAndCaption(await getPartnerRecordData(bpartnerId), 'AD_Org_ID');
+      // `!= null`, not a truthiness check: org id 0 is the metasfresh System-org
+      // sentinel and is falsy in JS, so `toBeTruthy()` would reject a legitimate id.
+      expect(partnerOrg.key, "The partner's organisation must be resolvable").not.toBe(null);
+      expect(partnerOrg.key, "The partner's organisation must be resolvable").not.toBe(undefined);
+
+      await configureVatIdCheck(page, {
+        restApiBaseURL: `${WIREMOCK_BASE_URL}${VIES_STUB_PATH}`,
+        orgId: partnerOrg.key,
+      });
+    });
+
+    await BusinessPartnerPage.gotoRecord(bpartnerId);
+    const header = page.locator('.sections-wrapper');
+    await header.locator('.form-field-VATaxID').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    await assertRecordIsValid(BPARTNER_WINDOW_ID, bpartnerId, 'before setting the partner VAT-ID');
+
+    const readPartner = () => getPartnerRecordData(bpartnerId);
+    const captionsByStatus = {};
+
+    captionsByStatus.NotChecked = readFieldKeyAndCaption(await readPartner(), 'VATaxIDStatus').caption;
+    expect(captionsByStatus.NotChecked, 'The starting NotChecked status must render a caption').toBeTruthy();
+
+    await test.step(`A VAT-ID the service confirms becomes Valid`, async () => {
+      await setVatIdAndAwaitPersisted({
+        scope: header,
+        vatIdValue: VATID_VALID,
+        readRecordData: readPartner,
+        label: 'partner header',
+      });
+      captionsByStatus.Valid = (
+        await waitForVatIdStatus({ readRecordData: readPartner, expectedKey: 'Valid', label: 'partner header' })
+      ).caption;
+    });
+
+    // No page.reload() between the three values, deliberately. A reload
+    // re-mounts the widget from the LAYOUT first and hydrates it from the
+    // document a moment later, and typing into that gap is silently discarded
+    // (see setVatIdAndAwaitPersisted). Nothing needs the reload: each status is
+    // read back from the record itself, so staying on the already-hydrated form
+    // removes the race instead of retrying through it.
+    await test.step(`A VAT-ID the service rejects becomes Invalid`, async () => {
+      await setVatIdAndAwaitPersisted({
+        scope: header,
+        vatIdValue: VATID_INVALID,
+        readRecordData: readPartner,
+        label: 'partner header',
+      });
+      captionsByStatus.Invalid = (
+        await waitForVatIdStatus({ readRecordData: readPartner, expectedKey: 'Invalid', label: 'partner header' })
+      ).caption;
+    });
+
+    await test.step(`A VAT-ID from a member state the service does not cover becomes NotSupported`, async () => {
+      await setVatIdAndAwaitPersisted({
+        scope: header,
+        vatIdValue: VATID_NOT_SUPPORTED,
+        readRecordData: readPartner,
+        label: 'partner header',
+      });
+      captionsByStatus.NotSupported = (
+        await waitForVatIdStatus({ readRecordData: readPartner, expectedKey: 'NotSupported', label: 'partner header' })
+      ).caption;
+    });
+
+    await test.step('The four statuses render four captions that all differ from one another', async () => {
+      const captions = Object.values(captionsByStatus);
+      console.log(`[INFO] Rendered status captions: ${JSON.stringify(captionsByStatus)}`);
+      expect(
+        new Set(captions).size,
+        `NotChecked, Valid, Invalid and NotSupported must each render a distinct caption, got ${JSON.stringify(captionsByStatus)}`
+      ).toBe(captions.length);
+
+      const screenshot = await page.screenshot({ fullPage: true });
+      await allure.attachment('Partner after the check reported NotSupported', screenshot, 'image/png');
+    });
+
+    await test.step('Setting the address VAT-ID drives the address status', async () => {
+      const modal = await openAddressRowAdvancedEdit(page);
+
+      await setVatIdAndAwaitPersisted({
+        scope: modal,
+        vatIdValue: VATID_VALID,
+        readRecordData: () => getLocationRecordData(bpartnerId, bpartnerLocationId),
+        label: 'address',
       });
 
-      await test.step('Enable the online check for this organisation, pointed at the stub server', async () => {
-        // The organisation is READ OFF THE PARTNER rather than hardcoded: the
-        // check resolves its configuration by the checked record's own
-        // AD_Org_ID (VATaxIDCheckService -> VATaxIDConfigRepository#getByOrgId),
-        // so the configuration this test edits must be that same organisation's
-        // or the run would configure one org and check another.
-        const partnerOrg = readListFieldKeyAndCaption(await getPartnerRecordData(bpartnerId), 'AD_Org_ID');
-        expect(partnerOrg.key, "The partner's organisation must be resolvable").toBeTruthy();
-
-        configuration = await configureVatIdCheck(page, {
-          restApiBaseURL: `${WIREMOCK_BASE_URL}${VIES_STUB_PATH}`,
-          orgId: partnerOrg.key,
-        });
+      const observed = await waitForVatIdStatus({
+        readRecordData: () => getLocationRecordData(bpartnerId, bpartnerLocationId),
+        expectedKey: 'Valid',
+        label: 'address',
       });
+      expect(
+        observed.caption,
+        'The address must render the same caption for Valid as the partner does — the status is one shared reference list'
+      ).toBe(captionsByStatus.Valid);
 
-      await BusinessPartnerPage.gotoRecord(bpartnerId);
-      const header = page.locator('.sections-wrapper');
-      await header.locator('.form-field-VATaxID').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      await assertRecordIsValid(BPARTNER_WINDOW_ID, bpartnerId, 'before setting the partner VAT-ID');
+      const screenshot = await page.screenshot({ fullPage: true });
+      await allure.attachment('Address detail form after the check reported Valid', screenshot, 'image/png');
+    });
 
-      const readPartner = () => getPartnerRecordData(bpartnerId);
-      const captionsByStatus = {};
-
-      captionsByStatus.NotChecked = readListFieldKeyAndCaption(await readPartner(), 'VATaxIDStatus').caption;
-      expect(captionsByStatus.NotChecked, 'The starting NotChecked status must render a caption').toBeTruthy();
-
-      await test.step(`A VAT-ID the service confirms becomes Valid`, async () => {
-        await setVatIdAndAwaitPersisted({
-          scope: header,
-          vatIdValue: VATID_VALID,
-          readRecordData: readPartner,
-          label: 'partner header',
-        });
-        captionsByStatus.Valid = (
-          await waitForVatIdStatus({ readRecordData: readPartner, expectedKey: 'Valid', label: 'partner header' })
-        ).caption;
-      });
-
-      // No page.reload() between the three values, deliberately. A reload
-      // re-mounts the widget from the LAYOUT first and hydrates it from the
-      // document a moment later, and typing into that gap is silently discarded
-      // (see setVatIdAndAwaitPersisted). Nothing needs the reload: each status is
-      // read back from the record itself, so staying on the already-hydrated form
-      // removes the race instead of retrying through it.
-      await test.step(`A VAT-ID the service rejects becomes Invalid`, async () => {
-        await setVatIdAndAwaitPersisted({
-          scope: header,
-          vatIdValue: VATID_INVALID,
-          readRecordData: readPartner,
-          label: 'partner header',
-        });
-        captionsByStatus.Invalid = (
-          await waitForVatIdStatus({ readRecordData: readPartner, expectedKey: 'Invalid', label: 'partner header' })
-        ).caption;
-      });
-
-      await test.step(`A VAT-ID from a member state the service does not cover becomes NotSupported`, async () => {
-        await setVatIdAndAwaitPersisted({
-          scope: header,
-          vatIdValue: VATID_NOT_SUPPORTED,
-          readRecordData: readPartner,
-          label: 'partner header',
-        });
-        captionsByStatus.NotSupported = (
-          await waitForVatIdStatus({ readRecordData: readPartner, expectedKey: 'NotSupported', label: 'partner header' })
-        ).caption;
-      });
-
-      await test.step('The four statuses render four captions that all differ from one another', async () => {
-        const captions = Object.values(captionsByStatus);
-        console.log(`[INFO] Rendered status captions: ${JSON.stringify(captionsByStatus)}`);
-        expect(
-          new Set(captions).size,
-          `NotChecked, Valid, Invalid and NotSupported must each render a distinct caption, got ${JSON.stringify(captionsByStatus)}`
-        ).toBe(captions.length);
-
-        const screenshot = await page.screenshot({ fullPage: true });
-        await allure.attachment('Partner after the check reported NotSupported', screenshot, 'image/png');
-      });
-
-      await test.step('Setting the address VAT-ID drives the address status', async () => {
-        const modal = await openAddressRowAdvancedEdit(page);
-
-        await setVatIdAndAwaitPersisted({
-          scope: modal,
-          vatIdValue: VATID_VALID,
-          readRecordData: () => getLocationRecordData(bpartnerId, bpartnerLocationId),
-          label: 'address',
-        });
-
-        const observed = await waitForVatIdStatus({
-          readRecordData: () => getLocationRecordData(bpartnerId, bpartnerLocationId),
-          expectedKey: 'Valid',
-          label: 'address',
-        });
-        expect(
-          observed.caption,
-          'The address must render the same caption for Valid as the partner does — the status is one shared reference list'
-        ).toBe(captionsByStatus.Valid);
-
-        const screenshot = await page.screenshot({ fullPage: true });
-        await allure.attachment('Address detail form after the check reported Valid', screenshot, 'image/png');
-      });
-
-      console.log('[PASS] The real check drove Valid / Invalid / NotSupported on the partner and Valid on its address, each distinguishable at a glance');
-    } finally {
-      await restoreVatIdCheckConfiguration(page, configuration);
-      for (const stubId of stubIds) {
-        await removeWireMockStub(stubId);
-      }
-    }
+    console.log('[PASS] The real check drove Valid / Invalid / NotSupported on the partner and Valid on its address, each distinguishable at a glance');
   });
   /**
    * The German caption of the VAT-ID element was relabelled from "USt-ID" to
