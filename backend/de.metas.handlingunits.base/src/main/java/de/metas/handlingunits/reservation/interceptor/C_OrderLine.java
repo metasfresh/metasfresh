@@ -99,13 +99,21 @@ public class C_OrderLine
 	@CalloutMethod(columnNames = de.metas.interfaces.I_C_OrderLine.COLUMNNAME_M_Product_ID)
 	public void onProductSetOrChanged(final de.metas.interfaces.I_C_OrderLine orderLine)
 	{
+		// This fires on every change to M_Product_ID, clearing the field included. There is then no product to
+		// default a packing instruction for, so the current one is left for the user to change separately.
+		final ProductId productId = ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID());
+		if (productId == null)
+		{
+			return;
+		}
+
 		final org.compiere.model.I_C_Order order = ordersRepo.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 
 		final ZonedDateTime date = extractPriceDate(orderLine, order);
 
 		final Optional<HUPIItemProductId> huPiItemProductId = hupiItemProductDAO.retrieveDefaultIdForProduct(
-				ProductId.ofRepoId(orderLine.getM_Product_ID()),
-				BPartnerId.ofRepoId(orderLine.getC_BPartner_ID()),
+				productId,
+				BPartnerId.ofRepoIdOrNull(orderLine.getC_BPartner_ID()),
 				date,
 				getPriceListVersionIdOrNull(orderLine, order, date));
 		final Properties ctx = Env.getCtx();

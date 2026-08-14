@@ -59,6 +59,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 /**
  * Covers the manual sales order line path: setting or changing the product on an order line must only
@@ -257,6 +258,38 @@ public class C_OrderLineTest
 		saveRecord(order);
 	}
 
+	/**
+	 * Clearing the product on the line fires this callout with {@code M_Product_ID} unset. There is no
+	 * product to default a packing instruction for, and the callout must not throw — an AD
+	 * {@code Mandatory} flag is only enforced on persist, so a pre-save callout genuinely sees the cleared
+	 * value, exactly as it does for an unset DatePromised above.
+	 */
+	@Test
+	public void productCleared_doesNotThrowAndLeavesThePackingInstructionAlone()
+	{
+		setEnforcePrecisePrice(true);
+		createDefaultForProductPackingInstruction();
+		createProductPrice(null);
+		final int packingInstructionBefore = orderLine.getM_HU_PI_Item_Product_ID();
+		clearOrderLineProduct();
+
+		assertThatCode(() -> interceptor.onProductSetOrChanged(orderLine)).doesNotThrowAnyException();
+
+		assertThat(orderLine.getM_HU_PI_Item_Product_ID()).isEqualTo(packingInstructionBefore);
+	}
+
+	/** The business partner is read on the same lookup call and is just as unset-able while editing. */
+	@Test
+	public void bpartnerCleared_doesNotThrow()
+	{
+		setEnforcePrecisePrice(true);
+		createDefaultForProductPackingInstruction();
+		createProductPrice(null);
+		clearOrderLineBPartner();
+
+		assertThatCode(() -> interceptor.onProductSetOrChanged(orderLine)).doesNotThrowAnyException();
+	}
+
 	private void clearOrderLineDatePromised()
 	{
 		orderLine.setDatePromised(null);
@@ -401,5 +434,17 @@ public class C_OrderLineTest
 			productPrice.setM_HU_PI_Item_Product(huPiItemProduct);
 		}
 		saveRecord(productPrice);
+	}
+
+	private void clearOrderLineProduct()
+	{
+		orderLine.setM_Product_ID(0);
+		saveRecord(orderLine);
+	}
+
+	private void clearOrderLineBPartner()
+	{
+		orderLine.setC_BPartner_ID(0);
+		saveRecord(orderLine);
 	}
 }
