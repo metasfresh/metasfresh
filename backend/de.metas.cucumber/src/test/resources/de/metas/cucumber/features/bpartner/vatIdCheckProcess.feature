@@ -207,7 +207,7 @@ Feature: The VAT-ID check process runs on a selection of Business Partners
 
   @from:cucumber
   @Id:S31060_6
-  Scenario: The nightly schedule's own selection covers every VAT-ID system-wide, not only a selection
+  Scenario: The nightly schedule's own selection covers every VAT-ID system-wide, and its run actually checks it
     Given no VATaxID_CheckLog records exist for VATaxID 'IT00743110157'
     And metasfresh contains C_BPartners:
       | Identifier   | Value         | VATaxID       |
@@ -215,24 +215,27 @@ Feature: The VAT-ID check process runs on a selection of Business Partners
     # bp_scheduled is created while the online check is still OFF for this organisation (the ambient
     # state left by the previous scenario's teardown) -- exactly like every earlier scenario in this file
     # -- so its save never schedules a real after-commit check. Only once it exists is the check flipped
-    # ON, and only long enough for the read-only assertion right below, which queries the selection
-    # directly and never executes a check itself. It is switched back OFF before the actual scheduled run
-    # further down: a "no selection" sweep reaches every OTHER feature's VAT-ID-bearing fixtures on this
-    # shared database too, and this is the only way to prove the selection and the branch without actually
-    # checking any of them -- see the step-defs' own javadoc. bp_scheduled is never put in any selection
-    # below -- the scheduled run has none at all -- so its presence in the nightly selection proves the
-    # selection reaches every VAT-ID system-wide, not only a selected few.
+    # ON, and stays on for the rest of the scenario: the read-only assertion below proves the selection
+    # reaches bp_scheduled, and the real scheduled run further down proves the selection is actually ACTED
+    # ON -- this is the only end-to-end coverage anywhere of the scheduled entry point performing and
+    # persisting a real check (bp_scheduled is never put in any selection -- the scheduled run has none at
+    # all -- so its result can only come from the nightly no-selection sweep). The lenient stub is what
+    # lets this real, unbounded run coexist safely with whatever other VAT-ID-bearing fixtures the shared
+    # executor database already holds -- see the step-defs' own javadoc.
     And metasfresh contains VATaxID_Config:
       | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
       | true                 | true               | 30               | ServiceUnavailable   |
     Then the C_BPartner_VATaxID_Check nightly selection includes C_BPartner 'bp_scheduled'
-    And metasfresh contains VATaxID_Config:
-      | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
-      | true                 | false              | 30               | ServiceUnavailable   |
+    And the VAT-ID online checker is stubbed to answer known VAT-IDs, and to report unavailable for the rest:
+      | VATaxID       | VATaxIDStatus |
+      | IT00743110157 | Valid         |
     When the C_BPartner_VATaxID_Check process is run as scheduled
     Then validate C_BPartner VAT-ID status:
       | C_BPartner_ID | VATaxIDStatus |
-      | bp_scheduled  | NotChecked    |
+      | bp_scheduled  | Valid         |
+    And validate VATaxID_CheckLog records of C_BPartner 'bp_scheduled':
+      | VATaxID       | VATaxIDStatus | AD_PInstance_ID |
+      | IT00743110157 | Valid         | true            |
 
   @from:cucumber
   @Id:S31060_7
