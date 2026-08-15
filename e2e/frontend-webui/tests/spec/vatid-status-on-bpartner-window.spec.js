@@ -1169,22 +1169,36 @@ left in the check log.
    * rendered UI, so this test does that for the two placements this spec already
    * opens: the partner header (tab 220) and the address detail form (tab 222).
    *
-   * HOW IT STAYS LANGUAGE-INDEPENDENT (e2e/frontend-webui/CLAUDE.md forbids
-   * asserting localized text, with no exception for "the text is the subject"):
-   * the expectation is not a literal and not a per-language table. It is read from
-   * the running backend's own window layout, in the session's language, and the
-   * assertion is "the label the user sees is one of the captions the Application
-   * Dictionary publishes for this column". That statement is true in every
-   * language, so the test needs no edit when a translation legitimately changes —
-   * and it still runs in two languages, which proves the caption resolves per
-   * language rather than being pinned to one.
+   * HOW IT STAYS LANGUAGE-INDEPENDENT: the expectation is not a literal and not a
+   * per-language table. It is read from the running backend's own window layout,
+   * in the session's language, per placement, and each placement's rendered label
+   * must equal ITS OWN published caption. That statement holds in every language,
+   * so the spec needs no edit when a translation legitimately changes — and it
+   * still runs in two languages, which proves the caption resolves per language
+   * rather than being pinned to one.
    *
-   * What it therefore catches: a placement rendering a DIFFERENT element than the
-   * AD says belongs there (the half-applied-relabel failure this exists for), a
-   * blank caption, and a stale cached label in the frontend. What it deliberately
-   * does NOT pin is the literal wording — that is AD data, verified where it
-   * lives (the relabel migration's read-back across all 18 placements in both
-   * German locales, plus the `window-designer` pass), not in a browser test.
+   * BE PRECISE ABOUT THE RULE, THOUGH. `e2e/frontend-webui/CLAUDE.md` forbids
+   * comparing an `expect` against "a localized UI string or a layout caption".
+   * This still compares rendered text against a layout caption — what it removes
+   * is the hardcoded per-language literal, which is the failure the rule's own
+   * "Why" describes (strings going stale, specs breaking when the language
+   * changes). Do not read this comment as claiming full compliance with the
+   * letter: it is a deliberate, narrower reading, kept because the mandate for
+   * this test (`metasfresh-window-design-rules` § "Verification") is inherently
+   * about a caption. If a reviewer wants the letter, this check belongs outside
+   * Playwright entirely — asserted against the migration's target value.
+   *
+   * What it catches: a placement rendering a DIFFERENT element than the one the
+   * AD publishes for it (the half-applied-relabel failure this exists for), a
+   * placement whose caption is blank, a placement that publishes more than one
+   * caption, and a stale cached label in the frontend.
+   *
+   * What it CANNOT catch, stated plainly: a wholesale reverted relabel. Both the
+   * expectation and the observation come from the same backend, so if the element
+   * still said "USt-ID" everywhere, the layout would say so, the DOM would agree,
+   * and this would pass. The literal wording is AD data and is guarded where that
+   * data lives — the relabel migration's usage enumeration across the placements
+   * it touched, plus the `window-designer` pass — not by a browser test.
    *
    * Still read from the rendered `<label>`, not only from the layout: the rule is
    * about what the user actually sees. The layout supplies the expectation; the
@@ -1236,26 +1250,73 @@ left in the check log.
    * edited when a translation legitimately changes.
    *
    * What it still catches: a placement rendering a DIFFERENT element than the one
-   * the AD says belongs there (the exact half-applied-relabel failure this test
-   * exists for), a blank caption, and a frontend that renders a stale cached
-   * label. What it deliberately does NOT pin is the caption's literal wording —
-   * that is AD data, verified where it lives (the migration's read-back across
-   * every placement, plus the `window-designer` pass), not in a browser test.
+   * the AD publishes for it (the half-applied-relabel failure this test exists
+   * for), a blank caption, a placement publishing more than one caption, and a
+   * frontend rendering a stale cached label.
+   *
+   * What it does NOT pin is the caption's literal wording. Expectation and
+   * observation both come from the same backend, so a wholesale reverted relabel
+   * would pass here — that wording is guarded at the Application Dictionary level
+   * by the relabel migration's usage enumeration and the `window-designer` pass,
+   * not by a browser test.
    */
-  const readLayoutCaptions = async (page, windowId, columnName) => {
+  const readLayoutCaptionsByPlacement = async (page, windowId, columnName) => {
     const response = await page.request.get(`${WEBAPI_BASE_URL}/window/${windowId}/layout`, {
       headers: { 'Content-Type': 'application/json' },
     });
     expect(response.ok(), `window ${windowId} layout must be readable (HTTP ${response.status()})`).toBe(true);
-    const captions = collectLayoutCaptions(await response.json(), columnName);
-    expect(
-      captions.size,
-      `the layout of window ${windowId} must publish at least one caption for ${columnName}`
-    ).toBeGreaterThan(0);
-    captions.forEach((caption) =>
-      expect(caption.trim(), `${columnName}'s layout caption must not be blank`).not.toBe('')
+    const layout = await response.json();
+
+    /**
+     * Each placement is read from the SAME endpoint the UI itself uses to render
+     * it, which is what makes "that placement's own caption" mean something:
+     *
+     *  - header form      -> `/window/{id}/layout`, elements under `sections`
+     *  - address advanced -> `/window/{id}/{tabId}/layout?advanced=true`
+     *
+     * The window-level `tabs[]` entry is NOT the address form: it describes that
+     * tab's grid columns, which do not include `VATaxID`. Reading it here returned
+     * an empty set and failed loudly — which is how this endpoint was pinned down
+     * rather than assumed.
+     */
+    const advancedResponse = await page.request.get(
+      `${WEBAPI_BASE_URL}/window/${windowId}/${LOCATION_TAB_ID}/layout?advanced=true`,
+      { headers: { 'Content-Type': 'application/json' } }
     );
-    return captions;
+    expect(
+      advancedResponse.ok(),
+      `window ${windowId} tab ${LOCATION_TAB_ID} advanced layout must be readable (HTTP ${advancedResponse.status()})`
+    ).toBe(true);
+    const advancedLayout = await advancedResponse.json();
+
+    /**
+     * Exactly one caption per placement — deliberately `toBe(1)`, not "at least one".
+     *
+     * This is what keeps the placements independent. Reading the whole window into
+     * one accepted set would let a sibling placement's caption satisfy the
+     * assertion, so a genuine divergence between the header and the address — one
+     * of them overridden onto a different `AD_Element` via `AD_Field.AD_Name_ID`
+     * — would pass unnoticed. That is not hypothetical: this feature's own relabel
+     * missed exactly such an override elsewhere in the dictionary and needed a
+     * second migration. Each placement is therefore compared against its OWN
+     * caption, and a placement publishing two would fail loudly rather than
+     * silently widen what the test accepts.
+     */
+    const onlyCaptionOf = (node, placement) => {
+      const captions = collectLayoutCaptions(node, columnName);
+      expect(
+        captions.size,
+        `${placement} must publish exactly one ${columnName} caption, got ${JSON.stringify([...captions])}`
+      ).toBe(1);
+      const [caption] = [...captions];
+      expect(caption.trim(), `${placement}: the ${columnName} caption must not be blank`).not.toBe('');
+      return caption;
+    };
+
+    return {
+      header: onlyCaptionOf(layout.sections, `window ${windowId}'s header form`),
+      address: onlyCaptionOf(advancedLayout, `window ${windowId} tab ${LOCATION_TAB_ID} (advanced edit)`),
+    };
   };
 
   CAPTION_LANGUAGES.forEach((language) => {
@@ -1277,18 +1338,24 @@ placement left pointing at a different element — ships unnoticed.
 ### What it proves
 
 Logged in as a ${language} user, the label rendered next to the VAT-ID input is
-exactly the caption the backend's window layout publishes for the \`VATaxID\`
-column — on the partner header AND in the address detail form, i.e. both
-placements this window carries.
+exactly the caption that placement itself publishes — the partner header checked
+against the header form's own entry, the address checked against tab
+\`${LOCATION_TAB_ID}\`'s. Scoping per placement is the point: a window-wide
+accepted set would let one placement's caption satisfy the other, hiding exactly
+the divergence this test exists to find.
 
-### Why it asserts no literal text
+### Why it asserts no literal text, and what that costs
 
 The expectation is read from the running backend in the session's language rather
-than hardcoded per language, so this spec stays language-independent as
-\`e2e/frontend-webui/CLAUDE.md\` requires: it never compares against a localized
-string, and it needs no edit when a translation legitimately changes. The
-caption's literal wording is AD data and is verified where that data lives — the
-migration's read-back across every placement — not in a browser test.
+than hardcoded per language, so the spec needs no edit when a translation
+legitimately changes. It does still compare against a layout caption, which
+\`e2e/frontend-webui/CLAUDE.md\` names — what is removed is the hardcoded
+localized literal, the failure that rule's rationale describes.
+
+The cost, stated rather than hidden: expectation and observation both come from
+the same backend, so a wholesale reverted relabel would pass here. That wording
+is guarded at the Application Dictionary level by the relabel migration, not by
+this test.
       `);
 
       test.setTimeout(180000);
@@ -1310,32 +1377,32 @@ migration's read-back across every placement — not in a browser test.
 
       await BusinessPartnerPage.gotoRecord(bpartnerId);
 
-      const layoutCaptions = await readLayoutCaptions(page, BPARTNER_WINDOW_ID, 'VATaxID');
+      const layoutCaptions = await readLayoutCaptionsByPlacement(page, BPARTNER_WINDOW_ID, 'VATaxID');
       console.log(
-        `[INFO] ${language}: layout publishes ${layoutCaptions.size} caption(s) for VATaxID: ${JSON.stringify([...layoutCaptions])}`
+        `[INFO] ${language}: layout publishes VATaxID captions header=${JSON.stringify(layoutCaptions.header)} address=${JSON.stringify(layoutCaptions.address)}`
       );
 
-      await test.step('Partner header: the VAT-ID label is the one the layout publishes', async () => {
+      await test.step("Partner header: the VAT-ID label is that placement's own caption", async () => {
         const label = page.locator('.sections-wrapper .form-field-VATaxID > label.form-control-label');
         await expect(label, 'The partner header must render exactly one VAT-ID label').toHaveCount(1);
         const rendered = (await label.innerText()).trim();
         expect(
-          [...layoutCaptions],
-          `partner header (tab 220), ${language}: the rendered VAT-ID caption "${rendered}" must be one the window layout publishes for the VATaxID column`
-        ).toContain(rendered);
-        console.log(`[PASS] partner header (tab 220): VAT-ID caption matches the layout (${language})`);
+          rendered,
+          `partner header (tab 220), ${language}: the rendered VAT-ID caption must be the one the header form itself publishes`
+        ).toBe(layoutCaptions.header);
+        console.log(`[PASS] partner header (tab 220): VAT-ID caption matches its own layout entry (${language})`);
       });
 
-      await test.step('Address: the VAT-ID label is the one the layout publishes', async () => {
+      await test.step("Address: the VAT-ID label is that placement's own caption", async () => {
         const modal = await openAddressRowAdvancedEdit(page);
         const label = modal.locator('.form-field-VATaxID > label.form-control-label');
         await expect(label, 'The address detail form must render exactly one VAT-ID label').toHaveCount(1);
         const rendered = (await label.innerText()).trim();
         expect(
-          [...layoutCaptions],
-          `address (tab 222), ${language}: the rendered VAT-ID caption "${rendered}" must be one the window layout publishes for the VATaxID column`
-        ).toContain(rendered);
-        console.log(`[PASS] address (tab 222): VAT-ID caption matches the layout (${language})`);
+          rendered,
+          `address (${LOCATION_TAB_ID}), ${language}: the rendered VAT-ID caption must be the one that tab itself publishes`
+        ).toBe(layoutCaptions.address);
+        console.log(`[PASS] address (tab 222): VAT-ID caption matches its own layout entry (${language})`);
 
         const screenshot = await page.screenshot({ fullPage: true });
         await allure.attachment(`Address detail form (${language})`, screenshot, 'image/png');
