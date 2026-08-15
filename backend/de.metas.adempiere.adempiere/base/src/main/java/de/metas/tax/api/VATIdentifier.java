@@ -45,11 +45,8 @@ public final class VATIdentifier
 	public String getAsString() {return value;}
 
 	/**
-	 * @return the value's first two characters, uppercased — the ISO/VIES member-state prefix
-	 * convention every EU VAT-ID follows (e.g. {@code DE123456789} -> {@code DE}). Mirrors the same
-	 * substring convention {@code VIESClient} and {@code EUVatIdValidator} each derive privately; a
-	 * value shorter than two characters (never rejected here, since this class only rejects blank)
-	 * is returned as-is, uppercased, and simply matches no known member-state code.
+	 * @return the first two characters, uppercased — the member-state prefix every EU VAT-ID carries. A
+	 * value shorter than two characters is returned as-is and simply matches no member state.
 	 */
 	@NonNull
 	public String getCountryCodePrefix()

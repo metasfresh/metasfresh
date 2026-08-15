@@ -96,11 +96,8 @@ public class C_Tax_StepDef
 	 *         {@code TaxDAO}</li>
 	 * </ul>
 	 *
-	 * <p>Re-running this step for an existing identifier acts as an upsert — applying the new
-	 * column values and saving, which re-triggers the {@code C_Tax} interceptor. This is the
-	 * standard way to drive flag-exclusivity test scenarios.
-	 *
-	 * <p>Upserts by {@code Name} so repeated runs don't collide on the unique-name constraint.
+	 * <p>Upserts by {@code Name}, so repeated runs neither collide on the unique-name constraint nor skip
+	 * the {@code C_Tax} interceptor — which is how flag-exclusivity scenarios are driven.
 	 *
 	 * <p><b>Gherkin usage example</b>:
 	 * <pre>{@code

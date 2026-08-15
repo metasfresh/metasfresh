@@ -29,9 +29,9 @@ import de.metas.tax.api.VATIdentifier;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.session.AdSessionId;
 
 import javax.annotation.Nullable;
-import org.adempiere.ad.session.AdSessionId;
 
 /**
  * Everything needed to append a {@code VATaxID_CheckLog} row at {@link VATaxIDStatus#RequestSent}.

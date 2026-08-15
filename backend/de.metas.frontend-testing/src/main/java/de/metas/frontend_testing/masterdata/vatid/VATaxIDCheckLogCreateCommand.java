@@ -12,14 +12,10 @@ import de.metas.vatid.VATaxIDCheckRequest;
 import lombok.Builder;
 import lombok.NonNull;
 
-import javax.annotation.Nullable;
-
 /**
- * Appends one {@code VATaxID_CheckLog} row for an already-created business partner, through the real
- * production writer {@link VATaxIDCheckRepository#writeRequestSent(VATaxIDCheckRequest)} — never through
- * raw SQL or {@code InterfaceWrapperHelper} directly. No VIES call is involved: the row is written at
- * {@code VATaxIDStatus.RequestSent}, exactly the state a real check-log row is in the instant a request
- * is sent, which is all this module's tests need to exercise the real count-gated zoom mechanism.
+ * Appends one {@code VATaxID_CheckLog} row through the real production writer
+ * {@link VATaxIDCheckRepository#writeRequestSent(VATaxIDCheckRequest)}, never raw SQL. No VIES call: the
+ * row is written at {@code RequestSent}, which is all these tests need to exercise the zoom mechanism.
  */
 @Builder
 public class VATaxIDCheckLogCreateCommand

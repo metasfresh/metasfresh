@@ -33,10 +33,8 @@ import javax.annotation.Nullable;
 /**
  * Stateless helper for VAT-ID validation.
  *
- * <p>Whether the format check runs at all is the caller's responsibility — resolved from
- * {@code VATaxIDConfig#isFormatCheckEnabled()} (see {@code VATaxIDConfigRepository#getByOrgId}), not by
- * this helper. {@link #validate(VATIdentifier)} performs the actual check via
- * {@link EUVatIdValidator#isValid(String)} and throws a user-validation error when the value is invalid.
+ * <p>Whether the check runs at all is the caller's responsibility, resolved from
+ * {@code VATaxIDConfig#isFormatCheckEnabled()} — not decided here.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class VATaxIDValidationUtil

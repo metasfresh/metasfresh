@@ -38,14 +38,11 @@ import java.util.Set;
 
 /**
  * The {@code de.metas.business} implementation of {@code de.metas.vatid}'s
- * {@link VATaxIDOrderTaxRefresher} seam — see that interface's javadoc for why the implementation lives
- * here rather than in the {@code de.metas.vatid} module itself.
+ * {@link VATaxIDOrderTaxRefresher} seam — that interface's javadoc says why it lives here.
  *
- * <p>Re-derives {@code C_OrderLine.C_Tax_ID} via {@link IOrderLineBL#setTax(I_C_OrderLine)} — the same
- * method every order-line save already goes through ({@code MOrderLine#beforeSave} calls it
- * unconditionally, "since an address change in the header can also cause tax changes in the lines") — so
- * this class introduces no new tax-computation logic; it only re-triggers the existing one for orders that
- * nothing else touches when only the partner's VAT-ID status changes elsewhere.
+ * <p>Re-derives {@code C_OrderLine.C_Tax_ID} via {@link IOrderLineBL#setTax(I_C_OrderLine)}, the same
+ * method every order-line save already goes through, so this adds no tax-computation logic — it only
+ * re-triggers the existing one for orders nothing else touches.
  */
 @Component
 public class OrderLineTaxRefreshOnVATaxIDStatusChange implements VATaxIDOrderTaxRefresher
