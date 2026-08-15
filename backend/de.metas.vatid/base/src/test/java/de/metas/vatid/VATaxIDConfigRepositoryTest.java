@@ -36,17 +36,11 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Tests for {@link VATaxIDConfigRepository}.
- *
- * Covers: a saved active {@code VATaxID_Config} record is read back with every field intact (format
- * check and VIES check can each be switched on/off per organisation, so both flags need to round-trip
- * independently), both {@link VATaxIDOnServiceUnavailableAction} values round-trip through
- * {@code OnServiceUnavailable}, an org with no record gets the synthesized SysConfig-backed default
- * rather than another org's config, an inactive record for the org is not returned (the "one active row
- * per org" contract), the synthesized default follows a live change of the
- * {@code VATaxID_Config.IsFormatCheckEnabledByDefault} SysConfig, and — the critical case — a config
- * already cached for a no-record org picks up a later SysConfig change rather than serving a stale value
- * forever (the cache's {@code additionalTableNameToResetFor(AD_SysConfig)} contract).
+ * Tests for {@link VATaxIDConfigRepository} — per-organisation round-trip of both flags and of
+ * {@code OnServiceUnavailable}, the "one active row per org" contract, the synthesized SysConfig-backed
+ * default for an org with no record, and that a cached no-record config picks up a later SysConfig change
+ * rather than serving a stale value (the cache's {@code additionalTableNameToResetFor(AD_SysConfig)}
+ * contract).
  */
 class VATaxIDConfigRepositoryTest
 {

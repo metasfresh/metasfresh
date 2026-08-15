@@ -80,19 +80,16 @@ public class VATaxIDConfigRepository
 	}
 
 	/**
-	 * @return the organisation's VAT-ID check configuration — <b>never {@code null}</b>. An organisation
-	 * with an active {@code VATaxID_Config} record gets that record, unchanged. An organisation with
-	 * <b>none</b> gets a synthesized configuration: {@link VATaxIDConfig#isFormatCheckEnabled()} follows
-	 * {@link #SYSCONFIG_IsFormatCheckEnabledByDefault} (System-level, {@code Y} as shipped), while
-	 * {@link VATaxIDConfig#isViesCheckEnabled()} is always {@code false} — that SysConfig governs only the
-	 * <em>format</em> half, so a config-less organisation can never end up with the online check on.
-	 * {@link VATaxIDConfig#getId()} is {@code null} on the synthesized configuration — there is no record
-	 * to point at.
+	 * @return the organisation's configuration, <b>never {@code null}</b>. With an active
+	 * {@code VATaxID_Config} record: that record. Without one: a synthesized configuration whose
+	 * {@link VATaxIDConfig#isFormatCheckEnabled()} follows {@link #SYSCONFIG_IsFormatCheckEnabledByDefault}
+	 * (System-level, {@code Y} as shipped) and whose {@link VATaxIDConfig#isViesCheckEnabled()} is always
+	 * {@code false} — that SysConfig governs the format half only. {@link VATaxIDConfig#getId()} is
+	 * {@code null} there, as no record backs it.
 	 *
-	 * <p>This is the single place that resolves that default: every caller — both save-time interceptors
-	 * ({@code de.metas.vatid.interceptor.C_BPartner} / {@code C_BPartner_Location}) and
-	 * {@code VATaxIDCheckService} — calls this method and cannot resolve the "no config" case any other
-	 * way, which is what keeps them from diverging again on the same business question.
+	 * <p>The single place resolving that default: both save-time interceptors and
+	 * {@code VATaxIDCheckService} call this and cannot resolve the "no config" case any other way, which is
+	 * what stops them diverging on the same business question.
 	 */
 	@NonNull
 	public VATaxIDConfig getByOrgId(@NonNull final OrgId orgId)

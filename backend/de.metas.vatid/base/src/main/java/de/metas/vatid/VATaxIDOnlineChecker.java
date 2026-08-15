@@ -27,76 +27,44 @@ import de.metas.tax.api.VATIdentifier;
 import lombok.NonNull;
 
 /**
- * Checks a VAT-ID against an external validation service.
+ * Checks a VAT-ID against an external validation service. The base half declares only this seam; the
+ * implementation lives in the {@code vies} half, so nothing in the base half depends on the transport or on
+ * the VIES response format.
  *
- * <p>The base half declares only this seam; the implementation lives in the {@code vies} half, so
- * nothing in the base half — interceptors, the check service, tax determination — depends on the
- * transport or on the VIES response format.
+ * <p>An implementation reports what the service said and nothing more: {@link VATaxIDStatus#Valid} /
+ * {@link VATaxIDStatus#Invalid} when it answered, {@link VATaxIDStatus#NotSupported} for a country outside
+ * its scope, {@link VATaxIDStatus#ServiceUnavailable} when it could not answer. Never
+ * {@link VATaxIDStatus#RequestSent} (a log-row state, not an outcome) nor {@link VATaxIDStatus#NotChecked}.
  *
- * <h2>What an implementation reports, and what it must NOT decide</h2>
+ * <p><b>The service-unavailable policy is not the checker's business</b> —
+ * {@link VATaxIDConfig#getOnServiceUnavailable()} is applied by the calling service. A checker applying it
+ * itself would make an unreachable service indistinguishable from one that answered "invalid", and the two
+ * have opposite consequences for a partner's tax certificate.
  *
- * An implementation reports <em>what the service said</em> and nothing more:
- *
- * <ul>
- *     <li>{@link VATaxIDStatus#Valid} / {@link VATaxIDStatus#Invalid} — the service answered.</li>
- *     <li>{@link VATaxIDStatus#NotSupported} — the VAT-ID's country is outside the service's scope,
- *         so no statement about validity is available.</li>
- *     <li>{@link VATaxIDStatus#ServiceUnavailable} — the service could not answer: a member state
- *         reported as unavailable, a transport failure, a timeout, an unusable response.</li>
- * </ul>
- *
- * It must never return {@link VATaxIDStatus#RequestSent} (that value exists only on the log row
- * being completed, never as an outcome) nor {@link VATaxIDStatus#NotChecked} (the absence of a
- * check, not the result of one).
- *
- * <p><b>The service-unavailable POLICY is not the checker's business.</b>
- * {@link VATaxIDConfig#getOnServiceUnavailable()} decides whether an unreachable service is recorded
- * as {@code ServiceUnavailable} or treated as {@code Invalid}; applying that belongs to the calling
- * service, which owns the config. A checker that applied it itself would make an unreachable service
- * indistinguishable from a service that answered "invalid" — and the two have opposite consequences
- * for a partner's tax certificate.
- *
- * <h2>Failure mode</h2>
- *
- * An implementation does not throw for a service-side or transport problem: it returns
- * {@code ServiceUnavailable}, because a failed check is a recordable outcome that must reach the
- * check log as evidence. Throwing is reserved for programming errors (a null argument, a
- * misconfigured base URL that cannot form a request at all).
+ * <p>A service-side or transport problem is returned as {@code ServiceUnavailable}, never thrown: a failed
+ * check is a recordable outcome that must reach the check log. Throwing is reserved for programming errors.
  */
 public interface VATaxIDOnlineChecker
 {
 	/**
-	 * @param vatId  the VAT-ID to check. A caller is expected to have a VAT-ID in hand at all — there is
-	 *               nothing to check otherwise. Note this is NOT the offline format gate:
-	 *               {@link VATaxIDValidationUtil} deliberately <em>accepts</em> null and any
-	 *               unsupported-prefix value, so it neither filters for nor guarantees anything here.
-	 * @param config the organisation's configuration, supplying the service base URL and the
-	 *               requester identity. The requester fields matter beyond authentication: without
-	 *               them the service returns an empty request identifier, and that identifier is the
-	 *               archivable evidence a check happened at all.
-	 * @return the outcome, with {@code requestIdentifier} and {@code rawResponse} populated whenever
-	 *         the service supplied them — including on an {@code Invalid} answer, where the raw
-	 *         response is the evidence for removing a tax certificate.
+	 * @param vatId  the VAT-ID to check. NOT pre-filtered by the offline format gate:
+	 *               {@link VATaxIDValidationUtil} deliberately accepts null and unsupported prefixes.
+	 * @param config supplies the service base URL and the requester identity — without the latter the
+	 *               service returns an empty request identifier, which is the archivable evidence that a
+	 *               check happened at all.
+	 * @return the outcome, with {@code requestIdentifier} and {@code rawResponse} populated whenever the
+	 *         service supplied them, including on {@code Invalid}.
 	 */
 	VATaxIDCheckResult check(@NonNull VATIdentifier vatId, @NonNull VATaxIDConfig config);
 
 	/**
-	 * The country codes the service currently reports itself unable to answer for.
+	 * The country codes the service currently reports itself unable to answer for. Asked once per run, not
+	 * once per VAT-ID: a member state can be down while the service itself is up, and discovering that
+	 * per-partner would burn a whole batch marking that country {@code ServiceUnavailable}.
 	 *
-	 * <p>Separate from {@link #check(VATIdentifier, VATaxIDConfig)} on purpose, and asked <em>once per
-	 * run</em> rather than once per VAT-ID: a member state can be down while the service itself is up,
-	 * and a batch that discovers this per-partner would burn its whole budget marking that country's
-	 * partners {@code ServiceUnavailable}. Callers consult this first and skip the affected countries,
-	 * leaving their stored status untouched.
-	 *
-	 * <p>An empty set means "nothing known to be down" — which is also what a caller gets when the
-	 * availability endpoint itself cannot be reached. That is deliberate: an unreachable availability
-	 * endpoint must not silently suppress every check, and a genuinely-down member state will surface
-	 * again as a {@code ServiceUnavailable} outcome on the individual check.
-	 *
-	 * <p>Conversely, an implementation that learns the service is down <em>as a whole</em> returns every
-	 * country it covers, so the caller skips the run entirely rather than rediscovering the outage once
-	 * per VAT-ID.
+	 * <p>An empty set means "nothing known to be down" — also what an unreachable availability endpoint
+	 * yields, deliberately, so it cannot silently suppress every check. An implementation that learns the
+	 * service is down as a whole returns every country it covers, so the caller skips the run entirely.
 	 */
 	ImmutableSet<String> getUnavailableCountryCodes(@NonNull VATaxIDConfig config);
 }

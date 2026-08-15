@@ -30,19 +30,11 @@ import javax.annotation.Nullable;
 
 /**
  * Immutable per-organisation VAT-ID check configuration, read from a single active {@code VATaxID_Config}
- * record (see {@code de.metas.vatid.VATaxIDConfigRepository}).
+ * record by {@link VATaxIDConfigRepository}.
  *
- * <p>Field meanings:
- * <ul>
- *   <li>{@link #isFormatCheckEnabled()} — run the local structure + check-digit validation.</li>
- *   <li>{@link #isVIESCheckEnabled()} — run the online VIES check.</li>
- *   <li>{@link #getRestApiBaseURL()} — the VIES endpoint.</li>
- *   <li>{@link #getRequesterMemberStateCode()} / {@link #getRequesterNumber()} — our own VAT-ID, sent so
- *       VIES returns the consultation number.</li>
- *   <li>{@link #getRecheckAfterDays()} — how long a successful result stays good.</li>
- *   <li>{@link #getOnServiceUnavailable()} — what an unreachable service means once the last result is
- *       older than {@link #getRecheckAfterDays()}.</li>
- * </ul>
+ * <p>The two requester fields are our own VAT-ID, sent so VIES returns a consultation number;
+ * {@link #getOnServiceUnavailable()} applies only once the last result is older than
+ * {@link #getRecheckAfterDays()}.
  */
 @Value
 @Builder

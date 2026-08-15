@@ -36,16 +36,12 @@ import java.util.Optional;
 
 /**
  * {@code VATaxID_Config.OnServiceUnavailable} ({@code AD_Reference_ID=542126}): what a VAT-ID's status
- * becomes once VIES (or the issuing member state) cannot be reached <em>and</em> the last successful
- * check is older than the configured {@code RecheckAfterDays}.
+ * becomes once the service cannot be reached <em>and</em> the last successful check is older than
+ * {@code RecheckAfterDays}.
  *
- * <p>This is deliberately a fail-open/fail-closed choice, not a raw flag: {@link #ServiceUnavailable} is
- * fail-open (applying it produces {@link VATaxIDStatus#ServiceUnavailable}, which keeps the VAT-ID
- * counting as holding a tax certificate), while {@link #Invalid} is fail-closed (produces
- * {@link VATaxIDStatus#Invalid}, no tax certificate). {@link #toVATaxIDStatus()} is the single mapping
- * from this configuration choice to the resulting status; the tax-certificate predicate itself stays
- * owned by {@link VATaxIDStatus#hasTaxCertificate()} — callers needing it call
- * {@code action.toVATaxIDStatus().hasTaxCertificate()} rather than a second copy of that logic here.
+ * <p>A fail-open/fail-closed choice, not a raw flag: {@link #ServiceUnavailable} keeps the VAT-ID counting
+ * as holding a tax certificate, {@link #Invalid} does not. {@link #toVATaxIDStatus()} is the single mapping
+ * to a status; the tax-certificate predicate stays owned by {@link VATaxIDStatus#hasTaxCertificate()}.
  */
 @RequiredArgsConstructor
 @Getter

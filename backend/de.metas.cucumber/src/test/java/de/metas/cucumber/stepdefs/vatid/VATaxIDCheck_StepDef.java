@@ -62,10 +62,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Drives {@link VATaxIDCheckService} directly and asserts what it persisted: the {@code VATaxID_CheckLog}
  * evidence rows and the denormalised status columns on the parent.
  *
- * <p>The check is invoked <b>explicitly</b> here, not via saving a partner: the save-time (after-commit)
- * trigger is a separate step of the feature and gets its own scenario. Driving the service directly keeps
- * these scenarios about the service's own contract — offline check first, not-supported without a call,
- * de-duplication, evidence, parent refresh.
+ * <p>Invoked explicitly rather than by saving a partner — the save-time trigger gets its own scenario — so
+ * these scenarios stay about the service's own contract.
  */
 @RequiredArgsConstructor
 public class VATaxIDCheck_StepDef
@@ -81,15 +79,12 @@ public class VATaxIDCheck_StepDef
 	@NonNull private final Map<StepDefDataIdentifier, VATaxIDStatus> returnedStatuses = new HashMap<>();
 
 	/**
-	 * Establishes a real {@code AD_Session} on the current (gluecode) thread, the way an interactive
-	 * WebUI/API save always has one already — direct-DB step defs such as {@code metasfresh contains
-	 * C_BPartners:} otherwise run with no session in {@link Env#getCtx()} at all, which would make the
+	 * Establishes a real {@code AD_Session} on the gluecode thread, the way an interactive save always has
+	 * one. Direct-DB step defs otherwise run with no session in {@link Env#getCtx()} at all, making the
 	 * after-commit trigger's {@code AD_Session_ID} capture vacuously null and unable to prove anything.
 	 *
-	 * <p>Test setup only: production code (the after-commit trigger) deliberately never creates a session
-	 * itself — see {@code ISessionBL#getCurrentOrCreateNewSession} vs. {@code #getCurrentSession} on the
-	 * trigger. This step plays the role of "a user is already logged in", which is exactly the
-	 * precondition the trigger's capture relies on.
+	 * <p>Test setup only: production code never creates a session itself. This step plays "a user is already
+	 * logged in", the precondition the capture relies on.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
@@ -105,30 +100,18 @@ public class VATaxIDCheck_StepDef
 
 	/**
 	 * Removes the {@code VATaxID_CheckLog} rows of one VAT-ID <b>value</b>, so a scenario starts from a
-	 * known-empty check history for it.
+	 * known-empty check history. De-duplication is keyed on the value, not the partner, so a row left by an
+	 * earlier run against the same never-reset local database would suppress the check under test. Test
+	 * isolation only — in production these rows are legal evidence and are never deleted.
 	 *
-	 * <p>Needed because de-duplication is keyed on the VAT-ID value (not on the partner): a row left behind
-	 * by an earlier run of this feature on the same, never-reset local database would suppress the very
-	 * check under test. In production these rows are legal evidence and are never deleted — this step is
-	 * test isolation only, and on a fresh database it is a no-op.
+	 * <p>Any parent still pointing at one of those rows has its zoom reference cleared first (a real foreign
+	 * key), <b>and its {@code VATaxIDStatus} / {@code VATaxIDCheckedAt} reset</b> — otherwise a re-run would
+	 * find a reused, upserted parent still carrying the previous run's final status, and a scenario asserting
+	 * a fresh {@code NotChecked} start would pass once and then silently fail.
 	 *
-	 * <p>Any {@code C_BPartner} / {@code C_BPartner_Location} still pointing at one of those rows has its
-	 * zoom reference cleared first: it is a real foreign key, so the delete would otherwise be impossible.
-	 * <b>Its denormalised {@code VATaxIDStatus} / {@code VATaxIDCheckedAt} are reset to
-	 * {@code NotChecked} / {@code null} in the same step</b> — leaving them at whatever the now-deleted log
-	 * row last said would be evidence-free state, and would make a scenario that asserts a fresh
-	 * {@code NotChecked} starting point (proving a re-check actually changed something) pass on a first run
-	 * and silently fail on a second run against the same never-reset local database, since a reused
-	 * {@code C_BPartner}/{@code C_BPartner_Location} identifier (upserted by {@code Value}/{@code GLN}) would
-	 * still carry the PREVIOUS run's final status.
-	 *
-	 * <p>The same reset is also applied to any {@code C_BPartner}/{@code C_BPartner_Location} whose
-	 * <b>current</b> {@code VATaxID} column equals this value, independently of the zoom reference above —
-	 * this value is shared across several scenarios/feature files (e.g. re-used well-formed VAT-IDs), and an
-	 * earlier scenario's own cleanup call for the same value can already have released a still-relevant
-	 * record's zoom reference (setting it to {@code 0} without — before this fix — resetting the status),
-	 * leaving that record's status stranded with no matching log row to find it by. Matching on the current
-	 * value directly is what still catches that record here.
+	 * <p>The same reset also covers any parent whose <b>current</b> {@code VATaxID} equals this value. The
+	 * value is shared across feature files, so an earlier scenario's cleanup can already have released a
+	 * still-relevant record's zoom reference, leaving its status stranded with no log row to find it by.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example

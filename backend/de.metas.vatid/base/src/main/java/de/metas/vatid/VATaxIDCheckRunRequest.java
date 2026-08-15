@@ -66,17 +66,12 @@ public class VATaxIDCheckRunRequest
 	@Nullable PInstanceId pinstanceId;
 
 	/**
-	 * Whether this run is the nightly schedule's own, selection-less sweep — as opposed to a user-triggered
-	 * manual/selection run. Defaults to {@code false} (a manual/selection run) when left unset.
+	 * Whether this is the nightly schedule's selection-less sweep rather than a user-triggered run.
+	 * Defaults to {@code false}.
 	 *
-	 * <p>Changes exactly one thing in {@link VATaxIDCheckRunService#run(VATaxIDCheckRunRequest)}: whether
-	 * the unconditional per-partner expansion (every selected partner's header plus ALL of its
-	 * VAT-ID-bearing locations — the documented, deliberate "selecting a partner also covers its locations"
-	 * behaviour) is additionally filtered down to due targets only, and re-ordered by attempt time. A
-	 * manual/selection run keeps the unconditional expansion; the nightly run needs the finer-grained
-	 * staleness filter because it reaches every VAT-ID system-wide rather than a bounded, user-chosen
-	 * selection — see {@link VATaxIDCheckRunService}'s class javadoc, "Attempt vs success", for why the two
-	 * paths must diverge here.
+	 * <p>Changes exactly one thing: whether the unconditional per-partner expansion is additionally filtered
+	 * to due targets and re-ordered by attempt time. The nightly run needs that finer staleness filter
+	 * because it reaches every VAT-ID system-wide rather than a bounded, user-chosen selection.
 	 */
 	boolean nightlyRun;
 }

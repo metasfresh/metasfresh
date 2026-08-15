@@ -52,15 +52,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Covers {@link VATaxIDCheckRunService}'s own defence against {@code stampAttemptInOwnTrx}'s chronic
- * failure — a stamp write that fails on every attempt for one target, e.g. row-lock contention with an
- * unrelated job on the same record, or a save-veto interceptor unconnected to VAT-ID checking (see
- * {@code stampAttemptInOwnTrx}'s own javadoc).
+ * Covers {@link VATaxIDCheckRunService}'s defence against a chronic {@code stampAttemptInOwnTrx} failure —
+ * a stamp write that fails on every attempt for one target.
  *
- * <p>{@link IBPartnerDAO} is replaced with a hand-built mock (not the POJO-backed real implementation) so
- * this test can make its per-target write deterministically throw for exactly one target while leaving
- * the other target's write to succeed — the one thing a real, in-memory DAO cannot reproduce without an
- * actual concurrent writer.
+ * <p>{@link IBPartnerDAO} is a hand-built mock rather than the POJO-backed implementation so one target's
+ * write can be made to throw deterministically while the other succeeds — the one thing a real in-memory
+ * DAO cannot reproduce without an actual concurrent writer.
  */
 class VATaxIDCheckRunServiceTest
 {

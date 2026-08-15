@@ -29,15 +29,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
 /**
- * Stubs the VAT-ID online check at its SPI boundary ({@link VATaxIDOnlineChecker}) rather than at the
- * HTTP layer, so no cucumber scenario depends on a live third-party service (VIES) — availability of a
- * public EU endpoint must never decide whether our build is green.
+ * Stubs the VAT-ID online check at its SPI boundary ({@link VATaxIDOnlineChecker}) rather than at the HTTP
+ * layer, so no scenario depends on the availability of a live third-party service.
  *
- * <p>Picked up by component scanning; nothing references this class explicitly. {@code @Primary} makes
- * the mock the injected candidate. The class name is deliberately NOT {@code TestServiceConfiguration}
- * (the name used in {@code de.metas.cucumber.stepdefs.shipper}): scanned {@code @Configuration} beans
- * are named after their simple class name, so two identically named configuration classes would collide
- * with a {@code ConflictingBeanDefinitionException}.
+ * <p>Picked up by component scanning; {@code @Primary} makes the mock the injected candidate. The name is
+ * deliberately not {@code TestServiceConfiguration} (used in {@code stepdefs.shipper}): scanned
+ * {@code @Configuration} beans are named after the simple class name, so two would collide with a
+ * {@code ConflictingBeanDefinitionException}.
  *
  * <p>Programmed per scenario by {@code VATaxIDOnlineChecker_StepDef}.
  */

@@ -38,25 +38,17 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 
 /**
- * The manual/scheduled VAT-ID check: available on the Business Partner window (table {@code C_BPartner}),
- * runnable on a single partner or on a selection alike (via {@link #retrieveSelectedRecordsQueryBuilder}),
- * and wired to the nightly {@code AD_Scheduler} — the same code path a user runs by hand.
+ * The manual/scheduled VAT-ID check: available on the Business Partner window, runnable on a single partner
+ * or a selection, and wired to the nightly {@code AD_Scheduler} — the same code path either way.
  *
- * <p>Thin glue only: resolves the {@code C_BPartner} ids this run covers (the one piece of work that
- * genuinely needs a {@code JavaProcess} — reading this run's own selection, or recognising that it has
- * none) and the {@code MaxChecksPerRun} parameter, then delegates the entire run to
- * {@link VATaxIDCheckRunService#run(VATaxIDCheckRunRequest)} — the combined partner+location target
- * selection, its deterministic ordering, the throttling, the per-target check-and-refresh, and the
- * pending/checked reporting all live there. See that method's javadoc for the full behaviour.
+ * <p>Thin glue: resolves this run's {@code C_BPartner} ids and the {@code MaxChecksPerRun} parameter, then
+ * delegates everything else to {@link VATaxIDCheckRunService#run(VATaxIDCheckRunRequest)}.
  *
- * <p><b>Selection vs. the nightly schedule.</b> A user-triggered run (single record or a selection) always
- * carries a table/selection on its {@code ProcessInfo}; the scheduler builds none at all (it invokes the
- * process with no table, no where-clause and no single record — see
- * {@code org.compiere.server.Scheduler#createProcessInfo}). {@link #getTableName()} distinguishes the two:
- * non-null means "read the selection", null means "the nightly run — cover every VAT-ID there is" via
- * {@link VATaxIDCheckRunService#retrieveAllBPartnerIdsWithVATaxID()}. Reading {@code retrieveSelectedRecordsQueryBuilder}
- * with no selection and no table at all throws {@code @NoSelection@} — this branch is what keeps the
- * scheduled run from hitting that.
+ * <p><b>Selection vs. nightly schedule.</b> A user-triggered run always carries a table/selection on its
+ * {@code ProcessInfo}; the scheduler builds none. {@link #getTableName()} distinguishes them — non-null
+ * means "read the selection", null means "cover every VAT-ID" via
+ * {@link VATaxIDCheckRunService#retrieveAllBPartnerIdsWithVATaxID()}. Without that branch the scheduled run
+ * would hit {@code @NoSelection@}.
  */
 public class C_BPartner_VATaxID_Check extends JavaProcess implements IProcessPrecondition
 {

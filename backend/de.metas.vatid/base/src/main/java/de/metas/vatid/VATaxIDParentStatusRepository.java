@@ -36,24 +36,20 @@ import javax.annotation.Nullable;
 /**
  * Repository Tables: {@code C_BPartner}, {@code C_BPartner_Location}.
  *
- * <p>Repository Cluster: {@code VATaxIDParentStatusRepository} — sole owner of the three VAT-ID check
- * columns {@code VATaxIDStatus}, {@code VATaxIDCheckedAt} and {@code VATaxID_CheckLog_ID} on both tables.
- * The remaining columns of those two tables belong to {@code de.metas.bpartner}'s own persistence
- * ({@code BPartnerCompositeRepository}, {@code BPartnerDAO}), which never touches these three; this class
- * in turn touches no other column, so the two do not overlap despite sharing the tables.
+ * <p>Repository Cluster: sole owner of the three VAT-ID check columns {@code VATaxIDStatus},
+ * {@code VATaxIDCheckedAt} and {@code VATaxID_CheckLog_ID} on both tables. The rest of those tables belongs
+ * to {@code de.metas.bpartner}'s own persistence, which never touches these three, and this class touches no
+ * other column — so the two do not overlap despite sharing the tables.
  *
- * <p>Owns the parent side of the feature's denormalisation: {@code VATaxID_CheckLog} holds the evidence
- * (see {@link VATaxIDCheckRepository}), and these three columns are the copy of its latest relevant row
- * that tax determination and the windows actually read. Every write here therefore mirrors one existing
- * log row — which is why {@link #updateParentStatus(VATaxIDCheckRequest, VATaxIDLastCheck)} takes a
- * {@link VATaxIDLastCheck} and cannot express a status that no log row backs.
+ * <p>Owns the parent side of the feature's denormalisation: {@code VATaxID_CheckLog} holds the evidence, and
+ * these three columns are the copy of its latest relevant row that tax determination and the windows read.
+ * Every write mirrors one existing log row, which is why
+ * {@link #updateParentStatus(VATaxIDCheckRequest, VATaxIDLastCheck)} takes a {@link VATaxIDLastCheck} and
+ * cannot express a status no log row backs.
  *
- * <p><b>Both parent types are handled here, not by the caller.</b> A VAT-ID lives either on the partner
- * header or on one of its locations, and both tables carry the three columns under identical names
- * while sharing no model interface. That forces a branch on the record type somewhere; it
- * belongs on this side of the persistence boundary, so {@link VATaxIDCheckService} states <em>which
- * record</em> it means (by passing the {@link VATaxIDCheckRequest} that already identifies it) and never
- * how either table is loaded or saved.
+ * <p>Both parent types are handled here rather than by the caller: the two tables carry the columns under
+ * identical names but share no model interface, so the branch on record type belongs on this side of the
+ * persistence boundary.
  */
 @Repository
 public class VATaxIDParentStatusRepository

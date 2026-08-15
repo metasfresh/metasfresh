@@ -31,33 +31,18 @@ import org.springframework.web.client.RestTemplate;
 import java.time.Duration;
 
 /**
- * Provides the application's {@link VATaxIDOnlineChecker} bean: one shared {@link VIESClient} on one
- * shared {@link RestTemplate}. Without this, the base half's check service would have an unsatisfiable
- * dependency in the real application context — the SPI would only ever be implemented by test doubles.
+ * Provides the application's {@link VATaxIDOnlineChecker} bean: one shared {@link VIESClient} on one shared
+ * {@link RestTemplate}. Without it the base half's check service would have an unsatisfiable dependency
+ * outside tests.
  *
- * <h2>Why one shared client, and no factory</h2>
+ * <p>One shared client, no factory: unlike {@code CreditPassClientFactory}, which needs one client per
+ * configuration because it puts the base URL into the template's {@code rootUri}, {@link VIESClient} takes
+ * the base URL from its {@code VATaxIDConfig} argument on every call and so holds no per-organisation state.
  *
- * The sibling {@code CreditPassClientFactory} pattern is deliberately <b>not</b> used. That factory exists
- * because creditpass puts the per-organisation base URL into the {@code RestTemplate}'s {@code rootUri},
- * which forces one client — and one template — per configuration.
- * {@link VIESClient#check(de.metas.tax.api.VATIdentifier, de.metas.vatid.VATaxIDConfig)} instead takes the
- * base URL from its {@code VATaxIDConfig} argument on every call, so the client holds no per-organisation
- * state and one instance serves every organisation.
- *
- * <h2>Why timeouts</h2>
- *
- * {@code CreditPassClientFactory} sets <b>none</b>, which leaves a hung socket waiting indefinitely. This
- * client is called from an after-commit path and from a batch run, where that would stall the caller: the
- * save-triggered check would pin a thread long after the user's save returned, and one unresponsive member
- * state would hold up a whole nightly run. Both timeouts are therefore set explicitly. Precedent for the
- * builder API: {@code de.metas.issue.tracking.everhour}'s {@code RestService} (its {@code restTemplate()}
- * method).
- *
- * <p>The values are plain documented constants, deliberately <b>not</b> SysConfigs or Application
- * Dictionary metadata: there is no evidence of a tuning need, and new AD metadata would cost an ID-server
- * call and another migration script for a value nobody has asked to change. Should a real need appear — a
- * member state that is reliably slow, say — a SysConfig can be introduced then, at which point these two
- * constants become its defaults.
+ * <p>Both timeouts are set explicitly ({@code CreditPassClientFactory} sets none): this client is called from
+ * an after-commit path and from a batch run, where a hung socket would pin a thread long past the user's save
+ * or stall a whole nightly run. They are plain constants rather than SysConfigs or AD metadata because nobody
+ * has asked to tune them; a SysConfig introduced later would take these as its defaults.
  */
 @Configuration
 public class VIESClientConfiguration

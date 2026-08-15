@@ -37,89 +37,27 @@ import java.time.Duration;
 import java.time.Instant;
 
 /**
- * The single entry point for checking one VAT-ID: used by the {@code C_BPartner} /
- * {@code C_BPartner_Location} after-commit trigger and by the check process alike, so the two
- * invocation paths cannot drift apart in what they check, what they record, or when they skip.
+ * Single entry point for checking one VAT-ID, shared by the {@code C_BPartner} /
+ * {@code C_BPartner_Location} after-commit trigger and the check process, so the two paths cannot drift
+ * apart in what they check, what they record, or when they skip.
  *
- * <h2>Order of operations</h2>
+ * <p>Order: offline format check, then de-duplication against {@link VATaxIDConfig#getRecheckAfterDays()},
+ * then {@link VATaxIDCheckRepository#writeRequestSent(VATaxIDCheckRequest)} <em>before</em> the online
+ * call. That write commits in its own transaction, so a check whose outcome is never learned (crash,
+ * timeout, rollback) still leaves evidence that it was asked. Finally the log row is completed and the
+ * parent's status columns, which tax determination and the windows read, are refreshed.
  *
- * <ol>
- *     <li><b>Offline format check first</b> ({@link VATaxIDValidationUtil}, gated by
- *         {@link VATaxIDConfig#isFormatCheckEnabled()}) — a value the format check rejects never reaches
- *         the online service.</li>
- *     <li><b>A prefix the online service does not cover</b> is recorded as
- *         {@link VATaxIDStatus#NotSupported} without a service call.</li>
- *     <li><b>De-duplication</b>: if the same VAT-ID value already has a result younger than
- *         {@link VATaxIDConfig#getRecheckAfterDays()}, that result is kept and no new request is sent —
- *         which is what collapses a bulk import and repeated saves of one record to a single call, and
- *         what makes an unreachable service harmless while the last result is still fresh.</li>
- *     <li><b>Write {@link VATaxIDStatus#RequestSent}</b> via
- *         {@link VATaxIDCheckRepository#writeRequestSent(VATaxIDCheckRequest)} <em>before</em> the call, so
- *         a check whose outcome is never learned — a crash, a timeout, a killed container, the online
- *         checker throwing, or a later order-tax refresh rolling the whole check-and-refresh unit back —
- *         still leaves evidence that it was asked. This genuinely holds because that write commits in its
- *         own, independent transaction (see that method's own javadoc) rather than joining whatever
- *         per-item transaction the caller happens to be running in — a plain save sharing that transaction
- *         would be erased by exactly the failures this guarantee exists to survive.</li>
- *     <li><b>Call {@link VATaxIDOnlineChecker#check(de.metas.tax.api.VATIdentifier, VATaxIDConfig)}</b>.</li>
- *     <li><b>Complete the log row</b> with the final status
- *         ({@link VATaxIDCheckRepository#completeCheck(VATaxIDCheckLogId, VATaxIDCheckResult)}) and
- *         <b>refresh the parent record's</b> {@code VATaxIDStatus}, {@code VATaxIDCheckedAt} and
- *         {@code VATaxID_CheckLog_ID} columns
- *         ({@link VATaxIDParentStatusRepository#updateParentStatus(VATaxIDCheckRequest, VATaxIDLastCheck)}) —
- *         the parent's status column is what tax determination and the windows read.</li>
- * </ol>
+ * <p>Countries the online service does not cover are answered {@link VATaxIDStatus#NotSupported} by the
+ * checker itself, so that list exists exactly once, in the implementation that owns the protocol.
  *
- * <p>Step 2 is deliberately <em>not</em> a second country table in this service: the checker itself
- * answers {@code NotSupported} without sending a request for a prefix it does not cover (see the
- * {@code VIESClient} implementation), so the list of covered countries exists exactly once, in the
- * implementation that owns the protocol. Reaching the checker is therefore not the same as reaching the
- * network.
+ * <p>{@link VATaxIDConfig#getOnServiceUnavailable()} is applied here, deliberately not in the checker. An
+ * {@link VATaxIDStatus#Invalid} it produces is stored under the same status as a real VIES rejection and
+ * no column records the difference; only the check-log {@code RawResponse} tells them apart — a real
+ * rejection always carries a boolean {@code valid: false}, a policy-produced one never does.
  *
- * <p>Where the service is unreachable and the last result is no longer fresh,
- * {@link VATaxIDConfig#getOnServiceUnavailable()} decides the recorded status — that policy is applied
- * here, deliberately not in the checker (see {@link VATaxIDOnlineChecker}).
- *
- * <h2>Telling a policy-produced {@code Invalid} from a real one</h2>
- *
- * An {@link VATaxIDStatus#Invalid} that {@link VATaxIDOnServiceUnavailableAction#Invalid} produced from an
- * unreachable service is stored under the <b>same status code</b> as a VAT-ID VIES actually rejected: the
- * table carries no reason column, and the {@code OnServiceUnavailable} value in force at the time
- * is not recorded either. The two are still reconstructable from the evidence, at the cost of knowing the
- * VIES payload shape — <b>read the {@code RawResponse} of the {@code VATaxID_CheckLog} row the parent's
- * {@code VATaxID_CheckLog_ID} points at</b>:
- *
- * <ul>
- *     <li><b>A real VIES rejection</b> — and only that — carries the {@code POST /check-vat-number} body
- *         verbatim, a JSON object with a {@code valid} member holding the boolean {@code false}
- *         ({@code {"valid":false,…}}). {@code VIESClient} reaches {@code Invalid} from nowhere else: a body
- *         is mapped to {@code Invalid} exactly when {@code valid} is present and boolean and false.</li>
- *     <li><b>A policy-produced {@code Invalid}</b> was a {@link VATaxIDStatus#ServiceUnavailable} the
- *         checker returned, so its {@code RawResponse} is one of: {@code null} (no body at all — a
- *         connect/read failure, or an empty response), an HTTP 4xx/5xx error body, or a body VIES did
- *         return that carries no boolean {@code valid} member (unparseable, or a no-verdict payload).
- *         Never {@code valid: false}.</li>
- * </ul>
- *
- * <p>So: a {@code valid} member holding boolean {@code false} in {@code RawResponse} means VIES said no; its
- * absence on an {@code Invalid} row means the service could not answer and this organisation's policy chose
- * to treat that as {@code Invalid}. A dedicated reason column would make the same question answerable
- * without this knowledge; it is deliberately out of the approved schema.
- *
- * <p>An organisation with no {@code VATaxID_Config} record keeps today's behaviour exactly — format check
- * on, online check off. {@link VATaxIDConfigRepository#getByOrgId(de.metas.organization.OrgId)} is the
- * single place that resolves that default; this service never applies it itself.
- *
- * <h2>Logging</h2>
- *
- * Progress is reported through {@code Loggables}, never through {@code JavaProcess}: the same code then
- * writes to {@code AD_PInstance_Log} when a process drives it and is a silent no-op when the interceptor
- * does.
- *
- * <h2>Transaction</h2>
- *
- * Callers invoke this <em>outside</em> the save transaction (the interceptor does so after commit), so a
- * slow or dead service can never fail a save.
+ * <p>Callers must invoke this <em>outside</em> the save transaction, so a slow or dead service can never
+ * fail a save. Progress is reported through {@code Loggables}, never {@code JavaProcess}, so the same code
+ * logs to {@code AD_PInstance_Log} under a process and is a no-op under the interceptor.
  */
 @Service
 @RequiredArgsConstructor
@@ -131,12 +69,9 @@ public class VATaxIDCheckService
 	@NonNull private final VATaxIDOnlineChecker onlineChecker;
 
 	/**
-	 * Checks the VAT-ID of {@code request} and records the attempt, per the order of operations in the
-	 * class javadoc.
-	 *
-	 * @return the status the VAT-ID now has — either the freshly obtained one, or the still-fresh previous
-	 * result when de-duplication skipped the call. Never {@link VATaxIDStatus#RequestSent}, which exists
-	 * only on a log row awaiting its answer.
+	 * @return the status the VAT-ID now has — the freshly obtained one, or the still-fresh previous result
+	 * when de-duplication skipped the call. Never {@link VATaxIDStatus#RequestSent}, which exists only on a
+	 * log row awaiting its answer.
 	 */
 	@NonNull
 	public VATaxIDStatus check(@NonNull final VATaxIDCheckRequest request)
@@ -195,13 +130,10 @@ public class VATaxIDCheckService
 	}
 
 	/**
-	 * @return the member-state codes {@code orgId}'s online checker currently reports as unavailable, or
-	 * an empty set when the organisation has the online check switched off — asking would burn a service
-	 * call for information nothing consults, since {@link #check(VATaxIDCheckRequest)} already skips the
-	 * online service entirely for such an organisation. See {@link VATaxIDOnlineChecker#getUnavailableCountryCodes}
-	 * for why this is asked once per run rather than once per VAT-ID: the caller (the check-run service)
-	 * consults this <em>before</em> looping over its selection and skips any VAT-ID whose member state is
-	 * in the returned set, rather than discovering the outage one {@link #check} call at a time.
+	 * @return the member-state codes {@code orgId}'s online checker reports as unavailable; empty when the
+	 * organisation has the online check switched off. Asked once per run, not once per VAT-ID, so the
+	 * check-run service can skip the affected member states up front instead of discovering the outage one
+	 * {@link #check} call at a time.
 	 */
 	@NonNull
 	public ImmutableSet<String> getUnavailableCountryCodes(@NonNull final OrgId orgId)
@@ -216,11 +148,8 @@ public class VATaxIDCheckService
 	}
 
 	/**
-	 * @return how many online calls the run identified by {@code pinstanceId} made, and their average
-	 * response time — see {@link VATaxIDCheckRepository#getCallStatsForRun(PInstanceId)}, which this
-	 * delegates to unchanged: {@link #checkRepository} is this table's sole owner (see its own class
-	 * javadoc), so the check-run service reaches the evidence through this pass-through rather than
-	 * depending on the repository directly.
+	 * @return how many online calls the run made, and their average response time. Pass-through, so the
+	 * check-run service need not depend on {@link VATaxIDCheckRepository}, this table's sole owner.
 	 */
 	@NonNull
 	public VATaxIDCheckCallStats getCallStatsForRun(@NonNull final PInstanceId pinstanceId)
@@ -229,11 +158,8 @@ public class VATaxIDCheckService
 	}
 
 	/**
-	 * @return {@code orgId}'s own {@code RecheckAfterDays} (or the SysConfig-backed default's {@code 0}
-	 * where it has no {@code VATaxID_Config} record — see {@link VATaxIDConfigRepository#getByOrgId(OrgId)})
-	 * — the same window {@link #check(VATaxIDCheckRequest)} itself applies for de-duplication. Exposed so
-	 * the nightly selection can pre-filter to records that are actually due, without duplicating the
-	 * organisation-config lookup this service already owns.
+	 * @return {@code orgId}'s de-duplication window, the same one {@link #check(VATaxIDCheckRequest)}
+	 * applies. Exposed so the nightly selection can pre-filter to records that are actually due.
 	 */
 	public int getRecheckAfterDays(@NonNull final OrgId orgId)
 	{
@@ -241,14 +167,9 @@ public class VATaxIDCheckService
 	}
 
 	/**
-	 * @return whether {@code orgId} has the online check switched on at all (or the SysConfig-backed
-	 * default's {@code false} where it has no {@code VATaxID_Config} record — see
-	 * {@link VATaxIDConfigRepository#getByOrgId(OrgId)}). Exposed so the nightly selection can exclude
-	 * records that can never actually be checked: {@link #check} returns before doing anything at all — no
-	 * service call, no write, no {@code VATaxIDCheckedAt} update — once it resolves this same flag
-	 * {@code false}, so such a record would otherwise stay {@code NotChecked} with a {@code null
-	 * VATaxIDCheckedAt} forever, sorting to the very front of every future nightly run and potentially
-	 * occupying its whole budget without ever making progress.
+	 * @return whether {@code orgId} has the online check switched on. Exposed so the nightly selection can
+	 * exclude records {@link #check} would return early for: they never get a {@code VATaxIDCheckedAt}, so
+	 * they would sort to the front of every future run forever without ever making progress.
 	 */
 	public boolean isViesCheckEnabled(@NonNull final OrgId orgId)
 	{
@@ -256,10 +177,8 @@ public class VATaxIDCheckService
 	}
 
 	/**
-	 * @return the last conclusive check of {@code vataxID} if it is still younger than
-	 * {@link VATaxIDConfig#getRecheckAfterDays()}, else {@code null} — i.e. {@code null} means "send a
-	 * request". A {@code RecheckAfterDays} of zero or less is no de-duplication window at all: every check
-	 * is sent.
+	 * @return the last conclusive check if still younger than {@link VATaxIDConfig#getRecheckAfterDays()},
+	 * else {@code null}, meaning "send a request". A window of zero or less disables de-duplication.
 	 */
 	@Nullable
 	private VATaxIDLastCheck getStillFreshCheck(@NonNull final VATIdentifier vataxID, @NonNull final VATaxIDConfig config)
@@ -280,22 +199,13 @@ public class VATaxIDCheckService
 	}
 
 	/**
-	 * Turns "the service could not answer" into the status the organisation chose for that case — the one
-	 * piece of interpretation the checker must not do itself, because a checker that applied it would make
-	 * an unreachable service indistinguishable from a service that answered "invalid", and the two have
-	 * opposite consequences for a partner's tax certificate.
+	 * Turns "the service could not answer" into the status the organisation chose — the one interpretation
+	 * the checker must not make itself, since an unreachable service and a rejected VAT-ID have opposite
+	 * consequences for a partner's tax certificate.
 	 *
-	 * <p>Reached only once de-duplication has already found no fresh result, which is exactly the condition
-	 * {@link VATaxIDOnServiceUnavailableAction} is defined for. {@code requestIdentifier} and
-	 * {@code rawResponse} are carried over unchanged: they are the evidence of what actually happened, and
-	 * the policy changes only how it is judged.
-	 *
-	 * <p><b>Carrying {@code rawResponse} over unchanged is what keeps the remap reconstructable</b>, since no
-	 * column records that it happened: a row this method turned into {@link VATaxIDStatus#Invalid} keeps the
-	 * {@code ServiceUnavailable} evidence it came with — {@code null}, an HTTP error body, or a body without a
-	 * boolean {@code valid} member — and therefore never the {@code valid: false} that a VAT-ID VIES really
-	 * rejected always carries. See the class javadoc, § "Telling a policy-produced {@code Invalid} from a real
-	 * one"; a future edit that synthesised a {@code rawResponse} here would destroy that distinction.
+	 * <p>{@code rawResponse} is carried over unchanged. No column records that this remap happened, so that
+	 * evidence is the only thing separating it from a real rejection (see the class javadoc) — never
+	 * synthesise one here.
 	 */
 	@NonNull
 	private static VATaxIDCheckResult applyOnServiceUnavailable(

@@ -153,29 +153,14 @@ public class VATaxIDCheckProcess_StepDef
 	}
 
 	/**
-	 * Runs the {@code C_BPartner_VATaxID_Check} process with NO selection at all — the exact shape
-	 * {@code org.compiere.server.Scheduler#createProcessInfo} builds for a nightly {@code AD_Scheduler}
-	 * run (no table, no where-clause, no single record), as opposed to
-	 * {@link #runProcessForSelection(String, DataTable)}, which always carries one.
+	 * Runs the process with NO selection at all — the shape
+	 * {@code org.compiere.server.Scheduler#createProcessInfo} builds for a nightly {@code AD_Scheduler} run,
+	 * as opposed to {@link #runProcessForSelection(String, DataTable)}, which always carries one.
 	 *
-	 * <p>The nightly path reaches every VAT-ID system-wide (see
-	 * {@link VATaxIDCheckRunService#retrieveAllBPartnerIdsWithVATaxID()}), which on the shared cucumber
-	 * database includes every other feature's VAT-ID-bearing fixtures, not only this scenario's own. Two
-	 * genuinely different uses of this step therefore coexist, and the caller picks the one matching its
-	 * intent:
-	 * <ul>
-	 *   <li><b>No-op-safe use</b> — run with the online check switched OFF for this organisation. Every
-	 *   record the sweep reaches is skipped before any online call, so the run is a real, but harmless,
-	 *   pass over the whole database. Combine with {@link #assertNightlySelectionIncludes(String)} /
-	 *   {@link #assertNightlySelectionExcludes(String)} to verify what the selection contains without ever
-	 *   executing a check on anyone.</li>
-	 *   <li><b>Genuinely-executing use</b> — run with the online check switched ON and the checker stubbed
-	 *   leniently ({@code the VAT-ID online checker is stubbed to answer known VAT-IDs, and to report
-	 *   unavailable for the rest}), which answers every VAT-ID the sweep reaches — including sibling
-	 *   scenarios' own leftover fixtures — instead of failing loudly on an unprogrammed one. This is how
-	 *   {@code S31060_6}/{@code _8}/{@code _9} prove the run actually persists a real outcome
-	 *   ({@code bp_scheduled}/{@code bp_pending}/{@code bpl_mixed} → {@code Valid}).</li>
-	 * </ul>
+	 * <p>The nightly path sweeps every VAT-ID system-wide, which on the shared cucumber database includes
+	 * other features' fixtures. So a scenario either runs it with the online check OFF (a harmless pass, for
+	 * asserting what the selection contains) or with the checker stubbed leniently, so sibling fixtures get
+	 * an answer instead of tripping the "unexpected online check" guard.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
@@ -293,13 +278,9 @@ public class VATaxIDCheckProcess_StepDef
 	}
 
 	/**
-	 * Asserts that {@code C_BPartner} is included in the nightly schedule's own selection — every VAT-ID
-	 * system-wide, per {@link VATaxIDCheckRunService#retrieveAllBPartnerIdsWithVATaxID()} — without
-	 * actually running a check on anyone. This is the read-only counterpart to
-	 * {@link #runProcessAsScheduled()}: this step proves WHAT the nightly sweep selects, independently of
-	 * whichever of that step's two uses (no-op-safe or genuinely-executing, see its own javadoc) a scenario
-	 * chooses to also run — so a scenario can pin down the selection without needing the online check
-	 * switched on at all.
+	 * Asserts that {@code C_BPartner} is included in the nightly selection without running a check on
+	 * anyone — the read-only counterpart to {@link #runProcessAsScheduled()}, so a scenario can pin down
+	 * what the sweep selects with the online check switched off entirely.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -323,13 +304,9 @@ public class VATaxIDCheckProcess_StepDef
 
 	/**
 	 * The negation of {@link #assertNightlySelectionIncludes(String)}: proves a record is kept OUT of the
-	 * nightly candidate list, not merely deprioritised within it. This matters because the nightly selection
-	 * is ordered least-recently-checked-first with never-checked records sorting first of all (see
-	 * {@code VATaxIDCheckRunService#retrieveAllBPartnerIdsWithVATaxID()}) — a record that can never actually
-	 * be checked (its own organisation has the online check switched off) but is still LISTED as due would
-	 * permanently sort to the front and could occupy the whole {@code MaxChecksPerRun} budget every night
-	 * without ever making progress, starving out every other, checkable record behind it. Excluding such a
-	 * record from the list entirely, rather than just leaving it low priority, is what this step verifies.
+	 * candidate list, not merely deprioritised within it. The selection sorts never-checked records first,
+	 * so a record that can never actually be checked but is still listed would occupy the whole
+	 * {@code MaxChecksPerRun} budget every night, starving every checkable record behind it.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns

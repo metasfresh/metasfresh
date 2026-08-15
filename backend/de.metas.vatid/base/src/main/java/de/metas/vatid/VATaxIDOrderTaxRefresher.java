@@ -26,25 +26,20 @@ import de.metas.bpartner.BPartnerId;
 import lombok.NonNull;
 
 /**
- * Reacts to a VAT-ID status change the check process just discovered: refreshes
- * {@code C_OrderLine.C_Tax_ID} on the partner's orders that are not yet completed.
+ * Reacts to a VAT-ID status change by refreshing {@code C_OrderLine.C_Tax_ID} on the partner's not-yet-
+ * completed orders.
  *
- * <p>The base half declares only this seam. Refreshing an order line's tax needs
- * {@code de.metas.order}'s {@code OrderLineBL} / {@code IOrderDAO}, both of which live in
- * {@code de.metas.business} — a module that already depends on this one (via
- * {@code de.metas.tax.api.impl.TaxDAO}, see {@code IBPartnerBL#getVATaxIDStatusCode}). {@code de.metas.vatid}
- * therefore cannot depend on {@code de.metas.business} without a cycle, so the implementation lives there
- * instead and is resolved through Spring — exactly the same base-seam / other-half-implementation split as
- * {@link VATaxIDOnlineChecker} (base half) / {@code VIESClient} (vies half).
+ * <p>The base half declares only this seam. The implementation needs {@code de.metas.order}'s
+ * {@code OrderLineBL} / {@code IOrderDAO} from {@code de.metas.business}, which already depends on this
+ * module, so it lives there and is resolved through Spring — the same split as
+ * {@link VATaxIDOnlineChecker} (base) / {@code VIESClient} (vies).
  *
- * <p>Called only when a check just discovered a genuine status change — including the very first check
- * ({@link VATaxIDStatus#NotChecked} to any other status) — never on a re-check that only reconfirms the
- * previous status, since nothing about the partner's tax situation changed then.
+ * <p>Called only on a genuine status change, including the first check
+ * ({@link VATaxIDStatus#NotChecked} to anything else), never on a re-check that reconfirms the previous
+ * status.
  *
- * <p>Invoice candidates are deliberately out of scope here — this seam is order lines only. Invalidating a
- * partner's unprocessed invoice candidates on the same status change is a separate, not-yet-scheduled
- * concern with its own machinery elsewhere in the codebase; nothing here should be extended to cover it
- * without that being a deliberate, separately reviewed decision.
+ * <p>Invoice candidates are deliberately out of scope — that is a separate, not-yet-scheduled concern with
+ * its own machinery, and extending this seam to cover it needs its own review.
  */
 public interface VATaxIDOrderTaxRefresher
 {

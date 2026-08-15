@@ -28,18 +28,12 @@ import lombok.NonNull;
 import lombok.Value;
 
 /**
- * What {@link VATaxIDCheckService} needs to read from the record whose VAT-ID status columns a check
- * maintains — the {@code C_BPartner} header or the {@code C_BPartner_Location}, whichever the request
- * names: the organisation whose {@code VATaxID_Config} applies, and the status stored right now.
+ * What {@link VATaxIDCheckService} reads from the record whose status columns a check maintains — the
+ * {@code C_BPartner} header or the {@code C_BPartner_Location}: the organisation whose
+ * {@code VATaxID_Config} applies, and the currently stored status.
  *
- * <p>Deliberately these two fields and no more: the stored status is needed to tell a changed status from
- * an unchanged one and to answer a check that is configured off, and the organisation is needed to resolve
- * the configuration — nothing else about the parent record concerns the check.
- *
- * <p>Read by {@link VATaxIDParentStatusRepository#getParentStatus(VATaxIDCheckRequest)}; the matching
- * write takes a {@link VATaxIDLastCheck} instead, because a completed check contributes three columns
- * ({@code VATaxIDStatus}, {@code VATaxIDCheckedAt}, {@code VATaxID_CheckLog_ID}) and never the
- * organisation.
+ * <p>These two and no more. The matching write takes a {@link VATaxIDLastCheck} instead, because a
+ * completed check contributes three columns and never the organisation.
  */
 @Value
 @Builder

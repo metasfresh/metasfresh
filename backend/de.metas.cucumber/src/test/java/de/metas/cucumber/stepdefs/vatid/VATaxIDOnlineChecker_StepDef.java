@@ -48,13 +48,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Programs the stubbed {@link VATaxIDOnlineChecker} (see {@link VATaxIDTestServiceConfiguration}) with
- * the answers a scenario expects the external service to give.
+ * Programs the stubbed {@link VATaxIDOnlineChecker} (see {@link VATaxIDTestServiceConfiguration}) with the
+ * answers a scenario expects from the external service.
  *
- * <p>Every stub step {@link org.mockito.Mockito#reset(Object[]) resets} the shared mock first. The mock is
- * a singleton bean living for the whole cucumber JVM, so without the reset a previous scenario's answers
- * and — more importantly — its recorded invocations would leak into
- * {@link #onlineCheckerWasNotCalled()}.
+ * <p>Every stub step {@link org.mockito.Mockito#reset(Object[]) resets} the shared mock first: it is a
+ * singleton for the whole cucumber JVM, so otherwise a previous scenario's answers and recorded invocations
+ * would leak into {@link #onlineCheckerWasNotCalled()}.
  */
 public class VATaxIDOnlineChecker_StepDef
 {
@@ -129,13 +128,10 @@ public class VATaxIDOnlineChecker_StepDef
 	}
 
 	/**
-	 * Stubs the online checker exactly as its SPI contract prescribes for a member state reporting itself
-	 * unavailable via {@code GET /check-status}: the availability endpoint reports {@code countryCode} as
-	 * down, and any VAT-ID actually listed in {@code dataTable} still gets its ordinary answer — a run
-	 * that (wrongly) failed to pre-filter and called {@link VATaxIDOnlineChecker#check} for the
-	 * unavailable member state's own VAT-ID would fail loudly with the same "unexpected online check"
-	 * guard {@link #stubOnlineChecker(DataTable)} uses, since that VAT-ID is deliberately absent from the
-	 * table.
+	 * Stubs the checker as its SPI contract prescribes for a member state reporting itself unavailable via
+	 * {@code GET /check-status}, while any VAT-ID listed in {@code dataTable} still gets its ordinary answer.
+	 * The unavailable state's own VAT-ID is deliberately absent from the table, so a run that failed to
+	 * pre-filter and called it anyway trips the same "unexpected online check" guard.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -157,12 +153,10 @@ public class VATaxIDOnlineChecker_StepDef
 	}
 
 	/**
-	 * Stubs the online checker leniently: every VAT-ID listed in {@code dataTable} gets its ordinary
-	 * answer, and any VAT-ID NOT listed gets {@link VATaxIDStatus#ServiceUnavailable} instead of the loud
-	 * failure {@link #stubOnlineChecker(DataTable)} uses. For a scenario that runs the check process with
-	 * no selection at all (the nightly-schedule shape, see {@code VATaxIDCheckProcess_StepDef}) and can
-	 * therefore reach every VAT-ID already in the local database, not only the ones it created itself —
-	 * {@link VATaxIDStatus#ServiceUnavailable} is harmless there for any {@code VATaxID_Config} whose
+	 * Stubs the checker leniently: a VAT-ID listed in {@code dataTable} gets its ordinary answer, any other
+	 * gets {@link VATaxIDStatus#ServiceUnavailable} rather than the loud failure
+	 * {@link #stubOnlineChecker(DataTable)} raises. For scenarios running the selection-less nightly shape,
+	 * which reaches every VAT-ID in the local database — harmless there, as long as
 	 * {@code OnServiceUnavailable} is left at its fail-open default.
 	 *
 	 * @cucumber.stepdef

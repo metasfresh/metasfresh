@@ -29,13 +29,11 @@ import lombok.Value;
 import java.time.Instant;
 
 /**
- * What is known about one VAT-ID value from a single {@code VATaxID_CheckLog} row: the status, when that
- * status was obtained, and which row is the evidence.
+ * What is known about one VAT-ID value from a single {@code VATaxID_CheckLog} row: the status, when it was
+ * obtained, and which row is the evidence.
  *
- * <p>Deliberately these three fields and no more, because they are exactly what both consumers need — the
- * de-duplication lookup ({@link VATaxIDCheckRepository#getLastConclusiveCheck(de.metas.tax.api.VATIdentifier)})
- * and the {@code VATaxIDStatus} / {@code VATaxIDCheckedAt} / {@code VATaxID_CheckLog_ID} columns that
- * {@code C_BPartner} and {@code C_BPartner_Location} denormalise from it.
+ * <p>These three and no more — exactly what the de-duplication lookup and the denormalised parent columns
+ * need.
  */
 @Value
 @Builder

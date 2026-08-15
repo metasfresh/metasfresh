@@ -33,13 +33,10 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 /**
- * Everything needed to append a new {@code VATaxID_CheckLog} row in status
- * {@link VATaxIDStatus#RequestSent}, i.e. to record that a VIES check was just sent — see
- * {@link VATaxIDCheckRepository#writeRequestSent(VATaxIDCheckRequest)}.
+ * Everything needed to append a {@code VATaxID_CheckLog} row at {@link VATaxIDStatus#RequestSent}.
  *
- * <p>Exactly one of {@link #getPinstanceId()} / {@link #getAdSessionId()} identifies what caused the
- * check (a process run vs. a user session triggered by an after-commit save), or both are {@code null}
- * for a check that has neither (e.g. triggered from a unit test).
+ * <p>Exactly one of {@link #getPinstanceId()} / {@link #getAdSessionId()} identifies what caused the check
+ * (a process run vs. a user session), or both are {@code null} for a check that has neither.
  */
 @Value
 @Builder

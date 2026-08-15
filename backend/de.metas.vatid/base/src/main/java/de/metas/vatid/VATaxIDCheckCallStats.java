@@ -26,13 +26,11 @@ import lombok.Builder;
 import lombok.Value;
 
 /**
- * How many online calls one run ({@code AD_PInstance_ID}) actually made, and their average
- * round-trip time — see {@link VATaxIDCheckService#getCallStatsForRun(de.metas.process.PInstanceId)}.
+ * How many online calls one run made, and their average round-trip time.
  *
- * <p>Deliberately a narrower thing than {@link VATaxIDCheckRunResult}: this carries only the two
- * numbers {@code VATaxIDCheckRepository} can answer from the {@code VATaxID_CheckLog} rows a run
- * wrote, which {@link VATaxIDCheckRunService#run(VATaxIDCheckRunRequest)} folds into that result —
- * not a second, competing run-summary type.
+ * <p>Narrower than {@link VATaxIDCheckRunResult} on purpose: only the two numbers
+ * {@code VATaxIDCheckRepository} can answer from the rows a run wrote, which the run service folds into
+ * that result rather than returning a second, competing summary.
  */
 @Value
 @Builder

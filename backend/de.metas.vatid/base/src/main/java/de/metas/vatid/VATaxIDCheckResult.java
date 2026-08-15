@@ -29,13 +29,11 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 /**
- * The outcome of a VAT-ID check, used to complete a {@code VATaxID_CheckLog} row that is at
- * {@link VATaxIDStatus#RequestSent} — see
- * {@link VATaxIDCheckRepository#completeCheck(VATaxIDCheckLogId, VATaxIDCheckResult)}.
+ * The outcome of a VAT-ID check, used to complete a {@code VATaxID_CheckLog} row at
+ * {@link VATaxIDStatus#RequestSent}.
  *
- * <p>{@link #getStatus()} must be a final status, i.e. anything other than
- * {@link VATaxIDStatus#RequestSent} — that value only ever exists on the row being completed, not as
- * an outcome to write.
+ * <p>{@link #getStatus()} must be a final status — {@code RequestSent} exists only on the row being
+ * completed, never as an outcome to write.
  */
 @Value
 @Builder

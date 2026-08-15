@@ -51,24 +51,13 @@ public class C_BPartner_Location
 	@NonNull private final VATaxIDConfigRepository configRepository;
 
 	/**
-	 * Unchanged synchronous format check: still {@code BEFORE_NEW}/{@code BEFORE_CHANGE}, still throws
-	 * hard on a malformed value, still gated — now by {@link VATaxIDConfigRepository#getByOrgId(OrgId)},
-	 * the same resolver {@code VATaxIDCheckService} uses, so this organisation's own
-	 * {@code VATaxID_Config.IsFormatCheckEnabled} (or, absent a record, the
-	 * {@code VATaxID_Config.IsFormatCheckEnabledByDefault} SysConfig) can never diverge from what the
-	 * after-commit online check enforces.
+	 * Unchanged synchronous format check, gated by {@link VATaxIDConfigRepository#getByOrgId(OrgId)} — the
+	 * same resolver {@code VATaxIDCheckService} uses, so the save-time gate and the after-commit online check
+	 * cannot diverge.
 	 *
-	 * <p><b>{@link #scheduleVATaxIDCheck(I_C_BPartner_Location)} must not assume this ran.</b> The framework
-	 * does order {@code BEFORE_*} before {@code AFTER_*} within one save, but that guarantees only that this
-	 * <em>method</em> was invoked — not that it <em>validated</em> anything: the resolved config above can
-	 * make it a no-op, and inter-class interceptor ordering is not guaranteed, so another interceptor's
-	 * {@code BEFORE_*} handler could in principle set {@code VATaxID} after this one already looked at it (no
-	 * production interceptor does today — only test step-defs write the column). So a malformed value can
-	 * reach the after-commit path. That is safe, but only because
-	 * {@code VATaxIDCheckService#check(de.metas.vatid.VATaxIDCheckRequest)} re-runs the format check itself
-	 * and {@link VATaxIDCheckTrigger} logs rather than propagates the resulting throw: the outcome is a
-	 * skipped check with a warning, never a failed save and never a check-log row claiming a malformed value
-	 * was checked.
+	 * <p><b>{@link #scheduleVATaxIDCheck(I_C_BPartner_Location)} must not assume this validated anything</b> —
+	 * see {@link C_BPartner#validateVATaxID} for why a malformed value can still reach the after-commit path,
+	 * and why that is safe.
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = I_C_BPartner_Location.COLUMNNAME_VATaxID)

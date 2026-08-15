@@ -39,27 +39,15 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 /**
  * Sets up the {@code VATaxID_Config} record of the test organisation.
  *
- * <p>Deliberately an <b>upsert</b>, not a plain insert: the table allows only one active record per
- * organisation (partial unique index), and the local cucumber database is not reset between runs, so a
- * second run of the same feature would otherwise violate that index.
+ * <p>Deliberately an upsert: the table allows one active record per organisation (partial unique index) and
+ * the local cucumber database is not reset between runs.
  *
- * <p>{@code VATaxID_Config} is per-organisation, not per-scenario: on a shared {@code @ghActions:run_on_executorN}
- * DB, whatever a scenario leaves it at outlives that scenario for every feature that runs after it on the
- * same executor. A scenario that enables {@code IsVIESCheckEnabled} and never disables it again leaves the
- * save-time after-commit trigger ({@code VATaxIDCheckTrigger}) live for every later feature's plain
- * {@code C_BPartner}/{@code C_BPartner_Location} save carrying a VAT-ID — which then hits whatever this
- * scenario's online-checker stub was last programmed with, throwing "Unexpected online check for VAT-ID
- * ..." out of an unrelated feature. Symmetrically, a scenario that disables {@code IsFormatCheckEnabled} and
- * never re-enables it leaves the save-time format gate silently off for every later feature that saves a
- * VAT-ID for this organisation without setting up its own config — since
- * {@code de.metas.vatid.VATaxIDConfigRepository#getByOrgId} now resolves the save-time gate from THIS
- * record whenever one is active, unconditionally. {@link #resetToSafeDefaultsAfterScenario()} closes both
- * for every scenario that touches this step def, unconditionally and regardless of whether the scenario
- * itself passed, failed or errored — a plain extra Gherkin step at the end of the scenario would NOT do
- * that, because Cucumber skips every remaining step once one step fails, so a step-based "cleanup" placed
- * after the scenario's own assertions never runs on the run that actually needs it. An {@code @After} hook
- * is Cucumber's own guaranteed-execution mechanism (same pattern as e.g.
- * {@code ShipperServiceLevelConfig_StepDef}), so it runs on every outcome.
+ * <p>The record is per-organisation, not per-scenario, so on a shared executor DB whatever a scenario leaves
+ * behind outlives it. A left-on {@code IsVIESCheckEnabled} keeps the after-commit trigger live for later
+ * features, which then hit this scenario's stale stub; a left-off {@code IsFormatCheckEnabled} silently
+ * disables the save-time gate for them. {@link #resetToSafeDefaultsAfterScenario()} closes both from an
+ * {@code @After} hook — a trailing Gherkin step would not, since Cucumber skips remaining steps once one
+ * fails, i.e. on exactly the runs that need the cleanup.
  */
 public class VATaxID_Config_StepDef
 {

@@ -51,19 +51,12 @@ import java.sql.Timestamp;
  *
  * <p>Repository Cluster: sole owner of {@code VATaxID_CheckLog}.
  *
- * <p>Persists the individual VAT-ID online check attempts that are the feature's legal evidence. The
- * table is <b>append-only, with exactly one exception</b>: a row is first written at
- * {@link VATaxIDStatus#RequestSent} and, later, that same row — and only that row — is updated to its
- * final status when the VIES answer arrives. This repository exposes exactly the two moves that
- * lifecycle allows — {@link #writeRequestSent(VATaxIDCheckRequest)} appends,
- * {@link #completeCheck(VATaxIDCheckLogId, VATaxIDCheckResult)} completes — and no general "update any
- * field of any row" method, so <b>no bypass path is exposed by this repository's own API</b>: every
- * caller reaching the table through this class can only append or complete, never issue an arbitrary
- * update. That guarantee is scoped to this class's API only — {@code I_VATaxID_CheckLog} is still a
- * public generated model interface, so the invariant's actual enforcement against a caller that skips
- * this repository entirely (e.g. loading and saving the model directly) is not the type system but the
- * codebase-wide review convention that persistence primitives for a model live only in that model's
- * authoritative repository.
+ * <p>Persists the individual check attempts that are the feature's legal evidence. The table is append-only
+ * with exactly one exception: a row is written at {@link VATaxIDStatus#RequestSent} and later completed with
+ * its final status. This class exposes only those two moves and no general update, so no caller going through
+ * it can issue an arbitrary one. That is an API guarantee only — {@code I_VATaxID_CheckLog} stays a public
+ * generated interface, so a caller bypassing this repository is caught by review convention, not by the type
+ * system.
  */
 @Repository
 public class VATaxIDCheckRepository
@@ -86,30 +79,17 @@ public class VATaxIDCheckRepository
 	}
 
 	/**
-	 * Appends a new {@code VATaxID_CheckLog} row at {@link VATaxIDStatus#RequestSent}, i.e. records that a
-	 * VIES check for {@code request.getVataxID()} was just sent. This is the only way a row is created;
-	 * there is no separate "already known" final-status creation path, because every check — successful,
-	 * failed or never answered — starts life as a sent request.
+	 * Appends a new row at {@link VATaxIDStatus#RequestSent}. The only way a row is created — every check,
+	 * successful or not, starts life as a sent request.
 	 *
-	 * <p><b>Commits in its own, immediately-committing transaction — deliberately, not a shortcut.</b>
-	 * {@code callInNewTrx} is normally a hack (every new use needs an inline justification, per
-	 * {@code docs/coding-rules/java-general.md} / {@code ITrxManager}'s own deprecation policy on the
-	 * method): here it is the entire point. This row IS the feature's legal evidence that a check was
-	 * attempted at all (see the class javadoc). Its caller — {@code VATaxIDCheckService#check} — runs
-	 * inside a per-item transaction the check-run service opens (see
-	 * {@code VATaxIDCheckRunService#checkOneInOwnTrx}); if this append joined that transaction (the
-	 * default for a plain {@code saveRecord} with no explicit transaction), a later failure in the SAME
-	 * check-and-refresh unit — the online checker throwing, or a triggered order-tax refresh rolling the
-	 * whole unit back — would erase this row along with everything else, even though the request really
-	 * was sent. Committing independently, before the online service is even called, means the row survives
-	 * that rollback: exactly what lets {@link #completeCheck(VATaxIDCheckLogId, VATaxIDCheckResult)}'s later
-	 * update — which correctly DOES join the ambient transaction, see that method's own javadoc — roll back
-	 * on its own without erasing the evidence that an attempt was made. A row left at
-	 * {@link VATaxIDStatus#RequestSent} after such a rollback is not a bug: it is exactly what that status
-	 * means — "a check is in flight, or its outcome was never learned."
+	 * <p><b>Commits in its own transaction.</b> {@code callInNewTrx} normally needs an inline justification
+	 * ({@code docs/coding-rules/java-general.md}); here it is the entire point. This row is the evidence that
+	 * a check was attempted, and its caller runs inside a per-item transaction that a throwing checker or a
+	 * triggered order-tax refresh can roll back. Committing independently, before the service is even called,
+	 * is what makes the evidence survive that rollback. A row left at {@code RequestSent} afterwards is not a
+	 * bug — it is exactly what the status means.
 	 *
-	 * @return the id of the newly written row, to be passed to {@link #completeCheck(VATaxIDCheckLogId, VATaxIDCheckResult)}
-	 * once (or if) the answer arrives.
+	 * @return the id to pass to {@link #completeCheck(VATaxIDCheckLogId, VATaxIDCheckResult)}.
 	 */
 	@NonNull
 	public VATaxIDCheckLogId writeRequestSent(@NonNull final VATaxIDCheckRequest request)
@@ -133,24 +113,17 @@ public class VATaxIDCheckRepository
 	}
 
 	/**
-	 * The most recent <b>conclusive</b> check of one VAT-ID <b>value</b> — the lookup de-duplication is
-	 * built on, and what the {@code (VATaxID, RequestDate)} index exists for.
+	 * The most recent <b>conclusive</b> check of one VAT-ID <b>value</b> — what de-duplication is built on,
+	 * and what the {@code (VATaxID, RequestDate)} index exists for. Keyed on the value, not on a partner or a
+	 * location: the same VAT-ID anywhere is the same question to the service.
 	 *
-	 * <p>Keyed on the value and not on a partner or a location: the same VAT-ID anywhere is the same
-	 * question to the online service, and asking it twice is exactly what de-duplication avoids.
+	 * <p>Conclusive means {@link VATaxIDStatus#Valid}, {@link VATaxIDStatus#Invalid} or
+	 * {@link VATaxIDStatus#NotSupported}. {@code RequestSent} and {@code ServiceUnavailable} rows are skipped,
+	 * else one failed attempt would suppress every retry for the whole re-check interval.
 	 *
-	 * <p><b>Conclusive</b> means the check ended in a statement about the VAT-ID:
-	 * {@link VATaxIDStatus#Valid}, {@link VATaxIDStatus#Invalid} or {@link VATaxIDStatus#NotSupported}.
-	 * {@link VATaxIDStatus#RequestSent} rows (a check whose outcome was never learned) and
-	 * {@link VATaxIDStatus#ServiceUnavailable} rows (no answer obtained) are deliberately skipped: counting
-	 * them would let one failed attempt suppress every retry for the whole re-check interval — the opposite
-	 * of what an unreachable service must lead to.
+	 * <p>Freshness is deliberately not decided here — the caller holds {@code RecheckAfterDays}.
 	 *
-	 * <p>Freshness is deliberately NOT decided here: {@code RecheckAfterDays} lives in
-	 * {@code VATaxID_Config}, so the caller holding the configuration compares the age.
-	 *
-	 * @return the newest conclusive row for that value, or {@code null} if the value has never been
-	 * conclusively checked.
+	 * @return the newest conclusive row for that value, or {@code null} if there is none.
 	 */
 	@Nullable
 	public VATaxIDLastCheck getLastConclusiveCheck(@NonNull final VATIdentifier vataxID)
@@ -180,25 +153,18 @@ public class VATaxIDCheckRepository
 	}
 
 	/**
-	 * Completes the one row identified by {@code checkLogId} — which must currently be at
-	 * {@link VATaxIDStatus#RequestSent} — with the VIES outcome. This is the log's single allowed update:
-	 * it never touches any other row, and it refuses to run twice on the same row, because once completed
-	 * a row is immutable evidence.
+	 * Completes the one row identified by {@code checkLogId}, which must currently be at
+	 * {@link VATaxIDStatus#RequestSent}. The log's single allowed update; it refuses to run twice, because a
+	 * completed row is immutable evidence.
 	 *
-	 * <p>The guard is a {@code SELECT ... FOR NO KEY UPDATE} row lock on the targeted row, taken inside a
-	 * transaction that is either joined from the caller or opened here for exactly this method
-	 * ({@link ITrxManager#runInThreadInheritedTrx(Runnable)}), followed by an in-Java status check and then
-	 * an ordinary {@link InterfaceWrapperHelper#saveRecord}. This is deliberately not a raw conditional
-	 * {@code UPDATE}: going through the model layer means the completion is change-logged (the table is
-	 * {@code IsChangeLog='Y'}) and invalidates any cached copy of the row, both of which a raw
-	 * {@code UPDATE} would silently skip. Atomicity is not weakened by loading first — a second concurrent
-	 * call for the same {@code checkLogId} blocks on the row lock until the first call's transaction
-	 * commits or rolls back, then observes the now-final status and fails the same way a losing raw
-	 * {@code UPDATE} would, without overwriting the winner's evidence.
+	 * <p>Guarded by a {@code SELECT ... FOR NO KEY UPDATE} row lock plus an in-Java status check, then an
+	 * ordinary {@link InterfaceWrapperHelper#saveRecord} rather than a raw conditional {@code UPDATE}: the
+	 * model layer change-logs the completion and invalidates cached copies, both of which a raw
+	 * {@code UPDATE} would skip. A concurrent second call blocks on the lock, then observes the final status
+	 * and fails without overwriting the winner's evidence.
 	 *
-	 * @throws org.adempiere.exceptions.AdempiereException if {@code checkLogId} does not currently point
-	 * at a {@link VATaxIDStatus#RequestSent} row — either it was already completed (including by a
-	 * concurrent caller that won the race), or it never was a request-sent row to begin with.
+	 * @throws org.adempiere.exceptions.AdempiereException if the row is not currently request-sent — already
+	 * completed (possibly by a concurrent winner), or never a request-sent row to begin with.
 	 */
 	public void completeCheck(@NonNull final VATaxIDCheckLogId checkLogId, @NonNull final VATaxIDCheckResult result)
 	{

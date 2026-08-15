@@ -62,84 +62,39 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * Runs a whole {@link VATaxIDCheckRunRequest}: the combined partner+location target selection and its
- * deterministic ordering, the {@code MaxChecksPerRun} throttling, the per-target check-and-refresh, and
- * the pending/checked reporting. The single collaborator behind {@code C_BPartner_VATaxID_Check} (the manual
- * process) and any future {@code AD_Scheduler} entry point too — both callers select
- * {@code C_BPartner_ID}s their own way and hand the resulting ids to {@link #run(VATaxIDCheckRunRequest)}
- * unchanged.
+ * Runs a whole {@link VATaxIDCheckRunRequest}: target selection, deterministic ordering,
+ * {@code MaxChecksPerRun} throttling, the per-target check, and the pending/checked reporting. Every
+ * actual check is delegated to {@link VATaxIDCheckService#check(VATaxIDCheckRequest)}; this class owns
+ * only the looping around it. Shared by the manual process and any future {@code AD_Scheduler} entry.
  *
- * <p>Every actual check is delegated to {@link VATaxIDCheckService#check(VATaxIDCheckRequest)}, which alone
- * owns the format-check-first, the not-supported short-circuit, de-duplication, evidence, and the
- * parent-status refresh — this class owns only the selection, ordering, throttling, and looping around it.
+ * <p><b>Selecting a partner also covers its locations</b> — the window only lets a user select
+ * {@code C_BPartner} records, so a selected partner contributes its own header plus every location of
+ * that partner carrying a VAT-ID. The nightly run filters that set further.
  *
- * <p><b>Selecting a partner also covers its locations.</b> The Business Partner window's selection is of
- * {@code C_BPartner} records — a user cannot select an address directly — so "check the VAT-IDs of the
- * selected partners" is read as "check the selected partners' own VAT-IDs <em>and</em> every VAT-ID on one
- * of their locations", not "the partner header only". {@link #retrieveCheckTargets(ImmutableList)} builds
- * exactly that combined set: every selected partner's own header (if it carries a VAT-ID) plus every
- * location of every selected partner that carries one — regardless of whether that location's owning
- * partner itself has a VAT-ID. This unconditional expansion is deliberate for a user-triggered
- * selection/manual run; the nightly run additionally filters it (see {@link VATaxIDCheckRunRequest#isNightlyRun()}).
+ * <p><b>{@code MaxChecksPerRun}</b> bounds the <em>combined</em> partner+location work, not each type
+ * separately; empty or {@code <= 0} means no limit. Untouched targets are reported as pending so a re-run
+ * picks them up.
  *
- * <p><b>{@code MaxChecksPerRun}</b> throttles a selection that is bigger than the organisation wants to hit
- * the online service with in one go: empty or {@code <= 0} means no limit at all (see the parameter's own
- * {@code AD_Element} description, which is the authoritative statement of that rule). It bounds the
- * <em>combined</em> partner+location work, not each type separately — a run does not check up to
- * {@code MaxChecksPerRun} partners and then, on top, up to {@code MaxChecksPerRun} locations. The rest of
- * the combined set is left completely untouched — still {@code NotChecked} or whatever it already was —
- * and the run logs how many were left pending, so a re-run (manual or the next nightly pass) picks them up.
+ * <p><b>Starvation guard.</b> {@code VATaxIDCheckedAt} advances only on a completed check, so a target
+ * that can never complete one would sort first of every future nightly run forever and occupy the whole
+ * budget. {@code VATaxIDLastAttemptedAt} is therefore stamped unconditionally, in its own already-committed
+ * transaction, strictly before {@link #checkOneInOwnTrx} begins; the nightly run sorts by it (nulls first,
+ * see {@link #filterAndOrderForNightlyRun}), so a just-failed target sorts behind a never-attempted one.
+ * This bounds crowding-out, not retry frequency — a failing target stays due and keeps being retried.
  *
- * <p><b>Attempt vs success — why a failing target cannot starve the nightly queue.</b>
- * {@code VATaxIDCheckedAt} advances only on a completed, non-rolled-back check (see
- * {@link VATaxIDCheckService#check}, written just before its own {@code updateParentStatus} call). A
- * target that can never complete a check — a malformed value that bypassed the save-time gate and always
- * fails the online check's own format re-validation, or a triggered order-tax refresh that always rolls
- * the whole check-and-refresh unit back — therefore never advances {@code VATaxIDCheckedAt} at all, and
- * would otherwise sort first of every future nightly run forever (a never-checked record sorts before any
- * checked one), permanently occupying the whole {@code MaxChecksPerRun} budget without ever making
- * progress. {@code VATaxIDLastAttemptedAt} exists to break exactly that: it is stamped unconditionally —
- * regardless of whether the attempt that follows succeeds, fails, or throws — in its own,
- * already-committed transaction that runs strictly <em>before</em> {@link #checkOneInOwnTrx} even starts
- * the check-and-refresh unit (see that method's javadoc for why that ordering, and that isolation, matter).
- * The nightly run's own ordering (see {@link #filterAndOrderForNightlyRun}) sorts by this attempt
- * timestamp, nulls first, rather than by success — so a target that just failed sorts <em>behind</em> a
- * target that was never attempted at all, and gets picked up again on some later run instead of
- * monopolising every run. This does not bound how often a permanently-broken target is retried — it only
- * guarantees it can no longer crowd out every other target every single night, which is the actual defect
- * this exists to prevent. Whether a target is due at all (as opposed to where it sorts) is unaffected: that
- * still depends on {@code VATaxIDStatus}/{@code VATaxIDCheckedAt} exactly as before — a record that keeps
- * failing keeps {@code VATaxIDStatus=NotChecked}, so it stays due and keeps getting retried, just no longer
- * at the permanent expense of everyone behind it.
+ * <p><b>Ordering.</b> {@link #retrieveCheckTargets(ImmutableList)} follows the caller's id order, header
+ * before that partner's locations, so a throttled manual run always processes the same prefix. The nightly
+ * run deliberately supersedes this with the attempt-time ordering above.
  *
- * <p><b>Deterministic ordering under throttling.</b> {@link #retrieveCheckTargets(ImmutableList)} follows
- * {@link VATaxIDCheckRunRequest#getSelectedBPartnerIds()}'s own order — the caller already orders that by
- * {@code C_BPartner_ID} — and, within one partner, the partner's own header check (if it has a VAT-ID)
- * before that partner's locations (ordered by {@code C_BPartner_Location_ID}). A throttled manual/selection
- * run therefore always processes the same deterministic prefix of the same selection. The nightly run
- * re-orders the resulting targets by attempt time instead (see above), which deliberately supersedes this
- * id-based ordering for that path — see {@link #filterAndOrderForNightlyRun}.
+ * <p><b>Each target runs in its own new transaction</b> ({@link #checkOneInOwnTrx}), together with the
+ * order-line-tax refresh a status change triggers, so one target's failure cannot affect any other — the
+ * point is independent commit per target, not escaping an ambient transaction.
  *
- * <p><b>No ambient transaction is assumed</b>: each check target's check — together with the
- * order-line-tax refresh a status change triggers — is wrapped in its own new transaction (see
- * {@link #checkOneInOwnTrx}) so that one target's failure — a throwing checker, a malformed value the
- * format re-check rejects, a refresh failure — can never affect any other target already checked or still
- * to be checked in the same run. {@code callInNewTrx} is deliberately used here even though the caller
- * (the process) already runs outside any ambient transaction — the point is not "there is no caller
- * transaction to escape", it is that each target's <em>whole</em> unit of work must commit or fail
- * completely independently of every other target's.
- *
- * <p><b>Availability pre-filter</b> ({@code GET /check-status}): before checking anything,
- * {@link #run(VATaxIDCheckRunRequest)} asks {@link VATaxIDCheckService#getUnavailableCountryCodes(OrgId)}
- * once per distinct organisation among the selection's targets — not once per VAT-ID — and skips every
- * target whose {@link VATIdentifier#getCountryCodePrefix()} is in the returned set. A skipped target is
- * never checked, never recorded as checked, and its stored status stands: it is never funnelled into
- * {@link VATaxIDConfig#getOnServiceUnavailable()}'s policy, which is reached only from inside an actual
- * {@link VATaxIDCheckService#check(VATaxIDCheckRequest)} call. This is what keeps a member-state outage
- * from mass-marking that country's partners {@code Invalid} under a fail-closed policy — the very
- * failure mode the pre-filter exists to prevent. Skipped targets do not count toward
- * {@link VATaxIDCheckRunResult#getPendingCount()} either: {@code MaxChecksPerRun} throttles the
- * remaining, actually-checkable targets, not the ones the pre-filter already removed.
+ * <p><b>Availability pre-filter</b> ({@code GET /check-status}): asked once per distinct organisation, not
+ * per VAT-ID, skipping targets whose member state is reported unavailable. A skipped target keeps its
+ * stored status and never reaches {@link VATaxIDConfig#getOnServiceUnavailable()}, which would otherwise
+ * mass-mark a country's partners {@code Invalid} during an outage under a fail-closed policy. Skipped
+ * targets do not count toward {@link VATaxIDCheckRunResult#getPendingCount()}.
  */
 @Service
 @RequiredArgsConstructor
@@ -262,33 +217,15 @@ public class VATaxIDCheckRunService
 	}
 
 	/**
-	 * The nightly schedule's own selection (see the class javadoc on {@code CheckTarget}'s caller,
-	 * {@code C_BPartner_VATaxID_Check}): every {@code C_BPartner_ID} that either has a due header VAT-ID or
-	 * has at least one due location VAT-ID — "due" meaning never checked, or stale past its own
-	 * organisation's {@code RecheckAfterDays}, the same staleness window {@link VATaxIDCheckService#check}
-	 * itself applies (now also applied at selection time rather than left entirely to that per-record
-	 * de-duplication). Header-due ids are ordered by the header's own {@code VATaxIDLastAttemptedAt}, nulls
-	 * first (see the class javadoc, "Attempt vs success"); a partner reached only through a due location —
-	 * its own header has no VAT-ID at all, so no header attempt exists to sort by — is appended after them
-	 * in whatever order the location query returned it. Neither detail matters: this method is a coarse
-	 * selection surface, not the actual throttled work queue, and its own internal order is never read by
-	 * anything downstream. The real per-target throttling and ordering happens in
-	 * {@link #filterAndOrderForNightlyRun}, which re-derives it from each resolved {@code CheckTarget}'s own
-	 * attempt timestamp at header-or-location grain, independently of this list's order.
+	 * The nightly schedule's selection: every {@code C_BPartner_ID} with a due header VAT-ID or at least one
+	 * due location VAT-ID. This is a coarse selection surface — the real per-target throttling and ordering
+	 * happens in {@link #filterAndOrderForNightlyRun}, so this list's own order is never read downstream.
 	 *
-	 * <p><b>Location due-ness must be checked independently of header due-ness.</b> A location's own
-	 * staleness must be visible to this selection even when its owning partner's header carries no VAT-ID
-	 * at all (header-only due-ness would leave such a location permanently unreachable by the nightly
-	 * sweep) or is itself already fresh (a fresh header must not hide a stale sibling location).
+	 * <p><b>Location due-ness is tested independently of header due-ness</b>, so a stale location is reachable
+	 * even when its partner's header carries no VAT-ID at all or is itself still fresh.
 	 *
-	 * <p>Scoped to the caller's own client (see {@link IBPartnerDAO#retrieveBPartnerIdsWithVATaxID()} and
-	 * {@link IBPartnerDAO#retrieveBPartnerLocationsWithVATaxID()}, which this delegates to).
-	 * {@link #isDueForNightlyRecheck} additionally excludes any record whose own organisation has the
-	 * online check switched off entirely: such a record can never actually be checked
-	 * ({@link VATaxIDCheckService#check} returns before doing anything once it resolves that same flag),
-	 * so it would otherwise stay {@code NotChecked} forever — see the class javadoc's "Attempt vs success"
-	 * section for why a record that can never advance either timestamp must be excluded, not merely
-	 * deprioritised.
+	 * <p>Scoped to the caller's own client. {@link #isDueForNightlyRecheck} also excludes records whose
+	 * organisation has the online check off entirely — they could never advance either timestamp.
 	 */
 	@NonNull
 	public ImmutableList<BPartnerId> retrieveAllBPartnerIdsWithVATaxID()
@@ -340,23 +277,15 @@ public class VATaxIDCheckRunService
 	}
 
 	/**
-	 * @return whether a record with {@code status}/{@code checkedAt} under {@code orgId} is due for the
-	 * nightly run: its own organisation has the online check switched on at all, AND it is either never
-	 * checked or its own organisation's {@code RecheckAfterDays} has elapsed since it last was. Shared by
-	 * the header selection ({@link #retrieveAllBPartnerIdsWithVATaxID}), the location selection (same
-	 * method), and the per-target nightly filter ({@link #filterAndOrderForNightlyRun}) — one rule, applied
-	 * at whichever grain (header, location, or resolved {@link CheckTarget}) is being tested, so the three
-	 * call sites cannot silently drift apart on what "due" means.
+	 * @return whether a record is due for the nightly run: its organisation has the online check on, and it is
+	 * either never checked or past that organisation's {@code RecheckAfterDays}. Shared by the header
+	 * selection, the location selection and {@link #filterAndOrderForNightlyRun}, so the three cannot drift
+	 * apart on what "due" means.
 	 *
-	 * <p>The staleness half mirrors {@link VATaxIDCheckService#check}'s own de-duplication window exactly —
-	 * this is a cheaper, coarser pre-filter over the same rule, not a competing one; {@code check} still
-	 * runs its own, authoritative de-duplication against the check-log evidence for whatever passes this
-	 * filter.
-	 *
-	 * <p>The VIES-enabled check comes first and short-circuits everything else, including the never-checked
-	 * case: {@code check} itself does nothing at all for such an organisation, so a record under it must
-	 * never be reported "due" no matter how long it has sat {@code NotChecked} — see the class javadoc's
-	 * "Attempt vs success" section for why leaving it in would starve the nightly budget.
+	 * <p>A coarse pre-filter over the same window {@link VATaxIDCheckService#check} applies, not a competing
+	 * one — {@code check} still runs its own authoritative de-duplication. The VIES-enabled test
+	 * short-circuits even the never-checked case: {@code check} does nothing for such an organisation, so
+	 * reporting it due would starve the nightly budget.
 	 */
 	private boolean isDueForNightlyRecheck(
 			@NonNull final OrgId orgId,
@@ -390,20 +319,14 @@ public class VATaxIDCheckRunService
 	}
 
 	/**
-	 * Filters {@code checkTargets} down to the ones actually due for a nightly run — applying
-	 * {@link #isDueForNightlyRecheck} at the SAME grain the caller already selected (header or location),
-	 * rather than only at the coarser partner grain {@link #retrieveAllBPartnerIdsWithVATaxID} uses to
-	 * decide which partners to fetch at all — and re-orders the survivors by
-	 * {@link CheckTarget#getLastAttemptedAt()}, nulls first (see the class javadoc, "Attempt vs success").
+	 * Filters {@code checkTargets} to those due for a nightly run, applying {@link #isDueForNightlyRecheck} at
+	 * the same grain the caller selected (header or location), and re-orders the survivors by
+	 * {@link CheckTarget#getLastAttemptedAt()}, nulls first.
 	 *
-	 * <p>Matching the grain of the filter to the grain of the expansion is the point: without this,
-	 * {@link #retrieveCheckTargets(ImmutableList)}'s unconditional per-selected-partner expansion — correct
-	 * and deliberate for a manual/selection run — would also add every one of a due partner's locations
-	 * regardless of that location's OWN staleness for the nightly run too, burning the budget on no-op
-	 * re-checks of already-fresh locations exactly as the original header-only starvation fix did one grain
-	 * up. Applied only when {@link VATaxIDCheckRunRequest#isNightlyRun()} — a manual/selection run keeps the
-	 * unconditional expansion, which is the documented, deliberate "selecting a partner also covers its
-	 * locations" behaviour.
+	 * <p>Matching filter grain to expansion grain is the point: {@link #retrieveCheckTargets(ImmutableList)}'s
+	 * unconditional per-partner expansion is right for a manual run, but for the nightly run it would burn the
+	 * budget re-checking already-fresh locations. Applied only when
+	 * {@link VATaxIDCheckRunRequest#isNightlyRun()}.
 	 */
 	@NonNull
 	private ImmutableList<CheckTarget> filterAndOrderForNightlyRun(@NonNull final ImmutableList<CheckTarget> checkTargets)
@@ -487,38 +410,21 @@ public class VATaxIDCheckRunService
 	}
 
 	/**
-	 * Runs one check target's ATTEMPT STAMP plus its check — and, where it changed the status, the
-	 * resulting order-line-tax refresh.
+	 * Runs one target's attempt stamp, its check, and the order-line-tax refresh a status change triggers.
 	 *
-	 * <p><b>The attempt stamp is deliberately its own, already-committed transaction, written BEFORE the
-	 * check-and-refresh unit below even starts</b> (see {@link #stampAttemptInOwnTrx}) — that ordering and
-	 * that isolation are the entire point of tracking attempts separately from successes (class javadoc,
-	 * "Attempt vs success"): a write sharing the check-and-refresh unit's transaction would be erased by
+	 * <p>The attempt stamp is its own already-committed transaction, written before the check-and-refresh
+	 * unit starts ({@link #stampAttemptInOwnTrx}); a write sharing that unit's transaction would be erased by
 	 * exactly the rollback it exists to survive.
 	 *
-	 * <p>The check-and-refresh unit itself is wrapped in its own, brand-new transaction — deliberately
-	 * {@code callInNewTrx} (normally a hack, per {@code docs/coding-rules/java-general.md}): the whole point
-	 * here is that each target's <em>whole</em> unit of work must commit (or fail) completely independently
-	 * of every other target's — a throwing online checker or a rejected malformed value must not roll back,
-	 * delay or block any target already checked or still queued in this same run. This would only go away
-	 * if per-target commit isolation were no longer required — not expected to change.
+	 * <p>The check-and-refresh unit is wrapped in {@code callInNewTrx} — normally a hack, per
+	 * {@code docs/coding-rules/java-general.md} — because each target's whole unit of work must commit or
+	 * fail independently of every other target's. The check and the refresh share that one transaction on
+	 * purpose: a separately-committing refresh could leave refreshed order-line tax with no committed check
+	 * behind it.
 	 *
-	 * <p>The check and the order-line-tax refresh it may trigger are deliberately ONE transaction, not two:
-	 * {@link #orderTaxRefresher} is called from inside this same {@code callInNewTrx} block (its own
-	 * {@code refreshOrderLinesTaxForBPartner} joins it via {@code runInThreadInheritedTrx}), so they commit
-	 * or roll back together. A separate, later transaction for the refresh would let it commit independently
-	 * of the check that triggered it — leaving refreshed order-line tax with no committed check to justify
-	 * it if the check's own write had failed, an inconsistency worse than the alternative (a refresh failure
-	 * rolling back an otherwise-successful check, to be retried on the next run).
-	 *
-	 * <p><b>Two separate {@code try}/{@code catch} blocks, not one</b> — the stamp attempt and the
-	 * check-and-refresh unit fail in ways an operator needs to tell apart. A stamp-write failure means the
-	 * check for this target was never even attempted (see {@link #stampAttemptInOwnTrx}'s own javadoc for
-	 * why that is an accepted residual risk, not a defended-against one) and leaves no other trace anywhere
-	 * — no {@code VATaxID_CheckLog} row exists either, since {@code writeRequestSent} runs only once the
-	 * check itself starts. A check-and-refresh failure, by contrast, means the attempt WAS made and is
-	 * already durably recorded. Logging both under the same message would make the more useful, rarer
-	 * signal indistinguishable from the routine one.
+	 * <p>Two {@code catch} blocks, not one: a stamp failure means the check was never attempted and leaves no
+	 * other trace, while a check-and-refresh failure means the attempt is already durably recorded. One
+	 * shared message would hide the rarer signal.
 	 */
 	private void checkOneInOwnTrx(@Nullable final PInstanceId pinstanceId, @NonNull final CheckTarget checkTarget)
 	{
@@ -558,30 +464,17 @@ public class VATaxIDCheckRunService
 	}
 
 	/**
-	 * Stamps {@code checkTarget}'s own record's {@code VATaxIDLastAttemptedAt} to "now", unconditionally —
-	 * this runs before {@link #checkOneInOwnTrx} even attempts the check, so it records that an attempt is
-	 * ABOUT to happen rather than that one has already succeeded or failed.
+	 * Stamps {@code checkTarget}'s {@code VATaxIDLastAttemptedAt} unconditionally, recording that an attempt
+	 * is about to happen rather than that one succeeded.
 	 *
-	 * <p><b>Deliberately {@code runInNewTrx}, not {@code runInThreadInheritedTrx}</b> — the one genuinely
-	 * required use of the hack {@code docs/coding-rules/java-general.md} otherwise warns against. The whole
-	 * point of {@code VATaxIDLastAttemptedAt} is to survive the rollback of the check-and-refresh unit that
-	 * follows it (see the class javadoc, "Attempt vs success"): if this write joined that unit's
-	 * transaction — via {@code runInThreadInheritedTrx}, or by simply running inside the same
-	 * {@code callInNewTrx} block — a rolled-back check would erase the very evidence that an attempt was
-	 * made, reproducing the exact defect this mechanism exists to prevent. A genuinely independent,
-	 * already-committed transaction is therefore not a shortcut here; it is the mechanism.
+	 * <p>Deliberately {@code runInNewTrx} rather than {@code runInThreadInheritedTrx} — the one genuinely
+	 * required use of the hack {@code docs/coding-rules/java-general.md} otherwise warns against. Joining the
+	 * check-and-refresh transaction would let a rolled-back check erase the evidence that an attempt was
+	 * made, which is the whole defect this mechanism prevents.
 	 *
-	 * <p><b>This method's own chronic failure is an accepted residual risk, not a defended-against one.</b>
-	 * If this write itself fails on every attempt for one target — row-lock contention with an unrelated job
-	 * touching the same record, or a save-veto interceptor unconnected to VAT-ID checking — that target's
-	 * {@code VATaxIDLastAttemptedAt} never advances either, and {@link #checkOneInOwnTrx} logs it distinctly
-	 * from an ordinary check failure rather than retrying it differently. Because due-ness and ordering are
-	 * decoupled (class javadoc, "Attempt vs success"), such a target sorts first on every run but consumes
-	 * only its own {@code MaxChecksPerRun} slot each time — it does not crowd out any other target, unlike
-	 * the original defect this whole mechanism exists to prevent. Not hardened further (e.g. an exclude-
-	 * after-N-failures counter): ordinary Postgres constraint semantics make a write failure on an
-	 * already-selectable row — updating one nullable column — genuinely rare, and a chronic occurrence is
-	 * meant to be diagnosed from the run log this method's caller writes, not auto-excluded.
+	 * <p>A chronic failure of this write itself is an accepted residual risk: such a target sorts first every
+	 * run but consumes only its own slot, so it crowds out nobody. Diagnose it from the run log rather than
+	 * auto-excluding after N failures.
 	 */
 	private void stampAttemptInOwnTrx(@NonNull final CheckTarget checkTarget)
 	{

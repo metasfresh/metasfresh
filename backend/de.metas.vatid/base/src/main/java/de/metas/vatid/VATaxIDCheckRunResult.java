@@ -26,12 +26,9 @@ import lombok.Builder;
 import lombok.Value;
 
 /**
- * What {@link VATaxIDCheckRunService#run(VATaxIDCheckRunRequest)} did with one
- * {@link VATaxIDCheckRunRequest}: how much of the combined partner+location selection it actually checked,
- * how much it left untouched because {@link VATaxIDCheckRunRequest#getMaxChecksPerRun()} throttled the run,
- * and how many online calls it actually made and their average response time — extending
- * {@link VATaxIDCheckCallStats} into this one result rather than returning it as a second, competing
- * summary.
+ * What {@link VATaxIDCheckRunService#run(VATaxIDCheckRunRequest)} did: how much of the selection it
+ * checked, how much {@link VATaxIDCheckRunRequest#getMaxChecksPerRun()} left untouched, and the call stats
+ * — extending {@link VATaxIDCheckCallStats} rather than returning a second, competing summary.
  */
 @Value
 @Builder

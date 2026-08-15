@@ -40,20 +40,16 @@ import javax.annotation.Nullable;
 
 /**
  * Schedules a {@link VATaxIDCheckService#check(VATaxIDCheckRequest)} to run <b>after</b> the current save
- * commits — the after-commit half of the feature, called from both {@link C_BPartner} and
- * {@link C_BPartner_Location}'s {@code @ModelChange} methods so the two interceptors cannot drift apart
- * in how they schedule, capture or fail.
+ * commits, called from both {@link C_BPartner} and {@link C_BPartner_Location} so the two interceptors
+ * cannot drift apart in how they schedule, capture or fail.
  *
- * <p>Named {@code Trigger} rather than folded into either interceptor or into
- * {@link VATaxIDCheckService} itself: it owns exactly one concern — deciding <em>when</em> and <em>as
- * whom</em> a check gets scheduled from a save — which is deliberately separate from the two model
- * interceptors (they only know their own table) and from {@link VATaxIDCheckService} (it only knows how
- * to run one check, not when to schedule one).
+ * <p>Kept separate from both: it owns only <em>when</em> and <em>as whom</em> a check is scheduled from a
+ * save — the interceptors know just their own table, and {@link VATaxIDCheckService} knows just how to run
+ * one check.
  *
- * <p>Deliberately does <b>not</b> read {@code Env.getCtx()} itself: a shared {@code @Component} reading
- * ambient thread-local context is exactly what the service-injection rule on {@code Env.get*} forbids.
- * The caller — each interceptor's {@code @ModelChange} method, the actual near-user save-time boundary —
- * resolves the acting {@code AD_Session_ID} and passes it in as a plain {@code Integer}.
+ * <p>Deliberately does not read {@code Env.getCtx()} itself — a shared {@code @Component} reading ambient
+ * thread-local context is what the service-injection rule forbids. Each interceptor resolves the acting
+ * {@code AD_Session_ID} and passes it in.
  */
 @Component
 @RequiredArgsConstructor

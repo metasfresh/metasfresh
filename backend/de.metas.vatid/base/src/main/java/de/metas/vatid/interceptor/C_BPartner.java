@@ -50,24 +50,16 @@ public class C_BPartner
 	@NonNull private final VATaxIDConfigRepository configRepository;
 
 	/**
-	 * Unchanged synchronous format check: still {@code BEFORE_NEW}/{@code BEFORE_CHANGE}, still throws
-	 * hard on a malformed value, still gated — now by {@link VATaxIDConfigRepository#getByOrgId(OrgId)},
-	 * the same resolver {@code VATaxIDCheckService} uses, so this organisation's own
-	 * {@code VATaxID_Config.IsFormatCheckEnabled} (or, absent a record, the
-	 * {@code VATaxID_Config.IsFormatCheckEnabledByDefault} SysConfig) can never diverge from what the
-	 * after-commit online check enforces.
+	 * Unchanged synchronous format check, gated by {@link VATaxIDConfigRepository#getByOrgId(OrgId)} — the
+	 * same resolver {@code VATaxIDCheckService} uses, so the save-time gate and the after-commit online check
+	 * cannot diverge.
 	 *
-	 * <p><b>{@link #scheduleVATaxIDCheck(I_C_BPartner)} must not assume this ran.</b> The framework does
-	 * order {@code BEFORE_*} before {@code AFTER_*} within one save, but that guarantees only that this
-	 * <em>method</em> was invoked — not that it <em>validated</em> anything: the resolved config above can
-	 * make it a no-op, and inter-class interceptor ordering is not guaranteed, so another interceptor's
-	 * {@code BEFORE_*} handler could in principle set {@code VATaxID} after this one already looked at it
-	 * (no production interceptor does today — only test step-defs write the column). So a malformed value
-	 * can reach the after-commit path. That is safe, but only because
-	 * {@code VATaxIDCheckService#check(de.metas.vatid.VATaxIDCheckRequest)} re-runs the format check itself
-	 * and {@link VATaxIDCheckTrigger} logs rather than propagates the resulting throw: the outcome is a
-	 * skipped check with a warning, never a failed save and never a check-log row claiming a malformed value
-	 * was checked.
+	 * <p><b>{@link #scheduleVATaxIDCheck(I_C_BPartner)} must not assume this validated anything.</b>
+	 * {@code BEFORE_*} does run before {@code AFTER_*}, but the config can make this a no-op, and inter-class
+	 * interceptor ordering is not guaranteed. A malformed value can therefore reach the after-commit path;
+	 * that is safe only because {@code VATaxIDCheckService#check} re-runs the format check and
+	 * {@link VATaxIDCheckTrigger} logs rather than propagates the throw — a skipped check with a warning,
+	 * never a failed save or a log row claiming a malformed value was checked.
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = I_C_BPartner.COLUMNNAME_VATaxID)
@@ -81,18 +73,15 @@ public class C_BPartner
 	}
 
 	/**
-	 * Schedules the online VAT-ID check once the save commits. Deliberately {@code AFTER_NEW}/
-	 * {@code AFTER_CHANGE}, not {@code BEFORE_*}: on {@code BEFORE_NEW} the partner has no
-	 * {@code C_BPartner_ID} yet, and {@link de.metas.vatid.VATaxIDCheckRequest#getBpartnerId()} is
-	 * {@code @NonNull}.
+	 * Schedules the online check once the save commits. Deliberately {@code AFTER_*}: on {@code BEFORE_NEW}
+	 * the partner has no {@code C_BPartner_ID} yet, and
+	 * {@link de.metas.vatid.VATaxIDCheckRequest#getBpartnerId()} is {@code @NonNull}.
 	 *
-	 * <p>The acting {@code AD_Session_ID} is resolved <b>here</b>, not inside {@link VATaxIDCheckTrigger}:
-	 * {@link VATaxIDCheckTrigger} is a shared {@code @Component} with no single caller, so it must not read
-	 * ambient thread-local context itself (service-injection rule on {@code Env.get*}); this
-	 * {@code @ModelChange} method is the actual call site of this particular save, so it resolves
-	 * {@code Env.getCtx()} once, on the thread doing the save, and passes the result down as a plain
-	 * {@code Integer} — {@code null} on a save with no logged-in session (batch/import), which is exactly
-	 * what {@link de.metas.vatid.VATaxIDCheckRequest#getAdSessionId()} allows.
+	 * <p>The acting {@code AD_Session_ID} is resolved here rather than inside {@link VATaxIDCheckTrigger}:
+	 * that shared {@code @Component} must not read ambient thread-local context (service-injection rule on
+	 * {@code Env.get*}), whereas this method is the actual call site on the saving thread. {@code null} on a
+	 * save with no logged-in session (batch/import), which
+	 * {@link de.metas.vatid.VATaxIDCheckRequest#getAdSessionId()} allows.
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE },
 			ifColumnsChanged = I_C_BPartner.COLUMNNAME_VATaxID)

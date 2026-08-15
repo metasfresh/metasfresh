@@ -322,30 +322,15 @@ class VATaxIDCheckRepositoryTest
 	}
 
 	/**
-	 * Pins that completing a check invalidates any cached copy of the completed row: {@link RecordingCache}
-	 * plays the role of a real {@code CCache} keyed on {@code VATaxID_CheckLog}, and {@link CacheMgt} calls
-	 * {@link CacheInterface#resetForRecordId} on every registered cache for a table whenever a row of that
-	 * table is saved (see {@code POJOLookupMap.save}, which is exactly what the unit-test backing exercises
-	 * here).
+	 * Pins that completing a check invalidates any cached copy of the row: {@link RecordingCache} plays a
+	 * real {@code CCache} keyed on {@code VATaxID_CheckLog}, and {@link CacheMgt} calls
+	 * {@link CacheInterface#resetForRecordId} whenever a row of that table is saved.
 	 *
-	 * <p><b>What this test deliberately does NOT claim to prove</b>: that this is a regression test against
-	 * the previous raw-{@code UPDATE} implementation. It is not, and cannot be, in this harness — verified
-	 * by running it against that implementation, where it also passed. The reason is
-	 * {@code POJOQuery.updateDirectly}, the unit-test backing for {@code IQuery.updateDirectly}: unlike the
-	 * real {@code TypedSqlQuery} (which takes the {@code ISqlQueryUpdater} branch straight to a raw SQL
-	 * {@code UPDATE} with no {@code PO}/{@code CacheMgt} involvement at all), {@code POJOQuery.updateDirectly}
-	 * has no raw-SQL path to fall back to, so it degrades to loading each matched row and calling
-	 * {@code InterfaceWrapperHelper.save} on it — which invalidates the cache regardless of whether the
-	 * production code goes through the model layer or bypasses it with a raw update. This is the same class
-	 * of harness gap {@code completeCheck_refusesWhenTheRowIsNotAtRequestSent_andLeavesItUntouched}'s javadoc
-	 * documents for the {@code WHERE}/{@code FOR UPDATE} clause: {@code POJOQuery} never builds real SQL, so
-	 * a property that only differs in the *SQL shape* of the write — raw {@code UPDATE} vs. row-locked
-	 * load-then-save — cannot be told apart by this harness. What this test still pins, and is worth pinning,
-	 * is that {@code completeCheck} keeps going through a save-shaped path at all (a future refactor that
-	 * stopped mutating the loaded record, e.g. by short-circuiting before the save, would fail it) — the
-	 * change-log/cache guarantee itself rests on code inspection (this repository's javadoc, and the
-	 * commit that introduced this fix), not on this or any other unit test in this module, because it is
-	 * genuinely a database-only behaviour with no in-memory artifact to assert on.
+	 * <p><b>Not a regression test against the previous raw-{@code UPDATE} implementation</b> — verified by
+	 * running it against that implementation, where it also passed. {@code POJOQuery.updateDirectly} has no
+	 * raw-SQL path, so it degrades to load-then-save and invalidates the cache either way. What this still
+	 * pins is that {@code completeCheck} goes through a save-shaped path at all; the change-log/cache
+	 * guarantee itself rests on code inspection, being database-only behaviour with no in-memory artifact.
 	 */
 	@Test
 	void completeCheck_invalidatesTheCacheForTheCompletedRow()
