@@ -40,6 +40,11 @@ public class VATaxIDCheckWorkpackageProcessor extends WorkpackageProcessorAdapte
 {
 	private static final Logger logger = LogManager.getLogger(VATaxIDCheckWorkpackageProcessor.class);
 
+	// Field, not a lookup inside processWorkPackage: docs/coding-rules/service-injection.md requires
+	// service lookups to be class fields. SpringContextHolder rather than injection is right here — the
+	// class is instantiated by the async framework, not by Spring.
+	@NonNull private final VATaxIDCheckService checkService = SpringContextHolder.instance.getBean(VATaxIDCheckService.class);
+
 	private static final String PARAM_C_BPartner_ID = "C_BPartner_ID";
 	private static final String PARAM_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 	private static final String PARAM_VATaxID = "VATaxID";
@@ -97,13 +102,12 @@ public class VATaxIDCheckWorkpackageProcessor extends WorkpackageProcessorAdapte
 
 		try
 		{
-			SpringContextHolder.instance.getBean(VATaxIDCheckService.class)
-					.check(VATaxIDCheckRequest.builder()
-							.bpartnerId(bpartnerId)
-							.bpartnerLocationId(bpartnerLocationId)
-							.vataxID(vataxID)
-							.adSessionId(adSessionId)
-							.build());
+			checkService.check(VATaxIDCheckRequest.builder()
+					.bpartnerId(bpartnerId)
+					.bpartnerLocationId(bpartnerLocationId)
+					.vataxID(vataxID)
+					.adSessionId(adSessionId)
+					.build());
 		}
 		catch (final Exception ex)
 		{

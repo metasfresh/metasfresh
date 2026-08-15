@@ -1407,3 +1407,88 @@ this test.
     });
   });
 });
+
+/**
+ * The status mirrors the VAT-ID in every grid.
+ *
+ * The rule the feature owner set: if `VATaxID` is not a grid column on a tab, then
+ * `VATaxIDStatus` must not be one either — a status column beside no VAT-ID column
+ * shows a verdict without the value it judges.
+ *
+ * This asserts the RULE, not a frozen column list. A test that hardcoded "these tabs
+ * have the column, those do not" would need editing every time a tab is redesigned and
+ * would happily pass while the rule itself was broken; this one keeps holding as tabs
+ * change, and fails only when the invariant is actually violated. It caught the real
+ * violation before the fix: window 123's `AD_Tab-222` published `VATaxIDStatus` as a
+ * grid column while `VATaxID` was absent.
+ *
+ * Language-independent: every identity here is a DB `ColumnName` from the WebAPI, never
+ * a caption.
+ *
+ * SCOPE LIMIT, stated rather than glossed: `/window/{id}/layout` exposes each CHILD
+ * tab's grid columns under `tabs[]`, which is where the location tabs live and where the
+ * violation was. The FIRST tab's own list view is rendered from a different endpoint that
+ * this layout call does not carry, so the partner header's grid is not covered here — it
+ * is covered by the migration and the `window-designer` pass. Extend this test if that
+ * endpoint is ever wired in.
+ */
+test.describe('VAT-ID status mirrors the VAT-ID in every Business Partner grid', () => {
+  test('no tab publishes the status as a grid column without the VAT-ID', async ({ page }) => {
+    // The WebAPI layout call needs an authenticated session, the same one the UI uses. A login user
+    // comes from the masterdata endpoint, exactly as this spec's other tests obtain one; no business
+    // data is needed here because the assertion reads window METADATA, not records.
+    const masterdata = await Backend.createMasterdata({
+      request: { login: { user: { firstname: 'E2E', lastname: 'VatidGridRule' } } },
+    });
+
+    await LoginPage.goto();
+    await LoginPage.login(masterdata.login.user);
+    await LoginPage.expectLoggedIn();
+
+    const response = await page.request.get(`${WEBAPI_BASE_URL}/window/${BPARTNER_WINDOW_ID}/layout`, {
+      headers: { 'Content-Type': 'application/json' },
+    });
+    expect(
+      response.ok(),
+      `window ${BPARTNER_WINDOW_ID} layout must be readable (HTTP ${response.status()})`
+    ).toBe(true);
+    const layout = await response.json();
+
+    const tabs = layout.tabs || [];
+    // Guard against a vacuous pass: an empty or shape-changed payload would satisfy every
+    // assertion below while checking nothing at all.
+    expect(tabs.length, 'the window layout must expose its tabs').toBeGreaterThan(0);
+
+    const offenders = [];
+    let tabsCarryingStatus = 0;
+
+    for (const tab of tabs) {
+      const gridColumns = (tab.elements || []).flatMap((element) =>
+        (element.fields || []).map((field) => field.field)
+      );
+
+      const hasVatId = gridColumns.includes('VATaxID');
+      const hasStatus = gridColumns.includes('VATaxIDStatus');
+
+      if (hasStatus) {
+        tabsCarryingStatus += 1;
+      }
+      if (hasStatus && !hasVatId) {
+        offenders.push(`${tab.tabId} (${tab.caption || 'no caption'})`);
+      }
+    }
+
+    expect(
+      offenders,
+      `these tabs publish VATaxIDStatus as a grid column while VATaxID is absent: ${offenders.join(', ')}`
+    ).toEqual([]);
+
+    // The rule permits the status in a grid only alongside the VAT-ID. Today the VAT-ID is
+    // in no Business Partner grid, so the status is in none either; this records that
+    // consequence explicitly, so a future change that adds one has to come past this test.
+    expect(
+      tabsCarryingStatus,
+      'no Business Partner tab grid carries VATaxIDStatus while VATaxID is in none of them'
+    ).toBe(0);
+  });
+});

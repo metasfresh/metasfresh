@@ -29,6 +29,7 @@ import de.metas.tax.api.VATIdentifier;
 import de.metas.vatid.VATaxIDCheckResult;
 import de.metas.vatid.VATaxIDConfig;
 import de.metas.vatid.VATaxIDOnlineChecker;
+import de.metas.util.Services;
 import de.metas.vatid.VATaxIDStatus;
 import io.cucumber.datatable.DataTable;
 import de.metas.cucumber.stepdefs.StepDefUtil;
@@ -36,6 +37,7 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
+import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_VATaxID_CheckLog;
 
 import java.util.Map;
@@ -58,6 +60,7 @@ import static org.mockito.Mockito.when;
  */
 public class VATaxIDOnlineChecker_StepDef
 {
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final VATaxIDOnlineChecker onlineCheckerMock = SpringContextHolder.instance.getBean(VATaxIDOnlineChecker.class);
 
 	/**
@@ -227,10 +230,28 @@ public class VATaxIDOnlineChecker_StepDef
 		// immediately would be a race that passes on an idle machine and fails on a loaded CI executor. A
 		// check driven explicitly by a step is already done by the time we get here, so for that case the
 		// wait simply succeeds on its first poll.
-		StepDefUtil.tryAndWait(60, 500, () -> wasCalledFor(vataxID));
+		// Polls the mock invocation AND the persisted outcome. Waiting on the invocation alone would still
+		// race: check() carries on after the checker returns — it completes the log row and updates the
+		// parent's status columns — and the assertion steps that follow read the database once, without
+		// retrying. Waiting for a conclusive check-log row closes that window instead of narrowing it.
+		StepDefUtil.tryAndWait(60, 500, () -> wasCalledFor(vataxID) && checkIsRecordedFor(vataxID));
 
 		verify(onlineCheckerMock, atLeastOnce())
 				.check(argThat(checked -> checked != null && checked.getAsString().equals(vataxID)), any(VATaxIDConfig.class));
+	}
+
+	/**
+	 * @return whether a {@code VATaxID_CheckLog} row for {@code vataxID} has left {@code RequestSent} — i.e.
+	 * the check finished and committed, not merely started.
+	 */
+	private boolean checkIsRecordedFor(@NonNull final String vataxID)
+	{
+		return queryBL.createQueryBuilder(I_VATaxID_CheckLog.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_VATaxID_CheckLog.COLUMNNAME_VATaxID, vataxID)
+				.addNotEqualsFilter(I_VATaxID_CheckLog.COLUMNNAME_VATaxIDStatus, VATaxIDStatus.RequestSent.getCode())
+				.create()
+				.anyMatch();
 	}
 
 	private boolean wasCalledFor(@NonNull final String vataxID)
