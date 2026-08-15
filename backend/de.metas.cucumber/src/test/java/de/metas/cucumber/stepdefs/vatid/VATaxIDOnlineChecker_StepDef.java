@@ -230,10 +230,16 @@ public class VATaxIDOnlineChecker_StepDef
 		// immediately would be a race that passes on an idle machine and fails on a loaded CI executor. A
 		// check driven explicitly by a step is already done by the time we get here, so for that case the
 		// wait simply succeeds on its first poll.
-		// Polls the mock invocation AND the persisted outcome. Waiting on the invocation alone would still
-		// race: check() carries on after the checker returns — it completes the log row and updates the
-		// parent's status columns — and the assertion steps that follow read the database once, without
-		// retrying. Waiting for a conclusive check-log row closes that window instead of narrowing it.
+		// Polls the mock invocation AND the persisted outcome. Waiting on the invocation alone would race
+		// badly: check() carries on after the checker returns — it completes the log row and then updates
+		// the parent's status columns — and the assertion steps that follow read the database once, without
+		// retrying.
+		//
+		// This NARROWS the race rather than eliminating it, and the distinction is worth stating. The poll
+		// goes green the moment completeCheck() commits, which is still one local load-and-save before
+		// updateParentStatus() commits the parent's columns. What remains is two adjacent same-thread
+		// commits with no third-party I/O between them — sub-millisecond against a 500 ms poll — where
+		// before it was an unbounded wait on a network call. Negligible, not impossible.
 		StepDefUtil.tryAndWait(60, 500, () -> wasCalledFor(vataxID) && checkIsRecordedFor(vataxID));
 
 		verify(onlineCheckerMock, atLeastOnce())

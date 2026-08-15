@@ -1454,10 +1454,25 @@ test.describe('VAT-ID status mirrors the VAT-ID in every Business Partner grid',
     ).toBe(true);
     const layout = await response.json();
 
-    const tabs = layout.tabs || [];
+    // Flattened recursively: a level-1 tab carries its own nested tabs under `subTabs`, so iterating
+    // `layout.tabs` alone would silently skip them — and the assertion's own wording says "no tab".
+    // Window 123 has nested tabs today; none is backed by C_BPartner or C_BPartner_Location, so this
+    // changes nothing right now, but it stops a future AD change that nests a partner- or
+    // location-backed tab from escaping the rule while this test still claims to cover it.
+    const flattenTabs = (tabList) =>
+      (tabList || []).flatMap((tab) => [tab, ...flattenTabs(tab.subTabs)]);
+
+    const tabs = flattenTabs(layout.tabs);
     // Guard against a vacuous pass: an empty or shape-changed payload would satisfy every
     // assertion below while checking nothing at all.
     expect(tabs.length, 'the window layout must expose its tabs').toBeGreaterThan(0);
+    // Guards against a vacuous pass. The expected result is "zero tabs carry the status", which a broken
+    // extraction path — say a future rename of `element.fields` — would also produce, indistinguishably.
+    // Requiring at least one tab to yield SOME grid column proves the parsing still works.
+    expect(
+      tabs.some((tab) => (tab.elements || []).length > 0),
+      'at least one tab must expose grid columns, else the column extraction below is reading nothing'
+    ).toBe(true);
 
     const offenders = [];
     let tabsCarryingStatus = 0;
