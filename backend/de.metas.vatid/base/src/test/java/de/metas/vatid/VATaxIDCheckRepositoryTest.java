@@ -32,6 +32,7 @@ import de.metas.process.PInstanceId;
 import de.metas.tax.api.VATIdentifier;
 import de.metas.user.UserId;
 import lombok.NonNull;
+import org.adempiere.ad.session.AdSessionId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -92,7 +93,7 @@ class VATaxIDCheckRepositoryTest
 				.bpartnerId(BPARTNER_ID)
 				.vataxID(VATIdentifier.of("DE123456789"))
 				.pinstanceId(PInstanceId.ofRepoId(2000001))
-				.adSessionId(3000001)
+				.adSessionId(AdSessionId.ofRepoId(3000001))
 				.build();
 
 		final VATaxIDCheckLogId checkLogId = vataxIDCheckRepository.writeRequestSent(request);

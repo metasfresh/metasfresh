@@ -69,7 +69,7 @@ class VATaxIDConfigRepositoryTest
 		record.setIsActive(isActive);
 		record.setIsFormatCheckEnabled(true);
 		record.setIsVIESCheckEnabled(true);
-		record.setRestApiBaseURL("https://ec.europa.eu/taxation_customs/vies/rest-api/ms/DE/vat/DE123456789");
+		record.setRestApiBaseURL("https://ec.europa.eu/taxation_customs/vies/rest-api");
 		record.setRequesterMemberStateCode("DE");
 		record.setRequesterNumber("123456789");
 		record.setRecheckAfterDays(90);
@@ -89,7 +89,7 @@ class VATaxIDConfigRepositoryTest
 		assertThat(config.getId()).isEqualTo(VATaxIDConfigId.ofRepoId(record.getVATaxID_Config_ID()));
 		assertThat(config.isFormatCheckEnabled()).isTrue();
 		assertThat(config.isViesCheckEnabled()).isTrue();
-		assertThat(config.getRestApiBaseURL()).isEqualTo("https://ec.europa.eu/taxation_customs/vies/rest-api/ms/DE/vat/DE123456789");
+		assertThat(config.getRestApiBaseURL()).isEqualTo("https://ec.europa.eu/taxation_customs/vies/rest-api");
 		assertThat(config.getRequesterMemberStateCode()).isEqualTo("DE");
 		assertThat(config.getRequesterNumber()).isEqualTo("123456789");
 		assertThat(config.getRecheckAfterDays()).isEqualTo(90);

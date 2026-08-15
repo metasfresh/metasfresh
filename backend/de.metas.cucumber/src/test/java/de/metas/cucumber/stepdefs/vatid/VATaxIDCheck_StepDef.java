@@ -79,12 +79,9 @@ public class VATaxIDCheck_StepDef
 	@NonNull private final Map<StepDefDataIdentifier, VATaxIDStatus> returnedStatuses = new HashMap<>();
 
 	/**
-	 * Establishes a real {@code AD_Session} on the gluecode thread, the way an interactive save always has
-	 * one. Direct-DB step defs otherwise run with no session in {@link Env#getCtx()} at all, making the
-	 * after-commit trigger's {@code AD_Session_ID} capture vacuously null and unable to prove anything.
-	 *
-	 * <p>Test setup only: production code never creates a session itself. This step plays "a user is already
-	 * logged in", the precondition the capture relies on.
+	 * Establishes a real {@code AD_Session} on the gluecode thread up front, the way an interactive save
+	 * always has one — so a scenario asserting {@code AD_Session_ID} proves the trigger picked up the
+	 * PRE-EXISTING session rather than merely creating one of its own.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example

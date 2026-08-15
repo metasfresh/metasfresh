@@ -306,18 +306,12 @@ public interface IBPartnerBL extends ISingletonService
 	Optional<VATIdentifier> getVATTaxId(@NonNull BPartnerLocationId bpartnerLocationId);
 
 	/**
-	 * Gets the raw {@code VATaxIDStatus} column value of whichever record actually supplied the
-	 * VAT-ID returned by {@link #getVATTaxId(BPartnerLocationId)} — the SAME resolution (location,
-	 * else, unless AD_SysConfig {@value #SYS_CONFIG_IgnorePartnerVATID} is set to Y, the partner) —
-	 * so a caller that needs "is this VAT-ID valid" reads the status off the record whose value it
-	 * is actually using, never a different one.
+	 * @return the raw {@code VATaxIDStatus} column of whichever record supplied
+	 * {@link #getVATTaxId(BPartnerLocationId)}'s value — same resolution, so the status always belongs to
+	 * the VAT-ID actually in use. Raw code, not the enum, which lives in a module depending on this one.
 	 *
-	 * <p>Returns the raw column code (not the {@code de.metas.vatid.VATaxIDStatus} enum): that type
-	 * lives in a module which depends on this one, so this module must not depend back on it. Empty
-	 * whenever no record supplied a VAT-ID at all ({@link #getVATTaxId} is then empty too), and ALSO
-	 * whenever a VAT-ID was found but the resolved record's {@code VATaxIDStatus} column is itself
-	 * {@code null} — unlike {@link #getVATTaxId}, which stays non-empty in that second case. A caller
-	 * must not treat "empty" here as proof that no VAT-ID was found.
+	 * <p>Empty both when no VAT-ID was found and when one was found whose status column is {@code null}, so
+	 * "empty" is not proof that no VAT-ID exists.
 	 */
 	@NonNull
 	Optional<String> getVATaxIDStatusCode(@NonNull BPartnerLocationId bpartnerLocationId);

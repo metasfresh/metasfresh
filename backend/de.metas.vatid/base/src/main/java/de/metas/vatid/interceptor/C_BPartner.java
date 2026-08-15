@@ -33,6 +33,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.session.AdSessionId;
 import org.adempiere.ad.session.ISessionBL;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.ModelValidator;
@@ -77,17 +78,16 @@ public class C_BPartner
 	 * the partner has no {@code C_BPartner_ID} yet, and
 	 * {@link de.metas.vatid.VATaxIDCheckRequest#getBpartnerId()} is {@code @NonNull}.
 	 *
-	 * <p>The acting {@code AD_Session_ID} is resolved here rather than inside {@link VATaxIDCheckTrigger}:
-	 * that shared {@code @Component} must not read ambient thread-local context (service-injection rule on
-	 * {@code Env.get*}), whereas this method is the actual call site on the saving thread. {@code null} on a
-	 * save with no logged-in session (batch/import), which
-	 * {@link de.metas.vatid.VATaxIDCheckRequest#getAdSessionId()} allows.
+	 * <p>The acting session is resolved here rather than inside {@link VATaxIDCheckTrigger}: that shared
+	 * {@code @Component} must not read ambient thread-local context (service-injection rule on
+	 * {@code Env.get*}), whereas this method is the actual call site on the saving thread. A save with no
+	 * logged-in session (batch/import) gets one created, so the evidence row always names an acting session.
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE },
 			ifColumnsChanged = I_C_BPartner.COLUMNNAME_VATaxID)
 	public void scheduleVATaxIDCheck(@NonNull final I_C_BPartner bpartner)
 	{
-		final Integer adSessionId = sessionBL.getCurrentSessionIdOrNull(Env.getCtx());
+		final AdSessionId adSessionId = sessionBL.getCurrentOrCreateSessionId(Env.getCtx());
 
 		vataxIDCheckTrigger.scheduleCheckAfterCommit(
 				BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()),

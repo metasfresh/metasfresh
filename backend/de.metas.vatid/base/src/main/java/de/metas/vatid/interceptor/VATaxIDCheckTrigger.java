@@ -32,6 +32,7 @@ import de.metas.vatid.VATaxIDCheckRequest;
 import de.metas.vatid.VATaxIDCheckService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.session.AdSessionId;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
@@ -68,14 +69,14 @@ public class VATaxIDCheckTrigger
 	 * @param bpartnerLocationId the location the VAT-ID lives on, or {@code null} when it lives on the
 	 * partner header
 	 * @param vataxIDValue the new value of the {@code VATaxID} column as it was saved
-	 * @param adSessionId the acting {@code AD_Session_ID}, already resolved by the caller (or {@code null}
-	 * if there is none) — see the class javadoc for why this trigger never resolves it itself
+	 * @param adSessionId the acting session, already resolved by the caller — see the class javadoc for why
+	 * this trigger never resolves it itself
 	 */
 	public void scheduleCheckAfterCommit(
 			@NonNull final BPartnerId bpartnerId,
 			@Nullable final BPartnerLocationId bpartnerLocationId,
 			@Nullable final String vataxIDValue,
-			@Nullable final Integer adSessionId)
+			@NonNull final AdSessionId adSessionId)
 	{
 		final VATIdentifier vataxID = VATIdentifier.ofNullable(vataxIDValue);
 		if (vataxID == null)
@@ -93,7 +94,7 @@ public class VATaxIDCheckTrigger
 			@NonNull final BPartnerId bpartnerId,
 			@Nullable final BPartnerLocationId bpartnerLocationId,
 			@NonNull final VATIdentifier vataxID,
-			@Nullable final Integer adSessionId)
+			@NonNull final AdSessionId adSessionId)
 	{
 		try
 		{

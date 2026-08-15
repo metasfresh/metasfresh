@@ -35,6 +35,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ForUpdate;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.session.AdSessionId;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
@@ -102,9 +103,7 @@ public class VATaxIDCheckRepository
 			record.setVATaxIDStatus(VATaxIDStatus.RequestSent.getCode());
 			record.setRequestDate(TimeUtil.asTimestampNotNull(SystemTime.asInstant()));
 			record.setAD_PInstance_ID(PInstanceId.toRepoId(request.getPinstanceId()));
-			// -1, the same "no id" sentinel PInstanceId.toRepoId(null) yields above: the PO layer stores it as SQL
-			// NULL, whereas a 0 would be persisted as a literal zero AD_Session_ID.
-			record.setAD_Session_ID(request.getAdSessionId() != null ? request.getAdSessionId() : -1);
+			record.setAD_Session_ID(AdSessionId.toRepoId(request.getAdSessionId()));
 
 			InterfaceWrapperHelper.saveRecord(record);
 

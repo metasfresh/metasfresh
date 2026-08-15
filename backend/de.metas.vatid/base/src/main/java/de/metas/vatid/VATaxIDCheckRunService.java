@@ -242,7 +242,7 @@ public class VATaxIDCheckRunService
 								Function.identity()));
 
 		// Header-due ids, in the DAO's own C_BPartner_ID order, secondary-sorted by the header's own
-		// VATaxIDLastAttemptedAt (nulls first) -- see the class javadoc, "Attempt vs success".
+		// VATaxIDLastAttemptedAt (nulls first) -- see the class javadoc, "Starvation guard".
 		final ImmutableList<BPartnerId> dueHeaderIds = allIdsWithVATaxID.stream()
 				.map(bpartnersById::get)
 				.filter(Objects::nonNull)
@@ -361,9 +361,8 @@ public class VATaxIDCheckRunService
 	 *
 	 * <p>Ordered per {@code selectedBPartnerIds}'s own order and, within one partner, the header before
 	 * that partner's locations (themselves ordered by {@code C_BPartner_Location_ID}) — see the class
-	 * javadoc, "Deterministic ordering under throttling". A partner with neither its own VAT-ID nor any
-	 * location VAT-ID contributes nothing and is not counted towards either the checked or the pending
-	 * count.
+	 * javadoc, "Ordering". A partner with neither its own VAT-ID nor any location VAT-ID contributes
+	 * nothing and is not counted towards either the checked or the pending count.
 	 */
 	@NonNull
 	private ImmutableList<CheckTarget> retrieveCheckTargets(@NonNull final ImmutableList<BPartnerId> selectedBPartnerIds)
@@ -545,7 +544,7 @@ public class VATaxIDCheckRunService
 
 		/**
 		 * When this record's status was last successfully determined — {@code null} if it never was. See
-		 * the class javadoc, "Attempt vs success": this is DIFFERENT from {@link #lastAttemptedAt}, which
+		 * the class javadoc, "Starvation guard": this is DIFFERENT from {@link #lastAttemptedAt}, which
 		 * advances on every attempt regardless of outcome.
 		 */
 		@Nullable Instant checkedAt;
@@ -553,7 +552,7 @@ public class VATaxIDCheckRunService
 		/**
 		 * When this record's check was last ATTEMPTED, regardless of outcome — {@code null} if it never
 		 * was. Used only by {@link VATaxIDCheckRunService#filterAndOrderForNightlyRun} to order the nightly
-		 * run's targets; unrelated to {@link #checkedAt}. See the class javadoc, "Attempt vs success".
+		 * run's targets; unrelated to {@link #checkedAt}. See the class javadoc, "Starvation guard".
 		 */
 		@Nullable Instant lastAttemptedAt;
 

@@ -31,6 +31,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import org.adempiere.ad.session.AdSessionId;
 
 /**
  * Everything needed to append a {@code VATaxID_CheckLog} row at {@link VATaxIDStatus#RequestSent}.
@@ -50,5 +51,5 @@ public class VATaxIDCheckRequest
 
 	@Nullable PInstanceId pinstanceId;
 
-	@Nullable Integer adSessionId;
+	@Nullable AdSessionId adSessionId;
 }

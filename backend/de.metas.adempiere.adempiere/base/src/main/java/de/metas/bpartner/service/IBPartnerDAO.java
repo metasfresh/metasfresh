@@ -283,20 +283,12 @@ public interface IBPartnerDAO extends ISingletonService
 
 	/**
 	 * @return every active {@code C_BPartner} of the current context client with a non-blank header
-	 * {@code VATaxID}, ordered by {@code C_BPartner_ID} — not scoped to any selection, but scoped to the
-	 * calling client like the rest of this DAO's queries. This is the nightly schedule's own selection (as
-	 * opposed to a user-triggered run's selection of specific partners): a scheduled run has no selection
-	 * to read at all, so it checks every VAT-ID of its own client instead.
+	 * {@code VATaxID}, ordered by {@code C_BPartner_ID} — the nightly schedule's own selection, since a
+	 * scheduled run has no user selection to read.
 	 *
-	 * <p><b>Not further scoped by organisation, and that is deliberate, not an oversight.</b> This is a
-	 * plain, cheap listing — it does not itself decide what happens to any of the ids it returns. The
-	 * caller (<code>de.metas.vatid.VATaxIDCheckRunService</code>) resolves each partner's <em>own</em>
-	 * organisation's configuration before touching it, so an organisation that never enabled the online
-	 * check pays only for an in-memory offline format re-check of a value that already passed the
-	 * save-time gate to exist at all — never a network call, never a write, never funnelled into any
-	 * other organisation's policy. Narrowing this query to "organisations with the check enabled" would
-	 * save that negligible re-check cost but cannot change what is safe to return, since that safety is
-	 * already enforced per-partner downstream, not here.
+	 * <p>Deliberately not narrowed to organisations that enabled the check: the caller resolves each
+	 * partner's own configuration before touching it, so a disabled organisation costs only an in-memory
+	 * re-check — never a call, a write, or another organisation's policy.
 	 */
 	ImmutableList<BPartnerId> retrieveBPartnerIdsWithVATaxID();
 
@@ -310,13 +302,11 @@ public interface IBPartnerDAO extends ISingletonService
 	ImmutableList<I_C_BPartner_Location> retrieveBPartnerLocationsWithVATaxID();
 
 	/**
-	 * Stamps {@code C_BPartner.VATaxIDLastAttemptedAt} to {@code attemptedAt} — unconditionally, regardless
-	 * of whether the check that follows succeeds, fails, or throws. Distinct from
-	 * {@code VATaxIDCheckedAt}, which advances only on a completed, non-rolled-back check: a target whose
-	 * check always fails would otherwise never advance a "last touched" timestamp at all, permanently
-	 * sorting first in a least-recently-touched-first nightly ordering. The caller is responsible for
-	 * committing this write in its own transaction, separate from the check-and-refresh unit that follows
-	 * it, so it survives that unit's rollback (see {@code de.metas.vatid.VATaxIDCheckRunService}).
+	 * Stamps {@code C_BPartner.VATaxIDLastAttemptedAt} unconditionally, whether the check that follows
+	 * succeeds, fails or throws — unlike {@code VATaxIDCheckedAt}, which advances only on a completed check.
+	 * Without it a permanently failing target would never advance any timestamp and would sort first of
+	 * every nightly run forever. The caller must commit this in its own transaction so it survives the
+	 * check's rollback.
 	 */
 	void stampVATaxIDCheckAttempt(@NonNull BPartnerId bpartnerId, @NonNull Instant attemptedAt);
 
