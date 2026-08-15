@@ -1475,6 +1475,13 @@ test.describe('VAT-ID status mirrors the VAT-ID in every Business Partner grid',
       tabs.some((tab) => (tab.elements || []).length > 0),
       'at least one tab must expose grid columns, else the column extraction below is reading nothing'
     ).toBe(true);
+    // NOT asserted here: that the flatten actually descended. It would be the natural regression guard for
+    // the `tab.subTabs`/`tab.tabs` bug this recursion once had, but it cannot be written against this
+    // window — measured against the live layout, window 123 returns 18 top-level tabs and 18 flattened.
+    // It HAS level-2 AD_Tab rows in the dictionary, yet the layout payload exposes none of them under
+    // `tabs`, so `toBeGreaterThan(layout.tabs.length)` would simply fail. The recursion is kept because it
+    // is correct the day a nested tab does appear; the gap is that a silent regression to the wrong
+    // property name would go unnoticed until then.
 
     const offenders = [];
     let tabsCarryingStatus = 0;

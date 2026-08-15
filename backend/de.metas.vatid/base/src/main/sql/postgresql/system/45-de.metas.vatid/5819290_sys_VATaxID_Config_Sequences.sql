@@ -25,7 +25,7 @@
 -- Parameters and the paired AD_Sequence row follow the shape table-creating scripts use elsewhere and
 -- match DB.createTableSequence's own defaults.
 --
--- IDs from idserver.metas.de: AD_MigrationScript 5819290, AD_Sequence 556651.
+-- IDs from idserver.metas.de: AD_MigrationScript 5819290, AD_Sequence 556651 and 556652.
 
 CREATE SEQUENCE IF NOT EXISTS VATaxID_Config_SEQ INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 START 1000000
 ;
@@ -42,4 +42,20 @@ SELECT 0, 0, 556651 /*From ID Server*/,
        'Y', 'VATaxID_Config', 1000000,
        TO_TIMESTAMP('2026-08-15 19:20:00', 'YYYY-MM-DD HH24:MI:SS'), 100
 WHERE NOT EXISTS (SELECT 1 FROM AD_Sequence WHERE Name = 'VATaxID_Config')
+;
+
+-- CheckLog gets its AD_Sequence row too, not just the physical sequence. Under the default
+-- native-sequence configuration DB.getNextID uses the Postgres sequence directly and this row is never
+-- read — but MSequence.getNextID, the fallback whenever native sequences are switched off, looks the name
+-- up in AD_Sequence and fails outright when no row matches. Shipping one without the other would leave
+-- exactly the same shape of latent gap this script exists to close.
+INSERT INTO AD_Sequence (AD_Client_ID, AD_Org_ID, AD_Sequence_ID, Created, CreatedBy, CurrentNext,
+                         CurrentNextSys, Description, IncrementNo, IsActive, IsAudited, IsAutoSequence,
+                         IsTableID, Name, StartNo, Updated, UpdatedBy)
+SELECT 0, 0, 556652 /*From ID Server*/,
+       TO_TIMESTAMP('2026-08-15 19:35:00', 'YYYY-MM-DD HH24:MI:SS'), 100, 1000000,
+       50000, 'Table VATaxID_CheckLog', 1, 'Y', 'N', 'Y',
+       'Y', 'VATaxID_CheckLog', 1000000,
+       TO_TIMESTAMP('2026-08-15 19:35:00', 'YYYY-MM-DD HH24:MI:SS'), 100
+WHERE NOT EXISTS (SELECT 1 FROM AD_Sequence WHERE Name = 'VATaxID_CheckLog')
 ;
