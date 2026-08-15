@@ -131,13 +131,21 @@ public class VIESClient implements VATaxIDOnlineChecker
 		}
 		catch (final HttpStatusCodeException e)
 		{
+			final String errorBody = StringUtils.trimBlankToNull(e.getResponseBodyAsString());
+
+			// A non-2xx carries the SAME error envelope a 200 can - VIES answers VOW-ERR-11 with HTTP 400 -
+			// so it must be classified here too. Without this, a request-side fault that happens to arrive
+			// with an error status would silently degrade to ServiceUnavailable, which is precisely the
+			// behaviour this classification exists to prevent.
+			throwIfRequestSideError(errorBody);
+
 			// Keep the error body: the check log exists so a dispute can be reconstructed, and a 4xx/5xx
 			// body is often the only explanation of why no verdict was obtained.
 			logger.warn("VIES check failed for {} with {} - reporting {}",
 					value, e.getStatusCode(), VATaxIDStatus.ServiceUnavailable, e);
 			return VATaxIDCheckResult.builder()
 					.status(VATaxIDStatus.ServiceUnavailable)
-					.rawResponse(StringUtils.trimBlankToNull(e.getResponseBodyAsString()))
+					.rawResponse(errorBody)
 					.build();
 		}
 		catch (final RestClientException e)
@@ -316,19 +324,7 @@ public class VIESClient implements VATaxIDOnlineChecker
 		final String viesError = extractErrorCode(json);
 		if (viesError != null)
 		{
-			if (REQUEST_SIDE_ERRORS.contains(viesError))
-			{
-				// Our own configuration is wrong, not the service. Thrown rather than recorded: recorded as
-				// ServiceUnavailable it would be indistinguishable from an outage, and under an
-				// OnServiceUnavailable of Invalid it would strip the tax certificate from every VAT-ID in
-				// the run because of one bad config value.
-				throw new AdempiereException("VIES rejected the request: " + viesError
-						+ ". Check the VAT-ID configuration (requester member state and requester number,"
-						+ " which must be the plain number without the country prefix).")
-						.appendParametersToMessage()
-						.setParameter("viesError", viesError)
-						.setParameter("rawResponse", rawResponse);
-			}
+			throwIfRequestSideError(rawResponse);
 
 			logger.warn("VIES reported {} - reporting {}", viesError, VATaxIDStatus.ServiceUnavailable);
 			return VATaxIDCheckResult.builder()
@@ -355,6 +351,46 @@ public class VIESClient implements VATaxIDOnlineChecker
 				.requestIdentifier(requestIdentifier)
 				.rawResponse(rawResponse)
 				.build();
+	}
+
+	/**
+	 * Throws when {@code rawResponse} is a VIES error envelope naming a REQUEST-side fault — one of ours to
+	 * fix, not the service's. Recorded instead of thrown it would be indistinguishable from an outage, and
+	 * under an {@code OnServiceUnavailable} of {@code Invalid} one bad configuration value would strip the
+	 * tax certificate from every VAT-ID in the run.
+	 *
+	 * <p>Called from BOTH response paths, because VIES uses both: {@code INVALID_REQUESTER_INFO} arrives on
+	 * HTTP 200 and {@code VOW-ERR-11} on HTTP 400.
+	 */
+	private void throwIfRequestSideError(@Nullable final String rawResponse)
+	{
+		if (Check.isBlank(rawResponse))
+		{
+			return;
+		}
+
+		final String viesError;
+		try
+		{
+			viesError = extractErrorCode(objectMapper.readTree(rawResponse));
+		}
+		catch (final Exception ignored)
+		{
+			// Unparseable: not an envelope we can classify, so leave it to the caller's own handling.
+			return;
+		}
+
+		if (viesError == null || !REQUEST_SIDE_ERRORS.contains(viesError))
+		{
+			return;
+		}
+
+		throw new AdempiereException("VIES rejected the request: " + viesError
+				+ ". Check the VAT-ID configuration (requester member state and requester number,"
+				+ " which must be the plain number without the country prefix).")
+				.appendParametersToMessage()
+				.setParameter("viesError", viesError)
+				.setParameter("rawResponse", rawResponse);
 	}
 
 	/**

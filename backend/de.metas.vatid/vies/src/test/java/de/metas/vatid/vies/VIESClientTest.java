@@ -47,6 +47,7 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withException;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withServerError;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withBadRequest;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 /**
@@ -136,6 +137,25 @@ class VIESClientTest
 		// the tax certificate from every VAT-ID in the run because of one wrong configuration value.
 		assertThatThrownBy(() -> client.check(VATIdentifier.of("DE123456789"), config()))
 				.hasMessageContaining("INVALID_REQUESTER_INFO");
+		server.verify();
+	}
+
+	@Test
+	@DisplayName("HTTP 400 error envelope naming a REQUEST-side fault -> throws too; a status code must not hide it")
+	void requestSideErrorEnvelopeOnHttpErrorStatusThrows()
+	{
+		// VIES answers VOW-ERR-11 with HTTP 400, not 200 (verified live 2026-08-15 by omitting one of the
+		// two requester fields). A 4xx makes RestTemplate throw before the body reaches the success-path
+		// parser, so without classifying it here as well this request-side fault would silently degrade to
+		// ServiceUnavailable - the exact behaviour the classification exists to prevent.
+		final String body = "{\"actionSucceed\":false,\"errorWrappers\":[{\"error\":\"VOW-ERR-11\","
+				+ "\"message\":\"A mandatory field is missing\"}]}";
+
+		server.expect(requestTo(BASE_URL + "/check-vat-number"))
+				.andRespond(withBadRequest().body(body).contentType(MediaType.APPLICATION_JSON));
+
+		assertThatThrownBy(() -> client.check(VATIdentifier.of("DE123456789"), config()))
+				.hasMessageContaining("VOW-ERR-11");
 		server.verify();
 	}
 
