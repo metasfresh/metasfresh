@@ -53,8 +53,11 @@
 -- values for the day someone switches VIES on, rather than the fallback's 0-day window, which would send
 -- a request for every single check.
 --
--- The sequence this INSERT draws from is created by 5819290, which runs first: metasfresh only creates a
--- <Table>_SEQ lazily at application runtime, so it is absent on a freshly migrated database.
+-- The native PK sequence this INSERT draws from is created by dba_seq_check_native(), which only runs in
+-- after_migration() -- i.e. not yet when this script applies, in the same batch. Calling it here for
+-- this one table is the codebase's own idiom for exactly this case (see
+-- 5816390_sys_DD_OrderLine_PickingJobSchedule_backfill.sql), and it beats a hand-rolled CREATE
+-- SEQUENCE: the function derives START from MAX(existing id)+1 rather than hardcoding 1000000.
 --
 -- IDs: AD_MigrationScript 5819340 from idserver.metas.de (this file's prefix). The VATaxID_Config_ID
 -- values come from the table's own Postgres sequence -- this is an application data row, not an AD
@@ -68,6 +71,8 @@
 --
 -- Created here, idempotently, with the same shape table-creating scripts use elsewhere. IF NOT EXISTS
 -- keeps it a no-op wherever the sequence already exists, so this is safe on every database.
+SELECT dba_seq_check_native('VATaxID_Config');
+
 INSERT INTO VATaxID_Config (
     VATaxID_Config_ID,
     AD_Client_ID, AD_Org_ID, IsActive,
