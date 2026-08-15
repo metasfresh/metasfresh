@@ -122,6 +122,40 @@ class VIESClientTest
 	}
 
 	@Test
+	@DisplayName("HTTP 200 error envelope naming a REQUEST-side fault -> throws, so one bad config cannot restatus a whole run")
+	void requestSideErrorEnvelopeThrows()
+	{
+		// Verified against the live service on 2026-08-15: sending the requester number WITH its country
+		// prefix returns HTTP 200 carrying exactly this envelope.
+		final String body = "{\"actionSucceed\":false,\"errorWrappers\":[{\"error\":\"INVALID_REQUESTER_INFO\"}]}";
+
+		server.expect(requestTo(BASE_URL + "/check-vat-number"))
+				.andRespond(withSuccess(body, MediaType.APPLICATION_JSON));
+
+		// Must NOT degrade to ServiceUnavailable: under an OnServiceUnavailable of Invalid that would strip
+		// the tax certificate from every VAT-ID in the run because of one wrong configuration value.
+		assertThatThrownBy(() -> client.check(VATIdentifier.of("DE123456789"), config()))
+				.hasMessageContaining("INVALID_REQUESTER_INFO");
+		server.verify();
+	}
+
+	@Test
+	@DisplayName("HTTP 200 error envelope naming a SERVICE-side fault -> ServiceUnavailable, evidence kept")
+	void serviceSideErrorEnvelopeDegrades()
+	{
+		final String body = "{\"actionSucceed\":false,\"errorWrappers\":[{\"error\":\"MS_UNAVAILABLE\"}]}";
+
+		server.expect(requestTo(BASE_URL + "/check-vat-number"))
+				.andRespond(withSuccess(body, MediaType.APPLICATION_JSON));
+
+		final VATaxIDCheckResult result = client.check(VATIdentifier.of("DE123456789"), config());
+
+		assertThat(result.getStatus()).isEqualTo(VATaxIDStatus.ServiceUnavailable);
+		assertThat(result.getRawResponse()).contains("MS_UNAVAILABLE");
+		server.verify();
+	}
+
+	@Test
 	@DisplayName("invalid answer -> Invalid, with the raw response kept as the evidence for removing a certificate")
 	void invalidAnswer()
 	{

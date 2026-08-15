@@ -89,6 +89,21 @@ public class VIESClient implements VATaxIDOnlineChecker
 			"AT", "BE", "BG", "CY", "CZ", "DE", "DK", "EE", "EL", "ES", "FI", "FR", "HR", "HU",
 			"IE", "IT", "LT", "LU", "LV", "MT", "NL", "PL", "PT", "RO", "SE", "SI", "SK", "XI");
 
+	/**
+	 * VIES error codes that mean OUR request was wrong, not that the service is unwell — a misconfigured
+	 * requester identity, or a mandatory field we failed to send. Verified live 2026-08-15:
+	 * {@code INVALID_REQUESTER_INFO} comes back on HTTP 200 when the requester number carries the country
+	 * prefix (send {@code IE}/{@code 6388047V}, never {@code IE}/{@code IE6388047V}), and
+	 * {@code VOW-ERR-11} on HTTP 400 when only one of the two requester fields is set.
+	 */
+	private static final ImmutableSet<String> REQUEST_SIDE_ERRORS = ImmutableSet.of(
+			"INVALID_REQUESTER_INFO",
+			"INVALID_INPUT",
+			"VOW-ERR-11");
+
+	/** Stand-in when the envelope says failure but carries no readable code. */
+	private static final String UNKNOWN_VIES_ERROR = "UNKNOWN";
+
 	@NonNull private final RestTemplate restTemplate;
 
 	@Override
@@ -263,12 +278,18 @@ public class VIESClient implements VATaxIDOnlineChecker
 	/**
 	 * Maps a {@code POST /check-vat-number} response body onto a result, keeping the body as evidence.
 	 *
-	 * <p>Per the 2026-08-10 live probe the body carries {@code valid}, {@code name}, {@code address},
-	 * the {@code trader*Match} fields ({@code NOT_PROCESSED} when no trader data was supplied) and
-	 * {@code requestIdentifier} (empty unless the requester VAT-ID is configured). There is no
-	 * success/error envelope: a missing or non-boolean {@code valid} is therefore treated as "no
-	 * verdict" ({@code ServiceUnavailable}), never as {@code Invalid}. Per-member-state outages are
-	 * reported by {@link #getUnavailableCountryCodes(VATaxIDConfig)}, not by this payload.
+	 * <p>A successful body carries {@code valid}, {@code name}, {@code address}, the
+	 * {@code trader*Match} fields and {@code requestIdentifier} (empty unless the requester VAT-ID is
+	 * configured). A missing or non-boolean {@code valid} is treated as "no verdict"
+	 * ({@code ServiceUnavailable}), never as {@code Invalid}.
+	 *
+	 * <p><b>VIES also answers HTTP 200 with an ERROR ENVELOPE</b> —
+	 * {@code {"actionSucceed":false,"errorWrappers":[{"error":"..."}]}} — verified live on 2026-08-15.
+	 * Those are split by cause: a request-side fault (our configuration, e.g.
+	 * {@code INVALID_REQUESTER_INFO}) throws, so a run stops and names what to fix instead of writing a
+	 * misleading status onto every partner; a service-side fault degrades to
+	 * {@code ServiceUnavailable}. Per-member-state outages are reported by
+	 * {@link #getUnavailableCountryCodes(VATaxIDConfig)}, not by this payload.
 	 */
 	private VATaxIDCheckResult toResult(@Nullable final String rawResponse)
 	{
@@ -286,6 +307,30 @@ public class VIESClient implements VATaxIDOnlineChecker
 		{
 			// An unparseable body means no answer, not an invalid VAT-ID.
 			logger.warn("Unusable VIES response - reporting {}", VATaxIDStatus.ServiceUnavailable, e);
+			return VATaxIDCheckResult.builder()
+					.status(VATaxIDStatus.ServiceUnavailable)
+					.rawResponse(rawResponse)
+					.build();
+		}
+
+		final String viesError = extractErrorCode(json);
+		if (viesError != null)
+		{
+			if (REQUEST_SIDE_ERRORS.contains(viesError))
+			{
+				// Our own configuration is wrong, not the service. Thrown rather than recorded: recorded as
+				// ServiceUnavailable it would be indistinguishable from an outage, and under an
+				// OnServiceUnavailable of Invalid it would strip the tax certificate from every VAT-ID in
+				// the run because of one bad config value.
+				throw new AdempiereException("VIES rejected the request: " + viesError
+						+ ". Check the VAT-ID configuration (requester member state and requester number,"
+						+ " which must be the plain number without the country prefix).")
+						.appendParametersToMessage()
+						.setParameter("viesError", viesError)
+						.setParameter("rawResponse", rawResponse);
+			}
+
+			logger.warn("VIES reported {} - reporting {}", viesError, VATaxIDStatus.ServiceUnavailable);
 			return VATaxIDCheckResult.builder()
 					.status(VATaxIDStatus.ServiceUnavailable)
 					.rawResponse(rawResponse)
@@ -310,6 +355,37 @@ public class VIESClient implements VATaxIDOnlineChecker
 				.requestIdentifier(requestIdentifier)
 				.rawResponse(rawResponse)
 				.build();
+	}
+
+	/**
+	 * @return the first {@code errorWrappers[].error} code when the body is an error envelope
+	 * ({@code actionSucceed} present and false), else {@code null}.
+	 */
+	@Nullable
+	private static String extractErrorCode(@NonNull final JsonNode json)
+	{
+		final JsonNode actionSucceed = json.get("actionSucceed");
+		if (actionSucceed == null || !actionSucceed.isBoolean() || actionSucceed.asBoolean())
+		{
+			return null;
+		}
+
+		final JsonNode wrappers = json.get("errorWrappers");
+		if (wrappers == null || !wrappers.isArray())
+		{
+			return UNKNOWN_VIES_ERROR;
+		}
+
+		for (final JsonNode wrapper : wrappers)
+		{
+			final String error = asTextOrNull(wrapper.get("error"));
+			if (error != null)
+			{
+				return error;
+			}
+		}
+
+		return UNKNOWN_VIES_ERROR;
 	}
 
 	@Nullable
