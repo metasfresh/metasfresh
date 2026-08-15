@@ -14,8 +14,9 @@ import lombok.NonNull;
 
 /**
  * Appends one {@code VATaxID_CheckLog} row through the real production writer
- * {@link VATaxIDCheckRepository#writeRequestSent(VATaxIDCheckRequest)}, never raw SQL. No VIES call: the
- * row is written at {@code RequestSent}, which is all these tests need to exercise the zoom mechanism.
+ * {@link VATaxIDCheckRepository#writeRequestSent(VATaxIDCheckRequest)} — never raw SQL nor
+ * {@code InterfaceWrapperHelper} directly. No VIES call: the row is written at {@code RequestSent}, which
+ * is all these tests need to exercise the real count-gated zoom mechanism.
  */
 @Builder
 public class VATaxIDCheckLogCreateCommand

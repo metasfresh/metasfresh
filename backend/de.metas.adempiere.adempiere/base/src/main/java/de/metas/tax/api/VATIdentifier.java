@@ -46,7 +46,11 @@ public final class VATIdentifier
 
 	/**
 	 * @return the first two characters, uppercased — the member-state prefix every EU VAT-ID carries. A
-	 * value shorter than two characters is returned as-is and simply matches no member state.
+	 * value shorter than two characters is returned uppercased but otherwise unchanged, and simply matches
+	 * no member state.
+	 *
+	 * <p>{@code VIESClient} and {@code EUVatIdValidator} each re-derive this same 2-char prefix privately,
+	 * so a change to the convention here does NOT propagate to them and the compiler will not catch it.
 	 */
 	@NonNull
 	public String getCountryCodePrefix()

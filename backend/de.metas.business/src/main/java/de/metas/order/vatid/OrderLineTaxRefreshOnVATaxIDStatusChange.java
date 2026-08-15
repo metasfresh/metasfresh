@@ -40,9 +40,11 @@ import java.util.Set;
  * The {@code de.metas.business} implementation of {@code de.metas.vatid}'s
  * {@link VATaxIDOrderTaxRefresher} seam — that interface's javadoc says why it lives here.
  *
- * <p>Re-derives {@code C_OrderLine.C_Tax_ID} via {@link IOrderLineBL#setTax(I_C_OrderLine)}, the same
- * method every order-line save already goes through, so this adds no tax-computation logic — it only
- * re-triggers the existing one for orders nothing else touches.
+ * <p>Re-derives {@code C_OrderLine.C_Tax_ID} via {@link IOrderLineBL#setTax(I_C_OrderLine)} — the same
+ * method every order-line save already goes through, because {@code MOrderLine#beforeSave} calls it
+ * UNCONDITIONALLY, not gated on any changed field. That is what makes this class add no tax-computation
+ * logic of its own; it only re-triggers the existing one for orders nothing else touches. If that call
+ * ever becomes conditional, this assumption breaks.
  */
 @Component
 public class OrderLineTaxRefreshOnVATaxIDStatusChange implements VATaxIDOrderTaxRefresher

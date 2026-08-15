@@ -74,18 +74,15 @@ import { assertRecordIsValid, getRecordData, WEBAPI_BASE_URL } from '../utils/We
  * the partner header and opens a look-alike form; see
  * `openAddressRowAdvancedEdit` for why that distinction is load-bearing here.
  *
- * KNOWN GAP — the status is NOT reachable in any grid, and this spec asserts
- * nothing about grid columns. `AD_Field.IsDisplayedGrid='Y'` is set for
- * `VATaxIDStatus` on tabs 220, 222 and 540843, but the rendered grid is built
- * from `AD_UI_Element.IsDisplayedGrid`, which is `'N'` for all three (mirroring
- * `VATaxID`'s own element there). Verified live: window 123's list-view layout
- * returns exactly 9 columns — `Value, Name, Name2, Name3, IsActive, IsCompany,
- * C_BP_Group_ID, AD_Language, AD_Org_ID` — which is precisely the tab's
- * `AD_UI_Element.IsDisplayedGrid='Y'` set, while 46 of its `AD_Field` rows carry
- * that flag; neither `VATaxID` nor `VATaxIDStatus` appears. So a grid assertion
- * either way would be wrong to write here: asserting presence would fail, and
- * asserting absence would freeze the current state as intended. This gap is
- * reported for a decision rather than encoded in a test.
+ * GRID COVERAGE — this spec asserts nothing about grid columns; that is covered
+ * at the AD/migration level, not here. The rendered grid is built from
+ * `AD_UI_Element.IsDisplayedGrid` (`AD_Field.IsDisplayedGrid` has no WebUI
+ * consumer). `VATaxIDStatus` is a grid column on window 123 tabs 220/222 and on
+ * the customer windows' header tabs. It is impossible on window 540354 while the
+ * VAT-ID block sits in advanced edit: `IsDisplayedGrid='Y'` combined with
+ * `IsAdvancedField='Y'` is inert, because the view-layout serialiser drops
+ * advanced elements. Note `AD_UI_Element.IsDisplayed='N'` does NOT block a grid
+ * column — only `IsAdvancedField` does.
  *
  * Language independence: in the two status tests every identity assertion is on a
  * DB ColumnName (`.form-field-<Column>`), a structural class, a window/tab id, or
