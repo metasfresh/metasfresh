@@ -31,6 +31,7 @@ import de.metas.vatid.VATaxIDConfig;
 import de.metas.vatid.VATaxIDOnlineChecker;
 import de.metas.vatid.VATaxIDStatus;
 import io.cucumber.datatable.DataTable;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
@@ -219,10 +220,31 @@ public class VATaxIDOnlineChecker_StepDef
 	 * </pre>
 	 */
 	@Then("the VAT-ID online checker was called for VATaxID {string}")
-	public void onlineCheckerWasCalled(@NonNull final String vataxID)
+	public void onlineCheckerWasCalled(@NonNull final String vataxID) throws InterruptedException
 	{
+		// Waits rather than asserting once. A save-triggered check runs in a work package, so the call
+		// happens on the async processor's thread some time after the save step returned; asserting
+		// immediately would be a race that passes on an idle machine and fails on a loaded CI executor. A
+		// check driven explicitly by a step is already done by the time we get here, so for that case the
+		// wait simply succeeds on its first poll.
+		StepDefUtil.tryAndWait(60, 500, () -> wasCalledFor(vataxID));
+
 		verify(onlineCheckerMock, atLeastOnce())
 				.check(argThat(checked -> checked != null && checked.getAsString().equals(vataxID)), any(VATaxIDConfig.class));
+	}
+
+	private boolean wasCalledFor(@NonNull final String vataxID)
+	{
+		try
+		{
+			verify(onlineCheckerMock, atLeastOnce())
+					.check(argThat(checked -> checked != null && checked.getAsString().equals(vataxID)), any(VATaxIDConfig.class));
+			return true;
+		}
+		catch (final AssertionError notYet)
+		{
+			return false;
+		}
 	}
 
 	/**

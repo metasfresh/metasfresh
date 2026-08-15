@@ -24,28 +24,21 @@ package de.metas.vatid.interceptor;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.logging.LogManager;
 import de.metas.tax.api.VATIdentifier;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import de.metas.vatid.VATaxIDCheckRequest;
-import de.metas.vatid.VATaxIDCheckService;
+import de.metas.vatid.async.VATaxIDCheckWorkpackageProcessor;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.session.AdSessionId;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 
 /**
- * Schedules a {@link VATaxIDCheckService#check(VATaxIDCheckRequest)} to run <b>after</b> the current save
+ * Schedules the online VAT-ID check to run <b>after</b> the current save
  * commits, called from both {@link C_BPartner} and {@link C_BPartner_Location} so the two interceptors
  * cannot drift apart in how they schedule, capture or fail.
  *
  * <p>Kept separate from both: it owns only <em>when</em> and <em>as whom</em> a check is scheduled from a
- * save — the interceptors know just their own table, and {@link VATaxIDCheckService} knows just how to run
+ * save — the interceptors know just their own table, and {@code VATaxIDCheckService} knows just how to run
  * one check.
  *
  * <p>Deliberately does not read {@code Env.getCtx()} itself — a shared {@code @Component} reading ambient
@@ -53,14 +46,8 @@ import javax.annotation.Nullable;
  * {@code AD_Session_ID} and passes it in.
  */
 @Component
-@RequiredArgsConstructor
 public class VATaxIDCheckTrigger
 {
-	private static final Logger logger = LogManager.getLogger(VATaxIDCheckTrigger.class);
-
-	@NonNull private final VATaxIDCheckService checkService;
-	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
-
 	/**
 	 * Schedules the check of {@code vataxIDValue} for the given partner/location once the current save
 	 * commits.
@@ -87,32 +74,9 @@ public class VATaxIDCheckTrigger
 			return;
 		}
 
-		trxManager.runAfterCommit(() -> runCheckSwallowingExceptions(bpartnerId, bpartnerLocationId, vataxID, adSessionId));
-	}
-
-	private void runCheckSwallowingExceptions(
-			@NonNull final BPartnerId bpartnerId,
-			@Nullable final BPartnerLocationId bpartnerLocationId,
-			@NonNull final VATIdentifier vataxID,
-			@NonNull final AdSessionId adSessionId)
-	{
-		try
-		{
-			checkService.check(VATaxIDCheckRequest.builder()
-					.bpartnerId(bpartnerId)
-					.bpartnerLocationId(bpartnerLocationId)
-					.vataxID(vataxID)
-					.adSessionId(adSessionId)
-					.build());
-		}
-		catch (final Exception ex)
-		{
-			// Without this catch, a throwing online checker — or a
-			// malformed VAT-ID that only this format re-check rejects — would propagate straight back into
-			// the caller's save and fail it, even though the row is already committed.
-			Loggables.withWarnLoggerToo(logger)
-					.addLog("VAT-ID check for bpartnerId={}, bpartnerLocationId={}, VATaxID={} failed after commit: {}",
-							bpartnerId, bpartnerLocationId, vataxID.getAsString(), ex.getMessage());
-		}
+		// Enqueued rather than run here. bindToThreadInheritedTrx means the work package materialises only
+		// if this save actually commits, so the previous runAfterCommit guarantee is kept while the wait on
+		// a third party moves off the saving thread.
+		VATaxIDCheckWorkpackageProcessor.enqueueOnTrxCommit(bpartnerId, bpartnerLocationId, vataxID, adSessionId);
 	}
 }
