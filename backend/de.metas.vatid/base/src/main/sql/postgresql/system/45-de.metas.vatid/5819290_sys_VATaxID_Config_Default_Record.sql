@@ -57,6 +57,17 @@
 -- values come from the table's own Postgres sequence -- this is an application data row, not an AD
 -- metadata row, so it does not draw from the AD id server.
 
+-- The table's own DDL script never created this sequence -- metasfresh creates a <Table>_SEQ lazily at
+-- runtime the first time the application inserts a row, so it is present on any database an app has run
+-- against and ABSENT on a freshly migrated one. That is exactly the difference between a developer's
+-- long-lived database and CI's, and it is why validating this INSERT locally could not catch it:
+-- db-apply-migrations failed with 'relation "vataxid_config_seq" does not exist'.
+--
+-- Created here, idempotently, with the same shape table-creating scripts use elsewhere. IF NOT EXISTS
+-- keeps it a no-op wherever the sequence already exists, so this is safe on every database.
+CREATE SEQUENCE IF NOT EXISTS VATaxID_Config_SEQ INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 START 1000000
+;
+
 INSERT INTO VATaxID_Config (
     VATaxID_Config_ID,
     AD_Client_ID, AD_Org_ID, IsActive,
