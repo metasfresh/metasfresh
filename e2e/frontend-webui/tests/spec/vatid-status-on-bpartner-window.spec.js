@@ -1454,13 +1454,15 @@ test.describe('VAT-ID status mirrors the VAT-ID in every Business Partner grid',
     ).toBe(true);
     const layout = await response.json();
 
-    // Flattened recursively: a level-1 tab carries its own nested tabs under `subTabs`, so iterating
+    // Flattened recursively: a level-1 tab carries its own nested tabs under `tabs` — the Java field is
+    // named `subTabs` but `@JsonProperty("tabs")` renames it on the wire, so reading `tab.subTabs` here
+    // silently yields undefined and the recursion never descends. Iterating
     // `layout.tabs` alone would silently skip them — and the assertion's own wording says "no tab".
     // Window 123 has nested tabs today; none is backed by C_BPartner or C_BPartner_Location, so this
     // changes nothing right now, but it stops a future AD change that nests a partner- or
     // location-backed tab from escaping the rule while this test still claims to cover it.
     const flattenTabs = (tabList) =>
-      (tabList || []).flatMap((tab) => [tab, ...flattenTabs(tab.subTabs)]);
+      (tabList || []).flatMap((tab) => [tab, ...flattenTabs(tab.tabs)]);
 
     const tabs = flattenTabs(layout.tabs);
     // Guard against a vacuous pass: an empty or shape-changed payload would satisfy every

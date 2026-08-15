@@ -53,7 +53,10 @@
 -- values for the day someone switches VIES on, rather than the fallback's 0-day window, which would send
 -- a request for every single check.
 --
--- IDs: AD_MigrationScript 5819290 from idserver.metas.de (this file's prefix). The VATaxID_Config_ID
+-- The sequence this INSERT draws from is created by 5819290, which runs first: metasfresh only creates a
+-- <Table>_SEQ lazily at application runtime, so it is absent on a freshly migrated database.
+--
+-- IDs: AD_MigrationScript 5819340 from idserver.metas.de (this file's prefix). The VATaxID_Config_ID
 -- values come from the table's own Postgres sequence -- this is an application data row, not an AD
 -- metadata row, so it does not draw from the AD id server.
 
@@ -65,9 +68,6 @@
 --
 -- Created here, idempotently, with the same shape table-creating scripts use elsewhere. IF NOT EXISTS
 -- keeps it a no-op wherever the sequence already exists, so this is safe on every database.
-CREATE SEQUENCE IF NOT EXISTS VATaxID_Config_SEQ INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 START 1000000
-;
-
 INSERT INTO VATaxID_Config (
     VATaxID_Config_ID,
     AD_Client_ID, AD_Org_ID, IsActive,
