@@ -56,8 +56,8 @@ public class OrderLineTaxRefreshOnVATaxIDStatusChange implements VATaxIDOrderTax
 	@Override
 	public void refreshOrderLinesTaxForBPartner(@NonNull final BPartnerId bpartnerId)
 	{
-		final Set<OrderId> notCompletedOrderIds = orderDAO.retrieveNotCompletedOrderIds(bpartnerId);
-		if (notCompletedOrderIds.isEmpty())
+		final Set<OrderId> notProcessedOrderIds = orderDAO.retrieveNotProcessedOrderIds(bpartnerId);
+		if (notProcessedOrderIds.isEmpty())
 		{
 			return;
 		}
@@ -69,12 +69,12 @@ public class OrderLineTaxRefreshOnVATaxIDStatusChange implements VATaxIDOrderTax
 		// must roll back with it, or an order line ends up carrying a tax that no recorded check justifies.
 		// A brand-new transaction would defeat exactly that: it would commit independently of the caller's
 		// transaction, so a refresh could survive a check that never actually committed.
-		trxManager.runInThreadInheritedTrx(() -> refreshInTrx(notCompletedOrderIds));
+		trxManager.runInThreadInheritedTrx(() -> refreshInTrx(notProcessedOrderIds));
 	}
 
-	private void refreshInTrx(@NonNull final Set<OrderId> notCompletedOrderIds)
+	private void refreshInTrx(@NonNull final Set<OrderId> notProcessedOrderIds)
 	{
-		for (final I_C_OrderLine orderLine : orderDAO.retrieveOrderLinesByOrderIds(notCompletedOrderIds))
+		for (final I_C_OrderLine orderLine : orderDAO.retrieveOrderLinesByOrderIds(notProcessedOrderIds))
 		{
 			orderLineBL.setTax(orderLine);
 			InterfaceWrapperHelper.saveRecord(orderLine);
