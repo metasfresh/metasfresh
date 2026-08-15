@@ -69,9 +69,21 @@ SELECT
     org.AD_Client_ID, org.AD_Org_ID, 'Y',
     TO_TIMESTAMP('2026-08-15 16:35:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
     TO_TIMESTAMP('2026-08-15 16:35:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
-    -- mirrors sysConfigBL.getBooleanValue('VATaxID_Config.IsFormatCheckEnabledByDefault', true):
-    -- System-scoped row, defaulting to 'Y' when absent
-    COALESCE((SELECT CASE WHEN UPPER(TRIM(sc.Value)) IN ('Y', 'TRUE') THEN 'Y' ELSE 'N' END
+    -- Mirrors sysConfigBL.getBooleanValue('VATaxID_Config.IsFormatCheckEnabledByDefault', true) on the
+    -- System-scoped row. StringUtils.toBoolean is explicit that an UNRECOGNISED value falls back to the
+    -- caller's default -- "defaultValue if value is null or other" -- so anything that is not a recognised
+    -- true/false token yields 'Y' here, NOT 'N'. It also does not trim, so ' N ' is "other" and likewise
+    -- yields 'Y'; UPPER alone reproduces its equalsIgnoreCase comparisons.
+    --
+    -- Known limitation: SysConfigDAO.getValue consults a JVM/environment property override BEFORE the DB
+    -- row, and SQL cannot see that. An installation that sets this SysConfig by JVM property rather than
+    -- by row would get the row's value seeded instead. No installation is known to do so, and the window
+    -- makes the seeded value visible and editable afterwards.
+    COALESCE((SELECT CASE
+                         WHEN UPPER(sc.Value) IN ('Y', 'TRUE') THEN 'Y'
+                         WHEN UPPER(sc.Value) IN ('N', 'FALSE') THEN 'N'
+                         ELSE 'Y'
+                     END
               FROM AD_SysConfig sc
               WHERE sc.Name = 'VATaxID_Config.IsFormatCheckEnabledByDefault'
                 AND sc.IsActive = 'Y'
