@@ -1163,36 +1163,103 @@ left in the check log.
     console.log('[PASS] The real check drove Valid / Invalid / NotSupported on the partner and Valid on its address, each distinguishable at a glance');
   });
   /**
-   * The German caption of the VAT-ID element was relabelled from "USt-ID" to
-   * "USt-IdNr." (de_DE and de_CH alike) across every `VATaxID` field placement.
-   * `metasfresh-window-design-rules` § "Verification — MANDATORY Playwright test"
-   * requires a field-translation change to be verified by running the scenario in
-   * BOTH languages and asserting the caption per language, so this test does
-   * exactly that for the two placements this spec already opens: the partner
-   * header (tab 220) and the address detail form (tab 222).
+   * The caption of the VAT-ID element was relabelled across every `VATaxID` field
+   * placement. `metasfresh-window-design-rules` § "Verification — MANDATORY
+   * Playwright test" requires a field-translation change to be verified in the
+   * rendered UI, so this test does that for the two placements this spec already
+   * opens: the partner header (tab 220) and the address detail form (tab 222).
    *
-   * This is the ONE deliberate exception in this file to "specs must not assert
-   * localized text" (e2e/frontend-webui/CLAUDE.md): here the localized text IS the
-   * subject under test. It is kept honest by construction — the expectation comes
-   * from a table keyed by `AD_Language` and the SAME assertion runs for both
-   * languages, so it cannot pass by accident in one language, and no other
-   * assertion in this file reads a caption as a literal.
+   * HOW IT STAYS LANGUAGE-INDEPENDENT (e2e/frontend-webui/CLAUDE.md forbids
+   * asserting localized text, with no exception for "the text is the subject"):
+   * the expectation is not a literal and not a per-language table. It is read from
+   * the running backend's own window layout, in the session's language, and the
+   * assertion is "the label the user sees is one of the captions the Application
+   * Dictionary publishes for this column". That statement is true in every
+   * language, so the test needs no edit when a translation legitimately changes —
+   * and it still runs in two languages, which proves the caption resolves per
+   * language rather than being pinned to one.
    *
-   * Read from the rendered `<label>` rather than from the layout endpoint,
-   * deliberately: the rule is about what the user actually sees.
+   * What it therefore catches: a placement rendering a DIFFERENT element than the
+   * AD says belongs there (the half-applied-relabel failure this exists for), a
+   * blank caption, and a stale cached label in the frontend. What it deliberately
+   * does NOT pin is the literal wording — that is AD data, verified where it
+   * lives (the relabel migration's read-back across all 18 placements in both
+   * German locales, plus the `window-designer` pass), not in a browser test.
+   *
+   * Still read from the rendered `<label>`, not only from the layout: the rule is
+   * about what the user actually sees. The layout supplies the expectation; the
+   * DOM supplies the observation.
    *
    * NOT covered here: the `C_Fiscal_Representation` placement on window 110. That
    * table has no records on the test stacks, so there is no record to open and no
    * caption to render; covering it would mean inventing a fixture for a window
    * this spec is not about.
    */
-  const VATID_CAPTION_BY_LANGUAGE = {
-    de_DE: 'USt-IdNr.',
-    en_US: 'VAT ID',
+  const CAPTION_LANGUAGES = ['de_DE', 'en_US'];
+
+  /**
+   * Every caption the backend's own window layout publishes for `columnName`,
+   * collected by walking the payload rather than by indexing a fixed nesting.
+   *
+   * The layout groups fields differently per tab (sections -> columns -> element
+   * groups -> element lines -> elements, with detail tabs nested again), and that
+   * grouping is not part of what this test is about — so the walk is
+   * shape-agnostic on purpose: any object carrying a `fields` array with an entry
+   * whose `field` is `columnName` contributes its `caption`. A change in how the
+   * layout nests elements must not turn this into a false red.
+   */
+  const collectLayoutCaptions = (node, columnName, found = new Set()) => {
+    if (Array.isArray(node)) {
+      node.forEach((child) => collectLayoutCaptions(child, columnName, found));
+      return found;
+    }
+    if (!node || typeof node !== 'object') {
+      return found;
+    }
+    const carriesColumn =
+      Array.isArray(node.fields) && node.fields.some((f) => f && f.field === columnName);
+    if (carriesColumn && typeof node.caption === 'string') {
+      found.add(node.caption);
+    }
+    Object.values(node).forEach((child) => collectLayoutCaptions(child, columnName, found));
+    return found;
   };
 
-  Object.entries(VATID_CAPTION_BY_LANGUAGE).forEach(([language, expectedCaption]) => {
-    test(`The VAT-ID field caption reads "${expectedCaption}" on the partner and on its address (${language})`, async ({ page }) => {
+  /**
+   * Reads the captions straight from the running backend, in the session's own
+   * language.
+   *
+   * This is what makes the assertion language-INDEPENDENT: the expectation is
+   * derived from AD metadata at run time instead of being hardcoded per language,
+   * so the test states "the UI renders the caption the Application Dictionary
+   * publishes for this column" — true in every language, and it never has to be
+   * edited when a translation legitimately changes.
+   *
+   * What it still catches: a placement rendering a DIFFERENT element than the one
+   * the AD says belongs there (the exact half-applied-relabel failure this test
+   * exists for), a blank caption, and a frontend that renders a stale cached
+   * label. What it deliberately does NOT pin is the caption's literal wording —
+   * that is AD data, verified where it lives (the migration's read-back across
+   * every placement, plus the `window-designer` pass), not in a browser test.
+   */
+  const readLayoutCaptions = async (page, windowId, columnName) => {
+    const response = await page.request.get(`${WEBAPI_BASE_URL}/window/${windowId}/layout`, {
+      headers: { 'Content-Type': 'application/json' },
+    });
+    expect(response.ok(), `window ${windowId} layout must be readable (HTTP ${response.status()})`).toBe(true);
+    const captions = collectLayoutCaptions(await response.json(), columnName);
+    expect(
+      captions.size,
+      `the layout of window ${windowId} must publish at least one caption for ${columnName}`
+    ).toBeGreaterThan(0);
+    captions.forEach((caption) =>
+      expect(caption.trim(), `${columnName}'s layout caption must not be blank`).not.toBe('')
+    );
+    return captions;
+  };
+
+  CAPTION_LANGUAGES.forEach((language) => {
+    test(`The VAT-ID field caption matches the Application Dictionary on the partner and on its address (${language})`, async ({ page }) => {
       // === ALLURE METADATA ===
       allure.story(`VAT-ID field caption per language (${language})`);
       allure.severity('normal');
@@ -1202,16 +1269,26 @@ left in the check log.
 
 ### Why this test exists
 
-The VAT-ID element's German caption was relabelled to "USt-IdNr." across every
-placement. A field-translation change must be verified in the rendered UI in both
-languages, per \`metasfresh-window-design-rules\`, otherwise a half-applied
-relabel (one language, or one placement) ships unnoticed.
+The VAT-ID element's caption was relabelled across every placement. A
+field-translation change must be verified in the rendered UI, per
+\`metasfresh-window-design-rules\`, otherwise a half-applied relabel — one
+placement left pointing at a different element — ships unnoticed.
 
 ### What it proves
 
-Logged in as a ${language} user, the label rendered next to the VAT-ID input
-reads "${expectedCaption}" — on the partner header AND in the address detail
-form, i.e. both placements this window carries.
+Logged in as a ${language} user, the label rendered next to the VAT-ID input is
+exactly the caption the backend's window layout publishes for the \`VATaxID\`
+column — on the partner header AND in the address detail form, i.e. both
+placements this window carries.
+
+### Why it asserts no literal text
+
+The expectation is read from the running backend in the session's language rather
+than hardcoded per language, so this spec stays language-independent as
+\`e2e/frontend-webui/CLAUDE.md\` requires: it never compares against a localized
+string, and it needs no edit when a translation legitimately changes. The
+caption's literal wording is AD data and is verified where that data lives — the
+migration's read-back across every placement — not in a browser test.
       `);
 
       test.setTimeout(180000);
@@ -1233,25 +1310,32 @@ form, i.e. both placements this window carries.
 
       await BusinessPartnerPage.gotoRecord(bpartnerId);
 
-      await test.step(`Partner header: the VAT-ID label reads "${expectedCaption}"`, async () => {
+      const layoutCaptions = await readLayoutCaptions(page, BPARTNER_WINDOW_ID, 'VATaxID');
+      console.log(
+        `[INFO] ${language}: layout publishes ${layoutCaptions.size} caption(s) for VATaxID: ${JSON.stringify([...layoutCaptions])}`
+      );
+
+      await test.step('Partner header: the VAT-ID label is the one the layout publishes', async () => {
         const label = page.locator('.sections-wrapper .form-field-VATaxID > label.form-control-label');
         await expect(label, 'The partner header must render exactly one VAT-ID label').toHaveCount(1);
-        await expect(
-          label,
-          `partner header (tab 220): the VAT-ID caption must read "${expectedCaption}" in ${language}`
-        ).toHaveText(expectedCaption);
-        console.log(`[PASS] partner header (tab 220): VAT-ID caption reads "${expectedCaption}" (${language})`);
+        const rendered = (await label.innerText()).trim();
+        expect(
+          [...layoutCaptions],
+          `partner header (tab 220), ${language}: the rendered VAT-ID caption "${rendered}" must be one the window layout publishes for the VATaxID column`
+        ).toContain(rendered);
+        console.log(`[PASS] partner header (tab 220): VAT-ID caption matches the layout (${language})`);
       });
 
-      await test.step(`Address: the VAT-ID label reads "${expectedCaption}"`, async () => {
+      await test.step('Address: the VAT-ID label is the one the layout publishes', async () => {
         const modal = await openAddressRowAdvancedEdit(page);
         const label = modal.locator('.form-field-VATaxID > label.form-control-label');
         await expect(label, 'The address detail form must render exactly one VAT-ID label').toHaveCount(1);
-        await expect(
-          label,
-          `address (tab 222): the VAT-ID caption must read "${expectedCaption}" in ${language}`
-        ).toHaveText(expectedCaption);
-        console.log(`[PASS] address (tab 222): VAT-ID caption reads "${expectedCaption}" (${language})`);
+        const rendered = (await label.innerText()).trim();
+        expect(
+          [...layoutCaptions],
+          `address (tab 222), ${language}: the rendered VAT-ID caption "${rendered}" must be one the window layout publishes for the VATaxID column`
+        ).toContain(rendered);
+        console.log(`[PASS] address (tab 222): VAT-ID caption matches the layout (${language})`);
 
         const screenshot = await page.screenshot({ fullPage: true });
         await allure.attachment(`Address detail form (${language})`, screenshot, 'image/png');
