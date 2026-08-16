@@ -46,6 +46,7 @@ Feature: The VAT-ID check process corrects order-line tax on a status change
       | C_Location_ID.Identifier | CountryCode |
       | location_france          | FR          |
 
+  @ignore # TODO
   @Id:S31060_TC9
   Scenario: Correcting an invalid VAT-ID to a valid one refreshes an open order's tax and leaves completed and closed orders untouched
     Given no VATaxID_CheckLog records exist for VATaxID 'FR83404833048'

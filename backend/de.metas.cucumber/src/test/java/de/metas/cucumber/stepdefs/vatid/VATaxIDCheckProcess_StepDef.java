@@ -41,6 +41,7 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.vatid.VATaxIDCheckRunService;
+import de.metas.vatid.process.C_BPartner_VATaxID_Check;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -69,7 +70,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class VATaxIDCheckProcess_StepDef
 {
 	private static final String PROCESS_VALUE = "C_BPartner_VATaxID_Check";
-	private static final String PARA_MaxChecksPerRun = "MaxChecksPerRun";
 
 	@NonNull private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	@NonNull private final IADPInstanceDAO pInstanceDAO = Services.get(IADPInstanceDAO.class);
@@ -139,7 +139,7 @@ public class VATaxIDCheckProcess_StepDef
 
 		if (Check.isNotBlank(maxChecksPerRunText))
 		{
-			builder.addParameter(PARA_MaxChecksPerRun, Integer.parseInt(maxChecksPerRunText.trim()));
+			builder.addParameter(C_BPartner_VATaxID_Check.PARA_MaxChecksPerRun, Integer.parseInt(maxChecksPerRunText.trim()));
 		}
 
 		final ProcessExecutor executor = builder

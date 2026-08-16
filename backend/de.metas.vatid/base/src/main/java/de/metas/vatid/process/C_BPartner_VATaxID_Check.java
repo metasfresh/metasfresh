@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.vatid
+ * metasfresh-vatid-base
  * %%
  * Copyright (C) 2026 metas GmbH
  * %%
@@ -22,6 +22,7 @@
 
 package de.metas.vatid.process;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.process.IProcessPrecondition;
@@ -52,7 +53,8 @@ import org.compiere.model.I_C_BPartner;
  */
 public class C_BPartner_VATaxID_Check extends JavaProcess implements IProcessPrecondition
 {
-	private static final String PARA_MaxChecksPerRun = "MaxChecksPerRun";
+	@VisibleForTesting
+	public static final String PARA_MaxChecksPerRun = "MaxChecksPerRun";
 
 	@NonNull private final VATaxIDCheckRunService checkRunService = SpringContextHolder.instance.getBean(VATaxIDCheckRunService.class);
 
