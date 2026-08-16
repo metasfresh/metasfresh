@@ -31,6 +31,7 @@ import de.metas.tax.api.VATIdentifier;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
@@ -43,7 +44,9 @@ import org.junit.jupiter.api.Test;
 import javax.annotation.Nullable;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -57,9 +60,9 @@ import static org.mockito.Mockito.when;
  * <p><b>The order-line-tax refresh.</b> It fires on whichever path wrote a status that DIFFERS from the one
  * the record already held — the save-triggered asynchronous check just as much as the
  * {@code C_BPartner_VATaxID_Check} process, because both converge here. Comparing against the record's
- * STORED status rather than a caller-supplied snapshot is what makes that true: with the comparison in
- * {@code VATaxIDCheckRunService} instead, a save-triggered check silently consumed the transition and the
- * process, running second, then saw no change left to react to.
+ * STORED status rather than a caller-supplied snapshot is what makes that true: were the comparison to sit in
+ * {@code VATaxIDCheckRunService} instead, a save-triggered check would silently consume the transition and the
+ * process, running second, would find no change left to react to.
  *
  * <p><b>The stale-verdict guard.</b> The other thing covered here is the one an ASYNCHRONOUS check must
  * never do: write a verdict onto a record whose {@code VATaxID} is no longer the value that verdict was
@@ -354,11 +357,9 @@ class VATaxIDCheckServiceTest
 	 * process — is the one that writes the new status. The open order's tax must be refreshed off the back of
 	 * that write.
 	 *
-	 * <p>Before the fix nothing refreshed here at all: {@code check} did not call the refresher, and the only
-	 * production call site was in {@code VATaxIDCheckRunService}, gated on a status snapshot the save-triggered
-	 * check had already consumed. Running the {@code C_BPartner_VATaxID_Check} process afterwards therefore
-	 * found {@code newStatus == previousStatus} and refreshed nothing either, so the order kept the tax of the
-	 * superseded status indefinitely.
+	 * <p>A scenario driven through the {@code C_BPartner_VATaxID_Check} process cannot stand in for this one:
+	 * the save-triggered check has by then already stored the status the process would react to, so the process
+	 * legitimately finds nothing changed. The save path has to be exercised in its own right.
 	 *
 	 * <p>The refresher itself is mocked: what belongs here is "the seam is invoked, once, for this partner",
 	 * and it is the {@code de.metas.business} implementation behind that seam — plus the cucumber scenario in
@@ -437,5 +438,45 @@ class VATaxIDCheckServiceTest
 		verify(onlineChecker, never()).check(any(VATIdentifier.class), any(VATaxIDConfig.class));
 		assertThat(allCheckLogs()).as("VATaxID_CheckLog rows").isEmpty();
 		verify(orderTaxRefresher, never()).refreshOrderLinesTaxForBPartner(any(BPartnerId.class));
+	}
+
+	/**
+	 * The failure branch the "status write and refresh are one unit of work" arrangement exists for: a throwing
+	 * refresher must bring the check down with it rather than be swallowed, because a status that commits
+	 * without its refresh is a partner whose open orders keep the tax of a status the record no longer has.
+	 *
+	 * <p>The message must say the CHECK ITSELF SUCCEEDED. {@code VATaxIDCheckRunService} logs one per-target
+	 * line for whatever comes out of here, and without that wording an operator reads a refresh failure as a
+	 * VAT-ID that could not be checked — and goes looking at the checking service instead of at the orders.
+	 *
+	 * <p><b>Only the propagation and the message are asserted.</b> Whether the parent-status write is genuinely
+	 * rolled back is not provable at this tier: {@code AdempiereTestHelper}'s in-memory POJO model has no real
+	 * transaction, so {@code callInThreadInheritedTrx} has nothing to roll back and the write survives here
+	 * regardless. That half of the guarantee rests on the transaction reasoning documented on
+	 * {@code VATaxIDCheckService#storeVerdictAndRefreshOrderTax}, and proving it would need a
+	 * database-backed test with an injectable refresher failure — which no seam currently offers.
+	 */
+	@Test
+	void aFailingOrderTaxRefresh_bringsTheCheckDownWithIt_sayingTheCheckItselfSucceeded()
+	{
+		givenConfig(0);
+		final BPartnerId bpartnerId = givenBPartnerWithVATaxIDAndStatus(CHECKED_VATAXID, VATaxIDStatus.Invalid);
+
+		when(onlineChecker.check(any(VATIdentifier.class), any(VATaxIDConfig.class)))
+				.thenReturn(VATaxIDCheckResult.builder().status(VATaxIDStatus.Valid).build());
+		doThrow(new RuntimeException("simulated order-tax refresh failure (test-only, VATaxIDCheckServiceTest)"))
+				.when(orderTaxRefresher).refreshOrderLinesTaxForBPartner(bpartnerId);
+
+		final VATaxIDCheckRequest request = VATaxIDCheckRequest.builder()
+				.bpartnerId(bpartnerId)
+				.vataxID(CHECKED_VATAXID)
+				.build();
+
+		assertThatThrownBy(() -> checkService.check(request))
+				.as("exception out of check()")
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("C_BPartner_ID=" + bpartnerId.getRepoId())
+				.hasMessageContaining("succeeded (status Invalid -> Valid)")
+				.hasMessageContaining("refreshing its open orders' tax failed");
 	}
 }

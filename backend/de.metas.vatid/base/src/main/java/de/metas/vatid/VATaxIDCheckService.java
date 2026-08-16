@@ -162,13 +162,20 @@ public class VATaxIDCheckService
 	 * Stores {@code lastCheck} on the parent and, when that write actually CHANGED the record's status,
 	 * refreshes the partner's not-yet-processed orders' tax — the two as one unit of work.
 	 *
-	 * <p><b>Why the comparison is against {@code previousStatus} read from the record.</b> The stored status
-	 * is what tax determination was reading a moment ago, so "it differs from what the record held" is
-	 * exactly the condition under which an open order's tax can now come out differently. A snapshot taken
-	 * by a caller is not the same thing: the {@code C_BPartner_VATaxID_Check} process used to compare against
-	 * one captured when it retrieved its targets, and the save-triggered check — which converges here too —
-	 * had by then already written the new status, so the process saw no change left and refreshed nothing.
-	 * Nobody did.
+	 * <p><b>Why the comparison is against {@code previousStatus} read from the record.</b> The stored status is
+	 * what tax determination reads, so "the verdict differs from what the record held" is exactly the condition
+	 * under which an open order's tax can come out differently. A snapshot held by a CALLER is not the same
+	 * thing: both paths converge on this method, and whichever of them reaches a record first consumes its
+	 * transition, so a snapshot the other one is still holding no longer describes any change left to react to.
+	 * Only the record is authoritative about the status it held immediately before this write.
+	 *
+	 * <p><b>Residual risk, accepted</b> — the same shape as the one
+	 * {@link #updateParentStatusIfStillCurrent(VATaxIDCheckRequest, VATaxIDLastCheck)} documents.
+	 * {@code previousStatus} is read at the top of {@link #check(VATaxIDCheckRequest)}, before the online call,
+	 * so a concurrent check of the SAME VAT-ID landing in between could leave it stale. The only outcome that
+	 * needs is a MISSED refresh, never a wrong one, and it needs the service to answer differently for one
+	 * identical value; the next scheduled re-check corrects it. Re-reading the status here would narrow the
+	 * window without closing it, for a case that has to happen twice over to matter.
 	 *
 	 * <p><b>Only a write that happened can trigger a refresh.</b> A verdict abandoned by
 	 * {@link #updateParentStatusIfStillCurrent(VATaxIDCheckRequest, VATaxIDLastCheck)} changed no status, so
@@ -182,8 +189,7 @@ public class VATaxIDCheckService
 	 * <ul>
 	 * <li>Under {@code C_BPartner_VATaxID_Check} there IS an ambient transaction ({@code VATaxIDCheckRunService}
 	 * wraps each target's whole unit), so this NESTS in it — a savepoint, committing nothing of its own. The
-	 * rethrow below then unwinds out of {@code check} and rolls that whole per-target unit back, exactly as
-	 * before this refresh moved here.</li>
+	 * rethrow below then unwinds out of {@code check} and takes that whole per-target unit down with it.</li>
 	 * <li>Under a save-triggered check there is NONE: {@code VATaxIDCheckWorkpackageProcessor} declares
 	 * {@code isRunInTransaction()==false}, so the async framework runs it with no thread-inherited transaction
 	 * at all. Here {@code callInThreadInheritedTrx} therefore opens one and commits it, which is what makes
