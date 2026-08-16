@@ -70,10 +70,12 @@
 -- Guarded by NOT EXISTS against the table's one-active-row-per-organisation partial unique index, so the
 -- script is safe on an installation that already created rows by hand.
 --
--- RecheckAfterDays=90 and OnServiceUnavailable='ServiceUnavailable' are the DDL defaults. Both are
--- unreachable while VIES is off, so they cannot change behaviour here; they carry sensible fail-open
--- values for the day someone switches VIES on, rather than the fallback's 0-day window, which would send
--- a request for every single check.
+-- RecheckAfterDays=30 and OnServiceUnavailable='ServiceUnavailable'. Both are unreachable while VIES is
+-- off, so they cannot change behaviour here; they carry sensible fail-open values for the day someone
+-- switches VIES on, rather than the fallback's 0-day window, which would send a request for every single
+-- check. OnServiceUnavailable matches the column's DDL default; RecheckAfterDays is deliberately 30
+-- rather than the DDL's 90 -- a quarter-long window is too coarse for a registration that can be
+-- withdrawn at any time and must be valid at the time of the supply.
 --
 -- The native PK sequence this INSERT draws from is created by dba_seq_check_native(), which only runs in
 -- after_migration() -- i.e. not yet when this script applies, in the same batch. Calling it here for
@@ -91,8 +93,8 @@
 -- long-lived database and CI's, and it is why validating this INSERT locally could not catch it:
 -- db-apply-migrations failed with 'relation "vataxid_config_seq" does not exist'.
 --
--- Created here, idempotently, with the same shape table-creating scripts use elsewhere. IF NOT EXISTS
--- keeps it a no-op wherever the sequence already exists, so this is safe on every database.
+-- dba_seq_check_native() is idempotent and creates the sequence only where it is missing, so this is
+-- safe on every database.
 SELECT dba_seq_check_native('VATaxID_Config');
 
 INSERT INTO VATaxID_Config (
@@ -100,8 +102,7 @@ INSERT INTO VATaxID_Config (
     AD_Client_ID, AD_Org_ID, IsActive,
     Created, CreatedBy, Updated, UpdatedBy,
     IsFormatCheckEnabled,
-    RestApiBaseURL,                        
-                            IsVIESCheckEnabled,
+    RestApiBaseURL, IsVIESCheckEnabled,
     RecheckAfterDays, OnServiceUnavailable
 )
 SELECT
