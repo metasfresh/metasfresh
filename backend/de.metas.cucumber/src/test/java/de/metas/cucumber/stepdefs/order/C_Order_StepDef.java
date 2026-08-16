@@ -574,6 +574,17 @@ public class C_Order_StepDef
 
 	}
 
+	/**
+	 * Asserts that purchase order(s) are created.
+	 *
+	 * <p><strong>Columns:</strong>
+	 * <ul>
+	 * <li>{@code Link_Order_ID.Identifier} (required) — identifies the SO; PO is found by Link_Order_ID
+	 * <li>{@code OPT.C_BPartner_ID} (optional) — filters the matched PO by vendor (disambiguates when multiple POs share the same Link_Order_ID)
+	 * <li>{@code OPT.DocStatus} (optional) — filters the matched PO by DocStatus (used when SO is re-completed and multiple POs share Link_Order_ID with different statuses, e.g. VO for old PO, CO for new one)
+	 * <li>{@code IsSOTrx} (required) — asserts whether the PO is a sales order
+	 * </ul>
+	 */
 	@Then("the order is created:")
 	public void thePurchaseOrderIsCreated(@NonNull final DataTable dataTable)
 	{
@@ -598,6 +609,16 @@ public class C_Order_StepDef
 				poQueryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_C_BPartner_ID, bpartnerRepoId);
 			}
 
+			// Optional disambiguation by DocStatus — needed when SO is re-completed (e.g. after
+			// reactivation) and multiple POs share the same Link_Order_ID with different DocStatus
+			// values (e.g. VO for the old PO, CO for the new one). Backward compatible: callers
+			// that omit the column get the original firstOnly behaviour (no DocStatus filter).
+			final String docStatus = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocStatus);
+			if (EmptyUtil.isNotBlank(docStatus))
+			{
+				poQueryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_DocStatus, docStatus);
+			}
+
 			final I_C_Order purchaseOrder = poQueryBuilder.create().firstOnly(I_C_Order.class);
 
 			final boolean isSOTrx = DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsSOTrx);
@@ -612,7 +633,6 @@ public class C_Order_StepDef
 			final String docSubType = DataTableUtil.extractStringOrNullForColumnName(tableRow, COLUMNNAME_DocSubType);
 			assertThat(docType.getDocSubType()).isEqualTo(docSubType);
 
-			final String docStatus = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocStatus);
 			if (docStatus != null)
 			{
 				assertThat(purchaseOrder.getDocStatus()).isEqualTo(docStatus);

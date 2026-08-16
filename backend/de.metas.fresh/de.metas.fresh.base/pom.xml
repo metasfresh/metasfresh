@@ -380,6 +380,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>de.metas.deliveryplanning</groupId>
+			<artifactId>de.metas.deliveryplanning.base</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>de.metas.pos</groupId>
 			<artifactId>de.metas.pos.base</artifactId>
 			<version>${metasfresh.version}</version>

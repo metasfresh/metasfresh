@@ -128,6 +128,28 @@ public class M_ShipperTransportation_StepDef
 			softly.assertThat(shipperLocation).isNotNull();
 			softly.assertThat(deliveryInstruction.getShipper_Location_ID()).as(I_M_ShipperTransportation.COLUMNNAME_Shipper_Location_ID).isEqualTo(shipperLocation.getC_BPartner_Location_ID());
 
+			final String deliveryLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_ShipperTransportation.COLUMNNAME_C_BPartner_Location_Delivery_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(deliveryLocationIdentifier))
+			{
+				final I_C_BPartner_Location deliveryLocation = bPartnerLocationTable.get(deliveryLocationIdentifier);
+				softly.assertThat(deliveryLocation).isNotNull();
+				softly.assertThat(deliveryInstruction.getC_BPartner_Location_Delivery_ID()).as(I_M_ShipperTransportation.COLUMNNAME_C_BPartner_Location_Delivery_ID).isEqualTo(deliveryLocation.getC_BPartner_Location_ID());
+			}
+
+			final String loadingLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_ShipperTransportation.COLUMNNAME_C_BPartner_Location_Loading_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(loadingLocationIdentifier))
+			{
+				final I_C_BPartner_Location loadingLocation = bPartnerLocationTable.get(loadingLocationIdentifier);
+				softly.assertThat(loadingLocation).isNotNull();
+				softly.assertThat(deliveryInstruction.getC_BPartner_Location_Loading_ID()).as(I_M_ShipperTransportation.COLUMNNAME_C_BPartner_Location_Loading_ID).isEqualTo(loadingLocation.getC_BPartner_Location_ID());
+			}
+
+			final Timestamp deliveryDate = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + I_M_ShipperTransportation.COLUMNNAME_ETA);
+			if (deliveryDate != null)
+			{
+				softly.assertThat(deliveryInstruction.getETA()).as(I_M_ShipperTransportation.COLUMNNAME_ETA).isEqualTo(deliveryDate);
+			}
+
 			final String docStatus = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_ShipperTransportation.COLUMNNAME_DocStatus);
 			if (Check.isNotBlank(docStatus))
 			{
