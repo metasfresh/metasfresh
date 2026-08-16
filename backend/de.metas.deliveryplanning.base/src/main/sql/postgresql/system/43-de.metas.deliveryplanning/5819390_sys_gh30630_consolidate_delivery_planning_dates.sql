@@ -409,20 +409,10 @@ SELECT backup_table('m_shippertransportation','_gh30630_dates');
 --     physical column; element 581689 becomes fully orphaned -> removed in step 8.
 DELETE FROM AD_UI_ElementField WHERE AD_UI_Element_ID IN (
     SELECT e.AD_UI_Element_ID FROM AD_UI_Element e
-      JOIN AD_Field f  ON f.AD_Field_ID = e.AD_Field_ID
-      JOIN AD_Column c ON c.AD_Column_ID = f.AD_Column_ID
-      JOIN AD_Table  t ON t.AD_Table_ID = c.AD_Table_ID
-     WHERE t.TableName='C_Invoice_Candidate' AND c.ColumnName='ActualLoadingDate');
-DELETE FROM AD_UI_Element WHERE AD_Field_ID IN (
-    SELECT f.AD_Field_ID FROM AD_Field f
-      JOIN AD_Column c ON c.AD_Column_ID=f.AD_Column_ID
-      JOIN AD_Table  t ON t.AD_Table_ID=c.AD_Table_ID
-     WHERE t.TableName='C_Invoice_Candidate' AND c.ColumnName='ActualLoadingDate');
-DELETE FROM AD_Field WHERE AD_Field_ID IN (
-    SELECT f.AD_Field_ID FROM AD_Field f
-      JOIN AD_Column c ON c.AD_Column_ID=f.AD_Column_ID
-      JOIN AD_Table  t ON t.AD_Table_ID=c.AD_Table_ID
-     WHERE t.TableName='C_Invoice_Candidate' AND c.ColumnName='ActualLoadingDate');
+      JOIN AD_Field f ON f.AD_Field_ID = e.AD_Field_ID
+     WHERE f.AD_Column_ID = 586144);
+DELETE FROM AD_UI_Element WHERE AD_Field_ID IN (SELECT AD_Field_ID FROM AD_Field WHERE AD_Column_ID=586144);
+DELETE FROM AD_Field WHERE AD_Column_ID=586144;
 DELETE FROM AD_Column_Trl WHERE AD_Column_ID=586144;
 DELETE FROM AD_Column     WHERE AD_Column_ID=586144;
 SELECT backup_table('c_invoice_candidate','_gh30630_actualloadingdate');
