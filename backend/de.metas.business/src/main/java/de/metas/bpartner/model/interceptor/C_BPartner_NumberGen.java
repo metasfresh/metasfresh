@@ -36,13 +36,15 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
+
 /**
  * Wires BPartner number generation into the model-save lifecycle.
- * Generates debtor/creditor numbers for new partners and advances sequences past
- * explicitly-supplied values on first save or when the value column changes.
+ * Generates debtor/creditor numbers and advances sequences past explicitly-supplied values.
  * <p>
- * Numbers are assigned at creation only; a later customer/vendor flip does not back-fill an
- * auto-generated number (see the {@code if (isNew)} guards below).
+ * A number is assigned when the partner first carries the role — at creation, or at the later
+ * customer/vendor flip for a partner that was created without it. An already-set number is never
+ * replaced, only reserved.
  * <p>
  * This interceptor is registered automatically as a Spring {@code @Component}.
  * It complements the existing {@code de.metas.bpartner.model.interceptor.C_BPartner}
@@ -82,37 +84,61 @@ public class C_BPartner_NumberGen
 		bpartnerNumberGenerator.generateNumbers(bpartner).applyTo(bpartner);
 	}
 
+	/**
+	 * Generate-or-reserve for an existing partner. Both concerns share one {@code BEFORE_CHANGE} method
+	 * because they are not independent: {@code ifColumnsChanged} is re-evaluated per method at invocation
+	 * time ({@code AnnotatedModelInterceptor}), and method order within an interceptor class is reflection
+	 * order. Split in two, a generate-then-reserve run would see the {@code DebtorId} it had just written
+	 * as a hand-typed value and reserve it a second time — order-dependently, and against the customer's
+	 * override function in the override branch.
+	 * <p>
+	 * <b>Generate</b> — a partner can reach the database before it is a customer/vendor (the WebUI persists
+	 * a new record as soon as its mandatory fields are filled, and the flag is ticked afterwards), so
+	 * {@link #generateOnNew} has nothing to assign for those; the flag flip back-fills the number.
+	 * <p>
+	 * <b>Reserve</b> — a hand-typed number advances the sequence past itself, so a number generated later
+	 * cannot collide with it.
+	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
-			ifColumnsChanged = { I_C_BPartner.COLUMNNAME_IsCustomer, I_C_BPartner.COLUMNNAME_IsVendor })
-	public void generateOnChange(@NonNull final I_C_BPartner bpartner)
+			ifColumnsChanged = {
+					I_C_BPartner.COLUMNNAME_IsCustomer,
+					I_C_BPartner.COLUMNNAME_IsVendor,
+					I_C_BPartner.COLUMNNAME_DebtorId,
+					I_C_BPartner.COLUMNNAME_CreditorId })
+	public void generateOrReserveOnChange(@NonNull final I_C_BPartner bpartner)
 	{
 		if (isDisabled(bpartner))
 		{
 			return;
 		}
+
 		final DebtorId debtorId = DebtorId.ofNullableNo(bpartner.getDebtorId());
 		final CreditorId creditorId = CreditorId.ofNullableNo(bpartner.getCreditorId());
-		if ((bpartner.isCustomer() && debtorId == null) || (bpartner.isVendor() && creditorId == null))
+
+		final boolean roleAdded = InterfaceWrapperHelper.isValueChanged(
+				bpartner, I_C_BPartner.COLUMNNAME_IsCustomer, I_C_BPartner.COLUMNNAME_IsVendor);
+		if (roleAdded
+				&& ((bpartner.isCustomer() && debtorId == null) || (bpartner.isVendor() && creditorId == null)))
 		{
+			// generateNumbers draws the missing number(s) and reserves the already-set one of a partner that
+			// is both customer and vendor, in the same pass — so reserveExplicitNumbers must not run on top.
 			bpartnerNumberGenerator.generateNumbers(bpartner).applyTo(bpartner);
+			return;
 		}
+
+		reserveExplicitNumbers(bpartner, debtorId, creditorId);
 	}
 
 	/**
-	 * On change of an explicitly-set debtor/creditor number on an existing partner: advance the
-	 * sequence past it so a later generated number cannot collide. Generation happens at creation
-	 * only (see {@link #generateOnNew}).
+	 * Advances the sequence past a debtor/creditor number that this save changed, so a number generated
+	 * later cannot collide with it. Only ever called for numbers that came in with the save — never for
+	 * one {@link #generateOrReserveOnChange} just generated, which the sequence is already past.
 	 */
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
-			ifColumnsChanged = { I_C_BPartner.COLUMNNAME_DebtorId, I_C_BPartner.COLUMNNAME_CreditorId })
-	public void reserveOnChange(@NonNull final I_C_BPartner bpartner)
+	private void reserveExplicitNumbers(
+			@NonNull final I_C_BPartner bpartner,
+			@Nullable final DebtorId debtorId,
+			@Nullable final CreditorId creditorId)
 	{
-		if (isDisabled(bpartner))
-		{
-			return;
-		}
-
-		final DebtorId debtorId = DebtorId.ofNullableNo(bpartner.getDebtorId());
 		if (bpartner.isCustomer()
 				&& debtorId != null
 				&& InterfaceWrapperHelper.isValueChanged(bpartner, I_C_BPartner.COLUMNNAME_DebtorId))
@@ -121,7 +147,6 @@ public class C_BPartner_NumberGen
 					BPartnerNumberContext.ofBPartner(bpartner, BPartnerNumberContext.Kind.DEBTOR), debtorId.toInt());
 		}
 
-		final CreditorId creditorId = CreditorId.ofNullableNo(bpartner.getCreditorId());
 		if (bpartner.isVendor()
 				&& creditorId != null
 				&& InterfaceWrapperHelper.isValueChanged(bpartner, I_C_BPartner.COLUMNNAME_CreditorId))
