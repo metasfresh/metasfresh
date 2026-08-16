@@ -18,9 +18,11 @@
 --   M_ShipperTransportation (AD_Table_ID=540030): ETD/ATD/ETA/ATA already exist (base script 5772160);
 --     only the field re-point and the drop of LoadingDate/DeliveryDate happen here.
 --
--- NOTE: no AD_Element is deleted. Element 581689 (ActualLoadingDate) is SHARED with
---       C_Invoice_Candidate; deleting it would break IC. LoadingDate (581900) and
---       DeliveryDate (541376) elements are likewise kept.
+-- NOTE: the port date elements 581686/687/688 plus the now-orphaned 581689 (ActualLoadingDate,
+--       whose last user C_Invoice_Candidate.ActualLoadingDate is dropped here) and 581900
+--       (LoadingDate, whose last users - the two *_Delivery_Instructions_V view columns - are
+--       repointed to base ETD 584066) are deleted in step 8. DeliveryDate (541376) is kept
+--       (still shared by 15 columns).
 --
 -- Source DDL: backend/de.metas.adempiere.adempiere/migration/src/main/sql/postgresql/ddl/public/views/M_Delivery_Planning_Delivery_Instructions_V.sql
 -- Source DDL: backend/de.metas.adempiere.adempiere/migration/src/main/sql/postgresql/ddl/public/views/M_ShipperTransportation_Delivery_Instructions_V.sql
@@ -149,9 +151,10 @@ UPDATE AD_ImpFormat_Row SET AD_Column_ID=593321, Updated=TO_TIMESTAMP('2026-08-1
 
 -- =====================================================================================
 -- 4) Re-point the two delivery-instruction views onto the consolidated ETD/ETA source.
---    Output column names loadingdate / deliverydate are preserved so the view AD_Columns
---    (585633/585634) and the fields on tab 546754 stay valid; only the underlying source
---    column changes (di.loadingdate->di.etd, di.deliverydate->di.eta).
+--    The output columns are renamed loadingdate->etd / deliverydate->eta (real column
+--    names); the view AD_Columns (585505/585506, 585633/585634) are renamed and repointed
+--    to the base ETD (584066) / ETA (584067) elements in section 4b below, and the fields
+--    on tabs 546737 / 546754 stay bound to the same (renamed) columns.
 -- =====================================================================================
 
 -- View: M_ShipperTransportation_Delivery_Instructions_V
@@ -165,9 +168,9 @@ SELECT di.documentno,
        di.docstatus,
        di.datedoc,
        di.c_bpartner_location_loading_id,
-       di.etd AS loadingdate,
+       di.etd AS etd,
        di.c_bpartner_location_delivery_id,
-       di.eta AS deliverydate,
+       di.eta AS eta,
        di.c_incoterms_id,
        di.incotermlocation,
        di.m_meansoftransportation_id,
@@ -209,9 +212,9 @@ SELECT di.documentno,
        di.docstatus,
        di.datedoc,
        di.c_bpartner_location_loading_id,
-       di.etd AS loadingdate,
+       di.etd AS etd,
        di.c_bpartner_location_delivery_id,
-       di.eta AS deliverydate,
+       di.eta AS eta,
        di.c_incoterms_id,
        di.incotermlocation,
        di.m_meansoftransportation_id,
@@ -243,6 +246,25 @@ SELECT db_alter_view(
 DROP VIEW IF EXISTS m_delivery_planning_delivery_instructions_v$new
 ;
 
+-- -------------------------------------------------------------------------------------
+-- 4b) Rename the 4 view AD_Columns LoadingDate/DeliveryDate -> ETD/ETA and repoint them
+--     onto the base ETD (584066) / ETA (584067) elements (the views now output etd/eta).
+--     The AD_Fields (710212/710213 on tab 546737; 710665/710666 on tab 546754) stay bound
+--     to the same (renamed) columns. AD_Field 710213 keeps its AD_Name_ID override.
+-- -------------------------------------------------------------------------------------
+
+-- M_Delivery_Planning_Delivery_Instructions_V: 585505 LoadingDate->ETD, 585506 DeliveryDate->ETA
+UPDATE AD_Column SET ColumnName='ETD', AD_Element_ID=584066, Updated=TO_TIMESTAMP('2026-08-16 10:01:20','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Column_ID=585505;
+UPDATE AD_Column SET ColumnName='ETA', AD_Element_ID=584067, Updated=TO_TIMESTAMP('2026-08-16 10:01:21','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Column_ID=585506;
+-- M_ShipperTransportation_Delivery_Instructions_V: 585633 LoadingDate->ETD, 585634 DeliveryDate->ETA
+UPDATE AD_Column SET ColumnName='ETD', AD_Element_ID=584066, Updated=TO_TIMESTAMP('2026-08-16 10:01:22','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Column_ID=585633;
+UPDATE AD_Column SET ColumnName='ETA', AD_Element_ID=584067, Updated=TO_TIMESTAMP('2026-08-16 10:01:23','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Column_ID=585634;
+
+/* DDL */ select update_Column_Translation_From_AD_Element(584066)
+;
+/* DDL */ select update_Column_Translation_From_AD_Element(584067)
+;
+
 
 -- =====================================================================================
 -- 5) Re-point the "Export Delivery Planning Lines (Jasper)" process SQL (AD_Process 585207)
@@ -256,7 +278,7 @@ SET SQLStatement =
        p.value                                                                         AS productCode,
        w.name                                                                          AS warehouseName,
        fromC.name                                                                      AS originCountry,
-       div.deliverydate                                                                AS deliveryDate,
+       div.eta                                                                         AS deliveryDate,
        m_delivery_planning.batch,
        m_delivery_planning.releaseno,
        m_delivery_planning.etd                                                         AS plannedloadingdate,
@@ -381,13 +403,41 @@ SELECT backup_table('m_shippertransportation','_gh30630_dates');
 /* DDL */ SELECT public.db_alter_table('M_ShipperTransportation','ALTER TABLE public.M_ShipperTransportation DROP COLUMN IF EXISTS LoadingDate');
 /* DDL */ SELECT public.db_alter_table('M_ShipperTransportation','ALTER TABLE public.M_ShipperTransportation DROP COLUMN IF EXISTS DeliveryDate');
 
+-- --- C_Invoice_Candidate.ActualLoadingDate 586144 (element 581689): written+displayed but never
+--     consumed (owner-approved removal). Drop the UI element, the field, the AD_Column and the
+--     physical column; element 581689 becomes fully orphaned -> removed in step 8.
+DELETE FROM AD_UI_ElementField WHERE AD_UI_Element_ID IN (
+    SELECT e.AD_UI_Element_ID FROM AD_UI_Element e
+      JOIN AD_Field f  ON f.AD_Field_ID = e.AD_Field_ID
+      JOIN AD_Column c ON c.AD_Column_ID = f.AD_Column_ID
+      JOIN AD_Table  t ON t.AD_Table_ID = c.AD_Table_ID
+     WHERE t.TableName='C_Invoice_Candidate' AND c.ColumnName='ActualLoadingDate');
+DELETE FROM AD_UI_Element WHERE AD_Field_ID IN (
+    SELECT f.AD_Field_ID FROM AD_Field f
+      JOIN AD_Column c ON c.AD_Column_ID=f.AD_Column_ID
+      JOIN AD_Table  t ON t.AD_Table_ID=c.AD_Table_ID
+     WHERE t.TableName='C_Invoice_Candidate' AND c.ColumnName='ActualLoadingDate');
+DELETE FROM AD_Field WHERE AD_Field_ID IN (
+    SELECT f.AD_Field_ID FROM AD_Field f
+      JOIN AD_Column c ON c.AD_Column_ID=f.AD_Column_ID
+      JOIN AD_Table  t ON t.AD_Table_ID=c.AD_Table_ID
+     WHERE t.TableName='C_Invoice_Candidate' AND c.ColumnName='ActualLoadingDate');
+SELECT backup_table('c_invoice_candidate','_gh30630_actualloadingdate');
+DELETE FROM AD_Column_Trl WHERE AD_Column_ID=586144;
+DELETE FROM AD_Column     WHERE AD_Column_ID=586144;
+/* DDL */ SELECT public.db_alter_table('C_Invoice_Candidate','ALTER TABLE public.C_Invoice_Candidate DROP COLUMN IF EXISTS ActualLoadingDate');
+
 -- =====================================================================================
 -- 8) Remove the now-orphaned port-introduced date AD_Elements. The columns above were
---    consolidated onto the base ETD/ETA/ATD/ATA elements (584066-069), leaving these three
+--    consolidated onto the base ETD/ETA/ATD/ATA elements (584066-069), leaving these
 --    port elements with 0 remaining references (verified: AD_Column/AD_Field.Name/
---    AD_Process_Para/AD_InfoColumn all 0). KEEP: 581689 ActualLoadingDate (shared with
---    C_Invoice_Candidate), 581900 LoadingDate (used by the two *_Delivery_Instructions_V
---    view columns), 541376 DeliveryDate (widely shared, 15 columns).
+--    AD_Process_Para/AD_InfoColumn all 0):
+--      581686/687/688 : the M_Delivery_Planning port date elements.
+--      581689 ActualLoadingDate : was shared with C_Invoice_Candidate; that column is
+--             dropped in step 7 above, so it is now fully orphaned.
+--      581900 LoadingDate : was used only by the two *_Delivery_Instructions_V view
+--             columns (585505/585633), which are repointed to base ETD 584066 in step 4b.
+--    KEEP: 541376 DeliveryDate (widely shared, still 15 columns).
 -- =====================================================================================
-DELETE FROM AD_Element_Trl WHERE AD_Element_ID IN (581686,581687,581688);
-DELETE FROM AD_Element     WHERE AD_Element_ID IN (581686,581687,581688);
+DELETE FROM AD_Element_Trl WHERE AD_Element_ID IN (581686,581687,581688,581689,581900);
+DELETE FROM AD_Element     WHERE AD_Element_ID IN (581686,581687,581688,581689,581900);

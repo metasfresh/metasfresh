@@ -51,7 +51,6 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
@@ -611,29 +610,4 @@ public class DeliveryPlanningRepository
 		save(deliveryPlanning);
 	}
 
-	@NonNull
-	public Optional<Timestamp> getMinActualLoadingDateFromPlannings(
-			@NonNull final OrderLineId orderLineId,
-			final boolean onlyWithCompletedInstructions)
-	{
-		IQueryBuilder<I_M_Delivery_Planning> queryBuilder = queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_C_OrderLine_ID, orderLineId)
-				.addNotNull(I_M_Delivery_Planning.COLUMNNAME_ATD);
-
-		if (onlyWithCompletedInstructions)
-		{
-			queryBuilder = queryBuilder
-					.andCollectChildren(I_M_ShipperTransportation.COLUMN_M_Delivery_Planning_ID)
-					.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_DocStatus, DocStatus.Completed)
-					.andCollect(I_M_ShipperTransportation.COLUMN_M_Delivery_Planning_ID);
-		}
-
-		return queryBuilder
-				.orderBy(I_M_Delivery_Planning.COLUMNNAME_ATD)
-				.setLimit(QueryLimit.ONE)
-				.create()
-				.firstOnlyOptional()
-				.map(I_M_Delivery_Planning::getATD);
-	}
 }

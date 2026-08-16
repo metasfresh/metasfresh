@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_Invoice_Candidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1874892882L;
+	private static final long serialVersionUID = -2132507024L;
 
     /** Standard Constructor */
     public X_C_Invoice_Candidate (final Properties ctx, final int C_Invoice_Candidate_ID, @Nullable final String trxName)
@@ -33,18 +33,6 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
-	}
-
-	@Override
-	public void setActualLoadingDate (final @Nullable java.sql.Timestamp ActualLoadingDate)
-	{
-		set_ValueNoCheck (COLUMNNAME_ActualLoadingDate, ActualLoadingDate);
-	}
-
-	@Override
-	public java.sql.Timestamp getActualLoadingDate() 
-	{
-		return get_ValueAsTimestamp(COLUMNNAME_ActualLoadingDate);
 	}
 
 	@Override
