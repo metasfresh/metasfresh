@@ -175,6 +175,42 @@ class VIESClientTest
 	}
 
 	@Test
+	@DisplayName("INVALID_INPUT is RECORD-attributable, so it must NOT abort the run - one bad VAT-ID is one bad target")
+	void invalidInputDoesNotAbortTheRun()
+	{
+		// INVALID_INPUT is the one VIES rejection that is caused by the RECORD rather than by the
+		// configuration: check() sends value.substring(2), so a VATaxID that is a bare country code ("DE")
+		// sends an empty vatNumber, and a malformed-but-non-empty one ("DEXYZ") is sent verbatim. Neither is
+		// reachable through the offline format gate WHEN IT IS ON -- but IsFormatCheckEnabled is a per-
+		// organisation setting that installations may switch off (see
+		// 5819340_sys_VATaxID_Config_Default_Record.sql, which seeds it from the pre-existing SysConfig
+		// rather than hardcoding it on).
+		//
+		// Treated as a request-side fault it would abort the WHOLE nightly run for everybody on the first
+		// such record -- strictly worse than the repetition the abort was introduced to prevent, because the
+		// configuration it tells the operator to fix is not the thing that is wrong.
+		final String body = "{\"actionSucceed\":false,\"errorWrappers\":[{\"error\":\"INVALID_INPUT\"}]}";
+
+		// Asserted on BOTH response paths, mirroring the two request-side tests above: we have not observed
+		// live which status code VIES pairs INVALID_INPUT with, and the classification must not depend on it.
+		server.expect(requestTo(BASE_URL + "/check-vat-number"))
+				.andRespond(withSuccess(body, MediaType.APPLICATION_JSON));
+		server.expect(requestTo(BASE_URL + "/check-vat-number"))
+				.andRespond(withBadRequest().body(body).contentType(MediaType.APPLICATION_JSON));
+
+		final VATaxIDCheckResult resultOn200 = client.check(VATIdentifier.of("DE"), config());
+		final VATaxIDCheckResult resultOn400 = client.check(VATIdentifier.of("DE"), config());
+
+		// An ordinary per-target failure: one warn line, the run carries on, and the envelope still reaches
+		// the check log as the evidence of why this record got no verdict.
+		assertThat(resultOn200.getStatus()).isEqualTo(VATaxIDStatus.ServiceUnavailable);
+		assertThat(resultOn200.getRawResponse()).contains("INVALID_INPUT");
+		assertThat(resultOn400.getStatus()).isEqualTo(VATaxIDStatus.ServiceUnavailable);
+		assertThat(resultOn400.getRawResponse()).contains("INVALID_INPUT");
+		server.verify();
+	}
+
+	@Test
 	@DisplayName("HTTP 200 error envelope naming a SERVICE-side fault -> ServiceUnavailable, evidence kept")
 	void serviceSideErrorEnvelopeDegrades()
 	{

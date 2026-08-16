@@ -91,15 +91,29 @@ public class VIESClient implements VATaxIDOnlineChecker
 			"IE", "IT", "LT", "LU", "LV", "MT", "NL", "PL", "PT", "RO", "SE", "SI", "SK", "XI");
 
 	/**
-	 * VIES error codes that mean OUR request was wrong, not that the service is unwell — a misconfigured
-	 * requester identity, or a mandatory field we failed to send. Verified live 2026-08-15:
+	 * VIES error codes that mean OUR CONFIGURATION is wrong — not that the service is unwell, and not that
+	 * the record being checked is at fault. Membership here is what makes a whole run abort (see
+	 * {@link #throwIfRequestSideError(String)}), so the bar is deliberately narrow: the fault must be
+	 * IDENTICAL for every target in the selection, so that carrying on could only repeat it.
+	 *
+	 * <p>Both codes here meet that bar, and both were verified live 2026-08-15:
 	 * {@code INVALID_REQUESTER_INFO} comes back on HTTP 200 when the requester number carries the country
 	 * prefix (send {@code IE}/{@code 6388047V}, never {@code IE}/{@code IE6388047V}), and
-	 * {@code VOW-ERR-11} on HTTP 400 when only one of the two requester fields is set.
+	 * {@code VOW-ERR-11} on HTTP 400 when only one of the two requester fields is set. Both name a field of
+	 * {@link VATaxIDConfig} — the requester identity — which is per organisation, not per VAT-ID.
+	 *
+	 * <p><b>{@code INVALID_INPUT} is deliberately NOT here</b>, although it is equally a rejection of our
+	 * request: it is attributable to the RECORD, not to the configuration. {@link #check} sends
+	 * {@code value.substring(2)}, so a {@code VATaxID} that is a bare country code ({@code "DE"}) sends an
+	 * empty vatNumber, and a malformed-but-non-empty one ({@code "DEXYZ"}) is sent verbatim. The offline
+	 * format gate catches both first, but only where {@code IsFormatCheckEnabled} is on, and that is a
+	 * per-organisation setting installations may have off. Aborting on it would let ONE bad partner record
+	 * stop the entire nightly run for everybody — worse than the repetition the abort exists to prevent,
+	 * and pointing the operator at a configuration that is not what is wrong. It therefore degrades to an
+	 * ordinary per-target failure: one warn line, the run continues, the envelope reaches the check log.
 	 */
 	private static final ImmutableSet<String> REQUEST_SIDE_ERRORS = ImmutableSet.of(
 			"INVALID_REQUESTER_INFO",
-			"INVALID_INPUT",
 			"VOW-ERR-11");
 
 	/** Stand-in when the envelope says failure but carries no readable code. */
@@ -355,10 +369,11 @@ public class VIESClient implements VATaxIDOnlineChecker
 	}
 
 	/**
-	 * Throws when {@code rawResponse} is a VIES error envelope naming a REQUEST-side fault — one of ours to
-	 * fix, not the service's. Recorded instead of thrown it would be indistinguishable from an outage, and
-	 * under an {@code OnServiceUnavailable} of {@code Invalid} one bad configuration value would strip the
-	 * tax certificate from every VAT-ID in the run.
+	 * Throws when {@code rawResponse} is a VIES error envelope naming a CONFIGURATION fault — one of ours to
+	 * fix, not the service's, and not the checked record's (see {@link #REQUEST_SIDE_ERRORS} on why
+	 * {@code INVALID_INPUT} is excluded). Recorded instead of thrown it would be indistinguishable from an
+	 * outage, and under an {@code OnServiceUnavailable} of {@code Invalid} one bad configuration value would
+	 * strip the tax certificate from every VAT-ID in the run.
 	 *
 	 * <p>Called from BOTH response paths, because VIES uses both: {@code INVALID_REQUESTER_INFO} arrives on
 	 * HTTP 200 and {@code VOW-ERR-11} on HTTP 400.
