@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.vatid
  * %%
  * Copyright (C) 2026 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.bpartner.vatid;
+package de.metas.vatid;
 
 import com.google.common.collect.ImmutableMap;
 import de.metas.logging.LogManager;
@@ -130,19 +130,11 @@ public final class EUVatIdValidator
 	// ------------------------------------------------------------------ public API
 
 	/**
-	 * Returns {@code true} if the given VAT-ID value is acceptable to store, {@code false} if it must be rejected.
+	 * @return whether the value is acceptable to store. Null, empty, blank, or anything normalising to
+	 * fewer than two characters is <b>accepted</b>; a recognised country prefix must then pass both the
+	 * structural regex and that country's check-digit algorithm, and an unrecognised prefix is rejected.
 	 *
-	 * <ul>
-	 *   <li>Null, empty, blank, or any value that normalises to fewer than two characters is always
-	 *       accepted ({@code true}).</li>
-	 *   <li>Any other value whose first two normalised characters are not one of the supported country
-	 *       prefixes is <em>rejected</em> ({@code false}).</li>
-	 *   <li>Values with a recognised prefix must pass both the structural regex and the
-	 *       country-specific check-digit algorithm.</li>
-	 * </ul>
-	 *
-	 * <p>Normalisation applied before checking (does not mutate the input):
-	 * trim → remove all spaces, dots, and hyphens → uppercase.
+	 * <p>Normalisation (non-mutating): trim, drop spaces/dots/hyphens, uppercase.
 	 */
 	public static boolean isValid(@Nullable final String vatId)
 	{

@@ -17,6 +17,7 @@ import de.metas.mobile.MobileConfigService;
 import de.metas.product.ProductRepository;
 import de.metas.scannable_code.format.service.ScannableCodeFormatService;
 import de.metas.util.web.security.UserAuthTokenService;
+import de.metas.vatid.VATaxIDCheckRepository;
 import de.metas.workplace.WorkplaceService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -48,4 +49,5 @@ public class CreateMasterdataCommandSupportingServices
 	@NonNull public final AssertExpectationsCommandServices assertExpectationsCommandServices;
 	@NonNull public final PickingJobScheduleService pickingJobScheduleService;
 	@NonNull public final WarehouseRepository warehouseRepository;
+	@NonNull public final VATaxIDCheckRepository vataxIDCheckRepository;
 }

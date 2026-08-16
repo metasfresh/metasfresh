@@ -44,6 +44,7 @@ public class JsonCreateMasterdataResponse
 	@NonNull Map<String, JsonLoginUserResponse> login;
 	@NonNull Map<String, JsonCreateBPartnerResponse> bpartners;
 	@Nullable Map<String, JsonCompensationGroupSchemaResponse> compensationGroupSchemas;
+	@Nullable Map<String, de.metas.frontend_testing.masterdata.vatid.JsonVATaxIDCheckLogResponse> vatIdChecks;
 	@NonNull Map<String, JsonCreateProductResponse> products;
 	@Nullable Map<String, JsonCreateResourceResponse> resources;
 	@NonNull Map<String, JsonCreateProductPlanningResponse> productPlannings;

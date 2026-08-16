@@ -68,6 +68,9 @@ import de.metas.frontend_testing.masterdata.sysconfig.SysconfigCommand;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserRequest;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserResponse;
 import de.metas.frontend_testing.masterdata.user.LoginUserCommand;
+import de.metas.frontend_testing.masterdata.vatid.JsonVATaxIDCheckLogRequest;
+import de.metas.frontend_testing.masterdata.vatid.JsonVATaxIDCheckLogResponse;
+import de.metas.frontend_testing.masterdata.vatid.VATaxIDCheckLogCreateCommand;
 import de.metas.frontend_testing.masterdata.warehouse.ConfigureWarehouseReplenishmentCommand;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseRequest;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseResponse;
@@ -111,6 +114,7 @@ public class CreateMasterdataCommand
 		final ImmutableMap<String, JsonLoginUserResponse> login = createLoginUsers();
 		final ImmutableMap<String, JsonCreateBPartnerResponse> bpartners = createBPartners();
 		configureOrgSeller();
+		final ImmutableMap<String, JsonVATaxIDCheckLogResponse> vatIdChecks = createVatIdChecks();
 		final ImmutableMap<String, JsonCreateProductResponse> products = createProducts();
 		final ImmutableMap<String, JsonCompensationGroupSchemaResponse> compensationGroupSchemas = createCompensationGroupSchemas();
 		// Post-pass: products and schemas must both be built first; this sets M_Product.C_CompensationGroup_Schema_ID
@@ -153,6 +157,7 @@ public class CreateMasterdataCommand
 				.mobileConfig(mobileConfig)
 				.login(login)
 				.bpartners(bpartners)
+				.vatIdChecks(vatIdChecks.isEmpty() ? null : vatIdChecks)
 				.compensationGroupSchemas(compensationGroupSchemas.isEmpty() ? null : compensationGroupSchemas)
 				.products(products)
 				.resources(resources)
@@ -215,6 +220,22 @@ public class CreateMasterdataCommand
 				.context(context)
 				.request(request)
 				.identifier(identifier)
+				.build()
+				.execute();
+	}
+
+	private ImmutableMap<String, JsonVATaxIDCheckLogResponse> createVatIdChecks()
+	{
+		return process(request.getVatIdChecks(), this::createVatIdCheck);
+	}
+
+	private JsonVATaxIDCheckLogResponse createVatIdCheck(final String identifier, final JsonVATaxIDCheckLogRequest request)
+	{
+		return VATaxIDCheckLogCreateCommand.builder()
+				.vataxIDCheckRepository(services.vataxIDCheckRepository)
+				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
 				.build()
 				.execute();
 	}

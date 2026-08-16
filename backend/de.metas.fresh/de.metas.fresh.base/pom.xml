@@ -193,6 +193,18 @@
 		</dependency>
 
 		<dependency>
+			<groupId>de.metas.vatid</groupId>
+			<artifactId>metasfresh-vatid-base</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.vatid</groupId>
+			<artifactId>metasfresh-vatid-vies</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>de.metas.vertical.pharma</groupId>
 			<artifactId>metasfresh-pharma.securpharm</artifactId>
 			<version>${metasfresh.version}</version>

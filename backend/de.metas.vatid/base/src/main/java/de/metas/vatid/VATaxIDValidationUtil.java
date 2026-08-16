@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.vatid
  * %%
  * Copyright (C) 2026 metas GmbH
  * %%
@@ -20,9 +20,10 @@
  * #L%
  */
 
-package de.metas.bpartner.vatid;
+package de.metas.vatid;
 
 import de.metas.i18n.AdMessageKey;
+import de.metas.tax.api.VATIdentifier;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
@@ -32,28 +33,26 @@ import javax.annotation.Nullable;
 /**
  * Stateless helper for VAT-ID validation.
  *
- * <p>{@link #SYSCONFIG_validateVATaxID} is the gate; reading it is the caller's responsibility (the
- * interceptors hold an {@code ISysConfigBL} instance field), so this helper itself stays free of any
- * service-locator call. {@link #validate(String)} performs the actual check via
- * {@link EUVatIdValidator#isValid(String)} and throws a user-validation error when the value is invalid.
+ * <p>Whether the check runs at all is the caller's responsibility, resolved from
+ * {@code VATaxIDConfig#isFormatCheckEnabled()} — not decided here.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class VATaxIDValidationUtil
 {
-	public static final String SYSCONFIG_validateVATaxID = "C_BPartner.validateVATaxID";
 	private static final AdMessageKey MSG_VATaxID_Invalid_Format = AdMessageKey.of("VATaxID_Invalid_Format");
 
 	/**
 	 * Throws a user-validation {@link AdempiereException} if {@code vatId} is not a valid VAT-ID.
-	 * Null/blank, and values whose prefix is outside the supported country set, are accepted.
-	 * The caller is responsible for checking the {@link #SYSCONFIG_validateVATaxID} gate first.
+	 * Null, and values whose prefix is outside the supported country set, are accepted.
+	 * The caller is responsible for checking whether the format check should run at all.
 	 */
-	public static void validate(@Nullable final String vatId)
+	public static void validate(@Nullable final VATIdentifier vatId)
 	{
-		if (!EUVatIdValidator.isValid(vatId))
+		final String vatIdString = VATIdentifier.toString(vatId);
+		if (!EUVatIdValidator.isValid(vatIdString))
 		{
 			// AdempiereException(AdMessageKey, …) is already flagged userValidationError=true — no .markAsUserValidationError() needed.
-			throw new AdempiereException(MSG_VATaxID_Invalid_Format, vatId);
+			throw new AdempiereException(MSG_VATaxID_Invalid_Format, vatIdString);
 		}
 	}
 }

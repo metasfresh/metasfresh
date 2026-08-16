@@ -1,0 +1,324 @@
+/*
+ * #%L
+ * de.metas.vatid
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.vatid;
+
+import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.common.util.time.SystemTime;
+import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.process.PInstanceId;
+import de.metas.tax.api.VATIdentifier;
+import de.metas.util.Loggables;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.time.Duration;
+import java.time.Instant;
+
+/**
+ * Single entry point for checking one VAT-ID, shared by the {@code C_BPartner} /
+ * {@code C_BPartner_Location} after-commit trigger and the check process, so the two paths cannot drift
+ * apart in what they check, what they record, or when they skip.
+ *
+ * <p>Order: offline format check, then de-duplication against {@link VATaxIDConfig#getRecheckAfterDays()},
+ * then {@link VATaxIDCheckRepository#writeRequestSent(VATaxIDCheckRequest)} <em>before</em> the online
+ * call. That write commits in its own transaction, so a check whose outcome is never learned (crash,
+ * timeout, rollback) still leaves evidence that it was asked. Finally the log row is completed and the
+ * parent's status columns, which tax determination and the windows read, are refreshed — but only while the
+ * record still holds the VAT-ID that was checked, see
+ * {@link #updateParentStatusIfStillCurrent(VATaxIDCheckRequest, VATaxIDLastCheck)}.
+ *
+ * <p>Countries the online service does not cover are answered {@link VATaxIDStatus#NotSupported} by the
+ * checker itself, so that list exists exactly once, in the implementation that owns the protocol.
+ *
+ * <p>{@link VATaxIDConfig#getOnServiceUnavailable()} is applied here, deliberately not in the checker. An
+ * {@link VATaxIDStatus#Invalid} it produces is stored under the same status as a real VIES rejection and
+ * no column records the difference; only the check-log {@code RawResponse} tells them apart — a real
+ * rejection always carries a boolean {@code valid: false}, a policy-produced one never does.
+ *
+ * <p>Callers must invoke this <em>outside</em> the save transaction, so a slow or dead service can never
+ * fail a save. Progress is reported through {@code Loggables}, never {@code JavaProcess}, so the same code
+ * logs to {@code AD_PInstance_Log} under a process and is a no-op under the interceptor.
+ */
+@Service
+@RequiredArgsConstructor
+public class VATaxIDCheckService
+{
+	private static final Logger logger = LogManager.getLogger(VATaxIDCheckService.class);
+
+	@NonNull private final VATaxIDConfigRepository configRepository;
+	@NonNull private final VATaxIDCheckRepository checkRepository;
+	@NonNull private final VATaxIDParentStatusRepository parentStatusRepository;
+	@NonNull private final VATaxIDOnlineChecker onlineChecker;
+
+	/**
+	 * @return the status the RECORD now has — the freshly obtained one, or the still-fresh previous result
+	 * when de-duplication skipped the call, or the unchanged stored one when nothing was written (the online
+	 * check is off, or the record no longer holds the checked VAT-ID; see
+	 * {@link #updateParentStatusIfStillCurrent(VATaxIDCheckRequest, VATaxIDLastCheck)}). Never the answer
+	 * itself when that answer was not stored — the caller acts on this, and
+	 * {@link VATaxIDCheckRunService} refreshes a partner's order-line tax when it differs from the previous
+	 * status. Never {@link VATaxIDStatus#RequestSent}, which exists only on a log row awaiting its answer.
+	 */
+	@NonNull
+	public VATaxIDStatus check(@NonNull final VATaxIDCheckRequest request)
+	{
+		final VATIdentifier vataxID = request.getVataxID();
+		final VATaxIDParentStatus parentStatus = parentStatusRepository.getParentStatus(request);
+		final VATaxIDConfig config = configRepository.getByOrgId(parentStatus.getOrgId());
+
+		if (config.isFormatCheckEnabled())
+		{
+			// Throws for a malformed value, exactly as the save-time check does — a value the format check
+			// rejects must not reach the online service, and must not be recorded as if it had been checked.
+			VATaxIDValidationUtil.validate(vataxID);
+		}
+
+		if (!config.isViesCheckEnabled())
+		{
+			// Nothing was checked, so nothing is recorded and the stored status stands.
+			return parentStatus.getStatus();
+		}
+
+		final VATaxIDLastCheck freshCheck = getStillFreshCheck(vataxID, config);
+		if (freshCheck != null)
+		{
+			Loggables.addLog("VAT-ID {} keeps status {} from the check of {}: still younger than"
+							+ " RecheckAfterDays={}, so no request was sent",
+					vataxID.getAsString(), freshCheck.getStatus(), freshCheck.getCheckedAt(), config.getRecheckAfterDays());
+
+			// Written even though nothing was checked: the parent must mirror the log row it points at, and
+			// this VAT-ID's fresh result may have been obtained for a different parent carrying the same value.
+			if (!updateParentStatusIfStillCurrent(request, freshCheck))
+			{
+				return parentStatus.getStatus();
+			}
+			return freshCheck.getStatus();
+		}
+
+		final VATaxIDCheckLogId checkLogId = checkRepository.writeRequestSent(request);
+
+		final VATaxIDCheckResult result = applyOnServiceUnavailable(onlineChecker.check(vataxID, config), config);
+		checkRepository.completeCheck(checkLogId, result);
+
+		if (!updateParentStatusIfStillCurrent(request, VATaxIDLastCheck.builder()
+				.checkLogId(checkLogId)
+				.status(result.getStatus())
+				.checkedAt(SystemTime.asInstant())
+				.build()))
+		{
+			// No status was stored, so there is no status change to report either.
+			return parentStatus.getStatus();
+		}
+
+		// Suppressed on a first-ever check (previous status NotChecked): the initial rollout would
+		// otherwise produce one line per record -- every VAT-ID "changes" the first time it is checked at
+		// all -- drowning the handful of genuine re-check flips a run summary exists to surface. A real
+		// re-check flip (Valid -> Invalid, ServiceUnavailable -> Valid, ...) still logs.
+		if (result.getStatus() != parentStatus.getStatus() && parentStatus.getStatus() != VATaxIDStatus.NotChecked)
+		{
+			Loggables.addLog("VAT-ID {}: status {} -> {}", vataxID.getAsString(), parentStatus.getStatus(), result.getStatus());
+		}
+
+		return result.getStatus();
+	}
+
+	/**
+	 * Writes {@code lastCheck} onto the parent record — unless that record's {@code VATaxID} is no longer the
+	 * value {@code request} was checked for, in which case the verdict is abandoned.
+	 *
+	 * <p><b>Why this guard exists.</b> A save-triggered check runs asynchronously
+	 * ({@code VATaxIDCheckWorkpackageProcessor}) on the VAT-ID captured when the work package was ENQUEUED,
+	 * while the parent columns are written onto the record as it stands when the package is PROCESSED. In
+	 * between, the user can clear the field — {@code VATaxIDCheckTrigger} enqueues nothing for a cleared
+	 * value, but the package already queued still runs — or correct it, in which case two in-flight packages
+	 * for the same record have no ordering guarantee and the older answer could overwrite the newer one.
+	 * Either way the record would end up carrying a status, a timestamp and a {@code VATaxID_CheckLog_ID}
+	 * that belong to a VAT-ID it does not hold, and under a {@code Valid} that is a tax certificate granted
+	 * on the strength of someone else's number.
+	 *
+	 * <p><b>The {@code VATaxID_CheckLog} row is written and kept regardless</b> — the attempt genuinely
+	 * happened, and that table is append-only historical evidence by design. Only the denormalised copy on
+	 * the parent is withheld.
+	 *
+	 * <p>The comparison lives here rather than inside
+	 * {@link VATaxIDParentStatusRepository#updateParentStatus(VATaxIDCheckRequest, VATaxIDLastCheck)}
+	 * because it is a decision, and a repository must not make conditional writes based on business state
+	 * ({@code docs/coding-rules/architecture.md} §8). It also has to be visible here: the caller must learn
+	 * that nothing was stored, so that neither the status-change log line nor
+	 * {@code VATaxIDCheckRunService}'s order-line-tax refresh fires on a verdict that was never written.
+	 * The repository still owns the branch on parent type, on both the read and the write.
+	 *
+	 * <p>The synchronous process path keeps working unchanged in the ordinary case — it builds its request
+	 * from the record it has just read, so the values match and this returns {@code true}. It is not exempt
+	 * from the race, though: {@code VATaxIDCheckRunService} reads its whole selection up front and then works
+	 * through it one target at a time, so a user editing a VAT-ID mid-run hits exactly the same window, and
+	 * the guard covers that too.
+	 *
+	 * <p><b>Residual risk, accepted.</b> The read and the write are two round-trips with no row lock between
+	 * them, so a write landing in that gap still slips past. That gap is now two adjacent local statements
+	 * with no third-party I/O between them, where before it spanned the whole online call plus however long
+	 * the work package sat in the queue — a narrowing from minutes to sub-millisecond, not an elimination.
+	 * Locking the parent row for the duration would serialise checks against ordinary partner edits, which
+	 * costs more than the remaining exposure is worth.
+	 *
+	 * @return whether the parent record was updated.
+	 */
+	private boolean updateParentStatusIfStillCurrent(
+			@NonNull final VATaxIDCheckRequest request,
+			@NonNull final VATaxIDLastCheck lastCheck)
+	{
+		final VATIdentifier currentVATaxID = parentStatusRepository.getCurrentVATaxID(request);
+		if (!request.getVataxID().equals(currentVATaxID))
+		{
+			// withWarnLoggerToo, not a bare Loggables: the case that matters is the asynchronous one, where
+			// Loggables is a no-op and the server log is the only place an operator can find this.
+			Loggables.withWarnLoggerToo(logger).addLog(
+					"VAT-ID check result {} for {} was NOT stored on {}: the record now holds {} instead of the"
+							+ " checked value, so the answer is about a VAT-ID it no longer has. The"
+							+ " VATaxID_CheckLog row is kept as evidence of the attempt.",
+					lastCheck.getStatus(), request.getVataxID().getAsString(), toLogLabel(request),
+					VATIdentifier.toString(currentVATaxID));
+			return false;
+		}
+
+		parentStatusRepository.updateParentStatus(request, lastCheck);
+		return true;
+	}
+
+	@NonNull
+	private static String toLogLabel(@NonNull final VATaxIDCheckRequest request)
+	{
+		final BPartnerLocationId bpartnerLocationId = request.getBpartnerLocationId();
+		return bpartnerLocationId != null
+				? "C_BPartner_ID=" + request.getBpartnerId().getRepoId()
+				+ ", C_BPartner_Location_ID=" + bpartnerLocationId.getRepoId()
+				: "C_BPartner_ID=" + request.getBpartnerId().getRepoId();
+	}
+
+	/**
+	 * @return the member-state codes {@code orgId}'s online checker reports as unavailable; empty when the
+	 * organisation has the online check switched off. Asked once per run, not once per VAT-ID, so the
+	 * check-run service can skip the affected member states up front instead of discovering the outage one
+	 * {@link #check} call at a time.
+	 */
+	@NonNull
+	public ImmutableSet<String> getUnavailableCountryCodes(@NonNull final OrgId orgId)
+	{
+		final VATaxIDConfig config = configRepository.getByOrgId(orgId);
+		if (!config.isViesCheckEnabled())
+		{
+			return ImmutableSet.of();
+		}
+
+		return onlineChecker.getUnavailableCountryCodes(config);
+	}
+
+	/**
+	 * @return how many online calls the run made, and their average response time. Pass-through, so the
+	 * check-run service need not depend on {@link VATaxIDCheckRepository}, this table's sole owner.
+	 */
+	@NonNull
+	public VATaxIDCheckCallStats getCallStatsForRun(@NonNull final PInstanceId pinstanceId)
+	{
+		return checkRepository.getCallStatsForRun(pinstanceId);
+	}
+
+	/**
+	 * @return {@code orgId}'s de-duplication window, the same one {@link #check(VATaxIDCheckRequest)}
+	 * applies. Exposed so the nightly selection can pre-filter to records that are actually due.
+	 */
+	public int getRecheckAfterDays(@NonNull final OrgId orgId)
+	{
+		return configRepository.getByOrgId(orgId).getRecheckAfterDays();
+	}
+
+	/**
+	 * @return whether {@code orgId} has the online check switched on. Exposed so the nightly selection can
+	 * exclude records {@link #check} would return early for: they never get a {@code VATaxIDCheckedAt}, so
+	 * they would sort to the front of every future run forever without ever making progress.
+	 */
+	public boolean isViesCheckEnabled(@NonNull final OrgId orgId)
+	{
+		return configRepository.getByOrgId(orgId).isViesCheckEnabled();
+	}
+
+	/**
+	 * @return the last conclusive check if still younger than {@link VATaxIDConfig#getRecheckAfterDays()},
+	 * else {@code null}, meaning "send a request". A window of zero or less disables de-duplication.
+	 */
+	@Nullable
+	private VATaxIDLastCheck getStillFreshCheck(@NonNull final VATIdentifier vataxID, @NonNull final VATaxIDConfig config)
+	{
+		if (config.getRecheckAfterDays() <= 0)
+		{
+			return null;
+		}
+
+		final VATaxIDLastCheck lastCheck = checkRepository.getLastConclusiveCheck(vataxID);
+		if (lastCheck == null)
+		{
+			return null;
+		}
+
+		final Instant staleBefore = SystemTime.asInstant().minus(Duration.ofDays(config.getRecheckAfterDays()));
+		return lastCheck.getCheckedAt().isBefore(staleBefore) ? null : lastCheck;
+	}
+
+	/**
+	 * Turns "the service could not answer" into the status the organisation chose — the one interpretation
+	 * the checker must not make itself, since an unreachable service and a rejected VAT-ID have opposite
+	 * consequences for a partner's tax certificate.
+	 *
+	 * <p>{@code rawResponse} is carried over unchanged. No column records that this remap happened, so that
+	 * evidence is the only thing separating it from a real rejection (see the class javadoc) — never
+	 * synthesise one here.
+	 */
+	@NonNull
+	private static VATaxIDCheckResult applyOnServiceUnavailable(
+			@NonNull final VATaxIDCheckResult result,
+			@NonNull final VATaxIDConfig config)
+	{
+		if (result.getStatus() != VATaxIDStatus.ServiceUnavailable)
+		{
+			return result;
+		}
+
+		final VATaxIDStatus statusPerPolicy = config.getOnServiceUnavailable().toVATaxIDStatus();
+		if (statusPerPolicy == result.getStatus())
+		{
+			return result;
+		}
+
+		return VATaxIDCheckResult.builder()
+				.status(statusPerPolicy)
+				.requestIdentifier(result.getRequestIdentifier())
+				.rawResponse(result.getRawResponse())
+				.build();
+	}
+
+}
