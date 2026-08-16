@@ -220,8 +220,12 @@ public class VATaxIDOnlineChecker_StepDef
 	 * actually attempted, as opposed to the after-commit trigger having been wired but never firing.
 	 *
 	 * <p>Requires the check to have fully landed — a terminal {@code VATaxID_CheckLog} row that its parent
-	 * record already points at. For a checker stubbed to THROW, which never gets there, use
-	 * {@link #onlineCheckWasAttempted(String)} instead.
+	 * record already points at. Two kinds of scenario cannot reach that state and must use
+	 * {@link #onlineCheckWasAttempted(String)} instead, or they burn the full 60 s timeout: a checker
+	 * stubbed to THROW, which never completes the log row; and a scenario that changes the record's
+	 * {@code VATaxID} while the check is in flight, where
+	 * {@code VATaxIDCheckService#updateParentStatusIfStillCurrent} deliberately abandons the verdict and the
+	 * completed row stays unreferenced for good.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
@@ -250,12 +254,11 @@ public class VATaxIDOnlineChecker_StepDef
 		// so a parent already pointing at the terminal row necessarily carries that row's status as well.
 		// That closes the window by construction rather than shrinking it.
 		//
-		// It is a real window, not a theoretical one, and emphatically not the "sub-millisecond, negligible"
-		// this comment used to claim: the parent save is a full C_BPartner save — every model interceptor,
-		// an enqueued external-system sync, change-log rows. Measured from the instant completeCheck()
-		// commits, it is 15-20 ms on an idle developer box and 80-200 ms on a loaded CI executor. Against a
-		// 500 ms poll grid that is wide enough for a poll to wake inside it, which is exactly how this step
-		// used to hand a green light to an assertion that then read a still-NotChecked parent.
+		// That window is wide, not negligible: the parent write is a full C_BPartner save — every model
+		// interceptor, an enqueued external-system sync, change-log rows. Measured from the instant
+		// completeCheck() commits, it is 15-20 ms on an idle developer box and 80-200 ms on a loaded CI
+		// executor. A 500 ms poll grid is wide enough to wake inside it, so a predicate satisfied by the log
+		// row alone hands a green light to an assertion that then reads a still-NotChecked parent.
 		StepDefUtil.tryAndWait(60, 500, () -> wasCalledFor(vataxID) && completedCheckIsReferencedByItsParent(vataxID));
 
 		verify(onlineCheckerMock, atLeastOnce())
@@ -355,7 +358,7 @@ public class VATaxIDOnlineChecker_StepDef
 		return queryBL.createQueryBuilder(I_VATaxID_CheckLog.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_VATaxID_CheckLog.COLUMNNAME_VATaxID, vataxID)
-				.addNotEqualsFilter(I_VATaxID_CheckLog.COLUMNNAME_VATaxIDStatus, VATaxIDStatus.RequestSent.getCode())
+				.addNotEqualsFilter(I_VATaxID_CheckLog.COLUMNNAME_VATaxIDStatus, VATaxIDStatus.RequestSent)
 				.create();
 	}
 
