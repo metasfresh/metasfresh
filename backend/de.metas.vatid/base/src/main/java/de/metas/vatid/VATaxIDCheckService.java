@@ -23,13 +23,16 @@
 package de.metas.vatid;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
+import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.tax.api.VATIdentifier;
 import de.metas.util.Loggables;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -45,7 +48,9 @@ import java.time.Instant;
  * then {@link VATaxIDCheckRepository#writeRequestSent(VATaxIDCheckRequest)} <em>before</em> the online
  * call. That write commits in its own transaction, so a check whose outcome is never learned (crash,
  * timeout, rollback) still leaves evidence that it was asked. Finally the log row is completed and the
- * parent's status columns, which tax determination and the windows read, are refreshed.
+ * parent's status columns, which tax determination and the windows read, are refreshed — but only while the
+ * record still holds the VAT-ID that was checked, see
+ * {@link #updateParentStatusIfStillCurrent(VATaxIDCheckRequest, VATaxIDLastCheck)}.
  *
  * <p>Countries the online service does not cover are answered {@link VATaxIDStatus#NotSupported} by the
  * checker itself, so that list exists exactly once, in the implementation that owns the protocol.
@@ -63,15 +68,21 @@ import java.time.Instant;
 @RequiredArgsConstructor
 public class VATaxIDCheckService
 {
+	private static final Logger logger = LogManager.getLogger(VATaxIDCheckService.class);
+
 	@NonNull private final VATaxIDConfigRepository configRepository;
 	@NonNull private final VATaxIDCheckRepository checkRepository;
 	@NonNull private final VATaxIDParentStatusRepository parentStatusRepository;
 	@NonNull private final VATaxIDOnlineChecker onlineChecker;
 
 	/**
-	 * @return the status the VAT-ID now has — the freshly obtained one, or the still-fresh previous result
-	 * when de-duplication skipped the call. Never {@link VATaxIDStatus#RequestSent}, which exists only on a
-	 * log row awaiting its answer.
+	 * @return the status the RECORD now has — the freshly obtained one, or the still-fresh previous result
+	 * when de-duplication skipped the call, or the unchanged stored one when nothing was written (the online
+	 * check is off, or the record no longer holds the checked VAT-ID; see
+	 * {@link #updateParentStatusIfStillCurrent(VATaxIDCheckRequest, VATaxIDLastCheck)}). Never the answer
+	 * itself when that answer was not stored — the caller acts on this, and
+	 * {@link VATaxIDCheckRunService} refreshes a partner's order-line tax when it differs from the previous
+	 * status. Never {@link VATaxIDStatus#RequestSent}, which exists only on a log row awaiting its answer.
 	 */
 	@NonNull
 	public VATaxIDStatus check(@NonNull final VATaxIDCheckRequest request)
@@ -102,7 +113,10 @@ public class VATaxIDCheckService
 
 			// Written even though nothing was checked: the parent must mirror the log row it points at, and
 			// this VAT-ID's fresh result may have been obtained for a different parent carrying the same value.
-			parentStatusRepository.updateParentStatus(request, freshCheck);
+			if (!updateParentStatusIfStillCurrent(request, freshCheck))
+			{
+				return parentStatus.getStatus();
+			}
 			return freshCheck.getStatus();
 		}
 
@@ -111,11 +125,15 @@ public class VATaxIDCheckService
 		final VATaxIDCheckResult result = applyOnServiceUnavailable(onlineChecker.check(vataxID, config), config);
 		checkRepository.completeCheck(checkLogId, result);
 
-		parentStatusRepository.updateParentStatus(request, VATaxIDLastCheck.builder()
+		if (!updateParentStatusIfStillCurrent(request, VATaxIDLastCheck.builder()
 				.checkLogId(checkLogId)
 				.status(result.getStatus())
 				.checkedAt(SystemTime.asInstant())
-				.build());
+				.build()))
+		{
+			// No status was stored, so there is no status change to report either.
+			return parentStatus.getStatus();
+		}
 
 		// Suppressed on a first-ever check (previous status NotChecked): the initial rollout would
 		// otherwise produce one line per record -- every VAT-ID "changes" the first time it is checked at
@@ -127,6 +145,70 @@ public class VATaxIDCheckService
 		}
 
 		return result.getStatus();
+	}
+
+	/**
+	 * Writes {@code lastCheck} onto the parent record — unless that record's {@code VATaxID} is no longer the
+	 * value {@code request} was checked for, in which case the verdict is abandoned.
+	 *
+	 * <p><b>Why this guard exists.</b> A save-triggered check runs asynchronously
+	 * ({@code VATaxIDCheckWorkpackageProcessor}) on the VAT-ID captured when the work package was ENQUEUED,
+	 * while the parent columns are written onto the record as it stands when the package is PROCESSED. In
+	 * between, the user can clear the field — {@code VATaxIDCheckTrigger} enqueues nothing for a cleared
+	 * value, but the package already queued still runs — or correct it, in which case two in-flight packages
+	 * for the same record have no ordering guarantee and the older answer could overwrite the newer one.
+	 * Either way the record would end up carrying a status, a timestamp and a {@code VATaxID_CheckLog_ID}
+	 * that belong to a VAT-ID it does not hold, and under a {@code Valid} that is a tax certificate granted
+	 * on the strength of someone else's number.
+	 *
+	 * <p><b>The {@code VATaxID_CheckLog} row is written and kept regardless</b> — the attempt genuinely
+	 * happened, and that table is append-only historical evidence by design. Only the denormalised copy on
+	 * the parent is withheld.
+	 *
+	 * <p>The comparison lives here rather than inside
+	 * {@link VATaxIDParentStatusRepository#updateParentStatus(VATaxIDCheckRequest, VATaxIDLastCheck)}
+	 * because it is a decision, and a repository must not make conditional writes based on business state
+	 * ({@code docs/coding-rules/architecture.md} §8). It also has to be visible here: the caller must learn
+	 * that nothing was stored, so that neither the status-change log line nor
+	 * {@code VATaxIDCheckRunService}'s order-line-tax refresh fires on a verdict that was never written.
+	 * The repository still owns the branch on parent type, on both the read and the write.
+	 *
+	 * <p>The synchronous process path is unaffected: it builds its request from the record it has just read
+	 * and writes moments later, so the values match and this returns {@code true} — unless a user really did
+	 * change the VAT-ID mid-run, which is exactly the case that should be skipped there too.
+	 *
+	 * @return whether the parent record was updated.
+	 */
+	private boolean updateParentStatusIfStillCurrent(
+			@NonNull final VATaxIDCheckRequest request,
+			@NonNull final VATaxIDLastCheck lastCheck)
+	{
+		final VATIdentifier currentVATaxID = parentStatusRepository.getCurrentVATaxID(request);
+		if (!request.getVataxID().equals(currentVATaxID))
+		{
+			// withWarnLoggerToo, not a bare Loggables: the case that matters is the asynchronous one, where
+			// Loggables is a no-op and the server log is the only place an operator can find this.
+			Loggables.withWarnLoggerToo(logger).addLog(
+					"VAT-ID check result {} for {} was NOT stored on {}: the record now holds {} instead of the"
+							+ " checked value, so the answer is about a VAT-ID it no longer has. The"
+							+ " VATaxID_CheckLog row is kept as evidence of the attempt.",
+					lastCheck.getStatus(), request.getVataxID().getAsString(), toLogLabel(request),
+					VATIdentifier.toString(currentVATaxID));
+			return false;
+		}
+
+		parentStatusRepository.updateParentStatus(request, lastCheck);
+		return true;
+	}
+
+	@NonNull
+	private static String toLogLabel(@NonNull final VATaxIDCheckRequest request)
+	{
+		final BPartnerLocationId bpartnerLocationId = request.getBpartnerLocationId();
+		return bpartnerLocationId != null
+				? "C_BPartner_ID=" + request.getBpartnerId().getRepoId()
+				+ ", C_BPartner_Location_ID=" + bpartnerLocationId.getRepoId()
+				: "C_BPartner_ID=" + request.getBpartnerId().getRepoId();
 	}
 
 	/**

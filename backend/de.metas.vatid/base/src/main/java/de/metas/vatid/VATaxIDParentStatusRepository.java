@@ -24,6 +24,7 @@ package de.metas.vatid;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.organization.OrgId;
+import de.metas.tax.api.VATIdentifier;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
@@ -38,8 +39,10 @@ import javax.annotation.Nullable;
  *
  * <p>Repository Cluster: sole owner of the three VAT-ID check columns {@code VATaxIDStatus},
  * {@code VATaxIDCheckedAt} and {@code VATaxID_CheckLog_ID} on both tables. The rest of those tables belongs
- * to {@code de.metas.bpartner}'s own persistence, which never touches these three, and this class touches no
- * other column — so the two do not overlap despite sharing the tables.
+ * to {@code de.metas.bpartner}'s own persistence, which never touches these three, and this class WRITES no
+ * other column — so the two do not overlap despite sharing the tables. It additionally READS {@code VATaxID}
+ * ({@link #getCurrentVATaxID(VATaxIDCheckRequest)}), which {@code de.metas.bpartner} owns and this class
+ * never writes.
  *
  * <p>Owns the parent side of the feature's denormalisation: {@code VATaxID_CheckLog} holds the evidence, and
  * these three columns are the copy of its latest relevant row that tax determination and the windows read.
@@ -76,6 +79,37 @@ public class VATaxIDParentStatusRepository
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.status(extractStatus(record.getVATaxIDStatus()))
 				.build();
+	}
+
+	/**
+	 * Reads the {@code VATaxID} currently stored on the record {@code request} names — the location when it
+	 * carries one, else the partner header.
+	 *
+	 * <p>A plain read, deliberately: the decision it feeds — whether an answer obtained for
+	 * {@link VATaxIDCheckRequest#getVataxID()} may still be written onto that record — belongs to
+	 * {@link VATaxIDCheckService}, not here ({@code docs/coding-rules/architecture.md} §8, "no conditional
+	 * writes based on business state"). What DOES belong here is the branch on parent type, which is why the
+	 * caller gets one value rather than having to reproduce that branch.
+	 *
+	 * <p>Separate from {@link #getParentStatus(VATaxIDCheckRequest)} rather than folded into it because the
+	 * two are read at different moments: the status before the check, this one immediately before the write,
+	 * with a third party's response time in between.
+	 *
+	 * @return {@code null} when the record's {@code VATaxID} is empty — e.g. cleared by the user while the
+	 * check was in flight.
+	 */
+	@Nullable
+	public VATIdentifier getCurrentVATaxID(@NonNull final VATaxIDCheckRequest request)
+	{
+		final BPartnerLocationId bpartnerLocationId = request.getBpartnerLocationId();
+		if (bpartnerLocationId != null)
+		{
+			final I_C_BPartner_Location record = InterfaceWrapperHelper.load(bpartnerLocationId, I_C_BPartner_Location.class);
+			return VATIdentifier.ofNullable(record.getVATaxID());
+		}
+
+		final I_C_BPartner record = InterfaceWrapperHelper.load(request.getBpartnerId(), I_C_BPartner.class);
+		return VATIdentifier.ofNullable(record.getVATaxID());
 	}
 
 	/**
