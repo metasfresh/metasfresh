@@ -90,6 +90,7 @@ public class C_BPartner
 		final AdSessionId adSessionId = sessionBL.getCurrentOrCreateSessionId(Env.getCtx());
 
 		vataxIDCheckTrigger.scheduleCheckAfterCommit(
+				OrgId.ofRepoId(bpartner.getAD_Org_ID()),
 				BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()),
 				null,
 				bpartner.getVATaxID(),
