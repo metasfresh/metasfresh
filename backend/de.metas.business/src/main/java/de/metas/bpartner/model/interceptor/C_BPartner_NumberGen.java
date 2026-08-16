@@ -71,7 +71,7 @@ public class C_BPartner_NumberGen
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
 	public void generateOnNew(@NonNull final I_C_BPartner bpartner)
 	{
-		if (!enabledFor(bpartner))
+		if (isDisabled(bpartner))
 		{
 			return;
 		}
@@ -80,6 +80,22 @@ public class C_BPartner_NumberGen
 		// numbers are reserved (not re-generated) inside generateNumbers. BEFORE_NEW ⇒ the values
 		// applyTo() sets are written by the INSERT (no re-save).
 		bpartnerNumberGenerator.generateNumbers(bpartner).applyTo(bpartner);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
+			ifColumnsChanged = I_C_BPartner.COLUMNNAME_IsCustomer + "," + I_C_BPartner.COLUMNNAME_IsVendor)
+	public void generateOnChange(@NonNull final I_C_BPartner bpartner)
+	{
+		if (isDisabled(bpartner))
+		{
+			return;
+		}
+		final DebtorId debtorId = DebtorId.ofNullableNo(bpartner.getDebtorId());
+		final CreditorId creditorId = CreditorId.ofNullableNo(bpartner.getCreditorId());
+		if ((bpartner.isCustomer() && debtorId == null) || (bpartner.isVendor() && creditorId == null))
+		{
+			bpartnerNumberGenerator.generateNumbers(bpartner).applyTo(bpartner);
+		}
 	}
 
 	/**
@@ -91,7 +107,7 @@ public class C_BPartner_NumberGen
 			ifColumnsChanged = { I_C_BPartner.COLUMNNAME_DebtorId, I_C_BPartner.COLUMNNAME_CreditorId })
 	public void reserveOnChange(@NonNull final I_C_BPartner bpartner)
 	{
-		if (!enabledFor(bpartner))
+		if (isDisabled(bpartner))
 		{
 			return;
 		}
@@ -115,10 +131,12 @@ public class C_BPartner_NumberGen
 		}
 	}
 
-	/** Master on/off switch (default off) — checked first so the interceptor is a no-op on instances not using the feature. */
-	private boolean enabledFor(@NonNull final I_C_BPartner bpartner)
+	/**
+	 * Master on/off switch (default off) — checked first so the interceptor is a no-op on instances not using the feature.
+	 */
+	private boolean isDisabled(@NonNull final I_C_BPartner bpartner)
 	{
-		return bpartnerNumberGenerator.isEnabled(
+		return !bpartnerNumberGenerator.isEnabled(
 				ClientAndOrgId.ofClientAndOrg(bpartner.getAD_Client_ID(), bpartner.getAD_Org_ID()));
 	}
 }
