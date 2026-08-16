@@ -29,10 +29,7 @@ import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.bpartner.BPartnerId;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
-import de.metas.vatid.VATaxIDConfig;
-import de.metas.vatid.VATaxIDConfigId;
-import de.metas.vatid.VATaxIDConfigRepository;
-import de.metas.vatid.VATaxIDOnServiceUnavailableAction;
+import de.metas.vatid.VATaxIDCheckService;
 import de.metas.vatid.async.VATaxIDCheckWorkpackageProcessor;
 import org.adempiere.ad.session.AdSessionId;
 import org.adempiere.test.AdempiereTestHelper;
@@ -70,7 +67,7 @@ class VATaxIDCheckTriggerTest
 	/** One of the VAT-IDs the cucumber scenarios use, so the two layers stay recognisably about the same case. */
 	private static final String VATAXID = "DE136695976";
 
-	private VATaxIDConfigRepository configRepository;
+	private VATaxIDCheckService checkService;
 	private IWorkPackageQueueFactory queueFactory;
 	private IWorkPackageBuilder workPackageBuilder;
 	private IWorkPackageParamsBuilder paramsBuilder;
@@ -96,21 +93,14 @@ class VATaxIDCheckTriggerTest
 		when(queueFactory.getQueueForEnqueuing(VATaxIDCheckWorkpackageProcessor.class)).thenReturn(queue);
 		Services.registerService(IWorkPackageQueueFactory.class, queueFactory);
 
-		configRepository = mock(VATaxIDConfigRepository.class);
+		checkService = mock(VATaxIDCheckService.class);
 
-		trigger = new VATaxIDCheckTrigger(configRepository);
+		trigger = new VATaxIDCheckTrigger(checkService);
 	}
 
 	private void givenViesCheckEnabled(final boolean viesCheckEnabled)
 	{
-		when(configRepository.getByOrgId(ORG_ID)).thenReturn(VATaxIDConfig.builder()
-				.id(VATaxIDConfigId.ofRepoId(1_000_000))
-				.formatCheckEnabled(true)
-				.viesCheckEnabled(viesCheckEnabled)
-				.restApiBaseURL("https://ec.europa.eu/taxation_customs/vies/rest-api")
-				.recheckAfterDays(30)
-				.onServiceUnavailable(VATaxIDOnServiceUnavailableAction.ServiceUnavailable)
-				.build());
+		when(checkService.isViesCheckEnabled(ORG_ID)).thenReturn(viesCheckEnabled);
 	}
 
 	private void whenPartnerIsSavedWith(final String vataxIDValue)
@@ -146,6 +136,8 @@ class VATaxIDCheckTriggerTest
 
 			verify(workPackageBuilder).buildAndEnqueue();
 			verify(paramsBuilder).setParameter("C_BPartner_ID", BPARTNER_ID.getRepoId());
+			// -1, the "no id" sentinel: this save put the VAT-ID on the partner header, not on a location.
+			verify(paramsBuilder).setParameter("C_BPartner_Location_ID", -1);
 			verify(paramsBuilder).setParameter("VATaxID", VATAXID);
 			verify(paramsBuilder).setParameter("AD_Session_ID", AD_SESSION_ID.getRepoId());
 		}

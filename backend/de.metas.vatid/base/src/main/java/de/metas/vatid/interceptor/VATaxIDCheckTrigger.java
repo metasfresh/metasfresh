@@ -26,7 +26,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.organization.OrgId;
 import de.metas.tax.api.VATIdentifier;
-import de.metas.vatid.VATaxIDConfigRepository;
+import de.metas.vatid.VATaxIDCheckService;
 import de.metas.vatid.async.VATaxIDCheckWorkpackageProcessor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -60,17 +60,22 @@ import javax.annotation.Nullable;
  * process does not come through here at all, so that gate is the only one on the process path — and on this
  * path a second reading costs nothing.
  *
- * <p><b>Residual race, accepted.</b> The flag is read here and read again when the package is processed, so
- * a configuration switched OFF in between still lets an already-queued check run — bounded by the queue's
- * latency, and the outcome is one online call and one log row too many, never a wrong verdict. Closing it
- * would mean carrying the decision inside the work package and refusing to re-read it, which trades this for
- * checks that ignore the configuration outright.
+ * <p><b>Residual disagreement between the two readings, accepted.</b> The flag is read here and read again
+ * when the package is processed, and the two can differ. Because BOTH gates must pass, that can only ever
+ * SUPPRESS a check, never add one: a configuration switched off in between makes
+ * {@code VATaxIDCheckService#check} return before it writes anything or calls the service, so the queued
+ * package becomes a silent no-op — no online call, no {@code VATaxID_CheckLog} row, the stored status
+ * untouched. What is lost in that window is a check the save-time policy had authorised; what cannot happen
+ * is a check it had declined, which is the direction that matters and the one this class exists to close.
+ * Making the enqueue-time verdict final — carrying it inside the work package and having the processor
+ * refuse to re-read — would buy that window at the price of a process path with no gate at all, and of
+ * checks that ignore a configuration switched off while they were queued.
  */
 @Component
 @RequiredArgsConstructor
 public class VATaxIDCheckTrigger
 {
-	@NonNull private final VATaxIDConfigRepository configRepository;
+	@NonNull private final VATaxIDCheckService checkService;
 
 	/**
 	 * Schedules the check of {@code vataxIDValue} for the given partner/location once the current save
@@ -101,7 +106,7 @@ public class VATaxIDCheckTrigger
 			return;
 		}
 
-		if (!configRepository.getByOrgId(orgId).isViesCheckEnabled())
+		if (!checkService.isViesCheckEnabled(orgId))
 		{
 			// The organisation has the online check switched off, so this save is not to be checked at all
 			// — see the class javadoc for why that verdict is reached here and not left to the processor.
