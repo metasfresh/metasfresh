@@ -118,6 +118,17 @@ public class VATaxIDCheck_StepDef
 	 * genuine change again. Clearing is itself safe: {@code VATaxIDCheckTrigger} enqueues nothing for an
 	 * empty value.
 	 *
+	 * <p><b>Reach, and why it is accepted.</b> Both the status reset and the value clear are keyed on the
+	 * VAT-ID <b>value</b> alone, so they hit EVERY record holding it, including fixtures belonging to other
+	 * feature files — {@code DE136695976}, for one, is also a literal in {@code createBPartnerV2.feature}
+	 * and {@code vatIdValidation.feature}, which share executor 3 (and so one database) with the features
+	 * calling this step. That is deliberate and not narrowable: a bare value string carries no signal of
+	 * which scenario owns the record. It is harmless because those siblings each SET the value inside the
+	 * scenario that asserts on it, and features run one at a time — a cleanup can only ever land before
+	 * such a fixture is created or after its assertions are done, never between the two. What it does mean
+	 * is that no scenario may rely on a shared VAT-ID literal surviving on a record it did not itself write
+	 * in the same scenario; on a re-run against the never-reset local database, it will not have.
+	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
 	 * <pre>
