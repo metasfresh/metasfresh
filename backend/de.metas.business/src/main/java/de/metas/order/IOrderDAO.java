@@ -148,8 +148,7 @@ public interface IOrderDAO extends ISingletonService
 	Stream<OrderId> streamOrderIdsByBPartnerId(BPartnerId bpartnerId);
 
 	/**
-	 * @return the ids of every order of {@code bpartnerId} that is not yet {@code Completed} or
-	 * {@code Closed} — the orders whose {@code C_OrderLine.C_Tax_ID} may still legitimately be recomputed.
+	 * @return the ids of every order of {@code bpartnerId} that is not yet processed — the orders whose {@code C_OrderLine.C_Tax_ID} may still legitimately be recomputed.
 	 */
 	Set<OrderId> retrieveNotProcessedOrderIds(BPartnerId bpartnerId);
 

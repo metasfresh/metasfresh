@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * metasfresh-vatid-base
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 -- VAT-ID online check: create the default VATaxID_Config record for every real organisation, so that the
 -- "USt-IdNr.-Konfiguration" window (AD_Window 542182) opens on a real, editable row instead of an empty
 -- list.
@@ -77,7 +99,9 @@ INSERT INTO VATaxID_Config (
     VATaxID_Config_ID,
     AD_Client_ID, AD_Org_ID, IsActive,
     Created, CreatedBy, Updated, UpdatedBy,
-    IsFormatCheckEnabled, IsVIESCheckEnabled,
+    IsFormatCheckEnabled,
+    RestApiBaseURL,                        
+                            IsVIESCheckEnabled,
     RecheckAfterDays, OnServiceUnavailable
 )
 SELECT
@@ -106,8 +130,9 @@ SELECT
                 AND sc.AD_Client_ID = 0
                 AND sc.AD_Org_ID = 0
               LIMIT 1), 'Y'),
+    'https://ec.europa.eu/taxation_customs/vies/rest-api',
     'N',   -- IsVIESCheckEnabled -- the fallback hardcodes false, so nothing else is possible today
-    90,    -- RecheckAfterDays
+    30,    -- RecheckAfterDays
     'ServiceUnavailable'
 FROM AD_Org org
 WHERE org.AD_Org_ID > 0
