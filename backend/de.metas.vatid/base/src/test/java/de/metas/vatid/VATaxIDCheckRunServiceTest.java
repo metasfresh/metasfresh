@@ -72,7 +72,6 @@ class VATaxIDCheckRunServiceTest
 	private static final String VIES_ERROR_CODE = "INVALID_REQUESTER_INFO";
 
 	private VATaxIDCheckService checkServiceMock;
-	private VATaxIDOrderTaxRefresher orderTaxRefresherMock;
 	private IBPartnerDAO bpartnerDAOMock;
 
 	@BeforeEach
@@ -84,7 +83,6 @@ class VATaxIDCheckRunServiceTest
 		Services.registerService(IBPartnerDAO.class, bpartnerDAOMock);
 
 		checkServiceMock = mock(VATaxIDCheckService.class);
-		orderTaxRefresherMock = mock(VATaxIDOrderTaxRefresher.class);
 	}
 
 	private static I_C_BPartner newBPartnerWithVATaxID(final BPartnerId bpartnerId, final String vataxID)
@@ -114,7 +112,7 @@ class VATaxIDCheckRunServiceTest
 		when(checkServiceMock.check(argThat(req -> req != null && BPARTNER_ID_HEALTHY.equals(req.getBpartnerId()))))
 				.thenReturn(VATaxIDStatus.Valid);
 
-		final VATaxIDCheckRunService runService = new VATaxIDCheckRunService(checkServiceMock, orderTaxRefresherMock);
+		final VATaxIDCheckRunService runService = new VATaxIDCheckRunService(checkServiceMock);
 
 		final VATaxIDCheckRunRequest request = VATaxIDCheckRunRequest.builder()
 				.selectedBPartnerIds(ImmutableList.of(BPARTNER_ID_BROKEN_STAMP, BPARTNER_ID_HEALTHY))
@@ -175,7 +173,7 @@ class VATaxIDCheckRunServiceTest
 						VIES_ERROR_CODE,
 						"VIES rejected the request: " + VIES_ERROR_CODE + ". Check the VAT-ID configuration."));
 
-		final VATaxIDCheckRunService runService = new VATaxIDCheckRunService(checkServiceMock, orderTaxRefresherMock);
+		final VATaxIDCheckRunService runService = new VATaxIDCheckRunService(checkServiceMock);
 
 		final VATaxIDCheckRunRequest request = VATaxIDCheckRunRequest.builder()
 				.selectedBPartnerIds(ImmutableList.of(BPARTNER_ID_HEALTHY, BPARTNER_ID_SECOND, BPARTNER_ID_THIRD))

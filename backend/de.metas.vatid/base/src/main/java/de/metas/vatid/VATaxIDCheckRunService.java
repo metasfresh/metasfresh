@@ -42,7 +42,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.slf4j.Logger;
@@ -86,9 +85,10 @@ import java.util.stream.Collectors;
  * before that partner's locations, so a throttled manual run always processes the same prefix. The nightly
  * run deliberately supersedes this with the attempt-time ordering above.
  *
- * <p><b>Each target runs in its own new transaction</b> ({@link #checkOneInOwnTrx}), together with the
- * order-line-tax refresh a status change triggers, so one target's failure cannot affect any other — the
- * point is independent commit per target, not escaping an ambient transaction.
+ * <p><b>Each target runs in its own new transaction</b> ({@link #checkOneInOwnTrx}) — including the
+ * order-line-tax refresh a status change triggers, which {@link VATaxIDCheckService} performs inside the
+ * check and which joins that same transaction — so one target's failure cannot affect any other. The point
+ * is independent commit per target, not escaping an ambient transaction.
  *
  * <p><b>One failure is not a per-target failure and stops the run</b>: a
  * {@link VATaxIDCheckRequestRejectedException}, i.e. the checking service rejecting the REQUEST because this
@@ -109,7 +109,6 @@ public class VATaxIDCheckRunService
 	private static final Logger logger = LogManager.getLogger(VATaxIDCheckRunService.class);
 
 	@NonNull private final VATaxIDCheckService checkService;
-	@NonNull private final VATaxIDOrderTaxRefresher orderTaxRefresher;
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
@@ -447,20 +446,20 @@ public class VATaxIDCheckRunService
 	}
 
 	/**
-	 * Runs one target's attempt stamp, its check, and the order-line-tax refresh a status change triggers.
+	 * Runs one target's attempt stamp and its check.
 	 *
-	 * <p>The attempt stamp is its own already-committed transaction, written before the check-and-refresh
-	 * unit starts ({@link #stampAttemptInOwnTrx}); a write sharing that unit's transaction would be erased by
-	 * exactly the rollback it exists to survive.
+	 * <p>The attempt stamp is its own already-committed transaction, written before the check starts
+	 * ({@link #stampAttemptInOwnTrx}); a write sharing the check's transaction would be erased by exactly the
+	 * rollback it exists to survive.
 	 *
-	 * <p>The check-and-refresh unit is wrapped in {@code callInNewTrx} — normally a hack, per
+	 * <p>The check is wrapped in {@code callInNewTrx} — normally a hack, per
 	 * {@code docs/coding-rules/java-general.md} — because each target's whole unit of work must commit or
-	 * fail independently of every other target's. The check and the refresh share that one transaction on
-	 * purpose: a separately-committing refresh could leave refreshed order-line tax with no committed check
-	 * behind it.
+	 * fail independently of every other target's. That unit includes the order-line-tax refresh a status
+	 * change triggers: {@link VATaxIDCheckService} performs it inside the check, joining this transaction
+	 * rather than opening its own, so a refresh failure still rolls the check back with it.
 	 *
 	 * <p>Two {@code catch} blocks, not one: a stamp failure means the check was never attempted and leaves no
-	 * other trace, while a check-and-refresh failure means the attempt is already durably recorded. One
+	 * other trace, while a failure of the check itself means the attempt is already durably recorded. One
 	 * shared message would hide the rarer signal.
 	 *
 	 * @throws VATaxIDCheckRequestRejectedException when the checking service rejected the request itself
@@ -491,7 +490,12 @@ public class VATaxIDCheckRunService
 		{
 			// Isolation from every OTHER target's transaction in this run (see the method javadoc above) —
 			// each target's check-plus-refresh must commit or fail as its own independent unit.
-			trxManager.callInNewTrx(() -> checkAndRefreshIfStatusChanged(pinstanceId, checkTarget));
+			trxManager.callInNewTrx(() -> checkService.check(VATaxIDCheckRequest.builder()
+					.bpartnerId(checkTarget.getBpartnerId())
+					.bpartnerLocationId(checkTarget.getBpartnerLocationId())
+					.vataxID(checkTarget.getVataxID())
+					.pinstanceId(pinstanceId)
+					.build()));
 		}
 		catch (final VATaxIDCheckRequestRejectedException ex)
 		{
@@ -543,43 +547,11 @@ public class VATaxIDCheckRunService
 		});
 	}
 
-	@NonNull
-	private VATaxIDStatus checkAndRefreshIfStatusChanged(@Nullable final PInstanceId pinstanceId, @NonNull final CheckTarget checkTarget)
-	{
-		final VATaxIDStatus newStatus = checkService.check(VATaxIDCheckRequest.builder()
-				.bpartnerId(checkTarget.getBpartnerId())
-				.bpartnerLocationId(checkTarget.getBpartnerLocationId())
-				.vataxID(checkTarget.getVataxID())
-				.pinstanceId(pinstanceId)
-				.build());
-
-		if (newStatus != checkTarget.getPreviousStatus())
-		{
-			try
-			{
-				orderTaxRefresher.refreshOrderLinesTaxForBPartner(checkTarget.getBpartnerId());
-			}
-			catch (final Exception ex)
-			{
-				// Re-thrown (not swallowed): the whole transaction — check included — must roll back
-				// together (see the method javadoc). Wrapped so the outer catch's log line still names the
-				// check as having succeeded, rather than being misread as a check failure.
-				throw new AdempiereException(
-						"VAT-ID check for " + checkTarget.getLogLabel()
-								+ " succeeded (status " + checkTarget.getPreviousStatus() + " -> " + newStatus
-								+ "), but refreshing its open orders' tax failed: " + ex.getMessage(),
-						ex);
-			}
-		}
-
-		return newStatus;
-	}
-
 	/**
 	 * One VAT-ID to check: either a partner header ({@link #bpartnerLocationId} {@code null}) or one of its
-	 * locations. Carries everything {@link #checkAndRefreshIfStatusChanged} needs so that method no longer
-	 * has to branch on which table the record came from — the branch happens once, when a {@code CheckTarget}
-	 * is built from the underlying {@code I_C_BPartner} / {@code I_C_BPartner_Location} record.
+	 * locations. Carries everything {@link #checkOneInOwnTrx} needs so that method no longer has to branch on
+	 * which table the record came from — the branch happens once, when a {@code CheckTarget} is built from
+	 * the underlying {@code I_C_BPartner} / {@code I_C_BPartner_Location} record.
 	 */
 	@Value
 	@Builder

@@ -30,8 +30,11 @@ import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.tax.api.VATIdentifier;
 import de.metas.util.Loggables;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -51,6 +54,11 @@ import java.time.Instant;
  * parent's status columns, which tax determination and the windows read, are refreshed — but only while the
  * record still holds the VAT-ID that was checked, see
  * {@link #updateParentStatusIfStillCurrent(VATaxIDCheckRequest, VATaxIDLastCheck)}.
+ *
+ * <p><b>A status that actually changed also refreshes the partner's open orders' tax</b>, and that happens
+ * here rather than in either caller — see
+ * {@link #storeVerdictAndRefreshOrderTax(VATaxIDCheckRequest, VATaxIDStatus, VATaxIDLastCheck)}. Both paths
+ * converge on this method, so a refresh anywhere else is a refresh only one of them gets.
  *
  * <p>Countries the online service does not cover are answered {@link VATaxIDStatus#NotSupported} by the
  * checker itself, so that list exists exactly once, in the implementation that owns the protocol.
@@ -74,15 +82,16 @@ public class VATaxIDCheckService
 	@NonNull private final VATaxIDCheckRepository checkRepository;
 	@NonNull private final VATaxIDParentStatusRepository parentStatusRepository;
 	@NonNull private final VATaxIDOnlineChecker onlineChecker;
+	@NonNull private final VATaxIDOrderTaxRefresher orderTaxRefresher;
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	/**
 	 * @return the status the RECORD now has — the freshly obtained one, or the still-fresh previous result
 	 * when de-duplication skipped the call, or the unchanged stored one when nothing was written (the online
 	 * check is off, or the record no longer holds the checked VAT-ID; see
 	 * {@link #updateParentStatusIfStillCurrent(VATaxIDCheckRequest, VATaxIDLastCheck)}). Never the answer
-	 * itself when that answer was not stored — the caller acts on this, and
-	 * {@link VATaxIDCheckRunService} refreshes a partner's order-line tax when it differs from the previous
-	 * status. Never {@link VATaxIDStatus#RequestSent}, which exists only on a log row awaiting its answer.
+	 * itself when that answer was not stored. Never {@link VATaxIDStatus#RequestSent}, which exists only on a
+	 * log row awaiting its answer.
 	 */
 	@NonNull
 	public VATaxIDStatus check(@NonNull final VATaxIDCheckRequest request)
@@ -113,7 +122,9 @@ public class VATaxIDCheckService
 
 			// Written even though nothing was checked: the parent must mirror the log row it points at, and
 			// this VAT-ID's fresh result may have been obtained for a different parent carrying the same value.
-			if (!updateParentStatusIfStillCurrent(request, freshCheck))
+			// That write can therefore change this record's status, which is why the order-tax refresh has to
+			// be considered on this path too and not only after a real online call.
+			if (!storeVerdictAndRefreshOrderTax(request, parentStatus.getStatus(), freshCheck))
 			{
 				return parentStatus.getStatus();
 			}
@@ -125,7 +136,7 @@ public class VATaxIDCheckService
 		final VATaxIDCheckResult result = applyOnServiceUnavailable(onlineChecker.check(vataxID, config), config);
 		checkRepository.completeCheck(checkLogId, result);
 
-		if (!updateParentStatusIfStillCurrent(request, VATaxIDLastCheck.builder()
+		if (!storeVerdictAndRefreshOrderTax(request, parentStatus.getStatus(), VATaxIDLastCheck.builder()
 				.checkLogId(checkLogId)
 				.status(result.getStatus())
 				.checkedAt(SystemTime.asInstant())
@@ -145,6 +156,91 @@ public class VATaxIDCheckService
 		}
 
 		return result.getStatus();
+	}
+
+	/**
+	 * Stores {@code lastCheck} on the parent and, when that write actually CHANGED the record's status,
+	 * refreshes the partner's not-yet-processed orders' tax — the two as one unit of work.
+	 *
+	 * <p><b>Why the comparison is against {@code previousStatus} read from the record.</b> The stored status
+	 * is what tax determination was reading a moment ago, so "it differs from what the record held" is
+	 * exactly the condition under which an open order's tax can now come out differently. A snapshot taken
+	 * by a caller is not the same thing: the {@code C_BPartner_VATaxID_Check} process used to compare against
+	 * one captured when it retrieved its targets, and the save-triggered check — which converges here too —
+	 * had by then already written the new status, so the process saw no change left and refreshed nothing.
+	 * Nobody did.
+	 *
+	 * <p><b>Only a write that happened can trigger a refresh.</b> A verdict abandoned by
+	 * {@link #updateParentStatusIfStillCurrent(VATaxIDCheckRequest, VATaxIDLastCheck)} changed no status, so
+	 * there is nothing for a tax rule to have started reading differently. Likewise a re-check that merely
+	 * reconfirms the stored status: refreshing there would re-save every line of every open order of every
+	 * partner the nightly run touches, for no changed input. (The remaining no-write case,
+	 * {@code IsVIESCheckEnabled=N}, never reaches this method — {@code check} returns before it.)
+	 *
+	 * <p><b>{@code callInThreadInheritedTrx}, so the pair is atomic on BOTH paths</b> — a refresh failure must
+	 * never leave a committed status behind stale order tax, and the two paths arrive here differently:
+	 * <ul>
+	 * <li>Under {@code C_BPartner_VATaxID_Check} there IS an ambient transaction ({@code VATaxIDCheckRunService}
+	 * wraps each target's whole unit), so this NESTS in it — a savepoint, committing nothing of its own. The
+	 * rethrow below then unwinds out of {@code check} and rolls that whole per-target unit back, exactly as
+	 * before this refresh moved here.</li>
+	 * <li>Under a save-triggered check there is NONE: {@code VATaxIDCheckWorkpackageProcessor} declares
+	 * {@code isRunInTransaction()==false}, so the async framework runs it with no thread-inherited transaction
+	 * at all. Here {@code callInThreadInheritedTrx} therefore opens one and commits it, which is what makes
+	 * the write and the refresh atomic on this path — separately auto-committing saves would not be.</li>
+	 * </ul>
+	 *
+	 * <p>The rethrow cannot fail a user's save: that path already runs off the saving thread, after the save
+	 * committed, and {@code VATaxIDCheckWorkpackageProcessor} logs and swallows whatever comes out of
+	 * {@code check}.
+	 *
+	 * @param previousStatus the status the record held before this check, as read at the top of
+	 * {@link #check(VATaxIDCheckRequest)}.
+	 * @return whether the parent record was updated — {@code false} means the verdict was abandoned, and the
+	 * caller must report the stored status rather than the answer.
+	 */
+	private boolean storeVerdictAndRefreshOrderTax(
+			@NonNull final VATaxIDCheckRequest request,
+			@NonNull final VATaxIDStatus previousStatus,
+			@NonNull final VATaxIDLastCheck lastCheck)
+	{
+		return trxManager.callInThreadInheritedTrx(() -> {
+			if (!updateParentStatusIfStillCurrent(request, lastCheck))
+			{
+				return false;
+			}
+
+			if (lastCheck.getStatus() != previousStatus)
+			{
+				refreshOrderTax(request, previousStatus, lastCheck.getStatus());
+			}
+
+			return true;
+		});
+	}
+
+	/**
+	 * Wraps a refresh failure rather than swallowing it: the whole unit — the status write included — must
+	 * roll back together, and the message has to say the check itself SUCCEEDED, or the run log's per-target
+	 * failure line reads as though the VAT-ID could not be checked.
+	 */
+	private void refreshOrderTax(
+			@NonNull final VATaxIDCheckRequest request,
+			@NonNull final VATaxIDStatus previousStatus,
+			@NonNull final VATaxIDStatus newStatus)
+	{
+		try
+		{
+			orderTaxRefresher.refreshOrderLinesTaxForBPartner(request.getBpartnerId());
+		}
+		catch (final Exception ex)
+		{
+			throw new AdempiereException(
+					"VAT-ID check for " + toLogLabel(request)
+							+ " succeeded (status " + previousStatus + " -> " + newStatus
+							+ "), but refreshing its open orders' tax failed: " + ex.getMessage(),
+					ex);
+		}
 	}
 
 	/**
@@ -168,9 +264,10 @@ public class VATaxIDCheckService
 	 * <p>The comparison lives here rather than inside
 	 * {@link VATaxIDParentStatusRepository#updateParentStatus(VATaxIDCheckRequest, VATaxIDLastCheck)}
 	 * because it is a decision, and a repository must not make conditional writes based on business state
-	 * ({@code docs/coding-rules/architecture.md} §8). It also has to be visible here: the caller must learn
-	 * that nothing was stored, so that neither the status-change log line nor
-	 * {@code VATaxIDCheckRunService}'s order-line-tax refresh fires on a verdict that was never written.
+	 * ({@code docs/coding-rules/architecture.md} §8). It also has to be visible to the caller: neither the
+	 * status-change log line nor the order-line-tax refresh in
+	 * {@link #storeVerdictAndRefreshOrderTax(VATaxIDCheckRequest, VATaxIDStatus, VATaxIDLastCheck)} may fire
+	 * on a verdict that was never written.
 	 * The repository still owns the branch on parent type, on both the read and the write.
 	 *
 	 * <p>The synchronous process path keeps working unchanged in the ordinary case — it builds its request

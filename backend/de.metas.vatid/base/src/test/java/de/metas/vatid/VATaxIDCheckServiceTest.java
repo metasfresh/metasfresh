@@ -50,8 +50,20 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Covers the one thing an ASYNCHRONOUS check must never do: write a verdict onto a record whose
- * {@code VATaxID} is no longer the value that verdict was obtained for.
+ * Covers what {@link VATaxIDCheckService#check(VATaxIDCheckRequest)} does with a verdict once it has one:
+ * whether it writes it onto the parent at all, and whether that write refreshes the partner's open orders'
+ * tax.
+ *
+ * <p><b>The order-line-tax refresh.</b> It fires on whichever path wrote a status that DIFFERS from the one
+ * the record already held — the save-triggered asynchronous check just as much as the
+ * {@code C_BPartner_VATaxID_Check} process, because both converge here. Comparing against the record's
+ * STORED status rather than a caller-supplied snapshot is what makes that true: with the comparison in
+ * {@code VATaxIDCheckRunService} instead, a save-triggered check silently consumed the transition and the
+ * process, running second, then saw no change left to react to.
+ *
+ * <p><b>The stale-verdict guard.</b> The other thing covered here is the one an ASYNCHRONOUS check must
+ * never do: write a verdict onto a record whose {@code VATaxID} is no longer the value that verdict was
+ * obtained for.
  *
  * <p>{@code VATaxIDCheckWorkpackageProcessor} reads the VAT-ID from the work-package parameter captured at
  * ENQUEUE time, while the parent columns are written onto the record as it stands at PROCESSING time. Between
@@ -75,6 +87,7 @@ class VATaxIDCheckServiceTest
 	private VATaxIDConfigRepository configRepository;
 	private VATaxIDCheckRepository checkRepository;
 	private VATaxIDOnlineChecker onlineChecker;
+	private VATaxIDOrderTaxRefresher orderTaxRefresher;
 	private VATaxIDCheckService checkService;
 
 	@BeforeEach
@@ -85,12 +98,14 @@ class VATaxIDCheckServiceTest
 		configRepository = mock(VATaxIDConfigRepository.class);
 		checkRepository = VATaxIDCheckRepository.newInstanceForUnitTesting();
 		onlineChecker = mock(VATaxIDOnlineChecker.class);
+		orderTaxRefresher = mock(VATaxIDOrderTaxRefresher.class);
 
 		checkService = new VATaxIDCheckService(
 				configRepository,
 				checkRepository,
 				new VATaxIDParentStatusRepository(),
-				onlineChecker);
+				onlineChecker,
+				orderTaxRefresher);
 	}
 
 	@AfterEach
@@ -119,6 +134,22 @@ class VATaxIDCheckServiceTest
 	{
 		final I_C_BPartner record = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
 		record.setVATaxID(vataxID != null ? vataxID.getAsString() : null);
+		InterfaceWrapperHelper.saveRecord(record);
+		return BPartnerId.ofRepoId(record.getC_BPartner_ID());
+	}
+
+	/**
+	 * A partner that has ALREADY been checked once and carries the resulting status — the starting point of
+	 * every re-check, and the only way to tell a status that changed from one that was merely reconfirmed.
+	 */
+	@NonNull
+	private static BPartnerId givenBPartnerWithVATaxIDAndStatus(
+			@NonNull final VATIdentifier vataxID,
+			@NonNull final VATaxIDStatus status)
+	{
+		final I_C_BPartner record = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		record.setVATaxID(vataxID.getAsString());
+		record.setVATaxIDStatus(status.getCode());
 		InterfaceWrapperHelper.saveRecord(record);
 		return BPartnerId.ofRepoId(record.getC_BPartner_ID());
 	}
@@ -204,6 +235,10 @@ class VATaxIDCheckServiceTest
 		// the strength of a verdict that was never stored.
 		assertThat(returnedStatus).as("returned status").isEqualTo(VATaxIDStatus.NotChecked);
 
+		// ... and no order tax was refreshed either: an abandoned verdict changed no status, so there is
+		// nothing for a tax rule to have started reading differently.
+		verify(orderTaxRefresher, never()).refreshOrderLinesTaxForBPartner(any(BPartnerId.class));
+
 		// The evidence is kept regardless: the attempt genuinely happened, and VATaxID_CheckLog is
 		// append-only historical evidence by design.
 		assertThat(allCheckLogs())
@@ -248,6 +283,7 @@ class VATaxIDCheckServiceTest
 		assertParentColumnsUntouched(bpartnerId);
 		assertThat(returnedStatus).as("returned status").isEqualTo(VATaxIDStatus.NotChecked);
 		verify(onlineChecker, never()).check(any(VATIdentifier.class), any(VATaxIDConfig.class));
+		verify(orderTaxRefresher, never()).refreshOrderLinesTaxForBPartner(any(BPartnerId.class));
 	}
 
 	/**
@@ -283,6 +319,8 @@ class VATaxIDCheckServiceTest
 
 		// The header must not be collateral damage: a location check never writes the header's columns.
 		assertParentColumnsUntouched(bpartnerId);
+
+		verify(orderTaxRefresher, never()).refreshOrderLinesTaxForBPartner(any(BPartnerId.class));
 	}
 
 	/**
@@ -308,5 +346,96 @@ class VATaxIDCheckServiceTest
 		assertThat(record.getVATaxIDCheckedAt()).as("VATaxIDCheckedAt").isNotNull();
 		assertThat(record.getVATaxID_CheckLog_ID()).as("VATaxID_CheckLog_ID").isGreaterThan(0);
 		assertThat(returnedStatus).as("returned status").isEqualTo(VATaxIDStatus.Valid);
+	}
+
+	/**
+	 * The defect this class's order-tax coverage exists for, in the sequence the feature owner actually hit:
+	 * a partner with an open sales order whose VAT-ID is corrected, so the SAVE-triggered check — not the
+	 * process — is the one that writes the new status. The open order's tax must be refreshed off the back of
+	 * that write.
+	 *
+	 * <p>Before the fix nothing refreshed here at all: {@code check} did not call the refresher, and the only
+	 * production call site was in {@code VATaxIDCheckRunService}, gated on a status snapshot the save-triggered
+	 * check had already consumed. Running the {@code C_BPartner_VATaxID_Check} process afterwards therefore
+	 * found {@code newStatus == previousStatus} and refreshed nothing either, so the order kept the tax of the
+	 * superseded status indefinitely.
+	 *
+	 * <p>The refresher itself is mocked: what belongs here is "the seam is invoked, once, for this partner",
+	 * and it is the {@code de.metas.business} implementation behind that seam — plus the cucumber scenario in
+	 * {@code vatIdCheckProcessCorrectsOrderTax.feature} — that own whether the resulting {@code C_Tax_ID} is
+	 * right.
+	 */
+	@Test
+	void aSaveTriggeredCheckThatChangesTheStoredStatus_refreshesTheOpenOrdersTax()
+	{
+		givenConfig(0);
+		final BPartnerId bpartnerId = givenBPartnerWithVATaxIDAndStatus(CHECKED_VATAXID, VATaxIDStatus.Invalid);
+
+		when(onlineChecker.check(any(VATIdentifier.class), any(VATaxIDConfig.class)))
+				.thenReturn(VATaxIDCheckResult.builder().status(VATaxIDStatus.Valid).build());
+
+		// No pinstanceId: this is the work-package path, exactly as VATaxIDCheckWorkpackageProcessor builds it.
+		final VATaxIDStatus returnedStatus = checkService.check(VATaxIDCheckRequest.builder()
+				.bpartnerId(bpartnerId)
+				.vataxID(CHECKED_VATAXID)
+				.build());
+
+		assertThat(returnedStatus).as("returned status").isEqualTo(VATaxIDStatus.Valid);
+		assertThat(reload(bpartnerId).getVATaxIDStatus()).as("VATaxIDStatus").isEqualTo(VATaxIDStatus.Valid.getCode());
+
+		verify(orderTaxRefresher).refreshOrderLinesTaxForBPartner(bpartnerId);
+	}
+
+	/**
+	 * The guard against the opposite failure — refreshing on every check. A re-check that reconfirms the stored
+	 * status changes nothing a tax rule reads, so re-deriving the tax of every open order of the partner would
+	 * be pure write amplification: the nightly run re-checks every VAT-ID in the database, and each refresh
+	 * saves every line of every not-yet-processed order.
+	 */
+	@Test
+	void aCheckThatReconfirmsTheStoredStatus_doesNotRefreshTheOrderTax()
+	{
+		givenConfig(0);
+		final BPartnerId bpartnerId = givenBPartnerWithVATaxIDAndStatus(CHECKED_VATAXID, VATaxIDStatus.Valid);
+
+		when(onlineChecker.check(any(VATIdentifier.class), any(VATaxIDConfig.class)))
+				.thenReturn(VATaxIDCheckResult.builder().status(VATaxIDStatus.Valid).build());
+
+		final VATaxIDStatus returnedStatus = checkService.check(VATaxIDCheckRequest.builder()
+				.bpartnerId(bpartnerId)
+				.vataxID(CHECKED_VATAXID)
+				.build());
+
+		assertThat(returnedStatus).as("returned status").isEqualTo(VATaxIDStatus.Valid);
+		verify(orderTaxRefresher, never()).refreshOrderLinesTaxForBPartner(any(BPartnerId.class));
+	}
+
+	/**
+	 * The third case the refresh must stay out of, alongside a reconfirmed status and an abandoned verdict: the
+	 * organisation has the online check switched off, so {@code check} returns before it records or writes
+	 * anything at all. Nothing changed, so nothing may be refreshed.
+	 */
+	@Test
+	void aCheckWithTheOnlineCheckDisabled_writesNothingAndDoesNotRefreshTheOrderTax()
+	{
+		when(configRepository.getByOrgId(any(OrgId.class))).thenReturn(VATaxIDConfig.builder()
+				.id(VATaxIDConfigId.ofRepoId(1_000_000))
+				.formatCheckEnabled(true)
+				.viesCheckEnabled(false)
+				.restApiBaseURL("https://ec.europa.eu/taxation_customs/vies/rest-api")
+				.recheckAfterDays(0)
+				.onServiceUnavailable(VATaxIDOnServiceUnavailableAction.ServiceUnavailable)
+				.build());
+		final BPartnerId bpartnerId = givenBPartnerWithVATaxIDAndStatus(CHECKED_VATAXID, VATaxIDStatus.Invalid);
+
+		final VATaxIDStatus returnedStatus = checkService.check(VATaxIDCheckRequest.builder()
+				.bpartnerId(bpartnerId)
+				.vataxID(CHECKED_VATAXID)
+				.build());
+
+		assertThat(returnedStatus).as("returned status").isEqualTo(VATaxIDStatus.Invalid);
+		verify(onlineChecker, never()).check(any(VATIdentifier.class), any(VATaxIDConfig.class));
+		assertThat(allCheckLogs()).as("VATaxID_CheckLog rows").isEmpty();
+		verify(orderTaxRefresher, never()).refreshOrderLinesTaxForBPartner(any(BPartnerId.class));
 	}
 }
