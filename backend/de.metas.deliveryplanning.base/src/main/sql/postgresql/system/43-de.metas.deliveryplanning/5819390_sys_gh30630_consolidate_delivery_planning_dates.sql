@@ -1,4 +1,4 @@
--- gh30630 Phase D - consolidate delivery-planning date columns onto the base ETD/ATD/ETA/ATA columns.
+-- gh30630 - consolidate delivery-planning date columns onto the base ETD/ATD/ETA/ATA columns.
 --
 -- Loading  = departure -> T-D (ETD/ATD);  Delivery = arrival -> T-A (ETA/ATA).
 -- Planned = E (estimated); Actual = A.
@@ -325,9 +325,35 @@ $function$
 
 
 -- =====================================================================================
+-- 6.5) Preserve existing data: copy the old date values into the new columns before the
+--      drop. No-op on a fresh apply (the old columns were just created empty by the port
+--      scripts); preserves data on any instance/stack already carrying populated columns.
+-- =====================================================================================
+SELECT backup_table('m_delivery_planning','_gh30630_datefold');
+SELECT backup_table('i_deliveryplanning','_gh30630_datefold');
+SELECT backup_table('m_shippertransportation','_gh30630_datefold');
+
+UPDATE M_Delivery_Planning
+   SET ETD = PlannedLoadingDate, ATD = ActualLoadingDate,
+       ETA = PlannedDeliveryDate, ATA = ActualDeliveryDate
+ WHERE PlannedLoadingDate IS NOT NULL OR ActualLoadingDate IS NOT NULL
+    OR PlannedDeliveryDate IS NOT NULL OR ActualDeliveryDate IS NOT NULL;
+
+UPDATE I_DeliveryPlanning
+   SET ETD = PlannedLoadingDate, ATD = ActualLoadingDate,
+       ETA = PlannedDeliveryDate, ATA = ActualDeliveryDate
+ WHERE PlannedLoadingDate IS NOT NULL OR ActualLoadingDate IS NOT NULL
+    OR PlannedDeliveryDate IS NOT NULL OR ActualDeliveryDate IS NOT NULL;
+
+-- M_ShipperTransportation ETD/ETA pre-exist (base) -> fill only if still unset.
+UPDATE M_ShipperTransportation
+   SET ETD = COALESCE(ETD, LoadingDate), ETA = COALESCE(ETA, DeliveryDate)
+ WHERE LoadingDate IS NOT NULL OR DeliveryDate IS NOT NULL;
+
+-- =====================================================================================
 -- 7) Drop the old date AD_Columns + physical columns.
---    NOTE: no AD_Element deleted (581686/581687/581688/581689 shared with C_Invoice_Candidate;
---          581900/541376 kept as well).
+--    Shared elements kept: 581689 (C_Invoice_Candidate), 581900 + 541376 (other columns).
+--    The 3 now-orphaned elements (581686/687/688) are removed in step 8 below.
 -- =====================================================================================
 
 -- --- M_Delivery_Planning: PlannedDeliveryDate 585023, ActualDeliveryDate 585024, PlannedLoadingDate 585026, ActualLoadingDate 585027
