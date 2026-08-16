@@ -327,6 +327,15 @@ public class VATaxIDOnlineChecker_StepDef
 	 * candidate rows are the same set, only narrowed to those a parent references. The parent's three check
 	 * columns are written as one set, so a parent pointing at a terminal row also carries that row's
 	 * status — which is what makes this the right thing to wait for.
+	 *
+	 * <p><b>Scoped by VAT-ID value, not by parent record</b> — it asks whether SOME parent references a
+	 * completed row for this value. That is exact for every caller today because each scenario puts the
+	 * checked value on exactly one record, and the {@code no VATaxID_CheckLog records exist for VATaxID}
+	 * step clears prior rows and releases the value from any earlier holder first. A scenario that put the
+	 * SAME VAT-ID on two records — plausible, since a conclusive result is deliberately shared across
+	 * parents by value — would go green on the first parent's write while the second was still in flight,
+	 * reintroducing exactly the race this closes. Give such a scenario two distinct VAT-IDs, or scope the
+	 * wait to the record.
 	 */
 	private boolean completedCheckIsReferencedByItsParent(@NonNull final String vataxID)
 	{
