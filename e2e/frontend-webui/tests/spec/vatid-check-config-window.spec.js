@@ -144,7 +144,7 @@ async function getListWidgetOptionKeys(fieldName) {
 }
 
 test.describe('VAT-ID check configuration window (542182)', () => {
-  test('All 8 config fields are visible + editable on a fresh record, OnServiceUnavailable offers exactly 2 options, values persist', async ({ page }) => {
+  test('All 8 config fields are visible + editable on the seeded record, OnServiceUnavailable offers exactly 2 options, values persist', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.story('VATaxID_Config window (542182) — field wiring + OnServiceUnavailable reference list');
     allure.severity('critical');
@@ -185,13 +185,20 @@ Closes a mandatory Playwright-coverage gap for a newly created WebUI window
     // e2e/frontend-webui CLAUDE.md via the playwright-run skill).
     await LoginPage.expectLoggedIn();
 
-    // The table permits only ONE active VATaxID_Config row per org (partial unique
-    // index on AD_Org_ID WHERE IsActive='Y'). Wrap record creation + assertions in
-    // try/finally so the created record is always deleted afterwards (best-effort,
-    // robust even if an earlier step throws) — otherwise the next run's Alt+N record
-    // collides with this run's leftover active row. Same pattern as
-    // view-invalidate-config-window.spec.js's deleteRecord/try-finally.
+    // This test used to create its own record with Alt+N and delete it afterwards. It can no longer do
+    // that: migration 5819340 seeds one VATaxID_Config row per active organisation, and the table has a
+    // partial unique index (AD_Org_ID WHERE IsActive='Y'), so a second active row is rejected outright
+    // with "Only one active VAT-ID check configuration is allowed per organisation."
+    //
+    // It now exercises the SEEDED record instead, which is also the more faithful test: after the seed,
+    // opening the existing row is exactly what a user does — nobody creates one by hand any more.
+    //
+    // The record is NOT deleted afterwards; it is product data now. Instead the fields this test changes
+    // are captured up front and written back in the finally block, so the run leaves the configuration as
+    // it found it and cannot poison a later spec (the same restore discipline
+    // vatid-status-on-bpartner-window.spec.js already uses for this window).
     let recordId;
+    let originalValues;
     try {
     // === STEP 2: Open the window and create a new record ===
     await page.goto(`${FRONTEND_BASE_URL}/window/${VATID_CONFIG_WINDOW_ID}`);
@@ -202,18 +209,33 @@ Closes a mandatory Playwright-coverage gap for a newly created WebUI window
     await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
     console.log('[INFO] VATaxID_Config window (542182) list view loaded');
 
-    await page.locator('body').click();
-    await page.waitForTimeout(200);
-    await page.keyboard.press('Alt+N');
+    // Open the seeded row rather than creating one. Asserted to exist: the seed migration guarantees a
+    // row per active organisation, so an empty list here is itself a real failure worth reporting loudly
+    // rather than silently skipping.
+    const firstRow = page.locator('.table-flex-wrapper tbody tr, .document-list-wrapper tbody tr').first();
+    await firstRow.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+    await firstRow.dblclick();
     await page.waitForURL(/\/window\/\d+\/\d+/, { timeout: SLOW_ACTION_TIMEOUT });
     await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
     await page.locator('.rotating, .indicator-pending').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
     await page.waitForTimeout(1000);
 
     recordId = page.url().split('/').pop();
-    console.log(`[INFO] New VATaxID_Config record created: ${recordId}`);
+    console.log(`[INFO] Opened the seeded VATaxID_Config record: ${recordId}`);
 
-    await assertRecordIsValid(VATID_CONFIG_WINDOW_ID, recordId, 'after create');
+    await assertRecordIsValid(VATID_CONFIG_WINDOW_ID, recordId, 'seeded record opened');
+
+    // Captured BEFORE anything is changed, so the finally block can put it all back.
+    originalValues = {
+      IsFormatCheckEnabled: await getRawFieldValue(VATID_CONFIG_WINDOW_ID, recordId, 'IsFormatCheckEnabled'),
+      IsVIESCheckEnabled: await getRawFieldValue(VATID_CONFIG_WINDOW_ID, recordId, 'IsVIESCheckEnabled'),
+      RestApiBaseURL: await getRawFieldValue(VATID_CONFIG_WINDOW_ID, recordId, 'RestApiBaseURL'),
+      RequesterMemberStateCode: await getRawFieldValue(VATID_CONFIG_WINDOW_ID, recordId, 'RequesterMemberStateCode'),
+      RequesterNumber: await getRawFieldValue(VATID_CONFIG_WINDOW_ID, recordId, 'RequesterNumber'),
+      RecheckAfterDays: await getRawFieldValue(VATID_CONFIG_WINDOW_ID, recordId, 'RecheckAfterDays'),
+      OnServiceUnavailable: await getRawFieldValue(VATID_CONFIG_WINDOW_ID, recordId, 'OnServiceUnavailable'),
+    };
+    console.log(`[INFO] Captured original config for restore: ${JSON.stringify(originalValues)}`);
 
     // === STEP 3: Every one of the 8 config fields is visible + not-readonly ===
     for (const { fieldName, widgetType } of CONFIG_FIELDS) {
@@ -330,10 +352,38 @@ Closes a mandatory Playwright-coverage gap for a newly created WebUI window
 
     console.log('[PASS] VATaxID_Config window (542182): all fields visible+editable, OnServiceUnavailable has exactly 2 options, record persists.');
     } finally {
-      // Best-effort cleanup so the partial-unique index (AD_Org_ID WHERE IsActive='Y')
-      // does not block the next run — runs regardless of pass/fail.
-      await deleteRecord(page, VATID_CONFIG_WINDOW_ID, recordId);
-      console.log(`[INFO] Cleanup: deleted record ${recordId}`);
+      // Put the seeded record back as it was. NOT a delete: this row is product data the seed migration
+      // ships, and removing it would both break the next run and misrepresent what an installation has.
+      // Best-effort and individually guarded, so one failing restore cannot mask the test's own result.
+      if (recordId && originalValues) {
+        try {
+          await page.goto(`${FRONTEND_BASE_URL}/window/${VATID_CONFIG_WINDOW_ID}/${recordId}`);
+          await page.locator('.rotating, .indicator-pending')
+            .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+
+          if (originalValues.IsFormatCheckEnabled === true) {
+            await BooleanWidget.setTrue('IsFormatCheckEnabled');
+          } else {
+            await BooleanWidget.setFalse('IsFormatCheckEnabled');
+          }
+          if (originalValues.IsVIESCheckEnabled === true) {
+            await BooleanWidget.setTrue('IsVIESCheckEnabled');
+          } else {
+            await BooleanWidget.setFalse('IsVIESCheckEnabled');
+          }
+          await TextWidget.setValue('RestApiBaseURL', originalValues.RestApiBaseURL || '');
+          await TextWidget.setValue('RequesterMemberStateCode', originalValues.RequesterMemberStateCode || '');
+          await TextWidget.setValue('RequesterNumber', originalValues.RequesterNumber || '');
+          await NumericWidget.setValue('RecheckAfterDays', Number(originalValues.RecheckAfterDays) || 0);
+          if (originalValues.OnServiceUnavailable) {
+            await ListWidget.setByValue('OnServiceUnavailable', originalValues.OnServiceUnavailable);
+          }
+          await waitForRecordSavedNoError(VATID_CONFIG_WINDOW_ID, recordId);
+          console.log(`[INFO] Cleanup: restored the seeded record ${recordId} to its original values`);
+        } catch (restoreError) {
+          console.log(`[WARN] Cleanup: could not fully restore record ${recordId}: ${restoreError.message}`);
+        }
+      }
     }
   });
 
@@ -419,24 +469,6 @@ e2e/frontend-webui/CLAUDE.md "Specs MUST be language-independent".
   });
 });
 
-/**
- * Delete a record via the WebAPI DELETE endpoint (absolute WEBAPI_BASE_URL, same
- * request path used by assertRecordIsValid/getFieldData above — a same-origin
- * relative fetch from the page only reaches the webapi when frontend+webapi share
- * an origin, which is not the case for a local split-port dev server). Best-effort
- * cleanup so the partial-unique index (AD_Org_ID WHERE IsActive='Y') does not block
- * re-runs. Swallows errors (e.g. record was never actually persisted).
- */
-async function deleteRecord(page, windowId, recordId) {
-  if (!recordId || recordId === 'NEW') return;
-  try {
-    await page.request.delete(`${WEBAPI_BASE_URL}/window/${windowId}/${recordId}`, {
-      headers: { Accept: 'application/json' },
-    });
-  } catch (e) {
-    // ignore — best-effort cleanup
-  }
-}
 
 /**
  * Read a field's raw (language-invariant) value via the WebAPI.
