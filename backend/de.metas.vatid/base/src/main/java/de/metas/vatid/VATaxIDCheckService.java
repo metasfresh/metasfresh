@@ -172,10 +172,22 @@ public class VATaxIDCheckService
 	 * <p><b>Residual risk, accepted</b> — the same shape as the one
 	 * {@link #updateParentStatusIfStillCurrent(VATaxIDCheckRequest, VATaxIDLastCheck)} documents.
 	 * {@code previousStatus} is read at the top of {@link #check(VATaxIDCheckRequest)}, before the online call,
-	 * so a concurrent check of the SAME VAT-ID landing in between could leave it stale. The only outcome that
-	 * needs is a MISSED refresh, never a wrong one, and it needs the service to answer differently for one
-	 * identical value; the next scheduled re-check corrects it. Re-reading the status here would narrow the
-	 * window without closing it, for a case that has to happen twice over to matter.
+	 * so a concurrent check of the SAME record landing in between leaves it stale. What a stale snapshot can
+	 * produce is a MISSED refresh, never a wrong one: the comparison can only fail to fire, it cannot fire for
+	 * a status the record does not hold.
+	 *
+	 * <p><b>A missed refresh is not guaranteed to heal itself.</b> Two overlapping checks of one record can
+	 * leave the record back at the status it started from while its order tax was derived under the other one:
+	 * this call reads {@code S0}, the concurrent one writes {@code S1} and refreshes against it, and this one
+	 * then writes {@code S0} again and compares {@code S0} to {@code S0}. The row says {@code S0}, the orders
+	 * were computed under {@code S1}, and for as long as the verdict stably stays {@code S0} every later
+	 * re-check compares {@code S0} to {@code S0} too and refreshes nothing. Clearing that state takes a real
+	 * status change, or the order tax being re-derived for some other reason. The bound accepted here is
+	 * therefore "the orders can lag the record", not "the next re-check corrects it".
+	 *
+	 * <p>Re-reading the status immediately before the comparison would narrow the window without closing it,
+	 * for a case that needs two checks of one record to overlap AND the service to answer differently for one
+	 * identical value within that overlap.
 	 *
 	 * <p><b>Only a write that happened can trigger a refresh.</b> A verdict abandoned by
 	 * {@link #updateParentStatusIfStillCurrent(VATaxIDCheckRequest, VATaxIDLastCheck)} changed no status, so

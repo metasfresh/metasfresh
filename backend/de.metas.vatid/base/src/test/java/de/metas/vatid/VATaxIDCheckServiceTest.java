@@ -185,6 +185,29 @@ class VATaxIDCheckServiceTest
 		InterfaceWrapperHelper.saveRecord(record);
 	}
 
+	/**
+	 * An earlier CONCLUSIVE check of {@code vataxID}, completed just now and therefore still fresh under any
+	 * positive {@code RecheckAfterDays} — what sends {@link VATaxIDCheckService#check(VATaxIDCheckRequest)}
+	 * down its de-duplication branch instead of to the online checker.
+	 *
+	 * <p>Obtained for a DIFFERENT partner that happens to carry the same value, which is what makes that branch
+	 * able to change the status of the record under test at all: de-duplication is keyed on the VAT-ID value,
+	 * not on the parent.
+	 */
+	private void givenStillFreshConclusiveCheck(
+			@NonNull final VATIdentifier vataxID,
+			@NonNull final VATaxIDStatus status)
+	{
+		final BPartnerId otherBPartnerId = givenBPartnerWithVATaxID(vataxID);
+		final VATaxIDCheckLogId earlierCheckLogId = checkRepository.writeRequestSent(VATaxIDCheckRequest.builder()
+				.bpartnerId(otherBPartnerId)
+				.vataxID(vataxID)
+				.build());
+		checkRepository.completeCheck(earlierCheckLogId, VATaxIDCheckResult.builder()
+				.status(status)
+				.build());
+	}
+
 	@NonNull
 	private static I_C_BPartner reload(@NonNull final BPartnerId bpartnerId)
 	{
@@ -265,14 +288,7 @@ class VATaxIDCheckServiceTest
 		givenConfig(30);
 
 		// An earlier, still-fresh conclusive check of the OLD value, obtained for some other partner.
-		final BPartnerId otherBPartnerId = givenBPartnerWithVATaxID(CHECKED_VATAXID);
-		final VATaxIDCheckLogId earlierCheckLogId = checkRepository.writeRequestSent(VATaxIDCheckRequest.builder()
-				.bpartnerId(otherBPartnerId)
-				.vataxID(CHECKED_VATAXID)
-				.build());
-		checkRepository.completeCheck(earlierCheckLogId, VATaxIDCheckResult.builder()
-				.status(VATaxIDStatus.Valid)
-				.build());
+		givenStillFreshConclusiveCheck(CHECKED_VATAXID, VATaxIDStatus.Valid);
 
 		final BPartnerId bpartnerId = givenBPartnerWithVATaxID(CHECKED_VATAXID);
 		// The user corrects the number to a different one before the queued check for the old one runs.
@@ -408,6 +424,67 @@ class VATaxIDCheckServiceTest
 				.build());
 
 		assertThat(returnedStatus).as("returned status").isEqualTo(VATaxIDStatus.Valid);
+		verify(orderTaxRefresher, never()).refreshOrderLinesTaxForBPartner(any(BPartnerId.class));
+	}
+
+	/**
+	 * The same transition on the OTHER branch that writes a verdict: de-duplication, where the answer is taken
+	 * from a still-fresh check log and no online call is made at all. That branch is the everyday one in
+	 * production — every partner re-checked inside {@code RecheckAfterDays} goes through it — and it can change
+	 * this record's status just as much as a fresh call can, because the fresh answer it reuses may have been
+	 * obtained for a different parent carrying the same VAT-ID.
+	 *
+	 * <p>Nothing else covers it. The online-call branch has its own call to the refresher, so passing there
+	 * proves nothing here; and the cucumber scenarios in {@code vatIdCheckProcessCorrectsOrderTax.feature}
+	 * open by clearing the {@code VATaxID_CheckLog} of every VAT-ID they use, which leaves de-duplication
+	 * nothing to find and forces a fresh online call by construction.
+	 */
+	@Test
+	void aDeDuplicatedCheckThatChangesTheStoredStatus_refreshesTheOpenOrdersTax()
+	{
+		givenConfig(30);
+		givenStillFreshConclusiveCheck(CHECKED_VATAXID, VATaxIDStatus.Valid);
+
+		final BPartnerId bpartnerId = givenBPartnerWithVATaxIDAndStatus(CHECKED_VATAXID, VATaxIDStatus.Invalid);
+
+		final VATaxIDStatus returnedStatus = checkService.check(VATaxIDCheckRequest.builder()
+				.bpartnerId(bpartnerId)
+				.vataxID(CHECKED_VATAXID)
+				.build());
+
+		// De-duplication really did take over: no request was sent, ...
+		verify(onlineChecker, never()).check(any(VATIdentifier.class), any(VATaxIDConfig.class));
+		// ... and the reused answer was still written onto the record, changing the status it held.
+		assertThat(returnedStatus).as("returned status").isEqualTo(VATaxIDStatus.Valid);
+		assertThat(reload(bpartnerId).getVATaxIDStatus()).as("VATaxIDStatus").isEqualTo(VATaxIDStatus.Valid.getCode());
+
+		// So the partner's open orders must be re-taxed off the back of THAT write -- for this partner, not for
+		// the unrelated one the reused answer was originally obtained for.
+		verify(orderTaxRefresher).refreshOrderLinesTaxForBPartner(bpartnerId);
+	}
+
+	/**
+	 * The de-duplication branch's half of the "do not refresh on every check" guard, the counterpart of
+	 * {@link #aCheckThatReconfirmsTheStoredStatus_doesNotRefreshTheOrderTax()}: the still-fresh answer equals
+	 * what the record already holds, so the write reconfirms the status rather than changing it and no tax
+	 * input moved. This is the single most common outcome of a nightly run, and refreshing here would re-save
+	 * every line of every open order of nearly every partner in the database.
+	 */
+	@Test
+	void aDeDuplicatedCheckThatReconfirmsTheStoredStatus_doesNotRefreshTheOrderTax()
+	{
+		givenConfig(30);
+		givenStillFreshConclusiveCheck(CHECKED_VATAXID, VATaxIDStatus.Valid);
+
+		final BPartnerId bpartnerId = givenBPartnerWithVATaxIDAndStatus(CHECKED_VATAXID, VATaxIDStatus.Valid);
+
+		final VATaxIDStatus returnedStatus = checkService.check(VATaxIDCheckRequest.builder()
+				.bpartnerId(bpartnerId)
+				.vataxID(CHECKED_VATAXID)
+				.build());
+
+		assertThat(returnedStatus).as("returned status").isEqualTo(VATaxIDStatus.Valid);
+		verify(onlineChecker, never()).check(any(VATIdentifier.class), any(VATaxIDConfig.class));
 		verify(orderTaxRefresher, never()).refreshOrderLinesTaxForBPartner(any(BPartnerId.class));
 	}
 
