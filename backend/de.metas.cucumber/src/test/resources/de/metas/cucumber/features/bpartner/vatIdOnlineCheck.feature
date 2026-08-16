@@ -218,7 +218,6 @@ Feature: VAT-ID is checked against the online validation service
       | VATaxID      | VATaxIDStatus | RequestDate         | ResponseDate        | RequestIdentifier | AD_Session_ID | AD_PInstance_ID |
       | BE0428759497 | Valid         | 2026-06-19T10:00:00 | 2026-06-19T10:00:00 | WAPIAAAATrigLoc1  | true          | false           |
 
-  @ignore # TODO
   @from:cucumber
   @Id:S0614_080
   Scenario: TC11 — the online checker throwing an exception does not fail the save
@@ -230,7 +229,10 @@ Feature: VAT-ID is checked against the online validation service
     When metasfresh contains C_BPartners:
       | Identifier | Value        | VATaxID    |
       | bp_vies7   | ViesTC11Test | IE6433435F |
-    Then the VAT-ID online checker was called for VATaxID 'IE6433435F'
+    # Not the "was called for" step the other scenarios use: that one also waits for the check to reach a
+    # terminal status, which a checker that throws never does -- check() unwinds before completeCheck(),
+    # leaving the log row at RequestSent for good.
+    Then the VAT-ID online check for VATaxID 'IE6433435F' was attempted, whatever its outcome
     And validate C_BPartner:
       | C_BPartner_ID | Value        | VATaxID    |
       | bp_vies7      | ViesTC11Test | IE6433435F |

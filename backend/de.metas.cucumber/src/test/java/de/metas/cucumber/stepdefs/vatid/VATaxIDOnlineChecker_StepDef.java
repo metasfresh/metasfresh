@@ -216,6 +216,9 @@ public class VATaxIDOnlineChecker_StepDef
 	 * Asserts the online checker WAS asked about {@code vataxID} — the direct evidence that a check was
 	 * actually attempted, as opposed to the after-commit trigger having been wired but never firing.
 	 *
+	 * <p>Requires the check to have reached a terminal status. For a checker stubbed to THROW, which never
+	 * can, use {@link #onlineCheckWasAttempted(String)} instead.
+	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
 	 * <pre>
@@ -244,6 +247,57 @@ public class VATaxIDOnlineChecker_StepDef
 
 		verify(onlineCheckerMock, atLeastOnce())
 				.check(argThat(checked -> checked != null && checked.getAsString().equals(vataxID)), any(VATaxIDConfig.class));
+	}
+
+	/**
+	 * The counterpart of {@link #onlineCheckerWasCalled(String)} for a checker that never answers: waits
+	 * until the checker was asked about {@code vataxID} and the attempt is on record, whatever became of it.
+	 *
+	 * <p>Needed because {@link #onlineCheckerWasCalled(String)} is structurally unsatisfiable when the
+	 * checker throws. That step also waits for the {@code VATaxID_CheckLog} row to have LEFT
+	 * {@code RequestSent} — i.e. for {@code completeCheck(...)} — and a throwing checker unwinds
+	 * {@code VATaxIDCheckService#check} before that call is ever reached, so the row stays at
+	 * {@code RequestSent} forever and the step can only ever time out.
+	 *
+	 * <p>Relaxing that step's own predicate to accept a still-{@code RequestSent} row was the alternative,
+	 * and was rejected: "has left {@code RequestSent}" is precisely what keeps the other scenarios'
+	 * follow-up assertions — which read the database once, without retrying — from racing a check that is
+	 * still in flight. Weakening it would hand that race back to every one of them to buy this one scenario
+	 * its wait.
+	 *
+	 * <p>What this step still proves is what the throwing scenario needs: the after-commit trigger genuinely
+	 * fired and reached the service (the mock recorded the call), and the service committed its pre-call
+	 * evidence row ({@code writeRequestSent} runs in its own transaction, so it survives the exception).
+	 * Nothing is left racing afterwards either — a checker that throws never reaches
+	 * {@code updateParentStatus}, so the parent's status columns stay untouched however long we look.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then the VAT-ID online check for VATaxID 'IE6433435F' was attempted, whatever its outcome
+	 * </pre>
+	 */
+	@Then("the VAT-ID online check for VATaxID {string} was attempted, whatever its outcome")
+	public void onlineCheckWasAttempted(@NonNull final String vataxID) throws InterruptedException
+	{
+		StepDefUtil.tryAndWait(60, 500, () -> wasCalledFor(vataxID) && checkAttemptIsRecordedFor(vataxID));
+
+		verify(onlineCheckerMock, atLeastOnce())
+				.check(argThat(checked -> checked != null && checked.getAsString().equals(vataxID)), any(VATaxIDConfig.class));
+	}
+
+	/**
+	 * @return whether a {@code VATaxID_CheckLog} row for {@code vataxID} exists at all — {@code RequestSent}
+	 * included. The deliberately weaker sibling of {@link #checkIsRecordedFor(String)}, for the case where
+	 * the check cannot reach a terminal status because the checker threw.
+	 */
+	private boolean checkAttemptIsRecordedFor(@NonNull final String vataxID)
+	{
+		return queryBL.createQueryBuilder(I_VATaxID_CheckLog.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_VATaxID_CheckLog.COLUMNNAME_VATaxID, vataxID)
+				.create()
+				.anyMatch();
 	}
 
 	/**
