@@ -44,9 +44,10 @@ import lombok.NonNull;
 public interface VATaxIDOrderTaxRefresher
 {
 	/**
-	 * Refreshes {@code C_OrderLine.C_Tax_ID} for every line of every order of {@code bpartnerId} that is
-	 * not yet {@code Completed} or {@code Closed}. A completed or closed order is never touched — rewriting
-	 * the tax of an already-final document would rewrite history.
+	 * Refreshes {@code C_OrderLine.C_Tax_ID} for every line of every order of {@code bpartnerId} that is not
+	 * yet processed. A processed order is never touched — rewriting the tax of an already-final document
+	 * would rewrite history — and that covers the voided and reversed ones too, not only the completed and
+	 * closed.
 	 */
 	void refreshOrderLinesTaxForBPartner(@NonNull BPartnerId bpartnerId);
 }
