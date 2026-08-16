@@ -5,8 +5,32 @@
 -- Each field mirrors the existing ETD field on this tab (AD_Field 710113 / AD_UI_Element 614616):
 --   AD_Field: AD_Name_ID left NULL so the label resolves from the column's element;
 --   AD_Field_Trl seeded then resolved via update_FieldTranslation_From_AD_Name_Element(<column element>);
---   AD_UI_Element in group 550206 (same group ETD/ETA use), type 'F', sequential SeqNo after ETD/ETA.
+--   AD_UI_Element placed to mirror tab 540096's layout: the dates (ATD/ATA/CRD/BLDate) stay in the
+--   "delivery dates" group 550206; the 4 flags go in a new "flags" group (555562, right column 546540);
+--   the 5 logistics fields go in a new "logistics" group (555563, left column 546539). Type 'F'.
 -- ReadOnly-ness mirrors the corresponding field on tab 540096 (all N except IsSOTrx = Y).
+
+-- ============================================================================
+-- New element groups mirroring the Transport Order tab (540096, groups 553415/553587):
+-- "flags" in the right column (546540, near the top) and "logistics" in the left column
+-- (546539), so the boolean flags and the container/tracking/vessel/port fields are not all
+-- piled into the right-column "delivery dates" group.
+-- ============================================================================
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,UIStyle,Updated,UpdatedBy) VALUES (0,0,546540,555562 /*From ID Server*/,TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100,'Y','flags',15,NULL,TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100)
+;
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,UIStyle,Updated,UpdatedBy) VALUES (0,0,546539,555563 /*From ID Server*/,TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100,'Y','logistics',30,NULL,TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100)
+;
+
+-- ============================================================================
+-- 0) IsActive -- first element of the flags group (design cornerstone: the flags group
+--    must start with IsActive; mirrors the Delivery Planning window 541632 which shows it).
+--    The IsActive AD_Field already exists on this tab (710072, auto-created with the tab,
+--    AD_Column 540440); it was simply not displayed. Display it and give it a UI element.
+-- ============================================================================
+UPDATE AD_Field SET IsDisplayed='Y', Updated=TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'), UpdatedBy=100 WHERE AD_Field_ID=710072
+;
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,710072,0,546732,555562,653168 /*From ID Server*/,'F',TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100,'Y','N','N','Y','N','N','N',0,'Active',5,0,0,TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100)
+;
 
 -- ============================================================================
 -- 1) ATD  (M_ShipperTransportation.ATD, AD_Column 591247, element 584068) -- ReadOnly N
@@ -69,7 +93,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=782305
 ;
 /* DDL */ select AD_Element_Link_Create_Missing_Field(782305)
 ;
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,782305,0,546732,550206,653158 /*From ID Server*/,'F',TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100,'Y','N','N','Y','N','N','N',0,'IsBookingConfirmed',80,0,0,TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100)
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,782305,0,546732,555562,653158 /*From ID Server*/,'F',TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100,'Y','N','N','Y','N','N','N',0,'IsBookingConfirmed',20,0,0,TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100)
 ;
 
 -- ============================================================================
@@ -85,7 +109,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=782306
 ;
 /* DDL */ select AD_Element_Link_Create_Missing_Field(782306)
 ;
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,782306,0,546732,550206,653159 /*From ID Server*/,'F',TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100,'Y','N','N','Y','N','N','N',0,'IsBLReceived',90,0,0,TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100)
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,782306,0,546732,555562,653159 /*From ID Server*/,'F',TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100,'Y','N','N','Y','N','N','N',0,'IsBLReceived',30,0,0,TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100)
 ;
 
 -- ============================================================================
@@ -101,7 +125,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=782307
 ;
 /* DDL */ select AD_Element_Link_Create_Missing_Field(782307)
 ;
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,782307,0,546732,550206,653160 /*From ID Server*/,'F',TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100,'Y','N','N','Y','N','N','N',0,'BLDate',100,0,0,TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100)
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,782307,0,546732,550206,653160 /*From ID Server*/,'F',TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100,'Y','N','N','Y','N','N','N',0,'BLDate',80,0,0,TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100)
 ;
 
 -- ============================================================================
@@ -117,7 +141,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=782308
 ;
 /* DDL */ select AD_Element_Link_Create_Missing_Field(782308)
 ;
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,782308,0,546732,550206,653161 /*From ID Server*/,'F',TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100,'Y','N','N','Y','N','N','N',0,'IsWENotice',110,0,0,TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100)
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,782308,0,546732,555562,653161 /*From ID Server*/,'F',TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100,'Y','N','N','Y','N','N','N',0,'IsWENotice',40,0,0,TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100)
 ;
 
 -- ============================================================================
@@ -133,7 +157,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=782309
 ;
 /* DDL */ select AD_Element_Link_Create_Missing_Field(782309)
 ;
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,782309,0,546732,550206,653162 /*From ID Server*/,'F',TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100,'Y','N','N','Y','N','N','N',0,'ContainerNo',120,0,0,TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100)
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,782309,0,546732,555563,653162 /*From ID Server*/,'F',TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100,'Y','N','N','Y','N','N','N',0,'ContainerNo',10,0,0,TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100)
 ;
 
 -- ============================================================================
@@ -149,7 +173,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=782310
 ;
 /* DDL */ select AD_Element_Link_Create_Missing_Field(782310)
 ;
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,782310,0,546732,550206,653163 /*From ID Server*/,'F',TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100,'Y','N','N','Y','N','N','N',0,'TrackingID',130,0,0,TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100)
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,782310,0,546732,555563,653163 /*From ID Server*/,'F',TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100,'Y','N','N','Y','N','N','N',0,'TrackingID',20,0,0,TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100)
 ;
 
 -- ============================================================================
@@ -165,7 +189,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=782311
 ;
 /* DDL */ select AD_Element_Link_Create_Missing_Field(782311)
 ;
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,782311,0,546732,550206,653164 /*From ID Server*/,'F',TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100,'Y','N','N','Y','N','N','N',0,'VesselName',140,0,0,TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100)
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,782311,0,546732,555563,653164 /*From ID Server*/,'F',TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100,'Y','N','N','Y','N','N','N',0,'VesselName',30,0,0,TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100)
 ;
 
 -- ============================================================================
@@ -181,7 +205,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=782312
 ;
 /* DDL */ select AD_Element_Link_Create_Missing_Field(782312)
 ;
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,782312,0,546732,550206,653165 /*From ID Server*/,'F',TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100,'Y','N','N','Y','N','N','N',0,'POL_ID',150,0,0,TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100)
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,782312,0,546732,555563,653165 /*From ID Server*/,'F',TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100,'Y','N','N','Y','N','N','N',0,'POL_ID',40,0,0,TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100)
 ;
 
 -- ============================================================================
@@ -197,7 +221,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=782313
 ;
 /* DDL */ select AD_Element_Link_Create_Missing_Field(782313)
 ;
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,782313,0,546732,550206,653166 /*From ID Server*/,'F',TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100,'Y','N','N','Y','N','N','N',0,'POD_ID',160,0,0,TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100)
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,782313,0,546732,555563,653166 /*From ID Server*/,'F',TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100,'Y','N','N','Y','N','N','N',0,'POD_ID',50,0,0,TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100)
 ;
 
 -- ============================================================================
@@ -213,7 +237,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=782314
 ;
 /* DDL */ select AD_Element_Link_Create_Missing_Field(782314)
 ;
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,782314,0,546732,550206,653167 /*From ID Server*/,'F',TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100,'Y','N','N','Y','N','N','N',0,'IsSOTrx',170,0,0,TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100)
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,782314,0,546732,555562,653167 /*From ID Server*/,'F',TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100,'Y','N','N','Y','N','N','N',0,'IsSOTrx',10,0,0,TO_TIMESTAMP('2026-08-16','YYYY-MM-DD'),100)
 ;
 
 -- ============================================================================
