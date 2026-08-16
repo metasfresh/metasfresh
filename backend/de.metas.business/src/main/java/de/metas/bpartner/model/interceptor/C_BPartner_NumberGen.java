@@ -83,7 +83,7 @@ public class C_BPartner_NumberGen
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
-			ifColumnsChanged = I_C_BPartner.COLUMNNAME_IsCustomer + "," + I_C_BPartner.COLUMNNAME_IsVendor)
+			ifColumnsChanged = { I_C_BPartner.COLUMNNAME_IsCustomer, I_C_BPartner.COLUMNNAME_IsVendor })
 	public void generateOnChange(@NonNull final I_C_BPartner bpartner)
 	{
 		if (isDisabled(bpartner))
