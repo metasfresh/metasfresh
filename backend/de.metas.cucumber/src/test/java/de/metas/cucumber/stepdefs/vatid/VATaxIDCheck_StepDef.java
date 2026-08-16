@@ -110,6 +110,14 @@ public class VATaxIDCheck_StepDef
 	 * value is shared across feature files, so an earlier scenario's cleanup can already have released a
 	 * still-relevant record's zoom reference, leaving its status stranded with no log row to find it by.
 	 *
+	 * <p>Those current holders additionally have the <b>value itself</b> cleared, not just the status. The
+	 * save-triggered check fires {@code ifColumnsChanged = VATaxID}, so a scenario that upserts its partner
+	 * by {@code Value} and re-assigns the same VAT-ID changes no column on a re-run against the never-reset
+	 * local database — the interceptor never fires, no work package is enqueued, and a scenario waiting for
+	 * the checker to be called can only time out. Releasing the value here makes the scenario's own save a
+	 * genuine change again. Clearing is itself safe: {@code VATaxIDCheckTrigger} enqueues nothing for an
+	 * empty value.
+	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
 	 * <pre>
@@ -131,7 +139,7 @@ public class VATaxIDCheck_StepDef
 
 		checkLogQuery.delete();
 
-		resetStatusOnCurrentHoldersOfValue(vataxID);
+		releaseValueFromCurrentHolders(vataxID);
 	}
 
 	private void clearCheckLogReferencesOnBPartners(@NonNull final IQuery<I_VATaxID_CheckLog> checkLogQuery)
@@ -153,24 +161,29 @@ public class VATaxIDCheck_StepDef
 	}
 
 	/**
-	 * See the class javadoc on {@link #no_check_log_records_exist(String)}, second paragraph: catches a
-	 * record whose zoom reference was already released by an <em>earlier</em> scenario's cleanup call for
-	 * this same shared VAT-ID value, which (before this record's status is reset here too) would leave its
-	 * status stranded with no checklog row left to find it by.
+	 * Resets the status of, and releases the value from, every record currently holding {@code vataxID} —
+	 * see {@link #no_check_log_records_exist(String)}, third and fourth paragraphs, for why each half is
+	 * needed.
 	 */
-	private void resetStatusOnCurrentHoldersOfValue(@NonNull final String vataxID)
+	private void releaseValueFromCurrentHolders(@NonNull final String vataxID)
 	{
 		queryBL.createQueryBuilder(I_C_BPartner.class)
 				.addEqualsFilter(I_C_BPartner.COLUMNNAME_VATaxID, vataxID)
 				.create()
 				.list()
-				.forEach(this::resetDenormalisedStatus);
+				.forEach(bpartnerRecord -> {
+					bpartnerRecord.setVATaxID(null);
+					resetDenormalisedStatus(bpartnerRecord);
+				});
 
 		queryBL.createQueryBuilder(I_C_BPartner_Location.class)
 				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_VATaxID, vataxID)
 				.create()
 				.list()
-				.forEach(this::resetDenormalisedStatus);
+				.forEach(bpartnerLocationRecord -> {
+					bpartnerLocationRecord.setVATaxID(null);
+					resetDenormalisedStatus(bpartnerLocationRecord);
+				});
 	}
 
 	private void resetDenormalisedStatus(@NonNull final I_C_BPartner bpartnerRecord)
