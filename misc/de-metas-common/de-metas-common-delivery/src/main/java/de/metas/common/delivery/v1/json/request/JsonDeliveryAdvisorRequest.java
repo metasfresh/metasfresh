@@ -190,6 +190,11 @@ public class JsonDeliveryAdvisorRequest
 						.map(JsonQuantity::getUomCode)
 						.collect(ImmutableSet.toImmutableSet());
 				return uomCodes.size() == 1 ? uomCodes.iterator().next() : null;
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_CUSTOM_VALUE_STRING_1:
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_CUSTOM_VALUE_STRING_2:
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_CUSTOM_VALUE_STRING_3:
+				// the attribute value name IS the Carrier_Config column / shipper-config property key
+				return shipperConfig.getAdditionalProperty(attributeValue);
 			default:
 				return null; // attribute not available at advise time — filtered out by caller
 		}

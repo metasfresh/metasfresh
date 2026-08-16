@@ -40,6 +40,10 @@ import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
 import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponse;
 import de.metas.shipper.client.nshift.json.request.JsonShipmentRequest;
+import de.metas.shipper.client.nshift.json.JsonAddressKind;
+import de.metas.common.delivery.v1.json.DeliveryMappingConstants;
+import de.metas.common.delivery.v1.json.request.JsonMappingConfig;
+import de.metas.common.delivery.v1.json.request.JsonMappingConfigList;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -251,6 +255,75 @@ public class NShiftShipmentServiceTest
 		assertEquals(0, shipmentRequest.getData().getProdConceptID(), "ProdConceptID must stay 0 (no resolved product) when rules resolve it");
 		assertTrue(shipmentRequest.getData().getServices().isEmpty(), "Services must not be pre-sent when rules resolve them");
 		assertNull(shipmentRequest.getData().getLines().get(0).getGoodsTypeID(), "Line GoodsTypeID must be omitted when rules resolve it");
+	}
+
+	@Test
+	void buildShipmentRequest_setsCustNoFromCustomValueString1MappingRule()
+	{
+		final String consigneeId = "DHL-CONSIGNEE-123";
+		// SenderCustNo / ReceiverCustNo rules routing the generic CustomValueString1 config value into the address CustNo
+		final JsonMappingConfigList mappingConfigs = JsonMappingConfigList.ofList(ImmutableList.<JsonMappingConfig>builder()
+				.addAll(NShiftTestMappingConfigs.SHARED_TEST.getConfigs())
+				.add(JsonMappingConfig.builder()
+						.seqNo(400)
+						.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_SENDER_CUSTNO)
+						.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_CUSTOM_VALUE_STRING_1)
+						.build())
+				.add(JsonMappingConfig.builder()
+						.seqNo(410)
+						.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_RECEIVER_CUSTNO)
+						.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_CUSTOM_VALUE_STRING_1)
+						.build())
+				.build());
+
+		final JsonDeliveryRequest request = DELIVERY_REQUEST.toBuilder()
+				.shipperConfig(DELIVERY_REQUEST.getShipperConfig()
+						.withAdditionalProperty(DeliveryMappingConstants.ATTRIBUTE_VALUE_CUSTOM_VALUE_STRING_1, consigneeId))
+				.mappingConfigs(mappingConfigs)
+				.build();
+
+		final JsonShipmentRequest shipmentRequest = NShiftShipmentService.buildShipmentRequest(request);
+
+		assertEquals(consigneeId, custNoOf(shipmentRequest, JsonAddressKind.SENDER), "Sender CustNo must come from the CustomValueString1 config value");
+		assertEquals(consigneeId, custNoOf(shipmentRequest, JsonAddressKind.RECEIVER), "Receiver CustNo must come from the CustomValueString1 config value");
+	}
+
+	@Test
+	void buildShipmentRequest_withoutShipperProduct_skipsProductScopedConfigWithoutNpe()
+	{
+		// Selection-rules booking with no pre-selected product: getValue(ShipperProductExternalId) must be "" (not null),
+		// so isConfigForShipperProduct (@NonNull) skips product-scoped configs instead of throwing an NPE.
+		final JsonMappingConfigList mappingConfigs = JsonMappingConfigList.ofList(ImmutableList.<JsonMappingConfig>builder()
+				.addAll(NShiftTestMappingConfigs.SHARED_TEST.getConfigs())
+				.add(JsonMappingConfig.builder()
+						.seqNo(500)
+						.shipperProductExternalId("10305") // product-scoped -> must be skipped when no product is set
+						.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_RECEIVER_CUSTNO)
+						.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_CUSTOM_VALUE_STRING_1)
+						.build())
+				.build());
+
+		final JsonDeliveryRequest request = DELIVERY_REQUEST.toBuilder()
+				.shipperProduct(null)
+				.shipperConfig(DELIVERY_REQUEST.getShipperConfig()
+						.withAdditionalProperty(NShiftConstants.SELECTION_RULES, "Y")
+						.withAdditionalProperty(DeliveryMappingConstants.ATTRIBUTE_VALUE_CUSTOM_VALUE_STRING_1, "DHL-CONSIGNEE-123"))
+				.mappingConfigs(mappingConfigs)
+				.build();
+
+		final JsonShipmentRequest shipmentRequest = NShiftShipmentService.buildShipmentRequest(request);
+		assertNotNull(shipmentRequest);
+		// product-scoped rule skipped (no product selected) -> receiver CustNo stays unset
+		assertNull(custNoOf(shipmentRequest, JsonAddressKind.RECEIVER), "product-scoped CustNo must be skipped when no product is selected");
+	}
+
+	private static String custNoOf(final JsonShipmentRequest request, final JsonAddressKind kind)
+	{
+		return request.getData().getAddresses().stream()
+				.filter(a -> a.getKind() == kind)
+				.findFirst()
+				.orElseThrow(() -> new AssertionError("no " + kind + " address"))
+				.getCustNo();
 	}
 
 }
