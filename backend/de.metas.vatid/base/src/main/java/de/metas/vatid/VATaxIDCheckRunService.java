@@ -90,6 +90,12 @@ import java.util.stream.Collectors;
  * order-line-tax refresh a status change triggers, so one target's failure cannot affect any other — the
  * point is independent commit per target, not escaping an ambient transaction.
  *
+ * <p><b>One failure is not a per-target failure and stops the run</b>: a
+ * {@link VATaxIDCheckRequestRejectedException}, i.e. the checking service rejecting the REQUEST because this
+ * system is misconfigured. Carrying on with a per-target log line — correct for every other failure — would
+ * repeat the identical error for the whole selection and mark nothing. {@link #run} therefore aborts the loop
+ * on it and logs the service's error code once, while still reporting what the partial run managed to do.
+ *
  * <p><b>Availability pre-filter</b> ({@code GET /check-status}): asked once per distinct organisation, not
  * per VAT-ID, skipping targets whose member state is reported unavailable. A skipped target keeps its
  * stored status and never reaches {@link VATaxIDConfig#getOnServiceUnavailable()}, which would otherwise
@@ -134,10 +140,42 @@ public class VATaxIDCheckRunService
 				break;
 			}
 
-			checkOneInOwnTrx(request.getPinstanceId(), checkTarget);
+			try
+			{
+				checkOneInOwnTrx(request.getPinstanceId(), checkTarget);
+			}
+			catch (final VATaxIDCheckRequestRejectedException ex)
+			{
+				// The ONE failure that must stop the run rather than be carried past: the service rejected
+				// the request because of our own configuration, so every remaining target would produce the
+				// identical error. Carrying on would write one warn line per target for the whole selection
+				// (up to MaxChecksPerRun) and report the run as merely having had failures.
+				// Named error code first: it is what the service's own documentation is indexed by.
+				// The rejected target counts as ATTEMPTED and is excluded from the not-attempted tally -- it
+				// was attempt-stamped and its request did reach the service, which is what "attempted" means
+				// throughout this class (see the class javadoc, "Starvation guard"). Lumping it in with the
+				// targets that were never started would understate how far the run got.
+				// The pending figure is restated here on purpose: it is one HIGHER than the not-attempted one
+				// (it includes the rejected target, which still needs a check), and the process footer reports
+				// it separately. Left unreconciled, the two numbers read as a contradiction in the same log.
+				Loggables.withWarnLoggerToo(logger).addLog(
+						"VAT-ID check run ABORTED after {} of {} targets: {} No VAT-ID status was changed by the "
+								+ "rejected request, and the remaining {} targets were not attempted. {} of {} "
+								+ "remain pending, the rejected target included. Correct the VAT-ID configuration, "
+								+ "then start the run again.",
+						checkedCount, eligibleTargets.size(), ex.getMessage(),
+						eligibleTargets.size() - checkedCount - 1,
+						eligibleTargets.size() - checkedCount, eligibleTargets.size());
+				break;
+			}
 			checkedCount++;
 		}
 
+		// Reported even when the run aborted -- the targets it did get through are exactly what a re-run after
+		// the fix must NOT be assumed to still need. On an abort this deliberately counts the REJECTED target
+		// as pending as well, unlike the not-attempted tally logged above: nothing advanced its
+		// VATaxIDCheckedAt, so it genuinely still needs a check. "Attempted" and "still needs checking" are
+		// different questions, and this one is the second.
 		final int pendingCount = eligibleTargets.size() - checkedCount;
 		if (pendingCount > 0)
 		{
@@ -424,6 +462,10 @@ public class VATaxIDCheckRunService
 	 * <p>Two {@code catch} blocks, not one: a stamp failure means the check was never attempted and leaves no
 	 * other trace, while a check-and-refresh failure means the attempt is already durably recorded. One
 	 * shared message would hide the rarer signal.
+	 *
+	 * @throws VATaxIDCheckRequestRejectedException when the checking service rejected the request itself
+	 * because of how this system is configured. Deliberately NOT swallowed here, unlike every other failure:
+	 * it would repeat identically for every remaining target, so {@link #run} aborts on it instead.
 	 */
 	private void checkOneInOwnTrx(@Nullable final PInstanceId pinstanceId, @NonNull final CheckTarget checkTarget)
 	{
@@ -450,6 +492,15 @@ public class VATaxIDCheckRunService
 			// Isolation from every OTHER target's transaction in this run (see the method javadoc above) —
 			// each target's check-plus-refresh must commit or fail as its own independent unit.
 			trxManager.callInNewTrx(() -> checkAndRefreshIfStatusChanged(pinstanceId, checkTarget));
+		}
+		catch (final VATaxIDCheckRequestRejectedException ex)
+		{
+			// Deliberately NOT swallowed by the generic catch below. This is not this target's failure: the
+			// checking service rejected the REQUEST because of our configuration, so every remaining target
+			// in the selection would hit the same wall. Propagated so run() can abort and say so once.
+			// (It survives callInNewTrx unwrapped because AdempiereException.wrapIfNeeded returns an
+			// AdempiereException subclass as-is.)
+			throw ex;
 		}
 		catch (final Exception ex)
 		{

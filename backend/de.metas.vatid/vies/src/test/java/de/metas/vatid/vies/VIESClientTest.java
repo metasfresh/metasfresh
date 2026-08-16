@@ -24,6 +24,7 @@ package de.metas.vatid.vies;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.tax.api.VATIdentifier;
+import de.metas.vatid.VATaxIDCheckRequestRejectedException;
 import de.metas.vatid.VATaxIDCheckResult;
 import de.metas.vatid.VATaxIDConfig;
 import de.metas.vatid.VATaxIDConfigId;
@@ -135,8 +136,18 @@ class VIESClientTest
 
 		// Must NOT degrade to ServiceUnavailable: under an OnServiceUnavailable of Invalid that would strip
 		// the tax certificate from every VAT-ID in the run because of one wrong configuration value.
+		// The TYPE is asserted, not just the message: VATaxIDCheckRunService tells this apart from an
+		// ordinary per-target failure by type alone, and a bare AdempiereException would be swallowed by its
+		// carry-on catch and repeated once per target for the whole selection.
 		assertThatThrownBy(() -> client.check(VATIdentifier.of("DE123456789"), config()))
-				.hasMessageContaining("INVALID_REQUESTER_INFO");
+				.isInstanceOf(VATaxIDCheckRequestRejectedException.class)
+				.hasMessageContaining("INVALID_REQUESTER_INFO")
+				// The message is quoted verbatim into the run's abort line, which an operator reads. The raw
+				// envelope must stay a parameter (AD_Issue, server log) rather than being appended into it.
+				.hasMessageNotContaining("actionSucceed")
+				.satisfies(ex -> assertThat(((VATaxIDCheckRequestRejectedException)ex).getServiceErrorCode())
+						.as("serviceErrorCode")
+						.isEqualTo("INVALID_REQUESTER_INFO"));
 		server.verify();
 	}
 
@@ -154,7 +165,11 @@ class VIESClientTest
 		server.expect(requestTo(BASE_URL + "/check-vat-number"))
 				.andRespond(withBadRequest().body(body).contentType(MediaType.APPLICATION_JSON));
 
+		// Same TYPE as the HTTP-200 path, not merely the same message: the abort decision downstream is made
+		// on the type, so a 4xx-borne configuration fault that produced a plain AdempiereException would be
+		// swallowed per-target after all.
 		assertThatThrownBy(() -> client.check(VATIdentifier.of("DE123456789"), config()))
+				.isInstanceOf(VATaxIDCheckRequestRejectedException.class)
 				.hasMessageContaining("VOW-ERR-11");
 		server.verify();
 	}

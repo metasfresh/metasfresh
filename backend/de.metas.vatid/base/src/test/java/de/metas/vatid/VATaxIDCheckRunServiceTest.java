@@ -48,12 +48,14 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Covers {@link VATaxIDCheckRunService}'s defence against a chronic {@code stampAttemptInOwnTrx} failure —
- * a stamp write that fails on every attempt for one target.
+ * Covers the two failures {@link VATaxIDCheckRunService} must tell apart: a chronic
+ * {@code stampAttemptInOwnTrx} failure on ONE target, which must not abort the run, and a request-side
+ * rejection by the checking service, which must.
  *
  * <p>{@link IBPartnerDAO} is a hand-built mock rather than the POJO-backed implementation so one target's
  * write can be made to throw deterministically while the other succeeds — the one thing a real in-memory
@@ -63,6 +65,11 @@ class VATaxIDCheckRunServiceTest
 {
 	private static final BPartnerId BPARTNER_ID_BROKEN_STAMP = BPartnerId.ofRepoId(1000101);
 	private static final BPartnerId BPARTNER_ID_HEALTHY = BPartnerId.ofRepoId(1000102);
+	private static final BPartnerId BPARTNER_ID_SECOND = BPartnerId.ofRepoId(1000103);
+	private static final BPartnerId BPARTNER_ID_THIRD = BPartnerId.ofRepoId(1000104);
+
+	/** Verified live against VIES on 2026-08-15 — see {@code VIESClient.REQUEST_SIDE_ERRORS}. */
+	private static final String VIES_ERROR_CODE = "INVALID_REQUESTER_INFO";
 
 	private VATaxIDCheckService checkServiceMock;
 	private VATaxIDOrderTaxRefresher orderTaxRefresherMock;
@@ -139,5 +146,78 @@ class VATaxIDCheckRunServiceTest
 				.as("run log lines")
 				.anyMatch(msg -> msg.contains("attempt-stamp write failed") && msg.contains(brokenTargetLabel))
 				.noneMatch(msg -> msg.contains("VAT-ID check processing failed for " + brokenTargetLabel));
+	}
+
+	/**
+	 * The mirror of the test above, and the reason the two cannot share one {@code catch}: a request-side
+	 * rejection is NOT a per-target failure. The configuration that produced it is the same for every
+	 * remaining target, so carrying on would repeat the identical error once per target for the whole
+	 * selection — up to {@code MaxChecksPerRun}, 500 by default — while marking nothing and telling the
+	 * operator nothing actionable.
+	 */
+	@Test
+	void aRequestSideRejection_abortsTheRunAfterTheFirstTarget_namingTheServiceErrorCode()
+	{
+		final I_C_BPartner firstPartner = newBPartnerWithVATaxID(BPARTNER_ID_HEALTHY, "DE222222222");
+		final I_C_BPartner secondPartner = newBPartnerWithVATaxID(BPARTNER_ID_SECOND, "DE333333333");
+		final I_C_BPartner thirdPartner = newBPartnerWithVATaxID(BPARTNER_ID_THIRD, "DE444444444");
+
+		when(bpartnerDAOMock.getByIds(anyCollection()))
+				.thenReturn(ImmutableList.of(firstPartner, secondPartner, thirdPartner));
+		when(bpartnerDAOMock.retrieveBPartnerLocationsWithVATaxID(anyCollection()))
+				.thenReturn(ImmutableList.<I_C_BPartner_Location>of());
+		when(checkServiceMock.getUnavailableCountryCodes(any(OrgId.class))).thenReturn(ImmutableSet.of());
+
+		// Raised for EVERY target, exactly as a misconfigured requester identity behaves: the fault is in the
+		// configuration, not in any particular VAT-ID, so the service rejects each request identically.
+		when(checkServiceMock.check(any(VATaxIDCheckRequest.class)))
+				.thenThrow(new VATaxIDCheckRequestRejectedException(
+						VIES_ERROR_CODE,
+						"VIES rejected the request: " + VIES_ERROR_CODE + ". Check the VAT-ID configuration."));
+
+		final VATaxIDCheckRunService runService = new VATaxIDCheckRunService(checkServiceMock, orderTaxRefresherMock);
+
+		final VATaxIDCheckRunRequest request = VATaxIDCheckRunRequest.builder()
+				.selectedBPartnerIds(ImmutableList.of(BPARTNER_ID_HEALTHY, BPARTNER_ID_SECOND, BPARTNER_ID_THIRD))
+				.maxChecksPerRun(0)
+				.nightlyRun(false)
+				.build();
+
+		final PlainStringLoggable log = Loggables.newPlainStringLoggable();
+		final VATaxIDCheckRunResult result;
+		try (final IAutoCloseable ignored = Loggables.temporarySetLoggable(log))
+		{
+			result = runService.run(request);
+		}
+
+		// The whole point: the run stops at the FIRST target instead of grinding through the selection.
+		verify(checkServiceMock, times(1)).check(any(VATaxIDCheckRequest.class));
+		verify(bpartnerDAOMock, never()).stampVATaxIDCheckAttempt(eq(BPARTNER_ID_SECOND), any(Instant.class));
+		verify(bpartnerDAOMock, never()).stampVATaxIDCheckAttempt(eq(BPARTNER_ID_THIRD), any(Instant.class));
+
+		// ... and it is NOT reported as an ordinary per-target failure, which would leave the operator with
+		// nothing to act on.
+		assertThat(log.getSingleMessages())
+				.as("run log lines")
+				.anyMatch(msg -> msg.contains("ABORTED") && msg.contains(VIES_ERROR_CODE))
+				.noneMatch(msg -> msg.contains("VAT-ID check processing failed for "
+						+ "C_BPartner_ID=" + BPARTNER_ID_HEALTHY.getRepoId()));
+
+		// TWO, not three: the rejected target WAS attempted -- it was attempt-stamped and its request did
+		// reach the service, which is what "attempted" means everywhere else in this class (see the class
+		// javadoc, "Starvation guard"). Only the two behind it were never started. Counting the rejected one
+		// among them would tell the operator the run got less far than it did.
+		// ... and the abort line reconciles that 2 with the 3 the process footer reports as pending, so the
+		// two numbers cannot read as a contradiction to an operator skimming the log.
+		assertThat(log.getSingleMessages())
+				.as("run log lines")
+				.anyMatch(msg -> msg.contains("ABORTED")
+						&& msg.contains("remaining 2 targets were not attempted")
+						&& msg.contains("3 of 3 remain pending"));
+
+		// The partial run still reports what it did. pendingCount counts the rejected target too, and that is
+		// deliberate: nothing advanced its VATaxIDCheckedAt, so all three genuinely still need a check.
+		assertThat(result.getCheckedCount()).as("checkedCount").isZero();
+		assertThat(result.getPendingCount()).as("pendingCount").isEqualTo(3);
 	}
 }

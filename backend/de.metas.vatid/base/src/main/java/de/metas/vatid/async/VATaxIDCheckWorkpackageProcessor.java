@@ -114,6 +114,15 @@ public class VATaxIDCheckWorkpackageProcessor extends WorkpackageProcessorAdapte
 			// Logged rather than rethrown, for the same reason the synchronous trigger swallowed it: a
 			// third party's answer must not turn into a failed unit of work that retries forever. The
 			// attempt is already durably recorded in VATaxID_CheckLog, and the nightly run re-checks.
+			//
+			// Deliberately NOT special-cased for VATaxIDCheckRequestRejectedException, unlike
+			// VATaxIDCheckRunService, which aborts its whole loop on it. The distinction there buys
+			// something this path cannot use: one work package is one record, so there is no remaining
+			// selection to spare and nothing to abort. Rethrowing would only convert a misconfiguration
+			// into a growing pile of errored, retrying work packages -- one per save -- which is exactly
+			// the failure mode this catch exists to prevent, and it would do so while the config is broken,
+			// i.e. when saves are most likely to keep coming. The misconfiguration still surfaces: with the
+			// full exception (and its error code) here, and unmissably in the next run's abort message.
 			logger.warn("VAT-ID check failed for {} - leaving the stored status as it was", vataxID.getAsString(), ex);
 		}
 

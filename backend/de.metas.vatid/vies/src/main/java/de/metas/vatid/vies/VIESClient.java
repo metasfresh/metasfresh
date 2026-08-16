@@ -31,6 +31,7 @@ import de.metas.logging.LogManager;
 import de.metas.tax.api.VATIdentifier;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
+import de.metas.vatid.VATaxIDCheckRequestRejectedException;
 import de.metas.vatid.VATaxIDCheckResult;
 import de.metas.vatid.VATaxIDConfig;
 import de.metas.vatid.VATaxIDOnlineChecker;
@@ -361,6 +362,11 @@ public class VIESClient implements VATaxIDOnlineChecker
 	 *
 	 * <p>Called from BOTH response paths, because VIES uses both: {@code INVALID_REQUESTER_INFO} arrives on
 	 * HTTP 200 and {@code VOW-ERR-11} on HTTP 400.
+	 *
+	 * <p>Raises {@link VATaxIDCheckRequestRejectedException} rather than a bare {@link AdempiereException},
+	 * and that type is load-bearing: the calling run service swallows an ordinary exception per target on
+	 * purpose, so a bare one would be logged once per target for the whole selection instead of stopping the
+	 * run — see that exception's javadoc.
 	 */
 	private void throwIfRequestSideError(@Nullable final String rawResponse)
 	{
@@ -385,12 +391,17 @@ public class VIESClient implements VATaxIDOnlineChecker
 			return;
 		}
 
-		throw new AdempiereException("VIES rejected the request: " + viesError
-				+ ". Check the VAT-ID configuration (requester member state and requester number,"
-				+ " which must be the plain number without the country prefix).")
-				.appendParametersToMessage()
-				.setParameter("viesError", viesError)
-				.setParameter("rawResponse", rawResponse);
+		// No appendParametersToMessage() here, unlike getBaseUrl above: this message is quoted verbatim into
+		// the run's abort line, which the operator reads in the process log. Splicing the raw JSON envelope
+		// into the middle of that sentence would bury the one instruction it exists to deliver. The envelope
+		// stays on the exception as a parameter, so it still reaches AD_Issue and the server log.
+		final VATaxIDCheckRequestRejectedException rejected = new VATaxIDCheckRequestRejectedException(
+				viesError,
+				"VIES rejected the request: " + viesError
+						+ ". Check the VAT-ID configuration (requester member state and requester number,"
+						+ " which must be the plain number without the country prefix).");
+		rejected.setParameter("rawResponse", rawResponse);
+		throw rejected;
 	}
 
 	/**

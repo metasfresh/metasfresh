@@ -42,7 +42,10 @@ import lombok.NonNull;
  * have opposite consequences for a partner's tax certificate.
  *
  * <p>A service-side or transport problem is returned as {@code ServiceUnavailable}, never thrown: a failed
- * check is a recordable outcome that must reach the check log. Throwing is reserved for programming errors.
+ * check is a recordable outcome that must reach the check log. Throwing is reserved for programming errors
+ * and for a configuration fault the operator must fix, which is raised as
+ * {@link VATaxIDCheckRequestRejectedException} so the caller can stop a whole run instead of repeating the
+ * same error once per target.
  */
 public interface VATaxIDOnlineChecker
 {
@@ -54,6 +57,10 @@ public interface VATaxIDOnlineChecker
 	 *               check happened at all.
 	 * @return the outcome, with {@code requestIdentifier} and {@code rawResponse} populated whenever the
 	 *         service supplied them, including on {@code Invalid}.
+	 * @throws VATaxIDCheckRequestRejectedException when the service rejected the REQUEST itself because of
+	 *         how this system is configured, rather than answering about {@code vatId}. The only failure an
+	 *         implementation throws instead of reporting — a caller running over a selection is expected to
+	 *         stop on it rather than repeat it once per target.
 	 */
 	VATaxIDCheckResult check(@NonNull VATIdentifier vatId, @NonNull VATaxIDConfig config);
 
