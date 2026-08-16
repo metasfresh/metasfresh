@@ -173,7 +173,7 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 		copyUserIdFromSalesToPurchaseOrderLine(salesOrderLine, purchaseOrderLine);
 
 		// Propagate SO shipper only when it drives delivery planning.
-		if (PurchaseTypeEnum.DROPSHIP.equals(purchaseType))
+		if (purchaseType.isDropship())
 		{
 			copyDPShipperFromSOLineToPOLine(salesOrderLine, purchaseOrderLine);
 		}
