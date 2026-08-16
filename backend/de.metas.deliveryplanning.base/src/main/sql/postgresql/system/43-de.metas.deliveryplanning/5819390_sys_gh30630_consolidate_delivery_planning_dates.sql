@@ -374,8 +374,9 @@ UPDATE M_ShipperTransportation
 
 -- =====================================================================================
 -- 7) Drop the old date AD_Columns + physical columns.
---    Shared elements kept: 581689 (C_Invoice_Candidate), 581900 + 541376 (other columns).
---    The 3 now-orphaned elements (581686/687/688) are removed in step 8 below.
+--    Only element 541376 (DeliveryDate, still 15 columns) stays. 581686/687/688, plus
+--    581689 (ActualLoadingDate, last user C_Invoice_Candidate dropped below) and 581900
+--    (LoadingDate, view columns repointed to base ETD 584066) are all removed in step 8.
 -- =====================================================================================
 
 -- --- M_Delivery_Planning: PlannedDeliveryDate 585023, ActualDeliveryDate 585024, PlannedLoadingDate 585026, ActualLoadingDate 585027
@@ -422,9 +423,9 @@ DELETE FROM AD_Field WHERE AD_Field_ID IN (
       JOIN AD_Column c ON c.AD_Column_ID=f.AD_Column_ID
       JOIN AD_Table  t ON t.AD_Table_ID=c.AD_Table_ID
      WHERE t.TableName='C_Invoice_Candidate' AND c.ColumnName='ActualLoadingDate');
-SELECT backup_table('c_invoice_candidate','_gh30630_actualloadingdate');
 DELETE FROM AD_Column_Trl WHERE AD_Column_ID=586144;
 DELETE FROM AD_Column     WHERE AD_Column_ID=586144;
+SELECT backup_table('c_invoice_candidate','_gh30630_actualloadingdate');
 /* DDL */ SELECT public.db_alter_table('C_Invoice_Candidate','ALTER TABLE public.C_Invoice_Candidate DROP COLUMN IF EXISTS ActualLoadingDate');
 
 -- =====================================================================================
