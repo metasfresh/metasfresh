@@ -274,16 +274,16 @@ public class M_Delivery_Planning_StepDef
 				softly.assertThat(deliveryPlanning.getM_Warehouse_ID()).as(I_M_Delivery_Planning.COLUMNNAME_M_Warehouse_ID).isEqualTo(warehouse.getM_Warehouse_ID());
 			}
 
-			final Timestamp plannedDeliveryDate = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + I_M_Delivery_Planning.COLUMNNAME_PlannedDeliveryDate);
+			final Timestamp plannedDeliveryDate = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + I_M_Delivery_Planning.COLUMNNAME_ETA);
 			if (plannedDeliveryDate != null)
 			{
-				softly.assertThat(deliveryPlanning.getPlannedDeliveryDate()).as(I_M_Delivery_Planning.COLUMNNAME_PlannedDeliveryDate).isEqualTo(plannedDeliveryDate);
+				softly.assertThat(deliveryPlanning.getETA()).as(I_M_Delivery_Planning.COLUMNNAME_ETA).isEqualTo(plannedDeliveryDate);
 			}
 
-			final Timestamp plannedLoadingDate = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + I_M_Delivery_Planning.COLUMNNAME_PlannedLoadingDate);
+			final Timestamp plannedLoadingDate = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + I_M_Delivery_Planning.COLUMNNAME_ETD);
 			if (plannedLoadingDate != null)
 			{
-				softly.assertThat(deliveryPlanning.getPlannedLoadingDate()).as(I_M_Delivery_Planning.COLUMNNAME_PlannedLoadingDate).isEqualTo(plannedLoadingDate);
+				softly.assertThat(deliveryPlanning.getETD()).as(I_M_Delivery_Planning.COLUMNNAME_ETD).isEqualTo(plannedLoadingDate);
 			}
 
 			final BigDecimal plannedLoadedQty = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_M_Delivery_Planning.COLUMNNAME_PlannedLoadedQuantity);

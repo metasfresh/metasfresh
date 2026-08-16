@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_ShipperTransportation extends org.compiere.model.PO implements I_M_ShipperTransportation, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 340485521L;
+	private static final long serialVersionUID = -1776272185L;
 
     /** Standard Constructor */
     public X_M_ShipperTransportation (final Properties ctx, final int M_ShipperTransportation_ID, @Nullable final String trxName)
@@ -213,18 +213,6 @@ public class X_M_ShipperTransportation extends org.compiere.model.PO implements 
 	public java.sql.Timestamp getDateToBeFetched() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DateToBeFetched);
-	}
-
-	@Override
-	public void setDeliveryDate (final @Nullable java.sql.Timestamp DeliveryDate)
-	{
-		set_Value (COLUMNNAME_DeliveryDate, DeliveryDate);
-	}
-
-	@Override
-	public java.sql.Timestamp getDeliveryDate() 
-	{
-		return get_ValueAsTimestamp(COLUMNNAME_DeliveryDate);
 	}
 
 	@Override
@@ -445,18 +433,6 @@ public class X_M_ShipperTransportation extends org.compiere.model.PO implements 
 	public boolean isWENotice() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsWENotice);
-	}
-
-	@Override
-	public void setLoadingDate (final @Nullable java.sql.Timestamp LoadingDate)
-	{
-		set_Value (COLUMNNAME_LoadingDate, LoadingDate);
-	}
-
-	@Override
-	public java.sql.Timestamp getLoadingDate() 
-	{
-		return get_ValueAsTimestamp(COLUMNNAME_LoadingDate);
 	}
 
 	@Override

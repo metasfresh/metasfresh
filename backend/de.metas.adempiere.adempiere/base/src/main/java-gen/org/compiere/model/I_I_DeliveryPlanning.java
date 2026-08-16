@@ -18,27 +18,6 @@ public interface I_I_DeliveryPlanning
 
 
 	/**
-	 * Set Act Delivery Date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setActualDeliveryDate (@Nullable java.sql.Timestamp ActualDeliveryDate);
-
-	/**
-	 * Get Act Delivery Date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.sql.Timestamp getActualDeliveryDate();
-
-	ModelColumn<I_I_DeliveryPlanning, Object> COLUMN_ActualDeliveryDate = new ModelColumn<>(I_I_DeliveryPlanning.class, "ActualDeliveryDate", null);
-	String COLUMNNAME_ActualDeliveryDate = "ActualDeliveryDate";
-
-	/**
 	 * Set Act Delivered Qty.
 	 *
 	 * <br>Type: Quantity
@@ -58,27 +37,6 @@ public interface I_I_DeliveryPlanning
 
 	ModelColumn<I_I_DeliveryPlanning, Object> COLUMN_ActualDischargeQuantity = new ModelColumn<>(I_I_DeliveryPlanning.class, "ActualDischargeQuantity", null);
 	String COLUMNNAME_ActualDischargeQuantity = "ActualDischargeQuantity";
-
-	/**
-	 * Set Act Load Date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setActualLoadingDate (@Nullable java.sql.Timestamp ActualLoadingDate);
-
-	/**
-	 * Get Act Load Date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.sql.Timestamp getActualLoadingDate();
-
-	ModelColumn<I_I_DeliveryPlanning, Object> COLUMN_ActualLoadingDate = new ModelColumn<>(I_I_DeliveryPlanning.class, "ActualLoadingDate", null);
-	String COLUMNNAME_ActualLoadingDate = "ActualLoadingDate";
 
 	/**
 	 * Set Act Load Qty.
@@ -154,6 +112,52 @@ public interface I_I_DeliveryPlanning
 	int getAD_Org_ID();
 
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set ATA.
+	 * Actual Arrival Date
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setATA (@Nullable java.sql.Timestamp ATA);
+
+	/**
+	 * Get ATA.
+	 * Actual Arrival Date
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getATA();
+
+	ModelColumn<I_I_DeliveryPlanning, Object> COLUMN_ATA = new ModelColumn<>(I_I_DeliveryPlanning.class, "ATA", null);
+	String COLUMNNAME_ATA = "ATA";
+
+	/**
+	 * Set ATD.
+	 * Actual Shipping Date
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setATD (@Nullable java.sql.Timestamp ATD);
+
+	/**
+	 * Get ATD.
+	 * Actual Shipping Date
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getATD();
+
+	ModelColumn<I_I_DeliveryPlanning, Object> COLUMN_ATD = new ModelColumn<>(I_I_DeliveryPlanning.class, "ATD", null);
+	String COLUMNNAME_ATD = "ATD";
 
 	/**
 	 * Set Batch.
@@ -265,6 +269,52 @@ public interface I_I_DeliveryPlanning
 
 	ModelColumn<I_I_DeliveryPlanning, Object> COLUMN_DocumentNo = new ModelColumn<>(I_I_DeliveryPlanning.class, "DocumentNo", null);
 	String COLUMNNAME_DocumentNo = "DocumentNo";
+
+	/**
+	 * Set ETA.
+	 * The ETA is used for shipment tracking, delivery planning, and scheduling of warehouse operations. The ETA is automatically synchronized from the Transport Order to the Purchase Order when the transport information is updated. Manual changes of the ETA in the Purchase Order are not allowed — it is always maintained in the corresponding Transport Order.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setETA (@Nullable java.sql.Timestamp ETA);
+
+	/**
+	 * Get ETA.
+	 * The ETA is used for shipment tracking, delivery planning, and scheduling of warehouse operations. The ETA is automatically synchronized from the Transport Order to the Purchase Order when the transport information is updated. Manual changes of the ETA in the Purchase Order are not allowed — it is always maintained in the corresponding Transport Order.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getETA();
+
+	ModelColumn<I_I_DeliveryPlanning, Object> COLUMN_ETA = new ModelColumn<>(I_I_DeliveryPlanning.class, "ETA", null);
+	String COLUMNNAME_ETA = "ETA";
+
+	/**
+	 * Set ETD.
+	 * Estimated Shipping Date
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setETD (@Nullable java.sql.Timestamp ETD);
+
+	/**
+	 * Get ETD.
+	 * Estimated Shipping Date
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getETD();
+
+	ModelColumn<I_I_DeliveryPlanning, Object> COLUMN_ETD = new ModelColumn<>(I_I_DeliveryPlanning.class, "ETD", null);
+	String COLUMNNAME_ETD = "ETD";
 
 	/**
 	 * Set Import Delivery Planning Data.
@@ -420,7 +470,7 @@ public interface I_I_DeliveryPlanning
 	String COLUMNNAME_M_Delivery_Planning_ID = "M_Delivery_Planning_ID";
 
 	/**
-	 * Set Country Of Origin.
+	 * Set Origin Country.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -429,7 +479,7 @@ public interface I_I_DeliveryPlanning
 	void setOriginCountry (@Nullable java.lang.String OriginCountry);
 
 	/**
-	 * Get Country Of Origin.
+	 * Get Origin Country.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -439,27 +489,6 @@ public interface I_I_DeliveryPlanning
 
 	ModelColumn<I_I_DeliveryPlanning, Object> COLUMN_OriginCountry = new ModelColumn<>(I_I_DeliveryPlanning.class, "OriginCountry", null);
 	String COLUMNNAME_OriginCountry = "OriginCountry";
-
-	/**
-	 * Set Plan Delivery Date (ETA).
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPlannedDeliveryDate (@Nullable java.sql.Timestamp PlannedDeliveryDate);
-
-	/**
-	 * Get Plan Delivery Date (ETA).
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.sql.Timestamp getPlannedDeliveryDate();
-
-	ModelColumn<I_I_DeliveryPlanning, Object> COLUMN_PlannedDeliveryDate = new ModelColumn<>(I_I_DeliveryPlanning.class, "PlannedDeliveryDate", null);
-	String COLUMNNAME_PlannedDeliveryDate = "PlannedDeliveryDate";
 
 	/**
 	 * Set Plan Delivered Qty.
@@ -502,27 +531,6 @@ public interface I_I_DeliveryPlanning
 
 	ModelColumn<I_I_DeliveryPlanning, Object> COLUMN_PlannedLoadedQuantity = new ModelColumn<>(I_I_DeliveryPlanning.class, "PlannedLoadedQuantity", null);
 	String COLUMNNAME_PlannedLoadedQuantity = "PlannedLoadedQuantity";
-
-	/**
-	 * Set Plan Load Date (ETD).
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPlannedLoadingDate (@Nullable java.sql.Timestamp PlannedLoadingDate);
-
-	/**
-	 * Get Plan Load Date (ETD).
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.sql.Timestamp getPlannedLoadingDate();
-
-	ModelColumn<I_I_DeliveryPlanning, Object> COLUMN_PlannedLoadingDate = new ModelColumn<>(I_I_DeliveryPlanning.class, "PlannedLoadingDate", null);
-	String COLUMNNAME_PlannedLoadingDate = "PlannedLoadingDate";
 
 	/**
 	 * Set Processed.

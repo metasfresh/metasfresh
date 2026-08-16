@@ -365,27 +365,6 @@ public interface I_M_ShipperTransportation
 	String COLUMNNAME_DateToBeFetched = "DateToBeFetched";
 
 	/**
-	 * Set Delivery Date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setDeliveryDate (@Nullable java.sql.Timestamp DeliveryDate);
-
-	/**
-	 * Get Delivery Date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.sql.Timestamp getDeliveryDate();
-
-	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_DeliveryDate = new ModelColumn<>(I_M_ShipperTransportation.class, "DeliveryDate", null);
-	String COLUMNNAME_DeliveryDate = "DeliveryDate";
-
-	/**
 	 * Set Delivery Time.
 	 *
 	 * <br>Type: String
@@ -700,27 +679,6 @@ public interface I_M_ShipperTransportation
 
 	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_IsWENotice = new ModelColumn<>(I_M_ShipperTransportation.class, "IsWENotice", null);
 	String COLUMNNAME_IsWENotice = "IsWENotice";
-
-	/**
-	 * Set Loading Date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setLoadingDate (@Nullable java.sql.Timestamp LoadingDate);
-
-	/**
-	 * Get Loading Date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.sql.Timestamp getLoadingDate();
-
-	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_LoadingDate = new ModelColumn<>(I_M_ShipperTransportation.class, "LoadingDate", null);
-	String COLUMNNAME_LoadingDate = "LoadingDate";
 
 	/**
 	 * Set Load Time.

@@ -124,7 +124,14 @@ public class GenerateOutgoingDeliveryPlanningCommand
 
 			requestBuilder.isB2B(order.isDropShip())
 					.incotermsId(IncotermsId.ofRepoIdOrNull(order.getC_Incoterms_ID()))
-					.incotermLocation(order.getIncotermLocation());
+					.incotermLocation(order.getIncotermLocation())
+					// gh30630: default the estimated departure/loading date (ETD) from the order's
+					// PreparationDate, mirroring the shape of
+					// PurchaseOrderToShipperTransportationService#applyDefaultDatesFromFirstOrder.
+					// ETA is already set from the shipment schedule's (refined) delivery date above.
+					.plannedLoadingDate(TimeUtil.asInstant(order.getPreparationDate()))
+					// gh30630: seed the actual departure/loading date (ATD) from the same PreparationDate (ATD = ETD).
+					.actualLoadingDate(TimeUtil.asInstant(order.getPreparationDate()));
 
 			final BPartnerLocationAndCaptureId bpartnerLocationId = OrderDocumentLocationAdapterFactory.locationAdapter(order).getBPartnerLocationAndCaptureId();
 			final CountryId destinationCountryId = bPartnerBL.getCountryId(bpartnerLocationId);
@@ -136,7 +143,7 @@ public class GenerateOutgoingDeliveryPlanningCommand
 		{
 			final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderLineId);
 
-			requestBuilder.actualDeliveryDate(TimeUtil.asInstant(orderLine.getDateDelivered()));
+			requestBuilder.actualDeliveryDate(TimeUtil.asInstant(CoalesceUtil.coalesce(orderLine.getDateDelivered(), deliveryDate_effective)));
 
 			if (deliveryDate_effective == null)
 			{

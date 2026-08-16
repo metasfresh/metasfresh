@@ -64,9 +64,13 @@ public class DeliveryInstructionCreateRequest
 
 	@Nullable Instant loadingDate;
 
+	@Nullable Instant atd;
+
 	@Nullable String loadingTime;
 
 	@Nullable Instant deliveryDate;
+
+	@Nullable Instant ata;
 
 	@Nullable String deliveryTime;
 

@@ -144,10 +144,10 @@ public class M_ShipperTransportation_StepDef
 				softly.assertThat(deliveryInstruction.getC_BPartner_Location_Loading_ID()).as(I_M_ShipperTransportation.COLUMNNAME_C_BPartner_Location_Loading_ID).isEqualTo(loadingLocation.getC_BPartner_Location_ID());
 			}
 
-			final Timestamp deliveryDate = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + I_M_ShipperTransportation.COLUMNNAME_DeliveryDate);
+			final Timestamp deliveryDate = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + I_M_ShipperTransportation.COLUMNNAME_ETA);
 			if (deliveryDate != null)
 			{
-				softly.assertThat(deliveryInstruction.getDeliveryDate()).as(I_M_ShipperTransportation.COLUMNNAME_DeliveryDate).isEqualTo(deliveryDate);
+				softly.assertThat(deliveryInstruction.getETA()).as(I_M_ShipperTransportation.COLUMNNAME_ETA).isEqualTo(deliveryDate);
 			}
 
 			final String docStatus = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_ShipperTransportation.COLUMNNAME_DocStatus);

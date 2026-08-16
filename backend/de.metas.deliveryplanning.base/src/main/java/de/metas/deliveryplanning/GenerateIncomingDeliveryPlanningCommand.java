@@ -2,6 +2,7 @@ package de.metas.deliveryplanning;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.incoterms.IncotermsId;
@@ -125,7 +126,14 @@ public class GenerateIncomingDeliveryPlanningCommand
 
 			requestBuilder.isB2B(order.isDropShip())
 					.incotermsId(IncotermsId.ofRepoIdOrNull(order.getC_Incoterms_ID()))
-					.incotermLocation(order.getIncotermLocation());
+					.incotermLocation(order.getIncotermLocation())
+					// gh30630: default the estimated departure/loading date (ETD) from the order's
+					// PreparationDate, mirroring the shape of
+					// PurchaseOrderToShipperTransportationService#applyDefaultDatesFromFirstOrder.
+					// ETA is already set from the receipt schedule's MovementDate above.
+					.plannedLoadingDate(TimeUtil.asInstant(order.getPreparationDate()))
+					// gh30630: seed the actual departure/loading date (ATD) from the same PreparationDate (ATD = ETD).
+					.actualLoadingDate(TimeUtil.asInstant(order.getPreparationDate()));
 		}
 
 		if (orderLineId != null)
@@ -133,7 +141,7 @@ public class GenerateIncomingDeliveryPlanningCommand
 			final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderLineId);
 			final Dimension orderLineDimension = dimensionService.getFromRecord(orderLine);
 
-			requestBuilder.actualDeliveryDate(TimeUtil.asInstant(orderLine.getDateDelivered()));
+			requestBuilder.actualDeliveryDate(TimeUtil.asInstant(CoalesceUtil.coalesce(orderLine.getDateDelivered(), receiptSchedule.getMovementDate())));
 			requestBuilder.shipperId(ShipperId.ofRepoIdOrNull(orderLine.getM_Shipper_ID()));
 			requestBuilder.dimension(orderLineDimension);
 		}

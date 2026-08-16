@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_I_DeliveryPlanning extends org.compiere.model.PO implements I_I_DeliveryPlanning, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1716194418L;
+	private static final long serialVersionUID = 354399226L;
 
     /** Standard Constructor */
     public X_I_DeliveryPlanning (final Properties ctx, final int I_DeliveryPlanning_ID, @Nullable final String trxName)
@@ -36,18 +36,6 @@ public class X_I_DeliveryPlanning extends org.compiere.model.PO implements I_I_D
 	}
 
 	@Override
-	public void setActualDeliveryDate (final @Nullable java.sql.Timestamp ActualDeliveryDate)
-	{
-		set_Value (COLUMNNAME_ActualDeliveryDate, ActualDeliveryDate);
-	}
-
-	@Override
-	public java.sql.Timestamp getActualDeliveryDate() 
-	{
-		return get_ValueAsTimestamp(COLUMNNAME_ActualDeliveryDate);
-	}
-
-	@Override
 	public void setActualDischargeQuantity (final @Nullable BigDecimal ActualDischargeQuantity)
 	{
 		set_Value (COLUMNNAME_ActualDischargeQuantity, ActualDischargeQuantity);
@@ -58,18 +46,6 @@ public class X_I_DeliveryPlanning extends org.compiere.model.PO implements I_I_D
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ActualDischargeQuantity);
 		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setActualLoadingDate (final @Nullable java.sql.Timestamp ActualLoadingDate)
-	{
-		set_Value (COLUMNNAME_ActualLoadingDate, ActualLoadingDate);
-	}
-
-	@Override
-	public java.sql.Timestamp getActualLoadingDate() 
-	{
-		return get_ValueAsTimestamp(COLUMNNAME_ActualLoadingDate);
 	}
 
 	@Override
@@ -98,6 +74,30 @@ public class X_I_DeliveryPlanning extends org.compiere.model.PO implements I_I_D
 	public int getAD_Issue_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Issue_ID);
+	}
+
+	@Override
+	public void setATA (final @Nullable java.sql.Timestamp ATA)
+	{
+		set_Value (COLUMNNAME_ATA, ATA);
+	}
+
+	@Override
+	public java.sql.Timestamp getATA() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_ATA);
+	}
+
+	@Override
+	public void setATD (final @Nullable java.sql.Timestamp ATD)
+	{
+		set_Value (COLUMNNAME_ATD, ATD);
+	}
+
+	@Override
+	public java.sql.Timestamp getATD() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_ATD);
 	}
 
 	@Override
@@ -152,6 +152,30 @@ public class X_I_DeliveryPlanning extends org.compiere.model.PO implements I_I_D
 	public java.lang.String getDocumentNo() 
 	{
 		return get_ValueAsString(COLUMNNAME_DocumentNo);
+	}
+
+	@Override
+	public void setETA (final @Nullable java.sql.Timestamp ETA)
+	{
+		set_Value (COLUMNNAME_ETA, ETA);
+	}
+
+	@Override
+	public java.sql.Timestamp getETA() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_ETA);
+	}
+
+	@Override
+	public void setETD (final @Nullable java.sql.Timestamp ETD)
+	{
+		set_Value (COLUMNNAME_ETD, ETD);
+	}
+
+	@Override
+	public java.sql.Timestamp getETD() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_ETD);
 	}
 
 	@Override
@@ -259,18 +283,6 @@ public class X_I_DeliveryPlanning extends org.compiere.model.PO implements I_I_D
 	}
 
 	@Override
-	public void setPlannedDeliveryDate (final @Nullable java.sql.Timestamp PlannedDeliveryDate)
-	{
-		set_Value (COLUMNNAME_PlannedDeliveryDate, PlannedDeliveryDate);
-	}
-
-	@Override
-	public java.sql.Timestamp getPlannedDeliveryDate() 
-	{
-		return get_ValueAsTimestamp(COLUMNNAME_PlannedDeliveryDate);
-	}
-
-	@Override
 	public void setPlannedDischargeQuantity (final @Nullable BigDecimal PlannedDischargeQuantity)
 	{
 		set_Value (COLUMNNAME_PlannedDischargeQuantity, PlannedDischargeQuantity);
@@ -294,18 +306,6 @@ public class X_I_DeliveryPlanning extends org.compiere.model.PO implements I_I_D
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PlannedLoadedQuantity);
 		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setPlannedLoadingDate (final @Nullable java.sql.Timestamp PlannedLoadingDate)
-	{
-		set_Value (COLUMNNAME_PlannedLoadingDate, PlannedLoadingDate);
-	}
-
-	@Override
-	public java.sql.Timestamp getPlannedLoadingDate() 
-	{
-		return get_ValueAsTimestamp(COLUMNNAME_PlannedLoadingDate);
 	}
 
 	@Override

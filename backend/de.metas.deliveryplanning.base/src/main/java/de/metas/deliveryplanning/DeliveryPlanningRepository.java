@@ -270,10 +270,10 @@ public class DeliveryPlanningRepository
 		deliveryPlanningRecord.setC_Incoterms_ID(IncotermsId.toRepoId(request.getIncotermsId()));
 		deliveryPlanningRecord.setIncotermLocation(request.getIncotermLocation());
 
-		deliveryPlanningRecord.setPlannedDeliveryDate(TimeUtil.asTimestamp(request.getPlannedDeliveryDate()));
-		deliveryPlanningRecord.setActualDeliveryDate(TimeUtil.asTimestamp(request.getActualDeliveryDate()));
-		deliveryPlanningRecord.setPlannedLoadingDate(TimeUtil.asTimestamp(request.getPlannedLoadingDate()));
-		deliveryPlanningRecord.setActualLoadingDate(TimeUtil.asTimestamp(request.getActualLoadingDate()));
+		deliveryPlanningRecord.setETA(TimeUtil.asTimestamp(request.getPlannedDeliveryDate()));
+		deliveryPlanningRecord.setATA(TimeUtil.asTimestamp(request.getActualDeliveryDate()));
+		deliveryPlanningRecord.setETD(TimeUtil.asTimestamp(request.getPlannedLoadingDate()));
+		deliveryPlanningRecord.setATD(TimeUtil.asTimestamp(request.getActualLoadingDate()));
 
 		deliveryPlanningRecord.setLoadingTime(request.getLoadingTime());
 		deliveryPlanningRecord.setDeliveryTime(request.getDeliveryTime());
@@ -443,11 +443,13 @@ public class DeliveryPlanningRepository
 
 		deliveryInstructionRecord.setM_MeansOfTransportation_ID(MeansOfTransportationId.toRepoId(request.getMeansOfTransportationId()));
 
-		deliveryInstructionRecord.setDeliveryDate(TimeUtil.asTimestamp(request.getDeliveryDate()));
+		deliveryInstructionRecord.setETA(TimeUtil.asTimestamp(request.getDeliveryDate()));
+		deliveryInstructionRecord.setATA(TimeUtil.asTimestamp(request.getAta()));
 		deliveryInstructionRecord.setDateDoc(TimeUtil.asTimestamp(request.getDateDoc()));
 		deliveryInstructionRecord.setC_DocType_ID(request.getDocTypeId().getRepoId());
 
-		deliveryInstructionRecord.setLoadingDate(TimeUtil.asTimestamp(request.getLoadingDate()));
+		deliveryInstructionRecord.setETD(TimeUtil.asTimestamp(request.getLoadingDate()));
+		deliveryInstructionRecord.setATD(TimeUtil.asTimestamp(request.getAtd()));
 
 		deliveryInstructionRecord.setC_BPartner_Location_Delivery_ID(request.getDeliveryPartnerLocationId().getRepoId());
 		deliveryInstructionRecord.setC_BPartner_Location_Loading_ID(request.getLoadingPartnerLocationId().getRepoId());
@@ -617,7 +619,7 @@ public class DeliveryPlanningRepository
 		IQueryBuilder<I_M_Delivery_Planning> queryBuilder = queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_C_OrderLine_ID, orderLineId)
-				.addNotNull(I_M_Delivery_Planning.COLUMNNAME_ActualLoadingDate);
+				.addNotNull(I_M_Delivery_Planning.COLUMNNAME_ATD);
 
 		if (onlyWithCompletedInstructions)
 		{
@@ -628,10 +630,10 @@ public class DeliveryPlanningRepository
 		}
 
 		return queryBuilder
-				.orderBy(I_M_Delivery_Planning.COLUMNNAME_ActualLoadingDate)
+				.orderBy(I_M_Delivery_Planning.COLUMNNAME_ATD)
 				.setLimit(QueryLimit.ONE)
 				.create()
 				.firstOnlyOptional()
-				.map(I_M_Delivery_Planning::getActualLoadingDate);
+				.map(I_M_Delivery_Planning::getATD);
 	}
 }

@@ -152,9 +152,9 @@ public class DeliveryPlanningImportProcess extends SimpleImportProcessTemplate<I
 
 	private void updateDeliveryPlanning(final I_I_DeliveryPlanning importRecord, final I_M_Delivery_Planning deliveryPlanning)
 	{
-		deliveryPlanning.setActualLoadingDate(importRecord.getActualLoadingDate());
+		deliveryPlanning.setATD(importRecord.getATD());
 		deliveryPlanning.setActualLoadQty(importRecord.getActualLoadQty());
-		deliveryPlanning.setActualDeliveryDate(importRecord.getActualDeliveryDate());
+		deliveryPlanning.setATA(importRecord.getATA());
 		deliveryPlanning.setActualDischargeQuantity(importRecord.getActualDischargeQuantity());
 		InterfaceWrapperHelper.save(deliveryPlanning);
 	}

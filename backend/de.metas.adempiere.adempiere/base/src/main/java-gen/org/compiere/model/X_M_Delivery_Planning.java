@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_Delivery_Planning, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1123752573L;
+	private static final long serialVersionUID = -2115867192L;
 
     /** Standard Constructor */
     public X_M_Delivery_Planning (final Properties ctx, final int M_Delivery_Planning_ID, @Nullable final String trxName)
@@ -36,18 +36,6 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	}
 
 	@Override
-	public void setActualDeliveryDate (final @Nullable java.sql.Timestamp ActualDeliveryDate)
-	{
-		set_Value (COLUMNNAME_ActualDeliveryDate, ActualDeliveryDate);
-	}
-
-	@Override
-	public java.sql.Timestamp getActualDeliveryDate() 
-	{
-		return get_ValueAsTimestamp(COLUMNNAME_ActualDeliveryDate);
-	}
-
-	@Override
 	public void setActualDischargeQuantity (final BigDecimal ActualDischargeQuantity)
 	{
 		set_Value (COLUMNNAME_ActualDischargeQuantity, ActualDischargeQuantity);
@@ -61,18 +49,6 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	}
 
 	@Override
-	public void setActualLoadingDate (final @Nullable java.sql.Timestamp ActualLoadingDate)
-	{
-		set_Value (COLUMNNAME_ActualLoadingDate, ActualLoadingDate);
-	}
-
-	@Override
-	public java.sql.Timestamp getActualLoadingDate() 
-	{
-		return get_ValueAsTimestamp(COLUMNNAME_ActualLoadingDate);
-	}
-
-	@Override
 	public void setActualLoadQty (final BigDecimal ActualLoadQty)
 	{
 		set_Value (COLUMNNAME_ActualLoadQty, ActualLoadQty);
@@ -83,6 +59,30 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ActualLoadQty);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setATA (final @Nullable java.sql.Timestamp ATA)
+	{
+		set_Value (COLUMNNAME_ATA, ATA);
+	}
+
+	@Override
+	public java.sql.Timestamp getATA() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_ATA);
+	}
+
+	@Override
+	public void setATD (final @Nullable java.sql.Timestamp ATD)
+	{
+		set_Value (COLUMNNAME_ATD, ATD);
+	}
+
+	@Override
+	public java.sql.Timestamp getATD() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_ATD);
 	}
 
 	@Override
@@ -256,14 +256,27 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	}
 
 	@Override
-	public void setGrade (final @Nullable java.lang.String Grade)
+	public void setETA (final @Nullable java.sql.Timestamp ETA)
 	{
-		throw new IllegalArgumentException ("Grade is virtual column");	}
+		set_Value (COLUMNNAME_ETA, ETA);
+	}
 
 	@Override
-	public java.lang.String getGrade() 
+	public java.sql.Timestamp getETA() 
 	{
-		return get_ValueAsString(COLUMNNAME_Grade);
+		return get_ValueAsTimestamp(COLUMNNAME_ETA);
+	}
+
+	@Override
+	public void setETD (final @Nullable java.sql.Timestamp ETD)
+	{
+		set_Value (COLUMNNAME_ETD, ETD);
+	}
+
+	@Override
+	public java.sql.Timestamp getETD() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_ETD);
 	}
 
 	@Override
@@ -516,18 +529,6 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	}
 
 	@Override
-	public void setPlannedDeliveryDate (final @Nullable java.sql.Timestamp PlannedDeliveryDate)
-	{
-		set_ValueNoCheck (COLUMNNAME_PlannedDeliveryDate, PlannedDeliveryDate);
-	}
-
-	@Override
-	public java.sql.Timestamp getPlannedDeliveryDate() 
-	{
-		return get_ValueAsTimestamp(COLUMNNAME_PlannedDeliveryDate);
-	}
-
-	@Override
 	public void setPlannedDischargeQuantity (final BigDecimal PlannedDischargeQuantity)
 	{
 		set_Value (COLUMNNAME_PlannedDischargeQuantity, PlannedDischargeQuantity);
@@ -551,18 +552,6 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PlannedLoadedQuantity);
 		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setPlannedLoadingDate (final @Nullable java.sql.Timestamp PlannedLoadingDate)
-	{
-		set_Value (COLUMNNAME_PlannedLoadingDate, PlannedLoadingDate);
-	}
-
-	@Override
-	public java.sql.Timestamp getPlannedLoadingDate() 
-	{
-		return get_ValueAsTimestamp(COLUMNNAME_PlannedLoadingDate);
 	}
 
 	@Override
