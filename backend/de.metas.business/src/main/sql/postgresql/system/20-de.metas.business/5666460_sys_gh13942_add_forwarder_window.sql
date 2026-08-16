@@ -1,3 +1,10 @@
+-- SUPERSEDED (net no-op): the M_Forwarder table + Forwarder window created here (gh13942) were an
+-- early port design, later REPLACED by the standard M_Shipper and DROPPED within this same,
+-- still-unpublished port -- see gh14215: 5671880 (replace with M_Shipper on M_Delivery_Planning),
+-- 5671920 (drop Forwarder window 541634), 5671930 (drop M_Forwarder table 542266). Retained only
+-- for migration-chain continuity; M_Forwarder does not ship. (C_BPartner_Forwarder is a different,
+-- kept table -- see 5652970.)
+--
 -- Table: M_Forwarder
 -- 2022-11-28T14:37:56.246Z
 INSERT INTO AD_Table (AccessLevel,ACTriggerLength,AD_Client_ID,AD_Org_ID,AD_Table_ID,CopyColumnsFromTable,Created,CreatedBy,Description,EntityType,ImportTable,IsActive,IsAutocomplete,IsChangeLog,IsDeleteable,IsDLM,IsEnableRemoteCacheInvalidation,IsHighVolume,IsSecurityEnabled,IsView,LoadSeq,Name,PersonalDataCategory,ReplicationType,TableName,TooltipType,Updated,UpdatedBy) VALUES ('3',0,0,0,542266,'N',TO_TIMESTAMP('2022-11-28 15:37:56','YYYY-MM-DD HH24:MI:SS'),100,'Forwarder','D','N','Y','N','N','Y','N','N','N','N','N',0,'Forwarder','NP','L','M_Forwarder','DTI',TO_TIMESTAMP('2022-11-28 15:37:56','YYYY-MM-DD HH24:MI:SS'),100)
