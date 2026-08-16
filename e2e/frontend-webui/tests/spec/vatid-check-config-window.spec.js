@@ -10,7 +10,7 @@ import { BooleanWidget } from '../utils/widgets/BooleanWidget';
 import { TextWidget } from '../utils/widgets/TextWidget';
 import { NumericWidget } from '../utils/widgets/NumericWidget';
 import { ListWidget } from '../utils/widgets/ListWidget';
-import { assertRecordIsValid, getFieldData, WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
+import { assertRecordIsValid, getFieldData } from '../utils/WebAPIValidation';
 
 /**
  * VAT-ID check configuration window (table VATaxID_Config).
@@ -165,8 +165,9 @@ Closes a mandatory Playwright-coverage gap for a newly created WebUI window
    layout/metadata endpoint.
 3. The OnServiceUnavailable dropdown (AD_Reference_ID 542126) offers exactly
    the two intended values (ServiceUnavailable, Invalid) and no others.
-4. A record can be created, its fields set, saved, and the saved values read
-   back unchanged after a page reload.
+4. The seeded record's fields can be set, saved, and read back unchanged after a
+   page reload. The record is restored afterwards, not deleted - the seed migration
+   ships it, so it is product data.
     `);
 
     test.setTimeout(120000);
@@ -312,6 +313,21 @@ Closes a mandatory Playwright-coverage gap for a newly created WebUI window
       await ListWidget.setByValue('OnServiceUnavailable', expected.OnServiceUnavailable);
     });
 
+    // The individual setters above are what the Allure steps document, but they are not
+    // what GUARANTEES the values landed: the widget layer silently drops a write now and
+    // then (see applyConfigFieldsVerified). This re-applies the same values through the
+    // verify-and-retry path, so STEP 6's read-back asserts persistence rather than
+    // accidentally asserting a race.
+    await applyConfigFieldsVerified(page, recordId, {
+      IsFormatCheckEnabled: false,
+      IsVIESCheckEnabled: true,
+      RestApiBaseURL: expected.RestApiBaseURL,
+      RequesterMemberStateCode: expected.RequesterMemberStateCode,
+      RequesterNumber: expected.RequesterNumber,
+      RecheckAfterDays: expected.RecheckAfterDays,
+      OnServiceUnavailable: expected.OnServiceUnavailable,
+    });
+
     await waitForRecordSavedNoError(VATID_CONFIG_WINDOW_ID, recordId);
 
     // === STEP 6: Reload and read back every value via the WebAPI (raw, language-independent) ===
@@ -361,25 +377,20 @@ Closes a mandatory Playwright-coverage gap for a newly created WebUI window
           await page.locator('.rotating, .indicator-pending')
             .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
 
-          if (originalValues.IsFormatCheckEnabled === true) {
-            await BooleanWidget.setTrue('IsFormatCheckEnabled');
-          } else {
-            await BooleanWidget.setFalse('IsFormatCheckEnabled');
-          }
-          if (originalValues.IsVIESCheckEnabled === true) {
-            await BooleanWidget.setTrue('IsVIESCheckEnabled');
-          } else {
-            await BooleanWidget.setFalse('IsVIESCheckEnabled');
-          }
-          await TextWidget.setValue('RestApiBaseURL', originalValues.RestApiBaseURL || '');
-          await TextWidget.setValue('RequesterMemberStateCode', originalValues.RequesterMemberStateCode || '');
-          await TextWidget.setValue('RequesterNumber', originalValues.RequesterNumber || '');
-          await NumericWidget.setValue('RecheckAfterDays', Number(originalValues.RecheckAfterDays) || 0);
-          if (originalValues.OnServiceUnavailable) {
-            await ListWidget.setByValue('OnServiceUnavailable', originalValues.OnServiceUnavailable);
-          }
-          await waitForRecordSavedNoError(VATID_CONFIG_WINDOW_ID, recordId);
-          console.log(`[INFO] Cleanup: restored the seeded record ${recordId} to its original values`);
+          // Verified + retried, for the same reason setup is: an unverified restore can
+          // silently drop a field and leave this shared record altered for every later spec.
+          await applyConfigFieldsVerified(page, recordId, {
+            IsFormatCheckEnabled: originalValues.IsFormatCheckEnabled === true,
+            IsVIESCheckEnabled: originalValues.IsVIESCheckEnabled === true,
+            RestApiBaseURL: originalValues.RestApiBaseURL ?? '',
+            RequesterMemberStateCode: originalValues.RequesterMemberStateCode ?? '',
+            RequesterNumber: originalValues.RequesterNumber ?? '',
+            RecheckAfterDays: Number(originalValues.RecheckAfterDays) || 0,
+            ...(originalValues.OnServiceUnavailable
+              ? { OnServiceUnavailable: originalValues.OnServiceUnavailable }
+              : {}),
+          });
+          console.log(`[INFO] Cleanup: restored the seeded record ${recordId}, verified`);
         } catch (restoreError) {
           console.log(`[WARN] Cleanup: could not fully restore record ${recordId}: ${restoreError.message}`);
         }
@@ -469,6 +480,57 @@ e2e/frontend-webui/CLAUDE.md "Specs MUST be language-independent".
   });
 });
 
+
+/**
+ * Set fields, then VERIFY them against the record and retry until they stick.
+ *
+ * Not belt-and-braces. The widget helpers on this stack silently drop writes: a
+ * traced run of this very spec issued 14 PATCHes for 15 field changes, with no error
+ * anywhere and no request at all for the missing one — and on a re-run it was a
+ * different field that vanished, so it is a focus/timing race, not one bad widget.
+ * `vatid-status-on-bpartner-window.spec.js` hit the identical race and documents it.
+ *
+ * A dropped write matters twice over here: during setup the persistence assertions
+ * would fail on a value the test never actually managed to send, and during teardown
+ * it would leave this shared, seeded record altered for every later spec.
+ */
+async function applyConfigFieldsVerified(page, recordId, fields) {
+  const deadline = Date.now() + VERY_SLOW_ACTION_TIMEOUT;
+  let mismatches = [];
+
+  while (Date.now() < deadline) {
+    for (const [fieldName, value] of Object.entries(fields)) {
+      if (typeof value === 'boolean') {
+        await (value ? BooleanWidget.setTrue(fieldName) : BooleanWidget.setFalse(fieldName));
+      } else if (typeof value === 'number') {
+        await NumericWidget.setValue(fieldName, value);
+      } else if (fieldName === 'OnServiceUnavailable') {
+        await ListWidget.setByValue(fieldName, value);
+      } else {
+        await TextWidget.setValue(fieldName, value ?? '');
+      }
+    }
+    await WidgetCommon.waitForSaveComplete();
+
+    mismatches = [];
+    for (const [fieldName, value] of Object.entries(fields)) {
+      const observed = await getRawFieldValue(VATID_CONFIG_WINDOW_ID, recordId, fieldName);
+      // Loose on purpose: the WebAPI returns a numeric as a string and an empty text
+      // field as null rather than ''.
+      const differs = typeof value === 'number'
+        ? Number(observed) !== value
+        : typeof value === 'boolean'
+          ? observed !== value
+          : (observed ?? '') !== (value ?? '');
+      if (differs) mismatches.push(`${fieldName}=${JSON.stringify(value)} (observed ${JSON.stringify(observed)})`);
+    }
+    if (mismatches.length === 0) return;
+
+    await page.waitForTimeout(500);
+  }
+
+  throw new Error(`VATaxID_Config ${recordId}: could not persist ${mismatches.join(', ')}`);
+}
 
 /**
  * Read a field's raw (language-invariant) value via the WebAPI.
