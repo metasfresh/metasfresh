@@ -46,7 +46,6 @@ Feature: The VAT-ID check process corrects order-line tax on a status change
       | C_Location_ID.Identifier | CountryCode |
       | location_france          | FR          |
 
-  @ignore # TODO
   @Id:S31060_TC9
   Scenario: Correcting an invalid VAT-ID to a valid one refreshes an open order's tax and leaves completed and closed orders untouched
     Given no VATaxID_CheckLog records exist for VATaxID 'FR83404833048'
@@ -73,9 +72,14 @@ Feature: The VAT-ID check process corrects order-line tax on a status change
       | Identifier  | GLN           | C_BPartner_ID.Identifier | IsShipToDefault | IsBillToDefault | OPT.C_Location_ID.Identifier |
       | bpl_correct | 0123456789041 | bp_correct               | Y               | Y               | location_france              |
 
+    # The trigger schedules that check in a work package, so it lands some time AFTER the save step
+    # returned. Wait for it instead of racing it -- the assertion below reads the database once, without
+    # retrying. Same wait, same reason, as the sibling scenarios in vatIdOnlineCheck.feature.
+    Then the VAT-ID online checker was called for VATaxID 'FR83404833048'
+
     # The after-commit trigger already checked the freshly created partner: proves the scenario starts
     # from a genuinely Invalid status, not from a manually poked column.
-    Then validate C_BPartner VAT-ID status:
+    And validate C_BPartner VAT-ID status:
       | C_BPartner_ID | VATaxIDStatus | HasTaxCertificate |
       | bp_correct    | Invalid       | false              |
 
