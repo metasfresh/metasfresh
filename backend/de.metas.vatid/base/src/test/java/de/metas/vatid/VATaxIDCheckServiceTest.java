@@ -24,6 +24,7 @@ package de.metas.vatid;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.organization.OrgId;
 import de.metas.tax.api.VATIdentifier;
@@ -33,6 +34,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_VATaxID_CheckLog;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -124,6 +126,27 @@ class VATaxIDCheckServiceTest
 	private static void changeVATaxIDTo(@NonNull final BPartnerId bpartnerId, @Nullable final VATIdentifier vataxID)
 	{
 		final I_C_BPartner record = InterfaceWrapperHelper.load(bpartnerId, I_C_BPartner.class);
+		record.setVATaxID(vataxID != null ? vataxID.getAsString() : null);
+		InterfaceWrapperHelper.saveRecord(record);
+	}
+
+	@NonNull
+	private static BPartnerLocationId givenBPartnerLocationWithVATaxID(
+			@NonNull final BPartnerId bpartnerId,
+			@Nullable final VATIdentifier vataxID)
+	{
+		final I_C_BPartner_Location record = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class);
+		record.setC_BPartner_ID(bpartnerId.getRepoId());
+		record.setVATaxID(vataxID != null ? vataxID.getAsString() : null);
+		InterfaceWrapperHelper.saveRecord(record);
+		return BPartnerLocationId.ofRepoId(bpartnerId, record.getC_BPartner_Location_ID());
+	}
+
+	private static void changeLocationVATaxIDTo(
+			@NonNull final BPartnerLocationId bpartnerLocationId,
+			@Nullable final VATIdentifier vataxID)
+	{
+		final I_C_BPartner_Location record = InterfaceWrapperHelper.load(bpartnerLocationId, I_C_BPartner_Location.class);
 		record.setVATaxID(vataxID != null ? vataxID.getAsString() : null);
 		InterfaceWrapperHelper.saveRecord(record);
 	}
@@ -225,6 +248,41 @@ class VATaxIDCheckServiceTest
 		assertParentColumnsUntouched(bpartnerId);
 		assertThat(returnedStatus).as("returned status").isEqualTo(VATaxIDStatus.NotChecked);
 		verify(onlineChecker, never()).check(any(VATIdentifier.class), any(VATaxIDConfig.class));
+	}
+
+	/**
+	 * The guard on the OTHER parent type. {@link VATaxIDParentStatusRepository} carries a separate code block
+	 * for {@code C_BPartner_Location} on both the read and the write, so a divergence there — comparing or
+	 * writing the wrong record — would be invisible to every partner-header test above.
+	 */
+	@Test
+	void aCorrectedLocationVATaxID_getsNoVerdictOnTheLocationEither()
+	{
+		givenConfig(0);
+		// The header carries a DIFFERENT, untouched VAT-ID on purpose: were the guard to compare against the
+		// header instead of the location, it would read CHECKED_VATAXID there and wave the write through.
+		final BPartnerId bpartnerId = givenBPartnerWithVATaxID(CHECKED_VATAXID);
+		final BPartnerLocationId bpartnerLocationId = givenBPartnerLocationWithVATaxID(bpartnerId, CHECKED_VATAXID);
+
+		changeLocationVATaxIDTo(bpartnerLocationId, CORRECTED_VATAXID);
+
+		when(onlineChecker.check(any(VATIdentifier.class), any(VATaxIDConfig.class)))
+				.thenReturn(VATaxIDCheckResult.builder().status(VATaxIDStatus.Valid).build());
+
+		final VATaxIDStatus returnedStatus = checkService.check(VATaxIDCheckRequest.builder()
+				.bpartnerId(bpartnerId)
+				.bpartnerLocationId(bpartnerLocationId)
+				.vataxID(CHECKED_VATAXID)
+				.build());
+
+		final I_C_BPartner_Location location = InterfaceWrapperHelper.load(bpartnerLocationId, I_C_BPartner_Location.class);
+		assertThat(location.getVATaxIDStatus()).as("location VATaxIDStatus").isNull();
+		assertThat(location.getVATaxIDCheckedAt()).as("location VATaxIDCheckedAt").isNull();
+		assertThat(location.getVATaxID_CheckLog_ID()).as("location VATaxID_CheckLog_ID").isLessThanOrEqualTo(0);
+		assertThat(returnedStatus).as("returned status").isEqualTo(VATaxIDStatus.NotChecked);
+
+		// The header must not be collateral damage: a location check never writes the header's columns.
+		assertParentColumnsUntouched(bpartnerId);
 	}
 
 	/**

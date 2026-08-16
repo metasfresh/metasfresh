@@ -173,9 +173,18 @@ public class VATaxIDCheckService
 	 * {@code VATaxIDCheckRunService}'s order-line-tax refresh fires on a verdict that was never written.
 	 * The repository still owns the branch on parent type, on both the read and the write.
 	 *
-	 * <p>The synchronous process path is unaffected: it builds its request from the record it has just read
-	 * and writes moments later, so the values match and this returns {@code true} — unless a user really did
-	 * change the VAT-ID mid-run, which is exactly the case that should be skipped there too.
+	 * <p>The synchronous process path keeps working unchanged in the ordinary case — it builds its request
+	 * from the record it has just read, so the values match and this returns {@code true}. It is not exempt
+	 * from the race, though: {@code VATaxIDCheckRunService} reads its whole selection up front and then works
+	 * through it one target at a time, so a user editing a VAT-ID mid-run hits exactly the same window, and
+	 * the guard covers that too.
+	 *
+	 * <p><b>Residual risk, accepted.</b> The read and the write are two round-trips with no row lock between
+	 * them, so a write landing in that gap still slips past. That gap is now two adjacent local statements
+	 * with no third-party I/O between them, where before it spanned the whole online call plus however long
+	 * the work package sat in the queue — a narrowing from minutes to sub-millisecond, not an elimination.
+	 * Locking the parent row for the duration would serialise checks against ordinary partner edits, which
+	 * costs more than the remaining exposure is worth.
 	 *
 	 * @return whether the parent record was updated.
 	 */
