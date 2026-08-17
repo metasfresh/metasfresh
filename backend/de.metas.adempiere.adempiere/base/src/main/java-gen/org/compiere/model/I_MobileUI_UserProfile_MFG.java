@@ -144,6 +144,52 @@ public interface I_MobileUI_UserProfile_MFG
 	String COLUMNNAME_IsAllowIssuingAnyHU = "IsAllowIssuingAnyHU";
 
 	/**
+	 * Set Allow receive to LU.
+	 * Offer load-unit (pallet/LU) targets on the production receipt.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowReceiveToLU (@Nullable java.lang.String IsAllowReceiveToLU);
+
+	/**
+	 * Get Allow receive to LU.
+	 * Offer load-unit (pallet/LU) targets on the production receipt.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsAllowReceiveToLU();
+
+	ModelColumn<I_MobileUI_UserProfile_MFG, Object> COLUMN_IsAllowReceiveToLU = new ModelColumn<>(I_MobileUI_UserProfile_MFG.class, "IsAllowReceiveToLU", null);
+	String COLUMNNAME_IsAllowReceiveToLU = "IsAllowReceiveToLU";
+
+	/**
+	 * Set Allow receive to TU.
+	 * Offer transport-unit (TU) targets on the production receipt.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowReceiveToTU (@Nullable java.lang.String IsAllowReceiveToTU);
+
+	/**
+	 * Get Allow receive to TU.
+	 * Offer transport-unit (TU) targets on the production receipt.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsAllowReceiveToTU();
+
+	ModelColumn<I_MobileUI_UserProfile_MFG, Object> COLUMN_IsAllowReceiveToTU = new ModelColumn<>(I_MobileUI_UserProfile_MFG.class, "IsAllowReceiveToTU", null);
+	String COLUMNNAME_IsAllowReceiveToTU = "IsAllowReceiveToTU";
+
+	/**
 	 * Set Best Before Date editable.
 	 * Allows editing the Best-Before-Date (MHD) when receiving finished goods in mobile manufacturing.
 	 *
@@ -165,6 +211,29 @@ public interface I_MobileUI_UserProfile_MFG
 
 	ModelColumn<I_MobileUI_UserProfile_MFG, Object> COLUMN_IsBestBeforeDateEditable = new ModelColumn<>(I_MobileUI_UserProfile_MFG.class, "IsBestBeforeDateEditable", null);
 	String COLUMNNAME_IsBestBeforeDateEditable = "IsBestBeforeDateEditable";
+
+	/**
+	 * Set Capture catch weight at receipt.
+	 * Capture the catch weight of a catch-weight product at production receipt.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsCaptureCatchWeightAtReceipt (@Nullable java.lang.String IsCaptureCatchWeightAtReceipt);
+
+	/**
+	 * Get Capture catch weight at receipt.
+	 * Capture the catch weight of a catch-weight product at production receipt.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsCaptureCatchWeightAtReceipt();
+
+	ModelColumn<I_MobileUI_UserProfile_MFG, Object> COLUMN_IsCaptureCatchWeightAtReceipt = new ModelColumn<>(I_MobileUI_UserProfile_MFG.class, "IsCaptureCatchWeightAtReceipt", null);
+	String COLUMNNAME_IsCaptureCatchWeightAtReceipt = "IsCaptureCatchWeightAtReceipt";
 
 	/**
 	 * Set Lot Number editable.
@@ -211,6 +280,29 @@ public interface I_MobileUI_UserProfile_MFG
 
 	ModelColumn<I_MobileUI_UserProfile_MFG, Object> COLUMN_IsScanResourceRequired = new ModelColumn<>(I_MobileUI_UserProfile_MFG.class, "IsScanResourceRequired", null);
 	String COLUMNNAME_IsScanResourceRequired = "IsScanResourceRequired";
+
+	/**
+	 * Set Skip Gebinde selection step.
+	 * Skip the new-Gebinde / scan-existing screen and go straight to the packing instruction.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsSkipReceiveTargetStep (@Nullable java.lang.String IsSkipReceiveTargetStep);
+
+	/**
+	 * Get Skip Gebinde selection step.
+	 * Skip the new-Gebinde / scan-existing screen and go straight to the packing instruction.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsSkipReceiveTargetStep();
+
+	ModelColumn<I_MobileUI_UserProfile_MFG, Object> COLUMN_IsSkipReceiveTargetStep = new ModelColumn<>(I_MobileUI_UserProfile_MFG.class, "IsSkipReceiveTargetStep", null);
+	String COLUMNNAME_IsSkipReceiveTargetStep = "IsSkipReceiveTargetStep";
 
 	/**
 	 * Set Mobile UI User Profile - Manufacturing.

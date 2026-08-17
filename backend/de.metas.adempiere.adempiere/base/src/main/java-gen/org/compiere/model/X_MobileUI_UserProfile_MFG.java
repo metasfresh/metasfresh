@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_UserProfile_MFG extends org.compiere.model.PO implements I_MobileUI_UserProfile_MFG, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 489158610L;
+	private static final long serialVersionUID = -586342492L;
 
     /** Standard Constructor */
     public X_MobileUI_UserProfile_MFG (final Properties ctx, final int MobileUI_UserProfile_MFG_ID, @Nullable final String trxName)
@@ -71,6 +71,48 @@ public class X_MobileUI_UserProfile_MFG extends org.compiere.model.PO implements
 	}
 
 	/** 
+	 * IsAllowReceiveToLU AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISALLOWRECEIVETOLU_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISALLOWRECEIVETOLU_Yes = "Y";
+	/** No = N */
+	public static final String ISALLOWRECEIVETOLU_No = "N";
+	@Override
+	public void setIsAllowReceiveToLU (final @Nullable java.lang.String IsAllowReceiveToLU)
+	{
+		set_Value (COLUMNNAME_IsAllowReceiveToLU, IsAllowReceiveToLU);
+	}
+
+	@Override
+	public java.lang.String getIsAllowReceiveToLU() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsAllowReceiveToLU);
+	}
+
+	/** 
+	 * IsAllowReceiveToTU AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISALLOWRECEIVETOTU_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISALLOWRECEIVETOTU_Yes = "Y";
+	/** No = N */
+	public static final String ISALLOWRECEIVETOTU_No = "N";
+	@Override
+	public void setIsAllowReceiveToTU (final @Nullable java.lang.String IsAllowReceiveToTU)
+	{
+		set_Value (COLUMNNAME_IsAllowReceiveToTU, IsAllowReceiveToTU);
+	}
+
+	@Override
+	public java.lang.String getIsAllowReceiveToTU() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsAllowReceiveToTU);
+	}
+
+	/** 
 	 * IsBestBeforeDateEditable AD_Reference_ID=319
 	 * Reference name: _YesNo
 	 */
@@ -89,6 +131,27 @@ public class X_MobileUI_UserProfile_MFG extends org.compiere.model.PO implements
 	public java.lang.String getIsBestBeforeDateEditable() 
 	{
 		return get_ValueAsString(COLUMNNAME_IsBestBeforeDateEditable);
+	}
+
+	/** 
+	 * IsCaptureCatchWeightAtReceipt AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISCAPTURECATCHWEIGHTATRECEIPT_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISCAPTURECATCHWEIGHTATRECEIPT_Yes = "Y";
+	/** No = N */
+	public static final String ISCAPTURECATCHWEIGHTATRECEIPT_No = "N";
+	@Override
+	public void setIsCaptureCatchWeightAtReceipt (final @Nullable java.lang.String IsCaptureCatchWeightAtReceipt)
+	{
+		set_Value (COLUMNNAME_IsCaptureCatchWeightAtReceipt, IsCaptureCatchWeightAtReceipt);
+	}
+
+	@Override
+	public java.lang.String getIsCaptureCatchWeightAtReceipt() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsCaptureCatchWeightAtReceipt);
 	}
 
 	/** 
@@ -131,6 +194,27 @@ public class X_MobileUI_UserProfile_MFG extends org.compiere.model.PO implements
 	public java.lang.String getIsScanResourceRequired() 
 	{
 		return get_ValueAsString(COLUMNNAME_IsScanResourceRequired);
+	}
+
+	/** 
+	 * IsSkipReceiveTargetStep AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISSKIPRECEIVETARGETSTEP_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISSKIPRECEIVETARGETSTEP_Yes = "Y";
+	/** No = N */
+	public static final String ISSKIPRECEIVETARGETSTEP_No = "N";
+	@Override
+	public void setIsSkipReceiveTargetStep (final @Nullable java.lang.String IsSkipReceiveTargetStep)
+	{
+		set_Value (COLUMNNAME_IsSkipReceiveTargetStep, IsSkipReceiveTargetStep);
+	}
+
+	@Override
+	public java.lang.String getIsSkipReceiveTargetStep() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsSkipReceiveTargetStep);
 	}
 
 	@Override

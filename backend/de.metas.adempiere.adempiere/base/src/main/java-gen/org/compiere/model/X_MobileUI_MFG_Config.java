@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_MFG_Config extends org.compiere.model.PO implements I_MobileUI_MFG_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1913793288L;
+	private static final long serialVersionUID = -1368610276L;
 
     /** Standard Constructor */
     public X_MobileUI_MFG_Config (final Properties ctx, final int MobileUI_MFG_Config_ID, @Nullable final String trxName)
@@ -47,6 +47,30 @@ public class X_MobileUI_MFG_Config extends org.compiere.model.PO implements I_Mo
 	}
 
 	@Override
+	public void setIsAllowReceiveToLU (final boolean IsAllowReceiveToLU)
+	{
+		set_Value (COLUMNNAME_IsAllowReceiveToLU, IsAllowReceiveToLU);
+	}
+
+	@Override
+	public boolean isAllowReceiveToLU() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowReceiveToLU);
+	}
+
+	@Override
+	public void setIsAllowReceiveToTU (final boolean IsAllowReceiveToTU)
+	{
+		set_Value (COLUMNNAME_IsAllowReceiveToTU, IsAllowReceiveToTU);
+	}
+
+	@Override
+	public boolean isAllowReceiveToTU() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowReceiveToTU);
+	}
+
+	@Override
 	public void setIsBestBeforeDateEditable (final boolean IsBestBeforeDateEditable)
 	{
 		set_Value (COLUMNNAME_IsBestBeforeDateEditable, IsBestBeforeDateEditable);
@@ -56,6 +80,18 @@ public class X_MobileUI_MFG_Config extends org.compiere.model.PO implements I_Mo
 	public boolean isBestBeforeDateEditable() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsBestBeforeDateEditable);
+	}
+
+	@Override
+	public void setIsCaptureCatchWeightAtReceipt (final boolean IsCaptureCatchWeightAtReceipt)
+	{
+		set_Value (COLUMNNAME_IsCaptureCatchWeightAtReceipt, IsCaptureCatchWeightAtReceipt);
+	}
+
+	@Override
+	public boolean isCaptureCatchWeightAtReceipt() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCaptureCatchWeightAtReceipt);
 	}
 
 	@Override
@@ -80,6 +116,18 @@ public class X_MobileUI_MFG_Config extends org.compiere.model.PO implements I_Mo
 	public boolean isScanResourceRequired() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsScanResourceRequired);
+	}
+
+	@Override
+	public void setIsSkipReceiveTargetStep (final boolean IsSkipReceiveTargetStep)
+	{
+		set_Value (COLUMNNAME_IsSkipReceiveTargetStep, IsSkipReceiveTargetStep);
+	}
+
+	@Override
+	public boolean isSkipReceiveTargetStep() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSkipReceiveTargetStep);
 	}
 
 	@Override
