@@ -15,6 +15,10 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Nullable;
 import java.util.Optional;
 
+/**
+ * Repository Tables: MobileUI_MFG_Config, MobileUI_UserProfile_MFG
+ * Repository Cluster: mobile-ui manufacturing configuration
+ */
 @Repository
 public class MobileUIManufacturingConfigRepository
 {
