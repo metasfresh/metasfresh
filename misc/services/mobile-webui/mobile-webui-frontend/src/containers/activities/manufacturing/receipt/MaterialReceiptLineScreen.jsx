@@ -5,7 +5,10 @@ import { trl } from '../../../../utils/translations';
 import { toastError } from '../../../../utils/toast';
 import { postManufacturingReceiveEventThunk } from '../../../../actions/ManufacturingActions';
 import { updateHeaderEntry } from '../../../../actions/HeaderActions';
-import { manufacturingReceiptReceiveTargetScreen } from '../../../../routes/manufacturing_receipt';
+import {
+  manufacturingReceiptNewHUScreen,
+  manufacturingReceiptReceiveTargetScreen,
+} from '../../../../routes/manufacturing_receipt';
 import {
   getActivityByIdFromWFProcess,
   getCustomQRCodeFormats,
@@ -42,6 +45,7 @@ const MaterialReceiptLineScreen = () => {
       catchWeightUomSymbol,
       qtyReceived,
       qtyToReceive,
+      skipReceiveTargetStep,
     },
     pickTo,
     customQRCodeFormats,
@@ -124,7 +128,12 @@ const MaterialReceiptLineScreen = () => {
   };
 
   const handleClick = () => {
-    history.push(manufacturingReceiptReceiveTargetScreen({ applicationId, wfProcessId, activityId, lineId }));
+    // When the profile skips the receive-target step, go straight to the Packvorschrift (new HU) list,
+    // bypassing the new-Gebinde-vs-scan-existing chooser.
+    const targetLocation = skipReceiveTargetStep
+      ? manufacturingReceiptNewHUScreen({ applicationId, wfProcessId, activityId, lineId })
+      : manufacturingReceiptReceiveTargetScreen({ applicationId, wfProcessId, activityId, lineId });
+    history.push(targetLocation);
   };
 
   let allowReceivingQty = false;
