@@ -81,5 +81,9 @@ public class JsonMobileConfigResponse
 		@Nullable Boolean isScanResourceRequired;
 		@Nullable Boolean isAllowIssuingAnyHU;
 		@Nullable String receiveUnitType;
+		@Nullable Boolean isAllowReceiveToLU;
+		@Nullable Boolean isAllowReceiveToTU;
+		@Nullable Boolean isSkipReceiveTargetStep;
+		@Nullable Boolean isCaptureCatchWeightAtReceipt;
 	}
 }

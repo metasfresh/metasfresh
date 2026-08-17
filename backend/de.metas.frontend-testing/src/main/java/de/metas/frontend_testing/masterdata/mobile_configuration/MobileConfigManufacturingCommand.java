@@ -34,6 +34,22 @@ class MobileConfigManufacturingCommand
 		{
 			newConfigBuilder.receiveUnitType(ReceiveUnitType.ofCode(request.getReceiveUnitType()));
 		}
+		if (request.getIsAllowReceiveToLU() != null)
+		{
+			newConfigBuilder.isAllowReceiveToLU(OptionalBoolean.ofBoolean(request.getIsAllowReceiveToLU()));
+		}
+		if (request.getIsAllowReceiveToTU() != null)
+		{
+			newConfigBuilder.isAllowReceiveToTU(OptionalBoolean.ofBoolean(request.getIsAllowReceiveToTU()));
+		}
+		if (request.getIsSkipReceiveTargetStep() != null)
+		{
+			newConfigBuilder.isSkipReceiveTargetStep(OptionalBoolean.ofBoolean(request.getIsSkipReceiveTargetStep()));
+		}
+		if (request.getIsCaptureCatchWeightAtReceipt() != null)
+		{
+			newConfigBuilder.isCaptureCatchWeightAtReceipt(OptionalBoolean.ofBoolean(request.getIsCaptureCatchWeightAtReceipt()));
+		}
 
 		final MobileUIManufacturingConfig newConfig = newConfigBuilder.build();
 		mobileManufacturingConfigRepository.saveUserConfig(newConfig, loginUserId);
@@ -42,6 +58,10 @@ class MobileConfigManufacturingCommand
 				.isScanResourceRequired(newConfig.getIsScanResourceRequired().toBooleanOrNull())
 				.isAllowIssuingAnyHU(newConfig.getIsAllowIssuingAnyHU().toBooleanOrNull())
 				.receiveUnitType(newConfig.getReceiveUnitType() != null ? newConfig.getReceiveUnitType().getCode() : null)
+				.isAllowReceiveToLU(newConfig.getIsAllowReceiveToLU().toBooleanOrNull())
+				.isAllowReceiveToTU(newConfig.getIsAllowReceiveToTU().toBooleanOrNull())
+				.isSkipReceiveTargetStep(newConfig.getIsSkipReceiveTargetStep().toBooleanOrNull())
+				.isCaptureCatchWeightAtReceipt(newConfig.getIsCaptureCatchWeightAtReceipt().toBooleanOrNull())
 				.build();
 	}
 
