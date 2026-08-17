@@ -19,6 +19,7 @@ public class JsonFinishedGoodsReceiveLine
 	@NonNull String id;
 
 	boolean coproduct;
+	@Nullable Boolean skipReceiveTargetStep;
 	@NonNull String productName;
 	@NonNull String uom;
 	@Nullable String catchWeightUomSymbol;
