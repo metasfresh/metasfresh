@@ -17,7 +17,7 @@ import java.util.Optional;
 
 /**
  * Repository Tables: MobileUI_MFG_Config, MobileUI_UserProfile_MFG
- * Repository Cluster: mobile-ui manufacturing configuration
+ * Repository Cluster: MobileUIManufacturingConfigRepository
  */
 @Repository
 public class MobileUIManufacturingConfigRepository
