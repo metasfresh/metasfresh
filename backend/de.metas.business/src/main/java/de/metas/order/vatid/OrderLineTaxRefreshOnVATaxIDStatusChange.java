@@ -77,7 +77,7 @@ public class OrderLineTaxRefreshOnVATaxIDStatusChange implements VATaxIDOrderTax
 		for (final I_C_OrderLine orderLine : orderDAO.retrieveOrderLinesByOrderIds(notProcessedOrderIds))
 		{
 			orderLineBL.setTax(orderLine);
-			InterfaceWrapperHelper.saveRecord(orderLine);
+			orderLineBL.save(orderLine);
 		}
 	}
 }
