@@ -68,4 +68,15 @@ public class C_PurchaseCandidateTest
 		assertThatCode(() -> interceptor.rejectLegacyUnknownSourceOnNew(record))
 				.doesNotThrowAnyException();
 	}
+
+	@Test
+	public void rejectsMissingSourceOnNew()
+	{
+		// Source has no column default and no callout, so a legitimate creation path must set it before
+		// BEFORE_NEW; a missing Source here is a programming error and must not slip through.
+		final I_C_PurchaseCandidate record = newInstance(I_C_PurchaseCandidate.class);
+
+		assertThatThrownBy(() -> interceptor.rejectLegacyUnknownSourceOnNew(record))
+				.isInstanceOf(RuntimeException.class);
+	}
 }

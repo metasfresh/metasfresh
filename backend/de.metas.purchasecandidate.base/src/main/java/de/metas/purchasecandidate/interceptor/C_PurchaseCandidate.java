@@ -88,8 +88,9 @@ public class C_PurchaseCandidate
 		// 'Unknown' is a backfill-only marker for pre-Source-column candidates. A new one carrying it
 		// would be excluded from both the sales-order interceptor and dispo auto-ordering, so a genuine
 		// purchase demand would never be ordered.
-		final PurchaseCandidateSource source = PurchaseCandidateSource.ofCodeOrNull(purchaseCandidateRecord.getSource());
-		if (source != null && source.isUnknown())
+		// Source has no column default and no callout, so any legitimate creation path has already set it
+		// by BEFORE_NEW; a missing/invalid code is a programming error and ofCode fails loud.
+		if (PurchaseCandidateSource.ofCode(purchaseCandidateRecord.getSource()).isUnknown())
 		{
 			throw new AdempiereException("Source=" + PurchaseCandidateSource.Unknown
 					+ " is reserved for legacy backfilled candidates and must not be set on new records")
