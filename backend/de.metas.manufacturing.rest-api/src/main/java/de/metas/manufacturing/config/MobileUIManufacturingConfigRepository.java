@@ -26,6 +26,10 @@ public class MobileUIManufacturingConfigRepository
 			.receiveUnitType(ReceiveUnitType.CU)
 			.isBestBeforeDateEditable(OptionalBoolean.TRUE)
 			.isLotNumberEditable(OptionalBoolean.TRUE)
+			.isAllowReceiveToLU(OptionalBoolean.TRUE)
+			.isAllowReceiveToTU(OptionalBoolean.TRUE)
+			.isSkipReceiveTargetStep(OptionalBoolean.FALSE)
+			.isCaptureCatchWeightAtReceipt(OptionalBoolean.TRUE)
 			.build();
 
 	private final CCache<UserId, Optional<MobileUIManufacturingConfig>> userConfigsCache = CCache.<UserId, Optional<MobileUIManufacturingConfig>>builder()
@@ -86,6 +90,10 @@ public class MobileUIManufacturingConfigRepository
 				.receiveUnitType(ReceiveUnitType.ofNullableCode(record.getReceiveUnitType()))
 				.isBestBeforeDateEditable(OptionalBoolean.ofNullableString(record.getIsBestBeforeDateEditable()))
 				.isLotNumberEditable(OptionalBoolean.ofNullableString(record.getIsLotNumberEditable()))
+				.isAllowReceiveToLU(OptionalBoolean.ofNullableString(record.getIsAllowReceiveToLU()))
+				.isAllowReceiveToTU(OptionalBoolean.ofNullableString(record.getIsAllowReceiveToTU()))
+				.isSkipReceiveTargetStep(OptionalBoolean.ofNullableString(record.getIsSkipReceiveTargetStep()))
+				.isCaptureCatchWeightAtReceipt(OptionalBoolean.ofNullableString(record.getIsCaptureCatchWeightAtReceipt()))
 				.build();
 	}
 
@@ -96,6 +104,10 @@ public class MobileUIManufacturingConfigRepository
 		record.setReceiveUnitType(from.getReceiveUnitType() != null ? from.getReceiveUnitType().getCode() : null);
 		record.setIsBestBeforeDateEditable(from.getIsBestBeforeDateEditable().toBooleanString());
 		record.setIsLotNumberEditable(from.getIsLotNumberEditable().toBooleanString());
+		record.setIsAllowReceiveToLU(from.getIsAllowReceiveToLU().toBooleanString());
+		record.setIsAllowReceiveToTU(from.getIsAllowReceiveToTU().toBooleanString());
+		record.setIsSkipReceiveTargetStep(from.getIsSkipReceiveTargetStep().toBooleanString());
+		record.setIsCaptureCatchWeightAtReceipt(from.getIsCaptureCatchWeightAtReceipt().toBooleanString());
 	}
 
 	private Optional<MobileUIManufacturingConfig> retrieveGlobalConfig(@NonNull final ClientId clientId)
@@ -116,6 +128,10 @@ public class MobileUIManufacturingConfigRepository
 				.receiveUnitType(ReceiveUnitType.ofNullableCode(record.getReceiveUnitType()))
 				.isBestBeforeDateEditable(OptionalBoolean.ofBoolean(record.isBestBeforeDateEditable()))
 				.isLotNumberEditable(OptionalBoolean.ofBoolean(record.isLotNumberEditable()))
+				.isAllowReceiveToLU(OptionalBoolean.ofBoolean(record.isAllowReceiveToLU()))
+				.isAllowReceiveToTU(OptionalBoolean.ofBoolean(record.isAllowReceiveToTU()))
+				.isSkipReceiveTargetStep(OptionalBoolean.ofBoolean(record.isSkipReceiveTargetStep()))
+				.isCaptureCatchWeightAtReceipt(OptionalBoolean.ofBoolean(record.isCaptureCatchWeightAtReceipt()))
 				.build();
 	}
 

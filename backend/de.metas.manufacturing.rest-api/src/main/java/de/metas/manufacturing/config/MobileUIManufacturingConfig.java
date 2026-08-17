@@ -20,11 +20,35 @@ public class MobileUIManufacturingConfig
 	@Nullable ReceiveUnitType receiveUnitType;
 	@NonNull OptionalBoolean isBestBeforeDateEditable;
 	@NonNull OptionalBoolean isLotNumberEditable;
+	@NonNull OptionalBoolean isAllowReceiveToLU;
+	@NonNull OptionalBoolean isAllowReceiveToTU;
+	@NonNull OptionalBoolean isSkipReceiveTargetStep;
+	@NonNull OptionalBoolean isCaptureCatchWeightAtReceipt;
 
 	@NonNull
 	public ReceiveUnitType getReceiveUnitTypeEffective()
 	{
 		return receiveUnitType != null ? receiveUnitType : ReceiveUnitType.CU;
+	}
+
+	public boolean getIsAllowReceiveToLUEffective()
+	{
+		return isAllowReceiveToLU.orElseTrue();
+	}
+
+	public boolean getIsAllowReceiveToTUEffective()
+	{
+		return isAllowReceiveToTU.orElseTrue();
+	}
+
+	public boolean getIsSkipReceiveTargetStepEffective()
+	{
+		return isSkipReceiveTargetStep.orElseFalse();
+	}
+
+	public boolean getIsCaptureCatchWeightAtReceiptEffective()
+	{
+		return isCaptureCatchWeightAtReceipt.orElseTrue();
 	}
 
 	/**
@@ -55,6 +79,10 @@ public class MobileUIManufacturingConfig
 				.receiveUnitType(this.receiveUnitType != null ? this.receiveUnitType : other.receiveUnitType)
 				.isBestBeforeDateEditable(this.isBestBeforeDateEditable.ifUnknown(other.isBestBeforeDateEditable))
 				.isLotNumberEditable(this.isLotNumberEditable.ifUnknown(other.isLotNumberEditable))
+				.isAllowReceiveToLU(this.isAllowReceiveToLU.ifUnknown(other.isAllowReceiveToLU))
+				.isAllowReceiveToTU(this.isAllowReceiveToTU.ifUnknown(other.isAllowReceiveToTU))
+				.isSkipReceiveTargetStep(this.isSkipReceiveTargetStep.ifUnknown(other.isSkipReceiveTargetStep))
+				.isCaptureCatchWeightAtReceipt(this.isCaptureCatchWeightAtReceipt.ifUnknown(other.isCaptureCatchWeightAtReceipt))
 				.build();
 		if (result.equals(this))
 		{
