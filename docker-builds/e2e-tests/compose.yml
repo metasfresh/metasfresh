@@ -175,11 +175,18 @@ services:
       - "FRONTEND_BASE_URL=http://webui:80"
       - "WEBAPI_BASE_URL=http://webui:80/rest/api"
       - "TESTING_API_BASE_URL=http://app-test:8282/api/v2"
+      # Reachable BY THE BACKEND, not only by this container: a spec may store this
+      # URL in configuration that the api/app service then calls out to (the VAT-ID
+      # check points its REST base URL at a WireMock stub this way), so it must be
+      # the docker-internal address. Same value the mobile runner already gets.
+      - "WIREMOCK_BASE_URL=http://wiremock:8080"
       - "CI=true"
       - "PLAYWRIGHT_SHARD=${PLAYWRIGHT_SHARD:-}"
     depends_on:
       webui:
         condition: service_healthy
+      wiremock:
+        condition: service_started
     deploy:
       mode: replicated
       replicas: 1

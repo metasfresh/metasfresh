@@ -164,6 +164,8 @@ public interface I_M_Shipper
 
 	/**
 	 * Set API Carrier Advise.
+	 * Determines whether the carrier advise is requested via the nShift API;
+ this drives the Advise-Carrier button in mobile picking.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -173,6 +175,8 @@ public interface I_M_Shipper
 
 	/**
 	 * Get API Carrier Advise.
+	 * Determines whether the carrier advise is requested via the nShift API;
+ this drives the Advise-Carrier button in mobile picking.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -182,6 +186,27 @@ public interface I_M_Shipper
 
 	ModelColumn<I_M_Shipper, Object> COLUMN_IsApiCarrierAdvise = new ModelColumn<>(I_M_Shipper.class, "IsApiCarrierAdvise", null);
 	String COLUMNNAME_IsApiCarrierAdvise = "IsApiCarrierAdvise";
+
+	/**
+	 * Set Create Delivery Planning.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsCreateDeliveryPlanning (boolean IsCreateDeliveryPlanning);
+
+	/**
+	 * Get Create Delivery Planning.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isCreateDeliveryPlanning();
+
+	ModelColumn<I_M_Shipper, Object> COLUMN_IsCreateDeliveryPlanning = new ModelColumn<>(I_M_Shipper.class, "IsCreateDeliveryPlanning", null);
+	String COLUMNNAME_IsCreateDeliveryPlanning = "IsCreateDeliveryPlanning";
 
 	/**
 	 * Set Default.

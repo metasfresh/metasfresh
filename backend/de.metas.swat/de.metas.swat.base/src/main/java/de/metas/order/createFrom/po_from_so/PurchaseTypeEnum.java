@@ -64,4 +64,9 @@ public enum PurchaseTypeEnum implements ReferenceListAwareEnum
 				.filter(value -> value.getCode().equals(code))
 				.findFirst();
 	}
+
+	public boolean isDropship()
+	{
+		return this == DROPSHIP;
+	}
 }

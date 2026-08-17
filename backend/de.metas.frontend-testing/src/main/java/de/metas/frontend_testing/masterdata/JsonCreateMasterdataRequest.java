@@ -66,6 +66,7 @@ public class JsonCreateMasterdataRequest
 	@Nullable Map<String, JsonWorkplaceRequest> workplaces;
 	@Nullable Map<String, JsonWarehouseRequest> warehouses;
 	@Nullable Map<String, JsonUOMRequest> uoms;
+	@Nullable Map<String, de.metas.frontend_testing.masterdata.vatid.JsonVATaxIDCheckLogRequest> vatIdChecks;
 	@Nullable Map<String, JsonCompensationGroupSchemaRequest> compensationGroupSchemas;
 	@Nullable Map<String, JsonCreateProductRequest> products;
 

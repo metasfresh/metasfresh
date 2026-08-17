@@ -46,6 +46,7 @@ public class JsonCreateMasterdataResponse
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, JsonMailboxResponse> mailboxes;
 	@NonNull Map<String, JsonCreateBPartnerResponse> bpartners;
 	@Nullable Map<String, JsonCompensationGroupSchemaResponse> compensationGroupSchemas;
+	@Nullable Map<String, de.metas.frontend_testing.masterdata.vatid.JsonVATaxIDCheckLogResponse> vatIdChecks;
 	@NonNull Map<String, JsonCreateProductResponse> products;
 	@Nullable Map<String, JsonCreateResourceResponse> resources;
 	@NonNull Map<String, JsonCreateProductPlanningResponse> productPlannings;

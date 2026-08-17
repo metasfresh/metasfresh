@@ -92,6 +92,14 @@ public class M_Warehouse_StepDef
 							.firstOnlyNotNull(I_M_Warehouse.class);
 
 					row.getAsIdentifier().put(warehouseTable, warehouseRecord);
+
+					// Optionally register the warehouse's BPartner location under the given identifier,
+					// so later steps can reference it (e.g. as the loading/delivery location of a delivery instruction).
+					row.getAsOptionalIdentifier(org.compiere.model.I_M_Warehouse.COLUMNNAME_C_BPartner_Location_ID)
+							.ifPresent(bpartnerLocationIdentifier -> {
+								final I_C_BPartner_Location bPartnerLocation = InterfaceWrapperHelper.load(warehouseRecord.getC_BPartner_Location_ID(), I_C_BPartner_Location.class);
+								bpartnerLocationTable.putOrReplace(bpartnerLocationIdentifier, bPartnerLocation);
+							});
 				});
 	}
 

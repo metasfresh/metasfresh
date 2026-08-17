@@ -30,6 +30,7 @@ import de.metas.inout.PriorityRule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.order.DeliveryRule;
+import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
@@ -64,6 +65,8 @@ public interface IShipmentScheduleEffectiveBL extends ISingletonService
 
 	/** Consider using {@link IShipmentScheduleBL#getQtyToDeliver(I_M_ShipmentSchedule)} instead. */
 	BigDecimal getQtyToDeliverBD(I_M_ShipmentSchedule sched);
+
+	Quantity getQtyOnHand(@NonNull I_M_ShipmentSchedule sched);
 
 	I_C_BPartner getBPartner(I_M_ShipmentSchedule sched);
 

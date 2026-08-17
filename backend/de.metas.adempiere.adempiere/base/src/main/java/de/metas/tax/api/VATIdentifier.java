@@ -6,6 +6,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.Locale;
 
 @EqualsAndHashCode
 public final class VATIdentifier
@@ -42,6 +43,21 @@ public final class VATIdentifier
 
 	@NonNull
 	public String getAsString() {return value;}
+
+	/**
+	 * @return the first two characters, uppercased — the member-state prefix every EU VAT-ID carries. A
+	 * value shorter than two characters is returned uppercased but otherwise unchanged, and simply matches
+	 * no member state.
+	 *
+	 * <p>{@code VIESClient} and {@code EUVatIdValidator} each re-derive this same 2-char prefix privately,
+	 * so a change to the convention here does NOT propagate to them and the compiler will not catch it.
+	 */
+	@NonNull
+	public String getCountryCodePrefix()
+	{
+		final String upper = value.toUpperCase(Locale.ROOT);
+		return upper.length() >= 2 ? upper.substring(0, 2) : upper;
+	}
 
 	@Nullable
 	public static String toString(@Nullable final VATIdentifier vatId)
