@@ -54,6 +54,11 @@ public enum PurchaseCandidateSource implements ReferenceListAwareEnum
 		return code;
 	}
 
+	public boolean isUnknown()
+	{
+		return this == Unknown;
+	}
+
 	public static PurchaseCandidateSource ofCode(@NonNull final String code)
 	{
 		final PurchaseCandidateSource type = typesByCode.get(code);
