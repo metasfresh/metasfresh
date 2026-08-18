@@ -137,8 +137,17 @@ Feature: mobileUI Picking - a whole-TU pick must book the qty it actually moved
       | PickFromHU   | QRCode                        |
       | productionTU | LMQ#1#5.772#28.10.2026#100308 |
 
-    # The whole 2-piece TU was moved, so the booking must say 2.
-    # ACTUAL (the defect): QtyPicked = 1, taken from the sales line's 1-piece Karton packing info.
-    Then validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule
+    # First half of the invariant - this PASSES: the source TU was moved WHOLE, so it is now picked
+    # (HUStatus S) and still carries both pieces. Nothing was split out.
+    Then M_HU are validated:
+      | M_HU_ID.Identifier | HUStatus | IsActive |
+      | productionTU       | S        | Y        |
+    And validate M_HU_Storage:
+      | M_HU_Storage_ID.Identifier | M_HU_ID.Identifier | M_Product_ID.Identifier | Qty |
+      | pickedTUStorage            | productionTU       | product                 | 2   |
+
+    # Second half - this FAILS, and the two together are the defect: 2 pieces moved, 1 booked.
+    # ACTUAL: QtyPicked = 1, taken from the sales line's 1-piece Karton packing info.
+    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule
       | QtyDeliveredCatch | Catch_UOM_ID | QtyPicked | QtyTU | Processed |
       | 5.772             | KGM          | 2         | 1     | N         |
