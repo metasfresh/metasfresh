@@ -43,6 +43,7 @@ import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.cucumber.stepdefs.tax.C_TaxCategory_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
+import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
 import de.metas.cucumber.stepdefs.util.IdentifiersEvaluatee;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.currency.Currency;
@@ -95,6 +96,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Shipper;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Evaluatees;
 import org.compiere.util.TimeUtil;
@@ -103,8 +105,10 @@ import org.junit.jupiter.api.Assertions;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -145,6 +149,7 @@ public class C_OrderLine_StepDef
 	@NonNull private final M_Attribute_StepDefData attributeTable;
 	@NonNull private final C_Tax_StepDefData taxTable;
 	@NonNull private final M_Warehouse_StepDefData warehouseTable;
+	@NonNull private final M_Shipper_StepDefData shipperTable;
 	@NonNull private final IdentifierIds_StepDefData identifierIdsTable;
 	@NonNull private final TestContext restTestContext;
 	@NonNull private final C_Project_StepDefData projectTable;
@@ -246,6 +251,15 @@ public class C_OrderLine_StepDef
 			orderLine.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 		}
 
+		final String shipperIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_M_Shipper_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(shipperIdentifier))
+		{
+			final I_M_Shipper shipper = shipperTable.get(shipperIdentifier);
+			assertThat(shipper).isNotNull();
+
+			orderLine.setM_Shipper_ID(shipper.getM_Shipper_ID());
+		}
+
 		final String uomX12DE355 = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_C_UOM_ID + "." + I_C_UOM.COLUMNNAME_X12DE355);
 		if (Check.isNotBlank(uomX12DE355))
 		{
@@ -265,11 +279,10 @@ public class C_OrderLine_StepDef
 					orderLine.setPriceActual(price);
 				});
 
-		tableRow.getAsOptionalLocalDate(I_C_OrderLine.COLUMNNAME_DatePromised)
-				.ifPresent(datePromised -> {
-					final ZoneId orderLineZoneId = orgDAO.getTimeZone(OrgId.ofRepoId(orderLine.getAD_Org_ID()));
-					orderLine.setDatePromised(TimeUtil.asTimestamp(datePromised, orderLineZoneId));
-				});
+		// DatePromised accepts both a date-only cell (2023-05-10) and an ISO-instant cell (2023-05-10T00:00:00Z);
+		// getAsOptionalInstant handles both, mirroring how C_Order_StepDef reads the order-header DatePromised.
+		tableRow.getAsOptionalInstant(I_C_OrderLine.COLUMNNAME_DatePromised)
+				.ifPresent(datePromised -> orderLine.setDatePromised(Timestamp.from(datePromised)));
 
 		tableRow.getAsOptionalLocalDate(I_C_OrderLine.COLUMNNAME_PreparationDate)
 				.ifPresent(preparationDate -> {
@@ -303,6 +316,26 @@ public class C_OrderLine_StepDef
 		restTestContext.setIntVariableFromRow(tableRow, orderLine::getC_OrderLine_ID);
 	}
 
+	/**
+	 * Same assertions as {@link #thePurchaseOrderLinkedToOrderO_HasLines(String, String, DataTable)}, but additionally
+	 * stores the generated purchase order under {@code orderIdentifier} so later steps can reference it.
+	 */
+	@Then("the purchase order {string} with document subtype {string} linked to order {string} has lines:")
+	public void thePurchaseOrderLinkedToOrderO_HasLines(
+			@NonNull final String orderIdentifier,
+			@Nullable final String docSubType,
+			@NonNull final String linkedOrderIdentifier,
+			@NonNull final DataTable dataTable)
+	{
+		// If the order was already registered (e.g. by a preceding "the order is created:" step),
+		// reuse it directly to avoid ambiguity when multiple POs share the same Link_Order_ID
+		// (e.g. an older voided PO plus the current one after SO reactivation + re-completion).
+		final I_C_Order purchaseOrder = orderTable.getOptional(orderIdentifier)
+				.orElseGet(() -> queryPurchaseOrderFromDb(linkedOrderIdentifier, orderIdentifier));
+
+		assertPurchaseOrderHasLines(purchaseOrder, docSubType, dataTable);
+	}
+
 	@Then("the purchase order with document subtype {string} linked to order {string} has lines:")
 	public void thePurchaseOrderLinkedToOrderO_HasLines(@Nullable final String docSubType, @NonNull final String linkedOrderIdentifier, @NonNull final DataTable dataTable)
 	{
@@ -313,6 +346,12 @@ public class C_OrderLine_StepDef
 				.create().firstOnly(I_C_Order.class);
 
 		assertThat(purchaseOrder).isNotNull();
+
+		assertPurchaseOrderHasLines(purchaseOrder, docSubType, dataTable);
+	}
+
+	private void assertPurchaseOrderHasLines(@NonNull final I_C_Order purchaseOrder, @Nullable final String docSubType, @NonNull final DataTable dataTable)
+	{
 
 		final I_C_DocType docType = queryBL
 				.createQueryBuilder(I_C_DocType.class)
@@ -341,6 +380,8 @@ public class C_OrderLine_StepDef
 			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + ".Identifier");
 			final String partnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_C_BPartner_ID + ".Identifier");
 			final int partnerId = Check.isBlank(partnerIdentifier) ? 0 : partnerTable.get(partnerIdentifier).getC_BPartner_ID();
+			final String warehouseIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final ZonedDateTime datePromised = DataTableUtil.extractZonedDateTimeOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_DatePromised);
 
 			boolean linePresent = false;
 
@@ -354,8 +395,28 @@ public class C_OrderLine_StepDef
 					linePresent = linePresent && orderLine.getC_BPartner_ID() == partnerId;
 				}
 
+				if (Check.isNotBlank(warehouseIdentifier))
+				{
+					final I_M_Warehouse warehouse = warehouseTable.get(warehouseIdentifier);
+					assertThat(warehouse).isNotNull();
+
+					linePresent = linePresent && (orderLine.getM_Warehouse_ID() == warehouse.getM_Warehouse_ID());
+				}
+
+				if (datePromised != null)
+				{
+					assertThat(orderLine.getDatePromised()).as(I_C_OrderLine.COLUMNNAME_DatePromised).isNotNull();
+					linePresent = linePresent && (orderLine.getDatePromised().equals(TimeUtil.asTimestamp(datePromised)));
+				}
+
 				if (linePresent)
 				{
+					final String orderLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+					if (Check.isNotBlank(orderLineIdentifier))
+					{
+						orderLineTable.putOrReplace(orderLineIdentifier, orderLine);
+					}
+
 					break;
 				}
 			}
@@ -1091,5 +1152,23 @@ public class C_OrderLine_StepDef
 			return isNullPlaceholder() ? null : LocalDate.parse(value);
 		}
 
+	}
+
+	/**
+	 * Queries the database for a purchase order linked to the given SO.
+	 * Registers the found PO under the provided identifier and returns it.
+	 */
+	private I_C_Order queryPurchaseOrderFromDb(
+			@NonNull final String linkedOrderIdentifier,
+			@NonNull final String orderIdentifier)
+	{
+		final I_C_Order foundPO = queryBL
+				.createQueryBuilder(I_C_Order.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Order.COLUMNNAME_Link_Order_ID, orderTable.get(linkedOrderIdentifier).getC_Order_ID())
+				.create().firstOnly(I_C_Order.class);
+		assertThat(foundPO).isNotNull();
+		orderTable.putOrReplace(orderIdentifier, foundPO);
+		return foundPO;
 	}
 }

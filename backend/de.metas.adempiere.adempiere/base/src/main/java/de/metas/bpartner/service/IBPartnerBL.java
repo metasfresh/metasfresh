@@ -304,4 +304,15 @@ public interface IBPartnerBL extends ISingletonService
 	 */
 	@NonNull
 	Optional<VATIdentifier> getVATTaxId(@NonNull BPartnerLocationId bpartnerLocationId);
+
+	/**
+	 * @return the raw {@code VATaxIDStatus} column of whichever record supplied
+	 * {@link #getVATTaxId(BPartnerLocationId)}'s value — same resolution, so the status always belongs to
+	 * the VAT-ID actually in use. Raw code, not the enum, which lives in a module depending on this one.
+	 *
+	 * <p>Empty both when no VAT-ID was found and when one was found whose status column is {@code null}, so
+	 * "empty" is not proof that no VAT-ID exists.
+	 */
+	@NonNull
+	Optional<String> getVATaxIDStatusCode(@NonNull BPartnerLocationId bpartnerLocationId);
 }
