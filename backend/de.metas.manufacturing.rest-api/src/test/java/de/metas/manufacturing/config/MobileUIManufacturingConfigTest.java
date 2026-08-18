@@ -311,21 +311,46 @@ class MobileUIManufacturingConfigTest
 	@Nested
 	class effectiveForReceiveLine
 	{
+		// The main-good path is asserted with BOTH config polarities on purpose. With a single mixed
+		// fixture, a flag whose configured value happens to equal the co-product-exempt outcome cannot
+		// distinguish "config passed through" from "value hardcoded" / "the other factor dropped" - so a
+		// polarity slip in effectiveForReceiveLine would survive. One all-TRUE and one all-FALSE case
+		// makes every flag's expectation differ from its co-product outcome in at least one of them.
 		@Test
-		void mainFinishedGood_passesTheConfigThrough()
+		void mainFinishedGood_passesEveryConfiguredTrueThrough()
+		{
+			final MobileUIManufacturingConfig config = configBuilder()
+					.isAllowFinishedGoodsReceiveToLU(OptionalBoolean.TRUE)
+					.isAllowFinishedGoodsReceiveToTU(OptionalBoolean.TRUE)
+					.isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.TRUE)
+					.isCaptureFinishedGoodsCatchWeightAtReceipt(OptionalBoolean.TRUE)
+					.build();
+
+			final FinishedGoodsReceiveLineConfig lineConfig = config.effectiveForReceiveLine(true);
+
+			assertThat(lineConfig.isAllowReceiveToLU()).isTrue();
+			assertThat(lineConfig.isAllowReceiveToTU()).isTrue();
+			assertThat(lineConfig.isSkipReceiveTargetStep()).isTrue();
+			assertThat(lineConfig.isCaptureCatchWeight()).isTrue();
+		}
+
+		@Test
+		void mainFinishedGood_passesEveryConfiguredFalseThrough()
 		{
 			final MobileUIManufacturingConfig config = configBuilder()
 					.isAllowFinishedGoodsReceiveToLU(OptionalBoolean.FALSE)
-					.isAllowFinishedGoodsReceiveToTU(OptionalBoolean.TRUE)
-					.isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.TRUE)
+					.isAllowFinishedGoodsReceiveToTU(OptionalBoolean.FALSE)
+					.isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.FALSE)
 					.isCaptureFinishedGoodsCatchWeightAtReceipt(OptionalBoolean.FALSE)
 					.build();
 
 			final FinishedGoodsReceiveLineConfig lineConfig = config.effectiveForReceiveLine(true);
 
+			// Every one of these differs from the co-product outcome, which is permissive for the three
+			// allow-flags and false for the skip-flag regardless of config.
 			assertThat(lineConfig.isAllowReceiveToLU()).isFalse();
-			assertThat(lineConfig.isAllowReceiveToTU()).isTrue();
-			assertThat(lineConfig.isSkipReceiveTargetStep()).isTrue();
+			assertThat(lineConfig.isAllowReceiveToTU()).isFalse();
+			assertThat(lineConfig.isSkipReceiveTargetStep()).isFalse();
 			assertThat(lineConfig.isCaptureCatchWeight()).isFalse();
 		}
 
