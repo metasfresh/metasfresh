@@ -31,6 +31,7 @@ import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.api.REST_API_StepDef;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.logging.LogManager;
 import de.metas.rest_api.invoicecandidates.response.JsonCheckInvoiceCandidatesStatusResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonCheckInvoiceCandidatesStatusResponseItem;
 import io.cucumber.datatable.DataTable;
@@ -39,10 +40,10 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.assertj.core.api.SoftAssertions;
+import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -66,6 +67,8 @@ public class C_Invoice_Candidate_StefDef
 	 * path — the two are not linked mechanically. If this step is ever reused against a second
 	 * endpoint, take the path from the scenario instead of this constant.
 	 */
+	private static final Logger logger = LogManager.getLogger(C_Invoice_Candidate_StefDef.class);
+
 	private static final String STATUS_ENDPOINT_PATH = "api/v2/invoices/status";
 	private static final int STATUS_ENDPOINT_EXPECTED_STATUS_CODE = 200;
 	private static final long TIMEOUT_SEC = 60;
@@ -113,10 +116,12 @@ public class C_Invoice_Candidate_StefDef
 		}
 		catch (final AssertionError timedOut)
 		{
-			// Only the poll timeout can reach here: reissueStatusRequest() converts a failed HTTP-status
-			// assertion into an AdempiereException, so a real server error is never mistaken for a timeout.
-			// Falling through lets assertResponseMatches() name the exact missing ExternalLineId, which is
-			// more useful than the generic "worker didn't succeed within the timeout".
+			// Only the poll timeout can reach here: every other AssertionError raised inside the poll body
+			// (a failed HTTP-status assertion in reissueStatusRequest(), an unparseable or null response in
+			// extractResponseItemMap()) is converted to an AdempiereException, so a real error is never
+			// mistaken for a timeout. Falling through lets assertResponseMatches() name the exact missing
+			// ExternalLineId, which is more useful than the generic "worker didn't succeed" message.
+			logger.warn("Invoice-candidate status did not become complete within {}s; asserting the last response", TIMEOUT_SEC, timedOut);
 		}
 
 		assertResponseMatches(rows);
@@ -189,12 +194,16 @@ public class C_Invoice_Candidate_StefDef
 			throw new AdempiereException("Failed to parse the " + STATUS_ENDPOINT_PATH + " response", e);
 		}
 
-		assertThat(statusResponse).isNotNull();
+		if (statusResponse == null)
+		{
+			// Must NOT be an assertion: this runs inside the poll body, and an AssertionError here would be
+			// mistaken for the poll timeout and swallowed, ending the retry loop after one iteration.
+			throw new AdempiereException("Got a null response from " + STATUS_ENDPOINT_PATH);
+		}
 
-		final List<JsonCheckInvoiceCandidatesStatusResponseItem> responseItemList = statusResponse.getInvoiceCandidates();
-		assertThat(responseItemList).isNotNull();
-
-		return Maps.uniqueIndex(responseItemList, (item) -> item.getExternalLineId().getValue());
+		// getInvoiceCandidates() cannot be null: the response DTO's @JsonCreator takes a @NonNull list,
+		// so Jackson fails above with a JsonProcessingException before we get here.
+		return Maps.uniqueIndex(statusResponse.getInvoiceCandidates(), (item) -> item.getExternalLineId().getValue());
 	}
 
 	private void assertResponseMatches(@NonNull final DataTableRows rows)
