@@ -60,6 +60,10 @@
 		<property name="com.jaspersoft.studio.field.name" value="picklist_group"/>
 		<property name="com.jaspersoft.studio.field.label" value="picklist_group"/>
 	</field>
+	<field name="weight" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="weight"/>
+		<property name="com.jaspersoft.studio.field.label" value="weight"/>
+	</field>
 	<variable name="workplace_header" class="java.lang.String" resetType="None" calculation="First">
 		<variableExpression><![CDATA[$F{workplace}]]></variableExpression>
 	</variable>
@@ -87,50 +91,75 @@
 		<groupExpression><![CDATA[$F{m_product_id}]]></groupExpression>
 		<groupHeader>
 			<band height="20" splitType="Stretch">
+				<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				<line>
-					<reportElement x="0" y="18" width="555" height="1" uuid="11111111-1111-1111-1111-111111111101"/>
+					<reportElement x="0" y="17" width="555" height="1" uuid="11111111-1111-1111-1111-111111111101"/>
 				</line>
 				<staticText>
-					<reportElement x="0" y="2" width="60" height="14" uuid="11111111-1111-1111-1111-111111111102"/>
+					<reportElement x="0" y="2" width="43" height="14" uuid="11111111-1111-1111-1111-111111111102">
+						<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					</reportElement>
 					<textElement>
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
-					<text><![CDATA[Artikel:]]></text>
+					<text><![CDATA[Artikelnr.:]]></text>
 				</staticText>
 				<textField isBlankWhenNull="true">
-					<reportElement x="60" y="2" width="100" height="14" uuid="11111111-1111-1111-1111-111111111103"/>
+					<reportElement x="44" y="2" width="57" height="14" uuid="11111111-1111-1111-1111-111111111103">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
 					<textElement>
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{productvalue}!= null ?$F{productvalue} : ""]]></textFieldExpression>
 				</textField>
 				<staticText>
-					<reportElement x="165" y="2" width="30" height="14" uuid="11111111-1111-1111-1111-111111111104"/>
+					<reportElement x="95" y="2" width="110" height="14" uuid="11111111-1111-1111-1111-111111111104">
+						<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					</reportElement>
 					<textElement>
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
-					<text><![CDATA[KZ:]]></text>
+					<text><![CDATA[KZ (Artikelbezeichnung):]]></text>
 				</staticText>
 				<textField isBlankWhenNull="true">
-					<reportElement x="198" y="2" width="220" height="14" uuid="11111111-1111-1111-1111-111111111105"/>
+					<reportElement x="205" y="2" width="193" height="14" uuid="11111111-1111-1111-1111-111111111105"/>
 					<textElement>
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{productname}!= null ?$F{productname}: ""]]></textFieldExpression>
 				</textField>
 				<staticText>
-					<reportElement x="420" y="2" width="60" height="14" uuid="11111111-1111-1111-1111-111111111106"/>
-					<textElement textAlignment="Right">
+					<reportElement x="398" y="2" width="48" height="14" uuid="11111111-1111-1111-1111-111111111106">
+						<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					</reportElement>
+					<textElement textAlignment="Left">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<text><![CDATA[zu packen:]]></text>
 				</staticText>
-				<textField pattern="#,##0.##" isBlankWhenNull="true" evaluationTime="Group" evaluationGroup="product">
-					<reportElement x="483" y="2" width="72" height="14" uuid="11111111-1111-1111-1111-111111111107"/>
+				<textField evaluationTime="Group" evaluationGroup="product" pattern="#,##0.##" isBlankWhenNull="true">
+					<reportElement x="438" y="2" width="40" height="14" uuid="11111111-1111-1111-1111-111111111107"/>
 					<textElement textAlignment="Right">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{product_qty_sum}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="480" y="2" width="40" height="14" uuid="dec83e7f-600c-4830-bdd1-775288b07cd9">
+						<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Gewicht:]]></text>
+				</staticText>
+				<textField evaluationTime="Group" evaluationGroup="product" pattern="#,##0.##" isBlankWhenNull="true">
+					<reportElement x="520" y="2" width="35" height="14" uuid="3d4da7bc-98a4-4e20-80b4-e0679fe97082"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{weight}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
@@ -191,14 +220,14 @@
 				<textElement>
 					<font fontName="Arial" size="8" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Lagernr.]]></text>
+				<text><![CDATA[Lagerplatz]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="125" y="0" width="70" height="14" uuid="33333333-3333-3333-3333-333333333302"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Zu picken]]></text>
+				<text><![CDATA[Menge Zu picken]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="200" y="0" width="70" height="14" uuid="33333333-3333-3333-3333-333333333305"/>
