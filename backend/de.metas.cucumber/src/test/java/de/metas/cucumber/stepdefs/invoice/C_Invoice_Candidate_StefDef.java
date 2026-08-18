@@ -58,6 +58,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RequiredArgsConstructor
 public class C_Invoice_Candidate_StefDef
 {
+	private static final Logger logger = LogManager.getLogger(C_Invoice_Candidate_StefDef.class);
+
 	/**
 	 * The endpoint this step def validates. It is intrinsic to the step (the step is named after that
 	 * endpoint's response), which is what lets this step re-issue the request itself instead of making
@@ -67,8 +69,6 @@ public class C_Invoice_Candidate_StefDef
 	 * path — the two are not linked mechanically. If this step is ever reused against a second
 	 * endpoint, take the path from the scenario instead of this constant.
 	 */
-	private static final Logger logger = LogManager.getLogger(C_Invoice_Candidate_StefDef.class);
-
 	private static final String STATUS_ENDPOINT_PATH = "api/v2/invoices/status";
 	private static final int STATUS_ENDPOINT_EXPECTED_STATUS_CODE = 200;
 	private static final long TIMEOUT_SEC = 60;
