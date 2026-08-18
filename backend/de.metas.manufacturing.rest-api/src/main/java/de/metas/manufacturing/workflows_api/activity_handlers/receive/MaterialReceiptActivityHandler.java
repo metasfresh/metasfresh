@@ -180,7 +180,7 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 		return JsonFinishedGoodsReceiveLine.builder()
 				.id(line.getId().toJson())
 				.coproduct(!isMainFinishedGood)
-				.skipReceiveTargetStep(isMainFinishedGood ? config.getIsSkipReceiveTargetStepEffective() : null)
+				.skipReceiveTargetStep(isMainFinishedGood && config.getIsSkipReceiveTargetStepEffective())
 				.productName(line.getProductValueAndProductName().translate(adLanguage))
 				.uom(uom)
 				.hazardSymbols(getJsonHazardSymbols(line.getProductId(), adLanguage))
