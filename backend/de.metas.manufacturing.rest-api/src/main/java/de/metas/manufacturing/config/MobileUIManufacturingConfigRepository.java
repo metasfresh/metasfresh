@@ -30,10 +30,10 @@ public class MobileUIManufacturingConfigRepository
 			.receiveUnitType(ReceiveUnitType.CU)
 			.isBestBeforeDateEditable(OptionalBoolean.TRUE)
 			.isLotNumberEditable(OptionalBoolean.TRUE)
-			.isAllowReceiveToLU(OptionalBoolean.TRUE)
-			.isAllowReceiveToTU(OptionalBoolean.TRUE)
-			.isSkipReceiveTargetStep(OptionalBoolean.FALSE)
-			.isCaptureCatchWeightAtReceipt(OptionalBoolean.TRUE)
+			.isAllowFinishedGoodsReceiveToLU(OptionalBoolean.TRUE)
+			.isAllowFinishedGoodsReceiveToTU(OptionalBoolean.TRUE)
+			.isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.FALSE)
+			.isCaptureFinishedGoodsCatchWeightAtReceipt(OptionalBoolean.TRUE)
 			.build();
 
 	private final CCache<UserId, Optional<MobileUIManufacturingConfig>> userConfigsCache = CCache.<UserId, Optional<MobileUIManufacturingConfig>>builder()
@@ -94,10 +94,10 @@ public class MobileUIManufacturingConfigRepository
 				.receiveUnitType(ReceiveUnitType.ofNullableCode(record.getReceiveUnitType()))
 				.isBestBeforeDateEditable(OptionalBoolean.ofNullableString(record.getIsBestBeforeDateEditable()))
 				.isLotNumberEditable(OptionalBoolean.ofNullableString(record.getIsLotNumberEditable()))
-				.isAllowReceiveToLU(OptionalBoolean.ofNullableString(record.getIsAllowReceiveToLU()))
-				.isAllowReceiveToTU(OptionalBoolean.ofNullableString(record.getIsAllowReceiveToTU()))
-				.isSkipReceiveTargetStep(OptionalBoolean.ofNullableString(record.getIsSkipReceiveTargetStep()))
-				.isCaptureCatchWeightAtReceipt(OptionalBoolean.ofNullableString(record.getIsCaptureCatchWeightAtReceipt()))
+				.isAllowFinishedGoodsReceiveToLU(OptionalBoolean.ofNullableString(record.getIsAllowFinishedGoodsReceiveToLU()))
+				.isAllowFinishedGoodsReceiveToTU(OptionalBoolean.ofNullableString(record.getIsAllowFinishedGoodsReceiveToTU()))
+				.isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.ofNullableString(record.getIsSkipFinishedGoodsReceiveTargetStep()))
+				.isCaptureFinishedGoodsCatchWeightAtReceipt(OptionalBoolean.ofNullableString(record.getIsCaptureFinishedGoodsCatchWeightAtReceipt()))
 				.build();
 	}
 
@@ -108,10 +108,10 @@ public class MobileUIManufacturingConfigRepository
 		record.setReceiveUnitType(from.getReceiveUnitType() != null ? from.getReceiveUnitType().getCode() : null);
 		record.setIsBestBeforeDateEditable(from.getIsBestBeforeDateEditable().toBooleanString());
 		record.setIsLotNumberEditable(from.getIsLotNumberEditable().toBooleanString());
-		record.setIsAllowReceiveToLU(from.getIsAllowReceiveToLU().toBooleanString());
-		record.setIsAllowReceiveToTU(from.getIsAllowReceiveToTU().toBooleanString());
-		record.setIsSkipReceiveTargetStep(from.getIsSkipReceiveTargetStep().toBooleanString());
-		record.setIsCaptureCatchWeightAtReceipt(from.getIsCaptureCatchWeightAtReceipt().toBooleanString());
+		record.setIsAllowFinishedGoodsReceiveToLU(from.getIsAllowFinishedGoodsReceiveToLU().toBooleanString());
+		record.setIsAllowFinishedGoodsReceiveToTU(from.getIsAllowFinishedGoodsReceiveToTU().toBooleanString());
+		record.setIsSkipFinishedGoodsReceiveTargetStep(from.getIsSkipFinishedGoodsReceiveTargetStep().toBooleanString());
+		record.setIsCaptureFinishedGoodsCatchWeightAtReceipt(from.getIsCaptureFinishedGoodsCatchWeightAtReceipt().toBooleanString());
 	}
 
 	private Optional<MobileUIManufacturingConfig> retrieveGlobalConfig(@NonNull final ClientId clientId)
@@ -132,10 +132,10 @@ public class MobileUIManufacturingConfigRepository
 				.receiveUnitType(ReceiveUnitType.ofNullableCode(record.getReceiveUnitType()))
 				.isBestBeforeDateEditable(OptionalBoolean.ofBoolean(record.isBestBeforeDateEditable()))
 				.isLotNumberEditable(OptionalBoolean.ofBoolean(record.isLotNumberEditable()))
-				.isAllowReceiveToLU(OptionalBoolean.ofBoolean(record.isAllowReceiveToLU()))
-				.isAllowReceiveToTU(OptionalBoolean.ofBoolean(record.isAllowReceiveToTU()))
-				.isSkipReceiveTargetStep(OptionalBoolean.ofBoolean(record.isSkipReceiveTargetStep()))
-				.isCaptureCatchWeightAtReceipt(OptionalBoolean.ofBoolean(record.isCaptureCatchWeightAtReceipt()))
+				.isAllowFinishedGoodsReceiveToLU(OptionalBoolean.ofBoolean(record.isAllowFinishedGoodsReceiveToLU()))
+				.isAllowFinishedGoodsReceiveToTU(OptionalBoolean.ofBoolean(record.isAllowFinishedGoodsReceiveToTU()))
+				.isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.ofBoolean(record.isSkipFinishedGoodsReceiveTargetStep()))
+				.isCaptureFinishedGoodsCatchWeightAtReceipt(OptionalBoolean.ofBoolean(record.isCaptureFinishedGoodsCatchWeightAtReceipt()))
 				.build();
 	}
 

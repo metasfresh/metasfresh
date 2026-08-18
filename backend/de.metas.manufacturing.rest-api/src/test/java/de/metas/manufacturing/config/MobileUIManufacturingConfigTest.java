@@ -38,17 +38,17 @@ class MobileUIManufacturingConfigTest
 				.isAllowIssuingAnyHU(OptionalBoolean.UNKNOWN)
 				.isBestBeforeDateEditable(OptionalBoolean.UNKNOWN)
 				.isLotNumberEditable(OptionalBoolean.UNKNOWN)
-				.isAllowReceiveToLU(OptionalBoolean.UNKNOWN)
-				.isAllowReceiveToTU(OptionalBoolean.UNKNOWN)
-				.isSkipReceiveTargetStep(OptionalBoolean.UNKNOWN)
-				.isCaptureCatchWeightAtReceipt(OptionalBoolean.UNKNOWN);
+				.isAllowFinishedGoodsReceiveToLU(OptionalBoolean.UNKNOWN)
+				.isAllowFinishedGoodsReceiveToTU(OptionalBoolean.UNKNOWN)
+				.isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.UNKNOWN)
+				.isCaptureFinishedGoodsCatchWeightAtReceipt(OptionalBoolean.UNKNOWN);
 	}
 
 	private void createGlobalConfig(
-			final boolean isAllowReceiveToLU,
-			final boolean isAllowReceiveToTU,
-			final boolean isSkipReceiveTargetStep,
-			final boolean isCaptureCatchWeightAtReceipt)
+			final boolean isAllowFinishedGoodsReceiveToLU,
+			final boolean isAllowFinishedGoodsReceiveToTU,
+			final boolean isSkipFinishedGoodsReceiveTargetStep,
+			final boolean isCaptureFinishedGoodsCatchWeightAtReceipt)
 	{
 		final I_MobileUI_MFG_Config record = InterfaceWrapperHelper.newInstance(I_MobileUI_MFG_Config.class);
 		record.setIsActive(true);
@@ -56,54 +56,54 @@ class MobileUIManufacturingConfigTest
 		record.setIsAllowIssuingAnyHU(false);
 		record.setIsBestBeforeDateEditable(true);
 		record.setIsLotNumberEditable(true);
-		record.setIsAllowReceiveToLU(isAllowReceiveToLU);
-		record.setIsAllowReceiveToTU(isAllowReceiveToTU);
-		record.setIsSkipReceiveTargetStep(isSkipReceiveTargetStep);
-		record.setIsCaptureCatchWeightAtReceipt(isCaptureCatchWeightAtReceipt);
+		record.setIsAllowFinishedGoodsReceiveToLU(isAllowFinishedGoodsReceiveToLU);
+		record.setIsAllowFinishedGoodsReceiveToTU(isAllowFinishedGoodsReceiveToTU);
+		record.setIsSkipFinishedGoodsReceiveTargetStep(isSkipFinishedGoodsReceiveTargetStep);
+		record.setIsCaptureFinishedGoodsCatchWeightAtReceipt(isCaptureFinishedGoodsCatchWeightAtReceipt);
 		InterfaceWrapperHelper.save(record);
 	}
 
 	private void createUserConfig(
-			@Nullable final String isAllowReceiveToLU,
-			@Nullable final String isAllowReceiveToTU,
-			@Nullable final String isSkipReceiveTargetStep,
-			@Nullable final String isCaptureCatchWeightAtReceipt)
+			@Nullable final String isAllowFinishedGoodsReceiveToLU,
+			@Nullable final String isAllowFinishedGoodsReceiveToTU,
+			@Nullable final String isSkipFinishedGoodsReceiveTargetStep,
+			@Nullable final String isCaptureFinishedGoodsCatchWeightAtReceipt)
 	{
 		final I_MobileUI_UserProfile_MFG record = InterfaceWrapperHelper.newInstance(I_MobileUI_UserProfile_MFG.class);
 		record.setAD_User_ID(USER_ID.getRepoId());
 		record.setIsActive(true);
-		record.setIsAllowReceiveToLU(isAllowReceiveToLU);
-		record.setIsAllowReceiveToTU(isAllowReceiveToTU);
-		record.setIsSkipReceiveTargetStep(isSkipReceiveTargetStep);
-		record.setIsCaptureCatchWeightAtReceipt(isCaptureCatchWeightAtReceipt);
+		record.setIsAllowFinishedGoodsReceiveToLU(isAllowFinishedGoodsReceiveToLU);
+		record.setIsAllowFinishedGoodsReceiveToTU(isAllowFinishedGoodsReceiveToTU);
+		record.setIsSkipFinishedGoodsReceiveTargetStep(isSkipFinishedGoodsReceiveTargetStep);
+		record.setIsCaptureFinishedGoodsCatchWeightAtReceipt(isCaptureFinishedGoodsCatchWeightAtReceipt);
 		InterfaceWrapperHelper.save(record);
 	}
 
 	@Nested
-	class getIsAllowReceiveToLUEffective
+	class getIsAllowFinishedGoodsReceiveToLUEffective
 	{
 		@Test
 		void noConfigAtAll_defaultsToTrue()
 		{
-			assertThat(repo.getConfig(USER_ID, clientId).getIsAllowReceiveToLUEffective()).isTrue();
+			assertThat(repo.getConfig(USER_ID, clientId).getIsAllowFinishedGoodsReceiveToLUEffective()).isTrue();
 		}
 
 		@Test
 		void userValueOverridesGlobal()
 		{
-			final MobileUIManufacturingConfig user = configBuilder().isAllowReceiveToLU(OptionalBoolean.FALSE).build();
-			final MobileUIManufacturingConfig global = configBuilder().isAllowReceiveToLU(OptionalBoolean.TRUE).build();
+			final MobileUIManufacturingConfig user = configBuilder().isAllowFinishedGoodsReceiveToLU(OptionalBoolean.FALSE).build();
+			final MobileUIManufacturingConfig global = configBuilder().isAllowFinishedGoodsReceiveToLU(OptionalBoolean.TRUE).build();
 
-			assertThat(user.fallbackTo(global).getIsAllowReceiveToLUEffective()).isFalse();
+			assertThat(user.fallbackTo(global).getIsAllowFinishedGoodsReceiveToLUEffective()).isFalse();
 		}
 
 		@Test
 		void userUnknownInheritsGlobal()
 		{
 			final MobileUIManufacturingConfig user = configBuilder().build();
-			final MobileUIManufacturingConfig global = configBuilder().isAllowReceiveToLU(OptionalBoolean.FALSE).build();
+			final MobileUIManufacturingConfig global = configBuilder().isAllowFinishedGoodsReceiveToLU(OptionalBoolean.FALSE).build();
 
-			assertThat(user.fallbackTo(global).getIsAllowReceiveToLUEffective()).isFalse();
+			assertThat(user.fallbackTo(global).getIsAllowFinishedGoodsReceiveToLUEffective()).isFalse();
 		}
 
 		@Test
@@ -112,7 +112,7 @@ class MobileUIManufacturingConfigTest
 			createGlobalConfig(false, true, false, true);
 			createUserConfig("", "", "", "");
 
-			assertThat(repo.getConfig(USER_ID, clientId).getIsAllowReceiveToLUEffective()).isFalse();
+			assertThat(repo.getConfig(USER_ID, clientId).getIsAllowFinishedGoodsReceiveToLUEffective()).isFalse();
 		}
 
 		@Test
@@ -121,7 +121,7 @@ class MobileUIManufacturingConfigTest
 			createGlobalConfig(false, true, false, true);
 			createUserConfig(null, null, null, null);
 
-			assertThat(repo.getConfig(USER_ID, clientId).getIsAllowReceiveToLUEffective()).isFalse();
+			assertThat(repo.getConfig(USER_ID, clientId).getIsAllowFinishedGoodsReceiveToLUEffective()).isFalse();
 		}
 
 		@Test
@@ -130,44 +130,44 @@ class MobileUIManufacturingConfigTest
 			createGlobalConfig(true, true, false, true);
 			createUserConfig("N", null, null, null);
 
-			assertThat(repo.getConfig(USER_ID, clientId).getIsAllowReceiveToLUEffective()).isFalse();
+			assertThat(repo.getConfig(USER_ID, clientId).getIsAllowFinishedGoodsReceiveToLUEffective()).isFalse();
 		}
 
 		@Test
 		void saveUserConfigPersistsTheFlag()
 		{
 			createGlobalConfig(true, true, false, true);
-			repo.saveUserConfig(configBuilder().isAllowReceiveToLU(OptionalBoolean.FALSE).build(), USER_ID);
+			repo.saveUserConfig(configBuilder().isAllowFinishedGoodsReceiveToLU(OptionalBoolean.FALSE).build(), USER_ID);
 
-			assertThat(repo.getConfig(USER_ID, clientId).getIsAllowReceiveToLUEffective()).isFalse();
+			assertThat(repo.getConfig(USER_ID, clientId).getIsAllowFinishedGoodsReceiveToLUEffective()).isFalse();
 		}
 	}
 
 	@Nested
-	class getIsAllowReceiveToTUEffective
+	class getIsAllowFinishedGoodsReceiveToTUEffective
 	{
 		@Test
 		void noConfigAtAll_defaultsToTrue()
 		{
-			assertThat(repo.getConfig(USER_ID, clientId).getIsAllowReceiveToTUEffective()).isTrue();
+			assertThat(repo.getConfig(USER_ID, clientId).getIsAllowFinishedGoodsReceiveToTUEffective()).isTrue();
 		}
 
 		@Test
 		void userValueOverridesGlobal()
 		{
-			final MobileUIManufacturingConfig user = configBuilder().isAllowReceiveToTU(OptionalBoolean.FALSE).build();
-			final MobileUIManufacturingConfig global = configBuilder().isAllowReceiveToTU(OptionalBoolean.TRUE).build();
+			final MobileUIManufacturingConfig user = configBuilder().isAllowFinishedGoodsReceiveToTU(OptionalBoolean.FALSE).build();
+			final MobileUIManufacturingConfig global = configBuilder().isAllowFinishedGoodsReceiveToTU(OptionalBoolean.TRUE).build();
 
-			assertThat(user.fallbackTo(global).getIsAllowReceiveToTUEffective()).isFalse();
+			assertThat(user.fallbackTo(global).getIsAllowFinishedGoodsReceiveToTUEffective()).isFalse();
 		}
 
 		@Test
 		void userUnknownInheritsGlobal()
 		{
 			final MobileUIManufacturingConfig user = configBuilder().build();
-			final MobileUIManufacturingConfig global = configBuilder().isAllowReceiveToTU(OptionalBoolean.FALSE).build();
+			final MobileUIManufacturingConfig global = configBuilder().isAllowFinishedGoodsReceiveToTU(OptionalBoolean.FALSE).build();
 
-			assertThat(user.fallbackTo(global).getIsAllowReceiveToTUEffective()).isFalse();
+			assertThat(user.fallbackTo(global).getIsAllowFinishedGoodsReceiveToTUEffective()).isFalse();
 		}
 
 		@Test
@@ -176,7 +176,7 @@ class MobileUIManufacturingConfigTest
 			createGlobalConfig(true, false, false, true);
 			createUserConfig("", "", "", "");
 
-			assertThat(repo.getConfig(USER_ID, clientId).getIsAllowReceiveToTUEffective()).isFalse();
+			assertThat(repo.getConfig(USER_ID, clientId).getIsAllowFinishedGoodsReceiveToTUEffective()).isFalse();
 		}
 
 		@Test
@@ -185,44 +185,44 @@ class MobileUIManufacturingConfigTest
 			createGlobalConfig(true, true, false, true);
 			createUserConfig(null, "N", null, null);
 
-			assertThat(repo.getConfig(USER_ID, clientId).getIsAllowReceiveToTUEffective()).isFalse();
+			assertThat(repo.getConfig(USER_ID, clientId).getIsAllowFinishedGoodsReceiveToTUEffective()).isFalse();
 		}
 
 		@Test
 		void saveUserConfigPersistsTheFlag()
 		{
 			createGlobalConfig(true, true, false, true);
-			repo.saveUserConfig(configBuilder().isAllowReceiveToTU(OptionalBoolean.FALSE).build(), USER_ID);
+			repo.saveUserConfig(configBuilder().isAllowFinishedGoodsReceiveToTU(OptionalBoolean.FALSE).build(), USER_ID);
 
-			assertThat(repo.getConfig(USER_ID, clientId).getIsAllowReceiveToTUEffective()).isFalse();
+			assertThat(repo.getConfig(USER_ID, clientId).getIsAllowFinishedGoodsReceiveToTUEffective()).isFalse();
 		}
 	}
 
 	@Nested
-	class getIsSkipReceiveTargetStepEffective
+	class getIsSkipFinishedGoodsReceiveTargetStepEffective
 	{
 		@Test
 		void noConfigAtAll_defaultsToFalse()
 		{
-			assertThat(repo.getConfig(USER_ID, clientId).getIsSkipReceiveTargetStepEffective()).isFalse();
+			assertThat(repo.getConfig(USER_ID, clientId).getIsSkipFinishedGoodsReceiveTargetStepEffective()).isFalse();
 		}
 
 		@Test
 		void userValueOverridesGlobal()
 		{
-			final MobileUIManufacturingConfig user = configBuilder().isSkipReceiveTargetStep(OptionalBoolean.TRUE).build();
-			final MobileUIManufacturingConfig global = configBuilder().isSkipReceiveTargetStep(OptionalBoolean.FALSE).build();
+			final MobileUIManufacturingConfig user = configBuilder().isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.TRUE).build();
+			final MobileUIManufacturingConfig global = configBuilder().isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.FALSE).build();
 
-			assertThat(user.fallbackTo(global).getIsSkipReceiveTargetStepEffective()).isTrue();
+			assertThat(user.fallbackTo(global).getIsSkipFinishedGoodsReceiveTargetStepEffective()).isTrue();
 		}
 
 		@Test
 		void userUnknownInheritsGlobal()
 		{
 			final MobileUIManufacturingConfig user = configBuilder().build();
-			final MobileUIManufacturingConfig global = configBuilder().isSkipReceiveTargetStep(OptionalBoolean.TRUE).build();
+			final MobileUIManufacturingConfig global = configBuilder().isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.TRUE).build();
 
-			assertThat(user.fallbackTo(global).getIsSkipReceiveTargetStepEffective()).isTrue();
+			assertThat(user.fallbackTo(global).getIsSkipFinishedGoodsReceiveTargetStepEffective()).isTrue();
 		}
 
 		@Test
@@ -231,7 +231,7 @@ class MobileUIManufacturingConfigTest
 			createGlobalConfig(true, true, true, true);
 			createUserConfig("", "", "", "");
 
-			assertThat(repo.getConfig(USER_ID, clientId).getIsSkipReceiveTargetStepEffective()).isTrue();
+			assertThat(repo.getConfig(USER_ID, clientId).getIsSkipFinishedGoodsReceiveTargetStepEffective()).isTrue();
 		}
 
 		@Test
@@ -240,44 +240,44 @@ class MobileUIManufacturingConfigTest
 			createGlobalConfig(true, true, false, true);
 			createUserConfig(null, null, "Y", null);
 
-			assertThat(repo.getConfig(USER_ID, clientId).getIsSkipReceiveTargetStepEffective()).isTrue();
+			assertThat(repo.getConfig(USER_ID, clientId).getIsSkipFinishedGoodsReceiveTargetStepEffective()).isTrue();
 		}
 
 		@Test
 		void saveUserConfigPersistsTheFlag()
 		{
 			createGlobalConfig(true, true, false, true);
-			repo.saveUserConfig(configBuilder().isSkipReceiveTargetStep(OptionalBoolean.TRUE).build(), USER_ID);
+			repo.saveUserConfig(configBuilder().isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.TRUE).build(), USER_ID);
 
-			assertThat(repo.getConfig(USER_ID, clientId).getIsSkipReceiveTargetStepEffective()).isTrue();
+			assertThat(repo.getConfig(USER_ID, clientId).getIsSkipFinishedGoodsReceiveTargetStepEffective()).isTrue();
 		}
 	}
 
 	@Nested
-	class getIsCaptureCatchWeightAtReceiptEffective
+	class getIsCaptureFinishedGoodsCatchWeightAtReceiptEffective
 	{
 		@Test
 		void noConfigAtAll_defaultsToTrue()
 		{
-			assertThat(repo.getConfig(USER_ID, clientId).getIsCaptureCatchWeightAtReceiptEffective()).isTrue();
+			assertThat(repo.getConfig(USER_ID, clientId).getIsCaptureFinishedGoodsCatchWeightAtReceiptEffective()).isTrue();
 		}
 
 		@Test
 		void userValueOverridesGlobal()
 		{
-			final MobileUIManufacturingConfig user = configBuilder().isCaptureCatchWeightAtReceipt(OptionalBoolean.FALSE).build();
-			final MobileUIManufacturingConfig global = configBuilder().isCaptureCatchWeightAtReceipt(OptionalBoolean.TRUE).build();
+			final MobileUIManufacturingConfig user = configBuilder().isCaptureFinishedGoodsCatchWeightAtReceipt(OptionalBoolean.FALSE).build();
+			final MobileUIManufacturingConfig global = configBuilder().isCaptureFinishedGoodsCatchWeightAtReceipt(OptionalBoolean.TRUE).build();
 
-			assertThat(user.fallbackTo(global).getIsCaptureCatchWeightAtReceiptEffective()).isFalse();
+			assertThat(user.fallbackTo(global).getIsCaptureFinishedGoodsCatchWeightAtReceiptEffective()).isFalse();
 		}
 
 		@Test
 		void userUnknownInheritsGlobal()
 		{
 			final MobileUIManufacturingConfig user = configBuilder().build();
-			final MobileUIManufacturingConfig global = configBuilder().isCaptureCatchWeightAtReceipt(OptionalBoolean.FALSE).build();
+			final MobileUIManufacturingConfig global = configBuilder().isCaptureFinishedGoodsCatchWeightAtReceipt(OptionalBoolean.FALSE).build();
 
-			assertThat(user.fallbackTo(global).getIsCaptureCatchWeightAtReceiptEffective()).isFalse();
+			assertThat(user.fallbackTo(global).getIsCaptureFinishedGoodsCatchWeightAtReceiptEffective()).isFalse();
 		}
 
 		@Test
@@ -286,7 +286,7 @@ class MobileUIManufacturingConfigTest
 			createGlobalConfig(true, true, false, false);
 			createUserConfig("", "", "", "");
 
-			assertThat(repo.getConfig(USER_ID, clientId).getIsCaptureCatchWeightAtReceiptEffective()).isFalse();
+			assertThat(repo.getConfig(USER_ID, clientId).getIsCaptureFinishedGoodsCatchWeightAtReceiptEffective()).isFalse();
 		}
 
 		@Test
@@ -295,16 +295,74 @@ class MobileUIManufacturingConfigTest
 			createGlobalConfig(true, true, false, true);
 			createUserConfig(null, null, null, "N");
 
-			assertThat(repo.getConfig(USER_ID, clientId).getIsCaptureCatchWeightAtReceiptEffective()).isFalse();
+			assertThat(repo.getConfig(USER_ID, clientId).getIsCaptureFinishedGoodsCatchWeightAtReceiptEffective()).isFalse();
 		}
 
 		@Test
 		void saveUserConfigPersistsTheFlag()
 		{
 			createGlobalConfig(true, true, false, true);
-			repo.saveUserConfig(configBuilder().isCaptureCatchWeightAtReceipt(OptionalBoolean.FALSE).build(), USER_ID);
+			repo.saveUserConfig(configBuilder().isCaptureFinishedGoodsCatchWeightAtReceipt(OptionalBoolean.FALSE).build(), USER_ID);
 
-			assertThat(repo.getConfig(USER_ID, clientId).getIsCaptureCatchWeightAtReceiptEffective()).isFalse();
+			assertThat(repo.getConfig(USER_ID, clientId).getIsCaptureFinishedGoodsCatchWeightAtReceiptEffective()).isFalse();
+		}
+	}
+
+	@Nested
+	class effectiveForReceiveLine
+	{
+		@Test
+		void mainFinishedGood_passesTheConfigThrough()
+		{
+			final MobileUIManufacturingConfig config = configBuilder()
+					.isAllowFinishedGoodsReceiveToLU(OptionalBoolean.FALSE)
+					.isAllowFinishedGoodsReceiveToTU(OptionalBoolean.TRUE)
+					.isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.TRUE)
+					.isCaptureFinishedGoodsCatchWeightAtReceipt(OptionalBoolean.FALSE)
+					.build();
+
+			final FinishedGoodsReceiveLineConfig lineConfig = config.effectiveForReceiveLine(true);
+
+			assertThat(lineConfig.isAllowReceiveToLU()).isFalse();
+			assertThat(lineConfig.isAllowReceiveToTU()).isTrue();
+			assertThat(lineConfig.isSkipReceiveTargetStep()).isTrue();
+			assertThat(lineConfig.isCaptureCatchWeight()).isFalse();
+		}
+
+		@Test
+		void coProduct_isExemptFromEverySimplification()
+		{
+			final MobileUIManufacturingConfig config = configBuilder()
+					.isAllowFinishedGoodsReceiveToLU(OptionalBoolean.FALSE)
+					.isAllowFinishedGoodsReceiveToTU(OptionalBoolean.FALSE)
+					.isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.TRUE)
+					.isCaptureFinishedGoodsCatchWeightAtReceipt(OptionalBoolean.FALSE)
+					.build();
+
+			final FinishedGoodsReceiveLineConfig lineConfig = config.effectiveForReceiveLine(false);
+
+			assertThat(lineConfig.isAllowReceiveToLU()).isTrue();
+			assertThat(lineConfig.isAllowReceiveToTU()).isTrue();
+			assertThat(lineConfig.isSkipReceiveTargetStep()).isFalse();
+			assertThat(lineConfig.isCaptureCatchWeight()).isTrue();
+		}
+
+		@Test
+		void coProduct_outcomeDoesNotDependOnTheConfig()
+		{
+			final MobileUIManufacturingConfig config = configBuilder()
+					.isAllowFinishedGoodsReceiveToLU(OptionalBoolean.TRUE)
+					.isAllowFinishedGoodsReceiveToTU(OptionalBoolean.TRUE)
+					.isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.FALSE)
+					.isCaptureFinishedGoodsCatchWeightAtReceipt(OptionalBoolean.TRUE)
+					.build();
+
+			final FinishedGoodsReceiveLineConfig lineConfig = config.effectiveForReceiveLine(false);
+
+			assertThat(lineConfig.isAllowReceiveToLU()).isTrue();
+			assertThat(lineConfig.isAllowReceiveToTU()).isTrue();
+			assertThat(lineConfig.isSkipReceiveTargetStep()).isFalse();
+			assertThat(lineConfig.isCaptureCatchWeight()).isTrue();
 		}
 	}
 }

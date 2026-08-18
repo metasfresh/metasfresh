@@ -121,6 +121,52 @@ public interface I_MobileUI_UserProfile_MFG
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Allow receiving finished goods to LU.
+	 * Offer load-unit (pallet/LU) targets for the finished-goods production receipt.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowFinishedGoodsReceiveToLU (@Nullable java.lang.String IsAllowFinishedGoodsReceiveToLU);
+
+	/**
+	 * Get Allow receiving finished goods to LU.
+	 * Offer load-unit (pallet/LU) targets for the finished-goods production receipt.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsAllowFinishedGoodsReceiveToLU();
+
+	ModelColumn<I_MobileUI_UserProfile_MFG, Object> COLUMN_IsAllowFinishedGoodsReceiveToLU = new ModelColumn<>(I_MobileUI_UserProfile_MFG.class, "IsAllowFinishedGoodsReceiveToLU", null);
+	String COLUMNNAME_IsAllowFinishedGoodsReceiveToLU = "IsAllowFinishedGoodsReceiveToLU";
+
+	/**
+	 * Set Allow receiving finished goods to TU.
+	 * Offer transport-unit (TU) targets for the finished-goods production receipt.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowFinishedGoodsReceiveToTU (@Nullable java.lang.String IsAllowFinishedGoodsReceiveToTU);
+
+	/**
+	 * Get Allow receiving finished goods to TU.
+	 * Offer transport-unit (TU) targets for the finished-goods production receipt.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsAllowFinishedGoodsReceiveToTU();
+
+	ModelColumn<I_MobileUI_UserProfile_MFG, Object> COLUMN_IsAllowFinishedGoodsReceiveToTU = new ModelColumn<>(I_MobileUI_UserProfile_MFG.class, "IsAllowFinishedGoodsReceiveToTU", null);
+	String COLUMNNAME_IsAllowFinishedGoodsReceiveToTU = "IsAllowFinishedGoodsReceiveToTU";
+
+	/**
 	 * Set No Raw Material Check.
 	 * Allows scanning and issuing HUs that are not in the manufacturing issue plan
 	 *
@@ -142,52 +188,6 @@ public interface I_MobileUI_UserProfile_MFG
 
 	ModelColumn<I_MobileUI_UserProfile_MFG, Object> COLUMN_IsAllowIssuingAnyHU = new ModelColumn<>(I_MobileUI_UserProfile_MFG.class, "IsAllowIssuingAnyHU", null);
 	String COLUMNNAME_IsAllowIssuingAnyHU = "IsAllowIssuingAnyHU";
-
-	/**
-	 * Set Allow receive to LU.
-	 * Offer load-unit (pallet/LU) targets on the production receipt.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setIsAllowReceiveToLU (@Nullable java.lang.String IsAllowReceiveToLU);
-
-	/**
-	 * Get Allow receive to LU.
-	 * Offer load-unit (pallet/LU) targets on the production receipt.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getIsAllowReceiveToLU();
-
-	ModelColumn<I_MobileUI_UserProfile_MFG, Object> COLUMN_IsAllowReceiveToLU = new ModelColumn<>(I_MobileUI_UserProfile_MFG.class, "IsAllowReceiveToLU", null);
-	String COLUMNNAME_IsAllowReceiveToLU = "IsAllowReceiveToLU";
-
-	/**
-	 * Set Allow receive to TU.
-	 * Offer transport-unit (TU) targets on the production receipt.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setIsAllowReceiveToTU (@Nullable java.lang.String IsAllowReceiveToTU);
-
-	/**
-	 * Get Allow receive to TU.
-	 * Offer transport-unit (TU) targets on the production receipt.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getIsAllowReceiveToTU();
-
-	ModelColumn<I_MobileUI_UserProfile_MFG, Object> COLUMN_IsAllowReceiveToTU = new ModelColumn<>(I_MobileUI_UserProfile_MFG.class, "IsAllowReceiveToTU", null);
-	String COLUMNNAME_IsAllowReceiveToTU = "IsAllowReceiveToTU";
 
 	/**
 	 * Set Best Before Date editable.
@@ -213,27 +213,27 @@ public interface I_MobileUI_UserProfile_MFG
 	String COLUMNNAME_IsBestBeforeDateEditable = "IsBestBeforeDateEditable";
 
 	/**
-	 * Set Capture catch weight at receipt.
-	 * Capture the catch weight of a catch-weight product at production receipt.
+	 * Set Capture finished-goods catch weight at receipt.
+	 * Capture the catch weight of a catch-weight finished good at production receipt.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setIsCaptureCatchWeightAtReceipt (@Nullable java.lang.String IsCaptureCatchWeightAtReceipt);
+	void setIsCaptureFinishedGoodsCatchWeightAtReceipt (@Nullable java.lang.String IsCaptureFinishedGoodsCatchWeightAtReceipt);
 
 	/**
-	 * Get Capture catch weight at receipt.
-	 * Capture the catch weight of a catch-weight product at production receipt.
+	 * Get Capture finished-goods catch weight at receipt.
+	 * Capture the catch weight of a catch-weight finished good at production receipt.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getIsCaptureCatchWeightAtReceipt();
+	@Nullable java.lang.String getIsCaptureFinishedGoodsCatchWeightAtReceipt();
 
-	ModelColumn<I_MobileUI_UserProfile_MFG, Object> COLUMN_IsCaptureCatchWeightAtReceipt = new ModelColumn<>(I_MobileUI_UserProfile_MFG.class, "IsCaptureCatchWeightAtReceipt", null);
-	String COLUMNNAME_IsCaptureCatchWeightAtReceipt = "IsCaptureCatchWeightAtReceipt";
+	ModelColumn<I_MobileUI_UserProfile_MFG, Object> COLUMN_IsCaptureFinishedGoodsCatchWeightAtReceipt = new ModelColumn<>(I_MobileUI_UserProfile_MFG.class, "IsCaptureFinishedGoodsCatchWeightAtReceipt", null);
+	String COLUMNNAME_IsCaptureFinishedGoodsCatchWeightAtReceipt = "IsCaptureFinishedGoodsCatchWeightAtReceipt";
 
 	/**
 	 * Set Lot Number editable.
@@ -282,27 +282,27 @@ public interface I_MobileUI_UserProfile_MFG
 	String COLUMNNAME_IsScanResourceRequired = "IsScanResourceRequired";
 
 	/**
-	 * Set Skip Gebinde selection step.
-	 * Skip the new-Gebinde / scan-existing screen and go straight to the packing instruction.
+	 * Set Skip finished-goods receiving-target step.
+	 * Skip the new-Gebinde / scan-existing screen for the finished good and go straight to the packing instruction.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setIsSkipReceiveTargetStep (@Nullable java.lang.String IsSkipReceiveTargetStep);
+	void setIsSkipFinishedGoodsReceiveTargetStep (@Nullable java.lang.String IsSkipFinishedGoodsReceiveTargetStep);
 
 	/**
-	 * Get Skip Gebinde selection step.
-	 * Skip the new-Gebinde / scan-existing screen and go straight to the packing instruction.
+	 * Get Skip finished-goods receiving-target step.
+	 * Skip the new-Gebinde / scan-existing screen for the finished good and go straight to the packing instruction.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getIsSkipReceiveTargetStep();
+	@Nullable java.lang.String getIsSkipFinishedGoodsReceiveTargetStep();
 
-	ModelColumn<I_MobileUI_UserProfile_MFG, Object> COLUMN_IsSkipReceiveTargetStep = new ModelColumn<>(I_MobileUI_UserProfile_MFG.class, "IsSkipReceiveTargetStep", null);
-	String COLUMNNAME_IsSkipReceiveTargetStep = "IsSkipReceiveTargetStep";
+	ModelColumn<I_MobileUI_UserProfile_MFG, Object> COLUMN_IsSkipFinishedGoodsReceiveTargetStep = new ModelColumn<>(I_MobileUI_UserProfile_MFG.class, "IsSkipFinishedGoodsReceiveTargetStep", null);
+	String COLUMNNAME_IsSkipFinishedGoodsReceiveTargetStep = "IsSkipFinishedGoodsReceiveTargetStep";
 
 	/**
 	 * Set Mobile UI User Profile - Manufacturing.

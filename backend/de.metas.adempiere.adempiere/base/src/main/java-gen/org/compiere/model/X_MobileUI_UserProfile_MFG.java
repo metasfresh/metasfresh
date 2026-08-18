@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_UserProfile_MFG extends org.compiere.model.PO implements I_MobileUI_UserProfile_MFG, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -586342492L;
+	private static final long serialVersionUID = -1252554458L;
 
     /** Standard Constructor */
     public X_MobileUI_UserProfile_MFG (final Properties ctx, final int MobileUI_UserProfile_MFG_ID, @Nullable final String trxName)
@@ -50,6 +50,48 @@ public class X_MobileUI_UserProfile_MFG extends org.compiere.model.PO implements
 	}
 
 	/** 
+	 * IsAllowFinishedGoodsReceiveToLU AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISALLOWFINISHEDGOODSRECEIVETOLU_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISALLOWFINISHEDGOODSRECEIVETOLU_Yes = "Y";
+	/** No = N */
+	public static final String ISALLOWFINISHEDGOODSRECEIVETOLU_No = "N";
+	@Override
+	public void setIsAllowFinishedGoodsReceiveToLU (final @Nullable java.lang.String IsAllowFinishedGoodsReceiveToLU)
+	{
+		set_Value (COLUMNNAME_IsAllowFinishedGoodsReceiveToLU, IsAllowFinishedGoodsReceiveToLU);
+	}
+
+	@Override
+	public java.lang.String getIsAllowFinishedGoodsReceiveToLU() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsAllowFinishedGoodsReceiveToLU);
+	}
+
+	/** 
+	 * IsAllowFinishedGoodsReceiveToTU AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISALLOWFINISHEDGOODSRECEIVETOTU_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISALLOWFINISHEDGOODSRECEIVETOTU_Yes = "Y";
+	/** No = N */
+	public static final String ISALLOWFINISHEDGOODSRECEIVETOTU_No = "N";
+	@Override
+	public void setIsAllowFinishedGoodsReceiveToTU (final @Nullable java.lang.String IsAllowFinishedGoodsReceiveToTU)
+	{
+		set_Value (COLUMNNAME_IsAllowFinishedGoodsReceiveToTU, IsAllowFinishedGoodsReceiveToTU);
+	}
+
+	@Override
+	public java.lang.String getIsAllowFinishedGoodsReceiveToTU() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsAllowFinishedGoodsReceiveToTU);
+	}
+
+	/** 
 	 * IsAllowIssuingAnyHU AD_Reference_ID=319
 	 * Reference name: _YesNo
 	 */
@@ -68,48 +110,6 @@ public class X_MobileUI_UserProfile_MFG extends org.compiere.model.PO implements
 	public java.lang.String getIsAllowIssuingAnyHU() 
 	{
 		return get_ValueAsString(COLUMNNAME_IsAllowIssuingAnyHU);
-	}
-
-	/** 
-	 * IsAllowReceiveToLU AD_Reference_ID=319
-	 * Reference name: _YesNo
-	 */
-	public static final int ISALLOWRECEIVETOLU_AD_Reference_ID=319;
-	/** Yes = Y */
-	public static final String ISALLOWRECEIVETOLU_Yes = "Y";
-	/** No = N */
-	public static final String ISALLOWRECEIVETOLU_No = "N";
-	@Override
-	public void setIsAllowReceiveToLU (final @Nullable java.lang.String IsAllowReceiveToLU)
-	{
-		set_Value (COLUMNNAME_IsAllowReceiveToLU, IsAllowReceiveToLU);
-	}
-
-	@Override
-	public java.lang.String getIsAllowReceiveToLU() 
-	{
-		return get_ValueAsString(COLUMNNAME_IsAllowReceiveToLU);
-	}
-
-	/** 
-	 * IsAllowReceiveToTU AD_Reference_ID=319
-	 * Reference name: _YesNo
-	 */
-	public static final int ISALLOWRECEIVETOTU_AD_Reference_ID=319;
-	/** Yes = Y */
-	public static final String ISALLOWRECEIVETOTU_Yes = "Y";
-	/** No = N */
-	public static final String ISALLOWRECEIVETOTU_No = "N";
-	@Override
-	public void setIsAllowReceiveToTU (final @Nullable java.lang.String IsAllowReceiveToTU)
-	{
-		set_Value (COLUMNNAME_IsAllowReceiveToTU, IsAllowReceiveToTU);
-	}
-
-	@Override
-	public java.lang.String getIsAllowReceiveToTU() 
-	{
-		return get_ValueAsString(COLUMNNAME_IsAllowReceiveToTU);
 	}
 
 	/** 
@@ -134,24 +134,24 @@ public class X_MobileUI_UserProfile_MFG extends org.compiere.model.PO implements
 	}
 
 	/** 
-	 * IsCaptureCatchWeightAtReceipt AD_Reference_ID=319
+	 * IsCaptureFinishedGoodsCatchWeightAtReceipt AD_Reference_ID=319
 	 * Reference name: _YesNo
 	 */
-	public static final int ISCAPTURECATCHWEIGHTATRECEIPT_AD_Reference_ID=319;
+	public static final int ISCAPTUREFINISHEDGOODSCATCHWEIGHTATRECEIPT_AD_Reference_ID=319;
 	/** Yes = Y */
-	public static final String ISCAPTURECATCHWEIGHTATRECEIPT_Yes = "Y";
+	public static final String ISCAPTUREFINISHEDGOODSCATCHWEIGHTATRECEIPT_Yes = "Y";
 	/** No = N */
-	public static final String ISCAPTURECATCHWEIGHTATRECEIPT_No = "N";
+	public static final String ISCAPTUREFINISHEDGOODSCATCHWEIGHTATRECEIPT_No = "N";
 	@Override
-	public void setIsCaptureCatchWeightAtReceipt (final @Nullable java.lang.String IsCaptureCatchWeightAtReceipt)
+	public void setIsCaptureFinishedGoodsCatchWeightAtReceipt (final @Nullable java.lang.String IsCaptureFinishedGoodsCatchWeightAtReceipt)
 	{
-		set_Value (COLUMNNAME_IsCaptureCatchWeightAtReceipt, IsCaptureCatchWeightAtReceipt);
+		set_Value (COLUMNNAME_IsCaptureFinishedGoodsCatchWeightAtReceipt, IsCaptureFinishedGoodsCatchWeightAtReceipt);
 	}
 
 	@Override
-	public java.lang.String getIsCaptureCatchWeightAtReceipt() 
+	public java.lang.String getIsCaptureFinishedGoodsCatchWeightAtReceipt() 
 	{
-		return get_ValueAsString(COLUMNNAME_IsCaptureCatchWeightAtReceipt);
+		return get_ValueAsString(COLUMNNAME_IsCaptureFinishedGoodsCatchWeightAtReceipt);
 	}
 
 	/** 
@@ -197,24 +197,24 @@ public class X_MobileUI_UserProfile_MFG extends org.compiere.model.PO implements
 	}
 
 	/** 
-	 * IsSkipReceiveTargetStep AD_Reference_ID=319
+	 * IsSkipFinishedGoodsReceiveTargetStep AD_Reference_ID=319
 	 * Reference name: _YesNo
 	 */
-	public static final int ISSKIPRECEIVETARGETSTEP_AD_Reference_ID=319;
+	public static final int ISSKIPFINISHEDGOODSRECEIVETARGETSTEP_AD_Reference_ID=319;
 	/** Yes = Y */
-	public static final String ISSKIPRECEIVETARGETSTEP_Yes = "Y";
+	public static final String ISSKIPFINISHEDGOODSRECEIVETARGETSTEP_Yes = "Y";
 	/** No = N */
-	public static final String ISSKIPRECEIVETARGETSTEP_No = "N";
+	public static final String ISSKIPFINISHEDGOODSRECEIVETARGETSTEP_No = "N";
 	@Override
-	public void setIsSkipReceiveTargetStep (final @Nullable java.lang.String IsSkipReceiveTargetStep)
+	public void setIsSkipFinishedGoodsReceiveTargetStep (final @Nullable java.lang.String IsSkipFinishedGoodsReceiveTargetStep)
 	{
-		set_Value (COLUMNNAME_IsSkipReceiveTargetStep, IsSkipReceiveTargetStep);
+		set_Value (COLUMNNAME_IsSkipFinishedGoodsReceiveTargetStep, IsSkipFinishedGoodsReceiveTargetStep);
 	}
 
 	@Override
-	public java.lang.String getIsSkipReceiveTargetStep() 
+	public java.lang.String getIsSkipFinishedGoodsReceiveTargetStep() 
 	{
-		return get_ValueAsString(COLUMNNAME_IsSkipReceiveTargetStep);
+		return get_ValueAsString(COLUMNNAME_IsSkipFinishedGoodsReceiveTargetStep);
 	}
 
 	@Override

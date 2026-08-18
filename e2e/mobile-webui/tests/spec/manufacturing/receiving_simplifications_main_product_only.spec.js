@@ -27,10 +27,10 @@ const createMasterdata = async () => {
             },
             mobileConfig: {
                 manufacturing: {
-                    isAllowReceiveToLU: true,
-                    isAllowReceiveToTU: false,
-                    isSkipReceiveTargetStep: true,
-                    isCaptureCatchWeightAtReceipt: false,
+                    isAllowFinishedGoodsReceiveToLU: true,
+                    isAllowFinishedGoodsReceiveToTU: false,
+                    isSkipFinishedGoodsReceiveTargetStep: true,
+                    isCaptureFinishedGoodsCatchWeightAtReceipt: false,
                 },
             },
             warehouses: {

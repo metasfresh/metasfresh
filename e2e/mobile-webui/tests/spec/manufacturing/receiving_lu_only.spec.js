@@ -21,7 +21,7 @@ const createMasterdata = async () => {
             },
             mobileConfig: {
                 manufacturing: {
-                    isAllowReceiveToTU: false,
+                    isAllowFinishedGoodsReceiveToTU: false,
                 },
             },
             warehouses: {

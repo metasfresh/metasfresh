@@ -20,10 +20,10 @@ public class MobileUIManufacturingConfig
 	@Nullable ReceiveUnitType receiveUnitType;
 	@NonNull OptionalBoolean isBestBeforeDateEditable;
 	@NonNull OptionalBoolean isLotNumberEditable;
-	@NonNull OptionalBoolean isAllowReceiveToLU;
-	@NonNull OptionalBoolean isAllowReceiveToTU;
-	@NonNull OptionalBoolean isSkipReceiveTargetStep;
-	@NonNull OptionalBoolean isCaptureCatchWeightAtReceipt;
+	@NonNull OptionalBoolean isAllowFinishedGoodsReceiveToLU;
+	@NonNull OptionalBoolean isAllowFinishedGoodsReceiveToTU;
+	@NonNull OptionalBoolean isSkipFinishedGoodsReceiveTargetStep;
+	@NonNull OptionalBoolean isCaptureFinishedGoodsCatchWeightAtReceipt;
 
 	@NonNull
 	public ReceiveUnitType getReceiveUnitTypeEffective()
@@ -31,24 +31,42 @@ public class MobileUIManufacturingConfig
 		return receiveUnitType != null ? receiveUnitType : ReceiveUnitType.CU;
 	}
 
-	public boolean getIsAllowReceiveToLUEffective()
+	public boolean getIsAllowFinishedGoodsReceiveToLUEffective()
 	{
-		return isAllowReceiveToLU.orElseTrue();
+		return isAllowFinishedGoodsReceiveToLU.orElseTrue();
 	}
 
-	public boolean getIsAllowReceiveToTUEffective()
+	public boolean getIsAllowFinishedGoodsReceiveToTUEffective()
 	{
-		return isAllowReceiveToTU.orElseTrue();
+		return isAllowFinishedGoodsReceiveToTU.orElseTrue();
 	}
 
-	public boolean getIsSkipReceiveTargetStepEffective()
+	public boolean getIsSkipFinishedGoodsReceiveTargetStepEffective()
 	{
-		return isSkipReceiveTargetStep.orElseFalse();
+		return isSkipFinishedGoodsReceiveTargetStep.orElseFalse();
 	}
 
-	public boolean getIsCaptureCatchWeightAtReceiptEffective()
+	public boolean getIsCaptureFinishedGoodsCatchWeightAtReceiptEffective()
 	{
-		return isCaptureCatchWeightAtReceipt.orElseTrue();
+		return isCaptureFinishedGoodsCatchWeightAtReceipt.orElseTrue();
+	}
+
+	/**
+	 * @param isMainFinishedGood {@code false} for a co-/by-product line, which every flag below exempts from the configured simplification.
+	 */
+	@NonNull
+	public FinishedGoodsReceiveLineConfig effectiveForReceiveLine(final boolean isMainFinishedGood)
+	{
+		// The polarity differs because "exempt" means the opposite thing per flag: for the three allow-flags the
+		// co-/by-product must stay PERMITTED (it is legitimately received into a TU - including an infinite-capacity
+		// one, where its catch weight IS the quantity), whereas for the skip-flag it must keep its target chooser,
+		// i.e. NOT skip.
+		return FinishedGoodsReceiveLineConfig.builder()
+				.allowReceiveToLU(!isMainFinishedGood || getIsAllowFinishedGoodsReceiveToLUEffective())
+				.allowReceiveToTU(!isMainFinishedGood || getIsAllowFinishedGoodsReceiveToTUEffective())
+				.captureCatchWeight(!isMainFinishedGood || getIsCaptureFinishedGoodsCatchWeightAtReceiptEffective())
+				.skipReceiveTargetStep(isMainFinishedGood && getIsSkipFinishedGoodsReceiveTargetStepEffective())
+				.build();
 	}
 
 	/**
@@ -79,10 +97,10 @@ public class MobileUIManufacturingConfig
 				.receiveUnitType(this.receiveUnitType != null ? this.receiveUnitType : other.receiveUnitType)
 				.isBestBeforeDateEditable(this.isBestBeforeDateEditable.ifUnknown(other.isBestBeforeDateEditable))
 				.isLotNumberEditable(this.isLotNumberEditable.ifUnknown(other.isLotNumberEditable))
-				.isAllowReceiveToLU(this.isAllowReceiveToLU.ifUnknown(other.isAllowReceiveToLU))
-				.isAllowReceiveToTU(this.isAllowReceiveToTU.ifUnknown(other.isAllowReceiveToTU))
-				.isSkipReceiveTargetStep(this.isSkipReceiveTargetStep.ifUnknown(other.isSkipReceiveTargetStep))
-				.isCaptureCatchWeightAtReceipt(this.isCaptureCatchWeightAtReceipt.ifUnknown(other.isCaptureCatchWeightAtReceipt))
+				.isAllowFinishedGoodsReceiveToLU(this.isAllowFinishedGoodsReceiveToLU.ifUnknown(other.isAllowFinishedGoodsReceiveToLU))
+				.isAllowFinishedGoodsReceiveToTU(this.isAllowFinishedGoodsReceiveToTU.ifUnknown(other.isAllowFinishedGoodsReceiveToTU))
+				.isSkipFinishedGoodsReceiveTargetStep(this.isSkipFinishedGoodsReceiveTargetStep.ifUnknown(other.isSkipFinishedGoodsReceiveTargetStep))
+				.isCaptureFinishedGoodsCatchWeightAtReceipt(this.isCaptureFinishedGoodsCatchWeightAtReceipt.ifUnknown(other.isCaptureFinishedGoodsCatchWeightAtReceipt))
 				.build();
 		if (result.equals(this))
 		{

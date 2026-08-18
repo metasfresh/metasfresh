@@ -16,6 +16,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
+import de.metas.manufacturing.config.FinishedGoodsReceiveLineConfig;
 import de.metas.manufacturing.config.MobileUIManufacturingConfig;
 import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
 import de.metas.manufacturing.config.ReceiveUnitType;
@@ -119,25 +120,21 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 
 		final String adLanguage = jsonOpts.getAdLanguage();
 
-		// The configured receipt simplifications apply to the main finished good only: a co-/by-product is legitimately
-		// received into a TU - including an infinite-capacity one, where its catch weight IS the quantity.
 		final boolean isMainFinishedGood = line.getCoProductBOMLineId() == null;
-		final boolean isAllowReceiveToLU = !isMainFinishedGood || config.getIsAllowReceiveToLUEffective();
-		final boolean isAllowReceiveToTU = !isMainFinishedGood || config.getIsAllowReceiveToTUEffective();
-		final boolean isCaptureCatchWeight = !isMainFinishedGood || config.getIsCaptureCatchWeightAtReceiptEffective();
+		final FinishedGoodsReceiveLineConfig lineConfig = config.effectiveForReceiveLine(isMainFinishedGood);
 
 		// A structure excluded by configuration comes out as an empty list WITHOUT an emptyReason: that reason is the
 		// operator-facing no-receiving-Gebinde guidance and must only ever accompany "no target at all".
-		final JsonNewTUTargetList tuTargetList = isAllowReceiveToTU
+		final JsonNewTUTargetList tuTargetList = lineConfig.isAllowReceiveToTU()
 				? getNewTUTargets(tuPIItemProducts, line.getProductId(), adLanguage)
 				: JsonNewTUTargetList.ofList(ImmutableList.of());
 
 		final JsonNewLUTargetsList newLUTargets;
-		if (isAllowReceiveToLU)
+		if (lineConfig.isAllowReceiveToLU())
 		{
 			newLUTargets = getNewLUTargets(tuPIItemProducts, line.getProductId(), customerId, adLanguage);
 		}
-		else if (isAllowReceiveToTU)
+		else if (lineConfig.isAllowReceiveToTU())
 		{
 			newLUTargets = JsonNewLUTargetsList.emptyWithoutReason();
 		}
@@ -170,7 +167,7 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 			uom = line.getQtyToReceive().getUOMSymbol();
 		}
 
-		final String catchWeightUomSymbol = isCaptureCatchWeight
+		final String catchWeightUomSymbol = lineConfig.isCaptureCatchWeight()
 				? Optional.ofNullable(line.getCatchWeightUOMId())
 						.map(uomDao::getById)
 						.map(I_C_UOM::getUOMSymbol)
@@ -180,7 +177,7 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 		return JsonFinishedGoodsReceiveLine.builder()
 				.id(line.getId().toJson())
 				.coproduct(!isMainFinishedGood)
-				.skipReceiveTargetStep(isMainFinishedGood && config.getIsSkipReceiveTargetStepEffective())
+				.skipReceiveTargetStep(lineConfig.isSkipReceiveTargetStep())
 				.productName(line.getProductValueAndProductName().translate(adLanguage))
 				.uom(uom)
 				.hazardSymbols(getJsonHazardSymbols(line.getProductId(), adLanguage))

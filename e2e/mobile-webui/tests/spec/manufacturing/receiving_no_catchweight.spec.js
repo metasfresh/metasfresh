@@ -19,7 +19,7 @@ const createMasterdata = async () => {
             },
             mobileConfig: {
                 manufacturing: {
-                    isCaptureCatchWeightAtReceipt: false,
+                    isCaptureFinishedGoodsCatchWeightAtReceipt: false,
                 },
             },
             warehouses: {

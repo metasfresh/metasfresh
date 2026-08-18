@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_MFG_Config extends org.compiere.model.PO implements I_MobileUI_MFG_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1368610276L;
+	private static final long serialVersionUID = -2136318858L;
 
     /** Standard Constructor */
     public X_MobileUI_MFG_Config (final Properties ctx, final int MobileUI_MFG_Config_ID, @Nullable final String trxName)
@@ -35,6 +35,30 @@ public class X_MobileUI_MFG_Config extends org.compiere.model.PO implements I_Mo
 	}
 
 	@Override
+	public void setIsAllowFinishedGoodsReceiveToLU (final boolean IsAllowFinishedGoodsReceiveToLU)
+	{
+		set_Value (COLUMNNAME_IsAllowFinishedGoodsReceiveToLU, IsAllowFinishedGoodsReceiveToLU);
+	}
+
+	@Override
+	public boolean isAllowFinishedGoodsReceiveToLU() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowFinishedGoodsReceiveToLU);
+	}
+
+	@Override
+	public void setIsAllowFinishedGoodsReceiveToTU (final boolean IsAllowFinishedGoodsReceiveToTU)
+	{
+		set_Value (COLUMNNAME_IsAllowFinishedGoodsReceiveToTU, IsAllowFinishedGoodsReceiveToTU);
+	}
+
+	@Override
+	public boolean isAllowFinishedGoodsReceiveToTU() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowFinishedGoodsReceiveToTU);
+	}
+
+	@Override
 	public void setIsAllowIssuingAnyHU (final boolean IsAllowIssuingAnyHU)
 	{
 		set_Value (COLUMNNAME_IsAllowIssuingAnyHU, IsAllowIssuingAnyHU);
@@ -44,30 +68,6 @@ public class X_MobileUI_MFG_Config extends org.compiere.model.PO implements I_Mo
 	public boolean isAllowIssuingAnyHU() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAllowIssuingAnyHU);
-	}
-
-	@Override
-	public void setIsAllowReceiveToLU (final boolean IsAllowReceiveToLU)
-	{
-		set_Value (COLUMNNAME_IsAllowReceiveToLU, IsAllowReceiveToLU);
-	}
-
-	@Override
-	public boolean isAllowReceiveToLU() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsAllowReceiveToLU);
-	}
-
-	@Override
-	public void setIsAllowReceiveToTU (final boolean IsAllowReceiveToTU)
-	{
-		set_Value (COLUMNNAME_IsAllowReceiveToTU, IsAllowReceiveToTU);
-	}
-
-	@Override
-	public boolean isAllowReceiveToTU() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsAllowReceiveToTU);
 	}
 
 	@Override
@@ -83,15 +83,15 @@ public class X_MobileUI_MFG_Config extends org.compiere.model.PO implements I_Mo
 	}
 
 	@Override
-	public void setIsCaptureCatchWeightAtReceipt (final boolean IsCaptureCatchWeightAtReceipt)
+	public void setIsCaptureFinishedGoodsCatchWeightAtReceipt (final boolean IsCaptureFinishedGoodsCatchWeightAtReceipt)
 	{
-		set_Value (COLUMNNAME_IsCaptureCatchWeightAtReceipt, IsCaptureCatchWeightAtReceipt);
+		set_Value (COLUMNNAME_IsCaptureFinishedGoodsCatchWeightAtReceipt, IsCaptureFinishedGoodsCatchWeightAtReceipt);
 	}
 
 	@Override
-	public boolean isCaptureCatchWeightAtReceipt() 
+	public boolean isCaptureFinishedGoodsCatchWeightAtReceipt() 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsCaptureCatchWeightAtReceipt);
+		return get_ValueAsBoolean(COLUMNNAME_IsCaptureFinishedGoodsCatchWeightAtReceipt);
 	}
 
 	@Override
@@ -119,15 +119,15 @@ public class X_MobileUI_MFG_Config extends org.compiere.model.PO implements I_Mo
 	}
 
 	@Override
-	public void setIsSkipReceiveTargetStep (final boolean IsSkipReceiveTargetStep)
+	public void setIsSkipFinishedGoodsReceiveTargetStep (final boolean IsSkipFinishedGoodsReceiveTargetStep)
 	{
-		set_Value (COLUMNNAME_IsSkipReceiveTargetStep, IsSkipReceiveTargetStep);
+		set_Value (COLUMNNAME_IsSkipFinishedGoodsReceiveTargetStep, IsSkipFinishedGoodsReceiveTargetStep);
 	}
 
 	@Override
-	public boolean isSkipReceiveTargetStep() 
+	public boolean isSkipFinishedGoodsReceiveTargetStep() 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsSkipReceiveTargetStep);
+		return get_ValueAsBoolean(COLUMNNAME_IsSkipFinishedGoodsReceiveTargetStep);
 	}
 
 	@Override

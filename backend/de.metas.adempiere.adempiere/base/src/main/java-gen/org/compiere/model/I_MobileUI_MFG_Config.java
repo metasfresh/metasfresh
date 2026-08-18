@@ -98,6 +98,52 @@ public interface I_MobileUI_MFG_Config
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Allow receiving finished goods to LU.
+	 * Offer load-unit (pallet/LU) targets for the finished-goods production receipt.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowFinishedGoodsReceiveToLU (boolean IsAllowFinishedGoodsReceiveToLU);
+
+	/**
+	 * Get Allow receiving finished goods to LU.
+	 * Offer load-unit (pallet/LU) targets for the finished-goods production receipt.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowFinishedGoodsReceiveToLU();
+
+	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsAllowFinishedGoodsReceiveToLU = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsAllowFinishedGoodsReceiveToLU", null);
+	String COLUMNNAME_IsAllowFinishedGoodsReceiveToLU = "IsAllowFinishedGoodsReceiveToLU";
+
+	/**
+	 * Set Allow receiving finished goods to TU.
+	 * Offer transport-unit (TU) targets for the finished-goods production receipt.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowFinishedGoodsReceiveToTU (boolean IsAllowFinishedGoodsReceiveToTU);
+
+	/**
+	 * Get Allow receiving finished goods to TU.
+	 * Offer transport-unit (TU) targets for the finished-goods production receipt.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowFinishedGoodsReceiveToTU();
+
+	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsAllowFinishedGoodsReceiveToTU = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsAllowFinishedGoodsReceiveToTU", null);
+	String COLUMNNAME_IsAllowFinishedGoodsReceiveToTU = "IsAllowFinishedGoodsReceiveToTU";
+
+	/**
 	 * Set No Raw Material Check.
 	 * Allows scanning and issuing HUs that are not in the manufacturing issue plan
 	 *
@@ -119,52 +165,6 @@ public interface I_MobileUI_MFG_Config
 
 	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsAllowIssuingAnyHU = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsAllowIssuingAnyHU", null);
 	String COLUMNNAME_IsAllowIssuingAnyHU = "IsAllowIssuingAnyHU";
-
-	/**
-	 * Set Allow receive to LU.
-	 * Offer load-unit (pallet/LU) targets on the production receipt.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsAllowReceiveToLU (boolean IsAllowReceiveToLU);
-
-	/**
-	 * Get Allow receive to LU.
-	 * Offer load-unit (pallet/LU) targets on the production receipt.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isAllowReceiveToLU();
-
-	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsAllowReceiveToLU = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsAllowReceiveToLU", null);
-	String COLUMNNAME_IsAllowReceiveToLU = "IsAllowReceiveToLU";
-
-	/**
-	 * Set Allow receive to TU.
-	 * Offer transport-unit (TU) targets on the production receipt.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsAllowReceiveToTU (boolean IsAllowReceiveToTU);
-
-	/**
-	 * Get Allow receive to TU.
-	 * Offer transport-unit (TU) targets on the production receipt.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isAllowReceiveToTU();
-
-	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsAllowReceiveToTU = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsAllowReceiveToTU", null);
-	String COLUMNNAME_IsAllowReceiveToTU = "IsAllowReceiveToTU";
 
 	/**
 	 * Set Best Before Date editable.
@@ -190,27 +190,27 @@ public interface I_MobileUI_MFG_Config
 	String COLUMNNAME_IsBestBeforeDateEditable = "IsBestBeforeDateEditable";
 
 	/**
-	 * Set Capture catch weight at receipt.
-	 * Capture the catch weight of a catch-weight product at production receipt.
+	 * Set Capture finished-goods catch weight at receipt.
+	 * Capture the catch weight of a catch-weight finished good at production receipt.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsCaptureCatchWeightAtReceipt (boolean IsCaptureCatchWeightAtReceipt);
+	void setIsCaptureFinishedGoodsCatchWeightAtReceipt (boolean IsCaptureFinishedGoodsCatchWeightAtReceipt);
 
 	/**
-	 * Get Capture catch weight at receipt.
-	 * Capture the catch weight of a catch-weight product at production receipt.
+	 * Get Capture finished-goods catch weight at receipt.
+	 * Capture the catch weight of a catch-weight finished good at production receipt.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isCaptureCatchWeightAtReceipt();
+	boolean isCaptureFinishedGoodsCatchWeightAtReceipt();
 
-	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsCaptureCatchWeightAtReceipt = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsCaptureCatchWeightAtReceipt", null);
-	String COLUMNNAME_IsCaptureCatchWeightAtReceipt = "IsCaptureCatchWeightAtReceipt";
+	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsCaptureFinishedGoodsCatchWeightAtReceipt = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsCaptureFinishedGoodsCatchWeightAtReceipt", null);
+	String COLUMNNAME_IsCaptureFinishedGoodsCatchWeightAtReceipt = "IsCaptureFinishedGoodsCatchWeightAtReceipt";
 
 	/**
 	 * Set Lot Number editable.
@@ -259,27 +259,27 @@ public interface I_MobileUI_MFG_Config
 	String COLUMNNAME_IsScanResourceRequired = "IsScanResourceRequired";
 
 	/**
-	 * Set Skip Gebinde selection step.
-	 * Skip the new-Gebinde / scan-existing screen and go straight to the packing instruction.
+	 * Set Skip finished-goods receiving-target step.
+	 * Skip the new-Gebinde / scan-existing screen for the finished good and go straight to the packing instruction.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsSkipReceiveTargetStep (boolean IsSkipReceiveTargetStep);
+	void setIsSkipFinishedGoodsReceiveTargetStep (boolean IsSkipFinishedGoodsReceiveTargetStep);
 
 	/**
-	 * Get Skip Gebinde selection step.
-	 * Skip the new-Gebinde / scan-existing screen and go straight to the packing instruction.
+	 * Get Skip finished-goods receiving-target step.
+	 * Skip the new-Gebinde / scan-existing screen for the finished good and go straight to the packing instruction.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isSkipReceiveTargetStep();
+	boolean isSkipFinishedGoodsReceiveTargetStep();
 
-	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsSkipReceiveTargetStep = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsSkipReceiveTargetStep", null);
-	String COLUMNNAME_IsSkipReceiveTargetStep = "IsSkipReceiveTargetStep";
+	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsSkipFinishedGoodsReceiveTargetStep = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsSkipFinishedGoodsReceiveTargetStep", null);
+	String COLUMNNAME_IsSkipFinishedGoodsReceiveTargetStep = "IsSkipFinishedGoodsReceiveTargetStep";
 
 	/**
 	 * Set MobileUI Manufacturing Configuration.

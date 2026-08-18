@@ -20,7 +20,7 @@ const createMasterdata = async () => {
             },
             mobileConfig: {
                 manufacturing: {
-                    isSkipReceiveTargetStep: true,
+                    isSkipFinishedGoodsReceiveTargetStep: true,
                 },
             },
             warehouses: {

@@ -34,21 +34,21 @@ class MobileConfigManufacturingCommand
 		{
 			newConfigBuilder.receiveUnitType(ReceiveUnitType.ofCode(request.getReceiveUnitType()));
 		}
-		if (request.getIsAllowReceiveToLU() != null)
+		if (request.getIsAllowFinishedGoodsReceiveToLU() != null)
 		{
-			newConfigBuilder.isAllowReceiveToLU(OptionalBoolean.ofBoolean(request.getIsAllowReceiveToLU()));
+			newConfigBuilder.isAllowFinishedGoodsReceiveToLU(OptionalBoolean.ofBoolean(request.getIsAllowFinishedGoodsReceiveToLU()));
 		}
-		if (request.getIsAllowReceiveToTU() != null)
+		if (request.getIsAllowFinishedGoodsReceiveToTU() != null)
 		{
-			newConfigBuilder.isAllowReceiveToTU(OptionalBoolean.ofBoolean(request.getIsAllowReceiveToTU()));
+			newConfigBuilder.isAllowFinishedGoodsReceiveToTU(OptionalBoolean.ofBoolean(request.getIsAllowFinishedGoodsReceiveToTU()));
 		}
-		if (request.getIsSkipReceiveTargetStep() != null)
+		if (request.getIsSkipFinishedGoodsReceiveTargetStep() != null)
 		{
-			newConfigBuilder.isSkipReceiveTargetStep(OptionalBoolean.ofBoolean(request.getIsSkipReceiveTargetStep()));
+			newConfigBuilder.isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.ofBoolean(request.getIsSkipFinishedGoodsReceiveTargetStep()));
 		}
-		if (request.getIsCaptureCatchWeightAtReceipt() != null)
+		if (request.getIsCaptureFinishedGoodsCatchWeightAtReceipt() != null)
 		{
-			newConfigBuilder.isCaptureCatchWeightAtReceipt(OptionalBoolean.ofBoolean(request.getIsCaptureCatchWeightAtReceipt()));
+			newConfigBuilder.isCaptureFinishedGoodsCatchWeightAtReceipt(OptionalBoolean.ofBoolean(request.getIsCaptureFinishedGoodsCatchWeightAtReceipt()));
 		}
 
 		final MobileUIManufacturingConfig newConfig = newConfigBuilder.build();
@@ -58,10 +58,10 @@ class MobileConfigManufacturingCommand
 				.isScanResourceRequired(newConfig.getIsScanResourceRequired().toBooleanOrNull())
 				.isAllowIssuingAnyHU(newConfig.getIsAllowIssuingAnyHU().toBooleanOrNull())
 				.receiveUnitType(newConfig.getReceiveUnitType() != null ? newConfig.getReceiveUnitType().getCode() : null)
-				.isAllowReceiveToLU(newConfig.getIsAllowReceiveToLU().toBooleanOrNull())
-				.isAllowReceiveToTU(newConfig.getIsAllowReceiveToTU().toBooleanOrNull())
-				.isSkipReceiveTargetStep(newConfig.getIsSkipReceiveTargetStep().toBooleanOrNull())
-				.isCaptureCatchWeightAtReceipt(newConfig.getIsCaptureCatchWeightAtReceipt().toBooleanOrNull())
+				.isAllowFinishedGoodsReceiveToLU(newConfig.getIsAllowFinishedGoodsReceiveToLU().toBooleanOrNull())
+				.isAllowFinishedGoodsReceiveToTU(newConfig.getIsAllowFinishedGoodsReceiveToTU().toBooleanOrNull())
+				.isSkipFinishedGoodsReceiveTargetStep(newConfig.getIsSkipFinishedGoodsReceiveTargetStep().toBooleanOrNull())
+				.isCaptureFinishedGoodsCatchWeightAtReceipt(newConfig.getIsCaptureFinishedGoodsCatchWeightAtReceipt().toBooleanOrNull())
 				.build();
 	}
 
