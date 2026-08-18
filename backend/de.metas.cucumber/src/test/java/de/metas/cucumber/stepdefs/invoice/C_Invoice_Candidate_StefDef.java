@@ -47,6 +47,13 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Step definitions for the invoice-candidate status endpoint {@code POST api/v2/invoices/status}.
+ * <p>
+ * This class owns the wait for the <b>asynchronous</b> invoice-candidate materialization behind that
+ * endpoint, so feature files assert the status response directly and never need their own
+ * "wait for the invoice candidates" steps.
+ */
 @RequiredArgsConstructor
 public class C_Invoice_Candidate_StefDef
 {
@@ -54,6 +61,10 @@ public class C_Invoice_Candidate_StefDef
 	 * The endpoint this step def validates. It is intrinsic to the step (the step is named after that
 	 * endpoint's response), which is what lets this step re-issue the request itself instead of making
 	 * every feature file wait for the invoice candidates beforehand.
+	 * <p>
+	 * Feature files calling {@code validate invoice candidate status response} must POST to this same
+	 * path — the two are not linked mechanically. If this step is ever reused against a second
+	 * endpoint, take the path from the scenario instead of this constant.
 	 */
 	private static final String STATUS_ENDPOINT_PATH = "api/v2/invoices/status";
 	private static final int STATUS_ENDPOINT_EXPECTED_STATUS_CODE = 200;
@@ -98,36 +109,45 @@ public class C_Invoice_Candidate_StefDef
 
 		try
 		{
-			StepDefUtil.tryAndWait(TIMEOUT_SEC, CHECK_INTERVAL_MS, () -> allExpectedItemsArePresent(rows));
+			StepDefUtil.tryAndWait(TIMEOUT_SEC, CHECK_INTERVAL_MS, () -> checkExpectedItemsPresentAndReissueIfNot(rows));
 		}
 		catch (final AssertionError timedOut)
 		{
-			// Deliberately fall through to the assertions below: they name the exact ExternalLineId that is
-			// missing, which is more useful than the generic "worker didn't succeed within the timeout".
+			// Only the poll timeout can reach here: reissueStatusRequest() converts a failed HTTP-status
+			// assertion into an AdempiereException, so a real server error is never mistaken for a timeout.
+			// Falling through lets assertResponseMatches() name the exact missing ExternalLineId, which is
+			// more useful than the generic "worker didn't succeed within the timeout".
 		}
 
 		assertResponseMatches(rows);
 	}
 
 	/**
-	 * @return {@code true} as soon as the last status response holds an item for every expected
-	 *         {@code ExternalLineId}; otherwise re-issues the status request — so the next poll iteration sees a
-	 *         fresh response — and returns {@code false}.
+	 * One poll iteration: checks the last status response and, when it is still incomplete, re-issues the
+	 * request so the next iteration sees a fresh one.
+	 *
+	 * @return {@code true} once the last response holds an item for every expected {@code ExternalLineId}
 	 */
-	private boolean allExpectedItemsArePresent(@NonNull final DataTableRows rows)
+	private boolean checkExpectedItemsPresentAndReissueIfNot(@NonNull final DataTableRows rows)
 	{
-		final Map<String, JsonCheckInvoiceCandidatesStatusResponseItem> responseItemMap = extractResponseItemMap();
-
-		final boolean allPresent = rows.stream()
-				.allMatch(row -> responseItemMap.containsKey(row.getAsString(I_C_Invoice_Candidate.COLUMNNAME_ExternalLineId)));
-
-		if (allPresent)
+		if (allExpectedItemsArePresent(rows))
 		{
 			return true;
 		}
 
 		reissueStatusRequest();
 		return false;
+	}
+
+	/**
+	 * Pure check against the <b>last</b> status response — issues no request and has no side effects.
+	 */
+	private boolean allExpectedItemsArePresent(@NonNull final DataTableRows rows)
+	{
+		final Map<String, JsonCheckInvoiceCandidatesStatusResponseItem> responseItemMap = extractResponseItemMap();
+
+		return rows.stream()
+				.allMatch(row -> responseItemMap.containsKey(row.getAsString(I_C_Invoice_Candidate.COLUMNNAME_ExternalLineId)));
 	}
 
 	private void reissueStatusRequest()
@@ -146,6 +166,13 @@ public class C_Invoice_Candidate_StefDef
 		catch (final IOException e)
 		{
 			throw new AdempiereException("Failed to re-issue the request to " + STATUS_ENDPOINT_PATH, e);
+		}
+		catch (final AssertionError httpStatusMismatch)
+		{
+			// The status assertion inside performHTTPRequest fails with an AssertionError, which the caller
+			// treats as the poll-timeout signal and swallows. Rethrowing as an AdempiereException keeps a
+			// genuine server error (e.g. a 500 during materialization) loud and correctly attributed.
+			throw new AdempiereException("Re-issued request to " + STATUS_ENDPOINT_PATH + " failed: " + httpStatusMismatch.getMessage(), httpStatusMismatch);
 		}
 	}
 
