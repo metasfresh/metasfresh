@@ -36,9 +36,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import java.util.Arrays;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_ErrorMsg;
 import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_IsImported;
@@ -56,13 +54,9 @@ public class MProductImportTableSqlUpdater
 
 	/**
 	 * SQL {@code IN (...)} list of every valid {@link ProductType} code (e.g. {@code 'E','F','I',...}).
-	 * Derived from the enum so the import's accepted set can never drift from the ProductType reference
-	 * list. Codes are single-char literals — no injection concern.
+	 * Derived from the enum so the import's accepted set can never drift from the ProductType reference list.
 	 */
-	private static final String VALID_PRODUCT_TYPE_CODES_SQL = Arrays.stream(ProductType.values())
-			.map(ProductType::getCode)
-			.map(code -> "'" + code + "'")
-			.collect(Collectors.joining(","));
+	private static final String VALID_PRODUCT_TYPE_CODES_SQL = ProductType.getCodesAsSqlList();
 
 	private final ImportRecordsSelection selection;
 	private final Properties ctx;
