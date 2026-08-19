@@ -229,7 +229,7 @@ const locateJobButtons = ({ documentNo, index, salesOrderId, customerId, qtyToDe
 };
 
 const expectJobButton = async ({ name, button, expectation }) => await test.step(`Expect job button ${name}`, async () => {
-    await button.waitFor({ state: 'attached' });
+    await button.waitFor({ state: 'visible', timeout: VERY_FAST_ACTION_TIMEOUT });
     await expect(button).toHaveCount(1);
 
     if (expectation.indicator != null) {

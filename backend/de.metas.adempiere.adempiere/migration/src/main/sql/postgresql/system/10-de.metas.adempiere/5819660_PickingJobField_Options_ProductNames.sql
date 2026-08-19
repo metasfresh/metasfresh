@@ -11,42 +11,42 @@ INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTra
 ;
 
 -- Reference Item: PickingJobField_Options -> ProductNames_ProductNames
-UPDATE AD_Ref_List_Trl SET IsTranslated='Y' WHERE AD_Language='de_CH' AND AD_Ref_List_ID=544344
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-19 19:04:39','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=544344
 ;
 
 -- Reference Item: PickingJobField_Options -> ProductNames_ProductNames
-UPDATE AD_Ref_List_Trl SET IsTranslated='Y' WHERE AD_Language='de_DE' AND AD_Ref_List_ID=544344
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-19 19:04:40','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=544344
 ;
 
 -- Reference Item: PickingJobField_Options -> ProductNames_ProductNames
-UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Product names (all)' WHERE AD_Language='en_US' AND AD_Ref_List_ID=544344
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Product names (all)', Updated=TO_TIMESTAMP('2026-08-19 19:04:41','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=544344
 ;
 
 UPDATE AD_Ref_List base SET Name=trl.Name, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Ref_List_Trl trl WHERE trl.AD_Ref_List_ID=base.AD_Ref_List_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
 ;
 
 -- Description for the new value ProductNames (AD_Ref_List_ID=544344)
-UPDATE AD_Ref_List SET Description='Alle Produktnamen des Auftrags, durch Komma getrennt.' WHERE AD_Ref_List_ID=544344
+UPDATE AD_Ref_List SET Description='Alle Produktnamen des Auftrags, durch Komma getrennt.', Updated=TO_TIMESTAMP('2026-08-19 19:04:42','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Ref_List_ID=544344
 ;
 
-UPDATE AD_Ref_List_Trl SET Description='Alle Produktnamen des Auftrags, durch Komma getrennt.' WHERE AD_Ref_List_ID=544344 AND AD_Language='de_DE'
+UPDATE AD_Ref_List_Trl SET Description='Alle Produktnamen des Auftrags, durch Komma getrennt.', Updated=TO_TIMESTAMP('2026-08-19 19:04:43','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Ref_List_ID=544344 AND AD_Language='de_DE'
 ;
 
-UPDATE AD_Ref_List_Trl SET Description='Alle Produktnamen des Auftrags, durch Komma getrennt.' WHERE AD_Ref_List_ID=544344 AND AD_Language='de_CH'
+UPDATE AD_Ref_List_Trl SET Description='Alle Produktnamen des Auftrags, durch Komma getrennt.', Updated=TO_TIMESTAMP('2026-08-19 19:04:44','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Ref_List_ID=544344 AND AD_Language='de_CH'
 ;
 
-UPDATE AD_Ref_List_Trl SET Description='All product names of the job, comma separated.' WHERE AD_Ref_List_ID=544344 AND AD_Language='en_US'
+UPDATE AD_Ref_List_Trl SET Description='All product names of the job, comma separated.', Updated=TO_TIMESTAMP('2026-08-19 19:04:45','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Ref_List_ID=544344 AND AD_Language='en_US'
 ;
 
 -- Description for the existing value Product (AD_Ref_List_ID=543862)
-UPDATE AD_Ref_List SET Description='Der Produktname — nur wenn der Auftrag genau ein Produkt enthält, sonst leer.' WHERE AD_Ref_List_ID=543862
+UPDATE AD_Ref_List SET Description='Der Produktname — nur wenn der Auftrag genau ein Produkt enthält, sonst leer.', Updated=TO_TIMESTAMP('2026-08-19 19:04:46','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Ref_List_ID=543862
 ;
 
-UPDATE AD_Ref_List_Trl SET Description='Der Produktname — nur wenn der Auftrag genau ein Produkt enthält, sonst leer.' WHERE AD_Ref_List_ID=543862 AND AD_Language='de_DE'
+UPDATE AD_Ref_List_Trl SET Description='Der Produktname — nur wenn der Auftrag genau ein Produkt enthält, sonst leer.', Updated=TO_TIMESTAMP('2026-08-19 19:04:47','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Ref_List_ID=543862 AND AD_Language='de_DE'
 ;
 
-UPDATE AD_Ref_List_Trl SET Description='Der Produktname — nur wenn der Auftrag genau ein Produkt enthält, sonst leer.' WHERE AD_Ref_List_ID=543862 AND AD_Language='de_CH'
+UPDATE AD_Ref_List_Trl SET Description='Der Produktname — nur wenn der Auftrag genau ein Produkt enthält, sonst leer.', Updated=TO_TIMESTAMP('2026-08-19 19:04:48','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Ref_List_ID=543862 AND AD_Language='de_CH'
 ;
 
-UPDATE AD_Ref_List_Trl SET Description='The product name — only when the job holds exactly one product, otherwise empty.' WHERE AD_Ref_List_ID=543862 AND AD_Language='en_US'
+UPDATE AD_Ref_List_Trl SET Description='The product name — only when the job holds exactly one product, otherwise empty.', Updated=TO_TIMESTAMP('2026-08-19 19:04:49','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Ref_List_ID=543862 AND AD_Language='en_US'
 ;
