@@ -73,10 +73,6 @@ public enum ProductType implements ReferenceListAwareEnum
 		return type != null ? type.getCode() : null;
 	}
 
-	/**
-	 * @return an SQL {@code IN (...)} list of every {@link ProductType} code, single-quoted and comma-separated
-	 * (e.g. {@code 'I','S','R','E','O','F','N'}). Codes are single-char literals — no injection concern.
-	 */
 	public static String getCodesAsSqlList()
 	{
 		return Arrays.stream(values())

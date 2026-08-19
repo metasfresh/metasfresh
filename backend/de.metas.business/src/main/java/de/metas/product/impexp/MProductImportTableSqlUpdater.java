@@ -52,10 +52,6 @@ public class MProductImportTableSqlUpdater
 {
 	private static final Logger logger = LogManager.getLogger(MProductImportTableSqlUpdater.class);
 
-	/**
-	 * SQL {@code IN (...)} list of every valid {@link ProductType} code (e.g. {@code 'E','F','I',...}).
-	 * Derived from the enum so the import's accepted set can never drift from the ProductType reference list.
-	 */
 	private static final String VALID_PRODUCT_TYPE_CODES_SQL = ProductType.getCodesAsSqlList();
 
 	private final ImportRecordsSelection selection;
