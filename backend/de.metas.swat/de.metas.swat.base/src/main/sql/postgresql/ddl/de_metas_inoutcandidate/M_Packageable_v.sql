@@ -189,7 +189,7 @@ FROM (SELECT
                JOIN M_Warehouse w ON (w.M_Warehouse_ID = COALESCE(s.M_Warehouse_Override_ID, s.M_Warehouse_ID)) -- s.M_Warehouse_ID is mandatory
                JOIN C_BPartner p ON (p.C_BPartner_ID = COALESCE(s.C_BPartner_Override_ID, s.C_BPartner_ID))
                LEFT JOIN C_BPartner_Stats stats ON (p.C_BPartner_ID = stats.C_BPartner_ID)
-               JOIN C_BPartner_Location bpl ON (bpl.C_BPartner_Location_ID = COALESCE(s.C_BP_Location_Override_ID, s.C_BPartner_Location_ID))
+               JOIN C_BPartner_Location bpl ON (bpl.C_BPartner_Location_ID = COALESCE(s.c_bp_location_override_value_id, s.c_bpartner_location_value_id))
                JOIN c_location l ON l.c_location_id = bpl.c_location_id
                JOIN M_Product prod ON (prod.M_Product_ID = s.M_Product_ID)
                LEFT JOIN C_OrderLine ol ON (ol.C_OrderLine_ID = s.C_OrderLine_ID)
