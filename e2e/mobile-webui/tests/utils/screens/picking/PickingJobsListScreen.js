@@ -247,5 +247,9 @@ const expectJobButton = async ({ name, button, expectation }) => await test.step
             await expect(indicatorLocator).toHaveCount(0);
         }
     }
+
+    if (expectation.caption != null) {
+        await expect(button).toHaveText(expectation.caption);
+    }
 });
 
