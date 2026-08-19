@@ -24,6 +24,7 @@ package de.metas.product.impexp;
 
 import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.logging.LogManager;
+import de.metas.product.ProductType;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Services;
@@ -35,7 +36,9 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import java.util.Arrays;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_ErrorMsg;
 import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_IsImported;
@@ -50,6 +53,17 @@ import static org.compiere.model.I_M_Product.COLUMNNAME_C_UOM_ID;
 public class MProductImportTableSqlUpdater
 {
 	private static final Logger logger = LogManager.getLogger(MProductImportTableSqlUpdater.class);
+
+	/**
+	 * SQL {@code IN (...)} list of every valid {@link ProductType} code (e.g. {@code 'E','F','I',...}).
+	 * Derived from the enum so the import's accepted set can never drift from the ProductType reference
+	 * list (the drift that let 'F'/'O'/'N' be wrongly rejected). Codes are single-char literals — no
+	 * injection concern.
+	 */
+	private static final String VALID_PRODUCT_TYPE_CODES_SQL = Arrays.stream(ProductType.values())
+			.map(ProductType::getCode)
+			.map(code -> "'" + code + "'")
+			.collect(Collectors.joining(","));
 
 	private final ImportRecordsSelection selection;
 	private final Properties ctx;
@@ -617,7 +631,7 @@ public class MProductImportTableSqlUpdater
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
 				.append(" SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid ProductType,' ")
-				.append("WHERE ProductType NOT IN ('E','I','R','S')")
+				.append("WHERE ProductType NOT IN (" + VALID_PRODUCT_TYPE_CODES_SQL + ")")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
 		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
