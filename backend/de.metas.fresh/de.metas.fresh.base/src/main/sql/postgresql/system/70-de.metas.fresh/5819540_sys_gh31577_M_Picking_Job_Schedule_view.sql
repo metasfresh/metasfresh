@@ -1,4 +1,10 @@
-DROP VIEW IF EXISTS M_Picking_Job_Schedule_view CASCADE
+DROP VIEW IF EXISTS M_Picking_OrderBoard_v
+;
+
+DROP VIEW IF EXISTS M_Picking_OrderBoard_Overview_v
+;
+
+DROP VIEW IF EXISTS M_Picking_Job_Schedule_view
 ;
 
 CREATE OR REPLACE VIEW M_Picking_Job_Schedule_view AS
