@@ -78,6 +78,17 @@ FROM (SELECT
           s.IsDisplayed,
           COALESCE(s.PreparationDate_Override, s.PreparationDate)                 AS PreparationDate,
           s.ShipmentAllocation_BestBefore_Policy,
+          -- 'Y' if there is at least one not-yet-processed picked qty already bound to a (draft) shipment line:
+          (CASE
+               WHEN EXISTS (SELECT 1
+                            FROM M_ShipmentSchedule_QtyPicked sqp
+                            WHERE sqp.M_ShipmentSchedule_ID = s.M_ShipmentSchedule_ID
+                              AND sqp.IsActive = 'Y'
+                              AND sqp.Processed = 'N'
+                              AND sqp.M_InOutLine_ID IS NOT NULL)
+                   THEN 'Y'
+                   ELSE 'N'
+           END)                                                                   AS IsPickQtyOnDraftShipment,
 
           --
           -- Product & ASI

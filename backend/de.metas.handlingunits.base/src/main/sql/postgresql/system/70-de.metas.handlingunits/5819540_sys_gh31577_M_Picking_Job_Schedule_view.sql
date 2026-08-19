@@ -1,7 +1,7 @@
-DROP VIEW IF EXISTS M_Picking_Job_Schedule_view
+DROP VIEW IF EXISTS M_Picking_Job_Schedule_view$new
 ;
 
-CREATE OR REPLACE VIEW M_Picking_Job_Schedule_view AS
+CREATE OR REPLACE VIEW M_Picking_Job_Schedule_view$new AS
 WITH base_schedule AS (SELECT s.m_shipmentschedule_id,
 
                               s.c_bpartner_customer_id,
@@ -95,3 +95,16 @@ SELECT b.*,
 FROM base_schedule b
 WHERE b.qtytoscheduleforpicking > 0
 ;
+
+SELECT db_alter_view(
+               'M_Picking_Job_Schedule_view',
+               (SELECT view_definition
+                FROM information_schema.views
+                WHERE lower(views.table_name) = lower('M_Picking_Job_Schedule_view$new'))
+       )
+;
+
+DROP VIEW IF EXISTS M_Picking_Job_Schedule_view$new
+;
+
+
