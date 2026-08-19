@@ -57,13 +57,9 @@ Feature: mobileUI Picking - Pick catch weight products
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | InvoicableQtyBasedOn | C_TaxCategory_ID.InternalName |
       | PLV                    | product      | 5.0      | KGM               | CatchWeight          | Normal                        |
 
-    # IsCatchWeightTUPickingEnabled is pinned explicitly: this feature's catch-weight scenarios rely on
-    # PickingJobLine.pickingUnit being CU, which computePickingUnit only yields while the flag is off.
-    # The flag is a single system-wide row, so a sibling on this executor that turns it on would
-    # otherwise silently flip this feature to TU picking with no code change (module CLAUDE.md rule 12).
     And set mobile UI picking profile
-      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob | IsCatchWeightTUPickingEnabled |
-      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  | N                             |
+      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
 
     And metasfresh contains C_BPartners without locations:
       | Identifier | Name     | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
