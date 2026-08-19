@@ -58,9 +58,11 @@ public class MobileUIManufacturingConfig
 	public FinishedGoodsReceiveLineConfig effectiveForReceiveLine(final boolean isMainFinishedGood)
 	{
 		// The polarity differs because "exempt" means the opposite thing per flag: for the three allow-flags the
-		// co-/by-product must stay PERMITTED (it is legitimately received into a TU - including an infinite-capacity
-		// one, where its catch weight IS the quantity), whereas for the skip-flag it must keep its target chooser,
-		// i.e. NOT skip.
+		// co-/by-product must stay PERMITTED (it is legitimately received into a TU, including an infinite-capacity
+		// one), whereas for the skip-flag it must keep its target chooser, i.e. NOT skip. The exemption is a
+		// deliberately conservative default - co-/by-products keep exactly today's behaviour - and NOT a technical
+		// necessity: ReceiveGoodsCommand.computeQtyToReceive falls back to the CU quantity for an infinite-capacity
+		// packing, so the weight is never the quantity source here.
 		return FinishedGoodsReceiveLineConfig.builder()
 				.allowReceiveToLU(!isMainFinishedGood || getIsAllowFinishedGoodsReceiveToLUEffective())
 				.allowReceiveToTU(!isMainFinishedGood || getIsAllowFinishedGoodsReceiveToTUEffective())
