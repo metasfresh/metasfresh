@@ -57,8 +57,7 @@ public class MProductImportTableSqlUpdater
 	/**
 	 * SQL {@code IN (...)} list of every valid {@link ProductType} code (e.g. {@code 'E','F','I',...}).
 	 * Derived from the enum so the import's accepted set can never drift from the ProductType reference
-	 * list (the drift that let 'F'/'O'/'N' be wrongly rejected). Codes are single-char literals — no
-	 * injection concern.
+	 * list. Codes are single-char literals — no injection concern.
 	 */
 	private static final String VALID_PRODUCT_TYPE_CODES_SQL = Arrays.stream(ProductType.values())
 			.map(ProductType::getCode)
