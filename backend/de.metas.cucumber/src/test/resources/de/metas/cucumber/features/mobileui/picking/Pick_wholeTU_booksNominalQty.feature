@@ -13,9 +13,9 @@ Feature: mobileUI Picking - a whole-TU pick must book the qty it actually moved
   # Preconditions that make the two diverge:
   #   - the picking profile enables catch-weight TU picking, and the sales line carries a FINITE
   #     packing instruction (1 piece per TU) => PickingJobLine.pickingUnit = TU
-  #   - the source HU is a real, non-virtual TU packed 2 pieces per TU, standing in for a production
-  #     HU (the scenario builds it directly; no manufacturing order is involved)
-  #     (a different packing instruction than the sales line's)
+  #   - the source HU is a real, non-virtual TU packed 2 pieces per TU on a different packing
+  #     instruction than the sales line's, standing in for a production HU - the scenario builds
+  #     it directly, with no manufacturing order involved
   #
   # PickingJobPickCommand then:
   #   - computes qtyToPickCUs = line packing info (1 CU per TU) x 1 TU = 1
