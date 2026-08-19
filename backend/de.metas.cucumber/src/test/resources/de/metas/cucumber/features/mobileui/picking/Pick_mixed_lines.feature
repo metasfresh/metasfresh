@@ -61,9 +61,13 @@ Feature: mobileUI Picking - Pick mixed lines
       | PLV                    | regularTUProduct   | 6.0      | PCE               | Nominal              | Normal                        |
       | PLV                    | regularCUProduct   | 7.0      | PCE               | Nominal              | Normal                        |
 
+    # IsCatchWeightTUPickingEnabled is pinned explicitly: this feature's catch-weight scenarios rely on
+    # PickingJobLine.pickingUnit being CU, which computePickingUnit only yields while the flag is off.
+    # The flag is a single system-wide row, so a sibling on this executor that turns it on would
+    # otherwise silently flip this feature to TU picking with no code change (module CLAUDE.md rule 12).
     And set mobile UI picking profile
-      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
-      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
+      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob | IsCatchWeightTUPickingEnabled |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  | N                             |
 
     And metasfresh contains C_BPartners without locations:
       | Identifier | Name     | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |

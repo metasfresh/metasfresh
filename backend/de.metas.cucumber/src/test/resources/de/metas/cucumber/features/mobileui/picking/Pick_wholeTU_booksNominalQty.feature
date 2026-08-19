@@ -13,7 +13,8 @@ Feature: mobileUI Picking - a whole-TU pick must book the qty it actually moved
   # Preconditions that make the two diverge:
   #   - the picking profile enables catch-weight TU picking, and the sales line carries a FINITE
   #     packing instruction (1 piece per TU) => PickingJobLine.pickingUnit = TU
-  #   - the source HU is a real, non-virtual TU produced by MANUFACTURING, packed 2 pieces per TU
+  #   - the source HU is a real, non-virtual TU packed 2 pieces per TU, standing in for a production
+  #     HU (the scenario builds it directly; no manufacturing order is involved)
   #     (a different packing instruction than the sales line's)
   #
   # PickingJobPickCommand then:
@@ -132,7 +133,10 @@ Feature: mobileUI Picking - a whole-TU pick must book the qty it actually moved
     And start picking job for sales order identified by salesOrder
     And scan picking slot identified by 200.0
     # No picking target of any kind is set - as in the reported case.
-    # One per-piece LMQ label: qty 1, weighed 5.772 kg. The client sends qtyPicked=1, pickWholeTU=false.
+    # A per-piece LMQ label carrying the weighed 5.772 kg - slightly ABOVE one nominal piece (5.5).
+    # NOTE: the leading 1 in the LMQ string is the QR-code FORMAT VERSION, not a quantity - LMQRCode
+    # carries no qty field. qtyPicked=1 comes from the pick step def, which sends BigDecimal.ONE
+    # whenever a QRCode column is given, with pickWholeTU=false.
     And pick lines
       | PickFromHU   | QRCode                        |
       | productionTU | LMQ#1#5.772#28.10.2026#100308 |
