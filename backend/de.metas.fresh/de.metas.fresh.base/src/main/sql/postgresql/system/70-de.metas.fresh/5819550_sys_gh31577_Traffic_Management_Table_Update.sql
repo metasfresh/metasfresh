@@ -39,19 +39,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(192)
 ;
 
--- Column: M_Picking_Job_Schedule_view.Weight
--- 2026-08-19T09:23:18.898Z
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,593335,629,0,22,542514,'Weight',TO_TIMESTAMP('2026-08-19 09:23:18.269000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Gewicht eines Produktes','D',14,'The Weight indicates the weight  of the product in the Weight UOM of the Client','Y','Y','N','N','N','N','N','N','N','N','N','Gewicht netto',TO_TIMESTAMP('2026-08-19 09:23:18.269000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0)
-;
-
--- 2026-08-19T09:23:18.976Z
-INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=593335 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
-;
-
--- 2026-08-19T09:23:22.268Z
-/* DDL */  select update_Column_Translation_From_AD_Element(629)
-;
-
 -- Column: M_Picking_Job_Schedule_view.C_Currency_ID
 -- 2026-08-19T09:31:06.165Z
 UPDATE AD_Column SET AD_Reference_Value_ID=156,Updated=TO_TIMESTAMP('2026-08-19 09:31:06.165000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=590662

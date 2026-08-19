@@ -184,7 +184,7 @@ FROM (SELECT
           s.UpdatedBy,
           s.IsActive,
           l.c_country_id,
-          prod.weight
+          Product_GrossWeight_KG(s.M_Product_ID) as GrossWeight
       FROM M_ShipmentSchedule s
                JOIN M_Warehouse w ON (w.M_Warehouse_ID = COALESCE(s.M_Warehouse_Override_ID, s.M_Warehouse_ID)) -- s.M_Warehouse_ID is mandatory
                JOIN C_BPartner p ON (p.C_BPartner_ID = COALESCE(s.C_BPartner_Override_ID, s.C_BPartner_ID))

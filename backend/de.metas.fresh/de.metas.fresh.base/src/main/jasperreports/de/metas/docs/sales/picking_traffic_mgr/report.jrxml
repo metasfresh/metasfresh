@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="de/metas/docs/sales/picking_traffic_mgr/report" uuid="c1d2e3f4-a5b6-4c7d-8e9f-0a1b2c3d4e5f">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\uat.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
@@ -60,9 +60,9 @@
 		<property name="com.jaspersoft.studio.field.name" value="picklist_group"/>
 		<property name="com.jaspersoft.studio.field.label" value="picklist_group"/>
 	</field>
-	<field name="weight" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.name" value="weight"/>
-		<property name="com.jaspersoft.studio.field.label" value="weight"/>
+	<field name="grossweight" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="grossweight"/>
+		<property name="com.jaspersoft.studio.field.label" value="grossweight"/>
 	</field>
 	<variable name="workplace_header" class="java.lang.String" resetType="None" calculation="First">
 		<variableExpression><![CDATA[$F{workplace}]]></variableExpression>
@@ -154,12 +154,12 @@
 					</textElement>
 					<text><![CDATA[Gewicht:]]></text>
 				</staticText>
-				<textField evaluationTime="Group" evaluationGroup="product" pattern="#,##0.##" isBlankWhenNull="true">
+				<textField pattern="#,##0.##" isBlankWhenNull="true">
 					<reportElement x="520" y="2" width="35" height="14" uuid="3d4da7bc-98a4-4e20-80b4-e0679fe97082"/>
 					<textElement textAlignment="Right">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{weight}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{grossweight}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
