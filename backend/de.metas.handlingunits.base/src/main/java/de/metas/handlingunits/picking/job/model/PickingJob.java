@@ -34,6 +34,8 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
@@ -576,6 +578,18 @@ public final class PickingJob implements PickingJobHeaderOrLine
 		}
 
 		return productValueAndName;
+	}
+
+	@NonNull
+	public ITranslatableString getProductNamesJoined()
+	{
+		final ImmutableList<ITranslatableString> names = lines.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						PickingJobLine::getProductId,
+						line -> line.getProductValueAndName().getName(),
+						(first, duplicate) -> first))   // same product on several lines -> named once
+				.values().asList();
+		return TranslatableStrings.join(", ", names);
 	}
 
 	@Nullable

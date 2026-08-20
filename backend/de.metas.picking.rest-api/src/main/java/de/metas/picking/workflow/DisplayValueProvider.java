@@ -215,6 +215,7 @@ public class DisplayValueProvider
 				.handoverLocationId(pickingJob.getHandoverLocationId())
 				.productValueAndName(pickingJob.getSingleProductValueAndName())
 				.qtyToDeliver(pickingJob.getSingleQtyToPickOrNull())
+				.productNames(pickingJob.getProductNamesJoined())
 				.build();
 	}
 
@@ -229,6 +230,7 @@ public class DisplayValueProvider
 				// .handoverLocationId(pickingJobLine.getHandoverLocationId())
 				.productValueAndName(pickingJobLine.getProductValueAndName())
 				.qtyToDeliver(pickingJobLine.getQtyToPick())
+				.productNames(pickingJobLine.getProductValueAndName().getName())
 				.build();
 	}
 
