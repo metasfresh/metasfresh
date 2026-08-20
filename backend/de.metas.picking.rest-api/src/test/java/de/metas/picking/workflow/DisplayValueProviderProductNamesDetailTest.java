@@ -158,9 +158,10 @@ class DisplayValueProviderProductNamesDetailTest
 	void line_productNames_namesOnlyItsOwnProduct()
 	{
 		final DisplayValueProvider provider = displayValueProvider();
+		// a line resolves its own product independently of any job it belongs to,
+		// so no job is constructed here
 		final PickingJobLine lineA = line(1, "ProductA");
 		final PickingJobLine lineB = line(2, "ProductB");
-		job(lineA, lineB); // the job the lines belong to; only the line itself is passed below
 
 		final String captionA = provider.getDisplayValue(productNamesField(), lineA).translate("en_US");
 		final String captionB = provider.getDisplayValue(productNamesField(), lineB).translate("en_US");
