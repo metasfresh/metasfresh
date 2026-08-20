@@ -84,6 +84,6 @@ public class JsonMobileConfigResponse
 		@Nullable Boolean isAllowFinishedGoodsReceiveToLU;
 		@Nullable Boolean isAllowFinishedGoodsReceiveToTU;
 		@Nullable Boolean isSkipFinishedGoodsReceiveTargetStep;
-		@Nullable Boolean isCaptureFinishedGoodsCatchWeightAtReceipt;
+		@Nullable Boolean isCaptureCatchWeightAtReceipt;
 	}
 }

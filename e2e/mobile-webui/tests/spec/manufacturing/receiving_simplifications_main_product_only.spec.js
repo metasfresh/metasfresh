@@ -30,7 +30,7 @@ const createMasterdata = async () => {
                     isAllowFinishedGoodsReceiveToLU: true,
                     isAllowFinishedGoodsReceiveToTU: false,
                     isSkipFinishedGoodsReceiveTargetStep: true,
-                    isCaptureFinishedGoodsCatchWeightAtReceipt: false,
+                    isCaptureCatchWeightAtReceipt: false,
                 },
             },
             warehouses: {
@@ -147,7 +147,7 @@ test('The simplified receipt applies to the main finished good only, not to its 
         });
     });
 
-    await test.step("The by-product keeps the unsimplified receipt", async () => {
+    await test.step("The by-product keeps its target and chooser, but not the weight prompt", async () => {
         // The Gebinde the rework goes into gets its label printed on the shop floor.
         const reworkTUQRCode = await ManufacturingJobScreen.generateSingleHUQRCode({
             piTestId: masterdata.packingInstructions.REWORK_PI.tuPITestId,
@@ -170,13 +170,12 @@ test('The simplified receipt applies to the main finished good only, not to its 
         await ManufacturingReceiptScanScreen.typeQRCode(reworkTUQRCode);
         await MaterialReceiptLineScreen.waitForScreen();
 
-        // The catch weight is still asked for - the dialog even opens on the weight QR-code reader,
-        // which is why the operator has to switch to manual input first.
+        // Catch weight is NOT asked for here either: since 2026-08-20 the flag governs every line, not just
+        // the main finished good, so with it switched off the by-product is prompted for the quantity only.
+        // The weight of a catch-weight product is captured later, at picking.
         await MaterialReceiptLineScreen.receiveQty({
-            switchToManualInput: true,
             qtyEntered: 9,
-            catchWeight: 0.987,
-            expectCatchWeightVisible: true,
+            expectCatchWeightVisible: false,
             expectGoBackToJob: true,
         });
         await ManufacturingJobScreen.expectReceiveButton({
@@ -185,13 +184,22 @@ test('The simplified receipt applies to the main finished good only, not to its 
             qtyReceived: '9 Stk',
         });
 
-        // The by-product's TU carries BOTH the received quantity and the weight.
+        // The by-product's TU carries the received quantity and NO weight - the weight is picking's to record.
         await Backend.expect({
-            title: "The by-product TU carries the quantity and the weight",
+            title: "The by-product TU carries the quantity and no weight",
             hus: {
                 [reworkTUQRCode]: {
                     storages: { 'REWORK': '9 PCE' },
-                    attributes: { 'WeightNet': '0.987' },
+                    // No CATCH weight was captured, so setCatchWeightForReceivedHUs() never ran - that is what
+                    // this line proves. The 0.000 is NOT a property of the flag: the HU's nominal weight comes
+                    // from the product master ((GrossWeight - Weight) x qty, WeightTareAttributeValueCallout
+                    // :130-141, contributing nothing at the default 0), which the flag never touches. On a real
+                    // catch-weight product the master weight and the UOM conversion agree, so a non-zero nominal
+                    // weight would land here even with catch weight off. This fixture cannot express that: the
+                    // masterdata API takes uomConversions but has no field for M_Product.Weight, so the product
+                    // is created with a Stk->kg rate and weight 0. Scale written out on purpose - the assertion
+                    // uses isEqualTo, which is scale-sensitive: '0' would NOT match 0.000.
+                    attributes: { 'WeightNet': '0.000' },
                 },
             }
         });

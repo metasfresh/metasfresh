@@ -1,5 +1,5 @@
 -- MobileUI Manufacturing — add IsAllowFinishedGoodsReceiveToLU / IsAllowFinishedGoodsReceiveToTU / IsSkipFinishedGoodsReceiveTargetStep /
--- IsCaptureFinishedGoodsCatchWeightAtReceipt config fields for the mobile production receipt flow.
+-- IsCaptureCatchWeightAtReceipt config fields for the mobile production receipt flow.
 -- Four YesNo config fields gating the mobile Produktion receive flow: which Gebinde targets (LU/TU)
 -- are offered, whether the target-choice screen is skipped, and whether catch weight is captured at
 -- receipt. Mirrors IsBestBeforeDateEditable / IsLotNumberEditable (5809490).
@@ -82,11 +82,11 @@ UPDATE AD_Element_Trl SET Name='Fertigprodukt: Gebinde-Auswahl überspringen', D
 ;
 
 -- ============================================================================
--- AD_Element: IsCaptureFinishedGoodsCatchWeightAtReceipt (585308)
+-- AD_Element: IsCaptureCatchWeightAtReceipt (585308)
 -- ============================================================================
 
 -- 2026-08-17 09:01:00
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,585308 /*From ID Server*/,0,'IsCaptureFinishedGoodsCatchWeightAtReceipt',TO_TIMESTAMP('2026-08-17 09:01:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','Fertigprodukt: Catch Weight erfassen','Fertigprodukt: Catch Weight erfassen',TO_TIMESTAMP('2026-08-17 09:01:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,585308 /*From ID Server*/,0,'IsCaptureCatchWeightAtReceipt',TO_TIMESTAMP('2026-08-17 09:01:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','Catch Weight erfassen','Catch Weight erfassen',TO_TIMESTAMP('2026-08-17 09:01:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2026-08-17 09:01:00 (seed _Trl rows for all system/base languages — copies element time)
@@ -94,15 +94,15 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description
 ;
 
 -- 2026-08-17 09:01:12 (en_US override)
-UPDATE AD_Element_Trl SET Name='Finished goods: capture catch weight', PrintName='Finished goods: capture catch weight', Description='Capture the catch weight of a catch-weight finished good at production receipt.', Help='When set (default), a catch-weight product prompts for its catch weight at production receipt. Unset so that no catch weight is captured at receipt — only the nominal quantity is entered — and the weight is captured later (e.g. at picking). Applies to the main finished-good line only; co- and by-products always keep catch-weight capture.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-17 09:01:12.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Element_ID=585308 AND AD_Language='en_US'
+UPDATE AD_Element_Trl SET Name='Capture catch weight', PrintName='Capture catch weight', Description='Capture the catch weight of a catch-weight product at production receipt.', Help='When set, a catch-weight product prompts for its catch weight at production receipt. Unset so that no catch weight is captured at receipt — only the nominal quantity is entered — and the weight is captured later (e.g. at picking). Applies to every line of the production receipt, co- and by-products included.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-17 09:01:12.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Element_ID=585308 AND AD_Language='en_US'
 ;
 
 -- 2026-08-17 09:01:13 (de_DE override)
-UPDATE AD_Element_Trl SET Name='Fertigprodukt: Catch Weight erfassen', Description='Catch Weight des Hauptfertigprodukts bei der Produktionsentnahme erfassen.', Help='Wenn gesetzt (Standard), wird bei einem Catch-Weight-Produkt das Catch Weight bei der Produktionsentnahme abgefragt. Deaktivieren, damit bei der Entnahme kein Catch Weight erfasst wird – es wird nur die nominale Menge eingegeben – und das Gewicht später erfasst wird (z. B. bei der Kommissionierung). Gilt nur für die Zeile des Hauptfertigprodukts; Kuppel- und Nebenprodukte behalten die Catch-Weight-Erfassung immer.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-17 09:01:13.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Element_ID=585308 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET Name='Catch Weight erfassen', Description='Catch Weight bei der Produktionsentnahme erfassen.', Help='Wenn gesetzt, wird bei einem Catch-Weight-Produkt das Catch Weight bei der Produktionsentnahme abgefragt. Deaktivieren, damit bei der Entnahme kein Catch Weight erfasst wird – es wird nur die nominale Menge eingegeben – und das Gewicht später erfasst wird (z. B. bei der Kommissionierung). Gilt für alle Zeilen der Produktionsentnahme, auch für Kuppel- und Nebenprodukte.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-17 09:01:13.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Element_ID=585308 AND AD_Language='de_DE'
 ;
 
 -- 2026-08-17 09:01:14 (de_CH override — same as de_DE)
-UPDATE AD_Element_Trl SET Name='Fertigprodukt: Catch Weight erfassen', Description='Catch Weight des Hauptfertigprodukts bei der Produktionsentnahme erfassen.', Help='Wenn gesetzt (Standard), wird bei einem Catch-Weight-Produkt das Catch Weight bei der Produktionsentnahme abgefragt. Deaktivieren, damit bei der Entnahme kein Catch Weight erfasst wird – es wird nur die nominale Menge eingegeben – und das Gewicht später erfasst wird (z. B. bei der Kommissionierung). Gilt nur für die Zeile des Hauptfertigprodukts; Kuppel- und Nebenprodukte behalten die Catch-Weight-Erfassung immer.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-17 09:01:14.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Element_ID=585308 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET Name='Catch Weight erfassen', Description='Catch Weight bei der Produktionsentnahme erfassen.', Help='Wenn gesetzt, wird bei einem Catch-Weight-Produkt das Catch Weight bei der Produktionsentnahme abgefragt. Deaktivieren, damit bei der Entnahme kein Catch Weight erfasst wird – es wird nur die nominale Menge eingegeben – und das Gewicht später erfasst wird (z. B. bei der Kommissionierung). Gilt für alle Zeilen der Produktionsentnahme, auch für Kuppel- und Nebenprodukte.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-17 09:01:14.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Element_ID=585308 AND AD_Language='de_CH'
 ;
 
 -- ============================================================================
@@ -136,9 +136,9 @@ INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Refe
 INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=593324 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
 ;
 
--- Column: MobileUI_MFG_Config.IsCaptureFinishedGoodsCatchWeightAtReceipt (593325) — DefaultValue='Y'
+-- Column: MobileUI_MFG_Config.IsCaptureCatchWeightAtReceipt (593325) — DefaultValue='Y'
 -- 2026-08-17 09:02:30
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,CloningStrategy,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,PersonalDataCategory,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,593325 /*From ID Server*/,585308,0,20,542397,'XX','IsCaptureFinishedGoodsCatchWeightAtReceipt',TO_TIMESTAMP('2026-08-17 09:02:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'N','Y','D',0,1,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','Y','N',0,'Fertigprodukt: Catch Weight erfassen','NP',0,0,TO_TIMESTAMP('2026-08-17 09:02:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,CloningStrategy,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,PersonalDataCategory,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,593325 /*From ID Server*/,585308,0,20,542397,'XX','IsCaptureCatchWeightAtReceipt',TO_TIMESTAMP('2026-08-17 09:02:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'N','Y','D',0,1,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','Y','N',0,'Catch Weight erfassen','NP',0,0,TO_TIMESTAMP('2026-08-17 09:02:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0)
 ;
 
 -- 2026-08-17 09:02:30 (seed _Trl)
@@ -176,9 +176,9 @@ INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Refe
 INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=593328 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
 ;
 
--- Column: MobileUI_UserProfile_MFG.IsCaptureFinishedGoodsCatchWeightAtReceipt (593329)
+-- Column: MobileUI_UserProfile_MFG.IsCaptureCatchWeightAtReceipt (593329)
 -- 2026-08-17 09:03:30
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,CloningStrategy,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,PersonalDataCategory,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,593329 /*From ID Server*/,585308,0,17,319,542263,'XX','IsCaptureFinishedGoodsCatchWeightAtReceipt',TO_TIMESTAMP('2026-08-17 09:03:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'N','','D',0,1,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Fertigprodukt: Catch Weight erfassen','NP',0,0,TO_TIMESTAMP('2026-08-17 09:03:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,CloningStrategy,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,PersonalDataCategory,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,593329 /*From ID Server*/,585308,0,17,319,542263,'XX','IsCaptureCatchWeightAtReceipt',TO_TIMESTAMP('2026-08-17 09:03:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'N','','D',0,1,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Catch Weight erfassen','NP',0,0,TO_TIMESTAMP('2026-08-17 09:03:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0)
 ;
 
 -- 2026-08-17 09:03:30 (seed _Trl)
@@ -222,7 +222,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ;
 
 -- 2026-08-17 09:05:03
-/* DDL */ SELECT public.db_alter_table('MobileUI_MFG_Config','ALTER TABLE public.MobileUI_MFG_Config ADD COLUMN IsCaptureFinishedGoodsCatchWeightAtReceipt CHAR(1) DEFAULT ''Y'' CHECK (IsCaptureFinishedGoodsCatchWeightAtReceipt IN (''Y'',''N'')) NOT NULL')
+/* DDL */ SELECT public.db_alter_table('MobileUI_MFG_Config','ALTER TABLE public.MobileUI_MFG_Config ADD COLUMN IsCaptureCatchWeightAtReceipt CHAR(1) DEFAULT ''Y'' CHECK (IsCaptureCatchWeightAtReceipt IN (''Y'',''N'')) NOT NULL')
 ;
 
 -- 2026-08-17 09:05:04
@@ -238,7 +238,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ;
 
 -- 2026-08-17 09:05:07
-/* DDL */ SELECT public.db_alter_table('MobileUI_UserProfile_MFG','ALTER TABLE public.MobileUI_UserProfile_MFG ADD COLUMN IsCaptureFinishedGoodsCatchWeightAtReceipt CHAR(1) CHECK (IsCaptureFinishedGoodsCatchWeightAtReceipt IN (''Y'',''N''))')
+/* DDL */ SELECT public.db_alter_table('MobileUI_UserProfile_MFG','ALTER TABLE public.MobileUI_UserProfile_MFG ADD COLUMN IsCaptureCatchWeightAtReceipt CHAR(1) CHECK (IsCaptureCatchWeightAtReceipt IN (''Y'',''N''))')
 ;
 
 -- ============================================================================
@@ -275,10 +275,10 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=782318 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
--- Field: MobileUI Manufacturing Configuration(541788,D) -> MobileUI Manufacturing Configuration(547483,D) -> Fertigprodukt: Catch Weight erfassen (782319)
--- Column: MobileUI_MFG_Config.IsCaptureFinishedGoodsCatchWeightAtReceipt
+-- Field: MobileUI Manufacturing Configuration(541788,D) -> MobileUI Manufacturing Configuration(547483,D) -> Catch Weight erfassen (782319)
+-- Column: MobileUI_MFG_Config.IsCaptureCatchWeightAtReceipt
 -- 2026-08-17 09:06:30
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,593325,782319 /*From ID Server*/,0,547483,TO_TIMESTAMP('2026-08-17 09:06:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,1,'D','Y','N','N','N','N','N','N','N','Fertigprodukt: Catch Weight erfassen',TO_TIMESTAMP('2026-08-17 09:06:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,593325,782319 /*From ID Server*/,0,547483,TO_TIMESTAMP('2026-08-17 09:06:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,1,'D','Y','N','N','N','N','N','N','N','Catch Weight erfassen',TO_TIMESTAMP('2026-08-17 09:06:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2026-08-17 09:06:30 (seed _Trl)
@@ -319,10 +319,10 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=782322 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
--- Field: Nutzer(108,D) -> Mobile UI Nutzerprofil - Produktion(546679,D) -> Fertigprodukt: Catch Weight erfassen (782323)
--- Column: MobileUI_UserProfile_MFG.IsCaptureFinishedGoodsCatchWeightAtReceipt
+-- Field: Nutzer(108,D) -> Mobile UI Nutzerprofil - Produktion(546679,D) -> Catch Weight erfassen (782323)
+-- Column: MobileUI_UserProfile_MFG.IsCaptureCatchWeightAtReceipt
 -- 2026-08-17 09:07:30
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,593329,782323 /*From ID Server*/,0,546679,TO_TIMESTAMP('2026-08-17 09:07:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,1,'D','Y','N','N','N','N','N','N','N','Fertigprodukt: Catch Weight erfassen',TO_TIMESTAMP('2026-08-17 09:07:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,593329,782323 /*From ID Server*/,0,546679,TO_TIMESTAMP('2026-08-17 09:07:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,1,'D','Y','N','N','N','N','N','N','N','Catch Weight erfassen',TO_TIMESTAMP('2026-08-17 09:07:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2026-08-17 09:07:30 (seed _Trl)
@@ -407,10 +407,10 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,782318,0,547483,551690,653171 /*From ID Server*/,'F',TO_TIMESTAMP('2026-08-17 09:09:20.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','Y','Y','N','Fertigprodukt: Gebinde-Auswahl überspringen',80,80,0,TO_TIMESTAMP('2026-08-17 09:09:20.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
--- UI Element: MobileUI Manufacturing Configuration -> config group -> 90 -> Fertigprodukt: Catch Weight erfassen (653172)
--- Column: MobileUI_MFG_Config.IsCaptureFinishedGoodsCatchWeightAtReceipt
+-- UI Element: MobileUI Manufacturing Configuration -> config group -> 90 -> Catch Weight erfassen (653172)
+-- Column: MobileUI_MFG_Config.IsCaptureCatchWeightAtReceipt
 -- 2026-08-17 09:09:30
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,782319,0,547483,551690,653172 /*From ID Server*/,'F',TO_TIMESTAMP('2026-08-17 09:09:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','Y','Y','N','Fertigprodukt: Catch Weight erfassen',90,90,0,TO_TIMESTAMP('2026-08-17 09:09:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,782319,0,547483,551690,653172 /*From ID Server*/,'F',TO_TIMESTAMP('2026-08-17 09:09:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','Y','Y','N','Catch Weight erfassen',90,90,0,TO_TIMESTAMP('2026-08-17 09:09:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- ============================================================================
@@ -435,8 +435,8 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,782322,0,546679,550042,653175 /*From ID Server*/,'F',TO_TIMESTAMP('2026-08-17 09:10:20.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','Y','Y','N','Fertigprodukt: Gebinde-Auswahl überspringen',80,80,0,TO_TIMESTAMP('2026-08-17 09:10:20.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
--- UI Element: Nutzer -> Mobile UI Nutzerprofil - Produktion -> primary group -> 90 -> Fertigprodukt: Catch Weight erfassen (653176)
--- Column: MobileUI_UserProfile_MFG.IsCaptureFinishedGoodsCatchWeightAtReceipt
+-- UI Element: Nutzer -> Mobile UI Nutzerprofil - Produktion -> primary group -> 90 -> Catch Weight erfassen (653176)
+-- Column: MobileUI_UserProfile_MFG.IsCaptureCatchWeightAtReceipt
 -- 2026-08-17 09:10:30
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,782323,0,546679,550042,653176 /*From ID Server*/,'F',TO_TIMESTAMP('2026-08-17 09:10:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','Y','Y','N','Fertigprodukt: Catch Weight erfassen',90,90,0,TO_TIMESTAMP('2026-08-17 09:10:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,782323,0,546679,550042,653176 /*From ID Server*/,'F',TO_TIMESTAMP('2026-08-17 09:10:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','Y','Y','N','Catch Weight erfassen',90,90,0,TO_TIMESTAMP('2026-08-17 09:10:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;

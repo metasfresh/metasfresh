@@ -33,7 +33,7 @@ public class MobileUIManufacturingConfigRepository
 			.isAllowFinishedGoodsReceiveToLU(OptionalBoolean.TRUE)
 			.isAllowFinishedGoodsReceiveToTU(OptionalBoolean.TRUE)
 			.isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.FALSE)
-			.isCaptureFinishedGoodsCatchWeightAtReceipt(OptionalBoolean.TRUE)
+			.isCaptureCatchWeightAtReceipt(OptionalBoolean.TRUE)
 			.build();
 
 	private final CCache<UserId, Optional<MobileUIManufacturingConfig>> userConfigsCache = CCache.<UserId, Optional<MobileUIManufacturingConfig>>builder()
@@ -97,7 +97,7 @@ public class MobileUIManufacturingConfigRepository
 				.isAllowFinishedGoodsReceiveToLU(OptionalBoolean.ofNullableString(record.getIsAllowFinishedGoodsReceiveToLU()))
 				.isAllowFinishedGoodsReceiveToTU(OptionalBoolean.ofNullableString(record.getIsAllowFinishedGoodsReceiveToTU()))
 				.isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.ofNullableString(record.getIsSkipFinishedGoodsReceiveTargetStep()))
-				.isCaptureFinishedGoodsCatchWeightAtReceipt(OptionalBoolean.ofNullableString(record.getIsCaptureFinishedGoodsCatchWeightAtReceipt()))
+				.isCaptureCatchWeightAtReceipt(OptionalBoolean.ofNullableString(record.getIsCaptureCatchWeightAtReceipt()))
 				.build();
 	}
 
@@ -111,7 +111,7 @@ public class MobileUIManufacturingConfigRepository
 		record.setIsAllowFinishedGoodsReceiveToLU(from.getIsAllowFinishedGoodsReceiveToLU().toBooleanString());
 		record.setIsAllowFinishedGoodsReceiveToTU(from.getIsAllowFinishedGoodsReceiveToTU().toBooleanString());
 		record.setIsSkipFinishedGoodsReceiveTargetStep(from.getIsSkipFinishedGoodsReceiveTargetStep().toBooleanString());
-		record.setIsCaptureFinishedGoodsCatchWeightAtReceipt(from.getIsCaptureFinishedGoodsCatchWeightAtReceipt().toBooleanString());
+		record.setIsCaptureCatchWeightAtReceipt(from.getIsCaptureCatchWeightAtReceipt().toBooleanString());
 	}
 
 	private Optional<MobileUIManufacturingConfig> retrieveGlobalConfig(@NonNull final ClientId clientId)
@@ -135,7 +135,7 @@ public class MobileUIManufacturingConfigRepository
 				.isAllowFinishedGoodsReceiveToLU(OptionalBoolean.ofBoolean(record.isAllowFinishedGoodsReceiveToLU()))
 				.isAllowFinishedGoodsReceiveToTU(OptionalBoolean.ofBoolean(record.isAllowFinishedGoodsReceiveToTU()))
 				.isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.ofBoolean(record.isSkipFinishedGoodsReceiveTargetStep()))
-				.isCaptureFinishedGoodsCatchWeightAtReceipt(OptionalBoolean.ofBoolean(record.isCaptureFinishedGoodsCatchWeightAtReceipt()))
+				.isCaptureCatchWeightAtReceipt(OptionalBoolean.ofBoolean(record.isCaptureCatchWeightAtReceipt()))
 				.build();
 	}
 

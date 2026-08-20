@@ -41,14 +41,14 @@ class MobileUIManufacturingConfigTest
 				.isAllowFinishedGoodsReceiveToLU(OptionalBoolean.UNKNOWN)
 				.isAllowFinishedGoodsReceiveToTU(OptionalBoolean.UNKNOWN)
 				.isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.UNKNOWN)
-				.isCaptureFinishedGoodsCatchWeightAtReceipt(OptionalBoolean.UNKNOWN);
+				.isCaptureCatchWeightAtReceipt(OptionalBoolean.UNKNOWN);
 	}
 
 	private void createGlobalConfig(
 			final boolean isAllowFinishedGoodsReceiveToLU,
 			final boolean isAllowFinishedGoodsReceiveToTU,
 			final boolean isSkipFinishedGoodsReceiveTargetStep,
-			final boolean isCaptureFinishedGoodsCatchWeightAtReceipt)
+			final boolean isCaptureCatchWeightAtReceipt)
 	{
 		final I_MobileUI_MFG_Config record = InterfaceWrapperHelper.newInstance(I_MobileUI_MFG_Config.class);
 		record.setIsActive(true);
@@ -59,7 +59,7 @@ class MobileUIManufacturingConfigTest
 		record.setIsAllowFinishedGoodsReceiveToLU(isAllowFinishedGoodsReceiveToLU);
 		record.setIsAllowFinishedGoodsReceiveToTU(isAllowFinishedGoodsReceiveToTU);
 		record.setIsSkipFinishedGoodsReceiveTargetStep(isSkipFinishedGoodsReceiveTargetStep);
-		record.setIsCaptureFinishedGoodsCatchWeightAtReceipt(isCaptureFinishedGoodsCatchWeightAtReceipt);
+		record.setIsCaptureCatchWeightAtReceipt(isCaptureCatchWeightAtReceipt);
 		InterfaceWrapperHelper.save(record);
 	}
 
@@ -67,7 +67,7 @@ class MobileUIManufacturingConfigTest
 			@Nullable final String isAllowFinishedGoodsReceiveToLU,
 			@Nullable final String isAllowFinishedGoodsReceiveToTU,
 			@Nullable final String isSkipFinishedGoodsReceiveTargetStep,
-			@Nullable final String isCaptureFinishedGoodsCatchWeightAtReceipt)
+			@Nullable final String isCaptureCatchWeightAtReceipt)
 	{
 		final I_MobileUI_UserProfile_MFG record = InterfaceWrapperHelper.newInstance(I_MobileUI_UserProfile_MFG.class);
 		record.setAD_User_ID(USER_ID.getRepoId());
@@ -75,7 +75,7 @@ class MobileUIManufacturingConfigTest
 		record.setIsAllowFinishedGoodsReceiveToLU(isAllowFinishedGoodsReceiveToLU);
 		record.setIsAllowFinishedGoodsReceiveToTU(isAllowFinishedGoodsReceiveToTU);
 		record.setIsSkipFinishedGoodsReceiveTargetStep(isSkipFinishedGoodsReceiveTargetStep);
-		record.setIsCaptureFinishedGoodsCatchWeightAtReceipt(isCaptureFinishedGoodsCatchWeightAtReceipt);
+		record.setIsCaptureCatchWeightAtReceipt(isCaptureCatchWeightAtReceipt);
 		InterfaceWrapperHelper.save(record);
 	}
 
@@ -254,30 +254,30 @@ class MobileUIManufacturingConfigTest
 	}
 
 	@Nested
-	class getIsCaptureFinishedGoodsCatchWeightAtReceiptEffective
+	class getIsCaptureCatchWeightAtReceiptEffective
 	{
 		@Test
 		void noConfigAtAll_defaultsToTrue()
 		{
-			assertThat(repo.getConfig(USER_ID, clientId).getIsCaptureFinishedGoodsCatchWeightAtReceiptEffective()).isTrue();
+			assertThat(repo.getConfig(USER_ID, clientId).getIsCaptureCatchWeightAtReceiptEffective()).isTrue();
 		}
 
 		@Test
 		void userValueOverridesGlobal()
 		{
-			final MobileUIManufacturingConfig user = configBuilder().isCaptureFinishedGoodsCatchWeightAtReceipt(OptionalBoolean.FALSE).build();
-			final MobileUIManufacturingConfig global = configBuilder().isCaptureFinishedGoodsCatchWeightAtReceipt(OptionalBoolean.TRUE).build();
+			final MobileUIManufacturingConfig user = configBuilder().isCaptureCatchWeightAtReceipt(OptionalBoolean.FALSE).build();
+			final MobileUIManufacturingConfig global = configBuilder().isCaptureCatchWeightAtReceipt(OptionalBoolean.TRUE).build();
 
-			assertThat(user.fallbackTo(global).getIsCaptureFinishedGoodsCatchWeightAtReceiptEffective()).isFalse();
+			assertThat(user.fallbackTo(global).getIsCaptureCatchWeightAtReceiptEffective()).isFalse();
 		}
 
 		@Test
 		void userUnknownInheritsGlobal()
 		{
 			final MobileUIManufacturingConfig user = configBuilder().build();
-			final MobileUIManufacturingConfig global = configBuilder().isCaptureFinishedGoodsCatchWeightAtReceipt(OptionalBoolean.FALSE).build();
+			final MobileUIManufacturingConfig global = configBuilder().isCaptureCatchWeightAtReceipt(OptionalBoolean.FALSE).build();
 
-			assertThat(user.fallbackTo(global).getIsCaptureFinishedGoodsCatchWeightAtReceiptEffective()).isFalse();
+			assertThat(user.fallbackTo(global).getIsCaptureCatchWeightAtReceiptEffective()).isFalse();
 		}
 
 		@Test
@@ -286,7 +286,7 @@ class MobileUIManufacturingConfigTest
 			createGlobalConfig(true, true, false, false);
 			createUserConfig("", "", "", "");
 
-			assertThat(repo.getConfig(USER_ID, clientId).getIsCaptureFinishedGoodsCatchWeightAtReceiptEffective()).isFalse();
+			assertThat(repo.getConfig(USER_ID, clientId).getIsCaptureCatchWeightAtReceiptEffective()).isFalse();
 		}
 
 		@Test
@@ -295,16 +295,16 @@ class MobileUIManufacturingConfigTest
 			createGlobalConfig(true, true, false, true);
 			createUserConfig(null, null, null, "N");
 
-			assertThat(repo.getConfig(USER_ID, clientId).getIsCaptureFinishedGoodsCatchWeightAtReceiptEffective()).isFalse();
+			assertThat(repo.getConfig(USER_ID, clientId).getIsCaptureCatchWeightAtReceiptEffective()).isFalse();
 		}
 
 		@Test
 		void saveUserConfigPersistsTheFlag()
 		{
 			createGlobalConfig(true, true, false, true);
-			repo.saveUserConfig(configBuilder().isCaptureFinishedGoodsCatchWeightAtReceipt(OptionalBoolean.FALSE).build(), USER_ID);
+			repo.saveUserConfig(configBuilder().isCaptureCatchWeightAtReceipt(OptionalBoolean.FALSE).build(), USER_ID);
 
-			assertThat(repo.getConfig(USER_ID, clientId).getIsCaptureFinishedGoodsCatchWeightAtReceiptEffective()).isFalse();
+			assertThat(repo.getConfig(USER_ID, clientId).getIsCaptureCatchWeightAtReceiptEffective()).isFalse();
 		}
 	}
 
@@ -323,7 +323,7 @@ class MobileUIManufacturingConfigTest
 					.isAllowFinishedGoodsReceiveToLU(OptionalBoolean.TRUE)
 					.isAllowFinishedGoodsReceiveToTU(OptionalBoolean.TRUE)
 					.isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.TRUE)
-					.isCaptureFinishedGoodsCatchWeightAtReceipt(OptionalBoolean.TRUE)
+					.isCaptureCatchWeightAtReceipt(OptionalBoolean.TRUE)
 					.build();
 
 			final FinishedGoodsReceiveLineConfig lineConfig = config.effectiveForReceiveLine(true);
@@ -341,13 +341,14 @@ class MobileUIManufacturingConfigTest
 					.isAllowFinishedGoodsReceiveToLU(OptionalBoolean.FALSE)
 					.isAllowFinishedGoodsReceiveToTU(OptionalBoolean.FALSE)
 					.isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.FALSE)
-					.isCaptureFinishedGoodsCatchWeightAtReceipt(OptionalBoolean.FALSE)
+					.isCaptureCatchWeightAtReceipt(OptionalBoolean.FALSE)
 					.build();
 
 			final FinishedGoodsReceiveLineConfig lineConfig = config.effectiveForReceiveLine(true);
 
-			// Every one of these differs from the co-product outcome, which is permissive for the three
-			// allow-flags and false for the skip-flag regardless of config.
+			// The first three differ from the co-product outcome, which is permissive for the two allow-flags
+			// and false for the skip-flag regardless of config. Catch weight now matches the co-product
+			// outcome by design - it is the same configured value on both paths.
 			assertThat(lineConfig.isAllowReceiveToLU()).isFalse();
 			assertThat(lineConfig.isAllowReceiveToTU()).isFalse();
 			assertThat(lineConfig.isSkipReceiveTargetStep()).isFalse();
@@ -355,13 +356,13 @@ class MobileUIManufacturingConfigTest
 		}
 
 		@Test
-		void coProduct_isExemptFromEverySimplification()
+		void coProduct_isExemptFromTheTargetSimplifications_butNotFromCatchWeight()
 		{
 			final MobileUIManufacturingConfig config = configBuilder()
 					.isAllowFinishedGoodsReceiveToLU(OptionalBoolean.FALSE)
 					.isAllowFinishedGoodsReceiveToTU(OptionalBoolean.FALSE)
 					.isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.TRUE)
-					.isCaptureFinishedGoodsCatchWeightAtReceipt(OptionalBoolean.FALSE)
+					.isCaptureCatchWeightAtReceipt(OptionalBoolean.FALSE)
 					.build();
 
 			final FinishedGoodsReceiveLineConfig lineConfig = config.effectiveForReceiveLine(false);
@@ -369,17 +370,19 @@ class MobileUIManufacturingConfigTest
 			assertThat(lineConfig.isAllowReceiveToLU()).isTrue();
 			assertThat(lineConfig.isAllowReceiveToTU()).isTrue();
 			assertThat(lineConfig.isSkipReceiveTargetStep()).isFalse();
-			assertThat(lineConfig.isCaptureCatchWeight()).isTrue();
+			// Catch weight is NOT exempt (2026-08-20): it follows the configured value on every line, so a
+			// co-product with the flag off is not prompted either. The weight is captured later at picking.
+			assertThat(lineConfig.isCaptureCatchWeight()).isFalse();
 		}
 
 		@Test
-		void coProduct_outcomeDoesNotDependOnTheConfig()
+		void coProduct_targetOutcomeDoesNotDependOnTheConfig_butCatchWeightDoes()
 		{
 			final MobileUIManufacturingConfig config = configBuilder()
 					.isAllowFinishedGoodsReceiveToLU(OptionalBoolean.TRUE)
 					.isAllowFinishedGoodsReceiveToTU(OptionalBoolean.TRUE)
 					.isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.FALSE)
-					.isCaptureFinishedGoodsCatchWeightAtReceipt(OptionalBoolean.TRUE)
+					.isCaptureCatchWeightAtReceipt(OptionalBoolean.TRUE)
 					.build();
 
 			final FinishedGoodsReceiveLineConfig lineConfig = config.effectiveForReceiveLine(false);

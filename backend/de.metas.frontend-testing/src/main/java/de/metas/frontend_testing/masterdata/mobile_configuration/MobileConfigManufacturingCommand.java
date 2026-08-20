@@ -46,9 +46,9 @@ class MobileConfigManufacturingCommand
 		{
 			newConfigBuilder.isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.ofBoolean(request.getIsSkipFinishedGoodsReceiveTargetStep()));
 		}
-		if (request.getIsCaptureFinishedGoodsCatchWeightAtReceipt() != null)
+		if (request.getIsCaptureCatchWeightAtReceipt() != null)
 		{
-			newConfigBuilder.isCaptureFinishedGoodsCatchWeightAtReceipt(OptionalBoolean.ofBoolean(request.getIsCaptureFinishedGoodsCatchWeightAtReceipt()));
+			newConfigBuilder.isCaptureCatchWeightAtReceipt(OptionalBoolean.ofBoolean(request.getIsCaptureCatchWeightAtReceipt()));
 		}
 
 		final MobileUIManufacturingConfig newConfig = newConfigBuilder.build();
@@ -61,7 +61,7 @@ class MobileConfigManufacturingCommand
 				.isAllowFinishedGoodsReceiveToLU(newConfig.getIsAllowFinishedGoodsReceiveToLU().toBooleanOrNull())
 				.isAllowFinishedGoodsReceiveToTU(newConfig.getIsAllowFinishedGoodsReceiveToTU().toBooleanOrNull())
 				.isSkipFinishedGoodsReceiveTargetStep(newConfig.getIsSkipFinishedGoodsReceiveTargetStep().toBooleanOrNull())
-				.isCaptureFinishedGoodsCatchWeightAtReceipt(newConfig.getIsCaptureFinishedGoodsCatchWeightAtReceipt().toBooleanOrNull())
+				.isCaptureCatchWeightAtReceipt(newConfig.getIsCaptureCatchWeightAtReceipt().toBooleanOrNull())
 				.build();
 	}
 

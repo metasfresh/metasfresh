@@ -23,7 +23,7 @@ public class MobileUIManufacturingConfig
 	@NonNull OptionalBoolean isAllowFinishedGoodsReceiveToLU;
 	@NonNull OptionalBoolean isAllowFinishedGoodsReceiveToTU;
 	@NonNull OptionalBoolean isSkipFinishedGoodsReceiveTargetStep;
-	@NonNull OptionalBoolean isCaptureFinishedGoodsCatchWeightAtReceipt;
+	@NonNull OptionalBoolean isCaptureCatchWeightAtReceipt;
 
 	@NonNull
 	public ReceiveUnitType getReceiveUnitTypeEffective()
@@ -46,9 +46,9 @@ public class MobileUIManufacturingConfig
 		return isSkipFinishedGoodsReceiveTargetStep.orElseFalse();
 	}
 
-	public boolean getIsCaptureFinishedGoodsCatchWeightAtReceiptEffective()
+	public boolean getIsCaptureCatchWeightAtReceiptEffective()
 	{
-		return isCaptureFinishedGoodsCatchWeightAtReceipt.orElseTrue();
+		return isCaptureCatchWeightAtReceipt.orElseTrue();
 	}
 
 	/**
@@ -57,16 +57,21 @@ public class MobileUIManufacturingConfig
 	@NonNull
 	public FinishedGoodsReceiveLineConfig effectiveForReceiveLine(final boolean isMainFinishedGood)
 	{
-		// The polarity differs because "exempt" means the opposite thing per flag: for the three allow-flags the
-		// co-/by-product must stay PERMITTED (it is legitimately received into a TU, including an infinite-capacity
-		// one), whereas for the skip-flag it must keep its target chooser, i.e. NOT skip. The exemption is a
-		// deliberately conservative default - co-/by-products keep exactly today's behaviour - and NOT a technical
-		// necessity: ReceiveGoodsCommand.computeQtyToReceive falls back to the CU quantity for an infinite-capacity
-		// packing, so the weight is never the quantity source here.
+		// Three of the four flags exempt co-/by-products, and the polarity differs because "exempt" means the
+		// opposite thing per flag: for the two allow-flags the co-/by-product must stay PERMITTED (it is
+		// legitimately received into a TU, including an infinite-capacity one), whereas for the skip-flag it must
+		// keep its target chooser, i.e. NOT skip. That exemption is a deliberately conservative default - those
+		// co-/by-product paths keep exactly today's behaviour.
+		//
+		// Catch weight is deliberately NOT exempt: it applies to every line. Nothing is lost by not weighing at
+		// receipt, because the weight of a catch-weight product is captured later at picking
+		// (PickingJobPickCommand takes it from the operator), which is the whole point of switching it off here.
+		// A product-data fallback would be meaningless: a nominal weight is exactly what a catch-weight product
+		// declares untrustworthy - for anything else the kg/piece UOM conversion already answers it.
 		return FinishedGoodsReceiveLineConfig.builder()
 				.allowReceiveToLU(!isMainFinishedGood || getIsAllowFinishedGoodsReceiveToLUEffective())
 				.allowReceiveToTU(!isMainFinishedGood || getIsAllowFinishedGoodsReceiveToTUEffective())
-				.captureCatchWeight(!isMainFinishedGood || getIsCaptureFinishedGoodsCatchWeightAtReceiptEffective())
+				.captureCatchWeight(getIsCaptureCatchWeightAtReceiptEffective())
 				.skipReceiveTargetStep(isMainFinishedGood && getIsSkipFinishedGoodsReceiveTargetStepEffective())
 				.build();
 	}
@@ -102,7 +107,7 @@ public class MobileUIManufacturingConfig
 				.isAllowFinishedGoodsReceiveToLU(this.isAllowFinishedGoodsReceiveToLU.ifUnknown(other.isAllowFinishedGoodsReceiveToLU))
 				.isAllowFinishedGoodsReceiveToTU(this.isAllowFinishedGoodsReceiveToTU.ifUnknown(other.isAllowFinishedGoodsReceiveToTU))
 				.isSkipFinishedGoodsReceiveTargetStep(this.isSkipFinishedGoodsReceiveTargetStep.ifUnknown(other.isSkipFinishedGoodsReceiveTargetStep))
-				.isCaptureFinishedGoodsCatchWeightAtReceipt(this.isCaptureFinishedGoodsCatchWeightAtReceipt.ifUnknown(other.isCaptureFinishedGoodsCatchWeightAtReceipt))
+				.isCaptureCatchWeightAtReceipt(this.isCaptureCatchWeightAtReceipt.ifUnknown(other.isCaptureCatchWeightAtReceipt))
 				.build();
 		if (result.equals(this))
 		{

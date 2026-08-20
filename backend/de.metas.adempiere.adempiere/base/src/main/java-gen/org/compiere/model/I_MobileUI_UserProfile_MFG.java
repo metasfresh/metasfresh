@@ -121,7 +121,7 @@ public interface I_MobileUI_UserProfile_MFG
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Allow receiving finished goods to LU.
+	 * Set Finished goods: allow receiving to LU.
 	 * Offer load-unit (pallet/LU) targets for the finished-goods production receipt.
 	 *
 	 * <br>Type: List
@@ -131,7 +131,7 @@ public interface I_MobileUI_UserProfile_MFG
 	void setIsAllowFinishedGoodsReceiveToLU (@Nullable java.lang.String IsAllowFinishedGoodsReceiveToLU);
 
 	/**
-	 * Get Allow receiving finished goods to LU.
+	 * Get Finished goods: allow receiving to LU.
 	 * Offer load-unit (pallet/LU) targets for the finished-goods production receipt.
 	 *
 	 * <br>Type: List
@@ -144,7 +144,7 @@ public interface I_MobileUI_UserProfile_MFG
 	String COLUMNNAME_IsAllowFinishedGoodsReceiveToLU = "IsAllowFinishedGoodsReceiveToLU";
 
 	/**
-	 * Set Allow receiving finished goods to TU.
+	 * Set Finished goods: allow receiving to TU.
 	 * Offer transport-unit (TU) targets for the finished-goods production receipt.
 	 *
 	 * <br>Type: List
@@ -154,7 +154,7 @@ public interface I_MobileUI_UserProfile_MFG
 	void setIsAllowFinishedGoodsReceiveToTU (@Nullable java.lang.String IsAllowFinishedGoodsReceiveToTU);
 
 	/**
-	 * Get Allow receiving finished goods to TU.
+	 * Get Finished goods: allow receiving to TU.
 	 * Offer transport-unit (TU) targets for the finished-goods production receipt.
 	 *
 	 * <br>Type: List
@@ -213,27 +213,27 @@ public interface I_MobileUI_UserProfile_MFG
 	String COLUMNNAME_IsBestBeforeDateEditable = "IsBestBeforeDateEditable";
 
 	/**
-	 * Set Capture finished-goods catch weight at receipt.
+	 * Set Finished goods: capture catch weight.
 	 * Capture the catch weight of a catch-weight finished good at production receipt.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setIsCaptureFinishedGoodsCatchWeightAtReceipt (@Nullable java.lang.String IsCaptureFinishedGoodsCatchWeightAtReceipt);
+	void setIsCaptureCatchWeightAtReceipt (@Nullable java.lang.String IsCaptureCatchWeightAtReceipt);
 
 	/**
-	 * Get Capture finished-goods catch weight at receipt.
+	 * Get Finished goods: capture catch weight.
 	 * Capture the catch weight of a catch-weight finished good at production receipt.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getIsCaptureFinishedGoodsCatchWeightAtReceipt();
+	@Nullable java.lang.String getIsCaptureCatchWeightAtReceipt();
 
-	ModelColumn<I_MobileUI_UserProfile_MFG, Object> COLUMN_IsCaptureFinishedGoodsCatchWeightAtReceipt = new ModelColumn<>(I_MobileUI_UserProfile_MFG.class, "IsCaptureFinishedGoodsCatchWeightAtReceipt", null);
-	String COLUMNNAME_IsCaptureFinishedGoodsCatchWeightAtReceipt = "IsCaptureFinishedGoodsCatchWeightAtReceipt";
+	ModelColumn<I_MobileUI_UserProfile_MFG, Object> COLUMN_IsCaptureCatchWeightAtReceipt = new ModelColumn<>(I_MobileUI_UserProfile_MFG.class, "IsCaptureCatchWeightAtReceipt", null);
+	String COLUMNNAME_IsCaptureCatchWeightAtReceipt = "IsCaptureCatchWeightAtReceipt";
 
 	/**
 	 * Set Lot Number editable.
@@ -282,7 +282,7 @@ public interface I_MobileUI_UserProfile_MFG
 	String COLUMNNAME_IsScanResourceRequired = "IsScanResourceRequired";
 
 	/**
-	 * Set Skip finished-goods receiving-target step.
+	 * Set Finished goods: skip receiving-target step.
 	 * Skip the new-Gebinde / scan-existing screen for the finished good and go straight to the packing instruction.
 	 *
 	 * <br>Type: List
@@ -292,7 +292,7 @@ public interface I_MobileUI_UserProfile_MFG
 	void setIsSkipFinishedGoodsReceiveTargetStep (@Nullable java.lang.String IsSkipFinishedGoodsReceiveTargetStep);
 
 	/**
-	 * Get Skip finished-goods receiving-target step.
+	 * Get Finished goods: skip receiving-target step.
 	 * Skip the new-Gebinde / scan-existing screen for the finished good and go straight to the packing instruction.
 	 *
 	 * <br>Type: List
