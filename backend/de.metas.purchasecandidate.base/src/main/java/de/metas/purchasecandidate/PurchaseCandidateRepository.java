@@ -205,7 +205,10 @@ public class PurchaseCandidateRepository
 		return queryBL.createQueryBuilder(I_C_OrderLine.class)
 				.addEqualsFilter(I_C_OrderLine.COLUMN_C_Order_ID, salesOrderId.getRepoId())
 				.andCollectChildren(I_C_PurchaseCandidate.COLUMN_C_OrderLineSO_ID)
-				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_IsAggregatePO, false) // manual
+				// only manually-created candidates (Purchase Planning view); material-disposition candidates must not be auto-ordered on sales-order completion.
+				// IsAggregatePO reflects the vendor's aggregate setting, not manual-vs-dispo, so it alone is not a reliable "manual" marker.
+				.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_Source, PurchaseCandidateSource.SalesOrder)
+				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_IsAggregatePO, false)
 				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_Processed, false)
 				.addCompareFilter(I_C_PurchaseCandidate.COLUMN_QtyToPurchase, Operator.GREATER, BigDecimal.ZERO)
 				.create()
@@ -219,9 +222,8 @@ public class PurchaseCandidateRepository
 	 * Same filter as {@link #retrieveManualPurchaseCandidateIdsBySalesOrderIdFilterQtyToPurchase(OrderId)},
 	 * but groups the candidates by the {@code IsDocComplete} flag of their matching {@code PP_Product_Planning}.
 	 * <p>
-	 * Used by the {@code C_Order} interceptor on sales-order recompletion to enqueue purchase-order generation
-	 * with the correct "auto-complete" flag per candidate — instead of blanket-completing everything regardless
-	 * of product-planning configuration (see <a href="https://github.com/metasfresh/me03/issues/29155">me03#29155</a>).
+	 * Used by the {@code C_Order} interceptor on sales-order completion to enqueue purchase-order generation with the
+	 * correct "auto-complete" flag per candidate, driven by the product-planning {@code IsDocComplete} configuration.
 	 * <p>
 	 * Candidates whose product planning cannot be resolved fall into the {@code true} bucket, preserving the
 	 * historical "auto-complete" default.
@@ -233,7 +235,10 @@ public class PurchaseCandidateRepository
 		final List<I_C_PurchaseCandidate> candidateRecords = queryBL.createQueryBuilder(I_C_OrderLine.class)
 				.addEqualsFilter(I_C_OrderLine.COLUMN_C_Order_ID, salesOrderId.getRepoId())
 				.andCollectChildren(I_C_PurchaseCandidate.COLUMN_C_OrderLineSO_ID)
-				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_IsAggregatePO, false) // manual
+				// only manually-created candidates (Purchase Planning view); material-disposition candidates must not be auto-ordered on sales-order completion.
+				// IsAggregatePO reflects the vendor's aggregate setting, not manual-vs-dispo, so it alone is not a reliable "manual" marker.
+				.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_Source, PurchaseCandidateSource.SalesOrder)
+				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_IsAggregatePO, false)
 				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_Processed, false)
 				.addCompareFilter(I_C_PurchaseCandidate.COLUMN_QtyToPurchase, Operator.GREATER, BigDecimal.ZERO)
 				.create()
@@ -419,10 +424,7 @@ public class PurchaseCandidateRepository
 		}
 		record.setPOReference(purchaseCandidate.getPOReference());
 
-		if (purchaseCandidate.getSource() != null)
-		{
-			record.setSource(purchaseCandidate.getSource().getCode());
-		}
+		record.setSource(purchaseCandidate.getSource().getCode());
 		record.setPriceInternal(purchaseCandidate.getPriceInternal());
 		record.setPriceEntered(purchaseCandidate.getPrice());
 		record.setPriceEffective(purchaseCandidate.getPriceEnteredEff());
@@ -541,7 +543,7 @@ public class PurchaseCandidateRepository
 				.externalHeaderId(ExternalId.ofOrNull(record.getExternalHeaderId()))
 				.poReference(record.getPOReference())
 
-				.source(PurchaseCandidateSource.ofCodeOrNull(record.getSource()))
+				.source(PurchaseCandidateSource.ofCode(record.getSource()))
 				//
 				.qtyToPurchase(qtyToPurchase)
 				//
