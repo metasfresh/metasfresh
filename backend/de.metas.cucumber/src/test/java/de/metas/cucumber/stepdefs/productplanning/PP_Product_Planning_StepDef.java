@@ -41,6 +41,7 @@ import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanning.ProductPlanningBuilder;
+import de.metas.material.planning.ProductPlanningId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
@@ -58,9 +59,13 @@ import org.compiere.model.I_M_Maturing_Configuration;
 import org.compiere.model.I_M_Maturing_Configuration_Line;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Product_Planning;
+import io.cucumber.java.After;
+import org.adempiere.model.InterfaceWrapperHelper;
 
 import javax.annotation.Nullable;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.WORKFLOW_ID;
 import static org.assertj.core.api.Assertions.*;
@@ -71,6 +76,9 @@ public class PP_Product_Planning_StepDef
 {
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
+
+	/** Plannings created/updated with no M_Product — they match ALL products, so they must be deactivated after the scenario to avoid leaking into the next one (see {@link #deactivateGenericProductPlannings()}). */
+	private final Set<ProductPlanningId> genericPlanningIds = new HashSet<>();
 
 	@NonNull private final M_Product_StepDefData productTable;
 	@NonNull private final PP_Product_BOMVersions_StepDefData productBomVersionsTable;
@@ -207,6 +215,13 @@ public class PP_Product_Planning_StepDef
 
 		final ProductPlanning productPlanning = productPlanningDAO.save(builder.build());
 
+		// A no-product planning matches ALL products; remember it so @After can deactivate it and it can't
+		// leak into the next scenario of the same shared-DB profile run.
+		if (productPlanning.getProductId() == null)
+		{
+			genericPlanningIds.add(productPlanning.getIdNotNull());
+		}
+
 		row.getAsOptionalIdentifier().ifPresent(identifier -> productPlanningTable.putOrReplace(identifier, productPlanning));
 	}
 
@@ -264,5 +279,25 @@ public class PP_Product_Planning_StepDef
 						&& WarehouseId.equals(productPlanning.getWarehouseId(), warehouseId)
 						&& ResourceId.equals(productPlanning.getPlantId(), plantId)
 						&& ProductId.equals(productPlanning.getProductId(), productId));
+	}
+
+	/**
+	 * Deactivates the no-product plannings this scenario created (tracked in {@link #genericPlanningIds}).
+	 * A generic (no-{@code M_Product}) planning applies to ALL products, so one left active leaks into the next
+	 * scenario of the same shared-DB profile run — its products become "purchased" and spawn spurious
+	 * SUPPLY/PURCHASE MD_Candidates. Runs on scenario pass AND failure.
+	 */
+	@After
+	public void deactivateGenericProductPlannings()
+	{
+		for (final ProductPlanningId planningId : genericPlanningIds)
+		{
+			final I_PP_Product_Planning record = InterfaceWrapperHelper.load(planningId, I_PP_Product_Planning.class);
+			if (record.isActive())
+			{
+				record.setIsActive(false);
+				InterfaceWrapperHelper.saveRecord(record);
+			}
+		}
 	}
 }
