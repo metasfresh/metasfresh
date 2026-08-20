@@ -3,7 +3,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import { trl } from '../../../../utils/translations';
 
 import { toastError } from '../../../../utils/toast';
-import { postManufacturingReceiveEventThunk } from '../../../../actions/ManufacturingActions';
+import {
+  postManufacturingReceiveEventThunk,
+  updateManufacturingLUReceiptTarget,
+} from '../../../../actions/ManufacturingActions';
 import { updateHeaderEntry } from '../../../../actions/HeaderActions';
 import {
   manufacturingReceiptNewHUScreen,
@@ -128,6 +131,16 @@ const MaterialReceiptLineScreen = () => {
   };
 
   const handleClick = () => {
+    // Skipping the chooser can leave nothing to choose at all: a single pallet and no TU on offer.
+    // Then the target is selected right away and the operator stays on the line, ready for the quantity.
+    // No separate "LU receiving is allowed" check is needed - switching LU receiving off empties this list.
+    const luTargets = availableReceivingTargets?.values ?? [];
+    const tuTargets = availableReceivingTUTargets?.values ?? [];
+    if (skipReceiveTargetStep && luTargets.length === 1 && tuTargets.length === 0) {
+      dispatch(updateManufacturingLUReceiptTarget({ wfProcessId, activityId, lineId, target: luTargets[0] }));
+      return;
+    }
+
     // When the profile skips the receive-target step, go straight to the Packvorschrift (new HU) list,
     // bypassing the new-Gebinde-vs-scan-existing chooser.
     const targetLocation = skipReceiveTargetStep

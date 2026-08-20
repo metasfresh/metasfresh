@@ -18,6 +18,10 @@ export const ReceiptNewHUScreen = {
         await expect(containerElement()).toBeVisible();
     }),
 
+    expectNotVisible: async () => await test.step(`${NAME} - Expect screen NOT to be displayed`, async () => {
+        await expect(containerElement()).toHaveCount(0);
+    }),
+
     clickLUTarget: async ({ luPIItemTestId }) => await test.step(`${NAME} - Click LU target "${luPIItemTestId}"`, async () => {
         await ReceiptNewHUScreen.expectVisible();
         await page.getByTestId(luPIItemTestId).tap();

@@ -55,6 +55,14 @@ const createMasterdata = async () => {
             },
             packingInstructions: {
                 "BOM_PI": { lu: "LU", qtyTUsPerLU: 20, tu: "TU", product: "BOM", qtyCUsPerTU: 4 },
+                // A second pallet packing for the main finished good - the same box, stacked 10 instead of
+                // 20 per pallet. Two pallets means the operator still has something to choose, so the
+                // packing-instruction list is shown and the assertions below about that list have
+                // something to look at. With a single pallet the list would be skipped altogether and the
+                // pallet taken automatically - a different behaviour, covered on its own by
+                // receiving_single_lu_autoselected.spec.js. This test is about the combination of the four
+                // flags and the co-product carve-out, not about how many pallets a product happens to have.
+                "BOM_PI_LOW_PALLET": { lu: "LU_LOW", qtyTUsPerLU: 10, tu: "TU_LOW", product: "BOM", qtyCUsPerTU: 4 },
                 // No qtyCUsPerTU -> infinite capacity, which the receipt offers for catch-weight lines only.
                 "REWORK_PI": { lu: "LU", qtyTUsPerLU: 20, tu: "TU_REWORK", product: "REWORK" },
             },

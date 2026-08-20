@@ -1,4 +1,4 @@
-import { ID_BACK_BUTTON, page } from '../../../common';
+import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT } from '../../../common';
 import { test } from '../../../../../playwright.config';
 import { expect } from '@playwright/test';
 import { ReceiptReceiveTargetScreen } from './ReceiptReceiveTargetScreen';
@@ -32,6 +32,24 @@ export const MaterialReceiptLineScreen = {
         await page.getByTestId('receive-target-button').tap();
         await ReceiptNewHUScreen.waitForScreen();
         await ReceiptReceiveTargetScreen.expectNotVisible();
+    }),
+
+    // The receive target needs no choosing at all: the chooser is switched off and a single pallet is
+    // the only target on offer, so tapping the receive target selects that pallet and the operator
+    // stays on the receive line, ready to enter the quantity.
+    clickReceiveTargetButtonExpectingTargetSelected: async ({ luName }) => await test.step(`${NAME} - Click receive target button (expecting pallet "${luName}" to be selected right away)`, async () => {
+        await page.getByTestId('receive-target-button').tap();
+        await MaterialReceiptLineScreen.expectReceiveTargetButtonNames({ luName });
+        await ReceiptNewHUScreen.expectNotVisible();
+        await ReceiptReceiveTargetScreen.expectNotVisible();
+    }),
+
+    // Once a target is set, the receive target button names it instead of the generic "Receive target".
+    expectReceiveTargetButtonNames: async ({ luName }) => await test.step(`${NAME} - Expect the receive target button to name "${luName}"`, async () => {
+        await MaterialReceiptLineScreen.expectVisible();
+        const button = page.getByTestId('receive-target-button');
+        await expect(button).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        await expect(button).toContainText(luName, { timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     selectNewLUTarget: async ({ luPIItemTestId }) => await test.step(`${NAME} - Select New LU target "${luPIItemTestId}"`, async () => {
