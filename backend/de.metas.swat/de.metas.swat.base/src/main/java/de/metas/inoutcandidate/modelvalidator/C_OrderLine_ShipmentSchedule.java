@@ -22,7 +22,9 @@ package de.metas.inoutcandidate.modelvalidator;
  * #L%
  */
 
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
+import de.metas.order.OrderLineId;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
@@ -59,5 +61,20 @@ public class C_OrderLine_ShipmentSchedule
 			shipmentScheduleInvalidateBL.invalidateJustForOrderLine(ol);
 			shipmentScheduleInvalidateBL.notifySegmentChangedForOrderLine(ol);
 		});
+	}
+
+	/**
+	 * Cascades the delete onto the {@code M_ShipmentSchedule} of a sales order line, guarding against deleting a
+	 * line whose schedule already has a real shipment (an active allocation to a non-voided/reversed inout).
+	 */
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
+	public void deleteOrGuardShipmentSchedules(final I_C_OrderLine ol)
+	{
+		if (!ol.getC_Order().isSOTrx())
+		{
+			return;
+		}
+
+		Services.get(IShipmentSchedulePA.class).deleteOrGuardForOrderLine(OrderLineId.ofRepoId(ol.getC_OrderLine_ID()));
 	}
 }

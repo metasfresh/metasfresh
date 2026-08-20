@@ -18,6 +18,7 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
+import de.metas.i18n.AdMessageKey;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceId;
@@ -140,6 +141,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.delete;
 
 public class InvoiceCandDAO implements IInvoiceCandDAO
 {
+	public static final AdMessageKey MSG_SalesOrderLine_CannotDelete_HasCompletedDocs = AdMessageKey.of("SalesOrderLine_CannotDelete_HasCompletedDocs");
+
 	private final transient Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandDAO.class);
 
 	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -245,19 +248,9 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	@Override
 	public int deleteAllReferencingInvoiceCandidates(@NonNull final Object model)
 	{
-		final String tableName = InterfaceWrapperHelper.getModelTableName(model);
-		final int tableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
-
-		final int recordId = InterfaceWrapperHelper.getId(model);
-
 		// i could do all this with "stream", but i find "old-school" easier to debug
 		int deleteCount = 0;
-		final List<I_C_Invoice_Candidate> icRecordsToDelete = queryBL
-				.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, tableId)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Record_ID, recordId)
-				.create()
-				.list();
+		final List<I_C_Invoice_Candidate> icRecordsToDelete = retrieveIcRecordsReferencing(model);
 		for (final I_C_Invoice_Candidate icRecordToDelete : icRecordsToDelete)
 		{
 			setProcessedToFalseIfIcNotNeeded(icRecordToDelete);
@@ -266,6 +259,48 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		}
 
 		return deleteCount;
+	}
+
+	@Override
+	public void deleteOrGuardReferencingInvoiceCandidates(@NonNull final Object model)
+	{
+		final List<I_C_Invoice_Candidate> icRecords = retrieveIcRecordsReferencing(model);
+
+		final boolean blockedByRealInvoice = icRecords.stream().anyMatch(this::hasNonVoidedInvoiceLine);
+		if (blockedByRealInvoice)
+		{
+			throw new AdempiereException(MSG_SalesOrderLine_CannotDelete_HasCompletedDocs);
+		}
+
+		deleteAllReferencingInvoiceCandidates(model);
+	}
+
+	private List<I_C_Invoice_Candidate> retrieveIcRecordsReferencing(@NonNull final Object model)
+	{
+		final String tableName = InterfaceWrapperHelper.getModelTableName(model);
+		final int tableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
+
+		final int recordId = InterfaceWrapperHelper.getId(model);
+
+		return queryBL
+				.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, tableId)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Record_ID, recordId)
+				.create()
+				.list();
+	}
+
+	/**
+	 * Block predicate: {@code ic} has at least one {@link I_C_Invoice_Line_Alloc}-linked {@code C_InvoiceLine} whose
+	 * parent {@code C_Invoice} is NOT voided/reversed. A voided/reversed invoice's lines stay active -- voiding zeroes
+	 * out their amounts but never deactivates them (see {@code MInvoice#voidIt}/{@code #reverseCorrectIt}) -- so
+	 * {@link #retrieveIlForIc} alone does not exclude them; the parent invoice's {@code DocStatus} must be checked.
+	 */
+	private boolean hasNonVoidedInvoiceLine(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		return retrieveIlForIc(ic)
+				.stream()
+				.anyMatch(invoiceLine -> !DocStatus.ofCode(invoiceLine.getC_Invoice().getDocStatus()).isReversedOrVoided());
 	}
 
 	/**

@@ -116,6 +116,13 @@ public interface IShipmentSchedulePA extends ISingletonService
 
 	void deleteAllForReference(TableRecordReference referencedRecord);
 
+	/**
+	 * Cascades the delete of a sales order line onto its {@link I_M_ShipmentSchedule}: a schedule with no active
+	 * allocation to a non-voided/reversed inout is deleted along with the line, while a schedule that already has
+	 * a real shipment blocks the delete.
+	 */
+	void deleteOrGuardForOrderLine(@NonNull OrderLineId orderLineId);
+
 	Set<ProductId> getProductIdsByShipmentScheduleIds(Collection<ShipmentScheduleId> shipmentScheduleIds);
 
 	void save(I_M_ShipmentSchedule record);
