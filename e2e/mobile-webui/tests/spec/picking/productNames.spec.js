@@ -11,12 +11,12 @@ import { LoginScreen } from "../../utils/screens/LoginScreen";
  * exactly like before, and the existing PRODUCT_NAME field type stays untouched for a multi-product
  * order (blank, as before this feature existed).
  */
-const createMasterdata = async ({ productField, lines }) => {
+const createMasterdata = async ({ productField, lines, workplace }) => {
     return await Backend.createMasterdata({
         language: "en_US",
         request: {
             login: {
-                user: { language: "en_US" },
+                user: { language: "en_US", workplace },
             },
             mobileConfig: {
                 picking: {
@@ -27,6 +27,11 @@ const createMasterdata = async ({ productField, lines }) => {
                     shipOnCloseLU: false,
                     pickTo: ['LU_TU'],
                     allowCompletingPartialPickingJob: false,
+                    // Scope the job list to this test's own workplace so it never sees jobs created
+                    // by other tests sharing the same picking job list (each test gets its own
+                    // distinct workplace — see the `workplace` param below).
+                    activeWorkplaceRequired: true,
+                    considerOnlyJobScheduledToWorkplace: true,
                     fields: [
                         { field: 'DOCUMENT_NO' },
                         { field: 'CUSTOMER' },
@@ -37,6 +42,7 @@ const createMasterdata = async ({ productField, lines }) => {
             },
             bpartners: { "BP1": {} },
             warehouses: { "wh": {} },
+            workplaces: { [workplace]: {} },
             products: {
                 "P1": { price: 1 },
                 "P2": { price: 1 },
@@ -47,7 +53,7 @@ const createMasterdata = async ({ productField, lines }) => {
                     bpartner: 'BP1',
                     warehouse: 'wh',
                     datePromised: '2025-03-01T00:00:00.000+02:00',
-                    lines,
+                    lines: lines.map(line => ({ ...line, workplace })),
                 }
             },
         }
@@ -69,6 +75,7 @@ test('Multi-product order lists all product names', async ({ page }) => {
             { product: 'P2', qty: 3 },
             { product: 'P3', qty: 2 },
         ],
+        workplace: 'workplace1',
     });
 
     await LoginScreen.login(masterdata.login.user);
@@ -100,6 +107,7 @@ test('Single-product order looks unchanged', async ({ page }) => {
         lines: [
             { product: 'P1', qty: 5 },
         ],
+        workplace: 'workplace2',
     });
 
     await LoginScreen.login(masterdata.login.user);
@@ -134,6 +142,7 @@ test('The existing PRODUCT_NAME field type is untouched', async ({ page }) => {
             { product: 'P2', qty: 3 },
             { product: 'P3', qty: 2 },
         ],
+        workplace: 'workplace3',
     });
 
     await LoginScreen.login(masterdata.login.user);
