@@ -3,8 +3,10 @@
 -- Four YesNo config fields gating the mobile Produktion receive flow: which Gebinde targets (LU/TU)
 -- are offered, whether the target-choice screen is skipped, and whether catch weight is captured at
 -- receipt. Mirrors IsBestBeforeDateEditable / IsLotNumberEditable (5809490).
--- All four apply to the MAIN FINISHED-GOOD line only — co- and by-product lines are deliberately
--- unaffected; hence the FinishedGoods qualifier in every column name and label.
+-- The three target/chooser flags apply to the MAIN FINISHED-GOOD line only — co- and by-product lines
+-- are deliberately unaffected by them; hence their FinishedGoods qualifier in column name and label.
+-- IsCaptureCatchWeightAtReceipt is the exception: it applies to EVERY receive line, co-/by-products
+-- included, so it carries no FinishedGoods qualifier and no "Fertigprodukt:" label prefix.
 --  - MobileUI_MFG_Config (542397): global config, YesNo (ref 20), NOT NULL DEFAULT per flag (Y/Y/N/Y).
 --  - MobileUI_UserProfile_MFG (542263): per-user override, three-state YesNo (ref 17 + 319), nullable (NULL = inherit global).
 -- Shared AD_Element per flag, referenced by both tables' columns.

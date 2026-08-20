@@ -52,7 +52,8 @@ public class MobileUIManufacturingConfig
 	}
 
 	/**
-	 * @param isMainFinishedGood {@code false} for a co-/by-product line, which every flag below exempts from the configured simplification.
+	 * @param isMainFinishedGood {@code false} for a co-/by-product line. THREE of the four flags exempt such a line
+	 *                           from the configured simplification; catch weight does NOT — it applies to every line.
 	 */
 	@NonNull
 	public FinishedGoodsReceiveLineConfig effectiveForReceiveLine(final boolean isMainFinishedGood)
