@@ -124,7 +124,10 @@ test('Detail surfaces name the right subject', async ({ page }) => {
                     // configuration this customer will not use on the launcher, exercised here because
                     // the field type is available to any profile, not only the one this customer runs.
                     fields: [
+                        { field: 'DOCUMENT_NO' },
+                        { field: 'CUSTOMER' },
                         { field: 'PRODUCT_NAMES', isShowInDetailed: true },
+                        { field: 'QTY_TO_DELIVER' },
                     ],
                 }
             },
