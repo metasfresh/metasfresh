@@ -74,12 +74,12 @@ UPDATE AD_Element_Trl SET Name='Filter by Barcode', IsTranslated='Y', Updated=TO
 SELECT update_TRL_Tables_On_AD_Element_TRL_Update(583565)
 ;
 
--- === 53687 FormatPattern : "Format Pattern" -> "Format-Muster" (Name + Description; shared element, see header) ===
-UPDATE AD_Element SET Name='Format-Muster', Description='Das Muster, das zur Formatierung einer Zahl oder eines Datums verwendet wird.', Updated=TO_TIMESTAMP('2026-08-20 09:30:20','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=53687
+-- === 53687 FormatPattern : "Format Pattern" -> "Formatmuster" (Name + Description; shared element, see header) ===
+UPDATE AD_Element SET Name='Formatmuster', Description='Das Muster, das zur Formatierung einer Zahl oder eines Datums verwendet wird.', Updated=TO_TIMESTAMP('2026-08-20 09:30:20','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=53687
 ;
-UPDATE AD_Element_Trl SET Name='Format-Muster', Description='Das Muster, das zur Formatierung einer Zahl oder eines Datums verwendet wird.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-20 09:30:21','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=53687 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET Name='Formatmuster', Description='Das Muster, das zur Formatierung einer Zahl oder eines Datums verwendet wird.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-20 09:30:21','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=53687 AND AD_Language='de_DE'
 ;
-UPDATE AD_Element_Trl SET Name='Format-Muster', Description='Das Muster, das zur Formatierung einer Zahl oder eines Datums verwendet wird.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-20 09:30:22','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=53687 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET Name='Formatmuster', Description='Das Muster, das zur Formatierung einer Zahl oder eines Datums verwendet wird.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-20 09:30:22','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=53687 AND AD_Language='de_CH'
 ;
 UPDATE AD_Element_Trl SET Name='Format Pattern', Description='The pattern used to format a number or date.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-20 09:30:23','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=53687 AND AD_Language='en_US'
 ;
