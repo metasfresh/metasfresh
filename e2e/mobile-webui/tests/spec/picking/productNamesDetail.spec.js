@@ -155,11 +155,8 @@ test('Detail surfaces name the right subject', async ({ page }) => {
     await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
 
     // Job header: each of the job's distinct products named once, in first-occurrence (line) order.
-    // PickingJobScreen has no expectHeaderProperty of its own (every sibling screen — jobs list, job
-    // line, material-receipt line, workplace manager — defines one over the same shared page-global
-    // `.view-header` row); reusing PickingJobLineScreen's existing, unmodified implementation here.
     const jobHeaderProductNames = [masterdata.products.P1.productName, masterdata.products.P2.productName].join(", ");
-    await PickingJobLineScreen.expectHeaderProperty({ caption: 'Product names (all)', value: jobHeaderProductNames });
+    await PickingJobScreen.expectHeaderProperty({ caption: 'Product names (all)', value: jobHeaderProductNames });
 
     // Opened line (the P2 line, index 2): names only its own product, never the job's other product(s).
     await PickingJobScreen.clickLineButton({ index: 2 });
