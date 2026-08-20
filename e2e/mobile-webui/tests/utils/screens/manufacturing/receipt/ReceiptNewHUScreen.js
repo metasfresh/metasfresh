@@ -1,4 +1,4 @@
-import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT } from '../../../common';
+import { ID_BACK_BUTTON, page, revealForCaptureIfEnabled, SLOW_ACTION_TIMEOUT } from '../../../common';
 import { test } from '../../../../../playwright.config';
 import { expect } from '@playwright/test';
 import { MaterialReceiptLineScreen } from './MaterialReceiptLineScreen';
@@ -24,12 +24,18 @@ export const ReceiptNewHUScreen = {
 
     clickLUTarget: async ({ luPIItemTestId }) => await test.step(`${NAME} - Click LU target "${luPIItemTestId}"`, async () => {
         await ReceiptNewHUScreen.expectVisible();
+        // Capture mode only (UAT_CAPTURE): show the target on the recording before tapping it — a spec that
+        // taps without asserting visibility first would otherwise never put it in frame. No-op otherwise.
+        await revealForCaptureIfEnabled(page.getByTestId(luPIItemTestId));
         await page.getByTestId(luPIItemTestId).tap();
         await MaterialReceiptLineScreen.waitForScreen();
     }),
 
     clickTUTarget: async ({ tuPIItemProductTestId }) => await test.step(`${NAME} - Click TU target "${tuPIItemProductTestId}"`, async () => {
         await ReceiptNewHUScreen.expectVisible();
+        // Capture mode only (UAT_CAPTURE): show the target on the recording before tapping it — a spec that
+        // taps without asserting visibility first would otherwise never put it in frame. No-op otherwise.
+        await revealForCaptureIfEnabled(page.getByTestId(tuPIItemProductTestId));
         await page.getByTestId(tuPIItemProductTestId).tap();
         await MaterialReceiptLineScreen.waitForScreen();
     }),
@@ -42,11 +48,17 @@ export const ReceiptNewHUScreen = {
     expectLUTargetVisible: async ({ luPIItemTestId }) => await test.step(`${NAME} - Expect LU target "${luPIItemTestId}" offered`, async () => {
         await ReceiptNewHUScreen.expectVisible();
         await expect(page.getByTestId(luPIItemTestId)).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        // Capture mode only (UAT_CAPTURE): the offered target often renders below the fold, so scroll it
+        // into the recorded viewport and hold it there. No-op / full speed otherwise.
+        await revealForCaptureIfEnabled(page.getByTestId(luPIItemTestId));
     }),
 
     expectTUTargetVisible: async ({ tuPIItemProductTestId }) => await test.step(`${NAME} - Expect TU target "${tuPIItemProductTestId}" offered`, async () => {
         await ReceiptNewHUScreen.expectVisible();
         await expect(page.getByTestId(tuPIItemProductTestId)).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        // Capture mode only (UAT_CAPTURE): the offered target often renders below the fold, so scroll it
+        // into the recorded viewport and hold it there. No-op / full speed otherwise.
+        await revealForCaptureIfEnabled(page.getByTestId(tuPIItemProductTestId));
     }),
 
     goBackToLineScreen: async () => await test.step(`${NAME} - Go back (expecting the receive line)`, async () => {
