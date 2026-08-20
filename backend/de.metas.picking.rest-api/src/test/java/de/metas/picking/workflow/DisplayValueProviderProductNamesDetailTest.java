@@ -62,7 +62,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * Covers the {@code PRODUCT_NAMES} launcher field type on the DETAIL surfaces (AC6, AC7, AC8): the started-job
+ * Covers the {@code PRODUCT_NAMES} launcher field type on the DETAIL surfaces: the started-job
  * header names every distinct product of the job (deduplicated by {@code ProductId}, first-occurrence order),
  * while an opened line names only its own product, never the job's others.
  */

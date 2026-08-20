@@ -48,7 +48,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * Covers the {@code PRODUCT_NAMES} launcher field type (AC2, AC3, AC4, AC5, AC8, AC9): a job-list
+ * Covers the {@code PRODUCT_NAMES} launcher field type: a job-list
  * caption listing every product of a multi-product job, joined by {@code ", "}, while the existing
  * {@code PRODUCT_NAME} / {@code QTY_TO_DELIVER} fields stay blank for a multi-product job as before.
  */
