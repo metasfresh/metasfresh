@@ -1,4 +1,4 @@
--- me03 31628: add a directed "Related Documents" (zoom-across) relation so that from a sales order
+-- Add a directed "Related Documents" (zoom-across) relation so that from a sales order
 -- (C_Order, IsSOTrx='Y') the user can jump to the order's Traffic Management (Picking Job Schedule)
 -- rows. Reuses the standard C_Order(SO) source reference 540666; the target opens the Picking Job
 -- Schedule window (541929) on the M_Picking_Job_Schedule_view (542514), filtered to the current order
