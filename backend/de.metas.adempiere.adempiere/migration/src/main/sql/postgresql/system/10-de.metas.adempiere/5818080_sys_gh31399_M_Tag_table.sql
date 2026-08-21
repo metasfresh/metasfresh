@@ -19,7 +19,8 @@ INSERT INTO AD_Table (AccessLevel,ACTriggerLength,AD_Client_ID,AD_Org_ID,AD_Tabl
 INSERT INTO AD_Table_Trl (AD_Language,AD_Table_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Table_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Table t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N') AND t.AD_Table_ID=542636 AND NOT EXISTS (SELECT 1 FROM AD_Table_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Table_ID=t.AD_Table_ID)
 ;
 
--- No AD_Sequence row: the native PK sequence m_tag_seq is auto-created by dba_seq_check_native() after migration.
+INSERT INTO AD_Sequence (CurrentNext,IsAudited,IsActive,IsTableID,Created,CreatedBy,IsAutoSequence,StartNo,IncrementNo,CurrentNextSys,Updated,UpdatedBy,AD_Sequence_ID,AD_Client_ID,Name,AD_Org_ID,Description) VALUES (1000000,'N','Y','Y',TO_TIMESTAMP('2026-08-10 15:20:00','YYYY-MM-DD HH24:MI:SS'),100,'Y',1000000,1,50000,TO_TIMESTAMP('2026-08-10 15:20:00','YYYY-MM-DD HH24:MI:SS'),100,581987,0,'M_Tag',0,'Table M_Tag')
+;
 
 -- Key column element (M_Tag_ID) --------------------------------------------
 INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,585159 /*From ID Server*/,0,'M_Tag_ID',TO_TIMESTAMP('2026-08-10 15:20:01','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Produkt-Label','Produkt-Label',TO_TIMESTAMP('2026-08-10 15:20:01','YYYY-MM-DD HH24:MI:SS'),100)
