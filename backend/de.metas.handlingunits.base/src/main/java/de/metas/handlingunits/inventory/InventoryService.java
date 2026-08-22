@@ -8,7 +8,10 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.attribute.HUAttributeUpdateRequest;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateCommand;
 import de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateRequest;
 import de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateResponse;
@@ -42,6 +45,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.Adempiere;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
@@ -83,6 +87,7 @@ public class InventoryService
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	@NonNull private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	@NonNull @Getter private final InventoryRepository inventoryRepository = new InventoryRepository();
 	@NonNull HuForInventoryLineFactory huForInventoryLineFactory;
 	@NonNull private final SourceHUsService sourceHUsService;
@@ -108,6 +113,7 @@ public class InventoryService
 
 	public Inventory toInventory(@NonNull final I_M_Inventory inventoryRecord) {return inventoryRepository.toInventory(inventoryRecord);}
 
+	@Nullable
 	public DocBaseAndSubType extractDocBaseAndSubTypeOrNull(final I_M_Inventory inventoryRecord)
 	{
 		return inventoryRepository.extractDocBaseAndSubTypeOrNull(inventoryRecord);
@@ -234,6 +240,35 @@ public class InventoryService
 				.build()
 				//
 				.execute();
+	}
+
+	/**
+	 * Stamps {@link AttributeConstants#ATTR_DateReceived} with {@code inventoryRecord.getMovementDate()} on every
+	 * assigned HU that does not yet carry a value. Skip-if-set preserves the original receipt date for HUs that
+	 * already exist in stock and are merely being re-counted; HUs newly created by the inventory get the
+	 * inventory date as their initial value. No-op for material-disposal inventories — those remove stock and
+	 * carry no receipt-date semantics.
+	 */
+	public void setReceivedDateOnInventoryHUs(@NonNull final I_M_Inventory inventoryRecord)
+	{
+		if (isMaterialDisposal(inventoryRecord))
+		{
+			return;
+		}
+
+		final ImmutableSet<HuId> huIds = inventoryRepository.toInventory(inventoryRecord).getHuIds();
+		if (huIds.isEmpty())
+		{
+			return;
+		}
+
+		huAttributesBL.updateHUAttributeRecursive(
+				huIds,
+				HUAttributeUpdateRequest.builder()
+						.attributeCode(AttributeConstants.ATTR_DateReceived)
+						.attributeValue(inventoryRecord.getMovementDate())
+						.onlyIfNotSet(true)
+						.build());
 	}
 
 	/**

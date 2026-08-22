@@ -120,7 +120,7 @@ public class M_HU_LUTU_Configuration_StepDef
 
 					assertThat(hus).hasSize(1);
 
-					final String huIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_HU.COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
+					final StepDefDataIdentifier huIdentifier = tableRow.getAsIdentifier(I_M_HU.COLUMNNAME_M_HU_ID);
 					huTable.putOrReplace(huIdentifier, hus.get(0));
 				});
 	}
@@ -229,7 +229,7 @@ public class M_HU_LUTU_Configuration_StepDef
 
 	private de.metas.handlingunits.model.I_M_ReceiptSchedule getReceiptSchedule(final StepDefDataIdentifier receiptScheduleIdentifier)
 	{
-		I_M_ReceiptSchedule receiptSchedule = receiptScheduleTable.getOptional(receiptScheduleIdentifier).orElse(null);
+		final I_M_ReceiptSchedule receiptSchedule = receiptScheduleTable.getOptional(receiptScheduleIdentifier).orElse(null);
 		if (receiptSchedule != null)
 		{
 			InterfaceWrapperHelper.refresh(receiptSchedule);
