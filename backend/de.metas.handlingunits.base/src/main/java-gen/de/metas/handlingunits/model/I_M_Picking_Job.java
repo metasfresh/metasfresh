@@ -52,6 +52,7 @@ public interface I_M_Picking_Job
 
 	/**
 	 * Set Carrier Product.
+	 * The carrier product for shipment handling.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -61,6 +62,7 @@ public interface I_M_Picking_Job
 
 	/**
 	 * Get Carrier Product.
+	 * The carrier product for shipment handling.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -242,6 +244,27 @@ public interface I_M_Picking_Job
 
 	ModelColumn<I_M_Picking_Job, Object> COLUMN_DocStatus = new ModelColumn<>(I_M_Picking_Job.class, "DocStatus", null);
 	String COLUMNNAME_DocStatus = "DocStatus";
+
+	/**
+	 * Set External System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSystem_ID (int ExternalSystem_ID);
+
+	/**
+	 * Get External System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getExternalSystem_ID();
+
+	ModelColumn<I_M_Picking_Job, Object> COLUMN_ExternalSystem_ID = new ModelColumn<>(I_M_Picking_Job.class, "ExternalSystem_ID", null);
+	String COLUMNNAME_ExternalSystem_ID = "ExternalSystem_ID";
 
 	/**
 	 * Set unloading address.
@@ -522,6 +545,7 @@ public interface I_M_Picking_Job
 
 	/**
 	 * Set Aggregation Type.
+	 * Defines how lines are grouped into one picking job: by order (with one shared LU for the whole order), by product (with the pick target at line level), or by delivery location.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -531,6 +555,7 @@ public interface I_M_Picking_Job
 
 	/**
 	 * Get Aggregation Type.
+	 * Defines how lines are grouped into one picking job: by order (with one shared LU for the whole order), by product (with the pick target at line level), or by delivery location.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true

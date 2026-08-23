@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_PickingProfile_Filter extends org.compiere.model.PO implements I_PickingProfile_Filter, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1042742251L;
+	private static final long serialVersionUID = 150451499L;
 
     /** Standard Constructor */
     public X_PickingProfile_Filter (final Properties ctx, final int PickingProfile_Filter_ID, @Nullable final String trxName)
@@ -47,6 +47,8 @@ public class X_PickingProfile_Filter extends org.compiere.model.PO implements I_
 	public static final String FILTERTYPE_HandoverLocation = "HandoverLocation";
 	/** PreparationDate = PreparationDate */
 	public static final String FILTERTYPE_PreparationDate = "PreparationDate";
+	/** ExternalSystem = ExternalSystem */
+	public static final String FILTERTYPE_ExternalSystem = "ExternalSystem";
 	@Override
 	public void setFilterType (final java.lang.String FilterType)
 	{

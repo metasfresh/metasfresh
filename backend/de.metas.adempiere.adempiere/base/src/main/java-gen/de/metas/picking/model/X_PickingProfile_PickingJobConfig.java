@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_PickingProfile_PickingJobConfig extends org.compiere.model.PO implements I_PickingProfile_PickingJobConfig, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1386016706L;
+	private static final long serialVersionUID = -1176294250L;
 
     /** Standard Constructor */
     public X_PickingProfile_PickingJobConfig (final Properties ctx, final int PickingProfile_PickingJobConfig_ID, @Nullable final String trxName)
@@ -110,6 +110,8 @@ public class X_PickingProfile_PickingJobConfig extends org.compiere.model.PO imp
 	public static final String PICKINGJOBFIELD_ProductNo = "ProductNo";
 	/** ProductNames = ProductNames */
 	public static final String PICKINGJOBFIELD_ProductNames = "ProductNames";
+	/** ExternalSystem = ExternalSystem */
+	public static final String PICKINGJOBFIELD_ExternalSystem = "ExternalSystem";
 	@Override
 	public void setPickingJobField (final java.lang.String PickingJobField)
 	{
