@@ -223,6 +223,24 @@ public class PP_Order_StepDef
 		});
 	}
 
+	@And("^create PP_Order expecting error code (.*):$")
+	public void create_PP_Order_expecting_error_code(@NonNull final String errorCode, @NonNull final DataTable dataTable)
+	{
+		// Mirrors "create PP_Order:" but asserts the creation is REFUSED with a specific error code — used to
+		// prove a guard that fires while the manufacturing order is being created, e.g. the product life-cycle
+		// status check in PP_Order#validateBOMAndProduct.
+		try
+		{
+			compute_PPOrderCreateRequest_to_create_pp_order(dataTable);
+
+			fail("An Exception should have been thrown while creating the manufacturing order !");
+		}
+		catch (final AdempiereException exception)
+		{
+			assertThat(exception.getErrorCode()).as("ErrorCode of %s", exception).isEqualTo(errorCode);
+		}
+	}
+
 	@And("complete planning for PP_Order:")
 	public void process_pp_order(@NonNull final DataTable dataTable) throws Exception
 	{

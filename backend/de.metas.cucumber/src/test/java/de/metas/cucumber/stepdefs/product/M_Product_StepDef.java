@@ -92,6 +92,15 @@ import static org.compiere.model.I_M_Product.COLUMNNAME_Value;
  * <p>
  * Products created here are registered in {@link M_Product_StepDefData} under their feature-file identifier,
  * so later steps and other step-def classes can resolve them by that identifier.
+ *
+ * <pre>{@code
+ * Given metasfresh contains M_Products:
+ *   | Identifier | ProductLifeCycleStatus |
+ *   | flippedToG | O                      |
+ * When update M_Product:
+ *   | M_Product_ID.Identifier | ProductLifeCycleStatus |
+ *   | flippedToG              | G                      |
+ * }</pre>
  */
 @RequiredArgsConstructor
 public class M_Product_StepDef
@@ -288,6 +297,21 @@ public class M_Product_StepDef
 		}
 	}
 
+	/**
+	 * Updates existing products, looked up by their feature-file identifier.
+	 * <p>
+	 * Required column:<br>
+	 *   <b>M_Product_ID.Identifier</b> — identifier of a product created/loaded earlier in the scenario<br>
+	 * Optional columns (only the ones present are written):<br>
+	 *   <b>Value</b>, <b>GTIN</b>, <b>UPC</b>, <b>EAN13_ProductCode</b>, <b>IsStocked</b>, <b>IsActive</b>,
+	 *   <b>ProductLifeCycleStatus</b> — BBS-Status code {@code O}/{@code A}/{@code G}/{@code N}
+	 *
+	 * <pre>{@code
+	 * When update M_Product:
+	 *   | M_Product_ID.Identifier | ProductLifeCycleStatus |
+	 *   | flippedToG              | G                      |
+	 * }</pre>
+	 */
 	@Given("update M_Product:")
 	public void update_M_Product(@NonNull final DataTable dataTable)
 	{
@@ -468,6 +492,8 @@ public class M_Product_StepDef
 		row.getAsOptionalString(I_M_Product.COLUMNNAME_EAN13_ProductCode).ifPresent(value -> productRecord.setEAN13_ProductCode(nullToken2Null(value)));
 		row.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsStocked).ifPresent(productRecord::setIsStocked);
 		row.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsActive).ifPresent(productRecord::setIsActive);
+		row.getAsOptionalString(I_M_Product.COLUMNNAME_ProductLifeCycleStatus)
+				.ifPresent(value -> productRecord.setProductLifeCycleStatus(nullToken2Null(value)));
 
 		saveRecord(productRecord);
 		productTable.putOrReplace(row.getAsIdentifier(), productRecord);
