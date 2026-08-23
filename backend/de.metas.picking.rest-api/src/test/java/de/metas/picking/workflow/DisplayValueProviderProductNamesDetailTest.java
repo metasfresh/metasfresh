@@ -54,6 +54,7 @@ import de.metas.quantity.Quantity;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -140,33 +141,37 @@ class DisplayValueProviderProductNamesDetailTest
 				.build();
 	}
 
-	@Test
-	void job_productNames_namesEachDistinctProductOnceInFirstOccurrenceOrder()
+	@Nested
+	class JobProductNames
 	{
-		final DisplayValueProvider provider = displayValueProvider();
-		final PickingJobLine lineA1 = line(1, "ProductA");
-		final PickingJobLine lineB = line(2, "ProductB");
-		final PickingJobLine lineA2 = line(1, "ProductA"); // same product again, on a different line
-		final PickingJob job = job(lineA1, lineB, lineA2);
+		@Test
+		void namesEachDistinctProductOnceInFirstOccurrenceOrder()
+		{
+			final DisplayValueProvider provider = displayValueProvider();
+			final PickingJobLine lineA1 = line(1, "ProductA");
+			final PickingJobLine lineB = line(2, "ProductB");
+			final PickingJobLine lineA2 = line(1, "ProductA"); // same product again, on a different line
+			final PickingJob job = job(lineA1, lineB, lineA2);
 
-		final String caption = provider.getDisplayValue(productNamesField(), job).translate("en_US");
+			final String caption = provider.getDisplayValue(productNamesField(), job).translate("en_US");
 
-		assertThat(caption).isEqualTo("ProductA, ProductB");
-	}
+			assertThat(caption).isEqualTo("ProductA, ProductB");
+		}
 
-	@Test
-	void job_productNames_namesTwoDistinctProductsSharingANameTwice()
-	{
-		final DisplayValueProvider provider = displayValueProvider();
-		// two genuinely different products that happen to carry the same name:
-		// deduplication is by ProductId, so neither may swallow the other
-		final PickingJobLine lineA = line(1, "Gouda");
-		final PickingJobLine lineB = line(2, "Gouda");
-		final PickingJob job = job(lineA, lineB);
+		@Test
+		void namesTwoDistinctProductsSharingANameTwice()
+		{
+			final DisplayValueProvider provider = displayValueProvider();
+			// two genuinely different products that happen to carry the same name:
+			// deduplication is by ProductId, so neither may swallow the other
+			final PickingJobLine lineA = line(1, "Gouda");
+			final PickingJobLine lineB = line(2, "Gouda");
+			final PickingJob job = job(lineA, lineB);
 
-		final String caption = provider.getDisplayValue(productNamesField(), job).translate("en_US");
+			final String caption = provider.getDisplayValue(productNamesField(), job).translate("en_US");
 
-		assertThat(caption).isEqualTo("Gouda, Gouda");
+			assertThat(caption).isEqualTo("Gouda, Gouda");
+		}
 	}
 
 	@Test
