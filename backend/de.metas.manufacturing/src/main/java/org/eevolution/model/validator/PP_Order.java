@@ -272,11 +272,7 @@ public class PP_Order
 			ifColumnsChanged = { I_PP_Order.COLUMNNAME_M_Product_ID, I_PP_Order.COLUMNNAME_PP_Product_BOM_ID })
 	public void validateBOMAndProduct(@NonNull final I_PP_Order ppOrder)
 	{
-		final ProductId productId = ProductId.ofRepoIdOrNull(ppOrder.getM_Product_ID());
-		if (productId != null)
-		{
-			productBL.assertAllowed(productId, ProductLifeCycleAction.MANUFACTURE);
-		}
+		assertProductAllowedForManufacturing(ppOrder);
 
 		final ProductBOMId bomId = ProductBOMId.ofRepoId(ppOrder.getPP_Product_BOM_ID());
 
@@ -305,6 +301,12 @@ public class PP_Order
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
 	public void assertProductAllowedOnComplete(@NonNull final I_PP_Order ppOrder)
+	{
+		assertProductAllowedForManufacturing(ppOrder);
+	}
+
+	/** Shared by the create/change guard and the completion re-check: both ask the same question. */
+	private void assertProductAllowedForManufacturing(@NonNull final I_PP_Order ppOrder)
 	{
 		final ProductId productId = ProductId.ofRepoIdOrNull(ppOrder.getM_Product_ID());
 		if (productId != null)

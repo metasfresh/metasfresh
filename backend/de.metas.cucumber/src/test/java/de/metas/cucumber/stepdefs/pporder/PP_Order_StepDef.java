@@ -240,16 +240,7 @@ public class PP_Order_StepDef
 	@And("^create PP_Order expecting error code (.*):$")
 	public void create_PP_Order_expecting_error_code(@NonNull final String errorCode, @NonNull final DataTable dataTable)
 	{
-		try
-		{
-			compute_PPOrderCreateRequest_to_create_pp_order(dataTable);
-
-			fail("An Exception should have been thrown while creating the manufacturing order !");
-		}
-		catch (final AdempiereException exception)
-		{
-			assertThat(exception.getErrorCode()).as("ErrorCode of %s", exception).isEqualTo(errorCode);
-		}
+		StepDefUtil.assertRefusedWithErrorCode(errorCode, () -> compute_PPOrderCreateRequest_to_create_pp_order(dataTable));
 	}
 
 	@And("complete planning for PP_Order:")
@@ -421,16 +412,7 @@ public class PP_Order_StepDef
 			@NonNull final String orderIdentifier,
 			@NonNull final String errorCode)
 	{
-		try
-		{
-			order_action(orderIdentifier, StepDefDocAction.completed.name());
-
-			fail("An Exception should have been thrown while completing manufacturing order " + orderIdentifier + " !");
-		}
-		catch (final AdempiereException exception)
-		{
-			assertThat(exception.getErrorCode()).as("ErrorCode of %s", exception).isEqualTo(errorCode);
-		}
+		StepDefUtil.assertRefusedWithErrorCode(errorCode, () -> order_action(orderIdentifier, StepDefDocAction.completed.name()));
 	}
 
 	private void validatePP_Order_BomLine(final int timeoutSec, @NonNull final DataTableRow row) throws InterruptedException

@@ -31,6 +31,7 @@ import de.metas.util.NumberUtils;
 import de.metas.util.StringUtils;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import lombok.experimental.UtilityClass;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
@@ -46,6 +47,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 /**
@@ -348,6 +350,20 @@ public class StepDefUtil
 		{
 			throw e;
 		}
+	}
+
+	/**
+	 * Runs {@code action} and asserts it is REFUSED with the given {@code AD_Message.ErrorCode}.
+	 * <p>
+	 * Asserting the error code — rather than merely that <i>some</i> exception was thrown — pins WHY the
+	 * action failed, so the step cannot pass because of an unrelated failure. Shared by the
+	 * "cannot be completed because of error code" steps of the various document types.
+	 */
+	public void assertRefusedWithErrorCode(@NonNull final String errorCode, @NonNull final Runnable action)
+	{
+		assertThatThrownBy(action::run)
+				.isInstanceOfSatisfying(AdempiereException.class,
+						exception -> assertThat(exception.getErrorCode()).as("ErrorCode of %s", exception).isEqualTo(errorCode));
 	}
 
 	public List<String> splitByColon(@NonNull final String s)

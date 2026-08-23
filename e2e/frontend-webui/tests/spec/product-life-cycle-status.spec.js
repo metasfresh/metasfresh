@@ -35,7 +35,7 @@ import {
   getViewLayoutColumnNames,
   getViewLayoutFilterParameterNames,
 } from '../utils/WebAPIValidation';
-import { navigateToViewWindow } from '../utils/view-validation/ViewWindowHelper';
+import { assertColumnsPresent, navigateToViewWindow } from '../utils/view-validation/ViewWindowHelper';
 
 // AD_Column.ColumnName for the life-cycle status field
 const FIELD_NAME = 'ProductLifeCycleStatus';
@@ -153,8 +153,8 @@ data window and that selecting "Gesperrt" (G) persists after save and page reloa
     await test.step('Assert the BBS-Status grid column renders in the Product list view', async () => {
       await navigateToViewWindow(PRODUCT_WINDOW_ID);
 
-      const header = page.locator(`th[data-testid="column-${FIELD_NAME}"]`);
-      await expect(header, `grid column header for ${FIELD_NAME}`).toHaveCount(1);
+      const { present } = await assertColumnsPresent([FIELD_NAME]);
+      expect(present, `grid column header for ${FIELD_NAME}`).toContain(FIELD_NAME);
 
       const screenshotBuffer = await page.screenshot({ fullPage: true });
       await allure.attachment(

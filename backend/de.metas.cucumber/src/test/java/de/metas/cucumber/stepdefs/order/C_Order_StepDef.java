@@ -557,16 +557,7 @@ public class C_Order_StepDef
 			@NonNull final String orderIdentifier,
 			@NonNull final String errorCode)
 	{
-		try
-		{
-			order_action(orderIdentifier, StepDefDocAction.completed.name());
-
-			fail("An Exception should have been thrown while completing order " + orderIdentifier + " !");
-		}
-		catch (final AdempiereException exception)
-		{
-			assertThat(exception.getErrorCode()).as("ErrorCode of %s", exception).isEqualTo(errorCode);
-		}
+		StepDefUtil.assertRefusedWithErrorCode(errorCode, () -> order_action(orderIdentifier, StepDefDocAction.completed.name()));
 	}
 
 	public void completeOrder(final I_C_Order order)
