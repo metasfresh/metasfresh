@@ -69,7 +69,13 @@ class ProductBL_assertAllowed_Test
 
 	private ProductId createProduct(final String productLifeCycleStatus, final String value)
 	{
+		return createProduct(productLifeCycleStatus, value, true);
+	}
+
+	private ProductId createProduct(final String productLifeCycleStatus, final String value, final boolean isActive)
+	{
 		final I_M_Product p = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+		p.setIsActive(isActive);
 		p.setValue(value);
 		p.setName("Test Product");
 		p.setProductLifeCycleStatus(productLifeCycleStatus);
@@ -218,5 +224,40 @@ class ProductBL_assertAllowed_Test
 					assertThat(ex.isUserValidationError()).isTrue();
 					assertThat(ex.getParameter("product")).isEqualTo("P_BLOCKED");
 				});
+	}
+
+	@Test
+	void batch_severalBlockedMembers_alwaysNamesTheLowestIdOne()
+	{
+		// The batch load returns an unordered result against a real DB, so without a stable iteration order the
+		// reported product would vary between runs and the user would fix them one unpredictable step at a
+		// time. NOTE: this is a regression guard for the sorted iteration, not a reproduction of the
+		// non-determinism — the POJO test map happens to preserve insertion order, so only a real Postgres
+		// query plan can actually shuffle the result.
+		final ProductId firstBlocked = createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_Blocked, "P_BLOCKED_1");
+		final ProductId secondBlocked = createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_Blocked, "P_BLOCKED_2");
+		assertThat(firstBlocked.getRepoId()).isLessThan(secondBlocked.getRepoId());
+
+		assertThatThrownBy(() -> productBL.assertAllowed(ImmutableSet.of(secondBlocked, firstBlocked), ProductLifeCycleAction.SHIP))
+				.isInstanceOfSatisfying(AdempiereException.class,
+						ex -> assertThat(ex.getParameter("product")).isEqualTo("P_BLOCKED_1"));
+	}
+
+	@Test
+	void batch_inactiveBlockedMember_stillThrows()
+	{
+		// A product can be deactivated while documents still reference it. The batch load filters inactive
+		// records out, so without the single-load fallback the check would silently pass here while the
+		// single-product overload below still refuses — the two must not diverge.
+		final ProductId inactiveBlocked = createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_DeliveryStop, "P_INACTIVE", false);
+
+		assertThatThrownBy(() -> productBL.assertAllowed(inactiveBlocked, ProductLifeCycleAction.SHIP))
+				.as("single-product overload")
+				.isInstanceOf(AdempiereException.class);
+
+		assertThatThrownBy(() -> productBL.assertAllowed(ImmutableSet.of(inactiveBlocked), ProductLifeCycleAction.SHIP))
+				.as("batch overload")
+				.isInstanceOfSatisfying(AdempiereException.class,
+						ex -> assertThat(ex.getParameter("product")).isEqualTo("P_INACTIVE"));
 	}
 }

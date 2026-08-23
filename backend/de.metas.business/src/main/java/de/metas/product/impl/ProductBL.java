@@ -73,6 +73,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -484,9 +485,20 @@ public final class ProductBL implements IProductBL
 
 		// getByIdsInTrx (not getByIds): a product may have been created within the current trx, same reason
 		// IProductDAO.getById refuses to load out-of-trx.
-		for (final I_M_Product product : productsRepo.getByIdsInTrx(ImmutableSet.copyOf(productIds)))
+		final ImmutableMap<ProductId, I_M_Product> productsById = Maps.uniqueIndex(
+				productsRepo.getByIdsInTrx(ImmutableSet.copyOf(productIds)),
+				product -> ProductId.ofRepoId(product.getM_Product_ID()));
+
+		// Iterate the REQUESTED ids in a stable order: getByIdsInTrx returns an unordered result, so without
+		// this a document carrying several blocked products would name an arbitrary one of them, differing
+		// between runs.
+		for (final ProductId productId : ImmutableList.sortedCopyOf(Comparator.comparingInt(ProductId::getRepoId), productIds))
 		{
-			assertAllowed(product, action);
+			// getByIdsInTrx filters out INACTIVE records, so a deactivated-but-still-referenced product would
+			// silently escape the check. Fall back to the single-record load for those, which is exactly what
+			// assertAllowed(ProductId, ...) does — the two paths must not diverge.
+			final I_M_Product product = productsById.get(productId);
+			assertAllowed(product != null ? product : getById(productId), action);
 		}
 	}
 

@@ -123,8 +123,11 @@ public interface IProductBL extends ISingletonService
 	 * Batch variant of {@link #assertAllowed(ProductId, ProductLifeCycleAction)} for callers that check a whole
 	 * document's lines: loads the products in one go instead of one {@code getById} per line.
 	 *
-	 * @throws org.adempiere.exceptions.AdempiereException (user validation error) on the first product whose current
-	 * {@link de.metas.product.BBSStatus} blocks the action.
+	 * The products are checked in ascending {@code M_Product_ID} order, so a document carrying several blocked
+	 * products always reports the same one.
+	 *
+	 * @throws org.adempiere.exceptions.AdempiereException (user validation error) on the lowest-id product whose
+	 * current {@link de.metas.product.BBSStatus} blocks the action.
 	 */
 	void assertAllowed(@NonNull Set<ProductId> productIds, @NonNull ProductLifeCycleAction action);
 
