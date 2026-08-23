@@ -86,6 +86,13 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_M_Product_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_Category_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_Value;
 
+/**
+ * Step definitions for {@code M_Product}: creating and updating products (including
+ * {@code ProductLifeCycleStatus}/BBS-Status), and asserting product master data.
+ * <p>
+ * Products created here are registered in {@link M_Product_StepDefData} under their feature-file identifier,
+ * so later steps and other step-def classes can resolve them by that identifier.
+ */
 @RequiredArgsConstructor
 public class M_Product_StepDef
 {

@@ -22,7 +22,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
 /**
- * Unit coverage for {@link PickingJobProductService#isSerialNoPickingEnabled(ProductId)}.
+ * Unit coverage for {@link PickingJobProductService#isSerialNoPickingEnabled(ProductId)} and
+ * {@link PickingJobProductService#assertPickAllowed(ProductId)}.
  * <p>
  * The serial-no picking prompt is driven by the {@code M_Product.IsSerialNoPicked} checkbox alone (plus the
  * defensive system-wide {@code SerialNo}-attribute-defined guard). The product's own attribute set is irrelevant

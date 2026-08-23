@@ -271,7 +271,11 @@ public class PP_Order
 			ifColumnsChanged = { I_PP_Order.COLUMNNAME_M_Product_ID, I_PP_Order.COLUMNNAME_PP_Product_BOM_ID })
 	public void validateBOMAndProduct(@NonNull final I_PP_Order ppOrder)
 	{
-		productBL.assertAllowed(ProductId.ofRepoId(ppOrder.getM_Product_ID()), ProductLifeCycleAction.MANUFACTURE);
+		final ProductId productId = ProductId.ofRepoIdOrNull(ppOrder.getM_Product_ID());
+		if (productId != null)
+		{
+			productBL.assertAllowed(productId, ProductLifeCycleAction.MANUFACTURE);
+		}
 
 		final ProductBOMId bomId = ProductBOMId.ofRepoId(ppOrder.getPP_Product_BOM_ID());
 

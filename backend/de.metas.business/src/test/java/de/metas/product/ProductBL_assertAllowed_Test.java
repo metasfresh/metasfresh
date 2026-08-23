@@ -22,6 +22,7 @@
 
 package de.metas.product;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.ad_reference.ADRefListItemCreateRequest;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.ad_reference.ReferenceId;
@@ -63,8 +64,13 @@ class ProductBL_assertAllowed_Test
 
 	private ProductId createProduct(final String productLifeCycleStatus)
 	{
+		return createProduct(productLifeCycleStatus, "P");
+	}
+
+	private ProductId createProduct(final String productLifeCycleStatus, final String value)
+	{
 		final I_M_Product p = InterfaceWrapperHelper.newInstance(I_M_Product.class);
-		p.setValue("P");
+		p.setValue(value);
 		p.setName("Test Product");
 		p.setProductLifeCycleStatus(productLifeCycleStatus);
 		InterfaceWrapperHelper.saveRecord(p);
@@ -171,5 +177,36 @@ class ProductBL_assertAllowed_Test
 			assertThatThrownBy(() -> productBL.assertAllowed(productId, ProductLifeCycleAction.PICK))
 					.isInstanceOfSatisfying(AdempiereException.class, ex -> assertThat(ex.isUserValidationError()).isTrue());
 		}
+	}
+
+	@Test
+	void batch_emptySet_isNoOp()
+	{
+		assertThatCode(() -> productBL.assertAllowed(ImmutableSet.of(), ProductLifeCycleAction.SHIP))
+				.doesNotThrowAnyException();
+	}
+
+	@Test
+	void batch_noMemberBlocksTheAction_doesNotThrow()
+	{
+		final ProductId ok = createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_OK, "P_OK");
+		// Auslauf does not block SHIP, so it must not block a SHIP check
+		final ProductId phaseOut = createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_PhaseOut, "P_PHASEOUT");
+
+		assertThatCode(() -> productBL.assertAllowed(ImmutableSet.of(ok, phaseOut), ProductLifeCycleAction.SHIP))
+				.doesNotThrowAnyException();
+	}
+
+	@Test
+	void batch_oneBlockedMember_throwsNamingThatProduct()
+	{
+		final ProductId ok = createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_OK, "P_OK");
+		final ProductId blocked = createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_DeliveryStop, "P_BLOCKED");
+
+		assertThatThrownBy(() -> productBL.assertAllowed(ImmutableSet.of(ok, blocked), ProductLifeCycleAction.SHIP))
+				.isInstanceOfSatisfying(AdempiereException.class, ex -> {
+					assertThat(ex.isUserValidationError()).isTrue();
+					assertThat(ex.getParameter("product")).isEqualTo("P_BLOCKED");
+				});
 	}
 }

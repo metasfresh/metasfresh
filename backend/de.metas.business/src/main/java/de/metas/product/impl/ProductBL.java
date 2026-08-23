@@ -471,7 +471,27 @@ public final class ProductBL implements IProductBL
 	@Override
 	public void assertAllowed(@NonNull final ProductId productId, @NonNull final ProductLifeCycleAction action)
 	{
-		final I_M_Product product = getById(productId);
+		assertAllowed(getById(productId), action);
+	}
+
+	@Override
+	public void assertAllowed(@NonNull final Set<ProductId> productIds, @NonNull final ProductLifeCycleAction action)
+	{
+		if (productIds.isEmpty())
+		{
+			return;
+		}
+
+		// getByIdsInTrx (not getByIds): a product may have been created within the current trx, same reason
+		// IProductDAO.getById refuses to load out-of-trx.
+		for (final I_M_Product product : productsRepo.getByIdsInTrx(ImmutableSet.copyOf(productIds)))
+		{
+			assertAllowed(product, action);
+		}
+	}
+
+	private static void assertAllowed(@NonNull final I_M_Product product, @NonNull final ProductLifeCycleAction action)
+	{
 		final String code = product.getProductLifeCycleStatus();
 		if (!isStatusAllowed(code, action))
 		{
