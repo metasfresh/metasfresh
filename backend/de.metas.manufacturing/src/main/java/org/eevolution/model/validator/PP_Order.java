@@ -21,6 +21,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -288,6 +289,27 @@ public class PP_Order
 					.appendParametersToMessage()
 					.setParameter("PP_Order.M_Product_ID", ppOrder.getM_Product_ID())
 					.setParameter("PP_Order.PP_Product_BOM_ID.M_Product_ID", productIdOfBOM.getRepoId());
+		}
+	}
+
+	/**
+	 * Blocks completing a manufacturing order whose product's life-cycle status forbids {@code MANUFACTURE}.
+	 * <p>
+	 * This is a <b>re-check</b>: {@link #validateBOMAndProduct(I_PP_Order)} already enforces the same rule when
+	 * the order is created or its product changed, but it cannot see a status flipped to a blocking value
+	 * <i>afterwards</i>. Completion is the moment the goods are actually produced, so it is where the current
+	 * status has to hold again.
+	 * <p>
+	 * Only the header (manufactured) product is checked; BOM-line components are deliberately out of scope.
+	 * Self-gating: products with status {@code O}/null are a no-op.
+	 */
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
+	public void assertProductAllowedOnComplete(@NonNull final I_PP_Order ppOrder)
+	{
+		final ProductId productId = ProductId.ofRepoIdOrNull(ppOrder.getM_Product_ID());
+		if (productId != null)
+		{
+			productBL.assertAllowed(productId, ProductLifeCycleAction.MANUFACTURE);
 		}
 	}
 
