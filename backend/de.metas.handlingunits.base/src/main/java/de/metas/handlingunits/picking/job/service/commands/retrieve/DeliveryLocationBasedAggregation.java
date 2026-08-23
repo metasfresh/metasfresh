@@ -15,6 +15,7 @@ class DeliveryLocationBasedAggregation
 	@NonNull private final DeliveryLocationBasedAggregationKey key;
 	private boolean partiallyPickedBefore = false;
 	@NonNull private final PickingJobCandidateProductsCollector productsCollector = new PickingJobCandidateProductsCollector();
+	@NonNull private final SingleExternalSystemCollector externalSystemCollector = new SingleExternalSystemCollector();
 	@NonNull private final HashSet<ShipmentScheduleAndJobScheduleId> scheduleIds = new HashSet<>();
 
 	public DeliveryLocationBasedAggregation(@NonNull final DeliveryLocationBasedAggregationKey key)
@@ -26,6 +27,7 @@ class DeliveryLocationBasedAggregation
 	{
 		this.partiallyPickedBefore = this.partiallyPickedBefore || item.isPartiallyPickedOrDelivered();
 		this.productsCollector.collect(item);
+		this.externalSystemCollector.collect(item);
 		this.scheduleIds.add(item.getId());
 	}
 
@@ -38,6 +40,7 @@ class DeliveryLocationBasedAggregation
 				.deliveryBPLocationId(key.getDeliveryBPLocationId())
 				.warehouseTypeId(key.getWarehouseTypeId())
 				.partiallyPickedBefore(partiallyPickedBefore)
+				.externalSystemId(externalSystemCollector.getSingleExternalSystemIdOrNull())
 				.products(productsCollector.toProducts())
 				.scheduleIds(ShipmentScheduleAndJobScheduleIdSet.ofCollection(scheduleIds))
 				.build();

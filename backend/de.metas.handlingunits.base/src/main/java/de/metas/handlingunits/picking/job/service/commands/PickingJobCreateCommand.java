@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.externalsystem.ExternalSystemId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
@@ -104,6 +105,7 @@ public class PickingJobCreateCommand
 							.orgId(headerKey.getOrgId())
 							.salesOrderId(headerKey.getSalesOrderId())
 							.preparationDate(headerKey.getPreparationDate())
+							.externalSystemId(headerKey.getExternalSystemId())
 							.deliveryDate(headerKey.getDeliveryDate())
 							.deliveryBPLocationId(headerKey.getDeliveryBPLocationId())
 							.deliveryRenderedAddress(headerKey.getDeliveryRenderedAddress())
@@ -223,6 +225,8 @@ public class PickingJobCreateCommand
 		@Nullable OrderId salesOrderId;
 		@Nullable InstantAndOrgId preparationDate;
 		@Nullable InstantAndOrgId deliveryDate;
+		/** Null when the picked schedules disagree on the external system, or carry none. */
+		@Nullable ExternalSystemId externalSystemId;
 		@Nullable BPartnerLocationId deliveryBPLocationId;
 		@Nullable String deliveryRenderedAddress;
 		@Nullable BPartnerLocationId handoverLocationId;
@@ -234,6 +238,7 @@ public class PickingJobCreateCommand
 				.orgId(items.getSingleOrgId())
 				.salesOrderId(items.getSingleSalesOrderId().orElse(null))
 				.preparationDate(items.getSinglePreparationDate().orElse(null))
+				.externalSystemId(items.getSingleExternalSystemId().orElse(null))
 				.deliveryDate(items.getSingleDeliveryDate().orElse(null))
 				.deliveryBPLocationId(items.getSingleCustomerLocationId().orElse(null))
 				.deliveryRenderedAddress(items.getSingleCustomerAddress().orElse(null))

@@ -30,6 +30,7 @@ import de.metas.document.location.RenderedAddressProvider;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobField;
@@ -89,6 +90,7 @@ class DisplayValueProviderProductNamesDetailTest
 		return DisplayValueProvider.builder()
 				.orgDAO(orgDAO)
 				.bpartnerService(bpartnerService)
+				.externalSystemRepository(ExternalSystemRepository.newInstanceForUnitTesting())
 				.profile(MobileUIPickingUserProfile.DEFAULT)
 				.build();
 	}

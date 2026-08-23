@@ -24,6 +24,7 @@ package de.metas.picking.api;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.externalsystem.ExternalSystemId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocumentNoFilter;
 import de.metas.inout.ShipmentScheduleId;
@@ -69,6 +70,13 @@ public class PackageableQuery
 	 * deliberate and worth revisiting only with data on how often PreparationDate is actually unset.
 	 */
 	@NonNull @Singular ImmutableSet<LocalDate> preparationDays;
+	/**
+	 * Filter on the order's external system. Empty means no filter.
+	 * <p>
+	 * STRICT, like {@link #preparationDays}: a row with no external system does NOT pass once the
+	 * operator has picked one, which is what "show me only the Shopware orders" means.
+	 */
+	@NonNull @Singular ImmutableSet<ExternalSystemId> externalSystemIds;
 	@Nullable ZonedDateTime maximumFixedPreparationDate;
 	@Nullable ZonedDateTime maximumFixedPromisedDate;
 	@Nullable ShipperId shipperId;

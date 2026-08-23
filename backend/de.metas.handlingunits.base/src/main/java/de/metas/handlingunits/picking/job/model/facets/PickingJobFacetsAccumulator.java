@@ -27,9 +27,11 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.externalsystem.ExternalSystemId;
 import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.facets.customer.CustomerFacet;
 import de.metas.handlingunits.picking.job.model.facets.delivery_day.DeliveryDayFacet;
+import de.metas.handlingunits.picking.job.model.facets.external_system.ExternalSystemFacet;
 import de.metas.handlingunits.picking.job.model.facets.preparation_day.PreparationDayFacet;
 import de.metas.handlingunits.picking.job.model.facets.handover_location.HandoverLocationFacet;
 import de.metas.picking.api.Packageable;
@@ -175,6 +177,7 @@ class PickingJobFacetsAccumulator
 		private final ImmutableSet<LocalDate> deliveryDays;
 		private final ImmutableSet<LocalDate> preparationDays;
 		private final ImmutableSet<BPartnerLocationId> handoverLocationIds;
+		private final ImmutableSet<ExternalSystemId> externalSystemIds;
 
 		private FacetAwareItem(@NonNull final Set<PickingJobFacet> facets)
 		{
@@ -183,6 +186,7 @@ class PickingJobFacetsAccumulator
 			this.deliveryDays = extract(facets, DeliveryDayFacet.class, DeliveryDayFacet::getDeliveryDate);
 			this.preparationDays = extract(facets, PreparationDayFacet.class, PreparationDayFacet::getPreparationDate);
 			this.handoverLocationIds = extract(facets, HandoverLocationFacet.class, HandoverLocationFacet::getBPartnerLocationId);
+			this.externalSystemIds = extract(facets, ExternalSystemFacet.class, ExternalSystemFacet::getExternalSystemId);
 		}
 
 		private static <T extends PickingJobFacet, R> ImmutableSet<R> extract(Set<PickingJobFacet> facets, Class<T> type, Function<T, R> mapper)
@@ -215,7 +219,8 @@ class PickingJobFacetsAccumulator
 			return isMatching(customerIds, query.getCustomerIds())
 					&& isMatching(deliveryDays, query.getDeliveryDays())
 					&& isMatching(preparationDays, query.getPreparationDays())
-					&& isMatching(handoverLocationIds, query.getHandoverLocationIds());
+					&& isMatching(handoverLocationIds, query.getHandoverLocationIds())
+					&& isMatching(externalSystemIds, query.getExternalSystemIds());
 		}
 
 		private static <T> boolean isMatching(final Set<T> values, final Set<T> requiredValues)

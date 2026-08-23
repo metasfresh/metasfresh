@@ -3,6 +3,7 @@ package de.metas.picking.workflow.lauchers;
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache;
 import de.metas.common.util.time.SystemTime;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobFieldType;
@@ -76,6 +77,7 @@ public class PickingWorkflowLaunchersProvider
 	@NonNull private final PickingJobHUService huService;
 	@NonNull private final DisplayValueProviderService displayValueProviderService;
 	@NonNull private final ScannedProductCodeResolver scannedProductCodeResolver;
+	@NonNull private final ExternalSystemRepository externalSystemRepository;
 
 	private final CCache<UserId, SynchronizedMutable<ComputedWorkflowLaunchers>> launchersCache = CCache.<UserId, SynchronizedMutable<ComputedWorkflowLaunchers>>builder().build();
 
@@ -306,6 +308,7 @@ public class PickingWorkflowLaunchersProvider
 						.build(),
 				CollectingParameters.builder()
 						.addressProvider(bpartnerService.newRenderedAddressProvider())
+						.externalSystemRepository(externalSystemRepository)
 						.groupsInOrder(groups)
 						.activeFacets(activeFacets)
 						.build());

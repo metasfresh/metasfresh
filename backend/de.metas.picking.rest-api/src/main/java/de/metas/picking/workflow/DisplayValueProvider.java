@@ -28,6 +28,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.location.RenderedAddressProvider;
+import de.metas.externalsystem.ExternalSystemId;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobField;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobFieldType;
@@ -64,6 +66,7 @@ public class DisplayValueProvider
 	@NonNull private final IOrgDAO orgDAO;
 	@NonNull private final PickingJobBPartnerService bpartnerService;
 	@NonNull private final RenderedAddressProvider renderedAddressProvider;
+	@NonNull private final ExternalSystemRepository externalSystemRepository;
 
 	@NonNull private final MobileUIPickingUserProfile profile;
 
@@ -73,12 +76,14 @@ public class DisplayValueProvider
 	private DisplayValueProvider(
 			@NonNull final IOrgDAO orgDAO,
 			@NonNull final PickingJobBPartnerService bpartnerService,
+			@NonNull final ExternalSystemRepository externalSystemRepository,
 			//
 			@NonNull final MobileUIPickingUserProfile profile)
 	{
 		this.orgDAO = orgDAO;
 		this.bpartnerService = bpartnerService;
 		this.renderedAddressProvider = bpartnerService.newRenderedAddressProvider();
+		this.externalSystemRepository = externalSystemRepository;
 		this.profile = profile;
 	}
 
@@ -182,6 +187,7 @@ public class DisplayValueProvider
 				.salesOrderDocumentNo(pickingJobCandidate.getSalesOrderDocumentNo())
 				.customerName(pickingJobCandidate.getCustomerName())
 				.preparationDate(pickingJobCandidate.getPreparationDate() != null ? pickingJobCandidate.getPreparationDate().toZonedDateTime(orgDAO::getTimeZone) : null)
+				.externalSystemId(pickingJobCandidate.getExternalSystemId())
 				.handoverLocationId(pickingJobCandidate.getHandoverLocationId())
 				.productValueAndName(pickingJobCandidate.getProductValueAndName())
 				.qtyToDeliver(pickingJobCandidate.getQtyToDeliver())
@@ -197,6 +203,7 @@ public class DisplayValueProvider
 				.salesOrderDocumentNo(pickingJobReference.getSalesOrderDocumentNo())
 				.customerName(pickingJobReference.getCustomerName())
 				.preparationDate(pickingJobReference.getPreparationDate())
+				.externalSystemId(pickingJobReference.getExternalSystemId())
 				.handoverLocationId(pickingJobReference.getHandoverLocationId())
 				.productValueAndName(pickingJobReference.getProductValueAndName())
 				.qtyToDeliver(pickingJobReference.getQtyToDeliver())
@@ -212,6 +219,7 @@ public class DisplayValueProvider
 				.salesOrderDocumentNo(pickingJob.getSalesOrderDocumentNo())
 				.customerName(pickingJob.getCustomerName())
 				.preparationDate(pickingJob.getPreparationDate())
+				.externalSystemId(pickingJob.getExternalSystemId())
 				.handoverLocationId(pickingJob.getHandoverLocationId())
 				.productValueAndName(pickingJob.getSingleProductValueAndName())
 				.qtyToDeliver(pickingJob.getSingleQtyToPickOrNull())
@@ -293,6 +301,16 @@ public class DisplayValueProvider
 			{
 				final ITranslatableString productNames = context.getProductNames();
 				return productNames != null ? productNames : TranslatableStrings.empty();
+			}
+			case EXTERNAL_SYSTEM:
+			{
+				// Nullable: an order entered by hand came in through no external system. Rendered as the
+				// external system's Name ("Shopware 6"), never its Value code ("Shopware6") -- the repository
+				// is fully cached, so this is a map lookup, not a query per launcher row.
+				final ExternalSystemId externalSystemId = context.getExternalSystemId();
+				return externalSystemId != null
+						? TranslatableStrings.anyLanguage(externalSystemRepository.getById(externalSystemId).getName())
+						: TranslatableStrings.empty();
 			}
 			case QTY_TO_DELIVER:
 			{
@@ -387,6 +405,7 @@ public class DisplayValueProvider
 		@Nullable String salesOrderDocumentNo;
 		@Nullable String customerName;
 		@Nullable ZonedDateTime preparationDate;
+		@Nullable ExternalSystemId externalSystemId;
 		@Nullable BPartnerLocationId deliveryLocationId;
 		@Nullable BPartnerLocationId handoverLocationId;
 		@Nullable ProductValueAndName productValueAndName;

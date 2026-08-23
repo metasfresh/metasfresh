@@ -2,6 +2,7 @@ package de.metas.handlingunits.picking.job.model;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.externalsystem.ExternalSystemId;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.shipping.CarrierProductId;
 import de.metas.user.UserId;
@@ -20,6 +21,7 @@ public class PickingJobHeader
 	@Nullable String salesOrderDocumentNo;
 	@Nullable ZonedDateTime preparationDate;
 	@Nullable ZonedDateTime deliveryDate;
+	@Nullable ExternalSystemId externalSystemId;
 	@Nullable String customerName;
 	@Nullable BPartnerLocationId deliveryBPLocationId;
 	@Nullable String deliveryRenderedAddress;

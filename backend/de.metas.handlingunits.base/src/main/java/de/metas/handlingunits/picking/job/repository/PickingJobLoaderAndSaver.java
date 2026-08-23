@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Sets;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.externalsystem.ExternalSystemId;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
@@ -354,6 +355,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				.salesOrderDocumentNo(salesOrderId != null ? loadingSupportingServices.getSalesOrderDocumentNo(salesOrderId) : null)
 				.preparationDate(preparationDate != null ? loadingSupportingServices.toZonedDateTime(preparationDate, orgId) : null)
 				.deliveryDate(deliveryDate != null ? loadingSupportingServices.toZonedDateTime(deliveryDate, orgId) : null)
+				.externalSystemId(ExternalSystemId.ofRepoIdOrNull(record.getExternalSystem_ID()))
 				.customerName(deliveryBPLocationId != null ? loadingSupportingServices.getBPartnerName(deliveryBPLocationId.getBpartnerId()) : null)
 				.deliveryBPLocationId(deliveryBPLocationId)
 				.deliveryRenderedAddress(record.getDeliveryToAddress())
@@ -852,6 +854,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				.deliveryBPLocationId(header.getDeliveryBPLocationId())
 				.deliveryDate(header.getDeliveryDate())
 				.preparationDate(header.getPreparationDate())
+				.externalSystemId(header.getExternalSystemId())
 				.scheduleIds(getScheduleIds(pickingJobId))
 				.isShipmentSchedulesLocked(getShipmentSchedulesIsLocked(pickingJobId).isTrue())
 				.handoverLocationId(header.getHandoverLocationId())

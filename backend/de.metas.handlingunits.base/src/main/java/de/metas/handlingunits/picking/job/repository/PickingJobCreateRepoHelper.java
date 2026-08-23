@@ -1,6 +1,7 @@
 package de.metas.handlingunits.picking.job.repository;
 
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.externalsystem.ExternalSystemId;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
@@ -85,6 +86,7 @@ class PickingJobCreateRepoHelper
 		record.setC_Order_ID(OrderId.toRepoId(request.getSalesOrderId()));
 		record.setPreparationDate(request.getPreparationDate() != null ? request.getPreparationDate().toTimestamp() : null);
 		record.setDeliveryDate(request.getDeliveryDate() != null ? request.getDeliveryDate().toTimestamp() : null);
+		record.setExternalSystem_ID(ExternalSystemId.toRepoId(request.getExternalSystemId()));
 		record.setC_BPartner_ID(deliveryBPLocationId != null ? deliveryBPLocationId.getBpartnerId().getRepoId() : 0);
 		record.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(deliveryBPLocationId));
 		record.setDeliveryToAddress(request.getDeliveryRenderedAddress());

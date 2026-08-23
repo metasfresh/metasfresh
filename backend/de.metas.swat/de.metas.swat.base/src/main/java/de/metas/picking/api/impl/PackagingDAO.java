@@ -9,6 +9,7 @@ import de.metas.document.DocumentNoFilter;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.externalsystem.ExternalSystemId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -141,6 +142,15 @@ public class PackagingDAO implements IPackagingDAO
 		{
 			final ICompositeQueryFilter<I_M_Packageable_V> preparationDaysFilter = queryBuilder.addCompositeQueryFilter().setJoinOr();
 			query.getPreparationDays().forEach(preparationDay -> preparationDaysFilter.addEqualsFilter(I_M_Packageable_V.COLUMN_PreparationDate, preparationDay, DateTruncQueryFilterModifier.DAY));
+		}
+
+		//
+		// Filter: ExternalSystemIds
+		// Strict, like PreparationDays above: a row with no external system does not pass once one is
+		// selected. See PackageableQuery.
+		if (!query.getExternalSystemIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_M_Packageable_V.COLUMNNAME_ExternalSystem_ID, query.getExternalSystemIds());
 		}
 
 		//
@@ -372,6 +382,7 @@ public class PackagingDAO implements IPackagingDAO
 
 		packageable.deliveryDate(record.getDeliveryDate() != null ? InstantAndOrgId.ofTimestamp(record.getDeliveryDate(), orgId) : null); // 01676
 		packageable.preparationDate(record.getPreparationDate() != null ? InstantAndOrgId.ofTimestamp(record.getPreparationDate(), orgId) : null);
+		packageable.externalSystemId(ExternalSystemId.ofRepoIdOrNull(record.getExternalSystem_ID()));
 
 		packageable.bestBeforePolicy(ShipmentAllocationBestBeforePolicy.optionalOfNullableCode(record.getShipmentAllocation_BestBefore_Policy()));
 

@@ -22,6 +22,7 @@
 
 package de.metas.picking.workflow;
 
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
 import de.metas.handlingunits.picking.job.service.external.bpartner.PickingJobBPartnerService;
 import de.metas.organization.IOrgDAO;
@@ -36,12 +37,14 @@ public class DisplayValueProviderService
 {
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final PickingJobBPartnerService bpartnerService;
+	private final ExternalSystemRepository externalSystemRepository;
 
 	public DisplayValueProvider newDisplayValueProvider(@NonNull final MobileUIPickingUserProfile profile)
 	{
 		return DisplayValueProvider.builder()
 				.orgDAO(orgDAO)
 				.bpartnerService(bpartnerService)
+				.externalSystemRepository(externalSystemRepository)
 				//
 				.profile(profile)
 				//

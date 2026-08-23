@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits.picking.job.model;
 
+import de.metas.externalsystem.ExternalSystemId;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import org.junit.jupiter.api.Test;
 
@@ -43,6 +44,8 @@ class PickingJobQueryFacetsTest
 	private static final ZoneId ZONE = ZoneId.of("Europe/Berlin");
 	private static final LocalDate DAY_1 = LocalDate.of(2026, 8, 11);
 	private static final LocalDate DAY_2 = LocalDate.of(2026, 8, 12);
+	private static final ExternalSystemId SHOPWARE = ExternalSystemId.ofRepoId(540007);
+	private static final ExternalSystemId WOO = ExternalSystemId.ofRepoId(540003);
 
 	@Test
 	void noFilterActive_matchesEverything()
@@ -79,6 +82,37 @@ class PickingJobQueryFacetsTest
 	}
 
 	/**
+	 * AC6 — the launcher shows already-started jobs and not-yet-started work items in ONE list. This
+	 * matcher is the started half; {@code PackagingDAO} is the other. If it ignored the external-system
+	 * filter, selecting a system would leave started jobs of every other system in the list — the exact
+	 * half-filtered defect PR 25526 had to fix for the preparation date.
+	 */
+	@Test
+	void externalSystemSelected_matchesOnlyThatSystem()
+	{
+		final PickingJobQuery.Facets facets = PickingJobQuery.Facets.builder().externalSystemId(SHOPWARE).build();
+
+		assertThat(facets.isMatching(reference(DAY_1, SHOPWARE))).isTrue();
+		assertThat(facets.isMatching(reference(DAY_1, WOO))).isFalse();
+	}
+
+	/** AC8 — a job whose order came in through no external system must still be listed while nothing is selected. */
+	@Test
+	void noFilterActive_matchesAJobWithoutAnExternalSystem()
+	{
+		assertThat(PickingJobQuery.Facets.EMPTY.isMatching(reference(DAY_1, null))).isTrue();
+	}
+
+	/** Strict once a system is selected, mirroring the SQL-side filter. */
+	@Test
+	void externalSystemSelected_excludesAJobWithoutAnExternalSystem()
+	{
+		final PickingJobQuery.Facets facets = PickingJobQuery.Facets.builder().externalSystemId(SHOPWARE).build();
+
+		assertThat(facets.isMatching(reference(DAY_1, null))).isFalse();
+	}
+
+	/**
 	 * A delivery date MUST be set here even though these tests are about the preparation date, because
 	 * {@link PickingJobQuery.Facets#isMatching(PickingJobReference)} also consults
 	 * {@code isDeliveryDateMatching}, which returns false for a null delivery date REGARDLESS of whether a
@@ -93,12 +127,18 @@ class PickingJobQueryFacetsTest
 	 */
 	private static PickingJobReference reference(@Nullable final LocalDate preparationDay)
 	{
+		return reference(preparationDay, SHOPWARE);
+	}
+
+	private static PickingJobReference reference(@Nullable final LocalDate preparationDay, @Nullable final ExternalSystemId externalSystemId)
+	{
 		return PickingJobReference.builder()
 				.pickingJobId(PickingJobId.ofRepoId(1))
 				.aggregationType(PickingJobAggregationType.SALES_ORDER)
 				.products(PickingJobCandidateProducts.newInstance())
 				.deliveryDate(DAY_1.atStartOfDay(ZONE))
 				.preparationDate(preparationDay != null ? preparationDay.atStartOfDay(ZONE) : null)
+				.externalSystemId(externalSystemId)
 				.build();
 	}
 }

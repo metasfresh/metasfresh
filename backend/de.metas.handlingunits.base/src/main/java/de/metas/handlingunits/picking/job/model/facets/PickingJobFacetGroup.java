@@ -37,6 +37,7 @@ import java.util.Objects;
 import static de.metas.picking.model.X_PickingProfile_Filter.FILTERTYPE_AD_Reference_ID;
 import static de.metas.picking.model.X_PickingProfile_Filter.FILTERTYPE_Customer;
 import static de.metas.picking.model.X_PickingProfile_Filter.FILTERTYPE_DeliveryDate;
+import static de.metas.picking.model.X_PickingProfile_Filter.FILTERTYPE_ExternalSystem;
 import static de.metas.picking.model.X_PickingProfile_Filter.FILTERTYPE_HandoverLocation;
 import static de.metas.picking.model.X_PickingProfile_Filter.FILTERTYPE_PreparationDate;
 
@@ -47,6 +48,7 @@ public enum PickingJobFacetGroup implements ReferenceListAwareEnum
 	DELIVERY_DATE(FILTERTYPE_DeliveryDate),
 	PREPARATION_DATE(FILTERTYPE_PreparationDate),
 	HANDOVER_LOCATION(FILTERTYPE_HandoverLocation),
+	EXTERNAL_SYSTEM(FILTERTYPE_ExternalSystem),
 	;
 
 	public static final ReferenceId PICKING_JOB_FILTER_OPTION_REFERENCE_ID = ReferenceId.ofRepoId(FILTERTYPE_AD_Reference_ID);

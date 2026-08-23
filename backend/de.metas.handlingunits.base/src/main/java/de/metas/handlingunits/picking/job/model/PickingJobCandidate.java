@@ -23,6 +23,7 @@
 package de.metas.handlingunits.picking.job.model;
 
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.externalsystem.ExternalSystemId;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.i18n.ITranslatableString;
 import de.metas.order.OrderId;
@@ -47,6 +48,8 @@ public class PickingJobCandidate
 {
 	@NonNull PickingJobAggregationType aggregationType;
 	@Nullable InstantAndOrgId preparationDate;
+	/** Null when the aggregated schedules do not agree on one external system, or carry none at all. */
+	@Nullable ExternalSystemId externalSystemId;
 	@Nullable String salesOrderDocumentNo;
 	@Nullable OrderId salesOrderId;
 	@Nullable String customerName;

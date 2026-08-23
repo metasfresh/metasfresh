@@ -28,6 +28,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.location.RenderedAddressProvider;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.facets.CollectingParameters;
 import de.metas.handlingunits.picking.job.model.facets.PickingJobFacetGroup;
@@ -97,6 +98,7 @@ class DeliveryDayFacetHandlerTest
 		return CollectingParameters.builder()
 				// never consulted by this handler; the parameters object insists on one
 				.addressProvider(RenderedAddressProvider.builder().documentLocationBL(mock(IDocumentLocationBL.class)).build())
+				.externalSystemRepository(ExternalSystemRepository.newInstanceForUnitTesting())
 				.groupsInOrder(ImmutableList.of(PickingJobFacetGroup.DELIVERY_DATE))
 				.activeFacets(PickingJobQuery.Facets.builder().build())
 				.build();

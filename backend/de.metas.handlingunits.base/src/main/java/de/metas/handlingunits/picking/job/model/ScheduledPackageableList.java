@@ -2,6 +2,7 @@ package de.metas.handlingunits.picking.job.model;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.externalsystem.ExternalSystemId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
@@ -124,6 +125,9 @@ public class ScheduledPackageableList implements Iterable<ScheduledPackageable>
 	public Optional<InstantAndOrgId> getSinglePreparationDate() {return getSingleValue(ScheduledPackageable::getPreparationDate);}
 
 	public Optional<InstantAndOrgId> getSingleDeliveryDate() {return getSingleValue(ScheduledPackageable::getDeliveryDate);}
+
+	/** Empty when the items disagree on the external system, or none of them has one. */
+	public Optional<ExternalSystemId> getSingleExternalSystemId() {return getSingleValue(ScheduledPackageable::getExternalSystemId);}
 
 	public Optional<BPartnerLocationId> getSingleCustomerLocationId() {return getSingleValue(ScheduledPackageable::getCustomerLocationId);}
 

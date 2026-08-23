@@ -25,6 +25,7 @@ package de.metas.picking.api;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
+import de.metas.externalsystem.ExternalSystemId;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.inout.ShipmentScheduleId;
@@ -111,6 +112,14 @@ public class Packageable
 
 	InstantAndOrgId deliveryDate;
 	InstantAndOrgId preparationDate;
+
+	/**
+	 * The external system the sales order came in through, copied onto the shipment schedule by
+	 * {@code OrderLineShipmentScheduleHandler} and exposed by {@code M_Packageable_V}.
+	 * <p>
+	 * Nullable: an order entered by hand has none.
+	 */
+	@Nullable ExternalSystemId externalSystemId;
 
 	@NonNull
 	@Default

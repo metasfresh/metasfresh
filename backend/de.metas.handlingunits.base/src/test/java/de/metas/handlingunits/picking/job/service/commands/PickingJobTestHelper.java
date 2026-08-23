@@ -37,6 +37,7 @@ import de.metas.handlingunits.picking.job.repository.DefaultPickingJobLoaderSupp
 import de.metas.handlingunits.picking.job.repository.MockedPickingJobLoaderSupportingServices;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job.service.PickingJobLockService;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.handlingunits.picking.job.service.PickingJobUnpickProductResolver;
@@ -147,6 +148,9 @@ public class PickingJobTestHelper
 	public final PickingJobScheduleService pickingJobScheduleService;
 	public final PickingJobBPartnerService bpartnerService;
 	public final PickingJobHUService huService;
+	/** Assigned in the constructor, NOT here: newInstanceForUnitTesting() asserts unit-test mode, which only
+	 * {@code HUTestHelper.newInstanceOutOfTrx()} below turns on -- and field initializers run before it. */
+	public final ExternalSystemRepository externalSystemRepository;
 	//
 	private final IProductBL productBL;
 	private final IOrderBL orderBL;
@@ -170,6 +174,7 @@ public class PickingJobTestHelper
 	public PickingJobTestHelper()
 	{
 		huTestHelper = HUTestHelper.newInstanceOutOfTrx();
+		externalSystemRepository = ExternalSystemRepository.newInstanceForUnitTesting();
 		SystemTime.setFixedTimeSource(LocalDate.parse("2021-01-01").atStartOfDay(MockedPickingJobLoaderSupportingServices.ZONE_ID));
 
 		SpringContextHolder.registerJUnitBean(ADReferenceService.newMocked());

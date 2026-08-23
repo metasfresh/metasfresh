@@ -3,6 +3,7 @@ package de.metas.handlingunits.picking.job.repository;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.externalsystem.ExternalSystemId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PackToSpec;
@@ -37,6 +38,7 @@ public class PickingJobCreateRepoRequest
 	@Nullable OrderId salesOrderId;
 	@Nullable InstantAndOrgId preparationDate;
 	@Nullable InstantAndOrgId deliveryDate;
+	@Nullable ExternalSystemId externalSystemId;
 	@Nullable BPartnerLocationId deliveryBPLocationId;
 	@Nullable String deliveryRenderedAddress;
 	@NonNull UserId pickerId;

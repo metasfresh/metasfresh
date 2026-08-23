@@ -15,6 +15,7 @@ public class OrderBasedAggregation
 	@NonNull private final OrderBasedAggregationKey key;
 	private boolean partiallyPickedBefore = false;
 	@NonNull private final PickingJobCandidateProductsCollector productsCollector = new PickingJobCandidateProductsCollector();
+	@NonNull private final SingleExternalSystemCollector externalSystemCollector = new SingleExternalSystemCollector();
 	@NonNull private final HashSet<ShipmentScheduleAndJobScheduleId> scheduleIds = new HashSet<>();
 
 	public OrderBasedAggregation(@NonNull final OrderBasedAggregationKey key)
@@ -30,6 +31,7 @@ public class OrderBasedAggregation
 		}
 
 		productsCollector.collect(item);
+		externalSystemCollector.collect(item);
 		scheduleIds.add(item.getId());
 	}
 
@@ -44,6 +46,7 @@ public class OrderBasedAggregation
 				.deliveryBPLocationId(key.getDeliveryBPLocationId())
 				.warehouseTypeId(key.getWarehouseTypeId())
 				.partiallyPickedBefore(partiallyPickedBefore)
+				.externalSystemId(externalSystemCollector.getSingleExternalSystemIdOrNull())
 				.products(productsCollector.toProducts())
 				.scheduleIds(ShipmentScheduleAndJobScheduleIdSet.ofCollection(scheduleIds))
 				.build();

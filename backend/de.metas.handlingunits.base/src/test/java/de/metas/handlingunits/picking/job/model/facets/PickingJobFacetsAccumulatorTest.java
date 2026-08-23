@@ -28,9 +28,15 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.location.RenderedAddressProvider;
+import de.metas.externalsystem.ExternalSystem;
+import de.metas.externalsystem.ExternalSystemCreateRequest;
+import de.metas.externalsystem.ExternalSystemId;
+import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.facets.customer.CustomerFacet;
 import de.metas.handlingunits.picking.job.model.facets.delivery_day.DeliveryDayFacet;
+import de.metas.handlingunits.picking.job.model.facets.external_system.ExternalSystemFacet;
 import de.metas.handlingunits.picking.job.model.facets.preparation_day.PreparationDayFacet;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.inout.ShipmentScheduleId;
@@ -49,6 +55,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.Objects;
 import java.util.Optional;
@@ -72,10 +79,18 @@ class PickingJobFacetsAccumulatorTest
 	private static final ImmutableList<PickingJobFacetGroup> CUSTOMER_THEN_DELIVERY_DATE =
 			ImmutableList.of(PickingJobFacetGroup.CUSTOMER, PickingJobFacetGroup.DELIVERY_DATE);
 
+	private ExternalSystemRepository externalSystemRepository;
+	private ExternalSystem shopware;
+	private ExternalSystem woo;
+
 	@BeforeEach
 	void setUp()
 	{
 		AdempiereTestHelper.get().init();
+
+		externalSystemRepository = ExternalSystemRepository.newInstanceForUnitTesting();
+		shopware = externalSystemRepository.create(ExternalSystemCreateRequest.builder().name("Shopware 6").type(ExternalSystemType.Shopware6).build());
+		woo = externalSystemRepository.create(ExternalSystemCreateRequest.builder().name("WOO Commerce").type(ExternalSystemType.WOO).build());
 	}
 
 	@Test
@@ -119,6 +134,33 @@ class PickingJobFacetsAccumulatorTest
 		assertThat(customerIdsOf(facets)).containsExactly(CUSTOMER_1);
 	}
 
+	/** AC4 — the group placed first is offered straight away, one option per distinct external system. */
+	@Test
+	void externalSystemFirst_isOfferedWithNothingSelected()
+	{
+		final PickingJobFacets facets = collectWithExternalSystems(parameters(
+				PickingJobQuery.Facets.EMPTY,
+				ImmutableList.of(PickingJobFacetGroup.EXTERNAL_SYSTEM, PickingJobFacetGroup.CUSTOMER)));
+
+		assertThat(externalSystemIdsOf(facets)).containsExactlyInAnyOrder(shopware.getId(), woo.getId());
+		assertThat(customerIdsOf(facets)).isEmpty();
+	}
+
+	/**
+	 * The composition half: without {@code FacetAwareItem.isMatching} consulting externalSystemIds this
+	 * still passes the visibility check above yet silently offers both customers.
+	 */
+	@Test
+	void selectingAnExternalSystem_narrowsTheFollowingGroup()
+	{
+		final PickingJobFacets facets = collectWithExternalSystems(parameters(
+				PickingJobQuery.Facets.builder().externalSystemId(shopware.getId()).build(),
+				ImmutableList.of(PickingJobFacetGroup.EXTERNAL_SYSTEM, PickingJobFacetGroup.CUSTOMER)));
+
+		assertThat(externalSystemIdsOf(facets)).containsExactlyInAnyOrder(shopware.getId(), woo.getId());
+		assertThat(customerIdsOf(facets)).containsExactly(CUSTOMER_1);
+	}
+
 	private PickingJobFacets collect(final CollectingParameters parameters)
 	{
 		return Stream.of(
@@ -127,17 +169,27 @@ class PickingJobFacetsAccumulatorTest
 				.collect(PickingJobFacetsAccumulator.collect(parameters));
 	}
 
-	private static CollectingParameters parameters(final PickingJobQuery.Facets activeFacets)
+	/** CUSTOMER_1 came in through Shopware, CUSTOMER_2 through WOO. */
+	private PickingJobFacets collectWithExternalSystems(final CollectingParameters parameters)
+	{
+		return Stream.of(
+						packageable(CUSTOMER_1, DAY_1, shopware.getId()),
+						packageable(CUSTOMER_2, DAY_2, woo.getId()))
+				.collect(PickingJobFacetsAccumulator.collect(parameters));
+	}
+
+	private CollectingParameters parameters(final PickingJobQuery.Facets activeFacets)
 	{
 		return parameters(activeFacets, CUSTOMER_THEN_DELIVERY_DATE);
 	}
 
-	private static CollectingParameters parameters(
+	private CollectingParameters parameters(
 			final PickingJobQuery.Facets activeFacets,
 			final ImmutableList<PickingJobFacetGroup> groupsInOrder)
 	{
 		return CollectingParameters.builder()
 				.addressProvider(RenderedAddressProvider.builder().documentLocationBL(mock(IDocumentLocationBL.class)).build())
+				.externalSystemRepository(externalSystemRepository)
 				.groupsInOrder(groupsInOrder)
 				.activeFacets(activeFacets)
 				.build();
@@ -153,12 +205,22 @@ class PickingJobFacetsAccumulatorTest
 		return facets.toList(DeliveryDayFacet.class, DeliveryDayFacet::getDeliveryDate);
 	}
 
+	private static Iterable<ExternalSystemId> externalSystemIdsOf(final PickingJobFacets facets)
+	{
+		return facets.toList(ExternalSystemFacet.class, ExternalSystemFacet::getExternalSystemId);
+	}
+
 	private static Iterable<LocalDate> preparationDaysOf(final PickingJobFacets facets)
 	{
 		return facets.toList(PreparationDayFacet.class, PreparationDayFacet::getPreparationDate);
 	}
 
 	private static Packageable packageable(final BPartnerId customerId, final LocalDate deliveryDay)
+	{
+		return packageable(customerId, deliveryDay, null);
+	}
+
+	private static Packageable packageable(final BPartnerId customerId, final LocalDate deliveryDay, @Nullable final ExternalSystemId externalSystemId)
 	{
 		final I_C_UOM uomRecord = newInstanceOutOfTrx(I_C_UOM.class);
 		uomRecord.setUOMSymbol("PCE");
@@ -189,6 +251,7 @@ class PickingJobFacetsAccumulatorTest
 				// preparation-date assertion is not silently comparing against an absent value
 				.preparationDate(InstantAndOrgId.ofInstant(
 						deliveryDay.atStartOfDay(zoneId()).toInstant(), ORG_ID))
+				.externalSystemId(externalSystemId)
 				.build();
 	}
 }

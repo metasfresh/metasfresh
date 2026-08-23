@@ -2,6 +2,7 @@ package de.metas.handlingunits.picking.job.model;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.externalsystem.ExternalSystemId;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.order.OrderId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
@@ -30,6 +31,7 @@ public class PickingJobReference
 	@Nullable BPartnerLocationId deliveryBPLocationId;
 	@Nullable ZonedDateTime deliveryDate;
 	@Nullable ZonedDateTime preparationDate;
+	@Nullable ExternalSystemId externalSystemId;
 	@NonNull @With PickingJobCandidateProducts products;
 	@Nullable ShipmentScheduleAndJobScheduleIdSet scheduleIds;
 	boolean isShipmentSchedulesLocked;

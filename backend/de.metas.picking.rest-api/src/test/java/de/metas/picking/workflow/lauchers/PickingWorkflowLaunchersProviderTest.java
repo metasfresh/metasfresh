@@ -54,8 +54,9 @@ class PickingWorkflowLaunchersProviderTest
 				new PickingJobRestService(helper.pickingJobService, helper.configService),
 				helper.warehouseService,
 				helper.huService,
-				new DisplayValueProviderService(helper.bpartnerService),
-				new ScannedProductCodeResolver(new EDIProductLookupService())
+				new DisplayValueProviderService(helper.bpartnerService, helper.externalSystemRepository),
+				new ScannedProductCodeResolver(new EDIProductLookupService()),
+				helper.externalSystemRepository
 		);
 
 	}

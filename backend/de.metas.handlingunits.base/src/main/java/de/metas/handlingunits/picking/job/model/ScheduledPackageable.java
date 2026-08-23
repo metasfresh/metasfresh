@@ -3,6 +3,7 @@ package de.metas.handlingunits.picking.job.model;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
+import de.metas.externalsystem.ExternalSystemId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderAndLineId;
@@ -82,6 +83,8 @@ public class ScheduledPackageable
 	public @Nullable OrderAndLineId getSalesOrderAndLineIdOrNull() {return packageable.getSalesOrderAndLineIdOrNull();}
 
 	public @Nullable WarehouseTypeId getWarehouseTypeId() {return packageable.getWarehouseTypeId();}
+
+	public @Nullable ExternalSystemId getExternalSystemId() {return packageable.getExternalSystemId();}
 
 	public boolean isPartiallyPickedOrDelivered()
 	{

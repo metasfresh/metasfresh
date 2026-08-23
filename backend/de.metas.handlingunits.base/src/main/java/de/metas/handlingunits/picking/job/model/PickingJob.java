@@ -31,6 +31,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.externalsystem.ExternalSystemId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
@@ -127,6 +128,9 @@ public final class PickingJob implements PickingJobHeaderOrLine
 
 	@Nullable
 	public ZonedDateTime getDeliveryDate() {return header.getDeliveryDate();}
+
+	@Nullable
+	public ExternalSystemId getExternalSystemId() {return header.getExternalSystemId();}
 
 	@Nullable
 	public BPartnerId getCustomerId() {return header.getCustomerId();}

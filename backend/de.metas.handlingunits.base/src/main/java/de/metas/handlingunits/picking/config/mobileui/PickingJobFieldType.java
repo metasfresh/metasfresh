@@ -42,6 +42,7 @@ import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJO
 import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJOBFIELD_DateReady;
 import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJOBFIELD_DeliveryAddress;
 import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJOBFIELD_DocumentNo;
+import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJOBFIELD_ExternalSystem;
 import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJOBFIELD_HandoverLocation;
 import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJOBFIELD_ProductName;
 import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJOBFIELD_ProductNames;
@@ -63,6 +64,7 @@ public enum PickingJobFieldType implements ReferenceListAwareEnum
 	PRODUCT_NAME(PICKINGJOBFIELD_ProductName),
 	PRODUCT_NAMES(PICKINGJOBFIELD_ProductNames),
 	QTY_TO_DELIVER(PICKINGJOBFIELD_QtyToDeliver),
+	EXTERNAL_SYSTEM(PICKINGJOBFIELD_ExternalSystem),
 	;
 
 	private static final ValuesIndex<PickingJobFieldType> index = ReferenceListAwareEnums.index(values());

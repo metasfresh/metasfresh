@@ -27,6 +27,7 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.externalsystem.ExternalSystemId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocumentNoFilter;
 import de.metas.handlingunits.picking.job.model.facets.PickingJobFacet;
@@ -95,6 +96,12 @@ public class PickingJobQuery
 		return facets != null ? facets.getPreparationDays() : ImmutableSet.of();
 	}
 
+	@NonNull
+	public ImmutableSet<ExternalSystemId> getExternalSystemIds()
+	{
+		return facets != null ? facets.getExternalSystemIds() : ImmutableSet.of();
+	}
+
 	public ImmutableSet<LocalDate> getDeliveryDays()
 	{
 		return facets != null ? facets.getDeliveryDays() : ImmutableSet.of();
@@ -142,6 +149,12 @@ public class PickingJobQuery
 		if (!preparationDays.isEmpty())
 		{
 			builder.preparationDays(preparationDays);
+		}
+
+		final ImmutableSet<ExternalSystemId> externalSystemIds = this.getExternalSystemIds();
+		if (!externalSystemIds.isEmpty())
+		{
+			builder.externalSystemIds(externalSystemIds);
 		}
 
 		final ImmutableSet<BPartnerLocationId> locationIds = this.getOnlyHandoverLocationIds();
@@ -194,6 +207,7 @@ public class PickingJobQuery
 		@NonNull @Singular ImmutableSet<LocalDate> deliveryDays;
 		@NonNull @Singular ImmutableSet<LocalDate> preparationDays;
 		@NonNull @Singular ImmutableSet<BPartnerLocationId> handoverLocationIds;
+		@NonNull @Singular ImmutableSet<ExternalSystemId> externalSystemIds;
 
 		public Facets add(@NonNull final Facets other)
 		{
@@ -216,6 +230,7 @@ public class PickingJobQuery
 					builder.deliveryDays(other.deliveryDays);
 					builder.preparationDays(other.preparationDays);
 					builder.handoverLocationIds(other.handoverLocationIds);
+					builder.externalSystemIds(other.externalSystemIds);
 				}
 				return builder.build();
 			}
@@ -223,7 +238,7 @@ public class PickingJobQuery
 
 		public boolean isEmpty()
 		{
-			return customerIds.isEmpty() && deliveryDays.isEmpty() && preparationDays.isEmpty() && handoverLocationIds.isEmpty();
+			return customerIds.isEmpty() && deliveryDays.isEmpty() && preparationDays.isEmpty() && handoverLocationIds.isEmpty() && externalSystemIds.isEmpty();
 		}
 
 		public boolean isMatching(final PickingJobReference pickingJobReference)
@@ -231,7 +246,8 @@ public class PickingJobQuery
 			return isCustomerMatching(pickingJobReference)
 					&& isDeliveryDateMatching(pickingJobReference)
 					&& isPreparationDateMatching(pickingJobReference)
-					&& isHandoverLocationMatching(pickingJobReference);
+					&& isHandoverLocationMatching(pickingJobReference)
+					&& isExternalSystemMatching(pickingJobReference);
 		}
 
 		public boolean isMatching(final PickingJobFacet facet)
@@ -273,6 +289,22 @@ public class PickingJobQuery
 
 		private boolean isHandoverLocationMatching(final PickingJobReference pickingJobReference) {return isHandoverLocationMatching(Optional.ofNullable(pickingJobReference.getHandoverLocationId()).orElse(pickingJobReference.getDeliveryBPLocationId()));}
 
+		/**
+		 * Same ordering as {@link #isPreparationDateMatching(PickingJobReference)}: the "no filter active"
+		 * check comes FIRST, so a job whose order came in through no external system is not excluded while
+		 * the operator has selected nothing. Once a system IS selected the match is strict, matching the
+		 * SQL-side filter in {@code PackagingDAO}.
+		 */
+		private boolean isExternalSystemMatching(final PickingJobReference pickingJobReference)
+		{
+			if (externalSystemIds.isEmpty())
+			{
+				return true;
+			}
+			final ExternalSystemId externalSystemId = pickingJobReference.getExternalSystemId();
+			return externalSystemId != null && externalSystemIds.contains(externalSystemId);
+		}
+
 		private boolean isHandoverLocationMatching(final BPartnerLocationId handoverLocationId) {return handoverLocationIds.isEmpty() || handoverLocationIds.contains(handoverLocationId);}
 
 		public Facets retainFacetsOfGroup(@NonNull final PickingJobFacetGroup group) {return PickingJobFacetHandlers.retainFacetsOfGroups(this, ImmutableSet.of(group));}
@@ -288,7 +320,8 @@ public class PickingJobQuery
 							customerIds.stream().map(customerId -> Facets.builder().customerId(customerId).build()),
 							deliveryDays.stream().map(deliveryDay -> Facets.builder().deliveryDay(deliveryDay).build()),
 							preparationDays.stream().map(preparationDay -> Facets.builder().preparationDay(preparationDay).build()),
-							handoverLocationIds.stream().map(handoverLocationId -> Facets.builder().handoverLocationId(handoverLocationId).build())
+							handoverLocationIds.stream().map(handoverLocationId -> Facets.builder().handoverLocationId(handoverLocationId).build()),
+							externalSystemIds.stream().map(externalSystemId -> Facets.builder().externalSystemId(externalSystemId).build())
 					)
 					.collect(ImmutableSet.toImmutableSet());
 		}

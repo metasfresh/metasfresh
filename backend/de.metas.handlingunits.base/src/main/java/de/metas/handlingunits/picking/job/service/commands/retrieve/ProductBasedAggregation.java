@@ -15,6 +15,7 @@ class ProductBasedAggregation
 	@NonNull private final ProductBasedAggregationKey key;
 	private boolean partiallyPickedBefore = false;
 	@NonNull private final PickingJobCandidateProductsCollector productsCollector = new PickingJobCandidateProductsCollector();
+	@NonNull private final SingleExternalSystemCollector externalSystemCollector = new SingleExternalSystemCollector();
 	@NonNull private final HashSet<ShipmentScheduleAndJobScheduleId> scheduleIds = new HashSet<>();
 
 	public ProductBasedAggregation(@NonNull final ProductBasedAggregationKey key)
@@ -30,6 +31,7 @@ class ProductBasedAggregation
 		}
 
 		productsCollector.collect(item);
+		externalSystemCollector.collect(item);
 		scheduleIds.add(item.getId());
 	}
 
@@ -39,6 +41,7 @@ class ProductBasedAggregation
 				.aggregationType(PickingJobAggregationType.PRODUCT)
 				.warehouseTypeId(key.getWarehouseTypeId())
 				.partiallyPickedBefore(partiallyPickedBefore)
+				.externalSystemId(externalSystemCollector.getSingleExternalSystemIdOrNull())
 				.products(productsCollector.toProducts())
 				.scheduleIds(ShipmentScheduleAndJobScheduleIdSet.ofCollection(scheduleIds))
 				.build();
