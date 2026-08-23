@@ -155,6 +155,21 @@ class DisplayValueProviderProductNamesDetailTest
 	}
 
 	@Test
+	void job_productNames_namesTwoDistinctProductsSharingANameTwice()
+	{
+		final DisplayValueProvider provider = displayValueProvider();
+		// two genuinely different products that happen to carry the same name:
+		// deduplication is by ProductId, so neither may swallow the other
+		final PickingJobLine lineA = line(1, "Gouda");
+		final PickingJobLine lineB = line(2, "Gouda");
+		final PickingJob job = job(lineA, lineB);
+
+		final String caption = provider.getDisplayValue(productNamesField(), job).translate("en_US");
+
+		assertThat(caption).isEqualTo("Gouda, Gouda");
+	}
+
+	@Test
 	void line_productNames_namesOnlyItsOwnProduct()
 	{
 		final DisplayValueProvider provider = displayValueProvider();
