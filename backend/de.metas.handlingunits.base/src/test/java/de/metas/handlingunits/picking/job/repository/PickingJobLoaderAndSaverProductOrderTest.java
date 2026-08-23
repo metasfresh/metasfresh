@@ -27,6 +27,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  * order is the order {@code extractProducts} iterates the job's lines in. The lines arrive from a
  * query with no {@code ORDER BY}, so the loader has to impose the order itself — otherwise the same
  * job renders its products differently from one load to the next.
+ * <p>
+ * JUnit is the right tier here rather than Playwright or Cucumber: the invariant is a pure in-memory
+ * ordering contract of the loader, reachable without a database because {@code addAlreadyLoadedFromDB}
+ * populates the line map directly. The mobile Playwright spec covers the user-visible caption and owns
+ * that layer; this test owns the ordering contract underneath it, so the two do not duplicate.
  */
 class PickingJobLoaderAndSaverProductOrderTest
 {
@@ -77,11 +82,13 @@ class PickingJobLoaderAndSaverProductOrderTest
 	void productNames_followLineIdOrder_whateverOrderTheLinesWereLoadedIn()
 	{
 		final I_M_Picking_Job job = createJob();
-		// created ascending, so line id order and product id order agree
+		// Product ids deliberately do NOT ascend with the line ids, so the expected string below is
+		// reached only by sorting on the LINE id: a sort on ProductId would yield 101,102,103 and a
+		// sort on nothing would yield the reversed feed order, and both differ from it.
 		final ImmutableList<I_M_Picking_Job_Line> linesInIdOrder = ImmutableList.of(
-				createLine(job, 101, 201),
-				createLine(job, 102, 202),
-				createLine(job, 103, 203));
+				createLine(job, 103, 201),
+				createLine(job, 101, 202),
+				createLine(job, 102, 203));
 
 		final PickingJobLoaderAndSaver loader = PickingJobLoaderAndSaver.forLoading(loadingSupportServices);
 		loader.addAlreadyLoadedFromDB(job);
@@ -95,6 +102,6 @@ class PickingJobLoaderAndSaverProductOrderTest
 				.orElseThrow(() -> new AssertionError("no PickingJobReference loaded"));
 
 		assertThat(reference.getProducts().getProductNamesJoined().getDefaultValue())
-				.isEqualTo("productName-101, productName-102, productName-103");
+				.isEqualTo("productName-103, productName-101, productName-102");
 	}
 }
