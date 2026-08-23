@@ -32,6 +32,13 @@ export const PickingJobScreen = {
         await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
     }),
 
+    // The job header and the line header are rendered by the same page-global markup, so this
+    // delegates rather than duplicating the locator — mirroring how DistributionJobScreen defers
+    // to DistributionUtils. Gives job-header assertions a call site on the screen they belong to.
+    expectHeaderProperty: async ({ caption, value }) => await step(`${NAME} - Check header property '${caption}'='${value}'`, async () => {
+        await PickingJobLineScreen.expectHeaderProperty({ caption, value });
+    }),
+
     expectVisible: async ({ timeout = SLOW_ACTION_TIMEOUT } = {}) => await step(`${NAME} - Expect to be displayed`, async () => {
         await expect(containerElement()).toBeVisible({ timeout });
     }),
