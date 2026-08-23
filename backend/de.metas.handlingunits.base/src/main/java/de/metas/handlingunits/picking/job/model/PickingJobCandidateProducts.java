@@ -1,6 +1,5 @@
 package de.metas.handlingunits.picking.job.model;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.i18n.ITranslatableString;
@@ -133,9 +132,8 @@ public class PickingJobCandidateProducts implements Iterable<PickingJobCandidate
 	{
 		// No deduplication is needed on this path: byProductId is keyed by ProductId and built with Maps.uniqueIndex,
 		// so a repeated product cannot exist here.
-		return TranslatableStrings.join(", ",
-				byProductId.values().stream()
-						.map(product -> product.getProductValueAndName().getName())
-						.collect(ImmutableList.toImmutableList()));
+		return byProductId.values().stream()
+				.map(product -> product.getProductValueAndName().getName())
+				.collect(TranslatableStrings.joining(", "));
 	}
 }

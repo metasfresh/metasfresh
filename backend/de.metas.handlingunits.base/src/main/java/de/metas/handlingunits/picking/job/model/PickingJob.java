@@ -48,6 +48,7 @@ import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Optionals;
+import de.metas.util.StreamUtils;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.Getter;
@@ -583,13 +584,12 @@ public final class PickingJob implements PickingJobHeaderOrLine
 	@NonNull
 	public ITranslatableString getProductNamesJoined()
 	{
-		final ImmutableList<ITranslatableString> names = lines.stream()
-				.collect(ImmutableMap.toImmutableMap(
-						PickingJobLine::getProductId,
-						line -> line.getProductValueAndName().getName(),
-						(first, duplicate) -> first))   // same product on several lines -> named once
-				.values().asList();
-		return TranslatableStrings.join(", ", names);
+		// distinct by ProductId (never by displayed text, so two distinct products sharing a name both appear);
+		// filter preserves encounter order, so the names read in line order.
+		return lines.stream()
+				.filter(StreamUtils.distinctByKey(PickingJobLine::getProductId))
+				.map(line -> line.getProductValueAndName().getName())
+				.collect(TranslatableStrings.joining(", "));
 	}
 
 	@Nullable
