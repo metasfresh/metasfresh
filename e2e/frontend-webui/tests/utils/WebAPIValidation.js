@@ -66,10 +66,21 @@ export function getViewLayoutColumnNames(layout) {
 
 /**
  * Filter parameter ColumnNames of a view layout (see {@link getViewLayout}).
+ *
+ * The backend nests the standard filter descriptors one level deeper than a filter group:
+ * `filters[].includedFilters[].parameters[]`. A filter group's own `parameters[]` is normally empty,
+ * so BOTH levels are collected here — reading only the outer one silently yields an empty list and
+ * turns every "is this field filterable?" assertion into a false negative.
+ *
  * @returns {string[]}
  */
 export function getViewLayoutFilterParameterNames(layout) {
-  return (layout.filters || []).flatMap((filter) => (filter.parameters || []).map((param) => param.parameterName));
+  const parameterNames = (parameters) => (parameters || []).map((param) => param.parameterName);
+
+  return (layout.filters || []).flatMap((filter) => [
+    ...parameterNames(filter.parameters),
+    ...(filter.includedFilters || []).flatMap((includedFilter) => parameterNames(includedFilter.parameters)),
+  ]);
 }
 
 /**
