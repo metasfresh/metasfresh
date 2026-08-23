@@ -185,6 +185,7 @@ public class DisplayValueProvider
 				.handoverLocationId(pickingJobCandidate.getHandoverLocationId())
 				.productValueAndName(pickingJobCandidate.getProductValueAndName())
 				.qtyToDeliver(pickingJobCandidate.getQtyToDeliver())
+				.productNames(pickingJobCandidate.getProducts().getProductNamesJoined())
 				.build();
 	}
 
@@ -199,6 +200,7 @@ public class DisplayValueProvider
 				.handoverLocationId(pickingJobReference.getHandoverLocationId())
 				.productValueAndName(pickingJobReference.getProductValueAndName())
 				.qtyToDeliver(pickingJobReference.getQtyToDeliver())
+				.productNames(pickingJobReference.getProducts().getProductNamesJoined())
 				.build();
 	}
 
@@ -213,6 +215,7 @@ public class DisplayValueProvider
 				.handoverLocationId(pickingJob.getHandoverLocationId())
 				.productValueAndName(pickingJob.getSingleProductValueAndName())
 				.qtyToDeliver(pickingJob.getSingleQtyToPickOrNull())
+				.productNames(pickingJob.getProductNamesJoined())
 				.build();
 	}
 
@@ -227,6 +230,7 @@ public class DisplayValueProvider
 				// .handoverLocationId(pickingJobLine.getHandoverLocationId())
 				.productValueAndName(pickingJobLine.getProductValueAndName())
 				.qtyToDeliver(pickingJobLine.getQtyToPick())
+				.productNames(pickingJobLine.getProductValueAndName().getName())
 				.build();
 	}
 
@@ -284,6 +288,11 @@ public class DisplayValueProvider
 			{
 				final ProductValueAndName productValueAndName = context.getProductValueAndName();
 				return productValueAndName != null ? productValueAndName.getName() : TranslatableStrings.empty();
+			}
+			case PRODUCT_NAMES:
+			{
+				final ITranslatableString productNames = context.getProductNames();
+				return productNames != null ? productNames : TranslatableStrings.empty();
 			}
 			case QTY_TO_DELIVER:
 			{
@@ -382,6 +391,7 @@ public class DisplayValueProvider
 		@Nullable BPartnerLocationId handoverLocationId;
 		@Nullable ProductValueAndName productValueAndName;
 		@Nullable Quantity qtyToDeliver;
+		@Nullable ITranslatableString productNames;
 
 		@Nullable
 		public BPartnerLocationId getHandoverLocationIdWithFallback()
