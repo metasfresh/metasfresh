@@ -9,16 +9,20 @@ import { PickingJobScreen } from '../../utils/screens/picking/PickingJobScreen';
 /**
  * Product life-cycle status (BBS-Status) blocks mobile picking.
  *
- * A product that is "Gesperrt" (blocked, status G) must not be pickable. The block is TEMPORAL and
- * that is the whole point of the scenario: a product with status G can never reach a picking job
- * through the normal path, because order-line creation (SELL) is already blocked for a G product.
- * So the realistic flow is — sell + create the picking job while the product is still OK, THEN flip
- * it to G, THEN have the picker try to pick it:
+ * Two statuses forbid PICK, and the flow is the same for both — sell + create the picking job while the
+ * product is still OK, THEN flip the status, THEN have the picker try to pick it:
  *
- *   1. product created OK  →  sold on SO1 (completes, shipment schedule appears)  →  picking job ready
- *   2. product flipped to G (second masterdata request — `productLifeCycleStatuses`)
- *   3. picker opens the job, scans the HU, presses OK  →  backend rejects the pick (PICK not allowed)
- *      →  error toast, nothing is picked.
+ *   1. product created OK  ->  sold on SO1 (completes, shipment schedule appears)  ->  picking job ready
+ *   2. product flipped to the blocking status (second masterdata request - `productLifeCycleStatuses`)
+ *   3. picker opens the job, scans the HU, presses OK  ->  backend rejects the pick (PICK not allowed)
+ *      ->  error toast, nothing is picked.
+ *
+ * Why the temporal flip, per status:
+ *   - "G" (Gesperrt) blocks EVERY action, so a G product can never reach a picking job through the normal
+ *     path — order-line creation (SELL) is already refused. The flip is the only way to reach this state.
+ *   - "N" (Lieferstopp) blocks only SHIP and PICK, so the sale itself stays legitimate. The flip mirrors
+ *     what actually happens in the business: the goods are sold, then a delivery stop is imposed, and the
+ *     picker must be stopped at the warehouse.
  */
 
 const createMasterdata = async () => {
@@ -67,8 +71,16 @@ const createMasterdata = async () => {
     })
 }
 
+// Both statuses forbid PICK; everything except the flipped status code is identical, so the scenario is
+// parametrised rather than duplicated.
+const PICK_BLOCKING_STATUSES = [
+    { code: 'G', name: 'Gesperrt' },
+    { code: 'N', name: 'Lieferstopp' },
+];
+
+PICK_BLOCKING_STATUSES.forEach(({ code, name }) => {
 // noinspection JSUnusedLocalSymbols
-test('Gesperrt product cannot be picked', async ({ page }) => {
+test(`${name} product cannot be picked`, async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
@@ -78,9 +90,9 @@ test('Gesperrt product cannot be picked', async ({ page }) => {
 
     const masterdata = await createMasterdata();
 
-    // The product was sold while OK; now it gets blocked in the ERP (status G = Gesperrt).
-    await test.step("Block the product (flip P1 to Gesperrt)", async () => {
-        await Backend.createMasterdata({ request: { productLifeCycleStatuses: { P1: 'G' } } });
+    // The product was sold while OK; now it gets blocked in the ERP.
+    await test.step(`Block the product (flip P1 to ${name})`, async () => {
+        await Backend.createMasterdata({ request: { productLifeCycleStatuses: { P1: code } } });
     });
 
     await LoginScreen.login(masterdata.login.user);
@@ -96,8 +108,8 @@ test('Gesperrt product cannot be picked', async ({ page }) => {
     await test.step("Attempt to pick the blocked product -> rejected", async () => {
         // Assert on the language-independent error code (the backend appends it to the toast, and it
         // never gets translated) rather than the localized message text — same handle the order-line
-        // cucumber test keys on. The visible message reads e.g. "Product <x> is in status G - action
-        // not allowed." (en_US) / "Produkt <x> ist im Status G - Aktion nicht erlaubt." (de_DE).
+        // cucumber test keys on. The visible message reads e.g. "Product <x> is in status <code> -
+        // action not allowed." (en_US) / "Produkt <x> ist im Status <code> - Aktion nicht erlaubt." (de_DE).
         await PickingJobScreen.pickHU({
             qrCode: masterdata.handlingUnits.HU1.huId,
             expectedError: 'M_Product_BBSStatus_ActionBlocked',
@@ -121,4 +133,5 @@ test('Gesperrt product cannot be picked', async ({ page }) => {
             }
         });
     });
+});
 });
