@@ -23,6 +23,7 @@ import de.metas.pricing.conditions.PricingConditions;
 import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.purchasecandidate.DemandGroupReference;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateSource;
 import de.metas.purchasecandidate.PurchaseCandidateTestTool;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.document.dimension.PurchaseCandidateDimensionFactory;
@@ -182,6 +183,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 				.productId(vendorProductInfo.getProductId())
 				.attributeSetInstanceId(vendorProductInfo.getAttributeSetInstanceId())
 				.vendorProductNo(vendorProductInfo.getVendorProductNo())
+				.source(PurchaseCandidateSource.SalesOrder)
 				.qtyToPurchase(TEN)
 				.salesOrderAndLineIdOrNull(OrderAndLineId.ofRepoIds(salesOrder.getC_Order_ID(), 50))
 				.warehouseId(WarehouseId.ofRepoId(60))
