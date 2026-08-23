@@ -130,6 +130,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_Incoterms_Customer_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IncotermLocation;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
@@ -533,6 +534,25 @@ public class C_Order_StepDef
 		assertThat(expectedException)
 				.as("Order action %s is not possible for order %s", action, orderIdentifier)
 				.isNotNull();
+	}
+
+	@And("^the order identified by (.*) cannot be completed because of error code (.*)$")
+	public void order_cannot_be_completed_because_of_error_code(
+			@NonNull final String orderIdentifier,
+			@NonNull final String errorCode)
+	{
+		// Unlike the plain "cannot be completed" step above, this one pins WHY the completion failed: without
+		// the error code the assertion would also pass if the order failed for an unrelated reason.
+		try
+		{
+			order_action(orderIdentifier, StepDefDocAction.completed.name());
+
+			fail("An Exception should have been thrown while completing order " + orderIdentifier + " !");
+		}
+		catch (final AdempiereException exception)
+		{
+			assertThat(exception.getErrorCode()).as("ErrorCode of %s", exception).isEqualTo(errorCode);
+		}
 	}
 
 	public void completeOrder(final I_C_Order order)

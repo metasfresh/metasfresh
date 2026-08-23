@@ -108,6 +108,7 @@ import java.util.function.Supplier;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 public class PP_Order_StepDef
 {
@@ -368,6 +369,25 @@ public class PP_Order_StepDef
 				throw new AdempiereException("Unhandled PP_Order action")
 						.appendParametersToMessage()
 						.setParameter("action:", action);
+		}
+	}
+
+	@And("^the manufacturing order identified by (.*) cannot be completed because of error code (.*)$")
+	public void manufacturing_order_cannot_be_completed_because_of_error_code(
+			@NonNull final String orderIdentifier,
+			@NonNull final String errorCode)
+	{
+		// The error code pins WHY the completion failed; asserting "some exception" alone would also pass if
+		// the manufacturing order failed for an unrelated reason.
+		try
+		{
+			order_action(orderIdentifier, StepDefDocAction.completed.name());
+
+			fail("An Exception should have been thrown while completing manufacturing order " + orderIdentifier + " !");
+		}
+		catch (final AdempiereException exception)
+		{
+			assertThat(exception.getErrorCode()).as("ErrorCode of %s", exception).isEqualTo(errorCode);
 		}
 	}
 
