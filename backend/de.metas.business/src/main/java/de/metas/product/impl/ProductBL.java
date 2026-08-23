@@ -483,22 +483,23 @@ public final class ProductBL implements IProductBL
 			return;
 		}
 
-		// getByIdsInTrx (not getByIds): a product may have been created within the current trx, same reason
-		// IProductDAO.getById refuses to load out-of-trx.
+		// One query for the whole document. getByIdsInTrxIncludingInactive (not getByIds / getByIdsInTrx):
+		// in-trx because a product may have been created within the current trx, and including inactive
+		// records because a product can be deactivated while documents still reference it — dropping those
+		// would silently skip a check that assertAllowed(ProductId, ...) still performs.
 		final ImmutableMap<ProductId, I_M_Product> productsById = Maps.uniqueIndex(
-				productsRepo.getByIdsInTrx(ImmutableSet.copyOf(productIds)),
+				productsRepo.getByIdsInTrxIncludingInactive(ImmutableSet.copyOf(productIds)),
 				product -> ProductId.ofRepoId(product.getM_Product_ID()));
 
-		// Iterate the REQUESTED ids in a stable order: getByIdsInTrx returns an unordered result, so without
-		// this a document carrying several blocked products would name an arbitrary one of them, differing
+		// Iterate the REQUESTED ids in a stable order: the query result is unordered, so without this a
+		// document carrying several blocked products would name an arbitrary one of them, differing
 		// between runs.
 		for (final ProductId productId : ImmutableList.sortedCopyOf(Comparator.comparingInt(ProductId::getRepoId), productIds))
 		{
-			// getByIdsInTrx filters out INACTIVE records, so a deactivated-but-still-referenced product would
-			// silently escape the check. Fall back to the single-record load for those, which is exactly what
-			// assertAllowed(ProductId, ...) does — the two paths must not diverge.
 			final I_M_Product product = productsById.get(productId);
-			assertAllowed(product != null ? product : getById(productId), action);
+			// A missing id means there is no such product at all: delegate to the single-record load, which
+			// raises the same "@NotFound@ @M_Product_ID@" error the single-product overload raises.
+			assertAllowed(product != null ? product : productsRepo.getByIdInTrx(productId), action);
 		}
 	}
 

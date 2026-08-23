@@ -186,6 +186,13 @@ public class ProductDAO implements IProductDAO
 
 	@Override
 	@NonNull
+	public ImmutableList<I_M_Product> getByIdsInTrxIncludingInactive(@NonNull final Set<ProductId> productIds)
+	{
+		return ImmutableList.copyOf(InterfaceWrapperHelper.loadByRepoIdAwares(productIds, I_M_Product.class));
+	}
+
+	@Override
+	@NonNull
 	public ImmutableList<I_M_Product> getByIdsInTrx(@NonNull final Set<ProductId> productIds)
 	{
 		return queryBL.createQueryBuilder(I_M_Product.class)
