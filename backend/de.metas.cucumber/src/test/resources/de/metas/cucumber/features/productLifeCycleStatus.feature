@@ -92,8 +92,8 @@ Feature: product life-cycle status enforcement on order lines
       | Identifier        | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                   | SOTrx | IsTaxIncluded | PricePrecision |
       | purchasePriceList | purchasePricingSystem         | DE                        | EUR                 | plc-purchase-PriceList | false | false         | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier       | M_PriceList_ID.Identifier | Name            | ValidFrom  |
-      | purchasePlv      | purchasePriceList         | plc-purchase-PLV | 2021-04-01 |
+      | Identifier  | M_PriceList_ID.Identifier | Name             | ValidFrom  |
+      | purchasePlv | purchasePriceList         | plc-purchase-PLV | 2021-04-01 |
     And metasfresh contains C_BPartners:
       | Identifier | Name       | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | vendor     | plc-Vendor | Y            | N              | purchasePricingSystem         |

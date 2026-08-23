@@ -79,59 +79,59 @@ const PICK_BLOCKING_STATUSES = [
 ];
 
 PICK_BLOCKING_STATUSES.forEach(({ code, name }) => {
-// noinspection JSUnusedLocalSymbols
-test(`${name} product cannot be picked`, async ({ page }) => {
-    // === ALLURE METADATA ===
-    allure.epic('E0105: Picking');
-    allure.tag('F00230: MobileUI Picking');
-    allure.tag('F00230');  // Standalone tag for Tags section
-    allure.story('Product life-cycle status (BBS-Status) blocks picking');
-    allure.severity('normal');
+    // noinspection JSUnusedLocalSymbols
+    test(`${name} product cannot be picked`, async ({ page }) => {
+        // === ALLURE METADATA ===
+        allure.epic('E0105: Picking');
+        allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');  // Standalone tag for Tags section
+        allure.story('Product life-cycle status (BBS-Status) blocks picking');
+        allure.severity('normal');
 
-    const masterdata = await createMasterdata();
+        const masterdata = await createMasterdata();
 
-    // The product was sold while OK; now it gets blocked in the ERP.
-    await test.step(`Block the product (flip P1 to ${name})`, async () => {
-        await Backend.createMasterdata({ request: { productLifeCycleStatuses: { P1: code } } });
-    });
-
-    await LoginScreen.login(masterdata.login.user);
-    await ApplicationsListScreen.expectVisible();
-    await ApplicationsListScreen.startApplication('picking');
-    await PickingJobsListScreen.waitForScreen();
-    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
-    const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
-
-    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode, expectNextScreen: 'PickLineScanScreen', gotoPickingJobScreen: true });
-    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI1.luName });
-
-    await test.step("Attempt to pick the blocked product -> rejected", async () => {
-        // Assert on the language-independent error code (the backend appends it to the toast, and it
-        // never gets translated) rather than the localized message text — same handle the order-line
-        // cucumber test keys on. The visible message reads e.g. "Product <x> is in status <code> -
-        // action not allowed." (en_US) / "Produkt <x> ist im Status <code> - Aktion nicht erlaubt." (de_DE).
-        await PickingJobScreen.pickHU({
-            qrCode: masterdata.handlingUnits.HU1.huId,
-            expectedError: 'M_Product_BBSStatus_ActionBlocked',
+        // The product was sold while OK; now it gets blocked in the ERP.
+        await test.step(`Block the product (flip P1 to ${name})`, async () => {
+            await Backend.createMasterdata({ request: { productLifeCycleStatuses: { P1: code } } });
         });
-    });
 
-    await test.step("Nothing was picked", async () => {
-        // Assert the real end result via the backend (authoritative + immune to the still-visible
-        // rejection toast): the source HU is untouched — still Active with its full quantity, nothing
-        // moved onto a picked HU, and the shipment schedule has no picked qty.
-        await Backend.expect({
-            pickings: {
-                [pickingJobId]: {
-                    shipmentSchedules: {
-                        P1: { qtyPicked: [] }
+        await LoginScreen.login(masterdata.login.user);
+        await ApplicationsListScreen.expectVisible();
+        await ApplicationsListScreen.startApplication('picking');
+        await PickingJobsListScreen.waitForScreen();
+        await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+        const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+
+        await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode, expectNextScreen: 'PickLineScanScreen', gotoPickingJobScreen: true });
+        await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI1.luName });
+
+        await test.step("Attempt to pick the blocked product -> rejected", async () => {
+            // Assert on the language-independent error code (the backend appends it to the toast, and it
+            // never gets translated) rather than the localized message text — same handle the order-line
+            // cucumber test keys on. The visible message reads e.g. "Product <x> is in status <code> -
+            // action not allowed." (en_US) / "Produkt <x> ist im Status <code> - Aktion nicht erlaubt." (de_DE).
+            await PickingJobScreen.pickHU({
+                qrCode: masterdata.handlingUnits.HU1.huId,
+                expectedError: 'M_Product_BBSStatus_ActionBlocked',
+            });
+        });
+
+        await test.step("Nothing was picked", async () => {
+            // Assert the real end result via the backend (authoritative + immune to the still-visible
+            // rejection toast): the source HU is untouched — still Active with its full quantity, nothing
+            // moved onto a picked HU, and the shipment schedule has no picked qty.
+            await Backend.expect({
+                pickings: {
+                    [pickingJobId]: {
+                        shipmentSchedules: {
+                            P1: { qtyPicked: [] }
+                        }
                     }
+                },
+                hus: {
+                    [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '1000 PCE' } },
                 }
-            },
-            hus: {
-                [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '1000 PCE' } },
-            }
+            });
         });
     });
-});
 });

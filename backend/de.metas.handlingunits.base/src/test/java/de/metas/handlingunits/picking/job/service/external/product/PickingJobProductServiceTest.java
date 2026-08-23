@@ -116,6 +116,19 @@ class PickingJobProductServiceTest
 	}
 
 	@Test
+	void assertPickAllowed_doNotDeliverStatus_throws()
+	{
+		// "N" (Lieferstopp / DO_NOT_DELIVER) blocks SHIP and PICK: the sale stays legitimate, but the goods
+		// must not leave the warehouse. Pinned on THIS entry point too — the mobile picking job and the
+		// desktop pick-HU path each call the guard themselves, so a shared-matrix test alone would not catch
+		// one of them being decoupled from IProductBL later.
+		final ProductId productId = createProductWithLifeCycleStatus(X_M_Product.PRODUCTLIFECYCLESTATUS_DeliveryStop);
+
+		assertThatThrownBy(() -> pickingJobProductService.assertPickAllowed(productId))
+				.isInstanceOf(AdempiereException.class);
+	}
+
+	@Test
 	void assertPickAllowed_okStatus_doesNotThrow()
 	{
 		// "O" (OK) is fully permissive → picking is allowed.
