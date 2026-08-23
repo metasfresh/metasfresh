@@ -6,6 +6,9 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.externalsystem.ExternalSystem;
+import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.util.StringUtils;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.handlingunits.HUPIItemProductId;
@@ -33,10 +36,12 @@ import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -100,6 +105,12 @@ public class SalesOrderCreateCommand
 		{
 			this.salesOrderFactory.shipperId(context.getId(request.getShipper(), ShipperId.class));
 		}
+
+		final ExternalSystem externalSystem = getExternalSystemOrNull();
+		if (externalSystem != null)
+		{
+			this.salesOrderFactory.externalSystemId(externalSystem.getId());
+		}
 		request.getLines().forEach(this::createOrderLine);
 
 		final I_C_Order salesOrderRecord = salesOrderFactory.createAndComplete();
@@ -115,7 +126,23 @@ public class SalesOrderCreateCommand
 		return JsonSalesOrderCreateResponse.builder()
 				.id(String.valueOf(salesOrderRecord.getC_Order_ID()))
 				.documentNo(salesOrderRecord.getDocumentNo())
+				.externalSystemId(externalSystem != null ? String.valueOf(externalSystem.getId().getRepoId()) : null)
+				.externalSystemName(externalSystem != null ? externalSystem.getName() : null)
 				.build();
+	}
+
+	@Nullable
+	private ExternalSystem getExternalSystemOrNull()
+	{
+		final String externalSystemValue = StringUtils.trimBlankToNull(request.getExternalSystem());
+		if (externalSystemValue == null)
+		{
+			return null;
+		}
+
+		return SpringContextHolder.instance.getBean(ExternalSystemRepository.class)
+				.getOptionalByValue(externalSystemValue)
+				.orElseThrow(() -> new AdempiereException("No external system found for value: " + externalSystemValue));
 	}
 
 	private void createOrderLine(final JsonSalesOrderCreateRequest.Line salesOrderLine)

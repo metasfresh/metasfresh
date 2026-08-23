@@ -21,6 +21,8 @@ public class JsonSalesOrderCreateRequest
 	@NonNull Identifier warehouse;
 	@Nullable Identifier shipper;
 	@NonNull ZonedDateTime datePromised;
+	/** {@code ExternalSystem.Value} (e.g. "Shopware6"), for tests that need the order to look like it came in through one. */
+	@Nullable String externalSystem;
 	@NonNull List<Line> lines;
 
 	//
