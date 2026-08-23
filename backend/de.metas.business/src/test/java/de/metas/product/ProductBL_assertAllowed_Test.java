@@ -100,16 +100,21 @@ class ProductBL_assertAllowed_Test
 	}
 
 	@Test
-	void phaseOut_blocksPurchaseOnly()
+	void phaseOut_blocksPurchaseAndManufacture()
 	{
 		final ProductId productId = createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_PhaseOut);
 
-		assertThat(productBL.isAllowed(productId, ProductLifeCycleAction.PURCHASE)).isFalse();
-		assertThatThrownBy(() -> productBL.assertAllowed(productId, ProductLifeCycleAction.PURCHASE))
-				.isInstanceOfSatisfying(AdempiereException.class, ex -> assertThat(ex.isUserValidationError()).isTrue());
+		for (final ProductLifeCycleAction action : new ProductLifeCycleAction[] {
+				ProductLifeCycleAction.PURCHASE, ProductLifeCycleAction.MANUFACTURE })
+		{
+			assertThat(productBL.isAllowed(productId, action)).as("action=%s", action).isFalse();
+			assertThatThrownBy(() -> productBL.assertAllowed(productId, action))
+					.as("action=%s", action)
+					.isInstanceOfSatisfying(AdempiereException.class, ex -> assertThat(ex.isUserValidationError()).isTrue());
+		}
 
 		for (final ProductLifeCycleAction action : new ProductLifeCycleAction[] {
-				ProductLifeCycleAction.SELL, ProductLifeCycleAction.PICK, ProductLifeCycleAction.MANUFACTURE, ProductLifeCycleAction.SHIP })
+				ProductLifeCycleAction.SELL, ProductLifeCycleAction.PICK, ProductLifeCycleAction.SHIP })
 		{
 			assertThat(productBL.isAllowed(productId, action)).as("action=%s", action).isTrue();
 			assertThatCode(() -> productBL.assertAllowed(productId, action)).as("action=%s", action).doesNotThrowAnyException();
@@ -117,16 +122,21 @@ class ProductBL_assertAllowed_Test
 	}
 
 	@Test
-	void doNotDeliver_blocksShipOnly()
+	void doNotDeliver_blocksShipAndPick()
 	{
 		final ProductId productId = createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_DeliveryStop);
 
-		assertThat(productBL.isAllowed(productId, ProductLifeCycleAction.SHIP)).isFalse();
-		assertThatThrownBy(() -> productBL.assertAllowed(productId, ProductLifeCycleAction.SHIP))
-				.isInstanceOfSatisfying(AdempiereException.class, ex -> assertThat(ex.isUserValidationError()).isTrue());
+		for (final ProductLifeCycleAction action : new ProductLifeCycleAction[] {
+				ProductLifeCycleAction.SHIP, ProductLifeCycleAction.PICK })
+		{
+			assertThat(productBL.isAllowed(productId, action)).as("action=%s", action).isFalse();
+			assertThatThrownBy(() -> productBL.assertAllowed(productId, action))
+					.as("action=%s", action)
+					.isInstanceOfSatisfying(AdempiereException.class, ex -> assertThat(ex.isUserValidationError()).isTrue());
+		}
 
 		for (final ProductLifeCycleAction action : new ProductLifeCycleAction[] {
-				ProductLifeCycleAction.PURCHASE, ProductLifeCycleAction.SELL, ProductLifeCycleAction.PICK, ProductLifeCycleAction.MANUFACTURE })
+				ProductLifeCycleAction.PURCHASE, ProductLifeCycleAction.SELL, ProductLifeCycleAction.MANUFACTURE })
 		{
 			assertThat(productBL.isAllowed(productId, action)).as("action=%s", action).isTrue();
 			assertThatCode(() -> productBL.assertAllowed(productId, action)).as("action=%s", action).doesNotThrowAnyException();
