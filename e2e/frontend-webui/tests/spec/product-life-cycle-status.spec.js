@@ -5,6 +5,8 @@
  *   1. Visible in the Product main tab (AD_Window_ID=140, AD_Tab_ID=180)
  *   2. Selectable from the dropdown by its underlying KEY ("G" = Gesperrt/Blocked)
  *   3. Persisted after save + page reload
+ *   4. Exposed by the list view as a grid column AND as a filter parameter
+ *   5. Rendered as a grid column in the DOM
  *
  * The test is language-independent: it selects the option by its
  * `data-testid="option-G"` (the dropdown renders the key, not the caption) and
@@ -26,7 +28,14 @@ import { DashboardPage } from '../utils/pages/DashboardPage';
 import { ListWidget } from '../utils/widgets/ListWidget';
 import { WidgetCommon } from '../utils/widgets/WidgetCommon';
 import { PRODUCT_WINDOW_ID } from '../utils/WindowIds';
-import { assertRecordIsValid, getFieldData } from '../utils/WebAPIValidation';
+import {
+  assertRecordIsValid,
+  getFieldData,
+  getViewLayout,
+  getViewLayoutColumnNames,
+  getViewLayoutFilterParameterNames,
+} from '../utils/WebAPIValidation';
+import { navigateToViewWindow } from '../utils/view-validation/ViewWindowHelper';
 
 // AD_Column.ColumnName for the life-cycle status field
 const FIELD_NAME = 'ProductLifeCycleStatus';
@@ -121,6 +130,40 @@ data window and that selecting "Gesperrt" (G) persists after save and page reloa
       );
     });
 
-    console.log('[PASS] ProductLifeCycleStatus field visible, selectable, and persists correctly.');
+    // === STEP 4: list view must expose the field as a grid column AND as a filter ===
+    await test.step('Assert BBS-Status is a grid column and a filter of the Product list view', async () => {
+      const layout = await getViewLayout(PRODUCT_WINDOW_ID, 'grid');
+
+      const columnNames = getViewLayoutColumnNames(layout);
+      console.log(`[INFO] Grid columns of window ${PRODUCT_WINDOW_ID}: ${JSON.stringify(columnNames)}`);
+      expect(columnNames, `grid columns of window ${PRODUCT_WINDOW_ID}`).toContain(FIELD_NAME);
+
+      // Filter-bar inclusion is driven by AD_Column.IsSelectionColumn — NOT by
+      // AD_UI_Element.IsAllowFiltering, which the backend only honours for the Labels widget
+      // (AD_UI_ElementType='L') and which is therefore inert on this plain field ('F').
+      // Asserting the descriptor the backend actually builds is what discriminates the two:
+      // with IsSelectionColumn='N' the field is absent from filters[] even though
+      // IsAllowFiltering='Y', so this assertion fails without migration 5819940.
+      const filterParameterNames = getViewLayoutFilterParameterNames(layout);
+      console.log(`[INFO] Filter parameters of window ${PRODUCT_WINDOW_ID}: ${JSON.stringify(filterParameterNames)}`);
+      expect(filterParameterNames, `filter parameters of window ${PRODUCT_WINDOW_ID}`).toContain(FIELD_NAME);
+    });
+
+    // === STEP 5: the grid column also renders in the DOM ===
+    await test.step('Assert the BBS-Status grid column renders in the Product list view', async () => {
+      await navigateToViewWindow(PRODUCT_WINDOW_ID);
+
+      const header = page.locator(`th[data-testid="column-${FIELD_NAME}"]`);
+      await expect(header, `grid column header for ${FIELD_NAME}`).toHaveCount(1);
+
+      const screenshotBuffer = await page.screenshot({ fullPage: true });
+      await allure.attachment(
+          'Product list view with the BBS-Status grid column',
+          screenshotBuffer,
+          'image/png',
+      );
+    });
+
+    console.log('[PASS] ProductLifeCycleStatus field visible, selectable, persists, and is a grid column + filter.');
   });
 });
