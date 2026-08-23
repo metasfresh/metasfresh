@@ -81,7 +81,7 @@ class PurchaseCandidateImmutableFields
 	@Nullable
 	Dimension dimension;
 
-	@Nullable
+	@NonNull
 	PurchaseCandidateSource source;
 
 	@Nullable
