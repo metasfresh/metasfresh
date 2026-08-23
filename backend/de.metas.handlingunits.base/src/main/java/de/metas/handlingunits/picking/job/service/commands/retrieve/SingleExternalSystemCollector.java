@@ -31,29 +31,38 @@ import java.util.Objects;
 
 /**
  * Reduces the external systems of the schedules aggregated into one picking-job candidate to the
- * single value they agree on, or null.
+ * single distinct one among them, or null.
+ * <p>
+ * Semantics deliberately mirror {@code ScheduledPackageableList.getSingleValue}, which the STARTED
+ * half of the launcher list goes through ({@code PickingJobCreateCommand} stores
+ * {@code getSingleExternalSystemId()} on the job): nulls are ignored, two different systems collapse
+ * to null. Diverging here would make a work item show one thing before it is started and another
+ * after — the display/filter disagreement this feature exists to avoid.
  * <p>
  * Deliberately NOT part of any aggregation KEY: putting it there would split a delivery-location or
  * product aggregation whenever two of its orders came from different systems, which is a change to
- * how the launcher groups work items, which this feature does not set out to change. Disagreement therefore
- * shows as "no external system" rather than as an arbitrary pick between them — the same choice
- * {@code ScheduledPackageableList.getSingleValue} makes for every other header-level value.
+ * how the launcher groups work items, which this feature does not set out to change.
  */
 class SingleExternalSystemCollector
 {
-	private boolean anyCollected = false;
+	private boolean diverged = false;
 	@Nullable private ExternalSystemId externalSystemId = null;
 
 	public void collect(@NonNull final ScheduledPackageable item)
 	{
 		final ExternalSystemId itemExternalSystemId = item.getExternalSystemId();
-		if (!anyCollected)
+		if (diverged || itemExternalSystemId == null)
 		{
-			anyCollected = true;
+			return;
+		}
+
+		if (externalSystemId == null)
+		{
 			externalSystemId = itemExternalSystemId;
 		}
 		else if (!Objects.equals(externalSystemId, itemExternalSystemId))
 		{
+			diverged = true;
 			externalSystemId = null;
 		}
 	}

@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.location.RenderedAddressProvider;
+import de.metas.externalsystem.ExternalSystem;
 import de.metas.externalsystem.ExternalSystemId;
 import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
@@ -308,8 +309,9 @@ public class DisplayValueProvider
 				// external system's Name ("Shopware 6"), never its Value code ("Shopware6") -- the repository
 				// is fully cached, so this is a map lookup, not a query per launcher row.
 				final ExternalSystemId externalSystemId = context.getExternalSystemId();
-				return externalSystemId != null
-						? TranslatableStrings.anyLanguage(externalSystemRepository.getById(externalSystemId).getName())
+				final ExternalSystem externalSystem = externalSystemId != null ? externalSystemRepository.getByIdOrNull(externalSystemId) : null;
+				return externalSystem != null
+						? TranslatableStrings.anyLanguage(externalSystem.getName())
 						: TranslatableStrings.empty();
 			}
 			case QTY_TO_DELIVER:

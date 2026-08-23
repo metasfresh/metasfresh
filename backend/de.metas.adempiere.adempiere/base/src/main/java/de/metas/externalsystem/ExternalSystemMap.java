@@ -53,6 +53,12 @@ public class ExternalSystemMap
 				.orElseThrow(() -> new AdempiereException("Unknown external system type: " + type));
 	}
 
+	@Nullable
+	public ExternalSystem getByIdOrNull(final @NonNull ExternalSystemId id)
+	{
+		return byId.get(id);
+	}
+
 	public @NonNull ExternalSystem getById(final @NonNull ExternalSystemId id)
 	{
 		final ExternalSystem externalSystem = byId.get(id);

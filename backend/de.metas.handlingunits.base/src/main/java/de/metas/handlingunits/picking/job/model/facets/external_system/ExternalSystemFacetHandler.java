@@ -96,7 +96,15 @@ public class ExternalSystemFacetHandler implements PickingJobFacetHandler
 			return ImmutableList.of();
 		}
 
-		final ExternalSystem externalSystem = parameters.getExternalSystemRepository().getById(externalSystemId);
+		// getByIdOrNull, not getById: the repository's map holds only ACTIVE rows, so deactivating an
+		// ExternalSystem while orders still reference it would otherwise throw here -- taking the whole
+		// filter bar down for every operator, not just that one order.
+		final ExternalSystem externalSystem = parameters.getExternalSystemRepository().getByIdOrNull(externalSystemId);
+		if (externalSystem == null)
+		{
+			return ImmutableList.of();
+		}
+
 		return ImmutableList.of(ExternalSystemFacet.of(false, externalSystemId, externalSystem.getName()));
 	}
 }

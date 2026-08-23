@@ -153,6 +153,22 @@ class DisplayValueProviderExternalSystemTest
 				.isEqualTo("SO1 | Acme");
 	}
 
+	/**
+	 * A deactivated ExternalSystem still referenced by live orders must not take the launcher down.
+	 * ExternalSystemRepository's map holds ACTIVE rows only, while C_Order / M_ShipmentSchedule /
+	 * M_Picking_Job keep a plain FK — so deactivating one is enough to reach an id the throwing
+	 * getById would reject, for every row of the list at once.
+	 */
+	@Test
+	void unknownOrDeactivatedExternalSystem_rendersBlankRatherThanFailing()
+	{
+		final DisplayValueProvider provider = displayValueProvider(
+				PickingJobFieldType.DOCUMENT_NO, PickingJobFieldType.CUSTOMER, PickingJobFieldType.EXTERNAL_SYSTEM);
+
+		assertThat(provider.computeLauncherCaption(candidate(ExternalSystemId.ofRepoId(999_999))).translate("en_US"))
+				.isEqualTo("SO1 | Acme");
+	}
+
 	/** AC9 — a profile that does not enable the field is untouched by it. */
 	@Test
 	void fieldNotConfigured_captionIsUnchanged()

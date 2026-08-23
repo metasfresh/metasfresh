@@ -92,6 +92,20 @@ public class ExternalSystemRepository
 		return getMap().getById(id);
 	}
 
+	/**
+	 * Null when no ACTIVE external system carries this id — the map is built with
+	 * {@code addOnlyActiveRecordsFilter}, while the documents referencing it (C_Order, M_ShipmentSchedule,
+	 * M_Picking_Job, ...) keep their plain FK. Deactivating an ExternalSystem row is therefore enough to
+	 * leave live documents pointing at an id {@link #getById(ExternalSystemId)} would throw on. Callers
+	 * that merely DISPLAY the name must use this and degrade to blank; only callers that genuinely
+	 * cannot proceed should use the throwing variant.
+	 */
+	@Nullable
+	public ExternalSystem getByIdOrNull(@NonNull final ExternalSystemId id)
+	{
+		return getMap().getByIdOrNull(id);
+	}
+
 	private static ExternalSystem fromRecord(@NonNull final I_ExternalSystem externalSystemRecord)
 	{
 		return ExternalSystem.builder()
