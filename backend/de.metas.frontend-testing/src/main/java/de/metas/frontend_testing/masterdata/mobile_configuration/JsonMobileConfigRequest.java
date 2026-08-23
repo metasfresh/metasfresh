@@ -124,5 +124,9 @@ public class JsonMobileConfigRequest
 		@Nullable Boolean isScanResourceRequired;
 		@Nullable Boolean isAllowIssuingAnyHU;
 		@Nullable String receiveUnitType;
+		@Nullable Boolean isAllowFinishedGoodsReceiveToLU;
+		@Nullable Boolean isAllowFinishedGoodsReceiveToTU;
+		@Nullable Boolean isSkipFinishedGoodsReceiveTargetStep;
+		@Nullable Boolean isCaptureCatchWeightAtReceipt;
 	}
 }
