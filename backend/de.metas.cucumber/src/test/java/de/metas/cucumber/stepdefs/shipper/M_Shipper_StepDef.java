@@ -109,6 +109,9 @@ public class M_Shipper_StepDef
 		row.getAsOptionalBoolean(I_M_Shipper.COLUMNNAME_IsApiCarrierAdvise)
 				.ifPresent(record::setIsApiCarrierAdvise);
 
+		row.getAsOptionalBoolean(I_M_Shipper.COLUMNNAME_IsCreateDeliveryPlanning)
+				.ifPresent(record::setIsCreateDeliveryPlanning);
+
 		InterfaceWrapperHelper.save(record);
 
 		row.getAsOptionalIdentifier()
