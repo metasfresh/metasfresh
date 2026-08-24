@@ -53,7 +53,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Covers the two failures {@link VATaxIDCheckRunService} must tell apart: a chronic
+ * Covers the two failures {@link VATaxIDMassCheckService} must tell apart: a chronic
  * {@code stampAttemptInOwnTrx} failure on ONE target, which must not abort the run, and a request-side
  * rejection by the checking service, which must.
  *
@@ -61,7 +61,7 @@ import static org.mockito.Mockito.when;
  * write can be made to throw deterministically while the other succeeds — the one thing a real in-memory
  * DAO cannot reproduce without an actual concurrent writer.
  */
-class VATaxIDCheckRunServiceTest
+class VATaxIDMassCheckServiceTest
 {
 	private static final BPartnerId BPARTNER_ID_BROKEN_STAMP = BPartnerId.ofRepoId(1000101);
 	private static final BPartnerId BPARTNER_ID_HEALTHY = BPartnerId.ofRepoId(1000102);
@@ -105,16 +105,16 @@ class VATaxIDCheckRunServiceTest
 				.thenReturn(ImmutableList.<I_C_BPartner_Location>of());
 		// the broken target's stamp write fails on every attempt -- the exact chronic-failure shape this
 		// test exists to cover; the healthy target's stamp write is left unstubbed (succeeds, no-op mock).
-		doThrow(new RuntimeException("simulated stamp-write failure (test-only, VATaxIDCheckRunServiceTest)"))
+		doThrow(new RuntimeException("simulated stamp-write failure (test-only, VATaxIDMassCheckServiceTest)"))
 				.when(bpartnerDAOMock).stampVATaxIDCheckAttempt(eq(BPARTNER_ID_BROKEN_STAMP), any(Instant.class));
 
 		when(checkServiceMock.getUnavailableCountryCodes(any(OrgId.class))).thenReturn(ImmutableSet.of());
 		when(checkServiceMock.check(argThat(req -> req != null && BPARTNER_ID_HEALTHY.equals(req.getBpartnerId()))))
 				.thenReturn(VATaxIDStatus.Valid);
 
-		final VATaxIDCheckRunService runService = new VATaxIDCheckRunService(checkServiceMock);
+		final VATaxIDMassCheckService massCheckService = new VATaxIDMassCheckService(checkServiceMock);
 
-		final VATaxIDCheckRunRequest request = VATaxIDCheckRunRequest.builder()
+		final VATaxIDMassCheckRequest request = VATaxIDMassCheckRequest.builder()
 				.selectedBPartnerIds(ImmutableList.of(BPARTNER_ID_BROKEN_STAMP, BPARTNER_ID_HEALTHY))
 				.maxChecksPerRun(0)
 				.nightlyRun(false)
@@ -123,7 +123,7 @@ class VATaxIDCheckRunServiceTest
 		final PlainStringLoggable log = Loggables.newPlainStringLoggable();
 		try (final IAutoCloseable ignored = Loggables.temporarySetLoggable(log))
 		{
-			runService.run(request);
+			massCheckService.run(request);
 		}
 
 		// the broken target's check was never even attempted -- the stamp failure short-circuited it
@@ -173,19 +173,19 @@ class VATaxIDCheckRunServiceTest
 						VIES_ERROR_CODE,
 						"VIES rejected the request: " + VIES_ERROR_CODE + ". Check the VAT-ID configuration."));
 
-		final VATaxIDCheckRunService runService = new VATaxIDCheckRunService(checkServiceMock);
+		final VATaxIDMassCheckService massCheckService = new VATaxIDMassCheckService(checkServiceMock);
 
-		final VATaxIDCheckRunRequest request = VATaxIDCheckRunRequest.builder()
+		final VATaxIDMassCheckRequest request = VATaxIDMassCheckRequest.builder()
 				.selectedBPartnerIds(ImmutableList.of(BPARTNER_ID_HEALTHY, BPARTNER_ID_SECOND, BPARTNER_ID_THIRD))
 				.maxChecksPerRun(0)
 				.nightlyRun(false)
 				.build();
 
 		final PlainStringLoggable log = Loggables.newPlainStringLoggable();
-		final VATaxIDCheckRunResult result;
+		final VATaxIDMassCheckResult result;
 		try (final IAutoCloseable ignored = Loggables.temporarySetLoggable(log))
 		{
-			result = runService.run(request);
+			result = massCheckService.run(request);
 		}
 
 		// The whole point: the run stops at the FIRST target instead of grinding through the selection.

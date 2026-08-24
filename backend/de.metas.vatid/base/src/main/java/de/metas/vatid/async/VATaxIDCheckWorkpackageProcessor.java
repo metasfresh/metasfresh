@@ -119,7 +119,7 @@ public class VATaxIDCheckWorkpackageProcessor extends WorkpackageProcessorAdapte
 			// attempt is already durably recorded in VATaxID_CheckLog, and the nightly run re-checks.
 			//
 			// Deliberately NOT special-cased for VATaxIDCheckRequestRejectedException, unlike
-			// VATaxIDCheckRunService, which aborts its whole loop on it. The distinction there buys
+			// VATaxIDMassCheckService, which aborts its whole loop on it. The distinction there buys
 			// something this path cannot use: one work package is one record, so there is no remaining
 			// selection to spare and nothing to abort. Rethrowing would only convert a misconfiguration
 			// into a growing pile of errored, retrying work packages -- one per save -- which is exactly

@@ -61,7 +61,7 @@ import static org.mockito.Mockito.when;
  * the record already held — the save-triggered asynchronous check just as much as the
  * {@code C_BPartner_VATaxID_Check} process, because both converge here. Comparing against the record's
  * STORED status rather than a caller-supplied snapshot is what makes that true: were the comparison to sit in
- * {@code VATaxIDCheckRunService} instead, a save-triggered check would silently consume the transition and the
+ * {@code VATaxIDMassCheckService} instead, a save-triggered check would silently consume the transition and the
  * process, running second, would find no change left to react to.
  *
  * <p><b>The stale-verdict guard.</b> The other thing covered here is the one an ASYNCHRONOUS check must
@@ -257,7 +257,7 @@ class VATaxIDCheckServiceTest
 		assertParentColumnsUntouched(bpartnerId);
 
 		// ... and the caller is told the status the RECORD has, not the one the abandoned answer produced --
-		// otherwise VATaxIDCheckRunService would see a status change and refresh the partner's order tax on
+		// otherwise VATaxIDMassCheckService would see a status change and refresh the partner's order tax on
 		// the strength of a verdict that was never stored.
 		assertThat(returnedStatus).as("returned status").isEqualTo(VATaxIDStatus.NotChecked);
 
@@ -522,7 +522,7 @@ class VATaxIDCheckServiceTest
 	 * refresher must bring the check down with it rather than be swallowed, because a status that commits
 	 * without its refresh is a partner whose open orders keep the tax of a status the record no longer has.
 	 *
-	 * <p>The message must say the CHECK ITSELF SUCCEEDED. {@code VATaxIDCheckRunService} logs one per-target
+	 * <p>The message must say the CHECK ITSELF SUCCEEDED. {@code VATaxIDMassCheckService} logs one per-target
 	 * line for whatever comes out of here, and without that wording an operator reads a refresh failure as a
 	 * VAT-ID that could not be checked — and goes looking at the checking service instead of at the orders.
 	 *

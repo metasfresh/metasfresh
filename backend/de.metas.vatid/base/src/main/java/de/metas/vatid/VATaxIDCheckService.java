@@ -43,34 +43,24 @@ import java.time.Duration;
 import java.time.Instant;
 
 /**
- * Single entry point for checking one VAT-ID, shared by the {@code C_BPartner} /
- * {@code C_BPartner_Location} after-commit trigger and the check process, so the two paths cannot drift
- * apart in what they check, what they record, or when they skip.
+ * Checks one VAT-ID. The single convergence point for both callers — the {@code C_BPartner} /
+ * {@code C_BPartner_Location} after-commit trigger and {@link VATaxIDMassCheckService} — so the two cannot
+ * drift on what gets checked, recorded, or skipped.
  *
- * <p>Order: offline format check, then de-duplication against {@link VATaxIDConfig#getRecheckAfterDays()},
- * then {@link VATaxIDCheckRepository#writeRequestSent(VATaxIDCheckRequest)} <em>before</em> the online
- * call. That write commits in its own transaction, so a check whose outcome is never learned (crash,
- * timeout, rollback) still leaves evidence that it was asked. Finally the log row is completed and the
- * parent's status columns, which tax determination and the windows read, are refreshed — but only while the
- * record still holds the VAT-ID that was checked, see
- * {@link #updateParentStatusIfStillCurrent(VATaxIDCheckRequest, VATaxIDLastCheck)}.
- *
- * <p><b>A status that actually changed also refreshes the partner's open orders' tax</b>, and that happens
- * here rather than in either caller — see
- * {@link #storeVerdictAndRefreshOrderTax(VATaxIDCheckRequest, VATaxIDStatus, VATaxIDLastCheck)}. Both paths
- * converge on this method, so a refresh anywhere else is a refresh only one of them gets.
- *
- * <p>Countries the online service does not cover are answered {@link VATaxIDStatus#NotSupported} by the
- * checker itself, so that list exists exactly once, in the implementation that owns the protocol.
- *
- * <p>{@link VATaxIDConfig#getOnServiceUnavailable()} is applied here, deliberately not in the checker. An
- * {@link VATaxIDStatus#Invalid} it produces is stored under the same status as a real VIES rejection and
- * no column records the difference; only the check-log {@code RawResponse} tells them apart — a real
- * rejection always carries a boolean {@code valid: false}, a policy-produced one never does.
- *
- * <p>Callers must invoke this <em>outside</em> the save transaction, so a slow or dead service can never
- * fail a save. Progress is reported through {@code Loggables}, never {@code JavaProcess}, so the same code
- * logs to {@code AD_PInstance_Log} under a process and is a no-op under the interceptor.
+ * <p>Invariants to know before changing anything here:
+ * <ul>
+ * <li>Call this <b>outside</b> the save transaction — a slow or dead service must never fail a save.</li>
+ * <li>{@link VATaxIDCheckRepository#writeRequestSent(VATaxIDCheckRequest)} commits in its own transaction
+ * <b>before</b> the online call, so a check whose outcome is never learned still leaves evidence it was
+ * asked.</li>
+ * <li>The parent's status columns are written only while the record still holds the VAT-ID that was
+ * checked — {@link #updateParentStatusIfStillCurrent(VATaxIDCheckRequest, VATaxIDLastCheck)}.</li>
+ * <li>A status that actually changed also refreshes that partner's open orders' tax, here and not in
+ * either caller — a refresh anywhere else is one that only one caller gets.</li>
+ * <li>An {@link VATaxIDStatus#Invalid} produced by {@link VATaxIDConfig#getOnServiceUnavailable()} is
+ * stored indistinguishably from a real VIES rejection; only the check-log {@code RawResponse} separates
+ * them — a real rejection carries {@code valid: false}, a policy-produced one never does.</li>
+ * </ul>
  */
 @Service
 @RequiredArgsConstructor
@@ -192,7 +182,7 @@ public class VATaxIDCheckService
 	 * <p><b>{@code callInThreadInheritedTrx}, so the pair is atomic on BOTH paths</b> — a refresh failure must
 	 * never leave a committed status behind stale order tax, and the two paths arrive here differently:
 	 * <ul>
-	 * <li>Under {@code C_BPartner_VATaxID_Check} there IS an ambient transaction ({@code VATaxIDCheckRunService}
+	 * <li>Under {@code C_BPartner_VATaxID_Check} there IS an ambient transaction ({@code VATaxIDMassCheckService}
 	 * wraps each target's whole unit), so this NESTS in it — a savepoint, committing nothing of its own. The
 	 * rethrow below then unwinds out of {@code check} and takes that whole per-target unit down with it.</li>
 	 * <li>Under a save-triggered check there is NONE: {@code VATaxIDCheckWorkpackageProcessor} declares
@@ -283,7 +273,7 @@ public class VATaxIDCheckService
 	 *
 	 * <p>The synchronous process path keeps working unchanged in the ordinary case — it builds its request
 	 * from the record it has just read, so the values match and this returns {@code true}. It is not exempt
-	 * from the race, though: {@code VATaxIDCheckRunService} reads its whole selection up front and then works
+	 * from the race, though: {@code VATaxIDMassCheckService} reads its whole selection up front and then works
 	 * through it one target at a time, so a user editing a VAT-ID mid-run hits exactly the same window, and
 	 * the guard covers that too.
 	 *
@@ -331,7 +321,7 @@ public class VATaxIDCheckService
 	/**
 	 * @return the member-state codes {@code orgId}'s online checker reports as unavailable; empty when the
 	 * organisation has the online check switched off. Asked once per run, not once per VAT-ID, so the
-	 * check-run service can skip the affected member states up front instead of discovering the outage one
+	 * mass-check service can skip the affected member states up front instead of discovering the outage one
 	 * {@link #check} call at a time.
 	 */
 	@NonNull
@@ -347,8 +337,7 @@ public class VATaxIDCheckService
 	}
 
 	/**
-	 * @return how many online calls the run made, and their average response time. Pass-through, so the
-	 * check-run service need not depend on {@link VATaxIDCheckRepository}, this table's sole owner.
+	 * @return how many online calls the run made, and their average response time.
 	 */
 	@NonNull
 	public VATaxIDCheckCallStats getCallStatsForRun(@NonNull final PInstanceId pinstanceId)
@@ -366,9 +355,8 @@ public class VATaxIDCheckService
 	}
 
 	/**
-	 * @return whether {@code orgId} has the online check switched on. Exposed so the nightly selection can
-	 * exclude records {@link #check} would return early for: they never get a {@code VATaxIDCheckedAt}, so
-	 * they would sort to the front of every future run forever without ever making progress.
+	 * @return whether {@code orgId} has the online check switched on. The single accessor for this
+	 * question, so the save-time enqueue gate and the nightly selection cannot express it differently.
 	 */
 	public boolean isViesCheckEnabled(@NonNull final OrgId orgId)
 	{

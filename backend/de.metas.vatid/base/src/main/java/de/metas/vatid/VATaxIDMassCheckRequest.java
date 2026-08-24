@@ -32,7 +32,7 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 /**
- * One run of {@link VATaxIDCheckRunService#run(VATaxIDCheckRunRequest)}: check the header VAT-ID (if any)
+ * One run of {@link VATaxIDMassCheckService#run(VATaxIDMassCheckRequest)}: check the header VAT-ID (if any)
  * and every location VAT-ID (if any) of every partner in {@link #getSelectedBPartnerIds()} — see that
  * method's javadoc for the combined selection it builds from this list and the throttling
  * {@link #getMaxChecksPerRun()} applies to it.
@@ -43,18 +43,18 @@ import javax.annotation.Nullable;
  */
 @Value
 @Builder
-public class VATaxIDCheckRunRequest
+public class VATaxIDMassCheckRequest
 {
 	/**
 	 * Ordered by {@code C_BPartner_ID} ascending — that order is what makes a throttled run's processed
-	 * prefix deterministic and reproducible (see {@link VATaxIDCheckRunService#run(VATaxIDCheckRunRequest)}).
+	 * prefix deterministic and reproducible (see {@link VATaxIDMassCheckService#run(VATaxIDMassCheckRequest)}).
 	 * The caller, not this class, is responsible for that ordering.
 	 */
 	@NonNull ImmutableList<BPartnerId> selectedBPartnerIds;
 
 	/**
 	 * Empty/unset or {@code <= 0} means no limit — see
-	 * {@link VATaxIDCheckRunService#run(VATaxIDCheckRunRequest)}.
+	 * {@link VATaxIDMassCheckService#run(VATaxIDMassCheckRequest)}.
 	 */
 	int maxChecksPerRun;
 

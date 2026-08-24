@@ -297,7 +297,7 @@ public interface IBPartnerDAO extends ISingletonService
 	 * {@code VATaxID}, ordered by {@code C_BPartner_ID} — the location-grain counterpart of
 	 * {@link #retrieveBPartnerIdsWithVATaxID()}, for the same nightly-schedule caller. Needed because a
 	 * location's own staleness must be visible to the nightly sweep even when its owning partner's header
-	 * carries no VAT-ID at all (see {@code de.metas.vatid.VATaxIDCheckRunService}).
+	 * carries no VAT-ID at all (see {@code de.metas.vatid.VATaxIDMassCheckService}).
 	 */
 	ImmutableList<I_C_BPartner_Location> retrieveBPartnerLocationsWithVATaxID();
 
