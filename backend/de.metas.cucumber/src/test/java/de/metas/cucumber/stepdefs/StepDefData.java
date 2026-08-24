@@ -30,6 +30,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.PO;
 import org.compiere.util.TimeUtil;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -37,7 +38,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public abstract class StepDefData<T>
 {
@@ -54,17 +55,10 @@ public abstract class StepDefData<T>
 	}
 
 	public void put(
-			@NonNull final StepDefDataIdentifier identifier,
-			@NonNull final T record)
-	{
-		put(identifier.getAsString(), record);
-	}
-
-	public void put(
 			@NonNull final String identifier,
-			@NonNull final T record)
+			@NonNull final T productRecord)
 	{
-		final RecordDataItem<T> recordDataItem = createRecordDataItem(record);
+		final RecordDataItem<T> recordDataItem = createRecordDataItem(productRecord);
 
 		final RecordDataItem<T> oldRecord = records.put(identifier, recordDataItem);
 		assertThat(oldRecord)
@@ -73,25 +67,18 @@ public abstract class StepDefData<T>
 	}
 
 	public void putOrReplace(
-			@NonNull final StepDefDataIdentifier identifier,
-			@NonNull final T record)
-	{
-		putOrReplace(identifier.getAsString(), record);
-	}
-
-	public void putOrReplace(
 			@NonNull final String identifier,
-			@NonNull final T record)
+			@NonNull final T productRecord)
 	{
 		final RecordDataItem<T> oldRecord = records.get(identifier);
 
 		if (oldRecord == null)
 		{
-			put(identifier, record);
+			put(identifier, productRecord);
 		}
 		else
 		{
-			records.replace(identifier, createRecordDataItem(record));
+			records.replace(identifier, createRecordDataItem(productRecord));
 		}
 	}
 
@@ -119,12 +106,6 @@ public abstract class StepDefData<T>
 	}
 
 	@NonNull
-	public T get(@NonNull final StepDefDataIdentifier identifier)
-	{
-		return get(identifier.getAsString());
-	}
-
-	@NonNull
 	public T get(@NonNull final String identifier)
 	{
 		final T record = getRecordDataItem(identifier).getRecord();
@@ -147,12 +128,6 @@ public abstract class StepDefData<T>
 	}
 
 	@NonNull
-	public Optional<T> getOptional(@NonNull final StepDefDataIdentifier identifier)
-	{
-		return getOptional(identifier.getAsString());
-	}
-
-	@NonNull
 	public Optional<T> getOptional(@NonNull final String identifier)
 	{
 		return Optional.ofNullable(records.get(identifier)).map(RecordDataItem::getRecord);
@@ -164,30 +139,30 @@ public abstract class StepDefData<T>
 	}
 
 	/**
-	 * @param record the item to store.
+	 * @param productRecord the item to store.
 	 *                      In case of a model interface, we just store its ID and class, to avoid problems with DB-transactions or other sorts of leaks.
 	 */
-	@NonNull
-	private StepDefData.RecordDataItem<T> createRecordDataItem(final @NonNull T record)
+	@NotNull
+	private StepDefData.RecordDataItem<T> createRecordDataItem(final @NotNull T productRecord)
 	{
-		if (InterfaceWrapperHelper.isModelInterface(record.getClass()) && clazz != null)
+		if (InterfaceWrapperHelper.isModelInterface(productRecord.getClass()) && clazz != null)
 		{
 			final Instant updated = InterfaceWrapperHelper
-					.getValueOptional(record, InterfaceWrapperHelper.COLUMNNAME_Updated)
+					.getValueOptional(productRecord, InterfaceWrapperHelper.COLUMNNAME_Updated)
 					.map(TimeUtil::asInstant)
 					.orElse(Instant.MIN);
 
 			// just store ID and table name, to avoid any leaks
-			final TableRecordReference tableRecordReference = TableRecordReference.of(InterfaceWrapperHelper.getModelTableName(record), InterfaceWrapperHelper.getId(record));
+			final TableRecordReference tableRecordReference = TableRecordReference.of(InterfaceWrapperHelper.getModelTableName(productRecord), InterfaceWrapperHelper.getId(productRecord));
 
-			return new RecordDataItem<>(null,
+			return new RecordDataItem<>((T)null,
 										tableRecordReference,
 										clazz,
 										Instant.now(),
 										updated);
 
 		}
-		return new RecordDataItem<>(record, null, null, Instant.now(), Instant.MIN);
+		return new RecordDataItem<T>(productRecord, null, null, Instant.now(), Instant.MIN);
 	}
 
 	@Value
