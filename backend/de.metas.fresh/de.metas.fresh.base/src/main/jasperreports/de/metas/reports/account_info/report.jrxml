@@ -347,8 +347,10 @@ ORDER BY param_acct_name, dateacct, unionorder
 					</textElement>
 					<textFieldExpression><![CDATA[$F{param_acct_value}]]></textFieldExpression>
 				</textField>
-				<textField isBlankWhenNull="true">
-					<reportElement x="356" y="71" width="74" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+				<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
+					<reportElement x="356" y="71" width="40" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6">
+						<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					</reportElement>
 					<textElement>
 						<font fontName="Arial" size="7" isBold="true"/>
 					</textElement>
@@ -420,15 +422,17 @@ ORDER BY param_acct_name, dateacct, unionorder
 						<pen lineWidth="1.0" lineStyle="Solid"/>
 					</graphicElement>
 				</line>
-				<textField isBlankWhenNull="true">
-					<reportElement x="443" y="71" width="263" height="9" uuid="d5f510bd-559e-4633-bb0d-dd3553fc1a49"/>
+				<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
+					<reportElement x="409" y="71" width="40" height="9" uuid="d5f510bd-559e-4633-bb0d-dd3553fc1a49">
+						<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					</reportElement>
 					<textElement>
 						<font fontName="Arial" size="7" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{param_end_date}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="430" y="71" width="13" height="9" uuid="a4084f00-0657-42bc-abca-cb2631f9dfa6">
+					<reportElement x="396" y="71" width="13" height="9" uuid="a4084f00-0657-42bc-abca-cb2631f9dfa6">
 						<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					</reportElement>
 					<textElement>
