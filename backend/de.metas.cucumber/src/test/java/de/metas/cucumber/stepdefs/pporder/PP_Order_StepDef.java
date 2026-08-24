@@ -108,6 +108,7 @@ import java.util.function.Supplier;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 public class PP_Order_StepDef
 {
@@ -220,6 +221,47 @@ public class PP_Order_StepDef
 
 			ppOrderTable.put(row.getAsIdentifier(I_PP_Order.COLUMNNAME_PP_Order_ID), ppOrder);
 		});
+	}
+
+	/**
+	 * Creates a manufacturing order and asserts it is rejected at save time by the {@link org.eevolution.model.validator.PP_Order}
+	 * model interceptor's product life-cycle (BBS-status) guard, exposing the resulting {@link AdempiereException#getErrorCode()}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>PP_Order_ID</b> — (required, identifier-ref) alias for the order that must NOT be created<br>
+	 *   <b>DocBaseType</b> — (required) PP_Order doc-base-type, e.g. {@code MOP}<br>
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) the finished-good product being manufactured<br>
+	 *   <b>QtyEntered</b> — (required) quantity to manufacture<br>
+	 *   <b>S_Resource_ID</b> — (required, identifier-ref) the plant/resource<br>
+	 *   <b>DateOrdered</b> — (required) order date<br>
+	 *   <b>DatePromised</b> — (required) promised date<br>
+	 *   <b>DateStartSchedule</b> — (required) schedule start date<br>
+	 *   <b>ErrorCode</b> — (required) the expected {@link AdempiereException#getErrorCode()}, e.g. {@code M_Product_BBSStatus_ActionBlocked}<br>
+	 * @cucumber.depends StepDefData: M_Product_StepDefData, S_Resource_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And create PP_Order expecting error:
+	 *   | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | ErrorCode                         |
+	 *   | ppOrder_blocked        | MOP         | blocked                 | 10         | testResource             | 2022-01-05T23:59:00.00Z | 2022-01-05T23:59:00.00Z | 2022-01-05T23:59:00.00Z | M_Product_BBSStatus_ActionBlocked |
+	 * </pre>
+	 *
+	 * @see #compute_PPOrderCreateRequest_to_create_pp_order(io.cucumber.datatable.DataTable) the create step whose full column contract this reuses
+	 */
+	@And("create PP_Order expecting error:")
+	public void create_pp_order_expecting_error(@NonNull final DataTable dataTable)
+	{
+		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
+		final String expectedErrorCode = row.getAsString("ErrorCode");
+		try
+		{
+			compute_PPOrderCreateRequest_to_create_pp_order(dataTable);
+			fail("Creating the PP_Order should have been rejected with error code " + expectedErrorCode);
+		}
+		catch (final AdempiereException exception)
+		{
+			assertThat(exception.getErrorCode()).isEqualTo(expectedErrorCode);
+		}
 	}
 
 	@And("complete planning for PP_Order:")

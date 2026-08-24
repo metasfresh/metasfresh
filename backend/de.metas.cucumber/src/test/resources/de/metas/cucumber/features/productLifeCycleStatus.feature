@@ -26,7 +26,7 @@ Feature: product life-cycle status enforcement on order lines
       | Identifier    | Name        | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | endcustomer_1 | Endcustomer | N            | Y              | ps_1                          |
 
-  @Id:S31039
+  @Id:S31039_TC1
   Scenario: the life-cycle status gates whether a product can be sold on an order
     # two products: one blocked (Gesperrt), one OK
     And metasfresh contains M_Products:
