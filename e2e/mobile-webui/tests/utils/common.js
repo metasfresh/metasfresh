@@ -171,8 +171,12 @@ export const expectErrorToast = async (title, func, toastValidator) => {
                 executeFuncFailOnSuccess(),
                 ErrorToast.waitToPopup(async (toastLocator) => {
                     if (currentErrorWatcherId !== watcherId) {
-                        // console.log(`Error toast detected, but the current watcher id (${currentErrorWatcherId}) does not match the current one (${watcherId})`);
-                        return;
+                        // The toast belongs to a MORE DEEPLY NESTED expectErrorToast. Same reasoning as in
+                        // runAndWatchForErrors: returning would resolve this branch, settle our own
+                        // Promise.race and abandon executeFuncFailOnSuccess() — the caller would carry on
+                        // believing OUR expected error was validated, when the inner one consumed a
+                        // different toast. Hang instead; only our own toast or func() may settle this race.
+                        await new Promise(() => {});
                     }
 
                     const textContent = await toastLocator.textContent();
