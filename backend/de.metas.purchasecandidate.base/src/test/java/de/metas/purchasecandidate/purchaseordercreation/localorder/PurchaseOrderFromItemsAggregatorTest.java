@@ -98,7 +98,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 		private int updatePricesCallCount;
 
 		@Override
-		public void updatePrices(@NonNull OrderLinePriceUpdateRequest request)
+		public void updatePrices(@NonNull final OrderLinePriceUpdateRequest request)
 		{
 			// mock IOrderLineBL.updatePrices() because
 			// setting up the required masterdata and testing the pricing engine is out of scope.
@@ -406,6 +406,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 				.warehouseId(WarehouseId.ofRepoId(60))
 				.profitInfoOrNull(PurchaseCandidateTestTool.createPurchaseProfitInfo())
 				.dimension(dimension)
+				.source(PurchaseCandidateSource.SalesOrder)
 				.build();
 	}
 
