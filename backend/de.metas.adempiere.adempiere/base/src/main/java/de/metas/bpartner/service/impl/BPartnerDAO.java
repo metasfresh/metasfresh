@@ -78,9 +78,9 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.trx.api.ITrx;
@@ -766,7 +766,6 @@ public class BPartnerDAO implements IBPartnerDAO
 
 		return queryBuilder.create();
 	}
-
 
 	@Override
 	public void stampVATaxIDCheckAttempt(@NonNull final BPartnerId bpartnerId, @NonNull final Instant attemptedAt)

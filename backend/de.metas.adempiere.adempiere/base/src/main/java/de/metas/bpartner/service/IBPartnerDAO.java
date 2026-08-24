@@ -281,7 +281,6 @@ public interface IBPartnerDAO extends ISingletonService
 	 */
 	ImmutableList<I_C_BPartner_Location> retrieveBPartnerLocationsWithVATaxID(@NonNull Collection<BPartnerId> bpartnerIds);
 
-
 	/**
 	 * Walks the {@code C_BPartner} records of {@code orgId} that are due a VAT-ID online check, oldest
 	 * attempt first ({@code VATaxIDLastAttemptedAt} ascending, nulls — never attempted — first).
