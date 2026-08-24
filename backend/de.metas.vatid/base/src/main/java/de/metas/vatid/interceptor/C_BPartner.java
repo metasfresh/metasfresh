@@ -59,8 +59,10 @@ public class C_BPartner
 	 * {@code BEFORE_*} does run before {@code AFTER_*}, but the config can make this a no-op, and inter-class
 	 * interceptor ordering is not guaranteed. A malformed value can therefore reach the after-commit path;
 	 * that is safe only because {@code VATaxIDCheckService#check} re-runs the format check and
-	 * {@link VATaxIDCheckTrigger} logs rather than propagates the throw — a skipped check with a warning,
-	 * never a failed save or a log row claiming a malformed value was checked.
+	 * {@code VATaxIDCheckWorkpackageProcessor} logs rather than propagates the throw — a skipped check with
+	 * a warning, never a failed save or a log row claiming a malformed value was checked. Note the swallow
+	 * lives in the PROCESSOR, not in {@link VATaxIDCheckTrigger}: the trigger only decides whether to
+	 * enqueue, and the check itself runs later, on the async work package.
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = I_C_BPartner.COLUMNNAME_VATaxID)
@@ -90,6 +92,7 @@ public class C_BPartner
 		final AdSessionId adSessionId = sessionBL.getCurrentOrCreateSessionId(Env.getCtx());
 
 		vataxIDCheckTrigger.scheduleCheckAfterCommit(
+				OrgId.ofRepoId(bpartner.getAD_Org_ID()),
 				BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()),
 				null,
 				bpartner.getVATaxID(),
