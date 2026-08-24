@@ -91,8 +91,8 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.proxy.Cached;
 import org.apache.commons.lang3.BooleanUtils;
 import org.compiere.model.IQuery;
-import org.compiere.model.X_C_BPartner_Location;
 import org.compiere.model.X_C_BPartner;
+import org.compiere.model.X_C_BPartner_Location;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Group;
@@ -112,9 +112,9 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Iterator;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -683,11 +683,15 @@ public class BPartnerDAO implements IBPartnerDAO
 				.listImmutable(I_C_BPartner_Location.class);
 	}
 
+	/** Matches the scheduler's default MaxChecksPerRun, so a full-budget run pages once per grain. */
+	private static final int ITERATOR_BUFFER_SIZE = 500;
+
 	@Override
 	public Iterator<I_C_BPartner> iterateBPartnersDueForVATaxIDCheck(@NonNull final OrgId orgId, @Nullable final Instant staleBefore)
 	{
-		return createBPartnersDueForVATaxIDCheckQuery(orgId, staleBefore)
-				.iterateWithGuaranteedIterator(I_C_BPartner.class);
+		final IQuery<I_C_BPartner> query = createBPartnersDueForVATaxIDCheckQuery(orgId, staleBefore);
+		query.setOption(IQuery.OPTION_IteratorBufferSize, ITERATOR_BUFFER_SIZE);
+		return query.iterateWithGuaranteedIterator(I_C_BPartner.class);
 	}
 
 	@Override
@@ -726,8 +730,9 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public Iterator<I_C_BPartner_Location> iterateBPartnerLocationsDueForVATaxIDCheck(@NonNull final OrgId orgId, @Nullable final Instant staleBefore)
 	{
-		return createBPartnerLocationsDueForVATaxIDCheckQuery(orgId, staleBefore)
-				.iterateWithGuaranteedIterator(I_C_BPartner_Location.class);
+		final IQuery<I_C_BPartner_Location> query = createBPartnerLocationsDueForVATaxIDCheckQuery(orgId, staleBefore);
+		query.setOption(IQuery.OPTION_IteratorBufferSize, ITERATOR_BUFFER_SIZE);
+		return query.iterateWithGuaranteedIterator(I_C_BPartner_Location.class);
 	}
 
 	@Override
@@ -761,7 +766,6 @@ public class BPartnerDAO implements IBPartnerDAO
 
 		return queryBuilder.create();
 	}
-
 
 
 	@Override

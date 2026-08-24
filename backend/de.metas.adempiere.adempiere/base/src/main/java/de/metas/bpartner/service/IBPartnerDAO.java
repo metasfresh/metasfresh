@@ -255,7 +255,6 @@ public interface IBPartnerDAO extends ISingletonService
 	@Nullable
 	I_C_BP_Relation retrieveBillToBPartnerRelationOrNull(BPartnerId bPartnerId);
 
-
 	/**
 	 * Retrieve default/first ship to location.
 	 *
@@ -281,7 +280,6 @@ public interface IBPartnerDAO extends ISingletonService
 	 * non-blank {@code VATaxID}, ordered by {@code C_BPartner_ID} then {@code C_BPartner_Location_ID}.
 	 */
 	ImmutableList<I_C_BPartner_Location> retrieveBPartnerLocationsWithVATaxID(@NonNull Collection<BPartnerId> bpartnerIds);
-
 
 
 	/**
