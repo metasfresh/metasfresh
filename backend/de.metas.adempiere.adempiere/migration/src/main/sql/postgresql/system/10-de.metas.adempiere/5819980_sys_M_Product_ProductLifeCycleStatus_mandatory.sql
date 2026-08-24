@@ -6,13 +6,25 @@
 -- information the status codes do not, and allowing it only forces every reader to handle a second
 -- representation of "unrestricted".
 --
--- t_alter_column's 5th argument sets the column default AND backfills the existing NULLs inside the
--- same DDL, so this is safe on an instance that still has NULL rows -- no separate UPDATE pass is
--- needed, and none of the rows change meaning (NULL and 'O' were already equivalent).
+-- The backfill is EXPLICIT and must stay. t_alter_column does NOT populate existing rows: it issues
+-- ALTER COLUMN ... SET DEFAULT (which only affects future inserts, unlike ADD COLUMN ... DEFAULT) and
+-- then ALTER COLUMN ... SET NOT NULL, with no UPDATE in between -- see
+-- de.metas.swat.base/.../ddl/functions/altercolumn.sql. So on any instance still holding one NULL row
+-- the SET NOT NULL aborts with "column ... contains null values" and takes the whole migration run
+-- with it. Most instances have no NULLs, because core 5816400 added the column with
+-- ADD COLUMN ... DEFAULT 'O', which does backfill at add time -- but that is a different mechanism and
+-- it only holds where nothing has written an explicit NULL since.
 --
--- AD_Column.IsMandatory must always match the physical NOT NULL constraint: the framework's
--- PO/InterfaceWrapperHelper save path enforces the AD flag, while the constraint catches every write
--- that bypasses it (raw SQL, importers, cucumber step defs). Both sides move together, here.
+-- No row changes meaning: NULL and 'O' are already equivalent to the application (see above).
+
+SELECT backup_table('m_product', '_31659_ProductLifeCycleStatus_mandatory');
+
+UPDATE M_Product
+SET ProductLifeCycleStatus='O',
+    Updated=TO_TIMESTAMP('2026-08-24 11:19:00', 'YYYY-MM-DD HH24:MI:SS'),
+    UpdatedBy=99
+WHERE ProductLifeCycleStatus IS NULL
+;
 
 INSERT INTO t_alter_column values('m_product','ProductLifeCycleStatus','VARCHAR(1)','NOT NULL','O')
 ;
