@@ -89,6 +89,7 @@ public class C_BPartner_Location
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpLocation.getC_BPartner_ID());
 		vataxIDCheckTrigger.scheduleCheckAfterCommit(
+				OrgId.ofRepoId(bpLocation.getAD_Org_ID()),
 				bpartnerId,
 				BPartnerLocationId.ofRepoId(bpartnerId, bpLocation.getC_BPartner_Location_ID()),
 				bpLocation.getVATaxID(),
