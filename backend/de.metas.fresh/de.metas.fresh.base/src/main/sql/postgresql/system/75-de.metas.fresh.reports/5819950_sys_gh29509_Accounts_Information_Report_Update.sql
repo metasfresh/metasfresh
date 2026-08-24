@@ -21,7 +21,7 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description
 ;
 
 -- 2026-08-24T09:24:12.734Z
-UPDATE AD_Element_Trl SET Description='', Help='', IsTranslated='Y', Name='Account_From', PrintName='Account_From',Updated=TO_TIMESTAMP('2026-08-24 09:24:12.560000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=585379 AND AD_Language='en_US'
+UPDATE AD_Element_Trl SET Description='', Help='', IsTranslated='Y', Name='Account From', PrintName='Account From',Updated=TO_TIMESTAMP('2026-08-24 09:24:12.560000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=585379 AND AD_Language='en_US'
 ;
 
 -- 2026-08-24T09:24:12.793Z
