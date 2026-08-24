@@ -363,7 +363,7 @@ public class M_Product_StepDef
 		tableRow.getAsOptionalString(I_M_Product.COLUMNNAME_EAN13_ProductCode)
 				.ifPresent(value -> productRecord.setEAN13_ProductCode(nullToken2Null(value)));
 		tableRow.getAsOptionalString(I_M_Product.COLUMNNAME_ProductLifeCycleStatus)
-				.ifPresent(value -> productRecord.setProductLifeCycleStatus(nullToken2Null(value)));
+				.ifPresent(value -> productRecord.setProductLifeCycleStatus(productLifeCycleStatusOrDefault(value)));
 
 		tableRow.getAsOptionalQuantity("WeightNet", uomDAO::getByX12DE355)
 				.ifPresent(netWeight -> {
@@ -481,6 +481,21 @@ public class M_Product_StepDef
 				.ifPresent(id -> productTable.putOrReplace(identifier, productDAO.getById(id)));
 	}
 
+	/**
+	 * Resolves a {@code ProductLifeCycleStatus} cell, mapping an explicit NULL token to {@code 'O'}.
+	 * <p>
+	 * The column is mandatory ({@code NOT NULL}, default {@code 'O'}), so a NULL cannot be written
+	 * through. Nothing is lost by defaulting it: NULL and {@code 'O'} mean the same thing to the
+	 * application — {@code BBSStatus.ofNullableCode(null)} yields no status and every
+	 * {@code ProductLifeCycleAction} is allowed, which is exactly what {@code 'O'} (OK) encodes. So a
+	 * feature file writing NULL still gets the unrestricted product it asked for.
+	 */
+	@NonNull
+	private static String productLifeCycleStatusOrDefault(@Nullable final String value)
+	{
+		return CoalesceUtil.coalesceNotNull(nullToken2Null(value), X_M_Product.PRODUCTLIFECYCLESTATUS_OK);
+	}
+
 	private void updateMProduct(@NonNull final DataTableRow row)
 	{
 		final I_M_Product productRecord = row.getAsIdentifier().lookupIn(productTable);
@@ -493,7 +508,7 @@ public class M_Product_StepDef
 		row.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsStocked).ifPresent(productRecord::setIsStocked);
 		row.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsActive).ifPresent(productRecord::setIsActive);
 		row.getAsOptionalString(I_M_Product.COLUMNNAME_ProductLifeCycleStatus)
-				.ifPresent(value -> productRecord.setProductLifeCycleStatus(nullToken2Null(value)));
+				.ifPresent(value -> productRecord.setProductLifeCycleStatus(productLifeCycleStatusOrDefault(value)));
 
 		saveRecord(productRecord);
 		productTable.putOrReplace(row.getAsIdentifier(), productRecord);
