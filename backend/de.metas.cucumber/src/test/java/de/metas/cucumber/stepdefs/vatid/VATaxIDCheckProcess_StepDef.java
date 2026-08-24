@@ -40,7 +40,7 @@ import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.vatid.VATaxIDCheckRunService;
+import de.metas.vatid.VATaxIDMassCheckService;
 import de.metas.vatid.process.C_BPartner_VATaxID_Check;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
@@ -74,7 +74,7 @@ public class VATaxIDCheckProcess_StepDef
 	@NonNull private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	@NonNull private final IADPInstanceDAO pInstanceDAO = Services.get(IADPInstanceDAO.class);
 	@NonNull private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
-	@NonNull private final VATaxIDCheckRunService checkRunService = SpringContextHolder.instance.getBean(VATaxIDCheckRunService.class);
+	@NonNull private final VATaxIDMassCheckService massCheckService = SpringContextHolder.instance.getBean(VATaxIDMassCheckService.class);
 
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
 
@@ -295,7 +295,7 @@ public class VATaxIDCheckProcess_StepDef
 	public void assertNightlySelectionIncludes(@NonNull final String bpartnerIdentifier)
 	{
 		final BPartnerId expectedId = resolveBPartnerId(bpartnerIdentifier);
-		final ImmutableList<BPartnerId> nightlySelection = checkRunService.retrieveAllBPartnerIdsWithVATaxID();
+		final ImmutableList<BPartnerId> nightlySelection = massCheckService.retrieveAllBPartnerIdsWithVATaxID();
 
 		assertThat(nightlySelection)
 				.as("C_BPartner_VATaxID_Check nightly selection must include C_BPartner `%s` (%s)", bpartnerIdentifier, expectedId)
@@ -321,7 +321,7 @@ public class VATaxIDCheckProcess_StepDef
 	public void assertNightlySelectionExcludes(@NonNull final String bpartnerIdentifier)
 	{
 		final BPartnerId expectedId = resolveBPartnerId(bpartnerIdentifier);
-		final ImmutableList<BPartnerId> nightlySelection = checkRunService.retrieveAllBPartnerIdsWithVATaxID();
+		final ImmutableList<BPartnerId> nightlySelection = massCheckService.retrieveAllBPartnerIdsWithVATaxID();
 
 		assertThat(nightlySelection)
 				.as("C_BPartner_VATaxID_Check nightly selection must NOT include C_BPartner `%s` (%s)", bpartnerIdentifier, expectedId)
@@ -351,7 +351,7 @@ public class VATaxIDCheckProcess_StepDef
 	{
 		final BPartnerId earlierId = resolveBPartnerId(earlierBPartnerIdentifier);
 		final BPartnerId laterId = resolveBPartnerId(laterBPartnerIdentifier);
-		final ImmutableList<BPartnerId> nightlySelection = checkRunService.retrieveAllBPartnerIdsWithVATaxID();
+		final ImmutableList<BPartnerId> nightlySelection = massCheckService.retrieveAllBPartnerIdsWithVATaxID();
 
 		final int earlierIndex = nightlySelection.indexOf(earlierId);
 		final int laterIndex = nightlySelection.indexOf(laterId);

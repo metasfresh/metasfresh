@@ -203,7 +203,7 @@ public class VATaxIDCheck_StepDef
 		bpartnerRecord.setVATaxIDStatus(VATaxIDStatus.NotChecked.getCode());
 		bpartnerRecord.setVATaxIDCheckedAt(null);
 		// VATaxIDLastAttemptedAt is DIFFERENT from VATaxIDCheckedAt (advances on every attempt, success or
-		// failure -- see VATaxIDCheckRunService's class javadoc, "Attempt vs success") and must be reset
+		// failure -- see VATaxIDMassCheckService's class javadoc, "Starvation guard") and must be reset
 		// here too, or a scenario asserting fresh due-ness after this cleanup would still see a stale
 		// attempt timestamp survive from an earlier run against the same never-reset local database.
 		bpartnerRecord.setVATaxIDLastAttemptedAt(null);

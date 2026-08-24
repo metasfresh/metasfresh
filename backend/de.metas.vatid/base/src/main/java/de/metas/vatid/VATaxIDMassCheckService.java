@@ -61,52 +61,39 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * Runs a whole {@link VATaxIDCheckRunRequest}: target selection, deterministic ordering,
- * {@code MaxChecksPerRun} throttling, the per-target check, and the pending/checked reporting. Every
- * actual check is delegated to {@link VATaxIDCheckService#check(VATaxIDCheckRequest)}; this class owns
- * only the looping around it. Shared by the manual process and any future {@code AD_Scheduler} entry.
+ * Checks a whole selection of VAT-IDs: target selection, deterministic ordering, {@code MaxChecksPerRun}
+ * throttling, and pending/checked reporting. Every actual check is delegated to
+ * {@link VATaxIDCheckService#check(VATaxIDCheckRequest)}; this class owns only the loop around it. Shared
+ * by the manual process and any future {@code AD_Scheduler} entry.
  *
- * <p><b>Selecting a partner also covers its locations</b> — the window only lets a user select
- * {@code C_BPartner} records, so a selected partner contributes its own header plus every location of
- * that partner carrying a VAT-ID. The nightly run filters that set further.
- *
- * <p><b>{@code MaxChecksPerRun}</b> bounds the <em>combined</em> partner+location work, not each type
- * separately; empty or {@code <= 0} means no limit. Untouched targets are reported as pending so a re-run
- * picks them up.
- *
- * <p><b>Starvation guard.</b> {@code VATaxIDCheckedAt} advances only on a completed check, so a target
- * that can never complete one would sort first of every future nightly run forever and occupy the whole
- * budget. {@code VATaxIDLastAttemptedAt} is therefore stamped unconditionally, in its own already-committed
- * transaction, strictly before {@link #checkOneInOwnTrx} begins; the nightly run sorts by it (nulls first,
- * see {@link #filterAndOrderForNightlyRun}), so a just-failed target sorts behind a never-attempted one.
- * This bounds crowding-out, not retry frequency — a failing target stays due and keeps being retried.
- *
- * <p><b>Ordering.</b> {@link #retrieveCheckTargets(ImmutableList)} follows the caller's id order, header
- * before that partner's locations, so a throttled manual run always processes the same prefix. The nightly
- * run deliberately supersedes this with the attempt-time ordering above.
- *
- * <p><b>Each target runs in its own new transaction</b> ({@link #checkOneInOwnTrx}) — including the
- * order-line-tax refresh a status change triggers, which {@link VATaxIDCheckService} performs inside the
- * check and which joins that same transaction — so one target's failure cannot affect any other. The point
- * is independent commit per target, not escaping an ambient transaction.
- *
- * <p><b>One failure is not a per-target failure and stops the run</b>: a
- * {@link VATaxIDCheckRequestRejectedException}, i.e. the checking service rejecting the REQUEST because this
- * system is misconfigured. Carrying on with a per-target log line — correct for every other failure — would
- * repeat the identical error for the whole selection and mark nothing. {@link #run} therefore aborts the loop
- * on it and logs the service's error code once, while still reporting what the partial run managed to do.
- *
- * <p><b>Availability pre-filter</b> ({@code GET /check-status}): asked once per distinct organisation, not
- * per VAT-ID, skipping targets whose member state is reported unavailable. A skipped target keeps its
- * stored status and never reaches {@link VATaxIDConfig#getOnServiceUnavailable()}, which would otherwise
- * mass-mark a country's partners {@code Invalid} during an outage under a fail-closed policy. Skipped
- * targets do not count toward {@link VATaxIDCheckRunResult#getPendingCount()}.
+ * <p>Invariants to know before changing anything here:
+ * <ul>
+ * <li>Selecting a partner also covers its locations — the window only offers {@code C_BPartner} records,
+ * so a selected partner contributes its header plus every VAT-ID-carrying location of that partner.</li>
+ * <li>{@code MaxChecksPerRun} bounds the <b>combined</b> partner+location work, not each type separately;
+ * empty or {@code <= 0} means no limit. Untouched targets are reported pending so a re-run picks them up.</li>
+ * <li><b>Starvation guard.</b> {@code VATaxIDCheckedAt} advances only on a completed check, so a target
+ * that can never complete one would head every future nightly run forever. {@code VATaxIDLastAttemptedAt}
+ * is therefore stamped unconditionally, in its own already-committed transaction, strictly before
+ * {@link #checkOneInOwnTrx}; the nightly run sorts by it (nulls first). This bounds crowding-out, not
+ * retry frequency.</li>
+ * <li>Each target runs in its own new transaction, so one target's failure cannot affect another. The
+ * point is independent commit per target, not escaping an ambient transaction.</li>
+ * <li>A {@link VATaxIDCheckRequestRejectedException} — the service rejecting the REQUEST because this
+ * system is misconfigured — aborts the whole loop instead of logging a per-target failure, which would
+ * otherwise repeat the identical error for every target in the selection.</li>
+ * <li>The availability pre-filter ({@code GET /check-status}) is asked once per distinct organisation, not
+ * per VAT-ID. Skipped targets keep their stored status, never reach
+ * {@link VATaxIDConfig#getOnServiceUnavailable()} (which would mass-mark a country {@code Invalid} during
+ * an outage under a fail-closed policy), and do not count toward
+ * {@link VATaxIDMassCheckResult#getPendingCount()}.</li>
+ * </ul>
  */
 @Service
 @RequiredArgsConstructor
-public class VATaxIDCheckRunService
+public class VATaxIDMassCheckService
 {
-	private static final Logger logger = LogManager.getLogger(VATaxIDCheckRunService.class);
+	private static final Logger logger = LogManager.getLogger(VATaxIDMassCheckService.class);
 
 	@NonNull private final VATaxIDCheckService checkService;
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -116,10 +103,10 @@ public class VATaxIDCheckRunService
 	 * Runs {@code request}'s combined partner+location selection, per the class javadoc.
 	 *
 	 * @return how many targets were checked and how many were left pending because of
-	 * {@link VATaxIDCheckRunRequest#getMaxChecksPerRun()}.
+	 * {@link VATaxIDMassCheckRequest#getMaxChecksPerRun()}.
 	 */
 	@NonNull
-	public VATaxIDCheckRunResult run(@NonNull final VATaxIDCheckRunRequest request)
+	public VATaxIDMassCheckResult run(@NonNull final VATaxIDMassCheckRequest request)
 	{
 		final ImmutableList<CheckTarget> allTargets = retrieveCheckTargets(request.getSelectedBPartnerIds());
 		final ImmutableList<CheckTarget> checkTargets = request.isNightlyRun()
@@ -184,7 +171,7 @@ public class VATaxIDCheckRunService
 
 		final VATaxIDCheckCallStats callStats = reportCallStats(request.getPinstanceId());
 
-		return VATaxIDCheckRunResult.builder()
+		return VATaxIDMassCheckResult.builder()
 				.checkedCount(checkedCount)
 				.pendingCount(pendingCount)
 				.callCount(callStats.getCallCount())
@@ -231,13 +218,10 @@ public class VATaxIDCheckRunService
 	}
 
 	/**
-	 * Logs, and returns, {@link VATaxIDCheckService#getCallStatsForRun(PInstanceId)} for this run — the
-	 * "calls made, and average response time" summary line. Reported even when {@code 0} calls were made:
-	 * a run over a fully de-duplicated selection making zero calls is itself useful information, since it
-	 * shows the de-duplication window is doing its job rather than the run having done nothing. No
-	 * pinstance (e.g. a unit test or a REST-triggered run outside any process) means nothing to attribute
-	 * the log rows to — reported as zero rather than queried, since {@code Loggables} is a no-op outside a
-	 * process anyway.
+	 * Logs, and returns, this run's "calls made, and average response time" summary line. Reported even at
+	 * {@code 0} calls — a fully de-duplicated selection making no calls shows the de-duplication window
+	 * working, not the run having done nothing. No pinstance (unit test, REST-triggered run outside any
+	 * process) means nothing to attribute log rows to, so it is reported as zero rather than queried.
 	 */
 	@NonNull
 	private VATaxIDCheckCallStats reportCallStats(@Nullable final PInstanceId pinstanceId)
@@ -363,7 +347,7 @@ public class VATaxIDCheckRunService
 	 * <p>Matching filter grain to expansion grain is the point: {@link #retrieveCheckTargets(ImmutableList)}'s
 	 * unconditional per-partner expansion is right for a manual run, but for the nightly run it would burn the
 	 * budget re-checking already-fresh locations. Applied only when
-	 * {@link VATaxIDCheckRunRequest#isNightlyRun()}.
+	 * {@link VATaxIDMassCheckRequest#isNightlyRun()}.
 	 */
 	@NonNull
 	private ImmutableList<CheckTarget> filterAndOrderForNightlyRun(@NonNull final ImmutableList<CheckTarget> checkTargets)
@@ -574,7 +558,7 @@ public class VATaxIDCheckRunService
 
 		/**
 		 * When this record's check was last ATTEMPTED, regardless of outcome — {@code null} if it never
-		 * was. Used only by {@link VATaxIDCheckRunService#filterAndOrderForNightlyRun} to order the nightly
+		 * was. Used only by {@link VATaxIDMassCheckService#filterAndOrderForNightlyRun} to order the nightly
 		 * run's targets; unrelated to {@link #checkedAt}. See the class javadoc, "Starvation guard".
 		 */
 		@Nullable Instant lastAttemptedAt;
@@ -586,7 +570,7 @@ public class VATaxIDCheckRunService
 		 * partner's, even for a location target: locations do not carry a materially different
 		 * organisation in practice, and {@code CheckTarget} otherwise has no independent org of its own to
 		 * resolve. Used by the availability pre-filter (see the class javadoc) and by the nightly due-ness
-		 * filter ({@link VATaxIDCheckRunService#filterAndOrderForNightlyRun}).
+		 * filter ({@link VATaxIDMassCheckService#filterAndOrderForNightlyRun}).
 		 */
 		@NonNull OrgId orgId;
 

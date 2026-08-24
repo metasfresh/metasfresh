@@ -31,9 +31,9 @@ import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
-import de.metas.vatid.VATaxIDCheckRunRequest;
-import de.metas.vatid.VATaxIDCheckRunResult;
-import de.metas.vatid.VATaxIDCheckRunService;
+import de.metas.vatid.VATaxIDMassCheckRequest;
+import de.metas.vatid.VATaxIDMassCheckResult;
+import de.metas.vatid.VATaxIDMassCheckService;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
@@ -43,12 +43,12 @@ import org.compiere.model.I_C_BPartner;
  * or a selection, and wired to the nightly {@code AD_Scheduler} — the same code path either way.
  *
  * <p>Thin glue: resolves this run's {@code C_BPartner} ids and the {@code MaxChecksPerRun} parameter, then
- * delegates everything else to {@link VATaxIDCheckRunService#run(VATaxIDCheckRunRequest)}.
+ * delegates everything else to {@link VATaxIDMassCheckService#run(VATaxIDMassCheckRequest)}.
  *
  * <p><b>Selection vs. nightly schedule.</b> A user-triggered run always carries a table/selection on its
  * {@code ProcessInfo}; the scheduler builds none. {@link #getTableName()} distinguishes them — non-null
  * means "read the selection", null means "cover every VAT-ID" via
- * {@link VATaxIDCheckRunService#retrieveAllBPartnerIdsWithVATaxID()}. Without that branch the scheduled run
+ * {@link VATaxIDMassCheckService#retrieveAllBPartnerIdsWithVATaxID()}. Without that branch the scheduled run
  * would hit {@code @NoSelection@}.
  */
 public class C_BPartner_VATaxID_Check extends JavaProcess implements IProcessPrecondition
@@ -56,7 +56,7 @@ public class C_BPartner_VATaxID_Check extends JavaProcess implements IProcessPre
 	@VisibleForTesting
 	public static final String PARA_MaxChecksPerRun = "MaxChecksPerRun";
 
-	@NonNull private final VATaxIDCheckRunService checkRunService = SpringContextHolder.instance.getBean(VATaxIDCheckRunService.class);
+	@NonNull private final VATaxIDMassCheckService massCheckService = SpringContextHolder.instance.getBean(VATaxIDMassCheckService.class);
 
 	/**
 	 * Empty or {@code <= 0} means no limit — see the {@code AD_Process_Para}'s own description, which this
@@ -83,10 +83,10 @@ public class C_BPartner_VATaxID_Check extends JavaProcess implements IProcessPre
 	{
 		final boolean nightlyRun = getTableName() == null;
 		final ImmutableList<BPartnerId> selectedBPartnerIds = nightlyRun
-				? checkRunService.retrieveAllBPartnerIdsWithVATaxID()
+				? massCheckService.retrieveAllBPartnerIdsWithVATaxID()
 				: retrieveSelectedBPartnerIds();
 
-		final VATaxIDCheckRunResult result = checkRunService.run(VATaxIDCheckRunRequest.builder()
+		final VATaxIDMassCheckResult result = massCheckService.run(VATaxIDMassCheckRequest.builder()
 				.selectedBPartnerIds(selectedBPartnerIds)
 				.maxChecksPerRun(p_MaxChecksPerRun)
 				.pinstanceId(getPinstanceId())
