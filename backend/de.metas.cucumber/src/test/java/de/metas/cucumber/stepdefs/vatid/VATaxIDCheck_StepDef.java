@@ -27,6 +27,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.workpackage.WorkPackageQueueUtil;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.tax.api.VATIdentifier;
 import de.metas.util.Services;
@@ -45,6 +46,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_VATaxID_CheckLog;
@@ -70,6 +72,10 @@ public class VATaxIDCheck_StepDef
 {
 	@NonNull private final VATaxIDCheckService vataxIDCheckService = SpringContextHolder.instance.getBean(VATaxIDCheckService.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final WorkPackageQueueUtil workPackageQueueUtil = new WorkPackageQueueUtil();
+
+	/** C_Queue_PackageProcessor.InternalName seeded by migration 5819330. */
+	private static final String VATAXID_CHECK_PACKAGE_PROCESSOR = "VATaxIDCheckWorkpackageProcessor";
 	@NonNull private final ISessionBL sessionBL = Services.get(ISessionBL.class);
 
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
@@ -421,6 +427,12 @@ public class VATaxIDCheck_StepDef
 		final StepDefDataIdentifier identifier = StepDefDataIdentifier.ofString(bpartnerIdentifier);
 		final I_C_BPartner bpartnerRecord = bpartnerTable.get(identifier);
 
+		// The drain belongs HERE, in the step that CONSUMES the rows, per de.metas.cucumber/CLAUDE.md
+		// rule 7: a save-triggered check is asynchronous, so reading the log before the queue is empty
+		// reads a row that has not been written yet -- and, worse, lets this scenario's check outlive its
+		// own stub into the next scenario.
+		waitUntilNoVATaxIDCheckWorkPackagesArePending();
+
 		final ImmutableList<I_VATaxID_CheckLog> checkLogRecords = queryBL
 				.createQueryBuilder(I_VATaxID_CheckLog.class)
 				.addEqualsFilter(I_VATaxID_CheckLog.COLUMNNAME_C_BPartner_ID, bpartnerRecord.getC_BPartner_ID())
@@ -479,5 +491,33 @@ public class VATaxIDCheck_StepDef
 	private static Instant toInstantOrNull(@Nullable final Timestamp timestamp)
 	{
 		return timestamp != null ? timestamp.toInstant() : null;
+	}
+
+	/**
+	 * Polls until no {@code VATaxIDCheckWorkpackageProcessor} package is pending. Bounded, and it fails
+	 * loudly rather than silently proceeding: a timeout here means a check never completed, which is
+	 * exactly the condition that used to surface as a different scenario's missing log row.
+	 */
+	private void waitUntilNoVATaxIDCheckWorkPackagesArePending()
+	{
+		final Instant deadline = Instant.now().plusSeconds(30);
+		int pending;
+		while ((pending = workPackageQueueUtil.countPendingWorkPackages(VATAXID_CHECK_PACKAGE_PROCESSOR)) > 0)
+		{
+			if (Instant.now().isAfter(deadline))
+			{
+				throw new AdempiereException("Timed out after 30s waiting for " + VATAXID_CHECK_PACKAGE_PROCESSOR
+						+ " work packages to drain; " + pending + " still pending");
+			}
+			try
+			{
+				Thread.sleep(200);
+			}
+			catch (final InterruptedException ex)
+			{
+				Thread.currentThread().interrupt();
+				throw new AdempiereException("Interrupted while waiting for VAT-ID check work packages to drain", ex);
+			}
+		}
 	}
 }

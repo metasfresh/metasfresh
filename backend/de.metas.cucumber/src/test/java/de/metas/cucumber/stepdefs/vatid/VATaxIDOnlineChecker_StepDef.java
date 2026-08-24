@@ -44,7 +44,10 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_VATaxID_CheckLog;
 
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.atLeastOnce;
@@ -65,6 +68,13 @@ public class VATaxIDOnlineChecker_StepDef
 {
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final VATaxIDOnlineChecker onlineCheckerMock = SpringContextHolder.instance.getBean(VATaxIDOnlineChecker.class);
+
+	/**
+	 * VAT-IDs the shared checker mock was asked about while this scenario's stub was installed, but which
+	 * this scenario never stubbed. Almost always a straggler from an earlier scenario whose async check
+	 * outlived its own stub; see the answer that fills it.
+	 */
+	@NonNull private final Set<String> unexpectedVATaxIDs = ConcurrentHashMap.newKeySet();
 
 	/**
 	 * Stubs the online checker to answer exactly the listed VAT-IDs. A check for any other value fails the
@@ -98,6 +108,7 @@ public class VATaxIDOnlineChecker_StepDef
 		final Map<String, VATaxIDCheckResult> results = resultsByVATaxID.build();
 
 		reset(onlineCheckerMock);
+		unexpectedVATaxIDs.clear();
 
 		when(onlineCheckerMock.check(any(VATIdentifier.class), any(VATaxIDConfig.class)))
 				.thenAnswer(invocation -> {
@@ -105,8 +116,16 @@ public class VATaxIDOnlineChecker_StepDef
 					final VATaxIDCheckResult result = results.get(vatId.getAsString());
 					if (result == null)
 					{
-						throw new AssertionError("Unexpected online check for VAT-ID `" + vatId.getAsString()
-								+ "`; this scenario stubbed only " + results.keySet());
+						// Recorded, NOT thrown. This answer is often produced on a work-package thread
+						// belonging to an EARLIER scenario, whose check outlived the stub it was set up
+						// with. Throwing there killed that check's own log-row write, so the scenario that
+						// visibly failed was whichever one happened to be waiting on that row -- never the
+						// one that leaked. Recording lets the owning scenario fail on its own terms via
+						// "no unexpected online checks happened", and leaves everyone else's data intact.
+						unexpectedVATaxIDs.add(vatId.getAsString());
+						return VATaxIDCheckResult.builder()
+								.status(VATaxIDStatus.ServiceUnavailable)
+								.build();
 					}
 					return result;
 				});
@@ -128,6 +147,7 @@ public class VATaxIDOnlineChecker_StepDef
 	public void stubOnlineCheckerUnreachable()
 	{
 		reset(onlineCheckerMock);
+		unexpectedVATaxIDs.clear();
 
 		when(onlineCheckerMock.check(any(VATIdentifier.class), any(VATaxIDConfig.class)))
 				.thenReturn(VATaxIDCheckResult.builder().status(VATaxIDStatus.ServiceUnavailable).build());
@@ -189,6 +209,7 @@ public class VATaxIDOnlineChecker_StepDef
 		final Map<String, VATaxIDCheckResult> results = resultsByVATaxID.build();
 
 		reset(onlineCheckerMock);
+		unexpectedVATaxIDs.clear();
 
 		when(onlineCheckerMock.check(any(VATIdentifier.class), any(VATaxIDConfig.class)))
 				.thenAnswer(invocation -> {
@@ -402,9 +423,29 @@ public class VATaxIDOnlineChecker_StepDef
 	public void stubOnlineCheckerThrows()
 	{
 		reset(onlineCheckerMock);
+		unexpectedVATaxIDs.clear();
 
 		when(onlineCheckerMock.check(any(VATIdentifier.class), any(VATaxIDConfig.class)))
 				.thenThrow(new RuntimeException("Simulated online checker failure (test-only, VATaxIDOnlineChecker_StepDef)"));
 		when(onlineCheckerMock.getUnavailableCountryCodes(any(VATaxIDConfig.class))).thenReturn(ImmutableSet.of());
+	}
+
+	/**
+	 * Fails the scenario that OWNS the leak, naming the VAT-IDs involved — the diagnosis the old
+	 * throw-on-the-async-thread behaviour destroyed by breaking a different scenario's data instead.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then no unexpected VAT-ID online checks happened
+	 * </pre>
+	 */
+	@Then("no unexpected VAT-ID online checks happened")
+	public void assertNoUnexpectedOnlineChecks()
+	{
+		assertThat(unexpectedVATaxIDs)
+				.as("the online checker was asked about VAT-IDs this scenario never stubbed; an async check "
+						+ "from an earlier scenario most likely outlived its stub")
+				.isEmpty();
 	}
 }

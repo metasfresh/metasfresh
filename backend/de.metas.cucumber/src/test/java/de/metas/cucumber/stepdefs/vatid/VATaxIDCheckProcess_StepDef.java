@@ -171,6 +171,28 @@ public class VATaxIDCheckProcess_StepDef
 	@When("the C_BPartner_VATaxID_Check process is run as scheduled")
 	public void runProcessAsScheduled()
 	{
+		runProcessAsScheduled(null);
+	}
+
+	/**
+	 * The scheduled run with {@code MaxChecksPerRun} pinned — the only way to assert that the nightly
+	 * ORDER BY actually decides WHICH records a budgeted run reaches, rather than merely what a full sweep
+	 * happens to contain.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When the C_BPartner_VATaxID_Check process is run as scheduled with MaxChecksPerRun '1'
+	 * </pre>
+	 */
+	@When("the C_BPartner_VATaxID_Check process is run as scheduled with MaxChecksPerRun {string}")
+	public void runProcessAsScheduledWithBudget(@NonNull final String maxChecksPerRunText)
+	{
+		runProcessAsScheduled(Integer.parseInt(maxChecksPerRunText.trim()));
+	}
+
+	private void runProcessAsScheduled(@Nullable final Integer maxChecksPerRun)
+	{
 		final AdProcessId processId = adProcessDAO.retrieveProcessIdByValue(PROCESS_VALUE);
 		assertThat(processId).as("AD_Process with Value=%s must exist", PROCESS_VALUE).isNotNull();
 
@@ -189,6 +211,10 @@ public class VATaxIDCheckProcess_StepDef
 				.setCreateTemporaryCtx();
 		// deliberately no setTableName/setWhereClause/setRecord_ID: a scheduled run selects nothing,
 		// per the class javadoc.
+		if (maxChecksPerRun != null)
+		{
+			builder.addParameter(C_BPartner_VATaxID_Check.PARA_MaxChecksPerRun, maxChecksPerRun);
+		}
 
 		final ProcessExecutor executor = builder
 				.buildAndPrepareExecution()
@@ -275,97 +301,6 @@ public class VATaxIDCheckProcess_StepDef
 		assertThat(logs)
 				.as("AD_PInstance_Log of PInstance %s must contain NO status-changed line for VATaxID '%s'", lastPInstanceId, vataxID)
 				.noneMatch(log -> log.getP_Msg() != null && log.getP_Msg().contains(forbiddenInfix));
-	}
-
-	/**
-	 * Asserts that {@code C_BPartner} is included in the nightly selection without running a check on
-	 * anyone — the read-only counterpart to {@link #runProcessAsScheduled()}, so a scenario can pin down
-	 * what the sweep selects with the online check switched off entirely.
-	 *
-	 * @cucumber.stepdef
-	 * @cucumber.columns
-	 *   <b>C_BPartner_ID</b> — (required, identifier-ref) partner expected to be in the nightly selection
-	 * @cucumber.depends StepDefData: C_BPartner_StepDefData
-	 * @cucumber.example
-	 * <pre>
-	 * Then the C_BPartner_VATaxID_Check nightly selection includes C_BPartner 'bp_scheduled'
-	 * </pre>
-	 */
-	@Then("the C_BPartner_VATaxID_Check nightly selection includes C_BPartner {string}")
-	public void assertNightlySelectionIncludes(@NonNull final String bpartnerIdentifier)
-	{
-		final BPartnerId expectedId = resolveBPartnerId(bpartnerIdentifier);
-		final ImmutableList<BPartnerId> nightlySelection = massCheckService.retrieveNightlyDueBPartnerIds();
-
-		assertThat(nightlySelection)
-				.as("C_BPartner_VATaxID_Check nightly selection must include C_BPartner `%s` (%s)", bpartnerIdentifier, expectedId)
-				.contains(expectedId);
-	}
-
-	/**
-	 * The negation of {@link #assertNightlySelectionIncludes(String)}: proves a record is kept OUT of the
-	 * candidate list, not merely deprioritised within it. The selection sorts never-checked records first,
-	 * so a record that can never actually be checked but is still listed would occupy the whole
-	 * {@code MaxChecksPerRun} budget every night, starving every checkable record behind it.
-	 *
-	 * @cucumber.stepdef
-	 * @cucumber.columns
-	 *   <b>C_BPartner_ID</b> — (required, identifier-ref) partner expected to be absent from the nightly selection
-	 * @cucumber.depends StepDefData: C_BPartner_StepDefData
-	 * @cucumber.example
-	 * <pre>
-	 * Then the C_BPartner_VATaxID_Check nightly selection does not include C_BPartner 'bp_viesOff'
-	 * </pre>
-	 */
-	@Then("the C_BPartner_VATaxID_Check nightly selection does not include C_BPartner {string}")
-	public void assertNightlySelectionExcludes(@NonNull final String bpartnerIdentifier)
-	{
-		final BPartnerId expectedId = resolveBPartnerId(bpartnerIdentifier);
-		final ImmutableList<BPartnerId> nightlySelection = massCheckService.retrieveNightlyDueBPartnerIds();
-
-		assertThat(nightlySelection)
-				.as("C_BPartner_VATaxID_Check nightly selection must NOT include C_BPartner `%s` (%s)", bpartnerIdentifier, expectedId)
-				.doesNotContain(expectedId);
-	}
-
-	/**
-	 * Asserts the RELATIVE ORDER of two entries in the nightly candidate list, rather than which absolute
-	 * slot either occupies — the shared cucumber database can carry an arbitrary number of OTHER VAT-ID
-	 * fixtures from other scenarios at the time this runs, and this assertion is immune to however many
-	 * of those sort in between the two named entries. This is what makes it possible to prove a priority
-	 * INVERSION (a target that failed its check attempt no longer outranks one that was never attempted at
-	 * all) without needing to control, or reason about, the whole database's candidate pool.
-	 *
-	 * @cucumber.stepdef
-	 * @cucumber.columns
-	 *   <b>C_BPartner_ID</b> (first)  — (required, identifier-ref) partner expected to sort earlier<br>
-	 *   <b>C_BPartner_ID</b> (second) — (required, identifier-ref) partner expected to sort later
-	 * @cucumber.depends StepDefData: C_BPartner_StepDefData
-	 * @cucumber.example
-	 * <pre>
-	 * Then the C_BPartner_VATaxID_Check nightly selection lists C_BPartner 'bp_pending' before C_BPartner 'bp_broken'
-	 * </pre>
-	 */
-	@Then("the C_BPartner_VATaxID_Check nightly selection lists C_BPartner {string} before C_BPartner {string}")
-	public void assertNightlySelectionOrder(@NonNull final String earlierBPartnerIdentifier, @NonNull final String laterBPartnerIdentifier)
-	{
-		final BPartnerId earlierId = resolveBPartnerId(earlierBPartnerIdentifier);
-		final BPartnerId laterId = resolveBPartnerId(laterBPartnerIdentifier);
-		final ImmutableList<BPartnerId> nightlySelection = massCheckService.retrieveNightlyDueBPartnerIds();
-
-		final int earlierIndex = nightlySelection.indexOf(earlierId);
-		final int laterIndex = nightlySelection.indexOf(laterId);
-
-		assertThat(earlierIndex)
-				.as("C_BPartner `%s` (%s) must be in the nightly selection", earlierBPartnerIdentifier, earlierId)
-				.isNotEqualTo(-1);
-		assertThat(laterIndex)
-				.as("C_BPartner `%s` (%s) must be in the nightly selection", laterBPartnerIdentifier, laterId)
-				.isNotEqualTo(-1);
-		assertThat(earlierIndex)
-				.as("C_BPartner `%s` (%s) must sort BEFORE C_BPartner `%s` (%s) in the nightly selection",
-						earlierBPartnerIdentifier, earlierId, laterBPartnerIdentifier, laterId)
-				.isLessThan(laterIndex);
 	}
 
 	@NonNull

@@ -367,31 +367,6 @@ public class VATaxIDMassCheckService
 		return callStats;
 	}
 
-	/**
-	 * @return the distinct {@code C_BPartner_ID}s tonight's sweep would touch, header- or location-due.
-	 * Not used by {@link #run}, which streams instead of materialising ids — this exists so a test can
-	 * assert what the selection contains without running the checks.
-	 */
-	@VisibleForTesting
-	@NonNull
-	public ImmutableList<BPartnerId> retrieveNightlyDueBPartnerIds()
-	{
-		final Instant now = SystemTime.asInstant();
-		final LinkedHashSet<BPartnerId> bpartnerIds = new LinkedHashSet<>();
-
-		checkService.getRecheckAfterDaysByViesEnabledOrgId().forEach((orgId, recheckAfterDays) -> {
-			final Instant staleBefore = recheckAfterDays <= 0 ? null : now.minus(Duration.ofDays(recheckAfterDays));
-			bpartnerDAO.iterateBPartnersDueForVATaxIDCheck(orgId, staleBefore)
-					.forEachRemaining(record -> bpartnerIds.add(BPartnerId.ofRepoId(record.getC_BPartner_ID())));
-			bpartnerDAO.iterateBPartnerLocationsDueForVATaxIDCheck(orgId, staleBefore)
-					.forEachRemaining(record -> bpartnerIds.add(BPartnerId.ofRepoId(record.getC_BPartner_ID())));
-		});
-
-		return ImmutableList.copyOf(bpartnerIds);
-	}
-
-
-
 	@NonNull
 	private static VATaxIDStatus resolveStatus(@Nullable final String statusCode)
 	{
