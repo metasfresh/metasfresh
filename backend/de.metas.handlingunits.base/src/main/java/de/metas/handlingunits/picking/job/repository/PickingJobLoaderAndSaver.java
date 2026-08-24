@@ -904,7 +904,13 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 	private PickingJobCandidateProducts extractProducts(final PickingJobId pickingJobId)
 	{
 		final PickingJobCandidateProductsCollector collector = new PickingJobCandidateProductsCollector();
-		for (final I_M_Picking_Job_Line line : this.pickingJobLines.get(pickingJobId))
+		// Sorted for the same reason loadPickingJob sorts its lines: this collection's iteration order becomes the
+		// order of the launcher caption's product names, so an unordered scan would render them differently run to run.
+		final ImmutableList<I_M_Picking_Job_Line> linesInPredictableOrder = this.pickingJobLines.get(pickingJobId)
+				.stream()
+				.sorted(Comparator.comparingInt(I_M_Picking_Job_Line::getM_Picking_Job_Line_ID))
+				.collect(ImmutableList.toImmutableList());
+		for (final I_M_Picking_Job_Line line : linesInPredictableOrder)
 		{
 			final ProductId productId = extractProductId(line);
 			collector.collect(
