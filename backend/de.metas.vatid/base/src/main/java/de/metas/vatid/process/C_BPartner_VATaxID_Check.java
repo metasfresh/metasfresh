@@ -47,9 +47,8 @@ import org.compiere.model.I_C_BPartner;
  *
  * <p><b>Selection vs. nightly schedule.</b> A user-triggered run always carries a table/selection on its
  * {@code ProcessInfo}; the scheduler builds none. {@link #getTableName()} distinguishes them — non-null
- * means "read the selection", null means "cover every VAT-ID" via
- * {@link VATaxIDMassCheckService#retrieveAllBPartnerIdsWithVATaxID()}. Without that branch the scheduled run
- * would hit {@code @NoSelection@}.
+ * means "read the selection", null means "sweep every due VAT-ID", which the service selects itself by
+ * streaming. Without that branch the scheduled run would hit {@code @NoSelection@}.
  */
 public class C_BPartner_VATaxID_Check extends JavaProcess implements IProcessPrecondition
 {
@@ -82,8 +81,9 @@ public class C_BPartner_VATaxID_Check extends JavaProcess implements IProcessPre
 	protected String doIt()
 	{
 		final boolean nightlyRun = getTableName() == null;
+		// A nightly run has no selection to pass: VATaxIDMassCheckService streams the due records itself.
 		final ImmutableList<BPartnerId> selectedBPartnerIds = nightlyRun
-				? massCheckService.retrieveAllBPartnerIdsWithVATaxID()
+				? ImmutableList.of()
 				: retrieveSelectedBPartnerIds();
 
 		final VATaxIDMassCheckResult result = massCheckService.run(VATaxIDMassCheckRequest.builder()

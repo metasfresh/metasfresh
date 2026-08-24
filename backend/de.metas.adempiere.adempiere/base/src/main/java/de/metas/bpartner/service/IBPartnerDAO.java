@@ -58,6 +58,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -281,25 +282,34 @@ public interface IBPartnerDAO extends ISingletonService
 	 */
 	ImmutableList<I_C_BPartner_Location> retrieveBPartnerLocationsWithVATaxID(@NonNull Collection<BPartnerId> bpartnerIds);
 
-	/**
-	 * @return every active {@code C_BPartner} of the current context client with a non-blank header
-	 * {@code VATaxID}, ordered by {@code C_BPartner_ID} — the nightly schedule's own selection, since a
-	 * scheduled run has no user selection to read.
-	 *
-	 * <p>Deliberately not narrowed to organisations that enabled the check: the caller resolves each
-	 * partner's own configuration before touching it, so a disabled organisation costs only an in-memory
-	 * re-check — never a call, a write, or another organisation's policy.
-	 */
-	ImmutableList<BPartnerId> retrieveBPartnerIdsWithVATaxID();
+
 
 	/**
-	 * @return every active {@code C_BPartner_Location} of the current context client with a non-blank
-	 * {@code VATaxID}, ordered by {@code C_BPartner_ID} — the location-grain counterpart of
-	 * {@link #retrieveBPartnerIdsWithVATaxID()}, for the same nightly-schedule caller. Needed because a
-	 * location's own staleness must be visible to the nightly sweep even when its owning partner's header
-	 * carries no VAT-ID at all (see {@code de.metas.vatid.VATaxIDMassCheckService}).
+	 * Walks the {@code C_BPartner} records of {@code orgId} that are due a VAT-ID online check, oldest
+	 * attempt first ({@code VATaxIDLastAttemptedAt} ascending, nulls — never attempted — first).
+	 *
+	 * <p>Due means: non-blank header {@code VATaxID}, and either no conclusive status yet or a
+	 * {@code VATaxIDCheckedAt} older than {@code staleBefore}. Pass {@code staleBefore == null} to mean
+	 * "no staleness window", i.e. every VAT-ID-bearing record of the organisation is due.
+	 *
+	 * <p>A guaranteed iterator: the caller writes {@code VATaxIDLastAttemptedAt} and
+	 * {@code VATaxIDCheckedAt} — the very columns this query filters and orders by — on records it has
+	 * already passed, so the id set must be fixed up front rather than re-read page by page.
 	 */
-	ImmutableList<I_C_BPartner_Location> retrieveBPartnerLocationsWithVATaxID();
+	Iterator<I_C_BPartner> iterateBPartnersDueForVATaxIDCheck(@NonNull OrgId orgId, @Nullable Instant staleBefore);
+
+	/** @return how many records {@link #iterateBPartnersDueForVATaxIDCheck(OrgId, Instant)} would yield. */
+	int countBPartnersDueForVATaxIDCheck(@NonNull OrgId orgId, @Nullable Instant staleBefore);
+
+	/**
+	 * The {@code C_BPartner_Location} counterpart of
+	 * {@link #iterateBPartnersDueForVATaxIDCheck(OrgId, Instant)}, scoped by the LOCATION's own
+	 * {@code AD_Org_ID} — the organisation whose configuration governs a location's check.
+	 */
+	Iterator<I_C_BPartner_Location> iterateBPartnerLocationsDueForVATaxIDCheck(@NonNull OrgId orgId, @Nullable Instant staleBefore);
+
+	/** @return how many records {@link #iterateBPartnerLocationsDueForVATaxIDCheck(OrgId, Instant)} would yield. */
+	int countBPartnerLocationsDueForVATaxIDCheck(@NonNull OrgId orgId, @Nullable Instant staleBefore);
 
 	/**
 	 * Stamps {@code C_BPartner.VATaxIDLastAttemptedAt} unconditionally, whether the check that follows

@@ -23,6 +23,7 @@
 package de.metas.vatid;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -217,5 +218,86 @@ class VATaxIDMassCheckServiceTest
 		// deliberate: nothing advanced its VATaxIDCheckedAt, so all three genuinely still need a check.
 		assertThat(result.getCheckedCount()).as("checkedCount").isZero();
 		assertThat(result.getPendingCount()).as("pendingCount").isEqualTo(3);
+	}
+
+	/**
+	 * The nightly run must select by streaming, never by handing the DAO a list of ids. A list is what
+	 * produced `An I/O error occurred while sending to the backend` on a real instance: one bind parameter
+	 * per due record, ~10k of them, before a single check had run. Asserting a parameter count would test
+	 * the query framework; asserting that the id-list overloads are never reached tests us.
+	 */
+	@Test
+	void nightlyRun_streamsAndNeverBuildsAnIdList()
+	{
+		final OrgId orgId = OrgId.ofRepoId(1_000_000);
+		final I_C_BPartner duePartner = newBPartnerWithVATaxID(BPARTNER_ID_HEALTHY, "DE123456789");
+		duePartner.setAD_Org_ID(orgId.getRepoId());
+
+		when(checkServiceMock.getRecheckAfterDaysByViesEnabledOrgId()).thenReturn(ImmutableMap.of(orgId, 30));
+		when(checkServiceMock.getUnavailableCountryCodes(any(OrgId.class))).thenReturn(ImmutableSet.of());
+		when(bpartnerDAOMock.countBPartnersDueForVATaxIDCheck(any(OrgId.class), any())).thenReturn(1);
+		when(bpartnerDAOMock.countBPartnerLocationsDueForVATaxIDCheck(any(OrgId.class), any())).thenReturn(0);
+		when(bpartnerDAOMock.iterateBPartnersDueForVATaxIDCheck(any(OrgId.class), any()))
+				.thenReturn(ImmutableList.of(duePartner).iterator());
+		when(bpartnerDAOMock.iterateBPartnerLocationsDueForVATaxIDCheck(any(OrgId.class), any()))
+				.thenReturn(ImmutableList.<I_C_BPartner_Location>of().iterator());
+		when(checkServiceMock.check(any(VATaxIDCheckRequest.class))).thenReturn(VATaxIDStatus.Valid);
+
+		final VATaxIDMassCheckService massCheckService = new VATaxIDMassCheckService(checkServiceMock);
+
+		final VATaxIDMassCheckResult result;
+		final PlainStringLoggable log = Loggables.newPlainStringLoggable();
+		try (final IAutoCloseable ignored = Loggables.temporarySetLoggable(log))
+		{
+			result = massCheckService.run(VATaxIDMassCheckRequest.builder()
+					.selectedBPartnerIds(ImmutableList.of())
+					.maxChecksPerRun(0)
+					.nightlyRun(true)
+					.build());
+		}
+
+		assertThat(result.getCheckedCount()).isEqualTo(1);
+		verify(bpartnerDAOMock, never()).getByIds(anyCollection());
+		verify(bpartnerDAOMock, never()).retrieveBPartnerLocationsWithVATaxID(anyCollection());
+		verify(bpartnerDAOMock).iterateBPartnersDueForVATaxIDCheck(eq(orgId), any());
+	}
+
+	/**
+	 * {@code MaxChecksPerRun} must bound what the run READS, not just what it checks — the whole point of
+	 * streaming. With a budget of 1 and two due records, the second must never be pulled from the iterator.
+	 */
+	@Test
+	void nightlyRun_stopsReadingOnceTheBudgetIsSpent()
+	{
+		final OrgId orgId = OrgId.ofRepoId(1_000_000);
+		final I_C_BPartner first = newBPartnerWithVATaxID(BPARTNER_ID_HEALTHY, "DE123456789");
+		final I_C_BPartner second = newBPartnerWithVATaxID(BPARTNER_ID_SECOND, "DE123456789");
+
+		when(checkServiceMock.getRecheckAfterDaysByViesEnabledOrgId()).thenReturn(ImmutableMap.of(orgId, 30));
+		when(checkServiceMock.getUnavailableCountryCodes(any(OrgId.class))).thenReturn(ImmutableSet.of());
+		when(bpartnerDAOMock.countBPartnersDueForVATaxIDCheck(any(OrgId.class), any())).thenReturn(2);
+		when(bpartnerDAOMock.countBPartnerLocationsDueForVATaxIDCheck(any(OrgId.class), any())).thenReturn(0);
+		when(bpartnerDAOMock.iterateBPartnersDueForVATaxIDCheck(any(OrgId.class), any()))
+				.thenReturn(ImmutableList.of(first, second).iterator());
+		when(bpartnerDAOMock.iterateBPartnerLocationsDueForVATaxIDCheck(any(OrgId.class), any()))
+				.thenReturn(ImmutableList.<I_C_BPartner_Location>of().iterator());
+		when(checkServiceMock.check(any(VATaxIDCheckRequest.class))).thenReturn(VATaxIDStatus.Valid);
+
+		final VATaxIDMassCheckService massCheckService = new VATaxIDMassCheckService(checkServiceMock);
+
+		final VATaxIDMassCheckResult result;
+		final PlainStringLoggable log = Loggables.newPlainStringLoggable();
+		try (final IAutoCloseable ignored = Loggables.temporarySetLoggable(log))
+		{
+			result = massCheckService.run(VATaxIDMassCheckRequest.builder()
+					.selectedBPartnerIds(ImmutableList.of())
+					.maxChecksPerRun(1)
+					.nightlyRun(true)
+					.build());
+		}
+
+		assertThat(result.getCheckedCount()).isEqualTo(1);
+		assertThat(result.getPendingCount()).isEqualTo(1);
+		verify(checkServiceMock, times(1)).check(any(VATaxIDCheckRequest.class));
 	}
 }

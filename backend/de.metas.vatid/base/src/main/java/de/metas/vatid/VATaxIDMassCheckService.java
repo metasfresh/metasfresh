@@ -22,6 +22,7 @@
 
 package de.metas.vatid;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
@@ -38,6 +39,7 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
@@ -53,6 +55,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
@@ -108,11 +111,13 @@ public class VATaxIDMassCheckService
 	@NonNull
 	public VATaxIDMassCheckResult run(@NonNull final VATaxIDMassCheckRequest request)
 	{
+		if (request.isNightlyRun())
+		{
+			return runNightly(request);
+		}
+
 		final ImmutableList<CheckTarget> allTargets = retrieveCheckTargets(request.getSelectedBPartnerIds());
-		final ImmutableList<CheckTarget> checkTargets = request.isNightlyRun()
-				? filterAndOrderForNightlyRun(allTargets)
-				: allTargets;
-		final ImmutableList<CheckTarget> eligibleTargets = skipUnavailableMemberStates(checkTargets);
+		final ImmutableList<CheckTarget> eligibleTargets = skipUnavailableMemberStates(allTargets);
 
 		final int maxChecksPerRun = request.getMaxChecksPerRun();
 		final boolean unlimited = maxChecksPerRun <= 0;
@@ -180,6 +185,131 @@ public class VATaxIDMassCheckService
 	}
 
 	/**
+	 * The nightly sweep. Streams the due records instead of materialising them: the selection is the whole
+	 * VAT-ID-bearing population, which on a real installation is tens of thousands of records, and the run
+	 * only ever checks {@code MaxChecksPerRun} of them.
+	 *
+	 * <p>Due-ness and ordering are the query's ({@code IBPartnerDAO}), evaluated per organisation with that
+	 * organisation's own recheck window — organisations with the check switched off are never queried at
+	 * all. The two grains run one after the other, headers then locations, each oldest-attempt-first; a
+	 * single combined ordering across both would need a merge, and raising {@code MaxChecksPerRun} is the
+	 * cheaper answer now that nothing is loaded up front.
+	 *
+	 * <p>{@code pendingCount} is counted, not derived: the run stops reading once its budget is spent, so
+	 * the number of targets still due can only come from a separate {@code count}. Unlike the selection
+	 * path's figure it does not subtract targets whose member state is unavailable — no query can know
+	 * that, since it is a live answer from the checking service.
+	 */
+	@NonNull
+	private VATaxIDMassCheckResult runNightly(@NonNull final VATaxIDMassCheckRequest request)
+	{
+		final Instant now = SystemTime.asInstant();
+		final int maxChecksPerRun = request.getMaxChecksPerRun();
+		final int budget = maxChecksPerRun <= 0 ? Integer.MAX_VALUE : maxChecksPerRun;
+		final Map<OrgId, ImmutableSet<String>> unavailableCountryCodesByOrg = new HashMap<>();
+		final ImmutableMap<OrgId, Integer> recheckAfterDaysByOrg = checkService.getRecheckAfterDaysByViesEnabledOrgId();
+
+		int dueCount = 0;
+		int checkedCount = 0;
+		boolean aborted = false;
+
+		for (final Map.Entry<OrgId, Integer> entry : recheckAfterDaysByOrg.entrySet())
+		{
+			final OrgId orgId = entry.getKey();
+			final Instant staleBefore = entry.getValue() <= 0 ? null : now.minus(Duration.ofDays(entry.getValue()));
+
+			dueCount += bpartnerDAO.countBPartnersDueForVATaxIDCheck(orgId, staleBefore)
+					+ bpartnerDAO.countBPartnerLocationsDueForVATaxIDCheck(orgId, staleBefore);
+
+			if (aborted || checkedCount >= budget)
+			{
+				continue;
+			}
+
+			final Iterator<I_C_BPartner> partners = bpartnerDAO.iterateBPartnersDueForVATaxIDCheck(orgId, staleBefore);
+			while (partners.hasNext() && checkedCount < budget && !aborted)
+			{
+				final I_C_BPartner bpartnerRecord = partners.next();
+				final CheckTarget checkTarget = CheckTarget.ofPartner(
+						BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID()), bpartnerRecord);
+				final CheckOutcome outcome = checkOneIfAvailable(request.getPinstanceId(), checkTarget, unavailableCountryCodesByOrg);
+				checkedCount += outcome.isChecked() ? 1 : 0;
+				aborted = outcome.isAborted();
+			}
+
+			final Iterator<I_C_BPartner_Location> locations = bpartnerDAO.iterateBPartnerLocationsDueForVATaxIDCheck(orgId, staleBefore);
+			while (locations.hasNext() && checkedCount < budget && !aborted)
+			{
+				final CheckTarget checkTarget = CheckTarget.ofLocation(locations.next());
+				final CheckOutcome outcome = checkOneIfAvailable(request.getPinstanceId(), checkTarget, unavailableCountryCodesByOrg);
+				checkedCount += outcome.isChecked() ? 1 : 0;
+				aborted = outcome.isAborted();
+			}
+		}
+
+		final int pendingCount = Math.max(0, dueCount - checkedCount);
+		if (pendingCount > 0)
+		{
+			Loggables.addLog("VAT-ID check: checked {} of {} due, MaxChecksPerRun={}, pendingCount={}",
+					checkedCount, dueCount, maxChecksPerRun, pendingCount);
+		}
+
+		final VATaxIDCheckCallStats callStats = reportCallStats(request.getPinstanceId());
+		return VATaxIDMassCheckResult.builder()
+				.checkedCount(checkedCount)
+				.pendingCount(pendingCount)
+				.callCount(callStats.getCallCount())
+				.averageResponseTimeMillis(callStats.getAverageResponseTimeMillis())
+				.build();
+	}
+
+	/**
+	 * Checks one streamed target unless its member state reports itself unavailable, in which case it keeps
+	 * its stored status and does not consume budget. Mirrors what {@link #skipUnavailableMemberStates} and
+	 * {@link #run}'s loop do together on the selection path.
+	 */
+	@NonNull
+	private CheckOutcome checkOneIfAvailable(
+			@Nullable final PInstanceId pinstanceId,
+			@NonNull final CheckTarget checkTarget,
+			@NonNull final Map<OrgId, ImmutableSet<String>> unavailableCountryCodesByOrg)
+	{
+		final ImmutableSet<String> unavailableCountryCodes = unavailableCountryCodesByOrg
+				.computeIfAbsent(checkTarget.getOrgId(), checkService::getUnavailableCountryCodes);
+		if (unavailableCountryCodes.contains(checkTarget.getVataxID().getCountryCodePrefix()))
+		{
+			return CheckOutcome.SKIPPED;
+		}
+
+		try
+		{
+			checkOneInOwnTrx(pinstanceId, checkTarget);
+		}
+		catch (final VATaxIDCheckRequestRejectedException ex)
+		{
+			// Same rule as the selection path: a rejected REQUEST is our own misconfiguration, so every
+			// remaining target would hit it too. Stop, and say so once.
+			Loggables.withWarnLoggerToo(logger).addLog(
+					"VAT-ID check run ABORTED at {}: {} Correct the VAT-ID configuration, then start the run again.",
+					checkTarget.getLogLabel(), ex.getMessage());
+			return CheckOutcome.ABORTED;
+		}
+		return CheckOutcome.CHECKED;
+	}
+
+	@Getter
+	@RequiredArgsConstructor
+	private enum CheckOutcome
+	{
+		CHECKED(true, false),
+		SKIPPED(false, false),
+		ABORTED(false, true);
+
+		private final boolean checked;
+		private final boolean aborted;
+	}
+
+	/**
 	 * Availability pre-filter (see the class javadoc): removes every target whose member state
 	 * {@link VATaxIDCheckService#getUnavailableCountryCodes(OrgId)} currently reports as unavailable,
 	 * logging one summary line per skipped member state rather than one per skipped VAT-ID — the same
@@ -238,129 +368,29 @@ public class VATaxIDMassCheckService
 	}
 
 	/**
-	 * The nightly schedule's selection: every {@code C_BPartner_ID} with a due header VAT-ID or at least one
-	 * due location VAT-ID. This is a coarse selection surface — the real per-target throttling and ordering
-	 * happens in {@link #filterAndOrderForNightlyRun}, so this list's own order is never read downstream.
-	 *
-	 * <p><b>Location due-ness is tested independently of header due-ness</b>, so a stale location is reachable
-	 * even when its partner's header carries no VAT-ID at all or is itself still fresh.
-	 *
-	 * <p>Scoped to the caller's own client. {@link #isDueForNightlyRecheck} also excludes records whose
-	 * organisation has the online check off entirely — they could never advance either timestamp.
+	 * @return the distinct {@code C_BPartner_ID}s tonight's sweep would touch, header- or location-due.
+	 * Not used by {@link #run}, which streams instead of materialising ids — this exists so a test can
+	 * assert what the selection contains without running the checks.
 	 */
+	@VisibleForTesting
 	@NonNull
-	public ImmutableList<BPartnerId> retrieveAllBPartnerIdsWithVATaxID()
+	public ImmutableList<BPartnerId> retrieveNightlyDueBPartnerIds()
 	{
 		final Instant now = SystemTime.asInstant();
-		final Map<OrgId, Integer> recheckAfterDaysByOrg = new HashMap<>();
+		final LinkedHashSet<BPartnerId> bpartnerIds = new LinkedHashSet<>();
 
-		final ImmutableList<BPartnerId> allIdsWithVATaxID = bpartnerDAO.retrieveBPartnerIdsWithVATaxID();
-		final ImmutableMap<BPartnerId, I_C_BPartner> bpartnersById = allIdsWithVATaxID.isEmpty()
-				? ImmutableMap.of()
-				: bpartnerDAO.getByIds(allIdsWithVATaxID).stream()
-						.collect(ImmutableMap.toImmutableMap(
-								bpartnerRecord -> BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID()),
-								Function.identity()));
+		checkService.getRecheckAfterDaysByViesEnabledOrgId().forEach((orgId, recheckAfterDays) -> {
+			final Instant staleBefore = recheckAfterDays <= 0 ? null : now.minus(Duration.ofDays(recheckAfterDays));
+			bpartnerDAO.iterateBPartnersDueForVATaxIDCheck(orgId, staleBefore)
+					.forEachRemaining(record -> bpartnerIds.add(BPartnerId.ofRepoId(record.getC_BPartner_ID())));
+			bpartnerDAO.iterateBPartnerLocationsDueForVATaxIDCheck(orgId, staleBefore)
+					.forEachRemaining(record -> bpartnerIds.add(BPartnerId.ofRepoId(record.getC_BPartner_ID())));
+		});
 
-		// Header-due ids, in the DAO's own C_BPartner_ID order, secondary-sorted by the header's own
-		// VATaxIDLastAttemptedAt (nulls first) -- see the class javadoc, "Starvation guard".
-		final ImmutableList<BPartnerId> dueHeaderIds = allIdsWithVATaxID.stream()
-				.map(bpartnersById::get)
-				.filter(Objects::nonNull)
-				.filter(bpartnerRecord -> isDueForNightlyRecheck(
-						OrgId.ofRepoId(bpartnerRecord.getAD_Org_ID()),
-						resolveStatus(bpartnerRecord.getVATaxIDStatus()),
-						toInstantOrNull(bpartnerRecord.getVATaxIDCheckedAt()),
-						now,
-						recheckAfterDaysByOrg))
-				.sorted(Comparator.comparing(
-						(final I_C_BPartner bpartnerRecord) -> toInstantOrNull(bpartnerRecord.getVATaxIDLastAttemptedAt()),
-						Comparator.nullsFirst(Comparator.naturalOrder())))
-				.map(bpartnerRecord -> BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID()))
-				.collect(ImmutableList.toImmutableList());
-
-		// Partners reached ONLY through a due location -- their header may carry no VAT-ID at all, or a
-		// fresh one; either way the location's own staleness must still make the partner visible here.
-		final Set<BPartnerId> idsWithDueLocation = bpartnerDAO.retrieveBPartnerLocationsWithVATaxID().stream()
-				.filter(locationRecord -> isDueForNightlyRecheck(
-						OrgId.ofRepoId(locationRecord.getAD_Org_ID()),
-						resolveStatus(locationRecord.getVATaxIDStatus()),
-						toInstantOrNull(locationRecord.getVATaxIDCheckedAt()),
-						now,
-						recheckAfterDaysByOrg))
-				.map(locationRecord -> BPartnerId.ofRepoId(locationRecord.getC_BPartner_ID()))
-				.collect(Collectors.toCollection(LinkedHashSet::new));
-
-		final LinkedHashSet<BPartnerId> union = new LinkedHashSet<>(dueHeaderIds);
-		idsWithDueLocation.forEach(union::add);
-
-		return ImmutableList.copyOf(union);
+		return ImmutableList.copyOf(bpartnerIds);
 	}
 
-	/**
-	 * @return whether a record is due for the nightly run: its organisation has the online check on, and it is
-	 * either never checked or past that organisation's {@code RecheckAfterDays}. Shared by the header
-	 * selection, the location selection and {@link #filterAndOrderForNightlyRun}, so the three cannot drift
-	 * apart on what "due" means.
-	 *
-	 * <p>A coarse pre-filter over the same window {@link VATaxIDCheckService#check} applies, not a competing
-	 * one — {@code check} still runs its own authoritative de-duplication. The VIES-enabled test
-	 * short-circuits even the never-checked case: {@code check} does nothing for such an organisation, so
-	 * reporting it due would starve the nightly budget.
-	 */
-	private boolean isDueForNightlyRecheck(
-			@NonNull final OrgId orgId,
-			@NonNull final VATaxIDStatus status,
-			@Nullable final Instant checkedAt,
-			@NonNull final Instant now,
-			@NonNull final Map<OrgId, Integer> recheckAfterDaysByOrg)
-	{
-		if (!checkService.isViesCheckEnabled(orgId))
-		{
-			return false;
-		}
 
-		if (status == VATaxIDStatus.NotChecked)
-		{
-			return true;
-		}
-
-		if (checkedAt == null)
-		{
-			return true;
-		}
-
-		final int recheckAfterDays = recheckAfterDaysByOrg.computeIfAbsent(orgId, checkService::getRecheckAfterDays);
-		if (recheckAfterDays <= 0)
-		{
-			return true;
-		}
-
-		return checkedAt.isBefore(now.minus(Duration.ofDays(recheckAfterDays)));
-	}
-
-	/**
-	 * Filters {@code checkTargets} to those due for a nightly run, applying {@link #isDueForNightlyRecheck} at
-	 * the same grain the caller selected (header or location), and re-orders the survivors by
-	 * {@link CheckTarget#getLastAttemptedAt()}, nulls first.
-	 *
-	 * <p>Matching filter grain to expansion grain is the point: {@link #retrieveCheckTargets(ImmutableList)}'s
-	 * unconditional per-partner expansion is right for a manual run, but for the nightly run it would burn the
-	 * budget re-checking already-fresh locations. Applied only when
-	 * {@link VATaxIDMassCheckRequest#isNightlyRun()}.
-	 */
-	@NonNull
-	private ImmutableList<CheckTarget> filterAndOrderForNightlyRun(@NonNull final ImmutableList<CheckTarget> checkTargets)
-	{
-		final Instant now = SystemTime.asInstant();
-		final Map<OrgId, Integer> recheckAfterDaysByOrg = new HashMap<>();
-
-		return checkTargets.stream()
-				.filter(checkTarget -> isDueForNightlyRecheck(
-						checkTarget.getOrgId(), checkTarget.getPreviousStatus(), checkTarget.getCheckedAt(), now, recheckAfterDaysByOrg))
-				.sorted(Comparator.comparing(CheckTarget::getLastAttemptedAt, Comparator.nullsFirst(Comparator.naturalOrder())))
-				.collect(ImmutableList.toImmutableList());
-	}
 
 	@NonNull
 	private static VATaxIDStatus resolveStatus(@Nullable final String statusCode)
@@ -423,7 +453,7 @@ public class VATaxIDMassCheckService
 
 			for (final I_C_BPartner_Location bpartnerLocationRecord : locationsByBPartnerId.get(bpartnerId))
 			{
-				checkTargets.add(CheckTarget.ofLocation(bpartnerRecord, bpartnerLocationRecord));
+				checkTargets.add(CheckTarget.ofLocation(bpartnerLocationRecord));
 			}
 		}
 		return checkTargets.build();
@@ -558,7 +588,7 @@ public class VATaxIDMassCheckService
 
 		/**
 		 * When this record's check was last ATTEMPTED, regardless of outcome — {@code null} if it never
-		 * was. Used only by {@link VATaxIDMassCheckService#filterAndOrderForNightlyRun} to order the nightly
+		 * was. Used by the nightly query's ordering (oldest attempt first, never-attempted first) to
 		 * run's targets; unrelated to {@link #checkedAt}. See the class javadoc, "Starvation guard".
 		 */
 		@Nullable Instant lastAttemptedAt;
@@ -566,11 +596,11 @@ public class VATaxIDMassCheckService
 		@NonNull String logLabel;
 
 		/**
-		 * The organisation whose {@link VATaxIDConfig} governs this target's check — always the owning
-		 * partner's, even for a location target: locations do not carry a materially different
-		 * organisation in practice, and {@code CheckTarget} otherwise has no independent org of its own to
-		 * resolve. Used by the availability pre-filter (see the class javadoc) and by the nightly due-ness
-		 * filter ({@link VATaxIDMassCheckService#filterAndOrderForNightlyRun}).
+		 * The organisation whose {@link VATaxIDConfig} governs this target's check: the record's OWN
+		 * {@code AD_Org_ID} — the location's for a location target, not its parent partner's. Same
+		 * organisation {@code VATaxIDCheckTrigger} gates the enqueue on and
+		 * {@code VATaxIDParentStatusRepository} resolves at processing time; the three must agree or one
+		 * gate answers a different question from the next.
 		 */
 		@NonNull OrgId orgId;
 
@@ -590,9 +620,7 @@ public class VATaxIDMassCheckService
 		}
 
 		@NonNull
-		private static CheckTarget ofLocation(
-				@NonNull final I_C_BPartner bpartnerRecord,
-				@NonNull final I_C_BPartner_Location bpartnerLocationRecord)
+		private static CheckTarget ofLocation(@NonNull final I_C_BPartner_Location bpartnerLocationRecord)
 		{
 			final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartnerLocationRecord.getC_BPartner_ID());
 			return CheckTarget.builder()
@@ -604,7 +632,7 @@ public class VATaxIDMassCheckService
 					.lastAttemptedAt(toInstantOrNull(bpartnerLocationRecord.getVATaxIDLastAttemptedAt()))
 					.logLabel("C_BPartner_ID=" + bpartnerLocationRecord.getC_BPartner_ID()
 							+ ", C_BPartner_Location_ID=" + bpartnerLocationRecord.getC_BPartner_Location_ID())
-					.orgId(OrgId.ofRepoId(bpartnerRecord.getAD_Org_ID()))
+					.orgId(OrgId.ofRepoId(bpartnerLocationRecord.getAD_Org_ID()))
 					.build();
 		}
 	}

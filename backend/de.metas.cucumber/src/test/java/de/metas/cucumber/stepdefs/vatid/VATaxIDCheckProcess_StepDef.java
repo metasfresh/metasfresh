@@ -295,7 +295,7 @@ public class VATaxIDCheckProcess_StepDef
 	public void assertNightlySelectionIncludes(@NonNull final String bpartnerIdentifier)
 	{
 		final BPartnerId expectedId = resolveBPartnerId(bpartnerIdentifier);
-		final ImmutableList<BPartnerId> nightlySelection = massCheckService.retrieveAllBPartnerIdsWithVATaxID();
+		final ImmutableList<BPartnerId> nightlySelection = massCheckService.retrieveNightlyDueBPartnerIds();
 
 		assertThat(nightlySelection)
 				.as("C_BPartner_VATaxID_Check nightly selection must include C_BPartner `%s` (%s)", bpartnerIdentifier, expectedId)
@@ -321,7 +321,7 @@ public class VATaxIDCheckProcess_StepDef
 	public void assertNightlySelectionExcludes(@NonNull final String bpartnerIdentifier)
 	{
 		final BPartnerId expectedId = resolveBPartnerId(bpartnerIdentifier);
-		final ImmutableList<BPartnerId> nightlySelection = massCheckService.retrieveAllBPartnerIdsWithVATaxID();
+		final ImmutableList<BPartnerId> nightlySelection = massCheckService.retrieveNightlyDueBPartnerIds();
 
 		assertThat(nightlySelection)
 				.as("C_BPartner_VATaxID_Check nightly selection must NOT include C_BPartner `%s` (%s)", bpartnerIdentifier, expectedId)
@@ -351,7 +351,7 @@ public class VATaxIDCheckProcess_StepDef
 	{
 		final BPartnerId earlierId = resolveBPartnerId(earlierBPartnerIdentifier);
 		final BPartnerId laterId = resolveBPartnerId(laterBPartnerIdentifier);
-		final ImmutableList<BPartnerId> nightlySelection = massCheckService.retrieveAllBPartnerIdsWithVATaxID();
+		final ImmutableList<BPartnerId> nightlySelection = massCheckService.retrieveNightlyDueBPartnerIds();
 
 		final int earlierIndex = nightlySelection.indexOf(earlierId);
 		final int laterIndex = nightlySelection.indexOf(laterId);

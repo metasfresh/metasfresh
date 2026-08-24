@@ -23,6 +23,7 @@
 package de.metas.vatid;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
 import de.metas.cache.CCache;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
@@ -95,6 +96,28 @@ public class VATaxIDConfigRepository
 	public VATaxIDConfig getByOrgId(@NonNull final OrgId orgId)
 	{
 		return configsByOrgId.getOrLoad(orgId, () -> retrieveByOrgId(orgId));
+	}
+
+	/**
+	 * @return the recheck window of every organisation that has the online check switched ON, keyed by
+	 * organisation. Organisations with no {@code VATaxID_Config} record are absent: no record means the
+	 * check is off ({@link #synthesizeDefaultWithoutRecord()}), so there is nothing for a run to select.
+	 *
+	 * <p>Exists because the nightly run must enumerate the organisations it should sweep, which
+	 * {@link #getByOrgId(OrgId)} — a lookup by a known org — cannot answer.
+	 */
+	@NonNull
+	public ImmutableMap<OrgId, Integer> getRecheckAfterDaysByViesEnabledOrgId()
+	{
+		return queryBL.createQueryBuilder(I_VATaxID_Config.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_VATaxID_Config.COLUMNNAME_IsVIESCheckEnabled, true)
+				.create()
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						record -> OrgId.ofRepoId(record.getAD_Org_ID()),
+						I_VATaxID_Config::getRecheckAfterDays,
+						(first, second) -> first));
 	}
 
 	@NonNull

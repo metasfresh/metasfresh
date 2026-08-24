@@ -22,6 +22,7 @@
 
 package de.metas.vatid;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
@@ -352,6 +353,16 @@ public class VATaxIDCheckService
 	public int getRecheckAfterDays(@NonNull final OrgId orgId)
 	{
 		return configRepository.getByOrgId(orgId).getRecheckAfterDays();
+	}
+
+	/**
+	 * @return the recheck window of every organisation with the online check switched on, keyed by
+	 * organisation. Exposed so the nightly run can enumerate the organisations to sweep.
+	 */
+	@NonNull
+	public ImmutableMap<OrgId, Integer> getRecheckAfterDaysByViesEnabledOrgId()
+	{
+		return configRepository.getRecheckAfterDaysByViesEnabledOrgId();
 	}
 
 	/**
