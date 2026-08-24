@@ -218,6 +218,7 @@ public class TaxDAO implements ITaxDAO
 		return queryBuilder
 				.addInArrayFilter(I_C_TaxCategory.COLUMN_VATType, query.getType().getValue(), null)
 				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
 				.addInSubQueryFilter(I_C_TaxCategory.COLUMNNAME_C_TaxCategory_ID, I_C_Tax.COLUMNNAME_C_TaxCategory_ID, querytaxes)
 				.orderBy(I_C_TaxCategory.COLUMNNAME_Name)
 				.create()
@@ -439,7 +440,6 @@ public class TaxDAO implements ITaxDAO
 
 		loggable.addLog("Filter by To_Country_ID={} or NULL", destCountryId.getRepoId());
 		queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_To_Country_ID, destCountryId, null);
-		//}
 
 		loggable.addLog("Type of dest country: {} or NULL", typeOfDestCountry);
 		if (typeOfDestCountry != null)
