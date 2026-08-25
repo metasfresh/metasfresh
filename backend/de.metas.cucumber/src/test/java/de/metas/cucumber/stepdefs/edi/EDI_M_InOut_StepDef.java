@@ -94,14 +94,17 @@ public class EDI_M_InOut_StepDef
 	 * <p>
 	 * Stands in for {@code EDIDocumentBL.updateEdiExportStatus}, the production trigger that puts a
 	 * shipment into {@code DontSend} when its ship-to location is not an EDI DESADV recipient (and into
-	 * {@code Pending} when it is). Reaching that state through the real trigger would mean setting up a
-	 * second, non-recipient location and re-routing the order — setup that says nothing about the
-	 * behaviour under test, which is how a DESADV aggregates the statuses of its shipments.
+	 * {@code Pending} when it is).
 	 * <p>
-	 * The value is written directly because there is no service that sets an arbitrary status: the
-	 * production writer derives it from the recipient flag. A direct write survives, because the
-	 * {@code M_InOut} interceptor recomputes the status only when {@code C_BPartner_ID},
-	 * {@code C_Order_ID} or {@code POReference} change.
+	 * That trigger cannot produce the state a DESADV-aggregation scenario needs, because the two
+	 * conditions exclude each other per ship-to location: for a non-recipient location
+	 * {@code C_Order.addToDesadv} creates no {@code EDI_Desadv} at all and
+	 * {@code DesadvBL.isOneDesadvPerShipment} skips the status recompute, while a recipient location
+	 * always gets {@code Pending}. "A DESADV whose shipment shall not be sent" is therefore reachable
+	 * only by writing the status onto an already-created shipment of a recipient location.
+	 * <p>
+	 * The write survives, because the {@code M_InOut} interceptor recomputes the EDI export status only
+	 * when {@code C_BPartner_ID}, {@code C_Order_ID} or {@code POReference} change.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -128,7 +131,7 @@ public class EDI_M_InOut_StepDef
 						row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID).lookupNotNullIn(inoutTable),
 						I_M_InOut.class);
 
-		final EDIExportStatus exportStatus = EDIExportStatus.ofCode(row.getAsString(I_M_InOut.COLUMNNAME_EDI_ExportStatus));
+		final EDIExportStatus exportStatus = row.getAsEnum(I_M_InOut.COLUMNNAME_EDI_ExportStatus, EDIExportStatus.class);
 
 		inoutRecord.setEDI_ExportStatus(exportStatus.getCode());
 		InterfaceWrapperHelper.save(inoutRecord);
