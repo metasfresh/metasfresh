@@ -37,6 +37,7 @@ import de.metas.vatid.VATaxIDCheckRequest;
 import de.metas.vatid.VATaxIDCheckService;
 import de.metas.vatid.VATaxIDStatus;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -497,6 +498,20 @@ public class VATaxIDCheck_StepDef
 	private static Instant toInstantOrNull(@Nullable final Timestamp timestamp)
 	{
 		return timestamp != null ? timestamp.toInstant() : null;
+	}
+
+	/**
+	 * Invariant: no scenario ends with a VAT-ID check still in flight. The consuming step's drain covers only
+	 * scenarios that assert on check-log rows; a check left running by any other scenario gets answered by the
+	 * NEXT scenario's stub of the singleton checker mock, and fails that innocent scenario instead. Ordered
+	 * above the default 10000 -- an {@code @After} with a HIGHER order runs FIRST -- so the drain completes
+	 * before {@code VATaxIDOnlineChecker_StepDef}'s unexpected-check guard and the config reset read the
+	 * aftermath.
+	 */
+	@After(order = 20_000)
+	public void drainVATaxIDCheckWorkPackagesAfterScenario() throws InterruptedException
+	{
+		waitUntilNoVATaxIDCheckWorkPackagesArePending();
 	}
 
 	/**

@@ -23,6 +23,11 @@
 package de.metas.cucumber.stepdefs.vatid;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
@@ -41,18 +46,23 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.vatid.process.C_BPartner_VATaxID_Check;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.util.List;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -71,6 +81,8 @@ public class VATaxIDCheckProcess_StepDef
 	@NonNull private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	@NonNull private final IADPInstanceDAO pInstanceDAO = Services.get(IADPInstanceDAO.class);
 	@NonNull private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
+	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
 
@@ -220,6 +232,72 @@ public class VATaxIDCheckProcess_StepDef
 		executor.getResult().propagateErrorIfAny();
 
 		lastPInstanceId = executor.getProcessInfo().getPinstanceId();
+	}
+
+	/**
+	 * Stamps {@code VATaxIDLastAttemptedAt} on every not-yet-attempted VAT-ID check candidate of the test
+	 * organisation EXCEPT the partners named in the data table (and their locations), so that afterwards the
+	 * named records are the only null-attempted ones left.
+	 *
+	 * <p>Makes a budgeted {@link #runProcessAsScheduledWithBudget(String)} deterministic. That run is a
+	 * global sweep and every scenario of this feature shares one organisation, so a never-attempted leftover
+	 * of an earlier scenario ties on the nightly ORDER BY's primary key (attempt time ascending, NULLS
+	 * FIRST), wins the {@code C_BPartner_ID} tie-break because it was created earlier, and silently eats a
+	 * small {@code MaxChecksPerRun} budget.
+	 *
+	 * <p>Covers both grains — a {@code C_BPartner_Location} carrying a VAT-ID is a nightly candidate in its
+	 * own right, even when its partner header carries none. Only records the nightly query would actually
+	 * select are touched (active, non-blank {@code VATaxID}, this organisation); records that already carry
+	 * an attempt stamp are left alone, since they already sort behind the null-attempted ones. Nothing is
+	 * assumed about WHICH other records exist, so this is safe on the shared executor database.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_BPartner_ID</b> — (required, identifier-ref) partner to leave untouched, together with its locations
+	 * @cucumber.depends StepDefData: C_BPartner_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Given every other VAT-ID check candidate has already been attempted, except C_BPartner:
+	 *   | C_BPartner_ID |
+	 *   | bp_broken     |
+	 *   | bp_pending    |
+	 * </pre>
+	 */
+	@Given("every other VAT-ID check candidate has already been attempted, except C_BPartner:")
+	public void stampAttemptOnAllOtherCandidates(@NonNull final DataTable dataTable)
+	{
+		final ImmutableSet<Integer> keepUnstampedBPartnerIds = DataTableRows.of(dataTable)
+				.stream()
+				.map(row -> row.getAsIdentifier(I_C_BPartner.COLUMNNAME_C_BPartner_ID).lookupNotNullIn(bpartnerTable).getC_BPartner_ID())
+				.collect(ImmutableSet.toImmutableSet());
+
+		final Instant attemptedAt = SystemTime.asInstant();
+
+		queryBL.createQueryBuilder(I_C_BPartner.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_AD_Org_ID, ORG_ID)
+				.addNotNull(I_C_BPartner.COLUMNNAME_VATaxID)
+				.addNotEqualsFilter(I_C_BPartner.COLUMNNAME_VATaxID, "")
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_VATaxIDLastAttemptedAt, null)
+				.addNotInArrayFilter(I_C_BPartner.COLUMNNAME_C_BPartner_ID, keepUnstampedBPartnerIds)
+				.create()
+				.list()
+				.forEach(bpartnerRecord -> bpartnerDAO.stampVATaxIDCheckAttempt(
+						BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID()),
+						attemptedAt));
+
+		queryBL.createQueryBuilder(I_C_BPartner_Location.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_AD_Org_ID, ORG_ID)
+				.addNotNull(I_C_BPartner_Location.COLUMNNAME_VATaxID)
+				.addNotEqualsFilter(I_C_BPartner_Location.COLUMNNAME_VATaxID, "")
+				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_VATaxIDLastAttemptedAt, null)
+				.addNotInArrayFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, keepUnstampedBPartnerIds)
+				.create()
+				.list()
+				.forEach(bpartnerLocationRecord -> bpartnerDAO.stampVATaxIDCheckAttempt(
+						BPartnerLocationId.ofRepoId(bpartnerLocationRecord.getC_BPartner_ID(), bpartnerLocationRecord.getC_BPartner_Location_ID()),
+						attemptedAt));
 	}
 
 	/**

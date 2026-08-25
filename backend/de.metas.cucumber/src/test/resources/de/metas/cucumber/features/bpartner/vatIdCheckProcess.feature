@@ -311,6 +311,14 @@ Feature: The VAT-ID check process runs on a selection of Business Partners
     And the VAT-ID online checker is stubbed to answer known VAT-IDs, and to report unavailable for the rest:
       | VATaxID    | VATaxIDStatus |
       | LU15027442 | Valid         |
+    # A scheduled run is a GLOBAL sweep, and every scenario of this feature shares one organisation, so the
+    # sweep also sees earlier scenarios' never-attempted leftovers (e.g. bp_viesOff). Each of those ties with
+    # bp_pending on the ORDER BY's attempt time and wins the C_BPartner_ID tie-break by being older, so a
+    # budget of one is only deterministic once every candidate but ours carries an attempt stamp.
+    And every other VAT-ID check candidate has already been attempted, except C_BPartner:
+      | C_BPartner_ID |
+      | bp_broken     |
+      | bp_pending    |
     When the C_BPartner_VATaxID_Check process is run as scheduled with MaxChecksPerRun '1'
     Then validate C_BPartner VAT-ID status:
       | C_BPartner_ID | VATaxIDStatus |
