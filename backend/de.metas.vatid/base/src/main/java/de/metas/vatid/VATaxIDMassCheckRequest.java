@@ -22,33 +22,36 @@
 
 package de.metas.vatid;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.BPartnerId;
 import de.metas.process.PInstanceId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_C_BPartner;
 
 import javax.annotation.Nullable;
 
 /**
  * One run of {@link VATaxIDMassCheckService#run(VATaxIDMassCheckRequest)}: check the header VAT-ID (if any)
- * and every location VAT-ID (if any) of every partner in {@link #getSelectedBPartnerIds()} — see that
- * method's javadoc for the combined selection it builds from this list and the throttling
+ * and every location VAT-ID (if any) of every partner in {@link #getSelectedBPartnersQuery()} — see that
+ * method's javadoc for the combined selection it builds from that query and the throttling
  * {@link #getMaxChecksPerRun()} applies to it.
  *
- * <p>Deliberately carries only process-agnostic values — typed ids, a plain {@code int}, an optional
- * {@link PInstanceId} — so the same run can be driven from a {@code JavaProcess}, a REST endpoint, or a
- * unit test, none of which need a {@code JavaProcess} to exist.
+ * <p>Deliberately carries only process-agnostic values — a {@code C_BPartner} selection query, a plain
+ * {@code int}, an optional {@link PInstanceId} — so the same run can be driven from a {@code JavaProcess},
+ * a REST endpoint, or a unit test, none of which need a {@code JavaProcess} to exist.
  */
 @Value
 @Builder
 public class VATaxIDMassCheckRequest
 {
 	/**
-	 * BPartner's to check. Empty means all.
+	 * The {@code C_BPartner} records to check, as a query streamed lazily rather than a materialised id list
+	 * — "select all" in the grid can carry tens of thousands of records, and binding one parameter per record
+	 * is exactly what produced {@code An I/O error occurred while sending to the backend}. {@code null} on the
+	 * nightly run, which streams the due records itself and ignores this field.
 	 */
-	@NonNull ImmutableList<BPartnerId> selectedBPartnerIds;
+	@Nullable IQuery<I_C_BPartner> selectedBPartnersQuery;
 
 	/**
 	 * Empty/unset or {@code <= 0} means no limit — see

@@ -23,8 +23,6 @@
 package de.metas.vatid.process;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.BPartnerId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -36,6 +34,7 @@ import de.metas.vatid.VATaxIDMassCheckResult;
 import de.metas.vatid.VATaxIDMassCheckService;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
 
 /**
@@ -81,34 +80,25 @@ public class C_BPartner_VATaxID_Check extends JavaProcess implements IProcessPre
 	protected String doIt()
 	{
 		final boolean nightlyRun = getTableName() == null;
-		// A nightly run has no selection to pass: VATaxIDMassCheckService streams the due records itself.
-		final ImmutableList<BPartnerId> selectedBPartnerIds = nightlyRun
-				? ImmutableList.of()
-				: retrieveSelectedBPartnerIds();
+		// A nightly run has no selection to pass: VATaxIDMassCheckService streams the due records itself. A
+		// user-triggered run passes its selection as a lazily-streamed query rather than a materialised id list:
+		// "select all" can carry tens of thousands of records, and binding one parameter per record is what
+		// produced `An I/O error occurred while sending to the backend`. retrieveSelectedRecordsQueryBuilder
+		// covers BOTH the multi-record pinstance selection and the single-record case, so the query preserves
+		// the exact selection semantics of either.
+		final IQuery<I_C_BPartner> selectedBPartnersQuery = nightlyRun
+				? null
+				: retrieveSelectedRecordsQueryBuilder(I_C_BPartner.class)
+						.orderBy(I_C_BPartner.COLUMNNAME_C_BPartner_ID)
+						.create();
 
 		final VATaxIDMassCheckResult result = massCheckService.run(VATaxIDMassCheckRequest.builder()
-				.selectedBPartnerIds(selectedBPartnerIds)
+				.selectedBPartnersQuery(selectedBPartnersQuery)
 				.maxChecksPerRun(p_MaxChecksPerRun)
 				.pinstanceId(getPinstanceId())
 				.nightlyRun(nightlyRun)
 				.build());
 
 		return result.getCheckedCount() + " checked, " + result.getPendingCount() + " pending";
-	}
-
-	/**
-	 * The {@code C_BPartner_ID}s this run's own selection covers — a single record or a multi-record
-	 * selection alike, per {@link #retrieveSelectedRecordsQueryBuilder}. Only ever called when
-	 * {@link #getTableName()} is non-null (see {@link #doIt()}), so this never hits the
-	 * {@code @NoSelection@} branch that method throws for a genuinely selection-less run.
-	 */
-	// TODO #31060: we cannot prevent the user from selecting all BPartners, so we need to iterate here as well
-	@NonNull
-	private ImmutableList<BPartnerId> retrieveSelectedBPartnerIds()
-	{
-		return retrieveSelectedRecordsQueryBuilder(I_C_BPartner.class)
-				.orderBy(I_C_BPartner.COLUMNNAME_C_BPartner_ID)
-				.create()
-				.listIds(BPartnerId::ofRepoId);
 	}
 }

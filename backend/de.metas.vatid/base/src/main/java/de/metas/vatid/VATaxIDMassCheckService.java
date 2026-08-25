@@ -22,8 +22,6 @@
 
 package de.metas.vatid;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationId;
@@ -47,6 +45,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -102,62 +101,58 @@ public class VATaxIDMassCheckService
 			return runNightly(request);
 		}
 
-		final ImmutableList<CheckTarget> allTargets = checkTargetRepo.retrieveCheckTargets(request.getSelectedBPartnerIds());
-		final ImmutableList<CheckTarget> eligibleTargets = skipUnavailableMemberStates(allTargets);
-
 		final int maxChecksPerRun = request.getMaxChecksPerRun();
-		final boolean unlimited = maxChecksPerRun <= 0;
-		final int checksAllowed = unlimited ? eligibleTargets.size() : Math.min(maxChecksPerRun, eligibleTargets.size());
+		final int budget = maxChecksPerRun <= 0 ? Integer.MAX_VALUE : maxChecksPerRun;
+		// Counted up front from the SAME queries the iterator streams, exactly as runNightly does: streaming
+		// cannot know the eligible total the old materialised path reported against, so pending/checked report
+		// against this count-query total instead. Unlike the old eligibleTargets.size() it is taken BEFORE the
+		// availability pre-filter, so an unavailable-country target counts as pending -- again matching runNightly.
+		final int dueCount = checkTargetRepo.countSelectedTargets(request.getSelectedBPartnersQuery());
+
+		final Map<OrgId, ImmutableSet<String>> unavailableCountryCodesByOrg = new HashMap<>();
+		// One line per skipped member state, emitted at the end: the streaming counterpart of what
+		// skipUnavailableMemberStates logged on the old materialised path. Counts only, never the targets, so it
+		// stays O(#countries) in memory however large the selection.
+		final Map<String, Integer> skippedCountByCountryCode = new LinkedHashMap<>();
 
 		int checkedCount = 0;
-		for (final CheckTarget checkTarget : eligibleTargets)
-		{
-			if (checkedCount >= checksAllowed)
-			{
-				break;
-			}
+		boolean aborted = false;
+		// The selection path skips a blank VAT-ID SILENTLY -- here a record without a VAT-ID is the ordinary
+		// case, unlike the nightly path where the query cannot filter blanks and each one is a data defect worth
+		// a log line. Hence the no-op callback.
+		final Iterator<CheckTarget> targets = checkTargetRepo.iterateSelectedTargets(
+				request.getSelectedBPartnersQuery(), logLabel -> {});
 
-			try
+		// The budget and abort tests MUST stay BEFORE hasNext(), exactly as runNightly documents: the two grains
+		// of iterateSelectedTargets concatenate LAZILY, so asking it for one more element once the partner grain
+		// is spent is what creates and runs the C_BPartner_Location subquery. A run out of budget must stop
+		// without firing it.
+		while (checkedCount < budget && !aborted && targets.hasNext())
+		{
+			final CheckTarget target = targets.next();
+			final CheckOutcome outcome = checkOneIfAvailable(request.getPinstanceId(), target, unavailableCountryCodesByOrg);
+			if (outcome == CheckOutcome.SKIPPED)
 			{
-				checkOneInOwnTrx(request.getPinstanceId(), checkTarget);
+				// Read straight off the target: the availability DECISION stays inside checkOneIfAvailable, this
+				// only tallies which member state it skipped so the operator-facing summary survives converging
+				// onto it.
+				skippedCountByCountryCode.merge(target.getVataxID().getCountryCodePrefix(), 1, Integer::sum);
 			}
-			catch (final VATaxIDCheckRequestRejectedException ex)
-			{
-				// The ONE failure that must stop the run rather than be carried past: the service rejected
-				// the request because of our own configuration, so every remaining target would produce the
-				// identical error. Carrying on would write one warn line per target for the whole selection
-				// (up to MaxChecksPerRun) and report the run as merely having had failures.
-				// Named error code first: it is what the service's own documentation is indexed by.
-				// The rejected target counts as ATTEMPTED and is excluded from the not-attempted tally -- it
-				// was attempt-stamped and its request did reach the service, which is what "attempted" means
-				// throughout this class (see the class javadoc, "Starvation guard"). Lumping it in with the
-				// targets that were never started would understate how far the run got.
-				// The pending figure is restated here on purpose: it is one HIGHER than the not-attempted one
-				// (it includes the rejected target, which still needs a check), and the process footer reports
-				// it separately. Left unreconciled, the two numbers read as a contradiction in the same log.
-				Loggables.withWarnLoggerToo(logger).addLog(
-						"VAT-ID check run ABORTED after {} of {} targets: {} No VAT-ID status was changed by the "
-								+ "rejected request, and the remaining {} targets were not attempted. {} of {} "
-								+ "remain pending, the rejected target included. Correct the VAT-ID configuration, "
-								+ "then start the run again.",
-						checkedCount, eligibleTargets.size(), ex.getMessage(),
-						eligibleTargets.size() - checkedCount - 1,
-						eligibleTargets.size() - checkedCount, eligibleTargets.size());
-				break;
-			}
-			checkedCount++;
+			checkedCount += outcome.isChecked() ? 1 : 0;
+			aborted = outcome.isAborted();
 		}
 
-		// Reported even when the run aborted -- the targets it did get through are exactly what a re-run after
-		// the fix must NOT be assumed to still need. On an abort this deliberately counts the REJECTED target
-		// as pending as well, unlike the not-attempted tally logged above: nothing advanced its
-		// VATaxIDCheckedAt, so it genuinely still needs a check. "Attempted" and "still needs checking" are
-		// different questions, and this one is the second.
-		final int pendingCount = eligibleTargets.size() - checkedCount;
+		// Preserved from the old skipUnavailableMemberStates: one summary line per skipped member state rather
+		// than one per skipped VAT-ID. The abort line itself, if any, was already emitted by checkOneIfAvailable.
+		skippedCountByCountryCode.forEach((countryCode, skippedCount) ->
+				Loggables.addLog("VAT-ID check: member state {} reports itself unavailable, skipped {} VAT-IDs",
+						countryCode, skippedCount));
+
+		final int pendingCount = Math.max(0, dueCount - checkedCount);
 		if (pendingCount > 0)
 		{
 			Loggables.addLog("VAT-ID check: checked {} of {} selected, MaxChecksPerRun={}, pendingCount={}",
-					checkedCount, eligibleTargets.size(), maxChecksPerRun, pendingCount);
+					checkedCount, dueCount, maxChecksPerRun, pendingCount);
 		}
 
 		final VATaxIDCheckCallStats callStats = reportCallStats(request.getPinstanceId());
@@ -171,7 +166,7 @@ public class VATaxIDMassCheckService
 	}
 
 	/**
-	 * The nightly sweep. Uses {@link VATaxIDMassCheckRequest#getMaxChecksPerRun()}  and ignores {@link VATaxIDMassCheckRequest#getSelectedBPartnerIds()}.
+	 * The nightly sweep. Uses {@link VATaxIDMassCheckRequest#getMaxChecksPerRun()}  and ignores {@link VATaxIDMassCheckRequest#getSelectedBPartnersQuery()}.
 	 *
 	 * <p>Due-ness and ordering are the query's ({@code IBPartnerDAO}), evaluated per organisation with that
 	 * organisation's own recheck window — organisations with the check switched off are never queried at
@@ -239,8 +234,8 @@ public class VATaxIDMassCheckService
 
 	/**
 	 * Checks one streamed target unless its member state reports itself unavailable, in which case it keeps
-	 * its stored status and does not consume budget. Mirrors what {@link #skipUnavailableMemberStates} and
-	 * {@link #run}'s loop do together on the selection path.
+	 * its stored status and does not consume budget. The single availability-aware step both {@link #run}'s
+	 * selection loop and {@link #runNightly} converge onto.
 	 */
 	@NonNull
 	private CheckOutcome checkOneIfAvailable(
@@ -293,44 +288,6 @@ public class VATaxIDMassCheckService
 
 		private final boolean checked;
 		private final boolean aborted;
-	}
-
-	/**
-	 * Availability pre-filter (see the class javadoc): removes every target whose member state
-	 * {@link VATaxIDCheckService#getUnavailableCountryCodes(OrgId)} currently reports as unavailable,
-	 * logging one summary line per skipped member state rather than one per skipped VAT-ID — the same
-	 * "a handful of meaningful lines, not thousands" reasoning as the per-record status-change log.
-	 * {@link #checkService} is asked at most once per distinct {@link CheckTarget#getOrgId()} in
-	 * {@code checkTargets}, not once per target.
-	 */
-	@NonNull
-	private ImmutableList<CheckTarget> skipUnavailableMemberStates(@NonNull final ImmutableList<CheckTarget> checkTargets)
-	{
-		final Map<OrgId, ImmutableSet<String>> unavailableCountryCodesByOrg = new HashMap<>();
-		final ImmutableListMultimap.Builder<String, CheckTarget> skippedByCountryCode = ImmutableListMultimap.builder();
-		final ImmutableList.Builder<CheckTarget> eligibleTargets = ImmutableList.builder();
-
-		for (final CheckTarget checkTarget : checkTargets)
-		{
-			final ImmutableSet<String> unavailableCountryCodes = unavailableCountryCodesByOrg
-					.computeIfAbsent(checkTarget.getOrgId(), checkService::getUnavailableCountryCodes);
-			final String countryCode = checkTarget.getVataxID().getCountryCodePrefix();
-
-			if (unavailableCountryCodes.contains(countryCode))
-			{
-				skippedByCountryCode.put(countryCode, checkTarget);
-			}
-			else
-			{
-				eligibleTargets.add(checkTarget);
-			}
-		}
-
-		skippedByCountryCode.build().asMap().forEach((countryCode, skippedTargets) ->
-				Loggables.addLog("VAT-ID check: member state {} reports itself unavailable, skipped {} VAT-IDs",
-						countryCode, skippedTargets.size()));
-
-		return eligibleTargets.build();
 	}
 
 	/**
