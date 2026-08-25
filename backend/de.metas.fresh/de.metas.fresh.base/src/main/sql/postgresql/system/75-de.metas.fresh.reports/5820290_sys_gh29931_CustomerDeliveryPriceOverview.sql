@@ -2,7 +2,7 @@
  * #%L
  * de.metas.fresh.base
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -19,6 +19,10 @@
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+-- Task 3 (partial): add p_DeliveryDateTo (nullable; NULL falls back to p_DeliveryDateFrom -> single day)
+-- and bound the delivery window. Price columns unchanged for now (still via report.getCurrentSalesPrice).
+
 DROP FUNCTION IF EXISTS report.getCustomerDeliveryPriceOverview(
     timestamp with time zone,
     numeric
