@@ -2191,19 +2191,19 @@ public interface I_M_Product
 	 * Set Product Life Cycle Status.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setProductLifeCycleStatus (@Nullable java.lang.String ProductLifeCycleStatus);
+	void setProductLifeCycleStatus (java.lang.String ProductLifeCycleStatus);
 
 	/**
 	 * Get Product Life Cycle Status.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getProductLifeCycleStatus();
+	java.lang.String getProductLifeCycleStatus();
 
 	ModelColumn<I_M_Product, Object> COLUMN_ProductLifeCycleStatus = new ModelColumn<>(I_M_Product.class, "ProductLifeCycleStatus", null);
 	String COLUMNNAME_ProductLifeCycleStatus = "ProductLifeCycleStatus";
