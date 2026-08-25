@@ -23,9 +23,11 @@
 package de.metas.vatid;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterators;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -53,7 +55,9 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
@@ -78,6 +82,90 @@ public class VATaxIdCheckTargetRepo
 	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	/**
+	 * The nightly run's single stream of the targets {@code orgId} owes a VAT-ID check: first every due
+	 * {@code C_BPartner} of that organisation, then every due {@code C_BPartner_Location} of it, each grain
+	 * ordered as {@link #iterateBPartnersDueForVATaxIDCheck(OrgId, Instant, int)} describes.
+	 *
+	 * <p>The two grains are CONCATENATED, not merged: each keeps its own oldest-attempt-first ordering
+	 * instead of being interleaved into one ordering across both, which would need a merge over two
+	 * separately ordered result sets to buy what raising {@code MaxChecksPerRun} buys more cheaply.
+	 *
+	 * <p><b>Lazy, and callers depend on it.</b> The {@code C_BPartner_Location} query is neither created nor
+	 * executed until the partner grain is exhausted AND the caller asks for one more element. A caller with
+	 * no budget left must therefore stop WITHOUT calling {@code hasNext()} again — see
+	 * {@code VATaxIDMassCheckService#runNightly}.
+	 *
+	 * @param onBlankVATaxIDSkipped called with the log label of every record whose {@code VATaxID} turns out
+	 * to be blank. Such a record is skipped instead of yielded — the queries can only filter
+	 * {@code VATaxID IS NOT NULL} — and whether that deserves a log line is the caller's policy, not this
+	 * repository's: on the nightly path it is a data defect worth naming, on the selection path the ordinary
+	 * case.
+	 * @return a guaranteed iterator
+	 */
+	@NonNull
+	public Iterator<CheckTarget> iterateTargetsDueForVATaxIDCheck(
+			@NonNull final OrgId orgId,
+			@Nullable final Instant lastCheckedBefore,
+			final int maxChecksPerRun,
+			@NonNull final Consumer<String> onBlankVATaxIDSkipped)
+	{
+		final Supplier<Iterator<CheckTarget>> dueBPartnerTargets = () -> skippingBlankVATaxIDs(
+				iterateBPartnersDueForVATaxIDCheck(orgId, lastCheckedBefore, maxChecksPerRun),
+				bpartnerRecord -> CheckTarget.ofPartner(BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID()), bpartnerRecord),
+				CheckTarget::logLabelOf,
+				onBlankVATaxIDSkipped);
+
+		final Supplier<Iterator<CheckTarget>> dueBPartnerLocationTargets = () -> skippingBlankVATaxIDs(
+				iterateBPartnerLocationsDueForVATaxIDCheck(orgId, lastCheckedBefore, maxChecksPerRun),
+				CheckTarget::ofLocation,
+				CheckTarget::logLabelOf,
+				onBlankVATaxIDSkipped);
+
+		// Each grain sits behind a Supplier and the two-element meta-iterator is transformed lazily, so
+		// Iterators.concat invokes a grain's Supplier -- and thereby runs its query -- only when it is asked
+		// for an element the preceding grain can no longer provide.
+		final Iterator<Iterator<CheckTarget>> lazyGrains = Iterators.transform(
+				ImmutableList.of(dueBPartnerTargets, dueBPartnerLocationTargets).iterator(),
+				Supplier::get);
+
+		return Iterators.concat(lazyGrains);
+	}
+
+	/**
+	 * Maps {@code records} to {@link CheckTarget}s, dropping every record whose {@code VATaxID} is blank and
+	 * announcing each drop to {@code onBlankVATaxIDSkipped}. Reads nothing from {@code records} before the
+	 * returned iterator is asked for an element.
+	 */
+	@NonNull
+	private static <RecordType> Iterator<CheckTarget> skippingBlankVATaxIDs(
+			@NonNull final Iterator<RecordType> records,
+			@NonNull final Function<RecordType, CheckTarget> toCheckTargetOrNull,
+			@NonNull final Function<RecordType, String> toLogLabel,
+			@NonNull final Consumer<String> onBlankVATaxIDSkipped)
+	{
+		return new AbstractIterator<CheckTarget>()
+		{
+			@Override
+			protected CheckTarget computeNext()
+			{
+				while (records.hasNext())
+				{
+					final RecordType record = records.next();
+					final CheckTarget checkTarget = toCheckTargetOrNull.apply(record);
+					if (checkTarget != null)
+					{
+						return checkTarget;
+					}
+					// Blank VAT-ID: skip this ONE record, so it costs the caller no budget and cannot abort
+					// the caller's run.
+					onBlankVATaxIDSkipped.accept(toLogLabel.apply(record));
+				}
+				return endOfData();
+			}
+		};
+	}
+
+	/**
 	 * @return how many records {@link #iterateBPartnersDueForVATaxIDCheck(OrgId, Instant, int)} would yield.
 	 */
 	public int countBPartnersDueForVATaxIDCheck(@NonNull final OrgId orgId,
@@ -94,9 +182,14 @@ public class VATaxIdCheckTargetRepo
 	 * {@code VATaxIDCheckedAt} older than {@code lastCheckedBefore}. Pass {@code lastCheckedBefore == null} to mean
 	 * "no staleness window", i.e. every VAT-ID-bearing record of the organisation is due.
 	 *
+	 * <p>One of the two grains of {@link #iterateTargetsDueForVATaxIDCheck(OrgId, Instant, int, Consumer)},
+	 * which is what callers outside this class use; kept separately reachable so a test can substitute one
+	 * grain's records without a database.
+	 *
 	 * @return a guaranteed iterator
 	 */
-	public Iterator<I_C_BPartner> iterateBPartnersDueForVATaxIDCheck(
+	@VisibleForTesting
+	Iterator<I_C_BPartner> iterateBPartnersDueForVATaxIDCheck(
 			@NonNull final OrgId orgId,
 			@Nullable final Instant lastCheckedBefore,
 			final int maxChecksPerRun)
@@ -157,9 +250,11 @@ public class VATaxIdCheckTargetRepo
 	 * {@link #iterateBPartnersDueForVATaxIDCheck(OrgId, Instant, int)}, scoped by the LOCATION's own
 	 * {@code AD_Org_ID} — the organisation whose configuration governs a location's check.
 	 */
-	public Iterator<I_C_BPartner_Location> iterateBPartnerLocationsDueForVATaxIDCheck(@NonNull final OrgId orgId,
-																					  @Nullable final Instant lastCheckedBefore,
-																					  final int maxChecksPerRun)
+	@VisibleForTesting
+	Iterator<I_C_BPartner_Location> iterateBPartnerLocationsDueForVATaxIDCheck(
+			@NonNull final OrgId orgId,
+			@Nullable final Instant lastCheckedBefore,
+			final int maxChecksPerRun)
 	{
 		final int effectiveBuffersize = computeEffectiveBuffersize(maxChecksPerRun);
 
@@ -367,7 +462,7 @@ public class VATaxIdCheckTargetRepo
 		 * path and abort the whole run, and the due-for-check query filters on {@code VATaxID IS NOT NULL} only.
 		 */
 		@Nullable
-		public static CheckTarget ofPartner(@NonNull final BPartnerId bpartnerId, @NonNull final I_C_BPartner bpartnerRecord)
+		private static CheckTarget ofPartner(@NonNull final BPartnerId bpartnerId, @NonNull final I_C_BPartner bpartnerRecord)
 		{
 			final VATIdentifier vataxID = VATIdentifier.ofNullable(bpartnerRecord.getVATaxID());
 			if (vataxID == null)
@@ -389,7 +484,7 @@ public class VATaxIdCheckTargetRepo
 
 		/** @return {@code null} if the record carries no VAT-ID to check -- see {@link #ofPartner}. */
 		@Nullable
-		public static CheckTarget ofLocation(@NonNull final I_C_BPartner_Location bpartnerLocationRecord)
+		private static CheckTarget ofLocation(@NonNull final I_C_BPartner_Location bpartnerLocationRecord)
 		{
 			final VATIdentifier vataxID = VATIdentifier.ofNullable(bpartnerLocationRecord.getVATaxID());
 			if (vataxID == null)
@@ -415,14 +510,14 @@ public class VATaxIdCheckTargetRepo
 		 * hand-built label would drift from {@link #logLabel}.
 		 */
 		@NonNull
-		public static String logLabelOf(@NonNull final I_C_BPartner bpartnerRecord)
+		private static String logLabelOf(@NonNull final I_C_BPartner bpartnerRecord)
 		{
 			return "C_BPartner_ID=" + bpartnerRecord.getC_BPartner_ID();
 		}
 
 		/** @see #logLabelOf(I_C_BPartner) */
 		@NonNull
-		public static String logLabelOf(@NonNull final I_C_BPartner_Location bpartnerLocationRecord)
+		private static String logLabelOf(@NonNull final I_C_BPartner_Location bpartnerLocationRecord)
 		{
 			return "C_BPartner_ID=" + bpartnerLocationRecord.getC_BPartner_ID()
 					+ ", C_BPartner_Location_ID=" + bpartnerLocationRecord.getC_BPartner_Location_ID();

@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.logging.LogManager;
@@ -40,8 +39,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -208,43 +205,17 @@ public class VATaxIDMassCheckService
 				break;
 			}
 
-			// TODO #31060: make checkTargetRepo return an iterator of CheckTargets. Then make CheckTarget.ofPartner private again, unless you choose to make CheckTarget a class in it's own java-file
-			final Iterator<I_C_BPartner> partners = checkTargetRepo.iterateBPartnersDueForVATaxIDCheck(orgId, lastCheckedBefore, maxChecksPerRun);
-			while (partners.hasNext() && checkedCount < budget && !aborted)
-			{
-				final I_C_BPartner bpartnerRecord = partners.next();
-				
-				final CheckTarget checkTarget = CheckTarget.ofPartner(
-						BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID()), 
-						bpartnerRecord);
-				if (checkTarget == null)
-				{
-					// Blank VAT-ID: skip this ONE record. Costs no budget, and does not abort the run.
-					logBlankVATaxIDSkipped(CheckTarget.logLabelOf(bpartnerRecord));
-					continue;
-				}
-				final CheckOutcome outcome = checkOneIfAvailable(request.getPinstanceId(), checkTarget, unavailableCountryCodesByOrg);
-				checkedCount += outcome.isChecked() ? 1 : 0;
-				aborted = outcome.isAborted();
-			}
+			final Iterator<CheckTarget> dueTargets = checkTargetRepo.iterateTargetsDueForVATaxIDCheck(
+					orgId, lastCheckedBefore, maxChecksPerRun, VATaxIDMassCheckService::logBlankVATaxIDSkipped);
 
-			// TODO #31060: same as for bpartners
-			// IF you can, let checkTargetRepo *one* Iterator<CheckTarget> that outputs first the baprtners and then the locations
-			// but if you can't do it properly, just don't!
-			// TODO #31060: ALSO: don't query if the budget is already exhausted!
-			final Iterator<I_C_BPartner_Location> locations = checkTargetRepo.iterateBPartnerLocationsDueForVATaxIDCheck(orgId, lastCheckedBefore, maxChecksPerRun);
-		
-			while (locations.hasNext() && checkedCount < budget && !aborted)
+			// The budget and abort tests MUST stay BEFORE hasNext(), however reorderable they look: && is
+			// evaluated left to right, and dueTargets concatenates its two grains LAZILY -- asking it for one
+			// more element once the partner grain is spent is exactly what creates and runs the
+			// C_BPartner_Location query. With hasNext() first, a run that has already spent its budget on
+			// partners would issue that query only to throw its result away.
+			while (checkedCount < budget && !aborted && dueTargets.hasNext())
 			{
-				final I_C_BPartner_Location bpartnerLocationRecord = locations.next();
-				final CheckTarget checkTarget = CheckTarget.ofLocation(bpartnerLocationRecord);
-				if (checkTarget == null)
-				{
-					// Blank VAT-ID: skip this ONE record. Costs no budget, and does not abort the run.
-					logBlankVATaxIDSkipped(CheckTarget.logLabelOf(bpartnerLocationRecord));
-					continue;
-				}
-				final CheckOutcome outcome = checkOneIfAvailable(request.getPinstanceId(), checkTarget, unavailableCountryCodesByOrg);
+				final CheckOutcome outcome = checkOneIfAvailable(request.getPinstanceId(), dueTargets.next(), unavailableCountryCodesByOrg);
 				checkedCount += outcome.isChecked() ? 1 : 0;
 				aborted = outcome.isAborted();
 			}

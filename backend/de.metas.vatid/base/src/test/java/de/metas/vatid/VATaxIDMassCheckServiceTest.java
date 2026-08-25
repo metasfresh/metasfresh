@@ -39,6 +39,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
 
 import java.time.Instant;
 
@@ -51,6 +52,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -105,6 +107,19 @@ class VATaxIDMassCheckServiceTest
 	{
 		final I_C_BPartner record = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
 		record.setC_BPartner_ID(bpartnerId.getRepoId());
+		record.setVATaxID(vataxID);
+		record.setVATaxIDStatus(VATaxIDStatus.NotChecked.getCode());
+		return record;
+	}
+
+	private static I_C_BPartner_Location newBPartnerLocationWithVATaxID(
+			final BPartnerId bpartnerId,
+			final int bpartnerLocationRepoId,
+			final String vataxID)
+	{
+		final I_C_BPartner_Location record = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class);
+		record.setC_BPartner_ID(bpartnerId.getRepoId());
+		record.setC_BPartner_Location_ID(bpartnerLocationRepoId);
 		record.setVATaxID(vataxID);
 		record.setVATaxIDStatus(VATaxIDStatus.NotChecked.getCode());
 		return record;
@@ -314,6 +329,111 @@ class VATaxIDMassCheckServiceTest
 		assertThat(result.getCheckedCount()).isEqualTo(1);
 		assertThat(result.getPendingCount()).isEqualTo(1);
 		verify(checkServiceMock, times(1)).check(any(VATaxIDCheckRequest.class));
+	}
+
+	/**
+	 * TODO #31060's "don't query if the budget is already exhausted". With the budget spent by partner
+	 * targets alone, the location grain must never be reached: the two grains are ONE lazily concatenated
+	 * iterator, so merely asking it whether it has one more element is what creates and runs the location
+	 * query. The two COUNT queries are a different matter and deliberately still run -- {@code pendingCount}
+	 * is derived from them.
+	 */
+	@Test
+	void nightlyRun_doesNotQueryLocations_whenTheBudgetIsSpentByPartnersAlone()
+	{
+		final OrgId orgId = OrgId.ofRepoId(1_000_000);
+		final I_C_BPartner duePartner = newBPartnerWithVATaxID(BPARTNER_ID_HEALTHY, "DE123456789");
+		duePartner.setAD_Org_ID(orgId.getRepoId());
+
+		when(checkServiceMock.getRecheckAfterDaysByViesEnabledOrgId()).thenReturn(ImmutableMap.of(orgId, 30));
+		when(checkServiceMock.getUnavailableCountryCodes(any(OrgId.class))).thenReturn(ImmutableSet.of());
+		doReturn(1).when(checkTargetRepoSpy).countBPartnersDueForVATaxIDCheck(any(OrgId.class), any());
+		doReturn(7).when(checkTargetRepoSpy).countBPartnerLocationsDueForVATaxIDCheck(any(OrgId.class), any());
+		doReturn(ImmutableList.of(duePartner).iterator())
+				.when(checkTargetRepoSpy).iterateBPartnersDueForVATaxIDCheck(any(OrgId.class), any(), anyInt());
+		doReturn(ImmutableList.<I_C_BPartner_Location>of().iterator())
+				.when(checkTargetRepoSpy).iterateBPartnerLocationsDueForVATaxIDCheck(any(OrgId.class), any(), anyInt());
+		when(checkServiceMock.check(any(VATaxIDCheckRequest.class))).thenReturn(VATaxIDStatus.Valid);
+
+		final VATaxIDMassCheckService massCheckService = new VATaxIDMassCheckService(checkServiceMock, checkTargetRepoSpy);
+
+		final VATaxIDMassCheckResult result;
+		final PlainStringLoggable log = Loggables.newPlainStringLoggable();
+		try (final IAutoCloseable ignored = Loggables.temporarySetLoggable(log))
+		{
+			result = massCheckService.run(VATaxIDMassCheckRequest.builder()
+					.selectedBPartnerIds(ImmutableList.of())
+					.maxChecksPerRun(1)
+					.nightlyRun(true)
+					.build());
+		}
+
+		// the single allowed check went to the partner target ...
+		assertThat(result.getCheckedCount()).as("checkedCount").isEqualTo(1);
+		verify(checkServiceMock, times(1)).check(any(VATaxIDCheckRequest.class));
+
+		// ... and the location query was never issued, because there was no budget left to spend on it.
+		verify(checkTargetRepoSpy, never())
+				.iterateBPartnerLocationsDueForVATaxIDCheck(any(OrgId.class), any(), anyInt());
+
+		// both COUNT queries still run, per organisation and before the budget break: pendingCount is
+		// derived from them, so skipping them would report a run that left 7 locations behind as complete.
+		verify(checkTargetRepoSpy).countBPartnersDueForVATaxIDCheck(eq(orgId), any());
+		verify(checkTargetRepoSpy).countBPartnerLocationsDueForVATaxIDCheck(eq(orgId), any());
+		assertThat(result.getPendingCount()).as("pendingCount").isEqualTo(7);
+	}
+
+	/**
+	 * The other half of the one-iterator refactor, and the half the budget-exhaustion test above can never
+	 * reach: with budget to spare, the location targets must FOLLOW the partner targets of the same
+	 * organisation — concatenated in that order, and actually yielded rather than quietly lost by the lazy
+	 * concatenation that keeps the location query unissued in the test above.
+	 */
+	@Test
+	void nightlyRun_yieldsPartnerTargetsFirst_thenLocationTargetsOfTheSameOrg()
+	{
+		final OrgId orgId = OrgId.ofRepoId(1_000_000);
+		final BPartnerLocationId dueLocationId = BPartnerLocationId.ofRepoId(BPARTNER_ID_SECOND, 2000201);
+
+		final I_C_BPartner duePartner = newBPartnerWithVATaxID(BPARTNER_ID_HEALTHY, "DE123456789");
+		duePartner.setAD_Org_ID(orgId.getRepoId());
+		final I_C_BPartner_Location dueLocation = newBPartnerLocationWithVATaxID(
+				BPARTNER_ID_SECOND, dueLocationId.getRepoId(), "DE987654321");
+		dueLocation.setAD_Org_ID(orgId.getRepoId());
+
+		when(checkServiceMock.getRecheckAfterDaysByViesEnabledOrgId()).thenReturn(ImmutableMap.of(orgId, 30));
+		when(checkServiceMock.getUnavailableCountryCodes(any(OrgId.class))).thenReturn(ImmutableSet.of());
+		doReturn(1).when(checkTargetRepoSpy).countBPartnersDueForVATaxIDCheck(any(OrgId.class), any());
+		doReturn(1).when(checkTargetRepoSpy).countBPartnerLocationsDueForVATaxIDCheck(any(OrgId.class), any());
+		doReturn(ImmutableList.of(duePartner).iterator())
+				.when(checkTargetRepoSpy).iterateBPartnersDueForVATaxIDCheck(any(OrgId.class), any(), anyInt());
+		doReturn(ImmutableList.of(dueLocation).iterator())
+				.when(checkTargetRepoSpy).iterateBPartnerLocationsDueForVATaxIDCheck(any(OrgId.class), any(), anyInt());
+		when(checkServiceMock.check(any(VATaxIDCheckRequest.class))).thenReturn(VATaxIDStatus.Valid);
+
+		final VATaxIDMassCheckService massCheckService = new VATaxIDMassCheckService(checkServiceMock, checkTargetRepoSpy);
+
+		final VATaxIDMassCheckResult result;
+		final PlainStringLoggable log = Loggables.newPlainStringLoggable();
+		try (final IAutoCloseable ignored = Loggables.temporarySetLoggable(log))
+		{
+			result = massCheckService.run(VATaxIDMassCheckRequest.builder()
+					.selectedBPartnerIds(ImmutableList.of())
+					.maxChecksPerRun(0)
+					.nightlyRun(true)
+					.build());
+		}
+
+		assertThat(result.getCheckedCount()).as("checkedCount").isEqualTo(2);
+		assertThat(result.getPendingCount()).as("pendingCount").isZero();
+
+		// the header first, its C_BPartner_Location_ID-bearing counterpart second -- never the other way round.
+		final InOrder inOrder = inOrder(checkServiceMock);
+		inOrder.verify(checkServiceMock).check(argThat(req -> req != null
+				&& BPARTNER_ID_HEALTHY.equals(req.getBpartnerId())
+				&& req.getBpartnerLocationId() == null));
+		inOrder.verify(checkServiceMock).check(argThat(req -> req != null
+				&& dueLocationId.equals(req.getBpartnerLocationId())));
 	}
 
 	/**
