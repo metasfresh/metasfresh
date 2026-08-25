@@ -70,6 +70,7 @@ import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_BPARTNER_ID;
@@ -126,6 +127,30 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 		final Channel channel = connection.createChannel();
 		final AMQP.Queue.PurgeOk purgeOk = channel.queuePurge(QUEUE_NAME_MF_TO_ES);
 		logger.info("Purged {} messages from queue {}", purgeOk.getMessageCount(), QUEUE_NAME_MF_TO_ES);
+	}
+
+	/**
+	 * Asserts that no message arrives on {@link ExternalSystemConstants#QUEUE_NAME_MF_TO_ES} within the
+	 * given timeout — the negative counterpart of {@code RabbitMQ receives a JsonExternalSystemRequest …}.
+	 * <p>
+	 * Performs a single blocking receive for the whole timeout window (mirroring the {@code DefaultConsumer}
+	 * idiom of {@link #pollRequestFromQueue(int, Function)}) rather than a poll loop, so a message that
+	 * arrives late in the window still fails the assertion instead of slipping past between polls.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then RabbitMQ MF_TO_ExternalSystem receives no message within 5s
+	 * </pre>
+	 */
+	@Then("^RabbitMQ MF_TO_ExternalSystem receives no message within (.*)s$")
+	public void rabbitMQ_receives_no_message(final int timeoutSeconds) throws IOException, TimeoutException, InterruptedException
+	{
+		final JsonExternalSystemRequest request = receiveOneRequestOrNull(timeoutSeconds);
+
+		assertThat(request)
+				.as("Expected no JsonExternalSystemRequest on queue=%s within %ss, but received: %s", QUEUE_NAME_MF_TO_ES, timeoutSeconds, request)
+				.isNull();
 	}
 
 	@Then("RabbitMQ receives a JsonExternalSystemRequest with the following external system config and bpartnerId as parameters:")
@@ -248,6 +273,53 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 			assertThat(messageReceivedWithinTimeout).isTrue();
 
 			return collector.build();
+		}
+		finally
+		{
+			if (channel != null)
+			{
+				channel.close();
+			}
+		}
+	}
+
+	/**
+	 * Blocks for up to {@code timeoutSeconds} for a single message on {@link ExternalSystemConstants#QUEUE_NAME_MF_TO_ES},
+	 * returning {@code null} if none arrived in time. Unlike {@link #pollRequestFromQueue(int, Function)} this
+	 * does not fail when nothing is received — the caller ({@code rabbitMQ_receives_no_message}) asserts on that.
+	 */
+	@Nullable
+	private JsonExternalSystemRequest receiveOneRequestOrNull(final int timeoutSeconds) throws IOException, TimeoutException, InterruptedException
+	{
+		Channel channel = null;
+
+		try
+		{
+			final Connection connection = metasfreshToRabbitMQFactory.newConnection();
+			channel = connection.createChannel();
+
+			final CountDownLatch countDownLatch = new CountDownLatch(1);
+			final AtomicReference<JsonExternalSystemRequest> receivedRequest = new AtomicReference<>();
+
+			final DefaultConsumer consumer = new DefaultConsumer(channel)
+			{
+				@Override
+				public void handleDelivery(final String consumerTag, final Envelope envelope, final AMQP.BasicProperties properties, final byte[] body) throws JsonProcessingException
+				{
+					final String externalSystemRequest = new String(body, StandardCharsets.UTF_8);
+
+					logger.info("*** {}: received message: {}", QUEUE_NAME_MF_TO_ES, externalSystemRequest);
+
+					receivedRequest.set(objectMapper.readValue(externalSystemRequest, JsonExternalSystemRequest.class));
+					countDownLatch.countDown();
+				}
+			};
+
+			channel.basicConsume(QUEUE_NAME_MF_TO_ES, true, consumer);
+
+			countDownLatch.await(timeoutSeconds, TimeUnit.SECONDS);
+
+			return receivedRequest.get();
 		}
 		finally
 		{

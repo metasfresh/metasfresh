@@ -133,6 +133,24 @@ public class EDI_Desadv_StepDef
 		}
 	}
 
+	/**
+	 * Resolves the {@code EDI_Desadv} that the given order's shipment(s) were consolidated into
+	 * (found only via its order: {@code C_Order.POReference} + {@code C_Order.C_BPartner_ID}).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_BPartner_ID.Identifier</b> — (required) expected {@code EDI_Desadv.C_BPartner_ID}<br>
+	 *   <b>C_Order_ID.Identifier</b> — (required) the order whose {@code POReference} + {@code C_BPartner_ID} resolve the DESADV<br>
+	 *   <b>EDI_Desadv_ID.Identifier</b> — (required) identifier under which the found record is stored for later steps<br>
+	 *   <b>OPT.Processed</b> — (optional) expected {@code EDI_Desadv.isProcessed()}<br>
+	 *   <b>OPT.FulfillmentPercent</b> — (optional) expected {@code EDI_Desadv.getFulfillmentPercent()}, compared with {@code isEqualByComparingTo}<br>
+	 * @cucumber.example
+	 * <pre>
+	 * Then EDI_Desadv is found:
+	 *   | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_Desadv_ID.Identifier | OPT.Processed | OPT.FulfillmentPercent |
+	 *   | bpartner                 | order_1                | desadv_1                 | false          | 100                    |
+	 * </pre>
+	 */
 	@Then("EDI_Desadv is found:")
 	public void find_desadv(@NonNull final DataTable table)
 	{
@@ -192,6 +210,25 @@ public class EDI_Desadv_StepDef
 		DataTableRows.of(dataTable).forEach(this::validateEDIExpDesadvElement);
 	}
 
+	/**
+	 * Polls the given {@code EDI_Desadv} records (already resolved via {@code EDI_Desadv is found:}
+	 * or {@code EDI_Desadv is enqueued for export}) until each reaches the expected
+	 * {@code EDI_ExportStatus}, then optionally asserts {@code Processed} / {@code FulfillmentPercent}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>EDI_Desadv_ID</b> — (required, identifier-ref) alias from {@code EDI_Desadv_StepDefData}<br>
+	 *   <b>EDI_ExportStatus</b> — (required) the export status to poll for<br>
+	 *   <b>OPT.Processed</b> — (optional) expected {@code EDI_Desadv.isProcessed()}, asserted once the export status matches<br>
+	 *   <b>OPT.FulfillmentPercent</b> — (optional) expected {@code EDI_Desadv.getFulfillmentPercent()}, compared with {@code isEqualByComparingTo}<br>
+	 * @cucumber.depends StepDefData: EDI_Desadv_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then after not more than 60s, EDI_Desadv records have the following export status
+	 *   | EDI_Desadv_ID | EDI_ExportStatus | OPT.Processed | OPT.FulfillmentPercent |
+	 *   | desadv_1      | Exported         | true          | 100                    |
+	 * </pre>
+	 */
 	@Then("^after not more than (.*)s, EDI_Desadv records have the following export status$")
 	public void validate_export_status(final int timeoutSec, @NonNull final DataTable table) throws InterruptedException
 	{
@@ -373,6 +410,30 @@ public class EDI_Desadv_StepDef
 			InterfaceWrapperHelper.refresh(desadvRecord);
 			return exportStatus.equals(desadvRecord.getEDI_ExportStatus());
 		});
+
+		assertOptionalDesadvFields(tableRow.asMap(), desadvRecord);
+	}
+
+	/**
+	 * Asserts the optional {@code OPT.Processed} / {@code OPT.FulfillmentPercent} DataTable columns
+	 * against the given {@code EDI_Desadv} record, shared by {@code EDI_Desadv is found:} and
+	 * {@code after not more than {}s, EDI_Desadv records have the following export status}.
+	 * A column that is absent from {@code tableRow} is skipped entirely, so callers that never
+	 * supply these columns keep today's exact behaviour.
+	 */
+	private void assertOptionalDesadvFields(@NonNull final Map<String, String> tableRow, @NonNull final I_EDI_Desadv desadvRecord)
+	{
+		final Boolean processed = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_EDI_Desadv.COLUMNNAME_Processed, null);
+		if (processed != null)
+		{
+			assertThat(desadvRecord.isProcessed()).as(I_EDI_Desadv.COLUMNNAME_Processed).isEqualTo(processed);
+		}
+
+		final BigDecimal fulfillmentPercent = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_EDI_Desadv.COLUMNNAME_FulfillmentPercent);
+		if (fulfillmentPercent != null)
+		{
+			assertThat(desadvRecord.getFulfillmentPercent()).as(I_EDI_Desadv.COLUMNNAME_FulfillmentPercent).isEqualByComparingTo(fulfillmentPercent);
+		}
 	}
 
 	private void enqueueDesadvForExport(@NonNull final Map<String, String> tableRow)
@@ -409,6 +470,8 @@ public class EDI_Desadv_StepDef
 
 		assertThat(desadvRecord).isNotNull();
 		assertThat(desadvRecord.getC_BPartner_ID()).isEqualTo(bpartnerID);
+
+		assertOptionalDesadvFields(tableRow, desadvRecord);
 
 		final String identifier = DataTableUtil.extractStringForColumnName(tableRow, I_EDI_Desadv.COLUMNNAME_EDI_Desadv_ID + "." + TABLECOLUMN_IDENTIFIER);
 		desadvTable.putOrReplace(identifier, desadvRecord);
