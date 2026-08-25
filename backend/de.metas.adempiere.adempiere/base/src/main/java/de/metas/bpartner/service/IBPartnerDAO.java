@@ -289,9 +289,11 @@ public interface IBPartnerDAO extends ISingletonService
 	 * {@code VATaxIDCheckedAt} older than {@code staleBefore}. Pass {@code staleBefore == null} to mean
 	 * "no staleness window", i.e. every VAT-ID-bearing record of the organisation is due.
 	 *
-	 * <p>A guaranteed iterator: the caller writes {@code VATaxIDLastAttemptedAt} and
-	 * {@code VATaxIDCheckedAt} — the very columns this query filters and orders by — on records it has
-	 * already passed, so the id set must be fixed up front rather than re-read page by page.
+	 * <p>Returns a guaranteed iterator, i.e. one that reads all matching ids once and then loads them in
+	 * pages. That matters because the caller updates {@code VATaxIDLastAttemptedAt} and
+	 * {@code VATaxIDCheckedAt} while it iterates, and this query filters and sorts on exactly those two
+	 * columns. A plain iterator re-runs the query for every page, so each update would re-sort the rows
+	 * it has not read yet, and records would be skipped or returned twice.
 	 */
 	Iterator<I_C_BPartner> iterateBPartnersDueForVATaxIDCheck(@NonNull OrgId orgId, @Nullable Instant staleBefore);
 
