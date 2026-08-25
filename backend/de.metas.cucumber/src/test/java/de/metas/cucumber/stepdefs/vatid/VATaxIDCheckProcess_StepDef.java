@@ -23,7 +23,6 @@
 package de.metas.cucumber.stepdefs.vatid;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.BPartnerId;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
@@ -40,7 +39,6 @@ import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.vatid.VATaxIDMassCheckService;
 import de.metas.vatid.process.C_BPartner_VATaxID_Check;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
@@ -49,7 +47,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 
@@ -74,7 +71,6 @@ public class VATaxIDCheckProcess_StepDef
 	@NonNull private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	@NonNull private final IADPInstanceDAO pInstanceDAO = Services.get(IADPInstanceDAO.class);
 	@NonNull private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
-	@NonNull private final VATaxIDMassCheckService massCheckService = SpringContextHolder.instance.getBean(VATaxIDMassCheckService.class);
 
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
 
@@ -301,13 +297,6 @@ public class VATaxIDCheckProcess_StepDef
 		assertThat(logs)
 				.as("AD_PInstance_Log of PInstance %s must contain NO status-changed line for VATaxID '%s'", lastPInstanceId, vataxID)
 				.noneMatch(log -> log.getP_Msg() != null && log.getP_Msg().contains(forbiddenInfix));
-	}
-
-	@NonNull
-	private BPartnerId resolveBPartnerId(@NonNull final String bpartnerIdentifier)
-	{
-		final I_C_BPartner bpartnerRecord = bpartnerTable.get(bpartnerIdentifier);
-		return BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID());
 	}
 
 	private void assertLastRunLogContains(@NonNull final String expectedSuffix)

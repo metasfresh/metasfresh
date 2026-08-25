@@ -27,8 +27,10 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRows;
-import de.metas.cucumber.stepdefs.workpackage.WorkPackageQueueUtil;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.workpackage.WorkPackageQueueUtil;
+import de.metas.logging.LogManager;
 import de.metas.tax.api.VATIdentifier;
 import de.metas.util.Services;
 import de.metas.vatid.VATaxIDCheckRequest;
@@ -46,11 +48,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_VATaxID_CheckLog;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
@@ -70,14 +72,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RequiredArgsConstructor
 public class VATaxIDCheck_StepDef
 {
-	@NonNull private final VATaxIDCheckService vataxIDCheckService = SpringContextHolder.instance.getBean(VATaxIDCheckService.class);
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	@NonNull private final WorkPackageQueueUtil workPackageQueueUtil = new WorkPackageQueueUtil();
+	private static final Logger logger = LogManager.getLogger(VATaxIDCheck_StepDef.class);
 
 	/** C_Queue_PackageProcessor.InternalName seeded by migration 5819330. */
 	private static final String VATAXID_CHECK_PACKAGE_PROCESSOR = "VATaxIDCheckWorkpackageProcessor";
+	private static final int WORKPACKAGE_DRAIN_TIMEOUT_SEC = 30;
+	private static final long WORKPACKAGE_DRAIN_POLL_MS = 200;
+
+	@NonNull private final VATaxIDCheckService vataxIDCheckService = SpringContextHolder.instance.getBean(VATaxIDCheckService.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final ISessionBL sessionBL = Services.get(ISessionBL.class);
 
+	@NonNull private final WorkPackageQueueUtil workPackageQueueUtil;
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
 	@NonNull private final C_BPartner_Location_StepDefData bpartnerLocationTable;
 
@@ -422,7 +428,7 @@ public class VATaxIDCheck_StepDef
 	 * </pre>
 	 */
 	@Then("validate VATaxID_CheckLog records of C_BPartner {string}:")
-	public void validate_VATaxID_CheckLog_records(@NonNull final String bpartnerIdentifier, @NonNull final DataTable dataTable)
+	public void validate_VATaxID_CheckLog_records(@NonNull final String bpartnerIdentifier, @NonNull final DataTable dataTable) throws InterruptedException
 	{
 		final StepDefDataIdentifier identifier = StepDefDataIdentifier.ofString(bpartnerIdentifier);
 		final I_C_BPartner bpartnerRecord = bpartnerTable.get(identifier);
@@ -498,26 +504,18 @@ public class VATaxIDCheck_StepDef
 	 * loudly rather than silently proceeding: a timeout here means a check never completed, which is
 	 * exactly the condition that used to surface as a different scenario's missing log row.
 	 */
-	private void waitUntilNoVATaxIDCheckWorkPackagesArePending()
+	private void waitUntilNoVATaxIDCheckWorkPackagesArePending() throws InterruptedException
 	{
-		final Instant deadline = Instant.now().plusSeconds(30);
-		int pending;
-		while ((pending = workPackageQueueUtil.countPendingWorkPackages(VATAXID_CHECK_PACKAGE_PROCESSOR)) > 0)
-		{
-			if (Instant.now().isAfter(deadline))
-			{
-				throw new AdempiereException("Timed out after 30s waiting for " + VATAXID_CHECK_PACKAGE_PROCESSOR
-						+ " work packages to drain; " + pending + " still pending");
-			}
-			try
-			{
-				Thread.sleep(200);
-			}
-			catch (final InterruptedException ex)
-			{
-				Thread.currentThread().interrupt();
-				throw new AdempiereException("Interrupted while waiting for VAT-ID check work packages to drain", ex);
-			}
-		}
+		StepDefUtil.tryAndWait(
+				WORKPACKAGE_DRAIN_TIMEOUT_SEC,
+				WORKPACKAGE_DRAIN_POLL_MS,
+				() -> workPackageQueueUtil.countPendingWorkPackages(VATAXID_CHECK_PACKAGE_PROCESSOR) == 0,
+				this::logPendingVATaxIDCheckWorkPackages);
+	}
+
+	private void logPendingVATaxIDCheckWorkPackages()
+	{
+		logger.error("*** VAT-ID check work packages failed to drain: {} pending C_Queue_WorkPackage(s) for {}",
+				workPackageQueueUtil.countPendingWorkPackages(VATAXID_CHECK_PACKAGE_PROCESSOR), VATAXID_CHECK_PACKAGE_PROCESSOR);
 	}
 }

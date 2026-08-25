@@ -33,6 +33,8 @@ import de.metas.util.Services;
 import de.metas.vatid.VATaxIDStatus;
 import io.cucumber.datatable.DataTable;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import io.cucumber.java.After;
+import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
@@ -73,14 +75,20 @@ public class VATaxIDOnlineChecker_StepDef
 	 * VAT-IDs the shared checker mock was asked about while this scenario's stub was installed, but which
 	 * this scenario never stubbed. Almost always a straggler from an earlier scenario whose async check
 	 * outlived its own stub; see the answer that fills it.
+	 *
+	 * <p>One instance per scenario (cucumber-picocontainer instantiates the glue per scenario), so it is
+	 * cleared in {@link #clearUnexpectedVATaxIDsBeforeScenario()} and NOT in the stub steps: a scenario that
+	 * stubs more than once must not lose what its earlier stub recorded. Concurrent because the answer that
+	 * fills it runs on async work-package threads.
 	 */
 	@NonNull private final Set<String> unexpectedVATaxIDs = ConcurrentHashMap.newKeySet();
 
 	/**
-	 * Stubs the online checker to answer exactly the listed VAT-IDs. A check for any other value fails the
-	 * scenario loudly instead of returning Mockito's {@code null} default — an unexpected online check is a
-	 * defect (it means the format check, the not-supported short-circuit or the de-duplication did not
-	 * stop it), and a {@code NullPointerException} deep inside the service would hide that.
+	 * Stubs the online checker to answer exactly the listed VAT-IDs. A check for any other value is recorded
+	 * in {@link #unexpectedVATaxIDs} and answered {@link VATaxIDStatus#ServiceUnavailable}, and
+	 * {@link #assertNoUnexpectedOnlineChecksAfterScenario()} then fails the scenario at its end. An
+	 * unexpected online check is a defect — the format check, the not-supported short-circuit or the
+	 * de-duplication did not stop it — so it never passes silently.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -108,7 +116,6 @@ public class VATaxIDOnlineChecker_StepDef
 		final Map<String, VATaxIDCheckResult> results = resultsByVATaxID.build();
 
 		reset(onlineCheckerMock);
-		unexpectedVATaxIDs.clear();
 
 		when(onlineCheckerMock.check(any(VATIdentifier.class), any(VATaxIDConfig.class)))
 				.thenAnswer(invocation -> {
@@ -120,8 +127,8 @@ public class VATaxIDOnlineChecker_StepDef
 						// belonging to an EARLIER scenario, whose check outlived the stub it was set up
 						// with. Throwing there killed that check's own log-row write, so the scenario that
 						// visibly failed was whichever one happened to be waiting on that row -- never the
-						// one that leaked. Recording lets the owning scenario fail on its own terms via
-						// "no unexpected online checks happened", and leaves everyone else's data intact.
+						// one that leaked. Recording lets the owning scenario fail on its own terms in
+						// assertNoUnexpectedOnlineChecksAfterScenario(), and leaves everyone else's data intact.
 						unexpectedVATaxIDs.add(vatId.getAsString());
 						return VATaxIDCheckResult.builder()
 								.status(VATaxIDStatus.ServiceUnavailable)
@@ -147,7 +154,6 @@ public class VATaxIDOnlineChecker_StepDef
 	public void stubOnlineCheckerUnreachable()
 	{
 		reset(onlineCheckerMock);
-		unexpectedVATaxIDs.clear();
 
 		when(onlineCheckerMock.check(any(VATIdentifier.class), any(VATaxIDConfig.class)))
 				.thenReturn(VATaxIDCheckResult.builder().status(VATaxIDStatus.ServiceUnavailable).build());
@@ -181,9 +187,9 @@ public class VATaxIDOnlineChecker_StepDef
 
 	/**
 	 * Stubs the checker leniently: a VAT-ID listed in {@code dataTable} gets its ordinary answer, any other
-	 * gets {@link VATaxIDStatus#ServiceUnavailable} rather than the loud failure
-	 * {@link #stubOnlineChecker(DataTable)} raises. For scenarios running the selection-less nightly shape,
-	 * which reaches every VAT-ID in the local database — harmless there, as long as
+	 * gets {@link VATaxIDStatus#ServiceUnavailable} without being recorded as unexpected — which is what
+	 * {@link #stubOnlineChecker(DataTable)} does, and fails the scenario for. For scenarios running the
+	 * selection-less nightly shape, which reaches every VAT-ID in the local database — harmless there, as long as
 	 * {@code OnServiceUnavailable} is left at its fail-open default.
 	 *
 	 * @cucumber.stepdef
@@ -209,7 +215,6 @@ public class VATaxIDOnlineChecker_StepDef
 		final Map<String, VATaxIDCheckResult> results = resultsByVATaxID.build();
 
 		reset(onlineCheckerMock);
-		unexpectedVATaxIDs.clear();
 
 		when(onlineCheckerMock.check(any(VATIdentifier.class), any(VATaxIDConfig.class)))
 				.thenAnswer(invocation -> {
@@ -423,7 +428,6 @@ public class VATaxIDOnlineChecker_StepDef
 	public void stubOnlineCheckerThrows()
 	{
 		reset(onlineCheckerMock);
-		unexpectedVATaxIDs.clear();
 
 		when(onlineCheckerMock.check(any(VATIdentifier.class), any(VATaxIDConfig.class)))
 				.thenThrow(new RuntimeException("Simulated online checker failure (test-only, VATaxIDOnlineChecker_StepDef)"));
@@ -447,5 +451,27 @@ public class VATaxIDOnlineChecker_StepDef
 				.as("the online checker was asked about VAT-IDs this scenario never stubbed; an async check "
 						+ "from an earlier scenario most likely outlived its stub")
 				.isEmpty();
+	}
+
+	/**
+	 * Empties the collector at scenario start, so the {@code @After} guard below can only ever see what THIS
+	 * scenario recorded.
+	 */
+	@Before
+	public void clearUnexpectedVATaxIDsBeforeScenario()
+	{
+		unexpectedVATaxIDs.clear();
+	}
+
+	/**
+	 * Makes {@link #assertNoUnexpectedOnlineChecks()} unconditional for every scenario using
+	 * {@link #stubOnlineChecker(DataTable)}, instead of only for those that remember to end with the step. A
+	 * trailing Gherkin step would not do: Cucumber skips the remaining steps once one fails, i.e. on exactly
+	 * the runs where a stray check is the likeliest explanation. A no-op for every other scenario.
+	 */
+	@After
+	public void assertNoUnexpectedOnlineChecksAfterScenario()
+	{
+		assertNoUnexpectedOnlineChecks();
 	}
 }
