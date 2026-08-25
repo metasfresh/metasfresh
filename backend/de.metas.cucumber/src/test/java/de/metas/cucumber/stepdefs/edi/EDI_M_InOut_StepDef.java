@@ -96,15 +96,21 @@ public class EDI_M_InOut_StepDef
 	 * shipment into {@code DontSend} when its ship-to location is not an EDI DESADV recipient (and into
 	 * {@code Pending} when it is).
 	 * <p>
-	 * That trigger cannot produce the state a DESADV-aggregation scenario needs, because the two
-	 * conditions exclude each other per ship-to location: for a non-recipient location
-	 * {@code C_Order.addToDesadv} creates no {@code EDI_Desadv} at all and
-	 * {@code DesadvBL.isOneDesadvPerShipment} skips the status recompute, while a recipient location
-	 * always gets {@code Pending}. "A DESADV whose shipment shall not be sent" is therefore reachable
-	 * only by writing the status onto an already-created shipment of a recipient location.
+	 * That trigger cannot produce the state a DESADV-aggregation scenario needs: it writes
+	 * {@code DontSend} only for a ship-to location that is no EDI DESADV recipient, and for such a
+	 * location {@code C_Order.addToDesadv} creates no {@code EDI_Desadv} at all — while a recipient
+	 * location, the only kind that has a DESADV, always gets {@code Pending}.
 	 * <p>
-	 * The write survives, because the {@code M_InOut} interceptor recomputes the EDI export status only
-	 * when {@code C_BPartner_ID}, {@code C_Order_ID} or {@code POReference} change.
+	 * The one other production writer of {@code DontSend},
+	 * {@code M_InOut.updateEdiExportStatusOnReverse}, is no alternative either: it fires on reverse /
+	 * void, which at the same timing also unlinks the shipment from its DESADV
+	 * ({@code M_InOut.removeFromDesadv}) and undoes its delivered quantity — the very under-delivery
+	 * these scenarios are built on.
+	 * <p>
+	 * "A DESADV whose shipment shall not be sent" is therefore reachable only by writing the status
+	 * onto an already-created shipment of a recipient location. The write survives, because the
+	 * {@code M_InOut} interceptor recomputes the EDI export status only when {@code C_BPartner_ID},
+	 * {@code C_Order_ID} or {@code POReference} change.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
