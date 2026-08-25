@@ -22,6 +22,7 @@ package de.metas.product.model.interceptor;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.inout.IInOutDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -30,9 +31,10 @@ import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
+
+import java.util.Objects;
 
 /**
  * Product life-cycle status enforcement on {@code M_InOut}.
@@ -73,13 +75,12 @@ public class M_InOut
 			return; // reversal / void of an existing shipment — never retroactively blocked
 		}
 
-		for (final I_M_InOutLine line : inOutDAO.retrieveLines(inOut))
-		{
-			final int productRepoId = line.getM_Product_ID();
-			if (productRepoId > 0)
-			{
-				productBL.assertAllowed(ProductId.ofRepoId(productRepoId), ProductLifeCycleAction.SHIP);
-			}
-		}
+		final ImmutableSet<ProductId> productIds = inOutDAO.retrieveLines(inOut)
+				.stream()
+				.map(line -> ProductId.ofRepoIdOrNull(line.getM_Product_ID()))
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+
+		productBL.assertAllowed(productIds, ProductLifeCycleAction.SHIP);
 	}
 }
