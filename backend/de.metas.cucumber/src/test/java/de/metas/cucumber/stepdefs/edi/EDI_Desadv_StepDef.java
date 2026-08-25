@@ -414,7 +414,7 @@ public class EDI_Desadv_StepDef
 			return exportStatus.equals(desadvRecord.getEDI_ExportStatus());
 		});
 
-		assertOptionalDesadvFields(tableRow.asMap(), desadvRecord);
+		assertOptionalDesadvFields(tableRow, desadvRecord);
 	}
 
 	/**
@@ -428,28 +428,27 @@ public class EDI_Desadv_StepDef
 	 * {@code null} token (see {@link DataTableUtil#nullToken2Null(String)}) asserts the column IS null,
 	 * any other value is compared literally.
 	 */
-	private void assertOptionalDesadvFields(@NonNull final Map<String, String> tableRow, @NonNull final I_EDI_Desadv desadvRecord)
+	private void assertOptionalDesadvFields(@NonNull final DataTableRow tableRow, @NonNull final I_EDI_Desadv desadvRecord)
 	{
-		final Boolean processed = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_EDI_Desadv.COLUMNNAME_Processed, null);
+		// The column names are given bare: DataTableRow resolves an "OPT." prefix itself.
+		final Boolean processed = tableRow.getAsOptionalBoolean(I_EDI_Desadv.COLUMNNAME_Processed).toBooleanOrNull();
 		if (processed != null)
 		{
 			assertThat(desadvRecord.isProcessed()).as(I_EDI_Desadv.COLUMNNAME_Processed).isEqualTo(processed);
 		}
 
-		final BigDecimal fulfillmentPercent = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_EDI_Desadv.COLUMNNAME_FulfillmentPercent);
-		if (fulfillmentPercent != null)
-		{
-			assertThat(desadvRecord.getFulfillmentPercent()).as(I_EDI_Desadv.COLUMNNAME_FulfillmentPercent).isEqualByComparingTo(fulfillmentPercent);
-		}
+		tableRow.getAsOptionalBigDecimal(I_EDI_Desadv.COLUMNNAME_FulfillmentPercent)
+				.ifPresent(expected -> assertThat(desadvRecord.getFulfillmentPercent())
+						.as(I_EDI_Desadv.COLUMNNAME_FulfillmentPercent)
+						.isEqualByComparingTo(expected));
 
-		// extractNullableStringForColumnName (unlike extractStringOrNullForColumnName) keeps the
-		// difference between "column not given" (skip) and "column given as the null token" (assert NULL)
-		final String ediErrorMsgRaw = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + I_EDI_Desadv.COLUMNNAME_EDIErrorMsg);
-		if (ediErrorMsgRaw != null)
-		{
-			final String expectedEDIErrorMsg = DataTableUtil.nullToken2Null(ediErrorMsgRaw);
-			assertThat(desadvRecord.getEDIErrorMsg()).as(I_EDI_Desadv.COLUMNNAME_EDIErrorMsg).isEqualTo(expectedEDIErrorMsg);
-		}
+		// getAsOptionalString is empty only when the COLUMN is missing, so a cell that is present and
+		// holds the null token still reaches us — which is what lets this assert an actual SQL NULL
+		// rather than silently skipping.
+		tableRow.getAsOptionalString(I_EDI_Desadv.COLUMNNAME_EDIErrorMsg)
+				.ifPresent(raw -> assertThat(desadvRecord.getEDIErrorMsg())
+						.as(I_EDI_Desadv.COLUMNNAME_EDIErrorMsg)
+						.isEqualTo(DataTableUtil.nullToken2Null(raw)));
 	}
 
 	private void enqueueDesadvForExport(@NonNull final Map<String, String> tableRow)
@@ -487,7 +486,7 @@ public class EDI_Desadv_StepDef
 		assertThat(desadvRecord).isNotNull();
 		assertThat(desadvRecord.getC_BPartner_ID()).isEqualTo(bpartnerID);
 
-		assertOptionalDesadvFields(tableRow, desadvRecord);
+		assertOptionalDesadvFields(DataTableRow.singleRow(tableRow), desadvRecord);
 
 		final String identifier = DataTableUtil.extractStringForColumnName(tableRow, I_EDI_Desadv.COLUMNNAME_EDI_Desadv_ID + "." + TABLECOLUMN_IDENTIFIER);
 		desadvTable.putOrReplace(identifier, desadvRecord);
