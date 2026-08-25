@@ -234,6 +234,25 @@ public class VATaxIDCheck_StepDef
 	}
 
 	/**
+	 * Waits until the check that a partner save scheduled by itself has actually run. The drain in
+	 * {@link #validate_VATaxID_CheckLog_records(String, DataTable)} guards the CONSUMING side; this step
+	 * guards the PRODUCING one — a scenario that moves the clock or re-stubs the checker right after a save
+	 * must not leave that queued check in flight, or it lands under the NEW clock and stub and records an
+	 * evidence row the scenario never asked for.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Given the automatically scheduled VAT-ID check has completed
+	 * </pre>
+	 */
+	@Given("the automatically scheduled VAT-ID check has completed")
+	public void automatically_scheduled_check_has_completed() throws InterruptedException
+	{
+		waitUntilNoVATaxIDCheckWorkPackagesArePending();
+	}
+
+	/**
 	 * Runs the VAT-ID check for each listed partner, using the VAT-ID currently stored on it.
 	 *
 	 * @cucumber.stepdef
