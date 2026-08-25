@@ -25,32 +25,22 @@ DROP FUNCTION IF EXISTS report.getCustomerDeliveryPriceOverview(
 )
 ;
 
-DROP FUNCTION IF EXISTS report.getCustomerDeliveryPriceOverview(
-    timestamp with time zone,
-    timestamp with time zone,
-    numeric
-)
-;
-
 CREATE OR REPLACE FUNCTION report.getCustomerDeliveryPriceOverview(
     p_DeliveryDateFrom timestamp with time zone,
-    p_DeliveryDateTo   timestamp with time zone,
     p_C_BPartner_ID    numeric
 )
     RETURNS TABLE
             (
-                Param_BPartnerValue     varchar,
-                BPvalue                 varchar,
-                ProductNo               varchar,
-                Product                 varchar,
-                Qty                     numeric,
-                UOM                     varchar,
-                BaseListPrice           numeric,
-                BasePricePerUOM         varchar,
-                BasePriceListVersion    varchar,
-                SpecialPrice            numeric,
-                SpecialPricePerUOM      varchar,
-                SpecialPriceListVersion varchar
+                Param_BPartnerValue varchar,
+                BPvalue             varchar,
+                ProductNo           varchar,
+                Product             varchar,
+                Qty                 numeric,
+                UOM                 varchar,
+                Price               numeric,
+                PricePerUOM         varchar,
+                PriceListVersion    varchar,
+                IsFromBasePriceList char(1)
             )
 AS
 $$
@@ -60,33 +50,30 @@ SELECT (SELECT value FROM C_BPartner WHERE C_BPartner_id = p_C_BPartner_ID) AS P
        p.name                                                               AS Product,
        SUM(sched.qtydelivered)                                              AS Qty,
        uom.name                                                             AS UOM,
-       pr.BasePriceStd                                                      AS BaseListPrice,
-       base_uom.name                                                        AS BasePricePerUOM,
-       pr.BasePLV                                                           AS BasePriceListVersion,
-       pr.SpecialPriceStd                                                   AS SpecialPrice,
-       special_uom.name                                                     AS SpecialPricePerUOM,
-       pr.SpecialPLV                                                        AS SpecialPriceListVersion
+       pp.pricestd                                                          AS Price,
+       pp_uom.name                                                          AS PricePerUOM,
+       plv.name                                                             AS PriceListVersion,
+       pp.isfrombasepricelist                                               AS IsFromBasePriceList
 FROM m_shipmentschedule sched
          JOIN m_product p ON p.m_product_id = sched.m_product_id
          JOIN c_uom uom ON uom.c_uom_id = p.c_uom_id
          JOIN c_bpartner bp ON bp.c_bpartner_id = sched.c_bpartner_id
-         LEFT JOIN LATERAL report.getSalesPriceSpecialAndBase(NOW(), sched.c_bpartner_location_id, sched.m_product_id) pr ON TRUE
-         LEFT JOIN c_uom base_uom ON base_uom.c_uom_id = pr.BaseC_UOM_ID
-         LEFT JOIN c_uom special_uom ON special_uom.c_uom_id = pr.SpecialC_UOM_ID
+         LEFT JOIN LATERAL report.getCurrentSalesPrice(NOW(), sched.c_bpartner_location_id, sched.m_product_id) pp ON TRUE
+         LEFT JOIN c_uom pp_uom ON pp_uom.c_uom_id = pp.c_uom_id
+         LEFT JOIN m_pricelist_version plv ON plv.m_pricelist_version_id = pp.m_pricelist_version_id
 WHERE sched.processed = 'Y'
   AND sched.deliverydate >= p_DeliveryDateFrom
-  AND sched.deliverydate < COALESCE(p_DeliveryDateTo, p_DeliveryDateFrom) + INTERVAL '1 day'
   AND (p_C_BPartner_ID IS NULL OR bp.C_BPartner_ID = p_C_BPartner_ID)
 GROUP BY p.value, p.name, uom.name,
-         pr.BasePriceStd, base_uom.name, pr.BasePLV,
-         pr.SpecialPriceStd, special_uom.name, pr.SpecialPLV,
-         bp.value
+         pp.pricestd, pp.c_currency_id,
+         pp.c_uom_id, pp.m_pricelist_id, pp.isfrombasepricelist,
+         plv.name, pp_uom.name, bp.value
 ORDER BY bp.value, p.value
 $$
     LANGUAGE sql
     STABLE
 ;
 
-COMMENT ON FUNCTION report.getCustomerDeliveryPriceOverview(timestamp with time zone, timestamp with time zone, numeric)
-    IS 'Returns processed deliveries per product for a given business partner (or all if NULL) within the delivery-date range [p_DeliveryDateFrom, p_DeliveryDateTo] inclusive (p_DeliveryDateTo NULL falls back to p_DeliveryDateFrom, single day). Each row carries both the base/standard list price and the customer-specific special price (empty when none), resolved via report.getSalesPriceSpecialAndBase.'
+COMMENT ON FUNCTION report.getCustomerDeliveryPriceOverview(timestamp with time zone, numeric)
+    IS 'Returns processed deliveries per product for a given business partner (or all if NULL) from a given date, enriched with the current sales price resolved via report.getCurrentSalesPrice.'
 ;
