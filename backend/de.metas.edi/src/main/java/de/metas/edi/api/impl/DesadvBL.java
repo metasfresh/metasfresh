@@ -1196,17 +1196,20 @@ public class DesadvBL
 		// No further M_InOutLine can arrive if the DESADV is fully fulfilled, or if every line has
 		// already received everything it will ever receive (which is what closing the line's
 		// M_ShipmentSchedule expresses, via EDI_DesadvLine.QtyOrdered_Override).
-		final boolean noFurtherDeliveryExpected =
-				fulfillmentPercent.compareTo(BigDecimal.valueOf(100)) >= 0
-						|| areAllDesadvLinesDeliveryClosed(desadv);
+		// allProcessed is checked first on purpose: while a shipment is still in flight it is false,
+		// and short-circuiting there spares the areAllDesadvLinesDeliveryClosed query on what is the
+		// common path (this method runs once per M_InOutLine / M_ShipmentSchedule change).
+		final boolean noFurtherDeliveryExpected = allProcessed
+				&& (fulfillmentPercent.compareTo(BigDecimal.valueOf(100)) >= 0
+						|| areAllDesadvLinesDeliveryClosed(desadv));
 
-		if (allProcessed && noFurtherDeliveryExpected)
+		if (noFurtherDeliveryExpected)
 		{
 			final boolean containsSentInOuts = allInOuts.stream().anyMatch(inOut -> EDIExportStatus.ofCode(inOut.getEDI_ExportStatus()).isSent());
 			final EDIExportStatus ediExportStatus = containsSentInOuts ? EDIExportStatus.Sent : EDIExportStatus.DontSend;
 			setDesadvStatusAndSaveIfChanged(desadv, ediExportStatus, null);
-			logger.info("DESADV {} auto-closed to {} (all InOuts sent/don't send, fulfillment {}%, allDesadvLinesDeliveryClosed={})",
-					desadvId, ediExportStatus, fulfillmentPercent, noFurtherDeliveryExpected);
+			logger.info("DESADV {} auto-closed to {} (all InOuts sent/don't send, no further delivery expected, fulfillment {}%)",
+					desadvId, ediExportStatus, fulfillmentPercent);
 			return;
 		}
 

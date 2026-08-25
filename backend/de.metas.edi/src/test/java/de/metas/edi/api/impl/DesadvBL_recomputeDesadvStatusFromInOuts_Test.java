@@ -174,4 +174,22 @@ class DesadvBL_recomputeDesadvStatusFromInOuts_Test
 		assertThat(desadv.getEDI_ExportStatus()).isEqualTo(EDIExportStatus.Sent.getCode());
 		assertThat(desadv.getEDIErrorMsg()).isNull();
 	}
+
+	/**
+	 * Pins the empty-lines guard in {@code areAllDesadvLinesDeliveryClosed}. {@code Stream.allMatch}
+	 * is vacuously {@code true} on an empty stream, so dropping that guard would auto-close every
+	 * freshly created, still-empty DESADV — and would do so while passing every other test here.
+	 */
+	@Test
+	void desadvWithoutLines_isNotDeliveryClosed_staysPending()
+	{
+		final I_EDI_Desadv desadv = createDesadv("0", EDIExportStatus.Pending.getCode());
+		// deliberately no EDI_DesadvLine at all
+		createLinkedInOut(desadv, EDIExportStatus.Sent);
+
+		desadvBL.recomputeDesadvStatusFromInOuts(EDIDesadvId.ofRepoId(desadv.getEDI_Desadv_ID()));
+
+		InterfaceWrapperHelper.refresh(desadv);
+		assertThat(desadv.getEDI_ExportStatus()).isEqualTo(EDIExportStatus.Pending.getCode());
+	}
 }
