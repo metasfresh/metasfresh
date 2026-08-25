@@ -185,17 +185,6 @@ public class VATaxIDCheckProcess_StepDef
 		runProcessAsScheduled(null);
 	}
 
-	/**
-	 * The scheduled run with {@code MaxChecksPerRun} pinned — the only way to assert that the nightly
-	 * ORDER BY actually decides WHICH records a budgeted run reaches, rather than merely what a full sweep
-	 * happens to contain.
-	 *
-	 * @cucumber.stepdef
-	 * @cucumber.example
-	 * <pre>
-	 * When the C_BPartner_VATaxID_Check process is run as scheduled with MaxChecksPerRun '1'
-	 * </pre>
-	 */
 	@When("the C_BPartner_VATaxID_Check process is run as scheduled with MaxChecksPerRun {string}")
 	public void runProcessAsScheduledWithBudget(@NonNull final String maxChecksPerRunText)
 	{
@@ -242,17 +231,10 @@ public class VATaxIDCheckProcess_StepDef
 	 * organisation EXCEPT the partners named in the data table (and their locations), so that afterwards the
 	 * named records are the only null-attempted ones left.
 	 *
-	 * <p>Makes a budgeted {@link #runProcessAsScheduledWithBudget(String)} deterministic. That run is a
-	 * global sweep and every scenario of this feature shares one organisation, so a never-attempted leftover
-	 * of an earlier scenario ties on the nightly ORDER BY's primary key (attempt time ascending, NULLS
-	 * FIRST), wins the {@code C_BPartner_ID} tie-break because it was created earlier, and silently eats a
-	 * small {@code MaxChecksPerRun} budget.
+	 * <p>Why: this makes a budgeted {@link #runProcessAsScheduledWithBudget(String)} deterministic.
 	 *
-	 * <p>Covers both grains — a {@code C_BPartner_Location} carrying a VAT-ID is a nightly candidate in its
-	 * own right, even when its partner header carries none. Only records the nightly query would actually
-	 * select are touched (active, non-blank {@code VATaxID}, this organisation); records that already carry
-	 * an attempt stamp are left alone, since they already sort behind the null-attempted ones. Nothing is
-	 * assumed about WHICH other records exist, so this is safe on the shared executor database.
+	 * <p>Covers both {@code C_BPartner_Location} and {@code C_BPartner} carrying a VAT-ID.
+	 * <p>Only records the nightly query would actually select are touched
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
