@@ -87,10 +87,8 @@ public class VATaxIDCheck_StepDef
 	 */
 	@NonNull private final SpringContextHolder.Lazy<VATaxIDCheckService> vataxIDCheckService = SpringContextHolder.lazyBean(VATaxIDCheckService.class);
 
-	/** Same construction-time constraint as {@link #vataxIDCheckService}; resolved via {@link #queryBL()}. */
-	@Nullable private IQueryBL _queryBL; // lazy
-	/** Same construction-time constraint as {@link #vataxIDCheckService}; resolved via {@link #sessionBL()}. */
-	@Nullable private ISessionBL _sessionBL; // lazy
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final ISessionBL sessionBL = Services.get(ISessionBL.class);
 
 	@NonNull private final WorkPackageQueueUtil workPackageQueueUtil;
 	@NonNull private final VATaxID_Config_StepDef vataxIDConfigStepDef;
@@ -114,7 +112,7 @@ public class VATaxIDCheck_StepDef
 	@Given("metasfresh has a current user session")
 	public void metasfresh_has_a_current_user_session()
 	{
-		sessionBL().getCurrentOrCreateNewSession(Env.getCtx());
+		sessionBL.getCurrentOrCreateNewSession(Env.getCtx());
 	}
 
 	/**
@@ -160,7 +158,7 @@ public class VATaxIDCheck_StepDef
 	@Given("no VATaxID_CheckLog records exist for VATaxID {string}")
 	public void no_check_log_records_exist(@NonNull final String vataxID)
 	{
-		final IQuery<I_VATaxID_CheckLog> checkLogQuery = queryBL().createQueryBuilder(I_VATaxID_CheckLog.class)
+		final IQuery<I_VATaxID_CheckLog> checkLogQuery = queryBL.createQueryBuilder(I_VATaxID_CheckLog.class)
 				.addEqualsFilter(I_VATaxID_CheckLog.COLUMNNAME_VATaxID, vataxID)
 				.create();
 
@@ -177,7 +175,7 @@ public class VATaxIDCheck_StepDef
 
 	private void clearCheckLogReferencesOnBPartners(@NonNull final IQuery<I_VATaxID_CheckLog> checkLogQuery)
 	{
-		queryBL().createQueryBuilder(I_C_BPartner.class)
+		queryBL.createQueryBuilder(I_C_BPartner.class)
 				.addInSubQueryFilter(I_C_BPartner.COLUMNNAME_VATaxID_CheckLog_ID, I_VATaxID_CheckLog.COLUMNNAME_VATaxID_CheckLog_ID, checkLogQuery)
 				.create()
 				.list()
@@ -186,7 +184,7 @@ public class VATaxIDCheck_StepDef
 
 	private void clearCheckLogReferencesOnBPartnerLocations(@NonNull final IQuery<I_VATaxID_CheckLog> checkLogQuery)
 	{
-		queryBL().createQueryBuilder(I_C_BPartner_Location.class)
+		queryBL.createQueryBuilder(I_C_BPartner_Location.class)
 				.addInSubQueryFilter(I_C_BPartner_Location.COLUMNNAME_VATaxID_CheckLog_ID, I_VATaxID_CheckLog.COLUMNNAME_VATaxID_CheckLog_ID, checkLogQuery)
 				.create()
 				.list()
@@ -200,7 +198,7 @@ public class VATaxIDCheck_StepDef
 	 */
 	private void releaseValueFromCurrentHolders(@NonNull final String vataxID)
 	{
-		queryBL().createQueryBuilder(I_C_BPartner.class)
+		queryBL.createQueryBuilder(I_C_BPartner.class)
 				.addEqualsFilter(I_C_BPartner.COLUMNNAME_VATaxID, vataxID)
 				.create()
 				.list()
@@ -209,7 +207,7 @@ public class VATaxIDCheck_StepDef
 					resetDenormalisedStatus(bpartnerRecord);
 				});
 
-		queryBL().createQueryBuilder(I_C_BPartner_Location.class)
+		queryBL.createQueryBuilder(I_C_BPartner_Location.class)
 				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_VATaxID, vataxID)
 				.create()
 				.list()
@@ -468,7 +466,7 @@ public class VATaxIDCheck_StepDef
 		// own stub into the next scenario.
 		waitUntilNoVATaxIDCheckWorkPackagesArePending();
 
-		final ImmutableList<I_VATaxID_CheckLog> checkLogRecords = queryBL()
+		final ImmutableList<I_VATaxID_CheckLog> checkLogRecords = queryBL
 				.createQueryBuilder(I_VATaxID_CheckLog.class)
 				.addEqualsFilter(I_VATaxID_CheckLog.COLUMNNAME_C_BPartner_ID, bpartnerRecord.getC_BPartner_ID())
 				.orderBy(I_VATaxID_CheckLog.COLUMNNAME_VATaxID_CheckLog_ID)
@@ -520,30 +518,6 @@ public class VATaxIDCheck_StepDef
 		});
 
 		softly.assertAll();
-	}
-
-	/** See {@link #_queryBL} for why this is not resolved in a field initialiser. */
-	@NonNull
-	private IQueryBL queryBL()
-	{
-		IQueryBL queryBL = this._queryBL;
-		if (queryBL == null)
-		{
-			queryBL = this._queryBL = Services.get(IQueryBL.class);
-		}
-		return queryBL;
-	}
-
-	/** See {@link #_sessionBL} for why this is not resolved in a field initialiser. */
-	@NonNull
-	private ISessionBL sessionBL()
-	{
-		ISessionBL sessionBL = this._sessionBL;
-		if (sessionBL == null)
-		{
-			sessionBL = this._sessionBL = Services.get(ISessionBL.class);
-		}
-		return sessionBL;
 	}
 
 	@Nullable

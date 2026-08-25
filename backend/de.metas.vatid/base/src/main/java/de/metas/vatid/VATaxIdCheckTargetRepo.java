@@ -57,6 +57,15 @@ import java.util.function.Function;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
+/**
+ * Selects and stamps the records a VAT-ID check runs against.
+ *
+ * <p>Repository Tables: C_BPartner, C_BPartner_Location
+ * <p>Repository Cluster: VATaxIdCheckTargetRepo, BPartnerDAO
+ *
+ * <p>Reads only the VAT-ID check columns of those two tables, and writes only
+ * {@code VATaxIDLastAttemptedAt}; the rest of both tables belongs to {@code BPartnerDAO}.
+ */
 @Repository
 public class VATaxIdCheckTargetRepo
 {
@@ -65,8 +74,8 @@ public class VATaxIdCheckTargetRepo
 	 */
 	private static final int ITERATOR_BUFFER_SIZE = 500;
 
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	/**
 	 * @return how many records {@link #iterateBPartnersDueForVATaxIDCheck(OrgId, Instant, int)} would yield.

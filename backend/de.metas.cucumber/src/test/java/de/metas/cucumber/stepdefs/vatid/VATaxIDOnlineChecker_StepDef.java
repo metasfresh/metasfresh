@@ -45,7 +45,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_VATaxID_CheckLog;
 
-import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -77,8 +76,7 @@ public class VATaxIDOnlineChecker_StepDef
 	 */
 	@NonNull private final SpringContextHolder.Lazy<VATaxIDOnlineChecker> onlineCheckerMock = SpringContextHolder.lazyBean(VATaxIDOnlineChecker.class);
 
-	/** Same construction-time constraint as {@link #onlineCheckerMock}; resolved via {@link #queryBL()}. */
-	@Nullable private IQueryBL _queryBL; // lazy
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	/**
 	 * VAT-IDs the shared checker mock was asked about while this scenario's stub was installed, but which
@@ -346,7 +344,7 @@ public class VATaxIDOnlineChecker_StepDef
 	 */
 	private boolean checkAttemptIsRecordedFor(@NonNull final String vataxID)
 	{
-		return queryBL().createQueryBuilder(I_VATaxID_CheckLog.class)
+		return queryBL.createQueryBuilder(I_VATaxID_CheckLog.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_VATaxID_CheckLog.COLUMNNAME_VATaxID, vataxID)
 				.create()
@@ -385,7 +383,7 @@ public class VATaxIDOnlineChecker_StepDef
 			@NonNull final String checkLogColumnName,
 			@NonNull final String vataxID)
 	{
-		return queryBL().createQueryBuilder(parentType)
+		return queryBL.createQueryBuilder(parentType)
 				.addInSubQueryFilter(checkLogColumnName, I_VATaxID_CheckLog.COLUMNNAME_VATaxID_CheckLog_ID, completedCheckLogsFor(vataxID))
 				.create()
 				.anyMatch();
@@ -399,23 +397,11 @@ public class VATaxIDOnlineChecker_StepDef
 	@NonNull
 	private IQuery<I_VATaxID_CheckLog> completedCheckLogsFor(@NonNull final String vataxID)
 	{
-		return queryBL().createQueryBuilder(I_VATaxID_CheckLog.class)
+		return queryBL.createQueryBuilder(I_VATaxID_CheckLog.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_VATaxID_CheckLog.COLUMNNAME_VATaxID, vataxID)
 				.addNotEqualsFilter(I_VATaxID_CheckLog.COLUMNNAME_VATaxIDStatus, VATaxIDStatus.RequestSent)
 				.create();
-	}
-
-	/** See {@link #_queryBL} for why this is not resolved in a field initialiser. */
-	@NonNull
-	private IQueryBL queryBL()
-	{
-		IQueryBL queryBL = this._queryBL;
-		if (queryBL == null)
-		{
-			queryBL = this._queryBL = Services.get(IQueryBL.class);
-		}
-		return queryBL;
 	}
 
 	private boolean wasCalledFor(@NonNull final String vataxID)
