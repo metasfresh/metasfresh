@@ -8,7 +8,9 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityUOMConverters;
+import de.metas.uom.UomId;
 import lombok.Builder;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
@@ -20,6 +22,7 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /*
  * #%L
@@ -47,6 +50,7 @@ public class CurrentCostTest
 {
 	private final CurrencyId currencyId = CurrencyId.ofRepoId(1);
 	private I_C_UOM uomEach;
+	private I_C_UOM uomKg;
 
 	@BeforeEach
 	public void beforeEach()
@@ -54,6 +58,7 @@ public class CurrentCostTest
 		AdempiereTestHelper.get().init();
 
 		uomEach = BusinessTestHelper.createUomEach();
+		uomKg = BusinessTestHelper.createUomKg();
 	}
 
 	private static BigDecimal toBigDecimalOrNull(final String str)
@@ -89,6 +94,63 @@ public class CurrentCostTest
 				.ownCostPrice(toBigDecimalOrNull(ownCostPrice))
 				.currentQty(toBigDecimalOrNull(currentQty))
 				.build();
+	}
+
+	/**
+	 * The CopyFromCostElement seed restates a live CurrentCost from the amounts it carried at
+	 * an as-of date ({@code CostRevaluationService#toCostAsOf}). Those historical amounts may legitimately
+	 * predate a product UOM change, so they can arrive in a different UOM than the live cost row.
+	 *
+	 * A ZERO quantity is unambiguous in any UOM -- zero metres is zero pieces -- and needs no conversion
+	 * rate. Rejecting it aborts the whole seed for every product. A NON-zero mismatch stays a hard error.
+	 */
+	@Nested
+	public class setFrom
+	{
+		private CostDetailPreviousAmounts previousAmounts(final String qty, final I_C_UOM uom)
+		{
+			return CostDetailPreviousAmounts.builder()
+					.costPrice(CostPrice.zero(currencyId, UomId.ofRepoId(uom.getC_UOM_ID())))
+					.qty(Quantity.of(new BigDecimal(qty), uom))
+					.cumulatedAmt(CostAmount.of(0, currencyId))
+					.cumulatedQty(Quantity.of(new BigDecimal(qty), uom))
+					.build();
+		}
+
+		@Test
+		public void sameUOM_isAccepted()
+		{
+			final CurrentCost currentCost = currentCost().build();
+
+			currentCost.setFrom(previousAmounts("0", uomEach));
+
+			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualByComparingTo("0");
+		}
+
+		@Test
+		public void zeroQtyInAnotherUOM_isAccepted()
+		{
+			final CurrentCost currentCost = currentCost().build();
+
+			currentCost.setFrom(previousAmounts("0", uomKg));
+
+			assertThat(currentCost.getCurrentQty().getUomId())
+					.as("a zero quantity must be adopted into the cost's own UOM, not rejected")
+					.isEqualTo(currentCost.getUomId());
+			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualByComparingTo("0");
+			assertThat(currentCost.getCumulatedQty().getUomId()).isEqualTo(currentCost.getUomId());
+		}
+
+		@Test
+		public void nonZeroQtyInAnotherUOM_stillThrows()
+		{
+			final CurrentCost currentCost = currentCost().build();
+
+			assertThatThrownBy(() -> currentCost.setFrom(previousAmounts("5", uomKg)))
+					.as("a non-zero mismatch is a real inconsistency and must stay loud")
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining("Invalid UOM");
+		}
 	}
 
 	@Nested

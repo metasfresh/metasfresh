@@ -119,16 +119,46 @@ public final class CurrentCost
 	public void setFrom(final CostDetailPreviousAmounts previousAmounts)
 	{
 		assertCostCurrency(previousAmounts.getCostPrice());
-		assertCostUOM(previousAmounts.getQty());
-
 		assertCostCurrency(previousAmounts.getCumulatedAmt());
-		assertCostUOM(previousAmounts.getCumulatedQty());
+
+		// resolve both quantities BEFORE mutating anything, so a rejected one leaves this cost untouched
+		final Quantity qty = toCostUOM(previousAmounts.getQty());
+		final Quantity cumulatedQty = toCostUOM(previousAmounts.getCumulatedQty());
 
 		this.costPrice = previousAmounts.getCostPrice();
-		this.currentQty = previousAmounts.getQty();
+		this.currentQty = qty;
 
 		this.cumulatedAmt = previousAmounts.getCumulatedAmt();
-		this.cumulatedQty = previousAmounts.getCumulatedQty();
+		this.cumulatedQty = cumulatedQty;
+	}
+
+	/**
+	 * Returns {@code qty} expressed in this cost's own UOM.
+	 * <p>
+	 * A <b>zero</b> quantity carries no unit information — zero metres is zero pieces — so it is adopted into
+	 * this cost's UOM instead of being rejected, and needs no conversion rate. That matters because
+	 * {@code CostRevaluationService#toCostAsOf} restates a live cost from the amounts it carried at an as-of
+	 * date, and those historical amounts can predate a change of the product's stock UOM. Since
+	 * {@code createLines} maps over every product in one pass, rejecting such a zero aborts the entire
+	 * cost-revaluation seed for the client.
+	 * <p>
+	 * A <b>non-zero</b> mismatch is a real inconsistency — converting it would need a rate this class has no
+	 * converter for — so it still throws.
+	 */
+	private Quantity toCostUOM(@NonNull final Quantity qty)
+	{
+		if (UomId.equals(qty.getUomId(), getUomId()))
+		{
+			return qty;
+		}
+		else if (qty.isZero())
+		{
+			return this.currentQty.toZero();
+		}
+		else
+		{
+			throw new AdempiereException("Invalid UOM for `" + qty + "`. Expected: " + getUomId());
+		}
 	}
 
 	public CostElementId getCostElementId()
