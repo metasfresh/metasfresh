@@ -891,7 +891,7 @@ Feature: EDI DESADV export via External System
     # Deliver only 70 of the 100 ordered, so a remainder stays open (see S30013_10 on the column name).
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
-      | s_s_100                          | D            | true                | false       | 70                                             |
+      | s_s_100                          | D            | true                | false       | 70                                              |
 
     And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
