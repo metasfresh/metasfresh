@@ -555,3 +555,56 @@ Feature: EDI DESADV export via External System
     Then after not more than 120s, EDI_Desadv records have the following export status
       | EDI_Desadv_ID | EDI_ExportStatus | OPT.EDIErrorMsg | OPT.Processed | OPT.FulfillmentPercent |
       | d_30          | S                | null            | true          | 50                     |
+
+  @from:cucumber
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00350_EDI
+  @Id:S30013_40
+  Scenario: S30013_40 — nothing was sent and everything is closed -> DESADV reaches DontSend
+  ## The branch that must yield DontSend rather than Sent, matching what the EDI_Desadv_Close process
+  ## writes.  An order for 100 PCE is delivered 70 PCE, but that shipment is not transmitted at all —
+  ## it carries DontSend, the status a shipment gets when its ship-to location is no EDI DESADV
+  ## recipient.  Closing the remaining M_ShipmentSchedule then says "the other 30 will never be
+  ## delivered", so the DESADV reaches its terminal status too — and since not one of its shipments
+  ## was ever sent, that terminal status is DontSend, not Sent.
+    And RabbitMQ MF_TO_ExternalSystem queue is purged
+
+    # @Date@ suffix keeps the POReference unique across local repeat runs (see S30013_10).
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised | POReference         |
+      | o_40       | true    | customer1     | 2025-04-17  | 2025-04-18Z  | PO_S30013_40_@Date@ |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID | QtyEntered |
+      | ol_40_1    | o_40                  | product      | 100        |
+
+    And the order identified by o_40 is completed
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | s_s_40     | ol_40_1                   | N             |
+
+    # Deliver only 70 of the 100 ordered, so a remainder stays open (see S30013_10 on the column name).
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | s_s_40                           | D            | true                | false       | 70                                              |
+
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | s_s_40                           | s_40                  |
+
+    And EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_ExportStatus |
+      | d_40                     | customer1                | o_40                  | P                |
+
+    # The shipment is never enqueued for export; it is marked as one that shall not be sent at all.
+    And the EDI export status of the following M_InOut records is set:
+      | M_InOut_ID | EDI_ExportStatus |
+      | s_40       | N                |
+
+    When the M_ShipmentSchedule identified by s_s_40 is closed
+
+    # ─── CORE ASSERTION ────────────────────────────────────────────────────────
+    # No shipment of this DESADV was ever sent, so the terminal status is DontSend (N), not Sent.
+    Then after not more than 120s, EDI_Desadv records have the following export status
+      | EDI_Desadv_ID | EDI_ExportStatus | OPT.EDIErrorMsg | OPT.Processed | OPT.FulfillmentPercent |
+      | d_40          | N                | null            | true          | 70                     |
