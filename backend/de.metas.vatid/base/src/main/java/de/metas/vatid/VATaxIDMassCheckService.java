@@ -32,6 +32,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
+import de.metas.tax.api.VATIdentifier;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.vatid.VATaxIdCheckTargetRepo.CheckTarget;
@@ -216,7 +217,12 @@ public class VATaxIDMassCheckService
 				final CheckTarget checkTarget = CheckTarget.ofPartner(
 						BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID()), 
 						bpartnerRecord);
-				
+				if (checkTarget == null)
+				{
+					// Blank VAT-ID: skip this ONE record. Costs no budget, and does not abort the run.
+					logBlankVATaxIDSkipped(CheckTarget.logLabelOf(bpartnerRecord));
+					continue;
+				}
 				final CheckOutcome outcome = checkOneIfAvailable(request.getPinstanceId(), checkTarget, unavailableCountryCodesByOrg);
 				checkedCount += outcome.isChecked() ? 1 : 0;
 				aborted = outcome.isAborted();
@@ -230,7 +236,14 @@ public class VATaxIDMassCheckService
 		
 			while (locations.hasNext() && checkedCount < budget && !aborted)
 			{
-				final CheckTarget checkTarget = CheckTarget.ofLocation(locations.next());
+				final I_C_BPartner_Location bpartnerLocationRecord = locations.next();
+				final CheckTarget checkTarget = CheckTarget.ofLocation(bpartnerLocationRecord);
+				if (checkTarget == null)
+				{
+					// Blank VAT-ID: skip this ONE record. Costs no budget, and does not abort the run.
+					logBlankVATaxIDSkipped(CheckTarget.logLabelOf(bpartnerLocationRecord));
+					continue;
+				}
 				final CheckOutcome outcome = checkOneIfAvailable(request.getPinstanceId(), checkTarget, unavailableCountryCodesByOrg);
 				checkedCount += outcome.isChecked() ? 1 : 0;
 				aborted = outcome.isAborted();
@@ -285,6 +298,18 @@ public class VATaxIDMassCheckService
 			return CheckOutcome.ABORTED;
 		}
 		return CheckOutcome.CHECKED;
+	}
+
+	/**
+	 * Reports one record the nightly run had to skip. Only the nightly path calls this: its query cannot
+	 * filter blanks out (the partial index serving it is predicated on {@code VATaxID IS NOT NULL} alone), so
+	 * the record is a data defect an operator has to fix rather than a normal "no VAT-ID" record.
+	 */
+	private static void logBlankVATaxIDSkipped(@NonNull final String logLabel)
+	{
+		Loggables.withWarnLoggerToo(logger).addLog(
+				"VAT-ID check: skipped {} -- its blank VAT-ID cannot be checked. Clear the column or enter a "
+						+ "valid VAT-ID.", logLabel);
 	}
 
 	@Getter
