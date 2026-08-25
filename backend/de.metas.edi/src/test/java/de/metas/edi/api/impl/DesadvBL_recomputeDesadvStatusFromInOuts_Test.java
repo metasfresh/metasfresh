@@ -139,4 +139,39 @@ class DesadvBL_recomputeDesadvStatusFromInOuts_Test
 		InterfaceWrapperHelper.refresh(desadv);
 		assertThat(desadv.getEDI_ExportStatus()).isEqualTo(EDIExportStatus.Pending.getCode());
 	}
+
+	@Test
+	void isDesadvStatusChanged_detectsEqualStatusAndErrorMsg()
+	{
+		final I_EDI_Desadv desadv = createDesadv("100", EDIExportStatus.Sent.getCode());
+		desadv.setEDIErrorMsg(null);
+		saveRecord(desadv);
+
+		assertThat(DesadvBL.isDesadvStatusChanged(desadv, EDIExportStatus.Sent, null))
+				.as("same status, same (null) error message -> nothing to write")
+				.isFalse();
+		assertThat(DesadvBL.isDesadvStatusChanged(desadv, EDIExportStatus.Pending, null))
+				.as("different status -> must write")
+				.isTrue();
+		assertThat(DesadvBL.isDesadvStatusChanged(desadv, EDIExportStatus.Sent, "boom"))
+				.as("same status but a new error message -> must write")
+				.isTrue();
+	}
+
+	@Test
+	void recompute_isIdempotent_whenAlreadySent()
+	{
+		final I_EDI_Desadv desadv = createDesadv("70", EDIExportStatus.Pending.getCode());
+		createDesadvLine(desadv, "100", "70", "70");
+		createLinkedInOut(desadv, EDIExportStatus.Sent);
+		final EDIDesadvId desadvId = EDIDesadvId.ofRepoId(desadv.getEDI_Desadv_ID());
+
+		desadvBL.recomputeDesadvStatusFromInOuts(desadvId);
+		desadvBL.recomputeDesadvStatusFromInOuts(desadvId);
+		desadvBL.recomputeDesadvStatusFromInOuts(desadvId);
+
+		InterfaceWrapperHelper.refresh(desadv);
+		assertThat(desadv.getEDI_ExportStatus()).isEqualTo(EDIExportStatus.Sent.getCode());
+		assertThat(desadv.getEDIErrorMsg()).isNull();
+	}
 }

@@ -61,6 +61,7 @@ import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -86,6 +87,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -1173,9 +1175,7 @@ public class DesadvBL
 		if (!invalidInOuts.isEmpty())
 		{
 			final String aggregatedError = buildAggregatedErrorMessage(invalidInOuts);
-			desadv.setEDI_ExportStatus(EDIExportStatus.Invalid.getCode());
-			desadv.setEDIErrorMsg(aggregatedError);
-			desadvDAO.save(desadv);
+			setDesadvStatusAndSaveIfChanged(desadv, EDIExportStatus.Invalid, aggregatedError);
 			logger.info("DESADV {} set to Invalid due to {} invalid InOuts: {}", desadvId, invalidInOuts.size(), aggregatedError);
 			return;
 		}
@@ -1183,9 +1183,7 @@ public class DesadvBL
 		if (!errorInOuts.isEmpty())
 		{
 			final String aggregatedError = buildAggregatedErrorMessage(errorInOuts);
-			desadv.setEDI_ExportStatus(EDIExportStatus.Error.getCode());
-			desadv.setEDIErrorMsg(aggregatedError);
-			desadvDAO.save(desadv);
+			setDesadvStatusAndSaveIfChanged(desadv, EDIExportStatus.Error, aggregatedError);
 			logger.info("DESADV {} set to Error due to {} error InOuts: {}", desadvId, errorInOuts.size(), aggregatedError);
 			return;
 		}
@@ -1206,18 +1204,48 @@ public class DesadvBL
 		{
 			final boolean containsSentInOuts = allInOuts.stream().anyMatch(inOut -> EDIExportStatus.ofCode(inOut.getEDI_ExportStatus()).isSent());
 			final EDIExportStatus ediExportStatus = containsSentInOuts ? EDIExportStatus.Sent : EDIExportStatus.DontSend;
-			desadv.setEDI_ExportStatus(ediExportStatus.getCode());
-			desadv.setEDIErrorMsg(null);
-			desadvDAO.save(desadv);
+			setDesadvStatusAndSaveIfChanged(desadv, ediExportStatus, null);
 			logger.info("DESADV {} auto-closed to {} (all InOuts sent/don't send, fulfillment {}%, allDesadvLinesDeliveryClosed={})",
 					desadvId, ediExportStatus, fulfillmentPercent, noFurtherDeliveryExpected);
 			return;
 		}
 
-		desadv.setEDI_ExportStatus(EDIExportStatus.Pending.getCode());
-		desadv.setEDIErrorMsg(null);
-		desadvDAO.save(desadv);
+		setDesadvStatusAndSaveIfChanged(desadv, EDIExportStatus.Pending, null);
 		logger.debug("DESADV {} set to Pending (fulfillment {}%, allProcessed={})", desadvId, fulfillmentPercent, allProcessed);
+	}
+
+	/**
+	 * @return {@code true} if writing {@code targetStatus} / {@code targetErrorMsg} onto {@code desadv} would
+	 *         actually change either value. Blank-vs-{@code null} error messages compare as equal.
+	 */
+	@VisibleForTesting
+	static boolean isDesadvStatusChanged(
+			@NonNull final I_EDI_Desadv desadv,
+			@NonNull final EDIExportStatus targetStatus,
+			@Nullable final String targetErrorMsg)
+	{
+		return !Objects.equals(desadv.getEDI_ExportStatus(), targetStatus.getCode())
+				|| !Objects.equals(StringUtils.trimBlankToNull(desadv.getEDIErrorMsg()),
+						StringUtils.trimBlankToNull(targetErrorMsg));
+	}
+
+	/**
+	 * Closing a multi-line order fires the M_ShipmentSchedule interceptor once per line, so the same
+	 * DESADV is recomputed N times and the first N-1 recomputations conclude "still open". Saving only
+	 * on an actual change keeps that to at most one write per transition.
+	 */
+	private void setDesadvStatusAndSaveIfChanged(
+			@NonNull final I_EDI_Desadv desadv,
+			@NonNull final EDIExportStatus targetStatus,
+			@Nullable final String targetErrorMsg)
+	{
+		if (!isDesadvStatusChanged(desadv, targetStatus, targetErrorMsg))
+		{
+			return;
+		}
+		desadv.setEDI_ExportStatus(targetStatus.getCode());
+		desadv.setEDIErrorMsg(targetErrorMsg);
+		desadvDAO.save(desadv);
 	}
 
 	/**
