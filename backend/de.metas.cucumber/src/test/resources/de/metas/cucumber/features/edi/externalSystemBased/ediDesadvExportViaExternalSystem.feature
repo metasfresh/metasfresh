@@ -491,3 +491,67 @@ Feature: EDI DESADV export via External System
     Then after not more than 120s, EDI_Desadv records have the following export status
       | EDI_Desadv_ID | EDI_ExportStatus | OPT.Processed | OPT.FulfillmentPercent |
       | d_20          | P                | false         | 70                     |
+
+
+  @from:cucumber
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00350_EDI
+  @Id:S30013_30
+  Scenario: S30013_30 — M_ShipmentSchedule closed after the DESADV was already exported -> DESADV reaches Sent
+  ## The production ordering: the export finished first, the close came later.
+  ## An order for 2 x 100 PCE is delivered and exported for the first line only, so the DESADV is
+  ## under-delivered (FulfillmentPercent=50) and stays Pending even though its only shipment is
+  ## already Sent.  Closing the second line's M_ShipmentSchedule afterwards is the statement "the
+  ## other 100 will never be delivered", so the already-exported DESADV must reach S on its own.
+  ## FulfillmentPercent must stay 50 — it is an EXP_FormatLine, i.e. transmitted content.
+    And RabbitMQ MF_TO_ExternalSystem queue is purged
+
+    # @Date@ suffix keeps the POReference unique across local repeat runs (see S30013_10).
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised | POReference         |
+      | o_30       | true    | customer1     | 2025-04-17  | 2025-04-18Z  | PO_S30013_30_@Date@ |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID | QtyEntered |
+      | ol_30_1    | o_30                  | product      | 100        |
+      | ol_30_2    | o_30                  | product      | 100        |
+
+    And the order identified by o_30 is completed
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | s_s_30_1   | ol_30_1                   | N             |
+      | s_s_30_2   | ol_30_2                   | N             |
+
+    # Only the first line is shipped; the second line's schedule stays open with nothing delivered.
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | s_s_30_1                         | D            | true                | false       |
+
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | s_s_30_1                         | s_30                  |
+
+    And EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_ExportStatus |
+      | d_30                     | customer1                | o_30                  | P                |
+
+    And M_InOut is enqueued for EDI export
+      | M_InOut_ID |
+      | s_30       |
+
+    Then after not more than 120s, M_InOut records have the following export status
+      | M_InOut_ID.Identifier | EDI_ExportStatus |
+      | s_30                  | S                |
+
+    # The export is finished — and the DESADV is still Pending because line ol_30_2 is undelivered.
+    And after not more than 120s, EDI_Desadv records have the following export status
+      | EDI_Desadv_ID | EDI_ExportStatus | OPT.EDIErrorMsg | OPT.Processed | OPT.FulfillmentPercent |
+      | d_30          | P                | null            | false         | 50                     |
+
+    When the M_ShipmentSchedule identified by s_s_30_2 is closed
+
+    # ─── CORE ASSERTION ────────────────────────────────────────────────────────
+    # The close arrives after the export already completed, and still closes the DESADV.
+    Then after not more than 120s, EDI_Desadv records have the following export status
+      | EDI_Desadv_ID | EDI_ExportStatus | OPT.EDIErrorMsg | OPT.Processed | OPT.FulfillmentPercent |
+      | d_30          | S                | null            | true          | 50                     |
