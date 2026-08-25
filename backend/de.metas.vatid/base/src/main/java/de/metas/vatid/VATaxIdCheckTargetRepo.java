@@ -31,7 +31,6 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.organization.OrgId;
 import de.metas.tax.api.VATIdentifier;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -123,8 +122,9 @@ public class VATaxIdCheckTargetRepo
 		final IQueryBuilder<I_C_BPartner> queryBuilder = queryBL.createQueryBuilder(I_C_BPartner.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BPartner.COLUMNNAME_AD_Org_ID, orgId)
-				.addNotNull(I_C_BPartner.COLUMNNAME_VATaxID)
-				.addNotEqualsFilter(I_C_BPartner.COLUMNNAME_VATaxID, "");
+				// Blanks are deliberately not excluded here; CheckTarget.ofPartner skips them one record at a
+				// time, so one blank VAT-ID cannot abort the whole nightly run.
+				.addNotNull(I_C_BPartner.COLUMNNAME_VATaxID);
 
 		if (lastCheckedBefore != null)
 		{
@@ -174,8 +174,9 @@ public class VATaxIdCheckTargetRepo
 		final IQueryBuilder<I_C_BPartner_Location> queryBuilder = queryBL.createQueryBuilder(I_C_BPartner_Location.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_AD_Org_ID, orgId)
-				.addNotNull(I_C_BPartner_Location.COLUMNNAME_VATaxID)
-				.addNotEqualsFilter(I_C_BPartner_Location.COLUMNNAME_VATaxID, "");
+				// Blanks are deliberately not excluded here; CheckTarget.ofLocation skips them one record at a
+				// time, so one blank VAT-ID cannot abort the whole nightly run.
+				.addNotNull(I_C_BPartner_Location.COLUMNNAME_VATaxID);
 
 		if (lastCheckedBefore != null)
 		{
@@ -279,14 +280,21 @@ public class VATaxIdCheckTargetRepo
 				continue;
 			}
 
-			if (!Check.isEmpty(bpartnerRecord.getVATaxID()))
+			// Not logged on this path, unlike the nightly one: here a record without a VAT-ID is the ordinary
+			// case, so logging would emit one line per VAT-ID-less partner in the selection.
+			final CheckTarget partnerCheckTarget = CheckTarget.ofPartner(bpartnerId, bpartnerRecord);
+			if (partnerCheckTarget != null)
 			{
-				checkTargets.add(CheckTarget.ofPartner(bpartnerId, bpartnerRecord));
+				checkTargets.add(partnerCheckTarget);
 			}
 
 			for (final I_C_BPartner_Location bpartnerLocationRecord : locationsByBPartnerId.get(bpartnerId))
 			{
-				checkTargets.add(CheckTarget.ofLocation(bpartnerLocationRecord));
+				final CheckTarget locationCheckTarget = CheckTarget.ofLocation(bpartnerLocationRecord);
+				if (locationCheckTarget != null)
+				{
+					checkTargets.add(locationCheckTarget);
+				}
 			}
 		}
 		return checkTargets.build();
@@ -344,36 +352,71 @@ public class VATaxIdCheckTargetRepo
 			return timestamp != null ? timestamp.toInstant() : null;
 		}
 		
-		@NonNull
+		/**
+		 * @return {@code null} if the record carries no VAT-ID to check; blank counts as none. Resolving a
+		 * blank via {@link VATIdentifier#of(String)} instead would throw from outside any catch on the nightly
+		 * path and abort the whole run, and the due-for-check query filters on {@code VATaxID IS NOT NULL} only.
+		 */
+		@Nullable
 		public static CheckTarget ofPartner(@NonNull final BPartnerId bpartnerId, @NonNull final I_C_BPartner bpartnerRecord)
 		{
+			final VATIdentifier vataxID = VATIdentifier.ofNullable(bpartnerRecord.getVATaxID());
+			if (vataxID == null)
+			{
+				return null;
+			}
+
 			return CheckTarget.builder()
 					.bpartnerId(bpartnerId)
 					.bpartnerLocationId(null)
-					.vataxID(VATIdentifier.of(bpartnerRecord.getVATaxID()))
+					.vataxID(vataxID)
 					.previousStatus(resolveStatus(bpartnerRecord.getVATaxIDStatus()))
 					.checkedAt(toInstantOrNull(bpartnerRecord.getVATaxIDCheckedAt()))
 					.lastAttemptedAt(toInstantOrNull(bpartnerRecord.getVATaxIDLastAttemptedAt()))
-					.logLabel("C_BPartner_ID=" + bpartnerRecord.getC_BPartner_ID())
+					.logLabel(logLabelOf(bpartnerRecord))
 					.orgId(OrgId.ofRepoId(bpartnerRecord.getAD_Org_ID()))
 					.build();
 		}
 
-		@NonNull
+		/** @return {@code null} if the record carries no VAT-ID to check -- see {@link #ofPartner}. */
+		@Nullable
 		public static CheckTarget ofLocation(@NonNull final I_C_BPartner_Location bpartnerLocationRecord)
 		{
+			final VATIdentifier vataxID = VATIdentifier.ofNullable(bpartnerLocationRecord.getVATaxID());
+			if (vataxID == null)
+			{
+				return null;
+			}
+
 			final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartnerLocationRecord.getC_BPartner_ID());
 			return CheckTarget.builder()
 					.bpartnerId(bpartnerId)
 					.bpartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, bpartnerLocationRecord.getC_BPartner_Location_ID()))
-					.vataxID(VATIdentifier.of(bpartnerLocationRecord.getVATaxID()))
+					.vataxID(vataxID)
 					.previousStatus(resolveStatus(bpartnerLocationRecord.getVATaxIDStatus()))
 					.checkedAt(toInstantOrNull(bpartnerLocationRecord.getVATaxIDCheckedAt()))
 					.lastAttemptedAt(toInstantOrNull(bpartnerLocationRecord.getVATaxIDLastAttemptedAt()))
-					.logLabel("C_BPartner_ID=" + bpartnerLocationRecord.getC_BPartner_ID()
-							+ ", C_BPartner_Location_ID=" + bpartnerLocationRecord.getC_BPartner_Location_ID())
+					.logLabel(logLabelOf(bpartnerLocationRecord))
 					.orgId(OrgId.ofRepoId(bpartnerLocationRecord.getAD_Org_ID()))
 					.build();
+		}
+
+		/**
+		 * Shared with the caller's skip log, so a skipped record is named exactly as a checked one; a second,
+		 * hand-built label would drift from {@link #logLabel}.
+		 */
+		@NonNull
+		public static String logLabelOf(@NonNull final I_C_BPartner bpartnerRecord)
+		{
+			return "C_BPartner_ID=" + bpartnerRecord.getC_BPartner_ID();
+		}
+
+		/** @see #logLabelOf(I_C_BPartner) */
+		@NonNull
+		public static String logLabelOf(@NonNull final I_C_BPartner_Location bpartnerLocationRecord)
+		{
+			return "C_BPartner_ID=" + bpartnerLocationRecord.getC_BPartner_ID()
+					+ ", C_BPartner_Location_ID=" + bpartnerLocationRecord.getC_BPartner_Location_ID();
 		}
 	}
 }

@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.organization.OrgId;
 import de.metas.util.Loggables;
@@ -47,9 +48,12 @@ import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -59,9 +63,9 @@ import static org.mockito.Mockito.when;
  * {@code stampAttemptInOwnTrx} failure on ONE target, which must not abort the run, and a request-side
  * rejection by the checking service, which must.
  *
- * <p>{@link IBPartnerDAO} is a hand-built mock rather than the POJO-backed implementation so one target's
- * write can be made to throw deterministically while the other succeeds — the one thing a real in-memory
- * DAO cannot reproduce without an actual concurrent writer.
+ * <p>{@link VATaxIdCheckTargetRepo} is spied rather than used as-is so one target's attempt-stamp write can
+ * be made to throw deterministically while the other succeeds — the one thing a real in-memory repository
+ * cannot reproduce without an actual concurrent writer.
  */
 class VATaxIDMassCheckServiceTest
 {
@@ -77,7 +81,7 @@ class VATaxIDMassCheckServiceTest
 	private static final String VIES_ERROR_CODE = "INVALID_REQUESTER_INFO";
 
 	private VATaxIDCheckService checkServiceMock;
-	private VATaxIdCheckTargetRepo checkTargetRepoMock;
+	private VATaxIdCheckTargetRepo checkTargetRepoSpy;
 	private IBPartnerDAO bpartnerDAOMock;
 
 	@BeforeEach
@@ -85,11 +89,16 @@ class VATaxIDMassCheckServiceTest
 	{
 		AdempiereTestHelper.get().init();
 
-		checkTargetRepoMock = mock(VATaxIdCheckTargetRepo.class);
-
 		bpartnerDAOMock = mock(IBPartnerDAO.class);
 		Services.registerService(IBPartnerDAO.class, bpartnerDAOMock);
 		checkServiceMock = mock(VATaxIDCheckService.class);
+
+		// A spy, not a plain mock: the selection path's target building (retrieveCheckTargets) is real code
+		// these tests exercise, while each query and each write below is stubbed out. Constructed only after
+		// bpartnerDAOMock is registered -- the repo resolves its services in its field initializers.
+		checkTargetRepoSpy = spy(new VATaxIdCheckTargetRepo());
+		doNothing().when(checkTargetRepoSpy).stampVATaxIDCheckAttempt(any(BPartnerId.class), any(Instant.class));
+		doNothing().when(checkTargetRepoSpy).stampVATaxIDCheckAttempt(any(BPartnerLocationId.class), any(Instant.class));
 	}
 
 	private static I_C_BPartner newBPartnerWithVATaxID(final BPartnerId bpartnerId, final String vataxID)
@@ -108,18 +117,18 @@ class VATaxIDMassCheckServiceTest
 		final I_C_BPartner healthyPartner = newBPartnerWithVATaxID(BPARTNER_ID_HEALTHY, "DE222222222");
 
 		when(bpartnerDAOMock.getByIds(anyCollection())).thenReturn(ImmutableList.of(brokenStampPartner, healthyPartner));
-		when(checkTargetRepoMock.retrieveBPartnerLocationsWithVATaxID(anyCollection()))
-				.thenReturn(ImmutableList.<I_C_BPartner_Location>of());
+		doReturn(ImmutableList.<I_C_BPartner_Location>of())
+				.when(checkTargetRepoSpy).retrieveBPartnerLocationsWithVATaxID(anyCollection());
 		// the broken target's stamp write fails on every attempt -- the exact chronic-failure shape this
-		// test exists to cover; the healthy target's stamp write is left unstubbed (succeeds, no-op mock).
+		// test exists to cover; the healthy target's keeps the no-op stub from beforeEach and succeeds.
 		doThrow(new RuntimeException("simulated stamp-write failure (test-only, VATaxIDMassCheckServiceTest)"))
-				.when(checkTargetRepoMock).stampVATaxIDCheckAttempt(eq(BPARTNER_ID_BROKEN_STAMP), any(Instant.class));
+				.when(checkTargetRepoSpy).stampVATaxIDCheckAttempt(eq(BPARTNER_ID_BROKEN_STAMP), any(Instant.class));
 
 		when(checkServiceMock.getUnavailableCountryCodes(any(OrgId.class))).thenReturn(ImmutableSet.of());
 		when(checkServiceMock.check(argThat(req -> BPARTNER_ID_HEALTHY.equals(req.getBpartnerId()))))
 				.thenReturn(VATaxIDStatus.Valid);
 
-		final VATaxIDMassCheckService massCheckService = new VATaxIDMassCheckService(checkServiceMock, checkTargetRepoMock);
+		final VATaxIDMassCheckService massCheckService = new VATaxIDMassCheckService(checkServiceMock, checkTargetRepoSpy);
 
 		final VATaxIDMassCheckRequest request = VATaxIDMassCheckRequest.builder()
 				.selectedBPartnerIds(ImmutableList.of(BPARTNER_ID_BROKEN_STAMP, BPARTNER_ID_HEALTHY))
@@ -139,7 +148,7 @@ class VATaxIDMassCheckServiceTest
 				.check(argThat(req -> BPARTNER_ID_BROKEN_STAMP.equals(req.getBpartnerId())));
 
 		// ... but the run did NOT abort: the healthy target queued behind it was still stamped and checked.
-		verify(checkTargetRepoMock).stampVATaxIDCheckAttempt(eq(BPARTNER_ID_HEALTHY), any(Instant.class));
+		verify(checkTargetRepoSpy).stampVATaxIDCheckAttempt(eq(BPARTNER_ID_HEALTHY), any(Instant.class));
 		verify(checkServiceMock)
 				.check(argThat(req -> BPARTNER_ID_HEALTHY.equals(req.getBpartnerId())));
 
@@ -169,8 +178,8 @@ class VATaxIDMassCheckServiceTest
 
 		when(bpartnerDAOMock.getByIds(anyCollection()))
 				.thenReturn(ImmutableList.of(firstPartner, secondPartner, thirdPartner));
-		when(checkTargetRepoMock.retrieveBPartnerLocationsWithVATaxID(anyCollection()))
-				.thenReturn(ImmutableList.<I_C_BPartner_Location>of());
+		doReturn(ImmutableList.<I_C_BPartner_Location>of())
+				.when(checkTargetRepoSpy).retrieveBPartnerLocationsWithVATaxID(anyCollection());
 		when(checkServiceMock.getUnavailableCountryCodes(any(OrgId.class))).thenReturn(ImmutableSet.of());
 
 		// Raised for EVERY target, exactly as a misconfigured requester identity behaves: the fault is in the
@@ -180,7 +189,7 @@ class VATaxIDMassCheckServiceTest
 						VIES_ERROR_CODE,
 						"VIES rejected the request: " + VIES_ERROR_CODE + ". Check the VAT-ID configuration."));
 
-		final VATaxIDMassCheckService massCheckService = new VATaxIDMassCheckService(checkServiceMock, checkTargetRepoMock);
+		final VATaxIDMassCheckService massCheckService = new VATaxIDMassCheckService(checkServiceMock, checkTargetRepoSpy);
 
 		final VATaxIDMassCheckRequest request = VATaxIDMassCheckRequest.builder()
 				.selectedBPartnerIds(ImmutableList.of(BPARTNER_ID_HEALTHY, BPARTNER_ID_SECOND, BPARTNER_ID_THIRD))
@@ -197,8 +206,8 @@ class VATaxIDMassCheckServiceTest
 
 		// The whole point: the run stops at the FIRST target instead of grinding through the selection.
 		verify(checkServiceMock, times(1)).check(any(VATaxIDCheckRequest.class));
-		verify(checkTargetRepoMock, never()).stampVATaxIDCheckAttempt(eq(BPARTNER_ID_SECOND), any(Instant.class));
-		verify(checkTargetRepoMock, never()).stampVATaxIDCheckAttempt(eq(BPARTNER_ID_THIRD), any(Instant.class));
+		verify(checkTargetRepoSpy, never()).stampVATaxIDCheckAttempt(eq(BPARTNER_ID_SECOND), any(Instant.class));
+		verify(checkTargetRepoSpy, never()).stampVATaxIDCheckAttempt(eq(BPARTNER_ID_THIRD), any(Instant.class));
 
 		// ... and it is NOT reported as an ordinary per-target failure, which would leave the operator with
 		// nothing to act on.
@@ -241,15 +250,15 @@ class VATaxIDMassCheckServiceTest
 
 		when(checkServiceMock.getRecheckAfterDaysByViesEnabledOrgId()).thenReturn(ImmutableMap.of(orgId, 30));
 		when(checkServiceMock.getUnavailableCountryCodes(any(OrgId.class))).thenReturn(ImmutableSet.of());
-		when(checkTargetRepoMock.countBPartnersDueForVATaxIDCheck(any(OrgId.class), any())).thenReturn(1);
-		when(checkTargetRepoMock.countBPartnerLocationsDueForVATaxIDCheck(any(OrgId.class), any())).thenReturn(0);
-		when(checkTargetRepoMock.iterateBPartnersDueForVATaxIDCheck(any(OrgId.class), any(), anyInt()))
-				.thenReturn(ImmutableList.of(duePartner).iterator());
-		when(checkTargetRepoMock.iterateBPartnerLocationsDueForVATaxIDCheck(any(OrgId.class), any(), anyInt()))
-				.thenReturn(ImmutableList.<I_C_BPartner_Location>of().iterator());
+		doReturn(1).when(checkTargetRepoSpy).countBPartnersDueForVATaxIDCheck(any(OrgId.class), any());
+		doReturn(0).when(checkTargetRepoSpy).countBPartnerLocationsDueForVATaxIDCheck(any(OrgId.class), any());
+		doReturn(ImmutableList.of(duePartner).iterator())
+				.when(checkTargetRepoSpy).iterateBPartnersDueForVATaxIDCheck(any(OrgId.class), any(), anyInt());
+		doReturn(ImmutableList.<I_C_BPartner_Location>of().iterator())
+				.when(checkTargetRepoSpy).iterateBPartnerLocationsDueForVATaxIDCheck(any(OrgId.class), any(), anyInt());
 		when(checkServiceMock.check(any(VATaxIDCheckRequest.class))).thenReturn(VATaxIDStatus.Valid);
 
-		final VATaxIDMassCheckService massCheckService = new VATaxIDMassCheckService(checkServiceMock, checkTargetRepoMock);
+		final VATaxIDMassCheckService massCheckService = new VATaxIDMassCheckService(checkServiceMock, checkTargetRepoSpy);
 
 		final VATaxIDMassCheckResult result;
 		final PlainStringLoggable log = Loggables.newPlainStringLoggable();
@@ -264,8 +273,8 @@ class VATaxIDMassCheckServiceTest
 
 		assertThat(result.getCheckedCount()).isEqualTo(1);
 		verify(bpartnerDAOMock, never()).getByIds(anyCollection());
-		verify(checkTargetRepoMock, never()).retrieveBPartnerLocationsWithVATaxID(anyCollection());
-		verify(checkTargetRepoMock).iterateBPartnersDueForVATaxIDCheck(eq(orgId), any(), anyInt());
+		verify(checkTargetRepoSpy, never()).retrieveBPartnerLocationsWithVATaxID(anyCollection());
+		verify(checkTargetRepoSpy).iterateBPartnersDueForVATaxIDCheck(eq(orgId), any(), anyInt());
 	}
 
 	/**
@@ -281,15 +290,15 @@ class VATaxIDMassCheckServiceTest
 
 		when(checkServiceMock.getRecheckAfterDaysByViesEnabledOrgId()).thenReturn(ImmutableMap.of(orgId, 30));
 		when(checkServiceMock.getUnavailableCountryCodes(any(OrgId.class))).thenReturn(ImmutableSet.of());
-		when(checkTargetRepoMock.countBPartnersDueForVATaxIDCheck(any(OrgId.class), any())).thenReturn(2);
-		when(checkTargetRepoMock.countBPartnerLocationsDueForVATaxIDCheck(any(OrgId.class), any())).thenReturn(0);
-		when(checkTargetRepoMock.iterateBPartnersDueForVATaxIDCheck(any(OrgId.class), any(), anyInt()))
-				.thenReturn(ImmutableList.of(first, second).iterator());
-		when(checkTargetRepoMock.iterateBPartnerLocationsDueForVATaxIDCheck(any(OrgId.class), any(), anyInt()))
-				.thenReturn(ImmutableList.<I_C_BPartner_Location>of().iterator());
+		doReturn(2).when(checkTargetRepoSpy).countBPartnersDueForVATaxIDCheck(any(OrgId.class), any());
+		doReturn(0).when(checkTargetRepoSpy).countBPartnerLocationsDueForVATaxIDCheck(any(OrgId.class), any());
+		doReturn(ImmutableList.of(first, second).iterator())
+				.when(checkTargetRepoSpy).iterateBPartnersDueForVATaxIDCheck(any(OrgId.class), any(), anyInt());
+		doReturn(ImmutableList.<I_C_BPartner_Location>of().iterator())
+				.when(checkTargetRepoSpy).iterateBPartnerLocationsDueForVATaxIDCheck(any(OrgId.class), any(), anyInt());
 		when(checkServiceMock.check(any(VATaxIDCheckRequest.class))).thenReturn(VATaxIDStatus.Valid);
 
-		final VATaxIDMassCheckService massCheckService = new VATaxIDMassCheckService(checkServiceMock, checkTargetRepoMock);
+		final VATaxIDMassCheckService massCheckService = new VATaxIDMassCheckService(checkServiceMock, checkTargetRepoSpy);
 
 		final VATaxIDMassCheckResult result;
 		final PlainStringLoggable log = Loggables.newPlainStringLoggable();
@@ -309,9 +318,9 @@ class VATaxIDMassCheckServiceTest
 
 	/**
 	 * A blank {@code VATaxID} must cost the run one record, not the whole run. The nightly query filters on
-	 * {@code VATaxID IS NOT NULL} only -- deliberately, to match its partial index -- while the column is not
-	 * mandatory and {@code ''} does reach the database (see {@code BPartnerCompositeSaver},
-	 * {@code BPartnerImportHelper}). Without the guard, building the {@code CheckTarget} throws
+	 * {@code VATaxID IS NOT NULL} only, while the column is not mandatory and {@code ''} does reach the
+	 * database (see {@code BPartnerCompositeSaver}, {@code BPartnerImportHelper}). Without the guard,
+	 * building the {@code CheckTarget} throws
 	 * {@code Invalid VAT ID} and every record and organisation behind it goes unchecked.
 	 *
 	 * <p>Budget is 1 with two due records, the blank one first: the good one can only be reached if skipping
@@ -328,15 +337,15 @@ class VATaxIDMassCheckServiceTest
 
 		when(checkServiceMock.getRecheckAfterDaysByViesEnabledOrgId()).thenReturn(ImmutableMap.of(orgId, 30));
 		when(checkServiceMock.getUnavailableCountryCodes(any(OrgId.class))).thenReturn(ImmutableSet.of());
-		when(bpartnerDAOMock.countBPartnersDueForVATaxIDCheck(any(OrgId.class), any())).thenReturn(2);
-		when(bpartnerDAOMock.countBPartnerLocationsDueForVATaxIDCheck(any(OrgId.class), any())).thenReturn(0);
-		when(bpartnerDAOMock.iterateBPartnersDueForVATaxIDCheck(any(OrgId.class), any()))
-				.thenReturn(ImmutableList.of(blankVATaxIDPartner, healthyPartner).iterator());
-		when(bpartnerDAOMock.iterateBPartnerLocationsDueForVATaxIDCheck(any(OrgId.class), any()))
-				.thenReturn(ImmutableList.<I_C_BPartner_Location>of().iterator());
+		doReturn(2).when(checkTargetRepoSpy).countBPartnersDueForVATaxIDCheck(any(OrgId.class), any());
+		doReturn(0).when(checkTargetRepoSpy).countBPartnerLocationsDueForVATaxIDCheck(any(OrgId.class), any());
+		doReturn(ImmutableList.of(blankVATaxIDPartner, healthyPartner).iterator())
+				.when(checkTargetRepoSpy).iterateBPartnersDueForVATaxIDCheck(any(OrgId.class), any(), anyInt());
+		doReturn(ImmutableList.<I_C_BPartner_Location>of().iterator())
+				.when(checkTargetRepoSpy).iterateBPartnerLocationsDueForVATaxIDCheck(any(OrgId.class), any(), anyInt());
 		when(checkServiceMock.check(any(VATaxIDCheckRequest.class))).thenReturn(VATaxIDStatus.Valid);
 
-		final VATaxIDMassCheckService massCheckService = new VATaxIDMassCheckService(checkServiceMock);
+		final VATaxIDMassCheckService massCheckService = new VATaxIDMassCheckService(checkServiceMock, checkTargetRepoSpy);
 
 		final VATaxIDMassCheckResult result;
 		final PlainStringLoggable log = Loggables.newPlainStringLoggable();
@@ -358,7 +367,7 @@ class VATaxIDMassCheckServiceTest
 		// ... the blank record was neither checked nor attempt-stamped ...
 		verify(checkServiceMock, never())
 				.check(argThat(req -> req != null && BPARTNER_ID_BLANK_VATAXID.equals(req.getBpartnerId())));
-		verify(bpartnerDAOMock, never()).stampVATaxIDCheckAttempt(eq(BPARTNER_ID_BLANK_VATAXID), any(Instant.class));
+		verify(checkTargetRepoSpy, never()).stampVATaxIDCheckAttempt(eq(BPARTNER_ID_BLANK_VATAXID), any(Instant.class));
 
 		// ... and it did not vanish silently: a data problem an operator has to fix is named in the run log.
 		assertThat(log.getSingleMessages())
