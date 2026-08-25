@@ -163,6 +163,28 @@ public class CurrentCostTest
 			assertThat(currentCost.getCostPrice().getOwnCostPrice().toBigDecimal())
 					.as("re-labelling must not alter the amount")
 					.isEqualByComparingTo("0.4762");
+			assertThat(currentCost.getCostPrice().getComponentsCostPrice().toBigDecimal())
+					.as("both price components are re-labelled symmetrically")
+					.isEqualByComparingTo("0");
+		}
+
+		@Test
+		public void zeroQty_butMismatchedNonZeroCumulatedQty_stillThrows()
+		{
+			final CurrentCost currentCost = currentCost().build();
+
+			// qty is zero and could be adopted, but cumulatedQty is a real quantity in a foreign UOM
+			final CostDetailPreviousAmounts amounts = CostDetailPreviousAmounts.builder()
+					.costPrice(CostPrice.zero(currencyId, UomId.ofRepoId(uomKg.getC_UOM_ID())))
+					.qty(Quantity.of(BigDecimal.ZERO, uomKg))
+					.cumulatedAmt(CostAmount.of(0, currencyId))
+					.cumulatedQty(Quantity.of(new BigDecimal("7"), uomKg))
+					.build();
+
+			assertThatThrownBy(() -> currentCost.setFrom(amounts))
+					.as("a non-zero cumulatedQty mismatch is as real as a currentQty one")
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining("Invalid UOM");
 		}
 
 		@Test

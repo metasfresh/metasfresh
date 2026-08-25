@@ -125,7 +125,12 @@ public final class CurrentCost
 		final Quantity qty = toCostUOM(previousAmounts.getQty());
 		final Quantity cumulatedQty = toCostUOM(previousAmounts.getCumulatedQty());
 
-		this.costPrice = toCostUOM(previousAmounts.getCostPrice());
+		// The price's UOM tracks its own amounts — every producer of CostDetailPreviousAmounts builds price and
+		// quantity from the same product UOM — so it is re-labelled exactly when the quantities were, never on its
+		// own. A price tagged independently of its amounts is not something this method may silently rewrite.
+		this.costPrice = UomId.equals(previousAmounts.getCostPrice().getUomId(), previousAmounts.getQty().getUomId())
+				? relabelToCostUOM(previousAmounts.getCostPrice())
+				: previousAmounts.getCostPrice();
 		this.currentQty = qty;
 
 		this.cumulatedAmt = previousAmounts.getCumulatedAmt();
@@ -162,7 +167,9 @@ public final class CurrentCost
 	}
 
 	/**
-	 * Returns {@code costPrice} labelled with this cost's own UOM.
+	 * Returns {@code costPrice} labelled with this cost's own UOM. Unlike {@link #toCostUOM(Quantity)} this
+	 * never rejects a mismatch — it is a pure re-label, which is why it is deliberately NOT an overload of the
+	 * same name; the caller decides when re-labelling is legitimate.
 	 * <p>
 	 * {@code M_Cost} carries no separate UOM for its price: a current cost's price is <b>by definition</b>
 	 * expressed in the cost row's UOM, which is why the constructor stamps {@link #uomId} onto the price on
@@ -173,7 +180,7 @@ public final class CurrentCost
 	 * {@code M_CostRevaluationLine.C_UOM_ID} while writing {@code CurrentQty} in this cost's UOM — a line
 	 * labelled with one unit and quantified in another.
 	 */
-	private CostPrice toCostUOM(@NonNull final CostPrice costPrice)
+	private CostPrice relabelToCostUOM(@NonNull final CostPrice costPrice)
 	{
 		return UomId.equals(costPrice.getUomId(), getUomId())
 				? costPrice
