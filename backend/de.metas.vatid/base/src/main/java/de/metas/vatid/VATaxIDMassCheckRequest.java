@@ -26,33 +26,21 @@ import de.metas.process.PInstanceId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_C_BPartner;
 
 import javax.annotation.Nullable;
 
 /**
  * One run of {@link VATaxIDMassCheckService#run(VATaxIDMassCheckRequest)}: check the header VAT-ID (if any)
- * and every location VAT-ID (if any) of every partner in {@link #getSelectedBPartnersQuery()} — see that
- * method's javadoc for the combined selection it builds from that query and the throttling
- * {@link #getMaxChecksPerRun()} applies to it.
+ * and every location VAT-ID (if any) of every partner in the {@code T_Selection} keyed by
+ * {@link #getPinstanceId()}, throttled by {@link #getMaxChecksPerRun()}.
  *
- * <p>Deliberately carries only process-agnostic values — a {@code C_BPartner} selection query, a plain
- * {@code int}, an optional {@link PInstanceId} — so the same run can be driven from a {@code JavaProcess},
- * a REST endpoint, or a unit test, none of which need a {@code JavaProcess} to exist.
+ * <p>Deliberately carries only process-agnostic values — a selection {@link PInstanceId}, a plain
+ * {@code int} — so the same run can be driven from a {@code JavaProcess}, a REST endpoint, or a unit test.
  */
 @Value
 @Builder
 public class VATaxIDMassCheckRequest
 {
-	/**
-	 * The {@code C_BPartner} records to check, as a query streamed lazily rather than a materialised id list
-	 * — "select all" in the grid can carry tens of thousands of records, and binding one parameter per record
-	 * is exactly what produced {@code An I/O error occurred while sending to the backend}. {@code null} on the
-	 * nightly run, which streams the due records itself and ignores this field.
-	 */
-	@Nullable IQuery<I_C_BPartner> selectedBPartnersQuery;
-
 	/**
 	 * Empty/unset or {@code <= 0} means no limit — see
 	 * {@link VATaxIDMassCheckService#run(VATaxIDMassCheckRequest)}.
@@ -60,9 +48,12 @@ public class VATaxIDMassCheckRequest
 	int maxChecksPerRun;
 
 	/**
-	 * The process run this check belongs to, if any — passed straight through into every
-	 * {@link VATaxIDCheckRequest#getPinstanceId()} this run creates. {@code null} for a run triggered
-	 * outside a process (e.g. a REST call or a unit test).
+	 * The process run this check belongs to. On a user-triggered run it is ALSO the selection key: the
+	 * caller materialised the chosen {@code C_BPartner}s into a {@code T_Selection} under this
+	 * {@link PInstanceId} (via {@code IQuery#createSelection}), and the run streams them with
+	 * {@code setOnlySelection} — no per-record bind parameter, which is what {@code An I/O error occurred
+	 * while sending to the backend} was. Passed through into every {@link VATaxIDCheckRequest#getPinstanceId()}
+	 * this run creates too. {@code null} only for the nightly sweep, which builds no selection.
 	 */
 	@Nullable PInstanceId pinstanceId;
 

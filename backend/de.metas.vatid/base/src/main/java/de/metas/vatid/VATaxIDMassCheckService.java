@@ -102,11 +102,14 @@ public class VATaxIDMassCheckService
 
 		final int maxChecksPerRun = request.getMaxChecksPerRun();
 		final int budget = maxChecksPerRun <= 0 ? Integer.MAX_VALUE : maxChecksPerRun;
+		// The pinstance doubles as the selection key on this path: the caller materialised the selected
+		// C_BPartners into a T_Selection under it (see VATaxIDMassCheckRequest#getPinstanceId).
+		final PInstanceId selectionId = request.getPinstanceId();
 		// Counted up front from the SAME queries the iterator streams, exactly as runNightly does: streaming
 		// cannot know the eligible total the old materialised path reported against, so pending/checked report
 		// against this count-query total instead. Unlike the old eligibleTargets.size() it is taken BEFORE the
 		// availability pre-filter, so an unavailable-country target counts as pending -- again matching runNightly.
-		final int dueCount = checkTargetRepo.countSelectedTargets(request.getSelectedBPartnersQuery());
+		final int dueCount = checkTargetRepo.countSelectedTargets(selectionId);
 
 		final Map<OrgId, ImmutableSet<String>> unavailableCountryCodesByOrg = new HashMap<>();
 		// One line per skipped member state, emitted at the end: the streaming counterpart of what
@@ -120,7 +123,7 @@ public class VATaxIDMassCheckService
 		// case, unlike the nightly path where the query cannot filter blanks and each one is a data defect worth
 		// a log line. Hence the no-op callback.
 		final Iterator<CheckTarget> targets = checkTargetRepo.iterateSelectedTargets(
-				request.getSelectedBPartnersQuery(), logLabel -> {});
+				selectionId, logLabel -> {});
 
 		// The budget and abort tests MUST stay BEFORE hasNext(), exactly as runNightly documents: the two grains
 		// of iterateSelectedTargets concatenate LAZILY, so asking it for one more element once the partner grain
@@ -165,7 +168,7 @@ public class VATaxIDMassCheckService
 	}
 
 	/**
-	 * The nightly sweep. Uses {@link VATaxIDMassCheckRequest#getMaxChecksPerRun()}  and ignores {@link VATaxIDMassCheckRequest#getSelectedBPartnersQuery()}.
+	 * The nightly sweep. Uses {@link VATaxIDMassCheckRequest#getMaxChecksPerRun()} and builds no selection.
 	 *
 	 * <p>Due-ness and ordering are the query's ({@code IBPartnerDAO}), evaluated per organisation with that
 	 * organisation's own recheck window — organisations with the check switched off are never queried at
@@ -314,25 +317,19 @@ public class VATaxIDMassCheckService
 
 
 	/**
-	 * Runs one target's attempt stamp and its check.
+	 * Runs one target's attempt stamp, then its check, each in its own transaction.
 	 *
-	 * <p>The attempt stamp is its own already-committed transaction, written before the check starts
-	 * ({@link VATaxIdCheckTargetRepo#stampVATaxIDCheckAttemptInOwnTrx(VATaxIdCheckTargetRepo.CheckTarget)}); a write sharing the check's transaction would be erased by exactly the
-	 * rollback it exists to survive.
+	 * <p>The stamp commits BEFORE the check
+	 * ({@link VATaxIdCheckTargetRepo#stampVATaxIDCheckAttemptInOwnTrx(VATaxIdCheckTargetRepo.CheckTarget)}), so
+	 * a rolled-back check cannot erase the record that an attempt was made. The check runs in its own
+	 * {@code callInNewTrx} so each target commits or fails independently — including the order-tax refresh a
+	 * status change triggers, which {@link VATaxIDCheckService} runs inside the check's transaction.
 	 *
-	 * <p>The check is wrapped in {@code callInNewTrx} — normally a hack, per
-	 * {@code docs/coding-rules/java-general.md} — because each target's whole unit of work must commit or
-	 * fail independently of every other target's. That unit includes the order-line-tax refresh a status
-	 * change triggers: {@link VATaxIDCheckService} performs it inside the check, joining this transaction
-	 * rather than opening its own, so a refresh failure still rolls the check back with it.
+	 * <p>Stamp failure and check failure are caught separately: only the former leaves no other trace.
 	 *
-	 * <p>Two {@code catch} blocks, not one: a stamp failure means the check was never attempted and leaves no
-	 * other trace, while a failure of the check itself means the attempt is already durably recorded. One
-	 * shared message would hide the rarer signal.
-	 *
-	 * @throws VATaxIDCheckRequestRejectedException when the checking service rejected the request itself
-	 * because of how this system is configured. Deliberately NOT swallowed here, unlike every other failure:
-	 * it would repeat identically for every remaining target, so {@link #run} aborts on it instead.
+	 * @throws VATaxIDCheckRequestRejectedException a request the service rejected because of how this system
+	 * is configured — it would recur for every remaining target, so {@link #run} aborts on it rather than
+	 * swallowing it here.
 	 */
 	private void checkOneInOwnTrx(@Nullable final PInstanceId pinstanceId, @NonNull final CheckTarget checkTarget)
 	{
@@ -385,5 +382,4 @@ public class VATaxIDMassCheckService
 		}
 	}
 
-	
 }

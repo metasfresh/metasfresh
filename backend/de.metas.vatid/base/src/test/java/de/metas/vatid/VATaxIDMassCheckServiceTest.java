@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.process.PInstanceId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.organization.OrgId;
@@ -35,7 +36,6 @@ import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.junit.jupiter.api.BeforeEach;
@@ -77,6 +77,7 @@ class VATaxIDMassCheckServiceTest
 	private static final BPartnerId BPARTNER_ID_SECOND = BPartnerId.ofRepoId(1000103);
 	private static final BPartnerId BPARTNER_ID_THIRD = BPartnerId.ofRepoId(1000104);
 	private static final BPartnerId BPARTNER_ID_BLANK_VATAXID = BPartnerId.ofRepoId(1000105);
+	private static final PInstanceId SELECTION_PINSTANCE_ID = PInstanceId.ofRepoId(1_000_050);
 
 	/**
 	 * Verified live against VIES on 2026-08-15 — see {@code VIESClient.REQUEST_SIDE_ERRORS}.
@@ -103,18 +104,11 @@ class VATaxIDMassCheckServiceTest
 		checkTargetRepoSpy = spy(new VATaxIdCheckTargetRepo());
 		doNothing().when(checkTargetRepoSpy).stampVATaxIDCheckAttempt(any(BPartnerId.class), any(Instant.class));
 		doNothing().when(checkTargetRepoSpy).stampVATaxIDCheckAttempt(any(BPartnerLocationId.class), any(Instant.class));
-	}
 
-	/**
-	 * A stand-in for the {@code C_BPartner} selection query the process hands the service. The selection tests
-	 * stub the repo spy's grain iterators, so this query is never executed -- it only has to be the object the
-	 * service threads through to {@code countSelectedTargets} / {@code iterateSelectedTargets}.
-	 */
-	private static IQuery<I_C_BPartner> mockSelectionQuery()
-	{
-		@SuppressWarnings("unchecked")
-		final IQuery<I_C_BPartner> selectedBPartnersQuery = mock(IQuery.class);
-		return selectedBPartnersQuery;
+		// The selection path now carries a non-null pinstance (its selection key), so reportCallStats reaches
+		// this call; give it a benign default. Unused on the nightly-null-pinstance tests, which is harmless.
+		when(checkServiceMock.getCallStatsForRun(any(PInstanceId.class)))
+				.thenReturn(VATaxIDCheckCallStats.builder().callCount(0).averageResponseTimeMillis(0).build());
 	}
 
 	private static I_C_BPartner newBPartnerWithVATaxID(final BPartnerId bpartnerId, final String vataxID)
@@ -144,15 +138,14 @@ class VATaxIDMassCheckServiceTest
 	{
 		final I_C_BPartner brokenStampPartner = newBPartnerWithVATaxID(BPARTNER_ID_BROKEN_STAMP, "DE111111111");
 		final I_C_BPartner healthyPartner = newBPartnerWithVATaxID(BPARTNER_ID_HEALTHY, "DE222222222");
-		final IQuery<I_C_BPartner> selectedBPartnersQuery = mockSelectionQuery();
 
 		// The selection now streams through the query-based seam, mirroring the nightly grain stubs: the two
 		// selected partners are the partner grain, there is no location grain.
-		doReturn(2).when(checkTargetRepoSpy).countSelectedTargets(selectedBPartnersQuery);
+		doReturn(2).when(checkTargetRepoSpy).countSelectedTargets(SELECTION_PINSTANCE_ID);
 		doReturn(ImmutableList.of(brokenStampPartner, healthyPartner).iterator())
-				.when(checkTargetRepoSpy).iterateSelectedBPartners(selectedBPartnersQuery);
+				.when(checkTargetRepoSpy).iterateSelectedBPartners(SELECTION_PINSTANCE_ID);
 		doReturn(ImmutableList.<I_C_BPartner_Location>of().iterator())
-				.when(checkTargetRepoSpy).iterateSelectedBPartnerLocations(selectedBPartnersQuery);
+				.when(checkTargetRepoSpy).iterateSelectedBPartnerLocations(SELECTION_PINSTANCE_ID);
 		// the broken target's stamp write fails on every attempt -- the exact chronic-failure shape this
 		// test exists to cover; the healthy target's keeps the no-op stub from beforeEach and succeeds.
 		doThrow(new RuntimeException("simulated stamp-write failure (test-only, VATaxIDMassCheckServiceTest)"))
@@ -165,7 +158,7 @@ class VATaxIDMassCheckServiceTest
 		final VATaxIDMassCheckService massCheckService = new VATaxIDMassCheckService(checkServiceMock, checkTargetRepoSpy);
 
 		final VATaxIDMassCheckRequest request = VATaxIDMassCheckRequest.builder()
-				.selectedBPartnersQuery(selectedBPartnersQuery)
+				.pinstanceId(SELECTION_PINSTANCE_ID)
 				.maxChecksPerRun(0)
 				.nightlyRun(false)
 				.build();
@@ -209,13 +202,12 @@ class VATaxIDMassCheckServiceTest
 		final I_C_BPartner firstPartner = newBPartnerWithVATaxID(BPARTNER_ID_HEALTHY, "DE222222222");
 		final I_C_BPartner secondPartner = newBPartnerWithVATaxID(BPARTNER_ID_SECOND, "DE333333333");
 		final I_C_BPartner thirdPartner = newBPartnerWithVATaxID(BPARTNER_ID_THIRD, "DE444444444");
-		final IQuery<I_C_BPartner> selectedBPartnersQuery = mockSelectionQuery();
 
-		doReturn(3).when(checkTargetRepoSpy).countSelectedTargets(selectedBPartnersQuery);
+		doReturn(3).when(checkTargetRepoSpy).countSelectedTargets(SELECTION_PINSTANCE_ID);
 		doReturn(ImmutableList.of(firstPartner, secondPartner, thirdPartner).iterator())
-				.when(checkTargetRepoSpy).iterateSelectedBPartners(selectedBPartnersQuery);
+				.when(checkTargetRepoSpy).iterateSelectedBPartners(SELECTION_PINSTANCE_ID);
 		doReturn(ImmutableList.<I_C_BPartner_Location>of().iterator())
-				.when(checkTargetRepoSpy).iterateSelectedBPartnerLocations(selectedBPartnersQuery);
+				.when(checkTargetRepoSpy).iterateSelectedBPartnerLocations(SELECTION_PINSTANCE_ID);
 		when(checkServiceMock.getUnavailableCountryCodes(any(OrgId.class))).thenReturn(ImmutableSet.of());
 
 		// Raised for EVERY target, exactly as a misconfigured requester identity behaves: the fault is in the
@@ -228,7 +220,7 @@ class VATaxIDMassCheckServiceTest
 		final VATaxIDMassCheckService massCheckService = new VATaxIDMassCheckService(checkServiceMock, checkTargetRepoSpy);
 
 		final VATaxIDMassCheckRequest request = VATaxIDMassCheckRequest.builder()
-				.selectedBPartnersQuery(selectedBPartnersQuery)
+				.pinstanceId(SELECTION_PINSTANCE_ID)
 				.maxChecksPerRun(0)
 				.nightlyRun(false)
 				.build();
@@ -278,27 +270,26 @@ class VATaxIDMassCheckServiceTest
 	void selectionRun_streamsAndNeverBuildsAnIdList()
 	{
 		final I_C_BPartner selectedPartner = newBPartnerWithVATaxID(BPARTNER_ID_HEALTHY, "DE123456789");
-		final IQuery<I_C_BPartner> selectedBPartnersQuery = mockSelectionQuery();
 
-		doReturn(1).when(checkTargetRepoSpy).countSelectedTargets(selectedBPartnersQuery);
+		doReturn(1).when(checkTargetRepoSpy).countSelectedTargets(SELECTION_PINSTANCE_ID);
 		doReturn(ImmutableList.of(selectedPartner).iterator())
-				.when(checkTargetRepoSpy).iterateSelectedBPartners(selectedBPartnersQuery);
+				.when(checkTargetRepoSpy).iterateSelectedBPartners(SELECTION_PINSTANCE_ID);
 		doReturn(ImmutableList.<I_C_BPartner_Location>of().iterator())
-				.when(checkTargetRepoSpy).iterateSelectedBPartnerLocations(selectedBPartnersQuery);
+				.when(checkTargetRepoSpy).iterateSelectedBPartnerLocations(SELECTION_PINSTANCE_ID);
 		when(checkServiceMock.getUnavailableCountryCodes(any(OrgId.class))).thenReturn(ImmutableSet.of());
 		when(checkServiceMock.check(any(VATaxIDCheckRequest.class))).thenReturn(VATaxIDStatus.Valid);
 
 		final VATaxIDMassCheckService massCheckService = new VATaxIDMassCheckService(checkServiceMock, checkTargetRepoSpy);
 
 		final VATaxIDMassCheckResult result = massCheckService.run(VATaxIDMassCheckRequest.builder()
-				.selectedBPartnersQuery(selectedBPartnersQuery)
+				.pinstanceId(SELECTION_PINSTANCE_ID)
 				.maxChecksPerRun(0)
 				.nightlyRun(false)
 				.build());
 
 		assertThat(result.getCheckedCount()).isEqualTo(1);
 		// the selection path streams via the query-based iterator, exactly like the nightly path ...
-		verify(checkTargetRepoSpy).iterateSelectedTargets(eq(selectedBPartnersQuery), any());
+		verify(checkTargetRepoSpy).iterateSelectedTargets(eq(SELECTION_PINSTANCE_ID), any());
 		// ... and never materialises the selection into an id list handed to the DAO (the #31060 crash).
 		verify(bpartnerDAOMock, never()).getByIds(anyCollection());
 	}
@@ -555,13 +546,12 @@ class VATaxIDMassCheckServiceTest
 	{
 		final I_C_BPartner blankVATaxIDPartner = newBPartnerWithVATaxID(BPARTNER_ID_BLANK_VATAXID, "");
 		final I_C_BPartner healthyPartner = newBPartnerWithVATaxID(BPARTNER_ID_HEALTHY, "DE123456789");
-		final IQuery<I_C_BPartner> selectedBPartnersQuery = mockSelectionQuery();
 
-		doReturn(1).when(checkTargetRepoSpy).countSelectedTargets(selectedBPartnersQuery);
+		doReturn(1).when(checkTargetRepoSpy).countSelectedTargets(SELECTION_PINSTANCE_ID);
 		doReturn(ImmutableList.of(blankVATaxIDPartner, healthyPartner).iterator())
-				.when(checkTargetRepoSpy).iterateSelectedBPartners(selectedBPartnersQuery);
+				.when(checkTargetRepoSpy).iterateSelectedBPartners(SELECTION_PINSTANCE_ID);
 		doReturn(ImmutableList.<I_C_BPartner_Location>of().iterator())
-				.when(checkTargetRepoSpy).iterateSelectedBPartnerLocations(selectedBPartnersQuery);
+				.when(checkTargetRepoSpy).iterateSelectedBPartnerLocations(SELECTION_PINSTANCE_ID);
 		when(checkServiceMock.getUnavailableCountryCodes(any(OrgId.class))).thenReturn(ImmutableSet.of());
 		when(checkServiceMock.check(any(VATaxIDCheckRequest.class))).thenReturn(VATaxIDStatus.Valid);
 
@@ -572,7 +562,7 @@ class VATaxIDMassCheckServiceTest
 		try (final IAutoCloseable ignored = Loggables.temporarySetLoggable(log))
 		{
 			result = massCheckService.run(VATaxIDMassCheckRequest.builder()
-					.selectedBPartnersQuery(selectedBPartnersQuery)
+					.pinstanceId(SELECTION_PINSTANCE_ID)
 					.maxChecksPerRun(0)
 					.nightlyRun(false)
 					.build());

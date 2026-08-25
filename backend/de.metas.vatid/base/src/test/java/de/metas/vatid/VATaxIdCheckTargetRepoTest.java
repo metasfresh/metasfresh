@@ -25,7 +25,7 @@ package de.metas.vatid;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.IQuery;
+import de.metas.process.PInstanceId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,8 +41,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Exercises {@link VATaxIdCheckTargetRepo}'s selection-path queries against the in-memory query layer — the
  * real {@code addInSubQueryFilter} + guaranteed iterator, not stubs — because the one property that matters
- * here, that {@link VATaxIdCheckTargetRepo#countSelectedTargets(IQuery)} and
- * {@link VATaxIdCheckTargetRepo#iterateSelectedTargets(IQuery, java.util.function.Consumer)} agree, lives in
+ * here, that {@link VATaxIdCheckTargetRepo#countSelectedTargets(PInstanceId)} and
+ * {@link VATaxIdCheckTargetRepo#iterateSelectedTargets(PInstanceId, java.util.function.Consumer)} agree, lives in
  * the SQL layer and no mock can prove it.
  */
 class VATaxIdCheckTargetRepoTest
@@ -93,11 +93,13 @@ class VATaxIdCheckTargetRepoTest
 		newLocation(noVat1, "DE444444444");   // location target, parent has NONE -- still selected, still counts
 		newLocation(withVat2, null);           // no VAT-ID -- excluded from both count and stream
 
-		// The whole selection: all four partners, VAT-ID or not (a "select all" run).
-		final IQuery<I_C_BPartner> selection = queryBL.createQueryBuilder(I_C_BPartner.class).create();
+		// The whole selection: all four partners, VAT-ID or not (a "select all" run), materialised into a
+		// T_Selection exactly as the process does before handing the run its PInstanceId.
+		final PInstanceId selectionId = PInstanceId.ofRepoId(1_000_050);
+		queryBL.createQueryBuilder(I_C_BPartner.class).create().createSelection(selectionId);
 
 		int streamed = 0;
-		final Iterator<VATaxIdCheckTargetRepo.CheckTarget> targets = repo.iterateSelectedTargets(selection, logLabel -> {});
+		final Iterator<VATaxIdCheckTargetRepo.CheckTarget> targets = repo.iterateSelectedTargets(selectionId, logLabel -> {});
 		while (targets.hasNext())
 		{
 			targets.next();
@@ -107,7 +109,7 @@ class VATaxIdCheckTargetRepoTest
 		// 2 VAT-ID-bearing partners + 2 VAT-ID-bearing locations = 4; the two VAT-ID-less partners and the
 		// VAT-ID-less location contribute nothing.
 		assertThat(streamed).as("targets iterateSelectedTargets yields").isEqualTo(4);
-		assertThat(repo.countSelectedTargets(selection))
+		assertThat(repo.countSelectedTargets(selectionId))
 				.as("countSelectedTargets must equal what the iterator yields (no drift)")
 				.isEqualTo(streamed);
 	}

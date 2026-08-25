@@ -30,16 +30,17 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.organization.OrgId;
+import de.metas.process.PInstanceId;
 import de.metas.tax.api.VATIdentifier;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
@@ -351,7 +352,7 @@ public class VATaxIdCheckTargetRepo
 	}
 
 	/**
-	 * The user-triggered run's single stream of the targets {@code selectedBPartnersQuery} selects: first the
+	 * The user-triggered run's single stream of the targets in the {@code selectionId} selection: first the
 	 * header VAT-ID of every selected {@code C_BPartner} that carries one, then every VAT-ID-carrying
 	 * {@code C_BPartner_Location} of any selected partner — regardless of whether that location's own partner
 	 * header has a VAT-ID (see the class Javadoc, "Selecting a partner also covers its locations").
@@ -377,17 +378,17 @@ public class VATaxIdCheckTargetRepo
 	 */
 	@NonNull
 	public Iterator<CheckTarget> iterateSelectedTargets(
-			@NonNull final IQuery<I_C_BPartner> selectedBPartnersQuery,
+			@NonNull final PInstanceId selectionId,
 			@NonNull final Consumer<String> onBlankVATaxIDSkipped)
 	{
 		final Supplier<Iterator<CheckTarget>> selectedBPartnerTargets = () -> skippingBlankVATaxIDs(
-				iterateSelectedBPartners(selectedBPartnersQuery),
+				iterateSelectedBPartners(selectionId),
 				bpartnerRecord -> CheckTarget.ofPartner(BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID()), bpartnerRecord),
 				CheckTarget::logLabelOf,
 				onBlankVATaxIDSkipped);
 
 		final Supplier<Iterator<CheckTarget>> selectedBPartnerLocationTargets = () -> skippingBlankVATaxIDs(
-				iterateSelectedBPartnerLocations(selectedBPartnersQuery),
+				iterateSelectedBPartnerLocations(selectionId),
 				CheckTarget::ofLocation,
 				CheckTarget::logLabelOf,
 				onBlankVATaxIDSkipped);
@@ -406,10 +407,10 @@ public class VATaxIdCheckTargetRepo
 	 * @return how many targets {@link #iterateSelectedTargets(IQuery, Consumer)} would yield, from the SAME
 	 * two queries the iterator streams so the count and the stream cannot drift.
 	 */
-	public int countSelectedTargets(@NonNull final IQuery<I_C_BPartner> selectedBPartnersQuery)
+	public int countSelectedTargets(@NonNull final PInstanceId selectionId)
 	{
-		return createSelectedBPartnersWithVATaxIDQuery(selectedBPartnersQuery).count()
-				+ createSelectedBPartnerLocationsQuery(selectedBPartnersQuery).count();
+		return createSelectedBPartnersWithVATaxIDQuery(selectionId).count()
+				+ createSelectedBPartnerLocationsQuery(selectionId).count();
 	}
 
 	/**
@@ -419,9 +420,9 @@ public class VATaxIdCheckTargetRepo
 	 */
 	@VisibleForTesting
 	@NonNull
-	Iterator<I_C_BPartner> iterateSelectedBPartners(@NonNull final IQuery<I_C_BPartner> selectedBPartnersQuery)
+	Iterator<I_C_BPartner> iterateSelectedBPartners(@NonNull final PInstanceId selectionId)
 	{
-		return createSelectedBPartnersWithVATaxIDQuery(selectedBPartnersQuery)
+		return createSelectedBPartnersWithVATaxIDQuery(selectionId)
 				.setOption(IQuery.OPTION_IteratorBufferSize, ITERATOR_BUFFER_SIZE)
 				.iterateWithGuaranteedIterator(I_C_BPartner.class);
 	}
@@ -429,19 +430,20 @@ public class VATaxIdCheckTargetRepo
 	/** The {@code C_BPartner_Location} counterpart of {@link #iterateSelectedBPartners(IQuery)}. */
 	@VisibleForTesting
 	@NonNull
-	Iterator<I_C_BPartner_Location> iterateSelectedBPartnerLocations(@NonNull final IQuery<I_C_BPartner> selectedBPartnersQuery)
+	Iterator<I_C_BPartner_Location> iterateSelectedBPartnerLocations(@NonNull final PInstanceId selectionId)
 	{
-		return createSelectedBPartnerLocationsQuery(selectedBPartnersQuery)
+		return createSelectedBPartnerLocationsQuery(selectionId)
 				.setOption(IQuery.OPTION_IteratorBufferSize, ITERATOR_BUFFER_SIZE)
 				.iterateWithGuaranteedIterator(I_C_BPartner_Location.class);
 	}
 
 	/**
-	 * The VAT-ID-carrying {@code C_BPartner}s of {@code selectedBPartnersQuery}, reached through a SQL subquery
-	 * so the selection is never bound parameter-by-parameter. Built by one method shared by
-	 * {@link #iterateSelectedBPartners(IQuery)} and {@link #countSelectedTargets(IQuery)} so the streamed rows
-	 * and their count cannot drift -- the same reason {@link #createSelectedBPartnerLocationsQuery(IQuery)}
-	 * exists for the location grain: without the {@code VATaxID} filter here the count would include every
+	 * The VAT-ID-carrying {@code C_BPartner}s of the {@code selectionId} selection, reached through
+	 * {@code setOnlySelection} so the selection is never bound parameter-by-parameter. Built by one method
+	 * shared by {@link #iterateSelectedBPartners(PInstanceId)} and {@link #countSelectedTargets(PInstanceId)}
+	 * so the streamed rows and their count cannot drift -- the same reason
+	 * {@link #createSelectedBPartnerLocationsQuery(PInstanceId)} exists for the location grain: without the
+	 * {@code VATaxID} filter here the count would include every
 	 * selected partner that carries no VAT-ID (the ordinary case on a broad selection), while the stream
 	 * yields only VAT-ID-bearing ones, and pendingCount would be inflated by the difference.
 	 *
@@ -450,28 +452,32 @@ public class VATaxIdCheckTargetRepo
 	 * grain queries a different table not covered by that selection and so must scope active itself.
 	 */
 	@NonNull
-	private IQuery<I_C_BPartner> createSelectedBPartnersWithVATaxIDQuery(@NonNull final IQuery<I_C_BPartner> selectedBPartnersQuery)
+	private IQuery<I_C_BPartner> createSelectedBPartnersWithVATaxIDQuery(@NonNull final PInstanceId selectionId)
 	{
 		return queryBL.createQueryBuilder(I_C_BPartner.class)
+				.setOnlySelection(selectionId)
 				.addNotNull(I_C_BPartner.COLUMNNAME_VATaxID)
-				.addInSubQueryFilter(I_C_BPartner.COLUMNNAME_C_BPartner_ID, I_C_BPartner.COLUMNNAME_C_BPartner_ID, selectedBPartnersQuery)
 				.orderBy(I_C_BPartner.COLUMNNAME_C_BPartner_ID)
 				.create();
 	}
 
 	/**
-	 * Every VAT-ID-carrying, active {@code C_BPartner_Location} of any partner in {@code selectedBPartnersQuery},
-	 * reached through a SQL subquery so the selection is never bound parameter-by-parameter. Built by one
-	 * method shared by {@link #iterateSelectedBPartnerLocations(IQuery)} and
-	 * {@link #countSelectedTargets(IQuery)} so the streamed rows and their count cannot drift.
+	 * Every VAT-ID-carrying, active {@code C_BPartner_Location} of any partner in the {@code selectionId}
+	 * selection, reached through a SQL subquery so the selection is never bound parameter-by-parameter. Built
+	 * by one method shared by {@link #iterateSelectedBPartnerLocations(PInstanceId)} and
+	 * {@link #countSelectedTargets(PInstanceId)} so the streamed rows and their count cannot drift.
 	 */
 	@NonNull
-	private IQuery<I_C_BPartner_Location> createSelectedBPartnerLocationsQuery(@NonNull final IQuery<I_C_BPartner> selectedBPartnersQuery)
+	private IQuery<I_C_BPartner_Location> createSelectedBPartnerLocationsQuery(@NonNull final PInstanceId selectionId)
 	{
+		final IQuery<I_C_BPartner> selectedBPartners = queryBL.createQueryBuilder(I_C_BPartner.class)
+				.setOnlySelection(selectionId)
+				.create();
+
 		return queryBL.createQueryBuilder(I_C_BPartner_Location.class)
 				.addOnlyActiveRecordsFilter()
 				.addNotNull(I_C_BPartner_Location.COLUMNNAME_VATaxID)
-				.addInSubQueryFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, I_C_BPartner.COLUMNNAME_C_BPartner_ID, selectedBPartnersQuery)
+				.addInSubQueryFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, I_C_BPartner.COLUMNNAME_C_BPartner_ID, selectedBPartners)
 				.orderBy(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID)
 				.create();
 	}

@@ -34,7 +34,6 @@ import de.metas.vatid.VATaxIDMassCheckResult;
 import de.metas.vatid.VATaxIDMassCheckService;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
 
 /**
@@ -83,17 +82,19 @@ public class C_BPartner_VATaxID_Check extends JavaProcess implements IProcessPre
 		// A nightly run has no selection to pass: VATaxIDMassCheckService streams the due records itself. A
 		// user-triggered run passes its selection as a lazily-streamed query rather than a materialised id list:
 		// "select all" can carry tens of thousands of records, and binding one parameter per record is what
-		// produced `An I/O error occurred while sending to the backend`. retrieveSelectedRecordsQueryBuilder
-		// covers BOTH the multi-record pinstance selection and the single-record case, so the query preserves
-		// the exact selection semantics of either.
-		final IQuery<I_C_BPartner> selectedBPartnersQuery = nightlyRun
-				? null
-				: retrieveSelectedRecordsQueryBuilder(I_C_BPartner.class)
-						.orderBy(I_C_BPartner.COLUMNNAME_C_BPartner_ID)
-						.create();
+		// produced `An I/O error occurred while sending to the backend`. Materialise the selection into a
+		// T_Selection keyed by this run's pinstance and let the service stream it with setOnlySelection.
+		// retrieveSelectedRecordsQueryBuilder covers BOTH the multi-record selection and the single-record
+		// case, so createSelection captures the exact selection semantics of either.
+		if (!nightlyRun)
+		{
+			retrieveSelectedRecordsQueryBuilder(I_C_BPartner.class)
+					.orderBy(I_C_BPartner.COLUMNNAME_C_BPartner_ID)
+					.create()
+					.createSelection(getPinstanceId());
+		}
 
 		final VATaxIDMassCheckResult result = massCheckService.run(VATaxIDMassCheckRequest.builder()
-				.selectedBPartnersQuery(selectedBPartnersQuery)
 				.maxChecksPerRun(p_MaxChecksPerRun)
 				.pinstanceId(getPinstanceId())
 				.nightlyRun(nightlyRun)
