@@ -31,6 +31,7 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
+import com.rabbitmq.client.GetResponse;
 import de.metas.CommandLineParser;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.ServerBoot;
@@ -87,6 +88,9 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 {
 	private final static Logger logger = LogManager.getLogger(MetasfreshToExternalSystemRabbitMQ_StepDef.class);
 
+	/** How long the synchronous {@code basicGet} poll sleeps between empty pulls. */
+	private static final long POLL_INTERVAL_MILLIS = 250L;
+
 	private final ConnectionFactory metasfreshToRabbitMQFactory;
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final M_HU_StepDefData huTable;
@@ -133,9 +137,10 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 	 * Asserts that no message arrives on {@link ExternalSystemConstants#QUEUE_NAME_MF_TO_ES} within the
 	 * given timeout — the negative counterpart of {@code RabbitMQ receives a JsonExternalSystemRequest …}.
 	 * <p>
-	 * Performs a single blocking receive for the whole timeout window (mirroring the {@code DefaultConsumer}
-	 * idiom of {@link #pollRequestFromQueue(int, Function)}) rather than a poll loop, so a message that
-	 * arrives late in the window still fails the assertion instead of slipping past between polls.
+	 * Polls synchronously with {@code basicGet} for the whole timeout window, so a message arriving late in
+	 * the window is still seen and still fails the assertion. A message that does not parse as a
+	 * {@link JsonExternalSystemRequest} is acked and skipped rather than failing the step — a leftover or
+	 * another scenario's message must not be reported as the condition under test.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
@@ -144,7 +149,7 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 	 * </pre>
 	 */
 	@Then("^RabbitMQ MF_TO_ExternalSystem receives no message within (.*)s$")
-	public void rabbitMQ_receives_no_message(final int timeoutSeconds) throws IOException, TimeoutException, InterruptedException
+	public void rabbitMQ_receives_no_message(final int timeoutSeconds) throws IOException, TimeoutException
 	{
 		final JsonExternalSystemRequest request = receiveOneRequestOrNull(timeoutSeconds);
 
@@ -289,43 +294,90 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 	 * does not fail when nothing is received — the caller ({@code rabbitMQ_receives_no_message}) asserts on that.
 	 */
 	@Nullable
-	private JsonExternalSystemRequest receiveOneRequestOrNull(final int timeoutSeconds) throws IOException, TimeoutException, InterruptedException
+	private JsonExternalSystemRequest receiveOneRequestOrNull(final int timeoutSeconds) throws IOException, TimeoutException
 	{
+		Connection connection = null;
 		Channel channel = null;
 
 		try
 		{
-			final Connection connection = metasfreshToRabbitMQFactory.newConnection();
+			connection = metasfreshToRabbitMQFactory.newConnection();
 			channel = connection.createChannel();
 
-			final CountDownLatch countDownLatch = new CountDownLatch(1);
-			final AtomicReference<JsonExternalSystemRequest> receivedRequest = new AtomicReference<>();
+			final long deadline = System.currentTimeMillis() + (timeoutSeconds * 1000L);
 
-			final DefaultConsumer consumer = new DefaultConsumer(channel)
+			while (System.currentTimeMillis() < deadline)
 			{
-				@Override
-				public void handleDelivery(final String consumerTag, final Envelope envelope, final AMQP.BasicProperties properties, final byte[] body) throws JsonProcessingException
+				final GetResponse response = channel.basicGet(QUEUE_NAME_MF_TO_ES, false);
+				if (response == null)
 				{
-					final String externalSystemRequest = new String(body, StandardCharsets.UTF_8);
-
-					logger.info("*** {}: received message: {}", QUEUE_NAME_MF_TO_ES, externalSystemRequest);
-
-					receivedRequest.set(objectMapper.readValue(externalSystemRequest, JsonExternalSystemRequest.class));
-					countDownLatch.countDown();
+					try
+					{
+						Thread.sleep(POLL_INTERVAL_MILLIS);
+					}
+					catch (final InterruptedException e)
+					{
+						Thread.currentThread().interrupt();
+						break;
+					}
+					continue;
 				}
-			};
 
-			channel.basicConsume(QUEUE_NAME_MF_TO_ES, true, consumer);
+				final long deliveryTag = response.getEnvelope().getDeliveryTag();
+				final String payload = new String(response.getBody(), StandardCharsets.UTF_8);
 
-			countDownLatch.await(timeoutSeconds, TimeUnit.SECONDS);
+				logger.info("*** {}: received message: {}", QUEUE_NAME_MF_TO_ES, payload);
 
-			return receivedRequest.get();
+				try
+				{
+					final JsonExternalSystemRequest request = objectMapper.readValue(payload, JsonExternalSystemRequest.class);
+					channel.basicAck(deliveryTag, false);
+					return request;
+				}
+				catch (final JsonProcessingException e)
+				{
+					// Foreign message (a leftover, or another scenario's): ack it so it neither blocks this poll
+					// nor reappears, and keep polling. Throwing here would fail the scenario for someone else's
+					// message rather than for the condition under test.
+					channel.basicAck(deliveryTag, false);
+					logger.info("*** {}: skipping unparseable message: {}", QUEUE_NAME_MF_TO_ES, payload, e);
+				}
+			}
+
+			return null;
 		}
 		finally
 		{
-			if (channel != null)
+			closeQuietly(channel, connection);
+		}
+	}
+
+	/**
+	 * Closes channel and connection, swallowing close failures — a broker-side close error must not mask
+	 * the assertion result of the step that is closing.
+	 */
+	private void closeQuietly(@Nullable final Channel channel, @Nullable final Connection connection)
+	{
+		if (channel != null)
+		{
+			try
 			{
 				channel.close();
+			}
+			catch (final Exception e)
+			{
+				logger.debug("Ignoring failure while closing the channel", e);
+			}
+		}
+		if (connection != null)
+		{
+			try
+			{
+				connection.close();
+			}
+			catch (final Exception e)
+			{
+				logger.debug("Ignoring failure while closing the connection", e);
 			}
 		}
 	}
