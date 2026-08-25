@@ -1,5 +1,6 @@
 package de.metas.edi.api.impl;
 
+import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.async.spi.impl.EDIWorkpackageProcessor;
@@ -9,6 +10,7 @@ import de.metas.esb.edi.model.I_EDI_Desadv_M_InOut;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
+import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
@@ -92,7 +94,7 @@ class DesadvBL_recomputeDesadvStatusFromInOuts_Test
 		return schedule;
 	}
 
-	private void createLinkedInOut(final I_EDI_Desadv desadv, final EDIExportStatus inOutStatus)
+	private I_M_InOut createLinkedInOut(final I_EDI_Desadv desadv, final EDIExportStatus inOutStatus)
 	{
 		final I_M_InOut inOut = newInstance(I_M_InOut.class);
 		inOut.setEDI_ExportStatus(inOutStatus.getCode());
@@ -103,6 +105,7 @@ class DesadvBL_recomputeDesadvStatusFromInOuts_Test
 		junction.setEDI_Desadv_ID(desadv.getEDI_Desadv_ID());
 		junction.setM_InOut_ID(inOut.getM_InOut_ID());
 		saveRecord(junction);
+		return inOut;
 	}
 
 	@Test
@@ -248,12 +251,22 @@ class DesadvBL_recomputeDesadvStatusFromInOuts_Test
 				.isEqualTo(EDIExportStatus.Sent.getCode());
 	}
 
+	/**
+	 * TC9. Reopening must return the DESADV to Pending and must never re-transmit.
+	 * <p>
+	 * "Never re-transmit" holds structurally today — {@code EDI_Desadv.onDesadvStatusChanged} is the
+	 * only interceptor on {@code EDI_ExportStatus} and its {@code propagateEDIStatus} early-returns in
+	 * per-{@code M_InOut} mode, which is the only mode this recompute runs in, while
+	 * {@code EDI_Desadv_EnqueueForExport} refuses to run in that mode at all. Nothing pinned that,
+	 * though, so the assertions below do: a future interceptor that re-enqueues on a status change
+	 * would turn every close/reopen cycle into mass re-transmission, and this test would catch it.
+	 */
 	@Test
-	void reopeningTheShipmentSchedule_returnsTheDesadvToPending()
+	void reopeningTheShipmentSchedule_returnsTheDesadvToPending_andNeverReTransmits()
 	{
 		final I_EDI_Desadv desadv = createDesadv("70", EDIExportStatus.Pending.getCode());
 		final I_EDI_DesadvLine desadvLine = createDesadvLineRecord(desadv, "100", null, "70");
-		createLinkedInOut(desadv, EDIExportStatus.Sent);
+		final I_M_InOut inOut = createLinkedInOut(desadv, EDIExportStatus.Sent);
 
 		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
 		orderLine.setEDI_DesadvLine_ID(desadvLine.getEDI_DesadvLine_ID());
@@ -268,9 +281,26 @@ class DesadvBL_recomputeDesadvStatusFromInOuts_Test
 		saveRecord(schedule);
 		desadvBL.updateQtyOrdered_OverrideFromShipSchedAndSave(schedule);
 
+		InterfaceWrapperHelper.refresh(desadvLine);
+		// Probed via isNull, not getQtyOrdered_Override() == null: the generated getter maps SQL NULL
+		// to BigDecimal.ZERO, so an .isNull() assertion here could never hold and a .isZero() one
+		// could not tell "override cleared" from "override set to zero" — the distinction the whole
+		// delivery-closed predicate turns on.
+		assertThat(InterfaceWrapperHelper.isNull(desadvLine, I_EDI_DesadvLine.COLUMNNAME_QtyOrdered_Override))
+				.as("reopening clears the override back to SQL NULL, which is what re-opens the line")
+				.isTrue();
+
 		InterfaceWrapperHelper.refresh(desadv);
 		assertThat(desadv.getEDI_ExportStatus())
 				.as("reopening must return the DESADV to Pending — more may ship after all")
 				.isEqualTo(EDIExportStatus.Pending.getCode());
+
+		InterfaceWrapperHelper.refresh(inOut);
+		assertThat(inOut.getEDI_ExportStatus())
+				.as("the shipment's own export status must be untouched — nothing is re-sent")
+				.isEqualTo(EDIExportStatus.Sent.getCode());
+		assertThat(POJOLookupMap.get().getRecords(I_C_Queue_WorkPackage.class))
+				.as("no export work package may be enqueued by a close or a reopen")
+				.isEmpty();
 	}
 }
