@@ -109,8 +109,15 @@ public class CurrentCostTest
 	{
 		private CostDetailPreviousAmounts previousAmounts(final String qty, final I_C_UOM uom)
 		{
+			return previousAmounts(qty, uom, "0");
+		}
+
+		private CostDetailPreviousAmounts previousAmounts(final String qty, final I_C_UOM uom, final String ownCostPrice)
+		{
 			return CostDetailPreviousAmounts.builder()
-					.costPrice(CostPrice.zero(currencyId, UomId.ofRepoId(uom.getC_UOM_ID())))
+					.costPrice(CostPrice.ownCostPrice(
+							CostAmount.of(new BigDecimal(ownCostPrice), currencyId),
+							UomId.ofRepoId(uom.getC_UOM_ID())))
 					.qty(Quantity.of(new BigDecimal(qty), uom))
 					.cumulatedAmt(CostAmount.of(0, currencyId))
 					.cumulatedQty(Quantity.of(new BigDecimal(qty), uom))
@@ -139,6 +146,23 @@ public class CurrentCostTest
 					.isEqualTo(currentCost.getUomId());
 			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualByComparingTo("0");
 			assertThat(currentCost.getCumulatedQty().getUomId()).isEqualTo(currentCost.getUomId());
+		}
+
+		@Test
+		public void zeroQtyInAnotherUOM_alsoRelabelsTheCostPrice()
+		{
+			final CurrentCost currentCost = currentCost().build();
+
+			// the live case: no stock left, but the carried price is NOT zero
+			currentCost.setFrom(previousAmounts("0", uomKg, "0.4762"));
+
+			assertThat(currentCost.getCostPrice().getUomId())
+					.as("the price must not keep a foreign UOM — M_Cost has no separate UOM for it, and "
+							+ "CostRevaluationRepository stamps this onto M_CostRevaluationLine.C_UOM_ID")
+					.isEqualTo(currentCost.getUomId());
+			assertThat(currentCost.getCostPrice().getOwnCostPrice().toBigDecimal())
+					.as("re-labelling must not alter the amount")
+					.isEqualByComparingTo("0.4762");
 		}
 
 		@Test

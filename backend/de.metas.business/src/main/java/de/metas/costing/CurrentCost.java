@@ -125,7 +125,7 @@ public final class CurrentCost
 		final Quantity qty = toCostUOM(previousAmounts.getQty());
 		final Quantity cumulatedQty = toCostUOM(previousAmounts.getCumulatedQty());
 
-		this.costPrice = previousAmounts.getCostPrice();
+		this.costPrice = toCostUOM(previousAmounts.getCostPrice());
 		this.currentQty = qty;
 
 		this.cumulatedAmt = previousAmounts.getCumulatedAmt();
@@ -159,6 +159,25 @@ public final class CurrentCost
 		{
 			throw new AdempiereException("Invalid UOM for `" + qty + "`. Expected: " + getUomId());
 		}
+	}
+
+	/**
+	 * Returns {@code costPrice} labelled with this cost's own UOM.
+	 * <p>
+	 * {@code M_Cost} carries no separate UOM for its price: a current cost's price is <b>by definition</b>
+	 * expressed in the cost row's UOM, which is why the constructor stamps {@link #uomId} onto the price on
+	 * every load. A {@link CostDetailPreviousAmounts} however still carries the UOM its amounts were recorded
+	 * under, so the price is re-labelled here to preserve that invariant.
+	 * <p>
+	 * Without this, {@code CostRevaluationRepository.updateRecordFromCopySource} would stamp the stale UOM onto
+	 * {@code M_CostRevaluationLine.C_UOM_ID} while writing {@code CurrentQty} in this cost's UOM — a line
+	 * labelled with one unit and quantified in another.
+	 */
+	private CostPrice toCostUOM(@NonNull final CostPrice costPrice)
+	{
+		return UomId.equals(costPrice.getUomId(), getUomId())
+				? costPrice
+				: costPrice.convertAmounts(getUomId(), amount -> amount);
 	}
 
 	public CostElementId getCostElementId()
