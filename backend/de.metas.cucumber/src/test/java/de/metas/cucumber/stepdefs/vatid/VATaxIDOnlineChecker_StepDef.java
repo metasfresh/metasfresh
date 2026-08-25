@@ -45,6 +45,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_VATaxID_CheckLog;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -68,8 +69,16 @@ import static org.mockito.Mockito.when;
  */
 public class VATaxIDOnlineChecker_StepDef
 {
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	@NonNull private final VATaxIDOnlineChecker onlineCheckerMock = SpringContextHolder.instance.getBean(VATaxIDOnlineChecker.class);
+	/**
+	 * Resolved on first use, NOT in a field initialiser. This class carries a {@code @Before} hook, so cucumber
+	 * instantiates it for every scenario in the suite, and a {@code @Before} runs before the
+	 * {@code Given infrastructure and metasfresh are running} step that brings Spring up — anything resolved at
+	 * construction time would therefore fail on every scenario. Constructing this class must stay free.
+	 */
+	@NonNull private final SpringContextHolder.Lazy<VATaxIDOnlineChecker> onlineCheckerMock = SpringContextHolder.lazyBean(VATaxIDOnlineChecker.class);
+
+	/** Same construction-time constraint as {@link #onlineCheckerMock}; resolved via {@link #queryBL()}. */
+	@Nullable private IQueryBL _queryBL; // lazy
 
 	/**
 	 * VAT-IDs the shared checker mock was asked about while this scenario's stub was installed, but which
@@ -115,9 +124,9 @@ public class VATaxIDOnlineChecker_StepDef
 						.build()));
 		final Map<String, VATaxIDCheckResult> results = resultsByVATaxID.build();
 
-		reset(onlineCheckerMock);
+		reset(onlineCheckerMock.get());
 
-		when(onlineCheckerMock.check(any(VATIdentifier.class), any(VATaxIDConfig.class)))
+		when(onlineCheckerMock.get().check(any(VATIdentifier.class), any(VATaxIDConfig.class)))
 				.thenAnswer(invocation -> {
 					final VATIdentifier vatId = invocation.getArgument(0);
 					final VATaxIDCheckResult result = results.get(vatId.getAsString());
@@ -136,7 +145,7 @@ public class VATaxIDOnlineChecker_StepDef
 					}
 					return result;
 				});
-		when(onlineCheckerMock.getUnavailableCountryCodes(any(VATaxIDConfig.class))).thenReturn(ImmutableSet.of());
+		when(onlineCheckerMock.get().getUnavailableCountryCodes(any(VATaxIDConfig.class))).thenReturn(ImmutableSet.of());
 	}
 
 	/**
@@ -153,11 +162,11 @@ public class VATaxIDOnlineChecker_StepDef
 	@Given("the VAT-ID online checker is stubbed to be unreachable")
 	public void stubOnlineCheckerUnreachable()
 	{
-		reset(onlineCheckerMock);
+		reset(onlineCheckerMock.get());
 
-		when(onlineCheckerMock.check(any(VATIdentifier.class), any(VATaxIDConfig.class)))
+		when(onlineCheckerMock.get().check(any(VATIdentifier.class), any(VATaxIDConfig.class)))
 				.thenReturn(VATaxIDCheckResult.builder().status(VATaxIDStatus.ServiceUnavailable).build());
-		when(onlineCheckerMock.getUnavailableCountryCodes(any(VATaxIDConfig.class))).thenReturn(ImmutableSet.of());
+		when(onlineCheckerMock.get().getUnavailableCountryCodes(any(VATaxIDConfig.class))).thenReturn(ImmutableSet.of());
 	}
 
 	/**
@@ -182,7 +191,7 @@ public class VATaxIDOnlineChecker_StepDef
 	{
 		stubOnlineChecker(dataTable);
 
-		when(onlineCheckerMock.getUnavailableCountryCodes(any(VATaxIDConfig.class))).thenReturn(ImmutableSet.of(unavailableCountryCode));
+		when(onlineCheckerMock.get().getUnavailableCountryCodes(any(VATaxIDConfig.class))).thenReturn(ImmutableSet.of(unavailableCountryCode));
 	}
 
 	/**
@@ -214,15 +223,15 @@ public class VATaxIDOnlineChecker_StepDef
 						.build()));
 		final Map<String, VATaxIDCheckResult> results = resultsByVATaxID.build();
 
-		reset(onlineCheckerMock);
+		reset(onlineCheckerMock.get());
 
-		when(onlineCheckerMock.check(any(VATIdentifier.class), any(VATaxIDConfig.class)))
+		when(onlineCheckerMock.get().check(any(VATIdentifier.class), any(VATaxIDConfig.class)))
 				.thenAnswer(invocation -> {
 					final VATIdentifier vatId = invocation.getArgument(0);
 					final VATaxIDCheckResult result = results.get(vatId.getAsString());
 					return result != null ? result : VATaxIDCheckResult.builder().status(VATaxIDStatus.ServiceUnavailable).build();
 				});
-		when(onlineCheckerMock.getUnavailableCountryCodes(any(VATaxIDConfig.class))).thenReturn(ImmutableSet.of());
+		when(onlineCheckerMock.get().getUnavailableCountryCodes(any(VATaxIDConfig.class))).thenReturn(ImmutableSet.of());
 	}
 
 	/**
@@ -238,7 +247,7 @@ public class VATaxIDOnlineChecker_StepDef
 	@Then("the VAT-ID online checker was not called")
 	public void onlineCheckerWasNotCalled()
 	{
-		verify(onlineCheckerMock, never()).check(any(VATIdentifier.class), any(VATaxIDConfig.class));
+		verify(onlineCheckerMock.get(), never()).check(any(VATIdentifier.class), any(VATaxIDConfig.class));
 	}
 
 	/**
@@ -287,7 +296,7 @@ public class VATaxIDOnlineChecker_StepDef
 		// row alone hands a green light to an assertion that then reads a still-NotChecked parent.
 		StepDefUtil.tryAndWait(60, 500, () -> wasCalledFor(vataxID) && completedCheckIsReferencedByItsParent(vataxID));
 
-		verify(onlineCheckerMock, atLeastOnce())
+		verify(onlineCheckerMock.get(), atLeastOnce())
 				.check(argThat(checked -> checked != null && checked.getAsString().equals(vataxID)), any(VATaxIDConfig.class));
 	}
 
@@ -325,7 +334,7 @@ public class VATaxIDOnlineChecker_StepDef
 	{
 		StepDefUtil.tryAndWait(60, 500, () -> wasCalledFor(vataxID) && checkAttemptIsRecordedFor(vataxID));
 
-		verify(onlineCheckerMock, atLeastOnce())
+		verify(onlineCheckerMock.get(), atLeastOnce())
 				.check(argThat(checked -> checked != null && checked.getAsString().equals(vataxID)), any(VATaxIDConfig.class));
 	}
 
@@ -337,7 +346,7 @@ public class VATaxIDOnlineChecker_StepDef
 	 */
 	private boolean checkAttemptIsRecordedFor(@NonNull final String vataxID)
 	{
-		return queryBL.createQueryBuilder(I_VATaxID_CheckLog.class)
+		return queryBL().createQueryBuilder(I_VATaxID_CheckLog.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_VATaxID_CheckLog.COLUMNNAME_VATaxID, vataxID)
 				.create()
@@ -376,7 +385,7 @@ public class VATaxIDOnlineChecker_StepDef
 			@NonNull final String checkLogColumnName,
 			@NonNull final String vataxID)
 	{
-		return queryBL.createQueryBuilder(parentType)
+		return queryBL().createQueryBuilder(parentType)
 				.addInSubQueryFilter(checkLogColumnName, I_VATaxID_CheckLog.COLUMNNAME_VATaxID_CheckLog_ID, completedCheckLogsFor(vataxID))
 				.create()
 				.anyMatch();
@@ -390,18 +399,30 @@ public class VATaxIDOnlineChecker_StepDef
 	@NonNull
 	private IQuery<I_VATaxID_CheckLog> completedCheckLogsFor(@NonNull final String vataxID)
 	{
-		return queryBL.createQueryBuilder(I_VATaxID_CheckLog.class)
+		return queryBL().createQueryBuilder(I_VATaxID_CheckLog.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_VATaxID_CheckLog.COLUMNNAME_VATaxID, vataxID)
 				.addNotEqualsFilter(I_VATaxID_CheckLog.COLUMNNAME_VATaxIDStatus, VATaxIDStatus.RequestSent)
 				.create();
 	}
 
+	/** See {@link #_queryBL} for why this is not resolved in a field initialiser. */
+	@NonNull
+	private IQueryBL queryBL()
+	{
+		IQueryBL queryBL = this._queryBL;
+		if (queryBL == null)
+		{
+			queryBL = this._queryBL = Services.get(IQueryBL.class);
+		}
+		return queryBL;
+	}
+
 	private boolean wasCalledFor(@NonNull final String vataxID)
 	{
 		try
 		{
-			verify(onlineCheckerMock, atLeastOnce())
+			verify(onlineCheckerMock.get(), atLeastOnce())
 					.check(argThat(checked -> checked != null && checked.getAsString().equals(vataxID)), any(VATaxIDConfig.class));
 			return true;
 		}
@@ -427,11 +448,11 @@ public class VATaxIDOnlineChecker_StepDef
 	@Given("the VAT-ID online checker is stubbed to throw an exception")
 	public void stubOnlineCheckerThrows()
 	{
-		reset(onlineCheckerMock);
+		reset(onlineCheckerMock.get());
 
-		when(onlineCheckerMock.check(any(VATIdentifier.class), any(VATaxIDConfig.class)))
+		when(onlineCheckerMock.get().check(any(VATIdentifier.class), any(VATaxIDConfig.class)))
 				.thenThrow(new RuntimeException("Simulated online checker failure (test-only, VATaxIDOnlineChecker_StepDef)"));
-		when(onlineCheckerMock.getUnavailableCountryCodes(any(VATaxIDConfig.class))).thenReturn(ImmutableSet.of());
+		when(onlineCheckerMock.get().getUnavailableCountryCodes(any(VATaxIDConfig.class))).thenReturn(ImmutableSet.of());
 	}
 
 	/**
@@ -467,7 +488,10 @@ public class VATaxIDOnlineChecker_StepDef
 	 * Makes {@link #assertNoUnexpectedOnlineChecks()} unconditional for every scenario using
 	 * {@link #stubOnlineChecker(DataTable)}, instead of only for those that remember to end with the step. A
 	 * trailing Gherkin step would not do: Cucumber skips the remaining steps once one fails, i.e. on exactly
-	 * the runs where a stray check is the likeliest explanation. A no-op for every other scenario.
+	 * the runs where a stray check is the likeliest explanation.
+	 *
+	 * <p>A free no-op for every other scenario: it reads the in-memory collector only, so it resolves no bean
+	 * and hits no database.
 	 */
 	@After
 	public void assertNoUnexpectedOnlineChecksAfterScenario()

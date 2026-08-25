@@ -30,6 +30,8 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 
+import javax.annotation.Nullable;
+
 /**
  * Shared queries over {@link I_C_Queue_WorkPackage} for cucumber step defs that need to know how many
  * workpackages are still pending for a given {@link I_C_Queue_PackageProcessor}, identified by its short name
@@ -41,7 +43,12 @@ import org.adempiere.ad.dao.IQueryBuilder;
  */
 public class WorkPackageQueueUtil
 {
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	/**
+	 * Resolved on first use, NOT in a field initialiser: this class is constructor-injected into step defs that
+	 * carry cucumber hooks, so it is constructed for every scenario in the suite — including ones that never use
+	 * it and ones running before the framework is up. Constructing it must stay free.
+	 */
+	@Nullable private IQueryBL _queryBL; // lazy
 
 	private static final String WORKPACKAGE_PROCESSOR_CLASS_SUFFIX = "WorkpackageProcessor";
 
@@ -74,7 +81,7 @@ public class WorkPackageQueueUtil
 
 	IQueryBuilder<I_C_Queue_WorkPackage> pendingWorkPackagesQuery(@NonNull final ImmutableSet<Integer> packageProcessorIds)
 	{
-		return queryBL.createQueryBuilder(I_C_Queue_WorkPackage.class)
+		return queryBL().createQueryBuilder(I_C_Queue_WorkPackage.class)
 				.addInArrayFilter(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_PackageProcessor_ID, packageProcessorIds)
 				.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_Processed, false)
 				.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_IsError, false)
@@ -93,12 +100,24 @@ public class WorkPackageQueueUtil
 				: processorShortName + WORKPACKAGE_PROCESSOR_CLASS_SUFFIX;
 		final String classnameSuffix = "." + processorSimpleClassName;
 
-		return queryBL.createQueryBuilder(I_C_Queue_PackageProcessor.class)
+		return queryBL().createQueryBuilder(I_C_Queue_PackageProcessor.class)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
 				.filter(packageProcessor -> packageProcessor.getClassname() != null && packageProcessor.getClassname().endsWith(classnameSuffix))
 				.map(I_C_Queue_PackageProcessor::getC_Queue_PackageProcessor_ID)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	/** See {@link #_queryBL} for why this is not resolved in a field initialiser. */
+	@NonNull
+	private IQueryBL queryBL()
+	{
+		IQueryBL queryBL = this._queryBL;
+		if (queryBL == null)
+		{
+			queryBL = this._queryBL = Services.get(IQueryBL.class);
+		}
+		return queryBL;
 	}
 }

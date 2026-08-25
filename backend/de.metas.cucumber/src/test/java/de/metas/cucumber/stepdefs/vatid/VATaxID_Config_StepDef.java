@@ -34,6 +34,8 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_VATaxID_Config;
 
+import javax.annotation.Nullable;
+
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 
 /**
@@ -51,9 +53,22 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
  */
 public class VATaxID_Config_StepDef
 {
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	/**
+	 * Resolved on first use, NOT in a field initialiser: the {@code @After} hook below makes cucumber
+	 * instantiate this class for every scenario in the suite, so constructing it must stay free.
+	 */
+	@Nullable private IQueryBL _queryBL; // lazy
 
 	private boolean touchedByThisScenario = false;
+
+	/**
+	 * Whether this scenario switched the organisation's online check ON. A latch, never cleared: a check
+	 * enqueued while the flag was on stays queued after the flag goes off again.
+	 *
+	 * <p>Read by {@link VATaxIDCheck_StepDef}'s drain hook, which is the exact precondition for a check to be
+	 * enqueued at all — see {@code VATaxIDCheckTrigger}, which reads {@code IsVIESCheckEnabled} at enqueue time.
+	 */
+	private boolean viesCheckEnabledByThisScenario = false;
 
 	/**
 	 * Upserts the organisation's VAT-ID configuration. An UPSERT rather than an insert on purpose: one
@@ -81,7 +96,7 @@ public class VATaxID_Config_StepDef
 	{
 		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
 
-		final I_VATaxID_Config existingRecord = queryBL
+		final I_VATaxID_Config existingRecord = queryBL()
 				.createQueryBuilder(I_VATaxID_Config.class)
 				.addEqualsFilter(I_VATaxID_Config.COLUMNNAME_AD_Org_ID, ORG_ID)
 				.addOnlyActiveRecordsFilter()
@@ -108,6 +123,15 @@ public class VATaxID_Config_StepDef
 		InterfaceWrapperHelper.saveRecord(record);
 
 		touchedByThisScenario = true;
+		viesCheckEnabledByThisScenario |= record.isVIESCheckEnabled();
+	}
+
+	/**
+	 * @return whether this scenario switched the online check on — see {@link #viesCheckEnabledByThisScenario}.
+	 */
+	public boolean isVIESCheckEnabledByThisScenario()
+	{
+		return viesCheckEnabledByThisScenario;
 	}
 
 	/**
@@ -125,7 +149,7 @@ public class VATaxID_Config_StepDef
 			return;
 		}
 
-		final I_VATaxID_Config existingRecord = queryBL
+		final I_VATaxID_Config existingRecord = queryBL()
 				.createQueryBuilder(I_VATaxID_Config.class)
 				.addEqualsFilter(I_VATaxID_Config.COLUMNNAME_AD_Org_ID, ORG_ID)
 				.addOnlyActiveRecordsFilter()
@@ -153,5 +177,17 @@ public class VATaxID_Config_StepDef
 		{
 			InterfaceWrapperHelper.saveRecord(existingRecord);
 		}
+	}
+
+	/** See {@link #_queryBL} for why this is not resolved in a field initialiser. */
+	@NonNull
+	private IQueryBL queryBL()
+	{
+		IQueryBL queryBL = this._queryBL;
+		if (queryBL == null)
+		{
+			queryBL = this._queryBL = Services.get(IQueryBL.class);
+		}
+		return queryBL;
 	}
 }
