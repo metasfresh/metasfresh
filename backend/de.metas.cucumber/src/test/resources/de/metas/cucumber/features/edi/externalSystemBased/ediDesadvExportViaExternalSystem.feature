@@ -743,9 +743,13 @@ Feature: EDI DESADV export via External System
       | EDI_Desadv_ID | EDI_ExportStatus | OPT.Processed | OPT.FulfillmentPercent |
       | d_60          | P                | false         | 70                     |
 
-    When the M_ShipmentSchedule identified by s_s_60_1 is closed
-    And the M_ShipmentSchedule identified by s_s_60_2 is closed
-    And the M_ShipmentSchedule identified by s_s_60_3 is closed
+    # TC8 requires ONE operation: the real M_ShipmentSchedule_CloseShipmentSchedules AD_Process is run once
+    # over a three-row selection, so the interceptor fires once per line inside a single close operation.
+    When the M_ShipmentSchedule_CloseShipmentSchedules process is run for selection:
+      | M_ShipmentSchedule_ID |
+      | s_s_60_1              |
+      | s_s_60_2              |
+      | s_s_60_3              |
 
     # ─── CORE ASSERTION ────────────────────────────────────────────────────────
     # The DESADV is closed only once the LAST line can no longer receive anything.

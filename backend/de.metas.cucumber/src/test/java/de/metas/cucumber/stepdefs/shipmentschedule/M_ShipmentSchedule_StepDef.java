@@ -73,18 +73,29 @@ import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepositor
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Recompute;
+import de.metas.inoutcandidate.process.M_ShipmentSchedule_CloseShipmentSchedules;
 import de.metas.logging.LogManager;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.ProcessCalledFrom;
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessInfo;
 import de.metas.rest_api.v2.attributes.JsonAttributeService;
+import de.metas.security.IRoleDAO;
+import de.metas.security.Role;
+import de.metas.security.RoleId;
 import de.metas.shipper.gateway.commons.process.CarrierAdviseProcessService;
 import de.metas.shipping.ShipperId;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -112,6 +123,7 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
 import org.slf4j.Logger;
@@ -122,6 +134,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -142,6 +155,14 @@ public class M_ShipmentSchedule_StepDef
 	private static final String SHIP_BPARTNER = "shipBPartner";
 	private static final String BILL_BPARTNER = "billBPartner";
 
+	/**
+	 * The user/role pair the module already uses for its API steps
+	 * (see e.g. {@code the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'}).
+	 * That role is defined on the cucumber client and has {@code IsAccessAllOrgs}, so a process running under it
+	 * may write the records the other steps of a scenario created.
+	 */
+	private static final String PROCESS_ROLE_NAME = "WebUI";
+
 	@NonNull private final JsonAttributeService jsonAttributeService = SpringContextHolder.instance.getBean(JsonAttributeService.class);
 	@NonNull private final ShipmentService shipmentService = SpringContextHolder.instance.getBean(ShipmentService.class);
 	@NonNull private final IShipmentScheduleInvalidateRepository shipmentScheduleInvalidateRepository = Services.get(IShipmentScheduleInvalidateRepository.class);
@@ -151,6 +172,9 @@ public class M_ShipmentSchedule_StepDef
 	@NonNull private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	@NonNull private final CarrierAdviseProcessService carrierAdviseProcessService = SpringContextHolder.instance.getBean(CarrierAdviseProcessService.class);
+	@NonNull private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+	@NonNull private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
+	@NonNull private final IUserDAO userDAO = Services.get(IUserDAO.class);
 
 	@NonNull private final AD_User_StepDefData userTable;
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
@@ -575,6 +599,101 @@ public class M_ShipmentSchedule_StepDef
 						.appendParametersToMessage()
 						.setParameter("action:", action);
 		}
+	}
+
+	/**
+	 * Closes ALL the given {@code M_ShipmentSchedule}s in ONE run of the real
+	 * {@code M_ShipmentSchedule_CloseShipmentSchedules} AD_Process — the way an operator closes a multi-row
+	 * selection from the shipment-disposition view. Use this instead of repeating
+	 * {@code the M_ShipmentSchedule identified by … is closed} whenever a scenario has to prove something
+	 * about a single close <i>operation</i> that spans several schedules (e.g. that a once-per-schedule model
+	 * interceptor does not produce repeated writes).
+	 * <p>
+	 * The selection is handed over exactly the way the WebUI hands it over: as the {@code ProcessInfo}
+	 * where-clause {@code M_ShipmentSchedule.M_ShipmentSchedule_ID IN (…)} that
+	 * {@code SqlViewSelectionQueryBuilder.buildSqlWhereClause(…)} builds for the selected rows; the process turns
+	 * it back into a query via {@code ProcessInfo.getQueryFilterOrElseFalse()}. Because that method additionally
+	 * restricts to the client(s)/org(s) the acting role may write, the process is run under the
+	 * {@link #PROCESS_ROLE_NAME} role of the {@code metasfresh} user rather than under the ambient (role-less)
+	 * context.
+	 * <p>
+	 * Any process error fails the step — including the process' own {@code @NoSelection@} guard, which fires when
+	 * the where-clause matched no open, unpicked schedule. So a silently empty selection cannot pass unnoticed.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_ShipmentSchedule_ID</b> — (required, identifier-ref) one row per {@code M_ShipmentSchedule} to close;
+	 *   ALL rows are closed by a single process run<br>
+	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData
+	 * @cucumber.example
+	 * <pre>{@code
+	 * When the M_ShipmentSchedule_CloseShipmentSchedules process is run for selection:
+	 *   | M_ShipmentSchedule_ID |
+	 *   | s_s_60_1              |
+	 *   | s_s_60_2              |
+	 *   | s_s_60_3              |
+	 * }</pre>
+	 */
+	@When("the M_ShipmentSchedule_CloseShipmentSchedules process is run for selection:")
+	public void M_ShipmentSchedule_CloseShipmentSchedules_forSelection(@NonNull final DataTable dataTable)
+	{
+		final ImmutableSet<Integer> shipmentScheduleRepoIds = DataTableRows.of(dataTable)
+				.stream()
+				.map(row -> row.getAsIdentifier(COLUMNNAME_M_ShipmentSchedule_ID))
+				.map(shipmentScheduleTable::getId)
+				.map(ShipmentScheduleId::getRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final String selectionWhereClause = DB.buildSqlList(
+				I_M_ShipmentSchedule.Table_Name + "." + COLUMNNAME_M_ShipmentSchedule_ID,
+				shipmentScheduleRepoIds);
+
+		final ProcessExecutionResult result = ProcessInfo.builder()
+				.setCtx(createProcessCtx())
+				.setProcessCalledFrom(ProcessCalledFrom.WebUI)
+				.setAD_Process_ID(adProcessDAO.retrieveProcessIdByClass(M_ShipmentSchedule_CloseShipmentSchedules.class))
+				.setWhereClause(selectionWhereClause)
+				.buildAndPrepareExecution()
+				.executeSync()
+				.getResult();
+
+		result.propagateErrorIfAny();
+
+		logger.info("Ran M_ShipmentSchedule_CloseShipmentSchedules with AD_PInstance_ID={} for selection {}: {}",
+				result.getPinstanceId(), selectionWhereClause, result.getSummary());
+	}
+
+	/**
+	 * @return a context that carries the {@link #PROCESS_ROLE_NAME} role of the {@code metasfresh} user,
+	 * so that a process reading {@code ProcessInfo.getQueryFilterOrElseFalse()} sees a role which may write the
+	 * cucumber client's records.
+	 */
+	private Properties createProcessCtx()
+	{
+		final UserId userId = userDAO.retrieveUserIdByLogin(StepDefConstants.METASFRESH_VALUE);
+		if (userId == null)
+		{
+			throw new AdempiereException("Missing AD_User with login " + StepDefConstants.METASFRESH_VALUE);
+		}
+
+		final RoleId roleId = roleDAO.getUserRoles(userId)
+				.stream()
+				.filter(role -> PROCESS_ROLE_NAME.equals(role.getName()))
+				.findFirst()
+				.map(Role::getId)
+				.orElseThrow(() -> new AdempiereException("AD_User with login " + StepDefConstants.METASFRESH_VALUE
+						+ " has no AD_Role with name " + PROCESS_ROLE_NAME));
+
+		// copyCtx (not deriveCtx): the process ctx has to carry the values itself.
+		// The ambient cucumber ctx reaches the process only as Properties-defaults otherwise, and
+		// ContextClientQueryFilter then fails with "No #AD_Client_ID found in context".
+		final Properties processCtx = Env.copyCtx(Env.getCtx());
+		Env.setClientId(processCtx, StepDefConstants.CLIENT_ID);
+		Env.setOrgId(processCtx, StepDefConstants.ORG_ID);
+		Env.setLoggedUserId(processCtx, userId);
+		Env.setContext(processCtx, Env.CTXNAME_AD_Role_ID, roleId.getRepoId());
+
+		return processCtx;
 	}
 
 	private void validateNoShipmentScheduleCreatedForOrder(@NonNull final OrderId orderId)
