@@ -222,6 +222,26 @@ public class PP_Order_StepDef
 		});
 	}
 
+	/**
+	 * Mirrors {@link #compute_PPOrderCreateRequest_to_create_pp_order(DataTable)} but asserts the creation is
+	 * REFUSED with the given error code — used to prove a guard that fires while the manufacturing order is
+	 * being created, e.g. the product life-cycle status check in {@code PP_Order#validateBOMAndProduct}.
+	 * <p>
+	 * The DataTable takes the same columns as {@code create PP_Order:}; the order is never created, so its
+	 * identifier is not registered for later steps.
+	 *
+	 * <pre>{@code
+	 * Then create PP_Order expecting error code M_Product_BBSStatus_ActionBlocked:
+	 *   | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument |
+	 *   | refusedOrder           | MOP         | finishedProduct         | 5          | plant                    | 2021-04-16T07:00:00.00Z | 2021-04-18T07:00:00.00Z | 2021-04-16T07:00:00.00Z | N                |
+	 * }</pre>
+	 */
+	@And("^create PP_Order expecting error code (.*):$")
+	public void create_PP_Order_expecting_error_code(@NonNull final String errorCode, @NonNull final DataTable dataTable)
+	{
+		StepDefUtil.assertRefusedWithErrorCode(errorCode, () -> compute_PPOrderCreateRequest_to_create_pp_order(dataTable));
+	}
+
 	@And("complete planning for PP_Order:")
 	public void process_pp_order(@NonNull final DataTable dataTable) throws Exception
 	{
@@ -369,6 +389,29 @@ public class PP_Order_StepDef
 						.appendParametersToMessage()
 						.setParameter("action:", action);
 		}
+	}
+
+	/**
+	 * Asserts that completing the given manufacturing order is REFUSED, and that it is refused for the
+	 * expected reason: the thrown {@link AdempiereException} must carry the given error code.
+	 * <p>
+	 * The error code pins WHY the completion failed; asserting that "some exception" was thrown would also
+	 * pass if the manufacturing order happened to fail for an unrelated reason.
+	 * <p>
+	 * Parameters:<br>
+	 *   <b>orderIdentifier</b> — identifier of a {@code PP_Order} created earlier in the scenario<br>
+	 *   <b>errorCode</b> — the expected {@code AD_Message.ErrorCode}
+	 *
+	 * <pre>{@code
+	 * And the manufacturing order identified by startedOrder cannot be completed because of error code M_Product_BBSStatus_ActionBlocked
+	 * }</pre>
+	 */
+	@And("^the manufacturing order identified by (.*) cannot be completed because of error code (.*)$")
+	public void manufacturing_order_cannot_be_completed_because_of_error_code(
+			@NonNull final String orderIdentifier,
+			@NonNull final String errorCode)
+	{
+		StepDefUtil.assertRefusedWithErrorCode(errorCode, () -> order_action(orderIdentifier, StepDefDocAction.completed.name()));
 	}
 
 	private void validatePP_Order_BomLine(final int timeoutSec, @NonNull final DataTableRow row) throws InterruptedException

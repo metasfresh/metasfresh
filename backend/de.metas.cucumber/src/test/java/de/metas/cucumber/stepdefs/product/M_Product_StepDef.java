@@ -86,6 +86,22 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_M_Product_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_Category_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_Value;
 
+/**
+ * Step definitions for {@code M_Product}: creating and updating products (including
+ * {@code ProductLifeCycleStatus}/BBS-Status), and asserting product master data.
+ * <p>
+ * Products created here are registered in {@link M_Product_StepDefData} under their feature-file identifier,
+ * so later steps and other step-def classes can resolve them by that identifier.
+ *
+ * <pre>{@code
+ * Given metasfresh contains M_Products:
+ *   | Identifier | ProductLifeCycleStatus |
+ *   | flippedToG | O                      |
+ * When update M_Product:
+ *   | M_Product_ID.Identifier | ProductLifeCycleStatus |
+ *   | flippedToG              | G                      |
+ * }</pre>
+ */
 @RequiredArgsConstructor
 public class M_Product_StepDef
 {
@@ -281,6 +297,21 @@ public class M_Product_StepDef
 		}
 	}
 
+	/**
+	 * Updates existing products, looked up by their feature-file identifier.
+	 * <p>
+	 * Required column:<br>
+	 *   <b>M_Product_ID.Identifier</b> — identifier of a product created/loaded earlier in the scenario<br>
+	 * Optional columns (only the ones present are written):<br>
+	 *   <b>Value</b>, <b>GTIN</b>, <b>UPC</b>, <b>EAN13_ProductCode</b>, <b>IsStocked</b>, <b>IsActive</b>,
+	 *   <b>ProductLifeCycleStatus</b> — BBS-Status code {@code O}/{@code A}/{@code G}/{@code N}
+	 *
+	 * <pre>{@code
+	 * When update M_Product:
+	 *   | M_Product_ID.Identifier | ProductLifeCycleStatus |
+	 *   | flippedToG              | G                      |
+	 * }</pre>
+	 */
 	@Given("update M_Product:")
 	public void update_M_Product(@NonNull final DataTable dataTable)
 	{
@@ -332,7 +363,7 @@ public class M_Product_StepDef
 		tableRow.getAsOptionalString(I_M_Product.COLUMNNAME_EAN13_ProductCode)
 				.ifPresent(value -> productRecord.setEAN13_ProductCode(nullToken2Null(value)));
 		tableRow.getAsOptionalString(I_M_Product.COLUMNNAME_ProductLifeCycleStatus)
-				.ifPresent(value -> productRecord.setProductLifeCycleStatus(nullToken2Null(value)));
+				.ifPresent(value -> productRecord.setProductLifeCycleStatus(productLifeCycleStatusOrDefault(value)));
 
 		tableRow.getAsOptionalQuantity("WeightNet", uomDAO::getByX12DE355)
 				.ifPresent(netWeight -> {
@@ -450,6 +481,21 @@ public class M_Product_StepDef
 				.ifPresent(id -> productTable.putOrReplace(identifier, productDAO.getById(id)));
 	}
 
+	/**
+	 * Resolves a {@code ProductLifeCycleStatus} cell, mapping an explicit NULL token to {@code 'O'}.
+	 * <p>
+	 * The column is mandatory ({@code NOT NULL}, default {@code 'O'}), so a NULL cannot be written
+	 * through. Nothing is lost by defaulting it: NULL and {@code 'O'} mean the same thing to the
+	 * application — {@code BBSStatus.ofNullableCode(null)} yields no status and every
+	 * {@code ProductLifeCycleAction} is allowed, which is exactly what {@code 'O'} (OK) encodes. So a
+	 * feature file writing NULL still gets the unrestricted product it asked for.
+	 */
+	@NonNull
+	private static String productLifeCycleStatusOrDefault(@Nullable final String value)
+	{
+		return CoalesceUtil.coalesceNotNull(nullToken2Null(value), X_M_Product.PRODUCTLIFECYCLESTATUS_OK);
+	}
+
 	private void updateMProduct(@NonNull final DataTableRow row)
 	{
 		final I_M_Product productRecord = row.getAsIdentifier().lookupIn(productTable);
@@ -461,6 +507,8 @@ public class M_Product_StepDef
 		row.getAsOptionalString(I_M_Product.COLUMNNAME_EAN13_ProductCode).ifPresent(value -> productRecord.setEAN13_ProductCode(nullToken2Null(value)));
 		row.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsStocked).ifPresent(productRecord::setIsStocked);
 		row.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsActive).ifPresent(productRecord::setIsActive);
+		row.getAsOptionalString(I_M_Product.COLUMNNAME_ProductLifeCycleStatus)
+				.ifPresent(value -> productRecord.setProductLifeCycleStatus(productLifeCycleStatusOrDefault(value)));
 
 		saveRecord(productRecord);
 		productTable.putOrReplace(row.getAsIdentifier(), productRecord);
