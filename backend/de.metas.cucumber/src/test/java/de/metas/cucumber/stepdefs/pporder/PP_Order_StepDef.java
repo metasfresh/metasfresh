@@ -229,6 +229,13 @@ public class PP_Order_StepDef
 					.map(productPlanningTable::get)
 					.ifPresent(productPlanning -> ppOrderCreateRequest.productPlanningId(productPlanning.getIdNotNull()));
 
+			// The workstation is what a lot-number provider resolves the production line from
+			// (PP_Order.WorkStation_ID -> S_Resource.LotNumberCode), so it must be settable here
+			// independently of the plant.
+			row.getAsOptionalIdentifier(I_PP_Order.COLUMNNAME_WorkStation_ID)
+					.map(workstationIdentifier -> workstationIdentifier.lookupNotNullIdIn(resourceTable))
+					.ifPresent(ppOrderCreateRequest::workstationId);
+
 			final I_PP_Order ppOrder = ppOrderService.createOrder(ppOrderCreateRequest.build());
 			assertThat(ppOrder).isNotNull();
 

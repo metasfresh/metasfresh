@@ -110,6 +110,7 @@ public class S_Resource_StepDef
 		row.getAsOptionalEnum(I_S_Resource.COLUMNNAME_ManufacturingResourceType, ManufacturingResourceType.class)
 				.map(ManufacturingResourceType::getCode)
 				.ifPresent(record::setManufacturingResourceType);
+		row.getAsOptionalString(I_S_Resource.COLUMNNAME_LotNumberCode).ifPresent(record::setLotNumberCode);
 		row.getAsOptionalInt(I_S_Resource.COLUMNNAME_PlanningHorizon).ifPresent(record::setPlanningHorizon);
 
 		row.getAsOptionalQuantity(
