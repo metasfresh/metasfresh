@@ -28,7 +28,7 @@
 --    long-lived customer branches, where ESRImportBL stores 'Unknown_Invoice' for SCOR lines and the
 --    WebUI then shows the raw code. Idempotent, so this script is portable to those branches unchanged.
 INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName)
-SELECT 0,0,540386,543782,TO_TIMESTAMP('2026-08-25 08:30:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.payment.esr','Y','Systemfremde Rechnung',TO_TIMESTAMP('2026-08-25 08:30:00','YYYY-MM-DD HH24:MI:SS'),100,'U','Unknown_Invoice'
+SELECT 0,0,540386,543782 /*From ID Server*/,TO_TIMESTAMP('2026-08-25 08:30:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.payment.esr','Y','Systemfremde Rechnung',TO_TIMESTAMP('2026-08-25 08:30:00','YYYY-MM-DD HH24:MI:SS'),100,'U','Unknown_Invoice'
 WHERE NOT EXISTS (SELECT 1 FROM AD_Ref_List WHERE AD_Ref_List_ID=543782)
 ;
 
@@ -58,7 +58,13 @@ INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID,Name,Description,IsTrans
 SELECT l.AD_Language, t.AD_Ref_List_ID, t.Name, t.Description, 'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.Createdby, t.Updated, t.UpdatedBy, 'Y'
 FROM   AD_Language l, AD_Ref_List t
 WHERE  l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Reference_ID=540386
-  AND  NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID AND tt.IsActive='Y')
+  AND  NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
+--    NOTE: deliberately NO IsActive filter here. AD_Ref_List_Trl's PRIMARY KEY *is*
+--    (AD_Ref_List_ID, AD_Language) -- the very key this guard matches -- so an IsActive='Y' filter
+--    would hide a deactivated row and the INSERT would then violate the PK and abort the migration.
+--    The general "filter IsActive on a NOT EXISTS guard" convention applies where the match key is a
+--    NATURAL key distinct from a surrogate PK (a re-insert gets a fresh PK, so no collision); here it
+--    is the PK itself, which inverts the outcome.
 ;
 
 -- 4. Every NON-English row takes the corrected German base text. This must overwrite rows that
