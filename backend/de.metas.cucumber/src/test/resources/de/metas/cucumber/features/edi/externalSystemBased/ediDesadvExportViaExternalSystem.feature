@@ -435,9 +435,10 @@ Feature: EDI DESADV export via External System
     When the M_ShipmentSchedule identified by s_s_10 is closed
 
     # ─── CORE ASSERTION ────────────────────────────────────────────────────────
+    # OPT.EDIErrorMsg=null: the auto-close is a clean terminal state, not an error state.
     Then after not more than 120s, EDI_Desadv records have the following export status
-      | EDI_Desadv_ID | EDI_ExportStatus | OPT.Processed | OPT.FulfillmentPercent |
-      | d_10          | S                | true          | 70                     |
+      | EDI_Desadv_ID | EDI_ExportStatus | OPT.EDIErrorMsg | OPT.Processed | OPT.FulfillmentPercent |
+      | d_10          | S                | null            | true          | 70                     |
 
 
   @from:cucumber

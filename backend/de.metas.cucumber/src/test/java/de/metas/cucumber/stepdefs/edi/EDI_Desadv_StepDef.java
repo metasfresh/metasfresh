@@ -144,11 +144,12 @@ public class EDI_Desadv_StepDef
 	 *   <b>EDI_Desadv_ID.Identifier</b> — (required) identifier under which the found record is stored for later steps<br>
 	 *   <b>OPT.Processed</b> — (optional) expected {@code EDI_Desadv.isProcessed()}<br>
 	 *   <b>OPT.FulfillmentPercent</b> — (optional) expected {@code EDI_Desadv.getFulfillmentPercent()}, compared with {@code isEqualByComparingTo}<br>
+	 *   <b>OPT.EDIErrorMsg</b> — (optional) expected {@code EDI_Desadv.getEDIErrorMsg()}; the {@code null} token asserts the column IS null<br>
 	 * @cucumber.example
 	 * <pre>
 	 * Then EDI_Desadv is found:
-	 *   | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_Desadv_ID.Identifier | OPT.Processed | OPT.FulfillmentPercent |
-	 *   | bpartner                 | order_1                | desadv_1                 | false          | 100                    |
+	 *   | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_Desadv_ID.Identifier | OPT.Processed | OPT.FulfillmentPercent | OPT.EDIErrorMsg |
+	 *   | bpartner                 | order_1                | desadv_1                 | false          | 100                    | null            |
 	 * </pre>
 	 */
 	@Then("EDI_Desadv is found:")
@@ -213,7 +214,8 @@ public class EDI_Desadv_StepDef
 	/**
 	 * Polls the given {@code EDI_Desadv} records (already resolved via {@code EDI_Desadv is found:}
 	 * or {@code EDI_Desadv is enqueued for export}) until each reaches the expected
-	 * {@code EDI_ExportStatus}, then optionally asserts {@code Processed} / {@code FulfillmentPercent}.
+	 * {@code EDI_ExportStatus}, then optionally asserts {@code Processed} / {@code FulfillmentPercent} /
+	 * {@code EDIErrorMsg}.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -221,12 +223,13 @@ public class EDI_Desadv_StepDef
 	 *   <b>EDI_ExportStatus</b> — (required) the export status to poll for<br>
 	 *   <b>OPT.Processed</b> — (optional) expected {@code EDI_Desadv.isProcessed()}, asserted once the export status matches<br>
 	 *   <b>OPT.FulfillmentPercent</b> — (optional) expected {@code EDI_Desadv.getFulfillmentPercent()}, compared with {@code isEqualByComparingTo}<br>
+	 *   <b>OPT.EDIErrorMsg</b> — (optional) expected {@code EDI_Desadv.getEDIErrorMsg()}; the {@code null} token asserts the column IS null<br>
 	 * @cucumber.depends StepDefData: EDI_Desadv_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * Then after not more than 60s, EDI_Desadv records have the following export status
-	 *   | EDI_Desadv_ID | EDI_ExportStatus | OPT.Processed | OPT.FulfillmentPercent |
-	 *   | desadv_1      | Exported         | true          | 100                    |
+	 *   | EDI_Desadv_ID | EDI_ExportStatus | OPT.Processed | OPT.FulfillmentPercent | OPT.EDIErrorMsg |
+	 *   | desadv_1      | Exported         | true          | 100                    | null            |
 	 * </pre>
 	 */
 	@Then("^after not more than (.*)s, EDI_Desadv records have the following export status$")
@@ -415,11 +418,15 @@ public class EDI_Desadv_StepDef
 	}
 
 	/**
-	 * Asserts the optional {@code OPT.Processed} / {@code OPT.FulfillmentPercent} DataTable columns
-	 * against the given {@code EDI_Desadv} record, shared by {@code EDI_Desadv is found:} and
-	 * {@code after not more than {}s, EDI_Desadv records have the following export status}.
+	 * Asserts the optional {@code OPT.Processed} / {@code OPT.FulfillmentPercent} / {@code OPT.EDIErrorMsg}
+	 * DataTable columns against the given {@code EDI_Desadv} record, shared by {@code EDI_Desadv is found:}
+	 * and {@code after not more than {}s, EDI_Desadv records have the following export status}.
 	 * A column that is absent from {@code tableRow} is skipped entirely, so callers that never
 	 * supply these columns keep today's exact behaviour.
+	 * <p>
+	 * {@code OPT.EDIErrorMsg} is the only one of the three that can assert a NULL: a cell holding the
+	 * {@code null} token (see {@link DataTableUtil#nullToken2Null(String)}) asserts the column IS null,
+	 * any other value is compared literally.
 	 */
 	private void assertOptionalDesadvFields(@NonNull final Map<String, String> tableRow, @NonNull final I_EDI_Desadv desadvRecord)
 	{
@@ -433,6 +440,14 @@ public class EDI_Desadv_StepDef
 		if (fulfillmentPercent != null)
 		{
 			assertThat(desadvRecord.getFulfillmentPercent()).as(I_EDI_Desadv.COLUMNNAME_FulfillmentPercent).isEqualByComparingTo(fulfillmentPercent);
+		}
+
+		// mind the difference between "column not given" (skip) and "column given as the null token" (assert NULL)
+		final String ediErrorMsgRaw = tableRow.get("OPT." + I_EDI_Desadv.COLUMNNAME_EDIErrorMsg);
+		if (ediErrorMsgRaw != null)
+		{
+			final String expectedEDIErrorMsg = DataTableUtil.nullToken2Null(ediErrorMsgRaw);
+			assertThat(desadvRecord.getEDIErrorMsg()).as(I_EDI_Desadv.COLUMNNAME_EDIErrorMsg).isEqualTo(expectedEDIErrorMsg);
 		}
 	}
 
