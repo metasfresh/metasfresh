@@ -1,10 +1,12 @@
 -- ESR_ImportLine.ESR_Payment_Action (AD_Reference_ID=540386): repair the names + descriptions the
 -- accountant actually reads in the ESR Import window.
 --
--- WHY. Verified against two live instances: only 'P' was ever IsTranslated='Y'. Every other
--- AD_Ref_List_Trl row is IsTranslated='N', so the WebUI falls back to the base row -- which holds a
--- GERMAN Name and an ENGLISH Description. Net effect: German users read English descriptions and
--- English users read German names, in every language. On top of that:
+-- WHY. Verified against two live instances: every AD_Ref_List_Trl row for this reference carries a
+-- GERMAN Name together with an ENGLISH Description, because the rows were seeded by copying the base
+-- row (which mixes the two). So whatever language you work in, you read a German name next to an
+-- English description. NOTE the mechanism is the row content itself, NOT a translation fallback: the
+-- List lookup joins AD_Ref_List_Trl on AD_Language only and does not filter IsTranslated, so the row
+-- is displayed verbatim whatever that flag says (IsTranslated='Y' held only for 'P'). On top of that:
 --   * 'R' (Rueckbuchung) shows the Trl name "Summenzeile" in en_US and de_CH -- the label of 'C'.
 --   * 'N' has "!!not used in fresh!!" leaking into the en_US/de_CH description.
 --   * 'C' description reads "Contro line" (typo).
@@ -28,7 +30,7 @@
 --    long-lived customer branches, where ESRImportBL stores 'Unknown_Invoice' for SCOR lines and the
 --    WebUI then shows the raw code. Idempotent, so this script is portable to those branches unchanged.
 INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName)
-SELECT 0,0,540386,543782 /*From ID Server*/,TO_TIMESTAMP('2026-08-25 08:30:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.payment.esr','Y','Systemfremde Rechnung',TO_TIMESTAMP('2026-08-25 08:30:00','YYYY-MM-DD HH24:MI:SS'),100,'U','Unknown_Invoice'
+SELECT 0,0,540386,543782 /*From ID Server, allocated by migration 5741590*/,TO_TIMESTAMP('2026-08-25 08:30:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.payment.esr','Y','Systemfremde Rechnung',TO_TIMESTAMP('2026-08-25 08:30:00','YYYY-MM-DD HH24:MI:SS'),100,'U','Unknown_Invoice'
 WHERE NOT EXISTS (SELECT 1 FROM AD_Ref_List WHERE AD_Ref_List_ID=543782)
 ;
 
@@ -80,6 +82,11 @@ FROM   AD_Ref_List rl
 WHERE  rl.AD_Ref_List_ID = t.AD_Ref_List_ID
   AND  rl.AD_Reference_ID = 540386
   AND  t.AD_Language <> 'en_US'
+--    Safety: never overwrite a language that already claims a finished translation. de_DE/de_CH are
+--    exempt because German is the text being authored here (and 'P' needs its wrong German replaced).
+--    Any other language is only touched while it is still untranslated, so a genuine fr_CH/it_CH
+--    translation -- which the instances checked here could not rule out -- survives untouched.
+  AND  (t.AD_Language IN ('de_DE','de_CH') OR coalesce(t.IsTranslated,'N') <> 'Y')
 ;
 
 -- 5. English translations.
