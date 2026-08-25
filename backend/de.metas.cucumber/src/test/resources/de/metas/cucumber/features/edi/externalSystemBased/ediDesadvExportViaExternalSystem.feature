@@ -376,7 +376,6 @@ Feature: EDI DESADV export via External System
   @from:cucumber
   @allure.label.epic:E0292_EDI
   @allure.label.feature:F00350_EDI
-  @F00350
   @Id:S30013_10
   Scenario: S30013_10 — under-delivery, remaining M_ShipmentSchedule closed -> DESADV reaches Sent
   ## An order for 100 PCE is only delivered 70 PCE; that one shipment is exported successfully.
@@ -444,7 +443,6 @@ Feature: EDI DESADV export via External System
   @from:cucumber
   @allure.label.epic:E0292_EDI
   @allure.label.feature:F00350_EDI
-  @F00350
   @Id:S30013_20
   Scenario: S30013_20 — under-delivery, M_ShipmentSchedule left open -> DESADV stays Pending
   ## The unchanged case, and the signal disposition relies on: as long as the remaining

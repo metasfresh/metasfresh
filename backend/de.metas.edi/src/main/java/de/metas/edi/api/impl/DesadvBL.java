@@ -123,7 +123,7 @@ public class DesadvBL
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IHUPIItemProductBL hupiItemProductBL = Services.get(IHUPIItemProductBL.class);
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@NonNull private final transient EDIDesadvPackService ediDesadvPackService;
 	@NonNull private final EDIDesadvInOutLineDAO desadvInOutLineDAO;
@@ -1310,9 +1310,8 @@ public class DesadvBL
 
 	/**
 	 * The recompute still runs more than once per transaction whenever several of the DESADV's linked
-	 * shipments change their EDI_ExportStatus (see de.metas.edi.model.validator.M_InOut), and the earlier
-	 * passes typically conclude "still open". Saving only on an actual change keeps that to at most one
-	 * write per transition.
+	 * shipments change their EDI_ExportStatus, and the earlier passes typically conclude "still open".
+	 * Saving only on an actual change keeps that to at most one write per transition.
 	 */
 	private void setDesadvStatusAndSaveIfChanged(
 			@NonNull final I_EDI_Desadv desadv,
