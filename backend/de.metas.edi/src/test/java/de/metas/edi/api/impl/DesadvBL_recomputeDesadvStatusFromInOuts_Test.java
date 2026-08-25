@@ -3,13 +3,18 @@ package de.metas.edi.api.impl;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIExportStatus;
+import de.metas.edi.api.impl.pack.EDIDesadvPackService;
 import de.metas.edi.async.spi.impl.EDIWorkpackageProcessor;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.I_EDI_Desadv_M_InOut;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.organization.OrgId;
+import de.metas.product.asidata.ProductASIDataRepository;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -21,6 +26,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -304,5 +311,77 @@ class DesadvBL_recomputeDesadvStatusFromInOuts_Test
 		assertThat(POJOLookupMap.get().getRecords(I_C_Queue_WorkPackage.class))
 				.as("no export work package may be enqueued by a close or a reopen")
 				.isEmpty();
+	}
+
+	/**
+	 * Pins the per-transaction dedupe of the close route: closing every {@code M_ShipmentSchedule} of one
+	 * order inside a single transaction must re-derive the DESADV header exactly <b>once</b>, not once per
+	 * schedule.
+	 * <p>
+	 * The {@code M_ShipmentSchedule} interceptor fires per record and each recompute costs three to four
+	 * uncached round-trips (the header, the per-shipment routing config, the linked-shipment junction, and
+	 * all DESADV lines), so an un-deduped close of an N-line order pays N times over for a verdict only the
+	 * last pass can reach. What is counted here is recompute <em>invocations</em>: {@code POJOLookupMap}
+	 * exposes no query counter, and {@code setDesadvStatusAndSaveIfChanged} guards the write only — so the
+	 * repetition is invisible to every record-state assertion, which is exactly why it needs its own test.
+	 */
+	@Test
+	void closingEveryScheduleOfOneDesadv_inOneTrx_recomputesTheHeaderOnlyOnce()
+	{
+		final I_EDI_Desadv desadv = createDesadv("70", EDIExportStatus.Pending.getCode());
+		createLinkedInOut(desadv, EDIExportStatus.Sent);
+
+		// three lines, each under-delivered 70 of 100, each with its own order line and shipment schedule
+		final List<I_M_ShipmentSchedule> closedSchedules = new ArrayList<>();
+		for (int i = 0; i < 3; i++)
+		{
+			final I_EDI_DesadvLine desadvLine = createDesadvLineRecord(desadv, "100", null, "70");
+			final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
+			orderLine.setEDI_DesadvLine_ID(desadvLine.getEDI_DesadvLine_ID());
+			saveRecord(orderLine);
+			closedSchedules.add(createShipmentSchedule(orderLine, "70", true));
+		}
+
+		final CountingDesadvBL countingDesadvBL = new CountingDesadvBL();
+
+		// one transaction = one close operation, the way M_ShipmentSchedule_CloseShipmentSchedules runs it
+		Services.get(ITrxManager.class).runInThreadInheritedTrx(
+				() -> closedSchedules.forEach(countingDesadvBL::updateQtyOrdered_OverrideFromShipSchedAndSave));
+
+		assertThat(countingDesadvBL.recomputeInvocations)
+				.as("three schedules of the same DESADV, closed in one transaction, must cost ONE recompute")
+				.isEqualTo(1);
+
+		InterfaceWrapperHelper.refresh(desadv);
+		assertThat(desadv.getEDI_ExportStatus())
+				.as("and the single deduped recompute must still reach the same terminal status")
+				.isEqualTo(EDIExportStatus.Sent.getCode());
+	}
+
+	/**
+	 * Counts how often the recompute entry point actually runs. Constructed the same way
+	 * {@link DesadvBL#newInstanceForUnitTesting()} does, but as a subclass rather than via
+	 * {@code SpringContextHolder} so that the override is in place: a Mockito spy would not see
+	 * {@code DesadvBL}'s own internal call to the method.
+	 */
+	private static final class CountingDesadvBL extends DesadvBL
+	{
+		private int recomputeInvocations = 0;
+
+		private CountingDesadvBL()
+		{
+			super(EDIDesadvPackService.newInstanceForUnitTesting(),
+					EDIDesadvInOutLineDAO.newInstanceForUnitTesting(),
+					EDIBPartnerConfigService.newInstanceForUnitTesting(),
+					new ProductASIDataRepository(Services.get(IQueryBL.class)),
+					new EDIDesadvInOutRepository());
+		}
+
+		@Override
+		public void recomputeDesadvStatusFromInOuts(@NonNull final EDIDesadvId desadvId)
+		{
+			recomputeInvocations++;
+			super.recomputeDesadvStatusFromInOuts(desadvId);
+		}
 	}
 }

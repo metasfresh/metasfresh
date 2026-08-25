@@ -66,6 +66,7 @@ import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -122,6 +123,7 @@ public class DesadvBL
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IHUPIItemProductBL hupiItemProductBL = Services.get(IHUPIItemProductBL.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@NonNull private final transient EDIDesadvPackService ediDesadvPackService;
 	@NonNull private final EDIDesadvInOutLineDAO desadvInOutLineDAO;
@@ -826,8 +828,9 @@ public class DesadvBL
 		// The override we just wrote can complete (or re-open) the DESADV's last open line, so the
 		// header status has to be re-derived. This is stated here rather than in any close process
 		// because every close route goes through ShipmentScheduleBL.closeShipmentSchedule and thus
-		// through this interceptor-driven method.
-		recomputeDesadvStatusFromInOuts(EDIDesadvId.ofRepoId(desadvLineRecord.getEDI_Desadv_ID()));
+		// through this interceptor-driven method — which is also why the recompute is deferred to the
+		// end of the transaction: one close operation spanning N lines re-derives the header once.
+		recomputeDesadvStatusFromInOutsBeforeCommit(EDIDesadvId.ofRepoId(desadvLineRecord.getEDI_Desadv_ID()));
 	}
 
 	public void propagateEDIStatus(@NonNull final I_EDI_Desadv desadv)
@@ -1156,6 +1159,37 @@ public class DesadvBL
 	}
 
 	/**
+	 * Accumulates {@code desadvId} and re-derives the DESADV status <b>once per distinct DESADV at the end
+	 * of the current transaction</b> instead of once per call, via
+	 * {@link #recomputeDesadvStatusFromInOuts(EDIDesadvId)}.
+	 * <p>
+	 * Closing the {@code M_ShipmentSchedule}s of an order fires the interceptor once per record, and each
+	 * recompute costs three to four uncached round-trips (the header, the per-shipment routing config, the
+	 * linked-shipment junction, and all DESADV lines). An N-line order therefore paid N times over for a
+	 * verdict only the last pass can reach. Deferring costs nothing semantically: a recompute at the end of
+	 * the transaction sees the final state of every line, which is precisely what the discarded earlier
+	 * passes were trying to establish.
+	 * <p>
+	 * {@code BEFORE_COMMIT} rather than {@code AFTER_COMMIT} on purpose — the recompute <i>writes</i> the
+	 * {@code EDI_Desadv}, so it must be part of the same transaction. That keeps the new status visible to
+	 * whoever reads the DESADV once the close returns (no asynchronous window to wait on), and lets a
+	 * failure fail the close instead of being logged and dropped. With no active transaction the shared
+	 * helper runs the recompute immediately, so a single stand-alone close behaves exactly as before.
+	 */
+	public void recomputeDesadvStatusFromInOutsBeforeCommit(@NonNull final EDIDesadvId desadvId)
+	{
+		trxManager.accumulateAndProcessBeforeCommit(
+				"DesadvBL.recomputeDesadvStatusFromInOutsBeforeCommit",
+				ImmutableSet.of(desadvId),
+				this::recomputeDesadvStatusFromInOutsNow);
+	}
+
+	private void recomputeDesadvStatusFromInOutsNow(@NonNull final Collection<EDIDesadvId> desadvIds)
+	{
+		ImmutableSet.copyOf(desadvIds).forEach(this::recomputeDesadvStatusFromInOuts);
+	}
+
+	/**
 	 * Recomputes the DESADV export status based on the statuses of all linked shipments (M_InOut).
 	 * <p>
 	 * This applies only when {@link #isOneDesadvPerShipment(I_EDI_Desadv)} returns true
@@ -1177,8 +1211,12 @@ public class DesadvBL
 	 *       {@code EDI_Desadv_Close} process.</li>
 	 *   <li>Otherwise → DESADV Pending, error message cleared</li>
 	 * </ol>
-	 * The computed status is written only when it (or the error message) actually differs from the
-	 * stored value, because closing an order's lines fires this recompute once per line.
+	 * The computed status is written only when it (or the error message) actually differs from the stored
+	 * value: several linked shipments changing status within one transaction each reach this method.
+	 * <p>
+	 * Callers on the shipment-schedule close route must use
+	 * {@link #recomputeDesadvStatusFromInOutsBeforeCommit(EDIDesadvId)} instead, which collapses one close
+	 * operation's N per-line invocations into a single recompute.
 	 */
 	public void recomputeDesadvStatusFromInOuts(@NonNull final EDIDesadvId desadvId)
 	{
@@ -1231,9 +1269,12 @@ public class DesadvBL
 		// No further M_InOutLine can arrive if the DESADV is fully fulfilled, or if every line has
 		// already received everything it will ever receive (which is what closing the line's
 		// M_ShipmentSchedule expresses, via EDI_DesadvLine.QtyOrdered_Override).
-		// allProcessed is checked first on purpose: while a shipment is still in flight it is false,
-		// and short-circuiting there spares the areAllDesadvLinesDeliveryClosed query on what is the
-		// common path (this method runs once per M_InOutLine / M_ShipmentSchedule change).
+		// allProcessed is evaluated first only because it is in-memory over the already-loaded allInOuts.
+		// It does NOT spare the areAllDesadvLinesDeliveryClosed query on the close path this feature
+		// exists for: a schedule is normally closed only once its shipments are already Sent/DontSend, so
+		// allProcessed is true throughout a mass-close and the line query would fire every single time.
+		// What holds that query count to one per transaction is the accumulation in
+		// recomputeDesadvStatusFromInOutsBeforeCommit, not this ordering.
 		final boolean noFurtherDeliveryExpected = allProcessed
 				&& (fulfillmentPercent.compareTo(BigDecimal.valueOf(100)) >= 0
 						|| areAllDesadvLinesDeliveryClosed(desadv));
@@ -1268,9 +1309,10 @@ public class DesadvBL
 	}
 
 	/**
-	 * Closing a multi-line order fires the M_ShipmentSchedule interceptor once per line, so the same
-	 * DESADV is recomputed N times and the first N-1 recomputations conclude "still open". Saving only
-	 * on an actual change keeps that to at most one write per transition.
+	 * The recompute still runs more than once per transaction whenever several of the DESADV's linked
+	 * shipments change their EDI_ExportStatus (see de.metas.edi.model.validator.M_InOut), and the earlier
+	 * passes typically conclude "still open". Saving only on an actual change keeps that to at most one
+	 * write per transition.
 	 */
 	private void setDesadvStatusAndSaveIfChanged(
 			@NonNull final I_EDI_Desadv desadv,
