@@ -34,7 +34,7 @@ WHERE NOT EXISTS (SELECT 1 FROM AD_Ref_List WHERE AD_Ref_List_ID=543782)
 
 -- 2. Base row = German (base language). Set Name AND Description for every action.
 UPDATE AD_Ref_List rl SET Name=v.de_name, Description=v.de_desc,
-       Updated=TO_TIMESTAMP('2026-08-25 08:30:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+       Updated=TO_TIMESTAMP('2026-08-25 08:30:01','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 FROM (VALUES
   (541079,'Zahlung mit aktueller Rechnung verrechnen','Zahlung der aktuellen Rechnung zuordnen.'),
   (540535,'Überzahlbetrag wurde zurückerstattet','Die Rückerstattung ist bereits erfolgt: metasfresh bucht dazu eine Auszahlung über den Überzahlbetrag und verrechnet sie mit der eingegangenen Zahlung. Die Banküberweisung selbst erfolgt ausserhalb von metasfresh.'),
@@ -58,21 +58,27 @@ INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID,Name,Description,IsTrans
 SELECT l.AD_Language, t.AD_Ref_List_ID, t.Name, t.Description, 'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.Createdby, t.Updated, t.UpdatedBy, 'Y'
 FROM   AD_Language l, AD_Ref_List t
 WHERE  l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Reference_ID=540386
-  AND  NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
+  AND  NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID AND tt.IsActive='Y')
 ;
 
--- 4. German translations (de_DE + de_CH) = the base text, now final.
-UPDATE AD_Ref_List_Trl t SET Name=rl.Name, Description=rl.Description, IsTranslated='Y',
-       Updated=TO_TIMESTAMP('2026-08-25 08:30:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+-- 4. Every NON-English row takes the corrected German base text. This must overwrite rows that
+--    ALREADY exist, not just ones the seed created: on a real instance AD_Ref_List_Trl already has a
+--    row per language (incl. fr_CH, en_GB, it_CH), so step 3 is a no-op for them and they would
+--    otherwise keep exactly the German-name/English-description mix this script exists to remove.
+--    IsTranslated='Y' only where the German text IS the final text (de_DE, de_CH); any other language
+--    is honestly left 'N' -- correct German, still awaiting its own translation.
+UPDATE AD_Ref_List_Trl t SET Name=rl.Name, Description=rl.Description,
+       IsTranslated = CASE WHEN t.AD_Language IN ('de_DE','de_CH') THEN 'Y' ELSE 'N' END,
+       Updated=TO_TIMESTAMP('2026-08-25 08:30:03','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 FROM   AD_Ref_List rl
 WHERE  rl.AD_Ref_List_ID = t.AD_Ref_List_ID
   AND  rl.AD_Reference_ID = 540386
-  AND  t.AD_Language IN ('de_DE','de_CH')
+  AND  t.AD_Language <> 'en_US'
 ;
 
 -- 5. English translations.
 UPDATE AD_Ref_List_Trl t SET Name=v.en_name, Description=v.en_desc, IsTranslated='Y',
-       Updated=TO_TIMESTAMP('2026-08-25 08:30:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+       Updated=TO_TIMESTAMP('2026-08-25 08:30:04','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 FROM (VALUES
   (541079,'Allocate payment with current invoice','Allocate the payment to the current invoice.'),
   (540535,'Overpayment was refunded','The refund has already been made: metasfresh books an outbound payment for the overpaid amount and allocates it against the incoming payment. The bank transfer itself happens outside metasfresh.'),
