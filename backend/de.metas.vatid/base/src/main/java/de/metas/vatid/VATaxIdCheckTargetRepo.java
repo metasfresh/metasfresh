@@ -404,7 +404,7 @@ public class VATaxIdCheckTargetRepo
 	}
 
 	/**
-	 * @return how many targets {@link #iterateSelectedTargets(IQuery, Consumer)} would yield, from the SAME
+	 * @return how many targets {@link #iterateSelectedTargets(PInstanceId, Consumer)} would yield, from the SAME
 	 * two queries the iterator streams so the count and the stream cannot drift.
 	 */
 	public int countSelectedTargets(@NonNull final PInstanceId selectionId)
@@ -414,7 +414,7 @@ public class VATaxIdCheckTargetRepo
 	}
 
 	/**
-	 * One of the two grains of {@link #iterateSelectedTargets(IQuery, Consumer)}; kept separately reachable so
+	 * One of the two grains of {@link #iterateSelectedTargets(PInstanceId, Consumer)}; kept separately reachable so
 	 * a test can substitute one grain's records without a database — see
 	 * {@link #iterateBPartnersDueForVATaxIDCheck(OrgId, Instant, int)}.
 	 */
@@ -427,7 +427,7 @@ public class VATaxIdCheckTargetRepo
 				.iterateWithGuaranteedIterator(I_C_BPartner.class);
 	}
 
-	/** The {@code C_BPartner_Location} counterpart of {@link #iterateSelectedBPartners(IQuery)}. */
+	/** The {@code C_BPartner_Location} counterpart of {@link #iterateSelectedBPartners(PInstanceId)}. */
 	@VisibleForTesting
 	@NonNull
 	Iterator<I_C_BPartner_Location> iterateSelectedBPartnerLocations(@NonNull final PInstanceId selectionId)

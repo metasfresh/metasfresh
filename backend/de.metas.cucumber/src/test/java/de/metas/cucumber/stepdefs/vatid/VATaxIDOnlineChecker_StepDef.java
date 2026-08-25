@@ -69,10 +69,8 @@ import static org.mockito.Mockito.when;
 public class VATaxIDOnlineChecker_StepDef
 {
 	/**
-	 * Resolved on first use, NOT in a field initialiser. This class carries a {@code @Before} hook, so cucumber
-	 * instantiates it for every scenario in the suite, and a {@code @Before} runs before the
-	 * {@code Given infrastructure and metasfresh are running} step that brings Spring up — anything resolved at
-	 * construction time would therefore fail on every scenario. Constructing this class must stay free.
+	 * Resolved on first use, to not interfere with this class's {@code @Before} hook.
+	 * This instance is created in {@link VATaxIDTestServiceConfiguration}.
 	 */
 	@NonNull private final SpringContextHolder.Lazy<VATaxIDOnlineChecker> onlineCheckerMock = SpringContextHolder.lazyBean(VATaxIDOnlineChecker.class);
 
