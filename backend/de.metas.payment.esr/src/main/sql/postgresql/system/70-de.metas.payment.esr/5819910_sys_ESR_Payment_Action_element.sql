@@ -59,8 +59,10 @@ UPDATE AD_Element_Trl SET
 WHERE  AD_Element_ID=542031 AND AD_Language='en_US'
 ;
 
--- 3b. any OTHER active system language: take the corrected German text, honestly flagged as not yet
---     translated. Needed because statement 1 seeds from the base AD_Element row, which still holds the
+-- 3b. any OTHER language that already HAS a row: take the corrected German text, honestly flagged as
+--     not yet translated. Unlike statement 1 this deliberately has no IsActive/IsSystemLanguage filter:
+--     it only rewrites rows that already exist, so it cannot create exposure for an inactive language.
+--     Needed because statement 1 seeds from the base AD_Element row, which still holds the
 --     old raw name at that point -- the same seed-before-rename ordering that left 5741590's rows stale.
 --     A language that already claims a finished translation is left alone.
 UPDATE AD_Element_Trl t SET
