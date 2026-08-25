@@ -544,6 +544,30 @@ public class C_Order_StepDef
 				.isNotNull();
 	}
 
+	/**
+	 * Asserts that completing the given order is REFUSED, and that it is refused for the expected reason:
+	 * the thrown {@link AdempiereException} must carry the given error code.
+	 * <p>
+	 * Unlike {@link #order_action_not_possible(String, String)}, which only asserts that <i>some</i> exception
+	 * was thrown, this step pins WHY the completion failed — without the error code the assertion would also
+	 * pass if the order happened to fail for an unrelated reason.
+	 * <p>
+	 * Parameters:<br>
+	 *   <b>orderIdentifier</b> — identifier of a {@code C_Order} created earlier in the scenario<br>
+	 *   <b>errorCode</b> — the expected {@code AD_Message.ErrorCode}
+	 *
+	 * <pre>{@code
+	 * Then the order identified by blockedOrder cannot be completed because of error code M_Product_BBSStatus_ActionBlocked
+	 * }</pre>
+	 */
+	@And("^the order identified by (.*) cannot be completed because of error code (.*)$")
+	public void order_cannot_be_completed_because_of_error_code(
+			@NonNull final String orderIdentifier,
+			@NonNull final String errorCode)
+	{
+		StepDefUtil.assertRefusedWithErrorCode(errorCode, () -> order_action(orderIdentifier, StepDefDocAction.completed.name()));
+	}
+
 	public void completeOrder(final I_C_Order order)
 	{
 		order.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it

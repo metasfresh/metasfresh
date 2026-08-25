@@ -101,6 +101,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+/**
+ * Repository Tables: M_Product, M_Product_Category, M_Product_SupplierApproval_Norm
+ * Repository Cluster: product master data
+ * <p>
+ * Also reads C_OrderLine / C_InvoiceLine / M_InOutLine / M_CostDetail, but only to answer
+ * {@link #isProductUsed(de.metas.product.ProductId)} — it owns none of those tables.
+ */
 public class ProductDAO implements IProductDAO
 {
 	final static int ONE_YEAR_DAYS = 365;
@@ -183,6 +190,13 @@ public class ProductDAO implements IProductDAO
 	public List<I_M_Product> getByIds(@NonNull final Set<ProductId> productIds)
 	{
 		return loadByRepoIdAwaresOutOfTrx(productIds, I_M_Product.class);
+	}
+
+	@Override
+	@NonNull
+	public ImmutableList<I_M_Product> getByIdsInTrxIncludingInactive(@NonNull final Set<ProductId> productIds)
+	{
+		return ImmutableList.copyOf(InterfaceWrapperHelper.loadByRepoIdAwares(productIds, I_M_Product.class));
 	}
 
 	@Override
