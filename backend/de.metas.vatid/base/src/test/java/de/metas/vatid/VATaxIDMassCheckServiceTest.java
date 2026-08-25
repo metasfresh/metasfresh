@@ -68,6 +68,7 @@ class VATaxIDMassCheckServiceTest
 	private static final BPartnerId BPARTNER_ID_HEALTHY = BPartnerId.ofRepoId(1000102);
 	private static final BPartnerId BPARTNER_ID_SECOND = BPartnerId.ofRepoId(1000103);
 	private static final BPartnerId BPARTNER_ID_THIRD = BPartnerId.ofRepoId(1000104);
+	private static final BPartnerId BPARTNER_ID_BLANK_VATAXID = BPartnerId.ofRepoId(1000105);
 
 	/** Verified live against VIES on 2026-08-15 — see {@code VIESClient.REQUEST_SIDE_ERRORS}. */
 	private static final String VIES_ERROR_CODE = "INVALID_REQUESTER_INFO";
@@ -299,5 +300,65 @@ class VATaxIDMassCheckServiceTest
 		assertThat(result.getCheckedCount()).isEqualTo(1);
 		assertThat(result.getPendingCount()).isEqualTo(1);
 		verify(checkServiceMock, times(1)).check(any(VATaxIDCheckRequest.class));
+	}
+
+	/**
+	 * A blank {@code VATaxID} must cost the run one record, not the whole run. The nightly query filters on
+	 * {@code VATaxID IS NOT NULL} only -- deliberately, to match its partial index -- while the column is not
+	 * mandatory and {@code ''} does reach the database (see {@code BPartnerCompositeSaver},
+	 * {@code BPartnerImportHelper}). Without the guard, building the {@code CheckTarget} throws
+	 * {@code Invalid VAT ID} and every record and organisation behind it goes unchecked.
+	 *
+	 * <p>Budget is 1 with two due records, the blank one first: the good one can only be reached if skipping
+	 * the blank one consumed nothing.
+	 */
+	@Test
+	void nightlyRun_skipsABlankVATaxID_withoutAbortingTheRunOrSpendingBudget()
+	{
+		final OrgId orgId = OrgId.ofRepoId(1_000_000);
+		final I_C_BPartner blankVATaxIDPartner = newBPartnerWithVATaxID(BPARTNER_ID_BLANK_VATAXID, "");
+		blankVATaxIDPartner.setAD_Org_ID(orgId.getRepoId());
+		final I_C_BPartner healthyPartner = newBPartnerWithVATaxID(BPARTNER_ID_HEALTHY, "DE123456789");
+		healthyPartner.setAD_Org_ID(orgId.getRepoId());
+
+		when(checkServiceMock.getRecheckAfterDaysByViesEnabledOrgId()).thenReturn(ImmutableMap.of(orgId, 30));
+		when(checkServiceMock.getUnavailableCountryCodes(any(OrgId.class))).thenReturn(ImmutableSet.of());
+		when(bpartnerDAOMock.countBPartnersDueForVATaxIDCheck(any(OrgId.class), any())).thenReturn(2);
+		when(bpartnerDAOMock.countBPartnerLocationsDueForVATaxIDCheck(any(OrgId.class), any())).thenReturn(0);
+		when(bpartnerDAOMock.iterateBPartnersDueForVATaxIDCheck(any(OrgId.class), any()))
+				.thenReturn(ImmutableList.of(blankVATaxIDPartner, healthyPartner).iterator());
+		when(bpartnerDAOMock.iterateBPartnerLocationsDueForVATaxIDCheck(any(OrgId.class), any()))
+				.thenReturn(ImmutableList.<I_C_BPartner_Location>of().iterator());
+		when(checkServiceMock.check(any(VATaxIDCheckRequest.class))).thenReturn(VATaxIDStatus.Valid);
+
+		final VATaxIDMassCheckService massCheckService = new VATaxIDMassCheckService(checkServiceMock);
+
+		final VATaxIDMassCheckResult result;
+		final PlainStringLoggable log = Loggables.newPlainStringLoggable();
+		try (final IAutoCloseable ignored = Loggables.temporarySetLoggable(log))
+		{
+			result = massCheckService.run(VATaxIDMassCheckRequest.builder()
+					.selectedBPartnerIds(ImmutableList.of())
+					.maxChecksPerRun(1)
+					.nightlyRun(true)
+					.build());
+		}
+
+		// the run completed and checked the good record queued behind the blank one ...
+		assertThat(result.getCheckedCount()).as("checkedCount").isEqualTo(1);
+		verify(checkServiceMock, times(1)).check(any(VATaxIDCheckRequest.class));
+		verify(checkServiceMock)
+				.check(argThat(req -> req != null && BPARTNER_ID_HEALTHY.equals(req.getBpartnerId())));
+
+		// ... the blank record was neither checked nor attempt-stamped ...
+		verify(checkServiceMock, never())
+				.check(argThat(req -> req != null && BPARTNER_ID_BLANK_VATAXID.equals(req.getBpartnerId())));
+		verify(bpartnerDAOMock, never()).stampVATaxIDCheckAttempt(eq(BPARTNER_ID_BLANK_VATAXID), any(Instant.class));
+
+		// ... and it did not vanish silently: a data problem an operator has to fix is named in the run log.
+		assertThat(log.getSingleMessages())
+				.as("run log lines")
+				.anyMatch(msg -> msg.contains("blank VAT-ID")
+						&& msg.contains("C_BPartner_ID=" + BPARTNER_ID_BLANK_VATAXID.getRepoId()));
 	}
 }

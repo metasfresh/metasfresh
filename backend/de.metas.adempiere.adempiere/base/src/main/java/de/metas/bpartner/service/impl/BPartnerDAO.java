@@ -707,8 +707,10 @@ public class BPartnerDAO implements IBPartnerDAO
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(I_C_BPartner.COLUMNNAME_AD_Org_ID, orgId)
-				.addNotNull(I_C_BPartner.COLUMNNAME_VATaxID)
-				.addNotEqualsFilter(I_C_BPartner.COLUMNNAME_VATaxID, "");
+				// IS NOT NULL and nothing more: this is exactly the predicate of the partial index that
+				// serves this query (C_BPartner_VATaxID_DueForCheck_idx). Narrowing the filter here
+				// past what that predicate says would leave the index unable to answer the query.
+				.addNotNull(I_C_BPartner.COLUMNNAME_VATaxID);
 
 		if (staleBefore != null)
 		{
@@ -748,8 +750,10 @@ public class BPartnerDAO implements IBPartnerDAO
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_AD_Org_ID, orgId)
-				.addNotNull(I_C_BPartner_Location.COLUMNNAME_VATaxID)
-				.addNotEqualsFilter(I_C_BPartner_Location.COLUMNNAME_VATaxID, "");
+				// IS NOT NULL and nothing more: this is exactly the predicate of the partial index that
+				// serves this query (C_BPartner_Location_VATaxID_DueForCheck_idx). Narrowing the filter here
+				// past what that predicate says would leave the index unable to answer the query.
+				.addNotNull(I_C_BPartner_Location.COLUMNNAME_VATaxID);
 
 		if (staleBefore != null)
 		{
