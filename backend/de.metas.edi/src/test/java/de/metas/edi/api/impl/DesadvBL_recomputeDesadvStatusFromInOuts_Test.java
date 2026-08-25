@@ -252,14 +252,16 @@ class DesadvBL_recomputeDesadvStatusFromInOuts_Test
 	}
 
 	/**
-	 * TC9. Reopening must return the DESADV to Pending and must never re-transmit.
+	 * Reopening a closed shipment schedule must return the DESADV to Pending, and reaching a terminal
+	 * status must not re-send anything.
 	 * <p>
-	 * "Never re-transmit" holds structurally today — {@code EDI_Desadv.onDesadvStatusChanged} is the
-	 * only interceptor on {@code EDI_ExportStatus} and its {@code propagateEDIStatus} early-returns in
-	 * per-{@code M_InOut} mode, which is the only mode this recompute runs in, while
-	 * {@code EDI_Desadv_EnqueueForExport} refuses to run in that mode at all. Nothing pinned that,
-	 * though, so the assertions below do: a future interceptor that re-enqueues on a status change
-	 * would turn every close/reopen cycle into mass re-transmission, and this test would catch it.
+	 * The assertions below pin what this tier can actually observe: the recompute's own code path
+	 * writes only the {@code EDI_Desadv}, so it leaves the shipment's {@code EDI_ExportStatus} alone
+	 * and enqueues no export work package. They do <b>not</b> cover interceptor wiring — a plain JUnit
+	 * test never runs the {@code ModelValidationEngine}, so no {@code @ModelChange} handler fires here.
+	 * Whether a status change can re-trigger an export through
+	 * {@code EDI_Desadv.onDesadvStatusChanged} is an integration-tier statement and is covered by the
+	 * Cucumber scenarios instead.
 	 */
 	@Test
 	void reopeningTheShipmentSchedule_returnsTheDesadvToPending_andNeverReTransmits()
