@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -56,9 +56,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 
 import javax.annotation.Nullable;
-import java.time.Instant;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -274,55 +272,6 @@ public interface IBPartnerDAO extends ISingletonService
 	List<I_C_BPartner_Location> retrieveBPartnerShipToLocations(I_C_BPartner bpartner);
 
 	List<I_C_BPartner_Location> retrieveBPartnerLocationsByIds(Set<BPartnerLocationId> ids);
-
-	/**
-	 * @return every active {@code C_BPartner_Location} of one of {@code bpartnerIds} that carries a
-	 * non-blank {@code VATaxID}, ordered by {@code C_BPartner_ID} then {@code C_BPartner_Location_ID}.
-	 */
-	ImmutableList<I_C_BPartner_Location> retrieveBPartnerLocationsWithVATaxID(@NonNull Collection<BPartnerId> bpartnerIds);
-
-	/**
-	 * Walks the {@code C_BPartner} records of {@code orgId} that are due a VAT-ID online check, oldest
-	 * attempt first ({@code VATaxIDLastAttemptedAt} ascending, nulls — never attempted — first).
-	 *
-	 * <p>Due means: non-blank header {@code VATaxID}, and either no conclusive status yet or a
-	 * {@code VATaxIDCheckedAt} older than {@code staleBefore}. Pass {@code staleBefore == null} to mean
-	 * "no staleness window", i.e. every VAT-ID-bearing record of the organisation is due.
-	 *
-	 * <p>Returns a guaranteed iterator, i.e. one that reads all matching ids once and then loads them in
-	 * pages. That matters because the caller updates {@code VATaxIDLastAttemptedAt} and
-	 * {@code VATaxIDCheckedAt} while it iterates, and this query filters and sorts on exactly those two
-	 * columns. A plain iterator re-runs the query for every page, so each update would re-sort the rows
-	 * it has not read yet, and records would be skipped or returned twice.
-	 */
-	Iterator<I_C_BPartner> iterateBPartnersDueForVATaxIDCheck(@NonNull OrgId orgId, @Nullable Instant staleBefore);
-
-	/** @return how many records {@link #iterateBPartnersDueForVATaxIDCheck(OrgId, Instant)} would yield. */
-	int countBPartnersDueForVATaxIDCheck(@NonNull OrgId orgId, @Nullable Instant staleBefore);
-
-	/**
-	 * The {@code C_BPartner_Location} counterpart of
-	 * {@link #iterateBPartnersDueForVATaxIDCheck(OrgId, Instant)}, scoped by the LOCATION's own
-	 * {@code AD_Org_ID} — the organisation whose configuration governs a location's check.
-	 */
-	Iterator<I_C_BPartner_Location> iterateBPartnerLocationsDueForVATaxIDCheck(@NonNull OrgId orgId, @Nullable Instant staleBefore);
-
-	/** @return how many records {@link #iterateBPartnerLocationsDueForVATaxIDCheck(OrgId, Instant)} would yield. */
-	int countBPartnerLocationsDueForVATaxIDCheck(@NonNull OrgId orgId, @Nullable Instant staleBefore);
-
-	/**
-	 * Stamps {@code C_BPartner.VATaxIDLastAttemptedAt} unconditionally, whether the check that follows
-	 * succeeds, fails or throws — unlike {@code VATaxIDCheckedAt}, which advances only on a completed check.
-	 * Without it a permanently failing target would never advance any timestamp and would sort first of
-	 * every nightly run forever. The caller must commit this in its own transaction so it survives the
-	 * check's rollback.
-	 */
-	void stampVATaxIDCheckAttempt(@NonNull BPartnerId bpartnerId, @NonNull Instant attemptedAt);
-
-	/**
-	 * The {@code C_BPartner_Location} counterpart of {@link #stampVATaxIDCheckAttempt(BPartnerId, Instant)}.
-	 */
-	void stampVATaxIDCheckAttempt(@NonNull BPartnerLocationId bpartnerLocationId, @NonNull Instant attemptedAt);
 
 	/**
 	 * Performs an non-strict search (e.g. if BP has only one address, it returns it even if it's not flagged as the default ShipTo address).

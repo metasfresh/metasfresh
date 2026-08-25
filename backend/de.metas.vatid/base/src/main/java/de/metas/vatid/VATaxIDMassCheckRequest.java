@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.vatid
+ * metasfresh-vatid-base
  * %%
  * Copyright (C) 2026 metas GmbH
  * %%
@@ -46,9 +46,7 @@ import javax.annotation.Nullable;
 public class VATaxIDMassCheckRequest
 {
 	/**
-	 * Ordered by {@code C_BPartner_ID} ascending — that order is what makes a throttled run's processed
-	 * prefix deterministic and reproducible (see {@link VATaxIDMassCheckService#run(VATaxIDMassCheckRequest)}).
-	 * The caller, not this class, is responsible for that ordering.
+	 * BPartner's to check. Empty means all.
 	 */
 	@NonNull ImmutableList<BPartnerId> selectedBPartnerIds;
 

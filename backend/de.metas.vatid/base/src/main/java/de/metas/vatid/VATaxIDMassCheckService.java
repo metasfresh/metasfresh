@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.vatid
+ * metasfresh-vatid-base
  * %%
  * Copyright (C) 2026 metas GmbH
  * %%
@@ -28,20 +28,16 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.time.SystemTime;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
-import de.metas.tax.api.VATIdentifier;
-import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import lombok.Builder;
+import de.metas.vatid.VATaxIdCheckTargetRepo.CheckTarget;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -49,13 +45,11 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.function.Function;
 
 /**
  * Checks a whole selection of VAT-IDs: target selection, deterministic ordering, {@code MaxChecksPerRun}
@@ -93,8 +87,8 @@ public class VATaxIDMassCheckService
 	private static final Logger logger = LogManager.getLogger(VATaxIDMassCheckService.class);
 
 	@NonNull private final VATaxIDCheckService checkService;
+	@NonNull private final VATaxIdCheckTargetRepo checkTargetRepo;
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	/**
 	 * Runs {@code request}'s combined partner+location selection, per the class javadoc.
@@ -110,7 +104,7 @@ public class VATaxIDMassCheckService
 			return runNightly(request);
 		}
 
-		final ImmutableList<CheckTarget> allTargets = retrieveCheckTargets(request.getSelectedBPartnerIds());
+		final ImmutableList<CheckTarget> allTargets = checkTargetRepo.retrieveCheckTargets(request.getSelectedBPartnerIds());
 		final ImmutableList<CheckTarget> eligibleTargets = skipUnavailableMemberStates(allTargets);
 
 		final int maxChecksPerRun = request.getMaxChecksPerRun();
@@ -179,21 +173,14 @@ public class VATaxIDMassCheckService
 	}
 
 	/**
-	 * The nightly sweep. Streams the due records instead of materialising them: the selection is the whole
-	 * VAT-ID-bearing population, which on a real installation is tens of thousands of records, and the run
-	 * only ever checks {@code MaxChecksPerRun} of them.
+	 * The nightly sweep. Uses {@link VATaxIDMassCheckRequest#getMaxChecksPerRun()}  and ignores {@link VATaxIDMassCheckRequest#getSelectedBPartnerIds()}.
 	 *
 	 * <p>Due-ness and ordering are the query's ({@code IBPartnerDAO}), evaluated per organisation with that
 	 * organisation's own recheck window — organisations with the check switched off are never queried at
 	 * all. The two grains run one after the other, headers then locations, each oldest-attempt-first; a
 	 * single combined ordering across both would need a merge, and raising {@code MaxChecksPerRun} is the
 	 * cheaper answer now that nothing is loaded up front.
-	 *
-	 * <p>{@code pendingCount} is counted, not derived: the run stops reading once its budget is spent, so
-	 * the number of targets still due can only come from a separate {@code count}. Unlike the selection
-	 * path's figure it does not subtract targets whose member state is unavailable — no query can know
-	 * that, since it is a live answer from the checking service.
-	 */
+     */
 	@NonNull
 	private VATaxIDMassCheckResult runNightly(@NonNull final VATaxIDMassCheckRequest request)
 	{
@@ -210,28 +197,37 @@ public class VATaxIDMassCheckService
 		for (final Map.Entry<OrgId, Integer> entry : recheckAfterDaysByOrg.entrySet())
 		{
 			final OrgId orgId = entry.getKey();
-			final Instant staleBefore = entry.getValue() <= 0 ? null : now.minus(Duration.ofDays(entry.getValue()));
+			final Instant lastCheckedBefore = entry.getValue() <= 0 ? null : now.minus(Duration.ofDays(entry.getValue()));
 
-			dueCount += bpartnerDAO.countBPartnersDueForVATaxIDCheck(orgId, staleBefore)
-					+ bpartnerDAO.countBPartnerLocationsDueForVATaxIDCheck(orgId, staleBefore);
+			dueCount += checkTargetRepo.countBPartnersDueForVATaxIDCheck(orgId, lastCheckedBefore)
+					+ checkTargetRepo.countBPartnerLocationsDueForVATaxIDCheck(orgId, lastCheckedBefore);
 
 			if (aborted || checkedCount >= budget)
 			{
-				continue;
+				break;
 			}
 
-			final Iterator<I_C_BPartner> partners = bpartnerDAO.iterateBPartnersDueForVATaxIDCheck(orgId, staleBefore);
+			// TODO #31060: make checkTargetRepo return an iterator of CheckTargets. Then make CheckTarget.ofPartner private again, unless you choose to make CheckTarget a class in it's own java-file
+			final Iterator<I_C_BPartner> partners = checkTargetRepo.iterateBPartnersDueForVATaxIDCheck(orgId, lastCheckedBefore, maxChecksPerRun);
 			while (partners.hasNext() && checkedCount < budget && !aborted)
 			{
 				final I_C_BPartner bpartnerRecord = partners.next();
+				
 				final CheckTarget checkTarget = CheckTarget.ofPartner(
-						BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID()), bpartnerRecord);
+						BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID()), 
+						bpartnerRecord);
+				
 				final CheckOutcome outcome = checkOneIfAvailable(request.getPinstanceId(), checkTarget, unavailableCountryCodesByOrg);
 				checkedCount += outcome.isChecked() ? 1 : 0;
 				aborted = outcome.isAborted();
 			}
 
-			final Iterator<I_C_BPartner_Location> locations = bpartnerDAO.iterateBPartnerLocationsDueForVATaxIDCheck(orgId, staleBefore);
+			// TODO #31060: same as for bpartners
+			// IF you can, let checkTargetRepo *one* Iterator<CheckTarget> that outputs first the baprtners and then the locations
+			// but if you can't do it properly, just don't!
+			// TODO #31060: ALSO: don't query if the budget is already exhausted!
+			final Iterator<I_C_BPartner_Location> locations = checkTargetRepo.iterateBPartnerLocationsDueForVATaxIDCheck(orgId, lastCheckedBefore, maxChecksPerRun);
+		
 			while (locations.hasNext() && checkedCount < budget && !aborted)
 			{
 				final CheckTarget checkTarget = CheckTarget.ofLocation(locations.next());
@@ -361,72 +357,9 @@ public class VATaxIDMassCheckService
 		return callStats;
 	}
 
-	@NonNull
-	private static VATaxIDStatus resolveStatus(@Nullable final String statusCode)
-	{
-		return VATaxIDStatus.optionalOfNullableCode(statusCode).orElse(VATaxIDStatus.NotChecked);
-	}
 
-	@Nullable
-	private static Instant toInstantOrNull(@Nullable final Timestamp timestamp)
-	{
-		return timestamp != null ? timestamp.toInstant() : null;
-	}
 
-	/**
-	 * @return every VAT-ID to check for {@code selectedBPartnerIds}: the header of every one of them that
-	 * carries one, plus every {@code C_BPartner_Location} of every one of them that carries one —
-	 * regardless of whether that location's own partner header has a VAT-ID (see the class javadoc,
-	 * "Selecting a partner also covers its locations").
-	 *
-	 * <p>Ordered per {@code selectedBPartnerIds}'s own order and, within one partner, the header before
-	 * that partner's locations (themselves ordered by {@code C_BPartner_Location_ID}) — see the class
-	 * javadoc, "Ordering". A partner with neither its own VAT-ID nor any location VAT-ID contributes
-	 * nothing and is not counted towards either the checked or the pending count.
-	 */
-	@NonNull
-	private ImmutableList<CheckTarget> retrieveCheckTargets(@NonNull final ImmutableList<BPartnerId> selectedBPartnerIds)
-	{
-		// The persistence access to C_BPartner / C_BPartner_Location belongs on IBPartnerDAO, which already
-		// owns it (getByIds, retrieveBPartnerLocationsWithVATaxID, ...) — this service must not build its
-		// own IQueryBL query for another module's table (docs/REVIEW.md).
-		final ImmutableMap<BPartnerId, I_C_BPartner> selectedBPartnersById = bpartnerDAO.getByIds(selectedBPartnerIds)
-				.stream()
-				.collect(ImmutableMap.toImmutableMap(
-						bpartnerRecord -> BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID()),
-						Function.identity()));
 
-		final ImmutableListMultimap<BPartnerId, I_C_BPartner_Location> locationsByBPartnerId = bpartnerDAO
-				.retrieveBPartnerLocationsWithVATaxID(selectedBPartnerIds)
-				.stream()
-				.collect(ImmutableListMultimap.toImmutableListMultimap(
-						locationRecord -> BPartnerId.ofRepoId(locationRecord.getC_BPartner_ID()),
-						Function.identity()));
-
-		final ImmutableList.Builder<CheckTarget> checkTargets = ImmutableList.builder();
-		for (final BPartnerId bpartnerId : selectedBPartnerIds)
-		{
-			final I_C_BPartner bpartnerRecord = selectedBPartnersById.get(bpartnerId);
-			if (bpartnerRecord == null)
-			{
-				// Selected by the caller but no longer resolvable by the time this run fetched it (e.g. the
-				// record was deleted in between) — nothing to check for it, and skipping is the only way to
-				// avoid an NPE from a null bpartnerRecord below.
-				continue;
-			}
-
-			if (!Check.isEmpty(bpartnerRecord.getVATaxID()))
-			{
-				checkTargets.add(CheckTarget.ofPartner(bpartnerId, bpartnerRecord));
-			}
-
-			for (final I_C_BPartner_Location bpartnerLocationRecord : locationsByBPartnerId.get(bpartnerId))
-			{
-				checkTargets.add(CheckTarget.ofLocation(bpartnerLocationRecord));
-			}
-		}
-		return checkTargets.build();
-	}
 
 	/**
 	 * Runs one target's attempt stamp and its check.
@@ -521,88 +454,13 @@ public class VATaxIDMassCheckService
 		trxManager.runInNewTrx(() -> {
 			if (bpartnerLocationId != null)
 			{
-				bpartnerDAO.stampVATaxIDCheckAttempt(bpartnerLocationId, attemptedAt);
+				checkTargetRepo.stampVATaxIDCheckAttempt(bpartnerLocationId, attemptedAt);
 			}
 			else
 			{
-				bpartnerDAO.stampVATaxIDCheckAttempt(checkTarget.getBpartnerId(), attemptedAt);
+				checkTargetRepo.stampVATaxIDCheckAttempt(checkTarget.getBpartnerId(), attemptedAt);
 			}
 		});
 	}
-
-	/**
-	 * One VAT-ID to check: either a partner header ({@link #bpartnerLocationId} {@code null}) or one of its
-	 * locations. Carries everything {@link #checkOneInOwnTrx} needs so that method no longer has to branch on
-	 * which table the record came from — the branch happens once, when a {@code CheckTarget} is built from
-	 * the underlying {@code I_C_BPartner} / {@code I_C_BPartner_Location} record.
-	 */
-	@Value
-	@Builder
-	private static class CheckTarget
-	{
-		@NonNull BPartnerId bpartnerId;
-
-		@Nullable BPartnerLocationId bpartnerLocationId;
-
-		@NonNull VATIdentifier vataxID;
-
-		@NonNull VATaxIDStatus previousStatus;
-
-		/**
-		 * When this record's status was last successfully determined — {@code null} if it never was. See
-		 * the class javadoc, "Starvation guard": this is DIFFERENT from {@link #lastAttemptedAt}, which
-		 * advances on every attempt regardless of outcome.
-		 */
-		@Nullable Instant checkedAt;
-
-		/**
-		 * When this record's check was last ATTEMPTED, regardless of outcome — {@code null} if it never
-		 * was. Used by the nightly query's ordering (oldest attempt first, never-attempted first) to
-		 * run's targets; unrelated to {@link #checkedAt}. See the class javadoc, "Starvation guard".
-		 */
-		@Nullable Instant lastAttemptedAt;
-
-		@NonNull String logLabel;
-
-		/**
-		 * The organisation whose {@link VATaxIDConfig} governs this target's check: the record's OWN
-		 * {@code AD_Org_ID} — the location's for a location target, not its parent partner's. Same
-		 * organisation {@code VATaxIDCheckTrigger} gates the enqueue on and
-		 * {@code VATaxIDParentStatusRepository} resolves at processing time; the three must agree or one
-		 * gate answers a different question from the next.
-		 */
-		@NonNull OrgId orgId;
-
-		@NonNull
-		private static CheckTarget ofPartner(@NonNull final BPartnerId bpartnerId, @NonNull final I_C_BPartner bpartnerRecord)
-		{
-			return CheckTarget.builder()
-					.bpartnerId(bpartnerId)
-					.bpartnerLocationId(null)
-					.vataxID(VATIdentifier.of(bpartnerRecord.getVATaxID()))
-					.previousStatus(resolveStatus(bpartnerRecord.getVATaxIDStatus()))
-					.checkedAt(toInstantOrNull(bpartnerRecord.getVATaxIDCheckedAt()))
-					.lastAttemptedAt(toInstantOrNull(bpartnerRecord.getVATaxIDLastAttemptedAt()))
-					.logLabel("C_BPartner_ID=" + bpartnerRecord.getC_BPartner_ID())
-					.orgId(OrgId.ofRepoId(bpartnerRecord.getAD_Org_ID()))
-					.build();
-		}
-
-		@NonNull
-		private static CheckTarget ofLocation(@NonNull final I_C_BPartner_Location bpartnerLocationRecord)
-		{
-			final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartnerLocationRecord.getC_BPartner_ID());
-			return CheckTarget.builder()
-					.bpartnerId(bpartnerId)
-					.bpartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, bpartnerLocationRecord.getC_BPartner_Location_ID()))
-					.vataxID(VATIdentifier.of(bpartnerLocationRecord.getVATaxID()))
-					.previousStatus(resolveStatus(bpartnerLocationRecord.getVATaxIDStatus()))
-					.checkedAt(toInstantOrNull(bpartnerLocationRecord.getVATaxIDCheckedAt()))
-					.lastAttemptedAt(toInstantOrNull(bpartnerLocationRecord.getVATaxIDLastAttemptedAt()))
-					.logLabel("C_BPartner_ID=" + bpartnerLocationRecord.getC_BPartner_ID()
-							+ ", C_BPartner_Location_ID=" + bpartnerLocationRecord.getC_BPartner_Location_ID())
-					.orgId(OrgId.ofRepoId(bpartnerLocationRecord.getAD_Org_ID()))
-					.build();
-		}
-	}
+	
 }

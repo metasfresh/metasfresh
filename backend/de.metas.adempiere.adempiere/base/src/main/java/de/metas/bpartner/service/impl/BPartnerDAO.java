@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -77,10 +77,8 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.trx.api.ITrx;
@@ -91,8 +89,6 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.proxy.Cached;
 import org.apache.commons.lang3.BooleanUtils;
 import org.compiere.model.IQuery;
-import org.compiere.model.X_C_BPartner;
-import org.compiere.model.X_C_BPartner_Location;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Group;
@@ -104,7 +100,6 @@ import org.compiere.model.I_C_Location;
 import org.compiere.model.X_C_Location;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -112,9 +107,6 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -662,125 +654,6 @@ public class BPartnerDAO implements IBPartnerDAO
 		}
 
 		return InterfaceWrapperHelper.loadByRepoIdAwares(ids, I_C_BPartner_Location.class);
-	}
-
-	@Override
-	public ImmutableList<I_C_BPartner_Location> retrieveBPartnerLocationsWithVATaxID(@NonNull final Collection<BPartnerId> bpartnerIds)
-	{
-		if (bpartnerIds.isEmpty())
-		{
-			return ImmutableList.of();
-		}
-
-		return queryBL.createQueryBuilder(I_C_BPartner_Location.class)
-				.addInArrayFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, bpartnerIds)
-				.addOnlyActiveRecordsFilter()
-				.addNotNull(I_C_BPartner_Location.COLUMNNAME_VATaxID)
-				.addNotEqualsFilter(I_C_BPartner_Location.COLUMNNAME_VATaxID, "")
-				.orderBy(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID)
-				.orderBy(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID)
-				.create()
-				.listImmutable(I_C_BPartner_Location.class);
-	}
-
-	/** Matches the scheduler's default MaxChecksPerRun, so a full-budget run pages once per grain. */
-	private static final int ITERATOR_BUFFER_SIZE = 500;
-
-	@Override
-	public Iterator<I_C_BPartner> iterateBPartnersDueForVATaxIDCheck(@NonNull final OrgId orgId, @Nullable final Instant staleBefore)
-	{
-		final IQuery<I_C_BPartner> query = createBPartnersDueForVATaxIDCheckQuery(orgId, staleBefore);
-		query.setOption(IQuery.OPTION_IteratorBufferSize, ITERATOR_BUFFER_SIZE);
-		return query.iterateWithGuaranteedIterator(I_C_BPartner.class);
-	}
-
-	@Override
-	public int countBPartnersDueForVATaxIDCheck(@NonNull final OrgId orgId, @Nullable final Instant staleBefore)
-	{
-		return createBPartnersDueForVATaxIDCheckQuery(orgId, staleBefore).count();
-	}
-
-	@NonNull
-	private IQuery<I_C_BPartner> createBPartnersDueForVATaxIDCheckQuery(@NonNull final OrgId orgId, @Nullable final Instant staleBefore)
-	{
-		final IQueryBuilder<I_C_BPartner> queryBuilder = queryBL.createQueryBuilder(I_C_BPartner.class)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
-				.addEqualsFilter(I_C_BPartner.COLUMNNAME_AD_Org_ID, orgId)
-				.addNotNull(I_C_BPartner.COLUMNNAME_VATaxID)
-				.addNotEqualsFilter(I_C_BPartner.COLUMNNAME_VATaxID, "");
-
-		if (staleBefore != null)
-		{
-			// A null VATaxIDStatus counts as never-checked, matching the caller's own resolveStatus.
-			queryBuilder.filter(queryBL.createCompositeQueryFilter(I_C_BPartner.class).setJoinOr()
-					.addEqualsFilter(I_C_BPartner.COLUMNNAME_VATaxIDStatus, null)
-					.addEqualsFilter(I_C_BPartner.COLUMNNAME_VATaxIDStatus, X_C_BPartner.VATAXIDSTATUS_NotChecked)
-					.addEqualsFilter(I_C_BPartner.COLUMNNAME_VATaxIDCheckedAt, null)
-					.addCompareFilter(I_C_BPartner.COLUMNNAME_VATaxIDCheckedAt, Operator.LESS, Timestamp.from(staleBefore)));
-		}
-
-		queryBuilder.orderBy()
-				.addColumn(I_C_BPartner.COLUMNNAME_VATaxIDLastAttemptedAt, IQueryOrderBy.Direction.Ascending, IQueryOrderBy.Nulls.First)
-				.addColumn(I_C_BPartner.COLUMNNAME_C_BPartner_ID);
-
-		return queryBuilder.create();
-	}
-
-	@Override
-	public Iterator<I_C_BPartner_Location> iterateBPartnerLocationsDueForVATaxIDCheck(@NonNull final OrgId orgId, @Nullable final Instant staleBefore)
-	{
-		final IQuery<I_C_BPartner_Location> query = createBPartnerLocationsDueForVATaxIDCheckQuery(orgId, staleBefore);
-		query.setOption(IQuery.OPTION_IteratorBufferSize, ITERATOR_BUFFER_SIZE);
-		return query.iterateWithGuaranteedIterator(I_C_BPartner_Location.class);
-	}
-
-	@Override
-	public int countBPartnerLocationsDueForVATaxIDCheck(@NonNull final OrgId orgId, @Nullable final Instant staleBefore)
-	{
-		return createBPartnerLocationsDueForVATaxIDCheckQuery(orgId, staleBefore).count();
-	}
-
-	@NonNull
-	private IQuery<I_C_BPartner_Location> createBPartnerLocationsDueForVATaxIDCheckQuery(@NonNull final OrgId orgId, @Nullable final Instant staleBefore)
-	{
-		final IQueryBuilder<I_C_BPartner_Location> queryBuilder = queryBL.createQueryBuilder(I_C_BPartner_Location.class)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
-				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_AD_Org_ID, orgId)
-				.addNotNull(I_C_BPartner_Location.COLUMNNAME_VATaxID)
-				.addNotEqualsFilter(I_C_BPartner_Location.COLUMNNAME_VATaxID, "");
-
-		if (staleBefore != null)
-		{
-			queryBuilder.filter(queryBL.createCompositeQueryFilter(I_C_BPartner_Location.class).setJoinOr()
-					.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_VATaxIDStatus, null)
-					.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_VATaxIDStatus, X_C_BPartner_Location.VATAXIDSTATUS_NotChecked)
-					.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_VATaxIDCheckedAt, null)
-					.addCompareFilter(I_C_BPartner_Location.COLUMNNAME_VATaxIDCheckedAt, Operator.LESS, Timestamp.from(staleBefore)));
-		}
-
-		queryBuilder.orderBy()
-				.addColumn(I_C_BPartner_Location.COLUMNNAME_VATaxIDLastAttemptedAt, IQueryOrderBy.Direction.Ascending, IQueryOrderBy.Nulls.First)
-				.addColumn(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID);
-
-		return queryBuilder.create();
-	}
-
-	@Override
-	public void stampVATaxIDCheckAttempt(@NonNull final BPartnerId bpartnerId, @NonNull final Instant attemptedAt)
-	{
-		final I_C_BPartner bpartnerRecord = load(bpartnerId, I_C_BPartner.class);
-		bpartnerRecord.setVATaxIDLastAttemptedAt(TimeUtil.asTimestampNotNull(attemptedAt));
-		InterfaceWrapperHelper.saveRecord(bpartnerRecord);
-	}
-
-	@Override
-	public void stampVATaxIDCheckAttempt(@NonNull final BPartnerLocationId bpartnerLocationId, @NonNull final Instant attemptedAt)
-	{
-		final I_C_BPartner_Location bpartnerLocationRecord = load(bpartnerLocationId, I_C_BPartner_Location.class);
-		bpartnerLocationRecord.setVATaxIDLastAttemptedAt(TimeUtil.asTimestampNotNull(attemptedAt));
-		InterfaceWrapperHelper.saveRecord(bpartnerLocationRecord);
 	}
 
 	@Override

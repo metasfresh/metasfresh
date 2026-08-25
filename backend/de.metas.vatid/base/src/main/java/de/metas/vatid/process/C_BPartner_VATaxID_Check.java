@@ -102,15 +102,13 @@ public class C_BPartner_VATaxID_Check extends JavaProcess implements IProcessPre
 	 * {@link #getTableName()} is non-null (see {@link #doIt()}), so this never hits the
 	 * {@code @NoSelection@} branch that method throws for a genuinely selection-less run.
 	 */
+	// TODO #31060: we cannot prevent the user from selecting all BPartners, so we need to iterate here as well
 	@NonNull
 	private ImmutableList<BPartnerId> retrieveSelectedBPartnerIds()
 	{
 		return retrieveSelectedRecordsQueryBuilder(I_C_BPartner.class)
 				.orderBy(I_C_BPartner.COLUMNNAME_C_BPartner_ID)
 				.create()
-				.listImmutable(I_C_BPartner.class)
-				.stream()
-				.map(bpartnerRecord -> BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID()))
-				.collect(ImmutableList.toImmutableList());
+				.listIds(BPartnerId::ofRepoId);
 	}
 }
