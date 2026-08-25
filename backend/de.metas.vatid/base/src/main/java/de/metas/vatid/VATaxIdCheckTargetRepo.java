@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.organization.OrgId;
 import de.metas.tax.api.VATIdentifier;
 import de.metas.util.Services;
@@ -35,6 +36,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
@@ -75,6 +77,7 @@ public class VATaxIdCheckTargetRepo
 	private static final int ITERATOR_BUFFER_SIZE = 500;
 
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	/**
 	 * The nightly run's single stream of the targets {@code orgId} owes a VAT-ID check: first every due
@@ -315,6 +318,36 @@ public class VATaxIdCheckTargetRepo
 		final I_C_BPartner_Location bpartnerLocationRecord = load(bpartnerLocationId, I_C_BPartner_Location.class);
 		bpartnerLocationRecord.setVATaxIDLastAttemptedAt(TimeUtil.asTimestampNotNull(attemptedAt));
 		InterfaceWrapperHelper.saveRecord(bpartnerLocationRecord);
+	}
+
+	/**
+	 * Stamps {@code checkTarget}'s {@code VATaxIDLastAttemptedAt} unconditionally, recording that an attempt
+	 * is about to happen rather than that one succeeded, in its OWN committed transaction.
+	 *
+	 * <p>Deliberately {@code runInNewTrx} rather than {@code runInThreadInheritedTrx} — the one genuinely
+	 * required use of the hack {@code docs/coding-rules/java-general.md} otherwise warns against. Joining the
+	 * check-and-refresh transaction would let a rolled-back check erase the evidence that an attempt was
+	 * made, which is the whole defect this mechanism prevents.
+	 *
+	 * <p>A chronic failure of this write itself is an accepted residual risk: such a target sorts first every
+	 * run but consumes only its own slot, so it crowds out nobody. Diagnose it from the run log rather than
+	 * auto-excluding after N failures.
+	 */
+	public void stampVATaxIDCheckAttemptInOwnTrx(@NonNull final CheckTarget checkTarget)
+	{
+		final Instant attemptedAt = SystemTime.asInstant();
+		final BPartnerLocationId bpartnerLocationId = checkTarget.getBpartnerLocationId();
+
+		trxManager.runInNewTrx(() -> {
+			if (bpartnerLocationId != null)
+			{
+				stampVATaxIDCheckAttempt(bpartnerLocationId, attemptedAt);
+			}
+			else
+			{
+				stampVATaxIDCheckAttempt(checkTarget.getBpartnerId(), attemptedAt);
+			}
+		});
 	}
 
 	/**

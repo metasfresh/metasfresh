@@ -24,7 +24,6 @@ package de.metas.vatid;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
@@ -318,7 +317,7 @@ public class VATaxIDMassCheckService
 	 * Runs one target's attempt stamp and its check.
 	 *
 	 * <p>The attempt stamp is its own already-committed transaction, written before the check starts
-	 * ({@link #stampAttemptInOwnTrx}); a write sharing the check's transaction would be erased by exactly the
+	 * ({@link VATaxIdCheckTargetRepo#stampVATaxIDCheckAttemptInOwnTrx(VATaxIdCheckTargetRepo.CheckTarget)}); a write sharing the check's transaction would be erased by exactly the
 	 * rollback it exists to survive.
 	 *
 	 * <p>The check is wrapped in {@code callInNewTrx} — normally a hack, per
@@ -339,13 +338,13 @@ public class VATaxIDMassCheckService
 	{
 		try
 		{
-			stampAttemptInOwnTrx(checkTarget);
+			checkTargetRepo.stampVATaxIDCheckAttemptInOwnTrx(checkTarget);
 		}
 		catch (final Exception ex)
 		{
 			// The stamp write itself failed -- the check-and-refresh unit below never even starts, so
 			// neither VATaxIDCheckedAt nor VATaxIDLastAttemptedAt advances for this target this run (see
-			// stampAttemptInOwnTrx's javadoc). Reported distinctly from an ordinary check failure (below):
+			// VATaxIdCheckTargetRepo#stampVATaxIDCheckAttemptInOwnTrx's javadoc). Reported distinctly from an ordinary check failure (below):
 			// this log line is the ONLY place this failure can surface at all.
 			Loggables.withWarnLoggerToo(logger).addLog(
 					"VAT-ID check attempt-stamp write failed for {}: {} -- the check for this target was NOT "
@@ -386,34 +385,5 @@ public class VATaxIDMassCheckService
 		}
 	}
 
-	/**
-	 * Stamps {@code checkTarget}'s {@code VATaxIDLastAttemptedAt} unconditionally, recording that an attempt
-	 * is about to happen rather than that one succeeded.
-	 *
-	 * <p>Deliberately {@code runInNewTrx} rather than {@code runInThreadInheritedTrx} — the one genuinely
-	 * required use of the hack {@code docs/coding-rules/java-general.md} otherwise warns against. Joining the
-	 * check-and-refresh transaction would let a rolled-back check erase the evidence that an attempt was
-	 * made, which is the whole defect this mechanism prevents.
-	 *
-	 * <p>A chronic failure of this write itself is an accepted residual risk: such a target sorts first every
-	 * run but consumes only its own slot, so it crowds out nobody. Diagnose it from the run log rather than
-	 * auto-excluding after N failures.
-	 */
-	private void stampAttemptInOwnTrx(@NonNull final CheckTarget checkTarget)
-	{
-		final Instant attemptedAt = SystemTime.asInstant();
-		final BPartnerLocationId bpartnerLocationId = checkTarget.getBpartnerLocationId();
-
-		trxManager.runInNewTrx(() -> {
-			if (bpartnerLocationId != null)
-			{
-				checkTargetRepo.stampVATaxIDCheckAttempt(bpartnerLocationId, attemptedAt);
-			}
-			else
-			{
-				checkTargetRepo.stampVATaxIDCheckAttempt(checkTarget.getBpartnerId(), attemptedAt);
-			}
-		});
-	}
 	
 }
