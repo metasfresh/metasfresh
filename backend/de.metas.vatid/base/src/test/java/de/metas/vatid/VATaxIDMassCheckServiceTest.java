@@ -102,8 +102,7 @@ class VATaxIDMassCheckServiceTest
 		// tests exercise, while each grain query and each write below is stubbed out. Constructed only after
 		// bpartnerDAOMock is registered -- the repo resolves its services in its field initializers.
 		checkTargetRepoSpy = spy(new VATaxIdCheckTargetRepo());
-		doNothing().when(checkTargetRepoSpy).stampVATaxIDCheckAttempt(any(BPartnerId.class), any(Instant.class));
-		doNothing().when(checkTargetRepoSpy).stampVATaxIDCheckAttempt(any(BPartnerLocationId.class), any(Instant.class));
+		doNothing().when(checkTargetRepoSpy).stampVATaxIDCheckAttempt(any(VATaxIdCheckTargetRepo.CheckTarget.class), any(Instant.class));
 
 		// The selection path now carries a non-null pinstance (its selection key), so reportCallStats reaches
 		// this call; give it a benign default. Unused on the nightly-null-pinstance tests, which is harmless.
@@ -149,7 +148,7 @@ class VATaxIDMassCheckServiceTest
 		// the broken target's stamp write fails on every attempt -- the exact chronic-failure shape this
 		// test exists to cover; the healthy target's keeps the no-op stub from beforeEach and succeeds.
 		doThrow(new RuntimeException("simulated stamp-write failure (test-only, VATaxIDMassCheckServiceTest)"))
-				.when(checkTargetRepoSpy).stampVATaxIDCheckAttempt(eq(BPARTNER_ID_BROKEN_STAMP), any(Instant.class));
+				.when(checkTargetRepoSpy).stampVATaxIDCheckAttempt(argThat(ct -> BPARTNER_ID_BROKEN_STAMP.equals(ct.getBpartnerId())), any(Instant.class));
 
 		when(checkServiceMock.getUnavailableCountryCodes(any(OrgId.class))).thenReturn(ImmutableSet.of());
 		when(checkServiceMock.check(argThat(req -> BPARTNER_ID_HEALTHY.equals(req.getBpartnerId()))))
@@ -175,7 +174,7 @@ class VATaxIDMassCheckServiceTest
 				.check(argThat(req -> BPARTNER_ID_BROKEN_STAMP.equals(req.getBpartnerId())));
 
 		// ... but the run did NOT abort: the healthy target queued behind it was still stamped and checked.
-		verify(checkTargetRepoSpy).stampVATaxIDCheckAttempt(eq(BPARTNER_ID_HEALTHY), any(Instant.class));
+		verify(checkTargetRepoSpy).stampVATaxIDCheckAttempt(argThat(ct -> BPARTNER_ID_HEALTHY.equals(ct.getBpartnerId())), any(Instant.class));
 		verify(checkServiceMock)
 				.check(argThat(req -> BPARTNER_ID_HEALTHY.equals(req.getBpartnerId())));
 
@@ -234,8 +233,8 @@ class VATaxIDMassCheckServiceTest
 
 		// The whole point: the run stops at the FIRST target instead of grinding through the selection.
 		verify(checkServiceMock, times(1)).check(any(VATaxIDCheckRequest.class));
-		verify(checkTargetRepoSpy, never()).stampVATaxIDCheckAttempt(eq(BPARTNER_ID_SECOND), any(Instant.class));
-		verify(checkTargetRepoSpy, never()).stampVATaxIDCheckAttempt(eq(BPARTNER_ID_THIRD), any(Instant.class));
+		verify(checkTargetRepoSpy, never()).stampVATaxIDCheckAttempt(argThat(ct -> BPARTNER_ID_SECOND.equals(ct.getBpartnerId())), any(Instant.class));
+		verify(checkTargetRepoSpy, never()).stampVATaxIDCheckAttempt(argThat(ct -> BPARTNER_ID_THIRD.equals(ct.getBpartnerId())), any(Instant.class));
 
 		// ... and it is NOT reported as an ordinary per-target failure, which would leave the operator with
 		// nothing to act on.
@@ -525,7 +524,7 @@ class VATaxIDMassCheckServiceTest
 		// ... the blank record was neither checked nor attempt-stamped ...
 		verify(checkServiceMock, never())
 				.check(argThat(req -> req != null && BPARTNER_ID_BLANK_VATAXID.equals(req.getBpartnerId())));
-		verify(checkTargetRepoSpy, never()).stampVATaxIDCheckAttempt(eq(BPARTNER_ID_BLANK_VATAXID), any(Instant.class));
+		verify(checkTargetRepoSpy, never()).stampVATaxIDCheckAttempt(argThat(ct -> BPARTNER_ID_BLANK_VATAXID.equals(ct.getBpartnerId())), any(Instant.class));
 
 		// ... and it did not vanish silently: a data problem an operator has to fix is named in the run log.
 		assertThat(log.getSingleMessages())
@@ -576,7 +575,7 @@ class VATaxIDMassCheckServiceTest
 		// ... the blank record was neither checked nor attempt-stamped ...
 		verify(checkServiceMock, never())
 				.check(argThat(req -> req != null && BPARTNER_ID_BLANK_VATAXID.equals(req.getBpartnerId())));
-		verify(checkTargetRepoSpy, never()).stampVATaxIDCheckAttempt(eq(BPARTNER_ID_BLANK_VATAXID), any(Instant.class));
+		verify(checkTargetRepoSpy, never()).stampVATaxIDCheckAttempt(argThat(ct -> BPARTNER_ID_BLANK_VATAXID.equals(ct.getBpartnerId())), any(Instant.class));
 
 		// ... and, unlike the nightly path, its skip was SILENT: no "blank VAT-ID" line reached the run log.
 		assertThat(log.getSingleMessages())

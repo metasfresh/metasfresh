@@ -246,44 +246,18 @@ public class VATaxIDCheckService
 	}
 
 	/**
-	 * Writes {@code lastCheck} onto the parent record — unless that record's {@code VATaxID} is no longer the
-	 * value {@code request} was checked for, in which case the verdict is abandoned.
+	 * Writes {@code lastCheck} onto the parent record ONLY if the record still holds the {@code VATaxID}
+	 * {@code request} was checked for; otherwise the verdict is abandoned.
 	 *
-	 * <p><b>Why this guard exists.</b> A save-triggered check runs asynchronously
-	 * ({@code VATaxIDCheckWorkpackageProcessor}) on the VAT-ID captured when the work package was ENQUEUED,
-	 * while the parent columns are written onto the record as it stands when the package is PROCESSED. In
-	 * between, the user can clear the field — {@code VATaxIDCheckTrigger} enqueues nothing for a cleared
-	 * value, but the package already queued still runs — or correct it, in which case two in-flight packages
-	 * for the same record have no ordering guarantee and the older answer could overwrite the newer one.
-	 * Either way the record would end up carrying a status, a timestamp and a {@code VATaxID_CheckLog_ID}
-	 * that belong to a VAT-ID it does not hold, and under a {@code Valid} that is a tax certificate granted
-	 * on the strength of someone else's number.
+	 * <p>A save-triggered check runs asynchronously on the VAT-ID captured at ENQUEUE time, so by the time it
+	 * is PROCESSED the user may have cleared or corrected the field — a stale answer must not brand the record
+	 * with a status, timestamp and {@code VATaxID_CheckLog_ID} for a number it no longer holds (under a
+	 * {@code Valid}, a tax certificate for someone else's VAT-ID). The append-only {@code VATaxID_CheckLog} row
+	 * is still written and kept; only the denormalised copy on the parent is withheld.
 	 *
-	 * <p><b>The {@code VATaxID_CheckLog} row is written and kept regardless</b> — the attempt genuinely
-	 * happened, and that table is append-only historical evidence by design. Only the denormalised copy on
-	 * the parent is withheld.
-	 *
-	 * <p>The comparison lives here rather than inside
-	 * {@link VATaxIDParentStatusRepository#updateParentStatus(VATaxIDCheckRequest, VATaxIDLastCheck)}
-	 * because it is a decision, and a repository must not make conditional writes based on business state
-	 * ({@code docs/coding-rules/architecture.md} §8). It also has to be visible to the caller: neither the
-	 * status-change log line nor the order-line-tax refresh in
-	 * {@link #storeVerdictAndRefreshOrderTax(VATaxIDCheckRequest, VATaxIDStatus, VATaxIDLastCheck)} may fire
-	 * on a verdict that was never written.
-	 * The repository still owns the branch on parent type, on both the read and the write.
-	 *
-	 * <p>The synchronous process path keeps working unchanged in the ordinary case — it builds its request
-	 * from the record it has just read, so the values match and this returns {@code true}. It is not exempt
-	 * from the race, though: {@code VATaxIDMassCheckService} reads its whole selection up front and then works
-	 * through it one target at a time, so a user editing a VAT-ID mid-run hits exactly the same window, and
-	 * the guard covers that too.
-	 *
-	 * <p><b>Residual risk, accepted.</b> The read and the write are two round-trips with no row lock between
-	 * them, so a write landing in that gap still slips past. That gap is now two adjacent local statements
-	 * with no third-party I/O between them, where before it spanned the whole online call plus however long
-	 * the work package sat in the queue — a narrowing from minutes to sub-millisecond, not an elimination.
-	 * Locking the parent row for the duration would serialise checks against ordinary partner edits, which
-	 * costs more than the remaining exposure is worth.
+	 * <p>The check lives here, not in the repository, because it is a decision the caller must see: neither the
+	 * status-change log line nor the order-tax refresh may fire on an unstored verdict
+	 * ({@code docs/coding-rules/architecture.md} §8).
 	 *
 	 * @return whether the parent record was updated.
 	 */

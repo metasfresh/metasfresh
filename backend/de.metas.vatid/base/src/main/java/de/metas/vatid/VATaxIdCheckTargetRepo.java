@@ -298,27 +298,27 @@ public class VATaxIdCheckTargetRepo
 	}
 
 	/**
-	 * Stamps {@code C_BPartner.VATaxIDLastAttemptedAt} unconditionally, whether the check that follows
-	 * succeeds, fails or throws — unlike {@code VATaxIDCheckedAt}, which advances only on a completed check.
-	 * Without it a permanently failing target would never advance any timestamp and would sort first of
-	 * every nightly run forever. The caller must commit this in its own transaction so it survives the
+	 * Stamps {@code checkTarget}'s {@code VATaxIDLastAttemptedAt} unconditionally, whether the check that
+	 * follows succeeds, fails or throws — unlike {@code VATaxIDCheckedAt}, which advances only on a completed
+	 * check. Without it a permanently failing target would sort first of every nightly run forever. Commit it
+	 * in its own transaction (see {@link #stampVATaxIDCheckAttemptInOwnTrx(CheckTarget)}) so it survives the
 	 * check's rollback.
 	 */
-	public void stampVATaxIDCheckAttempt(@NonNull final BPartnerId bpartnerId, @NonNull final Instant attemptedAt)
+	public void stampVATaxIDCheckAttempt(@NonNull final CheckTarget checkTarget, @NonNull final Instant attemptedAt)
 	{
-		final I_C_BPartner bpartnerRecord = load(bpartnerId, I_C_BPartner.class);
-		bpartnerRecord.setVATaxIDLastAttemptedAt(TimeUtil.asTimestampNotNull(attemptedAt));
-		InterfaceWrapperHelper.saveRecord(bpartnerRecord);
-	}
-
-	/**
-	 * The {@code C_BPartner_Location} counterpart of {@link #stampVATaxIDCheckAttempt(BPartnerId, Instant)}.
-	 */
-	public void stampVATaxIDCheckAttempt(@NonNull final BPartnerLocationId bpartnerLocationId, @NonNull final Instant attemptedAt)
-	{
-		final I_C_BPartner_Location bpartnerLocationRecord = load(bpartnerLocationId, I_C_BPartner_Location.class);
-		bpartnerLocationRecord.setVATaxIDLastAttemptedAt(TimeUtil.asTimestampNotNull(attemptedAt));
-		InterfaceWrapperHelper.saveRecord(bpartnerLocationRecord);
+		final BPartnerLocationId bpartnerLocationId = checkTarget.getBpartnerLocationId();
+		if (bpartnerLocationId != null)
+		{
+			final I_C_BPartner_Location bpartnerLocationRecord = load(bpartnerLocationId, I_C_BPartner_Location.class);
+			bpartnerLocationRecord.setVATaxIDLastAttemptedAt(TimeUtil.asTimestampNotNull(attemptedAt));
+			InterfaceWrapperHelper.saveRecord(bpartnerLocationRecord);
+		}
+		else
+		{
+			final I_C_BPartner bpartnerRecord = load(checkTarget.getBpartnerId(), I_C_BPartner.class);
+			bpartnerRecord.setVATaxIDLastAttemptedAt(TimeUtil.asTimestampNotNull(attemptedAt));
+			InterfaceWrapperHelper.saveRecord(bpartnerRecord);
+		}
 	}
 
 	/**
@@ -337,18 +337,7 @@ public class VATaxIdCheckTargetRepo
 	public void stampVATaxIDCheckAttemptInOwnTrx(@NonNull final CheckTarget checkTarget)
 	{
 		final Instant attemptedAt = SystemTime.asInstant();
-		final BPartnerLocationId bpartnerLocationId = checkTarget.getBpartnerLocationId();
-
-		trxManager.runInNewTrx(() -> {
-			if (bpartnerLocationId != null)
-			{
-				stampVATaxIDCheckAttempt(bpartnerLocationId, attemptedAt);
-			}
-			else
-			{
-				stampVATaxIDCheckAttempt(checkTarget.getBpartnerId(), attemptedAt);
-			}
-		});
+		trxManager.runInNewTrx(() -> stampVATaxIDCheckAttempt(checkTarget, attemptedAt));
 	}
 
 	/**

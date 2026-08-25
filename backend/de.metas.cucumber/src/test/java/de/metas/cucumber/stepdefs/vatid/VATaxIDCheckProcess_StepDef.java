@@ -24,10 +24,10 @@ package de.metas.cucumber.stepdefs.vatid;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.time.SystemTime;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.TimeUtil;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
@@ -44,7 +44,6 @@ import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.vatid.VATaxIdCheckTargetRepo;
 import de.metas.vatid.process.C_BPartner_VATaxID_Check;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
@@ -85,8 +84,6 @@ public class VATaxIDCheckProcess_StepDef
 	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	@NonNull private final VATaxIdCheckTargetRepo vaTaxIdCheckTargetRepo;
-	
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
 
 	/** The PInstance of the last process run, read by {@link #assertPendingCountLogged(int)}. */
@@ -267,9 +264,10 @@ public class VATaxIDCheckProcess_StepDef
 				.addNotInArrayFilter(I_C_BPartner.COLUMNNAME_C_BPartner_ID, keepUnstampedBPartnerIds)
 				.create()
 				.list()
-				.forEach(bpartnerRecord -> vaTaxIdCheckTargetRepo.stampVATaxIDCheckAttempt(
-						BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID()),
-						attemptedAt));
+				.forEach(bpartnerRecord -> {
+					bpartnerRecord.setVATaxIDLastAttemptedAt(TimeUtil.asTimestampNotNull(attemptedAt));
+					InterfaceWrapperHelper.saveRecord(bpartnerRecord);
+				});
 
 		queryBL.createQueryBuilder(I_C_BPartner_Location.class)
 				.addOnlyActiveRecordsFilter()
@@ -280,9 +278,10 @@ public class VATaxIDCheckProcess_StepDef
 				.addNotInArrayFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, keepUnstampedBPartnerIds)
 				.create()
 				.list()
-				.forEach(bpartnerLocationRecord -> vaTaxIdCheckTargetRepo.stampVATaxIDCheckAttempt(
-						BPartnerLocationId.ofRepoId(bpartnerLocationRecord.getC_BPartner_ID(), bpartnerLocationRecord.getC_BPartner_Location_ID()),
-						attemptedAt));
+				.forEach(bpartnerLocationRecord -> {
+					bpartnerLocationRecord.setVATaxIDLastAttemptedAt(TimeUtil.asTimestampNotNull(attemptedAt));
+					InterfaceWrapperHelper.saveRecord(bpartnerLocationRecord);
+				});
 	}
 
 	/**
