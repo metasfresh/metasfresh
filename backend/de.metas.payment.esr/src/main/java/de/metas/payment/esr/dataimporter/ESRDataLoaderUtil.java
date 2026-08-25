@@ -399,24 +399,23 @@ public class ESRDataLoaderUtil
 		}
 	}
 
-	public void addMatchErrorMsg(@NonNull final I_ESR_ImportLine importLine, final String msg)
-	{
-		importLine.setMatchErrorMsg(addMsgToString(importLine.getMatchErrorMsg(), msg));
-	}
-
 	/**
-	 * Like {@link #addMatchErrorMsg(I_ESR_ImportLine, String)}, but a no-op if the line's {@code MatchErrorMsg} already
-	 * contains the given message. For callers that may run more than once for the same line and would otherwise
-	 * accumulate the very same message again and again.
+	 * Appends {@code msg} to the line's {@code MatchErrorMsg}, unless it is already there.
+	 * <p>
+	 * The de-duplication is not a nicety: every {@code evaluate*} entry point here is re-runnable by
+	 * design -- the import evaluates a line, a {@code @ModelChange} interceptor evaluates it again, and a
+	 * second Process run evaluates it once more -- so an unconditional append shows the accountant the
+	 * same sentence two or three times over. It is idempotent per message, so a genuinely different
+	 * message is still appended.
 	 */
-	public void addMatchErrorMsgIfNotPresent(@NonNull final I_ESR_ImportLine importLine, @Nullable final String msg)
+	public void addMatchErrorMsg(@NonNull final I_ESR_ImportLine importLine, @Nullable final String msg)
 	{
 		final String currentMsg = importLine.getMatchErrorMsg();
 		if (!Check.isEmpty(msg, true) && currentMsg != null && currentMsg.contains(msg))
 		{
 			return;
 		}
-		addMatchErrorMsg(importLine, msg);
+		importLine.setMatchErrorMsg(addMsgToString(currentMsg, msg));
 	}
 
 	public void addImportErrorMsg(@NonNull final I_ESR_ImportLine importLine, final String msg)
