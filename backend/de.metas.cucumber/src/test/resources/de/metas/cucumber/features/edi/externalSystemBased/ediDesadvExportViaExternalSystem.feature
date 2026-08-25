@@ -371,3 +371,122 @@ Feature: EDI DESADV export via External System
     And after not more than 5s, EDI_Desadv records have the following export status
       | EDI_Desadv_ID.Identifier | EDI_ExportStatus |
       | d_repl_150               | P                |
+
+
+  @from:cucumber
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00350_EDI
+  @F00350
+  @Id:S30013_10
+  Scenario: S30013_10 — under-delivery, remaining M_ShipmentSchedule closed -> DESADV reaches Sent
+  ## An order for 100 PCE is only delivered 70 PCE; that one shipment is exported successfully.
+  ## Intermediate state: the DESADV is under-delivered (FulfillmentPercent=70) and therefore
+  ## still Pending — nothing may close it while more M_InOutLines could still arrive.
+  ## Closing the remaining M_ShipmentSchedule is the statement "no more will ever be delivered",
+  ## so the DESADV must reach its terminal status S / Processed on its own, without running the
+  ## EDI_Desadv_Close process.  FulfillmentPercent must stay 70 — it is an EXP_FormatLine, i.e.
+  ## transmitted content, and auto-closing may not change what the recipient receives.
+    And RabbitMQ MF_TO_ExternalSystem queue is purged
+
+    # @Date@ suffix keeps the POReference unique across local repeat runs: the DESADV is resolved
+    # by POReference + C_BPartner_ID, so a fixed value would re-use a previous run's DESADV.
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised | POReference           |
+      | o_10       | true    | customer1     | 2025-04-17  | 2025-04-18Z  | PO_S30013_10_@Date@   |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID | QtyEntered |
+      | ol_10_1    | o_10                  | product      | 100        |
+
+    And the order identified by o_10 is completed
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | s_s_10     | ol_10_1                   | N             |
+
+    # Deliver only 70 of the 100 ordered, so a remainder stays open.
+    # QtyToDeliver_Override_For_M_ShipmentSchedule_ID is the workpackage-parameter name that
+    # ShipmentScheduleWorkPackageParameters.PARAM_QtyToDeliver_Override resolves to; the short
+    # alias "QtyToDeliver_Override" does NOT match and the full 100 would be shipped.
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | s_s_10                           | D            | true                | false       | 70                                              |
+
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | s_s_10                           | s_10                  |
+
+    And EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_ExportStatus |
+      | d_10                     | customer1                | o_10                  | P                |
+
+    And M_InOut is enqueued for EDI export
+      | M_InOut_ID |
+      | s_10       |
+
+    Then after not more than 120s, M_InOut records have the following export status
+      | M_InOut_ID.Identifier | EDI_ExportStatus |
+      | s_10                  | S                |
+
+    # Intermediate state: everything that was shipped is exported, but the DESADV is under-delivered
+    And after not more than 120s, EDI_Desadv records have the following export status
+      | EDI_Desadv_ID | EDI_ExportStatus | OPT.Processed | OPT.FulfillmentPercent |
+      | d_10          | P                | false         | 70                     |
+
+    When the M_ShipmentSchedule identified by s_s_10 is closed
+
+    # ─── CORE ASSERTION ────────────────────────────────────────────────────────
+    Then after not more than 120s, EDI_Desadv records have the following export status
+      | EDI_Desadv_ID | EDI_ExportStatus | OPT.Processed | OPT.FulfillmentPercent |
+      | d_10          | S                | true          | 70                     |
+
+
+  @from:cucumber
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00350_EDI
+  @F00350
+  @Id:S30013_20
+  Scenario: S30013_20 — under-delivery, M_ShipmentSchedule left open -> DESADV stays Pending
+  ## The unchanged case, and the signal disposition relies on: as long as the remaining
+  ## M_ShipmentSchedule is open, more M_InOutLines can still arrive, so the under-delivered
+  ## DESADV must stay P / not Processed even though every shipment it has is exported.
+    And RabbitMQ MF_TO_ExternalSystem queue is purged
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised | POReference           |
+      | o_20       | true    | customer1     | 2025-04-17  | 2025-04-18Z  | PO_S30013_20_@Date@   |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID | QtyEntered |
+      | ol_20_1    | o_20                  | product      | 100        |
+
+    And the order identified by o_20 is completed
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | s_s_20     | ol_20_1                   | N             |
+
+    # Deliver only 70 of the 100 ordered, so a remainder stays open (see S30013_10 on the column name).
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | s_s_20                           | D            | true                | false       | 70                                              |
+
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | s_s_20                           | s_20                  |
+
+    And EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_ExportStatus |
+      | d_20                     | customer1                | o_20                  | P                |
+
+    And M_InOut is enqueued for EDI export
+      | M_InOut_ID |
+      | s_20       |
+
+    Then after not more than 120s, M_InOut records have the following export status
+      | M_InOut_ID.Identifier | EDI_ExportStatus |
+      | s_20                  | S                |
+
+    # ─── CORE ASSERTION ────────────────────────────────────────────────────────
+    # The schedule is deliberately NOT closed — this is the signal disposition relies on.
+    Then after not more than 120s, EDI_Desadv records have the following export status
+      | EDI_Desadv_ID | EDI_ExportStatus | OPT.Processed | OPT.FulfillmentPercent |
+      | d_20          | P                | false         | 70                     |
