@@ -126,4 +126,27 @@ public class PP_OrderTest
 		assertThatCode(() -> interceptor.validateBOMAndProduct(ppOrder))
 				.doesNotThrowAnyException();
 	}
+
+	@Test
+	public void completion_productFlippedToAuslauf_isRejected()
+	{
+		// The order was legitimately created while the product was still 'O'; the status was flipped to
+		// 'A' (Auslauf, blocks MANUFACTURE) afterwards, so only the completion re-check can catch it.
+		final I_M_Product product = createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_PhaseOut);
+		final I_PP_Order ppOrder = createPPOrder(product, createMatchingBOM(product));
+
+		assertThatThrownBy(() -> interceptor.assertProductAllowedOnComplete(ppOrder))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("M_Product_BBSStatus_ActionBlocked");
+	}
+
+	@Test
+	public void completion_okProduct_isAllowed()
+	{
+		final I_M_Product product = createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_OK);
+		final I_PP_Order ppOrder = createPPOrder(product, createMatchingBOM(product));
+
+		assertThatCode(() -> interceptor.assertProductAllowedOnComplete(ppOrder))
+				.doesNotThrowAnyException();
+	}
 }
