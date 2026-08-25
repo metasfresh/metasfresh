@@ -828,3 +828,105 @@ Feature: EDI DESADV export via External System
     And after not more than 5s, M_InOut records have the following export status
       | M_InOut_ID.Identifier | EDI_ExportStatus |
       | s_70                  | S                |
+
+
+  @from:cucumber
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00350_EDI
+  @Id:S30013_100
+  Scenario: S30013_100 — location-level 'E' routing outranks the partner's 'R' default -> the under-delivery still auto-closes
+  ## The routing shape a production instance actually runs.  Every other scenario in this file inherits
+  ## the Background's single partner-level C_BPartner_EDI_Setting with EdiDESADVSendingMode=E and no
+  ## location, so per-M_InOut export mode is reached trivially.  In production the
+  ## de.metas.edi.OneDesadvPerShipment sysconfig route is off and the mode comes from a
+  ## location-bound 'E' row that outranks the partner's own 'R' default on SeqNo — see
+  ## EDIBPartnerConfigRepository.resolve(): among the rows whose C_BPartner_Location_ID is null or
+  ## matches exactly, the minimum SeqNo wins, then the minimum ID.
+  ## This scenario builds that shape (partner-level 'R' at SeqNo 20, location-bound 'E' at SeqNo 10)
+  ## and then runs S30013_10's flow on top of it: deliver 70 of the 100 ordered, export that shipment,
+  ## close the remaining M_ShipmentSchedule, and the DESADV must auto-close to S on its own.
+  ## S30189_150 covers location-driven routing in isolation; this is the only scenario that composes it
+  ## with an under-delivery close, i.e. the combination the fix has to survive at the customer.
+    And RabbitMQ MF_TO_ExternalSystem queue is purged
+
+    # A partner of its own is required: the Background already owns the (customer1, no location) row,
+    # and this step upserts on (C_BPartner_ID, C_BPartner_Location_ID), so giving customer1 a
+    # partner-level 'R' default would overwrite that row and break every sibling scenario.
+    And metasfresh contains C_BPartners without locations:
+      | Identifier | Value                | Name                | IsCustomer | IsVendor | M_PricingSystem_ID |
+      | customer2  | desadvReceiver2Value | desadvReceiver2Name | Y          | N        | pricingSystem      |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier          | C_BPartner_ID | IsShipTo | IsBillTo | IsShipToDefault | IsBillToDefault | GLN           |
+      | bpartner_location_2 | customer2     | Y        | Y        | Y               | Y               | 2234567890123 |
+
+    # The tie-break under test: for bpartner_location_2 the location-bound 'E' row (SeqNo 10) beats the
+    # partner's own ReplicationInterface default (SeqNo 20), so this order runs in per-M_InOut mode and
+    # is exported through externalSystemConfig_1.  The blank C_BPartner_Location_ID cell on the first
+    # row is what makes it the partner-level default (the column is optional in this step).
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | Identifier                      | C_BPartner_ID | C_BPartner_Location_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | EdiDESADVSendingMode | EdiDESADV_ExternalSystem_Config_ID | SeqNo |
+      | edi_setting_desadv_repl_cust2   | customer2     |                        | true                 | 2234567890            | R                    |                                    | 20    |
+      | edi_setting_desadv_extSys_cust2 | customer2     | bpartner_location_2    | true                 | 2234567891            | E                    | externalSystemConfig_1             | 10    |
+
+    # @Date@ suffix keeps the POReference unique across local repeat runs (see S30013_10).
+    # DeliveryRule=F is mandatory here and NOT an arbitrary extra: MOrder.beforeSave copies the
+    # partner's DeliveryRule onto the order only while C_BPartner_Location_ID is still unset, and this
+    # order must name its location explicitly to hit the location-bound EDI setting.  Without it the
+    # order keeps the column default 'A' (Availability), there is no stock in the test DB, and
+    # 'generate shipments' aborts with "nothing left to deliver".  S30189_150 — the other scenario that
+    # names the location — passes F for the same reason.
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | C_BPartner_Location_ID | DeliveryRule | DateOrdered | DatePromised | POReference          |
+      | o_100      | true    | customer2     | bpartner_location_2    | F            | 2025-04-17  | 2025-04-18Z  | PO_S30013_100_@Date@ |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID | QtyEntered |
+      | ol_100_1   | o_100                 | product      | 100        |
+
+    And the order identified by o_100 is completed
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | s_s_100    | ol_100_1                  | N             |
+
+    # Deliver only 70 of the 100 ordered, so a remainder stays open (see S30013_10 on the column name).
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | s_s_100                          | D            | true                | false       | 70                                             |
+
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | s_s_100                          | s_100                 |
+
+    And EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier |
+      | d_100                    | customer2                | o_100                 |
+
+    And M_InOut is enqueued for EDI export
+      | M_InOut_ID |
+      | s_100      |
+
+    Then after not more than 120s, M_InOut records have the following export status
+      | M_InOut_ID.Identifier | EDI_ExportStatus |
+      | s_100                 | S                |
+
+    # ─── ROUTING ASSERTION ─────────────────────────────────────────────────────
+    # Only the external-system route puts a message on MF_TO_ExternalSystem.  Had the partner-level 'R'
+    # row won the SeqNo tie-break, the export would have taken the ReplicationInterface route and this
+    # step would time out — which is exactly the production precondition being asserted here.
+    Then RabbitMQ receives a JsonExternalSystemRequest with the following external system config and parameter:
+      | ExternalSystem_Config_ID.Identifier | ConfigIDOnly |
+      | externalSystemConfig_1              | true         |
+
+    # Intermediate state: everything that was shipped is exported, but the DESADV is under-delivered
+    And after not more than 120s, EDI_Desadv records have the following export status
+      | EDI_Desadv_ID | EDI_ExportStatus | OPT.Processed | OPT.FulfillmentPercent |
+      | d_100         | P                | false         | 70                     |
+
+    When the M_ShipmentSchedule identified by s_s_100 is closed
+
+    # ─── CORE ASSERTION ────────────────────────────────────────────────────────
+    # Same terminal state as S30013_10, reached under the production routing shape.
+    # OPT.EDIErrorMsg=null: the auto-close is a clean terminal state, not an error state.
+    Then after not more than 120s, EDI_Desadv records have the following export status
+      | EDI_Desadv_ID | EDI_ExportStatus | OPT.EDIErrorMsg | OPT.Processed | OPT.FulfillmentPercent |
+      | d_100         | S                | null            | true          | 70                     |
