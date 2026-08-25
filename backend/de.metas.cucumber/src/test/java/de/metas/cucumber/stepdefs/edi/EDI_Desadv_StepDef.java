@@ -149,7 +149,7 @@ public class EDI_Desadv_StepDef
 	 * <pre>
 	 * Then EDI_Desadv is found:
 	 *   | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_Desadv_ID.Identifier | OPT.Processed | OPT.FulfillmentPercent | OPT.EDIErrorMsg |
-	 *   | bpartner                 | order_1                | desadv_1                 | false          | 100                    | null            |
+	 *   | bpartner                 | order_1               | desadv_1                 | false         | 100                    | null            |
 	 * </pre>
 	 */
 	@Then("EDI_Desadv is found:")
@@ -221,15 +221,15 @@ public class EDI_Desadv_StepDef
 	 * @cucumber.columns
 	 *   <b>EDI_Desadv_ID</b> — (required, identifier-ref) alias from {@code EDI_Desadv_StepDefData}<br>
 	 *   <b>EDI_ExportStatus</b> — (required) the export status to poll for<br>
+	 *   <b>OPT.EDIErrorMsg</b> — (optional) expected {@code EDI_Desadv.getEDIErrorMsg()}; the {@code null} token asserts the column IS null<br>
 	 *   <b>OPT.Processed</b> — (optional) expected {@code EDI_Desadv.isProcessed()}, asserted once the export status matches<br>
 	 *   <b>OPT.FulfillmentPercent</b> — (optional) expected {@code EDI_Desadv.getFulfillmentPercent()}, compared with {@code isEqualByComparingTo}<br>
-	 *   <b>OPT.EDIErrorMsg</b> — (optional) expected {@code EDI_Desadv.getEDIErrorMsg()}; the {@code null} token asserts the column IS null<br>
 	 * @cucumber.depends StepDefData: EDI_Desadv_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * Then after not more than 60s, EDI_Desadv records have the following export status
-	 *   | EDI_Desadv_ID | EDI_ExportStatus | OPT.Processed | OPT.FulfillmentPercent | OPT.EDIErrorMsg |
-	 *   | desadv_1      | Exported         | true          | 100                    | null            |
+	 *   | EDI_Desadv_ID | EDI_ExportStatus | OPT.EDIErrorMsg | OPT.Processed | OPT.FulfillmentPercent |
+	 *   | desadv_1      | Exported         | null            | true          | 100                    |
 	 * </pre>
 	 */
 	@Then("^after not more than (.*)s, EDI_Desadv records have the following export status$")
@@ -442,8 +442,9 @@ public class EDI_Desadv_StepDef
 			assertThat(desadvRecord.getFulfillmentPercent()).as(I_EDI_Desadv.COLUMNNAME_FulfillmentPercent).isEqualByComparingTo(fulfillmentPercent);
 		}
 
-		// mind the difference between "column not given" (skip) and "column given as the null token" (assert NULL)
-		final String ediErrorMsgRaw = tableRow.get("OPT." + I_EDI_Desadv.COLUMNNAME_EDIErrorMsg);
+		// extractNullableStringForColumnName (unlike extractStringOrNullForColumnName) keeps the
+		// difference between "column not given" (skip) and "column given as the null token" (assert NULL)
+		final String ediErrorMsgRaw = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + I_EDI_Desadv.COLUMNNAME_EDIErrorMsg);
 		if (ediErrorMsgRaw != null)
 		{
 			final String expectedEDIErrorMsg = DataTableUtil.nullToken2Null(ediErrorMsgRaw);
