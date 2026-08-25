@@ -34,8 +34,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_VATaxID_Config;
 
-import javax.annotation.Nullable;
-
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 
 /**
@@ -53,11 +51,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
  */
 public class VATaxID_Config_StepDef
 {
-	/**
-	 * Resolved on first use, NOT in a field initialiser: the {@code @After} hook below makes cucumber
-	 * instantiate this class for every scenario in the suite, so constructing it must stay free.
-	 */
-	@Nullable private IQueryBL _queryBL; // lazy
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private boolean touchedByThisScenario = false;
 
@@ -96,7 +90,7 @@ public class VATaxID_Config_StepDef
 	{
 		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
 
-		final I_VATaxID_Config existingRecord = queryBL()
+		final I_VATaxID_Config existingRecord = queryBL
 				.createQueryBuilder(I_VATaxID_Config.class)
 				.addEqualsFilter(I_VATaxID_Config.COLUMNNAME_AD_Org_ID, ORG_ID)
 				.addOnlyActiveRecordsFilter()
@@ -149,7 +143,7 @@ public class VATaxID_Config_StepDef
 			return;
 		}
 
-		final I_VATaxID_Config existingRecord = queryBL()
+		final I_VATaxID_Config existingRecord = queryBL
 				.createQueryBuilder(I_VATaxID_Config.class)
 				.addEqualsFilter(I_VATaxID_Config.COLUMNNAME_AD_Org_ID, ORG_ID)
 				.addOnlyActiveRecordsFilter()
@@ -177,17 +171,5 @@ public class VATaxID_Config_StepDef
 		{
 			InterfaceWrapperHelper.saveRecord(existingRecord);
 		}
-	}
-
-	/** See {@link #_queryBL} for why this is not resolved in a field initialiser. */
-	@NonNull
-	private IQueryBL queryBL()
-	{
-		IQueryBL queryBL = this._queryBL;
-		if (queryBL == null)
-		{
-			queryBL = this._queryBL = Services.get(IQueryBL.class);
-		}
-		return queryBL;
 	}
 }
