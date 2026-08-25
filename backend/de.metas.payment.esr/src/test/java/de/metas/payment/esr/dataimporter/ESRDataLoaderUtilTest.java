@@ -77,14 +77,35 @@ public class ESRDataLoaderUtilTest
 		}
 
 		@Test
-		void blankMessage_doesNotCrashAndAddsNothingMeaningful()
+		void blankOrNullMessage_isANoOpAndDoesNotCrash()
 		{
 			final I_ESR_ImportLine line = newLine();
 
-			ESRDataLoaderUtil.addMatchErrorMsg(line, "a real problem");
-			ESRDataLoaderUtil.addMatchErrorMsg(line, "a real problem");
+			// on an empty line
+			ESRDataLoaderUtil.addMatchErrorMsg(line, null);
+			ESRDataLoaderUtil.addMatchErrorMsg(line, "");
+			ESRDataLoaderUtil.addMatchErrorMsg(line, "   ");
+			assertThat(line.getMatchErrorMsg()).as("nothing meaningful may be stored").isNullOrEmpty();
 
+			// and on a line that already carries a real message, which must survive untouched
+			ESRDataLoaderUtil.addMatchErrorMsg(line, "a real problem");
+			ESRDataLoaderUtil.addMatchErrorMsg(line, null);
+			ESRDataLoaderUtil.addMatchErrorMsg(line, "  ");
 			assertThat(line.getMatchErrorMsg()).isEqualTo("a real problem");
+		}
+
+		@Test
+		void aMessageThatIsASubstringOfAStoredOne_isSwallowed_knownTradeoff()
+		{
+			// Pins the documented limitation of the contains()-based de-duplication, so the behaviour is a
+			// recorded decision rather than a surprise: a shorter message that happens to sit inside an
+			// already-stored longer one is treated as already present.
+			final I_ESR_ImportLine line = newLine();
+
+			ESRDataLoaderUtil.addMatchErrorMsg(line, "Rechnung 103439 wurde nicht gefunden");
+			ESRDataLoaderUtil.addMatchErrorMsg(line, "Rechnung 103439");
+
+			assertThat(line.getMatchErrorMsg()).isEqualTo("Rechnung 103439 wurde nicht gefunden");
 		}
 	}
 }

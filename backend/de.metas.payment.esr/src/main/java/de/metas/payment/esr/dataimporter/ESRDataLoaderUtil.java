@@ -407,6 +407,12 @@ public class ESRDataLoaderUtil
 	 * second Process run evaluates it once more -- so an unconditional append shows the accountant the
 	 * same sentence two or three times over. It is idempotent per message, so a genuinely different
 	 * message is still appended.
+	 * <p>
+	 * Known limitation, deliberately kept: the check is {@code contains}, so a shorter message that
+	 * happens to sit inside one already stored is treated as present and dropped. Matching whole
+	 * messages instead (splitting on the {@code "; "} that {@link #addMsgToString(String, String)}
+	 * joins with) would only trade this for the opposite bug -- a message that itself contains
+	 * {@code "; "} would then duplicate again. Pinned by ESRDataLoaderUtilTest.
 	 */
 	public void addMatchErrorMsg(@NonNull final I_ESR_ImportLine importLine, @Nullable final String msg)
 	{

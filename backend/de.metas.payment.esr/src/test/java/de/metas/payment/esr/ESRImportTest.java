@@ -1715,10 +1715,6 @@ public class ESRImportTest extends ESRTestBase
 		}
 
 		/**
-		 * @param expectedPaymentAction the second line's expected {@code ESR_Payment_Action}, or {@code null} if it
-		 * is expected to stay unflagged (see {@link #arrivingOnALaterDay()}).
-		 */
-		/**
 		 * A later "Process ESR" run must NOT close a line the import flagged Duplicate_Payment.
 		 * <p>
 		 * The action pass ({@code ESRImportBL.handleEsrImportLine(String, I_ESR_ImportLine)}) only checks that
@@ -1773,6 +1769,10 @@ public class ESRImportTest extends ESRTestBase
 					.isEqualTo(paymentIdAfterImport);
 		}
 
+		/**
+		 * @param expectedPaymentAction the second line's expected {@code ESR_Payment_Action}, or {@code null} if it
+		 * is expected to stay unflagged (see {@link #arrivingOnALaterDay()}).
+		 */
 		private void assertDuplicateGetsOwnPayment(final int daysAfterFirstPayment, final String expectedPaymentAction)
 		{
 			final String grandTotal = "50";
