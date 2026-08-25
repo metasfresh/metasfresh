@@ -1065,6 +1065,43 @@ public class DesadvBL
 		return desadvDAO.retrieveAllDesadvLines(desadv);
 	}
 
+	/**
+	 * @return {@code true} if this line has already received everything it will ever receive, i.e.
+	 *         {@code QtyDeliveredInStockingUOM >= COALESCE(QtyOrdered_Override, QtyOrdered)}.
+	 *         This is the java equivalent of the SQL {@code IsDeliveryClosed} in
+	 *         {@code M_InOut_DesadvLine_V.sql} / {@code get_desadv_packs_json_fn.sql}.
+	 *         <p>
+	 *         Note: {@code getQtyOrdered_Override()} returns {@code ZERO} for a SQL NULL, so the
+	 *         "no override" case has to be detected with {@code InterfaceWrapperHelper.isNull} —
+	 *         otherwise every line without an override would look delivery-closed.
+	 */
+	@VisibleForTesting
+	static boolean isDesadvLineDeliveryClosed(@NonNull final I_EDI_DesadvLine desadvLineRecord)
+	{
+		final BigDecimal effectiveQtyOrdered =
+				InterfaceWrapperHelper.isNull(desadvLineRecord, I_EDI_DesadvLine.COLUMNNAME_QtyOrdered_Override)
+						? desadvLineRecord.getQtyOrdered()
+						: desadvLineRecord.getQtyOrdered_Override();
+
+		return desadvLineRecord.getQtyDeliveredInStockingUOM().compareTo(effectiveQtyOrdered) >= 0;
+	}
+
+	/**
+	 * @return {@code true} if no further {@code M_InOutLine} can arrive for this DESADV, because every
+	 *         one of its lines is delivery-closed. A DESADV without lines returns {@code false}:
+	 *         "nothing to deliver" is not the same statement as "everything delivered", and letting it
+	 *         return {@code true} would auto-close freshly created, still-empty DESADVs.
+	 */
+	private boolean areAllDesadvLinesDeliveryClosed(@NonNull final I_EDI_Desadv desadv)
+	{
+		final List<I_EDI_DesadvLine> desadvLines = desadvDAO.retrieveAllDesadvLines(desadv);
+		if (desadvLines.isEmpty())
+		{
+			return false;
+		}
+		return desadvLines.stream().allMatch(DesadvBL::isDesadvLineDeliveryClosed);
+	}
+
 	@NonNull
 	public List<I_C_Order> retrieveAllOrders(final I_EDI_Desadv desadv)
 	{
@@ -1100,8 +1137,10 @@ public class DesadvBL
 	 * <ol>
 	 *   <li>Any linked InOut is Invalid → DESADV Invalid + aggregated error message</li>
 	 *   <li>Any linked InOut is Error (and none Invalid) → DESADV Error + aggregated error message</li>
-	 *   <li>All linked InOuts are Sent or DontSend AND FulfillmentPercent >= 100% → DESADV Sent, clear error message</li>
-	 *   <li>Any linked InOut is Pending, Enqueued, or SendingStarted, OR FulfillmentPercent < 100% → DESADV Pending, clear error message</li>
+	 *   <li>All linked InOuts are Sent or DontSend AND (FulfillmentPercent >= 100% OR every {@code EDI_DesadvLine}
+	 *       is delivery-closed) → DESADV Sent/DontSend, clear error message</li>
+	 *   <li>Any linked InOut is Pending, Enqueued, or SendingStarted, OR neither of the above closing conditions
+	 *       holds → DESADV Pending, clear error message</li>
 	 * </ol>
 	 */
 	public void recomputeDesadvStatusFromInOuts(@NonNull final EDIDesadvId desadvId)
@@ -1156,14 +1195,22 @@ public class DesadvBL
 
 		final BigDecimal fulfillmentPercent = desadv.getFulfillmentPercent();
 
-		if (allProcessed && fulfillmentPercent.compareTo(BigDecimal.valueOf(100)) >= 0)
+		// No further M_InOutLine can arrive if the DESADV is fully fulfilled, or if every line has
+		// already received everything it will ever receive (which is what closing the line's
+		// M_ShipmentSchedule expresses, via EDI_DesadvLine.QtyOrdered_Override).
+		final boolean noFurtherDeliveryExpected =
+				fulfillmentPercent.compareTo(BigDecimal.valueOf(100)) >= 0
+						|| areAllDesadvLinesDeliveryClosed(desadv);
+
+		if (allProcessed && noFurtherDeliveryExpected)
 		{
 			final boolean containsSentInOuts = allInOuts.stream().anyMatch(inOut -> EDIExportStatus.ofCode(inOut.getEDI_ExportStatus()).isSent());
 			final EDIExportStatus ediExportStatus = containsSentInOuts ? EDIExportStatus.Sent : EDIExportStatus.DontSend;
 			desadv.setEDI_ExportStatus(ediExportStatus.getCode());
 			desadv.setEDIErrorMsg(null);
 			desadvDAO.save(desadv);
-			logger.info("DESADV {} auto-closed to Sent (all InOuts sent/don't send, fulfillment {}%)", desadvId, fulfillmentPercent);
+			logger.info("DESADV {} auto-closed to {} (all InOuts sent/don't send, fulfillment {}%, allDesadvLinesDeliveryClosed={})",
+					desadvId, ediExportStatus, fulfillmentPercent, noFurtherDeliveryExpected);
 			return;
 		}
 
