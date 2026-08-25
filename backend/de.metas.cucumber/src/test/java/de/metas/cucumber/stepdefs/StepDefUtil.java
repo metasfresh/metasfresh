@@ -48,6 +48,7 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -87,14 +88,17 @@ public class StepDefUtil
 	@NonNull
 	public static RoleId getRoleIdByName(@NonNull final UserId userId, @NonNull final String roleName)
 	{
-		return Services.get(IRoleDAO.class)
-				.getUserRoles(userId)
-				.stream()
+		final List<Role> userRoles = Services.get(IRoleDAO.class).getUserRoles(userId);
+
+		return userRoles.stream()
 				.filter(role -> roleName.equals(role.getName()))
 				.findFirst()
 				.map(Role::getId)
+				// Name the roles the user *does* have: when this fires in CI, that is what distinguishes a
+				// misspelled roleName from a role that was never assigned — the bare user id tells neither.
 				.orElseThrow(() -> new AdempiereException("AD_User with AD_User_ID=" + userId.getRepoId()
-						+ " has no AD_Role with name " + roleName));
+						+ " has no AD_Role with name " + roleName
+						+ "; assigned roles: " + userRoles.stream().map(Role::getName).collect(Collectors.joining(", "))));
 	}
 
 	/**
