@@ -1167,11 +1167,18 @@ public class DesadvBL
 	 * <ol>
 	 *   <li>Any linked InOut is Invalid → DESADV Invalid + aggregated error message</li>
 	 *   <li>Any linked InOut is Error (and none Invalid) → DESADV Error + aggregated error message</li>
-	 *   <li>All linked InOuts are Sent or DontSend AND (FulfillmentPercent >= 100% OR every {@code EDI_DesadvLine}
-	 *       is delivery-closed) → DESADV Sent/DontSend, clear error message</li>
-	 *   <li>Any linked InOut is Pending, Enqueued, or SendingStarted, OR neither of the above closing conditions
-	 *       holds → DESADV Pending, clear error message</li>
+	 *   <li>All linked InOuts are Sent or DontSend AND no further delivery is expected → DESADV Sent
+	 *       if at least one InOut is Sent, else DontSend; error message cleared.
+	 *       "No further delivery expected" means FulfillmentPercent &gt;= 100%, <b>or</b> every
+	 *       {@code EDI_DesadvLine} is delivery-closed
+	 *       ({@code QtyDeliveredInStockingUOM >= COALESCE(QtyOrdered_Override, QtyOrdered)}), which is
+	 *       what closing the line's {@code M_ShipmentSchedule} expresses. This is what lets an
+	 *       under-delivered DESADV reach its terminal status without running the
+	 *       {@code EDI_Desadv_Close} process.</li>
+	 *   <li>Otherwise → DESADV Pending, error message cleared</li>
 	 * </ol>
+	 * The computed status is written only when it (or the error message) actually differs from the
+	 * stored value, because closing an order's lines fires this recompute once per line.
 	 */
 	public void recomputeDesadvStatusFromInOuts(@NonNull final EDIDesadvId desadvId)
 	{
