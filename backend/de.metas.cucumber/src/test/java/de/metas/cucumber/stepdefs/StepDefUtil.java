@@ -26,12 +26,19 @@ import com.google.common.collect.ImmutableList;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.logging.LogManager;
+import de.metas.security.IRoleDAO;
+import de.metas.security.Role;
+import de.metas.security.RoleId;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.NumberUtils;
 import de.metas.util.StringUtils;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
@@ -57,6 +64,38 @@ public class StepDefUtil
 	private static final Logger logger = LogManager.getLogger(StepDefUtil.class);
 	private static final String SYS_maxWaitSeconds = "maxWaitSeconds";
 	private static ExplainedOptional<Long> _sys_maxWaitSeconds; // lazy
+
+	/**
+	 * @return the {@code AD_User} with the given {@code Login}; fails if there is none.
+	 * Standing masterdata lookup — the login has to exist in the DB the suite runs against.
+	 */
+	@NonNull
+	public static UserId getUserIdByLogin(@NonNull final String userLogin)
+	{
+		final UserId userId = Services.get(IUserDAO.class).retrieveUserIdByLogin(userLogin);
+		if (userId == null)
+		{
+			throw new AdempiereException("Missing AD_User with login " + userLogin);
+		}
+		return userId;
+	}
+
+	/**
+	 * @return the {@code AD_Role} with the given {@code Name} out of the roles assigned to the given user;
+	 * fails if the user has no such role.
+	 */
+	@NonNull
+	public static RoleId getRoleIdByName(@NonNull final UserId userId, @NonNull final String roleName)
+	{
+		return Services.get(IRoleDAO.class)
+				.getUserRoles(userId)
+				.stream()
+				.filter(role -> roleName.equals(role.getName()))
+				.findFirst()
+				.map(Role::getId)
+				.orElseThrow(() -> new AdempiereException("AD_User with AD_User_ID=" + userId.getRepoId()
+						+ " has no AD_Role with name " + roleName));
+	}
 
 	/**
 	 * Waits for the given {@code worker} to supply {@code true}.

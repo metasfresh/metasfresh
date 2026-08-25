@@ -36,13 +36,12 @@ import de.metas.common.rest_api.v2.JsonErrorItem;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.error.AdIssueId;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
-import de.metas.security.IRoleDAO;
-import de.metas.security.Role;
+import de.metas.security.RoleId;
 import de.metas.user.UserId;
-import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.web.security.UserAuthTokenFilter;
@@ -96,24 +95,12 @@ public class RESTUtil
 
 	public String getAuthToken(@NonNull final String userLogin, @NonNull final String roleName)
 	{
-		final IUserDAO userDAO = Services.get(IUserDAO.class);
-		final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
-
-		final UserId userId = userDAO.retrieveUserIdByLogin(userLogin);
-		if (userId == null)
-		{
-			throw new AdempiereException("Missing AD_User with login " + userLogin);
-		}
-		final Role role = roleDAO
-				.getUserRoles(userId)
-				.stream()
-				.filter(r -> r.getName().equals(roleName))
-				.findAny()
-				.orElseThrow(() -> new AdempiereException("User with login=" + userLogin + " and AD_User_ID=" + userId.getRepoId() + " has no role with name " + roleName));
+		final UserId userId = StepDefUtil.getUserIdByLogin(userLogin);
+		final RoleId roleId = StepDefUtil.getRoleIdByName(userId, roleName);
 
 		final I_AD_User_AuthToken userAuthTokenRecord = InterfaceWrapperHelper.newInstanceOutOfTrx(I_AD_User_AuthToken.class);
 		userAuthTokenRecord.setAD_User_ID(userId.getRepoId());
-		userAuthTokenRecord.setAD_Role_ID(role.getId().getRepoId());
+		userAuthTokenRecord.setAD_Role_ID(roleId.getRepoId());
 		userAuthTokenRecord.setAD_Org_ID(1000000);
 		InterfaceWrapperHelper.saveRecord(userAuthTokenRecord);
 

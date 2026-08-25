@@ -83,13 +83,10 @@ import de.metas.process.ProcessCalledFrom;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.rest_api.v2.attributes.JsonAttributeService;
-import de.metas.security.IRoleDAO;
-import de.metas.security.Role;
 import de.metas.security.RoleId;
 import de.metas.shipper.gateway.commons.process.CarrierAdviseProcessService;
 import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
-import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -156,10 +153,12 @@ public class M_ShipmentSchedule_StepDef
 	private static final String BILL_BPARTNER = "billBPartner";
 
 	/**
-	 * The user/role pair the module already uses for its API steps
-	 * (see e.g. {@code the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'}).
-	 * That role is defined on the cucumber client and has {@code IsAccessAllOrgs}, so a process running under it
-	 * may write the records the other steps of a scenario created.
+	 * Name of the {@code AD_Role} the selection process is run under. It is STANDING masterdata: the
+	 * {@code metasfresh} user has this role in the DB the suite runs against, independently of which steps ran
+	 * before — nothing has to create it, and this step-def is not coupled to the API-token step that happens to
+	 * name the same pair. Chosen because that role is defined on the cucumber client with
+	 * {@code IsAccessAllOrgs='Y'} (verified on the local stack), so a process running under it may write the
+	 * records the other steps of a scenario created.
 	 */
 	private static final String PROCESS_ROLE_NAME = "WebUI";
 
@@ -173,8 +172,6 @@ public class M_ShipmentSchedule_StepDef
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	@NonNull private final CarrierAdviseProcessService carrierAdviseProcessService = SpringContextHolder.instance.getBean(CarrierAdviseProcessService.class);
 	@NonNull private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-	@NonNull private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
-	@NonNull private final IUserDAO userDAO = Services.get(IUserDAO.class);
 
 	@NonNull private final AD_User_StepDefData userTable;
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
@@ -670,19 +667,8 @@ public class M_ShipmentSchedule_StepDef
 	 */
 	private Properties createProcessCtx()
 	{
-		final UserId userId = userDAO.retrieveUserIdByLogin(StepDefConstants.METASFRESH_VALUE);
-		if (userId == null)
-		{
-			throw new AdempiereException("Missing AD_User with login " + StepDefConstants.METASFRESH_VALUE);
-		}
-
-		final RoleId roleId = roleDAO.getUserRoles(userId)
-				.stream()
-				.filter(role -> PROCESS_ROLE_NAME.equals(role.getName()))
-				.findFirst()
-				.map(Role::getId)
-				.orElseThrow(() -> new AdempiereException("AD_User with login " + StepDefConstants.METASFRESH_VALUE
-						+ " has no AD_Role with name " + PROCESS_ROLE_NAME));
+		final UserId userId = StepDefUtil.getUserIdByLogin(StepDefConstants.METASFRESH_VALUE);
+		final RoleId roleId = StepDefUtil.getRoleIdByName(userId, PROCESS_ROLE_NAME);
 
 		// copyCtx (not deriveCtx): the process ctx has to carry the values itself.
 		// The ambient cucumber ctx reaches the process only as Properties-defaults otherwise, and
