@@ -96,7 +96,7 @@ public class RESTUtil
 	public String getAuthToken(@NonNull final String userLogin, @NonNull final String roleName)
 	{
 		final UserId userId = StepDefUtil.getUserIdByLogin(userLogin);
-		final RoleId roleId = StepDefUtil.getRoleIdByName(userId, roleName);
+		final RoleId roleId = StepDefUtil.getRoleIdByName(userId, userLogin, roleName);
 
 		final I_AD_User_AuthToken userAuthTokenRecord = InterfaceWrapperHelper.newInstanceOutOfTrx(I_AD_User_AuthToken.class);
 		userAuthTokenRecord.setAD_User_ID(userId.getRepoId());

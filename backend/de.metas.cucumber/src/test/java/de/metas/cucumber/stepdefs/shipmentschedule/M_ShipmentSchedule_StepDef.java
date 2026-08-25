@@ -668,7 +668,7 @@ public class M_ShipmentSchedule_StepDef
 	private Properties createProcessCtx()
 	{
 		final UserId userId = StepDefUtil.getUserIdByLogin(StepDefConstants.METASFRESH_VALUE);
-		final RoleId roleId = StepDefUtil.getRoleIdByName(userId, PROCESS_ROLE_NAME);
+		final RoleId roleId = StepDefUtil.getRoleIdByName(userId, StepDefConstants.METASFRESH_VALUE, PROCESS_ROLE_NAME);
 
 		// copyCtx (not deriveCtx): the process ctx has to carry the values itself.
 		// The ambient cucumber ctx reaches the process only as Properties-defaults otherwise, and

@@ -48,11 +48,11 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -84,9 +84,15 @@ public class StepDefUtil
 	/**
 	 * @return the {@code AD_Role} with the given {@code Name} out of the roles assigned to the given user;
 	 * fails if the user has no such role.
+	 *
+	 * @param userLogin only used to identify the user in the failure message — a CI log reader cannot
+	 * resolve a bare {@code AD_User_ID} without DB access.
 	 */
 	@NonNull
-	public static RoleId getRoleIdByName(@NonNull final UserId userId, @NonNull final String roleName)
+	public static RoleId getRoleIdByName(
+			@NonNull final UserId userId,
+			@NonNull final String userLogin,
+			@NonNull final String roleName)
 	{
 		final List<Role> userRoles = Services.get(IRoleDAO.class).getUserRoles(userId);
 
@@ -94,10 +100,11 @@ public class StepDefUtil
 				.filter(role -> roleName.equals(role.getName()))
 				.findFirst()
 				.map(Role::getId)
-				// Name the roles the user *does* have: when this fires in CI, that is what distinguishes a
-				// misspelled roleName from a role that was never assigned — the bare user id tells neither.
-				.orElseThrow(() -> new AdempiereException("AD_User with AD_User_ID=" + userId.getRepoId()
-						+ " has no AD_Role with name " + roleName
+				// Both halves of the message earn their place: the login identifies WHICH user failed
+				// without a DB lookup, and the assigned-roles list separates a misspelled roleName from a
+				// role that was never assigned. Neither alone tells the CI reader what to fix.
+				.orElseThrow(() -> new AdempiereException("AD_User with login=" + userLogin
+						+ " (AD_User_ID=" + userId.getRepoId() + ") has no AD_Role with name " + roleName
 						+ "; assigned roles: " + userRoles.stream().map(Role::getName).collect(Collectors.joining(", "))));
 	}
 
