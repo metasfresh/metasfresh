@@ -24,8 +24,14 @@
 --    was created would otherwise have none). No IsActive filter in the guard: AD_Element_Trl's key is
 --    (AD_Element_ID, AD_Language), so filtering it would hide a deactivated row and the INSERT would
 --    then violate that key.
-INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, Name,PrintName,Description,Help, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive)
-SELECT l.AD_Language, t.AD_Element_ID, t.Name,t.PrintName,t.Description,t.Help, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y'
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, Name,PrintName,Description,Help,
+                            PO_Name,PO_PrintName,PO_Description,PO_Help,CommitWarning,
+                            WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb,
+                            IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive)
+SELECT l.AD_Language, t.AD_Element_ID, t.Name,t.PrintName,t.Description,t.Help,
+       t.PO_Name,t.PO_PrintName,t.PO_Description,t.PO_Help,t.CommitWarning,
+       t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb,
+       'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y'
 FROM   AD_Language l, AD_Element t
 WHERE  l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Element_ID=542031
   AND  NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
@@ -71,3 +77,20 @@ WHERE  de.AD_Element_ID=542031 AND de.AD_Language='de_DE'
 -- 4. push AD_Element_Trl outward: refreshes AD_Element itself plus the dependent AD_Column/AD_Field
 --    translations. Without this the field keeps showing its old label.
 /* DDL */ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(542031);
+
+-- 5. AD_Field.Help is NOT covered by the propagation above: update_FieldTranslation_From_AD_Name_Element
+--    sets Name and Description on the base AD_Field row (and Help only on AD_Field_Trl), so the field's
+--    own Help stays stale. Verified by reading the function body, and a documented pitfall with a prior
+--    incident. Since the Help IS half of what this migration delivers, write it directly -- set-based via
+--    the element, so no AD_Field id is hardcoded, and covering BOTH routes the function itself covers.
+UPDATE AD_Field f SET
+       Help=(SELECT t.Help FROM AD_Element_Trl t WHERE t.AD_Element_ID=542031 AND t.AD_Language='de_DE'),
+       Updated=TO_TIMESTAMP('2026-08-25 16:10:04','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE  (
+         -- route 1: the field inherits from its column's element
+         (f.AD_Name_ID IS NULL AND EXISTS (SELECT 1 FROM AD_Column c
+                                            WHERE c.AD_Column_ID=f.AD_Column_ID AND c.AD_Element_ID=542031))
+         -- route 2: the field overrides with this element directly
+         OR f.AD_Name_ID=542031
+       )
+;
