@@ -6,12 +6,14 @@ import de.metas.edi.async.spi.impl.EDIWorkpackageProcessor;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.I_EDI_Desadv_M_InOut;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
+import de.metas.edi.model.I_C_OrderLine;
 import de.metas.edi.model.I_M_InOut;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -58,12 +60,36 @@ class DesadvBL_recomputeDesadvStatusFromInOuts_Test
 			final String qtyOrderedOverride,
 			final String qtyDeliveredInStockingUOM)
 	{
+		createDesadvLineRecord(desadv, qtyOrdered, qtyOrderedOverride, qtyDeliveredInStockingUOM);
+	}
+
+	/** Same as {@link #createDesadvLine(I_EDI_Desadv, String, String, String)} but returns the created record. */
+	private I_EDI_DesadvLine createDesadvLineRecord(
+			final I_EDI_Desadv desadv,
+			final String qtyOrdered,
+			final String qtyOrderedOverride,
+			final String qtyDeliveredInStockingUOM)
+	{
 		final I_EDI_DesadvLine line = newInstance(I_EDI_DesadvLine.class);
 		line.setEDI_Desadv_ID(desadv.getEDI_Desadv_ID());
 		line.setQtyOrdered(new BigDecimal(qtyOrdered));
 		line.setQtyOrdered_Override(qtyOrderedOverride == null ? null : new BigDecimal(qtyOrderedOverride));
 		line.setQtyDeliveredInStockingUOM(new BigDecimal(qtyDeliveredInStockingUOM));
 		saveRecord(line);
+		return line;
+	}
+
+	private I_M_ShipmentSchedule createShipmentSchedule(
+			final I_C_OrderLine orderLine,
+			final String qtyDelivered,
+			final boolean closed)
+	{
+		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
+		schedule.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
+		schedule.setQtyDelivered(new BigDecimal(qtyDelivered));
+		schedule.setIsClosed(closed);
+		saveRecord(schedule);
+		return schedule;
 	}
 
 	private void createLinkedInOut(final I_EDI_Desadv desadv, final EDIExportStatus inOutStatus)
@@ -191,5 +217,60 @@ class DesadvBL_recomputeDesadvStatusFromInOuts_Test
 
 		InterfaceWrapperHelper.refresh(desadv);
 		assertThat(desadv.getEDI_ExportStatus()).isEqualTo(EDIExportStatus.Pending.getCode());
+	}
+
+	@Test
+	void closingTheShipmentSchedule_flipsTheDesadvToSent()
+	{
+		final I_EDI_Desadv desadv = createDesadv("70", EDIExportStatus.Pending.getCode());
+		final I_EDI_DesadvLine desadvLine = createDesadvLineRecord(desadv, "100", null, "70");
+		createLinkedInOut(desadv, EDIExportStatus.Sent);
+
+		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
+		orderLine.setEDI_DesadvLine_ID(desadvLine.getEDI_DesadvLine_ID());
+		saveRecord(orderLine);
+
+		// nothing has flipped yet: the line is still open
+		desadvBL.recomputeDesadvStatusFromInOuts(EDIDesadvId.ofRepoId(desadv.getEDI_Desadv_ID()));
+		InterfaceWrapperHelper.refresh(desadv);
+		assertThat(desadv.getEDI_ExportStatus())
+				.as("precondition: still Pending while the schedule is open")
+				.isEqualTo(EDIExportStatus.Pending.getCode());
+
+		final I_M_ShipmentSchedule closedSchedule = createShipmentSchedule(orderLine, "70", true);
+		desadvBL.updateQtyOrdered_OverrideFromShipSchedAndSave(closedSchedule);
+
+		InterfaceWrapperHelper.refresh(desadvLine);
+		assertThat(desadvLine.getQtyOrdered_Override()).isEqualByComparingTo("70");
+		InterfaceWrapperHelper.refresh(desadv);
+		assertThat(desadv.getEDI_ExportStatus())
+				.as("closing the schedule must flip the DESADV without any further call")
+				.isEqualTo(EDIExportStatus.Sent.getCode());
+	}
+
+	@Test
+	void reopeningTheShipmentSchedule_returnsTheDesadvToPending()
+	{
+		final I_EDI_Desadv desadv = createDesadv("70", EDIExportStatus.Pending.getCode());
+		final I_EDI_DesadvLine desadvLine = createDesadvLineRecord(desadv, "100", null, "70");
+		createLinkedInOut(desadv, EDIExportStatus.Sent);
+
+		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
+		orderLine.setEDI_DesadvLine_ID(desadvLine.getEDI_DesadvLine_ID());
+		saveRecord(orderLine);
+
+		final I_M_ShipmentSchedule schedule = createShipmentSchedule(orderLine, "70", true);
+		desadvBL.updateQtyOrdered_OverrideFromShipSchedAndSave(schedule);
+		InterfaceWrapperHelper.refresh(desadv);
+		assertThat(desadv.getEDI_ExportStatus()).isEqualTo(EDIExportStatus.Sent.getCode());
+
+		schedule.setIsClosed(false);
+		saveRecord(schedule);
+		desadvBL.updateQtyOrdered_OverrideFromShipSchedAndSave(schedule);
+
+		InterfaceWrapperHelper.refresh(desadv);
+		assertThat(desadv.getEDI_ExportStatus())
+				.as("reopening must return the DESADV to Pending — more may ship after all")
+				.isEqualTo(EDIExportStatus.Pending.getCode());
 	}
 }

@@ -800,6 +800,12 @@ public class DesadvBL
 		final BigDecimal qtyOrdered_Override = getQtyOrdered_Override(schedule);
 		desadvLineRecord.setQtyOrdered_Override(qtyOrdered_Override);
 		desadvDAO.save(desadvLineRecord);
+
+		// The override we just wrote can complete (or re-open) the DESADV's last open line, so the
+		// header status has to be re-derived. This is stated here rather than in any close process
+		// because every close route goes through ShipmentScheduleBL.closeShipmentSchedule and thus
+		// through this interceptor-driven method.
+		recomputeDesadvStatusFromInOuts(EDIDesadvId.ofRepoId(desadvLineRecord.getEDI_Desadv_ID()));
 	}
 
 	public void propagateEDIStatus(@NonNull final I_EDI_Desadv desadv)
