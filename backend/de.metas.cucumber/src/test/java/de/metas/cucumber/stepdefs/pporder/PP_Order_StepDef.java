@@ -197,6 +197,24 @@ public class PP_Order_StepDef
 		DataTableRows.of(dataTable).forEach(row -> validatePP_Order_BomLine(timeoutSec, row));
 	}
 
+	/**
+	 * Creates {@code PP_Order} record(s) from the DataTable.
+	 * <p>
+	 * Required columns: {@code PP_Order_ID.Identifier}, {@code DocBaseType}, {@code M_Product_ID.Identifier},
+	 * {@code QtyEntered}, {@code S_Resource_ID.Identifier} (the <b>plant</b>), {@code DateOrdered},
+	 * {@code DatePromised} and {@code DateStartSchedule}.
+	 * <p>
+	 * Optional columns:
+	 * <ul>
+	 *     <li>{@code OPT.M_Warehouse_ID.Identifier} — defaults to {@link StepDefConstants#WAREHOUSE_ID}</li>
+	 *     <li>{@code OPT.PP_Product_Planning_ID.Identifier}</li>
+	 *     <li>{@code OPT.WorkStation_ID.Identifier} — the <b>workstation</b>, resolved against the resource table
+	 *     and passed to {@link PPOrderCreateRequest#getWorkstationId()}. Distinct from the plant: a lot-number
+	 *     provider resolves the production line via {@code PP_Order.WorkStation_ID -> S_Resource.LotNumberCode},
+	 *     so a scenario covering that hop must be able to set it independently.</li>
+	 *     <li>{@code completeDocument} — defaults to {@code false}</li>
+	 * </ul>
+	 */
 	@And("create PP_Order:")
 	public void compute_PPOrderCreateRequest_to_create_pp_order(@NonNull final DataTable dataTable)
 	{

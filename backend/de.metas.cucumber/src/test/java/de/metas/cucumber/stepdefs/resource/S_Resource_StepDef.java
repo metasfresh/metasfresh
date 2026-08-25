@@ -88,6 +88,22 @@ public class S_Resource_StepDef
 				});
 	}
 
+	/**
+	 * Creates {@code S_Resource} record(s) from the DataTable.
+	 * <p>
+	 * Required columns: {@code Identifier} and {@code S_ResourceType_ID}; the value/name pair is derived via
+	 * {@code row.suggestValueAndName()}.
+	 * <p>
+	 * Optional columns:
+	 * <ul>
+	 *     <li>{@code IsManufacturingResource}</li>
+	 *     <li>{@code ManufacturingResourceType} — e.g. {@code PT} (plant) or {@code WS} (workstation)</li>
+	 *     <li>{@code LotNumberCode} — the per-resource code a lot-number provider appends as the production-line
+	 *     segment, reached via {@code PP_Order.WorkStation_ID -> S_Resource.LotNumberCode}</li>
+	 *     <li>{@code PlanningHorizon}</li>
+	 *     <li>{@code CapacityPerProductionCycle} (+ its UOM column)</li>
+	 * </ul>
+	 */
 	@And("create S_Resource:")
 	public void createResources(@NonNull final DataTable dataTable)
 	{
