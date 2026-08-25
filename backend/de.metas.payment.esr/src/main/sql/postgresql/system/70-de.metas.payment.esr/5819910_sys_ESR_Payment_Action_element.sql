@@ -93,4 +93,9 @@ WHERE  (
          -- route 2: the field overrides with this element directly
          OR f.AD_Name_ID=542031
        )
+--    Guard: if the de_DE row were somehow missing (an install where de_DE is not an active system
+--    language), the scalar subquery above would yield NULL and this statement would silently BLANK the
+--    fields' Help instead of skipping them. Only run when there is a German text to copy.
+  AND  EXISTS (SELECT 1 FROM AD_Element_Trl t
+                WHERE t.AD_Element_ID=542031 AND t.AD_Language='de_DE' AND t.Help IS NOT NULL)
 ;
