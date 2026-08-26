@@ -33,6 +33,8 @@ import de.metas.util.Services;
 import de.metas.vatid.VATaxIDStatus;
 import io.cucumber.datatable.DataTable;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import io.cucumber.java.After;
+import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
@@ -44,7 +46,10 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_VATaxID_CheckLog;
 
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.atLeastOnce;
@@ -63,14 +68,32 @@ import static org.mockito.Mockito.when;
  */
 public class VATaxIDOnlineChecker_StepDef
 {
+	/**
+	 * Resolved on first use, to not interfere with this class's {@code @Before} hook.
+	 * This instance is created in {@link VATaxIDTestServiceConfiguration}.
+	 */
+	@NonNull private final SpringContextHolder.Lazy<VATaxIDOnlineChecker> onlineCheckerMock = SpringContextHolder.lazyBean(VATaxIDOnlineChecker.class);
+
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	@NonNull private final VATaxIDOnlineChecker onlineCheckerMock = SpringContextHolder.instance.getBean(VATaxIDOnlineChecker.class);
 
 	/**
-	 * Stubs the online checker to answer exactly the listed VAT-IDs. A check for any other value fails the
-	 * scenario loudly instead of returning Mockito's {@code null} default — an unexpected online check is a
-	 * defect (it means the format check, the not-supported short-circuit or the de-duplication did not
-	 * stop it), and a {@code NullPointerException} deep inside the service would hide that.
+	 * VAT-IDs the shared checker mock was asked about while this scenario's stub was installed, but which
+	 * this scenario never stubbed. Almost always a straggler from an earlier scenario whose async check
+	 * outlived its own stub; see the answer that fills it.
+	 *
+	 * <p>One instance per scenario (cucumber-picocontainer instantiates the glue per scenario), so it is
+	 * cleared in {@link #clearUnexpectedVATaxIDsBeforeScenario()} and NOT in the stub steps: a scenario that
+	 * stubs more than once must not lose what its earlier stub recorded. Concurrent because the answer that
+	 * fills it runs on async work-package threads.
+	 */
+	@NonNull private final Set<String> unexpectedVATaxIDs = ConcurrentHashMap.newKeySet();
+
+	/**
+	 * Stubs the online checker to answer exactly the listed VAT-IDs. A check for any other value is recorded
+	 * in {@link #unexpectedVATaxIDs} and answered {@link VATaxIDStatus#ServiceUnavailable}, and
+	 * {@link #assertNoUnexpectedOnlineChecksAfterScenario()} then fails the scenario at its end. An
+	 * unexpected online check is a defect — the format check, the not-supported short-circuit or the
+	 * de-duplication did not stop it — so it never passes silently.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -97,20 +120,28 @@ public class VATaxIDOnlineChecker_StepDef
 						.build()));
 		final Map<String, VATaxIDCheckResult> results = resultsByVATaxID.build();
 
-		reset(onlineCheckerMock);
+		reset(onlineCheckerMock.get());
 
-		when(onlineCheckerMock.check(any(VATIdentifier.class), any(VATaxIDConfig.class)))
+		when(onlineCheckerMock.get().check(any(VATIdentifier.class), any(VATaxIDConfig.class)))
 				.thenAnswer(invocation -> {
 					final VATIdentifier vatId = invocation.getArgument(0);
 					final VATaxIDCheckResult result = results.get(vatId.getAsString());
 					if (result == null)
 					{
-						throw new AssertionError("Unexpected online check for VAT-ID `" + vatId.getAsString()
-								+ "`; this scenario stubbed only " + results.keySet());
+						// Recorded, NOT thrown. This answer is often produced on a work-package thread
+						// belonging to an EARLIER scenario, whose check outlived the stub it was set up
+						// with. Throwing there killed that check's own log-row write, so the scenario that
+						// visibly failed was whichever one happened to be waiting on that row -- never the
+						// one that leaked. Recording lets the owning scenario fail on its own terms in
+						// assertNoUnexpectedOnlineChecksAfterScenario(), and leaves everyone else's data intact.
+						unexpectedVATaxIDs.add(vatId.getAsString());
+						return VATaxIDCheckResult.builder()
+								.status(VATaxIDStatus.ServiceUnavailable)
+								.build();
 					}
 					return result;
 				});
-		when(onlineCheckerMock.getUnavailableCountryCodes(any(VATaxIDConfig.class))).thenReturn(ImmutableSet.of());
+		when(onlineCheckerMock.get().getUnavailableCountryCodes(any(VATaxIDConfig.class))).thenReturn(ImmutableSet.of());
 	}
 
 	/**
@@ -127,11 +158,11 @@ public class VATaxIDOnlineChecker_StepDef
 	@Given("the VAT-ID online checker is stubbed to be unreachable")
 	public void stubOnlineCheckerUnreachable()
 	{
-		reset(onlineCheckerMock);
+		reset(onlineCheckerMock.get());
 
-		when(onlineCheckerMock.check(any(VATIdentifier.class), any(VATaxIDConfig.class)))
+		when(onlineCheckerMock.get().check(any(VATIdentifier.class), any(VATaxIDConfig.class)))
 				.thenReturn(VATaxIDCheckResult.builder().status(VATaxIDStatus.ServiceUnavailable).build());
-		when(onlineCheckerMock.getUnavailableCountryCodes(any(VATaxIDConfig.class))).thenReturn(ImmutableSet.of());
+		when(onlineCheckerMock.get().getUnavailableCountryCodes(any(VATaxIDConfig.class))).thenReturn(ImmutableSet.of());
 	}
 
 	/**
@@ -156,14 +187,14 @@ public class VATaxIDOnlineChecker_StepDef
 	{
 		stubOnlineChecker(dataTable);
 
-		when(onlineCheckerMock.getUnavailableCountryCodes(any(VATaxIDConfig.class))).thenReturn(ImmutableSet.of(unavailableCountryCode));
+		when(onlineCheckerMock.get().getUnavailableCountryCodes(any(VATaxIDConfig.class))).thenReturn(ImmutableSet.of(unavailableCountryCode));
 	}
 
 	/**
 	 * Stubs the checker leniently: a VAT-ID listed in {@code dataTable} gets its ordinary answer, any other
-	 * gets {@link VATaxIDStatus#ServiceUnavailable} rather than the loud failure
-	 * {@link #stubOnlineChecker(DataTable)} raises. For scenarios running the selection-less nightly shape,
-	 * which reaches every VAT-ID in the local database — harmless there, as long as
+	 * gets {@link VATaxIDStatus#ServiceUnavailable} without being recorded as unexpected — which is what
+	 * {@link #stubOnlineChecker(DataTable)} does, and fails the scenario for. For scenarios running the
+	 * selection-less nightly shape, which reaches every VAT-ID in the local database — harmless there, as long as
 	 * {@code OnServiceUnavailable} is left at its fail-open default.
 	 *
 	 * @cucumber.stepdef
@@ -188,15 +219,15 @@ public class VATaxIDOnlineChecker_StepDef
 						.build()));
 		final Map<String, VATaxIDCheckResult> results = resultsByVATaxID.build();
 
-		reset(onlineCheckerMock);
+		reset(onlineCheckerMock.get());
 
-		when(onlineCheckerMock.check(any(VATIdentifier.class), any(VATaxIDConfig.class)))
+		when(onlineCheckerMock.get().check(any(VATIdentifier.class), any(VATaxIDConfig.class)))
 				.thenAnswer(invocation -> {
 					final VATIdentifier vatId = invocation.getArgument(0);
 					final VATaxIDCheckResult result = results.get(vatId.getAsString());
 					return result != null ? result : VATaxIDCheckResult.builder().status(VATaxIDStatus.ServiceUnavailable).build();
 				});
-		when(onlineCheckerMock.getUnavailableCountryCodes(any(VATaxIDConfig.class))).thenReturn(ImmutableSet.of());
+		when(onlineCheckerMock.get().getUnavailableCountryCodes(any(VATaxIDConfig.class))).thenReturn(ImmutableSet.of());
 	}
 
 	/**
@@ -212,7 +243,7 @@ public class VATaxIDOnlineChecker_StepDef
 	@Then("the VAT-ID online checker was not called")
 	public void onlineCheckerWasNotCalled()
 	{
-		verify(onlineCheckerMock, never()).check(any(VATIdentifier.class), any(VATaxIDConfig.class));
+		verify(onlineCheckerMock.get(), never()).check(any(VATIdentifier.class), any(VATaxIDConfig.class));
 	}
 
 	/**
@@ -261,7 +292,7 @@ public class VATaxIDOnlineChecker_StepDef
 		// row alone hands a green light to an assertion that then reads a still-NotChecked parent.
 		StepDefUtil.tryAndWait(60, 500, () -> wasCalledFor(vataxID) && completedCheckIsReferencedByItsParent(vataxID));
 
-		verify(onlineCheckerMock, atLeastOnce())
+		verify(onlineCheckerMock.get(), atLeastOnce())
 				.check(argThat(checked -> checked != null && checked.getAsString().equals(vataxID)), any(VATaxIDConfig.class));
 	}
 
@@ -299,7 +330,7 @@ public class VATaxIDOnlineChecker_StepDef
 	{
 		StepDefUtil.tryAndWait(60, 500, () -> wasCalledFor(vataxID) && checkAttemptIsRecordedFor(vataxID));
 
-		verify(onlineCheckerMock, atLeastOnce())
+		verify(onlineCheckerMock.get(), atLeastOnce())
 				.check(argThat(checked -> checked != null && checked.getAsString().equals(vataxID)), any(VATaxIDConfig.class));
 	}
 
@@ -375,7 +406,7 @@ public class VATaxIDOnlineChecker_StepDef
 	{
 		try
 		{
-			verify(onlineCheckerMock, atLeastOnce())
+			verify(onlineCheckerMock.get(), atLeastOnce())
 					.check(argThat(checked -> checked != null && checked.getAsString().equals(vataxID)), any(VATaxIDConfig.class));
 			return true;
 		}
@@ -401,10 +432,54 @@ public class VATaxIDOnlineChecker_StepDef
 	@Given("the VAT-ID online checker is stubbed to throw an exception")
 	public void stubOnlineCheckerThrows()
 	{
-		reset(onlineCheckerMock);
+		reset(onlineCheckerMock.get());
 
-		when(onlineCheckerMock.check(any(VATIdentifier.class), any(VATaxIDConfig.class)))
+		when(onlineCheckerMock.get().check(any(VATIdentifier.class), any(VATaxIDConfig.class)))
 				.thenThrow(new RuntimeException("Simulated online checker failure (test-only, VATaxIDOnlineChecker_StepDef)"));
-		when(onlineCheckerMock.getUnavailableCountryCodes(any(VATaxIDConfig.class))).thenReturn(ImmutableSet.of());
+		when(onlineCheckerMock.get().getUnavailableCountryCodes(any(VATaxIDConfig.class))).thenReturn(ImmutableSet.of());
+	}
+
+	/**
+	 * Fails the scenario that OWNS the leak, naming the VAT-IDs involved — the diagnosis the old
+	 * throw-on-the-async-thread behaviour destroyed by breaking a different scenario's data instead.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then no unexpected VAT-ID online checks happened
+	 * </pre>
+	 */
+	@Then("no unexpected VAT-ID online checks happened")
+	public void assertNoUnexpectedOnlineChecks()
+	{
+		assertThat(unexpectedVATaxIDs)
+				.as("the online checker was asked about VAT-IDs this scenario never stubbed; an async check "
+						+ "from an earlier scenario most likely outlived its stub")
+				.isEmpty();
+	}
+
+	/**
+	 * Empties the collector at scenario start, so the {@code @After} guard below can only ever see what THIS
+	 * scenario recorded.
+	 */
+	@Before
+	public void clearUnexpectedVATaxIDsBeforeScenario()
+	{
+		unexpectedVATaxIDs.clear();
+	}
+
+	/**
+	 * Makes {@link #assertNoUnexpectedOnlineChecks()} unconditional for every scenario using
+	 * {@link #stubOnlineChecker(DataTable)}, instead of only for those that remember to end with the step. A
+	 * trailing Gherkin step would not do: Cucumber skips the remaining steps once one fails, i.e. on exactly
+	 * the runs where a stray check is the likeliest explanation.
+	 *
+	 * <p>A free no-op for every other scenario: it reads the in-memory collector only, so it resolves no bean
+	 * and hits no database.
+	 */
+	@After
+	public void assertNoUnexpectedOnlineChecksAfterScenario()
+	{
+		assertNoUnexpectedOnlineChecks();
 	}
 }

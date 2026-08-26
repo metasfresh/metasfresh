@@ -28,12 +28,16 @@ import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.workpackage.WorkPackageQueueUtil;
+import de.metas.logging.LogManager;
 import de.metas.tax.api.VATIdentifier;
 import de.metas.util.Services;
 import de.metas.vatid.VATaxIDCheckRequest;
 import de.metas.vatid.VATaxIDCheckService;
 import de.metas.vatid.VATaxIDStatus;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -49,6 +53,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_VATaxID_CheckLog;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
@@ -68,10 +73,25 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RequiredArgsConstructor
 public class VATaxIDCheck_StepDef
 {
-	@NonNull private final VATaxIDCheckService vataxIDCheckService = SpringContextHolder.instance.getBean(VATaxIDCheckService.class);
+	private static final Logger logger = LogManager.getLogger(VATaxIDCheck_StepDef.class);
+
+	/** C_Queue_PackageProcessor.InternalName seeded by migration 5819330. */
+	private static final String VATAXID_CHECK_PACKAGE_PROCESSOR = "VATaxIDCheckWorkpackageProcessor";
+	private static final int WORKPACKAGE_DRAIN_TIMEOUT_SEC = 30;
+	private static final long WORKPACKAGE_DRAIN_POLL_MS = 200;
+
+	/**
+	 * Resolved on first use, NOT in a field initialiser. The {@code @After} drain below makes cucumber
+	 * instantiate this class for every scenario in the suite, including scenarios that never touch VAT-ID and
+	 * runs where Spring never came up at all — so constructing this class must stay free.
+	 */
+	@NonNull private final SpringContextHolder.Lazy<VATaxIDCheckService> vataxIDCheckService = SpringContextHolder.lazyBean(VATaxIDCheckService.class);
+
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final ISessionBL sessionBL = Services.get(ISessionBL.class);
 
+	@NonNull private final WorkPackageQueueUtil workPackageQueueUtil;
+	@NonNull private final VATaxID_Config_StepDef vataxIDConfigStepDef;
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
 	@NonNull private final C_BPartner_Location_StepDefData bpartnerLocationTable;
 
@@ -203,7 +223,7 @@ public class VATaxIDCheck_StepDef
 		bpartnerRecord.setVATaxIDStatus(VATaxIDStatus.NotChecked.getCode());
 		bpartnerRecord.setVATaxIDCheckedAt(null);
 		// VATaxIDLastAttemptedAt is DIFFERENT from VATaxIDCheckedAt (advances on every attempt, success or
-		// failure -- see VATaxIDCheckRunService's class javadoc, "Attempt vs success") and must be reset
+		// failure -- see VATaxIDMassCheckService's class javadoc, "Starvation guard") and must be reset
 		// here too, or a scenario asserting fresh due-ness after this cleanup would still see a stale
 		// attempt timestamp survive from an earlier run against the same never-reset local database.
 		bpartnerRecord.setVATaxIDLastAttemptedAt(null);
@@ -218,6 +238,25 @@ public class VATaxIDCheck_StepDef
 		// See the C_BPartner overload above.
 		bpartnerLocationRecord.setVATaxIDLastAttemptedAt(null);
 		InterfaceWrapperHelper.saveRecord(bpartnerLocationRecord);
+	}
+
+	/**
+	 * Waits until the check that a partner save scheduled by itself has actually run. The drain in
+	 * {@link #validate_VATaxID_CheckLog_records(String, DataTable)} guards the CONSUMING side; this step
+	 * guards the PRODUCING one — a scenario that moves the clock or re-stubs the checker right after a save
+	 * must not leave that queued check in flight, or it lands under the NEW clock and stub and records an
+	 * evidence row the scenario never asked for.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Given the automatically scheduled VAT-ID check has completed
+	 * </pre>
+	 */
+	@Given("the automatically scheduled VAT-ID check has completed")
+	public void automatically_scheduled_check_has_completed() throws InterruptedException
+	{
+		waitUntilNoVATaxIDCheckWorkPackagesArePending();
 	}
 
 	/**
@@ -244,7 +283,7 @@ public class VATaxIDCheck_StepDef
 			final VATIdentifier vataxID = VATIdentifier.ofNullable(bpartnerRecord.getVATaxID());
 			assertThat(vataxID).as("VATaxID of C_BPartner `%s`", identifier).isNotNull();
 
-			final VATaxIDStatus returnedStatus = vataxIDCheckService.check(VATaxIDCheckRequest.builder()
+			final VATaxIDStatus returnedStatus = vataxIDCheckService.get().check(VATaxIDCheckRequest.builder()
 					.bpartnerId(BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID()))
 					.vataxID(vataxID)
 					.build());
@@ -416,10 +455,16 @@ public class VATaxIDCheck_StepDef
 	 * </pre>
 	 */
 	@Then("validate VATaxID_CheckLog records of C_BPartner {string}:")
-	public void validate_VATaxID_CheckLog_records(@NonNull final String bpartnerIdentifier, @NonNull final DataTable dataTable)
+	public void validate_VATaxID_CheckLog_records(@NonNull final String bpartnerIdentifier, @NonNull final DataTable dataTable) throws InterruptedException
 	{
 		final StepDefDataIdentifier identifier = StepDefDataIdentifier.ofString(bpartnerIdentifier);
 		final I_C_BPartner bpartnerRecord = bpartnerTable.get(identifier);
+
+		// The drain belongs HERE, in the step that CONSUMES the rows, per de.metas.cucumber/CLAUDE.md
+		// rule 7: a save-triggered check is asynchronous, so reading the log before the queue is empty
+		// reads a row that has not been written yet -- and, worse, lets this scenario's check outlive its
+		// own stub into the next scenario.
+		waitUntilNoVATaxIDCheckWorkPackagesArePending();
 
 		final ImmutableList<I_VATaxID_CheckLog> checkLogRecords = queryBL
 				.createQueryBuilder(I_VATaxID_CheckLog.class)
@@ -479,5 +524,50 @@ public class VATaxIDCheck_StepDef
 	private static Instant toInstantOrNull(@Nullable final Timestamp timestamp)
 	{
 		return timestamp != null ? timestamp.toInstant() : null;
+	}
+
+	/**
+	 * Invariant: no scenario ends with a VAT-ID check still in flight. The consuming step's drain covers only
+	 * scenarios that assert on check-log rows; a check left running by any other scenario gets answered by the
+	 * NEXT scenario's stub of the singleton checker mock, and fails that innocent scenario instead. Ordered
+	 * above the default 10000 -- an {@code @After} with a HIGHER order runs FIRST -- so the drain completes
+	 * before {@code VATaxIDOnlineChecker_StepDef}'s unexpected-check guard and the config reset read the
+	 * aftermath.
+	 *
+	 * <p>Skipped outright unless this scenario itself switched the organisation's online check on. That is the
+	 * exact precondition for a check to be enqueued at all -- {@code VATaxIDCheckTrigger} reads
+	 * {@code IsVIESCheckEnabled} at ENQUEUE time, and {@code VATaxID_Config_StepDef}'s own {@code @After} puts
+	 * the flag back off -- so a scenario that never set the config up cannot have left one in flight. Keeps the
+	 * hook a free no-op for the rest of the suite: no bean resolved, no query issued.
+	 */
+	@After(order = 20_000)
+	public void drainVATaxIDCheckWorkPackagesAfterScenario() throws InterruptedException
+	{
+		if (!vataxIDConfigStepDef.isVIESCheckEnabledByThisScenario())
+		{
+			return;
+		}
+
+		waitUntilNoVATaxIDCheckWorkPackagesArePending();
+	}
+
+	/**
+	 * Polls until no {@code VATaxIDCheckWorkpackageProcessor} package is pending. Bounded, and it fails
+	 * loudly rather than silently proceeding: a timeout here means a check never completed, which is
+	 * exactly the condition that used to surface as a different scenario's missing log row.
+	 */
+	private void waitUntilNoVATaxIDCheckWorkPackagesArePending() throws InterruptedException
+	{
+		StepDefUtil.tryAndWait(
+				WORKPACKAGE_DRAIN_TIMEOUT_SEC,
+				WORKPACKAGE_DRAIN_POLL_MS,
+				() -> workPackageQueueUtil.countPendingWorkPackages(VATAXID_CHECK_PACKAGE_PROCESSOR) == 0,
+				this::logPendingVATaxIDCheckWorkPackages);
+	}
+
+	private void logPendingVATaxIDCheckWorkPackages()
+	{
+		logger.error("*** VAT-ID check work packages failed to drain: {} pending C_Queue_WorkPackage(s) for {}",
+				workPackageQueueUtil.countPendingWorkPackages(VATAXID_CHECK_PACKAGE_PROCESSOR), VATAXID_CHECK_PACKAGE_PROCESSOR);
 	}
 }

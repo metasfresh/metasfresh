@@ -23,7 +23,9 @@
 package de.metas.cucumber.stepdefs.vatid;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.BPartnerId;
+import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
@@ -40,22 +42,27 @@ import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.vatid.VATaxIDCheckRunService;
 import de.metas.vatid.process.C_BPartner_VATaxID_Check;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.util.List;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -74,7 +81,8 @@ public class VATaxIDCheckProcess_StepDef
 	@NonNull private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	@NonNull private final IADPInstanceDAO pInstanceDAO = Services.get(IADPInstanceDAO.class);
 	@NonNull private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
-	@NonNull private final VATaxIDCheckRunService checkRunService = SpringContextHolder.instance.getBean(VATaxIDCheckRunService.class);
+	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
 
@@ -171,6 +179,17 @@ public class VATaxIDCheckProcess_StepDef
 	@When("the C_BPartner_VATaxID_Check process is run as scheduled")
 	public void runProcessAsScheduled()
 	{
+		runProcessAsScheduled(null);
+	}
+
+	@When("the C_BPartner_VATaxID_Check process is run as scheduled with MaxChecksPerRun {string}")
+	public void runProcessAsScheduledWithBudget(@NonNull final String maxChecksPerRunText)
+	{
+		runProcessAsScheduled(Integer.parseInt(maxChecksPerRunText.trim()));
+	}
+
+	private void runProcessAsScheduled(@Nullable final Integer maxChecksPerRun)
+	{
 		final AdProcessId processId = adProcessDAO.retrieveProcessIdByValue(PROCESS_VALUE);
 		assertThat(processId).as("AD_Process with Value=%s must exist", PROCESS_VALUE).isNotNull();
 
@@ -189,6 +208,10 @@ public class VATaxIDCheckProcess_StepDef
 				.setCreateTemporaryCtx();
 		// deliberately no setTableName/setWhereClause/setRecord_ID: a scheduled run selects nothing,
 		// per the class javadoc.
+		if (maxChecksPerRun != null)
+		{
+			builder.addParameter(C_BPartner_VATaxID_Check.PARA_MaxChecksPerRun, maxChecksPerRun);
+		}
 
 		final ProcessExecutor executor = builder
 				.buildAndPrepareExecution()
@@ -198,6 +221,67 @@ public class VATaxIDCheckProcess_StepDef
 		executor.getResult().propagateErrorIfAny();
 
 		lastPInstanceId = executor.getProcessInfo().getPinstanceId();
+	}
+
+	/**
+	 * Stamps {@code VATaxIDLastAttemptedAt} on every not-yet-attempted VAT-ID check candidate of the test
+	 * organisation EXCEPT the partners named in the data table (and their locations), so that afterwards the
+	 * named records are the only null-attempted ones left.
+	 *
+	 * <p>Why: this makes a budgeted {@link #runProcessAsScheduledWithBudget(String)} deterministic.
+	 *
+	 * <p>Covers both {@code C_BPartner_Location} and {@code C_BPartner} carrying a VAT-ID.
+	 * <p>Only records the nightly query would actually select are touched
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_BPartner_ID</b> — (required, identifier-ref) partner to leave untouched, together with its locations
+	 * @cucumber.depends StepDefData: C_BPartner_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Given every other VAT-ID check candidate has already been attempted, except C_BPartner:
+	 *   | C_BPartner_ID |
+	 *   | bp_broken     |
+	 *   | bp_pending    |
+	 * </pre>
+	 */
+	@Given("every other VAT-ID check candidate has already been attempted, except C_BPartner:")
+	public void stampAttemptOnAllOtherCandidates(@NonNull final DataTable dataTable)
+	{
+		final ImmutableSet<Integer> keepUnstampedBPartnerIds = DataTableRows.of(dataTable)
+				.stream()
+				.map(row -> row.getAsIdentifier(I_C_BPartner.COLUMNNAME_C_BPartner_ID).lookupNotNullIn(bpartnerTable).getC_BPartner_ID())
+				.collect(ImmutableSet.toImmutableSet());
+
+		final Instant attemptedAt = SystemTime.asInstant();
+
+		queryBL.createQueryBuilder(I_C_BPartner.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_AD_Org_ID, ORG_ID)
+				.addNotNull(I_C_BPartner.COLUMNNAME_VATaxID)
+				.addNotEqualsFilter(I_C_BPartner.COLUMNNAME_VATaxID, "")
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_VATaxIDLastAttemptedAt, null)
+				.addNotInArrayFilter(I_C_BPartner.COLUMNNAME_C_BPartner_ID, keepUnstampedBPartnerIds)
+				.create()
+				.list()
+				.forEach(bpartnerRecord -> {
+					bpartnerRecord.setVATaxIDLastAttemptedAt(TimeUtil.asTimestampNotNull(attemptedAt));
+					InterfaceWrapperHelper.saveRecord(bpartnerRecord);
+				});
+
+		queryBL.createQueryBuilder(I_C_BPartner_Location.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_AD_Org_ID, ORG_ID)
+				.addNotNull(I_C_BPartner_Location.COLUMNNAME_VATaxID)
+				.addNotEqualsFilter(I_C_BPartner_Location.COLUMNNAME_VATaxID, "")
+				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_VATaxIDLastAttemptedAt, null)
+				.addNotInArrayFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, keepUnstampedBPartnerIds)
+				.create()
+				.list()
+				.forEach(bpartnerLocationRecord -> {
+					bpartnerLocationRecord.setVATaxIDLastAttemptedAt(TimeUtil.asTimestampNotNull(attemptedAt));
+					InterfaceWrapperHelper.saveRecord(bpartnerLocationRecord);
+				});
 	}
 
 	/**
@@ -275,104 +359,6 @@ public class VATaxIDCheckProcess_StepDef
 		assertThat(logs)
 				.as("AD_PInstance_Log of PInstance %s must contain NO status-changed line for VATaxID '%s'", lastPInstanceId, vataxID)
 				.noneMatch(log -> log.getP_Msg() != null && log.getP_Msg().contains(forbiddenInfix));
-	}
-
-	/**
-	 * Asserts that {@code C_BPartner} is included in the nightly selection without running a check on
-	 * anyone — the read-only counterpart to {@link #runProcessAsScheduled()}, so a scenario can pin down
-	 * what the sweep selects with the online check switched off entirely.
-	 *
-	 * @cucumber.stepdef
-	 * @cucumber.columns
-	 *   <b>C_BPartner_ID</b> — (required, identifier-ref) partner expected to be in the nightly selection
-	 * @cucumber.depends StepDefData: C_BPartner_StepDefData
-	 * @cucumber.example
-	 * <pre>
-	 * Then the C_BPartner_VATaxID_Check nightly selection includes C_BPartner 'bp_scheduled'
-	 * </pre>
-	 */
-	@Then("the C_BPartner_VATaxID_Check nightly selection includes C_BPartner {string}")
-	public void assertNightlySelectionIncludes(@NonNull final String bpartnerIdentifier)
-	{
-		final BPartnerId expectedId = resolveBPartnerId(bpartnerIdentifier);
-		final ImmutableList<BPartnerId> nightlySelection = checkRunService.retrieveAllBPartnerIdsWithVATaxID();
-
-		assertThat(nightlySelection)
-				.as("C_BPartner_VATaxID_Check nightly selection must include C_BPartner `%s` (%s)", bpartnerIdentifier, expectedId)
-				.contains(expectedId);
-	}
-
-	/**
-	 * The negation of {@link #assertNightlySelectionIncludes(String)}: proves a record is kept OUT of the
-	 * candidate list, not merely deprioritised within it. The selection sorts never-checked records first,
-	 * so a record that can never actually be checked but is still listed would occupy the whole
-	 * {@code MaxChecksPerRun} budget every night, starving every checkable record behind it.
-	 *
-	 * @cucumber.stepdef
-	 * @cucumber.columns
-	 *   <b>C_BPartner_ID</b> — (required, identifier-ref) partner expected to be absent from the nightly selection
-	 * @cucumber.depends StepDefData: C_BPartner_StepDefData
-	 * @cucumber.example
-	 * <pre>
-	 * Then the C_BPartner_VATaxID_Check nightly selection does not include C_BPartner 'bp_viesOff'
-	 * </pre>
-	 */
-	@Then("the C_BPartner_VATaxID_Check nightly selection does not include C_BPartner {string}")
-	public void assertNightlySelectionExcludes(@NonNull final String bpartnerIdentifier)
-	{
-		final BPartnerId expectedId = resolveBPartnerId(bpartnerIdentifier);
-		final ImmutableList<BPartnerId> nightlySelection = checkRunService.retrieveAllBPartnerIdsWithVATaxID();
-
-		assertThat(nightlySelection)
-				.as("C_BPartner_VATaxID_Check nightly selection must NOT include C_BPartner `%s` (%s)", bpartnerIdentifier, expectedId)
-				.doesNotContain(expectedId);
-	}
-
-	/**
-	 * Asserts the RELATIVE ORDER of two entries in the nightly candidate list, rather than which absolute
-	 * slot either occupies — the shared cucumber database can carry an arbitrary number of OTHER VAT-ID
-	 * fixtures from other scenarios at the time this runs, and this assertion is immune to however many
-	 * of those sort in between the two named entries. This is what makes it possible to prove a priority
-	 * INVERSION (a target that failed its check attempt no longer outranks one that was never attempted at
-	 * all) without needing to control, or reason about, the whole database's candidate pool.
-	 *
-	 * @cucumber.stepdef
-	 * @cucumber.columns
-	 *   <b>C_BPartner_ID</b> (first)  — (required, identifier-ref) partner expected to sort earlier<br>
-	 *   <b>C_BPartner_ID</b> (second) — (required, identifier-ref) partner expected to sort later
-	 * @cucumber.depends StepDefData: C_BPartner_StepDefData
-	 * @cucumber.example
-	 * <pre>
-	 * Then the C_BPartner_VATaxID_Check nightly selection lists C_BPartner 'bp_pending' before C_BPartner 'bp_broken'
-	 * </pre>
-	 */
-	@Then("the C_BPartner_VATaxID_Check nightly selection lists C_BPartner {string} before C_BPartner {string}")
-	public void assertNightlySelectionOrder(@NonNull final String earlierBPartnerIdentifier, @NonNull final String laterBPartnerIdentifier)
-	{
-		final BPartnerId earlierId = resolveBPartnerId(earlierBPartnerIdentifier);
-		final BPartnerId laterId = resolveBPartnerId(laterBPartnerIdentifier);
-		final ImmutableList<BPartnerId> nightlySelection = checkRunService.retrieveAllBPartnerIdsWithVATaxID();
-
-		final int earlierIndex = nightlySelection.indexOf(earlierId);
-		final int laterIndex = nightlySelection.indexOf(laterId);
-
-		assertThat(earlierIndex)
-				.as("C_BPartner `%s` (%s) must be in the nightly selection", earlierBPartnerIdentifier, earlierId)
-				.isNotEqualTo(-1);
-		assertThat(laterIndex)
-				.as("C_BPartner `%s` (%s) must be in the nightly selection", laterBPartnerIdentifier, laterId)
-				.isNotEqualTo(-1);
-		assertThat(earlierIndex)
-				.as("C_BPartner `%s` (%s) must sort BEFORE C_BPartner `%s` (%s) in the nightly selection",
-						earlierBPartnerIdentifier, earlierId, laterBPartnerIdentifier, laterId)
-				.isLessThan(laterIndex);
-	}
-
-	@NonNull
-	private BPartnerId resolveBPartnerId(@NonNull final String bpartnerIdentifier)
-	{
-		final I_C_BPartner bpartnerRecord = bpartnerTable.get(bpartnerIdentifier);
-		return BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID());
 	}
 
 	private void assertLastRunLogContains(@NonNull final String expectedSuffix)
