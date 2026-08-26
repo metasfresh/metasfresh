@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_Delivery_Planning, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2115867192L;
+	private static final long serialVersionUID = 996236247L;
 
     /** Standard Constructor */
     public X_M_Delivery_Planning (final Properties ctx, final int M_Delivery_Planning_ID, @Nullable final String trxName)
@@ -351,6 +351,8 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	public static final String M_DELIVERY_PLANNING_TYPE_Incoming = "Incoming";
 	/** Outgoing = Outgoing */
 	public static final String M_DELIVERY_PLANNING_TYPE_Outgoing = "Outgoing";
+	/** Dropship = Dropship */
+	public static final String M_DELIVERY_PLANNING_TYPE_Dropship = "Dropship";
 	@Override
 	public void setM_Delivery_Planning_Type (final java.lang.String M_Delivery_Planning_Type)
 	{

@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_ShipperTransportation extends org.compiere.model.PO implements I_M_ShipperTransportation, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1776272185L;
+	private static final long serialVersionUID = 2129006182L;
 
     /** Standard Constructor */
     public X_M_ShipperTransportation (final Properties ctx, final int M_ShipperTransportation_ID, @Nullable final String trxName)
@@ -472,6 +472,29 @@ public class X_M_ShipperTransportation extends org.compiere.model.PO implements 
 	public int getM_Delivery_Planning_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Delivery_Planning_ID);
+	}
+
+	/** 
+	 * M_Delivery_Planning_Type AD_Reference_ID=541689
+	 * Reference name: M_Delivery_Planning_Types
+	 */
+	public static final int M_DELIVERY_PLANNING_TYPE_AD_Reference_ID=541689;
+	/** Incoming = Incoming */
+	public static final String M_DELIVERY_PLANNING_TYPE_Incoming = "Incoming";
+	/** Outgoing = Outgoing */
+	public static final String M_DELIVERY_PLANNING_TYPE_Outgoing = "Outgoing";
+	/** Dropship = Dropship */
+	public static final String M_DELIVERY_PLANNING_TYPE_Dropship = "Dropship";
+	@Override
+	public void setM_Delivery_Planning_Type (final java.lang.String M_Delivery_Planning_Type)
+	{
+		set_Value (COLUMNNAME_M_Delivery_Planning_Type, M_Delivery_Planning_Type);
+	}
+
+	@Override
+	public java.lang.String getM_Delivery_Planning_Type() 
+	{
+		return get_ValueAsString(COLUMNNAME_M_Delivery_Planning_Type);
 	}
 
 	@Override
