@@ -166,7 +166,7 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | WorkflowLine.Identifier | WorkflowReceivingTargetValues.Identifier |
       | mfgWorkflow                | receiptActivity             | receiptLine             | receivingTargetValues                    |
 
-    # Issue the component to the production order (at its own actual cost, different from finProd's cost)
+    # Issue the component to the production order
     And create JsonManufacturingOrderEvent and store it in context as request payload:
       | Event   | WorkflowProcess.Identifier | WorkflowActivity.Identifier | WorkflowStep.Identifier | WorkflowStepQRCode.Identifier |
       | IssueTo | mfgWorkflow                | issueActivity               | issueStep               | issueQRCode                   |
@@ -194,8 +194,7 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
       | PP_Order_ID.Identifier | M_Product_ID.Identifier | M_CostElement_ID | PP_Order_Cost_TrxType | CurrentCostPrice |
       | ppOrder                | finProd                 | AveragePO        | MR                    | 25 CHF           |
 
-    # Order-level CostDifference = received (finProd MR, 25) minus issued (compProd MI, 10) = 15:
-    # positive, because received exceeds issued.
+    # CostDifference = received (finProd MR, 25) minus issued (compProd MI, 10) = 15.
     And after not more than 60s, PP_Orders are found
       | Identifier | CostDifference |
       | ppOrder    | 15             |
@@ -209,9 +208,8 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
   @from:cucumber
   @Id:S30811_TC2
   Scenario: Finished good is received below its component cost
-    # finProd's own standing AveragePO cost (5 CHF/PCE) is lower than the 1:1 BOM rollup
-    # from compProd (10 CHF/PCE). The receipt posts at finProd's own current cost, so more
-    # was issued (compProd) than received (finProd): CostDifference must be negative.
+    # finProd's own standing AveragePO cost (5 CHF/PCE) is lower than the 1:1 BOM rollup from compProd
+    # (10 CHF/PCE), and the receipt posts at finProd's own cost, so CostDifference must be negative.
     And metasfresh contains single line completed inventories
       | M_Inventory_ID | M_InventoryLine_ID | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 | CostPrice | M_HU_ID |
       | finInventory   | finInventoryLine   | 2024-03-20   | 540008         | finProd      | 0       | 10       | PCE          | 5         | finHU   |
@@ -241,7 +239,7 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | WorkflowLine.Identifier | WorkflowReceivingTargetValues.Identifier |
       | mfgWorkflow                | receiptActivity             | receiptLine             | receivingTargetValues                    |
 
-    # Issue the component to the production order (at its own actual cost, different from finProd's cost)
+    # Issue the component to the production order
     And create JsonManufacturingOrderEvent and store it in context as request payload:
       | Event   | WorkflowProcess.Identifier | WorkflowActivity.Identifier | WorkflowStep.Identifier | WorkflowStepQRCode.Identifier |
       | IssueTo | mfgWorkflow                | issueActivity               | issueStep               | issueQRCode                   |
@@ -264,8 +262,7 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
       | PP_Order_ID.Identifier | M_Product_ID.Identifier | M_CostElement_ID | PP_Order_Cost_TrxType | CurrentCostPrice |
       | ppOrder                | finProd                 | AveragePO        | MR                    | 5 CHF            |
 
-    # Order-level CostDifference = received (finProd MR, 5) minus issued (compProd MI, 10) = -5:
-    # negative, because issued exceeds received.
+    # CostDifference = received (finProd MR, 5) minus issued (compProd MI, 10) = -5.
     And after not more than 60s, PP_Orders are found
       | Identifier | CostDifference |
       | ppOrder    | -5             |

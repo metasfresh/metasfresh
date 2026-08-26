@@ -6,17 +6,9 @@ import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { MasterWindowPage } from '../utils/pages/MasterWindowPage';
 
-// Manufacturing cost-imbalance monitor window ("Kostenüberwachung Fertigung")
-// Read-only window over PP_Order (DocStatus='CO') surfacing the CostDifference column.
 const COST_IMBALANCE_WINDOW_ID = 542175;
 
 test.describe('Manufacturing cost-imbalance monitor window', () => {
-  //
-  // The window's AD_Tab has WhereClause="DocStatus='CO'" over PP_Order and surfaces the
-  // CostDifference virtual column. This test seeds a real completed manufacturing order via
-  // the frontendTesting masterdata API (which always drives the PP_Order to DocStatus='CO' on
-  // creation) and asserts it renders in the grid with the CostDifference column.
-  //
   test('Completed manufacturing order appears with the CostDifference column', async ({ page }) => {
     allure.epic('E0226: Costing');
     allure.tag('F1500: Costing');
@@ -61,18 +53,15 @@ test.describe('Manufacturing cost-imbalance monitor window', () => {
     await MasterWindowPage.expectWindowLoaded();
     await MasterWindowPage.waitForTableData();
 
-    // The CostDifference grid column header is present (language-independent ColumnName selector).
+    // Selecting on ColumnName keeps the assertion language-independent.
     const costDifferenceColumn = page.locator('th[data-testid="column-CostDifference"]');
     expect(await costDifferenceColumn.count()).toBeGreaterThan(0);
 
-    // The seeded CO order appears in the grid, proving the tab's DocStatus='CO' WhereClause
-    // filter let it through (a Drafted/InProgress order would not show up here).
+    // The seeded order is completed, so the tab's DocStatus='CO' filter must let it through.
     const row = page.locator('tr').filter({ hasText: documentNo });
     expect(await row.count()).toBeGreaterThan(0);
 
-    // That row renders a CostDifference cell (value correctness is covered by a cucumber test;
-    // here we only need the column to be wired to the row, per the window-design-rules
-    // verification recipe for a new grid column).
+    // Only the wiring is checked here; the value itself is covered by a cucumber scenario.
     const costDifferenceCell = row.first().locator('[data-cy="cell-CostDifference"]');
     expect(await costDifferenceCell.count()).toBeGreaterThan(0);
 

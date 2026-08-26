@@ -188,7 +188,7 @@ public class PP_Order_StepDef
 	 *   <b>M_AttributeSetInstance_ID</b> — (optional, identifier-ref) expected ASI, compared by attributes-key<br>
 	 *   <b>M_HU_PI_Item_Product_ID</b> — (optional, identifier-ref) expected packing item-product<br>
 	 *   <b>DocStatus</b> — (optional) expected document status<br>
-	 *   <b>CostDifference</b> — (optional) expected value of the virtual PP_Order.CostDifference column: received (MR/CO/BY) minus issued (MI), summed across all PP_Order_Cost rows of this order — positive when received exceeds issued, negative when issued exceeds received<br>
+	 *   <b>CostDifference</b> — (optional) expected value of the virtual PP_Order.CostDifference column: received (MR/CO/BY) minus issued (MI) over the order's PP_Order_Cost rows<br>
 	 * @cucumber.depends StepDefData: PP_Order_StepDefData
 	 * @cucumber.example
 	 * <pre>

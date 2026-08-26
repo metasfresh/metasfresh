@@ -3,16 +3,13 @@
 --   AD_Column  592970 (PP_Order.CostDifference)
 --   AD_SQLColumn_SourceTableColumn 540223 (PP_Order.CostDifference <- PP_Order_Cost)
 --
--- Renames the virtual column PP_Order.Kostendifferenz -> PP_Order.CostDifference and NEGATES its
--- sign. The former computed issued-minus-received (IN - OUT); this computes received-minus-issued
--- (OUT - IN), so the value is negative when more cost was issued than received and positive when
--- more was received than issued. Only the two coalesce(...) summands of the ColumnSQL are swapped;
--- the sub-selects are otherwise identical.
+-- Renames the virtual column PP_Order.Kostendifferenz -> PP_Order.CostDifference and NEGATES its sign:
+-- it now computes received-minus-issued, so the value is negative when more cost was issued than
+-- received. Only the two coalesce(...) summands of the ColumnSQL are swapped.
 --
--- The displayed German label STAYS "Kostendifferenz" (base language) and en_US is "Cost difference";
--- only the technical ColumnName changes to CostDifference. The column is virtual (ColumnSQL) so
--- there is no stored data to copy; the migration creates the new virtual column, rewires the
--- existing header field (AD_Field 781320) to it, then drops the now-unreferenced old objects.
+-- The displayed German label stays "Kostendifferenz"; en_US is "Cost difference". The column is virtual
+-- (ColumnSQL), so there is no stored data to copy: create the new column, rewire the existing header
+-- field (AD_Field 781320) to it, then drop the now-unreferenced old objects.
 
 -- 1) New AD_Element CostDifference (German in base column; en_US override below).
 INSERT INTO AD_Element (AD_Client_ID,IsActive,CreatedBy,PrintName,EntityType,ColumnName,AD_Element_ID,AD_Org_ID,Name,UpdatedBy,Created,Updated)

@@ -11,9 +11,7 @@
 --   AD_UI_Element 652680..652692 (13, same order as the fields)
 --   AD_Menu    542348
 
--- ===========================================================================
 -- 1) Window caption element: DE base, EN override
--- ===========================================================================
 INSERT INTO AD_Element (AD_Element_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, EntityType, Name, PrintName, Description)
 VALUES (585116 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-07-20 14:00:00','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-07-20 14:00:00','YYYY-MM-DD HH24:MI:SS'), 100, 'D', 'Kostenüberwachung Fertigung', 'Kostenüberwachung Fertigung', 'Fertigungsaufträge, die abgeschlossen aber noch nicht geschlossen sind, mit Kostendifferenz')
 ;
@@ -39,9 +37,7 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-07-20 14:
 WHERE AD_Element_ID=585116 AND AD_Language='de_CH'
 ;
 
--- ===========================================================================
 -- 2) AD_Window
--- ===========================================================================
 INSERT INTO AD_Window (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,EntityType,IsActive,IsBetaFunctionality,IsDefault,IsEnableRemoteCacheInvalidation,IsExcludeFromZoomTargets,IsOneInstanceOnly,IsOverrideInMenu,IsSOTrx,Name,Processing,Updated,UpdatedBy,WindowType,WinHeight,WinWidth,ZoomIntoPriority)
 VALUES (0,585116 /*From ID Server*/,0,542175 /*From ID Server*/,TO_TIMESTAMP('2026-07-20 14:00:20','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','N','N','N','N','N','N','Kostenüberwachung Fertigung','N',TO_TIMESTAMP('2026-07-20 14:00:20','YYYY-MM-DD HH24:MI:SS'),100,'M',0,0,100)
 ;
@@ -61,9 +57,7 @@ DELETE FROM AD_Element_Link WHERE AD_Window_ID=542175
 select AD_Element_Link_Create_Missing_Window(542175)
 ;
 
--- ===========================================================================
 -- 3) Tab caption element: DE base, EN override
--- ===========================================================================
 INSERT INTO AD_Element (AD_Element_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, EntityType, Name, PrintName, Description)
 VALUES (585117 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-07-20 14:00:25','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-07-20 14:00:25','YYYY-MM-DD HH24:MI:SS'), 100, 'D', 'Fertigungsaufträge', 'Fertigungsaufträge', 'Fertigungsaufträge mit Status abgeschlossen, die noch nicht geschlossen sind')
 ;
@@ -89,9 +83,7 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-07-20 14:
 WHERE AD_Element_ID=585117 AND AD_Language='de_CH'
 ;
 
--- ===========================================================================
 -- 4) AD_Tab (TabLevel=0, over PP_Order, read-only, DocStatus='CO')
--- ===========================================================================
 INSERT INTO AD_Tab (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Tab_ID,AD_Table_ID,AD_Window_ID,AllowQuickInput,Created,CreatedBy,EntityType,HasTree,ImportFields,IncludedTabNewRecordInputMode,IsActive,IsAdvancedTab,IsAutodetectDefaultDateFilter,IsGenericZoomTarget,IsGridModeOnly,IsInsertRecord,IsReadOnly,IsRefreshAllOnActivate,IsRefreshViewOnChangeEvents,IsSearchCollapsed,IsSingleRow,IsSortTab,IsTranslationTab,Name,Processing,SeqNo,TabLevel,Updated,UpdatedBy,WhereClause)
 VALUES (0,585117 /*From ID Server*/,0,549352 /*From ID Server*/,53027,542175,'N',TO_TIMESTAMP('2026-07-20 14:00:45','YYYY-MM-DD HH24:MI:SS'),100,'D','N','N','A','Y','N','Y','N','N','N','Y','N','N','Y','Y','N','N','Fertigungsaufträge','N',10,0,TO_TIMESTAMP('2026-07-20 14:00:45','YYYY-MM-DD HH24:MI:SS'),100,'DocStatus=''CO''')
 ;
@@ -111,11 +103,9 @@ DELETE FROM AD_Element_Link WHERE AD_Tab_ID=549352
 select AD_Element_Link_Create_Missing_Tab(549352)
 ;
 
--- ===========================================================================
 -- 5) AD_Field rows, reusing the existing column elements (no new AD_Elements
 --    for standard PP_Order columns). Grid order matches the review workflow;
 --    C_UOM_ID is added next to the quantities for UOM adjacency.
--- ===========================================================================
 
 -- 5.1 IsActive (flags group, form only, not displayed in grid)
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,Updated,UpdatedBy)
@@ -325,9 +315,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=781761
 select AD_Element_Link_Create_Missing_Field(781761)
 ;
 
--- ===========================================================================
 -- 6) Layout: 1 section, 2 columns (left/right), 4 element groups
--- ===========================================================================
 INSERT INTO AD_UI_Section (AD_Client_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy,Value)
 VALUES (0,0,549352,547860 /*From ID Server*/,TO_TIMESTAMP('2026-07-20 14:01:55','YYYY-MM-DD HH24:MI:SS'),100,'Y',10,TO_TIMESTAMP('2026-07-20 14:01:55','YYYY-MM-DD HH24:MI:SS'),100,'main')
 ;
@@ -363,66 +351,62 @@ INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_Ele
 VALUES (0,0,549605,555517 /*From ID Server*/,TO_TIMESTAMP('2026-07-20 14:02:25','YYYY-MM-DD HH24:MI:SS'),100,'Y','default',20,NULL,TO_TIMESTAMP('2026-07-20 14:02:25','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
--- ===========================================================================
 -- 7) AD_UI_Element rows (one per field). All are grid-displayed except IsActive.
--- ===========================================================================
 
--- IsActive -> flags group, form only
+-- IsActive
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy)
 VALUES (0,781749,0,549352,555516,652680 /*From ID Server*/,'F',TO_TIMESTAMP('2026-07-20 14:02:30','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','Aktiv',10,0,0,TO_TIMESTAMP('2026-07-20 14:02:30','YYYY-MM-DD HH24:MI:SS'),100)
 ;
--- DocumentNo -> primary group, grid col 1
+-- DocumentNo
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy)
 VALUES (0,781750,0,549352,555514,652681 /*From ID Server*/,'F',TO_TIMESTAMP('2026-07-20 14:02:35','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N','Nr.',10,10,0,TO_TIMESTAMP('2026-07-20 14:02:35','YYYY-MM-DD HH24:MI:SS'),100)
 ;
--- C_DocType_ID -> primary group, grid col 2
+-- C_DocType_ID
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy)
 VALUES (0,781751,0,549352,555514,652682 /*From ID Server*/,'F',TO_TIMESTAMP('2026-07-20 14:02:40','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N','Belegart',20,20,0,TO_TIMESTAMP('2026-07-20 14:02:40','YYYY-MM-DD HH24:MI:SS'),100)
 ;
--- M_Product_ID -> primary group, grid col 3
+-- M_Product_ID
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy)
 VALUES (0,781752,0,549352,555514,652683 /*From ID Server*/,'F',TO_TIMESTAMP('2026-07-20 14:02:45','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N','Produkt',30,30,0,TO_TIMESTAMP('2026-07-20 14:02:45','YYYY-MM-DD HH24:MI:SS'),100)
 ;
--- CostDifference -> primary group (prominent), grid col 10
+-- CostDifference
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy)
 VALUES (0,781753,0,549352,555514,652684 /*From ID Server*/,'F',TO_TIMESTAMP('2026-07-20 14:02:50','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N','Kostendifferenz',40,100,0,TO_TIMESTAMP('2026-07-20 14:02:50','YYYY-MM-DD HH24:MI:SS'),100)
 ;
--- QtyOrdered -> secondary group, grid col 4
+-- QtyOrdered
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy)
 VALUES (0,781754,0,549352,555515,652685 /*From ID Server*/,'F',TO_TIMESTAMP('2026-07-20 14:02:55','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N','Bestellt/ Beauftragt',10,40,0,TO_TIMESTAMP('2026-07-20 14:02:55','YYYY-MM-DD HH24:MI:SS'),100)
 ;
--- QtyDelivered -> secondary group, grid col 5
+-- QtyDelivered
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy)
 VALUES (0,781755,0,549352,555515,652686 /*From ID Server*/,'F',TO_TIMESTAMP('2026-07-20 14:03:00','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N','Gelieferte Menge',20,50,0,TO_TIMESTAMP('2026-07-20 14:03:00','YYYY-MM-DD HH24:MI:SS'),100)
 ;
--- C_UOM_ID -> secondary group, grid col 6 (adjacent to the quantities)
+-- C_UOM_ID
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy)
 VALUES (0,781756,0,549352,555515,652687 /*From ID Server*/,'F',TO_TIMESTAMP('2026-07-20 14:03:05','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N','Maßeinheit',30,60,0,TO_TIMESTAMP('2026-07-20 14:03:05','YYYY-MM-DD HH24:MI:SS'),100)
 ;
--- DatePromised -> secondary group, grid col 7
+-- DatePromised
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy)
 VALUES (0,781757,0,549352,555515,652688 /*From ID Server*/,'F',TO_TIMESTAMP('2026-07-20 14:03:10','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N','Zugesagter Termin',40,70,0,TO_TIMESTAMP('2026-07-20 14:03:10','YYYY-MM-DD HH24:MI:SS'),100)
 ;
--- DateFinishSchedule -> secondary group, grid col 8
+-- DateFinishSchedule
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy)
 VALUES (0,781758,0,549352,555515,652689 /*From ID Server*/,'F',TO_TIMESTAMP('2026-07-20 14:03:15','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N','Datum Fertigstellung geplant',50,80,0,TO_TIMESTAMP('2026-07-20 14:03:15','YYYY-MM-DD HH24:MI:SS'),100)
 ;
--- M_Warehouse_ID -> secondary group, grid col 9
+-- M_Warehouse_ID
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy)
 VALUES (0,781759,0,549352,555515,652690 /*From ID Server*/,'F',TO_TIMESTAMP('2026-07-20 14:03:20','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N','Lager',60,90,0,TO_TIMESTAMP('2026-07-20 14:03:20','YYYY-MM-DD HH24:MI:SS'),100)
 ;
--- DocStatus -> flags group, grid col 11 (near-last)
+-- DocStatus
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy)
 VALUES (0,781760,0,549352,555516,652691 /*From ID Server*/,'F',TO_TIMESTAMP('2026-07-20 14:03:25','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N','Belegstatus',20,110,0,TO_TIMESTAMP('2026-07-20 14:03:25','YYYY-MM-DD HH24:MI:SS'),100)
 ;
--- AD_Org_ID -> org group, grid col 12 (last)
+-- AD_Org_ID
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy)
 VALUES (0,781761,0,549352,555517,652692 /*From ID Server*/,'F',TO_TIMESTAMP('2026-07-20 14:03:30','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N','Sektion',10,120,0,TO_TIMESTAMP('2026-07-20 14:03:30','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
--- ===========================================================================
 -- 8) Menu: reuse the window caption element for the menu label
--- ===========================================================================
 INSERT INTO AD_Menu (Action,AD_Client_ID,AD_Element_ID,AD_Menu_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,EntityType,InternalName,IsActive,IsCreateNew,IsReadOnly,IsSOTrx,IsSummary,Name,Updated,UpdatedBy)
 VALUES ('W',0,585116,542348 /*From ID Server*/,0,542175,TO_TIMESTAMP('2026-07-20 14:03:35','YYYY-MM-DD HH24:MI:SS'),100,'D','PP_Order_CostImbalance','Y','N','Y','N','N','Kostenüberwachung Fertigung',TO_TIMESTAMP('2026-07-20 14:03:35','YYYY-MM-DD HH24:MI:SS'),100)
 ;
