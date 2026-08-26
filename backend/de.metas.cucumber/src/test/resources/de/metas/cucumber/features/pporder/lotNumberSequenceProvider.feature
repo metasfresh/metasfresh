@@ -170,10 +170,10 @@ Feature: Lot number stamped on HU during manufacturing receipt
     # The third row receives TWO HUs from ONE receipt: M_HU_ID.Identifier takes two comma-separated
     # identifiers, bound positionally to the received HUs.
     And receive HUs for PP_Order with M_HU_LUTU_Configuration:
-      | PP_Order_ID             | M_HU_ID.Identifier                  | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
-      | ppOrder_lotno_ws5       | hu_lotno_ws5                        | N               | 0     | N               | 1     | N               | 10          | lotNoProduct_HUPI                  |
-      | ppOrder_lotno_ws7       | hu_lotno_ws7                        | N               | 0     | N               | 1     | N               | 10          | lotNoProduct_HUPI                  |
-      | ppOrder_lotno_ws5_multi | hu_lotno_ws5_multi_a,hu_lotno_ws5_multi_b | N         | 0     | N               | 2     | N               | 10          | lotNoProduct_HUPI                  |
+      | PP_Order_ID             | M_HU_ID.Identifier                        | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
+      | ppOrder_lotno_ws5       | hu_lotno_ws5                              | N               | 0     | N               | 1     | N               | 10          | lotNoProduct_HUPI                  |
+      | ppOrder_lotno_ws7       | hu_lotno_ws7                              | N               | 0     | N               | 1     | N               | 10          | lotNoProduct_HUPI                  |
+      | ppOrder_lotno_ws5_multi | hu_lotno_ws5_multi_a,hu_lotno_ws5_multi_b | N               | 0     | N               | 2     | N               | 10          | lotNoProduct_HUPI                  |
 
     When complete planning for PP_Order:
       | PP_Order_ID.Identifier  |
@@ -182,10 +182,19 @@ Feature: Lot number stamped on HU during manufacturing receipt
       | ppOrder_lotno_ws5_multi |
 
     # Each HU must carry ITS OWN workstation's line digit -- 5 and 7, not one shared value.
-    # And BOTH HUs of the multi-HU receipt must be stamped, with the SAME lot number: the provider is
-    # invoked once per receipt (AbstractPPOrderReceiptHUProducer memoises the value), not once per HU.
-    # Note there is deliberately NO running counter to assert: DBFunctionSequenceNoProvider returns
-    # isUseIncrementSeqNoAsPrefix()=false, so the lot value is exactly what the DB function computes.
+    # And EVERY HU of the multi-HU receipt must be stamped, all with the same lot number: before this
+    # scenario nothing covered a receipt that packs into more than one HU, so a stamping path that
+    # handled only the first HU would have gone unnoticed.
+    #
+    # What this does NOT prove, deliberately stated so nobody mistakes it for a guard:
+    #  * NOT that the provider is invoked once per receipt rather than once per HU. The Background
+    #    freezes the clock (SystemTime.setFixedTimeSource) and test_lotno_workstation is a pure
+    #    function of (order, timestamp), so calling it once or N times yields the identical string --
+    #    removing the memoisation in AbstractPPOrderReceiptHUProducer would leave this scenario green.
+    #    A call-count assertion needs a mock-based unit test on that producer, not cucumber.
+    #  * NOT that a running counter advances: DBFunctionSequenceNoProvider returns
+    #    isUseIncrementSeqNoAsPrefix()=false, so the lot value is exactly what the DB function
+    #    computes and no counter exists on this path.
     Then M_HU_Attribute is validated
       | M_HU_ID              | M_Attribute_ID.Value | Value |
       | hu_lotno_ws5         | Lot-Nummer           | L0915 |
