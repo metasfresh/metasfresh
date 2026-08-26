@@ -746,6 +746,31 @@ public class C_Order_StepDef
 				.forEach(this::validateOrder);
 	}
 
+	/**
+	 * Updates fields of a {@code C_Order} previously registered under an identifier.
+	 *
+	 * <p>Required column:
+	 * <ul>
+	 *   <li>{@code C_Order_ID} – identifier of the order to update</li>
+	 * </ul>
+	 * Optional field columns (each applied only when present):
+	 * <ul>
+	 *   <li>{@code DocBaseType} + {@code DocSubType} – both together select a new C_DocType / C_DocTypeTarget</li>
+	 *   <li>{@code PaymentRule}</li>
+	 *   <li>{@code PreparationDate}</li>
+	 *   <li>{@code LC_Date}</li>
+	 *   <li>{@code POReference} – the customer's purchase-order reference; a {@code @Date@} placeholder
+	 *       in the value is resolved to the current timestamp, so a scenario can keep it unique across
+	 *       repeated local runs</li>
+	 * </ul>
+	 *
+	 * <p>Example:
+	 * <pre>
+	 * When update order
+	 *   | C_Order_ID | POReference    |
+	 *   | o_1        | PO_1234_@Date@ |
+	 * </pre>
+	 */
 	@And("update order")
 	public void update_order(@NonNull final DataTable dataTable)
 	{
@@ -781,6 +806,9 @@ public class C_Order_StepDef
 				.ifPresent(expected -> order.setPreparationDate(Timestamp.from(expected)));
 		tableRow.getAsOptionalInstant(I_C_Order.COLUMNNAME_LC_Date)
 				.ifPresent(expected -> order.setLC_Date(Timestamp.from(expected)));
+		// getAsOptionalName (not ...String) so that a @Date@ placeholder in the value is resolved
+		tableRow.getAsOptionalName(COLUMNNAME_POReference)
+				.ifPresent(order::setPOReference);
 		saveRecord(order);
 
 		orderTable.putOrReplace(tableRow.getAsIdentifier(), order);
