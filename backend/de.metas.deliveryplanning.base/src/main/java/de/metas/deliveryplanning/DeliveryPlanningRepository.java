@@ -156,7 +156,7 @@ public class DeliveryPlanningRepository
 		return deliveryPlanningType.hasShipment() && !deliveryPlanningType.isDropship();
 	}
 
-	public Optional<DeliveryPlanningReceiptInfo> getReceiptInfoIfIncomingType(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	public Optional<DeliveryPlanningReceiptInfo> getReceiptInfoIfHasReceipt(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
 		final I_M_Delivery_Planning record = getById(deliveryPlanningId);
 		final DeliveryPlanningType deliveryPlanningType = extractDeliveryPlanningType(record);

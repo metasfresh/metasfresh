@@ -23,6 +23,8 @@
 package de.metas.deliveryplanning;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.cache.CacheMgt;
@@ -65,6 +67,8 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAware;
+import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -73,7 +77,7 @@ import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Warehouse;
-import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Delivery_Planning;
 import org.compiere.util.TimeUtil;
@@ -83,8 +87,10 @@ import javax.annotation.Nullable;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -109,7 +115,7 @@ public class DeliveryPlanningService
 
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
@@ -398,18 +404,25 @@ public class DeliveryPlanningService
 	 */
 	public DeliveryPlanningList getBySelection(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
-		final ImmutableList.Builder<DeliveryPlanning> deliveryPlannings = ImmutableList.builder();
+		final ImmutableList.Builder<I_M_Delivery_Planning> recordsCollector = ImmutableList.builder();
 
 		final Iterator<I_M_Delivery_Planning> records = deliveryPlanningRepository.extractDeliveryPlannings(selectedDeliveryPlanningsFilter);
 		while (records.hasNext())
 		{
-			deliveryPlannings.add(toDeliveryPlanning(records.next()));
+			recordsCollector.add(records.next());
 		}
+		final ImmutableList<I_M_Delivery_Planning> deliveryPlanningRecords = recordsCollector.build();
 
-		return DeliveryPlanningList.ofCollection(deliveryPlannings.build());
+		final DeliveryPlanningAddresses addresses = loadAddresses(deliveryPlanningRecords);
+
+		return DeliveryPlanningList.ofCollection(deliveryPlanningRecords.stream()
+				.map(record -> toDeliveryPlanning(record, addresses))
+				.collect(ImmutableList.toImmutableList()));
 	}
 
-	private DeliveryPlanning toDeliveryPlanning(@NonNull final I_M_Delivery_Planning record)
+	private static DeliveryPlanning toDeliveryPlanning(
+			@NonNull final I_M_Delivery_Planning record,
+			@NonNull final DeliveryPlanningAddresses addresses)
 	{
 		final DeliveryPlanningType deliveryPlanningType = DeliveryPlanningRepository.extractDeliveryPlanningType(record);
 
@@ -421,11 +434,47 @@ public class DeliveryPlanningService
 				.incotermsId(IncotermsId.ofRepoIdOrNull(record.getC_Incoterms_ID()))
 				.incotermLocation(record.getIncotermLocation())
 				.meansOfTransportationId(MeansOfTransportationId.ofRepoIdOrNull(record.getM_MeansOfTransportation_ID()))
-				.loadingLocationId(extractShipFromLocationIdOrNull(record, deliveryPlanningType))
-				.deliveryLocationId(extractShipToLocationIdOrNull(record, deliveryPlanningType))
+				.loadingLocationId(extractShipFromLocationIdOrNull(record, deliveryPlanningType, addresses))
+				.deliveryLocationId(extractShipToLocationIdOrNull(record, deliveryPlanningType, addresses))
 				.closed(record.isClosed())
 				.deliveryInstructionId(ShipperTransportationId.ofRepoIdOrNull(record.getM_ShipperTransportation_ID()))
 				.build();
+	}
+
+	/**
+	 * Batch-loads every record the ship-from and ship-to addresses of the given delivery plannings are read from,
+	 * so that resolving those addresses costs one round trip per collaborator instead of one per planning.
+	 */
+	private DeliveryPlanningAddresses loadAddresses(@NonNull final Collection<I_M_Delivery_Planning> records)
+	{
+		final ImmutableSet.Builder<ReceiptScheduleId> receiptScheduleIds = ImmutableSet.builder();
+		final ImmutableSet.Builder<ShipmentScheduleId> shipmentScheduleIds = ImmutableSet.builder();
+		final ImmutableSet.Builder<WarehouseId> warehouseIds = ImmutableSet.builder();
+
+		for (final I_M_Delivery_Planning record : records)
+		{
+			addIfNotNull(receiptScheduleIds, ReceiptScheduleId.ofRepoIdOrNull(record.getM_ReceiptSchedule_ID()));
+			addIfNotNull(shipmentScheduleIds, ShipmentScheduleId.ofRepoIdOrNull(record.getM_ShipmentSchedule_ID()));
+			addIfNotNull(warehouseIds, WarehouseId.ofRepoIdOrNull(record.getM_Warehouse_ID()));
+		}
+
+		return DeliveryPlanningAddresses.builder()
+				.receiptSchedules(receiptScheduleDAO.getByIds(receiptScheduleIds.build()))
+				.shipmentSchedules(shipmentScheduleBL.getByIds(shipmentScheduleIds.build()))
+				// getByIds resolves out of trx only, unlike getById: warehouses are master data, so none is ever
+				// created in the same transaction as the delivery plannings read here
+				.warehouses(Maps.uniqueIndex(
+						warehouseDAO.getByIds(warehouseIds.build()),
+						warehouse -> WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID())))
+				.build();
+	}
+
+	private static <T> void addIfNotNull(@NonNull final ImmutableSet.Builder<T> collector, @Nullable final T element)
+	{
+		if (element != null)
+		{
+			collector.add(element);
+		}
 	}
 
 	private DeliveryInstructionCreateRequest createDeliveryInstructionRequest(@NonNull final DeliveryPlanningId deliveryPlanningId)
@@ -462,8 +511,9 @@ public class DeliveryPlanningService
 
 		final BPartnerLocationId deliveryPlanningLocationId = BPartnerLocationId.ofRepoId(deliveryPlanningRecord.getC_BPartner_ID(), deliveryPlanningRecord.getC_BPartner_Location_ID());
 		final boolean hasReceipt = deliveryPlanningType.hasReceipt();
-		final BPartnerLocationId shipFrom = extractShipFromLocationId(deliveryPlanningRecord);
-		final BPartnerLocationId shipTo = extractShipToLocationId(deliveryPlanningRecord);
+		final DeliveryPlanningAddresses addresses = loadAddresses(ImmutableList.of(deliveryPlanningRecord));
+		final BPartnerLocationId shipFrom = extractShipFromLocationId(deliveryPlanningRecord, deliveryPlanningType, addresses);
+		final BPartnerLocationId shipTo = extractShipToLocationId(deliveryPlanningRecord, deliveryPlanningType, addresses);
 
 		final Dimension deliveryPlanningDimension = dimensionService.getFromRecord(deliveryPlanningRecord);
 
@@ -503,78 +553,123 @@ public class DeliveryPlanningService
 				.build();
 	}
 
-	private BPartnerLocationId extractShipFromLocationId(final I_M_Delivery_Planning deliveryPlanningRecord)
+	/**
+	 * @return {@code null} when the record the loading address is read from is not set. A selection-wide
+	 * precondition runs on every selection change, so it must report "this planning has no loading address"
+	 * rather than throw.
+	 */
+	@Nullable
+	private static BPartnerLocationId extractShipFromLocationIdOrNull(
+			@NonNull final I_M_Delivery_Planning deliveryPlanningRecord,
+			@NonNull final DeliveryPlanningType deliveryPlanningType,
+			@NonNull final DeliveryPlanningAddresses addresses)
 	{
-		final DeliveryPlanningType deliveryPlanningType = DeliveryPlanningRepository.extractDeliveryPlanningType(deliveryPlanningRecord);
-
-		final boolean hasReceipt = deliveryPlanningType.hasReceipt();
-
-		if (hasReceipt)
+		if (deliveryPlanningType.hasReceipt())
 		{
-			final I_M_ReceiptSchedule receiptSchedule = receiptScheduleDAO.getById(ReceiptScheduleId.ofRepoId(deliveryPlanningRecord.getM_ReceiptSchedule_ID()));
+			final ReceiptScheduleId receiptScheduleId = ReceiptScheduleId.ofRepoIdOrNull(deliveryPlanningRecord.getM_ReceiptSchedule_ID());
+			return receiptScheduleId != null ? addresses.getReceiptScheduleLocationId(receiptScheduleId) : null;
+		}
 
+		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(deliveryPlanningRecord.getM_Warehouse_ID());
+		return warehouseId != null ? addresses.getWarehouseLocationId(warehouseId) : null;
+	}
+
+	/**
+	 * @return {@code null} when the record the delivery address is read from is not set - see
+	 * {@link #extractShipFromLocationIdOrNull(I_M_Delivery_Planning, DeliveryPlanningType, DeliveryPlanningAddresses)}.
+	 */
+	@Nullable
+	private static BPartnerLocationId extractShipToLocationIdOrNull(
+			@NonNull final I_M_Delivery_Planning deliveryPlanningRecord,
+			@NonNull final DeliveryPlanningType deliveryPlanningType,
+			@NonNull final DeliveryPlanningAddresses addresses)
+	{
+		if (DeliveryPlanningRepository.hasOwnShipment(deliveryPlanningType))
+		{
+			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoIdOrNull(deliveryPlanningRecord.getM_ShipmentSchedule_ID());
+			return shipmentScheduleId != null ? addresses.getShipmentScheduleLocationId(shipmentScheduleId) : null;
+		}
+
+		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(deliveryPlanningRecord.getM_Warehouse_ID());
+		return warehouseId != null ? addresses.getWarehouseLocationId(warehouseId) : null;
+	}
+
+	private static BPartnerLocationId extractShipFromLocationId(
+			@NonNull final I_M_Delivery_Planning deliveryPlanningRecord,
+			@NonNull final DeliveryPlanningType deliveryPlanningType,
+			@NonNull final DeliveryPlanningAddresses addresses)
+	{
+		final BPartnerLocationId loadingLocationId = extractShipFromLocationIdOrNull(deliveryPlanningRecord, deliveryPlanningType, addresses);
+		if (loadingLocationId == null)
+		{
+			throw new AdempiereException("Cannot determine the loading address")
+					.appendParametersToMessage()
+					.setParameter(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningRecord.getM_Delivery_Planning_ID());
+		}
+		return loadingLocationId;
+	}
+
+	private static BPartnerLocationId extractShipToLocationId(
+			@NonNull final I_M_Delivery_Planning deliveryPlanningRecord,
+			@NonNull final DeliveryPlanningType deliveryPlanningType,
+			@NonNull final DeliveryPlanningAddresses addresses)
+	{
+		final BPartnerLocationId deliveryLocationId = extractShipToLocationIdOrNull(deliveryPlanningRecord, deliveryPlanningType, addresses);
+		if (deliveryLocationId == null)
+		{
+			throw new AdempiereException("Cannot determine the delivery address")
+					.appendParametersToMessage()
+					.setParameter(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningRecord.getM_Delivery_Planning_ID());
+		}
+		return deliveryLocationId;
+	}
+
+	/**
+	 * The records the ship-from and ship-to addresses of a set of delivery plannings are read from.
+	 */
+	@Builder
+	private static final class DeliveryPlanningAddresses
+	{
+		@NonNull private final Map<ReceiptScheduleId, I_M_ReceiptSchedule> receiptSchedules;
+		@NonNull private final Map<ShipmentScheduleId, I_M_ShipmentSchedule> shipmentSchedules;
+		@NonNull private final Map<WarehouseId, I_M_Warehouse> warehouses;
+
+		BPartnerLocationId getReceiptScheduleLocationId(@NonNull final ReceiptScheduleId receiptScheduleId)
+		{
+			final I_M_ReceiptSchedule receiptSchedule = getOrThrow(receiptSchedules, receiptScheduleId, I_M_ReceiptSchedule.Table_Name);
 			return BPartnerLocationId.ofRepoId(receiptSchedule.getC_BPartner_ID(), receiptSchedule.getC_BPartner_Location_ID());
 		}
 
-		final WarehouseId warehouseId = WarehouseId.ofRepoId(deliveryPlanningRecord.getM_Warehouse_ID());
-		return getWarehouseBPartnerLocationId(warehouseId);
-	}
-
-	/**
-	 * Same as {@link #extractShipFromLocationId(I_M_Delivery_Planning)}, but returns {@code null} instead of
-	 * failing when the record the address is read from is not set. A selection-wide precondition runs on every
-	 * selection change, so it must report "this planning has no loading address" rather than throw.
-	 */
-	@Nullable
-	private BPartnerLocationId extractShipFromLocationIdOrNull(
-			@NonNull final I_M_Delivery_Planning deliveryPlanningRecord,
-			@NonNull final DeliveryPlanningType deliveryPlanningType)
-	{
-		final int sourceRecordId = deliveryPlanningType.hasReceipt()
-				? deliveryPlanningRecord.getM_ReceiptSchedule_ID()
-				: deliveryPlanningRecord.getM_Warehouse_ID();
-
-		return sourceRecordId > 0 ? extractShipFromLocationId(deliveryPlanningRecord) : null;
-	}
-
-	private BPartnerLocationId extractShipToLocationId(final I_M_Delivery_Planning deliveryPlanningRecord)
-	{
-		final DeliveryPlanningType deliveryPlanningType = DeliveryPlanningRepository.extractDeliveryPlanningType(deliveryPlanningRecord);
-
-		final boolean hasOwnShipment = DeliveryPlanningRepository.hasOwnShipment(deliveryPlanningType);
-
-		if (hasOwnShipment)
+		BPartnerLocationId getShipmentScheduleLocationId(@NonNull final ShipmentScheduleId shipmentScheduleId)
 		{
-			final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleBL.getById(ShipmentScheduleId.ofRepoId(deliveryPlanningRecord.getM_ShipmentSchedule_ID()));
-
+			final I_M_ShipmentSchedule shipmentSchedule = getOrThrow(shipmentSchedules, shipmentScheduleId, I_M_ShipmentSchedule.Table_Name);
 			return BPartnerLocationId.ofRepoId(shipmentSchedule.getC_BPartner_ID(), shipmentSchedule.getC_BPartner_Location_ID());
 		}
 
-		final WarehouseId warehouseId = WarehouseId.ofRepoId(deliveryPlanningRecord.getM_Warehouse_ID());
-		return getWarehouseBPartnerLocationId(warehouseId);
-	}
+		BPartnerLocationId getWarehouseLocationId(@NonNull final WarehouseId warehouseId)
+		{
+			final I_M_Warehouse warehouse = getOrThrow(warehouses, warehouseId, I_M_Warehouse.Table_Name);
+			return BPartnerLocationId.ofRepoId(warehouse.getC_BPartner_ID(), warehouse.getC_BPartner_Location_ID());
+		}
 
-	/**
-	 * Same as {@link #extractShipToLocationId(I_M_Delivery_Planning)}, but returns {@code null} instead of
-	 * failing when the record the address is read from is not set - see
-	 * {@link #extractShipFromLocationIdOrNull(I_M_Delivery_Planning, DeliveryPlanningType)}.
-	 */
-	@Nullable
-	private BPartnerLocationId extractShipToLocationIdOrNull(
-			@NonNull final I_M_Delivery_Planning deliveryPlanningRecord,
-			@NonNull final DeliveryPlanningType deliveryPlanningType)
-	{
-		final int sourceRecordId = DeliveryPlanningRepository.hasOwnShipment(deliveryPlanningType)
-				? deliveryPlanningRecord.getM_ShipmentSchedule_ID()
-				: deliveryPlanningRecord.getM_Warehouse_ID();
-
-		return sourceRecordId > 0 ? extractShipToLocationId(deliveryPlanningRecord) : null;
-	}
-
-	private BPartnerLocationId getWarehouseBPartnerLocationId(@NonNull final WarehouseId warehouseId)
-	{
-		final I_M_Warehouse warehouse = warehouseBL.getById(warehouseId);
-		return BPartnerLocationId.ofRepoId(warehouse.getC_BPartner_ID(), warehouse.getC_BPartner_Location_ID());
+		/**
+		 * A resolved id with no matching row is a dangling reference, not an absent address - throw rather than
+		 * read as "no address", which is reserved for a genuinely unset id.
+		 */
+		private static <ID extends RepoIdAware, T> T getOrThrow(
+				@NonNull final Map<ID, T> recordsById,
+				@NonNull final ID id,
+				@NonNull final String tableName)
+		{
+			final T record = recordsById.get(id);
+			if (record == null)
+			{
+				throw new AdempiereException("No " + tableName + " found")
+						.appendParametersToMessage()
+						.setParameter(tableName + "_ID", id.getRepoId());
+			}
+			return record;
+		}
 	}
 
 	public void generateDeliveryInstructions(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
@@ -649,15 +744,15 @@ public class DeliveryPlanningService
 		}
 	}
 
-	public Optional<DeliveryPlanningReceiptInfo> getReceiptInfoIfIncomingType(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	public Optional<DeliveryPlanningReceiptInfo> getReceiptInfoIfHasReceipt(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
-		return deliveryPlanningRepository.getReceiptInfoIfIncomingType(deliveryPlanningId);
+		return deliveryPlanningRepository.getReceiptInfoIfHasReceipt(deliveryPlanningId);
 	}
 
 	public DeliveryPlanningReceiptInfo getReceiptInfo(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
-		return deliveryPlanningRepository.getReceiptInfoIfIncomingType(deliveryPlanningId)
-				.orElseThrow(() -> new AdempiereException("Expected to be an incoming delivery planning"));
+		return deliveryPlanningRepository.getReceiptInfoIfHasReceipt(deliveryPlanningId)
+				.orElseThrow(() -> new AdempiereException("Expected the delivery planning to have a receipt"));
 	}
 
 	public void updateReceiptInfoById(

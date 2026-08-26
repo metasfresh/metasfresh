@@ -186,13 +186,13 @@ final class DeliveryPlanningGenerateProcessesHelper
 
 	public DeliveryPlanningReceiptInfo getReceiptInfo(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
-		return getReceiptInfoIfIncomingType(deliveryPlanningId)
-				.orElseThrow(() -> new AdempiereException("Expected to be an incoming delivery planning"));
+		return getReceiptInfoIfHasReceipt(deliveryPlanningId)
+				.orElseThrow(() -> new AdempiereException("Expected the delivery planning to have a receipt"));
 	}
 
-	public Optional<DeliveryPlanningReceiptInfo> getReceiptInfoIfIncomingType(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	public Optional<DeliveryPlanningReceiptInfo> getReceiptInfoIfHasReceipt(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
-		return receiptInfos.computeIfAbsent(deliveryPlanningId, deliveryPlanningService::getReceiptInfoIfIncomingType);
+		return receiptInfos.computeIfAbsent(deliveryPlanningId, deliveryPlanningService::getReceiptInfoIfHasReceipt);
 	}
 
 	public DeliveryPlanningShipmentInfo getShipmentInfo(@NonNull final DeliveryPlanningId deliveryPlanningId)
@@ -288,10 +288,10 @@ final class DeliveryPlanningGenerateProcessesHelper
 
 	public ProcessPreconditionsResolution checkEligibleToCreateReceipt(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
-		final Optional<DeliveryPlanningReceiptInfo> optionalDeliveryPlanningReceipt = getReceiptInfoIfIncomingType(deliveryPlanningId);
+		final Optional<DeliveryPlanningReceiptInfo> optionalDeliveryPlanningReceipt = getReceiptInfoIfHasReceipt(deliveryPlanningId);
 		if (!optionalDeliveryPlanningReceipt.isPresent())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("Not an incoming delivery planning");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("The delivery planning has no receipt");
 		}
 
 		return checkEligibleToCreateReceipt(optionalDeliveryPlanningReceipt.get());
