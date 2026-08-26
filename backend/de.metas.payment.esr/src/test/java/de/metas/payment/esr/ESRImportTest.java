@@ -1723,6 +1723,59 @@ public class ESRImportTest extends ESRTestBase
 			assertDuplicateGetsOwnPayment(1);
 		}
 
+		/**
+		 * A later "Process ESR" run must NOT close a line the import flagged Duplicate_Payment.
+		 * <p>
+		 * The action pass ({@code ESRImportBL.handleEsrImportLine(String, I_ESR_ImportLine)}) only checks that
+		 * ESR_Payment_Action is non-null before running a handler and setting Processed. Since the import sets
+		 * Duplicate_Payment itself, that flag would otherwise be read as "the accountant decided" and the line
+		 * would be closed -- observed in UAT, where completing the import for an unrelated line silently closed
+		 * a duplicate line. Duplicate_Payment is not offered in the action dropdown at all, so the accountant
+		 * must still pick one of the overpayment actions; the line has to stay open until then.
+		 */
+		@Test
+		void completingTheImportMustNotCloseTheFlaggedDuplicate()
+		{
+			final String grandTotal = "50";
+			final String esrLineText = "01201067789300000001060012345600654321400000050009072  030014040914041014041100001006800000000000090                          ";
+			final String completeRef = ESRTransactionLineMatcherUtil.extractReferenceNumberStr(esrLineText);
+
+			final String partnerValue = "123456";
+			final String invDocNo = "654321";
+			final String ESR_Rendered_AccountNo = "01-067789-3";
+
+			final I_ESR_ImportLine esrImportLine1 = setupESR_ImportLine(invDocNo, grandTotal, false, completeRef, ESR_Rendered_AccountNo, partnerValue, "50", false);
+			esrImportLine1.setESRLineText(esrLineText);
+			final Timestamp paymentDate = TimeUtil.getDay(2024, 1, 10);
+			esrImportLine1.setPaymentDate(paymentDate);
+			save(esrImportLine1);
+			esrImportBL.process(esrImportLine1.getESR_Import());
+
+			final I_ESR_ImportLine esrImportLine2 = createESR_ImportLineFromOtherLine(esrImportLine1);
+			esrImportLine2.setESRLineText(esrLineText);
+			esrImportLine2.setPaymentDate(paymentDate);
+			save(esrImportLine2);
+			final I_ESR_Import esrImport2 = esrImportLine2.getESR_Import();
+			esrImportBL.process(esrImport2);
+
+			refresh(esrImportLine2, true);
+			assertThat(esrImportLine2.getESR_Payment_Action(), is(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment));
+			assertThat("precondition: the import leaves the flagged duplicate open",
+					   esrImportLine2.isProcessed(), is(false));
+			final int paymentIdAfterImport = esrImportLine2.getC_Payment_ID();
+
+			// the accountant completes the import without having chosen an overpayment action
+			esrImportBL.complete(esrImport2, "completing the import");
+
+			refresh(esrImportLine2, true);
+			assertThat("a flagged duplicate must stay OPEN until an overpayment action is chosen",
+					   esrImportLine2.isProcessed(), is(false));
+			assertThat("the flag itself must survive, so the accountant still sees why the line is open",
+					   esrImportLine2.getESR_Payment_Action(), is(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment));
+			assertThat("and its own payment must not be swapped or dropped",
+					   esrImportLine2.getC_Payment_ID(), is(paymentIdAfterImport));
+		}
+
 		private void assertDuplicateGetsOwnPayment(final int daysAfterFirstPayment)
 		{
 			final String grandTotal = "50";
