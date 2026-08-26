@@ -81,6 +81,13 @@ WHERE AD_Process_ID=585655 AND AD_Language IN ('de_DE', 'de_CH')
 --    Plannings tab - which is where a planner looking at the document notices the row that should
 --    not be there - but that tab does not exist yet; it gets a second AD_Table_Process row over
 --    M_Delivery_Planning_Alloc when it is built.
+--
+--    WebUI_ViewQuickAction='N' is DELIBERATE, and the one place this differs from its two siblings:
+--    Combine (585653) and Add to (585654) both carry 'Y'. Removing a planning from an instruction is
+--    the only destructive one of the three - it deletes the allocation and its shipping package and
+--    drops a release number the forwarder may already hold - while the other two only add. So it
+--    stays off the one-click quick-action toolbar and is reached through the actions menu, where it
+--    costs the planner one deliberate extra click. Do not "make it consistent" with the other two.
 -- ---------------------------------------------------------------------------------------------
 INSERT INTO AD_Table_Process (AD_Table_Process_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
                               AD_Table_ID, AD_Process_ID, AD_Window_ID, EntityType,
