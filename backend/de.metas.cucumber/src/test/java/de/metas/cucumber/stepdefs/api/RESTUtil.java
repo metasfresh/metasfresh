@@ -40,6 +40,7 @@ import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.error.AdIssueId;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
+import de.metas.security.IRoleDAO;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -110,8 +111,9 @@ public class RESTUtil
 		// under this role's UserRolePermissions. The token alone only authorises HTTP requests (via the
 		// UserAuthTokenFilter); an in-process call would otherwise have no role permissions, so an
 		// Access.READ-guarded lookup (e.g. OrgDAO.retrieveOrgIdBy) could not see orgs outside the context org.
-		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_Role_ID, role.getId().getRepoId());
-		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_Client_ID, role.getClientId().getRepoId());
+		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_Role_ID, roleId.getRepoId());
+		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_Client_ID,
+				Services.get(IRoleDAO.class).getById(roleId).getClientId().getRepoId());
 
 		return userAuthTokenRecord.getAuthToken();
 	}
