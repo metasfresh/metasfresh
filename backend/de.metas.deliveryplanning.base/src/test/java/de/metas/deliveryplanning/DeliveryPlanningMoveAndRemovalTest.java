@@ -196,8 +196,11 @@ class DeliveryPlanningMoveAndRemovalTest
 	 * deleted an allocation and left its package behind strands a row here.
 	 * <p>
 	 * Worth more than naming a single expected id, because it also catches a leak on a path neither this test nor
-	 * its author anticipated. Holds only because none of these scenarios voids an instruction - a void deactivates
-	 * the allocation and its package rather than deleting either, and both would still be counted.
+	 * its author anticipated.
+	 * <p>
+	 * Robust across a void as well: a void deactivates the allocation and its shipping package together rather
+	 * than deleting either, and neither count filters on {@code IsActive}, so the two stay in lockstep. None of
+	 * these scenarios voids anything - but the invariant would survive one, so it needs no protecting from it.
 	 */
 	private void assertNoOrphanedShippingPackages()
 	{
