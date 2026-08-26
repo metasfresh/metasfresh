@@ -171,10 +171,20 @@ public class VATaxIDMassCheckService
 	 * The nightly sweep. Uses {@link VATaxIDMassCheckRequest#getMaxChecksPerRun()} and builds no selection.
 	 *
 	 * <p>Due-ness and ordering are the query's ({@code IBPartnerDAO}), evaluated per organisation with that
-	 * organisation's own recheck window — organisations with the check switched off are never queried at
-	 * all. The two grains run one after the other, headers then locations, each oldest-attempt-first; a
-	 * single combined ordering across both would need a merge, and raising {@code MaxChecksPerRun} is the
-	 * cheaper answer now that nothing is loaded up front.
+	 * organisation's own recheck window — organisations with the online check switched off are never queried
+	 * at all (only VIES-enabled organisations are swept — {@code getRecheckAfterDaysByViesEnabledOrgId}).
+	 * <b>Why skip them:</b> the nightly exists solely to keep the <i>time-varying</i> VIES verdict current — a
+	 * VAT registration can be withdrawn or turned invalid after it was first checked, which is the whole
+	 * reason an online check is repeated at all. An organisation with VIES off has no such time-varying result
+	 * to refresh: its only validation is the offline format check, which is deterministic and already applied
+	 * at save time (and re-applied by the manual process), so a value's format verdict never changes on its
+	 * own between nights. Sweeping a VIES-off organisation would therefore re-examine values whose verdict
+	 * cannot have moved — pure work for no possible status change — so it is excluded by construction.
+	 * By design that also means the nightly does NOT auto-detect a pre-existing / imported malformed VAT-ID on
+	 * a format-check-only organisation: there the manual {@code C_BPartner_VATaxID_Check} process is the path
+	 * that gives such a value its offline {@code Invalid} verdict. The two grains run one after the other,
+	 * headers then locations, each oldest-attempt-first; a single combined ordering across both would need a
+	 * merge, and raising {@code MaxChecksPerRun} is the cheaper answer now that nothing is loaded up front.
      */
 	@NonNull
 	private VATaxIDMassCheckResult runNightly(@NonNull final VATaxIDMassCheckRequest request)
