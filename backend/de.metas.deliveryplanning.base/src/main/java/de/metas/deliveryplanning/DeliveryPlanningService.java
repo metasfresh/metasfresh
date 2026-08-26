@@ -23,6 +23,7 @@
 package de.metas.deliveryplanning;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerId;
@@ -354,16 +355,6 @@ public class DeliveryPlanningService
 		deliveryPlanningRepository.reOpenSelectedDeliveryPlannings(selectedDeliveryPlanningsFilter);
 	}
 
-	public boolean isExistsClosedDeliveryPlannings(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
-	{
-		return deliveryPlanningRepository.isExistsClosedDeliveryPlannings(selectedDeliveryPlanningsFilter);
-	}
-
-	public boolean isExistsOpenDeliveryPlannings(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
-	{
-		return deliveryPlanningRepository.isExistsOpenDeliveryPlannings(selectedDeliveryPlanningsFilter);
-	}
-
 	public boolean isExistsNoShipperDeliveryPlannings(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
 		return deliveryPlanningRepository.isExistNoShipperDeliveryPlannings(selectedDeliveryPlanningsFilter);
@@ -414,20 +405,26 @@ public class DeliveryPlanningService
 		final ImmutableList<I_M_Delivery_Planning> deliveryPlanningRecords = recordsCollector.build();
 
 		final DeliveryPlanningAddresses addresses = loadAddresses(deliveryPlanningRecords);
+		final ImmutableMap<DeliveryPlanningId, ShipperTransportationId> allocatedInstructionIds = deliveryPlanningRepository.getAllocatedInstructionIds(
+				deliveryPlanningRecords.stream()
+						.map(record -> DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID()))
+						.collect(ImmutableSet.toImmutableSet()));
 
 		return DeliveryPlanningList.ofCollection(deliveryPlanningRecords.stream()
-				.map(record -> toDeliveryPlanning(record, addresses))
+				.map(record -> toDeliveryPlanning(record, addresses, allocatedInstructionIds))
 				.collect(ImmutableList.toImmutableList()));
 	}
 
 	private static DeliveryPlanning toDeliveryPlanning(
 			@NonNull final I_M_Delivery_Planning record,
-			@NonNull final DeliveryPlanningAddresses addresses)
+			@NonNull final DeliveryPlanningAddresses addresses,
+			@NonNull final Map<DeliveryPlanningId, ShipperTransportationId> allocatedInstructionIds)
 	{
 		final DeliveryPlanningType deliveryPlanningType = DeliveryPlanningRepository.extractDeliveryPlanningType(record);
+		final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID());
 
 		return DeliveryPlanning.builder()
-				.id(DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID()))
+				.id(deliveryPlanningId)
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.type(deliveryPlanningType)
 				.shipperId(ShipperId.ofRepoIdOrNull(record.getM_Shipper_ID()))
@@ -437,7 +434,7 @@ public class DeliveryPlanningService
 				.loadingLocationId(extractShipFromLocationIdOrNull(record, deliveryPlanningType, addresses))
 				.deliveryLocationId(extractShipToLocationIdOrNull(record, deliveryPlanningType, addresses))
 				.closed(record.isClosed())
-				.deliveryInstructionId(ShipperTransportationId.ofRepoIdOrNull(record.getM_ShipperTransportation_ID()))
+				.deliveryInstructionId(allocatedInstructionIds.get(deliveryPlanningId))
 				.build();
 	}
 
@@ -546,7 +543,6 @@ public class DeliveryPlanningService
 				.batchNo(deliveryPlanningRecord.getBatch())
 				.qtyLoaded(Quantity.of(deliveryPlanningRecord.getPlannedLoadedQuantity(), uomToUse))
 				.qtyDischarged(Quantity.of(deliveryPlanningRecord.getPlannedDischargeQuantity(), uomToUse))
-				.uom(uomToUse)
 				.orderLineId(OrderLineId.ofRepoIdOrNull(deliveryPlanningRecord.getC_OrderLine_ID()))
 				.deliveryPlanningId(deliveryPlanningId)
 				.dimension(deliveryPlanningDimension)

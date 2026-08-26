@@ -23,6 +23,7 @@
 package de.metas.deliveryplanning;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -55,6 +56,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Delivery_Planning;
+import org.compiere.model.I_M_Delivery_Planning_Alloc;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.X_M_Delivery_Planning;
 import org.compiere.util.TimeUtil;
@@ -63,6 +65,7 @@ import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -76,9 +79,21 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+/**
+ * Repository Tables: M_Delivery_Planning, M_Delivery_Planning_Alloc, M_ShipperTransportation, M_ShippingPackage, M_Package
+ * Repository Cluster: DeliveryPlanningRepository (sole owner of M_Delivery_Planning_Alloc; primary owner of
+ * M_Delivery_Planning, which DeliveryPlanningImportProcess also writes directly), ShipperTransportationDAO,
+ * PurchaseOrderToShipperTransportationRepository, MPackageRepository (the three transport and packing tables are
+ * shared with the transport-order role, which knows nothing of delivery planning)
+ */
 @Repository
 public class DeliveryPlanningRepository
 {
+	/**
+	 * The step between two consecutive allocation {@code LineNo}s, following the house convention for document lines.
+	 */
+	private static final int ALLOCATION_LINE_NO_STEP = 10;
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
@@ -392,22 +407,6 @@ public class DeliveryPlanningRepository
 		}
 	}
 
-	public boolean isExistsClosedDeliveryPlannings(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
-	{
-		return getDeliveryPlanningQueryBuilder(selectedDeliveryPlanningsFilter)
-				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, true)
-				.create()
-				.anyMatch();
-	}
-
-	public boolean isExistsOpenDeliveryPlannings(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
-	{
-		return getDeliveryPlanningQueryBuilder(selectedDeliveryPlanningsFilter)
-				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, false)
-				.create()
-				.anyMatch();
-	}
-
 	public boolean isExistNoShipperDeliveryPlannings(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
 		return getDeliveryPlanningQueryBuilder(selectedDeliveryPlanningsFilter)
@@ -470,17 +469,93 @@ public class DeliveryPlanningRepository
 
 		save(deliveryInstructionRecord);
 
-		final I_M_ShippingPackage shippingPackageRecord = newInstance(I_M_ShippingPackage.class);
+		createAllocations(deliveryInstructionRecord, ImmutableList.of(toAllocCreateRequest(request)));
 
-		shippingPackageRecord.setM_ShipperTransportation_ID(deliveryInstructionRecord.getM_ShipperTransportation_ID());
+		return deliveryInstructionRecord;
+	}
+
+	private static DeliveryPlanningAllocCreateRequest toAllocCreateRequest(@NonNull final DeliveryInstructionCreateRequest request)
+	{
+		return DeliveryPlanningAllocCreateRequest.builder()
+				.deliveryPlanningId(request.getDeliveryPlanningId())
+				.productId(request.getProductId())
+				.qtyLoaded(request.getQtyLoaded())
+				.qtyDischarged(request.getQtyDischarged())
+				.batchNo(request.getBatchNo())
+				.orderLineId(request.getOrderLineId())
+				.toBeFetched(request.isToBeFetched())
+				.build();
+	}
+
+	/**
+	 * Allocates the given delivery plannings to the given delivery instruction, each with its own
+	 * {@code M_ShippingPackage}.
+	 * <p>
+	 * The {@code LineNo}s continue in tens after the instruction's highest existing one, following the order of
+	 * {@code requests} - so a caller that wants a particular print order has to hand the requests over already
+	 * sorted; the encounter order of a query is not one.
+	 */
+	public ImmutableList<DeliveryPlanningAllocId> createAllocations(
+			@NonNull final ShipperTransportationId deliveryInstructionId,
+			@NonNull final List<DeliveryPlanningAllocCreateRequest> requests)
+	{
+		return createAllocations(load(deliveryInstructionId, I_M_ShipperTransportation.class), requests);
+	}
+
+	private ImmutableList<DeliveryPlanningAllocId> createAllocations(
+			@NonNull final I_M_ShipperTransportation deliveryInstructionRecord,
+			@NonNull final List<DeliveryPlanningAllocCreateRequest> requests)
+	{
+		final ShipperTransportationId deliveryInstructionId = ShipperTransportationId.ofRepoId(deliveryInstructionRecord.getM_ShipperTransportation_ID());
+
+		int lineNo = getMaxAllocationLineNo(deliveryInstructionId);
+
+		final ImmutableList.Builder<DeliveryPlanningAllocId> allocIds = ImmutableList.builder();
+		for (final DeliveryPlanningAllocCreateRequest request : requests)
+		{
+			lineNo += ALLOCATION_LINE_NO_STEP;
+			allocIds.add(createAllocation(deliveryInstructionRecord, request, lineNo));
+		}
+		return allocIds.build();
+	}
+
+	private DeliveryPlanningAllocId createAllocation(
+			@NonNull final I_M_ShipperTransportation deliveryInstructionRecord,
+			@NonNull final DeliveryPlanningAllocCreateRequest request,
+			final int lineNo)
+	{
+		// M_ShippingPackage_ID is mandatory on the allocation and uniquely indexed, so the package exists first
+		final I_M_ShippingPackage shippingPackageRecord = createShippingPackage(deliveryInstructionRecord, request);
+
+		final I_M_Delivery_Planning_Alloc allocRecord = newInstance(I_M_Delivery_Planning_Alloc.class);
+		allocRecord.setAD_Org_ID(deliveryInstructionRecord.getAD_Org_ID());
+		allocRecord.setM_Delivery_Planning_ID(request.getDeliveryPlanningId().getRepoId());
+		allocRecord.setM_ShipperTransportation_ID(deliveryInstructionRecord.getM_ShipperTransportation_ID());
+		allocRecord.setM_ShippingPackage_ID(shippingPackageRecord.getM_ShippingPackage_ID());
+		allocRecord.setLineNo(lineNo);
+		allocRecord.setDocStatus(extractDocStatus(deliveryInstructionRecord).getCode());
+		allocRecord.setProcessed(deliveryInstructionRecord.isProcessed());
+		saveRecord(allocRecord);
+
+		return DeliveryPlanningAllocId.ofRepoId(allocRecord.getM_Delivery_Planning_Alloc_ID());
+	}
+
+	private static I_M_ShippingPackage createShippingPackage(
+			@NonNull final I_M_ShipperTransportation deliveryInstructionRecord,
+			@NonNull final DeliveryPlanningAllocCreateRequest request)
+	{
+		final int shipperBPartnerId = deliveryInstructionRecord.getShipper_BPartner_ID();
+		final int shipperLocationId = deliveryInstructionRecord.getShipper_Location_ID();
 
 		final I_M_Package mpackage = newInstance(I_M_Package.class);
-		mpackage.setM_Shipper_ID(request.getShipperId().getRepoId());
-		mpackage.setShipDate((TimeUtil.asTimestamp(request.getDeliveryDate())));
-		mpackage.setC_BPartner_ID(request.getShipperBPartnerId().getRepoId());
-		mpackage.setC_BPartner_Location_ID(request.getShipperLocationId().getRepoId());
+		mpackage.setM_Shipper_ID(deliveryInstructionRecord.getM_Shipper_ID());
+		mpackage.setShipDate(deliveryInstructionRecord.getETA());
+		mpackage.setC_BPartner_ID(shipperBPartnerId);
+		mpackage.setC_BPartner_Location_ID(shipperLocationId);
 		save(mpackage);
 
+		final I_M_ShippingPackage shippingPackageRecord = newInstance(I_M_ShippingPackage.class);
+		shippingPackageRecord.setM_ShipperTransportation_ID(deliveryInstructionRecord.getM_ShipperTransportation_ID());
 		shippingPackageRecord.setM_Package_ID(mpackage.getM_Package_ID());
 		shippingPackageRecord.setIsToBeFetched(request.isToBeFetched());
 		shippingPackageRecord.setM_Product_ID(request.getProductId().getRepoId());
@@ -488,16 +563,151 @@ public class DeliveryPlanningRepository
 		shippingPackageRecord.setActualDischargeQuantity(request.getQtyDischarged().toBigDecimal());
 		shippingPackageRecord.setActualLoadQty(request.getQtyLoaded().toBigDecimal());
 		shippingPackageRecord.setBatch(request.getBatchNo());
-		shippingPackageRecord.setC_UOM_ID(request.getUom().getC_UOM_ID());
+		shippingPackageRecord.setC_UOM_ID(request.getQtyLoaded().getUomId().getRepoId());
 
-		shippingPackageRecord.setC_BPartner_ID(request.getShipperBPartnerId().getRepoId());
-		shippingPackageRecord.setC_BPartner_Location_ID(request.getShipperLocationId().getRepoId());
+		shippingPackageRecord.setC_BPartner_ID(shipperBPartnerId);
+		shippingPackageRecord.setC_BPartner_Location_ID(shipperLocationId);
 
 		shippingPackageRecord.setC_OrderLine_ID(OrderLineId.toRepoId(request.getOrderLineId()));
 
 		saveRecord(shippingPackageRecord);
 
-		return deliveryInstructionRecord;
+		return shippingPackageRecord;
+	}
+
+	/**
+	 * On remove from the instruction, and on the source half of a move: the allocations of the given plannings and
+	 * the shipping packages they point at are deleted, not deactivated, so nothing survives to say the cargo was
+	 * ever on that document.
+	 * <p>
+	 * Only active allocations are touched: a deactivated one records an instruction that was voided, and voiding
+	 * is not what the planner is undoing here.
+	 * <p>
+	 * Deleting record by record rather than by query is what keeps the last line of defence for "a planning
+	 * cannot be removed from a completed instruction": the allocation mirrors the instruction's {@code Processed},
+	 * and deleting a processed record throws. A bulk query delete would not check it.
+	 */
+	public void deleteAllocations(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
+	{
+		if (deliveryPlanningIds.isEmpty())
+		{
+			return;
+		}
+
+		final List<I_M_Delivery_Planning_Alloc> allocRecords = queryAllocationsByPlanningIds(deliveryPlanningIds).create().list();
+		final ImmutableMap<Integer, I_M_ShippingPackage> shippingPackages = getShippingPackagesOf(allocRecords);
+
+		for (final I_M_Delivery_Planning_Alloc allocRecord : allocRecords)
+		{
+			final I_M_ShippingPackage shippingPackageRecord = shippingPackages.get(allocRecord.getM_ShippingPackage_ID());
+
+			// the allocation references the package, so it goes first
+			InterfaceWrapperHelper.delete(allocRecord);
+			InterfaceWrapperHelper.delete(shippingPackageRecord);
+		}
+	}
+
+	/**
+	 * On void or cancel of the delivery instruction: the allocations and their shipping packages are deactivated
+	 * rather than deleted, so the record of what was once planned survives.
+	 * <p>
+	 * {@code IsActive='N'} is also what releases both partial unique indexes on the allocation, so the plannings
+	 * can be allocated again afterwards.
+	 */
+	public void deactivateAllocations(@NonNull final ShipperTransportationId deliveryInstructionId)
+	{
+		final I_M_ShipperTransportation deliveryInstructionRecord = load(deliveryInstructionId, I_M_ShipperTransportation.class);
+		final DocStatus docStatus = extractDocStatus(deliveryInstructionRecord);
+
+		final List<I_M_Delivery_Planning_Alloc> allocRecords = queryActiveAllocationsByInstructionId(deliveryInstructionId).create().list();
+		final ImmutableMap<Integer, I_M_ShippingPackage> shippingPackages = getShippingPackagesOf(allocRecords);
+
+		for (final I_M_Delivery_Planning_Alloc allocRecord : allocRecords)
+		{
+			final I_M_ShippingPackage shippingPackageRecord = shippingPackages.get(allocRecord.getM_ShippingPackage_ID());
+			shippingPackageRecord.setIsActive(false);
+			saveRecord(shippingPackageRecord);
+
+			allocRecord.setDocStatus(docStatus.getCode());
+			allocRecord.setProcessed(true);
+			allocRecord.setIsActive(false);
+			saveRecord(allocRecord);
+		}
+	}
+
+	/**
+	 * The shipping packages the given allocations point at, keyed by id, in one round trip.
+	 * <p>
+	 * Every allocation has one - {@code M_ShippingPackage_ID} is mandatory and foreign-keyed - so a lookup in the
+	 * result never misses.
+	 */
+	private ImmutableMap<Integer, I_M_ShippingPackage> getShippingPackagesOf(@NonNull final List<I_M_Delivery_Planning_Alloc> allocRecords)
+	{
+		if (allocRecords.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final ImmutableSet<Integer> shippingPackageIds = allocRecords.stream()
+				.map(I_M_Delivery_Planning_Alloc::getM_ShippingPackage_ID)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return queryBL.createQueryBuilder(I_M_ShippingPackage.class)
+				.addInArrayFilter(I_M_ShippingPackage.COLUMNNAME_M_ShippingPackage_ID, shippingPackageIds)
+				.create()
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(I_M_ShippingPackage::getM_ShippingPackage_ID, shippingPackage -> shippingPackage));
+	}
+
+	/**
+	 * The delivery instruction each of the given plannings is currently allocated to. A planning without an active
+	 * allocation is absent from the result.
+	 * <p>
+	 * One key per planning is safe because {@code M_Delivery_Planning_Alloc_Planning_UQ} permits only one active
+	 * allocation per planning.
+	 */
+	public ImmutableMap<DeliveryPlanningId, ShipperTransportationId> getAllocatedInstructionIds(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
+	{
+		if (deliveryPlanningIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		return queryAllocationsByPlanningIds(deliveryPlanningIds)
+				.create()
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						allocRecord -> DeliveryPlanningId.ofRepoId(allocRecord.getM_Delivery_Planning_ID()),
+						allocRecord -> ShipperTransportationId.ofRepoId(allocRecord.getM_ShipperTransportation_ID())));
+	}
+
+	private int getMaxAllocationLineNo(@NonNull final ShipperTransportationId deliveryInstructionId)
+	{
+		// deliberately not filtered by IsActive: a deactivated allocation's LineNo stays taken, so a later
+		// allocation on the same instruction never reuses a number that was already printed
+		return queryBL.createQueryBuilder(I_M_Delivery_Planning_Alloc.class)
+				.addEqualsFilter(I_M_Delivery_Planning_Alloc.COLUMNNAME_M_ShipperTransportation_ID, deliveryInstructionId)
+				.create()
+				.maxInt(I_M_Delivery_Planning_Alloc.COLUMNNAME_LineNo);
+	}
+
+	private IQueryBuilder<I_M_Delivery_Planning_Alloc> queryAllocationsByPlanningIds(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
+	{
+		return queryBL.createQueryBuilder(I_M_Delivery_Planning_Alloc.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_Delivery_Planning_Alloc.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningIds);
+	}
+
+	private IQueryBuilder<I_M_Delivery_Planning_Alloc> queryActiveAllocationsByInstructionId(@NonNull final ShipperTransportationId deliveryInstructionId)
+	{
+		return queryBL.createQueryBuilder(I_M_Delivery_Planning_Alloc.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Delivery_Planning_Alloc.COLUMNNAME_M_ShipperTransportation_ID, deliveryInstructionId);
+	}
+
+	private static DocStatus extractDocStatus(@NonNull final I_M_ShipperTransportation deliveryInstructionRecord)
+	{
+		return DocStatus.ofNullableCodeOrUnknown(deliveryInstructionRecord.getDocStatus());
 	}
 
 	public void updateDeliveryPlanningFromInstruction(@NonNull final DeliveryPlanningId deliveryPlanningId,
@@ -536,6 +746,8 @@ public class DeliveryPlanningRepository
 
 	public void unlinkDeliveryPlannings(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
+		deactivateAllocations(deliveryInstructionId);
+
 		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = retrieveForDeliveryInstructionId(deliveryInstructionId);
 		while (deliveryPlanningIterator.hasNext())
 		{

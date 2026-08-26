@@ -198,6 +198,32 @@ class DeliveryPlanningListTest
 		}
 
 		@Test
+		@DisplayName("a mixed selection is both anyClosed and anyOpen - the two are not each other's negation")
+		void mixedIsBothClosedAndOpen()
+		{
+			final DeliveryPlanningList list = DeliveryPlanningList.of(planning().build(), planning().closed(true).build());
+
+			assertThat(list.anyClosed()).isTrue();
+			assertThat(list.anyOpen()).isTrue();
+		}
+
+		@Test
+		@DisplayName("an all-closed selection has no open row")
+		void noneOpen()
+		{
+			final DeliveryPlanningList list = DeliveryPlanningList.of(planning().closed(true).build(), planning().closed(true).build());
+
+			assertThat(list.anyOpen()).isFalse();
+		}
+
+		@Test
+		@DisplayName("an empty selection has no open row either - so a process refusing 'nothing open' also refuses it")
+		void noneOpenWhenEmpty()
+		{
+			assertThat(DeliveryPlanningList.EMPTY.anyOpen()).isFalse();
+		}
+
+		@Test
 		@DisplayName("a row without a delivery instruction is not allocated")
 		void noneAllocated()
 		{

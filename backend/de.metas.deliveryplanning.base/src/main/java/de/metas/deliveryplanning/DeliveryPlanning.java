@@ -68,7 +68,7 @@ public class DeliveryPlanning
 
 	boolean closed;
 
-	/** The delivery instruction this planning is currently allocated to, if any. */
+	/** The delivery instruction this planning's active allocation points at, if it has one. */
 	@Nullable ShipperTransportationId deliveryInstructionId;
 
 	public boolean isAllocated() {return deliveryInstructionId != null;}

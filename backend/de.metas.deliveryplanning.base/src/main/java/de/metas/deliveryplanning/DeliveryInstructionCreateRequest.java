@@ -37,7 +37,6 @@ import lombok.Data;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -95,8 +94,6 @@ public class DeliveryInstructionCreateRequest
 	@NonNull Quantity qtyLoaded;
 
 	@NonNull Quantity qtyDischarged;
-
-	@NonNull I_C_UOM uom;
 
 	@Nullable OrderLineId orderLineId;
 

@@ -91,6 +91,12 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 
 	public boolean anyClosed() {return list.stream().anyMatch(DeliveryPlanning::isClosed);}
 
+	/**
+	 * Not the negation of {@link #anyClosed()}: a selection holding one open and one closed planning answers
+	 * {@code true} to both.
+	 */
+	public boolean anyOpen() {return list.stream().anyMatch(deliveryPlanning -> !deliveryPlanning.isClosed());}
+
 	public DeliveryPlanningList closedOnes() {return filter(DeliveryPlanning::isClosed);}
 
 	public boolean anyAllocated() {return list.stream().anyMatch(DeliveryPlanning::isAllocated);}

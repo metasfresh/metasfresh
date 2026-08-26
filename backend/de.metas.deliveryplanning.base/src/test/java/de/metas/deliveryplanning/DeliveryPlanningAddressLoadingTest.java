@@ -23,6 +23,7 @@
 package de.metas.deliveryplanning;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.dimension.DimensionService;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
@@ -30,6 +31,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.shipping.ShipperRepository;
+import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -45,6 +47,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -143,11 +146,25 @@ class DeliveryPlanningAddressLoadingTest
 
 	private DeliveryPlanningList getBySelection(@NonNull final List<I_M_Delivery_Planning> records)
 	{
+		return getBySelection(records, ImmutableMap.of());
+	}
+
+	private DeliveryPlanningList getBySelection(
+			@NonNull final List<I_M_Delivery_Planning> records,
+			@NonNull final Map<DeliveryPlanningId, ShipperTransportationId> allocatedInstructionIds)
+	{
 		@SuppressWarnings("unchecked") final IQueryFilter<I_M_Delivery_Planning> filter = Mockito.mock(IQueryFilter.class);
 		Mockito.doAnswer(invocation -> records.iterator())
 				.when(deliveryPlanningRepository).extractDeliveryPlannings(filter);
+		Mockito.doReturn(ImmutableMap.copyOf(allocatedInstructionIds))
+				.when(deliveryPlanningRepository).getAllocatedInstructionIds(Mockito.any());
 
 		return deliveryPlanningService.getBySelection(filter);
+	}
+
+	private static DeliveryPlanningId idOf(@NonNull final I_M_Delivery_Planning record)
+	{
+		return DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID());
 	}
 
 	private static final BPartnerLocationId WAREHOUSE_LOCATION =
@@ -246,5 +263,38 @@ class DeliveryPlanningAddressLoadingTest
 		Mockito.verify(warehouseDAO, Mockito.times(1)).getByIds(Mockito.any());
 		Mockito.verify(warehouseDAO, Mockito.never()).getById(Mockito.any());
 		Mockito.verify(warehouseDAO, Mockito.never()).getById(Mockito.any(), Mockito.any());
+		Mockito.verify(deliveryPlanningRepository, Mockito.times(1)).getAllocatedInstructionIds(Mockito.any());
+	}
+
+	@Test
+	@DisplayName("allocated means an active allocation names an instruction, not that M_ShipperTransportation_ID is set on the planning")
+	void allocationIsTheSourceOfIsAllocated()
+	{
+		final I_M_Delivery_Planning record = createDeliveryPlanning(
+				X_M_Delivery_Planning.M_DELIVERY_PLANNING_TYPE_Incoming,
+				createReceiptSchedule(), 0, createWarehouse());
+		record.setM_ShipperTransportation_ID(540099);
+		InterfaceWrapperHelper.save(record);
+
+		final DeliveryPlanning deliveryPlanning = getBySelection(ImmutableList.of(record)).stream().findFirst().orElseThrow(AssertionError::new);
+
+		assertThat(deliveryPlanning.getDeliveryInstructionId()).isNull();
+		assertThat(deliveryPlanning.isAllocated()).isFalse();
+	}
+
+	@Test
+	@DisplayName("the allocation's instruction is the one reported, even when the planning names none")
+	void allocationSuppliesTheInstruction()
+	{
+		final I_M_Delivery_Planning record = createDeliveryPlanning(
+				X_M_Delivery_Planning.M_DELIVERY_PLANNING_TYPE_Incoming,
+				createReceiptSchedule(), 0, createWarehouse());
+		final ShipperTransportationId allocatedTo = ShipperTransportationId.ofRepoId(540021);
+
+		final DeliveryPlanning deliveryPlanning = getBySelection(ImmutableList.of(record), ImmutableMap.of(idOf(record), allocatedTo))
+				.stream().findFirst().orElseThrow(AssertionError::new);
+
+		assertThat(deliveryPlanning.getDeliveryInstructionId()).isEqualTo(allocatedTo);
+		assertThat(deliveryPlanning.isAllocated()).isTrue();
 	}
 }
