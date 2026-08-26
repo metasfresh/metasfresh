@@ -1,0 +1,167 @@
+/*
+ * #%L
+ * de.metas.deliveryplanning.base
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.deliveryplanning;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.util.GuavaCollectors;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.ToString;
+
+import javax.annotation.Nullable;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collector;
+import java.util.stream.Stream;
+
+/**
+ * An immutable selection of delivery plannings, loaded ONCE per invocation, with every selection predicate
+ * the aggregation processes ask about answered against that in-memory list instead of its own query.
+ * <p>
+ * The predicates return WHICH rows are the odd ones out, not just how many - that is what the rejection
+ * message, the grid highlight and the {@code doIt} assertion all need.
+ */
+@EqualsAndHashCode
+@ToString
+public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
+{
+	public static final DeliveryPlanningList EMPTY = new DeliveryPlanningList(ImmutableList.of());
+
+	private final ImmutableList<DeliveryPlanning> list;
+
+	private DeliveryPlanningList(@NonNull final Collection<DeliveryPlanning> list)
+	{
+		this.list = list.stream()
+				// keep them ordered by delivery planning id, so every derived message and line numbering is reproducible
+				.sorted(Comparator.comparingInt(deliveryPlanning -> deliveryPlanning.getId().getRepoId()))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	public static DeliveryPlanningList ofCollection(@NonNull final Collection<DeliveryPlanning> list)
+	{
+		return !list.isEmpty() ? new DeliveryPlanningList(list) : EMPTY;
+	}
+
+	public static DeliveryPlanningList of(final DeliveryPlanning... arr)
+	{
+		return ofCollection(ImmutableList.copyOf(arr));
+	}
+
+	public static Collector<DeliveryPlanning, ?, DeliveryPlanningList> collect()
+	{
+		return GuavaCollectors.collectUsingListAccumulator(DeliveryPlanningList::ofCollection);
+	}
+
+	public boolean isEmpty() {return list.isEmpty();}
+
+	public int size() {return list.size();}
+
+	public Stream<DeliveryPlanning> stream() {return list.stream();}
+
+	@Override
+	public @NonNull Iterator<DeliveryPlanning> iterator() {return list.iterator();}
+
+	public boolean anyClosed() {return list.stream().anyMatch(DeliveryPlanning::isClosed);}
+
+	public DeliveryPlanningList closedOnes() {return filter(DeliveryPlanning::isClosed);}
+
+	public boolean anyAllocated() {return list.stream().anyMatch(DeliveryPlanning::isAllocated);}
+
+	public DeliveryPlanningList allocatedOnes() {return filter(DeliveryPlanning::isAllocated);}
+
+	public DeliveryPlanningList withoutShipper() {return filter(DeliveryPlanning::isWithoutShipper);}
+
+	private DeliveryPlanningList filter(@NonNull final Predicate<DeliveryPlanning> predicate)
+	{
+		return list.stream().filter(predicate).collect(collect());
+	}
+
+	/**
+	 * Every field on which this selection disagrees, so one message can name them all at once instead of
+	 * reporting one field at a time. Empty means the selection can share a single delivery instruction.
+	 * <p>
+	 * The result is ordered by {@link AdmissibilityField} declaration order, so the message reads the same way
+	 * every time.
+	 */
+	public ImmutableSet<AdmissibilityField> admissibilityMismatches()
+	{
+		return Arrays.stream(AdmissibilityField.values())
+				.filter(this::isMismatch)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private boolean isMismatch(@NonNull final AdmissibilityField field)
+	{
+		// NULL counts as a value here, on purpose: SQL's count(DISTINCT col) ignores NULLs, which would make
+		// "all rows have no forwarder" (admissible - they are all the same) indistinguishable from
+		// "some rows have a forwarder and some do not" (a mismatch - they are not).
+		final Set<Object> distinctValues = new HashSet<>();
+		for (final DeliveryPlanning deliveryPlanning : list)
+		{
+			distinctValues.add(field.extractValue(deliveryPlanning));
+			if (distinctValues.size() > 1)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Everything the delivery-instruction header can hold only one of, and which therefore has to match across
+	 * the whole selection. Derived from the header columns the generation writes, so a column the header holds
+	 * once joins the rule by construction.
+	 */
+	public enum AdmissibilityField
+	{
+		Organisation(DeliveryPlanning::getOrgId),
+		Direction(DeliveryPlanning::getType),
+		Forwarder(DeliveryPlanning::getShipperId),
+		Incoterms(DeliveryPlanning::getIncotermsId),
+		IncotermLocation(DeliveryPlanning::getIncotermLocation),
+		MeansOfTransportation(DeliveryPlanning::getMeansOfTransportationId),
+		LoadingAddress(DeliveryPlanning::getLoadingLocationId),
+		DeliveryAddress(DeliveryPlanning::getDeliveryLocationId);
+
+		private final Function<DeliveryPlanning, Object> valueExtractor;
+
+		AdmissibilityField(@NonNull final Function<DeliveryPlanning, Object> valueExtractor)
+		{
+			this.valueExtractor = valueExtractor;
+		}
+
+		@Nullable
+		Object extractValue(@NonNull final DeliveryPlanning deliveryPlanning)
+		{
+			return valueExtractor.apply(deliveryPlanning);
+		}
+	}
+}

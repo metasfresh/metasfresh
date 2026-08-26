@@ -22,6 +22,7 @@
 
 package de.metas.deliveryplanning;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.cache.CacheMgt;
@@ -392,6 +393,42 @@ public class DeliveryPlanningService
 		return deliveryPlanningRepository.isExistDeliveryPlanningsWithReleaseNo(selectedDeliveryPlanningsFilter);
 	}
 
+	/**
+	 * Loads the selected delivery plannings ONCE, so that every precondition and every rule of the aggregation
+	 * processes can be answered against the returned in-memory list instead of firing its own query.
+	 */
+	public DeliveryPlanningList getBySelection(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	{
+		final ImmutableList.Builder<DeliveryPlanning> deliveryPlannings = ImmutableList.builder();
+
+		final Iterator<I_M_Delivery_Planning> records = deliveryPlanningRepository.extractDeliveryPlannings(selectedDeliveryPlanningsFilter);
+		while (records.hasNext())
+		{
+			deliveryPlannings.add(toDeliveryPlanning(records.next()));
+		}
+
+		return DeliveryPlanningList.ofCollection(deliveryPlannings.build());
+	}
+
+	private DeliveryPlanning toDeliveryPlanning(@NonNull final I_M_Delivery_Planning record)
+	{
+		final DeliveryPlanningType deliveryPlanningType = DeliveryPlanningRepository.extractDeliveryPlanningType(record);
+
+		return DeliveryPlanning.builder()
+				.id(DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID()))
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				.type(deliveryPlanningType)
+				.shipperId(ShipperId.ofRepoIdOrNull(record.getM_Shipper_ID()))
+				.incotermsId(IncotermsId.ofRepoIdOrNull(record.getC_Incoterms_ID()))
+				.incotermLocation(record.getIncotermLocation())
+				.meansOfTransportationId(MeansOfTransportationId.ofRepoIdOrNull(record.getM_MeansOfTransportation_ID()))
+				.loadingLocationId(extractShipFromLocationIdOrNull(record, deliveryPlanningType))
+				.deliveryLocationId(extractShipToLocationIdOrNull(record, deliveryPlanningType))
+				.closed(record.isClosed())
+				.deliveryInstructionId(ShipperTransportationId.ofRepoIdOrNull(record.getM_ShipperTransportation_ID()))
+				.build();
+	}
+
 	private DeliveryInstructionCreateRequest createDeliveryInstructionRequest(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
 		final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningRepository.getById(deliveryPlanningId);
@@ -484,6 +521,23 @@ public class DeliveryPlanningService
 		return getWarehouseBPartnerLocationId(warehouseId);
 	}
 
+	/**
+	 * Same as {@link #extractShipFromLocationId(I_M_Delivery_Planning)}, but returns {@code null} instead of
+	 * failing when the record the address is read from is not set. A selection-wide precondition runs on every
+	 * selection change, so it must report "this planning has no loading address" rather than throw.
+	 */
+	@Nullable
+	private BPartnerLocationId extractShipFromLocationIdOrNull(
+			@NonNull final I_M_Delivery_Planning deliveryPlanningRecord,
+			@NonNull final DeliveryPlanningType deliveryPlanningType)
+	{
+		final int sourceRecordId = deliveryPlanningType.isIncoming()
+				? deliveryPlanningRecord.getM_ReceiptSchedule_ID()
+				: deliveryPlanningRecord.getM_Warehouse_ID();
+
+		return sourceRecordId > 0 ? extractShipFromLocationId(deliveryPlanningRecord) : null;
+	}
+
 	private BPartnerLocationId extractShipToLocationId(final I_M_Delivery_Planning deliveryPlanningRecord)
 	{
 		final DeliveryPlanningType deliveryPlanningType = DeliveryPlanningRepository.extractDeliveryPlanningType(deliveryPlanningRecord);
@@ -499,6 +553,23 @@ public class DeliveryPlanningService
 
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(deliveryPlanningRecord.getM_Warehouse_ID());
 		return getWarehouseBPartnerLocationId(warehouseId);
+	}
+
+	/**
+	 * Same as {@link #extractShipToLocationId(I_M_Delivery_Planning)}, but returns {@code null} instead of
+	 * failing when the record the address is read from is not set - see
+	 * {@link #extractShipFromLocationIdOrNull(I_M_Delivery_Planning, DeliveryPlanningType)}.
+	 */
+	@Nullable
+	private BPartnerLocationId extractShipToLocationIdOrNull(
+			@NonNull final I_M_Delivery_Planning deliveryPlanningRecord,
+			@NonNull final DeliveryPlanningType deliveryPlanningType)
+	{
+		final int sourceRecordId = deliveryPlanningType.isOutgoing()
+				? deliveryPlanningRecord.getM_ShipmentSchedule_ID()
+				: deliveryPlanningRecord.getM_Warehouse_ID();
+
+		return sourceRecordId > 0 ? extractShipToLocationId(deliveryPlanningRecord) : null;
 	}
 
 	private BPartnerLocationId getWarehouseBPartnerLocationId(@NonNull final WarehouseId warehouseId)
