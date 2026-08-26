@@ -97,7 +97,6 @@ import de.metas.rest_api.v2.attributes.JsonAttributeService;
 import de.metas.security.RoleId;
 import de.metas.shipper.gateway.commons.process.CarrierAdviseProcessService;
 import de.metas.shipping.ShipperId;
-import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
