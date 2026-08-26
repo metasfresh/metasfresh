@@ -122,8 +122,7 @@ public class GenerateOutgoingDeliveryPlanningCommand
 		{
 			final I_C_Order order = orderDAO.getById(orderId);
 
-			requestBuilder.isB2B(order.isDropShip())
-					.incotermsId(IncotermsId.ofRepoIdOrNull(order.getC_Incoterms_ID()))
+			requestBuilder.incotermsId(IncotermsId.ofRepoIdOrNull(order.getC_Incoterms_ID()))
 					.incotermLocation(order.getIncotermLocation())
 					// gh30630: default the estimated departure/loading date (ETD) from the order's
 					// PreparationDate, mirroring the shape of

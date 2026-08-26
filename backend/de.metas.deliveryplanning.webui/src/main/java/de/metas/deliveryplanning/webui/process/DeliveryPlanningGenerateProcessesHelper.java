@@ -208,7 +208,7 @@ final class DeliveryPlanningGenerateProcessesHelper
 
 	public Optional<DeliveryPlanningShipmentInfo> getB2BShipmentInfo(@NonNull final DeliveryPlanningReceiptInfo receiptInfo)
 	{
-		if (!receiptInfo.isB2B())
+		if (!receiptInfo.isDropship())
 		{
 			return Optional.empty();
 		}

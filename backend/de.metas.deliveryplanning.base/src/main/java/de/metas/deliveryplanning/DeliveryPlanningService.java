@@ -239,7 +239,6 @@ public class DeliveryPlanningService
 				.deliveryPlanningType(DeliveryPlanningRepository.extractDeliveryPlanningType(deliveryPlanningRecord))
 				.orderStatus(OrderStatus.ofNullableCode(deliveryPlanningRecord.getOrderStatus()))
 				.meansOfTransportationId(MeansOfTransportationId.ofRepoIdOrNull(deliveryPlanningRecord.getM_MeansOfTransportation_ID()))
-				.isB2B(deliveryPlanningRecord.isB2B())
 				.qtyOrdered(Quantity.of(deliveryPlanningRecord.getQtyOrdered(), uomToUse))
 				.qtyTotalOpen(Quantity.of(deliveryPlanningRecord.getQtyTotalOpen(), uomToUse))
 				.actualLoadedQty(Quantity.of(deliveryPlanningRecord.getActualLoadQty(), uomToUse))
@@ -462,7 +461,7 @@ public class DeliveryPlanningService
 		final I_C_UOM uomToUse = uomOfRecord != null ? uomOfRecord : productBL.getStockUOM(productId);
 
 		final BPartnerLocationId deliveryPlanningLocationId = BPartnerLocationId.ofRepoId(deliveryPlanningRecord.getC_BPartner_ID(), deliveryPlanningRecord.getC_BPartner_Location_ID());
-		final boolean isIncoming = deliveryPlanningType.isIncoming();
+		final boolean hasReceipt = deliveryPlanningType.hasReceipt();
 		final BPartnerLocationId shipFrom = extractShipFromLocationId(deliveryPlanningRecord);
 		final BPartnerLocationId shipTo = extractShipToLocationId(deliveryPlanningRecord);
 
@@ -492,7 +491,7 @@ public class DeliveryPlanningService
 				.shipperId(ShipperId.ofRepoId(deliveryPlanningRecord.getM_Shipper_ID()))
 
 				.productId(productId)
-				.isToBeFetched(isIncoming)
+				.isToBeFetched(hasReceipt)
 				//.locatorId() : Not yet decided where to take it from. TODO in a future CR
 				.batchNo(deliveryPlanningRecord.getBatch())
 				.qtyLoaded(Quantity.of(deliveryPlanningRecord.getPlannedLoadedQuantity(), uomToUse))
@@ -508,9 +507,9 @@ public class DeliveryPlanningService
 	{
 		final DeliveryPlanningType deliveryPlanningType = DeliveryPlanningRepository.extractDeliveryPlanningType(deliveryPlanningRecord);
 
-		final boolean isIncoming = deliveryPlanningType.isIncoming();
+		final boolean hasReceipt = deliveryPlanningType.hasReceipt();
 
-		if (isIncoming)
+		if (hasReceipt)
 		{
 			final I_M_ReceiptSchedule receiptSchedule = receiptScheduleDAO.getById(ReceiptScheduleId.ofRepoId(deliveryPlanningRecord.getM_ReceiptSchedule_ID()));
 
@@ -531,7 +530,7 @@ public class DeliveryPlanningService
 			@NonNull final I_M_Delivery_Planning deliveryPlanningRecord,
 			@NonNull final DeliveryPlanningType deliveryPlanningType)
 	{
-		final int sourceRecordId = deliveryPlanningType.isIncoming()
+		final int sourceRecordId = deliveryPlanningType.hasReceipt()
 				? deliveryPlanningRecord.getM_ReceiptSchedule_ID()
 				: deliveryPlanningRecord.getM_Warehouse_ID();
 
@@ -542,9 +541,9 @@ public class DeliveryPlanningService
 	{
 		final DeliveryPlanningType deliveryPlanningType = DeliveryPlanningRepository.extractDeliveryPlanningType(deliveryPlanningRecord);
 
-		final boolean isOutgoing = deliveryPlanningType.isOutgoing();
+		final boolean hasOwnShipment = DeliveryPlanningRepository.hasOwnShipment(deliveryPlanningType);
 
-		if (isOutgoing)
+		if (hasOwnShipment)
 		{
 			final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleBL.getById(ShipmentScheduleId.ofRepoId(deliveryPlanningRecord.getM_ShipmentSchedule_ID()));
 
@@ -565,7 +564,7 @@ public class DeliveryPlanningService
 			@NonNull final I_M_Delivery_Planning deliveryPlanningRecord,
 			@NonNull final DeliveryPlanningType deliveryPlanningType)
 	{
-		final int sourceRecordId = deliveryPlanningType.isOutgoing()
+		final int sourceRecordId = DeliveryPlanningRepository.hasOwnShipment(deliveryPlanningType)
 				? deliveryPlanningRecord.getM_ShipmentSchedule_ID()
 				: deliveryPlanningRecord.getM_Warehouse_ID();
 

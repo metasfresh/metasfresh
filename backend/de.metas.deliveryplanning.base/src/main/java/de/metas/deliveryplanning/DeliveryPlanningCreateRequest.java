@@ -69,8 +69,6 @@ public class DeliveryPlanningCreateRequest
 
 	@NonNull BPartnerLocationId bPartnerLocationId;
 
-	boolean isB2B;
-
 	@NonNull DeliveryPlanningType deliveryPlanningType;
 
 	@Nullable

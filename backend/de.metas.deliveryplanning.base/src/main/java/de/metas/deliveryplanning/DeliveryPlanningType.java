@@ -33,7 +33,8 @@ import javax.annotation.Nullable;
 public enum DeliveryPlanningType implements ReferenceListAwareEnum
 {
 	Incoming(X_M_Delivery_Planning.M_DELIVERY_PLANNING_TYPE_Incoming),
-	Outgoing(X_M_Delivery_Planning.M_DELIVERY_PLANNING_TYPE_Outgoing);
+	Outgoing(X_M_Delivery_Planning.M_DELIVERY_PLANNING_TYPE_Outgoing),
+	Dropship(X_M_Delivery_Planning.M_DELIVERY_PLANNING_TYPE_Dropship);
 
 	private static final ReferenceListAwareEnums.ValuesIndex<DeliveryPlanningType> typesByCode = ReferenceListAwareEnums.index(values());
 
@@ -68,14 +69,20 @@ public enum DeliveryPlanningType implements ReferenceListAwareEnum
 		return type != null ? type.getCode() : null;
 	}
 
-	public boolean isIncoming()
+	public boolean hasReceipt()
 	{
-		return this == Incoming;
+		return this == Incoming || this == Dropship;
 	}
 
-	public boolean isOutgoing()
+	/** Also true for {@link #Dropship}, whose shipment is generated together with the receipt but is carried by the paired sales-side planning. */
+	public boolean hasShipment()
 	{
-		return this == Outgoing;
+		return this == Outgoing || this == Dropship;
+	}
+
+	public boolean isDropship()
+	{
+		return this == Dropship;
 	}
 
 }

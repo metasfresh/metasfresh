@@ -127,29 +127,40 @@ public class DeliveryPlanningRepository
 		return DeliveryPlanningType.ofCode(record.getM_Delivery_Planning_Type());
 	}
 
-	private static void assertIncoming(final I_M_Delivery_Planning record)
+	@NonNull
+	private static DeliveryPlanningType assertHasReceipt(final I_M_Delivery_Planning record)
 	{
 		final DeliveryPlanningType deliveryPlanningType = extractDeliveryPlanningType(record);
-		if (!deliveryPlanningType.isIncoming())
+		if (!deliveryPlanningType.hasReceipt())
 		{
-			throw new AdempiereException("Expected to be an incoming delivery planning: " + record);
+			throw new AdempiereException("Expected the delivery planning to have a receipt: " + record);
+		}
+		return deliveryPlanningType;
+	}
+
+	private static void assertHasOwnShipment(final I_M_Delivery_Planning record)
+	{
+		final DeliveryPlanningType deliveryPlanningType = extractDeliveryPlanningType(record);
+		if (!hasOwnShipment(deliveryPlanningType))
+		{
+			throw new AdempiereException("Expected the delivery planning to have its own shipment: " + record);
 		}
 	}
 
-	private static void assertOutgoing(final I_M_Delivery_Planning record)
+	/**
+	 * A {@link DeliveryPlanningType#Dropship} planning does have a shipment, but it is carried by the paired
+	 * sales-side planning, so this record's own shipment schedule and movement are not set.
+	 */
+	static boolean hasOwnShipment(@NonNull final DeliveryPlanningType deliveryPlanningType)
 	{
-		final DeliveryPlanningType deliveryPlanningType = extractDeliveryPlanningType(record);
-		if (!deliveryPlanningType.isOutgoing())
-		{
-			throw new AdempiereException("Expected to be an outgoing delivery planning: " + record);
-		}
+		return deliveryPlanningType.hasShipment() && !deliveryPlanningType.isDropship();
 	}
 
 	public Optional<DeliveryPlanningReceiptInfo> getReceiptInfoIfIncomingType(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
 		final I_M_Delivery_Planning record = getById(deliveryPlanningId);
 		final DeliveryPlanningType deliveryPlanningType = extractDeliveryPlanningType(record);
-		return deliveryPlanningType.isIncoming()
+		return deliveryPlanningType.hasReceipt()
 				? Optional.of(toDeliveryPlanningReceiptInfo(record))
 				: Optional.empty();
 	}
@@ -157,12 +168,12 @@ public class DeliveryPlanningRepository
 	@NonNull
 	private static DeliveryPlanningReceiptInfo toDeliveryPlanningReceiptInfo(final I_M_Delivery_Planning record)
 	{
-		assertIncoming(record);
+		final DeliveryPlanningType deliveryPlanningType = assertHasReceipt(record);
 		return DeliveryPlanningReceiptInfo.builder()
 				.deliveryPlanningId(DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID()))
 				.purchaseOrderAndLineId(OrderAndLineId.ofRepoIdsOrNull(record.getC_Order_ID(), record.getC_OrderLine_ID()))
 				.receiptScheduleId(ReceiptScheduleId.ofRepoId(record.getM_ReceiptSchedule_ID()))
-				.isB2B(record.isB2B())
+				.dropship(deliveryPlanningType.isDropship())
 				//
 				.receiptId(InOutId.ofRepoIdOrNull(record.getM_InOut_ID()))
 				.receivedStatusColorId(ColorId.ofRepoIdOrNull(record.getDeliveryStatus_Color_ID()))
@@ -173,7 +184,7 @@ public class DeliveryPlanningRepository
 
 	private static void updateRecordFromReceiptInfo(final I_M_Delivery_Planning record, final DeliveryPlanningReceiptInfo from)
 	{
-		assertIncoming(record);
+		assertHasReceipt(record);
 		record.setM_InOut_ID(InOutId.toRepoId(from.getReceiptId()));
 		record.setDeliveryStatus_Color_ID(ColorId.toRepoId(from.getReceivedStatusColorId()));
 	}
@@ -193,14 +204,14 @@ public class DeliveryPlanningRepository
 	{
 		final I_M_Delivery_Planning record = getById(deliveryPlanningId);
 		final DeliveryPlanningType deliveryPlanningType = extractDeliveryPlanningType(record);
-		return deliveryPlanningType.isOutgoing()
+		return hasOwnShipment(deliveryPlanningType)
 				? Optional.of(toDeliveryPlanningShipmentInfo(record))
 				: Optional.empty();
 	}
 
 	private static DeliveryPlanningShipmentInfo toDeliveryPlanningShipmentInfo(final I_M_Delivery_Planning record)
 	{
-		assertOutgoing(record);
+		assertHasOwnShipment(record);
 		return DeliveryPlanningShipmentInfo.builder()
 				.deliveryPlanningId(DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID()))
 				.salesOrderAndLineId(OrderAndLineId.ofRepoIdsOrNull(record.getC_Order_ID(), record.getC_OrderLine_ID()))
@@ -215,7 +226,7 @@ public class DeliveryPlanningRepository
 
 	private static void updateRecordFromShipmentInfo(final I_M_Delivery_Planning record, final DeliveryPlanningShipmentInfo from)
 	{
-		assertOutgoing(record);
+		assertHasOwnShipment(record);
 		record.setM_InOut_ID(InOutId.toRepoId(from.getShipmentId()));
 		record.setDeliveryStatus_Color_ID(ColorId.toRepoId(from.getShippedStatusColorId()));
 	}
@@ -238,11 +249,11 @@ public class DeliveryPlanningRepository
 	{
 		final I_M_Delivery_Planning record = getById(deliveryPlanningId);
 		final DeliveryPlanningType deliveryPlanningType = extractDeliveryPlanningType(record);
-		if (deliveryPlanningType.isIncoming())
+		if (deliveryPlanningType.hasReceipt())
 		{
 			return receiptInfoMapper.apply(toDeliveryPlanningReceiptInfo(record));
 		}
-		else if (deliveryPlanningType.isOutgoing())
+		else if (deliveryPlanningType.hasShipment())
 		{
 			return shipmentInfoMapper.apply(toDeliveryPlanningShipmentInfo(record));
 		}
@@ -301,7 +312,7 @@ public class DeliveryPlanningRepository
 		deliveryPlanningRecord.setReleaseNo(request.getReleaseNo());
 		deliveryPlanningRecord.setTransportDetails(request.getTransportDetails());
 
-		deliveryPlanningRecord.setIsB2B(request.isB2B());
+		deliveryPlanningRecord.setIsB2B(request.getDeliveryPlanningType().isDropship());
 
 		deliveryPlanningRecord.setM_MeansOfTransportation_ID(MeansOfTransportationId.toRepoId(request.getMeansOfTransportationId()));
 		deliveryPlanningRecord.setOrderStatus(OrderStatus.toCodeOrNull(request.getOrderStatus()));
