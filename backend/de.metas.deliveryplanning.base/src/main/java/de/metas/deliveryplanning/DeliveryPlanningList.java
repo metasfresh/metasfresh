@@ -38,6 +38,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -112,6 +113,24 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	public ImmutableList<DeliveryPlanningId> getIdsInAllocationOrder()
 	{
 		return list.stream().map(DeliveryPlanning::getId).collect(ImmutableList.toImmutableList());
+	}
+
+	/**
+	 * The one transport direction the whole selection shares, or empty when it spans more than one (and for an
+	 * empty selection).
+	 * <p>
+	 * The same fact as the {@link AdmissibilityField#Direction} mismatch, but as a value rather than a flag:
+	 * the add-to target picker correlates its list on the direction, so it needs the value itself, and the
+	 * rejection needs to know when there is none to correlate on.
+	 */
+	public Optional<DeliveryPlanningType> getSingleType()
+	{
+		return list.stream()
+				.map(DeliveryPlanning::getType)
+				.distinct()
+				.count() == 1
+				? Optional.of(list.get(0).getType())
+				: Optional.empty();
 	}
 
 	public boolean anyClosed() {return list.stream().anyMatch(DeliveryPlanning::isClosed);}

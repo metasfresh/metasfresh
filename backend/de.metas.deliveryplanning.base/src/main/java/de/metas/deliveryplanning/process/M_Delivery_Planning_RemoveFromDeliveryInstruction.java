@@ -27,7 +27,6 @@ import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
-import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ConstantQueryFilter;
@@ -35,34 +34,20 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Delivery_Planning;
 
+import static de.metas.deliveryplanning.process.M_Delivery_Planning_CombineIntoDeliveryInstruction.MAX_SELECTION_SIZE;
+
 /**
- * Combines the selected delivery plannings into ONE delivery instruction - as opposed to
- * {@link M_Delivery_Planning_GenerateDeliveryInstruction}, which creates one instruction per planning.
+ * Takes the selected delivery plannings off the draft delivery instruction they are on, leaving the instruction and
+ * its other plannings as they were.
  * <p>
  * A thin adapter: every rule lives in {@link DeliveryPlanningService}, so a cucumber step drives the same code
  * path the WebUI drives instead of re-implementing the flow.
  * <p>
- * Deliberately does NOT navigate to the instruction it created ({@code setRecordToOpen}). The action requires two
- * or more rows, so it is always launched from a grid the planner is working through; jumping away would cost the
- * grid's filter and scroll position on every consolidation. The generated notification already links to the new
- * document for the planner who does want to go there.
+ * No parameters: which instruction a planning leaves is not a choice, it is the one it is on.
  */
-public class M_Delivery_Planning_CombineIntoDeliveryInstruction extends JavaProcess implements IProcessPrecondition
+public class M_Delivery_Planning_RemoveFromDeliveryInstruction extends JavaProcess implements IProcessPrecondition
 {
-	/**
-	 * Same cap as the order-to-transport-order precedent {@code AddOrderLinesToShipperTransportation}: the
-	 * precondition loads the selection, and no real consolidation puts hundreds of plannings on one truck.
-	 * <p>
-	 * Shared by the other two aggregation actions, which load the selection the same way - kept on one of them
-	 * and statically imported, exactly as {@code AddOrderLinesToShipperTransportation.MAX_SELECTION_SIZE} is by
-	 * its own siblings, rather than repeated per process or reached for across a module boundary.
-	 */
-	public static final int MAX_SELECTION_SIZE = 100;
-
 	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
-
-	@Param(parameterName = "IsComplete")
-	private boolean p_IsComplete;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
@@ -72,13 +57,6 @@ public class M_Delivery_Planning_CombineIntoDeliveryInstruction extends JavaProc
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		if (!context.isMoreThanOneSelected())
-		{
-			// hidden rather than shown-and-disabled: at a single row Combine and Generate produce the same
-			// result, so there is nothing for the planner to learn from seeing it
-			return ProcessPreconditionsResolution.rejectWithInternalReason("Combining needs at least two delivery plannings");
-		}
-
 		if (context.isMoreThanAllowedSelected(MAX_SELECTION_SIZE))
 		{
 			return ProcessPreconditionsResolution.rejectBecauseTooManyRecordsSelected(MAX_SELECTION_SIZE);
@@ -86,7 +64,7 @@ public class M_Delivery_Planning_CombineIntoDeliveryInstruction extends JavaProc
 
 		final DeliveryPlanningList selectedDeliveryPlannings = deliveryPlanningService.getBySelection(context.getQueryFilter(I_M_Delivery_Planning.class));
 
-		return deliveryPlanningService.getCombineRejectionReason(selectedDeliveryPlannings)
+		return deliveryPlanningService.getRemoveFromRejectionReason(selectedDeliveryPlannings)
 				.map(ProcessPreconditionsResolution::reject)
 				.orElseGet(ProcessPreconditionsResolution::accept);
 	}
@@ -96,7 +74,7 @@ public class M_Delivery_Planning_CombineIntoDeliveryInstruction extends JavaProc
 	{
 		final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter = getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false));
 
-		deliveryPlanningService.combine(selectedDeliveryPlanningsFilter, p_IsComplete);
+		deliveryPlanningService.removeFrom(selectedDeliveryPlanningsFilter);
 
 		return MSG_OK;
 	}

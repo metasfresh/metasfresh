@@ -249,6 +249,63 @@ class DeliveryPlanningAllocLifecycleTest
 	}
 
 	@Test
+	@DisplayName("a move deletes the source allocation and its package, and creates a fresh pair on the target")
+	void moveReplacesTheAllocationAndItsPackage()
+	{
+		final ShipperTransportationId source = createDeliveryInstruction(DocStatus.Drafted, false);
+		final ShipperTransportationId target = createDeliveryInstruction(DocStatus.Drafted, false);
+		final DeliveryPlanningId moving = createDeliveryPlanning();
+		final DeliveryPlanningId staying = createDeliveryPlanning();
+		deliveryPlanningRepository.createAllocations(source, ImmutableList.of(allocRequestFor(moving), allocRequestFor(staying)));
+		final int sourcePackageId = allAllocations().get(0).getM_ShippingPackage_ID();
+
+		// exactly what addTo does per planning, and in that order: the source allocation is DELETED, so the
+		// target's insert finds no active row on either partial unique index
+		deliveryPlanningRepository.deleteAllocations(ImmutableList.of(moving));
+		deliveryPlanningRepository.createAllocations(target, ImmutableList.of(allocRequestFor(moving)));
+
+		assertThat(allAllocations())
+				.as("one allocation per planning, the moved one now on the target")
+				.extracting(
+						I_M_Delivery_Planning_Alloc::getM_Delivery_Planning_ID,
+						I_M_Delivery_Planning_Alloc::getM_ShipperTransportation_ID,
+						I_M_Delivery_Planning_Alloc::isActive)
+				.containsExactlyInAnyOrder(
+						tuple(staying.getRepoId(), source.getRepoId(), true),
+						tuple(moving.getRepoId(), target.getRepoId(), true));
+
+		assertThat(queryBL.createQueryBuilder(I_M_ShippingPackage.class)
+				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_M_ShippingPackage_ID, sourcePackageId)
+				.create()
+				.anyMatch())
+				.as("nothing survives to say the cargo was ever on the source document")
+				.isFalse();
+	}
+
+	@Test
+	@DisplayName("a moved allocation continues the TARGET's LineNo, not the source's")
+	void moveContinuesTheTargetsLineNo()
+	{
+		final ShipperTransportationId source = createDeliveryInstruction(DocStatus.Drafted, false);
+		final ShipperTransportationId target = createDeliveryInstruction(DocStatus.Drafted, false);
+		// three on the source, so the moved one's source LineNo (30) is higher than the target's next (20)
+		final DeliveryPlanningId moving = createDeliveryPlanning();
+		deliveryPlanningRepository.createAllocations(source, ImmutableList.of(
+				allocRequestFor(createDeliveryPlanning()), allocRequestFor(createDeliveryPlanning()), allocRequestFor(moving)));
+		deliveryPlanningRepository.createAllocations(target, ImmutableList.of(allocRequestFor(createDeliveryPlanning())));
+
+		deliveryPlanningRepository.deleteAllocations(ImmutableList.of(moving));
+		deliveryPlanningRepository.createAllocations(target, ImmutableList.of(allocRequestFor(moving)));
+
+		assertThat(allAllocations().stream()
+				.filter(alloc -> alloc.getM_Delivery_Planning_ID() == moving.getRepoId())
+				.findFirst()
+				.orElseThrow(AssertionError::new)
+				.getLineNo())
+				.isEqualTo(20);
+	}
+
+	@Test
 	@DisplayName("getAllocatedInstructionIds reports only plannings with an ACTIVE allocation")
 	void allocatedInstructionIdsReportsOnlyActiveOnes()
 	{

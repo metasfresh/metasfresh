@@ -38,6 +38,7 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
@@ -76,6 +77,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.service.ClientId;
@@ -95,6 +97,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -127,12 +130,22 @@ public class DeliveryPlanningService
 	public static final AdMessageKey MSG_M_Delivery_Planning_ClosedPlannings = AdMessageKey.of("de.metas.deliveryplanning.CombineIntoDeliveryInstruction.ClosedPlannings");
 	public static final AdMessageKey MSG_M_Delivery_Planning_AlreadyOnDeliveryInstruction = AdMessageKey.of("de.metas.deliveryplanning.CombineIntoDeliveryInstruction.AlreadyOnDeliveryInstruction");
 
+	/**
+	 * Named "completed" rather than "not a draft" because that is the only state a planner can meet here: voiding
+	 * an instruction deactivates its allocations, so a planning still carrying an ACTIVE allocation to a non-draft
+	 * instruction is on a completed one.
+	 */
+	public static final AdMessageKey MSG_M_Delivery_Planning_OnCompletedDeliveryInstruction = AdMessageKey.of("de.metas.deliveryplanning.DeliveryInstruction.OnCompletedInstruction");
+	public static final AdMessageKey MSG_M_Delivery_Planning_TargetInstructionNotDraft = AdMessageKey.of("de.metas.deliveryplanning.AddToDeliveryInstruction.TargetNotDraft");
+	public static final AdMessageKey MSG_M_Delivery_Planning_NotOnDeliveryInstruction = AdMessageKey.of("de.metas.deliveryplanning.RemoveFromDeliveryInstruction.NotOnDeliveryInstruction");
+
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final ShipperRepository shipperRepository;
 	private final DeliveryPlanningRepository deliveryPlanningRepository;
 	private final DeliveryStatusColorPaletteService deliveryStatusColorPaletteService;
@@ -840,6 +853,186 @@ public class DeliveryPlanningService
 				.orderLineId(OrderLineId.ofRepoIdOrNull(deliveryPlanningRecord.getC_OrderLine_ID()))
 				.toBeFetched(DeliveryPlanningRepository.extractDeliveryPlanningType(deliveryPlanningRecord).hasReceipt())
 				.build();
+	}
+
+	/**
+	 * Why this selection cannot be added to a delivery instruction, or empty when it can.
+	 * <p>
+	 * Lives here rather than in the process's {@code checkPreconditionsApplicable} for the same two reasons
+	 * {@link #getCombineRejectionReason(DeliveryPlanningList)} does: a cucumber step drives the rule the WebUI
+	 * drives, and the reason on the disabled button is by construction the sentence {@link #addTo} throws.
+	 *
+	 * @param targetDeliveryInstructionId the instruction the planner picked, or {@code null} when the parameter
+	 * 		dialog has not been shown yet - the precondition can only judge the selection, so it passes {@code null}
+	 * 		and the target-side rule is evaluated when {@code addTo} runs.
+	 */
+	public Optional<ITranslatableString> getAddToRejectionReason(
+			@NonNull final DeliveryPlanningList selectedDeliveryPlannings,
+			@Nullable final ShipperTransportationId targetDeliveryInstructionId)
+	{
+		if (selectedDeliveryPlannings.anyClosed())
+		{
+			return Optional.of(TranslatableStrings.adMessage(
+					MSG_M_Delivery_Planning_ClosedPlannings,
+					toIdList(selectedDeliveryPlannings.closedOnes())));
+		}
+
+		// refused outright: not partially performed, and not silently skipping the offending rows either
+		final DeliveryPlanningList onCompletedInstruction = onNonDraftInstruction(selectedDeliveryPlannings);
+		if (!onCompletedInstruction.isEmpty())
+		{
+			return Optional.of(TranslatableStrings.adMessage(
+					MSG_M_Delivery_Planning_OnCompletedDeliveryInstruction,
+					toIdList(onCompletedInstruction)));
+		}
+
+		if (!selectedDeliveryPlannings.getSingleType().isPresent())
+		{
+			// the target picker offers the instructions of ONE direction, so a selection spanning two has no
+			// target list to be offered at all
+			return Optional.of(TranslatableStrings.adMessage(
+					MSG_M_Delivery_Planning_IncompatibleSelection,
+					TranslatableStrings.adMessage(AdmissibilityField.Direction.getLabel())));
+		}
+
+		if (targetDeliveryInstructionId != null
+				&& !deliveryPlanningRepository.getDeliveryInstructionDocStatus(targetDeliveryInstructionId).isDrafted())
+		{
+			return Optional.of(TranslatableStrings.adMessage(MSG_M_Delivery_Planning_TargetInstructionNotDraft));
+		}
+
+		return Optional.empty();
+	}
+
+	/**
+	 * Why nothing can be removed from a delivery instruction for this selection, or empty when it can.
+	 * <p>
+	 * Deliberately does NOT reject a closed planning: closing a planning says "stop processing this", which is
+	 * exactly the situation in which taking it off the truck is the right correction.
+	 */
+	public Optional<ITranslatableString> getRemoveFromRejectionReason(@NonNull final DeliveryPlanningList selectedDeliveryPlannings)
+	{
+		final DeliveryPlanningList allocated = selectedDeliveryPlannings.allocatedOnes();
+		if (allocated.isEmpty())
+		{
+			return Optional.of(TranslatableStrings.adMessage(
+					MSG_M_Delivery_Planning_NotOnDeliveryInstruction,
+					toIdList(selectedDeliveryPlannings)));
+		}
+
+		final DeliveryPlanningList onCompletedInstruction = onNonDraftInstruction(allocated);
+		if (!onCompletedInstruction.isEmpty())
+		{
+			return Optional.of(TranslatableStrings.adMessage(
+					MSG_M_Delivery_Planning_OnCompletedDeliveryInstruction,
+					toIdList(onCompletedInstruction)));
+		}
+
+		return Optional.empty();
+	}
+
+	/**
+	 * The plannings of the given selection whose delivery instruction is no longer a draft - which is what forbids
+	 * both moving them off it and removing them from it.
+	 */
+	private DeliveryPlanningList onNonDraftInstruction(@NonNull final DeliveryPlanningList selectedDeliveryPlannings)
+	{
+		final ImmutableSet<ShipperTransportationId> deliveryInstructionIds = selectedDeliveryPlannings.stream()
+				.map(DeliveryPlanning::getDeliveryInstructionId)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final ImmutableMap<ShipperTransportationId, DocStatus> docStatuses = deliveryPlanningRepository.getDeliveryInstructionDocStatuses(deliveryInstructionIds);
+
+		return selectedDeliveryPlannings.stream()
+				.filter(deliveryPlanning -> deliveryPlanning.getDeliveryInstructionId() != null)
+				// an instruction the query did not return cannot be shown to be a draft, so it counts as one that
+				// is not - the safe direction for a rule whose job is to forbid
+				.filter(deliveryPlanning -> !docStatuses.getOrDefault(deliveryPlanning.getDeliveryInstructionId(), DocStatus.Unknown).isDrafted())
+				.collect(DeliveryPlanningList.collect());
+	}
+
+	/**
+	 * Puts the selected delivery plannings on the given DRAFT delivery instruction, taking each off whatever draft
+	 * instruction it was on before.
+	 * <p>
+	 * All-or-nothing: the rejection is evaluated for the whole selection before anything is written, and
+	 * the writes then run in one transaction, so a failure part-way leaves no planning moved, no shipping package
+	 * orphaned and no {@code ReleaseNo} re-stamped. Per planning the order is delete-then-create, so the
+	 * single-active-allocation index never sees two.
+	 * <p>
+	 * A planning already on the target is left alone: there is nothing to move, and its {@code ReleaseNo} already
+	 * names that instruction.
+	 */
+	public void addTo(
+			@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter,
+			@NonNull final ShipperTransportationId targetDeliveryInstructionId)
+	{
+		final DeliveryPlanningList selectedDeliveryPlannings = getBySelection(selectedDeliveryPlanningsFilter);
+		if (selectedDeliveryPlannings.isEmpty())
+		{
+			// an invariant, not a user-facing rejection: the process's precondition already refuses an empty
+			// selection, and every rejection a planner can actually provoke is a translated message
+			throw new AdempiereException("No delivery planning selected");
+		}
+
+		getAddToRejectionReason(selectedDeliveryPlannings, targetDeliveryInstructionId)
+				.ifPresent(reason -> {throw new AdempiereException(reason);});
+
+		// in allocation order, so the LineNos the target hands out continue in a decided order rather than the
+		// query's encounter order
+		final ImmutableList<DeliveryPlanningId> deliveryPlanningIds = selectedDeliveryPlannings.stream()
+				.filter(deliveryPlanning -> !targetDeliveryInstructionId.equals(deliveryPlanning.getDeliveryInstructionId()))
+				.map(DeliveryPlanning::getId)
+				.collect(ImmutableList.toImmutableList());
+		if (deliveryPlanningIds.isEmpty())
+		{
+			return;
+		}
+
+		trxManager.runInThreadInheritedTrx(() -> {
+			final ImmutableList<DeliveryPlanningAllocCreateRequest> allocations = deliveryPlanningIds.stream()
+					.map(this::createAllocCreateRequest)
+					.collect(ImmutableList.toImmutableList());
+
+			// the source allocation and its package are DELETED, not deactivated, so the target's insert has no
+			// active row left to collide with on either partial unique index
+			deliveryPlanningRepository.deleteAllocations(deliveryPlanningIds);
+			deliveryPlanningRepository.createAllocations(targetDeliveryInstructionId, allocations);
+
+			// re-stamped from the target: the old release number named a document the cargo has left
+			deliveryPlanningRepository.updateDeliveryPlanningsFromInstruction(deliveryPlanningIds, targetDeliveryInstructionId);
+		});
+	}
+
+	/**
+	 * Takes the selected delivery plannings off the DRAFT delivery instruction they are on: allocation and
+	 * shipping package are deleted, and the planning loses its {@code ReleaseNo}, so it can be planned again.
+	 * <p>
+	 * The instruction itself and its other plannings are untouched - which is the reason removal is not
+	 * void-and-regenerate: a regenerated instruction is a new document, so it would re-stamp the release number of
+	 * every planning that did not move.
+	 * <p>
+	 * Selected plannings that are on no instruction are skipped rather than failed: they are already in the state
+	 * the planner asked for.
+	 */
+	public void removeFrom(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	{
+		final DeliveryPlanningList selectedDeliveryPlannings = getBySelection(selectedDeliveryPlanningsFilter);
+		if (selectedDeliveryPlannings.isEmpty())
+		{
+			throw new AdempiereException("No delivery planning selected");
+		}
+
+		getRemoveFromRejectionReason(selectedDeliveryPlannings)
+				.ifPresent(reason -> {throw new AdempiereException(reason);});
+
+		final ImmutableList<DeliveryPlanningId> deliveryPlanningIds = selectedDeliveryPlannings.allocatedOnes().getIdsInAllocationOrder();
+
+		trxManager.runInThreadInheritedTrx(() -> {
+			deliveryPlanningRepository.deleteAllocations(deliveryPlanningIds);
+			deliveryPlanningRepository.clearInstructionReference(deliveryPlanningIds);
+		});
 	}
 
 	public void unlinkDeliveryPlannings(@NonNull final ShipperTransportationId deliveryInstructionId)

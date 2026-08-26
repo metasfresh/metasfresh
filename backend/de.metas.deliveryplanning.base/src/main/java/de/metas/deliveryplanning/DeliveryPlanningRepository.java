@@ -681,6 +681,75 @@ public class DeliveryPlanningRepository
 						allocRecord -> ShipperTransportationId.ofRepoId(allocRecord.getM_ShipperTransportation_ID())));
 	}
 
+	/**
+	 * The {@code DocStatus} of each of the given delivery instructions, in one round trip.
+	 * <p>
+	 * The instruction's own {@code DocStatus} is the authority on whether it is still a draft - not the one
+	 * mirrored onto the allocation, which is a copy taken when the allocation was written and says nothing about
+	 * what the document did afterwards.
+	 */
+	public ImmutableMap<ShipperTransportationId, DocStatus> getDeliveryInstructionDocStatuses(@NonNull final Collection<ShipperTransportationId> deliveryInstructionIds)
+	{
+		if (deliveryInstructionIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		return queryBL.createQueryBuilder(I_M_ShipperTransportation.class)
+				.addInArrayFilter(I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID, deliveryInstructionIds)
+				.create()
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						record -> ShipperTransportationId.ofRepoId(record.getM_ShipperTransportation_ID()),
+						DeliveryPlanningRepository::extractDocStatus));
+	}
+
+	public DocStatus getDeliveryInstructionDocStatus(@NonNull final ShipperTransportationId deliveryInstructionId)
+	{
+		return extractDocStatus(load(deliveryInstructionId, I_M_ShipperTransportation.class));
+	}
+
+	/**
+	 * Stamps the given plannings' {@code ReleaseNo} and instruction reference from the given delivery instruction.
+	 * <p>
+	 * Whatever they carried before is overwritten, which is what a move off another instruction requires: the old
+	 * release number names a document the cargo is no longer on, so keeping it would leave two records disagreeing
+	 * about where the cargo is.
+	 */
+	public void updateDeliveryPlanningsFromInstruction(
+			@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds,
+			@NonNull final ShipperTransportationId deliveryInstructionId)
+	{
+		if (deliveryPlanningIds.isEmpty())
+		{
+			return;
+		}
+
+		final I_M_ShipperTransportation deliveryInstructionRecord = load(deliveryInstructionId, I_M_ShipperTransportation.class);
+		for (final DeliveryPlanningId deliveryPlanningId : deliveryPlanningIds)
+		{
+			updateDeliveryPlanningFromInstruction(deliveryPlanningId, deliveryInstructionRecord);
+		}
+	}
+
+	/**
+	 * Clears the given plannings' {@code ReleaseNo} and instruction reference: they are on no delivery instruction
+	 * any more, and are therefore planable onto one again.
+	 * <p>
+	 * The allocation is not touched here - {@link #deleteAllocations(Collection)} is what removes it, and this is
+	 * the planning-side half of the same removal.
+	 */
+	public void clearInstructionReference(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
+	{
+		for (final DeliveryPlanningId deliveryPlanningId : deliveryPlanningIds)
+		{
+			final I_M_Delivery_Planning deliveryPlanningRecord = getById(deliveryPlanningId);
+			deliveryPlanningRecord.setReleaseNo(null);
+			deliveryPlanningRecord.setM_ShipperTransportation_ID(-1);
+			saveRecord(deliveryPlanningRecord);
+		}
+	}
+
 	private int getMaxAllocationLineNo(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
 		// deliberately not filtered by IsActive: a deactivated allocation's LineNo stays taken, so a later
