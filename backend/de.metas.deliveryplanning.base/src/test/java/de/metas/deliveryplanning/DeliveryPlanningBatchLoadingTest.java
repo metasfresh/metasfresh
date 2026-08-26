@@ -23,13 +23,18 @@
 package de.metas.deliveryplanning;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.notification.INotificationBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -37,10 +42,13 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Delivery_Planning;
 import org.compiere.model.I_M_Delivery_Planning_Alloc;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_M_Delivery_Planning;
+import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -59,8 +67,9 @@ import static org.assertj.core.groups.Tuple.tuple;
  * Combine, Add to and Remove from all run synchronously on a grid selection of up to a hundred rows that the
  * planner is waiting on, and all three read the same delivery-planning records twice over - once to build the
  * allocation requests, once to stamp the {@code ReleaseNo}. Every one of those reads has to be ONE batch load, so
- * each test here asserts {@code times(n)} on the batch method AND {@code never()} on the per-row one: a test that
- * only checked the outcome would stay green with the per-row load put back, which is exactly how this defect
+ * each test here asserts {@code times(n)} on the batch method AND pins the per-row one to the fixed number of
+ * calls the action may legitimately make - none, except the single seed-header load of {@code combine}: a test
+ * that only checked the outcome would stay green with the per-row load put back, which is exactly how this defect
  * reached a second and a third call site after it had already been removed from {@code getBySelection}.
  * <p>
  * The repository is a spy over the REAL one, on the unit-test in-memory store, so the loads actually happen while
@@ -74,16 +83,33 @@ class DeliveryPlanningBatchLoadingTest
 	 */
 	private static final int PRODUCT_ID = 540010;
 
+	/** Only ever written to the instruction header and read back as a {@code ShipperId} - no {@code M_Shipper} record is loaded. */
+	private static final int SHIPPER_ID = 540001;
+	private static final int BPARTNER_ID = 540020;
+	private static final int BPARTNER_LOCATION_ID = 540021;
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private DeliveryPlanningRepository deliveryPlanningRepository;
 	private DeliveryPlanningService deliveryPlanningService;
 	private I_C_UOM uom;
 
+	// created on first use, and shared by the whole selection: the plannings have to agree on the addresses read
+	// from them, or the selection is inadmissible for a reason this test is not about
+	private I_M_Warehouse loadingWarehouse;
+	private I_M_ShipmentSchedule deliveryShipmentSchedule;
+
 	@BeforeEach
 	void setUp()
 	{
 		AdempiereTestHelper.get().init();
+
+		// combine notifies the user who CREATED the instruction. Two things follow, neither of them about round
+		// trips: the in-memory store stamps CreatedBy from the logged user exactly as PO does, so without one it
+		// stays -1 and the producer cannot name a recipient; and the real INotificationBL cannot be built here at
+		// all (its repository is a Spring bean), which it answers by logging a stack trace and carrying on.
+		Env.setLoggedUserId(Env.getCtx(), UserId.METASFRESH);
+		Services.registerService(INotificationBL.class, Mockito.mock(INotificationBL.class));
 
 		deliveryPlanningRepository = Mockito.spy(new DeliveryPlanningRepository(Mockito.mock(DimensionService.class)));
 		deliveryPlanningService = new DeliveryPlanningService(
@@ -109,6 +135,62 @@ class DeliveryPlanningBatchLoadingTest
 		record.setPlannedDischargeQuantity(BigDecimal.ONE);
 		InterfaceWrapperHelper.save(record);
 		return record;
+	}
+
+	/**
+	 * A planning a whole selection can be combined from: it names the forwarder the instruction header cannot exist
+	 * without, and the two records an {@code Outgoing} planning reads its loading and delivery address from. Every
+	 * planning of a selection shares them, so the selection agrees on every admissibility field.
+	 */
+	private I_M_Delivery_Planning combinableDeliveryPlanning()
+	{
+		final I_M_Delivery_Planning record = deliveryPlanning();
+		record.setM_Shipper_ID(SHIPPER_ID);
+		record.setC_BPartner_ID(BPARTNER_ID);
+		record.setC_BPartner_Location_ID(BPARTNER_LOCATION_ID);
+		record.setM_Warehouse_ID(loadingWarehouseId());
+		record.setM_ShipmentSchedule_ID(deliveryShipmentScheduleId());
+		InterfaceWrapperHelper.save(record);
+		return record;
+	}
+
+	private int loadingWarehouseId()
+	{
+		if (loadingWarehouse == null)
+		{
+			loadingWarehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
+			loadingWarehouse.setValue("WH");
+			loadingWarehouse.setName("WH");
+			loadingWarehouse.setC_BPartner_ID(BPARTNER_ID);
+			loadingWarehouse.setC_BPartner_Location_ID(BPARTNER_LOCATION_ID);
+			InterfaceWrapperHelper.save(loadingWarehouse);
+		}
+		return loadingWarehouse.getM_Warehouse_ID();
+	}
+
+	private int deliveryShipmentScheduleId()
+	{
+		if (deliveryShipmentSchedule == null)
+		{
+			deliveryShipmentSchedule = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule.class);
+			deliveryShipmentSchedule.setC_BPartner_ID(BPARTNER_ID);
+			deliveryShipmentSchedule.setC_BPartner_Location_ID(BPARTNER_LOCATION_ID);
+			InterfaceWrapperHelper.save(deliveryShipmentSchedule);
+		}
+		return deliveryShipmentSchedule.getM_ShipmentSchedule_ID();
+	}
+
+	/**
+	 * The document type the instruction header is created with. A real record rather than a stubbed DAO: resolving
+	 * it is one of the things {@code combine} does on the way to the loads counted here.
+	 */
+	private void createDeliveryInstructionDocType()
+	{
+		final I_C_DocType docType = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
+		docType.setName("Delivery Instruction");
+		docType.setDocBaseType(DocBaseType.ShipperTransportation.getCode());
+		docType.setDocSubType(DocSubType.DeliveryInstruction.getCode());
+		InterfaceWrapperHelper.save(docType);
 	}
 
 	private I_M_ShipperTransportation draftDeliveryInstruction(@NonNull final String documentNo)
@@ -159,7 +241,57 @@ class DeliveryPlanningBatchLoadingTest
 		Mockito.verify(deliveryPlanningRepository, Mockito.never()).getById(Mockito.any());
 	}
 
+	/**
+	 * As above, but for an action that also makes a fixed number of single-row loads - {@code combine} builds the
+	 * instruction header from ONE seed planning, and that load neither can be nor needs to be batched. Pinned to an
+	 * exact count rather than waved through: the point of these tests is that nothing the planner triggers loads
+	 * once PER ROW, and only an exact count can tell a constant apart from a per-row one.
+	 */
+	private void assertBatchLoadedExactly(final int batchLoads, final int singleRowLoads)
+	{
+		Mockito.verify(deliveryPlanningRepository, Mockito.times(batchLoads)).getByIds(Mockito.any());
+		Mockito.verify(deliveryPlanningRepository, Mockito.times(singleRowLoads)).getById(Mockito.any());
+	}
+
 	// ------------------------------------------------------------------ tests
+
+	@Test
+	@DisplayName("combine reads the selection in two batch loads - the only single-row load is the one seed header")
+	void combineBatchLoadsTheSelection()
+	{
+		createDeliveryInstructionDocType();
+		final ImmutableList<I_M_Delivery_Planning> records = ImmutableList.of(
+				combinableDeliveryPlanning(), combinableDeliveryPlanning(), combinableDeliveryPlanning());
+		final IQueryFilter<I_M_Delivery_Planning> selection = selectionOf(records);
+
+		// a draft, which is the default: a combined instruction is assembled over days
+		final ShipperTransportationId deliveryInstructionId = deliveryPlanningService.combine(selection, false);
+
+		// one batch for the allocation requests of the plannings behind the seed, one for the ReleaseNo stamping -
+		// plus the single-row load of the ONE seed planning the header is built from, which does not grow with the
+		// selection the way the per-row load this pins out would
+		assertBatchLoadedExactly(2, 1);
+
+		// the batch did not cost the outcome: all three are on the one instruction and carry their own ReleaseNo
+		final I_M_ShipperTransportation deliveryInstruction = InterfaceWrapperHelper.load(deliveryInstructionId, I_M_ShipperTransportation.class);
+		for (final I_M_Delivery_Planning record : records)
+		{
+			final I_M_Delivery_Planning stamped = reload(record);
+			assertThat(stamped.getM_ShipperTransportation_ID()).isEqualTo(deliveryInstruction.getM_ShipperTransportation_ID());
+			// read back rather than hard-coded: unlike the instructions the other tests hand over ready-made, this
+			// one is created inside combine, so its DocumentNo is handed out on save and is not known beforehand
+			assertThat(stamped.getReleaseNo()).startsWith(deliveryInstruction.getDocumentNo() + "-" + record.getM_Delivery_Planning_ID() + "-");
+		}
+
+		// nor the ORDER: the seed is allocated by generateDeliveryInstruction and the rest follow it in allocation
+		// order, so the LineNos follow the selection rather than the encounter order of the batch query
+		assertThat(allocationsInLineNoOrder())
+				.extracting(I_M_Delivery_Planning_Alloc::getM_Delivery_Planning_ID, I_M_Delivery_Planning_Alloc::getLineNo)
+				.containsExactly(
+						tuple(records.get(0).getM_Delivery_Planning_ID(), 10),
+						tuple(records.get(1).getM_Delivery_Planning_ID(), 20),
+						tuple(records.get(2).getM_Delivery_Planning_ID(), 30));
+	}
 
 	@Test
 	@DisplayName("add-to reads the selection in two batch loads - never one planning at a time")
