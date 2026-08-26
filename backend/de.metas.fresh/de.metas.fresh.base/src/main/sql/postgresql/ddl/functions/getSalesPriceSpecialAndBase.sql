@@ -87,6 +87,7 @@ WITH RECURSIVE
                    AND c.depth < 10),
     -- For each PL in the chain, take its newest active PLV valid on p_Date
     plv_per_pl AS (SELECT DISTINCT ON (c.M_PriceList_ID) c.depth,
+                                                         (c.BasePriceList_ID IS NULL) AS is_base_list,
                                                          c.M_PriceList_ID,
                                                          plv.M_PriceList_Version_ID
                    FROM pl_chain c
@@ -100,6 +101,7 @@ WITH RECURSIVE
                   WHERE c.depth = 0),
     -- All PLV rows in the chain that actually price this product
     priced AS (SELECT x.depth,
+                      x.is_base_list,
                       pp.PriceStd,
                       pp.C_UOM_ID,
                       plv.Name                       AS PLVName,
@@ -109,7 +111,12 @@ WITH RECURSIVE
                         JOIN M_PriceList_Version plv ON plv.M_PriceList_Version_ID = x.M_PriceList_Version_ID
                         JOIN M_ProductPrice pp ON pp.M_PriceList_Version_ID = x.M_PriceList_Version_ID
                WHERE pp.M_Product_ID = p_M_Product_ID
-                 AND pp.IsActive = 'Y'),
+                 AND pp.IsActive = 'Y'
+                 -- exclude invalid, attribute-set-instance (ASI) specific and packaging (HU/PI) specific
+                 -- prices, matching the canonical ProductPriceQuery / get_Product_Price resolution
+                 AND pp.IsInvalidPrice <> 'Y'
+                 AND pp.IsAttributeDependant = 'N'
+                 AND pp.M_HU_PI_Item_Product_ID IS NULL),
     -- Special: the depth-0 price, but ONLY when the assigned list is an override
     special AS (SELECT pr.PriceStd, pr.C_UOM_ID, pr.PLVName
                 FROM priced pr,
@@ -119,12 +126,12 @@ WITH RECURSIVE
                 ORDER BY pr.seqno_sort ASC,
                          pr.M_ProductPrice_ID ASC
                 LIMIT 1),
-    -- Base: the nearest base-list price. When the assigned list is an override, that is the
-    -- nearest depth>=1 row; when it is itself a base list, the depth-0 row IS the base.
+    -- Base: the price from the TRUE base list of the chain -- the price list whose
+    -- BasePriceList_ID IS NULL. It stays the standard/base price even when the customer's
+    -- assigned list is a multi-level override; a middle override level is never treated as base.
     base AS (SELECT pr.PriceStd, pr.C_UOM_ID, pr.PLVName
-             FROM priced pr,
-                  root_info ri
-             WHERE pr.depth >= (CASE WHEN ri.is_override THEN 1 ELSE 0 END)
+             FROM priced pr
+             WHERE pr.is_base_list
              ORDER BY pr.depth ASC,
                       pr.seqno_sort ASC,
                       pr.M_ProductPrice_ID ASC

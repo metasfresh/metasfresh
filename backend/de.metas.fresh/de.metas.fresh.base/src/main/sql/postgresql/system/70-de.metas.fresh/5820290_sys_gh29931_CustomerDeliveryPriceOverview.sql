@@ -19,10 +19,6 @@
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
--- Task 3 (partial): add p_DeliveryDateTo (nullable; NULL falls back to p_DeliveryDateFrom -> single day)
--- and bound the delivery window. Price columns unchanged for now (still via report.getCurrentSalesPrice).
-
 DROP FUNCTION IF EXISTS report.getCustomerDeliveryPriceOverview(
     timestamp with time zone,
     numeric
@@ -58,33 +54,48 @@ CREATE OR REPLACE FUNCTION report.getCustomerDeliveryPriceOverview(
             )
 AS
 $$
+WITH deliveries AS (
+    -- One row per (business partner, product): the delivered quantity summed over the whole
+    -- window, plus a representative location for pricing. Collapsing to (bp, product) here is
+    -- what makes each article appear ONCE per partner -- a partner whose ship-to locations
+    -- resolve to different (country-specific) price lists no longer yields one row per location.
+    -- The representative is the lowest-id delivery location; a partner's locations resolve to
+    -- different prices only when country-specific price lists apply.
+    SELECT sched.c_bpartner_id,
+           sched.m_product_id,
+           SUM(sched.qtydelivered)           AS qty,
+           MIN(sched.c_bpartner_location_id) AS rep_c_bpartner_location_id
+    FROM m_shipmentschedule sched
+    WHERE sched.processed = 'Y'
+      AND sched.deliverydate >= p_DeliveryDateFrom
+      AND sched.deliverydate < COALESCE(p_DeliveryDateTo, p_DeliveryDateFrom) + INTERVAL '1 day'
+      AND (p_C_BPartner_ID IS NULL OR sched.c_bpartner_id = p_C_BPartner_ID)
+    GROUP BY sched.c_bpartner_id, sched.m_product_id
+)
 SELECT (SELECT value FROM C_BPartner WHERE C_BPartner_id = p_C_BPartner_ID) AS Param_BPartnerValue,
-       bp.value                                                             AS BPvalue,
-       p.value                                                              AS ProductNo,
-       p.name                                                               AS Product,
-       SUM(sched.qtydelivered)                                              AS Qty,
-       uom.name                                                             AS UOM,
-       pr.BasePriceStd                                                      AS BaseListPrice,
-       base_uom.name                                                        AS BasePricePerUOM,
-       pr.BasePLV                                                           AS BasePriceListVersion,
-       pr.SpecialPriceStd                                                   AS SpecialPrice,
-       special_uom.name                                                     AS SpecialPricePerUOM,
-       pr.SpecialPLV                                                        AS SpecialPriceListVersion
-FROM m_shipmentschedule sched
-         JOIN m_product p ON p.m_product_id = sched.m_product_id
+       bp.value           AS BPvalue,
+       p.value            AS ProductNo,
+       p.name             AS Product,
+       d.qty              AS Qty,
+       uom.name           AS UOM,
+       pr.BasePriceStd    AS BaseListPrice,
+       base_uom.name      AS BasePricePerUOM,
+       pr.BasePLV         AS BasePriceListVersion,
+       pr.SpecialPriceStd AS SpecialPrice,
+       special_uom.name   AS SpecialPricePerUOM,
+       pr.SpecialPLV      AS SpecialPriceListVersion
+FROM deliveries d
+         JOIN m_product p ON p.m_product_id = d.m_product_id
          JOIN c_uom uom ON uom.c_uom_id = p.c_uom_id
-         JOIN c_bpartner bp ON bp.c_bpartner_id = sched.c_bpartner_id
-         LEFT JOIN LATERAL report.getSalesPriceSpecialAndBase(NOW(), sched.c_bpartner_location_id, sched.m_product_id) pr ON TRUE
+         JOIN c_bpartner bp ON bp.c_bpartner_id = d.c_bpartner_id
+         -- anchor prices at the last instant of the delivery period (matches the window upper bound
+         -- in the CTE) so DateTo scopes the prices too: one reproducible price per article for a
+         -- closed period, instead of the wall-clock NOW() that ignored DateTo
+         LEFT JOIN LATERAL report.getSalesPriceSpecialAndBase(
+                 COALESCE(p_DeliveryDateTo, p_DeliveryDateFrom) + INTERVAL '1 day' - INTERVAL '1 microsecond',
+                 d.rep_c_bpartner_location_id, d.m_product_id) pr ON TRUE
          LEFT JOIN c_uom base_uom ON base_uom.c_uom_id = pr.BaseC_UOM_ID
          LEFT JOIN c_uom special_uom ON special_uom.c_uom_id = pr.SpecialC_UOM_ID
-WHERE sched.processed = 'Y'
-  AND sched.deliverydate >= p_DeliveryDateFrom
-  AND sched.deliverydate < COALESCE(p_DeliveryDateTo, p_DeliveryDateFrom) + INTERVAL '1 day'
-  AND (p_C_BPartner_ID IS NULL OR bp.C_BPartner_ID = p_C_BPartner_ID)
-GROUP BY p.value, p.name, uom.name,
-         pr.BasePriceStd, base_uom.name, pr.BasePLV,
-         pr.SpecialPriceStd, special_uom.name, pr.SpecialPLV,
-         bp.value
 ORDER BY bp.value, p.value
 $$
     LANGUAGE sql
