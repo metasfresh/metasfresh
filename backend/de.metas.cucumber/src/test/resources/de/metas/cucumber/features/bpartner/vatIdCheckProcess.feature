@@ -313,7 +313,7 @@ Feature: The VAT-ID check process runs on a selection of Business Partners
       | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
       | false                | false              | 30               | ServiceUnavailable   |
     And metasfresh contains C_BPartners:
-      | Identifier | Value          | VATaxID   |
+      | Identifier | Value          | VATaxID    |
       | bp_broken  | ProcStarveBrk1 | IE6433435F |
     Given metasfresh contains VATaxID_Config:
       | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
