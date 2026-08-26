@@ -835,6 +835,73 @@ Feature: EDI DESADV export via External System
   @from:cucumber
   @allure.label.epic:E0292_EDI
   @allure.label.feature:F00350_EDI
+  @Id:S30013_80
+  Scenario: S30013_80 — POReference filled in after the order was completed -> the retro-created DESADV carries the delivered quantities
+  ## The second failure the customer reported.  The clerk completed the order before the customer's
+  ## purchase-order reference was known, so C_Order's before-complete interceptor skipped DESADV
+  ## creation (it returns early on a blank POReference) and no EDI_Desadv / EDI_DesadvLine existed.
+  ## The reference is then filled in on the already-completed order, and the DESADV is created later,
+  ## at shipment completion, by DesadvBL.addToDesadvCreateForInOutIfNotExist via its C_Order fallback.
+  ## That fallback creates the EDI_DesadvLines only at that moment, so the delivered quantities have to
+  ## be derived AFTER they exist — otherwise the recipient receives a DESADV announcing zero delivered.
+    And RabbitMQ MF_TO_ExternalSystem queue is purged
+
+    # POReference is deliberately absent here: that is what keeps the order out of the DESADV at
+    # completion time and sets up the whole scenario.
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised |
+      | o_80       | true    | customer1     | 2025-04-17  | 2025-04-18Z  |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID | QtyEntered |
+      | ol_80_1    | o_80                  | product      | 3          |
+
+    And the order identified by o_80 is completed
+
+    # The premise: with a blank POReference the completion created neither a DESADV header nor any
+    # DESADV line, so nothing is wired up yet.
+    Then C_Order and its C_OrderLines are not linked to any EDI_Desadv:
+      | C_Order_ID |
+      | o_80       |
+
+    # The real-world action: the clerk fills the customer's purchase-order reference in on the
+    # already-completed order.
+    # @Date@ suffix keeps the POReference unique across local repeat runs (see S30013_10).
+    When update order
+      | C_Order_ID | POReference         |
+      | o_80       | PO_S30013_80_@Date@ |
+
+    # Updating the order re-invalidates its M_ShipmentSchedule, so wait for the recompute to land
+    # before generating from it.
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | s_s_80     | ol_80_1                   | N             |
+
+    # Deliver all 3 ordered, so the DESADV is fully delivered.
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | s_s_80                           | D            | true                | false       |
+
+    # DocStatus=CO: the DESADV is created in the shipment's before-complete interceptor, so the wait
+    # has to land on the COMPLETED shipment before anything reads the DESADV.
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | DocStatus |
+      | s_s_80                           | s_80                  | CO        |
+
+    # ─── CORE ASSERTION ────────────────────────────────────────────
+    # The DESADV was created from the order at shipment completion and must already carry the shipped
+    # quantities — header sums included — not the zeros a freshly created, un-walked line would have.
+    And EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier | OPT.SumDeliveredInStockingUOM | OPT.FulfillmentPercent |
+      | d_80                     | customer1                | o_80                  | 3                             | 100                    |
+
+    And EDI_DesadvLine records are found:
+      | EDI_DesadvLine_ID | EDI_Desadv_ID | M_Product_ID | OPT.QtyEntered | OPT.QtyDeliveredInUOM | OPT.QtyDeliveredInStockingUOM |
+      | d_l_80            | d_80          | product        | 3              | 3                     | 3                             |
+
+
+  @from:cucumber
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00350_EDI
   @Id:S30013_100
   Scenario: S30013_100 — location-level 'E' routing outranks the partner's 'R' default -> the under-delivery still auto-closes
   ## The routing shape a production instance actually runs.  Every other scenario in this file inherits

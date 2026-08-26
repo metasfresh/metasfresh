@@ -41,6 +41,8 @@ import de.metas.edi.process.export.enqueue.DesadvEnqueuer;
 import de.metas.edi.process.export.enqueue.EnqueueDesadvRequest;
 import de.metas.edi.process.export.enqueue.EnqueueDesadvResult;
 import de.metas.esb.edi.model.I_EDI_Desadv;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -84,6 +86,7 @@ public class EDI_Desadv_StepDef
 	private static final String QTY_TU_TAGNAME = "QtyTU";
 
 	private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final DesadvEnqueuer desadvEnqueuer = SpringContextHolder.instance.getBean(DesadvEnqueuer.class);
@@ -144,6 +147,7 @@ public class EDI_Desadv_StepDef
 	 *   <b>EDI_Desadv_ID.Identifier</b> — (required) identifier under which the found record is stored for later steps<br>
 	 *   <b>OPT.Processed</b> — (optional) expected {@code EDI_Desadv.isProcessed()}<br>
 	 *   <b>OPT.FulfillmentPercent</b> — (optional) expected {@code EDI_Desadv.getFulfillmentPercent()}, compared with {@code isEqualByComparingTo}<br>
+	 *   <b>OPT.SumDeliveredInStockingUOM</b> — (optional) expected {@code EDI_Desadv.getSumDeliveredInStockingUOM()}, compared with {@code isEqualByComparingTo}<br>
 	 *   <b>OPT.EDIErrorMsg</b> — (optional) expected {@code EDI_Desadv.getEDIErrorMsg()}; the {@code null} token asserts the column IS null<br>
 	 * @cucumber.example
 	 * <pre>
@@ -159,6 +163,54 @@ public class EDI_Desadv_StepDef
 		for (final Map<String, String> row : dataTable)
 		{
 			findDesadv(row);
+		}
+	}
+
+	/**
+	 * Asserts that neither the given {@code C_Order} nor any of its {@code C_OrderLine}s is wired to a
+	 * DESADV, i.e. {@code C_Order.EDI_Desadv_ID} and every {@code C_OrderLine.EDI_DesadvLine_ID} are unset.
+	 * <p>
+	 * This is the premise of the "POReference filled in after the order was completed" flow: the
+	 * before-complete interceptor on {@code C_Order} skips DESADV creation while {@code POReference} is
+	 * blank, so a DESADV created later — at shipment completion — has to derive the delivered
+	 * quantities on its own. Asserting the absence up front is what makes that later assertion mean
+	 * something.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_Order_ID</b> — (required, identifier-ref) the order that must not be linked to a DESADV<br>
+	 * @cucumber.depends StepDefData: C_Order_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then C_Order and its C_OrderLines are not linked to any EDI_Desadv:
+	 *   | C_Order_ID |
+	 *   | o_1        |
+	 * </pre>
+	 */
+	@Then("C_Order and its C_OrderLines are not linked to any EDI_Desadv:")
+	public void assert_order_not_linked_to_desadv(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::assertOrderNotLinkedToDesadv);
+	}
+
+	private void assertOrderNotLinkedToDesadv(@NonNull final DataTableRow row)
+	{
+		final I_C_Order order = row.getAsIdentifier(I_C_Order.COLUMNNAME_C_Order_ID).lookupNotNullIn(orderTable);
+		InterfaceWrapperHelper.refresh(order);
+
+		final de.metas.edi.model.I_C_Order ediOrder = InterfaceWrapperHelper.create(order, de.metas.edi.model.I_C_Order.class);
+		assertThat(ediOrder.getEDI_Desadv_ID()).as(de.metas.edi.model.I_C_Order.COLUMNNAME_EDI_Desadv_ID).isZero();
+
+		final List<de.metas.edi.model.I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(
+				OrderId.ofRepoId(order.getC_Order_ID()),
+				de.metas.edi.model.I_C_OrderLine.class);
+
+		assertThat(orderLines).as("C_OrderLines of the order").isNotEmpty();
+		for (final de.metas.edi.model.I_C_OrderLine orderLine : orderLines)
+		{
+			assertThat(orderLine.getEDI_DesadvLine_ID())
+					.as("%s of C_OrderLine with Line=%s", de.metas.edi.model.I_C_OrderLine.COLUMNNAME_EDI_DesadvLine_ID, orderLine.getLine())
+					.isZero();
 		}
 	}
 
@@ -224,6 +276,7 @@ public class EDI_Desadv_StepDef
 	 *   <b>OPT.EDIErrorMsg</b> — (optional) expected {@code EDI_Desadv.getEDIErrorMsg()}; the {@code null} token asserts the column IS null<br>
 	 *   <b>OPT.Processed</b> — (optional) expected {@code EDI_Desadv.isProcessed()}, asserted once the export status matches<br>
 	 *   <b>OPT.FulfillmentPercent</b> — (optional) expected {@code EDI_Desadv.getFulfillmentPercent()}, compared with {@code isEqualByComparingTo}<br>
+	 *   <b>OPT.SumDeliveredInStockingUOM</b> — (optional) expected {@code EDI_Desadv.getSumDeliveredInStockingUOM()}, compared with {@code isEqualByComparingTo}<br>
 	 * @cucumber.depends StepDefData: EDI_Desadv_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -418,7 +471,8 @@ public class EDI_Desadv_StepDef
 	}
 
 	/**
-	 * Asserts the optional {@code OPT.Processed} / {@code OPT.FulfillmentPercent} / {@code OPT.EDIErrorMsg}
+	 * Asserts the optional {@code OPT.Processed} / {@code OPT.FulfillmentPercent} /
+	 * {@code OPT.SumDeliveredInStockingUOM} / {@code OPT.EDIErrorMsg}
 	 * DataTable columns against the given {@code EDI_Desadv} record, shared by {@code EDI_Desadv is found:}
 	 * and {@code after not more than {}s, EDI_Desadv records have the following export status}.
 	 * A column that is absent from {@code tableRow} is skipped entirely, so callers that never
@@ -440,6 +494,11 @@ public class EDI_Desadv_StepDef
 		tableRow.getAsOptionalBigDecimal(I_EDI_Desadv.COLUMNNAME_FulfillmentPercent)
 				.ifPresent(expected -> assertThat(desadvRecord.getFulfillmentPercent())
 						.as(I_EDI_Desadv.COLUMNNAME_FulfillmentPercent)
+						.isEqualByComparingTo(expected));
+
+		tableRow.getAsOptionalBigDecimal(I_EDI_Desadv.COLUMNNAME_SumDeliveredInStockingUOM)
+				.ifPresent(expected -> assertThat(desadvRecord.getSumDeliveredInStockingUOM())
+						.as(I_EDI_Desadv.COLUMNNAME_SumDeliveredInStockingUOM)
 						.isEqualByComparingTo(expected));
 
 		// getAsOptionalString is empty only when the COLUMN is missing, so a cell that is present and
