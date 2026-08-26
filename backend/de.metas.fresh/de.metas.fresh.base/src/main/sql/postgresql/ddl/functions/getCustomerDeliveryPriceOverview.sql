@@ -68,7 +68,9 @@ WITH deliveries AS (
     FROM m_shipmentschedule sched
     WHERE sched.processed = 'Y'
       AND sched.deliverydate >= p_DeliveryDateFrom
-      AND sched.deliverydate < COALESCE(p_DeliveryDateTo, p_DeliveryDateFrom) + INTERVAL '1 day'
+      -- DateTo bounds the window inclusively when given; when omitted the window runs until
+      -- today (NOW()), preserving the old single-parameter "from date until today" behaviour
+      AND sched.deliverydate < COALESCE(p_DeliveryDateTo, NOW()) + INTERVAL '1 day'
       AND (p_C_BPartner_ID IS NULL OR sched.c_bpartner_id = p_C_BPartner_ID)
     GROUP BY sched.c_bpartner_id, sched.m_product_id
 )
@@ -88,11 +90,11 @@ FROM deliveries d
          JOIN m_product p ON p.m_product_id = d.m_product_id
          JOIN c_uom uom ON uom.c_uom_id = p.c_uom_id
          JOIN c_bpartner bp ON bp.c_bpartner_id = d.c_bpartner_id
-         -- anchor prices at the last instant of the delivery period (matches the window upper bound
-         -- in the CTE) so DateTo scopes the prices too: one reproducible price per article for a
-         -- closed period, instead of the wall-clock NOW() that ignored DateTo
+         -- anchor prices at the period end: when DateTo is given, the last instant of that day
+         -- (matches the window upper bound in the CTE) -> a reproducible price for a closed period;
+         -- when DateTo is omitted, NOW() -> "until today" prices, as the old single-date report did
          LEFT JOIN LATERAL report.getSalesPriceSpecialAndBase(
-                 COALESCE(p_DeliveryDateTo, p_DeliveryDateFrom) + INTERVAL '1 day' - INTERVAL '1 microsecond',
+                 COALESCE(p_DeliveryDateTo + INTERVAL '1 day' - INTERVAL '1 microsecond', NOW()),
                  d.rep_c_bpartner_location_id, d.m_product_id) pr ON TRUE
          LEFT JOIN c_uom base_uom ON base_uom.c_uom_id = pr.BaseC_UOM_ID
          LEFT JOIN c_uom special_uom ON special_uom.c_uom_id = pr.SpecialC_UOM_ID
@@ -103,5 +105,5 @@ $$
 ;
 
 COMMENT ON FUNCTION report.getCustomerDeliveryPriceOverview(timestamp with time zone, timestamp with time zone, numeric)
-    IS 'Returns processed deliveries per product for a given business partner (or all if NULL) within the delivery-date range [p_DeliveryDateFrom, p_DeliveryDateTo] inclusive (p_DeliveryDateTo NULL falls back to p_DeliveryDateFrom, single day). Each row carries both the base/standard list price and the customer-specific special price (empty when none), resolved via report.getSalesPriceSpecialAndBase.'
+    IS 'Returns processed deliveries per (business partner, product) starting at p_DeliveryDateFrom. p_DeliveryDateTo bounds the end inclusively when given (prices anchored at that day''s end -> reproducible); when NULL the range runs until today and prices are taken as of now, matching the former single-parameter behaviour. One row per (partner, product): Qty is the summed delivered quantity, and each row carries both the base/standard list price and the customer-specific special price (empty when none), resolved via report.getSalesPriceSpecialAndBase.'
 ;
