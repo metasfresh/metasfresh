@@ -171,10 +171,13 @@ public class VATaxIDMassCheckService
 	 * The nightly sweep. Uses {@link VATaxIDMassCheckRequest#getMaxChecksPerRun()} and builds no selection.
 	 *
 	 * <p>Due-ness and ordering are the query's ({@code IBPartnerDAO}), evaluated per organisation with that
-	 * organisation's own recheck window — organisations with the check switched off are never queried at
-	 * all. The two grains run one after the other, headers then locations, each oldest-attempt-first; a
-	 * single combined ordering across both would need a merge, and raising {@code MaxChecksPerRun} is the
-	 * cheaper answer now that nothing is loaded up front.
+	 * organisation's own recheck window — organisations with the online check switched off are never queried
+	 * at all (only VIES-enabled organisations are swept — {@code getRecheckAfterDaysByViesEnabledOrgId}). By
+	 * design that means the nightly does NOT auto-detect a pre-existing / imported malformed VAT-ID on a
+	 * format-check-only organisation: there the manual {@code C_BPartner_VATaxID_Check} process is the path
+	 * that gives such a value its offline {@code Invalid} verdict. The two grains run one after the other,
+	 * headers then locations, each oldest-attempt-first; a single combined ordering across both would need a
+	 * merge, and raising {@code MaxChecksPerRun} is the cheaper answer now that nothing is loaded up front.
      */
 	@NonNull
 	private VATaxIDMassCheckResult runNightly(@NonNull final VATaxIDMassCheckRequest request)

@@ -387,8 +387,8 @@ class VATaxIDCheckServiceTest
 	 * structure) must not leave the record forever {@code NotChecked}. The offline format check is
 	 * authoritative when enabled, so the check records {@link VATaxIDStatus#Invalid} straight away and never
 	 * calls VIES — the same predicate the save-time interceptor uses to block such a value, applied to one
-	 * that was imported or predates the format check. Regression for the danthermuat finding where an
-	 * imported malformed VAT-ID stayed "Ungeprüft".
+	 * that was imported or predates the format check. Regression: such a value must not stay
+	 * {@code NotChecked} ("Ungeprüft") forever.
 	 */
 	@Test
 	void aMalformedVATaxID_isRecordedInvalidOffline_withoutCallingVIES()
@@ -423,6 +423,39 @@ class VATaxIDCheckServiceTest
 					assertThat(log.getRequestIdentifier()).isNull();
 					assertThat(log.getRawResponse()).contains("offline format check");
 				});
+	}
+
+	/**
+	 * The offline format check is independent of the online check: a malformed VAT-ID is recorded
+	 * {@link VATaxIDStatus#Invalid} even when VIES is switched OFF for the organisation. Contrast
+	 * {@link #aCheckWithTheOnlineCheckDisabled_writesNothingAndDoesNotRefreshTheOrderTax()}, where a
+	 * WELL-FORMED value with VIES off writes nothing — the difference is exactly that the offline check has a
+	 * verdict of its own to record, so a value that can never be checked online is not left {@code NotChecked}
+	 * forever on a VIES-disabled organisation.
+	 */
+	@Test
+	void aMalformedVATaxID_isRecordedInvalidOffline_evenWithVIESDisabled()
+	{
+		when(configRepository.getByOrgId(any(OrgId.class))).thenReturn(VATaxIDConfig.builder()
+				.id(VATaxIDConfigId.ofRepoId(1_000_000))
+				.formatCheckEnabled(true)
+				.viesCheckEnabled(false)
+				.restApiBaseURL("https://ec.europa.eu/taxation_customs/vies/rest-api")
+				.recheckAfterDays(0)
+				.onServiceUnavailable(VATaxIDOnServiceUnavailableAction.ServiceUnavailable)
+				.build());
+		final VATIdentifier malformed = VATIdentifier.of("BE4258156477"); // BE prefix, fails BE[01]\d{9}
+		final BPartnerId bpartnerId = givenBPartnerWithVATaxID(malformed);
+
+		final VATaxIDStatus returnedStatus = checkService.check(VATaxIDCheckRequest.builder()
+				.bpartnerId(bpartnerId)
+				.vataxID(malformed)
+				.build());
+
+		assertThat(returnedStatus).as("returned status").isEqualTo(VATaxIDStatus.Invalid);
+		assertThat(reload(bpartnerId).getVATaxIDStatus()).as("VATaxIDStatus").isEqualTo(VATaxIDStatus.Invalid.getCode());
+		verify(onlineChecker, never()).check(any(VATIdentifier.class), any(VATaxIDConfig.class));
+		assertThat(allCheckLogs()).as("VATaxID_CheckLog rows").hasSize(1);
 	}
 
 	@Test

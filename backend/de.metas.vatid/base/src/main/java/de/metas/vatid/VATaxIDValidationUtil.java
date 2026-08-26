@@ -48,10 +48,11 @@ public final class VATaxIDValidationUtil
 	 */
 	public static void validate(@Nullable final VATIdentifier vatId)
 	{
-		if (!isFormatValid(vatId))
+		final String vatIdString = VATIdentifier.toString(vatId);
+		if (!EUVatIdValidator.isValid(vatIdString))
 		{
 			// AdempiereException(AdMessageKey, …) is already flagged userValidationError=true — no .markAsUserValidationError() needed.
-			throw new AdempiereException(MSG_VATaxID_Invalid_Format, VATIdentifier.toString(vatId));
+			throw new AdempiereException(MSG_VATaxID_Invalid_Format, vatIdString);
 		}
 	}
 

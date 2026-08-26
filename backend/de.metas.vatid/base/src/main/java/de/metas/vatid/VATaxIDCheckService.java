@@ -103,8 +103,8 @@ public class VATaxIDCheckService
 		{
 			// A malformed value is definitively not a valid VAT-ID, and the offline format check can say so
 			// without VIES — so it is recorded as Invalid rather than sent to the service, and never left
-			// forever NotChecked. Runs regardless of IsVIESCheckEnabled (AC13: format and VIES checks are
-			// independent), and on the SAME predicate the save-time interceptor uses to BLOCK such a value —
+			// forever NotChecked. Runs regardless of IsVIESCheckEnabled (the format and VIES checks toggle
+			// independently), and on the SAME predicate the save-time interceptor uses to BLOCK such a value —
 			// so the save gate and the process agree on what "malformed" means. The save-time path still
 			// throws to reject at entry; this path exists for a value that was imported or predates the
 			// format check, which the process must be able to verdict rather than silently skip.
