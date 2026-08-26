@@ -24,6 +24,7 @@ package de.metas.deliveryplanning;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.i18n.AdMessageKey;
 import de.metas.util.GuavaCollectors;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -31,6 +32,7 @@ import lombok.ToString;
 
 import javax.annotation.Nullable;
 
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -53,6 +55,17 @@ import java.util.stream.Stream;
 @ToString
 public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 {
+	/**
+	 * Earliest planned departure first, the delivery planning id as the tie-break.
+	 * <p>
+	 * A planning without an ETD sorts last: it has no place in a departure order, and parking it behind the
+	 * dated ones keeps the result reproducible rather than dependent on the query's encounter order - which is
+	 * the whole point of sorting here.
+	 */
+	private static final Comparator<DeliveryPlanning> ALLOCATION_ORDER = Comparator
+			.comparing(DeliveryPlanning::getEtd, Comparator.nullsLast(Comparator.<Instant>naturalOrder()))
+			.thenComparingInt(deliveryPlanning -> deliveryPlanning.getId().getRepoId());
+
 	public static final DeliveryPlanningList EMPTY = new DeliveryPlanningList(ImmutableList.of());
 
 	private final ImmutableList<DeliveryPlanning> list;
@@ -60,8 +73,8 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	private DeliveryPlanningList(@NonNull final Collection<DeliveryPlanning> list)
 	{
 		this.list = list.stream()
-				// keep them ordered by delivery planning id, so every derived message and line numbering is reproducible
-				.sorted(Comparator.comparingInt(deliveryPlanning -> deliveryPlanning.getId().getRepoId()))
+				// so every derived message, allocation LineNo and printed line is reproducible
+				.sorted(ALLOCATION_ORDER)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -88,6 +101,18 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 
 	@Override
 	public @NonNull Iterator<DeliveryPlanning> iterator() {return list.iterator();}
+
+	/**
+	 * The ids in the order the plannings of one delivery instruction have to be allocated - and therefore
+	 * numbered - in: earliest ETD, then planning id. The same selection always yields the same {@code LineNo}
+	 * per planning, which the encounter order of a query would not.
+	 *
+	 * @see DeliveryPlanningRepository#createAllocations(de.metas.shipping.model.ShipperTransportationId, java.util.List)
+	 */
+	public ImmutableList<DeliveryPlanningId> getIdsInAllocationOrder()
+	{
+		return list.stream().map(DeliveryPlanning::getId).collect(ImmutableList.toImmutableList());
+	}
 
 	public boolean anyClosed() {return list.stream().anyMatch(DeliveryPlanning::isClosed);}
 
@@ -148,20 +173,39 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	 */
 	public enum AdmissibilityField
 	{
-		Organisation(DeliveryPlanning::getOrgId),
-		Direction(DeliveryPlanning::getType),
-		Forwarder(DeliveryPlanning::getShipperId),
-		Incoterms(DeliveryPlanning::getIncotermsId),
-		IncotermLocation(DeliveryPlanning::getIncotermLocation),
-		MeansOfTransportation(DeliveryPlanning::getMeansOfTransportationId),
-		LoadingAddress(DeliveryPlanning::getLoadingLocationId),
-		DeliveryAddress(DeliveryPlanning::getDeliveryLocationId);
+		Organisation(DeliveryPlanning::getOrgId, "Organisation"),
+		Direction(DeliveryPlanning::getType, "Direction"),
+		Forwarder(DeliveryPlanning::getShipperId, "Forwarder"),
+		Incoterms(DeliveryPlanning::getIncotermsId, "Incoterms"),
+		IncotermLocation(DeliveryPlanning::getIncotermLocation, "IncotermLocation"),
+		MeansOfTransportation(DeliveryPlanning::getMeansOfTransportationId, "MeansOfTransportation"),
+		LoadingAddress(DeliveryPlanning::getLoadingLocationId, "LoadingAddress"),
+		DeliveryAddress(DeliveryPlanning::getDeliveryLocationId, "DeliveryAddress");
+
+		private static final String LABEL_PREFIX = "de.metas.deliveryplanning.CombineIntoDeliveryInstruction.Field.";
 
 		private final Function<DeliveryPlanning, Object> valueExtractor;
 
-		AdmissibilityField(@NonNull final Function<DeliveryPlanning, Object> valueExtractor)
+		/**
+		 * How this field is named in the message that rejects an inadmissible selection. Carried on the enum
+		 * constant rather than in a lookup table beside it, so a field can never be added without a label and
+		 * then silently drop out of a message whose whole job is to name every field at once.
+		 * <p>
+		 * The suffix is spelled out instead of taken from {@link #name()} on purpose: the key is an
+		 * {@code AD_Message.Value} living in the database, so renaming a constant here must not move it.
+		 */
+		private final AdMessageKey label;
+
+		AdmissibilityField(@NonNull final Function<DeliveryPlanning, Object> valueExtractor, @NonNull final String labelSuffix)
 		{
 			this.valueExtractor = valueExtractor;
+			this.label = AdMessageKey.of(LABEL_PREFIX + labelSuffix);
+		}
+
+		@NonNull
+		public AdMessageKey getLabel()
+		{
+			return label;
 		}
 
 		@Nullable

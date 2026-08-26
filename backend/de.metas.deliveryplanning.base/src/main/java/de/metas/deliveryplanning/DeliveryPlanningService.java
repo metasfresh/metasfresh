@@ -30,6 +30,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.cache.CacheMgt;
 import de.metas.common.util.time.SystemTime;
+import de.metas.deliveryplanning.DeliveryPlanningList.AdmissibilityField;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
@@ -40,6 +41,8 @@ import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.incoterms.IncotermsId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ReceiptScheduleId;
@@ -96,6 +99,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class DeliveryPlanningService
@@ -113,6 +117,15 @@ public class DeliveryPlanningService
 	public static final AdMessageKey MSG_M_Delivery_Planning_SalesOrderFullyDelivered = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.SalesOrderFullyDelivered");
 	public static final AdMessageKey MSG_M_Delivery_Planning_PurchaseOrderFullyDelivered = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.PurchaseOrderFullyDelivered");
 	public static final String PARAM_AdditionalLines = "AdditionalLines";
+
+	/**
+	 * One message for the whole selection, naming EVERY field the selection disagrees on - never the first one
+	 * found, and never one message per field: a planner who deselects the odd forwarder only to be told about the
+	 * delivery address is being sent back and forth for information we already had.
+	 */
+	public static final AdMessageKey MSG_M_Delivery_Planning_IncompatibleSelection = AdMessageKey.of("de.metas.deliveryplanning.CombineIntoDeliveryInstruction.IncompatibleSelection");
+	public static final AdMessageKey MSG_M_Delivery_Planning_ClosedPlannings = AdMessageKey.of("de.metas.deliveryplanning.CombineIntoDeliveryInstruction.ClosedPlannings");
+	public static final AdMessageKey MSG_M_Delivery_Planning_AlreadyOnDeliveryInstruction = AdMessageKey.of("de.metas.deliveryplanning.CombineIntoDeliveryInstruction.AlreadyOnDeliveryInstruction");
 
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
@@ -225,8 +238,7 @@ public class DeliveryPlanningService
 		final OrgId orgId = OrgId.ofRepoId(deliveryPlanningRecord.getAD_Org_ID());
 
 		final ProductId productId = ProductId.ofRepoId(deliveryPlanningRecord.getM_Product_ID());
-		final I_C_UOM uomOfRecord = uomDAO.getByIdOrNull(deliveryPlanningRecord.getC_UOM_ID());
-		final I_C_UOM uomToUse = uomOfRecord != null ? uomOfRecord : productBL.getStockUOM(productId);
+		final I_C_UOM uomToUse = getUomOrStockUom(deliveryPlanningRecord, productId);
 
 		final Dimension dimension = dimensionService.getFromRecord(deliveryPlanningRecord);
 
@@ -269,6 +281,15 @@ public class DeliveryPlanningService
 				.transportDetails(deliveryPlanningRecord.getTransportDetails())
 				.dimension(dimension)
 				.build();
+	}
+
+	/**
+	 * The delivery planning's own UOM, or the product's stock UOM when it has none.
+	 */
+	private I_C_UOM getUomOrStockUom(@NonNull final I_M_Delivery_Planning deliveryPlanningRecord, @NonNull final ProductId productId)
+	{
+		final I_C_UOM uomOfRecord = uomDAO.getByIdOrNull(deliveryPlanningRecord.getC_UOM_ID());
+		return uomOfRecord != null ? uomOfRecord : productBL.getStockUOM(productId);
 	}
 
 	public void createAdditionalDeliveryPlannings(@NonNull final DeliveryPlanningId deliveryPlanningId, final int additionalLines)
@@ -433,6 +454,7 @@ public class DeliveryPlanningService
 				.meansOfTransportationId(MeansOfTransportationId.ofRepoIdOrNull(record.getM_MeansOfTransportation_ID()))
 				.loadingLocationId(extractShipFromLocationIdOrNull(record, deliveryPlanningType, addresses))
 				.deliveryLocationId(extractShipToLocationIdOrNull(record, deliveryPlanningType, addresses))
+				.etd(TimeUtil.asInstant(record.getETD()))
 				.closed(record.isClosed())
 				.deliveryInstructionId(allocatedInstructionIds.get(deliveryPlanningId))
 				.build();
@@ -503,8 +525,7 @@ public class DeliveryPlanningService
 		}
 
 		final ProductId productId = ProductId.ofRepoId(deliveryPlanningRecord.getM_Product_ID());
-		final I_C_UOM uomOfRecord = uomDAO.getByIdOrNull(deliveryPlanningRecord.getC_UOM_ID());
-		final I_C_UOM uomToUse = uomOfRecord != null ? uomOfRecord : productBL.getStockUOM(productId);
+		final I_C_UOM uomToUse = getUomOrStockUom(deliveryPlanningRecord, productId);
 
 		final BPartnerLocationId deliveryPlanningLocationId = BPartnerLocationId.ofRepoId(deliveryPlanningRecord.getC_BPartner_ID(), deliveryPlanningRecord.getC_BPartner_Location_ID());
 		final boolean hasReceipt = deliveryPlanningType.hasReceipt();
@@ -682,6 +703,143 @@ public class DeliveryPlanningService
 
 			generateCompleteDeliveryInstruction(deliveryInstructionRequest);
 		}
+	}
+
+	/**
+	 * Why this selection cannot be combined into ONE delivery instruction, or empty when it can.
+	 * <p>
+	 * Lives here rather than in the process's {@code checkPreconditionsApplicable} for two reasons: a cucumber
+	 * step drives the same rule the WebUI drives, and the reason the disabled button shows is by construction the
+	 * same sentence {@link #combine(IQueryFilter, boolean)} throws.
+	 * <p>
+	 * Row eligibility is checked before cross-row compatibility, so a planner resolves "this row cannot go at
+	 * all" before "these rows cannot go together".
+	 */
+	public Optional<ITranslatableString> getCombineRejectionReason(@NonNull final DeliveryPlanningList selectedDeliveryPlannings)
+	{
+		if (!selectedDeliveryPlannings.withoutShipper().isEmpty())
+		{
+			// the delivery instruction header cannot exist without a forwarder
+			return Optional.of(TranslatableStrings.adMessage(MSG_M_Delivery_Planning_NoForwarder));
+		}
+
+		if (selectedDeliveryPlannings.anyClosed())
+		{
+			return Optional.of(TranslatableStrings.adMessage(
+					MSG_M_Delivery_Planning_ClosedPlannings,
+					toIdList(selectedDeliveryPlannings.closedOnes())));
+		}
+
+		if (selectedDeliveryPlannings.anyAllocated())
+		{
+			// rejected here, and not left to the single-active-allocation unique index: the index would abort the
+			// whole transaction with a constraint violation instead of naming the plannings that are in the way
+			return Optional.of(TranslatableStrings.adMessage(
+					MSG_M_Delivery_Planning_AlreadyOnDeliveryInstruction,
+					toIdList(selectedDeliveryPlannings.allocatedOnes())));
+		}
+
+		final ImmutableSet<AdmissibilityField> mismatches = selectedDeliveryPlannings.admissibilityMismatches();
+		if (!mismatches.isEmpty())
+		{
+			final ITranslatableString differingFields = mismatches.stream()
+					.map(field -> TranslatableStrings.adMessage(field.getLabel()))
+					.collect(TranslatableStrings.joining(", "));
+
+			return Optional.of(TranslatableStrings.adMessage(MSG_M_Delivery_Planning_IncompatibleSelection, differingFields));
+		}
+
+		return Optional.empty();
+	}
+
+	private static String toIdList(@NonNull final DeliveryPlanningList deliveryPlannings)
+	{
+		return deliveryPlannings.stream()
+				.map(deliveryPlanning -> String.valueOf(deliveryPlanning.getId().getRepoId()))
+				.collect(Collectors.joining(", "));
+	}
+
+	/**
+	 * Combines the selected delivery plannings into ONE delivery instruction: each planning gets its own
+	 * allocation, its own shipping package and its own {@code ReleaseNo}, and the instruction lists them all.
+	 * <p>
+	 * All-or-nothing: {@link #getCombineRejectionReason(DeliveryPlanningList)} is evaluated first and throws for
+	 * the whole selection, so no planning is left half-moved and no orphaned package survives.
+	 * <p>
+	 * The instruction's header is seeded from the FIRST planning in allocation order (earliest departure, then
+	 * planning id) rather than from whichever row the query returned first - the plannings agree on every header
+	 * field the admissibility rule covers, but not on the dates, so which one seeds them has to be decided rather
+	 * than inherited from the encounter order.
+	 *
+	 * @param complete complete the instruction right away instead of leaving it a draft. A draft is the default:
+	 * 		a combined instruction is assembled over days, so the planner says when it is final.
+	 * @return the one delivery instruction that was created
+	 */
+	public ShipperTransportationId combine(
+			@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter,
+			final boolean complete)
+	{
+		final DeliveryPlanningList selectedDeliveryPlannings = getBySelection(selectedDeliveryPlanningsFilter);
+		if (selectedDeliveryPlannings.isEmpty())
+		{
+			// an invariant, not a user-facing rejection: the process's precondition already refuses an empty
+			// selection, and every rejection a planner can actually provoke is a translated message below
+			throw new AdempiereException("No delivery planning selected");
+		}
+
+		getCombineRejectionReason(selectedDeliveryPlannings)
+				.ifPresent(reason -> {throw new AdempiereException(reason);});
+
+		final ImmutableList<DeliveryPlanningId> deliveryPlanningIds = selectedDeliveryPlannings.getIdsInAllocationOrder();
+
+		// the header, plus the seed planning's allocation and shipping package (LineNo 10)
+		final I_M_ShipperTransportation deliveryInstruction = deliveryPlanningRepository.generateDeliveryInstruction(
+				createDeliveryInstructionRequest(deliveryPlanningIds.get(0)));
+		final ShipperTransportationId deliveryInstructionId = ShipperTransportationId.ofRepoId(deliveryInstruction.getM_ShipperTransportation_ID());
+
+		// the remaining plannings, handed over ALREADY SORTED because createAllocations numbers in the given order
+		final ImmutableList<DeliveryPlanningAllocCreateRequest> furtherAllocations = deliveryPlanningIds.subList(1, deliveryPlanningIds.size())
+				.stream()
+				.map(this::createAllocCreateRequest)
+				.collect(ImmutableList.toImmutableList());
+		if (!furtherAllocations.isEmpty())
+		{
+			deliveryPlanningRepository.createAllocations(deliveryInstructionId, furtherAllocations);
+		}
+
+		if (complete)
+		{
+			docActionBL.processEx(deliveryInstruction, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+		}
+
+		// one instruction, so one notification - which is also what tells the planner Combine ran and not Generate
+		DeliveryInstructionUserNotificationsProducer.newInstance().notifyGenerated(deliveryInstruction);
+
+		// every planning gets its OWN ReleaseNo, stamped from the instruction it now sits on
+		for (final DeliveryPlanningId deliveryPlanningId : deliveryPlanningIds)
+		{
+			deliveryPlanningRepository.updateDeliveryPlanningFromInstruction(deliveryPlanningId, deliveryInstruction);
+		}
+
+		return deliveryInstructionId;
+	}
+
+	private DeliveryPlanningAllocCreateRequest createAllocCreateRequest(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningRepository.getById(deliveryPlanningId);
+
+		final ProductId productId = ProductId.ofRepoId(deliveryPlanningRecord.getM_Product_ID());
+		final I_C_UOM uomToUse = getUomOrStockUom(deliveryPlanningRecord, productId);
+
+		return DeliveryPlanningAllocCreateRequest.builder()
+				.deliveryPlanningId(deliveryPlanningId)
+				.productId(productId)
+				.qtyLoaded(Quantity.of(deliveryPlanningRecord.getPlannedLoadedQuantity(), uomToUse))
+				.qtyDischarged(Quantity.of(deliveryPlanningRecord.getPlannedDischargeQuantity(), uomToUse))
+				.batchNo(deliveryPlanningRecord.getBatch())
+				.orderLineId(OrderLineId.ofRepoIdOrNull(deliveryPlanningRecord.getC_OrderLine_ID()))
+				.toBeFetched(DeliveryPlanningRepository.extractDeliveryPlanningType(deliveryPlanningRecord).hasReceipt())
+				.build();
 	}
 
 	public void unlinkDeliveryPlannings(@NonNull final ShipperTransportationId deliveryInstructionId)

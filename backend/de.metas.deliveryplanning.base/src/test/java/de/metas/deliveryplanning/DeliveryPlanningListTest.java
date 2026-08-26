@@ -34,6 +34,9 @@ import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
 
+import java.time.Instant;
+import java.util.Arrays;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -167,6 +170,86 @@ class DeliveryPlanningListTest
 
 			assertThat(DeliveryPlanningList.of(row1, row2).admissibilityMismatches())
 					.containsExactlyInAnyOrder(AdmissibilityField.values());
+		}
+	}
+
+	@Nested
+	@DisplayName("allocation order")
+	class AllocationOrder
+	{
+		private DeliveryPlanning withEtd(final int idRepoId, @Nullable final String etd)
+		{
+			return DeliveryPlanning.builder()
+					.id(DeliveryPlanningId.ofRepoId(idRepoId))
+					.orgId(OrgId.ofRepoId(1000000))
+					.type(DeliveryPlanningType.Outgoing)
+					.etd(etd != null ? Instant.parse(etd) : null)
+					.build();
+		}
+
+		@Test
+		@DisplayName("earliest ETD first - NOT the order the plannings were handed over in")
+		void earliestEtdFirst()
+		{
+			final DeliveryPlanningList list = DeliveryPlanningList.of(
+					withEtd(101, "2026-03-03T00:00:00Z"),
+					withEtd(102, "2026-03-01T00:00:00Z"),
+					withEtd(103, "2026-03-02T00:00:00Z"));
+
+			assertThat(list.getIdsInAllocationOrder()).extracting(DeliveryPlanningId::getRepoId)
+					.containsExactly(102, 103, 101);
+		}
+
+		@Test
+		@DisplayName("the planning id breaks a tie on equal ETD")
+		void planningIdBreaksTheTie()
+		{
+			final DeliveryPlanningList list = DeliveryPlanningList.of(
+					withEtd(203, "2026-03-01T00:00:00Z"),
+					withEtd(201, "2026-03-01T00:00:00Z"),
+					withEtd(202, "2026-03-01T00:00:00Z"));
+
+			assertThat(list.getIdsInAllocationOrder()).extracting(DeliveryPlanningId::getRepoId)
+					.containsExactly(201, 202, 203);
+		}
+
+		@Test
+		@DisplayName("a planning without an ETD sorts last, and still deterministically among its kind")
+		void withoutEtdSortsLast()
+		{
+			final DeliveryPlanningList list = DeliveryPlanningList.of(
+					withEtd(302, null),
+					withEtd(303, "2026-03-05T00:00:00Z"),
+					withEtd(301, null));
+
+			assertThat(list.getIdsInAllocationOrder()).extracting(DeliveryPlanningId::getRepoId)
+					.containsExactly(303, 301, 302);
+		}
+
+		@Test
+		@DisplayName("iteration sees the same order the ids do, so anything derived from the list agrees with the LineNo")
+		void iterationAgreesWithTheIds()
+		{
+			final DeliveryPlanningList list = DeliveryPlanningList.of(
+					withEtd(401, "2026-03-09T00:00:00Z"),
+					withEtd(402, "2026-03-08T00:00:00Z"));
+
+			assertThat(list.stream().map(DeliveryPlanning::getId))
+					.containsExactlyElementsOf(list.getIdsInAllocationOrder());
+		}
+	}
+
+	@Nested
+	@DisplayName("admissibility field labels")
+	class AdmissibilityFieldLabels
+	{
+		@Test
+		@DisplayName("every field has its own label, so no two fields collapse into one word in the rejection message")
+		void everyFieldHasItsOwnLabel()
+		{
+			assertThat(Arrays.stream(AdmissibilityField.values()).map(AdmissibilityField::getLabel))
+					.doesNotHaveDuplicates()
+					.hasSize(AdmissibilityField.values().length);
 		}
 	}
 

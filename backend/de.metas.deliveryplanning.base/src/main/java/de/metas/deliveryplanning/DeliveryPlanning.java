@@ -33,6 +33,8 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 
+import java.time.Instant;
+
 /**
  * One delivery planning, loaded for in-memory evaluation by {@link DeliveryPlanningList}.
  * <p>
@@ -65,6 +67,13 @@ public class DeliveryPlanning
 
 	/** Where the transport ends - the header's delivery address. */
 	@Nullable BPartnerLocationId deliveryLocationId;
+
+	/**
+	 * The planned departure - {@code M_Delivery_Planning.ETD}, nullable because a planning exists before one is
+	 * planned. Carried here for one reason: it is the primary key of the order the plannings of one delivery
+	 * instruction are numbered in (see {@link DeliveryPlanningList#getIdsInAllocationOrder()}).
+	 */
+	@Nullable Instant etd;
 
 	boolean closed;
 
