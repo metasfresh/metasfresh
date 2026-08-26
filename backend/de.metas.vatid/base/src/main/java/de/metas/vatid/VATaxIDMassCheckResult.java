@@ -26,13 +26,13 @@ import lombok.Builder;
 import lombok.Value;
 
 /**
- * What {@link VATaxIDCheckRunService#run(VATaxIDCheckRunRequest)} did: how much of the selection it
- * checked, how much {@link VATaxIDCheckRunRequest#getMaxChecksPerRun()} left untouched, and the call stats
+ * What {@link VATaxIDMassCheckService#run(VATaxIDMassCheckRequest)} did: how much of the selection it
+ * checked, how much {@link VATaxIDMassCheckRequest#getMaxChecksPerRun()} left untouched, and the call stats
  * — extending {@link VATaxIDCheckCallStats} rather than returning a second, competing summary.
  */
 @Value
 @Builder
-public class VATaxIDCheckRunResult
+public class VATaxIDMassCheckResult
 {
 	int checkedCount;
 

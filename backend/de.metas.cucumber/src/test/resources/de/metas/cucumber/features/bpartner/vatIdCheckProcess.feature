@@ -225,7 +225,6 @@ Feature: The VAT-ID check process runs on a selection of Business Partners
     And metasfresh contains VATaxID_Config:
       | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
       | true                 | true               | 30               | ServiceUnavailable   |
-    Then the C_BPartner_VATaxID_Check nightly selection includes C_BPartner 'bp_scheduled'
     And the VAT-ID online checker is stubbed to answer known VAT-IDs, and to report unavailable for the rest:
       | VATaxID       | VATaxIDStatus |
       | IT00743110157 | Valid         |
@@ -252,7 +251,14 @@ Feature: The VAT-ID check process runs on a selection of Business Partners
     # nightly candidate list -- if such a record were still LISTED as due, it would permanently occupy the
     # front of every night's selection and could consume the whole MaxChecksPerRun budget without ever
     # making progress, starving out every other, checkable record behind it.
-    Then the C_BPartner_VATaxID_Check nightly selection does not include C_BPartner 'bp_viesOff'
+    # Asserted behaviourally, against the real query: a scheduled run must leave it NotChecked. Reading
+    # the selection list internally would have proved only that the Java filter agreed with itself.
+    And the VAT-ID online checker is stubbed to answer known VAT-IDs, and to report unavailable for the rest:
+      | VATaxID | VATaxIDStatus |
+    When the C_BPartner_VATaxID_Check process is run as scheduled
+    Then validate C_BPartner VAT-ID status:
+      | C_BPartner_ID | VATaxIDStatus |
+      | bp_viesOff    | NotChecked    |
 
   @from:cucumber
   @Id:S31060_8
@@ -298,14 +304,22 @@ Feature: The VAT-ID check process runs on a selection of Business Partners
     Then validate C_BPartner VAT-ID status:
       | C_BPartner_ID | VATaxIDStatus |
       | bp_broken     | NotChecked    |
-    Then the C_BPartner_VATaxID_Check nightly selection lists C_BPartner 'bp_pending' before C_BPartner 'bp_broken'
-    # Behavioural confirmation, not only the internal ordering: a real scheduled run (lenient stub, so
-    # whatever else the shared database happens to also reach resolves harmlessly instead of crashing the
-    # scenario) must actually advance bp_pending while bp_broken keeps failing every attempt.
+    # The ordering is asserted where it now lives -- in the query -- by giving a real scheduled run a
+    # budget of one check. bp_broken was just attempted (VATaxIDLastAttemptedAt stamped), bp_pending never
+    # was, so the ORDER BY (attempt time ascending, nulls first) must hand the single check to bp_pending.
+    # An in-memory assertion on a selection list could not have caught a wrong ORDER BY at all.
     And the VAT-ID online checker is stubbed to answer known VAT-IDs, and to report unavailable for the rest:
       | VATaxID    | VATaxIDStatus |
       | LU15027442 | Valid         |
-    When the C_BPartner_VATaxID_Check process is run as scheduled
+    # A scheduled run is a GLOBAL sweep, and every scenario of this feature shares one organisation, so the
+    # sweep also sees earlier scenarios' never-attempted leftovers (e.g. bp_viesOff). Each of those ties with
+    # bp_pending on the ORDER BY's attempt time and wins the C_BPartner_ID tie-break by being older, so a
+    # budget of one is only deterministic once every candidate but ours carries an attempt stamp.
+    And every other VAT-ID check candidate has already been attempted, except C_BPartner:
+      | C_BPartner_ID |
+      | bp_broken     |
+      | bp_pending    |
+    When the C_BPartner_VATaxID_Check process is run as scheduled with MaxChecksPerRun '1'
     Then validate C_BPartner VAT-ID status:
       | C_BPartner_ID | VATaxIDStatus |
       | bp_broken     | NotChecked    |
@@ -334,7 +348,6 @@ Feature: The VAT-ID check process runs on a selection of Business Partners
     And metasfresh contains VATaxID_Config:
       | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
       | true                 | true               | 30               | ServiceUnavailable   |
-    Then the C_BPartner_VATaxID_Check nightly selection includes C_BPartner 'bp_mixed'
     And the VAT-ID online checker is stubbed to answer known VAT-IDs, and to report unavailable for the rest:
       | VATaxID    | VATaxIDStatus |
       | DK13585628 | Valid         |

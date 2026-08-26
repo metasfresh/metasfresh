@@ -136,7 +136,7 @@ class VIESClientTest
 
 		// Must NOT degrade to ServiceUnavailable: under an OnServiceUnavailable of Invalid that would strip
 		// the tax certificate from every VAT-ID in the run because of one wrong configuration value.
-		// The TYPE is asserted, not just the message: VATaxIDCheckRunService tells this apart from an
+		// The TYPE is asserted, not just the message: VATaxIDMassCheckService tells this apart from an
 		// ordinary per-target failure by type alone, and a bare AdempiereException would be swallowed by its
 		// carry-on catch and repeated once per target for the whole selection.
 		assertThatThrownBy(() -> client.check(VATIdentifier.of("DE123456789"), config()))

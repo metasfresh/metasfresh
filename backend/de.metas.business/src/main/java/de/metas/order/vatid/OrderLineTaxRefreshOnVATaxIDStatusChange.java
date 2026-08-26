@@ -29,7 +29,6 @@ import de.metas.order.OrderId;
 import de.metas.util.Services;
 import de.metas.vatid.VATaxIDOrderTaxRefresher;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Component;
@@ -51,7 +50,6 @@ public class OrderLineTaxRefreshOnVATaxIDStatusChange implements VATaxIDOrderTax
 {
 	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@Override
 	public void refreshOrderLinesTaxForBPartner(@NonNull final BPartnerId bpartnerId)
@@ -62,18 +60,9 @@ public class OrderLineTaxRefreshOnVATaxIDStatusChange implements VATaxIDOrderTax
 			return;
 		}
 
-		// Thread-inherited, deliberately NOT a new transaction: the check process runs each partner's check
-		// in its own per-item transaction (see C_BPartner_VATaxID_Check#checkOneInOwnTrx), and this refresh
-		// is called from inside that same still-open transaction. The refresh must be atomic WITH the
-		// status change that caused it — if the check's own commit later fails for any reason, the refresh
-		// must roll back with it, or an order line ends up carrying a tax that no recorded check justifies.
-		// A brand-new transaction would defeat exactly that: it would commit independently of the caller's
-		// transaction, so a refresh could survive a check that never actually committed.
-		trxManager.runInThreadInheritedTrx(() -> refreshInTrx(notProcessedOrderIds));
-	}
-
-	private void refreshInTrx(@NonNull final Set<OrderId> notProcessedOrderIds)
-	{
+		// Runs in the caller's transaction — which is what plain code does here; never open a new one.
+		// The refresh must be atomic with the status change that caused it (VATaxIDCheckService wraps both
+		// in one transaction), or an order line ends up carrying a tax no committed check justifies.
 		for (final I_C_OrderLine orderLine : orderDAO.retrieveOrderLinesByOrderIds(notProcessedOrderIds))
 		{
 			orderLineBL.setTax(orderLine);
