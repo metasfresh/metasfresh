@@ -68,6 +68,7 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -108,6 +109,52 @@ public class DeliveryPlanningRepository
 	protected I_M_Delivery_Planning getById(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
 		return load(deliveryPlanningId, I_M_Delivery_Planning.class);
+	}
+
+	/**
+	 * The records of the given delivery plannings, in ONE round trip, in the order the ids were given.
+	 * <p>
+	 * The order is the caller's because it is the order the allocations are numbered in; the encounter order of a
+	 * query is not one. Deliberately unfiltered by {@code IsActive}, exactly like the single-row
+	 * {@link #getById(DeliveryPlanningId)} it replaces: a selection can legitimately name a closed planning, and
+	 * whether that is admissible is a rule of its own, not something a loader may decide by dropping the row.
+	 *
+	 * @throws AdempiereException for an id with no matching row. A resolved id without a record is a DANGLING
+	 * 		reference - which {@code getById} also throws for - and not a planning that may be quietly dropped from
+	 * 		the result, which is what a bare map lookup would silently turn it into.
+	 */
+	protected ImmutableList<I_M_Delivery_Planning> getByIds(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
+	{
+		if (deliveryPlanningIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final ImmutableMap<DeliveryPlanningId, I_M_Delivery_Planning> recordsById = queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
+				.addInArrayFilter(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningIds)
+				.create()
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						record -> DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID()),
+						Function.identity()));
+
+		return deliveryPlanningIds.stream()
+				.map(deliveryPlanningId -> getOrThrow(recordsById, deliveryPlanningId))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private static I_M_Delivery_Planning getOrThrow(
+			@NonNull final Map<DeliveryPlanningId, I_M_Delivery_Planning> recordsById,
+			@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		final I_M_Delivery_Planning record = recordsById.get(deliveryPlanningId);
+		if (record == null)
+		{
+			throw new AdempiereException("No " + I_M_Delivery_Planning.Table_Name + " found")
+					.appendParametersToMessage()
+					.setParameter(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningId.getRepoId());
+		}
+		return record;
 	}
 
 	public List<I_M_Delivery_Planning> getByReleaseNo(@NonNull final String releaseNo)
@@ -725,10 +772,25 @@ public class DeliveryPlanningRepository
 			return;
 		}
 
-		final I_M_ShipperTransportation deliveryInstructionRecord = load(deliveryInstructionId, I_M_ShipperTransportation.class);
-		for (final DeliveryPlanningId deliveryPlanningId : deliveryPlanningIds)
+		updateDeliveryPlanningsFromInstruction(
+				deliveryPlanningIds,
+				load(deliveryInstructionId, I_M_ShipperTransportation.class));
+	}
+
+	/**
+	 * Same as {@link #updateDeliveryPlanningsFromInstruction(Collection, ShipperTransportationId)}, for a caller
+	 * that has just created the instruction and therefore already holds its record.
+	 * <p>
+	 * The plannings are loaded in ONE round trip: a whole grid selection is stamped here, and the planner is
+	 * waiting on it.
+	 */
+	public void updateDeliveryPlanningsFromInstruction(
+			@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds,
+			@NonNull final I_M_ShipperTransportation deliveryInstruction)
+	{
+		for (final I_M_Delivery_Planning deliveryPlanningRecord : getByIds(deliveryPlanningIds))
 		{
-			updateDeliveryPlanningFromInstruction(deliveryPlanningId, deliveryInstructionRecord);
+			updateDeliveryPlanningFromInstruction(deliveryPlanningRecord, deliveryInstruction);
 		}
 	}
 
@@ -741,9 +803,8 @@ public class DeliveryPlanningRepository
 	 */
 	public void clearInstructionReference(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
 	{
-		for (final DeliveryPlanningId deliveryPlanningId : deliveryPlanningIds)
+		for (final I_M_Delivery_Planning deliveryPlanningRecord : getByIds(deliveryPlanningIds))
 		{
-			final I_M_Delivery_Planning deliveryPlanningRecord = getById(deliveryPlanningId);
 			deliveryPlanningRecord.setReleaseNo(null);
 			deliveryPlanningRecord.setM_ShipperTransportation_ID(-1);
 			saveRecord(deliveryPlanningRecord);
@@ -779,13 +840,19 @@ public class DeliveryPlanningRepository
 		return DocStatus.ofNullableCodeOrUnknown(deliveryInstructionRecord.getDocStatus());
 	}
 
-	public void updateDeliveryPlanningFromInstruction(@NonNull final DeliveryPlanningId deliveryPlanningId,
+	/**
+	 * Deliberately takes the already-loaded record and is PRIVATE: the only way in from outside is
+	 * {@link #updateDeliveryPlanningsFromInstruction(Collection, I_M_ShipperTransportation)}, which loads its whole
+	 * argument in ONE round trip. There is no id-taking public counterpart on purpose - the last one was reached
+	 * for from a loop over a collection, which is precisely the per-row load the collection method exists to
+	 * prevent, and a javadoc saying "use the batch version" is what failed to stop it.
+	 */
+	private static void updateDeliveryPlanningFromInstruction(@NonNull final I_M_Delivery_Planning deliveryPlanningRecord,
 			@NonNull final I_M_ShipperTransportation deliveryInstruction)
 	{
-		final I_M_Delivery_Planning deliveryPlanningRecord = getById(deliveryPlanningId);
 		final String created = new SimpleDateFormat("yyyyMMdd-HHmm").format(deliveryInstruction.getCreated());
 		deliveryPlanningRecord.setReleaseNo(deliveryInstruction.getDocumentNo() + "-"
-													+ deliveryPlanningId.getRepoId()
+													+ deliveryPlanningRecord.getM_Delivery_Planning_ID()
 													+ "-" + created);
 		deliveryPlanningRecord.setM_ShipperTransportation_ID(deliveryInstruction.getM_ShipperTransportation_ID());
 		saveRecord(deliveryPlanningRecord);

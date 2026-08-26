@@ -407,7 +407,7 @@ public class DeliveryPlanningService
 		deliveryInstructionUserNotificationsProducer
 				.notifyGenerated(deliveryInstruction);
 
-		deliveryPlanningRepository.updateDeliveryPlanningFromInstruction(deliveryPlanningId, deliveryInstruction);
+		deliveryPlanningRepository.updateDeliveryPlanningsFromInstruction(ImmutableSet.of(deliveryPlanningId), deliveryInstruction);
 
 		CacheMgt.get().reset(I_M_Delivery_Planning.Table_Name, deliveryPlanningId.getRepoId());
 
@@ -811,10 +811,8 @@ public class DeliveryPlanningService
 		final ShipperTransportationId deliveryInstructionId = ShipperTransportationId.ofRepoId(deliveryInstruction.getM_ShipperTransportation_ID());
 
 		// the remaining plannings, handed over ALREADY SORTED because createAllocations numbers in the given order
-		final ImmutableList<DeliveryPlanningAllocCreateRequest> furtherAllocations = deliveryPlanningIds.subList(1, deliveryPlanningIds.size())
-				.stream()
-				.map(this::createAllocCreateRequest)
-				.collect(ImmutableList.toImmutableList());
+		final ImmutableList<DeliveryPlanningAllocCreateRequest> furtherAllocations =
+				createAllocCreateRequests(deliveryPlanningIds.subList(1, deliveryPlanningIds.size()));
 		if (!furtherAllocations.isEmpty())
 		{
 			deliveryPlanningRepository.createAllocations(deliveryInstructionId, furtherAllocations);
@@ -829,17 +827,35 @@ public class DeliveryPlanningService
 		DeliveryInstructionUserNotificationsProducer.newInstance().notifyGenerated(deliveryInstruction);
 
 		// every planning gets its OWN ReleaseNo, stamped from the instruction it now sits on
-		for (final DeliveryPlanningId deliveryPlanningId : deliveryPlanningIds)
-		{
-			deliveryPlanningRepository.updateDeliveryPlanningFromInstruction(deliveryPlanningId, deliveryInstruction);
-		}
+		deliveryPlanningRepository.updateDeliveryPlanningsFromInstruction(deliveryPlanningIds, deliveryInstruction);
 
 		return deliveryInstructionId;
 	}
 
-	private DeliveryPlanningAllocCreateRequest createAllocCreateRequest(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	/**
+	 * The allocation requests for the given delivery plannings, in the order the ids were given - which is the
+	 * order {@code createAllocations} hands out the {@code LineNo}s in.
+	 * <p>
+	 * Takes the whole collection rather than one id at a time deliberately: the records are batch-loaded ONCE, so
+	 * a selection of N plannings costs one round trip instead of N, on a synchronous action the planner waits on.
+	 * There is no single-id counterpart on purpose - offering one is how the per-row load got reintroduced on a
+	 * second and then a third call site after it had already been removed from {@code getBySelection}.
+	 */
+	private ImmutableList<DeliveryPlanningAllocCreateRequest> createAllocCreateRequests(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
 	{
-		final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningRepository.getById(deliveryPlanningId);
+		return deliveryPlanningRepository.getByIds(deliveryPlanningIds)
+				.stream()
+				.map(this::createAllocCreateRequest)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	/**
+	 * Takes the already-loaded record, not its id: the id-taking form would load, and this runs once per row of a
+	 * whole selection.
+	 */
+	private DeliveryPlanningAllocCreateRequest createAllocCreateRequest(@NonNull final I_M_Delivery_Planning deliveryPlanningRecord)
+	{
+		final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoId(deliveryPlanningRecord.getM_Delivery_Planning_ID());
 
 		final ProductId productId = ProductId.ofRepoId(deliveryPlanningRecord.getM_Product_ID());
 		final I_C_UOM uomToUse = getUomOrStockUom(deliveryPlanningRecord, productId);
@@ -991,9 +1007,7 @@ public class DeliveryPlanningService
 		}
 
 		trxManager.runInThreadInheritedTrx(() -> {
-			final ImmutableList<DeliveryPlanningAllocCreateRequest> allocations = deliveryPlanningIds.stream()
-					.map(this::createAllocCreateRequest)
-					.collect(ImmutableList.toImmutableList());
+			final ImmutableList<DeliveryPlanningAllocCreateRequest> allocations = createAllocCreateRequests(deliveryPlanningIds);
 
 			// the source allocation and its package are DELETED, not deactivated, so the target's insert has no
 			// active row left to collide with on either partial unique index
