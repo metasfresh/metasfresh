@@ -48,11 +48,14 @@ public final class VATaxIDValidationUtil
 	 */
 	public static void validate(@Nullable final VATIdentifier vatId)
 	{
-		final String vatIdString = VATIdentifier.toString(vatId);
-		if (!EUVatIdValidator.isValid(vatIdString))
+		// Delegates to isFormatValid so the throwing and non-throwing forms share ONE predicate by
+		// construction — the offline check in VATaxIDCheckService and this save-time gate must never
+		// diverge on what "malformed" means. The extra VATIdentifier.toString on the throw path is a
+		// negligible cost worth that guarantee; do not "optimise" it by inlining the check here.
+		if (!isFormatValid(vatId))
 		{
 			// AdempiereException(AdMessageKey, …) is already flagged userValidationError=true — no .markAsUserValidationError() needed.
-			throw new AdempiereException(MSG_VATaxID_Invalid_Format, vatIdString);
+			throw new AdempiereException(MSG_VATaxID_Invalid_Format, VATIdentifier.toString(vatId));
 		}
 	}
 
