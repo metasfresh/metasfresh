@@ -102,6 +102,9 @@ Feature: VAT-ID is checked against the online validation service
     And metasfresh contains C_BPartners:
       | Identifier | Value       | VATaxID     |
       | bp_vies4   | ViesTC7Test | EE100594102 |
+    # The save above schedules a check of its own; wait for it here, so it cannot still be in flight when the
+    # clock jumps below and land its evidence row on 2026-06-19 instead of 2026-06-17.
+    And the automatically scheduled VAT-ID check has completed
     And the VAT-ID check runs for C_BPartner:
       | C_BPartner_ID |
       | bp_vies4      |
@@ -144,6 +147,9 @@ Feature: VAT-ID is checked against the online validation service
     And metasfresh contains C_BPartners:
       | Identifier | Value          | VATaxID   |
       | bp_vies5   | <BPartnerName> | <VATaxID> |
+    # The save above schedules a check of its own; wait for it here, or it lands after the clock jump below,
+    # finds the post-jump row inconclusive, and records a third evidence row dated 2026-06-19.
+    And the automatically scheduled VAT-ID check has completed
     And the VAT-ID check runs for C_BPartner:
       | C_BPartner_ID |
       | bp_vies5      |

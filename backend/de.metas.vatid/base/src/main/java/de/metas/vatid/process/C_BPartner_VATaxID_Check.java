@@ -23,17 +23,15 @@
 package de.metas.vatid.process;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.BPartnerId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
-import de.metas.vatid.VATaxIDCheckRunRequest;
-import de.metas.vatid.VATaxIDCheckRunResult;
-import de.metas.vatid.VATaxIDCheckRunService;
+import de.metas.vatid.VATaxIDMassCheckRequest;
+import de.metas.vatid.VATaxIDMassCheckResult;
+import de.metas.vatid.VATaxIDMassCheckService;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
@@ -43,20 +41,19 @@ import org.compiere.model.I_C_BPartner;
  * or a selection, and wired to the nightly {@code AD_Scheduler} — the same code path either way.
  *
  * <p>Thin glue: resolves this run's {@code C_BPartner} ids and the {@code MaxChecksPerRun} parameter, then
- * delegates everything else to {@link VATaxIDCheckRunService#run(VATaxIDCheckRunRequest)}.
+ * delegates everything else to {@link VATaxIDMassCheckService#run(VATaxIDMassCheckRequest)}.
  *
  * <p><b>Selection vs. nightly schedule.</b> A user-triggered run always carries a table/selection on its
  * {@code ProcessInfo}; the scheduler builds none. {@link #getTableName()} distinguishes them — non-null
- * means "read the selection", null means "cover every VAT-ID" via
- * {@link VATaxIDCheckRunService#retrieveAllBPartnerIdsWithVATaxID()}. Without that branch the scheduled run
- * would hit {@code @NoSelection@}.
+ * means "read the selection", null means "sweep every due VAT-ID", which the service selects itself by
+ * streaming. Without that branch the scheduled run would hit {@code @NoSelection@}.
  */
 public class C_BPartner_VATaxID_Check extends JavaProcess implements IProcessPrecondition
 {
 	@VisibleForTesting
 	public static final String PARA_MaxChecksPerRun = "MaxChecksPerRun";
 
-	@NonNull private final VATaxIDCheckRunService checkRunService = SpringContextHolder.instance.getBean(VATaxIDCheckRunService.class);
+	@NonNull private final VATaxIDMassCheckService massCheckService = SpringContextHolder.instance.getBean(VATaxIDMassCheckService.class);
 
 	/**
 	 * Empty or {@code <= 0} means no limit — see the {@code AD_Process_Para}'s own description, which this
@@ -82,35 +79,27 @@ public class C_BPartner_VATaxID_Check extends JavaProcess implements IProcessPre
 	protected String doIt()
 	{
 		final boolean nightlyRun = getTableName() == null;
-		final ImmutableList<BPartnerId> selectedBPartnerIds = nightlyRun
-				? checkRunService.retrieveAllBPartnerIdsWithVATaxID()
-				: retrieveSelectedBPartnerIds();
+		// A nightly run has no selection to pass: VATaxIDMassCheckService streams the due records itself. A
+		// user-triggered run passes its selection as a lazily-streamed query rather than a materialised id list:
+		// "select all" can carry tens of thousands of records, and binding one parameter per record is what
+		// produced `An I/O error occurred while sending to the backend`. Materialise the selection into a
+		// T_Selection keyed by this run's pinstance and let the service stream it with setOnlySelection.
+		// retrieveSelectedRecordsQueryBuilder covers BOTH the multi-record selection and the single-record
+		// case, so createSelection captures the exact selection semantics of either.
+		if (!nightlyRun)
+		{
+			retrieveSelectedRecordsQueryBuilder(I_C_BPartner.class)
+					.orderBy(I_C_BPartner.COLUMNNAME_C_BPartner_ID)
+					.create()
+					.createSelection(getPinstanceId());
+		}
 
-		final VATaxIDCheckRunResult result = checkRunService.run(VATaxIDCheckRunRequest.builder()
-				.selectedBPartnerIds(selectedBPartnerIds)
+		final VATaxIDMassCheckResult result = massCheckService.run(VATaxIDMassCheckRequest.builder()
 				.maxChecksPerRun(p_MaxChecksPerRun)
 				.pinstanceId(getPinstanceId())
 				.nightlyRun(nightlyRun)
 				.build());
 
 		return result.getCheckedCount() + " checked, " + result.getPendingCount() + " pending";
-	}
-
-	/**
-	 * The {@code C_BPartner_ID}s this run's own selection covers — a single record or a multi-record
-	 * selection alike, per {@link #retrieveSelectedRecordsQueryBuilder}. Only ever called when
-	 * {@link #getTableName()} is non-null (see {@link #doIt()}), so this never hits the
-	 * {@code @NoSelection@} branch that method throws for a genuinely selection-less run.
-	 */
-	@NonNull
-	private ImmutableList<BPartnerId> retrieveSelectedBPartnerIds()
-	{
-		return retrieveSelectedRecordsQueryBuilder(I_C_BPartner.class)
-				.orderBy(I_C_BPartner.COLUMNNAME_C_BPartner_ID)
-				.create()
-				.listImmutable(I_C_BPartner.class)
-				.stream()
-				.map(bpartnerRecord -> BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID()))
-				.collect(ImmutableList.toImmutableList());
 	}
 }

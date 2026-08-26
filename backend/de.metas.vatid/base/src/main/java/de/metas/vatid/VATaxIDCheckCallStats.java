@@ -28,8 +28,8 @@ import lombok.Value;
 /**
  * How many online calls one run made, and their average round-trip time.
  *
- * <p>Narrower than {@link VATaxIDCheckRunResult} on purpose: only the two numbers
- * {@code VATaxIDCheckRepository} can answer from the rows a run wrote, which the run service folds into
+ * <p>Narrower than {@link VATaxIDMassCheckResult} on purpose: only the two numbers
+ * {@code VATaxIDCheckRepository} can answer from the rows a run wrote, which the mass-check service folds into
  * that result rather than returning a second, competing summary.
  */
 @Value

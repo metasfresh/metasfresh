@@ -56,6 +56,15 @@ public class VATaxID_Config_StepDef
 	private boolean touchedByThisScenario = false;
 
 	/**
+	 * Whether this scenario switched the organisation's online check ON. A latch, never cleared: a check
+	 * enqueued while the flag was on stays queued after the flag goes off again.
+	 *
+	 * <p>Read by {@link VATaxIDCheck_StepDef}'s drain hook, which is the exact precondition for a check to be
+	 * enqueued at all — see {@code VATaxIDCheckTrigger}, which reads {@code IsVIESCheckEnabled} at enqueue time.
+	 */
+	private boolean viesCheckEnabledByThisScenario = false;
+
+	/**
 	 * Upserts the organisation's VAT-ID configuration. An UPSERT rather than an insert on purpose: one
 	 * active row per organisation is enforced by a partial unique index, and the local cucumber DB is
 	 * never reset between runs, so a second run would otherwise collide on that index.
@@ -108,6 +117,15 @@ public class VATaxID_Config_StepDef
 		InterfaceWrapperHelper.saveRecord(record);
 
 		touchedByThisScenario = true;
+		viesCheckEnabledByThisScenario |= record.isVIESCheckEnabled();
+	}
+
+	/**
+	 * @return whether this scenario switched the online check on — see {@link #viesCheckEnabledByThisScenario}.
+	 */
+	public boolean isVIESCheckEnabledByThisScenario()
+	{
+		return viesCheckEnabledByThisScenario;
 	}
 
 	/**
