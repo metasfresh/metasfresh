@@ -69,6 +69,14 @@ public class VATaxIDCheckService
 {
 	private static final Logger logger = LogManager.getLogger(VATaxIDCheckService.class);
 
+	/**
+	 * {@code RawResponse} written for an {@link VATaxIDStatus#Invalid} produced by the OFFLINE format check
+	 * rather than by VIES. It deliberately carries no {@code valid:false}, which is the one thing that
+	 * separates it from a real VIES rejection (see the class javadoc); no VIES request was made, so the row's
+	 * {@code RequestIdentifier} also stays null.
+	 */
+	private static final String RAWRESPONSE_OFFLINE_FORMAT_INVALID = "offline format check: malformed VAT-ID, no VIES request sent";
+
 	@NonNull private final VATaxIDConfigRepository configRepository;
 	@NonNull private final VATaxIDCheckRepository checkRepository;
 	@NonNull private final VATaxIDParentStatusRepository parentStatusRepository;
@@ -91,11 +99,20 @@ public class VATaxIDCheckService
 		final VATaxIDParentStatus parentStatus = parentStatusRepository.getParentStatus(request);
 		final VATaxIDConfig config = configRepository.getByOrgId(parentStatus.getOrgId());
 
-		if (config.isFormatCheckEnabled())
+		if (config.isFormatCheckEnabled() && !VATaxIDValidationUtil.isFormatValid(vataxID))
 		{
-			// Throws for a malformed value, exactly as the save-time check does — a value the format check
-			// rejects must not reach the online service, and must not be recorded as if it had been checked.
-			VATaxIDValidationUtil.validate(vataxID);
+			// A malformed value is definitively not a valid VAT-ID, and the offline format check can say so
+			// without VIES — so it is recorded as Invalid rather than sent to the service, and never left
+			// forever NotChecked. Runs regardless of IsVIESCheckEnabled (the format and VIES checks toggle
+			// independently), and on the SAME predicate the save-time interceptor uses to BLOCK such a value —
+			// so the save gate and the process agree on what "malformed" means. The save-time path still
+			// throws to reject at entry; this path exists for a value that was imported or predates the
+			// format check, which the process must be able to verdict rather than silently skip.
+			final VATaxIDCheckLogId checkLogId = checkRepository.writeRequestSent(request);
+			return completeCheckAndStoreVerdict(request, parentStatus, VATaxIDCheckResult.builder()
+					.status(VATaxIDStatus.Invalid)
+					.rawResponse(RAWRESPONSE_OFFLINE_FORMAT_INVALID)
+					.build(), checkLogId);
 		}
 
 		if (!config.isViesCheckEnabled())
@@ -123,8 +140,26 @@ public class VATaxIDCheckService
 		}
 
 		final VATaxIDCheckLogId checkLogId = checkRepository.writeRequestSent(request);
-
 		final VATaxIDCheckResult result = applyOnServiceUnavailable(onlineChecker.check(vataxID, config), config);
+		return completeCheckAndStoreVerdict(request, parentStatus, result, checkLogId);
+	}
+
+	/**
+	 * Completes the {@code RequestSent} log row with {@code result}, stores the verdict on the parent —
+	 * refreshing the partner's open orders' tax when the status actually changed — and logs a genuine re-check
+	 * flip. Shared by the online path and the offline format-invalid path so the two cannot drift on how a
+	 * verdict, once obtained, is recorded.
+	 *
+	 * @return the status the RECORD now has: the verdict when it was stored, or the unchanged stored status
+	 * when {@link #updateParentStatusIfStillCurrent(VATaxIDCheckRequest, VATaxIDLastCheck)} abandoned it.
+	 */
+	@NonNull
+	private VATaxIDStatus completeCheckAndStoreVerdict(
+			@NonNull final VATaxIDCheckRequest request,
+			@NonNull final VATaxIDParentStatus parentStatus,
+			@NonNull final VATaxIDCheckResult result,
+			@NonNull final VATaxIDCheckLogId checkLogId)
+	{
 		checkRepository.completeCheck(checkLogId, result);
 
 		if (!storeVerdictAndRefreshOrderTax(request, parentStatus.getStatus(), VATaxIDLastCheck.builder()
@@ -143,7 +178,8 @@ public class VATaxIDCheckService
 		// re-check flip (Valid -> Invalid, ServiceUnavailable -> Valid, ...) still logs.
 		if (result.getStatus() != parentStatus.getStatus() && parentStatus.getStatus() != VATaxIDStatus.NotChecked)
 		{
-			Loggables.addLog("VAT-ID {}: status {} -> {}", vataxID.getAsString(), parentStatus.getStatus(), result.getStatus());
+			Loggables.addLog("VAT-ID {}: status {} -> {}",
+					request.getVataxID().getAsString(), parentStatus.getStatus(), result.getStatus());
 		}
 
 		return result.getStatus();
