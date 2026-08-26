@@ -103,6 +103,14 @@ public class S_Resource_StepDef
 	 *     <li>{@code PlanningHorizon}</li>
 	 *     <li>{@code CapacityPerProductionCycle} (+ its UOM column)</li>
 	 * </ul>
+	 * <pre>
+	 * And create S_Resource:
+	 *   | Identifier  | S_ResourceType_ID | IsManufacturingResource | ManufacturingResourceType | LotNumberCode | PlanningHorizon |
+	 *   | wsLineFive  | 1000000           | Y                       | WS                        | 5             | 999             |
+	 *   | wsLineSeven | 1000000           | Y                       | WS                        | 7             | 999             |
+	 * </pre>
+	 * Two workstations differing only in {@code LotNumberCode}, so a scenario can prove the lot number's
+	 * line segment follows the order's workstation.
 	 */
 	@And("create S_Resource:")
 	public void createResources(@NonNull final DataTable dataTable)

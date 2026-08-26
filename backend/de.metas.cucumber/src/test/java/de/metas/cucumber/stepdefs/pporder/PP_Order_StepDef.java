@@ -214,6 +214,14 @@ public class PP_Order_StepDef
 	 *     so a scenario covering that hop must be able to set it independently.</li>
 	 *     <li>{@code completeDocument} — defaults to {@code false}</li>
 	 * </ul>
+	 * <pre>
+	 * And create PP_Order:
+	 *   | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | OPT.WorkStation_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument |
+	 *   | ppOrder_lotno_ws5      | MOP         | finishedGoodsProd       | 10         | testResource             | wsLineFive                    | 2025-04-01T23:59:00.00Z | 2025-04-01T23:59:00.00Z | 2025-04-01T23:59:00.00Z | Y                |
+	 * </pre>
+	 * Here {@code testResource} is the plant and {@code wsLineFive} the workstation — two different
+	 * resources on the same order. Omit {@code OPT.WorkStation_ID.Identifier} when the scenario does
+	 * not exercise the workstation hop.
 	 */
 	@And("create PP_Order:")
 	public void compute_PPOrderCreateRequest_to_create_pp_order(@NonNull final DataTable dataTable)
