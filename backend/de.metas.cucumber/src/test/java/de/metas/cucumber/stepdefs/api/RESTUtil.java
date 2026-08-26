@@ -93,6 +93,7 @@ public class RESTUtil
 {
 	private static final Logger logger = LogManager.getLogger(RESTUtil.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
 
 	public String getAuthToken(@NonNull final String userLogin, @NonNull final String roleName)
 	{
@@ -113,7 +114,7 @@ public class RESTUtil
 		// Access.READ-guarded lookup (e.g. OrgDAO.retrieveOrgIdBy) could not see orgs outside the context org.
 		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_Role_ID, roleId.getRepoId());
 		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_Client_ID,
-				Services.get(IRoleDAO.class).getById(roleId).getClientId().getRepoId());
+				roleDAO.getById(roleId).getClientId().getRepoId());
 
 		return userAuthTokenRecord.getAuthToken();
 	}
