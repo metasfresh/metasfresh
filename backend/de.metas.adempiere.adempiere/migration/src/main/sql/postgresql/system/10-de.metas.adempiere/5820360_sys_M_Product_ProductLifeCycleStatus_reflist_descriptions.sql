@@ -1,21 +1,10 @@
 -- Product Life Cycle Status (BBS-Status) ref-list (AD_Reference 542123): give every value a Description.
+-- The WebUI renders it as the dropdown tooltip, so this is where a user learns what a status blocks.
+-- All four were NULL.
 --
--- The WebUI shows AD_Ref_List.Description as the hover tooltip on a dropdown value, so this is where a
--- user finds out what a status actually permits and forbids without opening the documentation. All four
--- values had a NULL Description, which left the labels (OK / Auslauf / Gesperrt / Lieferstopp) to be
--- guessed at -- and "Auslauf" in particular is easy to confuse with the separate Auslaufprodukt
--- (M_Product.Discontinued) checkbox, which does something entirely different (it filters the order-line
--- quick-input product picker; it blocks nothing).
---
--- Base language is de_DE, so the GERMAN text goes into AD_Ref_List.Description and the English into the
--- en_US AD_Ref_List_Trl -- the same split 5817300 established for Name (German) vs ValueName (English).
--- de_CH is a translated language for this ref-list too and gets the German text.
---
--- The wording mirrors de.metas.product.BBSStatus, which is the single source of truth for the matrix:
---   OK             -> blocks nothing
---   PHASE_OUT      -> blocks PURCHASE, MANUFACTURE
---   BLOCKED        -> blocks every ProductLifeCycleAction
---   DO_NOT_DELIVER -> blocks SHIP, PICK
+-- Base language is de_DE: German goes into AD_Ref_List.Description, English into the en_US Trl (same
+-- split 5817300 made for Name vs ValueName). de_CH is translated too and gets the German text.
+-- Wording mirrors de.metas.product.BBSStatus, the source of truth for the matrix.
 
 -- O = OK ---------------------------------------------------------------------------------------------
 UPDATE AD_Ref_List SET Description='Keine Einschränkung: Einkauf, Verkauf, Kommissionierung, Produktion und Versand sind erlaubt.',
