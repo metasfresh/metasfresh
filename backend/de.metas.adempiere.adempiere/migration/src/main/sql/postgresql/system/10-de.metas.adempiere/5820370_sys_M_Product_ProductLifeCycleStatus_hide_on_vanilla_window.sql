@@ -9,8 +9,8 @@
 -- that customer's repo already adds the field to the window it actually opens.
 --
 -- Hides a UI element only -- the column, its ref-list and every backend guard stay in core untouched.
--- (AD_Window 541885 overrides 140 with IsOverrideInMenu='Y', so the menu does not reach 140 anyway;
--- this makes "not part of the vanilla Product UI" explicit rather than accidental.)
+-- (the customer product window overrides 140 with IsOverrideInMenu='Y', so the menu does not reach 140
+-- anyway; this makes "not part of the vanilla Product UI" explicit rather than accidental.)
 
 UPDATE AD_Field
 SET IsDisplayed='N',
