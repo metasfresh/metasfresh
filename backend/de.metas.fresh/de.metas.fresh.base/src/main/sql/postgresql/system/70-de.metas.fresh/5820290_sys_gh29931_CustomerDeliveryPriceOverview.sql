@@ -55,24 +55,29 @@ CREATE OR REPLACE FUNCTION report.getCustomerDeliveryPriceOverview(
 AS
 $$
 WITH deliveries AS (
-    -- One row per (business partner, product): the delivered quantity summed over the whole
-    -- window, plus a representative location for pricing. Collapsing to (bp, product) here is
-    -- what makes each article appear ONCE per partner -- a partner whose ship-to locations
-    -- resolve to different (country-specific) price lists no longer yields one row per location.
-    -- The representative is the lowest-id delivery location; a partner's locations resolve to
-    -- different prices only when country-specific price lists apply.
+    -- One row per (business partner, delivery country, product). The sales price is driven by
+    -- the delivery location's COUNTRY (country-specific price lists), so we group by that country
+    -- instead of by raw location: locations in the same country collapse to one row (identical
+    -- price), while a genuinely different-country price stays on its own row -- no arbitrary pick.
+    -- The effective delivery location honors the schedule override (C_BP_Location_Override_ID);
+    -- rep_c_bpartner_location_id is any location of that country (all resolve to the same price).
     SELECT sched.c_bpartner_id,
+           loc.c_country_id,
            sched.m_product_id,
-           SUM(sched.qtydelivered)           AS qty,
-           MIN(sched.c_bpartner_location_id) AS rep_c_bpartner_location_id
+           SUM(sched.qtydelivered)         AS qty,
+           MIN(eff.c_bpartner_location_id) AS rep_c_bpartner_location_id
     FROM m_shipmentschedule sched
+             LEFT JOIN c_bpartner_location eff
+                       ON eff.c_bpartner_location_id =
+                          COALESCE(sched.c_bp_location_override_id, sched.c_bpartner_location_id)
+             LEFT JOIN c_location loc ON loc.c_location_id = eff.c_location_id
     WHERE sched.processed = 'Y'
       AND sched.deliverydate >= p_DeliveryDateFrom
       -- DateTo bounds the window inclusively when given; when omitted the window runs until
       -- today (NOW()), preserving the old single-parameter "from date until today" behaviour
       AND sched.deliverydate < COALESCE(p_DeliveryDateTo, NOW()) + INTERVAL '1 day'
       AND (p_C_BPartner_ID IS NULL OR sched.c_bpartner_id = p_C_BPartner_ID)
-    GROUP BY sched.c_bpartner_id, sched.m_product_id
+    GROUP BY sched.c_bpartner_id, loc.c_country_id, sched.m_product_id
 )
 SELECT (SELECT value FROM C_BPartner WHERE C_BPartner_id = p_C_BPartner_ID) AS Param_BPartnerValue,
        bp.value           AS BPvalue,
