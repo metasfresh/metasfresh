@@ -1085,10 +1085,7 @@ public class ESRImportBL implements IESRImportBL
 
 		final String actionType = line.getESR_Payment_Action();
 
-		// A SYSTEM-SET flag is not a user decision. The import sets some actions itself, and this pass
-		// only tests that ESR_Payment_Action is non-null before running a handler and marking the line
-		// Processed -- so without this guard a later Process run (possibly triggered for a completely
-		// different line) silently closes such a line although nobody decided anything.
+		// A SYSTEM-SET flag is not a user decision:
 		//   Duplicate_Payment: the import flags it, the accountant must still pick an overpayment
 		//     action. It is not even selectable -- ESRPaymentActionValidationRule accepts it in no
 		//     group -- so skipping it here cannot block a deliberate choice.
