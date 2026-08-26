@@ -34,18 +34,11 @@ import java.math.BigDecimal;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Unit-tests the sign-routing/leg-decomposition logic that {@code Doc_PPCostCollector} uses to post a
- * {@code CostDifferenceDistribution} cost collector, WITHOUT going through the full {@code Doc_}/{@code Fact}
- * posting machinery (which needs a DB-backed {@code AcctSchema} + {@code AcctDocContext} not available as a
- * plain unit test in this module — see the Task 5 report for the reasoning). This is the actual new logic
- * introduced by the branch (which account is debited/credited and by how much); the surrounding
- * {@code Fact}/{@code FactLine} construction reuses the already-proven idiom from
- * {@code createFacts_ComponentIssue}/{@code createFacts_Variance}.
- * <p>
- * Fixtures mirror {@code PPOrderCostDifferenceDistributorTest}'s Eg1/Eg2 (INVESTIGATION §2, PLAN-PR2 Task 5):
+ * Covers which account each leg of a {@code CostDifferenceDistribution} posting debits or credits, and by how
+ * much:
  * <ul>
- *     <li>Eg1: residual=40 (capitalized=32, cogs=8) -&gt; DR P_Asset_Acct 32, DR P_COGS_Acct 8, CR P_WIP_Acct 40.</li>
- *     <li>Eg2: residual=-40 (capitalized=-40, cogs=0) -&gt; DR P_WIP_Acct 40, CR P_Asset_Acct 40 (reverse).</li>
+ *     <li>residual=40 (capitalized=32, cogs=8) -&gt; DR P_Asset_Acct 32, DR P_COGS_Acct 8, CR P_WIP_Acct 40.</li>
+ *     <li>residual=-40 (capitalized=-40, cogs=0) -&gt; DR P_WIP_Acct 40, CR P_Asset_Acct 40.</li>
  * </ul>
  */
 class Doc_PPCostCollectorCostDifferenceDistributionTest

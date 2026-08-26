@@ -69,14 +69,7 @@ public interface IPPCostCollectorBL extends ISingletonService
 	 */
 	I_PP_Cost_Collector createReceipt(ReceiptCostCollectorCandidate candidate);
 
-	/**
-	 * Create and process a {@code CostDifferenceDistribution} cost collector for the WIP cost-difference
-	 * discharge of a completed-but-not-closed order. The monetary split is computed against {@code M_Cost}
-	 * by {@code PPOrderCostDifferenceDistributor} (which calls this); the collector links the order and
-	 * finished good and carries the manufactured qty as its movement qty.
-	 *
-	 * @return processed cost collector
-	 */
+	/** Creates and processes the {@code CostDifferenceDistribution} collector carrying the manufactured qty. */
 	I_PP_Cost_Collector createCostDifferenceDistribution(@NonNull I_PP_Order order, @NonNull ProductId productId, @NonNull Quantity qty);
 
 	void createActivityControl(ActivityControlCreateRequest request);

@@ -61,21 +61,13 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 /**
- * Discharges the WIP cost residual of a completed-but-not-closed manufacturing order:
- * the in-stock portion is capitalized onto the finished good's current cost price, the
- * already-shipped remainder spills to COGS. Driven by the explicit "Distribute" action.
+ * Discharges the WIP cost residual of a completed-but-not-closed manufacturing order: the in-stock
+ * portion is capitalized onto the finished good's current cost price, the already-shipped remainder
+ * spills to COGS.
  * <p>
- * {@code residual = issued - received} is recomputed in Java from the order's {@code PP_Order_Cost}
- * rows. It uses the same two sums as the {@code PP_Order.CostDifference} display column but with the
- * <b>opposite sign</b>: that column shows {@code received - issued} (so it reads negative when a make
- * costs more than it received), whereas the amount to discharge into inventory/COGS is
- * {@code issued - received = -CostDifference}. Do not read the virtual column value.
- * <p>
- * The split math is method-independent (Standard / AveragePO / MovingAverageInvoice all settle
- * through {@link CurrentCost}); it mirrors
- * {@code MovingAverageInvoiceCostingMethodHandler.computeCostAmountDetailedForMatchInv} with
- * {@code amtDifference = residual}, {@code receiptQty = manufacturedQty} and
- * {@code on-hand = M_Cost.CurrentQty}.
+ * {@code residual = issued - received} is always recomputed from the order's {@code PP_Order_Cost} rows.
+ * It is the <b>opposite sign</b> of the {@code PP_Order.CostDifference} display column
+ * ({@code received - issued}), which is never read here.
  */
 @Component
 @RequiredArgsConstructor
@@ -90,16 +82,10 @@ public class PPOrderCostDifferenceDistributor
 	@NonNull private final CurrentCostsRepository currentCostsRepo;
 	@NonNull private final CostingMethodHandlerUtils utils;
 
-	/**
-	 * Distributes the WIP cost residual of the given (completed, not-closed) order: capitalizes the
-	 * in-stock portion onto the finished good's {@link CurrentCost} and creates a
-	 * {@code CostDifferenceDistribution} cost collector. No-op when the residual is zero.
-	 */
 	public void distribute(@NonNull final PPOrderId orderId)
 	{
-		// Idempotency: this collector type is a no-op in every costing handler (it creates no PP_Order_Cost
-		// row), so re-running would recompute the identical residual and capitalize CurrentCostPrice a second
-		// time. The order stays Completed after distribution, so the "Distribute" action would remain offered.
+		// The order stays Completed after distributing, so the action remains offered; re-running would
+		// recompute the identical residual and capitalize the current cost price a second time.
 		if (isAlreadyDistributed(orderId))
 		{
 			throw new AdempiereException("@Processed@")
@@ -110,8 +96,7 @@ public class PPOrderCostDifferenceDistributor
 		final I_PP_Order order = ppOrdersRepo.getById(orderId);
 
 		final ClientId clientId = ClientId.ofRepoId(order.getAD_Client_ID());
-		// Use the acct schema of the order's org (the one CreatePPOrderCostsCommand created the PP_Order_Cost
-		// rows for and Doc_PPCostCollector recomputes/posts against) — NOT necessarily the client's primary schema.
+		// The order's org schema — the one its PP_Order_Cost rows were created for; not necessarily the client's primary one.
 		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
 		final AcctSchemaId acctSchemaId = acctSchemasRepo.getByClientAndOrg(clientId, orgId).getId();
 
@@ -119,7 +104,6 @@ public class PPOrderCostDifferenceDistributor
 
 		if (residualAndQty.getResidual().isZero())
 		{
-			// nothing to discharge
 			return;
 		}
 
@@ -136,8 +120,7 @@ public class PPOrderCostDifferenceDistributor
 			currentCostsRepo.save(currentCost);
 		}
 
-		// Marker collector for the discharge; PP_Cost_Collector carries no monetary field (the residual/split is
-		// recomputed from PP_Order_Cost). Links the order + finished good, movement qty = manufactured qty.
+		// The collector carries no monetary field; the split is recomputed from PP_Order_Cost when posting.
 		costCollectorsService.createCostDifferenceDistribution(
 				order,
 				ProductId.ofRepoId(order.getM_Product_ID()),
@@ -145,20 +128,11 @@ public class PPOrderCostDifferenceDistributor
 	}
 
 	/**
-	 * Recomputes the capitalize/COGS split for the given order + {@link AcctSchemaId}, for posting purposes
-	 * ({@code Doc_PPCostCollector.createFacts(AcctSchema)} — which is invoked once per every {@code AcctSchema}
-	 * configured for the client, not only the primary one, so the caller MUST pass the schema it is posting to;
-	 * this method never re-derives "the" primary schema itself). It does NOT move the finished good's
-	 * {@link CurrentCost} price: the price was already moved (on the order's org acct schema) when the order's
-	 * {@code CostDifferenceDistribution} cost collector was created (see {@link #distribute}).
-	 * <p>
-	 * Unlike {@link #distribute}, this method is read-only: it calls the read-only {@link #computeSplit}, never
-	 * {@link #distributeOnto} (which mutates the price), and never creates or saves a {@link CurrentCost} row —
-	 * calling it repeatedly (e.g. on a repost) does not double-move the price. It throws if the {@link CurrentCost}
-	 * row is missing (expected to already exist from {@link #distribute}) rather than silently fabricating one.
+	 * Recomputes the capitalize/COGS split for posting, without moving the current cost price ({@link #distribute}
+	 * already did that), so a repost never moves it again. The caller must pass the schema it is posting to: posting
+	 * runs once per configured {@link AcctSchemaId}, not only the primary one.
 	 *
-	 * @return a zero split ({@link CostAmountDetailed#zero}) when there is nothing to discharge, matching
-	 * {@link #distribute}'s no-op case
+	 * @return a zero split when there is nothing to discharge
 	 */
 	public CostAmountDetailed computeSplitForPosting(@NonNull final PPOrderId orderId, @NonNull final AcctSchemaId acctSchemaId)
 	{
@@ -173,23 +147,14 @@ public class PPOrderCostDifferenceDistributor
 		final CurrentCost currentCost = currentCostsRepo.getOrNull(mainProductCostSegment);
 		if (currentCost == null)
 		{
-			// Read-only: unlike distribute()/getOrCreate, never fabricate a new (zero-qty) CurrentCost row here —
-			// that would silently misroute the whole residual to COGS (qtyInStock would read 0).
+			// Never fabricate a zero-qty row here: qtyInStock would read 0 and the whole residual would misroute to COGS.
 			throw new AdempiereException("CurrentCost record not found for " + mainProductCostSegment
 					+ " — expected to already exist from the 'Distribute' action");
 		}
 
-		// read-only: computeSplit only reads currentCost's currentQty/precision/currencyId; it never mutates
-		// or saves it (distributeOnto, which does move the price via addWeightedAverage, is used only at
-		// distribution time by #distribute).
 		return computeSplit(residualAndQty.getResidual(), residualAndQty.getManufacturedQty(), currentCost);
 	}
 
-	/**
-	 * Shared by {@link #distribute} and {@link #computeSplitForPosting}: resolves the material cost element for
-	 * the given {@code acctSchemaId}'s costing method, then recomputes the residual/manufactured-qty from the
-	 * order's {@code PP_Order_Cost} rows for that exact schema.
-	 */
 	private ResidualAndManufacturedQty computeResidualAndManufacturedQtyForOrder(
 			@NonNull final PPOrderId orderId,
 			@NonNull final AcctSchemaId acctSchemaId)
@@ -219,13 +184,7 @@ public class PPOrderCostDifferenceDistributor
 						() -> new AdempiereException("Expected exactly one material cost element for costing method " + costingMethod + " but got " + materialElements)));
 	}
 
-	/**
-	 * Splits the residual into the capitalize (ADJUSTMENT) and COGS (ALREADY_SHIPPED) legs and
-	 * moves the current cost price by capitalizing the ADJUSTMENT leg (weighted-average, qty delta = 0).
-	 * Mutates the given {@code currentCost}.
-	 *
-	 * @return the split ({@code mainAmt = residual}, {@code costAdjustmentAmt = capitalized}, {@code alreadyShippedAmt = COGS})
-	 */
+	/** Splits the residual and capitalizes the adjustment leg onto the given {@code currentCost}, which it mutates. */
 	@VisibleForTesting
 	static CostAmountDetailed distributeOnto(
 			@NonNull final CostAmount residual,
@@ -238,18 +197,14 @@ public class PPOrderCostDifferenceDistributor
 		final CostAmount capitalized = split.getCostAdjustmentAmt();
 		if (!capitalized.isZero())
 		{
-			// qty delta = 0 => reprices the existing on-hand qty by the capitalized amount
+			// Zero qty delta => reprices the existing on-hand qty by the capitalized amount.
 			currentCost.addWeightedAverage(capitalized, manufacturedQty.toZero(), uomConverter);
 		}
 
 		return split;
 	}
 
-	/**
-	 * Computes the capitalize/COGS split. Mirrors the reference invoice-match algorithm with
-	 * {@code amtDifference = residual}, {@code receiptQty = manufacturedQty},
-	 * {@code qtyStillInStock = M_Cost.CurrentQty.min(manufacturedQty)}.
-	 */
+	/** Splits the residual pro rata: the still-in-stock share is capitalized, the shipped remainder goes to COGS. */
 	@VisibleForTesting
 	static CostAmountDetailed computeSplit(
 			@NonNull final CostAmount residual,
@@ -268,13 +223,11 @@ public class PPOrderCostDifferenceDistributor
 		}
 		else if (manufacturedQty.isZero())
 		{
-			// nothing in stock to capitalize onto => all to COGS
 			capitalized = CostAmount.zero(currencyId);
 			cogs = residual;
 		}
 		else if (manufacturedQty.equalsIgnoreSource(qtyInStock))
 		{
-			// everything manufactured is still in stock => capitalize the whole residual
 			capitalized = residual;
 			cogs = CostAmount.zero(currencyId);
 		}
@@ -293,14 +246,9 @@ public class PPOrderCostDifferenceDistributor
 	}
 
 	/**
-	 * Recomputes {@code residual = issued - received} and the manufactured qty from the order's
-	 * {@code PP_Order_Cost} rows, for the given accounting schema and material cost element (recomputed
-	 * in Java, not read from the virtual {@code CostDifference} column):
-	 * <ul>
-	 *     <li>{@code issued}   = &Sigma; over MaterialIssue rows of {@code -accumulatedQty x (own + components price)}</li>
-	 *     <li>{@code received} = &Sigma; over MainProduct / CoProduct / ByProduct rows of {@code postCalculationAmount}</li>
-	 * </ul>
-	 * {@code manufacturedQty} = the MainProduct row's accumulated (received) qty.
+	 * Recomputes {@code residual = issued - received} over the order's {@code PP_Order_Cost} rows of the given
+	 * schema and material cost element: {@code issued} sums {@code -accumulatedQty x price} over the MaterialIssue
+	 * rows, {@code received} sums the post-calculation amount over the MainProduct / CoProduct / ByProduct rows.
 	 */
 	@VisibleForTesting
 	static ResidualAndManufacturedQty computeResidualAndManufacturedQty(
@@ -324,7 +272,7 @@ public class PPOrderCostDifferenceDistributor
 			final PPOrderCostTrxType trxType = cost.getTrxType();
 			if (trxType == PPOrderCostTrxType.MaterialIssue)
 			{
-				// -cumulatedqty x (currentcostprice + currentcostpricell)
+				// MaterialIssue rows accumulate a negative qty, hence the negate().
 				issued = issued.add(cost.getPrice().multiply(cost.getAccumulatedQty()).negate());
 			}
 			else if (trxType == PPOrderCostTrxType.MainProduct

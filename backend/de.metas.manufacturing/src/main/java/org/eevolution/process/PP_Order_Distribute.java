@@ -36,12 +36,8 @@ import org.eevolution.api.PPOrderId;
 import javax.annotation.Nullable;
 
 /**
- * Discharges the WIP cost residual of a completed-but-not-closed manufacturing order via
- * {@link PPOrderCostDifferenceDistributor}: capitalizes the in-stock portion onto the finished
- * good's current cost and spills the already-shipped portion to COGS.
- * <p>
- * Available only on a single order that is {@link DocStatus#isCompleted()} and not
- * {@link DocStatus#isClosed()} — mirrors {@link PP_Order_UnClose}'s precondition style.
+ * Discharges the WIP cost residual of a manufacturing order, offered only while it is completed and
+ * not yet closed.
  */
 public class PP_Order_Distribute extends JavaProcess implements IProcessPrecondition
 {

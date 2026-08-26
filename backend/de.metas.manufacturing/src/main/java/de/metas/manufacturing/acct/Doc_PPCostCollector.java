@@ -401,21 +401,9 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	}
 
 	/**
-	 * <pre>
-	 * residual > 0 (Eg1):
-	 *   Product Asset (capitalized)   DR
-	 *   COGS (already-shipped spill)  DR
-	 *   WIP                                CR
-	 * residual < 0 (Eg2): reverse (DR WIP / CR Product Asset).
-	 * </pre>
-	 * Routing is purely sign-based per leg (see {@link #costDifferenceDistributionLegs}), so a negative residual
-	 * with a nonzero COGS spill also produces a 3-leg fact (CR Product Asset + CR COGS / DR WIP) — not only the
-	 * 2-leg case shown above for Eg2 (where the COGS leg happens to be zero).
-	 * <p>
-	 * The split is recomputed from {@code PP_Order_Cost} at posting time via
-	 * {@link PPOrderCostDifferenceDistributor#computeSplitForPosting} (read-only — the current cost price was
-	 * already moved when the order's {@code CostDifferenceDistribution} collector was created by the
-	 * "Distribute" action). The amount is controller-triggered, not derived via {@code docLine.getCreateCosts}.
+	 * Posts the WIP residual: DR Product Asset (capitalized) + DR COGS (shipped remainder) / CR WIP, each leg
+	 * flipped when the residual is negative. The amount comes from {@code PP_Order_Cost}, not from
+	 * {@code docLine.getCreateCosts}.
 	 */
 	private List<Fact> createFacts_CostDifferenceDistribution(final AcctSchema as)
 	{
@@ -455,14 +443,8 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	}
 
 	/**
-	 * Decomposes the capitalize/COGS {@code split} into the (at most 3) balanced fact legs for
-	 * {@link #createFacts_CostDifferenceDistribution}: {@code P_Asset_Acct} (capitalized), {@code P_COGS_Acct}
-	 * (already-shipped spill) and {@code P_WIP_Acct} (the residual, opposite sign) — zero-amount legs are
-	 * omitted. Debit/credit is routed purely by sign (positive = debit, negative = credit); since
-	 * {@code capitalized + cogs == residual} by construction, the legs always sum to zero (balanced).
-	 * <p>
-	 * Pure/DB-free by design so the sign-routing logic can be unit-tested without the full {@code Doc_}/{@code Fact}
-	 * posting machinery (see {@code Doc_PPCostCollectorCostDifferenceDistributionTest}).
+	 * Decomposes the split into at most three legs — asset, COGS and the negated residual on WIP — dropping the
+	 * zero ones. They always balance, because {@code capitalized + cogs == residual}.
 	 */
 	@VisibleForTesting
 	static ImmutableList<CostDifferenceDistributionLeg> costDifferenceDistributionLegs(@NonNull final CostAmountDetailed split)

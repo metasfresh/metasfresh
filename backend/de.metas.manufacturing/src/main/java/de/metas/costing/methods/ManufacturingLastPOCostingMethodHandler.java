@@ -139,9 +139,7 @@ public class ManufacturingLastPOCostingMethodHandler implements CostingMethodHan
 		}
 		else if (costCollectorType.isCostDifferenceDistribution())
 		{
-			// The WIP cost-difference distribution (capitalize on-hand qty / spill remainder to COGS) is computed
-			// against M_Cost directly by the distributor service that creates this collector; this method-specific
-			// handler does not move any cost here (no-op), independent of the manufacturing costing method.
+			// The distribution is applied to M_Cost by the service that creates this collector; nothing to do here.
 			orderCosts = null;
 			currentCost = null;
 			result = null;

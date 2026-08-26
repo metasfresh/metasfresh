@@ -248,14 +248,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 		}
 		else if (costCollectorType.isCostDifferenceDistribution())
 		{
-			// Forward completion is a no-op: the marker collector carries no PP_Order_Cost row; the finished
-			// good's cost-price move and the balanced posting happen in
-			// PPOrderCostDifferenceDistributor.distribute() / Doc_PPCostCollector.
-			//
-			// A reversal is NOT refused here on purpose: on the reversal document isReversal() is false (its
-			// Reversal_ID points to the lower-id original, and isReversal() tests Reversal_ID > own id), so a
-			// completeIt-time isReversal() guard would never fire. The reversal is refused at the reversal entry
-			// point instead — see reverseCorrectIt().
+			// Nothing to do: the cost-price move and the posting happen outside this collector.
 		}
 
 		//
@@ -443,19 +436,9 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 	}
 
 	/**
-	 * Refuses {@code reverseCorrectIt()} for a {@code CostDifferenceDistribution} cost collector.
-	 * <p>
-	 * {@link #reverseCorrectIt()} creates a mirrored collector and completes it, which re-runs
-	 * {@code Doc_PPCostCollector.createFacts_CostDifferenceDistribution}. That posting recomputes the SAME
-	 * non-negated capitalize/COGS split (it never checks whether the collector is a reversal), so reversing would
-	 * post the identical DR-Asset/COGS / CR-WIP facts AGAIN — DOUBLING the GL instead of undoing it. Full
-	 * negated-reversal support is deferred (it requires reopening + redistributing the order). Until then, refuse
-	 * the reversal at its entry point.
-	 * <p>
-	 * Guarded here (in {@code reverseCorrectIt}) rather than in {@code completeIt}: the reversal is completed on the
-	 * mirrored document, whose {@code isReversal()} is false (its {@code Reversal_ID} points to the lower-id
-	 * original), so a {@code completeIt}-time {@code isReversal()} check would never fire. {@code reverseCorrectIt}
-	 * is called exactly once per reverse attempt, so a type check here fires reliably.
+	 * Refuses reversing a {@code CostDifferenceDistribution} collector: the mirrored document reposts the same
+	 * non-negated split, doubling the GL instead of undoing it. The guard belongs here and not in
+	 * {@code completeIt}, where {@code isReversal()} is false on the mirrored document.
 	 */
 	@VisibleForTesting
 	static void assertReverseCorrectSupported(final CostCollectorType costCollectorType)

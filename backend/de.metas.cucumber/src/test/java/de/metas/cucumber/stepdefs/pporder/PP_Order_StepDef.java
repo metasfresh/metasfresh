@@ -418,11 +418,8 @@ public class PP_Order_StepDef
 	}
 
 	/**
-	 * Runs the "Distribute" action ({@link PP_Order_Distribute}) on the given completed-but-not-closed
-	 * manufacturing order: discharges its WIP cost residual by capitalizing the in-stock portion onto the
-	 * finished good's current cost and spilling the already-shipped portion to COGS. Not a document
-	 * action (it does not change {@code DocStatus}), so it is invoked as a plain {@code AD_Process}
-	 * rather than through {@link #order_action}.
+	 * Runs {@link PP_Order_Distribute} on the given order. It is a plain {@code AD_Process}, not a document
+	 * action, so it does not go through {@link #order_action} and leaves {@code DocStatus} untouched.
 	 */
 	@And("^the manufacturing order identified by (.*) is distributed$")
 	public void distributeOrder(@NonNull final String orderIdentifier)

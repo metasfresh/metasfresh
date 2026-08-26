@@ -30,24 +30,9 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * Guards {@link MPPCostCollector#assertReverseCorrectSupported(CostCollectorType)} — the type check
- * {@code reverseCorrectIt()} performs at its very first statement, before it builds/completes any mirrored
- * collector.
- * <p>
- * Reversing a {@code CostDifferenceDistribution} collector must be refused: {@code reverseCorrectIt()} would
- * complete a mirrored collector that re-runs {@code Doc_PPCostCollector.createFacts_CostDifferenceDistribution},
- * recomputing the identical non-negated split (posting never checks for a reversal) and DOUBLING the GL. Every
- * OTHER cost-collector type must still be reversible.
- * <p>
- * The guard is intentionally keyed on the {@link CostCollectorType} at the {@code reverseCorrectIt} entry point,
- * NOT on {@code isReversal()} inside {@code completeIt()}: the reversal is completed on the mirrored document,
- * whose {@code isReversal()} is false (its {@code Reversal_ID} points to the lower-id original), so a
- * {@code completeIt}-time check would never fire.
- * <p>
- * NOTE: this tests the extracted decision, not an end-to-end {@code reverseCorrectIt()} call — constructing an
- * {@code MPPCostCollector} (a {@code PO}) needs {@code POInfo} / a DB connection, unavailable in the plain unit
- * layer (no manufacturing test constructs a {@code PO} subclass for this reason). The wiring is a single
- * unconditional call at the top of {@code reverseCorrectIt()}, verifiable by reading.
+ * Covers {@link MPPCostCollector#assertReverseCorrectSupported(CostCollectorType)}: a
+ * {@code CostDifferenceDistribution} collector must be refused, because the mirrored collector would repost the
+ * same non-negated split and double the GL; every other type stays reversible.
  */
 class MPPCostCollectorCostDifferenceDistributionReversalTest
 {

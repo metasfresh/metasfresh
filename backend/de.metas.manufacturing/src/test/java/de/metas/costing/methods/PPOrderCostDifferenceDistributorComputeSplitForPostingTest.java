@@ -70,17 +70,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * DB-backed (via {@code AdempiereTestHelper}'s in-memory POJO layer) coverage for
- * {@link PPOrderCostDifferenceDistributor#computeSplitForPosting} — the accessor
- * {@code Doc_PPCostCollector} uses at posting time.
- * <p>
- * Two different {@link AcctSchemaId}s are set up for the SAME order, each with its own
- * {@code PP_Order_Cost} rows (different residual) and its own {@code M_Cost} row (different
- * on-hand qty), mirroring Eg1/Eg2 from {@code PPOrderCostDifferenceDistributorTest}. This proves
- * {@code computeSplitForPosting} is scoped to the {@link AcctSchemaId} it is called with — and would
- * have failed had it re-derived "the" primary schema internally instead of using the one
- * {@code Doc_PPCostCollector.createFacts(AcctSchema)} was actually invoked with (which happens once
- * per every {@code AcctSchema} configured for the client, not only the primary one).
+ * Covers {@link PPOrderCostDifferenceDistributor#computeSplitForPosting}. Two {@link AcctSchemaId}s are set up
+ * for the SAME order, each with its own {@code PP_Order_Cost} rows and its own on-hand qty, so the test fails
+ * if the split is not scoped to the schema it was called with.
  */
 class PPOrderCostDifferenceDistributorComputeSplitForPostingTest
 {
@@ -148,9 +140,8 @@ class PPOrderCostDifferenceDistributorComputeSplitForPostingTest
 	}
 
 	/**
-	 * NOTE: {@code IPPOrderCostBL.save} replaces ALL {@code PP_Order_Cost} rows of the order (it deletes
-	 * whatever isn't in the given {@link PPOrderCosts}) — so every schema's rows for the SAME order must be
-	 * accumulated and saved together in one call, never one {@code save} per schema.
+	 * {@code IPPOrderCostBL.save} replaces ALL rows of the order, so every schema's rows must be saved together
+	 * in one call, never one call per schema.
 	 */
 	private void addPPOrderCosts(
 			final ImmutableList.Builder<PPOrderCost> costs,
@@ -212,13 +203,13 @@ class PPOrderCostDifferenceDistributorComputeSplitForPostingTest
 
 		final AcctSchemaId schemaA = createAcctSchema(CostingMethod.AveragePO);
 		final CostElement costElementA = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.AveragePO);
-		// Eg1 fixture: issued=100, received=60 -> residual=40; CurrentQty=8 -> capitalize 32 / cogs 8
+		// issued=100, received=60 -> residual=40; CurrentQty=8 -> capitalize 32 / cogs 8
 		addPPOrderCosts(costs, schemaA, costElementA.getId(), "10", "-10", "6", "10", "60");
 		saveCurrentCost(schemaA, costElementA.getId(), "8");
 
 		final AcctSchemaId schemaB = createAcctSchema(CostingMethod.StandardCosting);
 		final CostElement costElementB = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.StandardCosting);
-		// Eg2 fixture: issued=10, received=50 -> residual=-40; CurrentQty=20 -> capitalize -40 / cogs 0
+		// issued=10, received=50 -> residual=-40; CurrentQty=20 -> capitalize -40 / cogs 0
 		addPPOrderCosts(costs, schemaB, costElementB.getId(), "1", "-10", "5", "10", "50");
 		saveCurrentCost(schemaB, costElementB.getId(), "20");
 

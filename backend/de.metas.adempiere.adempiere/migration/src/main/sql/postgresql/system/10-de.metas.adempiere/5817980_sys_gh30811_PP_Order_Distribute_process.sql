@@ -1,8 +1,6 @@
--- gh30811 Manufacturing costing — "Distribute" action on PP_Order (AD_Table 53027): discharges the
--- WIP cost residual of a completed-but-not-closed manufacturing order by calling
--- PPOrderCostDifferenceDistributor.distribute(...), which capitalizes the in-stock portion onto the
--- finished good's current cost and spills the already-shipped portion to COGS via a new
--- CostDifferenceDistribution PP_Cost_Collector. German base label; English override on en_US.
+-- gh30811 Manufacturing costing — "Distribute" action on PP_Order (AD_Table 53027): discharges the WIP
+-- cost residual of a completed-but-not-closed manufacturing order via a new CostDifferenceDistribution
+-- PP_Cost_Collector. German base label; English override on en_US.
 
 -- AD_Process: Java process, precondition-gated to a single completed-not-closed PP_Order (mirrors
 -- the existing PP_Order_UnClose row's field values). EntityType EE01 (org.eevolution), same as the
@@ -30,10 +28,9 @@ UPDATE AD_Process_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-09 10:
 WHERE AD_Language='de_CH' AND AD_Process_ID=585649
 ;
 
--- AD_Table_Process: table-wide (AD_Window_ID/AD_Tab_ID left NULL) so the action surfaces on every
--- window that opens PP_Order — the standard PP_Order window and the D2 cost-imbalance monitor window
--- alike. Both a quick action (per-row, from the grid) and a document action (from the record itself),
--- mirroring WEBUI_PP_Order_IssueReceipt_Launcher's flag combination; not the default quick action.
+-- AD_Table_Process: table-wide (AD_Window_ID/AD_Tab_ID left NULL) so the action surfaces on every window
+-- that opens PP_Order. Both a quick action (per-row, from the grid) and a document action, mirroring
+-- WEBUI_PP_Order_IssueReceipt_Launcher's flag combination; not the default quick action.
 INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,AD_Table_Process_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_DocumentAction,WEBUI_IncludedTabTopAction,WEBUI_ViewAction,WEBUI_ViewQuickAction,WEBUI_ViewQuickAction_Default)
 VALUES (0,0,585649,53027,541660 /*From ID Server*/,TO_TIMESTAMP('2026-08-09 10:10:20','YYYY-MM-DD HH24:MI:SS'),100,'EE01','Y',TO_TIMESTAMP('2026-08-09 10:10:20','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N')
 ;

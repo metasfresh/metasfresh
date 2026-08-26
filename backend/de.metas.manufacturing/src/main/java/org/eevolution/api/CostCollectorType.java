@@ -154,11 +154,7 @@ public enum CostCollectorType
 		return this == MethodChangeVariance && orderBOMLineId != null;
 	}
 
-	/**
-	 * WIP cost-difference distribution (capitalize on-hand / spill to COGS), created by the explicit "Distribute"
-	 * action on a completed-but-not-closed order. Not a variance, not a material movement, not an activity-control
-	 * collector: it carries an already-computed amount rather than deriving one from qty x price.
-	 */
+	/** WIP cost-difference distribution: capitalizes the on-hand share of the residual and spills the rest to COGS. */
 	public boolean isCostDifferenceDistribution()
 	{
 		return this == CostDifferenceDistribution;

@@ -315,7 +315,6 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty |
       | acctSchema      | finProd      | AveragePO        | 30 CHF           | 8 PCE      |
 
-    # Drive the "Distribute" action on the completed-but-not-closed order.
     And the manufacturing order identified by ppOrder is distributed
 
     And after not more than 60s, PP_Cost_Collector are found:

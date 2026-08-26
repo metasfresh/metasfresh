@@ -60,8 +60,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Ground-truth cases for the {@code CostDifferenceDistribution} split.
  * <ul>
- *   <li>Eg1: residual=40, manufacturedQty=10, CurrentQty=8 -> capitalize 32 / spill 8, price 30 -> 34.</li>
- *   <li>Eg2: residual=-40, manufacturedQty=10, CurrentQty=20 -> capitalize -40 / spill 0, price 30 -> 28.</li>
+ *   <li>residual=40, manufacturedQty=10, CurrentQty=8 -> capitalize 32 / spill 8, price 30 -> 34.</li>
+ *   <li>residual=-40, manufacturedQty=10, CurrentQty=20 -> capitalize -40 / spill 0, price 30 -> 28.</li>
  * </ul>
  */
 public class PPOrderCostDifferenceDistributorTest
