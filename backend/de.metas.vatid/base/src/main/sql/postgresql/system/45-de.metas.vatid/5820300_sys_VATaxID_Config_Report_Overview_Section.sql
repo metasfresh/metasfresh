@@ -1,3 +1,7 @@
+-- VATaxID_Config_Report: add an overview section counting how many partners / addresses carry a
+-- VAT-ID at all (with / without), so the per-status counts are read against the real population.
+-- Body kept in sync with ddl/functions/VATaxID_Config_Report.sql.
+
 DROP FUNCTION IF EXISTS VATaxID_Config_Report(NUMERIC);
 
 CREATE OR REPLACE FUNCTION VATaxID_Config_Report(p_VATaxID_Config_ID NUMERIC)

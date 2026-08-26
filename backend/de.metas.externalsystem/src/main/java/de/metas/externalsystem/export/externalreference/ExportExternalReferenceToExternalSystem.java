@@ -93,7 +93,7 @@ public abstract class ExportExternalReferenceToExternalSystem extends ExportToEx
 	 */
 	public void enqueueExternalReferenceSync(@NonNull final ExternalReferenceId externalReferenceId)
 	{
-		Loggables.withLogger(logger, Level.DEBUG).addLog("ExternalReferenceId: {} enqueued to be synced.", externalReferenceId);
+		Loggables.withLogger(logger, Level.DEBUG).addLog("ExportExternalReferenceToExternalSystem - ExternalReferenceId: {} enqueued to be synced.", externalReferenceId);
 
 		syncExternalReferenceDebouncer.add(externalReferenceId);
 	}

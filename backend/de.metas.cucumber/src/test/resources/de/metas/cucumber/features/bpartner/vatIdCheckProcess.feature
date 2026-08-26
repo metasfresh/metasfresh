@@ -61,6 +61,36 @@ Feature: The VAT-ID check process runs on a selection of Business Partners
     And the VAT-ID check process run reports 1 pending checks
 
   @from:cucumber
+  @Id:S31060_11
+  Scenario: The process marks an already-persisted malformed VAT-ID as Invalid without calling VIES
+  # The partner is created while the format check is OFF, so a malformed value can be persisted at all
+  # (the save-time interceptor would otherwise block it) -- mirroring a value that arrived by import or
+  # predates the format check. With both checks then on, the process must give it a definitive Invalid
+  # from the offline format check alone, never a VIES call, and never leave it 'Ungeprüft'.
+    Given no VATaxID_CheckLog records exist for VATaxID 'BE4258156477'
+    And metasfresh contains VATaxID_Config:
+      | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
+      | false                | false              | 30               | ServiceUnavailable   |
+    And metasfresh contains C_BPartners:
+      | Identifier | Value          | VATaxID      |
+      | bp_badfmt  | ProcBadFormat1 | BE4258156477 |
+    And metasfresh contains VATaxID_Config:
+      | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
+      | true                 | true               | 30               | ServiceUnavailable   |
+    And the VAT-ID online checker is stubbed to answer:
+      | VATaxID | VATaxIDStatus |
+    When the C_BPartner_VATaxID_Check process is run for selection with MaxChecksPerRun '0':
+      | C_BPartner_ID |
+      | bp_badfmt     |
+    Then validate C_BPartner VAT-ID status:
+      | C_BPartner_ID | VATaxIDStatus |
+      | bp_badfmt     | Invalid       |
+    And validate VATaxID_CheckLog records of C_BPartner 'bp_badfmt':
+      | VATaxID      | VATaxIDStatus | AD_PInstance_ID |
+      | BE4258156477 | Invalid       | true            |
+    And no unexpected VAT-ID online checks happened
+
+  @from:cucumber
   @Id:S31060_2
   Scenario Outline: An empty or zero limit checks every selected VAT-ID
     Given no VATaxID_CheckLog records exist for VATaxID 'DE136695976'

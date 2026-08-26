@@ -382,6 +382,49 @@ class VATaxIDCheckServiceTest
 	 * {@code vatIdCheckProcessCorrectsOrderTax.feature} — that own whether the resulting {@code C_Tax_ID} is
 	 * right.
 	 */
+	/**
+	 * A syntactically-invalid VAT-ID on a SUPPORTED prefix (here a Belgian number that fails the {@code BE}
+	 * structure) must not leave the record forever {@code NotChecked}. The offline format check is
+	 * authoritative when enabled, so the check records {@link VATaxIDStatus#Invalid} straight away and never
+	 * calls VIES — the same predicate the save-time interceptor uses to block such a value, applied to one
+	 * that was imported or predates the format check. Regression for the danthermuat finding where an
+	 * imported malformed VAT-ID stayed "Ungeprüft".
+	 */
+	@Test
+	void aMalformedVATaxID_isRecordedInvalidOffline_withoutCallingVIES()
+	{
+		givenConfig(0);
+		final VATIdentifier malformed = VATIdentifier.of("BE4258156477"); // BE prefix, fails BE[01]\d{9}
+		final BPartnerId bpartnerId = givenBPartnerWithVATaxID(malformed);
+
+		final VATaxIDStatus returnedStatus = checkService.check(VATaxIDCheckRequest.builder()
+				.bpartnerId(bpartnerId)
+				.vataxID(malformed)
+				.build());
+
+		assertThat(returnedStatus).as("returned status").isEqualTo(VATaxIDStatus.Invalid);
+
+		final I_C_BPartner record = reload(bpartnerId);
+		assertThat(record.getVATaxIDStatus()).as("VATaxIDStatus").isEqualTo(VATaxIDStatus.Invalid.getCode());
+		assertThat(record.getVATaxIDCheckedAt()).as("VATaxIDCheckedAt").isNotNull();
+		assertThat(record.getVATaxID_CheckLog_ID()).as("VATaxID_CheckLog_ID").isGreaterThan(0);
+
+		// The offline format check is definitive on its own — VIES is never asked about a malformed value.
+		verify(onlineChecker, never()).check(any(VATIdentifier.class), any(VATaxIDConfig.class));
+
+		// The log row is Invalid and distinguishable from a VIES 'valid:false' rejection: no requestIdentifier,
+		// and a RawResponse that marks it as an offline format rejection (see the class javadoc on the point).
+		assertThat(allCheckLogs())
+				.as("VATaxID_CheckLog rows")
+				.hasSize(1)
+				.allSatisfy(log -> {
+					assertThat(log.getVATaxID()).isEqualTo(malformed.getAsString());
+					assertThat(log.getVATaxIDStatus()).isEqualTo(VATaxIDStatus.Invalid.getCode());
+					assertThat(log.getRequestIdentifier()).isNull();
+					assertThat(log.getRawResponse()).contains("offline format check");
+				});
+	}
+
 	@Test
 	void aSaveTriggeredCheckThatChangesTheStoredStatus_refreshesTheOpenOrdersTax()
 	{

@@ -305,6 +305,20 @@ true today without fabricating a row the real system cannot yet produce.
       }
     });
 
+    await test.step('IsActive is the right-most grid column (moved to the far right — migration 5820320)', async () => {
+      // Grid columns render in AD_UI_Element.SeqNoGrid order; migration 5820320 gives IsActive the highest
+      // SeqNoGrid (200), so its header must sit to the RIGHT of AD_Org_ID (previously the last data column).
+      // Compared by horizontal position, reusing the two data-testid selectors already asserted above.
+      const isActiveBox = await page.locator('[data-testid="column-IsActive"]').boundingBox();
+      const orgBox = await page.locator('[data-testid="column-AD_Org_ID"]').boundingBox();
+      expect(isActiveBox, 'IsActive column header must have a bounding box').toBeTruthy();
+      expect(orgBox, 'AD_Org_ID column header must have a bounding box').toBeTruthy();
+      expect(
+        isActiveBox.x,
+        'IsActive grid column must render to the right of AD_Org_ID after the grid-order change',
+      ).toBeGreaterThan(orgBox.x);
+    });
+
     await test.step('Assert the list-view "add new" affordance is absent (AD_Tab.IsInsertRecord=N)', async () => {
       // TableFilter.js renders the "add new" button as
       // `<button class="btn btn-meta-outline-secondary btn-distance btn-sm">`
