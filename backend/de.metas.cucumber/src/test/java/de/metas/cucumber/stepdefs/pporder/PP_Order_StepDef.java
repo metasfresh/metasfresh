@@ -197,6 +197,32 @@ public class PP_Order_StepDef
 		DataTableRows.of(dataTable).forEach(row -> validatePP_Order_BomLine(timeoutSec, row));
 	}
 
+	/**
+	 * Creates {@code PP_Order} record(s) from the DataTable.
+	 * <p>
+	 * Required columns: {@code PP_Order_ID.Identifier}, {@code DocBaseType}, {@code M_Product_ID.Identifier},
+	 * {@code QtyEntered}, {@code S_Resource_ID.Identifier} (the <b>plant</b>), {@code DateOrdered},
+	 * {@code DatePromised} and {@code DateStartSchedule}.
+	 * <p>
+	 * Optional columns:
+	 * <ul>
+	 *     <li>{@code OPT.M_Warehouse_ID.Identifier} — defaults to {@link StepDefConstants#WAREHOUSE_ID}</li>
+	 *     <li>{@code OPT.PP_Product_Planning_ID.Identifier}</li>
+	 *     <li>{@code OPT.WorkStation_ID.Identifier} — the <b>workstation</b>, resolved against the resource table
+	 *     and passed to {@link PPOrderCreateRequest#getWorkstationId()}. Distinct from the plant: a lot-number
+	 *     provider resolves the production line via {@code PP_Order.WorkStation_ID -> S_Resource.LotNumberCode},
+	 *     so a scenario covering that hop must be able to set it independently.</li>
+	 *     <li>{@code completeDocument} — defaults to {@code false}</li>
+	 * </ul>
+	 * <pre>
+	 * And create PP_Order:
+	 *   | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | OPT.WorkStation_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument |
+	 *   | ppOrder_lotno_ws5      | MOP         | finishedGoodsProd       | 10         | testResource             | wsLineFive                    | 2025-04-01T23:59:00.00Z | 2025-04-01T23:59:00.00Z | 2025-04-01T23:59:00.00Z | Y                |
+	 * </pre>
+	 * Here {@code testResource} is the plant and {@code wsLineFive} the workstation — two different
+	 * resources on the same order. Omit {@code OPT.WorkStation_ID.Identifier} when the scenario does
+	 * not exercise the workstation hop.
+	 */
 	@And("create PP_Order:")
 	public void compute_PPOrderCreateRequest_to_create_pp_order(@NonNull final DataTable dataTable)
 	{
@@ -228,6 +254,13 @@ public class PP_Order_StepDef
 			row.getAsOptionalIdentifier(I_PP_Order.COLUMNNAME_PP_Product_Planning_ID)
 					.map(productPlanningTable::get)
 					.ifPresent(productPlanning -> ppOrderCreateRequest.productPlanningId(productPlanning.getIdNotNull()));
+
+			// The workstation is what a lot-number provider resolves the production line from
+			// (PP_Order.WorkStation_ID -> S_Resource.LotNumberCode), so it must be settable here
+			// independently of the plant.
+			row.getAsOptionalIdentifier(I_PP_Order.COLUMNNAME_WorkStation_ID)
+					.map(workstationIdentifier -> workstationIdentifier.lookupNotNullIdIn(resourceTable))
+					.ifPresent(ppOrderCreateRequest::workstationId);
 
 			final I_PP_Order ppOrder = ppOrderService.createOrder(ppOrderCreateRequest.build());
 			assertThat(ppOrder).isNotNull();
