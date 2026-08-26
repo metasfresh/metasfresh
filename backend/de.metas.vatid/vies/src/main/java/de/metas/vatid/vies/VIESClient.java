@@ -379,7 +379,7 @@ public class VIESClient implements VATaxIDOnlineChecker
 	 * HTTP 200 and {@code VOW-ERR-11} on HTTP 400.
 	 *
 	 * <p>Raises {@link VATaxIDCheckRequestRejectedException} rather than a bare {@link AdempiereException},
-	 * and that type is load-bearing: the calling run service swallows an ordinary exception per target on
+	 * and that type is load-bearing: the calling mass-check service swallows an ordinary exception per target on
 	 * purpose, so a bare one would be logged once per target for the whole selection instead of stopping the
 	 * run — see that exception's javadoc.
 	 */
