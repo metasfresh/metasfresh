@@ -159,24 +159,36 @@ Feature: Lot number stamped on HU during manufacturing receipt
       | PP_Product_BOM_ID.Identifier | OPT.LotNo_Sequence_ID.Identifier |
       | bom_ws                       | seq_lotno_ws                     |
 
-    # Both orders sit on the SAME plant (testResource) and differ ONLY by workstation.
+    # The first two orders sit on the SAME plant (testResource) and differ ONLY by workstation.
+    # The third runs on line 5 as well, but is received as TWO HUs (QtyTU=2) to cover the multi-HU receipt.
     And create PP_Order:
-      | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | OPT.WorkStation_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument |
-      | ppOrder_lotno_ws5      | MOP         | finishedGoodsProd       | 10         | testResource             | wsLineFive                    | 2025-04-01T23:59:00.00Z | 2025-04-01T23:59:00.00Z | 2025-04-01T23:59:00.00Z | Y                |
-      | ppOrder_lotno_ws7      | MOP         | finishedGoodsProd       | 10         | testResource             | wsLineSeven                   | 2025-04-01T23:59:00.00Z | 2025-04-01T23:59:00.00Z | 2025-04-01T23:59:00.00Z | Y                |
+      | PP_Order_ID.Identifier  | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | OPT.WorkStation_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument |
+      | ppOrder_lotno_ws5       | MOP         | finishedGoodsProd       | 10         | testResource             | wsLineFive                    | 2025-04-01T23:59:00.00Z | 2025-04-01T23:59:00.00Z | 2025-04-01T23:59:00.00Z | Y                |
+      | ppOrder_lotno_ws7       | MOP         | finishedGoodsProd       | 10         | testResource             | wsLineSeven                   | 2025-04-01T23:59:00.00Z | 2025-04-01T23:59:00.00Z | 2025-04-01T23:59:00.00Z | Y                |
+      | ppOrder_lotno_ws5_multi | MOP         | finishedGoodsProd       | 20         | testResource             | wsLineFive                    | 2025-04-01T23:59:00.00Z | 2025-04-01T23:59:00.00Z | 2025-04-01T23:59:00.00Z | Y                |
 
+    # The third row receives TWO HUs from ONE receipt: M_HU_ID.Identifier takes two comma-separated
+    # identifiers, bound positionally to the received HUs.
     And receive HUs for PP_Order with M_HU_LUTU_Configuration:
-      | PP_Order_ID       | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
-      | ppOrder_lotno_ws5 | hu_lotno_ws5       | N               | 0     | N               | 1     | N               | 10          | lotNoProduct_HUPI                  |
-      | ppOrder_lotno_ws7 | hu_lotno_ws7       | N               | 0     | N               | 1     | N               | 10          | lotNoProduct_HUPI                  |
+      | PP_Order_ID             | M_HU_ID.Identifier                  | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
+      | ppOrder_lotno_ws5       | hu_lotno_ws5                        | N               | 0     | N               | 1     | N               | 10          | lotNoProduct_HUPI                  |
+      | ppOrder_lotno_ws7       | hu_lotno_ws7                        | N               | 0     | N               | 1     | N               | 10          | lotNoProduct_HUPI                  |
+      | ppOrder_lotno_ws5_multi | hu_lotno_ws5_multi_a,hu_lotno_ws5_multi_b | N         | 0     | N               | 2     | N               | 10          | lotNoProduct_HUPI                  |
 
     When complete planning for PP_Order:
-      | PP_Order_ID.Identifier |
-      | ppOrder_lotno_ws5      |
-      | ppOrder_lotno_ws7      |
+      | PP_Order_ID.Identifier  |
+      | ppOrder_lotno_ws5       |
+      | ppOrder_lotno_ws7       |
+      | ppOrder_lotno_ws5_multi |
 
     # Each HU must carry ITS OWN workstation's line digit -- 5 and 7, not one shared value.
+    # And BOTH HUs of the multi-HU receipt must be stamped, with the SAME lot number: the provider is
+    # invoked once per receipt (AbstractPPOrderReceiptHUProducer memoises the value), not once per HU.
+    # Note there is deliberately NO running counter to assert: DBFunctionSequenceNoProvider returns
+    # isUseIncrementSeqNoAsPrefix()=false, so the lot value is exactly what the DB function computes.
     Then M_HU_Attribute is validated
-      | M_HU_ID      | M_Attribute_ID.Value | Value |
-      | hu_lotno_ws5 | Lot-Nummer           | L0915 |
-      | hu_lotno_ws7 | Lot-Nummer           | L0917 |
+      | M_HU_ID              | M_Attribute_ID.Value | Value |
+      | hu_lotno_ws5         | Lot-Nummer           | L0915 |
+      | hu_lotno_ws7         | Lot-Nummer           | L0917 |
+      | hu_lotno_ws5_multi_a | Lot-Nummer           | L0915 |
+      | hu_lotno_ws5_multi_b | Lot-Nummer           | L0915 |

@@ -118,10 +118,19 @@ public class M_HU_LUTU_Configuration_StepDef
 							.packUsingLUTUConfiguration(lutuConfig)
 							.createDraftReceiptCandidatesAndPlanningHUs();
 
-					assertThat(hus).hasSize(1);
+					// M_HU_ID.Identifier may name MORE THAN ONE identifier, comma-separated, for a receipt that
+					// packs into several HUs (e.g. QtyTU=2). The received HUs are then bound to the identifiers
+					// positionally. A single identifier keeps the previous behaviour exactly: one HU expected.
+					final List<StepDefDataIdentifier> huIdentifiers = tableRow.getAsIdentifier(I_M_HU.COLUMNNAME_M_HU_ID).toCommaSeparatedList();
 
-					final StepDefDataIdentifier huIdentifier = tableRow.getAsIdentifier(I_M_HU.COLUMNNAME_M_HU_ID);
-					huTable.putOrReplace(huIdentifier, hus.get(0));
+					assertThat(hus)
+							.as("received HUs must match the number of identifiers given in M_HU_ID.Identifier")
+							.hasSize(huIdentifiers.size());
+
+					for (int i = 0; i < huIdentifiers.size(); i++)
+					{
+						huTable.putOrReplace(huIdentifiers.get(i), hus.get(i));
+					}
 				});
 	}
 
