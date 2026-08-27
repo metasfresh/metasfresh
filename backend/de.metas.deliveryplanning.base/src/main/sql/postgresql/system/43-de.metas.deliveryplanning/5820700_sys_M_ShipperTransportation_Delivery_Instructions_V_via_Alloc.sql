@@ -1,7 +1,13 @@
-DROP VIEW M_ShipperTransportation_Delivery_Instructions_V
-;
+-- Source DDL: backend/de.metas.adempiere.adempiere/migration/src/main/sql/postgresql/ddl/public/views/M_ShipperTransportation_Delivery_Instructions_V.sql
+--
+-- Re-point M_ShipperTransportation_Delivery_Instructions_V off M_ShipperTransportation.M_Delivery_Planning_ID
+-- (being dropped) and onto M_Delivery_Planning_Alloc. The view still exposes m_delivery_planning_id
+-- (AD_Tab 546754 filters on it) -- under aggregation it now legitimately returns one row per
+-- (instruction, planning) pair instead of one row per instruction.
 
-CREATE OR REPLACE VIEW M_ShipperTransportation_Delivery_Instructions_V
+DROP VIEW IF EXISTS M_ShipperTransportation_Delivery_Instructions_V$new;
+
+CREATE OR REPLACE VIEW M_ShipperTransportation_Delivery_Instructions_V$new
 AS
 SELECT di.documentno,
        di.m_shippertransportation_id,
@@ -35,3 +41,11 @@ FROM M_ShipperTransportation di
          JOIN M_Delivery_Planning dp ON dp.m_delivery_planning_id = dpa.m_delivery_planning_id
 ;
 
+SELECT db_alter_view(
+    'M_ShipperTransportation_Delivery_Instructions_V',
+    (SELECT view_definition
+     FROM information_schema.views
+     WHERE lower(table_name) = lower('M_ShipperTransportation_Delivery_Instructions_V$new'))
+);
+
+DROP VIEW IF EXISTS M_ShipperTransportation_Delivery_Instructions_V$new;
