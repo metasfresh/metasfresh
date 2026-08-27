@@ -508,8 +508,6 @@ public class DeliveryPlanningRepository
 		deliveryInstructionRecord.setC_BPartner_Location_Delivery_ID(request.getDeliveryPartnerLocationId().getRepoId());
 		deliveryInstructionRecord.setC_BPartner_Location_Loading_ID(request.getLoadingPartnerLocationId().getRepoId());
 
-		deliveryInstructionRecord.setM_Delivery_Planning_ID(request.getDeliveryPlanningId().getRepoId());
-
 		dimensionService.updateRecord(deliveryInstructionRecord, request.getDimension());
 
 		save(deliveryInstructionRecord);
@@ -914,8 +912,10 @@ public class DeliveryPlanningRepository
 
 	public Iterator<I_M_ShipperTransportation> retrieveForDeliveryPlanning(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
+		final Collection<ShipperTransportationId> deliveryInstructionIds = getAllocatedInstructionIds(ImmutableList.of(deliveryPlanningId)).values();
+
 		return queryBL.createQueryBuilder(I_M_ShipperTransportation.class)
-				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningId)
+				.addInArrayFilter(I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID, deliveryInstructionIds)
 				.create()
 				.iterate(I_M_ShipperTransportation.class);
 	}
@@ -963,8 +963,10 @@ public class DeliveryPlanningRepository
 
 	public boolean hasCompleteDeliveryInstruction(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
+		final Collection<ShipperTransportationId> deliveryInstructionIds = getAllocatedInstructionIds(ImmutableList.of(deliveryPlanningId)).values();
+
 		return queryBL.createQueryBuilder(I_M_ShipperTransportation.class)
-				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningId)
+				.addInArrayFilter(I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID, deliveryInstructionIds)
 				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_DocStatus, DocStatus.Completed)
 				.anyMatch();
 	}
