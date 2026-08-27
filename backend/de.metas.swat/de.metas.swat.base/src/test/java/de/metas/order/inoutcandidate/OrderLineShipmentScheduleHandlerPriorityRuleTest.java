@@ -141,14 +141,23 @@ public class OrderLineShipmentScheduleHandlerPriorityRuleTest
 		assertThat(result).isEqualTo(PriorityRule.High.getCode());
 	}
 
+	/**
+	 * An out-of-list code can only reach {@code M_Shipper.PriorityRule} through an import, the REST API or direct SQL
+	 * (the column has no CHECK constraint; the value list is enforced in the UI layer only). Such a code must NOT
+	 * abort the derivation: this method runs inside {@code ShipmentScheduleUpdater.updateSchedules}, which iterates a
+	 * whole recompute batch with no per-item error handling, so a throw here would roll back the batch's transaction
+	 * and take unrelated schedules down with it. The order's own priority is likewise returned unvalidated, so
+	 * falling back keeps the two sides of this method symmetric.
+	 */
 	@Test
-	void switchOn_shipperHasUnknownCode_throws()
+	void switchOn_shipperHasUnknownCode_fallsBackToOrder()
 	{
 		setSwitch(true);
 		final I_C_Order order = createOrder(PriorityRule.High);
 		final ShipperId shipperId = createShipper("not-a-known-priority-code");
 
-		assertThatThrownBy(() -> handler.computePriorityRuleCode(order, shipperId, CLIENT_AND_ORG_ID))
-				.isInstanceOf(AdempiereException.class);
+		final String result = handler.computePriorityRuleCode(order, shipperId, CLIENT_AND_ORG_ID);
+
+		assertThat(result).isEqualTo(PriorityRule.High.getCode());
 	}
 }

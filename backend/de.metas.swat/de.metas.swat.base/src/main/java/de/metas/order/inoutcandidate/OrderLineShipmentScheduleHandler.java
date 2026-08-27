@@ -22,6 +22,7 @@ import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.inoutcandidate.picking_bom.PickingOrderConfig;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.logging.LogManager;
 import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
@@ -63,6 +64,7 @@ import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderCreateRequest;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -83,6 +85,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 @Component
 public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 {
+	private static final Logger logger = LogManager.getLogger(OrderLineShipmentScheduleHandler.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
@@ -278,14 +281,39 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		if (shipperId != null
 				&& sysConfigBL.getBooleanValue(SYSCONFIG_PriorityRuleFromShipper, false, clientAndOrgId))
 		{
-			final PriorityRule shipperPriority =
-					PriorityRule.ofNullableCode(shipperDAO.getById(shipperId).getPriorityRule());
+			final PriorityRule shipperPriority = getShipperPriorityOrNull(shipperId);
 			if (shipperPriority != null)
 			{
 				return shipperPriority.getCode();
 			}
 		}
 		return order.getPriorityRule();
+	}
+
+	/**
+	 * @return the shipper's priority, or {@code null} if it has none or its stored code is not in the priority list.
+	 *
+	 * An out-of-list code can reach {@code M_Shipper.PriorityRule} through an import, the REST API or direct SQL —
+	 * the column has no CHECK constraint, the value list is enforced in the UI layer only. It must not propagate as
+	 * an exception: this runs inside {@link de.metas.inoutcandidate.api.impl.ShipmentScheduleUpdater#updateSchedules},
+	 * which iterates a whole recompute batch with no per-item error handling, so throwing here would roll back the
+	 * batch and take unrelated schedules down with it. Falling back also keeps this method symmetric, since the
+	 * order's own priority code is returned unvalidated.
+	 */
+	@Nullable
+	private PriorityRule getShipperPriorityOrNull(@NonNull final ShipperId shipperId)
+	{
+		final String code = shipperDAO.getById(shipperId).getPriorityRule();
+		try
+		{
+			return PriorityRule.ofNullableCode(code);
+		}
+		catch (final RuntimeException ex)
+		{
+			logger.warn("Ignoring unknown PriorityRule code {} on M_Shipper_ID={}; falling back to the order's priority",
+					code, shipperId.getRepoId(), ex);
+			return null;
+		}
 	}
 
 	private void updateShipmentScheduleFromOrder(
