@@ -30,19 +30,28 @@
 -- columns, all covered by the INSERT below. No EntityType column exists on ad_sequence here --
 -- checked, not assumed (the probe that flagged this as uncertain was right).
 --
--- CurrentNext: NOT set to the template's 1000000. The table already holds 8 backfilled rows
--- (5820530) whose ids came from the native sequence (ids 1000023..1000030), and this instance
--- demonstrably runs a periodic sync that corrects a table's AD_Sequence.CurrentNext to match
--- its actual native-sequence position once the table has data -- M_Delivery_Planning's own row
--- (AD_Sequence_ID 556051, 9 rows) already shows CurrentNext=1000009, exactly equal to its
--- native sequence's next nextval() (last_value=1000009, is_called='f'). Since CurrentNext is
--- purely for admin-window inspection/reset on this native-sequence instance (see above -- it is
--- never read by the ID-generation path), inserting 1000000 here would misrepresent the table's
--- real position from the moment this row is created, for no benefit; inserting the true next
--- value keeps the row honest immediately. m_delivery_planning_alloc_seq here reads
--- last_value=1000031, is_called='f' (verified live) -- so CurrentNext is set to 1000031, the
--- value nextval() will actually return next. StartNo stays 1000000 (the table's designed
--- start, per the template), not the current data position.
+-- CurrentNext: DERIVED AT APPLY TIME, not the template's 1000000 and not a literal.
+--
+-- The convention on this instance is that a table's AD_Sequence.CurrentNext tracks its real
+-- position once the table has data: M_Delivery_Planning's own row (AD_Sequence_ID 556051, 9
+-- rows) reads CurrentNext=1000009, exactly its native sequence's next nextval()
+-- (last_value=1000009, is_called='f'). Shipping 1000000 would misrepresent the table from the
+-- moment the row is created.
+--
+-- But the value MUST NOT be hardcoded to what this stack happens to read. The backfill's ids
+-- come from the native sequence, whose position depends entirely on how much data the target
+-- instance already has -- a customer instance with hundreds of delivery instructions lands
+-- nowhere near a freshly-seeded CI database. A literal read off one stack would therefore be
+-- correct on that stack and wrong on every other, which is precisely the failure mode that has
+-- already cost this branch two CI cycles (a column that exists only in the newer local seed,
+-- and a sequence that only an app-server boot had created locally).
+--
+-- So CurrentNext is computed from the table's own data: max(id) + 1, floored at StartNo for the
+-- empty-table case. On this stack that evaluates to 1000031, which equals both max(id)+1 and
+-- the sequence's own last_value/is_called='f' position -- verified live, and identical to the
+-- literal it replaces, so the already-applied row here is unaffected.
+--
+-- StartNo stays 1000000 (the table's designed start, per the template), not the data position.
 --
 -- Idempotence: NOT EXISTS on the name, matching the AD_Sequence.Name unique constraint anyway,
 -- so a re-apply can never duplicate. Defense-in-depth: the migration tool tracks this script in
@@ -58,7 +67,10 @@ SELECT 556653 /*From ID Server*/, 0, 0, 'Y',
        TO_TIMESTAMP('2026-08-27 09:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
        TO_TIMESTAMP('2026-08-27 09:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
        'M_Delivery_Planning_Alloc', 'Table M_Delivery_Planning_Alloc',
-       NULL, 'Y', 1, 1000000, 1000031, 50000,
+       NULL, 'Y', 1, 1000000,
+       GREATEST(1000000, COALESCE((SELECT max(a.M_Delivery_Planning_Alloc_ID)
+                                     FROM M_Delivery_Planning_Alloc a), 0) + 1),
+       50000,
        'N', 'Y', NULL, NULL, NULL, NULL,
        NULL, NULL
 WHERE NOT EXISTS (
