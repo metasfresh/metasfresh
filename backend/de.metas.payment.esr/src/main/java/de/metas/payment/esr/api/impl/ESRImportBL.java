@@ -1002,6 +1002,16 @@ public class ESRImportBL implements IESRImportBL
 		}
 	}
 
+	/**
+	 * Actions the IMPORT sets by itself, which therefore must not be treated as a decision by
+	 * {@link #handleEsrImportLine(String, I_ESR_ImportLine)}. See the comment at the guard for why each
+	 * one is in here -- and why {@code Unable_To_Assign_Income} is not.
+	 */
+	private static final ImmutableSet<String> SYSTEM_SET_ACTIONS_AWAITING_DECISION = ImmutableSet.of(
+			X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment,
+			X_ESR_ImportLine.ESR_PAYMENT_ACTION_Control_Line,
+			X_ESR_ImportLine.ESR_PAYMENT_ACTION_Reverse_Booking);
+
 	private void handleEsrImportLine(final String message, final I_ESR_ImportLine line)
 	{
 		if (line.isProcessed())
@@ -1057,6 +1067,21 @@ public class ESRImportBL implements IESRImportBL
 		}
 
 		final String actionType = line.getESR_Payment_Action();
+
+		// A SYSTEM-SET flag is not a user decision:
+		//   Duplicate_Payment: the import flags it, the accountant must still pick an overpayment
+		//     action. It is not even selectable -- ESRPaymentActionValidationRule accepts it in no
+		//     group -- so skipping it here cannot block a deliberate choice.
+		//   Control_Line / Reverse_Booking: no handler is registered for either, so this pass would
+		//     only append a "not supported" message to the line on every run. Reverse bookings are
+		//     documented as something the admin deals with manually.
+		// Unable_To_Assign_Income is deliberately NOT in this set: it IS offered in the dropdown, so
+		// it can be a genuine user choice and must keep being processed.
+		if (SYSTEM_SET_ACTIONS_AWAITING_DECISION.contains(actionType))
+		{
+			return;
+		}
+
 		if (Check.isEmpty(actionType, true))
 		{
 			final AdempiereException ex = new AdempiereException("@" + ESRConstants.ERR_ESR_LINE_WITH_NO_PAYMENT_ACTION + "@");
@@ -1181,7 +1206,7 @@ public class ESRImportBL implements IESRImportBL
 	private void markInvoiceAlreadyPaid(@NonNull final I_ESR_ImportLine importLine, @NonNull final I_C_Invoice invoice)
 	{
 		final Properties ctx = getCtx(importLine);
-		ESRDataLoaderUtil.addMatchErrorMsgIfNotPresent(importLine,
+		ESRDataLoaderUtil.addMatchErrorMsg(importLine,
 														msgBL.getMsg(ctx, ESR_INVOICE_ALREADY_PAID_1P, new Object[] { invoice.getDocumentNo() }));
 		importLine.setESR_Document_Status(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched);
 	}
