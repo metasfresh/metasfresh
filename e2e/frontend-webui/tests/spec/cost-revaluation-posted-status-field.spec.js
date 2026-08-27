@@ -5,11 +5,7 @@ import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { MasterWindowPage } from '../utils/pages/MasterWindowPage';
 import { getRecordData } from '../utils/WebAPIValidation';
-import {
-  FRONTEND_BASE_URL,
-  SLOW_ACTION_TIMEOUT,
-  VERY_SLOW_ACTION_TIMEOUT,
-} from '../utils/common';
+import { FRONTEND_BASE_URL, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
 
 /**
  * Cost Revaluation window ("Kosten Neubewertung") — gh31743: surface the document's Posted status
@@ -194,30 +190,20 @@ Language under test: ${language}.
         let postedGroup = null;
         let postedGroupIdx = -1;
         let orgGroupIdx = -1;
-        let columnGroups = null;
 
+        // Find the posted group's column, then resolve the org+client group's index within that
+        // SAME column — one order-independent pass per column.
         for (const section of layout.sections || []) {
           for (const column of section.columns || []) {
             const groups = column.elementGroups || [];
-            for (let i = 0; i < groups.length; i++) {
-              const names = groupFieldNames(groups[i]);
-              if (names.includes('Posted') && names.includes('PostingError_Issue_ID')) {
-                postedGroup = groups[i];
-                postedGroupIdx = i;
-                columnGroups = groups;
-              }
-              if (names.includes('AD_Org_ID')) {
-                // Track the org group index within whichever column the posted group is in;
-                // resolved against the posted group's own column below.
-                if (columnGroups === groups) orgGroupIdx = i;
-              }
-            }
-            // If the posted group was found in THIS column, also resolve the org group's index here.
-            if (columnGroups === groups) {
-              for (let i = 0; i < groups.length; i++) {
-                if (groupFieldNames(groups[i]).includes('AD_Org_ID')) orgGroupIdx = i;
-              }
-            }
+            const pIdx = groups.findIndex((g) => {
+              const names = groupFieldNames(g);
+              return names.includes('Posted') && names.includes('PostingError_Issue_ID');
+            });
+            if (pIdx === -1) continue;
+            postedGroup = groups[pIdx];
+            postedGroupIdx = pIdx;
+            orgGroupIdx = groups.findIndex((g) => groupFieldNames(g).includes('AD_Org_ID'));
           }
         }
 
