@@ -29,6 +29,12 @@ import de.metas.ad_reference.ADReferenceService;
 import de.metas.business.BusinessTestHelper;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElement;
+import de.metas.costing.CostDetailCreateRequest;
+import de.metas.costing.CostDetailCreateResultsList;
+import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.impl.CostDetailRepository;
+import de.metas.costing.impl.CostDetailService;
+import de.metas.currency.CurrencyRepository;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegmentAndElement;
@@ -46,7 +52,6 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -62,19 +67,18 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.api.impl.MockedProductCostingBL;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * Covers {@link PPOrderCostDifferenceDistributor#computeSplitForPosting}. Two {@link AcctSchemaId}s are set up
- * for the SAME order, each with its own {@code PP_Order_Cost} rows and its own on-hand qty, so the test fails
- * if the split is not scoped to the schema it was called with.
+ * Covers {@link PPOrderCostDifferenceDistributor#createCostDetails} — the cost details each manufacturing
+ * costing-method handler creates for a {@code CostDifferenceDistribution} collector, and the cost-price move
+ * that comes with the adjustment leg.
  */
-class PPOrderCostDifferenceDistributorComputeSplitForPostingTest
+class PPOrderCostDifferenceDistributorCostDetailsTest
 {
 	private final ClientId clientId = ClientId.ofRepoId(1);
 	private final OrgId orgId = OrgId.ofRepoId(0);
@@ -89,6 +93,7 @@ class PPOrderCostDifferenceDistributorComputeSplitForPostingTest
 	private PPOrderCostDifferenceDistributor distributor;
 	private CurrentCostsRepository currentCostsRepo;
 	private CostElementRepository costElementRepo;
+	private CostingMethodHandlerUtils utils;
 
 	@BeforeEach
 	void setUp()
@@ -104,7 +109,11 @@ class PPOrderCostDifferenceDistributorComputeSplitForPostingTest
 
 		costElementRepo = new CostElementRepository(ADReferenceService.newMocked());
 		currentCostsRepo = new CurrentCostsRepository(costElementRepo);
-		distributor = new PPOrderCostDifferenceDistributor(costElementRepo, currentCostsRepo, Mockito.mock(CostingMethodHandlerUtils.class));
+		utils = new CostingMethodHandlerUtils(
+				new CurrencyRepository(),
+				currentCostsRepo,
+				new CostDetailService(new CostDetailRepository(), costElementRepo));
+		distributor = new PPOrderCostDifferenceDistributor(costElementRepo, utils);
 	}
 
 	private AcctSchemaId createAcctSchema(final CostingMethod costingMethod)
@@ -182,6 +191,15 @@ class PPOrderCostDifferenceDistributorComputeSplitForPostingTest
 			final CostElementId costElementId,
 			final String currentQty)
 	{
+		saveCurrentCost(acctSchemaId, costElementId, currentQty, "0");
+	}
+
+	private void saveCurrentCost(
+			final AcctSchemaId acctSchemaId,
+			final CostElementId costElementId,
+			final String currentQty,
+			final String currentCostPrice)
+	{
 		final I_M_Cost cost = InterfaceWrapperHelper.newInstance(I_M_Cost.class);
 		cost.setAD_Org_ID(orgId.getRepoId());
 		cost.setC_AcctSchema_ID(acctSchemaId.getRepoId());
@@ -191,70 +209,155 @@ class PPOrderCostDifferenceDistributorComputeSplitForPostingTest
 		cost.setM_AttributeSetInstance_ID(AttributeSetInstanceId.NONE.getRepoId());
 		cost.setC_UOM_ID(uomEach.getC_UOM_ID());
 		cost.setC_Currency_ID(currencyId.getRepoId());
-		cost.setCurrentCostPrice(BigDecimal.ZERO);
+		cost.setCurrentCostPrice(new BigDecimal(currentCostPrice));
 		cost.setCurrentQty(new BigDecimal(currentQty));
 		InterfaceWrapperHelper.saveRecord(cost);
 	}
 
+	private CostDetailCreateRequest request(
+			final AcctSchemaId acctSchemaId,
+			final CostElement costElement,
+			final String manufacturedQty)
+	{
+		return CostDetailCreateRequest.builder()
+				.acctSchemaId(acctSchemaId)
+				.clientId(clientId)
+				.orgId(orgId)
+				.productId(mainProductId)
+				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+				.costElement(costElement)
+				.documentRef(CostingDocumentRef.ofCostCollectorId(1))
+				.qty(Quantity.of(new BigDecimal(manufacturedQty), uomEach))
+				.amt(CostAmount.zero(currencyId))
+				.date(Instant.parse("2026-08-27T00:00:00Z"))
+				.build();
+	}
+
+	private CostAmountDetailed splitOf(final CostDetailCreateResultsList results, final AcctSchemaId acctSchemaId)
+	{
+		return results.getTotalAmountToPost(utils.getAcctSchemaById(acctSchemaId));
+	}
+
+	private BigDecimal costPriceOf(final AcctSchemaId acctSchemaId, final CostElementId costElementId)
+	{
+		return currentCostsRepo.getOrNull(segment(mainProductId, acctSchemaId, costElementId))
+				.getCostPrice()
+				.toBigDecimal();
+	}
+
 	@Test
-	void computeSplitForPosting_isScopedToTheGivenAcctSchema_notThePrimaryOne()
+	void positiveResidual_capitalizesTheInStockShare_andSpillsTheRestToCogs()
+	{
+		final ImmutableList.Builder<PPOrderCost> costs = ImmutableList.builder();
+		final AcctSchemaId schema = createAcctSchema(CostingMethod.AveragePO);
+		final CostElement costElement = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.AveragePO);
+		// issued=100, received=60 -> residual=40; 8 of the 10 manufactured are still in stock at 30
+		addPPOrderCosts(costs, schema, costElement.getId(), "10", "-10", "6", "10", "60");
+		saveCurrentCost(schema, costElement.getId(), "8", "30");
+		saveAll(costs.build());
+
+		final CostDetailCreateResultsList results = distributor.createCostDetails(request(schema, costElement, "10"), orderId);
+
+		final CostAmountDetailed split = splitOf(results, schema);
+		assertThat(split.getMainAmt().toBigDecimal()).isEqualTo("40");
+		assertThat(split.getCostAdjustmentAmt().toBigDecimal()).isEqualTo("32");
+		assertThat(split.getAlreadyShippedAmt().toBigDecimal()).isEqualTo("8");
+
+		assertThat(costPriceOf(schema, costElement.getId())).isEqualTo("34"); // (30 x 8 + 32) / 8
+	}
+
+	@Test
+	void negativeResidual_fullyInStock_movesTheCostPriceDown()
+	{
+		final ImmutableList.Builder<PPOrderCost> costs = ImmutableList.builder();
+		final AcctSchemaId schema = createAcctSchema(CostingMethod.AveragePO);
+		final CostElement costElement = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.AveragePO);
+		// issued=10, received=50 -> residual=-40; 20 on hand at 30
+		addPPOrderCosts(costs, schema, costElement.getId(), "1", "-10", "5", "10", "50");
+		saveCurrentCost(schema, costElement.getId(), "20", "30");
+		saveAll(costs.build());
+
+		final CostDetailCreateResultsList results = distributor.createCostDetails(request(schema, costElement, "10"), orderId);
+
+		final CostAmountDetailed split = splitOf(results, schema);
+		assertThat(split.getMainAmt().toBigDecimal()).isEqualTo("-40");
+		assertThat(split.getCostAdjustmentAmt().toBigDecimal()).isEqualTo("-40");
+		assertThat(split.getAlreadyShippedAmt().toBigDecimal()).isEqualTo("0");
+
+		assertThat(costPriceOf(schema, costElement.getId())).isEqualTo("28"); // (30 x 20 - 40) / 20
+	}
+
+	@Test
+	void eachAcctSchemaGetsItsOwnResidual_notThePrimarySchemasOne()
 	{
 		final ImmutableList.Builder<PPOrderCost> costs = ImmutableList.builder();
 
 		final AcctSchemaId schemaA = createAcctSchema(CostingMethod.AveragePO);
 		final CostElement costElementA = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.AveragePO);
-		// issued=100, received=60 -> residual=40; CurrentQty=8 -> capitalize 32 / cogs 8
 		addPPOrderCosts(costs, schemaA, costElementA.getId(), "10", "-10", "6", "10", "60");
-		saveCurrentCost(schemaA, costElementA.getId(), "8");
+		saveCurrentCost(schemaA, costElementA.getId(), "8", "30");
 
 		final AcctSchemaId schemaB = createAcctSchema(CostingMethod.StandardCosting);
 		final CostElement costElementB = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.StandardCosting);
-		// issued=10, received=50 -> residual=-40; CurrentQty=20 -> capitalize -40 / cogs 0
 		addPPOrderCosts(costs, schemaB, costElementB.getId(), "1", "-10", "5", "10", "50");
-		saveCurrentCost(schemaB, costElementB.getId(), "20");
+		saveCurrentCost(schemaB, costElementB.getId(), "20", "30");
 
 		saveAll(costs.build());
 
-		final CostAmountDetailed splitA = distributor.computeSplitForPosting(orderId, schemaA);
+		final CostAmountDetailed splitA = splitOf(distributor.createCostDetails(request(schemaA, costElementA, "10"), orderId), schemaA);
 		assertThat(splitA.getMainAmt().toBigDecimal()).isEqualTo("40");
 		assertThat(splitA.getCostAdjustmentAmt().toBigDecimal()).isEqualTo("32");
 		assertThat(splitA.getAlreadyShippedAmt().toBigDecimal()).isEqualTo("8");
 
-		final CostAmountDetailed splitB = distributor.computeSplitForPosting(orderId, schemaB);
+		final CostAmountDetailed splitB = splitOf(distributor.createCostDetails(request(schemaB, costElementB, "10"), orderId), schemaB);
 		assertThat(splitB.getMainAmt().toBigDecimal()).isEqualTo("-40");
 		assertThat(splitB.getCostAdjustmentAmt().toBigDecimal()).isEqualTo("-40");
 		assertThat(splitB.getAlreadyShippedAmt().toBigDecimal()).isEqualTo("0");
 	}
 
 	@Test
-	void computeSplitForPosting_doesNotMoveTheCurrentCostPrice()
+	void aCostingMethodTheOrderHasNoRowsFor_producesNoCostDetails()
 	{
 		final ImmutableList.Builder<PPOrderCost> costs = ImmutableList.builder();
-		final AcctSchemaId schemaA = createAcctSchema(CostingMethod.AveragePO);
-		final CostElement costElementA = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.AveragePO);
-		addPPOrderCosts(costs, schemaA, costElementA.getId(), "10", "-10", "6", "10", "60");
-		saveCurrentCost(schemaA, costElementA.getId(), "8");
+		final AcctSchemaId schema = createAcctSchema(CostingMethod.AveragePO);
+		final CostElement averagePOElement = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.AveragePO);
+		addPPOrderCosts(costs, schema, averagePOElement.getId(), "10", "-10", "6", "10", "60");
+		saveCurrentCost(schema, averagePOElement.getId(), "8", "30");
 		saveAll(costs.build());
 
-		distributor.computeSplitForPosting(orderId, schemaA);
+		// the costing engine explodes every material cost element of the client against the schema being posted
+		final CostElement standardElement = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.StandardCosting);
 
-		// unlike distribute(), computeSplitForPosting must never touch M_Cost.CurrentCostPrice
-		final CostSegmentAndElement mainSegment = segment(mainProductId, schemaA, costElementA.getId());
-		assertThat(currentCostsRepo.getOrNull(mainSegment).getCostPrice().toBigDecimal()).isEqualTo("0");
+		final CostDetailCreateResultsList results = distributor.createCostDetails(request(schema, standardElement, "10"), orderId);
+
+		assertThat(results).isEqualTo(CostDetailCreateResultsList.EMPTY);
+		assertThat(costPriceOf(schema, averagePOElement.getId())).isEqualTo("30");
 	}
 
 	@Test
-	void computeSplitForPosting_throws_whenCurrentCostRecordIsMissing()
+	void reversal_replaysTheNegatedAdjustment_andMovesTheCostPriceBack()
 	{
 		final ImmutableList.Builder<PPOrderCost> costs = ImmutableList.builder();
-		final AcctSchemaId schemaA = createAcctSchema(CostingMethod.AveragePO);
-		final CostElement costElementA = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.AveragePO);
-		addPPOrderCosts(costs, schemaA, costElementA.getId(), "10", "-10", "6", "10", "60");
+		final AcctSchemaId schema = createAcctSchema(CostingMethod.AveragePO);
+		final CostElement costElement = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.AveragePO);
+		addPPOrderCosts(costs, schema, costElement.getId(), "10", "-10", "6", "10", "60");
+		saveCurrentCost(schema, costElement.getId(), "8", "30");
 		saveAll(costs.build());
-		// no saveCurrentCost(...) call: the M_Cost row is missing
 
-		assertThatThrownBy(() -> distributor.computeSplitForPosting(orderId, schemaA))
-				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("CurrentCost record not found");
+		distributor.createCostDetails(request(schema, costElement, "10"), orderId);
+		assertThat(costPriceOf(schema, costElement.getId())).isEqualTo("34");
+
+		// what CostingService hands the handler when the collector is reversed: the stored leg, negated
+		final CostDetailCreateRequest reversalRequest = request(schema, costElement, "10").toBuilder()
+				.documentRef(CostingDocumentRef.ofCostCollectorId(2))
+				.initialDocumentRef(CostingDocumentRef.ofCostCollectorId(1))
+				.amtType(CostAmountType.ADJUSTMENT)
+				.amt(CostAmount.of(-32, currencyId))
+				.qty(Quantity.zero(uomEach))
+				.build();
+
+		distributor.createCostDetails(reversalRequest, orderId);
+
+		assertThat(costPriceOf(schema, costElement.getId())).isEqualTo("30");
 	}
 }

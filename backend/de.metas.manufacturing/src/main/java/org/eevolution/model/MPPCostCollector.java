@@ -38,7 +38,6 @@ package org.eevolution.model;
  * #L%
  */
 
-import com.google.common.annotations.VisibleForTesting;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
@@ -248,7 +247,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 		}
 		else if (costCollectorType.isCostDifferenceDistribution())
 		{
-			// Nothing to do: the cost-price move and the posting happen outside this collector.
+			// Nothing to do here: the costing method handler creates this collector's cost details when it is posted.
 		}
 
 		//
@@ -435,20 +434,6 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 		// }
 	}
 
-	/**
-	 * Refuses reversing a {@code CostDifferenceDistribution} collector: the mirrored document reposts the same
-	 * non-negated split, doubling the GL instead of undoing it. The guard belongs here and not in
-	 * {@code completeIt}, where {@code isReversal()} is false on the mirrored document.
-	 */
-	@VisibleForTesting
-	static void assertReverseCorrectSupported(final CostCollectorType costCollectorType)
-	{
-		if (costCollectorType.isCostDifferenceDistribution())
-		{
-			throw new LiberoException("Reversing a Cost Difference Distribution is not supported");
-		}
-	}
-
 	@Override
 	public boolean voidIt()
 	{
@@ -465,8 +450,6 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 	@Override
 	public boolean reverseCorrectIt()
 	{
-		assertReverseCorrectSupported(CostCollectorType.ofCode(getCostCollectorType()));
-
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSECORRECT);
 
 		//

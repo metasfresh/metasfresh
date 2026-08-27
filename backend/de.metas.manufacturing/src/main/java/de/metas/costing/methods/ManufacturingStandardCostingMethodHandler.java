@@ -37,6 +37,7 @@ import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.PPCostCollectorId;
 import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.springframework.stereotype.Component;
 
@@ -81,6 +82,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 	private final ICurrentCostsRepository currentCostsRepo;
 	private final ICostDetailService costDetailsService;
 	private final CostingMethodHandlerUtils utils;
+	private final PPOrderCostDifferenceDistributor costDifferenceDistributor;
 
 	private final StandardCostingMethodHandler standardCostingMethodHandler;
 
@@ -92,11 +94,13 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 			@NonNull final ICurrentCostsRepository currentCostsRepo,
 			@NonNull final ICostDetailService costDetailsService,
 			@NonNull final CostingMethodHandlerUtils utils,
+			@NonNull final PPOrderCostDifferenceDistributor costDifferenceDistributor,
 			@NonNull final StandardCostingMethodHandler standardCostingMethodHandler)
 	{
 		this.currentCostsRepo = currentCostsRepo;
 		this.costDetailsService = costDetailsService;
 		this.utils = utils;
+		this.costDifferenceDistributor = costDifferenceDistributor;
 		this.standardCostingMethodHandler = standardCostingMethodHandler;
 	}
 
@@ -183,8 +187,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 		}
 		else if (costCollectorType.isCostDifferenceDistribution())
 		{
-			// The distribution is applied to M_Cost by the service that creates this collector; nothing to do here.
-			return CostDetailCreateResultsList.EMPTY;
+			return costDifferenceDistributor.createCostDetails(request, PPOrderId.ofRepoId(cc.getPP_Order_ID()));
 		}
 		else
 		{

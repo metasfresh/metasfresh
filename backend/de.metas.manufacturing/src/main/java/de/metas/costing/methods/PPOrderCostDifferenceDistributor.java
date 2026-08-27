@@ -23,22 +23,25 @@
 package de.metas.costing.methods;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostAmount;
+import de.metas.costing.CostDetailCreateRequest;
+import de.metas.costing.CostDetailCreateResult;
+import de.metas.costing.CostDetailCreateResultsList;
+import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
-import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostElementRepository;
-import de.metas.costing.impl.CurrentCostsRepository;
+import de.metas.document.engine.DocStatus;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.quantity.QuantityUOMConverter;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -57,6 +60,8 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Nullable;
 
 import java.util.List;
 
@@ -79,13 +84,12 @@ public class PPOrderCostDifferenceDistributor
 	private final IPPCostCollectorBL costCollectorsService = Services.get(IPPCostCollectorBL.class);
 
 	@NonNull private final ICostElementRepository costElementsRepo;
-	@NonNull private final CurrentCostsRepository currentCostsRepo;
 	@NonNull private final CostingMethodHandlerUtils utils;
 
 	public void distribute(@NonNull final PPOrderId orderId)
 	{
 		// The order stays Completed after distributing, so the action remains offered; re-running would
-		// recompute the identical residual and capitalize the current cost price a second time.
+		// discharge the same residual twice.
 		if (isAlreadyDistributed(orderId))
 		{
 			throw new AdempiereException("@Processed@")
@@ -95,32 +99,18 @@ public class PPOrderCostDifferenceDistributor
 
 		final I_PP_Order order = ppOrdersRepo.getById(orderId);
 
+		// Only decides whether there is anything to discharge at all; the amount that gets posted is recomputed
+		// per accounting schema while the collector is posted.
 		final ClientId clientId = ClientId.ofRepoId(order.getAD_Client_ID());
-		// The order's org schema — the one its PP_Order_Cost rows were created for; not necessarily the client's primary one.
 		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
 		final AcctSchemaId acctSchemaId = acctSchemasRepo.getByClientAndOrg(clientId, orgId).getId();
 
 		final ResidualAndManufacturedQty residualAndQty = computeResidualAndManufacturedQtyForOrder(orderId, acctSchemaId);
-
-		if (residualAndQty.getResidual().isZero())
+		if (residualAndQty == null || residualAndQty.getResidual().isZero())
 		{
 			return;
 		}
 
-		final CurrentCost currentCost = currentCostsRepo.getOrCreate(residualAndQty.getMainProductCostSegment());
-
-		final CostAmountDetailed split = distributeOnto(
-				residualAndQty.getResidual(),
-				residualAndQty.getManufacturedQty(),
-				currentCost,
-				utils.getQuantityUOMConverter());
-
-		if (!split.getCostAdjustmentAmt().isZero())
-		{
-			currentCostsRepo.save(currentCost);
-		}
-
-		// The collector carries no monetary field; the split is recomputed from PP_Order_Cost when posting.
 		costCollectorsService.createCostDifferenceDistribution(
 				order,
 				ProductId.ofRepoId(order.getM_Product_ID()),
@@ -128,33 +118,100 @@ public class PPOrderCostDifferenceDistributor
 	}
 
 	/**
-	 * Recomputes the capitalize/COGS split for posting, without moving the current cost price ({@link #distribute}
-	 * already did that), so a repost never moves it again. The caller must pass the schema it is posting to: posting
-	 * runs once per configured {@link AcctSchemaId}, not only the primary one.
-	 *
-	 * @return a zero split when there is nothing to discharge
+	 * Creates the cost details of a {@code CostDifferenceDistribution} collector and capitalizes the adjustment leg
+	 * onto the finished good's {@link CurrentCost}. Driven from each manufacturing costing-method handler, so the
+	 * accounting schema, the cost element and — on a reversal — the already-negated amounts come from the framework.
 	 */
-	public CostAmountDetailed computeSplitForPosting(@NonNull final PPOrderId orderId, @NonNull final AcctSchemaId acctSchemaId)
+	public CostDetailCreateResultsList createCostDetails(
+			@NonNull final CostDetailCreateRequest request,
+			@NonNull final PPOrderId orderId)
 	{
-		final ResidualAndManufacturedQty residualAndQty = computeResidualAndManufacturedQtyForOrder(orderId, acctSchemaId);
-
-		if (residualAndQty.getResidual().isZero())
-		{
-			return CostAmountDetailed.zero(residualAndQty.getResidual().getCurrencyId());
-		}
-
-		final CostSegmentAndElement mainProductCostSegment = residualAndQty.getMainProductCostSegment();
-		final CurrentCost currentCost = currentCostsRepo.getOrNull(mainProductCostSegment);
-		if (currentCost == null)
-		{
-			// Never fabricate a zero-qty row here: qtyInStock would read 0 and the whole residual would misroute to COGS.
-			throw new AdempiereException("CurrentCost record not found for " + mainProductCostSegment
-					+ " — expected to already exist from the 'Distribute' action");
-		}
-
-		return computeSplit(residualAndQty.getResidual(), residualAndQty.getManufacturedQty(), currentCost);
+		return request.isReversal()
+				? createReversalCostDetails(request)
+				: createDistributionCostDetails(request, orderId);
 	}
 
+	private CostDetailCreateResultsList createDistributionCostDetails(
+			@NonNull final CostDetailCreateRequest request,
+			@NonNull final PPOrderId orderId)
+	{
+		final PPOrderCosts orderCosts = ppOrderCostsService.getByOrderId(orderId);
+		final ResidualAndManufacturedQty residualAndQty = computeResidualAndManufacturedQty(
+				orderCosts,
+				request.getAcctSchemaId(),
+				request.getCostElementId());
+		if (residualAndQty == null || residualAndQty.getResidual().isZero())
+		{
+			return CostDetailCreateResultsList.EMPTY;
+		}
+
+		final CurrentCost currentCost = utils.getCurrentCost(request);
+		final CostAmountDetailed split = computeSplit(
+				residualAndQty.getResidual(),
+				residualAndQty.getManufacturedQty(),
+				currentCost);
+
+		final CostDetailCreateResult mainResult = utils.createCostDetailRecordNoCostsChanged(
+				request.withAmountAndType(split.getMainAmt(), CostAmountType.MAIN),
+				CostDetailPreviousAmounts.of(currentCost));
+		CostAmountAndQtyDetailed amtAndQty = mainResult.getAmtAndQty();
+
+		if (!split.getCostAdjustmentAmt().isZero())
+		{
+			final CostDetailCreateResult adjustmentResult = utils.createCostDetailRecordWithChangedCosts(
+					request.withAmountAndType(split.getCostAdjustmentAmt(), CostAmountType.ADJUSTMENT).withQtyZero(),
+					CostDetailPreviousAmounts.of(currentCost));
+
+			moveCostPriceBy(currentCost, split.getCostAdjustmentAmt(), request);
+
+			amtAndQty = amtAndQty.add(adjustmentResult.getAmtAndQty());
+		}
+
+		if (!split.getAlreadyShippedAmt().isZero())
+		{
+			final CostDetailCreateResult alreadyShippedResult = utils.createCostDetailRecordNoCostsChanged(
+					request.withAmountAndType(split.getAlreadyShippedAmt(), CostAmountType.ALREADY_SHIPPED).withQtyZero(),
+					CostDetailPreviousAmounts.of(currentCost));
+			amtAndQty = amtAndQty.add(alreadyShippedResult.getAmtAndQty());
+		}
+
+		return CostDetailCreateResultsList.ofNullable(mainResult.withAmtAndQty(amtAndQty));
+	}
+
+	/**
+	 * Replays one already-negated leg of the original distribution. Only the adjustment leg moved the cost price,
+	 * so only it moves it back.
+	 */
+	private CostDetailCreateResultsList createReversalCostDetails(@NonNull final CostDetailCreateRequest request)
+	{
+		final CurrentCost currentCost = utils.getCurrentCost(request);
+
+		if (CostAmountType.ADJUSTMENT.equals(request.getAmtType()))
+		{
+			final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(
+					request,
+					CostDetailPreviousAmounts.of(currentCost));
+
+			moveCostPriceBy(currentCost, request.getAmt(), request);
+
+			return CostDetailCreateResultsList.ofNullable(result);
+		}
+
+		return CostDetailCreateResultsList.ofNullable(
+				utils.createCostDetailRecordNoCostsChanged(request, CostDetailPreviousAmounts.of(currentCost)));
+	}
+
+	/** Zero qty delta =&gt; reprices the existing on-hand qty by {@code amt}. */
+	private void moveCostPriceBy(
+			@NonNull final CurrentCost currentCost,
+			@NonNull final CostAmount amt,
+			@NonNull final CostDetailCreateRequest request)
+	{
+		currentCost.addWeightedAverage(amt, request.getQty().toZero(), utils.getQuantityUOMConverter());
+		utils.saveCurrentCost(currentCost);
+	}
+
+	@Nullable
 	private ResidualAndManufacturedQty computeResidualAndManufacturedQtyForOrder(
 			@NonNull final PPOrderId orderId,
 			@NonNull final AcctSchemaId acctSchemaId)
@@ -170,6 +227,7 @@ public class PPOrderCostDifferenceDistributor
 	private boolean isAlreadyDistributed(@NonNull final PPOrderId orderId)
 	{
 		return costCollectorsService.getByOrderId(orderId).stream()
+				.filter(cc -> !DocStatus.ofNullableCodeOrUnknown(cc.getDocStatus()).isReversedOrVoided())
 				.map(I_PP_Cost_Collector::getCostCollectorType)
 				.map(CostCollectorType::ofNullableCode)
 				.anyMatch(type -> type != null && type.isCostDifferenceDistribution());
@@ -182,26 +240,6 @@ public class PPOrderCostDifferenceDistributor
 				.map(CostElement::getId)
 				.collect(GuavaCollectors.singleElementOrThrow(
 						() -> new AdempiereException("Expected exactly one material cost element for costing method " + costingMethod + " but got " + materialElements)));
-	}
-
-	/** Splits the residual and capitalizes the adjustment leg onto the given {@code currentCost}, which it mutates. */
-	@VisibleForTesting
-	static CostAmountDetailed distributeOnto(
-			@NonNull final CostAmount residual,
-			@NonNull final Quantity manufacturedQty,
-			@NonNull final CurrentCost currentCost,
-			@NonNull final QuantityUOMConverter uomConverter)
-	{
-		final CostAmountDetailed split = computeSplit(residual, manufacturedQty, currentCost);
-
-		final CostAmount capitalized = split.getCostAdjustmentAmt();
-		if (!capitalized.isZero())
-		{
-			// Zero qty delta => reprices the existing on-hand qty by the capitalized amount.
-			currentCost.addWeightedAverage(capitalized, manufacturedQty.toZero(), uomConverter);
-		}
-
-		return split;
 	}
 
 	/** Splits the residual pro rata: the still-in-stock share is capitalized, the shipped remainder goes to COGS. */
@@ -250,13 +288,21 @@ public class PPOrderCostDifferenceDistributor
 	 * schema and material cost element: {@code issued} sums {@code -accumulatedQty x price} over the MaterialIssue
 	 * rows, {@code received} sums the post-calculation amount over the MainProduct / CoProduct / ByProduct rows.
 	 */
+	@Nullable
 	@VisibleForTesting
 	static ResidualAndManufacturedQty computeResidualAndManufacturedQty(
 			@NonNull final PPOrderCosts orderCosts,
 			@NonNull final AcctSchemaId acctSchemaId,
 			@NonNull final CostElementId materialCostElementId)
 	{
-		final PPOrderCost mainProductCost = getMainProductCost(orderCosts, acctSchemaId, materialCostElementId);
+		final PPOrderCost mainProductCost = getMainProductCostOrNull(orderCosts, acctSchemaId, materialCostElementId);
+		if (mainProductCost == null)
+		{
+			// The costing engine explodes the client's material cost elements against the schema being posted, so a
+			// handler can be asked for a costing method this order carries no PP_Order_Cost rows for.
+			return null;
+		}
+
 		final CurrencyId currencyId = mainProductCost.getPrice().getCurrencyId();
 
 		CostAmount issued = CostAmount.zero(currencyId);
@@ -284,21 +330,28 @@ public class PPOrderCostDifferenceDistributor
 		}
 
 		final CostAmount residual = issued.subtract(received);
-		return ResidualAndManufacturedQty.of(residual, mainProductCost.getAccumulatedQty(), mainProductCost.getCostSegmentAndElement());
+		return ResidualAndManufacturedQty.of(residual, mainProductCost.getAccumulatedQty());
 	}
 
-	private static PPOrderCost getMainProductCost(
+	@Nullable
+	private static PPOrderCost getMainProductCostOrNull(
 			@NonNull final PPOrderCosts orderCosts,
 			@NonNull final AcctSchemaId acctSchemaId,
 			@NonNull final CostElementId materialCostElementId)
 	{
-		return orderCosts.toCollection().stream()
+		final List<PPOrderCost> mainProductCosts = orderCosts.toCollection().stream()
 				.filter(cost -> acctSchemaId.equals(cost.getAcctSchemaId()))
 				.filter(cost -> materialCostElementId.equals(cost.getCostElementId()))
 				.filter(PPOrderCost::isMainProduct)
-				.collect(GuavaCollectors.singleElementOrThrow(
-						() -> new AdempiereException("Expected exactly one main-product PP_Order_Cost row for acctSchema=" + acctSchemaId
-								+ ", costElement=" + materialCostElementId + " in " + orderCosts)));
+				.collect(ImmutableList.toImmutableList());
+
+		if (mainProductCosts.size() > 1)
+		{
+			throw new AdempiereException("Expected at most one main-product PP_Order_Cost row for acctSchema=" + acctSchemaId
+					+ ", costElement=" + materialCostElementId + " in " + orderCosts);
+		}
+
+		return mainProductCosts.isEmpty() ? null : mainProductCosts.get(0);
 	}
 
 	@Value(staticConstructor = "of")
@@ -306,6 +359,5 @@ public class PPOrderCostDifferenceDistributor
 	{
 		@NonNull CostAmount residual;
 		@NonNull Quantity manufacturedQty;
-		@NonNull CostSegmentAndElement mainProductCostSegment;
 	}
 }

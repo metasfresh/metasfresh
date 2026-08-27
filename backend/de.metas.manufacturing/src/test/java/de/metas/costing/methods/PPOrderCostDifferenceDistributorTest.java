@@ -40,7 +40,6 @@ import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.quantity.QuantityUOMConverters;
 import de.metas.uom.UomId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
@@ -58,11 +57,8 @@ import java.math.BigDecimal;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Ground-truth cases for the {@code CostDifferenceDistribution} split.
- * <ul>
- *   <li>residual=40, manufacturedQty=10, CurrentQty=8 -> capitalize 32 / spill 8, price 30 -> 34.</li>
- *   <li>residual=-40, manufacturedQty=10, CurrentQty=20 -> capitalize -40 / spill 0, price 30 -> 28.</li>
- * </ul>
+ * Ground-truth cases for the {@code CostDifferenceDistribution} split math. The resulting cost details and the
+ * cost-price move are covered by {@link PPOrderCostDifferenceDistributorCostDetailsTest}.
  */
 public class PPOrderCostDifferenceDistributorTest
 {
@@ -112,37 +108,29 @@ public class PPOrderCostDifferenceDistributorTest
 	}
 
 	@Test
-	public void eg1_positiveResidual_spillsToCogs_andMovesPriceUp()
+	public void positiveResidual_partlyShipped_spillsToCogs()
 	{
-		final CurrentCost currentCost = currentCost("30", "8");
-
-		final CostAmountDetailed split = PPOrderCostDifferenceDistributor.distributeOnto(
+		final CostAmountDetailed split = PPOrderCostDifferenceDistributor.computeSplit(
 				CostAmount.of(40, currencyId),
 				Quantity.of(10, uomEach),
-				currentCost,
-				QuantityUOMConverters.noConversion());
+				currentCost("30", "8"));
 
+		assertThat(split.getMainAmt().toBigDecimal()).isEqualTo("40");
 		assertThat(split.getCostAdjustmentAmt().toBigDecimal()).isEqualTo("32"); // capitalize 4 x 8
 		assertThat(split.getAlreadyShippedAmt().toBigDecimal()).isEqualTo("8");  // spill 4 x 2 -> COGS
-		assertThat(split.getMainAmt().toBigDecimal()).isEqualTo("40");
-		assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("34"); // (30 x 8 + 32) / 8
 	}
 
 	@Test
-	public void eg2_negativeResidual_noCogs_andMovesPriceDown()
+	public void negativeResidual_fullyInStock_hasNoCogsLeg()
 	{
-		final CurrentCost currentCost = currentCost("30", "20");
-
-		final CostAmountDetailed split = PPOrderCostDifferenceDistributor.distributeOnto(
+		final CostAmountDetailed split = PPOrderCostDifferenceDistributor.computeSplit(
 				CostAmount.of(-40, currencyId),
 				Quantity.of(10, uomEach),
-				currentCost,
-				QuantityUOMConverters.noConversion());
+				currentCost("30", "20"));
 
-		assertThat(split.getCostAdjustmentAmt().toBigDecimal()).isEqualTo("-40"); // all capitalized (qtyInStock == mfd)
-		assertThat(split.getAlreadyShippedAmt().toBigDecimal()).isEqualTo("0");   // no COGS
 		assertThat(split.getMainAmt().toBigDecimal()).isEqualTo("-40");
-		assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("28"); // (30 x 20 - 40) / 20
+		assertThat(split.getCostAdjustmentAmt().toBigDecimal()).isEqualTo("-40"); // all capitalized (qtyInStock == mfd)
+		assertThat(split.getAlreadyShippedAmt().toBigDecimal()).isEqualTo("0");
 	}
 
 	@Test

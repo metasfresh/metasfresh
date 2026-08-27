@@ -67,6 +67,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 	//
 	private final CostingMethodHandlerUtils utils;
+	private final PPOrderCostDifferenceDistributor costDifferenceDistributor;
 
 	private final AveragePOCostingMethodHandler averagePOCostingMethodHandler;
 
@@ -76,9 +77,11 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 
 	public ManufacturingAveragePOCostingMethodHandler(
 			@NonNull final CostingMethodHandlerUtils utils,
+			@NonNull final PPOrderCostDifferenceDistributor costDifferenceDistributor,
 			@NonNull final AveragePOCostingMethodHandler averagePOCostingMethodHandler)
 	{
 		this.utils = utils;
+		this.costDifferenceDistributor = costDifferenceDistributor;
 		this.averagePOCostingMethodHandler = averagePOCostingMethodHandler;
 	}
 
@@ -151,10 +154,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 		}
 		else if (costCollectorType.isCostDifferenceDistribution())
 		{
-			// The distribution is applied to M_Cost by the service that creates this collector; nothing to do here.
-			orderCosts = null;
-			currentCost = null;
-			result = null;
+			return costDifferenceDistributor.createCostDetails(request, orderId);
 		}
 		else
 		{

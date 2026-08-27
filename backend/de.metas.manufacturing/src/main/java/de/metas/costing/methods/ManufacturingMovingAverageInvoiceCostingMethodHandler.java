@@ -45,6 +45,7 @@ public class ManufacturingMovingAverageInvoiceCostingMethodHandler implements Co
 	@NonNull private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 	//
 	@NonNull private final CostingMethodHandlerUtils utils;
+	@NonNull private final PPOrderCostDifferenceDistributor costDifferenceDistributor;
 	@NonNull private final MovingAverageInvoiceCostingMethodHandler movingAverageInvoiceCostingMethodHandler;
 
 	@NonNull @Getter private final CostingMethod costingMethod = CostingMethod.MovingAverageInvoice;
@@ -101,10 +102,7 @@ public class ManufacturingMovingAverageInvoiceCostingMethodHandler implements Co
 		}
 		else if (costCollectorType.isCostDifferenceDistribution())
 		{
-			// The distribution is applied to M_Cost by the service that creates this collector; nothing to do here.
-			orderCosts = null;
-			currentCost = null;
-			result = null;
+			return costDifferenceDistributor.createCostDetails(request, orderId);
 		}
 		else
 		{

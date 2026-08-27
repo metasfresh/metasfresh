@@ -120,6 +120,7 @@ public class ManufacturingActivityControlNoProductTest
 				currentCostsRepo,
 				costDetailsService,
 				handlerUtils,
+				new PPOrderCostDifferenceDistributor(costElementRepo, handlerUtils),
 				new StandardCostingMethodHandler(handlerUtils));
 
 		euroCurrencyId = PlainCurrencyDAO.createCurrency(CurrencyCode.EUR).getId();

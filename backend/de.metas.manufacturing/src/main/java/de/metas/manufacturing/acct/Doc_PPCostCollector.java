@@ -33,20 +33,17 @@ import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElement;
 import de.metas.costing.methods.CostAmountDetailed;
-import de.metas.costing.methods.PPOrderCostDifferenceDistributor;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocBaseType;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
-import org.compiere.SpringContextHolder;
 import org.compiere.acct.Doc;
 import org.compiere.acct.Fact;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.PPCostCollectorQuantities;
-import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Cost_Collector;
 
 import javax.annotation.Nullable;
@@ -67,7 +64,6 @@ import java.util.List;
 public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 {
 	private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
-	private final PPOrderCostDifferenceDistributor costDifferenceDistributor = SpringContextHolder.instance.getBean(PPOrderCostDifferenceDistributor.class);
 
 	/**
 	 * Pseudo Line
@@ -402,21 +398,23 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 
 	/**
 	 * Posts the WIP residual: DR Product Asset (capitalized) + DR COGS (shipped remainder) / CR WIP, each leg
-	 * flipped when the residual is negative. The amount comes from {@code PP_Order_Cost}, not from
-	 * {@code docLine.getCreateCosts}.
+	 * flipped when the residual is negative.
 	 */
 	private List<Fact> createFacts_CostDifferenceDistribution(final AcctSchema as)
 	{
-		final PPOrderId orderId = PPOrderId.ofRepoId(getPP_Cost_Collector().getPP_Order_ID());
-		final CostAmountDetailed split = costDifferenceDistributor.computeSplitForPosting(orderId, as.getId());
+		final DocLine_CostCollector docLine = getLine();
+		final AggregatedCostAmount costResult = docLine.getCreateCosts(as).orElse(null);
+		if (costResult == null)
+		{
+			return ImmutableList.of();
+		}
 
-		final ImmutableList<CostDifferenceDistributionLeg> legs = costDifferenceDistributionLegs(split);
+		final ImmutableList<CostDifferenceDistributionLeg> legs = costDifferenceDistributionLegs(costResult.getTotalAmountToPost(as));
 		if (legs.isEmpty())
 		{
 			return ImmutableList.of();
 		}
 
-		final DocLine_CostCollector docLine = getLine();
 		final Quantity qty = getMovementQty();
 
 		final Fact fact = new Fact(this, as, PostingType.Actual);

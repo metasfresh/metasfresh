@@ -70,11 +70,14 @@ public class ManufacturingLastPOCostingMethodHandler implements CostingMethodHan
 	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 	//
 	private final CostingMethodHandlerUtils utils;
+	private final PPOrderCostDifferenceDistributor costDifferenceDistributor;
 
 	public ManufacturingLastPOCostingMethodHandler(
-			@NonNull final CostingMethodHandlerUtils utils)
+			@NonNull final CostingMethodHandlerUtils utils,
+			@NonNull final PPOrderCostDifferenceDistributor costDifferenceDistributor)
 	{
 		this.utils = utils;
+		this.costDifferenceDistributor = costDifferenceDistributor;
 	}
 
 	@Override
@@ -139,10 +142,7 @@ public class ManufacturingLastPOCostingMethodHandler implements CostingMethodHan
 		}
 		else if (costCollectorType.isCostDifferenceDistribution())
 		{
-			// The distribution is applied to M_Cost by the service that creates this collector; nothing to do here.
-			orderCosts = null;
-			currentCost = null;
-			result = null;
+			return costDifferenceDistributor.createCostDetails(request, orderId);
 		}
 		else
 		{
