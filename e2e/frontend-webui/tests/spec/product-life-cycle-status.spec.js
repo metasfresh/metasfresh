@@ -25,8 +25,9 @@
  * of a local run that showed window 140 STILL listing ProductLifeCycleStatus with IsDisplayedGrid='N'
  * applied. That observation was a stale-cache artifact, not behaviour: ViewLayoutFactory's
  * "SqlViewLayouts" cache carries no `#<table>` suffix, so CCache.extractTableNameForCacheName derives
- * no table name and no AD_* reset label ever reaches it, and with expireAfterMinutes=0 it never expires
- * on its own. A migration applied as raw SQL also never triggers PO.java's save-path invalidation.
+ * no real table name and the cache falls back to registering itself under its OWN name — a label no
+ * AD_* save ever resets — and with expireAfterMinutes=0 it never expires on its own. A migration
+ * applied as raw SQL also never triggers PO.java's save-path invalidation.
  * After resetting SqlViewLayouts + SqlViewBindings the same probe returned the grid WITHOUT the column.
  * So: before concluding a layout flag "did not work", reset those caches (or restart the app server)
  * and re-observe.
