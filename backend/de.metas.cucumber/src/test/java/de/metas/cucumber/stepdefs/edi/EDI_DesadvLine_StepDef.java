@@ -82,12 +82,19 @@ public class EDI_DesadvLine_StepDef
 	 *   <li>{@code Line} – narrows the match to the line with this line number</li>
 	 * </ul>
 	 * When no disambiguator is provided the query must return exactly one result.
+	 * <p>
+	 * Optional assertion columns (each asserted only when the column is present):
+	 * <ul>
+	 *   <li>{@code QtyEntered} – expected {@code EDI_DesadvLine.QtyEntered}</li>
+	 *   <li>{@code QtyDeliveredInUOM} – expected {@code EDI_DesadvLine.QtyDeliveredInUOM}</li>
+	 *   <li>{@code QtyDeliveredInStockingUOM} – expected {@code EDI_DesadvLine.QtyDeliveredInStockingUOM}</li>
+	 * </ul>
 	 *
 	 * <p>Example:
 	 * <pre>
 	 * Then EDI_DesadvLine records are found:
-	 *   | EDI_DesadvLine_ID | EDI_Desadv_ID |
-	 *   | desadvLine        | myDesadv      |
+	 *   | EDI_DesadvLine_ID | EDI_Desadv_ID | OPT.QtyDeliveredInStockingUOM |
+	 *   | desadvLine        | myDesadv      | 3                             |
 	 * </pre>
 	 */
 	@Then("EDI_DesadvLine records are found:")
@@ -116,8 +123,33 @@ public class EDI_DesadvLine_StepDef
 
 		final I_EDI_DesadvLine desadvLine = queryBuilder.create().firstOnlyNotNull(I_EDI_DesadvLine.class);
 
+		assertOptionalDesadvLineQtys(row, desadvLine);
+
 		final StepDefDataIdentifier lineIdentifier = row.getAsIdentifier(I_EDI_DesadvLine.COLUMNNAME_EDI_DesadvLine_ID);
 		desadvLineTable.putOrReplace(lineIdentifier, desadvLine);
+	}
+
+	/**
+	 * Asserts the optional {@code QtyEntered} / {@code QtyDeliveredInUOM} /
+	 * {@code QtyDeliveredInStockingUOM} DataTable columns against the given line. A column that is
+	 * absent from the row is skipped entirely, so callers that never supply it keep today's behaviour.
+	 */
+	private static void assertOptionalDesadvLineQtys(@NonNull final DataTableRow row, @NonNull final I_EDI_DesadvLine desadvLine)
+	{
+		row.getAsOptionalBigDecimal(I_EDI_DesadvLine.COLUMNNAME_QtyEntered)
+				.ifPresent(expected -> assertThat(desadvLine.getQtyEntered())
+						.as(I_EDI_DesadvLine.COLUMNNAME_QtyEntered)
+						.isEqualByComparingTo(expected));
+
+		row.getAsOptionalBigDecimal(I_EDI_DesadvLine.COLUMNNAME_QtyDeliveredInUOM)
+				.ifPresent(expected -> assertThat(desadvLine.getQtyDeliveredInUOM())
+						.as(I_EDI_DesadvLine.COLUMNNAME_QtyDeliveredInUOM)
+						.isEqualByComparingTo(expected));
+
+		row.getAsOptionalBigDecimal(I_EDI_DesadvLine.COLUMNNAME_QtyDeliveredInStockingUOM)
+				.ifPresent(expected -> assertThat(desadvLine.getQtyDeliveredInStockingUOM())
+						.as(I_EDI_DesadvLine.COLUMNNAME_QtyDeliveredInStockingUOM)
+						.isEqualByComparingTo(expected));
 	}
 
 	/**
