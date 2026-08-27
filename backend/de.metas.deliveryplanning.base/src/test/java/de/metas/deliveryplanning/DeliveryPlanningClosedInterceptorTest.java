@@ -300,7 +300,7 @@ class DeliveryPlanningClosedInterceptorTest
 	@DisplayName("an unrelated column change does not trigger the interceptor - ifColumnsChanged actually filters")
 	void unrelatedColumnChange_doesNotTriggerInterceptor()
 	{
-		// closed already, WITHOUT going through the normal close flow (which would have removed the allocation) -
+		// closed already, WITHOUT going through the normal close flow (which would have deactivated the allocation) -
 		// allocateTo bypasses that ordering the same way close_allocatedToCompletedInstruction_refused's setup
 		// does, so the interceptor's own onDeliveryPlanningClosed body ("if (isClosed())") is reached below with
 		// an allocation still present; only ifColumnsChanged stands between that body and every future save

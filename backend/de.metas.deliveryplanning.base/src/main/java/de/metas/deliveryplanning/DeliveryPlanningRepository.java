@@ -659,18 +659,7 @@ public class DeliveryPlanningRepository
 			return;
 		}
 
-		final List<I_M_Delivery_Planning_Alloc> allocRecords = queryAllocationsByPlanningIds(deliveryPlanningIds).create().list();
-		final ImmutableMap<Integer, I_M_ShippingPackage> shippingPackages = getShippingPackagesOf(allocRecords);
-
-		for (final I_M_Delivery_Planning_Alloc allocRecord : allocRecords)
-		{
-			final I_M_ShippingPackage shippingPackageRecord = shippingPackages.get(allocRecord.getM_ShippingPackage_ID());
-			shippingPackageRecord.setIsActive(false);
-			saveRecord(shippingPackageRecord);
-
-			allocRecord.setIsActive(false);
-			saveRecord(allocRecord);
-		}
+		deactivateAllocationRecords(queryAllocationsByPlanningIds(deliveryPlanningIds).create().list());
 	}
 
 	/**
@@ -682,7 +671,16 @@ public class DeliveryPlanningRepository
 	 */
 	public void deactivateAllocations(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
-		final List<I_M_Delivery_Planning_Alloc> allocRecords = queryActiveAllocationsByInstructionId(deliveryInstructionId).create().list();
+		deactivateAllocationRecords(queryActiveAllocationsByInstructionId(deliveryInstructionId).create().list());
+	}
+
+	/**
+	 * Shared by both {@code deactivateAllocations} overloads. The package-then-allocation order matches
+	 * {@link #deactivateAllocations(ShipperTransportationId)}'s original order for consistency - unlike a
+	 * delete, no FK constraint forces either write to go first.
+	 */
+	private void deactivateAllocationRecords(@NonNull final List<I_M_Delivery_Planning_Alloc> allocRecords)
+	{
 		final ImmutableMap<Integer, I_M_ShippingPackage> shippingPackages = getShippingPackagesOf(allocRecords);
 
 		for (final I_M_Delivery_Planning_Alloc allocRecord : allocRecords)
