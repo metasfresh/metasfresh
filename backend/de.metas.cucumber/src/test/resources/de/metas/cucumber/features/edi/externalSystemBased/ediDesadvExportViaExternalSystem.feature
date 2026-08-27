@@ -999,3 +999,69 @@ Feature: EDI DESADV export via External System
     Then after not more than 120s, EDI_Desadv records have the following export status
       | EDI_Desadv_ID | EDI_ExportStatus | OPT.EDIErrorMsg | OPT.Processed | OPT.FulfillmentPercent |
       | d_100         | S                | null            | true          | 70                     |
+
+
+  @from:cucumber
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00350_EDI
+  @Id:S30013_110
+  Scenario: S30013_110 — M_ShipmentSchedule closed before the DESADV was exported -> DESADV reaches Sent
+  ## The customer's own agreed sequence, and the mirror image of S30013_30.
+  ## An order for 100 PCE is delivered 70 PCE, and the remaining M_ShipmentSchedule is closed straight
+  ## away — while the shipment is still waiting to be exported.
+  ## Closing alone cannot finish the DESADV: its own recompute still sees an unexported M_InOut, so the
+  ## DESADV stays Pending.  The export then flips that shipment to Sent, and it is that status change
+  ## which carries the already-closed DESADV to its terminal status S / Processed.
+  ## FulfillmentPercent must stay 70 — it is an EXP_FormatLine, i.e. transmitted content.
+    And RabbitMQ MF_TO_ExternalSystem queue is purged
+
+    # @Date@ suffix keeps the POReference unique across local repeat runs (see S30013_10).
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised | POReference          |
+      | o_110      | true    | customer1     | 2025-04-17  | 2025-04-18Z  | PO_S30013_110_@Date@ |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID | QtyEntered |
+      | ol_110_1   | o_110                 | product      | 100        |
+
+    And the order identified by o_110 is completed
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | s_s_110    | ol_110_1                  | N             |
+
+    # Deliver only 70 of the 100 ordered, so a remainder stays open (see S30013_10 on the column name).
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | s_s_110                          | D            | true                | false       | 70                                              |
+
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | s_s_110                          | s_110                 |
+
+    And EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_ExportStatus |
+      | d_110                    | customer1                | o_110                 | P                |
+
+    # The ordering under test: the close comes FIRST, while the shipment is still unexported.
+    When the M_ShipmentSchedule identified by s_s_110 is closed
+
+    # Intermediate state: the close on its own may not finish the DESADV — nothing has been transmitted
+    # yet, so it stays Pending and carries no error.
+    Then after not more than 120s, EDI_Desadv records have the following export status
+      | EDI_Desadv_ID | EDI_ExportStatus | OPT.EDIErrorMsg | OPT.Processed | OPT.FulfillmentPercent |
+      | d_110         | P                | null            | false         | 70                     |
+
+    And M_InOut is enqueued for EDI export
+      | M_InOut_ID |
+      | s_110      |
+
+    Then after not more than 120s, M_InOut records have the following export status
+      | M_InOut_ID.Identifier | EDI_ExportStatus |
+      | s_110                 | S                |
+
+    # ─── CORE ASSERTION ────────────────────────────────────────────────────────
+    # The export lands on an already-closed schedule, and the DESADV still reaches its terminal status.
+    # OPT.EDIErrorMsg=null: the auto-close is a clean terminal state, not an error state.
+    Then after not more than 120s, EDI_Desadv records have the following export status
+      | EDI_Desadv_ID | EDI_ExportStatus | OPT.EDIErrorMsg | OPT.Processed | OPT.FulfillmentPercent |
+      | d_110         | S                | null            | true          | 70                     |
