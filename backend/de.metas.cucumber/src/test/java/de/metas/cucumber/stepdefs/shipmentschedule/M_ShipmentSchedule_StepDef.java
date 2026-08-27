@@ -905,6 +905,7 @@ public class M_ShipmentSchedule_StepDef
 	 *     (e.g. {@code 2022-08-10}) compared in the order's time zone<br>
 	 *   <b>DeliveryDate</b> — (optional) expected per-line delivery date (the line's promised delivery date),
 	 *     as a plain calendar date compared in the order's time zone<br>
+	 *   <b>PriorityRule</b> — (optional) expected priority rule code (1=Urgent, 3=High, 5=Medium, 7=Low, 9=Minor)<br>
 	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -1516,6 +1517,9 @@ public class M_ShipmentSchedule_StepDef
 			final I_C_Project project = projectTable.get(projectIdentifier);
 			softly.assertThat(shipmentSchedule.getC_Project_ID()).as("C_Project_ID for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(project.getC_Project_ID());
 		}
+
+		tableRow.getAsOptionalString(I_M_ShipmentSchedule.COLUMNNAME_PriorityRule)
+				.ifPresent(expected -> softly.assertThat(shipmentSchedule.getPriorityRule()).as("PriorityRule for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(expected));
 
 		softly.assertAll();
 	}
