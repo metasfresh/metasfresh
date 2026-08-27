@@ -35,7 +35,15 @@
 --                                                                  no DB check constraint
 --
 -- Tables written into the backup schema:
---   backup.m_shippertransportation_gh31608             full copy of the table before any change
+--   backup.m_shippertransportation_bkp_<ts>_gh31608_direction
+--                                                      full copy of the table before any change.
+--                                                      Named by backup_table's own convention
+--                                                      (suffix form), so the timestamp is part of
+--                                                      the name and a second application makes a
+--                                                      SECOND backup instead of colliding with the
+--                                                      first. Discover it via backup.backup_tables,
+--                                                      which backup_table registers it in -- do not
+--                                                      hardcode the name anywhere.
 --   backup.m_shippertransportation_gh31608_resolution  one row per transport: which rule decided
 --                                                      it, what it was set to, and why. It is the
 --                                                      single computation that both the UPDATE and
@@ -46,7 +54,7 @@
 -- ===========================================================================
 -- 1. Back up the whole table BEFORE anything is written
 -- ===========================================================================
-SELECT backup_table('m_shippertransportation', '', 'm_shippertransportation_gh31608');
+SELECT backup_table('m_shippertransportation', '_gh31608_direction');
 
 -- ===========================================================================
 -- 2. AD_Column: M_ShipperTransportation.M_Delivery_Planning_Type
@@ -299,9 +307,14 @@ WHERE r.fallback_reason IS NOT NULL
 -- ===========================================================================
 -- (a) nothing unset
 --     SELECT count(*) FROM M_ShipperTransportation WHERE M_Delivery_Planning_Type IS NULL;
--- (b) every row still accounted for against the backup
---     SELECT count(*)
---       FROM backup.m_shippertransportation_gh31608 b
---       FULL JOIN M_ShipperTransportation s USING (M_ShipperTransportation_ID)
---      WHERE b.M_ShipperTransportation_ID IS NULL
---         OR s.M_ShipperTransportation_ID IS NULL;
+-- (b) every row still accounted for against the backup. Resolve the backup's name first --
+--     it carries backup_table's timestamp, so it differs per application:
+--       SELECT table_name FROM backup.backup_tables
+--        WHERE table_name LIKE 'm_shippertransportation_bkp_%_gh31608_direction'
+--        ORDER BY table_name DESC LIMIT 1;
+--     then, substituting that name for <bkp>:
+--       SELECT count(*)
+--         FROM backup.<bkp> b
+--         FULL JOIN M_ShipperTransportation s USING (M_ShipperTransportation_ID)
+--        WHERE b.M_ShipperTransportation_ID IS NULL
+--           OR s.M_ShipperTransportation_ID IS NULL;
