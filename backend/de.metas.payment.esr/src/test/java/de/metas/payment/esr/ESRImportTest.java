@@ -1770,33 +1770,16 @@ public class ESRImportTest extends ESRTestBase
 		}
 
 		/**
-		 * @param expectedPaymentAction the second line's expected {@code ESR_Payment_Action}, or {@code null} if it
-		 * is expected to stay unflagged (see {@link #arrivingOnALaterDay()}).
-		 */
-		/**
-		 * The detection path that actually lost money in production, and the one no other test reaches.
-		 * <p>
-		 * {@code ESRImportDAO.findExistentPaymentId} turns a candidate payment (same partner, same amount)
-		 * into a duplicate via one of three routes. Both sibling tests give the two lines the SAME
-		 * {@code ESRLineText}, so the "another line already carries this payment" route matches first and
-		 * returns -- {@code IPaymentBL.isMatchInvoice} is never evaluated by them.
-		 * <p>
-		 * The production case was different: two DISTINCT bank lines, and the earlier payment was already
-		 * allocated to the very invoice the second line resolves. Only {@code isMatchInvoice} can catch
-		 * that. This test isolates it by giving the second line a different line text (so the line-text
-		 * route cannot fire) while keeping the payment date equal (so the candidate query matches on every
-		 * branch, including those that filter candidates on an exact {@code DateTrx}).
-		 * <p>
-		 * The load-bearing assertion is that the second line gets its OWN payment: attaching the earlier
-		 * one is exactly the behaviour that left the newly arrived money unbooked.
+		 * Duplicate recognised because the earlier payment is already allocated to this line's invoice.
+		 * The sibling tests give both lines the same {@code ESRLineText}, so they never reach this route:
+		 * hence the differing line text here, and the equal payment date so the candidate query still
+		 * matches on branches that filter on an exact {@code DateTrx}.
 		 */
 		@Test
 		void earlierPaymentAllocatedToTheSameInvoice_isDetectedViaTheInvoice_notTheLineText()
 		{
 			final String grandTotal = "50";
 			final String esrLineText1 = "01201067789300000001060012345600654321400000050009072  030014040914041014041100001006800000000000090                          ";
-			// same reference and amount, but NOT the same raw bank line: one differing character, same length,
-			// so neither text contains the other and the line-text route cannot match.
 			final String esrLineText2 = esrLineText1.replace("041100", "041200");
 
 			assertThat(esrLineText2).as("the two bank lines must differ").isNotEqualTo(esrLineText1);
@@ -1822,7 +1805,6 @@ public class ESRImportTest extends ESRTestBase
 			final int firstPaymentId = esrImportLine1.getC_Payment_ID();
 			assertThat(firstPaymentId).as("the first line must have produced a payment").isNotZero();
 
-			// the same amount arrives again for the same, now-settled invoice -- on a DIFFERENT bank line
 			final I_ESR_ImportLine esrImportLine2 = createESR_ImportLineFromOtherLine(esrImportLine1);
 			esrImportLine2.setESRLineText(esrLineText2);
 			esrImportLine2.setPaymentDate(paymentDate);
@@ -1842,6 +1824,10 @@ public class ESRImportTest extends ESRTestBase
 					.isNotEqualTo(firstPaymentId);
 		}
 
+		/**
+		 * @param expectedPaymentAction the second line's expected {@code ESR_Payment_Action}, or {@code null} if it
+		 * is expected to stay unflagged (see {@link #arrivingOnALaterDay()}).
+		 */
 		private void assertDuplicateGetsOwnPayment(final int daysAfterFirstPayment, final String expectedPaymentAction)
 		{
 			final String grandTotal = "50";
