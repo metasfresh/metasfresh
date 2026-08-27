@@ -22,6 +22,7 @@
 
 package de.metas.deliveryplanning.interceptor;
 
+import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.deliveryplanning.DeliveryPlanningService;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -57,5 +58,19 @@ public class M_Delivery_Planning
 	public void onActualLoadingDateChanged(@NonNull final I_M_Delivery_Planning deliveryPlanning)
 	{
 		deliveryPlanningService.invalidateInvoiceCandidatesFor(deliveryPlanning);
+	}
+
+	/**
+	 * Fires only on the transition TO closed (AC14: no process, this one included, acts on a planning that is
+	 * already closed) - {@link DeliveryPlanningService#onDeliveryPlanningClosed} either refuses the close outright
+	 * or removes the now-closed planning's allocation.
+	 */
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_M_Delivery_Planning.COLUMNNAME_IsClosed)
+	public void onClosedChanged(@NonNull final I_M_Delivery_Planning deliveryPlanning)
+	{
+		if (deliveryPlanning.isClosed())
+		{
+			deliveryPlanningService.onDeliveryPlanningClosed(DeliveryPlanningId.ofRepoId(deliveryPlanning.getM_Delivery_Planning_ID()));
+		}
 	}
 }

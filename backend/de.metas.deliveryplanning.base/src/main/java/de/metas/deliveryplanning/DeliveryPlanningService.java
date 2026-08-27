@@ -116,6 +116,14 @@ public class DeliveryPlanningService
 	 * closed planning (the goods-movement generators), and the per-row skip report of {@link #cancelDelivery}.
 	 */
 	public static final AdMessageKey MSG_M_Delivery_Planning_Closed = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.Closed");
+
+	/**
+	 * Refuses to CLOSE a planning that is currently allocated to a COMPLETED delivery instruction, naming
+	 * Re-Activate as the way out - the instruction has to go back to a draft before the planning inside it can be
+	 * closed.
+	 */
+	public static final AdMessageKey MSG_M_Delivery_Planning_CloseOnCompletedInstruction = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.CloseOnCompletedInstruction");
+
 	public static final AdMessageKey MSG_M_Delivery_Planning_AtLeastOnePerOrderLine = AdMessageKey.of("de.metas.deliveryplanning.M_Delivery_Planning_AtLeastOnePerOrderLine");
 
 	private static final AdMessageKey MSG_M_Delivery_Planning_AlreadyReferenced = AdMessageKey.of("de.metas.deliveryplanning.M_Delivery_Planning_AlreadyReferenced");
@@ -918,6 +926,43 @@ public class DeliveryPlanningService
 		}
 
 		return Optional.of(TranslatableStrings.adMessage(MSG_M_Delivery_Planning_ClosedAllocatedPlannings, toIdList(closedPlanningIds)));
+	}
+
+	/**
+	 * Why the given planning's {@code IsClosed} change to CLOSED must be refused, or empty when it may proceed.
+	 * <p>
+	 * Refused only when the planning is currently allocated to a COMPLETED delivery instruction - told apart from a
+	 * draft one via the instruction's {@code DocStatus} directly, the same as {@link #getCompleteRejectionReason}.
+	 */
+	public Optional<ITranslatableString> getCloseRejectionReason(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		if (deliveryPlanningRepository.hasCompleteDeliveryInstruction(deliveryPlanningId))
+		{
+			return Optional.of(TranslatableStrings.adMessage(MSG_M_Delivery_Planning_CloseOnCompletedInstruction, deliveryPlanningId.getRepoId()));
+		}
+		return Optional.empty();
+	}
+
+	/**
+	 * Reacts to a planning's {@code IsClosed} flipping to {@code true} (the {@code M_Delivery_Planning}
+	 * AFTER_CHANGE(IsClosed) interceptor): refused outright via {@link #getCloseRejectionReason} when the planning
+	 * is on a completed instruction; otherwise its allocation and shipping package are removed via the SAME
+	 * primitive {@link #removeFrom} uses - closing says "stop processing this cargo", and remaining allocated to a
+	 * draft instruction contradicts that. A planning on no instruction is left alone.
+	 */
+	public void onDeliveryPlanningClosed(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		getCloseRejectionReason(deliveryPlanningId)
+				.ifPresent(reason -> {throw new AdempiereException(reason);});
+
+		final ImmutableSet<DeliveryPlanningId> allocatedIds = deliveryPlanningRepository.getAllocatedInstructionIds(ImmutableList.of(deliveryPlanningId)).keySet();
+		if (allocatedIds.isEmpty())
+		{
+			return;
+		}
+
+		deliveryPlanningRepository.deleteAllocations(allocatedIds);
+		deliveryPlanningRepository.clearInstructionReference(allocatedIds);
 	}
 
 	/**
