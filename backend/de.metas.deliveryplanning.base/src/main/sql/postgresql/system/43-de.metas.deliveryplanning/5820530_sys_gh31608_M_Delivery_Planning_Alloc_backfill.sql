@@ -98,6 +98,7 @@ DO $$
 DECLARE
     v_header_without_planning_backref  integer;
     v_planning_bad_package_join        integer;
+    v_package_shared_by_plannings      integer;
     v_planning_client_mismatch         integer;
 BEGIN
     -- Cross-check (§3b.2): a NON-VOIDED DI instruction whose header link has no matching
@@ -157,6 +158,41 @@ BEGIN
             '(one active package per planning, matched through the order line) does not hold '
             'for these rows -- aborting without writing anything.',
             v_planning_bad_package_join;
+    END IF;
+
+    -- Proves the REVERSE direction of the same assumption: the check above only proves each
+    -- planning resolves to exactly one package, not that no two DIFFERENT plannings resolve to
+    -- the SAME package. Two plannings can legitimately share one C_OrderLine_ID (partial
+    -- shipments of one order line across separate instructions -- DeliveryPlanningService
+    -- guards against deleting the LAST such planning, which only makes sense if more than one
+    -- can exist), so without this check two plannings on two different instructions could both
+    -- pass the guard above (each resolving to exactly one package) while both resolving to the
+    -- SAME single package if the other instruction's own package is missing/inactive -- silently
+    -- misattributing a package to the wrong instruction's allocation, or failing the INSERT on
+    -- the raw M_Delivery_Planning_Alloc_Package_UQ index instead of this script's own message.
+    SELECT count(*)
+    INTO v_package_shared_by_plannings
+    FROM (
+        SELECT sp.M_ShippingPackage_ID
+        FROM M_Delivery_Planning dp
+        JOIN M_ShipperTransportation st ON st.M_ShipperTransportation_ID = dp.M_ShipperTransportation_ID
+        JOIN C_DocType dt ON dt.C_DocType_ID = st.C_DocType_ID AND dt.DocSubType = 'DI'
+        JOIN M_ShippingPackage sp
+          ON sp.C_OrderLine_ID = dp.C_OrderLine_ID
+         AND sp.IsActive = 'Y'
+        WHERE dp.M_ShipperTransportation_ID > 0
+          AND st.DocStatus <> 'VO'
+        GROUP BY sp.M_ShippingPackage_ID
+        HAVING count(*) > 1
+    ) bad;
+
+    IF v_package_shared_by_plannings > 0 THEN
+        RAISE EXCEPTION
+            'gh31608 M_Delivery_Planning_Alloc backfill: % active M_ShippingPackage row(s) would '
+            'be claimed by more than one delivery planning through the order-line join. The '
+            'package-join assumption this backfill relies on (one active package per planning) '
+            'does not hold for these rows -- aborting without writing anything.',
+            v_package_shared_by_plannings;
     END IF;
 
     -- Proves the AD_Client_ID mirror is safe before the insert relies on it: the allocation
@@ -248,10 +284,12 @@ WHERE dp.M_ShipperTransportation_ID > 0
 --       GROUP BY M_Delivery_Planning_ID HAVING count(*) > 1;
 --     SELECT M_ShippingPackage_ID, count(*) FROM M_Delivery_Planning_Alloc WHERE IsActive='Y'
 --       GROUP BY M_ShippingPackage_ID HAVING count(*) > 1;
--- (d) every allocation's DocStatus/Processed/AD_Org_ID equals its instruction's (expect 0):
+-- (d) every allocation's DocStatus/Processed/AD_Org_ID/AD_Client_ID equals its instruction's
+--     (expect 0):
 --     SELECT count(*) FROM M_Delivery_Planning_Alloc a
 --       JOIN M_ShipperTransportation st ON st.M_ShipperTransportation_ID = a.M_ShipperTransportation_ID
---      WHERE a.DocStatus <> st.DocStatus OR a.Processed <> st.Processed OR a.AD_Org_ID <> st.AD_Org_ID;
+--      WHERE a.DocStatus <> st.DocStatus OR a.Processed <> st.Processed
+--         OR a.AD_Org_ID <> st.AD_Org_ID OR a.AD_Client_ID <> st.AD_Client_ID;
 -- (e) LineNo is non-zero and matches the Java's numbering for a single-member instruction
 --     (expect 8, all =10, and 0 for the "<>10" count):
 --     SELECT count(*), count(*) FILTER (WHERE LineNo = 0) FROM M_Delivery_Planning_Alloc;
