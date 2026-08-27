@@ -41,7 +41,6 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
-import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -96,8 +95,6 @@ public class DeliveryPlanningRepository
 	private static final int ALLOCATION_LINE_NO_STEP = 10;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-	private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
 
 	private final DimensionService dimensionService;
 
@@ -668,10 +665,13 @@ public class DeliveryPlanningRepository
 	 * <p>
 	 * {@code IsActive='N'} is also what releases both partial unique indexes on the allocation, so the plannings
 	 * can be allocated again afterwards.
+	 *
+	 * @return the shipping packages just deactivated - {@link #unlinkDeliveryPlannings(ShipperTransportationId)}
+	 * 		unlinks exactly these afterwards, instead of re-querying the instruction's whole package set.
 	 */
-	public void deactivateAllocations(@NonNull final ShipperTransportationId deliveryInstructionId)
+	public ImmutableList<I_M_ShippingPackage> deactivateAllocations(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
-		deactivateAllocationRecords(queryActiveAllocationsByInstructionId(deliveryInstructionId).create().list());
+		return deactivateAllocationRecords(queryActiveAllocationsByInstructionId(deliveryInstructionId).create().list());
 	}
 
 	/**
@@ -679,19 +679,22 @@ public class DeliveryPlanningRepository
 	 * {@link #deactivateAllocations(ShipperTransportationId)}'s original order for consistency - unlike a
 	 * delete, no FK constraint forces either write to go first.
 	 */
-	private void deactivateAllocationRecords(@NonNull final List<I_M_Delivery_Planning_Alloc> allocRecords)
+	private ImmutableList<I_M_ShippingPackage> deactivateAllocationRecords(@NonNull final List<I_M_Delivery_Planning_Alloc> allocRecords)
 	{
 		final ImmutableMap<Integer, I_M_ShippingPackage> shippingPackages = getShippingPackagesOf(allocRecords);
 
+		final ImmutableList.Builder<I_M_ShippingPackage> deactivatedShippingPackages = ImmutableList.builder();
 		for (final I_M_Delivery_Planning_Alloc allocRecord : allocRecords)
 		{
 			final I_M_ShippingPackage shippingPackageRecord = shippingPackages.get(allocRecord.getM_ShippingPackage_ID());
 			shippingPackageRecord.setIsActive(false);
 			saveRecord(shippingPackageRecord);
+			deactivatedShippingPackages.add(shippingPackageRecord);
 
 			allocRecord.setIsActive(false);
 			saveRecord(allocRecord);
 		}
+		return deactivatedShippingPackages.build();
 	}
 
 	/**
@@ -912,9 +915,15 @@ public class DeliveryPlanningRepository
 				.iterate(I_M_Delivery_Planning.class);
 	}
 
+	/**
+	 * Unlinks the packages behind the JUST-DEACTIVATED allocations only - never the instruction's whole,
+	 * unfiltered package set. A planning removed from this instruction earlier leaves its own retired, deactivated
+	 * package behind, still carrying this instruction's id; that package is none of this void's business, and
+	 * re-querying by instruction id would wipe its {@code C_OrderLine_ID} too.
+	 */
 	public void unlinkDeliveryPlannings(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
-		deactivateAllocations(deliveryInstructionId);
+		final ImmutableList<I_M_ShippingPackage> shippingPackages = deactivateAllocations(deliveryInstructionId);
 
 		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = retrieveForDeliveryInstructionId(deliveryInstructionId);
 		while (deliveryPlanningIterator.hasNext())
@@ -923,11 +932,9 @@ public class DeliveryPlanningRepository
 			deliveryPlanningRecord.setReleaseNo(null);
 			deliveryPlanningRecord.setM_ShipperTransportation_ID(-1);
 			saveRecord(deliveryPlanningRecord);
-
-			shipperTransportationDAO.retrieveShippingPackages(deliveryInstructionId)
-					.forEach(this::unlinkShippingPackage);
-
 		}
+
+		shippingPackages.forEach(this::unlinkShippingPackage);
 	}
 
 	private void unlinkShippingPackage(@NonNull final I_M_ShippingPackage shippingPackage)

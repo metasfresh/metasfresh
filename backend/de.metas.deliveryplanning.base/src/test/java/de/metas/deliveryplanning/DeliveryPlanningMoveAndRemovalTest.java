@@ -25,6 +25,7 @@ package de.metas.deliveryplanning;
 import com.google.common.collect.ImmutableList;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
+import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperRepository;
@@ -159,6 +160,27 @@ class DeliveryPlanningMoveAndRemovalTest
 						.collect(ImmutableList.toImmutableList()));
 
 		deliveryPlanningRepository.updateDeliveryPlanningsFromInstruction(ids, deliveryInstructionId);
+	}
+
+	/** Like {@link #allocateTo}, but stamps the given order line onto the planning's shipping package. */
+	private void allocateToWithOrderLine(
+			@NonNull final ShipperTransportationId deliveryInstructionId,
+			@NonNull final OrderLineId orderLineId,
+			@NonNull final I_M_Delivery_Planning record)
+	{
+		final DeliveryPlanningId id = idOf(record);
+
+		deliveryPlanningRepository.createAllocations(
+				deliveryInstructionId,
+				ImmutableList.of(DeliveryPlanningAllocCreateRequest.builder()
+						.deliveryPlanningId(id)
+						.productId(ProductId.ofRepoId(PRODUCT_ID))
+						.qtyLoaded(Quantity.of(BigDecimal.TEN, uom))
+						.qtyDischarged(Quantity.of(BigDecimal.ONE, uom))
+						.orderLineId(orderLineId)
+						.build()));
+
+		deliveryPlanningRepository.updateDeliveryPlanningsFromInstruction(ImmutableList.of(id), deliveryInstructionId);
 	}
 
 	private static DeliveryPlanningId idOf(@NonNull final I_M_Delivery_Planning record)
@@ -399,5 +421,42 @@ class DeliveryPlanningMoveAndRemovalTest
 				.isEqualTo(20);
 		assertThat(allocationOf(moving).getM_ShipperTransportation_ID()).isEqualTo(target.getRepoId());
 		assertNoOrphanedShippingPackages();
+	}
+
+	@Test
+	@DisplayName("void unlinks only the just-deactivated allocation's own package - an earlier removal's retired package keeps its order-line link")
+	void voidDoesNotWipeAnEarlierRemovedPlanningsOrderLineLink()
+	{
+		final ShipperTransportationId deliveryInstructionId = draftDeliveryInstruction("SHARED-9");
+
+		// P1: allocated, then removed from the still-DRAFT instruction. C6 deactivates rather than deletes, so
+		// the retired package survives, still carrying this instruction's id AND its order-line link
+		final I_M_Delivery_Planning removedEarlier = deliveryPlanning();
+		final OrderLineId removedEarlierOrderLineId = OrderLineId.ofRepoId(540100);
+		allocateToWithOrderLine(deliveryInstructionId, removedEarlierOrderLineId, removedEarlier);
+		final int removedEarlierPackageId = allocationOf(removedEarlier).getM_ShippingPackage_ID();
+
+		deliveryPlanningService.removeFrom(selectionOf(removedEarlier));
+		assertThat(shippingPackageIsActive(removedEarlierPackageId)).isFalse();
+		assertThat(InterfaceWrapperHelper.load(removedEarlierPackageId, I_M_ShippingPackage.class).getC_OrderLine_ID())
+				.as("removal deactivates the package - it must not touch the order-line link")
+				.isEqualTo(removedEarlierOrderLineId.getRepoId());
+
+		// P2: allocated to the SAME instruction afterwards
+		final I_M_Delivery_Planning laterAllocated = deliveryPlanning();
+		final OrderLineId laterOrderLineId = OrderLineId.ofRepoId(540101);
+		allocateToWithOrderLine(deliveryInstructionId, laterOrderLineId, laterAllocated);
+		final int laterPackageId = allocationOf(laterAllocated).getM_ShippingPackage_ID();
+
+		// the instruction is voided - unlinkDeliveryPlannings runs, exactly what the TIMING_AFTER_VOID
+		// interceptor triggers
+		deliveryPlanningService.unlinkDeliveryPlannings(deliveryInstructionId);
+
+		assertThat(InterfaceWrapperHelper.load(laterPackageId, I_M_ShippingPackage.class).getC_OrderLine_ID())
+				.as("the voided instruction's own, just-deactivated package loses its order-line link")
+				.isLessThanOrEqualTo(0);
+		assertThat(InterfaceWrapperHelper.load(removedEarlierPackageId, I_M_ShippingPackage.class).getC_OrderLine_ID())
+				.as("P1 has nothing to do with this void - its retired package's order-line link must survive")
+				.isEqualTo(removedEarlierOrderLineId.getRepoId());
 	}
 }

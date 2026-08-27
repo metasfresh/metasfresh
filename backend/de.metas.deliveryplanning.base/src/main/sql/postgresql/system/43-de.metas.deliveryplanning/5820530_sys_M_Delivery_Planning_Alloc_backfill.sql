@@ -69,8 +69,10 @@
 --   * On VOID, the interceptor's unlinkDeliveryPlannings -> deactivateAllocations sets the
 --     allocation AND its M_ShippingPackage to IsActive='N'. Both pre-checks and the INSERT
 --     filter sp.IsActive='Y', so a voided instruction's package is already excluded.
---   * On REMOVE / MOVE, deleteAllocations DELETES the allocation and its package outright.
---     Nothing survives to be claimed.
+--   * On REMOVE / MOVE, deactivateAllocations sets the allocation AND its M_ShippingPackage to
+--     IsActive='N' -- the same mechanism as the VOID bullet above, not a delete. The row survives,
+--     but stays inactive, so it is still excluded by the IsActive='Y' filter both pre-checks and
+--     the INSERT apply.
 --   * unlinkDeliveryPlannings additionally clears C_OrderLine_ID on the instruction's packages,
 --     inside its per-planning loop -- so even an active leftover would stop matching any
 --     planning's order line.
