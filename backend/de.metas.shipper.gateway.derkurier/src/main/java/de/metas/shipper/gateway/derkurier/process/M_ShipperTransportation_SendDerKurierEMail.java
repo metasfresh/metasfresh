@@ -58,7 +58,7 @@ public class M_ShipperTransportation_SendDerKurierEMail
 	private final transient DerKurierDeliveryOrderEmailer //
 			derKurierDeliveryOrderEmailer = SpringContextHolder.instance.getBean(DerKurierDeliveryOrderEmailer.class);
 
-	private final transient ShipperTransportationDocSubTypeGuard docSubTypeGuard = SpringContextHolder.instance.getBean(ShipperTransportationDocSubTypeGuard.class);
+	private final ShipperTransportationDocSubTypeGuard docSubTypeGuard = SpringContextHolder.instance.getBean(ShipperTransportationDocSubTypeGuard.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
