@@ -27,7 +27,7 @@ import de.metas.inout.PriorityRule;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Shipper;
@@ -60,7 +60,6 @@ class M_Shipper_ShipmentScheduleTest
 		AdempiereTestHelper.get().init();
 
 		shipmentScheduleInvalidateBL = mock(IShipmentScheduleInvalidateBL.class);
-		Services.registerService(IShipmentScheduleInvalidateBL.class, shipmentScheduleInvalidateBL);
 	}
 
 	@Test
@@ -71,7 +70,7 @@ class M_Shipper_ShipmentScheduleTest
 		final I_M_Shipper shipper = createShipper();
 		final ShipmentScheduleId scheduleId = createShipmentSchedule(shipper, false);
 
-		registerInterceptorUnderTest();
+		registerInterceptorUnderTest(shipmentScheduleInvalidateBL);
 
 		// when: the shipper's PriorityRule changes
 		shipper.setPriorityRule(PriorityRule.High.getCode());
@@ -88,7 +87,7 @@ class M_Shipper_ShipmentScheduleTest
 		final I_M_Shipper shipper = createShipper();
 		createShipmentSchedule(shipper, true);
 
-		registerInterceptorUnderTest();
+		registerInterceptorUnderTest(shipmentScheduleInvalidateBL);
 
 		// when: the shipper's PriorityRule changes
 		shipper.setPriorityRule(PriorityRule.High.getCode());
@@ -105,7 +104,7 @@ class M_Shipper_ShipmentScheduleTest
 		final I_M_Shipper shipper = createShipper();
 		createShipmentSchedule(shipper, false);
 
-		registerInterceptorUnderTest();
+		registerInterceptorUnderTest(shipmentScheduleInvalidateBL);
 
 		// when: an unrelated column (Name) changes -- PriorityRule stays untouched
 		shipper.setName("Some other name");
@@ -133,8 +132,8 @@ class M_Shipper_ShipmentScheduleTest
 		return ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
 	}
 
-	private static void registerInterceptorUnderTest()
+	private static void registerInterceptorUnderTest(@NonNull final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL)
 	{
-		POJOLookupMap.get().addModelValidator(new M_Shipper_ShipmentSchedule());
+		POJOLookupMap.get().addModelValidator(new M_Shipper_ShipmentSchedule(shipmentScheduleInvalidateBL));
 	}
 }

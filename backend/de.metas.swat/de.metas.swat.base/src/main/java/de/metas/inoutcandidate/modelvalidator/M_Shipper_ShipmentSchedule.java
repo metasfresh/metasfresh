@@ -6,6 +6,7 @@ import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_M_Shipper;
@@ -22,10 +23,11 @@ import java.util.Set;
  */
 @Interceptor(I_M_Shipper.class)
 @Component
+@RequiredArgsConstructor
 public class M_Shipper_ShipmentSchedule
 {
 	@NonNull private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
-	@NonNull private final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL = Services.get(IShipmentScheduleInvalidateBL.class);
+	@NonNull private final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL;
 
 	@ModelChange(timings = {
 			ModelValidator.TYPE_AFTER_NEW,
