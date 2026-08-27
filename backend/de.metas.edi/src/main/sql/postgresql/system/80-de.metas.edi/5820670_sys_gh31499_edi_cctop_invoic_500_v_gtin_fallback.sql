@@ -91,10 +91,10 @@ SELECT SUM(il.qtyEntered)                                                       
        COALESCE(NULLIF(REGEXP_REPLACE(pip.GTIN, '\s+$', ''), ''),
                 REGEXP_REPLACE(pip.EAN_TU, '\s+$', '')
        )                                                                         AS Buyer_GTIN_TU,
-       COALESCE(NULLIF(REGEXP_REPLACE(asi_data.gtin, '\s+$', ''), ''),
-                NULLIF(REGEXP_REPLACE(asi_data.ean_cu, '\s+$', ''), ''),
-                NULLIF(REGEXP_REPLACE(asi_data.ean13_productcode, '\s+$', ''), ''),
-                REGEXP_REPLACE(p.gtin), '\s+$', '')                              AS Buyer_GTIN_CU,
+       COALESCE(NULLIF(REGEXP_REPLACE(asi_data.GTIN, '\s+$', ''), ''),
+                NULLIF(REGEXP_REPLACE(p.GTIN, '\s+$', ''), ''),
+                REGEXP_REPLACE(asi_data.EAN_CU, '\s+$', '')
+       )                                                                         AS Buyer_GTIN_CU,
        REGEXP_REPLACE(asi_data.EAN_CU, '\s+$', '')                               AS Buyer_EAN_CU,
 
        COALESCE(NULLIF(REGEXP_REPLACE(p.GTIN, '\s+$', ''), ''),
