@@ -626,9 +626,9 @@ public class DeliveryPlanningRepository
 	 * Only active allocations are touched: a deactivated one records an instruction that was voided, and voiding
 	 * is not what the planner is undoing here.
 	 * <p>
-	 * Deleting record by record rather than by query is what keeps the last line of defence for "a planning
-	 * cannot be removed from a completed instruction": the allocation mirrors the instruction's {@code Processed},
-	 * and deleting a processed record throws. A bulk query delete would not check it.
+	 * "A planning cannot be removed from a completed instruction" is enforced entirely at the service layer -
+	 * {@link DeliveryPlanningService#getRemoveFromRejectionReason} rejects the whole selection BEFORE this method
+	 * is ever called. The allocation itself carries no status to check here: it is not a document.
 	 */
 	public void deleteAllocations(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
 	{
