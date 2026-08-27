@@ -1064,7 +1064,7 @@ public class DeliveryPlanningRepository
 	 * {@code IsClosed} filter: {@link DeliveryPlanningService#cancelDelivery} needs a closed planning in the
 	 * result too, so it can report it per row instead of the row silently never being seen at all.
 	 */
-	public ICompositeQueryFilter<I_M_Delivery_Planning> excludeDeliveryPlanningsWithoutReleaseNo(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	public ICompositeQueryFilter<I_M_Delivery_Planning> excludeDeliveryPlanningsWithoutReleaseNo(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
 		return queryBL
 				.createCompositeQueryFilter(I_M_Delivery_Planning.class)

@@ -1563,8 +1563,7 @@ public class DeliveryPlanningService
 	 * Invalidates the invoice candidates of EVERY planning currently allocated to the given instruction, in ONE
 	 * batch load - not the legacy single {@code M_ShipperTransportation.M_Delivery_Planning_ID}
 	 * header FK the interceptor used to read, which silently skipped every allocation but the first on an
-	 * aggregated instruction, and not a per-planning loop either: that would be a fifth N+1 in this exact code
-	 * family, after four earlier fixes.
+	 * aggregated instruction, and not a per-planning loop either, which would be an N+1 over the allocations.
 	 * <p>
 	 * A transport order, or an instruction with no allocations, is a no-op: {@code getAllocatedPlanningIds} comes
 	 * back empty and the batch load never runs.
