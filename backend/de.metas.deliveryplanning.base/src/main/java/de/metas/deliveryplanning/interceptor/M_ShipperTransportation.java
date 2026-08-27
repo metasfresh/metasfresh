@@ -54,11 +54,20 @@ public class M_ShipperTransportation
 		bpartnerStatisticsUpdater.updateBPartnerStatistics(IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest.builder()
 				.bpartnerId(shipperTransportation.getShipper_BPartner_ID())
 				.build());
-
-		updateDeliveryPlanning(shipperTransportation);
 	}
 
-	private void updateDeliveryPlanning(@NonNull final I_M_ShipperTransportation shipperTransportation)
+	/**
+	 * COMPLETE only, deliberately not VOID: on void, invoice-candidate invalidation for the instruction's
+	 * allocations is owned exclusively by {@link #unlinkDeliveryPlannings(I_M_ShipperTransportation)}, which
+	 * captures the affected planning ids BEFORE deactivating the allocations. This method's
+	 * {@code getAllocatedPlanningIds}-based re-derivation would, on VOID, run inside a
+	 * {@code trxManager.runAfterCommit} closure AFTER {@code unlinkDeliveryPlannings} (same class, same
+	 * timing) had already deactivated those very allocations in the same transaction - always finding an
+	 * empty set and silently invalidating nothing. Keeping this handler COMPLETE-only removes that hazard by
+	 * construction instead of leaving a redundant, always-empty call in place.
+	 */
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
+	public void invalidateInvoiceCandidatesAfterComplete(@NonNull final I_M_ShipperTransportation shipperTransportation)
 	{
 		final ShipperTransportationId deliveryInstructionId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
 		trxManager.runAfterCommit(() -> deliveryPlanningService.invalidateInvoiceCandidatesFor(deliveryInstructionId));
