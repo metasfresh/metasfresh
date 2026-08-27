@@ -79,7 +79,7 @@ public class M_Delivery_Planning_CancelDeliveryInstruction extends JavaProcess i
 
 		final DeliveryPlanningCancelResult result = deliveryPlanningService.cancelDelivery(selectedDeliveryPlanningsFilter);
 
-		// per-row report (AC14): a closed planning does not abort the run, it is named here instead
+		// per-row report: a closed planning does not abort the run, it is named here instead
 		for (final DeliveryPlanningId skippedId : result.getSkippedClosedIds())
 		{
 			addLog(msgBL.getMsg(getCtx(), DeliveryPlanningService.MSG_M_Delivery_Planning_Closed, new Object[] { skippedId.getRepoId() }));

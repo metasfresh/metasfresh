@@ -59,7 +59,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * Task C3 - the {@code M_Delivery_Planning} AFTER_CHANGE(IsClosed) interceptor (AC14): closing a planning allocated
+ * The {@code M_Delivery_Planning} AFTER_CHANGE(IsClosed) interceptor: closing a planning allocated
  * to a DRAFT instruction deactivates the allocation and its shipping package; closing one allocated to a COMPLETED
  * instruction is refused, pointing at Re-Activate.
  * <p>

@@ -11,7 +11,7 @@
 -- at N active allocations they produce the full N x N cross product -- every planning paired with
 -- every package's quantities, and the M_ShippingPackage_ID key repeats N times.
 --
--- Fix: correlate both M_ShippingPackage and M_Delivery_Planning to the same allocation row
+-- The view correlates both M_ShippingPackage and M_Delivery_Planning to the same allocation row
 -- (M_Delivery_Planning_Alloc) instead of each independently to the instruction.
 
 DROP VIEW IF EXISTS M_Delivery_Planning_Delivery_Instructions_V$new

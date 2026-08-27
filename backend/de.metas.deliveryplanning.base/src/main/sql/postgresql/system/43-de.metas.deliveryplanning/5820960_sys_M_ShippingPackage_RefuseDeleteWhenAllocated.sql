@@ -4,10 +4,10 @@
 -- The acceptance criteria know only close / remove / void / cancel; deleting an instruction or one of its
 -- packages is not an operation this feature offers. Two things nevertheless make the delete reachable
 -- today: M_ShipperTransportation and M_ShippingPackage both carry IsDeleteable='Y', and a DRAFTED
--- instruction's only guard is MMShipperTransportation.beforeDelete()'s isProcessed() check. Since 5820950
--- made all three of M_Delivery_Planning_Alloc's FKs ON DELETE CASCADE, that delete now silently destroys
--- the allocation rows rather than failing loudly on a foreign key - which is why the refusal has to be
--- stated in the application.
+-- instruction's only guard is MMShipperTransportation.beforeDelete()'s isProcessed() check. Which foreign-key
+-- action the allocation carries is not what makes the delete wrong, so the refusal is stated in the
+-- application rather than in the schema: a cascade would destroy the rows silently, and NO ACTION would fail
+-- with a raw constraint violation naming nothing the operator can act on.
 --
 -- Guarding the PACKAGE also guards the INSTRUCTION: PO.delete0() runs beforeDelete() before it fires
 -- TYPE_BEFORE_DELETE, and MMShipperTransportation.beforeDelete() force-deletes every one of its
@@ -16,9 +16,10 @@
 --
 -- Retired (IsActive='N') allocations refuse the delete too, deliberately: an instruction that once carried
 -- a planning is exactly the document whose history the retirement exists to keep, and "cancel it instead"
--- is the answer there as much as for a live booking. The ON DELETE CASCADE from 5820950 is untouched and
--- still needed - it serves the M_Delivery_Planning leg, where deleting a shipment/receipt schedule
--- legitimately deletes its plannings.
+-- is the answer there as much as for a live booking. The M_Delivery_Planning leg is the one place a delete
+-- is legitimate - a shipment/receipt-schedule delete cascades into its plannings - and it is handled in
+-- Java too: interceptor/M_Delivery_Planning.onDelete refuses the live case, then removes the retired rows
+-- itself (see 5820970, which puts all three FKs back to plain NO ACTION).
 --
 -- Scoped by construction, not by a filter: only delivery planning creates allocations, so this message is
 -- unreachable for the transport-order and handling-units packages that share M_ShippingPackage.

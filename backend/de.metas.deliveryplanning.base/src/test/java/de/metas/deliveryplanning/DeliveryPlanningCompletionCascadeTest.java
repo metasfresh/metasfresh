@@ -110,7 +110,7 @@ class DeliveryPlanningCompletionCascadeTest
 	}
 
 	/**
-	 * Same table, distinguished only by the {@code C_DocType.DocSubType} - the mechanism introduced by task C5
+	 * Same table, distinguished only by the {@code C_DocType.DocSubType} - the {@code DocSubType} mechanism
 	 * ({@link de.metas.shipping.ShipperTransportationDocSubTypeGuard}) and reused here, per the fix for this
 	 * finding: never re-derive "is this a delivery instruction" from direction, {@code IsSOTrx}, or allocations.
 	 */

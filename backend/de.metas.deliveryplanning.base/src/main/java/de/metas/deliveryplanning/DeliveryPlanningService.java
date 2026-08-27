@@ -78,6 +78,7 @@ import de.metas.util.Services;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -108,13 +109,14 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class DeliveryPlanningService
 {
 	public static final AdMessageKey MSG_M_Delivery_Planning_AllClosed = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.AllClosed");
 	public static final AdMessageKey MSG_M_Delivery_Planning_AllOpen = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.AllOpen");
 
 	/**
-	 * "Closed means finished, nothing touches it" (AC14): the rejection thrown by a process that acts on a single
+	 * "Closed means finished, nothing touches it": the rejection thrown by a process that acts on a single
 	 * closed planning (the goods-movement generators), and the per-row skip report of {@link #cancelDelivery}.
 	 */
 	public static final AdMessageKey MSG_M_Delivery_Planning_Closed = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.Closed");
@@ -188,18 +190,17 @@ public class DeliveryPlanningService
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	/**
-	 * The task-C5 mechanism that tells the two {@code M_ShipperTransportation} document roles apart - reused here
-	 * rather than a second ad-hoc distinction.
-	 */
-	private final ShipperTransportationDocSubTypeGuard shipperTransportationDocSubTypeGuard;
 	private final ShipperRepository shipperRepository;
 	private final DeliveryPlanningRepository deliveryPlanningRepository;
 	private final DeliveryStatusColorPaletteService deliveryStatusColorPaletteService;
-
 	private final DimensionService dimensionService;
-
 	private final MeansOfTransportationService meansOfTransportationService;
+
+	/**
+	 * Tells the two {@code M_ShipperTransportation} document roles apart by {@code C_DocType.DocSubType} - reused
+	 * here rather than inventing a second ad-hoc distinction.
+	 */
+	private final ShipperTransportationDocSubTypeGuard shipperTransportationDocSubTypeGuard;
 
 	final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
@@ -207,21 +208,6 @@ public class DeliveryPlanningService
 	final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 
-	public DeliveryPlanningService(
-			@NonNull final ShipperRepository shipperRepository,
-			@NonNull final DeliveryPlanningRepository deliveryPlanningRepository,
-			@NonNull final DeliveryStatusColorPaletteService deliveryStatusColorPaletteService,
-			@NonNull final DimensionService dimensionService,
-			@NonNull final MeansOfTransportationService meansOfTransportationService,
-			@NonNull final ShipperTransportationDocSubTypeGuard shipperTransportationDocSubTypeGuard)
-	{
-		this.shipperRepository = shipperRepository;
-		this.deliveryPlanningRepository = deliveryPlanningRepository;
-		this.deliveryStatusColorPaletteService = deliveryStatusColorPaletteService;
-		this.dimensionService = dimensionService;
-		this.meansOfTransportationService = meansOfTransportationService;
-		this.shipperTransportationDocSubTypeGuard = shipperTransportationDocSubTypeGuard;
-	}
 
 	/**
 	 * Gate for per-shipper auto-creation.
@@ -292,12 +278,15 @@ public class DeliveryPlanningService
 	 * Refuses to delete a planning that an ACTIVE {@code M_Delivery_Planning_Alloc} still points at -
 	 * unconditionally, regardless of who is deleting it. Asked of the allocation table rather than of
 	 * {@code ReleaseNo}, which only mirrors it; see
-	 * {@link DeliveryPlanningRepository#hasActiveAllocation(DeliveryPlanningId)}. The allocation's shipping package is mandatory-FKed
-	 * to a still-live instruction, so silently letting the delete through (and cascading the active allocation
-	 * away with it, per the {@code ON DELETE CASCADE} on {@code M_Delivery_Planning_Alloc}) would strand that
-	 * instruction's cargo with no record of ever having been there - unlike a RETIRED allocation, which the
-	 * cascade may safely take along because the history it records is only ever consulted while its planning
-	 * still exists.
+	 * {@link DeliveryPlanningRepository#hasActiveAllocation(DeliveryPlanningId)}.
+	 * <p>
+	 * The allocation's shipping package is mandatory-FKed to a still-live instruction, so letting the delete
+	 * through would strand that instruction's cargo with no record of it ever having been booked. A RETIRED
+	 * allocation is the opposite case and must NOT be refused - the history it records is only ever consulted
+	 * while its planning exists, so once the planning goes, it goes too. That removal is done explicitly by
+	 * {@link #deleteAllocationsFor(DeliveryPlanningId)}, which the same interceptor calls straight after this
+	 * guard; the FKs themselves are plain {@code NO ACTION} precisely so that nothing but application code ever
+	 * decides which of the two cases a given allocation is.
 	 */
 	public void assertNotCurrentlyAllocated(@NonNull final I_M_Delivery_Planning deliveryPlanning)
 	{
@@ -1012,7 +1001,7 @@ public class DeliveryPlanningService
 	 * last planning off a drafted instruction now makes it reachable.</li>
 	 * </ul>
 	 * A transport order, which legitimately never has allocations, stays a no-op for BOTH rules - told apart from
-	 * a delivery instruction via {@link ShipperTransportationDocSubTypeGuard} (task C5's mechanism), never by
+	 * a delivery instruction via {@link ShipperTransportationDocSubTypeGuard}, never by
 	 * direction, {@code IsSOTrx}, or the presence of allocations.
 	 */
 	public Optional<ITranslatableString> getCompleteRejectionReason(@NonNull final ShipperTransportationId deliveryInstructionId)
@@ -1435,7 +1424,7 @@ public class DeliveryPlanningService
 	/**
 	 * Cancels every selected planning that carries a {@code ReleaseNo}, per row: a closed one is left untouched and
 	 * named in {@link DeliveryPlanningCancelResult#getSkippedClosedIds()} rather than aborting the whole selection
-	 * (AC14) - the open ones are still voided and cancelled.
+	 * - the open ones are still voided and cancelled.
 	 */
 	public DeliveryPlanningCancelResult cancelDelivery(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{

@@ -37,7 +37,7 @@
 -- (M_Delivery_Planning_Alloc.IsActive='Y', per 5820920) already scopes every row to the instruction's
 -- CURRENT active allocations -- exactly "the plannings on this instruction". Superseded/historical
 -- allocations are intentionally NOT shown here; that capability is a separate, owner-approved rebuild
--- (plan task E5) sourced from INACTIVE M_Delivery_Planning_Alloc rows, not from this tab.
+-- sourced from INACTIVE M_Delivery_Planning_Alloc rows, not from this tab.
 UPDATE AD_Tab
    SET AD_Column_ID=NULL,
        Parent_Column_ID=540426,

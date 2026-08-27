@@ -5,7 +5,7 @@
 -- off a drafted instruction, making this state reachable for the first time - and the reports resolving
 -- through the allocation (docs_deliveryinstructions_description / _forwarder / _productdetails) print a
 -- blank document for it. A transport order, which legitimately never has allocations, is unaffected -
--- distinguished from a delivery instruction via C_DocType.DocSubType, the same mechanism task C5 used to
+-- distinguished from a delivery instruction via C_DocType.DocSubType, the same mechanism used to
 -- separate the two document roles that share M_ShipperTransportation.
 --
 -- No AD_Process / AD_Table_Process: this is a @DocValidate(TIMING_BEFORE_COMPLETE) guard fired by the

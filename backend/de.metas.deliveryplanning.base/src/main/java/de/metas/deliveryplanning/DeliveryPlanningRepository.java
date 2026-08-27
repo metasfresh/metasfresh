@@ -420,7 +420,7 @@ public class DeliveryPlanningRepository
 
 	/**
 	 * Guarded like the canonical closed/open pair ({@code ReceiptScheduleBL.close}): closing an already-closed
-	 * planning throws {@code @Closed@=@Y@} rather than silently doing nothing (AC14). All-or-nothing over the
+	 * planning throws {@code @Closed@=@Y@} rather than silently doing nothing. All-or-nothing over the
 	 * selection - checked before anything is written, so a mixed selection leaves no row half-closed.
 	 */
 	public void closeSelectedDeliveryPlannings(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
@@ -447,7 +447,7 @@ public class DeliveryPlanningRepository
 
 	/**
 	 * The counterpart of {@link #closeSelectedDeliveryPlannings}: reopening an already-open planning throws
-	 * {@code @Closed@=@N@} rather than silently doing nothing (AC14).
+	 * {@code @Closed@=@N@} rather than silently doing nothing.
 	 */
 	public void reOpenSelectedDeliveryPlannings(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
@@ -1021,7 +1021,7 @@ public class DeliveryPlanningRepository
 	/**
 	 * Cancels ONE delivery planning: closes it, marks it processed, sets its order status to {@code Canceled} and
 	 * zeroes its planned/actual quantities. Takes the already-loaded record rather than a filter - the caller
-	 * ({@link DeliveryPlanningService#cancelDelivery}) decides per row whether a planning is eligible (AC14: a
+	 * ({@link DeliveryPlanningService#cancelDelivery}) decides per row whether a planning is eligible (a
 	 * closed one is skipped, never cancelled here).
 	 */
 	public void cancelDeliveryPlanning(@NonNull final I_M_Delivery_Planning deliveryPlanningRecord)
@@ -1056,7 +1056,7 @@ public class DeliveryPlanningRepository
 	/**
 	 * Same applicability gate as {@link #excludeDeliveryPlanningsWithoutInstruction}, but WITHOUT the
 	 * {@code IsClosed} filter: {@link DeliveryPlanningService#cancelDelivery} needs a closed planning in the
-	 * result too, so it can report it per row (AC14) instead of the row silently never being seen at all.
+	 * result too, so it can report it per row instead of the row silently never being seen at all.
 	 */
 	public ICompositeQueryFilter<I_M_Delivery_Planning> excludeDeliveryPlanningsWithoutReleaseNo(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{

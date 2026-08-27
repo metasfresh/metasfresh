@@ -1,3 +1,9 @@
+-- SUPERSEDED: 5820970 puts all three FKs back to plain NO ACTION, and the live-vs-retired split this
+-- script tried to delegate to the database is now made in application code, where it can actually be
+-- expressed. Read that script before relying on anything below. This one is kept rather than edited
+-- away because it has already been applied to at least one environment, which would otherwise be left
+-- on ON DELETE CASCADE with no migration to correct it.
+--
 -- Every allocation-retirement path (remove-from-instruction, move, close, void/cancel)
 -- DEACTIVATES M_Delivery_Planning_Alloc and its M_ShippingPackage instead of deleting them, so a
 -- retired allocation now PERSISTS with IsActive='N' -- by design, so a re-booking history can show

@@ -175,8 +175,8 @@ class ShippingPackageDeleteGuardTest
 		final DeliveryPlanningId planningId = allocateTo(instruction, deliveryPlanning());
 		final I_M_ShippingPackage shippingPackage = shippingPackageOf(planningId);
 
-		// exactly what remove-from-instruction does, both halves of it (DeliveryPlanningService:1062-1063):
-		// the allocation is retired AND the planning loses its release number
+		// exactly what DeliveryPlanningService.removeFrom does, both halves of it: the allocation is retired
+		// AND the planning loses its release number
 		deliveryPlanningRepository.deactivateAllocations(ImmutableList.of(planningId));
 		deliveryPlanningRepository.clearInstructionReference(ImmutableList.of(planningId));
 

@@ -48,7 +48,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * AC14 - {@code GenerateShortageOverage} refuses a closed planning in its precondition, the same guard
+ * {@code GenerateShortageOverage} refuses a closed planning in its precondition, the same guard
  * {@code GenerateReceipt}/{@code GenerateShipment} carry (proven in {@code de.metas.deliveryplanning.webui}'s
  * {@code DeliveryPlanningGenerateClosedGuardTest}).
  * <p>

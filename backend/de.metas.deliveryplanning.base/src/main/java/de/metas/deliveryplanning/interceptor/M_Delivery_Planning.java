@@ -25,6 +25,7 @@ package de.metas.deliveryplanning.interceptor;
 import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.deliveryplanning.DeliveryPlanningService;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_M_Delivery_Planning;
@@ -35,15 +36,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.isUIAction;
 
 @Interceptor(I_M_Delivery_Planning.class)
 @Component
+@RequiredArgsConstructor
 public class M_Delivery_Planning
 {
 	private final DeliveryPlanningService deliveryPlanningService;
-
-	public M_Delivery_Planning(
-			@NonNull final DeliveryPlanningService deliveryPlanningService)
-	{
-		this.deliveryPlanningService = deliveryPlanningService;
-	}
 
 	/**
 	 * The currently-allocated guard runs for EVERY delete, UI-triggered or not, and the retired-history cleanup
@@ -52,7 +48,7 @@ public class M_Delivery_Planning
 	 * cascade sees one undifferentiated set of child rows and would erase an ACTIVE allocation exactly as
 	 * readily as a retired one, with nowhere to put the check. So the refusal and the cleanup live here,
 	 * together, in that order. The rest of {@code validateDeletion}
-	 * (AC14's "at least one planning per order line") stays UI-only - it is a single-record safeguard against an
+	 * (the "at least one planning per order line" rule) stays UI-only - it is a single-record safeguard against an
 	 * operator error, not a rule a schedule-driven cleanup of every planning on that schedule should have to obey.
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
@@ -76,7 +72,7 @@ public class M_Delivery_Planning
 	}
 
 	/**
-	 * Fires only on the transition TO closed (AC14: no process, this one included, acts on a planning that is
+	 * Fires only on the transition TO closed (no process, this one included, acts on a planning that is
 	 * already closed) - {@link DeliveryPlanningService#onDeliveryPlanningClosed} either refuses the close outright
 	 * or deactivates the now-closed planning's allocation.
 	 */

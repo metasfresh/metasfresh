@@ -47,7 +47,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * AC14 - {@code GenerateReceipt} and {@code GenerateShipment} refuse a closed planning in their precondition, the
+ * {@code GenerateReceipt} and {@code GenerateShipment} refuse a closed planning in their precondition, the
  * same guard {@code GenerateShortageOverage} carries (proven in {@code de.metas.deliveryplanning.base}).
  * <p>
  * The guard is checked BEFORE either process reads a receipt/shipment schedule, so a closed selection needs no

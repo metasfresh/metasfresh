@@ -373,7 +373,7 @@ class DeliveryPlanningMoveAndRemovalTest
 	}
 
 	@Test
-	@DisplayName("remove-from succeeds for a CLOSED planning - the one deliberate exception to AC14's closed guard")
+	@DisplayName("remove-from succeeds for a CLOSED planning - the one deliberate exception to the closed guard")
 	void removeFromSucceedsForAClosedPlanning()
 	{
 		final ShipperTransportationId deliveryInstructionId = draftDeliveryInstruction("SHARED-5");
@@ -429,7 +429,7 @@ class DeliveryPlanningMoveAndRemovalTest
 	{
 		final ShipperTransportationId deliveryInstructionId = draftDeliveryInstruction("SHARED-9");
 
-		// P1: allocated, then removed from the still-DRAFT instruction. C6 deactivates rather than deletes, so
+		// P1: allocated, then removed from the still-DRAFT instruction. Removal deactivates rather than deletes, so
 		// the retired package survives, still carrying this instruction's id AND its order-line link
 		final I_M_Delivery_Planning removedEarlier = deliveryPlanning();
 		final OrderLineId removedEarlierOrderLineId = OrderLineId.ofRepoId(540100);

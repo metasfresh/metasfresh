@@ -29,7 +29,7 @@ import lombok.Value;
 
 /**
  * What {@link DeliveryPlanningService#cancelDelivery} did with a selection, per row: cancelled, or skipped because
- * it was already closed (AC14 - {@code Cancel} refuses only the closed rows, not the whole selection).
+ * it was already closed ({@code Cancel} refuses only the closed rows, not the whole selection).
  */
 @Value
 @Builder

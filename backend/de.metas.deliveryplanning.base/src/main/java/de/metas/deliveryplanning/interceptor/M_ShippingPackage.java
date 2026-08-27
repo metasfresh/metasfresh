@@ -25,6 +25,7 @@ package de.metas.deliveryplanning.interceptor;
 import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
@@ -32,14 +33,10 @@ import org.springframework.stereotype.Component;
 
 @Interceptor(I_M_ShippingPackage.class)
 @Component
+@RequiredArgsConstructor
 public class M_ShippingPackage
 {
 	private final DeliveryPlanningService deliveryPlanningService;
-
-	public M_ShippingPackage(@NonNull final DeliveryPlanningService deliveryPlanningService)
-	{
-		this.deliveryPlanningService = deliveryPlanningService;
-	}
 
 	/**
 	 * A delivery instruction is cancelled or closed, never deleted - so a shipping package that carries a

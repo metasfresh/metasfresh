@@ -46,7 +46,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * AC14 - "closed means finished, nothing touches it": {@code Close} / {@code ReOpen} throw the canonical
+ * "Closed means finished, nothing touches it": {@code Close} / {@code ReOpen} throw the canonical
  * {@code @Closed@} error instead of silently doing nothing, and {@code Cancel} refuses a closed row per-row rather
  * than aborting the whole selection.
  */
