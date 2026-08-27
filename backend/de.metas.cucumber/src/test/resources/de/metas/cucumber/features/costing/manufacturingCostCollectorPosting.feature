@@ -510,3 +510,9 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
     And expect inventory valuation report
       | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt | InventoryValueAcctAmt |
       | 2024-03-27 | finProd      | warehouseStd   | 6   | 25.0000        | 150.00           | 150.00                |
+
+    # The schema's costing method is global state and this is the only scenario that moves it. Put it back, so
+    # the feature leaves the schema as its own Background found it.
+    And update C_AcctSchema:
+      | C_AcctSchema_ID | CostingMethod |
+      | acctSchema      | A             |

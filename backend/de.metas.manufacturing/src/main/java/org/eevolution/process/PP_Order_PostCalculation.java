@@ -49,8 +49,8 @@ import javax.annotation.Nullable;
  */
 public class PP_Order_PostCalculation extends JavaProcess implements IProcessPrecondition
 {
-	private final PPOrderCostDifferenceDistributor costDifferenceDistributor = SpringContextHolder.instance.getBean(PPOrderCostDifferenceDistributor.class);
-	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
+	@NonNull private final PPOrderCostDifferenceDistributor costDifferenceDistributor = SpringContextHolder.instance.getBean(PPOrderCostDifferenceDistributor.class);
+	@NonNull private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 
 	/** Only these accumulate into PP_Order_Cost; without that there is no residual to discharge. */
 	private static final ImmutableSet<CostingMethod> COSTING_METHODS_WITH_ORDER_COSTS = ImmutableSet.of(
@@ -79,9 +79,9 @@ public class PP_Order_PostCalculation extends JavaProcess implements IProcessPre
 
 		// Distributing closes the order, so this withdraws the action once the residual is discharged. After a
 		// PP_Order_UnClose it is offered again, correctly: a run without further activity finds nothing to discharge.
+		// Completed and Closed are distinct statuses, so isCompleted() alone already excludes a closed order.
 		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(ppOrder.getDocStatus());
-		return docStatus.isCompleted() && !docStatus.isClosed()
-				&& hasOrderCosts(ppOrder);
+		return docStatus.isCompleted() && hasOrderCosts(ppOrder);
 	}
 
 	/**
