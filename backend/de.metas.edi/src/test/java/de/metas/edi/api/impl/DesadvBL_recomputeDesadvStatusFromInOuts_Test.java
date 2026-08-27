@@ -101,6 +101,22 @@ class DesadvBL_recomputeDesadvStatusFromInOuts_Test
 		return schedule;
 	}
 
+	/**
+	 * An <b>open</b> {@code M_ShipmentSchedule} (IsClosed='N') that carries a {@code QtyOrdered_Override} —
+	 * the state the WebUI leaves behind after a packing correction, see
+	 * {@link #packingCorrectionLoweringTheOrderedQty_flipsTheDesadvToSent_althoughNothingWasClosed()}.
+	 */
+	private I_M_ShipmentSchedule createOpenShipmentScheduleWithQtyOrderedOverride(
+			final I_C_OrderLine orderLine,
+			final String qtyDelivered,
+			final String qtyOrderedOverride)
+	{
+		final I_M_ShipmentSchedule schedule = createShipmentSchedule(orderLine, qtyDelivered, false);
+		schedule.setQtyOrdered_Override(new BigDecimal(qtyOrderedOverride));
+		saveRecord(schedule);
+		return schedule;
+	}
+
 	private I_M_InOut createLinkedInOut(final I_EDI_Desadv desadv, final EDIExportStatus inOutStatus)
 	{
 		final I_M_InOut inOut = newInstance(I_M_InOut.class);
@@ -311,6 +327,89 @@ class DesadvBL_recomputeDesadvStatusFromInOuts_Test
 		assertThat(POJOLookupMap.get().getRecords(I_C_Queue_WorkPackage.class))
 				.as("no export work package may be enqueued by a close or a reopen")
 				.isEmpty();
+	}
+
+	/**
+	 * <b>KNOWN-FAILING — it pins the customer contract, not today's behaviour.</b> It documents that the
+	 * shipped terminal-status predicate is wider than what the customer was told, and it is expected to
+	 * stay RED until a human decides how to resolve that (accept-and-document, or narrow the predicate).
+	 * Do not "fix" it by relaxing the assertion.
+	 * <p>
+	 * <b>What the customer was promised.</b> "Der fehlende Teil ist nur das automatisch geschlossen wird,
+	 * wenn alle Lieferdispos <i>geschlossen</i> sind im Fall von Unterlieferung"
+	 * (the originating customer request). The trigger is <i>closing</i> a shipment disposition.
+	 * Here nothing is closed.
+	 * <p>
+	 * <b>The path this reproduces.</b> A disposition clerk corrects the <i>Packing Item</i> on a
+	 * partly-shipped {@code M_ShipmentSchedule} in the Lieferdisposition window
+	 * ({@code AD_Window_ID} 542156):
+	 * <ol>
+	 *   <li>the annotated callout {@code de.metas.handlingunits.inoutcandidate.callout.M_ShipmentSchedule
+	 *       .updateShipmentScheduleQtys} (registered in {@code de.metas.handlingunits.model.validator.Main:204})
+	 *       watches {@code M_HU_PI_Item_Product_Override_ID} among others ({@code M_ShipmentSchedule.java:41-49});</li>
+	 *   <li>it calls {@code HUPackingAwareBL.setQtyCUFromQtyTU} ({@code M_ShipmentSchedule.java:59}), which
+	 *       recomputes the ordered CU qty as {@code QtyOrdered_TU * CUsPerTU} of the <b>new</b> packing item
+	 *       and writes it through {@code ShipmentScheduleHUPackingAware.setQty}
+	 *       ({@code ShipmentScheduleHUPackingAware.java:85-88}) into {@code M_ShipmentSchedule.QtyOrdered_Override};</li>
+	 *   <li>on save, the EDI interceptor {@code de.metas.edi.model.validator.M_ShipmentSchedule}
+	 *       ({@code :43-46}, {@code ifColumnsChanged={QtyOrdered_Override, IsClosed}}) fires
+	 *       {@link DesadvBL#updateQtyOrdered_OverrideFromShipSchedAndSave} — which is what this test calls.</li>
+	 * </ol>
+	 * {@code getQtyOrdered_Override} ({@code DesadvBL.java:308-330}) substitutes {@code QtyDelivered} only for a
+	 * <b>closed</b> schedule; for this open one it copies the packing-recomputed value verbatim onto the
+	 * {@code EDI_DesadvLine}. {@code isDesadvLineDeliveryClosed} ({@code DesadvBL.java:1112-1120}) then reads
+	 * {@code 10 >= 8} as "this line has received everything it will ever receive" and the header goes terminal.
+	 * <p>
+	 * <b>Why {@code FulfillmentPercent} does not save us.</b> {@code EDI_Desadv.SumOrderedInStockingUOM} is only
+	 * ever adjusted when an {@code EDI_DesadvLine} is attached or detached, from raw {@code C_OrderLine.QtyOrdered}
+	 * ({@code DesadvBL.java:224} / {@code :728}) — never from an override. So the pre-existing
+	 * {@code fulfillmentPercent >= 100} arm of the gate stays false and the {@code areAllDesadvLinesDeliveryClosed}
+	 * arm added by the DESADV auto-close feature is the only thing that flips the header.
+	 * <p>
+	 * <b>Concrete case</b> (the customer's own "Änderung von Pilzmischung von 4 auf 2 TU" shape): 4 TU ordered at
+	 * 5 kg/TU = 20 kg; 2 TU = 10 kg already shipped and Sent; the clerk corrects the packing item to a 2 kg TU, so
+	 * the recomputed ordered qty is 4 * 2 = 8 kg. 10 delivered >= 8 "ordered" -> the DESADV silently reaches
+	 * {@code Sent} + {@code Processed} and drops out of the still-owed worklist, although 2 TU are still owed and
+	 * nobody closed anything.
+	 */
+	@Test
+	void packingCorrectionLoweringTheOrderedQty_flipsTheDesadvToSent_althoughNothingWasClosed()
+	{
+		// 20 kg ordered (4 TU x 5 kg), 10 kg delivered (2 TU) and already Sent -> 50 %
+		final I_EDI_Desadv desadv = createDesadv("50", EDIExportStatus.Pending.getCode());
+		final I_EDI_DesadvLine desadvLine = createDesadvLineRecord(desadv, "20", null, "10");
+		createLinkedInOut(desadv, EDIExportStatus.Sent);
+
+		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
+		orderLine.setEDI_DesadvLine_ID(desadvLine.getEDI_DesadvLine_ID());
+		saveRecord(orderLine);
+
+		desadvBL.recomputeDesadvStatusFromInOuts(EDIDesadvId.ofRepoId(desadv.getEDI_Desadv_ID()));
+		InterfaceWrapperHelper.refresh(desadv);
+		assertThat(desadv.getEDI_ExportStatus())
+				.as("precondition: half-delivered and nothing closed -> still Pending")
+				.isEqualTo(EDIExportStatus.Pending.getCode());
+
+		// the packing correction: the callout recomputes ordered as 4 TU x 2 kg = 8 kg onto the STILL-OPEN schedule
+		final I_M_ShipmentSchedule openSchedule =
+				createOpenShipmentScheduleWithQtyOrderedOverride(orderLine, "10", "8");
+		assertThat(openSchedule.isClosed())
+				.as("precondition: the shipment disposition is NOT closed — that is the whole point")
+				.isFalse();
+
+		// exactly what the EDI interceptor does on the AFTER_CHANGE of QtyOrdered_Override
+		desadvBL.updateQtyOrdered_OverrideFromShipSchedAndSave(openSchedule);
+
+		InterfaceWrapperHelper.refresh(desadvLine);
+		assertThat(desadvLine.getQtyOrdered_Override())
+				.as("mechanism: an OPEN schedule's override is copied through verbatim, delivered qty is NOT substituted")
+				.isEqualByComparingTo("8");
+
+		InterfaceWrapperHelper.refresh(desadv);
+		assertThat(desadv.getEDI_ExportStatus())
+				.as("no M_ShipmentSchedule was closed, so per the customer contract the DESADV must stay Pending; "
+						+ "2 of 4 TU are still owed")
+				.isEqualTo(EDIExportStatus.Pending.getCode());
 	}
 
 	/**
