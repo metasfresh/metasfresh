@@ -94,8 +94,10 @@ class DeliveryPlanningBatchLoadingTest
 	private DeliveryPlanningService deliveryPlanningService;
 	private I_C_UOM uom;
 
-	// created on first use, and shared by the whole selection: the plannings have to agree on the addresses read
-	// from them, or the selection is inadmissible for a reason this test is not about
+	/**
+	 * Created on first use and shared by the whole selection: the plannings have to agree on the addresses read
+	 * from these two, or the selection is inadmissible for a reason these tests are not about.
+	 */
 	private I_M_Warehouse loadingWarehouse;
 	private I_M_ShipmentSchedule deliveryShipmentSchedule;
 
@@ -104,10 +106,8 @@ class DeliveryPlanningBatchLoadingTest
 	{
 		AdempiereTestHelper.get().init();
 
-		// combine notifies the user who CREATED the instruction. Two things follow, neither of them about round
-		// trips: the in-memory store stamps CreatedBy from the logged user exactly as PO does, so without one it
-		// stays -1 and the producer cannot name a recipient; and the real INotificationBL cannot be built here at
-		// all (its repository is a Spring bean), which it answers by logging a stack trace and carrying on.
+		// combine notifies the instruction's creator: the recipient is CreatedBy, which is stamped from the logged
+		// user, and the notification itself has nothing to do with what these actions cost in round trips
 		Env.setLoggedUserId(Env.getCtx(), UserId.METASFRESH);
 		Services.registerService(INotificationBL.class, Mockito.mock(INotificationBL.class));
 
@@ -237,15 +237,14 @@ class DeliveryPlanningBatchLoadingTest
 	 */
 	private void assertBatchLoadedExactly(final int batchLoads)
 	{
-		Mockito.verify(deliveryPlanningRepository, Mockito.times(batchLoads)).getByIds(Mockito.any());
-		Mockito.verify(deliveryPlanningRepository, Mockito.never()).getById(Mockito.any());
+		assertBatchLoadedExactly(batchLoads, 0);
 	}
 
 	/**
-	 * As above, but for an action that also makes a fixed number of single-row loads - {@code combine} builds the
+	 * As above, for an action that also makes a fixed number of single-row loads: {@code combine} builds the
 	 * instruction header from ONE seed planning, and that load neither can be nor needs to be batched. Pinned to an
-	 * exact count rather than waved through: the point of these tests is that nothing the planner triggers loads
-	 * once PER ROW, and only an exact count can tell a constant apart from a per-row one.
+	 * exact count rather than waved through - nothing the planner triggers may load once PER ROW, and only an exact
+	 * count tells a constant apart from a per-row one.
 	 */
 	private void assertBatchLoadedExactly(final int batchLoads, final int singleRowLoads)
 	{
