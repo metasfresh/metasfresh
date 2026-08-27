@@ -132,9 +132,9 @@ Feature: Order to delivery instructions
       | deliveryPlanningSO_line2 | 2          | 2            | Outgoing           | orderSO_Unchanged | orderLine_2    | customer      | product      | customerLocation       | 2023-04-10 | false    | false     | dropShipWarehouse | 2                     |
 
     And update M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifier | OPT.M_Shipper_ID.Identifier |
-      | deliveryPlanningSO_line1          | shipper_DHL                 |
-      | deliveryPlanningSO_line2          | shipper_DPD                 |
+      | M_Delivery_Planning_ID   | M_Shipper_ID |
+      | deliveryPlanningSO_line1 | shipper_DHL  |
+      | deliveryPlanningSO_line2 | shipper_DPD  |
 
     Then the order is created:
       | OPT.Identifier | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | DocSubType | OPT.IsDropShip | OPT.DocStatus | OPT.DropShip_BPartner_ID.Identifier |
@@ -157,9 +157,9 @@ Feature: Order to delivery instructions
       | deliveryPlanningPO_line1 | 2          | 2            | Dropship           | orderPO    | orderLinePO_1  | vendor        | product      | dropShipWarehouseLocation | 2023-05-10 | false    | false     | dropShipWarehouse |
       | deliveryPlanningPO_line2 | 2          | 2            | Dropship           | orderPO    | orderLinePO_2  | vendor        | product      | dropShipWarehouseLocation | 2023-04-10 | false    | false     | dropShipWarehouse |
     And update M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifier | OPT.M_Shipper_ID.Identifier |
-      | deliveryPlanningPO_line1          | shipper_DHL                 |
-      | deliveryPlanningPO_line2          | shipper_DPD                 |
+      | M_Delivery_Planning_ID   | M_Shipper_ID |
+      | deliveryPlanningPO_line1 | shipper_DHL  |
+      | deliveryPlanningPO_line2 | shipper_DPD  |
 
     When generate M_ShipperTransportation for M_Delivery_Planning:
       | M_ShipperTransportation_ID | M_Delivery_Planning_ID   | IsComplete |
@@ -359,9 +359,9 @@ Feature: Order to delivery instructions
       | deliveryPlanningSO_7.2 | 4          | 4            | Outgoing           | orderSO_7  | orderLine_7.2  | customer      | product_7    | customerLocation       | 2023-04-10 | false    | false     | dropShipWarehouse_7 | 4                     |
 
     And update M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifier | OPT.M_Shipper_ID.Identifier |
-      | deliveryPlanningSO_7.1            | shipper_DHL                 |
-      | deliveryPlanningSO_7.2            | shipper_DPD                 |
+      | M_Delivery_Planning_ID | M_Shipper_ID |
+      | deliveryPlanningSO_7.1 | shipper_DHL  |
+      | deliveryPlanningSO_7.2 | shipper_DPD  |
 
     Then the order is created:
       | OPT.Identifier | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | DocSubType | OPT.IsDropShip | OPT.DocStatus | OPT.DropShip_BPartner_ID.Identifier |
@@ -424,9 +424,9 @@ Feature: Order to delivery instructions
       | M_ShippingPackage_ID.Identifier | M_Package_ID.Identifier | M_ShipperTransportation_ID.Identifier | C_BPartner_Location_ID.Identifier | ActualLoadQty | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_OrderLine_ID.Identifier |
       | shippingPackageSO_7.2           | packageLineSO_7.2       | deliveryInstructionSO_7.2             | customerLocation                  | 4             | customer                     | product_7                   | orderLine_7.2                 |
     And update M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifier | OPT.M_Shipper_ID.Identifier |
-      | deliveryPlanningPO_7.1            | shipper_DHL                 |
-      | deliveryPlanningPO_7.2            | shipper_DPD                 |
+      | M_Delivery_Planning_ID | M_Shipper_ID |
+      | deliveryPlanningPO_7.1 | shipper_DHL  |
+      | deliveryPlanningPO_7.2 | shipper_DPD  |
 
     When generate M_ShipperTransportation for M_Delivery_Planning:
       | M_ShipperTransportation_ID | M_Delivery_Planning_ID | IsComplete |

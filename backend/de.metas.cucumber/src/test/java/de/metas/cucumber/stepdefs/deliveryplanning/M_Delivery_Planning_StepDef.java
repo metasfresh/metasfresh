@@ -27,7 +27,6 @@ import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRows;
-import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
@@ -61,12 +60,9 @@ import org.compiere.model.I_M_Shipper;
 import org.compiere.model.I_M_Warehouse;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Supplier;
 
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -381,26 +377,37 @@ public class M_Delivery_Planning_StepDef
 		}
 	}
 
+	/**
+	 * Updates the given delivery planning.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_Delivery_Planning_ID</b> — (required, identifier-ref) the planning to update<br>
+	 *   <b>M_Shipper_ID</b> — (optional, identifier-ref) new shipper to assign<br>
+	 * @cucumber.depends StepDefData: M_Delivery_Planning_StepDefData, M_Shipper_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update M_Delivery_Planning:
+	 *   | M_Delivery_Planning_ID | M_Shipper_ID |
+	 *   | deliveryPlanning_1      | shipper_DHL  |
+	 * </pre>
+	 */
 	@And("update M_Delivery_Planning:")
 	public void update_M_Delivery_Planning(@NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
+		DataTableRows.of(dataTable).forEach(row ->
 		{
-			final String deliveryPlanningIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_Delivery_Planning deliveryPlanning = deliveryPlanningTable.get(deliveryPlanningIdentifier);
-			assertThat(deliveryPlanning).isNotNull();
+			final I_M_Delivery_Planning deliveryPlanning = row.getAsIdentifier(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID).lookupNotNullIn(deliveryPlanningTable);
 
-			final String shipperIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Delivery_Planning.COLUMNNAME_M_Shipper_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(shipperIdentifier))
-			{
-				final I_M_Shipper shipper = shipperTable.get(shipperIdentifier);
-				assertThat(shipper).isNotNull();
-
-				deliveryPlanning.setM_Shipper_ID(shipper.getM_Shipper_ID());
-			}
+			row.getAsOptionalIdentifier(I_M_Delivery_Planning.COLUMNNAME_M_Shipper_ID)
+					.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+					.ifPresent(id -> {
+						final I_M_Shipper shipper = id.lookupNotNullIn(shipperTable);
+						deliveryPlanning.setM_Shipper_ID(shipper.getM_Shipper_ID());
+					});
 
 			saveRecord(deliveryPlanning);
-		}
+		});
 	}
 
 	@NonNull
