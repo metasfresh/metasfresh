@@ -100,6 +100,27 @@ public class M_HU_LUTU_Configuration_StepDef
 		this.huListTable = huListTable;
 	}
 
+	/**
+	 * Receives the main product of a {@code PP_Order} into planning HUs, packed per the LU/TU
+	 * configuration built from the DataTable row.
+	 * <p>
+	 * Required columns: {@code PP_Order_ID} (identifier), {@code M_HU_ID.Identifier},
+	 * {@code IsInfiniteQtyLU}, {@code QtyLU}, {@code IsInfiniteQtyTU}, {@code QtyTU},
+	 * {@code IsInfiniteQtyCU}, {@code QtyCUsPerTU} and {@code M_HU_PI_Item_Product_ID.Identifier}.
+	 * <p>
+	 * {@code M_HU_ID.Identifier} accepts <b>one or several</b> comma-separated identifiers. The
+	 * received HUs are bound to them positionally, and the number of identifiers must match the
+	 * number of HUs the configuration actually produces — a mismatch fails the step rather than
+	 * silently registering only the first HU. So a receipt that packs into two TUs is written as:
+	 * <pre>
+	 * And receive HUs for PP_Order with M_HU_LUTU_Configuration:
+	 *   | PP_Order_ID | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
+	 *   | ppOrder_1   | hu_a,hu_b          | N               | 0     | N               | 2     | N               | 10          | huPiItemProduct_1                  |
+	 * </pre>
+	 * With {@code QtyLU=0} there is no aggregate LU, so one physical HU is created per TU. The
+	 * positional binding is stable: {@code getCreatedHUs()} is backed by a {@code TreeSet} ordered by
+	 * ascending {@code M_HU_ID}, and ids are assigned in creation order within the scenario.
+	 */
 	@And("receive HUs for PP_Order with M_HU_LUTU_Configuration:")
 	public void create_M_HU_LUTU_Configuration_for_pp_order(@NonNull final DataTable dataTable)
 	{
@@ -118,10 +139,19 @@ public class M_HU_LUTU_Configuration_StepDef
 							.packUsingLUTUConfiguration(lutuConfig)
 							.createDraftReceiptCandidatesAndPlanningHUs();
 
-					assertThat(hus).hasSize(1);
+					// M_HU_ID.Identifier may name MORE THAN ONE identifier, comma-separated, for a receipt that
+					// packs into several HUs (e.g. QtyTU=2). The received HUs are then bound to the identifiers
+					// positionally. A single identifier keeps the previous behaviour exactly: one HU expected.
+					final List<StepDefDataIdentifier> huIdentifiers = tableRow.getAsIdentifier(I_M_HU.COLUMNNAME_M_HU_ID).toCommaSeparatedList();
 
-					final StepDefDataIdentifier huIdentifier = tableRow.getAsIdentifier(I_M_HU.COLUMNNAME_M_HU_ID);
-					huTable.putOrReplace(huIdentifier, hus.get(0));
+					assertThat(hus)
+							.as("received HUs must match the number of identifiers given in M_HU_ID.Identifier")
+							.hasSize(huIdentifiers.size());
+
+					for (int i = 0; i < huIdentifiers.size(); i++)
+					{
+						huTable.putOrReplace(huIdentifiers.get(i), hus.get(i));
+					}
 				});
 	}
 
