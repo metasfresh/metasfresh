@@ -1842,6 +1842,147 @@ public class ESRImportTest extends ESRTestBase
 	 * re-read from the line's FK
 	 * </ul>
 	 */
+	@Nested
+	class LineWithoutInvoice
+	{
+		/** Scaffolding for a line whose reference resolves to no invoice at all. */
+		private I_ESR_Import importWithUnmatchableLine()
+		{
+			final I_AD_Org org = newInstance(I_AD_Org.class, contextProvider);
+			org.setValue("106");
+			save(org);
+
+			final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class, contextProvider);
+			refNoType.setName("InvoiceReference");
+			save(refNoType);
+
+			final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
+			final I_C_BP_BankAccount account = createBankAccount(true,
+					org.getAD_Org_ID(),
+					Env.getAD_User_ID(getCtx()),
+					"01-067789-3",
+					currencyEUR);
+
+			// the reference in this line belongs to no invoice in the system
+			final String esrLineText = "01201067789300000001060000000000000000400000050009072  030014040914041014041100001006800000000000090                          ";
+			final I_ESR_Import esrImport = createImport();
+			esrImport.setAD_Org_ID(org.getAD_Org_ID());
+			esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
+			save(esrImport);
+
+			esrImportBL.loadAndEvaluateESRImportStream(createImportFile(esrImport), new ByteArrayInputStream(esrLineText.getBytes()));
+			return esrImport;
+		}
+
+		private int createPartner()
+		{
+			final I_C_BPartner bpartner = newInstance(I_C_BPartner.class, contextProvider);
+			bpartner.setValue("payer-without-invoice");
+			save(bpartner);
+			return bpartner.getC_BPartner_ID();
+		}
+
+		/**
+		 * An unmatchable line creates no payment, so nothing can be done with it; setting the partner by
+		 * hand and processing again is the documented recovery, and it is what creates the payment.
+		 */
+		@Test
+		void unknownReference_createsNoPaymentUntilThePartnerIsSetByHand()
+		{
+			final I_ESR_Import esrImport = importWithUnmatchableLine();
+			esrImportBL.process(esrImport);
+
+			final I_ESR_ImportLine line = ESRTestUtil.retrieveSingleLine(esrImport);
+			refresh(line, true);
+			assertThat(line.getC_Payment_ID()).as("no partner, so no payment can be created").isZero();
+			assertThat(line.getC_Invoice_ID()).as("the reference matched no invoice").isZero();
+
+			// the recovery: the accountant sets whoever actually paid
+			line.setC_BPartner_ID(createPartner());
+			line.setESR_IsManual_ReferenceNo(true); // 'Y' by default in the real DB, false in the POJO store
+			save(line);
+			esrImportBL.process(esrImport);
+
+			refresh(line, true);
+			assertThat(line.getC_Payment_ID())
+					.as("processing again after the partner was set is what creates the payment")
+					.isNotZero();
+		}
+
+		/**
+		 * The payment such a line receives: booked for the full amount, but deliberately not allocated and
+		 * with no action chosen, so the accountant still has to decide what happens to the money.
+		 */
+		@Test
+		void theOwnPaymentIsCompletedUnallocatedAndLeavesTheActionOpen()
+		{
+			final I_ESR_Import esrImport = importWithUnmatchableLine();
+			final I_ESR_ImportLine line = ESRTestUtil.retrieveSingleLine(esrImport);
+			line.setC_BPartner_ID(createPartner());
+			line.setESR_IsManual_ReferenceNo(true);
+			save(line);
+
+			esrImportBL.process(esrImport);
+
+			refresh(line, true);
+			final PaymentId paymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
+			assertThat(paymentId).as("the line must have got its own payment").isNotNull();
+
+			final I_C_Payment payment = paymentDAO.getById(paymentId);
+			assertThat(payment.getPayAmt())
+					.as("booked for the amount that arrived")
+					.isEqualByComparingTo(line.getAmount());
+			assertThat(payment.getC_Invoice_ID()).as("there is no invoice to link").isZero();
+			assertThat(payment.isAllocated()).as("left unallocated for the accountant").isFalse();
+			assertThat(payment.getDocStatus()).as("completed, so the money is booked").isEqualTo("CO");
+			assertThat(line.getESR_Payment_Action())
+					.as("no action is set for the accountant, so the line stays a visible todo")
+					.isNull();
+			assertThat(line.isProcessed()).as("and the line stays open").isFalse();
+		}
+
+		/**
+		 * The refund branch that only a line WITHOUT an invoice reaches: there is no over-payment to
+		 * compute against, so the whole received amount is what gets transferred back. The sibling test
+		 * in ESRActionHandlerTest covers the with-invoice case, where only the excess is refunded.
+		 */
+		@Test
+		void choosingRefund_transfersBackTheWholeReceivedAmount()
+		{
+			final I_ESR_Import esrImport = importWithUnmatchableLine();
+			final I_ESR_ImportLine line = ESRTestUtil.retrieveSingleLine(esrImport);
+			line.setC_BPartner_ID(createPartner());
+			line.setESR_IsManual_ReferenceNo(true);
+			save(line);
+			esrImportBL.process(esrImport);
+
+			refresh(line, true);
+			final java.math.BigDecimal received = line.getAmount();
+			assertThat(POJOLookupMap.get().getRecords(I_C_Payment.class))
+					.as("guard: the import booked the incoming payment")
+					.hasSize(1);
+
+			line.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner);
+			save(line);
+			esrImportBL.registerActionHandler(
+					X_ESR_ImportLine.ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner,
+					new MoneyTransferedBackESRActionHandler());
+			esrImportBL.complete(esrImport, "");
+
+			final java.util.List<I_C_Payment> payments = POJOLookupMap.get().getRecords(I_C_Payment.class);
+			assertThat(payments).as("an outbound payment must have been booked for the refund").hasSize(2);
+
+			final I_C_Payment refund = payments.stream()
+					.filter(pmt -> !pmt.isReceipt())
+					.findFirst()
+					.orElse(null);
+			assertThat(refund).as("the refund is an OUTBOUND payment").isNotNull();
+			assertThat(refund.getPayAmt())
+					.as("with no invoice there is no excess to compute, so the whole amount goes back")
+					.isEqualByComparingTo(received);
+		}
+	}
+
 	@Test
 	public void testReprocessSameImport_createsNoSecondPayment()
 	{
