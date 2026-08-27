@@ -46,10 +46,12 @@ public class M_Delivery_Planning
 	}
 
 	/**
-	 * The currently-allocated guard runs for EVERY delete, UI-triggered or not: {@code M_Delivery_Planning_Alloc}'s
-	 * FKs cascade on delete (they must, so a genuinely retired allocation doesn't block deleting the planning it
-	 * once named), so nothing downstream of this interceptor stops a delete of an ACTIVELY allocated planning from
-	 * silently taking its live allocation and shipping package down with it. The rest of {@code validateDeletion}
+	 * The currently-allocated guard runs for EVERY delete, UI-triggered or not, and the retired-history cleanup
+	 * that follows it is the reason {@code M_Delivery_Planning_Alloc}'s FKs can stay plain {@code NO ACTION}:
+	 * splitting live bookings from retired history is a decision only application code can make - a database
+	 * cascade sees one undifferentiated set of child rows and would erase an ACTIVE allocation exactly as
+	 * readily as a retired one, with nowhere to put the check. So the refusal and the cleanup live here,
+	 * together, in that order. The rest of {@code validateDeletion}
 	 * (AC14's "at least one planning per order line") stays UI-only - it is a single-record safeguard against an
 	 * operator error, not a rule a schedule-driven cleanup of every planning on that schedule should have to obey.
 	 */
@@ -62,6 +64,9 @@ public class M_Delivery_Planning
 		{
 			deliveryPlanningService.validateDeletion(deliveryPlanning);
 		}
+
+		// only retired history can still be pointing here, the assert above having refused every live booking
+		deliveryPlanningService.deleteAllocationsFor(DeliveryPlanningId.ofRepoId(deliveryPlanning.getM_Delivery_Planning_ID()));
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_M_Delivery_Planning.COLUMNNAME_ATD)

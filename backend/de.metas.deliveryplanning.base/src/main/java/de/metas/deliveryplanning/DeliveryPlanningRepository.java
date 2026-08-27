@@ -865,6 +865,29 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
+	 * Removes the given planning's allocation rows outright - the cleanup a delete of the planning itself owes,
+	 * done in Java where it can be seen and reasoned about rather than by a database cascade.
+	 * <p>
+	 * Only ever correct AFTER {@link DeliveryPlanningService#assertNotCurrentlyAllocated} has established that
+	 * none of them is live: what is removed here is retired history, and a retired allocation records what was
+	 * once planned FOR this planning - once the planning itself is physically gone there is nothing left for it
+	 * to be a history of. The shipping packages are deliberately left alone: they are the instruction's own
+	 * (retired) lines and belong to a document that still exists.
+	 */
+	public void deleteAllocationsFor(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
+	{
+		if (deliveryPlanningIds.isEmpty())
+		{
+			return;
+		}
+
+		queryBL.createQueryBuilder(I_M_Delivery_Planning_Alloc.class)
+				.addInArrayFilter(I_M_Delivery_Planning_Alloc.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningIds)
+				.create()
+				.delete();
+	}
+
+	/**
 	 * The delivery instruction the given shipping package is allocated to, if any - deliberately NOT filtered
 	 * by {@code IsActive}.
 	 * <p>

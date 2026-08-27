@@ -308,6 +308,20 @@ public class DeliveryPlanningService
 	}
 
 	/**
+	 * The allocation-side cleanup a delete of the given planning owes: its retired allocation rows go with it.
+	 * <p>
+	 * Called from the planning's {@code TYPE_BEFORE_DELETE} interceptor immediately after
+	 * {@link #assertNotCurrentlyAllocated} has refused the live case, so only retired history is ever removed.
+	 * This is deliberately explicit Java rather than an {@code ON DELETE CASCADE}: a database cascade cannot
+	 * tell {@code IsActive='Y'} from {@code IsActive='N'}, so it would erase a live booking just as readily -
+	 * silently, and with no place to put a check.
+	 */
+	public void deleteAllocationsFor(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		deliveryPlanningRepository.deleteAllocationsFor(ImmutableList.of(deliveryPlanningId));
+	}
+
+	/**
 	 * Refuses to delete a shipping package that any {@code M_Delivery_Planning_Alloc} points at - active or
 	 * retired - naming the delivery instruction to cancel or close instead.
 	 * <p>

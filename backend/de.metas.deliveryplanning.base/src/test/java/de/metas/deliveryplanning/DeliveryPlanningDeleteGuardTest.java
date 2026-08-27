@@ -39,6 +39,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Delivery_Planning;
+import org.compiere.model.I_M_Delivery_Planning_Alloc;
 import org.compiere.model.X_M_Delivery_Planning;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -47,6 +48,7 @@ import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
@@ -150,6 +152,29 @@ class DeliveryPlanningDeleteGuardTest
 						+ "even from a non-UI caller - it would cascade the ACTIVE allocation and its shipping "
 						+ "package away with no trace of the cargo that was still booked")
 				.isInstanceOf(AdempiereException.class);
+	}
+
+	@Test
+	@DisplayName("deleting a planning whose allocation is RETIRED succeeds and takes the retired allocation with it")
+	void deleteOfAPlanningWithOnlyARetiredAllocationRemovesTheAllocation()
+	{
+		final ShipperTransportationId instruction = draftDeliveryInstruction("SCHEDULE-DELETE-2");
+		final I_M_Delivery_Planning allocated = deliveryPlanning();
+		allocateTo(instruction, allocated);
+
+		final DeliveryPlanningId planningId = DeliveryPlanningId.ofRepoId(allocated.getM_Delivery_Planning_ID());
+		// exactly what remove-from-instruction does, both halves of it (DeliveryPlanningService:1062-1063):
+		// the allocation is retired AND the planning loses its release number
+		deliveryPlanningRepository.deactivateAllocations(ImmutableList.of(planningId));
+		deliveryPlanningRepository.clearInstructionReference(ImmutableList.of(planningId));
+
+		InterfaceWrapperHelper.delete(InterfaceWrapperHelper.load(planningId, I_M_Delivery_Planning.class));
+
+		assertThat(POJOLookupMap.get().getRecords(I_M_Delivery_Planning_Alloc.class))
+				.as("the retired allocation records history FOR this planning; once the planning itself is gone "
+						+ "there is nothing left for it to be a history of, so the delete must remove it "
+						+ "EXPLICITLY - a blind ON DELETE CASCADE cannot tell it apart from a live booking")
+				.isEmpty();
 	}
 
 	@Test
