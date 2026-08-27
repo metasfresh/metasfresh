@@ -157,6 +157,23 @@ class DeliveryPlanningInstructionLookupTest
 	}
 
 	@Test
+	@DisplayName("an unallocated planning resolves to NO instruction even while another instruction exists - the empty-id-list filter must not degenerate to match-all")
+	void unallocatedPlanning_seesNoForeignInstruction()
+	{
+		// both lookups now build their filter from the planning's allocated instruction ids. For an unallocated
+		// planning that list is empty, and an in-array filter over an empty list must match nothing - not everything.
+		// Without a second, foreign instruction in the database this cannot fail, which is why one is created here.
+		final ShipperTransportationId foreignInstructionId = createDeliveryInstruction(DocStatus.Completed, true);
+		final DeliveryPlanningId allocatedPlanningId = createDeliveryPlanning();
+		deliveryPlanningRepository.createAllocations(foreignInstructionId, ImmutableList.of(allocRequestFor(allocatedPlanningId)));
+
+		final DeliveryPlanningId unallocatedPlanningId = createDeliveryPlanning();
+
+		assertThat(toList(deliveryPlanningRepository.retrieveForDeliveryPlanning(unallocatedPlanningId))).isEmpty();
+		assertThat(deliveryPlanningRepository.hasCompleteDeliveryInstruction(unallocatedPlanningId)).isFalse();
+	}
+
+	@Test
 	@DisplayName("an instruction carrying two plannings reports complete, and resolves, for BOTH - the aggregation the old header FK could not express")
 	void twoPlanningsOnOneCompletedInstruction()
 	{
