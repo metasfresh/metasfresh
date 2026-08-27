@@ -23,6 +23,8 @@
 package de.metas.deliveryplanning;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.ITranslatableString;
@@ -36,6 +38,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Delivery_Planning;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,6 +46,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Optional;
 
@@ -101,6 +105,39 @@ class DeliveryPlanningCompletionCascadeTest
 		record.setDocStatus(DocStatus.Drafted.getCode());
 		InterfaceWrapperHelper.save(record);
 		return ShipperTransportationId.ofRepoId(record.getM_ShipperTransportation_ID());
+	}
+
+	/**
+	 * Same table, distinguished only by the {@code C_DocType.DocSubType} - the mechanism introduced by task C5
+	 * ({@link de.metas.shipping.ShipperTransportationDocSubTypeGuard}) and reused here, per the fix for this
+	 * finding: never re-derive "is this a delivery instruction" from direction, {@code IsSOTrx}, or allocations.
+	 */
+	private ShipperTransportationId createInstructionWithDocSubType(@Nullable final String docSubType)
+	{
+		final I_C_DocType docType = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
+		docType.setName("docType-" + docSubType);
+		docType.setDocBaseType(DocBaseType.ShipperTransportation.getCode());
+		docType.setDocSubType(docSubType);
+		InterfaceWrapperHelper.save(docType);
+
+		final I_M_ShipperTransportation record = InterfaceWrapperHelper.newInstance(I_M_ShipperTransportation.class);
+		record.setShipper_BPartner_ID(SHIPPER_BPARTNER_ID);
+		record.setShipper_Location_ID(SHIPPER_LOCATION_ID);
+		record.setM_Shipper_ID(SHIPPER_ID);
+		record.setDocStatus(DocStatus.Drafted.getCode());
+		record.setC_DocType_ID(docType.getC_DocType_ID());
+		InterfaceWrapperHelper.save(record);
+		return ShipperTransportationId.ofRepoId(record.getM_ShipperTransportation_ID());
+	}
+
+	private ShipperTransportationId createDeliveryInstructionWithDocType()
+	{
+		return createInstructionWithDocSubType(DocSubType.DeliveryInstruction.getCode());
+	}
+
+	private ShipperTransportationId createTransportOrder()
+	{
+		return createInstructionWithDocSubType(null);
 	}
 
 	private DeliveryPlanningId createDeliveryPlanning(final boolean closed)
@@ -168,6 +205,51 @@ class DeliveryPlanningCompletionCascadeTest
 		assertThat(deliveryPlanningService.getCompleteRejectionReason(deliveryInstructionId)).isEmpty();
 
 		Mockito.verify(deliveryPlanningRepository, Mockito.never()).getByIds(Mockito.any());
+	}
+
+	@Test
+	@DisplayName("complete is refused for a delivery instruction with zero active allocations - the degenerate state Remove-from-instruction can now create")
+	void completeIsRefusedForEmptyDeliveryInstruction()
+	{
+		final ShipperTransportationId deliveryInstructionId = createDeliveryInstructionWithDocType();
+
+		final Optional<ITranslatableString> reason = deliveryPlanningService.getCompleteRejectionReason(deliveryInstructionId);
+
+		assertThat(reason).as("a rejection reason").isPresent();
+		assertThat(reason.get().translate("en_US")).contains(DeliveryPlanningService.MSG_M_Delivery_Planning_EmptyDeliveryInstruction.toAD_Message());
+	}
+
+	@Test
+	@DisplayName("complete is refused for a delivery instruction whose only allocation was deactivated - zero ACTIVE allocations too")
+	void completeIsRefusedForDeliveryInstructionWithOnlyDeactivatedAllocation()
+	{
+		final ShipperTransportationId deliveryInstructionId = createDeliveryInstructionWithDocType();
+		allocate(deliveryInstructionId, createDeliveryPlanning(false));
+		deliveryPlanningRepository.deactivateAllocations(deliveryInstructionId);
+
+		final Optional<ITranslatableString> reason = deliveryPlanningService.getCompleteRejectionReason(deliveryInstructionId);
+
+		assertThat(reason).as("a rejection reason").isPresent();
+		assertThat(reason.get().translate("en_US")).contains(DeliveryPlanningService.MSG_M_Delivery_Planning_EmptyDeliveryInstruction.toAD_Message());
+	}
+
+	@Test
+	@DisplayName("complete is accepted for a delivery instruction with one active allocation - no regression")
+	void completeIsAcceptedForDeliveryInstructionWithOneActiveAllocation()
+	{
+		final ShipperTransportationId deliveryInstructionId = createDeliveryInstructionWithDocType();
+		allocate(deliveryInstructionId, createDeliveryPlanning(false));
+
+		assertThat(deliveryPlanningService.getCompleteRejectionReason(deliveryInstructionId)).isEmpty();
+	}
+
+	@Test
+	@DisplayName("complete is accepted for a transport order with zero allocations - the case the guard must keep as a no-op")
+	void completeIsAcceptedForTransportOrderWithNoAllocations()
+	{
+		final ShipperTransportationId transportOrderId = createTransportOrder();
+
+		assertThat(deliveryPlanningService.getCompleteRejectionReason(transportOrderId)).isEmpty();
 	}
 
 	// ------------------------------------------------------------------ invalidateInvoiceCandidatesFor(instruction)

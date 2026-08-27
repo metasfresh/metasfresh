@@ -735,6 +735,11 @@ public class DeliveryPlanningRepository
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	public I_M_ShipperTransportation getInstructionById(@NonNull final ShipperTransportationId deliveryInstructionId)
+	{
+		return load(deliveryInstructionId, I_M_ShipperTransportation.class);
+	}
+
 	/**
 	 * The {@code DocStatus} of each of the given delivery instructions, in one round trip.
 	 * <p>

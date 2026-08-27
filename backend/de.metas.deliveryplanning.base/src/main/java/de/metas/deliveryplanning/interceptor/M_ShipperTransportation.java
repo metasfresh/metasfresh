@@ -74,11 +74,12 @@ public class M_ShipperTransportation
 	}
 
 	/**
-	 * Refuses to complete the instruction while any of its currently allocated plannings is closed, naming it.
+	 * Refuses to complete the instruction while any of its currently allocated plannings is closed, naming it -
+	 * and refuses to complete a delivery instruction that has zero active allocations at all.
 	 * <p>
-	 * A transport order, or an instruction with no allocations, is a no-op:
+	 * A transport order is a no-op either way:
 	 * {@link DeliveryPlanningService#getCompleteRejectionReason(ShipperTransportationId)} comes back empty and
-	 * nothing is read beyond the one allocation lookup.
+	 * nothing is read beyond the one allocation lookup plus the document-type check.
 	 */
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
 	public void rejectCompleteWithClosedAllocatedPlannings(@NonNull final I_M_ShipperTransportation shipperTransportation)

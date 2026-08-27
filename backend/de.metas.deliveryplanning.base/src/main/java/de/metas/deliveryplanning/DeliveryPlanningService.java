@@ -66,6 +66,7 @@ import de.metas.quantity.Quantitys;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.Shipper;
 import de.metas.shipping.ShipperRepository;
+import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.uom.IUOMDAO;
@@ -84,6 +85,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Warehouse;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Delivery_Planning;
 import org.compiere.util.TimeUtil;
@@ -146,6 +148,16 @@ public class DeliveryPlanningService
 	 */
 	public static final AdMessageKey MSG_M_Delivery_Planning_ClosedAllocatedPlannings = AdMessageKey.of("de.metas.deliveryplanning.CompleteDeliveryInstruction.ClosedAllocatedPlannings");
 
+	/**
+	 * Before allocations existed, a 1:1 header FK made "zero plannings" unreachable by construction for a delivery
+	 * instruction. {@code M_Delivery_Planning_RemoveFromDeliveryInstruction} can now take the last planning off a
+	 * drafted instruction, making this state reachable for the first time - and the reports resolving through the
+	 * allocation would print a blank document for it. Scoped to an actual delivery instruction (via
+	 * {@link ShipperTransportationDocSubTypeGuard}, never by direction/{@code IsSOTrx}/allocations) so a transport
+	 * order, which legitimately never has allocations, stays unaffected.
+	 */
+	public static final AdMessageKey MSG_M_Delivery_Planning_EmptyDeliveryInstruction = AdMessageKey.of("de.metas.deliveryplanning.CompleteDeliveryInstruction.EmptyDeliveryInstruction");
+
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
@@ -153,6 +165,14 @@ public class DeliveryPlanningService
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+
+	/**
+	 * The task-C5 mechanism that tells the two {@code M_ShipperTransportation} document roles apart - reused here
+	 * rather than a second ad-hoc distinction. {@code getBeanOrSupply} (not {@code SpringContextHolder.instance.getBean}
+	 * directly) so unit tests that construct this service without registering the guard still work.
+	 */
+	private final ShipperTransportationDocSubTypeGuard shipperTransportationDocSubTypeGuard =
+			SpringContextHolder.getBeanOrSupply(ShipperTransportationDocSubTypeGuard.class, ShipperTransportationDocSubTypeGuard::new);
 	private final ShipperRepository shipperRepository;
 	private final DeliveryPlanningRepository deliveryPlanningRepository;
 	private final DeliveryStatusColorPaletteService deliveryStatusColorPaletteService;
@@ -856,18 +876,30 @@ public class DeliveryPlanningService
 	/**
 	 * Why the given delivery instruction cannot be completed, or empty when it can.
 	 * <p>
-	 * The only rule so far: none of its currently allocated plannings may be closed. A planning is closed after
-	 * it was allocated to say "stop processing this cargo" - completing the instruction anyway would freight
-	 * exactly what the planner already called off.
-	 * <p>
-	 * A transport order, or an instruction with no allocations, is a no-op: {@code getAllocatedPlanningIds} comes
-	 * back empty and the batch load of the plannings themselves never runs.
+	 * Two rules:
+	 * <ul>
+	 * <li>none of its currently allocated plannings may be closed. A planning is closed after it was allocated
+	 * to say "stop processing this cargo" - completing the instruction anyway would freight exactly what the
+	 * planner already called off.</li>
+	 * <li>a delivery instruction may not be completed with zero active allocations - completing it anyway would
+	 * freight nothing while printing a document whose report resolves everything through the (missing)
+	 * allocation. Before allocations existed a 1:1 header FK made this unreachable by construction; removing the
+	 * last planning off a drafted instruction now makes it reachable.</li>
+	 * </ul>
+	 * A transport order, which legitimately never has allocations, stays a no-op for BOTH rules - told apart from
+	 * a delivery instruction via {@link ShipperTransportationDocSubTypeGuard} (task C5's mechanism), never by
+	 * direction, {@code IsSOTrx}, or the presence of allocations.
 	 */
 	public Optional<ITranslatableString> getCompleteRejectionReason(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
 		final ImmutableSet<DeliveryPlanningId> allocatedPlanningIds = deliveryPlanningRepository.getAllocatedPlanningIds(deliveryInstructionId);
 		if (allocatedPlanningIds.isEmpty())
 		{
+			final I_M_ShipperTransportation deliveryInstruction = deliveryPlanningRepository.getInstructionById(deliveryInstructionId);
+			if (shipperTransportationDocSubTypeGuard.isDeliveryInstruction(deliveryInstruction))
+			{
+				return Optional.of(TranslatableStrings.adMessage(MSG_M_Delivery_Planning_EmptyDeliveryInstruction));
+			}
 			return Optional.empty();
 		}
 
