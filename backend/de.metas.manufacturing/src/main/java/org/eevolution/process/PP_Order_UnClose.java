@@ -163,7 +163,8 @@ public class PP_Order_UnClose extends JavaProcess implements IProcessPreconditio
 			}
 
 			final CostCollectorType costCollectorType = CostCollectorType.ofCode(cc.getCostCollectorType());
-			// Only the collectors that closeIt() generated itself are reversed here.
+			// Only the collectors that closeIt() generated itself are reversed here. Adding
+			// CostDifferenceDistribution would re-open the residual it discharged and let it post twice.
 			if (costCollectorType == CostCollectorType.UsageVariance)
 			{
 				if (docStatus.isClosed())

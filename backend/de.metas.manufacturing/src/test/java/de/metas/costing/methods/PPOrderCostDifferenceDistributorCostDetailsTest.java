@@ -47,12 +47,14 @@ import de.metas.costing.impl.CostElementRepository;
 import de.metas.costing.impl.CurrentCostsRepository;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -66,6 +68,8 @@ import org.eevolution.api.PPOrderCostTrxType;
 import org.eevolution.api.PPOrderCosts;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.impl.MockedProductCostingBL;
+import org.eevolution.model.I_PP_Cost_Collector;
+import org.eevolution.model.I_PP_Order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -82,13 +86,16 @@ class PPOrderCostDifferenceDistributorCostDetailsTest
 {
 	private final ClientId clientId = ClientId.ofRepoId(1);
 	private final OrgId orgId = OrgId.ofRepoId(0);
-	private final PPOrderId orderId = PPOrderId.ofRepoId(1);
+	private PPOrderId orderId;
 
 	private final ProductId mainProductId = ProductId.ofRepoId(2000);
 	private final ProductId componentProductId = ProductId.ofRepoId(2001);
 
 	private CurrencyId currencyId;
 	private I_C_UOM uomEach;
+
+	/** What {@code getByClientAndOrg} resolves to, i.e. the schema {@code distribute()} works off. */
+	private AcctSchemaId orderAcctSchemaId;
 
 	private PPOrderCostDifferenceDistributor distributor;
 	private CurrentCostsRepository currentCostsRepo;
@@ -107,6 +114,12 @@ class PPOrderCostDifferenceDistributorCostDetailsTest
 		// getCostingLevel is asked with either AcctSchema, so a fixed answer works for both schemas under test
 		Services.registerService(IProductCostingBL.class, new MockedProductCostingBL(CostingLevel.Client, CostingMethod.AveragePO));
 
+		// has to precede everything that resolves IAcctSchemaDAO: the helper refuses to replace an already-used one
+		orderAcctSchemaId = createAcctSchema(CostingMethod.AveragePO);
+		AcctSchemaTestHelper.registerAcctSchemaDAOWhichAlwaysProvides(orderAcctSchemaId);
+
+		orderId = createCompletedPPOrder();
+
 		costElementRepo = new CostElementRepository(ADReferenceService.newMocked());
 		currentCostsRepo = new CurrentCostsRepository(costElementRepo);
 		utils = new CostingMethodHandlerUtils(
@@ -114,6 +127,17 @@ class PPOrderCostDifferenceDistributorCostDetailsTest
 				currentCostsRepo,
 				new CostDetailService(new CostDetailRepository(), costElementRepo));
 		distributor = new PPOrderCostDifferenceDistributor(costElementRepo, utils);
+	}
+
+	private PPOrderId createCompletedPPOrder()
+	{
+		final I_PP_Order order = InterfaceWrapperHelper.newInstance(I_PP_Order.class);
+		InterfaceWrapperHelper.setValue(order, I_PP_Order.COLUMNNAME_AD_Client_ID, clientId.getRepoId());
+		order.setAD_Org_ID(orgId.getRepoId());
+		order.setM_Product_ID(mainProductId.getRepoId());
+		order.setDocStatus(DocStatus.Completed.getCode());
+		InterfaceWrapperHelper.saveRecord(order);
+		return PPOrderId.ofRepoId(order.getPP_Order_ID());
 	}
 
 	private AcctSchemaId createAcctSchema(final CostingMethod costingMethod)
@@ -430,5 +454,32 @@ class PPOrderCostDifferenceDistributorCostDetailsTest
 
 		// the order reports its imbalance again and can be distributed a second time
 		assertThat(residualOf(schema, costElement.getId())).isEqualTo(CostAmount.of(40, currencyId));
+	}
+
+	/**
+	 * Pins what the {@code PP_Order_PostCalculation} javadoc promises about the re-run offered after a
+	 * {@code PP_Order_UnClose}: UnClose reverses only the {@code UsageVariance} collector, so the residual
+	 * discharged by the first distribution stays discharged and a second {@code distribute()} posts nothing.
+	 * The other half of that dependency is {@link #reversal_ofTheMainLeg_reopensTheResidualInPPOrderCost()}:
+	 * would UnClose reverse the distribution collector too, the residual would re-open and be discharged twice.
+	 */
+	@Test
+	void distribute_afterTheResidualWasDischarged_createsNoFurtherCollector_andDoesNotCloseTheOrder()
+	{
+		final ImmutableList.Builder<PPOrderCost> costs = ImmutableList.builder();
+		final CostElement costElement = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.AveragePO);
+		// issued=100, received=60 -> residual=40
+		addPPOrderCosts(costs, orderAcctSchemaId, costElement.getId(), "10", "-10", "6", "10");
+		saveCurrentCost(orderAcctSchemaId, costElement.getId(), "8", "30");
+		saveAll(costs.build());
+
+		// what posting the first CostDifferenceDistribution collector does
+		distributor.createCostDetails(request(orderAcctSchemaId, costElement, "10"), orderId);
+		assertThat(residualOf(orderAcctSchemaId, costElement.getId())).isEqualTo(CostAmount.zero(currencyId));
+
+		distributor.distribute(orderId);
+
+		assertThat(Services.get(IQueryBL.class).createQueryBuilder(I_PP_Cost_Collector.class).create().count()).isZero();
+		assertThat(InterfaceWrapperHelper.load(orderId, I_PP_Order.class).getDocStatus()).isEqualTo(DocStatus.Completed.getCode());
 	}
 }

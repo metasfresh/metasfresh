@@ -23,23 +23,14 @@
 package org.eevolution.process;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.acct.AcctSchemaTestHelper;
-import de.metas.acct.api.AcctSchemaId;
 import de.metas.business.BusinessTestHelper;
-import de.metas.costing.CostingLevel;
-import de.metas.costing.CostingMethod;
-import de.metas.costing.IProductCostingBL;
 import de.metas.costing.methods.PPOrderCostDifferenceDistributor;
-import de.metas.currency.CurrencyCode;
-import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.engine.DocStatus;
-import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.SelectionSize;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.element.api.AdTabId;
@@ -50,13 +41,10 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
-import org.eevolution.api.impl.MockedProductCostingBL;
 import org.eevolution.model.I_PP_Order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mockito;
 
 import javax.annotation.Nullable;
@@ -68,6 +56,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Covers the precondition gate of {@link PP_Order_PostCalculation}: when the "post calculation" action is
  * offered on a manufacturing order.
+ * <p>
+ * Which accounting schemas actually carry a residual is the distributor's call and is covered by
+ * {@code PPOrderCostDifferenceDistributorTest}; here it is stubbed.
  */
 @ExtendWith(AdempiereTestWatcher.class)
 class PP_Order_PostCalculationTest
@@ -75,8 +66,8 @@ class PP_Order_PostCalculationTest
 	private final ClientId clientId = ClientId.ofRepoId(1);
 	private final OrgId orgId = OrgId.ofRepoId(0);
 
-	private CurrencyId currencyId;
 	private ProductId finishedGoodId;
+	private PPOrderCostDifferenceDistributor costDifferenceDistributor;
 
 	@BeforeEach
 	void setUp()
@@ -85,39 +76,25 @@ class PP_Order_PostCalculationTest
 		Env.setClientId(Env.getCtx(), clientId);
 		Env.setOrgId(Env.getCtx(), orgId);
 
-		currencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 		finishedGoodId = BusinessTestHelper.createProductId("finished good", BusinessTestHelper.createUomEach());
 
 		// the process resolves it in a field initializer; doIt() is not under test here
-		SpringContextHolder.registerJUnitBean(PPOrderCostDifferenceDistributor.class, Mockito.mock(PPOrderCostDifferenceDistributor.class));
+		costDifferenceDistributor = Mockito.mock(PPOrderCostDifferenceDistributor.class);
+		SpringContextHolder.registerJUnitBean(PPOrderCostDifferenceDistributor.class, costDifferenceDistributor);
 	}
 
-	/** The costing methods whose manufacturing handlers accumulate into {@code PP_Order_Cost}. */
-	private enum EligibleCostingMethod
+	@Test
+	void offered_whenTheOrderHasCostsToDischarge()
 	{
-		AveragePO(CostingMethod.AveragePO),
-		LastPOPrice(CostingMethod.LastPOPrice),
-		MovingAverageInvoice(CostingMethod.MovingAverageInvoice);
-
-		final CostingMethod costingMethod;
-
-		EligibleCostingMethod(@NonNull final CostingMethod costingMethod) {this.costingMethod = costingMethod;}
-	}
-
-	@ParameterizedTest
-	@EnumSource(EligibleCostingMethod.class)
-	void offered_whenAcctSchemaAccumulatesOrderCosts(@NonNull final EligibleCostingMethod eligible)
-	{
-		givenAcctSchemaCostingMethod(eligible.costingMethod);
+		givenOrderHasCosts(true);
 
 		assertThat(checkPreconditions(ppOrder(DocStatus.Completed)).isRejected()).isFalse();
 	}
 
 	@Test
-	void notOffered_whenAcctSchemaIsStandardCosting()
+	void notOffered_whenTheOrderHasNoCostsToDischarge()
 	{
-		// standard costing values everything at standard and accumulates nothing, so there is no residual to discharge
-		givenAcctSchemaCostingMethod(CostingMethod.StandardCosting);
+		givenOrderHasCosts(false);
 
 		assertThat(checkPreconditions(ppOrder(DocStatus.Completed)).isRejected()).isTrue();
 	}
@@ -125,7 +102,7 @@ class PP_Order_PostCalculationTest
 	@Test
 	void notOffered_whenOrderIsClosed()
 	{
-		givenAcctSchemaCostingMethod(CostingMethod.AveragePO);
+		givenOrderHasCosts(true);
 
 		assertThat(checkPreconditions(ppOrder(DocStatus.Closed)).isRejected()).isTrue();
 	}
@@ -133,39 +110,16 @@ class PP_Order_PostCalculationTest
 	@Test
 	void notOffered_whenOrderIsNotCompleted()
 	{
-		givenAcctSchemaCostingMethod(CostingMethod.AveragePO);
+		givenOrderHasCosts(true);
 
 		assertThat(checkPreconditions(ppOrder(DocStatus.Drafted)).isRejected()).isTrue();
 		assertThat(checkPreconditions(ppOrder(DocStatus.InProgress)).isRejected()).isTrue();
 	}
 
-	/**
-	 * The costing method has to come from the accounting schema, not from the product: only a cost element
-	 * matching the schema's method is accountable, so a per-M_Product_Category_Acct override would disagree
-	 * with what actually posts.
-	 */
-	@Test
-	void schemaWinsOverProductCategoryOverride_whenTheProductSaysStandardCosting()
-	{
-		givenAcctSchemaCostingMethod(CostingMethod.AveragePO);
-		givenProductCostingMethod(CostingMethod.StandardCosting);
-
-		assertThat(checkPreconditions(ppOrder(DocStatus.Completed)).isRejected()).isFalse();
-	}
-
-	@Test
-	void schemaWinsOverProductCategoryOverride_whenTheProductSaysAveragePO()
-	{
-		givenAcctSchemaCostingMethod(CostingMethod.StandardCosting);
-		givenProductCostingMethod(CostingMethod.AveragePO);
-
-		assertThat(checkPreconditions(ppOrder(DocStatus.Completed)).isRejected()).isTrue();
-	}
-
 	@Test
 	void notOffered_whenMoreThanOneOrderSelected()
 	{
-		givenAcctSchemaCostingMethod(CostingMethod.AveragePO);
+		givenOrderHasCosts(true);
 
 		final ProcessPreconditionsResolution resolution = new PP_Order_PostCalculation()
 				.checkPreconditionsApplicable(new PreconditionsContext(ppOrder(DocStatus.Completed), SelectionSize.ofSize(2)));
@@ -173,20 +127,9 @@ class PP_Order_PostCalculationTest
 		assertThat(resolution.isRejected()).isTrue();
 	}
 
-	private void givenAcctSchemaCostingMethod(@NonNull final CostingMethod costingMethod)
+	private void givenOrderHasCosts(final boolean hasOrderCosts)
 	{
-		final AcctSchemaId acctSchemaId = AcctSchemaTestHelper.newAcctSchema()
-				.costingLevel(CostingLevel.Client)
-				.costingMethod(costingMethod)
-				.currencyId(currencyId)
-				.build();
-		AcctSchemaTestHelper.registerAcctSchemaDAOWhichAlwaysProvides(acctSchemaId);
-	}
-
-	/** what {@code IProductCostingBL} would answer, i.e. the per-product-category override */
-	private void givenProductCostingMethod(@NonNull final CostingMethod costingMethod)
-	{
-		Services.registerService(IProductCostingBL.class, new MockedProductCostingBL(CostingLevel.Client, costingMethod));
+		Mockito.when(costDifferenceDistributor.hasOrderCosts(Mockito.any())).thenReturn(hasOrderCosts);
 	}
 
 	private I_PP_Order ppOrder(@NonNull final DocStatus docStatus)

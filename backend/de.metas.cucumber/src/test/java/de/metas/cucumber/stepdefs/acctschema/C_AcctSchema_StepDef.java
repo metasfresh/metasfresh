@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.acctschema;
 
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostingMethod;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
@@ -97,7 +98,9 @@ public class C_AcctSchema_StepDef
 		final I_C_AcctSchema acctSchema = acctSchemaTable.get(identifier);
 
 		row.getAsOptionalEnum(I_C_AcctSchema.COLUMNNAME_CostingMethod, CostingMethod.class).ifPresent(costingMethod -> {
-			costingMethodOverrides.add(new CostingMethodOverride(acctSchema.getC_AcctSchema_ID(), acctSchema.getCostingMethod()));
+			costingMethodOverrides.add(new CostingMethodOverride(
+					AcctSchemaId.ofRepoId(acctSchema.getC_AcctSchema_ID()),
+					acctSchema.getCostingMethod()));
 			acctSchema.setCostingMethod(costingMethod.getCode());
 		});
 
@@ -140,7 +143,7 @@ public class C_AcctSchema_StepDef
 	@Value
 	private static class CostingMethodOverride
 	{
-		int acctSchemaId;
+		AcctSchemaId acctSchemaId;
 		String originalCostingMethod;
 	}
 

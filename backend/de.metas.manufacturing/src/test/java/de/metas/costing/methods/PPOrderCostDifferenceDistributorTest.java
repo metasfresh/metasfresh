@@ -22,7 +22,9 @@
 
 package de.metas.costing.methods;
 
+import de.metas.acct.AcctSchemaTestHelper;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.business.BusinessTestHelper;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElement;
@@ -35,27 +37,44 @@ import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
+import de.metas.costing.IProductCostingBL;
+import de.metas.costing.impl.CostDetailRepository;
+import de.metas.costing.impl.CostDetailService;
+import de.metas.costing.impl.CostElementRepository;
+import de.metas.costing.impl.CurrentCostsRepository;
+import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.CurrencyRepository;
+import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
+import org.compiere.util.Env;
 import org.eevolution.api.PPOrderCost;
 import org.eevolution.api.PPOrderCostTrxType;
+import org.eevolution.api.impl.MockedProductCostingBL;
+import org.eevolution.model.I_PP_Order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Ground-truth cases for the {@code CostDifferenceDistribution} split math. The resulting cost details and the
+ * Ground-truth cases for the {@code CostDifferenceDistribution} split math, plus the eligibility gate
+ * {@link PPOrderCostDifferenceDistributor#hasOrderCosts(I_PP_Order)}. The resulting cost details and the
  * cost-price move are covered by {@link PPOrderCostDifferenceDistributorCostDetailsTest}.
  */
 public class PPOrderCostDifferenceDistributorTest
@@ -69,12 +88,20 @@ public class PPOrderCostDifferenceDistributorTest
 	private static final CostElementId materialCostElementId = CostElementId.ofRepoId(1);
 	private static final ProductId mainProductId = ProductId.ofRepoId(1);
 
+	private final ClientId orderClientId = ClientId.ofRepoId(1);
+	private final OrgId orderOrgId = OrgId.ofRepoId(0);
+	private ProductId finishedGoodId;
+
 	@BeforeEach
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		Env.setClientId(Env.getCtx(), orderClientId);
+		Env.setOrgId(Env.getCtx(), orderOrgId);
+
 		uomEach = BusinessTestHelper.createUomEach();
 		uomEachId = UomId.ofRepoId(uomEach.getC_UOM_ID());
+		finishedGoodId = BusinessTestHelper.createProductId("finished good", uomEach);
 	}
 
 	private CurrentCost currentCost(final String ownCostPrice, final String currentQty)
@@ -162,5 +189,93 @@ public class PPOrderCostDifferenceDistributorTest
 				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
 				.costElementId(materialCostElementId)
 				.build();
+	}
+
+	/** The costing methods whose manufacturing handlers accumulate into {@code PP_Order_Cost}. */
+	private enum EligibleCostingMethod
+	{
+		AveragePO(CostingMethod.AveragePO),
+		LastPOPrice(CostingMethod.LastPOPrice),
+		MovingAverageInvoice(CostingMethod.MovingAverageInvoice);
+
+		final CostingMethod costingMethod;
+
+		EligibleCostingMethod(@NonNull final CostingMethod costingMethod) {this.costingMethod = costingMethod;}
+	}
+
+	@ParameterizedTest
+	@EnumSource(EligibleCostingMethod.class)
+	public void hasOrderCosts_whenTheAcctSchemaAccumulatesThem(@NonNull final EligibleCostingMethod eligible)
+	{
+		final PPOrderCostDifferenceDistributor distributor = givenDistributor(eligible.costingMethod, eligible.costingMethod);
+
+		assertThat(distributor.hasOrderCosts(ppOrder())).isTrue();
+	}
+
+	@Test
+	public void hasNoOrderCosts_whenTheAcctSchemaIsStandardCosting()
+	{
+		// standard costing values everything at standard and accumulates nothing, so there is no residual to discharge
+		final PPOrderCostDifferenceDistributor distributor = givenDistributor(CostingMethod.StandardCosting, CostingMethod.StandardCosting);
+
+		assertThat(distributor.hasOrderCosts(ppOrder())).isFalse();
+	}
+
+	/**
+	 * The costing method has to come from the accounting schema, not from the product: only a cost element
+	 * matching the schema's method is accountable, so a per-M_Product_Category_Acct override would disagree
+	 * with what actually posts.
+	 */
+	@Test
+	public void schemaWinsOverProductCategoryOverride_whenTheProductSaysStandardCosting()
+	{
+		final PPOrderCostDifferenceDistributor distributor = givenDistributor(CostingMethod.AveragePO, CostingMethod.StandardCosting);
+
+		assertThat(distributor.hasOrderCosts(ppOrder())).isTrue();
+	}
+
+	@Test
+	public void schemaWinsOverProductCategoryOverride_whenTheProductSaysAveragePO()
+	{
+		final PPOrderCostDifferenceDistributor distributor = givenDistributor(CostingMethod.StandardCosting, CostingMethod.AveragePO);
+
+		assertThat(distributor.hasOrderCosts(ppOrder())).isFalse();
+	}
+
+	/**
+	 * The {@code productCostingMethod} is what {@code IProductCostingBL} answers, i.e. the per-product-category
+	 * override. Both services have to be registered before the distributor is built: it resolves them in field
+	 * initializers, and {@code registerAcctSchemaDAOWhichAlwaysProvides} refuses to replace an already-used DAO.
+	 */
+	private PPOrderCostDifferenceDistributor givenDistributor(
+			@NonNull final CostingMethod acctSchemaCostingMethod,
+			@NonNull final CostingMethod productCostingMethod)
+	{
+		Services.registerService(IProductCostingBL.class, new MockedProductCostingBL(CostingLevel.Client, productCostingMethod));
+
+		AcctSchemaTestHelper.registerAcctSchemaDAOWhichAlwaysProvides(
+				AcctSchemaTestHelper.newAcctSchema()
+						.costingLevel(CostingLevel.Client)
+						.costingMethod(acctSchemaCostingMethod)
+						.currencyId(PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR))
+						.build());
+
+		final CostElementRepository costElementRepo = new CostElementRepository(ADReferenceService.newMocked());
+		return new PPOrderCostDifferenceDistributor(
+				costElementRepo,
+				new CostingMethodHandlerUtils(
+						new CurrencyRepository(),
+						new CurrentCostsRepository(costElementRepo),
+						new CostDetailService(new CostDetailRepository(), costElementRepo)));
+	}
+
+	private I_PP_Order ppOrder()
+	{
+		final I_PP_Order ppOrder = InterfaceWrapperHelper.newInstance(I_PP_Order.class);
+		InterfaceWrapperHelper.setValue(ppOrder, I_PP_Order.COLUMNNAME_AD_Client_ID, orderClientId.getRepoId());
+		ppOrder.setAD_Org_ID(orderOrgId.getRepoId());
+		ppOrder.setM_Product_ID(finishedGoodId.getRepoId());
+		InterfaceWrapperHelper.saveRecord(ppOrder);
+		return ppOrder;
 	}
 }

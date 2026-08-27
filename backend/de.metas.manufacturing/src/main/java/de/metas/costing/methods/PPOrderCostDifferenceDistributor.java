@@ -23,6 +23,7 @@
 package de.metas.costing.methods;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
@@ -74,6 +75,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PPOrderCostDifferenceDistributor
 {
+	/** Only these accumulate into {@code PP_Order_Cost}; without that there is no residual to discharge. */
+	private static final ImmutableSet<CostingMethod> COSTING_METHODS_WITH_ORDER_COSTS = ImmutableSet.of(
+			CostingMethod.AveragePO,
+			CostingMethod.LastPOPrice,
+			CostingMethod.MovingAverageInvoice);
+
 	private final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
 	private final IPPOrderCostBL ppOrderCostsService = Services.get(IPPOrderCostBL.class);
 	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
@@ -82,6 +89,24 @@ public class PPOrderCostDifferenceDistributor
 
 	@NonNull private final ICostElementRepository costElementsRepo;
 	@NonNull private final CostingMethodHandlerUtils utils;
+
+	/**
+	 * Whether this order's accounting schema accumulates into {@code PP_Order_Cost} at all. Standard costing
+	 * values every issue and receipt at standard and accumulates nothing, so the residual is always zero there
+	 * and {@link #distribute(PPOrderId)} would silently do nothing.
+	 * <p>
+	 * Resolved from the accounting schema, not from the product: only a cost element whose costing method matches
+	 * the schema's is accountable, and {@link #distribute(PPOrderId)} resolves the residual the same way. Reading
+	 * a per-product-category override here would disagree with what actually posts.
+	 */
+	public boolean hasOrderCosts(@NonNull final I_PP_Order order)
+	{
+		final AcctSchema acctSchema = acctSchemasRepo.getByClientAndOrg(
+				ClientId.ofRepoId(order.getAD_Client_ID()),
+				OrgId.ofRepoId(order.getAD_Org_ID()));
+
+		return COSTING_METHODS_WITH_ORDER_COSTS.contains(acctSchema.getCosting().getCostingMethod());
+	}
 
 	public void distribute(@NonNull final PPOrderId orderId)
 	{
