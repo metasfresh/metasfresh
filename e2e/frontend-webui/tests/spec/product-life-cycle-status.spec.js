@@ -1,52 +1,21 @@
 /**
- * M_Product.ProductLifeCycleStatus (BBS-Status) is NOT rendered in the vanilla Product form
+ * M_Product.ProductLifeCycleStatus (BBS-Status) is deliberately NOT part of the vanilla Product
+ * window (AD_Window_ID=140, AD_Tab_ID=180). This spec guards that: the field must be absent from
+ * the form, from the grid, and from the filter bar.
  *
- * Scope: guard the deliberate decision that the life-cycle status field is not offered in the
- * standard Product window (AD_Window_ID=140, AD_Tab_ID=180):
- *   1. The field is not rendered in the Product form
- *   2. The field is not a column of the Product grid
- *   3. The field is not offered as a filter of the Product list
+ * Migration 5820370 hid it there on purpose -- the window already carries an "Auslaufprodukt"
+ * (M_Product.Discontinued) checkbox that reads like the same control, and the enforcement is wanted
+ * by one customer, whose own repo puts the field on the window that customer actually opens. 5820780
+ * then removed the leftover filter entry. The column, its reference list and every backend guard stay
+ * in core, covered by de.metas.cucumber productLifeCycleStatus.feature and ProductBL_assertAllowed_Test
+ * / PickHUCommand_LifeCycleStatus_Test.
  *
- * WHY THIS TEST INVERTED
- * ----------------------
- * It previously asserted the opposite — field visible, selectable, persisted, grid column + filter.
- * Migration 5820370 hides the field on window 140 on purpose: the window already carries an
- * "Auslaufprodukt" (M_Product.Discontinued) checkbox that reads like the same control, and the
- * life-cycle enforcement is wanted by one customer, whose own repo adds the field to the window
- * that customer actually opens. Derivation of the new expectations (per
- * `metasfresh-test-integrity` § "Test Wiring Drift", step 3):
- *   - 5820370 sets AD_UI_Element 652772 IsDisplayed='N' => the form must NOT render the field
- *   - 5820370 sets AD_UI_Element 652772 IsDisplayedGrid='N' => the grid must NOT list the column
- *   - 5820780 sets AD_Field 781848 IsFilterField='N' => the filter bar must NOT offer the field
- * The observed CI failure matched that derivation exactly (the old step 1 timed out waiting for a
- * field container that is no longer rendered), so the assertion is updated rather than the change.
+ * The filter assertion guards AD_Field.IsFilterField (window-scoped), NOT AD_Column.IsSelectionColumn
+ * (table-level, still on so the customer's own window keeps its quick filter).
  *
- * BEWARE WHEN RE-DERIVING THESE EXPECTATIONS FROM A LOCAL RUN
- * -----------------------------------------------------------
- * An earlier revision of this spec logged the grid column instead of asserting it, on the strength
- * of a local run that showed window 140 STILL listing ProductLifeCycleStatus with IsDisplayedGrid='N'
- * applied. That observation was a stale-cache artifact, not behaviour: ViewLayoutFactory's
- * "SqlViewLayouts" cache carries no `#<table>` suffix, so CCache.extractTableNameForCacheName derives
- * no real table name and the cache falls back to registering itself under its OWN name — a label no
- * AD_* save ever resets — and with expireAfterMinutes=0 it never expires on its own. A migration
- * applied as raw SQL also never triggers PO.java's save-path invalidation.
- * After resetting SqlViewLayouts + SqlViewBindings the same probe returned the grid WITHOUT the column.
- * So: before concluding a layout flag "did not work", reset those caches (or restart the app server)
- * and re-observe.
- *
- * The FILTER parameter needs both migrations to be absent, which is why it is asserted only now. The
- * filter entry originates from AD_Column.IsSelectionColumn='Y' (5819940), which is table-level and stays
- * 'Y' so the customer's own Product window keeps its quick filter; 5820780 switches it off for THIS
- * window alone via AD_Field.IsFilterField. Asserting its absence therefore guards the window-scoped
- * switch, not the shared column flag.
- *
- * WHERE THE REMAINING BEHAVIOUR IS COVERED
- * ----------------------------------------
- * The column, its reference list and every backend guard stay in core, and are exercised by
- * `de.metas.cucumber` productLifeCycleStatus.feature (order-line block + the completion re-checks)
- * and by ProductBL_assertAllowed_Test / PickHUCommand_LifeCycleStatus_Test. The field's visibility
- * in the customer's own Product window cannot be tested here — that window does not exist on a core
- * DB — so no automated core check covers it.
+ * Running this locally: reset the SqlViewLayouts and SqlViewBindings caches first, or the app server
+ * keeps serving the pre-migration layout. Neither cache is keyed to a table, so no AD_* change
+ * invalidates them and an unreset run will contradict the migration.
  */
 
 import { expect } from '@playwright/test';
