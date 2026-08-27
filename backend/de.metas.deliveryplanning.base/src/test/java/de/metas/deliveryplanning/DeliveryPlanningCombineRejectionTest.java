@@ -76,7 +76,7 @@ class DeliveryPlanningCombineRejectionTest
 		return DeliveryPlanning.builder()
 				.id(DeliveryPlanningId.ofRepoId(nextId++))
 				.orgId(OrgId.ofRepoId(1000000))
-				.type(DeliveryPlanningType.Outgoing)
+				.type(TransportDirection.Outgoing)
 				.shipperId(ShipperId.ofRepoId(540001));
 	}
 
@@ -168,7 +168,7 @@ class DeliveryPlanningCombineRejectionTest
 		final DeliveryPlanning row1 = DeliveryPlanning.builder()
 				.id(DeliveryPlanningId.ofRepoId(nextId++))
 				.orgId(OrgId.ofRepoId(1000000))
-				.type(DeliveryPlanningType.Outgoing)
+				.type(TransportDirection.Outgoing)
 				.shipperId(ShipperId.ofRepoId(540001))
 				.incotermsId(IncotermsId.ofRepoId(540002))
 				.incotermLocation("Hamburg")
@@ -180,7 +180,7 @@ class DeliveryPlanningCombineRejectionTest
 		final DeliveryPlanning row2 = DeliveryPlanning.builder()
 				.id(DeliveryPlanningId.ofRepoId(nextId++))
 				.orgId(OrgId.ofRepoId(1000001))
-				.type(DeliveryPlanningType.Incoming)
+				.type(TransportDirection.Incoming)
 				.shipperId(ShipperId.ofRepoId(540011))
 				.incotermsId(IncotermsId.ofRepoId(540012))
 				.incotermLocation("Rotterdam")

@@ -58,7 +58,7 @@ Feature: Delivery planning automatically generated when M_ShipmentSchedule is cr
       | M_Delivery_Planning_ID.Identifiers | C_OrderLine_ID.Identifier |
       | deliveryPlanning_SO                | orderLine_SO              |
     And validate M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | M_Delivery_Planning_Type | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Shipper_ID.Identifier | OPT.ETA | OPT.M_Warehouse_ID.Identifier |
+      | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | TransportDirection | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Shipper_ID.Identifier | OPT.ETA | OPT.M_Warehouse_ID.Identifier |
       | deliveryPlanning_SO               | 10         | 10           | Outgoing                 | order_SO                  | orderLine_SO                  | customer                     | product                     | customerLocation                      | shipper_DHL                 | 2023-02-25              | warehouse                     |
 
 
@@ -115,7 +115,7 @@ Feature: Delivery planning automatically generated when M_ShipmentSchedule is cr
       | M_Delivery_Planning_ID.Identifiers | C_OrderLine_ID.Identifier |
       | deliveryPlanning_PO                | orderLine_PO              |
     And validate M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | M_Delivery_Planning_Type | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Shipper_ID.Identifier | OPT.ETA | OPT.M_Warehouse_ID.Identifier |
+      | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | TransportDirection | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Shipper_ID.Identifier | OPT.ETA | OPT.M_Warehouse_ID.Identifier |
       | deliveryPlanning_PO               | 5          | 5            | Incoming                 | order_PO                  | orderLine_PO                  | vendor                       | product                     | warehouseLocation                     | shipper_DPD                 | 2023-02-20              | warehouse                     |
 
 
@@ -160,7 +160,7 @@ Feature: Delivery planning automatically generated when M_ShipmentSchedule is cr
       | M_Delivery_Planning_ID.Identifiers | C_OrderLine_ID.Identifier |
       | deliveryPlanning_SO_3              | orderLine_SO_3            |
     And validate M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | M_Delivery_Planning_Type | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
+      | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | TransportDirection | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
       | deliveryPlanning_SO_3             | 10         | 10           | Outgoing                 | order_SO_3                | orderLine_SO_3                | customer_3                   | product_3                   | customerLocation_3                    |
 
     When the order identified by order_SO_3 is reactivated
@@ -175,5 +175,5 @@ Feature: Delivery planning automatically generated when M_ShipmentSchedule is cr
       | Identifier         | C_OrderLine_ID.Identifier | IsToRecompute |
       | shipmentSchedule_3 | orderLine_SO_3            | N             |
     And validate M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | M_Delivery_Planning_Type | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
+      | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | TransportDirection | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
       | deliveryPlanning_SO_3             | 20         | 20           | Outgoing                 | order_SO_3                | orderLine_SO_3                | customer_3                   | product_3                   | customerLocation_3                    |

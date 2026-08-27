@@ -136,7 +136,7 @@ class DeliveryPlanningAddressLoadingTest
 			final int warehouseId)
 	{
 		final I_M_Delivery_Planning record = InterfaceWrapperHelper.newInstance(I_M_Delivery_Planning.class);
-		record.setM_Delivery_Planning_Type(type);
+		record.setTransportDirection(type);
 		record.setM_ReceiptSchedule_ID(receiptScheduleId);
 		record.setM_ShipmentSchedule_ID(shipmentScheduleId);
 		record.setM_Warehouse_ID(warehouseId);
@@ -181,7 +181,7 @@ class DeliveryPlanningAddressLoadingTest
 	void incoming()
 	{
 		final I_M_Delivery_Planning record = createDeliveryPlanning(
-				X_M_Delivery_Planning.M_DELIVERY_PLANNING_TYPE_Incoming,
+				X_M_Delivery_Planning.TRANSPORTDIRECTION_Incoming,
 				createReceiptSchedule(), 0, createWarehouse());
 
 		final DeliveryPlanning deliveryPlanning = getBySelection(ImmutableList.of(record)).stream().findFirst().orElseThrow(AssertionError::new);
@@ -195,7 +195,7 @@ class DeliveryPlanningAddressLoadingTest
 	void outgoing()
 	{
 		final I_M_Delivery_Planning record = createDeliveryPlanning(
-				X_M_Delivery_Planning.M_DELIVERY_PLANNING_TYPE_Outgoing,
+				X_M_Delivery_Planning.TRANSPORTDIRECTION_Outgoing,
 				0, createShipmentSchedule(), createWarehouse());
 
 		final DeliveryPlanning deliveryPlanning = getBySelection(ImmutableList.of(record)).stream().findFirst().orElseThrow(AssertionError::new);
@@ -213,7 +213,7 @@ class DeliveryPlanningAddressLoadingTest
 	void dropship()
 	{
 		final I_M_Delivery_Planning record = createDeliveryPlanning(
-				X_M_Delivery_Planning.M_DELIVERY_PLANNING_TYPE_Dropship,
+				X_M_Delivery_Planning.TRANSPORTDIRECTION_Dropship,
 				createReceiptSchedule(), 0, createWarehouse());
 
 		final DeliveryPlanning deliveryPlanning = getBySelection(ImmutableList.of(record)).stream().findFirst().orElseThrow(AssertionError::new);
@@ -227,7 +227,7 @@ class DeliveryPlanningAddressLoadingTest
 	void unresolvableAddressesReadAsNull()
 	{
 		final I_M_Delivery_Planning record = createDeliveryPlanning(
-				X_M_Delivery_Planning.M_DELIVERY_PLANNING_TYPE_Incoming,
+				X_M_Delivery_Planning.TRANSPORTDIRECTION_Incoming,
 				0, 0, 0);
 
 		final DeliveryPlanning deliveryPlanning = getBySelection(ImmutableList.of(record)).stream().findFirst().orElseThrow(AssertionError::new);
@@ -242,11 +242,11 @@ class DeliveryPlanningAddressLoadingTest
 	{
 		final int warehouseId = createWarehouse();
 		final ImmutableList<I_M_Delivery_Planning> records = ImmutableList.of(
-				createDeliveryPlanning(X_M_Delivery_Planning.M_DELIVERY_PLANNING_TYPE_Incoming, createReceiptSchedule(), 0, warehouseId),
-				createDeliveryPlanning(X_M_Delivery_Planning.M_DELIVERY_PLANNING_TYPE_Incoming, createReceiptSchedule(), 0, warehouseId),
-				createDeliveryPlanning(X_M_Delivery_Planning.M_DELIVERY_PLANNING_TYPE_Outgoing, 0, createShipmentSchedule(), warehouseId),
-				createDeliveryPlanning(X_M_Delivery_Planning.M_DELIVERY_PLANNING_TYPE_Outgoing, 0, createShipmentSchedule(), warehouseId),
-				createDeliveryPlanning(X_M_Delivery_Planning.M_DELIVERY_PLANNING_TYPE_Dropship, createReceiptSchedule(), 0, warehouseId));
+				createDeliveryPlanning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Incoming, createReceiptSchedule(), 0, warehouseId),
+				createDeliveryPlanning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Incoming, createReceiptSchedule(), 0, warehouseId),
+				createDeliveryPlanning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Outgoing, 0, createShipmentSchedule(), warehouseId),
+				createDeliveryPlanning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Outgoing, 0, createShipmentSchedule(), warehouseId),
+				createDeliveryPlanning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Dropship, createReceiptSchedule(), 0, warehouseId));
 
 		final DeliveryPlanningList deliveryPlannings = getBySelection(records);
 
@@ -271,7 +271,7 @@ class DeliveryPlanningAddressLoadingTest
 	void allocationIsTheSourceOfIsAllocated()
 	{
 		final I_M_Delivery_Planning record = createDeliveryPlanning(
-				X_M_Delivery_Planning.M_DELIVERY_PLANNING_TYPE_Incoming,
+				X_M_Delivery_Planning.TRANSPORTDIRECTION_Incoming,
 				createReceiptSchedule(), 0, createWarehouse());
 		record.setM_ShipperTransportation_ID(540099);
 		InterfaceWrapperHelper.save(record);
@@ -287,7 +287,7 @@ class DeliveryPlanningAddressLoadingTest
 	void allocationSuppliesTheInstruction()
 	{
 		final I_M_Delivery_Planning record = createDeliveryPlanning(
-				X_M_Delivery_Planning.M_DELIVERY_PLANNING_TYPE_Incoming,
+				X_M_Delivery_Planning.TRANSPORTDIRECTION_Incoming,
 				createReceiptSchedule(), 0, createWarehouse());
 		final ShipperTransportationId allocatedTo = ShipperTransportationId.ofRepoId(540021);
 

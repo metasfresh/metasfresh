@@ -128,7 +128,7 @@ class DeliveryPlanningAddToAdmissibilityTest
 	private I_M_Delivery_Planning deliveryPlanning(final int shipperId)
 	{
 		final I_M_Delivery_Planning record = InterfaceWrapperHelper.newInstance(I_M_Delivery_Planning.class);
-		record.setM_Delivery_Planning_Type(X_M_Delivery_Planning.M_DELIVERY_PLANNING_TYPE_Outgoing);
+		record.setTransportDirection(X_M_Delivery_Planning.TRANSPORTDIRECTION_Outgoing);
 		record.setM_Product_ID(PRODUCT_ID);
 		record.setC_UOM_ID(uom.getC_UOM_ID());
 		record.setPlannedLoadedQuantity(BigDecimal.TEN);

@@ -208,8 +208,8 @@ public class M_Delivery_Planning_StepDef
 			final BigDecimal qtyTotalOpen = DataTableUtil.extractBigDecimalForColumnName(row, I_M_Delivery_Planning.COLUMNNAME_QtyTotalOpen);
 			softly.assertThat(deliveryPlanning.getQtyTotalOpen()).as(I_M_Delivery_Planning.COLUMNNAME_QtyTotalOpen).isEqualTo(qtyTotalOpen);
 
-			final String type = DataTableUtil.extractStringForColumnName(row, I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_Type);
-			softly.assertThat(deliveryPlanning.getM_Delivery_Planning_Type()).as(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_Type).isEqualTo(type);
+			final String type = DataTableUtil.extractStringForColumnName(row, I_M_Delivery_Planning.COLUMNNAME_TransportDirection);
+			softly.assertThat(deliveryPlanning.getTransportDirection()).as(I_M_Delivery_Planning.COLUMNNAME_TransportDirection).isEqualTo(type);
 
 			final String productIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Delivery_Planning.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(productIdentifier))

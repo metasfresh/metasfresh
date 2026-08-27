@@ -84,7 +84,7 @@ class DeliveryPlanningAddRemoveRejectionTest
 		return DeliveryPlanning.builder()
 				.id(DeliveryPlanningId.ofRepoId(nextId++))
 				.orgId(OrgId.ofRepoId(1000000))
-				.type(DeliveryPlanningType.Outgoing)
+				.type(TransportDirection.Outgoing)
 				.shipperId(ShipperId.ofRepoId(540001));
 	}
 
@@ -174,8 +174,8 @@ class DeliveryPlanningAddRemoveRejectionTest
 	{
 		assertThat(addToRejectionTextOf(
 				deliveryInstruction(DocStatus.Drafted),
-				deliveryPlanning().type(DeliveryPlanningType.Outgoing).build(),
-				deliveryPlanning().type(DeliveryPlanningType.Incoming).build()))
+				deliveryPlanning().type(TransportDirection.Outgoing).build(),
+				deliveryPlanning().type(TransportDirection.Incoming).build()))
 				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_IncompatibleSelection))
 				.contains(keyOf(AdmissibilityField.Direction.getLabel()));
 	}

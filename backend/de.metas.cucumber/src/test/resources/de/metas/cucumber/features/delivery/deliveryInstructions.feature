@@ -52,7 +52,7 @@ Feature: Generate delivery instructions from delivery plannings
       | M_Delivery_Planning_ID.Identifiers | C_OrderLine_ID.Identifier |
       | deliveryPlanningDI_SO              | orderLineDI_SO            |
     And validate M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | M_Delivery_Planning_Type | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Shipper_ID.Identifier | OPT.ETA | OPT.PlannedLoadedQuantity |
+      | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | TransportDirection | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Shipper_ID.Identifier | OPT.ETA | OPT.PlannedLoadedQuantity |
       | deliveryPlanningDI_SO             | 10         | 10           | Outgoing                 | orderDI_SO                | orderLineDI_SO                | customer                     | product                     | customerLocation                      | shipper_DHL                 | 2023-02-10              | 10                        |
 
     When generate M_ShipperTransportation for M_Delivery_Planning:

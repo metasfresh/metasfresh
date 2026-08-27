@@ -27,45 +27,45 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class DeliveryPlanningTypeTest
+class TransportDirectionTest
 {
 	@Test
 	void codes_matchTheReferenceListValues()
 	{
-		assertThat(DeliveryPlanningType.Incoming.getCode()).isEqualTo("Incoming");
-		assertThat(DeliveryPlanningType.Outgoing.getCode()).isEqualTo("Outgoing");
-		assertThat(DeliveryPlanningType.Dropship.getCode()).isEqualTo("Dropship");
+		assertThat(TransportDirection.Incoming.getCode()).isEqualTo("Incoming");
+		assertThat(TransportDirection.Outgoing.getCode()).isEqualTo("Outgoing");
+		assertThat(TransportDirection.Dropship.getCode()).isEqualTo("Dropship");
 	}
 
 	@Test
 	void ofCode_resolvesEveryReferenceListValue()
 	{
-		assertThat(DeliveryPlanningType.ofCode(X_M_Delivery_Planning.M_DELIVERY_PLANNING_TYPE_Incoming)).isEqualTo(DeliveryPlanningType.Incoming);
-		assertThat(DeliveryPlanningType.ofCode(X_M_Delivery_Planning.M_DELIVERY_PLANNING_TYPE_Outgoing)).isEqualTo(DeliveryPlanningType.Outgoing);
-		assertThat(DeliveryPlanningType.ofCode(X_M_Delivery_Planning.M_DELIVERY_PLANNING_TYPE_Dropship)).isEqualTo(DeliveryPlanningType.Dropship);
+		assertThat(TransportDirection.ofCode(X_M_Delivery_Planning.TRANSPORTDIRECTION_Incoming)).isEqualTo(TransportDirection.Incoming);
+		assertThat(TransportDirection.ofCode(X_M_Delivery_Planning.TRANSPORTDIRECTION_Outgoing)).isEqualTo(TransportDirection.Outgoing);
+		assertThat(TransportDirection.ofCode(X_M_Delivery_Planning.TRANSPORTDIRECTION_Dropship)).isEqualTo(TransportDirection.Dropship);
 	}
 
 	@Test
 	void hasReceipt()
 	{
-		assertThat(DeliveryPlanningType.Incoming.hasReceipt()).isTrue();
-		assertThat(DeliveryPlanningType.Outgoing.hasReceipt()).isFalse();
-		assertThat(DeliveryPlanningType.Dropship.hasReceipt()).isTrue();
+		assertThat(TransportDirection.Incoming.hasReceipt()).isTrue();
+		assertThat(TransportDirection.Outgoing.hasReceipt()).isFalse();
+		assertThat(TransportDirection.Dropship.hasReceipt()).isTrue();
 	}
 
 	@Test
 	void hasShipment()
 	{
-		assertThat(DeliveryPlanningType.Incoming.hasShipment()).isFalse();
-		assertThat(DeliveryPlanningType.Outgoing.hasShipment()).isTrue();
-		assertThat(DeliveryPlanningType.Dropship.hasShipment()).isTrue();
+		assertThat(TransportDirection.Incoming.hasShipment()).isFalse();
+		assertThat(TransportDirection.Outgoing.hasShipment()).isTrue();
+		assertThat(TransportDirection.Dropship.hasShipment()).isTrue();
 	}
 
 	@Test
 	void isDropship()
 	{
-		assertThat(DeliveryPlanningType.Incoming.isDropship()).isFalse();
-		assertThat(DeliveryPlanningType.Outgoing.isDropship()).isFalse();
-		assertThat(DeliveryPlanningType.Dropship.isDropship()).isTrue();
+		assertThat(TransportDirection.Incoming.isDropship()).isFalse();
+		assertThat(TransportDirection.Outgoing.isDropship()).isFalse();
+		assertThat(TransportDirection.Dropship.isDropship()).isTrue();
 	}
 }
