@@ -1,4 +1,4 @@
--- me03 #31608 -- TransportDirection: new AD_Element for the three-valued transport direction
+-- gh31608 -- TransportDirection: new AD_Element for the three-valued transport direction
 -- (Incoming/Outgoing/Dropship) currently carried under the misnamed AD_Element 581679
 -- "M_Delivery_Planning_Type".
 --

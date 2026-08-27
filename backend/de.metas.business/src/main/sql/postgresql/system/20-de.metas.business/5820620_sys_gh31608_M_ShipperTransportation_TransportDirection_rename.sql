@@ -1,4 +1,4 @@
--- me03 #31608 -- repoint M_ShipperTransportation.M_Delivery_Planning_Type to the new AD_Element
+-- gh31608 -- repoint M_ShipperTransportation.M_Delivery_Planning_Type to the new AD_Element
 -- 585383 (TransportDirection, created by 5820600) and rename the physical column to match.
 --
 -- Two AD_Field rows carry this column: 783020 (AD_Window 540020 "Transport Auftrag" -> AD_Tab
