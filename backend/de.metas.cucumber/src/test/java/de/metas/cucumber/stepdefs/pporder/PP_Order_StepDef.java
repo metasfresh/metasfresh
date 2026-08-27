@@ -196,6 +196,8 @@ public class PP_Order_StepDef
 	 *   | Identifier | CostDifference |
 	 *   | ppOrder    | 15             |
 	 * </pre>
+	 * @see de.metas.cucumber.stepdefs.costing.PP_Order_Cost_StepDef for asserting the individual PP_Order_Cost rows that CostDifference aggregates
+	 * @see PP_Cost_Collector_StepDef for asserting the cost collectors that produce those PP_Order_Cost rows
 	 */
 	@And("^after not more than (.*)s, PP_Orders are found$")
 	public void validatePP_Order(
