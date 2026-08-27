@@ -34,13 +34,18 @@ import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_AcctSchema;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static de.metas.acct.interceptor.C_AcctSchema.DISABLE_CHECK_CURRENCY;
 
@@ -48,6 +53,9 @@ import static de.metas.acct.interceptor.C_AcctSchema.DISABLE_CHECK_CURRENCY;
 public class C_AcctSchema_StepDef
 {
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	/** The costing method is global state shared by every scenario on the executor; see the @After below. */
+	@NonNull private final List<CostingMethodOverride> costingMethodOverrides = new ArrayList<>();
 	@NonNull private final CurrencyRepository currencyRepository = SpringContextHolder.instance.getBean(CurrencyRepository.class);
 
 	@NonNull private final IdentifiersResolver identifiersResolver;
@@ -88,7 +96,10 @@ public class C_AcctSchema_StepDef
 		final StepDefDataIdentifier identifier = row.getAsIdentifier();
 		final I_C_AcctSchema acctSchema = acctSchemaTable.get(identifier);
 
-		row.getAsOptionalEnum(I_C_AcctSchema.COLUMNNAME_CostingMethod, CostingMethod.class).ifPresent(costingMethod -> acctSchema.setCostingMethod(costingMethod.getCode()));
+		row.getAsOptionalEnum(I_C_AcctSchema.COLUMNNAME_CostingMethod, CostingMethod.class).ifPresent(costingMethod -> {
+			costingMethodOverrides.add(new CostingMethodOverride(acctSchema.getC_AcctSchema_ID(), acctSchema.getCostingMethod()));
+			acctSchema.setCostingMethod(costingMethod.getCode());
+		});
 
 		row.getAsOptionalString("C_Currency_ID")
 				.map(CurrencyCode::ofThreeLetterCode)
@@ -104,6 +115,33 @@ public class C_AcctSchema_StepDef
 
 		row.getAsOptionalBoolean("IsRepostCreatedDocs")
 				.ifTrue(this::repostCreatedDocuments);
+	}
+
+	/**
+	 * Restores any {@code CostingMethod} overrides back to the value the schema carried before. Fires for
+	 * every scenario regardless of pass/fail, so a scenario that changes the costing method cannot leak it
+	 * to the rest of the executor even when it fails part-way; no-op when nothing was overridden.
+	 */
+	@After
+	public void resetCostingMethodOverrides()
+	{
+		// Unwound last-first: a scenario can override the same schema more than once (its Background, then the
+		// scenario body), and only reverse order puts back the value that was there before any of them.
+		for (int i = costingMethodOverrides.size() - 1; i >= 0; i--)
+		{
+			final CostingMethodOverride override = costingMethodOverrides.get(i);
+			final I_C_AcctSchema acctSchema = InterfaceWrapperHelper.load(override.getAcctSchemaId(), I_C_AcctSchema.class);
+			acctSchema.setCostingMethod(override.getOriginalCostingMethod());
+			InterfaceWrapperHelper.saveRecord(acctSchema);
+		}
+		costingMethodOverrides.clear();
+	}
+
+	@Value
+	private static class CostingMethodOverride
+	{
+		int acctSchemaId;
+		String originalCostingMethod;
 	}
 
 	private void loadAcctSchema(@NonNull final DataTableRow row)
