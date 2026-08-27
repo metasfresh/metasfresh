@@ -68,7 +68,9 @@ import de.metas.shipping.Shipper;
 import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.shipping.model.ShippingPackageId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -127,6 +129,13 @@ public class DeliveryPlanningService
 	public static final AdMessageKey MSG_M_Delivery_Planning_AtLeastOnePerOrderLine = AdMessageKey.of("de.metas.deliveryplanning.M_Delivery_Planning_AtLeastOnePerOrderLine");
 
 	private static final AdMessageKey MSG_M_Delivery_Planning_AlreadyReferenced = AdMessageKey.of("de.metas.deliveryplanning.M_Delivery_Planning_AlreadyReferenced");
+
+	/**
+	 * A delivery instruction is cancelled or closed, never deleted. Raised on the package leg because that is
+	 * where every reachable delete arrives first - see
+	 * {@link #assertShippingPackageNotAllocated(de.metas.shipping.model.I_M_ShippingPackage)}.
+	 */
+	private static final AdMessageKey MSG_M_ShippingPackage_Allocated = AdMessageKey.of("de.metas.deliveryplanning.M_ShippingPackage.Allocated");
 
 	public static final AdMessageKey MSG_M_Delivery_Planning_NoForwarder = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.NoForwarder");
 	public static final AdMessageKey MSG_M_Delivery_Planning_AllHaveReleaseNo = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.AllHaveReleaseNo");
@@ -296,6 +305,42 @@ public class DeliveryPlanningService
 		{
 			throw new AdempiereException(MSG_M_Delivery_Planning_AlreadyReferenced);
 		}
+	}
+
+	/**
+	 * Refuses to delete a shipping package that any {@code M_Delivery_Planning_Alloc} points at - active or
+	 * retired - naming the delivery instruction to cancel or close instead.
+	 * <p>
+	 * Deleting a delivery instruction is not an operation this feature offers: the acceptance criteria know
+	 * only close, remove, void and cancel. It is nevertheless reachable, because {@code M_ShipperTransportation}
+	 * and {@code M_ShippingPackage} both carry {@code IsDeleteable='Y'} and a DRAFTED instruction's only guard
+	 * is {@code MMShipperTransportation.beforeDelete()}'s {@code isProcessed()} check - and since the
+	 * allocation's FKs became {@code ON DELETE CASCADE}, that delete would now erase the allocations silently
+	 * instead of failing loudly on the foreign key.
+	 * <p>
+	 * Guarding the package also guards the instruction: {@code PO.delete0()} runs {@code beforeDelete()} BEFORE
+	 * it fires {@code TYPE_BEFORE_DELETE}, and {@code MMShipperTransportation.beforeDelete()} force-deletes all
+	 * of its {@code M_ShippingPackage} lines, so an instruction delete always reaches this guard first. A
+	 * second guard on the instruction itself would be unreachable.
+	 * <p>
+	 * Scoped by construction rather than by a filter: only delivery planning creates allocations, so the
+	 * transport-order and handling-units packages that share {@code M_ShippingPackage} never match and are
+	 * left exactly as deletable as they were.
+	 */
+	public void assertShippingPackageNotAllocated(@NonNull final I_M_ShippingPackage shippingPackage)
+	{
+		final ShippingPackageId shippingPackageId = ShippingPackageId.ofRepoIdOrNull(shippingPackage.getM_ShippingPackage_ID());
+		if (shippingPackageId == null)
+		{
+			// not saved yet, so nothing can point at it
+			return;
+		}
+
+		deliveryPlanningRepository.getInstructionIdByShippingPackageId(shippingPackageId)
+				.ifPresent(deliveryInstructionId -> {
+					final String documentNo = deliveryPlanningRepository.getInstructionById(deliveryInstructionId).getDocumentNo();
+					throw new AdempiereException(TranslatableStrings.adMessage(MSG_M_ShippingPackage_Allocated, documentNo));
+				});
 	}
 
 	private DeliveryPlanningCreateRequest createRequest(@NonNull final DeliveryPlanningId deliveryPlanningId, @NonNull final Quantity plannedLoadedQty)

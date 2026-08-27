@@ -44,6 +44,7 @@ import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.shipping.model.ShippingPackageId;
 import de.metas.util.ColorId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -861,6 +862,29 @@ public class DeliveryPlanningRepository
 		return queryBL.createQueryBuilder(I_M_Delivery_Planning_Alloc.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_M_Delivery_Planning_Alloc.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningIds);
+	}
+
+	/**
+	 * The delivery instruction the given shipping package is allocated to, if any - deliberately NOT filtered
+	 * by {@code IsActive}.
+	 * <p>
+	 * A retired allocation counts here exactly like a live one: an instruction that once carried a planning is
+	 * the very document whose history the retirement exists to keep, and it is cancelled or closed rather than
+	 * deleted either way. Filtering to active rows would let the {@code ON DELETE CASCADE} from the package
+	 * quietly erase that history.
+	 * <p>
+	 * At most one row can match while the allocation is active (the partial unique index on
+	 * {@code M_ShippingPackage_ID}), and a package is created for exactly one allocation, so a package with
+	 * several allocation rows would itself be the defect - hence {@code firstOnlyOptional} rather than a
+	 * silent first-of-many.
+	 */
+	public Optional<ShipperTransportationId> getInstructionIdByShippingPackageId(@NonNull final ShippingPackageId shippingPackageId)
+	{
+		return queryBL.createQueryBuilder(I_M_Delivery_Planning_Alloc.class)
+				.addEqualsFilter(I_M_Delivery_Planning_Alloc.COLUMNNAME_M_ShippingPackage_ID, shippingPackageId)
+				.create()
+				.firstOnlyOptional(I_M_Delivery_Planning_Alloc.class)
+				.map(allocRecord -> ShipperTransportationId.ofRepoId(allocRecord.getM_ShipperTransportation_ID()));
 	}
 
 	private IQueryBuilder<I_M_Delivery_Planning_Alloc> queryActiveAllocationsByInstructionId(@NonNull final ShipperTransportationId deliveryInstructionId)
