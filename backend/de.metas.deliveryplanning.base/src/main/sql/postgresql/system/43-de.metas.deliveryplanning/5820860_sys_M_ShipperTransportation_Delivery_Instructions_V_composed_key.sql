@@ -1,6 +1,6 @@
 -- M_ShipperTransportation_Delivery_Instructions_V (AD_Table 542287): fix row identity at N>1.
 --
--- M_ShipperTransportation_ID (AD_Column 585628) is IsKey='Y', but since 5820820 the view returns
+-- M_ShipperTransportation_ID (AD_Column 585628) is IsKey='Y', but since 5820920 the view returns
 -- one row per active M_Delivery_Planning_Alloc of the instruction, and M_ShipperTransportation_ID
 -- is identical across all of an instruction's rows. At N=1 active planning that degenerates to a
 -- harmless single row; at N>1 every row of that instruction collides on the same WebUI row id, so

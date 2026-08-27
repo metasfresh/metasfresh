@@ -1,6 +1,7 @@
 -- Source DDL: backend/de.metas.adempiere.adempiere/migration/src/main/sql/postgresql/ddl/public/views/M_Delivery_Planning_Delivery_Instructions_V.sql
 --
--- Same cartesian-product bug as M_ShipperTransportation_Delivery_Instructions_V (fixed by 5820820),
+-- Same cartesian-product bug as M_ShipperTransportation_Delivery_Instructions_V (which installs the
+-- correlated join directly, in 5820920),
 -- present in this sibling view since it was introduced: M_ShippingPackage AND M_Delivery_Planning
 -- are both joined to M_ShipperTransportation by instruction id only, with no correlation to each
 -- other. DeliveryPlanningRepository.createAllocation creates one distinct M_ShippingPackage per
