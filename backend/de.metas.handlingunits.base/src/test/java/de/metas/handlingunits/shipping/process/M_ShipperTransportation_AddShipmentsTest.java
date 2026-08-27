@@ -25,10 +25,13 @@ package de.metas.handlingunits.shipping.process;
 import com.google.common.collect.ImmutableList;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocSubType;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
@@ -47,12 +50,19 @@ import static org.mockito.Mockito.when;
  */
 class M_ShipperTransportation_AddShipmentsTest
 {
+	private IDocTypeDAO docTypeDAO;
 	private M_ShipperTransportation_AddShipments process;
 
 	@BeforeEach
 	void setUp()
 	{
 		AdempiereTestHelper.get().init();
+
+		// spy the real (table-cached) DocTypeDAO *before* the guard is constructed, so the guard's own
+		// captured DAO reference is the spy and the C_DocType lookup count stays observable
+		docTypeDAO = Mockito.spy(Services.get(IDocTypeDAO.class));
+		Services.registerService(IDocTypeDAO.class, docTypeDAO);
+
 		SpringContextHolder.registerJUnitBean(new ShipperTransportationDocSubTypeGuard());
 		process = new M_ShipperTransportation_AddShipments();
 	}
@@ -87,6 +97,8 @@ class M_ShipperTransportation_AddShipmentsTest
 		final ProcessPreconditionsResolution resolution = process.checkPreconditionsApplicable(contextSelecting(transportOrder));
 
 		assertThat(resolution.isAccepted()).isTrue();
+		// the no-op proof: exactly one C_DocType lookup for the single selected row, no repeated/hidden work
+		Mockito.verify(docTypeDAO, Mockito.times(1)).getById(Mockito.any(DocTypeId.class));
 	}
 
 	@Test

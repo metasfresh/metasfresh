@@ -24,17 +24,21 @@ package de.metas.tourplanning.process;
 
 import de.metas.document.DocBaseType;
 import de.metas.document.DocSubType;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.shipping.PurchaseOrderToShipperTransportationService;
 import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -47,12 +51,19 @@ import static org.mockito.Mockito.when;
  */
 class M_ShippingPackage_CreateFromTourplanningTest
 {
+	private IDocTypeDAO docTypeDAO;
 	private M_ShippingPackage_CreateFromTourplanning process;
 
 	@BeforeEach
 	void setUp()
 	{
 		AdempiereTestHelper.get().init();
+
+		// spy the real (table-cached) DocTypeDAO *before* the guard is constructed, so the guard's own
+		// captured DAO reference is the spy and the C_DocType lookup count stays observable
+		docTypeDAO = Mockito.spy(Services.get(IDocTypeDAO.class));
+		Services.registerService(IDocTypeDAO.class, docTypeDAO);
+
 		SpringContextHolder.registerJUnitBean(ShipperTransportationDocSubTypeGuard.class, new ShipperTransportationDocSubTypeGuard());
 		SpringContextHolder.registerJUnitBean(PurchaseOrderToShipperTransportationService.class, mock(PurchaseOrderToShipperTransportationService.class));
 		process = new M_ShippingPackage_CreateFromTourplanning();
@@ -88,6 +99,8 @@ class M_ShippingPackage_CreateFromTourplanningTest
 		final ProcessPreconditionsResolution resolution = process.checkPreconditionsApplicable(contextSelecting(transportOrder));
 
 		assertThat(resolution.isAccepted()).isTrue();
+		// the no-op proof: exactly one C_DocType lookup for the single selected row, no repeated/hidden work
+		Mockito.verify(docTypeDAO, Mockito.times(1)).getById(Mockito.any(DocTypeId.class));
 	}
 
 	@Test
