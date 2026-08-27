@@ -23,6 +23,8 @@
 package de.metas.cucumber.stepdefs.acctschema;
 
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.cache.CacheMgt;
 import de.metas.costing.CostingMethod;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
@@ -45,15 +47,19 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_AcctSchema;
 
+import javax.annotation.Nullable;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import static de.metas.acct.interceptor.C_AcctSchema.DISABLE_CHECK_CURRENCY;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RequiredArgsConstructor
 public class C_AcctSchema_StepDef
 {
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 
 	/** The costing method is global state shared by every scenario on the executor; see the @After below. */
 	@NonNull private final List<CostingMethodOverride> costingMethodOverrides = new ArrayList<>();
@@ -96,13 +102,14 @@ public class C_AcctSchema_StepDef
 	{
 		final StepDefDataIdentifier identifier = row.getAsIdentifier();
 		final I_C_AcctSchema acctSchema = acctSchemaTable.get(identifier);
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(acctSchema.getC_AcctSchema_ID());
 
-		row.getAsOptionalEnum(I_C_AcctSchema.COLUMNNAME_CostingMethod, CostingMethod.class).ifPresent(costingMethod -> {
-			costingMethodOverrides.add(new CostingMethodOverride(
-					AcctSchemaId.ofRepoId(acctSchema.getC_AcctSchema_ID()),
-					acctSchema.getCostingMethod()));
+		final CostingMethod costingMethod = row.getAsOptionalEnum(I_C_AcctSchema.COLUMNNAME_CostingMethod, CostingMethod.class).orElse(null);
+		if (costingMethod != null)
+		{
+			costingMethodOverrides.add(new CostingMethodOverride(acctSchemaId, acctSchema.getCostingMethod()));
 			acctSchema.setCostingMethod(costingMethod.getCode());
-		});
+		}
 
 		row.getAsOptionalString("C_Currency_ID")
 				.map(CurrencyCode::ofThreeLetterCode)
@@ -113,6 +120,11 @@ public class C_AcctSchema_StepDef
 				});
 
 		InterfaceWrapperHelper.saveRecord(acctSchema);
+
+		if (costingMethod != null)
+		{
+			makeCostingMethodEffective(acctSchemaId, costingMethod);
+		}
 
 		acctSchemaTable.putOrReplace(identifier, acctSchema);
 
@@ -136,8 +148,33 @@ public class C_AcctSchema_StepDef
 			final I_C_AcctSchema acctSchema = InterfaceWrapperHelper.load(override.getAcctSchemaId(), I_C_AcctSchema.class);
 			acctSchema.setCostingMethod(override.getOriginalCostingMethod());
 			InterfaceWrapperHelper.saveRecord(acctSchema);
+
+			makeCostingMethodEffective(override.getAcctSchemaId(), CostingMethod.ofNullableCode(override.getOriginalCostingMethod()));
 		}
 		costingMethodOverrides.clear();
+	}
+
+	/**
+	 * Makes {@code costingMethod} effective for readers, not merely persisted.
+	 * <p>
+	 * The costing method is global state shared by every scenario on the executor, and {@code saveRecord} emits no
+	 * UPDATE when the column already holds the wanted value. Without an UPDATE nothing invalidates
+	 * {@link IAcctSchemaDAO}'s cache, which a preceding scenario can have left holding the costing method IT set:
+	 * that cache is repopulated from the still-uncommitted row while the preceding write is in flight, and the
+	 * write's own invalidation has already fired by then. So reset the cache once the write is committed, and
+	 * assert - a schema that still reads stale fails here, at the step that owns it, instead of silently
+	 * mis-costing a later scenario.
+	 */
+	private void makeCostingMethodEffective(@NonNull final AcctSchemaId acctSchemaId, @Nullable final CostingMethod costingMethod)
+	{
+		CacheMgt.get().reset(I_C_AcctSchema.Table_Name, acctSchemaId.getRepoId());
+
+		if (costingMethod != null)
+		{
+			assertThat(acctSchemaDAO.getById(acctSchemaId).getCosting().getCostingMethod())
+					.as("effective CostingMethod of C_AcctSchema_ID=%s", acctSchemaId.getRepoId())
+					.isEqualTo(costingMethod);
+		}
 	}
 
 	@Value
