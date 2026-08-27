@@ -727,27 +727,6 @@ public interface I_M_ShipperTransportation
 	String COLUMNNAME_M_Delivery_Planning_ID = "M_Delivery_Planning_ID";
 
 	/**
-	 * Set Type.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setM_Delivery_Planning_Type (java.lang.String M_Delivery_Planning_Type);
-
-	/**
-	 * Get Type.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getM_Delivery_Planning_Type();
-
-	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_M_Delivery_Planning_Type = new ModelColumn<>(I_M_ShipperTransportation.class, "M_Delivery_Planning_Type", null);
-	String COLUMNNAME_M_Delivery_Planning_Type = "M_Delivery_Planning_Type";
-
-	/**
 	 * Set Means of Transportation.
 	 *
 	 * <br>Type: Search
@@ -1111,6 +1090,27 @@ public interface I_M_ShipperTransportation
 
 	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_TrackingID = new ModelColumn<>(I_M_ShipperTransportation.class, "TrackingID", null);
 	String COLUMNNAME_TrackingID = "TrackingID";
+
+	/**
+	 * Set Direction.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setTransportDirection (java.lang.String TransportDirection);
+
+	/**
+	 * Get Direction.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getTransportDirection();
+
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_TransportDirection = new ModelColumn<>(I_M_ShipperTransportation.class, "TransportDirection", null);
+	String COLUMNNAME_TransportDirection = "TransportDirection";
 
 	/**
 	 * Get Updated.

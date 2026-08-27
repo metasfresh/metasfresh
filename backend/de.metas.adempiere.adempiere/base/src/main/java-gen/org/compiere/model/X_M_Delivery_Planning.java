@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_Delivery_Planning, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -375283805L;
+	private static final long serialVersionUID = 1573269252L;
 
     /** Standard Constructor */
     public X_M_Delivery_Planning (final Properties ctx, final int M_Delivery_Planning_ID, @Nullable final String trxName)
@@ -330,29 +330,6 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 		return get_ValueAsInt(COLUMNNAME_M_Delivery_Planning_ID);
 	}
 
-	/** 
-	 * M_Delivery_Planning_Type AD_Reference_ID=541689
-	 * Reference name: M_Delivery_Planning_Types
-	 */
-	public static final int M_DELIVERY_PLANNING_TYPE_AD_Reference_ID=541689;
-	/** Incoming = Incoming */
-	public static final String M_DELIVERY_PLANNING_TYPE_Incoming = "Incoming";
-	/** Outgoing = Outgoing */
-	public static final String M_DELIVERY_PLANNING_TYPE_Outgoing = "Outgoing";
-	/** Dropship = Dropship */
-	public static final String M_DELIVERY_PLANNING_TYPE_Dropship = "Dropship";
-	@Override
-	public void setM_Delivery_Planning_Type (final java.lang.String M_Delivery_Planning_Type)
-	{
-		set_Value (COLUMNNAME_M_Delivery_Planning_Type, M_Delivery_Planning_Type);
-	}
-
-	@Override
-	public java.lang.String getM_Delivery_Planning_Type() 
-	{
-		return get_ValueAsString(COLUMNNAME_M_Delivery_Planning_Type);
-	}
-
 	@Override
 	public void setM_InOut_ID (final int M_InOut_ID)
 	{
@@ -648,6 +625,29 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	public java.lang.String getTransportDetails() 
 	{
 		return get_ValueAsString(COLUMNNAME_TransportDetails);
+	}
+
+	/** 
+	 * TransportDirection AD_Reference_ID=541689
+	 * Reference name: TransportDirection
+	 */
+	public static final int TRANSPORTDIRECTION_AD_Reference_ID=541689;
+	/** Incoming = Incoming */
+	public static final String TRANSPORTDIRECTION_Incoming = "Incoming";
+	/** Outgoing = Outgoing */
+	public static final String TRANSPORTDIRECTION_Outgoing = "Outgoing";
+	/** Dropship = Dropship */
+	public static final String TRANSPORTDIRECTION_Dropship = "Dropship";
+	@Override
+	public void setTransportDirection (final java.lang.String TransportDirection)
+	{
+		set_Value (COLUMNNAME_TransportDirection, TransportDirection);
+	}
+
+	@Override
+	public java.lang.String getTransportDirection() 
+	{
+		return get_ValueAsString(COLUMNNAME_TransportDirection);
 	}
 
 	@Override
