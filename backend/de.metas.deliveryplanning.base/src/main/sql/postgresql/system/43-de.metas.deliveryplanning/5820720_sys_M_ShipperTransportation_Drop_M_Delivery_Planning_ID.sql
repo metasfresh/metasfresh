@@ -1,10 +1,8 @@
--- NOT APPLIED YET on purpose (B6 task split): the Java readers/writers of
--- M_ShipperTransportation.M_Delivery_Planning_ID are being reworked in a parallel change; this
--- script must stay unapplied until that lands, then be applied and the model classes (I_M_ShipperTransportation,
--- X_M_ShipperTransportation) regenerated. Every SQL/AD consumer was already re-pointed onto
--- M_Delivery_Planning_Alloc by 5820690 / 5820700 / 5820710; dependency sweep against the live DB
--- (pg_views, pg_proc, AD_Val_Rule.Code, AD_Column.ColumnSQL, EXP_FormatLine by AD_Column_ID) found no
--- other consumer of this column.
+-- Drops M_ShipperTransportation.M_Delivery_Planning_ID, superseded by M_Delivery_Planning_Alloc.
+-- Every SQL/AD consumer was re-pointed onto M_Delivery_Planning_Alloc by 5820690 / 5820700 / 5820710;
+-- dependency sweep against the live DB (pg_views, pg_proc, AD_Val_Rule.Code, AD_Column.ColumnSQL,
+-- EXP_FormatLine by AD_Column_ID) found no other consumer of this column. Applied, and the model
+-- classes (I_M_ShipperTransportation, X_M_ShipperTransportation) regenerated, by 00e448d0841.
 
 -- FK-chain cleanup, anchored on AD_Column_ID=585609 (M_ShipperTransportation.M_Delivery_Planning_ID),
 -- so it also covers any future custom-window AD_Field for this column, not just AD_Field 710779.

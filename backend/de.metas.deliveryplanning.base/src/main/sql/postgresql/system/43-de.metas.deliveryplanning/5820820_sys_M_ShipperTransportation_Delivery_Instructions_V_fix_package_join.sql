@@ -1,10 +1,16 @@
 -- Source DDL: backend/de.metas.adempiere.adempiere/migration/src/main/sql/postgresql/ddl/public/views/M_ShipperTransportation_Delivery_Instructions_V.sql
 --
--- Re-point M_ShipperTransportation_Delivery_Instructions_V off M_ShipperTransportation.M_Delivery_Planning_ID
--- (being dropped) and onto M_Delivery_Planning_Alloc. The view still exposes m_delivery_planning_id --
--- under aggregation it now legitimately returns one row per (instruction, planning) pair instead of
--- one row per instruction. (AD_Tab 546754, which used to filter on this column, was later retired by
--- 5820720 -- an aggregated header has N plannings and no single M_Delivery_Planning_ID to filter on.)
+-- Fixes a cartesian-product bug shipped in 5820700: M_ShippingPackage was joined to the
+-- instruction id only, with no correlation to the M_Delivery_Planning_Alloc row it actually
+-- belongs to. DeliveryPlanningRepository.createAllocation creates one distinct M_ShippingPackage
+-- per allocation, so an instruction with N active allocations has N packages sharing that
+-- instruction id. At N=1 the join degenerates to a harmless 1x1 pairing and looks correct (every
+-- test on this branch uses one planning per instruction); at N active allocations it produces the
+-- full N x N cross product -- every planning paired with every package's quantities, so
+-- plannedloadedquantity/planneddischargequantity are wrong on most of the rows.
+--
+-- Fix: correlate M_ShippingPackage to its own allocation row (M_Delivery_Planning_Alloc) instead
+-- of re-joining it to the instruction independently of M_Delivery_Planning.
 
 DROP VIEW IF EXISTS M_ShipperTransportation_Delivery_Instructions_V$new;
 
@@ -35,10 +41,9 @@ SELECT di.documentno,
        di.ad_org_id,
        di.ad_client_id
 FROM M_ShipperTransportation di
-         JOIN M_ShippingPackage sp
-              ON di.m_shippertransportation_id = sp.m_shippertransportation_id
          JOIN M_Delivery_Planning_Alloc dpa
               ON dpa.m_shippertransportation_id = di.m_shippertransportation_id AND dpa.isactive = 'Y'
+         JOIN M_ShippingPackage sp ON sp.m_shippingpackage_id = dpa.m_shippingpackage_id
          JOIN M_Delivery_Planning dp ON dp.m_delivery_planning_id = dpa.m_delivery_planning_id
 ;
 
