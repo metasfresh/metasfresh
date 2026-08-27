@@ -435,9 +435,18 @@ public class DeliveryPlanningService
 	 * allocated to a completed instruction is never discovered reactively, mid-loop, after an earlier row already
 	 * applied.
 	 * <p>
-	 * Reads bare ids off the filter rather than {@link #getBySelection} on purpose: that helper builds the full
-	 * {@link DeliveryPlanning} domain object, which needs a {@code TransportDirection} every selected row does not
-	 * necessarily carry yet - the close guard itself has no use for it.
+	 * Reads bare ids off the filter rather than {@link #getBySelection} because the close guard has no use for the
+	 * full {@link DeliveryPlanning} domain object - only its id. This is NOT a production data concern:
+	 * {@code M_Delivery_Planning.TransportDirection} is NOT NULL, and {@code M_Delivery_Planning_Close}'s own
+	 * {@code checkPreconditionsApplicable} already runs {@link #getBySelection} over this same filter before
+	 * {@code doIt()}, so the UI path is forced through that helper anyway. The lighter read exists so unit tests
+	 * can drive this service directly, bypassing the precondition gate, with fixtures that carry no direction.
+	 * <p>
+	 * The completed-instruction check is deliberately performed twice - here per selected row, and again per row
+	 * inside the write loop via the {@code AFTER_CHANGE(IsClosed)} interceptor. That is not redundancy to remove:
+	 * this pass fails fast before any write, while the interceptor (inside
+	 * {@code trxManager.runInThreadInheritedTrx}) is what still rolls the whole loop back should state change
+	 * between the two passes. Removing either one reopens the partial-application hole.
 	 */
 	private void validateNoneAllocatedToCompletedInstruction(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
