@@ -88,7 +88,7 @@ public abstract class ExportHUToExternalSystemService extends ExportToExternalSy
 
 	public void enqueueHUExport(@NonNull final ExportHUCandidate exportHUCandidate)
 	{
-		Loggables.withLogger(logger, Level.DEBUG).addLog("exportHUCandidate: {} enqueued to be synced.", exportHUCandidate);
+		Loggables.withLogger(logger, Level.DEBUG).addLog("ExportHUToExternalSystemService - exportHUCandidate: {} enqueued to be synced.", exportHUCandidate);
 
 		syncHuDebouncer.add(exportHUCandidate);
 	}

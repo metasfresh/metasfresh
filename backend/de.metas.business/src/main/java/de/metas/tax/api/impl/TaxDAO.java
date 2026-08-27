@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.tax.api.impl;
 
 import ch.qos.logback.classic.Level;
@@ -81,8 +103,7 @@ public class TaxDAO implements ITaxDAO
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IBPartnerOrgBL bPartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final IFiscalRepresentationBL fiscalRepresentationBL = Services.get(IFiscalRepresentationBL.class);
-	private final IBPartnerBL bpartnerBL  = Services.get(IBPartnerBL.class);
-
+	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 
 	@Override
 	public Tax getTaxById(final int taxRepoId)
@@ -327,18 +348,15 @@ public class TaxDAO implements ITaxDAO
 				}
 
 				final CountryId warehouseCountryId = warehouseBL.getCountryId(warehouseId);
-				if (warehouseCountryId != null)
-				{
-					loggable.addLog("C_Country_ID={} based on warehouse", warehouseCountryId.getRepoId());
-					countryId = warehouseCountryId;
-				}
+				loggable.addLog("C_Country_ID={} based on warehouse", warehouseCountryId.getRepoId());
+				countryId = warehouseCountryId;
 			}
 			else
 			{
 				loggable.addLog("Effective AD_Org_ID={} (or any)", orgId.getRepoId());
 				queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY);
 				countryId = bPartnerOrgBL.getOrgCountryId(orgId);
-				loggable.addLog("C_Country_ID={} based on AD_Org_ID={}", countryId.getRepoId(), orgId.getRepoId());
+				loggable.addLog("C_Country_ID={} based on AD_Org_ID={}", CountryId.toRepoId(countryId), orgId.getRepoId());
 			}
 			if (countryId == null)
 			{
@@ -410,9 +428,9 @@ public class TaxDAO implements ITaxDAO
 		// which is exactly today's presence-only behaviour.
 		final boolean bPartnerHasTaxCertificate = bpVATaxID != null
 				&& bpartnerBL.getVATaxIDStatusCode(bpartnerLocationId)
-						.flatMap(VATaxIDStatus::optionalOfNullableCode)
-						.map(VATaxIDStatus::hasTaxCertificate)
-						.orElse(true);
+				.flatMap(VATaxIDStatus::optionalOfNullableCode)
+				.map(VATaxIDStatus::hasTaxCertificate)
+				.orElse(true);
 		loggable.addLog("BPartner has tax certificate={}", bPartnerHasTaxCertificate);
 		queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_RequiresTaxCertificate, StringUtils.ofBoolean(bPartnerHasTaxCertificate), null);
 
@@ -420,19 +438,8 @@ public class TaxDAO implements ITaxDAO
 		loggable.addLog("BPartner is a small business={}", bpartnerIsSmallbusiness);
 		queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_IsSmallbusiness, StringUtils.ofBoolean(bpartnerIsSmallbusiness), null);
 
-		// if (euOneStopShop && WITHIN_COUNTRY_AREA.equals(typeOfDestCountry) && !bPartnerHasTaxCertificate)
-		// {
-		// 	loggable.addLog("AD_Org_ID={} has IsEUOneStopShop=Y, typeOfDestCountry=WITHIN_COUNTRY_AREA and C_BPartner_ID={} has no tax certificate; -> filter by To_Country_ID={}",
-		// 					orgId.getRepoId(), destCountryId.getRepoId(), bpartnerId.getRepoId());
-		// 	queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_To_Country_ID, destCountryId);
-		// }
-		// else
-		// {
-		// 	loggable.addLog("AD_Org_ID={} has IsEUOneStopShop=N OR typeOfDestCountry!=WITHIN_COUNTRY_AREA OR C_BPartner_ID={} has a tax certificate; -> filter by To_Country_ID={} or NULL",
-		// 					orgId.getRepoId(), destCountryId.getRepoId(), bpartnerId.getRepoId());
 		loggable.addLog("Filter by To_Country_ID={} or NULL", destCountryId.getRepoId());
 		queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_To_Country_ID, destCountryId, null);
-		//}
 
 		loggable.addLog("Type of dest country: {} or NULL", typeOfDestCountry);
 		if (typeOfDestCountry != null)
