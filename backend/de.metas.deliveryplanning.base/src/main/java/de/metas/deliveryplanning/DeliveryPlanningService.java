@@ -278,11 +278,24 @@ public class DeliveryPlanningService
 			throw new AdempiereException(MSG_M_Delivery_Planning_AtLeastOnePerOrderLine);
 		}
 
+		assertNotCurrentlyAllocated(deliveryPlanning);
+	}
+
+	/**
+	 * Refuses to delete a planning that is currently allocated to a delivery instruction ({@code ReleaseNo} set) -
+	 * unconditionally, regardless of who is deleting it. The allocation's shipping package is mandatory-FKed
+	 * to a still-live instruction, so silently letting the delete through (and cascading the active allocation
+	 * away with it, per the {@code ON DELETE CASCADE} on {@code M_Delivery_Planning_Alloc}) would strand that
+	 * instruction's cargo with no record of ever having been there - unlike a RETIRED allocation, which the
+	 * cascade may safely take along because the history it records is only ever consulted while its planning
+	 * still exists.
+	 */
+	public void assertNotCurrentlyAllocated(final I_M_Delivery_Planning deliveryPlanning)
+	{
 		if (!Check.isBlank(deliveryPlanning.getReleaseNo()))
 		{
 			throw new AdempiereException(MSG_M_Delivery_Planning_AlreadyReferenced);
 		}
-
 	}
 
 	private DeliveryPlanningCreateRequest createRequest(@NonNull final DeliveryPlanningId deliveryPlanningId, @NonNull final Quantity plannedLoadedQty)

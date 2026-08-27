@@ -11,11 +11,15 @@
 -- M_Delivery_Planning_Alloc row pointing at a row that no longer exists -- NO ACTION refuses the
 -- parent delete outright with a raw FK-violation instead of the operation succeeding.
 --
--- Fix: ON DELETE CASCADE on all three FKs. A retired allocation's only reason to exist is to record
+-- ON DELETE CASCADE on all three FKs. A retired allocation's only reason to exist is to record
 -- history for a planning / instruction / package that still exists; once any one of those three is
 -- itself physically deleted, there is nothing left for the allocation row to be a history OF, so
 -- cascading it away costs the re-booking history nothing it was built to keep (void/close/remove/
 -- move never delete the parent row, so this path is never taken for the history's own scenarios).
+-- An ACTIVE allocation is a different matter - deleting its planning must still be refused rather
+-- than silently cascaded away, which this migration alone cannot do (a plain FK cascade cannot tell
+-- IsActive='Y' apart from 'N'). That refusal is a separate, unconditional application-level guard on
+-- every M_Delivery_Planning delete, not part of this schema change.
 ALTER TABLE M_Delivery_Planning_Alloc DROP CONSTRAINT IF EXISTS MDeliveryPlanning_MDeliveryPlanningAlloc;
 ALTER TABLE M_Delivery_Planning_Alloc
     ADD CONSTRAINT MDeliveryPlanning_MDeliveryPlanningAlloc

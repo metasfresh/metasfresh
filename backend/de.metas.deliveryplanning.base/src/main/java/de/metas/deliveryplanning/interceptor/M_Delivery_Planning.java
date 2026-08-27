@@ -45,9 +45,19 @@ public class M_Delivery_Planning
 		this.deliveryPlanningService = deliveryPlanningService;
 	}
 
+	/**
+	 * The currently-allocated guard runs for EVERY delete, UI-triggered or not: {@code M_Delivery_Planning_Alloc}'s
+	 * FKs cascade on delete (they must, so a genuinely retired allocation doesn't block deleting the planning it
+	 * once named), so nothing downstream of this interceptor stops a delete of an ACTIVELY allocated planning from
+	 * silently taking its live allocation and shipping package down with it. The rest of {@code validateDeletion}
+	 * (AC14's "at least one planning per order line") stays UI-only - it is a single-record safeguard against an
+	 * operator error, not a rule a schedule-driven cleanup of every planning on that schedule should have to obey.
+	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void onDelete(@NonNull final I_M_Delivery_Planning deliveryPlanning)
 	{
+		deliveryPlanningService.assertNotCurrentlyAllocated(deliveryPlanning);
+
 		if (isUIAction(deliveryPlanning))
 		{
 			deliveryPlanningService.validateDeletion(deliveryPlanning);
