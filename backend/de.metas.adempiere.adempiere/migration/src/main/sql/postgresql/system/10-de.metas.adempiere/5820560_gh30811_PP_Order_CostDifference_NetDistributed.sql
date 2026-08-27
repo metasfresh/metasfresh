@@ -1,15 +1,10 @@
--- Nets already-distributed amounts out of the virtual column PP_Order.CostDifference (AD_Column 592970).
+-- Nets already-discharged amounts out of PP_Order.CostDifference (AD_Column 592970), so the cost-imbalance
+-- monitor stops listing orders a controller has already dealt with.
 --
--- The column shows the order's WIP cost imbalance as received-minus-issued. Once a controller discharges
--- that imbalance, the order must stop reporting it, otherwise the cost-imbalance monitor keeps listing
--- orders that have already been dealt with.
---
--- The discharged amount is the MAIN leg of the cost details of the order's cost-difference-distribution
--- collectors, which carries issued-minus-received - the exact negation of what the first two summands
--- produce, so a fully discharged order reads 0. Reversing such a collector stores the negated legs under
--- the same collector type, so the sum cancels itself and the column reports the gross imbalance again.
---
--- The third summand contributes nothing until cost-difference-distribution collectors exist.
+-- The discharged amount is the MAIN cost detail of the order's cost-difference-distribution collectors
+-- (type 170), carrying issued-minus-received, so a fully discharged order reads 0. Reversing such a
+-- collector stores the negated legs under the same type, so the sum cancels and the gross imbalance
+-- is reported again.
 
 UPDATE AD_Column SET ColumnSQL=
 '(coalesce((select sum(oc.postcalculationamt)

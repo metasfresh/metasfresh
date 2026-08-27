@@ -176,7 +176,7 @@ public class PP_Order_StepDef
 	/**
 	 * @cucumber.stepdef
 	 * @cucumber.columns
-	 *   <b>Identifier</b> — (optional) alias of an already-created PP_Order; when given, the order is looked up directly instead of by the criteria columns below<br>
+	 *   <b>Identifier</b> — (optional) alias of an already-created PP_Order; looked up directly instead of by the criteria columns below<br>
 	 *   <b>M_Product_ID</b> — (optional, identifier-ref) main product<br>
 	 *   <b>PP_Product_BOM_ID</b> — (optional, identifier-ref) BOM used by the order<br>
 	 *   <b>PP_Product_Planning_ID</b> — (optional, identifier-ref) product planning record<br>
@@ -188,7 +188,7 @@ public class PP_Order_StepDef
 	 *   <b>M_AttributeSetInstance_ID</b> — (optional, identifier-ref) expected ASI, compared by attributes-key<br>
 	 *   <b>M_HU_PI_Item_Product_ID</b> — (optional, identifier-ref) expected packing item-product<br>
 	 *   <b>DocStatus</b> — (optional) expected document status<br>
-	 *   <b>CostDifference</b> — (optional) expected value of the virtual PP_Order.CostDifference column: received (MR/CO/BY) minus issued (MI) over the order's PP_Order_Cost rows<br>
+	 *   <b>CostDifference</b> — (optional) expected received (MR/CO/BY) minus issued (MI) over the order's PP_Order_Cost rows<br>
 	 * @cucumber.depends StepDefData: PP_Order_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -196,8 +196,7 @@ public class PP_Order_StepDef
 	 *   | Identifier | CostDifference |
 	 *   | ppOrder    | 15             |
 	 * </pre>
-	 * @see de.metas.cucumber.stepdefs.costing.PP_Order_Cost_StepDef for asserting the individual PP_Order_Cost rows that CostDifference aggregates
-	 * @see PP_Cost_Collector_StepDef for asserting the cost collectors that produce those PP_Order_Cost rows
+	 * @see de.metas.cucumber.stepdefs.costing.PP_Order_Cost_StepDef for the individual rows CostDifference aggregates
 	 */
 	@And("^after not more than (.*)s, PP_Orders are found$")
 	public void validatePP_Order(

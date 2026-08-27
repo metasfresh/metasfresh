@@ -1,15 +1,10 @@
--- New read-only monitor window over PP_Order (table 53027): lists manufacturing orders
--- that are completed but not closed (DocStatus='CO'), surfacing the CostDifference
--- virtual column (AD_Column 592970) so a controller can review the WIP cost imbalance
--- before running the later distribution step.
--- IDs allocated from idserver.metas.de:
---   AD_Element 585116 (window caption), 585117 (tab caption)
---   AD_Window  542175
---   AD_Tab     549352
---   AD_Field   781749..781761 (13 fields)
---   AD_UI_Section 547860, AD_UI_Column 549604/549605, AD_UI_ElementGroup 555514..555517
---   AD_UI_Element 652680..652692 (13, same order as the fields)
---   AD_Menu    542348
+-- Read-only monitor window over PP_Order (table 53027): completed-but-not-closed orders
+-- (DocStatus='CO') with the CostDifference virtual column (AD_Column 592970), so a controller can
+-- review the WIP cost imbalance before running the distribution step.
+--
+-- IDs allocated from idserver.metas.de: AD_Element 585116/585117, AD_Window 542175, AD_Tab 549352,
+--   AD_Field 781749..781761, AD_UI_Section 547860, AD_UI_Column 549604/549605,
+--   AD_UI_ElementGroup 555514..555517, AD_UI_Element 652680..652692 (field order), AD_Menu 542348
 
 -- 1) Window caption element: DE base, EN override
 INSERT INTO AD_Element (AD_Element_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, EntityType, Name, PrintName, Description)
@@ -103,11 +98,9 @@ DELETE FROM AD_Element_Link WHERE AD_Tab_ID=549352
 select AD_Element_Link_Create_Missing_Tab(549352)
 ;
 
--- 5) AD_Field rows, reusing the existing column elements (no new AD_Elements
---    for standard PP_Order columns). Grid order matches the review workflow;
---    C_UOM_ID is added next to the quantities for UOM adjacency.
+-- 5) AD_Field rows, reusing the existing column elements.
 
--- 5.1 IsActive (flags group, form only, not displayed in grid)
+-- 5.1 IsActive
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,Updated,UpdatedBy)
 VALUES (0,53649,781749 /*From ID Server*/,0,549352,TO_TIMESTAMP('2026-07-20 14:00:50','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Y','N','N','N','N','N','N','Aktiv',10,0,TO_TIMESTAMP('2026-07-20 14:00:50','YYYY-MM-DD HH24:MI:SS'),100)
 ;
@@ -123,7 +116,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=781749
 select AD_Element_Link_Create_Missing_Field(781749)
 ;
 
--- 5.2 DocumentNo (primary group, first grid column)
+-- 5.2 DocumentNo
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,Updated,UpdatedBy)
 VALUES (0,53621,781750 /*From ID Server*/,0,549352,TO_TIMESTAMP('2026-07-20 14:00:55','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Y','Y','N','N','N','N','N','Nr.',10,10,TO_TIMESTAMP('2026-07-20 14:00:55','YYYY-MM-DD HH24:MI:SS'),100)
 ;
@@ -139,7 +132,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=781750
 select AD_Element_Link_Create_Missing_Field(781750)
 ;
 
--- 5.3 C_DocType_ID (primary group)
+-- 5.3 C_DocType_ID
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,Updated,UpdatedBy)
 VALUES (0,53629,781751 /*From ID Server*/,0,549352,TO_TIMESTAMP('2026-07-20 14:01:00','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Y','Y','N','N','N','N','N','Belegart',20,20,TO_TIMESTAMP('2026-07-20 14:01:00','YYYY-MM-DD HH24:MI:SS'),100)
 ;
@@ -155,7 +148,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=781751
 select AD_Element_Link_Create_Missing_Field(781751)
 ;
 
--- 5.4 M_Product_ID (primary group)
+-- 5.4 M_Product_ID
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,Updated,UpdatedBy)
 VALUES (0,53623,781752 /*From ID Server*/,0,549352,TO_TIMESTAMP('2026-07-20 14:01:05','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Y','Y','N','N','N','N','N','Produkt',30,30,TO_TIMESTAMP('2026-07-20 14:01:05','YYYY-MM-DD HH24:MI:SS'),100)
 ;
@@ -171,7 +164,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=781752
 select AD_Element_Link_Create_Missing_Field(781752)
 ;
 
--- 5.5 CostDifference (primary group, prominent; the key column being surfaced)
+-- 5.5 CostDifference
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,Updated,UpdatedBy)
 VALUES (0,592970,781753 /*From ID Server*/,0,549352,TO_TIMESTAMP('2026-07-20 14:01:10','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Y','Y','N','N','N','N','N','Kostendifferenz',40,100,TO_TIMESTAMP('2026-07-20 14:01:10','YYYY-MM-DD HH24:MI:SS'),100)
 ;
@@ -187,7 +180,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=781753
 select AD_Element_Link_Create_Missing_Field(781753)
 ;
 
--- 5.6 QtyOrdered (secondary group)
+-- 5.6 QtyOrdered
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,Updated,UpdatedBy)
 VALUES (0,53670,781754 /*From ID Server*/,0,549352,TO_TIMESTAMP('2026-07-20 14:01:15','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Y','Y','N','N','N','N','N','Bestellt/ Beauftragt',10,40,TO_TIMESTAMP('2026-07-20 14:01:15','YYYY-MM-DD HH24:MI:SS'),100)
 ;
@@ -203,7 +196,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=781754
 select AD_Element_Link_Create_Missing_Field(781754)
 ;
 
--- 5.7 QtyDelivered (secondary group)
+-- 5.7 QtyDelivered
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,Updated,UpdatedBy)
 VALUES (0,53668,781755 /*From ID Server*/,0,549352,TO_TIMESTAMP('2026-07-20 14:01:20','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Y','Y','N','N','N','N','N','Gelieferte Menge',20,50,TO_TIMESTAMP('2026-07-20 14:01:20','YYYY-MM-DD HH24:MI:SS'),100)
 ;
@@ -219,7 +212,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=781755
 select AD_Element_Link_Create_Missing_Field(781755)
 ;
 
--- 5.8 C_UOM_ID (secondary group; adjacent to the quantities above for UOM display)
+-- 5.8 C_UOM_ID
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,Updated,UpdatedBy)
 VALUES (0,53632,781756 /*From ID Server*/,0,549352,TO_TIMESTAMP('2026-07-20 14:01:25','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Y','Y','N','N','N','N','N','Maßeinheit',30,60,TO_TIMESTAMP('2026-07-20 14:01:25','YYYY-MM-DD HH24:MI:SS'),100)
 ;
@@ -235,7 +228,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=781756
 select AD_Element_Link_Create_Missing_Field(781756)
 ;
 
--- 5.9 DatePromised (secondary group)
+-- 5.9 DatePromised
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,Updated,UpdatedBy)
 VALUES (0,53641,781757 /*From ID Server*/,0,549352,TO_TIMESTAMP('2026-07-20 14:01:30','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Y','Y','N','N','N','N','N','Zugesagter Termin',40,70,TO_TIMESTAMP('2026-07-20 14:01:30','YYYY-MM-DD HH24:MI:SS'),100)
 ;
@@ -251,7 +244,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=781757
 select AD_Element_Link_Create_Missing_Field(781757)
 ;
 
--- 5.10 DateFinishSchedule (secondary group; drives the tab's default sort, most recent first)
+-- 5.10 DateFinishSchedule (drives the tab's default sort)
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,Updated,UpdatedBy)
 VALUES (0,53639,781758 /*From ID Server*/,0,549352,TO_TIMESTAMP('2026-07-20 14:01:35','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Y','Y','N','N','N','N','N','Datum Fertigstellung geplant',50,80,-1,TO_TIMESTAMP('2026-07-20 14:01:35','YYYY-MM-DD HH24:MI:SS'),100)
 ;
@@ -267,7 +260,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=781758
 select AD_Element_Link_Create_Missing_Field(781758)
 ;
 
--- 5.11 M_Warehouse_ID (secondary group)
+-- 5.11 M_Warehouse_ID
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,Updated,UpdatedBy)
 VALUES (0,53624,781759 /*From ID Server*/,0,549352,TO_TIMESTAMP('2026-07-20 14:01:40','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Y','Y','N','N','N','N','N','Lager',60,90,TO_TIMESTAMP('2026-07-20 14:01:40','YYYY-MM-DD HH24:MI:SS'),100)
 ;
@@ -283,7 +276,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=781759
 select AD_Element_Link_Create_Missing_Field(781759)
 ;
 
--- 5.12 DocStatus (flags group; shown as a column even though the tab's WhereClause already scopes to CO)
+-- 5.12 DocStatus (kept as a grid column although the tab is already scoped to CO)
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,Updated,UpdatedBy)
 VALUES (0,53646,781760 /*From ID Server*/,0,549352,TO_TIMESTAMP('2026-07-20 14:01:45','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Y','Y','N','N','N','N','N','Belegstatus',20,110,TO_TIMESTAMP('2026-07-20 14:01:45','YYYY-MM-DD HH24:MI:SS'),100)
 ;
@@ -299,7 +292,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=781760
 select AD_Element_Link_Create_Missing_Field(781760)
 ;
 
--- 5.13 AD_Org_ID (org group; last field, last grid column per the org-last rule)
+-- 5.13 AD_Org_ID (last, per the org-last layout rule)
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,Updated,UpdatedBy)
 VALUES (0,53683,781761 /*From ID Server*/,0,549352,TO_TIMESTAMP('2026-07-20 14:01:50','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Y','Y','N','N','N','N','N','Sektion',10,120,TO_TIMESTAMP('2026-07-20 14:01:50','YYYY-MM-DD HH24:MI:SS'),100)
 ;
@@ -351,7 +344,7 @@ INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_Ele
 VALUES (0,0,549605,555517 /*From ID Server*/,TO_TIMESTAMP('2026-07-20 14:02:25','YYYY-MM-DD HH24:MI:SS'),100,'Y','default',20,NULL,TO_TIMESTAMP('2026-07-20 14:02:25','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
--- 7) AD_UI_Element rows (one per field). All are grid-displayed except IsActive.
+-- 7) AD_UI_Element rows, one per field; all grid-displayed except IsActive.
 
 -- IsActive
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy)
