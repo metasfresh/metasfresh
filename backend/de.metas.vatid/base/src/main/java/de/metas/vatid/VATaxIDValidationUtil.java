@@ -48,11 +48,29 @@ public final class VATaxIDValidationUtil
 	 */
 	public static void validate(@Nullable final VATIdentifier vatId)
 	{
-		final String vatIdString = VATIdentifier.toString(vatId);
-		if (!EUVatIdValidator.isValid(vatIdString))
+		// Delegates to isFormatValid so the throwing and non-throwing forms share ONE predicate by
+		// construction — the offline check in VATaxIDCheckService and this save-time gate must never
+		// diverge on what "malformed" means. The extra VATIdentifier.toString on the throw path is a
+		// negligible cost worth that guarantee; do not "optimise" it by inlining the check here.
+		if (!isFormatValid(vatId))
 		{
 			// AdempiereException(AdMessageKey, …) is already flagged userValidationError=true — no .markAsUserValidationError() needed.
-			throw new AdempiereException(MSG_VATaxID_Invalid_Format, vatIdString);
+			throw new AdempiereException(MSG_VATaxID_Invalid_Format, VATIdentifier.toString(vatId));
 		}
+	}
+
+	/**
+	 * The non-throwing counterpart of {@link #validate(VATIdentifier)}, for a caller that must RECORD a
+	 * verdict for a malformed value rather than abort on it. Same rule set: null, and values whose prefix is
+	 * outside the supported country set... see {@link EUVatIdValidator#isValid(String)} for the exact
+	 * acceptance rule (null / too-short accepted; a supported prefix must pass its structure and check digit;
+	 * an unsupported prefix is rejected). The caller is responsible for checking whether the format check
+	 * should run at all.
+	 *
+	 * @return {@code true} if {@code vatId} passes the offline format check.
+	 */
+	public static boolean isFormatValid(@Nullable final VATIdentifier vatId)
+	{
+		return EUVatIdValidator.isValid(VATIdentifier.toString(vatId));
 	}
 }

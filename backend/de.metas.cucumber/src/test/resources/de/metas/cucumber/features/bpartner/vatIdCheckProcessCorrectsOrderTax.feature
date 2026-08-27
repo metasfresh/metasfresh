@@ -2,11 +2,16 @@
 @allure.label.epic:E2200_Automatic_Tax_Determination
 @allure.label.feature:F66040_Business_Partner_VAT_ID_Validation
 @ghActions:run_on_executor7
-Feature: The VAT-ID check process corrects order-line tax on a status change
-  Where the check process finds that a Business Partner's VAT-ID status actually changed, it refreshes
+Feature: A VAT-ID check corrects order-line tax on a status change
+  Where a VAT-ID check writes a status that differs from the one the record already held, it refreshes
   C_OrderLine.C_Tax_ID on that partner's orders that are not yet completed. A completed order is never
   touched, even after its partner's VAT-ID is corrected — rewriting a finished document's tax would
   rewrite history.
+
+  Both ways into a check are covered, because both converge on the same service: the
+  C_BPartner_VATaxID_Check process, and the check a save schedules automatically. The save-triggered one
+  is the everyday case — a user correcting a wrong VAT-ID on a partner that has an open order — and it
+  must not need the process to be run afterwards to put the tax right.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -135,5 +140,87 @@ Feature: The VAT-ID check process corrects order-line tax on a status change
     And validate C_OrderLine:
       | Identifier    | OPT.C_Tax_ID.Identifier |
       | lineOpen      | taxCorrectCert0         |
+      | lineCompleted | taxCorrectStandard19    |
+      | lineClosed    | taxCorrectStandard19    |
+
+  @Id:S31060_TC10
+  Scenario: Correcting the VAT-ID and saving refreshes an open order's tax without running the check process
+    # The everyday sequence the feature owner hit, and the one TC9 above cannot show: nobody runs the
+    # C_BPartner_VATaxID_Check process after fixing a VAT-ID -- they just save. The check the save
+    # schedules is therefore the one that has to put the open order's tax right, on its own.
+    #
+    # This scenario deliberately never runs the process. It also cannot be replaced by TC9 with the
+    # process step deleted: TC9 suppresses the save-triggered check (IsVIESCheckEnabled=false) around its
+    # correction precisely so the process is left something to discover, which is the opposite of what is
+    # under test here.
+    Given no VATaxID_CheckLog records exist for VATaxID 'FR96552100554'
+    And no VATaxID_CheckLog records exist for VATaxID 'FR44732829320'
+    And metasfresh contains VATaxID_Config:
+      | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
+      | true                 | true               | 30               | ServiceUnavailable   |
+    And the VAT-ID online checker is stubbed to answer:
+      | VATaxID       | VATaxIDStatus |
+      | FR96552100554 | Invalid       |
+
+    # No Value/Name, for the reason spelled out in TC9 above: a partner reused across local reruns would
+    # drag earlier runs' still-open orders into refreshOrderLinesTaxForBPartner.
+    And metasfresh contains C_BPartners without locations:
+      | Identifier | M_PricingSystem_ID.Identifier | IsCustomer | VATaxID       |
+      | bp_save    | ps_1                          | Y          | FR96552100554 |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier | GLN           | C_BPartner_ID.Identifier | IsShipToDefault | IsBillToDefault | OPT.C_Location_ID.Identifier |
+      | bpl_save   | 0123456789058 | bp_save                  | Y               | Y               | location_france              |
+
+    # Wait for the save-triggered check instead of racing it -- same wait, same reason, as TC9.
+    Then the VAT-ID online checker was called for VATaxID 'FR96552100554'
+    And validate C_BPartner VAT-ID status:
+      | C_BPartner_ID | VATaxIDStatus | HasTaxCertificate |
+      | bp_save       | Invalid       | false             |
+
+    And metasfresh contains C_Orders:
+      | Identifier     | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier |
+      | orderOpen      | true    | bp_save                  | 2026-08-13  | bpl_save                              | warehouseStd                  |
+      | orderCompleted | true    | bp_save                  | 2026-08-13  | bpl_save                              | warehouseStd                  |
+      | orderClosed    | true    | bp_save                  | 2026-08-13  | bpl_save                              | warehouseStd                  |
+    And metasfresh contains C_OrderLines:
+      | Identifier    | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | lineOpen      | orderOpen             | product                 | 1          |
+      | lineCompleted | orderCompleted        | product                 | 1          |
+      | lineClosed    | orderClosed           | product                 | 1          |
+    And validate C_OrderLine:
+      | Identifier    | OPT.C_Tax_ID.Identifier |
+      | lineOpen      | taxCorrectStandard19    |
+      | lineCompleted | taxCorrectStandard19    |
+      | lineClosed    | taxCorrectStandard19    |
+
+    When the order identified by orderCompleted is completed
+    And the order identified by orderClosed is completed
+    And the order identified by orderClosed is closed
+
+    # The correction, with the online check left ON: the save schedules the check, and that check is the
+    # only thing that runs from here on.
+    And the VAT-ID online checker is stubbed to answer:
+      | VATaxID       | VATaxIDStatus |
+      | FR44732829320 | Valid         |
+    And update C_BPartner:
+      | Identifier | VATaxID       |
+      | bp_save    | FR44732829320 |
+
+    Then the VAT-ID online checker was called for VATaxID 'FR44732829320'
+
+    # Polled, and asserted BEFORE the partner's own status: the status write and this refresh share one
+    # transaction, so the refreshed tax becoming visible is the signal that the whole unit has committed.
+    # Reading the status first would race that commit -- the "was called" step above only waits for the
+    # VATaxID_CheckLog row, which is written earlier and separately.
+    And after not more than 60s, validate C_OrderLine:
+      | Identifier | OPT.C_Tax_ID.Identifier |
+      | lineOpen   | taxCorrectCert0         |
+
+    And validate C_BPartner VAT-ID status:
+      | C_BPartner_ID | VATaxIDStatus | HasTaxCertificate |
+      | bp_save       | Valid         | true              |
+
+    And validate C_OrderLine:
+      | Identifier    | OPT.C_Tax_ID.Identifier |
       | lineCompleted | taxCorrectStandard19    |
       | lineClosed    | taxCorrectStandard19    |
