@@ -287,7 +287,10 @@ public class M_InOut_StepDef
 	 * <b>QuantityType</b> — (required) "D" (delivery), "O" (ordered), etc.<br>
 	 * <b>IsCompleteShipments</b> — (required) true/false — auto-complete the generated shipment<br>
 	 * <b>IsShipmentDateToday</b> — (required) true/false — use today as shipment date<br>
-	 * <b>QtyToDeliver_Override</b> — (optional) override quantity to deliver<br>
+	 * <b>QtyToDeliver_Override_For_M_ShipmentSchedule_ID</b> — (optional) override quantity to deliver.
+	 * The column name really is that long: it is the workpackage parameter
+	 * {@link ShipmentScheduleWorkPackageParameters#PARAM_QtyToDeliver_Override}, and a cell headed with the
+	 * short name {@code QtyToDeliver_Override} is silently ignored — the full quantity ships instead.<br>
 	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData
 	 * @cucumber.example <pre>
 	 * And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
@@ -344,7 +347,10 @@ public class M_InOut_StepDef
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns <b>M_ShipmentSchedule_ID</b> — (required, identifier-ref) shipment schedule alias<br>
-	 * <b>QtyToDeliver_Override</b> — (optional) override quantity to deliver<br>
+	 * <b>QtyToDeliver_Override_For_M_ShipmentSchedule_ID</b> — (optional) override quantity to deliver.
+	 * The column name really is that long: it is the workpackage parameter
+	 * {@link ShipmentScheduleWorkPackageParameters#PARAM_QtyToDeliver_Override}, and a cell headed with the
+	 * short name {@code QtyToDeliver_Override} is silently ignored — the full quantity ships instead.<br>
 	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData
 	 * @cucumber.example <pre>
 	 * And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
