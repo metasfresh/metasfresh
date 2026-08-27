@@ -20,7 +20,11 @@
 --
 -- Row mirrors M_ReceiptSchedule_Alloc's AD_Sequence row field-for-field (the table 5820400's
 -- own header cites as this table's design model) EXCEPT AD_Sequence_ID, Name, Description,
--- CurrentNext and the timestamps -- read live, 2026-08-27:
+-- CurrentNext, the timestamps, and UpdatedBy -- read live, 2026-08-27. UpdatedBy diverges
+-- deliberately: the template row carries 0 (it was last touched in 2015 by a process that
+-- stamped the system user), while every AD-dictionary insert on this branch uses 100, which is
+-- also what 5820400's own AD_Table/AD_Element rows use. Following the branch's convention is
+-- right here; copying a decade-old row's audit column would not be:
 --   SELECT * FROM AD_Sequence WHERE Name='M_ReceiptSchedule_Alloc';
 --   -> AD_Client_ID=0, AD_Org_ID=0, IsActive='Y', IsAutoSequence='Y', IncrementNo=1,
 --      StartNo=1000000, CurrentNextSys=50000, IsAudited='N', IsTableID='Y', VFormat/Prefix/
@@ -53,7 +57,9 @@
 --
 -- StartNo stays 1000000 (the table's designed start, per the template), not the data position.
 --
--- Idempotence: NOT EXISTS on the name, matching the AD_Sequence.Name unique constraint anyway,
+-- Idempotence: NOT EXISTS on the name. The constraint it leans on is the PARTIAL unique index
+-- ad_sequence_tableidname UNIQUE (upper(Name)) WHERE IsTableID='Y' -- which covers this row --
+-- and NOT ad_sequence_name, which is UNIQUE (AD_Client_ID, AD_Org_ID, Name). Either way,
 -- so a re-apply can never duplicate. Defense-in-depth: the migration tool tracks this script in
 -- AD_MigrationScript and runs it at most once per DB.
 INSERT INTO AD_Sequence (

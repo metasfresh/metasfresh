@@ -55,26 +55,42 @@
 -- pre-check below proves this join is well-defined (exactly one active package per planning's
 -- order line) BEFORE the insert runs, rather than assuming it.
 --
--- AMENDED, and the order line alone is NOT enough. Review found that the order-line correlation
--- does not survive a VOIDED donor instruction: voiding nulls the planning's
--- M_ShipperTransportation_ID (interceptor/M_ShipperTransportation.unlinkDeliveryPlannings,
--- @DocValidate AFTER_VOID) but nothing deactivates the package it claimed. That removes the
--- package's rightful claimant from the pre-checks' population -- both of them filter
--- st.DocStatus <> 'VO' -- so a DIFFERENT planning sharing the same order line on a LIVE
--- instruction resolved to that orphaned package, passed both guards, and satisfied Package_UQ
--- (which keys on the package id, not on the pairing). No error; the wrong instruction's
--- allocation simply pointed at another instruction's package.
+-- AMENDED: the join carries a SECOND conjunct, sp.M_ShipperTransportation_ID =
+-- st.M_ShipperTransportation_ID, added ON TOP of the order-line correlation (not instead of it
+-- -- the instruction alone is the unsafe form rejected above). Both pre-checks carry it too, so
+-- a planning whose only order-line match belongs to another instruction trips the first guard
+-- (zero packages) and aborts rather than being silently mis-paired.
 --
--- So the join carries a SECOND conjunct: sp.M_ShipperTransportation_ID =
--- st.M_ShipperTransportation_ID. It is added ON TOP of the order-line correlation, not instead
--- of it -- the instruction alone is the unsafe form this section already rejected above. Both
--- pre-checks carry the same conjunct, so a planning whose only order-line match belongs to
--- another instruction now trips the first guard (zero packages) and aborts, instead of being
--- silently mis-paired.
+-- WHY, stated honestly, because an earlier version of this comment got it wrong. The claim was
+-- that voiding leaves the package active and claimable, so a planning on a live instruction
+-- could adopt it. That is NOT what the code does, and the correction is worth recording so the
+-- next reader does not re-derive the wrong reason:
+--
+--   * On VOID, the interceptor's unlinkDeliveryPlannings -> deactivateAllocations sets the
+--     allocation AND its M_ShippingPackage to IsActive='N'. Both pre-checks and the INSERT
+--     filter sp.IsActive='Y', so a voided instruction's package is already excluded.
+--   * On REMOVE / MOVE, deleteAllocations DELETES the allocation and its package outright.
+--     Nothing survives to be claimed.
+--   * unlinkDeliveryPlannings additionally clears C_OrderLine_ID on the instruction's packages,
+--     inside its per-planning loop -- so even an active leftover would stop matching any
+--     planning's order line.
+--
+-- So NO supported code path is known to produce an active, order-line-bearing package whose
+-- instruction has no planning pointing at it. Measured on this stack: 0 such rows (against 8
+-- active DI packages that do carry an order line).
+--
+-- The conjunct is kept anyway, and this is the concrete scenario it is for -- not a
+-- hypothetical. This script runs ONCE against data whose whole history predates the allocation
+-- table: every package on the customer instance was created by the old 1:1 flow, under code
+-- that has since changed, including a void path that did not deactivate allocations because
+-- there were none. This local dataset (8 instructions, all consistent) cannot speak for that
+-- history. The conjunct makes the pairing correct by construction instead of resting on an
+-- argument about paths that no longer exist, and it costs one AND per join.
 --
 -- ===========================================================================================
--- Field-by-field semantics -- mirrored from DeliveryPlanningRepository.createAllocation()
--- (backend/de.metas.deliveryplanning.base/.../DeliveryPlanningRepository.java:567-586)
+-- Field-by-field semantics -- mirrored from DeliveryPlanningRepository.createAllocation(), the
+-- one writer of these rows outside this script. Described by behaviour rather than pinned to a
+-- file:line, because a migration script is immutable once merged and a line reference rots.
 -- ===========================================================================================
 --   M_ShippingPackage_ID  the instruction's existing package, resolved via the order-line AND
 --                         instruction join above (not created fresh -- this is a backfill of an
