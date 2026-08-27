@@ -317,9 +317,10 @@ public class DeliveryPlanningService
 	 * Deleting a delivery instruction is not an operation this feature offers: the acceptance criteria know
 	 * only close, remove, void and cancel. It is nevertheless reachable, because {@code M_ShipperTransportation}
 	 * and {@code M_ShippingPackage} both carry {@code IsDeleteable='Y'} and a DRAFTED instruction's only guard
-	 * is {@code MMShipperTransportation.beforeDelete()}'s {@code isProcessed()} check - and since the
-	 * allocation's FKs became {@code ON DELETE CASCADE}, that delete would now erase the allocations silently
-	 * instead of failing loudly on the foreign key.
+	 * is {@code MMShipperTransportation.beforeDelete()}'s {@code isProcessed()} check. The allocation's
+	 * foreign keys are plain {@code NO ACTION}, so without this guard that delete does not succeed either -
+	 * it fails with a raw constraint violation naming nothing the operator can act on, which is why the
+	 * refusal is stated here, where it can name the instruction to cancel.
 	 * <p>
 	 * Guarding the package also guards the instruction: {@code PO.delete0()} runs {@code beforeDelete()} BEFORE
 	 * it fires {@code TYPE_BEFORE_DELETE}, and {@code MMShipperTransportation.beforeDelete()} force-deletes all

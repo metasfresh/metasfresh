@@ -37,6 +37,7 @@ import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.cucumber.stepdefs.InterfaceWrapperHelperUtils;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -48,7 +49,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
@@ -77,12 +77,6 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
  */
 public class M_Delivery_Planning_StepDef
 {
-	/**
-	 * The Delivery Planning window. Only the fact that a window number is SET matters to
-	 * {@code InterfaceWrapperHelper.isUIAction}; the value itself is never read back here.
-	 */
-	private static final int WINDOW_NO_DELIVERY_PLANNING = 541532;
-
 	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
 
 	private final M_Delivery_Planning_StepDefData deliveryPlanningTable;
@@ -227,7 +221,7 @@ public class M_Delivery_Planning_StepDef
 			final boolean uiAction = row.getAsOptionalBoolean("OPT.IsUIAction").orElseTrue();
 			if (uiAction)
 			{
-				POWrapper.getStrictPO(deliveryPlanning).set_ManualUserAction(WINDOW_NO_DELIVERY_PLANNING);
+				InterfaceWrapperHelperUtils.set_ManualUserAction(deliveryPlanning);
 			}
 
 			try

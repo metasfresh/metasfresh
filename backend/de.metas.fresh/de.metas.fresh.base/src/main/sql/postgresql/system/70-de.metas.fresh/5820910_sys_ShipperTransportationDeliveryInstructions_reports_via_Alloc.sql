@@ -1,10 +1,11 @@
 -- Re-point the 3 de_metas_endcustomer_fresh_reports.docs_deliveryinstructions_* report functions
 -- off M_ShipperTransportation.M_Delivery_Planning_ID (being dropped) and onto M_Delivery_Planning_Alloc.
 -- Grouped in one script because all three are the same atomic re-point of the same FK removal;
--- only docs_deliveryinstructions_description has a checked-in DDL source file (updated alongside):
--- Source DDL: backend/de.metas.fresh/de.metas.fresh.base/src/main/sql/postgresql/ddl/functions/docs_deliveryinstructions_description.sql
--- docs_deliveryinstructions_forwarder / docs_deliveryinstructions_productdetails have no DDL source
--- file (they live only in migration history) -- none is created here, matching existing convention.
+-- all three now have a checked-in DDL source file under
+-- backend/de.metas.fresh/de.metas.fresh.base/src/main/sql/postgresql/ddl/functions/ --
+-- docs_deliveryinstructions_{description,forwarder,productdetails}.sql -- each updated alongside this
+-- script. Only _description had one before; the other two lived in migration history alone, so there was
+-- nothing to diff a change against.
 --
 -- Every return type stays byte-identical to the pre-change function (verified against the live DB) --
 -- CREATE OR REPLACE is safe. docs_deliveryinstructions_description / _forwarder resolve exactly ONE
