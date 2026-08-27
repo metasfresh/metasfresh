@@ -20,12 +20,21 @@
  * #L%
  */
 
--- View: public.edi_cctop_invoic_500_v
+-- Source DDL: backend/de.metas.edi/src/main/sql/postgresql/ddl/views/edi_cctop_invoic_500_v_view.sql
+-- INVOIC export: harmonize the CU/TU GTIN fallback with DESADV and EPCIS.
+--   Buyer_GTIN_CU        : asi_data.gtin -> asi_data.ean_cu -> asi_data.ean13_productcode -> product.gtin
+--   GTIN / Buyer_GTIN_TU : packing-instruction gtin -> packing-instruction ean_tu
+-- Supplier_GTIN_CU stays the supplier's own product GTIN and deliberately does NOT fall back to the
+-- buyer-scoped asi_data, since those identifiers mean different things to the receiver.
+--
+-- edi_cctop_invoic_500_v has dependent views (c_invoice_export_edi_invoic_json_v,
+-- historical_invoices_json_v), so the change goes through db_alter_view, which drops and recreates
+-- them in dependency order. A bare DROP VIEW fails on the dependents; a bare CREATE OR REPLACE
+-- cannot change the column list.
 
-DROP VIEW IF EXISTS public.edi_cctop_invoic_500_v
-;
+DROP VIEW IF EXISTS edi_cctop_invoic_500_v$new;
 
-CREATE OR REPLACE VIEW edi_cctop_invoic_500_v AS
+CREATE OR REPLACE VIEW edi_cctop_invoic_500_v$new AS
 SELECT SUM(il.qtyEntered)                                                        AS QtyInvoiced,
        CASE
            WHEN u.x12de355 = 'TU' THEN 'PCE'
@@ -91,16 +100,12 @@ SELECT SUM(il.qtyEntered)                                                       
        COALESCE(NULLIF(REGEXP_REPLACE(pip.GTIN, '\s+$', ''), ''),
                 REGEXP_REPLACE(pip.EAN_TU, '\s+$', '')
        )                                                                         AS Buyer_GTIN_TU,
-       COALESCE(NULLIF(REGEXP_REPLACE(asi_data.GTIN, '\s+$', ''), ''),
-                NULLIF(REGEXP_REPLACE(p.GTIN, '\s+$', ''), ''),
-                REGEXP_REPLACE(asi_data.EAN_CU, '\s+$', '')
-       )                                                                         AS Buyer_GTIN_CU,
+       COALESCE(NULLIF(REGEXP_REPLACE(asi_data.gtin, '\s+$', ''), ''),
+                NULLIF(REGEXP_REPLACE(asi_data.ean_cu, '\s+$', ''), ''),
+                NULLIF(REGEXP_REPLACE(asi_data.ean13_productcode, '\s+$', ''), ''),
+                REGEXP_REPLACE(p.gtin, '\s+$', ''))                              AS Buyer_GTIN_CU,
        REGEXP_REPLACE(asi_data.EAN_CU, '\s+$', '')                               AS Buyer_EAN_CU,
-
-       COALESCE(NULLIF(REGEXP_REPLACE(p.GTIN, '\s+$', ''), ''),
-                NULLIF(REGEXP_REPLACE(asi_data.GTIN, '\s+$', ''), ''),
-                REGEXP_REPLACE(asi_data.EAN_CU, '\s+$', '')
-       ) /* prefer product */                                                    AS Supplier_GTIN_CU,
+       REGEXP_REPLACE(p.GTIN, '\s+$', '')                                        AS Supplier_GTIN_CU, /* the SUPPLIER's own GTIN — deliberately NOT the buyer-scoped asi_data */
        SUM(il.QtyEnteredInBPartnerUOM)                                           AS qtyEnteredInBPartnerUOM,
        il.C_UOM_BPartner_ID                                                      AS C_UOM_BPartner_ID,
        il.externalids                                                            AS ExternalId,
@@ -114,17 +119,17 @@ FROM c_invoiceline il
          LEFT JOIN m_product_category pc ON pc.m_product_category_id = p.m_product_category_id
          LEFT JOIN c_invoice i ON i.c_invoice_id = il.c_invoice_id
          LEFT JOIN c_currency c ON c.c_currency_id = i.c_currency_id
-    -- ASI-aware product data lookup (M_Product_ASI_Data with content-based ASI subset matching)
+         -- ASI-aware product data lookup (M_Product_ASI_Data with content-based ASI subset matching)
          LEFT JOIN LATERAL (
-    SELECT gtin, ean_cu, upc, productno, productdescription, productname
-    FROM m_product_asi_data
-    WHERE isactive = 'Y'
-      AND m_product_id = il.m_product_id
-      AND (c_bpartner_id IS NULL OR c_bpartner_id = i.c_bpartner_id)
-      AND IsASIAttributesKeySubset(m_attributesetinstance_id, il.m_attributesetinstance_id)
-    ORDER BY seqno
-    LIMIT 1
-    ) asi_data ON TRUE
+             SELECT gtin, ean_cu, ean13_productcode, upc, productno, productdescription, productname
+             FROM m_product_asi_data
+             WHERE isactive = 'Y'
+               AND m_product_id = il.m_product_id
+               AND (c_bpartner_id IS NULL OR c_bpartner_id = i.c_bpartner_id)
+               AND IsASIAttributesKeySubset(m_attributesetinstance_id, il.m_attributesetinstance_id)
+             ORDER BY seqno
+             LIMIT 1
+         ) asi_data ON TRUE
          LEFT JOIN c_tax t ON t.c_tax_id = il.c_tax_id
          LEFT JOIN c_uom u ON u.c_uom_id = il.c_uom_id
          LEFT JOIN c_uom u_price ON u_price.c_uom_id = il.price_uom_id
@@ -139,6 +144,7 @@ GROUP BY il.c_invoice_id,
          ol.InvoicableQtyBasedOn,
          asi_data.UPC,
          asi_data.EAN_CU,
+         asi_data.ean13_productcode,
          p.value,
          p.DepositType,
          asi_data.productno,
@@ -176,6 +182,16 @@ GROUP BY il.c_invoice_id,
 ORDER BY COALESCE(ol.line, il.line)
 ;
 
+SELECT db_alter_view(
+    'edi_cctop_invoic_500_v',
+    (SELECT view_definition
+     FROM information_schema.views
+     WHERE lower(views.table_name) = lower('edi_cctop_invoic_500_v$new'))
+);
+
+DROP VIEW IF EXISTS edi_cctop_invoic_500_v$new;
+
+-- db_alter_view recreates the view from its definition only, so re-apply the view comment.
 COMMENT ON VIEW edi_cctop_invoic_500_v IS 'Notes:
 we output the Qty in the customer''s UOM (i.e. QtyEntered), but we call it QtyInvoiced for historical reasons.
 task 08878: Note: we try to aggregate ils which have the same order line. Grouping by C_OrderLine_ID to make sure that we don''t aggregate too much;

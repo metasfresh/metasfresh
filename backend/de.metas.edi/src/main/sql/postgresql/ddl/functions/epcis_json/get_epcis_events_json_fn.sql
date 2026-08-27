@@ -463,9 +463,9 @@ BEGIN
                                     'cuGTIN', COALESCE(NULLIF(REGEXP_REPLACE(asi_data.gtin, '\s+$', ''), ''),
                                                        NULLIF(REGEXP_REPLACE(asi_data.ean_cu, '\s+$', ''), ''),
                                                        NULLIF(REGEXP_REPLACE(asi_data.ean13_productcode, '\s+$', ''), ''),
-                                                       REGEXP_REPLACE(prod.gtin), '\s+$', ''),
+                                                       REGEXP_REPLACE(prod.gtin, '\s+$', '')),
                                     'tuGTIN', COALESCE(NULLIF(REGEXP_REPLACE(pi_prod.gtin, '\s+$', ''), ''),
-                                                       REGEXP_REPLACE(pi_prod.ean_tu), '\s+$', ''),
+                                                       REGEXP_REPLACE(pi_prod.ean_tu, '\s+$', '')),
                                     'quantity', stor.qty,
                                     'movementqty', stor.qty,
                                     'uom', COALESCE(uom.x12de355, 'KGM'),
@@ -523,9 +523,9 @@ BEGIN
                                     'cuGTIN', COALESCE(NULLIF(REGEXP_REPLACE(asi_data.gtin, '\s+$', ''), ''),
                                                        NULLIF(REGEXP_REPLACE(asi_data.ean_cu, '\s+$', ''), ''),
                                                        NULLIF(REGEXP_REPLACE(asi_data.ean13_productcode, '\s+$', ''), ''),
-                                                       REGEXP_REPLACE(prod.gtin), '\s+$', ''),
+                                                       REGEXP_REPLACE(prod.gtin, '\s+$', '')),
                                     'tuGTIN', COALESCE(NULLIF(REGEXP_REPLACE(pi_prod.gtin, '\s+$', ''), ''),
-                                                       REGEXP_REPLACE(pi_prod.ean_tu), '\s+$', ''),
+                                                       REGEXP_REPLACE(pi_prod.ean_tu, '\s+$', '')),
                                     'quantity',
                                     CASE
                                         WHEN COALESCE(atb.qty, 1) > 0 THEN stor.qty / atb.qty

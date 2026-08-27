@@ -94,13 +94,9 @@ SELECT SUM(il.qtyEntered)                                                       
        COALESCE(NULLIF(REGEXP_REPLACE(asi_data.gtin, '\s+$', ''), ''),
                 NULLIF(REGEXP_REPLACE(asi_data.ean_cu, '\s+$', ''), ''),
                 NULLIF(REGEXP_REPLACE(asi_data.ean13_productcode, '\s+$', ''), ''),
-                REGEXP_REPLACE(p.gtin), '\s+$', '')                              AS Buyer_GTIN_CU,
+                REGEXP_REPLACE(p.gtin, '\s+$', ''))                              AS Buyer_GTIN_CU,
        REGEXP_REPLACE(asi_data.EAN_CU, '\s+$', '')                               AS Buyer_EAN_CU,
-
-       COALESCE(NULLIF(REGEXP_REPLACE(p.GTIN, '\s+$', ''), ''),
-                NULLIF(REGEXP_REPLACE(asi_data.GTIN, '\s+$', ''), ''),
-                REGEXP_REPLACE(asi_data.EAN_CU, '\s+$', '')
-       ) /* prefer product */                                                    AS Supplier_GTIN_CU,
+       REGEXP_REPLACE(p.GTIN, '\s+$', '')                                        AS Supplier_GTIN_CU, /* the SUPPLIER's own GTIN — deliberately NOT the buyer-scoped asi_data */
        SUM(il.QtyEnteredInBPartnerUOM)                                           AS qtyEnteredInBPartnerUOM,
        il.C_UOM_BPartner_ID                                                      AS C_UOM_BPartner_ID,
        il.externalids                                                            AS ExternalId,
@@ -114,17 +110,17 @@ FROM c_invoiceline il
          LEFT JOIN m_product_category pc ON pc.m_product_category_id = p.m_product_category_id
          LEFT JOIN c_invoice i ON i.c_invoice_id = il.c_invoice_id
          LEFT JOIN c_currency c ON c.c_currency_id = i.c_currency_id
-    -- ASI-aware product data lookup (M_Product_ASI_Data with content-based ASI subset matching)
+         -- ASI-aware product data lookup (M_Product_ASI_Data with content-based ASI subset matching)
          LEFT JOIN LATERAL (
-    SELECT gtin, ean_cu, upc, productno, productdescription, productname
-    FROM m_product_asi_data
-    WHERE isactive = 'Y'
-      AND m_product_id = il.m_product_id
-      AND (c_bpartner_id IS NULL OR c_bpartner_id = i.c_bpartner_id)
-      AND IsASIAttributesKeySubset(m_attributesetinstance_id, il.m_attributesetinstance_id)
-    ORDER BY seqno
-    LIMIT 1
-    ) asi_data ON TRUE
+             SELECT gtin, ean_cu, ean13_productcode, upc, productno, productdescription, productname
+             FROM m_product_asi_data
+             WHERE isactive = 'Y'
+               AND m_product_id = il.m_product_id
+               AND (c_bpartner_id IS NULL OR c_bpartner_id = i.c_bpartner_id)
+               AND IsASIAttributesKeySubset(m_attributesetinstance_id, il.m_attributesetinstance_id)
+             ORDER BY seqno
+             LIMIT 1
+         ) asi_data ON TRUE
          LEFT JOIN c_tax t ON t.c_tax_id = il.c_tax_id
          LEFT JOIN c_uom u ON u.c_uom_id = il.c_uom_id
          LEFT JOIN c_uom u_price ON u_price.c_uom_id = il.price_uom_id
@@ -139,6 +135,7 @@ GROUP BY il.c_invoice_id,
          ol.InvoicableQtyBasedOn,
          asi_data.UPC,
          asi_data.EAN_CU,
+         asi_data.ean13_productcode,
          p.value,
          p.DepositType,
          asi_data.productno,
