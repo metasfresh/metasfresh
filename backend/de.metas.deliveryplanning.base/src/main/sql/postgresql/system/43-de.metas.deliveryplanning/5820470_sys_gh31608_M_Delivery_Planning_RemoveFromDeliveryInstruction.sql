@@ -37,7 +37,7 @@ INSERT INTO AD_Process (AD_Process_ID, AD_Client_ID, AD_Org_ID, IsActive, Create
                         IsOneInstanceOnly, RefreshAllAfterExecution, AllowProcessRerun, IsUseBPartnerLanguage,
                         IsApplySecuritySettings, IsTranslateExcelHeaders, IsNotifyUserAfterExecution,
                         PostgrestResponseFormat, IsFormatExcelFile, IsLogWarning, IsIncludeCSVHeaderRow,
-                        IsPDFA3Output, IsPreventConcurrentExecution)
+                        IsPDFA3Output)
 VALUES (585655 /*From ID Server*/, 0, 0, 'Y',
         TO_TIMESTAMP('2026-08-27 11:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
         TO_TIMESTAMP('2026-08-27 11:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
@@ -50,7 +50,7 @@ VALUES (585655 /*From ID Server*/, 0, 0, 'Y',
         'N', 'Y', 'Y', 'Y',
         'N', 'Y', 'N',
         'json', 'Y', 'N', 'Y',
-        'N', 'N')
+        'N')
 ;
 
 -- seed AD_Process_Trl for every active system language, copying the German base text
