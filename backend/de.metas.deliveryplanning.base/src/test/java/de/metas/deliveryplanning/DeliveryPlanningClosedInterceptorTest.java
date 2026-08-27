@@ -231,6 +231,32 @@ class DeliveryPlanningClosedInterceptorTest
 	}
 
 	@Test
+	@DisplayName("close: a mixed selection (one valid, one refused) applies NOTHING - not even the valid row")
+	void close_mixedSelection_appliesNothing()
+	{
+		final ShipperTransportationId draft = deliveryInstruction("DRAFT-2", DocStatus.Drafted.getCode());
+		final I_M_Delivery_Planning valid = deliveryPlanning();
+		allocateTo(draft, valid);
+		final int validPackageId = shippingPackageIdOf(valid);
+
+		final ShipperTransportationId completed = deliveryInstruction("COMPLETED-3", DocStatus.Completed.getCode());
+		final I_M_Delivery_Planning refused = deliveryPlanning();
+		allocateTo(completed, refused);
+
+		assertThatThrownBy(() -> deliveryPlanningService.closeSelectedDeliveryPlannings(selectionOf(valid, refused)))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_CloseOnCompletedInstruction));
+
+		final I_M_Delivery_Planning reloadedValid = reload(valid);
+		assertThat(reloadedValid.isClosed()).as("the valid row must not have been closed - nothing was applied").isFalse();
+		assertThat(reloadedValid.getReleaseNo()).as("and its ReleaseNo must survive").isNotNull();
+		assertThat(shippingPackageExists(validPackageId)).as("the valid planning's shipping package must survive").isTrue();
+		assertThat(allActiveAllocations()).as("both allocations must survive - nothing was applied").hasSize(2);
+
+		assertThat(reload(refused).isClosed()).isFalse();
+	}
+
+	@Test
 	@DisplayName("close: an unallocated planning succeeds and is a no-op on allocations")
 	void close_unallocatedPlanning_succeedsNoOpOnAllocations()
 	{
@@ -260,10 +286,17 @@ class DeliveryPlanningClosedInterceptorTest
 	@DisplayName("an unrelated column change does not trigger the interceptor - ifColumnsChanged actually filters")
 	void unrelatedColumnChange_doesNotTriggerInterceptor()
 	{
-		// allocated to a COMPLETED instruction, so if the interceptor fired on ANY change it would refuse this save
-		final ShipperTransportationId completed = deliveryInstruction("COMPLETED-2", DocStatus.Completed.getCode());
+		// closed already, WITHOUT going through the normal close flow (which would have removed the allocation) -
+		// allocateTo bypasses that ordering the same way close_allocatedToCompletedInstruction_refused's setup
+		// does, so the interceptor's own onDeliveryPlanningClosed body ("if (isClosed())") is reached below with
+		// an allocation still present; only ifColumnsChanged stands between that body and every future save
 		final I_M_Delivery_Planning planning = deliveryPlanning();
-		allocateTo(completed, planning);
+		planning.setIsClosed(true);
+		InterfaceWrapperHelper.save(planning);
+
+		final ShipperTransportationId draft = deliveryInstruction("DRAFT-3", DocStatus.Drafted.getCode());
+		allocateTo(draft, planning);
+		final int packageId = shippingPackageIdOf(planning);
 
 		final I_M_Delivery_Planning toUpdate = reload(planning);
 		toUpdate.setWayBillNo("WB-123");
@@ -271,7 +304,8 @@ class DeliveryPlanningClosedInterceptorTest
 
 		final I_M_Delivery_Planning reloaded = reload(planning);
 		assertThat(reloaded.getWayBillNo()).isEqualTo("WB-123");
-		assertThat(reloaded.isClosed()).as("untouched by the unrelated save").isFalse();
-		assertThat(allActiveAllocations()).as("the allocation is untouched").hasSize(1);
+		assertThat(reloaded.isClosed()).isTrue();
+		assertThat(allActiveAllocations()).as("the allocation is untouched by the unrelated save").hasSize(1);
+		assertThat(shippingPackageExists(packageId)).as("and its shipping package").isTrue();
 	}
 }

@@ -420,7 +420,38 @@ public class DeliveryPlanningService
 	public void closeSelectedDeliveryPlannings(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
 		validateDeliveryPlannings(selectedDeliveryPlanningsFilter);
-		deliveryPlanningRepository.closeSelectedDeliveryPlannings(selectedDeliveryPlanningsFilter);
+		validateNoneAllocatedToCompletedInstruction(selectedDeliveryPlanningsFilter);
+
+		// thread-inherited, not a new isolated trx: closeSelectedDeliveryPlannings runs @RunOutOfTrx (no ambient
+		// trx exists here), so this BINDS one for the whole write loop rather than letting each row's save()
+		// commit on its own - defence in depth should the upfront validation above ever develop a gap.
+		trxManager.runInThreadInheritedTrx(() -> deliveryPlanningRepository.closeSelectedDeliveryPlannings(selectedDeliveryPlanningsFilter));
+	}
+
+	/**
+	 * All-or-nothing over the WHOLE selection, mirroring the already-closed check
+	 * {@link DeliveryPlanningRepository#closeSelectedDeliveryPlannings} runs upfront: every planning in the
+	 * selection is checked against {@link #getCloseRejectionReason} BEFORE any row is written, so a planning
+	 * allocated to a completed instruction is never discovered reactively, mid-loop, after an earlier row already
+	 * applied.
+	 * <p>
+	 * Reads bare ids off the filter rather than {@link #getBySelection} on purpose: that helper builds the full
+	 * {@link DeliveryPlanning} domain object, which needs a {@code TransportDirection} every selected row does not
+	 * necessarily carry yet - the close guard itself has no use for it.
+	 */
+	private void validateNoneAllocatedToCompletedInstruction(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	{
+		final ImmutableList<DeliveryPlanningId> deliveryPlanningIds = deliveryPlanningRepository.getDeliveryPlanningQueryBuilder(selectedDeliveryPlanningsFilter)
+				.create()
+				.stream()
+				.map(record -> DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID()))
+				.collect(ImmutableList.toImmutableList());
+
+		for (final DeliveryPlanningId deliveryPlanningId : deliveryPlanningIds)
+		{
+			getCloseRejectionReason(deliveryPlanningId)
+					.ifPresent(reason -> {throw new AdempiereException(reason);});
+		}
 	}
 
 	public void reOpenSelectedDeliveryPlannings(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
