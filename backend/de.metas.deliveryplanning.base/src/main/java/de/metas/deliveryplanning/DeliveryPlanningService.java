@@ -759,7 +759,7 @@ public class DeliveryPlanningService
 	 * @param complete complete every generated instruction right away instead of leaving it a draft - a draft is
 	 * 		the default, same as {@link #combine(IQueryFilter, boolean)}.
 	 */
-	public void generateDeliveryInstructions(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter, final boolean complete)
+	public void generateDeliveryInstructions(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter, final boolean complete)
 	{
 		final ICompositeQueryFilter<I_M_Delivery_Planning> deliveryPlanningsSuitableForInstruction = deliveryPlanningRepository
 				.excludeUnsuitableForInstruction(selectedDeliveryPlanningsFilter);

@@ -150,7 +150,7 @@ class DeliveryPlanningGenerateCompletionTest
 		return deliveryShipmentSchedule.getM_ShipmentSchedule_ID();
 	}
 
-	/** The document type the instruction header is created with - resolved by name, so it has to exist. */
+	/** The document type the instruction header is created with - resolved by DocBaseType.ShipperTransportation + DocSubType.DeliveryInstruction, so those two have to match. */
 	private void createDeliveryInstructionDocType()
 	{
 		final I_C_DocType docType = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
