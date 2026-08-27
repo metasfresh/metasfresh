@@ -7,6 +7,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Shipper;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.Set;
@@ -24,38 +25,42 @@ class ShipmentSchedulePA_ByShipperTest
 		shipmentSchedulePA = new ShipmentSchedulePA();
 	}
 
-	@Test
-	void testRetrieveUnprocessedIdsByShipperId_OnlyUnprocessedOnSameShipperReturned()
+	@Nested
+	class RetrieveUnprocessedIdsByShipperId
 	{
-		// Given: two schedules on shipper A (one unprocessed, one processed) and one on shipper B
-		final ShipperId shipperA = createShipper();
-		final ShipperId shipperB = createShipper();
+		@Test
+		void onlyUnprocessedOnSameShipperReturned()
+		{
+			// Given: two schedules on shipper A (one unprocessed, one processed) and one on shipper B
+			final ShipperId shipperA = createShipper();
+			final ShipperId shipperB = createShipper();
 
-		final I_M_ShipmentSchedule schedA_Unprocessed = createShipmentSchedule(shipperA, false);
-		final ShipmentScheduleId schedA_UnprocessedId = ShipmentScheduleId.ofRepoId(schedA_Unprocessed.getM_ShipmentSchedule_ID());
+			final I_M_ShipmentSchedule schedA_Unprocessed = createShipmentSchedule(shipperA, false);
+			final ShipmentScheduleId schedA_UnprocessedId = ShipmentScheduleId.ofRepoId(schedA_Unprocessed.getM_ShipmentSchedule_ID());
 
-		final I_M_ShipmentSchedule schedA_Processed = createShipmentSchedule(shipperA, true);
+			final I_M_ShipmentSchedule schedA_Processed = createShipmentSchedule(shipperA, true);
 
-		final I_M_ShipmentSchedule schedB_Unprocessed = createShipmentSchedule(shipperB, false);
+			final I_M_ShipmentSchedule schedB_Unprocessed = createShipmentSchedule(shipperB, false);
 
-		// When
-		final Set<ShipmentScheduleId> result = shipmentSchedulePA.retrieveUnprocessedIdsByShipperId(shipperA);
+			// When
+			final Set<ShipmentScheduleId> result = shipmentSchedulePA.retrieveUnprocessedIdsByShipperId(shipperA);
 
-		// Then: only the unprocessed shipper-A schedule is returned
-		assertThat(result).containsExactly(schedA_UnprocessedId);
-	}
+			// Then: only the unprocessed shipper-A schedule is returned
+			assertThat(result).containsExactly(schedA_UnprocessedId);
+		}
 
-	@Test
-	void testRetrieveUnprocessedIdsByShipperId_UnknownShipperReturnsEmptySet()
-	{
-		// Given: an unknown shipper
-		final ShipperId unknownShipper = ShipperId.ofRepoId(999999);
+		@Test
+		void unknownShipperReturnsEmptySet()
+		{
+			// Given: an unknown shipper
+			final ShipperId unknownShipper = ShipperId.ofRepoId(999999);
 
-		// When
-		final Set<ShipmentScheduleId> result = shipmentSchedulePA.retrieveUnprocessedIdsByShipperId(unknownShipper);
+			// When
+			final Set<ShipmentScheduleId> result = shipmentSchedulePA.retrieveUnprocessedIdsByShipperId(unknownShipper);
 
-		// Then: an empty set is returned
-		assertThat(result).isEmpty();
+			// Then: an empty set is returned
+			assertThat(result).isEmpty();
+		}
 	}
 
 	private ShipperId createShipper()

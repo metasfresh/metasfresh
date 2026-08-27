@@ -1,5 +1,6 @@
 package de.metas.order.inoutcandidate;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_Order;
@@ -11,6 +12,7 @@ import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.location.DocumentLocation;
+import de.metas.inout.PriorityRule;
 import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
@@ -29,7 +31,6 @@ import de.metas.order.OrderLineId;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
-import de.metas.inout.PriorityRule;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -39,7 +40,6 @@ import de.metas.shipping.ShipperId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import com.google.common.annotations.VisibleForTesting;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.QueryLimit;
@@ -276,9 +276,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 			@NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		if (shipperId != null
-				&& sysConfigBL.getBooleanValue(SYSCONFIG_PriorityRuleFromShipper, false,
-						clientAndOrgId.getClientId().getRepoId(),
-						clientAndOrgId.getOrgId().getRepoId()))
+				&& sysConfigBL.getBooleanValue(SYSCONFIG_PriorityRuleFromShipper, false, clientAndOrgId))
 		{
 			final PriorityRule shipperPriority =
 					PriorityRule.ofNullableCode(shipperDAO.getById(shipperId).getPriorityRule());
