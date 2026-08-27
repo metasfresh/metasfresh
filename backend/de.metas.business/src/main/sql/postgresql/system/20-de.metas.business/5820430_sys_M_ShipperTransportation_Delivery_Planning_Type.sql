@@ -35,7 +35,7 @@
 --                                                                  no DB check constraint
 --
 -- Written into the backup schema (one table, and it IS a backup):
---   backup.m_shippertransportation_bkp_<ts>_gh31608_direction
+--   backup.m_shippertransportation_bkp_<ts>_delivery_direction
 --                                                      full copy of the table before any change.
 --                                                      Named by backup_table's own convention
 --                                                      (suffix form), so the timestamp is part of
@@ -46,7 +46,7 @@
 --                                                      hardcode the name anywhere.
 --
 -- Nothing else is written to that schema. The per-transport resolution is computed once
--- into a TEMP table (gh31608_resolution) purely for readability of a four-rule multi-CTE
+-- into a TEMP table (tmp_direction_resolution) purely for readability of a four-rule multi-CTE
 -- derivation, and it disappears with the session.
 --
 -- The transports whose direction had to be GUESSED are neither stored nor printed -- see
@@ -57,7 +57,7 @@
 -- ===========================================================================
 -- 1. Back up the whole table BEFORE anything is written
 -- ===========================================================================
-SELECT backup_table('m_shippertransportation', '_gh31608_direction');
+SELECT backup_table('m_shippertransportation', '_delivery_direction');
 
 -- ===========================================================================
 -- 2. AD_Column: M_ShipperTransportation.M_Delivery_Planning_Type
@@ -156,7 +156,7 @@ ALTER TABLE M_ShipperTransportation
 -- saving a temp table. (It once had a second consumer -- a not-clean-cut report -- and the
 -- no-drift argument that came with it; that report is gone, see section 5, so this is now
 -- the honest reason and the only one.)
-CREATE TEMP TABLE gh31608_resolution AS
+CREATE TEMP TABLE tmp_direction_resolution AS
 WITH planning AS (
     -- Every delivery planning reachable from a transport, with its direction.
     -- A planning that is still 'Incoming' plus the B2B flag is a dropship in the old
@@ -290,7 +290,7 @@ UPDATE M_ShipperTransportation st
 SET M_Delivery_Planning_Type = r.direction,
     Updated   = TO_TIMESTAMP('2026-08-26 22:00:05','YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy = 99
-FROM gh31608_resolution r
+FROM tmp_direction_resolution r
 WHERE r.m_shippertransportation_id = st.M_ShipperTransportation_ID
   AND r.direction IS NOT NULL
 ;
@@ -327,7 +327,7 @@ WHERE r.m_shippertransportation_id = st.M_ShipperTransportation_ID
 -- (b) every row still accounted for against the backup. Resolve the backup's name first --
 --     it carries backup_table's timestamp, so it differs per application:
 --       SELECT backup_table_name FROM backup.backup_tables
---        WHERE backup_table_name LIKE 'backup.m_shippertransportation_bkp_%_gh31608_direction'
+--        WHERE backup_table_name LIKE 'backup.m_shippertransportation_bkp_%_delivery_direction'
 --        ORDER BY backup_table_name DESC LIMIT 1;
 --     (the column is backup_table_name, not table_name, and the value is stored WITH the
 --      'backup.' schema prefix -- both verified against the live table, and both wrong in an

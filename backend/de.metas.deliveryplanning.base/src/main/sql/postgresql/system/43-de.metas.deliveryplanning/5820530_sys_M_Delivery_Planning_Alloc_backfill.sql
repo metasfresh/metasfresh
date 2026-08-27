@@ -150,7 +150,7 @@ BEGIN
 
     IF v_header_without_planning_backref > 0 THEN
         RAISE EXCEPTION
-            'gh31608 M_Delivery_Planning_Alloc backfill: % non-voided DI instruction(s) carry a '
+            'M_Delivery_Planning_Alloc backfill: % non-voided DI instruction(s) carry a '
             'header link (M_ShipperTransportation.M_Delivery_Planning_ID) with no matching '
             'M_Delivery_Planning.M_ShipperTransportation_ID backref. This disagreement between '
             'the two sources must be resolved by hand before this backfill can run -- '
@@ -187,7 +187,7 @@ BEGIN
 
     IF v_planning_bad_package_join > 0 THEN
         RAISE EXCEPTION
-            'gh31608 M_Delivery_Planning_Alloc backfill: % delivery planning(s) linked to a '
+            'M_Delivery_Planning_Alloc backfill: % delivery planning(s) linked to a '
             'non-voided DI instruction do not resolve to exactly one active M_ShippingPackage. '
             'The package must match the planning BOTH on C_OrderLine_ID AND on '
             'M_ShipperTransportation_ID; a package that matches the order line but belongs to a '
@@ -232,7 +232,7 @@ BEGIN
 
     IF v_package_shared_by_plannings > 0 THEN
         RAISE EXCEPTION
-            'gh31608 M_Delivery_Planning_Alloc backfill: % active M_ShippingPackage row(s) would '
+            'M_Delivery_Planning_Alloc backfill: % active M_ShippingPackage row(s) would '
             'be claimed by more than one delivery planning on the same instruction through the '
             'order-line join. The package-join assumption this backfill relies on (one active '
             'package per planning, matched on BOTH C_OrderLine_ID and M_ShipperTransportation_ID) '
@@ -256,7 +256,7 @@ BEGIN
 
     IF v_planning_client_mismatch > 0 THEN
         RAISE EXCEPTION
-            'gh31608 M_Delivery_Planning_Alloc backfill: % delivery planning(s) linked to a '
+            'M_Delivery_Planning_Alloc backfill: % delivery planning(s) linked to a '
             'non-voided DI instruction have an AD_Client_ID different from that instruction''s. '
             'The allocation mirrors the instruction''s client (same as AD_Org_ID); this '
             'disagreement must be resolved by hand before this backfill can run -- aborting '
@@ -268,7 +268,7 @@ END $$;
 -- ===========================================================================================
 -- Back up the table this script writes into, before the first write.
 -- ===========================================================================================
-SELECT backup_table('m_delivery_planning_alloc', '_gh31608_backfill');
+SELECT backup_table('m_delivery_planning_alloc', '_alloc_backfill');
 
 -- ===========================================================================================
 -- Make sure the table's native PK sequence exists before nextval() is called on it.

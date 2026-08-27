@@ -1,13 +1,14 @@
--- gh31608 -- TransportDirection: new AD_Element for the three-valued transport direction
+-- TransportDirection: new AD_Element for the three-valued transport direction
 -- (Incoming/Outgoing/Dropship) currently carried under the misnamed AD_Element 581679
 -- "M_Delivery_Planning_Type".
 --
 -- Why a NEW element instead of renaming 581679 in place: 581679 is named after *delivery
 -- planning*, but the column it backs (M_Delivery_Planning.M_Delivery_Planning_Type and, since
--- gh31608's 5820430, M_ShipperTransportation.M_Delivery_Planning_Type) describes the *transport
--- direction* -- M_ShipperTransportation also carries it for transport orders, which are not
--- deliveries. The tell was already in the metadata: all three AD_Field rows on 581679
--- (708076, 783020, 783021) carry an AD_Name_ID override to element 540579 ("Richtung"/"Direction")
+-- this branch's earlier script 5820430, M_ShipperTransportation.M_Delivery_Planning_Type)
+-- describes the *transport direction* -- M_ShipperTransportation also carries it for transport
+-- orders, which are not deliveries. The tell was already in the metadata: all three AD_Field
+-- rows on 581679 (708076, 783020, 783021) carry an AD_Name_ID override to element 540579
+-- ("Richtung"/"Direction")
 -- -- an element whose own name is displayed nowhere is misnamed. 540579 itself cannot be reused:
 -- it already backs ImpEx_ConnectorType, RabbitMQ_Message_Audit and R_Request, so a fourth
 -- unrelated meaning is out, and metasfresh convention requires AD_Element.ColumnName to equal the

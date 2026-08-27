@@ -1,4 +1,4 @@
--- gh31608 -- finish the M_Delivery_Planning_Type -> TransportDirection rename:
+-- Finish the M_Delivery_Planning_Type -> TransportDirection rename:
 --   1) fix AD_Val_Rule 540796's Code, which restricts the M_ShipperTransportation_ID lookup on
 --      process 585654 (M_Delivery_Planning_AddToDeliveryInstruction, created by 5820460 in this
 --      module) to drafts matching the sibling M_Delivery_Planning_Type process parameter -- both

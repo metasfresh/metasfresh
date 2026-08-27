@@ -1,4 +1,4 @@
--- gh31608 -- the transport-order role and the delivery-instruction role share
+-- The transport-order role and the delivery-instruction role share
 -- M_ShipperTransportation, distinguished only by C_DocType.DocSubType ('DI' = delivery instruction,
 -- else = transport order). Two of the AD_Val_Rule-driven "add to transport order" pickers still
 -- offer a delivery instruction as a valid target. This script closes that leak by excluding

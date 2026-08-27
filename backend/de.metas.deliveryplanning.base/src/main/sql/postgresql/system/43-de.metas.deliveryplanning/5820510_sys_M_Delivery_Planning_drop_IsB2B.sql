@@ -1,4 +1,4 @@
--- gh31608 - drop M_Delivery_Planning.IsB2B: the B2B/dropship information now lives entirely in
+-- Drop M_Delivery_Planning.IsB2B: the B2B/dropship information now lives entirely in
 -- M_Delivery_Planning_Type (added by 5820420), so the separate flag is redundant.
 --
 -- Conversion rule (asymmetric on purpose -- decided in AGGREGATION-PROPOSAL.md, section
@@ -54,7 +54,7 @@
 -- ===========================================================================
 -- 1. Back up the whole table BEFORE anything is written
 -- ===========================================================================
-SELECT backup_table('m_delivery_planning', '_gh31608_isb2b_drop');
+SELECT backup_table('m_delivery_planning', '_isb2b_drop');
 
 -- ===========================================================================
 -- 2. Retype the purchase-side dropship legs (see the conversion rule above).

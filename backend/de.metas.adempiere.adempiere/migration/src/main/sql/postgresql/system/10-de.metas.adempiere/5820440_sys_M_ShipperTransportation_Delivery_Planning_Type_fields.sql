@@ -1,4 +1,4 @@
--- gh31608: surface M_ShipperTransportation.M_Delivery_Planning_Type (AD_Column 593410) in the UI.
+-- Surface M_ShipperTransportation.M_Delivery_Planning_Type (AD_Column 593410) in the UI.
 --
 -- The column was added by 5820430 with no AD_Field and no AD_UI_Element, so the three-valued
 -- direction (Incoming / Outgoing / Dropship) it holds is invisible. It replaces the IsSOTrx flag

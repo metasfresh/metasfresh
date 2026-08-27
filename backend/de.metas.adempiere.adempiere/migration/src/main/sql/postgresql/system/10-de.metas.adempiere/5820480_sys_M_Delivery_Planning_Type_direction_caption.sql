@@ -1,4 +1,4 @@
--- gh31608: label the transport direction "Richtung" / "Direction" on the Delivery Planning window
+-- Label the transport direction "Richtung" / "Direction" on the Delivery Planning window
 -- too, so ONE column no longer carries TWO names across the three windows a planner works in.
 --
 -- AD_Field 708076 (AD_Window 541632 "Lieferplanung" -> AD_Tab 546674, over AD_Column 585005
