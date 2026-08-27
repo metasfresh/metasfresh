@@ -23,6 +23,7 @@
 package de.metas.inoutcandidate.modelvalidator;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.inout.PriorityRule;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -73,7 +74,7 @@ class M_Shipper_ShipmentScheduleTest
 		registerInterceptorUnderTest();
 
 		// when: the shipper's PriorityRule changes
-		shipper.setPriorityRule("3");
+		shipper.setPriorityRule(PriorityRule.High.getCode());
 		saveRecord(shipper);
 
 		// then: the unprocessed schedule is flagged for recompute
@@ -90,7 +91,7 @@ class M_Shipper_ShipmentScheduleTest
 		registerInterceptorUnderTest();
 
 		// when: the shipper's PriorityRule changes
-		shipper.setPriorityRule("3");
+		shipper.setPriorityRule(PriorityRule.High.getCode());
 		saveRecord(shipper);
 
 		// then: nothing is flagged -- the processed schedule was never a candidate
