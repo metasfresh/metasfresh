@@ -142,8 +142,7 @@ public class DeliveryPlanningService
 	/**
 	 * Distinct from {@link #MSG_M_Delivery_Planning_ClosedPlannings}: that one rejects a SELECTION naming a closed
 	 * planning before it is put on an instruction (Combine / Add to); this one rejects COMPLETING an instruction
-	 * that already holds a planning closed AFTER it was allocated - a different moment, a different sentence
-	 * (gh31608 Task C1, AC6).
+	 * that already holds a planning closed AFTER it was allocated - a different moment, a different sentence.
 	 */
 	public static final AdMessageKey MSG_M_Delivery_Planning_ClosedAllocatedPlannings = AdMessageKey.of("de.metas.deliveryplanning.CompleteDeliveryInstruction.ClosedAllocatedPlannings");
 
@@ -844,9 +843,7 @@ public class DeliveryPlanningService
 
 	private static String toIdList(@NonNull final DeliveryPlanningList deliveryPlannings)
 	{
-		return deliveryPlannings.stream()
-				.map(deliveryPlanning -> String.valueOf(deliveryPlanning.getId().getRepoId()))
-				.collect(Collectors.joining(", "));
+		return toIdList(deliveryPlannings.getIdsInAllocationOrder());
 	}
 
 	private static String toIdList(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
@@ -857,7 +854,7 @@ public class DeliveryPlanningService
 	}
 
 	/**
-	 * Why the given delivery instruction cannot be completed, or empty when it can (gh31608 Task C1, AC6).
+	 * Why the given delivery instruction cannot be completed, or empty when it can.
 	 * <p>
 	 * The only rule so far: none of its currently allocated plannings may be closed. A planning is closed after
 	 * it was allocated to say "stop processing this cargo" - completing the instruction anyway would freight
@@ -1188,14 +1185,30 @@ public class DeliveryPlanningService
 		});
 	}
 
+	/**
+	 * Unlinks every planning currently allocated to the instruction (deactivating the allocations) and
+	 * invalidates their invoice candidates - the same batch load {@link #invalidateInvoiceCandidatesFor(ShipperTransportationId)}
+	 * uses, but the affected ids are resolved BEFORE the deactivation, not after: the invalidation is
+	 * deferred to after-commit, and by then the deactivation this same call performs has already made
+	 * {@link DeliveryPlanningRepository#getAllocatedPlanningIds(ShipperTransportationId)} come back empty.
+	 * Re-deriving the ids inside the deferred closure would silently invalidate nothing.
+	 */
 	public void unlinkDeliveryPlannings(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
+		final ImmutableSet<DeliveryPlanningId> allocatedPlanningIds = deliveryPlanningRepository.getAllocatedPlanningIds(deliveryInstructionId);
+
 		deliveryPlanningRepository.unlinkDeliveryPlannings(deliveryInstructionId);
+
+		if (!allocatedPlanningIds.isEmpty())
+		{
+			trxManager.runAfterCommit(() -> deliveryPlanningRepository.getByIds(allocatedPlanningIds)
+					.forEach(this::invalidateInvoiceCandidatesFor));
+		}
 	}
 
 	/**
 	 * Mirrors the instruction's {@code DocStatus} and {@code Processed} onto every one of its active allocations -
-	 * the cascade a complete or a re-activate owes them (gh31608 Task C1, AC6). Void is not a caller: it already
+	 * the cascade a complete or a re-activate owes them. Void is not a caller: it already
 	 * deactivates the allocation as part of {@link #unlinkDeliveryPlannings(ShipperTransportationId)}.
 	 */
 	public void cascadeDocStatusToAllocations(@NonNull final ShipperTransportationId deliveryInstructionId)
@@ -1352,7 +1365,7 @@ public class DeliveryPlanningService
 
 	/**
 	 * Invalidates the invoice candidates of EVERY planning currently allocated to the given instruction, in ONE
-	 * batch load (gh31608 Task C1) - not the legacy single {@code M_ShipperTransportation.M_Delivery_Planning_ID}
+	 * batch load - not the legacy single {@code M_ShipperTransportation.M_Delivery_Planning_ID}
 	 * header FK the interceptor used to read, which silently skipped every allocation but the first on an
 	 * aggregated instruction, and not a per-planning loop either: that would be a fifth N+1 in this exact code
 	 * family, after four earlier fixes.

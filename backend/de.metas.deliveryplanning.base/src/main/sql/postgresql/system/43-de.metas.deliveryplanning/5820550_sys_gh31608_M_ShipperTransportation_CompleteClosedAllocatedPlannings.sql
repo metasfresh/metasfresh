@@ -1,5 +1,5 @@
 -- Delivery Planning: refuse to COMPLETE a delivery instruction while any of its currently allocated
--- plannings is closed (gh31608 Task C1, AC6).
+-- plannings is closed.
 --
 -- Distinct from message 545797 (ClosedPlannings, generalised by 5820460): that one rejects a SELECTION
 -- naming a closed planning before it is put on an instruction (Combine / Add to) - a pre-write check over

@@ -49,17 +49,17 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * gh31608 Task C1 - what completing a delivery instruction costs, and what it refuses.
+ * What completing a delivery instruction costs, and what it refuses.
  * <p>
  * Both rules read the instruction's allocated plannings, so both are exercised here against a REAL
  * {@link DeliveryPlanningRepository} SPIED on the unit-test in-memory store, the same setup as
  * {@link DeliveryPlanningBatchLoadingTest} - so the batch-versus-per-row call pattern stays countable
  * while the loads actually happen.
  * <p>
- * A transport order shares {@code M_ShipperTransportation} with a delivery instruction (§ "Do NOT touch" of
- * Task C1), so it is exercised here the same way any delivery instruction with zero allocations is: the
- * repository never even reaches for the batch load, which {@code Mockito.verify(..., never())} proves rather
- * than merely assumes.
+ * A transport order shares {@code M_ShipperTransportation} with a delivery instruction and must be
+ * unaffected by both rules, so it is exercised here the same way any delivery instruction with zero
+ * allocations is: the repository never even reaches for the batch load, which
+ * {@code Mockito.verify(..., never())} proves rather than merely assumes.
  */
 class DeliveryPlanningCompletionCascadeTest
 {
@@ -161,7 +161,7 @@ class DeliveryPlanningCompletionCascadeTest
 	@DisplayName("complete-rejection is a no-op for an instruction with no allocations - never reads planning records")
 	void completeRejectionReasonIsANoOpWhenUnallocated()
 	{
-		// stands in for BOTH cases Task C1's "Do NOT touch" line protects: a transport order (which never gets an
+		// stands in for BOTH cases a no-op must cover: a transport order (which never gets an
 		// allocation) and a delivery instruction nothing has been combined onto yet share this exact code path
 		final ShipperTransportationId deliveryInstructionId = createDeliveryInstruction();
 
@@ -200,6 +200,39 @@ class DeliveryPlanningCompletionCascadeTest
 		Mockito.clearInvocations(deliveryPlanningRepository);
 
 		deliveryPlanningService.invalidateInvoiceCandidatesFor(deliveryInstructionId);
+
+		Mockito.verify(deliveryPlanningRepository, Mockito.never()).getByIds(Mockito.any());
+	}
+
+	// ------------------------------------------------------------------ unlinkDeliveryPlannings(instruction) - void
+
+	@Test
+	@DisplayName("void invalidates invoice candidates for every planning that WAS allocated, using ids captured before deactivation")
+	void unlinkDeliveryPlanningsInvalidatesInvoiceCandidatesDespiteDeactivation()
+	{
+		final ShipperTransportationId deliveryInstructionId = createDeliveryInstruction();
+		allocate(deliveryInstructionId, createDeliveryPlanning(false));
+		allocate(deliveryInstructionId, createDeliveryPlanning(false));
+		Mockito.clearInvocations(deliveryPlanningRepository);
+
+		deliveryPlanningService.unlinkDeliveryPlannings(deliveryInstructionId);
+
+		// unlinkDeliveryPlannings deactivates the allocations SYNCHRONOUSLY, before the invalidation the
+		// invoice-candidate side effect defers to after-commit; a re-query of "active" allocations at that
+		// later point would see none left and silently invalidate nothing, so the ids must be resolved
+		// BEFORE the deactivation and carried into the deferred batch load, not re-derived after it
+		Mockito.verify(deliveryPlanningRepository, Mockito.times(1))
+				.getByIds(Mockito.argThat(ids -> ((java.util.Collection<?>) ids).size() == 2));
+	}
+
+	@Test
+	@DisplayName("unlinking an instruction with no allocations is a no-op - never batch-loads")
+	void unlinkDeliveryPlanningsIsANoOpWhenUnallocated()
+	{
+		final ShipperTransportationId deliveryInstructionId = createDeliveryInstruction();
+		Mockito.clearInvocations(deliveryPlanningRepository);
+
+		deliveryPlanningService.unlinkDeliveryPlannings(deliveryInstructionId);
 
 		Mockito.verify(deliveryPlanningRepository, Mockito.never()).getByIds(Mockito.any());
 	}

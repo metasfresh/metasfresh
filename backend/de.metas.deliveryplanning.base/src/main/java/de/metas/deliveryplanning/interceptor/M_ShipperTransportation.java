@@ -65,8 +65,9 @@ public class M_ShipperTransportation
 	}
 
 	/**
-	 * Refuses to complete the instruction while any of its currently allocated plannings is closed, naming it -
-	 * gh31608 Task C1, AC6. A transport order, or an instruction with no allocations, is a no-op:
+	 * Refuses to complete the instruction while any of its currently allocated plannings is closed, naming it.
+	 * <p>
+	 * A transport order, or an instruction with no allocations, is a no-op:
 	 * {@link DeliveryPlanningService#getCompleteRejectionReason(ShipperTransportationId)} comes back empty and
 	 * nothing is read beyond the one allocation lookup.
 	 */
@@ -74,12 +75,12 @@ public class M_ShipperTransportation
 	public void rejectCompleteWithClosedAllocatedPlannings(@NonNull final I_M_ShipperTransportation shipperTransportation)
 	{
 		deliveryPlanningService.getCompleteRejectionReason(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()))
-				.ifPresent(reason -> { throw new AdempiereException(reason); });
+				.ifPresent(reason -> {throw new AdempiereException(reason);});
 	}
 
 	/**
 	 * Cascades the instruction's {@code DocStatus} and {@code Processed} onto every one of its active allocations,
-	 * on complete and on re-activate - gh31608 Task C1, AC6. Void is not one of these timings: it already
+	 * on complete and on re-activate. Void is not one of these timings: it already
 	 * deactivates the allocation via {@link #unlinkDeliveryPlannings(I_M_ShipperTransportation)}, which is where
 	 * §3d of the aggregation design puts it, and not in {@code MMShipperTransportation.voidIt()} - voiding a
 	 * COMPLETED instruction does not run that method's own line-deactivation branch, so the deactivation has to

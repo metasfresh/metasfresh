@@ -354,7 +354,7 @@ class DeliveryPlanningAllocLifecycleTest
 		assertThat(deliveryPlanningRepository.getAllocatedPlanningIds(createDeliveryInstruction(DocStatus.Drafted, false))).isEmpty();
 	}
 
-	// ------------------------------------------------------------------ complete / re-activate cascade (gh31608 Task C1)
+	// ------------------------------------------------------------------ complete / re-activate cascade
 
 	@Test
 	@DisplayName("complete mirrors DocStatus and Processed onto every active allocation, without deactivating them")

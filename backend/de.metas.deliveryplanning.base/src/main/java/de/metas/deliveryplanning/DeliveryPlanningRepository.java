@@ -683,7 +683,7 @@ public class DeliveryPlanningRepository
 	/**
 	 * Mirrors the instruction's {@code DocStatus} and {@code Processed} onto every ACTIVE allocation - the write
 	 * {@link #createAllocation} stamps once at creation time but nothing kept in sync afterwards, so completing or
-	 * re-activating an instruction used to leave every allocation's mirror stale (gh31608 Task C1).
+	 * re-activating an instruction used to leave every allocation's mirror stale.
 	 * <p>
 	 * Deliberately does NOT touch {@code IsActive}, and is therefore NOT what void calls:
 	 * {@link #deactivateAllocations(ShipperTransportationId)} already stamps both columns as part of deactivating
