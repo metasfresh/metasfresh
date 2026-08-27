@@ -74,8 +74,10 @@
 --   DocStatus, Processed  mirrored from the INSTRUCTION (st), exactly like createAllocation()
 --   AD_Org_ID              the INSTRUCTION's org, not the planning's (createAllocation() sets
 --                         it from deliveryInstructionRecord, not the planning)
---   AD_Client_ID           mirrored from the instruction for the same reason; verified equal to
---                         the planning's client on every row in this dataset
+--   AD_Client_ID           mirrored from the instruction for the same reason. Proven, not just
+--                         spot-checked: the pre-check aborts if any planning/instruction pair
+--                         disagrees on client (third guard, below), the same treatment as the
+--                         header-backref and package-join assumptions.
 --
 -- ===========================================================================================
 -- Idempotence
@@ -96,6 +98,7 @@ DO $$
 DECLARE
     v_header_without_planning_backref  integer;
     v_planning_bad_package_join        integer;
+    v_planning_client_mismatch         integer;
 BEGIN
     -- Cross-check (§3b.2): a NON-VOIDED DI instruction whose header link has no matching
     -- planning-side FK is a genuine anomaly -- the two sources disagree in a way the backfill
@@ -154,6 +157,30 @@ BEGIN
             '(one active package per planning, matched through the order line) does not hold '
             'for these rows -- aborting without writing anything.',
             v_planning_bad_package_join;
+    END IF;
+
+    -- Proves the AD_Client_ID mirror is safe before the insert relies on it: the allocation
+    -- stamps the INSTRUCTION's client (st.AD_Client_ID), same reasoning as AD_Org_ID. metasfresh's
+    -- multi-tenant FK model makes a planning and the instruction it is linked to disagreeing on
+    -- client very unlikely, but "unlikely" is not "proven" -- so this is checked the same way as
+    -- the two assumptions above, rather than trusted from a one-instance manual spot-check.
+    SELECT count(*)
+    INTO v_planning_client_mismatch
+    FROM M_Delivery_Planning dp
+    JOIN M_ShipperTransportation st ON st.M_ShipperTransportation_ID = dp.M_ShipperTransportation_ID
+    JOIN C_DocType dt ON dt.C_DocType_ID = st.C_DocType_ID AND dt.DocSubType = 'DI'
+    WHERE dp.M_ShipperTransportation_ID > 0
+      AND st.DocStatus <> 'VO'
+      AND dp.AD_Client_ID <> st.AD_Client_ID;
+
+    IF v_planning_client_mismatch > 0 THEN
+        RAISE EXCEPTION
+            'gh31608 M_Delivery_Planning_Alloc backfill: % delivery planning(s) linked to a '
+            'non-voided DI instruction have an AD_Client_ID different from that instruction''s. '
+            'The allocation mirrors the instruction''s client (same as AD_Org_ID); this '
+            'disagreement must be resolved by hand before this backfill can run -- aborting '
+            'without writing anything.',
+            v_planning_client_mismatch;
     END IF;
 END $$;
 
