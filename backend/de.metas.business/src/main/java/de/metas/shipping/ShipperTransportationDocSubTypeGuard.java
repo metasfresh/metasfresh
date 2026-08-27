@@ -40,9 +40,9 @@ import org.springframework.stereotype.Service;
  * instruction, {@link #rejectIfNotDeliveryInstruction} hides a delivery-instruction-only process on a transport
  * order.
  * <p>
- * {@link IDocTypeDAO#getById} is cached at table level (see its javadoc / implementation comment), so calling this
- * once per selected row is NOT a query-per-row - {@code C_DocType} is loaded once and served from the in-memory
- * table cache for every subsequent call.
+ * {@link IDocTypeDAO#getById(DocTypeId)} is cached at table level (see the implementation comment on that method), so
+ * calling this once per selected row is NOT a query-per-row - {@code C_DocType} is loaded once and served from the
+ * in-memory table cache for every subsequent call.
  */
 @Service
 public class ShipperTransportationDocSubTypeGuard

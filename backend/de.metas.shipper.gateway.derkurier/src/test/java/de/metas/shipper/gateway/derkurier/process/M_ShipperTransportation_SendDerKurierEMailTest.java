@@ -60,7 +60,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * AC19: {@code M_ShipperTransportation_SendDerKurierEMail} (the "Der Kurier" mail action) is a transport-order-only
+ * {@code M_ShipperTransportation_SendDerKurierEMail} (the "Der Kurier" mail action) is a transport-order-only
  * action - it must not be offered on a delivery instruction, and a plain, otherwise-eligible transport order must
  * be completely unaffected (a no-op) by the added guard.
  */
