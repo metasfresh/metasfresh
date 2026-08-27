@@ -85,7 +85,6 @@ import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Warehouse;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Delivery_Planning;
 import org.compiere.util.TimeUtil;
@@ -168,11 +167,9 @@ public class DeliveryPlanningService
 
 	/**
 	 * The task-C5 mechanism that tells the two {@code M_ShipperTransportation} document roles apart - reused here
-	 * rather than a second ad-hoc distinction. {@code getBeanOrSupply} (not {@code SpringContextHolder.instance.getBean}
-	 * directly) so unit tests that construct this service without registering the guard still work.
+	 * rather than a second ad-hoc distinction.
 	 */
-	private final ShipperTransportationDocSubTypeGuard shipperTransportationDocSubTypeGuard =
-			SpringContextHolder.getBeanOrSupply(ShipperTransportationDocSubTypeGuard.class, ShipperTransportationDocSubTypeGuard::new);
+	private final ShipperTransportationDocSubTypeGuard shipperTransportationDocSubTypeGuard;
 	private final ShipperRepository shipperRepository;
 	private final DeliveryPlanningRepository deliveryPlanningRepository;
 	private final DeliveryStatusColorPaletteService deliveryStatusColorPaletteService;
@@ -192,13 +189,15 @@ public class DeliveryPlanningService
 			@NonNull final DeliveryPlanningRepository deliveryPlanningRepository,
 			@NonNull final DeliveryStatusColorPaletteService deliveryStatusColorPaletteService,
 			@NonNull final DimensionService dimensionService,
-			@NonNull final MeansOfTransportationService meansOfTransportationService)
+			@NonNull final MeansOfTransportationService meansOfTransportationService,
+			@NonNull final ShipperTransportationDocSubTypeGuard shipperTransportationDocSubTypeGuard)
 	{
 		this.shipperRepository = shipperRepository;
 		this.deliveryPlanningRepository = deliveryPlanningRepository;
 		this.deliveryStatusColorPaletteService = deliveryStatusColorPaletteService;
 		this.dimensionService = dimensionService;
 		this.meansOfTransportationService = meansOfTransportationService;
+		this.shipperTransportationDocSubTypeGuard = shipperTransportationDocSubTypeGuard;
 	}
 
 	/**

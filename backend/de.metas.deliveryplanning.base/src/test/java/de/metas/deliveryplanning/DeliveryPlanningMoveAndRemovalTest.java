@@ -28,6 +28,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperRepository;
+import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -93,7 +94,8 @@ class DeliveryPlanningMoveAndRemovalTest
 				deliveryPlanningRepository,
 				Mockito.mock(DeliveryStatusColorPaletteService.class),
 				Mockito.mock(DimensionService.class),
-				Mockito.mock(MeansOfTransportationService.class));
+				Mockito.mock(MeansOfTransportationService.class),
+				new ShipperTransportationDocSubTypeGuard());
 
 		uom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
 		InterfaceWrapperHelper.save(uom);

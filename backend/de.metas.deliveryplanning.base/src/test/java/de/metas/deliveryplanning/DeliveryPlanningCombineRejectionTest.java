@@ -31,6 +31,7 @@ import de.metas.incoterms.IncotermsId;
 import de.metas.organization.OrgId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.ShipperRepository;
+import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.shipping.model.ShipperTransportationId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
@@ -68,7 +69,8 @@ class DeliveryPlanningCombineRejectionTest
 				Mockito.mock(DeliveryPlanningRepository.class),
 				Mockito.mock(DeliveryStatusColorPaletteService.class),
 				Mockito.mock(DimensionService.class),
-				Mockito.mock(MeansOfTransportationService.class));
+				Mockito.mock(MeansOfTransportationService.class),
+				new ShipperTransportationDocSubTypeGuard());
 	}
 
 	private static DeliveryPlanning.DeliveryPlanningBuilder combinable()

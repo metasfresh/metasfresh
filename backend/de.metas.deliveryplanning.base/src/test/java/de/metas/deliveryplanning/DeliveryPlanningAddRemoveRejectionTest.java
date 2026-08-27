@@ -30,6 +30,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.organization.OrgId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.ShipperRepository;
+import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
 import lombok.NonNull;
@@ -74,7 +75,8 @@ class DeliveryPlanningAddRemoveRejectionTest
 				new DeliveryPlanningRepository(Mockito.mock(DimensionService.class)),
 				Mockito.mock(DeliveryStatusColorPaletteService.class),
 				Mockito.mock(DimensionService.class),
-				Mockito.mock(MeansOfTransportationService.class));
+				Mockito.mock(MeansOfTransportationService.class),
+				new ShipperTransportationDocSubTypeGuard());
 	}
 
 	// ------------------------------------------------------------------ helpers

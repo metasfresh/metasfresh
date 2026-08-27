@@ -29,6 +29,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.notification.INotificationBL;
 import de.metas.shipping.ShipperRepository;
+import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -93,7 +94,8 @@ class DeliveryPlanningGenerateCompletionTest
 				deliveryPlanningRepository,
 				Mockito.mock(DeliveryStatusColorPaletteService.class),
 				Mockito.mock(DimensionService.class),
-				Mockito.mock(MeansOfTransportationService.class));
+				Mockito.mock(MeansOfTransportationService.class),
+				new ShipperTransportationDocSubTypeGuard());
 
 		uom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
 		InterfaceWrapperHelper.save(uom);

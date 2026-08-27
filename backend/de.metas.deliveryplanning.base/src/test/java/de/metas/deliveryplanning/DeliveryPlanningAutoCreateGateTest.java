@@ -1,6 +1,7 @@
 package de.metas.deliveryplanning;
 
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.document.dimension.DimensionService;
 import de.metas.shipping.ShipperRepository;
 import lombok.NonNull;
@@ -49,7 +50,8 @@ public class DeliveryPlanningAutoCreateGateTest
 		final DeliveryStatusColorPaletteService colorPaletteService = Mockito.mock(DeliveryStatusColorPaletteService.class);
 		final DimensionService dimensionService = Mockito.mock(DimensionService.class);
 		final MeansOfTransportationService meansOfTransportationService = Mockito.mock(MeansOfTransportationService.class);
-		return new DeliveryPlanningService(shipperRepository, repo, colorPaletteService, dimensionService, meansOfTransportationService);
+		final ShipperTransportationDocSubTypeGuard shipperTransportationDocSubTypeGuard = new ShipperTransportationDocSubTypeGuard();
+		return new DeliveryPlanningService(shipperRepository, repo, colorPaletteService, dimensionService, meansOfTransportationService, shipperTransportationDocSubTypeGuard);
 	}
 
 	// ------------------------------------------------------------------ tests
