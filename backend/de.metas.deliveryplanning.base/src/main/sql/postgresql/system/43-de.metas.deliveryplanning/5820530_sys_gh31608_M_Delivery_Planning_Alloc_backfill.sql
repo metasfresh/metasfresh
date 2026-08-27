@@ -55,13 +55,30 @@
 -- pre-check below proves this join is well-defined (exactly one active package per planning's
 -- order line) BEFORE the insert runs, rather than assuming it.
 --
+-- AMENDED, and the order line alone is NOT enough. Review found that the order-line correlation
+-- does not survive a VOIDED donor instruction: voiding nulls the planning's
+-- M_ShipperTransportation_ID (interceptor/M_ShipperTransportation.unlinkDeliveryPlannings,
+-- @DocValidate AFTER_VOID) but nothing deactivates the package it claimed. That removes the
+-- package's rightful claimant from the pre-checks' population -- both of them filter
+-- st.DocStatus <> 'VO' -- so a DIFFERENT planning sharing the same order line on a LIVE
+-- instruction resolved to that orphaned package, passed both guards, and satisfied Package_UQ
+-- (which keys on the package id, not on the pairing). No error; the wrong instruction's
+-- allocation simply pointed at another instruction's package.
+--
+-- So the join carries a SECOND conjunct: sp.M_ShipperTransportation_ID =
+-- st.M_ShipperTransportation_ID. It is added ON TOP of the order-line correlation, not instead
+-- of it -- the instruction alone is the unsafe form this section already rejected above. Both
+-- pre-checks carry the same conjunct, so a planning whose only order-line match belongs to
+-- another instruction now trips the first guard (zero packages) and aborts, instead of being
+-- silently mis-paired.
+--
 -- ===========================================================================================
 -- Field-by-field semantics -- mirrored from DeliveryPlanningRepository.createAllocation()
 -- (backend/de.metas.deliveryplanning.base/.../DeliveryPlanningRepository.java:567-586)
 -- ===========================================================================================
---   M_ShippingPackage_ID  the instruction's existing package, resolved via the order-line join
---                         above (not created fresh -- this is a backfill of an existing link,
---                         not a new allocation)
+--   M_ShippingPackage_ID  the instruction's existing package, resolved via the order-line AND
+--                         instruction join above (not created fresh -- this is a backfill of an
+--                         existing link, not a new allocation)
 --   LineNo                getMaxAllocationLineNo(instruction) + 10 per planning (:828,:96
 --                         ALLOCATION_LINE_NO_STEP=10); reproduced here as
 --                         COALESCE(MAX existing LineNo on the instruction, 0)
@@ -126,9 +143,11 @@ BEGIN
             v_header_without_planning_backref;
     END IF;
 
-    -- Proves the order-line join is well-defined before the insert relies on it: every
-    -- planning reachable via the planning-side FK on a non-voided DI instruction must resolve
-    -- to EXACTLY ONE active M_ShippingPackage through its order line. Zero means the join
+    -- Proves the join is well-defined before the insert relies on it: every planning reachable
+    -- via the planning-side FK on a non-voided DI instruction must resolve to EXACTLY ONE
+    -- active M_ShippingPackage through its order line AND on that planning's own instruction
+    -- (see the amended decision in the header for why the instruction conjunct is load-bearing
+    -- rather than redundant). Zero means the join
     -- would drop the row (and the header cross-check above would then also fail, since no
     -- allocation ever gets created for it -- caught independently here for a precise message).
     -- More than one means the 1:1 assumption the whole join rests on does not hold and the
@@ -154,10 +173,11 @@ BEGIN
     IF v_planning_bad_package_join > 0 THEN
         RAISE EXCEPTION
             'gh31608 M_Delivery_Planning_Alloc backfill: % delivery planning(s) linked to a '
-            'non-voided DI instruction do not resolve to exactly one active M_ShippingPackage '
-            'via C_OrderLine_ID. The package-join assumption this backfill relies on '
-            '(one active package per planning, matched through the order line) does not hold '
-            'for these rows -- aborting without writing anything.',
+            'non-voided DI instruction do not resolve to exactly one active M_ShippingPackage. '
+            'The package must match the planning BOTH on C_OrderLine_ID AND on '
+            'M_ShipperTransportation_ID -- a package that matches the order line but belongs to '
+            'another instruction is deliberately NOT accepted, so a package orphaned by a voided '
+            'instruction cannot be mis-paired. Aborting without writing anything.',
             v_planning_bad_package_join;
     END IF;
 
@@ -166,11 +186,17 @@ BEGIN
     -- the SAME package. Two plannings can legitimately share one C_OrderLine_ID (partial
     -- shipments of one order line across separate instructions -- DeliveryPlanningService
     -- guards against deleting the LAST such planning, which only makes sense if more than one
-    -- can exist), so without this check two plannings on two different instructions could both
-    -- pass the guard above (each resolving to exactly one package) while both resolving to the
-    -- SAME single package if the other instruction's own package is missing/inactive -- silently
-    -- misattributing a package to the wrong instruction's allocation, or failing the INSERT on
-    -- the raw M_Delivery_Planning_Alloc_Package_UQ index instead of this script's own message.
+    -- can exist), so without this check two plannings could both pass the guard above (each
+    -- resolving to exactly one package) while both resolving to the SAME package -- failing the
+    -- INSERT on the raw M_Delivery_Planning_Alloc_Package_UQ index instead of on this script's
+    -- own message.
+    --
+    -- NARROWED by the instruction conjunct, and kept deliberately. The cross-instruction case
+    -- this check was originally written for is now structurally impossible: a package can only
+    -- resolve to a planning on its OWN instruction. What remains reachable is two plannings on
+    -- the SAME instruction sharing one order line and therefore one package -- a real shape
+    -- (partial shipments), and exactly what Package_UQ forbids. So this stays as the check that
+    -- reports it in this script's language instead of as an index violation.
     SELECT count(*)
     INTO v_package_shared_by_plannings
     FROM (
@@ -191,8 +217,9 @@ BEGIN
     IF v_package_shared_by_plannings > 0 THEN
         RAISE EXCEPTION
             'gh31608 M_Delivery_Planning_Alloc backfill: % active M_ShippingPackage row(s) would '
-            'be claimed by more than one delivery planning through the order-line join. The '
-            'package-join assumption this backfill relies on (one active package per planning) '
+            'be claimed by more than one delivery planning on the same instruction through the '
+            'order-line join. The package-join assumption this backfill relies on (one active '
+            'package per planning, matched on BOTH C_OrderLine_ID and M_ShipperTransportation_ID) '
             'does not hold for these rows -- aborting without writing anything.',
             v_package_shared_by_plannings;
     END IF;
@@ -246,7 +273,8 @@ SELECT public.dba_seq_check_native('M_Delivery_Planning_Alloc');
 
 -- ===========================================================================================
 -- Step 3 (§3b.3): backfill one allocation per planning-side link, reusing the instruction's
--- existing M_ShippingPackage (resolved via the order line, see decision above).
+-- existing M_ShippingPackage (resolved via the order line AND the instruction, see the amended
+-- decision above).
 -- ===========================================================================================
 INSERT INTO M_Delivery_Planning_Alloc (
     M_Delivery_Planning_Alloc_ID,
@@ -314,3 +342,11 @@ WHERE dp.M_ShipperTransportation_ID > 0
 --     (expect 8, all =10, and 0 for the "<>10" count):
 --     SELECT count(*), count(*) FILTER (WHERE LineNo = 0) FROM M_Delivery_Planning_Alloc;
 --     SELECT count(*) FROM M_Delivery_Planning_Alloc WHERE LineNo <> 10;
+-- (f) every allocation's package belongs to the SAME instruction as the allocation itself.
+--     This is the property that was silently violated before the instruction conjunct was
+--     added, and it is now guaranteed by construction -- which is exactly why it is verified
+--     here rather than assumed. Expect 0:
+--
+--     SELECT count(*) FROM M_Delivery_Planning_Alloc a
+--       JOIN M_ShippingPackage sp ON sp.M_ShippingPackage_ID = a.M_ShippingPackage_ID
+--      WHERE sp.M_ShipperTransportation_ID <> a.M_ShipperTransportation_ID;
