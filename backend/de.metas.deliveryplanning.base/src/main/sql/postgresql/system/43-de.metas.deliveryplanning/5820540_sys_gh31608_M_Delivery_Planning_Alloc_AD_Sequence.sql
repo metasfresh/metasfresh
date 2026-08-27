@@ -57,9 +57,9 @@ INSERT INTO AD_Sequence (
     VFormat, IsAutoSequence, IncrementNo, StartNo, CurrentNext, CurrentNextSys,
     IsAudited, IsTableID, Prefix, Suffix, DateColumn, DecimalPattern,
     CustomSequenceNoProvider_JavaClass_ID, RestartFrequency)
-SELECT 556653, 0, 0, 'Y',
-       TO_TIMESTAMP('2026-08-27 09:00:00', 'YYYY-MM-DD HH24:MI:SS'), 99,
-       TO_TIMESTAMP('2026-08-27 09:00:00', 'YYYY-MM-DD HH24:MI:SS'), 99,
+SELECT 556653 /*From ID Server*/, 0, 0, 'Y',
+       TO_TIMESTAMP('2026-08-27 09:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
+       TO_TIMESTAMP('2026-08-27 09:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
        'M_Delivery_Planning_Alloc', 'Table M_Delivery_Planning_Alloc',
        NULL, 'Y', 1, 1000000, 1000031, 50000,
        'N', 'Y', NULL, NULL, NULL, NULL,
