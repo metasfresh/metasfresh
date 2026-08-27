@@ -1,16 +1,17 @@
 /**
  * M_Product.ProductLifeCycleStatus (BBS-Status) is deliberately NOT part of the vanilla Product
  * window (AD_Window_ID=140, AD_Tab_ID=180). This spec guards that: the field must be absent from
- * the form and from the grid.
+ * the form, from the grid, and from the filter bar.
  *
  * Migration 5820370 hid it there on purpose -- the window already carries an "Auslaufprodukt"
  * (M_Product.Discontinued) checkbox that reads like the same control, and the enforcement is wanted
- * by one customer, whose own repo puts the field on the window that customer actually opens. The
- * column, its reference list and every backend guard stay in core, covered by de.metas.cucumber
- * productLifeCycleStatus.feature and ProductBL_assertAllowed_Test / PickHUCommand_LifeCycleStatus_Test.
+ * by one customer, whose own repo puts the field on the window that customer actually opens. 5820780
+ * then removed the leftover filter entry. The column, its reference list and every backend guard stay
+ * in core, covered by de.metas.cucumber productLifeCycleStatus.feature and ProductBL_assertAllowed_Test
+ * / PickHUCommand_LifeCycleStatus_Test.
  *
- * The filter parameter is logged rather than asserted: it comes from AD_Column.IsSelectionColumn
- * (5819940), which is table-level and stays on for the customer's own window.
+ * The filter assertion guards AD_Field.IsFilterField (window-scoped), NOT AD_Column.IsSelectionColumn
+ * (table-level, still on so the customer's own window keeps its quick filter).
  *
  * Running this locally: reset the SqlViewLayouts and SqlViewBindings caches first, or the app server
  * keeps serving the pre-migration layout. Neither cache is keyed to a table, so no AD_* change
@@ -98,8 +99,8 @@ removed (migration 5820370).
       );
     });
 
-    // === STEP 2: the grid must not list the column ===
-    await test.step('Assert ProductLifeCycleStatus is absent from the Product grid', async () => {
+    // === STEP 2: the grid must not list the column, the filter bar must not offer it ===
+    await test.step('Assert ProductLifeCycleStatus is absent from the Product grid and filters', async () => {
       const layout = await getViewLayout(PRODUCT_WINDOW_ID, 'grid');
 
       const columnNames = getViewLayoutColumnNames(layout);
@@ -107,9 +108,10 @@ removed (migration 5820370).
       expect(columnNames, `${FIELD_NAME} must not be a grid column of window ${PRODUCT_WINDOW_ID}`)
           .not.toContain(FIELD_NAME);
 
-      // Logged, not asserted — the filter is column-driven and outlives this migration. See the header.
       const filterParameterNames = getViewLayoutFilterParameterNames(layout);
       console.log(`[INFO] Filter parameters of window ${PRODUCT_WINDOW_ID}: ${JSON.stringify(filterParameterNames)}`);
+      expect(filterParameterNames, `${FIELD_NAME} must not be a filter of window ${PRODUCT_WINDOW_ID}`)
+          .not.toContain(FIELD_NAME);
     });
 
     console.log('[PASS] ProductLifeCycleStatus is not rendered in the vanilla Product form.');
