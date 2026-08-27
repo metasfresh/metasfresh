@@ -219,138 +219,142 @@ public class M_Delivery_Planning_StepDef
 		});
 	}
 
+	/**
+	 * Validates a previously created/loaded {@code M_Delivery_Planning} against the given expectations.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_Delivery_Planning_ID</b> — (required, identifier-ref) the planning to validate<br>
+	 *   <b>QtyOrdered</b> — (required) expected {@code QtyOrdered}<br>
+	 *   <b>QtyTotalOpen</b> — (required) expected {@code QtyTotalOpen}<br>
+	 *   <b>TransportDirection</b> — (required) expected {@code TransportDirection}<br>
+	 *   <b>M_Product_ID</b> — (optional, identifier-ref) expected product<br>
+	 *   <b>C_BPartner_ID</b> — (optional, identifier-ref) expected business partner<br>
+	 *   <b>C_Order_ID</b> — (optional, identifier-ref) expected order<br>
+	 *   <b>C_OrderLine_ID</b> — (optional, identifier-ref) expected order line<br>
+	 *   <b>M_Shipper_ID</b> — (optional, identifier-ref) expected shipper<br>
+	 *   <b>C_BPartner_Location_ID</b> — (optional, identifier-ref) expected business partner location<br>
+	 *   <b>M_Warehouse_ID</b> — (optional, identifier-ref) expected warehouse<br>
+	 *   <b>ETA</b> — (optional) expected {@code ETA}<br>
+	 *   <b>ETD</b> — (optional) expected {@code ETD}<br>
+	 *   <b>PlannedLoadedQuantity</b> — (optional) expected {@code PlannedLoadedQuantity}<br>
+	 *   <b>IsClosed</b> — (optional) expected {@code IsClosed}<br>
+	 *   <b>Processed</b> — (optional) expected {@code Processed}<br>
+	 *   <b>OrderStatus</b> — (optional) expected {@code OrderStatus}<br>
+	 *   <b>M_ShipperTransportation_ID</b> — (optional, identifier-ref, null-allowed) expected linked delivery
+	 *   instruction; a literal {@code null}/{@code -} asserts that none is linked (i.e. {@code M_ShipperTransportation_ID=0})<br>
+	 * @cucumber.depends StepDefData: M_Delivery_Planning_StepDefData, M_Product_StepDefData, C_BPartner_StepDefData,
+	 * C_Order_StepDefData, C_OrderLine_StepDefData, M_Shipper_StepDefData, C_BPartner_Location_StepDefData,
+	 * M_Warehouse_StepDefData, M_ShipperTransportation_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And validate M_Delivery_Planning:
+	 *   | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection |
+	 *   | deliveryPlanning_1      | 5          | 5            | Outgoing            |
+	 * </pre>
+	 */
 	@And("validate M_Delivery_Planning:")
 	public void validate_M_Delivery_Planning(@NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
+		DataTableRows.of(dataTable).forEach(row ->
 		{
-			final String deliveryPlanningIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_Delivery_Planning deliveryPlanning = deliveryPlanningTable.get(deliveryPlanningIdentifier);
-			assertThat(deliveryPlanning).isNotNull();
+			final I_M_Delivery_Planning deliveryPlanning = row.getAsIdentifier(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID).lookupNotNullIn(deliveryPlanningTable);
 			InterfaceWrapperHelper.refresh(deliveryPlanning);
 
 			final SoftAssertions softly = new SoftAssertions();
 
-			final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalForColumnName(row, I_M_Delivery_Planning.COLUMNNAME_QtyOrdered);
+			final BigDecimal qtyOrdered = row.getAsBigDecimal(I_M_Delivery_Planning.COLUMNNAME_QtyOrdered);
 			softly.assertThat(deliveryPlanning.getQtyOrdered()).as(I_M_Delivery_Planning.COLUMNNAME_QtyOrdered).isEqualTo(qtyOrdered);
 
-			final BigDecimal qtyTotalOpen = DataTableUtil.extractBigDecimalForColumnName(row, I_M_Delivery_Planning.COLUMNNAME_QtyTotalOpen);
+			final BigDecimal qtyTotalOpen = row.getAsBigDecimal(I_M_Delivery_Planning.COLUMNNAME_QtyTotalOpen);
 			softly.assertThat(deliveryPlanning.getQtyTotalOpen()).as(I_M_Delivery_Planning.COLUMNNAME_QtyTotalOpen).isEqualTo(qtyTotalOpen);
 
-			final String type = DataTableUtil.extractStringForColumnName(row, I_M_Delivery_Planning.COLUMNNAME_TransportDirection);
+			final String type = row.getAsString(I_M_Delivery_Planning.COLUMNNAME_TransportDirection);
 			softly.assertThat(deliveryPlanning.getTransportDirection()).as(I_M_Delivery_Planning.COLUMNNAME_TransportDirection).isEqualTo(type);
 
-			final String productIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Delivery_Planning.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(productIdentifier))
-			{
-				final I_M_Product product = productTable.get(productIdentifier);
-				softly.assertThat(product).isNotNull();
+			row.getAsOptionalIdentifier(I_M_Delivery_Planning.COLUMNNAME_M_Product_ID)
+					.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+					.ifPresent(id -> {
+						final I_M_Product product = id.lookupNotNullIn(productTable);
+						softly.assertThat(deliveryPlanning.getM_Product_ID()).as(I_M_Delivery_Planning.COLUMNNAME_M_Product_ID).isEqualTo(product.getM_Product_ID());
+					});
 
-				softly.assertThat(deliveryPlanning.getM_Product_ID()).as(I_M_Delivery_Planning.COLUMNNAME_M_Product_ID).isEqualTo(product.getM_Product_ID());
-			}
+			row.getAsOptionalIdentifier(I_M_Delivery_Planning.COLUMNNAME_C_BPartner_ID)
+					.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+					.ifPresent(id -> {
+						final I_C_BPartner bPartner = id.lookupNotNullIn(bpartnerTable);
+						softly.assertThat(deliveryPlanning.getC_BPartner_ID()).as(I_M_Delivery_Planning.COLUMNNAME_C_BPartner_ID).isEqualTo(bPartner.getC_BPartner_ID());
+					});
 
-			final String bpartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Delivery_Planning.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(bpartnerIdentifier))
-			{
-				final I_C_BPartner bPartner = bpartnerTable.get(bpartnerIdentifier);
-				softly.assertThat(bPartner).isNotNull();
-				softly.assertThat(deliveryPlanning.getC_BPartner_ID()).as(I_M_Delivery_Planning.COLUMNNAME_C_BPartner_ID).isEqualTo(bPartner.getC_BPartner_ID());
-			}
+			row.getAsOptionalIdentifier(I_M_Delivery_Planning.COLUMNNAME_C_Order_ID)
+					.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+					.ifPresent(id -> {
+						final I_C_Order order = id.lookupNotNullIn(orderTable);
+						softly.assertThat(deliveryPlanning.getC_Order_ID()).as(I_M_Delivery_Planning.COLUMNNAME_C_Order_ID).isEqualTo(order.getC_Order_ID());
+					});
 
-			final String orderIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Delivery_Planning.COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(orderIdentifier))
-			{
-				final I_C_Order order = orderTable.get(orderIdentifier);
-				softly.assertThat(order).isNotNull();
-				softly.assertThat(deliveryPlanning.getC_Order_ID()).as(I_M_Delivery_Planning.COLUMNNAME_C_Order_ID).isEqualTo(order.getC_Order_ID());
-			}
+			row.getAsOptionalIdentifier(I_M_Delivery_Planning.COLUMNNAME_C_OrderLine_ID)
+					.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+					.ifPresent(id -> {
+						final I_C_OrderLine orderLine = id.lookupNotNullIn(orderLineTable);
+						softly.assertThat(deliveryPlanning.getC_OrderLine_ID()).as(I_M_Delivery_Planning.COLUMNNAME_C_OrderLine_ID).isEqualTo(orderLine.getC_OrderLine_ID());
+					});
 
-			final String orderLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Delivery_Planning.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(orderLineIdentifier))
-			{
-				final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
-				softly.assertThat(orderLine).isNotNull();
-				softly.assertThat(deliveryPlanning.getC_OrderLine_ID()).as(I_M_Delivery_Planning.COLUMNNAME_C_OrderLine_ID).isEqualTo(orderLine.getC_OrderLine_ID());
-			}
+			row.getAsOptionalIdentifier(I_M_Delivery_Planning.COLUMNNAME_M_Shipper_ID)
+					.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+					.ifPresent(id -> {
+						final I_M_Shipper shipper = id.lookupNotNullIn(shipperTable);
+						softly.assertThat(deliveryPlanning.getM_Shipper_ID()).as(I_M_Delivery_Planning.COLUMNNAME_M_Shipper_ID).isEqualTo(shipper.getM_Shipper_ID());
+					});
 
-			final String shipperIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Delivery_Planning.COLUMNNAME_M_Shipper_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(shipperIdentifier))
-			{
-				final I_M_Shipper shipper = shipperTable.get(shipperIdentifier);
-				softly.assertThat(shipper).isNotNull();
-				softly.assertThat(deliveryPlanning.getM_Shipper_ID()).as(I_M_Delivery_Planning.COLUMNNAME_M_Shipper_ID).isEqualTo(shipper.getM_Shipper_ID());
-			}
+			row.getAsOptionalIdentifier(I_M_Delivery_Planning.COLUMNNAME_C_BPartner_Location_ID)
+					.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+					.ifPresent(id -> {
+						final I_C_BPartner_Location bPartnerLocation = id.lookupNotNullIn(bPartnerLocationTable);
+						softly.assertThat(deliveryPlanning.getC_BPartner_Location_ID()).as(I_M_Delivery_Planning.COLUMNNAME_C_BPartner_Location_ID).isEqualTo(bPartnerLocation.getC_BPartner_Location_ID());
+					});
 
-			final String bpartnerLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Delivery_Planning.COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(bpartnerLocationIdentifier))
-			{
-				final I_C_BPartner_Location bPartnerLocation = bPartnerLocationTable.get(bpartnerLocationIdentifier);
-				softly.assertThat(bPartnerLocation).isNotNull();
-				softly.assertThat(deliveryPlanning.getC_BPartner_Location_ID()).as(I_M_Delivery_Planning.COLUMNNAME_C_BPartner_Location_ID).isEqualTo(bPartnerLocation.getC_BPartner_Location_ID());
-			}
+			row.getAsOptionalIdentifier(I_M_Delivery_Planning.COLUMNNAME_M_Warehouse_ID)
+					.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+					.ifPresent(id -> {
+						final I_M_Warehouse warehouse = id.lookupNotNullIn(warehouseTable);
+						softly.assertThat(deliveryPlanning.getM_Warehouse_ID()).as(I_M_Delivery_Planning.COLUMNNAME_M_Warehouse_ID).isEqualTo(warehouse.getM_Warehouse_ID());
+					});
 
-			final String warehouseIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Delivery_Planning.COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(warehouseIdentifier))
-			{
-				final I_M_Warehouse warehouse = warehouseTable.get(warehouseIdentifier);
-				softly.assertThat(warehouse).isNotNull();
-				softly.assertThat(deliveryPlanning.getM_Warehouse_ID()).as(I_M_Delivery_Planning.COLUMNNAME_M_Warehouse_ID).isEqualTo(warehouse.getM_Warehouse_ID());
-			}
+			row.getAsOptionalLocalDateTimestamp(I_M_Delivery_Planning.COLUMNNAME_ETA)
+					.ifPresent(eta -> softly.assertThat(deliveryPlanning.getETA()).as(I_M_Delivery_Planning.COLUMNNAME_ETA).isEqualTo(eta));
 
-			final Timestamp plannedDeliveryDate = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + I_M_Delivery_Planning.COLUMNNAME_ETA);
-			if (plannedDeliveryDate != null)
-			{
-				softly.assertThat(deliveryPlanning.getETA()).as(I_M_Delivery_Planning.COLUMNNAME_ETA).isEqualTo(plannedDeliveryDate);
-			}
+			row.getAsOptionalLocalDateTimestamp(I_M_Delivery_Planning.COLUMNNAME_ETD)
+					.ifPresent(etd -> softly.assertThat(deliveryPlanning.getETD()).as(I_M_Delivery_Planning.COLUMNNAME_ETD).isEqualTo(etd));
 
-			final Timestamp plannedLoadingDate = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + I_M_Delivery_Planning.COLUMNNAME_ETD);
-			if (plannedLoadingDate != null)
-			{
-				softly.assertThat(deliveryPlanning.getETD()).as(I_M_Delivery_Planning.COLUMNNAME_ETD).isEqualTo(plannedLoadingDate);
-			}
+			row.getAsOptionalBigDecimal(I_M_Delivery_Planning.COLUMNNAME_PlannedLoadedQuantity)
+					.ifPresent(plannedLoadedQty -> softly.assertThat(deliveryPlanning.getPlannedLoadedQuantity()).as(I_M_Delivery_Planning.COLUMNNAME_PlannedLoadedQuantity).isEqualTo(plannedLoadedQty));
 
-			final BigDecimal plannedLoadedQty = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_M_Delivery_Planning.COLUMNNAME_PlannedLoadedQuantity);
-			if (plannedLoadedQty != null)
-			{
-				softly.assertThat(deliveryPlanning.getPlannedLoadedQuantity()).as(I_M_Delivery_Planning.COLUMNNAME_PlannedLoadedQuantity).isEqualTo(plannedLoadedQty);
-			}
+			row.getAsOptionalBoolean(I_M_Delivery_Planning.COLUMNNAME_IsClosed)
+					.ifPresent(isClosed -> softly.assertThat(deliveryPlanning.isClosed()).as(I_M_Delivery_Planning.COLUMNNAME_IsClosed).isEqualTo(isClosed));
 
-			final Boolean isClosed = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + I_M_Delivery_Planning.COLUMNNAME_IsClosed);
-			if (isClosed != null)
-			{
-				softly.assertThat(deliveryPlanning.isClosed()).as(I_M_Delivery_Planning.COLUMNNAME_IsClosed).isEqualTo(isClosed);
-			}
+			row.getAsOptionalBoolean(I_M_Delivery_Planning.COLUMNNAME_Processed)
+					.ifPresent(isProcessed -> softly.assertThat(deliveryPlanning.isProcessed()).as(I_M_Delivery_Planning.COLUMNNAME_Processed).isEqualTo(isProcessed));
 
-			final Boolean isProcessed = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + I_M_Delivery_Planning.COLUMNNAME_Processed);
-			if (isProcessed != null)
-			{
-				softly.assertThat(deliveryPlanning.isProcessed()).as(I_M_Delivery_Planning.COLUMNNAME_Processed).isEqualTo(isProcessed);
-			}
+			row.getAsOptionalString(I_M_Delivery_Planning.COLUMNNAME_OrderStatus)
+					.filter(Check::isNotBlank)
+					.ifPresent(orderStatus -> softly.assertThat(deliveryPlanning.getOrderStatus()).as(I_M_Delivery_Planning.COLUMNNAME_OrderStatus).isEqualTo(orderStatus));
 
-			final String orderStatus = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Delivery_Planning.COLUMNNAME_OrderStatus);
-			if (Check.isNotBlank(orderStatus))
-			{
-				softly.assertThat(deliveryPlanning.getOrderStatus()).as(I_M_Delivery_Planning.COLUMNNAME_OrderStatus).isEqualTo(orderStatus);
-			}
-
-			final String deliveryInstructionIdentifier = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + I_M_Delivery_Planning.COLUMNNAME_M_ShipperTransportation_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(deliveryInstructionIdentifier))
-			{
-				final String deliveryInstructionIdentifierValue = DataTableUtil.nullToken2Null(deliveryInstructionIdentifier);
-				if (deliveryInstructionIdentifierValue != null)
-				{
-					final I_M_ShipperTransportation deliveryInstruction = deliveryInstructionTable.get(deliveryInstructionIdentifier);
-					softly.assertThat(deliveryInstruction).isNotNull();
-					softly.assertThat(deliveryPlanning.getM_ShipperTransportation_ID()).as(I_M_Delivery_Planning.COLUMNNAME_M_ShipperTransportation_ID).isEqualTo(deliveryInstruction.getM_ShipperTransportation_ID());
-				}
-				else
-				{
-					softly.assertThat(deliveryPlanning.getM_ShipperTransportation_ID()).as(I_M_Delivery_Planning.COLUMNNAME_M_ShipperTransportation_ID).isEqualTo(0);
-				}
-			}
+			row.getAsOptionalIdentifier(I_M_Delivery_Planning.COLUMNNAME_M_ShipperTransportation_ID)
+					.ifPresent(id -> {
+						if (id.isNullPlaceholder())
+						{
+							softly.assertThat(deliveryPlanning.getM_ShipperTransportation_ID()).as(I_M_Delivery_Planning.COLUMNNAME_M_ShipperTransportation_ID).isEqualTo(0);
+						}
+						else
+						{
+							final I_M_ShipperTransportation deliveryInstruction = id.lookupNotNullIn(deliveryInstructionTable);
+							softly.assertThat(deliveryPlanning.getM_ShipperTransportation_ID()).as(I_M_Delivery_Planning.COLUMNNAME_M_ShipperTransportation_ID).isEqualTo(deliveryInstruction.getM_ShipperTransportation_ID());
+						}
+					});
 
 			softly.assertAll();
-		}
+		});
 	}
 
 	@And("^M_Delivery_Planning identified by (.*) is (closed|opened|canceled)$")
