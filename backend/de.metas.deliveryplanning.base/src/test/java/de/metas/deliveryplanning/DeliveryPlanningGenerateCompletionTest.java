@@ -28,11 +28,11 @@ import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.notification.INotificationBL;
-import de.metas.product.ProductId;
 import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -160,13 +160,13 @@ class DeliveryPlanningGenerateCompletionTest
 		InterfaceWrapperHelper.save(docType);
 	}
 
-	private IQueryFilter<I_M_Delivery_Planning> filterFor(final I_M_Delivery_Planning record)
+	private IQueryFilter<I_M_Delivery_Planning> filterFor(@NonNull final I_M_Delivery_Planning record)
 	{
 		return queryBL.createCompositeQueryFilter(I_M_Delivery_Planning.class)
 				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, record.getM_Delivery_Planning_ID());
 	}
 
-	private I_M_Delivery_Planning reload(final I_M_Delivery_Planning record)
+	private I_M_Delivery_Planning reload(@NonNull final I_M_Delivery_Planning record)
 	{
 		return InterfaceWrapperHelper.load(record.getM_Delivery_Planning_ID(), I_M_Delivery_Planning.class);
 	}
