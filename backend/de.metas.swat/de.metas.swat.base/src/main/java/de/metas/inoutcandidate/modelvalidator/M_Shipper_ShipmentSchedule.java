@@ -5,6 +5,7 @@ import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.compiere.model.I_M_Shipper;
@@ -21,6 +22,9 @@ import java.util.Set;
 @Validator(I_M_Shipper.class)
 public class M_Shipper_ShipmentSchedule
 {
+	@NonNull private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+	@NonNull private final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL = Services.get(IShipmentScheduleInvalidateBL.class);
+
 	@ModelChange(timings = {
 			ModelValidator.TYPE_AFTER_NEW,
 			ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {
@@ -29,14 +33,13 @@ public class M_Shipper_ShipmentSchedule
 	{
 		final ShipperId shipperId = ShipperId.ofRepoId(shipper.getM_Shipper_ID());
 
-		final Set<ShipmentScheduleId> unprocessedScheduleIds = Services.get(IShipmentSchedulePA.class)
-				.retrieveUnprocessedIdsByShipperId(shipperId);
+		final Set<ShipmentScheduleId> unprocessedScheduleIds = shipmentSchedulePA.retrieveUnprocessedIdsByShipperId(shipperId);
 
 		if (unprocessedScheduleIds.isEmpty())
 		{
 			return;
 		}
 
-		Services.get(IShipmentScheduleInvalidateBL.class).flagForRecompute(unprocessedScheduleIds);
+		shipmentScheduleInvalidateBL.flagForRecompute(unprocessedScheduleIds);
 	}
 }
