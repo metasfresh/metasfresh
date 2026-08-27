@@ -30,7 +30,6 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
@@ -45,7 +44,6 @@ import java.util.Optional;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Covers {@link OrderLineShipmentScheduleHandler#computePriorityRuleCode(I_C_Order, ShipperId, ClientAndOrgId)}.
