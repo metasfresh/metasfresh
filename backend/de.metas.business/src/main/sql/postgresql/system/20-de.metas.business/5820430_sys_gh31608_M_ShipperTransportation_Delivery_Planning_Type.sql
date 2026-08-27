@@ -144,9 +144,14 @@ ALTER TABLE M_ShipperTransportation
 -- Rule 4 is the safety property: it has no precondition and its expression is total, so
 -- every transport gets a direction and no row can be left out.
 -- TEMP, not a stored table: the migration CLI runs this whole file through ONE psql
--- process with --single-transaction, so every statement below sees it and it disappears
--- with the session. It exists only so the UPDATE and the not-clean-cut report are driven
--- from the SAME computation and cannot drift apart.
+-- process with --single-transaction, so the UPDATE below sees it and it disappears with the
+-- session.
+--
+-- It is materialised rather than inlined into the UPDATE because the derivation below is a
+-- four-rule, multi-CTE computation and reading it as one named step is worth more than
+-- saving a temp table. (It once had a second consumer -- a not-clean-cut report -- and the
+-- no-drift argument that came with it; that report is gone, see section 5, so this is now
+-- the honest reason and the only one.)
 CREATE TEMP TABLE gh31608_resolution AS
 WITH planning AS (
     -- Every delivery planning reachable from a transport, with its direction.
@@ -287,27 +292,28 @@ WHERE r.m_shippertransportation_id = st.M_ShipperTransportation_ID
 ;
 
 -- ===========================================================================
--- 5. Report what was not clean-cut -- to the run's own output, not to a stored table
+-- 5. What was NOT clean-cut is deliberately not captured at apply time
 -- ===========================================================================
 -- Two kinds of row are not clean-cut: the ones rule 2 resolved through its dropship/plain
 -- tie-break, and the ones rule 4 resolved from the flag because content had no answer.
 -- Both keep working; a legacy mixed transport is only slightly narrower afterwards,
 -- because the direction now fixes what may be added to it.
 --
--- Printed rather than stored, so the applying run's log carries it -- which is the moment
--- it matters: whoever applies this to the customer instance sees in the output exactly
--- which transports were guessed at. Section 6 (c) recomputes it on demand afterwards.
-SELECT r.m_shippertransportation_id,
-       st.DocumentNo,
-       st.IsSOTrx,
-       r.rule_no,
-       r.direction,
-       r.fallback_reason
-FROM gh31608_resolution r
-JOIN M_ShipperTransportation st ON st.M_ShipperTransportation_ID = r.m_shippertransportation_id
-WHERE r.fallback_reason IS NOT NULL
-ORDER BY r.rule_no, st.DocumentNo
-;
+-- This script used to store that listing as a table in the backup schema. It does not any
+-- more, and it does not print it either. The print was tried and REMOVED, because it does
+-- not work: the migration CLI runs psql through PostgresqlNativeExecutor, which BUFFERS
+-- stdout and stderr and emits them only inside a ScriptExecutionException. Measured on a
+-- real CI apply log: zero SELECT result rows and zero NOTICE lines appear outside a failure
+-- dump. So on a SUCCESSFUL apply -- the normal case, and the only one that matters at
+-- rollout -- neither a SELECT nor a RAISE NOTICE reaches any log a human will read.
+--
+-- What that costs, stated plainly rather than papered over: the deciding rule per transport
+-- is NOT recoverable afterwards, because the reasoning also read
+-- M_Delivery_Planning.IsB2B and a later script on this branch drops that column. What IS
+-- recoverable, at any time and from live data, is the part a human acts on -- which
+-- transports carried plannings that did not agree on one direction -- because the
+-- per-planning direction survives every later script. Section 6 (c) is that query, and it
+-- is the single documented way to get this list.
 
 -- ===========================================================================
 -- 6. Verification -- run by hand after applying; both must return 0
