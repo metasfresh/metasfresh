@@ -48,6 +48,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.POWrapper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
@@ -76,6 +77,12 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
  */
 public class M_Delivery_Planning_StepDef
 {
+	/**
+	 * The Delivery Planning window. Only the fact that a window number is SET matters to
+	 * {@code InterfaceWrapperHelper.isUIAction}; the value itself is never read back here.
+	 */
+	private static final int WINDOW_NO_DELIVERY_PLANNING = 541532;
+
 	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
 
 	private final M_Delivery_Planning_StepDefData deliveryPlanningTable;
@@ -186,12 +193,21 @@ public class M_Delivery_Planning_StepDef
 	 * Deletes the given delivery planning for real, via {@link InterfaceWrapperHelper#delete(Object)}, so the
 	 * whole registered interceptor chain runs exactly as it does in production - rather than calling one
 	 * validation method and calling that a delete.
+	 * <p>
+	 * Deletes as a MANUAL USER ACTION by default, because that is the delete an operator performs from the
+	 * Delivery Planning window and the one these scenarios were written against.
+	 * {@code M_Delivery_Planning.onDelete} runs the "at least one planning per order line" rule only for a UI
+	 * action - a schedule-driven cleanup of every planning on a schedule must not have to obey it - so a
+	 * programmatic delete here would silently skip that rule and make any scenario asserting it unreachable.
+	 * Pass {@code OPT.IsUIAction=false} to exercise the programmatic path instead.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
 	 *   <b>M_Delivery_Planning_ID</b> — (required, identifier-ref) the planning to delete<br>
 	 *   <b>ErrorCode</b> — (optional) when set, the deletion is expected to fail with this {@code AdempiereException} error code
 	 *   instead of succeeding<br>
+	 *   <b>OPT.IsUIAction</b> — (optional, default {@code true}) delete as a manual user action, as the WebUI does;
+	 *   set {@code false} for the programmatic path a receipt/shipment-schedule delete takes<br>
 	 * @cucumber.depends StepDefData: M_Delivery_Planning_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -208,6 +224,12 @@ public class M_Delivery_Planning_StepDef
 			final I_M_Delivery_Planning deliveryPlanning = row.getAsIdentifier(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID).lookupNotNullIn(deliveryPlanningTable);
 
 			final String errorCode = row.getAsOptionalString("ErrorCode").filter(Check::isNotBlank).orElse(null);
+			final boolean uiAction = row.getAsOptionalBoolean("OPT.IsUIAction").orElseTrue();
+			if (uiAction)
+			{
+				POWrapper.getStrictPO(deliveryPlanning).set_ManualUserAction(WINDOW_NO_DELIVERY_PLANNING);
+			}
+
 			try
 			{
 				InterfaceWrapperHelper.delete(deliveryPlanning);
@@ -215,8 +237,6 @@ public class M_Delivery_Planning_StepDef
 				{
 					throw new RuntimeException("Was expecting operation to fail!");
 				}
-				InterfaceWrapperHelper.delete(deliveryPlanning);
-
 			}
 			catch (final AdempiereException e)
 			{

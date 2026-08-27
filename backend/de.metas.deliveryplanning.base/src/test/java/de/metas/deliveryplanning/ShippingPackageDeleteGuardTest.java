@@ -56,10 +56,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * The {@code M_ShippingPackage} BEFORE_DELETE guard against deleting a package that an ACTIVE
  * {@code M_Delivery_Planning_Alloc} still points at.
  * <p>
- * This is the second half of the same job {@link DeliveryPlanningDeleteGuardTest} covers for the planning leg:
- * {@code M_Delivery_Planning_Alloc}'s three FKs are all {@code ON DELETE CASCADE}, and Postgres cannot cascade
- * over {@code IsActive='N'} rows while refusing over {@code IsActive='Y'} ones. Without a Java guard the package
- * delete silently destroys a live booking - a worse failure than the raw FK violation the cascade replaced.
+ * A delivery instruction is cancelled or closed, never deleted - the acceptance criteria know only close,
+ * remove, void and cancel. The delete is nevertheless reachable ({@code IsDeleteable='Y'} on both
+ * {@code M_ShipperTransportation} and {@code M_ShippingPackage}), so the refusal is stated here, where it can
+ * name the instruction to cancel instead of leaving the operator a raw foreign-key violation.
  * <p>
  * <b>This one guard also covers the delivery-instruction leg</b>, and that is deliberate rather than an
  * oversight. {@code PO.delete0()} calls {@code beforeDelete()} BEFORE it fires {@code TYPE_BEFORE_DELETE}
@@ -153,7 +153,7 @@ class ShippingPackageDeleteGuardTest
 	}
 
 	@Test
-	@DisplayName("deleting a package that an ACTIVE allocation points at is refused, not silently cascaded away")
+	@DisplayName("deleting a package that an ACTIVE allocation points at is refused")
 	void deleteOfAPackageWithAnActiveAllocationIsRefused()
 	{
 		final ShipperTransportationId instruction = draftDeliveryInstruction("PACKAGE-DELETE-1");
@@ -161,9 +161,8 @@ class ShippingPackageDeleteGuardTest
 		final I_M_ShippingPackage shippingPackage = shippingPackageOf(planningId);
 
 		assertThatThrownBy(() -> InterfaceWrapperHelper.delete(shippingPackage))
-				.as("deleting a shipping package still carrying a live booking must never silently succeed - the "
-						+ "ON DELETE CASCADE would take the ACTIVE allocation with it, leaving the instruction's "
-						+ "cargo with no record of ever having been booked")
+				.as("deleting a shipping package still carrying a live booking must never succeed - it would take "
+						+ "the instruction's cargo with it, leaving no record of it ever having been booked")
 				.isInstanceOf(AdempiereException.class);
 	}
 

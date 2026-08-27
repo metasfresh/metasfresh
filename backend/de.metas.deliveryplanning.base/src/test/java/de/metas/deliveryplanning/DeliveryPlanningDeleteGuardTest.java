@@ -52,14 +52,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * The {@code M_Delivery_Planning} BEFORE_DELETE guard against deleting an ACTIVELY allocated planning - the Java
- * counterpart of {@code M_Delivery_Planning_Alloc}'s FKs being {@code ON DELETE CASCADE}.
+ * The {@code M_Delivery_Planning} BEFORE_DELETE guard, and the retired-history cleanup that follows it.
  * <p>
- * Before {@code ON DELETE CASCADE}, a plain NO ACTION foreign key from the allocation to the planning made this
- * scenario impossible regardless of caller: any delete of an actively-allocated planning hit a raw FK violation.
- * Cascading the FK removes that accidental backstop for every caller, not just the one this fix targets (a
- * RETIRED allocation blocking an unrelated schedule delete) - so the guard below is what now protects an ACTIVE
- * allocation from being silently cascaded away by the very same delete.
+ * {@code M_Delivery_Planning_Alloc}'s foreign keys are plain {@code NO ACTION}, so the database refuses to let
+ * any allocation's planning be deleted - which is right for a LIVE booking and wrong for retired history, and
+ * the database cannot tell the two apart. Both halves of that split therefore live in the interceptor: it
+ * refuses the live case with a translatable message instead of a raw constraint violation, then deletes the
+ * retired rows itself so the delete the schedule-cleanup path legitimately wants can go through.
  * <p>
  * Exercised through the REAL, registered {@code M_Delivery_Planning} interceptor (same mechanism as
  * {@link DeliveryPlanningClosedInterceptorTest}), deleting directly via {@link InterfaceWrapperHelper#delete} -
@@ -133,7 +132,7 @@ class DeliveryPlanningDeleteGuardTest
 	}
 
 	@Test
-	@DisplayName("a NON-UI delete of a currently-allocated planning is refused, not silently cascaded away")
+	@DisplayName("a NON-UI delete of a currently-allocated planning is refused")
 	void nonUiDeleteOfAnActivelyAllocatedPlanningIsRefused()
 	{
 		final ShipperTransportationId instruction = draftDeliveryInstruction("SCHEDULE-DELETE-1");
@@ -148,9 +147,8 @@ class DeliveryPlanningDeleteGuardTest
 		// schedule is deleted: a programmatic, non-UI InterfaceWrapperHelper.delete() of the planning - never
 		// through validateDeletion(), which only runs for isUIAction() deletes
 		assertThatThrownBy(() -> InterfaceWrapperHelper.delete(reloaded))
-				.as("deleting a planning that is still on a delivery instruction must never silently succeed, "
-						+ "even from a non-UI caller - it would cascade the ACTIVE allocation and its shipping "
-						+ "package away with no trace of the cargo that was still booked")
+				.as("deleting a planning that is still on a delivery instruction must never succeed, even from a "
+						+ "non-UI caller - the instruction's cargo would lose the record of ever having been booked")
 				.isInstanceOf(AdempiereException.class);
 	}
 
@@ -172,8 +170,8 @@ class DeliveryPlanningDeleteGuardTest
 
 		assertThat(POJOLookupMap.get().getRecords(I_M_Delivery_Planning_Alloc.class))
 				.as("the retired allocation records history FOR this planning; once the planning itself is gone "
-						+ "there is nothing left for it to be a history of, so the delete must remove it "
-						+ "EXPLICITLY - a blind ON DELETE CASCADE cannot tell it apart from a live booking")
+						+ "there is nothing left for it to be a history of, so the interceptor must remove it "
+						+ "explicitly - the NO ACTION foreign key would otherwise refuse the delete outright")
 				.isEmpty();
 	}
 

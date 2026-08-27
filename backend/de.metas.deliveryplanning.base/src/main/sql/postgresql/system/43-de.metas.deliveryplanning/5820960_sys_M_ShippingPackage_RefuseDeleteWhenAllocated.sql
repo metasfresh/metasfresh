@@ -18,8 +18,9 @@
 -- a planning is exactly the document whose history the retirement exists to keep, and "cancel it instead"
 -- is the answer there as much as for a live booking. The M_Delivery_Planning leg is the one place a delete
 -- is legitimate - a shipment/receipt-schedule delete cascades into its plannings - and it is handled in
--- Java too: interceptor/M_Delivery_Planning.onDelete refuses the live case, then removes the retired rows
--- itself (see 5820970, which puts all three FKs back to plain NO ACTION).
+-- Java too: interceptor/M_Delivery_Planning.onDelete refuses the live case, then deletes the retired rows
+-- itself, so the NO ACTION foreign keys declared in 5820400 never have to guess which kind they are looking
+-- at.
 --
 -- Scoped by construction, not by a filter: only delivery planning creates allocations, so this message is
 -- unreachable for the transport-order and handling-units packages that share M_ShippingPackage.

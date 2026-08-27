@@ -884,13 +884,19 @@ public class DeliveryPlanningRepository
 
 	/**
 	 * Removes the given planning's allocation rows outright - the cleanup a delete of the planning itself owes,
-	 * done in Java where it can be seen and reasoned about rather than by a database cascade.
+	 * done in Java, where the live-versus-retired split it depends on can actually be expressed.
 	 * <p>
-	 * Only ever correct AFTER {@link DeliveryPlanningService#assertNotCurrentlyAllocated} has established that
-	 * none of them is live: what is removed here is retired history, and a retired allocation records what was
-	 * once planned FOR this planning - once the planning itself is physically gone there is nothing left for it
-	 * to be a history of. The shipping packages are deliberately left alone: they are the instruction's own
-	 * (retired) lines and belong to a document that still exists.
+	 * Filters to {@code IsActive='N'} itself rather than trusting the caller to have refused the live case
+	 * first. {@link DeliveryPlanningService#assertNotCurrentlyAllocated} does run immediately before this in
+	 * the one current call site, but an invariant held only by call order is one a second call site - or a
+	 * concurrent transaction inserting a fresh allocation between the two statements - silently breaks. With
+	 * the filter, such a live row is simply left in place and the {@code NO ACTION} foreign key refuses the
+	 * planning's delete loudly, which is the safe direction to fail in.
+	 * <p>
+	 * What is removed is retired history: a retired allocation records what was once planned FOR this planning,
+	 * so once the planning itself is physically gone there is nothing left for it to be a history of. The
+	 * shipping packages are deliberately left alone - they are the instruction's own (retired) lines and belong
+	 * to a document that still exists.
 	 */
 	public void deleteAllocationsFor(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
 	{
@@ -900,6 +906,7 @@ public class DeliveryPlanningRepository
 		}
 
 		queryBL.createQueryBuilder(I_M_Delivery_Planning_Alloc.class)
+				.addEqualsFilter(I_M_Delivery_Planning_Alloc.COLUMNNAME_IsActive, false)
 				.addInArrayFilter(I_M_Delivery_Planning_Alloc.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningIds)
 				.create()
 				.delete();
@@ -911,8 +918,7 @@ public class DeliveryPlanningRepository
 	 * <p>
 	 * A retired allocation counts here exactly like a live one: an instruction that once carried a planning is
 	 * the very document whose history the retirement exists to keep, and it is cancelled or closed rather than
-	 * deleted either way. Filtering to active rows would let the {@code ON DELETE CASCADE} from the package
-	 * quietly erase that history.
+	 * deleted either way.
 	 * <p>
 	 * At most one row can match while the allocation is active (the partial unique index on
 	 * {@code M_ShippingPackage_ID}), and a package is created for exactly one allocation, so a package with
