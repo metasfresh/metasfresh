@@ -1,6 +1,10 @@
 package de.metas.payment.esr.dataimporter;
 
 import de.metas.payment.esr.model.I_ESR_ImportLine;
+import de.metas.attachments.AttachmentEntryService;
+import de.metas.payment.esr.api.IESRImportBL;
+import de.metas.payment.esr.api.impl.ESRImportBL;
+import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -23,6 +27,14 @@ public class ESRDataLoaderUtilTest
 	void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		// ESRDataLoaderUtil is a @UtilityClass, so its Services.get(...) fields run in the static
+		// initializer the first time the class is touched. IESRImportBL cannot be auto-instantiated
+		// (ESRImportBL has no default constructor), so without this registration the initializer
+		// throws -- and because a failed <clinit> is cached per JVM, every later test that touches
+		// ESRDataLoaderUtil then fails with NoClassDefFoundError. Registering it here is what makes
+		// this class independent of whether some other test registered the service first.
+		Services.registerService(IESRImportBL.class, new ESRImportBL(AttachmentEntryService.createInstanceForUnitTesting()));
 	}
 
 	private I_ESR_ImportLine newLine()
