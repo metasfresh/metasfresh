@@ -73,8 +73,8 @@
 --     IsActive='N' -- the same mechanism as the VOID bullet above, not a delete. The row survives,
 --     but stays inactive, so it is still excluded by the IsActive='Y' filter both pre-checks and
 --     the INSERT apply.
---   * unlinkDeliveryPlannings additionally clears C_OrderLine_ID on the instruction's packages,
---     inside its per-planning loop -- so even an active leftover would stop matching any
+--   * unlinkDeliveryPlannings additionally clears C_OrderLine_ID on exactly the packages behind the
+--     allocations it just deactivated -- so even an active leftover would stop matching any
 --     planning's order line.
 --
 -- So NO supported code path is known to produce an active, order-line-bearing package whose

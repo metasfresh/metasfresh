@@ -53,10 +53,22 @@ public class M_ShipperTransportation
 		final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
 
 		//
-		// Retrieve all HUs which we need to remove from their picking slots
+		// Retrieve all HUs which we need to remove from their picking slots.
+		//
+		// ACTIVE packages only, and the filter belongs here rather than in the DAO: a delivery planning removed
+		// from this instruction leaves its shipping package behind as an IsActive='N' line, still carrying this
+		// instruction's id, because the allocation it belonged to is retired rather than deleted. That package's
+		// cargo was never loaded onto this truck and its HU may well be queued in an ACTIVE picking slot for
+		// something else - emptying that slot is operator-visible. retrieveShippingPackages is shared, so it is
+		// left unfiltered for its other callers.
 		final Set<I_M_HU> husToRemove = new TreeSet<>(HUByIdComparator.instance);
 		for (final I_M_ShippingPackage shippingPackage : shipperTransportationDAO.retrieveShippingPackages(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID())))
 		{
+			if (!shippingPackage.isActive())
+			{
+				continue;
+			}
+
 			final I_M_Package mpackage = shippingPackage.getM_Package();
 
 			final List<I_M_HU> hus = huPackageDAO.retrieveHUs(mpackage);

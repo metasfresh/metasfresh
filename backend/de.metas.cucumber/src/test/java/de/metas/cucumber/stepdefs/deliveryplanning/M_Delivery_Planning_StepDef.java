@@ -183,7 +183,9 @@ public class M_Delivery_Planning_StepDef
 	}
 
 	/**
-	 * Deletes the given delivery planning, via {@link DeliveryPlanningService#validateDeletion(I_M_Delivery_Planning)}.
+	 * Deletes the given delivery planning for real, via {@link InterfaceWrapperHelper#delete(Object)}, so the
+	 * whole registered interceptor chain runs exactly as it does in production - rather than calling one
+	 * validation method and calling that a delete.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -208,7 +210,7 @@ public class M_Delivery_Planning_StepDef
 			final String errorCode = row.getAsOptionalString("ErrorCode").filter(Check::isNotBlank).orElse(null);
 			try
 			{
-				deliveryPlanningService.validateDeletion(deliveryPlanning);
+				InterfaceWrapperHelper.delete(deliveryPlanning);
 				if (Check.isNotBlank(errorCode))
 				{
 					throw new RuntimeException("Was expecting operation to fail!");

@@ -865,6 +865,24 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
+	 * Whether the given planning is currently on a delivery instruction - asked of the allocation table itself,
+	 * which is the only authority on it.
+	 * <p>
+	 * Deliberately NOT read from {@code M_Delivery_Planning.ReleaseNo}. That column is a denormalised mirror kept
+	 * in step with the allocation by every retirement path, but it is not itself protected: anything that removes
+	 * an allocation row without going through those paths leaves a planning whose {@code ReleaseNo} says
+	 * "allocated" while nothing is. A guard built on the mirror would then refuse forever, and since every code
+	 * path that clears {@code ReleaseNo} works from the allocation row that no longer exists, the planning could
+	 * never be deleted nor planned again.
+	 */
+	public boolean hasActiveAllocation(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		return queryAllocationsByPlanningIds(ImmutableList.of(deliveryPlanningId))
+				.create()
+				.anyMatch();
+	}
+
+	/**
 	 * Removes the given planning's allocation rows outright - the cleanup a delete of the planning itself owes,
 	 * done in Java where it can be seen and reasoned about rather than by a database cascade.
 	 * <p>
