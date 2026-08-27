@@ -9,6 +9,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -21,6 +22,7 @@ public class M_ShipperTransportation_AddShipments extends JavaProcess implements
 {
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
+	private final ShipperTransportationDocSubTypeGuard docSubTypeGuard = SpringContextHolder.instance.getBean(ShipperTransportationDocSubTypeGuard.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
@@ -29,7 +31,10 @@ public class M_ShipperTransportation_AddShipments extends JavaProcess implements
 		final List<I_M_ShipperTransportation> selectedModels = context.getSelectedModels(I_M_ShipperTransportation.class);
 		if (selectedModels.size() == 1)
 		{
-			return ProcessPreconditionsResolution.acceptIf(!selectedModels.get(0).isProcessed());
+			final I_M_ShipperTransportation shipperTransportation = selectedModels.get(0);
+			return ProcessPreconditionsResolution.firstRejectOrElseAccept(
+					() -> ProcessPreconditionsResolution.acceptIf(!shipperTransportation.isProcessed()),
+					() -> docSubTypeGuard.rejectIfDeliveryInstruction(shipperTransportation));
 		}
 
 		return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();

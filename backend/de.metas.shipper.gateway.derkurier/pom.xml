@@ -51,6 +51,12 @@
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
+		<!-- needed for ShipperTransportationDocSubTypeGuard (document-type separation between a transport order and a delivery instruction) -->
+		<dependency>
+			<groupId>de.metas.business</groupId>
+			<artifactId>de.metas.business</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>de.metas.async</groupId>
 			<artifactId>de.metas.async</artifactId>
