@@ -5,6 +5,7 @@
  * standard Product window (AD_Window_ID=140, AD_Tab_ID=180):
  *   1. The field is not rendered in the Product form
  *   2. The field is not a column of the Product grid
+ *   3. The field is not offered as a filter of the Product list
  *
  * WHY THIS TEST INVERTED
  * ----------------------
@@ -16,6 +17,7 @@
  * `metasfresh-test-integrity` § "Test Wiring Drift", step 3):
  *   - 5820370 sets AD_UI_Element 652772 IsDisplayed='N' => the form must NOT render the field
  *   - 5820370 sets AD_UI_Element 652772 IsDisplayedGrid='N' => the grid must NOT list the column
+ *   - 5820780 sets AD_Field 781848 IsFilterField='N' => the filter bar must NOT offer the field
  * The observed CI failure matched that derivation exactly (the old step 1 timed out waiting for a
  * field container that is no longer rendered), so the assertion is updated rather than the change.
  *
@@ -32,10 +34,11 @@
  * So: before concluding a layout flag "did not work", reset those caches (or restart the app server)
  * and re-observe.
  *
- * The FILTER parameter is still logged rather than asserted, and that is accurate rather than a guess:
- * the filter is column-driven (AD_Column.IsSelectionColumn='Y', migration 5819940, untouched here), so
- * window 140 still offers a BBS-Status filter for a field it no longer displays. Closing that gap is a
- * separate change (AD_Field.IsFilterField on tab 180) and is not part of this spec's contract yet.
+ * The FILTER parameter needs both migrations to be absent, which is why it is asserted only now. The
+ * filter entry originates from AD_Column.IsSelectionColumn='Y' (5819940), which is table-level and stays
+ * 'Y' so the customer's own Product window keeps its quick filter; 5820780 switches it off for THIS
+ * window alone via AD_Field.IsFilterField. Asserting its absence therefore guards the window-scoped
+ * switch, not the shared column flag.
  *
  * WHERE THE REMAINING BEHAVIOUR IS COVERED
  * ----------------------------------------
@@ -127,8 +130,8 @@ removed (migration 5820370).
       );
     });
 
-    // === STEP 2: the grid must not list the column ===
-    await test.step('Assert ProductLifeCycleStatus is absent from the Product grid', async () => {
+    // === STEP 2: the grid must not list the column, the filter bar must not offer it ===
+    await test.step('Assert ProductLifeCycleStatus is absent from the Product grid and filters', async () => {
       const layout = await getViewLayout(PRODUCT_WINDOW_ID, 'grid');
 
       const columnNames = getViewLayoutColumnNames(layout);
@@ -136,9 +139,10 @@ removed (migration 5820370).
       expect(columnNames, `${FIELD_NAME} must not be a grid column of window ${PRODUCT_WINDOW_ID}`)
           .not.toContain(FIELD_NAME);
 
-      // Logged, not asserted — the filter is column-driven and outlives this migration. See the header.
       const filterParameterNames = getViewLayoutFilterParameterNames(layout);
       console.log(`[INFO] Filter parameters of window ${PRODUCT_WINDOW_ID}: ${JSON.stringify(filterParameterNames)}`);
+      expect(filterParameterNames, `${FIELD_NAME} must not be a filter of window ${PRODUCT_WINDOW_ID}`)
+          .not.toContain(FIELD_NAME);
     });
 
     console.log('[PASS] ProductLifeCycleStatus is not rendered in the vanilla Product form.');
