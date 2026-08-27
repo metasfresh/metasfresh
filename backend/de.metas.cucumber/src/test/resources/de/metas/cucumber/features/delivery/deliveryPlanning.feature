@@ -153,9 +153,9 @@ Feature: Order to delivery instructions
       | deliveryPlanningPO_line1           | orderLinePO_1             |
       | deliveryPlanningPO_line2           | orderLinePO_2             |
     And validate M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | IsB2B | M_Delivery_Planning_Type | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.ETA | OPT.IsClosed | OPT.Processed | OPT.M_Warehouse_ID.Identifier |
-      | deliveryPlanningPO_line1          | 2          | 2            | true  | Dropship                 | orderPO                   | orderLinePO_1                 | vendor                       | product                     | dropShipWarehouseLocation             | 2023-05-10              | false        | false         | dropShipWarehouse             |
-      | deliveryPlanningPO_line2          | 2          | 2            | true  | Dropship                 | orderPO                   | orderLinePO_2                 | vendor                       | product                     | dropShipWarehouseLocation             | 2023-04-10              | false        | false         | dropShipWarehouse             |
+      | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | M_Delivery_Planning_Type | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.ETA    | OPT.IsClosed | OPT.Processed | OPT.M_Warehouse_ID.Identifier |
+      | deliveryPlanningPO_line1          | 2          | 2            | Dropship                 | orderPO                   | orderLinePO_1                 | vendor                       | product                     | dropShipWarehouseLocation             | 2023-05-10 | false        | false         | dropShipWarehouse             |
+      | deliveryPlanningPO_line2          | 2          | 2            | Dropship                 | orderPO                   | orderLinePO_2                 | vendor                       | product                     | dropShipWarehouseLocation             | 2023-04-10 | false        | false         | dropShipWarehouse             |
     And update M_Delivery_Planning:
       | M_Delivery_Planning_ID.Identifier | OPT.M_Shipper_ID.Identifier |
       | deliveryPlanningPO_line1          | shipper_DHL                 |
@@ -380,9 +380,9 @@ Feature: Order to delivery instructions
       | deliveryPlanningPO_7.1             | orderLinePO_7.1           |
       | deliveryPlanningPO_7.2             | orderLinePO_7.2           |
     And validate M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | IsB2B | M_Delivery_Planning_Type | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.ETA | OPT.IsClosed | OPT.Processed | OPT.M_Warehouse_ID.Identifier | OPT.PlannedLoadedQuantity |
-      | deliveryPlanningPO_7.1            | 2          | 2            | true  | Dropship                 | orderPO_7                 | orderLinePO_7.1               | vendor_7                     | product_7                   | dropShipWarehouseLocation             | 2023-05-10              | false        | false         | dropShipWarehouse_7           | 2                         |
-      | deliveryPlanningPO_7.2            | 4          | 4            | true  | Dropship                 | orderPO_7                 | orderLinePO_7.2               | vendor_7                     | product_7                   | dropShipWarehouseLocation             | 2023-04-10              | false        | false         | dropShipWarehouse_7           | 4                         |
+      | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | M_Delivery_Planning_Type | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.ETA    | OPT.IsClosed | OPT.Processed | OPT.M_Warehouse_ID.Identifier | OPT.PlannedLoadedQuantity |
+      | deliveryPlanningPO_7.1            | 2          | 2            | Dropship                 | orderPO_7                 | orderLinePO_7.1               | vendor_7                     | product_7                   | dropShipWarehouseLocation             | 2023-05-10 | false        | false         | dropShipWarehouse_7           | 2                         |
+      | deliveryPlanningPO_7.2            | 4          | 4            | Dropship                 | orderPO_7                 | orderLinePO_7.2               | vendor_7                     | product_7                   | dropShipWarehouseLocation             | 2023-04-10 | false        | false         | dropShipWarehouse_7           | 4                         |
 
     When generate M_ShipperTransportation for M_Delivery_Planning:
       | M_ShipperTransportation_ID.Identifier | M_Delivery_Planning_ID.Identifier |

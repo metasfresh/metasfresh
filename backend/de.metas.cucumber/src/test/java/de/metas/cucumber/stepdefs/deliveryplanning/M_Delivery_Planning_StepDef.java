@@ -211,12 +211,6 @@ public class M_Delivery_Planning_StepDef
 			final String type = DataTableUtil.extractStringForColumnName(row, I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_Type);
 			softly.assertThat(deliveryPlanning.getM_Delivery_Planning_Type()).as(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_Type).isEqualTo(type);
 
-			final Boolean isB2B = DataTableUtil.extractBooleanForColumnNameOr(row, I_M_Delivery_Planning.COLUMNNAME_IsB2B, null);
-			if (isB2B != null)
-			{
-				softly.assertThat(deliveryPlanning.isB2B()).as(I_M_Delivery_Planning.COLUMNNAME_IsB2B).isEqualTo(isB2B);
-			}
-
 			final String productIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Delivery_Planning.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(productIdentifier))
 			{

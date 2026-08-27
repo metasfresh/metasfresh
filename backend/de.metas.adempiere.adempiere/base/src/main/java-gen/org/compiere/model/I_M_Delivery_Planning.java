@@ -516,27 +516,6 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set B2B.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsB2B (boolean IsB2B);
-
-	/**
-	 * Get B2B.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isB2B();
-
-	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_IsB2B = new ModelColumn<>(I_M_Delivery_Planning.class, "IsB2B", null);
-	String COLUMNNAME_IsB2B = "IsB2B";
-
-	/**
 	 * Set Closed.
 	 *
 	 * <br>Type: YesNo
