@@ -322,4 +322,34 @@ class DeliveryPlanningAllocLifecycleTest
 		assertThat(deliveryPlanningRepository.getAllocatedInstructionIds(ImmutableList.of(allocated, unallocated, deactivated)))
 				.containsExactly(entry(allocated, deliveryInstructionId));
 	}
+
+	@Test
+	@DisplayName("getAllocatedPlanningIds reports what an instruction holds NOW - not what it held before a void or a move")
+	void allocatedPlanningIdsReportsOnlyActiveOnes()
+	{
+		final ShipperTransportationId deliveryInstructionId = createDeliveryInstruction(DocStatus.Drafted, false);
+		final DeliveryPlanningId held = createDeliveryPlanning();
+		final DeliveryPlanningId movedAway = createDeliveryPlanning();
+		final DeliveryPlanningId deactivated = createDeliveryPlanning();
+		deliveryPlanningRepository.createAllocations(deliveryInstructionId, ImmutableList.of(
+				allocRequestFor(held), allocRequestFor(movedAway), allocRequestFor(deactivated)));
+
+		// a move deletes the allocation, a void deactivates it - neither leaves the planning on this document
+		deliveryPlanningRepository.deleteAllocations(ImmutableList.of(movedAway));
+		final I_M_Delivery_Planning_Alloc deactivatedAlloc = allAllocations().stream()
+				.filter(alloc -> alloc.getM_Delivery_Planning_ID() == deactivated.getRepoId())
+				.findFirst()
+				.orElseThrow(AssertionError::new);
+		deactivatedAlloc.setIsActive(false);
+		InterfaceWrapperHelper.save(deactivatedAlloc);
+
+		assertThat(deliveryPlanningRepository.getAllocatedPlanningIds(deliveryInstructionId)).containsExactly(held);
+	}
+
+	@Test
+	@DisplayName("getAllocatedPlanningIds of an instruction that holds nothing is empty, not a failure")
+	void allocatedPlanningIdsOfAnEmptyInstruction()
+	{
+		assertThat(deliveryPlanningRepository.getAllocatedPlanningIds(createDeliveryInstruction(DocStatus.Drafted, false))).isEmpty();
+	}
 }

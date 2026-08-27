@@ -240,6 +240,48 @@ class DeliveryPlanningListTest
 	}
 
 	@Nested
+	@DisplayName("union")
+	class Union
+	{
+		@Test
+		@DisplayName("a planning in both lists is carried ONCE, so it is never a mismatch with itself")
+		void aPlanningInBothIsCarriedOnce()
+		{
+			final DeliveryPlanning onTheTarget = withShipper(540001);
+			final DeliveryPlanningList target = DeliveryPlanningList.of(onTheTarget, withShipper(540001));
+
+			// exactly what add-to hands over for a planning the target already holds
+			final DeliveryPlanningList union = target.union(DeliveryPlanningList.of(onTheTarget));
+
+			assertThat(union.size()).isEqualTo(2);
+			assertThat(union.getIdsInAllocationOrder()).doesNotHaveDuplicates();
+			assertThat(union.admissibilityMismatches()).isEmpty();
+		}
+
+		@Test
+		@DisplayName("a field the two lists disagree on is a mismatch of the union, even when each list agrees with itself")
+		void disagreementBetweenTheTwoListsIsAMismatch()
+		{
+			final DeliveryPlanningList target = DeliveryPlanningList.of(withShipper(540001), withShipper(540001));
+
+			final DeliveryPlanningList union = target.union(DeliveryPlanningList.of(withShipper(540002)));
+
+			assertThat(target.admissibilityMismatches()).as("each list on its own is admissible").isEmpty();
+			assertThat(union.admissibilityMismatches()).containsExactly(AdmissibilityField.Forwarder);
+		}
+
+		@Test
+		@DisplayName("with an empty list on either side the other one is returned unchanged")
+		void unionWithEmpty()
+		{
+			final DeliveryPlanningList list = DeliveryPlanningList.of(withShipper(540001));
+
+			assertThat(list.union(DeliveryPlanningList.EMPTY)).isEqualTo(list);
+			assertThat(DeliveryPlanningList.EMPTY.union(list)).isEqualTo(list);
+		}
+	}
+
+	@Nested
 	@DisplayName("admissibility field labels")
 	class AdmissibilityFieldLabels
 	{

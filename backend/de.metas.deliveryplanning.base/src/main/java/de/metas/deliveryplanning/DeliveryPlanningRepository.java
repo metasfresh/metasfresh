@@ -729,6 +729,22 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
+	 * The delivery plannings the given instruction currently holds, in ONE round trip - the other direction of
+	 * {@link #getAllocatedInstructionIds(Collection)}.
+	 * <p>
+	 * ACTIVE allocations only, which is what "currently holds" means: a deactivated allocation is what a voided
+	 * instruction leaves behind, and its planning is no longer cargo of this document.
+	 */
+	public ImmutableSet<DeliveryPlanningId> getAllocatedPlanningIds(@NonNull final ShipperTransportationId deliveryInstructionId)
+	{
+		return queryActiveAllocationsByInstructionId(deliveryInstructionId)
+				.create()
+				.stream()
+				.map(allocRecord -> DeliveryPlanningId.ofRepoId(allocRecord.getM_Delivery_Planning_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	/**
 	 * The {@code DocStatus} of each of the given delivery instructions, in one round trip.
 	 * <p>
 	 * The instruction's own {@code DocStatus} is the authority on whether it is still a draft - not the one

@@ -438,15 +438,53 @@ public class DeliveryPlanningService
 		}
 		final ImmutableList<I_M_Delivery_Planning> deliveryPlanningRecords = recordsCollector.build();
 
-		final DeliveryPlanningAddresses addresses = loadAddresses(deliveryPlanningRecords);
-		final ImmutableMap<DeliveryPlanningId, ShipperTransportationId> allocatedInstructionIds = deliveryPlanningRepository.getAllocatedInstructionIds(
-				deliveryPlanningRecords.stream()
-						.map(record -> DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID()))
-						.collect(ImmutableSet.toImmutableSet()));
+		return toDeliveryPlanningList(
+				deliveryPlanningRecords,
+				deliveryPlanningRepository.getAllocatedInstructionIds(
+						deliveryPlanningRecords.stream()
+								.map(record -> DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID()))
+								.collect(ImmutableSet.toImmutableSet())));
+	}
 
-		return DeliveryPlanningList.ofCollection(deliveryPlanningRecords.stream()
+	/**
+	 * The delivery plannings a delivery instruction currently holds, as the same in-memory list a selection is
+	 * judged as - so the add-to rule can be answered against what the instruction would hold AFTERWARDS.
+	 * <p>
+	 * Two batch loads and not a single per-row one: the ids of the instruction's ACTIVE allocations, then the
+	 * records behind them. Which instruction each of them sits on is not queried a second time - it is the one that
+	 * was asked for.
+	 */
+	private DeliveryPlanningList getAllocatedTo(@NonNull final ShipperTransportationId deliveryInstructionId)
+	{
+		final ImmutableSet<DeliveryPlanningId> allocatedIds = deliveryPlanningRepository.getAllocatedPlanningIds(deliveryInstructionId);
+		if (allocatedIds.isEmpty())
+		{
+			return DeliveryPlanningList.EMPTY;
+		}
+
+		return toDeliveryPlanningList(
+				deliveryPlanningRepository.getByIds(allocatedIds),
+				Maps.toMap(allocatedIds, ignoredDeliveryPlanningId -> deliveryInstructionId));
+	}
+
+	/**
+	 * The given records as the in-memory list every aggregation rule is answered against, with the addresses they
+	 * are read from batch-loaded ONCE for the whole collection.
+	 *
+	 * @param allocatedInstructionIds the delivery instruction each planning is currently allocated to, absent for
+	 * 		one that is on none. Handed in rather than queried here, because a caller that already knows it - having
+	 * 		asked for exactly the plannings of ONE instruction - would otherwise pay for a round trip to be told
+	 * 		what it just asked for.
+	 */
+	private DeliveryPlanningList toDeliveryPlanningList(
+			@NonNull final ImmutableList<I_M_Delivery_Planning> deliveryPlanningRecords,
+			@NonNull final Map<DeliveryPlanningId, ShipperTransportationId> allocatedInstructionIds)
+	{
+		final DeliveryPlanningAddresses addresses = loadAddresses(deliveryPlanningRecords);
+
+		return deliveryPlanningRecords.stream()
 				.map(record -> toDeliveryPlanning(record, addresses, allocatedInstructionIds))
-				.collect(ImmutableList.toImmutableList()));
+				.collect(DeliveryPlanningList.collect());
 	}
 
 	private static DeliveryPlanning toDeliveryPlanning(
@@ -755,14 +793,26 @@ public class DeliveryPlanningService
 		final ImmutableSet<AdmissibilityField> mismatches = selectedDeliveryPlannings.admissibilityMismatches();
 		if (!mismatches.isEmpty())
 		{
-			final ITranslatableString differingFields = mismatches.stream()
-					.map(field -> TranslatableStrings.adMessage(field.getLabel()))
-					.collect(TranslatableStrings.joining(", "));
-
-			return Optional.of(TranslatableStrings.adMessage(MSG_M_Delivery_Planning_IncompatibleSelection, differingFields));
+			return Optional.of(incompatibleMessage(mismatches));
 		}
 
 		return Optional.empty();
+	}
+
+	/**
+	 * The one rejection that names EVERY field the plannings disagree on, rather than reporting one field at a time
+	 * and making the planner fix them one action at a time.
+	 * <p>
+	 * Shared by both actions that put plannings on a delivery instruction: they write the same document under the
+	 * same header, so they owe the planner the same sentence.
+	 */
+	private static ITranslatableString incompatibleMessage(@NonNull final Set<AdmissibilityField> mismatches)
+	{
+		final ITranslatableString differingFields = mismatches.stream()
+				.map(field -> TranslatableStrings.adMessage(field.getLabel()))
+				.collect(TranslatableStrings.joining(", "));
+
+		return TranslatableStrings.adMessage(MSG_M_Delivery_Planning_IncompatibleSelection, differingFields);
 	}
 
 	private static String toIdList(@NonNull final DeliveryPlanningList deliveryPlannings)
@@ -877,10 +927,14 @@ public class DeliveryPlanningService
 	 * Lives here rather than in the process's {@code checkPreconditionsApplicable} for the same two reasons
 	 * {@link #getCombineRejectionReason(DeliveryPlanningList)} does: a cucumber step drives the rule the WebUI
 	 * drives, and the reason on the disabled button is by construction the sentence {@link #addTo} throws.
+	 * <p>
+	 * Row eligibility first, then the target: a planner resolves "this row cannot go at all" before "it cannot go
+	 * THERE". The target-side rules are the last two, and both need the plannings the target already holds to be
+	 * read - which is why they cost nothing on the selection-change path, where there is no target yet.
 	 *
 	 * @param targetDeliveryInstructionId the instruction the planner picked, or {@code null} when the parameter
 	 * 		dialog has not been shown yet - the precondition can only judge the selection, so it passes {@code null}
-	 * 		and the target-side rule is evaluated when {@code addTo} runs.
+	 * 		and the target-side rules are evaluated when {@code addTo} runs.
 	 */
 	public Optional<ITranslatableString> getAddToRejectionReason(
 			@NonNull final DeliveryPlanningList selectedDeliveryPlannings,
@@ -906,15 +960,36 @@ public class DeliveryPlanningService
 		{
 			// the target picker offers the instructions of ONE direction, so a selection spanning two has no
 			// target list to be offered at all
-			return Optional.of(TranslatableStrings.adMessage(
-					MSG_M_Delivery_Planning_IncompatibleSelection,
-					TranslatableStrings.adMessage(AdmissibilityField.Direction.getLabel())));
+			return Optional.of(incompatibleMessage(ImmutableSet.of(AdmissibilityField.Direction)));
 		}
 
-		if (targetDeliveryInstructionId != null
-				&& !deliveryPlanningRepository.getDeliveryInstructionDocStatus(targetDeliveryInstructionId).isDrafted())
+		if (targetDeliveryInstructionId == null)
+		{
+			// the parameter dialog has not been shown yet, so the two target-side rules below cannot be evaluated;
+			// they are, when addTo runs with the instruction the planner picked
+			return Optional.empty();
+		}
+
+		if (!deliveryPlanningRepository.getDeliveryInstructionDocStatus(targetDeliveryInstructionId).isDrafted())
 		{
 			return Optional.of(TranslatableStrings.adMessage(MSG_M_Delivery_Planning_TargetInstructionNotDraft));
+		}
+
+		// The SAME admissibility rule Combine applies, over what the instruction would hold AFTERWARDS rather than
+		// over the selection alone: the header holds one forwarder, one incoterm, one incoterm location, one means
+		// of transportation and one loading and delivery address, so a planning whose own differ would end up under
+		// a document that does not describe its cargo - wrong on the printed paperwork, wrong at the forwarder
+		// handover, wrong at the pickup and delivery address. Judging the selection by itself is not enough, and
+		// neither is the picker's direction filter: without this, a selection Combine refuses can be put on the
+		// very instruction Combine created, one add-to at a time.
+		final ImmutableSet<AdmissibilityField> mismatches = getAllocatedTo(targetDeliveryInstructionId)
+				// a planning that is already on the target is in BOTH lists and is counted ONCE, so it is never
+				// compared against itself and reported as differing from itself
+				.union(selectedDeliveryPlannings)
+				.admissibilityMismatches();
+		if (!mismatches.isEmpty())
+		{
+			return Optional.of(incompatibleMessage(mismatches));
 		}
 
 		return Optional.empty();

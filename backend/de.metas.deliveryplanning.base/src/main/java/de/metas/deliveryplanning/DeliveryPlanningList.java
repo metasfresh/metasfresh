@@ -38,6 +38,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -152,6 +153,39 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	private DeliveryPlanningList filter(@NonNull final Predicate<DeliveryPlanning> predicate)
 	{
 		return list.stream().filter(predicate).collect(collect());
+	}
+
+	/**
+	 * This list and the given one as ONE list, so a rule that asks what a delivery instruction would hold after a
+	 * move can be answered against what it holds now TOGETHER WITH what is being put on it.
+	 * <p>
+	 * A planning that is in both is carried ONCE, keyed on its id. That is what makes adding a planning the target
+	 * already holds a no-op rather than a self-mismatch: two copies of the same row would otherwise be two entries
+	 * that {@link #admissibilityMismatches()} compares - and although they agree on every field today, the
+	 * de-duplication is what makes that a property of the list rather than a coincidence of the comparison.
+	 */
+	public DeliveryPlanningList union(@NonNull final DeliveryPlanningList other)
+	{
+		if (other.isEmpty())
+		{
+			return this;
+		}
+		if (isEmpty())
+		{
+			return other;
+		}
+
+		final LinkedHashMap<DeliveryPlanningId, DeliveryPlanning> byId = new LinkedHashMap<>();
+		for (final DeliveryPlanning deliveryPlanning : list)
+		{
+			byId.put(deliveryPlanning.getId(), deliveryPlanning);
+		}
+		for (final DeliveryPlanning deliveryPlanning : other.list)
+		{
+			byId.putIfAbsent(deliveryPlanning.getId(), deliveryPlanning);
+		}
+
+		return ofCollection(byId.values());
 	}
 
 	/**
