@@ -27,6 +27,7 @@ import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ConstantQueryFilter;
@@ -35,7 +36,11 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Delivery_Planning;
 
 public class M_Delivery_Planning_GenerateDeliveryInstruction extends JavaProcess implements IProcessPrecondition
-{	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
+{
+	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
+
+	@Param(parameterName = "IsComplete")
+	private boolean p_IsComplete;
 
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
@@ -80,7 +85,7 @@ public class M_Delivery_Planning_GenerateDeliveryInstruction extends JavaProcess
 	{
 		final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter = getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false));
 
-		deliveryPlanningService.generateDeliveryInstructions(selectedDeliveryPlanningsFilter);
+		deliveryPlanningService.generateDeliveryInstructions(selectedDeliveryPlanningsFilter, p_IsComplete);
 
 		return MSG_OK;
 

@@ -394,7 +394,18 @@ public class DeliveryPlanningService
 		return deliveryPlanningRepository.isExistNoShipperDeliveryPlannings(selectedDeliveryPlanningsFilter);
 	}
 
-	public void generateCompleteDeliveryInstruction(@NonNull final DeliveryInstructionCreateRequest deliveryInstructionRequest)
+	/**
+	 * Generates ONE delivery instruction for the given planning.
+	 * <p>
+	 * Renamed from {@code generateCompleteDeliveryInstruction} (Task B7, AC5): completion is no longer
+	 * unconditional, so a name promising completion would be a lie. Mirrors how {@link #combine(IQueryFilter, boolean)}
+	 * already takes the same {@code complete} flag for the same reason.
+	 *
+	 * @param complete complete the instruction right away instead of leaving it a draft. {@link #regenerateDeliveryInstructions}
+	 * 		is the one caller that always passes {@code true} - ReGenerate is out of scope of AC5 and keeps completing
+	 * 		exactly as it did before this flag existed.
+	 */
+	public void generateDeliveryInstruction(@NonNull final DeliveryInstructionCreateRequest deliveryInstructionRequest, final boolean complete)
 	{
 		final DeliveryInstructionUserNotificationsProducer deliveryInstructionUserNotificationsProducer = DeliveryInstructionUserNotificationsProducer.newInstance();
 
@@ -402,7 +413,10 @@ public class DeliveryPlanningService
 
 		final I_M_ShipperTransportation deliveryInstruction = deliveryPlanningRepository.generateDeliveryInstruction(deliveryInstructionRequest);
 
-		docActionBL.processEx(deliveryInstruction, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+		if (complete)
+		{
+			docActionBL.processEx(deliveryInstruction, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+		}
 
 		deliveryInstructionUserNotificationsProducer
 				.notifyGenerated(deliveryInstruction);
@@ -740,7 +754,14 @@ public class DeliveryPlanningService
 		}
 	}
 
-	public void generateDeliveryInstructions(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	/**
+	 * Generates one delivery instruction PER selected planning - as opposed to {@link #combine}, which puts the
+	 * whole selection on ONE instruction.
+	 *
+	 * @param complete complete every generated instruction right away instead of leaving it a draft (AC5: Generate
+	 * 		does not complete by default, same as Combine).
+	 */
+	public void generateDeliveryInstructions(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter, final boolean complete)
 	{
 		final ICompositeQueryFilter<I_M_Delivery_Planning> deliveryPlanningsSuitableForInstruction = deliveryPlanningRepository
 				.excludeUnsuitableForInstruction(selectedDeliveryPlanningsFilter);
@@ -752,7 +773,7 @@ public class DeliveryPlanningService
 
 			final DeliveryInstructionCreateRequest deliveryInstructionRequest = createDeliveryInstructionRequest(DeliveryPlanningId.ofRepoId(deliveryPlanningRecord.getM_Delivery_Planning_ID()));
 
-			generateCompleteDeliveryInstruction(deliveryInstructionRequest);
+			generateDeliveryInstruction(deliveryInstructionRequest, complete);
 		}
 	}
 
@@ -1143,9 +1164,10 @@ public class DeliveryPlanningService
 			final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoId(deliveryPlanningRecord.getM_Delivery_Planning_ID());
 			voidLinkedDeliveryInstructions(deliveryPlanningId);
 
-			// then generate a new one
+			// then generate a new one, always completed - ReGenerate is out of AC5's scope (Generate/Combine only)
+			// and keeps completing exactly as it did before Generate/Combine gained the option not to
 			final DeliveryInstructionCreateRequest deliveryInstructionRequest = createDeliveryInstructionRequest(deliveryPlanningId);
-			generateCompleteDeliveryInstruction(deliveryInstructionRequest);
+			generateDeliveryInstruction(deliveryInstructionRequest, true);
 		}
 	}
 

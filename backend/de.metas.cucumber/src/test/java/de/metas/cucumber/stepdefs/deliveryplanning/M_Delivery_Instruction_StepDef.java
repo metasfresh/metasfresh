@@ -61,6 +61,22 @@ public class M_Delivery_Instruction_StepDef
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+	/**
+	 * Generates one delivery instruction ({@code M_ShipperTransportation}) for the given delivery planning, via
+	 * {@link DeliveryPlanningService#generateDeliveryInstructions(IQueryFilter, boolean)} - the same code path the
+	 * {@code M_Delivery_Planning_GenerateDeliveryInstruction} process drives.
+	 * <p>
+	 * Required column: {@code M_Delivery_Planning_ID.Identifier} - the planning to generate for.
+	 * <p>
+	 * Optional column: {@code OPT.IsComplete} - complete the generated instruction right away instead of leaving it
+	 * a draft. Defaults to {@code false}, mirroring the process parameter's default (AC5: Generate does not
+	 * complete by default).
+	 * <pre>
+	 * When generate M_ShipperTransportation for M_Delivery_Planning:
+	 *   | M_ShipperTransportation_ID.Identifier | M_Delivery_Planning_ID.Identifier | OPT.IsComplete |
+	 *   | deliveryInstruction                   | deliveryPlanning                  | true           |
+	 * </pre>
+	 */
 	@And("generate M_ShipperTransportation for M_Delivery_Planning:")
 	public void generate_Delivery_Instructions(@NonNull final DataTable dataTable)
 	{
@@ -70,7 +86,8 @@ public class M_Delivery_Instruction_StepDef
 			final I_M_Delivery_Planning deliveryPlanning = deliveryPlanningTable.get(deliveryPlanningIdentifier);
 			assertThat(deliveryPlanning).isNotNull();
 
-			deliveryPlanningService.generateDeliveryInstructions(getQueryFilterFor(deliveryPlanning));
+			final boolean isComplete = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT.IsComplete", false);
+			deliveryPlanningService.generateDeliveryInstructions(getQueryFilterFor(deliveryPlanning), isComplete);
 
 			InterfaceWrapperHelper.refresh(deliveryPlanning);
 
