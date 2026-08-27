@@ -86,18 +86,4 @@ public class M_ShipperTransportation
 		deliveryPlanningService.getCompleteRejectionReason(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()))
 				.ifPresent(reason -> {throw new AdempiereException(reason);});
 	}
-
-	/**
-	 * Cascades the instruction's {@code DocStatus} and {@code Processed} onto every one of its active allocations,
-	 * on complete and on re-activate. Void is not one of these timings: it already
-	 * deactivates the allocation via {@link #unlinkDeliveryPlannings(I_M_ShipperTransportation)}, which is where
-	 * §3d of the aggregation design puts it, and not in {@code MMShipperTransportation.voidIt()} - voiding a
-	 * COMPLETED instruction does not run that method's own line-deactivation branch, so the deactivation has to
-	 * happen here regardless of which DocStatus the instruction was voided from.
-	 */
-	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE, ModelValidator.TIMING_AFTER_REACTIVATE })
-	public void cascadeDocStatusToAllocations(@NonNull final I_M_ShipperTransportation shipperTransportation)
-	{
-		deliveryPlanningService.cascadeDocStatusToAllocations(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()));
-	}
 }

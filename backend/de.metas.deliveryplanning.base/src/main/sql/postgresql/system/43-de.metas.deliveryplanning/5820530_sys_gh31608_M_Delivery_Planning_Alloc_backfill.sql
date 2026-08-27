@@ -104,7 +104,6 @@
 --                         whole backfill is one INSERT statement (atomic) applied at most once
 --                         (tracked by AD_MigrationScript); it cannot leave some sibling rows of
 --                         one instruction inserted and others not.
---   DocStatus, Processed  mirrored from the INSTRUCTION (st), exactly like createAllocation()
 --   AD_Org_ID              the INSTRUCTION's org, not the planning's (createAllocation() sets
 --                         it from deliveryInstructionRecord, not the planning)
 --   AD_Client_ID           mirrored from the instruction for the same reason. Proven, not just
@@ -296,7 +295,7 @@ SELECT public.dba_seq_check_native('M_Delivery_Planning_Alloc');
 INSERT INTO M_Delivery_Planning_Alloc (
     M_Delivery_Planning_Alloc_ID,
     M_Delivery_Planning_ID, M_ShipperTransportation_ID, M_ShippingPackage_ID,
-    LineNo, DocStatus, Processed,
+    LineNo,
     AD_Client_ID, AD_Org_ID, IsActive,
     Created, CreatedBy, Updated, UpdatedBy)
 SELECT nextval('m_delivery_planning_alloc_seq'),
@@ -304,7 +303,6 @@ SELECT nextval('m_delivery_planning_alloc_seq'),
        COALESCE(existing_max.max_lineno, 0)
            + (ROW_NUMBER() OVER (PARTITION BY st.M_ShipperTransportation_ID
                                   ORDER BY dp.M_Delivery_Planning_ID) * 10),
-       st.DocStatus, st.Processed,
        st.AD_Client_ID, st.AD_Org_ID, 'Y',
        TO_TIMESTAMP('2026-08-27 09:00:00', 'YYYY-MM-DD HH24:MI:SS'), 99,
        TO_TIMESTAMP('2026-08-27 09:00:00', 'YYYY-MM-DD HH24:MI:SS'), 99
@@ -349,12 +347,10 @@ WHERE dp.M_ShipperTransportation_ID > 0
 --       GROUP BY M_Delivery_Planning_ID HAVING count(*) > 1;
 --     SELECT M_ShippingPackage_ID, count(*) FROM M_Delivery_Planning_Alloc WHERE IsActive='Y'
 --       GROUP BY M_ShippingPackage_ID HAVING count(*) > 1;
--- (d) every allocation's DocStatus/Processed/AD_Org_ID/AD_Client_ID equals its instruction's
---     (expect 0):
+-- (d) every allocation's AD_Org_ID/AD_Client_ID equals its instruction's (expect 0):
 --     SELECT count(*) FROM M_Delivery_Planning_Alloc a
 --       JOIN M_ShipperTransportation st ON st.M_ShipperTransportation_ID = a.M_ShipperTransportation_ID
---      WHERE a.DocStatus <> st.DocStatus OR a.Processed <> st.Processed
---         OR a.AD_Org_ID <> st.AD_Org_ID OR a.AD_Client_ID <> st.AD_Client_ID;
+--      WHERE a.AD_Org_ID <> st.AD_Org_ID OR a.AD_Client_ID <> st.AD_Client_ID;
 -- (e) LineNo is non-zero and matches the Java's numbering for a single-member instruction
 --     (expect 8, all =10, and 0 for the "<>10" count):
 --     SELECT count(*), count(*) FILTER (WHERE LineNo = 0) FROM M_Delivery_Planning_Alloc;

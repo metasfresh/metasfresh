@@ -1206,16 +1206,6 @@ public class DeliveryPlanningService
 		}
 	}
 
-	/**
-	 * Mirrors the instruction's {@code DocStatus} and {@code Processed} onto every one of its active allocations -
-	 * the cascade a complete or a re-activate owes them. Void is not a caller: it already
-	 * deactivates the allocation as part of {@link #unlinkDeliveryPlannings(ShipperTransportationId)}.
-	 */
-	public void cascadeDocStatusToAllocations(@NonNull final ShipperTransportationId deliveryInstructionId)
-	{
-		deliveryPlanningRepository.updateAllocationsDocStatus(deliveryInstructionId);
-	}
-
 	public void regenerateDeliveryInstructions(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
 		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter = deliveryPlanningRepository

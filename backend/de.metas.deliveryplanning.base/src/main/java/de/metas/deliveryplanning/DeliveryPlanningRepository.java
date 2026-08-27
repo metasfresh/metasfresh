@@ -578,8 +578,6 @@ public class DeliveryPlanningRepository
 		allocRecord.setM_ShipperTransportation_ID(deliveryInstructionRecord.getM_ShipperTransportation_ID());
 		allocRecord.setM_ShippingPackage_ID(shippingPackageRecord.getM_ShippingPackage_ID());
 		allocRecord.setLineNo(lineNo);
-		allocRecord.setDocStatus(extractDocStatus(deliveryInstructionRecord).getCode());
-		allocRecord.setProcessed(deliveryInstructionRecord.isProcessed());
 		saveRecord(allocRecord);
 
 		return DeliveryPlanningAllocId.ofRepoId(allocRecord.getM_Delivery_Planning_Alloc_ID());
@@ -661,9 +659,6 @@ public class DeliveryPlanningRepository
 	 */
 	public void deactivateAllocations(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
-		final I_M_ShipperTransportation deliveryInstructionRecord = load(deliveryInstructionId, I_M_ShipperTransportation.class);
-		final DocStatus docStatus = extractDocStatus(deliveryInstructionRecord);
-
 		final List<I_M_Delivery_Planning_Alloc> allocRecords = queryActiveAllocationsByInstructionId(deliveryInstructionId).create().list();
 		final ImmutableMap<Integer, I_M_ShippingPackage> shippingPackages = getShippingPackagesOf(allocRecords);
 
@@ -673,34 +668,7 @@ public class DeliveryPlanningRepository
 			shippingPackageRecord.setIsActive(false);
 			saveRecord(shippingPackageRecord);
 
-			allocRecord.setDocStatus(docStatus.getCode());
-			allocRecord.setProcessed(true);
 			allocRecord.setIsActive(false);
-			saveRecord(allocRecord);
-		}
-	}
-
-	/**
-	 * Mirrors the instruction's {@code DocStatus} and {@code Processed} onto every ACTIVE allocation - the write
-	 * {@link #createAllocation} stamps once at creation time but nothing kept in sync afterwards, so completing or
-	 * re-activating an instruction used to leave every allocation's mirror stale.
-	 * <p>
-	 * Deliberately does NOT touch {@code IsActive}, and is therefore NOT what void calls:
-	 * {@link #deactivateAllocations(ShipperTransportationId)} already stamps both columns as part of deactivating
-	 * the row, and a void instruction's allocation must end up deactivated, not merely mirrored. This method is for
-	 * the two transitions that leave the allocation ACTIVE - complete and re-activate.
-	 */
-	public void updateAllocationsDocStatus(@NonNull final ShipperTransportationId deliveryInstructionId)
-	{
-		final I_M_ShipperTransportation deliveryInstructionRecord = load(deliveryInstructionId, I_M_ShipperTransportation.class);
-		final DocStatus docStatus = extractDocStatus(deliveryInstructionRecord);
-		final boolean processed = deliveryInstructionRecord.isProcessed();
-
-		final List<I_M_Delivery_Planning_Alloc> allocRecords = queryActiveAllocationsByInstructionId(deliveryInstructionId).create().list();
-		for (final I_M_Delivery_Planning_Alloc allocRecord : allocRecords)
-		{
-			allocRecord.setDocStatus(docStatus.getCode());
-			allocRecord.setProcessed(processed);
 			saveRecord(allocRecord);
 		}
 	}
@@ -770,9 +738,8 @@ public class DeliveryPlanningRepository
 	/**
 	 * The {@code DocStatus} of each of the given delivery instructions, in one round trip.
 	 * <p>
-	 * The instruction's own {@code DocStatus} is the authority on whether it is still a draft - not the one
-	 * mirrored onto the allocation, which is a copy taken when the allocation was written and says nothing about
-	 * what the document did afterwards.
+	 * The allocation itself carries no {@code DocStatus} - it is not a document - so this is read from the
+	 * instruction directly, the only authority on whether it is still a draft.
 	 */
 	public ImmutableMap<ShipperTransportationId, DocStatus> getDeliveryInstructionDocStatuses(@NonNull final Collection<ShipperTransportationId> deliveryInstructionIds)
 	{

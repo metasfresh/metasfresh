@@ -75,27 +75,6 @@ public interface I_M_Delivery_Planning_Alloc
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Status.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setDocStatus (java.lang.String DocStatus);
-
-	/**
-	 * Get Status.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getDocStatus();
-
-	ModelColumn<I_M_Delivery_Planning_Alloc, Object> COLUMN_DocStatus = new ModelColumn<>(I_M_Delivery_Planning_Alloc.class, "DocStatus", null);
-	String COLUMNNAME_DocStatus = "DocStatus";
-
-	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -226,27 +205,6 @@ public interface I_M_Delivery_Planning_Alloc
 
 	ModelColumn<I_M_Delivery_Planning_Alloc, Object> COLUMN_M_ShippingPackage_ID = new ModelColumn<>(I_M_Delivery_Planning_Alloc.class, "M_ShippingPackage_ID", null);
 	String COLUMNNAME_M_ShippingPackage_ID = "M_ShippingPackage_ID";
-
-	/**
-	 * Set Processed.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setProcessed (boolean Processed);
-
-	/**
-	 * Get Processed.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isProcessed();
-
-	ModelColumn<I_M_Delivery_Planning_Alloc, Object> COLUMN_Processed = new ModelColumn<>(I_M_Delivery_Planning_Alloc.class, "Processed", null);
-	String COLUMNNAME_Processed = "Processed";
 
 	/**
 	 * Get Updated.

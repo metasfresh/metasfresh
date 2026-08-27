@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_Delivery_Planning_Alloc extends org.compiere.model.PO implements I_M_Delivery_Planning_Alloc, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -893791322L;
+	private static final long serialVersionUID = -162791540L;
 
     /** Standard Constructor */
     public X_M_Delivery_Planning_Alloc (final Properties ctx, final int M_Delivery_Planning_Alloc_ID, @Nullable final String trxName)
@@ -32,47 +32,6 @@ public class X_M_Delivery_Planning_Alloc extends org.compiere.model.PO implement
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
-	}
-
-	/** 
-	 * DocStatus AD_Reference_ID=131
-	 * Reference name: _Document Status
-	 */
-	public static final int DOCSTATUS_AD_Reference_ID=131;
-	/** Drafted = DR */
-	public static final String DOCSTATUS_Drafted = "DR";
-	/** Completed = CO */
-	public static final String DOCSTATUS_Completed = "CO";
-	/** Approved = AP */
-	public static final String DOCSTATUS_Approved = "AP";
-	/** NotApproved = NA */
-	public static final String DOCSTATUS_NotApproved = "NA";
-	/** Voided = VO */
-	public static final String DOCSTATUS_Voided = "VO";
-	/** Invalid = IN */
-	public static final String DOCSTATUS_Invalid = "IN";
-	/** Reversed = RE */
-	public static final String DOCSTATUS_Reversed = "RE";
-	/** Closed = CL */
-	public static final String DOCSTATUS_Closed = "CL";
-	/** Unknown = ?? */
-	public static final String DOCSTATUS_Unknown = "??";
-	/** InProgress = IP */
-	public static final String DOCSTATUS_InProgress = "IP";
-	/** WaitingPayment = WP */
-	public static final String DOCSTATUS_WaitingPayment = "WP";
-	/** WaitingConfirmation = WC */
-	public static final String DOCSTATUS_WaitingConfirmation = "WC";
-	@Override
-	public void setDocStatus (final java.lang.String DocStatus)
-	{
-		set_Value (COLUMNNAME_DocStatus, DocStatus);
-	}
-
-	@Override
-	public java.lang.String getDocStatus() 
-	{
-		return get_ValueAsString(COLUMNNAME_DocStatus);
 	}
 
 	@Override
@@ -145,17 +104,5 @@ public class X_M_Delivery_Planning_Alloc extends org.compiere.model.PO implement
 	public int getM_ShippingPackage_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_ShippingPackage_ID);
-	}
-
-	@Override
-	public void setProcessed (final boolean Processed)
-	{
-		set_Value (COLUMNNAME_Processed, Processed);
-	}
-
-	@Override
-	public boolean isProcessed() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_Processed);
 	}
 }

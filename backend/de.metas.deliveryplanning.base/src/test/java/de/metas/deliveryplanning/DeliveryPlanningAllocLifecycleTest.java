@@ -45,7 +45,6 @@ import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
@@ -177,8 +176,8 @@ class DeliveryPlanningAllocLifecycleTest
 	}
 
 	@Test
-	@DisplayName("void deactivates the allocation and its package, and mirrors the instruction's DocStatus")
-	void deactivateFlipsIsActiveOnBothAndMirrorsDocStatus()
+	@DisplayName("void deactivates both the allocation and its package")
+	void deactivateFlipsIsActiveOnBoth()
 	{
 		final ShipperTransportationId deliveryInstructionId = createDeliveryInstruction(DocStatus.Drafted, false);
 		deliveryPlanningRepository.createAllocations(deliveryInstructionId, ImmutableList.of(allocRequestFor(createDeliveryPlanning())));
@@ -194,8 +193,6 @@ class DeliveryPlanningAllocLifecycleTest
 
 		final I_M_Delivery_Planning_Alloc allocAfter = reload(allocBefore);
 		assertThat(allocAfter.isActive()).isFalse();
-		assertThat(allocAfter.isProcessed()).isTrue();
-		assertThat(allocAfter.getDocStatus()).isEqualTo(DocStatus.Voided.getCode());
 		assertThat(InterfaceWrapperHelper.load(shippingPackageId, I_M_ShippingPackage.class).isActive()).isFalse();
 	}
 
@@ -352,73 +349,5 @@ class DeliveryPlanningAllocLifecycleTest
 	void allocatedPlanningIdsOfAnEmptyInstruction()
 	{
 		assertThat(deliveryPlanningRepository.getAllocatedPlanningIds(createDeliveryInstruction(DocStatus.Drafted, false))).isEmpty();
-	}
-
-	// ------------------------------------------------------------------ complete / re-activate cascade
-
-	@Test
-	@DisplayName("complete mirrors DocStatus and Processed onto every active allocation, without deactivating them")
-	void updateAllocationsDocStatusMirrorsOnComplete()
-	{
-		final ShipperTransportationId deliveryInstructionId = createDeliveryInstruction(DocStatus.Drafted, false);
-		deliveryPlanningRepository.createAllocations(deliveryInstructionId, ImmutableList.of(
-				allocRequestFor(createDeliveryPlanning()), allocRequestFor(createDeliveryPlanning())));
-		final List<Integer> shippingPackageIds = allAllocations().stream().map(I_M_Delivery_Planning_Alloc::getM_ShippingPackage_ID).collect(Collectors.toList());
-
-		// the document engine has already stamped the completion by the time the after-complete hook runs
-		final I_M_ShipperTransportation deliveryInstruction = InterfaceWrapperHelper.load(deliveryInstructionId, I_M_ShipperTransportation.class);
-		deliveryInstruction.setDocStatus(DocStatus.Completed.getCode());
-		deliveryInstruction.setProcessed(true);
-		InterfaceWrapperHelper.save(deliveryInstruction);
-
-		deliveryPlanningRepository.updateAllocationsDocStatus(deliveryInstructionId);
-
-		assertThat(allAllocations())
-				.as("both allocations mirror the instruction, and neither is deactivated by a complete")
-				.allSatisfy(alloc -> {
-					assertThat(alloc.getDocStatus()).isEqualTo(DocStatus.Completed.getCode());
-					assertThat(alloc.isProcessed()).isTrue();
-					assertThat(alloc.isActive()).isTrue();
-				});
-		assertThat(shippingPackageIds).allSatisfy(packageId ->
-				assertThat(InterfaceWrapperHelper.load(packageId, I_M_ShippingPackage.class).isActive())
-						.as("a complete does not touch the package the way a void deactivates it")
-						.isTrue());
-	}
-
-	@Test
-	@DisplayName("re-activate mirrors DocStatus and Processed back onto every active allocation")
-	void updateAllocationsDocStatusMirrorsOnReActivate()
-	{
-		final ShipperTransportationId deliveryInstructionId = createDeliveryInstruction(DocStatus.Drafted, false);
-		deliveryPlanningRepository.createAllocations(deliveryInstructionId, ImmutableList.of(allocRequestFor(createDeliveryPlanning())));
-		final I_M_ShipperTransportation deliveryInstruction = InterfaceWrapperHelper.load(deliveryInstructionId, I_M_ShipperTransportation.class);
-		deliveryInstruction.setDocStatus(DocStatus.Completed.getCode());
-		deliveryInstruction.setProcessed(true);
-		InterfaceWrapperHelper.save(deliveryInstruction);
-		deliveryPlanningRepository.updateAllocationsDocStatus(deliveryInstructionId);
-
-		// the document engine has already stamped the re-activation by the time the after-reactivate hook runs
-		deliveryInstruction.setDocStatus(DocStatus.InProgress.getCode());
-		deliveryInstruction.setProcessed(false);
-		InterfaceWrapperHelper.save(deliveryInstruction);
-
-		deliveryPlanningRepository.updateAllocationsDocStatus(deliveryInstructionId);
-
-		final I_M_Delivery_Planning_Alloc allocAfter = allAllocations().get(0);
-		assertThat(allocAfter.getDocStatus()).isEqualTo(DocStatus.InProgress.getCode());
-		assertThat(allocAfter.isProcessed()).isFalse();
-		assertThat(allocAfter.isActive()).isTrue();
-	}
-
-	@Test
-	@DisplayName("updateAllocationsDocStatus of an instruction that holds nothing is a no-op, not a failure")
-	void updateAllocationsDocStatusOfAnEmptyInstructionIsANoOp()
-	{
-		final ShipperTransportationId deliveryInstructionId = createDeliveryInstruction(DocStatus.Completed, true);
-
-		deliveryPlanningRepository.updateAllocationsDocStatus(deliveryInstructionId);
-
-		assertThat(allAllocations()).isEmpty();
 	}
 }
