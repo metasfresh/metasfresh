@@ -362,3 +362,151 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
     And expect inventory valuation report
       | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt | InventoryValueAcctAmt |
       | 2024-03-27 | finProd      | warehouseStd   | 8   | 34.0000        | 272.00           | 272.00                |
+
+  @from:cucumber
+  @Id:S30811_TC4
+  Scenario: Distribute discharges the residual on the MovingAverageInvoice costing method too
+    # Same shape as the AveragePO scenario above, but on the costing method the customer actually runs.
+    # The acct schema's costing method decides BOTH which handler owns the cost collector and which cost
+    # element's facts are postable (CostElement.isAccountable), so switching it here is the whole lever.
+    And cost elements for material costing methods MovingAverageInvoice are active
+    And update C_AcctSchema:
+      | C_AcctSchema_ID | CostingMethod |
+      | acctSchema      | M             |
+
+    # compProd's AveragePO cost stays at the Background's 10 CHF: only the MovingAverageInvoice element is
+    # seeded to 25, so a failed switch would post 100 instead of 250 below.
+    And update current costs
+      | M_Product_ID | CurrentCostPrice |
+      | compProd     | 25 CHF           |
+
+    # finProd carries its own standing cost of 20, decoupled from the 25 CHF BOM rollup.
+    And metasfresh contains single line completed inventories
+      | M_Inventory_ID | M_InventoryLine_ID | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 | CostPrice | M_HU_ID |
+      | finInventory   | finInventoryLine   | 2024-03-20   | 540008         | finProd      | 0       | 6        | PCE          | 20        | finHU   |
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
+      | acctSchema      | finProd      | MovingAverageInvoice | 20 CHF           | 6 PCE      |
+
+    And create PP_Order:
+      | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument | OPT.PP_Product_Planning_ID.Identifier |
+      | ppOrder                | MOP         | finProd                 | 10         | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | prodPlan                              |
+    And after not more than 60s, PP_Order_BomLines are found
+      | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
+      | ppOrderBomLine                 | ppOrder                | compProd                | 10           | false           | PCE               | CO            |
+    When complete planning for PP_Order:
+      | PP_Order_ID.Identifier |
+      | ppOrder                |
+
+    And create JsonWFProcessStartRequest for manufacturing and store it in context as request payload:
+      | PP_Order_ID.Identifier |
+      | ppOrder                |
+    And the metasfresh REST-API endpoint path 'api/v2/userWorkflows/wfProcess/start' receives a 'POST' request with the payload from context and responds with '200' status code
+
+    And process response and extract manufacturing step and issueTo HU manufacturing candidate:
+      | WorkflowProcess.Identifier | WorkflowActivity.Identifier | WorkflowStep.Identifier | WorkflowStepQRCode.Identifier |
+      | mfgWorkflow                | issueActivity               | issueStep               | issueQRCode                   |
+    And process response and extract manufacturing line and receiving target values:
+      | WorkflowProcess.Identifier | WorkflowActivity.Identifier | WorkflowLine.Identifier | WorkflowReceivingTargetValues.Identifier |
+      | mfgWorkflow                | receiptActivity             | receiptLine             | receivingTargetValues                    |
+
+    And create JsonManufacturingOrderEvent and store it in context as request payload:
+      | Event   | WorkflowProcess.Identifier | WorkflowActivity.Identifier | WorkflowStep.Identifier | WorkflowStepQRCode.Identifier |
+      | IssueTo | mfgWorkflow                | issueActivity               | issueStep               | issueQRCode                   |
+    And the metasfresh REST-API endpoint path 'api/v2/manufacturing/event' receives a 'POST' request with the payload from context and responds with '200' status code
+
+    And create JsonManufacturingOrderEvent and store it in context as request payload:
+      | Event       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | WorkflowLine.Identifier | WorkflowReceivingTargetValues.Identifier |
+      | ReceiveFrom | mfgWorkflow                | receiptActivity             | receiptLine             | receivingTargetValues                    |
+    And the metasfresh REST-API endpoint path 'api/v2/manufacturing/event' receives a 'POST' request with the payload from context and responds with '200' status code
+
+    And after not more than 60s, PP_Cost_Collector are found:
+      | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType |
+      | issueCostCollector              | ppOrder                | compProd                | 10          | CO        | ComponentIssue    |
+      | receiptCostCollector            | ppOrder                | finProd                 | 10          | CO        | MaterialReceipt   |
+    And Wait until documents issueCostCollector, receiptCostCollector are posted
+
+    # issued 250 - received 200 = a 50 CHF WIP residual for the Distribute action to discharge.
+    And Fact_Acct records are matching
+      | Record_ID            | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr |
+      | issueCostCollector   | P_WIP_Acct            | compProd     | 250       | 0         |
+      | issueCostCollector   | P_Asset_Acct          | compProd     | 0         | 250       |
+      | receiptCostCollector | P_Asset_Acct          | finProd      | 200       | 0         |
+      | receiptCostCollector | P_WIP_Acct            | finProd      | 0         | 200       |
+
+    # Sell 10 of the 16 PCE on hand, leaving the 6 PCE onto which the residual gets capitalized.
+    And metasfresh contains M_PricingSystems
+      | Identifier |
+      | salesPS    |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx |
+      | salesPL    | salesPS            | CH           | CHF           | true  |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID |
+      | salesPLV   | salesPL        |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | salesPLV               | finProd      | 40       | PCE      |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID |
+      | customer   | N        | Y          | salesPS            |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier       | C_BPartner_ID | C_Country_ID | IsShipToDefault | IsBillToDefault |
+      | customerLocation | customer      | CH           | Y               | Y               |
+    And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
+    And for costing, create completed order with one line
+      | C_OrderLine_ID | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | M_Product_ID | QtyEntered | Price |
+      | so1_l1         | customer      | 2024-03-26  | SOO         | 540008         | finProd      | 10         | 40    |
+    # The 10 PCE come off two HUs with different M_AttributeSetInstances, so the shipment gets one line per
+    # HU - which the 'create completed shipment with one line' helper cannot bind. Generate from the schedule.
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier |
+      | sched1     | so1_l1                    |
+    And shipment is generated for the following shipment schedule
+      | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier |
+      | shipment1             | sched1                           |
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
+      | acctSchema      | finProd      | MovingAverageInvoice | 20 CHF           | 6 PCE      |
+
+    # Lagerwert before discharging: the 6 PCE still on hand, booked on P_Asset_Acct at 20 CHF/PCE.
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt | InventoryValueAcctAmt |
+      | 2024-03-27 | finProd      | warehouseStd   | 6   | 20.0000        | 120.00           | 120.00                |
+
+    And the manufacturing order identified by ppOrder is distributed
+
+    # The collector carries no quantity at all: everything it posts is recomputed from PP_Order_Cost.
+    And after not more than 60s, PP_Cost_Collector are found:
+      | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType          |
+      | distributionCostCollector       | ppOrder                | finProd                 | 0           | CO        | CostDifferenceDistribution |
+    And Wait until documents distributionCostCollector are posted
+
+    # 50 residual over 10 manufactured = 5 CHF/PCE: 6 PCE still on hand are capitalized (30), the 10 shipped
+    # PCE spill the remaining 20 to COGS. Every leg carries a ZERO qty - the receipt already booked the qty.
+    And Fact_Acct records are matching
+      | Record_ID                 | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty   |
+      | distributionCostCollector | P_Asset_Acct          | finProd      | 30        | 0         | 0 PCE |
+      | distributionCostCollector | P_COGS_Acct           | finProd      | 20        | 0         | 0 PCE |
+      | distributionCostCollector | P_WIP_Acct            | finProd      | 0         | 50        | 0 PCE |
+
+    # 250 issued, 200 received, 50 distributed: the order's WIP nets to zero.
+    And Fact_Acct records balances for documents issueCostCollector,receiptCostCollector,distributionCostCollector are matching
+      | AccountConceptualName | SourceBalance |
+      | P_WIP_Acct            | 0 CHF         |
+
+    # Discharging closes the order, so the residual can be neither re-opened nor discharged a second time.
+    And after not more than 60s, PP_Orders are found
+      | Identifier | DocStatus |
+      | ppOrder    | CL        |
+
+    # The capitalized 30 CHF over the 6 PCE on hand raises the current cost from 20 to 25 CHF/PCE.
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
+      | acctSchema      | finProd      | MovingAverageInvoice | 25 CHF           | 6 PCE      |
+
+    # Lagerwert after discharging: qty on hand untouched (value moved only), ledger and cost price both up by
+    # the capitalized 30 CHF.
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt | InventoryValueAcctAmt |
+      | 2024-03-27 | finProd      | warehouseStd   | 6   | 25.0000        | 150.00           | 150.00                |

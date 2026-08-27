@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostingMethod;
-import de.metas.costing.IProductCostingBL;
 import de.metas.costing.methods.PPOrderCostDifferenceDistributor;
 import de.metas.document.engine.DocStatus;
 import de.metas.process.IProcessPrecondition;
@@ -34,7 +33,6 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -53,7 +51,6 @@ public class PP_Order_PostCalculation extends JavaProcess implements IProcessPre
 {
 	private final PPOrderCostDifferenceDistributor costDifferenceDistributor = SpringContextHolder.instance.getBean(PPOrderCostDifferenceDistributor.class);
 	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
-	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
 
 	/** Only these accumulate into PP_Order_Cost; without that there is no residual to discharge. */
 	private static final ImmutableSet<CostingMethod> COSTING_METHODS_WITH_ORDER_COSTS = ImmutableSet.of(
@@ -91,16 +88,18 @@ public class PP_Order_PostCalculation extends JavaProcess implements IProcessPre
 	 * Standard costing values every issue and receipt at standard and never accumulates into
 	 * {@code PP_Order_Cost}, so the residual is always zero there and the action would silently do nothing.
 	 * Offer it only for the costing methods that do accumulate.
+	 * <p>
+	 * Resolved from the accounting schema, not from the product: only a cost element whose costing method
+	 * matches the schema's is accountable, and the distributor resolves the residual the same way. Reading a
+	 * per-product-category override here would disagree with what actually posts.
 	 */
 	private boolean hasOrderCosts(@NonNull final I_PP_Order ppOrder)
 	{
 		final AcctSchema acctSchema = acctSchemasRepo.getByClientAndOrg(
 				ClientId.ofRepoId(ppOrder.getAD_Client_ID()),
 				OrgId.ofRepoId(ppOrder.getAD_Org_ID()));
-		final CostingMethod costingMethod = productCostingBL.getCostingMethod(
-				ProductId.ofRepoId(ppOrder.getM_Product_ID()), acctSchema);
 
-		return COSTING_METHODS_WITH_ORDER_COSTS.contains(costingMethod);
+		return COSTING_METHODS_WITH_ORDER_COSTS.contains(acctSchema.getCosting().getCostingMethod());
 	}
 
 	@Override
