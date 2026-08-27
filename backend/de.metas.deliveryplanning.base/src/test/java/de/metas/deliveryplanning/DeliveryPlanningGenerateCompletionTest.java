@@ -53,8 +53,7 @@ import java.math.BigDecimal;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Task B7 (AC5): whether Generate completes the delivery instruction it creates - and, unaffected by this task,
- * whether ReGenerate still does.
+ * Whether Generate completes the delivery instruction it creates - and whether regenerate still does, unaffected.
  * <p>
  * {@code generateDeliveryInstructions} and {@code regenerateDeliveryInstructions} are exercised through a REAL
  * {@link DeliveryPlanningRepository} on the unit-test in-memory store (the same setup as
@@ -211,7 +210,7 @@ class DeliveryPlanningGenerateCompletionTest
 	}
 
 	@Test
-	@DisplayName("regenerate still always completes - AC5 covers Generate and Combine only, not ReGenerate")
+	@DisplayName("regenerate still always completes, unaffected by generate's draft-or-complete option")
 	void regenerateAlwaysCompletes()
 	{
 		final I_M_Delivery_Planning planning = generatableDeliveryPlanning();

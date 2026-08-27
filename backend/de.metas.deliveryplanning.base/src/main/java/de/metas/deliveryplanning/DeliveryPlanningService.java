@@ -397,13 +397,11 @@ public class DeliveryPlanningService
 	/**
 	 * Generates ONE delivery instruction for the given planning.
 	 * <p>
-	 * Renamed from {@code generateCompleteDeliveryInstruction} (Task B7, AC5): completion is no longer
-	 * unconditional, so a name promising completion would be a lie. Mirrors how {@link #combine(IQueryFilter, boolean)}
-	 * already takes the same {@code complete} flag for the same reason.
+	 * Mirrors how {@link #combine(IQueryFilter, boolean)} takes the same {@code complete} flag: completion is
+	 * optional, not automatic, so a name promising completion unconditionally would be a lie.
 	 *
 	 * @param complete complete the instruction right away instead of leaving it a draft. {@link #regenerateDeliveryInstructions}
-	 * 		is the one caller that always passes {@code true} - ReGenerate is out of scope of AC5 and keeps completing
-	 * 		exactly as it did before this flag existed.
+	 * 		is the one caller that always passes {@code true} - regenerate always completes.
 	 */
 	public void generateDeliveryInstruction(@NonNull final DeliveryInstructionCreateRequest deliveryInstructionRequest, final boolean complete)
 	{
@@ -758,8 +756,8 @@ public class DeliveryPlanningService
 	 * Generates one delivery instruction PER selected planning - as opposed to {@link #combine}, which puts the
 	 * whole selection on ONE instruction.
 	 *
-	 * @param complete complete every generated instruction right away instead of leaving it a draft (AC5: Generate
-	 * 		does not complete by default, same as Combine).
+	 * @param complete complete every generated instruction right away instead of leaving it a draft - a draft is
+	 * 		the default, same as {@link #combine(IQueryFilter, boolean)}.
 	 */
 	public void generateDeliveryInstructions(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter, final boolean complete)
 	{
@@ -1164,8 +1162,7 @@ public class DeliveryPlanningService
 			final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoId(deliveryPlanningRecord.getM_Delivery_Planning_ID());
 			voidLinkedDeliveryInstructions(deliveryPlanningId);
 
-			// then generate a new one, always completed - ReGenerate is out of AC5's scope (Generate/Combine only)
-			// and keeps completing exactly as it did before Generate/Combine gained the option not to
+			// then generate a new one, always completed - regenerate has no draft-then-complete option
 			final DeliveryInstructionCreateRequest deliveryInstructionRequest = createDeliveryInstructionRequest(deliveryPlanningId);
 			generateDeliveryInstruction(deliveryInstructionRequest, true);
 		}

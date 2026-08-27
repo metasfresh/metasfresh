@@ -69,8 +69,7 @@ public class M_Delivery_Instruction_StepDef
 	 * Required column: {@code M_Delivery_Planning_ID.Identifier} - the planning to generate for.
 	 * <p>
 	 * Optional column: {@code OPT.IsComplete} - complete the generated instruction right away instead of leaving it
-	 * a draft. Defaults to {@code false}, mirroring the process parameter's default (AC5: Generate does not
-	 * complete by default).
+	 * a draft. Defaults to {@code false}, mirroring the process parameter's default: a draft is the default.
 	 * <pre>
 	 * When generate M_ShipperTransportation for M_Delivery_Planning:
 	 *   | M_ShipperTransportation_ID.Identifier | M_Delivery_Planning_ID.Identifier | OPT.IsComplete |

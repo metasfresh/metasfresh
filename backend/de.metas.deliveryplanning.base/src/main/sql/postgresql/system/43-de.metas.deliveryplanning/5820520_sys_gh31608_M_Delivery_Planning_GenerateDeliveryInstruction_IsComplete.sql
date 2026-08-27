@@ -1,14 +1,13 @@
--- Delivery Planning: Task B7 - Generate gains an IsComplete parameter, default 'N'.
+-- Delivery Planning: Generate gains an IsComplete parameter, default 'N'.
 --
 -- Mirrors the Combine action's parameter (5820450, AD_Process_Para 543276) exactly: same element
 -- (2047 'Fertigstellen'), same reference (20 Yes-No), same seq (10), same default 'N' - Generate no
 -- longer completes the delivery instruction automatically; completing it stays available as an
--- option (AC5: neither Generate nor Combine completes by default).
+-- option, same as Combine.
 --
--- Bundled: the section 5.1(b) rename of AD_Process 585176 (approved 2026-08-26,
--- ai-work/31608/AGGREGATION-PROPOSAL.md lines 919, 1491, 1992). Drops "Lieferinstruktion" (the
--- document is named "Lieferanweisung" everywhere else in the glossary) and adds the cardinality
--- now that Generate and Combine sit side by side on the same grid:
+-- Also renames AD_Process 585176. Drops "Lieferinstruktion" (the document is named
+-- "Lieferanweisung" everywhere else in the glossary) and adds the cardinality now that Generate
+-- and Combine sit side by side on the same grid:
 --   de: "Lieferanweisung je Lieferplanung erzeugen"
 --   en: "Generate Delivery Instruction per Planning"
 --
