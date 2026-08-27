@@ -216,8 +216,8 @@ Feature: Jasper Report Tests
       | M_Delivery_Planning_ID.Identifiers | C_OrderLine_ID.Identifier |
       | deliveryPlanning_di                | so_di_l1                  |
     And generate M_ShipperTransportation for M_Delivery_Planning:
-      | M_ShipperTransportation_ID.Identifier | M_Delivery_Planning_ID.Identifier | OPT.IsComplete |
-      | deliveryInstruction_di                | deliveryPlanning_di               | true           |
+      | M_ShipperTransportation_ID | M_Delivery_Planning_ID | IsComplete |
+      | deliveryInstruction_di     | deliveryPlanning_di    | true       |
     And validate M_ShipperTransportation:
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DocStatus |
       | deliveryInstruction_di                | shipper_DHL             | customer                       | customerLocation               | CO            |

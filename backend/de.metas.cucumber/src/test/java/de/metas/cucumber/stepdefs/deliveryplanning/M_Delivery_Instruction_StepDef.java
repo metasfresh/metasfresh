@@ -22,7 +22,7 @@
 
 package de.metas.cucumber.stepdefs.deliveryplanning;
 
-import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.shipment.M_ShipperTransportation_StepDefData;
 import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.shipping.model.I_M_ShipperTransportation;
@@ -37,9 +37,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Delivery_Planning;
 
-import java.util.Map;
-
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -65,27 +62,29 @@ public class M_Delivery_Instruction_StepDef
 	 * Generates one delivery instruction ({@code M_ShipperTransportation}) for the given delivery planning, via
 	 * {@link DeliveryPlanningService#generateDeliveryInstructions(IQueryFilter, boolean)} - the same code path the
 	 * {@code M_Delivery_Planning_GenerateDeliveryInstruction} process drives.
-	 * <p>
-	 * Required column: {@code M_Delivery_Planning_ID.Identifier} - the planning to generate for.
-	 * <p>
-	 * Optional column: {@code OPT.IsComplete} - complete the generated instruction right away instead of leaving it
-	 * a draft. Defaults to {@code false}, mirroring the process parameter's default: a draft is the default.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_Delivery_Planning_ID</b> — (required, identifier-ref) the planning to generate for<br>
+	 *   <b>M_ShipperTransportation_ID</b> — (required, identifier-ref) alias to store the generated instruction under<br>
+	 *   <b>IsComplete</b> — (optional) complete the generated instruction right away instead of leaving it a draft;
+	 *   defaults to {@code false}, mirroring the process parameter's default: a draft is the default<br>
+	 * @cucumber.depends StepDefData: M_Delivery_Planning_StepDefData, M_ShipperTransportation_StepDefData
+	 * @cucumber.example
 	 * <pre>
 	 * When generate M_ShipperTransportation for M_Delivery_Planning:
-	 *   | M_ShipperTransportation_ID.Identifier | M_Delivery_Planning_ID.Identifier | OPT.IsComplete |
-	 *   | deliveryInstruction                   | deliveryPlanning                  | true           |
+	 *   | M_ShipperTransportation_ID | M_Delivery_Planning_ID | IsComplete |
+	 *   | deliveryInstruction        | deliveryPlanning        | true       |
 	 * </pre>
 	 */
 	@And("generate M_ShipperTransportation for M_Delivery_Planning:")
 	public void generate_Delivery_Instructions(@NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
+		DataTableRows.of(dataTable).forEach(row ->
 		{
-			final String deliveryPlanningIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_Delivery_Planning deliveryPlanning = deliveryPlanningTable.get(deliveryPlanningIdentifier);
-			assertThat(deliveryPlanning).isNotNull();
+			final I_M_Delivery_Planning deliveryPlanning = row.getAsIdentifier(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID).lookupNotNullIn(deliveryPlanningTable);
 
-			final boolean isComplete = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT.IsComplete", false);
+			final boolean isComplete = row.getAsOptionalBoolean("IsComplete").orElseFalse();
 			deliveryPlanningService.generateDeliveryInstructions(getQueryFilterFor(deliveryPlanning), isComplete);
 
 			InterfaceWrapperHelper.refresh(deliveryPlanning);
@@ -93,19 +92,32 @@ public class M_Delivery_Instruction_StepDef
 			assertThat(deliveryPlanning.getM_ShipperTransportation_ID()).isNotZero();
 			final I_M_ShipperTransportation deliveryInstruction = load(deliveryPlanning.getM_ShipperTransportation_ID(), I_M_ShipperTransportation.class);
 
-			final String deliveryInstructionIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Delivery_Planning.COLUMNNAME_M_ShipperTransportation_ID + "." + TABLECOLUMN_IDENTIFIER);
-			deliveryInstructionTable.putOrReplace(deliveryInstructionIdentifier, deliveryInstruction);
-		}
+			row.getAsIdentifier(I_M_Delivery_Planning.COLUMNNAME_M_ShipperTransportation_ID).putOrReplace(deliveryInstructionTable, deliveryInstruction);
+		});
 	}
 
+	/**
+	 * Regenerates the delivery instruction ({@code M_ShipperTransportation}) for the given delivery planning, via
+	 * {@link DeliveryPlanningService#regenerateDeliveryInstructions(IQueryFilter)}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_Delivery_Planning_ID</b> — (required, identifier-ref) the planning to regenerate for<br>
+	 *   <b>M_ShipperTransportation_ID</b> — (required, identifier-ref) alias to store the regenerated instruction under<br>
+	 * @cucumber.depends StepDefData: M_Delivery_Planning_StepDefData, M_ShipperTransportation_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When regenerate M_ShipperTransportation for M_Delivery_Planning:
+	 *   | M_ShipperTransportation_ID    | M_Delivery_Planning_ID |
+	 *   | deliveryInstructionRegenerated | deliveryPlanning        |
+	 * </pre>
+	 */
 	@And("regenerate M_ShipperTransportation for M_Delivery_Planning:")
 	public void regenerate_Delivery_Instructions(@NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
+		DataTableRows.of(dataTable).forEach(row ->
 		{
-			final String deliveryPlanningIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_Delivery_Planning deliveryPlanning = deliveryPlanningTable.get(deliveryPlanningIdentifier);
-			assertThat(deliveryPlanning).isNotNull();
+			final I_M_Delivery_Planning deliveryPlanning = row.getAsIdentifier(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID).lookupNotNullIn(deliveryPlanningTable);
 
 			deliveryPlanningService.regenerateDeliveryInstructions(getQueryFilterFor(deliveryPlanning));
 
@@ -114,9 +126,8 @@ public class M_Delivery_Instruction_StepDef
 			assertThat(deliveryPlanning.getM_ShipperTransportation_ID()).isNotZero();
 			final I_M_ShipperTransportation deliveryInstruction = load(deliveryPlanning.getM_ShipperTransportation_ID(), I_M_ShipperTransportation.class);
 
-			final String deliveryInstructionIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Delivery_Planning.COLUMNNAME_M_ShipperTransportation_ID + "." + TABLECOLUMN_IDENTIFIER);
-			deliveryInstructionTable.putOrReplace(deliveryInstructionIdentifier, deliveryInstruction);
-		}
+			row.getAsIdentifier(I_M_Delivery_Planning.COLUMNNAME_M_ShipperTransportation_ID).putOrReplace(deliveryInstructionTable, deliveryInstruction);
+		});
 	}
 
 	@NonNull
