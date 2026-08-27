@@ -144,6 +144,7 @@ BEGIN
         LEFT JOIN M_ShippingPackage sp
                ON sp.C_OrderLine_ID = dp.C_OrderLine_ID
               AND sp.IsActive = 'Y'
+              AND sp.M_ShipperTransportation_ID = st.M_ShipperTransportation_ID
         WHERE dp.M_ShipperTransportation_ID > 0
           AND st.DocStatus <> 'VO'
         GROUP BY dp.M_Delivery_Planning_ID
@@ -180,6 +181,7 @@ BEGIN
         JOIN M_ShippingPackage sp
           ON sp.C_OrderLine_ID = dp.C_OrderLine_ID
          AND sp.IsActive = 'Y'
+         AND sp.M_ShipperTransportation_ID = st.M_ShipperTransportation_ID
         WHERE dp.M_ShipperTransportation_ID > 0
           AND st.DocStatus <> 'VO'
         GROUP BY sp.M_ShippingPackage_ID
@@ -226,6 +228,23 @@ END $$;
 SELECT backup_table('m_delivery_planning_alloc', '_gh31608_backfill');
 
 -- ===========================================================================================
+-- Make sure the table's native PK sequence exists before nextval() is called on it.
+--
+-- 5820400 creates M_Delivery_Planning_Alloc with a raw INSERT INTO AD_Table, which never goes
+-- through MTable.afterSave() -- the Java hook that would otherwise create the sequence. The
+-- only other creator is dba_seq_check_native(), and after_migration() calls it AFTER the whole
+-- batch, i.e. after this script. So on any fresh apply where 5820400 and this script run in one
+-- batch (CI, deep_tundra_release, a customer instance) the sequence does not exist yet and the
+-- INSERT below fails with 'relation "m_delivery_planning_alloc_seq" does not exist' -- observed
+-- on https://github.com/metasfresh/metasfresh/actions/runs/33040774597. A dev stack hides this,
+-- because an app-server boot created the sequence at some point after 5820400 landed.
+--
+-- Calling it explicitly for this one table is the established pattern (e.g. 5801580 for
+-- M_Product_ASI_Data). It is a check-and-create, so it is a no-op where the sequence exists.
+-- ===========================================================================================
+SELECT public.dba_seq_check_native('M_Delivery_Planning_Alloc');
+
+-- ===========================================================================================
 -- Step 3 (§3b.3): backfill one allocation per planning-side link, reusing the instruction's
 -- existing M_ShippingPackage (resolved via the order line, see decision above).
 -- ===========================================================================================
@@ -250,6 +269,7 @@ JOIN C_DocType dt ON dt.C_DocType_ID = st.C_DocType_ID AND dt.DocSubType = 'DI'
 JOIN M_ShippingPackage sp
   ON sp.C_OrderLine_ID = dp.C_OrderLine_ID
  AND sp.IsActive = 'Y'
+ AND sp.M_ShipperTransportation_ID = st.M_ShipperTransportation_ID
 LEFT JOIN LATERAL (
     SELECT max(existing.LineNo) AS max_lineno
     FROM M_Delivery_Planning_Alloc existing
