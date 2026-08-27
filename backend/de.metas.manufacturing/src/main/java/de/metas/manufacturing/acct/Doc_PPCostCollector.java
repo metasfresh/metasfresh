@@ -415,29 +415,41 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 			return ImmutableList.of();
 		}
 
-		final Quantity qty = getMovementQty();
-
 		final Fact fact = new Fact(this, as, PostingType.Actual);
 		for (final CostDifferenceDistributionLeg leg : legs)
 		{
-			final Account account = docLine.getAccount(leg.getAcctType(), as);
-			final CostAmount absAmt = leg.getAbsAmt();
-			fact.createLine()
-					.setDocLine(docLine)
-					.setAccount(account)
-					.setAmtSource(absAmt.getCurrencyId(),
-							leg.isDebit() ? absAmt.toBigDecimal() : null,
-							leg.isDebit() ? null : absAmt.toBigDecimal())
-					.setQty(leg.isDebit() ? qty : qty.negate())
-					.additionalDescription("CostDifferenceDistribution")
-					.projectId(docLine.getC_Project_ID())
-					.activityId(docLine.getActivityId())
-					.campaignId(docLine.getC_Campaign_ID())
-					.locatorId(docLine.getM_Locator_ID())
-					.buildAndAdd();
+			addCostDifferenceFactLine(fact, docLine, leg, as);
 		}
 
 		return ImmutableList.of(fact);
+	}
+
+	/**
+	 * The posting moves value only: it discharges a cost residual that the receipt already accounted for in
+	 * quantity terms. The line therefore carries a ZERO qty - a non-zero one would be counted a second time by
+	 * the inventory valuation (Lagerwert) report.
+	 */
+	private void addCostDifferenceFactLine(
+			@NonNull final Fact fact,
+			@NonNull final DocLine_CostCollector docLine,
+			@NonNull final CostDifferenceDistributionLeg leg,
+			@NonNull final AcctSchema as)
+	{
+		final Account account = docLine.getAccount(leg.getAcctType(), as);
+		final CostAmount absAmt = leg.getAbsAmt();
+		fact.createLine()
+				.setDocLine(docLine)
+				.setAccount(account)
+				.setAmtSource(absAmt.getCurrencyId(),
+						leg.isDebit() ? absAmt.toBigDecimal() : null,
+						leg.isDebit() ? null : absAmt.toBigDecimal())
+				.setQty(getMovementQty().toZero())
+				.additionalDescription("CostDifferenceDistribution")
+				.projectId(docLine.getC_Project_ID())
+				.activityId(docLine.getActivityId())
+				.campaignId(docLine.getC_Campaign_ID())
+				.locatorId(docLine.getM_Locator_ID())
+				.buildAndAdd();
 	}
 
 	/**

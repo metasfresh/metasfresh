@@ -47,8 +47,6 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.PPOrderCost;
 import org.eevolution.api.PPOrderCostTrxType;
-import org.eevolution.api.PPOrderCosts;
-import org.eevolution.api.PPOrderId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -70,7 +68,6 @@ public class PPOrderCostDifferenceDistributorTest
 	private static final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(1);
 	private static final CostElementId materialCostElementId = CostElementId.ofRepoId(1);
 	private static final ProductId mainProductId = ProductId.ofRepoId(1);
-	private static final ProductId componentProductId = ProductId.ofRepoId(2);
 
 	@BeforeEach
 	public void beforeEach()
@@ -112,7 +109,7 @@ public class PPOrderCostDifferenceDistributorTest
 	{
 		final CostAmountDetailed split = PPOrderCostDifferenceDistributor.computeSplit(
 				CostAmount.of(40, currencyId),
-				Quantity.of(10, uomEach),
+				mainProductCostWithAccumulatedQty(10),
 				currentCost("30", "8"));
 
 		assertThat(split.getMainAmt().toBigDecimal()).isEqualTo("40");
@@ -125,7 +122,7 @@ public class PPOrderCostDifferenceDistributorTest
 	{
 		final CostAmountDetailed split = PPOrderCostDifferenceDistributor.computeSplit(
 				CostAmount.of(-40, currencyId),
-				Quantity.of(10, uomEach),
+				mainProductCostWithAccumulatedQty(10),
 				currentCost("30", "20"));
 
 		assertThat(split.getMainAmt().toBigDecimal()).isEqualTo("-40");
@@ -133,39 +130,15 @@ public class PPOrderCostDifferenceDistributorTest
 		assertThat(split.getAlreadyShippedAmt().toBigDecimal()).isEqualTo("0");
 	}
 
-	@Test
-	public void residual_isIssuedMinusReceived_fromPPOrderCostRows()
+	/** The manufactured qty {@code computeSplit} works off is the main-product line's accumulated qty. */
+	private PPOrderCost mainProductCostWithAccumulatedQty(final int accumulatedQty)
 	{
-		final CostPrice componentPrice = costPrice("10"); // issued price total per unit
-		final CostPrice mainPrice = costPrice("6");
-
-		final PPOrderCost issuedRow = PPOrderCost.builder()
-				.trxType(PPOrderCostTrxType.MaterialIssue)
-				.costSegmentAndElement(segment(componentProductId))
-				.price(componentPrice)
-				.accumulatedQty(Quantity.of(-10, uomEach)) // outbound qty stored negative
-				.build();
-
-		final PPOrderCost receivedRow = PPOrderCost.builder()
+		return PPOrderCost.builder()
 				.trxType(PPOrderCostTrxType.MainProduct)
 				.costSegmentAndElement(segment(mainProductId))
-				.price(mainPrice)
-				.accumulatedQty(Quantity.of(10, uomEach))
-				.postCalculationAmount(CostAmount.of(60, currencyId))
+				.price(costPrice("30"))
+				.accumulatedQty(Quantity.of(accumulatedQty, uomEach))
 				.build();
-
-		final PPOrderCosts orderCosts = PPOrderCosts.builder()
-				.orderId(PPOrderId.ofRepoId(1))
-				.cost(issuedRow)
-				.cost(receivedRow)
-				.build();
-
-		final PPOrderCostDifferenceDistributor.ResidualAndManufacturedQty result =
-				PPOrderCostDifferenceDistributor.computeResidualAndManufacturedQty(orderCosts, acctSchemaId, materialCostElementId);
-
-		// issued = -(-10) x 10 = 100 ; received = 60 ; residual = 40
-		assertThat(result.getResidual().toBigDecimal()).isEqualTo("40");
-		assertThat(result.getManufacturedQty().toBigDecimal()).isEqualTo("10");
 	}
 
 	private CostPrice costPrice(final String ownCostPrice)

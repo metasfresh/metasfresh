@@ -46,9 +46,12 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
       | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType | OPT.Included_HU_PI_ID.Identifier |
       | finPackLUItem              | finPackLUVersion              | 1   | HU       | finPackTU                        |
       | finPackTUItem              | finPackTUVersion              | 1   | MI       |                                  |
+    # The TU capacity has to cover the largest receipt in this feature in one go: receipt candidates are
+    # aggregated per top-level HU, so a capacity below the received qty splits the receipt into one HU - and
+    # therefore one MaterialReceipt cost collector - per TU.
     And metasfresh contains M_HU_PI_Item_Product:
       | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
-      | finProdItem                        | finPackTUItem              | finProd                 | 1   | 2022-01-01 |
+      | finProdItem                        | finPackTUItem              | finProd                 | 100 | 2022-01-01 |
 
     And metasfresh contains PP_Product_BOM
       | Identifier | M_Product_ID.Identifier | ValidFrom  | PP_Product_BOMVersions_ID.Identifier |
@@ -68,6 +71,10 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
     And load S_Resource:
       | S_Resource_ID.Identifier | S_Resource_ID |
       | testResource             | 540011        |
+
+    And load M_Warehouse:
+      | M_Warehouse_ID | Value        |
+      | warehouseStd   | StdWarehouse |
 
   @from:cucumber
   Scenario: Issue a component and receive the finished good, then check Fact_Acct signs
@@ -218,7 +225,7 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
     Then after not more than 60s, all ActivityControl PP_Cost_Collector for PP_Order ppOrder are posted with no Fact_Acct
 
   @from:cucumber
-  @Id:S30811_TC1
+  @Id:S30811_TC3
   Scenario: Distribute capitalizes the in-stock cost residual and spills the shipped portion to COGS
     # compProd is consumed at 34 CHF/PCE - pricier than its Background seed - so the component cost
     # exceeds the receipt valuation, leaving a WIP residual for the Distribute action to discharge.
@@ -308,29 +315,65 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
     And for costing, create completed order with one line
       | C_OrderLine_ID | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | M_Product_ID | QtyEntered | Price |
       | so1_l1         | customer      | 2024-03-26  | SOO         | 540008         | finProd      | 10         | 40    |
-    And for costing, create completed shipment with one line
-      | C_OrderLine_ID | M_InOutLine_ID |
-      | so1_l1         | shipment1_l1   |
+    # The 10 PCE are drawn from two HUs - 8 PCE off the inventory-seeded HU and 2 PCE off the
+    # manufactured receipt HU - which carry different M_AttributeSetInstances, so the shipment gets one
+    # line per HU. The 'create completed shipment with one line' helper cannot bind such a shipment, so
+    # generate it straight from its shipment schedule instead; no later step references the lines.
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier |
+      | sched1     | so1_l1                    |
+    And shipment is generated for the following shipment schedule
+      | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier |
+      | shipment1             | sched1                           |
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty |
       | acctSchema      | finProd      | AveragePO        | 30 CHF           | 8 PCE      |
 
+    # Lagerwert before discharging: the 8 PCE still on hand, booked on P_Asset_Acct at 30 CHF/PCE
+    # (240 seeded by the inventory + 300 received - 300 shipped).
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt | InventoryValueAcctAmt |
+      | 2024-03-27 | finProd      | warehouseStd   | 8   | 30.0000        | 240.00           | 240.00                |
+
     And the manufacturing order identified by ppOrder is distributed
 
+    # The collector carries no quantity at all: everything it posts is recomputed from PP_Order_Cost.
     And after not more than 60s, PP_Cost_Collector are found:
       | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType          |
-      | distributionCostCollector       | ppOrder                | finProd                 | 10          | CO        | CostDifferenceDistribution |
+      | distributionCostCollector       | ppOrder                | finProd                 | 0           | CO        | CostDifferenceDistribution |
     And Wait until documents distributionCostCollector are posted
 
     # Balanced WIP discharge: DR P_Asset (32, capitalized onto finProd's current cost) + DR P_COGS
     # (8, spilled - already shipped) / CR P_WIP (40, the residual computed above).
+    # Every leg carries a ZERO qty - the receipt already accounted for the quantity, so a qty here would be
+    # counted a second time by the inventory valuation report.
     And Fact_Acct records are matching
-      | Record_ID                 | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr |
-      | distributionCostCollector | P_Asset_Acct          | finProd      | 32        | 0         |
-      | distributionCostCollector | P_COGS_Acct           | finProd      | 8         | 0         |
-      | distributionCostCollector | P_WIP_Acct            | finProd      | 0         | 40        |
+      | Record_ID                 | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty   |
+      | distributionCostCollector | P_Asset_Acct          | finProd      | 32        | 0         | 0 PCE |
+      | distributionCostCollector | P_COGS_Acct           | finProd      | 8         | 0         | 0 PCE |
+      | distributionCostCollector | P_WIP_Acct            | finProd      | 0         | 40        | 0 PCE |
+
+    # The order's WIP is now fully discharged: 340 issued, 300 received and 40 distributed net to zero over
+    # the order's three cost collectors. No product column: the issue books WIP on the component, the receipt
+    # and the distribution on the finished good.
+    And Fact_Acct records balances for documents issueCostCollector,receiptCostCollector,distributionCostCollector are matching
+      | AccountConceptualName | SourceBalance |
+      | P_WIP_Acct            | 0 CHF         |
+
+    # Discharging closes the order, so neither a further issue/receipt can re-open the residual nor can the
+    # action be run a second time.
+    And after not more than 60s, PP_Orders are found
+      | Identifier | DocStatus |
+      | ppOrder    | CL        |
 
     # The capitalized 32 CHF raised finProd's current cost from 30 to 34 CHF/PCE (272 CHF over 8 PCE).
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty |
       | acctSchema      | finProd      | AveragePO        | 34 CHF           | 8 PCE      |
+
+    # Lagerwert after discharging: the quantity on hand is untouched (the distribution moved value only), while
+    # the ledger and the cost price both rose by the capitalized 32 CHF - so booked and expected value still
+    # agree. A distribution leg carrying a qty would show 18 PCE here and a cost price of 272/18.
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt | InventoryValueAcctAmt |
+      | 2024-03-27 | finProd      | warehouseStd   | 8   | 34.0000        | 272.00           | 272.00                |

@@ -34,6 +34,7 @@ import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.impl.CostDetailRepository;
 import de.metas.costing.impl.CostDetailService;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
@@ -159,31 +160,46 @@ class PPOrderCostDifferenceDistributorCostDetailsTest
 			final String issuedPrice,
 			final String issuedQty,
 			final String receivedPrice,
-			final String receivedQty,
-			final String postCalculationAmt)
+			final String receivedQty)
 	{
+		final BigDecimal issuedQtyBD = new BigDecimal(issuedQty);
+		final BigDecimal receivedQtyBD = new BigDecimal(receivedQty);
+
+		// A component issue keeps the stock-movement direction in its qty (negative) while accumulating the
+		// cost that went INTO the order as a positive amount - exactly what the handlers persist.
 		costs.add(PPOrderCost.builder()
 				.trxType(PPOrderCostTrxType.MaterialIssue)
 				.costSegmentAndElement(segment(componentProductId, acctSchemaId, costElementId))
 				.price(costPrice(issuedPrice))
-				.accumulatedQty(Quantity.of(new BigDecimal(issuedQty), uomEach))
+				.accumulatedQty(Quantity.of(issuedQtyBD, uomEach))
+				.accumulatedAmount(CostAmount.of(new BigDecimal(issuedPrice).multiply(issuedQtyBD).negate(), currencyId))
 				.build());
 
 		costs.add(PPOrderCost.builder()
 				.trxType(PPOrderCostTrxType.MainProduct)
 				.costSegmentAndElement(segment(mainProductId, acctSchemaId, costElementId))
 				.price(costPrice(receivedPrice))
-				.accumulatedQty(Quantity.of(new BigDecimal(receivedQty), uomEach))
-				.postCalculationAmount(CostAmount.of(new BigDecimal(postCalculationAmt), currencyId))
+				.accumulatedQty(Quantity.of(receivedQtyBD, uomEach))
+				.accumulatedAmount(CostAmount.of(new BigDecimal(receivedPrice).multiply(receivedQtyBD), currencyId))
 				.build());
 	}
 
 	private void saveAll(final ImmutableList<PPOrderCost> costs)
 	{
-		Services.get(IPPOrderCostBL.class).save(PPOrderCosts.builder()
+		final PPOrderCosts orderCosts = PPOrderCosts.builder()
 				.orderId(orderId)
 				.costs(costs)
-				.build());
+				.build();
+
+		// what every costing-method handler does after an issue or a receipt
+		orderCosts.updatePostCalculationAmounts(CurrencyPrecision.ofInt(2));
+
+		Services.get(IPPOrderCostBL.class).save(orderCosts);
+	}
+
+	private CostAmount residualOf(final AcctSchemaId acctSchemaId, final CostElementId costElementId)
+	{
+		return Services.get(IPPOrderCostBL.class).getByOrderId(orderId).getResidualCost(acctSchemaId, costElementId);
 	}
 
 	private void saveCurrentCost(
@@ -252,7 +268,7 @@ class PPOrderCostDifferenceDistributorCostDetailsTest
 		final AcctSchemaId schema = createAcctSchema(CostingMethod.AveragePO);
 		final CostElement costElement = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.AveragePO);
 		// issued=100, received=60 -> residual=40; 8 of the 10 manufactured are still in stock at 30
-		addPPOrderCosts(costs, schema, costElement.getId(), "10", "-10", "6", "10", "60");
+		addPPOrderCosts(costs, schema, costElement.getId(), "10", "-10", "6", "10");
 		saveCurrentCost(schema, costElement.getId(), "8", "30");
 		saveAll(costs.build());
 
@@ -273,7 +289,7 @@ class PPOrderCostDifferenceDistributorCostDetailsTest
 		final AcctSchemaId schema = createAcctSchema(CostingMethod.AveragePO);
 		final CostElement costElement = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.AveragePO);
 		// issued=10, received=50 -> residual=-40; 20 on hand at 30
-		addPPOrderCosts(costs, schema, costElement.getId(), "1", "-10", "5", "10", "50");
+		addPPOrderCosts(costs, schema, costElement.getId(), "1", "-10", "5", "10");
 		saveCurrentCost(schema, costElement.getId(), "20", "30");
 		saveAll(costs.build());
 
@@ -294,12 +310,12 @@ class PPOrderCostDifferenceDistributorCostDetailsTest
 
 		final AcctSchemaId schemaA = createAcctSchema(CostingMethod.AveragePO);
 		final CostElement costElementA = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.AveragePO);
-		addPPOrderCosts(costs, schemaA, costElementA.getId(), "10", "-10", "6", "10", "60");
+		addPPOrderCosts(costs, schemaA, costElementA.getId(), "10", "-10", "6", "10");
 		saveCurrentCost(schemaA, costElementA.getId(), "8", "30");
 
 		final AcctSchemaId schemaB = createAcctSchema(CostingMethod.StandardCosting);
 		final CostElement costElementB = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.StandardCosting);
-		addPPOrderCosts(costs, schemaB, costElementB.getId(), "1", "-10", "5", "10", "50");
+		addPPOrderCosts(costs, schemaB, costElementB.getId(), "1", "-10", "5", "10");
 		saveCurrentCost(schemaB, costElementB.getId(), "20", "30");
 
 		saveAll(costs.build());
@@ -321,7 +337,7 @@ class PPOrderCostDifferenceDistributorCostDetailsTest
 		final ImmutableList.Builder<PPOrderCost> costs = ImmutableList.builder();
 		final AcctSchemaId schema = createAcctSchema(CostingMethod.AveragePO);
 		final CostElement averagePOElement = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.AveragePO);
-		addPPOrderCosts(costs, schema, averagePOElement.getId(), "10", "-10", "6", "10", "60");
+		addPPOrderCosts(costs, schema, averagePOElement.getId(), "10", "-10", "6", "10");
 		saveCurrentCost(schema, averagePOElement.getId(), "8", "30");
 		saveAll(costs.build());
 
@@ -335,12 +351,39 @@ class PPOrderCostDifferenceDistributorCostDetailsTest
 	}
 
 	@Test
+	void theResidualIsDischargedInPPOrderCost_soASecondRunPostsNothing()
+	{
+		final ImmutableList.Builder<PPOrderCost> costs = ImmutableList.builder();
+		final AcctSchemaId schema = createAcctSchema(CostingMethod.AveragePO);
+		final CostElement costElement = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.AveragePO);
+		// issued=100, received=60 -> residual=40
+		addPPOrderCosts(costs, schema, costElement.getId(), "10", "-10", "6", "10");
+		saveCurrentCost(schema, costElement.getId(), "8", "30");
+		saveAll(costs.build());
+
+		assertThat(residualOf(schema, costElement.getId())).isEqualTo(CostAmount.of(40, currencyId));
+
+		distributor.createCostDetails(request(schema, costElement, "10"), orderId);
+
+		// the main product now carries the whole cost the order was posted at
+		assertThat(residualOf(schema, costElement.getId())).isEqualTo(CostAmount.zero(currencyId));
+
+		final CostDetailCreateResultsList secondRun = distributor.createCostDetails(
+				request(schema, costElement, "10").toBuilder()
+						.documentRef(CostingDocumentRef.ofCostCollectorId(2))
+						.build(),
+				orderId);
+		assertThat(secondRun).isEqualTo(CostDetailCreateResultsList.EMPTY);
+		assertThat(costPriceOf(schema, costElement.getId())).isEqualTo("34"); // moved once, not twice
+	}
+
+	@Test
 	void reversal_replaysTheNegatedAdjustment_andMovesTheCostPriceBack()
 	{
 		final ImmutableList.Builder<PPOrderCost> costs = ImmutableList.builder();
 		final AcctSchemaId schema = createAcctSchema(CostingMethod.AveragePO);
 		final CostElement costElement = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.AveragePO);
-		addPPOrderCosts(costs, schema, costElement.getId(), "10", "-10", "6", "10", "60");
+		addPPOrderCosts(costs, schema, costElement.getId(), "10", "-10", "6", "10");
 		saveCurrentCost(schema, costElement.getId(), "8", "30");
 		saveAll(costs.build());
 
@@ -359,5 +402,34 @@ class PPOrderCostDifferenceDistributorCostDetailsTest
 		distributor.createCostDetails(reversalRequest, orderId);
 
 		assertThat(costPriceOf(schema, costElement.getId())).isEqualTo("30");
+	}
+
+	@Test
+	void reversal_ofTheMainLeg_reopensTheResidualInPPOrderCost()
+	{
+		final ImmutableList.Builder<PPOrderCost> costs = ImmutableList.builder();
+		final AcctSchemaId schema = createAcctSchema(CostingMethod.AveragePO);
+		final CostElement costElement = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.AveragePO);
+		// issued=100, received=60 -> residual=40
+		addPPOrderCosts(costs, schema, costElement.getId(), "10", "-10", "6", "10");
+		saveCurrentCost(schema, costElement.getId(), "8", "30");
+		saveAll(costs.build());
+
+		distributor.createCostDetails(request(schema, costElement, "10"), orderId);
+		assertThat(residualOf(schema, costElement.getId())).isEqualTo(CostAmount.zero(currencyId));
+
+		// what CostingService hands the handler for the reversed MAIN leg: the stored leg, negated
+		final CostDetailCreateRequest reversalRequest = request(schema, costElement, "10").toBuilder()
+				.documentRef(CostingDocumentRef.ofCostCollectorId(2))
+				.initialDocumentRef(CostingDocumentRef.ofCostCollectorId(1))
+				.amtType(CostAmountType.MAIN)
+				.amt(CostAmount.of(-40, currencyId))
+				.qty(Quantity.zero(uomEach))
+				.build();
+
+		distributor.createCostDetails(reversalRequest, orderId);
+
+		// the order reports its imbalance again and can be distributed a second time
+		assertThat(residualOf(schema, costElement.getId())).isEqualTo(CostAmount.of(40, currencyId));
 	}
 }

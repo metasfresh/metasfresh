@@ -2,6 +2,7 @@ package org.eevolution.api;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
@@ -20,6 +21,8 @@ import lombok.Singular;
 import lombok.ToString;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -255,6 +258,53 @@ public final class PPOrderCosts
 		costs.stream()
 				.filter(PPOrderCost::isByProduct)
 				.forEach(PPOrderCost::setPostCalculationAmountAsZero);
+	}
+
+	/**
+	 * The order's not-yet-discharged WIP cost for the given accounting schema and cost element:
+	 * what post-calculation attributed to the main product (the order's total input cost) minus what the
+	 * main product actually accumulated on receipt. Positive =&gt; more was issued than received.
+	 *
+	 * @return {@code null} if the order carries no main-product cost row for that schema and cost element -
+	 * the costing engine explodes the client's cost elements against the schema being posted, so a handler can
+	 * be asked for a costing method this order has no {@code PP_Order_Cost} rows for.
+	 */
+	@Nullable
+	public CostAmount getResidualCost(
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final CostElementId costElementId)
+	{
+		final PPOrderCost mainProductCost = getMainProductCostOrNull(acctSchemaId, costElementId);
+		if (mainProductCost == null)
+		{
+			return null;
+		}
+
+		return mainProductCost.getResidualCost();
+	}
+
+	/**
+	 * @return the single main-product cost row of the given accounting schema and cost element,
+	 * or {@code null} if there is none.
+	 */
+	@Nullable
+	public PPOrderCost getMainProductCostOrNull(
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final CostElementId costElementId)
+	{
+		final List<PPOrderCost> mainProductCosts = costs.values().stream()
+				.filter(cost -> acctSchemaId.equals(cost.getAcctSchemaId()))
+				.filter(cost -> costElementId.equals(cost.getCostElementId()))
+				.filter(PPOrderCost::isMainProduct)
+				.collect(ImmutableList.toImmutableList());
+
+		if (mainProductCosts.size() > 1)
+		{
+			throw new AdempiereException("Expected at most one main-product PP_Order_Cost row for acctSchema=" + acctSchemaId
+					+ ", costElement=" + costElementId + " in " + this);
+		}
+
+		return mainProductCosts.isEmpty() ? null : mainProductCosts.get(0);
 	}
 
 	private Set<CostElementId> getCostElementIds()

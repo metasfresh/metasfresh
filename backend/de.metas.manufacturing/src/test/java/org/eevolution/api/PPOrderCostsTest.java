@@ -153,6 +153,91 @@ public class PPOrderCostsTest
 				.contains(newPrice);
 	}
 
+	/**
+	 * The main product's post-calculation amount is the total INPUT cost of the order - what post-calculation
+	 * distributes over the outputs - so it must NOT count what the outputs already accumulated.
+	 * {@link #testPostCalculation_SimpleCase()} cannot catch that: its main-product row accumulated nothing.
+	 */
+	@Test
+	public void testPostCalculation_MainProductWithAccumulatedAmount()
+	{
+		// 10 PCE of a component consumed at 34 -> 340 issued into the order,
+		// 10 PCE of the finished good received at its own current cost of 30 -> 300 received.
+		final PPOrderCosts orderCosts = PPOrderCosts.builder()
+				.orderId(ppOrderId)
+				.cost(mainProductCost(productId1, "30", "10", "300"))
+				.cost(materialIssueCost(productId2, "34", "-10", "340"))
+				.build();
+
+		orderCosts.updatePostCalculationAmounts(costingPrecision);
+
+		this.assertThatPostCalculationAmt(orderCosts, productId1).isEqualByComparingTo(new BigDecimal("340"));
+		this.assertThatPostCalculationAmt(orderCosts, productId2).isEqualByComparingTo(new BigDecimal("340"));
+	}
+
+	@Test
+	public void getResidualCost_isIssuedMinusReceived()
+	{
+		final PPOrderCosts orderCosts = PPOrderCosts.builder()
+				.orderId(ppOrderId)
+				.cost(mainProductCost(productId1, "30", "10", "300"))
+				.cost(materialIssueCost(productId2, "34", "-10", "340"))
+				.build();
+
+		orderCosts.updatePostCalculationAmounts(costingPrecision);
+
+		// 340 issued - 300 received
+		assertThat(orderCosts.getResidualCost(acctSchemaId, costElementId))
+				.isEqualTo(CostAmount.of(40, currencyId));
+	}
+
+	@Test
+	public void getResidualCost_isNullWhenThereIsNoMainProductRowForThatSchemaAndElement()
+	{
+		final PPOrderCosts orderCosts = PPOrderCosts.builder()
+				.orderId(ppOrderId)
+				.cost(mainProductCost(productId1, "30", "10", "300"))
+				.cost(materialIssueCost(productId2, "34", "-10", "340"))
+				.build();
+
+		assertThat(orderCosts.getResidualCost(AcctSchemaId.ofRepoId(2), costElementId)).isNull();
+		assertThat(orderCosts.getResidualCost(acctSchemaId, CostElementId.ofRepoId(2))).isNull();
+	}
+
+	private PPOrderCost mainProductCost(
+			@NonNull final ProductId productId,
+			@NonNull final String price,
+			@NonNull final String accumulatedQty,
+			@NonNull final String accumulatedAmount)
+	{
+		return orderCost(PPOrderCostTrxType.MainProduct, productId, price, accumulatedQty, accumulatedAmount);
+	}
+
+	private PPOrderCost materialIssueCost(
+			@NonNull final ProductId productId,
+			@NonNull final String price,
+			@NonNull final String accumulatedQty,
+			@NonNull final String accumulatedAmount)
+	{
+		return orderCost(PPOrderCostTrxType.MaterialIssue, productId, price, accumulatedQty, accumulatedAmount);
+	}
+
+	private PPOrderCost orderCost(
+			@NonNull final PPOrderCostTrxType trxType,
+			@NonNull final ProductId productId,
+			@NonNull final String price,
+			@NonNull final String accumulatedQty,
+			@NonNull final String accumulatedAmount)
+	{
+		return PPOrderCost.builder()
+				.trxType(trxType)
+				.costSegmentAndElement(costSegmentAndElement(productId))
+				.price(CostPrice.ownCostPrice(CostAmount.of(new BigDecimal(price), currencyId), uomId))
+				.accumulatedQty(Quantity.of(new BigDecimal(accumulatedQty), uom))
+				.accumulatedAmount(CostAmount.of(new BigDecimal(accumulatedAmount), currencyId))
+				.build();
+	}
+
 	private CostSegmentAndElement costSegmentAndElement(@NonNull final ProductId productId)
 	{
 		return CostSegmentAndElement.builder()

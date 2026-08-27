@@ -158,6 +158,15 @@ public class PPOrderCost
 		return getTrxType() == PPOrderCostTrxType.ByProduct;
 	}
 
+	/**
+	 * Accumulated amount and accumulated qty move independently - they do NOT have to share a sign:
+	 * <ul>
+	 * <li>a material receipt accumulates a positive amount against a positive qty;
+	 * <li>a component issue keeps the stock-movement direction in the qty (negative) while accumulating the
+	 * cost that went into the order as a positive amount;
+	 * <li>discharging the order's WIP residual accumulates an amount of either sign against no qty at all.
+	 * </ul>
+	 */
 	@NonNull
 	public PPOrderCost addingAccumulatedAmountAndQty(
 			@NonNull final CostAmount amt,
@@ -167,14 +176,6 @@ public class PPOrderCost
 		if (amt.isZero() && qty.isZero())
 		{
 			return this;
-		}
-
-		final boolean amtIsPositiveOrZero = amt.signum() >= 0;
-		final boolean amtIsNotZero = amt.signum() != 0;
-		final boolean qtyIsPositiveOrZero = qty.signum() >= 0;
-		if (amtIsNotZero && amtIsPositiveOrZero != qtyIsPositiveOrZero )
-		{
-			throw new AdempiereException("Amount and Quantity shall have the same sign: " + amt + ", " + qty);
 		}
 
 		final Quantity accumulatedQty = getAccumulatedQty();
@@ -202,6 +203,16 @@ public class PPOrderCost
 		}
 
 		return toBuilder().price(newPrice).build();
+	}
+
+	/**
+	 * @return the part of this line's post-calculation amount that is not yet reflected in what the line
+	 * accumulated. On the main-product line that is the order's WIP residual: positive when more was issued
+	 * into the order than was received out of it.
+	 */
+	public CostAmount getResidualCost()
+	{
+		return getPostCalculationAmount().subtract(getAccumulatedAmount());
 	}
 
 	/* package */void setPostCalculationAmount(@NonNull final CostAmount postCalculationAmount)

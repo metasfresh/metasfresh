@@ -102,7 +102,7 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_OrderCandidate_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Order_Candidate;
-import org.eevolution.process.PP_Order_Distribute;
+import org.eevolution.process.PP_Order_PostCalculation;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -418,15 +418,16 @@ public class PP_Order_StepDef
 	}
 
 	/**
-	 * Runs {@link PP_Order_Distribute} on the given order. It is a plain {@code AD_Process}, not a document
-	 * action, so it does not go through {@link #order_action} and leaves {@code DocStatus} untouched.
+	 * Runs {@link PP_Order_PostCalculation} on the given order. It is a plain {@code AD_Process}, not a document
+	 * action, so it does not go through {@link #order_action} — but it closes the order as part of discharging
+	 * the residual, so {@code DocStatus} ends up {@code CL}.
 	 */
 	@And("^the manufacturing order identified by (.*) is distributed$")
 	public void distributeOrder(@NonNull final String orderIdentifier)
 	{
 		final I_PP_Order orderRecord = ppOrderTable.get(orderIdentifier);
 
-		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(PP_Order_Distribute.class);
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(PP_Order_PostCalculation.class);
 
 		ProcessInfo.builder()
 				.setCtx(Env.getCtx())

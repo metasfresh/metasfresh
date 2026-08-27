@@ -30,8 +30,8 @@ import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Check;
 import org.compiere.SpringContextHolder;
-import org.eevolution.model.I_PP_Order;
 import org.eevolution.api.PPOrderId;
+import org.eevolution.model.I_PP_Order;
 
 import javax.annotation.Nullable;
 
@@ -39,7 +39,7 @@ import javax.annotation.Nullable;
  * Discharges the WIP cost residual of a manufacturing order, offered only while it is completed and
  * not yet closed.
  */
-public class PP_Order_Distribute extends JavaProcess implements IProcessPrecondition
+public class PP_Order_PostCalculation extends JavaProcess implements IProcessPrecondition
 {
 	private final PPOrderCostDifferenceDistributor costDifferenceDistributor = SpringContextHolder.instance.getBean(PPOrderCostDifferenceDistributor.class);
 
@@ -62,6 +62,9 @@ public class PP_Order_Distribute extends JavaProcess implements IProcessPrecondi
 			return false;
 		}
 
+		// Distributing closes the order, so this also withdraws the action once the residual has been
+		// discharged. After a PP_Order_UnClose the action is offered again, which is correct: the discharged
+		// residual is booked into PP_Order_Cost, so a run without further activity finds nothing to discharge.
 		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(ppOrder.getDocStatus());
 		return docStatus.isCompleted() && !docStatus.isClosed();
 	}
