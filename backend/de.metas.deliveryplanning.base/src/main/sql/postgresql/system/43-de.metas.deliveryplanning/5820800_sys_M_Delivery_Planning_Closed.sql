@@ -5,7 +5,7 @@
 INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value)
 VALUES (0,545812 /*From ID Server*/,0,TO_TIMESTAMP('2026-08-27 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',
   'Die Lieferplanung {0} ist geschlossen.','E',TO_TIMESTAMP('2026-08-27 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,
-  'M_Delivery_Planning_Closed')
+  'de.metas.deliveryplanning.DeliveryPlanningService.Closed')
 ;
 
 UPDATE AD_Message SET ErrorCode='DP_PLANNING_CLOSED', Updated=TO_TIMESTAMP('2026-08-27 10:00:01','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Message_ID=545812;

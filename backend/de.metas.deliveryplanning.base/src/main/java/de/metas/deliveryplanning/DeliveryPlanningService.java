@@ -115,7 +115,7 @@ public class DeliveryPlanningService
 	 * "Closed means finished, nothing touches it" (AC14): the rejection thrown by a process that acts on a single
 	 * closed planning (the goods-movement generators), and the per-row skip report of {@link #cancelDelivery}.
 	 */
-	public static final AdMessageKey MSG_M_Delivery_Planning_Closed = AdMessageKey.of("M_Delivery_Planning_Closed");
+	public static final AdMessageKey MSG_M_Delivery_Planning_Closed = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.Closed");
 	public static final AdMessageKey MSG_M_Delivery_Planning_AtLeastOnePerOrderLine = AdMessageKey.of("de.metas.deliveryplanning.M_Delivery_Planning_AtLeastOnePerOrderLine");
 
 	private static final AdMessageKey MSG_M_Delivery_Planning_AlreadyReferenced = AdMessageKey.of("de.metas.deliveryplanning.M_Delivery_Planning_AlreadyReferenced");

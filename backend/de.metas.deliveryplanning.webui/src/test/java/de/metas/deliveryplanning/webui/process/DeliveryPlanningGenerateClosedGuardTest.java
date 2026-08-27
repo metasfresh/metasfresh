@@ -28,7 +28,6 @@ import de.metas.deliveryplanning.DeliveryStatusColorPaletteService;
 import de.metas.deliveryplanning.MeansOfTransportationService;
 import de.metas.document.dimension.DimensionService;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
-import de.metas.i18n.AdMessageKey;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.shipping.PurchaseOrderToShipperTransportationRepository;
@@ -99,7 +98,7 @@ class DeliveryPlanningGenerateClosedGuardTest
 	{
 		assertThat(resolution.isAccepted()).isFalse();
 		assertThat(resolution.getRejectReason().translate("en_US"))
-				.contains(AdMessageKey.of("M_Delivery_Planning_Closed").toAD_Message())
+				.contains(DeliveryPlanningService.MSG_M_Delivery_Planning_Closed.toAD_Message())
 				.contains(String.valueOf(deliveryPlanningId));
 	}
 
