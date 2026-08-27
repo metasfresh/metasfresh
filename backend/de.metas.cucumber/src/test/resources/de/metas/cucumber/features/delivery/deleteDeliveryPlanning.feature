@@ -68,8 +68,8 @@ Feature: Delete delivery planning
       | deliveryPlanningDelete_2          | 5          | 5            | Outgoing                 | 2                         | orderDelete               | orderLineDelete               | customer                     | product                     | customerLocation                      | shipper_DHL                 | 2023-02-25              |
 
     When generate M_ShipperTransportation for M_Delivery_Planning:
-      | M_ShipperTransportation_ID.Identifier | M_Delivery_Planning_ID.Identifier |
-      | deliveryInstructionDelete             | deliveryPlanningDelete_1          |
+      | M_ShipperTransportation_ID.Identifier | M_Delivery_Planning_ID.Identifier | OPT.IsComplete |
+      | deliveryInstructionDelete             | deliveryPlanningDelete_1          | true           |
 
     Then validate M_ShipperTransportation:
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.ETA |

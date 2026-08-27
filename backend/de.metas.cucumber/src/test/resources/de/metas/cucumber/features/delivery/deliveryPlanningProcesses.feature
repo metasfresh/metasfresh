@@ -55,8 +55,8 @@ Feature: Delivery planning processes interaction
       | deliveryPlanningAdd_1             | 5          | 5            | Outgoing                 | orderAdd                  | orderLineAdd                  | customer                     | product                     | customerLocation                      | shipper_DHL                 | 2023-02-25              | 5                         |
 
     When generate M_ShipperTransportation for M_Delivery_Planning:
-      | M_ShipperTransportation_ID.Identifier | M_Delivery_Planning_ID.Identifier |
-      | deliveryInstructionAdd                | deliveryPlanningAdd_1             |
+      | M_ShipperTransportation_ID.Identifier | M_Delivery_Planning_ID.Identifier | OPT.IsComplete |
+      | deliveryInstructionAdd                | deliveryPlanningAdd_1             | true           |
 
     Then validate M_ShipperTransportation:
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.ETA |
@@ -134,8 +134,8 @@ Feature: Delivery planning processes interaction
       | deliveryPlanning_2                | 5          | 5            | Outgoing                 | false        | false         | 2                         |
 
     When generate M_ShipperTransportation for M_Delivery_Planning:
-      | M_ShipperTransportation_ID.Identifier | M_Delivery_Planning_ID.Identifier |
-      | deliveryInstruction                   | deliveryPlanning_2                |
+      | M_ShipperTransportation_ID.Identifier | M_Delivery_Planning_ID.Identifier | OPT.IsComplete |
+      | deliveryInstruction                   | deliveryPlanning_2                | true           |
 
     Then validate M_ShipperTransportation:
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.ETA | OPT.DocStatus |
