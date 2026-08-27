@@ -26,13 +26,16 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerStatisticsUpdater;
+import de.metas.currency.CurrencyRepository;
 import de.metas.greeting.GreetingRepository;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.api.impl.AggregationEngine;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.money.MoneyService;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.user.UserRepository;
@@ -87,6 +90,8 @@ public abstract class AbstractNewAggregationEngineTests extends AbstractAggregat
 
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
+		SpringContextHolder.registerJUnitBean(new InvoiceCandidateRecordService());
+		SpringContextHolder.registerJUnitBean(new MoneyService(new CurrencyRepository()));
 	}
 
 	@Test
