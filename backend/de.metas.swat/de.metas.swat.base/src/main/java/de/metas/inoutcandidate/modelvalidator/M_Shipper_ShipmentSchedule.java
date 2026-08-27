@@ -6,10 +6,11 @@ import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
 import java.util.Set;
 
@@ -19,7 +20,8 @@ import java.util.Set;
  * {@code OrderLineShipmentScheduleHandler#updateShipmentScheduleFromOrder} re-derives their priority from the
  * (new) shipper value.
  */
-@Validator(I_M_Shipper.class)
+@Interceptor(I_M_Shipper.class)
+@Component
 public class M_Shipper_ShipmentSchedule
 {
 	@NonNull private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
