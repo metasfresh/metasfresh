@@ -20,14 +20,14 @@
  * #L%
  */
 
-package de.metas.handlingunits.inventory;
+package de.metas.deliveryplanning.process;
 
 import de.metas.deliveryplanning.DeliveryPlanningRepository;
 import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.deliveryplanning.DeliveryStatusColorPaletteService;
 import de.metas.deliveryplanning.MeansOfTransportationService;
-import de.metas.deliveryplanning.process.M_Delivery_Planning_GenerateShortageOverage;
 import de.metas.document.dimension.DimensionService;
+import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLineFactory;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -52,17 +52,18 @@ import static org.mockito.Mockito.when;
  * {@code GenerateReceipt}/{@code GenerateShipment} carry (proven in {@code de.metas.deliveryplanning.webui}'s
  * {@code DeliveryPlanningGenerateClosedGuardTest}).
  * <p>
- * {@code M_Delivery_Planning_GenerateShortageOverage} eagerly constructs a real {@link InventoryRepository} field
- * (package-private constructor). That constructor is callable from any test class DECLARED IN this package -
- * {@code de.metas.handlingunits.inventory} - regardless of which Maven module hosts the file: this is a plain
- * classpath build, not JPMS. {@code de.metas.deliveryplanning.base} already depends on
- * {@code de.metas.handlingunits.base}, so this test lives here, in that exact package, purely to reach the
- * constructor - it registers the real instance as a JUnit bean the same way
- * {@code DeliveryPlanningGenerateClosedGuardTest} registers {@code ShipmentService} and
+ * {@code M_Delivery_Planning_GenerateShortageOverage} eagerly resolves a {@link InventoryRepository} field
+ * initializer via {@code SpringContextHolder}, so a bean must be registered for the field initializer to succeed.
+ * {@link InventoryRepository} is a {@code final} class, and this module pins Mockito {@code 2.7.22}, whose default
+ * (subclass) mock maker cannot mock final classes - {@code Mockito.mock(InventoryRepository.class)} would throw
+ * {@code MockitoException}. This module therefore opts into {@code mock-maker-inline}
+ * ({@code src/test/resources/mockito-extensions/org.mockito.plugins.MockMaker}, mirroring
+ * {@code de.metas.picking.rest-api}'s only precedent for that opt-in), which lets a real Mockito mock stand in here,
+ * exactly like {@code DeliveryPlanningGenerateClosedGuardTest} does for {@code ShipmentService} and
  * {@code PurchaseOrderToShipperTransportationRepository}.
  * <p>
- * The guard's {@code isClosed(...)} check fires BEFORE {@link InventoryRepository} is ever exercised, so the real
- * instance needs no valid data - it only has to exist so the process's field initializer does not blow up.
+ * The guard's {@code isClosed(...)} check fires BEFORE {@link InventoryRepository} is ever exercised, so the mock
+ * needs no stubbing - it only has to exist so the process's field initializer does not blow up.
  */
 class M_Delivery_Planning_GenerateShortageOverageClosedGuardTest
 {
@@ -80,9 +81,7 @@ class M_Delivery_Planning_GenerateShortageOverageClosedGuardTest
 				new ShipperTransportationDocSubTypeGuard());
 
 		SpringContextHolder.registerJUnitBean(DeliveryPlanningService.class, deliveryPlanningService);
-		// the real thing: package-private constructor, reachable only from a test class in its own package (see
-		// class javadoc) - the guard never exercises it, it only has to exist so the field initializer succeeds
-		SpringContextHolder.registerJUnitBean(InventoryRepository.class, new InventoryRepository());
+		SpringContextHolder.registerJUnitBean(InventoryRepository.class, Mockito.mock(InventoryRepository.class));
 		SpringContextHolder.registerJUnitBean(HuForInventoryLineFactory.class, Mockito.mock(HuForInventoryLineFactory.class));
 	}
 
