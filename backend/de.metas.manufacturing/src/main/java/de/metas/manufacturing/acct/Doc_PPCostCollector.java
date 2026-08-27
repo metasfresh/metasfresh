@@ -485,7 +485,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 
 		CostAmount getAbsAmt()
 		{
-			return amt.signum() < 0 ? amt.negate() : amt;
+			return amt.negateIf(amt.signum() < 0);
 		}
 	}
 }

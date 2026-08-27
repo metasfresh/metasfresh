@@ -46,6 +46,11 @@ public class PP_Order_Distribute extends JavaProcess implements IProcessPrecondi
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
+		if (!context.isSingleSelection())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection().toInternal();
+		}
+
 		final I_PP_Order ppOrder = context.getSelectedModel(I_PP_Order.class);
 		return ProcessPreconditionsResolution.acceptIf(isEligible(ppOrder));
 	}
