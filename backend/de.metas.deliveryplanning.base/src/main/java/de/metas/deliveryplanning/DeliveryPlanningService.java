@@ -275,7 +275,7 @@ public class DeliveryPlanningService
 				.incotermsId(IncotermsId.ofRepoIdOrNull(deliveryPlanningRecord.getC_Incoterms_ID()))
 				.incotermLocation(deliveryPlanningRecord.getIncotermLocation())
 				.warehouseId(WarehouseId.ofRepoId(deliveryPlanningRecord.getM_Warehouse_ID()))
-				.deliveryPlanningType(DeliveryPlanningRepository.extractDeliveryPlanningType(deliveryPlanningRecord))
+				.transportDirection(DeliveryPlanningRepository.extractTransportDirection(deliveryPlanningRecord))
 				.orderStatus(OrderStatus.ofNullableCode(deliveryPlanningRecord.getOrderStatus()))
 				.meansOfTransportationId(MeansOfTransportationId.ofRepoIdOrNull(deliveryPlanningRecord.getM_MeansOfTransportation_ID()))
 				.qtyOrdered(Quantity.of(deliveryPlanningRecord.getQtyOrdered(), uomToUse))
@@ -511,19 +511,19 @@ public class DeliveryPlanningService
 			@NonNull final DeliveryPlanningAddresses addresses,
 			@NonNull final Map<DeliveryPlanningId, ShipperTransportationId> allocatedInstructionIds)
 	{
-		final DeliveryPlanningType deliveryPlanningType = DeliveryPlanningRepository.extractDeliveryPlanningType(record);
+		final TransportDirection transportDirection = DeliveryPlanningRepository.extractTransportDirection(record);
 		final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID());
 
 		return DeliveryPlanning.builder()
 				.id(deliveryPlanningId)
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
-				.type(deliveryPlanningType)
+				.type(transportDirection)
 				.shipperId(ShipperId.ofRepoIdOrNull(record.getM_Shipper_ID()))
 				.incotermsId(IncotermsId.ofRepoIdOrNull(record.getC_Incoterms_ID()))
 				.incotermLocation(record.getIncotermLocation())
 				.meansOfTransportationId(MeansOfTransportationId.ofRepoIdOrNull(record.getM_MeansOfTransportation_ID()))
-				.loadingLocationId(extractShipFromLocationIdOrNull(record, deliveryPlanningType, addresses))
-				.deliveryLocationId(extractShipToLocationIdOrNull(record, deliveryPlanningType, addresses))
+				.loadingLocationId(extractShipFromLocationIdOrNull(record, transportDirection, addresses))
+				.deliveryLocationId(extractShipToLocationIdOrNull(record, transportDirection, addresses))
 				.etd(TimeUtil.asInstant(record.getETD()))
 				.closed(record.isClosed())
 				.deliveryInstructionId(allocatedInstructionIds.get(deliveryPlanningId))
@@ -579,7 +579,7 @@ public class DeliveryPlanningService
 
 		final OrgId orgId = OrgId.ofRepoId(deliveryPlanningRecord.getAD_Org_ID());
 
-		final DeliveryPlanningType deliveryPlanningType = DeliveryPlanningRepository.extractDeliveryPlanningType(deliveryPlanningRecord);
+		final TransportDirection transportDirection = DeliveryPlanningRepository.extractTransportDirection(deliveryPlanningRecord);
 
 		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
 				.docBaseType(DocBaseType.ShipperTransportation)
@@ -598,10 +598,10 @@ public class DeliveryPlanningService
 		final I_C_UOM uomToUse = getUomOrStockUom(deliveryPlanningRecord, productId);
 
 		final BPartnerLocationId deliveryPlanningLocationId = BPartnerLocationId.ofRepoId(deliveryPlanningRecord.getC_BPartner_ID(), deliveryPlanningRecord.getC_BPartner_Location_ID());
-		final boolean hasReceipt = deliveryPlanningType.hasReceipt();
+		final boolean hasReceipt = transportDirection.hasReceipt();
 		final DeliveryPlanningAddresses addresses = loadAddresses(ImmutableList.of(deliveryPlanningRecord));
-		final BPartnerLocationId shipFrom = extractShipFromLocationId(deliveryPlanningRecord, deliveryPlanningType, addresses);
-		final BPartnerLocationId shipTo = extractShipToLocationId(deliveryPlanningRecord, deliveryPlanningType, addresses);
+		final BPartnerLocationId shipFrom = extractShipFromLocationId(deliveryPlanningRecord, transportDirection, addresses);
+		final BPartnerLocationId shipTo = extractShipToLocationId(deliveryPlanningRecord, transportDirection, addresses);
 
 		final Dimension deliveryPlanningDimension = dimensionService.getFromRecord(deliveryPlanningRecord);
 
@@ -648,10 +648,10 @@ public class DeliveryPlanningService
 	@Nullable
 	private static BPartnerLocationId extractShipFromLocationIdOrNull(
 			@NonNull final I_M_Delivery_Planning deliveryPlanningRecord,
-			@NonNull final DeliveryPlanningType deliveryPlanningType,
+			@NonNull final TransportDirection transportDirection,
 			@NonNull final DeliveryPlanningAddresses addresses)
 	{
-		if (deliveryPlanningType.hasReceipt())
+		if (transportDirection.hasReceipt())
 		{
 			final ReceiptScheduleId receiptScheduleId = ReceiptScheduleId.ofRepoIdOrNull(deliveryPlanningRecord.getM_ReceiptSchedule_ID());
 			return receiptScheduleId != null ? addresses.getReceiptScheduleLocationId(receiptScheduleId) : null;
@@ -663,15 +663,15 @@ public class DeliveryPlanningService
 
 	/**
 	 * @return {@code null} when the record the delivery address is read from is not set - see
-	 * {@link #extractShipFromLocationIdOrNull(I_M_Delivery_Planning, DeliveryPlanningType, DeliveryPlanningAddresses)}.
+	 * {@link #extractShipFromLocationIdOrNull(I_M_Delivery_Planning, TransportDirection, DeliveryPlanningAddresses)}.
 	 */
 	@Nullable
 	private static BPartnerLocationId extractShipToLocationIdOrNull(
 			@NonNull final I_M_Delivery_Planning deliveryPlanningRecord,
-			@NonNull final DeliveryPlanningType deliveryPlanningType,
+			@NonNull final TransportDirection transportDirection,
 			@NonNull final DeliveryPlanningAddresses addresses)
 	{
-		if (DeliveryPlanningRepository.hasOwnShipment(deliveryPlanningType))
+		if (DeliveryPlanningRepository.hasOwnShipment(transportDirection))
 		{
 			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoIdOrNull(deliveryPlanningRecord.getM_ShipmentSchedule_ID());
 			return shipmentScheduleId != null ? addresses.getShipmentScheduleLocationId(shipmentScheduleId) : null;
@@ -683,10 +683,10 @@ public class DeliveryPlanningService
 
 	private static BPartnerLocationId extractShipFromLocationId(
 			@NonNull final I_M_Delivery_Planning deliveryPlanningRecord,
-			@NonNull final DeliveryPlanningType deliveryPlanningType,
+			@NonNull final TransportDirection transportDirection,
 			@NonNull final DeliveryPlanningAddresses addresses)
 	{
-		final BPartnerLocationId loadingLocationId = extractShipFromLocationIdOrNull(deliveryPlanningRecord, deliveryPlanningType, addresses);
+		final BPartnerLocationId loadingLocationId = extractShipFromLocationIdOrNull(deliveryPlanningRecord, transportDirection, addresses);
 		if (loadingLocationId == null)
 		{
 			throw new AdempiereException("Cannot determine the loading address")
@@ -698,10 +698,10 @@ public class DeliveryPlanningService
 
 	private static BPartnerLocationId extractShipToLocationId(
 			@NonNull final I_M_Delivery_Planning deliveryPlanningRecord,
-			@NonNull final DeliveryPlanningType deliveryPlanningType,
+			@NonNull final TransportDirection transportDirection,
 			@NonNull final DeliveryPlanningAddresses addresses)
 	{
-		final BPartnerLocationId deliveryLocationId = extractShipToLocationIdOrNull(deliveryPlanningRecord, deliveryPlanningType, addresses);
+		final BPartnerLocationId deliveryLocationId = extractShipToLocationIdOrNull(deliveryPlanningRecord, transportDirection, addresses);
 		if (deliveryLocationId == null)
 		{
 			throw new AdempiereException("Cannot determine the delivery address")
@@ -978,7 +978,7 @@ public class DeliveryPlanningService
 				.qtyDischarged(Quantity.of(deliveryPlanningRecord.getPlannedDischargeQuantity(), uomToUse))
 				.batchNo(deliveryPlanningRecord.getBatch())
 				.orderLineId(OrderLineId.ofRepoIdOrNull(deliveryPlanningRecord.getC_OrderLine_ID()))
-				.toBeFetched(DeliveryPlanningRepository.extractDeliveryPlanningType(deliveryPlanningRecord).hasReceipt())
+				.toBeFetched(DeliveryPlanningRepository.extractTransportDirection(deliveryPlanningRecord).hasReceipt())
 				.build();
 	}
 

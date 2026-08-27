@@ -30,41 +30,41 @@ import org.compiere.model.X_M_Delivery_Planning;
 
 import javax.annotation.Nullable;
 
-public enum DeliveryPlanningType implements ReferenceListAwareEnum
+public enum TransportDirection implements ReferenceListAwareEnum
 {
-	Incoming(X_M_Delivery_Planning.M_DELIVERY_PLANNING_TYPE_Incoming),
-	Outgoing(X_M_Delivery_Planning.M_DELIVERY_PLANNING_TYPE_Outgoing),
-	Dropship(X_M_Delivery_Planning.M_DELIVERY_PLANNING_TYPE_Dropship);
+	Incoming(X_M_Delivery_Planning.TRANSPORTDIRECTION_Incoming),
+	Outgoing(X_M_Delivery_Planning.TRANSPORTDIRECTION_Outgoing),
+	Dropship(X_M_Delivery_Planning.TRANSPORTDIRECTION_Dropship);
 
-	private static final ReferenceListAwareEnums.ValuesIndex<DeliveryPlanningType> typesByCode = ReferenceListAwareEnums.index(values());
+	private static final ReferenceListAwareEnums.ValuesIndex<TransportDirection> typesByCode = ReferenceListAwareEnums.index(values());
 
 	@Getter
 	private final String code;
 
-	DeliveryPlanningType(@NonNull final String code)
+	TransportDirection(@NonNull final String code)
 	{
 		this.code = code;
 	}
 
-	public static DeliveryPlanningType ofCode(@NonNull final String code)
+	public static TransportDirection ofCode(@NonNull final String code)
 	{
 		return typesByCode.ofCode(code);
 	}
 
 	@Nullable
-	public static DeliveryPlanningType ofNullableCode(@Nullable final String code)
+	public static TransportDirection ofNullableCode(@Nullable final String code)
 	{
 		return ofNullableCode(code, null);
 	}
 
 	@Nullable
-	public static DeliveryPlanningType ofNullableCode(@Nullable final String code, @Nullable final DeliveryPlanningType fallbackValue)
+	public static TransportDirection ofNullableCode(@Nullable final String code, @Nullable final TransportDirection fallbackValue)
 	{
 		return code != null ? ofCode(code) : fallbackValue;
 	}
 
 	@Nullable
-	public static String toCodeOrNull(@Nullable final DeliveryPlanningType type)
+	public static String toCodeOrNull(@Nullable final TransportDirection type)
 	{
 		return type != null ? type.getCode() : null;
 	}

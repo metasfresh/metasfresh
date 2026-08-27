@@ -51,7 +51,7 @@ public class DeliveryPlanning
 	@NonNull OrgId orgId;
 
 	/** The transport direction. */
-	@NonNull DeliveryPlanningType type;
+	@NonNull TransportDirection type;
 
 	/** The forwarder. Nullable: a planning may exist before one is chosen. */
 	@Nullable ShipperId shipperId;

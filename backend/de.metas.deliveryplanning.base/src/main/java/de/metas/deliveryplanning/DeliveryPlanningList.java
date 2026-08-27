@@ -124,7 +124,7 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	 * the add-to target picker correlates its list on the direction, so it needs the value itself, and the
 	 * rejection needs to know when there is none to correlate on.
 	 */
-	public Optional<DeliveryPlanningType> getSingleType()
+	public Optional<TransportDirection> getSingleType()
 	{
 		return list.stream()
 				.map(DeliveryPlanning::getType)

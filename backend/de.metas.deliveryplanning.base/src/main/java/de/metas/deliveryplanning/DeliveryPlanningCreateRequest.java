@@ -69,7 +69,7 @@ public class DeliveryPlanningCreateRequest
 
 	@NonNull BPartnerLocationId bPartnerLocationId;
 
-	@NonNull DeliveryPlanningType deliveryPlanningType;
+	@NonNull TransportDirection transportDirection;
 
 	@Nullable
 	OrderStatus orderStatus;

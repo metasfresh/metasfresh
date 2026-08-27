@@ -99,7 +99,7 @@ public class GenerateOutgoingDeliveryPlanningCommand
 				.clientId(ClientId.ofRepoId(shipmentSchedule.getAD_Client_ID()))
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID()))
 				.deliveryStatusColorId(colorPalette.getNotDeliveredColorId())
-				.deliveryPlanningType(DeliveryPlanningType.Outgoing)
+				.transportDirection(TransportDirection.Outgoing)
 				.orderId(orderId)
 				.orderLineId(orderLineId)
 				.warehouseId(WarehouseId.ofRepoId(shipmentSchedule.getM_Warehouse_ID()))

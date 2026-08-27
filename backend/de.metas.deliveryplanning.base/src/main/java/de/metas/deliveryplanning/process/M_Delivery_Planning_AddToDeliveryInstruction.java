@@ -24,7 +24,7 @@ package de.metas.deliveryplanning.process;
 
 import de.metas.deliveryplanning.DeliveryPlanningList;
 import de.metas.deliveryplanning.DeliveryPlanningService;
-import de.metas.deliveryplanning.DeliveryPlanningType;
+import de.metas.deliveryplanning.TransportDirection;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
@@ -55,7 +55,7 @@ import static de.metas.deliveryplanning.process.M_Delivery_Planning_CombineIntoD
  * <p>
  * The dialog has exactly one visible field, the target instruction. Its list is narrowed by the value rule to the
  * drafted delivery instructions of the selection's own direction, which is carried into the rule by the hidden
- * {@link #PARAM_M_Delivery_Planning_Type} parameter below - so the commonest wrong pick is unofferable rather than
+ * {@link #PARAM_TransportDirection} parameter below - so the commonest wrong pick is unofferable rather than
  * rejected afterwards.
  */
 public class M_Delivery_Planning_AddToDeliveryInstruction extends JavaProcess
@@ -65,7 +65,7 @@ public class M_Delivery_Planning_AddToDeliveryInstruction extends JavaProcess
 	 * The direction the target instruction has to match. Not shown to the planner - it is not a choice but a
 	 * property of the selection, and the value rule of the target parameter is its only reader.
 	 */
-	private static final String PARAM_M_Delivery_Planning_Type = I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_Type;
+	private static final String PARAM_TransportDirection = I_M_Delivery_Planning.COLUMNNAME_TransportDirection;
 
 	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
 
@@ -97,12 +97,12 @@ public class M_Delivery_Planning_AddToDeliveryInstruction extends JavaProcess
 	@Override
 	public Object getParameterDefaultValue(@NonNull final IProcessDefaultParameter parameter)
 	{
-		if (PARAM_M_Delivery_Planning_Type.equals(parameter.getColumnName()))
+		if (PARAM_TransportDirection.equals(parameter.getColumnName()))
 		{
 			// single by the precondition, which rejects a selection spanning two directions
 			return deliveryPlanningService.getBySelection(getProcessInfo().getQueryFilterOrElseFalse())
 					.getSingleType()
-					.map(DeliveryPlanningType::getCode)
+					.map(TransportDirection::getCode)
 					.map(Object.class::cast)
 					.orElse(Null.NULL);
 		}
