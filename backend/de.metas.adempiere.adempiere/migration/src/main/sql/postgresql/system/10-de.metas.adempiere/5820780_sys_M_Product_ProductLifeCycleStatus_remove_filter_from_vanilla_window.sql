@@ -1,16 +1,9 @@
--- Product Life Cycle Status (BBS-Status): stop offering the field as a filter in the vanilla Product window.
--- 5820370 hid the field itself on AD_Tab 180 / AD_Window 140 ("Produkt_OLD"), but the filter bar kept
--- listing it, so the window offered a filter for a field it no longer displays.
+-- Product Life Cycle Status (BBS-Status): remove the leftover filter entry from the vanilla Product
+-- window. 5820370 hid the field on AD_Window 140, but the filter bar kept offering it.
 --
--- The filter entry comes from AD_Column.IsSelectionColumn (5819940), which is table-level and must stay
--- 'Y': the customer's own Product window relies on it for its quick filter, and clearing it there would
--- remove the filter from every M_Product tab. AD_Field.IsFilterField is the window-scoped switch, so
--- setting it on this one AD_Field removes the entry from window 140 alone. AD_Field 781859 -- the same
--- column on the customer override window -- is a separate row and is untouched by construction.
---
--- Verified on a local stack carrying every migration of this change: with IsFilterField='N' the window's
--- layout no longer lists ProductLifeCycleStatus among its filter parameters, the grid stays clean, and
--- the column, its ref-list and every backend guard remain untouched.
+-- AD_Field.IsFilterField is window-scoped, so this touches window 140 only. The filter's source,
+-- AD_Column.IsSelectionColumn (5819940), is table-level and stays 'Y' -- clearing it there would also
+-- strip the quick filter from the customer's own Product window.
 
 UPDATE AD_Field
 SET IsFilterField='N',
