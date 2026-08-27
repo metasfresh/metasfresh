@@ -29,13 +29,17 @@ import de.metas.order.OrderLineId;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.inout.PriorityRule;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.shipping.IShipperDAO;
+import de.metas.shipping.ShipperId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import com.google.common.annotations.VisibleForTesting;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.QueryLimit;
@@ -47,6 +51,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
@@ -89,6 +94,8 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 	private final IWarehouseAdvisor warehouseAdvisor = Services.get(IWarehouseAdvisor.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 	private final PickingBOMService pickingBOMService;
 
 	private final OrderLineShipmentScheduleHandlerExtension extensions;
@@ -259,11 +266,38 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		extensions.updateShipmentScheduleFromOrderLine(shipmentSchedule, orderLine);
 	}
 
+	@VisibleForTesting
+	static final String SYSCONFIG_PriorityRuleFromShipper = "M_ShipmentSchedule_PriorityRuleFromShipper";
+
+	@VisibleForTesting
+	String computePriorityRuleCode(
+			@NonNull final I_C_Order order,
+			@Nullable final ShipperId shipperId,
+			@NonNull final ClientAndOrgId clientAndOrgId)
+	{
+		if (shipperId != null
+				&& sysConfigBL.getBooleanValue(SYSCONFIG_PriorityRuleFromShipper, false,
+						clientAndOrgId.getClientId().getRepoId(),
+						clientAndOrgId.getOrgId().getRepoId()))
+		{
+			final PriorityRule shipperPriority =
+					PriorityRule.ofNullableCode(shipperDAO.getById(shipperId).getPriorityRule());
+			if (shipperPriority != null)
+			{
+				return shipperPriority.getCode();
+			}
+		}
+		return order.getPriorityRule();
+	}
+
 	private void updateShipmentScheduleFromOrder(
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
 			@NonNull final I_C_Order order)
 	{
-		shipmentSchedule.setPriorityRule(order.getPriorityRule());
+		shipmentSchedule.setPriorityRule(computePriorityRuleCode(
+				order,
+				ShipperId.ofRepoIdOrNull(shipmentSchedule.getM_Shipper_ID()),
+				ClientAndOrgId.ofClientAndOrg(shipmentSchedule.getAD_Client_ID(), shipmentSchedule.getAD_Org_ID())));
 
 		final BPartnerLocationAndCaptureId billToLocationId = orderBL.getBillToLocationId(order);
 		final BPartnerContactId billToContactId;
