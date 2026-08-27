@@ -159,13 +159,9 @@ public class PPOrderCost
 	}
 
 	/**
-	 * Accumulated amount and accumulated qty move independently - they do NOT have to share a sign:
-	 * <ul>
-	 * <li>a material receipt accumulates a positive amount against a positive qty;
-	 * <li>a component issue keeps the stock-movement direction in the qty (negative) while accumulating the
-	 * cost that went into the order as a positive amount;
-	 * <li>discharging the order's WIP residual accumulates an amount of either sign against no qty at all.
-	 * </ul>
+	 * Accumulated amount and accumulated qty move independently and need NOT share a sign: a component issue keeps
+	 * the stock-movement direction in the qty (negative) while accumulating a positive cost, and discharging the
+	 * WIP residual accumulates an amount of either sign against no qty at all.
 	 */
 	@NonNull
 	public PPOrderCost addingAccumulatedAmountAndQty(
@@ -206,9 +202,8 @@ public class PPOrderCost
 	}
 
 	/**
-	 * @return the part of this line's post-calculation amount that is not yet reflected in what the line
-	 * accumulated. On the main-product line that is the order's WIP residual: positive when more was issued
-	 * into the order than was received out of it.
+	 * @return the part of this line's post-calculation amount not yet reflected in what the line accumulated.
+	 * On the main-product line that is the order's WIP residual: positive when more was issued than received.
 	 */
 	public CostAmount getResidualCost()
 	{

@@ -84,11 +84,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Covers the {@code ComponentIssue} cost-collector path of the three manufacturing costing-method handlers:
  * what a component issue accumulates on its {@code PP_Order_Cost} MaterialIssue row, and that reversing the
- * collector ({@code MPPCostCollector.reverseCorrectIt}) takes exactly that accumulation back off again.
- * <p>
- * The reversal branch used to accumulate the reversal's own amount un-negated while the forward pass
- * accumulated the request's (always zero) amount, so an issue plus its reversal left {@code CumulatedAmt}
- * standing at the full issued cost instead of netting back to zero.
+ * collector takes exactly that accumulation back off again, netting {@code CumulatedAmt} to zero.
  */
 @ExtendWith(AdempiereTestWatcher.class)
 class ManufacturingComponentIssueReversalTest
@@ -123,10 +119,7 @@ class ManufacturingComponentIssueReversalTest
 	private PPCostCollectorId issueCollectorId;
 	private PPCostCollectorId reversalCollectorId;
 
-	/**
-	 * The three handlers whose {@code createComponentIssue} carries the accumulation under test.
-	 * Their component-issue code is identical, so each one is driven through the same scenario.
-	 */
+	/** The three handlers carrying the accumulation under test; their component-issue code is identical. */
 	private enum ManufacturingHandlerUnderTest
 	{
 		AveragePO(CostingMethod.AveragePO)
@@ -279,9 +272,8 @@ class ManufacturingComponentIssueReversalTest
 	}
 
 	/**
-	 * The rows {@code CreatePPOrderCostsCommand} leaves behind for a freshly created order: nothing accumulated
-	 * yet. A main-product row is mandatory - post-calculation, which every handler runs after each collector,
-	 * requires exactly one per cost element.
+	 * The rows {@code CreatePPOrderCostsCommand} leaves behind for a freshly created order. The main-product row is
+	 * mandatory: post-calculation, which every handler runs after each collector, requires exactly one per cost element.
 	 */
 	private void createOrderCosts()
 	{

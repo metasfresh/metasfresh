@@ -62,9 +62,8 @@ public class PP_Order_PostCalculation extends JavaProcess implements IProcessPre
 			return false;
 		}
 
-		// Distributing closes the order, so this also withdraws the action once the residual has been
-		// discharged. After a PP_Order_UnClose the action is offered again, which is correct: the discharged
-		// residual is booked into PP_Order_Cost, so a run without further activity finds nothing to discharge.
+		// Distributing closes the order, so this withdraws the action once the residual is discharged. After a
+		// PP_Order_UnClose it is offered again, correctly: a run without further activity finds nothing to discharge.
 		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(ppOrder.getDocStatus());
 		return docStatus.isCompleted() && !docStatus.isClosed();
 	}

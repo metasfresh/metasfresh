@@ -154,15 +154,13 @@ public class PPOrderCostsTest
 	}
 
 	/**
-	 * The main product's post-calculation amount is the total INPUT cost of the order - what post-calculation
-	 * distributes over the outputs - so it must NOT count what the outputs already accumulated.
-	 * {@link #testPostCalculation_SimpleCase()} cannot catch that: its main-product row accumulated nothing.
+	 * The main product's post-calculation amount is the total INPUT cost of the order, so it must NOT count what
+	 * the outputs already accumulated.
 	 */
 	@Test
 	public void testPostCalculation_MainProductWithAccumulatedAmount()
 	{
-		// 10 PCE of a component consumed at 34 -> 340 issued into the order,
-		// 10 PCE of the finished good received at its own current cost of 30 -> 300 received.
+		// 340 issued into the order (10 PCE of a component at 34), 300 received (10 PCE of the output at 30)
 		final PPOrderCosts orderCosts = PPOrderCosts.builder()
 				.orderId(ppOrderId)
 				.cost(mainProductCost(productId1, "30", "10", "300"))

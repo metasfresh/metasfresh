@@ -34,12 +34,7 @@ import java.math.BigDecimal;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Covers which account each leg of a {@code CostDifferenceDistribution} posting debits or credits, and by how
- * much:
- * <ul>
- *     <li>residual=40 (capitalized=32, cogs=8) -&gt; DR P_Asset_Acct 32, DR P_COGS_Acct 8, CR P_WIP_Acct 40.</li>
- *     <li>residual=-40 (capitalized=-40, cogs=0) -&gt; DR P_WIP_Acct 40, CR P_Asset_Acct 40.</li>
- * </ul>
+ * Covers which account each leg of a {@code CostDifferenceDistribution} posting debits or credits, and by how much.
  */
 class Doc_PPCostCollectorCostDifferenceDistributionTest
 {

@@ -75,9 +75,8 @@ import java.time.Instant;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Covers {@link PPOrderCostDifferenceDistributor#createCostDetails} — the cost details each manufacturing
- * costing-method handler creates for a {@code CostDifferenceDistribution} collector, and the cost-price move
- * that comes with the adjustment leg.
+ * Covers {@link PPOrderCostDifferenceDistributor#createCostDetails}: the cost details created for a
+ * {@code CostDifferenceDistribution} collector, and the cost-price move of the adjustment leg.
  */
 class PPOrderCostDifferenceDistributorCostDetailsTest
 {
@@ -165,8 +164,8 @@ class PPOrderCostDifferenceDistributorCostDetailsTest
 		final BigDecimal issuedQtyBD = new BigDecimal(issuedQty);
 		final BigDecimal receivedQtyBD = new BigDecimal(receivedQty);
 
-		// A component issue keeps the stock-movement direction in its qty (negative) while accumulating the
-		// cost that went INTO the order as a positive amount - exactly what the handlers persist.
+		// A component issue keeps the stock-movement direction in its qty (negative) while accumulating the cost
+		// that went INTO the order as a positive amount.
 		costs.add(PPOrderCost.builder()
 				.trxType(PPOrderCostTrxType.MaterialIssue)
 				.costSegmentAndElement(segment(componentProductId, acctSchemaId, costElementId))

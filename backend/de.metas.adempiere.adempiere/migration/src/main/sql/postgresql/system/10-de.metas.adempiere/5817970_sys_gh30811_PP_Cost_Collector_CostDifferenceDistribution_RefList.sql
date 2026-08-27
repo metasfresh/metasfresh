@@ -1,14 +1,12 @@
--- gh30811 Manufacturing costing — new PP cost-collector type "CostDifferenceDistribution" (Value 170)
--- on the PP_CostCollectorType reference (AD_Reference 53287). Discharges the WIP cost residual via the
--- controller-driven Distribute action. German base label; English override on en_US.
+-- New PP cost-collector type "CostDifferenceDistribution" (Value 170) on the PP_CostCollectorType
+-- reference (AD_Reference 53287): the collector that discharges a manufacturing order's WIP cost residual.
 
--- AD_Ref_List: German text in the base Name; EntityType EE01 (org.eevolution) to match the reference's rows
+-- EntityType EE01 (org.eevolution), matching the reference's other rows.
 INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Ref_List_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName)
 VALUES (0,0,544328 /*From ID Server*/,53287,TO_TIMESTAMP('2026-08-09 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'EE01','Y','Kostendifferenz-Verteilung',TO_TIMESTAMP('2026-08-09 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'170','CostDifferenceDistribution')
 ;
 
--- Seed _Trl rows for every active system language incl. the base (copies the German base Name),
--- matching the sibling rows on this reference (each carries a de_DE _Trl row).
+-- Seed _Trl rows for every active system language incl. the base.
 INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID,Description,Name,IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy)
 SELECT l.AD_Language, t.AD_Ref_List_ID, t.Description, t.Name, 'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.Createdby, t.Updated, t.UpdatedBy
 FROM AD_Language l, AD_Ref_List t

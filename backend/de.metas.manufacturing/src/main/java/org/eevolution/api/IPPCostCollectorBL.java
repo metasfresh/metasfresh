@@ -71,9 +71,8 @@ public interface IPPCostCollectorBL extends ISingletonService
 
 	/**
 	 * Creates and processes the {@code CostDifferenceDistribution} collector of the given order's main product.
-	 * <p>
-	 * The collector carries neither a quantity nor an amount: everything that gets posted is recomputed from the
-	 * order's {@code PP_Order_Cost} rows at posting time.
+	 * The collector carries neither a quantity nor an amount: everything posted is recomputed from the order's
+	 * {@code PP_Order_Cost} rows at posting time.
 	 */
 	I_PP_Cost_Collector createCostDifferenceDistribution(@NonNull I_PP_Order order, @NonNull ZonedDateTime movementDate);
 

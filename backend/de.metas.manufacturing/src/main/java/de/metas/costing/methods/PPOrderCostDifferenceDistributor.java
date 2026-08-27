@@ -61,17 +61,14 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 /**
- * Discharges the WIP cost residual of a completed-but-not-closed manufacturing order: the in-stock
- * portion is capitalized onto the finished good's current cost price, the already-shipped remainder
- * spills to COGS.
+ * Discharges the WIP cost residual of a completed-but-not-closed manufacturing order: the in-stock portion is
+ * capitalized onto the finished good's current cost price, the already-shipped remainder spills to COGS.
  * <p>
- * The residual is always recomputed from the order's {@code PP_Order_Cost} rows, as the main-product line's
- * post-calculation amount (the order's total input cost, i.e. what was <i>issued</i>) minus what that line
- * accumulated (what was <i>received</i>). It is therefore the <b>opposite sign</b> of the
- * {@code PP_Order.CostDifference} display column ({@code received - issued}), which is never read here.
+ * The residual is recomputed from the order's {@code PP_Order_Cost} rows as {@code issued - received}, i.e. the
+ * <b>opposite sign</b> of the {@code PP_Order.CostDifference} display column, which is never read here.
  * <p>
- * Once posted, the residual is accumulated onto that same main-product line, so it reads zero afterwards -
- * that self-zeroing is what keeps a re-run (e.g. after a {@code PP_Order_UnClose}) from discharging it twice.
+ * Posting accumulates the residual back onto the main-product line, so it reads zero afterwards - that
+ * self-zeroing is what keeps a re-run (e.g. after a {@code PP_Order_UnClose}) from discharging it twice.
  */
 @Component
 @RequiredArgsConstructor
@@ -91,8 +88,7 @@ public class PPOrderCostDifferenceDistributor
 		final I_PP_Order order = ppOrdersRepo.getById(orderId);
 
 		// Only decides whether there is anything to discharge at all; the amount that gets posted is recomputed
-		// per accounting schema while the collector is posted. A residual that was already discharged reads zero
-		// here, so re-running the action after a PP_Order_UnClose is a no-op unless there was further activity.
+		// per accounting schema while the collector is posted.
 		final ClientId clientId = ClientId.ofRepoId(order.getAD_Client_ID());
 		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
 		final AcctSchemaId acctSchemaId = acctSchemasRepo.getByClientAndOrg(clientId, orgId).getId();
@@ -105,16 +101,15 @@ public class PPOrderCostDifferenceDistributor
 
 		costCollectorsService.createCostDifferenceDistribution(order, SystemTime.asZonedDateTime());
 
-		// Closing is part of discharging: it stops any further issue or receipt from re-opening a residual that
-		// has just been posted away, and it withdraws the action from the order (the precondition requires
-		// completed-and-not-closed).
+		// Closing is part of discharging: it stops a further issue or receipt from re-opening the residual that
+		// was just posted away, and withdraws the action from the order.
 		ppOrdersService.closeOrder(orderId);
 	}
 
 	/**
 	 * Creates the cost details of a {@code CostDifferenceDistribution} collector and capitalizes the adjustment leg
-	 * onto the finished good's {@link CurrentCost}. Driven from each manufacturing costing-method handler, so the
-	 * accounting schema, the cost element and — on a reversal — the already-negated amounts come from the framework.
+	 * onto the finished good's {@link CurrentCost}. Driven from each manufacturing costing-method handler, so schema,
+	 * cost element and — on a reversal — the already-negated amounts come from the framework.
 	 */
 	public CostDetailCreateResultsList createCostDetails(
 			@NonNull final CostDetailCreateRequest request,
@@ -171,11 +166,8 @@ public class PPOrderCostDifferenceDistributor
 			amtAndQty = amtAndQty.add(alreadyShippedResult.getAmtAndQty());
 		}
 
-		// Discharge the residual on the main-product line as well: it now carries the full cost the order was
-		// posted at, so getResidualCost() reads zero and neither a re-post nor a re-run of the action can
-		// discharge the same amount twice.
-		// Done here rather than in distribute() because the amounts posted above are recomputed from these very
-		// rows at posting time - zeroing them earlier would leave nothing to post.
+		// Discharge the residual on the main-product line too, so getResidualCost() reads zero and it cannot be
+		// discharged twice. Not done in distribute(): the amounts posted above are recomputed from these rows.
 		accumulateOntoMainProduct(orderCosts, mainProductCost, residual);
 		ppOrderCostsService.save(orderCosts);
 
@@ -214,10 +206,7 @@ public class PPOrderCostDifferenceDistributor
 				utils.createCostDetailRecordNoCostsChanged(request, CostDetailPreviousAmounts.of(currentCost)));
 	}
 
-	/**
-	 * Adds {@code amt} to the accumulated amount of the order's main-product cost row, leaving its accumulated
-	 * qty alone - the distribution moves value only.
-	 */
+	/** Adds {@code amt} to the main-product row's accumulated amount, leaving the qty alone - value moves only. */
 	private void accumulateOntoMainProduct(
 			@NonNull final PPOrderId orderId,
 			@NonNull final CostDetailCreateRequest request,

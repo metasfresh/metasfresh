@@ -419,8 +419,7 @@ public class PP_Order_StepDef
 
 	/**
 	 * Runs {@link PP_Order_PostCalculation} on the given order. It is a plain {@code AD_Process}, not a document
-	 * action, so it does not go through {@link #order_action} — but it closes the order as part of discharging
-	 * the residual, so {@code DocStatus} ends up {@code CL}.
+	 * action - but it closes the order as part of discharging the residual, so {@code DocStatus} ends up {@code CL}.
 	 */
 	@And("^the manufacturing order identified by (.*) is distributed$")
 	public void distributeOrder(@NonNull final String orderIdentifier)

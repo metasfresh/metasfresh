@@ -179,7 +179,6 @@ public class PP_Cost_Collector_StepDef
 			queryBuilder.addEqualsFilter(COLUMNNAME_M_Product_ID, productTable.get(productIdentifier).getM_Product_ID());
 		}
 
-		// Narrows the match when one order has several completed collectors for the same product.
 		final String costCollectorTypeName = DataTableUtil.extractStringOrNullForColumnName(tableRow, COLUMNNAME_CostCollectorType);
 		if (costCollectorTypeName != null)
 		{

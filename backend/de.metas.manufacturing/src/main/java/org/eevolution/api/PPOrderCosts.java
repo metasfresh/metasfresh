@@ -261,13 +261,12 @@ public final class PPOrderCosts
 	}
 
 	/**
-	 * The order's not-yet-discharged WIP cost for the given accounting schema and cost element:
-	 * what post-calculation attributed to the main product (the order's total input cost) minus what the
-	 * main product actually accumulated on receipt. Positive =&gt; more was issued than received.
+	 * The order's not-yet-discharged WIP cost for the given accounting schema and cost element.
+	 * Positive =&gt; more was issued into the order than was received out of it.
 	 *
-	 * @return {@code null} if the order carries no main-product cost row for that schema and cost element -
-	 * the costing engine explodes the client's cost elements against the schema being posted, so a handler can
-	 * be asked for a costing method this order has no {@code PP_Order_Cost} rows for.
+	 * @return {@code null} if there is no main-product cost row for that schema and cost element - the costing
+	 * engine explodes the client's cost elements against the schema being posted, so a handler can be asked for
+	 * a costing method this order has no rows for.
 	 */
 	@Nullable
 	public CostAmount getResidualCost(
@@ -283,10 +282,7 @@ public final class PPOrderCosts
 		return mainProductCost.getResidualCost();
 	}
 
-	/**
-	 * @return the single main-product cost row of the given accounting schema and cost element,
-	 * or {@code null} if there is none.
-	 */
+	/** @return the single main-product cost row for the given schema and cost element, or {@code null}. */
 	@Nullable
 	public PPOrderCost getMainProductCostOrNull(
 			@NonNull final AcctSchemaId acctSchemaId,

@@ -425,9 +425,8 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	}
 
 	/**
-	 * The posting moves value only: it discharges a cost residual that the receipt already accounted for in
-	 * quantity terms. The line therefore carries a ZERO qty - a non-zero one would be counted a second time by
-	 * the inventory valuation (Lagerwert) report.
+	 * The line carries a ZERO qty: the receipt already accounted for the quantity, so a qty here would be
+	 * counted a second time by the inventory valuation (Lagerwert) report.
 	 */
 	private void addCostDifferenceFactLine(
 			@NonNull final Fact fact,
@@ -453,8 +452,8 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	}
 
 	/**
-	 * Decomposes the split into at most three legs — asset, COGS and the negated residual on WIP — dropping the
-	 * zero ones. They always balance, because {@code capitalized + cogs == residual}.
+	 * At most three legs — asset, COGS and the negated residual on WIP — dropping the zero ones. They always
+	 * balance, because {@code capitalized + cogs == residual}.
 	 */
 	@VisibleForTesting
 	static ImmutableList<CostDifferenceDistributionLeg> costDifferenceDistributionLegs(@NonNull final CostAmountDetailed split)
