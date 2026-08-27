@@ -79,7 +79,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Covers the ActivityControl cost-collector posting path when the reported {@code S_Resource}
- * has no linked {@code M_Product} (me03#29817): posting shall be a graceful no-op
+ * has no linked {@code M_Product}: posting shall be a graceful no-op
  * ({@link CostDetailCreateResultsList#EMPTY}), not an {@link org.adempiere.exceptions.AdempiereException}.
  */
 @ExtendWith(AdempiereTestWatcher.class)
