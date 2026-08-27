@@ -133,6 +133,12 @@ public class M_Delivery_Planning_GenerateShortageOverage extends JavaProcess imp
 		}
 
 		final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoId(context.getSingleSelectedRecordId());
+
+		if (deliveryPlanningService.isClosed(deliveryPlanningId))
+		{
+			return ProcessPreconditionsResolution.reject(DeliveryPlanningService.MSG_M_Delivery_Planning_Closed, deliveryPlanningId.getRepoId());
+		}
+
 		final Optional<DeliveryPlanningReceiptInfo> optionalDeliveryPlanningReceipt = deliveryPlanningService.getReceiptInfoIfHasReceipt(deliveryPlanningId);
 		if (!optionalDeliveryPlanningReceipt.isPresent())
 		{

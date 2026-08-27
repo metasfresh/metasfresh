@@ -110,6 +110,12 @@ public class DeliveryPlanningService
 {
 	public static final AdMessageKey MSG_M_Delivery_Planning_AllClosed = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.AllClosed");
 	public static final AdMessageKey MSG_M_Delivery_Planning_AllOpen = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.AllOpen");
+
+	/**
+	 * "Closed means finished, nothing touches it" (AC14): the rejection thrown by a process that acts on a single
+	 * closed planning (the goods-movement generators), and the per-row skip report of {@link #cancelDelivery}.
+	 */
+	public static final AdMessageKey MSG_M_Delivery_Planning_Closed = AdMessageKey.of("M_Delivery_Planning_Closed");
 	public static final AdMessageKey MSG_M_Delivery_Planning_AtLeastOnePerOrderLine = AdMessageKey.of("de.metas.deliveryplanning.M_Delivery_Planning_AtLeastOnePerOrderLine");
 
 	private static final AdMessageKey MSG_M_Delivery_Planning_AlreadyReferenced = AdMessageKey.of("de.metas.deliveryplanning.M_Delivery_Planning_AlreadyReferenced");
@@ -1268,24 +1274,45 @@ public class DeliveryPlanningService
 		}
 	}
 
-	public void cancelDelivery(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	/**
+	 * Cancels every selected planning that carries a {@code ReleaseNo}, per row: a closed one is left untouched and
+	 * named in {@link DeliveryPlanningCancelResult#getSkippedClosedIds()} rather than aborting the whole selection
+	 * (AC14) - the open ones are still voided and cancelled.
+	 */
+	public DeliveryPlanningCancelResult cancelDelivery(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
 		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter = deliveryPlanningRepository
-				.excludeDeliveryPlanningsWithoutInstruction(selectedDeliveryPlanningsFilter);
+				.excludeDeliveryPlanningsWithoutReleaseNo(selectedDeliveryPlanningsFilter);
+
+		final ImmutableList.Builder<DeliveryPlanningId> cancelledIds = ImmutableList.builder();
+		final ImmutableList.Builder<DeliveryPlanningId> skippedClosedIds = ImmutableList.builder();
 
 		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = deliveryPlanningRepository.extractDeliveryPlannings(dpFilter);
 
 		while (deliveryPlanningIterator.hasNext())
 		{
 			final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningIterator.next();
+			final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoId(deliveryPlanningRecord.getM_Delivery_Planning_ID());
+
+			if (deliveryPlanningRecord.isClosed())
+			{
+				skippedClosedIds.add(deliveryPlanningId);
+				continue;
+			}
 
 			// first void the existent delivery instructions
-			final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoId(deliveryPlanningRecord.getM_Delivery_Planning_ID());
 			voidLinkedDeliveryInstructions(deliveryPlanningId);
 
-			// then cancel delivery planning
-			deliveryPlanningRepository.cancelSelectedDeliveryPlannings(selectedDeliveryPlanningsFilter);
+			// re-read: the void's unlink cascade may have cleared ReleaseNo/M_ShipperTransportation_ID on this
+			// same row, and the pre-void record in hand here must not overwrite that with stale values
+			deliveryPlanningRepository.cancelDeliveryPlanning(deliveryPlanningRepository.getById(deliveryPlanningId));
+			cancelledIds.add(deliveryPlanningId);
 		}
+
+		return DeliveryPlanningCancelResult.builder()
+				.cancelledIds(cancelledIds.build())
+				.skippedClosedIds(skippedClosedIds.build())
+				.build();
 	}
 
 	public Optional<DeliveryPlanningReceiptInfo> getReceiptInfoIfHasReceipt(@NonNull final DeliveryPlanningId deliveryPlanningId)

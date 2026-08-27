@@ -92,6 +92,7 @@ import java.util.Set;
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_ShipmentSchedule;
 
 import static de.metas.deliveryplanning.DeliveryPlanningService.MSG_M_Delivery_Planning_BlockedPartner;
+import static de.metas.deliveryplanning.DeliveryPlanningService.MSG_M_Delivery_Planning_Closed;
 import static de.metas.deliveryplanning.DeliveryPlanningService.MSG_M_Delivery_Planning_PurchaseOrderFullyDelivered;
 import static de.metas.deliveryplanning.DeliveryPlanningService.MSG_M_Delivery_Planning_SalesOrderFullyDelivered;
 
@@ -248,6 +249,11 @@ final class DeliveryPlanningGenerateProcessesHelper
 
 	public ProcessPreconditionsResolution checkEligibleToCreateShipment(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
+		if (deliveryPlanningService.isClosed(deliveryPlanningId))
+		{
+			return ProcessPreconditionsResolution.reject(MSG_M_Delivery_Planning_Closed, deliveryPlanningId.getRepoId());
+		}
+
 		final Optional<DeliveryPlanningShipmentInfo> optionalShipmentInfo = getShipmentInfoIfOutgoingType(deliveryPlanningId);
 		if (!optionalShipmentInfo.isPresent())
 		{
@@ -288,6 +294,11 @@ final class DeliveryPlanningGenerateProcessesHelper
 
 	public ProcessPreconditionsResolution checkEligibleToCreateReceipt(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
+		if (deliveryPlanningService.isClosed(deliveryPlanningId))
+		{
+			return ProcessPreconditionsResolution.reject(MSG_M_Delivery_Planning_Closed, deliveryPlanningId.getRepoId());
+		}
+
 		final Optional<DeliveryPlanningReceiptInfo> optionalDeliveryPlanningReceipt = getReceiptInfoIfHasReceipt(deliveryPlanningId);
 		if (!optionalDeliveryPlanningReceipt.isPresent())
 		{

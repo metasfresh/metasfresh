@@ -420,32 +420,53 @@ public class DeliveryPlanningRepository
 				.stream();
 	}
 
+	/**
+	 * Guarded like the canonical closed/open pair ({@code ReceiptScheduleBL.close}): closing an already-closed
+	 * planning throws {@code @Closed@=@Y@} rather than silently doing nothing (AC14). All-or-nothing over the
+	 * selection - checked before anything is written, so a mixed selection leaves no row half-closed.
+	 */
 	public void closeSelectedDeliveryPlannings(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
-		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = getDeliveryPlanningQueryBuilder(selectedDeliveryPlanningsFilter)
-				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, false)
+		final List<I_M_Delivery_Planning> deliveryPlanningRecords = getDeliveryPlanningQueryBuilder(selectedDeliveryPlanningsFilter)
 				.create()
-				.iterate(I_M_Delivery_Planning.class);
+				.list();
 
-		while (deliveryPlanningIterator.hasNext())
+		for (final I_M_Delivery_Planning deliveryPlanningRecord : deliveryPlanningRecords)
 		{
-			final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningIterator.next();
+			if (deliveryPlanningRecord.isClosed())
+			{
+				throw new AdempiereException("@Closed@=@Y@ (" + deliveryPlanningRecord + ")");
+			}
+		}
+
+		for (final I_M_Delivery_Planning deliveryPlanningRecord : deliveryPlanningRecords)
+		{
 			deliveryPlanningRecord.setIsClosed(true);
 			deliveryPlanningRecord.setProcessed(true);
 			save(deliveryPlanningRecord);
 		}
 	}
 
+	/**
+	 * The counterpart of {@link #closeSelectedDeliveryPlannings}: reopening an already-open planning throws
+	 * {@code @Closed@=@N@} rather than silently doing nothing (AC14).
+	 */
 	public void reOpenSelectedDeliveryPlannings(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
-		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = getDeliveryPlanningQueryBuilder(selectedDeliveryPlanningsFilter)
-				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, true)
+		final List<I_M_Delivery_Planning> deliveryPlanningRecords = getDeliveryPlanningQueryBuilder(selectedDeliveryPlanningsFilter)
 				.create()
-				.iterate(I_M_Delivery_Planning.class);
+				.list();
 
-		while (deliveryPlanningIterator.hasNext())
+		for (final I_M_Delivery_Planning deliveryPlanningRecord : deliveryPlanningRecords)
 		{
-			final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningIterator.next();
+			if (!deliveryPlanningRecord.isClosed())
+			{
+				throw new AdempiereException("@Closed@=@N@ (" + deliveryPlanningRecord + ")");
+			}
+		}
+
+		for (final I_M_Delivery_Planning deliveryPlanningRecord : deliveryPlanningRecords)
+		{
 			deliveryPlanningRecord.setIsClosed(false);
 			deliveryPlanningRecord.setProcessed(false);
 			save(deliveryPlanningRecord);
@@ -925,27 +946,21 @@ public class DeliveryPlanningRepository
 				.iterate(I_M_ShipperTransportation.class);
 	}
 
-	public void cancelSelectedDeliveryPlannings(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	/**
+	 * Cancels ONE delivery planning: closes it, marks it processed, sets its order status to {@code Canceled} and
+	 * zeroes its planned/actual quantities. Takes the already-loaded record rather than a filter - the caller
+	 * ({@link DeliveryPlanningService#cancelDelivery}) decides per row whether a planning is eligible (AC14: a
+	 * closed one is skipped, never cancelled here).
+	 */
+	public void cancelDeliveryPlanning(@NonNull final I_M_Delivery_Planning deliveryPlanningRecord)
 	{
-		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter = queryBL
-				.createCompositeQueryFilter(I_M_Delivery_Planning.class)
-				.setJoinAnd()
-				.addFilter(selectedDeliveryPlanningsFilter)
-				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, false);
-
-		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = extractDeliveryPlannings(dpFilter);
-
-		while (deliveryPlanningIterator.hasNext())
-		{
-			final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningIterator.next();
-			deliveryPlanningRecord.setIsClosed(true);
-			deliveryPlanningRecord.setProcessed(true);
-			deliveryPlanningRecord.setOrderStatus(X_M_Delivery_Planning.ORDERSTATUS_Canceled);
-			deliveryPlanningRecord.setPlannedLoadedQuantity(BigDecimal.ZERO);
-			deliveryPlanningRecord.setPlannedDischargeQuantity(BigDecimal.ZERO);
-			deliveryPlanningRecord.setActualLoadQty(BigDecimal.ZERO);
-			save(deliveryPlanningRecord);
-		}
+		deliveryPlanningRecord.setIsClosed(true);
+		deliveryPlanningRecord.setProcessed(true);
+		deliveryPlanningRecord.setOrderStatus(X_M_Delivery_Planning.ORDERSTATUS_Canceled);
+		deliveryPlanningRecord.setPlannedLoadedQuantity(BigDecimal.ZERO);
+		deliveryPlanningRecord.setPlannedDischargeQuantity(BigDecimal.ZERO);
+		deliveryPlanningRecord.setActualLoadQty(BigDecimal.ZERO);
+		save(deliveryPlanningRecord);
 	}
 
 	public ICompositeQueryFilter<I_M_Delivery_Planning> excludeUnsuitableForInstruction(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
@@ -964,6 +979,19 @@ public class DeliveryPlanningRepository
 				.addFilter(selectedDeliveryPlanningsFilter)
 				.addNotNull(I_M_Delivery_Planning.COLUMNNAME_ReleaseNo)
 				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, false);
+	}
+
+	/**
+	 * Same applicability gate as {@link #excludeDeliveryPlanningsWithoutInstruction}, but WITHOUT the
+	 * {@code IsClosed} filter: {@link DeliveryPlanningService#cancelDelivery} needs a closed planning in the
+	 * result too, so it can report it per row (AC14) instead of the row silently never being seen at all.
+	 */
+	public ICompositeQueryFilter<I_M_Delivery_Planning> excludeDeliveryPlanningsWithoutReleaseNo(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	{
+		return queryBL
+				.createCompositeQueryFilter(I_M_Delivery_Planning.class)
+				.addFilter(selectedDeliveryPlanningsFilter)
+				.addNotNull(I_M_Delivery_Planning.COLUMNNAME_ReleaseNo);
 	}
 
 	public boolean hasCompleteDeliveryInstruction(@NonNull final DeliveryPlanningId deliveryPlanningId)

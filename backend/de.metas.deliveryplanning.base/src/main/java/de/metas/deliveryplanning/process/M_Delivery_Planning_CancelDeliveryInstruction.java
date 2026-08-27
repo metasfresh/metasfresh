@@ -22,6 +22,8 @@
 
 package de.metas.deliveryplanning.process;
 
+import de.metas.deliveryplanning.DeliveryPlanningCancelResult;
+import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.deliveryplanning.DeliveryPlanningList;
 import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.process.IProcessPrecondition;
@@ -75,9 +77,14 @@ public class M_Delivery_Planning_CancelDeliveryInstruction extends JavaProcess i
 	{
 		final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter = getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false));
 
-		deliveryPlanningService.cancelDelivery(selectedDeliveryPlanningsFilter);
+		final DeliveryPlanningCancelResult result = deliveryPlanningService.cancelDelivery(selectedDeliveryPlanningsFilter);
+
+		// per-row report (AC14): a closed planning does not abort the run, it is named here instead
+		for (final DeliveryPlanningId skippedId : result.getSkippedClosedIds())
+		{
+			addLog(msgBL.getMsg(getCtx(), DeliveryPlanningService.MSG_M_Delivery_Planning_Closed, new Object[] { skippedId.getRepoId() }));
+		}
 
 		return MSG_OK;
-
 	}
 }

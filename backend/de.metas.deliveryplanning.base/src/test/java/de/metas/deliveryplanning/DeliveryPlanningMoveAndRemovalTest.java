@@ -311,6 +311,28 @@ class DeliveryPlanningMoveAndRemovalTest
 	}
 
 	@Test
+	@DisplayName("remove-from succeeds for a CLOSED planning - the one deliberate exception to AC14's closed guard")
+	void removeFromSucceedsForAClosedPlanning()
+	{
+		final ShipperTransportationId deliveryInstructionId = draftDeliveryInstruction("SHARED-5");
+		final I_M_Delivery_Planning closedAndAllocated = deliveryPlanning();
+		closedAndAllocated.setIsClosed(true);
+		InterfaceWrapperHelper.save(closedAndAllocated);
+		allocateTo(deliveryInstructionId, closedAndAllocated);
+		final int packageId = allocationOf(closedAndAllocated).getM_ShippingPackage_ID();
+
+		deliveryPlanningService.removeFrom(selectionOf(closedAndAllocated));
+
+		final I_M_Delivery_Planning removed = reload(closedAndAllocated);
+		assertThat(removed.isClosed()).as("removing does not reopen it - closing is a separate decision").isTrue();
+		assertThat(removed.getReleaseNo()).isNull();
+		assertThat(removed.getM_ShipperTransportation_ID()).isLessThanOrEqualTo(0);
+		assertThat(shippingPackageExists(packageId)).isFalse();
+		assertThat(allocationsInLineNoOrder()).isEmpty();
+		assertNoOrphanedShippingPackages();
+	}
+
+	@Test
 	@DisplayName("a moved allocation continues the TARGET's LineNo, not the one it had on the source")
 	void aMovedAllocationContinuesTheTargetsLineNo()
 	{
