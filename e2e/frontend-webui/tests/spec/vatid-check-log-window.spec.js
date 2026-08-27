@@ -6,6 +6,7 @@ import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { BusinessPartnerPage } from '../utils/pages/BusinessPartnerPage';
 import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { getViewLayout } from '../utils/WebAPIValidation';
 
 /**
  * VAT-ID check-log window (table VATaxID_CheckLog).
@@ -347,6 +348,57 @@ true today without fabricating a row the real system cannot yet produce.
     });
 
     console.log('[PASS] VATaxID_CheckLog window (542183): renders with its grid columns, no create affordance, no-insert guarantee holds.');
+  });
+
+  test('The Business Partner field is a Search (Lookup) widget in grid and filter — not a TableDir dropdown (migration 5820590)', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.story('VATaxID_CheckLog window (542183) — C_BPartner_ID renders as a search lookup, not a dropdown');
+    allure.severity('normal');
+    allure.tag('VATaxID_CheckLog');
+    allure.description(`
+## C_BPartner_ID is a Search widget on the check-log (AD_Window 542183 / AD_Tab 549365)
+
+VATaxID_CheckLog.C_BPartner_ID (AD_Column 593172) was AD_Reference_ID=19 (TableDir), whose lookup renders as
+a full drop-down over every business partner — unusable on a real instance (tens of thousands of partners),
+for both the grid column and the filter. Migration 5820590 switches it to AD_Reference_ID=30 (Search).
+
+The backend maps TableDir -> DocumentFieldWidgetType.List and Search -> DocumentFieldWidgetType.Lookup
+(DescriptorsFactoryHelper.extractWidgetType), so the observable, language-independent difference between the
+old dropdown and the new search widget is exactly widgetType "List" -> "Lookup". This asserts the grid column
+AND the filter parameter for C_BPartner_ID both expose widgetType "Lookup". Data-driven off the view layout
+(no rendered record needed — the audit log has zero rows on CI).
+    `);
+
+    test.setTimeout(90000);
+
+    const masterdata = await Backend.createMasterdata({
+      request: { login: { user: { language: 'en_US', firstname: 'E2E', lastname: 'VatidCheckLogBPartnerSearch' } } },
+    });
+    await LoginPage.goto();
+    await LoginPage.login(masterdata.login.user);
+    await LoginPage.expectLoggedIn();
+
+    const layout = await getViewLayout(VATID_CHECKLOG_WINDOW_ID, 'grid');
+
+    await test.step('C_BPartner_ID grid column is a Lookup (search) widget, not a List (dropdown)', async () => {
+      const element = (layout.elements || []).find((el) => (el.fields || []).some((f) => f.field === 'C_BPartner_ID'));
+      expect(element, 'C_BPartner_ID must be present as a grid element on the check-log layout').toBeTruthy();
+      // widgetType lives on the element for grid layouts; fall back to the field to be robust to shape.
+      const gridWidgetType = element.widgetType || (element.fields || []).find((f) => f.field === 'C_BPartner_ID')?.widgetType;
+      expect(gridWidgetType, 'C_BPartner_ID grid column must be a Search (Lookup) widget after migration 5820590').toBe('Lookup');
+      console.log(`[PASS] C_BPartner_ID grid column widgetType = ${gridWidgetType}`);
+    });
+
+    await test.step('C_BPartner_ID filter parameter is a Lookup (search) widget, not a List (dropdown)', async () => {
+      const filterParams = (layout.filters || []).flatMap((filter) => [
+        ...(filter.parameters || []),
+        ...((filter.includedFilters || []).flatMap((included) => included.parameters || [])),
+      ]);
+      const bpartnerFilter = filterParams.find((p) => p.parameterName === 'C_BPartner_ID');
+      expect(bpartnerFilter, 'C_BPartner_ID must be a filter parameter on the check-log layout').toBeTruthy();
+      expect(bpartnerFilter.widgetType, 'C_BPartner_ID filter must be a Search (Lookup) widget after migration 5820590').toBe('Lookup');
+      console.log(`[PASS] C_BPartner_ID filter parameter widgetType = ${bpartnerFilter.widgetType}`);
+    });
   });
 
   test('The check-log window is offered as a related-document zoom target when opening a Business Partner with a real check-log row', async ({ page }) => {
