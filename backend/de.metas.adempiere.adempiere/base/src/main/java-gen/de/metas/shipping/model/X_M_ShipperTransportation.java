@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_ShipperTransportation extends org.compiere.model.PO implements I_M_ShipperTransportation, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1562675493L;
+	private static final long serialVersionUID = 1152176019L;
 
     /** Standard Constructor */
     public X_M_ShipperTransportation (final Properties ctx, final int M_ShipperTransportation_ID, @Nullable final String trxName)
@@ -409,18 +409,6 @@ public class X_M_ShipperTransportation extends org.compiere.model.PO implements 
 	public boolean isBookingConfirmed() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsBookingConfirmed);
-	}
-
-	@Override
-	public void setIsSOTrx (final boolean IsSOTrx)
-	{
-		set_Value (COLUMNNAME_IsSOTrx, IsSOTrx);
-	}
-
-	@Override
-	public boolean isSOTrx() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsSOTrx);
 	}
 
 	@Override

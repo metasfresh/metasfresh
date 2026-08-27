@@ -635,29 +635,6 @@ public interface I_M_ShipperTransportation
 	String COLUMNNAME_IsBookingConfirmed = "IsBookingConfirmed";
 
 	/**
-	 * Set Sales Transaction.
-	 * This is a Sales Transaction
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsSOTrx (boolean IsSOTrx);
-
-	/**
-	 * Get Sales Transaction.
-	 * This is a Sales Transaction
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isSOTrx();
-
-	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_IsSOTrx = new ModelColumn<>(I_M_ShipperTransportation.class, "IsSOTrx", null);
-	String COLUMNNAME_IsSOTrx = "IsSOTrx";
-
-	/**
 	 * Set WE Notice.
 	 * Has the container planning been completed?
 	 *

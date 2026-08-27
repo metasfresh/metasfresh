@@ -23,7 +23,6 @@
 package de.metas.handlingunits.impl;
 
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.lang.SOTrx;
 import de.metas.organization.OrgId;
 import de.metas.shipping.ShipperId;
 import lombok.Builder;
@@ -60,6 +59,4 @@ public class CreateShipperTransportationRequest
 	 * Should be {@code true} if the user is supposed to physically in the real world find and put into the package exactly those HUs that metasfresh picked on the fly.
 	 */
 	boolean assignAnonymouslyPickedHUs;
-
-	SOTrx isSOTrx;
 }

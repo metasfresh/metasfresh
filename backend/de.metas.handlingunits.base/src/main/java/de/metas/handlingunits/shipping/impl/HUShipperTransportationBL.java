@@ -25,7 +25,6 @@ import de.metas.handlingunits.shipping.weighting.ShippingWeightCalculator;
 import de.metas.handlingunits.shipping.weighting.ShippingWeightSourceTypes;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.IInOutDAO;
-import de.metas.lang.SOTrx;
 import de.metas.lock.api.LockOwner;
 import de.metas.organization.OrgId;
 import de.metas.product.PackageDimensions;
@@ -388,7 +387,6 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 				.shipDate(TimeUtil.asLocalDate(shipment.getMovementDate()))
 				.pickupTimeFrom(TimeUtil.asLocalTime(shipper.getPickupTimeFrom()))
 				.pickupTimeTo(TimeUtil.asLocalTime(shipper.getPickupTimeTo()))
-				.isSOTrx(SOTrx.SALES)
 				.build();
 
 		final ShipperTransportationId shipperTransportationId = shipperTransportationDAO.create(createShipperTransportationRequest);

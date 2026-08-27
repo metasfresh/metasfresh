@@ -21,6 +21,7 @@ import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.shipping.model.X_M_ShipperTransportation;
 import de.metas.sscc18.ISSCC18CodeBL;
 import de.metas.sscc18.SSCC18;
 import de.metas.sscc18.impl.SSCC18CodeBL;
@@ -670,13 +671,13 @@ public class PurchaseOrderToShipperTransportationServiceTest
 	}
 
 	/**
-	 * Regression-safety: the auto-defaulting must NOT run for a sales (SOTrx=Y) transport order, so the existing sales flow is untouched.
+	 * Regression-safety: the auto-defaulting must NOT run for a sales (Outgoing direction) transport order, so the existing sales flow is untouched.
 	 */
 	@Test
 	public void defaultDates_notAppliedForSalesTransportOrder()
 	{
 		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
-		shipperTransportation.setIsSOTrx(true);
+		shipperTransportation.setTransportDirection(X_M_ShipperTransportation.TRANSPORTDIRECTION_Outgoing);
 		save(shipperTransportation);
 		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
 
@@ -914,7 +915,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 		shipperTransportation.setM_Shipper_ID(shipper.getM_Shipper_ID());
 
 		shipperTransportation.setDateDoc(TimeUtil.asTimestamp(LocalDate.of(2019, 6, 6), orgDAO.getTimeZone(OrgId.ofRepoId(shipper.getAD_Org_ID()))));
-		shipperTransportation.setIsSOTrx(false); // purchase (inbound) transport order
+		shipperTransportation.setTransportDirection(X_M_ShipperTransportation.TRANSPORTDIRECTION_Incoming); // purchase (inbound) transport order
 
 		save(shipperTransportation);
 

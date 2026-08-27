@@ -240,7 +240,6 @@ public class M_Tour_Instance_CreateFromSelectedDeliveryDays extends JavaProcess
 			shipperTransportationBL.setShipper(shipperTransportation, shipperId);
 		}
 		shipperTransportationBL.setC_DocType(shipperTransportation);
-		shipperTransportation.setIsSOTrx(true);
 
 		// 07958
 		// also set the tour id

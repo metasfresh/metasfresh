@@ -49,6 +49,7 @@ import de.metas.report.server.ReportConstants;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
+import de.metas.shipping.model.X_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipping.mpackage.Package;
@@ -294,7 +295,7 @@ public class PurchaseOrderToShipperTransportationService
 	 */
 	private void applyDefaultDatesFromFirstOrder(@NonNull final I_M_ShipperTransportation shipperTransportation, @NonNull final I_C_Order order)
 	{
-		if (shipperTransportation.isSOTrx())
+		if (X_M_ShipperTransportation.TRANSPORTDIRECTION_Outgoing.equals(shipperTransportation.getTransportDirection()))
 		{
 			return; // sales behaviour on the transport order must keep working unchanged
 		}
