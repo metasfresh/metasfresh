@@ -191,9 +191,10 @@ BEGIN
             'gh31608 M_Delivery_Planning_Alloc backfill: % delivery planning(s) linked to a '
             'non-voided DI instruction do not resolve to exactly one active M_ShippingPackage. '
             'The package must match the planning BOTH on C_OrderLine_ID AND on '
-            'M_ShipperTransportation_ID -- a package that matches the order line but belongs to '
-            'another instruction is deliberately NOT accepted, so a package orphaned by a voided '
-            'instruction cannot be mis-paired. Aborting without writing anything.',
+            'M_ShipperTransportation_ID; a package that matches the order line but belongs to a '
+            'different instruction is deliberately NOT accepted, because this backfill cannot '
+            'tell which pairing such data was meant to express. Aborting without writing '
+            'anything -- resolve the pairing by hand and re-run.',
             v_planning_bad_package_join;
     END IF;
 
