@@ -26,8 +26,10 @@ import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
@@ -106,17 +108,31 @@ public class M_Delivery_Planning_StepDef
 		this.deliveryInstructionTable = deliveryInstructionTable;
 	}
 
+	/**
+	 * Waits for the async {@code M_Delivery_Planning} generation for the given order line, then loads the created
+	 * records under the given aliases (in {@code M_Delivery_Planning_ID} order).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_OrderLine_ID</b> — (required, identifier-ref) the order line the plannings were generated for<br>
+	 *   <b>M_Delivery_Planning_ID</b> — (required, identifier-ref) comma-separated list of aliases to store the
+	 *   loaded records under, one per expected record, in ascending {@code M_Delivery_Planning_ID} order<br>
+	 * @cucumber.depends StepDefData: C_OrderLine_StepDefData, M_Delivery_Planning_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And after not more than 30s, load created M_Delivery_Planning:
+	 *   | M_Delivery_Planning_ID              | C_OrderLine_ID |
+	 *   | deliveryPlanning_1,deliveryPlanning_2 | orderLine      |
+	 * </pre>
+	 */
 	@And("^after not more than (.*)s, load created M_Delivery_Planning:$")
-	public void load_created_M_Delivery_Planning(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	public void load_created_M_Delivery_Planning(final int timeoutSec, @NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
+		DataTableRows.of(dataTable).forEach(row ->
 		{
-			final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Delivery_Planning.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
-			assertThat(orderLine).isNotNull();
+			final I_C_OrderLine orderLine = row.getAsIdentifier(I_M_Delivery_Planning.COLUMNNAME_C_OrderLine_ID).lookupNotNullIn(orderLineTable);
 
-			final String deliveryPlanningIdentifiers = DataTableUtil.extractStringForColumnName(row, I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID + "." + TABLECOLUMN_IDENTIFIER + "s");
-			final List<String> identifiers = StepDefUtil.splitIdentifiers(deliveryPlanningIdentifiers);
+			final List<StepDefDataIdentifier> identifiers = row.getAsIdentifierList(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID);
 			final int numberOfRecordsToLoad = identifiers.size();
 
 			final IQueryBuilder<I_M_Delivery_Planning> queryBuilder = queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
@@ -147,10 +163,9 @@ public class M_Delivery_Planning_StepDef
 
 			for (int rowIndex = 0; rowIndex < numberOfRecordsToLoad; rowIndex++)
 			{
-				final String deliveryPlanningIdentifier = identifiers.get(rowIndex);
-				deliveryPlanningTable.putOrReplace(deliveryPlanningIdentifier, deliveryPlannings.get(rowIndex));
+				identifiers.get(rowIndex).putOrReplace(deliveryPlanningTable, deliveryPlannings.get(rowIndex));
 			}
-		}
+		});
 	}
 
 	@And("^generate (.*) additional M_Delivery_Planning records for: (.*)$")

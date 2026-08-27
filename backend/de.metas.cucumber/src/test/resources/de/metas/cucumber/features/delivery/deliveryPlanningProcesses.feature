@@ -48,8 +48,8 @@ Feature: Delivery planning processes interaction
       | Identifier         | C_OrderLine_ID.Identifier | IsToRecompute |
       | shipmentSchedule_1 | orderLineAdd              | N             |
     And after not more than 30s, load created M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifiers | C_OrderLine_ID.Identifier |
-      | deliveryPlanningAdd_1              | orderLineAdd              |
+      | M_Delivery_Planning_ID | C_OrderLine_ID |
+      | deliveryPlanningAdd_1  | orderLineAdd   |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | TransportDirection | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Shipper_ID.Identifier | OPT.ETA | OPT.PlannedLoadedQuantity |
       | deliveryPlanningAdd_1             | 5          | 5            | Outgoing                 | orderAdd                  | orderLineAdd                  | customer                     | product                     | customerLocation                      | shipper_DHL                 | 2023-02-25              | 5                         |
@@ -80,8 +80,8 @@ Feature: Delivery planning processes interaction
     When generate 2 additional M_Delivery_Planning records for: deliveryPlanningAdd_1
 
     Then after not more than 30s, load created M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifiers                                | C_OrderLine_ID.Identifier |
-      | deliveryPlanningAdd_1,deliveryPlanningAdd_2,deliveryPlanningAdd_3 | orderLineAdd              |
+      | M_Delivery_Planning_ID                                            | C_OrderLine_ID |
+      | deliveryPlanningAdd_1,deliveryPlanningAdd_2,deliveryPlanningAdd_3 | orderLineAdd   |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | TransportDirection | OPT.PlannedLoadedQuantity | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Shipper_ID.Identifier | OPT.ETA | OPT.M_ShipperTransportation_ID.Identifier |
       | deliveryPlanningAdd_1             | 5          | 5            | Outgoing                 | 3                         | orderAdd                  | orderLineAdd                  | customer                     | product                     | customerLocation                      | shipper_DHL                 | 2023-02-25              | deliveryInstructionAdd                    |
@@ -104,8 +104,8 @@ Feature: Delivery planning processes interaction
       | Identifier       | C_OrderLine_ID.Identifier | IsToRecompute |
       | shipmentSchedule | orderLine                 | N             |
     And after not more than 30s, load created M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifiers | C_OrderLine_ID.Identifier |
-      | deliveryPlanning                   | orderLine                 |
+      | M_Delivery_Planning_ID | C_OrderLine_ID |
+      | deliveryPlanning       | orderLine      |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | TransportDirection | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Shipper_ID.Identifier | OPT.ETA | OPT.IsClosed | OPT.Processed | OPT.PlannedLoadedQuantity |
       | deliveryPlanning                  | 5          | 5            | Outgoing                 | order                     | orderLine                     | customer                     | product                     | customerLocation                      | shipper_DHL                 | 2023-02-10              | false        | false         | 5                         |
@@ -113,8 +113,8 @@ Feature: Delivery planning processes interaction
     When generate 1 additional M_Delivery_Planning records for: deliveryPlanning
 
     Then after not more than 30s, load created M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifiers  | C_OrderLine_ID.Identifier |
-      | deliveryPlanning,deliveryPlanning_2 | orderLine                 |
+      | M_Delivery_Planning_ID              | C_OrderLine_ID |
+      | deliveryPlanning,deliveryPlanning_2 | orderLine      |
 
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | TransportDirection | OPT.PlannedLoadedQuantity | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Shipper_ID.Identifier | OPT.ETA | OPT.IsClosed | OPT.Processed |

@@ -123,9 +123,9 @@ Feature: Order to delivery instructions
       | shipmentSchedule_1 | orderLine_1               | N             |
       | shipmentSchedule_2 | orderLine_2               | N             |
     And after not more than 30s, load created M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifiers | C_OrderLine_ID.Identifier |
-      | deliveryPlanningSO_line1           | orderLine_1               |
-      | deliveryPlanningSO_line2           | orderLine_2               |
+      | M_Delivery_Planning_ID   | C_OrderLine_ID |
+      | deliveryPlanningSO_line1 | orderLine_1    |
+      | deliveryPlanningSO_line2 | orderLine_2    |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | TransportDirection | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.ETA | OPT.IsClosed | OPT.Processed | OPT.M_Warehouse_ID.Identifier | OPT.PlannedLoadedQuantity |
       | deliveryPlanningSO_line1          | 2          | 2            | Outgoing                 | orderSO_Unchanged         | orderLine_1                   | customer                     | product                     | customerLocation                      | 2023-05-10              | false        | false         | dropShipWarehouse             | 2                         |
@@ -149,9 +149,9 @@ Feature: Order to delivery instructions
       | receiptSchedule_1               | orderPO               | orderLinePO_1             | vendor                   | vendorLocation                    | product                 | 2          | dropShipWarehouse         |
       | receiptSchedule_2               | orderPO               | orderLinePO_2             | vendor                   | vendorLocation                    | product                 | 2          | dropShipWarehouse         |
     And after not more than 30s, load created M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifiers | C_OrderLine_ID.Identifier |
-      | deliveryPlanningPO_line1           | orderLinePO_1             |
-      | deliveryPlanningPO_line2           | orderLinePO_2             |
+      | M_Delivery_Planning_ID   | C_OrderLine_ID |
+      | deliveryPlanningPO_line1 | orderLinePO_1  |
+      | deliveryPlanningPO_line2 | orderLinePO_2  |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | TransportDirection | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.ETA    | OPT.IsClosed | OPT.Processed | OPT.M_Warehouse_ID.Identifier |
       | deliveryPlanningPO_line1          | 2          | 2            | Dropship                 | orderPO                   | orderLinePO_1                 | vendor                       | product                     | dropShipWarehouseLocation             | 2023-05-10 | false        | false         | dropShipWarehouse             |
@@ -314,8 +314,8 @@ Feature: Order to delivery instructions
       | Identifier           | C_OrderLine_ID.Identifier | IsToRecompute |
       | shipmentSchedule_7.1 | orderLine_7.1             | N             |
     And after not more than 30s, load created M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifiers | C_OrderLine_ID.Identifier |
-      | deliveryPlanningSO_7.1             | orderLine_7.1             |
+      | M_Delivery_Planning_ID | C_OrderLine_ID |
+      | deliveryPlanningSO_7.1 | orderLine_7.1  |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | TransportDirection | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.ETA | OPT.IsClosed | OPT.Processed | OPT.M_Warehouse_ID.Identifier |
       | deliveryPlanningSO_7.1            | 2          | 2            | Outgoing                 | orderSO_7                 | orderLine_7.1                 | customer                     | product_7                   | customerLocation                      | 2023-05-10              | false        | false         | dropShipWarehouse_7           |
@@ -349,9 +349,9 @@ Feature: Order to delivery instructions
       | shipmentSchedule_7.1 | orderLine_7.1             | N             |
       | shipmentSchedule_7.2 | orderLine_7.2             | N             |
     And after not more than 30s, load created M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifiers | C_OrderLine_ID.Identifier |
-      | deliveryPlanningSO_7.1             | orderLine_7.1             |
-      | deliveryPlanningSO_7.2             | orderLine_7.2             |
+      | M_Delivery_Planning_ID | C_OrderLine_ID |
+      | deliveryPlanningSO_7.1 | orderLine_7.1  |
+      | deliveryPlanningSO_7.2 | orderLine_7.2  |
 
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | TransportDirection | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.ETA | OPT.IsClosed | OPT.Processed | OPT.M_Warehouse_ID.Identifier | OPT.PlannedLoadedQuantity |
@@ -376,9 +376,9 @@ Feature: Order to delivery instructions
       | receiptSchedule_7.1             | orderPO_7             | orderLinePO_7.1           | vendor_7                 | vendorLocation_7                  | product_7               | 2          | dropShipWarehouse_7       |
       | receiptSchedule_7.2             | orderPO_7             | orderLinePO_7.2           | vendor_7                 | vendorLocation_7                  | product_7               | 4          | dropShipWarehouse_7       |
     And after not more than 30s, load created M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifiers | C_OrderLine_ID.Identifier |
-      | deliveryPlanningPO_7.1             | orderLinePO_7.1           |
-      | deliveryPlanningPO_7.2             | orderLinePO_7.2           |
+      | M_Delivery_Planning_ID | C_OrderLine_ID  |
+      | deliveryPlanningPO_7.1 | orderLinePO_7.1 |
+      | deliveryPlanningPO_7.2 | orderLinePO_7.2 |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | TransportDirection | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.ETA    | OPT.IsClosed | OPT.Processed | OPT.M_Warehouse_ID.Identifier | OPT.PlannedLoadedQuantity |
       | deliveryPlanningPO_7.1            | 2          | 2            | Dropship                 | orderPO_7                 | orderLinePO_7.1               | vendor_7                     | product_7                   | dropShipWarehouseLocation             | 2023-05-10 | false        | false         | dropShipWarehouse_7           | 2                         |

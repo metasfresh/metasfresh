@@ -47,8 +47,8 @@ Feature: Delete delivery planning
       | Identifier       | C_OrderLine_ID.Identifier | IsToRecompute |
       | shipmentSchedule | orderLineDelete           | N             |
     And after not more than 30s, load created M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifiers | C_OrderLine_ID.Identifier |
-      | deliveryPlanningDelete_1           | orderLineDelete           |
+      | M_Delivery_Planning_ID   | C_OrderLine_ID  |
+      | deliveryPlanningDelete_1 | orderLineDelete |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | TransportDirection | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Shipper_ID.Identifier | OPT.ETA | OPT.PlannedLoadedQuantity |
       | deliveryPlanningDelete_1          | 5          | 5            | Outgoing                 | orderDelete               | orderLineDelete               | customer                     | product                     | customerLocation                      | shipper_DHL                 | 2023-02-25              | 5                         |
@@ -60,8 +60,8 @@ Feature: Delete delivery planning
     When generate 1 additional M_Delivery_Planning records for: deliveryPlanningDelete_1
 
     Then after not more than 30s, load created M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifiers                | C_OrderLine_ID.Identifier |
-      | deliveryPlanningDelete_1,deliveryPlanningDelete_2 | orderLineDelete           |
+      | M_Delivery_Planning_ID                            | C_OrderLine_ID  |
+      | deliveryPlanningDelete_1,deliveryPlanningDelete_2 | orderLineDelete |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | TransportDirection | OPT.PlannedLoadedQuantity | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Shipper_ID.Identifier | OPT.ETA |
       | deliveryPlanningDelete_1          | 5          | 5            | Outgoing                 | 3                         | orderDelete               | orderLineDelete               | customer                     | product                     | customerLocation                      | shipper_DHL                 | 2023-02-25              |
