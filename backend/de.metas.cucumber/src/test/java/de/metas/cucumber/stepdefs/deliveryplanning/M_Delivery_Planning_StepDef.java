@@ -66,6 +66,14 @@ import java.util.function.Supplier;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+/**
+ * Loads, deletes, updates and validates {@code M_Delivery_Planning} records, and drives the
+ * close/reopen/cancel document actions.
+ * <p>
+ * Generating / regenerating the delivery instruction ({@code M_ShipperTransportation}) for a
+ * planning is handled by {@link M_Delivery_Instruction_StepDef}, which shares the same
+ * {@link M_Delivery_Planning_StepDefData} instance (injected by PicoContainer).
+ */
 public class M_Delivery_Planning_StepDef
 {
 	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
@@ -117,7 +125,7 @@ public class M_Delivery_Planning_StepDef
 	 * @cucumber.example
 	 * <pre>
 	 * And after not more than 30s, load created M_Delivery_Planning:
-	 *   | M_Delivery_Planning_ID              | C_OrderLine_ID |
+	 *   | M_Delivery_Planning_ID                | C_OrderLine_ID |
 	 *   | deliveryPlanning_1,deliveryPlanning_2 | orderLine      |
 	 * </pre>
 	 */
@@ -186,8 +194,8 @@ public class M_Delivery_Planning_StepDef
 	 * @cucumber.example
 	 * <pre>
 	 * And delete M_Delivery_Planning:
-	 *   | M_Delivery_Planning_ID | ErrorCode                                                        |
-	 *   | deliveryPlanning_1      | de.metas.deliveryplanning.M_Delivery_Planning_AlreadyReferenced |
+	 *   | M_Delivery_Planning_ID | ErrorCode                                                       |
+	 *   | deliveryPlanning_1     | de.metas.deliveryplanning.M_Delivery_Planning_AlreadyReferenced |
 	 * </pre>
 	 */
 	@When("delete M_Delivery_Planning:")
@@ -246,7 +254,7 @@ public class M_Delivery_Planning_StepDef
 	 * <pre>
 	 * And validate M_Delivery_Planning:
 	 *   | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection |
-	 *   | deliveryPlanning_1      | 5          | 5            | Outgoing            |
+	 *   | deliveryPlanning_1     | 5          | 5            | Outgoing           |
 	 * </pre>
 	 */
 	@And("validate M_Delivery_Planning:")
@@ -389,7 +397,7 @@ public class M_Delivery_Planning_StepDef
 	 * <pre>
 	 * And update M_Delivery_Planning:
 	 *   | M_Delivery_Planning_ID | M_Shipper_ID |
-	 *   | deliveryPlanning_1      | shipper_DHL  |
+	 *   | deliveryPlanning_1     | shipper_DHL  |
 	 * </pre>
 	 */
 	@And("update M_Delivery_Planning:")

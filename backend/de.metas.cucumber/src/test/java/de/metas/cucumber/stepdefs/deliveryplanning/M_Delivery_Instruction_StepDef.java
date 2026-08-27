@@ -74,7 +74,7 @@ public class M_Delivery_Instruction_StepDef
 	 * <pre>
 	 * When generate M_ShipperTransportation for M_Delivery_Planning:
 	 *   | M_ShipperTransportation_ID | M_Delivery_Planning_ID | IsComplete |
-	 *   | deliveryInstruction        | deliveryPlanning        | true       |
+	 *   | deliveryInstruction        | deliveryPlanning       | true       |
 	 * </pre>
 	 */
 	@And("generate M_ShipperTransportation for M_Delivery_Planning:")
@@ -108,8 +108,8 @@ public class M_Delivery_Instruction_StepDef
 	 * @cucumber.example
 	 * <pre>
 	 * When regenerate M_ShipperTransportation for M_Delivery_Planning:
-	 *   | M_ShipperTransportation_ID    | M_Delivery_Planning_ID |
-	 *   | deliveryInstructionRegenerated | deliveryPlanning        |
+	 *   | M_ShipperTransportation_ID     | M_Delivery_Planning_ID |
+	 *   | deliveryInstructionRegenerated | deliveryPlanning       |
 	 * </pre>
 	 */
 	@And("regenerate M_ShipperTransportation for M_Delivery_Planning:")
