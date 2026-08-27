@@ -681,6 +681,31 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
+	 * Mirrors the instruction's {@code DocStatus} and {@code Processed} onto every ACTIVE allocation - the write
+	 * {@link #createAllocation} stamps once at creation time but nothing kept in sync afterwards, so completing or
+	 * re-activating an instruction used to leave every allocation's mirror stale (gh31608 Task C1).
+	 * <p>
+	 * Deliberately does NOT touch {@code IsActive}, and is therefore NOT what void calls:
+	 * {@link #deactivateAllocations(ShipperTransportationId)} already stamps both columns as part of deactivating
+	 * the row, and a void instruction's allocation must end up deactivated, not merely mirrored. This method is for
+	 * the two transitions that leave the allocation ACTIVE - complete and re-activate.
+	 */
+	public void updateAllocationsDocStatus(@NonNull final ShipperTransportationId deliveryInstructionId)
+	{
+		final I_M_ShipperTransportation deliveryInstructionRecord = load(deliveryInstructionId, I_M_ShipperTransportation.class);
+		final DocStatus docStatus = extractDocStatus(deliveryInstructionRecord);
+		final boolean processed = deliveryInstructionRecord.isProcessed();
+
+		final List<I_M_Delivery_Planning_Alloc> allocRecords = queryActiveAllocationsByInstructionId(deliveryInstructionId).create().list();
+		for (final I_M_Delivery_Planning_Alloc allocRecord : allocRecords)
+		{
+			allocRecord.setDocStatus(docStatus.getCode());
+			allocRecord.setProcessed(processed);
+			saveRecord(allocRecord);
+		}
+	}
+
+	/**
 	 * The shipping packages the given allocations point at, keyed by id, in one round trip.
 	 * <p>
 	 * Every allocation has one - {@code M_ShippingPackage_ID} is mandatory and foreign-keyed - so a lookup in the

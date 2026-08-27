@@ -139,6 +139,14 @@ public class DeliveryPlanningService
 	public static final AdMessageKey MSG_M_Delivery_Planning_TargetInstructionNotDraft = AdMessageKey.of("de.metas.deliveryplanning.AddToDeliveryInstruction.TargetNotDraft");
 	public static final AdMessageKey MSG_M_Delivery_Planning_NotOnDeliveryInstruction = AdMessageKey.of("de.metas.deliveryplanning.RemoveFromDeliveryInstruction.NotOnDeliveryInstruction");
 
+	/**
+	 * Distinct from {@link #MSG_M_Delivery_Planning_ClosedPlannings}: that one rejects a SELECTION naming a closed
+	 * planning before it is put on an instruction (Combine / Add to); this one rejects COMPLETING an instruction
+	 * that already holds a planning closed AFTER it was allocated - a different moment, a different sentence
+	 * (gh31608 Task C1, AC6).
+	 */
+	public static final AdMessageKey MSG_M_Delivery_Planning_ClosedAllocatedPlannings = AdMessageKey.of("de.metas.deliveryplanning.CompleteDeliveryInstruction.ClosedAllocatedPlannings");
+
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
@@ -841,6 +849,43 @@ public class DeliveryPlanningService
 				.collect(Collectors.joining(", "));
 	}
 
+	private static String toIdList(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
+	{
+		return deliveryPlanningIds.stream()
+				.map(deliveryPlanningId -> String.valueOf(deliveryPlanningId.getRepoId()))
+				.collect(Collectors.joining(", "));
+	}
+
+	/**
+	 * Why the given delivery instruction cannot be completed, or empty when it can (gh31608 Task C1, AC6).
+	 * <p>
+	 * The only rule so far: none of its currently allocated plannings may be closed. A planning is closed after
+	 * it was allocated to say "stop processing this cargo" - completing the instruction anyway would freight
+	 * exactly what the planner already called off.
+	 * <p>
+	 * A transport order, or an instruction with no allocations, is a no-op: {@code getAllocatedPlanningIds} comes
+	 * back empty and the batch load of the plannings themselves never runs.
+	 */
+	public Optional<ITranslatableString> getCompleteRejectionReason(@NonNull final ShipperTransportationId deliveryInstructionId)
+	{
+		final ImmutableSet<DeliveryPlanningId> allocatedPlanningIds = deliveryPlanningRepository.getAllocatedPlanningIds(deliveryInstructionId);
+		if (allocatedPlanningIds.isEmpty())
+		{
+			return Optional.empty();
+		}
+
+		final ImmutableList<DeliveryPlanningId> closedPlanningIds = deliveryPlanningRepository.getByIds(allocatedPlanningIds).stream()
+				.filter(I_M_Delivery_Planning::isClosed)
+				.map(record -> DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID()))
+				.collect(ImmutableList.toImmutableList());
+		if (closedPlanningIds.isEmpty())
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(TranslatableStrings.adMessage(MSG_M_Delivery_Planning_ClosedAllocatedPlannings, toIdList(closedPlanningIds)));
+	}
+
 	/**
 	 * Combines the selected delivery plannings into ONE delivery instruction: each planning gets its own
 	 * allocation, its own shipping package and its own {@code ReleaseNo}, and the instruction lists them all.
@@ -1148,6 +1193,16 @@ public class DeliveryPlanningService
 		deliveryPlanningRepository.unlinkDeliveryPlannings(deliveryInstructionId);
 	}
 
+	/**
+	 * Mirrors the instruction's {@code DocStatus} and {@code Processed} onto every one of its active allocations -
+	 * the cascade a complete or a re-activate owes them (gh31608 Task C1, AC6). Void is not a caller: it already
+	 * deactivates the allocation as part of {@link #unlinkDeliveryPlannings(ShipperTransportationId)}.
+	 */
+	public void cascadeDocStatusToAllocations(@NonNull final ShipperTransportationId deliveryInstructionId)
+	{
+		deliveryPlanningRepository.updateAllocationsDocStatus(deliveryInstructionId);
+	}
+
 	public void regenerateDeliveryInstructions(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
 		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter = deliveryPlanningRepository
@@ -1293,6 +1348,28 @@ public class DeliveryPlanningService
 	public void invalidateInvoiceCandidatesFor(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
 		invalidateInvoiceCandidatesFor(deliveryPlanningRepository.getById(deliveryPlanningId));
+	}
+
+	/**
+	 * Invalidates the invoice candidates of EVERY planning currently allocated to the given instruction, in ONE
+	 * batch load (gh31608 Task C1) - not the legacy single {@code M_ShipperTransportation.M_Delivery_Planning_ID}
+	 * header FK the interceptor used to read, which silently skipped every allocation but the first on an
+	 * aggregated instruction, and not a per-planning loop either: that would be a fifth N+1 in this exact code
+	 * family, after four earlier fixes.
+	 * <p>
+	 * A transport order, or an instruction with no allocations, is a no-op: {@code getAllocatedPlanningIds} comes
+	 * back empty and the batch load never runs.
+	 */
+	public void invalidateInvoiceCandidatesFor(@NonNull final ShipperTransportationId deliveryInstructionId)
+	{
+		final ImmutableSet<DeliveryPlanningId> allocatedPlanningIds = deliveryPlanningRepository.getAllocatedPlanningIds(deliveryInstructionId);
+		if (allocatedPlanningIds.isEmpty())
+		{
+			return;
+		}
+
+		deliveryPlanningRepository.getByIds(allocatedPlanningIds)
+				.forEach(this::invalidateInvoiceCandidatesFor);
 	}
 
 	private void validateDeliveryPlannings(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
