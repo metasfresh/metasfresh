@@ -34,7 +34,7 @@
 --   M_Delivery_Planning.M_Delivery_Planning_Type shape           -> VARCHAR(250), NOT NULL,
 --                                                                  no DB check constraint
 --
--- Tables written into the backup schema:
+-- Written into the backup schema (one table, and it IS a backup):
 --   backup.m_shippertransportation_bkp_<ts>_gh31608_direction
 --                                                      full copy of the table before any change.
 --                                                      Named by backup_table's own convention
@@ -44,12 +44,11 @@
 --                                                      first. Discover it via backup.backup_tables,
 --                                                      which backup_table registers it in -- do not
 --                                                      hardcode the name anywhere.
---   backup.m_shippertransportation_gh31608_resolution  one row per transport: which rule decided
---                                                      it, what it was set to, and why. It is the
---                                                      single computation that both the UPDATE and
---                                                      the ambiguous listing below are driven from,
---                                                      so the two cannot drift apart.
---   backup.m_shippertransportation_gh31608_ambiguous   the subset a human may want to look at
+--
+-- Nothing else is written to that schema. The per-transport resolution is computed once
+-- into a TEMP table (gh31608_resolution), so the UPDATE and the not-clean-cut report are
+-- still driven from the SAME computation and cannot drift apart, and it disappears with
+-- the session. The not-clean-cut rows are printed to the run's output rather than stored.
 
 -- ===========================================================================
 -- 1. Back up the whole table BEFORE anything is written
@@ -144,7 +143,11 @@ ALTER TABLE M_ShipperTransportation
 --
 -- Rule 4 is the safety property: it has no precondition and its expression is total, so
 -- every transport gets a direction and no row can be left out.
-CREATE TABLE backup.m_shippertransportation_gh31608_resolution AS
+-- TEMP, not a stored table: the migration CLI runs this whole file through ONE psql
+-- process with --single-transaction, so every statement below sees it and it disappears
+-- with the session. It exists only so the UPDATE and the not-clean-cut report are driven
+-- from the SAME computation and cannot drift apart.
+CREATE TEMP TABLE gh31608_resolution AS
 WITH planning AS (
     -- Every delivery planning reachable from a transport, with its direction.
     -- A planning that is still 'Incoming' plus the B2B flag is a dropship in the old
@@ -278,28 +281,32 @@ UPDATE M_ShipperTransportation st
 SET M_Delivery_Planning_Type = r.direction,
     Updated   = TO_TIMESTAMP('2026-08-26 22:00:05','YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy = 99
-FROM backup.m_shippertransportation_gh31608_resolution r
+FROM gh31608_resolution r
 WHERE r.m_shippertransportation_id = st.M_ShipperTransportation_ID
   AND r.direction IS NOT NULL
 ;
 
 -- ===========================================================================
--- 5. Record what was not clean-cut, rather than hiding it in a log line
+-- 5. Report what was not clean-cut -- to the run's own output, not to a stored table
 -- ===========================================================================
--- Two kinds of row land here: the ones rule 2 resolved through its dropship/plain
+-- Two kinds of row are not clean-cut: the ones rule 2 resolved through its dropship/plain
 -- tie-break, and the ones rule 4 resolved from the flag because content had no answer.
 -- Both keep working; a legacy mixed transport is only slightly narrower afterwards,
 -- because the direction now fixes what may be added to it.
-CREATE TABLE backup.m_shippertransportation_gh31608_ambiguous AS
+--
+-- Printed rather than stored, so the applying run's log carries it -- which is the moment
+-- it matters: whoever applies this to the customer instance sees in the output exactly
+-- which transports were guessed at. Section 6 (c) recomputes it on demand afterwards.
 SELECT r.m_shippertransportation_id,
        st.DocumentNo,
        st.IsSOTrx,
        r.rule_no,
        r.direction,
        r.fallback_reason
-FROM backup.m_shippertransportation_gh31608_resolution r
+FROM gh31608_resolution r
 JOIN M_ShipperTransportation st ON st.M_ShipperTransportation_ID = r.m_shippertransportation_id
 WHERE r.fallback_reason IS NOT NULL
+ORDER BY r.rule_no, st.DocumentNo
 ;
 
 -- ===========================================================================
@@ -318,3 +325,19 @@ WHERE r.fallback_reason IS NOT NULL
 --         FULL JOIN M_ShipperTransportation s USING (M_ShipperTransportation_ID)
 --        WHERE b.M_ShipperTransportation_ID IS NULL
 --           OR s.M_ShipperTransportation_ID IS NULL;
+-- (c) the not-clean-cut transports, recomputed on demand. Section 5 prints these during
+--     the run; this recovers them afterwards WITHOUT the resolution table. It reports the
+--     ambiguity itself -- a transport whose plannings do not agree on one direction -- which
+--     is what a human acts on. It does NOT recover the deciding rule: that reasoning also
+--     read M_Delivery_Planning.IsB2B, and a later script on this branch drops that column,
+--     so the "why" survives only in THAT script's backup of m_delivery_planning. Hence the
+--     run-time print in section 5.
+--       SELECT st.M_ShipperTransportation_ID, st.DocumentNo, st.M_Delivery_Planning_Type,
+--              count(DISTINCT dp.M_Delivery_Planning_Type) AS n_planning_directions
+--         FROM M_ShipperTransportation st
+--         JOIN M_Delivery_Planning dp
+--           ON dp.M_ShipperTransportation_ID = st.M_ShipperTransportation_ID
+--          AND dp.IsActive = 'Y'
+--        GROUP BY st.M_ShipperTransportation_ID, st.DocumentNo, st.M_Delivery_Planning_Type
+--       HAVING count(DISTINCT dp.M_Delivery_Planning_Type) > 1
+--        ORDER BY st.DocumentNo;
