@@ -11,6 +11,9 @@ Feature: EDI DESADV export via postgREST
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2025-05-15T16:30:17+02:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    # Default the DESADV no-pack suppression toggle OFF for every scenario, so the toggle-on
+    # scenario below cannot leak 'Y' into sibling scenarios/features on the same CI executor.
+    And set sys config boolean value false for sys config de.metas.edi.desadv.OmitNonClosedNoPackLines
     And documents are accounted immediately
 
     And metasfresh contains M_PricingSystems
@@ -692,6 +695,119 @@ Feature: EDI DESADV export via postgREST
     And verify DESADV JSON export has DesadvLineWithNoPacking:
       | OrderLine | QtyOrderedInDesadvLineUOM | QtyDeliveredInDesadvLineUOM | IsDeliveryClosed | QtyCUsPerTU |
       | 20        | 50                        | 0                           | false            | 0           |
+
+  @Id:S30770_010
+  @from:cucumber
+  Scenario: DESADV export omits non-closed no-pack lines when OmitNonClosedNoPackLines is on
+
+    # Same shape as "includes unshipped order lines": one shipped line (-> pack) and one
+    # unshipped line (-> would be a non-closed no-pack line). With the suppression toggle ON,
+    # the non-closed no-pack line must be omitted entirely (the receiving system treats any
+    # no-pack line it receives as a closed delivery link).
+    # NOTE: uses its own POReference (omitClosedRef) — DESADV aggregates orders by
+    # (bpartner, POReference), so sharing partialShipRef with the sibling scenario on this
+    # executor would merge both orders into one DESADV and collide on line numbers.
+    Given metasfresh contains M_Products:
+      | Identifier      |
+      | prod_shipped    |
+      | prod_notShipped |
+
+    And metasfresh contains M_Product_ASI_Data:
+      | Identifier        | M_Product_ID    | C_BPartner_ID | SeqNo |
+      | asiData_shipped   | prod_shipped    | customer1     | 10    |
+      | asiData_notShip   | prod_notShipped | customer1     | 10    |
+    And metasfresh contains M_HU_PackingMaterial:
+      | M_HU_PackingMaterial_ID | M_Product_ID | Name        |
+      | pm_shipped              | prod_shipped | pmShipped   |
+    And load M_HU_PackagingCode:
+      | M_HU_PackagingCode_ID | PackagingCode | HU_UnitType |
+      | huPkgCodeLU_ns        | ISO1          | LU          |
+      | huPkgCodeTU_ns        | CART          | TU          |
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID     |
+      | huPILU_ns      |
+      | huPITU_ns      |
+      | huPIVirtual_ns |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID     | HU_UnitType | IsCurrent | M_HU_PackagingCode_ID |
+      | huPIVerLU_ns       | huPILU_ns      | LU          | Y         |                       |
+      | huPIVerTU_ns       | huPITU_ns      | TU          | Y         | huPkgCodeTU_ns        |
+      | huPIVerCU_ns       | huPIVirtual_ns | V           | Y         |                       |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID | Qty | ItemType | Included_HU_PI_ID | M_HU_PackingMaterial_ID |
+      | huPiItemLU_ns              | huPIVerLU_ns       | 10  | HU       | huPITU_ns         |                         |
+      | huPiItemTU_ns              | huPIVerTU_ns       | 0   | PM       |                    | pm_shipped              |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID | Qty | ValidFrom  | M_HU_PackagingCode_LU_Fallback_ID | GTIN_LU_PackingMaterial_Fallback |
+      | huPiProd_ns             | huPiItemTU_ns    | prod_shipped | 10  | 2025-01-01 | huPkgCodeLU_ns                    | nsLuGTIN                         |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID    | PriceStd | C_UOM_ID |
+      | salesPLV               | prod_shipped    | 5.00     | PCE      |
+      | salesPLV               | prod_notShipped | 3.00     | PCE      |
+
+    # Order with 2 lines
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised | OPT.POReference |
+      | o_ns       | true    | customer1     | 2025-04-17  | 2025-04-18Z  | omitClosedRef   |
+    And metasfresh contains C_OrderLines:
+      | Identifier    | C_Order_ID | M_Product_ID    | QtyEntered | OPT.M_HU_PI_Item_Product_ID |
+      | ol_shipped    | o_ns       | prod_shipped    | 100        | huPiProd_ns                 |
+      | ol_notShipped | o_ns       | prod_notShipped | 50         |                             |
+    And the order identified by o_ns is completed
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And after not more than 180s, M_ShipmentSchedules are found:
+      | Identifier    | C_OrderLine_ID | IsToRecompute |
+      | ss_shipped    | ol_shipped     | N             |
+      | ss_notShipped | ol_notShipped  | N             |
+
+    And setup the SSCC18 code generator with GS1ManufacturerCode 1234567, GS1ExtensionDigit 0 and next sequence number always=1000000.
+
+    # Only ship the first line — the second line is NOT shipped at all
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | ss_shipped                       | D            | true                | false       |
+
+    And after not more than 180s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | REST.Context.M_InOut_ID | REST.Context.DocumentNo     |
+      | ss_shipped                       | s_ns                  | shipment_ns_ID          | shipment_ns_DocumentNo      |
+
+    And reset the SSCC18 code generator's next sequence number back to its actual sequence.
+
+    And EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_ExportStatus | REST.Context |
+      | d_ns                     | customer1                | o_ns                  | P                | d_ns         |
+
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_ns       | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+
+    # Enable the DESADV no-pack suppression toggle for this scenario only
+    And set sys config boolean value true for sys config de.metas.edi.desadv.OmitNonClosedNoPackLines
+
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/M_InOut_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+    "processParameters": [
+    {
+      "name": "M_InOut_ID",
+      "value": "@shipment_ns_ID@"
+    }
+  ]
+}
+    """
+    # The shipped line stays in Packings (delivery closed); the unshipped, non-closed
+    # no-pack line must be OMITTED — DesadvLineWithNoPacking is empty (0 rows below).
+    Then verify DESADV JSON export has compensation group packing:
+      | PackingCount | MainArticleCount | SubArticleCount | IsDeliveryClosed |
+      | 1            | 1                | 0               | true             |
+
+    And verify DESADV JSON export has DesadvLineWithNoPacking:
+      | OrderLine | QtyOrderedInDesadvLineUOM | QtyDeliveredInDesadvLineUOM | IsDeliveryClosed | QtyCUsPerTU |
 
   @Id:S0468_050
   @from:cucumber

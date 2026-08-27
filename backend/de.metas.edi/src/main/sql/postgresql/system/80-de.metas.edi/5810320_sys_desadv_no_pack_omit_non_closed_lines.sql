@@ -1,35 +1,12 @@
-/*
- * #%L
- * de.metas.edi
- * %%
- * Copyright (C) 2025 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
--- Function for desadv lines with no pack.
--- Builds the JSON for desadv lines that have no edi_desadv_pack_item: both unshipped lines
--- (must still appear in DESADV with qty 0) and shipped-but-not-packed lines.
+-- Source DDL: backend/de.metas.edi/src/main/sql/postgresql/ddl/functions/desadv_json/get_desadv_lines_no_pack_json_fn.sql
 --
--- Note: the per-line JSON object was previously assembled via the view
--- edi_desadv_line_object_v. That view had an unguarded LEFT JOIN to m_inoutline and
--- produced row multiplication (and inconsistent GTIN resolution) when one edi_desadvline
--- mapped to multiple m_inoutline rows. The same logic is now inlined here with
--- LATERAL + LIMIT 1 on m_inoutline to guarantee exactly one row per desadv line — the
--- pattern that get_desadv_packs_json_fn already used to side-step the same view.
+-- DESADV JSON: optionally omit no-pack lines whose delivery is not closed.
+-- Adds a SysConfig-gated filter to get_desadv_lines_no_pack_json_fn: when
+-- de.metas.edi.desadv.OmitNonClosedNoPackLines = 'Y', a no-pack line is kept only if its
+-- delivery is closed. Some receiving systems treat every no-pack line they receive as a
+-- closed delivery link, so a not-closed no-pack line would be mis-interpreted.
+-- Default 'N' preserves the previous behaviour (all matching no-pack lines emitted).
+
 CREATE OR REPLACE FUNCTION "de.metas.edi".get_desadv_lines_no_pack_json_fn(p_edi_desadv_id NUMERIC, p_m_inout_id NUMERIC)
     RETURNS JSONB AS $$
 DECLARE
@@ -192,3 +169,22 @@ BEGIN
     RETURN COALESCE(v_lines_no_pack_json, '[]'::jsonb);
 END;
 $$ LANGUAGE plpgsql STABLE;
+
+-- AD_SysConfig default for the new toggle (default OFF preserves existing behaviour).
+-- Guarded INSERT: idempotent if the row already exists (re-apply / faithful-DB rebuild).
+INSERT INTO AD_SysConfig
+    (AD_Client_ID, AD_Org_ID, AD_SysConfig_ID, ConfigurationLevel, Created, CreatedBy, Description, EntityType, IsActive, Name, Updated, UpdatedBy, Value)
+SELECT 0, 0, 541829 /*From ID Server*/, 'S',
+        TO_TIMESTAMP('2026-07-01 00:00:00.000000', 'YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',
+        100,
+        'When Y, get_desadv_lines_no_pack_json_fn omits no-pack lines whose delivery is not closed (some receiving systems treat every received no-pack line as a closed delivery link). Default N keeps all matching no-pack lines. Set per instance via set_sysconfig_value.',
+        'D', 'Y',
+        'de.metas.edi.desadv.OmitNonClosedNoPackLines',
+        TO_TIMESTAMP('2026-07-01 00:00:00.000000', 'YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',
+        100,
+        'N'
+WHERE NOT EXISTS (
+    SELECT 1 FROM AD_SysConfig
+    WHERE Name = 'de.metas.edi.desadv.OmitNonClosedNoPackLines'
+      AND AD_Client_ID = 0 AND AD_Org_ID = 0
+);
