@@ -46,9 +46,13 @@
 --                                                      hardcode the name anywhere.
 --
 -- Nothing else is written to that schema. The per-transport resolution is computed once
--- into a TEMP table (gh31608_resolution), so the UPDATE and the not-clean-cut report are
--- still driven from the SAME computation and cannot drift apart, and it disappears with
--- the session. The not-clean-cut rows are printed to the run's output rather than stored.
+-- into a TEMP table (gh31608_resolution) purely for readability of a four-rule multi-CTE
+-- derivation, and it disappears with the session.
+--
+-- The transports whose direction had to be GUESSED are neither stored nor printed -- see
+-- section 5 for why (the CLI swallows a script's stdout on a successful apply, so no
+-- in-script mechanism reaches a reader). Section 6 (c) recomputes the part that is
+-- recoverable. Do not add a SELECT or RAISE NOTICE here expecting it to be seen.
 
 -- ===========================================================================
 -- 1. Back up the whole table BEFORE anything is written
@@ -322,22 +326,24 @@ WHERE r.m_shippertransportation_id = st.M_ShipperTransportation_ID
 --     SELECT count(*) FROM M_ShipperTransportation WHERE M_Delivery_Planning_Type IS NULL;
 -- (b) every row still accounted for against the backup. Resolve the backup's name first --
 --     it carries backup_table's timestamp, so it differs per application:
---       SELECT table_name FROM backup.backup_tables
---        WHERE table_name LIKE 'm_shippertransportation_bkp_%_gh31608_direction'
---        ORDER BY table_name DESC LIMIT 1;
+--       SELECT backup_table_name FROM backup.backup_tables
+--        WHERE backup_table_name LIKE 'backup.m_shippertransportation_bkp_%_gh31608_direction'
+--        ORDER BY backup_table_name DESC LIMIT 1;
+--     (the column is backup_table_name, not table_name, and the value is stored WITH the
+--      'backup.' schema prefix -- both verified against the live table, and both wrong in an
+--      earlier version of this comment)
 --     then, substituting that name for <bkp>:
 --       SELECT count(*)
 --         FROM backup.<bkp> b
 --         FULL JOIN M_ShipperTransportation s USING (M_ShipperTransportation_ID)
 --        WHERE b.M_ShipperTransportation_ID IS NULL
 --           OR s.M_ShipperTransportation_ID IS NULL;
--- (c) the not-clean-cut transports, recomputed on demand. Section 5 prints these during
---     the run; this recovers them afterwards WITHOUT the resolution table. It reports the
+-- (c) the not-clean-cut transports. Nothing surfaces them during the run (section 5), so
+--     THIS is the only way to see them, before or after the apply. It reports the
 --     ambiguity itself -- a transport whose plannings do not agree on one direction -- which
 --     is what a human acts on. It does NOT recover the deciding rule: that reasoning also
 --     read M_Delivery_Planning.IsB2B, and a later script on this branch drops that column,
---     so the "why" survives only in THAT script's backup of m_delivery_planning. Hence the
---     run-time print in section 5.
+--     so the "why" survives only in THAT script's backup of m_delivery_planning.
 --       SELECT st.M_ShipperTransportation_ID, st.DocumentNo, st.M_Delivery_Planning_Type,
 --              count(DISTINCT dp.M_Delivery_Planning_Type) AS n_planning_directions
 --         FROM M_ShipperTransportation st
