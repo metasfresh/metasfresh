@@ -1773,6 +1773,75 @@ public class ESRImportTest extends ESRTestBase
 		 * @param expectedPaymentAction the second line's expected {@code ESR_Payment_Action}, or {@code null} if it
 		 * is expected to stay unflagged (see {@link #arrivingOnALaterDay()}).
 		 */
+		/**
+		 * The detection path that actually lost money in production, and the one no other test reaches.
+		 * <p>
+		 * {@code ESRImportDAO.findExistentPaymentId} turns a candidate payment (same partner, same amount)
+		 * into a duplicate via one of three routes. Both sibling tests give the two lines the SAME
+		 * {@code ESRLineText}, so the "another line already carries this payment" route matches first and
+		 * returns -- {@code IPaymentBL.isMatchInvoice} is never evaluated by them.
+		 * <p>
+		 * The production case was different: two DISTINCT bank lines, and the earlier payment was already
+		 * allocated to the very invoice the second line resolves. Only {@code isMatchInvoice} can catch
+		 * that. This test isolates it by giving the second line a different line text (so the line-text
+		 * route cannot fire) while keeping the payment date equal (so the candidate query matches on every
+		 * branch, including those that filter candidates on an exact {@code DateTrx}).
+		 * <p>
+		 * The load-bearing assertion is that the second line gets its OWN payment: attaching the earlier
+		 * one is exactly the behaviour that left the newly arrived money unbooked.
+		 */
+		@Test
+		void earlierPaymentAllocatedToTheSameInvoice_isDetectedViaTheInvoice_notTheLineText()
+		{
+			final String grandTotal = "50";
+			final String esrLineText1 = "01201067789300000001060012345600654321400000050009072  030014040914041014041100001006800000000000090                          ";
+			// same reference and amount, but NOT the same raw bank line: one differing character, same length,
+			// so neither text contains the other and the line-text route cannot match.
+			final String esrLineText2 = esrLineText1.replace("041100", "041200");
+
+			assertThat(esrLineText2).as("the two bank lines must differ").isNotEqualTo(esrLineText1);
+			assertThat(esrLineText2.length()).as("same record length").isEqualTo(esrLineText1.length());
+			assertThat(ESRTransactionLineMatcherUtil.extractReferenceNumberStr(esrLineText2))
+					.as("both lines must still resolve the same invoice reference")
+					.isEqualTo(ESRTransactionLineMatcherUtil.extractReferenceNumberStr(esrLineText1));
+
+			final String completeRef = ESRTransactionLineMatcherUtil.extractReferenceNumberStr(esrLineText1);
+			final String partnerValue = "123456";
+			final String invDocNo = "654321";
+			final String ESR_Rendered_AccountNo = "01-067789-3";
+
+			final I_ESR_ImportLine esrImportLine1 = setupESR_ImportLine(invDocNo, grandTotal, false, completeRef, ESR_Rendered_AccountNo, partnerValue, "50", false);
+			esrImportLine1.setESRLineText(esrLineText1);
+			final Timestamp paymentDate = TimeUtil.getDay(2024, 1, 10);
+			esrImportLine1.setPaymentDate(paymentDate);
+			save(esrImportLine1);
+			esrImportBL.process(esrImportLine1.getESR_Import());
+
+			refresh(esrImportLine1, true);
+			assertThat(esrImportLine1.getESR_Payment_Action()).isEqualTo(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Fit_Amounts);
+			final int firstPaymentId = esrImportLine1.getC_Payment_ID();
+			assertThat(firstPaymentId).as("the first line must have produced a payment").isNotZero();
+
+			// the same amount arrives again for the same, now-settled invoice -- on a DIFFERENT bank line
+			final I_ESR_ImportLine esrImportLine2 = createESR_ImportLineFromOtherLine(esrImportLine1);
+			esrImportLine2.setESRLineText(esrLineText2);
+			esrImportLine2.setPaymentDate(paymentDate);
+			save(esrImportLine2);
+			esrImportBL.process(esrImportLine2.getESR_Import());
+
+			refresh(esrImportLine2, true);
+			assertThat(esrImportLine2.getESR_Payment_Action())
+					.as("flagged through the invoice route, even though no other line carries this bank line")
+					.isEqualTo(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment);
+			assertThat(esrImportLine2.isProcessed())
+					.as("must stay open until the accountant picks an overpayment action")
+					.isFalse();
+			assertThat(esrImportLine2.getC_Payment_ID())
+					.as("the money that arrived a second time must be booked as its OWN payment")
+					.isNotZero()
+					.isNotEqualTo(firstPaymentId);
+		}
+
 		private void assertDuplicateGetsOwnPayment(final int daysAfterFirstPayment, final String expectedPaymentAction)
 		{
 			final String grandTotal = "50";
