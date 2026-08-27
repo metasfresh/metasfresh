@@ -178,16 +178,30 @@ public class M_Delivery_Planning_StepDef
 		deliveryPlanningService.createAdditionalDeliveryPlannings(deliveryPlanningId, noAdditionalRecords);
 	}
 
+	/**
+	 * Deletes the given delivery planning, via {@link DeliveryPlanningService#validateDeletion(I_M_Delivery_Planning)}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_Delivery_Planning_ID</b> — (required, identifier-ref) the planning to delete<br>
+	 *   <b>ErrorCode</b> — (optional) when set, the deletion is expected to fail with this {@code AdempiereException} error code
+	 *   instead of succeeding<br>
+	 * @cucumber.depends StepDefData: M_Delivery_Planning_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And delete M_Delivery_Planning:
+	 *   | M_Delivery_Planning_ID | ErrorCode                                                        |
+	 *   | deliveryPlanning_1      | de.metas.deliveryplanning.M_Delivery_Planning_AlreadyReferenced |
+	 * </pre>
+	 */
 	@When("delete M_Delivery_Planning:")
 	public void delete_M_Delivery_Planning(@NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
+		DataTableRows.of(dataTable).forEach(row ->
 		{
-			final String deliveryPlanningIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_Delivery_Planning deliveryPlanning = deliveryPlanningTable.get(deliveryPlanningIdentifier);
-			assertThat(deliveryPlanning).isNotNull();
+			final I_M_Delivery_Planning deliveryPlanning = row.getAsIdentifier(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID).lookupNotNullIn(deliveryPlanningTable);
 
-			final String errorCode = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.ErrorCode");
+			final String errorCode = row.getAsOptionalString("ErrorCode").filter(Check::isNotBlank).orElse(null);
 			try
 			{
 				deliveryPlanningService.validateDeletion(deliveryPlanning);
@@ -202,7 +216,7 @@ public class M_Delivery_Planning_StepDef
 			{
 				assertThat(e.getErrorCode()).as("ErrorCode of %s", e).isEqualTo(errorCode);
 			}
-		}
+		});
 	}
 
 	@And("validate M_Delivery_Planning:")
