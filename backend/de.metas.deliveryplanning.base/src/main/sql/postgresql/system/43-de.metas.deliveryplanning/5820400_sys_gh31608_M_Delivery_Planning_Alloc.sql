@@ -61,13 +61,13 @@ CREATE TABLE IF NOT EXISTS M_Delivery_Planning_Alloc
 -- ===========================================================================
 -- 2. AD_Table
 -- ===========================================================================
--- This raw INSERT never runs through MTable.afterSave() (org/compiere/model/MTable.java:
--- 294-308), so it provides neither the native PK sequence nor the AD_Sequence dictionary row
--- that hook would otherwise create. Both gaps are closed by LATER scripts, not here: the
--- native sequence by 5820530 (dba_seq_check_native), the AD_Sequence row by 5820540. This is a
--- comment only -- this script is already applied everywhere this branch has run, so adding SQL
--- here now would never execute on those instances and would create exactly the
--- registry-vs-data drift this comment is warning about.
+-- This raw INSERT never runs through the ORM's normal model-layer save path for a new AD_Table
+-- row, so it provides neither the native PK sequence nor the AD_Sequence dictionary row that
+-- path would otherwise create. Both gaps are closed by LATER scripts, not here: the native
+-- sequence by 5820530 (dba_seq_check_native), the AD_Sequence row by 5820540. This is a comment
+-- only -- this script is already applied everywhere this branch has run, so adding SQL here now
+-- would never execute on those instances and would create exactly the registry-vs-data drift
+-- this comment is warning about.
 -- ===========================================================================
 INSERT INTO AD_Table
     (AD_Table_ID, AD_Client_ID, AD_Org_ID, IsActive,

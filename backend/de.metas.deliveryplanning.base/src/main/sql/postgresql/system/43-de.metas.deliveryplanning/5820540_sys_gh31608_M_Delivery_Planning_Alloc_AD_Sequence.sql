@@ -1,22 +1,19 @@
 -- 5820400 created M_Delivery_Planning_Alloc with a raw INSERT INTO AD_Table, which never goes
--- through MTable.afterSave() (backend/de.metas.adempiere.adempiere/base/src/main/java-legacy/
--- org/compiere/model/MTable.java:294-308). That hook is responsible for TWO things on a
--- Java-model-layer table save: the native PK sequence, and (via
--- ITableSequenceChecker.createOrUpdateTableSequence, TableSequenceChecker.java:220-264,
--- setIsTableID(true)) the table's AD_Sequence dictionary row. The native sequence half was
--- fixed in 5820530 (dba_seq_check_native('M_Delivery_Planning_Alloc'), after CI died on
--- 'relation "m_delivery_planning_alloc_seq" does not exist'). This script supplies the other
--- half: the AD_Sequence row, still missing after both of those scripts.
+-- through the ORM's normal model-layer save path for a new AD_Table row. That path is
+-- responsible for TWO things on a normal table creation: the native PK sequence, and the
+-- table's AD_Sequence dictionary row. The native sequence half was fixed in 5820530
+-- (dba_seq_check_native('M_Delivery_Planning_Alloc'), after CI died on 'relation
+-- "m_delivery_planning_alloc_seq" does not exist'). This script supplies the other half: the
+-- AD_Sequence row, still missing after both of those scripts.
 --
 -- Not a functional fix: SYSTEM_NATIVE_SEQUENCE=Y on every instance this has been checked
 -- against (verified live, deep_tundra_uat_2 port 21632: AD_SysConfig.Value='Y', IsActive='Y',
--- AD_Client_ID=0/AD_Org_ID=0). With that flag on, DB.getNextID() -> PO.isUseNativeSequences()
--- (org/compiere/model/PO.java:3168) takes the native-sequence branch and calls nextval()
--- straight on the physical Postgres sequence -- AD_Sequence is never consulted for ID
--- generation on that path (org/compiere/util/DB.java:2549-2582; the only escapes from that
--- branch -- migration-script logging, the "Maintain Dictionary" ini flag, or an external
--- dictionary/project ID server -- are all dev/admin-mode switches, not the normal runtime
--- save path DeliveryPlanningRepository.createAllocation() uses). So the missing row costs
+-- AD_Client_ID=0/AD_Org_ID=0). With that flag on, ID generation for a new row on this table
+-- takes the native-sequence branch and calls nextval() straight on the physical Postgres
+-- sequence -- AD_Sequence is never consulted for ID generation on that path (the only escapes
+-- from that branch -- migration-script logging, the "Maintain Dictionary" ini flag, or an
+-- external dictionary/project ID server -- are all dev/admin-mode switches, not the normal
+-- runtime save path this table's allocation-creation logic uses). So the missing row costs
 -- visibility only: the table does not show up in the *Sequence* admin window for inspection or
 -- manual reset, unlike every sibling allocation table (M_ReceiptSchedule_Alloc,
 -- M_Delivery_Planning, C_Order_Carrier_Service, M_Product_ASI_Data all have one).
