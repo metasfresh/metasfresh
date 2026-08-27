@@ -49,7 +49,14 @@ DELETE FROM AD_Field WHERE AD_Column_ID = 585609
 -- DO NOT simply reactivate this tab: with Parent_Column_ID NULL the WebUI silently falls back to the
 -- parent's key column (GridTabVOBasedDocumentEntityDescriptorFactory:1018), which would match rows on
 -- M_ShipperTransportation_ID and display the wrong instructions with no error anywhere.
-UPDATE AD_Tab SET IsActive='N', Parent_Column_ID=NULL, Updated=now(), UpdatedBy=100 WHERE AD_Tab_ID=546754
+-- WhereClause is neutralised to a never-matching predicate rather than left as-is: its old text names
+-- @M_Delivery_Planning_ID@, a context variable the header no longer supplies, so it is dead text that
+-- would read as still-meaningful. With Parent_Column_ID NULL a reactivated tab would fall back to the
+-- parent's key column (see above); '1=0' makes that accidental reactivation show nothing instead of the
+-- wrong instructions.
+UPDATE AD_Tab SET IsActive='N', Parent_Column_ID=NULL, WhereClause='1=0',
+  Updated=TO_TIMESTAMP('2026-08-27 13:45:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Tab_ID=546754
 ;
 
 DELETE FROM AD_Column_Trl WHERE AD_Column_ID = 585609
