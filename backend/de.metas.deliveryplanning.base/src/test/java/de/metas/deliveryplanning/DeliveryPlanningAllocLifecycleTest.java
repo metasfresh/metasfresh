@@ -51,12 +51,12 @@ import static org.assertj.core.api.Assertions.entry;
 import static org.assertj.core.groups.Tuple.tuple;
 
 /**
- * The allocation's write lifecycle: what {@code createAllocations}, {@code deactivateAllocations} and
- * {@code deleteAllocations} leave behind.
+ * The allocation's write lifecycle: what {@code createAllocations} and the two {@code deactivateAllocations}
+ * overloads (by instruction, and by planning ids) leave behind.
  * <p>
- * The two partial unique indexes that make the deactivate-versus-delete distinction matter are a DB
- * guarantee and are therefore not exercised here; what is pinned here is that the repository writes the
- * state those indexes key on - {@code IsActive} - the way each event requires.
+ * The two partial unique indexes that make deactivation-versus-still-active matter are a DB guarantee and
+ * are therefore not exercised here; what is pinned here is that the repository writes the state those
+ * indexes key on - {@code IsActive} - the way each event requires.
  */
 class DeliveryPlanningAllocLifecycleTest
 {
@@ -211,8 +211,8 @@ class DeliveryPlanningAllocLifecycleTest
 	}
 
 	@Test
-	@DisplayName("remove deletes the allocation together with its shipping package")
-	void deleteRemovesAllocationAndPackage()
+	@DisplayName("remove deactivates the allocation together with its shipping package - neither is deleted")
+	void deactivateByPlanningIdsDeactivatesAllocationAndPackage()
 	{
 		final ShipperTransportationId deliveryInstructionId = createDeliveryInstruction(DocStatus.Drafted, false);
 		final DeliveryPlanningId removed = createDeliveryPlanning();
@@ -220,34 +220,36 @@ class DeliveryPlanningAllocLifecycleTest
 		deliveryPlanningRepository.createAllocations(deliveryInstructionId, ImmutableList.of(allocRequestFor(removed), allocRequestFor(kept)));
 		final int removedPackageId = allAllocations().get(0).getM_ShippingPackage_ID();
 
-		deliveryPlanningRepository.deleteAllocations(ImmutableList.of(removed));
+		deliveryPlanningRepository.deactivateAllocations(ImmutableList.of(removed));
 
 		assertThat(allAllocations())
-				.extracting(I_M_Delivery_Planning_Alloc::getM_Delivery_Planning_ID)
-				.containsExactly(kept.getRepoId());
-		assertThat(queryBL.createQueryBuilder(I_M_ShippingPackage.class)
-				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_M_ShippingPackage_ID, removedPackageId)
-				.create()
-				.anyMatch()).isFalse();
+				.as("both rows survive - the removed one deactivated, the kept one untouched")
+				.extracting(I_M_Delivery_Planning_Alloc::getM_Delivery_Planning_ID, I_M_Delivery_Planning_Alloc::isActive)
+				.containsExactlyInAnyOrder(
+						tuple(removed.getRepoId(), false),
+						tuple(kept.getRepoId(), true));
+		assertThat(InterfaceWrapperHelper.load(removedPackageId, I_M_ShippingPackage.class).isActive())
+				.as("its shipping package is deactivated too, not deleted")
+				.isFalse();
 	}
 
 	@Test
-	@DisplayName("remove leaves a deactivated allocation of the same planning standing - a void is not what is being undone")
-	void deleteDoesNotTouchDeactivatedAllocations()
+	@DisplayName("remove leaves an already-deactivated allocation of the same planning standing - a void is not what is being undone")
+	void deactivateByPlanningIdsSkipsAlreadyDeactivatedAllocations()
 	{
 		final DeliveryPlanningId deliveryPlanningId = createDeliveryPlanning();
 		final ShipperTransportationId voidedInstructionId = createDeliveryInstruction(DocStatus.Drafted, false);
 		deliveryPlanningRepository.createAllocations(voidedInstructionId, ImmutableList.of(allocRequestFor(deliveryPlanningId)));
 		deliveryPlanningRepository.deactivateAllocations(voidedInstructionId);
 
-		deliveryPlanningRepository.deleteAllocations(ImmutableList.of(deliveryPlanningId));
+		deliveryPlanningRepository.deactivateAllocations(ImmutableList.of(deliveryPlanningId));
 
 		assertThat(allAllocations()).hasSize(1);
 		assertThat(allAllocations().get(0).isActive()).isFalse();
 	}
 
 	@Test
-	@DisplayName("a move deletes the source allocation and its package, and creates a fresh pair on the target")
+	@DisplayName("a move deactivates the source allocation and its package, and creates a fresh active pair on the target")
 	void moveReplacesTheAllocationAndItsPackage()
 	{
 		final ShipperTransportationId source = createDeliveryInstruction(DocStatus.Drafted, false);
@@ -257,26 +259,24 @@ class DeliveryPlanningAllocLifecycleTest
 		deliveryPlanningRepository.createAllocations(source, ImmutableList.of(allocRequestFor(moving), allocRequestFor(staying)));
 		final int sourcePackageId = allAllocations().get(0).getM_ShippingPackage_ID();
 
-		// exactly what addTo does per planning, and in that order: the source allocation is DELETED, so the
-		// target's insert finds no active row on either partial unique index
-		deliveryPlanningRepository.deleteAllocations(ImmutableList.of(moving));
+		// exactly what addTo does per planning, and in that order: the source allocation is DEACTIVATED, so the
+		// target's insert finds no ACTIVE row on either partial unique index
+		deliveryPlanningRepository.deactivateAllocations(ImmutableList.of(moving));
 		deliveryPlanningRepository.createAllocations(target, ImmutableList.of(allocRequestFor(moving)));
 
 		assertThat(allAllocations())
-				.as("one allocation per planning, the moved one now on the target")
+				.as("the source row for the moved planning survives deactivated; the staying row and the new target row are active")
 				.extracting(
 						I_M_Delivery_Planning_Alloc::getM_Delivery_Planning_ID,
 						I_M_Delivery_Planning_Alloc::getM_ShipperTransportation_ID,
 						I_M_Delivery_Planning_Alloc::isActive)
 				.containsExactlyInAnyOrder(
+						tuple(moving.getRepoId(), source.getRepoId(), false),
 						tuple(staying.getRepoId(), source.getRepoId(), true),
 						tuple(moving.getRepoId(), target.getRepoId(), true));
 
-		assertThat(queryBL.createQueryBuilder(I_M_ShippingPackage.class)
-				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_M_ShippingPackage_ID, sourcePackageId)
-				.create()
-				.anyMatch())
-				.as("nothing survives to say the cargo was ever on the source document")
+		assertThat(InterfaceWrapperHelper.load(sourcePackageId, I_M_ShippingPackage.class).isActive())
+				.as("the source document's shipping package survives, deactivated - not deleted")
 				.isFalse();
 	}
 
@@ -292,15 +292,37 @@ class DeliveryPlanningAllocLifecycleTest
 				allocRequestFor(createDeliveryPlanning()), allocRequestFor(createDeliveryPlanning()), allocRequestFor(moving)));
 		deliveryPlanningRepository.createAllocations(target, ImmutableList.of(allocRequestFor(createDeliveryPlanning())));
 
-		deliveryPlanningRepository.deleteAllocations(ImmutableList.of(moving));
+		deliveryPlanningRepository.deactivateAllocations(ImmutableList.of(moving));
 		deliveryPlanningRepository.createAllocations(target, ImmutableList.of(allocRequestFor(moving)));
 
 		assertThat(allAllocations().stream()
-				.filter(alloc -> alloc.getM_Delivery_Planning_ID() == moving.getRepoId())
+				// the deactivated source row for `moving` also matches on M_Delivery_Planning_ID, so the NEW
+				// active one is what identifies the target's row here
+				.filter(alloc -> alloc.getM_Delivery_Planning_ID() == moving.getRepoId() && alloc.isActive())
 				.findFirst()
 				.orElseThrow(AssertionError::new)
 				.getLineNo())
 				.isEqualTo(20);
+	}
+
+	@Test
+	@DisplayName("a deactivated planning can be allocated again immediately - the partial unique indexes only key on IsActive='Y'")
+	void deactivatedPlanningCanBeAllocatedAgainImmediately()
+	{
+		final ShipperTransportationId source = createDeliveryInstruction(DocStatus.Drafted, false);
+		final DeliveryPlanningId planningId = createDeliveryPlanning();
+		deliveryPlanningRepository.createAllocations(source, ImmutableList.of(allocRequestFor(planningId)));
+
+		deliveryPlanningRepository.deactivateAllocations(ImmutableList.of(planningId));
+
+		final ShipperTransportationId target = createDeliveryInstruction(DocStatus.Drafted, false);
+		final ImmutableList<DeliveryPlanningAllocId> newAllocIds =
+				deliveryPlanningRepository.createAllocations(target, ImmutableList.of(allocRequestFor(planningId)));
+
+		assertThat(newAllocIds).hasSize(1);
+		assertThat(deliveryPlanningRepository.getAllocatedInstructionIds(ImmutableList.of(planningId)))
+				.as("the fresh allocation on the target is the only ACTIVE one reported for this planning")
+				.containsExactly(entry(planningId, target));
 	}
 
 	@Test
@@ -332,8 +354,8 @@ class DeliveryPlanningAllocLifecycleTest
 		deliveryPlanningRepository.createAllocations(deliveryInstructionId, ImmutableList.of(
 				allocRequestFor(held), allocRequestFor(movedAway), allocRequestFor(deactivated)));
 
-		// a move deletes the allocation, a void deactivates it - neither leaves the planning on this document
-		deliveryPlanningRepository.deleteAllocations(ImmutableList.of(movedAway));
+		// a move deactivates the allocation, a void deactivates it too - neither leaves the planning active on this document
+		deliveryPlanningRepository.deactivateAllocations(ImmutableList.of(movedAway));
 		final I_M_Delivery_Planning_Alloc deactivatedAlloc = allAllocations().stream()
 				.filter(alloc -> alloc.getM_Delivery_Planning_ID() == deactivated.getRepoId())
 				.findFirst()

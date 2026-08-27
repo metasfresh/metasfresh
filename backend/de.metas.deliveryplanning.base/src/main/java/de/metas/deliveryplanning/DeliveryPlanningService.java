@@ -986,7 +986,7 @@ public class DeliveryPlanningService
 	/**
 	 * Reacts to a planning's {@code IsClosed} flipping to {@code true} (the {@code M_Delivery_Planning}
 	 * AFTER_CHANGE(IsClosed) interceptor): refused outright via {@link #getCloseRejectionReason} when the planning
-	 * is on a completed instruction; otherwise its allocation and shipping package are removed via the SAME
+	 * is on a completed instruction; otherwise its allocation and shipping package are deactivated via the SAME
 	 * primitive {@link #removeFrom} uses - closing says "stop processing this cargo", and remaining allocated to a
 	 * draft instruction contradicts that. A planning on no instruction is left alone.
 	 */
@@ -1001,7 +1001,7 @@ public class DeliveryPlanningService
 			return;
 		}
 
-		deliveryPlanningRepository.deleteAllocations(allocatedIds);
+		deliveryPlanningRepository.deactivateAllocations(allocatedIds);
 		deliveryPlanningRepository.clearInstructionReference(allocatedIds);
 	}
 
@@ -1232,7 +1232,7 @@ public class DeliveryPlanningService
 	 * <p>
 	 * All-or-nothing: the rejection is evaluated for the whole selection before anything is written, and
 	 * the writes then run in one transaction, so a failure part-way leaves no planning moved, no shipping package
-	 * orphaned and no {@code ReleaseNo} re-stamped. Per planning the order is delete-then-create, so the
+	 * orphaned and no {@code ReleaseNo} re-stamped. Per planning the order is deactivate-then-create, so the
 	 * single-active-allocation index never sees two.
 	 * <p>
 	 * A planning already on the target is left alone: there is nothing to move, and its {@code ReleaseNo} already
@@ -1267,9 +1267,10 @@ public class DeliveryPlanningService
 		trxManager.runInThreadInheritedTrx(() -> {
 			final ImmutableList<DeliveryPlanningAllocCreateRequest> allocations = createAllocCreateRequests(deliveryPlanningIds);
 
-			// the source allocation and its package are DELETED, not deactivated, so the target's insert has no
-			// active row left to collide with on either partial unique index
-			deliveryPlanningRepository.deleteAllocations(deliveryPlanningIds);
+			// the source allocation and its package are DEACTIVATED, not deleted, so the record of what was once
+			// planned survives - the target's insert still finds no ACTIVE row to collide with on either partial
+			// unique index, since both are declared WHERE IsActive='Y'
+			deliveryPlanningRepository.deactivateAllocations(deliveryPlanningIds);
 			deliveryPlanningRepository.createAllocations(targetDeliveryInstructionId, allocations);
 
 			// re-stamped from the target: the old release number named a document the cargo has left
@@ -1279,7 +1280,7 @@ public class DeliveryPlanningService
 
 	/**
 	 * Takes the selected delivery plannings off the DRAFT delivery instruction they are on: allocation and
-	 * shipping package are deleted, and the planning loses its {@code ReleaseNo}, so it can be planned again.
+	 * shipping package are deactivated, and the planning loses its {@code ReleaseNo}, so it can be planned again.
 	 * <p>
 	 * The instruction itself and its other plannings are untouched - which is the reason removal is not
 	 * void-and-regenerate: a regenerated instruction is a new document, so it would re-stamp the release number of
@@ -1302,7 +1303,7 @@ public class DeliveryPlanningService
 		final ImmutableList<DeliveryPlanningId> deliveryPlanningIds = selectedDeliveryPlannings.allocatedOnes().getIdsInAllocationOrder();
 
 		trxManager.runInThreadInheritedTrx(() -> {
-			deliveryPlanningRepository.deleteAllocations(deliveryPlanningIds);
+			deliveryPlanningRepository.deactivateAllocations(deliveryPlanningIds);
 			deliveryPlanningRepository.clearInstructionReference(deliveryPlanningIds);
 		});
 	}

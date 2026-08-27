@@ -638,12 +638,13 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * On remove from the instruction, and on the source half of a move: the allocations of the given plannings and
-	 * the shipping packages they point at are deleted, not deactivated, so nothing survives to say the cargo was
-	 * ever on that document.
+	 * On remove from the instruction, on the source half of a move, and on close: the allocations of the given
+	 * plannings and the shipping packages they point at are deactivated rather than deleted, so the record of what
+	 * was once planned survives - the same reason {@link #deactivateAllocations(ShipperTransportationId)}
+	 * deactivates rather than deletes on void/cancel.
 	 * <p>
-	 * Only active allocations are touched: a deactivated one records an instruction that was voided, and voiding
-	 * is not what the planner is undoing here.
+	 * Only active allocations are touched: a deactivated one already records an instruction this planning was
+	 * taken off before (a void or an earlier removal), and that history is not what the caller is undoing here.
 	 * <p>
 	 * "A planning cannot be removed from a completed instruction" is enforced entirely at the service layer, by
 	 * each caller's own rejection-reason check BEFORE this method is ever called -
@@ -651,7 +652,7 @@ public class DeliveryPlanningRepository
 	 * {@link DeliveryPlanningService#getAddToRejectionReason} for the source half of a move. The allocation itself
 	 * carries no status to check here: it is not a document.
 	 */
-	public void deleteAllocations(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
+	public void deactivateAllocations(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
 	{
 		if (deliveryPlanningIds.isEmpty())
 		{
@@ -664,10 +665,11 @@ public class DeliveryPlanningRepository
 		for (final I_M_Delivery_Planning_Alloc allocRecord : allocRecords)
 		{
 			final I_M_ShippingPackage shippingPackageRecord = shippingPackages.get(allocRecord.getM_ShippingPackage_ID());
+			shippingPackageRecord.setIsActive(false);
+			saveRecord(shippingPackageRecord);
 
-			// the allocation references the package, so it goes first
-			InterfaceWrapperHelper.delete(allocRecord);
-			InterfaceWrapperHelper.delete(shippingPackageRecord);
+			allocRecord.setIsActive(false);
+			saveRecord(allocRecord);
 		}
 	}
 
@@ -830,8 +832,8 @@ public class DeliveryPlanningRepository
 	 * Clears the given plannings' {@code ReleaseNo} and instruction reference: they are on no delivery instruction
 	 * any more, and are therefore planable onto one again.
 	 * <p>
-	 * The allocation is not touched here - {@link #deleteAllocations(Collection)} is what removes it, and this is
-	 * the planning-side half of the same removal.
+	 * The allocation is not touched here - {@link #deactivateAllocations(Collection)} is what deactivates it, and
+	 * this is the planning-side half of the same removal.
 	 */
 	public void clearInstructionReference(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
 	{

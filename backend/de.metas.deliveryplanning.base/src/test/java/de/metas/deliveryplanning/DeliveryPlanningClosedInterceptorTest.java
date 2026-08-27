@@ -60,7 +60,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Task C3 - the {@code M_Delivery_Planning} AFTER_CHANGE(IsClosed) interceptor (AC14): closing a planning allocated
- * to a DRAFT instruction removes the allocation and its shipping package; closing one allocated to a COMPLETED
+ * to a DRAFT instruction deactivates the allocation and its shipping package; closing one allocated to a COMPLETED
  * instruction is refused, pointing at Re-Activate.
  * <p>
  * Exercised through the REAL, registered {@code M_Delivery_Planning} interceptor (via
@@ -177,25 +177,36 @@ class DeliveryPlanningClosedInterceptorTest
 				.anyMatch();
 	}
 
-	private int shippingPackageIdOf(@NonNull final I_M_Delivery_Planning record)
+	private I_M_Delivery_Planning_Alloc activeAllocationOf(@NonNull final I_M_Delivery_Planning record)
 	{
 		return allActiveAllocations().stream()
 				.filter(alloc -> alloc.getM_Delivery_Planning_ID() == record.getM_Delivery_Planning_ID())
 				.findFirst()
-				.orElseThrow(() -> new AssertionError("no active allocation for delivery planning " + record.getM_Delivery_Planning_ID()))
-				.getM_ShippingPackage_ID();
+				.orElseThrow(() -> new AssertionError("no active allocation for delivery planning " + record.getM_Delivery_Planning_ID()));
+	}
+
+	private int shippingPackageIdOf(@NonNull final I_M_Delivery_Planning record)
+	{
+		return activeAllocationOf(record).getM_ShippingPackage_ID();
+	}
+
+	private boolean shippingPackageIsActive(final int shippingPackageId)
+	{
+		return InterfaceWrapperHelper.load(shippingPackageId, I_M_ShippingPackage.class).isActive();
 	}
 
 	// ------------------------------------------------------------------ tests
 
 	@Test
-	@DisplayName("close: a planning allocated to a DRAFT instruction has its allocation and shipping package removed")
-	void close_allocatedToDraftInstruction_removesAllocationAndPackage()
+	@DisplayName("close: a planning allocated to a DRAFT instruction has its allocation and shipping package deactivated")
+	void close_allocatedToDraftInstruction_deactivatesAllocationAndPackage()
 	{
 		final ShipperTransportationId draft = deliveryInstruction("DRAFT-1", DocStatus.Drafted.getCode());
 		final I_M_Delivery_Planning planning = deliveryPlanning();
 		allocateTo(draft, planning);
-		final int packageId = shippingPackageIdOf(planning);
+		final I_M_Delivery_Planning_Alloc allocBefore = activeAllocationOf(planning);
+		final int allocationId = allocBefore.getM_Delivery_Planning_Alloc_ID();
+		final int packageId = allocBefore.getM_ShippingPackage_ID();
 
 		deliveryPlanningService.closeSelectedDeliveryPlannings(selectionOf(planning));
 
@@ -203,8 +214,11 @@ class DeliveryPlanningClosedInterceptorTest
 		assertThat(closed.isClosed()).isTrue();
 		assertThat(closed.getReleaseNo()).as("the removal clears the release number, same as removeFrom").isNull();
 		assertThat(closed.getM_ShipperTransportation_ID()).as("and the instruction reference").isLessThanOrEqualTo(0);
-		assertThat(allActiveAllocations()).as("the allocation is gone").isEmpty();
-		assertThat(shippingPackageExists(packageId)).as("its shipping package went with it").isFalse();
+		assertThat(allActiveAllocations()).as("no active allocation remains").isEmpty();
+		assertThat(InterfaceWrapperHelper.load(allocationId, I_M_Delivery_Planning_Alloc.class).isActive())
+				.as("the allocation row survives, deactivated - the re-booking audit trail this task exists for")
+				.isFalse();
+		assertThat(shippingPackageIsActive(packageId)).as("its shipping package is deactivated too, not deleted").isFalse();
 	}
 
 	@Test

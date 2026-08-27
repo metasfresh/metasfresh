@@ -58,13 +58,15 @@ import static org.assertj.core.groups.Tuple.tuple;
  * What {@code addTo} and {@code removeFrom} leave behind, driven through the SERVICE rather than the repository.
  * <p>
  * Deliberately asserts nothing that {@link DeliveryPlanningBatchLoadingTest} already pins. That one counts round
- * trips and covers the plain add of an unallocated planning; this one covers the four things neither it nor the
+ * trips and covers the plain add of an unallocated planning; this one covers the things neither it nor the
  * repository-level tests reach through the orchestration:
  * <ol>
  *     <li>the MOVE off a source draft instruction - the clause that makes add-to more than an add</li>
  *     <li>its idempotency - a planning already on the target must not be taken off and put back</li>
  *     <li>removal leaving the instruction's OTHER plannings alone, which needs a partial selection</li>
  *     <li>a moved allocation continuing the TARGET's LineNo rather than the source's</li>
+ *     <li>a removed planning is immediately re-allocatable, and its retired allocation does not leak into an
+ *     	active-filtered lookup</li>
  * </ol>
  * <p>
  * The repository is the real one and the selection is a real query filter over the in-memory store - nothing is
@@ -177,20 +179,23 @@ class DeliveryPlanningMoveAndRemovalTest
 				.list();
 	}
 
+	/**
+	 * The planning's CURRENT (active) allocation - filtered on {@code IsActive}, because after a move the
+	 * planning's retired source-side row also matches on {@code M_Delivery_Planning_ID} and would otherwise
+	 * make this lookup ambiguous.
+	 */
 	private I_M_Delivery_Planning_Alloc allocationOf(@NonNull final I_M_Delivery_Planning record)
 	{
 		return allocationsInLineNoOrder().stream()
 				.filter(alloc -> alloc.getM_Delivery_Planning_ID() == record.getM_Delivery_Planning_ID())
+				.filter(I_M_Delivery_Planning_Alloc::isActive)
 				.findFirst()
-				.orElseThrow(() -> new AssertionError("no allocation for delivery planning " + record.getM_Delivery_Planning_ID()));
+				.orElseThrow(() -> new AssertionError("no ACTIVE allocation for delivery planning " + record.getM_Delivery_Planning_ID()));
 	}
 
-	private boolean shippingPackageExists(final int shippingPackageId)
+	private boolean shippingPackageIsActive(final int shippingPackageId)
 	{
-		return queryBL.createQueryBuilder(I_M_ShippingPackage.class)
-				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_M_ShippingPackage_ID, shippingPackageId)
-				.create()
-				.anyMatch();
+		return InterfaceWrapperHelper.load(shippingPackageId, I_M_ShippingPackage.class).isActive();
 	}
 
 	/**
@@ -214,7 +219,7 @@ class DeliveryPlanningMoveAndRemovalTest
 	// ------------------------------------------------------------------ tests
 
 	@Test
-	@DisplayName("add-to MOVES a planning off the draft instruction it was on, taking its shipping package with it")
+	@DisplayName("add-to MOVES a planning off the draft instruction it was on, deactivating its source allocation and shipping package")
 	void addToMovesThePlanningOffItsSourceInstruction()
 	{
 		final ShipperTransportationId source = draftDeliveryInstruction("SOURCE-1");
@@ -228,12 +233,14 @@ class DeliveryPlanningMoveAndRemovalTest
 		deliveryPlanningService.addTo(selectionOf(moving), target);
 
 		assertThat(allocationsInLineNoOrder())
-				.as("exactly one allocation, on the target - the source's was deleted, not left standing")
-				.extracting(I_M_Delivery_Planning_Alloc::getM_Delivery_Planning_ID, I_M_Delivery_Planning_Alloc::getM_ShipperTransportation_ID)
-				.containsExactly(tuple(moving.getM_Delivery_Planning_ID(), target.getRepoId()));
+				.as("the source row survives DEACTIVATED, and a fresh ACTIVE row sits on the target - nothing was left standing active")
+				.extracting(I_M_Delivery_Planning_Alloc::getM_Delivery_Planning_ID, I_M_Delivery_Planning_Alloc::getM_ShipperTransportation_ID, I_M_Delivery_Planning_Alloc::isActive)
+				.containsExactlyInAnyOrder(
+						tuple(moving.getM_Delivery_Planning_ID(), source.getRepoId(), false),
+						tuple(moving.getM_Delivery_Planning_ID(), target.getRepoId(), true));
 
-		assertThat(shippingPackageExists(sourcePackageId))
-				.as("the source allocation's shipping package went with it")
+		assertThat(shippingPackageIsActive(sourcePackageId))
+				.as("the source allocation's shipping package went with it, deactivated rather than deleted")
 				.isFalse();
 		assertNoOrphanedShippingPackages();
 
@@ -287,7 +294,9 @@ class DeliveryPlanningMoveAndRemovalTest
 		final int stayingAllocationId = stayingAllocBefore.getM_Delivery_Planning_Alloc_ID();
 		final int stayingLineNo = stayingAllocBefore.getLineNo();
 		final String stayingReleaseNo = reload(staying).getReleaseNo();
-		final int leavingPackageId = allocationOf(leaving).getM_ShippingPackage_ID();
+		final I_M_Delivery_Planning_Alloc leavingAllocBefore = allocationOf(leaving);
+		final int leavingAllocationId = leavingAllocBefore.getM_Delivery_Planning_Alloc_ID();
+		final int leavingPackageId = leavingAllocBefore.getM_ShippingPackage_ID();
 
 		// only one of the two is selected - which is the whole point of the assertion below
 		deliveryPlanningService.removeFrom(selectionOf(leaving));
@@ -295,9 +304,19 @@ class DeliveryPlanningMoveAndRemovalTest
 		final I_M_Delivery_Planning removed = reload(leaving);
 		assertThat(removed.getReleaseNo()).isNull();
 		assertThat(removed.getM_ShipperTransportation_ID()).isLessThanOrEqualTo(0);
-		assertThat(shippingPackageExists(leavingPackageId)).isFalse();
+		assertThat(shippingPackageIsActive(leavingPackageId))
+				.as("removed - deactivated, not deleted")
+				.isFalse();
+		assertThat(InterfaceWrapperHelper.load(leavingAllocationId, I_M_Delivery_Planning_Alloc.class).isActive())
+				.as("the removed planning's own allocation row survives, deactivated")
+				.isFalse();
+		assertThat(deliveryPlanningRepository.getAllocatedInstructionIds(ImmutableList.of(idOf(leaving))))
+				.as("the retired allocation must not leak into an active-filtered lookup")
+				.isEmpty();
 
-		assertThat(allocationsInLineNoOrder()).hasSize(1);
+		assertThat(allocationsInLineNoOrder())
+				.as("both rows survive - the removed one deactivated, the staying one still active")
+				.hasSize(2);
 		final I_M_Delivery_Planning_Alloc stayingAllocAfter = allocationOf(staying);
 		assertThat(stayingAllocAfter.getM_Delivery_Planning_Alloc_ID()).isEqualTo(stayingAllocationId);
 		assertThat(stayingAllocAfter.getLineNo())
@@ -311,6 +330,27 @@ class DeliveryPlanningMoveAndRemovalTest
 	}
 
 	@Test
+	@DisplayName("remove-from releases the planning for IMMEDIATE re-allocation - proving the partial unique indexes only key on IsActive='Y'")
+	void removeFromThenAddToSucceedsImmediately()
+	{
+		final ShipperTransportationId source = draftDeliveryInstruction("SOURCE-7");
+		final I_M_Delivery_Planning planning = deliveryPlanning();
+		allocateTo(source, planning);
+
+		deliveryPlanningService.removeFrom(selectionOf(planning));
+
+		final ShipperTransportationId target = draftDeliveryInstruction("TARGET-7");
+		deliveryPlanningService.addTo(selectionOf(reload(planning)), target);
+
+		final I_M_Delivery_Planning reAllocated = reload(planning);
+		assertThat(reAllocated.getM_ShipperTransportation_ID())
+				.as("the same planning is allocated again, right away, with no leftover row blocking it")
+				.isEqualTo(target.getRepoId());
+		assertThat(allocationOf(planning).getM_ShipperTransportation_ID()).isEqualTo(target.getRepoId());
+		assertNoOrphanedShippingPackages();
+	}
+
+	@Test
 	@DisplayName("remove-from succeeds for a CLOSED planning - the one deliberate exception to AC14's closed guard")
 	void removeFromSucceedsForAClosedPlanning()
 	{
@@ -319,7 +359,9 @@ class DeliveryPlanningMoveAndRemovalTest
 		closedAndAllocated.setIsClosed(true);
 		InterfaceWrapperHelper.save(closedAndAllocated);
 		allocateTo(deliveryInstructionId, closedAndAllocated);
-		final int packageId = allocationOf(closedAndAllocated).getM_ShippingPackage_ID();
+		final I_M_Delivery_Planning_Alloc allocBefore = allocationOf(closedAndAllocated);
+		final int allocationId = allocBefore.getM_Delivery_Planning_Alloc_ID();
+		final int packageId = allocBefore.getM_ShippingPackage_ID();
 
 		deliveryPlanningService.removeFrom(selectionOf(closedAndAllocated));
 
@@ -327,8 +369,11 @@ class DeliveryPlanningMoveAndRemovalTest
 		assertThat(removed.isClosed()).as("removing does not reopen it - closing is a separate decision").isTrue();
 		assertThat(removed.getReleaseNo()).isNull();
 		assertThat(removed.getM_ShipperTransportation_ID()).isLessThanOrEqualTo(0);
-		assertThat(shippingPackageExists(packageId)).isFalse();
-		assertThat(allocationsInLineNoOrder()).isEmpty();
+		assertThat(shippingPackageIsActive(packageId)).as("deactivated, not deleted").isFalse();
+		assertThat(InterfaceWrapperHelper.load(allocationId, I_M_Delivery_Planning_Alloc.class).isActive())
+				.as("the allocation row survives, deactivated")
+				.isFalse();
+		assertThat(allocationsInLineNoOrder()).hasSize(1);
 		assertNoOrphanedShippingPackages();
 	}
 
