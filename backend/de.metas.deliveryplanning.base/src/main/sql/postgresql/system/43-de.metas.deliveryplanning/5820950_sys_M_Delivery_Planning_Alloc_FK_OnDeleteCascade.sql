@@ -1,7 +1,7 @@
--- Task C6 (9b0eaf45c3f) made every allocation-retirement path (remove-from-instruction, move,
--- close, void/cancel) DEACTIVATE M_Delivery_Planning_Alloc and its M_ShippingPackage instead of
--- deleting them, so a retired allocation now PERSISTS with IsActive='N' -- by design, so the
--- re-booking audit trail (C6+E5) can show what was once planned.
+-- Every allocation-retirement path (remove-from-instruction, move, close, void/cancel)
+-- DEACTIVATES M_Delivery_Planning_Alloc and its M_ShippingPackage instead of deleting them, so a
+-- retired allocation now PERSISTS with IsActive='N' -- by design, so a re-booking history can show
+-- what was once planned.
 --
 -- All three FKs on M_Delivery_Planning_Alloc were declared plain NO ACTION (see 5820400), which
 -- assumed the row would always be deleted before its parent ever could be. That assumption no
@@ -14,8 +14,8 @@
 -- Fix: ON DELETE CASCADE on all three FKs. A retired allocation's only reason to exist is to record
 -- history for a planning / instruction / package that still exists; once any one of those three is
 -- itself physically deleted, there is nothing left for the allocation row to be a history OF, so
--- cascading it away costs the audit trail nothing it was built to keep (void/close/remove/move never
--- delete the parent row, so this never fires on the paths C6+E5 actually care about).
+-- cascading it away costs the re-booking history nothing it was built to keep (void/close/remove/
+-- move never delete the parent row, so this path is never taken for the history's own scenarios).
 ALTER TABLE M_Delivery_Planning_Alloc DROP CONSTRAINT IF EXISTS MDeliveryPlanning_MDeliveryPlanningAlloc;
 ALTER TABLE M_Delivery_Planning_Alloc
     ADD CONSTRAINT MDeliveryPlanning_MDeliveryPlanningAlloc
