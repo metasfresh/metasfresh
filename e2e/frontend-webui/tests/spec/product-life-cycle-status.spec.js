@@ -2,8 +2,9 @@
  * M_Product.ProductLifeCycleStatus (BBS-Status) is NOT rendered in the vanilla Product form
  *
  * Scope: guard the deliberate decision that the life-cycle status field is not offered in the
- * standard Product FORM (AD_Window_ID=140, AD_Tab_ID=180):
+ * standard Product window (AD_Window_ID=140, AD_Tab_ID=180):
  *   1. The field is not rendered in the Product form
+ *   2. The field is not a column of the Product grid
  *
  * WHY THIS TEST INVERTED
  * ----------------------
@@ -14,15 +15,26 @@
  * that customer actually opens. Derivation of the new expectations (per
  * `metasfresh-test-integrity` § "Test Wiring Drift", step 3):
  *   - 5820370 sets AD_UI_Element 652772 IsDisplayed='N' => the form must NOT render the field
+ *   - 5820370 sets AD_UI_Element 652772 IsDisplayedGrid='N' => the grid must NOT list the column
  * The observed CI failure matched that derivation exactly (the old step 1 timed out waiting for a
  * field container that is no longer rendered), so the assertion is updated rather than the change.
  *
- * The grid column and the filter parameter are LOGGED, NOT ASSERTED, because a local run against a
- * DB with 5820370 applied showed the grid layout of window 140 STILL lists ProductLifeCycleStatus
- * even with both IsDisplayedGrid='N' and IsDisplayed='N' on the UI element (and still lists it with
- * that element deactivated). So the grid descriptor is not driven by the flags this migration sets,
- * and the filter is column-driven (AD_Column.IsSelectionColumn, migration 5819940, untouched here).
- * Neither is part of this change's contract; asserting either way would be a guess.
+ * BEWARE WHEN RE-DERIVING THESE EXPECTATIONS FROM A LOCAL RUN
+ * -----------------------------------------------------------
+ * An earlier revision of this spec logged the grid column instead of asserting it, on the strength
+ * of a local run that showed window 140 STILL listing ProductLifeCycleStatus with IsDisplayedGrid='N'
+ * applied. That observation was a stale-cache artifact, not behaviour: ViewLayoutFactory's
+ * "SqlViewLayouts" cache carries no `#<table>` suffix, so CCache.extractTableNameForCacheName derives
+ * no table name and no AD_* reset label ever reaches it, and with expireAfterMinutes=0 it never expires
+ * on its own. A migration applied as raw SQL also never triggers PO.java's save-path invalidation.
+ * After resetting SqlViewLayouts + SqlViewBindings the same probe returned the grid WITHOUT the column.
+ * So: before concluding a layout flag "did not work", reset those caches (or restart the app server)
+ * and re-observe.
+ *
+ * The FILTER parameter is still logged rather than asserted, and that is accurate rather than a guess:
+ * the filter is column-driven (AD_Column.IsSelectionColumn='Y', migration 5819940, untouched here), so
+ * window 140 still offers a BBS-Status filter for a field it no longer displays. Closing that gap is a
+ * separate change (AD_Field.IsFilterField on tab 180) and is not part of this spec's contract yet.
  *
  * WHERE THE REMAINING BEHAVIOUR IS COVERED
  * ----------------------------------------
@@ -114,14 +126,16 @@ removed (migration 5820370).
       );
     });
 
-    // === STEP 2: record what the list view still exposes (observational) ===
-    await test.step('Record the Product list view grid columns and filter parameters', async () => {
+    // === STEP 2: the grid must not list the column ===
+    await test.step('Assert ProductLifeCycleStatus is absent from the Product grid', async () => {
       const layout = await getViewLayout(PRODUCT_WINDOW_ID, 'grid');
 
-      // Both LOGGED, not asserted — see the header. Verified locally: the grid layout still lists
-      // the column with 5820370 applied, so neither observation is part of this change's contract.
       const columnNames = getViewLayoutColumnNames(layout);
       console.log(`[INFO] Grid columns of window ${PRODUCT_WINDOW_ID}: ${JSON.stringify(columnNames)}`);
+      expect(columnNames, `${FIELD_NAME} must not be a grid column of window ${PRODUCT_WINDOW_ID}`)
+          .not.toContain(FIELD_NAME);
+
+      // Logged, not asserted — the filter is column-driven and outlives this migration. See the header.
       const filterParameterNames = getViewLayoutFilterParameterNames(layout);
       console.log(`[INFO] Filter parameters of window ${PRODUCT_WINDOW_ID}: ${JSON.stringify(filterParameterNames)}`);
     });
