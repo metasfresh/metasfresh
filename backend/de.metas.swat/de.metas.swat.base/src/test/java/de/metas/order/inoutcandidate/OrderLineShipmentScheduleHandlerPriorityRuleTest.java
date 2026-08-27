@@ -53,6 +53,7 @@ public class OrderLineShipmentScheduleHandlerPriorityRuleTest
 	private static final ClientAndOrgId CLIENT_AND_ORG_ID = ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, OrgId.ANY);
 
 	private OrderLineShipmentScheduleHandler handler;
+	private ISysConfigBL sysConfigBL;
 
 	@BeforeEach
 	void beforeEach()
@@ -65,11 +66,14 @@ public class OrderLineShipmentScheduleHandlerPriorityRuleTest
 				Mockito.mock(IShipmentScheduleInvalidateBL.class),
 				new PickingBOMService(),
 				Optional.empty());
+		// assigned AFTER init(): AdempiereTestHelper.get().init() calls Services.clear() in @BeforeEach, so a field
+		// initialized at construction time would hold a stale/cleared service registry entry.
+		sysConfigBL = Services.get(ISysConfigBL.class);
 	}
 
-	private static void setSwitch(final boolean value)
+	private void setSwitch(final boolean value)
 	{
-		Services.get(ISysConfigBL.class).setValue(
+		sysConfigBL.setValue(
 				OrderLineShipmentScheduleHandler.SYSCONFIG_PriorityRuleFromShipper,
 				value,
 				CLIENT_AND_ORG_ID.getClientId(),
