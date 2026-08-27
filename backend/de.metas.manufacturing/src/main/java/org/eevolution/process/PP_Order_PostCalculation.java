@@ -22,13 +22,23 @@ package org.eevolution.process;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.costing.CostingMethod;
+import de.metas.costing.IProductCostingBL;
 import de.metas.costing.methods.PPOrderCostDifferenceDistributor;
 import de.metas.document.engine.DocStatus;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.service.ClientId;
 import org.compiere.SpringContextHolder;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
@@ -42,6 +52,14 @@ import javax.annotation.Nullable;
 public class PP_Order_PostCalculation extends JavaProcess implements IProcessPrecondition
 {
 	private final PPOrderCostDifferenceDistributor costDifferenceDistributor = SpringContextHolder.instance.getBean(PPOrderCostDifferenceDistributor.class);
+	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
+	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
+
+	/** Only these accumulate into PP_Order_Cost; without that there is no residual to discharge. */
+	private static final ImmutableSet<CostingMethod> COSTING_METHODS_WITH_ORDER_COSTS = ImmutableSet.of(
+			CostingMethod.AveragePO,
+			CostingMethod.LastPOPrice,
+			CostingMethod.MovingAverageInvoice);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
@@ -55,7 +73,7 @@ public class PP_Order_PostCalculation extends JavaProcess implements IProcessPre
 		return ProcessPreconditionsResolution.acceptIf(isEligible(ppOrder));
 	}
 
-	private static boolean isEligible(@Nullable final I_PP_Order ppOrder)
+	private boolean isEligible(@Nullable final I_PP_Order ppOrder)
 	{
 		if (ppOrder == null)
 		{
@@ -65,7 +83,24 @@ public class PP_Order_PostCalculation extends JavaProcess implements IProcessPre
 		// Distributing closes the order, so this withdraws the action once the residual is discharged. After a
 		// PP_Order_UnClose it is offered again, correctly: a run without further activity finds nothing to discharge.
 		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(ppOrder.getDocStatus());
-		return docStatus.isCompleted() && !docStatus.isClosed();
+		return docStatus.isCompleted() && !docStatus.isClosed()
+				&& hasOrderCosts(ppOrder);
+	}
+
+	/**
+	 * Standard costing values every issue and receipt at standard and never accumulates into
+	 * {@code PP_Order_Cost}, so the residual is always zero there and the action would silently do nothing.
+	 * Offer it only for the costing methods that do accumulate.
+	 */
+	private boolean hasOrderCosts(@NonNull final I_PP_Order ppOrder)
+	{
+		final AcctSchema acctSchema = acctSchemasRepo.getByClientAndOrg(
+				ClientId.ofRepoId(ppOrder.getAD_Client_ID()),
+				OrgId.ofRepoId(ppOrder.getAD_Org_ID()));
+		final CostingMethod costingMethod = productCostingBL.getCostingMethod(
+				ProductId.ofRepoId(ppOrder.getM_Product_ID()), acctSchema);
+
+		return COSTING_METHODS_WITH_ORDER_COSTS.contains(costingMethod);
 	}
 
 	@Override
