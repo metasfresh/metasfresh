@@ -1,3 +1,4 @@
+-- Source DDL: backend/de.metas.edi/src/main/sql/postgresql/ddl/functions/desadv_json/get_desadv_packs_json_fn.sql
 -- Function for desadv packs
 -- Handles compensation group sub-articles: sub-article pack items are merged
 -- into the main article's pack, adding IsSubArticle and MainArticleLine to each LineItem.
@@ -204,7 +205,7 @@ BEGIN
             ) asi_data ON TRUE
             -- Packing instruction product lookup
                  LEFT JOIN LATERAL (
-            SELECT gtin
+            SELECT gtin, ean_tu
             FROM m_hu_pi_item_product
             WHERE isactive = 'Y'
               AND m_product_id = p.m_product_id

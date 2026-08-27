@@ -131,7 +131,7 @@ BEGIN
         ) diol ON TRUE
         -- Packing instruction product lookup (preferred BPartner, fall back to wildcard)
              LEFT JOIN LATERAL (
-        SELECT gtin
+        SELECT gtin, ean_tu
         FROM m_hu_pi_item_product
         WHERE isactive = 'Y'
           AND m_product_id = p.m_product_id
