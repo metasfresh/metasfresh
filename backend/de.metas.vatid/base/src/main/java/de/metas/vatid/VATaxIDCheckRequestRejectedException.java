@@ -30,7 +30,7 @@ import org.adempiere.exceptions.AdempiereException;
  * The online checking service rejected the REQUEST ITSELF — because of how this system is configured — instead
  * of answering about the VAT-ID that was sent.
  *
- * <p><b>Why its own type.</b> {@link VATaxIDCheckRunService} deliberately swallows an ordinary per-target
+ * <p><b>Why its own type.</b> {@link VATaxIDMassCheckService} deliberately swallows an ordinary per-target
  * failure so one target cannot abort a run over a whole selection. A configuration fault is the opposite case:
  * every remaining target would hit exactly the same wall, so left indistinguishable from a per-target failure
  * it produces one warn line per target for the entire selection (up to {@code MaxChecksPerRun}) and a run that
@@ -43,7 +43,7 @@ import org.adempiere.exceptions.AdempiereException;
  *
  * <p><b>Why the base half.</b> It sits next to the {@link VATaxIDOnlineChecker} seam whose contract it is part
  * of, and deliberately NOT next to the VIES client that raises it: the {@code vies} half depends on the base
- * half, so a type declared there could not be referenced by {@link VATaxIDCheckRunService} — the one caller
+ * half, so a type declared there could not be referenced by {@link VATaxIDMassCheckService} — the one caller
  * that has to act on it.
  */
 public class VATaxIDCheckRequestRejectedException extends AdempiereException
