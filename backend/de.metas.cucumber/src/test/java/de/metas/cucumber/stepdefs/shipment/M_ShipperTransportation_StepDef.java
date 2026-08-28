@@ -243,6 +243,12 @@ public class M_ShipperTransportation_StepDef
 	{
 		final I_M_ShipperTransportation shipperTransportationRecord = newInstance(I_M_ShipperTransportation.class);
 
+		// TransportDirection is mandatory and deliberately has no default - neither on the column nor here.
+		// The scenario has to say which direction it means, exactly as a user creating a transport order by
+		// hand has to. A fallback in this step def would be the removed default under another name, and it
+		// would let a scenario silently assert against a direction it never chose.
+		shipperTransportationRecord.setTransportDirection(row.getAsString(I_M_ShipperTransportation.COLUMNNAME_TransportDirection));
+
 		row.getAsOptionalIdentifier(I_M_ShipperTransportation.COLUMNNAME_M_Shipper_ID)
 				.map(shipperTable::getId)
 				.ifPresent(id -> shipperTransportationBL.setShipper(shipperTransportationRecord,id));
