@@ -1,5 +1,6 @@
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_Delivery_Planning_Alloc
@@ -73,6 +74,29 @@ public interface I_M_Delivery_Planning_Alloc
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Removed On.
+	 * When the delivery planning was removed from the delivery instruction
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDateRemoved (@Nullable java.sql.Timestamp DateRemoved);
+
+	/**
+	 * Get Removed On.
+	 * When the delivery planning was removed from the delivery instruction
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getDateRemoved();
+
+	ModelColumn<I_M_Delivery_Planning_Alloc, Object> COLUMN_DateRemoved = new ModelColumn<>(I_M_Delivery_Planning_Alloc.class, "DateRemoved", null);
+	String COLUMNNAME_DateRemoved = "DateRemoved";
 
 	/**
 	 * Set Active.

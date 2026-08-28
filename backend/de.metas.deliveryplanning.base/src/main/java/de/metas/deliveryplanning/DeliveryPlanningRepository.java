@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.incoterms.IncotermsId;
@@ -810,6 +811,13 @@ public class DeliveryPlanningRepository
 	 * deactivated planning ids from HERE: {@link DeliveryPlanningService} resets each of their dates from the
 	 * order and schedule immediately after calling either overload, so a future fifth retirement path is
 	 * correct by construction as long as it also goes through one of these two.
+	 * <p>
+	 * Being that choke point is also why {@code DateRemoved} is stamped here and nowhere else. The delivery
+	 * instruction's history tab reads it as "when this planning left this instruction", and it must stay put
+	 * afterwards: {@code Updated} cannot serve, because any later write to the row - a data migration, an FK
+	 * change, a backfill - silently re-dates the whole history. Both entry queries select ACTIVE allocations
+	 * only ({@code addOnlyActiveRecordsFilter} / {@code queryActiveAllocationsByInstructionId}), so an
+	 * already-retired allocation never reaches this loop and the stamp is written exactly once per allocation.
 	 */
 	private DeactivatedAllocations deactivateAllocationRecords(@NonNull final List<I_M_Delivery_Planning_Alloc> allocRecords)
 	{
@@ -825,6 +833,7 @@ public class DeliveryPlanningRepository
 			deactivatedShippingPackages.add(shippingPackageRecord);
 
 			allocRecord.setIsActive(false);
+			allocRecord.setDateRemoved(SystemTime.asTimestamp());
 			saveRecord(allocRecord);
 
 			deallocatedPlanningIds.add(DeliveryPlanningId.ofRepoId(allocRecord.getM_Delivery_Planning_ID()));

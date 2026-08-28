@@ -4,6 +4,27 @@
 -- dependency sweep against the live DB (pg_views, pg_proc, AD_Val_Rule.Code, AD_Column.ColumnSQL,
 -- EXP_FormatLine by AD_Column_ID) found no other consumer of this column. Applied, and the model
 -- classes (I_M_ShipperTransportation, X_M_ShipperTransportation) regenerated, by 00e448d0841.
+--
+-- THIS SCRIPT WAS EDITED IN PLACE AND RENAMED (was
+-- ..._Drop_M_Delivery_Planning_ID_and_Plannings_tab_rebind.sql). It is legal because neither this file nor
+-- 5820860 has ever reached a base branch (`git log origin/deep_tundra_release -- <path>` is empty for
+-- both), and migration-script immutability binds on INTEGRATION, not on local application.
+--
+-- The hazard that carries, named so the next reader can re-check it rather than trust this comment: the
+-- runner's applied-check is `SELECT COUNT(1) FROM AD_MigrationScript WHERE ProjectName=? AND Name=?`
+-- (SQLDatabaseScriptsRegistry.dbIsApplied, de.metas.migration.base .../impl/SQLDatabaseScriptsRegistry.java:106)
+-- -- keyed on the NAME, with no checksum. So on any environment that already ran the OLD file, the rename
+-- makes this script look unapplied and re-run, while the statements the edit REMOVED (the AD_Element 581962
+-- re-caption and the AD_UI_Element grid columns on tab 546754) stay applied and are not undone by anything.
+--
+-- Checked, not assumed, on 2026-08-28: every local stack on this box was queried with
+--   select name from ad_migrationscript where name like '%5820940%' or name like '%5820980%';
+-- across ports 21632, 21432, 22432, 21732, 21832, 21941. Only 21632 had ever recorded either script, and it
+-- now records only the new name (its old rows were dropped and the edited scripts re-applied, then the
+-- removed statements' effects reverted by hand). The branch has never been merged to a base branch and has
+-- never been rolled out to any instance, so the set of environments carrying un-reverted effects is EMPTY --
+-- and a compensating migration for an empty set is a guard with no failure scenario it prevents. If this
+-- branch is ever applied somewhere else before it merges, that query is what catches it.
 
 -- Park AD_Tab 546754 instead of re-purposing it.
 --

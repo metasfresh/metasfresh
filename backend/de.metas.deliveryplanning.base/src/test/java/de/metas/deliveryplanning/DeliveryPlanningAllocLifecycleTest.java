@@ -45,6 +45,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -407,5 +408,57 @@ class DeliveryPlanningAllocLifecycleTest
 	void allocatedPlanningIdsOfAnEmptyInstruction()
 	{
 		assertThat(deliveryPlanningRepository.getAllocatedPlanningIds(createDeliveryInstruction(DocStatus.Drafted, false))).isEmpty();
+	}
+
+	@Test
+	@DisplayName("DateRemoved is stamped when the allocation is deactivated, and is NOT moved by a later unrelated write")
+	void dateRemovedIsStampedOnceAndSurvivesLaterWrites()
+	{
+		final ShipperTransportationId deliveryInstructionId = createDeliveryInstruction(DocStatus.Drafted, false);
+		final DeliveryPlanningId deliveryPlanningId = createDeliveryPlanning();
+		deliveryPlanningRepository.createAllocations(deliveryInstructionId, ImmutableList.of(allocRequestFor(deliveryPlanningId)));
+
+		final I_M_Delivery_Planning_Alloc alloc = allAllocations().get(0);
+		assertThat(alloc.getDateRemoved())
+				.as("an allocation that is still on the instruction has not been removed from it")
+				.isNull();
+
+		deliveryPlanningRepository.deactivateAllocations(ImmutableList.of(deliveryPlanningId));
+
+		final Timestamp stampedAt = reload(alloc).getDateRemoved();
+		assertThat(stampedAt)
+				.as("deactivation is the business event this column records")
+				.isNotNull();
+
+		// the whole point of the column: any later touch of the row moves Updated, and must NOT move DateRemoved
+		final I_M_Delivery_Planning_Alloc retired = reload(alloc);
+		retired.setLineNo(retired.getLineNo() + 1);
+		InterfaceWrapperHelper.save(retired);
+
+		final I_M_Delivery_Planning_Alloc afterUnrelatedWrite = reload(alloc);
+		assertThat(afterUnrelatedWrite.getLineNo())
+				.as("guard on the guard: the unrelated write must really have hit the row")
+				.isEqualTo(retired.getLineNo());
+		assertThat(afterUnrelatedWrite.getDateRemoved())
+				.as("an unrelated write must not re-date the removal")
+				.isEqualTo(stampedAt);
+	}
+
+	@Test
+	@DisplayName("a void stamps DateRemoved on every allocation it retires, and re-voiding does not re-date them")
+	void dateRemovedIsStampedByVoidAndNotRewrittenByASecondVoid()
+	{
+		final ShipperTransportationId deliveryInstructionId = createDeliveryInstruction(DocStatus.Drafted, false);
+		deliveryPlanningRepository.createAllocations(deliveryInstructionId, ImmutableList.of(
+				allocRequestFor(createDeliveryPlanning()), allocRequestFor(createDeliveryPlanning())));
+
+		deliveryPlanningRepository.deactivateAllocations(deliveryInstructionId);
+		final List<Timestamp> stampedAt = allAllocations().stream().map(I_M_Delivery_Planning_Alloc::getDateRemoved).collect(ImmutableList.toImmutableList());
+		assertThat(stampedAt).allSatisfy(dateRemoved -> assertThat(dateRemoved).isNotNull());
+
+		// the second void finds nothing ACTIVE to retire, so it must leave the first void's dates alone
+		deliveryPlanningRepository.deactivateAllocations(deliveryInstructionId);
+
+		assertThat(allAllocations()).extracting(I_M_Delivery_Planning_Alloc::getDateRemoved).containsExactlyElementsOf(stampedAt);
 	}
 }
