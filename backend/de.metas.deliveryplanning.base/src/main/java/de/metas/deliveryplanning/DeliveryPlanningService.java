@@ -1163,6 +1163,11 @@ public class DeliveryPlanningService
 				.batchNo(deliveryPlanningRecord.getBatch())
 				.orderLineId(OrderLineId.ofRepoIdOrNull(deliveryPlanningRecord.getC_OrderLine_ID()))
 				.toBeFetched(DeliveryPlanningRepository.extractTransportDirection(deliveryPlanningRecord).hasReceipt())
+				// the planning's own dates, so the instruction's fill-if-empty defaulting needs no second load
+				.etd(deliveryPlanningRecord.getETD())
+				.eta(deliveryPlanningRecord.getETA())
+				.loadingTime(deliveryPlanningRecord.getLoadingTime())
+				.deliveryTime(deliveryPlanningRecord.getDeliveryTime())
 				.build();
 	}
 

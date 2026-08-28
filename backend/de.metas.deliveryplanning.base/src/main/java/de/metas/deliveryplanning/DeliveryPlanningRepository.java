@@ -46,6 +46,7 @@ import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.model.ShippingPackageId;
 import de.metas.util.ColorId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -546,6 +547,12 @@ public class DeliveryPlanningRepository
 				.batchNo(request.getBatchNo())
 				.orderLineId(request.getOrderLineId())
 				.toBeFetched(request.isToBeFetched())
+				// the creation path already writes these onto the instruction from the same request; carrying
+				// them keeps the defaulting a no-op there instead of a special case
+				.etd(TimeUtil.asTimestamp(request.getLoadingDate()))
+				.eta(TimeUtil.asTimestamp(request.getDeliveryDate()))
+				.loadingTime(request.getLoadingTime())
+				.deliveryTime(request.getDeliveryTime())
 				.build();
 	}
 
@@ -569,6 +576,10 @@ public class DeliveryPlanningRepository
 			@NonNull final List<DeliveryPlanningAllocCreateRequest> requests)
 	{
 		final ShipperTransportationId deliveryInstructionId = ShipperTransportationId.ofRepoId(deliveryInstructionRecord.getM_ShipperTransportation_ID());
+
+		// BEFORE the packages are built: createShippingPackage seeds M_Package.ShipDate from the instruction's
+		// ETA, so a date filled now reaches this add's packages instead of only the next one's.
+		applyDefaultDatesFromPlannings(deliveryInstructionRecord, requests);
 
 		int lineNo = getMaxAllocationLineNo(deliveryInstructionId);
 
@@ -598,6 +609,76 @@ public class DeliveryPlanningRepository
 		saveRecord(allocRecord);
 
 		return DeliveryPlanningAllocId.ofRepoId(allocRecord.getM_Delivery_Planning_Alloc_ID());
+	}
+
+	/**
+	 * Seeds the delivery instruction's dates from the plannings being allocated to it - each field only while
+	 * the instruction does not already carry one.
+	 * <p>
+	 * These are DEFAULTS, so a value the planner entered before the allocation must survive; that is why every
+	 * field is guarded individually rather than the whole seed being skipped once any one of them is set. The
+	 * shape is taken from {@code PurchaseOrderToShipperTransportationService.applyDefaultDatesFromFirstOrder},
+	 * which solves the same problem for a transport order on this same table, rather than invented here.
+	 * <p>
+	 * It runs on EVERY add, not only at creation. A planning whose upstream date chain produced nothing leaves
+	 * the instruction empty, and only a later add can supply the dates; a creation-time-only seed could never
+	 * recover from that. Running every time is safe precisely because the guard can only fill blanks.
+	 * <p>
+	 * {@code ATD}/{@code ATA} are derived from the instruction's own {@code ETD}/{@code ETA} FIELDS after the
+	 * fills, not from the planning, so a planner-set departure propagates into the actual. {@code BLDate} is
+	 * deliberately not touched: it belongs to the transport-order flow.
+	 * <p>
+	 * Known and accepted, same as in the precedent: a date the planner deliberately CLEARED reads as empty and
+	 * is refilled by the next add.
+	 * <p>
+	 * Reads the dates off the REQUESTS rather than re-loading the plannings: every caller builds each request
+	 * from an already-loaded record, so a load here would be a second round trip over rows the caller is
+	 * holding - the exact N+1 {@link DeliveryPlanningBatchLoadingTest} exists to pin.
+	 */
+	private void applyDefaultDatesFromPlannings(
+			@NonNull final I_M_ShipperTransportation deliveryInstructionRecord,
+			@NonNull final List<DeliveryPlanningAllocCreateRequest> requests)
+	{
+		boolean changed = false;
+		for (final DeliveryPlanningAllocCreateRequest request : requests)
+		{
+			if (deliveryInstructionRecord.getETD() == null && request.getEtd() != null)
+			{
+				deliveryInstructionRecord.setETD(request.getEtd());
+				changed = true;
+			}
+			if (deliveryInstructionRecord.getETA() == null && request.getEta() != null)
+			{
+				deliveryInstructionRecord.setETA(request.getEta());
+				changed = true;
+			}
+			if (Check.isBlank(deliveryInstructionRecord.getLoadingTime()) && !Check.isBlank(request.getLoadingTime()))
+			{
+				deliveryInstructionRecord.setLoadingTime(request.getLoadingTime());
+				changed = true;
+			}
+			if (Check.isBlank(deliveryInstructionRecord.getDeliveryTime()) && !Check.isBlank(request.getDeliveryTime()))
+			{
+				deliveryInstructionRecord.setDeliveryTime(request.getDeliveryTime());
+				changed = true;
+			}
+		}
+
+		if (deliveryInstructionRecord.getETD() != null && deliveryInstructionRecord.getATD() == null)
+		{
+			deliveryInstructionRecord.setATD(deliveryInstructionRecord.getETD());
+			changed = true;
+		}
+		if (deliveryInstructionRecord.getETA() != null && deliveryInstructionRecord.getATA() == null)
+		{
+			deliveryInstructionRecord.setATA(deliveryInstructionRecord.getETA());
+			changed = true;
+		}
+
+		if (changed)
+		{
+			saveRecord(deliveryInstructionRecord);
+		}
 	}
 
 	private static I_M_ShippingPackage createShippingPackage(

@@ -30,6 +30,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.sql.Timestamp;
 
 /**
  * One planning's share of a delivery instruction: the allocation to create, plus what goes on the
@@ -55,4 +56,16 @@ public class DeliveryPlanningAllocCreateRequest
 	@Nullable OrderLineId orderLineId;
 
 	boolean toBeFetched;
+
+	/**
+	 * The planning's own dates, carried here so the instruction's fill-if-empty defaulting can read them
+	 * without a second load: every caller builds this request from an already-loaded planning record.
+	 */
+	@Nullable Timestamp etd;
+
+	@Nullable Timestamp eta;
+
+	@Nullable String loadingTime;
+
+	@Nullable String deliveryTime;
 }
