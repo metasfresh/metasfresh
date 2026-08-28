@@ -6,7 +6,7 @@
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\dev.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="Remote"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="316"/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="679"/>
@@ -83,10 +83,14 @@
 		<property name="com.jaspersoft.studio.field.name" value="taxnote"/>
 		<property name="com.jaspersoft.studio.field.label" value="taxnote"/>
 	</field>
+	<field name="isadvancepayment" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="isadvancepayment"/>
+		<property name="com.jaspersoft.studio.field.label" value="isadvancepayment"/>
+	</field>
 	<detail>
 		<band height="15" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<printWhenExpression><![CDATA[new Boolean( $F{p_term} != null )]]></printWhenExpression>
+			<printWhenExpression><![CDATA[new Boolean($F{p_term}!=null && $F{isadvancepayment}.equals( "N" ))]]></printWhenExpression>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement key="textField-82" style="Test" x="150" y="0" width="370" height="12" isPrintWhenDetailOverflows="true" uuid="4ff37ef9-5963-48e1-b50b-c31a32425867"/>
 				<box>
