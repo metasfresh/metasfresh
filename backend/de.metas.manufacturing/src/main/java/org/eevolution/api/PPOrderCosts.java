@@ -145,6 +145,24 @@ public final class PPOrderCosts
 		changeExistingCost(costSegmentAndElement, cost -> cost.addingAccumulatedAmountAndQty(amt, qty, uomConverter));
 	}
 
+	/**
+	 * Discharges {@code amt} onto the main-product line: the accumulated amount moves by {@code +amt} while
+	 * the accumulated qty is left untouched, so the line records value leaving the order without recording a
+	 * further movement of goods.
+	 */
+	public void dischargeOntoMainProduct(
+			@NonNull final PPOrderCost mainProductCost,
+			@NonNull final CostAmount amt,
+			@NonNull final QuantityUOMConverter uomConverter)
+	{
+		// accumulateOutboundCostAmount negates again, so passing -amt moves the accumulated amount by +amt.
+		accumulateOutboundCostAmount(
+				mainProductCost.getCostSegmentAndElement(),
+				amt.negate(),
+				mainProductCost.getAccumulatedQty().toZero(),
+				uomConverter);
+	}
+
 	public void accumulateOutboundCostAmount(
 			@NonNull final CostSegmentAndElement costSegmentAndElement,
 			@NonNull final CostAmount amt,

@@ -193,7 +193,7 @@ public class PPOrderCostDifferenceDistributor
 
 		// Discharge the residual on the main-product line too, so getResidualCost() reads zero and it cannot be
 		// discharged twice. Not done in distribute(): the amounts posted above are recomputed from these rows.
-		accumulateOntoMainProduct(orderCosts, mainProductCost, residual);
+		orderCosts.dischargeOntoMainProduct(mainProductCost, residual, utils.getQuantityUOMConverter());
 		ppOrderCostsService.save(orderCosts);
 
 		return CostDetailCreateResultsList.ofNullable(mainResult.withAmtAndQty(amtAndQty));
@@ -244,22 +244,8 @@ public class PPOrderCostDifferenceDistributor
 			return;
 		}
 
-		accumulateOntoMainProduct(orderCosts, mainProductCost, amt);
+		orderCosts.dischargeOntoMainProduct(mainProductCost, amt, utils.getQuantityUOMConverter());
 		ppOrderCostsService.save(orderCosts);
-	}
-
-	private void accumulateOntoMainProduct(
-			@NonNull final PPOrderCosts orderCosts,
-			@NonNull final PPOrderCost mainProductCost,
-			@NonNull final CostAmount amt)
-	{
-		orderCosts.accumulateOutboundCostAmount(
-				mainProductCost.getCostSegmentAndElement(),
-				// accumulateOutbound negates again, so the accumulated amount moves by +amt;
-				// the zero qty leaves the accumulated qty untouched.
-				amt.negate(),
-				mainProductCost.getAccumulatedQty().toZero(),
-				utils.getQuantityUOMConverter());
 	}
 
 	/** Zero qty delta =&gt; reprices the existing on-hand qty by {@code amt}. */
