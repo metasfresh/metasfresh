@@ -1408,18 +1408,20 @@ public class DeliveryPlanningService
 	}
 
 	/**
-	 * Unlinks every planning currently allocated to the instruction (deactivating the allocations) and
-	 * invalidates their invoice candidates - the same batch load {@link #invalidateInvoiceCandidatesFor(ShipperTransportationId)}
-	 * uses, but the affected ids are resolved BEFORE the deactivation, not after: the invalidation is
-	 * deferred to after-commit, and by then the deactivation this same call performs has already made
-	 * {@link DeliveryPlanningRepository#getAllocatedPlanningIds(ShipperTransportationId)} come back empty.
-	 * Re-deriving the ids inside the deferred closure would silently invalidate nothing.
+	 * Unlinks every planning currently allocated to the instruction (deactivating the allocations), resets their
+	 * dates and invalidates their invoice candidates - the same batch load
+	 * {@link #invalidateInvoiceCandidatesFor(ShipperTransportationId)} uses, but reading the affected ids from
+	 * {@link DeliveryPlanningRepository#unlinkDeliveryPlannings}'s OWN return value rather than a second, separate
+	 * query: the same pattern the other three retirement paths (close, remove-from, the source half of a move)
+	 * already follow - deactivate once, use what it reports it deactivated. Re-deriving the ids from
+	 * {@link DeliveryPlanningRepository#getAllocatedPlanningIds(ShipperTransportationId)} AFTER the deactivation
+	 * would come back empty, which is exactly why the invalidation below is deferred to after-commit against the
+	 * ids captured HERE rather than re-resolved inside that deferred closure.
 	 */
 	public void unlinkDeliveryPlannings(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
-		final ImmutableSet<DeliveryPlanningId> allocatedPlanningIds = deliveryPlanningRepository.getAllocatedPlanningIds(deliveryInstructionId);
-
-		deliveryPlanningRepository.unlinkDeliveryPlannings(deliveryInstructionId);
+		final ImmutableSet<DeliveryPlanningId> allocatedPlanningIds =
+				deliveryPlanningRepository.unlinkDeliveryPlannings(deliveryInstructionId).getDeallocatedPlanningIds();
 		resetDatesFromOrderAndSchedule(allocatedPlanningIds);
 
 		if (!allocatedPlanningIds.isEmpty())

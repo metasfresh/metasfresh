@@ -691,7 +691,8 @@ public class DeliveryPlanningRepository
 	{
 		for (final I_M_Delivery_Planning record : deliveryPlanningRecords)
 		{
-			final DeliveryInstructionDates dates = resolvedDatesByPlanningId.get(DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID()));
+			final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID());
+			final DeliveryInstructionDates dates = getResolvedDatesOrThrow(resolvedDatesByPlanningId, deliveryPlanningId);
 
 			record.setETD(dates.getEtd());
 			record.setATD(dates.getAtd());
@@ -701,6 +702,20 @@ public class DeliveryPlanningRepository
 			record.setDeliveryTime(dates.getDeliveryTime());
 			saveRecord(record);
 		}
+	}
+
+	private static DeliveryInstructionDates getResolvedDatesOrThrow(
+			@NonNull final Map<DeliveryPlanningId, DeliveryInstructionDates> resolvedDatesByPlanningId,
+			@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		final DeliveryInstructionDates dates = resolvedDatesByPlanningId.get(deliveryPlanningId);
+		if (dates == null)
+		{
+			throw new AdempiereException("No resolved " + DeliveryInstructionDates.class.getSimpleName() + " found")
+					.appendParametersToMessage()
+					.setParameter(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningId.getRepoId());
+		}
+		return dates;
 	}
 
 	private static I_M_ShippingPackage createShippingPackage(
@@ -1142,10 +1157,15 @@ public class DeliveryPlanningRepository
 	 * unfiltered package set. A planning removed from this instruction earlier leaves its own retired, deactivated
 	 * package behind, still carrying this instruction's id; that package is none of this void's business, and
 	 * re-querying by instruction id would wipe its {@code C_OrderLine_ID} too.
+	 *
+	 * @return the same {@link DeactivatedAllocations} {@link #deactivateAllocations(ShipperTransportationId)}
+	 * 		produced - the caller resets exactly these planning ids' dates afterwards, the same pattern the other
+	 * 		three retirement paths (close, remove-from, the source half of a move) already follow: deactivate,
+	 * 		then use THIS return value, never a second query for the same ids.
 	 */
-	public void unlinkDeliveryPlannings(@NonNull final ShipperTransportationId deliveryInstructionId)
+	public DeactivatedAllocations unlinkDeliveryPlannings(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
-		final ImmutableList<I_M_ShippingPackage> shippingPackages = deactivateAllocations(deliveryInstructionId).getShippingPackages();
+		final DeactivatedAllocations deactivatedAllocations = deactivateAllocations(deliveryInstructionId);
 
 		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = retrieveForDeliveryInstructionId(deliveryInstructionId);
 		while (deliveryPlanningIterator.hasNext())
@@ -1156,7 +1176,9 @@ public class DeliveryPlanningRepository
 			saveRecord(deliveryPlanningRecord);
 		}
 
-		shippingPackages.forEach(this::unlinkShippingPackage);
+		deactivatedAllocations.getShippingPackages().forEach(this::unlinkShippingPackage);
+
+		return deactivatedAllocations;
 	}
 
 	private void unlinkShippingPackage(@NonNull final I_M_ShippingPackage shippingPackage)

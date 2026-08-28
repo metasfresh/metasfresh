@@ -23,10 +23,12 @@
 package de.metas.deliveryplanning;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.shipping.model.ShipperTransportationId;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -34,6 +36,7 @@ import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -59,14 +62,19 @@ import static org.assertj.core.api.Assertions.assertThat;
  * <p>
  * Exercises {@link DeliveryPlanningService#resolveInstructionDatesForAllocation} directly, as a pure function:
  * the DECISION lives there (architecture.md §8 - a repository may never make it), so this is where it is
- * tested. {@link DeliveryPlanningRepository#createAllocations} only ever writes what this resolves, verbatim.
+ * tested. {@link DeliveryPlanningRepository#createAllocations} only ever writes what this resolves, verbatim -
+ * the last two tests below drive that real write path end to end, through a persisted instruction and a DB
+ * reload, so the resolution above is never verified in isolation from what actually lands on the record.
  */
 class DeliveryInstructionDateDefaultsTest
 {
+	private DeliveryPlanningRepository deliveryPlanningRepository;
+
 	@BeforeEach
 	void setUp()
 	{
 		AdempiereTestHelper.get().init();
+		deliveryPlanningRepository = new DeliveryPlanningRepository(Mockito.mock(DimensionService.class));
 	}
 
 	private static Timestamp day(final int dayOfMonth)
@@ -83,6 +91,15 @@ class DeliveryInstructionDateDefaultsTest
 		record.setDocStatus(DocStatus.Drafted.getCode());
 		record.setETD(etd);
 		record.setETA(eta);
+		return record;
+	}
+
+	private static I_M_ShipperTransportation savedDeliveryInstruction(
+			@Nullable final Timestamp etd,
+			@Nullable final Timestamp eta)
+	{
+		final I_M_ShipperTransportation record = draftDeliveryInstruction(etd, eta);
+		InterfaceWrapperHelper.save(record);
 		return record;
 	}
 
@@ -172,5 +189,47 @@ class DeliveryInstructionDateDefaultsTest
 				.as("an unset ETD must never derive a phantom ATD")
 				.isNull();
 		assertThat(resolved.getAta()).isNull();
+	}
+
+	@Test
+	@DisplayName("createAllocations persists a pre-set date untouched and writes its empty sibling - the real write path, not just the resolution")
+	void createAllocationsPersistsExistingDateAndFillsEmptySibling()
+	{
+		final I_M_ShipperTransportation instruction = savedDeliveryInstruction(day(1), null);
+		final ShipperTransportationId instructionId = ShipperTransportationId.ofRepoId(instruction.getM_ShipperTransportation_ID());
+
+		final DeliveryPlanningAllocCreateRequest request = allocRequest(day(3), day(7), "08:00");
+		final DeliveryInstructionDates resolvedDates = resolve(instruction, request);
+
+		deliveryPlanningRepository.createAllocations(instructionId, ImmutableList.of(request), resolvedDates);
+
+		final I_M_ShipperTransportation reloaded = InterfaceWrapperHelper.load(instructionId, I_M_ShipperTransportation.class);
+		assertThat(reloaded.getETD())
+				.as("the date already on the instruction before the allocation must survive the actual write")
+				.isEqualTo(day(1));
+		assertThat(reloaded.getETA())
+				.as("the empty sibling must actually be persisted, not only resolved in memory")
+				.isEqualTo(day(7));
+		assertThat(reloaded.getATD()).as("ATD persisted from the pre-set ETD").isEqualTo(day(1));
+		assertThat(reloaded.getATA()).as("ATA persisted from the newly-filled ETA").isEqualTo(day(7));
+	}
+
+	@Test
+	@DisplayName("createAllocations writes no derived actuals when the planning carries no dates - the real write path, not just the resolution")
+	void createAllocationsPersistsNoActualsWhenPlanningHasNoDates()
+	{
+		final I_M_ShipperTransportation instruction = savedDeliveryInstruction(null, null);
+		final ShipperTransportationId instructionId = ShipperTransportationId.ofRepoId(instruction.getM_ShipperTransportation_ID());
+
+		final DeliveryPlanningAllocCreateRequest request = allocRequest(null, null, null);
+		final DeliveryInstructionDates resolvedDates = resolve(instruction, request);
+
+		deliveryPlanningRepository.createAllocations(instructionId, ImmutableList.of(request), resolvedDates);
+
+		final I_M_ShipperTransportation reloaded = InterfaceWrapperHelper.load(instructionId, I_M_ShipperTransportation.class);
+		assertThat(reloaded.getETD()).isNull();
+		assertThat(reloaded.getETA()).isNull();
+		assertThat(reloaded.getATD()).as("an unset ETD must never persist a phantom ATD").isNull();
+		assertThat(reloaded.getATA()).isNull();
 	}
 }
