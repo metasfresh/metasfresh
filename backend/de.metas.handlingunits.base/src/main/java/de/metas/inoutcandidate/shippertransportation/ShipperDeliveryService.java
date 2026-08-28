@@ -125,6 +125,7 @@ public class ShipperDeliveryService
 				.orgId(OrgId.ofRepoId(shipment.getAD_Org_ID()))
 				.shipDate(inOutBL.retrieveMovementDate(shipment))
 				.assignAnonymouslyPickedHUs(true)
+				.isSOTrx(shipment.isSOTrx())
 				.build();
 
 		final ShipperTransportationId shipperTransportationId;

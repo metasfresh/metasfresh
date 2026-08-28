@@ -59,4 +59,10 @@ public class CreateShipperTransportationRequest
 	 * Should be {@code true} if the user is supposed to physically in the real world find and put into the package exactly those HUs that metasfresh picked on the fly.
 	 */
 	boolean assignAnonymouslyPickedHUs;
+
+	/**
+	 * Whether the shipment/receipt this transport order is created for is a sales transaction ({@code true}) or a
+	 * purchase transaction ({@code false}). Drives the created record's {@code TransportDirection}.
+	 */
+	boolean isSOTrx;
 }

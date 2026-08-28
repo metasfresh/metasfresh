@@ -387,6 +387,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 				.shipDate(TimeUtil.asLocalDate(shipment.getMovementDate()))
 				.pickupTimeFrom(TimeUtil.asLocalTime(shipper.getPickupTimeFrom()))
 				.pickupTimeTo(TimeUtil.asLocalTime(shipper.getPickupTimeTo()))
+				.isSOTrx(shipment.isSOTrx())
 				.build();
 
 		final ShipperTransportationId shipperTransportationId = shipperTransportationDAO.create(createShipperTransportationRequest);
