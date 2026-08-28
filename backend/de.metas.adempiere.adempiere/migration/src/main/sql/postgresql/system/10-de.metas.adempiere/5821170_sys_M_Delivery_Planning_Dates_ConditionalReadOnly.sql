@@ -13,30 +13,39 @@
 -- DeliveryPlanningRepository.hasActiveAllocation exactly: 'Y' iff an active
 -- M_Delivery_Planning_Alloc row references the planning).
 --
--- Investigated whether IsAllocated needs its own AD_Field on AD_Tab 546674 for '@IsAllocated@' to
--- resolve at runtime (a ReadOnlyLogic referencing a variable absent from the Document's field set
--- does not throw visibly -- Document#computeFieldReadOnly catches ExpressionEvaluationException,
--- logs a warning, and silently preserves the field's current (non-readonly) state -- see
--- de.metas.ui.web.window.model.Document#computeFieldReadOnly). Traced the WebUI field-loading path:
---   * ad_field_v.sql LEFT JOINs AD_Field onto every AD_Column of the tab's table -- confirmed live:
---     `SELECT * FROM ad_field_v WHERE ad_tab_id=546674 AND columnname='IsAllocated'` returns one row
---     (ad_field_id IS NULL, columnsql populated) even though no AD_Field exists for it.
---   * GridFieldVOsLoader#load() (org.compiere.model) indexes the resultset by AD_Column_ID, not
---     AD_Field_ID, with the explicit comment "AD_Field_ID might be null for auto-generated fields
---     (check the view definition)" -- i.e. this is handled by design, not filtered out.
---   * GridTabVOBasedDocumentEntityDescriptorFactory#createDocumentEntityBuilder() unconditionally
---     iterates every loaded GridFieldVO (gridTabVO.getFields().forEach(...)) and adds each --
---     including virtual/ColumnSQL ones, gated only on gridFieldVO.isVirtualColumn(), never on
---     AD_Field_ID -- to the DocumentEntityDescriptor AND to the entity's SQL data-binding
---     (entityBindings.addField), so the ColumnSQL is included in the row SELECT and the Document
---     carries a live value for it.
---   * DocumentEvaluatee#get_ValueIfExists("IsAllocated") therefore resolves via
---     _document.getFieldViewOrNull("IsAllocated"), which succeeds because of the point above.
--- 5821150 independently reached and recorded the identical conclusion for filter-field resolution
--- off the same ad_field_v LEFT JOIN, citing a live-DB precedent (M_ReceiptSchedule.C_BP_Group_ID:
--- IsSelectionColumn='Y', ColumnSQL virtual, no active AD_Field).
--- Conclusion: no AD_Field for IsAllocated is required. This script only updates ReadOnlyLogic on
--- the 4 existing date fields.
+-- Whether IsAllocated needs its own AD_Field on AD_Tab 546674 for '@IsAllocated@' to resolve is the
+-- load-bearing question here, because getting it wrong fails SILENTLY: a ReadOnlyLogic referencing a
+-- variable absent from the Document's field set does not surface an error -- Document#computeFieldReadOnly
+-- catches Exception, returns null, and the caller then skips setReadonly entirely, leaving the field
+-- exactly as it was. It does NOT need one, and this was settled empirically rather than by inference:
+--
+--   VERIFIED ON A RUNNING INSTANCE, 2026-08-28 (local app stack on :18080 against the deep_tundra_uat_2
+--   DB on :21632), reading AD_Field.readonly straight off GET /rest/api/window/541632/<id>:
+--     * planning 1000027, one ACTIVE allocation, Processed='N'  -> ETD/ATD/ETA/ATA readonly = true
+--     * the SAME planning with its allocation deactivated        -> readonly = false  (all four)
+--     * the SAME planning with the allocation restored           -> readonly = true   (all four)
+--     * planning 1000005, never allocated, Processed='N'         -> readonly = false
+--   Using one record for the flip is what makes it proof: it holds every other field constant. Note that
+--   planning 1000025 looks like a deactivated-allocation case but is NOT usable as one -- it is
+--   Processed='Y'/IsClosed='Y', so it reads read-only for an unrelated reason.
+--
+-- The supporting code path, for a reader who needs the mechanism rather than the result. Two details are
+-- easy to get wrong and are spelled out deliberately:
+--   * GridFieldVO#getSQL selects between ad_field_v and **ad_field_vt** on Env.isBaseLanguage -- a de_DE
+--     session takes the _vt branch. BOTH views LEFT JOIN AD_Field and admit AD_Field_ID IS NULL, so a
+--     ColumnSQL column with no AD_Field survives either way; citing only ad_field_v would cover just one
+--     of the two branches the runtime actually picks between.
+--   * GridFieldVOsLoader#load() indexes the resultset by AD_Column_ID, not AD_Field_ID, with the explicit
+--     comment "AD_Field_ID might be null for auto-generated fields" -- handled by design, not filtered.
+--   * GridTabVOBasedDocumentEntityDescriptorFactory#createDocumentEntityBuilder() adds every loaded
+--     GridFieldVO to the DocumentEntityDescriptor AND to the SQL data-binding (entityBindings.addField).
+--     There is no AD_Field_ID or IsDisplayed gate; isVirtualColumn() only selects which SQL the field
+--     uses. SqlDocumentEntityDataBindingDescriptor#getSqlSelectAll then emits a select value for every
+--     registered field, so the ColumnSQL really is in the row SELECT.
+--   * The comparison itself is Boolean-vs-string: IsAllocated is AD_Reference_ID=20 (YesNo), so the
+--     Document field value is a Boolean while the expression compares it to 'Y'. It matches because
+--     DocumentEvaluatee#convertToString routes Boolean through DisplayType.toBooleanString -> "Y"/"N".
+-- This script only updates ReadOnlyLogic on the 4 existing date fields; no AD_Field is created.
 --
 -- IDs allocated from idserver.metas.de on 2026-08-28:
 --   AD_MigrationScript 5821170 (this file)
