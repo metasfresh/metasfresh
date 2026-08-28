@@ -1,3 +1,18 @@
+-- docs_deliveryinstructions_productdetails: adds the order document number and PO reference,
+-- aggregated per article now that the printed instruction can carry several plannings and
+-- therefore several source orders. A single header-level order reference would be misleading
+-- once more than one order is behind an instruction, so the reference moves to this per-article
+-- detail band instead, narrowing the aggregation from the whole document to one article.
+--
+-- Each article's plannings can come from different orders (or from purchase orders with
+-- different references), so both new columns are STRING_AGG(DISTINCT ..., ', ' ORDER BY ...) --
+-- deterministic order, no duplicate when several plannings share one order. The order is
+-- LEFT JOINed because M_Delivery_Planning.C_Order_ID is nullable and an unmatched planning must
+-- not drop its row out of the other aggregated columns (warehouse, quantities).
+--
+-- The return type gains two columns, so DROP FUNCTION is required before CREATE -- Postgres
+-- refuses a CREATE OR REPLACE that changes the return type.
+
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.docs_deliveryinstructions_productdetails(numeric, character varying);
 
 CREATE FUNCTION de_metas_endcustomer_fresh_reports.docs_deliveryinstructions_productdetails(p_m_shippertransportation_id numeric, p_ad_language character varying)
