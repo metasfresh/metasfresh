@@ -14,8 +14,16 @@
 -- The same placement is what M_Delivery_Planning.M_Delivery_Planning_Type (AD_Column 585005) uses
 -- on the Delivery Planning window: "flags" group, right column, displayed in the grid.
 --
--- Read-only on both tabs, like IsSOTrx and like the Delivery Planning sibling: the direction is
--- derived from the documents the transport carries, not typed by the user.
+-- NOT flatly read-only, though IsSOTrx and the Delivery Planning sibling are. The direction is
+-- normally derived from the documents the transport carries and is set in Java by every
+-- programmatic creation path, which an AD_Field flag does not affect either way. But the column is
+-- MANDATORY and 5821080 removes its default on purpose, so that a gap surfaces instead of being
+-- silently filled: with IsReadOnly='Y' a user pressing 'New' on either window would face a required
+-- field they cannot fill, and the record could never be saved. Owner ruling: "if a user does use
+-- new, a decision should be made" -- a decision cannot be made on a read-only field.
+-- Nothing is lost by allowing it: Document#computeReadonly propagates Processed generically, so the
+-- field locks once the document is processed, exactly like every other field on these tabs (none of
+-- which carries an explicit ReadOnlyLogic either).
 --
 -- Label: AD_Field.AD_Name_ID is set to AD_Element 540579 ("Richtung" / "Direction"), an existing
 -- fully-translated core element, instead of inheriting the column's shared element 581679
@@ -40,7 +48,7 @@ UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=175, Updated=TO
 -- ============================================================================
 -- 2) AD_Window 540020 / AD_Tab 540096 "Speditionslieferung"
 -- ============================================================================
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,Updated,UpdatedBy) VALUES (0,593410,783020 /*From ID Server*/,540579,0,540096,TO_TIMESTAMP('2026-08-26 12:01:00','YYYY-MM-DD HH24:MI:SS'),100,0,'D','Y','Y','Y','N','N','N','Y','N','Richtung',0,205,0,TO_TIMESTAMP('2026-08-26 12:01:00','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,Updated,UpdatedBy) VALUES (0,593410,783020 /*From ID Server*/,540579,0,540096,TO_TIMESTAMP('2026-08-26 12:01:00','YYYY-MM-DD HH24:MI:SS'),100,0,'D','Y','Y','Y','N','N','N','N','N','Richtung',0,205,0,TO_TIMESTAMP('2026-08-26 12:01:00','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=783020 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
@@ -56,7 +64,7 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 -- ============================================================================
 -- 3) AD_Window 541657 / AD_Tab 546732 "Lieferanweisungen"
 -- ============================================================================
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,Updated,UpdatedBy) VALUES (0,593410,783021 /*From ID Server*/,540579,0,546732,TO_TIMESTAMP('2026-08-26 12:03:00','YYYY-MM-DD HH24:MI:SS'),100,0,'D','Y','Y','Y','N','N','N','Y','N','Richtung',185,200,0,TO_TIMESTAMP('2026-08-26 12:03:00','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,Updated,UpdatedBy) VALUES (0,593410,783021 /*From ID Server*/,540579,0,546732,TO_TIMESTAMP('2026-08-26 12:03:00','YYYY-MM-DD HH24:MI:SS'),100,0,'D','Y','Y','Y','N','N','N','N','N','Richtung',185,200,0,TO_TIMESTAMP('2026-08-26 12:03:00','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=783021 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
