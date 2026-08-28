@@ -3,12 +3,12 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.docs_deliveryinstr
  LANGUAGE sql
  STABLE
 AS $function$
-SELECT wh.name                                  AS warehouseName,
-       dp.plannedloadedquantity,
-       dp.qtyordered,
-       p.value                                  AS productValue,
-       p.name                                   AS productName,
-       COALESCE(uomt.uomsymbol, uomt.uomsymbol) AS uom
+SELECT MIN(wh.name)                  AS warehouseName,
+       SUM(dp.plannedloadedquantity) AS plannedloadedquantity,
+       SUM(dp.qtyordered)            AS qtyordered,
+       p.value                       AS productValue,
+       p.name                        AS productName,
+       MIN(uomt.uomsymbol)           AS uom
 FROM M_ShipperTransportation st
          JOIN m_delivery_planning_alloc dpa ON dpa.m_shippertransportation_id = st.m_shippertransportation_id AND dpa.isactive = 'Y'
          JOIN m_delivery_planning dp ON dp.m_delivery_planning_id = dpa.m_delivery_planning_id
@@ -17,5 +17,6 @@ FROM M_ShipperTransportation st
          JOIN C_UOM uom ON dp.c_uom_id = uom.c_uom_id
          JOIN C_UOM_trl uomt ON dp.c_uom_id = uomt.c_uom_id and uomt.ad_language=p_ad_language
 WHERE st.m_shippertransportation_id = p_m_shippertransportation_id
+GROUP BY p.m_product_id
 $function$
 ;
