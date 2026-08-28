@@ -13,7 +13,6 @@ import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Services;
-import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_InOut;
@@ -150,7 +149,6 @@ class ShipperDeliveryServiceShipmentGateTest
 	 * all necessary DAO calls, including a shipper set on the document (so the shipper-presence gate
 	 * always passes and only the shipment-gate under test decides the outcome).
 	 */
-	@NonNull
 	private void setupShipment(final boolean isSOTrx, final String movementType, final boolean isReturn)
 	{
 		final I_M_Shipper shipper = newInstance(I_M_Shipper.class);

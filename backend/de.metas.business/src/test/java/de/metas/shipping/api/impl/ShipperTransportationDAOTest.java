@@ -42,6 +42,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.util.Collection;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -182,7 +183,7 @@ class ShipperTransportationDAOTest
 				.orgId(OrgId.ofRepoId(0))
 				.build();
 
-		final java.util.Collection<I_M_ShipperTransportation> matches = shipperTransportationDAO.getByQuery(query);
+		final Collection<I_M_ShipperTransportation> matches = shipperTransportationDAO.getByQuery(query);
 
 		assertThat(matches)
 				.extracting(I_M_ShipperTransportation::getM_ShipperTransportation_ID)
