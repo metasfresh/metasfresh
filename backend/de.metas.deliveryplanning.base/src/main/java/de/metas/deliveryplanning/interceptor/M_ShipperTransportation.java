@@ -11,6 +11,7 @@ import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.ModelValidator;
@@ -86,5 +87,22 @@ public class M_ShipperTransportation
 	{
 		deliveryPlanningService.getCompleteRejectionReason(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()))
 				.ifPresent(reason -> {throw new AdempiereException(reason);});
+	}
+
+	/**
+	 * The instruction's dates are read-only on the plannings while they are allocated - this is what keeps them
+	 * in step: a planner's edit of any of these fields on the instruction reaches every currently allocated
+	 * planning, one-way, instruction to planning.
+	 */
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = {
+			I_M_ShipperTransportation.COLUMNNAME_ETD,
+			I_M_ShipperTransportation.COLUMNNAME_ETA,
+			I_M_ShipperTransportation.COLUMNNAME_ATD,
+			I_M_ShipperTransportation.COLUMNNAME_ATA,
+			I_M_ShipperTransportation.COLUMNNAME_LoadingTime,
+			I_M_ShipperTransportation.COLUMNNAME_DeliveryTime })
+	public void syncDatesToAllocatedPlannings(@NonNull final I_M_ShipperTransportation shipperTransportation)
+	{
+		deliveryPlanningService.syncDatesToAllocatedPlannings(shipperTransportation);
 	}
 }

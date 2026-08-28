@@ -304,8 +304,11 @@ class DeliveryPlanningCompletionCascadeTest
 		// unlinkDeliveryPlannings deactivates the allocations SYNCHRONOUSLY, before the invalidation the
 		// invoice-candidate side effect defers to after-commit; a re-query of "active" allocations at that
 		// later point would see none left and silently invalidate nothing, so the ids must be resolved
-		// BEFORE the deactivation and carried into the deferred batch load, not re-derived after it
-		Mockito.verify(deliveryPlanningRepository, Mockito.times(1))
+		// BEFORE the deactivation and carried into the deferred batch load, not re-derived after it.
+		// TWO calls over the same 2 ids are genuinely expected here: the deactivation itself resets those
+		// plannings' dates (one batch load), and the deferred invalidation reads them again afterwards (a
+		// second, unrelated batch load) - both are single round trips for the whole set, never one per row
+		Mockito.verify(deliveryPlanningRepository, Mockito.times(2))
 				.getByIds(Mockito.argThat(ids -> ((java.util.Collection<?>) ids).size() == 2));
 	}
 

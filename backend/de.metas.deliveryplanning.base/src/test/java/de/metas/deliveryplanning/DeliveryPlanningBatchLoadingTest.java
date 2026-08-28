@@ -337,7 +337,10 @@ class DeliveryPlanningBatchLoadingTest
 		Mockito.clearInvocations(deliveryPlanningRepository);
 		deliveryPlanningService.removeFrom(selection);
 
-		assertBatchLoadedExactly(1);
+		// one batch to recompute the removed plannings' dates from the order and its schedule, one for the
+		// ReleaseNo/instruction-reference clearing - each a single round trip for the whole selection, never one
+		// per row
+		assertBatchLoadedExactly(2);
 
 		for (final I_M_Delivery_Planning record : records)
 		{

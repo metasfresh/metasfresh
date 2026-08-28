@@ -25,15 +25,23 @@ package de.metas.deliveryplanning;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.incoterms.IncotermsId;
+import de.metas.interfaces.I_C_OrderLine;
 import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ReceiptScheduleId;
+import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.location.CountryId;
+import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
@@ -56,6 +64,7 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Delivery_Planning;
 import org.compiere.model.I_M_Delivery_Planning_Alloc;
 import org.compiere.model.I_M_Package;
@@ -63,6 +72,7 @@ import org.compiere.model.X_M_Delivery_Planning;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -97,6 +107,9 @@ public class DeliveryPlanningRepository
 	private static final int ALLOCATION_LINE_NO_STEP = 10;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
+	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 
 	private final DimensionService dimensionService;
 
@@ -760,12 +773,18 @@ public class DeliveryPlanningRepository
 	 * Shared by both {@code deactivateAllocations} overloads. The package-then-allocation order matches
 	 * {@link #deactivateAllocations(ShipperTransportationId)}'s original order for consistency - unlike a
 	 * delete, no FK constraint forces either write to go first.
+	 * <p>
+	 * This is also the single choke point every path that ends an allocation's active life routes through -
+	 * remove-from, the source half of a move, close and void alike - which is why the date reset
+	 * ({@link #resetDatesFromOrderAndSchedule}) is keyed HERE, on "the allocation row just became inactive",
+	 * rather than repeated at each of those call sites.
 	 */
 	private ImmutableList<I_M_ShippingPackage> deactivateAllocationRecords(@NonNull final List<I_M_Delivery_Planning_Alloc> allocRecords)
 	{
 		final ImmutableMap<Integer, I_M_ShippingPackage> shippingPackages = getShippingPackagesOf(allocRecords);
 
 		final ImmutableList.Builder<I_M_ShippingPackage> deactivatedShippingPackages = ImmutableList.builder();
+		final ImmutableSet.Builder<DeliveryPlanningId> deallocatedPlanningIds = ImmutableSet.builder();
 		for (final I_M_Delivery_Planning_Alloc allocRecord : allocRecords)
 		{
 			final I_M_ShippingPackage shippingPackageRecord = shippingPackages.get(allocRecord.getM_ShippingPackage_ID());
@@ -775,8 +794,138 @@ public class DeliveryPlanningRepository
 
 			allocRecord.setIsActive(false);
 			saveRecord(allocRecord);
+
+			deallocatedPlanningIds.add(DeliveryPlanningId.ofRepoId(allocRecord.getM_Delivery_Planning_ID()));
 		}
+
+		resetDatesFromOrderAndSchedule(deallocatedPlanningIds.build());
+
 		return deactivatedShippingPackages.build();
+	}
+
+	/**
+	 * Recomputes the given plannings' date fields from the order and its schedule, exactly as
+	 * {@code GenerateIncomingDeliveryPlanningCommand} / {@code GenerateOutgoingDeliveryPlanningCommand} derive them
+	 * when a planning is FIRST generated - called the moment an allocation becomes inactive, so a planning is
+	 * never left showing another document's dates once it stops being allocated to it.
+	 * <p>
+	 * A RECOMPUTE, not a restore: while allocated, {@link #updateDeliveryPlanningFromInstruction} overwrites the
+	 * planning's own dates with the instruction's, so there is no "value from before the allocation" left to
+	 * bring back - only the order's CURRENT state, which is also the more useful answer (a live promised
+	 * arrival beats a stale snapshot). Add-then-remove is therefore not a byte-exact round trip.
+	 * <p>
+	 * {@code LoadingTime}/{@code DeliveryTime} have no order-derived source - neither Generate command ever
+	 * populates them - so they are cleared, exactly as a freshly generated planning would leave them.
+	 * <p>
+	 * Batched throughout: the plannings and every collaborator their dates are read from (orders, order lines,
+	 * receipt schedules, shipment schedules) are each loaded in ONE round trip, never per row.
+	 */
+	private void resetDatesFromOrderAndSchedule(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
+	{
+		if (deliveryPlanningIds.isEmpty())
+		{
+			return;
+		}
+
+		final ImmutableList<I_M_Delivery_Planning> deliveryPlanningRecords = getByIds(deliveryPlanningIds);
+
+		final ImmutableSet.Builder<OrderId> orderIds = ImmutableSet.builder();
+		final ImmutableSet.Builder<OrderLineId> orderLineIds = ImmutableSet.builder();
+		final ImmutableSet.Builder<ReceiptScheduleId> receiptScheduleIds = ImmutableSet.builder();
+		final ImmutableSet.Builder<ShipmentScheduleId> shipmentScheduleIds = ImmutableSet.builder();
+
+		for (final I_M_Delivery_Planning record : deliveryPlanningRecords)
+		{
+			addIfNotNull(orderIds, OrderId.ofRepoIdOrNull(record.getC_Order_ID()));
+			addIfNotNull(orderLineIds, OrderLineId.ofRepoIdOrNull(record.getC_OrderLine_ID()));
+			if (hasReceiptOrUnknown(record))
+			{
+				addIfNotNull(receiptScheduleIds, ReceiptScheduleId.ofRepoIdOrNull(record.getM_ReceiptSchedule_ID()));
+			}
+			else
+			{
+				addIfNotNull(shipmentScheduleIds, ShipmentScheduleId.ofRepoIdOrNull(record.getM_ShipmentSchedule_ID()));
+			}
+		}
+
+		final ImmutableMap<OrderId, I_C_Order> ordersById = Maps.uniqueIndex(
+				orderDAO.getByIds(orderIds.build()),
+				order -> OrderId.ofRepoId(order.getC_Order_ID()));
+		final ImmutableMap<OrderLineId, I_C_OrderLine> orderLinesById = Maps.uniqueIndex(
+				orderDAO.retrieveOrderLinesByIds(orderLineIds.build()),
+				orderLine -> OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
+		final Map<ReceiptScheduleId, I_M_ReceiptSchedule> receiptSchedulesById = receiptScheduleDAO.getByIds(receiptScheduleIds.build());
+		final Map<ShipmentScheduleId, I_M_ShipmentSchedule> shipmentSchedulesById = shipmentScheduleBL.getByIds(shipmentScheduleIds.build());
+
+		for (final I_M_Delivery_Planning record : deliveryPlanningRecords)
+		{
+			applyResetDates(record, ordersById, orderLinesById, receiptSchedulesById, shipmentSchedulesById);
+			saveRecord(record);
+		}
+	}
+
+	private static void applyResetDates(
+			@NonNull final I_M_Delivery_Planning record,
+			@NonNull final Map<OrderId, I_C_Order> ordersById,
+			@NonNull final Map<OrderLineId, I_C_OrderLine> orderLinesById,
+			@NonNull final Map<ReceiptScheduleId, I_M_ReceiptSchedule> receiptSchedulesById,
+			@NonNull final Map<ShipmentScheduleId, I_M_ShipmentSchedule> shipmentSchedulesById)
+	{
+		final I_C_Order order = ordersById.get(OrderId.ofRepoIdOrNull(record.getC_Order_ID()));
+		final I_C_OrderLine orderLine = orderLinesById.get(OrderLineId.ofRepoIdOrNull(record.getC_OrderLine_ID()));
+		final boolean hasReceipt = hasReceiptOrUnknown(record);
+
+		// the Outgoing command's own effective-delivery-date computation (coalesce(Override, plain)); the
+		// Incoming command has no override field and reads the receipt schedule's MovementDate directly instead
+		final Timestamp deliveryDateEffective;
+		if (hasReceipt)
+		{
+			final I_M_ReceiptSchedule receiptSchedule = receiptSchedulesById.get(ReceiptScheduleId.ofRepoIdOrNull(record.getM_ReceiptSchedule_ID()));
+			deliveryDateEffective = receiptSchedule != null ? receiptSchedule.getMovementDate() : null;
+		}
+		else
+		{
+			final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulesById.get(ShipmentScheduleId.ofRepoIdOrNull(record.getM_ShipmentSchedule_ID()));
+			deliveryDateEffective = shipmentSchedule != null
+					? CoalesceUtil.coalesce(shipmentSchedule.getDeliveryDate_Override(), shipmentSchedule.getDeliveryDate())
+					: null;
+		}
+
+		// the Outgoing command's own fallback for an unset delivery date; the Incoming command has none
+		final Timestamp eta = deliveryDateEffective == null && !hasReceipt && orderLine != null
+				? orderLine.getDatePromised()
+				: deliveryDateEffective;
+
+		final Timestamp ata = orderLine != null ? CoalesceUtil.coalesce(orderLine.getDateDelivered(), deliveryDateEffective) : null;
+
+		final Timestamp etd = order != null ? order.getPreparationDate() : null;
+
+		record.setETD(etd);
+		record.setATD(etd);
+		record.setETA(eta);
+		record.setATA(ata);
+		record.setLoadingTime(null);
+		record.setDeliveryTime(null);
+	}
+
+	private static <T> void addIfNotNull(@NonNull final ImmutableSet.Builder<T> collector, @Nullable final T element)
+	{
+		if (element != null)
+		{
+			collector.add(element);
+		}
+	}
+
+	/**
+	 * {@link #extractTransportDirection} throws for a planning with no {@code TransportDirection} at all, which is
+	 * correct for the callers that need a definite answer - but the date reset runs for EVERY deallocated planning
+	 * regardless, so an unset direction here is read as "not a receipt" (the shipment-schedule branch) rather than
+	 * propagating the throw into a path with no admissibility gate of its own.
+	 */
+	private static boolean hasReceiptOrUnknown(@NonNull final I_M_Delivery_Planning record)
+	{
+		final TransportDirection transportDirection = TransportDirection.ofNullableCode(record.getTransportDirection());
+		return transportDirection != null && transportDirection.hasReceipt();
 	}
 
 	/**
@@ -874,11 +1023,14 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * Stamps the given plannings' {@code ReleaseNo} and instruction reference from the given delivery instruction.
+	 * Stamps the given plannings' {@code ReleaseNo}, instruction reference and date fields from the given
+	 * delivery instruction - the same writer both the initial "add conforms to the instruction" moment and a
+	 * later "instruction changed, push it down to every allocated planning" sync use.
 	 * <p>
 	 * Whatever they carried before is overwritten, which is what a move off another instruction requires: the old
 	 * release number names a document the cargo is no longer on, so keeping it would leave two records disagreeing
-	 * about where the cargo is.
+	 * about where the cargo is. The dates are overwritten for the same reason, unconditionally rather than only
+	 * while empty - see {@link #updateDeliveryPlanningFromInstruction}.
 	 */
 	public void updateDeliveryPlanningsFromInstruction(
 			@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds,
@@ -1033,6 +1185,12 @@ public class DeliveryPlanningRepository
 	 * argument in ONE round trip. There is no id-taking public counterpart on purpose - the last one was reached
 	 * for from a loop over a collection, which is precisely the per-row load the collection method exists to
 	 * prevent, and a javadoc saying "use the batch version" is what failed to stop it.
+	 * <p>
+	 * Also where the planning's date fields conform to the instruction's: while a planning is allocated, its own
+	 * {@code ETD}/{@code ETA}/{@code ATD}/{@code ATA}/{@code LoadingTime}/{@code DeliveryTime} are the
+	 * instruction's, unconditionally overwritten every time this runs - on the initial stamp exactly as much as
+	 * on a later re-stamp - never filled only when empty the way the OTHER direction (the instruction defaulting
+	 * from the plannings being added) is. The direction is fixed: instruction to planning, never back.
 	 */
 	private static void updateDeliveryPlanningFromInstruction(@NonNull final I_M_Delivery_Planning deliveryPlanningRecord,
 			@NonNull final I_M_ShipperTransportation deliveryInstruction)
@@ -1042,6 +1200,14 @@ public class DeliveryPlanningRepository
 													+ deliveryPlanningRecord.getM_Delivery_Planning_ID()
 													+ "-" + created);
 		deliveryPlanningRecord.setM_ShipperTransportation_ID(deliveryInstruction.getM_ShipperTransportation_ID());
+
+		deliveryPlanningRecord.setETD(deliveryInstruction.getETD());
+		deliveryPlanningRecord.setETA(deliveryInstruction.getETA());
+		deliveryPlanningRecord.setATD(deliveryInstruction.getATD());
+		deliveryPlanningRecord.setATA(deliveryInstruction.getATA());
+		deliveryPlanningRecord.setLoadingTime(deliveryInstruction.getLoadingTime());
+		deliveryPlanningRecord.setDeliveryTime(deliveryInstruction.getDeliveryTime());
+
 		saveRecord(deliveryPlanningRecord);
 	}
 

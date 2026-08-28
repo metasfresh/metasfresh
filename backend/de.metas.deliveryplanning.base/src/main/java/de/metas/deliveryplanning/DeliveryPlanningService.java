@@ -1396,6 +1396,28 @@ public class DeliveryPlanningService
 		}
 	}
 
+	/**
+	 * Reacts to the instruction's own dates changing (the {@code M_ShipperTransportation} AFTER_CHANGE
+	 * {@code ETD}/{@code ETA}/{@code ATD}/{@code ATA}/{@code LoadingTime}/{@code DeliveryTime} interceptor):
+	 * pushes them down onto every planning CURRENTLY allocated to it.
+	 * <p>
+	 * One-way and unconditional, the same as the initial "add conforms to the instruction" stamp - both go
+	 * through {@link DeliveryPlanningRepository#updateDeliveryPlanningsFromInstruction(Collection, I_M_ShipperTransportation)}.
+	 * A planning that is no longer allocated is not among {@code getAllocatedPlanningIds} and is therefore left
+	 * alone - it is on its way to (or has already had) its own reset, not this sync.
+	 */
+	public void syncDatesToAllocatedPlannings(@NonNull final I_M_ShipperTransportation deliveryInstruction)
+	{
+		final ShipperTransportationId deliveryInstructionId = ShipperTransportationId.ofRepoId(deliveryInstruction.getM_ShipperTransportation_ID());
+		final ImmutableSet<DeliveryPlanningId> allocatedPlanningIds = deliveryPlanningRepository.getAllocatedPlanningIds(deliveryInstructionId);
+		if (allocatedPlanningIds.isEmpty())
+		{
+			return;
+		}
+
+		deliveryPlanningRepository.updateDeliveryPlanningsFromInstruction(allocatedPlanningIds, deliveryInstruction);
+	}
+
 	public void regenerateDeliveryInstructions(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
 		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter = deliveryPlanningRepository
