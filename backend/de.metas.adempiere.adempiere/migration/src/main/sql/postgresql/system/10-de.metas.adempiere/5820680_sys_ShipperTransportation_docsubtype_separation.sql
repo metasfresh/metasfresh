@@ -55,10 +55,13 @@ WHERE AD_Val_Rule_ID = 540468 /* M_ShipperTransportation_Open_ ForShipper */;
 -- window-scoped to the transport-order window instead of guarded in Java: the process prints a
 -- handling-unit loading list (de/metas/docs/sales/billoflading/report.jrxml), and the
 -- delivery-planning flow never links a handling unit to its M_Package, so on a delivery instruction
--- the report has nothing to print. No customer repo checked customises a window or AD_Table_Process
--- over M_ShipperTransportation (AD_Table_ID 540030), so the window-scope is not defeated by an
--- existing clone. PrintAllShipmentDocuments (541228, AD_Table_Process 540765+541325) is untouched -
--- it is deliberately offered on both windows already.
+-- the report has nothing to print. Narrowing the binding is not free, though: AD_Table_Process
+-- 540789 is table-global until this statement, so today it reaches every window over the table --
+-- including any override window over 540020, and a targeted code search for
+-- Overrides_Window_ID=540020 returns two such. Pinning it to 540020 therefore drops it from those
+-- copies, because a copied window cannot see a window-pinned binding; companion scripts in those
+-- repositories restore it there. PrintAllShipmentDocuments (541228, AD_Table_Process 540765+541325)
+-- is untouched - it is deliberately offered on both windows already.
 UPDATE AD_Table_Process
 SET AD_Window_ID = 540020 /* Transport Auftrag */,
     Updated = TO_TIMESTAMP('2026-08-27 09:00:02', 'YYYY-MM-DD HH24:MI:SS'),

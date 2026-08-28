@@ -3,10 +3,13 @@
 --   AD_Window 540020 "Transport Auftrag"  -> AD_Tab 540096 "Speditionslieferung"
 --   AD_Window 541657 "Lieferanweisungen"  -> AD_Tab 546732 "Lieferanweisungen"
 --
--- 540020 IS overridden -- two customer windows set Overrides_Window_ID=540020, each in its own repo,
--- and each gets a companion script in its own repo putting the field on its own tab; 541657 is not.
--- Both settled by an org-wide code search for Overrides_Window_ID=540020 / =541657, NOT by a local
--- DB: a local DB holds no Overrides_Window_ID rows at all, so it always answers "no override".
+-- 540020 IS overridden: a targeted code search for Overrides_Window_ID=540020 returns two customer
+-- override windows, each in its own repository, and each gets a companion script there putting the
+-- field on its own tab. No override was found for 541657 -- but that is a floor, not a ceiling. The
+-- search sees checked-in SQL only; GitHub code search truncates silently (a broad org sweep
+-- missed the very files the targeted query had just returned); and a custom window may predate the
+-- Overrides_Window_ID column altogether. Only a customer-faithful DB can rule an override out, and
+-- this workspace has none -- so 541657 is an open risk, not a cleared one.
 --
 -- Editability differs per window because the role does. 540020 is the only one with
 -- IsInsertRecord='Y', and the column is mandatory with its default deliberately removed by 5821080,
@@ -23,7 +26,7 @@
 -- drops it, so the filter moves onto the direction column (175, matching AD_Column 585005 on the
 -- Delivery Planning side). A selection column has to be visible in the grid, hence
 -- IsDisplayedGrid='Y', at a SeqNoGrid free on both the AD_UI_Element and the AD_Field layer of
--- its tab -- on 540096 that is 35, keeping the C_DocType_ID/DocumentNo/DateDoc block contiguous.
+-- its tab -- 35 on both, which leaves each tab's C_DocType_ID/DocumentNo/DateDoc block contiguous.
 
 -- ============================================================================
 -- 1) Make the direction filterable, taking over the IsSOTrx filter slot.
@@ -60,5 +63,5 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=783021
 ;
 /* DDL */ select AD_Element_Link_Create_Missing_Field(783021)
 ;
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,783021,0,546732,555562,653670 /*From ID Server*/,'F',TO_TIMESTAMP('2026-08-26 12:04:00','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','Y','N','N',0,'Richtung',12,55,0,TO_TIMESTAMP('2026-08-26 12:04:00','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,783021,0,546732,555562,653670 /*From ID Server*/,'F',TO_TIMESTAMP('2026-08-26 12:04:00','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','Y','N','N',0,'Richtung',12,35,0,TO_TIMESTAMP('2026-08-26 12:04:00','YYYY-MM-DD HH24:MI:SS'),100)
 ;

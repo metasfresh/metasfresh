@@ -10,11 +10,13 @@
 -- "Lieferanweisungen", cleaned up below.
 --
 -- That sweep ran against a DB carrying no Overrides_Window_ID rows at all, so it could not see
--- customer override windows and its "only two AD_Field rows" answer is a floor, not a ceiling. An
--- org-wide code search for Overrides_Window_ID shows AD_Window 540020 IS overridden by two customer
--- windows in customer repositories, while 541657 is not. Whatever AD_Field rows those windows hold
--- for this column are covered regardless, because every DELETE below is anchored on the column, not
--- on the two known AD_Field_IDs -- which is also why no companion script is needed for the cleanup.
+-- customer override windows and its "only two AD_Field rows" answer is a floor, not a ceiling. A
+-- targeted code search for Overrides_Window_ID=540020 returns two customer override windows; for
+-- 541657 it returns none, which is likewise a floor -- neither a local DB nor a code search can
+-- prove an override absent, only a customer-faithful DB can. It makes no difference to the cleanup:
+-- whatever AD_Field rows any override window holds for this column are covered regardless, because
+-- every DELETE below is anchored on the column, not on the two known AD_Field_IDs -- which is also
+-- why no companion script is needed here.
 
 -- FK-chain cleanup, anchored on AD_Column_ID=590639 (M_ShipperTransportation.IsSOTrx).
 DELETE FROM AD_UI_Element WHERE AD_Field_ID IN

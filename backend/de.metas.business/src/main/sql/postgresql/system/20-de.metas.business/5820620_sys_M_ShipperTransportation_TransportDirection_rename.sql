@@ -15,14 +15,14 @@
 -- 5820630 (de.metas.deliveryplanning.base), which owns the process (585654) both belong to. No
 -- view, matview, function or AD_Column.ColumnSQL references it.
 --
--- AD_Window 540020 IS overridden by two customer windows (Overrides_Window_ID=540020, each in its
--- own customer repository); 541657 is not. Established by an org-wide code search for
--- Overrides_Window_ID, NOT
--- from a local DB, which carries no Overrides_Window_ID rows at all and so always answers "no
--- override". This script still needs no companion of its own: the element repoint and the physical
--- rename sit on AD_Column 593410, which every window over the table shares, and the only per-window
--- rows it touches are the two AD_Name_ID stop-gaps 5820440 put on the core tabs -- the companion
--- scripts in those two repos own the equivalent for their own tabs.
+-- AD_Window 540020 IS overridden: a targeted code search for Overrides_Window_ID=540020 returns two
+-- customer override windows, each in its own repository. No override was found for 541657, but that
+-- is a floor, not a ceiling -- the search sees checked-in SQL only, truncates silently, and a
+-- custom window may predate the Overrides_Window_ID column; only a faithful customer DB settles it.
+-- This script still needs no companion of its own: the element repoint and the physical rename sit
+-- on AD_Column 593410, which every window over the table shares, and the only per-window rows it
+-- touches are the two AD_Name_ID stop-gaps 5820440 put on the core tabs -- the companion scripts in
+-- those repositories own the equivalent for their own tabs.
 --
 -- No new AD row is created here, so no ID-server allocation beyond this script's own
 -- AD_MigrationScript 5820620 (idserver.metas.de, 2026-08-27).

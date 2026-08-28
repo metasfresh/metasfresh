@@ -10,8 +10,10 @@
 -- Dependency sweep before renaming (case-insensitive, live DB, 2026-08-27): no view, matview,
 -- function, AD_Val_Rule.Code or AD_Column.ColumnSQL references m_delivery_planning_type on
 -- M_Delivery_Planning (the one hit, AD_Val_Rule 540796, is scoped to M_ShipperTransportation and
--- is handled in 5820620). No AD_Window overrides AD_Window 541632, so no companion customer-repo
--- script is needed.
+-- is handled in 5820620). No override window was found for AD_Window 541632, so no companion
+-- customer-repo script is added here -- a floor, not a ceiling: neither a local DB (which holds no
+-- Overrides_Window_ID rows at all) nor a code search can prove an override absent; only a
+-- customer-faithful DB can.
 --
 -- No new AD row is created here, so no ID-server allocation beyond this script's own
 -- AD_MigrationScript 5820610 (idserver.metas.de, 2026-08-27).

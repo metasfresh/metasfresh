@@ -17,7 +17,11 @@
 -- Description/Help live on the element rather than as per-field overrides: all three consumers
 -- (AD_Column 585005, AD_Column 593410, the direction process parameter) mean the same concept, so
 -- one shared text is right and a fork would be wrong. The value is mandatory and defaultless and
--- its "Dropship" arm is not self-evident, so each of the three arms is spelled out.
+-- its "Dropship" arm is not self-evident, so each of the three arms is spelled out. Note the
+-- propagation asymmetry: the sync functions carry Name and Description down to the base AD_Column /
+-- AD_Field rows but NOT Help, so those keep Help NULL while their _Trl rows hold the full text. No
+-- user impact -- the tooltip is read from the _Trl row -- but do not read a NULL base Help as "the
+-- help text never landed".
 --
 -- This script only creates the element + its translations, copying 540579's caption exactly
 -- (de_DE/de_CH "Richtung", en_US "Direction", fr_CH "Direction" IsTranslated='N' -- matching what

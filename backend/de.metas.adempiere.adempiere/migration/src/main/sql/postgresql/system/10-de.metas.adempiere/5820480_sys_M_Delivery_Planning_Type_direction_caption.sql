@@ -39,8 +39,9 @@
 -- element group (550029), its SeqNo (50) and its SeqNoGrid (30), so a later change that adds a tab
 -- to AD_Window 541632 cannot collide with this one.
 --
--- AD_Window 541632 has no override window (no AD_Window row with Overrides_Window_ID=541632), so
--- there is no companion customer-repo script.
+-- No override window was found for AD_Window 541632, so no companion customer-repo script is added
+-- here -- a floor, not a ceiling: neither a local DB (which holds no Overrides_Window_ID rows at
+-- all) nor a code search can prove an override absent; only a customer-faithful DB can.
 --
 -- IDs allocated from idserver.metas.de on 2026-08-27:
 --   AD_MigrationScript 5820480 (this file). No new AD row is created, so no other ID is needed:
