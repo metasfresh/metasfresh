@@ -1,55 +1,29 @@
--- Surface M_ShipperTransportation.M_Delivery_Planning_Type (AD_Column 593410) in the UI.
+-- Surface M_ShipperTransportation's three-valued direction (AD_Column 593410, added by 5820430 with
+-- no AD_Field and no AD_UI_Element) on both windows over the table, replacing the IsSOTrx flag:
+--   AD_Window 540020 "Transport Auftrag"  -> AD_Tab 540096 "Speditionslieferung"
+--   AD_Window 541657 "Lieferanweisungen"  -> AD_Tab 546732 "Lieferanweisungen"
 --
--- The column was added by 5820430 with no AD_Field and no AD_UI_Element, so the three-valued
--- direction (Incoming / Outgoing / Dropship) it holds is invisible. It replaces the IsSOTrx flag
--- on both windows over M_ShipperTransportation, so it is wired into both main tabs:
---   AD_Window 540020 "Transport Auftrag" -> AD_Tab 540096 "Speditionslieferung"
---   AD_Window 541657 "Lieferanweisungen" -> AD_Tab 546732 "Lieferanweisungen"
--- Neither window has an override window (AD_Window.Overrides_Window_ID), so there is no
--- companion customer-repo script.
+-- 540020 IS overridden -- two customer windows set Overrides_Window_ID=540020, each in its own repo,
+-- and each gets a companion script in its own repo putting the field on its own tab; 541657 is not.
+-- Both settled by an org-wide code search for Overrides_Window_ID=540020 / =541657, NOT by a local
+-- DB: a local DB holds no Overrides_Window_ID rows at all, so it always answers "no override".
 --
--- Placement and editability differ per window, because the field's ROLE differs per window.
+-- Editability differs per window because the role does. 540020 is the only one with
+-- IsInsertRecord='Y', and the column is mandatory with its default deliberately removed by 5821080,
+-- so IsReadOnly='Y' there would leave a required field nobody can fill and a record nobody can save.
+-- Hence IsReadOnly='N', first in the left column's UIStyle='primary' group 540667. 541657 offers no
+-- 'New' action, so it stays IsReadOnly='Y' and takes the slot IsSOTrx had: second in the
+-- right-column "flags" group 555562, after IsActive and before IsBookingConfirmed. Read-only there
+-- guards the invariant that an instruction's direction follows its allocated plannings, which the
+-- combine-time admissibility check already keeps uniform; both copies lock once the document is
+-- processed anyway, so neither needs a ReadOnlyLogic. AD_Name_ID=540579 ("Richtung") is a stop-gap
+-- caption because the column's own element is still misnamed; 5820620 drops it again.
 --
---   AD_Window 540020 / AD_Tab 540096 "Speditionslieferung" -- IsInsertRecord='Y', so this is the
---   one window that offers a 'New' action. The column is MANDATORY and 5821080 removes its default
---   on purpose, so that a missing direction surfaces instead of being silently filled; on a new
---   record the user therefore has to supply it, and IsReadOnly='Y' would leave a required field
---   that cannot be filled and a record that can never be saved. So: IsReadOnly='N' here, and the
---   element sits FIRST in the left column's UIStyle='primary' group 540667 -- a mandatory,
---   user-entered field belongs top-left, not among the right-column "flags" whose other members
---   (IsBookingConfirmed, IsBLReceived, IsWENotice) are all booleans.
---
---   AD_Window 541657 / AD_Tab 546732 "Lieferanweisungen" -- IsInsertRecord='N': this window has no
---   'New' action at all, so no user ever has to supply a direction here. It stays IsReadOnly='Y',
---   like IsSOTrx and like the Delivery Planning sibling, and it stays where IsSOTrx sat: first in
---   the right-column "flags" group 555562 (SeqNo 12), so dropping the IsSOTrx element in 5820850
---   leaves no hole. Read-only is what protects the invariant here: the direction of a delivery
---   instruction follows the plannings allocated to it, and the combine-time admissibility check
---   already guarantees that all of them share one direction -- a hand edit could only break that,
---   silently, through Complete and onto the printed document.
---
--- Nothing is lost by making 540020's copy editable: every programmatic creation path sets the
--- direction in Java, which an AD_Field flag never affected either way, and Document#computeReadonly
--- propagates Processed generically, so the field locks once the document is processed, exactly like
--- every other field on these tabs (none of which carries an explicit ReadOnlyLogic either).
---
--- The right-column "flags" placement kept on 546732 is also what M_Delivery_Planning.
--- M_Delivery_Planning_Type (AD_Column 585005) uses on the Delivery Planning window, where the
--- direction is likewise derived rather than typed.
---
--- Label: AD_Field.AD_Name_ID is set to AD_Element 540579 ("Richtung" / "Direction"), an existing
--- fully-translated core element, instead of inheriting the column's shared element 581679
--- ("Lieferplanung Art" / "Type"). That element names the *delivery planning* and is wrong on a
--- transport order, which has no delivery planning at all; element 581679 is shared with
--- AD_Column 585005 and must therefore not be mutated (field-level override is the correct fork).
---
--- Grid + filter: IsSOTrx is AD_Column.IsSelectionColumn='Y' (SelectionColumnSeqNo=170) today, so
--- the transport grids can be narrowed by direction. Dropping IsSOTrx without transferring that
--- would remove a filter users have. The direction column therefore becomes a selection column
--- too (SelectionColumnSeqNo=175, i.e. the same neighbourhood), which also matches AD_Column
--- 585005 on the Delivery Planning side. Because a selection column must be visible in the grid,
--- both AD_UI_Elements are IsDisplayedGrid='Y' (SeqNoGrid chosen collision-free on both the
--- AD_UI_Element and the AD_Field layer, on each tab).
+-- Filter + grid: IsSOTrx carries the direction filter today (SelectionColumnSeqNo=170) and 5820850
+-- drops it, so the filter moves onto the direction column (175, matching AD_Column 585005 on the
+-- Delivery Planning side). A selection column has to be visible in the grid, hence
+-- IsDisplayedGrid='Y', at a SeqNoGrid free on both the AD_UI_Element and the AD_Field layer of
+-- its tab -- on 540096 that is 35, keeping the C_DocType_ID/DocumentNo/DateDoc block contiguous.
 
 -- ============================================================================
 -- 1) Make the direction filterable, taking over the IsSOTrx filter slot.
@@ -70,7 +44,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=783020
 ;
 /* DDL */ select AD_Element_Link_Create_Missing_Field(783020)
 ;
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,783020,0,540096,540667,653669 /*From ID Server*/,'F',TO_TIMESTAMP('2026-08-26 12:02:00','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','Y','N','N',0,'Richtung',5,65,0,TO_TIMESTAMP('2026-08-26 12:02:00','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,783020,0,540096,540667,653669 /*From ID Server*/,'F',TO_TIMESTAMP('2026-08-26 12:02:00','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','Y','N','N',0,'Richtung',5,35,0,TO_TIMESTAMP('2026-08-26 12:02:00','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- ============================================================================

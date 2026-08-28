@@ -1,17 +1,22 @@
 -- Drops M_ShipperTransportation.IsSOTrx, superseded by TransportDirection (5820430 / 5820620).
--- Its single reader (PurchaseOrderToShipperTransportationService.applyDefaultDatesFromFirstOrder) was
--- reworked to gate on TransportDirection instead, and the four writers (ShipperTransportationDAO,
--- ShipperDeliveryService, HUShipperTransportationBL, M_Tour_Instance_CreateFromSelectedDeliveryDays) no
--- longer set it -- they always create Outgoing transports, which is exactly the column's own physical
--- DEFAULT ('Outgoing', see 5820430), so removing the writes changes nothing observable.
+-- Its single reader -- the one that defaults a transport's dates from its first order -- was reworked
+-- to gate on TransportDirection instead, and the four code paths that used to set it no longer do:
+-- all four create Outgoing transports only, which is exactly the column's own physical DEFAULT
+-- ('Outgoing', see 5820430), so dropping the writes changes nothing observable.
 --
 -- Dependency sweep against the live DB (pg_views, pg_proc, AD_Val_Rule.Code, AD_Column.ColumnSQL,
 -- EXP_FormatLine by AD_Column_ID, AD_Tab.Parent_Column_ID -- all keyed on AD_Column_ID=590639) found no
 -- consumer besides two AD_Field rows, on windows 540020 "Transport Auftrag" and 541657
 -- "Lieferanweisungen", cleaned up below.
+--
+-- That sweep ran against a DB carrying no Overrides_Window_ID rows at all, so it could not see
+-- customer override windows and its "only two AD_Field rows" answer is a floor, not a ceiling. An
+-- org-wide code search for Overrides_Window_ID shows AD_Window 540020 IS overridden by two customer
+-- windows in customer repositories, while 541657 is not. Whatever AD_Field rows those windows hold
+-- for this column are covered regardless, because every DELETE below is anchored on the column, not
+-- on the two known AD_Field_IDs -- which is also why no companion script is needed for the cleanup.
 
--- FK-chain cleanup, anchored on AD_Column_ID=590639 (M_ShipperTransportation.IsSOTrx), so it also
--- covers any future custom-window AD_Field for this column, not just the two current ones.
+-- FK-chain cleanup, anchored on AD_Column_ID=590639 (M_ShipperTransportation.IsSOTrx).
 DELETE FROM AD_UI_Element WHERE AD_Field_ID IN
     (SELECT AD_Field_ID FROM AD_Field WHERE AD_Column_ID = 590639)
 ;

@@ -16,6 +16,12 @@
 -- 540426, no WhereClause) is reused rather than duplicated -- it is the same reference 540468 uses as
 -- ITS source, and a second source reference for the same table gets reverted in review.
 --
+-- Neither relation gets a source WhereClause, and neither needs one even though two windows sit on the
+-- one M_ShipperTransportation table: each target WhereClause already scopes itself by data. 540505
+-- requires an active M_Delivery_Planning_Alloc, which only a delivery instruction ever has; 540468
+-- requires a shipping package pointing at a purchase order, which the Dropship delivery instructions
+-- legitimately do have -- so a window or document-type source filter would hide true links.
+--
 -- Target reference: new, and its WhereClause mirrors 541708's shape (the sibling relation on the same
 -- allocation table), only with the two sides swapped -- filter the plannings by the selected
 -- instruction instead of the instructions by the selected planning.
