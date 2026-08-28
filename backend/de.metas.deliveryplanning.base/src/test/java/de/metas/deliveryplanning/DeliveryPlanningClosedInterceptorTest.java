@@ -52,6 +52,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
 
@@ -202,11 +203,17 @@ class DeliveryPlanningClosedInterceptorTest
 	void close_allocatedToDraftInstruction_deactivatesAllocationAndPackage()
 	{
 		final ShipperTransportationId draft = deliveryInstruction("DRAFT-1", DocStatus.Drafted.getCode());
+		// gives the instruction a date to contaminate the planning with via the sync-down, so the close's reset
+		// has something observable to undo
+		final I_M_ShipperTransportation draftRecord = InterfaceWrapperHelper.load(draft, I_M_ShipperTransportation.class);
+		draftRecord.setETD(Timestamp.valueOf("2026-03-20 00:00:00"));
+		InterfaceWrapperHelper.save(draftRecord);
 		final I_M_Delivery_Planning planning = deliveryPlanning();
 		allocateTo(draft, planning);
 		final I_M_Delivery_Planning_Alloc allocBefore = activeAllocationOf(planning);
 		final int allocationId = allocBefore.getM_Delivery_Planning_Alloc_ID();
 		final int packageId = allocBefore.getM_ShippingPackage_ID();
+		assertThat(reload(planning).getETD()).as("sanity: allocation synced the instruction's date down first").isNotNull();
 
 		deliveryPlanningService.closeSelectedDeliveryPlannings(selectionOf(planning));
 
@@ -214,6 +221,9 @@ class DeliveryPlanningClosedInterceptorTest
 		assertThat(closed.isClosed()).isTrue();
 		assertThat(closed.getReleaseNo()).as("the removal clears the release number, same as removeFrom").isNull();
 		assertThat(closed.getM_ShipperTransportation_ID()).as("and the instruction reference").isLessThanOrEqualTo(0);
+		assertThat(closed.getETD())
+				.as("the close reset the date - the planning has no order to derive one from, so the instruction's is gone, not carried over")
+				.isNull();
 		assertThat(allActiveAllocations()).as("no active allocation remains").isEmpty();
 		assertThat(InterfaceWrapperHelper.load(allocationId, I_M_Delivery_Planning_Alloc.class).isActive())
 				.as("the allocation row survives, deactivated - the re-booking audit trail this task exists for")

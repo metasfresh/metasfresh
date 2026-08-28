@@ -49,6 +49,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
 
@@ -183,6 +184,13 @@ class DeliveryPlanningMoveAndRemovalTest
 		deliveryPlanningRepository.updateDeliveryPlanningsFromInstruction(ImmutableList.of(id), deliveryInstructionId);
 	}
 
+	private static void setETD(@NonNull final ShipperTransportationId deliveryInstructionId, @NonNull final Timestamp etd)
+	{
+		final I_M_ShipperTransportation record = InterfaceWrapperHelper.load(deliveryInstructionId, I_M_ShipperTransportation.class);
+		record.setETD(etd);
+		InterfaceWrapperHelper.save(record);
+	}
+
 	private static DeliveryPlanningId idOf(@NonNull final I_M_Delivery_Planning record)
 	{
 		return DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID());
@@ -246,6 +254,10 @@ class DeliveryPlanningMoveAndRemovalTest
 	{
 		final ShipperTransportationId source = draftDeliveryInstruction("SOURCE-1");
 		final ShipperTransportationId target = draftDeliveryInstruction("TARGET-1");
+		// distinct dates on source and target: the move deactivates the source allocation (which resets the
+		// planning's dates from its order/schedule) and then immediately re-syncs it from the target, so what
+		// survives must be the TARGET's date, never the source's - proving the intermediate reset does not leak
+		setETD(target, Timestamp.valueOf("2026-03-25 00:00:00"));
 		final I_M_Delivery_Planning moving = deliveryPlanning();
 		allocateTo(source, moving);
 
@@ -272,6 +284,9 @@ class DeliveryPlanningMoveAndRemovalTest
 				.startsWith("TARGET-1-")
 				.doesNotContain("SOURCE-1");
 		assertThat(moved.getM_ShipperTransportation_ID()).isEqualTo(target.getRepoId());
+		assertThat(moved.getETD())
+				.as("the source-side reset is only ever transient here: the target's own sync-down has the final word")
+				.isEqualTo(Timestamp.valueOf("2026-03-25 00:00:00"));
 	}
 
 	@Test

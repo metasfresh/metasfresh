@@ -92,11 +92,17 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
- * Repository Tables: M_Delivery_Planning, M_Delivery_Planning_Alloc, M_ShipperTransportation, M_ShippingPackage, M_Package
+ * Repository Tables: M_Delivery_Planning, M_Delivery_Planning_Alloc, M_ShipperTransportation, M_ShippingPackage,
+ * M_Package; C_Order, C_OrderLine, M_ReceiptSchedule, M_ShipmentSchedule (read-only - consulted by
+ * {@code resetDatesFromOrderAndSchedule} to recompute a deallocated planning's dates, never written)
  * Repository Cluster: DeliveryPlanningRepository (sole owner of M_Delivery_Planning_Alloc; primary owner of
  * M_Delivery_Planning, which DeliveryPlanningImportProcess also writes directly), ShipperTransportationDAO,
  * PurchaseOrderToShipperTransportationRepository, MPackageRepository (the three transport and packing tables are
- * shared with the transport-order role, which knows nothing of delivery planning)
+ * shared with the transport-order role, which knows nothing of delivery planning); read-only via
+ * {@code OrderDAO} (C_Order, C_OrderLine), {@code ReceiptScheduleDAO} (M_ReceiptSchedule) and
+ * {@code ShipmentScheduleRepository} (M_ShipmentSchedule) - their actual owners, named here so a future write to
+ * one of those four tables from this class reads as the split-ownership bug it would be, not a continuation of
+ * an already-accepted share
  */
 @Repository
 public class DeliveryPlanningRepository
@@ -819,6 +825,21 @@ public class DeliveryPlanningRepository
 	 * <p>
 	 * Batched throughout: the plannings and every collaborator their dates are read from (orders, order lines,
 	 * receipt schedules, shipment schedules) are each loaded in ONE round trip, never per row.
+	 * <p>
+	 * Action-at-a-distance, deliberately: writing {@code ATD} here also drives the PRE-EXISTING
+	 * {@code M_Delivery_Planning} {@code AFTER_CHANGE(ATD)} interceptor
+	 * ({@code DeliveryPlanningService#invalidateInvoiceCandidatesFor(I_M_Delivery_Planning)}), once per row -
+	 * a genuine per-row DB read of that row's order line (uncached; the handler-registry lookup underneath it
+	 * IS cached, so only the order-line read repeats). This is not a new N+1 the way a per-row LOAD of the
+	 * plannings/orders/schedules THIS method reads would be: the per-row {@code saveRecord} below is already
+	 * unavoidable (each row gets its own recomputed values, and this class has no bulk-update primitive), and
+	 * the interceptor's extra read rides that same already-O(N) loop rather than multiplying it. It also mirrors
+	 * this class's own accepted shape for "batched" invalidation elsewhere
+	 * ({@code DeliveryPlanningService#invalidateInvoiceCandidatesFor(ShipperTransportationId)}: one batch load of
+	 * the plannings, then one invalidation call per row, because no batch invalidate-candidates API exists).
+	 * A second, redundant invalidation on the void path (the deferred after-commit one in
+	 * {@code DeliveryPlanningService#unlinkDeliveryPlannings}) is accepted as a harmless idempotent
+	 * mark-for-recompute, not something this method works around.
 	 */
 	private void resetDatesFromOrderAndSchedule(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
 	{
@@ -1191,6 +1212,11 @@ public class DeliveryPlanningRepository
 	 * instruction's, unconditionally overwritten every time this runs - on the initial stamp exactly as much as
 	 * on a later re-stamp - never filled only when empty the way the OTHER direction (the instruction defaulting
 	 * from the plannings being added) is. The direction is fixed: instruction to planning, never back.
+	 * <p>
+	 * Same action-at-a-distance as {@link #resetDatesFromOrderAndSchedule}: the {@code ATD} write here also
+	 * drives the pre-existing {@code M_Delivery_Planning} {@code AFTER_CHANGE(ATD)} invoice-candidate
+	 * invalidation, once per row of the caller's batch - see that method's javadoc for why this is accepted
+	 * rather than routed around.
 	 */
 	private static void updateDeliveryPlanningFromInstruction(@NonNull final I_M_Delivery_Planning deliveryPlanningRecord,
 			@NonNull final I_M_ShipperTransportation deliveryInstruction)

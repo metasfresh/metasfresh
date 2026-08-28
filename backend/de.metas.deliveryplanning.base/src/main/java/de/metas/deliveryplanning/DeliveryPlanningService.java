@@ -1304,6 +1304,12 @@ public class DeliveryPlanningService
 	 * <p>
 	 * A planning already on the target is left alone: there is nothing to move, and its {@code ReleaseNo} already
 	 * names that instruction.
+	 * <p>
+	 * The deactivate-then-create order means a moved planning's dates are briefly reset from its order and
+	 * schedule (the source deactivation) before {@link DeliveryPlanningRepository#updateDeliveryPlanningsFromInstruction}
+	 * overwrites them again from the target a few lines later - a dead intermediate write, harmless because
+	 * nothing observes it mid-transaction, and cheaper to accept than to special-case the deactivation for the
+	 * one caller that immediately re-allocates.
 	 */
 	public void addTo(
 			@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter,
