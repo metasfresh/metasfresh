@@ -31,8 +31,7 @@ AS
 $func$
 WITH related_orders AS (SELECT DISTINCT o.c_order_id, COALESCE(o.c_doctype_id, o.c_doctypetarget_id) AS c_doctype_id
                         FROM c_invoiceline il
-                                 JOIN c_orderline ol ON ol.c_orderline_id = il.c_orderline_id
-                                 JOIN c_order o ON o.c_order_id = ol.c_order_id
+                                 JOIN c_order o ON o.c_order_id = il.c_order_id
                         WHERE il.c_invoice_id = p_c_invoice_id
                           AND il.isactive = 'Y'
                         UNION
