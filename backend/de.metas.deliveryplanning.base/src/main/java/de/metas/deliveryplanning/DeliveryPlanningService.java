@@ -1590,7 +1590,7 @@ public class DeliveryPlanningService
 				orderDAO.getByIds(orderIds.build()),
 				order -> OrderId.ofRepoId(order.getC_Order_ID()));
 		final ImmutableMap<OrderLineId, I_C_OrderLine> orderLinesById = Maps.uniqueIndex(
-				orderDAO.retrieveOrderLinesByIds(orderLineIds.build()),
+				orderLineBL.getByIds(orderLineIds.build()),
 				orderLine -> OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
 		final Map<ReceiptScheduleId, I_M_ReceiptSchedule> receiptSchedulesById = receiptScheduleDAO.getByIds(receiptScheduleIds.build());
 		final Map<ShipmentScheduleId, I_M_ShipmentSchedule> shipmentSchedulesById = shipmentScheduleBL.getByIds(shipmentScheduleIds.build());

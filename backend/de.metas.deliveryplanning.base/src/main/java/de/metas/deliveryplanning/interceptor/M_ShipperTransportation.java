@@ -26,9 +26,9 @@ public class M_ShipperTransportation
 	@NonNull private final DeliveryPlanningService deliveryPlanningService;
 	@NonNull private final IEventBusFactory eventBusFactory;
 
-	private final IBPartnerStatisticsUpdater bpartnerStatisticsUpdater = Services.get(IBPartnerStatisticsUpdater.class);
+	@NonNull private final IBPartnerStatisticsUpdater bpartnerStatisticsUpdater = Services.get(IBPartnerStatisticsUpdater.class);
 
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@Init
 	public void onInit()
