@@ -269,7 +269,9 @@ Feature: A closed delivery planning is finished and nothing processes it any fur
     And the M_ShipperTransportation identified by deliveryInstructionCancel is reactivated
     And M_Delivery_Planning identified by planningCancel_2 is closed
 
-    # both are selected; only the open one is cancelled
+    # both are selected; only the open one is cancelled. Two independent guards keep the closed one out - it
+    # carries no release number any more (closing deallocated it) AND cancel skips a closed row - so breaking
+    # either one alone leaves this scenario green; breaking both cancels it and the quantity below goes to 0.
     When M_Delivery_Planning identified by planningCancel_1,planningCancel_2 is canceled
 
     Then validate M_Delivery_Planning:
