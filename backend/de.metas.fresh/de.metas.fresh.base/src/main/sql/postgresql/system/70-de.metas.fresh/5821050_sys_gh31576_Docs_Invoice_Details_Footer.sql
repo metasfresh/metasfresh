@@ -68,7 +68,7 @@ SELECT i.descriptionbottom,
        END                                                                                            AS deliveryviarule,
        report.getBPartner_CustomDocumentText(i.C_DocTypeTarget_ID, i.c_bpartner_id)                   AS AdditionalText,
        report.TaxNote(NULL, p_Invoice_ID, p_Language)                                                 AS taxnote,
-       de_metas_endcustomer_fresh_reports.Is_Advance_Payment_Invoice(i.C_Invoice_ID)                  AS is_advance_payment_invoice
+       de_metas_endcustomer_fresh_reports.Is_Advance_Payment_Invoice(i.C_Invoice_ID)                  AS isAdvancePayment
 FROM C_Invoice i
          LEFT OUTER JOIN C_PaymentTerm pt ON i.C_PaymentTerm_ID = pt.C_PaymentTerm_ID
          LEFT OUTER JOIN C_PaymentTerm_Trl ptt ON i.C_PaymentTerm_ID = ptt.C_PaymentTerm_ID AND ptt.AD_Language = p_Language
