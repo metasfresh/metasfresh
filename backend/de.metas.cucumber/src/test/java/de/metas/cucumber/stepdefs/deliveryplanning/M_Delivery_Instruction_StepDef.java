@@ -22,18 +22,17 @@
 
 package de.metas.cucumber.stepdefs.deliveryplanning;
 
-import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.shipment.M_ShipperTransportation_StepDefData;
 import de.metas.deliveryplanning.DeliveryPlanningList.AdmissibilityField;
 import de.metas.deliveryplanning.DeliveryPlanningService;
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -46,17 +45,13 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Delivery_Planning;
-import org.compiere.util.Env;
-
-import java.util.List;
-import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Generates / regenerates the delivery instruction ({@code M_ShipperTransportation}) for a delivery planning.
+ * Generates / regenerates the delivery instruction ({@code M_ShipperTransportation}) for a delivery planning, moves
+ * plannings on and off one, and drives its Complete / Re-Activate / Void document actions.
  * <p>
  * Loading and validating the resulting {@code M_ShipperTransportation} is handled by
  * {@code de.metas.cucumber.stepdefs.shipment.M_ShipperTransportation_StepDef}; the two step-defs share the same
@@ -68,11 +63,12 @@ public class M_Delivery_Instruction_StepDef
 {
 	private final M_ShipperTransportation_StepDefData deliveryInstructionTable;
 	private final M_Delivery_Planning_StepDefData deliveryPlanningTable;
+	private final DeliveryPlanningRejectionHelper rejectionHelper;
 
-	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
+	@NonNull private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
 
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
 	/**
 	 * Generates one delivery instruction ({@code M_ShipperTransportation}) for the given delivery planning, via
@@ -178,7 +174,7 @@ public class M_Delivery_Instruction_StepDef
 			final IQueryFilter<I_M_Delivery_Planning> selectionFilter = getQueryFilterFor(row);
 			final boolean isComplete = row.getAsOptionalBoolean("IsComplete").orElseFalse();
 
-			runExpectingRejectionIfAny(row, () -> {
+			rejectionHelper.runExpectingRejectionIfAny(row, () -> {
 				final ShipperTransportationId deliveryInstructionId = deliveryPlanningService.combine(selectionFilter, isComplete);
 
 				row.getAsOptionalIdentifier(I_M_Delivery_Planning.COLUMNNAME_M_ShipperTransportation_ID)
@@ -215,7 +211,7 @@ public class M_Delivery_Instruction_StepDef
 			final I_M_ShipperTransportation targetDeliveryInstruction = row.getAsIdentifier(I_M_Delivery_Planning.COLUMNNAME_M_ShipperTransportation_ID).lookupNotNullIn(deliveryInstructionTable);
 			final ShipperTransportationId targetDeliveryInstructionId = ShipperTransportationId.ofRepoId(targetDeliveryInstruction.getM_ShipperTransportation_ID());
 
-			runExpectingRejectionIfAny(row, () -> deliveryPlanningService.addTo(selectionFilter, targetDeliveryInstructionId));
+			rejectionHelper.runExpectingRejectionIfAny(row, () -> deliveryPlanningService.addTo(selectionFilter, targetDeliveryInstructionId));
 		});
 	}
 
@@ -243,58 +239,76 @@ public class M_Delivery_Instruction_StepDef
 		DataTableRows.of(dataTable).forEach(row -> {
 			final IQueryFilter<I_M_Delivery_Planning> selectionFilter = getQueryFilterFor(row);
 
-			runExpectingRejectionIfAny(row, () -> deliveryPlanningService.removeFrom(selectionFilter));
+			rejectionHelper.runExpectingRejectionIfAny(row, () -> deliveryPlanningService.removeFrom(selectionFilter));
 		});
 	}
 
 	/**
-	 * Runs the given action, and - when the row carries an {@code ErrorAdMessage} and/or {@code ErrorFields} -
-	 * asserts that it was REJECTED with that message instead of succeeding.
-	 * <p>
-	 * The expected text is resolved from the {@code AD_Message} through {@link IMsgBL} in the very language the
-	 * {@code AdempiereException} renders itself in ({@link Env#getAD_Language()}), so the assertion states which
-	 * message was expected rather than hard-coding one language's wording into the feature file. Only the part
-	 * before the message's first {@code {0}} placeholder is compared, since the parameters are runtime ids.
+	 * Drives a document action on the delivery instruction - the same {@code Complete} / {@code Re-Activate} /
+	 * {@code Void} buttons a planner presses on the instruction's own window, which is what makes the allocations
+	 * follow (or stay put).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When the M_ShipperTransportation identified by deliveryInstruction is voided
+	 * </pre>
 	 */
-	private void runExpectingRejectionIfAny(@NonNull final DataTableRow row, @NonNull final Runnable action)
+	@When("^the M_ShipperTransportation identified by (.*) is (completed|reactivated|voided)$")
+	public void deliveryInstruction_docAction(@NonNull final String deliveryInstructionIdentifier, @NonNull final String action)
 	{
-		final Optional<AdMessageKey> expectedAdMessage = row.getAsOptionalString("ErrorAdMessage")
-				.filter(Check::isNotBlank)
-				.map(AdMessageKey::of);
-		final List<String> expectedFields = row.getAsOptionalString("ErrorFields")
-				.filter(Check::isNotBlank)
-				.map(fields -> Splitter.on(",").trimResults().omitEmptyStrings().splitToList(fields))
-				.orElseGet(ImmutableList::of);
+		final I_M_ShipperTransportation deliveryInstruction = deliveryInstructionTable.get(deliveryInstructionIdentifier);
 
-		if (!expectedAdMessage.isPresent() && expectedFields.isEmpty())
-		{
-			action.run();
-			return;
-		}
+		processDeliveryInstruction(deliveryInstruction, StepDefDocAction.valueOf(action));
 
-		final Throwable thrown = catchThrowable(action::run);
-		assertThat(thrown).as("the action was expected to be rejected, but it succeeded").isInstanceOf(AdempiereException.class);
-
-		final String rejectionMessage = thrown.getMessage();
-		final String adLanguage = Env.getAD_Language();
-
-		expectedAdMessage.ifPresent(adMessage -> org.assertj.core.api.Assertions.assertThat(rejectionMessage)
-				.as("rejection message of %s", adMessage.toAD_Message())
-				.contains(textBeforeFirstParameter(msgBL.getMsg(adLanguage, adMessage))));
-
-		for (final String fieldName : expectedFields)
-		{
-			org.assertj.core.api.Assertions.assertThat(rejectionMessage)
-					.as("rejection message names the differing field %s", fieldName)
-					.contains(msgBL.getMsg(adLanguage, AdmissibilityField.valueOf(fieldName).getLabel()));
-		}
+		InterfaceWrapperHelper.refresh(deliveryInstruction);
 	}
 
-	@NonNull
-	private static String textBeforeFirstParameter(@NonNull final String adMessageText)
+	/**
+	 * Presses {@code Complete} on the delivery instruction expecting it to be REFUSED, and asserts which rejection
+	 * came back.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>ErrorAdMessage</b> — (optional) the {@code AD_Message} the completion is expected to be rejected with<br>
+	 *   <b>ErrorMessage</b> — (optional) the raw rejection text, {@code @token@}s included<br>
+	 * @cucumber.depends StepDefData: M_ShipperTransportation_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When completing the M_ShipperTransportation identified by deliveryInstruction is refused:
+	 *   | ErrorAdMessage                                                              |
+	 *   | de.metas.deliveryplanning.CompleteDeliveryInstruction.EmptyDeliveryInstruction |
+	 * </pre>
+	 */
+	@When("^completing the M_ShipperTransportation identified by (.*) is refused:$")
+	public void completing_deliveryInstruction_is_refused(@NonNull final String deliveryInstructionIdentifier, @NonNull final DataTable dataTable)
 	{
-		final int firstParameterIndex = adMessageText.indexOf('{');
-		return firstParameterIndex >= 0 ? adMessageText.substring(0, firstParameterIndex).trim() : adMessageText;
+		final I_M_ShipperTransportation deliveryInstruction = deliveryInstructionTable.get(deliveryInstructionIdentifier);
+
+		rejectionHelper.runExpectingRejectionIfAny(
+				DataTableRows.of(dataTable).singleRow(),
+				() -> processDeliveryInstruction(deliveryInstruction, StepDefDocAction.completed));
+
+		InterfaceWrapperHelper.refresh(deliveryInstruction);
+	}
+
+	private void processDeliveryInstruction(@NonNull final I_M_ShipperTransportation deliveryInstruction, @NonNull final StepDefDocAction action)
+	{
+		switch (action)
+		{
+			case completed:
+				documentBL.processEx(deliveryInstruction, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+				break;
+			case reactivated:
+				// a re-activated document lands In Progress, not back in Drafted - DocumentEngine#reActivateIt
+				documentBL.processEx(deliveryInstruction, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
+				break;
+			case voided:
+				documentBL.processEx(deliveryInstruction, IDocument.ACTION_Void, IDocument.STATUS_Voided);
+				break;
+			default:
+				throw new AdempiereException("Unsupported action for M_ShipperTransportation: " + action);
+		}
 	}
 
 	/**

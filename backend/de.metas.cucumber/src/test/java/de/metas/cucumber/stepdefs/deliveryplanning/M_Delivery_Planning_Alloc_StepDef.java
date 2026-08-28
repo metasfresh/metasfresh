@@ -62,7 +62,7 @@ public class M_Delivery_Planning_Alloc_StepDef
 	private final M_ShipperTransportation_StepDefData deliveryInstructionTable;
 	private final M_ShippingPackage_StepDefData shippingPackageTable;
 
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	/**
 	 * Asserts the COMPLETE set of active allocations of one delivery instruction, in {@code LineNo} order: the
@@ -74,18 +74,18 @@ public class M_Delivery_Planning_Alloc_StepDef
 	 * @cucumber.columns
 	 *   <b>M_Delivery_Planning_ID</b> — (required, identifier-ref) the planning this allocation belongs to<br>
 	 *   <b>LineNo</b> — (required) expected {@code LineNo}; the rows are given in ascending {@code LineNo} order<br>
-	 *   <b>OPT.M_Delivery_Planning_Alloc_ID</b> — (optional, identifier-ref) alias to store the allocation under<br>
-	 *   <b>OPT.M_ShippingPackage_ID</b> — (optional, identifier-ref) alias to store the allocation's shipping
+	 *   <b>M_Delivery_Planning_Alloc_ID</b> — (optional, identifier-ref) alias to store the allocation under<br>
+	 *   <b>M_ShippingPackage_ID</b> — (optional, identifier-ref) alias to store the allocation's shipping
 	 *   package under, for later {@code validate M_Shipping_Package} steps<br>
-	 *   <b>OPT.ActualLoadQty</b> — (optional) expected {@code ActualLoadQty} on the allocation's shipping package<br>
+	 *   <b>ActualLoadQty</b> — (optional) expected {@code ActualLoadQty} on the allocation's shipping package<br>
 	 * @cucumber.depends StepDefData: M_Delivery_Planning_StepDefData, M_ShipperTransportation_StepDefData,
 	 * M_Delivery_Planning_Alloc_StepDefData, M_ShippingPackage_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * Then the M_ShipperTransportation identified by deliveryInstruction holds exactly the following active M_Delivery_Planning_Alloc:
-	 *   | M_Delivery_Planning_ID | LineNo | OPT.M_ShippingPackage_ID |
-	 *   | deliveryPlanning_1     | 10     | shippingPackage_1        |
-	 *   | deliveryPlanning_2     | 20     | shippingPackage_2        |
+	 *   | M_Delivery_Planning_ID | LineNo | M_ShippingPackage_ID |
+	 *   | deliveryPlanning_1     | 10     | shippingPackage_1    |
+	 *   | deliveryPlanning_2     | 20     | shippingPackage_2    |
 	 * </pre>
 	 */
 	@Then("^the M_ShipperTransportation identified by (.*) holds exactly the following active M_Delivery_Planning_Alloc:$")
@@ -174,7 +174,7 @@ public class M_Delivery_Planning_Alloc_StepDef
 	 *   <b>M_Delivery_Planning_ID</b> — (required, identifier-ref) the allocated planning<br>
 	 *   <b>M_ShipperTransportation_ID</b> — (required, identifier-ref) the delivery instruction<br>
 	 *   <b>IsActive</b> — (required) expected {@code IsActive}: {@code false} for a retired allocation<br>
-	 *   <b>OPT.LineNo</b> — (optional) expected {@code LineNo}<br>
+	 *   <b>LineNo</b> — (optional) expected {@code LineNo}<br>
 	 * @cucumber.depends StepDefData: M_Delivery_Planning_StepDefData, M_ShipperTransportation_StepDefData
 	 * @cucumber.example
 	 * <pre>

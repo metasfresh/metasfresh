@@ -22,6 +22,8 @@
 
 package de.metas.cucumber.stepdefs.deliveryplanning;
 
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
@@ -79,7 +81,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class M_Delivery_Planning_StepDef
 {
-	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
+	@NonNull private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
 
 	private final M_Delivery_Planning_StepDefData deliveryPlanningTable;
 	private final C_Order_StepDefData orderTable;
@@ -90,8 +92,9 @@ public class M_Delivery_Planning_StepDef
 	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
 	private final M_Warehouse_StepDefData warehouseTable;
 	private final M_ShipperTransportation_StepDefData deliveryInstructionTable;
+	private final DeliveryPlanningRejectionHelper rejectionHelper;
 
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public M_Delivery_Planning_StepDef(
 			@NonNull final M_Delivery_Planning_StepDefData deliveryPlanningTable,
@@ -102,7 +105,8 @@ public class M_Delivery_Planning_StepDef
 			@NonNull final M_Shipper_StepDefData shipperTable,
 			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
 			@NonNull final M_Warehouse_StepDefData warehouseTable,
-			@NonNull final M_ShipperTransportation_StepDefData deliveryInstructionTable)
+			@NonNull final M_ShipperTransportation_StepDefData deliveryInstructionTable,
+			@NonNull final DeliveryPlanningRejectionHelper rejectionHelper)
 	{
 		this.deliveryPlanningTable = deliveryPlanningTable;
 		this.orderTable = orderTable;
@@ -113,6 +117,7 @@ public class M_Delivery_Planning_StepDef
 		this.bPartnerLocationTable = bPartnerLocationTable;
 		this.warehouseTable = warehouseTable;
 		this.deliveryInstructionTable = deliveryInstructionTable;
+		this.rejectionHelper = rejectionHelper;
 	}
 
 	/**
@@ -379,28 +384,63 @@ public class M_Delivery_Planning_StepDef
 		});
 	}
 
+	/**
+	 * Drives the close / re-open / cancel processes over the given selection, which - like the WebUI grid they are
+	 * launched from - may name SEVERAL plannings, comma-separated.
+	 */
 	@And("^M_Delivery_Planning identified by (.*) is (closed|opened|canceled)$")
-	public void delivery_Planning_action(@NonNull final String deliveryPlanningIdentifier, @NonNull final String action)
+	public void delivery_Planning_action(@NonNull final String deliveryPlanningIdentifiers, @NonNull final String action)
 	{
-		final I_M_Delivery_Planning deliveryPlanning = deliveryPlanningTable.get(deliveryPlanningIdentifier);
-		assertThat(deliveryPlanning).isNotNull();
+		final IQueryFilter<I_M_Delivery_Planning> selectionFilter = getQueryFilterFor(deliveryPlanningIdentifiers);
 
 		switch (StepDefDocAction.valueOf(action))
 		{
 			case closed:
-				deliveryPlanningService.closeSelectedDeliveryPlannings(getQueryFilterFor(deliveryPlanningIdentifier));
+				deliveryPlanningService.closeSelectedDeliveryPlannings(selectionFilter);
 				break;
 			case opened:
-				deliveryPlanningService.reOpenSelectedDeliveryPlannings(getQueryFilterFor(deliveryPlanningIdentifier));
+				deliveryPlanningService.reOpenSelectedDeliveryPlannings(selectionFilter);
 				break;
 			case canceled:
-				deliveryPlanningService.cancelDelivery(getQueryFilterFor(deliveryPlanningIdentifier));
+				deliveryPlanningService.cancelDelivery(selectionFilter);
 				break;
 			default:
 				throw new AdempiereException("Unsupported action for M_Delivery_Planning!")
 						.appendParametersToMessage()
-						.setParameter(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanning.getM_Delivery_Planning_ID());
+						.setParameter(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningIdentifiers);
 		}
+	}
+
+	/**
+	 * Presses {@code Close} / {@code Re-Open} on the delivery planning expecting it to be REFUSED, and asserts which
+	 * rejection came back - the same {@link DeliveryPlanningService} entry points the
+	 * {@code M_Delivery_Planning_Close} / {@code M_Delivery_Planning_ReOpen} processes drive.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>ErrorAdMessage</b> — (optional) the {@code AD_Message} the action is expected to be rejected with<br>
+	 *   <b>ErrorMessage</b> — (optional) the raw rejection text, {@code @token@}s included<br>
+	 * @cucumber.depends StepDefData: M_Delivery_Planning_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When closing M_Delivery_Planning identified by deliveryPlanning is refused:
+	 *   | ErrorMessage  |
+	 *   | @Closed@=@Y@  |
+	 * </pre>
+	 */
+	@When("^(closing|reopening) M_Delivery_Planning identified by (.*) is refused:$")
+	public void delivery_Planning_action_refused(
+			@NonNull final String action,
+			@NonNull final String deliveryPlanningIdentifier,
+			@NonNull final DataTable dataTable)
+	{
+		final IQueryFilter<I_M_Delivery_Planning> selectionFilter = getQueryFilterFor(deliveryPlanningIdentifier);
+
+		final Runnable deliveryPlanningAction = "closing".equals(action)
+				? () -> deliveryPlanningService.closeSelectedDeliveryPlannings(selectionFilter)
+				: () -> deliveryPlanningService.reOpenSelectedDeliveryPlannings(selectionFilter);
+
+		rejectionHelper.runExpectingRejectionIfAny(DataTableRows.of(dataTable).singleRow(), deliveryPlanningAction);
 	}
 
 	/**
@@ -513,13 +553,21 @@ public class M_Delivery_Planning_StepDef
 		});
 	}
 
+	/**
+	 * The grid selection close / re-open / cancel receive: the plannings named in the given comma-separated
+	 * identifier list, because all three are multi-row selection processes.
+	 */
 	@NonNull
-	private IQueryFilter<I_M_Delivery_Planning> getQueryFilterFor(@NonNull final String deliveryPlanningIdentifier)
+	private IQueryFilter<I_M_Delivery_Planning> getQueryFilterFor(@NonNull final String deliveryPlanningIdentifiers)
 	{
-		final I_M_Delivery_Planning deliveryPlanning = deliveryPlanningTable.get(deliveryPlanningIdentifier);
-		assertThat(deliveryPlanning).isNotNull();
+		final ImmutableList<Integer> deliveryPlanningIds = Splitter.on(",").trimResults().omitEmptyStrings().splitToList(deliveryPlanningIdentifiers)
+				.stream()
+				.map(deliveryPlanningTable::get)
+				.map(I_M_Delivery_Planning::getM_Delivery_Planning_ID)
+				.collect(ImmutableList.toImmutableList());
+		assertThat(deliveryPlanningIds).as("M_Delivery_Planning identified by %s", deliveryPlanningIdentifiers).isNotEmpty();
 
 		return queryBL.createCompositeQueryFilter(I_M_Delivery_Planning.class)
-				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanning.getM_Delivery_Planning_ID());
+				.addInArrayFilter(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningIds);
 	}
 }
