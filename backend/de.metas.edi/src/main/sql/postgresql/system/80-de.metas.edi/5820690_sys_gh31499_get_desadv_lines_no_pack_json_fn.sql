@@ -20,6 +20,8 @@
  * #L%
  */
 
+-- Source DDL: backend/de.metas.edi/src/main/sql/postgresql/ddl/functions/desadv_json/get_desadv_lines_no_pack_json_fn.sql
+
 -- Function for desadv lines with no pack.
 -- Builds the JSON for desadv lines that have no edi_desadv_pack_item: both unshipped lines
 -- (must still appear in DESADV with qty 0) and shipped-but-not-packed lines.
