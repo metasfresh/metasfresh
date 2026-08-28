@@ -120,16 +120,16 @@ Feature: Several delivery plannings on one delivery instruction
     And the order identified by orderMix_2 is completed
 
     Then after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier          | C_OrderLine_ID.Identifier | IsToRecompute |
-      | shipmentScheduleMix_1 | orderLineMix_1          | N             |
-      | shipmentScheduleMix_2 | orderLineMix_2          | N             |
+      | Identifier            | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentScheduleMix_1 | orderLineMix_1            | N             |
+      | shipmentScheduleMix_2 | orderLineMix_2            | N             |
     And after not more than 60s, load created M_Delivery_Planning:
       | M_Delivery_Planning_ID | C_OrderLine_ID |
       | planningMix_1          | orderLineMix_1 |
       | planningMix_2          | orderLineMix_2 |
 
     When combine M_Delivery_Planning into one M_ShipperTransportation:
-      | M_Delivery_Planning_ID      | ErrorAdMessage                                                                | ErrorFields               |
+      | M_Delivery_Planning_ID      | ErrorAdMessage                                                                 | ErrorFields               |
       | planningMix_1,planningMix_2 | de.metas.deliveryplanning.CombineIntoDeliveryInstruction.IncompatibleSelection | Forwarder,DeliveryAddress |
 
     # refused for the whole selection: neither planning ends up on an instruction
@@ -203,9 +203,9 @@ Feature: Several delivery plannings on one delivery instruction
       | planningAdd_4          | 10     | 2             |
       | planningAdd_3          | 20     | 2             |
     And validate M_Delivery_Planning_Alloc:
-      | M_Delivery_Planning_ID | M_ShipperTransportation_ID | IsActive | OPT.LineNo |
-      | planningAdd_3          | deliveryInstructionAdd_A   | false    | 30         |
-      | planningAdd_3          | deliveryInstructionAdd_B   | true     | 20         |
+      | M_Delivery_Planning_ID | M_ShipperTransportation_ID | IsActive | LineNo |
+      | planningAdd_3          | deliveryInstructionAdd_A   | false    | 30     |
+      | planningAdd_3          | deliveryInstructionAdd_B   | true     | 20     |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | M_ShipperTransportation_ID |
       | planningAdd_3          | 10         | 10           | Outgoing           | deliveryInstructionAdd_B   |
@@ -253,7 +253,7 @@ Feature: Several delivery plannings on one delivery instruction
 
     # ADD is refused for the whole selection, not partially performed
     When add M_Delivery_Planning to M_ShipperTransportation:
-      | M_ShipperTransportation_ID | M_Delivery_Planning_ID | ErrorAdMessage                                                      |
+      | M_ShipperTransportation_ID | M_Delivery_Planning_ID | ErrorAdMessage                                                       |
       | deliveryInstructionDraft   | planningDone_2         | de.metas.deliveryplanning.DeliveryInstruction.OnCompletedInstruction |
 
     Then the M_ShipperTransportation identified by deliveryInstructionDone holds exactly the following active M_Delivery_Planning_Alloc:
@@ -269,7 +269,7 @@ Feature: Several delivery plannings on one delivery instruction
 
     # and so is REMOVE
     When remove M_Delivery_Planning from M_ShipperTransportation:
-      | M_Delivery_Planning_ID | ErrorAdMessage                                                      |
+      | M_Delivery_Planning_ID | ErrorAdMessage                                                       |
       | planningDone_2         | de.metas.deliveryplanning.DeliveryInstruction.OnCompletedInstruction |
 
     Then the M_ShipperTransportation identified by deliveryInstructionDone holds exactly the following active M_Delivery_Planning_Alloc:
@@ -319,8 +319,8 @@ Feature: Several delivery plannings on one delivery instruction
       | planningRemove_1       | 10     |
       | planningRemove_3       | 30     |
     And validate M_Delivery_Planning_Alloc:
-      | M_Delivery_Planning_ID | M_ShipperTransportation_ID | IsActive | OPT.LineNo |
-      | planningRemove_2       | deliveryInstructionRemove  | false    | 20         |
+      | M_Delivery_Planning_ID | M_ShipperTransportation_ID | IsActive | LineNo |
+      | planningRemove_2       | deliveryInstructionRemove  | false    | 20     |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | M_ShipperTransportation_ID |
       | planningRemove_2       | 9          | 9            | Outgoing           | null                       |
@@ -391,8 +391,8 @@ Feature: Several delivery plannings on one delivery instruction
 
     # COMBINE: same default, same option
     And combine M_Delivery_Planning into one M_ShipperTransportation:
-      | M_ShipperTransportation_ID     | M_Delivery_Planning_ID          |
-      | deliveryInstructionCombDraft   | planningDraft_3,planningDraft_4 |
+      | M_ShipperTransportation_ID   | M_Delivery_Planning_ID          |
+      | deliveryInstructionCombDraft | planningDraft_3,planningDraft_4 |
     And combine M_Delivery_Planning into one M_ShipperTransportation:
       | M_ShipperTransportation_ID  | M_Delivery_Planning_ID          | IsComplete |
       | deliveryInstructionCombDone | planningDraft_5,planningDraft_6 | true       |
@@ -403,3 +403,10 @@ Feature: Several delivery plannings on one delivery instruction
       | deliveryInstructionGenDone            | shipper_DHL             | customer                       | customerLocation               | CO            |
       | deliveryInstructionCombDraft          | shipper_DHL             | customer                       | customerLocation               | DR            |
       | deliveryInstructionCombDone           | shipper_DHL             | customer                       | customerLocation               | CO            |
+
+    # and a draft is what a planner who ticks nothing gets: the completion flag both processes offer is a
+    # dictionary default, so the code honouring the flag it is handed says nothing about it on its own
+    And validate AD_Process_Para:
+      | Classname                                                                           | ColumnName | DefaultValue |
+      | de.metas.deliveryplanning.process.M_Delivery_Planning_GenerateDeliveryInstruction    | IsComplete | N            |
+      | de.metas.deliveryplanning.process.M_Delivery_Planning_CombineIntoDeliveryInstruction | IsComplete | N            |
