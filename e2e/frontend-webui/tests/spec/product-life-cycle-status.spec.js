@@ -1,36 +1,21 @@
 /**
- * M_Product.ProductLifeCycleStatus (BBS-Status) is NOT rendered in the vanilla Product form
+ * M_Product.ProductLifeCycleStatus (BBS-Status) is deliberately NOT part of the vanilla Product
+ * window (AD_Window_ID=140, AD_Tab_ID=180). This spec guards that: the field must be absent from
+ * the form, from the grid, and from the filter bar.
  *
- * Scope: guard the deliberate decision that the life-cycle status field is not offered in the
- * standard Product FORM (AD_Window_ID=140, AD_Tab_ID=180):
- *   1. The field is not rendered in the Product form
+ * Migration 5820370 hid it there on purpose -- the window already carries an "Auslaufprodukt"
+ * (M_Product.Discontinued) checkbox that reads like the same control, and the enforcement is wanted
+ * by one customer, whose own repo puts the field on the window that customer actually opens. 5820780
+ * then removed the leftover filter entry. The column, its reference list and every backend guard stay
+ * in core, covered by de.metas.cucumber productLifeCycleStatus.feature and ProductBL_assertAllowed_Test
+ * / PickHUCommand_LifeCycleStatus_Test.
  *
- * WHY THIS TEST INVERTED
- * ----------------------
- * It previously asserted the opposite — field visible, selectable, persisted, grid column + filter.
- * Migration 5820370 hides the field on window 140 on purpose: the window already carries an
- * "Auslaufprodukt" (M_Product.Discontinued) checkbox that reads like the same control, and the
- * life-cycle enforcement is wanted by one customer, whose own repo adds the field to the window
- * that customer actually opens. Derivation of the new expectations (per
- * `metasfresh-test-integrity` § "Test Wiring Drift", step 3):
- *   - 5820370 sets AD_UI_Element 652772 IsDisplayed='N' => the form must NOT render the field
- * The observed CI failure matched that derivation exactly (the old step 1 timed out waiting for a
- * field container that is no longer rendered), so the assertion is updated rather than the change.
+ * The filter assertion guards AD_Field.IsFilterField (window-scoped), NOT AD_Column.IsSelectionColumn
+ * (table-level, still on so the customer's own window keeps its quick filter).
  *
- * The grid column and the filter parameter are LOGGED, NOT ASSERTED, because a local run against a
- * DB with 5820370 applied showed the grid layout of window 140 STILL lists ProductLifeCycleStatus
- * even with both IsDisplayedGrid='N' and IsDisplayed='N' on the UI element (and still lists it with
- * that element deactivated). So the grid descriptor is not driven by the flags this migration sets,
- * and the filter is column-driven (AD_Column.IsSelectionColumn, migration 5819940, untouched here).
- * Neither is part of this change's contract; asserting either way would be a guess.
- *
- * WHERE THE REMAINING BEHAVIOUR IS COVERED
- * ----------------------------------------
- * The column, its reference list and every backend guard stay in core, and are exercised by
- * `de.metas.cucumber` productLifeCycleStatus.feature (order-line block + the completion re-checks)
- * and by ProductBL_assertAllowed_Test / PickHUCommand_LifeCycleStatus_Test. The field's visibility
- * in the customer's own Product window cannot be tested here — that window does not exist on a core
- * DB — so no automated core check covers it.
+ * Running this locally: reset the SqlViewLayouts and SqlViewBindings caches first, or the app server
+ * keeps serving the pre-migration layout. Neither cache is keyed to a table, so no AD_* change
+ * invalidates them and an unreset run will contradict the migration.
  */
 
 import { expect } from '@playwright/test';
@@ -114,16 +99,19 @@ removed (migration 5820370).
       );
     });
 
-    // === STEP 2: record what the list view still exposes (observational) ===
-    await test.step('Record the Product list view grid columns and filter parameters', async () => {
+    // === STEP 2: the grid must not list the column, the filter bar must not offer it ===
+    await test.step('Assert ProductLifeCycleStatus is absent from the Product grid and filters', async () => {
       const layout = await getViewLayout(PRODUCT_WINDOW_ID, 'grid');
 
-      // Both LOGGED, not asserted — see the header. Verified locally: the grid layout still lists
-      // the column with 5820370 applied, so neither observation is part of this change's contract.
       const columnNames = getViewLayoutColumnNames(layout);
       console.log(`[INFO] Grid columns of window ${PRODUCT_WINDOW_ID}: ${JSON.stringify(columnNames)}`);
+      expect(columnNames, `${FIELD_NAME} must not be a grid column of window ${PRODUCT_WINDOW_ID}`)
+          .not.toContain(FIELD_NAME);
+
       const filterParameterNames = getViewLayoutFilterParameterNames(layout);
       console.log(`[INFO] Filter parameters of window ${PRODUCT_WINDOW_ID}: ${JSON.stringify(filterParameterNames)}`);
+      expect(filterParameterNames, `${FIELD_NAME} must not be a filter of window ${PRODUCT_WINDOW_ID}`)
+          .not.toContain(FIELD_NAME);
     });
 
     console.log('[PASS] ProductLifeCycleStatus is not rendered in the vanilla Product form.');

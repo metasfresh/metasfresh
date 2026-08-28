@@ -318,6 +318,29 @@ public interface I_M_Shipper
 	String COLUMNNAME_PickupTimeTo = "PickupTimeTo";
 
 	/**
+	 * Set Priority.
+	 * Priority of a document
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPriorityRule (@Nullable java.lang.String PriorityRule);
+
+	/**
+	 * Get Priority.
+	 * Priority of a document
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPriorityRule();
+
+	ModelColumn<I_M_Shipper, Object> COLUMN_PriorityRule = new ModelColumn<>(I_M_Shipper.class, "PriorityRule", null);
+	String COLUMNNAME_PriorityRule = "PriorityRule";
+
+	/**
 	 * Set Shipper Gateway.
 	 *
 	 * <br>Type: List
