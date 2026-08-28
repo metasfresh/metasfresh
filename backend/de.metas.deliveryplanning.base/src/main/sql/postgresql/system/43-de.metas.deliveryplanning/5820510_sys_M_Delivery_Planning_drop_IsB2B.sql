@@ -85,7 +85,12 @@ UPDATE M_Delivery_Planning
 --    row this chain fails to reach -- an override window's own AD_Field, or a
 --    user's saved sort/personalisation -- makes the DELETE FROM AD_Column below
 --    violate ad_column_field and aborts the entire migration run, this issue's
---    later scripts included. Anchoring on the column removes the need to know.
+--    later scripts included. Anchoring on the column removes the need to know,
+--    for the AD_Field chain. It does not make the column delete unconditionally
+--    safe: 44 FK constraints point at AD_Column, 38 of them NO ACTION, and some
+--    of those tables are written at runtime too (AD_Column_Access, AD_Find,
+--    AD_Field_ContextMenu.AD_Column_ID). No core script cleans them either, so
+--    this narrows the exposure to the AD_Field side rather than closing it.
 --    Same shape as 5820850 and 5820940 on this branch.
 --    AD_Element 581680 and AD_Process_Para 542516 are left alone (see header).
 -- ===========================================================================
@@ -133,11 +138,12 @@ DELETE FROM AD_Column WHERE AD_Column_ID = 585006
 --     -- expect 5
 -- (b) SELECT count(*) FROM M_Delivery_Planning WHERE IsB2B='Y';
 --     -- must ERROR: column "isb2b" does not exist
--- (c) SELECT count(*) FROM AD_Field f JOIN AD_Column c ON c.AD_Column_ID=f.AD_Column_ID
---      WHERE c.AD_Column_ID=585006;
---     -- expect 0
--- (d) SELECT count(*) FROM AD_UI_Element ue WHERE ue.AD_Field_ID IN (708077)
---        OR ue.Labels_Selector_Field_ID IN (708077);
+-- (c) SELECT count(*) FROM AD_Field WHERE AD_Column_ID=585006;
+--     -- expect 0. Deliberately not joined to AD_Column: a join returns 0 as soon as the column row
+--     -- is gone, whether or not orphan fields remain, which is the case worth catching.
+-- (d) SELECT count(*) FROM AD_UI_Element ue
+--      WHERE ue.AD_Field_ID IN (SELECT AD_Field_ID FROM AD_Field WHERE AD_Column_ID=585006)
+--         OR ue.Labels_Selector_Field_ID IN (SELECT AD_Field_ID FROM AD_Field WHERE AD_Column_ID=585006);
 --     -- expect 0
 -- (e) SELECT AD_Element_ID, IsActive FROM AD_Element WHERE AD_Element_ID=581680;
 --     -- still present, IsActive='Y'
