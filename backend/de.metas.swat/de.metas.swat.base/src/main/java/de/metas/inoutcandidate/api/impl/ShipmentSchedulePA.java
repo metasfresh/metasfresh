@@ -27,6 +27,7 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
+import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -251,6 +252,18 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_Processed, false)
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_C_Order_ID, orderId)
+				.create()
+				.idsAsSet(ShipmentScheduleId::ofRepoId);
+	}
+
+	@Override
+	public Set<ShipmentScheduleId> retrieveUnprocessedIdsByShipperId(@NonNull final ShipperId shipperId)
+	{
+		return queryBL
+				.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_Processed, false)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_M_Shipper_ID, shipperId)
 				.create()
 				.idsAsSet(ShipmentScheduleId::ofRepoId);
 	}
