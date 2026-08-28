@@ -26,17 +26,27 @@
 -- IDs: only AD_MigrationScript (5820510, from ID server) is needed -- this script only removes AD
 -- rows, it creates none.
 --
--- Dependency sweep of the column before dropping it (live DB, deep_tundra_uat_2):
+-- Dependency sweep of the column before dropping it (live DB, deep_tundra_uat_2) -- a floor, not a
+-- ceiling, which is exactly why step 3 is written so its answer does not have to be right:
 --   AD_Column       585006  M_Delivery_Planning.IsB2B, AD_Element 581680
 --   AD_Column_Trl   4 rows (de_CH / de_DE / en_US / fr_CH)
 --   AD_Field        708077  tab 546674 (M_Delivery_Planning window 541632)
 --   AD_Field_Trl    4 rows (de_CH / de_DE / en_US / fr_CH)
 --   AD_Element_Link 1012714 (field 708077 <-> element 581680)
---   AD_UI_Element   613483 (field 708077); no AD_UI_ElementField rows reference it
---   AD_Field_ContextMenu / AD_UserDef_Field / AD_User_SortPref_Line / any
---     AD_UI_Element.Labels_Selector_Field_ID: 0 rows each
+--   AD_UI_Element   613483 (field 708077)
+--   AD_UI_ElementField / AD_Field_ContextMenu / AD_UserDef_Field / AD_User_SortPref_Line / any
+--     AD_UI_Element.Labels_Selector_Field_ID: 0 rows on THIS stack
 --   pg_views / pg_proc / AD_Val_Rule.code / AD_Column.ColumnSQL / pg_indexes / pg_matviews: no
 --     hit for 'isb2b' anywhere in the live DB
+--
+-- Two independent reasons those zeroes say nothing about a production instance:
+--   * An override window over AD_Window 541632 would hold its OWN AD_Field row for this column.
+--     Whether one exists is an open, unproven question on this branch (see 5820480 / 5820610):
+--     neither a local DB nor a code search can rule an override out.
+--   * AD_UserDef_Field, AD_User_SortPref_Line and AD_Field_ContextMenu rows are written at RUNTIME,
+--     by users personalising or sorting that grid column -- never by a migration. A scrambled dev
+--     stack legitimately holds zero where production holds many, and for these three tables even a
+--     customer-faithful DB is only a snapshot of the moment it was taken.
 --
 -- Explicitly NOT touched -- AD_Element 581680 stays active (still referenced by AD_Process_Para
 -- 542516), and 542516 itself stays active. It is a parameter of process 585192 "Generate Goods
@@ -68,18 +78,48 @@ UPDATE M_Delivery_Planning
    AND IsB2B = 'Y';
 
 -- ===========================================================================
--- 3. Remove the AD rows that reference the column: the field, its
---    translations, its element link, its UI element -- then the column
---    itself. AD_Element 581680 and AD_Process_Para 542516 are left alone
---    (see header).
+-- 3. Remove the AD rows that reference the column, then the column itself.
+--    Anchored on AD_Column_ID, never on the literal AD_Field_ID 708077: eight
+--    FK constraints point at AD_Field and only two of them cascade
+--    (AD_Element_Link, AD_Field_Trl). The other six are NO ACTION, so a single
+--    row this chain fails to reach -- an override window's own AD_Field, or a
+--    user's saved sort/personalisation -- makes the DELETE FROM AD_Column below
+--    violate ad_column_field and aborts the entire migration run, this issue's
+--    later scripts included. Anchoring on the column removes the need to know.
+--    Same shape as 5820850 and 5820940 on this branch.
+--    AD_Element 581680 and AD_Process_Para 542516 are left alone (see header).
 -- ===========================================================================
-DELETE FROM AD_Field_Trl    WHERE AD_Field_ID = 708077;
-DELETE FROM AD_Element_Link WHERE AD_Field_ID = 708077;
-DELETE FROM AD_UI_Element   WHERE AD_Field_ID = 708077;
-DELETE FROM AD_Field        WHERE AD_Field_ID = 708077;
+DELETE FROM AD_UI_Element WHERE AD_Field_ID IN
+    (SELECT AD_Field_ID FROM AD_Field WHERE AD_Column_ID = 585006)
+;
+DELETE FROM AD_UI_Element WHERE Labels_Selector_Field_ID IN
+    (SELECT AD_Field_ID FROM AD_Field WHERE AD_Column_ID = 585006)
+;
+DELETE FROM AD_Element_Link WHERE AD_Field_ID IN
+    (SELECT AD_Field_ID FROM AD_Field WHERE AD_Column_ID = 585006)
+;
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID IN
+    (SELECT AD_Field_ID FROM AD_Field WHERE AD_Column_ID = 585006)
+;
+DELETE FROM AD_Field_ContextMenu WHERE AD_Field_ID IN
+    (SELECT AD_Field_ID FROM AD_Field WHERE AD_Column_ID = 585006)
+;
+DELETE FROM AD_UI_ElementField WHERE AD_Field_ID IN
+    (SELECT AD_Field_ID FROM AD_Field WHERE AD_Column_ID = 585006)
+;
+DELETE FROM AD_UserDef_Field WHERE AD_Field_ID IN
+    (SELECT AD_Field_ID FROM AD_Field WHERE AD_Column_ID = 585006)
+;
+DELETE FROM AD_User_SortPref_Line WHERE AD_Field_ID IN
+    (SELECT AD_Field_ID FROM AD_Field WHERE AD_Column_ID = 585006)
+;
+DELETE FROM AD_Field WHERE AD_Column_ID = 585006
+;
 
-DELETE FROM AD_Column_Trl WHERE AD_Column_ID = 585006;
-DELETE FROM AD_Column     WHERE AD_Column_ID = 585006;
+DELETE FROM AD_Column_Trl WHERE AD_Column_ID = 585006
+;
+DELETE FROM AD_Column WHERE AD_Column_ID = 585006
+;
 
 -- ===========================================================================
 -- 4. Drop the physical column
@@ -96,7 +136,8 @@ DELETE FROM AD_Column     WHERE AD_Column_ID = 585006;
 -- (c) SELECT count(*) FROM AD_Field f JOIN AD_Column c ON c.AD_Column_ID=f.AD_Column_ID
 --      WHERE c.AD_Column_ID=585006;
 --     -- expect 0
--- (d) SELECT count(*) FROM AD_UI_Element WHERE AD_Field_ID=708077;
+-- (d) SELECT count(*) FROM AD_UI_Element ue WHERE ue.AD_Field_ID IN (708077)
+--        OR ue.Labels_Selector_Field_ID IN (708077);
 --     -- expect 0
 -- (e) SELECT AD_Element_ID, IsActive FROM AD_Element WHERE AD_Element_ID=581680;
 --     -- still present, IsActive='Y'
