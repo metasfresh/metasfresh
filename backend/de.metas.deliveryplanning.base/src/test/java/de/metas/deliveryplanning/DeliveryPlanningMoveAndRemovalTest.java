@@ -371,6 +371,22 @@ class DeliveryPlanningMoveAndRemovalTest
 	}
 
 	@Test
+	@DisplayName("add-to stamps the moved planning's C_Order_ID onto the new shipping package it creates on the target")
+	void addToStampsThePlanningsOrderIdOntoTheNewShippingPackage()
+	{
+		final ShipperTransportationId target = draftDeliveryInstruction("TARGET-8");
+		final I_M_Delivery_Planning moving = deliveryPlanningWithOrderDerivedDates(Timestamp.valueOf("2026-03-01 00:00:00"));
+		final int orderId = moving.getC_Order_ID();
+
+		deliveryPlanningService.addTo(selectionOf(moving), target);
+
+		final int shippingPackageId = allocationOf(moving).getM_ShippingPackage_ID();
+		assertThat(InterfaceWrapperHelper.load(shippingPackageId, I_M_ShippingPackage.class).getC_Order_ID())
+				.as("the planning's own C_Order_ID must land on the package add-to creates for it")
+				.isEqualTo(orderId);
+	}
+
+	@Test
 	@DisplayName("add-to is a no-op for a planning already on the target - not a delete and re-create")
 	void addToLeavesAPlanningAlreadyOnTheTargetAlone()
 	{

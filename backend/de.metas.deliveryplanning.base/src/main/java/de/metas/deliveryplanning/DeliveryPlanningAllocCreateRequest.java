@@ -22,6 +22,7 @@
 
 package de.metas.deliveryplanning;
 
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -54,6 +55,13 @@ public class DeliveryPlanningAllocCreateRequest
 	@Nullable String batchNo;
 
 	@Nullable OrderLineId orderLineId;
+
+	/**
+	 * The order behind this planning's allocation, resolved by the caller from {@code M_Delivery_Planning.C_Order_ID}
+	 * - never derived here, so it lands on the created {@code M_ShippingPackage} exactly as the caller resolved it,
+	 * including {@code null} for a planning that genuinely has no order.
+	 */
+	@Nullable OrderId orderId;
 
 	boolean toBeFetched;
 

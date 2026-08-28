@@ -27,6 +27,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocTypeId;
 import de.metas.document.dimension.Dimension;
 import de.metas.incoterms.IncotermsId;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -96,6 +97,13 @@ public class DeliveryInstructionCreateRequest
 	@NonNull Quantity qtyDischarged;
 
 	@Nullable OrderLineId orderLineId;
+
+	/**
+	 * The order behind this planning's allocation, resolved by the caller from {@code M_Delivery_Planning.C_Order_ID}
+	 * - never derived here, so it lands on the created {@code M_ShippingPackage} exactly as the caller resolved it,
+	 * including {@code null} for a planning that genuinely has no order.
+	 */
+	@Nullable OrderId orderId;
 
 	@NonNull DeliveryPlanningId deliveryPlanningId;
 

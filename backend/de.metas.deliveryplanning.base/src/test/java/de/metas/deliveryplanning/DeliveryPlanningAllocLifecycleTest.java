@@ -25,6 +25,7 @@ package de.metas.deliveryplanning;
 import com.google.common.collect.ImmutableList;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
+import de.metas.order.OrderId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.model.I_M_ShipperTransportation;
@@ -140,6 +141,41 @@ class DeliveryPlanningAllocLifecycleTest
 		assertThat(allocations).hasSize(2);
 		assertThat(allocations).allSatisfy(alloc -> assertThat(alloc.getM_ShippingPackage_ID()).isGreaterThan(0));
 		assertThat(allocations.stream().map(I_M_Delivery_Planning_Alloc::getM_ShippingPackage_ID)).doesNotHaveDuplicates();
+	}
+
+	@Test
+	@DisplayName("the request's orderId lands on the shipping package created for it - unset when the request carries none")
+	void createStampsTheRequestsOrderIdOntoItsShippingPackage()
+	{
+		final ShipperTransportationId deliveryInstructionId = createDeliveryInstruction(DocStatus.Drafted, false);
+		final OrderId orderId = OrderId.ofRepoId(540099);
+
+		final DeliveryPlanningId withOrderPlanningId = createDeliveryPlanning();
+		final DeliveryPlanningId withoutOrderPlanningId = createDeliveryPlanning();
+
+		deliveryPlanningRepository.createAllocations(deliveryInstructionId, ImmutableList.of(
+				DeliveryPlanningAllocCreateRequest.builder()
+						.deliveryPlanningId(withOrderPlanningId)
+						.productId(ProductId.ofRepoId(540010))
+						.qtyLoaded(Quantity.of(BigDecimal.TEN, uom))
+						.qtyDischarged(Quantity.of(BigDecimal.ONE, uom))
+						.orderId(orderId)
+						.build(),
+				allocRequestFor(withoutOrderPlanningId)));
+
+		final I_M_Delivery_Planning_Alloc withOrderAlloc = allAllocations().stream()
+				.filter(alloc -> alloc.getM_Delivery_Planning_ID() == withOrderPlanningId.getRepoId())
+				.findFirst().orElseThrow(() -> new AssertionError("no allocation for withOrderPlanningId"));
+		final I_M_Delivery_Planning_Alloc withoutOrderAlloc = allAllocations().stream()
+				.filter(alloc -> alloc.getM_Delivery_Planning_ID() == withoutOrderPlanningId.getRepoId())
+				.findFirst().orElseThrow(() -> new AssertionError("no allocation for withoutOrderPlanningId"));
+
+		assertThat(InterfaceWrapperHelper.load(withOrderAlloc.getM_ShippingPackage_ID(), I_M_ShippingPackage.class).getC_Order_ID())
+				.as("the request's orderId must land on the package it created")
+				.isEqualTo(orderId.getRepoId());
+		assertThat(InterfaceWrapperHelper.load(withoutOrderAlloc.getM_ShippingPackage_ID(), I_M_ShippingPackage.class).getC_Order_ID())
+				.as("a request carrying no orderId must not fabricate one on the package")
+				.isLessThanOrEqualTo(0);
 	}
 
 	@Test

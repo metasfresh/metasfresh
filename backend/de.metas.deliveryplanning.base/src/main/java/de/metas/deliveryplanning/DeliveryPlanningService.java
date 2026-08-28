@@ -782,6 +782,7 @@ public class DeliveryPlanningService
 				.qtyLoaded(Quantity.of(deliveryPlanningRecord.getPlannedLoadedQuantity(), uomToUse))
 				.qtyDischarged(Quantity.of(deliveryPlanningRecord.getPlannedDischargeQuantity(), uomToUse))
 				.orderLineId(OrderLineId.ofRepoIdOrNull(deliveryPlanningRecord.getC_OrderLine_ID()))
+				.orderId(OrderId.ofRepoIdOrNull(deliveryPlanningRecord.getC_Order_ID()))
 				.deliveryPlanningId(deliveryPlanningId)
 				.dimension(deliveryPlanningDimension)
 				.build();
@@ -1178,6 +1179,7 @@ public class DeliveryPlanningService
 				.qtyDischarged(Quantity.of(deliveryPlanningRecord.getPlannedDischargeQuantity(), uomToUse))
 				.batchNo(deliveryPlanningRecord.getBatch())
 				.orderLineId(OrderLineId.ofRepoIdOrNull(deliveryPlanningRecord.getC_OrderLine_ID()))
+				.orderId(OrderId.ofRepoIdOrNull(deliveryPlanningRecord.getC_Order_ID()))
 				.toBeFetched(DeliveryPlanningRepository.extractTransportDirection(deliveryPlanningRecord).hasReceipt())
 				// the planning's own dates, so the instruction's fill-if-empty defaulting needs no second load
 				.etd(deliveryPlanningRecord.getETD())

@@ -28,9 +28,11 @@ import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.notification.INotificationBL;
+import de.metas.order.OrderId;
 import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -178,6 +180,14 @@ class DeliveryPlanningGenerateCompletionTest
 		return InterfaceWrapperHelper.load(shipperTransportationId, I_M_ShipperTransportation.class).getDocStatus();
 	}
 
+	private I_M_ShippingPackage seedShippingPackageOf(final int shipperTransportationId)
+	{
+		return queryBL.createQueryBuilder(I_M_ShippingPackage.class)
+				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID, shipperTransportationId)
+				.create()
+				.firstOnlyNotNull(I_M_ShippingPackage.class);
+	}
+
 	// ------------------------------------------------------------------ tests
 
 	@Test
@@ -209,6 +219,23 @@ class DeliveryPlanningGenerateCompletionTest
 
 		final I_M_Delivery_Planning stamped = reload(planning);
 		assertThat(docStatusOf(stamped.getM_ShipperTransportation_ID())).isEqualTo(DocStatus.Completed.getCode());
+	}
+
+	@Test
+	@DisplayName("generate stamps the planning's C_Order_ID onto the seed shipping package it creates")
+	void generateStampsThePlanningsOrderIdOntoTheSeedShippingPackage()
+	{
+		final I_M_Delivery_Planning planning = generatableDeliveryPlanning();
+		final OrderId orderId = OrderId.ofRepoId(540199);
+		planning.setC_Order_ID(orderId.getRepoId());
+		InterfaceWrapperHelper.save(planning);
+
+		deliveryPlanningService.generateDeliveryInstructions(filterFor(planning), false);
+
+		final int shipperTransportationId = reload(planning).getM_ShipperTransportation_ID();
+		assertThat(seedShippingPackageOf(shipperTransportationId).getC_Order_ID())
+				.as("the seed package must carry the same order the planning is behind")
+				.isEqualTo(orderId.getRepoId());
 	}
 
 	@Test

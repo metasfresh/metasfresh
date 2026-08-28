@@ -557,6 +557,7 @@ public class DeliveryPlanningRepository
 				.qtyDischarged(request.getQtyDischarged())
 				.batchNo(request.getBatchNo())
 				.orderLineId(request.getOrderLineId())
+				.orderId(request.getOrderId())
 				.toBeFetched(request.isToBeFetched())
 				.etd(TimeUtil.asTimestamp(request.getLoadingDate()))
 				.eta(TimeUtil.asTimestamp(request.getDeliveryDate()))
@@ -747,6 +748,7 @@ public class DeliveryPlanningRepository
 		shippingPackageRecord.setC_BPartner_Location_ID(shipperLocationId);
 
 		shippingPackageRecord.setC_OrderLine_ID(OrderLineId.toRepoId(request.getOrderLineId()));
+		shippingPackageRecord.setC_Order_ID(OrderId.toRepoId(request.getOrderId()));
 
 		saveRecord(shippingPackageRecord);
 
