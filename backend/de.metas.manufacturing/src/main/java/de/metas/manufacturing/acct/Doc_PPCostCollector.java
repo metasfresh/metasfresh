@@ -22,6 +22,7 @@ package de.metas.manufacturing.acct;
  * #L%
  */
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.Account;
 import de.metas.acct.accounts.ProductAcctType;
@@ -31,11 +32,13 @@ import de.metas.acct.doc.AcctDocContext;
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElement;
+import de.metas.costing.methods.CostAmountDetailed;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocBaseType;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.Value;
 import org.compiere.acct.Doc;
 import org.compiere.acct.Fact;
 import org.eevolution.api.CostCollectorType;
@@ -159,6 +162,10 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		else if (CostCollectorType.ActivityControl.equals(costCollectorType))
 		{
 			facts.addAll(createFacts_ActivityControl(as));
+		}
+		else if (CostCollectorType.CostDifferenceDistribution.equals(costCollectorType))
+		{
+			facts.addAll(createFacts_CostDifferenceDistribution(as));
 		}
 		else
 		{
@@ -387,5 +394,109 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		}
 
 		return facts;
+	}
+
+	/**
+	 * Posts the WIP residual: DR Product Asset (capitalized) + DR COGS (shipped remainder) / CR WIP, each leg
+	 * flipped when the residual is negative.
+	 */
+	private List<Fact> createFacts_CostDifferenceDistribution(final AcctSchema as)
+	{
+		final DocLine_CostCollector docLine = getLine();
+		final AggregatedCostAmount costResult = docLine.getCreateCosts(as).orElse(null);
+		if (costResult == null)
+		{
+			return ImmutableList.of();
+		}
+
+		final ImmutableList<CostDifferenceDistributionLeg> legs = costDifferenceDistributionLegs(costResult.getTotalAmountToPost(as));
+		if (legs.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final Fact fact = new Fact(this, as, PostingType.Actual);
+		for (final CostDifferenceDistributionLeg leg : legs)
+		{
+			addCostDifferenceFactLine(fact, docLine, leg, as);
+		}
+
+		return ImmutableList.of(fact);
+	}
+
+	/**
+	 * The line carries a ZERO qty: the receipt already accounted for the quantity, so a qty here would be
+	 * counted a second time by the inventory valuation (Lagerwert) report.
+	 */
+	private void addCostDifferenceFactLine(
+			@NonNull final Fact fact,
+			@NonNull final DocLine_CostCollector docLine,
+			@NonNull final CostDifferenceDistributionLeg leg,
+			@NonNull final AcctSchema as)
+	{
+		final Account account = docLine.getAccount(leg.getAcctType(), as);
+		final CostAmount absAmt = leg.getAbsAmt();
+		fact.createLine()
+				.setDocLine(docLine)
+				.setAccount(account)
+				.setAmtSource(absAmt.getCurrencyId(),
+						leg.isDebit() ? absAmt.toBigDecimal() : null,
+						leg.isDebit() ? null : absAmt.toBigDecimal())
+				.setQty(getMovementQty().toZero())
+				.additionalDescription("CostDifferenceDistribution")
+				.projectId(docLine.getC_Project_ID())
+				.activityId(docLine.getActivityId())
+				.campaignId(docLine.getC_Campaign_ID())
+				.locatorId(docLine.getM_Locator_ID())
+				.buildAndAdd();
+	}
+
+	/**
+	 * At most three legs — asset, COGS and the negated residual on WIP — dropping the zero ones. They always
+	 * balance, because {@code capitalized + cogs == residual}.
+	 */
+	@VisibleForTesting
+	static ImmutableList<CostDifferenceDistributionLeg> costDifferenceDistributionLegs(@NonNull final CostAmountDetailed split)
+	{
+		final CostAmount residual = split.getMainAmt();
+		if (residual.isZero())
+		{
+			return ImmutableList.of();
+		}
+
+		final ImmutableList.Builder<CostDifferenceDistributionLeg> legs = ImmutableList.builder();
+		addLegIfNotZero(legs, ProductAcctType.P_Asset_Acct, split.getCostAdjustmentAmt());
+		addLegIfNotZero(legs, ProductAcctType.P_COGS_Acct, split.getAlreadyShippedAmt());
+		addLegIfNotZero(legs, ProductAcctType.P_WIP_Acct, residual.negate());
+		return legs.build();
+	}
+
+	private static void addLegIfNotZero(
+			@NonNull final ImmutableList.Builder<CostDifferenceDistributionLeg> legs,
+			@NonNull final ProductAcctType acctType,
+			@NonNull final CostAmount amt)
+	{
+		if (!amt.isZero())
+		{
+			legs.add(new CostDifferenceDistributionLeg(acctType, amt));
+		}
+	}
+
+	@Value
+	static class CostDifferenceDistributionLeg
+	{
+		@NonNull ProductAcctType acctType;
+		/** positive =&gt; debit; negative =&gt; credit. */
+		@NonNull CostAmount amt;
+
+		boolean isDebit()
+		{
+			return amt.signum() > 0;
+		}
+
+		CostAmount getAbsAmt()
+		{
+			return amt.negateIf(amt.signum() < 0);
+		}
 	}
 }
