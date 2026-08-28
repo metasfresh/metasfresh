@@ -25,6 +25,8 @@ package de.metas.shipping.model.validator;
 import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.document.engine.DocStatus;
 import de.metas.order.IOrderBL;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -38,12 +40,15 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.compiere.model.ModelValidator;
 
+import java.util.Collection;
+
 @Validator(I_M_ShipperTransportation.class)
 @RequiredArgsConstructor
 public class M_ShipperTransportation
 {
 	@NonNull private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
 	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	@Init
 	public void setupCallouts()
@@ -86,9 +91,10 @@ public class M_ShipperTransportation
 			return;
 		}
 
-		shipperTransportationDAO.retrieveOrderIds(ShipperTransportationId.ofRepoId(transportOrder.getM_ShipperTransportation_ID()))
+		final Collection<OrderId> orderIds = shipperTransportationDAO.retrieveOrderIds(ShipperTransportationId.ofRepoId(transportOrder.getM_ShipperTransportation_ID()));
+		orderDAO.getByIds(orderIds)
 				.stream()
-				.filter(orderId -> !orderBL.isSalesOrder(orderId))
-				.forEach(orderId -> orderBL.syncDatesFromTransportOrder(orderId, transportOrder));
+				.filter(order -> !orderBL.isSalesOrder(order))
+				.forEach(order -> orderBL.syncDatesFromTransportOrder(OrderId.ofRepoId(order.getC_Order_ID()), transportOrder));
 	}
 }
