@@ -173,6 +173,31 @@ public class PP_Order_StepDef
 		this.warehouseTable = warehouseTable;
 	}
 
+	/**
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (optional) alias of an already-created PP_Order; looked up directly instead of by the criteria columns below<br>
+	 *   <b>M_Product_ID</b> — (optional, identifier-ref) main product<br>
+	 *   <b>PP_Product_BOM_ID</b> — (optional, identifier-ref) BOM used by the order<br>
+	 *   <b>PP_Product_Planning_ID</b> — (optional, identifier-ref) product planning record<br>
+	 *   <b>S_Resource_ID</b> — (optional, identifier-ref or raw ID) plant resource<br>
+	 *   <b>QtyEntered</b> — (optional) expected entered quantity with UOM<br>
+	 *   <b>QtyOrdered</b> — (optional) expected ordered quantity<br>
+	 *   <b>DatePromised</b> — (optional) expected/lookup promised date<br>
+	 *   <b>C_BPartner_ID</b> — (optional, identifier-ref) BPartner<br>
+	 *   <b>M_AttributeSetInstance_ID</b> — (optional, identifier-ref) expected ASI, compared by attributes-key<br>
+	 *   <b>M_HU_PI_Item_Product_ID</b> — (optional, identifier-ref) expected packing item-product<br>
+	 *   <b>DocStatus</b> — (optional) expected document status<br>
+	 *   <b>CostDifference</b> — (optional) expected received (MR/CO/BY) minus issued (MI) over the order's PP_Order_Cost rows<br>
+	 * @cucumber.depends StepDefData: PP_Order_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And after not more than 60s, PP_Orders are found
+	 *   | Identifier | CostDifference |
+	 *   | ppOrder    | 15             |
+	 * </pre>
+	 * @see de.metas.cucumber.stepdefs.costing.PP_Order_Cost_StepDef for the individual rows CostDifference aggregates
+	 */
 	@And("^after not more than (.*)s, PP_Orders are found$")
 	public void validatePP_Order(
 			final int timeoutSec,
@@ -555,6 +580,9 @@ public class PP_Order_StepDef
 
 		row.getAsOptionalEnum(I_PP_Order.COLUMNNAME_DocStatus, DocStatus.class)
 				.ifPresent(docStatus -> softly.assertThat(actual.getDocStatus()).as("DocStatus").isEqualTo(docStatus.getCode()));
+
+		row.getAsOptionalBigDecimal(I_PP_Order.COLUMNNAME_CostDifference)
+				.ifPresent(costDifference -> softly.assertThat(actual.getCostDifference()).as("CostDifference").isEqualByComparingTo(costDifference));
 
 		softly.assertAll();
 	}
