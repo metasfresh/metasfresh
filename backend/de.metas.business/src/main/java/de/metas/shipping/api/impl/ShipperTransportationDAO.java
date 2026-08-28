@@ -129,6 +129,10 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 		final I_M_ShipperTransportation shipperTransportation = newInstance(I_M_ShipperTransportation.class);
 
 		shipperTransportation.setAD_Org_ID(request.getOrgId().getRepoId());
+		// every caller of this method builds the request from a sales shipment (M_InOut) - there is no purchase/
+		// receipt caller, so Outgoing is a derivation, not a default; never widen this method to a caller that
+		// could also be Incoming without revisiting this line
+		shipperTransportation.setTransportDirection(X_M_ShipperTransportation.TRANSPORTDIRECTION_Outgoing);
 		shipperTransportation.setM_Shipper_ID(request.getShipperId().getRepoId());
 		shipperTransportation.setPickupTimeFrom(TimeUtil.asTimestamp(request.getPickupTimeFrom()));
 		shipperTransportation.setPickupTimeTo(TimeUtil.asTimestamp(request.getPickupTimeTo()));

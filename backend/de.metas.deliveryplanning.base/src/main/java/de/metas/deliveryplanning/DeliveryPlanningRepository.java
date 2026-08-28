@@ -510,6 +510,10 @@ public class DeliveryPlanningRepository
 
 		deliveryInstructionRecord.setAD_Org_ID(request.getOrgId().getRepoId());
 
+		// derived by the caller from the seed delivery planning(s) - never defaulted here or by the column: see
+		// DeliveryInstructionCreateRequest#transportDirection
+		deliveryInstructionRecord.setTransportDirection(request.getTransportDirection().getCode());
+
 		deliveryInstructionRecord.setShipper_BPartner_ID(request.getShipperBPartnerId().getRepoId());
 		deliveryInstructionRecord.setShipper_Location_ID(request.getShipperLocationId().getRepoId());
 

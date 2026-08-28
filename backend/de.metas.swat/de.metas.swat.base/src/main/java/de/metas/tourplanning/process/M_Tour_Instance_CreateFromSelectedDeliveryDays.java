@@ -32,6 +32,7 @@ import de.metas.tourplanning.api.ITourInstanceDAO;
 import de.metas.tourplanning.api.ITourInstanceQueryParams;
 import de.metas.tourplanning.api.impl.PlainTourInstanceQueryParams;
 import de.metas.tourplanning.model.I_M_DeliveryDay;
+import de.metas.shipping.model.X_M_ShipperTransportation;
 import de.metas.tourplanning.model.I_M_ShipperTransportation;
 import de.metas.tourplanning.model.I_M_Tour_Instance;
 import de.metas.util.Check;
@@ -167,7 +168,7 @@ public class M_Tour_Instance_CreateFromSelectedDeliveryDays extends JavaProcess
 			final IContextAware context = this;
 			_tourInstance = Services.get(ITourInstanceBL.class).createTourInstanceDraft(context, deliveryDay);
 
-			final I_M_ShipperTransportation shipperTransportation = getCreateShipperTransportation(_tourInstance);
+			final I_M_ShipperTransportation shipperTransportation = getCreateShipperTransportation(_tourInstance, deliveryDay);
 			_tourInstance.setM_ShipperTransportation_ID(shipperTransportation.getM_ShipperTransportation_ID());
 
 			InterfaceWrapperHelper.save(_tourInstance);
@@ -205,7 +206,7 @@ public class M_Tour_Instance_CreateFromSelectedDeliveryDays extends JavaProcess
 		return p_M_ShipperTransportation;
 	}
 
-	private I_M_ShipperTransportation getCreateShipperTransportation(final I_M_Tour_Instance tourInstance)
+	private I_M_ShipperTransportation getCreateShipperTransportation(final I_M_Tour_Instance tourInstance, final I_M_DeliveryDay deliveryDay)
 	{
 		if (_shipperTransportation != null)
 		{
@@ -222,16 +223,22 @@ public class M_Tour_Instance_CreateFromSelectedDeliveryDays extends JavaProcess
 
 		//
 		// Create a new shipper transportation
-		_shipperTransportation = createShipperTransportation(tourInstance);
+		_shipperTransportation = createShipperTransportation(tourInstance, deliveryDay);
 		return _shipperTransportation;
 	}
 
-	private I_M_ShipperTransportation createShipperTransportation(final I_M_Tour_Instance tourInstance)
+	private I_M_ShipperTransportation createShipperTransportation(final I_M_Tour_Instance tourInstance, final I_M_DeliveryDay deliveryDay)
 	{
 		Check.assumeNotNull(tourInstance, "tourInstance not null");
 
 		final I_M_ShipperTransportation shipperTransportation = InterfaceWrapperHelper.newInstance(I_M_ShipperTransportation.class, this);
 		shipperTransportation.setDateDoc(tourInstance.getDeliveryDate());
+		// derived from the delivery day that seeds this tour instance: IsToBeFetched=Y means the material is
+		// fetched from a vendor (Incoming), IsToBeFetched=N means it is delivered to a customer (Outgoing) - see
+		// IDeliveryDayAllocable#isToBeFetched(). Never defaulted here or by the column.
+		shipperTransportation.setTransportDirection(deliveryDay.isToBeFetched()
+				? X_M_ShipperTransportation.TRANSPORTDIRECTION_Incoming
+				: X_M_ShipperTransportation.TRANSPORTDIRECTION_Outgoing);
 		shipperTransportation.setShipper_BPartner_ID(p_Shipper_BPartner_ID);
 		shipperTransportation.setShipper_Location_ID(p_Shipper_Location_ID);
 		final ShipperId shipperId = ShipperId.ofRepoIdOrNull(p_M_Shipper_ID);

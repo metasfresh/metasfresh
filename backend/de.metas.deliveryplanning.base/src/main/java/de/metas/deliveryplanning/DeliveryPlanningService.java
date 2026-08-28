@@ -755,6 +755,7 @@ public class DeliveryPlanningService
 		return DeliveryInstructionCreateRequest.builder()
 				.orgId(orgId)
 				.clientId(ClientId.ofRepoId(deliveryPlanningRecord.getAD_Client_ID()))
+				.transportDirection(transportDirection)
 
 				.shipperBPartnerId(BPartnerId.ofRepoId(deliveryPlanningRecord.getC_BPartner_ID()))
 				.shipperLocationId(deliveryPlanningLocationId)
