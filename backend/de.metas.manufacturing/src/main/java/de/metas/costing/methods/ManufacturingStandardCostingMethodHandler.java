@@ -31,12 +31,14 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.time.DurationUtils;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.PPCostCollectorId;
 import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.springframework.stereotype.Component;
 
@@ -70,6 +72,7 @@ import java.util.Set;
  */
 
 @Component
+@RequiredArgsConstructor
 public class ManufacturingStandardCostingMethodHandler implements CostingMethodHandler
 {
 	// services
@@ -78,27 +81,17 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 	private final IProductBL productsService = Services.get(IProductBL.class);
 	private final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
 	//
-	private final ICurrentCostsRepository currentCostsRepo;
-	private final ICostDetailService costDetailsService;
-	private final CostingMethodHandlerUtils utils;
+	@NonNull private final ICurrentCostsRepository currentCostsRepo;
+	@NonNull private final ICostDetailService costDetailsService;
+	@NonNull private final CostingMethodHandlerUtils utils;
+	@NonNull private final PPOrderCostDifferenceDistributor costDifferenceDistributor;
 
-	private final StandardCostingMethodHandler standardCostingMethodHandler;
+	@NonNull private final StandardCostingMethodHandler standardCostingMethodHandler;
 
 	private static final ImmutableSet<String> HANDLED_TABLE_NAMES = ImmutableSet.<String>builder()
 			.add(CostingDocumentRef.TABLE_NAME_PP_Cost_Collector)
 			.build();
 
-	public ManufacturingStandardCostingMethodHandler(
-			@NonNull final ICurrentCostsRepository currentCostsRepo,
-			@NonNull final ICostDetailService costDetailsService,
-			@NonNull final CostingMethodHandlerUtils utils,
-			@NonNull final StandardCostingMethodHandler standardCostingMethodHandler)
-	{
-		this.currentCostsRepo = currentCostsRepo;
-		this.costDetailsService = costDetailsService;
-		this.utils = utils;
-		this.standardCostingMethodHandler = standardCostingMethodHandler;
-	}
 
 	@Override
 	public CostingMethod getCostingMethod()
@@ -180,6 +173,10 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 
 				return CostDetailCreateResultsList.ofNullable(createUsageVariance(request.withProductIdAndQty(actualResourceProductId, qty)));
 			}
+		}
+		else if (costCollectorType.isCostDifferenceDistribution())
+		{
+			return costDifferenceDistributor.createCostDetails(request, PPOrderId.ofRepoId(cc.getPP_Order_ID()));
 		}
 		else
 		{
