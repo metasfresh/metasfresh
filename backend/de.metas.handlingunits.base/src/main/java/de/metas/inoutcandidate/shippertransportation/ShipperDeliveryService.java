@@ -97,6 +97,14 @@ public class ShipperDeliveryService
 	{
 		final I_M_InOut shipment = inOutDAO.getById(inOutId);
 
+		final boolean isOutboundSalesShipment = shipment.isSOTrx() && !inOutBL.isReturnMovementType(shipment.getMovementType());
+		if (!isOutboundSalesShipment)
+		{
+			Loggables.withLogger(logger, Level.INFO).addLog(
+					"Returning! Not an outbound sales shipment (purchase receipt or return), no shipper-transportation record is created for it! m_inout_id: ", inOutId);
+			return;
+		}
+
 		final ShipperId shipperId = ShipperId.ofRepoIdOrNull(shipment.getM_Shipper_ID());
 
 		if (shipperId == null)

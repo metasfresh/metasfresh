@@ -20,12 +20,14 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.model.X_M_InOut;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Collections;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -36,10 +38,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Unit test for AC-13d: a shipper with {@code IsCreateDeliveryPlanning='Y'} must NOT be added
- * to the daily (outgoing) transport order.  A flag='N' shipper IS added normally.
+ * Only a genuine outbound sales shipment may create a shipper-transportation record.
+ * A purchase receipt, a customer return, and a vendor return must all be a clean no-op,
+ * even when a shipper is set on the document.
  */
-class ShipperDeliveryServiceDailyTransportOrderExclusionTest
+class ShipperDeliveryServiceShipmentGateTest
 {
 	// ---- mocked Services.get() dependencies ----
 	private IInOutBL inOutBL;
@@ -85,57 +88,73 @@ class ShipperDeliveryServiceDailyTransportOrderExclusionTest
 				deliveryOrderCarrierResolver);
 	}
 
-	/**
-	 * AC-13d (negative): shipper with {@code IsCreateDeliveryPlanning=true}
-	 * must NOT be added to the daily transport order.
-	 * Verifies that {@link IShipperTransportationDAO#getOrCreate} is never called.
-	 */
 	@Test
-	void givenShipperWithDeliveryPlanningFlagY_whenDailyTransportOrder_thenSkipped()
+	@DisplayName("a sales shipment creates the transport document (regression net)")
+	void salesShipment_createsTransportDocument()
 	{
-		final ShipperId shipperId = setupShipment(true /* isCreateDeliveryPlanning */);
+		setupShipment(true /* isSOTrx */, X_M_InOut.MOVEMENTTYPE_CustomerShipment, false /* isReturn */);
 
-		service.createTransportationAndPackagesForShipment(
-				InOutId.ofRepoId(1),
-				true /* createOneTransportationOrderPerDay */);
+		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(99);
+		when(shipperTransportationDAO.create(any())).thenReturn(transportationId);
+		when(inOutToTransportationOrderService.addShipmentsToTransportationOrder(any(), any()))
+				.thenReturn(Collections.emptyList());
 
-		verify(shipperTransportationDAO, never()).getOrCreate(any());
+		service.createTransportationAndPackagesForShipment(InOutId.ofRepoId(1), false);
+
+		verify(shipperTransportationDAO).create(any());
+	}
+
+	@Test
+	@DisplayName("a purchase receipt is a no-op, even with a shipper set")
+	void purchaseReceipt_isNoOp()
+	{
+		setupShipment(false /* isSOTrx */, X_M_InOut.MOVEMENTTYPE_VendorReceipts, false /* isReturn */);
+
+		service.createTransportationAndPackagesForShipment(InOutId.ofRepoId(1), false);
+
 		verify(shipperTransportationDAO, never()).create(any());
+		verify(shipperTransportationDAO, never()).getOrCreate(any());
 		verify(inOutToTransportationOrderService, never()).addShipmentsToTransportationOrder(any(), any());
 	}
 
-	/**
-	 * AC-13d (positive): shipper with {@code IsCreateDeliveryPlanning=false}
-	 * IS added to the daily transport order — {@link IShipperTransportationDAO#getOrCreate} is called.
-	 */
 	@Test
-	void givenShipperWithDeliveryPlanningFlagN_whenDailyTransportOrder_thenAdded()
+	@DisplayName("a customer return is a no-op even though IsSOTrx='Y' - a naive isSOTrx-only gate would wrongly let it through")
+	void customerReturn_isNoOp()
 	{
-		final ShipperId shipperId = setupShipment(false /* isCreateDeliveryPlanning */);
+		setupShipment(true /* isSOTrx */, X_M_InOut.MOVEMENTTYPE_CustomerReturns, true /* isReturn */);
 
-		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(99);
-		when(shipperTransportationDAO.getOrCreate(any())).thenReturn(transportationId);
-		when(inOutToTransportationOrderService.addShipmentsToTransportationOrder(any(), any()))
-				.thenReturn(java.util.Collections.emptyList());
+		service.createTransportationAndPackagesForShipment(InOutId.ofRepoId(1), false);
 
-		service.createTransportationAndPackagesForShipment(
-				InOutId.ofRepoId(1),
-				true /* createOneTransportationOrderPerDay */);
+		verify(shipperTransportationDAO, never()).create(any());
+		verify(shipperTransportationDAO, never()).getOrCreate(any());
+		verify(inOutToTransportationOrderService, never()).addShipmentsToTransportationOrder(any(), any());
+	}
 
-		verify(shipperTransportationDAO).getOrCreate(any());
+	@Test
+	@DisplayName("a vendor return is a no-op")
+	void vendorReturn_isNoOp()
+	{
+		setupShipment(false /* isSOTrx */, X_M_InOut.MOVEMENTTYPE_VendorReturns, true /* isReturn */);
+
+		service.createTransportationAndPackagesForShipment(InOutId.ofRepoId(1), false);
+
+		verify(shipperTransportationDAO, never()).create(any());
+		verify(shipperTransportationDAO, never()).getOrCreate(any());
+		verify(inOutToTransportationOrderService, never()).addShipmentsToTransportationOrder(any(), any());
 	}
 
 	// ---- helpers ----
 
 	/**
-	 * Sets up a minimal {@link I_M_InOut} with the given shipper flag and stubs all necessary DAO calls.
+	 * Sets up a minimal {@link I_M_InOut} with the given SOTrx/movement-type combination and stubs
+	 * all necessary DAO calls, including a shipper set on the document (so the shipper-presence gate
+	 * always passes and only the shipment-gate under test decides the outcome).
 	 */
 	@NonNull
-	private ShipperId setupShipment(final boolean isCreateDeliveryPlanning)
+	private void setupShipment(final boolean isSOTrx, final String movementType, final boolean isReturn)
 	{
 		final I_M_Shipper shipper = newInstance(I_M_Shipper.class);
-		shipper.setIsCreateDeliveryPlanning(isCreateDeliveryPlanning);
-		// CreateShipperTransportationRequest.pickupTimeFrom is @NonNull — provide non-null timestamps
+		shipper.setIsCreateDeliveryPlanning(false);
 		shipper.setPickupTimeFrom(Timestamp.valueOf(LocalDateTime.of(LocalDate.now(), LocalTime.of(8, 0))));
 		shipper.setPickupTimeTo(Timestamp.valueOf(LocalDateTime.of(LocalDate.now(), LocalTime.of(18, 0))));
 		save(shipper);
@@ -145,18 +164,15 @@ class ShipperDeliveryServiceDailyTransportOrderExclusionTest
 		when(shipment.getM_Shipper_ID()).thenReturn(shipperId.getRepoId());
 		when(shipment.getM_Warehouse_ID()).thenReturn(1);
 		when(shipment.getAD_Org_ID()).thenReturn(0);
-		when(shipment.isSOTrx()).thenReturn(true);
-		when(shipment.getMovementType()).thenReturn(X_M_InOut.MOVEMENTTYPE_CustomerShipment);
+		when(shipment.isSOTrx()).thenReturn(isSOTrx);
+		when(shipment.getMovementType()).thenReturn(movementType);
 
 		when(inOutDAO.getById(InOutId.ofRepoId(1))).thenReturn(shipment);
 		when(shipperDAO.getById(shipperId)).thenReturn(shipper);
 		when(inOutBL.retrieveMovementDate(shipment)).thenReturn(LocalDate.now());
-		when(inOutBL.isReturnMovementType(X_M_InOut.MOVEMENTTYPE_CustomerShipment)).thenReturn(false);
+		when(inOutBL.isReturnMovementType(movementType)).thenReturn(isReturn);
 
-		// BPartnerLocationAndCaptureId is final — use real factory method instead of mock
 		final BPartnerLocationAndCaptureId bpLoc = BPartnerLocationAndCaptureId.ofRepoId(1, 1);
 		when(warehouseDAO.getWarehouseLocationById(any())).thenReturn(bpLoc);
-
-		return shipperId;
 	}
 }
