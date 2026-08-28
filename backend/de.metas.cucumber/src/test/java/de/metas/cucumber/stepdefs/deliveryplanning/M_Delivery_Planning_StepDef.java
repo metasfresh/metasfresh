@@ -61,11 +61,13 @@ import org.compiere.model.I_M_Shipper;
 import org.compiere.model.I_M_Warehouse;
 
 import java.math.BigDecimal;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Loads, deletes, updates and validates {@code M_Delivery_Planning} records, and drives the
@@ -431,6 +433,83 @@ public class M_Delivery_Planning_StepDef
 					});
 
 			saveRecord(deliveryPlanning);
+		});
+	}
+
+	/**
+	 * Asserts that each of the given plannings carries its OWN release number, stamped from the delivery
+	 * instruction it now sits on - the third thing an aggregation owes each planning, next to its own allocation
+	 * and its own shipping package.
+	 * <p>
+	 * The value itself is not asserted verbatim: it is built from the instruction's {@code DocumentNo}, the
+	 * planning's id and the instruction's creation MINUTE, so a literal expectation in a feature file would be a
+	 * clock-dependent assertion. What is asserted is what the requirement is about - present, naming that
+	 * instruction, and different for every planning.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_Delivery_Planning_ID</b> — (required, identifier-ref) the planning whose {@code ReleaseNo} is asserted<br>
+	 * @cucumber.depends StepDefData: M_Delivery_Planning_StepDefData, M_ShipperTransportation_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then each M_Delivery_Planning has its own ReleaseNo stamped from M_ShipperTransportation deliveryInstruction:
+	 *   | M_Delivery_Planning_ID |
+	 *   | deliveryPlanning_1     |
+	 *   | deliveryPlanning_2     |
+	 * </pre>
+	 */
+	@And("^each M_Delivery_Planning has its own ReleaseNo stamped from M_ShipperTransportation (.*):$")
+	public void validate_ReleaseNo_stamped_from(
+			@NonNull final String deliveryInstructionIdentifier,
+			@NonNull final DataTable dataTable)
+	{
+		final I_M_ShipperTransportation deliveryInstruction = deliveryInstructionTable.get(deliveryInstructionIdentifier);
+		assertThat(deliveryInstruction).isNotNull();
+
+		final Set<String> releaseNos = new LinkedHashSet<>();
+
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_M_Delivery_Planning deliveryPlanning = row.getAsIdentifier(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID).lookupNotNullIn(deliveryPlanningTable);
+			InterfaceWrapperHelper.refresh(deliveryPlanning);
+
+			final String releaseNo = deliveryPlanning.getReleaseNo();
+			assertThat(releaseNo)
+					.as("%s of M_Delivery_Planning %s", I_M_Delivery_Planning.COLUMNNAME_ReleaseNo, deliveryPlanning.getM_Delivery_Planning_ID())
+					.isNotBlank()
+					.startsWith(deliveryInstruction.getDocumentNo() + "-");
+
+			assertThat(releaseNos.add(releaseNo))
+					.as("%s %s of M_Delivery_Planning %s is not shared with another planning",
+							I_M_Delivery_Planning.COLUMNNAME_ReleaseNo, releaseNo, deliveryPlanning.getM_Delivery_Planning_ID())
+					.isTrue();
+		});
+	}
+
+	/**
+	 * Asserts that the given plannings carry no release number - what a planning that is on no delivery
+	 * instruction looks like, and therefore what makes it plannable again.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_Delivery_Planning_ID</b> — (required, identifier-ref) the planning whose {@code ReleaseNo} is asserted<br>
+	 * @cucumber.depends StepDefData: M_Delivery_Planning_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then the following M_Delivery_Planning have no ReleaseNo:
+	 *   | M_Delivery_Planning_ID |
+	 *   | deliveryPlanning_2     |
+	 * </pre>
+	 */
+	@And("the following M_Delivery_Planning have no ReleaseNo:")
+	public void validate_no_ReleaseNo(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_M_Delivery_Planning deliveryPlanning = row.getAsIdentifier(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID).lookupNotNullIn(deliveryPlanningTable);
+			InterfaceWrapperHelper.refresh(deliveryPlanning);
+
+			assertThat(deliveryPlanning.getReleaseNo())
+					.as("%s of M_Delivery_Planning %s", I_M_Delivery_Planning.COLUMNNAME_ReleaseNo, deliveryPlanning.getM_Delivery_Planning_ID())
+					.isNullOrEmpty();
 		});
 	}
 
