@@ -48,6 +48,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * {@link ShipperTransportationDAO#create(CreateShipperTransportationRequest)} must derive
@@ -189,5 +190,17 @@ class ShipperTransportationDAOTest
 				.extracting(I_M_ShipperTransportation::getM_ShipperTransportation_ID)
 				.as("no transportDirection set on the query must not narrow the match by direction")
 				.contains(incomingId.getRepoId(), outgoingId.getRepoId());
+	}
+
+	@Test
+	@DisplayName("omitting isSOTrx must fail loudly - it must never fall back to a silent Incoming")
+	void requestWithoutSOTrx_cannotBeBuilt()
+	{
+		final CreateShipperTransportationRequest.CreateShipperTransportationRequestBuilder builderWithoutSOTrx = requestBuilder();
+
+		assertThatThrownBy(builderWithoutSOTrx::build)
+				.as("a caller that forgets the transaction direction must not silently create an Incoming transport order")
+				.isInstanceOf(NullPointerException.class)
+				.hasMessageContaining("isSOTrx");
 	}
 }

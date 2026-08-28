@@ -8,6 +8,7 @@ import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -19,22 +20,15 @@ import org.springframework.stereotype.Component;
 
 @Interceptor(I_M_ShipperTransportation.class)
 @Component
+@RequiredArgsConstructor
 public class M_ShipperTransportation
 {
-	private final DeliveryPlanningService deliveryPlanningService;
-	private final IEventBusFactory eventBusFactory;
+	@NonNull private final DeliveryPlanningService deliveryPlanningService;
+	@NonNull private final IEventBusFactory eventBusFactory;
 
 	private final IBPartnerStatisticsUpdater bpartnerStatisticsUpdater = Services.get(IBPartnerStatisticsUpdater.class);
 
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-
-	public M_ShipperTransportation(
-			@NonNull final DeliveryPlanningService deliveryPlanningService,
-			@NonNull final IEventBusFactory eventBusFactory)
-	{
-		this.deliveryPlanningService = deliveryPlanningService;
-		this.eventBusFactory = eventBusFactory;
-	}
 
 	@Init
 	public void onInit()

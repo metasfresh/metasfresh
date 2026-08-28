@@ -25,7 +25,6 @@ package de.metas.shipping.model.validator;
 import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.document.engine.DocStatus;
 import de.metas.order.IOrderBL;
-import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
@@ -48,7 +47,6 @@ public class M_ShipperTransportation
 {
 	@NonNull private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
 	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	@Init
 	public void setupCallouts()
@@ -92,7 +90,7 @@ public class M_ShipperTransportation
 		}
 
 		final Collection<OrderId> orderIds = shipperTransportationDAO.retrieveOrderIds(ShipperTransportationId.ofRepoId(transportOrder.getM_ShipperTransportation_ID()));
-		orderDAO.getByIds(orderIds)
+		orderBL.getByIds(orderIds)
 				.stream()
 				.filter(order -> !orderBL.isSalesOrder(order))
 				.forEach(order -> orderBL.syncDatesFromTransportOrder(OrderId.ofRepoId(order.getC_Order_ID()), transportOrder));

@@ -149,7 +149,7 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 	 */
 	private static String deriveTransportDirection(@NonNull final CreateShipperTransportationRequest request)
 	{
-		return request.isSOTrx()
+		return request.getIsSOTrx()
 				? X_M_ShipperTransportation.TRANSPORTDIRECTION_Outgoing
 				: X_M_ShipperTransportation.TRANSPORTDIRECTION_Incoming;
 	}

@@ -208,7 +208,7 @@ public class DeliveryPlanningService
 	private final ShipperTransportationDocSubTypeGuard shipperTransportationDocSubTypeGuard;
 
 	final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-	final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
 	final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);

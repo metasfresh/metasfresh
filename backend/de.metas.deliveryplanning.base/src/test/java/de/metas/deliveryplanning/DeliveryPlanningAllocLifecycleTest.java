@@ -23,6 +23,7 @@
 package de.metas.deliveryplanning;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.order.OrderId;
@@ -39,6 +40,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Delivery_Planning;
 import org.compiere.model.I_M_Delivery_Planning_Alloc;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -46,6 +48,7 @@ import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -65,6 +68,7 @@ class DeliveryPlanningAllocLifecycleTest
 	private static final int SHIPPER_BPARTNER_ID = 540001;
 	private static final int SHIPPER_LOCATION_ID = 540002;
 	private static final int SHIPPER_ID = 540003;
+	private static final ZonedDateTime REMOVED_AT = ZonedDateTime.parse("2026-08-27T10:15:30+02:00[Europe/Berlin]");
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -80,6 +84,12 @@ class DeliveryPlanningAllocLifecycleTest
 
 		uom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
 		InterfaceWrapperHelper.save(uom);
+	}
+
+	@AfterEach
+	void tearDown()
+	{
+		SystemTime.resetTimeSource();
 	}
 
 	// ------------------------------------------------------------------ helpers
@@ -423,14 +433,18 @@ class DeliveryPlanningAllocLifecycleTest
 				.as("an allocation that is still on the instruction has not been removed from it")
 				.isNull();
 
+		// the clock is pinned and later ADVANCED on purpose: against the ambient clock a re-stamp landing in the
+		// same millisecond would satisfy the "did not move" assertion below while the bug was fully present
+		SystemTime.setFixedTimeSource(REMOVED_AT);
 		deliveryPlanningRepository.deactivateAllocations(ImmutableList.of(deliveryPlanningId));
 
 		final Timestamp stampedAt = reload(alloc).getDateRemoved();
 		assertThat(stampedAt)
 				.as("deactivation is the business event this column records")
-				.isNotNull();
+				.isEqualTo(Timestamp.from(REMOVED_AT.toInstant()));
 
 		// the whole point of the column: any later touch of the row moves Updated, and must NOT move DateRemoved
+		SystemTime.setFixedTimeSource(REMOVED_AT.plusDays(1));
 		final I_M_Delivery_Planning_Alloc retired = reload(alloc);
 		retired.setLineNo(retired.getLineNo() + 1);
 		InterfaceWrapperHelper.save(retired);
@@ -440,7 +454,7 @@ class DeliveryPlanningAllocLifecycleTest
 				.as("guard on the guard: the unrelated write must really have hit the row")
 				.isEqualTo(retired.getLineNo());
 		assertThat(afterUnrelatedWrite.getDateRemoved())
-				.as("an unrelated write must not re-date the removal")
+				.as("an unrelated write a day later must not re-date the removal")
 				.isEqualTo(stampedAt);
 	}
 

@@ -63,6 +63,11 @@ public class CreateShipperTransportationRequest
 	/**
 	 * Whether the shipment/receipt this transport order is created for is a sales transaction ({@code true}) or a
 	 * purchase transaction ({@code false}). Drives the created record's {@code TransportDirection}.
+	 * <p>
+	 * Boxed on purpose: {@code M_ShipperTransportation.TransportDirection} lost its database default so that no
+	 * direction is ever invented, and a primitive {@code boolean} would reinstate that default one layer up - a
+	 * caller omitting {@code .isSOTrx(...)} would silently get {@code false} -> {@code Incoming}. As a
+	 * {@code @NonNull Boolean} the omission fails loudly in {@code build()} instead.
 	 */
-	boolean isSOTrx;
+	@NonNull Boolean isSOTrx;
 }
