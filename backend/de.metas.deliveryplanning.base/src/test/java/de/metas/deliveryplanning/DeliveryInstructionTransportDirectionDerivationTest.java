@@ -30,6 +30,7 @@ import de.metas.notification.INotificationBL;
 import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.model.X_M_ShipperTransportation;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -162,6 +163,12 @@ class DeliveryInstructionTransportDirectionDerivationTest
 				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, record.getM_Delivery_Planning_ID());
 	}
 
+	private IQueryFilter<I_M_Delivery_Planning> filterFor(@NonNull final I_M_Delivery_Planning record1, @NonNull final I_M_Delivery_Planning record2)
+	{
+		return queryBL.createCompositeQueryFilter(I_M_Delivery_Planning.class)
+				.addInArrayFilter(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, record1.getM_Delivery_Planning_ID(), record2.getM_Delivery_Planning_ID());
+	}
+
 	private I_M_Delivery_Planning reload(@NonNull final I_M_Delivery_Planning record)
 	{
 		return InterfaceWrapperHelper.load(record.getM_Delivery_Planning_ID(), I_M_Delivery_Planning.class);
@@ -182,6 +189,21 @@ class DeliveryInstructionTransportDirectionDerivationTest
 
 		assertThat(instruction.getTransportDirection())
 				.as("the instruction must carry the direction its Incoming planning implies, not the Outgoing default")
+				.isEqualTo(X_M_ShipperTransportation.TRANSPORTDIRECTION_Incoming);
+	}
+
+	@Test
+	@DisplayName("combine seeds the instruction's TransportDirection from the (agreeing) plannings - not the Outgoing default")
+	void combineDerivesIncomingDirectionFromIncomingPlannings()
+	{
+		final I_M_Delivery_Planning planning1 = incomingDeliveryPlanning();
+		final I_M_Delivery_Planning planning2 = incomingDeliveryPlanning();
+
+		final ShipperTransportationId deliveryInstructionId = deliveryPlanningService.combine(filterFor(planning1, planning2), false);
+
+		final I_M_ShipperTransportation instruction = InterfaceWrapperHelper.load(deliveryInstructionId, I_M_ShipperTransportation.class);
+		assertThat(instruction.getTransportDirection())
+				.as("combine must seed the instruction's direction from the plannings it combines, not default to Outgoing")
 				.isEqualTo(X_M_ShipperTransportation.TRANSPORTDIRECTION_Incoming);
 	}
 }
