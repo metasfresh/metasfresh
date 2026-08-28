@@ -30,9 +30,11 @@
 -- to filter the working list by but currently cannot: M_Shipper_ID, C_Incoterms_ID,
 -- IncotermLocation, M_MeansOfTransportation_ID, AD_Org_ID, IsClosed. All six already have an
 -- AD_Field on AD_Tab 546674 (AD_Window 541632), but only three of them were actually visible in
--- the grid: the flag the WebUI reads is AD_UI_Element.IsDisplayedGrid (M_Delivery_Planning's
--- AD_Table.AccessLevel=3, i.e. not System-only, so the legacy AD_Field.IsDisplayedGrid='Y' present
--- on all six is NOT what gets read). M_MeansOfTransportation_ID, IsClosed and AD_Org_ID had
+-- the grid: the flag the WebUI reads is AD_UI_Element.IsDisplayedGrid. LayoutFactory.layoutGridView()
+-- (de.metas.ui.web.base) filters streamAD_UI_Elements() on isDisplayedGrid unconditionally, and falls
+-- back to the single-row layout only when that filter yields NOTHING at all -- which is not the case
+-- on AD_Tab 546674. The legacy AD_Field.IsDisplayedGrid='Y' present on all six is therefore never read
+-- by the WebUI. M_MeansOfTransportation_ID, IsClosed and AD_Org_ID had
 -- AD_UI_Element.IsDisplayedGrid='N' / SeqNoGrid=0 -- filterable but invisible in the result grid --
 -- so section 10 flips them on.
 --
