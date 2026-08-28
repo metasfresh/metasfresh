@@ -1,11 +1,4 @@
-# The inline mock maker is required by M_Delivery_Planning_GenerateShortageOverageClosedGuardTest:
-# it mocks de.metas.handlingunits.inventory.InventoryRepository, which is a final class, and the
-# default subclass mock maker cannot mock final classes.
-#
-# Note this file ships INSIDE the module's test-jar (pom.xml builds one), so any module that ever
-# depends on de.metas.deliveryplanning.base's test-jar inherits the inline mock maker for ALL of its
-# own tests. No module does today; check this before adding such a dependency.
-#
-# Mockito reads the first non-empty line and strips everything from '#'
-# (org.mockito.internal.configuration.plugins.PluginFileReader), so these comments are inert.
+# This file ships INSIDE the module's test-jar (pom.xml builds one), so any module that ever depends
+# on de.metas.deliveryplanning.base's test-jar inherits the inline mock maker for ALL of its own
+# tests. No module does today; check this before adding such a dependency.
 mock-maker-inline

@@ -56,7 +56,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.location.CountryId;
-import de.metas.order.IOrderDAO;
+import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
@@ -187,32 +187,32 @@ public class DeliveryPlanningService
 	 */
 	public static final AdMessageKey MSG_M_Delivery_Planning_EmptyDeliveryInstruction = AdMessageKey.of("de.metas.deliveryplanning.CompleteDeliveryInstruction.EmptyDeliveryInstruction");
 
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	@NonNull private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
+	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	@NonNull private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	private final ShipperRepository shipperRepository;
-	private final DeliveryPlanningRepository deliveryPlanningRepository;
-	private final DeliveryStatusColorPaletteService deliveryStatusColorPaletteService;
-	private final DimensionService dimensionService;
-	private final MeansOfTransportationService meansOfTransportationService;
+	@NonNull private final ShipperRepository shipperRepository;
+	@NonNull private final DeliveryPlanningRepository deliveryPlanningRepository;
+	@NonNull private final DeliveryStatusColorPaletteService deliveryStatusColorPaletteService;
+	@NonNull private final DimensionService dimensionService;
+	@NonNull private final MeansOfTransportationService meansOfTransportationService;
 
 	/**
 	 * Tells the two {@code M_ShipperTransportation} document roles apart by {@code C_DocType.DocSubType} - reused
 	 * here rather than inventing a second ad-hoc distinction.
 	 */
-	private final ShipperTransportationDocSubTypeGuard shipperTransportationDocSubTypeGuard;
+	@NonNull private final ShipperTransportationDocSubTypeGuard shipperTransportationDocSubTypeGuard;
 
-	final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
-	final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
-	final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-	final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
+	@NonNull private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
+	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	@NonNull private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 
 
 	/**
@@ -1587,7 +1587,7 @@ public class DeliveryPlanningService
 		}
 
 		final ImmutableMap<OrderId, I_C_Order> ordersById = Maps.uniqueIndex(
-				orderDAO.getByIds(orderIds.build()),
+				orderBL.getByIds(orderIds.build()),
 				order -> OrderId.ofRepoId(order.getC_Order_ID()));
 		final ImmutableMap<OrderLineId, I_C_OrderLine> orderLinesById = Maps.uniqueIndex(
 				orderLineBL.getByIds(orderLineIds.build()),
