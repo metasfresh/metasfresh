@@ -39,9 +39,12 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Delivery_Planning;
 import org.compiere.model.I_M_Delivery_Planning_Alloc;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_M_Delivery_Planning;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -191,6 +194,51 @@ class DeliveryPlanningMoveAndRemovalTest
 		InterfaceWrapperHelper.save(record);
 	}
 
+	// ------------------------------------------------------------------ helpers (source-contamination regression)
+
+	private static final int BPARTNER_ID = 540020;
+	private static final int BPARTNER_LOCATION_ID = 540021;
+	private I_M_Warehouse warehouse;
+
+	private int warehouseId()
+	{
+		if (warehouse == null)
+		{
+			warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
+			warehouse.setValue("WH");
+			warehouse.setName("WH");
+			warehouse.setC_BPartner_ID(BPARTNER_ID);
+			warehouse.setC_BPartner_Location_ID(BPARTNER_LOCATION_ID);
+			InterfaceWrapperHelper.save(warehouse);
+		}
+		return warehouse.getM_Warehouse_ID();
+	}
+
+	/** A planning with an ORDER and a shipment schedule, so it has an order-derived ETD independent of any instruction. */
+	private I_M_Delivery_Planning deliveryPlanningWithOrderDerivedDates(@NonNull final Timestamp orderPreparationDate)
+	{
+		final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
+		order.setPreparationDate(orderPreparationDate);
+		InterfaceWrapperHelper.save(order);
+
+		final I_M_ShipmentSchedule shipmentSchedule = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule.class);
+		shipmentSchedule.setC_BPartner_ID(BPARTNER_ID);
+		shipmentSchedule.setC_BPartner_Location_ID(BPARTNER_LOCATION_ID);
+		InterfaceWrapperHelper.save(shipmentSchedule);
+
+		final I_M_Delivery_Planning record = InterfaceWrapperHelper.newInstance(I_M_Delivery_Planning.class);
+		record.setTransportDirection(X_M_Delivery_Planning.TRANSPORTDIRECTION_Outgoing);
+		record.setM_Product_ID(PRODUCT_ID);
+		record.setC_UOM_ID(uom.getC_UOM_ID());
+		record.setPlannedLoadedQuantity(BigDecimal.TEN);
+		record.setPlannedDischargeQuantity(BigDecimal.ONE);
+		record.setM_Warehouse_ID(warehouseId());
+		record.setC_Order_ID(order.getC_Order_ID());
+		record.setM_ShipmentSchedule_ID(shipmentSchedule.getM_ShipmentSchedule_ID());
+		InterfaceWrapperHelper.save(record);
+		return record;
+	}
+
 	private static DeliveryPlanningId idOf(@NonNull final I_M_Delivery_Planning record)
 	{
 		return DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID());
@@ -287,6 +335,39 @@ class DeliveryPlanningMoveAndRemovalTest
 		assertThat(moved.getETD())
 				.as("the source-side reset is only ever transient here: the target's own sync-down has the final word")
 				.isEqualTo(Timestamp.valueOf("2026-03-25 00:00:00"));
+	}
+
+	/**
+	 * The bug the sync-down and the fill-if-empty defaulting can produce together if the allocation-request
+	 * snapshot is built from a STILL-source-dated row: a planning allocated to a dated source instruction A
+	 * carries A's dates (the sync-down overwrote its own), not its order-derived truth. Moving it onto an EMPTY
+	 * draft target B must never let A's dates leak into B's fill-if-empty defaulting - B must end up with the
+	 * planning's OWN order-derived dates, exactly as if the planning had never been allocated to A at all.
+	 */
+	@Test
+	@DisplayName("add-to never leaks the SOURCE instruction's dates into an empty TARGET - the moved planning's order-derived truth wins")
+	void addToDoesNotLeakSourceDatesIntoAnEmptyTarget()
+	{
+		final ShipperTransportationId source = draftDeliveryInstruction("SOURCE-6");
+		setETD(source, Timestamp.valueOf("2026-03-20 00:00:00"));
+		final ShipperTransportationId target = draftDeliveryInstruction("TARGET-6");
+
+		final I_M_Delivery_Planning moving = deliveryPlanningWithOrderDerivedDates(Timestamp.valueOf("2026-03-01 00:00:00"));
+		allocateTo(source, moving);
+		assertThat(reload(moving).getETD())
+				.as("sanity: the sync-down contaminated the planning with SOURCE's date before the move")
+				.isEqualTo(Timestamp.valueOf("2026-03-20 00:00:00"));
+
+		deliveryPlanningService.addTo(selectionOf(moving), target);
+
+		final I_M_Delivery_Planning moved = reload(moving);
+		assertThat(moved.getETD())
+				.as("the planning's OWN order-derived ETD, not the source instruction's - the target had nothing "
+						+ "of its own to default from, so a stale snapshot would have leaked SOURCE's date straight through")
+				.isEqualTo(Timestamp.valueOf("2026-03-01 00:00:00"));
+		assertThat(InterfaceWrapperHelper.load(target, I_M_ShipperTransportation.class).getETD())
+				.as("the target itself must show the same order-derived date, not SOURCE's")
+				.isEqualTo(Timestamp.valueOf("2026-03-01 00:00:00"));
 	}
 
 	@Test

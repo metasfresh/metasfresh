@@ -23,28 +23,24 @@
 package de.metas.deliveryplanning;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.model.I_M_ShipperTransportation;
-import de.metas.shipping.model.ShipperTransportationId;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Delivery_Planning;
-import org.compiere.model.X_M_Delivery_Planning;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -60,23 +56,17 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Running on every add rather than only at creation is what makes the feature usable on real data: a
  * planning whose upstream date chain produced nothing leaves the instruction empty, and only a later add can
  * supply the dates. The null guard is what makes running every time safe - it can only fill blanks.
+ * <p>
+ * Exercises {@link DeliveryPlanningService#resolveInstructionDatesForAllocation} directly, as a pure function:
+ * the DECISION lives there (architecture.md §8 - a repository may never make it), so this is where it is
+ * tested. {@link DeliveryPlanningRepository#createAllocations} only ever writes what this resolves, verbatim.
  */
 class DeliveryInstructionDateDefaultsTest
 {
-	private static final int PRODUCT_ID = 540010;
-
-	private DeliveryPlanningRepository deliveryPlanningRepository;
-	private I_C_UOM uom;
-
 	@BeforeEach
 	void setUp()
 	{
 		AdempiereTestHelper.get().init();
-
-		deliveryPlanningRepository = new DeliveryPlanningRepository(Mockito.mock(DimensionService.class));
-
-		uom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
-		InterfaceWrapperHelper.save(uom);
 	}
 
 	private static Timestamp day(final int dayOfMonth)
@@ -84,25 +74,7 @@ class DeliveryInstructionDateDefaultsTest
 		return Timestamp.from(LocalDate.of(2026, 3, dayOfMonth).atStartOfDay(ZoneId.of("UTC")).toInstant());
 	}
 
-	private I_M_Delivery_Planning deliveryPlanning(
-			@Nullable final Timestamp etd,
-			@Nullable final Timestamp eta,
-			@Nullable final String loadingTime)
-	{
-		final I_M_Delivery_Planning record = InterfaceWrapperHelper.newInstance(I_M_Delivery_Planning.class);
-		record.setTransportDirection(X_M_Delivery_Planning.TRANSPORTDIRECTION_Outgoing);
-		record.setM_Product_ID(PRODUCT_ID);
-		record.setC_UOM_ID(uom.getC_UOM_ID());
-		record.setPlannedLoadedQuantity(BigDecimal.TEN);
-		record.setPlannedDischargeQuantity(BigDecimal.ONE);
-		record.setETD(etd);
-		record.setETA(eta);
-		record.setLoadingTime(loadingTime);
-		InterfaceWrapperHelper.save(record);
-		return record;
-	}
-
-	private I_M_ShipperTransportation draftDeliveryInstruction(
+	private static I_M_ShipperTransportation draftDeliveryInstruction(
 			@Nullable final Timestamp etd,
 			@Nullable final Timestamp eta)
 	{
@@ -111,32 +83,44 @@ class DeliveryInstructionDateDefaultsTest
 		record.setDocStatus(DocStatus.Drafted.getCode());
 		record.setETD(etd);
 		record.setETA(eta);
-		InterfaceWrapperHelper.save(record);
 		return record;
 	}
 
-	private void allocate(@NonNull final I_M_ShipperTransportation instruction, @NonNull final I_M_Delivery_Planning planning)
+	/** Exactly the mapping {@code DeliveryPlanningService#createAllocCreateRequest} performs off a loaded planning. */
+	private static DeliveryPlanningAllocCreateRequest allocRequest(
+			@Nullable final Timestamp etd,
+			@Nullable final Timestamp eta,
+			@Nullable final String loadingTime)
 	{
-		deliveryPlanningRepository.createAllocations(
-				ShipperTransportationId.ofRepoId(instruction.getM_ShipperTransportation_ID()),
-				ImmutableList.of(DeliveryPlanningAllocCreateRequest.builder()
-						.deliveryPlanningId(DeliveryPlanningId.ofRepoId(planning.getM_Delivery_Planning_ID()))
-						.productId(ProductId.ofRepoId(PRODUCT_ID))
-						.qtyLoaded(Quantity.of(BigDecimal.TEN, uom))
-						.qtyDischarged(Quantity.of(BigDecimal.ONE, uom))
-						// exactly the mapping DeliveryPlanningService.createAllocCreateRequest performs off the
-						// loaded planning record - the dates travel on the request so the defaulting needs no
-						// second load of rows the caller is already holding
-						.etd(planning.getETD())
-						.eta(planning.getETA())
-						.loadingTime(planning.getLoadingTime())
-						.deliveryTime(planning.getDeliveryTime())
-						.build()));
+		return DeliveryPlanningAllocCreateRequest.builder()
+				.deliveryPlanningId(DeliveryPlanningId.ofRepoId(1))
+				.productId(ProductId.ofRepoId(540010))
+				.qtyLoaded(Quantity.of(BigDecimal.TEN, uom()))
+				.qtyDischarged(Quantity.of(BigDecimal.ONE, uom()))
+				.etd(etd)
+				.eta(eta)
+				.loadingTime(loadingTime)
+				.build();
 	}
 
-	private I_M_ShipperTransportation reload(@NonNull final I_M_ShipperTransportation instruction)
+	private static I_C_UOM uomInstance;
+
+	private static I_C_UOM uom()
 	{
-		return InterfaceWrapperHelper.load(instruction.getM_ShipperTransportation_ID(), I_M_ShipperTransportation.class);
+		if (uomInstance == null)
+		{
+			uomInstance = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
+			InterfaceWrapperHelper.save(uomInstance);
+		}
+		return uomInstance;
+	}
+
+	private static DeliveryInstructionDates resolve(
+			@NonNull final I_M_ShipperTransportation instruction,
+			@NonNull final DeliveryPlanningAllocCreateRequest... requests)
+	{
+		final List<DeliveryPlanningAllocCreateRequest> requestList = ImmutableList.copyOf(requests);
+		return DeliveryPlanningService.resolveInstructionDatesForAllocation(instruction, requestList);
 	}
 
 	@Test
@@ -145,17 +129,16 @@ class DeliveryInstructionDateDefaultsTest
 	{
 		final I_M_ShipperTransportation instruction = draftDeliveryInstruction(null, null);
 
-		allocate(instruction, deliveryPlanning(day(3), day(7), "08:00"));
+		final DeliveryInstructionDates resolved = resolve(instruction, allocRequest(day(3), day(7), "08:00"));
 
-		final I_M_ShipperTransportation reloaded = reload(instruction);
-		assertThat(reloaded.getETD()).as("ETD seeded from the planning").isEqualTo(day(3));
-		assertThat(reloaded.getETA()).as("ETA seeded from the planning").isEqualTo(day(7));
-		assertThat(reloaded.getLoadingTime()).as("LoadingTime seeded from the planning").isEqualTo("08:00");
-		assertThat(reloaded.getATD())
+		assertThat(resolved.getEtd()).as("ETD seeded from the planning").isEqualTo(day(3));
+		assertThat(resolved.getEta()).as("ETA seeded from the planning").isEqualTo(day(7));
+		assertThat(resolved.getLoadingTime()).as("LoadingTime seeded from the planning").isEqualTo("08:00");
+		assertThat(resolved.getAtd())
 				.as("ATD derives from the instruction's ETD FIELD after the fill, exactly as the transport-order "
 						+ "precedent does, so a planner-set ETD propagates into ATD")
 				.isEqualTo(day(3));
-		assertThat(reloaded.getATA()).as("ATA derives from the filled ETA").isEqualTo(day(7));
+		assertThat(resolved.getAta()).as("ATA derives from the filled ETA").isEqualTo(day(7));
 	}
 
 	@Test
@@ -164,32 +147,30 @@ class DeliveryInstructionDateDefaultsTest
 	{
 		final I_M_ShipperTransportation instruction = draftDeliveryInstruction(day(1), null);
 
-		allocate(instruction, deliveryPlanning(day(3), day(7), null));
+		final DeliveryInstructionDates resolved = resolve(instruction, allocRequest(day(3), day(7), null));
 
-		final I_M_ShipperTransportation reloaded = reload(instruction);
-		assertThat(reloaded.getETD())
+		assertThat(resolved.getEtd())
 				.as("these are defaults - a value entered before the allocation must be kept")
 				.isEqualTo(day(1));
-		assertThat(reloaded.getETA())
+		assertThat(resolved.getEta())
 				.as("per field, not per document: one field being set must not skip the whole seed")
 				.isEqualTo(day(7));
-		assertThat(reloaded.getATD()).as("ATD follows the planner's ETD, not the planning's").isEqualTo(day(1));
+		assertThat(resolved.getAtd()).as("ATD follows the planner's ETD, not the planning's").isEqualTo(day(1));
 	}
 
 	@Test
-	@DisplayName("a planning with no dates leaves the instruction untouched - no null-to-null writes, no derived actuals")
+	@DisplayName("a planning with no dates leaves the instruction's resolution empty - no derived actuals from nothing")
 	void planningWithoutDatesLeavesTheInstructionEmpty()
 	{
 		final I_M_ShipperTransportation instruction = draftDeliveryInstruction(null, null);
 
-		allocate(instruction, deliveryPlanning(null, null, null));
+		final DeliveryInstructionDates resolved = resolve(instruction, allocRequest(null, null, null));
 
-		final I_M_ShipperTransportation reloaded = reload(instruction);
-		assertThat(reloaded.getETD()).isNull();
-		assertThat(reloaded.getETA()).isNull();
-		assertThat(reloaded.getATD())
-				.as("an unset ETD must never trigger a pointless null-to-null write on ATD")
+		assertThat(resolved.getEtd()).isNull();
+		assertThat(resolved.getEta()).isNull();
+		assertThat(resolved.getAtd())
+				.as("an unset ETD must never derive a phantom ATD")
 				.isNull();
-		assertThat(reloaded.getATA()).isNull();
+		assertThat(resolved.getAta()).isNull();
 	}
 }
