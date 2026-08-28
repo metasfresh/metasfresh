@@ -2,6 +2,7 @@ package de.metas.inoutcandidate.invalidation.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import de.metas.async.AsyncBatchId;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.ModelCacheInvalidationService;
@@ -221,6 +222,10 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		}
 	}
 
+	// PostgreSQL's driver rejects a single "IN (?,?,...)" statement once the parameter count exceeds ~32,765
+	// (DB-08006, "out-of-range integer as a 2-byte value"); chunk well under that cap.
+	private static final int MAX_IDS_PER_CHUNK = 10_000;
+
 	@Override
 	public void invalidateShipmentSchedules(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
 	{
@@ -232,22 +237,26 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		final String description = truncInvalidateDescription("" + shipmentScheduleIds.size() + " shipment schedules: " + shipmentScheduleIds);
 		final String chunkUUID = UUID.randomUUID().toString();
 
-		final List<Object> sqlParams = new ArrayList<>();
-		sqlParams.add(description);
-		sqlParams.add(chunkUUID);
-		final String sqlInWhereClause = DB.buildSqlList(shipmentScheduleIds, sqlParams); // creates the string and fills the sqlParams list
+		int count = 0;
+		for (final List<ShipmentScheduleId> shipmentScheduleIdsChunk : Iterables.partition(shipmentScheduleIds, MAX_IDS_PER_CHUNK))
+		{
+			final List<Object> sqlParams = new ArrayList<>();
+			sqlParams.add(description);
+			sqlParams.add(chunkUUID);
+			final String sqlInWhereClause = DB.buildSqlList(shipmentScheduleIdsChunk, sqlParams); // creates the string and fills the sqlParams list
 
-		final String sql = "INSERT INTO " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " (M_ShipmentSchedule_ID, Description, C_Async_Batch_ID, ChunkUUID) "
-				+ " SELECT " + I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ", ?, " + I_M_ShipmentSchedule.COLUMNNAME_C_Async_Batch_ID + " , ?"
-				+ " FROM " + I_M_ShipmentSchedule.Table_Name
-				+ " WHERE "
-				// Only our shipment schedule Ids
-				+ I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + " IN " + sqlInWhereClause
-				// Only those which were not already added (technically not necessary, but shall reduce unnecessary bloat)
-				+ "   AND NOT EXISTS (select 1 from " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " e where e.AD_PInstance_ID is NULL and e.M_ShipmentSchedule_ID=" + I_M_ShipmentSchedule.Table_Name + "."
-				+ I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ")";
+			final String sql = "INSERT INTO " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " (M_ShipmentSchedule_ID, Description, C_Async_Batch_ID, ChunkUUID) "
+					+ " SELECT " + I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ", ?, " + I_M_ShipmentSchedule.COLUMNNAME_C_Async_Batch_ID + " , ?"
+					+ " FROM " + I_M_ShipmentSchedule.Table_Name
+					+ " WHERE "
+					// Only our shipment schedule Ids
+					+ I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + " IN " + sqlInWhereClause
+					// Only those which were not already added (technically not necessary, but shall reduce unnecessary bloat)
+					+ "   AND NOT EXISTS (select 1 from " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " e where e.AD_PInstance_ID is NULL and e.M_ShipmentSchedule_ID=" + I_M_ShipmentSchedule.Table_Name + "."
+					+ I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ")";
 
-		final int count = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
+			count += DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
+		}
 		logger.debug("Invalidated {} shipment schedules for M_ShipmentSchedule_IDs={}", count, shipmentScheduleIds);
 
 		if (count > 0)
