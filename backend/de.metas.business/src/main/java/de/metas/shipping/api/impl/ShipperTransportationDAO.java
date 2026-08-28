@@ -129,11 +129,7 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 		final I_M_ShipperTransportation shipperTransportation = newInstance(I_M_ShipperTransportation.class);
 
 		shipperTransportation.setAD_Org_ID(request.getOrgId().getRepoId());
-		// derived from the underlying shipment/receipt, never defaulted: a sales transaction ships Outgoing,
-		// a purchase transaction (e.g. a receipt) is Incoming
-		shipperTransportation.setTransportDirection(request.isSOTrx()
-				? X_M_ShipperTransportation.TRANSPORTDIRECTION_Outgoing
-				: X_M_ShipperTransportation.TRANSPORTDIRECTION_Incoming);
+		shipperTransportation.setTransportDirection(deriveTransportDirection(request));
 		shipperTransportation.setM_Shipper_ID(request.getShipperId().getRepoId());
 		shipperTransportation.setPickupTimeFrom(TimeUtil.asTimestamp(request.getPickupTimeFrom()));
 		shipperTransportation.setPickupTimeTo(TimeUtil.asTimestamp(request.getPickupTimeTo()));
@@ -145,6 +141,17 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 		saveRecord(shipperTransportation);
 
 		return ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
+	}
+
+	/**
+	 * A sales transaction (a shipment) ships Outgoing; a purchase transaction (e.g. a receipt) is Incoming.
+	 * Never defaulted or hardcoded - always derived from the underlying document.
+	 */
+	private static String deriveTransportDirection(@NonNull final CreateShipperTransportationRequest request)
+	{
+		return request.isSOTrx()
+				? X_M_ShipperTransportation.TRANSPORTDIRECTION_Outgoing
+				: X_M_ShipperTransportation.TRANSPORTDIRECTION_Incoming;
 	}
 
 	@Override
@@ -229,6 +236,12 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 			builder.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_Processed, processed);
 		}
 
+		final String transportDirection = query.getTransportDirection();
+		if (transportDirection != null)
+		{
+			builder.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_TransportDirection, transportDirection);
+		}
+
 		return builder.create();
 	}
 
@@ -240,6 +253,7 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 				.shipperBPartnerAndLocationId(request.getShipperBPartnerAndLocationId())
 				.shipDate(request.getShipDate())
 				.orgId(request.getOrgId())
+				.transportDirection(deriveTransportDirection(request))
 				.build())
 				.orElseGet(() -> create(request));
 	}

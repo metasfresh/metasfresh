@@ -52,6 +52,13 @@ public class ShipperTransportationQuery
 	@NonNull @Singular Collection<OrderLineId> orderLineIds;
 	@Nullable Boolean processed;
 
+	/**
+	 * One of {@code X_M_ShipperTransportation.TRANSPORTDIRECTION_*}. Unset matches any direction -
+	 * a transport order's direction (Incoming/Outgoing/Dropship) is not implied by any of this query's
+	 * other fields, so a caller that cares which direction it matches must say so explicitly.
+	 */
+	@Nullable String transportDirection;
+
 	public boolean isAny()
 	{
 		return this.equals(ANY);

@@ -24,6 +24,7 @@ package de.metas.shipping.api.impl;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
+import de.metas.handlingunits.impl.ShipperTransportationQuery;
 import de.metas.organization.OrgId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationDAO;
@@ -125,5 +126,67 @@ class ShipperTransportationDAOTest
 		final I_M_ShipperTransportation transportOrder = load(shipperTransportationId, I_M_ShipperTransportation.class);
 		assertThat(transportOrder.getTransportDirection())
 				.isEqualTo(X_M_ShipperTransportation.TRANSPORTDIRECTION_Outgoing);
+	}
+
+	@Test
+	@DisplayName("getOrCreate must adopt an existing transport order whose direction matches the request")
+	void getOrCreateAdoptsExistingOrder_whenDirectionMatches()
+	{
+		final CreateShipperTransportationRequest request = requestBuilder()
+				.isSOTrx(true) // sales shipment -> Outgoing
+				.build();
+
+		final ShipperTransportationId existingId = shipperTransportationDAO.create(request);
+
+		final ShipperTransportationId foundId = shipperTransportationDAO.getOrCreate(request);
+
+		assertThat(foundId)
+				.as("a same-direction transport order for the same shipper/location/date/org must be reused")
+				.isEqualTo(existingId);
+	}
+
+	@Test
+	@DisplayName("getOrCreate must NOT adopt an existing transport order whose direction differs from the request - e.g. an Incoming one created by a receipt path, while the current request is a sales shipment")
+	void getOrCreateCreatesNewOrder_whenExistingDirectionDiffers()
+	{
+		final CreateShipperTransportationRequest incomingRequest = requestBuilder()
+				.isSOTrx(false) // purchase receipt -> Incoming
+				.build();
+		final ShipperTransportationId incomingId = shipperTransportationDAO.create(incomingRequest);
+
+		final CreateShipperTransportationRequest outgoingRequest = requestBuilder()
+				.isSOTrx(true) // sales shipment -> Outgoing
+				.build();
+
+		final ShipperTransportationId foundId = shipperTransportationDAO.getOrCreate(outgoingRequest);
+
+		assertThat(foundId)
+				.as("an Incoming transport order must never be silently reused for an Outgoing shipment")
+				.isNotEqualTo(incomingId);
+
+		final I_M_ShipperTransportation createdOrder = load(foundId, I_M_ShipperTransportation.class);
+		assertThat(createdOrder.getTransportDirection())
+				.isEqualTo(X_M_ShipperTransportation.TRANSPORTDIRECTION_Outgoing);
+	}
+
+	@Test
+	@DisplayName("a query with no explicit direction still matches transport orders of every direction - existing callers keep matching what they matched before")
+	void getByQuery_matchesAnyDirection_whenTransportDirectionUnset()
+	{
+		final ShipperTransportationId incomingId = shipperTransportationDAO.create(requestBuilder().isSOTrx(false).build());
+		final ShipperTransportationId outgoingId = shipperTransportationDAO.create(requestBuilder().isSOTrx(true).build());
+
+		final ShipperTransportationQuery query = ShipperTransportationQuery.builder()
+				.shipperId(shipperId)
+				.shipperBPartnerAndLocationId(bpartnerAndLocationId)
+				.orgId(OrgId.ofRepoId(0))
+				.build();
+
+		final java.util.Collection<I_M_ShipperTransportation> matches = shipperTransportationDAO.getByQuery(query);
+
+		assertThat(matches)
+				.extracting(I_M_ShipperTransportation::getM_ShipperTransportation_ID)
+				.as("no transportDirection set on the query must not narrow the match by direction")
+				.contains(incomingId.getRepoId(), outgoingId.getRepoId());
 	}
 }
