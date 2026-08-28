@@ -16,8 +16,14 @@
 -- when NO field on a tab has AD_Column.IsKey='Y', the framework falls back to treating every
 -- AD_Column.IsParent='Y' field as a composed row-id part (SqlViewDataRepository.retrieveRowId_MultiKey
 -- -> DocumentId.ofComposedKeyParts). The same two IsParent='Y' columns are also what
--- GridTabVO.buildLinkColumnNames() offers as parent-link candidates for a child tab, so this
--- cooperates with (rather than conflicts with) AD_Tab 546754's own parent-link migration.
+-- GridTabVO.buildLinkColumnNames() offers as parent-link candidates for a child tab.
+--
+-- This is metadata hygiene on the VIEW, not a tab change, and it stands on its own: 5820920 made the
+-- view return N rows per instruction, so a single IsKey column that is constant across those N rows is
+-- simply wrong whether or not anything renders them today. The only tab over this view, 546754, is
+-- PARKED by 5820940 (owner decision 2026-08-28 -- reserved for the future multi-leg / N:N display, and
+-- explicitly NOT the history tab; history is 5821180's own tab over inactive allocations). This script
+-- leaves the view's row identity correct for whoever un-parks it.
 --
 -- No AD_Column INSERT needed: M_Delivery_Planning_ID is already selected by the view and already
 -- has an AD_Column row (585629) -- adding a new column (e.g. M_ShippingPackage_ID) was considered
