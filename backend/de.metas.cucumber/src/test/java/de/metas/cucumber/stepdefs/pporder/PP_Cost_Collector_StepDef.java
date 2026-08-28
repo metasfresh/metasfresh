@@ -33,6 +33,7 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -57,26 +58,16 @@ import static org.eevolution.model.I_PP_Cost_Collector.COLUMNNAME_M_Product_ID;
 import static org.eevolution.model.I_PP_Cost_Collector.COLUMNNAME_MovementQty;
 import static org.eevolution.model.I_PP_Cost_Collector.COLUMNNAME_PP_Cost_Collector_ID;
 
+@RequiredArgsConstructor
 public class PP_Cost_Collector_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final PP_Order_StepDefData ppOrderTable;
-	private final PP_Cost_Collector_StepDefData ppCostCollectorTable;
-	private final M_Product_StepDefData productTable;
-	private final PP_Order_BOMLine_StepDefData bomLineTable;
+	@NonNull private final PP_Order_StepDefData ppOrderTable;
+	@NonNull private final PP_Cost_Collector_StepDefData ppCostCollectorTable;
+	@NonNull private final M_Product_StepDefData productTable;
+	@NonNull private final PP_Order_BOMLine_StepDefData bomLineTable;
 
-	public PP_Cost_Collector_StepDef(
-			@NonNull final PP_Order_StepDefData ppOrderTable,
-			@NonNull final PP_Cost_Collector_StepDefData ppCostCollectorTable,
-			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final PP_Order_BOMLine_StepDefData bomLineTable)
-	{
-		this.ppOrderTable = ppOrderTable;
-		this.ppCostCollectorTable = ppCostCollectorTable;
-		this.productTable = productTable;
-		this.bomLineTable = bomLineTable;
-	}
 
 	/**
 	 * Loads PP_Cost_Collector records from the database by matching the given DataTable rows,

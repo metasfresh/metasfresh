@@ -73,6 +73,7 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -117,6 +118,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RequiredArgsConstructor
 public class PP_Order_StepDef
 {
 	private static final AdMessageKey MISSING_PRODUCT_PLU_CONFIG = AdMessageKey.of("de.metas.externalsystem.leichmehl.ExportPPOrderToLeichMehlService.MissingPLUConfigForProduct");
@@ -134,49 +136,20 @@ public class PP_Order_StepDef
 
 	private final ExportPPOrderToExternalSystem exportPPOrderToExternalSystem = SpringContextHolder.instance.getBean(ExportPPOrderToExternalSystem.class);
 
-	private final M_Product_StepDefData productTable;
-	private final PP_Product_BOM_StepDefData productBOMTable;
-	private final PP_Product_Planning_StepDefData productPlanningTable;
-	private final C_BPartner_StepDefData bPartnerTable;
-	private final PP_Order_StepDefData ppOrderTable;
-	private final S_Resource_StepDefData resourceTable;
-	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
-	private final PP_Order_BOMLine_StepDefData ppOrderBomLineTable;
-	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
-	private final PP_Order_Candidate_StepDefData ppOrderCandidateTable;
-	private final M_HU_StepDefData huTable;
-	private final ExternalSystem_Config_LeichMehl_StepDefData leichMehlConfigTable;
-	private final M_Warehouse_StepDefData warehouseTable;
+	@NonNull private final M_Product_StepDefData productTable;
+	@NonNull private final PP_Product_BOM_StepDefData productBOMTable;
+	@NonNull private final PP_Product_Planning_StepDefData productPlanningTable;
+	@NonNull private final C_BPartner_StepDefData bPartnerTable;
+	@NonNull private final PP_Order_StepDefData ppOrderTable;
+	@NonNull private final S_Resource_StepDefData resourceTable;
+	@NonNull private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
+	@NonNull private final PP_Order_BOMLine_StepDefData ppOrderBomLineTable;
+	@NonNull private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
+	@NonNull private final PP_Order_Candidate_StepDefData ppOrderCandidateTable;
+	@NonNull private final M_HU_StepDefData huTable;
+	@NonNull private final ExternalSystem_Config_LeichMehl_StepDefData leichMehlConfigTable;
+	@NonNull private final M_Warehouse_StepDefData warehouseTable;
 
-	public PP_Order_StepDef(
-			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final PP_Product_BOM_StepDefData productBOMTable,
-			@NonNull final PP_Product_Planning_StepDefData productPlanningTable,
-			@NonNull final C_BPartner_StepDefData bPartnerTable,
-			@NonNull final PP_Order_StepDefData ppOrderTable,
-			@NonNull final S_Resource_StepDefData resourceTable,
-			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
-			@NonNull final PP_Order_BOMLine_StepDefData ppOrderBomLineTable,
-			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable,
-			@NonNull final PP_Order_Candidate_StepDefData ppOrderCandidateTable,
-			@NonNull final M_HU_StepDefData huTable,
-			@NonNull final ExternalSystem_Config_LeichMehl_StepDefData leichMehlConfigTable,
-			@NonNull final M_Warehouse_StepDefData warehouseTable)
-	{
-		this.productTable = productTable;
-		this.productBOMTable = productBOMTable;
-		this.productPlanningTable = productPlanningTable;
-		this.bPartnerTable = bPartnerTable;
-		this.ppOrderTable = ppOrderTable;
-		this.resourceTable = resourceTable;
-		this.attributeSetInstanceTable = attributeSetInstanceTable;
-		this.ppOrderBomLineTable = ppOrderBomLineTable;
-		this.huPiItemProductTable = huPiItemProductTable;
-		this.ppOrderCandidateTable = ppOrderCandidateTable;
-		this.huTable = huTable;
-		this.leichMehlConfigTable = leichMehlConfigTable;
-		this.warehouseTable = warehouseTable;
-	}
 
 	@And("^after not more than (.*)s, PP_Orders are found$")
 	public void validatePP_Order(

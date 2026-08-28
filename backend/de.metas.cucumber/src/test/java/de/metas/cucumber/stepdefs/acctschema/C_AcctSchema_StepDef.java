@@ -29,6 +29,7 @@ import de.metas.costing.CostingMethod;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.accounting.AccountingCucumberHelper;
 import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
 import de.metas.currency.CurrencyCode;
@@ -53,12 +54,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static de.metas.acct.interceptor.C_AcctSchema.DISABLE_CHECK_CURRENCY;
-import static org.assertj.core.api.Assertions.assertThat;
 
 @RequiredArgsConstructor
+/**
+ * Loads and updates {@code C_AcctSchema}. The costing method is global state shared by every scenario on
+ * the executor, so an override made here is recorded and put back by the {@code @After} hook below.
+ */
 public class C_AcctSchema_StepDef
 {
-	private static final long COSTING_METHOD_MAX_WAIT_MILLIS = 10_000;
+	private static final long COSTING_METHOD_MAX_WAIT_SECONDS = 10;
 	private static final long COSTING_METHOD_RECHECK_INTERVAL_MILLIS = 250;
 
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -145,36 +149,43 @@ public class C_AcctSchema_StepDef
 	{
 		// Unwound last-first: a scenario can override the same schema more than once (its Background, then the
 		// scenario body), and only reverse order puts back the value that was there before any of them.
-		AssertionError failure = null;
+		Throwable failure = null;
 		for (int i = costingMethodOverrides.size() - 1; i >= 0; i--)
 		{
-			final CostingMethodOverride override = costingMethodOverrides.get(i);
-
-			// Reset BEFORE loading too: a cached model still carrying the pre-scenario value would make setting
-			// that value a no-op, so the save would emit no UPDATE and the row would keep the overridden one.
-			CacheMgt.get().reset(I_C_AcctSchema.Table_Name, override.getAcctSchemaId().getRepoId());
-
-			final I_C_AcctSchema acctSchema = InterfaceWrapperHelper.load(override.getAcctSchemaId(), I_C_AcctSchema.class);
-			acctSchema.setCostingMethod(override.getOriginalCostingMethod());
-			InterfaceWrapperHelper.saveRecord(acctSchema);
-
 			try
 			{
-				makeCostingMethodEffective(override.getAcctSchemaId(), CostingMethod.ofNullableCode(override.getOriginalCostingMethod()));
+				restore(costingMethodOverrides.get(i));
 			}
-			catch (final AssertionError e)
+			catch (final RuntimeException | AssertionError e)
 			{
-				// Keep unwinding: stopping here would leave the schema on an intermediate override for every
-				// scenario that follows on this executor, burying the actual failure under unrelated ones.
+				// Keep unwinding whatever the failure was: giving up here would leave every override earlier in
+				// the list in place for each scenario that follows, which is the leak this hook exists to prevent.
 				failure = failure != null ? failure : e;
 			}
 		}
 		costingMethodOverrides.clear();
 
-		if (failure != null)
+		if (failure instanceof AssertionError)
 		{
-			throw failure;
+			throw (AssertionError)failure;
 		}
+		else if (failure != null)
+		{
+			throw (RuntimeException)failure;
+		}
+	}
+
+	private void restore(@NonNull final CostingMethodOverride override) throws InterruptedException
+	{
+		// Reset before loading too: a cached model still carrying the pre-scenario value would make setting that
+		// value a no-op, so the save would emit no UPDATE and the row would keep the overridden one.
+		CacheMgt.get().reset(I_C_AcctSchema.Table_Name, override.getAcctSchemaId().getRepoId());
+
+		final I_C_AcctSchema acctSchema = InterfaceWrapperHelper.load(override.getAcctSchemaId(), I_C_AcctSchema.class);
+		acctSchema.setCostingMethod(override.getOriginalCostingMethod());
+		InterfaceWrapperHelper.saveRecord(acctSchema);
+
+		makeCostingMethodEffective(override.getAcctSchemaId(), CostingMethod.ofNullableCode(override.getOriginalCostingMethod()));
 	}
 
 	/**
@@ -199,18 +210,15 @@ public class C_AcctSchema_StepDef
 			return;
 		}
 
-		final long deadlineMillis = System.currentTimeMillis() + COSTING_METHOD_MAX_WAIT_MILLIS;
-		CostingMethod effectiveCostingMethod = getEffectiveCostingMethod(acctSchemaId);
-		while (!costingMethod.equals(effectiveCostingMethod) && System.currentTimeMillis() < deadlineMillis)
-		{
-			Thread.sleep(COSTING_METHOD_RECHECK_INTERVAL_MILLIS);
-			CacheMgt.get().reset(I_C_AcctSchema.Table_Name, acctSchemaId.getRepoId());
-			effectiveCostingMethod = getEffectiveCostingMethod(acctSchemaId);
-		}
-
-		assertThat(effectiveCostingMethod)
-				.as("effective CostingMethod of C_AcctSchema_ID=%s", acctSchemaId.getRepoId())
-				.isEqualTo(costingMethod);
+		StepDefUtil.tryAndWait(
+				COSTING_METHOD_MAX_WAIT_SECONDS,
+				COSTING_METHOD_RECHECK_INTERVAL_MILLIS,
+				() -> {
+					CacheMgt.get().reset(I_C_AcctSchema.Table_Name, acctSchemaId.getRepoId());
+					return costingMethod.equals(getEffectiveCostingMethod(acctSchemaId));
+				},
+				() -> System.out.println("C_AcctSchema_ID=" + acctSchemaId.getRepoId() + " reports "
+						+ getEffectiveCostingMethod(acctSchemaId) + ", waiting for " + costingMethod));
 	}
 
 	private CostingMethod getEffectiveCostingMethod(@NonNull final AcctSchemaId acctSchemaId)

@@ -22,6 +22,7 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
@@ -59,6 +60,7 @@ import java.util.Set;
  */
 
 @Component
+@RequiredArgsConstructor
 public class ManufacturingAveragePOCostingMethodHandler implements CostingMethodHandler
 {
 	// services
@@ -66,24 +68,15 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	private final IPPOrderCostBL ppOrderCostsService = Services.get(IPPOrderCostBL.class);
 	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 	//
-	private final CostingMethodHandlerUtils utils;
-	private final PPOrderCostDifferenceDistributor costDifferenceDistributor;
+	@NonNull private final CostingMethodHandlerUtils utils;
+	@NonNull private final PPOrderCostDifferenceDistributor costDifferenceDistributor;
 
-	private final AveragePOCostingMethodHandler averagePOCostingMethodHandler;
+	@NonNull private final AveragePOCostingMethodHandler averagePOCostingMethodHandler;
 
 	private static final ImmutableSet<String> HANDLED_TABLE_NAMES = ImmutableSet.<String>builder()
 			.add(CostingDocumentRef.TABLE_NAME_PP_Cost_Collector)
 			.build();
 
-	public ManufacturingAveragePOCostingMethodHandler(
-			@NonNull final CostingMethodHandlerUtils utils,
-			@NonNull final PPOrderCostDifferenceDistributor costDifferenceDistributor,
-			@NonNull final AveragePOCostingMethodHandler averagePOCostingMethodHandler)
-	{
-		this.utils = utils;
-		this.costDifferenceDistributor = costDifferenceDistributor;
-		this.averagePOCostingMethodHandler = averagePOCostingMethodHandler;
-	}
 
 	@Override
 	public CostingMethod getCostingMethod()

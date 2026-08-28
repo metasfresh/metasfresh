@@ -22,6 +22,7 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
@@ -59,6 +60,7 @@ import java.util.Set;
  */
 
 @Component
+@RequiredArgsConstructor
 public class ManufacturingLastPOCostingMethodHandler implements CostingMethodHandler
 {
 	private static final ImmutableSet<String> HANDLED_TABLE_NAMES = ImmutableSet.<String>builder()
@@ -69,16 +71,9 @@ public class ManufacturingLastPOCostingMethodHandler implements CostingMethodHan
 	private final IPPOrderCostBL ppOrderCostsService = Services.get(IPPOrderCostBL.class);
 	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 	//
-	private final CostingMethodHandlerUtils utils;
-	private final PPOrderCostDifferenceDistributor costDifferenceDistributor;
+	@NonNull private final CostingMethodHandlerUtils utils;
+	@NonNull private final PPOrderCostDifferenceDistributor costDifferenceDistributor;
 
-	public ManufacturingLastPOCostingMethodHandler(
-			@NonNull final CostingMethodHandlerUtils utils,
-			@NonNull final PPOrderCostDifferenceDistributor costDifferenceDistributor)
-	{
-		this.utils = utils;
-		this.costDifferenceDistributor = costDifferenceDistributor;
-	}
 
 	@Override
 	public CostingMethod getCostingMethod()
