@@ -58,6 +58,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RequiredArgsConstructor
 public class C_AcctSchema_StepDef
 {
+	private static final long COSTING_METHOD_MAX_WAIT_MILLIS = 10_000;
+	private static final long COSTING_METHOD_RECHECK_INTERVAL_MILLIS = 250;
+
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 
@@ -92,13 +95,13 @@ public class C_AcctSchema_StepDef
 				.forEach(this::loadAndUpdate);
 	}
 
-	private void loadAndUpdate(final DataTableRow row)
+	private void loadAndUpdate(final DataTableRow row) throws InterruptedException
 	{
 		loadAcctSchema(row);
 		updateAcctSchema(row);
 	}
 
-	private void updateAcctSchema(final DataTableRow row)
+	private void updateAcctSchema(final DataTableRow row) throws InterruptedException
 	{
 		final StepDefDataIdentifier identifier = row.getAsIdentifier();
 		final I_C_AcctSchema acctSchema = acctSchemaTable.get(identifier);
@@ -138,20 +141,40 @@ public class C_AcctSchema_StepDef
 	 * to the rest of the executor even when it fails part-way; no-op when nothing was overridden.
 	 */
 	@After
-	public void resetCostingMethodOverrides()
+	public void resetCostingMethodOverrides() throws InterruptedException
 	{
 		// Unwound last-first: a scenario can override the same schema more than once (its Background, then the
 		// scenario body), and only reverse order puts back the value that was there before any of them.
+		AssertionError failure = null;
 		for (int i = costingMethodOverrides.size() - 1; i >= 0; i--)
 		{
 			final CostingMethodOverride override = costingMethodOverrides.get(i);
+
+			// Reset BEFORE loading too: a cached model still carrying the pre-scenario value would make setting
+			// that value a no-op, so the save would emit no UPDATE and the row would keep the overridden one.
+			CacheMgt.get().reset(I_C_AcctSchema.Table_Name, override.getAcctSchemaId().getRepoId());
+
 			final I_C_AcctSchema acctSchema = InterfaceWrapperHelper.load(override.getAcctSchemaId(), I_C_AcctSchema.class);
 			acctSchema.setCostingMethod(override.getOriginalCostingMethod());
 			InterfaceWrapperHelper.saveRecord(acctSchema);
 
-			makeCostingMethodEffective(override.getAcctSchemaId(), CostingMethod.ofNullableCode(override.getOriginalCostingMethod()));
+			try
+			{
+				makeCostingMethodEffective(override.getAcctSchemaId(), CostingMethod.ofNullableCode(override.getOriginalCostingMethod()));
+			}
+			catch (final AssertionError e)
+			{
+				// Keep unwinding: stopping here would leave the schema on an intermediate override for every
+				// scenario that follows on this executor, burying the actual failure under unrelated ones.
+				failure = failure != null ? failure : e;
+			}
 		}
 		costingMethodOverrides.clear();
+
+		if (failure != null)
+		{
+			throw failure;
+		}
 	}
 
 	/**
@@ -159,22 +182,40 @@ public class C_AcctSchema_StepDef
 	 * <p>
 	 * The costing method is global state shared by every scenario on the executor, and {@code saveRecord} emits no
 	 * UPDATE when the column already holds the wanted value. Without an UPDATE nothing invalidates
-	 * {@link IAcctSchemaDAO}'s cache, which a preceding scenario can have left holding the costing method IT set:
-	 * that cache is repopulated from the still-uncommitted row while the preceding write is in flight, and the
-	 * write's own invalidation has already fired by then. So reset the cache once the write is committed, and
-	 * assert - a schema that still reads stale fails here, at the step that owns it, instead of silently
-	 * mis-costing a later scenario.
+	 * {@link IAcctSchemaDAO}'s cache, which a preceding scenario can have left holding the costing method IT set.
+	 * <p>
+	 * A single reset does not settle it either: {@link IAcctSchemaDAO} caches all schemas under one key, and a
+	 * reader whose load of that key was already in flight when we wrote stores its pre-write snapshot <em>after</em>
+	 * our reset - an entry that then sticks until the next invalidation. So reset until the DAO reports what the row
+	 * now holds. That converges as soon as those readers are done; a costing method that never becomes effective
+	 * fails here, at the step that owns it, instead of silently mis-costing a later scenario.
 	 */
-	private void makeCostingMethodEffective(@NonNull final AcctSchemaId acctSchemaId, @Nullable final CostingMethod costingMethod)
+	private void makeCostingMethodEffective(@NonNull final AcctSchemaId acctSchemaId, @Nullable final CostingMethod costingMethod) throws InterruptedException
 	{
 		CacheMgt.get().reset(I_C_AcctSchema.Table_Name, acctSchemaId.getRepoId());
 
-		if (costingMethod != null)
+		if (costingMethod == null)
 		{
-			assertThat(acctSchemaDAO.getById(acctSchemaId).getCosting().getCostingMethod())
-					.as("effective CostingMethod of C_AcctSchema_ID=%s", acctSchemaId.getRepoId())
-					.isEqualTo(costingMethod);
+			return;
 		}
+
+		final long deadlineMillis = System.currentTimeMillis() + COSTING_METHOD_MAX_WAIT_MILLIS;
+		CostingMethod effectiveCostingMethod = getEffectiveCostingMethod(acctSchemaId);
+		while (!costingMethod.equals(effectiveCostingMethod) && System.currentTimeMillis() < deadlineMillis)
+		{
+			Thread.sleep(COSTING_METHOD_RECHECK_INTERVAL_MILLIS);
+			CacheMgt.get().reset(I_C_AcctSchema.Table_Name, acctSchemaId.getRepoId());
+			effectiveCostingMethod = getEffectiveCostingMethod(acctSchemaId);
+		}
+
+		assertThat(effectiveCostingMethod)
+				.as("effective CostingMethod of C_AcctSchema_ID=%s", acctSchemaId.getRepoId())
+				.isEqualTo(costingMethod);
+	}
+
+	private CostingMethod getEffectiveCostingMethod(@NonNull final AcctSchemaId acctSchemaId)
+	{
+		return acctSchemaDAO.getById(acctSchemaId).getCosting().getCostingMethod();
 	}
 
 	@Value
