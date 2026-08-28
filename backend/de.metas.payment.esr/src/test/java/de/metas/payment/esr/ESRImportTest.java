@@ -1845,29 +1845,37 @@ public class ESRImportTest extends ESRTestBase
 	@Nested
 	class LineWithoutInvoice
 	{
-		/** Scaffolding for a line whose reference resolves to no invoice at all. */
+		private I_C_BP_BankAccount sharedAccount;
+
+		/**
+		 * Scaffolding for a line whose reference resolves to no invoice at all. The org, reference type and
+		 * bank account are created once and reused: creating them per call makes the org and
+		 * reference-type lookups ambiguous as soon as a test needs a second import.
+		 */
 		private I_ESR_Import importWithUnmatchableLine()
 		{
-			final I_AD_Org org = newInstance(I_AD_Org.class, contextProvider);
-			org.setValue("106");
-			save(org);
+			if (sharedAccount == null)
+			{
+				final I_AD_Org org = newInstance(I_AD_Org.class, contextProvider);
+				org.setValue("106");
+				save(org);
 
-			final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class, contextProvider);
-			refNoType.setName("InvoiceReference");
-			save(refNoType);
+				final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class, contextProvider);
+				refNoType.setName("InvoiceReference");
+				save(refNoType);
 
-			final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
-			final I_C_BP_BankAccount account = createBankAccount(true,
-					org.getAD_Org_ID(),
-					Env.getAD_User_ID(getCtx()),
-					"01-067789-3",
-					currencyEUR);
+				sharedAccount = createBankAccount(true,
+						org.getAD_Org_ID(),
+						Env.getAD_User_ID(getCtx()),
+						"01-067789-3",
+						PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR));
+			}
 
 			// the reference in this line belongs to no invoice in the system
 			final String esrLineText = "01201067789300000001060000000000000000400000050009072  030014040914041014041100001006800000000000090                          ";
 			final I_ESR_Import esrImport = createImport();
-			esrImport.setAD_Org_ID(org.getAD_Org_ID());
-			esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
+			esrImport.setAD_Org_ID(sharedAccount.getAD_Org_ID());
+			esrImport.setC_BP_BankAccount_ID(sharedAccount.getC_BP_BankAccount_ID());
 			save(esrImport);
 
 			esrImportBL.loadAndEvaluateESRImportStream(createImportFile(esrImport), new ByteArrayInputStream(esrLineText.getBytes()));
@@ -1939,6 +1947,47 @@ public class ESRImportTest extends ESRTestBase
 					.as("no action is set for the accountant, so the line stays a visible todo")
 					.isNull();
 			assertThat(line.isProcessed()).as("and the line stays open").isFalse();
+		}
+
+		/**
+		 * Two no-invoice lines for the same payer and amount, on DIFFERENT bank lines. The second line's
+		 * duplicate search finds the first line's payment as a candidate, and because the bank lines differ
+		 * it reaches the invoice route -- where the line has no invoice at all.
+		 * <p>
+		 * On an instance with history any earlier completed payment for that payer and amount is such a
+		 * candidate, so this is the normal case rather than an edge one, and it aborts the whole import.
+		 */
+		@Test
+		void aSecondNoInvoiceLineForTheSamePayerAndAmount_doesNotBlowUp()
+		{
+			final int partnerId = createPartner();
+
+			final I_ESR_Import firstImport = importWithUnmatchableLine();
+			final I_ESR_ImportLine firstLine = ESRTestUtil.retrieveSingleLine(firstImport);
+			firstLine.setC_BPartner_ID(partnerId);
+			firstLine.setESR_IsManual_ReferenceNo(true);
+			save(firstLine);
+			esrImportBL.process(firstImport);
+
+			refresh(firstLine, true);
+			assertThat(firstLine.getC_Payment_ID()).as("guard: the first line booked a payment").isNotZero();
+
+			// a second line, same payer and amount, but NOT the same bank line -- so the "another line already
+			// carries this payment" route cannot match and the invoice route is reached
+			final I_ESR_Import secondImport = importWithUnmatchableLine();
+			final I_ESR_ImportLine secondLine = ESRTestUtil.retrieveSingleLine(secondImport);
+			secondLine.setESRLineText(firstLine.getESRLineText().replace("041100", "041200"));
+			secondLine.setC_BPartner_ID(partnerId);
+			secondLine.setESR_IsManual_ReferenceNo(true);
+			save(secondLine);
+
+			esrImportBL.process(secondImport);
+
+			refresh(secondLine, true);
+			assertThat(secondLine.getC_Payment_ID())
+					.as("the second line must get its own payment, not blow up the import")
+					.isNotZero()
+					.isNotEqualTo(firstLine.getC_Payment_ID());
 		}
 
 		/**
