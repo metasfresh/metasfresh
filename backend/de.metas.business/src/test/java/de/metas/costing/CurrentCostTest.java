@@ -272,7 +272,32 @@ public class CurrentCostTest
 	@Nested
 	public class addToCurrentQtyAndCumulate
 	{
-		/** Over-issue leaves CurrentQty negative — flooring it would fabricate phantom on-hand value with no GL posting. */
+		/**
+		 * The shared, floored variant. Every non-MovingAverageInvoice costing method uses it and must keep
+		 * clamping CurrentQty at zero on over-issue -- this pins that AveragePO / Standard / LastPO / ...
+		 * customers do NOT inherit the MAI-only negative-carrying behaviour.
+		 */
+		@Test
+		public void overIssue_floorsCurrentQtyToZero()
+		{
+			final CurrentCost currentCost = currentCost()
+					.ownCostPrice("1000")
+					.currentQty("1")
+					.build();
+
+			currentCost.addToCurrentQtyAndCumulate(
+					Quantity.of(-5, uomEach),
+					CostAmount.of(0, currencyId));
+
+			assertThat(currentCost.getCurrentQty())
+					.as("the shared variant must floor CurrentQty at zero on over-issue")
+					.isEqualTo(Quantity.of(0, uomEach));
+		}
+
+		/**
+		 * The MovingAverageInvoice-only variant: over-issue leaves CurrentQty negative — flooring it would
+		 * fabricate phantom on-hand value with no GL posting.
+		 */
 		@Test
 		public void overIssue_carriesNegativeCurrentQty()
 		{
@@ -281,7 +306,7 @@ public class CurrentCostTest
 					.currentQty("1")
 					.build();
 
-			currentCost.addToCurrentQtyAndCumulate(
+			currentCost.addToCurrentQtyAndCumulateAllowingNegative(
 					Quantity.of(-5, uomEach),
 					CostAmount.of(0, currencyId));
 
