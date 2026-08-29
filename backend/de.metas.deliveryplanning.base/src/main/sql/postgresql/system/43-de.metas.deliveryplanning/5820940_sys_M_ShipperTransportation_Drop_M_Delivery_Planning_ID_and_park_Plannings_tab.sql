@@ -24,9 +24,9 @@
 -- removed statements' effects reverted by hand).
 --
 -- THE CLASS IS WIDER THAN THESE TWO SCRIPTS. Re-checked 2026-08-29 against 21632: the branch has left 30
--- AD_MigrationScript rows whose file no longer exists at HEAD -- 22 of them the `gh31608_` / `me03_31608_`
--- prefixed duplicates that c366abcf8a1 scrubbed out of the file names, and 8 genuine rename/delete
--- casualties: 5820490, 5820690, 5820700, 5820710, 5820720, 5820820, 5820870, 5820900. A name-keyed,
+-- AD_MigrationScript rows whose file no longer exists at HEAD -- 22 of them duplicates left behind when
+-- c366abcf8a1 scrubbed the retired internal-tracker prefix out of the file names, and 8 genuine
+-- rename/delete casualties: 5820490, 5820690, 5820700, 5820710, 5820720, 5820820, 5820870, 5820900. A name-keyed,
 -- checksum-free applied-check means every one of them has the same shape of hazard as this script's own
 -- rename. To enumerate them on any stack, list the applied names for this branch's prefix range and diff
 -- against the files:
