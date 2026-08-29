@@ -38,7 +38,7 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.When;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -59,7 +59,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * {@link M_ShipperTransportation_StepDefData} instance (injected by PicoContainer), so a delivery instruction stored
  * here is visible to the validating/loading steps.
  */
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class M_Delivery_Instruction_StepDef
 {
 	/** every column {@link #combine_M_Delivery_Planning(DataTable)} understands besides the rejection expectations */

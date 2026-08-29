@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.deliveryplanning.base
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -30,6 +30,20 @@ import org.compiere.model.X_M_Delivery_Planning;
 
 import javax.annotation.Nullable;
 
+/**
+ * The three-valued direction of a transport, shared by two columns that live in two different modules:
+ * {@code M_Delivery_Planning.TransportDirection} (this module) and
+ * {@code M_ShipperTransportation.TransportDirection} ({@code de.metas.business}).
+ * <p>
+ * This enum is reachable only from {@code de.metas.deliveryplanning.base}, so code in
+ * {@code de.metas.business} - notably {@code PurchaseOrderToShipperTransportationService} - has to compare
+ * the raw {@code X_M_ShipperTransportation.TRANSPORTDIRECTION_*} constants instead. That is a known and
+ * accepted asymmetry, NOT a divergence risk: both columns are backed by the SAME
+ * {@code AD_Reference_Value_ID = 541689}, and the two generated constant sets are therefore identical by
+ * construction. Do not "resolve" it by duplicating this enum into the other module - the only correct
+ * resolutions are to leave it as is, or to move this type down into {@code de.metas.business} so both
+ * modules can use it (a cross-module API move, out of scope where this was introduced).
+ */
 public enum TransportDirection implements ReferenceListAwareEnum
 {
 	Incoming(X_M_Delivery_Planning.TRANSPORTDIRECTION_Incoming),

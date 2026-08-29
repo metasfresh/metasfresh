@@ -32,7 +32,7 @@ import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.assertj.core.api.SoftAssertions;
@@ -54,7 +54,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * named planning/instruction pair looks like - including a RETIRED ({@code IsActive='N'}) row, which is how the
  * re-booking trail survives a move, a removal or a void.
  */
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class M_Delivery_Planning_Alloc_StepDef
 {
 	@NonNull private final M_Delivery_Planning_Alloc_StepDefData deliveryPlanningAllocTable;

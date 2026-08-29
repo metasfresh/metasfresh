@@ -36,7 +36,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class M_ShippingPackage
 {
-	private final DeliveryPlanningService deliveryPlanningService;
+	@NonNull private final DeliveryPlanningService deliveryPlanningService;
 
 	/**
 	 * A delivery instruction is cancelled or closed, never deleted - so a shipping package that carries a
