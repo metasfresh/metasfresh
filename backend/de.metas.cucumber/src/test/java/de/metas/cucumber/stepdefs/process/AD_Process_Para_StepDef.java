@@ -2,8 +2,8 @@ package de.metas.cucumber.stepdefs.process;
 
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
-import io.cucumber.datatable.DataTable;
 import de.metas.util.Services;
+import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
@@ -16,7 +16,11 @@ import org.compiere.model.I_AD_Process_Para;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Step definitions for creating {@link I_AD_Process_Para} records in tests.
+ * Step definitions for creating {@link I_AD_Process_Para} records in tests, and for validating the
+ * {@code DefaultValue} an existing one carries in the Application Dictionary.
+ *
+ * <p>The column lists below belong to the CREATE step; the validating step documents its own columns on
+ * {@link #validate_AD_Process_Para(DataTable)}.
  *
  * <p>Required columns:
  * <ul>

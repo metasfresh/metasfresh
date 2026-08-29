@@ -1715,6 +1715,10 @@ public class DeliveryPlanningService
 			final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningIterator.next();
 			final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoId(deliveryPlanningRecord.getM_Delivery_Planning_ID());
 
+			// currently unreachable, and deliberately kept: closing a planning deallocates it, and
+			// DeliveryPlanningRepository.clearInstructionReference nulls its ReleaseNo on the way out - so the
+			// excludeDeliveryPlanningsWithoutReleaseNo filter above has already dropped every closed row before
+			// this test sees it. Do not read an empty getSkippedClosedIds() as "cancel ignores Closed".
 			if (deliveryPlanningRecord.isClosed())
 			{
 				skippedClosedIds.add(deliveryPlanningId);
