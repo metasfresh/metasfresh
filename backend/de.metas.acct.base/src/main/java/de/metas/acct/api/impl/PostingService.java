@@ -13,10 +13,13 @@ import de.metas.acct.posting.log.DocumentPostingLogService;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.SpringContextHolder.Lazy;
 import org.compiere.acct.Doc;
@@ -32,6 +35,7 @@ public class PostingService implements IPostingService
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final Lazy<DocumentPostingUserNotificationService> userNotificationsHolder = SpringContextHolder.lazyBean(DocumentPostingUserNotificationService.class);
 	@NonNull private final Lazy<AcctDocRegistry> acctDocRegistryHolder = SpringContextHolder.lazyBean(AcctDocRegistry.class);
 	@NonNull private final Lazy<DocumentPostingBusService> postingBusServiceHolder = SpringContextHolder.lazyBean(DocumentPostingBusService.class);
@@ -100,6 +104,15 @@ public class PostingService implements IPostingService
 		}
 		catch (final Exception ex)
 		{
+			if (isDocumentDeleted(request.getRecord()))
+			{
+				// The document was deleted after its posting was scheduled - e.g. a settlement which mass-creates
+				// and then deletes match documents. A deleted document has no accounting facts left to post,
+				// so there is nothing to do and this is not an error the user has to know about.
+				logger.debug("Skip posting {} because the document does not exist anymore", request.getRecord());
+				return;
+			}
+
 			final AdempiereException metasfreshException = AdempiereException.wrapIfNeeded(ex);
 			
 			documentPostingLogServiceHolder.get().logPostingError(request, metasfreshException);
@@ -108,6 +121,25 @@ public class PostingService implements IPostingService
 			{
 				userNotificationsHolder.get().notifyPostingError(request.getOnErrorNotifyUserId(), request.getRecord(), metasfreshException);
 			}
+		}
+	}
+
+	private boolean isDocumentDeleted(@NonNull final TableRecordReference documentRef)
+	{
+		final String tableName = documentRef.getTableName();
+		try
+		{
+			return queryBL.createQueryBuilder(tableName)
+					.addEqualsFilter(InterfaceWrapperHelper.getKeyColumnName(tableName), documentRef.getRecord_ID())
+					.create()
+					.noneMatch();
+		}
+		catch (final Exception ex)
+		{
+			// We are called from the catch block of postNow, so an exception thrown here would replace the actual
+			// posting error instead of reporting it. When we cannot tell, assume the document is still there.
+			logger.warn("Failed checking if {} still exists. Considering it as still existing.", documentRef, ex);
+			return false;
 		}
 	}
 
