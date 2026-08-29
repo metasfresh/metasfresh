@@ -21,10 +21,24 @@
 --   select name from ad_migrationscript where name like '%5820940%' or name like '%5820980%';
 -- across ports 21632, 21432, 22432, 21732, 21832, 21941. Only 21632 had ever recorded either script, and it
 -- now records only the new name (its old rows were dropped and the edited scripts re-applied, then the
--- removed statements' effects reverted by hand). The branch has never been merged to a base branch and has
--- never been rolled out to any instance, so the set of environments carrying un-reverted effects is EMPTY --
--- and a compensating migration for an empty set is a guard with no failure scenario it prevents. If this
--- branch is ever applied somewhere else before it merges, that query is what catches it.
+-- removed statements' effects reverted by hand).
+--
+-- THE CLASS IS WIDER THAN THESE TWO SCRIPTS. Re-checked 2026-08-29 against 21632: the branch has left 30
+-- AD_MigrationScript rows whose file no longer exists at HEAD -- 22 of them the `gh31608_` / `me03_31608_`
+-- prefixed duplicates that c366abcf8a1 scrubbed out of the file names, and 8 genuine rename/delete
+-- casualties: 5820490, 5820690, 5820700, 5820710, 5820720, 5820820, 5820870, 5820900. A name-keyed,
+-- checksum-free applied-check means every one of them has the same shape of hazard as this script's own
+-- rename. To enumerate them on any stack, list the applied names for this branch's prefix range and diff
+-- against the files:
+--   select name from ad_migrationscript where name ~ '58(20[4-9]|21[0-2])[0-9]{2}';
+-- and for each row check whether the part after '->' still exists under backend/**/sql/postgresql/.
+--
+-- It is still harmless in production, and for the reason the check above establishes rather than by
+-- assumption: ALL 45 of this branch's migrations are branch-local (`git log origin/deep_tundra_release --
+-- <path>` is empty for every one of them), so none of the retired names ever reached a base branch, and
+-- the branch has never been rolled out to any instance. The set of environments carrying un-reverted
+-- effects is EMPTY -- and a compensating migration for an empty set is a guard with no failure scenario it
+-- prevents. If this branch is ever applied somewhere else before it merges, that query is what catches it.
 
 -- Park AD_Tab 546754 instead of re-purposing it.
 --
@@ -32,7 +46,10 @@
 -- "Versandpaket", untouched) plus a HISTORY tab over INACTIVE M_Delivery_Planning_Alloc rows. The
 -- forward "which plannings are on this instruction" question is answered by Related Documents (the
 -- AD_RelationType added in 5821190), not by a third tab. 546754 is reserved for the future
--- multi-leg / N:N display, so it is taken OFF the window here and left in the AD untouched
+-- multi-leg / N:N display, so it is DEACTIVATED here (IsActive='N') and left in the AD untouched.
+-- "Parked" means exactly that and nothing more: ad_tab.ad_window_id is NOT NULL, so the tab cannot be
+-- detached from window 541657 and still reads AD_Window_ID=541657 / SeqNo 30 -- IsActive='N' IS the park
+-- mechanism. Do not go looking for a detachment that the schema cannot express.
 -- otherwise: its AD_Element 581962 keeps its pre-branch caption and no grid columns are wired.
 --
 -- Only the parent binding has to move, and only because it is FK-forced: 546754 bound to its parent

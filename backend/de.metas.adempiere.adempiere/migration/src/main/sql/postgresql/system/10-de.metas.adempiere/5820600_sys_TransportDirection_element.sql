@@ -60,14 +60,16 @@ UPDATE AD_Element_Trl SET Name='Direction', PrintName='Direction',
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585383,'en_US')
 ;
 
--- 4) de_DE: Name/Description/Help already match the base row; flip IsTranslated='Y'
-UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-27 09:00:14','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=585383 AND AD_Language='de_DE'
+-- 4) de_DE: the seeded row already carries the German base text verbatim, so nothing was translated
+--    into German -- IsTranslated stays 'N', matching this branch's other new elements
+--    (585384..585388) and the AD-wide norm. The DDL call below still propagates the text.
+UPDATE AD_Element_Trl SET IsTranslated='N', Updated=TO_TIMESTAMP('2026-08-27 09:00:14','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=585383 AND AD_Language='de_DE'
 ;
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585383,'de_DE')
 ;
 
--- 5) de_CH: Name/Description/Help already match the base row; flip IsTranslated='Y'
-UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-27 09:00:16','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=585383 AND AD_Language='de_CH'
+-- 5) de_CH: same as de_DE -- base text verbatim, IsTranslated stays 'N'.
+UPDATE AD_Element_Trl SET IsTranslated='N', Updated=TO_TIMESTAMP('2026-08-27 09:00:16','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=585383 AND AD_Language='de_CH'
 ;
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585383,'de_CH')
 ;
