@@ -2,14 +2,14 @@
 @allure.label.epic:E0226_Costing
 @allure.label.feature:F1500_Costing
 @allure.label.feature:F1514_Cost_Type_Moving_Average_Invoice
-@F1500
 @ghActions:run_on_executor6
 Feature: Moving Average Invoice - explicit cost price and negative on-hand
 ## F1500: Costing
 # Moving-Average-Invoice costing under two conditions the on-hand quantity can reach:
 #  - an explicit-cost (year-end) inventory revalues the on-hand cost even when stock is already on hand
-#  - an over-issue drives the on-hand quantity negative; the moving average must carry the negative
-#    on-hand honestly (no floor to zero) and an invoice price variance must not adjust a negative on-hand.
+#  - a genuine over-issue (a non-reversal shipment of more than is on hand) drives the on-hand quantity
+#    negative; the moving average must carry the negative on-hand honestly (no floor to zero) and an
+#    invoice price variance must not adjust a negative on-hand.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -76,13 +76,18 @@ Feature: Moving Average Invoice - explicit cost price and negative on-hand
       | invYearEnd     | invYearEnd_l1      | 2021-12-31   | warehouseStd   | product      | 10      | 20       | PCE          | 15        |
     Then after not more than 10s, M_CostDetails are found for product product and cost element MovingAverageInvoice
       | TableName       | Record_ID     | IsSOTrx | Amt     | Qty    | IsChangingCosts |
+      | M_InventoryLine | invOpening_l1 | N       | 100 CHF | 10 PCE | Y               |
       | M_InventoryLine | invYearEnd_l1 | N       | 150 CHF | 10 PCE | Y               |
+    #
+    # The cumulated amount is the running sum of the per-transaction deltas (100 + 150 = 250), not the
+    # revalued stock value (15 * 20 = 300).
+    #
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
-      | acctSchema      | product      | MovingAverageInvoice | 15 CHF           | 20 PCE     | 300 CHF      |
+      | acctSchema      | product      | MovingAverageInvoice | 15 CHF           | 20 PCE     | 250 CHF      |
 
   @Id:S26253_TC21
-  Scenario: An over-issue keeps the on-hand quantity negative and a later receipt keeps a faithful moving average
+  Scenario: A non-reversal over-issue drives the on-hand quantity negative and it is carried honestly
     #
     # Receive 10 PCE at 10 CHF.
     #
@@ -92,53 +97,73 @@ Feature: Moving Average Invoice - explicit cost price and negative on-hand
     And for costing, create completed material receipt with one line
       | C_OrderLine_ID | M_InOut_ID | M_InOutLine_ID |
       | po_l1          | receipt    | receipt_line1  |
+    Then after not more than 10s, M_CostDetails are found for product product and cost element MovingAverageInvoice
+      | TableName   | Record_ID     | IsSOTrx | Amt     | Qty    | IsChangingCosts |
+      | M_InOutLine | receipt_line1 | N       | 100 CHF | 10 PCE | Y               |
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
       | acctSchema      | product      | MovingAverageInvoice | 10 CHF           | 10 PCE     | 100 CHF      |
     #
-    # Sell and ship all 10 PCE: the on-hand quantity is back to zero.
+    # Ship all 10 PCE that are on hand: the on-hand quantity returns to zero.
     #
     When for costing, create completed order with one line
       | C_OrderLine_ID | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | M_Product_ID | QtyEntered | Price |
-      | so_l1          | customer      | 2021-04-16  | SOO         | warehouseStd   | product      | 10         | 19    |
+      | soFull_l1      | customer      | 2021-04-16  | SOO         | warehouseStd   | product      | 10         | 19    |
     And for costing, create completed shipment with one line
-      | C_OrderLine_ID | M_InOutLine_ID |
-      | so_l1          | shipment_line1 |
-    Then validate current costs
+      | C_OrderLine_ID | M_InOutLine_ID     |
+      | soFull_l1      | shipmentFull_line1 |
+    Then after not more than 10s, M_CostDetails are found for product product and cost element MovingAverageInvoice
+      | TableName   | Record_ID          | IsSOTrx | Amt      | Qty     | IsChangingCosts |
+      | M_InOutLine | receipt_line1      | N       | 100 CHF  | 10 PCE  | Y               |
+      | M_InOutLine | shipmentFull_line1 | Y       | -100 CHF | -10 PCE | Y               |
+    And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
       | acctSchema      | product      | MovingAverageInvoice | 10 CHF           | 0 PCE      | 0 CHF        |
     #
-    # The receipt is found to be erroneous and reversed. The goods are already shipped, so reversing the
-    # receipt drives the on-hand quantity NEGATIVE (-10). It must NOT be floored to zero.
+    # Over-issue: a force-delivery sales order ships another 5 PCE though nothing is on hand. The on-hand
+    # goes to -5 through CurrentCost.addToCurrentQtyAndCumulate, which carries the quantity UNCLAMPED (a
+    # floor to zero would leave it at 0). The cost price stays 10; the cumulated amount follows the running
+    # sum of deltas: 100 - 100 - 50 = -50.
     #
-    When the material receipt identified by receipt is reversed as receiptReversal
+    When for costing, create completed order with one line
+      | C_OrderLine_ID | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | M_Product_ID | QtyEntered | Price | DeliveryRule |
+      | soOver_l1      | customer      | 2021-04-16  | SOO         | warehouseStd   | product      | 5          | 19    | F            |
+    And for costing, create completed shipment with one line
+      | C_OrderLine_ID | M_InOutLine_ID     |
+      | soOver_l1      | shipmentOver_line1 |
     Then after not more than 10s, M_CostDetails are found for product product and cost element MovingAverageInvoice
-      | TableName   | Record_ID           | IsSOTrx | Amt      | Qty     | IsChangingCosts |
-      | M_InOutLine | receipt_line1       | N       | 100 CHF  | 10 PCE  | Y               |
-      | M_InOutLine | shipment_line1      | Y       | -100 CHF | -10 PCE | Y               |
-      | M_InOutLine | receiptReversal_line1 | N     | -100 CHF | -10 PCE | Y               |
+      | TableName   | Record_ID          | IsSOTrx | Amt      | Qty     | IsChangingCosts |
+      | M_InOutLine | receipt_line1      | N       | 100 CHF  | 10 PCE  | Y               |
+      | M_InOutLine | shipmentFull_line1 | Y       | -100 CHF | -10 PCE | Y               |
+      | M_InOutLine | shipmentOver_line1 | Y       | -50 CHF  | -5 PCE  | Y               |
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
-      | acctSchema      | product      | MovingAverageInvoice | 10 CHF           | -10 PCE    | -100 CHF     |
+      | acctSchema      | product      | MovingAverageInvoice | 10 CHF           | -5 PCE     | -50 CHF      |
     #
-    # A corrected receipt of 20 PCE at 12 CHF arrives. The moving average must blend onto the negative
-    # on-hand honestly: (-100 + 240) / (-10 + 20) = 140 / 10 = 14 CHF. Flooring the earlier over-issue to
-    # zero would have produced a wrong average (7 CHF over 20 PCE).
+    # A corrected receipt of 15 PCE at 12 CHF blends onto the negative on-hand honestly:
+    # (10 * -5 + 12 * 15) / (-5 + 15) = 130 / 10 = 13 CHF. Flooring the earlier over-issue to zero
+    # would have produced a wrong average.
     #
     When for costing, create completed order with one line
       | C_OrderLine_ID | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | M_Product_ID | QtyEntered | Price |
-      | poFix_l1       | vendor        | 2021-04-16  | POO         | warehouseStd   | product      | 20         | 12    |
+      | poFix_l1       | vendor        | 2021-04-16  | POO         | warehouseStd   | product      | 15         | 12    |
     And for costing, create completed material receipt with one line
-      | C_OrderLine_ID | M_InOut_ID  | M_InOutLine_ID   |
-      | poFix_l1       | receiptFix  | receiptFix_line1 |
-    Then validate current costs
+      | C_OrderLine_ID | M_InOut_ID | M_InOutLine_ID   |
+      | poFix_l1       | receiptFix | receiptFix_line1 |
+    Then after not more than 10s, M_CostDetails are found for product product and cost element MovingAverageInvoice
+      | TableName   | Record_ID          | IsSOTrx | Amt      | Qty     | IsChangingCosts |
+      | M_InOutLine | receipt_line1      | N       | 100 CHF  | 10 PCE  | Y               |
+      | M_InOutLine | shipmentFull_line1 | Y       | -100 CHF | -10 PCE | Y               |
+      | M_InOutLine | shipmentOver_line1 | Y       | -50 CHF  | -5 PCE  | Y               |
+      | M_InOutLine | receiptFix_line1   | N       | 180 CHF  | 15 PCE  | Y               |
+    And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
-      | acctSchema      | product      | MovingAverageInvoice | 14 CHF           | 10 PCE     | 140 CHF      |
+      | acctSchema      | product      | MovingAverageInvoice | 13 CHF           | 10 PCE     | 130 CHF      |
 
   @Id:S26253_TC22
   Scenario: An invoice price variance against a negative on-hand posts entirely to COGS, not to on-hand
     #
-    # Receive two deliveries of 10 PCE at 10 CHF each (on-hand 20 PCE).
+    # Receive 10 PCE at 10 CHF.
     #
     Given for costing, create completed order with one line
       | C_OrderLine_ID | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | M_Product_ID | QtyEntered | Price |
@@ -146,43 +171,63 @@ Feature: Moving Average Invoice - explicit cost price and negative on-hand
     And for costing, create completed material receipt with one line
       | C_OrderLine_ID | M_InOut_ID | M_InOutLine_ID |
       | poA_l1         | receiptA   | receiptA_line1 |
-    And for costing, create completed order with one line
-      | C_OrderLine_ID | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | M_Product_ID | QtyEntered | Price |
-      | poB_l1         | vendor        | 2021-04-16  | POO         | warehouseStd   | product      | 10         | 10    |
-    And for costing, create completed material receipt with one line
-      | C_OrderLine_ID | M_InOut_ID | M_InOutLine_ID |
-      | poB_l1         | receiptB   | receiptB_line1 |
+    Then after not more than 10s, M_CostDetails are found for product product and cost element MovingAverageInvoice
+      | TableName   | Record_ID      | IsSOTrx | Amt     | Qty    | IsChangingCosts |
+      | M_InOutLine | receiptA_line1 | N       | 100 CHF | 10 PCE | Y               |
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
-      | acctSchema      | product      | MovingAverageInvoice | 10 CHF           | 20 PCE     | 200 CHF      |
+      | acctSchema      | product      | MovingAverageInvoice | 10 CHF           | 10 PCE     | 100 CHF      |
     #
-    # Sell and ship all 20 PCE (on-hand back to zero), then reverse delivery B's receipt: on-hand goes
-    # negative (-10). Delivery A's receipt is untouched, so its vendor invoice can still be matched.
+    # Ship all 10 PCE that are on hand: the on-hand quantity returns to zero.
     #
     When for costing, create completed order with one line
       | C_OrderLine_ID | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | M_Product_ID | QtyEntered | Price |
-      | so_l1          | customer      | 2021-04-16  | SOO         | warehouseStd   | product      | 20         | 19    |
+      | soFull_l1      | customer      | 2021-04-16  | SOO         | warehouseStd   | product      | 10         | 19    |
     And for costing, create completed shipment with one line
-      | C_OrderLine_ID | M_InOutLine_ID |
-      | so_l1          | shipment_line1 |
-    And the material receipt identified by receiptB is reversed as receiptBReversal
-    Then validate current costs
+      | C_OrderLine_ID | M_InOutLine_ID     |
+      | soFull_l1      | shipmentFull_line1 |
+    Then after not more than 10s, M_CostDetails are found for product product and cost element MovingAverageInvoice
+      | TableName   | Record_ID          | IsSOTrx | Amt      | Qty     | IsChangingCosts |
+      | M_InOutLine | receiptA_line1     | N       | 100 CHF  | 10 PCE  | Y               |
+      | M_InOutLine | shipmentFull_line1 | Y       | -100 CHF | -10 PCE | Y               |
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
+      | acctSchema      | product      | MovingAverageInvoice | 10 CHF           | 0 PCE      | 0 CHF        |
+    #
+    # Over-issue: a force-delivery sales order ships another 10 PCE though nothing is on hand, driving the
+    # on-hand to -10 through the non-reversal shipment path (carried unclamped). Delivery A's receipt is
+    # untouched, so its vendor invoice can still be matched.
+    #
+    When for costing, create completed order with one line
+      | C_OrderLine_ID | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | M_Product_ID | QtyEntered | Price | DeliveryRule |
+      | soOver_l1      | customer      | 2021-04-16  | SOO         | warehouseStd   | product      | 10         | 19    | F            |
+    And for costing, create completed shipment with one line
+      | C_OrderLine_ID | M_InOutLine_ID     |
+      | soOver_l1      | shipmentOver_line1 |
+    Then after not more than 10s, M_CostDetails are found for product product and cost element MovingAverageInvoice
+      | TableName   | Record_ID          | IsSOTrx | Amt      | Qty     | IsChangingCosts |
+      | M_InOutLine | receiptA_line1     | N       | 100 CHF  | 10 PCE  | Y               |
+      | M_InOutLine | shipmentFull_line1 | Y       | -100 CHF | -10 PCE | Y               |
+      | M_InOutLine | shipmentOver_line1 | Y       | -100 CHF | -10 PCE | Y               |
+    And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
       | acctSchema      | product      | MovingAverageInvoice | 10 CHF           | -10 PCE    | -100 CHF     |
     #
     # Delivery A's vendor invoice arrives at 13 CHF (a 3 CHF/PCE price variance). Because the on-hand
     # quantity is negative, NONE of the difference may adjust the on-hand cost price: the whole 30 CHF
-    # variance is period cost (ALREADY_SHIPPED / COGS), the on-hand adjustment is 0, and the current cost
-    # price stays 10.
+    # variance is period cost (ALREADY_SHIPPED / COGS), the on-hand adjustment is 0 (so no ADJUSTMENT cost
+    # detail is produced), and the current cost price stays 10.
     #
     When for costing, create completed invoice with one line
       | C_OrderLine_ID | PriceEntered_Override | M_MatchInv_ID |
       | poA_l1         | 13                    | matchInvA     |
     Then after not more than 10s, M_CostDetails are found for product product and cost element MovingAverageInvoice
-      | TableName  | Record_ID | IsSOTrx | AmtType         | Amt     | Qty    | IsChangingCosts |
-      | M_MatchInv | matchInvA | N       | MAIN            | 130 CHF | 10 PCE | N               |
-      | M_MatchInv | matchInvA | N       | ADJUSTMENT      | 0 CHF   | 0 PCE  | Y               |
-      | M_MatchInv | matchInvA | N       | ALREADY_SHIPPED | 30 CHF  | 0 PCE  | Y               |
+      | TableName   | Record_ID          | IsSOTrx | AmtType         | Amt      | Qty     | IsChangingCosts |
+      | M_InOutLine | receiptA_line1     | N       |                 | 100 CHF  | 10 PCE  | Y               |
+      | M_InOutLine | shipmentFull_line1 | Y       |                 | -100 CHF | -10 PCE | Y               |
+      | M_InOutLine | shipmentOver_line1 | Y       |                 | -100 CHF | -10 PCE | Y               |
+      | M_MatchInv  | matchInvA          | N       | MAIN            | 130 CHF  | 10 PCE  | N               |
+      | M_MatchInv  | matchInvA          | N       | ALREADY_SHIPPED | 30 CHF   | 0 PCE   | N               |
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
       | acctSchema      | product      | MovingAverageInvoice | 10 CHF           | -10 PCE    | -100 CHF     |
