@@ -212,7 +212,7 @@ public class ManufacturingMovingAverageInvoiceCostingMethodHandler implements Co
 			requestEffective = request.withAmountAndQty(amt, qty);
 			result = utils.createCostDetailRecordWithChangedCosts(requestEffective, previousCosts);
 
-			currentCosts.addToCurrentQtyAndCumulateAllowingNegative(requestEffective.getQty(), requestEffective.getAmt());
+			currentCosts.addToCurrentQtyAndCumulate(requestEffective.getQty(), requestEffective.getAmt());
 		}
 
 		// Accumulate to order costs

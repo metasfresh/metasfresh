@@ -264,7 +264,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 
 			if (!request.isReversal())
 			{
-				currentCosts.addToCurrentQtyAndCumulateAllowingNegative(shippedButNotNotifiedResult.getAmtAndQty(type));
+				currentCosts.addToCurrentQtyAndCumulate(shippedButNotNotifiedResult.getAmtAndQty(type));
 			}
 			else
 			{
@@ -378,7 +378,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 			}
 			else
 			{
-				currentCosts.addToCurrentQtyAndCumulateAllowingNegative(qty, amt);
+				currentCosts.addToCurrentQtyAndCumulate(qty, amt);
 			}
 		}
 
@@ -457,7 +457,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 					outboundCostDetailRequest,
 					outboundPreviousCosts);
 
-			outboundCurrentCosts.addToCurrentQtyAndCumulateAllowingNegative(outboundQty, outboundAmt, utils.getQuantityUOMConverter());
+			outboundCurrentCosts.addToCurrentQtyAndCumulate(outboundQty, outboundAmt, utils.getQuantityUOMConverter());
 			utils.saveCurrentCost(outboundCurrentCosts);
 
 			// Inbound cost
@@ -637,7 +637,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		}
 		else
 		{
-			currentCosts.addToCurrentQtyAndCumulateAllowingNegative(qty.negate(), negateAmount, utils.getQuantityUOMConverter());
+			currentCosts.addToCurrentQtyAndCumulate(qty.negate(), negateAmount, utils.getQuantityUOMConverter());
 		}
 
 		utils.saveCurrentCost(currentCosts);

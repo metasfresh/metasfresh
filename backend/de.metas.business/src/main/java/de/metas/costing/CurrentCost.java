@@ -294,42 +294,6 @@ public final class CurrentCost
 		addToCurrentQtyAndCumulate(amtAndQty.getQty(), amtAndQty.getAmt());
 	}
 
-	public void addToCurrentQtyAndCumulateAllowingNegative(
-			@NonNull final Quantity qtyToAdd,
-			@NonNull final CostAmount amt,
-			@NonNull final QuantityUOMConverter uomConverter)
-	{
-		final Quantity qtyToAddConv = uomConverter.convertQuantityTo(qtyToAdd, costSegment.getProductId(), uomId);
-		addToCurrentQtyAndCumulateAllowingNegative(qtyToAddConv, amt);
-	}
-
-	/**
-	 * Same as {@link #addToCurrentQtyAndCumulate(Quantity, CostAmount)} but the resulting {@code CurrentQty}
-	 * is NOT clamped at zero.
-	 * <p>
-	 * Clamping an over-issue back to zero fabricates on-hand quantity that no document ever created: the
-	 * subsequent inbound then re-averages against that phantom quantity (see
-	 * {@link #addWeightedAverage(CostAmount, Quantity, QuantityUOMConverter)}, which weights by
-	 * {@code CurrentQty}), so the cost price sticks and {@code CurrentCostPrice * CurrentQty} drifts away from
-	 * what is booked on the product-asset account. Carrying the negative keeps the two reconcilable.
-	 * <p>
-	 * Only the MovingAverageInvoice handlers use this; every other costing method keeps the clamping variant,
-	 * so their behaviour is unchanged.
-	 */
-	public void addToCurrentQtyAndCumulateAllowingNegative(
-			@NonNull final Quantity qtyToAdd,
-			@NonNull final CostAmount amt)
-	{
-		currentQty = currentQty.add(qtyToAdd);
-
-		addCumulatedAmtAndQty(amt, qtyToAdd);
-	}
-
-	public void addToCurrentQtyAndCumulateAllowingNegative(@NonNull final CostAmountAndQty amtAndQty)
-	{
-		addToCurrentQtyAndCumulateAllowingNegative(amtAndQty.getQty(), amtAndQty.getAmt());
-	}
-
 	public void setCostPrice(@NonNull final CostPrice costPrice)
 	{
 		this.costPrice = costPrice;
