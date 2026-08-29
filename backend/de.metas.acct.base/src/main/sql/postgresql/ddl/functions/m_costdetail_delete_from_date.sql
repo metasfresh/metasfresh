@@ -123,23 +123,7 @@ BEGIN
                 v_next_currentcostprice := v_firstCostDetail.prev_currentcostprice;
                 v_next_currentcostpricell := v_firstCostDetail.prev_currentcostpricell;
                 v_next_currentqty := v_firstCostDetail.prev_currentqty + v_firstCostDetail.qty;
-                -- SQL FOLLOWS JAVA. This rewind must reproduce what the posting layer would have left in
-                -- M_Cost: the recompute deletes the cost details from the target date on, and the costing
-                -- handlers then replay forward starting from exactly this value.
-                --   MovingAverageInvoice ('M') is the ONE method whose handlers carry a negative CurrentQty
-                --     through an over-issue (de.metas.costing.CurrentCost.addToCurrentQtyAndCumulateAllowingNegative,
-                --     used only by the MovingAverageInvoice handlers), so the clamp is skipped for it.
-                --   Every other method still clamps at zero on an over-issue
-                --     (de.metas.costing.CurrentCost.addToCurrentQtyAndCumulate), so the clamp stays for them.
-                -- CONCRETE FAILURE SCENARIO THIS PREVENTS: clamping for 'M' rewinds M_Cost to a floored
-                -- starting quantity while the forward replay is unfloored, so the replay treats quantity that
-                -- no document ever created as real on-hand. That phantom quantity is then the WEIGHT in the
-                -- weighted average (CurrentCost.addWeightedAverage derives the running amount from
-                -- price * CurrentQty), which makes the cost price sticky and drives CurrentCostPrice*CurrentQty
-                -- away from what is booked on the product-asset account.
-                -- A NULL costingmethod (unresolvable cost element) makes the comparison NULL, and
-                -- IS DISTINCT FROM yields TRUE there, so it keeps the historical clamping behaviour.
-                IF (v_next_currentqty < 0 AND v_costingmethod IS DISTINCT FROM 'M') THEN
+                IF (v_next_currentqty < 0) THEN
                     v_next_currentqty := 0;
                 END IF;
                 v_next_cumulatedamt := v_firstCostDetail.prev_cumulatedamt + v_firstCostDetail.amt;
