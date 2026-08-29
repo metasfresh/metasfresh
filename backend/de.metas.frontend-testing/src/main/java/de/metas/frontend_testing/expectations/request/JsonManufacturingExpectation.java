@@ -24,6 +24,11 @@ public class JsonManufacturingExpectation
 	@Jacksonized
 	public static class ReceivedHU
 	{
+		/**
+		 * Binds the received HU itself, whatever its structure. Needed for a bare VHU/CU receipt, which has
+		 * neither an LU nor a TU parent — bind it here and assert its {@code huType} under {@code hus}.
+		 */
+		@Nullable Identifier hu;
 		@Nullable Identifier lu;
 		@Nullable Identifier tu;
 		@Nullable QtyAndUOMString qty;
