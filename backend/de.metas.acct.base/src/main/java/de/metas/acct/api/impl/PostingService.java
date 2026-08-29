@@ -5,6 +5,7 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.DocumentPostMultiRequest;
 import de.metas.acct.api.DocumentPostRequest;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.acct.api.IPostingDocumentDAO;
 import de.metas.acct.api.IPostingService;
 import de.metas.acct.doc.AcctDocRegistry;
 import de.metas.acct.posting.DocumentPostingBusService;
@@ -13,10 +14,8 @@ import de.metas.acct.posting.log.DocumentPostingLogService;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -35,7 +34,7 @@ public class PostingService implements IPostingService
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IPostingDocumentDAO postingDocumentDAO = Services.get(IPostingDocumentDAO.class);
 	@NonNull private final Lazy<DocumentPostingUserNotificationService> userNotificationsHolder = SpringContextHolder.lazyBean(DocumentPostingUserNotificationService.class);
 	@NonNull private final Lazy<AcctDocRegistry> acctDocRegistryHolder = SpringContextHolder.lazyBean(AcctDocRegistry.class);
 	@NonNull private final Lazy<DocumentPostingBusService> postingBusServiceHolder = SpringContextHolder.lazyBean(DocumentPostingBusService.class);
@@ -109,7 +108,8 @@ public class PostingService implements IPostingService
 				// The document was deleted after its posting was scheduled - e.g. a settlement which mass-creates
 				// and then deletes match documents. A deleted document has no accounting facts left to post,
 				// so there is nothing to do and this is not an error the user has to know about.
-				logger.debug("Skip posting {} because the document does not exist anymore", request.getRecord());
+				// We still log the exception which brought us here, else the only trace of it would be lost.
+				logger.debug("Skip posting {} because the document does not exist anymore", request.getRecord(), ex);
 				return;
 			}
 
@@ -126,13 +126,9 @@ public class PostingService implements IPostingService
 
 	private boolean isDocumentDeleted(@NonNull final TableRecordReference documentRef)
 	{
-		final String tableName = documentRef.getTableName();
 		try
 		{
-			return queryBL.createQueryBuilder(tableName)
-					.addEqualsFilter(InterfaceWrapperHelper.getKeyColumnName(tableName), documentRef.getRecord_ID())
-					.create()
-					.noneMatch();
+			return !postingDocumentDAO.exists(documentRef);
 		}
 		catch (final Exception ex)
 		{
