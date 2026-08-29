@@ -119,6 +119,7 @@ class ManufacturingRepostCostCollectorTest
 
 	private CostElementRepository costElementRepo;
 	private CostingMethodHandlerUtils utils;
+	private PPOrderCostDifferenceDistributor distributor;
 
 	// per-test, set up by setupOrderFor(..)
 	private AcctSchemaId acctSchemaId;
@@ -133,10 +134,11 @@ class ManufacturingRepostCostCollectorTest
 		AveragePO(CostingMethod.AveragePO)
 				{
 					@Override
-					CostingMethodHandler createHandler(final CostingMethodHandlerUtils utils)
+					CostingMethodHandler createHandler(final CostingMethodHandlerUtils utils, final PPOrderCostDifferenceDistributor distributor)
 					{
 						return new ManufacturingAveragePOCostingMethodHandler(
 								utils,
+								distributor,
 								new AveragePOCostingMethodHandler(
 										utils,
 										MatchInvoiceService.newInstanceForUnitTesting(),
@@ -146,18 +148,19 @@ class ManufacturingRepostCostCollectorTest
 		LastPO(CostingMethod.LastPOPrice)
 				{
 					@Override
-					CostingMethodHandler createHandler(final CostingMethodHandlerUtils utils)
+					CostingMethodHandler createHandler(final CostingMethodHandlerUtils utils, final PPOrderCostDifferenceDistributor distributor)
 					{
-						return new ManufacturingLastPOCostingMethodHandler(utils);
+						return new ManufacturingLastPOCostingMethodHandler(utils, distributor);
 					}
 				},
 		MovingAverageInvoice(CostingMethod.MovingAverageInvoice)
 				{
 					@Override
-					CostingMethodHandler createHandler(final CostingMethodHandlerUtils utils)
+					CostingMethodHandler createHandler(final CostingMethodHandlerUtils utils, final PPOrderCostDifferenceDistributor distributor)
 					{
 						return new ManufacturingMovingAverageInvoiceCostingMethodHandler(
 								utils,
+								distributor,
 								new MovingAverageInvoiceCostingMethodHandler(
 										utils,
 										MatchInvoiceService.newInstanceForUnitTesting(),
@@ -170,7 +173,7 @@ class ManufacturingRepostCostCollectorTest
 
 		ManufacturingHandlerUnderTest(@NonNull final CostingMethod costingMethod) {this.costingMethod = costingMethod;}
 
-		abstract CostingMethodHandler createHandler(CostingMethodHandlerUtils utils);
+		abstract CostingMethodHandler createHandler(CostingMethodHandlerUtils utils, PPOrderCostDifferenceDistributor distributor);
 	}
 
 	@BeforeEach
@@ -192,6 +195,7 @@ class ManufacturingRepostCostCollectorTest
 				new CurrencyRepository(),
 				new CurrentCostsRepository(costElementRepo),
 				new CostDetailService(new CostDetailRepository(), costElementRepo));
+		distributor = new PPOrderCostDifferenceDistributor(costElementRepo, utils);
 	}
 
 	@ParameterizedTest
@@ -206,7 +210,7 @@ class ManufacturingRepostCostCollectorTest
 
 		assertThat(utils.getExistingCostDetails(request)).hasSize(1);
 
-		final CurrentCost componentCost = utils.getCurrentCostForUpdate(request);
+		final CurrentCost componentCost = utils.getCurrentCost(request);
 		assertThat(componentCost.getCurrentQty().toBigDecimal()).isEqualByComparingTo(COMPONENT_CURRENT_QTY_AFTER_ONE_ISSUE);
 		assertThat(componentCost.getCumulatedQty().toBigDecimal()).isEqualByComparingTo(ISSUED_QTY);
 	}
@@ -223,7 +227,7 @@ class ManufacturingRepostCostCollectorTest
 
 		assertThat(utils.getExistingCostDetails(request)).hasSize(1);
 
-		final CurrentCost mainProductCost = utils.getCurrentCostForUpdate(request);
+		final CurrentCost mainProductCost = utils.getCurrentCost(request);
 		assertThat(mainProductCost.getCurrentQty().toBigDecimal()).isEqualByComparingTo(MAIN_PRODUCT_CURRENT_QTY_AFTER_ONE_RECEIPT);
 		assertThat(mainProductCost.getCumulatedQty().toBigDecimal()).isEqualByComparingTo(RECEIVED_QTY);
 	}
@@ -242,7 +246,7 @@ class ManufacturingRepostCostCollectorTest
 				.currencyId(currencyId)
 				.build();
 		costElement = costElementRepo.getOrCreateMaterialCostElement(clientId, handlerUnderTest.costingMethod);
-		handler = handlerUnderTest.createHandler(utils);
+		handler = handlerUnderTest.createHandler(utils, distributor);
 
 		issueCollectorId = createCostCollector(CostCollectorType.ComponentIssue, ISSUED_QTY.negate());
 		receiptCollectorId = createCostCollector(CostCollectorType.MaterialReceipt, RECEIVED_QTY);

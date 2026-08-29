@@ -288,7 +288,8 @@ public class PPOrderCostDifferenceDistributor
 	{
 		final CurrencyId currencyId = currentCost.getCurrencyId();
 		final Quantity manufacturedQty = mainProductCost.getAccumulatedQty();
-		final Quantity qtyInStock = currentCost.getCurrentQty().min(manufacturedQty);
+		// Negative on-hand cannot capitalize into stock, so the whole residual is period cost (COGS).
+		final Quantity qtyInStock = currentCost.getCurrentQty().toZeroIfNegative().min(manufacturedQty);
 
 		final CostAmount capitalized;
 		final CostAmount cogs;
