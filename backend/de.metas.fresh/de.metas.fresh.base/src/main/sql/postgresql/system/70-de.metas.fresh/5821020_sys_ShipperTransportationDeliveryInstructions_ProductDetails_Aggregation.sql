@@ -1,3 +1,28 @@
+-- ===========================================================================
+-- ATOMIC PORT UNIT: 5820910 + 5821020 + 5821060 + 5821140
+-- Port / cherry-pick / propagate ALL FOUR TOGETHER -- NEVER a subset.
+-- ===========================================================================
+-- These four scripts successively redefine the same two report functions
+-- (de_metas_endcustomer_fresh_reports.docs_deliveryinstructions_description and
+-- ..._productdetails). Applied whole, the chain ends correct. Applied PARTIALLY, the instance gets
+-- a silently WRONG delivery-instruction PDF -- no error, no failed migration, just wrong paper.
+-- The intermediate states are genuinely wrong, not merely superseded:
+--   * after 5821020 alone -- _productdetails groups by p.m_product_id only, with
+--     MIN(uomt.uomsymbol) as the unit: it SUMS QUANTITIES ACROSS DIFFERENT UOMs and prints an
+--     arbitrary one (4 Ea + 6 kg of one product print as a single row reading "10 Ea").
+--     5821060 repairs it by adding dp.c_uom_id to the GROUP BY.
+--   * after 5820910 / 5821020 / 5821060 -- _productdetails INNER JOINs m_warehouse and C_UOM_trl,
+--     so a planning without a warehouse, or a product whose UOM has no translation in the report
+--     language, VANISHES from the detail band. 5821140 converts both to LEFT JOIN (+ COALESCE onto
+--     C_UOM.uomsymbol for the unit).
+--   * after 5820910 alone -- _description INNER JOINs C_Order through the first allocation's
+--     planning, so a planning with no C_Order_ID BLANKS THE WHOLE HEADER BAND. 5821020 drops that
+--     join again.
+-- This is not hypothetical here: the DoD propagates this issue's branch up to new_dawn_uat, and any
+-- later hotfix cherry-pick faces the same choice. Move the four as one unit
+-- (see skill metasfresh-patch-porter, "Propagation flow").
+-- ===========================================================================
+
 -- Deliver-instruction report functions no longer assume exactly one M_Delivery_Planning per
 -- M_ShipperTransportation: several plannings can now be aggregated onto one instruction via
 -- M_Delivery_Planning_Alloc, each with its own M_ShippingPackage.
