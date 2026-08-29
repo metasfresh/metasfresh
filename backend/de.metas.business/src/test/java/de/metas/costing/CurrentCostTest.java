@@ -314,5 +314,36 @@ public class CurrentCostTest
 					.as("over-issue must leave CurrentQty negative, not floored to zero")
 					.isEqualTo(Quantity.of(-4, uomEach));
 		}
+
+		/**
+		 * Parity guard for the SQL cost recompute.
+		 * <p>
+		 * {@code de_metas_acct.m_costdetail_delete_from_date} case 2.3 rewinds M_Cost by replaying the last
+		 * outbound cost detail before the recompute range: {@code prev_currentqty + qty}. The recompute then
+		 * deletes the details and the handlers replay forward from that value, so the two implementations must
+		 * agree on what an over-issue leaves behind — otherwise the rewind lands on a floored quantity that the
+		 * unfloored forward replay treats as real on-hand.
+		 * <p>
+		 * Same numbers as the SQL fixture: prev qty 20, outbound -30.
+		 */
+		@Test
+		public void overIssue_matchesTheSqlRecomputeRewind()
+		{
+			final CurrentCost movingAverageInvoice = currentCost().ownCostPrice("10").currentQty("20").build();
+			movingAverageInvoice.addToCurrentQtyAndCumulateAllowingNegative(
+					Quantity.of(-30, uomEach),
+					CostAmount.of(-300, currencyId));
+			assertThat(movingAverageInvoice.getCurrentQty())
+					.as("MovingAverageInvoice: SQL case 2.3 rewinds to -10, so the handlers must too")
+					.isEqualTo(Quantity.of(-10, uomEach));
+
+			final CurrentCost everyOtherMethod = currentCost().ownCostPrice("10").currentQty("20").build();
+			everyOtherMethod.addToCurrentQtyAndCumulate(
+					Quantity.of(-30, uomEach),
+					CostAmount.of(-300, currencyId));
+			assertThat(everyOtherMethod.getCurrentQty())
+					.as("every other method: SQL case 2.3 still clamps to 0, so the handlers must too")
+					.isEqualTo(Quantity.of(0, uomEach));
+		}
 	}
 }
