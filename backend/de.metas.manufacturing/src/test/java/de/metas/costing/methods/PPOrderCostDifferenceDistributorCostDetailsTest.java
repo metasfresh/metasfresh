@@ -327,6 +327,28 @@ class PPOrderCostDifferenceDistributorCostDetailsTest
 	}
 
 	@Test
+	void negativeOnHand_capitalizesNothing_spillsTheWholeResidualToCogs()
+	{
+		final ImmutableList.Builder<PPOrderCost> costs = ImmutableList.builder();
+		final AcctSchemaId schema = createAcctSchema(CostingMethod.AveragePO);
+		final CostElement costElement = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.AveragePO);
+		// issued=100, received=60 -> residual=40; on-hand is negative (-5) after an over-issue
+		addPPOrderCosts(costs, schema, costElement.getId(), "10", "-10", "6", "10");
+		saveCurrentCost(schema, costElement.getId(), "-5", "30");
+		saveAll(costs.build());
+
+		final CostDetailCreateResultsList results = distributor.createCostDetails(request(schema, costElement, "10"), orderId);
+
+		// Negative on-hand cannot capitalize into stock, so nothing is capitalized and the whole residual is COGS.
+		final CostAmountDetailed split = splitOf(results, schema);
+		assertThat(split.getMainAmt().toBigDecimal()).isEqualTo("40");
+		assertThat(split.getCostAdjustmentAmt().toBigDecimal()).isEqualTo("0");
+		assertThat(split.getAlreadyShippedAmt().toBigDecimal()).isEqualTo("40");
+
+		assertThat(costPriceOf(schema, costElement.getId())).isEqualTo("30"); // unchanged: nothing capitalized
+	}
+
+	@Test
 	void eachAcctSchemaGetsItsOwnResidual_notThePrimarySchemasOne()
 	{
 		final ImmutableList.Builder<PPOrderCost> costs = ImmutableList.builder();
