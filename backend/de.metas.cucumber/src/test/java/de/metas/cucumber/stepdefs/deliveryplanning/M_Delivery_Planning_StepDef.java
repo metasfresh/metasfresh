@@ -48,6 +48,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -81,46 +82,23 @@ import static org.assertj.core.api.Assertions.assertThat;
  * planning is handled by {@link M_Delivery_Instruction_StepDef}, which shares the same
  * {@link M_Delivery_Planning_StepDefData} instance (injected by PicoContainer).
  */
+@RequiredArgsConstructor
 public class M_Delivery_Planning_StepDef
 {
 	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
 
-	private final M_Delivery_Planning_StepDefData deliveryPlanningTable;
-	private final C_Order_StepDefData orderTable;
-	private final C_OrderLine_StepDefData orderLineTable;
-	private final M_Product_StepDefData productTable;
-	private final C_BPartner_StepDefData bpartnerTable;
-	private final M_Shipper_StepDefData shipperTable;
-	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
-	private final M_Warehouse_StepDefData warehouseTable;
-	private final M_ShipperTransportation_StepDefData deliveryInstructionTable;
-	private final DeliveryPlanningRejectionHelper rejectionHelper;
+	@NonNull private final M_Delivery_Planning_StepDefData deliveryPlanningTable;
+	@NonNull private final C_Order_StepDefData orderTable;
+	@NonNull private final C_OrderLine_StepDefData orderLineTable;
+	@NonNull private final M_Product_StepDefData productTable;
+	@NonNull private final C_BPartner_StepDefData bpartnerTable;
+	@NonNull private final M_Shipper_StepDefData shipperTable;
+	@NonNull private final C_BPartner_Location_StepDefData bPartnerLocationTable;
+	@NonNull private final M_Warehouse_StepDefData warehouseTable;
+	@NonNull private final M_ShipperTransportation_StepDefData deliveryInstructionTable;
+	@NonNull private final DeliveryPlanningRejectionHelper rejectionHelper;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-	public M_Delivery_Planning_StepDef(
-			@NonNull final M_Delivery_Planning_StepDefData deliveryPlanningTable,
-			@NonNull final C_Order_StepDefData orderTable,
-			@NonNull final C_OrderLine_StepDefData orderLineTable,
-			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final C_BPartner_StepDefData bpartnerTable,
-			@NonNull final M_Shipper_StepDefData shipperTable,
-			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
-			@NonNull final M_Warehouse_StepDefData warehouseTable,
-			@NonNull final M_ShipperTransportation_StepDefData deliveryInstructionTable,
-			@NonNull final DeliveryPlanningRejectionHelper rejectionHelper)
-	{
-		this.deliveryPlanningTable = deliveryPlanningTable;
-		this.orderTable = orderTable;
-		this.orderLineTable = orderLineTable;
-		this.productTable = productTable;
-		this.bpartnerTable = bpartnerTable;
-		this.shipperTable = shipperTable;
-		this.bPartnerLocationTable = bPartnerLocationTable;
-		this.warehouseTable = warehouseTable;
-		this.deliveryInstructionTable = deliveryInstructionTable;
-		this.rejectionHelper = rejectionHelper;
-	}
 
 	/**
 	 * Waits for the async {@code M_Delivery_Planning} generation for the given order line, then loads the created
@@ -209,7 +187,7 @@ public class M_Delivery_Planning_StepDef
 	 *   <b>M_Delivery_Planning_ID</b> — (required, identifier-ref) the planning to delete<br>
 	 *   <b>ErrorCode</b> — (optional) when set, the deletion is expected to fail with this {@code AdempiereException} error code
 	 *   instead of succeeding<br>
-	 *   <b>OPT.IsUIAction</b> — (optional, default {@code true}) delete as a manual user action, as the WebUI does;
+	 *   <b>IsUIAction</b> (or <b>OPT.IsUIAction</b>) — (optional, default {@code true}) delete as a manual user action, as the WebUI does;
 	 *   set {@code false} for the programmatic path a receipt/shipment-schedule delete takes<br>
 	 * @cucumber.depends StepDefData: M_Delivery_Planning_StepDefData
 	 * @cucumber.example
@@ -227,7 +205,7 @@ public class M_Delivery_Planning_StepDef
 			final I_M_Delivery_Planning deliveryPlanning = row.getAsIdentifier(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID).lookupNotNullIn(deliveryPlanningTable);
 
 			final String errorCode = row.getAsOptionalString("ErrorCode").filter(Check::isNotBlank).orElse(null);
-			final boolean uiAction = row.getAsOptionalBoolean("OPT.IsUIAction").orElseTrue();
+			final boolean uiAction = row.getAsOptionalBoolean("IsUIAction").orElseTrue();
 			if (uiAction)
 			{
 				InterfaceWrapperHelperUtils.set_ManualUserAction(deliveryPlanning);

@@ -231,6 +231,35 @@ public class M_ShipperTransportation_StepDef
 		deliveryInstructionTable.putOrReplace(row.getAsIdentifier(I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID), resultHolder[0]);
 	}
 
+	/**
+	 * Creates one {@code M_ShipperTransportation} (transport order / delivery instruction) record per row and
+	 * stores it under its identifier.
+	 * <p>
+	 * {@code TransportDirection} is <b>required</b>, deliberately: the column is mandatory and carries no
+	 * default at either layer since migration {@code 5821080}, so a scenario has to say which direction it
+	 * means, exactly as a user creating a transport order by hand has to. A fallback here would be the removed
+	 * default under another name and would let a scenario assert against a direction it never chose.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> (or <b>M_ShipperTransportation_ID</b>) — (required) alias to store the created record
+	 *   under; either header works, the step registers {@code M_ShipperTransportation_ID} as an additional row
+	 *   identifier column<br>
+	 *   <b>TransportDirection</b> — (required) {@code Outgoing}, {@code Incoming} or {@code Dropship}
+	 *   (see {@code X_M_ShipperTransportation.TRANSPORTDIRECTION_*})<br>
+	 *   <b>M_Shipper_ID</b> — (optional, identifier-ref) the shipper; set through
+	 *   {@code IShipperTransportationBL#setShipper}, which also copies the shipper's pickup time window<br>
+	 *   <b>Shipper_BPartner_ID</b> — (optional, identifier-ref) the forwarder business partner<br>
+	 *   <b>Shipper_Location_ID</b> — (optional, identifier-ref) the forwarder location<br>
+	 * @cucumber.depends StepDefData: M_ShipperTransportation_StepDefData, M_Shipper_StepDefData,
+	 * C_BPartner_StepDefData, C_BPartner_Location_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And metasfresh contains Transport Order
+	 *   | Identifier     | M_Shipper_ID    | Shipper_BPartner_ID | Shipper_Location_ID | TransportDirection |
+	 *   | transportOrder | shipper_freight | supplier            | supplierLocation    | Incoming           |
+	 * </pre>
+	 */
 	@And("metasfresh contains Transport Order")
 	public void add_TransportOrder(@NonNull final DataTable dataTable)
 	{
@@ -239,6 +268,10 @@ public class M_ShipperTransportation_StepDef
 				.forEach(this::createTransportOrder);
 	}
 
+	/**
+	 * Row-level worker of {@link #add_TransportOrder(DataTable)}; the column contract is documented there.
+	 * Public so other step defs can create a transport order from a row they already hold.
+	 */
 	public void createTransportOrder(@NonNull final DataTableRow row)
 	{
 		final I_M_ShipperTransportation shipperTransportationRecord = newInstance(I_M_ShipperTransportation.class);
