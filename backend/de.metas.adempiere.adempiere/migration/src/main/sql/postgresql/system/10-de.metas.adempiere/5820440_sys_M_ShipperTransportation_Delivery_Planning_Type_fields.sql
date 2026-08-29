@@ -22,11 +22,25 @@
 -- processed anyway, so neither needs a ReadOnlyLogic. AD_Name_ID=540579 ("Richtung") is a stop-gap
 -- caption because the column's own element is still misnamed; 5820620 drops it again.
 --
--- Filter + grid: IsSOTrx carries the direction filter today (SelectionColumnSeqNo=170) and 5820850
--- drops it, so the filter moves onto the direction column (175, matching AD_Column 585005 on the
--- Delivery Planning side). A selection column has to be visible in the grid, hence
--- IsDisplayedGrid='Y', at a SeqNoGrid free on both the AD_UI_Element and the AD_Field layer of
--- its tab -- 35 on both, which leaves each tab's C_DocType_ID/DocumentNo/DateDoc block contiguous.
+-- Filter: IsSOTrx carries the direction filter today (SelectionColumnSeqNo=170) and 5820850 drops
+-- it, so the filter moves onto the direction column at SelectionColumnSeqNo=175, a slot free on
+-- M_ShipperTransportation. It is NOT aligned with the Delivery Planning side and does not need to
+-- be: AD_Column 585005 (M_Delivery_Planning.TransportDirection) sits at 30, and each table numbers
+-- its own filter slots independently.
+--
+-- IsDisplayedGrid='Y' is a layout choice here, NOT a requirement of the filter mechanism. Under
+-- Auto, AD_Column.IsSelectionColumn='Y' becomes a WebUI filter straight off AD_Column, with no
+-- AD_Field at all -- 5821150 on this same branch adds four such filter-only columns
+-- (593412..593415) that have zero AD_Field rows and filter fine. The direction is grid-visible
+-- because it replaces IsSOTrx in the grid, not because the filter requires it.
+--
+-- SeqNoGrid deliberately differs between the two layers, and only one of them is live.
+-- AD_UI_Element gets 35 on both tabs -- that IS the layer the WebUI honours (LayoutFactory switches
+-- to the AD_UI_* provider as soon as the tab has any AD_UI_Section, and both tabs do), and 35 slots
+-- in after Lieferweg(30) so each tab's C_DocType_ID/DocumentNo/DateDoc block stays contiguous.
+-- AD_Field gets 205 (tab 540096) / 200 (tab 546732) -- appended at the end of a layer that is dead
+-- metadata for these two tabs; both values are collision-free there, but nothing renders from them.
+-- Do NOT "align" the two layers: the AD_Field numbers are inert and changing 35 would move the grid.
 
 -- ============================================================================
 -- 1) Make the direction filterable, taking over the IsSOTrx filter slot.

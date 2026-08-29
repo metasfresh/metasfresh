@@ -1,8 +1,22 @@
 -- Drops M_ShipperTransportation.IsSOTrx, superseded by TransportDirection (5820430 / 5820620).
 -- Its single reader -- the one that defaults a transport's dates from its first order -- was reworked
--- to gate on TransportDirection instead, and the four code paths that used to set it no longer do:
--- all four create Outgoing transports only, which is exactly the column's own physical DEFAULT
--- ('Outgoing', see 5820430), so dropping the writes changes nothing observable.
+-- to gate on TransportDirection instead, and the code paths that used to set IsSOTrx no longer do.
+--
+-- Dropping those writes is safe because every production creation site of an M_ShipperTransportation
+-- record now sets TransportDirection EXPLICITLY, and does so with the direction the record really has
+-- (which is not always Outgoing):
+--   ShipperTransportationDAO.java:132                     -> deriveTransportDirection(request)
+--   M_Tour_Instance_CreateFromSelectedDeliveryDays.java:239 -> Incoming when deliveryDay.isToBeFetched(),
+--                                                            Outgoing otherwise
+--   DeliveryPlanningRepository.java:516                   -> the allocated plannings' direction
+-- plus the WebUI 'New' path (this script's sibling 5820440 makes the field editable on tab 540096)
+-- and CopyRecordFactory, which copies the source row's value.
+--
+-- Do NOT rely on a column default here: 5820430 did add a physical DEFAULT 'Outgoing', but 5821080
+-- (higher prefix, so it runs AFTER this script) deliberately REMOVES it at both layers -- physical
+-- default and AD_Column.DefaultValue -- so that a future creation path which forgets to set the
+-- direction fails loudly on NOT NULL instead of silently writing 'Outgoing'. A new writer of this
+-- table must set TransportDirection itself.
 --
 -- Dependency sweep against the live DB (pg_views, pg_proc, AD_Val_Rule.Code, AD_Column.ColumnSQL,
 -- EXP_FormatLine by AD_Column_ID, AD_Tab.Parent_Column_ID -- all keyed on AD_Column_ID=590639) found no

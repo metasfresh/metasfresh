@@ -121,7 +121,11 @@ WHERE l.IsActive='Y'
 -- ===========================================================================
 -- 3. Physical column
 -- ===========================================================================
--- New column, so ALTER TABLE ADD COLUMN (t_alter_column needs the column to exist).
+-- New column, added with a raw ALTER TABLE ADD COLUMN rather than through db_alter_table.
+-- That is a deliberate exception to the branch's own convention (5821180 does the same job via
+-- db_alter_table) and it is safe here for one specific reason: ADD COLUMN cannot disturb a
+-- dependent view, so there is nothing for db_alter_table's drop-and-recreate cycle to protect.
+-- t_alter_column is not an option either way -- it only ALTERs a column that already exists.
 -- DEFAULT and NOT NULL are declared together on purpose: ADD COLUMN with a DEFAULT
 -- populates the existing rows, so the NOT NULL is satisfied the moment it is declared and
 -- cannot abort. 'Outgoing' is also the right default going forward -- it preserves today's
@@ -159,6 +163,13 @@ ALTER TABLE M_ShipperTransportation
 CREATE TEMP TABLE tmp_direction_resolution AS
 WITH planning AS (
     -- Every delivery planning reachable from a transport, with its direction.
+    -- NOTE the first UNION arm (via M_Delivery_Planning_Alloc) contributes NOTHING at apply time:
+    -- M_Delivery_Planning_Alloc is created empty by 5820400 and only backfilled by 5820530, a
+    -- hundred prefixes later. So on a real run rule 1 below is fed solely by the second arm, the
+    -- direct M_Delivery_Planning.M_ShipperTransportation_ID link. The arm is kept because it makes
+    -- the derivation correct on a re-run against an already-aggregated database, where the direct
+    -- link no longer exists -- but do not read this CTE as evidence that allocations were populated
+    -- at this point in the script order.
     -- A planning that is still 'Incoming' plus the B2B flag is a dropship in the old
     -- two-field model, so its effective direction is 'Dropship' -- the same retyping the
     -- planning-side migration applies. The flag is read through to_jsonb so that this

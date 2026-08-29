@@ -9,9 +9,14 @@ WHERE AD_Reference_ID = 541708
 ;
 
 -- Deactivate AD_Field 710779 ("Lieferplanung", tab 546732 "Lieferanweisungen" on window 541657) --
--- its backing column M_ShipperTransportation.M_Delivery_Planning_ID is going away (dropped in a
--- follow-up script). The field is deactivated here, not deleted -- the column drop is a separate,
--- deliberately-not-yet-applied script.
+-- its backing column M_ShipperTransportation.M_Delivery_Planning_ID is going away.
+--
+-- These two UPDATEs are ALWAYS superseded within the same branch: 5820940 ships alongside this
+-- script and DELETEs exactly these rows (its FK-chain cleanup is anchored on AD_Column 585609, so
+-- it takes AD_Field 710779 and AD_UI_Element 614920 with it). They are kept only so that this
+-- script leaves the window in a coherent state on its own, for the window of one script between
+-- the two -- an earlier draft of this header claimed the column drop was "a separate, deliberately
+-- not-yet-applied script", which is no longer true and must not be read as a reason to skip 5820940.
 UPDATE AD_Field
 SET IsActive = 'N',
     IsDisplayed = 'N',

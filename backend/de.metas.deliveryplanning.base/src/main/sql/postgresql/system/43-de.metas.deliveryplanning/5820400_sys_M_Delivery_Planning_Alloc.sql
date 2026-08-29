@@ -5,8 +5,17 @@
 -- M_ShippingPackage, where they are displayed and edited.
 -- Direction is planning-layer -> packing-layer: the allocation references its M_ShippingPackage;
 -- neither M_ShippingPackage nor M_Package carries a planning reference.
--- An allocation is not a document: it carries no DocStatus and no Processed flag. Void deactivates
--- it (IsActive='N'), remove/move deletes it - both real state, never a mirrored status column.
+-- An allocation is not a document: it carries no DocStatus and no Processed flag. Void, remove and
+-- move all RETIRE the row rather than delete it - IsActive='N' plus a DateRemoved stamp
+-- (DeliveryPlanningRepository.deactivateAllocationRecords). Real state, never a mirrored status
+-- column. The retired row is not debris: it is exactly what the delivery instruction's read-only
+-- history tab (AD_Tab 549416, over M_ShipperTransportation_Delivery_Planning_History_V, which
+-- selects dpa.IsActive='N') renders, which is why DateRemoved is stamped at that one choke point
+-- and must never be re-dated afterwards.
+-- The single physical DELETE is DeliveryPlanningRepository.deleteAllocationsFor, called from the
+-- M_Delivery_Planning delete interceptor: once the planning itself is gone there is nothing left
+-- for its retired allocations to be a history of. It filters to IsActive='N', so a live allocation
+-- is never deleted -- the NO ACTION foreign key refuses the planning's delete instead.
 -- LineNo orders the allocations of one instruction (assigned in tens, 10/20/30 ...).
 -- Modelled on M_InOutLine_To_C_Customs_Invoice_Line and M_ReceiptSchedule_Alloc.
 -- Indexes (incl. the partial unique guards) are a separate migration.
@@ -112,17 +121,21 @@ WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y'
   AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt
                   WHERE tt.AD_Language = l.AD_Language AND tt.AD_Element_ID = 585382);
 
+-- de_DE carries the German base text verbatim, so nothing was translated into it:
+-- IsTranslated stays 'N', matching this branch's other new elements (585384..585388).
 UPDATE AD_Element_Trl
 SET    Name = 'Lieferplanung-Zuordnung', PrintName = 'Lieferplanung-Zuordnung',
        Description = 'Zuordnung einer Lieferplanung zu einer Lieferanweisung.',
-       IsTranslated = 'Y',
+       IsTranslated = 'N',
        Updated = TO_TIMESTAMP('2026-08-26 10:00:12', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
 WHERE  AD_Element_ID = 585382 AND AD_Language = 'de_DE';
 
+-- de_CH carries the German base text verbatim, so nothing was translated into it:
+-- IsTranslated stays 'N', matching this branch's other new elements (585384..585388).
 UPDATE AD_Element_Trl
 SET    Name = 'Lieferplanung-Zuordnung', PrintName = 'Lieferplanung-Zuordnung',
        Description = 'Zuordnung einer Lieferplanung zu einer Lieferanweisung.',
-       IsTranslated = 'Y',
+       IsTranslated = 'N',
        Updated = TO_TIMESTAMP('2026-08-26 10:00:13', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
 WHERE  AD_Element_ID = 585382 AND AD_Language = 'de_CH';
 

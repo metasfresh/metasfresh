@@ -77,10 +77,13 @@ WHERE AD_Process_ID=585655 AND AD_Language IN ('de_DE', 'de_CH')
 -- ---------------------------------------------------------------------------------------------
 -- 2) placement: an action on the Delivery Planning grid.
 --
---    Only the planning window for now. The design also wants it on the delivery instruction's
---    Plannings tab - which is where a planner looking at the document notices the row that should
---    not be there - but that tab does not exist yet; it gets a second AD_Table_Process row over
---    M_Delivery_Planning_Alloc when it is built.
+--    The planning window (541632) is the ONLY placement, and that is the settled end state - not a
+--    stage on the way to a second one. An earlier draft of this script promised a companion
+--    AD_Table_Process over M_Delivery_Planning_Alloc on the delivery instruction's own Plannings
+--    tab. That tab is not being built: 5820940 parks AD_Tab 546754 (IsActive='N') for a possible
+--    future multi-leg display, and 5821180 adds AD_Tab 549416, which is a READ-ONLY history tab
+--    over the retired allocations - neither is an editable Plannings tab, and no second
+--    AD_Table_Process row is added anywhere on this branch. Do not go looking for one.
 --
 --    WebUI_ViewQuickAction='N' is DELIBERATE, and the one place this differs from its two siblings:
 --    Combine (585653) and Add to (585654) both carry 'Y'. Removing a planning from an instruction is

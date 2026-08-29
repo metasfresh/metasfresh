@@ -10,9 +10,12 @@
 --       guard: it is the only layer no future call site can bypass -- two users adding the same
 --       planning to two different draft instructions in parallel is caught here and nowhere else.
 --       Also serves every planning -> allocation lookup.
---       The clause is IsActive alone: voiding an instruction DEACTIVATES its allocations and
---       removing a planning DELETES them, so the DocStatus mirror is not load-bearing for the
---       guard -- a planning can be re-allocated after its instruction was voided.
+--       The clause is IsActive alone, and that is sufficient because EVERY retirement path -- void,
+--       remove and move alike -- sets IsActive='N' (DeliveryPlanningRepository.
+--       deactivateAllocationRecords, which also stamps DateRemoved for the instruction's history
+--       tab). No path leaves a retired allocation active, so the DocStatus mirror is not
+--       load-bearing for the guard and a planning can be re-allocated after its instruction was
+--       voided or after it was removed from one.
 --   M_Delivery_Planning_Alloc_Instruction    not unique, unfiltered
 --       all allocations of one instruction: the Plannings tab, unlink, the complete / re-activate /
 --       void cascade, and both views. Deliberately unfiltered, because the cascade must also see
