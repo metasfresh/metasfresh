@@ -407,6 +407,6 @@ Feature: Several delivery plannings on one delivery instruction
     # and a draft is what a planner who ticks nothing gets: the completion flag both processes offer is a
     # dictionary default, so the code honouring the flag it is handed says nothing about it on its own
     And validate AD_Process_Para:
-      | Classname                                                                           | ColumnName | DefaultValue |
+      | Classname                                                                            | ColumnName | DefaultValue |
       | de.metas.deliveryplanning.process.M_Delivery_Planning_GenerateDeliveryInstruction    | IsComplete | N            |
       | de.metas.deliveryplanning.process.M_Delivery_Planning_CombineIntoDeliveryInstruction | IsComplete | N            |

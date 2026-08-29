@@ -277,7 +277,7 @@ Feature: A closed delivery planning is finished and nothing processes it any fur
     Then validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | IsClosed | OrderStatus | PlannedLoadedQuantity | M_ShipperTransportation_ID |
       | planningCancel_1       | 10         | 10           | Outgoing           | true     | Canceled    | 0                     | null                       |
-      | planningCancel_2       | 10         | 10           | Outgoing           | true     |             | 5                     | null                       |
+      | planningCancel_2       | 10         | 10           | Outgoing           | true     | null        | 5                     | null                       |
     And the following M_Delivery_Planning have no ReleaseNo:
       | M_Delivery_Planning_ID |
       | planningCancel_1       |
