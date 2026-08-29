@@ -24,11 +24,13 @@ package de.metas.cucumber.stepdefs.deliveryplanning;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
@@ -81,7 +83,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class M_Delivery_Planning_StepDef
 {
-	@NonNull private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
+	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
 
 	private final M_Delivery_Planning_StepDefData deliveryPlanningTable;
 	private final C_Order_StepDefData orderTable;
@@ -94,7 +96,7 @@ public class M_Delivery_Planning_StepDef
 	private final M_ShipperTransportation_StepDefData deliveryInstructionTable;
 	private final DeliveryPlanningRejectionHelper rejectionHelper;
 
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public M_Delivery_Planning_StepDef(
 			@NonNull final M_Delivery_Planning_StepDefData deliveryPlanningTable,
@@ -267,7 +269,8 @@ public class M_Delivery_Planning_StepDef
 	 *   <b>PlannedLoadedQuantity</b> — (optional) expected {@code PlannedLoadedQuantity}<br>
 	 *   <b>IsClosed</b> — (optional) expected {@code IsClosed}<br>
 	 *   <b>Processed</b> — (optional) expected {@code Processed}<br>
-	 *   <b>OrderStatus</b> — (optional) expected {@code OrderStatus}<br>
+	 *   <b>OrderStatus</b> — (optional, null-allowed) expected {@code OrderStatus}; {@code null} asserts the planning
+	 *   carries none<br>
 	 *   <b>M_ShipperTransportation_ID</b> — (optional, identifier-ref, null-allowed) expected linked delivery
 	 *   instruction; a literal {@code null}/{@code -} asserts that none is linked (i.e. {@code M_ShipperTransportation_ID=0})<br>
 	 * @cucumber.depends StepDefData: M_Delivery_Planning_StepDefData, M_Product_StepDefData, C_BPartner_StepDefData,
@@ -365,7 +368,9 @@ public class M_Delivery_Planning_StepDef
 
 			row.getAsOptionalString(I_M_Delivery_Planning.COLUMNNAME_OrderStatus)
 					.filter(Check::isNotBlank)
-					.ifPresent(orderStatus -> softly.assertThat(deliveryPlanning.getOrderStatus()).as(I_M_Delivery_Planning.COLUMNNAME_OrderStatus).isEqualTo(orderStatus));
+					.ifPresent(orderStatus -> softly.assertThat(deliveryPlanning.getOrderStatus())
+							.as(I_M_Delivery_Planning.COLUMNNAME_OrderStatus)
+							.isEqualTo(DataTableUtil.nullToken2Null(orderStatus)));
 
 			row.getAsOptionalIdentifier(I_M_Delivery_Planning.COLUMNNAME_M_ShipperTransportation_ID)
 					.ifPresent(id -> {
@@ -386,7 +391,16 @@ public class M_Delivery_Planning_StepDef
 
 	/**
 	 * Drives the close / re-open / cancel processes over the given selection, which - like the WebUI grid they are
-	 * launched from - may name SEVERAL plannings, comma-separated.
+	 * launched from - may name SEVERAL plannings, comma-separated. That is what the processes act on: ONE selection,
+	 * evaluated per row, so a rejected or skipped planning does not decide the fate of the others.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: M_Delivery_Planning_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When M_Delivery_Planning identified by deliveryPlanning_1 is closed
+	 * And M_Delivery_Planning identified by deliveryPlanning_1,deliveryPlanning_2 is canceled
+	 * </pre>
 	 */
 	@And("^M_Delivery_Planning identified by (.*) is (closed|opened|canceled)$")
 	public void delivery_Planning_action(@NonNull final String deliveryPlanningIdentifiers, @NonNull final String action)
@@ -440,7 +454,7 @@ public class M_Delivery_Planning_StepDef
 				? () -> deliveryPlanningService.closeSelectedDeliveryPlannings(selectionFilter)
 				: () -> deliveryPlanningService.reOpenSelectedDeliveryPlannings(selectionFilter);
 
-		rejectionHelper.runExpectingRejectionIfAny(DataTableRows.of(dataTable).singleRow(), deliveryPlanningAction);
+		rejectionHelper.runExpectingRejectionIfAny(DataTableRows.of(dataTable).singleRow(), ImmutableSet.of(), deliveryPlanningAction);
 	}
 
 	/**

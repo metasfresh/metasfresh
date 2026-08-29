@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.deliveryplanning;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
@@ -61,14 +62,24 @@ import static org.assertj.core.api.Assertions.assertThat;
 @AllArgsConstructor
 public class M_Delivery_Instruction_StepDef
 {
-	private final M_ShipperTransportation_StepDefData deliveryInstructionTable;
-	private final M_Delivery_Planning_StepDefData deliveryPlanningTable;
-	private final DeliveryPlanningRejectionHelper rejectionHelper;
+	/** every column {@link #combine_M_Delivery_Planning(DataTable)} understands besides the rejection expectations */
+	private static final ImmutableSet<String> COMBINE_COLUMNS = ImmutableSet.of(
+			I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, I_M_Delivery_Planning.COLUMNNAME_M_ShipperTransportation_ID, "IsComplete");
+	/** every column {@link #add_M_Delivery_Planning_to_M_ShipperTransportation(DataTable)} understands besides the rejection expectations */
+	private static final ImmutableSet<String> ADD_TO_COLUMNS = ImmutableSet.of(
+			I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, I_M_Delivery_Planning.COLUMNNAME_M_ShipperTransportation_ID);
+	/** every column {@link #remove_M_Delivery_Planning_from_M_ShipperTransportation(DataTable)} understands besides the rejection expectations */
+	private static final ImmutableSet<String> REMOVE_FROM_COLUMNS = ImmutableSet.of(
+			I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID);
 
-	@NonNull private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
+	@NonNull private final M_ShipperTransportation_StepDefData deliveryInstructionTable;
+	@NonNull private final M_Delivery_Planning_StepDefData deliveryPlanningTable;
+	@NonNull private final DeliveryPlanningRejectionHelper rejectionHelper;
 
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
+
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
 	/**
 	 * Generates one delivery instruction ({@code M_ShipperTransportation}) for the given delivery planning, via
@@ -174,7 +185,7 @@ public class M_Delivery_Instruction_StepDef
 			final IQueryFilter<I_M_Delivery_Planning> selectionFilter = getQueryFilterFor(row);
 			final boolean isComplete = row.getAsOptionalBoolean("IsComplete").orElseFalse();
 
-			rejectionHelper.runExpectingRejectionIfAny(row, () -> {
+			rejectionHelper.runExpectingRejectionIfAny(row, COMBINE_COLUMNS, () -> {
 				final ShipperTransportationId deliveryInstructionId = deliveryPlanningService.combine(selectionFilter, isComplete);
 
 				row.getAsOptionalIdentifier(I_M_Delivery_Planning.COLUMNNAME_M_ShipperTransportation_ID)
@@ -211,7 +222,7 @@ public class M_Delivery_Instruction_StepDef
 			final I_M_ShipperTransportation targetDeliveryInstruction = row.getAsIdentifier(I_M_Delivery_Planning.COLUMNNAME_M_ShipperTransportation_ID).lookupNotNullIn(deliveryInstructionTable);
 			final ShipperTransportationId targetDeliveryInstructionId = ShipperTransportationId.ofRepoId(targetDeliveryInstruction.getM_ShipperTransportation_ID());
 
-			rejectionHelper.runExpectingRejectionIfAny(row, () -> deliveryPlanningService.addTo(selectionFilter, targetDeliveryInstructionId));
+			rejectionHelper.runExpectingRejectionIfAny(row, ADD_TO_COLUMNS, () -> deliveryPlanningService.addTo(selectionFilter, targetDeliveryInstructionId));
 		});
 	}
 
@@ -239,7 +250,7 @@ public class M_Delivery_Instruction_StepDef
 		DataTableRows.of(dataTable).forEach(row -> {
 			final IQueryFilter<I_M_Delivery_Planning> selectionFilter = getQueryFilterFor(row);
 
-			rejectionHelper.runExpectingRejectionIfAny(row, () -> deliveryPlanningService.removeFrom(selectionFilter));
+			rejectionHelper.runExpectingRejectionIfAny(row, REMOVE_FROM_COLUMNS, () -> deliveryPlanningService.removeFrom(selectionFilter));
 		});
 	}
 
@@ -249,6 +260,7 @@ public class M_Delivery_Instruction_StepDef
 	 * follow (or stay put).
 	 *
 	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: M_ShipperTransportation_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * When the M_ShipperTransportation identified by deliveryInstruction is voided
@@ -287,6 +299,7 @@ public class M_Delivery_Instruction_StepDef
 
 		rejectionHelper.runExpectingRejectionIfAny(
 				DataTableRows.of(dataTable).singleRow(),
+				ImmutableSet.of(),
 				() -> processDeliveryInstruction(deliveryInstruction, StepDefDocAction.completed));
 
 		InterfaceWrapperHelper.refresh(deliveryInstruction);

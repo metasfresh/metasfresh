@@ -64,15 +64,22 @@ public class DeliveryPlanningRejectionHelper
 	private static final ImmutableSet<String> EXPECTATION_COLUMNS = ImmutableSet.of(
 			COLUMNNAME_ErrorAdMessage, COLUMNNAME_ErrorMessage, COLUMNNAME_ErrorFields);
 
-	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	/**
 	 * Runs the given action, and - when the row names any expected rejection - asserts that it was rejected that way
 	 * instead of succeeding. A row naming none just runs the action.
+	 *
+	 * @param otherKnownColumns every column the CALLING step understands, i.e. everything besides the expectation
+	 * 		columns this helper owns. Anything outside the two sets is a typo rather than an ignored cell - see
+	 * 		{@link #assertNoUnknownColumn(DataTableRow, ImmutableSet)}.
 	 */
-	public void runExpectingRejectionIfAny(@NonNull final DataTableRow row, @NonNull final Runnable action)
+	public void runExpectingRejectionIfAny(
+			@NonNull final DataTableRow row,
+			@NonNull final ImmutableSet<String> otherKnownColumns,
+			@NonNull final Runnable action)
 	{
-		assertNoMisspelledExpectationColumn(row);
+		assertNoUnknownColumn(row, otherKnownColumns);
 
 		final Optional<AdMessageKey> expectedAdMessage = row.getAsOptionalString(COLUMNNAME_ErrorAdMessage)
 				.filter(Check::isNotBlank)
@@ -91,12 +98,16 @@ public class DeliveryPlanningRejectionHelper
 		}
 
 		final Throwable thrown = catchThrowable(action::run);
-		assertThat(thrown).as("the action was expected to be rejected, but it succeeded").isInstanceOf(AdempiereException.class);
+		assertThat(thrown).as("the action was expected to be rejected, but it succeeded").isNotNull();
+		assertThat(thrown)
+				.as("the action was rejected, but with a %s - only an AdempiereException carries the errorCode a"
+						+ " rejection is identified by", thrown.getClass().getName())
+				.isInstanceOf(AdempiereException.class);
 
 		final String rejectionMessage = thrown.getMessage();
 		final String adLanguage = Env.getAD_Language();
 
-		expectedAdMessage.ifPresent(adMessage -> assertRejectedWith((AdempiereException)thrown, adMessage, adLanguage));
+		expectedAdMessage.ifPresent(adMessage -> assertRejectedWith((AdempiereException)thrown, adMessage));
 
 		expectedMessage.ifPresent(message -> assertThat(rejectionMessage)
 				.as("rejection message %s", message)
@@ -115,68 +126,52 @@ public class DeliveryPlanningRejectionHelper
 	 * from the {@code AD_Message} the {@code ITranslatableString} was built from (its own {@code ErrorCode} when it has
 	 * one, else the message's value) - exact, and independent of both the wording and the language.
 	 * <p>
-	 * The text comparison below it is not a second-best alternative but the only thing left on ONE path: a rejection
-	 * thrown from a {@code BEFORE_}-timing document interceptor is not propagated, it is turned into a process message
-	 * and re-thrown as a {@code DocumentProcessingException} built from the rendered TEXT, which carries no
-	 * {@code errorCode} of its own. The expected text is asserted to be non-blank first, so an {@code AD_Message} whose
-	 * text begins with its {@code {0}} parameter cannot degrade the assertion into {@code contains("")}.
+	 * There is deliberately no text comparison to fall back on. An {@link AdempiereException} thrown anywhere under a
+	 * document action keeps its {@code errorCode} all the way out: {@code AbstractDocumentBL.processIt0}'s
+	 * {@code doCatch} re-throws through {@code AdempiereException.wrapIfNeeded}, which hands back the very same
+	 * exception when it already is one - a {@code BEFORE_}-timing interceptor rejection included. A rejection reaching
+	 * here without an {@code errorCode} is therefore NOT the named {@code AD_Message}, and asserting that loudly beats
+	 * matching a message text that the {@code AD_Message} may share with any other message.
 	 */
 	private void assertRejectedWith(
 			@NonNull final AdempiereException thrown,
-			@NonNull final AdMessageKey expectedAdMessage,
-			@NonNull final String adLanguage)
+			@NonNull final AdMessageKey expectedAdMessage)
 	{
-		if (thrown.getErrorCode() != null)
-		{
-			// the same coalesce AdempiereException applies: an AD_Message may carry its own ErrorCode, and then
-			// THAT is what the exception ends up with rather than the message's value
-			final String expectedErrorCode = CoalesceUtil.coalesceNotNull(
-					msgBL.getErrorCode(expectedAdMessage),
-					expectedAdMessage.toAD_Message());
+		// the same coalesce AdempiereException applies: an AD_Message may carry its own ErrorCode, and then
+		// THAT is what the exception ends up with rather than the message's value
+		final String expectedErrorCode = CoalesceUtil.coalesceNotNull(
+				msgBL.getErrorCode(expectedAdMessage),
+				expectedAdMessage.toAD_Message());
 
-			assertThat(thrown.getErrorCode())
-					.as("errorCode of the rejection")
-					.isEqualTo(expectedErrorCode);
-			return;
-		}
-
-		final String expectedText = textBeforeFirstParameter(msgBL.getMsg(adLanguage, expectedAdMessage));
-		assertThat(expectedText)
-				.as("the text of %s before its first parameter - an empty one would assert nothing", expectedAdMessage.toAD_Message())
-				.isNotBlank();
-
-		assertThat(thrown.getMessage())
-				.as("rejection message of %s", expectedAdMessage.toAD_Message())
-				.contains(expectedText);
+		assertThat(thrown.getErrorCode())
+				.as("errorCode of the rejection %s", thrown.getMessage())
+				.isEqualTo(expectedErrorCode);
 	}
 
 	/**
-	 * A misspelled OPTIONAL expectation column would silently drop the claim it carries - a scenario asserting both an
-	 * {@code AD_Message} and the fields it has to name would stay green having asserted only the message. Any unknown
-	 * {@code Error…} column is therefore an error rather than an ignored cell.
+	 * A misspelled column would silently drop the claim it carries - a scenario asserting both an {@code AD_Message}
+	 * and the fields it has to name would stay green having asserted only the message. Every column is therefore
+	 * matched against the KNOWN set (this helper's expectation columns plus the calling step's own), so a typo is an
+	 * error rather than an ignored cell no matter what it looks like: a prefix test would let {@code Eror…} through,
+	 * and would reject an {@code ErrorCode} column that other steps of this domain use legitimately.
 	 */
-	private static void assertNoMisspelledExpectationColumn(@NonNull final DataTableRow row)
+	private static void assertNoUnknownColumn(
+			@NonNull final DataTableRow row,
+			@NonNull final ImmutableSet<String> otherKnownColumns)
 	{
+		final ImmutableSet<String> knownColumns = ImmutableSet.<String>builder()
+				.addAll(EXPECTATION_COLUMNS)
+				.addAll(otherKnownColumns)
+				.build();
+
 		final ImmutableList<String> unknownColumns = row.asMap().keySet()
 				.stream()
 				.map(columnName -> columnName.startsWith("OPT.") ? columnName.substring("OPT.".length()) : columnName)
-				.filter(columnName -> columnName.startsWith("Error"))
-				.filter(columnName -> !EXPECTATION_COLUMNS.contains(columnName))
+				.filter(columnName -> !knownColumns.contains(columnName))
 				.collect(ImmutableList.toImmutableList());
 
 		assertThat(unknownColumns)
-				.as("unknown Error… columns - known ones are %s", EXPECTATION_COLUMNS)
+				.as("unknown columns - known ones are %s", knownColumns)
 				.isEmpty();
-	}
-
-	/**
-	 * Only the part before an {@code AD_Message}'s first {@code {0}} placeholder is compared, since the parameters are
-	 * runtime ids.
-	 */
-	@NonNull
-	private static String textBeforeFirstParameter(@NonNull final String adMessageText)
-	{
-		final int firstParameterIndex = adMessageText.indexOf('{');
-		return firstParameterIndex >= 0 ? adMessageText.substring(0, firstParameterIndex).trim() : adMessageText;
 	}
 }

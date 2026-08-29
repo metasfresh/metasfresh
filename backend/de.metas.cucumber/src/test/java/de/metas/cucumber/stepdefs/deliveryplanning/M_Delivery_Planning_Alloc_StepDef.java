@@ -57,12 +57,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 @AllArgsConstructor
 public class M_Delivery_Planning_Alloc_StepDef
 {
-	private final M_Delivery_Planning_Alloc_StepDefData deliveryPlanningAllocTable;
-	private final M_Delivery_Planning_StepDefData deliveryPlanningTable;
-	private final M_ShipperTransportation_StepDefData deliveryInstructionTable;
-	private final M_ShippingPackage_StepDefData shippingPackageTable;
+	@NonNull private final M_Delivery_Planning_Alloc_StepDefData deliveryPlanningAllocTable;
+	@NonNull private final M_Delivery_Planning_StepDefData deliveryPlanningTable;
+	@NonNull private final M_ShipperTransportation_StepDefData deliveryInstructionTable;
+	@NonNull private final M_ShippingPackage_StepDefData shippingPackageTable;
 
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	/**
 	 * Asserts the COMPLETE set of active allocations of one delivery instruction, in {@code LineNo} order: the
