@@ -20,10 +20,8 @@ const createMasterdata = async () => {
         language: "en_US",
         request: {
             login: { user: { language: "en_US" } },
-            // isAllowReceiveWithoutPackingItem is a sticky mobileConfig field: the masterdata command writes
-            // it only when the request supplies it, so omitting it would inherit whatever
-            // receiving_without_packing_item.spec.js left behind and the guidance would never appear.
-            // Pinning it here also documents that the flag is OFF by default.
+            // The guidance only appears while receiving without a packing instruction is switched off, so this
+            // scenario states that precondition rather than leaning on the default.
             mobileConfig: { manufacturing: { receiveUnitType: 'TU', isAllowReceiveWithoutPackingItem: false } },
             warehouses: { "wh": {} },
             products: {

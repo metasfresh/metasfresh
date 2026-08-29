@@ -12,9 +12,8 @@ import { ReceiptNewHUScreen, VIRTUAL_TU_TARGET_TESTID } from '../../utils/screen
 // Plants grown in the ground or in their own container sit in no GS1 packing structure at all, so the
 // finished good has NO packing instruction. Without the profile flag below the mobile receive screen
 // dead-ends — that case stays covered by receiving_no_gebinde_guidance.spec.js, which pins the flag OFF.
-// With the flag on, the "No Packing Item" packing instruction
-// is offered — the same choice the WebUI "Empfangen" process has always had — and the goods are
-// received as a bare virtual HU.
+// With the flag on, the "No Packing Item" packing instruction is offered — the same choice the WebUI
+// "Empfangen" process has always had — and the goods are received as a bare virtual HU.
 const createMasterdata = async () => {
     return await Backend.createMasterdata({
         language: "en_US",
@@ -23,15 +22,6 @@ const createMasterdata = async () => {
             mobileConfig: {
                 manufacturing: {
                     isAllowReceiveWithoutPackingItem: true,
-                    // The three below are sticky mobileConfig fields written only when supplied, and sibling
-                    // specs in this folder leave the values this scenario cannot run under:
-                    // receiving_lu_only leaves TU receiving off (which also hides the virtual target, since it
-                    // lives in the TU list), receiving_skip_target_step leaves the chooser skipped, and the
-                    // receiving_tu_mode specs leave TU receive mode (whose quantities are counted in TUs -
-                    // meaningless for goods in no packing structure). Pin each rather than inherit.
-                    isAllowFinishedGoodsReceiveToTU: true,
-                    isSkipFinishedGoodsReceiveTargetStep: false,
-                    receiveUnitType: 'CU',
                 },
             },
             warehouses: { "wh": {} },
