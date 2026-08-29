@@ -559,7 +559,8 @@ public class AveragePOCostingMethodHandlerTest
 				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("-100", "-10"));
 
 				final CurrentCost currentCost = getCurrentCost(orgId1);
-				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
+				// over-issue -10 from qty 0 leaves CurrentQty negative (no floor); price unchanged
+				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("-10");
 				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
 			}
 
@@ -576,8 +577,9 @@ public class AveragePOCostingMethodHandlerTest
 				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("150", "10"));
 
 				final CurrentCost currentCost = getCurrentCost(orgId1);
-				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
-				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("15");
+				// receipt backfills -10 to 0: newAmt = 10x(-10) + 150 = 50 over newQty 0 => price stays 10 (no re-average at qty 0)
+				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
+				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
 			}
 
 			// Shipment reversal
@@ -594,8 +596,9 @@ public class AveragePOCostingMethodHandlerTest
 				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("100", "10"));
 
 				final CurrentCost currentCost = getCurrentCost(orgId1);
-				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("20");
-				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("12.5"); // (10x15 + 10x10) / (10 + 10)
+				// reversal re-adds 10 @100: newAmt = 10x0 + 100 = 100 over newQty 10 => price 10
+				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
+				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
 			}
 		}
 
@@ -636,7 +639,8 @@ public class AveragePOCostingMethodHandlerTest
 				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("-100", "-10"));
 
 				final CurrentCost currentCost = getCurrentCost(orgId1);
-				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
+				// over-issue -10 from qty 0 leaves CurrentQty negative (no floor); price unchanged
+				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("-10");
 				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
 			}
 
@@ -654,7 +658,8 @@ public class AveragePOCostingMethodHandlerTest
 				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("100", "10"));
 
 				final CurrentCost currentCost = getCurrentCost(orgId1);
-				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
+				// reversal re-adds 10 @100 onto -10: newAmt = 10x(-10) + 100 = 0 over newQty 0 => price stays 10
+				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
 				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
 			}
 
@@ -671,8 +676,9 @@ public class AveragePOCostingMethodHandlerTest
 				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("150", "10"));
 
 				final CurrentCost currentCost = getCurrentCost(orgId1);
-				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("20");
-				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("12.5"); // (10x15 + 10x10) / (10 + 10)
+				// receipt onto qty 0: newAmt = 10x0 + 150 = 150 over newQty 10 => price 15
+				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
+				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("15");
 			}
 		}
 
@@ -695,7 +701,8 @@ public class AveragePOCostingMethodHandlerTest
 				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("0", "-100"));
 
 				final CurrentCost currentCost = getCurrentCost(orgId1);
-				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
+				// over-issue -100 with no prior stock leaves CurrentQty negative (no floor), price 0
+				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("-100");
 				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("0");
 			}
 
@@ -712,8 +719,12 @@ public class AveragePOCostingMethodHandlerTest
 				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("150", "10"));
 
 				final CurrentCost currentCost = getCurrentCost(orgId1);
-				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
-				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("15");
+				// receipt onto -100: newAmt = 0x(-100) + 150 = 150 over newQty -90 => price 150/-90 = -1.6667.
+				// This transient NEGATIVE stored cost price is a known artifact of a receipt into an over-issued
+				// (negative on-hand) position at a zero cost basis. Whether a guard belongs anywhere is an open
+				// design question; do NOT add one here.
+				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("-90");
+				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("-1.6667");
 			}
 
 			// Shipment reversal
@@ -730,8 +741,10 @@ public class AveragePOCostingMethodHandlerTest
 				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("0", "100"));
 
 				final CurrentCost currentCost = getCurrentCost(orgId1);
-				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("110");
-				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("1.3636"); // (10x15 + 100x0) / (10 + 100) = 150 / 110 = 1.3636
+				// reversal re-adds 100 @0 onto -90: newAmt = (-1.6667)x(-90) + 0 = 150.003 over newQty 10 => 15.0003
+				// (the residual .0003 is the rounding tail of the transient -1.6667 price above)
+				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
+				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("15.0003");
 			}
 		}
 	}

@@ -268,4 +268,26 @@ public class CurrentCostTest
 		}
 
 	}
+
+	@Nested
+	public class addToCurrentQtyAndCumulate
+	{
+		/** Over-issue leaves CurrentQty negative — flooring it would fabricate phantom on-hand value with no GL posting. */
+		@Test
+		public void overIssue_carriesNegativeCurrentQty()
+		{
+			final CurrentCost currentCost = currentCost()
+					.ownCostPrice("1000")
+					.currentQty("1")
+					.build();
+
+			currentCost.addToCurrentQtyAndCumulate(
+					Quantity.of(-5, uomEach),
+					CostAmount.of(0, currencyId));
+
+			assertThat(currentCost.getCurrentQty())
+					.as("over-issue must leave CurrentQty negative, not floored to zero")
+					.isEqualTo(Quantity.of(-4, uomEach));
+		}
+	}
 }

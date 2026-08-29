@@ -284,7 +284,7 @@ public final class CurrentCost
 			@NonNull final Quantity qtyToAdd,
 			@NonNull final CostAmount amt)
 	{
-		currentQty = currentQty.add(qtyToAdd).toZeroIfNegative();
+		currentQty = currentQty.add(qtyToAdd);
 
 		addCumulatedAmtAndQty(amt, qtyToAdd);
 	}
