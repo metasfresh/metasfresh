@@ -3,13 +3,13 @@
 @allure.label.feature:F1500_Costing
 @allure.label.feature:F1514_Cost_Type_Moving_Average_Invoice
 @ghActions:run_on_executor6
-Feature: Moving Average Invoice - explicit cost price and negative on-hand
+Feature: Moving Average Invoice - explicit cost price and floored on-hand
 ## F1500: Costing
 # Moving-Average-Invoice costing under two conditions the on-hand quantity can reach:
 #  - an explicit-cost (year-end) inventory revalues the on-hand cost even when stock is already on hand
-#  - a genuine over-issue (a non-reversal shipment of more than is on hand) drives the on-hand quantity
-#    negative; the moving average must carry the negative on-hand honestly (no floor to zero) and an
-#    invoice price variance must not adjust a negative on-hand.
+#  - a genuine over-issue (a non-reversal shipment of more than is on hand) is floored to zero on-hand
+#    (never driven negative); a later receipt blends onto that zero on-hand, and an invoice price variance
+#    against the zero on-hand adjusts nothing and posts entirely to COGS.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -87,7 +87,7 @@ Feature: Moving Average Invoice - explicit cost price and negative on-hand
       | acctSchema      | product      | MovingAverageInvoice | 15 CHF           | 20 PCE     | 250 CHF      |
 
   @Id:S26253_TC21
-  Scenario: A non-reversal over-issue drives the on-hand quantity negative and it is carried honestly
+  Scenario: A non-reversal over-issue is floored to zero on-hand, not driven negative
     #
     # Receive 10 PCE at 10 CHF.
     #
@@ -120,10 +120,10 @@ Feature: Moving Average Invoice - explicit cost price and negative on-hand
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
       | acctSchema      | product      | MovingAverageInvoice | 10 CHF           | 0 PCE      | 0 CHF        |
     #
-    # Over-issue: a force-delivery sales order ships another 5 PCE though nothing is on hand. The on-hand
-    # goes to -5 through CurrentCost.addToCurrentQtyAndCumulate, which carries the quantity UNCLAMPED (a
-    # floor to zero would leave it at 0). The cost price stays 10; the cumulated amount follows the running
-    # sum of deltas: 100 - 100 - 50 = -50.
+    # Over-issue: a force-delivery sales order ships another 5 PCE though nothing is on hand.
+    # CurrentCost.addToCurrentQtyAndCumulate floors the on-hand quantity at zero (0 + (-5) -> 0), so the
+    # over-issue does NOT drive it negative. The cost price stays 10; the cumulated amount still follows the
+    # running sum of the raw deltas (100 - 100 - 50 = -50) even though the on-hand quantity itself is floored.
     #
     When for costing, create completed order with one line
       | C_OrderLine_ID | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | M_Product_ID | QtyEntered | Price | DeliveryRule |
@@ -138,11 +138,11 @@ Feature: Moving Average Invoice - explicit cost price and negative on-hand
       | M_InOutLine | shipmentOver_line1 | Y       | -50 CHF  | -5 PCE  | Y               |
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
-      | acctSchema      | product      | MovingAverageInvoice | 10 CHF           | -5 PCE     | -50 CHF      |
+      | acctSchema      | product      | MovingAverageInvoice | 10 CHF           | 0 PCE      | -50 CHF      |
     #
-    # A corrected receipt of 15 PCE at 12 CHF blends onto the negative on-hand honestly:
-    # (10 * -5 + 12 * 15) / (-5 + 15) = 130 / 10 = 13 CHF. Flooring the earlier over-issue to zero
-    # would have produced a wrong average.
+    # A corrected receipt of 15 PCE at 12 CHF blends onto the floored (zero) on-hand:
+    # (10 * 0 + 12 * 15) / (0 + 15) = 180 / 15 = 12 CHF, and the on-hand quantity becomes 15. Because the
+    # earlier over-issue floored the on-hand to zero, the blend starts from zero rather than from -5.
     #
     When for costing, create completed order with one line
       | C_OrderLine_ID | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | M_Product_ID | QtyEntered | Price |
@@ -158,10 +158,10 @@ Feature: Moving Average Invoice - explicit cost price and negative on-hand
       | M_InOutLine | receiptFix_line1   | N       | 180 CHF  | 15 PCE  | Y               |
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
-      | acctSchema      | product      | MovingAverageInvoice | 13 CHF           | 10 PCE     | 130 CHF      |
+      | acctSchema      | product      | MovingAverageInvoice | 12 CHF           | 15 PCE     | 130 CHF      |
 
   @Id:S26253_TC22
-  Scenario: An invoice price variance against a negative on-hand posts entirely to COGS, not to on-hand
+  Scenario: An invoice price variance against a floored (zero) on-hand posts entirely to COGS, not to on-hand
     #
     # Receive 10 PCE at 10 CHF.
     #
@@ -194,9 +194,9 @@ Feature: Moving Average Invoice - explicit cost price and negative on-hand
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
       | acctSchema      | product      | MovingAverageInvoice | 10 CHF           | 0 PCE      | 0 CHF        |
     #
-    # Over-issue: a force-delivery sales order ships another 10 PCE though nothing is on hand, driving the
-    # on-hand to -10 through the non-reversal shipment path (carried unclamped). Delivery A's receipt is
-    # untouched, so its vendor invoice can still be matched.
+    # Over-issue: a force-delivery sales order ships another 10 PCE though nothing is on hand. The non-reversal
+    # shipment path floors the on-hand at zero (0 + (-10) -> 0), so it is NOT driven negative. Delivery A's
+    # receipt is untouched, so its vendor invoice can still be matched.
     #
     When for costing, create completed order with one line
       | C_OrderLine_ID | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | M_Product_ID | QtyEntered | Price | DeliveryRule |
@@ -211,12 +211,13 @@ Feature: Moving Average Invoice - explicit cost price and negative on-hand
       | M_InOutLine | shipmentOver_line1 | Y       | -100 CHF | -10 PCE | Y               |
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
-      | acctSchema      | product      | MovingAverageInvoice | 10 CHF           | -10 PCE    | -100 CHF     |
+      | acctSchema      | product      | MovingAverageInvoice | 10 CHF           | 0 PCE      | -100 CHF     |
     #
-    # Delivery A's vendor invoice arrives at 13 CHF (a 3 CHF/PCE price variance). Because the on-hand
-    # quantity is negative, NONE of the difference may adjust the on-hand cost price: the whole 30 CHF
-    # variance is period cost (ALREADY_SHIPPED / COGS), the on-hand adjustment is 0 (so no ADJUSTMENT cost
-    # detail is produced), and the current cost price stays 10.
+    # Delivery A's vendor invoice arrives at 13 CHF (a 3 CHF/PCE price variance). The on-hand quantity is
+    # zero (the over-issue floored it), so computeMatchInvSplit clamps the still-in-stock share to zero:
+    # NONE of the difference may adjust the on-hand cost price. The whole 30 CHF variance is period cost
+    # (ALREADY_SHIPPED / COGS), the on-hand adjustment is 0 (so no ADJUSTMENT cost detail is produced), and
+    # the current cost price stays 10.
     #
     When for costing, create completed invoice with one line
       | C_OrderLine_ID | PriceEntered_Override | M_MatchInv_ID |
@@ -230,4 +231,4 @@ Feature: Moving Average Invoice - explicit cost price and negative on-hand
       | M_MatchInv  | matchInvA          | N       | ALREADY_SHIPPED | 30 CHF   | 0 PCE   | N               |
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
-      | acctSchema      | product      | MovingAverageInvoice | 10 CHF           | -10 PCE    | -100 CHF     |
+      | acctSchema      | product      | MovingAverageInvoice | 10 CHF           | 0 PCE      | -100 CHF     |
