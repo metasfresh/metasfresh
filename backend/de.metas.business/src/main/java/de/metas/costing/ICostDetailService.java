@@ -46,6 +46,17 @@ public interface ICostDetailService
 			@NonNull CostElementId costElementId,
 			@NonNull Set<ProductId> productIds);
 
+	/**
+	 * Recovers ALL persisted cost-detail legs of the document identified by the request's
+	 * (acctSchemaId, costElementId, documentRef) — MAIN, ADJUSTMENT and ALREADY_SHIPPED alike.
+	 * <p>
+	 * {@code request.getAmtType()} is intentionally IGNORED (it defaults to MAIN): this feeds the
+	 * repost-recovery path ({@code CostingMethodHandlerTemplate.createOrUpdateCost} plus the manufacturing
+	 * handlers), which must reconstruct the FULL posting. Filtering by amtType here would drop the non-MAIN
+	 * legs of a multi-leg document (MovingAverageInvoice MatchInv, manufacturing CostDifferenceDistribution)
+	 * and degenerate the aggregated {@link de.metas.costing.methods.CostAmountDetailed} to the MAIN leg. To recover a single amtType,
+	 * use the {@link CostDetailQuery} overloads instead.
+	 */
 	List<CostDetail> getExistingCostDetails(CostDetailCreateRequest request);
 
 	AggregatedCostAmount toAggregatedCostAmount(List<CostDetail> costDetails);
