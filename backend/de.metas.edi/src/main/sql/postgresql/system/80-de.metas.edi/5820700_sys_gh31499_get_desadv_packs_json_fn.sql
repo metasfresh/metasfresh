@@ -1,3 +1,4 @@
+-- Source DDL: backend/de.metas.edi/src/main/sql/postgresql/ddl/functions/desadv_json/get_desadv_packs_json_fn.sql
 -- Function for desadv packs
 -- Handles compensation group sub-articles: sub-article pack items are merged
 -- into the main article's pack, adding IsSubArticle and MainArticleLine to each LineItem.
