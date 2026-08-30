@@ -134,11 +134,22 @@ public class CostDetailService implements ICostDetailService
 	@Override
 	public final List<CostDetail> getExistingCostDetails(@NonNull final CostDetailCreateRequest request)
 	{
+		// NOTE: intentionally NOT filtering by request.getAmtType() (which defaults to MAIN).
+		// This method feeds the repost-recovery path (CostingMethodHandlerTemplate.createOrUpdateCost in
+		// de.metas.business plus all four manufacturing handlers), which must reconstruct the FULL posting:
+		// on a repost we recover ALL persisted legs of the document (MAIN + ADJUSTMENT + ALREADY_SHIPPED) so
+		// the aggregated CostAmountDetailed is leg-complete instead of degenerating to the MAIN leg.
+		// Multi-leg producers this corrects: the MovingAverageInvoice MatchInv (keeps the invoice-vs-PO price
+		// variance routing to InvoicePriceVariance instead of GR/IR), and the manufacturing
+		// CostDifferenceDistribution under AveragePO / LastPOPrice / MovingAverageInvoice
+		// (PPOrderCostDifferenceDistributor persists MAIN + ADJUSTMENT + ALREADY_SHIPPED for all three).
+		// A document/method that only ever persists a single MAIN leg is unaffected: recovering all legs is
+		// identical to recovering MAIN.
 		return costDetailsRepo.list(CostDetailQuery.builder()
 				.acctSchemaId(request.getAcctSchemaId())
 				.costElementId(request.getCostElementId()) // assume request's costing element is set
 				.documentRef(request.getDocumentRef())
-				.amtType(request.getAmtType())
+				// .amtType(...) omitted on purpose: recover every leg, see note above
 				// .productId(request.getProductId())
 				// .attributeSetInstanceId(request.getAttributeSetInstanceId())
 				.build());
