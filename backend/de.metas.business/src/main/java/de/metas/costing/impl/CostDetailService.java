@@ -140,7 +140,10 @@ public class CostDetailService implements ICostDetailService
 		// on a repost we recover ALL persisted legs of the document (MAIN + ADJUSTMENT + ALREADY_SHIPPED) so
 		// the aggregated CostAmountDetailed is leg-complete instead of degenerating to the MAIN leg.
 		// Multi-leg producers this corrects: the MovingAverageInvoice MatchInv (keeps the invoice-vs-PO price
-		// variance routing to InvoicePriceVariance instead of GR/IR), and the manufacturing
+		// variance on its proper account -- for the on-hand case, on-hand inventory revaluation (P_Asset) via
+		// the ADJUSTMENT leg, with InvoicePriceVariance only as an FX/residual line -- so GR/IR
+		// (NotInvoicedReceipts) still carries only the PO-price receipt amount and nets to zero, instead of
+		// degenerating to the full invoiced amount), and the manufacturing
 		// CostDifferenceDistribution under AveragePO / LastPOPrice / MovingAverageInvoice
 		// (PPOrderCostDifferenceDistributor persists MAIN + ADJUSTMENT + ALREADY_SHIPPED for all three).
 		// A document/method that only ever persists a single MAIN leg is unaffected: recovering all legs is
