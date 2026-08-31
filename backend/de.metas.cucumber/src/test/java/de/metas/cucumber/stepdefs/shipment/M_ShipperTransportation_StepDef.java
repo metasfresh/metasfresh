@@ -394,7 +394,24 @@ public class M_ShipperTransportation_StepDef
 	 * completed ({@code Processed='Y'}) transport order is read-only unless the column is always-updateable.
 	 * That gate is covered by the Playwright spec
 	 * {@code e2e/frontend-webui/tests/spec/transport-order-dates-editable-when-completed.spec.js}.
+	 * <p>
+	 * On a DELIVERY instruction the same model-layer write is what drives the second date interceptor,
+	 * {@code de.metas.deliveryplanning.interceptor.M_ShipperTransportation#syncDatesToAllocatedPlannings},
+	 * which pushes the changed date down onto every currently allocated delivery planning.
 	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_ShipperTransportation_ID</b> (or <b>Identifier</b>) — (required, identifier-ref) the record to update<br>
+	 *   <b>ETD</b> — (optional) new estimated departure<br>
+	 *   <b>ETA</b> — (optional) new estimated arrival<br>
+	 *   <b>BLDate</b> — (optional) new bill-of-lading date<br>
+	 * @cucumber.depends StepDefData: M_ShipperTransportation_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update transport order
+	 *   | M_ShipperTransportation_ID | ETD                  | ETA                  |
+	 *   | deliveryInstruction        | 2023-06-01T00:00:00Z | 2023-06-05T00:00:00Z |
+	 * </pre>
 	 * @see de.metas.shipping.model.validator.M_ShipperTransportation
 	 */
 	@And("update transport order")
@@ -409,6 +426,9 @@ public class M_ShipperTransportation_StepDef
 	{
 		final ShipperTransportationId shipperTransportationId = tableRow.getAsIdentifier().lookupNotNullIdIn(deliveryInstructionTable);
 		final I_M_ShipperTransportation record = shipperTransportationDAO.getById(shipperTransportationId);
+
+		tableRow.getAsOptionalInstant(I_M_ShipperTransportation.COLUMNNAME_ETD)
+				.ifPresent(expected -> record.setETD(Timestamp.from(expected)));
 
 		tableRow.getAsOptionalInstant(I_M_ShipperTransportation.COLUMNNAME_ETA)
 				.ifPresent(expected -> record.setETA(Timestamp.from(expected)));

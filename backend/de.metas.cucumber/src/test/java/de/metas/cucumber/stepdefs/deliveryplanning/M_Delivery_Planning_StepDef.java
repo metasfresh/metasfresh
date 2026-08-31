@@ -335,6 +335,12 @@ public class M_Delivery_Planning_StepDef
 			row.getAsOptionalLocalDateTimestamp(I_M_Delivery_Planning.COLUMNNAME_ETD)
 					.ifPresent(etd -> softly.assertThat(deliveryPlanning.getETD()).as(I_M_Delivery_Planning.COLUMNNAME_ETD).isEqualTo(etd));
 
+			row.getAsOptionalLocalDateTimestamp(I_M_Delivery_Planning.COLUMNNAME_ATA)
+					.ifPresent(ata -> softly.assertThat(deliveryPlanning.getATA()).as(I_M_Delivery_Planning.COLUMNNAME_ATA).isEqualTo(ata));
+
+			row.getAsOptionalLocalDateTimestamp(I_M_Delivery_Planning.COLUMNNAME_ATD)
+					.ifPresent(atd -> softly.assertThat(deliveryPlanning.getATD()).as(I_M_Delivery_Planning.COLUMNNAME_ATD).isEqualTo(atd));
+
 			row.getAsOptionalBigDecimal(I_M_Delivery_Planning.COLUMNNAME_PlannedLoadedQuantity)
 					.ifPresent(plannedLoadedQty -> softly.assertThat(deliveryPlanning.getPlannedLoadedQuantity()).as(I_M_Delivery_Planning.COLUMNNAME_PlannedLoadedQuantity).isEqualTo(plannedLoadedQty));
 
@@ -542,6 +548,60 @@ public class M_Delivery_Planning_StepDef
 			assertThat(deliveryPlanning.getReleaseNo())
 					.as("%s of M_Delivery_Planning %s", I_M_Delivery_Planning.COLUMNNAME_ReleaseNo, deliveryPlanning.getM_Delivery_Planning_ID())
 					.isNullOrEmpty();
+		});
+	}
+
+	/**
+	 * Asserts that each of the given plannings carries the delivery instruction's OWN date fields - which is what
+	 * "the instruction owns the dates while the planning is allocated to it" means in the data: on the initial
+	 * stamp and on every later change of the instruction alike, one-way, instruction to planning.
+	 * <p>
+	 * A relationship rather than literals, deliberately: the instruction's departure date is derived from the
+	 * seeding order's {@code PreparationDate}, so pinning it as a literal in a feature file would assert the
+	 * derivation instead of the sync. Where a date IS literal-knowable (an arrival date taken from the order
+	 * line's {@code DatePromised}), the scenario pins it with {@code validate M_Delivery_Planning:} as well.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_Delivery_Planning_ID</b> — (required, identifier-ref) the planning whose dates are asserted<br>
+	 * @cucumber.depends StepDefData: M_Delivery_Planning_StepDefData, M_ShipperTransportation_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then the following M_Delivery_Planning carry the date fields of M_ShipperTransportation deliveryInstruction:
+	 *   | M_Delivery_Planning_ID |
+	 *   | deliveryPlanning_1     |
+	 *   | deliveryPlanning_2     |
+	 * </pre>
+	 */
+	@And("^the following M_Delivery_Planning carry the date fields of M_ShipperTransportation (.*):$")
+	public void validate_dates_taken_from_instruction(
+			@NonNull final String deliveryInstructionIdentifier,
+			@NonNull final DataTable dataTable)
+	{
+		final I_M_ShipperTransportation deliveryInstruction = deliveryInstructionTable.get(deliveryInstructionIdentifier);
+		assertThat(deliveryInstruction).isNotNull();
+		InterfaceWrapperHelper.refresh(deliveryInstruction);
+
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_M_Delivery_Planning deliveryPlanning = row.getAsIdentifier(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID).lookupNotNullIn(deliveryPlanningTable);
+			InterfaceWrapperHelper.refresh(deliveryPlanning);
+
+			final SoftAssertions softly = new SoftAssertions();
+
+			softly.assertThat(deliveryPlanning.getETD()).as("%s of M_Delivery_Planning %s", I_M_Delivery_Planning.COLUMNNAME_ETD, deliveryPlanning.getM_Delivery_Planning_ID())
+					.isEqualTo(deliveryInstruction.getETD());
+			softly.assertThat(deliveryPlanning.getETA()).as("%s of M_Delivery_Planning %s", I_M_Delivery_Planning.COLUMNNAME_ETA, deliveryPlanning.getM_Delivery_Planning_ID())
+					.isEqualTo(deliveryInstruction.getETA());
+			softly.assertThat(deliveryPlanning.getATD()).as("%s of M_Delivery_Planning %s", I_M_Delivery_Planning.COLUMNNAME_ATD, deliveryPlanning.getM_Delivery_Planning_ID())
+					.isEqualTo(deliveryInstruction.getATD());
+			softly.assertThat(deliveryPlanning.getATA()).as("%s of M_Delivery_Planning %s", I_M_Delivery_Planning.COLUMNNAME_ATA, deliveryPlanning.getM_Delivery_Planning_ID())
+					.isEqualTo(deliveryInstruction.getATA());
+			softly.assertThat(deliveryPlanning.getLoadingTime()).as("%s of M_Delivery_Planning %s", I_M_Delivery_Planning.COLUMNNAME_LoadingTime, deliveryPlanning.getM_Delivery_Planning_ID())
+					.isEqualTo(deliveryInstruction.getLoadingTime());
+			softly.assertThat(deliveryPlanning.getDeliveryTime()).as("%s of M_Delivery_Planning %s", I_M_Delivery_Planning.COLUMNNAME_DeliveryTime, deliveryPlanning.getM_Delivery_Planning_ID())
+					.isEqualTo(deliveryInstruction.getDeliveryTime());
+
+			softly.assertAll();
 		});
 	}
 
