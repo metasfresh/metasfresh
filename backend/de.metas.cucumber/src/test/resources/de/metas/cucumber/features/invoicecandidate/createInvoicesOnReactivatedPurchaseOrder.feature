@@ -1,6 +1,8 @@
 @from:cucumber
 @allure.label.epic:E0340_Invoicing
 @allure.label.feature:F00701_Sales_Invoice_Candidates
+@allure.label.epic:E0225_Accounting
+@allure.label.feature:F01010.3_Match_Invoice
 @F00701
 @ghActions:run_on_executor5
 Feature: Create Invoices on a reactivated purchase order that already has a material receipt
@@ -59,6 +61,8 @@ Feature: Create Invoices on a reactivated purchase order that already has a mate
   @from:cucumber
 @allure.label.epic:E0340_Invoicing
 @allure.label.feature:F00701_Sales_Invoice_Candidates
+@allure.label.epic:E0225_Accounting
+@allure.label.feature:F01010.3_Match_Invoice
 @F00701
   Scenario: Create Invoices succeeds for a purchase order that was reactivated after its material receipt
     #

@@ -1,6 +1,8 @@
 @from:cucumber
 @allure.label.epic:E0340_Invoicing
 @allure.label.feature:F00701_Sales_Invoice_Candidates
+@allure.label.epic:E0225_Accounting
+@allure.label.feature:F01010.3_Match_Invoice
 @F00701
 @ghActions:run_on_executor5
 Feature: Closing an undelivered receipt disposition closes the purchase invoice candidate
@@ -57,6 +59,8 @@ Feature: Closing an undelivered receipt disposition closes the purchase invoice 
   @from:cucumber
 @allure.label.epic:E0340_Invoicing
 @allure.label.feature:F00701_Sales_Invoice_Candidates
+@allure.label.epic:E0225_Accounting
+@allure.label.feature:F01010.3_Match_Invoice
 @F00701
   Scenario: Closing an undelivered receipt disposition closes the purchase invoice candidate
     When metasfresh contains C_Orders:
