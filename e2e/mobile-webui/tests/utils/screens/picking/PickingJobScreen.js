@@ -210,9 +210,17 @@ export const PickingJobScreen = {
 
         if (!expectedPickDirectly) {
             // expectedError: the qty-dialog Done press fires the picking/event POST which the backend
-            // rejects (e.g. a life-cycle-blocked product) — asserted as an error toast; the dialog closes
-            // and we stay on the picking-job screen.
+            // rejects (e.g. a life-cycle-blocked product) — asserted as an error toast.
             await GetQuantityDialog.fillAndPressDone({ switchToManualInput, expectQtyEntered, qtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason, expectedError });
+        }
+
+        if (expectedError) {
+            // A REJECTED pick leaves the operator exactly where they were — the qty dialog stays open so
+            // the quantity can be corrected or the pick cancelled. Verified from the trace: after the 422
+            // on POST /picking/event the app renders the toast and issues no further request, and
+            // #WFProcessScreen is not in the DOM. So there is no next screen to wait for here; waiting
+            // for one would time out.
+            return;
         }
 
         if (!expectNextScreen || expectNextScreen === 'PickingJobScreen') {

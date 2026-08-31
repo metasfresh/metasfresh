@@ -45,11 +45,11 @@ SELECT SUM(il.qtyEntered)                                                       
        il.pricelist,
        il.discount,
        ol.invoicableqtybasedon,
-       REGEXP_REPLACE(asi_data.UPC, '\s+$', '')                                    AS UPC_CU,
+       REGEXP_REPLACE(asi_data.UPC, '\s+$', '')                                  AS UPC_CU,
        REGEXP_REPLACE(asi_data.EAN_CU, '\s+$', '')                               AS EAN_CU, -- Deprecated: superseded by buyer_ean_cu
        REGEXP_REPLACE(p.value, '\s+$', '')                                       AS Value,
        p.DepositType                                                             AS Product_DepositType,
-       REGEXP_REPLACE(asi_data.productno, '\s+$', '')                              AS CustomerProductNo,
+       REGEXP_REPLACE(asi_data.productno, '\s+$', '')                            AS CustomerProductNo,
        SUBSTR(p.name, 1, 35)                                                     AS name,
        SUBSTR(p.name, 36, 70)                                                    AS name2,
        t.rate,
@@ -74,23 +74,29 @@ SELECT SUM(il.qtyEntered)                                                       
            WHEN 'Leergut' THEN 'P'
                           ELSE ''
        END                                                                       AS leergut,
-       COALESCE(NULLIF(asi_data.productdescription, ''), NULLIF(asi_data.productname, ''), NULLIF(p.description, ''),
-                p.name)::character varying                                       AS productdescription,
+       COALESCE(
+               NULLIF(asi_data.productdescription, ''),
+               NULLIF(asi_data.productname, ''),
+               NULLIF(p.description, ''),
+               p.name)::character varying                                        AS productdescription,
        COALESCE(ol.line, il.line)                                                AS orderline,
        COALESCE(NULLIF(o.poreference, ''), i.poreference)::character varying(40) AS orderporeference,
        il.c_orderline_id,
        SUM(il.taxamtinfo)                                                        AS taxamtinfo,
-       REGEXP_REPLACE(pip.GTIN::text, '\s+$'::text, ''::text)                    AS GTIN,   -- Deprecated: superseded by buyer_gtin_tu
-       REGEXP_REPLACE(pip.EAN_TU::text, '\s+$'::text, ''::text)                  AS EAN_TU,
-       REGEXP_REPLACE(pip.UPC::text, '\s+$'::text, ''::text)                     AS UPC_TU,
-       REGEXP_REPLACE(pip.GTIN::text, '\s+$'::text, ''::text)                    AS Buyer_GTIN_TU,
-       COALESCE( -- if there is no explicit asi_data GTIN, fall back to the buyer-specific EAN_CU on the same M_Product_ASI_Data row (EAN_CU and GTIN_CU are semantically equivalent for modern EAN-13/EAN-14 codes); only when both are missing do we fall back to the supplier-side base M_Product.GTIN
-               NULLIF(REGEXP_REPLACE(asi_data.GTIN::text, '\s+$'::text, ''::text), ''::text),
-               NULLIF(REGEXP_REPLACE(asi_data.EAN_CU::text, '\s+$'::text, ''::text), ''::text),
-               REGEXP_REPLACE(p.GTIN::text, '\s+$'::text, ''::text)
-       )                                                                         AS Buyer_GTIN_CU,
-       REGEXP_REPLACE(asi_data.EAN_CU::text, '\s+$'::text, ''::text)             AS Buyer_EAN_CU,
-       REGEXP_REPLACE(p.GTIN::text, '\s+$'::text, ''::text)                      AS Supplier_GTIN_CU,
+       COALESCE(NULLIF(REGEXP_REPLACE(pip.GTIN, '\s+$', ''), ''),
+                REGEXP_REPLACE(pip.EAN_TU, '\s+$', '')
+       )                                                                         AS GTIN,   -- Deprecated: superseded by buyer_gtin_tu
+       REGEXP_REPLACE(pip.EAN_TU, '\s+$', '')                                    AS EAN_TU,
+       REGEXP_REPLACE(pip.UPC, '\s+$', '')                                       AS UPC_TU,
+       COALESCE(NULLIF(REGEXP_REPLACE(pip.GTIN, '\s+$', ''), ''),
+                REGEXP_REPLACE(pip.EAN_TU, '\s+$', '')
+       )                                                                         AS Buyer_GTIN_TU,
+       COALESCE(NULLIF(REGEXP_REPLACE(asi_data.gtin, '\s+$', ''), ''),
+                NULLIF(REGEXP_REPLACE(asi_data.ean_cu, '\s+$', ''), ''),
+                NULLIF(REGEXP_REPLACE(asi_data.ean13_productcode, '\s+$', ''), ''),
+                REGEXP_REPLACE(p.gtin, '\s+$', ''))                              AS Buyer_GTIN_CU,
+       REGEXP_REPLACE(asi_data.EAN_CU, '\s+$', '')                               AS Buyer_EAN_CU,
+       REGEXP_REPLACE(p.GTIN, '\s+$', '')                                        AS Supplier_GTIN_CU, /* the SUPPLIER's own GTIN — deliberately NOT the buyer-scoped asi_data */
        SUM(il.QtyEnteredInBPartnerUOM)                                           AS qtyEnteredInBPartnerUOM,
        il.C_UOM_BPartner_ID                                                      AS C_UOM_BPartner_ID,
        il.externalids                                                            AS ExternalId,
@@ -106,7 +112,7 @@ FROM c_invoiceline il
          LEFT JOIN c_currency c ON c.c_currency_id = i.c_currency_id
          -- ASI-aware product data lookup (M_Product_ASI_Data with content-based ASI subset matching)
          LEFT JOIN LATERAL (
-             SELECT gtin, ean_cu, upc, productno, productdescription, productname
+             SELECT gtin, ean_cu, ean13_productcode, upc, productno, productdescription, productname
              FROM m_product_asi_data
              WHERE isactive = 'Y'
                AND m_product_id = il.m_product_id
@@ -129,6 +135,7 @@ GROUP BY il.c_invoice_id,
          ol.InvoicableQtyBasedOn,
          asi_data.UPC,
          asi_data.EAN_CU,
+         asi_data.ean13_productcode,
          p.value,
          p.DepositType,
          asi_data.productno,

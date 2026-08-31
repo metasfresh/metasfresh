@@ -38,6 +38,39 @@ BEGIN
 
     RETURN QUERY
 
+        -- 0. Overview: how many partners / addresses carry a VAT-ID at all. The per-status counts below
+        --    include every record (a record that never had a VAT-ID reads as NotChecked / NULL), so this
+        --    section is what tells the reader how large the population with an actual VAT-ID is -- the set
+        --    the check process ever acts on -- versus the (usually much larger) set with none.
+        SELECT 5::NUMERIC, '0 - Überblick USt-IdNr.-Bestand'::VARCHAR, v.RecordType,
+               NULL::NUMERIC, NULL::VARCHAR, NULL::VARCHAR, NULL::NUMERIC, NULL::VARCHAR,
+               NULL::VARCHAR, NULL::VARCHAR, NULL::TIMESTAMP, v.Cnt::NUMERIC, v.Detail
+        FROM (
+                 SELECT 'Partner'::VARCHAR AS RecordType, 'mit USt-IdNr.'::VARCHAR AS Detail, COUNT(*) AS Cnt
+                 FROM C_BPartner bp
+                 WHERE bp.AD_Org_ID = v_ad_org_id AND bp.IsActive = 'Y'
+                   AND COALESCE(TRIM(bp.VATaxID), '') <> ''
+                 UNION ALL
+                 SELECT 'Partner'::VARCHAR, 'ohne USt-IdNr.'::VARCHAR, COUNT(*)
+                 FROM C_BPartner bp
+                 WHERE bp.AD_Org_ID = v_ad_org_id AND bp.IsActive = 'Y'
+                   AND COALESCE(TRIM(bp.VATaxID), '') = ''
+                 UNION ALL
+                 SELECT 'Location'::VARCHAR, 'mit USt-IdNr.'::VARCHAR, COUNT(*)
+                 FROM C_BPartner_Location bpl
+                          JOIN C_BPartner bp ON bp.C_BPartner_ID = bpl.C_BPartner_ID
+                 WHERE bp.AD_Org_ID = v_ad_org_id AND bpl.IsActive = 'Y'
+                   AND COALESCE(TRIM(bpl.VATaxID), '') <> ''
+                 UNION ALL
+                 SELECT 'Location'::VARCHAR, 'ohne USt-IdNr.'::VARCHAR, COUNT(*)
+                 FROM C_BPartner_Location bpl
+                          JOIN C_BPartner bp ON bp.C_BPartner_ID = bpl.C_BPartner_ID
+                 WHERE bp.AD_Org_ID = v_ad_org_id AND bpl.IsActive = 'Y'
+                   AND COALESCE(TRIM(bpl.VATaxID), '') = ''
+             ) v
+
+        UNION ALL
+
         -- 1. Count of VAT-IDs per status, partner headers and addresses counted separately
         SELECT 10::NUMERIC, '1 - Count per status'::VARCHAR, s.RecordType,
                NULL::NUMERIC, NULL::VARCHAR, NULL::VARCHAR, NULL::NUMERIC, NULL::VARCHAR, NULL::VARCHAR,

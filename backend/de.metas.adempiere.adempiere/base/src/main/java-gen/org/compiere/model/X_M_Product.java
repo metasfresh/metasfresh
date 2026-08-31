@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Product extends org.compiere.model.PO implements I_M_Product, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -57209193L;
+	private static final long serialVersionUID = 1798749400L;
 
     /** Standard Constructor */
     public X_M_Product (final Properties ctx, final int M_Product_ID, @Nullable final String trxName)
@@ -1456,7 +1456,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	/** DeliveryStop = N */
 	public static final String PRODUCTLIFECYCLESTATUS_DeliveryStop = "N";
 	@Override
-	public void setProductLifeCycleStatus (final @Nullable java.lang.String ProductLifeCycleStatus)
+	public void setProductLifeCycleStatus (final java.lang.String ProductLifeCycleStatus)
 	{
 		set_Value (COLUMNNAME_ProductLifeCycleStatus, ProductLifeCycleStatus);
 	}

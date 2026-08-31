@@ -238,6 +238,8 @@ public class C_Order_StepDef
 	 *   <li>{@code IsFixedPreparationDate} (optional) — when {@code true}, holds each order line until its own
 	 *       preparation date (per-line {@code M_Packageable_V.PreparationDate}) is reached before it may be picked</li>
 	 *   <li>{@code HandOver_Location_ID} (optional) — identifier referencing the delivery/hand-over {@code C_BPartner_Location} (also sets {@code IsUseHandOver_Location})</li>
+	 *   <li>{@code PriorityRule} (optional) — priority rule code (1=Urgent, 3=High, 5=Medium, 7=Low, 9=Minor);
+	 *       defaults to the AD column default (5, Medium) when omitted</li>
 	 * </ul>
 	 */
 	@Given("metasfresh contains C_Orders:")
@@ -457,6 +459,9 @@ public class C_Order_StepDef
 				.map(shipperTable::extractIdFromRecord)
 				.map(ShipperId::getRepoId)
 				.ifPresent(order::setM_Shipper_ID);
+
+		tableRow.getAsOptionalString(I_C_Order.COLUMNNAME_PriorityRule)
+				.ifPresent(order::setPriorityRule);
 		tableRow.getAsOptionalIdentifier(COLUMNNAME_C_Project_ID)
 				.map(projectTable::get)
 				.map(projectTable::extractIdFromRecord)
@@ -542,6 +547,30 @@ public class C_Order_StepDef
 		assertThat(expectedException)
 				.as("Order action %s is not possible for order %s", action, orderIdentifier)
 				.isNotNull();
+	}
+
+	/**
+	 * Asserts that completing the given order is REFUSED, and that it is refused for the expected reason:
+	 * the thrown {@link AdempiereException} must carry the given error code.
+	 * <p>
+	 * Unlike {@link #order_action_not_possible(String, String)}, which only asserts that <i>some</i> exception
+	 * was thrown, this step pins WHY the completion failed — without the error code the assertion would also
+	 * pass if the order happened to fail for an unrelated reason.
+	 * <p>
+	 * Parameters:<br>
+	 *   <b>orderIdentifier</b> — identifier of a {@code C_Order} created earlier in the scenario<br>
+	 *   <b>errorCode</b> — the expected {@code AD_Message.ErrorCode}
+	 *
+	 * <pre>{@code
+	 * Then the order identified by blockedOrder cannot be completed because of error code M_Product_BBSStatus_ActionBlocked
+	 * }</pre>
+	 */
+	@And("^the order identified by (.*) cannot be completed because of error code (.*)$")
+	public void order_cannot_be_completed_because_of_error_code(
+			@NonNull final String orderIdentifier,
+			@NonNull final String errorCode)
+	{
+		StepDefUtil.assertRefusedWithErrorCode(errorCode, () -> order_action(orderIdentifier, StepDefDocAction.completed.name()));
 	}
 
 	public void completeOrder(final I_C_Order order)
@@ -785,6 +814,31 @@ public class C_Order_StepDef
 				.forEach(this::validateOrder);
 	}
 
+	/**
+	 * Updates fields of a {@code C_Order} previously registered under an identifier.
+	 *
+	 * <p>Required column:
+	 * <ul>
+	 *   <li>{@code C_Order_ID} – identifier of the order to update</li>
+	 * </ul>
+	 * Optional field columns (each applied only when present):
+	 * <ul>
+	 *   <li>{@code DocBaseType} + {@code DocSubType} – both together select a new C_DocType / C_DocTypeTarget</li>
+	 *   <li>{@code PaymentRule}</li>
+	 *   <li>{@code PreparationDate}</li>
+	 *   <li>{@code LC_Date}</li>
+	 *   <li>{@code POReference} – the customer's purchase-order reference; a {@code @Date@} placeholder
+	 *       in the value is resolved to the current timestamp, so a scenario can keep it unique across
+	 *       repeated local runs</li>
+	 * </ul>
+	 *
+	 * <p>Example:
+	 * <pre>
+	 * When update order
+	 *   | C_Order_ID | POReference    |
+	 *   | o_1        | PO_1234_@Date@ |
+	 * </pre>
+	 */
 	@And("update order")
 	public void update_order(@NonNull final DataTable dataTable)
 	{
@@ -820,6 +874,9 @@ public class C_Order_StepDef
 				.ifPresent(expected -> order.setPreparationDate(Timestamp.from(expected)));
 		tableRow.getAsOptionalInstant(I_C_Order.COLUMNNAME_LC_Date)
 				.ifPresent(expected -> order.setLC_Date(Timestamp.from(expected)));
+		// getAsOptionalName (not ...String) so that a @Date@ placeholder in the value is resolved
+		tableRow.getAsOptionalName(COLUMNNAME_POReference)
+				.ifPresent(order::setPOReference);
 		saveRecord(order);
 
 		orderTable.putOrReplace(tableRow.getAsIdentifier(), order);

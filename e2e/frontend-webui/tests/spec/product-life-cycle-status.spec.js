@@ -1,20 +1,21 @@
 /**
- * M_Product.ProductLifeCycleStatus (BBS-Status) field in the Product window
+ * M_Product.ProductLifeCycleStatus (BBS-Status) is deliberately NOT part of the vanilla Product
+ * window (AD_Window_ID=140, AD_Tab_ID=180). This spec guards that: the field must be absent from
+ * the form, from the grid, and from the filter bar.
  *
- * Scope: verify that the ProductLifeCycleStatus field on M_Product is:
- *   1. Visible in the Product main tab (AD_Window_ID=140, AD_Tab_ID=180)
- *   2. Selectable from the dropdown by its underlying KEY ("G" = Gesperrt/Blocked)
- *   3. Persisted after save + page reload
+ * Migration 5820370 hid it there on purpose -- the window already carries an "Auslaufprodukt"
+ * (M_Product.Discontinued) checkbox that reads like the same control, and the enforcement is wanted
+ * by one customer, whose own repo puts the field on the window that customer actually opens. 5820780
+ * then removed the leftover filter entry. The column, its reference list and every backend guard stay
+ * in core, covered by de.metas.cucumber productLifeCycleStatus.feature and ProductBL_assertAllowed_Test
+ * / PickHUCommand_LifeCycleStatus_Test.
  *
- * The test is language-independent: it selects the option by its
- * `data-testid="option-G"` (the dropdown renders the key, not the caption) and
- * verifies persistence by reading the raw field value via the WebAPI rather than
- * the displayed caption.
+ * The filter assertion guards AD_Field.IsFilterField (window-scoped), NOT AD_Column.IsSelectionColumn
+ * (table-level, still on so the customer's own window keeps its quick filter).
  *
- * Reference list values: O (OK) / A (Auslauf) / G (Gesperrt) / N (Lieferstopp).
- * Widget type: List (renders as #lookup_ProductLifeCycleStatus dropdown).
- * "G" is chosen because the column default is "O", so selecting "G" proves a
- * changed value is persisted (not just the default).
+ * Running this locally: reset the SqlViewLayouts and SqlViewBindings caches first, or the app server
+ * keeps serving the pre-migration layout. Neither cache is keyed to a table, so no AD_* change
+ * invalidates them and an unreset run will contradict the migration.
  */
 
 import { expect } from '@playwright/test';
@@ -23,35 +24,35 @@ import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
-import { ListWidget } from '../utils/widgets/ListWidget';
 import { WidgetCommon } from '../utils/widgets/WidgetCommon';
 import { PRODUCT_WINDOW_ID } from '../utils/WindowIds';
-import { assertRecordIsValid, getFieldData } from '../utils/WebAPIValidation';
+import {
+  assertRecordIsValid,
+  getViewLayout,
+  getViewLayoutColumnNames,
+  getViewLayoutFilterParameterNames,
+} from '../utils/WebAPIValidation';
 
 // AD_Column.ColumnName for the life-cycle status field
 const FIELD_NAME = 'ProductLifeCycleStatus';
 
-// Underlying AD_Ref_List.Value — same in every UI language ("Gesperrt")
-const LIFE_CYCLE_STATUS_BLOCKED_VALUE = 'G';
-
 test.describe('M_Product.ProductLifeCycleStatus field in Product window', () => {
-  test('BBS-Status field appears in Product window and persists a Gesperrt selection', async ({ page }) => {
+  test('BBS-Status is not rendered in the vanilla Product form', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0380: Masterdata Products');
     allure.tag('F6000: Maintain Product Data');
     allure.tag('F6000');  // Standalone tag for Tags section
-    allure.story('Product life-cycle status (BBS-Status) field visible and persists');
+    allure.story('Product life-cycle status (BBS-Status) is not part of the standard Product UI');
     allure.severity('normal');
     allure.description(`
 ## M_Product.ProductLifeCycleStatus (BBS-Status)
 
-Verifies that the product life-cycle status field appears in the Product master
-data window and that selecting "Gesperrt" (G) persists after save and page reload.
+Verifies that the product life-cycle status field is NOT offered in the standard Product
+window form. The column and its backend enforcement remain in core; only the form exposure is
+removed (migration 5820370).
     `);
 
     // Create a fresh test user + a dedicated test product (no shared seed data).
-    // No language is pinned — selection happens by option key and assertion by
-    // raw field value, so the test is language-independent.
     const masterdata = await Backend.createMasterdata({
       request: {
         login: { user: {} },
@@ -74,53 +75,45 @@ data window and that selecting "Gesperrt" (G) persists after save and page reloa
     await page.waitForURL(/\/window\/\d+\/\d+/, { timeout: 30000 });
     console.log(`[INFO] Navigated to product detail view: ${page.url()}`);
 
-    // CRITICAL: assert record is valid before modifying — if valid=false changes will not be saved
-    await assertRecordIsValid(PRODUCT_WINDOW_ID, productId, 'before setting ProductLifeCycleStatus');
+    // The record must load cleanly — otherwise "field absent" would prove nothing.
+    await assertRecordIsValid(PRODUCT_WINDOW_ID, productId, 'Product record loaded');
 
-    // === STEP 1: Verify the field is visible ===
-    await test.step('Assert ProductLifeCycleStatus field is present in the form', async () => {
-      const fieldContainer = WidgetCommon.getFieldContainer(FIELD_NAME);
-      await fieldContainer.waitFor({ state: 'visible', timeout: 30000 });
-      await expect(fieldContainer).toBeVisible();
-      console.log(`[INFO] ProductLifeCycleStatus field container is visible`);
-    });
+    // === STEP 1: the form must not render the field ===
+    await test.step('Assert ProductLifeCycleStatus is absent from the Product form', async () => {
+      // A control the window DOES render, to prove the form itself is up before asserting an absence.
+      const referenceField = WidgetCommon.getFieldContainer('Name');
+      await referenceField.waitFor({ state: 'visible', timeout: 30000 });
 
-    // === STEP 2: Select the Gesperrt option by its key (data-testid="option-G") ===
-    await test.step(`Set ${FIELD_NAME} to key "${LIFE_CYCLE_STATUS_BLOCKED_VALUE}"`, async () => {
-      await ListWidget.setByValue(FIELD_NAME, LIFE_CYCLE_STATUS_BLOCKED_VALUE);
-      console.log(`[INFO] Selected option key "${LIFE_CYCLE_STATUS_BLOCKED_VALUE}" from ProductLifeCycleStatus dropdown`);
-    });
-
-    // === STEP 3: Reload page and verify persistence via WebAPI (language-independent) ===
-    await test.step('Reload page and assert ProductLifeCycleStatus raw value is G', async () => {
-      await page.reload();
-      await page.waitForURL(/\/window\/\d+\/\d+/, { timeout: 30000 });
-
-      const fieldContainer = WidgetCommon.getFieldContainer(FIELD_NAME);
-      await fieldContainer.waitFor({ state: 'visible', timeout: 30000 });
-
-      // Read the raw field value from the WebAPI — this returns the underlying
-      // key, e.g. { key: 'G', caption: <localized-caption> } for List widgets.
-      const field = await getFieldData(PRODUCT_WINDOW_ID, productId, FIELD_NAME);
-      const rawKey = typeof field.value === 'object' && field.value !== null
-        ? field.value.key
-        : field.value;
-      console.log(`[INFO] ProductLifeCycleStatus raw value after reload: ${JSON.stringify(field.value)}`);
-
-      expect(rawKey).toBe(LIFE_CYCLE_STATUS_BLOCKED_VALUE);
-
-      // Scroll the field into the viewport before screenshotting so the proof
-      // shot actually shows the rendered field (lazy-mounted form groups).
-      await fieldContainer.scrollIntoViewIfNeeded();
+      // Built explicitly rather than via WidgetCommon.getFieldContainer, which appends .first():
+      // an absence check must count EVERY match, not just the first.
+      const fieldLocator = page.locator(`#lookup_${FIELD_NAME}, .form-field-${FIELD_NAME}`);
+      await expect(fieldLocator, `${FIELD_NAME} must not be rendered on window ${PRODUCT_WINDOW_ID}`)
+          .toHaveCount(0);
+      console.log(`[INFO] ${FIELD_NAME} is not rendered in the Product form, as intended`);
 
       const screenshotBuffer = await page.screenshot({ fullPage: true });
       await allure.attachment(
-          'Product window with ProductLifeCycleStatus field after save & reload',
+          'Product window without the BBS-Status field',
           screenshotBuffer,
           'image/png',
       );
     });
 
-    console.log('[PASS] ProductLifeCycleStatus field visible, selectable, and persists correctly.');
+    // === STEP 2: the grid must not list the column, the filter bar must not offer it ===
+    await test.step('Assert ProductLifeCycleStatus is absent from the Product grid and filters', async () => {
+      const layout = await getViewLayout(PRODUCT_WINDOW_ID, 'grid');
+
+      const columnNames = getViewLayoutColumnNames(layout);
+      console.log(`[INFO] Grid columns of window ${PRODUCT_WINDOW_ID}: ${JSON.stringify(columnNames)}`);
+      expect(columnNames, `${FIELD_NAME} must not be a grid column of window ${PRODUCT_WINDOW_ID}`)
+          .not.toContain(FIELD_NAME);
+
+      const filterParameterNames = getViewLayoutFilterParameterNames(layout);
+      console.log(`[INFO] Filter parameters of window ${PRODUCT_WINDOW_ID}: ${JSON.stringify(filterParameterNames)}`);
+      expect(filterParameterNames, `${FIELD_NAME} must not be a filter of window ${PRODUCT_WINDOW_ID}`)
+          .not.toContain(FIELD_NAME);
+    });
+
+    console.log('[PASS] ProductLifeCycleStatus is not rendered in the vanilla Product form.');
   });
 });

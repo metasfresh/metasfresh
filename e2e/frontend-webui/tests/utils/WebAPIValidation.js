@@ -31,6 +31,59 @@ import { expect } from '@playwright/test';
 export const WEBAPI_BASE_URL = process.env.WEBAPI_BASE_URL || 'http://localhost:8080/rest/api';
 
 /**
+ * Get a window's LIST-VIEW layout (grid columns + filter descriptors) from the WebAPI.
+ *
+ * This is the language-invariant way to assert what the backend actually builds for a list view:
+ * grid columns arrive as `elements[].fields[].field` and filter parameters as
+ * `filters[].parameters[].parameterName` — both are AD_Column ColumnNames, not localized captions.
+ *
+ * @param {number|string} windowId - AD_Window_ID (e.g., 140 for Product)
+ * @param {string} viewType - 'grid' (default) or 'list'
+ * @returns {Promise<Object>} the view layout JSON
+ */
+export async function getViewLayout(windowId, viewType = 'grid') {
+  const page = getPage();
+
+  const response = await page.request.get(
+      `${WEBAPI_BASE_URL}/documentView/${windowId}/layout?viewType=${viewType}`,
+      { headers: { 'Content-Type': 'application/json' } },
+  );
+
+  if (!response.ok()) {
+    throw new Error(`HTTP ${response.status()}: ${response.statusText()} — view layout of window ${windowId}`);
+  }
+
+  return await response.json();
+}
+
+/**
+ * Grid column ColumnNames of a view layout (see {@link getViewLayout}).
+ * @returns {string[]}
+ */
+export function getViewLayoutColumnNames(layout) {
+  return (layout.elements || []).flatMap((element) => (element.fields || []).map((field) => field.field));
+}
+
+/**
+ * Filter parameter ColumnNames of a view layout (see {@link getViewLayout}).
+ *
+ * The backend nests the standard filter descriptors one level deeper than a filter group:
+ * `filters[].includedFilters[].parameters[]`. A filter group's own `parameters[]` is normally empty,
+ * so BOTH levels are collected here — reading only the outer one silently yields an empty list and
+ * turns every "is this field filterable?" assertion into a false negative.
+ *
+ * @returns {string[]}
+ */
+export function getViewLayoutFilterParameterNames(layout) {
+  const parameterNames = (parameters) => (parameters || []).map((param) => param.parameterName);
+
+  return (layout.filters || []).flatMap((filter) => [
+    ...parameterNames(filter.parameters),
+    ...(filter.includedFilters || []).flatMap((includedFilter) => parameterNames(includedFilter.parameters)),
+  ]);
+}
+
+/**
  * Get complete record data including validation status from WebAPI.
  *
  * @param {string} windowId - Window ID (e.g., '143' for Sales Order)

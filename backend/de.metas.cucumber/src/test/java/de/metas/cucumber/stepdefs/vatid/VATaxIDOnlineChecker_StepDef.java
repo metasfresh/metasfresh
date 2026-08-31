@@ -33,15 +33,23 @@ import de.metas.util.Services;
 import de.metas.vatid.VATaxIDStatus;
 import io.cucumber.datatable.DataTable;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import io.cucumber.java.After;
+import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_VATaxID_CheckLog;
 
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.atLeastOnce;
@@ -60,14 +68,32 @@ import static org.mockito.Mockito.when;
  */
 public class VATaxIDOnlineChecker_StepDef
 {
+	/**
+	 * Resolved on first use, to not interfere with this class's {@code @Before} hook.
+	 * This instance is created in {@link VATaxIDTestServiceConfiguration}.
+	 */
+	@NonNull private final SpringContextHolder.Lazy<VATaxIDOnlineChecker> onlineCheckerMock = SpringContextHolder.lazyBean(VATaxIDOnlineChecker.class);
+
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	@NonNull private final VATaxIDOnlineChecker onlineCheckerMock = SpringContextHolder.instance.getBean(VATaxIDOnlineChecker.class);
 
 	/**
-	 * Stubs the online checker to answer exactly the listed VAT-IDs. A check for any other value fails the
-	 * scenario loudly instead of returning Mockito's {@code null} default — an unexpected online check is a
-	 * defect (it means the format check, the not-supported short-circuit or the de-duplication did not
-	 * stop it), and a {@code NullPointerException} deep inside the service would hide that.
+	 * VAT-IDs the shared checker mock was asked about while this scenario's stub was installed, but which
+	 * this scenario never stubbed. Almost always a straggler from an earlier scenario whose async check
+	 * outlived its own stub; see the answer that fills it.
+	 *
+	 * <p>One instance per scenario (cucumber-picocontainer instantiates the glue per scenario), so it is
+	 * cleared in {@link #clearUnexpectedVATaxIDsBeforeScenario()} and NOT in the stub steps: a scenario that
+	 * stubs more than once must not lose what its earlier stub recorded. Concurrent because the answer that
+	 * fills it runs on async work-package threads.
+	 */
+	@NonNull private final Set<String> unexpectedVATaxIDs = ConcurrentHashMap.newKeySet();
+
+	/**
+	 * Stubs the online checker to answer exactly the listed VAT-IDs. A check for any other value is recorded
+	 * in {@link #unexpectedVATaxIDs} and answered {@link VATaxIDStatus#ServiceUnavailable}, and
+	 * {@link #assertNoUnexpectedOnlineChecksAfterScenario()} then fails the scenario at its end. An
+	 * unexpected online check is a defect — the format check, the not-supported short-circuit or the
+	 * de-duplication did not stop it — so it never passes silently.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -94,20 +120,28 @@ public class VATaxIDOnlineChecker_StepDef
 						.build()));
 		final Map<String, VATaxIDCheckResult> results = resultsByVATaxID.build();
 
-		reset(onlineCheckerMock);
+		reset(onlineCheckerMock.get());
 
-		when(onlineCheckerMock.check(any(VATIdentifier.class), any(VATaxIDConfig.class)))
+		when(onlineCheckerMock.get().check(any(VATIdentifier.class), any(VATaxIDConfig.class)))
 				.thenAnswer(invocation -> {
 					final VATIdentifier vatId = invocation.getArgument(0);
 					final VATaxIDCheckResult result = results.get(vatId.getAsString());
 					if (result == null)
 					{
-						throw new AssertionError("Unexpected online check for VAT-ID `" + vatId.getAsString()
-								+ "`; this scenario stubbed only " + results.keySet());
+						// Recorded, NOT thrown. This answer is often produced on a work-package thread
+						// belonging to an EARLIER scenario, whose check outlived the stub it was set up
+						// with. Throwing there killed that check's own log-row write, so the scenario that
+						// visibly failed was whichever one happened to be waiting on that row -- never the
+						// one that leaked. Recording lets the owning scenario fail on its own terms in
+						// assertNoUnexpectedOnlineChecksAfterScenario(), and leaves everyone else's data intact.
+						unexpectedVATaxIDs.add(vatId.getAsString());
+						return VATaxIDCheckResult.builder()
+								.status(VATaxIDStatus.ServiceUnavailable)
+								.build();
 					}
 					return result;
 				});
-		when(onlineCheckerMock.getUnavailableCountryCodes(any(VATaxIDConfig.class))).thenReturn(ImmutableSet.of());
+		when(onlineCheckerMock.get().getUnavailableCountryCodes(any(VATaxIDConfig.class))).thenReturn(ImmutableSet.of());
 	}
 
 	/**
@@ -124,11 +158,11 @@ public class VATaxIDOnlineChecker_StepDef
 	@Given("the VAT-ID online checker is stubbed to be unreachable")
 	public void stubOnlineCheckerUnreachable()
 	{
-		reset(onlineCheckerMock);
+		reset(onlineCheckerMock.get());
 
-		when(onlineCheckerMock.check(any(VATIdentifier.class), any(VATaxIDConfig.class)))
+		when(onlineCheckerMock.get().check(any(VATIdentifier.class), any(VATaxIDConfig.class)))
 				.thenReturn(VATaxIDCheckResult.builder().status(VATaxIDStatus.ServiceUnavailable).build());
-		when(onlineCheckerMock.getUnavailableCountryCodes(any(VATaxIDConfig.class))).thenReturn(ImmutableSet.of());
+		when(onlineCheckerMock.get().getUnavailableCountryCodes(any(VATaxIDConfig.class))).thenReturn(ImmutableSet.of());
 	}
 
 	/**
@@ -153,14 +187,14 @@ public class VATaxIDOnlineChecker_StepDef
 	{
 		stubOnlineChecker(dataTable);
 
-		when(onlineCheckerMock.getUnavailableCountryCodes(any(VATaxIDConfig.class))).thenReturn(ImmutableSet.of(unavailableCountryCode));
+		when(onlineCheckerMock.get().getUnavailableCountryCodes(any(VATaxIDConfig.class))).thenReturn(ImmutableSet.of(unavailableCountryCode));
 	}
 
 	/**
 	 * Stubs the checker leniently: a VAT-ID listed in {@code dataTable} gets its ordinary answer, any other
-	 * gets {@link VATaxIDStatus#ServiceUnavailable} rather than the loud failure
-	 * {@link #stubOnlineChecker(DataTable)} raises. For scenarios running the selection-less nightly shape,
-	 * which reaches every VAT-ID in the local database — harmless there, as long as
+	 * gets {@link VATaxIDStatus#ServiceUnavailable} without being recorded as unexpected — which is what
+	 * {@link #stubOnlineChecker(DataTable)} does, and fails the scenario for. For scenarios running the
+	 * selection-less nightly shape, which reaches every VAT-ID in the local database — harmless there, as long as
 	 * {@code OnServiceUnavailable} is left at its fail-open default.
 	 *
 	 * @cucumber.stepdef
@@ -185,15 +219,15 @@ public class VATaxIDOnlineChecker_StepDef
 						.build()));
 		final Map<String, VATaxIDCheckResult> results = resultsByVATaxID.build();
 
-		reset(onlineCheckerMock);
+		reset(onlineCheckerMock.get());
 
-		when(onlineCheckerMock.check(any(VATIdentifier.class), any(VATaxIDConfig.class)))
+		when(onlineCheckerMock.get().check(any(VATIdentifier.class), any(VATaxIDConfig.class)))
 				.thenAnswer(invocation -> {
 					final VATIdentifier vatId = invocation.getArgument(0);
 					final VATaxIDCheckResult result = results.get(vatId.getAsString());
 					return result != null ? result : VATaxIDCheckResult.builder().status(VATaxIDStatus.ServiceUnavailable).build();
 				});
-		when(onlineCheckerMock.getUnavailableCountryCodes(any(VATaxIDConfig.class))).thenReturn(ImmutableSet.of());
+		when(onlineCheckerMock.get().getUnavailableCountryCodes(any(VATaxIDConfig.class))).thenReturn(ImmutableSet.of());
 	}
 
 	/**
@@ -209,15 +243,20 @@ public class VATaxIDOnlineChecker_StepDef
 	@Then("the VAT-ID online checker was not called")
 	public void onlineCheckerWasNotCalled()
 	{
-		verify(onlineCheckerMock, never()).check(any(VATIdentifier.class), any(VATaxIDConfig.class));
+		verify(onlineCheckerMock.get(), never()).check(any(VATIdentifier.class), any(VATaxIDConfig.class));
 	}
 
 	/**
 	 * Asserts the online checker WAS asked about {@code vataxID} — the direct evidence that a check was
 	 * actually attempted, as opposed to the after-commit trigger having been wired but never firing.
 	 *
-	 * <p>Requires the check to have reached a terminal status. For a checker stubbed to THROW, which never
-	 * can, use {@link #onlineCheckWasAttempted(String)} instead.
+	 * <p>Requires the check to have fully landed — a terminal {@code VATaxID_CheckLog} row that its parent
+	 * record already points at. Two kinds of scenario cannot reach that state and must use
+	 * {@link #onlineCheckWasAttempted(String)} instead, or they burn the full 60 s timeout: a checker
+	 * stubbed to THROW, which never completes the log row; and a scenario that changes the record's
+	 * {@code VATaxID} while the check is in flight, where
+	 * {@code VATaxIDCheckService#updateParentStatusIfStillCurrent} deliberately abandons the verdict and the
+	 * completed row stays unreferenced for good.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
@@ -233,19 +272,27 @@ public class VATaxIDOnlineChecker_StepDef
 		// immediately would be a race that passes on an idle machine and fails on a loaded CI executor. A
 		// check driven explicitly by a step is already done by the time we get here, so for that case the
 		// wait simply succeeds on its first poll.
-		// Polls the mock invocation AND the persisted outcome. Waiting on the invocation alone would race
-		// badly: check() carries on after the checker returns — it completes the log row and then updates
-		// the parent's status columns — and the assertion steps that follow read the database once, without
+		//
+		// Polls the mock invocation AND the persisted outcome — and specifically the outcome AS THE
+		// FOLLOWING ASSERTIONS READ IT. check() does not finish when the checker returns: it completes the
+		// VATaxID_CheckLog row, and only afterwards, in a SEPARATE and independently committed save, writes
+		// the verdict onto the parent (C_BPartner / C_BPartner_Location: VATaxIDStatus, VATaxIDCheckedAt,
+		// VATaxID_CheckLog_ID). Every assertion step after this one reads that PARENT, once, without
 		// retrying.
 		//
-		// This NARROWS the race rather than eliminating it, and the distinction is worth stating. The poll
-		// goes green the moment completeCheck() commits, which is still one local load-and-save before
-		// updateParentStatus() commits the parent's columns. What remains is two adjacent same-thread
-		// commits with no third-party I/O between them — sub-millisecond against a 500 ms poll — where
-		// before it was an unbounded wait on a network call. Negligible, not impossible.
-		StepDefUtil.tryAndWait(60, 500, () -> wasCalledFor(vataxID) && checkIsRecordedFor(vataxID));
+		// So the wait covers the parent write too, by waiting for the completed log row to be REFERENCED BY
+		// its parent — the parent's three columns are written as one set (VATaxIDParentStatusRepository),
+		// so a parent already pointing at the terminal row necessarily carries that row's status as well.
+		// That closes the window by construction rather than shrinking it.
+		//
+		// That window is wide, not negligible: the parent write is a full C_BPartner save — every model
+		// interceptor, an enqueued external-system sync, change-log rows. Measured from the instant
+		// completeCheck() commits, it is 15-20 ms on an idle developer box and 80-200 ms on a loaded CI
+		// executor. A 500 ms poll grid is wide enough to wake inside it, so a predicate satisfied by the log
+		// row alone hands a green light to an assertion that then reads a still-NotChecked parent.
+		StepDefUtil.tryAndWait(60, 500, () -> wasCalledFor(vataxID) && completedCheckIsReferencedByItsParent(vataxID));
 
-		verify(onlineCheckerMock, atLeastOnce())
+		verify(onlineCheckerMock.get(), atLeastOnce())
 				.check(argThat(checked -> checked != null && checked.getAsString().equals(vataxID)), any(VATaxIDConfig.class));
 	}
 
@@ -254,16 +301,17 @@ public class VATaxIDOnlineChecker_StepDef
 	 * until the checker was asked about {@code vataxID} and the attempt is on record, whatever became of it.
 	 *
 	 * <p>Needed because {@link #onlineCheckerWasCalled(String)} is structurally unsatisfiable when the
-	 * checker throws. That step also waits for the {@code VATaxID_CheckLog} row to have LEFT
-	 * {@code RequestSent} — i.e. for {@code completeCheck(...)} — and a throwing checker unwinds
-	 * {@code VATaxIDCheckService#check} before that call is ever reached, so the row stays at
-	 * {@code RequestSent} forever and the step can only ever time out.
+	 * checker throws. That step waits for the {@code VATaxID_CheckLog} row to have LEFT
+	 * {@code RequestSent} and to be referenced by its parent — i.e. for {@code completeCheck(...)} and the
+	 * parent save that follows it — and a throwing checker unwinds {@code VATaxIDCheckService#check} before
+	 * either is ever reached, so the row stays at {@code RequestSent} forever, unreferenced, and the step
+	 * can only ever time out.
 	 *
 	 * <p>Relaxing that step's own predicate to accept a still-{@code RequestSent} row was the alternative,
-	 * and was rejected: "has left {@code RequestSent}" is precisely what keeps the other scenarios'
-	 * follow-up assertions — which read the database once, without retrying — from racing a check that is
-	 * still in flight. Weakening it would hand that race back to every one of them to buy this one scenario
-	 * its wait.
+	 * and was rejected: what it waits for is precisely what keeps the other scenarios' follow-up
+	 * assertions — which read the database once, without retrying — from racing a check that is still in
+	 * flight. Weakening it would hand that race back to every one of them to buy this one scenario its
+	 * wait.
 	 *
 	 * <p>What this step still proves is what the throwing scenario needs: the after-commit trigger genuinely
 	 * fired and reached the service (the mock recorded the call), and the service committed its pre-call
@@ -282,14 +330,15 @@ public class VATaxIDOnlineChecker_StepDef
 	{
 		StepDefUtil.tryAndWait(60, 500, () -> wasCalledFor(vataxID) && checkAttemptIsRecordedFor(vataxID));
 
-		verify(onlineCheckerMock, atLeastOnce())
+		verify(onlineCheckerMock.get(), atLeastOnce())
 				.check(argThat(checked -> checked != null && checked.getAsString().equals(vataxID)), any(VATaxIDConfig.class));
 	}
 
 	/**
 	 * @return whether a {@code VATaxID_CheckLog} row for {@code vataxID} exists at all — {@code RequestSent}
-	 * included. The deliberately weaker sibling of {@link #checkIsRecordedFor(String)}, for the case where
-	 * the check cannot reach a terminal status because the checker threw.
+	 * included. The deliberately weaker sibling of
+	 * {@link #completedCheckIsReferencedByItsParent(String)}, for the case where the check cannot reach a
+	 * terminal status because the checker threw.
 	 */
 	private boolean checkAttemptIsRecordedFor(@NonNull final String vataxID)
 	{
@@ -301,24 +350,63 @@ public class VATaxIDOnlineChecker_StepDef
 	}
 
 	/**
-	 * @return whether a {@code VATaxID_CheckLog} row for {@code vataxID} has left {@code RequestSent} — i.e.
-	 * the check finished and committed, not merely started.
+	 * @return whether a {@code VATaxID_CheckLog} row for {@code vataxID} has left {@code RequestSent} AND is
+	 * the row its parent record now points at — i.e. the check finished, committed, and was denormalised
+	 * onto the {@code C_BPartner} / {@code C_BPartner_Location} that the assertion steps go on to read.
+	 *
+	 * <p>Strictly stronger than "the log row has left {@code RequestSent}", which it still requires: the
+	 * candidate rows are the same set, only narrowed to those a parent references. The parent's three check
+	 * columns are written as one set, so a parent pointing at a terminal row also carries that row's
+	 * status — which is what makes this the right thing to wait for.
+	 *
+	 * <p><b>Scoped by VAT-ID value, not by parent record</b> — it asks whether SOME parent references a
+	 * completed row for this value. That is exact for every caller today because each scenario puts the
+	 * checked value on exactly one record, and the {@code no VATaxID_CheckLog records exist for VATaxID}
+	 * step clears prior rows and releases the value from any earlier holder first. A scenario that put the
+	 * SAME VAT-ID on two records — plausible, since a conclusive result is deliberately shared across
+	 * parents by value — would go green on the first parent's write while the second was still in flight,
+	 * reintroducing exactly the race this closes. Give such a scenario two distinct VAT-IDs, or scope the
+	 * wait to the record.
 	 */
-	private boolean checkIsRecordedFor(@NonNull final String vataxID)
+	private boolean completedCheckIsReferencedByItsParent(@NonNull final String vataxID)
+	{
+		// Both parent types, because both carry the column and both have scenarios: C_BPartner_Location is
+		// the parent whenever the checked VAT-ID sits on a location rather than on the partner header.
+		return isReferencedByAParent(I_C_BPartner.class, I_C_BPartner.COLUMNNAME_VATaxID_CheckLog_ID, vataxID)
+				|| isReferencedByAParent(I_C_BPartner_Location.class, I_C_BPartner_Location.COLUMNNAME_VATaxID_CheckLog_ID, vataxID);
+	}
+
+	private <T> boolean isReferencedByAParent(
+			@NonNull final Class<T> parentType,
+			@NonNull final String checkLogColumnName,
+			@NonNull final String vataxID)
+	{
+		return queryBL.createQueryBuilder(parentType)
+				.addInSubQueryFilter(checkLogColumnName, I_VATaxID_CheckLog.COLUMNNAME_VATaxID_CheckLog_ID, completedCheckLogsFor(vataxID))
+				.create()
+				.anyMatch();
+	}
+
+	/**
+	 * @return the {@code VATaxID_CheckLog} rows for {@code vataxID} that have left {@code RequestSent}, as a
+	 * sub-query. Built fresh per call rather than shared between the two parent tables, so neither query can
+	 * inherit anything from the other's execution.
+	 */
+	@NonNull
+	private IQuery<I_VATaxID_CheckLog> completedCheckLogsFor(@NonNull final String vataxID)
 	{
 		return queryBL.createQueryBuilder(I_VATaxID_CheckLog.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_VATaxID_CheckLog.COLUMNNAME_VATaxID, vataxID)
-				.addNotEqualsFilter(I_VATaxID_CheckLog.COLUMNNAME_VATaxIDStatus, VATaxIDStatus.RequestSent.getCode())
-				.create()
-				.anyMatch();
+				.addNotEqualsFilter(I_VATaxID_CheckLog.COLUMNNAME_VATaxIDStatus, VATaxIDStatus.RequestSent)
+				.create();
 	}
 
 	private boolean wasCalledFor(@NonNull final String vataxID)
 	{
 		try
 		{
-			verify(onlineCheckerMock, atLeastOnce())
+			verify(onlineCheckerMock.get(), atLeastOnce())
 					.check(argThat(checked -> checked != null && checked.getAsString().equals(vataxID)), any(VATaxIDConfig.class));
 			return true;
 		}
@@ -344,10 +432,54 @@ public class VATaxIDOnlineChecker_StepDef
 	@Given("the VAT-ID online checker is stubbed to throw an exception")
 	public void stubOnlineCheckerThrows()
 	{
-		reset(onlineCheckerMock);
+		reset(onlineCheckerMock.get());
 
-		when(onlineCheckerMock.check(any(VATIdentifier.class), any(VATaxIDConfig.class)))
+		when(onlineCheckerMock.get().check(any(VATIdentifier.class), any(VATaxIDConfig.class)))
 				.thenThrow(new RuntimeException("Simulated online checker failure (test-only, VATaxIDOnlineChecker_StepDef)"));
-		when(onlineCheckerMock.getUnavailableCountryCodes(any(VATaxIDConfig.class))).thenReturn(ImmutableSet.of());
+		when(onlineCheckerMock.get().getUnavailableCountryCodes(any(VATaxIDConfig.class))).thenReturn(ImmutableSet.of());
+	}
+
+	/**
+	 * Fails the scenario that OWNS the leak, naming the VAT-IDs involved — the diagnosis the old
+	 * throw-on-the-async-thread behaviour destroyed by breaking a different scenario's data instead.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then no unexpected VAT-ID online checks happened
+	 * </pre>
+	 */
+	@Then("no unexpected VAT-ID online checks happened")
+	public void assertNoUnexpectedOnlineChecks()
+	{
+		assertThat(unexpectedVATaxIDs)
+				.as("the online checker was asked about VAT-IDs this scenario never stubbed; an async check "
+						+ "from an earlier scenario most likely outlived its stub")
+				.isEmpty();
+	}
+
+	/**
+	 * Empties the collector at scenario start, so the {@code @After} guard below can only ever see what THIS
+	 * scenario recorded.
+	 */
+	@Before
+	public void clearUnexpectedVATaxIDsBeforeScenario()
+	{
+		unexpectedVATaxIDs.clear();
+	}
+
+	/**
+	 * Makes {@link #assertNoUnexpectedOnlineChecks()} unconditional for every scenario using
+	 * {@link #stubOnlineChecker(DataTable)}, instead of only for those that remember to end with the step. A
+	 * trailing Gherkin step would not do: Cucumber skips the remaining steps once one fails, i.e. on exactly
+	 * the runs where a stray check is the likeliest explanation.
+	 *
+	 * <p>A free no-op for every other scenario: it reads the in-memory collector only, so it resolves no bean
+	 * and hits no database.
+	 */
+	@After
+	public void assertNoUnexpectedOnlineChecksAfterScenario()
+	{
+		assertNoUnexpectedOnlineChecks();
 	}
 }

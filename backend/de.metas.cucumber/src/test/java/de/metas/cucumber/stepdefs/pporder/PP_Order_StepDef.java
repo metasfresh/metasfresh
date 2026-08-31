@@ -197,6 +197,32 @@ public class PP_Order_StepDef
 		DataTableRows.of(dataTable).forEach(row -> validatePP_Order_BomLine(timeoutSec, row));
 	}
 
+	/**
+	 * Creates {@code PP_Order} record(s) from the DataTable.
+	 * <p>
+	 * Required columns: {@code PP_Order_ID.Identifier}, {@code DocBaseType}, {@code M_Product_ID.Identifier},
+	 * {@code QtyEntered}, {@code S_Resource_ID.Identifier} (the <b>plant</b>), {@code DateOrdered},
+	 * {@code DatePromised} and {@code DateStartSchedule}.
+	 * <p>
+	 * Optional columns:
+	 * <ul>
+	 *     <li>{@code OPT.M_Warehouse_ID.Identifier} — defaults to {@link StepDefConstants#WAREHOUSE_ID}</li>
+	 *     <li>{@code OPT.PP_Product_Planning_ID.Identifier}</li>
+	 *     <li>{@code OPT.WorkStation_ID.Identifier} — the <b>workstation</b>, resolved against the resource table
+	 *     and passed to {@link PPOrderCreateRequest#getWorkstationId()}. Distinct from the plant: a lot-number
+	 *     provider resolves the production line via {@code PP_Order.WorkStation_ID -> S_Resource.LotNumberCode},
+	 *     so a scenario covering that hop must be able to set it independently.</li>
+	 *     <li>{@code completeDocument} — defaults to {@code false}</li>
+	 * </ul>
+	 * <pre>
+	 * And create PP_Order:
+	 *   | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | OPT.WorkStation_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument |
+	 *   | ppOrder_lotno_ws5      | MOP         | finishedGoodsProd       | 10         | testResource             | wsLineFive                    | 2025-04-01T23:59:00.00Z | 2025-04-01T23:59:00.00Z | 2025-04-01T23:59:00.00Z | Y                |
+	 * </pre>
+	 * Here {@code testResource} is the plant and {@code wsLineFive} the workstation — two different
+	 * resources on the same order. Omit {@code OPT.WorkStation_ID.Identifier} when the scenario does
+	 * not exercise the workstation hop.
+	 */
 	@And("create PP_Order:")
 	public void compute_PPOrderCreateRequest_to_create_pp_order(@NonNull final DataTable dataTable)
 	{
@@ -229,11 +255,38 @@ public class PP_Order_StepDef
 					.map(productPlanningTable::get)
 					.ifPresent(productPlanning -> ppOrderCreateRequest.productPlanningId(productPlanning.getIdNotNull()));
 
+			// The workstation is what a lot-number provider resolves the production line from
+			// (PP_Order.WorkStation_ID -> S_Resource.LotNumberCode), so it must be settable here
+			// independently of the plant.
+			row.getAsOptionalIdentifier(I_PP_Order.COLUMNNAME_WorkStation_ID)
+					.map(workstationIdentifier -> workstationIdentifier.lookupNotNullIdIn(resourceTable))
+					.ifPresent(ppOrderCreateRequest::workstationId);
+
 			final I_PP_Order ppOrder = ppOrderService.createOrder(ppOrderCreateRequest.build());
 			assertThat(ppOrder).isNotNull();
 
 			ppOrderTable.put(row.getAsIdentifier(I_PP_Order.COLUMNNAME_PP_Order_ID), ppOrder);
 		});
+	}
+
+	/**
+	 * Mirrors {@link #compute_PPOrderCreateRequest_to_create_pp_order(DataTable)} but asserts the creation is
+	 * REFUSED with the given error code — used to prove a guard that fires while the manufacturing order is
+	 * being created, e.g. the product life-cycle status check in {@code PP_Order#validateBOMAndProduct}.
+	 * <p>
+	 * The DataTable takes the same columns as {@code create PP_Order:}; the order is never created, so its
+	 * identifier is not registered for later steps.
+	 *
+	 * <pre>{@code
+	 * Then create PP_Order expecting error code M_Product_BBSStatus_ActionBlocked:
+	 *   | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument |
+	 *   | refusedOrder           | MOP         | finishedProduct         | 5          | plant                    | 2021-04-16T07:00:00.00Z | 2021-04-18T07:00:00.00Z | 2021-04-16T07:00:00.00Z | N                |
+	 * }</pre>
+	 */
+	@And("^create PP_Order expecting error code (.*):$")
+	public void create_PP_Order_expecting_error_code(@NonNull final String errorCode, @NonNull final DataTable dataTable)
+	{
+		StepDefUtil.assertRefusedWithErrorCode(errorCode, () -> compute_PPOrderCreateRequest_to_create_pp_order(dataTable));
 	}
 
 	@And("complete planning for PP_Order:")
@@ -388,6 +441,29 @@ public class PP_Order_StepDef
 						.appendParametersToMessage()
 						.setParameter("action:", action);
 		}
+	}
+
+	/**
+	 * Asserts that completing the given manufacturing order is REFUSED, and that it is refused for the
+	 * expected reason: the thrown {@link AdempiereException} must carry the given error code.
+	 * <p>
+	 * The error code pins WHY the completion failed; asserting that "some exception" was thrown would also
+	 * pass if the manufacturing order happened to fail for an unrelated reason.
+	 * <p>
+	 * Parameters:<br>
+	 *   <b>orderIdentifier</b> — identifier of a {@code PP_Order} created earlier in the scenario<br>
+	 *   <b>errorCode</b> — the expected {@code AD_Message.ErrorCode}
+	 *
+	 * <pre>{@code
+	 * And the manufacturing order identified by startedOrder cannot be completed because of error code M_Product_BBSStatus_ActionBlocked
+	 * }</pre>
+	 */
+	@And("^the manufacturing order identified by (.*) cannot be completed because of error code (.*)$")
+	public void manufacturing_order_cannot_be_completed_because_of_error_code(
+			@NonNull final String orderIdentifier,
+			@NonNull final String errorCode)
+	{
+		StepDefUtil.assertRefusedWithErrorCode(errorCode, () -> order_action(orderIdentifier, StepDefDocAction.completed.name()));
 	}
 
 	private void validatePP_Order_BomLine(final int timeoutSec, @NonNull final DataTableRow row) throws InterruptedException

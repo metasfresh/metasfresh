@@ -32,9 +32,12 @@ import javax.annotation.Nullable;
  * report, and its caller is waiting for a summary rather than for a save to return. Sending it through a
  * queue would hide its progress and split its reporting for no gain.
  *
- * <p>{@code VATaxIDStatus} is {@code RequestSent} between enqueue and answer — written before the online
- * call in its own committed transaction — so a record whose check is still queued says so rather than
- * looking unchecked.
+ * <p><b>What carries {@code RequestSent} between enqueue and answer is the evidence row, not the record.</b>
+ * {@code VATaxIDCheckRepository#writeRequestSent} appends a {@code VATaxID_CheckLog} row at that status in
+ * its own committed transaction, before the online call, so the attempt survives a rollback of the check
+ * that follows it. The parent {@code C_BPartner} / {@code C_BPartner_Location} is not touched until the
+ * verdict lands: it keeps whatever status it had — typically {@code NotChecked} — for as long as the check
+ * is queued or in flight, and a queued check is therefore visible in the log, not on the record.
  */
 public class VATaxIDCheckWorkpackageProcessor extends WorkpackageProcessorAdapter
 {
@@ -116,7 +119,7 @@ public class VATaxIDCheckWorkpackageProcessor extends WorkpackageProcessorAdapte
 			// attempt is already durably recorded in VATaxID_CheckLog, and the nightly run re-checks.
 			//
 			// Deliberately NOT special-cased for VATaxIDCheckRequestRejectedException, unlike
-			// VATaxIDCheckRunService, which aborts its whole loop on it. The distinction there buys
+			// VATaxIDMassCheckService, which aborts its whole loop on it. The distinction there buys
 			// something this path cannot use: one work package is one record, so there is no remaining
 			// selection to spare and nothing to abort. Rethrowing would only convert a misconfiguration
 			// into a growing pile of errored, retrying work packages -- one per save -- which is exactly

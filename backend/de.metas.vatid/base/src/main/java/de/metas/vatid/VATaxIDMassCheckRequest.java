@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.vatid
+ * metasfresh-vatid-base
  * %%
  * Copyright (C) 2026 metas GmbH
  * %%
@@ -22,8 +22,6 @@
 
 package de.metas.vatid;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.BPartnerId;
 import de.metas.process.PInstanceId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -32,36 +30,30 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 /**
- * One run of {@link VATaxIDCheckRunService#run(VATaxIDCheckRunRequest)}: check the header VAT-ID (if any)
- * and every location VAT-ID (if any) of every partner in {@link #getSelectedBPartnerIds()} — see that
- * method's javadoc for the combined selection it builds from this list and the throttling
- * {@link #getMaxChecksPerRun()} applies to it.
+ * One run of {@link VATaxIDMassCheckService#run(VATaxIDMassCheckRequest)}: check the header VAT-ID (if any)
+ * and every location VAT-ID (if any) of every partner in the {@code T_Selection} keyed by
+ * {@link #getPinstanceId()}, throttled by {@link #getMaxChecksPerRun()}.
  *
- * <p>Deliberately carries only process-agnostic values — typed ids, a plain {@code int}, an optional
- * {@link PInstanceId} — so the same run can be driven from a {@code JavaProcess}, a REST endpoint, or a
- * unit test, none of which need a {@code JavaProcess} to exist.
+ * <p>Deliberately carries only process-agnostic values — a selection {@link PInstanceId}, a plain
+ * {@code int} — so the same run can be driven from a {@code JavaProcess}, a REST endpoint, or a unit test.
  */
 @Value
 @Builder
-public class VATaxIDCheckRunRequest
+public class VATaxIDMassCheckRequest
 {
 	/**
-	 * Ordered by {@code C_BPartner_ID} ascending — that order is what makes a throttled run's processed
-	 * prefix deterministic and reproducible (see {@link VATaxIDCheckRunService#run(VATaxIDCheckRunRequest)}).
-	 * The caller, not this class, is responsible for that ordering.
-	 */
-	@NonNull ImmutableList<BPartnerId> selectedBPartnerIds;
-
-	/**
 	 * Empty/unset or {@code <= 0} means no limit — see
-	 * {@link VATaxIDCheckRunService#run(VATaxIDCheckRunRequest)}.
+	 * {@link VATaxIDMassCheckService#run(VATaxIDMassCheckRequest)}.
 	 */
 	int maxChecksPerRun;
 
 	/**
-	 * The process run this check belongs to, if any — passed straight through into every
-	 * {@link VATaxIDCheckRequest#getPinstanceId()} this run creates. {@code null} for a run triggered
-	 * outside a process (e.g. a REST call or a unit test).
+	 * The process run this check belongs to. On a user-triggered run it is ALSO the selection key: the
+	 * caller materialised the chosen {@code C_BPartner}s into a {@code T_Selection} under this
+	 * {@link PInstanceId} (via {@code IQuery#createSelection}), and the run streams them with
+	 * {@code setOnlySelection} — no per-record bind parameter, which is what {@code An I/O error occurred
+	 * while sending to the backend} was. Passed through into every {@link VATaxIDCheckRequest#getPinstanceId()}
+	 * this run creates too. {@code null} only for the nightly sweep, which builds no selection.
 	 */
 	@Nullable PInstanceId pinstanceId;
 

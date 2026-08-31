@@ -24,9 +24,12 @@ package de.metas.vatid.interceptor;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.organization.OrgId;
 import de.metas.tax.api.VATIdentifier;
+import de.metas.vatid.VATaxIDCheckService;
 import de.metas.vatid.async.VATaxIDCheckWorkpackageProcessor;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.session.AdSessionId;
 import org.springframework.stereotype.Component;
 
@@ -43,15 +46,43 @@ import javax.annotation.Nullable;
  *
  * <p>Deliberately does not read {@code Env.getCtx()} itself — a shared {@code @Component} reading ambient
  * thread-local context is what the service-injection rule forbids. Each interceptor resolves the acting
- * {@code AD_Session_ID} and passes it in.
+ * {@code AD_Session_ID} and passes it in, and likewise the {@code AD_Org_ID} of the record being saved.
+ *
+ * <p><b>The organisation's {@code IsVIESCheckEnabled} is consulted here, at ENQUEUE time.</b> That is the
+ * moment the save happens, and the policy in force when the user saves is the one that should govern that
+ * save — the property the synchronous predecessor had for free, and that moving the check into a work
+ * package would otherwise lose: {@code VATaxIDCheckService} re-reads the same flag when the package is
+ * PROCESSED, which can be much later and under a configuration nobody had switched on yet at save time.
+ * It also stops the shipped default (VIES off, see migration {@code 5819340}) from queueing one guaranteed
+ * no-op work package per VAT-ID save on every installation.
+ *
+ * <p>{@code VATaxIDCheckService#check} keeps its own gate, and must: the {@code C_BPartner_VATaxID_Check}
+ * process does not come through here at all, so that gate is the only one on the process path — and on this
+ * path a second reading costs nothing.
+ *
+ * <p><b>Residual disagreement between the two readings, accepted.</b> The flag is read here and read again
+ * when the package is processed, and the two can differ. Because BOTH gates must pass, that can only ever
+ * SUPPRESS a check, never add one: a configuration switched off in between makes
+ * {@code VATaxIDCheckService#check} return before it writes anything or calls the service, so the queued
+ * package becomes a silent no-op — no online call, no {@code VATaxID_CheckLog} row, the stored status
+ * untouched. What is lost in that window is a check the save-time policy had authorised; what cannot happen
+ * is a check it had declined, which is the direction that matters and the one this class exists to close.
+ * Making the enqueue-time verdict final — carrying it inside the work package and having the processor
+ * refuse to re-read — would buy that window at the price of a process path with no gate at all, and of
+ * checks that ignore a configuration switched off while they were queued.
  */
 @Component
+@RequiredArgsConstructor
 public class VATaxIDCheckTrigger
 {
+	@NonNull private final VATaxIDCheckService checkService;
+
 	/**
 	 * Schedules the check of {@code vataxIDValue} for the given partner/location once the current save
 	 * commits.
 	 *
+	 * @param orgId the organisation of the record being saved, resolved by the caller from that record —
+	 * see the class javadoc for why this trigger reads no ambient context of its own
 	 * @param bpartnerId the partner the VAT-ID lives on
 	 * @param bpartnerLocationId the location the VAT-ID lives on, or {@code null} when it lives on the
 	 * partner header
@@ -60,6 +91,7 @@ public class VATaxIDCheckTrigger
 	 * this trigger never resolves it itself
 	 */
 	public void scheduleCheckAfterCommit(
+			@NonNull final OrgId orgId,
 			@NonNull final BPartnerId bpartnerId,
 			@Nullable final BPartnerLocationId bpartnerLocationId,
 			@Nullable final String vataxIDValue,
@@ -71,6 +103,13 @@ public class VATaxIDCheckTrigger
 			// A cleared VAT-ID (saved as null/blank) has nothing to check — VATaxIDCheckRequest#getVataxID()
 			// is @NonNull, so a blank value must never reach it. Not an error: clearing the VAT-ID is a
 			// legitimate save (e.g. correcting a wrongly-entered value), not a save that failed validation.
+			return;
+		}
+
+		if (!checkService.isViesCheckEnabled(orgId))
+		{
+			// The organisation has the online check switched off, so this save is not to be checked at all
+			// — see the class javadoc for why that verdict is reached here and not left to the processor.
 			return;
 		}
 
