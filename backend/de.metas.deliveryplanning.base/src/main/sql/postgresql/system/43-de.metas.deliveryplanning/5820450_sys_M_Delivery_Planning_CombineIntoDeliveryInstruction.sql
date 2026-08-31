@@ -97,7 +97,9 @@ WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Process_Para_ID=543276
 
 -- ---------------------------------------------------------------------------------------------
 -- 3) placement: the DEFAULT quick action on the Delivery Planning grid.
---    NOT a document action: it needs two or more selected rows, which a single open record is not.
+--    NOT a document action, unlike the other three and unlike every pre-existing action on this window:
+--    checkAtLeastTwoSelected rejects anything but a multi-row selection, so on a single open record this
+--    would sit permanently disabled. Combining one planning is what the 1:1 generate already does.
 --    Default because combining is the normal way a planner turns a selection into a delivery
 --    instruction; the 1:1 generate stays available but is no longer the first thing offered. With no
 --    default flagged, the strip falls back to caption order, which is what put the 1:1 generate first.

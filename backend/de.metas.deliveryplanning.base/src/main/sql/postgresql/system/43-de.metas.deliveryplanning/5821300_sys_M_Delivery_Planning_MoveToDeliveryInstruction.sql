@@ -26,6 +26,11 @@
 --   AD_Message   545809  RemoveFromDeliveryInstruction.NotOnDeliveryInstruction -- states the STATE,
 --                        not the action, so Move refuses an unallocated selection with it; only the
 --                        Value still names Remove, and renaming it would break its AdMessageKey
+--
+-- EDITED AFTER FIRST APPLY (WebUI_DocumentAction 'N' -> 'Y' on AD_Table_Process 541670). The runner keys
+-- applied-ness on the file NAME with no checksum, so a stack that already ran the earlier version keeps
+-- the old value. Reconcile with:
+--   UPDATE AD_Table_Process SET WebUI_DocumentAction='Y' WHERE AD_Table_Process_ID=541670;
 
 -- ---------------------------------------------------------------------------------------------
 -- 1) the process
@@ -136,7 +141,7 @@ VALUES (541670 /*From ID Server*/, 0, 0, 'Y',
         TO_TIMESTAMP('2026-08-31 10:03:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
         TO_TIMESTAMP('2026-08-31 10:03:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
         542259, 585656, 541632, 'D',
-        'Y', 'N', 'Y', 'N', 'N')
+        'Y', 'N', 'Y', 'Y', 'N')
 ;
 
 -- ---------------------------------------------------------------------------------------------
