@@ -28,7 +28,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.cache.CacheMgt;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.deliveryplanning.DeliveryPlanningList.AdmissibilityField;
@@ -517,11 +516,7 @@ public class DeliveryPlanningService
 	 */
 	private void validateNoneAllocatedToCompletedInstruction(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
-		final ImmutableList<DeliveryPlanningId> deliveryPlanningIds = deliveryPlanningRepository.getDeliveryPlanningQueryBuilder(selectedDeliveryPlanningsFilter)
-				.create()
-				.stream()
-				.map(record -> DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID()))
-				.collect(ImmutableList.toImmutableList());
+		final ImmutableList<DeliveryPlanningId> deliveryPlanningIds = deliveryPlanningRepository.getIds(selectedDeliveryPlanningsFilter);
 
 		for (final DeliveryPlanningId deliveryPlanningId : deliveryPlanningIds)
 		{
@@ -566,10 +561,13 @@ public class DeliveryPlanningService
 		deliveryInstructionUserNotificationsProducer
 				.notifyGenerated(deliveryInstruction);
 
+		// No explicit CacheMgt reset here: the saveRecord inside updateDeliveryPlanningsFromInstruction already
+		// invalidates this record's caches, and does strictly more than a manual reset would. PO.save0 builds a
+		// CacheInvalidateMultiRequest for every single-key table and hands it to
+		// ModelCacheInvalidationService.invalidate, which resets the model cache AND calls
+		// CacheMgt.resetLocalNowAndBroadcastOnTrxCommit - i.e. local reset now plus a broadcast to the other
+		// nodes on commit, which CacheMgt.get().reset(tableName, id) does not do.
 		deliveryPlanningRepository.updateDeliveryPlanningsFromInstruction(ImmutableSet.of(deliveryPlanningId), deliveryInstruction);
-
-		CacheMgt.get().reset(I_M_Delivery_Planning.Table_Name, deliveryPlanningId.getRepoId());
-
 	}
 
 	public boolean isExistDeliveryPlanningsWithoutReleaseNo(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
@@ -1075,7 +1073,7 @@ public class DeliveryPlanningService
 			return;
 		}
 
-		final ImmutableSet<DeliveryPlanningId> deactivatedIds = deliveryPlanningRepository.deactivateAllocations(allocatedIds);
+		final ImmutableSet<DeliveryPlanningId> deactivatedIds = deliveryPlanningRepository.deactivateAllocations(allocatedIds, SystemTime.asInstant());
 		resetDatesFromOrderAndSchedule(deactivatedIds);
 		deliveryPlanningRepository.clearInstructionReference(allocatedIds);
 	}
@@ -1361,7 +1359,7 @@ public class DeliveryPlanningService
 		// the source allocation and its package are DEACTIVATED, not deleted, so the record of what was once
 		// planned survives - the target's insert still finds no ACTIVE row to collide with on either partial
 		// unique index, since both are declared WHERE IsActive='Y'
-		final ImmutableSet<DeliveryPlanningId> deactivatedIds = deliveryPlanningRepository.deactivateAllocations(deliveryPlanningIds);
+		final ImmutableSet<DeliveryPlanningId> deactivatedIds = deliveryPlanningRepository.deactivateAllocations(deliveryPlanningIds, SystemTime.asInstant());
 		resetDatesFromOrderAndSchedule(deactivatedIds);
 
 		// built AFTER the reset above: reads the just-reset, order-derived dates - never the source
@@ -1401,7 +1399,7 @@ public class DeliveryPlanningService
 		// No trxManager wrapper - same reason as in addTo: the only caller,
 		// M_Delivery_Planning_RemoveFromDeliveryInstruction.doIt(), is a JavaProcess without @RunOutOfTrx and
 		// therefore already runs inside a transaction.
-		final ImmutableSet<DeliveryPlanningId> deactivatedIds = deliveryPlanningRepository.deactivateAllocations(deliveryPlanningIds);
+		final ImmutableSet<DeliveryPlanningId> deactivatedIds = deliveryPlanningRepository.deactivateAllocations(deliveryPlanningIds, SystemTime.asInstant());
 		resetDatesFromOrderAndSchedule(deactivatedIds);
 		deliveryPlanningRepository.clearInstructionReference(deliveryPlanningIds);
 	}
@@ -1420,7 +1418,7 @@ public class DeliveryPlanningService
 	public void unlinkDeliveryPlannings(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
 		final ImmutableSet<DeliveryPlanningId> allocatedPlanningIds =
-				deliveryPlanningRepository.unlinkDeliveryPlannings(deliveryInstructionId).getDeallocatedPlanningIds();
+				deliveryPlanningRepository.unlinkDeliveryPlannings(deliveryInstructionId, SystemTime.asInstant()).getDeallocatedPlanningIds();
 		resetDatesFromOrderAndSchedule(allocatedPlanningIds);
 
 		if (!allocatedPlanningIds.isEmpty())

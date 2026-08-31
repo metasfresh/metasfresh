@@ -29,6 +29,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
+import java.time.Instant;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -55,6 +56,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class DeliveryPlanningInstructionLookupTest
 {
+	/** A fixed "removed at" stamp: the repository takes it as a parameter, so tests do not depend on wall-clock time. */
+	private static final Instant REMOVED_AT = Instant.parse("2026-08-31T10:00:00Z");
+
 	private static final int SHIPPER_BPARTNER_ID = 540001;
 	private static final int SHIPPER_LOCATION_ID = 540002;
 	private static final int SHIPPER_ID = 540003;
@@ -151,7 +155,7 @@ class DeliveryPlanningInstructionLookupTest
 		final ShipperTransportationId instructionId = createDeliveryInstruction(DocStatus.Completed, true);
 		final DeliveryPlanningId planningId = createDeliveryPlanning();
 		deliveryPlanningRepository.createAllocations(instructionId, ImmutableList.of(allocRequestFor(planningId)));
-		deliveryPlanningRepository.deactivateAllocations(instructionId);
+		deliveryPlanningRepository.deactivateAllocations(instructionId, REMOVED_AT);
 
 		assertThat(deliveryPlanningRepository.hasCompleteDeliveryInstruction(planningId)).isFalse();
 	}

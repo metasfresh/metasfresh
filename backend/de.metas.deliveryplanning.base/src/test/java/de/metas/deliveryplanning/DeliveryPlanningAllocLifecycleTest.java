@@ -236,7 +236,7 @@ class DeliveryPlanningAllocLifecycleTest
 		deliveryInstruction.setDocStatus(DocStatus.Voided.getCode());
 		InterfaceWrapperHelper.save(deliveryInstruction);
 
-		deliveryPlanningRepository.deactivateAllocations(deliveryInstructionId);
+		deliveryPlanningRepository.deactivateAllocations(deliveryInstructionId, REMOVED_AT.toInstant());
 
 		final I_M_Delivery_Planning_Alloc allocAfter = reload(allocBefore);
 		assertThat(allocAfter.isActive()).isFalse();
@@ -249,9 +249,9 @@ class DeliveryPlanningAllocLifecycleTest
 	{
 		final ShipperTransportationId deliveryInstructionId = createDeliveryInstruction(DocStatus.Drafted, false);
 		deliveryPlanningRepository.createAllocations(deliveryInstructionId, ImmutableList.of(allocRequestFor(createDeliveryPlanning())));
-		deliveryPlanningRepository.deactivateAllocations(deliveryInstructionId);
+		deliveryPlanningRepository.deactivateAllocations(deliveryInstructionId, REMOVED_AT.toInstant());
 
-		deliveryPlanningRepository.deactivateAllocations(deliveryInstructionId);
+		deliveryPlanningRepository.deactivateAllocations(deliveryInstructionId, REMOVED_AT.toInstant());
 
 		assertThat(allAllocations()).hasSize(1);
 		assertThat(allAllocations().get(0).isActive()).isFalse();
@@ -267,7 +267,7 @@ class DeliveryPlanningAllocLifecycleTest
 		deliveryPlanningRepository.createAllocations(deliveryInstructionId, ImmutableList.of(allocRequestFor(removed), allocRequestFor(kept)));
 		final int removedPackageId = allAllocations().get(0).getM_ShippingPackage_ID();
 
-		deliveryPlanningRepository.deactivateAllocations(ImmutableList.of(removed));
+		deliveryPlanningRepository.deactivateAllocations(ImmutableList.of(removed), REMOVED_AT.toInstant());
 
 		assertThat(allAllocations())
 				.as("both rows survive - the removed one deactivated, the kept one untouched")
@@ -287,9 +287,9 @@ class DeliveryPlanningAllocLifecycleTest
 		final DeliveryPlanningId deliveryPlanningId = createDeliveryPlanning();
 		final ShipperTransportationId voidedInstructionId = createDeliveryInstruction(DocStatus.Drafted, false);
 		deliveryPlanningRepository.createAllocations(voidedInstructionId, ImmutableList.of(allocRequestFor(deliveryPlanningId)));
-		deliveryPlanningRepository.deactivateAllocations(voidedInstructionId);
+		deliveryPlanningRepository.deactivateAllocations(voidedInstructionId, REMOVED_AT.toInstant());
 
-		deliveryPlanningRepository.deactivateAllocations(ImmutableList.of(deliveryPlanningId));
+		deliveryPlanningRepository.deactivateAllocations(ImmutableList.of(deliveryPlanningId), REMOVED_AT.toInstant());
 
 		assertThat(allAllocations()).hasSize(1);
 		assertThat(allAllocations().get(0).isActive()).isFalse();
@@ -308,7 +308,7 @@ class DeliveryPlanningAllocLifecycleTest
 
 		// exactly what addTo does per planning, and in that order: the source allocation is DEACTIVATED, so the
 		// target's insert finds no ACTIVE row on either partial unique index
-		deliveryPlanningRepository.deactivateAllocations(ImmutableList.of(moving));
+		deliveryPlanningRepository.deactivateAllocations(ImmutableList.of(moving), REMOVED_AT.toInstant());
 		deliveryPlanningRepository.createAllocations(target, ImmutableList.of(allocRequestFor(moving)));
 
 		assertThat(allAllocations())
@@ -339,7 +339,7 @@ class DeliveryPlanningAllocLifecycleTest
 				allocRequestFor(createDeliveryPlanning()), allocRequestFor(createDeliveryPlanning()), allocRequestFor(moving)));
 		deliveryPlanningRepository.createAllocations(target, ImmutableList.of(allocRequestFor(createDeliveryPlanning())));
 
-		deliveryPlanningRepository.deactivateAllocations(ImmutableList.of(moving));
+		deliveryPlanningRepository.deactivateAllocations(ImmutableList.of(moving), REMOVED_AT.toInstant());
 		deliveryPlanningRepository.createAllocations(target, ImmutableList.of(allocRequestFor(moving)));
 
 		assertThat(allAllocations().stream()
@@ -360,7 +360,7 @@ class DeliveryPlanningAllocLifecycleTest
 		final DeliveryPlanningId planningId = createDeliveryPlanning();
 		deliveryPlanningRepository.createAllocations(source, ImmutableList.of(allocRequestFor(planningId)));
 
-		deliveryPlanningRepository.deactivateAllocations(ImmutableList.of(planningId));
+		deliveryPlanningRepository.deactivateAllocations(ImmutableList.of(planningId), REMOVED_AT.toInstant());
 
 		final ShipperTransportationId target = createDeliveryInstruction(DocStatus.Drafted, false);
 		final ImmutableList<DeliveryPlanningAllocId> newAllocIds =
@@ -384,7 +384,7 @@ class DeliveryPlanningAllocLifecycleTest
 
 		final ShipperTransportationId voidedInstructionId = createDeliveryInstruction(DocStatus.Drafted, false);
 		deliveryPlanningRepository.createAllocations(voidedInstructionId, ImmutableList.of(allocRequestFor(deactivated)));
-		deliveryPlanningRepository.deactivateAllocations(voidedInstructionId);
+		deliveryPlanningRepository.deactivateAllocations(voidedInstructionId, REMOVED_AT.toInstant());
 
 		assertThat(deliveryPlanningRepository.getAllocatedInstructionIds(ImmutableList.of(allocated, unallocated, deactivated)))
 				.containsExactly(entry(allocated, deliveryInstructionId));
@@ -402,7 +402,7 @@ class DeliveryPlanningAllocLifecycleTest
 				allocRequestFor(held), allocRequestFor(movedAway), allocRequestFor(deactivated)));
 
 		// a move deactivates the allocation, a void deactivates it too - neither leaves the planning active on this document
-		deliveryPlanningRepository.deactivateAllocations(ImmutableList.of(movedAway));
+		deliveryPlanningRepository.deactivateAllocations(ImmutableList.of(movedAway), REMOVED_AT.toInstant());
 		final I_M_Delivery_Planning_Alloc deactivatedAlloc = allAllocations().stream()
 				.filter(alloc -> alloc.getM_Delivery_Planning_ID() == deactivated.getRepoId())
 				.findFirst()
@@ -433,10 +433,12 @@ class DeliveryPlanningAllocLifecycleTest
 				.as("an allocation that is still on the instruction has not been removed from it")
 				.isNull();
 
-		// the clock is pinned and later ADVANCED on purpose: against the ambient clock a re-stamp landing in the
-		// same millisecond would satisfy the "did not move" assertion below while the bug was fully present
+		// DateRemoved itself is now passed in, not read from the clock. The clock is still pinned and later
+		// ADVANCED on purpose for the SECOND half of this test: the unrelated write below moves Updated from the
+		// ambient clock, and against a real clock a re-stamp landing in the same millisecond would satisfy the
+		// "did not move" assertion while the bug was fully present.
 		SystemTime.setFixedTimeSource(REMOVED_AT);
-		deliveryPlanningRepository.deactivateAllocations(ImmutableList.of(deliveryPlanningId));
+		deliveryPlanningRepository.deactivateAllocations(ImmutableList.of(deliveryPlanningId), REMOVED_AT.toInstant());
 
 		final Timestamp stampedAt = reload(alloc).getDateRemoved();
 		assertThat(stampedAt)
@@ -466,12 +468,12 @@ class DeliveryPlanningAllocLifecycleTest
 		deliveryPlanningRepository.createAllocations(deliveryInstructionId, ImmutableList.of(
 				allocRequestFor(createDeliveryPlanning()), allocRequestFor(createDeliveryPlanning())));
 
-		deliveryPlanningRepository.deactivateAllocations(deliveryInstructionId);
+		deliveryPlanningRepository.deactivateAllocations(deliveryInstructionId, REMOVED_AT.toInstant());
 		final List<Timestamp> stampedAt = allAllocations().stream().map(I_M_Delivery_Planning_Alloc::getDateRemoved).collect(ImmutableList.toImmutableList());
 		assertThat(stampedAt).allSatisfy(dateRemoved -> assertThat(dateRemoved).isNotNull());
 
 		// the second void finds nothing ACTIVE to retire, so it must leave the first void's dates alone
-		deliveryPlanningRepository.deactivateAllocations(deliveryInstructionId);
+		deliveryPlanningRepository.deactivateAllocations(deliveryInstructionId, REMOVED_AT.toInstant());
 
 		assertThat(allAllocations()).extracting(I_M_Delivery_Planning_Alloc::getDateRemoved).containsExactlyElementsOf(stampedAt);
 	}

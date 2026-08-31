@@ -27,7 +27,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.common.util.time.SystemTime;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.incoterms.IncotermsId;
@@ -50,6 +49,7 @@ import de.metas.shipping.model.ShippingPackageId;
 import de.metas.util.Check;
 import de.metas.util.ColorId;
 import de.metas.util.Services;
+import java.time.Instant;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -93,11 +93,18 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * PurchaseOrderToShipperTransportationRepository, MPackageRepository (the three transport and packing tables are
  * shared with the transport-order role, which knows nothing of delivery planning)
  * <p>
- * Deliberately holds NO other bounded context's DAO/BL: the order, order line, receipt schedule and shipment
- * schedule a planning's dates are recomputed from are read by {@link DeliveryPlanningService}, which hands this
- * class a fully-resolved {@link DeliveryInstructionDates} to write verbatim - see
+ * Holds no other bounded context's DAO/BL for reading BUSINESS state: the order, order line, receipt schedule and
+ * shipment schedule a planning's dates are recomputed from are read by {@link DeliveryPlanningService}, which hands
+ * this class a fully-resolved {@link DeliveryInstructionDates} to write verbatim - see
  * {@link DeliveryPlanningService#resetDatesFromOrderAndSchedule} and
  * {@link DeliveryPlanningService#resolveInstructionDatesForAllocation}.
+ * <p>
+ * The ONE injected collaborator is {@link DimensionService}, and it is deliberate rather than an exception that
+ * slipped in: dimensions (the AD-level {@code Dimension} carried on almost every document row) are a persistence
+ * concern, not a delivery-planning decision - the service has no dimension to decide, it is copied from the source
+ * row onto the target row at the moment the target row is written. Moving the call up to
+ * {@link DeliveryPlanningService} would push a pure persistence detail into business code without removing any
+ * coupling.
  */
 @Repository
 public class DeliveryPlanningRepository
@@ -774,14 +781,16 @@ public class DeliveryPlanningRepository
 	 * 		allocation to begin with. {@link DeliveryPlanningService} resets exactly these plannings' dates from
 	 * 		their order and schedule afterwards - a decision this repository does not make.
 	 */
-	public ImmutableSet<DeliveryPlanningId> deactivateAllocations(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
+	public ImmutableSet<DeliveryPlanningId> deactivateAllocations(
+			@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds,
+			@NonNull final Instant removedAt)
 	{
 		if (deliveryPlanningIds.isEmpty())
 		{
 			return ImmutableSet.of();
 		}
 
-		return deactivateAllocationRecords(queryAllocationsByPlanningIds(deliveryPlanningIds).create().list()).getDeallocatedPlanningIds();
+		return deactivateAllocationRecords(queryAllocationsByPlanningIds(deliveryPlanningIds).create().list(), removedAt).getDeallocatedPlanningIds();
 	}
 
 	/**
@@ -791,9 +800,11 @@ public class DeliveryPlanningRepository
 	 * {@code IsActive='N'} is also what releases both partial unique indexes on the allocation, so the plannings
 	 * can be allocated again afterwards.
 	 */
-	public DeactivatedAllocations deactivateAllocations(@NonNull final ShipperTransportationId deliveryInstructionId)
+	public DeactivatedAllocations deactivateAllocations(
+			@NonNull final ShipperTransportationId deliveryInstructionId,
+			@NonNull final Instant removedAt)
 	{
-		return deactivateAllocationRecords(queryActiveAllocationsByInstructionId(deliveryInstructionId).create().list());
+		return deactivateAllocationRecords(queryActiveAllocationsByInstructionId(deliveryInstructionId).create().list(), removedAt);
 	}
 
 	/**
@@ -814,21 +825,23 @@ public class DeliveryPlanningRepository
 	 * only ({@code addOnlyActiveRecordsFilter} / {@code queryActiveAllocationsByInstructionId}), so an
 	 * already-retired allocation never reaches this loop and the stamp is written exactly once per allocation.
 	 */
-	private DeactivatedAllocations deactivateAllocationRecords(@NonNull final List<I_M_Delivery_Planning_Alloc> allocRecords)
+	private DeactivatedAllocations deactivateAllocationRecords(
+			@NonNull final List<I_M_Delivery_Planning_Alloc> allocRecords,
+			@NonNull final Instant removedAt)
 	{
-		final ImmutableMap<Integer, I_M_ShippingPackage> shippingPackages = getShippingPackagesOf(allocRecords);
+		final ImmutableMap<ShippingPackageId, I_M_ShippingPackage> shippingPackages = getShippingPackagesOf(allocRecords);
 
 		final ImmutableList.Builder<I_M_ShippingPackage> deactivatedShippingPackages = ImmutableList.builder();
 		final ImmutableSet.Builder<DeliveryPlanningId> deallocatedPlanningIds = ImmutableSet.builder();
 		for (final I_M_Delivery_Planning_Alloc allocRecord : allocRecords)
 		{
-			final I_M_ShippingPackage shippingPackageRecord = shippingPackages.get(allocRecord.getM_ShippingPackage_ID());
+			final I_M_ShippingPackage shippingPackageRecord = shippingPackages.get(ShippingPackageId.ofRepoId(allocRecord.getM_ShippingPackage_ID()));
 			shippingPackageRecord.setIsActive(false);
 			saveRecord(shippingPackageRecord);
 			deactivatedShippingPackages.add(shippingPackageRecord);
 
 			allocRecord.setIsActive(false);
-			allocRecord.setDateRemoved(SystemTime.asTimestamp());
+			allocRecord.setDateRemoved(TimeUtil.asTimestamp(removedAt));
 			saveRecord(allocRecord);
 
 			deallocatedPlanningIds.add(DeliveryPlanningId.ofRepoId(allocRecord.getM_Delivery_Planning_ID()));
@@ -858,22 +871,24 @@ public class DeliveryPlanningRepository
 	 * Every allocation has one - {@code M_ShippingPackage_ID} is mandatory and foreign-keyed - so a lookup in the
 	 * result never misses.
 	 */
-	private ImmutableMap<Integer, I_M_ShippingPackage> getShippingPackagesOf(@NonNull final List<I_M_Delivery_Planning_Alloc> allocRecords)
+	private ImmutableMap<ShippingPackageId, I_M_ShippingPackage> getShippingPackagesOf(@NonNull final List<I_M_Delivery_Planning_Alloc> allocRecords)
 	{
 		if (allocRecords.isEmpty())
 		{
 			return ImmutableMap.of();
 		}
 
-		final ImmutableSet<Integer> shippingPackageIds = allocRecords.stream()
-				.map(I_M_Delivery_Planning_Alloc::getM_ShippingPackage_ID)
+		final ImmutableSet<ShippingPackageId> shippingPackageIds = allocRecords.stream()
+				.map(allocRecord -> ShippingPackageId.ofRepoId(allocRecord.getM_ShippingPackage_ID()))
 				.collect(ImmutableSet.toImmutableSet());
 
 		return queryBL.createQueryBuilder(I_M_ShippingPackage.class)
 				.addInArrayFilter(I_M_ShippingPackage.COLUMNNAME_M_ShippingPackage_ID, shippingPackageIds)
 				.create()
 				.stream()
-				.collect(ImmutableMap.toImmutableMap(I_M_ShippingPackage::getM_ShippingPackage_ID, shippingPackage -> shippingPackage));
+				.collect(ImmutableMap.toImmutableMap(
+						shippingPackage -> ShippingPackageId.ofRepoId(shippingPackage.getM_ShippingPackage_ID()),
+						shippingPackage -> shippingPackage));
 	}
 
 	/**
@@ -1147,8 +1162,21 @@ public class DeliveryPlanningRepository
 				.iterate(I_M_Delivery_Planning.class);
 	}
 
+	/**
+	 * The ids of the plannings the given selection matches. A named read so callers do not have to execute this
+	 * repository's own {@link IQueryBuilder} themselves.
+	 */
 	@NonNull
-	public IQueryBuilder<I_M_Delivery_Planning> getDeliveryPlanningQueryBuilder(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	public ImmutableList<DeliveryPlanningId> getIds(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	{
+		return getDeliveryPlanningQueryBuilder(selectedDeliveryPlanningsFilter)
+				.create()
+				.listIds(DeliveryPlanningId::ofRepoId)
+				.asList();
+	}
+
+	@NonNull
+	private IQueryBuilder<I_M_Delivery_Planning> getDeliveryPlanningQueryBuilder(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
 		return queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
 				.filter(selectedDeliveryPlanningsFilter);
@@ -1173,9 +1201,11 @@ public class DeliveryPlanningRepository
 	 * 		three retirement paths (close, remove-from, the source half of a move) already follow: deactivate,
 	 * 		then use THIS return value, never a second query for the same ids.
 	 */
-	public DeactivatedAllocations unlinkDeliveryPlannings(@NonNull final ShipperTransportationId deliveryInstructionId)
+	public DeactivatedAllocations unlinkDeliveryPlannings(
+			@NonNull final ShipperTransportationId deliveryInstructionId,
+			@NonNull final Instant removedAt)
 	{
-		final DeactivatedAllocations deactivatedAllocations = deactivateAllocations(deliveryInstructionId);
+		final DeactivatedAllocations deactivatedAllocations = deactivateAllocations(deliveryInstructionId, removedAt);
 
 		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = retrieveForDeliveryInstructionId(deliveryInstructionId);
 		while (deliveryPlanningIterator.hasNext())

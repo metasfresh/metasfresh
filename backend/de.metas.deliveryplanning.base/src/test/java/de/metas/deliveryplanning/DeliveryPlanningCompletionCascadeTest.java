@@ -35,6 +35,7 @@ import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Services;
+import java.time.Instant;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -68,6 +69,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class DeliveryPlanningCompletionCascadeTest
 {
+	/** A fixed "removed at" stamp: the repository takes it as a parameter, so tests do not depend on wall-clock time. */
+	private static final Instant REMOVED_AT = Instant.parse("2026-08-31T10:00:00Z");
+
 	private static final int SHIPPER_BPARTNER_ID = 540001;
 	private static final int SHIPPER_LOCATION_ID = 540002;
 	private static final int SHIPPER_ID = 540003;
@@ -227,7 +231,7 @@ class DeliveryPlanningCompletionCascadeTest
 	{
 		final ShipperTransportationId deliveryInstructionId = createDeliveryInstructionWithDocType();
 		allocate(deliveryInstructionId, createDeliveryPlanning(false));
-		deliveryPlanningRepository.deactivateAllocations(deliveryInstructionId);
+		deliveryPlanningRepository.deactivateAllocations(deliveryInstructionId, REMOVED_AT);
 
 		final Optional<ITranslatableString> reason = deliveryPlanningService.getCompleteRejectionReason(deliveryInstructionId);
 

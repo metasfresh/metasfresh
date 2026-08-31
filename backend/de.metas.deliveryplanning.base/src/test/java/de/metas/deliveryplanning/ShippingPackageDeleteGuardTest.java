@@ -33,6 +33,7 @@ import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
+import java.time.Instant;
 import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.exceptions.AdempiereException;
@@ -73,6 +74,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 class ShippingPackageDeleteGuardTest
 {
+	/** A fixed "removed at" stamp: the repository takes it as a parameter, so tests do not depend on wall-clock time. */
+	private static final Instant REMOVED_AT = Instant.parse("2026-08-31T10:00:00Z");
+
 	private static final int PRODUCT_ID = 540010;
 
 	private DeliveryPlanningRepository deliveryPlanningRepository;
@@ -176,7 +180,7 @@ class ShippingPackageDeleteGuardTest
 
 		// exactly what DeliveryPlanningService.removeFrom does, both halves of it: the allocation is retired
 		// AND the planning loses its release number
-		deliveryPlanningRepository.deactivateAllocations(ImmutableList.of(planningId));
+		deliveryPlanningRepository.deactivateAllocations(ImmutableList.of(planningId), REMOVED_AT);
 		deliveryPlanningRepository.clearInstructionReference(ImmutableList.of(planningId));
 
 		final I_M_ShippingPackage reloaded = InterfaceWrapperHelper.load(
