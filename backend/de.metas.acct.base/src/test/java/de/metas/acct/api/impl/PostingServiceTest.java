@@ -4,12 +4,12 @@ import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.DocumentPostMultiRequest;
 import de.metas.acct.api.DocumentPostRequest;
 import de.metas.acct.api.IAcctSchemaDAO;
-import de.metas.acct.api.IPostingDocumentDAO;
 import de.metas.acct.doc.AcctDocRegistry;
 import de.metas.acct.posting.DocumentPostingUserNotificationService;
 import de.metas.acct.posting.log.DocumentPostingLogService;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import org.adempiere.ad.table.api.IReferencedRecordDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -122,9 +122,9 @@ public class PostingServiceTest
 		@DisplayName("the posting error is still reported when we cannot check whether the document exists")
 		void logsThePostingErrorEvenIfTheExistenceCheckFails()
 		{
-			final IPostingDocumentDAO failingDAO = mock(IPostingDocumentDAO.class);
-			when(failingDAO.exists(any())).thenThrow(new AdempiereException("database is not available"));
-			Services.registerService(IPostingDocumentDAO.class, failingDAO);
+			final IReferencedRecordDAO failingRecordDAO = mock(IReferencedRecordDAO.class);
+			when(failingRecordDAO.exists(any())).thenThrow(new AdempiereException("database is not available"));
+			Services.registerService(IReferencedRecordDAO.class, failingRecordDAO);
 			postingService = new PostingService();
 
 			final TableRecordReference documentRef = TableRecordReference.of(I_C_Invoice.Table_Name, 9649545);
