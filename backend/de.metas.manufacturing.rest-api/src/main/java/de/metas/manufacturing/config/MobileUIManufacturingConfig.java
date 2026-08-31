@@ -24,6 +24,7 @@ public class MobileUIManufacturingConfig
 	@NonNull OptionalBoolean isAllowFinishedGoodsReceiveToTU;
 	@NonNull OptionalBoolean isSkipFinishedGoodsReceiveTargetStep;
 	@NonNull OptionalBoolean isCaptureCatchWeightAtReceipt;
+	@NonNull OptionalBoolean isAllowReceiveWithoutPackingItem;
 
 	@NonNull
 	public ReceiveUnitType getReceiveUnitTypeEffective()
@@ -51,9 +52,15 @@ public class MobileUIManufacturingConfig
 		return isCaptureCatchWeightAtReceipt.orElseTrue();
 	}
 
+	/** Opt-in, hence FALSE by default. */
+	public boolean getIsAllowReceiveWithoutPackingItemEffective()
+	{
+		return isAllowReceiveWithoutPackingItem.orElseFalse();
+	}
+
 	/**
-	 * @param isMainFinishedGood {@code false} for a co-/by-product line. THREE of the four flags exempt such a line
-	 *                           from the configured simplification; catch weight does NOT — it applies to every line.
+	 * @param isMainFinishedGood {@code false} for a co-/by-product line. Three of the five flags exempt such a line;
+	 *                           catch weight and receive-without-packing-item do not — they apply to every line.
 	 */
 	@NonNull
 	public FinishedGoodsReceiveLineConfig effectiveForReceiveLine(final boolean isMainFinishedGood)
@@ -69,11 +76,15 @@ public class MobileUIManufacturingConfig
 		// (PickingJobPickCommand takes it from the operator), which is the whole point of switching it off here.
 		// A product-data fallback would be meaningless: a nominal weight is exactly what a catch-weight product
 		// declares untrustworthy - for anything else the kg/piece UOM conversion already answers it.
+		//
+		// Receive-without-packing-item is not exempt either, for the opposite reason: it is opt-in and off by
+		// default, so exempting a line would force the extra target ON everywhere - what the flag exists to avoid.
 		return FinishedGoodsReceiveLineConfig.builder()
 				.allowReceiveToLU(!isMainFinishedGood || getIsAllowFinishedGoodsReceiveToLUEffective())
 				.allowReceiveToTU(!isMainFinishedGood || getIsAllowFinishedGoodsReceiveToTUEffective())
 				.captureCatchWeight(getIsCaptureCatchWeightAtReceiptEffective())
 				.skipReceiveTargetStep(isMainFinishedGood && getIsSkipFinishedGoodsReceiveTargetStepEffective())
+				.allowReceiveWithoutPackingItem(getIsAllowReceiveWithoutPackingItemEffective())
 				.build();
 	}
 
@@ -109,6 +120,7 @@ public class MobileUIManufacturingConfig
 				.isAllowFinishedGoodsReceiveToTU(this.isAllowFinishedGoodsReceiveToTU.ifUnknown(other.isAllowFinishedGoodsReceiveToTU))
 				.isSkipFinishedGoodsReceiveTargetStep(this.isSkipFinishedGoodsReceiveTargetStep.ifUnknown(other.isSkipFinishedGoodsReceiveTargetStep))
 				.isCaptureCatchWeightAtReceipt(this.isCaptureCatchWeightAtReceipt.ifUnknown(other.isCaptureCatchWeightAtReceipt))
+				.isAllowReceiveWithoutPackingItem(this.isAllowReceiveWithoutPackingItem.ifUnknown(other.isAllowReceiveWithoutPackingItem))
 				.build();
 		if (result.equals(this))
 		{
