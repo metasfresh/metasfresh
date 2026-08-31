@@ -115,6 +115,52 @@ Feature: Reopening a receipt disposition reopens the purchase invoice candidate
     # open for editing. The candidate must stay open too, or it can never be invoiced again.
     When the order identified by po2 is reactivated
 
+    # IsDeliveryClosed stays true while the order is parked: the parking path deliberately does not
+    # reopen it (pre-existing, display-only). The next complete reopens it - see @Id:S0164_500.
     Then validate C_Invoice_Candidate:
-      | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | OPT.Processed |
-      | invoiceCand_2                     | 0            | false         |
+      | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | OPT.IsDeliveryClosed | OPT.Processed |
+      | invoiceCand_2                     | 0            | true                 | false         |
+
+  @Id:S0164_500
+  @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@allure.label.epic:E0225_Accounting
+@allure.label.feature:F01010.3_Match_Invoice
+@F00701
+  Scenario: Re-completing a reactivated purchase order reopens the parked receipt disposition and its invoice candidate
+    When metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DocBaseType | DateOrdered |
+      | po3        | false   | bpartner_1    | POO         | 2022-07-26  |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | QtyEnteredTU | M_HU_PI_Item_Product_ID |
+      | po3_l1     | po3        | product      | 100        | 10           | product_TU_10CU         |
+    And the order identified by po3 is completed
+    And after not more than 60s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
+      | receiptSchedule3                | po3                   | po3_l1                    | bpartner_1               | l_1                               | product                 | 100        | warehouseStd              | 10               |
+    And after not more than 120s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice |
+      | invoiceCand_3                     | po3                       | po3_l1                    | 0                | 0            |
+
+    # Nothing was ever received and the buyer closes the disposition, which closes the candidate.
+    When the M_ReceiptSchedule identified by receiptSchedule3 is closed
+    Then validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | OPT.IsDeliveryClosed | OPT.Processed |
+      | invoiceCand_3                     | 0            | true                 | true          |
+
+    # Reactivating the PO leaves the already-closed disposition (and hence the candidate) untouched:
+    # the parking path only closes dispositions that are still open.
+    When the order identified by po3 is reactivated
+    Then validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | OPT.IsDeliveryClosed | OPT.Processed |
+      | invoiceCand_3                     | 0            | true                 | true          |
+
+    # Re-completing the PO reopens the parked disposition - and must give the candidate back as open work.
+    When the order identified by po3 is completed
+    Then after not more than 60s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.IsClosed | OPT.Processed |
+      | receiptSchedule3                | po3                   | po3_l1                    | bpartner_1               | l_1                               | product                 | 100        | warehouseStd              | false        | false         |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | OPT.IsDeliveryClosed | OPT.Processed |
+      | invoiceCand_3                     | 0            | false                | false         |

@@ -277,9 +277,10 @@ public class M_ShipmentSchedule
 			return;
 		}
 
+		final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID());
+
 		if (shipmentSchedule.isClosed())
 		{
-			final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID());
 			orderBL.closeLine(orderLine);
 			invoiceCandBL.closeDeliveryInvoiceCandidatesByOrderLineId(orderLineId);
 
@@ -291,7 +292,6 @@ public class M_ShipmentSchedule
 		}
 		else
 		{
-			final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID());
 			orderBL.reopenLine(orderLine);
 			invoiceCandBL.openDeliveryInvoiceCandidatesByOrderLineId(orderLineId);
 
