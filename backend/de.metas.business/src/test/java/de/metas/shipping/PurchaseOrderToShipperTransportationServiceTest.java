@@ -549,8 +549,6 @@ public class PurchaseOrderToShipperTransportationServiceTest
 	/**
 	 * The five transport-order date fields (ETD, ETA, ATD, ATA, B/L date) must auto-populate from the first assigned purchase order:
 	 * ETA = PO.DatePromised, ETD = PO.PreparationDate (taken as already calculated on the order), ATD = ETD, ATA = ETA, B/L date = ATD.
-	 * <p>
-	 * me03 https://github.com/metasfresh/me03/issues/30956
 	 */
 	@Test
 	public void defaultDates_appliedFromFirstPurchaseOrder()

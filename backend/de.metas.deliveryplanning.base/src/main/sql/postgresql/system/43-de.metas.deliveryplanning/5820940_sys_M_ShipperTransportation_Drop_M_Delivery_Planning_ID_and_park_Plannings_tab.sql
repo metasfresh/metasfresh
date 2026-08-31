@@ -2,6 +2,10 @@
 -- deactivates AD_Tab 546754, which bound to that column. Every SQL and AD consumer now resolves through
 -- M_Delivery_Planning_Alloc; a dependency sweep over pg_views, pg_proc, AD_Val_Rule.Code,
 -- AD_Column.ColumnSQL and EXP_FormatLine found no other consumer.
+--
+-- Do NOT rename this file once it has been applied anywhere: the runner's applied-check is keyed on the
+-- script NAME with no checksum, so a rename makes it look unapplied and re-run, while whatever an edit
+-- REMOVED stays applied and is undone by nothing.
 
 -- Window 541657 keeps two tabs: lines (546736) plus a history tab over inactive
 -- M_Delivery_Planning_Alloc rows. "Which plannings are on this instruction" is answered by Related

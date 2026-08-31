@@ -52,9 +52,11 @@ public class M_ShipperTransportation
 	}
 
 	/**
-	 * COMPLETE only, not VOID: on void the invalidation is owned by
-	 * {@link #unlinkDeliveryPlannings(I_M_ShipperTransportation)}, which captures the affected planning ids before
-	 * deactivating the allocations.
+	 * COMPLETE only, and adding VOID here would be a silent no-op: this method re-derives the plannings from
+	 * {@code getAllocatedPlanningIds} inside a run-after-commit closure, so on VOID it would run AFTER the sibling
+	 * {@link #unlinkDeliveryPlannings(I_M_ShipperTransportation)} had already deactivated those allocations in the
+	 * same transaction, always find an empty set, and invalidate nothing. Void's invalidation is therefore owned by
+	 * that handler, which captures the ids BEFORE deactivating.
 	 */
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void invalidateInvoiceCandidatesAfterComplete(@NonNull final I_M_ShipperTransportation shipperTransportation)

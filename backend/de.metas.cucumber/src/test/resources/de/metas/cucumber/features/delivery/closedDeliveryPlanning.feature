@@ -269,6 +269,9 @@ Feature: A closed delivery planning is finished and nothing processes it any fur
     And the M_ShipperTransportation identified by deliveryInstructionCancel is reactivated
     And M_Delivery_Planning identified by planningCancel_2 is closed
 
+    # Two guards could refuse a closed planning here (the release-number filter and the IsClosed skip) but
+    # only the first is provably exercised by this scenario. Do NOT add an assertion on an empty
+    # skippedClosedIds - that would bake in an ordering this scenario does not actually prove.
     # both are selected; only the open one is cancelled
     When M_Delivery_Planning identified by planningCancel_1,planningCancel_2 is canceled
 
