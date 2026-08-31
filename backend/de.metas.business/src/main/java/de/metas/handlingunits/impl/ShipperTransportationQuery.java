@@ -27,6 +27,7 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.TransportDirection;
 import de.metas.shipping.model.ShipperTransportationId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -53,11 +54,10 @@ public class ShipperTransportationQuery
 	@Nullable Boolean processed;
 
 	/**
-	 * One of {@code X_M_ShipperTransportation.TRANSPORTDIRECTION_*}. Unset matches any direction -
-	 * a transport order's direction (Incoming/Outgoing/Dropship) is not implied by any of this query's
+	 * Unset matches any direction - a transport order's direction is not implied by any of this query's
 	 * other fields, so a caller that cares which direction it matches must say so explicitly.
 	 */
-	@Nullable String transportDirection;
+	@Nullable TransportDirection transportDirection;
 
 	public boolean isAny()
 	{

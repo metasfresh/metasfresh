@@ -25,6 +25,7 @@ package de.metas.handlingunits.impl;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.organization.OrgId;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.TransportDirection;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -61,13 +62,15 @@ public class CreateShipperTransportationRequest
 	boolean assignAnonymouslyPickedHUs;
 
 	/**
-	 * Whether the shipment/receipt this transport order is created for is a sales transaction ({@code true}) or a
-	 * purchase transaction ({@code false}). Drives the created record's {@code TransportDirection}.
+	 * The direction the created {@code M_ShipperTransportation} gets. Stated by the caller, never derived here:
+	 * only the caller knows whether its document is a receipt, a shipment or a dropship.
 	 * <p>
-	 * Boxed on purpose: {@code M_ShipperTransportation.TransportDirection} has no database default, so that no
-	 * direction is ever invented, and a primitive {@code boolean} would reinstate such a default one layer up - a
-	 * caller omitting {@code .isSOTrx(...)} would silently get {@code false} -> {@code Incoming}. As a
-	 * {@code @NonNull Boolean} the omission fails loudly in {@code build()} instead.
+	 * Mandatory on purpose, and a three-valued type on purpose. {@code M_ShipperTransportation.TransportDirection}
+	 * has no database default, so no direction is ever invented; a caller that omits this fails loudly in
+	 * {@code build()} rather than being handed one. It used to be an {@code isSOTrx} flag, which made
+	 * {@link TransportDirection#Dropship} unreachable through this request no matter what the caller knew - a
+	 * boolean cannot carry a three-valued domain. Callers whose document genuinely is two-valued map it with
+	 * {@link TransportDirection#ofSOTrx(de.metas.lang.SOTrx)}.
 	 */
-	@NonNull Boolean isSOTrx;
+	@NonNull TransportDirection transportDirection;
 }

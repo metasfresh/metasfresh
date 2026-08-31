@@ -27,6 +27,7 @@ import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
 import de.metas.handlingunits.impl.ShipperTransportationQuery;
 import de.metas.organization.OrgId;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.TransportDirection;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -51,9 +52,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * {@link ShipperTransportationDAO#create(CreateShipperTransportationRequest)} must derive
- * {@code M_ShipperTransportation.TransportDirection} from the request's SOTrx flag - never hardcode
- * {@code Outgoing} - because the DAO is also reached from purchase-receipt paths.
+ * {@link ShipperTransportationDAO#create(CreateShipperTransportationRequest)} must persist the
+ * {@code TransportDirection} its caller stated - never hardcode {@code Outgoing}, and never collapse the
+ * three-valued domain to a sales/purchase boolean - because the DAO is reached from receipt, shipment and
+ * dropship paths alike.
  */
 class ShipperTransportationDAOTest
 {
@@ -104,7 +106,7 @@ class ShipperTransportationDAOTest
 	void createDerivesIncomingDirectionForPurchaseReceipt()
 	{
 		final CreateShipperTransportationRequest request = requestBuilder()
-				.isSOTrx(false) // purchase receipt
+				.transportDirection(TransportDirection.Incoming) // purchase receipt
 				.build();
 
 		final ShipperTransportationId shipperTransportationId = shipperTransportationDAO.create(request);
@@ -120,7 +122,7 @@ class ShipperTransportationDAOTest
 	void createDerivesOutgoingDirectionForSalesShipment()
 	{
 		final CreateShipperTransportationRequest request = requestBuilder()
-				.isSOTrx(true) // sales shipment
+				.transportDirection(TransportDirection.Outgoing) // sales shipment
 				.build();
 
 		final ShipperTransportationId shipperTransportationId = shipperTransportationDAO.create(request);
@@ -135,7 +137,7 @@ class ShipperTransportationDAOTest
 	void getOrCreateAdoptsExistingOrder_whenDirectionMatches()
 	{
 		final CreateShipperTransportationRequest request = requestBuilder()
-				.isSOTrx(true) // sales shipment -> Outgoing
+				.transportDirection(TransportDirection.Outgoing) // sales shipment
 				.build();
 
 		final ShipperTransportationId existingId = shipperTransportationDAO.create(request);
@@ -152,12 +154,12 @@ class ShipperTransportationDAOTest
 	void getOrCreateCreatesNewOrder_whenExistingDirectionDiffers()
 	{
 		final CreateShipperTransportationRequest incomingRequest = requestBuilder()
-				.isSOTrx(false) // purchase receipt -> Incoming
+				.transportDirection(TransportDirection.Incoming) // purchase receipt -> Incoming
 				.build();
 		final ShipperTransportationId incomingId = shipperTransportationDAO.create(incomingRequest);
 
 		final CreateShipperTransportationRequest outgoingRequest = requestBuilder()
-				.isSOTrx(true) // sales shipment -> Outgoing
+				.transportDirection(TransportDirection.Outgoing) // sales shipment
 				.build();
 
 		final ShipperTransportationId foundId = shipperTransportationDAO.getOrCreate(outgoingRequest);
@@ -175,8 +177,8 @@ class ShipperTransportationDAOTest
 	@DisplayName("a query with no explicit direction still matches transport orders of every direction - existing callers keep matching what they matched before")
 	void getByQuery_matchesAnyDirection_whenTransportDirectionUnset()
 	{
-		final ShipperTransportationId incomingId = shipperTransportationDAO.create(requestBuilder().isSOTrx(false).build());
-		final ShipperTransportationId outgoingId = shipperTransportationDAO.create(requestBuilder().isSOTrx(true).build());
+		final ShipperTransportationId incomingId = shipperTransportationDAO.create(requestBuilder().transportDirection(TransportDirection.Incoming).build());
+		final ShipperTransportationId outgoingId = shipperTransportationDAO.create(requestBuilder().transportDirection(TransportDirection.Outgoing).build());
 
 		final ShipperTransportationQuery query = ShipperTransportationQuery.builder()
 				.shipperId(shipperId)
@@ -193,14 +195,49 @@ class ShipperTransportationDAOTest
 	}
 
 	@Test
-	@DisplayName("omitting isSOTrx must fail loudly - it must never fall back to a silent Incoming")
-	void requestWithoutSOTrx_cannotBeBuilt()
+	@DisplayName("a dropship transport order must be persisted as Dropship - the direction is three-valued, not a boolean")
+	void createPersistsDropshipDirection()
 	{
-		final CreateShipperTransportationRequest.CreateShipperTransportationRequestBuilder builderWithoutSOTrx = requestBuilder();
+		final CreateShipperTransportationRequest request = requestBuilder()
+				.transportDirection(TransportDirection.Dropship)
+				.build();
 
-		assertThatThrownBy(builderWithoutSOTrx::build)
-				.as("a caller that forgets the transaction direction must not silently create an Incoming transport order")
+		final ShipperTransportationId shipperTransportationId = shipperTransportationDAO.create(request);
+
+		final I_M_ShipperTransportation transportOrder = load(shipperTransportationId, I_M_ShipperTransportation.class);
+		assertThat(transportOrder.getTransportDirection())
+				.as("a dropship must not be forced into Incoming or Outgoing")
+				.isEqualTo(X_M_ShipperTransportation.TRANSPORTDIRECTION_Dropship);
+	}
+
+	@Test
+	@DisplayName("getOrCreate must NOT adopt an Outgoing transport order for a Dropship request")
+	void getOrCreateCreatesNewOrder_whenExistingIsOutgoingAndRequestIsDropship()
+	{
+		final ShipperTransportationId outgoingId = shipperTransportationDAO.create(requestBuilder()
+				.transportDirection(TransportDirection.Outgoing)
+				.build());
+
+		final ShipperTransportationId foundId = shipperTransportationDAO.getOrCreate(requestBuilder()
+				.transportDirection(TransportDirection.Dropship)
+				.build());
+
+		assertThat(foundId)
+				.as("an Outgoing transport order must never be silently reused for a Dropship")
+				.isNotEqualTo(outgoingId);
+		assertThat(load(foundId, I_M_ShipperTransportation.class).getTransportDirection())
+				.isEqualTo(X_M_ShipperTransportation.TRANSPORTDIRECTION_Dropship);
+	}
+
+	@Test
+	@DisplayName("omitting the transport direction must fail loudly - it must never fall back to a silent default")
+	void requestWithoutTransportDirection_cannotBeBuilt()
+	{
+		final CreateShipperTransportationRequest.CreateShipperTransportationRequestBuilder builderWithoutDirection = requestBuilder();
+
+		assertThatThrownBy(builderWithoutDirection::build)
+				.as("a caller that forgets the direction must not silently create a transport order in some default one")
 				.isInstanceOf(NullPointerException.class)
-				.hasMessageContaining("isSOTrx");
+				.hasMessageContaining("transportDirection");
 	}
 }

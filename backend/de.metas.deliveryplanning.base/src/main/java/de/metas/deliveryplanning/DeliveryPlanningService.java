@@ -69,6 +69,7 @@ import de.metas.shipping.ShipperId;
 import de.metas.shipping.Shipper;
 import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
+import de.metas.shipping.TransportDirection;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;

@@ -46,6 +46,7 @@ import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.TransportDirection;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -133,7 +134,9 @@ public class ShipperDeliveryService
 				.orgId(OrgId.ofRepoId(shipment.getAD_Org_ID()))
 				.shipDate(inOutBL.retrieveMovementDate(shipment))
 				.assignAnonymouslyPickedHUs(true)
-				.isSOTrx(shipment.isSOTrx())
+				// Outgoing, stated rather than derived: the guard at the top of this method has already
+				// returned for anything that is not an outbound sales shipment.
+				.transportDirection(TransportDirection.Outgoing)
 				.build();
 
 		final ShipperTransportationId shipperTransportationId;

@@ -27,6 +27,7 @@ import de.metas.deliveryplanning.DeliveryPlanningList.AdmissibilityField;
 import de.metas.incoterms.IncotermsId;
 import de.metas.organization.OrgId;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.TransportDirection;
 import de.metas.shipping.model.ShipperTransportationId;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

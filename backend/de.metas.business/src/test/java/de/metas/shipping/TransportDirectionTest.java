@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.deliveryplanning.base
+ * de.metas.business
  * %%
  * Copyright (C) 2026 metas GmbH
  * %%
@@ -20,8 +20,10 @@
  * #L%
  */
 
-package de.metas.deliveryplanning;
+package de.metas.shipping;
 
+import de.metas.lang.SOTrx;
+import de.metas.shipping.model.X_M_ShipperTransportation;
 import org.compiere.model.X_M_Delivery_Planning;
 import org.junit.jupiter.api.Test;
 
@@ -40,9 +42,29 @@ class TransportDirectionTest
 	@Test
 	void ofCode_resolvesEveryReferenceListValue()
 	{
-		assertThat(TransportDirection.ofCode(X_M_Delivery_Planning.TRANSPORTDIRECTION_Incoming)).isEqualTo(TransportDirection.Incoming);
-		assertThat(TransportDirection.ofCode(X_M_Delivery_Planning.TRANSPORTDIRECTION_Outgoing)).isEqualTo(TransportDirection.Outgoing);
-		assertThat(TransportDirection.ofCode(X_M_Delivery_Planning.TRANSPORTDIRECTION_Dropship)).isEqualTo(TransportDirection.Dropship);
+		assertThat(TransportDirection.ofCode(X_M_ShipperTransportation.TRANSPORTDIRECTION_Incoming)).isEqualTo(TransportDirection.Incoming);
+		assertThat(TransportDirection.ofCode(X_M_ShipperTransportation.TRANSPORTDIRECTION_Outgoing)).isEqualTo(TransportDirection.Outgoing);
+		assertThat(TransportDirection.ofCode(X_M_ShipperTransportation.TRANSPORTDIRECTION_Dropship)).isEqualTo(TransportDirection.Dropship);
+	}
+
+	/**
+	 * One enum now serves both tables, so the two generated constant sets must stay identical. They are
+	 * generated from the same {@code AD_Reference_Value_ID=541689}; this pins that, so a future migration
+	 * that changes only one of them fails here instead of silently splitting the domain in two.
+	 */
+	@Test
+	void bothGeneratedModelsCarryTheSameCodes()
+	{
+		assertThat(X_M_Delivery_Planning.TRANSPORTDIRECTION_Incoming).isEqualTo(X_M_ShipperTransportation.TRANSPORTDIRECTION_Incoming);
+		assertThat(X_M_Delivery_Planning.TRANSPORTDIRECTION_Outgoing).isEqualTo(X_M_ShipperTransportation.TRANSPORTDIRECTION_Outgoing);
+		assertThat(X_M_Delivery_Planning.TRANSPORTDIRECTION_Dropship).isEqualTo(X_M_ShipperTransportation.TRANSPORTDIRECTION_Dropship);
+	}
+
+	@Test
+	void ofSOTrx_mapsTheTwoValuedDocumentNature()
+	{
+		assertThat(TransportDirection.ofSOTrx(SOTrx.SALES)).isEqualTo(TransportDirection.Outgoing);
+		assertThat(TransportDirection.ofSOTrx(SOTrx.PURCHASE)).isEqualTo(TransportDirection.Incoming);
 	}
 
 	@Test

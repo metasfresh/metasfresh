@@ -29,6 +29,7 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.notification.INotificationBL;
 import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
+import de.metas.shipping.TransportDirection;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.model.X_M_ShipperTransportation;

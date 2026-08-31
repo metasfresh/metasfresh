@@ -18,6 +18,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.TransportDirection;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.Builder;

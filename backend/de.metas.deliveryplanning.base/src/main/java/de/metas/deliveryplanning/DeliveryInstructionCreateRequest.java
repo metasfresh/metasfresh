@@ -33,6 +33,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.TransportDirection;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;

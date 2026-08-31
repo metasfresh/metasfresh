@@ -50,7 +50,6 @@ import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
-import de.metas.shipping.model.X_M_ShipperTransportation;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipping.mpackage.Package;
 import de.metas.sscc18.ISSCC18CodeBL;
@@ -295,7 +294,7 @@ public class PurchaseOrderToShipperTransportationService
 	 */
 	private void applyDefaultDatesFromFirstOrder(@NonNull final I_M_ShipperTransportation shipperTransportation, @NonNull final I_C_Order order)
 	{
-		if (X_M_ShipperTransportation.TRANSPORTDIRECTION_Outgoing.equals(shipperTransportation.getTransportDirection()))
+		if (TransportDirection.ofNullableCode(shipperTransportation.getTransportDirection()) == TransportDirection.Outgoing)
 		{
 			return; // sales behaviour on the transport order must keep working unchanged
 		}

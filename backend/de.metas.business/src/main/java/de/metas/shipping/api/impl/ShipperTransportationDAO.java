@@ -30,6 +30,7 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.TransportDirection;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
@@ -129,7 +130,7 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 		final I_M_ShipperTransportation shipperTransportation = newInstance(I_M_ShipperTransportation.class);
 
 		shipperTransportation.setAD_Org_ID(request.getOrgId().getRepoId());
-		shipperTransportation.setTransportDirection(deriveTransportDirection(request));
+		shipperTransportation.setTransportDirection(request.getTransportDirection().getCode());
 		shipperTransportation.setM_Shipper_ID(request.getShipperId().getRepoId());
 		shipperTransportation.setPickupTimeFrom(TimeUtil.asTimestamp(request.getPickupTimeFrom()));
 		shipperTransportation.setPickupTimeTo(TimeUtil.asTimestamp(request.getPickupTimeTo()));
@@ -141,17 +142,6 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 		saveRecord(shipperTransportation);
 
 		return ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
-	}
-
-	/**
-	 * A sales transaction (a shipment) ships Outgoing; a purchase transaction (e.g. a receipt) is Incoming.
-	 * Never defaulted or hardcoded - always derived from the underlying document.
-	 */
-	private static String deriveTransportDirection(@NonNull final CreateShipperTransportationRequest request)
-	{
-		return request.getIsSOTrx()
-				? X_M_ShipperTransportation.TRANSPORTDIRECTION_Outgoing
-				: X_M_ShipperTransportation.TRANSPORTDIRECTION_Incoming;
 	}
 
 	@Override
@@ -236,10 +226,10 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 			builder.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_Processed, processed);
 		}
 
-		final String transportDirection = query.getTransportDirection();
+		final TransportDirection transportDirection = query.getTransportDirection();
 		if (transportDirection != null)
 		{
-			builder.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_TransportDirection, transportDirection);
+			builder.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_TransportDirection, transportDirection.getCode());
 		}
 
 		return builder.create();
@@ -253,7 +243,7 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 				.shipperBPartnerAndLocationId(request.getShipperBPartnerAndLocationId())
 				.shipDate(request.getShipDate())
 				.orgId(request.getOrgId())
-				.transportDirection(deriveTransportDirection(request))
+				.transportDirection(request.getTransportDirection())
 				.build())
 				.orElseGet(() -> create(request));
 	}
