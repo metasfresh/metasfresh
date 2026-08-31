@@ -112,11 +112,10 @@ Feature: The delivery instruction owns the dates of the delivery plannings booke
       | M_ShipperTransportation_ID | M_Delivery_Planning_ID |
       | deliveryInstructionAdopt   | planningLate           |
 
-    # This scenario PINS first-writer-wins - the instruction keeps the arrival it already had, which is the
-    # arrival of the earliest-departing planning. Read it as an OPEN question, not a settled specification:
-    # the competing reading is that the header takes the LATEST arrival, which for this data is 2023-04-20.
-    # Resolving it that way changes this scenario AND DeliveryInstructionDateDefaultsTest together - one
-    # without the other is wrong.
+    # First-writer-wins, and deliberately so: the instruction keeps the arrival it already had rather than
+    # taking the latest across its plannings. This is the same rule the transport order applies on this same
+    # table - applyDefaultDatesFromFirstOrder fills each date only while it is still empty, from ONE order -
+    # so a planner sees one behaviour on both documents instead of two.
     Then validate M_ShipperTransportation:
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DocStatus | OPT.ETA    |
       | deliveryInstructionAdopt              | shipper_DHL             | customer                       | customerLocation               | DR            | 2023-03-10 |
