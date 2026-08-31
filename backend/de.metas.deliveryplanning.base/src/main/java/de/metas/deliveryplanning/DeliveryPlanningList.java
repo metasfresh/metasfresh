@@ -121,6 +121,18 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 				: Optional.empty();
 	}
 
+	/**
+	 * The one value the whole selection carries for the given key field, or empty when the selection is. Safe to
+	 * read off the first planning: a selection that disagreed with itself was refused by
+	 * {@link #aggregationKeyViolations()} before any caller got this far.
+	 */
+	public Optional<Object> getSingleAggregationKeyValue(@NonNull final AggregationKeyField field)
+	{
+		return list.isEmpty()
+				? Optional.empty()
+				: Optional.ofNullable(field.extractValue(list.get(0)));
+	}
+
 	public boolean anyClosed() {return list.stream().anyMatch(DeliveryPlanning::isClosed);}
 
 	/**
@@ -209,6 +221,11 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	/**
 	 * Everything the delivery-instruction header can hold only one of, and which therefore has to match across the
 	 * whole selection.
+	 * <p>
+	 * ADDING A FIELD HERE IS HALF THE CHANGE. The Add-to / Move-to target picker filters on the same set through
+	 * the {@code AD_Val_Rule} "Delivery Instruction aggregation key matching", fed by one hidden process parameter
+	 * per field. A field added here and not there leaves the picker offering targets this class then refuses -- the
+	 * planner picks one and is told no, which is the defect that filtering was introduced to remove.
 	 */
 	public enum AggregationKeyField
 	{

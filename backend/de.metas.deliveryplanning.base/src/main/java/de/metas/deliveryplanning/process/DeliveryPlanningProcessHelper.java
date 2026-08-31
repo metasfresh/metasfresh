@@ -22,7 +22,15 @@
 
 package de.metas.deliveryplanning.process;
 
+import com.google.common.collect.ImmutableMap;
+import de.metas.deliveryplanning.DeliveryPlanningList;
+import de.metas.deliveryplanning.DeliveryPlanningList.AggregationKeyField;
 import de.metas.process.IProcessPreconditionsContext;
+import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.util.lang.RepoIdAware;
+import org.compiere.model.Null;
+
+import javax.annotation.Nullable;
 import de.metas.process.ProcessPreconditionsResolution;
 import lombok.NonNull;
 
@@ -56,6 +64,41 @@ public final class DeliveryPlanningProcessHelper
 		}
 
 		return ProcessPreconditionsResolution.accept();
+	}
+
+	private static final ImmutableMap<String, AggregationKeyField> AGGREGATION_KEY_PARAMETERS = ImmutableMap
+			.<String, AggregationKeyField>builder()
+			.put(I_M_ShipperTransportation.COLUMNNAME_AD_Org_ID, AggregationKeyField.Organisation)
+			.put(I_M_ShipperTransportation.COLUMNNAME_M_Shipper_ID, AggregationKeyField.Forwarder)
+			.put(I_M_ShipperTransportation.COLUMNNAME_C_Incoterms_ID, AggregationKeyField.Incoterms)
+			.put(I_M_ShipperTransportation.COLUMNNAME_IncotermLocation, AggregationKeyField.IncotermLocation)
+			.put(I_M_ShipperTransportation.COLUMNNAME_M_MeansOfTransportation_ID, AggregationKeyField.MeansOfTransportation)
+			.put(I_M_ShipperTransportation.COLUMNNAME_C_BPartner_Location_Loading_ID, AggregationKeyField.LoadingAddress)
+			.put(I_M_ShipperTransportation.COLUMNNAME_C_BPartner_Location_Delivery_ID, AggregationKeyField.DeliveryAddress)
+			.build();
+
+	/** @return {@code null} when the column is not a key parameter, so the caller falls through. */
+	@Nullable
+	public static Object getAggregationKeyParameterDefault(
+			@NonNull final DeliveryPlanningList selectedDeliveryPlannings,
+			@NonNull final String columnName)
+	{
+		final AggregationKeyField field = AGGREGATION_KEY_PARAMETERS.get(columnName);
+		if (field == null)
+		{
+			return null;
+		}
+
+		return selectedDeliveryPlannings.getSingleAggregationKeyValue(field)
+				.map(DeliveryPlanningProcessHelper::toParameterValue)
+				.orElse(Null.NULL);
+	}
+
+	private static Object toParameterValue(@NonNull final Object keyValue)
+	{
+		return keyValue instanceof RepoIdAware
+				? ((RepoIdAware)keyValue).getRepoId()
+				: keyValue;
 	}
 
 	public static ProcessPreconditionsResolution checkSingleSelection(@NonNull final IProcessPreconditionsContext context)

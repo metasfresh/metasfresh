@@ -103,6 +103,14 @@ public class M_Delivery_Planning_AddToDeliveryInstruction extends JavaProcess
 					.orElse(Null.NULL);
 		}
 
+		final Object aggregationKeyDefault = DeliveryPlanningProcessHelper.getAggregationKeyParameterDefault(
+				deliveryPlanningService.getBySelection(getProcessInfo().getQueryFilterOrElseFalse()),
+				parameter.getColumnName());
+		if (aggregationKeyDefault != null)
+		{
+			return aggregationKeyDefault;
+		}
+
 		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 	}
 
