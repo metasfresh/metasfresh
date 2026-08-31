@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.acct;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.accounts.BPartnerGroupAccountType;
 import de.metas.acct.accounts.CostElementAccountType;
@@ -63,6 +64,7 @@ import de.metas.util.Services;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_M_InOut;
@@ -309,36 +311,18 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		updateFromInvoiceLine(cr_InventoryClearing);
 
 		//
-		// P_Asset CR/DR
-		// (cost adjustment)
-		if (!costs.getCostAdjustmentAmt().isZero())
+		// P_Asset CR/DR (cost adjustment) and P_COGS CR/DR (already shipped)
+		for (final CostAdjustmentLeg leg : costAdjustmentLegs(costs, getQty(), receiptLine.getM_Locator_ID()))
 		{
-			final Balance costAdjustmentBalance = toDebitBalanceIfPositive(costs.getCostAdjustmentAmt());
 			fact.createLine()
-					.setAccount(docLine.getAccount(ProductAcctType.P_Asset_Acct, as))
+					.setAccount(docLine.getAccount(leg.getAcctType(), as))
 					.setCurrencyConversionCtx(getInvoiceCurrencyConversionCtx())
-					.setAmtSource(costAdjustmentBalance)
-					.setQty(getQty())
+					.setAmtSource(toDebitBalanceIfPositive(leg.getAmt()))
+					.setQty(leg.getQty())
 					.costElement(costElementId)
 					.bpartnerId(getReceiptBPartnerId())
 					.productId(receiptProductId)
-					.buildAndAdd();
-		}
-
-		//
-		// P_COGS CR/DR
-		// (already shipped)
-		if (!costs.getAlreadyShippedAmt().isZero())
-		{
-			final Balance alreadyShippedBalance = toDebitBalanceIfPositive(costs.getAlreadyShippedAmt());
-			fact.createLine()
-					.setAccount(docLine.getAccount(ProductAcctType.P_COGS_Acct, as))
-					.setCurrencyConversionCtx(getInvoiceCurrencyConversionCtx())
-					.setAmtSource(alreadyShippedBalance)
-					.setQty(getQty())
-					.costElement(costElementId)
-					.bpartnerId(getReceiptBPartnerId())
-					.productId(receiptProductId)
+					.locatorId(leg.getLocatorRepoId())
 					.buildAndAdd();
 		}
 
@@ -603,6 +587,54 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		{
 			throw new AdempiereException("Unhandled type: " + type);
 		}
+	}
+
+	/**
+	 * The cost-adjustment legs of a MatchInv posting: the price difference between the invoice and the PO price,
+	 * split into the share that revalues the stock still on hand (P_Asset) and the share for stock already shipped
+	 * (P_COGS). Zero shares produce no leg.
+	 *
+	 * @param qty            the matched quantity, as booked on the GR/IR leg
+	 * @param receiptLocatorRepoId the locator the matched receipt line was received into
+	 */
+	@VisibleForTesting
+	static ImmutableList<CostAdjustmentLeg> costAdjustmentLegs(
+			@NonNull final CostAmountDetailed costs,
+			@NonNull final Quantity qty,
+			final int receiptLocatorRepoId)
+	{
+		final ImmutableList.Builder<CostAdjustmentLeg> legs = ImmutableList.builder();
+
+		// P_Asset: revalues the stock that is still on hand.
+		// The line carries a ZERO qty: the material receipt already booked the quantity, and the GR/IR leg is
+		// quantity-balanced against its InventoryClearing counterpart, so a qty here has no negative counterpart and
+		// is counted as stock on hand by the inventory valuation (Lagerwert) report, which sums Fact_Acct.Qty on
+		// P_Asset. It is attributed to the receipt's locator, like the GR/IR leg whose price it corrects, so the
+		// revaluation lands in the warehouse the goods were received into.
+		if (!costs.getCostAdjustmentAmt().isZero())
+		{
+			legs.add(new CostAdjustmentLeg(ProductAcctType.P_Asset_Acct, costs.getCostAdjustmentAmt(), qty.toZero(), receiptLocatorRepoId));
+		}
+
+		// P_COGS: the share for stock that was already shipped.
+		// Left carrying the matched qty and no locator, i.e. unchanged - see the open question on the pull request.
+		if (!costs.getAlreadyShippedAmt().isZero())
+		{
+			legs.add(new CostAdjustmentLeg(ProductAcctType.P_COGS_Acct, costs.getAlreadyShippedAmt(), qty, 0));
+		}
+
+		return legs.build();
+	}
+
+	@Value
+	static class CostAdjustmentLeg
+	{
+		@NonNull ProductAcctType acctType;
+		/** positive =&gt; debit; negative =&gt; credit. */
+		@NonNull CostAmount amt;
+		@NonNull Quantity qty;
+		/** {@code 0} when the leg is attributed to no locator. */
+		int locatorRepoId;
 	}
 
 }   // Doc_MatchInv
