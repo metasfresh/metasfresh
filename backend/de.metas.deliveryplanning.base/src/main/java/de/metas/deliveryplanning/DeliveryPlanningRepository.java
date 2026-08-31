@@ -47,6 +47,7 @@ import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.model.ShippingPackageId;
+import de.metas.util.Check;
 import de.metas.util.ColorId;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -156,14 +157,11 @@ public class DeliveryPlanningRepository
 			@NonNull final Map<DeliveryPlanningId, I_M_Delivery_Planning> recordsById,
 			@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
-		final I_M_Delivery_Planning record = recordsById.get(deliveryPlanningId);
-		if (record == null)
-		{
-			throw new AdempiereException("No " + I_M_Delivery_Planning.Table_Name + " found")
-					.appendParametersToMessage()
-					.setParameter(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningId.getRepoId());
-		}
-		return record;
+		// an invariant: the map was just loaded from a query over these very ids, so a miss means the
+		// caller passed an id the load never saw - a programmer error, not anything a planner can provoke
+		return Check.assumeNotNull(recordsById.get(deliveryPlanningId),
+				"No {} found for {}={}", I_M_Delivery_Planning.Table_Name,
+				I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningId.getRepoId());
 	}
 
 	public List<I_M_Delivery_Planning> getByReleaseNo(@NonNull final String releaseNo)
@@ -715,14 +713,10 @@ public class DeliveryPlanningRepository
 			@NonNull final Map<DeliveryPlanningId, DeliveryInstructionDates> resolvedDatesByPlanningId,
 			@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
-		final DeliveryInstructionDates dates = resolvedDatesByPlanningId.get(deliveryPlanningId);
-		if (dates == null)
-		{
-			throw new AdempiereException("No resolved " + DeliveryInstructionDates.class.getSimpleName() + " found")
-					.appendParametersToMessage()
-					.setParameter(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningId.getRepoId());
-		}
-		return dates;
+		// an invariant: the caller resolves the dates for exactly the planning ids it then looks up here
+		return Check.assumeNotNull(resolvedDatesByPlanningId.get(deliveryPlanningId),
+				"No resolved {} found for {}={}", DeliveryInstructionDates.class.getSimpleName(),
+				I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningId.getRepoId());
 	}
 
 	private static I_M_ShippingPackage createShippingPackage(

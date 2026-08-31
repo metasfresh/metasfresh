@@ -837,6 +837,10 @@ public class DeliveryPlanningService
 		final BPartnerLocationId loadingLocationId = extractShipFromLocationIdOrNull(deliveryPlanningRecord, transportDirection, addresses);
 		if (loadingLocationId == null)
 		{
+			// NOT a Check.assume*: this is reachable by a planner, not a programmer error -
+			// M_Delivery_Planning.M_Warehouse_ID is not mandatory in the dictionary, so a planning with
+			// neither a warehouse nor a schedule to read the address from lands here. It is therefore a
+			// user-facing rejection that is still missing its AD_Message - flagged, not converted.
 			throw new AdempiereException("Cannot determine the loading address")
 					.appendParametersToMessage()
 					.setParameter(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningRecord.getM_Delivery_Planning_ID());
@@ -852,6 +856,8 @@ public class DeliveryPlanningService
 		final BPartnerLocationId deliveryLocationId = extractShipToLocationIdOrNull(deliveryPlanningRecord, transportDirection, addresses);
 		if (deliveryLocationId == null)
 		{
+			// NOT a Check.assume*, for the same reason as the loading address above: planner-reachable,
+			// so it needs an AD_Message rather than an assertion.
 			throw new AdempiereException("Cannot determine the delivery address")
 					.appendParametersToMessage()
 					.setParameter(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningRecord.getM_Delivery_Planning_ID());
@@ -896,14 +902,7 @@ public class DeliveryPlanningService
 				@NonNull final ID id,
 				@NonNull final String tableName)
 		{
-			final T record = recordsById.get(id);
-			if (record == null)
-			{
-				throw new AdempiereException("No " + tableName + " found")
-						.appendParametersToMessage()
-						.setParameter(tableName + "_ID", id.getRepoId());
-			}
-			return record;
+			return Check.assumeNotNull(recordsById.get(id), "No {} found for {}_ID={}", tableName, tableName, id.getRepoId());
 		}
 	}
 
@@ -1102,12 +1101,11 @@ public class DeliveryPlanningService
 			final boolean complete)
 	{
 		final DeliveryPlanningList selectedDeliveryPlannings = getBySelection(selectedDeliveryPlanningsFilter);
-		if (selectedDeliveryPlannings.isEmpty())
-		{
-			// an invariant, not a user-facing rejection: the process's precondition already refuses an empty
-			// selection, and every rejection a planner can actually provoke is a translated message below
-			throw new AdempiereException("No delivery planning selected");
-		}
+		// an invariant, not a user-facing rejection: the process's precondition already refuses an empty
+		// selection, and every rejection a planner can actually provoke is a translated message below.
+		// Check.assume is what states an invariant - an untranslated AdempiereException literal would be
+		// indistinguishable from a rejection that merely forgot its AD_Message.
+		Check.assume(!selectedDeliveryPlannings.isEmpty(), "No delivery planning selected");
 
 		getCombineRejectionReason(selectedDeliveryPlannings)
 				.ifPresent(reason -> {throw new AdempiereException(reason);});
@@ -1337,12 +1335,8 @@ public class DeliveryPlanningService
 			@NonNull final ShipperTransportationId targetDeliveryInstructionId)
 	{
 		final DeliveryPlanningList selectedDeliveryPlannings = getBySelection(selectedDeliveryPlanningsFilter);
-		if (selectedDeliveryPlannings.isEmpty())
-		{
-			// an invariant, not a user-facing rejection: the process's precondition already refuses an empty
-			// selection, and every rejection a planner can actually provoke is a translated message
-			throw new AdempiereException("No delivery planning selected");
-		}
+		// an invariant, not a user-facing rejection - see combine() above
+		Check.assume(!selectedDeliveryPlannings.isEmpty(), "No delivery planning selected");
 
 		getAddToRejectionReason(selectedDeliveryPlannings, targetDeliveryInstructionId)
 				.ifPresent(reason -> {throw new AdempiereException(reason);});
@@ -1358,24 +1352,28 @@ public class DeliveryPlanningService
 			return;
 		}
 
-		trxManager.runInThreadInheritedTrx(() -> {
-			// the source allocation and its package are DEACTIVATED, not deleted, so the record of what was once
-			// planned survives - the target's insert still finds no ACTIVE row to collide with on either partial
-			// unique index, since both are declared WHERE IsActive='Y'
-			final ImmutableSet<DeliveryPlanningId> deactivatedIds = deliveryPlanningRepository.deactivateAllocations(deliveryPlanningIds);
-			resetDatesFromOrderAndSchedule(deactivatedIds);
+		// No trxManager wrapper: the only caller is M_Delivery_Planning_AddToDeliveryInstruction.doIt(), a
+		// JavaProcess without @RunOutOfTrx, so an ambient thread-inherited transaction already spans the whole
+		// call and rolls the writes below back together. runInThreadInheritedTrx would only add a savepoint
+		// inside that transaction; it earns its keep exclusively where the caller arrives OUT of transaction
+		// (see closeSelectedDeliveryPlannings above, whose process IS @RunOutOfTrx).
 
-			// built AFTER the reset above: reads the just-reset, order-derived dates - never the source
-			// instruction's, which the sync-down would still have on these rows before the reset ran
-			final ImmutableList<DeliveryPlanningAllocCreateRequest> allocations = createAllocCreateRequests(deliveryPlanningIds);
+		// the source allocation and its package are DEACTIVATED, not deleted, so the record of what was once
+		// planned survives - the target's insert still finds no ACTIVE row to collide with on either partial
+		// unique index, since both are declared WHERE IsActive='Y'
+		final ImmutableSet<DeliveryPlanningId> deactivatedIds = deliveryPlanningRepository.deactivateAllocations(deliveryPlanningIds);
+		resetDatesFromOrderAndSchedule(deactivatedIds);
 
-			final I_M_ShipperTransportation targetInstruction = deliveryPlanningRepository.getInstructionById(targetDeliveryInstructionId);
-			final DeliveryInstructionDates resolvedDates = resolveInstructionDatesForAllocation(targetInstruction, allocations);
-			deliveryPlanningRepository.createAllocations(targetInstruction, allocations, resolvedDates);
+		// built AFTER the reset above: reads the just-reset, order-derived dates - never the source
+		// instruction's, which the sync-down would still have on these rows before the reset ran
+		final ImmutableList<DeliveryPlanningAllocCreateRequest> allocations = createAllocCreateRequests(deliveryPlanningIds);
 
-			// re-stamped from the target: the old release number named a document the cargo has left
-			deliveryPlanningRepository.updateDeliveryPlanningsFromInstruction(deliveryPlanningIds, targetDeliveryInstructionId);
-		});
+		final I_M_ShipperTransportation targetInstruction = deliveryPlanningRepository.getInstructionById(targetDeliveryInstructionId);
+		final DeliveryInstructionDates resolvedDates = resolveInstructionDatesForAllocation(targetInstruction, allocations);
+		deliveryPlanningRepository.createAllocations(targetInstruction, allocations, resolvedDates);
+
+		// re-stamped from the target: the old release number named a document the cargo has left
+		deliveryPlanningRepository.updateDeliveryPlanningsFromInstruction(deliveryPlanningIds, targetDeliveryInstructionId);
 	}
 
 	/**
@@ -1392,21 +1390,20 @@ public class DeliveryPlanningService
 	public void removeFrom(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
 		final DeliveryPlanningList selectedDeliveryPlannings = getBySelection(selectedDeliveryPlanningsFilter);
-		if (selectedDeliveryPlannings.isEmpty())
-		{
-			throw new AdempiereException("No delivery planning selected");
-		}
+		// an invariant, not a user-facing rejection - see combine() above
+		Check.assume(!selectedDeliveryPlannings.isEmpty(), "No delivery planning selected");
 
 		getRemoveFromRejectionReason(selectedDeliveryPlannings)
 				.ifPresent(reason -> {throw new AdempiereException(reason);});
 
 		final ImmutableList<DeliveryPlanningId> deliveryPlanningIds = selectedDeliveryPlannings.allocatedOnes().getIdsInAllocationOrder();
 
-		trxManager.runInThreadInheritedTrx(() -> {
-			final ImmutableSet<DeliveryPlanningId> deactivatedIds = deliveryPlanningRepository.deactivateAllocations(deliveryPlanningIds);
-			resetDatesFromOrderAndSchedule(deactivatedIds);
-			deliveryPlanningRepository.clearInstructionReference(deliveryPlanningIds);
-		});
+		// No trxManager wrapper - same reason as in addTo: the only caller,
+		// M_Delivery_Planning_RemoveFromDeliveryInstruction.doIt(), is a JavaProcess without @RunOutOfTrx and
+		// therefore already runs inside a transaction.
+		final ImmutableSet<DeliveryPlanningId> deactivatedIds = deliveryPlanningRepository.deactivateAllocations(deliveryPlanningIds);
+		resetDatesFromOrderAndSchedule(deactivatedIds);
+		deliveryPlanningRepository.clearInstructionReference(deliveryPlanningIds);
 	}
 
 	/**

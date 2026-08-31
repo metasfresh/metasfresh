@@ -185,10 +185,16 @@ final class DeliveryPlanningGenerateProcessesHelper
 		this.sysConfigBL = sysConfigBL;
 	}
 
+	/**
+	 * Invariant: every caller has already established that this planning HAS a receipt (its direction is
+	 * Incoming or Dropship). A miss is a programmer error, hence {@code Check.assume*} rather than an
+	 * untranslated {@code AdempiereException} literal, which would read like a rejection missing its
+	 * AD_Message.
+	 */
 	public DeliveryPlanningReceiptInfo getReceiptInfo(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
-		return getReceiptInfoIfHasReceipt(deliveryPlanningId)
-				.orElseThrow(() -> new AdempiereException("Expected the delivery planning to have a receipt"));
+		return Check.assumeNotEmpty(getReceiptInfoIfHasReceipt(deliveryPlanningId),
+				"Expected {} to have a receipt", deliveryPlanningId);
 	}
 
 	public Optional<DeliveryPlanningReceiptInfo> getReceiptInfoIfHasReceipt(@NonNull final DeliveryPlanningId deliveryPlanningId)
@@ -196,10 +202,11 @@ final class DeliveryPlanningGenerateProcessesHelper
 		return receiptInfos.computeIfAbsent(deliveryPlanningId, deliveryPlanningService::getReceiptInfoIfHasReceipt);
 	}
 
+	/** The shipment twin of {@link #getReceiptInfo(DeliveryPlanningId)} - same invariant, same reasoning. */
 	public DeliveryPlanningShipmentInfo getShipmentInfo(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
-		return getShipmentInfoIfOutgoingType(deliveryPlanningId)
-				.orElseThrow(() -> new AdempiereException("Expected to be an outgoing delivery planning"));
+		return Check.assumeNotEmpty(getShipmentInfoIfOutgoingType(deliveryPlanningId),
+				"Expected {} to be an outgoing delivery planning", deliveryPlanningId);
 	}
 
 	public Optional<DeliveryPlanningShipmentInfo> getShipmentInfoIfOutgoingType(@NonNull final DeliveryPlanningId deliveryPlanningId)
