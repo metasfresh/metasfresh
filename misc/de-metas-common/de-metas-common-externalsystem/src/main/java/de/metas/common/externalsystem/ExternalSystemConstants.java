@@ -210,6 +210,14 @@ public class ExternalSystemConstants
 	public static final String PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME = "endpointName";
 	public static final String PARAM_SCRIPTEDADAPTER_TO_MF_SCRIPT_IDENTIFIER = "scriptIdentifier";
 	public static final String PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN = "token";
+	/**
+	 * Stable per-child identity used as the dynamic SFTP poll-route id (and the ssh-key temp-file map key).
+	 * Keyed on the child config id — NOT on the endpoint {@code Value} — so that changing the child's
+	 * endpoint (different endpoint record / changed host) does not orphan the previously-started route:
+	 * Stop/disable recomputes the SAME key and tears the running poller down. See
+	 * {@code ScriptedImportConversionSftpRouteBuilder}.
+	 */
+	public static final String PARAM_SCRIPTEDADAPTER_TO_MF_ROUTE_KEY = "scriptedImportRouteKey";
 
 	// SFTP polling parameters (for ScriptedImportConversion inbound polling)
 	public static final String PARAM_SFTP_POLLING_ENDPOINT_HOST = "sftpHost";
@@ -220,8 +228,9 @@ public class ExternalSystemConstants
 	public static final String PARAM_SFTP_POLLING_ENDPOINT_AUTH_TYPE = "sftpAuthType";
 	public static final String PARAM_SFTP_POLLING_ENDPOINT_REMOTE_PATH = "sftpRemotePath";
 	public static final String PARAM_SFTP_POLLING_INTERVAL_MS = "sftpPollingIntervalMs";
-	public static final String PARAM_SFTP_POLLING_PROCESSED_DIR = "sftpProcessedDirectory";
-	public static final String PARAM_SFTP_POLLING_ERROR_DIR = "sftpErrorDirectory";
+	// Local, transport-agnostic archive folders (used by both SFTP and REST import).
+	public static final String PARAM_PROCESSED_DIR = "processedDirectory";
+	public static final String PARAM_ERROR_DIR = "errorDirectory";
 
 	// Shared SFTP auth type values (used by both backend enum and Camel routes)
 	public static final String SFTP_AUTH_TYPE_PASSWORD = "PASSWORD";

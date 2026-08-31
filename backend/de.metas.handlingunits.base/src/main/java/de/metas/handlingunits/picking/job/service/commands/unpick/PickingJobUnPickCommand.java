@@ -316,13 +316,67 @@ public class PickingJobUnPickCommand
 
 		final ShipmentScheduleId shipmentScheduleId = step.getScheduleId().getShipmentScheduleId();
 
+		// Before extraction detaches anything: is the pick-to row TU-keyed (bare-TU pick → use the reduce path
+		// below) or CU/LU-keyed (extracted-CU delete still matches → unchanged)?
+		final HuId pickToTuId = resolvePickToTuId(wholeHUsToUnpick, boundaryHu);
+		final boolean isPickToBareTU = pickToTuId != null && !huService.hasLoadingUnit(pickToTuId);
+
 		final PickingJobStepUnpickInfo.PickingJobStepUnpickInfoBuilder unpickInfoBuilder = PickingJobStepUnpickInfo.builder()
 				.unpickedHUs(wholeHUsToUnpick);
 
-		unpickWholeHUs(wholeHUsToUnpick, shipmentScheduleId);
-		unpickBoundaryHU(step, boundaryHu, boundarySplitQty, shipmentScheduleId, unpickInfoBuilder);
+		final List<I_M_HU> extractedTopLevelHUs = new ArrayList<>(unpickWholeHUs(wholeHUsToUnpick));
+		extractedTopLevelHUs.addAll(unpickBoundaryHU(step, boundaryHu, boundarySplitQty, unpickInfoBuilder));
+
+		// Single reduce-vs-delete dispatch for the whole step: a bare-TU pick-to row is TU-keyed, so its
+		// schedule-side rows are reduced once for the step's total unpicked qty; otherwise the extracted
+		// top-level HUs' CU/LU-keyed rows are deleted.
+		if (isPickToBareTU)
+		{
+			final Quantity totalUnpickedQty = computeTotalUnpickedQty(wholeHUsToUnpick, boundaryHu, boundarySplitQty);
+			shipmentScheduleService.reduceQtyPickedForPickToTU(shipmentScheduleId, pickToTuId, totalUnpickedQty);
+		}
+		else
+		{
+			shipmentScheduleService.deleteByTopLevelHUsAndShipmentScheduleId(extractedTopLevelHUs, shipmentScheduleId);
+		}
 
 		return step.reduceWithUnpickEvent(pickFromKey, unpickInfoBuilder.build());
+	}
+
+	/**
+	 * Resolves the TU that this step's pick-to CU(s) are packed into, using any one of the step's picked-to CUs
+	 * (all CUs of one step share that step's single pick-to TU). Returns {@code null} when there is no pick-to CU
+	 * at all, or the CU has no TU parent (e.g. a standalone/top-level CU pick).
+	 */
+	@Nullable
+	private HuId resolvePickToTuId(
+			@NonNull final List<PickingJobStepPickedToHU> wholeHUsToUnpick,
+			@Nullable final PickingJobStepPickedToHU boundaryHu)
+	{
+		final HuId representativeCuId = !wholeHUsToUnpick.isEmpty()
+				? wholeHUsToUnpick.get(0).getActualPickedHUId()
+				: boundaryHu != null ? boundaryHu.getActualPickedHUId() : null;
+		return representativeCuId != null ? huService.getParentTransportUnitId(representativeCuId) : null;
+	}
+
+	@NonNull
+	private static Quantity computeTotalUnpickedQty(
+			@NonNull final List<PickingJobStepPickedToHU> wholeHUsToUnpick,
+			@Nullable final PickingJobStepPickedToHU boundaryHu,
+			@Nullable final Quantity boundarySplitQty)
+	{
+		Quantity total = wholeHUsToUnpick.stream()
+				.map(PickingJobStepPickedToHU::getQtyPicked)
+				.reduce(Quantity::add)
+				.orElse(null);
+
+		if (boundaryHu != null && boundarySplitQty != null)
+		{
+			total = total != null ? total.add(boundarySplitQty) : boundarySplitQty;
+		}
+
+		Check.assumeNotNull(total, "at least one of wholeHUsToUnpick or boundarySplitQty must be present when resolving the pick-to TU's total unpicked qty");
+		return total;
 	}
 
 	private static List<PickingJobStepPickedToHU> resolveWholeHUsToUnpick(
@@ -343,37 +397,51 @@ public class PickingJobUnPickCommand
 		}
 	}
 
-	private void unpickWholeHUs(
-			@NonNull final List<PickingJobStepPickedToHU> wholeHUsToUnpick,
-			@NonNull final ShipmentScheduleId shipmentScheduleId)
+	/**
+	 * Pure HU operation: extracts the given whole picked-to HUs to top level and returns them. Does NOT touch
+	 * any {@code M_ShipmentSchedule_QtyPicked} row — the caller ({@link #unpickStep}) does the single
+	 * reduce-vs-delete dispatch for the whole step.
+	 *
+	 * @return the extracted top-level HUs (empty if {@code wholeHUsToUnpick} is empty)
+	 */
+	@NonNull
+	private List<I_M_HU> unpickWholeHUs(@NonNull final List<PickingJobStepPickedToHU> wholeHUsToUnpick)
 	{
 		if (wholeHUsToUnpick.isEmpty())
 		{
-			return;
+			return ImmutableList.of();
 		}
 
 		final ImmutableSet<HUIdAndQRCode> huIdAndQRCodeList = extractHuIdAndQRCodes(wholeHUsToUnpick);
 
 		final List<I_M_HU> topLevelHUs = extractToTopLevelHUs(huIdAndQRCodeList);
-		shipmentScheduleService.deleteByTopLevelHUsAndShipmentScheduleId(topLevelHUs, shipmentScheduleId);
 		changeHUStatusFromPickedToActive(topLevelHUs);
 
 		// Move the EXTRACTED top-level HUs, not the original picked-CU references: extracting an aggregate
 		// CU splits out a new TU and relocates its QR assignment onto that TU, so the original (huId,QR)
 		// pairs are stale and the move's re-extraction would fail the QR-assignment assertion.
 		moveToTargetHUIfNeeded(toCurrentHuIdAndQRCodes(topLevelHUs));
+
+		return topLevelHUs;
 	}
 
-	private void unpickBoundaryHU(
+	/**
+	 * Pure HU operation: carves the boundary split qty into a new CU, extracts it to top level and returns it.
+	 * Does NOT touch any {@code M_ShipmentSchedule_QtyPicked} row — the caller ({@link #unpickStep}) does the
+	 * single reduce-vs-delete dispatch for the whole step. Still fills {@code unpickInfoBuilder}.
+	 *
+	 * @return the carved top-level HU (empty if there is no boundary HU to split)
+	 */
+	@NonNull
+	private List<I_M_HU> unpickBoundaryHU(
 			@NonNull final PickingJobStep step,
 			@Nullable final PickingJobStepPickedToHU boundaryHu,
 			@Nullable final Quantity boundarySplitQty,
-			@NonNull final ShipmentScheduleId shipmentScheduleId,
 			@NonNull final PickingJobStepUnpickInfo.PickingJobStepUnpickInfoBuilder unpickInfoBuilder)
 	{
 		if (boundaryHu == null || boundarySplitQty == null)
 		{
-			return;
+			return ImmutableList.of();
 		}
 
 		final HuId boundaryVhuId = boundaryHu.getActualPickedHUId();
@@ -394,13 +462,14 @@ public class PickingJobUnPickCommand
 		final ImmutableSet<HUIdAndQRCode> carvedHuIdAndQRCode = ImmutableSet.of(
 				HUIdAndQRCode.builder().huId(carvedCUId).huQRCode(carvedQRCode).build());
 		final List<I_M_HU> carvedTopLevelHUs = extractToTopLevelHUs(carvedHuIdAndQRCode);
-		shipmentScheduleService.deleteByTopLevelHUsAndShipmentScheduleId(carvedTopLevelHUs, shipmentScheduleId);
 		changeHUStatusFromPickedToActive(carvedTopLevelHUs);
 		moveToTargetHUIfNeeded(carvedHuIdAndQRCode);
 
 		unpickInfoBuilder
 				.huToReduce(boundaryHu)
 				.reducedQtyPicked(remainderQty);
+
+		return carvedTopLevelHUs;
 	}
 
 	private void moveToTargetHUIfNeeded(final ImmutableSet<HUIdAndQRCode> huIdAndQRCodeList)

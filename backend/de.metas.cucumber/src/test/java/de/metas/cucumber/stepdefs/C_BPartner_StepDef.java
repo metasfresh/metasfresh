@@ -36,6 +36,7 @@ import de.metas.common.util.EmptyUtil;
 import de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg;
 import de.metas.cucumber.stepdefs.aggregation.C_Aggregation_StepDefData;
 import de.metas.cucumber.stepdefs.bpgroup.C_BP_Group_StepDefData;
+import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.discountschema.M_DiscountSchema_StepDefData;
 import de.metas.cucumber.stepdefs.dunning.C_Dunning_StepDefData;
@@ -93,6 +94,7 @@ import static de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg_Pr
 import static de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg_ProcessHelper.PARAM_IS_SHOW_MEMBERSHIP_PARAMETER;
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static de.metas.invoicecandidate.model.I_C_BPartner.COLUMNNAME_PO_InvoiceLine_Aggregation_ID;
 import static de.metas.invoicecandidate.model.I_C_BPartner.COLUMNNAME_SO_Invoice_Aggregation_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_AD_Language;
@@ -138,6 +140,7 @@ public class C_BPartner_StepDef
 	@NonNull private final AD_Org_StepDefData orgTable;
 	@NonNull private final C_Aggregation_StepDefData aggregationTable;
 	@NonNull private final AD_User_StepDefData userTable;
+	@NonNull private final M_Warehouse_StepDefData warehouseTable;
 	@NonNull private final TestContext restTestContext;
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
@@ -164,6 +167,9 @@ public class C_BPartner_StepDef
 	 *   <li>{@code IsEInvoiceRecipeint} — {@code Y}/{@code N}; marks the partner as an e-invoice recipient (note: column name is misspelled in the DB)</li>
 	 *   <li>{@code EInvoiceType} — the e-invoice format code (e.g. {@code X} for XRechnung)</li>
 	 *   <li>{@code EInvoice_BuyerReference} — the buyer reference / Leitweg-ID (BT-10)</li>
+	 *   <li>{@code IsFactoring} — {@code Y}/{@code N}; marks the partner's invoices as silently factored (payment owed to the org's factorer)</li>
+	 *   <li>{@code IsFactorer} — {@code Y}/{@code N}; marks the partner as the factorer resolved for its {@code AD_Org_ID}</li>
+	 *   <li>{@code IsInvoiceEmailEnabled} — {@code Y}/{@code N}; when {@code Y}, invoices are emailable to the bill-to location email even without a bill contact</li>
 	 * </ul>
 	 */
 	@Given("metasfresh contains C_BPartners:")
@@ -338,6 +344,11 @@ public class C_BPartner_StepDef
 		bPartnerRecord.setIsTaxExempt(row.getAsOptionalBoolean(COLUMNNAME_IsTaxExempt).orElseFalse());
 		bPartnerRecord.setIsSalesRep(row.getAsOptionalBoolean(COLUMNNAME_IsSalesRep).orElseFalse());
 		bPartnerRecord.setAD_Org_ID(orgId);
+
+		row.getAsOptionalString(de.metas.document.archive.model.I_C_BPartner.COLUMNNAME_IsInvoiceEmailEnabled)
+				.ifPresent(isInvoiceEmailEnabled -> InterfaceWrapperHelper
+						.create(bPartnerRecord, de.metas.document.archive.model.I_C_BPartner.class)
+						.setIsInvoiceEmailEnabled(isInvoiceEmailEnabled));
 		bPartnerRecord.setDeliveryRule(DeliveryRule.FORCE.getCode());
 
 		final StepDefDataIdentifier discountSchemaIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_PO_DiscountSchema_ID).orElse(null);
@@ -403,6 +414,10 @@ public class C_BPartner_StepDef
 		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_EInvoiceType).ifPresent(bPartnerRecord::setEInvoiceType);
 		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_EInvoice_BuyerReference).ifPresent(bPartnerRecord::setEInvoice_BuyerReference);
 
+		// silent factoring (stille Zession): see de.metas.einvoice.cii.CiiMapper#buildPaymentMeans
+		row.getAsOptionalBoolean(I_C_BPartner.COLUMNNAME_IsFactoring).ifPresent(bPartnerRecord::setIsFactoring);
+		row.getAsOptionalBoolean(I_C_BPartner.COLUMNNAME_IsFactorer).ifPresent(bPartnerRecord::setIsFactorer);
+
 		final String paymentTermValue = row.getAsOptionalString(I_C_BPartner.COLUMNNAME_C_PaymentTerm_ID + ".Value").orElse(null);
 		if (Check.isNotBlank(paymentTermValue))
 		{
@@ -447,6 +462,10 @@ public class C_BPartner_StepDef
 
 		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_VATaxID)
 				.ifPresent(vatId -> bPartnerRecord.setVATaxID(DataTableUtil.nullToken2Null(vatId)));
+
+		row.getAsOptionalIdentifier(I_C_BPartner.COLUMNNAME_M_Warehouse_ID)
+				.map(warehouseTable::getId)
+				.ifPresent(warehouseId -> bPartnerRecord.setM_Warehouse_ID(warehouseId.getRepoId()));
 
 		final boolean alsoCreateLocation = InterfaceWrapperHelper.isNew(bPartnerRecord) && addDefaultLocationIfNewBPartner;
 
@@ -596,6 +615,10 @@ public class C_BPartner_StepDef
 		row.getAsOptionalIdentifier(COLUMNNAME_SO_Invoice_Aggregation_ID)
 				.map(aggregationTable::get)
 				.ifPresent(aggregationRecord -> bPartner.setSO_Invoice_Aggregation_ID(aggregationRecord.getC_Aggregation_ID()));
+
+		row.getAsOptionalIdentifier(COLUMNNAME_PO_InvoiceLine_Aggregation_ID)
+				.map(aggregationTable::get)
+				.ifPresent(aggregationRecord -> bPartner.setPO_InvoiceLine_Aggregation_ID(aggregationRecord.getC_Aggregation_ID()));
 
 		row.getAsOptionalIdentifier(I_C_BPartner.COLUMNNAME_C_Dunning_ID)
 				.map(dunningTable::get)

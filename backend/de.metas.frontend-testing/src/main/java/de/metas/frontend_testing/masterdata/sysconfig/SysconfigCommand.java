@@ -33,6 +33,14 @@ public class SysconfigCommand
 			.put("mobileui.frontend.barcodeScanner.useCamera", "Y")
 			.put("mobileui.frontend.barcodeScanner.offscreenInput.readOnly", "N")
 			.put("mobileui.frontend.barcodeScanner.visibleInput.readOnly", "N")
+			// Reset the inputText timing knobs too — a test that lowers them (e.g. the truncated-HU-QR
+			// picking test drops idleAbandonMillis to 500 so a held partial errors fast) must NOT leak
+			// that value onto later specs: a small idleAbandonMillis abandons the chunked-scan test's
+			// in-flight partial mid-gap → "QR not recognized". Defaults match the seed migrations
+			// (debounceMillis 5664360 = 300, idleAbandonMillis 5812460 = 15000, triggerOnChange = 10).
+			.put("mobileui.frontend.barcodeScanner.inputText.debounceMillis", "300")
+			.put("mobileui.frontend.barcodeScanner.inputText.idleAbandonMillis", "15000")
+			.put("mobileui.frontend.barcodeScanner.inputText.triggerOnChangeIfLengthGreaterThan", "10")
 			.build();
 
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);

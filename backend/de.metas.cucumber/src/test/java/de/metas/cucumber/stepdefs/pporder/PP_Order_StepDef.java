@@ -40,6 +40,7 @@ import de.metas.cucumber.stepdefs.externalsystem.ExternalSystem_Config_LeichMehl
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.productplanning.PP_Product_Planning_StepDefData;
+import de.metas.cucumber.stepdefs.rabbitMQ.RabbitMQ_StepDef;
 import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.document.engine.DocStatus;
@@ -138,6 +139,7 @@ public class PP_Order_StepDef
 	private final M_HU_StepDefData huTable;
 	private final ExternalSystem_Config_LeichMehl_StepDefData leichMehlConfigTable;
 	private final M_Warehouse_StepDefData warehouseTable;
+	private final RabbitMQ_StepDef rabbitMQStepDef;
 
 	public PP_Order_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
@@ -152,8 +154,10 @@ public class PP_Order_StepDef
 			@NonNull final PP_Order_Candidate_StepDefData ppOrderCandidateTable,
 			@NonNull final M_HU_StepDefData huTable,
 			@NonNull final ExternalSystem_Config_LeichMehl_StepDefData leichMehlConfigTable,
-			@NonNull final M_Warehouse_StepDefData warehouseTable)
+			@NonNull final M_Warehouse_StepDefData warehouseTable,
+			@NonNull final RabbitMQ_StepDef rabbitMQStepDef)
 	{
+		this.rabbitMQStepDef = rabbitMQStepDef;
 		this.productTable = productTable;
 		this.productBOMTable = productBOMTable;
 		this.productPlanningTable = productPlanningTable;
@@ -169,11 +173,21 @@ public class PP_Order_StepDef
 		this.warehouseTable = warehouseTable;
 	}
 
+	/**
+	 * Waits (up to {@code timeoutSec}) for the committed {@code PP_Order} record(s) matching the DataTable.
+	 * <p>
+	 * The rabbitMQ queues are drained first via {@link RabbitMQ_StepDef#wait_empty_all_queues()} (material-events
+	 * then async-batch) so the async candidate-to-order generation chain has fully settled before the poll asserts.
+	 * This keeps the technical drain out of the feature file — see module CLAUDE.md rule 7 ("drain inside the
+	 * consuming step def, as late as possible, never as a bare step in the .feature file").
+	 */
 	@And("^after not more than (.*)s, PP_Orders are found$")
 	public void validatePP_Order(
 			final int timeoutSec,
-			@NonNull final DataTable dataTable)
+			@NonNull final DataTable dataTable) throws InterruptedException
 	{
+		rabbitMQStepDef.wait_empty_all_queues();
+
 		DataTableRows.of(dataTable).forEach(row -> validatePP_Order(timeoutSec, row));
 	}
 
@@ -183,6 +197,32 @@ public class PP_Order_StepDef
 		DataTableRows.of(dataTable).forEach(row -> validatePP_Order_BomLine(timeoutSec, row));
 	}
 
+	/**
+	 * Creates {@code PP_Order} record(s) from the DataTable.
+	 * <p>
+	 * Required columns: {@code PP_Order_ID.Identifier}, {@code DocBaseType}, {@code M_Product_ID.Identifier},
+	 * {@code QtyEntered}, {@code S_Resource_ID.Identifier} (the <b>plant</b>), {@code DateOrdered},
+	 * {@code DatePromised} and {@code DateStartSchedule}.
+	 * <p>
+	 * Optional columns:
+	 * <ul>
+	 *     <li>{@code OPT.M_Warehouse_ID.Identifier} — defaults to {@link StepDefConstants#WAREHOUSE_ID}</li>
+	 *     <li>{@code OPT.PP_Product_Planning_ID.Identifier}</li>
+	 *     <li>{@code OPT.WorkStation_ID.Identifier} — the <b>workstation</b>, resolved against the resource table
+	 *     and passed to {@link PPOrderCreateRequest#getWorkstationId()}. Distinct from the plant: a lot-number
+	 *     provider resolves the production line via {@code PP_Order.WorkStation_ID -> S_Resource.LotNumberCode},
+	 *     so a scenario covering that hop must be able to set it independently.</li>
+	 *     <li>{@code completeDocument} — defaults to {@code false}</li>
+	 * </ul>
+	 * <pre>
+	 * And create PP_Order:
+	 *   | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | OPT.WorkStation_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument |
+	 *   | ppOrder_lotno_ws5      | MOP         | finishedGoodsProd       | 10         | testResource             | wsLineFive                    | 2025-04-01T23:59:00.00Z | 2025-04-01T23:59:00.00Z | 2025-04-01T23:59:00.00Z | Y                |
+	 * </pre>
+	 * Here {@code testResource} is the plant and {@code wsLineFive} the workstation — two different
+	 * resources on the same order. Omit {@code OPT.WorkStation_ID.Identifier} when the scenario does
+	 * not exercise the workstation hop.
+	 */
 	@And("create PP_Order:")
 	public void compute_PPOrderCreateRequest_to_create_pp_order(@NonNull final DataTable dataTable)
 	{
@@ -215,11 +255,38 @@ public class PP_Order_StepDef
 					.map(productPlanningTable::get)
 					.ifPresent(productPlanning -> ppOrderCreateRequest.productPlanningId(productPlanning.getIdNotNull()));
 
+			// The workstation is what a lot-number provider resolves the production line from
+			// (PP_Order.WorkStation_ID -> S_Resource.LotNumberCode), so it must be settable here
+			// independently of the plant.
+			row.getAsOptionalIdentifier(I_PP_Order.COLUMNNAME_WorkStation_ID)
+					.map(workstationIdentifier -> workstationIdentifier.lookupNotNullIdIn(resourceTable))
+					.ifPresent(ppOrderCreateRequest::workstationId);
+
 			final I_PP_Order ppOrder = ppOrderService.createOrder(ppOrderCreateRequest.build());
 			assertThat(ppOrder).isNotNull();
 
 			ppOrderTable.put(row.getAsIdentifier(I_PP_Order.COLUMNNAME_PP_Order_ID), ppOrder);
 		});
+	}
+
+	/**
+	 * Mirrors {@link #compute_PPOrderCreateRequest_to_create_pp_order(DataTable)} but asserts the creation is
+	 * REFUSED with the given error code — used to prove a guard that fires while the manufacturing order is
+	 * being created, e.g. the product life-cycle status check in {@code PP_Order#validateBOMAndProduct}.
+	 * <p>
+	 * The DataTable takes the same columns as {@code create PP_Order:}; the order is never created, so its
+	 * identifier is not registered for later steps.
+	 *
+	 * <pre>{@code
+	 * Then create PP_Order expecting error code M_Product_BBSStatus_ActionBlocked:
+	 *   | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument |
+	 *   | refusedOrder           | MOP         | finishedProduct         | 5          | plant                    | 2021-04-16T07:00:00.00Z | 2021-04-18T07:00:00.00Z | 2021-04-16T07:00:00.00Z | N                |
+	 * }</pre>
+	 */
+	@And("^create PP_Order expecting error code (.*):$")
+	public void create_PP_Order_expecting_error_code(@NonNull final String errorCode, @NonNull final DataTable dataTable)
+	{
+		StepDefUtil.assertRefusedWithErrorCode(errorCode, () -> compute_PPOrderCreateRequest_to_create_pp_order(dataTable));
 	}
 
 	@And("complete planning for PP_Order:")
@@ -347,7 +414,7 @@ public class PP_Order_StepDef
 		}
 	}
 
-	@And("^the manufacturing order identified by (.*) is (reactivated|completed)$")
+	@And("^the manufacturing order identified by (.*) is (reactivated|completed|closed)$")
 	public void order_action(
 			@NonNull final String orderIdentifier,
 			@NonNull final String action)
@@ -364,11 +431,39 @@ public class PP_Order_StepDef
 				orderRecord.setDocAction(IDocument.ACTION_Complete);
 				documentBL.processEx(orderRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 				break;
+			case closed:
+				// Closing reports the not-yet-started routing activities, which creates the ActivityControl cost collectors.
+				orderRecord.setDocAction(IDocument.ACTION_Close);
+				documentBL.processEx(orderRecord, IDocument.ACTION_Close, IDocument.STATUS_Closed);
+				break;
 			default:
 				throw new AdempiereException("Unhandled PP_Order action")
 						.appendParametersToMessage()
 						.setParameter("action:", action);
 		}
+	}
+
+	/**
+	 * Asserts that completing the given manufacturing order is REFUSED, and that it is refused for the
+	 * expected reason: the thrown {@link AdempiereException} must carry the given error code.
+	 * <p>
+	 * The error code pins WHY the completion failed; asserting that "some exception" was thrown would also
+	 * pass if the manufacturing order happened to fail for an unrelated reason.
+	 * <p>
+	 * Parameters:<br>
+	 *   <b>orderIdentifier</b> — identifier of a {@code PP_Order} created earlier in the scenario<br>
+	 *   <b>errorCode</b> — the expected {@code AD_Message.ErrorCode}
+	 *
+	 * <pre>{@code
+	 * And the manufacturing order identified by startedOrder cannot be completed because of error code M_Product_BBSStatus_ActionBlocked
+	 * }</pre>
+	 */
+	@And("^the manufacturing order identified by (.*) cannot be completed because of error code (.*)$")
+	public void manufacturing_order_cannot_be_completed_because_of_error_code(
+			@NonNull final String orderIdentifier,
+			@NonNull final String errorCode)
+	{
+		StepDefUtil.assertRefusedWithErrorCode(errorCode, () -> order_action(orderIdentifier, StepDefDocAction.completed.name()));
 	}
 
 	private void validatePP_Order_BomLine(final int timeoutSec, @NonNull final DataTableRow row) throws InterruptedException

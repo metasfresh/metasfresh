@@ -66,6 +66,8 @@ public interface PickingJobLoaderSupportingServices
 
 	String getLocatorName(@NonNull LocatorId locatorId);
 
+	void warmUpQRCodesCache(@NonNull Collection<HuId> huIds);
+
 	HUQRCode getQRCodeByHUId(HuId huId);
 
 	ScheduledPackageableLocks getLocks(ShipmentScheduleAndJobScheduleIdSet scheduleIds);

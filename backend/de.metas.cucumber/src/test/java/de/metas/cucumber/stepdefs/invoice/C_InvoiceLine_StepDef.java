@@ -33,6 +33,7 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
+import de.metas.cucumber.stepdefs.accounting.C_ElementValue_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.tax.C_TaxCategory_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
@@ -111,7 +112,34 @@ public class C_InvoiceLine_StepDef
 	private final C_Activity_StepDefData activityTable;
 	// for linking invoice lines back to order lines (C_OrderLine_ID FK, split-payment matching, etc.)
 	private final C_OrderLine_StepDefData orderLineTable;
+	// for setting a per-line GL account override (C_ElementValue_Override_ID) on draft invoice lines
+	private final C_ElementValue_StepDefData elementValueTable;
 
+	/**
+	 * Creates {@code C_InvoiceLine} records on existing invoices.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_Invoice_ID</b> — (required, identifier-ref) the parent invoice<br>
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) the product<br>
+	 *   <b>QtyInvoiced</b> — (required) quantity with UOM (e.g. "1 PCE")<br>
+	 *   <b>C_UOM_ID</b> — (optional) UOM code; defaults from QtyInvoiced<br>
+	 *   <b>C_Tax_ID</b> — (optional, identifier-ref) the tax to apply<br>
+	 *   <b>C_Tax_ID$set</b> — (optional, identifier-ref) force this tax on the line<br>
+	 *   <b>Price</b> — (optional) explicit price<br>
+	 *   <b>IsPackagingMaterial</b> — (optional) mark the line as packaging material; omit to keep the model default (N)<br>
+	 *   <b>C_OrderLine_ID</b> — (optional, identifier-ref) source order line<br>
+	 *   <b>M_InOutLine_ID</b> — (optional, identifier-ref) source receipt/shipment line<br>
+	 *   <b>C_ElementValue_Override_ID</b> — (optional, identifier-ref) per-line GL account override (purchase invoices)<br>
+	 *   <b>Identifier</b> — (optional) alias for cross-step reference<br>
+	 * @cucumber.depends C_Invoice_StepDefData, M_Product_StepDefData, C_Tax_StepDefData, C_ElementValue_StepDefData, C_OrderLine_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And metasfresh contains C_InvoiceLines
+	 *   | Identifier  | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID | C_ElementValue_Override_ID |
+	 *   | invoiceLine | invoice      | product      | 1 PCE       | zeroTax  | overrideAccount            |
+	 * </pre>
+	 */
 	@And("metasfresh contains C_InvoiceLines")
 	public void addC_InvoiceLines(@NonNull final DataTable dataTable)
 	{
@@ -428,11 +456,22 @@ public class C_InvoiceLine_StepDef
 				.map(inOutLineTable::getId)
 				.ifPresent(inOutLineId -> invoiceLine.setM_InOutLine_ID(inOutLineId.getRepoId()));
 
+		// Per-line GL account override for purchase invoices
+		row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_C_ElementValue_Override_ID)
+				.map(elementValueTable::getId)
+				.ifPresent(elementValueId -> invoiceLine.setC_ElementValue_Override_ID(elementValueId.getRepoId()));
+
 		row.getAsOptionalIdentifier("C_Tax_ID$set")
 				.ifPresent(taxIdentifier -> {
 					final TaxId taxId = taxTable.getId(taxIdentifier);
 					invoiceLine.setC_Tax_ID(taxId.getRepoId());
 				});
+
+		final Boolean isPackagingMaterial = row.getAsOptionalBoolean(I_C_InvoiceLine.COLUMNNAME_IsPackagingMaterial).toBooleanOrNull();
+		if (isPackagingMaterial != null)
+		{
+			invoiceLine.setIsPackagingMaterial(isPackagingMaterial);
+		}
 
 		invoiceLineBL.updatePrices(invoiceLine);
 		invoiceLineBL.updateLineNetAmt(invoiceLine, qtyEntered.toBigDecimal());

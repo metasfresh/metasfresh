@@ -26,12 +26,19 @@ import com.google.common.collect.ImmutableList;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.logging.LogManager;
+import de.metas.security.IRoleDAO;
+import de.metas.security.Role;
+import de.metas.security.RoleId;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.NumberUtils;
 import de.metas.util.StringUtils;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
@@ -45,8 +52,10 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * TODO: move all "waiting" methods to de.metas.common.util.{@link de.metas.common.util.TryAndWaitUtil}.
@@ -57,6 +66,48 @@ public class StepDefUtil
 	private static final Logger logger = LogManager.getLogger(StepDefUtil.class);
 	private static final String SYS_maxWaitSeconds = "maxWaitSeconds";
 	private static ExplainedOptional<Long> _sys_maxWaitSeconds; // lazy
+
+	/**
+	 * @return the {@code AD_User} with the given {@code Login}; fails if there is none.
+	 * Standing masterdata lookup — the login has to exist in the DB the suite runs against.
+	 */
+	@NonNull
+	public static UserId getUserIdByLogin(@NonNull final String userLogin)
+	{
+		final UserId userId = Services.get(IUserDAO.class).retrieveUserIdByLogin(userLogin);
+		if (userId == null)
+		{
+			throw new AdempiereException("Missing AD_User with login " + userLogin);
+		}
+		return userId;
+	}
+
+	/**
+	 * @return the {@code AD_Role} with the given {@code Name} out of the roles assigned to the given user;
+	 * fails if the user has no such role.
+	 *
+	 * @param userLogin only used to identify the user in the failure message — a CI log reader cannot
+	 * resolve a bare {@code AD_User_ID} without DB access.
+	 */
+	@NonNull
+	public static RoleId getRoleIdByName(
+			@NonNull final UserId userId,
+			@NonNull final String userLogin,
+			@NonNull final String roleName)
+	{
+		final List<Role> userRoles = Services.get(IRoleDAO.class).getUserRoles(userId);
+
+		return userRoles.stream()
+				.filter(role -> roleName.equals(role.getName()))
+				.findFirst()
+				.map(Role::getId)
+				// Both halves of the message earn their place: the login identifies WHICH user failed
+				// without a DB lookup, and the assigned-roles list separates a misspelled roleName from a
+				// role that was never assigned. Neither alone tells the CI reader what to fix.
+				.orElseThrow(() -> new AdempiereException("AD_User with login=" + userLogin
+						+ " (AD_User_ID=" + userId.getRepoId() + ") has no AD_Role with name " + roleName
+						+ "; assigned roles: " + userRoles.stream().map(Role::getName).collect(Collectors.joining(", "))));
+	}
 
 	/**
 	 * Waits for the given {@code worker} to supply {@code true}.
@@ -348,6 +399,20 @@ public class StepDefUtil
 		{
 			throw e;
 		}
+	}
+
+	/**
+	 * Runs {@code action} and asserts it is REFUSED with the given {@code AD_Message.ErrorCode}.
+	 * <p>
+	 * Asserting the error code — rather than merely that <i>some</i> exception was thrown — pins WHY the
+	 * action failed, so the step cannot pass because of an unrelated failure. Shared by the
+	 * "cannot be completed because of error code" steps of the various document types.
+	 */
+	public void assertRefusedWithErrorCode(@NonNull final String errorCode, @NonNull final Runnable action)
+	{
+		assertThatThrownBy(action::run)
+				.isInstanceOfSatisfying(AdempiereException.class,
+						exception -> assertThat(exception.getErrorCode()).as("ErrorCode of %s", exception).isEqualTo(errorCode));
 	}
 
 	public List<String> splitByColon(@NonNull final String s)

@@ -28,6 +28,7 @@ import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.effective.BPartnerAddressEffectiveBL;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
@@ -81,6 +82,8 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
@@ -114,32 +117,38 @@ public class OLCandBL implements IOLCandBL
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
+	private final IWarehouseAdvisor warehouseAdvisor = Services.get(IWarehouseAdvisor.class);
 
 	private final IBPartnerBL bpartnerBL;
 	private final BPartnerOrderParamsRepository bPartnerOrderParamsRepository;
+	@NonNull private final BPartnerAddressEffectiveBL bpartnerAddressEffectiveBL;
 
 	public OLCandBL(
 			@NonNull final IBPartnerBL bpartnerBL,
-			@NonNull final BPartnerOrderParamsRepository bPartnerOrderParamsRepository)
+			@NonNull final BPartnerOrderParamsRepository bPartnerOrderParamsRepository,
+			@NonNull final BPartnerAddressEffectiveBL bpartnerAddressEffectiveBL)
 	{
 		this.bpartnerBL = bpartnerBL;
 		this.bPartnerOrderParamsRepository = bPartnerOrderParamsRepository;
+		this.bpartnerAddressEffectiveBL = bpartnerAddressEffectiveBL;
 	}
 
 	/**
-	 * Registers (and returns) an {@link IOLCandBL} for unit tests under the interface key that consumers
-	 * resolve via {@code Services.get(IOLCandBL.class)} — call it once in setup; no extra registerJUnitBean needed.
+	 * Registers (and returns) the {@link OLCandBL} for unit tests under the {@link IOLCandBL} interface key that
+	 * consumers resolve via {@code Services.get(IOLCandBL.class)} — call it once in setup; no extra registerJUnitBean
+	 * needed. Returns the concrete type so callers that hold an {@link OLCandBL} field can assign it directly.
 	 */
 	@VisibleForTesting
-	public static IOLCandBL newInstanceForUnitTesting()
+	public static OLCandBL newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
 		//noinspection DataFlowIssue
-		return SpringContextHolder.getBeanOrSupply(
+		return (OLCandBL)SpringContextHolder.getBeanOrSupply(
 				IOLCandBL.class,
 				() -> new OLCandBL(
-						new BPartnerBL(new UserRepository()),
-						BPartnerOrderParamsRepository.newInstanceForUnitTesting()));
+						SpringContextHolder.getBeanOrSupply(IBPartnerBL.class, () -> new BPartnerBL(new UserRepository())),
+						BPartnerOrderParamsRepository.newInstanceForUnitTesting(),
+						BPartnerAddressEffectiveBL.newInstanceForUnitTesting()));
 	}
 
 	@Override
@@ -320,10 +329,11 @@ public class OLCandBL implements IOLCandBL
 	{
 		final ShipperId orderCandiateShipperId = orderCandidateRecord == null ? null : ShipperId.ofRepoIdOrNull(orderCandidateRecord.getM_Shipper_ID());
 
-		final ShipperId locationShipperId = orderCandidateRecord == null ? null : bpartnerBL.getEffectiveShipperId(
-				effectiveValuesBL.getDropShipLocationEffectiveId(orderCandidateRecord),
-						effectiveValuesBL.getLocationEffectiveId(orderCandidateRecord)
-		);
+		final ShipperId locationShipperId = orderCandidateRecord == null ? null
+				: bpartnerAddressEffectiveBL.getDeliveryEffective(
+						effectiveValuesBL.getDropShipLocationEffectiveId(orderCandidateRecord),
+						effectiveValuesBL.getLocationEffectiveId(orderCandidateRecord))
+						.getShipperId();
 
 		final ShipperId bpartnerOrderParamsShipperId = bPartnerOrderParams == null ? null
 				: bPartnerOrderParams.getShipperId().orElse(null);
@@ -497,6 +507,28 @@ public class OLCandBL implements IOLCandBL
 				.billBPartnerId(billBPartnerId)
 				.build();
 		return bPartnerOrderParamsRepository.getBy(query);
+	}
+
+	@Nullable
+	@Override
+	public WarehouseId getWarehouseId(
+			@NonNull final I_C_OLCand olCand,
+			@Nullable final OLCandOrderDefaults orderDefaults)
+	{
+		final WarehouseId olCandWarehouseId = WarehouseId.ofRepoIdOrNull(olCand.getM_Warehouse_ID());
+		if (olCandWarehouseId != null)
+		{
+			return olCandWarehouseId;
+		}
+
+		final BPartnerId buyerBPartnerId = effectiveValuesBL.getBuyerPartnerInfo(olCand).getBpartnerId();
+		final WarehouseId bpPickingWarehouseId = warehouseAdvisor.evaluateCustomerPickingWarehouse(buyerBPartnerId);
+		if (bpPickingWarehouseId != null)
+		{
+			return bpPickingWarehouseId;
+		}
+
+		return orderDefaults != null ? orderDefaults.getWarehouseId() : null;
 	}
 
 	@Override

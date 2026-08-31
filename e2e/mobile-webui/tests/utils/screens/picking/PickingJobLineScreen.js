@@ -5,6 +5,7 @@ import { PickingJobStepScreen } from "./PickingJobStepScreen";
 import { GetQuantityDialog } from "./GetQuantityDialog";
 import { ManufacturingJobScreen } from "../manufacturing/ManufacturingJobScreen";
 import { SelectPickTargetLUScreen } from "./SelectPickTargetLUScreen";
+import { SelectPickTargetTUScreen } from "./SelectPickTargetTUScreen";
 import { expect } from "@playwright/test";
 
 const NAME = "PickingJobLineScreen";
@@ -48,6 +49,38 @@ export const PickingJobLineScreen = {
         // new one (for TU) is already mounted.
         await page.locator('#SelectPickTargetScreen').first().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
         await page.locator('.loading').first().waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    // Line-level TU pick target (PRODUCT aggregation): the target is a property of the line,
+    // so the buttons live inside the line view (SelectCurrentLUTUButtons is rendered with a lineId).
+    setTargetTU: async ({ tu }) => await test.step(`${NAME} - Set line target TU to ${tu}`, async () => {
+        await PickingJobLineScreen.clickTUTargetButton();
+        await SelectPickTargetTUScreen.clickTUButton({ tu });
+        await PickingJobLineScreen.waitForScreen();
+    }),
+
+    // Line-level carrier advise (PRODUCT aggregation): the advise button + the resolved carrier
+    // product caption are rendered inside the line view by SelectCurrentLUTUButtons (lineId set).
+    expectCarrierProductCaption: async ({ caption }) => await test.step(`${NAME} - Expect carrier product caption contains '${caption}'`, async () => {
+        const detail = page.getByTestId('carrier-product-caption');
+        await detail.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+        await expect(detail).toContainText(caption);
+    }),
+
+    expectAdviseCarrierButtonVisible: async () => await test.step(`${NAME} - Expect advise carrier button visible`, async () => {
+        await page.getByTestId('advise-carrier-button').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    clickAdviseCarrier: async () => await test.step(`${NAME} - Click advise carrier button`, async () => {
+        const button = page.getByTestId('advise-carrier-button');
+        await button.waitFor({ timeout: SLOW_ACTION_TIMEOUT });
+        await expect(button).toBeEnabled();
+        await button.tap();
+        await PickingJobLineScreen.waitForScreen();
+    }),
+
+    clickScanQRCodeButton: async () => await test.step(`${NAME} - Click Scan QR Code button`, async () => {
+        await page.getByTestId('scanQRCode-button').tap();
     }),
 
     goBack: async () => await test.step(`${NAME} - Go back`, async () => {

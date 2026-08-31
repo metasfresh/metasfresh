@@ -30,7 +30,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Inputsource.
+	 * Set Input Source.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -39,7 +39,7 @@ public interface I_C_Invoice_Candidate
 	void setAD_InputDataSource_ID (int AD_InputDataSource_ID);
 
 	/**
-	 * Get Inputsource.
+	 * Get Input Source.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -537,6 +537,33 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_DocType_Invoicing_Pool> COLUMN_C_DocType_Invoicing_Pool_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_DocType_Invoicing_Pool_ID", org.compiere.model.I_C_DocType_Invoicing_Pool.class);
 	String COLUMNNAME_C_DocType_Invoicing_Pool_ID = "C_DocType_Invoicing_Pool_ID";
+
+	/**
+	 * Set Account (Override).
+	 * The GL account to which this invoice or invoice line is posted.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_ElementValue_Override_ID (int C_ElementValue_Override_ID);
+
+	/**
+	 * Get Account (Override).
+	 * The GL account to which this invoice or invoice line is posted.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_ElementValue_Override_ID();
+
+	@Nullable org.compiere.model.I_C_ElementValue getC_ElementValue_Override();
+
+	void setC_ElementValue_Override(@Nullable org.compiere.model.I_C_ElementValue C_ElementValue_Override);
+
+	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_ElementValue> COLUMN_C_ElementValue_Override_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_ElementValue_Override_ID", org.compiere.model.I_C_ElementValue.class);
+	String COLUMNNAME_C_ElementValue_Override_ID = "C_ElementValue_Override_ID";
 
 	/**
 	 * Set Flatrate Term.
@@ -3718,7 +3745,7 @@ public interface I_C_Invoice_Candidate
 	/**
 	 * Set Reason.
 	 *
-	 * <br>Type: Text
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -3727,7 +3754,7 @@ public interface I_C_Invoice_Candidate
 	/**
 	 * Get Reason.
 	 *
-	 * <br>Type: Text
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */

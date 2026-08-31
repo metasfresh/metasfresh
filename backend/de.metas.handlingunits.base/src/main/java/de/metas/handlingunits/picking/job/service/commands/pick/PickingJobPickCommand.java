@@ -119,6 +119,7 @@ public class PickingJobPickCommand
 	//
 	// Services
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final PickingJobProductService productService;
 	@NonNull private final PickingJobBPartnerService bpartnerService;
 	@NonNull private final PickingJobWarehouseService warehouseService;
 	@NonNull private final PickingJobShipmentScheduleService shipmentScheduleService;
@@ -201,6 +202,7 @@ public class PickingJobPickCommand
 	{
 		Check.assumeGreaterOrEqualToZero(qtyToPickBD, "qtyToPickBD");
 
+		this.productService = productService;
 		this.bpartnerService = bpartnerService;
 		this.warehouseService = warehouseService;
 		this.shipmentScheduleService = shipmentScheduleService;
@@ -360,6 +362,8 @@ public class PickingJobPickCommand
 	{
 		_pickingJob.assertNotProcessed();
 
+		productService.assertPickAllowed(getProductId());
+
 		checkOrAllocatePickingSlot();
 
 		validatePickFromHU();
@@ -375,6 +379,8 @@ public class PickingJobPickCommand
 		}
 
 		changeStep(step -> updateStepFromPickedHUs(step, pickedHUs));
+
+		foldPickedLineIntoHeaderCarrier();
 
 		if (isCloseTarget)
 		{
@@ -576,9 +582,10 @@ public class PickingJobPickCommand
 		// Resolve the picked LU via the current line's effective target (after splitOutPickToHUs → updatePickingTarget):
 		// PRODUCT-agg → the line's just-materialised LU; SALES_ORDER/DELIVERY_LOCATION-agg → the header LU. Resolving
 		// per current line (not findFirst over all lines) avoids stamping the wrong LU in a multi-line PRODUCT-agg job
-		// where a prior line's LU is already materialised.
-		final HuId pickedLuId = _pickingJob.getLuPickingTargetEffective(_lineId)
-				.filter(LUPickingTarget::isExistingLU)
+		// where a prior line's LU is already materialised. Shares the first-existing-across-line-then-header resolution
+		// with the read side (PickingJobService.getExistingLuGrais) via getExistingLuPickingTargetEffective — keeping
+		// the write (stamp) and read (mirror-for-UI) paths from drifting.
+		final HuId pickedLuId = _pickingJob.getExistingLuPickingTargetEffective(_lineId)
 				.map(LUPickingTarget::getLuIdNotNull)
 				.orElse(null);
 
@@ -595,6 +602,23 @@ public class PickingJobPickCommand
 		final GRAISet existingGrais = huService.getGrais(pickedLuId);
 		final GRAISet desiredGrais = existingGrais.union(graiCodes);
 		huService.setGrais(pickedLuId, desiredGrais);
+	}
+
+	/**
+	 * Folds the just-picked line into the header's carrier state (the header tracks the CURRENT top-level parcel).
+	 * A manual pick makes the header read-only and carries its carrier onto the header (divergent manuals collapse to
+	 * no single carrier); a non-manual pick leaves the header untouched (its carrier comes only from advise). Skipped
+	 * for a line-level ({@code PRODUCT}) job: there the LINE is the parcel and stays at its create-time carrier, so
+	 * the header is not the current parcel and must not be folded into.
+	 */
+	private void foldPickedLineIntoHeaderCarrier()
+	{
+		if (isLineLevelPickTarget())
+		{
+			return;
+		}
+		final PickingJobLine pickedLine = getLine();
+		_pickingJob = _pickingJob.withHeaderCarrierFromPickedLine(pickedLine);
 	}
 
 	private void closeLUAndTUPickingTargets()
@@ -805,7 +829,8 @@ public class PickingJobPickCommand
 			final I_M_HU pickFromHURecord = huService.getById(pickFromHU.getId());
 			if (huService.isVirtual(pickFromHURecord))
 			{
-				packedHUs = pickCUsAndPackTo(productId, pickFromHU.getId(), packToInfo);
+				// Whole-TU pick (picked unit is the TU): pack CUs into full TUs and record the TUs, not leaf CUs.
+				packedHUs = pickCUsAndPackTo(productId, pickFromHU.getId(), packToInfo, /*recordLeafCUsAsTUParts*/false);
 			}
 			else
 			{
@@ -823,7 +848,9 @@ public class PickingJobPickCommand
 			}
 			else
 			{
-				packedHUs = pickCUsAndPackTo(productId, pickFromHU.getId(), packToInfo);
+				// CU pick into a TU pick target (picked unit is the CU): record the leaf CU as a CU part so a
+				// later unpick-to-floor can extract & re-activate it.
+				packedHUs = pickCUsAndPackTo(productId, pickFromHU.getId(), packToInfo, /*recordLeafCUsAsTUParts*/true);
 			}
 		}
 
@@ -874,16 +901,40 @@ public class PickingJobPickCommand
 				}
 				else
 				{
+					// Decouple the two recordings for a CU-into-TU pick (the TU now carries leaf CU parts):
+					// - Shipment schedule (M_ShipmentSchedule_QtyPicked): for a CU-into-BARE-TU pick (no LU)
+					//   record the destination TU (VHU_ID stays NULL; expanded into per-VHU COO candidates at
+					//   shipment time), NOT the leaf CU (which would materialise a spurious VHU and change
+					//   downstream shipment/reversal/DESADV handling). An LU pick keeps recording the leaf CU.
+					// - Picking-job step: ALWAYS record the leaf CU(s), so a later unpick-to-floor can extract
+					//   and re-activate them.
+					final boolean recordTUOnShipmentSchedule = packedHUs.getLURecords().isEmpty();
+
 					final ImmutableList<TUPart> cus = tu.getCUsNotEmpty();
 					final List<Quantity> catchWeights = getCatchWeight() != null ? getCatchWeight().spreadEqually(cus.size()) : null;
+
+					Quantity qtyPickedThisTU = null;
 					for (int i = 0; i < cus.size(); i++)
 					{
 						final TUPart cu = cus.get(i);
 						final Quantity catchWeightPerCU = catchWeights != null ? catchWeights.get(i) : null;
 						final Quantity qtyPicked = huStorageFactory.getStorage(cu.toHU()).getQuantity(productId, uom);
-						addShipmentScheduleQtyPicked(cu, qtyPicked);
+						qtyPickedThisTU = qtyPickedThisTU == null ? qtyPicked : qtyPickedThisTU.add(qtyPicked);
+						if (!recordTUOnShipmentSchedule)
+						{
+							addShipmentScheduleQtyPicked(cu, qtyPicked);
+						}
 
-						result.addAll(toPickingJobStepPickedToHU(tu, cu, qtyPicked, catchWeightPerCU, pickFrom));
+						result.addAll(toPickingJobStepPickedToHU(cu, qtyPicked, catchWeightPerCU, pickFrom));
+					}
+
+					if (recordTUOnShipmentSchedule && qtyPickedThisTU != null)
+					{
+						// Record THIS pick's qty (sum of its CU parts), NOT the container TU's cumulative
+						// product storage: picking the same product more than once into one bare TU would
+						// otherwise record the running total, which the shipment-schedule expansion over-counts
+						// into a spurious extra per-COO line (nShiftShipment COO "mixed TUs" scenarios).
+						addShipmentScheduleQtyPicked(tu, qtyPickedThisTU);
 					}
 				}
 			}
@@ -976,16 +1027,21 @@ public class PickingJobPickCommand
 	}
 
 	private List<PickingJobStepPickedToHU> toPickingJobStepPickedToHU(
-			@NonNull final TU tu1,
 			@NonNull final TUPart cu,
 			@NonNull final Quantity qtyPicked,
 			@Nullable final Quantity catchWeight,
 			@NonNull final PickingJobStepPickFrom pickFrom)
 	{
 
-		final List<HUQRCode> huQRCodes = huService.getOrCreateQRCodesByHuId(tu1.getId());
-		// Consumes only the first code (get(0) below); assertEnoughQRCodes tolerates a surplus (rationale in its Javadoc).
-		assertEnoughQRCodes(huQRCodes, 1);
+		// Record the CU's OWN QR code (not the container TU's): the recorded HU here IS the leaf CU, so a
+		// later unpick extracts THIS CU to top-level (extractToTopLevel asserts the QR is on the extracted
+		// HU) and, on a move-to-target, re-derives the QR from the extracted CU. Recording the container
+		// TU's QR left the CU un-QR'd → the unpick's extract asserted the wrong HU and the CU was stranded
+		// Picked inside the TU.
+		final List<HUQRCode> huQRCodes = huService.getOrCreateQRCodesByHuId(cu.getId());
+		// Same surplus tolerance as the aggregate-TU path: this path uses only the first code (get(0) below),
+		// tolerates a surplus (rationale in its Javadoc).
+			assertEnoughQRCodes(huQRCodes, 1);
 		final HUQRCode huQRCode = huQRCodes.get(0);
 
 		return ImmutableList.of(
@@ -1112,7 +1168,8 @@ public class PickingJobPickCommand
 	private LUTUResult pickCUsAndPackTo(
 			@NonNull final ProductId productId,
 			@NonNull final HuId pickFromVHUId,
-			@NonNull final PackToHUsProducer.PackToInfo packToInfo)
+			@NonNull final PackToHUsProducer.PackToInfo packToInfo,
+			final boolean recordLeafCUsAsTUParts)
 	{
 		return packToHUsProducer.packToHU(
 				PackToHUsProducer.PackToHURequest.builder()
@@ -1126,6 +1183,7 @@ public class PickingJobPickCommand
 						.checkIfAlreadyPacked(checkIfAlreadyPacked)
 						.createInventoryForMissingQty(createInventoryForMissingQty)
 						.allowedReservedVhuIds(getAllowedReservedVhuIds())
+						.recordLeafCUsAsTUParts(recordLeafCUsAsTUParts)
 						.build()
 		);
 	}

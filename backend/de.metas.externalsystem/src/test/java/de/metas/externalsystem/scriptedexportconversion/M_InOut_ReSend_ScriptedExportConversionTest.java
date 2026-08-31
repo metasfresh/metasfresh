@@ -52,8 +52,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * <p>
  * Covers:
  * <ul>
- *   <li>repo.getConfigsWithNonSentAttemptBySourceRecord: returns distinct config(s) with a non-sent attempt (status not Sent/DontSend); the Error/Invalid-only narrowing for re-send is covered at the service layer in ExternalSystemExportStatusServiceTest</li>
- *   <li>recordPendingAsResend: flips the single row in place to Pending+IsResend=Y (no duplicate row)</li>
+ *   <li>repo.getConfigsWithNonSentAttemptBySourceRecord: returns distinct config(s) with a non-sent attempt (status not Sent/DontSend); the re-send selection (Error/Invalid/DontSend, plus an operator-parked PInstance-stamped Pending) is covered at the service layer in ExternalSystemExportStatusServiceTest</li>
+ *   <li>recordPendingAsResend: appends a NEW Pending+IsResend=Y attempt row, keeping the prior attempt (per-attempt history)</li>
  *   <li>multi-config: both configs returned when both have Error or Invalid status</li>
  *   <li>sent-only: config not returned when latest attempt is Sent</li>
  *   <li>RESEND error context value: exists and returns non-null code</li>
@@ -193,10 +193,10 @@ public class M_InOut_ReSend_ScriptedExportConversionTest
 	}
 
 	// -----------------------------------------------------------------------
-	// 4. recordPendingAsResend: flips the single row in place to Pending+IsResend=Y (no duplicate)
+	// 4. recordPendingAsResend: appends a NEW Pending+IsResend=Y attempt, keeping the prior attempt
 	// -----------------------------------------------------------------------
 	@Test
-	void recordPendingAsResend_flipsSingleRowToPendingResend_noDuplicate()
+	void recordPendingAsResend_addsNewPendingResendAttempt_keepingPriorError()
 	{
 		final I_M_InOut inout = InterfaceWrapperHelper.newInstance(I_M_InOut.class);
 		InterfaceWrapperHelper.saveRecord(inout);
@@ -220,14 +220,19 @@ public class M_InOut_ReSend_ScriptedExportConversionTest
 		// Call recordPendingAsResend
 		service.recordPendingAsResend(configId, ref);
 
-		// Single-row contract: STILL exactly 1 row — the row was flipped in place, not duplicated
+		// Per-attempt contract: a NEW attempt row is added; the prior Error attempt is KEPT as history —
+		// so two rows now coexist (was a single in-place flip under the former single-row design).
 		final List<ScriptedExportConversionStatus> rows = repo.getByConfigId(configId);
-		assertThat(rows).hasSize(1);
+		assertThat(rows).hasSize(2);
 
-		// The single row is now Pending + IsResend=Y
-		final ScriptedExportConversionStatus flippedRow = rows.get(0);
-		assertThat(flippedRow.getStatus()).isEqualTo(ExternalSystemExportStatus.Pending);
-		assertThat(flippedRow.isResend()).isTrue();
+		// the prior Error attempt is preserved
+		assertThat(rows).anyMatch(r -> r.getStatus() == ExternalSystemExportStatus.Error);
+
+		// the LATEST attempt is the new Pending + IsResend=Y
+		final ScriptedExportConversionStatus latest = repo.getLatestByConfigAndRecord(configId, ref).orElse(null);
+		assertThat(latest).isNotNull();
+		assertThat(latest.getStatus()).isEqualTo(ExternalSystemExportStatus.Pending);
+		assertThat(latest.isResend()).isTrue();
 	}
 
 	// -----------------------------------------------------------------------

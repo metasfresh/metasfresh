@@ -68,6 +68,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_BPARTNER_ID;
@@ -83,6 +84,9 @@ import static org.assertj.core.api.Assertions.*;
 public class MetasfreshToExternalSystemRabbitMQ_StepDef
 {
 	private final static Logger logger = LogManager.getLogger(MetasfreshToExternalSystemRabbitMQ_StepDef.class);
+
+	/** How long the synchronous {@code basicGet} poll sleeps between empty pulls. */
+	private static final long POLL_INTERVAL_MILLIS = 250L;
 
 	private final ConnectionFactory metasfreshToRabbitMQFactory;
 	private final C_BPartner_StepDefData bpartnerTable;
@@ -144,6 +148,31 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 		{
 			connection.close();
 		}
+	}
+
+	/**
+	 * Asserts that no message arrives on {@link ExternalSystemConstants#QUEUE_NAME_MF_TO_ES} within the
+	 * given timeout — the negative counterpart of {@code RabbitMQ receives a JsonExternalSystemRequest …}.
+	 * <p>
+	 * Polls synchronously with {@code basicGet} for the whole timeout window, so a message arriving late in
+	 * the window is still seen and still fails the assertion. A message that does not parse as a
+	 * {@link JsonExternalSystemRequest} is acked and skipped rather than failing the step — a leftover or
+	 * another scenario's message must not be reported as the condition under test.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then RabbitMQ MF_TO_ExternalSystem receives no message within 5s
+	 * </pre>
+	 */
+	@Then("^RabbitMQ MF_TO_ExternalSystem receives no message within (.*)s$")
+	public void rabbitMQ_receives_no_message(final int timeoutSeconds) throws IOException, TimeoutException
+	{
+		final JsonExternalSystemRequest request = receiveOneRequestOrNull(timeoutSeconds);
+
+		assertThat(request)
+				.as("Expected no JsonExternalSystemRequest on queue=%s within %ss, but received: %s", QUEUE_NAME_MF_TO_ES, timeoutSeconds, request)
+				.isNull();
 	}
 
 	@Then("RabbitMQ receives a JsonExternalSystemRequest with the following external system config and bpartnerId as parameters:")
@@ -333,6 +362,100 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 		finally
 		{
 			connection.close();
+		}
+	}
+
+	/**
+	 * Blocks for up to {@code timeoutSeconds} for a single message on {@link ExternalSystemConstants#QUEUE_NAME_MF_TO_ES},
+	 * returning {@code null} if none arrived in time. Unlike {@link #pollRequestFromQueue(int, Function)} this
+	 * does not fail when nothing is received — the caller ({@code rabbitMQ_receives_no_message}) asserts on that.
+	 */
+	@Nullable
+	private JsonExternalSystemRequest receiveOneRequestOrNull(final int timeoutSeconds) throws IOException, TimeoutException
+	{
+		Connection connection = null;
+		Channel channel = null;
+
+		try
+		{
+			connection = metasfreshToRabbitMQFactory.newConnection();
+			channel = connection.createChannel();
+
+			final long deadline = System.currentTimeMillis() + (timeoutSeconds * 1000L);
+
+			while (System.currentTimeMillis() < deadline)
+			{
+				final GetResponse response = channel.basicGet(QUEUE_NAME_MF_TO_ES, false);
+				if (response == null)
+				{
+					try
+					{
+						Thread.sleep(POLL_INTERVAL_MILLIS);
+					}
+					catch (final InterruptedException e)
+					{
+						Thread.currentThread().interrupt();
+						break;
+					}
+					continue;
+				}
+
+				final long deliveryTag = response.getEnvelope().getDeliveryTag();
+				final String payload = new String(response.getBody(), StandardCharsets.UTF_8);
+
+				logger.info("*** {}: received message: {}", QUEUE_NAME_MF_TO_ES, payload);
+
+				try
+				{
+					final JsonExternalSystemRequest request = objectMapper.readValue(payload, JsonExternalSystemRequest.class);
+					channel.basicAck(deliveryTag, false);
+					return request;
+				}
+				catch (final JsonProcessingException e)
+				{
+					// Foreign message (a leftover, or another scenario's): ack it so it neither blocks this poll
+					// nor reappears, and keep polling. Throwing here would fail the scenario for someone else's
+					// message rather than for the condition under test.
+					channel.basicAck(deliveryTag, false);
+					logger.info("*** {}: skipping unparseable message: {}", QUEUE_NAME_MF_TO_ES, payload, e);
+				}
+			}
+
+			return null;
+		}
+		finally
+		{
+			closeQuietly(channel, connection);
+		}
+	}
+
+	/**
+	 * Closes channel and connection, swallowing close failures — a broker-side close error must not mask
+	 * the assertion result of the step that is closing.
+	 */
+	private void closeQuietly(@Nullable final Channel channel, @Nullable final Connection connection)
+	{
+		if (channel != null)
+		{
+			try
+			{
+				channel.close();
+			}
+			catch (final Exception e)
+			{
+				logger.debug("Ignoring failure while closing the channel", e);
+			}
+		}
+		if (connection != null)
+		{
+			try
+			{
+				connection.close();
+			}
+			catch (final Exception e)
+			{
+				logger.debug("Ignoring failure while closing the connection", e);
+			}
 		}
 	}
 

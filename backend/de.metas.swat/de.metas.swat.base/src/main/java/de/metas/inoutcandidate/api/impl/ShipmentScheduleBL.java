@@ -19,6 +19,7 @@ import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.ApplyShipmentScheduleChangesRequest;
+import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
@@ -97,6 +98,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -147,7 +149,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	static final AdMessageKey MSG_REACTIVATION_VOID_NOT_ALLOWED_BECAUSE_ALREADY_EXPORTED = AdMessageKey.of("salesorder.shipmentschedule.exported");
 	static final AdMessageKey MSG_REACTIVATION_VOID_NOT_ALLOWED_BECAUSE_SCHEDULED_FOR_PICKING = AdMessageKey.of("salesorder.shipmentschedule.cannotReactivateBecauseScheduledForPicking");
 
-	private static final String SYS_Config_M_ShipmentSchedule_Close_PartiallyShipped = "M_ShipmentSchedule_Close_PartiallyShipped";
+	static final String SYS_Config_M_ShipmentSchedule_Close_PartiallyShipped = "M_ShipmentSchedule_Close_PartiallyShipped";
 
 	private static final String SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS = "de.metas.inoutcandidate.M_ShipmentSchedule.canBeExportedAfterSeconds";
 	private static final String SYSCONFIG_CAN_BE_REEXPORTED_IF_QTYTODELIVER_IS_INCREASED = "de.metas.inoutcandidate.M_ShipmentSchedule.canBeExportedIfQtyToDeliverIsIncreased";
@@ -159,6 +161,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final SpringContextHolder.Lazy<ProjectRepository> projectRepository = SpringContextHolder.lazyBean(ProjectRepository.class);
@@ -689,10 +692,11 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			return;
 		}
 
-		// Track which schedules were fully shipped in this shipment (MovementQty >= QtyOrdered)
-		final HashSet<ShipmentScheduleId> fullyShippedScheduleIds = new HashSet<>();
+		// This shipment's just-delivered qty per schedule. Its own lines are not yet Processed here, so the
+		// PROCESSED-only ledger read below excludes them and we add this qty on top (see the
+		// TIMING_AFTER_COMPLETE-runs-before-setProcessed gotcha in de.metas.inoutcandidate/CLAUDE.md).
+		final HashMap<ShipmentScheduleId, BigDecimal> qtyDeliveredByThisShipmentByScheduleId = new HashMap<>();
 		final HashSet<OrderId> orderIds = new HashSet<>();
-
 		for (final I_M_InOutLine iolrecord : inOutDAO.retrieveLines(inoutRecord))
 		{
 			try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(iolrecord))
@@ -706,34 +710,39 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 						orderIds.add(orderId);
 					}
 
-					if (iolrecord.getMovementQty().compareTo(shipmentScheduleRecord.getQtyOrdered()) >= 0)
-					{
-						fullyShippedScheduleIds.add(scheduleId);
-					}
+					qtyDeliveredByThisShipmentByScheduleId.merge(scheduleId, iolrecord.getMovementQty(), BigDecimal::add);
 				}
 			}
 		}
 
-		// Close all schedules from the involved orders that were NOT fully shipped.
-		// This includes partially shipped schedules (MovementQty < QtyOrdered) and
-		// completely unshipped schedules (no shipment line at all).
+		// Close every not-yet-closed schedule that is not fully delivered. Delivered = this shipment's qty
+		// (above) + the committed processed-line ledger of already-completed sibling M_InOuts
+		// (retrieveQtyDelivered). We intentionally do NOT read the schedule's own QtyDelivered: it is a
+		// deferred runAfterCommit recompute of that same ledger and lags here (the multi-InOut bug this fixes).
 		for (final OrderId orderId : orderIds)
 		{
 			final ImmutableSet<ShipmentScheduleId> allScheduleIds = shipmentSchedulePA.retrieveScheduleIdsByOrderId(orderId);
 			for (final ShipmentScheduleId scheduleId : allScheduleIds)
 			{
-				if (fullyShippedScheduleIds.contains(scheduleId))
+				final I_M_ShipmentSchedule schedule = shipmentSchedulePA.getById(scheduleId);
+				if (schedule.isClosed())
 				{
-					logger.debug("Not closing shipment schedule {} - fully shipped in this delivery", scheduleId);
 					continue;
 				}
 
-				final I_M_ShipmentSchedule schedule = shipmentSchedulePA.getById(scheduleId);
-				if (!schedule.isClosed())
+				final BigDecimal effectiveQtyOrdered = shipmentScheduleEffectiveBL.computeQtyOrdered(schedule);
+				final BigDecimal qtyDeliveredThisShipment = qtyDeliveredByThisShipmentByScheduleId.getOrDefault(scheduleId, BigDecimal.ZERO);
+				final BigDecimal qtyDelivered = qtyDeliveredThisShipment.add(shipmentScheduleAllocDAO.retrieveQtyDelivered(schedule));
+
+				if (qtyDelivered.compareTo(effectiveQtyOrdered) >= 0)
 				{
-					logger.debug("Closing shipment schedule {} for order {} (M_ShipmentSchedule_Close_PartiallyShipped=Y)", scheduleId, orderId);
-					closeShipmentSchedule(schedule);
+					logger.debug("Not closing shipment schedule {} - already fully delivered (qtyDelivered={} >= effectiveQtyOrdered={})",
+							scheduleId, qtyDelivered, effectiveQtyOrdered);
+					continue;
 				}
+
+				logger.debug("Closing shipment schedule {} for order {} (M_ShipmentSchedule_Close_PartiallyShipped=Y)", scheduleId, orderId);
+				closeShipmentSchedule(schedule);
 			}
 		}
 	}
@@ -983,6 +992,12 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	public I_M_ShipmentSchedule getByOrderLineId(@NonNull final OrderLineId orderLineId)
 	{
 		return shipmentSchedulePA.getByOrderLineId(orderLineId);
+	}
+
+	@Override
+	public List<I_M_ShipmentSchedule> getByOrderLineIds(@NonNull final Set<OrderLineId> orderLineIds)
+	{
+		return shipmentSchedulePA.getByOrderLineIds(orderLineIds);
 	}
 
 	@Override

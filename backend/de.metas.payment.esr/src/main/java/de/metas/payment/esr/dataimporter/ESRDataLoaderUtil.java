@@ -38,6 +38,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.Env;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 /*
@@ -398,9 +399,17 @@ public class ESRDataLoaderUtil
 		}
 	}
 
-	public void addMatchErrorMsg(@NonNull final I_ESR_ImportLine importLine, final String msg)
+	/**
+	 * Appends {@code msg} to the line's {@code MatchErrorMsg}, unless it is already there.
+	 */
+	public void addMatchErrorMsg(@NonNull final I_ESR_ImportLine importLine, @Nullable final String msg)
 	{
-		importLine.setMatchErrorMsg(addMsgToString(importLine.getMatchErrorMsg(), msg));
+		final String currentMsg = importLine.getMatchErrorMsg();
+		if (!Check.isEmpty(msg, true) && currentMsg != null && currentMsg.contains(msg))
+		{
+			return;
+		}
+		importLine.setMatchErrorMsg(addMsgToString(currentMsg, msg));
 	}
 
 	public void addImportErrorMsg(@NonNull final I_ESR_ImportLine importLine, final String msg)

@@ -112,6 +112,7 @@ public class MobileUIPickingUserProfileRepository
 				.isConsiderOnlyJobScheduledToWorkplace(profileRecord.isConsideredOnlyScheduledJobs())
 				.isAllowQuickPackAll(profileRecord.isAllowQuickPackAll())
 				.isMassPrinting(profileRecord.isMassPrinting())
+				.isShowQtyAvailableForLines(profileRecord.isShowQtyAvailableForLines())
 				.customerConfigs(retrievePickingCustomerConfigsCollection(profileId))
 				.defaultPickingJobOptions(extractPickingJobOptions(profileRecord))
 				.filters(retrieveFilters(profileId))
@@ -336,6 +337,7 @@ public class MobileUIPickingUserProfileRepository
 		record.setIsConsideredOnlyScheduledJobs(from.isConsiderOnlyJobScheduledToWorkplace());
 		record.setIsAllowQuickPackAll(from.isAllowQuickPackAll());
 		record.setIsMassPrinting(from.isMassPrinting());
+		record.setIsShowQtyAvailableForLines(from.isShowQtyAvailableForLines());
 		updateRecord(record, from.getDefaultPickingJobOptions());
 	}
 
@@ -395,6 +397,8 @@ public class MobileUIPickingUserProfileRepository
 		return queryBL.createQueryBuilder(I_PickingProfile_Filter.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_PickingProfile_Filter.COLUMNNAME_MobileUI_UserProfile_Picking_ID, profileId)
+				// deliberately unordered: both callers are order-insensitive (retrieveFilters re-sorts via
+				// PickingFiltersList, save_Filters collects into a map keyed by facet group)
 				.create()
 				.stream();
 	}

@@ -15,6 +15,8 @@ import org.compiere.SpringContextHolder;
 
 import java.util.Set;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 public class M_CostElement_StepDefData extends StepDefData<CostElement>
 		implements StepDefDataGetIdAware<CostElementId, CostElement>
 {
@@ -31,6 +33,14 @@ public class M_CostElement_StepDefData extends StepDefData<CostElement>
 				.stream()
 				.map(this::getIdOrLoadNow)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	/** Resolves a comma-separated identifier/costing-method string and asserts it maps to exactly one cost element. */
+	public final CostElementId getSingleId(@NonNull final String commaSeparatedString)
+	{
+		final Set<CostElementId> costElementIds = getIdsOfCommaSeparatedString(commaSeparatedString);
+		assertThat(costElementIds).as("cost element for %s", commaSeparatedString).hasSize(1);
+		return costElementIds.iterator().next();
 	}
 
 	private CostElementId getIdOrLoadNow(final StepDefDataIdentifier identifier)
