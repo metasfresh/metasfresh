@@ -622,7 +622,7 @@ public class DeliveryPlanningService
 		return DeliveryPlanning.builder()
 				.id(deliveryPlanningId)
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
-				.type(transportDirection)
+				.transportDirection(transportDirection)
 				.shipperId(ShipperId.ofRepoIdOrNull(record.getM_Shipper_ID()))
 				.incotermsId(IncotermsId.ofRepoIdOrNull(record.getC_Incoterms_ID()))
 				.incotermLocation(record.getIncotermLocation())
@@ -1250,7 +1250,7 @@ public class DeliveryPlanningService
 			return allocationStateRejection;
 		}
 
-		if (!selectedDeliveryPlannings.getSingleType().isPresent())
+		if (!selectedDeliveryPlannings.getSingleTransportDirection().isPresent())
 		{
 			// the target picker offers the instructions of ONE direction, so a selection spanning two has no
 			// target list to be offered at all

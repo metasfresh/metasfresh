@@ -111,13 +111,13 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	 * the {@link AggregationKeyField#Direction} mismatch as a value rather than a flag, for callers that have to
 	 * correlate on the direction itself.
 	 */
-	public Optional<TransportDirection> getSingleType()
+	public Optional<TransportDirection> getSingleTransportDirection()
 	{
 		return list.stream()
-				.map(DeliveryPlanning::getType)
+				.map(DeliveryPlanning::getTransportDirection)
 				.distinct()
 				.count() == 1
-				? Optional.of(list.get(0).getType())
+				? Optional.of(list.get(0).getTransportDirection())
 				: Optional.empty();
 	}
 
@@ -213,7 +213,7 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	public enum AggregationKeyField
 	{
 		Organisation(DeliveryPlanning::getOrgId, "Organisation"),
-		Direction(DeliveryPlanning::getType, "Direction"),
+		Direction(DeliveryPlanning::getTransportDirection, "Direction"),
 		Forwarder(DeliveryPlanning::getShipperId, "Forwarder"),
 		Incoterms(DeliveryPlanning::getIncotermsId, "Incoterms"),
 		IncotermLocation(DeliveryPlanning::getIncotermLocation, "IncotermLocation"),

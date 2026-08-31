@@ -97,7 +97,7 @@ public class M_Delivery_Planning_AddToDeliveryInstruction extends JavaProcess
 		{
 			// single by the precondition, which rejects a selection spanning two directions
 			return deliveryPlanningService.getBySelection(getProcessInfo().getQueryFilterOrElseFalse())
-					.getSingleType()
+					.getSingleTransportDirection()
 					.map(TransportDirection::getCode)
 					.map(Object.class::cast)
 					.orElse(Null.NULL);

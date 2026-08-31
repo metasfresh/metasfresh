@@ -57,7 +57,7 @@ class DeliveryPlanningListTest
 		return DeliveryPlanning.builder()
 				.id(DeliveryPlanningId.ofRepoId(nextId++))
 				.orgId(OrgId.ofRepoId(1000000))
-				.type(TransportDirection.Outgoing);
+				.transportDirection(TransportDirection.Outgoing);
 	}
 
 	private static DeliveryPlanning withShipper(@Nullable final Integer shipperRepoId)
@@ -148,7 +148,7 @@ class DeliveryPlanningListTest
 			final DeliveryPlanning row1 = DeliveryPlanning.builder()
 					.id(DeliveryPlanningId.ofRepoId(nextId++))
 					.orgId(OrgId.ofRepoId(1000000))
-					.type(TransportDirection.Outgoing)
+					.transportDirection(TransportDirection.Outgoing)
 					.shipperId(ShipperId.ofRepoId(540001))
 					.incotermsId(IncotermsId.ofRepoId(540002))
 					.incotermLocation("Hamburg")
@@ -160,7 +160,7 @@ class DeliveryPlanningListTest
 			final DeliveryPlanning row2 = DeliveryPlanning.builder()
 					.id(DeliveryPlanningId.ofRepoId(nextId++))
 					.orgId(OrgId.ofRepoId(1000001))
-					.type(TransportDirection.Incoming)
+					.transportDirection(TransportDirection.Incoming)
 					.shipperId(ShipperId.ofRepoId(540011))
 					.incotermsId(IncotermsId.ofRepoId(540012))
 					.incotermLocation("Rotterdam")
@@ -183,7 +183,7 @@ class DeliveryPlanningListTest
 			return DeliveryPlanning.builder()
 					.id(DeliveryPlanningId.ofRepoId(idRepoId))
 					.orgId(OrgId.ofRepoId(1000000))
-					.type(TransportDirection.Outgoing)
+					.transportDirection(TransportDirection.Outgoing)
 					.etd(etd != null ? Instant.parse(etd) : null)
 					.build();
 		}
