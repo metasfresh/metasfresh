@@ -39,16 +39,16 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 @RequiredArgsConstructor
-public class ReferencedRecordDAO
+public class ReferencedRecordRepository
 {
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@VisibleForTesting
-	public static ReferencedRecordDAO newInstanceForUnitTesting()
+	public static ReferencedRecordRepository newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
 		//noinspection DataFlowIssue
-		return SpringContextHolder.getBeanOrSupply(ReferencedRecordDAO.class, ReferencedRecordDAO::new);
+		return SpringContextHolder.getBeanOrSupply(ReferencedRecordRepository.class, ReferencedRecordRepository::new);
 	}
 
 	public boolean exists(@NonNull final TableRecordReference recordRef)

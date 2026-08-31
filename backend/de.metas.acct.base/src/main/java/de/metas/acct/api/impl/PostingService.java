@@ -13,7 +13,7 @@ import de.metas.acct.posting.log.DocumentPostingLogService;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.table.ReferencedRecordDAO;
+import org.adempiere.ad.table.ReferencedRecordRepository;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
@@ -34,7 +34,7 @@ public class PostingService implements IPostingService
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
-	@NonNull private final Lazy<ReferencedRecordDAO> referencedRecordDAOHolder = SpringContextHolder.lazyBean(ReferencedRecordDAO.class);
+	@NonNull private final Lazy<ReferencedRecordRepository> referencedRecordRepositoryHolder = SpringContextHolder.lazyBean(ReferencedRecordRepository.class);
 	@NonNull private final Lazy<DocumentPostingUserNotificationService> userNotificationsHolder = SpringContextHolder.lazyBean(DocumentPostingUserNotificationService.class);
 	@NonNull private final Lazy<AcctDocRegistry> acctDocRegistryHolder = SpringContextHolder.lazyBean(AcctDocRegistry.class);
 	@NonNull private final Lazy<DocumentPostingBusService> postingBusServiceHolder = SpringContextHolder.lazyBean(DocumentPostingBusService.class);
@@ -125,7 +125,7 @@ public class PostingService implements IPostingService
 	{
 		try
 		{
-			return !referencedRecordDAOHolder.get().exists(documentRef);
+			return !referencedRecordRepositoryHolder.get().exists(documentRef);
 		}
 		catch (final Exception ex)
 		{
