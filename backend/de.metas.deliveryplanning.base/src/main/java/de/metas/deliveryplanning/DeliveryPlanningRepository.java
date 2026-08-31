@@ -1171,8 +1171,7 @@ public class DeliveryPlanningRepository
 	{
 		return getDeliveryPlanningQueryBuilder(selectedDeliveryPlanningsFilter)
 				.create()
-				.listIds(DeliveryPlanningId::ofRepoId)
-				.asList();
+				.listIds(DeliveryPlanningId::ofRepoId);
 	}
 
 	@NonNull
