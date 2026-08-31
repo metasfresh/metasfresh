@@ -224,7 +224,7 @@ class DeliveryPlanningAddToAdmissibilityTest
 	}
 
 	/**
-	 * The precondition's view: the grid action is judged before the parameter dialog exists, so the target is
+	 * The precondition's view: the action is judged before the parameter dialog exists, so the target is
 	 * {@code null} here. Whatever this refuses is refused while the planner is still looking at the grid.
 	 */
 	private String addToRejectionTextOfWithoutTarget(@NonNull final IQueryFilter<I_M_Delivery_Planning> selection)
@@ -371,7 +371,7 @@ class DeliveryPlanningAddToAdmissibilityTest
 	}
 
 	@Test
-	@DisplayName("the grid action is refused for a self-disagreeing selection BEFORE a target is picked")
+	@DisplayName("the action is refused for a self-disagreeing selection BEFORE a target is picked")
 	void addTo_selectionThatDisagreesWithItselfIsRefusedWithNoTargetYet()
 	{
 		final IQueryFilter<I_M_Delivery_Planning> selection = selectionOf(ImmutableList.of(

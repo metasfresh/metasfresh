@@ -155,7 +155,8 @@ WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Process_Para_ID IN (543
 
 -- ---------------------------------------------------------------------------------------------
 -- 5) placement: an action on the Delivery Planning grid, beside Combine.
---    NOT a document action: it acts on a selection of rows, which a single open record is not.
+--    Offered on the grid AND on a single open record: a single-document launch sets the process
+--    whereClause from that record, so the selection this action reads resolves to exactly it.
 -- ---------------------------------------------------------------------------------------------
 INSERT INTO AD_Table_Process (AD_Table_Process_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
                               AD_Table_ID, AD_Process_ID, AD_Window_ID, EntityType,

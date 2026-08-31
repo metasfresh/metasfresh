@@ -6,8 +6,9 @@
 -- selection holds an allocated planning, Move as soon as it holds an unallocated one, so a planner is
 -- offered exactly one of them for any selection and each description names the other.
 --
--- Both are grid actions on the delivery-planning window (AD_Table_Process), not document actions: they
--- act on a selection of rows, which a single open record is not.
+-- Both are actions on the delivery-planning window (AD_Table_Process), offered on the grid and on a
+-- single open record alike -- a single-document launch sets the process whereClause from that record, so
+-- the selection they read resolves to exactly it.
 --
 -- IDs allocated from idserver.metas.de on 2026-08-31:
 --   AD_Process       585656 (M_Delivery_Planning_MoveToDeliveryInstruction)

@@ -1,4 +1,4 @@
--- Shorten the ten delivery-planning precondition messages. They render in the grid action's
+-- Shorten the ten delivery-planning precondition messages. They render in the action's
 -- disabled-reason tooltip, where the available width truncates anything long -- a truncated reason
 -- reads as no reason at all, and the planner cannot tell which rule refused the action.
 -- Only MsgText changes; the AD_Message keys and ErrorCodes are untouched, so the cucumber
