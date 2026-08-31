@@ -1121,11 +1121,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				}
 			}
 
-			// Tell the user who started this run that these candidates could not be invoiced.
-			// This is the single choke point of all three failure call sites.
-			// The notification survives the rollback that is about to happen because
-			// NotificationRepository.save creates the AD_Note with newInstanceOutOfTrx (TRXNAME_None),
-			// i.e. autocommit - it has nothing to do with the surrounding saveConstraints() window.
+			// Survives the rollback that is about to happen: NotificationRepository.save creates the AD_Note
+			// with newInstanceOutOfTrx (TRXNAME_None).
 			getCollector().addFailedCandidates(affectedCands, error);
 
 			return result;

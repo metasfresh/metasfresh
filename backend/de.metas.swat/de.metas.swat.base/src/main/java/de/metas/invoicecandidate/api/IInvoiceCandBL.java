@@ -87,11 +87,7 @@ public interface IInvoiceCandBL extends ISingletonService
 
 		void addNotifications(List<I_AD_Note> notifications);
 
-		/**
-		 * Called when the given candidates could not be invoiced because of the given error.
-		 * Implementations which are able to notify a user shall do so from here; the plain result
-		 * implementation only counts them.
-		 */
+		/** Implementations which are able to notify a user shall do so from here. */
 		void addFailedCandidates(List<I_C_Invoice_Candidate> failedCandidates, Throwable error);
 
 		/**
@@ -375,10 +371,7 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	void closeInvoiceCandidatesByOrderLineId(OrderLineId orderLineId);
 
-	/**
-	 * Undo {@link #closeInvoiceCandidatesByOrderLineId(OrderLineId)}: clear the candidates' {@code Processed_Override}
-	 * and invalidate them, so their {@code QtyToInvoice} is recomputed from their own data.
-	 */
+	/** Undo of {@link #closeInvoiceCandidatesByOrderLineId(OrderLineId)}: clears {@code Processed_Override} and invalidates the candidates. */
 	void openInvoiceCandidatesByOrderLineId(OrderLineId orderLineId);
 
 	/**

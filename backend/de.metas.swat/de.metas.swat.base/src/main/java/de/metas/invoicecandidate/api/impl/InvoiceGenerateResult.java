@@ -111,10 +111,6 @@ import de.metas.util.Services;
 		}
 	}
 
-	/**
-	 * Plain result implementation: only counts the failed candidates.
-	 * Notifying the user is done by {@code UserNotificationsInvoiceGenerateResult}, which knows the recipient.
-	 */
 	@Override
 	public void addFailedCandidates(final List<I_C_Invoice_Candidate> failedCandidates, final Throwable error)
 	{

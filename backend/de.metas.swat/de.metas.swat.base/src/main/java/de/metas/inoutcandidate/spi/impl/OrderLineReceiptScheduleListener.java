@@ -41,10 +41,8 @@ public class OrderLineReceiptScheduleListener extends ReceiptScheduleListenerAda
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID());
 		invoiceCandBL.closeDeliveryInvoiceCandidatesByOrderLineId(orderLineId);
 
-		// Nothing was ever received on this line, so its candidates can never be invoiced.
-		// Close them, or they linger forever as open work that "Create Invoices" silently skips
-		// (InvoiceCandidateEnqueuer:278). A partial receipt must NOT be closed - the delivered part
-		// is still invoiceable.
+		// Nothing was received, so the candidates can never be invoiced and would linger as open work that
+		// "Create Invoices" silently skips. A partial receipt must stay open - its delivered part is invoiceable.
 		if (orderLine.getQtyDelivered().signum() == 0)
 		{
 			invoiceCandBL.closeInvoiceCandidatesByOrderLineId(orderLineId);
@@ -73,10 +71,6 @@ public class OrderLineReceiptScheduleListener extends ReceiptScheduleListenerAda
 
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID());
 		invoiceCandBL.openDeliveryInvoiceCandidatesByOrderLineId(orderLineId);
-
-		// Symmetric to onAfterClose: the close set Processed_Override=Y on the candidates, so the
-		// reopen has to clear it again. Otherwise the line is open work again, but its candidates
-		// stay closed and can never be invoiced.
 		invoiceCandBL.openInvoiceCandidatesByOrderLineId(orderLineId);
 	}
 }

@@ -77,7 +77,6 @@ Feature: Closing an undelivered receipt disposition closes the purchase invoice 
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice |
       | invoiceCand_1                     | po1                       | po1_l1                    | 0                | 0            |
 
-    # Nothing was ever received; the disposition is simply closed.
     When the M_ReceiptSchedule identified by receiptSchedule1 is closed
 
     Then validate C_Invoice_Candidate:

@@ -42,11 +42,8 @@ public class InvoiceUserNotificationsProducer
 			.build();
 
 	/**
-	 * Topic used to notify about invoice candidates which could NOT be invoiced.
-	 * <p>
-	 * Deliberately NOT {@link #EVENTBUS_TOPIC}: that one carries "invoice generated" events and every subscriber of it
-	 * (e.g. the WebUI notification list, or {@code InvoiceGeneratedNotificationChecker} in the tests) expects each event
-	 * to reference a C_Invoice. A failure event references no invoice at all, so it has to travel on its own topic.
+	 * Separate from {@link #EVENTBUS_TOPIC} because every subscriber of that one expects the event to reference
+	 * a C_Invoice, and a failure event references none.
 	 */
 	public static final Topic EVENTBUS_TOPIC_Error = Topic.builder()
 			.name("de.metas.invoicecandidate.UserNotifications.InvoicingErrors")
@@ -108,9 +105,6 @@ public class InvoiceUserNotificationsProducer
 				.build();
 	}
 
-	/**
-	 * Notifies the user who started the "Create Invoices" run that the given candidates could not be invoiced.
-	 */
 	public InvoiceUserNotificationsProducer notifyInvoicingError(
 			@Nullable final List<I_C_Invoice_Candidate> failedCandidates,
 			@Nullable final Throwable error,
@@ -124,16 +118,15 @@ public class InvoiceUserNotificationsProducer
 
 		try
 		{
-			// send() and not sendAfterCommit(): the invoicing transaction is rolled back on error
-			// (InvoiceCandBLCreateInvoices.DefaultInvoiceGeneratorRunnable.doCatch returns true),
+			// send() and not sendAfterCommit(): the invoicing transaction is rolled back on error,
 			// so an after-commit notification would never be sent.
 			Services.get(INotificationBL.class).send(UserNotificationRequest.builder()
 					.topic(EVENTBUS_TOPIC_Error)
 					.recipientUserId(recipientUserId != null ? recipientUserId : Env.getLoggedUserId())
 					.contentADMessage(MSG_Event_InvoicingError)
 					.contentADMessageParam(failedCandidates.size())
-					// extractMessage() and not getLocalizedMessage(): the latter is null for e.g. a
-					// NullPointerException thrown by an aggregator, which would render the note as "...: null".
+					// extractMessage() and not getLocalizedMessage(): the latter is null for e.g. an NPE,
+					// which would render the note as "...: null".
 					.contentADMessageParam(AdempiereException.extractMessage(error))
 					.build());
 		}

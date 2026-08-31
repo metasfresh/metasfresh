@@ -14,7 +14,6 @@ Feature: Create Invoices on a reactivated purchase order that already has a mate
     And metasfresh has date and time 2022-07-26T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
-    # Without this, C_Order_ReceiptSchedule.reactivateIfNoReceipts refuses the reactivation outright.
     And set sys config boolean value true for sys config PO_AllowReactivationIfReceiptsCreated
 
     And load M_Warehouse:
@@ -65,9 +64,6 @@ Feature: Create Invoices on a reactivated purchase order that already has a mate
 @allure.label.feature:F01010.3_Match_Invoice
 @F00701
   Scenario: Create Invoices succeeds for a purchase order that was reactivated after its material receipt
-    #
-    # A purchase order with one line, completed
-    #
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DocBaseType | DateOrdered |
       | po1        | false   | bpartner_1    | POO         | 2022-07-26  |
@@ -76,9 +72,6 @@ Feature: Create Invoices on a reactivated purchase order that already has a mate
       | po1_l1     | po1        | product      | 100        | 10           | product_TU_10CU         |
     And the order identified by po1 is completed
 
-    #
-    # ... fully received
-    #
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule1                | po1                   | po1_l1                    | bpartner_1               | l_1                               | product                 | 100        | warehouseStd              | 10               |
@@ -98,16 +91,10 @@ Feature: Create Invoices on a reactivated purchase order that already has a mate
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
       | invoiceCand_1                     | po1                       | po1_l1                    | 100              | 100          | materialReceiptLine           |
 
-    #
-    # ... and then reactivated. From here on the order is no longer "complete", so every save of its
-    # lines recomputes C_Tax_ID (MOrderLine.beforeSave) - a column the receipt-exists guard on
-    # C_OrderLine does not ignore.
-    #
+    # Once reactivated the order is no longer complete, so every save of its lines recomputes C_Tax_ID
+    # - a column the receipt-exists guard on C_OrderLine does not ignore.
     And the order identified by po1 is reactivated
 
-    #
-    # Invoicing must still produce the invoice.
-    #
     And process invoice candidates
       | C_Invoice_Candidate_ID |
       | invoiceCand_1          |

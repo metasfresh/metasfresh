@@ -719,13 +719,9 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 			InterfaceWrapperHelper.refresh(orderLine);
 			orderBL.reopenLine(orderLine);
 
-			// Same reasoning for the invoice candidates: when nothing was received, that same
-			// listener also set Processed_Override=Y on them. Parking must not leave them closed,
-			// or the reactivated order's candidates can never be invoiced again.
-			// Deliberately NOT calling openDeliveryInvoiceCandidatesByOrderLineId here: the candidates'
-			// IsDeliveryClosed stays Y while the order is parked, exactly as before this change. That
-			// asymmetry is pre-existing (display-only; no Java reads the flag) and self-heals on the
-			// next complete - see reopenReceiptSchedulesForOrder. Asserted by @Id:S0164_400.
+			// Undo the close's Processed_Override=Y too, or the reactivated order's candidates can never be invoiced.
+			// openDeliveryInvoiceCandidatesByOrderLineId is deliberately NOT called: IsDeliveryClosed is display-only
+			// and self-heals on the next complete - see reopenReceiptSchedulesForOrder.
 			invoiceCandBL.openInvoiceCandidatesByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
 		}
 	}

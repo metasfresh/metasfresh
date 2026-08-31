@@ -77,13 +77,11 @@ Feature: Reopening a receipt disposition reopens the purchase invoice candidate
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice |
       | invoiceCand_1                     | po1                       | po1_l1                    | 0                | 0            |
 
-    # Nothing was ever received; the disposition is simply closed, which closes the candidate.
     When the M_ReceiptSchedule identified by receiptSchedule1 is closed
     Then validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | OPT.IsDeliveryClosed | OPT.Processed |
       | invoiceCand_1                     | 0            | true                 | true          |
 
-    # Reopening the disposition must give the candidate back as open work.
     When the M_ReceiptSchedule identified by receiptSchedule1 is reactivated
     Then validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | OPT.IsDeliveryClosed | OPT.Processed |
@@ -111,12 +109,10 @@ Feature: Reopening a receipt disposition reopens the purchase invoice candidate
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice |
       | invoiceCand_2                     | po2                       | po2_l1                    | 0                | 0            |
 
-    # Reactivating the PO closes the receipt schedule, but only to "park" it - the order line stays
-    # open for editing. The candidate must stay open too, or it can never be invoiced again.
     When the order identified by po2 is reactivated
 
-    # IsDeliveryClosed stays true while the order is parked: the parking path deliberately does not
-    # reopen it (pre-existing, display-only). The next complete reopens it - see @Id:S0164_500.
+    # IsDeliveryClosed stays true while parked: the parking path deliberately does not reopen it
+    # (display-only); the next complete does - see @Id:S0164_500.
     Then validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | OPT.IsDeliveryClosed | OPT.Processed |
       | invoiceCand_2                     | 0            | true                 | false         |
@@ -143,20 +139,17 @@ Feature: Reopening a receipt disposition reopens the purchase invoice candidate
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice |
       | invoiceCand_3                     | po3                       | po3_l1                    | 0                | 0            |
 
-    # Nothing was ever received and the buyer closes the disposition, which closes the candidate.
     When the M_ReceiptSchedule identified by receiptSchedule3 is closed
     Then validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | OPT.IsDeliveryClosed | OPT.Processed |
       | invoiceCand_3                     | 0            | true                 | true          |
 
-    # Reactivating the PO leaves the already-closed disposition (and hence the candidate) untouched:
-    # the parking path only closes dispositions that are still open.
+    # The parking path only closes dispositions that are still open, so an already-closed one is untouched.
     When the order identified by po3 is reactivated
     Then validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | OPT.IsDeliveryClosed | OPT.Processed |
       | invoiceCand_3                     | 0            | true                 | true          |
 
-    # Re-completing the PO reopens the parked disposition - and must give the candidate back as open work.
     When the order identified by po3 is completed
     Then after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.IsClosed | OPT.Processed |

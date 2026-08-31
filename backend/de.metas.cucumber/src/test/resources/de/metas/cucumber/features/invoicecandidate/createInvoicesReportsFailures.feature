@@ -55,8 +55,7 @@ Feature: A failing "Create Invoices" run reports back to the user who started it
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | ic_ie_1                           | ol_ie_1                   | 0            |
 
-    # InvoiceRule=Immediate makes the candidate invoiceable without any delivery, so the run below
-    # really does try to invoice it instead of skipping it for "nothing delivered yet".
+    # InvoiceRule=Immediate makes the candidate invoiceable without a delivery, so the run really tries to invoice it.
     And update invoice candidates
       | C_Invoice_Candidate_ID.Identifier | OPT.InvoiceRule_Override |
       | ic_ie_1                           | I                        |
@@ -64,10 +63,7 @@ Feature: A failing "Create Invoices" run reports back to the user who started it
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | ic_ie_1                           | ol_ie_1                   | 10           |
 
-    # The customer is put on credit stop after the order was completed. Completing the generated
-    # invoice then throws @BPartnerCreditStop@ (MInvoice.prepareIt), the invoice transaction is rolled
-    # back and InvoiceCandBLCreateInvoices marks the candidate as failed. This is a genuine FAILURE of
-    # the "Create Invoices" run - not a candidate that was quietly skipped.
+    # Credit stop makes completing the generated invoice throw @BPartnerCreditStop@, so the run genuinely fails.
     And upsert C_BPartner_Stats
       | C_BPartner_ID.Identifier | SOCreditStatus.Code |
       | endcustomer_ie_1         | S                   |
@@ -79,22 +75,16 @@ Feature: A failing "Create Invoices" run reports back to the user who started it
       | Identifier        | Value                |
       | msgInvoicingError | Event_InvoicingError |
 
-    # Not the "wait for the candidate to be processed" variant: a failing candidate is never
-    # processed, so that variant would only time out.
+    # A failing candidate is never processed, so the "wait until processed" variant would only time out.
     When process invoice candidates and verify C_Invoice_Candidate is not processed after 30s
       | C_Invoice_Candidate_ID.Identifier |
       | ic_ie_1                           |
 
-    # Evidence that the run FAILED for this candidate rather than skipping it.
-    # IsInvoicingError - not IsError - because the "update invalid invoice candidates" work package that
-    # follows the failed run clears IsError/ErrorMsg again (InvoiceCandBL.resetError), while
-    # IsInvoicingError/InvoicingErrorMsg keep the record of the failed invoicing run.
+    # IsInvoicingError and not IsError: the "update invalid invoice candidates" run that follows clears IsError again.
     Then validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | IsInvoicingError | OPT.Processed |
       | ic_ie_1                           | true             | false         |
 
-    # ...and the user who started the run is told about it: the failure notification is persisted
-    # as an AD_Note for that user (NotificationRepository.save).
     And after not more than 60s, validate AD_Note:
       | Identifier | AD_Message_ID.Identifier | OPT.AD_User_ID.Identifier |
       | note_1     | msgInvoicingError        | user_metasfresh           |
@@ -123,8 +113,6 @@ Feature: A failing "Create Invoices" run reports back to the user who started it
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_mx_1    | plv_mx_1                          | p_mx_1                  | 10.0     | PCE               | Normal                        |
 
-    # Two customers: only the second one is put on credit stop further down, so that ONE selection
-    # contains one invoiceable candidate and one that fails.
     And metasfresh contains C_BPartners:
       | Identifier       | Name               | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | customer_mx_good | mx_GoodCustomer    | N            | Y              | ps_mx_1                       |
@@ -148,8 +136,7 @@ Feature: A failing "Create Invoices" run reports back to the user who started it
       | ic_mx_good                        | ol_mx_good                | 0            |
       | ic_mx_bad                         | ol_mx_bad                 | 0            |
 
-    # InvoiceRule=Immediate makes both candidates invoiceable without any delivery, so the run below
-    # really does try to invoice both instead of skipping them for "nothing delivered yet".
+    # InvoiceRule=Immediate makes both candidates invoiceable without a delivery, so the run really tries to invoice them.
     And update invoice candidates
       | C_Invoice_Candidate_ID.Identifier | OPT.InvoiceRule_Override |
       | ic_mx_good                        | I                        |
@@ -159,10 +146,8 @@ Feature: A failing "Create Invoices" run reports back to the user who started it
       | ic_mx_good                        | ol_mx_good                | 10           |
       | ic_mx_bad                         | ol_mx_bad                 | 10           |
 
-    # Only the second customer is put on credit stop, so completing ITS invoice throws
-    # @BPartnerCreditStop@ (MInvoice.prepareIt). The two candidates have different bill partners and
-    # therefore aggregate into two separate invoice headers, each with its own transaction: the good
-    # header is committed, the bad one is rolled back and its candidate marked as failed.
+    # The two candidates have different bill partners, so they aggregate into two invoice headers with
+    # separate transactions: the good one commits, the credit-stopped one rolls back and is marked failed.
     And upsert C_BPartner_Stats
       | C_BPartner_ID.Identifier | SOCreditStatus.Code |
       | customer_mx_bad          | S                   |
@@ -174,17 +159,13 @@ Feature: A failing "Create Invoices" run reports back to the user who started it
       | Identifier        | Value                |
       | msgInvoicingError | Event_InvoicingError |
 
-    # The failure notification is looked up with firstOnly(), and the preceding scenario of this
-    # feature leaves its own Event_InvoicingError note behind. Reset so that the note asserted below
-    # is unambiguously the one produced by THIS run.
+    # The note is looked up with firstOnly(), so drop the preceding scenario's Event_InvoicingError note first.
     And AD_Note table is reset
 
-    # One "Create Invoices" run over ONE selection holding both candidates.
     When process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | ic_mx_good,ic_mx_bad              |
 
-    # AC4: the failure of the one candidate did not take the other one down with it.
     Then after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_mx_good         | ic_mx_good                        |
@@ -192,14 +173,11 @@ Feature: A failing "Create Invoices" run reports back to the user who started it
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | processed | DocStatus |
       | invoice_mx_good         | customer_mx_good         | l_mx_good                         | true      | CO        |
 
-    # ...while the failed candidate is flagged as an invoicing error and stays un-processed.
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | IsInvoicingError | OPT.Processed |
       | ic_mx_good                        | false            | true          |
       | ic_mx_bad                         | true             | false         |
 
-    # AC3: and the user who started the run is told about the failure - exactly one note, because
-    # createNoticesAndMarkICs is called once, for the one header aggregation that failed.
     And after not more than 60s, validate AD_Note:
       | Identifier | AD_Message_ID.Identifier | OPT.AD_User_ID.Identifier |
       | note_1     | msgInvoicingError        | user_metasfresh           |

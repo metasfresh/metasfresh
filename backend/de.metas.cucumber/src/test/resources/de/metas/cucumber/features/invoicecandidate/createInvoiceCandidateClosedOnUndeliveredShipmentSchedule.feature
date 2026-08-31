@@ -59,7 +59,6 @@ Feature: Closing an undelivered shipment disposition closes the sales invoice ca
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice |
       | invoiceCand_1                     | so1                       | so1_l1                    | 0                | 0            |
 
-    # Nothing was ever shipped; the disposition is simply closed.
     When the M_ShipmentSchedule identified by shipmentSchedule1 is closed
 
     Then validate C_Invoice_Candidate:

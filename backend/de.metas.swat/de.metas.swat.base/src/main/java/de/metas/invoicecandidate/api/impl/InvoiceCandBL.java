@@ -2265,19 +2265,14 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		invoiceCandidates.forEach(this::openInvoiceCandidate);
 	}
 
-	/**
-	 * Counterpart of {@link #closeInvoiceCandidate(I_C_Invoice_Candidate)}.
-	 * <p>
-	 * QtyToInvoice is deliberately not restored here: the invalidation makes the recompute machinery
-	 * derive it again from the candidate's own data.
-	 */
+	/** Counterpart of {@link #closeInvoiceCandidate(I_C_Invoice_Candidate)}; QtyToInvoice is not restored, the invalidation recomputes it. */
 	private void openInvoiceCandidate(@NonNull final I_C_Invoice_Candidate candidate)
 	{
 		candidate.setProcessed_Override(null);
 
 		if (!InterfaceWrapperHelper.hasChanges(candidate))
 		{
-			return; // https://github.com/metasfresh/metasfresh/issues/3216
+			return;
 		}
 
 		invoiceCandDAO.invalidateCand(candidate);
