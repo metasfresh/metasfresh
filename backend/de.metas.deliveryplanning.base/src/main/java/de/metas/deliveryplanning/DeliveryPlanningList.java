@@ -149,6 +149,12 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 
 	public DeliveryPlanningList allocatedOnes() {return filter(DeliveryPlanning::isAllocated);}
 
+	/**
+	 * The complement of {@link #allocatedOnes()} - what Move to a delivery instruction refuses, exactly as Add to
+	 * refuses the allocated ones, so the two actions' preconditions partition every selection between them.
+	 */
+	public DeliveryPlanningList unallocatedOnes() {return filter(deliveryPlanning -> !deliveryPlanning.isAllocated());}
+
 	public DeliveryPlanningList withoutShipper() {return filter(DeliveryPlanning::isWithoutShipper);}
 
 	private DeliveryPlanningList filter(@NonNull final Predicate<DeliveryPlanning> predicate)

@@ -175,12 +175,15 @@ public class M_Delivery_Planning_Alloc_StepDef
 	 *   <b>M_ShipperTransportation_ID</b> — (required, identifier-ref) the delivery instruction<br>
 	 *   <b>IsActive</b> — (required) expected {@code IsActive}: {@code false} for a retired allocation<br>
 	 *   <b>LineNo</b> — (optional) expected {@code LineNo}<br>
+	 *   <b>IsShippingPackageActive</b> — (optional) expected {@code IsActive} of the allocation's OWN shipping
+	 *   package - the pair is retired together, so a retired allocation whose package is still active is a
+	 *   half-performed release<br>
 	 * @cucumber.depends StepDefData: M_Delivery_Planning_StepDefData, M_ShipperTransportation_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * Then validate M_Delivery_Planning_Alloc:
-	 *   | M_Delivery_Planning_ID | M_ShipperTransportation_ID | IsActive |
-	 *   | deliveryPlanning_1     | deliveryInstruction_source | false    |
+	 *   | M_Delivery_Planning_ID | M_ShipperTransportation_ID | IsActive | IsShippingPackageActive |
+	 *   | deliveryPlanning_1     | deliveryInstruction_source | false    | false                   |
 	 * </pre>
 	 */
 	@Then("validate M_Delivery_Planning_Alloc:")
@@ -209,6 +212,10 @@ public class M_Delivery_Planning_Alloc_StepDef
 					.isEqualTo(row.getAsBoolean(I_M_Delivery_Planning_Alloc.COLUMNNAME_IsActive));
 			row.getAsOptionalInt(I_M_Delivery_Planning_Alloc.COLUMNNAME_LineNo)
 					.ifPresent(lineNo -> softly.assertThat(allocRecord.getLineNo()).as(I_M_Delivery_Planning_Alloc.COLUMNNAME_LineNo).isEqualTo(lineNo.intValue()));
+			row.getAsOptionalBoolean("IsShippingPackageActive")
+					.ifPresent(expected -> softly.assertThat(loadShippingPackageOf(allocRecord).isActive())
+							.as("IsActive of the M_ShippingPackage of M_Delivery_Planning_Alloc %s", allocRecord.getM_Delivery_Planning_Alloc_ID())
+							.isEqualTo(expected));
 			softly.assertAll();
 		});
 	}

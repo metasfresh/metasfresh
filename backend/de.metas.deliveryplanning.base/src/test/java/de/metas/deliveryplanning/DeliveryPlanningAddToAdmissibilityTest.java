@@ -235,6 +235,19 @@ class DeliveryPlanningAddToAdmissibilityTest
 				.orElse(null);
 	}
 
+	/**
+	 * The same for move-to: the two actions share this rule, so both are asserted against it.
+	 */
+	private String moveToRejectionTextOf(
+			@NonNull final IQueryFilter<I_M_Delivery_Planning> selection,
+			@NonNull final ShipperTransportationId target)
+	{
+		return deliveryPlanningService
+				.getMoveToRejectionReason(deliveryPlanningService.getBySelection(selection), target)
+				.map(reason -> reason.translate("en_US"))
+				.orElse(null);
+	}
+
 	private static String keyOf(final AdMessageKey adMessageKey)
 	{
 		return adMessageKey.toAD_Message();
@@ -292,9 +305,14 @@ class DeliveryPlanningAddToAdmissibilityTest
 				.isEqualTo(target.getRepoId());
 	}
 
+	/**
+	 * Moved off add-to when the two verbs were split: a planning the target already holds IS allocated, so add-to
+	 * now refuses it outright and only move-to can be handed such a selection. The rule being pinned - that the
+	 * planning is counted ONCE and so never reported as differing from itself - is unchanged.
+	 */
 	@Test
-	@DisplayName("add to of a planning the target already holds is a no-op, not a mismatch with itself")
-	void addTo_alreadyOnTheTargetIsIdempotent()
+	@DisplayName("move to of a planning the target already holds is a no-op, not a mismatch with itself")
+	void moveTo_alreadyOnTheTargetIsIdempotent()
 	{
 		final I_M_Delivery_Planning p1 = deliveryPlanning(FORWARDER_A);
 		final I_M_Delivery_Planning p3 = deliveryPlanning(FORWARDER_A);
@@ -304,9 +322,9 @@ class DeliveryPlanningAddToAdmissibilityTest
 		// the same planning is in the selection AND on the target: counted once, so it is never compared against
 		// itself and reported as differing from itself
 		final IQueryFilter<I_M_Delivery_Planning> selection = selectionOf(ImmutableList.of(p1));
-		assertThat(addToRejectionTextOf(selection, target)).isNull();
+		assertThat(moveToRejectionTextOf(selection, target)).isNull();
 
-		deliveryPlanningService.addTo(selection, target);
+		deliveryPlanningService.moveTo(selection, target);
 
 		assertThat(deliveryPlanningRepository.getAllocatedPlanningIds(target))
 				.as("nothing was added and nothing was taken away")
@@ -314,6 +332,35 @@ class DeliveryPlanningAddToAdmissibilityTest
 		assertThat(reload(p1).getReleaseNo())
 				.as("the release number already names this instruction, so it is not re-stamped")
 				.isEqualTo(releaseNoBefore);
+	}
+
+	@Test
+	@DisplayName("move to is refused when the moved selection differs from what the target already holds, naming the field")
+	void moveTo_differingFromTheTargetsOwnPlanningsIsRefused()
+	{
+		final I_M_Delivery_Planning p1 = deliveryPlanning(FORWARDER_A);
+		final ShipperTransportationId target = combineIntoDraftInstruction(ImmutableList.of(p1, deliveryPlanning(FORWARDER_A)));
+
+		// on a draft instruction of its own, so move-to's allocation guard passes and the admissibility rule -
+		// the same one add-to applies - is what has to refuse it
+		final I_M_Delivery_Planning moving = deliveryPlanning(FORWARDER_B);
+		final ShipperTransportationId source = combineIntoDraftInstruction(ImmutableList.of(moving, deliveryPlanning(FORWARDER_B)));
+		final IQueryFilter<I_M_Delivery_Planning> selection = selectionOf(ImmutableList.of(moving));
+
+		assertThat(moveToRejectionTextOf(selection, target))
+				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_IncompatibleSelection))
+				.contains(keyOf(AggregationKeyField.Forwarder.getLabel()));
+
+		assertThatThrownBy(() -> deliveryPlanningService.moveTo(selection, target))
+				.isInstanceOf(AdempiereException.class);
+
+		assertThat(deliveryPlanningRepository.getAllocatedPlanningIds(target))
+				.as("the target holds only its own two plannings")
+				.hasSize(2)
+				.doesNotContain(idOf(moving));
+		assertThat(reload(moving).getM_ShipperTransportation_ID())
+				.as("and the refused planning stayed on the source it was on")
+				.isEqualTo(source.getRepoId());
 	}
 
 	@Test

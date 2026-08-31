@@ -109,8 +109,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Service
@@ -168,6 +170,20 @@ public class DeliveryPlanningService
 	 */
 	public static final AdMessageKey MSG_M_Delivery_Planning_OnCompletedDeliveryInstruction = AdMessageKey.of("de.metas.deliveryplanning.DeliveryInstruction.OnCompletedInstruction");
 	public static final AdMessageKey MSG_M_Delivery_Planning_TargetInstructionNotDraft = AdMessageKey.of("de.metas.deliveryplanning.AddToDeliveryInstruction.TargetNotDraft");
+
+	/**
+	 * Refuses ADDING a planning that already sits on a delivery instruction, and names Move as the action that
+	 * does apply to it.
+	 * <p>
+	 * Distinct from {@link #MSG_M_Delivery_Planning_AlreadyOnDeliveryInstruction}, which refuses COMBINING such a
+	 * planning into a NEW instruction - there the answer is to take it off first, here it is to move it.
+	 */
+	public static final AdMessageKey MSG_M_Delivery_Planning_AlreadyOnDeliveryInstruction_UseMove = AdMessageKey.of("de.metas.deliveryplanning.AddToDeliveryInstruction.AlreadyOnDeliveryInstruction");
+
+	/**
+	 * Refuses taking a planning off an instruction it is not on. Shared by Remove from and Move to - the sentence
+	 * is the state, not the action, so a second near-identical message would say the same thing twice.
+	 */
 	public static final AdMessageKey MSG_M_Delivery_Planning_NotOnDeliveryInstruction = AdMessageKey.of("de.metas.deliveryplanning.RemoveFromDeliveryInstruction.NotOnDeliveryInstruction");
 
 	/**
@@ -1195,23 +1211,88 @@ public class DeliveryPlanningService
 	}
 
 	/**
-	 * Why this selection cannot be added to a delivery instruction, or empty when it can.
+	 * Why this selection cannot be ADDED to a delivery instruction, or empty when it can.
 	 * <p>
 	 * Lives here rather than in the process's {@code checkPreconditionsApplicable} for the same two reasons
 	 * {@link #getCombineRejectionReason(DeliveryPlanningList)} does: a cucumber step drives the rule the WebUI
 	 * drives, and the reason on the disabled button is by construction the sentence {@link #addTo} throws.
 	 * <p>
-	 * Row eligibility first, then the target: a planner resolves "this row cannot go at all" before "it cannot go
-	 * THERE". The target-side rules are the last two, and both need the plannings the target already holds to be
-	 * read - which is why they cost nothing on the selection-change path, where there is no target yet.
+	 * Add is the action for a planning that is on NO instruction yet. One that already sits on a draft is refused,
+	 * and the rejection names the action that does apply - Move - rather than the planning being moved silently:
+	 * taking a load off another instruction changes THAT document too, and a verb doing both hid it.
 	 *
 	 * @param targetDeliveryInstructionId the instruction the planner picked, or {@code null} when the parameter
 	 * 		dialog has not been shown yet - the precondition can only judge the selection, so it passes {@code null}
-	 * 		and the target-side rules are evaluated when {@code addTo} runs.
+	 * 		and the target-side rules are evaluated when {@link #addTo} runs.
 	 */
 	public Optional<ITranslatableString> getAddToRejectionReason(
 			@NonNull final DeliveryPlanningList selectedDeliveryPlannings,
 			@Nullable final ShipperTransportationId targetDeliveryInstructionId)
+	{
+		return getPutOnDeliveryInstructionRejectionReason(
+				selectedDeliveryPlannings,
+				targetDeliveryInstructionId,
+				() -> {
+					// exactly the complement of Move's guard below, so a selection is offered exactly one of the
+					// two actions and the planner never has to guess which one their rows are in the state for
+					final DeliveryPlanningList allocated = selectedDeliveryPlannings.allocatedOnes();
+					return allocated.isEmpty()
+							? Optional.empty()
+							: Optional.of(TranslatableStrings.adMessage(
+							MSG_M_Delivery_Planning_AlreadyOnDeliveryInstruction_UseMove,
+							toIdList(allocated)));
+				});
+	}
+
+	/**
+	 * Why this selection cannot be MOVED to another delivery instruction, or empty when it can.
+	 * <p>
+	 * The mirror image of {@link #getAddToRejectionReason(DeliveryPlanningList, ShipperTransportationId)}: same
+	 * rules on the rows and on the target, opposite allocation guard. Move is the action for a planning that IS on
+	 * a draft instruction; one that is on none has nothing to move off, and Add is what applies to it.
+	 *
+	 * @param targetDeliveryInstructionId the instruction the planner picked, or {@code null} when the parameter
+	 * 		dialog has not been shown yet - same contract as the add-to counterpart.
+	 */
+	public Optional<ITranslatableString> getMoveToRejectionReason(
+			@NonNull final DeliveryPlanningList selectedDeliveryPlannings,
+			@Nullable final ShipperTransportationId targetDeliveryInstructionId)
+	{
+		return getPutOnDeliveryInstructionRejectionReason(
+				selectedDeliveryPlannings,
+				targetDeliveryInstructionId,
+				() -> {
+					// ANY unallocated row refuses the WHOLE selection, matching the all-or-nothing the action
+					// itself is - and making the pair of preconditions mutually exclusive rather than merely
+					// usually-disjoint
+					final DeliveryPlanningList unallocated = selectedDeliveryPlannings.unallocatedOnes();
+					return unallocated.isEmpty()
+							? Optional.empty()
+							: Optional.of(TranslatableStrings.adMessage(
+							MSG_M_Delivery_Planning_NotOnDeliveryInstruction,
+							toIdList(unallocated)));
+				});
+	}
+
+	/**
+	 * Everything Add to and Move to refuse for the same reason - which is everything except the allocation state
+	 * the two actions are the two halves of.
+	 * <p>
+	 * Row eligibility first, then the target: a planner resolves "this row cannot go at all" before "it cannot go
+	 * THERE". The target-side rules are the last two, and both need the plannings the target already holds to be
+	 * read - which is why they cost nothing on the selection-change path, where there is no target yet.
+	 * <p>
+	 * The completed-instruction rule is evaluated BEFORE the allocation guard on purpose: a planning on a completed
+	 * instruction is allocated, so the guard would otherwise answer for it and send the planner to a Move that
+	 * refuses it anyway. The dead end is worth naming at the first press.
+	 *
+	 * @param allocationStateGuard the one rule the two actions do not share: Add refuses an allocated planning,
+	 * 		Move refuses an unallocated one.
+	 */
+	private Optional<ITranslatableString> getPutOnDeliveryInstructionRejectionReason(
+			@NonNull final DeliveryPlanningList selectedDeliveryPlannings,
+			@Nullable final ShipperTransportationId targetDeliveryInstructionId,
+			@NonNull final Supplier<Optional<ITranslatableString>> allocationStateGuard)
 	{
 		if (selectedDeliveryPlannings.anyClosed())
 		{
@@ -1229,6 +1310,12 @@ public class DeliveryPlanningService
 					toIdList(onCompletedInstruction)));
 		}
 
+		final Optional<ITranslatableString> allocationStateRejection = allocationStateGuard.get();
+		if (allocationStateRejection.isPresent())
+		{
+			return allocationStateRejection;
+		}
+
 		if (!selectedDeliveryPlannings.getSingleType().isPresent())
 		{
 			// the target picker offers the instructions of ONE direction, so a selection spanning two has no
@@ -1239,7 +1326,7 @@ public class DeliveryPlanningService
 		if (targetDeliveryInstructionId == null)
 		{
 			// the parameter dialog has not been shown yet, so the two target-side rules below cannot be evaluated;
-			// they are, when addTo runs with the instruction the planner picked
+			// they are, when the action runs with the instruction the planner picked
 			return Optional.empty();
 		}
 
@@ -1323,16 +1410,54 @@ public class DeliveryPlanningService
 	}
 
 	/**
-	 * Puts the selected delivery plannings on the given DRAFT delivery instruction, taking each off whatever draft
-	 * instruction it was on before.
+	 * Puts the selected delivery plannings on the given DRAFT delivery instruction. Only plannings that are on NO
+	 * instruction yet: one that is already allocated is refused and the planner is pointed at {@link #moveTo},
+	 * because taking a load off another instruction changes that document too.
 	 * <p>
-	 * All-or-nothing: the rejection is evaluated for the whole selection before anything is written, and
-	 * the writes then run in one transaction, so a failure part-way leaves no planning moved, no shipping package
-	 * orphaned and no {@code ReleaseNo} re-stamped. Per planning the order is deactivate-then-create, so the
-	 * single-active-allocation index never sees two.
+	 * All-or-nothing: the rejection is evaluated for the whole selection before anything is written, and the writes
+	 * then run in one transaction, so a failure part-way leaves no planning allocated and no {@code ReleaseNo}
+	 * stamped.
+	 */
+	public void addTo(
+			@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter,
+			@NonNull final ShipperTransportationId targetDeliveryInstructionId)
+	{
+		putOnDeliveryInstruction(
+				selectedDeliveryPlanningsFilter,
+				targetDeliveryInstructionId,
+				this::getAddToRejectionReason,
+				// nothing to release: the guard above refused every allocated planning
+				false);
+	}
+
+	/**
+	 * Moves the selected delivery plannings from the DRAFT delivery instruction they are on to the given one: the
+	 * source allocation and its shipping package are released, the planning's dates return to their order-derived
+	 * origin, and a new allocation is created on the target.
 	 * <p>
-	 * A planning already on the target is left alone: there is nothing to move, and its {@code ReleaseNo} already
-	 * names that instruction.
+	 * All-or-nothing, exactly as {@link #addTo} is - and for the sharper reason: a move touches TWO documents, so a
+	 * failure part-way would leave a load on neither.
+	 * <p>
+	 * A planning already on the target is left alone rather than refused: there is nothing to move, and its
+	 * {@code ReleaseNo} already names that instruction. A selection the planner dragged over the target's own rows
+	 * therefore still moves the rest instead of failing whole.
+	 */
+	public void moveTo(
+			@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter,
+			@NonNull final ShipperTransportationId targetDeliveryInstructionId)
+	{
+		putOnDeliveryInstruction(
+				selectedDeliveryPlanningsFilter,
+				targetDeliveryInstructionId,
+				this::getMoveToRejectionReason,
+				true);
+	}
+
+	/**
+	 * The one implementation behind {@link #addTo} and {@link #moveTo}: resolve the target, build the allocation
+	 * requests, resolve the instruction's dates, create the allocations, re-stamp the release numbers. The two
+	 * actions differ in exactly two things - the guard they are rejected by, and whether a source allocation is
+	 * released first.
 	 * <p>
 	 * Deactivate, THEN reset, THEN build the allocation requests - in that order, deliberately. A planning still
 	 * allocated to the SOURCE carries the source instruction's dates (the sync-down overwrote its own), so a
@@ -1342,23 +1467,29 @@ public class DeliveryPlanningService
 	 * with the target's resolved dates a few lines later regardless - the reset's persisted value on the
 	 * planning is transient, but the REQUEST built from it is what the target's defaulting sees, and that is
 	 * what must be order-derived, not source-contaminated.
+	 *
+	 * @param releaseSourceAllocation deactivate the allocation the planning is on today and reset its dates before
+	 * 		creating the new one. True for a move; false for an add, whose guard has already refused every planning
+	 * 		that has one.
 	 */
-	public void addTo(
+	private void putOnDeliveryInstruction(
 			@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter,
-			@NonNull final ShipperTransportationId targetDeliveryInstructionId)
+			@NonNull final ShipperTransportationId targetDeliveryInstructionId,
+			@NonNull final BiFunction<DeliveryPlanningList, ShipperTransportationId, Optional<ITranslatableString>> rejectionReason,
+			final boolean releaseSourceAllocation)
 	{
 		final DeliveryPlanningList selectedDeliveryPlannings = getBySelection(selectedDeliveryPlanningsFilter);
 		// an invariant, not a user-facing rejection - see combine() above
 		Check.assume(!selectedDeliveryPlannings.isEmpty(), "No delivery planning selected");
 
-		getAddToRejectionReason(selectedDeliveryPlannings, targetDeliveryInstructionId)
+		rejectionReason.apply(selectedDeliveryPlannings, targetDeliveryInstructionId)
 				.ifPresent(reason -> {throw new AdempiereException(reason);});
 
 		// in allocation order, so the LineNos the target hands out continue in a decided order rather than the
 		// query's encounter order
 		final ImmutableList<DeliveryPlanningId> deliveryPlanningIds = selectedDeliveryPlannings.stream()
-				// already on the target = nothing to move; with several legs that means NONE of its allocations
-				// names the target
+				// already on the target = nothing to do; with several legs that means NONE of its allocations
+				// names the target. Reachable only for a move - an add's guard has refused every allocated row
 				.filter(deliveryPlanning -> !deliveryPlanning.getDeliveryInstructionIds().contains(targetDeliveryInstructionId))
 				.map(DeliveryPlanning::getId)
 				.collect(ImmutableList.toImmutableList());
@@ -1367,19 +1498,22 @@ public class DeliveryPlanningService
 			return;
 		}
 
-		// No trxManager wrapper: the only caller is M_Delivery_Planning_AddToDeliveryInstruction.doIt(), a
-		// JavaProcess without @RunOutOfTrx, so an ambient thread-inherited transaction already spans the whole
-		// call and rolls the writes below back together. runInThreadInheritedTrx would only add a savepoint
-		// inside that transaction; it earns its keep exclusively where the caller arrives OUT of transaction
-		// (see closeSelectedDeliveryPlannings above, whose process IS @RunOutOfTrx).
+		// No trxManager wrapper: the only callers are the two JavaProcesses without @RunOutOfTrx, so an ambient
+		// thread-inherited transaction already spans the whole call and rolls the writes below back together.
+		// runInThreadInheritedTrx would only add a savepoint inside that transaction; it earns its keep
+		// exclusively where the caller arrives OUT of transaction (see closeSelectedDeliveryPlannings above,
+		// whose process IS @RunOutOfTrx).
 
-		// the source allocation and its package are DEACTIVATED, not deleted, so the record of what was once
-		// planned survives - the target's insert still finds no ACTIVE row to collide with on either partial
-		// unique index, since both are declared WHERE IsActive='Y'
-		final ImmutableSet<DeliveryPlanningId> deactivatedIds = deliveryPlanningRepository.deactivateAllocations(deliveryPlanningIds, SystemTime.asInstant());
-		resetDatesFromOrderAndSchedule(deactivatedIds);
+		if (releaseSourceAllocation)
+		{
+			// the source allocation and its package are DEACTIVATED, not deleted, so the record of what was once
+			// planned survives - the target's insert still finds no ACTIVE row to collide with on either partial
+			// unique index, since both are declared WHERE IsActive='Y'
+			final ImmutableSet<DeliveryPlanningId> deactivatedIds = deliveryPlanningRepository.deactivateAllocations(deliveryPlanningIds, SystemTime.asInstant());
+			resetDatesFromOrderAndSchedule(deactivatedIds);
+		}
 
-		// built AFTER the reset above: reads the just-reset, order-derived dates - never the source
+		// built AFTER any reset above: reads the just-reset, order-derived dates - never the source
 		// instruction's, which the sync-down would still have on these rows before the reset ran
 		final ImmutableList<DeliveryPlanningAllocCreateRequest> allocations = createAllocCreateRequests(deliveryPlanningIds);
 
@@ -1387,7 +1521,7 @@ public class DeliveryPlanningService
 		final DeliveryInstructionDates resolvedDates = resolveInstructionDatesForAllocation(targetInstruction, allocations);
 		deliveryPlanningRepository.createAllocations(targetInstruction, allocations, resolvedDates);
 
-		// re-stamped from the target: the old release number named a document the cargo has left
+		// stamped from the target: on a move the old release number named a document the cargo has left
 		deliveryPlanningRepository.updateDeliveryPlanningsFromInstruction(deliveryPlanningIds, targetDeliveryInstructionId);
 	}
 

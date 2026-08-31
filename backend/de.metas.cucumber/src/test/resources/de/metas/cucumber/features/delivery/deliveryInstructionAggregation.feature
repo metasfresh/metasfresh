@@ -5,8 +5,9 @@
 Feature: Several delivery plannings on one delivery instruction
 
   A planner consolidates the loads of one truck.
-  Combine builds one instruction out of a selection, Add to / Remove from re-book a single load, and the
-  instruction stays a draft until the planner says it is final.
+  Combine builds one instruction out of a selection.
+  Add to puts an unplanned load on a draft, Move to re-books a planned one, Remove from takes it off.
+  The instruction stays a draft until the planner says it is final.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -143,7 +144,7 @@ Feature: Several delivery plannings on one delivery instruction
       | planningMix_2          |
 
   @Id:S31608_TC3
-  Scenario: Add a delivery planning to a draft delivery instruction, then move it to another draft
+  Scenario: Add applies to an unplanned delivery planning only - an already planned one is pointed at Move
 
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier |
@@ -175,6 +176,25 @@ Feature: Several delivery plannings on one delivery instruction
       | M_ShipperTransportation_ID | M_Delivery_Planning_ID |
       | deliveryInstructionAdd_B   | planningAdd_4          |
 
+    # planningAdd_3 is on no instruction, so MOVE has nothing to move and refuses it - Add is what applies
+    When move M_Delivery_Planning to M_ShipperTransportation:
+      | M_ShipperTransportation_ID | M_Delivery_Planning_ID | ErrorAdMessage                                                                  |
+      | deliveryInstructionAdd_A   | planningAdd_3          | de.metas.deliveryplanning.RemoveFromDeliveryInstruction.NotOnDeliveryInstruction |
+
+    # ADD is all-or-nothing: one already-planned row in the selection refuses the whole action
+    When add M_Delivery_Planning to M_ShipperTransportation:
+      | M_ShipperTransportation_ID | M_Delivery_Planning_ID      | ErrorAdMessage                                                                  |
+      | deliveryInstructionAdd_A   | planningAdd_3,planningAdd_4 | de.metas.deliveryplanning.AddToDeliveryInstruction.AlreadyOnDeliveryInstruction |
+
+    Then the M_ShipperTransportation identified by deliveryInstructionAdd_A holds exactly the following active M_Delivery_Planning_Alloc:
+      | M_Delivery_Planning_ID | LineNo | ActualLoadQty |
+      | planningAdd_1          | 10     | 4             |
+      | planningAdd_2          | 20     | 2             |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | M_ShipperTransportation_ID |
+      | planningAdd_3          | 10         | 10           | Outgoing           | null                       |
+      | planningAdd_4          | 10         | 10           | Outgoing           | deliveryInstructionAdd_B   |
+
     # ADD: a planning that is on no instruction joins a draft one
     When add M_Delivery_Planning to M_ShipperTransportation:
       | M_ShipperTransportation_ID | M_Delivery_Planning_ID |
@@ -189,33 +209,22 @@ Feature: Several delivery plannings on one delivery instruction
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | M_ShipperTransportation_ID |
       | planningAdd_3          | 10         | 10           | Outgoing           | deliveryInstructionAdd_A   |
 
-    # MOVE: the same planning goes to the other draft, and leaves a retired allocation behind
+    # and now that it IS planned, ADD refuses it and names Move
     When add M_Delivery_Planning to M_ShipperTransportation:
-      | M_ShipperTransportation_ID | M_Delivery_Planning_ID |
-      | deliveryInstructionAdd_B   | planningAdd_3          |
+      | M_ShipperTransportation_ID | M_Delivery_Planning_ID | ErrorAdMessage                                                                  |
+      | deliveryInstructionAdd_B   | planningAdd_3          | de.metas.deliveryplanning.AddToDeliveryInstruction.AlreadyOnDeliveryInstruction |
 
     Then the M_ShipperTransportation identified by deliveryInstructionAdd_A holds exactly the following active M_Delivery_Planning_Alloc:
       | M_Delivery_Planning_ID | LineNo | ActualLoadQty |
       | planningAdd_1          | 10     | 4             |
       | planningAdd_2          | 20     | 2             |
+      | planningAdd_3          | 30     | 2             |
     And the M_ShipperTransportation identified by deliveryInstructionAdd_B holds exactly the following active M_Delivery_Planning_Alloc:
       | M_Delivery_Planning_ID | LineNo | ActualLoadQty |
       | planningAdd_4          | 10     | 2             |
-      | planningAdd_3          | 20     | 2             |
-    And validate M_Delivery_Planning_Alloc:
-      | M_Delivery_Planning_ID | M_ShipperTransportation_ID | IsActive | LineNo |
-      | planningAdd_3          | deliveryInstructionAdd_A   | false    | 30     |
-      | planningAdd_3          | deliveryInstructionAdd_B   | true     | 20     |
-    And validate M_Delivery_Planning:
-      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | M_ShipperTransportation_ID |
-      | planningAdd_3          | 10         | 10           | Outgoing           | deliveryInstructionAdd_B   |
-    And each M_Delivery_Planning has its own ReleaseNo stamped from M_ShipperTransportation deliveryInstructionAdd_B:
-      | M_Delivery_Planning_ID |
-      | planningAdd_3          |
-      | planningAdd_4          |
 
   @Id:S31608_TC4
-  Scenario: Nothing moves off a completed delivery instruction
+  Scenario: Neither Add, Move nor Remove touches a delivery planning on a completed delivery instruction
 
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier |
@@ -251,10 +260,21 @@ Feature: Several delivery plannings on one delivery instruction
       | deliveryInstructionDone               | shipper_DHL             | customer                       | customerLocation               | CO            |
       | deliveryInstructionDraft              | shipper_DHL             | customer                       | customerLocation               | DR            |
 
-    # ADD is refused for the whole selection, not partially performed
+    # ADD is refused for the whole selection, not partially performed - and the completed instruction is named,
+    # rather than the planner being sent to a Move that would refuse it anyway
     When add M_Delivery_Planning to M_ShipperTransportation:
       | M_ShipperTransportation_ID | M_Delivery_Planning_ID | ErrorAdMessage                                                       |
       | deliveryInstructionDraft   | planningDone_2         | de.metas.deliveryplanning.DeliveryInstruction.OnCompletedInstruction |
+
+    # so is MOVE - which is the action that would otherwise apply to an allocated planning
+    When move M_Delivery_Planning to M_ShipperTransportation:
+      | M_ShipperTransportation_ID | M_Delivery_Planning_ID | ErrorAdMessage                                                       |
+      | deliveryInstructionDraft   | planningDone_2         | de.metas.deliveryplanning.DeliveryInstruction.OnCompletedInstruction |
+
+    # and a MOVE whose selection mixes a draft-allocated planning with a completed-allocated one moves NEITHER
+    When move M_Delivery_Planning to M_ShipperTransportation:
+      | M_ShipperTransportation_ID | M_Delivery_Planning_ID        | ErrorAdMessage                                                       |
+      | deliveryInstructionDraft   | planningDone_3,planningDone_2 | de.metas.deliveryplanning.DeliveryInstruction.OnCompletedInstruction |
 
     Then the M_ShipperTransportation identified by deliveryInstructionDone holds exactly the following active M_Delivery_Planning_Alloc:
       | M_Delivery_Planning_ID | LineNo |
@@ -279,6 +299,100 @@ Feature: Several delivery plannings on one delivery instruction
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | M_ShipperTransportation_ID |
       | planningDone_2         | 9          | 9            | Outgoing           | deliveryInstructionDone    |
+
+  @Id:S31608_TC21
+  Scenario: Move a delivery planning between two draft delivery instructions
+
+    Given metasfresh contains C_Orders:
+      | Identifier      | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier |
+      | orderMoveSource | true    | customer                 | 2023-02-03  | 2023-02-15T00:00:00Z | 2023-02-20T00:00:00Z | customerLocation                      |
+      | orderMoveTarget | true    | customer                 | 2023-02-03  | 2023-05-05T00:00:00Z | 2023-05-10T00:00:00Z | customerLocation                      |
+    And metasfresh contains C_OrderLines:
+      | Identifier          | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineMoveSource | orderMoveSource       | product                 | 10         | shipper_DHL                 |
+      | orderLineMoveTarget | orderMoveTarget       | product                 | 6          | shipper_DHL                 |
+
+    When the order identified by orderMoveSource is completed
+    And the order identified by orderMoveTarget is completed
+
+    Then after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier                 | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentScheduleMoveSource | orderLineMoveSource       | N             |
+      | shipmentScheduleMoveTarget | orderLineMoveTarget       | N             |
+    And after not more than 60s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID | C_OrderLine_ID      |
+      | planningMove_1         | orderLineMoveSource |
+      | planningMove_3         | orderLineMoveTarget |
+
+    # two loads on the source order line: 5 + 5 of the 10 ordered
+    When generate 1 additional M_Delivery_Planning records for: planningMove_1
+
+    Then after not more than 60s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID        | C_OrderLine_ID      |
+      | planningMove_1,planningMove_2 | orderLineMoveSource |
+
+    When combine M_Delivery_Planning into one M_ShipperTransportation:
+      | M_ShipperTransportation_ID | M_Delivery_Planning_ID        |
+      | deliveryInstructionMove_A  | planningMove_1,planningMove_2 |
+    And generate M_ShipperTransportation for M_Delivery_Planning:
+      | M_ShipperTransportation_ID | M_Delivery_Planning_ID |
+      | deliveryInstructionMove_B  | planningMove_3         |
+
+    # the planner gave the source truck its own departure and arrival, which syncs down to both its loads
+    And update transport order
+      | M_ShipperTransportation_ID | ETD                  | ETA                  |
+      | deliveryInstructionMove_A  | 2023-06-01T00:00:00Z | 2023-06-05T00:00:00Z |
+
+    Then validate M_ShipperTransportation:
+      | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DocStatus | OPT.ETA    |
+      | deliveryInstructionMove_B             | shipper_DHL             | customer                       | customerLocation               | DR            | 2023-05-10 |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | ETD        | ETA        | M_ShipperTransportation_ID |
+      | planningMove_1         | 10         | 10           | Outgoing           | 2023-06-01 | 2023-06-05 | deliveryInstructionMove_A  |
+      | planningMove_2         | 10         | 10           | Outgoing           | 2023-06-01 | 2023-06-05 | deliveryInstructionMove_A  |
+
+    # MOVE: planningMove_2 changes truck; planningMove_3 is ALREADY on the target and is skipped
+    When move M_Delivery_Planning to M_ShipperTransportation:
+      | M_ShipperTransportation_ID | M_Delivery_Planning_ID        |
+      | deliveryInstructionMove_B  | planningMove_2,planningMove_3 |
+
+    Then the M_ShipperTransportation identified by deliveryInstructionMove_A holds exactly the following active M_Delivery_Planning_Alloc:
+      | M_Delivery_Planning_ID | LineNo | ActualLoadQty |
+      | planningMove_1         | 10     | 5             |
+    And the M_ShipperTransportation identified by deliveryInstructionMove_B holds exactly the following active M_Delivery_Planning_Alloc:
+      | M_Delivery_Planning_ID | LineNo | ActualLoadQty |
+      | planningMove_3         | 10     | 6             |
+      | planningMove_2         | 20     | 5             |
+
+    # the source allocation and its shipping package are RELEASED - deactivated, not erased
+    And validate M_Delivery_Planning_Alloc:
+      | M_Delivery_Planning_ID | M_ShipperTransportation_ID | IsActive | LineNo | IsShippingPackageActive |
+      | planningMove_2         | deliveryInstructionMove_A  | false    | 20     | false                   |
+      | planningMove_2         | deliveryInstructionMove_B  | true     | 20     | true                    |
+    # exactly ONE allocation row for the skipped planning: no second one was created for it
+    And validate M_Delivery_Planning_Alloc:
+      | M_Delivery_Planning_ID | M_ShipperTransportation_ID | IsActive | LineNo | IsShippingPackageActive |
+      | planningMove_3         | deliveryInstructionMove_B  | true     | 10     | true                    |
+
+    # nothing of the source survives on the moved load: it is on the TARGET's dates, and the load that
+    # stayed behind still has the source truck's
+    And the following M_Delivery_Planning carry the date fields of M_ShipperTransportation deliveryInstructionMove_B:
+      | M_Delivery_Planning_ID |
+      | planningMove_2         |
+      | planningMove_3         |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | ETD        | ETA        | M_ShipperTransportation_ID |
+      | planningMove_2         | 10         | 10           | Outgoing           | 2023-05-05 | 2023-05-10 | deliveryInstructionMove_B  |
+      | planningMove_1         | 10         | 10           | Outgoing           | 2023-06-01 | 2023-06-05 | deliveryInstructionMove_A  |
+
+    # the release number is re-stamped from the target - the old one named a document the cargo has left
+    And each M_Delivery_Planning has its own ReleaseNo stamped from M_ShipperTransportation deliveryInstructionMove_B:
+      | M_Delivery_Planning_ID |
+      | planningMove_2         |
+      | planningMove_3         |
+    And each M_Delivery_Planning has its own ReleaseNo stamped from M_ShipperTransportation deliveryInstructionMove_A:
+      | M_Delivery_Planning_ID |
+      | planningMove_1         |
 
   @Id:S31608_TC5
   Scenario: Remove delivery plannings from a draft delivery instruction, a closed one included

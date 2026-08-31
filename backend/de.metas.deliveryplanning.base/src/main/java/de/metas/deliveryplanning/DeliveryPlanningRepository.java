@@ -775,7 +775,7 @@ public class DeliveryPlanningRepository
 	 * "A planning cannot be removed from a completed instruction" is enforced entirely at the service layer, by
 	 * each caller's own rejection-reason check BEFORE this method is ever called -
 	 * {@link DeliveryPlanningService#getRemoveFromRejectionReason} for the remove-from path,
-	 * {@link DeliveryPlanningService#getAddToRejectionReason} for the source half of a move. The allocation itself
+	 * {@link DeliveryPlanningService#getMoveToRejectionReason} for the source half of a move. The allocation itself
 	 * carries no status to check here: it is not a document.
 	 *
 	 * @return the planning ids ACTUALLY deactivated - a subset of the input when one of them had no active

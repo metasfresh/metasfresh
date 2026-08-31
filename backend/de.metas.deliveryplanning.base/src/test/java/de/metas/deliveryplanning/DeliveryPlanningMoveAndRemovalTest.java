@@ -57,16 +57,17 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.groups.Tuple.tuple;
 
 /**
- * What {@code addTo} and {@code removeFrom} leave behind, driven through the SERVICE rather than the repository.
+ * What {@code moveTo} and {@code removeFrom} leave behind, driven through the SERVICE rather than the repository.
  * <p>
  * Deliberately asserts nothing that {@link DeliveryPlanningBatchLoadingTest} already pins. That one counts round
  * trips and covers the plain add of an unallocated planning; this one covers the things neither it nor the
  * repository-level tests reach through the orchestration:
  * <ol>
- *     <li>the MOVE off a source draft instruction - the clause that makes add-to more than an add</li>
+ *     <li>the MOVE off a source draft instruction - the whole reason move-to is its own action</li>
  *     <li>its idempotency - a planning already on the target must not be taken off and put back</li>
  *     <li>removal leaving the instruction's OTHER plannings alone, which needs a partial selection</li>
  *     <li>a moved allocation continuing the TARGET's LineNo rather than the source's</li>
@@ -297,8 +298,8 @@ class DeliveryPlanningMoveAndRemovalTest
 	// ------------------------------------------------------------------ tests
 
 	@Test
-	@DisplayName("add-to MOVES a planning off the draft instruction it was on, deactivating its source allocation and shipping package")
-	void addToMovesThePlanningOffItsSourceInstruction()
+	@DisplayName("move-to takes a planning off the draft instruction it was on, deactivating its source allocation and shipping package")
+	void moveToTakesThePlanningOffItsSourceInstruction()
 	{
 		final ShipperTransportationId source = draftDeliveryInstruction("SOURCE-1");
 		final ShipperTransportationId target = draftDeliveryInstruction("TARGET-1");
@@ -312,7 +313,7 @@ class DeliveryPlanningMoveAndRemovalTest
 		final int sourcePackageId = allocationOf(moving).getM_ShippingPackage_ID();
 		assertThat(reload(moving).getReleaseNo()).startsWith("SOURCE-1-");
 
-		deliveryPlanningService.addTo(selectionOf(moving), target);
+		deliveryPlanningService.moveTo(selectionOf(moving), target);
 
 		assertThat(allocationsInLineNoOrder())
 				.as("the source row survives DEACTIVATED, and a fresh ACTIVE row sits on the target - nothing was left standing active")
@@ -345,8 +346,8 @@ class DeliveryPlanningMoveAndRemovalTest
 	 * planning's OWN order-derived dates, exactly as if the planning had never been allocated to A at all.
 	 */
 	@Test
-	@DisplayName("add-to never leaks the SOURCE instruction's dates into an empty TARGET - the moved planning's order-derived truth wins")
-	void addToDoesNotLeakSourceDatesIntoAnEmptyTarget()
+	@DisplayName("move-to never leaks the SOURCE instruction's dates into an empty TARGET - the moved planning's order-derived truth wins")
+	void moveToDoesNotLeakSourceDatesIntoAnEmptyTarget()
 	{
 		final ShipperTransportationId source = draftDeliveryInstruction("SOURCE-6");
 		setETD(source, Timestamp.valueOf("2026-03-20 00:00:00"));
@@ -358,7 +359,7 @@ class DeliveryPlanningMoveAndRemovalTest
 				.as("sanity: the sync-down contaminated the planning with SOURCE's date before the move")
 				.isEqualTo(Timestamp.valueOf("2026-03-20 00:00:00"));
 
-		deliveryPlanningService.addTo(selectionOf(moving), target);
+		deliveryPlanningService.moveTo(selectionOf(moving), target);
 
 		final I_M_Delivery_Planning moved = reload(moving);
 		assertThat(moved.getETD())
@@ -371,24 +372,63 @@ class DeliveryPlanningMoveAndRemovalTest
 	}
 
 	@Test
-	@DisplayName("add-to stamps the moved planning's C_Order_ID onto the new shipping package it creates on the target")
+	@DisplayName("add-to stamps the added planning's C_Order_ID onto the new shipping package it creates on the target")
 	void addToStampsThePlanningsOrderIdOntoTheNewShippingPackage()
 	{
 		final ShipperTransportationId target = draftDeliveryInstruction("TARGET-8");
-		final I_M_Delivery_Planning moving = deliveryPlanningWithOrderDerivedDates(Timestamp.valueOf("2026-03-01 00:00:00"));
-		final int orderId = moving.getC_Order_ID();
+		// on NO instruction yet, which is the selection add-to is the action for
+		final I_M_Delivery_Planning joining = deliveryPlanningWithOrderDerivedDates(Timestamp.valueOf("2026-03-01 00:00:00"));
+		final int orderId = joining.getC_Order_ID();
 
-		deliveryPlanningService.addTo(selectionOf(moving), target);
+		deliveryPlanningService.addTo(selectionOf(joining), target);
 
-		final int shippingPackageId = allocationOf(moving).getM_ShippingPackage_ID();
+		final int shippingPackageId = allocationOf(joining).getM_ShippingPackage_ID();
 		assertThat(InterfaceWrapperHelper.load(shippingPackageId, I_M_ShippingPackage.class).getC_Order_ID())
 				.as("the planning's own C_Order_ID must land on the package add-to creates for it")
 				.isEqualTo(orderId);
 	}
 
 	@Test
-	@DisplayName("add-to is a no-op for a planning already on the target - not a delete and re-create")
-	void addToLeavesAPlanningAlreadyOnTheTargetAlone()
+	@DisplayName("move-to is refused for an UNALLOCATED planning - and refuses the WHOLE selection, moving nothing")
+	void moveToRefusesAnUnallocatedPlanningAndMovesNothing()
+	{
+		final ShipperTransportationId source = draftDeliveryInstruction("SOURCE-8");
+		final ShipperTransportationId target = draftDeliveryInstruction("TARGET-8B");
+		final I_M_Delivery_Planning allocated = deliveryPlanning();
+		allocateTo(source, allocated);
+		final I_M_Delivery_Planning notAllocated = deliveryPlanning();
+
+		assertThatThrownBy(() -> deliveryPlanningService.moveTo(selectionOf(allocated, notAllocated), target))
+				.hasMessageContaining(DeliveryPlanningService.MSG_M_Delivery_Planning_NotOnDeliveryInstruction.toAD_Message());
+
+		assertThat(allocationOf(allocated).getM_ShipperTransportation_ID())
+				.as("all-or-nothing: the allocated row stayed on its source rather than being half-moved")
+				.isEqualTo(source.getRepoId());
+		assertNoOrphanedShippingPackages();
+	}
+
+	@Test
+	@DisplayName("add-to is refused for an ALLOCATED planning - and refuses the WHOLE selection, adding nothing")
+	void addToRefusesAnAllocatedPlanningAndAddsNothing()
+	{
+		final ShipperTransportationId source = draftDeliveryInstruction("SOURCE-8C");
+		final ShipperTransportationId target = draftDeliveryInstruction("TARGET-8C");
+		final I_M_Delivery_Planning allocated = deliveryPlanning();
+		allocateTo(source, allocated);
+		final I_M_Delivery_Planning notAllocated = deliveryPlanning();
+
+		assertThatThrownBy(() -> deliveryPlanningService.addTo(selectionOf(allocated, notAllocated), target))
+				.hasMessageContaining(DeliveryPlanningService.MSG_M_Delivery_Planning_AlreadyOnDeliveryInstruction_UseMove.toAD_Message());
+
+		assertThat(deliveryPlanningRepository.getAllocationsByPlanningId(ImmutableList.of(idOf(notAllocated))).isEmpty())
+				.as("all-or-nothing: the unallocated row was not put on the target either")
+				.isTrue();
+		assertNoOrphanedShippingPackages();
+	}
+
+	@Test
+	@DisplayName("move-to is a no-op for a planning already on the target - skipped, not a delete and re-create")
+	void moveToLeavesAPlanningAlreadyOnTheTargetAlone()
 	{
 		final ShipperTransportationId target = draftDeliveryInstruction("TARGET-2");
 		final I_M_Delivery_Planning alreadyThere = deliveryPlanning();
@@ -399,7 +439,7 @@ class DeliveryPlanningMoveAndRemovalTest
 		final int shippingPackageId = before.getM_ShippingPackage_ID();
 		final int lineNo = before.getLineNo();
 
-		deliveryPlanningService.addTo(selectionOf(alreadyThere), target);
+		deliveryPlanningService.moveTo(selectionOf(alreadyThere), target);
 
 		final I_M_Delivery_Planning_Alloc after = allocationOf(alreadyThere);
 		assertThat(allocationsInLineNoOrder()).hasSize(1);
@@ -526,7 +566,7 @@ class DeliveryPlanningMoveAndRemovalTest
 
 		allocateTo(target, deliveryPlanning());
 
-		deliveryPlanningService.addTo(selectionOf(moving), target);
+		deliveryPlanningService.moveTo(selectionOf(moving), target);
 
 		assertThat(allocationOf(moving).getLineNo())
 				.as("the target had one line at 10, so the moved planning takes 20")

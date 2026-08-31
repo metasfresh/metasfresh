@@ -46,13 +46,17 @@ import javax.annotation.Nullable;
 import static de.metas.deliveryplanning.process.M_Delivery_Planning_CombineIntoDeliveryInstruction.MAX_SELECTION_SIZE;
 
 /**
- * Puts the selected delivery plannings on an EXISTING draft delivery instruction - as opposed to
- * {@link M_Delivery_Planning_CombineIntoDeliveryInstruction}, which creates a new one, and to
- * {@link M_Delivery_Planning_MoveToDeliveryInstruction}, which re-books a planning that is already on one.
+ * Moves the selected delivery plannings from the draft delivery instruction they are on to another draft one:
+ * the source allocation and its shipping package are released, the planning's dates return to their order-derived
+ * origin, and a new allocation is created on the target.
  * <p>
- * Add and Move are offered EXCLUSIVELY: this one is unavailable as soon as the selection holds an allocated
- * planning, that one as soon as it holds an unallocated one, so a planner looking at a selection is offered
- * exactly one of the two and never has to work out which state their rows are in.
+ * The counterpart of {@link M_Delivery_Planning_AddToDeliveryInstruction}, which puts a planning that is on NO
+ * instruction on one. The two exist separately because moving changes the SOURCE document as well as the target -
+ * a single verb doing both hid that from the planner who only meant to add.
+ * <p>
+ * Add and Move are offered EXCLUSIVELY: that one is unavailable as soon as the selection holds an allocated
+ * planning, this one as soon as it holds an unallocated one, so a planner looking at a selection is offered exactly
+ * one of the two and never has to work out which state their rows are in.
  * <p>
  * A thin adapter: every rule lives in {@link DeliveryPlanningService}, so a cucumber step drives the same code
  * path the WebUI drives instead of re-implementing the flow.
@@ -62,7 +66,7 @@ import static de.metas.deliveryplanning.process.M_Delivery_Planning_CombineIntoD
  * {@link #PARAM_TransportDirection} parameter below - so the commonest wrong pick is unofferable rather than
  * rejected afterwards.
  */
-public class M_Delivery_Planning_AddToDeliveryInstruction extends JavaProcess
+public class M_Delivery_Planning_MoveToDeliveryInstruction extends JavaProcess
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	/**
@@ -82,22 +86,22 @@ public class M_Delivery_Planning_AddToDeliveryInstruction extends JavaProcess
 		return ProcessPreconditionsResolution.firstRejectOrElseAccept(
 				() -> DeliveryPlanningProcessHelper.checkAnySelection(context),
 				() -> DeliveryPlanningProcessHelper.checkAtMostSelected(context, MAX_SELECTION_SIZE),
-				() -> checkSelectionCanBeAddedTo(context));
+				() -> checkSelectionCanBeMoved(context));
 	}
 
 	/**
 	 * Shown-and-disabled with its reason, NOT hidden - deliberately the opposite of
 	 * {@link M_Delivery_Planning_CombineIntoDeliveryInstruction}'s single-row case, which uses
 	 * {@code rejectWithInternalReason} because at one row Combine and Generate do the same thing and there is
-	 * nothing for the planner to learn. Here there IS: the reason names Move, which is the action that applies to
-	 * the selection the planner has made. A hidden button would leave them looking for the one they need.
+	 * nothing for the planner to learn. Here there IS: the reason says the selection is on no instruction, which
+	 * is what points the planner at Add. A hidden button would leave them looking for the one they need.
 	 */
-	private ProcessPreconditionsResolution checkSelectionCanBeAddedTo(@NonNull final IProcessPreconditionsContext context)
+	private ProcessPreconditionsResolution checkSelectionCanBeMoved(@NonNull final IProcessPreconditionsContext context)
 	{
 		final DeliveryPlanningList selectedDeliveryPlannings = deliveryPlanningService.getBySelection(context.getQueryFilter(I_M_Delivery_Planning.class));
 
 		// null target: the parameter dialog has not been shown yet, so only the selection can be judged here
-		return deliveryPlanningService.getAddToRejectionReason(selectedDeliveryPlannings, null)
+		return deliveryPlanningService.getMoveToRejectionReason(selectedDeliveryPlannings, null)
 				.map(ProcessPreconditionsResolution::reject)
 				.orElseGet(ProcessPreconditionsResolution::accept);
 	}
@@ -124,7 +128,7 @@ public class M_Delivery_Planning_AddToDeliveryInstruction extends JavaProcess
 	{
 		final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter = getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false));
 
-		deliveryPlanningService.addTo(selectedDeliveryPlanningsFilter, p_M_ShipperTransportation_ID);
+		deliveryPlanningService.moveTo(selectedDeliveryPlanningsFilter, p_M_ShipperTransportation_ID);
 
 		return MSG_OK;
 	}

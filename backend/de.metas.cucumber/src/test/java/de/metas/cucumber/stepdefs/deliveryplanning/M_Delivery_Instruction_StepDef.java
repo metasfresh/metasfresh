@@ -51,8 +51,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Generates / regenerates the delivery instruction ({@code M_ShipperTransportation}) for a delivery planning, moves
- * plannings on and off one, and drives its Complete / Re-Activate / Void document actions.
+ * Generates / regenerates the delivery instruction ({@code M_ShipperTransportation}) for a delivery planning, puts
+ * plannings on one, moves them between two and takes them off one, and drives its Complete / Re-Activate / Void
+ * document actions.
  * <p>
  * Loading and validating the resulting {@code M_ShipperTransportation} is handled by
  * {@code de.metas.cucumber.stepdefs.shipment.M_ShipperTransportation_StepDef}; the two step-defs share the same
@@ -65,8 +66,13 @@ public class M_Delivery_Instruction_StepDef
 	/** every column {@link #combine_M_Delivery_Planning(DataTable)} understands besides the rejection expectations */
 	private static final ImmutableSet<String> COMBINE_COLUMNS = ImmutableSet.of(
 			I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, I_M_Delivery_Planning.COLUMNNAME_M_ShipperTransportation_ID, "IsComplete");
-	/** every column {@link #add_M_Delivery_Planning_to_M_ShipperTransportation(DataTable)} understands besides the rejection expectations */
-	private static final ImmutableSet<String> ADD_TO_COLUMNS = ImmutableSet.of(
+	/**
+	 * Every column the two target-instruction steps -
+	 * {@link #add_M_Delivery_Planning_to_M_ShipperTransportation(DataTable)} and
+	 * {@link #move_M_Delivery_Planning_to_M_ShipperTransportation(DataTable)} - understand besides the rejection
+	 * expectations. One constant, because the two take the same table: a selection and a target.
+	 */
+	private static final ImmutableSet<String> TARGET_INSTRUCTION_COLUMNS = ImmutableSet.of(
 			I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, I_M_Delivery_Planning.COLUMNNAME_M_ShipperTransportation_ID);
 	/** every column {@link #remove_M_Delivery_Planning_from_M_ShipperTransportation(DataTable)} understands besides the rejection expectations */
 	private static final ImmutableSet<String> REMOVE_FROM_COLUMNS = ImmutableSet.of(
@@ -195,13 +201,14 @@ public class M_Delivery_Instruction_StepDef
 	}
 
 	/**
-	 * Puts the given delivery plannings on an EXISTING draft delivery instruction, via
-	 * {@link DeliveryPlanningService#addTo(IQueryFilter, ShipperTransportationId)} - the same code path the
-	 * {@code M_Delivery_Planning_AddToDeliveryInstruction} process drives.
+	 * Puts the given delivery plannings - which must be on NO delivery instruction yet - on an EXISTING draft one,
+	 * via {@link DeliveryPlanningService#addTo(IQueryFilter, ShipperTransportationId)} - the same code path the
+	 * {@code M_Delivery_Planning_AddToDeliveryInstruction} process drives. Re-booking a planning that is already
+	 * allocated is {@link #move_M_Delivery_Planning_to_M_ShipperTransportation(DataTable)}.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
-	 *   <b>M_Delivery_Planning_ID</b> — (required, identifier-ref) comma-separated aliases of the plannings to move<br>
+	 *   <b>M_Delivery_Planning_ID</b> — (required, identifier-ref) comma-separated aliases of the plannings to add<br>
 	 *   <b>M_ShipperTransportation_ID</b> — (required, identifier-ref) the TARGET delivery instruction<br>
 	 *   <b>ErrorAdMessage</b> — (optional) when set, the action is expected to be REJECTED with this {@code AD_Message}<br>
 	 *   <b>ErrorFields</b> — (optional) comma-separated {@link AggregationKeyField} names the rejection has to name<br>
@@ -222,7 +229,39 @@ public class M_Delivery_Instruction_StepDef
 			final I_M_ShipperTransportation targetDeliveryInstruction = row.getAsIdentifier(I_M_Delivery_Planning.COLUMNNAME_M_ShipperTransportation_ID).lookupNotNullIn(deliveryInstructionTable);
 			final ShipperTransportationId targetDeliveryInstructionId = ShipperTransportationId.ofRepoId(targetDeliveryInstruction.getM_ShipperTransportation_ID());
 
-			rejectionHelper.runExpectingRejectionIfAny(row, ADD_TO_COLUMNS, () -> deliveryPlanningService.addTo(selectionFilter, targetDeliveryInstructionId));
+			rejectionHelper.runExpectingRejectionIfAny(row, TARGET_INSTRUCTION_COLUMNS, () -> deliveryPlanningService.addTo(selectionFilter, targetDeliveryInstructionId));
+		});
+	}
+
+	/**
+	 * Moves the given delivery plannings - which must already be on a draft delivery instruction - to another draft
+	 * one, via {@link DeliveryPlanningService#moveTo(IQueryFilter, ShipperTransportationId)} - the same code path
+	 * the {@code M_Delivery_Planning_MoveToDeliveryInstruction} process drives.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_Delivery_Planning_ID</b> — (required, identifier-ref) comma-separated aliases of the plannings to move<br>
+	 *   <b>M_ShipperTransportation_ID</b> — (required, identifier-ref) the TARGET delivery instruction<br>
+	 *   <b>ErrorAdMessage</b> — (optional) when set, the action is expected to be REJECTED with this {@code AD_Message}<br>
+	 *   <b>ErrorFields</b> — (optional) comma-separated {@link AggregationKeyField} names the rejection has to name<br>
+	 * @cucumber.depends StepDefData: M_Delivery_Planning_StepDefData, M_ShipperTransportation_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When move M_Delivery_Planning to M_ShipperTransportation:
+	 *   | M_ShipperTransportation_ID | M_Delivery_Planning_ID |
+	 *   | deliveryInstruction_target | deliveryPlanning_2     |
+	 * </pre>
+	 */
+	@When("move M_Delivery_Planning to M_ShipperTransportation:")
+	public void move_M_Delivery_Planning_to_M_ShipperTransportation(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final IQueryFilter<I_M_Delivery_Planning> selectionFilter = getQueryFilterFor(row);
+
+			final I_M_ShipperTransportation targetDeliveryInstruction = row.getAsIdentifier(I_M_Delivery_Planning.COLUMNNAME_M_ShipperTransportation_ID).lookupNotNullIn(deliveryInstructionTable);
+			final ShipperTransportationId targetDeliveryInstructionId = ShipperTransportationId.ofRepoId(targetDeliveryInstruction.getM_ShipperTransportation_ID());
+
+			rejectionHelper.runExpectingRejectionIfAny(row, TARGET_INSTRUCTION_COLUMNS, () -> deliveryPlanningService.moveTo(selectionFilter, targetDeliveryInstructionId));
 		});
 	}
 

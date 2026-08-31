@@ -375,6 +375,38 @@ class DeliveryPlanningListTest
 			assertThat(list.allocatedOnes()).containsExactly(allocated);
 		}
 
+		/**
+		 * The two halves have to PARTITION the selection - every row in exactly one of them - because Add to and
+		 * Move to are offered on exactly that split. A row falling in both, or in neither, would offer the planner
+		 * both actions or none.
+		 */
+		@Test
+		@DisplayName("unallocatedOnes is the exact complement of allocatedOnes - together they are the whole selection")
+		void allocatedAndUnallocatedPartitionTheSelection()
+		{
+			final DeliveryPlanning unallocated = planning().build();
+			final DeliveryPlanning allocated = planning()
+					.allocations(allocatedTo(ShipperTransportationId.ofRepoId(540021)))
+					.build();
+
+			final DeliveryPlanningList list = DeliveryPlanningList.of(unallocated, allocated);
+
+			assertThat(list.unallocatedOnes()).containsExactly(unallocated);
+			assertThat(list.allocatedOnes()).containsExactly(allocated);
+			assertThat(list.unallocatedOnes().size() + list.allocatedOnes().size()).isEqualTo(list.size());
+		}
+
+		@Test
+		@DisplayName("a selection that is entirely on delivery instructions has no unallocated row - what Move needs")
+		void noneUnallocated()
+		{
+			final DeliveryPlanningList list = DeliveryPlanningList.of(
+					planning().allocations(allocatedTo(ShipperTransportationId.ofRepoId(540021))).build(),
+					planning().allocations(allocatedTo(ShipperTransportationId.ofRepoId(540022))).build());
+
+			assertThat(list.unallocatedOnes().isEmpty()).isTrue();
+		}
+
 		@Test
 		@DisplayName("withoutShipper names the rows that have no forwarder - the check admissibility cannot make")
 		void withoutShipper()
