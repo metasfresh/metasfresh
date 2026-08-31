@@ -294,7 +294,10 @@ public class PurchaseOrderToShipperTransportationService
 	 */
 	private void applyDefaultDatesFromFirstOrder(@NonNull final I_M_ShipperTransportation shipperTransportation, @NonNull final I_C_Order order)
 	{
-		if (TransportDirection.ofNullableCode(shipperTransportation.getTransportDirection()) == TransportDirection.Outgoing)
+		// isOutgoing(), NOT hasShipment(): Incoming AND Dropship must both fall through to the purchase-side
+		// defaults below, and hasShipment() is true for Dropship too. TransportDirection is NOT NULL on
+		// M_ShipperTransportation, so ofCode cannot fail here.
+		if (TransportDirection.ofCode(shipperTransportation.getTransportDirection()).isOutgoing())
 		{
 			return; // sales behaviour on the transport order must keep working unchanged
 		}

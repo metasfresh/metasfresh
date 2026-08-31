@@ -26,8 +26,8 @@ import de.metas.adempiere.form.IClientUI;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.TransportDirection;
 import de.metas.shipping.api.IShipperTransportationBL;
-import de.metas.shipping.model.X_M_ShipperTransportation;
 import de.metas.tourplanning.api.ITourInstanceBL;
 import de.metas.tourplanning.api.ITourInstanceDAO;
 import de.metas.tourplanning.api.ITourInstanceQueryParams;
@@ -236,9 +236,9 @@ public class M_Tour_Instance_CreateFromSelectedDeliveryDays extends JavaProcess
 		// derived from the delivery day that seeds this tour instance: IsToBeFetched=Y means the material is
 		// fetched from a vendor (Incoming), IsToBeFetched=N means it is delivered to a customer (Outgoing) - see
 		// IDeliveryDayAllocable#isToBeFetched(). Never defaulted here or by the column.
-		shipperTransportation.setTransportDirection(deliveryDay.isToBeFetched()
-				? X_M_ShipperTransportation.TRANSPORTDIRECTION_Incoming
-				: X_M_ShipperTransportation.TRANSPORTDIRECTION_Outgoing);
+		shipperTransportation.setTransportDirection((deliveryDay.isToBeFetched()
+				? TransportDirection.Incoming
+				: TransportDirection.Outgoing).getCode());
 		shipperTransportation.setShipper_BPartner_ID(p_Shipper_BPartner_ID);
 		shipperTransportation.setShipper_Location_ID(p_Shipper_Location_ID);
 		final ShipperId shipperId = ShipperId.ofRepoIdOrNull(p_M_Shipper_ID);

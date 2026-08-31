@@ -115,4 +115,14 @@ public enum TransportDirection implements ReferenceListAwareEnum
 		return this == Dropship;
 	}
 
+	/**
+	 * STRICTLY {@link #Outgoing} - deliberately NOT the same partition as {@link #hasShipment()}, which is also
+	 * true for {@link #Dropship}. Callers that must treat a dropship as a purchase-side transport (its goods never
+	 * leave our own warehouse, because they never enter it) need this one.
+	 */
+	public boolean isOutgoing()
+	{
+		return this == Outgoing;
+	}
+
 }
