@@ -53,16 +53,27 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Asserts what the two delivery-instruction consignment views return for one delivery instruction:
- * {@code M_Delivery_Planning_Delivery_Instructions_V} and {@code M_ShipperTransportation_Delivery_Instructions_V}.
+ * Asserts what the three views over the delivery-planning-to-delivery-instruction allocation return for one
+ * delivery instruction.
  * <p>
  * These are database VIEWS with no Java model class, so the steps read them with raw SQL - and that is the
  * point of this step def existing at all: a join defect in a view exists only in SQL, so no in-memory unit
- * test can reach it. What both steps assert is the same three-part row identity an aggregated instruction owes
- * its plannings - <b>as many rows as it has active allocations and no more</b> (a package joined to the
- * instruction instead of to its allocation row multiplies that into the N x N cross product), <b>each row
- * carrying its OWN planning's product and quantities</b> (a cross product also pairs the right number of rows
- * with the wrong partners), and <b>a row key that is unique across them</b>.
+ * test can reach it. Every step asserts the same three-part row identity an instruction owes its plannings -
+ * <b>as many rows as it has allocations and no more</b> (a package joined to the instruction instead of to
+ * its allocation row multiplies that into the N x N cross product), <b>each row carrying its OWN planning's
+ * product and quantities</b> (a cross product also pairs the right number of rows with the wrong partners),
+ * and <b>a row key that is unique across them</b>.
+ * <p>
+ * The three differ in what they are worth today, which the scenarios calling them state rather than blur:
+ * <ul>
+ * <li>{@code M_Delivery_Planning_Delivery_Instructions_V} - LIVE, behind tab 546737 of the delivery planning
+ * window (541632). A regression here is visible to a planner today.</li>
+ * <li>{@code M_ShipperTransportation_Delivery_Planning_History_V} - LIVE, behind the history tab 549416 of
+ * the delivery instruction window (541657); one row per RETIRED ({@code IsActive='N'}) allocation.</li>
+ * <li>{@code M_ShipperTransportation_Delivery_Instructions_V} - PARKED: its only consumer, tab 546754, is
+ * {@code IsActive='N'}, reserved for a future multi-leg display. Guarded anyway, so a cartesian-product
+ * regression cannot sit undetected until that display is built.</li>
+ * </ul>
  */
 @RequiredArgsConstructor
 public class Delivery_Instructions_V_StepDef
@@ -136,6 +147,47 @@ public class Delivery_Instructions_V_StepDef
 				"M_ShipperTransportation_Delivery_Instructions_V",
 				// no single key column: the composed row key of this view, per migration 5820860
 				"M_ShipperTransportation_ID || '-' || M_Delivery_Planning_ID",
+				"PlannedLoadedQuantity",
+				"PlannedDischargeQuantity",
+				deliveryInstructionIdentifier,
+				dataTable);
+	}
+
+	/**
+	 * The rows {@code M_ShipperTransportation_Delivery_Planning_History_V} returns for one delivery instruction:
+	 * one per RETIRED ({@code IsActive='N'}) allocation - what the instruction's history tab shows a planner
+	 * about loads that were once booked on it. Keyed by {@code M_Delivery_Planning_Alloc_ID}.
+	 * <p>
+	 * The quantities are the planning's CURRENT ones ({@code M_Delivery_Planning.PlannedLoadedQuantity}), not a
+	 * snapshot from the retired shipping package - this view joins no package at all, which is also why it
+	 * cannot produce the cross product its two siblings did. Asserted here so that stays true: the natural next
+	 * request for this tab is the retired package's quantities, and adding that join by instruction id instead
+	 * of by allocation row is exactly how the sibling views got it wrong.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_Delivery_Planning_ID</b> — (required, identifier-ref) the planning this history row belongs to<br>
+	 *   <b>M_Product_ID</b> — (optional, identifier-ref) expected product of the row<br>
+	 *   <b>PlannedLoadedQuantity</b> — (optional) expected loaded quantity of the row<br>
+	 *   <b>PlannedDischargeQuantity</b> — (optional) expected discharge quantity of the row<br>
+	 * @cucumber.depends StepDefData: M_ShipperTransportation_StepDefData, M_Delivery_Planning_StepDefData,
+	 * M_Product_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then the M_ShipperTransportation identified by deliveryInstruction has exactly the following rows in M_ShipperTransportation_Delivery_Planning_History_V:
+	 *   | M_Delivery_Planning_ID | M_Product_ID | PlannedLoadedQuantity | PlannedDischargeQuantity |
+	 *   | deliveryPlanning_1     | product_1    | 7                     | 0                       |
+	 *   | deliveryPlanning_2     | product_2    | 3                     | 0                       |
+	 * </pre>
+	 */
+	@Then("^the M_ShipperTransportation identified by (.*) has exactly the following rows in M_ShipperTransportation_Delivery_Planning_History_V:$")
+	public void validate_M_ShipperTransportation_Delivery_Planning_History_V(
+			@NonNull final String deliveryInstructionIdentifier,
+			@NonNull final DataTable dataTable)
+	{
+		validateView(
+				"M_ShipperTransportation_Delivery_Planning_History_V",
+				"M_Delivery_Planning_Alloc_ID",
 				"PlannedLoadedQuantity",
 				"PlannedDischargeQuantity",
 				deliveryInstructionIdentifier,

@@ -412,7 +412,7 @@ Feature: Several delivery plannings on one delivery instruction
       | de.metas.deliveryplanning.process.M_Delivery_Planning_CombineIntoDeliveryInstruction | IsComplete | N            |
 
   @Id:S31608_TC15
-  Scenario: Both delivery instruction views return one consignment row per delivery planning
+  Scenario: The delivery instruction consignment views return one row per delivery planning
 
     # two articles, so every consignment row carries a second discriminator next to its quantity
     Given metasfresh contains M_Products:
@@ -457,12 +457,63 @@ Feature: Several delivery plannings on one delivery instruction
       | planningView_2         | 20     | 3             |
 
     # two plannings, two consignment rows - not the 2 x 2 an uncorrelated package join returns,
-    # and each row carries its OWN planning's article and quantities
+    # and each row carries its OWN planning's article and quantities.
+    # This one a planner sees today: it backs tab 546737 of the delivery planning window (541632).
     And the M_ShipperTransportation identified by deliveryInstructionView has exactly the following rows in M_Delivery_Planning_Delivery_Instructions_V:
       | M_Delivery_Planning_ID | M_Product_ID | ActualLoadQty | ActualDischargeQuantity |
       | planningView_1         | product      | 7             | 0                       |
       | planningView_2         | product2     | 3             | 0                       |
+
+    # The sibling view renders nowhere today - its only tab (546754) is IsActive='N', parked for a future
+    # multi-leg display. Guarded so the same cartesian product cannot sit undetected until that is built.
     And the M_ShipperTransportation identified by deliveryInstructionView has exactly the following rows in M_ShipperTransportation_Delivery_Instructions_V:
       | M_Delivery_Planning_ID | M_Product_ID | PlannedLoadedQuantity | PlannedDischargeQuantity |
       | planningView_1         | product      | 7                     | 0                       |
       | planningView_2         | product2     | 3                     | 0                       |
+
+  @Id:S31608_TC20
+  Scenario: The delivery instruction history returns one row per retired delivery planning
+
+    # what a planner sees on the instruction's history tab (549416) after taking loads off it - live today,
+    # over the same allocation records, so it owes the same one-row-per-planning identity
+
+    Given metasfresh contains M_Products:
+      | Identifier |
+      | product2   |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | priceListVersion_SO    | product2     | 20.0     | PCE               | Normal                        |
+
+    And metasfresh contains C_Orders:
+      | Identifier   | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier |
+      | orderHistory | true    | customer                 | 2023-02-03  | 2023-02-20T00:00:00Z | customerLocation                      |
+    And metasfresh contains C_OrderLines:
+      | Identifier         | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineHistory_1 | orderHistory          | product                 | 6          | shipper_DHL                 |
+      | orderLineHistory_2 | orderHistory          | product2                | 2          | shipper_DHL                 |
+
+    When the order identified by orderHistory is completed
+
+    Then after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier                | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentScheduleHistory_1 | orderLineHistory_1        | N             |
+      | shipmentScheduleHistory_2 | orderLineHistory_2        | N             |
+    And after not more than 60s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID | C_OrderLine_ID     |
+      | planningHistory_1      | orderLineHistory_1 |
+      | planningHistory_2      | orderLineHistory_2 |
+
+    When combine M_Delivery_Planning into one M_ShipperTransportation:
+      | M_ShipperTransportation_ID | M_Delivery_Planning_ID              |
+      | deliveryInstructionHistory | planningHistory_1,planningHistory_2 |
+    And remove M_Delivery_Planning from M_ShipperTransportation:
+      | M_Delivery_Planning_ID              |
+      | planningHistory_1,planningHistory_2 |
+
+    # both allocations are retired, so the instruction holds none and the history holds both - one row each,
+    # with its own planning's article and quantity
+    Then the M_ShipperTransportation identified by deliveryInstructionHistory holds no active M_Delivery_Planning_Alloc
+    And the M_ShipperTransportation identified by deliveryInstructionHistory has exactly the following rows in M_ShipperTransportation_Delivery_Planning_History_V:
+      | M_Delivery_Planning_ID | M_Product_ID | PlannedLoadedQuantity | PlannedDischargeQuantity |
+      | planningHistory_1      | product      | 6                     | 0                        |
+      | planningHistory_2      | product2     | 2                     | 0                        |
