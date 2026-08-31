@@ -22,7 +22,7 @@ Feature: A failing "Create Invoices" run reports back to the user who started it
 @allure.label.epic:E0225_Accounting
 @allure.label.feature:F01010.3_Match_Invoice
 @F00701
-  Scenario: A "Create Invoices" run that fails for the selected candidate notifies nobody
+  Scenario: A "Create Invoices" run that fails for the selected candidate notifies the user who started it
     Given metasfresh contains M_Products:
       | Identifier | Name              |
       | p_ie_1     | salesProduct_ie_1 |
@@ -93,8 +93,8 @@ Feature: A failing "Create Invoices" run reports back to the user who started it
       | C_Invoice_Candidate_ID.Identifier | IsInvoicingError | OPT.Processed |
       | ic_ie_1                           | true             | false         |
 
-    # ...and yet the user who started the run is told nothing: no notification is produced,
-    # so no AD_Note exists. This is the defect.
+    # ...and the user who started the run is told about it: the failure notification is persisted
+    # as an AD_Note for that user (NotificationRepository.save).
     And after not more than 60s, validate AD_Note:
       | Identifier | AD_Message_ID.Identifier | OPT.AD_User_ID.Identifier |
       | note_1     | msgInvoicingError        | user_metasfresh           |

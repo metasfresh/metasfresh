@@ -88,6 +88,13 @@ public interface IInvoiceCandBL extends ISingletonService
 		void addNotifications(List<I_AD_Note> notifications);
 
 		/**
+		 * Called when the given candidates could not be invoiced because of the given error.
+		 * Implementations which are able to notify a user shall do so from here; the plain result
+		 * implementation only counts them.
+		 */
+		void addFailedCandidates(List<I_C_Invoice_Candidate> failedCandidates, Throwable error);
+
+		/**
 		 * @param ctx context (for translation)
 		 * @return result summary (using context language)
 		 */

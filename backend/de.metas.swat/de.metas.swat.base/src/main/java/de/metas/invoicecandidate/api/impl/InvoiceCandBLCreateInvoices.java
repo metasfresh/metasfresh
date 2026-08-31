@@ -1120,6 +1120,13 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 					result.add(note);
 				}
 			}
+
+			// Tell the user who started this run that these candidates could not be invoiced.
+			// This is the single choke point of all three failure call sites, and it is still inside the
+			// saveConstraints() window, which is what lets the notification's AD_Note be saved out of the
+			// transaction that is about to be rolled back.
+			getCollector().addFailedCandidates(affectedCands, error);
+
 			return result;
 
 		}
