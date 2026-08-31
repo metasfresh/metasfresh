@@ -291,8 +291,12 @@ public class M_ShipmentSchedule
 		}
 		else
 		{
+			final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID());
 			orderBL.reopenLine(orderLine);
-			invoiceCandBL.openDeliveryInvoiceCandidatesByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
+			invoiceCandBL.openDeliveryInvoiceCandidatesByOrderLineId(orderLineId);
+
+			// see OrderLineReceiptScheduleListener.onAfterReopen - same reasoning, sales side
+			invoiceCandBL.openInvoiceCandidatesByOrderLineId(orderLineId);
 		}
 	}
 

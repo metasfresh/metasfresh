@@ -70,6 +70,13 @@ public class OrderLineReceiptScheduleListener extends ReceiptScheduleListenerAda
 		}
 
 		orderBL.reopenLine(orderLine);
-		invoiceCandBL.openDeliveryInvoiceCandidatesByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
+
+		final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID());
+		invoiceCandBL.openDeliveryInvoiceCandidatesByOrderLineId(orderLineId);
+
+		// Symmetric to onAfterClose: the close set Processed_Override=Y on the candidates, so the
+		// reopen has to clear it again. Otherwise the line is open work again, but its candidates
+		// stay closed and can never be invoiced.
+		invoiceCandBL.openInvoiceCandidatesByOrderLineId(orderLineId);
 	}
 }
