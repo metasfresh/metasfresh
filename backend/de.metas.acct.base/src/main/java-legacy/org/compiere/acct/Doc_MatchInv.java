@@ -594,7 +594,8 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 	 * split into the share that revalues the stock still on hand (P_Asset) and the share for stock already shipped
 	 * (P_COGS). Zero shares produce no leg.
 	 *
-	 * @param qty            the matched quantity, as booked on the GR/IR leg
+	 * @param costs                the cost split for this match
+	 * @param qty                  the matched quantity, as booked on the GR/IR leg
 	 * @param receiptLocatorRepoId the locator the matched receipt line was received into
 	 */
 	@VisibleForTesting

@@ -117,6 +117,43 @@ class Doc_MatchInvCostAdjustmentLegsTest
 		});
 	}
 
+	/**
+	 * Both shares are non-zero: the P_Asset leg is quantity-neutral and on the receipt locator, while the P_COGS leg
+	 * is deliberately left as it was - it still carries the matched quantity and no locator. Pinning P_COGS here is
+	 * what makes the asymmetry explicit: it is a product decision, not an oversight, and this test fails if it
+	 * changes by accident.
+	 */
+	@Test
+	void bothLegs_onlyTheAssetLegIsQuantityNeutral()
+	{
+		final ImmutableList<Doc_MatchInv.CostAdjustmentLeg> legs =
+				Doc_MatchInv.costAdjustmentLegs(split("120", "12", "8"), qty(10), RECEIPT_LOCATOR_ID);
+
+		assertThat(legs).hasSize(2);
+
+		final Doc_MatchInv.CostAdjustmentLeg asset = legByAcctType(legs, ProductAcctType.P_Asset_Acct);
+		final Doc_MatchInv.CostAdjustmentLeg cogs = legByAcctType(legs, ProductAcctType.P_COGS_Acct);
+		assertSoftly(softly -> {
+			softly.assertThat(asset.getAmt().toBigDecimal()).as("P_Asset AmtSource").isEqualByComparingTo("12");
+			softly.assertThat(asset.getQty().toBigDecimal()).as("P_Asset Qty").isEqualByComparingTo(BigDecimal.ZERO);
+			softly.assertThat(asset.getLocatorRepoId()).as("P_Asset M_Locator_ID").isEqualTo(RECEIPT_LOCATOR_ID);
+
+			softly.assertThat(cogs.getAmt().toBigDecimal()).as("P_COGS AmtSource").isEqualByComparingTo("8");
+			softly.assertThat(cogs.getQty().toBigDecimal()).as("P_COGS Qty").isEqualByComparingTo("10");
+			softly.assertThat(cogs.getLocatorRepoId()).as("P_COGS M_Locator_ID").isZero();
+		});
+	}
+
+	@Test
+	void onlyAlreadyShipped_producesTheCogsLegAlone()
+	{
+		final ImmutableList<Doc_MatchInv.CostAdjustmentLeg> legs =
+				Doc_MatchInv.costAdjustmentLegs(split("120", "0", "8"), qty(10), RECEIPT_LOCATOR_ID);
+
+		assertThat(legs).hasSize(1);
+		assertThat(legs.get(0).getAcctType()).isEqualTo(ProductAcctType.P_COGS_Acct);
+	}
+
 	@Test
 	void zeroCostAdjustment_noAssetLeg()
 	{

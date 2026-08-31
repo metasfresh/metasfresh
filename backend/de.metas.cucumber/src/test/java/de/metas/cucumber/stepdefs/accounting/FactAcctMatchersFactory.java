@@ -188,13 +188,7 @@ public class FactAcctMatchersFactory
 	private Optional<LocatorId> extractLocatorId(final @NonNull DataTableRow row)
 	{
 		final StepDefDataIdentifier identifier = row.getAsOptionalIdentifier(I_Fact_Acct.COLUMNNAME_M_Locator_ID).orElse(null);
-		if (identifier == null)
-		{
-			return null;
-		}
-		return identifier.isNullPlaceholder()
-				? Optional.empty()
-				: Optional.of(locatorTable.getId(identifier));
+		return identifier == null ? null : Optional.ofNullable(identifier.lookupIdIn(locatorTable));
 	}
 
 }
