@@ -72,7 +72,8 @@ WHERE AD_Process_ID=585655 AND AD_Language IN ('de_DE', 'de_CH')
 ;
 
 -- ---------------------------------------------------------------------------------------------
--- 2) placement: a quick action on the Delivery Planning grid, like Combine and Add to.
+-- 2) placement: a quick action on the Delivery Planning grid AND on a single open record, like Add to
+--    and Move to. Combine is the one that stays grid-only.
 --    Removal is only ever reachable while the instruction is still a DRAFT -- the rejection refuses
 --    every selection whose instruction is no longer one -- and a draft's release number has not gone
 --    to the forwarder yet, so a removal cannot retract something already communicated. Removal also

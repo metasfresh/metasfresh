@@ -27,7 +27,7 @@ import de.metas.process.ProcessPreconditionsResolution;
 import lombok.NonNull;
 
 /**
- * The selection-shaped precondition guards the delivery planning gridactions repeat verbatim - "is anything
+ * The selection-shaped precondition guards the delivery planning actions repeat verbatim - "is anything
  * selected", "is too much selected", "is more than one row selected". Business rules stay on the owning process.
  */
 public final class DeliveryPlanningProcessHelper

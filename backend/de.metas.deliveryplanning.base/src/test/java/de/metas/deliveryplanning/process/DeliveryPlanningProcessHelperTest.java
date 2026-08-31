@@ -37,7 +37,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
 /**
- * Pins the selection guards the delivery planning gridactions share.
+ * Pins the selection guards the delivery planning actions share.
  */
 class DeliveryPlanningProcessHelperTest
 {
