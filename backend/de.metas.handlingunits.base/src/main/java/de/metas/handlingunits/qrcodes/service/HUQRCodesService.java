@@ -450,14 +450,6 @@ public class HUQRCodesService
 	}
 
 	/**
-	 * Resolves any supported scanned code (metasfresh global QR code, {@code M_HU.Value}/ExternalBarcode label, ...)
-	 * to the {@link HUQRCode} of the handling unit it identifies.
-	 * <p>
-	 * Unlike {@link HUQRCode#fromGlobalQRCodeJsonString}, this accepts every code format {@link #parse(ScannedCode)}
-	 * understands, not only a metasfresh global QR code.
-	 */
-	@NonNull
-	/**
 	 * Resolves any scanned code that identifies an existing handling unit to that unit's {@link HUQRCode}.
 	 * <p>
 	 * {@link #parse(ScannedCode)} already covers every supported label kind — a metasfresh global QR code,
@@ -467,6 +459,7 @@ public class HUQRCodesService
 	 * resolved by a second lookup: silently mapping such a code onto whichever HU happens to share its value
 	 * would pick from the wrong unit.
 	 */
+	@NonNull
 	public HUQRCode getQRCodeByScannedCode(@NonNull final ScannedCode scannedCode)
 	{
 		final IHUQRCode huQRCode = parse(scannedCode);

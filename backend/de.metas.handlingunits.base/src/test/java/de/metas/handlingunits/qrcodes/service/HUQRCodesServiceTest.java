@@ -338,6 +338,17 @@ class HUQRCodesServiceTest
 
 			assertThat(resolvedQrCode).isEqualTo(expectedQrCode);
 		}
+
+		@Test
+		void codeThatParsesToSomethingOtherThanAnAssignedHU_isRejected()
+		{
+			// "PICK_ON_THE_FLY" parses successfully - but to a PickOnTheFlyQRCode, which identifies no
+			// existing handling unit. It must be rejected rather than resolved onto whichever HU happens
+			// to carry that string as its M_HU.Value / ExternalBarcode.
+			assertThatThrownBy(() -> huQRCodesService.getQRCodeByScannedCode(ScannedCode.ofString("PICK_ON_THE_FLY")))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining("Invalid HU QR code");
+		}
 	}
 
 	@Nested
