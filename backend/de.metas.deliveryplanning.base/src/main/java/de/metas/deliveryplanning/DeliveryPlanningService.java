@@ -562,11 +562,15 @@ public class DeliveryPlanningService
 				.notifyGenerated(deliveryInstruction);
 
 		// No explicit CacheMgt reset here: the saveRecord inside updateDeliveryPlanningsFromInstruction already
-		// invalidates this record's caches, and does strictly more than a manual reset would. PO.save0 builds a
+		// invalidates this record's caches, with better TIMING than a manual reset. PO.save0 builds a
 		// CacheInvalidateMultiRequest for every single-key table and hands it to
 		// ModelCacheInvalidationService.invalidate, which resets the model cache AND calls
-		// CacheMgt.resetLocalNowAndBroadcastOnTrxCommit - i.e. local reset now plus a broadcast to the other
-		// nodes on commit, which CacheMgt.get().reset(tableName, id) does not do.
+		// CacheMgt.resetLocalNowAndBroadcastOnTrxCommit - local reset now, broadcast deferred to commit.
+		// A manual CacheMgt.get().reset(tableName, id) DOES broadcast too (CacheMgt:255-262 picks
+		// LOCAL_AND_BROADCAST outside unit-test mode) - but it broadcasts IMMEDIATELY, mid-transaction, so
+		// another node can invalidate, re-read the still-uncommitted row, cache that stale value, and never
+		// be invalidated again: the invalidation it needed was already spent. Deferring to commit is what
+		// makes the difference, not the presence of a broadcast.
 		deliveryPlanningRepository.updateDeliveryPlanningsFromInstruction(ImmutableSet.of(deliveryPlanningId), deliveryInstruction);
 	}
 
