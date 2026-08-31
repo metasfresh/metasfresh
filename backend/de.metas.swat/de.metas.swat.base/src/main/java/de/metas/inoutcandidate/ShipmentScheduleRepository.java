@@ -82,6 +82,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -572,6 +573,16 @@ public class ShipmentScheduleRepository
 	public ImmutableSet<ShipmentScheduleId> getIdsByQuery(@NonNull final ShipmentScheduleQuery query)
 	{
 		return toSqlQuery(query).create().idsAsSet(ShipmentScheduleId::ofRepoId);
+	}
+
+	@NonNull
+	public Optional<ShipmentScheduleId> getIdByQuery(@NonNull final ShipmentScheduleQuery query)
+	{
+		// ofRepoIdOrNull, not ofRepoId: firstIdOnlyOptional wraps Optional.ofNullable(idMapper.apply(firstIdOnly())),
+		// so the mapper is handed the not-found sentinel (-1) and must answer null. The strict ofRepoId throws
+		// "M_ShipmentSchedule_ID > 0 but it was -1" instead, which made this method unusable for its one purpose —
+		// asking whether a shipment schedule exists.
+		return toSqlQuery(query).create().firstIdOnlyOptional(ShipmentScheduleId::ofRepoIdOrNull);
 	}
 
 	/** Dedup key for {@link #loadByPackageIds} — a (package, schedule) pair with value equality (avoids a string key). */

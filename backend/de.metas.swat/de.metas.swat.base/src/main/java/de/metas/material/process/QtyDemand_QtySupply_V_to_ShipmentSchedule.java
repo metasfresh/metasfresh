@@ -26,12 +26,6 @@ import de.metas.inoutcandidate.ShipmentScheduleQuery;
 import de.metas.inoutcandidate.ShipmentScheduleRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.cockpit.QtyDemandQtySupply;
-import de.metas.material.cockpit.QtyDemandQtySupplyId;
-import de.metas.material.cockpit.QtyDemandSupplyRepository;
-import de.metas.process.IProcessPrecondition;
-import de.metas.process.IProcessPreconditionsContext;
-import de.metas.process.JavaProcess;
-import de.metas.process.ProcessPreconditionsResolution;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
@@ -39,39 +33,33 @@ import org.compiere.SpringContextHolder;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class QtyDemand_QtySupply_V_to_ShipmentSchedule extends JavaProcess implements IProcessPrecondition
+public class QtyDemand_QtySupply_V_to_ShipmentSchedule extends QtyDemandQtySupplyJumpProcess
 {
-	private final QtyDemandSupplyRepository demandSupplyRepository = SpringContextHolder.instance.getBean(QtyDemandSupplyRepository.class);
 	private final ShipmentScheduleRepository shipmentScheduleRepository = SpringContextHolder.instance.getBean(ShipmentScheduleRepository.class);
 
 	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
+	protected boolean hasRecordsToOpen(@NonNull final QtyDemandQtySupply row)
 	{
-		if (!context.isSingleSelection())
-		{
-			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
-		}
-		return ProcessPreconditionsResolution.accept();
+		return shipmentScheduleRepository.getIdByQuery(toQuery(row)).isPresent();
 	}
 
 	@Override
-	protected String doIt() throws Exception
+	protected List<TableRecordReference> findRecordsToOpen(@NonNull final QtyDemandQtySupply row)
 	{
-		final QtyDemandQtySupply currentRow = demandSupplyRepository.getById(QtyDemandQtySupplyId.ofRepoId(getRecord_ID()));
-		final ShipmentScheduleQuery shipmentScheduleQuery = ShipmentScheduleQuery.builder()
-				.warehouseId(currentRow.getWarehouseId())
-				.orgId(currentRow.getOrgId())
-				.productId(currentRow.getProductId())
-				.attributesKey(currentRow.getAttributesKey())
-				.onlyNonZeroReservedQty(true)
-				.build();
-
-		final List<TableRecordReference> recordReferences = shipmentScheduleRepository.getIdsByQuery(shipmentScheduleQuery)
+		return shipmentScheduleRepository.getIdsByQuery(toQuery(row))
 				.stream()
 				.map(id -> TableRecordReference.of(I_M_ShipmentSchedule.Table_Name, id))
 				.collect(Collectors.toList());
-		getResult().setRecordsToOpen(recordReferences);
-		return MSG_OK;
 	}
 
+	private static ShipmentScheduleQuery toQuery(@NonNull final QtyDemandQtySupply row)
+	{
+		return ShipmentScheduleQuery.builder()
+				.warehouseId(row.getWarehouseId())
+				.orgId(row.getOrgId())
+				.productId(row.getProductId())
+				.attributesKey(row.getAttributesKey())
+				.onlyNonZeroReservedQty(true)
+				.build();
+	}
 }
