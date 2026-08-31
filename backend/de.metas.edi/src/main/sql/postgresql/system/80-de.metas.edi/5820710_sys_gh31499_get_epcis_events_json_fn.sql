@@ -20,6 +20,8 @@
  * #L%
  */
 
+-- Source DDL: backend/de.metas.edi/src/main/sql/postgresql/ddl/functions/epcis_json/get_epcis_events_json_fn.sql
+
 -- EPCIS event JSON for a given M_InOut (shipment).
 -- HU-based, DESADV-optional: core data from HU hierarchy, DESADV only for optional biz references.
 --
