@@ -1121,8 +1121,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				}
 			}
 
-			// Survives the rollback that is about to happen: NotificationRepository.save creates the AD_Note
-			// with newInstanceOutOfTrx (TRXNAME_None).
+			// Survives the rollback that is about to happen: the AD_Note is created out-of-trx (TRXNAME_None).
 			getCollector().addFailedCandidates(affectedCands, error);
 
 			return result;
