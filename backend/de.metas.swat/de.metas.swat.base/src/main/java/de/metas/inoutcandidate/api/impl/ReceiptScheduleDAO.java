@@ -383,8 +383,12 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 	@Override
 	public Optional<ReceiptScheduleId> getIdByQuery(@NonNull final ReceiptScheduleQuery query)
 	{
+		// ofRepoIdOrNull, not ofRepoId: firstIdOnlyOptional wraps Optional.ofNullable(idMapper.apply(firstIdOnly())),
+		// so the mapper is handed the not-found sentinel (-1) and must answer null. The strict ofRepoId throws
+		// "M_ReceiptSchedule_ID > 0 but it was -1" instead, which made this method unusable for its one purpose —
+		// asking whether a receipt schedule exists.
 		return buildQuery(query)
-				.firstIdOnlyOptional(ReceiptScheduleId::ofRepoId);
+				.firstIdOnlyOptional(ReceiptScheduleId::ofRepoIdOrNull);
 	}
 
 	@NonNull

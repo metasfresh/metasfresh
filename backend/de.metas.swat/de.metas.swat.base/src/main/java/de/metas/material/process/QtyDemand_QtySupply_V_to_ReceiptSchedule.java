@@ -26,52 +26,40 @@ import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.api.ReceiptScheduleQuery;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.material.cockpit.QtyDemandQtySupply;
-import de.metas.material.cockpit.QtyDemandQtySupplyId;
-import de.metas.material.cockpit.QtyDemandSupplyRepository;
-import de.metas.process.IProcessPrecondition;
-import de.metas.process.IProcessPreconditionsContext;
-import de.metas.process.JavaProcess;
-import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class QtyDemand_QtySupply_V_to_ReceiptSchedule extends JavaProcess implements IProcessPrecondition
+public class QtyDemand_QtySupply_V_to_ReceiptSchedule extends QtyDemandQtySupplyJumpProcess
 {
-	private final QtyDemandSupplyRepository demandSupplyRepository = SpringContextHolder.instance.getBean(QtyDemandSupplyRepository.class);
 	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
 
 	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
+	protected boolean hasRecordsToOpen(@NonNull final QtyDemandQtySupply row)
 	{
-		if (!context.isSingleSelection())
-		{
-			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
-		}
-		return ProcessPreconditionsResolution.accept();
+		return receiptScheduleDAO.getIdByQuery(toQuery(row)).isPresent();
 	}
 
 	@Override
-	protected String doIt() throws Exception
+	protected List<TableRecordReference> findRecordsToOpen(@NonNull final QtyDemandQtySupply row)
 	{
-		final QtyDemandQtySupply currentRow = demandSupplyRepository.getById(QtyDemandQtySupplyId.ofRepoId(getRecord_ID()));
-		final ReceiptScheduleQuery receiptScheduleQuery = ReceiptScheduleQuery.builder()
-				.warehouseId(currentRow.getWarehouseId())
-				.orgId(currentRow.getOrgId())
-				.productId(currentRow.getProductId())
-				.attributesKey(currentRow.getAttributesKey())
-				.onlyNonZeroQty(true)
-				.build();
-		final List<TableRecordReference> recordReferences = receiptScheduleDAO.listIdsByQuery(receiptScheduleQuery)
+		return receiptScheduleDAO.listIdsByQuery(toQuery(row))
 				.stream()
 				.map(id -> TableRecordReference.of(I_M_ReceiptSchedule.Table_Name, id))
 				.collect(Collectors.toList());
-		getResult().setRecordsToOpen(recordReferences);
-		return MSG_OK;
 	}
 
+	private static ReceiptScheduleQuery toQuery(@NonNull final QtyDemandQtySupply row)
+	{
+		return ReceiptScheduleQuery.builder()
+				.warehouseId(row.getWarehouseId())
+				.orgId(row.getOrgId())
+				.productId(row.getProductId())
+				.attributesKey(row.getAttributesKey())
+				.onlyNonZeroQty(true)
+				.build();
+	}
 }
