@@ -1250,11 +1250,14 @@ public class DeliveryPlanningService
 			return allocationStateRejection;
 		}
 
-		if (!selectedDeliveryPlannings.getSingleTransportDirection().isPresent())
+		// The selection's own consistency, judged before any target is known: a selection that disagrees with
+		// itself cannot go onto ANY single instruction, so it is refused while the planner is still on the grid
+		// rather than after they have picked a target. Direction is one of these fields, so the value the target
+		// picker correlates on is covered here too.
+		final ImmutableSet<AggregationKeyField> selectionMismatches = selectedDeliveryPlannings.aggregationKeyViolations();
+		if (!selectionMismatches.isEmpty())
 		{
-			// the target picker offers the instructions of ONE direction, so a selection spanning two has no
-			// target list to be offered at all
-			return Optional.of(incompatibleMessage(ImmutableSet.of(AggregationKeyField.Direction)));
+			return Optional.of(incompatibleMessage(selectionMismatches));
 		}
 
 		if (targetDeliveryInstructionId == null)

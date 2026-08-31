@@ -223,6 +223,26 @@ class DeliveryPlanningAddToAdmissibilityTest
 				.orElse(null);
 	}
 
+	/**
+	 * The precondition's view: the grid action is judged before the parameter dialog exists, so the target is
+	 * {@code null} here. Whatever this refuses is refused while the planner is still looking at the grid.
+	 */
+	private String addToRejectionTextOfWithoutTarget(@NonNull final IQueryFilter<I_M_Delivery_Planning> selection)
+	{
+		return deliveryPlanningService
+				.getAddToRejectionReason(deliveryPlanningService.getBySelection(selection), null)
+				.map(reason -> reason.translate("en_US"))
+				.orElse(null);
+	}
+
+	private String moveToRejectionTextOfWithoutTarget(@NonNull final IQueryFilter<I_M_Delivery_Planning> selection)
+	{
+		return deliveryPlanningService
+				.getMoveToRejectionReason(deliveryPlanningService.getBySelection(selection), null)
+				.map(reason -> reason.translate("en_US"))
+				.orElse(null);
+	}
+
 	private static String keyOf(final AdMessageKey adMessageKey)
 	{
 		return adMessageKey.toAD_Message();
@@ -346,6 +366,36 @@ class DeliveryPlanningAddToAdmissibilityTest
 				deliveryPlanning(FORWARDER_A), deliveryPlanning(FORWARDER_B)));
 
 		assertThat(addToRejectionTextOf(selection, target))
+				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_IncompatibleSelection))
+				.contains(keyOf(AggregationKeyField.Forwarder.getLabel()));
+	}
+
+	@Test
+	@DisplayName("the grid action is refused for a self-disagreeing selection BEFORE a target is picked")
+	void addTo_selectionThatDisagreesWithItselfIsRefusedWithNoTargetYet()
+	{
+		final IQueryFilter<I_M_Delivery_Planning> selection = selectionOf(ImmutableList.of(
+				deliveryPlanning(FORWARDER_A), deliveryPlanning(FORWARDER_B)));
+
+		assertThat(addToRejectionTextOfWithoutTarget(selection))
+				.as("two forwarders cannot share one instruction, so no target the picker could offer would "
+						+ "accept this selection - the action has to be refused while the grid is still showing")
+				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_IncompatibleSelection))
+				.contains(keyOf(AggregationKeyField.Forwarder.getLabel()));
+	}
+
+	@Test
+	@DisplayName("move to is refused for a self-disagreeing selection BEFORE a target is picked")
+	void moveTo_selectionThatDisagreesWithItselfIsRefusedWithNoTargetYet()
+	{
+		// each on its own draft instruction, so both are allocated and move-to's own guard is satisfied
+		final I_M_Delivery_Planning onA = deliveryPlanning(FORWARDER_A);
+		final I_M_Delivery_Planning onB = deliveryPlanning(FORWARDER_B);
+		combineIntoDraftInstruction(ImmutableList.of(onA));
+		combineIntoDraftInstruction(ImmutableList.of(onB));
+
+		assertThat(moveToRejectionTextOfWithoutTarget(selectionOf(ImmutableList.of(onA, onB))))
+				.as("the same rule as add to: the two actions share this chain")
 				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_IncompatibleSelection))
 				.contains(keyOf(AggregationKeyField.Forwarder.getLabel()));
 	}
