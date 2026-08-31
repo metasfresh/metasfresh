@@ -7,7 +7,8 @@ Feature: Moving Average Invoice - MatchInv repost keeps the invoice-vs-PO price 
 ## F1500: Costing
 # A MovingAverageInvoice vendor MatchInv posts the invoice-vs-PO price difference against the on-hand
 # inventory cost (P_Asset), while NotInvoicedReceipts (GR/IR) only ever carries the PO-price receipt
-# amount, so GR/IR nets to zero against the material receipt.
+# amount, so GR/IR nets to zero against the material receipt. The P_Asset leg is a pure revaluation:
+# zero quantity, attributed to the receipt's locator.
 #
 # On a REPOST the posting must reconstruct itself from ALL the persisted cost-detail legs
 # (MAIN + ADJUSTMENT), not just MAIN. If the non-MAIN legs are dropped, GR/IR degenerates to the full
@@ -25,8 +26,8 @@ Feature: Moving Average Invoice - MatchInv repost keeps the invoice-vs-PO price 
       | acctSchema      | metas fresh UN/34 CHF | M             |
     And cost elements for material costing methods MovingAverageInvoice are active
     And load M_Warehouse:
-      | M_Warehouse_ID | Value        |
-      | warehouseStd   | StdWarehouse |
+      | M_Warehouse_ID | Value        | M_Locator_ID |
+      | warehouseStd   | StdWarehouse | locatorStd   |
     And metasfresh contains M_Products:
       | Identifier |
       | product    |
@@ -91,12 +92,17 @@ Feature: Moving Average Invoice - MatchInv repost keeps the invoice-vs-PO price 
     #   P_Asset                     DR 20   = the on-hand price variance
     # so GR/IR nets to zero against the material receipt's GR/IR credit of 100.
     #
+    # GR/IR and InventoryClearing are quantity-balanced (+10 / -10) and move no stock. The P_Asset leg has no
+    # negative counterpart, so it carries ZERO qty - the receipt already booked the 10 PCE, and a qty here would
+    # be counted a second time by the inventory valuation (Lagerwert) report. It is attributed to the receipt's
+    # locator, so the revaluation lands in the warehouse the goods were received into.
+    #
     And Wait until documents receipt,matchInv are posted
     And Fact_Acct records are matching
-      | AccountConceptualName    | AmtAcctDr | AmtAcctCr | AmtSourceDr | AmtSourceCr | Qty     | M_Product_ID | Record_ID | C_BPartner_ID |
-      | NotInvoicedReceipts_Acct | 100       |           | 100 CHF     |             | +10 PCE | product      | matchInv  | vendor        |
-      | P_InventoryClearing_Acct |           | 120       |             | 120 CHF     | -10 PCE | product      | matchInv  | vendor        |
-      | P_Asset_Acct             | 20        |           | 20 CHF      |             | +10 PCE | product      | matchInv  | vendor        |
+      | AccountConceptualName    | AmtAcctDr | AmtAcctCr | AmtSourceDr | AmtSourceCr | Qty     | M_Locator_ID | M_Product_ID | Record_ID | C_BPartner_ID |
+      | NotInvoicedReceipts_Acct | 100       |           | 100 CHF     |             | +10 PCE | locatorStd   | product      | matchInv  | vendor        |
+      | P_InventoryClearing_Acct |           | 120       |             | 120 CHF     | -10 PCE | null         | product      | matchInv  | vendor        |
+      | P_Asset_Acct             | 20        |           | 20 CHF      |             | 0 PCE   | locatorStd   | product      | matchInv  | vendor        |
     And Fact_Acct records balances for documents receipt,matchInv are matching
       | AccountConceptualName    | M_Product_ID | SourceBalance | AcctBalance | Qty   |
       | NotInvoicedReceipts_Acct | product      | 0 CHF         | 0           | 0 PCE |
@@ -120,10 +126,10 @@ Feature: Moving Average Invoice - MatchInv repost keeps the invoice-vs-PO price 
     # PO-price receipt amount (100), the variance still sits on P_Asset (20), and GR/IR still nets to zero.
     #
     Then Fact_Acct records are matching
-      | AccountConceptualName    | AmtAcctDr | AmtAcctCr | AmtSourceDr | AmtSourceCr | Qty     | M_Product_ID | Record_ID | C_BPartner_ID |
-      | NotInvoicedReceipts_Acct | 100       |           | 100 CHF     |             | +10 PCE | product      | matchInv  | vendor        |
-      | P_InventoryClearing_Acct |           | 120       |             | 120 CHF     | -10 PCE | product      | matchInv  | vendor        |
-      | P_Asset_Acct             | 20        |           | 20 CHF      |             | +10 PCE | product      | matchInv  | vendor        |
+      | AccountConceptualName    | AmtAcctDr | AmtAcctCr | AmtSourceDr | AmtSourceCr | Qty     | M_Locator_ID | M_Product_ID | Record_ID | C_BPartner_ID |
+      | NotInvoicedReceipts_Acct | 100       |           | 100 CHF     |             | +10 PCE | locatorStd   | product      | matchInv  | vendor        |
+      | P_InventoryClearing_Acct |           | 120       |             | 120 CHF     | -10 PCE | null         | product      | matchInv  | vendor        |
+      | P_Asset_Acct             | 20        |           | 20 CHF      |             | 0 PCE   | locatorStd   | product      | matchInv  | vendor        |
     And Fact_Acct records balances for documents receipt,matchInv are matching
       | AccountConceptualName    | M_Product_ID | SourceBalance | AcctBalance | Qty   |
       | NotInvoicedReceipts_Acct | product      | 0 CHF         | 0           | 0 PCE |
