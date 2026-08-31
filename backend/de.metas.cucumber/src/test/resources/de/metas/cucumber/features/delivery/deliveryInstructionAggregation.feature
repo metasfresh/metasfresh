@@ -410,3 +410,59 @@ Feature: Several delivery plannings on one delivery instruction
       | Classname                                                                            | ColumnName | DefaultValue |
       | de.metas.deliveryplanning.process.M_Delivery_Planning_GenerateDeliveryInstruction    | IsComplete | N            |
       | de.metas.deliveryplanning.process.M_Delivery_Planning_CombineIntoDeliveryInstruction | IsComplete | N            |
+
+  @Id:S31608_TC15
+  Scenario: Both delivery instruction views return one consignment row per delivery planning
+
+    # two articles, so every consignment row carries a second discriminator next to its quantity
+    Given metasfresh contains M_Products:
+      | Identifier |
+      | product2   |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | priceListVersion_SO    | product2     | 20.0     | PCE               | Normal                        |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier |
+      | orderView  | true    | customer                 | 2023-02-03  | 2023-02-20T00:00:00Z | customerLocation                      |
+    And metasfresh contains C_OrderLines:
+      | Identifier      | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineView_1 | orderView             | product                 | 7          | shipper_DHL                 |
+      | orderLineView_2 | orderView             | product2                | 3          | shipper_DHL                 |
+
+    When the order identified by orderView is completed
+
+    Then after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier             | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentScheduleView_1 | orderLineView_1           | N             |
+      | shipmentScheduleView_2 | orderLineView_2           | N             |
+    And after not more than 60s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID | C_OrderLine_ID  |
+      | planningView_1         | orderLineView_1 |
+      | planningView_2         | orderLineView_2 |
+
+    # distinct quantities per planning: identical ones would let a mispairing read as correct
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | M_Product_ID | PlannedLoadedQuantity |
+      | planningView_1         | 7          | 7            | Outgoing           | product      | 7                     |
+      | planningView_2         | 3          | 3            | Outgoing           | product2     | 3                     |
+
+    When combine M_Delivery_Planning into one M_ShipperTransportation:
+      | M_ShipperTransportation_ID | M_Delivery_Planning_ID        |
+      | deliveryInstructionView    | planningView_1,planningView_2 |
+
+    Then the M_ShipperTransportation identified by deliveryInstructionView holds exactly the following active M_Delivery_Planning_Alloc:
+      | M_Delivery_Planning_ID | LineNo | ActualLoadQty |
+      | planningView_1         | 10     | 7             |
+      | planningView_2         | 20     | 3             |
+
+    # two plannings, two consignment rows - not the 2 x 2 an uncorrelated package join returns,
+    # and each row carries its OWN planning's article and quantities
+    And the M_ShipperTransportation identified by deliveryInstructionView has exactly the following rows in M_Delivery_Planning_Delivery_Instructions_V:
+      | M_Delivery_Planning_ID | M_Product_ID | ActualLoadQty | ActualDischargeQuantity |
+      | planningView_1         | product      | 7             | 0                       |
+      | planningView_2         | product2     | 3             | 0                       |
+    And the M_ShipperTransportation identified by deliveryInstructionView has exactly the following rows in M_ShipperTransportation_Delivery_Instructions_V:
+      | M_Delivery_Planning_ID | M_Product_ID | PlannedLoadedQuantity | PlannedDischargeQuantity |
+      | planningView_1         | product      | 7                     | 0                       |
+      | planningView_2         | product2     | 3                     | 0                       |
