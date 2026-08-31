@@ -7,6 +7,10 @@ import org.adempiere.ad.table.api.IReferencedRecordDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
+/**
+ * Repository Tables: (dynamic - resolved at runtime from the given {@link TableRecordReference}; owns no fixed table)
+ * Repository Cluster: -
+ */
 public class ReferencedRecordDAO implements IReferencedRecordDAO
 {
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
