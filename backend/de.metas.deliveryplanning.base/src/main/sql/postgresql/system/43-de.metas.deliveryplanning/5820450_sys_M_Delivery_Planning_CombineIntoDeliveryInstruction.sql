@@ -90,8 +90,11 @@ WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Process_Para_ID=543276
 ;
 
 -- ---------------------------------------------------------------------------------------------
--- 3) placement: an action on the Delivery Planning grid.
+-- 3) placement: the DEFAULT quick action on the Delivery Planning grid.
 --    NOT a document action: it needs two or more selected rows, which a single open record is not.
+--    Default because combining is the normal way a planner turns a selection into a delivery
+--    instruction; the 1:1 generate stays available but is no longer the first thing offered. With no
+--    default flagged, the strip falls back to caption order, which is what put the 1:1 generate first.
 -- ---------------------------------------------------------------------------------------------
 INSERT INTO AD_Table_Process (AD_Table_Process_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
                               AD_Table_ID, AD_Process_ID, AD_Window_ID, EntityType,
@@ -100,7 +103,7 @@ VALUES (541665 /*From ID Server*/, 0, 0, 'Y',
         TO_TIMESTAMP('2026-08-27 09:02:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
         TO_TIMESTAMP('2026-08-27 09:02:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
         542259, 585653, 541632, 'D',
-        'Y', 'N', 'Y', 'N', 'N')
+        'Y', 'Y', 'Y', 'N', 'N')
 ;
 
 -- ---------------------------------------------------------------------------------------------
