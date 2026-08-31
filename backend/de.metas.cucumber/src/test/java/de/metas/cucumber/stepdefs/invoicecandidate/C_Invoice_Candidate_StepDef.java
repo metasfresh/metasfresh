@@ -645,6 +645,15 @@ public class C_Invoice_Candidate_StepDef
 						row.getAsOptionalString(I_C_Invoice_Candidate.COLUMNNAME_ErrorMsg)
 								.ifPresent(expected -> softly.assertThat(finalInvoiceCandidate.getErrorMsg()).as("ErrorMsg").contains(expected));
 
+						// IsError/ErrorMsg are cleared again by the next "update invalid invoice candidates" run
+						// (InvoiceCandBL.resetError), whereas IsInvoicingError/InvoicingErrorMsg survive it. Assert on
+						// these two whenever the point is that a *"Create Invoices" run* failed for the candidate.
+						row.getAsOptionalBoolean(I_C_Invoice_Candidate.COLUMNNAME_IsInvoicingError)
+								.ifPresent(expected -> softly.assertThat(finalInvoiceCandidate.isInvoicingError()).as("IsInvoicingError").isEqualTo(expected));
+
+						row.getAsOptionalString(I_C_Invoice_Candidate.COLUMNNAME_InvoicingErrorMsg)
+								.ifPresent(expected -> softly.assertThat(finalInvoiceCandidate.getInvoicingErrorMsg()).as("InvoicingErrorMsg").contains(expected));
+
 						row.getAsOptionalBigDecimal(I_C_Invoice_Candidate.COLUMNNAME_PriceActual)
 								.ifPresent(expected -> softly.assertThat(finalInvoiceCandidate.getPriceActual()).as("PriceActual").isEqualByComparingTo(expected));
 
