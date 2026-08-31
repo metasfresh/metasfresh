@@ -224,3 +224,17 @@ Feature: The delivery instruction owns the dates of the delivery plannings booke
     And the following M_Delivery_Planning carry the date fields of M_ShipperTransportation deliveryInstructionReset:
       | M_Delivery_Planning_ID |
       | planningStay           |
+
+    # the truck is rescheduled AGAIN, after the removal
+    When update transport order
+      | M_ShipperTransportation_ID | ETD                  | ETA                  |
+      | deliveryInstructionReset   | 2023-07-01T00:00:00Z | 2023-07-05T00:00:00Z |
+
+    # the load still on board follows it, and the one taken off does NOT come back under the truck's dates:
+    # the sync resolves its plannings through the ACTIVE allocations, so a released one is no longer reached
+    Then validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | ETD        | ETA        | M_ShipperTransportation_ID |
+      | planningStay           | 5          | 5            | Outgoing           | 2023-07-01 | 2023-07-05 | deliveryInstructionReset   |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | ETD        | ETA        | ATD        | ATA        | M_ShipperTransportation_ID |
+      | planningLeave          | 4          | 4            | Outgoing           | 2023-04-15 | 2023-04-20 | 2023-04-15 | 2023-04-20 | null                       |

@@ -446,6 +446,16 @@ Feature: Several delivery plannings on one delivery instruction
       | planningRemove_1       |
       | planningRemove_3       |
 
+    # both views read the same allocations through IsActive, so one removal splits them: the consignment
+    # view keeps only what is still on board, and the retired one appears in the history
+    And the M_ShipperTransportation identified by deliveryInstructionRemove has exactly the following rows in M_ShipperTransportation_Delivery_Instructions_V:
+      | M_Delivery_Planning_ID |
+      | planningRemove_1       |
+      | planningRemove_3       |
+    And the M_ShipperTransportation identified by deliveryInstructionRemove has exactly the following rows in M_ShipperTransportation_Delivery_Planning_History_V:
+      | M_Delivery_Planning_ID |
+      | planningRemove_2       |
+
     # closing a planning takes it off the draft instruction on its own
     When M_Delivery_Planning identified by planningRemove_3 is closed
 
