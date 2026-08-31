@@ -279,8 +279,15 @@ public class M_ShipmentSchedule
 
 		if (shipmentSchedule.isClosed())
 		{
+			final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID());
 			orderBL.closeLine(orderLine);
-			invoiceCandBL.closeDeliveryInvoiceCandidatesByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
+			invoiceCandBL.closeDeliveryInvoiceCandidatesByOrderLineId(orderLineId);
+
+			// see OrderLineReceiptScheduleListener.onAfterClose - same reasoning, sales side
+			if (orderLine.getQtyDelivered().signum() == 0)
+			{
+				invoiceCandBL.closeInvoiceCandidatesByOrderLineId(orderLineId);
+			}
 		}
 		else
 		{
