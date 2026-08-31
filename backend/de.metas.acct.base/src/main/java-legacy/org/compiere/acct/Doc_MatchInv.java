@@ -618,7 +618,9 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		}
 
 		// P_COGS: the share for stock that was already shipped.
-		// Left carrying the matched qty and no locator, i.e. unchanged - see the open question on the pull request.
+		// Deliberately unchanged: it still carries the matched qty and no locator. Unlike P_Asset, P_COGS is not an
+		// inventory account, so a qty here is not summed as stock on hand by the inventory valuation (Lagerwert)
+		// report; whether it should carry a qty at all is a separate product decision.
 		if (!costs.getAlreadyShippedAmt().isZero())
 		{
 			legs.add(new CostAdjustmentLeg(ProductAcctType.P_COGS_Acct, costs.getAlreadyShippedAmt(), qty, 0));
