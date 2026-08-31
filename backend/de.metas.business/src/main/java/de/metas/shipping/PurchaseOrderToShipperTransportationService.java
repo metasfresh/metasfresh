@@ -86,11 +86,32 @@ public class PurchaseOrderToShipperTransportationService
 
 	/**
 	 * Order in which assigned purchase orders are processed, so the "first order" that seeds the transport order's default dates is
-	 * deterministic: earliest {@code DatePromised} first (the promised delivery date), ties broken by {@code C_Order_ID}. A missing
-	 * {@code DatePromised} sorts last.
+	 * deterministic: earliest {@code PreparationDate} first (the ready/provisioning date), ties broken by {@code C_Order_ID}. A
+	 * missing {@code PreparationDate} sorts last.
+	 * <p>
+	 * Sorted on the DEPARTURE date rather than the arrival date deliberately, and it must stay that way: the seeded ETD is the first
+	 * order's {@code PreparationDate}, so sorting by {@code DatePromised} picked the earliest-ARRIVING order and then took ITS
+	 * departure - yielding a header ETD that is not the earliest departure at all whenever one order arrives first but departs
+	 * second. Sorting by the same field the seed reads makes "first" and "earliest departure" the same order.
+	 * <p>
+	 * It also matches {@code DeliveryPlanningList.ALLOCATION_ORDER}, which orders delivery plannings by ETD, nulls last, tie-broken
+	 * by id: both paths seed the same {@code M_ShipperTransportation} date fields, so they sort on the same axis. (The tie-break
+	 * differs - {@code C_Order_ID} here, planning id there - which is fine: it only decides between rows sharing a date.)
+	 * <p>
+	 * {@code PreparationDate} may be null where {@code DatePromised} is effectively always set, hence nulls-last: an order without a
+	 * ready date has no place in a departure order, and parking it behind the dated ones keeps the result reproducible instead of
+	 * dependent on the set's encounter order.
+	 * <p>
+	 * That same asymmetry is why {@code DatePromised} sits BETWEEN the departure date and the id: sorting on the field more often
+	 * null makes the null bucket a realistic case rather than a theoretical one, and the winner inside it still decides a real
+	 * value - {@code applyDefaultDatesFromFirstOrder} seeds ETA from the winning order's {@code DatePromised} even when ETD stays
+	 * null. Falling straight through to {@code C_Order_ID} would pick that ETA by insertion order, which carries no shipping
+	 * meaning at all, while {@code DatePromised} is right there and does. It only ever runs among orders already tied on
+	 * {@code PreparationDate} - most usefully when every one of them lacks it.
 	 */
 	private static final Comparator<I_C_Order> SEED_ORDER_COMPARATOR = Comparator
-			.comparing(I_C_Order::getDatePromised, Comparator.nullsLast(Comparator.naturalOrder()))
+			.comparing(I_C_Order::getPreparationDate, Comparator.nullsLast(Comparator.naturalOrder()))
+			.thenComparing(I_C_Order::getDatePromised, Comparator.nullsLast(Comparator.naturalOrder()))
 			.thenComparingInt(I_C_Order::getC_Order_ID);
 
 	@NonNull private final PurchaseOrderToShipperTransportationRepository repo;
