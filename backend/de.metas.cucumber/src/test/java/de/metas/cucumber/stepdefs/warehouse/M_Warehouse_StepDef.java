@@ -81,6 +81,10 @@ public class M_Warehouse_StepDef
 							.create()
 							.firstOnlyNotNull(I_M_Warehouse.class);
 
+					final I_M_Locator locator = warehouseBL.getOrCreateDefaultLocator(WarehouseId.ofRepoId(warehouseRecord.getM_Warehouse_ID()));
+					row.getAsOptionalIdentifier(I_M_Locator.COLUMNNAME_M_Locator_ID)
+							.ifPresent(locatorIdentifier -> locatorTable.put(locatorIdentifier, locator));
+
 					row.getAsIdentifier().put(warehouseTable, warehouseRecord);
 				});
 	}

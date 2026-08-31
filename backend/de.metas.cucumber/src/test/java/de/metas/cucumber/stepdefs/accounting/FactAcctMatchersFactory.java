@@ -8,6 +8,7 @@ import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_Tax_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
@@ -23,6 +24,7 @@ import io.cucumber.datatable.DataTable;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_Fact_Acct;
 
 import javax.annotation.Nullable;
@@ -40,6 +42,7 @@ public class FactAcctMatchersFactory
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
 	@NonNull private final C_Tax_StepDefData taxTable;
 	@NonNull private final M_Product_StepDefData productTable;
+	@NonNull private final M_Locator_StepDefData locatorTable;
 	@NonNull private final C_Invoice_StepDefData invoiceTable;
 
 	public FactAcctMatchers createLineMatchers(@NonNull final DataTable table)
@@ -87,6 +90,7 @@ public class FactAcctMatchersFactory
 				.bpartnerId(extractBPartnerId(row))
 				.productId(extractProductId(row))
 				.invoiceId(extractInvoiceId(row))
+				.locatorId(extractLocatorId(row))
 				.build();
 	}
 
@@ -177,6 +181,20 @@ public class FactAcctMatchersFactory
 	{
 		final StepDefDataIdentifier identifier = row.getAsOptionalIdentifier("C_Invoice_ID").orElse(null);
 		return identifier == null ? null : Optional.ofNullable(identifier.lookupIdIn(invoiceTable));
+	}
+
+	@SuppressWarnings("OptionalAssignedToNull")
+	@Nullable
+	private Optional<LocatorId> extractLocatorId(final @NonNull DataTableRow row)
+	{
+		final StepDefDataIdentifier identifier = row.getAsOptionalIdentifier(I_Fact_Acct.COLUMNNAME_M_Locator_ID).orElse(null);
+		if (identifier == null)
+		{
+			return null;
+		}
+		return identifier.isNullPlaceholder()
+				? Optional.empty()
+				: Optional.of(locatorTable.getId(identifier));
 	}
 
 }
