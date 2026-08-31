@@ -130,10 +130,10 @@ public class DeliveryPlanningService
 
 	public static final AdMessageKey MSG_M_Delivery_Planning_AtLeastOnePerOrderLine = AdMessageKey.of("de.metas.deliveryplanning.M_Delivery_Planning_AtLeastOnePerOrderLine");
 
-	private static final AdMessageKey MSG_M_Delivery_Planning_AlreadyReferenced = AdMessageKey.of("de.metas.deliveryplanning.M_Delivery_Planning_AlreadyReferenced");
+	public static final AdMessageKey MSG_M_Delivery_Planning_AlreadyReferenced = AdMessageKey.of("de.metas.deliveryplanning.M_Delivery_Planning_AlreadyReferenced");
 
 	/** A delivery instruction is cancelled or closed, never deleted. Raised on the package leg, where deletes arrive. */
-	private static final AdMessageKey MSG_M_ShippingPackage_Allocated = AdMessageKey.of("de.metas.deliveryplanning.M_ShippingPackage.Allocated");
+	public static final AdMessageKey MSG_M_ShippingPackage_Allocated = AdMessageKey.of("de.metas.deliveryplanning.M_ShippingPackage.Allocated");
 
 	public static final AdMessageKey MSG_M_Delivery_Planning_NoForwarder = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.NoForwarder");
 	public static final AdMessageKey MSG_M_Delivery_Planning_AllHaveReleaseNo = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.AllHaveReleaseNo");

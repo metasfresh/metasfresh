@@ -35,6 +35,7 @@ import org.compiere.model.I_C_DocType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import com.google.common.collect.ImmutableList;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import java.util.List;
@@ -151,7 +152,13 @@ class ShipperTransportationDocSubTypeGuardTest
 			assertThat(guard.rejectIfDeliveryInstruction(row).isAccepted()).isTrue();
 		}
 
-		// linear, not quadratic: exactly one DocType lookup per row, all against the same cached record
-		Mockito.verify(docTypeDAO, Mockito.times(rows.size())).getById(Mockito.any(DocTypeId.class));
+		// linear, not quadratic: one DocType lookup per row, each asking for THAT row's own doc type -
+		// a bare call count would also be satisfied by three lookups of the wrong id
+		final ArgumentCaptor<DocTypeId> lookedUpDocTypeIds = ArgumentCaptor.forClass(DocTypeId.class);
+		Mockito.verify(docTypeDAO, Mockito.times(rows.size())).getById(lookedUpDocTypeIds.capture());
+		assertThat(lookedUpDocTypeIds.getAllValues())
+				.containsExactlyElementsOf(rows.stream()
+						.map(row -> DocTypeId.ofRepoId(row.getC_DocType_ID()))
+						.collect(ImmutableList.toImmutableList()));
 	}
 }

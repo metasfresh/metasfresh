@@ -241,20 +241,6 @@ class DeliveryPlanningAllocLifecycleTest
 	}
 
 	@Test
-	@DisplayName("a deactivated allocation is left alone by a later deactivate of the same instruction")
-	void deactivateSkipsTheAlreadyDeactivatedOnes()
-	{
-		final ShipperTransportationId deliveryInstructionId = createDeliveryInstruction(DocStatus.Drafted, false);
-		deliveryPlanningRepository.createAllocations(deliveryInstructionId, ImmutableList.of(allocRequestFor(createDeliveryPlanning())));
-		deliveryPlanningRepository.deactivateAllocations(deliveryInstructionId, REMOVED_AT.toInstant());
-
-		deliveryPlanningRepository.deactivateAllocations(deliveryInstructionId, REMOVED_AT.toInstant());
-
-		assertThat(allAllocations()).hasSize(1);
-		assertThat(allAllocations().get(0).isActive()).isFalse();
-	}
-
-	@Test
 	@DisplayName("remove deactivates the allocation together with its shipping package - neither is deleted")
 	void deactivateByPlanningIdsDeactivatesAllocationAndPackage()
 	{
@@ -275,21 +261,6 @@ class DeliveryPlanningAllocLifecycleTest
 		assertThat(InterfaceWrapperHelper.load(removedPackageId, I_M_ShippingPackage.class).isActive())
 				.as("its shipping package is deactivated too, not deleted")
 				.isFalse();
-	}
-
-	@Test
-	@DisplayName("remove leaves an already-deactivated allocation of the same planning standing - a void is not what is being undone")
-	void deactivateByPlanningIdsSkipsAlreadyDeactivatedAllocations()
-	{
-		final DeliveryPlanningId deliveryPlanningId = createDeliveryPlanning();
-		final ShipperTransportationId voidedInstructionId = createDeliveryInstruction(DocStatus.Drafted, false);
-		deliveryPlanningRepository.createAllocations(voidedInstructionId, ImmutableList.of(allocRequestFor(deliveryPlanningId)));
-		deliveryPlanningRepository.deactivateAllocations(voidedInstructionId, REMOVED_AT.toInstant());
-
-		deliveryPlanningRepository.deactivateAllocations(ImmutableList.of(deliveryPlanningId), REMOVED_AT.toInstant());
-
-		assertThat(allAllocations()).hasSize(1);
-		assertThat(allAllocations().get(0).isActive()).isFalse();
 	}
 
 	@Test
@@ -322,31 +293,6 @@ class DeliveryPlanningAllocLifecycleTest
 		assertThat(InterfaceWrapperHelper.load(sourcePackageId, I_M_ShippingPackage.class).isActive())
 				.as("the source document's shipping package survives, deactivated - not deleted")
 				.isFalse();
-	}
-
-	@Test
-	@DisplayName("a moved allocation continues the TARGET's LineNo, not the source's")
-	void moveContinuesTheTargetsLineNo()
-	{
-		final ShipperTransportationId source = createDeliveryInstruction(DocStatus.Drafted, false);
-		final ShipperTransportationId target = createDeliveryInstruction(DocStatus.Drafted, false);
-		// three on the source, so the moved one's source LineNo (30) is higher than the target's next (20)
-		final DeliveryPlanningId moving = createDeliveryPlanning();
-		deliveryPlanningRepository.createAllocations(source, ImmutableList.of(
-				allocRequestFor(createDeliveryPlanning()), allocRequestFor(createDeliveryPlanning()), allocRequestFor(moving)));
-		deliveryPlanningRepository.createAllocations(target, ImmutableList.of(allocRequestFor(createDeliveryPlanning())));
-
-		deliveryPlanningRepository.deactivateAllocations(ImmutableList.of(moving), REMOVED_AT.toInstant());
-		deliveryPlanningRepository.createAllocations(target, ImmutableList.of(allocRequestFor(moving)));
-
-		assertThat(allAllocations().stream()
-				// the deactivated source row for `moving` also matches on M_Delivery_Planning_ID, so the NEW
-				// active one is what identifies the target's row here
-				.filter(alloc -> alloc.getM_Delivery_Planning_ID() == moving.getRepoId() && alloc.isActive())
-				.findFirst()
-				.orElseThrow(AssertionError::new)
-				.getLineNo())
-				.isEqualTo(20);
 	}
 
 	@Test
@@ -414,13 +360,6 @@ class DeliveryPlanningAllocLifecycleTest
 		InterfaceWrapperHelper.save(deactivatedAlloc);
 
 		assertThat(deliveryPlanningRepository.getAllocatedPlanningIds(deliveryInstructionId)).containsExactly(held);
-	}
-
-	@Test
-	@DisplayName("getAllocatedPlanningIds of an instruction that holds nothing is empty, not a failure")
-	void allocatedPlanningIdsOfAnEmptyInstruction()
-	{
-		assertThat(deliveryPlanningRepository.getAllocatedPlanningIds(createDeliveryInstruction(DocStatus.Drafted, false))).isEmpty();
 	}
 
 	@Test

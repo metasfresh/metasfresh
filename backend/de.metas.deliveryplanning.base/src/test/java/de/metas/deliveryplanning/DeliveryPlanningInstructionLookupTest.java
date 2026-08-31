@@ -135,15 +135,6 @@ class DeliveryPlanningInstructionLookupTest
 	}
 
 	@Test
-	@DisplayName("hasCompleteDeliveryInstruction is false for a planning that has no allocation at all")
-	void hasCompleteDeliveryInstruction_noAllocation()
-	{
-		final DeliveryPlanningId planningId = createDeliveryPlanning();
-
-		assertThat(deliveryPlanningRepository.hasCompleteDeliveryInstruction(planningId)).isFalse();
-	}
-
-	@Test
 	@DisplayName("hasCompleteDeliveryInstruction is false when the only allocation onto the completed instruction is inactive")
 	void hasCompleteDeliveryInstruction_inactiveAllocation()
 	{

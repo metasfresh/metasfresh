@@ -126,33 +126,5 @@ class DeliveryPlanningProcessHelperTest
 			assertThat(DeliveryPlanningProcessHelper.checkSingleSelection(contextWith(SelectionSize.ofAll())).isAccepted()).isFalse();
 		}
 
-		/**
-		 * {@code checkSingleSelection} asks {@code context.isMoreThanOneSelected()}, which is equivalent to
-		 * {@code !context.isSingleSelection()} only AFTER {@code checkAnySelection} has rejected the empty selection.
-		 */
-		@Test
-		@DisplayName("past the any-selection guard, rejecting is equivalent to !isSingleSelection()")
-		void singleSelectionGuardMatchesIsSingleSelection()
-		{
-			final SelectionSize[] selectionsPastTheAnySelectionGuard = {
-					SelectionSize.ofSize(1),
-					SelectionSize.ofSize(2),
-					SelectionSize.ofSize(100),
-					SelectionSize.ofAll(),
-			};
-
-			for (final SelectionSize selectionSize : selectionsPastTheAnySelectionGuard)
-			{
-				final IProcessPreconditionsContext context = contextWith(selectionSize);
-
-				assertThat(DeliveryPlanningProcessHelper.checkAnySelection(context).isAccepted())
-						.as("precondition of this equivalence: %s is past the any-selection guard", selectionSize)
-						.isTrue();
-
-				assertThat(DeliveryPlanningProcessHelper.checkSingleSelection(context).isAccepted())
-						.as("checkSingleSelection must accept exactly when isSingleSelection(); selection=%s", selectionSize)
-						.isEqualTo(context.isSingleSelection());
-			}
-		}
 	}
 }

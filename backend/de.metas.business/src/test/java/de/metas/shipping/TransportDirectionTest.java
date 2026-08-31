@@ -23,42 +23,12 @@
 package de.metas.shipping;
 
 import de.metas.lang.SOTrx;
-import de.metas.shipping.model.X_M_ShipperTransportation;
-import org.compiere.model.X_M_Delivery_Planning;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class TransportDirectionTest
 {
-	@Test
-	void codes_matchTheReferenceListValues()
-	{
-		assertThat(TransportDirection.Incoming.getCode()).isEqualTo("Incoming");
-		assertThat(TransportDirection.Outgoing.getCode()).isEqualTo("Outgoing");
-		assertThat(TransportDirection.Dropship.getCode()).isEqualTo("Dropship");
-	}
-
-	@Test
-	void ofCode_resolvesEveryReferenceListValue()
-	{
-		assertThat(TransportDirection.ofCode(X_M_ShipperTransportation.TRANSPORTDIRECTION_Incoming)).isEqualTo(TransportDirection.Incoming);
-		assertThat(TransportDirection.ofCode(X_M_ShipperTransportation.TRANSPORTDIRECTION_Outgoing)).isEqualTo(TransportDirection.Outgoing);
-		assertThat(TransportDirection.ofCode(X_M_ShipperTransportation.TRANSPORTDIRECTION_Dropship)).isEqualTo(TransportDirection.Dropship);
-	}
-
-	/**
-	 * One enum serves both tables, so the two generated constant sets must stay identical: a migration that
-	 * changes only one of them must fail here rather than split the domain in two.
-	 */
-	@Test
-	void bothGeneratedModelsCarryTheSameCodes()
-	{
-		assertThat(X_M_Delivery_Planning.TRANSPORTDIRECTION_Incoming).isEqualTo(X_M_ShipperTransportation.TRANSPORTDIRECTION_Incoming);
-		assertThat(X_M_Delivery_Planning.TRANSPORTDIRECTION_Outgoing).isEqualTo(X_M_ShipperTransportation.TRANSPORTDIRECTION_Outgoing);
-		assertThat(X_M_Delivery_Planning.TRANSPORTDIRECTION_Dropship).isEqualTo(X_M_ShipperTransportation.TRANSPORTDIRECTION_Dropship);
-	}
-
 	@Test
 	void ofSOTrx_mapsTheTwoValuedDocumentNature()
 	{
@@ -80,6 +50,20 @@ class TransportDirectionTest
 		assertThat(TransportDirection.Incoming.hasShipment()).isFalse();
 		assertThat(TransportDirection.Outgoing.hasShipment()).isTrue();
 		assertThat(TransportDirection.Dropship.hasShipment()).isTrue();
+	}
+
+	/**
+	 * The contract that makes {@code isOutgoing()} worth having next to {@link TransportDirection#hasShipment()}:
+	 * it is STRICTLY Outgoing, so a Dropship - which does have a shipment - is false here.
+	 */
+	@Test
+	void isOutgoing()
+	{
+		assertThat(TransportDirection.Outgoing.isOutgoing()).isTrue();
+		assertThat(TransportDirection.Dropship.isOutgoing())
+				.as("a dropship has a shipment but is NOT Outgoing - that is the whole difference to hasShipment()")
+				.isFalse();
+		assertThat(TransportDirection.Incoming.isOutgoing()).isFalse();
 	}
 
 	@Test

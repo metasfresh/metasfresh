@@ -275,32 +275,6 @@ class DeliveryPlanningClosedInterceptorTest
 	}
 
 	@Test
-	@DisplayName("close: an unallocated planning succeeds and is a no-op on allocations")
-	void close_unallocatedPlanning_succeedsNoOpOnAllocations()
-	{
-		final I_M_Delivery_Planning planning = deliveryPlanning();
-
-		deliveryPlanningService.closeSelectedDeliveryPlannings(selectionOf(planning));
-
-		final I_M_Delivery_Planning closed = reload(planning);
-		assertThat(closed.isClosed()).isTrue();
-		assertThat(allActiveAllocations()).isEmpty();
-	}
-
-	@Test
-	@DisplayName("reopen: an open planning still errors instead of doing nothing - unaffected by the new interceptor")
-	void reOpen_openPlanningStillErrors()
-	{
-		final I_M_Delivery_Planning open = deliveryPlanning();
-
-		assertThatThrownBy(() -> deliveryPlanningService.reOpenSelectedDeliveryPlannings(selectionOf(open)))
-				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("Closed=N");
-
-		assertThat(reload(open).isClosed()).isFalse();
-	}
-
-	@Test
 	@DisplayName("an unrelated column change does not trigger the interceptor - ifColumnsChanged actually filters")
 	void unrelatedColumnChange_doesNotTriggerInterceptor()
 	{

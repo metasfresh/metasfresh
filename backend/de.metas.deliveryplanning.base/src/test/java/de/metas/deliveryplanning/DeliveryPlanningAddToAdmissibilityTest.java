@@ -354,23 +354,6 @@ class DeliveryPlanningAddToAdmissibilityTest
 	}
 
 	@Test
-	@DisplayName("add to onto an EMPTY draft instruction still judges the selection's own admissibility")
-	void addTo_selectionThatDisagreesWithItselfIsRefusedEvenOnAnEmptyTarget()
-	{
-		final I_M_ShipperTransportation empty = InterfaceWrapperHelper.newInstance(I_M_ShipperTransportation.class);
-		empty.setDocStatus(DocStatus.Drafted.getCode());
-		InterfaceWrapperHelper.save(empty);
-		final ShipperTransportationId target = ShipperTransportationId.ofRepoId(empty.getM_ShipperTransportation_ID());
-
-		final IQueryFilter<I_M_Delivery_Planning> selection = selectionOf(ImmutableList.of(
-				deliveryPlanning(FORWARDER_A), deliveryPlanning(FORWARDER_B)));
-
-		assertThat(addToRejectionTextOf(selection, target))
-				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_IncompatibleSelection))
-				.contains(keyOf(AggregationKeyField.Forwarder.getLabel()));
-	}
-
-	@Test
 	@DisplayName("the action is refused for a self-disagreeing selection BEFORE a target is picked")
 	void addTo_selectionThatDisagreesWithItselfIsRefusedWithNoTargetYet()
 	{

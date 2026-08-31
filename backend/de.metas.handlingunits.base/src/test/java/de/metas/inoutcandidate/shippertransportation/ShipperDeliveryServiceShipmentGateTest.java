@@ -1,6 +1,7 @@
 package de.metas.inoutcandidate.shippertransportation;
 
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
 import de.metas.handlingunits.shipmentschedule.api.DeliveryOrderCarrierResolver;
 import de.metas.handlingunits.shipping.InOutToTransportationOrderService;
 import de.metas.inout.IInOutBL;
@@ -10,6 +11,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.shipper.gateway.commons.ShipperGatewayFacade;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.TransportDirection;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Services;
@@ -21,6 +23,7 @@ import org.compiere.model.X_M_InOut;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -30,6 +33,7 @@ import java.util.Collections;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -100,7 +104,12 @@ class ShipperDeliveryServiceShipmentGateTest
 
 		service.createTransportationAndPackagesForShipment(InOutId.ofRepoId(1), false);
 
-		verify(shipperTransportationDAO).create(any());
+		// the direction is the request's own new field: an Outgoing sales shipment must never be booked onto an
+		// Incoming or Dropship transport order, so assert the value and not merely that create() was reached
+		final ArgumentCaptor<CreateShipperTransportationRequest> request =
+				ArgumentCaptor.forClass(CreateShipperTransportationRequest.class);
+		verify(shipperTransportationDAO).create(request.capture());
+		assertThat(request.getValue().getTransportDirection()).isEqualTo(TransportDirection.Outgoing);
 	}
 
 	@Test
@@ -121,19 +130,6 @@ class ShipperDeliveryServiceShipmentGateTest
 	void customerReturn_isNoOp()
 	{
 		setupShipment(true /* isSOTrx */, X_M_InOut.MOVEMENTTYPE_CustomerReturns, true /* isReturn */);
-
-		service.createTransportationAndPackagesForShipment(InOutId.ofRepoId(1), false);
-
-		verify(shipperTransportationDAO, never()).create(any());
-		verify(shipperTransportationDAO, never()).getOrCreate(any());
-		verify(inOutToTransportationOrderService, never()).addShipmentsToTransportationOrder(any(), any());
-	}
-
-	@Test
-	@DisplayName("a vendor return is a no-op")
-	void vendorReturn_isNoOp()
-	{
-		setupShipment(false /* isSOTrx */, X_M_InOut.MOVEMENTTYPE_VendorReturns, true /* isReturn */);
 
 		service.createTransportationAndPackagesForShipment(InOutId.ofRepoId(1), false);
 

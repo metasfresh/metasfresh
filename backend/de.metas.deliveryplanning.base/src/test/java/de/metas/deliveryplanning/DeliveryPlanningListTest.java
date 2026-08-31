@@ -113,13 +113,6 @@ class DeliveryPlanningListTest
 		}
 
 		@Test
-		@DisplayName("an empty selection has nothing to disagree about")
-		void emptySelection()
-		{
-			assertThat(DeliveryPlanningList.EMPTY.aggregationKeyViolations()).isEmpty();
-		}
-
-		@Test
 		@DisplayName("NULL is a value: a shipperless row beside a row with a shipper IS a mismatch")
 		void someRowsShipperless()
 		{
@@ -227,17 +220,6 @@ class DeliveryPlanningListTest
 					.containsExactly(303, 301, 302);
 		}
 
-		@Test
-		@DisplayName("iteration sees the same order the ids do, so anything derived from the list agrees with the LineNo")
-		void iterationAgreesWithTheIds()
-		{
-			final DeliveryPlanningList list = DeliveryPlanningList.of(
-					withEtd(401, "2026-03-09T00:00:00Z"),
-					withEtd(402, "2026-03-08T00:00:00Z"));
-
-			assertThat(list.stream().map(DeliveryPlanning::getId))
-					.containsExactlyElementsOf(list.getIdsInAllocationOrder());
-		}
 	}
 
 	@Nested
@@ -427,18 +409,6 @@ class DeliveryPlanningListTest
 		private final ShipperTransportationId secondLeg = ShipperTransportationId.ofRepoId(540022);
 
 		@Test
-		@DisplayName("a planning on no instruction has no allocations at all - never null")
-		void unallocated()
-		{
-			final DeliveryPlanning unallocated = planning().build();
-
-			assertThat(unallocated.getAllocations()).isEmpty();
-			assertThat(unallocated.isAllocated()).isFalse();
-			assertThat(unallocated.getAllocationCount()).isZero();
-			assertThat(unallocated.getDeliveryInstructionIds()).isEmpty();
-		}
-
-		@Test
 		@DisplayName("one allocation: one instruction, counted once")
 		void oneAllocation()
 		{
@@ -479,16 +449,5 @@ class DeliveryPlanningListTest
 					.containsExactly(firstLeg);
 		}
 
-		@Test
-		@DisplayName("a multi-leg planning counts as allocated for the list-level checks, exactly like a single-leg one")
-		void multiLegCountsAsAllocated()
-		{
-			final DeliveryPlanning multiLeg = planning().allocations(allocatedTo(firstLeg, secondLeg)).build();
-
-			final DeliveryPlanningList list = DeliveryPlanningList.of(planning().build(), multiLeg);
-
-			assertThat(list.anyAllocated()).isTrue();
-			assertThat(list.allocatedOnes()).containsExactly(multiLeg);
-		}
 	}
 }

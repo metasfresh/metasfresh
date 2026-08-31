@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.deliveryplanning.interceptor.M_ShippingPackage;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
+import de.metas.i18n.AdMessageKey;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperRepository;
@@ -134,6 +135,11 @@ class ShippingPackageDeleteGuardTest
 		return id;
 	}
 
+	private static String keyOf(@NonNull final AdMessageKey adMessageKey)
+	{
+		return adMessageKey.toAD_Message();
+	}
+
 	/** The package {@link #allocateTo} created, i.e. the one the allocation points at. */
 	private I_M_ShippingPackage shippingPackageOf(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
@@ -158,7 +164,8 @@ class ShippingPackageDeleteGuardTest
 		assertThatThrownBy(() -> InterfaceWrapperHelper.delete(shippingPackage))
 				.as("deleting a shipping package still carrying a live booking must never succeed - it would take "
 						+ "the instruction's cargo with it, leaving no record of it ever having been booked")
-				.isInstanceOf(AdempiereException.class);
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining(keyOf(DeliveryPlanningService.MSG_M_ShippingPackage_Allocated));
 	}
 
 	@Test
@@ -180,7 +187,8 @@ class ShippingPackageDeleteGuardTest
 		assertThatThrownBy(() -> InterfaceWrapperHelper.delete(reloaded))
 				.as("an instruction that once carried a planning is exactly the document whose history the "
 						+ "retirement exists to keep - it is cancelled or closed, never deleted")
-				.isInstanceOf(AdempiereException.class);
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining(keyOf(DeliveryPlanningService.MSG_M_ShippingPackage_Allocated));
 	}
 
 	@Test

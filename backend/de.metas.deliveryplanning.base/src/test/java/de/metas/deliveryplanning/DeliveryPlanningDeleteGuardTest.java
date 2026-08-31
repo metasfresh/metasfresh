@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.deliveryplanning.interceptor.M_Delivery_Planning;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
+import de.metas.i18n.AdMessageKey;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperRepository;
@@ -127,6 +128,11 @@ class DeliveryPlanningDeleteGuardTest
 		deliveryPlanningRepository.updateDeliveryPlanningsFromInstruction(ImmutableList.of(id), deliveryInstructionId);
 	}
 
+	private static String keyOf(@NonNull final AdMessageKey adMessageKey)
+	{
+		return adMessageKey.toAD_Message();
+	}
+
 	@Test
 	@DisplayName("a NON-UI delete of a currently-allocated planning is refused")
 	void nonUiDeleteOfAnActivelyAllocatedPlanningIsRefused()
@@ -145,7 +151,8 @@ class DeliveryPlanningDeleteGuardTest
 		assertThatThrownBy(() -> InterfaceWrapperHelper.delete(reloaded))
 				.as("deleting a planning that is still on a delivery instruction must never succeed, even from a "
 						+ "non-UI caller - the instruction's cargo would lose the record of ever having been booked")
-				.isInstanceOf(AdempiereException.class);
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_AlreadyReferenced));
 	}
 
 	@Test
@@ -178,5 +185,9 @@ class DeliveryPlanningDeleteGuardTest
 		final I_M_Delivery_Planning neverAllocated = deliveryPlanning();
 
 		InterfaceWrapperHelper.delete(neverAllocated);
+
+		assertThat(POJOLookupMap.get().getRecords(I_M_Delivery_Planning.class))
+				.as("the planning is actually gone - the guard must not turn an unallocated delete into a silent no-op")
+				.isEmpty();
 	}
 }

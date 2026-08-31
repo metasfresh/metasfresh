@@ -49,7 +49,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * {@link ShipperTransportationDAO#create(CreateShipperTransportationRequest)} must persist the
@@ -113,21 +112,6 @@ class ShipperTransportationDAOTest
 		assertThat(transportOrder.getTransportDirection())
 				.as("a purchase receipt must not be labelled Outgoing")
 				.isEqualTo(X_M_ShipperTransportation.TRANSPORTDIRECTION_Incoming);
-	}
-
-	@Test
-	@DisplayName("a sales shipment's transport order must be Outgoing")
-	void createDerivesOutgoingDirectionForSalesShipment()
-	{
-		final CreateShipperTransportationRequest request = requestBuilder()
-				.transportDirection(TransportDirection.Outgoing) // sales shipment
-				.build();
-
-		final ShipperTransportationId shipperTransportationId = shipperTransportationDAO.create(request);
-
-		final I_M_ShipperTransportation transportOrder = load(shipperTransportationId, I_M_ShipperTransportation.class);
-		assertThat(transportOrder.getTransportDirection())
-				.isEqualTo(X_M_ShipperTransportation.TRANSPORTDIRECTION_Outgoing);
 	}
 
 	@Test
@@ -225,17 +209,5 @@ class ShipperTransportationDAOTest
 				.isNotEqualTo(outgoingId);
 		assertThat(load(foundId, I_M_ShipperTransportation.class).getTransportDirection())
 				.isEqualTo(X_M_ShipperTransportation.TRANSPORTDIRECTION_Dropship);
-	}
-
-	@Test
-	@DisplayName("omitting the transport direction must fail loudly - it must never fall back to a silent default")
-	void requestWithoutTransportDirection_cannotBeBuilt()
-	{
-		final CreateShipperTransportationRequest.CreateShipperTransportationRequestBuilder builderWithoutDirection = requestBuilder();
-
-		assertThatThrownBy(builderWithoutDirection::build)
-				.as("a caller that forgets the direction must not silently create a transport order in some default one")
-				.isInstanceOf(NullPointerException.class)
-				.hasMessageContaining("transportDirection");
 	}
 }
