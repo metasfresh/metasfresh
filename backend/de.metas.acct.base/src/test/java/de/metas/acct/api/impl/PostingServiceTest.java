@@ -9,7 +9,7 @@ import de.metas.acct.posting.DocumentPostingUserNotificationService;
 import de.metas.acct.posting.log.DocumentPostingLogService;
 import de.metas.user.UserId;
 import de.metas.util.Services;
-import org.adempiere.ad.table.api.IReferencedRecordDAO;
+import org.adempiere.ad.table.ReferencedRecordDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -21,6 +21,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+
+import java.util.function.Supplier;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -43,6 +45,12 @@ public class PostingServiceTest
 	@BeforeEach
 	void init()
 	{
+		init(ReferencedRecordDAO::newInstanceForUnitTesting);
+	}
+
+	/** The supplier is invoked only after the test helper enabled the unit-test mode and cleared the previously registered beans. */
+	private void init(final Supplier<ReferencedRecordDAO> referencedRecordDAOSupplier)
+	{
 		AdempiereTestHelper.get().init();
 
 		final IAcctSchemaDAO acctSchemaDAO = mock(IAcctSchemaDAO.class);
@@ -56,6 +64,7 @@ public class PostingServiceTest
 		SpringContextHolder.registerJUnitBean(AcctDocRegistry.class, acctDocRegistry);
 		SpringContextHolder.registerJUnitBean(DocumentPostingLogService.class, documentPostingLogService);
 		SpringContextHolder.registerJUnitBean(DocumentPostingUserNotificationService.class, userNotificationService);
+		SpringContextHolder.registerJUnitBean(ReferencedRecordDAO.class, referencedRecordDAOSupplier.get());
 
 		postingService = new PostingService();
 	}
@@ -115,10 +124,9 @@ public class PostingServiceTest
 		@DisplayName("the posting error is still reported when we cannot check whether the document exists")
 		void logsThePostingErrorEvenIfTheExistenceCheckFails()
 		{
-			final IReferencedRecordDAO failingRecordDAO = mock(IReferencedRecordDAO.class);
+			final ReferencedRecordDAO failingRecordDAO = mock(ReferencedRecordDAO.class);
 			when(failingRecordDAO.exists(any())).thenThrow(new AdempiereException("database is not available"));
-			Services.registerService(IReferencedRecordDAO.class, failingRecordDAO);
-			postingService = new PostingService();
+			init(() -> failingRecordDAO);
 
 			final TableRecordReference documentRef = TableRecordReference.of(I_C_Invoice.Table_Name, 9649545);
 			when(acctDocRegistry.get(any(), eq(documentRef)))
