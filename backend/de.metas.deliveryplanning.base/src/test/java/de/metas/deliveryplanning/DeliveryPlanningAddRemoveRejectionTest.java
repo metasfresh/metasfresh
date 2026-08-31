@@ -46,6 +46,7 @@ import javax.annotation.Nullable;
 
 import java.util.Optional;
 
+import static de.metas.deliveryplanning.DeliveryPlanningAllocTestHelper.allocatedTo;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -138,7 +139,7 @@ class DeliveryPlanningAddRemoveRejectionTest
 	void addTo_onAnotherDraftInstructionIsTheMove()
 	{
 		final DeliveryPlanning onAnotherDraft = deliveryPlanning()
-				.deliveryInstructionId(deliveryInstruction(DocStatus.Drafted))
+				.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted)))
 				.build();
 
 		assertThat(deliveryPlanningService.getAddToRejectionReason(
@@ -152,7 +153,7 @@ class DeliveryPlanningAddRemoveRejectionTest
 	void addTo_onCompletedInstructionIsRefused()
 	{
 		final DeliveryPlanning onCompleted = deliveryPlanning()
-				.deliveryInstructionId(deliveryInstruction(DocStatus.Completed))
+				.allocations(allocatedTo(deliveryInstruction(DocStatus.Completed)))
 				.build();
 
 		assertThat(addToRejectionTextOf(deliveryInstruction(DocStatus.Drafted), deliveryPlanning().build(), onCompleted))
@@ -212,7 +213,7 @@ class DeliveryPlanningAddRemoveRejectionTest
 	void removeFrom_onDraftInstructionIsAccepted()
 	{
 		final DeliveryPlanning allocated = deliveryPlanning()
-				.deliveryInstructionId(deliveryInstruction(DocStatus.Drafted))
+				.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted)))
 				.build();
 
 		assertThat(deliveryPlanningService.getRemoveFromRejectionReason(DeliveryPlanningList.of(allocated))).isEmpty();
@@ -224,7 +225,7 @@ class DeliveryPlanningAddRemoveRejectionTest
 	{
 		final DeliveryPlanning closedAndAllocated = deliveryPlanning()
 				.closed(true)
-				.deliveryInstructionId(deliveryInstruction(DocStatus.Drafted))
+				.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted)))
 				.build();
 
 		assertThat(deliveryPlanningService.getRemoveFromRejectionReason(DeliveryPlanningList.of(closedAndAllocated))).isEmpty();
@@ -235,7 +236,7 @@ class DeliveryPlanningAddRemoveRejectionTest
 	void removeFrom_onCompletedInstructionIsRefused()
 	{
 		final DeliveryPlanning onCompleted = deliveryPlanning()
-				.deliveryInstructionId(deliveryInstruction(DocStatus.Completed))
+				.allocations(allocatedTo(deliveryInstruction(DocStatus.Completed)))
 				.build();
 
 		assertThat(textOf(deliveryPlanningService.getRemoveFromRejectionReason(DeliveryPlanningList.of(onCompleted))))
@@ -254,12 +255,54 @@ class DeliveryPlanningAddRemoveRejectionTest
 				.contains(String.valueOf(notAllocated.getId().getRepoId()));
 	}
 
+	/**
+	 * The case the DB still forbids and the list shape exists for: a planning on several legs, one of them already
+	 * completed. ANY non-draft instruction refuses - the completed leg cannot be altered, so the action cannot be
+	 * performed for this planning at all, and partially performing it is exactly what these rules refuse.
+	 */
+	@Test
+	@DisplayName("remove from: a planning on a draft AND a completed instruction is refused - ANY non-draft leg forbids")
+	void removeFrom_anyNonDraftInstructionRefuses()
+	{
+		final DeliveryPlanning onBoth = deliveryPlanning()
+				.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted), deliveryInstruction(DocStatus.Completed)))
+				.build();
+
+		assertThat(textOf(deliveryPlanningService.getRemoveFromRejectionReason(DeliveryPlanningList.of(onBoth))))
+				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_OnCompletedDeliveryInstruction))
+				.contains(String.valueOf(onBoth.getId().getRepoId()));
+	}
+
+	@Test
+	@DisplayName("remove from: a planning on TWO draft instructions is accepted - every leg is still alterable")
+	void removeFrom_allDraftInstructionsIsAccepted()
+	{
+		final DeliveryPlanning onTwoDrafts = deliveryPlanning()
+				.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted), deliveryInstruction(DocStatus.Drafted)))
+				.build();
+
+		assertThat(deliveryPlanningService.getRemoveFromRejectionReason(DeliveryPlanningList.of(onTwoDrafts))).isEmpty();
+	}
+
+	@Test
+	@DisplayName("add to: a planning on a draft AND a completed instruction is refused - ANY non-draft leg forbids")
+	void addTo_anyNonDraftInstructionRefuses()
+	{
+		final DeliveryPlanning onBoth = deliveryPlanning()
+				.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted), deliveryInstruction(DocStatus.Completed)))
+				.build();
+
+		assertThat(addToRejectionTextOf(deliveryInstruction(DocStatus.Drafted), onBoth))
+				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_OnCompletedDeliveryInstruction))
+				.contains(String.valueOf(onBoth.getId().getRepoId()));
+	}
+
 	@Test
 	@DisplayName("remove from: an unallocated row alongside an allocated one does not refuse the selection")
 	void removeFrom_unallocatedRowIsSkippedNotRefused()
 	{
 		final DeliveryPlanning allocated = deliveryPlanning()
-				.deliveryInstructionId(deliveryInstruction(DocStatus.Drafted))
+				.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted)))
 				.build();
 
 		assertThat(deliveryPlanningService.getRemoveFromRejectionReason(

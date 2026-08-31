@@ -23,9 +23,11 @@
 package de.metas.deliveryplanning;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimaps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
@@ -105,7 +107,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -601,7 +602,7 @@ public class DeliveryPlanningService
 
 		return toDeliveryPlanningList(
 				deliveryPlanningRecords,
-				deliveryPlanningRepository.getAllocatedInstructionIds(
+				deliveryPlanningRepository.getAllocationsByPlanningId(
 						deliveryPlanningRecords.stream()
 								.map(record -> DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID()))
 								.collect(ImmutableSet.toImmutableSet())));
@@ -611,47 +612,51 @@ public class DeliveryPlanningService
 	 * The delivery plannings a delivery instruction currently holds, as the same in-memory list a selection is
 	 * judged as - so the add-to rule can be answered against what the instruction would hold AFTERWARDS.
 	 * <p>
-	 * Two batch loads and not a single per-row one: the ids of the instruction's ACTIVE allocations, then the
-	 * records behind them. Which instruction each of them sits on is not queried a second time - it is the one that
-	 * was asked for.
+	 * Two batch loads and not a single per-row one: the instruction's ACTIVE allocations, then the planning
+	 * records behind them. The allocations are carried over from the first load rather than queried a second
+	 * time - they are exactly what was asked for.
 	 */
 	private DeliveryPlanningList getAllocatedTo(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
-		final ImmutableSet<DeliveryPlanningId> allocatedIds = deliveryPlanningRepository.getAllocatedPlanningIds(deliveryInstructionId);
-		if (allocatedIds.isEmpty())
+		final ImmutableList<DeliveryPlanningAlloc> allocations = deliveryPlanningRepository.getAllocationsOfInstruction(deliveryInstructionId);
+		if (allocations.isEmpty())
 		{
 			return DeliveryPlanningList.EMPTY;
 		}
 
+		final ImmutableSet<DeliveryPlanningId> allocatedIds = allocations.stream()
+				.map(DeliveryPlanningAlloc::getDeliveryPlanningId)
+				.collect(ImmutableSet.toImmutableSet());
+
 		return toDeliveryPlanningList(
 				deliveryPlanningRepository.getByIds(allocatedIds),
-				Maps.toMap(allocatedIds, ignoredDeliveryPlanningId -> deliveryInstructionId));
+				Multimaps.index(allocations, DeliveryPlanningAlloc::getDeliveryPlanningId));
 	}
 
 	/**
 	 * The given records as the in-memory list every aggregation rule is answered against, with the addresses they
 	 * are read from batch-loaded ONCE for the whole collection.
 	 *
-	 * @param allocatedInstructionIds the delivery instruction each planning is currently allocated to, absent for
-	 * 		one that is on none. Handed in rather than queried here, because a caller that already knows it - having
+	 * @param allocationsByPlanningId the ACTIVE allocations of each planning, empty for one that is on no
+	 * 		instruction. Handed in rather than queried here, because a caller that already knows them - having
 	 * 		asked for exactly the plannings of ONE instruction - would otherwise pay for a round trip to be told
 	 * 		what it just asked for.
 	 */
 	private DeliveryPlanningList toDeliveryPlanningList(
 			@NonNull final ImmutableList<I_M_Delivery_Planning> deliveryPlanningRecords,
-			@NonNull final Map<DeliveryPlanningId, ShipperTransportationId> allocatedInstructionIds)
+			@NonNull final ImmutableListMultimap<DeliveryPlanningId, DeliveryPlanningAlloc> allocationsByPlanningId)
 	{
 		final DeliveryPlanningAddresses addresses = loadAddresses(deliveryPlanningRecords);
 
 		return deliveryPlanningRecords.stream()
-				.map(record -> toDeliveryPlanning(record, addresses, allocatedInstructionIds))
+				.map(record -> toDeliveryPlanning(record, addresses, allocationsByPlanningId))
 				.collect(DeliveryPlanningList.collect());
 	}
 
 	private static DeliveryPlanning toDeliveryPlanning(
 			@NonNull final I_M_Delivery_Planning record,
 			@NonNull final DeliveryPlanningAddresses addresses,
-			@NonNull final Map<DeliveryPlanningId, ShipperTransportationId> allocatedInstructionIds)
+			@NonNull final ImmutableListMultimap<DeliveryPlanningId, DeliveryPlanningAlloc> allocationsByPlanningId)
 	{
 		final TransportDirection transportDirection = DeliveryPlanningRepository.extractTransportDirection(record);
 		final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID());
@@ -668,7 +673,7 @@ public class DeliveryPlanningService
 				.deliveryLocationId(extractShipToLocationIdOrNull(record, transportDirection, addresses))
 				.etd(TimeUtil.asInstant(record.getETD()))
 				.closed(record.isClosed())
-				.deliveryInstructionId(allocatedInstructionIds.get(deliveryPlanningId))
+				.allocations(allocationsByPlanningId.get(deliveryPlanningId))
 				.build();
 	}
 
@@ -1071,7 +1076,7 @@ public class DeliveryPlanningService
 		getCloseRejectionReason(deliveryPlanningId)
 				.ifPresent(reason -> {throw new AdempiereException(reason);});
 
-		final ImmutableSet<DeliveryPlanningId> allocatedIds = deliveryPlanningRepository.getAllocatedInstructionIds(ImmutableList.of(deliveryPlanningId)).keySet();
+		final ImmutableSet<DeliveryPlanningId> allocatedIds = deliveryPlanningRepository.getAllocationsByPlanningId(ImmutableList.of(deliveryPlanningId)).keySet();
 		if (allocatedIds.isEmpty())
 		{
 			return;
@@ -1291,23 +1296,29 @@ public class DeliveryPlanningService
 	}
 
 	/**
-	 * The plannings of the given selection whose delivery instruction is no longer a draft - which is what forbids
-	 * both moving them off it and removing them from it.
+	 * The plannings of the given selection that sit on AT LEAST ONE delivery instruction which is no longer a
+	 * draft - which is what forbids both moving them off it and removing them from it.
+	 * <p>
+	 * ANY and not ALL, deliberately: both callers use this to FORBID, and a planning that is on one draft and one
+	 * completed instruction cannot be taken off the completed one at all, so the whole action has to be refused.
+	 * Requiring every instruction to be non-draft would let exactly that planning through and then fail - or
+	 * silently alter - a completed document.
 	 */
 	private DeliveryPlanningList onNonDraftInstruction(@NonNull final DeliveryPlanningList selectedDeliveryPlannings)
 	{
 		final ImmutableSet<ShipperTransportationId> deliveryInstructionIds = selectedDeliveryPlannings.stream()
-				.map(DeliveryPlanning::getDeliveryInstructionId)
-				.filter(Objects::nonNull)
+				.map(DeliveryPlanning::getDeliveryInstructionIds)
+				.flatMap(Collection::stream)
 				.collect(ImmutableSet.toImmutableSet());
 
 		final ImmutableMap<ShipperTransportationId, DocStatus> docStatuses = deliveryPlanningRepository.getDeliveryInstructionDocStatuses(deliveryInstructionIds);
 
 		return selectedDeliveryPlannings.stream()
-				.filter(deliveryPlanning -> deliveryPlanning.getDeliveryInstructionId() != null)
+				.filter(DeliveryPlanning::isAllocated)
 				// an instruction the query did not return cannot be shown to be a draft, so it counts as one that
 				// is not - the safe direction for a rule whose job is to forbid
-				.filter(deliveryPlanning -> !docStatuses.getOrDefault(deliveryPlanning.getDeliveryInstructionId(), DocStatus.Unknown).isDrafted())
+				.filter(deliveryPlanning -> deliveryPlanning.getDeliveryInstructionIds().stream()
+						.anyMatch(id -> !docStatuses.getOrDefault(id, DocStatus.Unknown).isDrafted()))
 				.collect(DeliveryPlanningList.collect());
 	}
 
@@ -1346,7 +1357,9 @@ public class DeliveryPlanningService
 		// in allocation order, so the LineNos the target hands out continue in a decided order rather than the
 		// query's encounter order
 		final ImmutableList<DeliveryPlanningId> deliveryPlanningIds = selectedDeliveryPlannings.stream()
-				.filter(deliveryPlanning -> !targetDeliveryInstructionId.equals(deliveryPlanning.getDeliveryInstructionId()))
+				// already on the target = nothing to move; with several legs that means NONE of its allocations
+				// names the target
+				.filter(deliveryPlanning -> !deliveryPlanning.getDeliveryInstructionIds().contains(targetDeliveryInstructionId))
 				.map(DeliveryPlanning::getId)
 				.collect(ImmutableList.toImmutableList());
 		if (deliveryPlanningIds.isEmpty())

@@ -75,7 +75,7 @@ import static org.assertj.core.groups.Tuple.tuple;
  * </ol>
  * <p>
  * The repository is the real one and the selection is a real query filter over the in-memory store - nothing is
- * stubbed, so {@code getAllocatedInstructionIds} genuinely reads the allocation rows. That matters: it is what
+ * stubbed, so {@code getAllocationsByPlanningId} genuinely reads the allocation rows. That matters: it is what
  * populates {@code DeliveryPlanning.deliveryInstructionId}, which is what the already-on-target filter and the
  * completed-instruction rule branch on. A mocked repository would make (1) and (2) partly self-fulfilling.
  */
@@ -444,9 +444,9 @@ class DeliveryPlanningMoveAndRemovalTest
 		assertThat(InterfaceWrapperHelper.load(leavingAllocationId, I_M_Delivery_Planning_Alloc.class).isActive())
 				.as("the removed planning's own allocation row survives, deactivated")
 				.isFalse();
-		assertThat(deliveryPlanningRepository.getAllocatedInstructionIds(ImmutableList.of(idOf(leaving))))
+		assertThat(deliveryPlanningRepository.getAllocationsByPlanningId(ImmutableList.of(idOf(leaving))).isEmpty())
 				.as("the retired allocation must not leak into an active-filtered lookup")
-				.isEmpty();
+				.isTrue();
 
 		assertThat(allocationsInLineNoOrder())
 				.as("both rows survive - the removed one deactivated, the staying one still active")

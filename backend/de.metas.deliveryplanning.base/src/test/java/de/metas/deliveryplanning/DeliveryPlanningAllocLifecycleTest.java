@@ -23,6 +23,7 @@
 package de.metas.deliveryplanning;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
@@ -367,14 +368,15 @@ class DeliveryPlanningAllocLifecycleTest
 				deliveryPlanningRepository.createAllocations(target, ImmutableList.of(allocRequestFor(planningId)));
 
 		assertThat(newAllocIds).hasSize(1);
-		assertThat(deliveryPlanningRepository.getAllocatedInstructionIds(ImmutableList.of(planningId)))
+		assertThat(deliveryPlanningRepository.getAllocationsByPlanningId(ImmutableList.of(planningId)).get(planningId))
 				.as("the fresh allocation on the target is the only ACTIVE one reported for this planning")
-				.containsExactly(entry(planningId, target));
+				.extracting(DeliveryPlanningAlloc::getDeliveryInstructionId)
+				.containsExactly(target);
 	}
 
 	@Test
-	@DisplayName("getAllocatedInstructionIds reports only plannings with an ACTIVE allocation")
-	void allocatedInstructionIdsReportsOnlyActiveOnes()
+	@DisplayName("getAllocationsByPlanningId reports only plannings with an ACTIVE allocation")
+	void allocationsByPlanningIdReportsOnlyActiveOnes()
 	{
 		final ShipperTransportationId deliveryInstructionId = createDeliveryInstruction(DocStatus.Drafted, false);
 		final DeliveryPlanningId allocated = createDeliveryPlanning();
@@ -386,8 +388,13 @@ class DeliveryPlanningAllocLifecycleTest
 		deliveryPlanningRepository.createAllocations(voidedInstructionId, ImmutableList.of(allocRequestFor(deactivated)));
 		deliveryPlanningRepository.deactivateAllocations(voidedInstructionId, REMOVED_AT.toInstant());
 
-		assertThat(deliveryPlanningRepository.getAllocatedInstructionIds(ImmutableList.of(allocated, unallocated, deactivated)))
-				.containsExactly(entry(allocated, deliveryInstructionId));
+		final ImmutableListMultimap<DeliveryPlanningId, DeliveryPlanningAlloc> allocations =
+				deliveryPlanningRepository.getAllocationsByPlanningId(ImmutableList.of(allocated, unallocated, deactivated));
+
+		assertThat(allocations.keySet()).containsExactly(allocated);
+		assertThat(allocations.get(allocated))
+				.extracting(DeliveryPlanningAlloc::getDeliveryInstructionId)
+				.containsExactly(deliveryInstructionId);
 	}
 
 	@Test

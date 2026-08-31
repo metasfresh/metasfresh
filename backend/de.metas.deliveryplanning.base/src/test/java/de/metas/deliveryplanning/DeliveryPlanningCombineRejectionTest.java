@@ -43,6 +43,7 @@ import org.mockito.Mockito;
 import java.util.Arrays;
 import java.util.Optional;
 
+import static de.metas.deliveryplanning.DeliveryPlanningAllocTestHelper.allocatedTo;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -113,7 +114,7 @@ class DeliveryPlanningCombineRejectionTest
 	@DisplayName("a planning already on a delivery instruction is rejected here, not by the unique index")
 	void alreadyAllocatedIsRejected()
 	{
-		final DeliveryPlanning allocated = combinable().deliveryInstructionId(ShipperTransportationId.ofRepoId(540021)).build();
+		final DeliveryPlanning allocated = combinable().allocations(allocatedTo(ShipperTransportationId.ofRepoId(540021))).build();
 
 		assertThat(rejectionTextOf(combinable().build(), allocated))
 				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_AlreadyOnDeliveryInstruction))

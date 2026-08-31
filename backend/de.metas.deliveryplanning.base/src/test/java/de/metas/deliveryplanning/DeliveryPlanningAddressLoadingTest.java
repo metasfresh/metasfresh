@@ -23,6 +23,7 @@
 package de.metas.deliveryplanning;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.dimension.DimensionService;
@@ -151,15 +152,25 @@ class DeliveryPlanningAddressLoadingTest
 		return getBySelection(records, ImmutableMap.of());
 	}
 
+	/**
+	 * @param allocatedInstructionIds the instruction each planning sits on, spelled as a map because every case
+	 * 		here has at most one - the repository hands the service the allocations themselves, which this turns it
+	 * 		into.
+	 */
 	private DeliveryPlanningList getBySelection(
 			@NonNull final List<I_M_Delivery_Planning> records,
 			@NonNull final Map<DeliveryPlanningId, ShipperTransportationId> allocatedInstructionIds)
 	{
+		final ImmutableListMultimap.Builder<DeliveryPlanningId, DeliveryPlanningAlloc> allocations = ImmutableListMultimap.builder();
+		allocatedInstructionIds.forEach((deliveryPlanningId, deliveryInstructionId) -> allocations.put(
+				deliveryPlanningId,
+				DeliveryPlanningAllocTestHelper.allocationTo(deliveryInstructionId)));
+
 		@SuppressWarnings("unchecked") final IQueryFilter<I_M_Delivery_Planning> filter = Mockito.mock(IQueryFilter.class);
 		Mockito.doAnswer(invocation -> records.iterator())
 				.when(deliveryPlanningRepository).extractDeliveryPlannings(filter);
-		Mockito.doReturn(ImmutableMap.copyOf(allocatedInstructionIds))
-				.when(deliveryPlanningRepository).getAllocatedInstructionIds(Mockito.any());
+		Mockito.doReturn(allocations.build())
+				.when(deliveryPlanningRepository).getAllocationsByPlanningId(Mockito.any());
 
 		return deliveryPlanningService.getBySelection(filter);
 	}
@@ -265,7 +276,7 @@ class DeliveryPlanningAddressLoadingTest
 		Mockito.verify(warehouseDAO, Mockito.times(1)).getByIds(Mockito.any());
 		Mockito.verify(warehouseDAO, Mockito.never()).getById(Mockito.any());
 		Mockito.verify(warehouseDAO, Mockito.never()).getById(Mockito.any(), Mockito.any());
-		Mockito.verify(deliveryPlanningRepository, Mockito.times(1)).getAllocatedInstructionIds(Mockito.any());
+		Mockito.verify(deliveryPlanningRepository, Mockito.times(1)).getAllocationsByPlanningId(Mockito.any());
 	}
 
 	@Test
@@ -280,7 +291,7 @@ class DeliveryPlanningAddressLoadingTest
 
 		final DeliveryPlanning deliveryPlanning = getBySelection(ImmutableList.of(record)).stream().findFirst().orElseThrow(AssertionError::new);
 
-		assertThat(deliveryPlanning.getDeliveryInstructionId()).isNull();
+		assertThat(deliveryPlanning.getAllocations()).isEmpty();
 		assertThat(deliveryPlanning.isAllocated()).isFalse();
 	}
 
@@ -296,7 +307,8 @@ class DeliveryPlanningAddressLoadingTest
 		final DeliveryPlanning deliveryPlanning = getBySelection(ImmutableList.of(record), ImmutableMap.of(idOf(record), allocatedTo))
 				.stream().findFirst().orElseThrow(AssertionError::new);
 
-		assertThat(deliveryPlanning.getDeliveryInstructionId()).isEqualTo(allocatedTo);
+		assertThat(deliveryPlanning.getDeliveryInstructionIds()).containsExactly(allocatedTo);
+		assertThat(deliveryPlanning.getAllocationCount()).isEqualTo(1);
 		assertThat(deliveryPlanning.isAllocated()).isTrue();
 	}
 }

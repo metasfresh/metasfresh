@@ -23,6 +23,7 @@
 package de.metas.deliveryplanning;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
@@ -892,33 +893,77 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * The delivery instruction each of the given plannings is currently allocated to. A planning without an active
-	 * allocation is absent from the result.
+	 * The ACTIVE allocations of each of the given plannings, grouped by planning. A planning without an active
+	 * allocation is absent from the result (and {@link ImmutableListMultimap#get(Object)} answers it with an empty
+	 * list, never {@code null}).
 	 * <p>
-	 * One key per planning is safe because {@code M_Delivery_Planning_Alloc_Planning_UQ} permits only one active
-	 * allocation per planning.
+	 * ACTIVE allocations only, which is what "currently allocated" means: a deactivated allocation is what a voided
+	 * instruction leaves behind, and its planning is no longer cargo of that document.
+	 * <p>
+	 * A multimap and NOT a one-key-per-planning map: multi-leg transport allocates one planning to several
+	 * instructions, one per leg. {@code M_Delivery_Planning_Alloc_Planning_UQ} still permits only one active
+	 * allocation per planning today, so the lists are of size one - but a second one must group here, not throw
+	 * in the loader.
 	 */
-	public ImmutableMap<DeliveryPlanningId, ShipperTransportationId> getAllocatedInstructionIds(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
+	public ImmutableListMultimap<DeliveryPlanningId, DeliveryPlanningAlloc> getAllocationsByPlanningId(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
 	{
 		if (deliveryPlanningIds.isEmpty())
 		{
-			return ImmutableMap.of();
+			return ImmutableListMultimap.of();
 		}
 
 		return queryAllocationsByPlanningIds(deliveryPlanningIds)
 				.create()
 				.stream()
-				.collect(ImmutableMap.toImmutableMap(
-						allocRecord -> DeliveryPlanningId.ofRepoId(allocRecord.getM_Delivery_Planning_ID()),
-						allocRecord -> ShipperTransportationId.ofRepoId(allocRecord.getM_ShipperTransportation_ID())));
+				.map(DeliveryPlanningRepository::toDeliveryPlanningAlloc)
+				.collect(ImmutableListMultimap.toImmutableListMultimap(
+						DeliveryPlanningAlloc::getDeliveryPlanningId,
+						alloc -> alloc));
 	}
 
 	/**
-	 * The delivery plannings the given instruction currently holds, in ONE round trip - the other direction of
-	 * {@link #getAllocatedInstructionIds(Collection)}.
+	 * The ACTIVE allocations the given instruction currently holds, in ONE round trip - the other direction of
+	 * {@link #getAllocationsByPlanningId(Collection)}.
 	 * <p>
 	 * ACTIVE allocations only, which is what "currently holds" means: a deactivated allocation is what a voided
 	 * instruction leaves behind, and its planning is no longer cargo of this document.
+	 */
+	public ImmutableList<DeliveryPlanningAlloc> getAllocationsOfInstruction(@NonNull final ShipperTransportationId deliveryInstructionId)
+	{
+		return queryActiveAllocationsByInstructionId(deliveryInstructionId)
+				.create()
+				.stream()
+				.map(DeliveryPlanningRepository::toDeliveryPlanningAlloc)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	/**
+	 * The delivery instructions ONE planning is currently allocated to, distinct - the id-only reduction of
+	 * {@link #getAllocationsByPlanningId(Collection)} that the two single-planning instruction lookups in this
+	 * class need. Empty for a planning on none, which makes both of them answer "no instruction" rather than fail.
+	 */
+	private ImmutableSet<ShipperTransportationId> getAllocatedInstructionIdsOf(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		return getAllocationsByPlanningId(ImmutableList.of(deliveryPlanningId))
+				.values()
+				.stream()
+				.map(DeliveryPlanningAlloc::getDeliveryInstructionId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private static DeliveryPlanningAlloc toDeliveryPlanningAlloc(@NonNull final I_M_Delivery_Planning_Alloc allocRecord)
+	{
+		return DeliveryPlanningAlloc.builder()
+				.id(DeliveryPlanningAllocId.ofRepoId(allocRecord.getM_Delivery_Planning_Alloc_ID()))
+				.deliveryPlanningId(DeliveryPlanningId.ofRepoId(allocRecord.getM_Delivery_Planning_ID()))
+				.deliveryInstructionId(ShipperTransportationId.ofRepoId(allocRecord.getM_ShipperTransportation_ID()))
+				.shippingPackageId(ShippingPackageId.ofRepoId(allocRecord.getM_ShippingPackage_ID()))
+				.build();
+	}
+
+	/**
+	 * The delivery plannings the given instruction currently holds - {@link #getAllocationsOfInstruction} reduced
+	 * to the planning ids, for the callers that only need to know WHICH plannings, not which allocation rows.
 	 */
 	public ImmutableSet<DeliveryPlanningId> getAllocatedPlanningIds(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
@@ -1228,7 +1273,7 @@ public class DeliveryPlanningRepository
 
 	public Iterator<I_M_ShipperTransportation> retrieveForDeliveryPlanning(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
-		final Collection<ShipperTransportationId> deliveryInstructionIds = getAllocatedInstructionIds(ImmutableList.of(deliveryPlanningId)).values();
+		final ImmutableSet<ShipperTransportationId> deliveryInstructionIds = getAllocatedInstructionIdsOf(deliveryPlanningId);
 
 		return queryBL.createQueryBuilder(I_M_ShipperTransportation.class)
 				.addInArrayFilter(I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID, deliveryInstructionIds)
@@ -1286,7 +1331,7 @@ public class DeliveryPlanningRepository
 
 	public boolean hasCompleteDeliveryInstruction(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
-		final Collection<ShipperTransportationId> deliveryInstructionIds = getAllocatedInstructionIds(ImmutableList.of(deliveryPlanningId)).values();
+		final ImmutableSet<ShipperTransportationId> deliveryInstructionIds = getAllocatedInstructionIdsOf(deliveryPlanningId);
 
 		return queryBL.createQueryBuilder(I_M_ShipperTransportation.class)
 				.addInArrayFilter(I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID, deliveryInstructionIds)

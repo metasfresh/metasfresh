@@ -22,6 +22,8 @@
 
 package de.metas.deliveryplanning;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.incoterms.IncotermsId;
 import de.metas.organization.OrgId;
@@ -40,8 +42,9 @@ import java.time.Instant;
  * One delivery planning, loaded for in-memory evaluation by {@link DeliveryPlanningList}.
  * <p>
  * Carries exactly the fields the aggregation rules ask about: everything the delivery-instruction header
- * can hold only one of (see {@link DeliveryPlanningList.AggregationKeyField}), plus the two state flags the
- * guards need. It is deliberately not a full mirror of {@code M_Delivery_Planning}.
+ * can hold only one of (see {@link DeliveryPlanningList.AggregationKeyField}), plus the two pieces of state the
+ * guards need: whether it is closed, and which delivery instructions it is allocated to. It is deliberately not a
+ * full mirror of {@code M_Delivery_Planning}.
  */
 @Value
 @Builder
@@ -78,10 +81,39 @@ public class DeliveryPlanning
 
 	boolean closed;
 
-	/** The delivery instruction this planning's active allocation points at, if it has one. */
-	@Nullable ShipperTransportationId deliveryInstructionId;
+	/**
+	 * This planning's ACTIVE allocations - one per delivery instruction it currently sits on, empty for a planning
+	 * on none. Never {@code null}.
+	 * <p>
+	 * A list and not a single instruction id: multi-leg transport puts one planning on several instructions, one
+	 * per leg. Today the partial unique index {@code M_Delivery_Planning_Alloc_Planning_UQ} still permits only one
+	 * active allocation per planning, so this list holds at most one entry - but no consumer may assume that.
+	 */
+	@NonNull
+	@Builder.Default
+	ImmutableList<DeliveryPlanningAlloc> allocations = ImmutableList.of();
 
-	public boolean isAllocated() {return deliveryInstructionId != null;}
+	public boolean isAllocated() {return !allocations.isEmpty();}
+
+	/**
+	 * How many delivery instructions this planning is currently on - answerable from an already-loaded list,
+	 * without reading the allocations again.
+	 */
+	public int getAllocationCount() {return allocations.size();}
+
+	/**
+	 * WHICH delivery instructions this planning is currently on, distinct - the counterpart of
+	 * {@link #getAllocationCount()}, and empty for an unallocated planning.
+	 * <p>
+	 * Distinct rather than one entry per allocation: a caller asking "is it on THIS instruction" or "what are the
+	 * doc statuses of its instructions" asks about documents, not about allocation rows.
+	 */
+	public ImmutableSet<ShipperTransportationId> getDeliveryInstructionIds()
+	{
+		return allocations.stream()
+				.map(DeliveryPlanningAlloc::getDeliveryInstructionId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
 
 	public boolean isWithoutShipper() {return shipperId == null;}
 }

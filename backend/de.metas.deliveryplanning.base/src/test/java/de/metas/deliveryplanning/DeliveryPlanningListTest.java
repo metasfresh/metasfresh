@@ -38,6 +38,7 @@ import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.Arrays;
 
+import static de.metas.deliveryplanning.DeliveryPlanningAllocTestHelper.allocatedTo;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -365,7 +366,7 @@ class DeliveryPlanningListTest
 		{
 			final DeliveryPlanning unallocated = planning().build();
 			final DeliveryPlanning allocated = planning()
-					.deliveryInstructionId(ShipperTransportationId.ofRepoId(540021))
+					.allocations(allocatedTo(ShipperTransportationId.ofRepoId(540021)))
 					.build();
 
 			final DeliveryPlanningList list = DeliveryPlanningList.of(unallocated, allocated);
@@ -384,6 +385,81 @@ class DeliveryPlanningListTest
 			final DeliveryPlanningList list = DeliveryPlanningList.of(withShipper, shipperless);
 
 			assertThat(list.withoutShipper()).containsExactly(shipperless);
+		}
+	}
+
+	@Nested
+	@DisplayName("allocations")
+	class Allocations
+	{
+		// instance fields, not static: a Java 8 inner class may only hold static fields that are compile-time
+		// constants, which an id value object is not
+		private final ShipperTransportationId firstLeg = ShipperTransportationId.ofRepoId(540021);
+		private final ShipperTransportationId secondLeg = ShipperTransportationId.ofRepoId(540022);
+
+		@Test
+		@DisplayName("a planning on no instruction has no allocations at all - never null")
+		void unallocated()
+		{
+			final DeliveryPlanning unallocated = planning().build();
+
+			assertThat(unallocated.getAllocations()).isEmpty();
+			assertThat(unallocated.isAllocated()).isFalse();
+			assertThat(unallocated.getAllocationCount()).isZero();
+			assertThat(unallocated.getDeliveryInstructionIds()).isEmpty();
+		}
+
+		@Test
+		@DisplayName("one allocation: one instruction, counted once")
+		void oneAllocation()
+		{
+			final DeliveryPlanning allocated = planning().allocations(allocatedTo(firstLeg)).build();
+
+			assertThat(allocated.isAllocated()).isTrue();
+			assertThat(allocated.getAllocationCount()).isEqualTo(1);
+			assertThat(allocated.getDeliveryInstructionIds()).containsExactly(firstLeg);
+		}
+
+		/**
+		 * The case the DB still forbids and the whole list shape exists for: multi-leg transport, one planning on
+		 * one instruction per leg. Pinned NOW, so the semantics are a decision rather than something discovered
+		 * when the partial unique index is dropped.
+		 */
+		@Test
+		@DisplayName("two allocations to DIFFERENT instructions: both are counted, both are named")
+		void twoAllocationsToDifferentInstructions()
+		{
+			final DeliveryPlanning multiLeg = planning().allocations(allocatedTo(firstLeg, secondLeg)).build();
+
+			assertThat(multiLeg.isAllocated()).isTrue();
+			assertThat(multiLeg.getAllocationCount()).isEqualTo(2);
+			assertThat(multiLeg.getDeliveryInstructionIds()).containsExactly(firstLeg, secondLeg);
+		}
+
+		@Test
+		@DisplayName("two allocations to the SAME instruction are two allocations but ONE instruction")
+		void twoAllocationsToTheSameInstruction()
+		{
+			final DeliveryPlanning twiceOnOneLeg = planning().allocations(allocatedTo(firstLeg, firstLeg)).build();
+
+			assertThat(twiceOnOneLeg.getAllocationCount())
+					.as("the count answers how many allocations, which is what a caller asking about rows needs")
+					.isEqualTo(2);
+			assertThat(twiceOnOneLeg.getDeliveryInstructionIds())
+					.as("the instructions are DISTINCT - a caller asking 'is it on THIS document' asks about documents")
+					.containsExactly(firstLeg);
+		}
+
+		@Test
+		@DisplayName("a multi-leg planning counts as allocated for the list-level checks, exactly like a single-leg one")
+		void multiLegCountsAsAllocated()
+		{
+			final DeliveryPlanning multiLeg = planning().allocations(allocatedTo(firstLeg, secondLeg)).build();
+
+			final DeliveryPlanningList list = DeliveryPlanningList.of(planning().build(), multiLeg);
+
+			assertThat(list.anyAllocated()).isTrue();
+			assertThat(list.allocatedOnes()).containsExactly(multiLeg);
 		}
 	}
 }
