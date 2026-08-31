@@ -76,7 +76,7 @@ import static org.assertj.core.groups.Tuple.tuple;
  * <p>
  * The repository is the real one and the selection is a real query filter over the in-memory store - nothing is
  * stubbed, so {@code getAllocationsByPlanningId} genuinely reads the allocation rows. That matters: it is what
- * populates {@code DeliveryPlanning.deliveryInstructionId}, which is what the already-on-target filter and the
+ * populates {@code DeliveryPlanning.allocations}, which is what the already-on-target filter and the
  * completed-instruction rule branch on. A mocked repository would make (1) and (2) partly self-fulfilling.
  */
 class DeliveryPlanningMoveAndRemovalTest
