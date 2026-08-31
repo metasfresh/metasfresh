@@ -48,6 +48,19 @@ const RECEIPT_ACTION_TESTID = 'quick-action-QtyDemand_QtySupply_V_to_ReceiptSche
 const SHIPMENT_ACTION_TESTID = 'quick-action-QtyDemand_QtySupply_V_to_ShipmentSchedule'; // AD_Process_ID 585513, "Sprung zu Lieferdisposition"
 const PRODUCTION_ACTION_TESTID = 'quick-action-QtyDemand_QtySupply_V_to_PP_Order_Candidate'; // AD_Process_ID 585516, "Sprung zu Produktionsdisposition"
 
+// The three jump processes' RecordsToOpen resolve to a window via RecordWindowFinder.findAdWindowId
+// (ADProcessPostProcessService.createViewRequest) — deliberately NOT hardcoded per stream here.
+// RecordWindowFinder does not just read AD_Table.AD_Window_ID: it goes through ad_table_windows_v
+// (DefaultGenericZoomIntoTableInfoRepository) and then remaps the result through any active
+// AD_Window.Overrides_Window_ID customization (SqlCustomizedWindowInfoMapRepository) — confirmed live
+// on this DB, where M_ShipmentSchedule's configured default-SO window (500221, "Lieferdisposition
+// OLD") is actually served as 541965 ("Lieferdisposition") because of exactly such an override. A
+// window id hardcoded from a point-in-time DB query is therefore fragile per-instance (and, per
+// e2e/frontend-webui/CLAUDE.md's "core vs override window" rule, potentially per-CI-image too) — it
+// would either desync silently or make every retry time out even though the app behaves correctly.
+// What IS stable: the jump always opens some window other than the cockpit's own — see
+// assertActionEnabledAndOpens.
+
 const ORDER_QTY = 5;
 // Large relative to the manufactured product's zero on-hand stock, so the sales order alone pushes
 // its ATP negative and material-dispo advises a production candidate for it.
@@ -155,11 +168,37 @@ async function assertActionDisabled(dropdown, testId) {
 
 /**
  * Non-empty case (the over-rejection guard): enabled, no reason text, and the jump actually opens
- * the target grid. Retries the whole open-dropdown/click/assert cycle: the underlying record can
- * still be in flight from the async material-dispo pipeline when the row was first selected.
+ * the target grid. Retries the whole select-row/open-dropdown/click/assert cycle: the underlying
+ * record can still be in flight from the async material-dispo pipeline when the row was first
+ * selected.
+ *
+ * Each attempt re-establishes a known baseline by re-navigating to `viewId`/`rowId` and re-selecting
+ * the row FIRST — a retry must never assume the page is still where the previous attempt left it. Two
+ * ways the previous attempt can invalidate that assumption: (a) its click already opened the jump's
+ * modal (see below) — a bare re-open of the quick-actions dropdown would then either hit a covered/
+ * stale toggle, or, if the toggle is still reachable, its plain `!isDropdownOpen` flip
+ * (QuickActionsDropdown.js) would CLOSE an already-open dropdown instead of opening one, timing out
+ * the visibility wait for a harness reason unrelated to the assertion; (b) a retry firing before the
+ * modal ever opened would otherwise reuse a dropdown left in an indeterminate state.
+ *
+ * Discriminating the real jump from a no-op: the three jump processes render as a `SAME_TAB_OVERLAY`
+ * raw modal (`ProcessExecutionResult.setRecordsToOpen` defaults `RecordsToOpen.TargetTab` to
+ * `SAME_TAB_OVERLAY`; `ProcessActions.js`'s `openView` case dispatches `openRawModal()` for it) — this
+ * does NOT navigate the browser (no `history.push`, no query-string change), so `page.url()` cannot
+ * tell a real jump from a no-op here (unlike a plain `NEW_TAB`/`SAME_TAB` jump elsewhere in the app).
+ * What DOES differ: `Container.js` mounts a `DocumentListContainer` inside the modal with
+ * `windowId={rawModal.windowId}`, which immediately issues `GET /rest/api/documentView/<windowId>/
+ * <viewId>?firstRow=...` (`browseViewRequest` in `frontend/src/api/view.js`) to fetch THAT window's
+ * rows. A no-op click creates no new view and fires no such request at all, so waiting for exactly
+ * this GET — for any `<windowId>` OTHER than the cockpit's own `MATERIAL_COCKPIT_V2_WINDOW_ID` —
+ * genuinely proves a new grid was opened, unlike the vacuous `.document-list-wrapper` check this
+ * replaces (satisfied by the cockpit's own still-visible grid regardless of whether the click did
+ * anything). It deliberately does NOT pin the exact target window id — see the comment above the
+ * action-testid constants for why that would be instance-fragile.
  */
-async function assertActionEnabledAndOpens(page, testId, { timeout = 120000 } = {}) {
+async function assertActionEnabledAndOpens(page, testId, viewId, rowId, { timeout = 120000 } = {}) {
   await expect(async () => {
+    await selectCockpitRow(page, viewId, rowId);
     const dropdown = await openQuickActionsDropdown(page);
     const entry = dropdown.getByTestId(testId);
     await expect(entry, `${testId} must be offered`).toBeVisible();
@@ -167,8 +206,17 @@ async function assertActionEnabledAndOpens(page, testId, { timeout = 120000 } = 
     // The reason <p>/<small> is rendered only when `action.disabled` (QuickActionsDropdown.js), so
     // once enabled it must not be rendered at all — a language-invariant structural check.
     await expect(entry.locator('p.one-line small'), `${testId} must not show a disabled-reason once its target holds records`).toHaveCount(0);
+
+    const otherWindowViewRowsResponse = page.waitForResponse((response) => {
+      if (response.request().method() !== 'GET') return false;
+      // Matches the rows GET only (`/documentView/<windowId>/<viewId>?firstRow=...`) — excludes the
+      // sibling `/documentView/<windowId>/layout?...` and `/documentView/<windowId>/<viewId>/
+      // quickActions` calls the same modal mount also fires, and excludes the cockpit's own window.
+      const match = response.url().match(/\/documentView\/(\d+)\/[^/?]+\?firstRow=/);
+      return !!match && match[1] !== String(MATERIAL_COCKPIT_V2_WINDOW_ID);
+    }, { timeout: 15000 });
     await entry.click();
-    await expect(page.locator('.document-list-wrapper, .document-list'), `${testId} must open the target grid`).toBeVisible({ timeout: 5000 });
+    await otherWindowViewRowsResponse;
   }).toPass({ timeout, intervals: [3000, 5000, 10000, 15000] });
 }
 
@@ -196,7 +244,15 @@ jump at all (\`ProcessExecutionResult\` collapses an empty record list to null) 
 nothing happen and cannot tell a real failure from "there is genuinely nothing here".
     `);
 
-    test.setTimeout(300000);
+    // Worst case is 3x waitForCockpitRow (up to 120s each) + 3x assertActionEnabledAndOpens (up to
+    // 120s each) = 720s; the previous 300000ms outer budget was below that sum, so a slow-but-healthy
+    // run tripped the OUTER timeout and lost the specific inner error. Raised above the worst-case sum
+    // (with margin) rather than lowering the inner budgets, because those budgets are load-bearing:
+    // the production stream's candidate is genuinely generated asynchronously by material-dispo (up to
+    // ~60s per the mirrored productionCandidate.feature, doubled for headroom), and the other two
+    // streams' waits exist "to be safe against timing" per the file docstring above — shrinking them
+    // would trade this fix for new flakiness instead of removing it.
+    test.setTimeout(900000);
 
     // --- Seed masterdata -----------------------------------------------------------------------
     // Split into two independent `createMasterdata` calls with separate (non-shared) contexts.
@@ -233,9 +289,17 @@ nothing happen and cannot tell a real failure from "there is genuinely nothing h
           },
         },
         // Marks `manufactured` as isManufactured=true — must exist before its sales order below,
-        // so the demand event that order raises is matched by PPOrderCandidateDemandMatcher.
+        // so the demand event that order raises is matched by PPOrderCandidateDemandMatcher. The
+        // `products.manufactured.bom` above is a DIFFERENT mechanism (M_Product.IsBOM +
+        // PP_Product_BOM) that does NOT touch PP_Product_Planning: CreateProductPlanningCommand.
+        // execute() only sets isManufactured when `bom` (or `pickingOrder`) is set on THIS request, so
+        // `bom: 'manufactured'` is required here too. `CreateProductCommand.
+        // createPP_Product_BOMVersions()` registers the created ProductBOMVersionsId under the
+        // product's OWN identifier, so `'manufactured'` resolves to it. Do NOT use `pickingOrder:
+        // true` instead — PPOrderCandidateDemandMatcher.match() requires `manufactured &&
+        // !pickingOrder`, so that would defeat the match.
         productPlannings: {
-          manufacturedPlanning: { product: 'manufactured', warehouse: 'wh' },
+          manufacturedPlanning: { product: 'manufactured', warehouse: 'wh', bom: 'manufactured' },
         },
         salesOrders: {
           soSalesOnly: {
@@ -301,10 +365,11 @@ nothing happen and cannot tell a real failure from "there is genuinely nothing h
 
       // Enabled path first: it is a hard assertion, and if the masterdata never materialised we want
       // to fail on THAT rather than on a disabled-check that was never going to be meaningful.
-      await selectCockpitRow(page, viewId, rowId);
-      await assertActionEnabledAndOpens(page, SHIPMENT_ACTION_TESTID);
+      // assertActionEnabledAndOpens re-selects the row itself (on every retry attempt too).
+      await assertActionEnabledAndOpens(page, SHIPMENT_ACTION_TESTID, viewId, rowId);
 
-      // Re-select: the click above navigated away to the shipment-schedule grid.
+      // Re-select: the jump above opened the shipment-schedule grid in a modal overlay; re-navigating
+      // resets that state.
       await selectCockpitRow(page, viewId, rowId);
       const dropdown = await openQuickActionsDropdown(page);
       await assertActionDisabled(dropdown, RECEIPT_ACTION_TESTID);
@@ -314,8 +379,7 @@ nothing happen and cannot tell a real failure from "there is genuinely nothing h
     await test.step('purchaseOnly: Sprung zu Lieferdisposition and Sprung zu Produktionsdisposition disabled, Sprung zu Wareneingangsdispo enabled', async () => {
       const { viewId, rowId } = await waitForCockpitRow(page, purchaseOnlyProductId);
 
-      await selectCockpitRow(page, viewId, rowId);
-      await assertActionEnabledAndOpens(page, RECEIPT_ACTION_TESTID);
+      await assertActionEnabledAndOpens(page, RECEIPT_ACTION_TESTID, viewId, rowId);
 
       await selectCockpitRow(page, viewId, rowId);
       const dropdown = await openQuickActionsDropdown(page);
@@ -326,8 +390,7 @@ nothing happen and cannot tell a real failure from "there is genuinely nothing h
     // --- Row 3: manufactured product with a shortage -> production non-empty -------------------
     await test.step('manufactured: Sprung zu Produktionsdisposition enabled once material-dispo advises a production candidate', async () => {
       const { viewId, rowId } = await waitForCockpitRow(page, manufacturedProductId);
-      await selectCockpitRow(page, viewId, rowId);
-      await assertActionEnabledAndOpens(page, PRODUCTION_ACTION_TESTID);
+      await assertActionEnabledAndOpens(page, PRODUCTION_ACTION_TESTID, viewId, rowId);
     });
   });
 });
