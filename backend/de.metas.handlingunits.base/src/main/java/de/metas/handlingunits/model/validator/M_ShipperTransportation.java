@@ -56,7 +56,7 @@ public class M_ShipperTransportation
 		// Retrieve all HUs which we need to remove from their picking slots
 		// ACTIVE packages only: a planning removed from this instruction leaves an IsActive='N' package behind,
 		// whose HU may still be queued in a picking slot for something else. Filtered HERE and not in
-		// retrieveShippingPackages, which is shared and must stay unfiltered for its other callers.
+		// retrieveShippingPackages, which is a general-purpose DAO read whose contract is "all packages".
 		final Set<I_M_HU> husToRemove = new TreeSet<>(HUByIdComparator.instance);
 		for (final I_M_ShippingPackage shippingPackage : shipperTransportationDAO.retrieveShippingPackages(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID())))
 		{

@@ -67,11 +67,11 @@ WHERE AD_Process_ID=585655 AND AD_Language IN ('de_DE', 'de_CH')
 ;
 
 -- ---------------------------------------------------------------------------------------------
--- 2) placement: an action on the Delivery Planning grid.
---    WebUI_ViewQuickAction='N', unlike Combine (585653) and Add to (585654): removal is the only
---    destructive one of the three -- it deletes the allocation and its shipping package and drops a
---    release number the forwarder may already hold -- so it stays off the one-click quick-action
---    toolbar and is reached through the actions menu instead.
+-- 2) placement: a quick action on the Delivery Planning grid, like Combine and Add to.
+--    Removal is only ever reachable while the instruction is still a DRAFT -- the rejection refuses
+--    every selection whose instruction is no longer one -- and a draft's release number has not gone
+--    to the forwarder yet, so a removal cannot retract something already communicated. Removal also
+--    clears the reference, so the planning can simply be added again.
 -- ---------------------------------------------------------------------------------------------
 INSERT INTO AD_Table_Process (AD_Table_Process_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
                               AD_Table_ID, AD_Process_ID, AD_Window_ID, EntityType,
@@ -80,7 +80,7 @@ VALUES (541667 /*From ID Server*/, 0, 0, 'Y',
         TO_TIMESTAMP('2026-08-27 11:01:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
         TO_TIMESTAMP('2026-08-27 11:01:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
         542259, 585655, 541632, 'D',
-        'N', 'N', 'Y', 'N', 'N')
+        'Y', 'N', 'Y', 'N', 'N')
 ;
 
 -- ---------------------------------------------------------------------------------------------
