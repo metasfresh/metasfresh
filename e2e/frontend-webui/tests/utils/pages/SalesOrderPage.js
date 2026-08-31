@@ -203,6 +203,25 @@ export class SalesOrderPage {
    */
   static async addOrderLine({ product, quantity, recordId }) {
     return await test.step(`SalesOrderPage - Add order line: ${product} x ${quantity}`, async () => {
+      await this.openQuickEntryAndSelectProduct({ product, recordId });
+      await this.submitQuickEntryLine({ quantity });
+    });
+  }
+
+  /**
+   * Open the batch-entry (quick input) form and select a product, then STOP — leaving the form open so
+   * the caller can inspect what the backend defaulted into it.
+   *
+   * This is the first half of {@link addOrderLine}, which submits and closes the form and so cannot be
+   * used to read a defaulted field. Keeping it as the single implementation means both callers get the
+   * same spinner handling rather than two copies drifting apart.
+   *
+   * @param {Object} params
+   * @param {string} params.product - Product code or name
+   * @param {string} params.recordId - Optional record ID (extracted from the URL if not provided)
+   */
+  static async openQuickEntryAndSelectProduct({ product, recordId }) {
+    return await test.step(`SalesOrderPage - Open quick entry and select: ${product}`, async () => {
       const page = getPage();
 
       // Get record ID if not provided
@@ -273,24 +292,40 @@ export class SalesOrderPage {
       // This avoids clicking on "Search for more..." or other non-record options
       await page.locator('.input-dropdown-list-option').getByText(product).first().click();
 
-      // Wait for product to be selected and form to update
-      await page.waitForTimeout(500);
+      // The product callout runs server-side and patches the quick-input document; give it time to
+      // come back before the caller reads any field it may have defaulted.
+      await page.waitForTimeout(1500);
+    });
+  }
 
-      // Fill quantity using spinbutton role (language-independent)
+  /**
+   * @returns {Promise<string>} the displayed value of the packing-instruction
+   *   (`M_HU_PI_Item_Product_ID`) field in the open quick-entry form — empty string when unset.
+   *   Call after {@link openQuickEntryAndSelectProduct}.
+   */
+  static async getQuickEntryPackingInstruction() {
+    return await test.step('SalesOrderPage - Read quick-entry packing instruction', async () => {
+      const page = getPage();
+
+      const field = page.locator('.quick-input-container #lookup_M_HU_PI_Item_Product_ID input.input-field');
+      await field.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      return (await field.inputValue()).trim();
+    });
+  }
+
+  /**
+   * Submit the order line from the quick-entry form opened by
+   * {@link openQuickEntryAndSelectProduct}, then close the form.
+   */
+  static async submitQuickEntryLine({ quantity }) {
+    return await test.step(`SalesOrderPage - Submit quick-entry line qty ${quantity}`, async () => {
+      const page = getPage();
+
       await page.getByRole('spinbutton').fill(quantity.toString());
-
-      // Press Enter to add the line (as instructed by the UI: "Press 'Enter' to add")
       await page.keyboard.press('Enter');
-
-      // Wait for the line to be added
       await page.waitForTimeout(500);
 
-      // Close the batch entry modal
-      // Language-independent: Use data-testid from TableFilter.js
-      const closeButton = page.getByTestId('batch-entry-toggle');
-      await closeButton.click();
-
-      // Wait for the modal to close
+      await page.getByTestId('batch-entry-toggle').click();
       await page.waitForTimeout(500);
     });
   }

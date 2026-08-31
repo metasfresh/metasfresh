@@ -12,9 +12,10 @@ Feature: Average PO - Check costing when reversing a material receipt
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
     And metasfresh has date and time 2021-04-14T13:30:13+01:00[Europe/Berlin]
+    # Pinned: this feature asserts AveragePO amounts, so it must not inherit a costing method from a sibling.
     And load and update C_AcctSchema:
-      | C_AcctSchema_ID | Name                  |
-      | acctSchema      | metas fresh UN/34 CHF |
+      | C_AcctSchema_ID | Name                  | CostingMethod |
+      | acctSchema      | metas fresh UN/34 CHF | A             |
     And cost elements for material costing methods AveragePO are active
     And load M_Warehouse:
       | M_Warehouse_ID | Value        |

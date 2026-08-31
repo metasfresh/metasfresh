@@ -33,6 +33,22 @@ export const holdForCaptureIfEnabled = async () => {
     await page.waitForTimeout(CAPTURE_HOLD_MS);
 };
 
+// Bring an element the test is asserting on into the recorded viewport, then hold it there. Playwright's
+// toBeVisible() only requires a non-empty bounding box, NOT that the element is inside the viewport — so an
+// offered target that renders below the fold satisfies the assertion while appearing in no recorded frame,
+// producing a video whose caption claims something its frames never show. NO-OP unless UAT_CAPTURE is set,
+// so a normal/CI run neither scrolls nor waits.
+export const revealForCaptureIfEnabled = async (locator) => {
+    if (!UAT_CAPTURE) return;
+    // NOT scrollIntoViewIfNeeded(): it only has to make an element *actionable*, so it does nothing once
+    // the browser deems it near enough — which still leaves it under the bottom bar. Measured by rendering
+    // this issue's six recordings with that API and reading the frames: 3 of the 6 (receiving_lu_only,
+    // receiving_skip_target_step, receiving_no_catchweight) showed no target row at all. Legibility on
+    // video needs full centering, so ask for it explicitly.
+    await locator.evaluate((el) => el.scrollIntoView({ block: 'center', inline: 'nearest' }));
+    await holdForCaptureIfEnabled();
+};
+
 export const step = async (title, func) => await test.step(title, async () => await runAndWatchForErrors(func));
 
 let nextErrorWatcherId = 101;

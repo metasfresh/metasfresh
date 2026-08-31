@@ -306,6 +306,11 @@ public class PickingJobTestHelper
 		return LocatorId.ofRepoId(warehouseId, locator.getM_Locator_ID());
 	}
 
+	public HUTestHelper getHuTestHelper()
+	{
+		return huTestHelper;
+	}
+
 	public void updateMobileProfile(final UnaryOperator<MobileUIPickingUserProfile> updater)
 	{
 		configService.update(updater);

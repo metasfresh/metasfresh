@@ -710,7 +710,8 @@ public class PickingJobPickCommand
 			final I_M_HU pickFromHURecord = huService.getById(pickFromHU.getId());
 			if (huService.isVirtual(pickFromHURecord))
 			{
-				packedHUs = pickCUsAndPackTo(productId, pickFromHU.getId(), packToInfo);
+				// Whole-TU pick (picked unit is the TU): pack CUs into full TUs and record the TUs, not leaf CUs.
+				packedHUs = pickCUsAndPackTo(productId, pickFromHU.getId(), packToInfo, /*recordLeafCUsAsTUParts*/false);
 			}
 			else
 			{
@@ -728,7 +729,9 @@ public class PickingJobPickCommand
 			}
 			else
 			{
-				packedHUs = pickCUsAndPackTo(productId, pickFromHU.getId(), packToInfo);
+				// CU pick into a TU pick target (picked unit is the CU): record the leaf CU as a CU part so a
+				// later unpick-to-floor can extract & re-activate it.
+				packedHUs = pickCUsAndPackTo(productId, pickFromHU.getId(), packToInfo, /*recordLeafCUsAsTUParts*/true);
 			}
 		}
 
@@ -766,16 +769,40 @@ public class PickingJobPickCommand
 				}
 				else
 				{
+					// Decouple the two recordings for a CU-into-TU pick (the TU now carries leaf CU parts):
+					// - Shipment schedule (M_ShipmentSchedule_QtyPicked): for a CU-into-BARE-TU pick (no LU)
+					//   record the destination TU (VHU_ID stays NULL; expanded into per-VHU COO candidates at
+					//   shipment time), NOT the leaf CU (which would materialise a spurious VHU and change
+					//   downstream shipment/reversal/DESADV handling). An LU pick keeps recording the leaf CU.
+					// - Picking-job step: ALWAYS record the leaf CU(s), so a later unpick-to-floor can extract
+					//   and re-activate them.
+					final boolean recordTUOnShipmentSchedule = packedHUs.getLURecords().isEmpty();
+
 					final ImmutableList<TUPart> cus = tu.getCUsNotEmpty();
 					final List<Quantity> catchWeights = getCatchWeight() != null ? getCatchWeight().spreadEqually(cus.size()) : null;
+
+					Quantity qtyPickedThisTU = null;
 					for (int i = 0; i < cus.size(); i++)
 					{
 						final TUPart cu = cus.get(i);
 						final Quantity catchWeightPerCU = catchWeights != null ? catchWeights.get(i) : null;
 						final Quantity qtyPicked = huStorageFactory.getStorage(cu.toHU()).getQuantity(productId, uom);
-						addShipmentScheduleQtyPicked(cu, qtyPicked);
+						qtyPickedThisTU = qtyPickedThisTU == null ? qtyPicked : qtyPickedThisTU.add(qtyPicked);
+						if (!recordTUOnShipmentSchedule)
+						{
+							addShipmentScheduleQtyPicked(cu, qtyPicked);
+						}
 
-						result.addAll(toPickingJobStepPickedToHU(tu, cu, qtyPicked, catchWeightPerCU, pickFrom));
+						result.addAll(toPickingJobStepPickedToHU(cu, qtyPicked, catchWeightPerCU, pickFrom));
+					}
+
+					if (recordTUOnShipmentSchedule && qtyPickedThisTU != null)
+					{
+						// Record THIS pick's qty (sum of its CU parts), NOT the container TU's cumulative
+						// product storage: picking the same product more than once into one bare TU would
+						// otherwise record the running total, which the shipment-schedule expansion over-counts
+						// into a spurious extra per-COO line (nShiftShipment COO "mixed TUs" scenarios).
+						addShipmentScheduleQtyPicked(tu, qtyPickedThisTU);
 					}
 				}
 			}
@@ -844,7 +871,10 @@ public class PickingJobPickCommand
 	{
 
 		final List<HUQRCode> huQRCodes = huService.getOrCreateQRCodesByHuId(tu.getId());
-		if (huQRCodes.size() != tu.getQtyTU().toInt())
+		// An aggregate HU can accumulate more active QR-code assignments than its current TU count (generated
+		// one-per-TU and not trimmed on split/pick-out). Only the first N are used below, so tolerate a surplus;
+		// error only on a deficit.
+		if (huQRCodes.size() < tu.getQtyTU().toInt())
 		{
 			throw new AdempiereException(INVALID_NUMBER_QR_CODES_ERROR_MSG, tu.getQtyTU(), huQRCodes.size());
 		}
@@ -869,15 +899,21 @@ public class PickingJobPickCommand
 	}
 
 	private List<PickingJobStepPickedToHU> toPickingJobStepPickedToHU(
-			@NonNull final TU tu1,
 			@NonNull final TUPart cu,
 			@NonNull final Quantity qtyPicked,
 			@Nullable final Quantity catchWeight,
 			@NonNull final PickingJobStepPickFrom pickFrom)
 	{
 
-		final List<HUQRCode> huQRCodes = huService.getOrCreateQRCodesByHuId(tu1.getId());
-		if (huQRCodes.size() != 1)
+		// Record the CU's OWN QR code (not the container TU's): the recorded HU here IS the leaf CU, so a
+		// later unpick extracts THIS CU to top-level (extractToTopLevel asserts the QR is on the extracted
+		// HU) and, on a move-to-target, re-derives the QR from the extracted CU. Recording the container
+		// TU's QR left the CU un-QR'd → the unpick's extract asserted the wrong HU and the CU was stranded
+		// Picked inside the TU.
+		final List<HUQRCode> huQRCodes = huService.getOrCreateQRCodesByHuId(cu.getId());
+		// Same surplus tolerance as the aggregate-TU path: this path uses only the first code (get(0) below),
+		// so a surplus is fine; error only when there are zero codes.
+		if (huQRCodes.size() < 1)
 		{
 			throw new AdempiereException(INVALID_NUMBER_QR_CODES_ERROR_MSG, 1, huQRCodes.size());
 		}
@@ -984,7 +1020,8 @@ public class PickingJobPickCommand
 	private LUTUResult pickCUsAndPackTo(
 			@NonNull final ProductId productId,
 			@NonNull final HuId pickFromVHUId,
-			@NonNull final PackToHUsProducer.PackToInfo packToInfo)
+			@NonNull final PackToHUsProducer.PackToInfo packToInfo,
+			final boolean recordLeafCUsAsTUParts)
 	{
 		return packToHUsProducer.packToHU(
 				PackToHUsProducer.PackToHURequest.builder()
@@ -997,6 +1034,7 @@ public class PickingJobPickCommand
 						.documentRef(getLineId().toTableRecordReference())
 						.checkIfAlreadyPacked(checkIfAlreadyPacked)
 						.createInventoryForMissingQty(createInventoryForMissingQty)
+						.recordLeafCUsAsTUParts(recordLeafCUsAsTUParts)
 						.build()
 		);
 	}
