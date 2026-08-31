@@ -468,8 +468,8 @@ Feature: Several delivery plannings on one delivery instruction
     # multi-leg display. Guarded so the same cartesian product cannot sit undetected until that is built.
     And the M_ShipperTransportation identified by deliveryInstructionView has exactly the following rows in M_ShipperTransportation_Delivery_Instructions_V:
       | M_Delivery_Planning_ID | M_Product_ID | PlannedLoadedQuantity | PlannedDischargeQuantity |
-      | planningView_1         | product      | 7                     | 0                       |
-      | planningView_2         | product2     | 3                     | 0                       |
+      | planningView_1         | product      | 7                     | 0                        |
+      | planningView_2         | product2     | 3                     | 0                        |
 
   @Id:S31608_TC20
   Scenario: The delivery instruction history returns one row per retired delivery planning
