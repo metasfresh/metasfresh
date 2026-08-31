@@ -31,15 +31,15 @@ import static org.assertj.core.api.Assertions.assertThat;
  * #L%
  */
 
-public class ReferencedRecordDAOTest
+public class ReferencedRecordRepositoryTest
 {
-	private ReferencedRecordDAO referencedRecordDAO;
+	private ReferencedRecordRepository referencedRecordRepository;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		referencedRecordDAO = ReferencedRecordDAO.newInstanceForUnitTesting();
+		referencedRecordRepository = ReferencedRecordRepository.newInstanceForUnitTesting();
 	}
 
 	@Test
@@ -47,22 +47,22 @@ public class ReferencedRecordDAOTest
 	{
 		final I_C_UOM record = createUOM(true);
 
-		assertThat(referencedRecordDAO.exists(TableRecordReference.of(record))).isTrue();
+		assertThat(referencedRecordRepository.exists(TableRecordReference.of(record))).isTrue();
 	}
 
 	@Test
 	void missingRecord()
 	{
-		assertThat(referencedRecordDAO.exists(TableRecordReference.of(I_C_UOM.Table_Name, 999999))).isFalse();
+		assertThat(referencedRecordRepository.exists(TableRecordReference.of(I_C_UOM.Table_Name, 999999))).isFalse();
 	}
 
-	/** Guards the deliberate absence of an active-records filter in {@link ReferencedRecordDAO#exists(TableRecordReference)}. */
+	/** Guards the deliberate absence of an active-records filter in {@link ReferencedRecordRepository#exists(TableRecordReference)}. */
 	@Test
 	void inactiveRecordStillExists()
 	{
 		final I_C_UOM record = createUOM(false);
 
-		assertThat(referencedRecordDAO.exists(TableRecordReference.of(record))).isTrue();
+		assertThat(referencedRecordRepository.exists(TableRecordReference.of(record))).isTrue();
 	}
 
 	private static I_C_UOM createUOM(final boolean active)
