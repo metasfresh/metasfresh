@@ -9,11 +9,9 @@ import { MaterialReceiptLineScreen } from '../../utils/screens/manufacturing/rec
 import { ReceiptReceiveTargetScreen } from '../../utils/screens/manufacturing/receipt/ReceiptReceiveTargetScreen';
 import { ReceiptNewHUScreen, VIRTUAL_TU_TARGET_TESTID } from '../../utils/screens/manufacturing/receipt/ReceiptNewHUScreen';
 
-// Plants grown in the ground or in their own container sit in no GS1 packing structure at all, so the
-// finished good has NO packing instruction. Without the profile flag below the mobile receive screen
-// dead-ends — that case stays covered by receiving_no_gebinde_guidance.spec.js, which pins the flag OFF.
-// With the flag on, the "No Packing Item" packing instruction is offered — the same choice the WebUI
-// "Empfangen" process has always had — and the goods are received as a bare virtual HU.
+// A finished good in no packing structure has no packing instruction, so without the flag the mobile
+// receive screen dead-ends (covered by receiving_no_gebinde_guidance.spec.js). With it on, "No Packing
+// Item" is offered — as the WebUI always has — and the goods are received as a bare virtual HU.
 const createMasterdata = async () => {
     return await Backend.createMasterdata({
         language: "en_US",
@@ -29,8 +27,7 @@ const createMasterdata = async () => {
                 "COMP1": {},
                 "BOM": { bom: { lines: [{ product: 'COMP1', qty: 1 }] } },
             },
-            // Deliberately no packingInstructions for BOM: retrieveTUs returns nothing, so the only
-            // target that can be offered is the virtual "No Packing Item" one.
+            // No packingInstructions for BOM: retrieveTUs returns nothing, leaving only the virtual target.
             handlingUnits: { "HU_COMP1": { product: 'COMP1', warehouse: 'wh', qty: 100 } },
             manufacturingOrders: {
                 "PP1": { warehouse: 'wh', product: 'BOM', qty: 80, datePromised: '2025-03-01T00:00:00.000+02:00' }
@@ -58,7 +55,7 @@ test('A product with no packing instruction is received via "No Packing Item"', 
 
     await ManufacturingJobScreen.clickReceiveButton({ index: 1 }); // i.e., main product
 
-    // A target IS available now, so the operator must not be told to go configure master data.
+    // A target is available, so no "configure the master data" guidance.
     await MaterialReceiptLineScreen.expectNoGebindeHintNotVisible();
 
     await MaterialReceiptLineScreen.clickReceiveTargetButton();
@@ -78,8 +75,7 @@ test('A product with no packing instruction is received via "No Packing Item"', 
         qtyReceived: '4 Stk',
     });
 
-    // huType 'V' is the point of the whole scenario: the goods landed in a bare virtual HU, with no
-    // TU and no pallet around them — the same result the WebUI "Empfangen" process produces.
+    // huType 'V' is the point: a bare virtual HU, no TU and no pallet — as the WebUI produces.
     await Backend.expect({
         title: "The finished good was received without any packing structure",
         manufacturings: {

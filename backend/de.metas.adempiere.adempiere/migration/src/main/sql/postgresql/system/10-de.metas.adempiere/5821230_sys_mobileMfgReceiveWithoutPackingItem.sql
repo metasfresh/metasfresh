@@ -1,18 +1,14 @@
 -- MobileUI Manufacturing — add IsAllowReceiveWithoutPackingItem so the mobile production receipt can
--- offer the "No Packing Item" packing instruction as a receiving target.
--- Without it a product that sits in no packing structure (trees / container plants grown in the ground)
--- cannot be received in the mobile app at all: the receive query is pinned to HU_UnitType='TU' while every
--- "No Packing Item" packing instruction is HU_UnitType='V', so no target is offered and the operator gets
--- the MaterialReceipt_NoReceivingGebinde guidance instead. The WebUI "Empfangen" process has always offered
--- it (PackingInfoProcessParams -> includeVirtualItem).
--- Default OFF, so no existing installation changes behaviour.
--- Unlike the three IsAllowFinishedGoods* / IsSkip* flags this one carries NO FinishedGoods qualifier: those
--- exempt a co-/by-product line by keeping the behaviour permitted for it, which for an opt-in flag would
--- force the new target ON everywhere. Like IsCaptureCatchWeightAtReceipt it applies to EVERY receive line.
---  - MobileUI_MFG_Config (542397): global config, YesNo (ref 20), NOT NULL DEFAULT 'N'.
---  - MobileUI_UserProfile_MFG (542263): per-user override, three-state YesNo (ref 17 + 319), nullable
---    (NULL = inherit global).
--- Shared AD_Element, referenced by both tables' columns. Mirrors 5819440.
+-- offer the "No Packing Item" packing instruction as a receiving target, as the WebUI "Empfangen"
+-- process already does (PackingInfoProcessParams -> includeVirtualItem). Without it a product in no
+-- packing structure cannot be received in the mobile app at all: the receive query is pinned to
+-- HU_UnitType='TU' while that packing instruction is 'V'. Default OFF.
+-- No FinishedGoods qualifier, unlike the IsAllowFinishedGoods* / IsSkip* flags: those exempt a
+-- co-/by-product line, which for an opt-in flag would force the target ON everywhere. Applies to
+-- every receive line, like IsCaptureCatchWeightAtReceipt.
+--  - MobileUI_MFG_Config (542397): global, YesNo (ref 20), NOT NULL DEFAULT 'N'.
+--  - MobileUI_UserProfile_MFG (542263): per-user override, YesNo (ref 17 + 319), nullable = inherit.
+-- Shared AD_Element for both columns. Mirrors 5819440.
 --
 -- IDs allocated from idserver.metas.de on 2026-08-29:
 --   AD_Element    585389  (IsAllowReceiveWithoutPackingItem)

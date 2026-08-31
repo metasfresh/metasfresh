@@ -124,11 +124,9 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 		final boolean isMainFinishedGood = line.getCoProductBOMLineId() == null;
 		final FinishedGoodsReceiveLineConfig lineConfig = config.effectiveForReceiveLine(isMainFinishedGood);
 
-		// The "No Packing Item" (virtual) packing instruction can never come back from retrieveTUs - that query is
-		// pinned to HU_UnitType='TU' while the virtual PI is 'V' - so it is added here, opt-in, mirroring what the
-		// WebUI "Empfangen" process does via WEBUI_ProcessHelper#retrieveHUPIItemProductRecords(includeVirtualItem).
-		// It belongs to the TU list (it carries a tuPIItemProductId and has no LU parent items), hence switching TU
-		// receiving off also hides it.
+		// retrieveTUs is pinned to HU_UnitType='TU', so the virtual ('V') packing instruction never comes back from
+		// it; add it here, as WEBUI_ProcessHelper#retrieveHUPIItemProductRecords(includeVirtualItem) does for the
+		// WebUI. It carries a tuPIItemProductId and has no LU parent items, so it belongs to the TU list.
 		final boolean offerVirtualTUTarget = lineConfig.isAllowReceiveToTU() && lineConfig.isAllowReceiveWithoutPackingItem();
 
 		// A structure excluded by configuration comes out as an empty list WITHOUT an emptyReason: that reason is the
@@ -226,8 +224,7 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 	{
 		if (tuPIItemProducts.isEmpty())
 		{
-			// The virtual packing instruction has no LU parent items, so it is never an LU target - but when the TU
-			// list offers it, a target DOES exist and the guidance would contradict the screen the operator sees.
+			// A target does exist (in the TU list), so the guidance would contradict the screen the operator sees.
 			return offerVirtualTUTarget
 					? JsonNewLUTargetsList.emptyWithoutReason()
 					: JsonNewLUTargetsList.emptyBecause(noReceivingGebindeReason(productId, adLanguage));

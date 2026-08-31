@@ -20,8 +20,7 @@ const createMasterdata = async () => {
         language: "en_US",
         request: {
             login: { user: { language: "en_US" } },
-            // The guidance only appears while receiving without a packing instruction is switched off, so this
-            // scenario states that precondition rather than leaning on the default.
+            // The guidance only appears while this is off; state the precondition rather than lean on the default.
             mobileConfig: { manufacturing: { receiveUnitType: 'TU', isAllowReceiveWithoutPackingItem: false } },
             warehouses: { "wh": {} },
             products: {

@@ -27,10 +27,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Covers the receive screen's target OFFERING only — the side that decides which Gebinde the operator is shown.
- * Choosing a target and actually receiving is exercised end-to-end by the mobile Playwright suite.
- */
+/** Covers the target OFFERING only; receiving itself is covered by the mobile Playwright suite. */
 class MaterialReceiptActivityHandlerTest
 {
 	private static final String AD_LANGUAGE = "en_US";
@@ -43,9 +40,7 @@ class MaterialReceiptActivityHandlerTest
 	{
 		AdempiereTestHelper.get().init();
 
-		// Real collaborators rather than mocks: the module's surefire runs on Java 17 while the pinned
-		// ByteBuddy cannot inject subclasses there, and these services are cheap to construct anyway.
-		// The target-offering paths under test reach their own collaborators via Services.get(...) instead.
+		// Real collaborators, not mocks: surefire runs on Java 17, where the pinned ByteBuddy cannot subclass.
 		handler = new MaterialReceiptActivityHandler(
 				HUQRCodesService.newInstanceForUnitTesting(),
 				new ProductHazardSymbolService(new ProductHazardSymbolRepository(), new HazardSymbolRepository()),
@@ -66,7 +61,7 @@ class MaterialReceiptActivityHandlerTest
 		return ProductId.ofRepoId(product.getM_Product_ID());
 	}
 
-	/** The one packing instruction the mobile receive query can never return, because it is HU_UnitType='V'. */
+	/** The packing instruction retrieveTUs can never return, being HU_UnitType='V'. */
 	private static void createVirtualPIItemProduct()
 	{
 		final I_M_HU_PI_Item_Product piip = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class);
@@ -75,7 +70,7 @@ class MaterialReceiptActivityHandlerTest
 		InterfaceWrapperHelper.save(piip);
 	}
 
-	/** No physical TU packing exists for the product — the reported Baumschule case. */
+	/** The reported case: the product has no physical TU packing at all. */
 	private static List<I_M_HU_PI_Item_Product> noPhysicalTUs()
 	{
 		return ImmutableList.of();
@@ -106,7 +101,7 @@ class MaterialReceiptActivityHandlerTest
 		@Test
 		void flagOn_noPhysicalTU_carriesNoEmptyReason()
 		{
-			// The guidance tells the operator to fix master data; with a target on screen that would be misleading.
+			// The guidance says "fix the master data" — misleading while a target is on screen.
 			final JsonNewTUTargetList result = handler.getNewTUTargets(noPhysicalTUs(), true, productId, AD_LANGUAGE);
 
 			assertThat(result.getEmptyReason()).isNull();
@@ -128,8 +123,8 @@ class MaterialReceiptActivityHandlerTest
 		@Test
 		void flagOn_noPhysicalTU_staysSilentBecauseTheTUListOffersATarget()
 		{
-			// The virtual packing instruction has no LU parent items, so the LU list is legitimately empty — but a
-			// target DOES exist, and the backend's invariant is that the guidance only ever accompanies "no target at all".
+			// Legitimately empty (no LU parent items), but a target exists — and the guidance must accompany
+			// "no target at all" only.
 			final JsonNewLUTargetsList result = handler.getNewLUTargets(noPhysicalTUs(), true, productId, null, AD_LANGUAGE);
 
 			assertThat(result.getValues()).isEmpty();

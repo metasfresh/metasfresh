@@ -52,20 +52,15 @@ public class MobileUIManufacturingConfig
 		return isCaptureCatchWeightAtReceipt.orElseTrue();
 	}
 
-	/**
-	 * Opt-in, so it defaults to FALSE: switching it on makes the mobile receipt offer the
-	 * "No Packing Item" packing instruction as a receiving target, which no installation
-	 * should start doing without asking for it.
-	 */
+	/** Opt-in, hence FALSE by default. */
 	public boolean getIsAllowReceiveWithoutPackingItemEffective()
 	{
 		return isAllowReceiveWithoutPackingItem.orElseFalse();
 	}
 
 	/**
-	 * @param isMainFinishedGood {@code false} for a co-/by-product line. THREE of the five flags exempt such a line
-	 *                           from the configured simplification; catch weight and receive-without-packing-item do
-	 *                           NOT — they apply to every line.
+	 * @param isMainFinishedGood {@code false} for a co-/by-product line. Three of the five flags exempt such a line;
+	 *                           catch weight and receive-without-packing-item do not — they apply to every line.
 	 */
 	@NonNull
 	public FinishedGoodsReceiveLineConfig effectiveForReceiveLine(final boolean isMainFinishedGood)
@@ -82,9 +77,8 @@ public class MobileUIManufacturingConfig
 		// A product-data fallback would be meaningless: a nominal weight is exactly what a catch-weight product
 		// declares untrustworthy - for anything else the kg/piece UOM conversion already answers it.
 		//
-		// Receive-without-packing-item is likewise not exempt, but for the opposite reason: it is opt-in and OFF by
-		// default, so "exempting" a co-/by-product line would mean forcing the extra target ON for every co-/by-product
-		// in every installation - the exact behaviour change the flag exists to avoid.
+		// Receive-without-packing-item is not exempt either, for the opposite reason: it is opt-in and off by
+		// default, so exempting a line would force the extra target ON everywhere - what the flag exists to avoid.
 		return FinishedGoodsReceiveLineConfig.builder()
 				.allowReceiveToLU(!isMainFinishedGood || getIsAllowFinishedGoodsReceiveToLUEffective())
 				.allowReceiveToTU(!isMainFinishedGood || getIsAllowFinishedGoodsReceiveToTUEffective())
