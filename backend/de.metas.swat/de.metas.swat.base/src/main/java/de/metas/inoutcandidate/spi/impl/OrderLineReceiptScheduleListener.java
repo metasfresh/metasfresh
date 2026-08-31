@@ -38,7 +38,17 @@ public class OrderLineReceiptScheduleListener extends ReceiptScheduleListenerAda
 
 		orderBL.closeLine(orderLine);
 
-		invoiceCandBL.closeDeliveryInvoiceCandidatesByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
+		final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID());
+		invoiceCandBL.closeDeliveryInvoiceCandidatesByOrderLineId(orderLineId);
+
+		// Nothing was ever received on this line, so its candidates can never be invoiced.
+		// Close them, or they linger forever as open work that "Create Invoices" silently skips
+		// (InvoiceCandidateEnqueuer:278). A partial receipt must NOT be closed - the delivered part
+		// is still invoiceable.
+		if (orderLine.getQtyDelivered().signum() == 0)
+		{
+			invoiceCandBL.closeInvoiceCandidatesByOrderLineId(orderLineId);
+		}
 	}
 
 	/**
