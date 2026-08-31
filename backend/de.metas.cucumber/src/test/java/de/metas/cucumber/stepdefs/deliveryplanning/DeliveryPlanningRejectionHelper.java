@@ -27,7 +27,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableRow;
-import de.metas.deliveryplanning.DeliveryPlanningList.AdmissibilityField;
+import de.metas.deliveryplanning.DeliveryPlanningList.AggregationKeyField;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.TranslatableStrings;
@@ -58,7 +58,7 @@ public class DeliveryPlanningRejectionHelper
 	private static final String COLUMNNAME_ErrorAdMessage = "ErrorAdMessage";
 	/** a raw rejection text, {@code @token@}s included, for a rejection that carries no {@code AD_Message} */
 	private static final String COLUMNNAME_ErrorMessage = "ErrorMessage";
-	/** the {@link AdmissibilityField}s the rejection message has to name, all of them, in ONE message */
+	/** the {@link AggregationKeyField}s the rejection message has to name, all of them, in ONE message */
 	private static final String COLUMNNAME_ErrorFields = "ErrorFields";
 
 	private static final ImmutableSet<String> EXPECTATION_COLUMNS = ImmutableSet.of(
@@ -117,7 +117,7 @@ public class DeliveryPlanningRejectionHelper
 		{
 			assertThat(rejectionMessage)
 					.as("rejection message names the differing field %s", fieldName)
-					.contains(msgBL.getMsg(adLanguage, AdmissibilityField.valueOf(fieldName).getLabel()));
+					.contains(msgBL.getMsg(adLanguage, AggregationKeyField.valueOf(fieldName).getLabel()));
 		}
 	}
 

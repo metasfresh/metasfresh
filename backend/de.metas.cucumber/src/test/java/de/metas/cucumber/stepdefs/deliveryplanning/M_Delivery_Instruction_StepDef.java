@@ -28,7 +28,7 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.shipment.M_ShipperTransportation_StepDefData;
-import de.metas.deliveryplanning.DeliveryPlanningList.AdmissibilityField;
+import de.metas.deliveryplanning.DeliveryPlanningList.AggregationKeyField;
 import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -168,7 +168,7 @@ public class M_Delivery_Instruction_StepDef
 	 *   leaving it a draft, mirroring the process parameter's default<br>
 	 *   <b>ErrorAdMessage</b> — (optional) when set, the action is expected to be REJECTED with this
 	 *   {@code AD_Message}<br>
-	 *   <b>ErrorFields</b> — (optional) comma-separated {@link AdmissibilityField} names the rejection message
+	 *   <b>ErrorFields</b> — (optional) comma-separated {@link AggregationKeyField} names the rejection message
 	 *   has to name, all of them, in ONE message<br>
 	 * @cucumber.depends StepDefData: M_Delivery_Planning_StepDefData, M_ShipperTransportation_StepDefData
 	 * @cucumber.example
@@ -204,7 +204,7 @@ public class M_Delivery_Instruction_StepDef
 	 *   <b>M_Delivery_Planning_ID</b> — (required, identifier-ref) comma-separated aliases of the plannings to move<br>
 	 *   <b>M_ShipperTransportation_ID</b> — (required, identifier-ref) the TARGET delivery instruction<br>
 	 *   <b>ErrorAdMessage</b> — (optional) when set, the action is expected to be REJECTED with this {@code AD_Message}<br>
-	 *   <b>ErrorFields</b> — (optional) comma-separated {@link AdmissibilityField} names the rejection has to name<br>
+	 *   <b>ErrorFields</b> — (optional) comma-separated {@link AggregationKeyField} names the rejection has to name<br>
 	 * @cucumber.depends StepDefData: M_Delivery_Planning_StepDefData, M_ShipperTransportation_StepDefData
 	 * @cucumber.example
 	 * <pre>

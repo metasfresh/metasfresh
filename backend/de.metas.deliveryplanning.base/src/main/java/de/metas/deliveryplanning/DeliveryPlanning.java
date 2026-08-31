@@ -40,7 +40,7 @@ import java.time.Instant;
  * One delivery planning, loaded for in-memory evaluation by {@link DeliveryPlanningList}.
  * <p>
  * Carries exactly the fields the aggregation rules ask about: everything the delivery-instruction header
- * can hold only one of (see {@link DeliveryPlanningList.AdmissibilityField}), plus the two state flags the
+ * can hold only one of (see {@link DeliveryPlanningList.AggregationKeyField}), plus the two state flags the
  * guards need. It is deliberately not a full mirror of {@code M_Delivery_Planning}.
  */
 @Value

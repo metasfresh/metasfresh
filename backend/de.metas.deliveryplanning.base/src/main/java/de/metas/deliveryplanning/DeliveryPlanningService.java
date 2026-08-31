@@ -30,7 +30,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
-import de.metas.deliveryplanning.DeliveryPlanningList.AdmissibilityField;
+import de.metas.deliveryplanning.DeliveryPlanningList.AggregationKeyField;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
@@ -965,7 +965,7 @@ public class DeliveryPlanningService
 					toIdList(selectedDeliveryPlannings.allocatedOnes())));
 		}
 
-		final ImmutableSet<AdmissibilityField> mismatches = selectedDeliveryPlannings.admissibilityMismatches();
+		final ImmutableSet<AggregationKeyField> mismatches = selectedDeliveryPlannings.admissibilityMismatches();
 		if (!mismatches.isEmpty())
 		{
 			return Optional.of(incompatibleMessage(mismatches));
@@ -981,7 +981,7 @@ public class DeliveryPlanningService
 	 * Shared by both actions that put plannings on a delivery instruction: they write the same document under the
 	 * same header, so they owe the planner the same sentence.
 	 */
-	private static ITranslatableString incompatibleMessage(@NonNull final Set<AdmissibilityField> mismatches)
+	private static ITranslatableString incompatibleMessage(@NonNull final Set<AggregationKeyField> mismatches)
 	{
 		final ITranslatableString differingFields = mismatches.stream()
 				.map(field -> TranslatableStrings.adMessage(field.getLabel()))
@@ -1228,7 +1228,7 @@ public class DeliveryPlanningService
 		{
 			// the target picker offers the instructions of ONE direction, so a selection spanning two has no
 			// target list to be offered at all
-			return Optional.of(incompatibleMessage(ImmutableSet.of(AdmissibilityField.Direction)));
+			return Optional.of(incompatibleMessage(ImmutableSet.of(AggregationKeyField.Direction)));
 		}
 
 		if (targetDeliveryInstructionId == null)
@@ -1250,7 +1250,7 @@ public class DeliveryPlanningService
 		// handover, wrong at the pickup and delivery address. Judging the selection by itself is not enough, and
 		// neither is the picker's direction filter: without this, a selection Combine refuses can be put on the
 		// very instruction Combine created, one add-to at a time.
-		final ImmutableSet<AdmissibilityField> mismatches = getAllocatedTo(targetDeliveryInstructionId)
+		final ImmutableSet<AggregationKeyField> mismatches = getAllocatedTo(targetDeliveryInstructionId)
 				// a planning that is already on the target is in BOTH lists and is counted ONCE, so it is never
 				// compared against itself and reported as differing from itself
 				.union(selectedDeliveryPlannings)

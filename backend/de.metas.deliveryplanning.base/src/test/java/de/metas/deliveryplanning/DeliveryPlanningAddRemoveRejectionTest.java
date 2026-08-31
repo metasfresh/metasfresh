@@ -22,7 +22,7 @@
 
 package de.metas.deliveryplanning;
 
-import de.metas.deliveryplanning.DeliveryPlanningList.AdmissibilityField;
+import de.metas.deliveryplanning.DeliveryPlanningList.AggregationKeyField;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
@@ -180,7 +180,7 @@ class DeliveryPlanningAddRemoveRejectionTest
 				deliveryPlanning().type(TransportDirection.Outgoing).build(),
 				deliveryPlanning().type(TransportDirection.Incoming).build()))
 				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_IncompatibleSelection))
-				.contains(keyOf(AdmissibilityField.Direction.getLabel()));
+				.contains(keyOf(AggregationKeyField.Direction.getLabel()));
 	}
 
 	@Test

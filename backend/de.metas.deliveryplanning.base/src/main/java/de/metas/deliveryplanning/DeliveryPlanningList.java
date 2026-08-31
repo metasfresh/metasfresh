@@ -121,7 +121,7 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	 * The one transport direction the whole selection shares, or empty when it spans more than one (and for an
 	 * empty selection).
 	 * <p>
-	 * The same fact as the {@link AdmissibilityField#Direction} mismatch, but as a value rather than a flag:
+	 * The same fact as the {@link AggregationKeyField#Direction} mismatch, but as a value rather than a flag:
 	 * the add-to target picker correlates its list on the direction, so it needs the value itself, and the
 	 * rejection needs to know when there is none to correlate on.
 	 */
@@ -193,17 +193,17 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	 * Every field on which this selection disagrees, so one message can name them all at once instead of
 	 * reporting one field at a time. Empty means the selection can share a single delivery instruction.
 	 * <p>
-	 * The result is ordered by {@link AdmissibilityField} declaration order, so the message reads the same way
+	 * The result is ordered by {@link AggregationKeyField} declaration order, so the message reads the same way
 	 * every time.
 	 */
-	public ImmutableSet<AdmissibilityField> admissibilityMismatches()
+	public ImmutableSet<AggregationKeyField> admissibilityMismatches()
 	{
-		return Arrays.stream(AdmissibilityField.values())
+		return Arrays.stream(AggregationKeyField.values())
 				.filter(this::isMismatch)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	private boolean isMismatch(@NonNull final AdmissibilityField field)
+	private boolean isMismatch(@NonNull final AggregationKeyField field)
 	{
 		// NULL counts as a value here, on purpose: SQL's count(DISTINCT col) ignores NULLs, which would make
 		// "all rows have no forwarder" (admissible - they are all the same) indistinguishable from
@@ -225,7 +225,7 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	 * the whole selection. Derived from the header columns the generation writes, so a column the header holds
 	 * once joins the rule by construction.
 	 */
-	public enum AdmissibilityField
+	public enum AggregationKeyField
 	{
 		Organisation(DeliveryPlanning::getOrgId, "Organisation"),
 		Direction(DeliveryPlanning::getType, "Direction"),
@@ -250,7 +250,7 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 		 */
 		private final AdMessageKey label;
 
-		AdmissibilityField(@NonNull final Function<DeliveryPlanning, Object> valueExtractor, @NonNull final String labelSuffix)
+		AggregationKeyField(@NonNull final Function<DeliveryPlanning, Object> valueExtractor, @NonNull final String labelSuffix)
 		{
 			this.valueExtractor = valueExtractor;
 			this.label = AdMessageKey.of(LABEL_PREFIX + labelSuffix);

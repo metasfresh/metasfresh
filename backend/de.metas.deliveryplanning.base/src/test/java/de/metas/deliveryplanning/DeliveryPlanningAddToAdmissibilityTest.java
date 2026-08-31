@@ -23,7 +23,7 @@
 package de.metas.deliveryplanning;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.deliveryplanning.DeliveryPlanningList.AdmissibilityField;
+import de.metas.deliveryplanning.DeliveryPlanningList.AggregationKeyField;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocSubType;
 import de.metas.document.dimension.DimensionService;
@@ -259,7 +259,7 @@ class DeliveryPlanningAddToAdmissibilityTest
 
 		assertThat(addToRejectionTextOf(selection, target))
 				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_IncompatibleSelection))
-				.contains(keyOf(AdmissibilityField.Forwarder.getLabel()));
+				.contains(keyOf(AggregationKeyField.Forwarder.getLabel()));
 
 		assertThatThrownBy(() -> deliveryPlanningService.addTo(selection, target))
 				.isInstanceOf(AdempiereException.class);
@@ -330,6 +330,6 @@ class DeliveryPlanningAddToAdmissibilityTest
 
 		assertThat(addToRejectionTextOf(selection, target))
 				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_IncompatibleSelection))
-				.contains(keyOf(AdmissibilityField.Forwarder.getLabel()));
+				.contains(keyOf(AggregationKeyField.Forwarder.getLabel()));
 	}
 }

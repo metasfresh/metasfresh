@@ -23,7 +23,7 @@
 package de.metas.deliveryplanning;
 
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.deliveryplanning.DeliveryPlanningList.AdmissibilityField;
+import de.metas.deliveryplanning.DeliveryPlanningList.AggregationKeyField;
 import de.metas.document.dimension.DimensionService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
@@ -150,8 +150,8 @@ class DeliveryPlanningCombineRejectionTest
 
 		assertThat(rejectionText)
 				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_IncompatibleSelection))
-				.contains(keyOf(AdmissibilityField.Forwarder.getLabel()))
-				.contains(keyOf(AdmissibilityField.Incoterms.getLabel()));
+				.contains(keyOf(AggregationKeyField.Forwarder.getLabel()))
+				.contains(keyOf(AggregationKeyField.Incoterms.getLabel()));
 	}
 
 	@Test
@@ -195,7 +195,7 @@ class DeliveryPlanningCombineRejectionTest
 		final String rejectionText = rejectionTextOf(row1, row2);
 
 		assertThat(rejectionText).contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_IncompatibleSelection));
-		assertThat(Arrays.stream(AdmissibilityField.values()).map(field -> keyOf(field.getLabel())))
+		assertThat(Arrays.stream(AggregationKeyField.values()).map(field -> keyOf(field.getLabel())))
 				.allSatisfy(fieldLabel -> assertThat(rejectionText).contains(fieldLabel));
 	}
 }

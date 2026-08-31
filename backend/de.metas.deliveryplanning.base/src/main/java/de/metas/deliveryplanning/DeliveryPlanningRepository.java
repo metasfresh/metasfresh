@@ -390,7 +390,7 @@ public class DeliveryPlanningRepository
 
 		deliveryPlanningRecord.setM_MeansOfTransportation_ID(MeansOfTransportationId.toRepoId(request.getMeansOfTransportationId()));
 		deliveryPlanningRecord.setOrderStatus(OrderStatus.toCodeOrNull(request.getOrderStatus()));
-		deliveryPlanningRecord.setTransportDirection(TransportDirection.toCodeOrNull(request.getTransportDirection()));
+		deliveryPlanningRecord.setTransportDirection(request.getTransportDirection().getCode());
 
 		deliveryPlanningRecord.setBatch(request.getBatch());
 		deliveryPlanningRecord.setC_OriginCountry_ID(CountryId.toRepoId(request.getOriginCountryId()));

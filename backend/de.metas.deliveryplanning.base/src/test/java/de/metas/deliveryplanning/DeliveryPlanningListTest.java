@@ -23,7 +23,7 @@
 package de.metas.deliveryplanning;
 
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.deliveryplanning.DeliveryPlanningList.AdmissibilityField;
+import de.metas.deliveryplanning.DeliveryPlanningList.AggregationKeyField;
 import de.metas.incoterms.IncotermsId;
 import de.metas.organization.OrgId;
 import de.metas.shipping.ShipperId;
@@ -127,7 +127,7 @@ class DeliveryPlanningListTest
 					withShipper(540001),
 					withShipper(null));
 
-			assertThat(list.admissibilityMismatches()).containsExactly(AdmissibilityField.Forwarder);
+			assertThat(list.admissibilityMismatches()).containsExactly(AggregationKeyField.Forwarder);
 		}
 
 		@Test
@@ -138,7 +138,7 @@ class DeliveryPlanningListTest
 					withIncoterms(540002, "Hamburg"),
 					withIncoterms(540002, null));
 
-			assertThat(list.admissibilityMismatches()).containsExactly(AdmissibilityField.IncotermLocation);
+			assertThat(list.admissibilityMismatches()).containsExactly(AggregationKeyField.IncotermLocation);
 		}
 
 		@Test
@@ -170,7 +170,7 @@ class DeliveryPlanningListTest
 					.build();
 
 			assertThat(DeliveryPlanningList.of(row1, row2).admissibilityMismatches())
-					.containsExactlyInAnyOrder(AdmissibilityField.values());
+					.containsExactlyInAnyOrder(AggregationKeyField.values());
 		}
 	}
 
@@ -268,7 +268,7 @@ class DeliveryPlanningListTest
 			final DeliveryPlanningList union = target.union(DeliveryPlanningList.of(withShipper(540002)));
 
 			assertThat(target.admissibilityMismatches()).as("each list on its own is admissible").isEmpty();
-			assertThat(union.admissibilityMismatches()).containsExactly(AdmissibilityField.Forwarder);
+			assertThat(union.admissibilityMismatches()).containsExactly(AggregationKeyField.Forwarder);
 		}
 
 		@Test
@@ -284,15 +284,15 @@ class DeliveryPlanningListTest
 
 	@Nested
 	@DisplayName("admissibility field labels")
-	class AdmissibilityFieldLabels
+	class AggregationKeyFieldLabels
 	{
 		@Test
 		@DisplayName("every field has its own label, so no two fields collapse into one word in the rejection message")
 		void everyFieldHasItsOwnLabel()
 		{
-			assertThat(Arrays.stream(AdmissibilityField.values()).map(AdmissibilityField::getLabel))
+			assertThat(Arrays.stream(AggregationKeyField.values()).map(AggregationKeyField::getLabel))
 					.doesNotHaveDuplicates()
-					.hasSize(AdmissibilityField.values().length);
+					.hasSize(AggregationKeyField.values().length);
 		}
 	}
 
