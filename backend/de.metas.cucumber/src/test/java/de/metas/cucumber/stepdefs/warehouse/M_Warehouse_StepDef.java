@@ -97,9 +97,12 @@ public class M_Warehouse_StepDef
 							.create()
 							.firstOnlyNotNull(I_M_Warehouse.class);
 
-					final I_M_Locator locator = warehouseBL.getOrCreateDefaultLocator(WarehouseId.ofRepoId(warehouseRecord.getM_Warehouse_ID()));
+					// Resolve the locator only when the caller asked for it: this step LOADS existing master data, and
+					// getOrCreateDefaultLocator() may create a locator / flip IsDefault flags.
 					row.getAsOptionalIdentifier(I_M_Locator.COLUMNNAME_M_Locator_ID)
-							.ifPresent(locatorIdentifier -> locatorTable.put(locatorIdentifier, locator));
+							.ifPresent(locatorIdentifier -> locatorTable.put(
+									locatorIdentifier,
+									warehouseBL.getOrCreateDefaultLocator(WarehouseId.ofRepoId(warehouseRecord.getM_Warehouse_ID()))));
 
 					row.getAsIdentifier().put(warehouseTable, warehouseRecord);
 				});
