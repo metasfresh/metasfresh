@@ -33,6 +33,10 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_Carrier_Product_GoodsType_Alloc;
 import org.springframework.stereotype.Repository;
 
+/**
+ * Repository Tables: Carrier_Product_GoodsType_Alloc
+ * Repository Cluster: CarrierProductGoodsTypeAllocRepository
+ */
 @Repository
 public class CarrierProductGoodsTypeAllocRepository
 {
@@ -65,6 +69,20 @@ public class CarrierProductGoodsTypeAllocRepository
 	private static String buildKey(final int carrierProductId, final int goodsTypeId)
 	{
 		return carrierProductId + "#" + goodsTypeId;
+	}
+
+	/**
+	 * Returns all {@link CarrierGoodsTypeId}s allocated to the given carrier product.
+	 * Derived from the in-memory cache (consistent with {@link #exists}).
+	 * Returns an empty set if no allocations exist.
+	 */
+	public ImmutableSet<CarrierGoodsTypeId> getGoodsTypeIdsByCarrierProductId(@NonNull final CarrierProductId carrierProductId)
+	{
+		final String prefix = carrierProductId.getRepoId() + "#";
+		return getAllocSet().stream()
+				.filter(key -> key.startsWith(prefix))
+				.map(key -> CarrierGoodsTypeId.ofRepoId(Integer.parseInt(key.substring(prefix.length()))))
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	public void save(@NonNull final CarrierProductId carrierProductId, @NonNull final CarrierGoodsTypeId goodsTypeId)

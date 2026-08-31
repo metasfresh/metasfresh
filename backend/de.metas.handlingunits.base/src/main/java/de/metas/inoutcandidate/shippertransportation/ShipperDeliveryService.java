@@ -24,21 +24,26 @@ package de.metas.inoutcandidate.shippertransportation;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
+import de.metas.handlingunits.shipmentschedule.api.DeliveryOrderCarrierResolver;
 import de.metas.handlingunits.shipping.InOutToTransportationOrderService;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.shipper.gateway.commons.ShipperGatewayFacade;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderCreateRequest;
+import de.metas.shipper.gateway.spi.model.ResolvedCarrier;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
@@ -80,6 +85,7 @@ public class ShipperDeliveryService
 	@NonNull private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 	@NonNull private final InOutToTransportationOrderService inOutToTransportationOrderService;
 	@NonNull private final ShipperGatewayFacade shipperGatewayFacade;
+	@NonNull private final DeliveryOrderCarrierResolver deliveryOrderCarrierResolver;
 
 	public void createTransportationAndPackagesForShipment(@NonNull final InOutId inOutId)
 	{
@@ -101,6 +107,13 @@ public class ShipperDeliveryService
 		}
 
 		final I_M_Shipper shipper = shipperDAO.getById(shipperId);
+
+		if (createOneTransportationOrderPerDay && shipper.isCreateDeliveryPlanning())
+		{
+			Loggables.withLogger(logger, Level.INFO).addLog(
+					"Skipping daily transport order for shipper with IsCreateDeliveryPlanning=Y, m_inout_id: {}", inOutId);
+			return;
+		}
 
 		final BPartnerLocationAndCaptureId shipFromBPWarehouseLocation = warehouseDAO.getWarehouseLocationById(WarehouseId.ofRepoId(shipment.getM_Warehouse_ID()));
 
@@ -170,6 +183,11 @@ public class ShipperDeliveryService
 
 		final I_M_ShipperTransportation shipperTransportation = load(shipperTransportationId, I_M_ShipperTransportation.class);
 
+		// Resolve the carrier from the shipment schedule (SCHEDULE-SOURCED); pass it to commons as data
+		// (commons must not depend on the handlingunits module — see DeliveryOrderCarrierResolver).
+		final ImmutableMap<ShipmentScheduleId, ResolvedCarrier> carrierByScheduleId = deliveryOrderCarrierResolver.resolveByPackageIds(
+				mPackageIds.stream().map(PackageId::ofRepoId).collect(ImmutableSet.toImmutableSet()));
+
 		final DeliveryOrderCreateRequest request = DeliveryOrderCreateRequest.builder()
 				.pickupDate(getPickupDate(shipperTransportation))
 				.timeFrom(TimeUtil.asLocalTime(shipperTransportation.getPickupTimeFrom()))
@@ -178,6 +196,7 @@ public class ShipperDeliveryService
 				.shipperTransportationId(shipperTransportationId)
 				.shipperGatewayId(shipperGatewayId)
 				.asyncBatchId(asyncBatchId)
+				.carrierByScheduleId(carrierByScheduleId)
 				.build();
 		shipperGatewayFacade.createAndSendDeliveryOrdersForPackages(request);
 	}

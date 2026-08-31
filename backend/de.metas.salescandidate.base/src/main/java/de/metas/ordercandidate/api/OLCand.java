@@ -83,6 +83,7 @@ public final class OLCand implements IProductPriceAware
 	@Getter private final DeliveryRule deliveryRule;
 	@Getter private final DeliveryViaRule deliveryViaRule;
 	@Getter private final ShipperId shipperId;
+	@Nullable @Getter private final WarehouseId warehouseId;
 	@Getter private final String externalLineId;
 	@Getter private final String externalHeaderId;
 	@Getter private final FreightCostRule freightCostRule;
@@ -125,6 +126,7 @@ public final class OLCand implements IProductPriceAware
 			@Nullable final PaymentTermId paymentTermId,
 			@Nullable final PricingSystemId pricingSystemId,
 			@Nullable final ShipperId shipperId,
+			@Nullable final WarehouseId warehouseId,
 			@Nullable final DocTypeId orderDocTypeId,
 			@Nullable final BPartnerId salesRepId,
 			@Nullable final OrderLineGroup orderLineGroup,
@@ -176,6 +178,7 @@ public final class OLCand implements IProductPriceAware
 		this.qtyItemCapacityEff = qtyItemCapacityEff;
 
 		this.shipperId = shipperId;
+		this.warehouseId = warehouseId;
 
 		this.salesRepId = salesRepId;
 
@@ -251,12 +254,6 @@ public final class OLCand implements IProductPriceAware
 	public int getM_AttributeSetInstance_ID()
 	{
 		return olCandRecord.getM_AttributeSetInstance_ID();
-	}
-
-	@Nullable
-	public WarehouseId getWarehouseId()
-	{
-		return WarehouseId.ofRepoIdOrNull(olCandRecord.getM_Warehouse_ID());
 	}
 
 	@Nullable

@@ -29,7 +29,7 @@ import de.metas.audit.data.model.DataExportAuditId;
 import de.metas.audit.data.repository.DataExportAuditLogRepository;
 import de.metas.audit.data.repository.DataExportAuditRepository;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfig;
@@ -59,7 +59,7 @@ public abstract class ExportToExternalSystemService
 	protected final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	protected final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-	protected final ExternalSystemConfigRepo externalSystemConfigRepo;
+	protected final ExternalSystemConfigRepository externalSystemConfigRepository;
 
 	private final DataExportAuditRepository dataExportAuditRepository;
 	private final DataExportAuditLogRepository dataExportAuditLogRepository;
@@ -68,12 +68,12 @@ public abstract class ExportToExternalSystemService
 	protected ExportToExternalSystemService(
 			@NonNull final DataExportAuditRepository dataExportAuditRepository,
 			@NonNull final DataExportAuditLogRepository dataExportAuditLogRepository,
-			@NonNull final ExternalSystemConfigRepo externalSystemConfigRepo,
+			@NonNull final ExternalSystemConfigRepository externalSystemConfigRepository,
 			@NonNull final ExternalSystemMessageSender externalSystemMessageSender)
 	{
 		this.dataExportAuditRepository = dataExportAuditRepository;
 		this.dataExportAuditLogRepository = dataExportAuditLogRepository;
-		this.externalSystemConfigRepo = externalSystemConfigRepo;
+		this.externalSystemConfigRepository = externalSystemConfigRepository;
 		this.externalSystemMessageSender = externalSystemMessageSender;
 	}
 
@@ -134,7 +134,7 @@ public abstract class ExportToExternalSystemService
 	{
 		return dataExportAuditLogRepository.getExternalSystemConfigIds(dataExportAuditId)
 				.stream()
-				.map(id -> externalSystemConfigRepo.getChildByParentIdAndType(ExternalSystemParentConfigId.ofRepoId(id), getExternalSystemType()))
+				.map(id -> externalSystemConfigRepository.getChildByParentIdAndType(ExternalSystemParentConfigId.ofRepoId(id), getExternalSystemType()))
 				.filter(Optional::isPresent)
 				.map(Optional::get)
 				.map(IExternalSystemChildConfig::getId)

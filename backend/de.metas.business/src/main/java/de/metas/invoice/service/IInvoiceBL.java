@@ -146,6 +146,12 @@ public interface IInvoiceBL extends ISingletonService
 	 */
 	boolean isCreditMemo(String docBaseType);
 
+	/**
+	 * @return the effective document type: {@code C_DocType_ID} if set, otherwise {@code C_DocTypeTarget_ID}; {@code null} if neither is set.
+	 */
+	@Nullable
+	DocTypeId getDocTypeIdEffectiveOrNull(I_C_Invoice invoice);
+
     boolean isReversal(InvoiceId invoiceId);
 
 	/**

@@ -12,6 +12,8 @@ import de.metas.document.archive.mailrecipient.DocOutBoundRecipientService;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipients;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientProvider;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
+import de.metas.document.archive.model.I_C_BPartner;
+import de.metas.i18n.Language;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.order.IOrderBL;
@@ -22,6 +24,7 @@ import de.metas.user.User;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
@@ -164,6 +167,16 @@ public class InvoiceDocOutboundLogMailRecipientProvider
 			{
 				return Optional.of(docOutBoundRecipient);
 			}
+		}
+
+		// No usable bill contact resolved above, but the partner is explicitly invoice-email-enabled
+		// and the bill-to location has an email => send to the location email (recipient without an AD_User).
+		final I_C_BPartner billPartnerRecord = bpartnerBL.getById(billPartnerId, I_C_BPartner.class);
+		final boolean partnerInvoiceEmailEnabled = StringUtils.toBoolean(billPartnerRecord.getIsInvoiceEmailEnabled(), false);
+		if (partnerInvoiceEmailEnabled && Check.isNotBlank(locationEmail))
+		{
+			final Language bPartnerLanguage = bpartnerBL.getLanguage(billPartnerRecord).orElse(null);
+			return Optional.of(DocOutBoundRecipient.ofEmailAddress(locationEmail, bPartnerLanguage, true));
 		}
 
 		return Optional.empty();

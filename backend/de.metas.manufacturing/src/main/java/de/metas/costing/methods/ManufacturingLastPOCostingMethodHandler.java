@@ -19,9 +19,6 @@ import de.metas.costing.CurrentCost;
 import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import de.metas.currency.CurrencyPrecision;
-import de.metas.material.planning.IResourceProductService;
-import de.metas.product.ProductId;
-import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -36,7 +33,6 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.springframework.stereotype.Component;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.Set;
 
@@ -70,7 +66,6 @@ public class ManufacturingLastPOCostingMethodHandler implements CostingMethodHan
 			.build();
 	// services
 	private final IPPCostCollectorBL costCollectorsService = Services.get(IPPCostCollectorBL.class);
-	private final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
 	private final IPPOrderCostBL ppOrderCostsService = Services.get(IPPOrderCostBL.class);
 	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 	//
@@ -129,18 +124,8 @@ public class ManufacturingLastPOCostingMethodHandler implements CostingMethodHan
 		}
 		else if (costCollectorType.isActivityControl())
 		{
-			final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
-			if (actualResourceId.isNoResource())
-			{
-				return CostDetailCreateResultsList.EMPTY;
-			}
-
-			final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
-			final Duration totalDuration = costCollectorsService.getTotalDurationReported(cc);
-
-			orderCosts = null;
-			currentCost = null;
-			result = createActivityControl(request.withProductId(actualResourceProductId), totalDuration);
+			// Activity-control costs are not tracked for this costing method -> post zero facts
+			return CostDetailCreateResultsList.EMPTY;
 		}
 		else if (costCollectorType.isUsageVariance()
 				|| costCollectorType.isMethodChangeVariance()
@@ -258,14 +243,6 @@ public class ManufacturingLastPOCostingMethodHandler implements CostingMethodHan
 				utils.getQuantityUOMConverter());
 
 		return result;
-	}
-
-	private CostDetailCreateResult createActivityControl(
-			final CostDetailCreateRequest request,
-			final Duration totalDuration)
-	{
-		// TODO Auto-generated method stub
-		throw new AdempiereException("Computing activity costs is not yet supported");
 	}
 
 	@Override

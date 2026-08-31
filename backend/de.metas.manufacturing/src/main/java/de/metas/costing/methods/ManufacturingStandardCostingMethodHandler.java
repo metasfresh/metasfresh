@@ -144,10 +144,15 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 			final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
 			if (actualResourceId.isNoResource())
 			{
-				return null;
+				return CostDetailCreateResultsList.EMPTY;
 			}
 
-			final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
+			final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId).orElse(null);
+			if (actualResourceProductId == null)
+			{
+				// resource has no cost product -> no activity cost to post (graceful no-op)
+				return CostDetailCreateResultsList.EMPTY;
+			}
 
 			final Duration totalDuration = costCollectorsService.getTotalDurationReported(cc);
 
@@ -164,10 +169,11 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 				final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
 				if (actualResourceId.isNoResource())
 				{
-					return null;
+					return CostDetailCreateResultsList.EMPTY;
 				}
 
-				final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
+				final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId)
+						.orElseThrow(() -> new AdempiereException("No product found for " + actualResourceId));
 
 				final Duration totalDurationReported = costCollectorsService.getTotalDurationReported(cc);
 				final Quantity qty = convertDurationToQuantity(totalDurationReported, actualResourceProductId);

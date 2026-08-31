@@ -21,6 +21,10 @@ public class JsonHUExpectation
 	@Nullable Identifier bpartnerLocation;
 	@Nullable String huStatus;
 	/**
+	 * When {@code true}, assert the HU's consignee was STRIPPED, i.e. {@code C_BPartner_ID <= 0}.
+	 */
+	@Nullable Boolean consigneeCleared;
+	/**
 	 * Expected HU unit type. Pass the DB code (the value of {@code M_HU_PI_Version.HU_UnitType}):
 	 * <ul>
 	 *   <li>{@code "V"} — Virtual PI / bare VHU/CU ({@code HUType.VirtualPI})</li>

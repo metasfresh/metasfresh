@@ -2,9 +2,6 @@
   "workstationName": "Name",
   "isUserAssigned": "Assigned",
   "action": {
-    "assign": {
-      "buttonCaption": "Assign"
-    },
     "scanAgain": {
       "buttonCaption": "Scan again"
     }

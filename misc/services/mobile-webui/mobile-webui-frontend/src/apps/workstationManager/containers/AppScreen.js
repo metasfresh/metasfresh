@@ -41,7 +41,6 @@ const AppScreen = () => {
 
   const [loading, setLoading] = useState(true);
   const [workstation, setWorkstation] = useState();
-
   const queryParameters = new URLSearchParams(window.location.search);
   const qrCodeParam = queryParameters.get('qrCode');
   const callerApplicationId = queryParameters.get('callerApplicationId');
@@ -60,15 +59,12 @@ const AppScreen = () => {
   };
 
   const onBarcodeScanned = ({ scannedBarcode }) => {
+    // Assign on scan (mirror the workplace app): a scan — including a re-scan of an already-assigned
+    // workstation — re-assigns it, switching the operator's active workplace back to the scanned
+    // workstation's workplace. A read-only lookup here would silently fail to re-switch a drifted workplace.
     return api
-      .getWorkstationByQRCode(scannedBarcode)
-      .then((workplaceInfo) => setWorkstationAndUpdateUrl(workplaceInfo));
-  };
-
-  const onAssignClick = () => {
-    api
-      .assignWorkstationById(workstation.id)
-      .then((workstation) => setWorkstation(workstation))
+      .assignWorkstationByQRCode(scannedBarcode)
+      .then((workstationInfo) => setWorkstationAndUpdateUrl(workstationInfo))
       .catch((axiosError) => toastError({ axiosError }));
   };
 
@@ -91,9 +87,6 @@ const AppScreen = () => {
       <div className="app-workstantionManager">
         <WorkstationInfoComponent workstationInfo={workstation} />
         <div className="pt-3 section">
-          {!workstation.userAssigned && (
-            <ButtonWithIndicator caption={appTrl('action.assign.buttonCaption')} onClick={onAssignClick} />
-          )}
           <ButtonWithIndicator caption={appTrl('action.scanAgain.buttonCaption')} onClick={onScanAgainClick} />
         </div>
       </div>

@@ -2,7 +2,7 @@
 @allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F19100
 @ghActions:run_on_executor6
-Feature: MD_Stock_PerWeek_V shows cumulative projected stock (QtyATP) and rolls overdue demand into the current week
+Feature: MD_Stock_PerWeek_V shows cumulative projected stock (QtyATP); overdue backlog stays in the projected stock, not in the movement columns
 
   Background:
     Given infrastructure and metasfresh are running
@@ -64,30 +64,30 @@ Feature: MD_Stock_PerWeek_V shows cumulative projected stock (QtyATP) and rolls 
   @from:cucumber
   @allure.label.epic:E0155_Material_Disposition
   @allure.label.feature:F19100
-  Scenario: Overdue DEMAND/SHIPMENT dated before the current week is rolled into the current week's QtyExpectedShipments
+  Scenario: Overdue DEMAND/SHIPMENT dated before the current week is NOT shown in the current week's movement columns (it stays in the projected stock)
 
-    # The view applies GREATEST(date_trunc('week', DateProjected), date_trunc('week', now()))
-    # so any DEMAND/SHIPMENT whose DateProjected falls in a past week still counts in the
-    # current-week row's QtyExpectedShipments — it is not silently dropped.
+    # Movement columns bucket by the candidate's ACTUAL week, so a DEMAND/SHIPMENT whose DateProjected
+    # falls in a past week does NOT appear in the current-week row's QtyExpectedShipments. The backlog
+    # is not lost: it is already reflected in the projected stock (QtyATPBegin / QtyATP), so it is shown
+    # once (in ATP), not twice (ATP + movement column).
     Given metasfresh contains M_Products:
       | Identifier          | M_Product_Category_ID    | C_UOM_ID.X12DE355 |
       | product_S25618_atp2 | standard_category_S25618 | PCE               |
 
-    # This DEMAND is dated 2 weeks in the past (WeekOffset=-2, within that past week) but must
-    # appear in the current-week (WeekOffset=0) row's QtyExpectedShipments via overdue rolling.
+    # This DEMAND is dated 2 weeks in the past (WeekOffset=-2, within that past week).
     And metasfresh initially has this MD_Candidate data relative to current week
       | Identifier           | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID        | WeekOffset | DayWithinWeek | Qty | ATP | M_Warehouse_ID |
       | overdue_S25618_atp2  | DEMAND            | SHIPMENT                  | product_S25618_atp2 | -2         | 3             | 7   | -7  | wh_S25618_atp  |
 
-    # The current-week row (WeekOffset=0) must show QtyExpectedShipments=7 for the overdue demand.
-    # QtyATP=-7: the STOCK candidate paired with this DEMAND is dated in the past week with
-    # Qty=ATP=-7. That date is before the current week+1 start, so it is the latest STOCK
-    # for this product/warehouse → QtyATP=-7.
-    # QtyATPBegin=-7: that same STOCK candidate is also dated before the current week's Monday
-    # (it is two weeks overdue), so it owns the as-of-start stock too.
+    # The current-week row (WeekOffset=0) shows QtyExpectedShipments=0: the overdue demand buckets into
+    # its own past week (outside the shown horizon), so it does not appear in the movement column.
+    # QtyATP=-7: the STOCK candidate paired with this DEMAND is dated in the past week with Qty=ATP=-7;
+    # it is the latest STOCK before the current week+1 start → QtyATP=-7.
+    # QtyATPBegin=-7: that same STOCK candidate is dated before the current week's Monday, so it owns the
+    # as-of-start stock — i.e. the projected balance already carries the backlog's effect (unchanged).
     Then after not more than 10s, MD_Stock_PerWeek_V contains:
       | M_Product_ID        | M_Warehouse_ID | WeekOffset | QtyATPBegin | QtyExpectedShipments | QtyExpectedReceipts | QtyATP |
-      | product_S25618_atp2 | wh_S25618_atp  | 0          | -7          | 7                    | 0                   | -7     |
+      | product_S25618_atp2 | wh_S25618_atp  | 0          | -7          | 0                    | 0                   | -7     |
 
   @Id:S30457_10
   @from:cucumber
@@ -131,3 +131,4 @@ Feature: MD_Stock_PerWeek_V shows cumulative projected stock (QtyATP) and rolls 
     Then after not more than 10s, MD_Stock_PerWeek_V contains:
       | M_Product_ID        | M_Warehouse_ID | WeekOffset | QtyATPBegin | QtyExpectedShipments | QtyExpectedReceipts | QtyATP |
       | product_S30457_atp3 | wh_S25618_atp  | 0          | 0           | 0                    | 0                   | 60     |
+

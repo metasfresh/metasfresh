@@ -57,10 +57,17 @@ export const PickingSlotScreen = {
      * the target LU, and refreshes the slot content — the screen stays on PickingSlotScreen.
      * On error (HuNotFound, LuNotAtPickingSlot) the backend returns 4xx → error toast.
      *
+     * Appends an explicit Enter terminator. `BarcodeScannerComponent.type()` dispatches all keystrokes
+     * instantaneously (0ms wall-clock), so two back-to-back TU-GRAI scans would concatenate in the
+     * `useKeyboardBarcodeReader` buffer before the ~1500ms GRAI debounce could flush; the Enter
+     * force-completes each instantaneous test-harness scan immediately, so each code is a distinct
+     * barcode. In PRODUCTION a GRAI is a non-HU-prefix code (`NOT_APPLICABLE`) that completes via the
+     * debounce flush without any Enter — the Enter is purely a test-harness need.
+     *
      * @param {string} graiString - Canonical GRAI string ("{companyPrefix}.{assetType}.{serial}")
      */
     scanGRAI: async ({ graiString }) => await test.step(`${NAME} - Scan GRAI: ${graiString}`, async () => {
-        await BarcodeScannerComponent.type({ scannedCode: graiString, testId: GRAI_SCANNER_TESTID });
+        await BarcodeScannerComponent.type({ scannedCode: graiString, testId: GRAI_SCANNER_TESTID, terminator: 'Enter' });
     }),
 
     /** The GRAI scanner is present — shown only when the consolidation customer requires GRAI. */

@@ -26,7 +26,7 @@ export const useGrais = ({ huId }) => {
   }, [huId]);
 
   const addGrais = useCallback((newGrais) => {
-    setGraiCodes((prev) => mergeGraiArrays(prev, newGrais));
+    setGraiCodes((prev) => mergeGraiArrays(prev, newGrais).merged);
     setDirty(true);
   }, []);
 

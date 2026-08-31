@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_StepDefData;
@@ -16,8 +17,15 @@ import de.metas.handlingunits.grai.GRAISet;
 import de.metas.handlingunits.grai.HUGraiService;
 import de.metas.handlingunits.grai.HUGraiSnapshot;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
+import de.metas.cucumber.stepdefs.shipper.Carrier_Product_StepDefData;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
+import de.metas.handlingunits.picking.job.model.PickingJob;
+import de.metas.handlingunits.picking.job.model.PickingJobId;
+import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
+import de.metas.picking.workflow.PickingJobRestService;
+import de.metas.shipping.CarrierProductId;
+import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
@@ -36,6 +44,7 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFActivity;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcess;
+import de.metas.i18n.AdMessageKey;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -54,9 +63,11 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 @RequiredArgsConstructor
 public class MobileUI_Picking_StepDef
@@ -65,6 +76,7 @@ public class MobileUI_Picking_StepDef
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
 	@NonNull private final HUGraiService huGraiService = SpringContextHolder.instance.getBean(HUGraiService.class);
+	@NonNull private final PickingJobRestService pickingJobRestService = SpringContextHolder.instance.getBean(PickingJobRestService.class);
 	@NonNull private final MobileUIPickingClient mobileUIPickingClient = new MobileUIPickingClient();
 
 	@NonNull private final M_Product_StepDefData productsTable;
@@ -72,6 +84,7 @@ public class MobileUI_Picking_StepDef
 	@NonNull private final PickingSlot_StepDefData pickingSlotsTable;
 	@NonNull private final M_HU_StepDefData huTable;
 	@NonNull private final M_HU_PI_StepDefData huPiTable;
+	@NonNull private final Carrier_Product_StepDefData carrierProductsTable;
 
 	@NonNull private final Context context = new Context();
 
@@ -217,6 +230,227 @@ public class MobileUI_Picking_StepDef
 						assertThat(actualPickingTarget.getLuIdNotNull()).as("line-level LU picking target").isEqualTo(luId);
 					}
 				});
+	}
+
+	/**
+	 * Asserts the carrier-advise display flags the mobile picking UI renders for the current job line,
+	 * across the pick-to shapes (LU target, TU target, or CU-direct / no-target pick) — exactly the
+	 * line-level {@code carrierAdvise*} fields {@code SelectCurrentLUTUButtons} reads to render the advise button.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>target</b> — (required) names the pick-to shape being asserted (LU/TU/none); the flags are line-level<br>
+	 *   <b>available</b> — (required) expected line carrierAdviseAvailable<br>
+	 *   <b>readOnly</b> — (required) expected line carrierAdviseReadOnly<br>
+	 *   <b>carrierProductCaption</b> — (optional) expected line carrier product caption<br>
+	 *   <b>M_Product_ID</b> — (optional, identifier-ref) select the line by product when the job has several
+	 *   lines with divergent carriers; omit for a single-line job (asserts the only line)<br>
+	 */
+	@Then("expect current picking job line carrier advise")
+	public void expectCarrierAdvise(@NonNull final DataTable dataTable)
+	{
+		// Re-fetch the process freshly (as the mobile UI does) so the post-pick line-level carrier-advise
+		// flags are reflected, not the stale post-event response.
+		context.setWfProcess(mobileUIPickingClient.getWFProcessById(context.getWfProcessIdNotNull()));
+		DataTableRows.of(dataTable).forEach(this::assertCarrierAdvise);
+	}
+
+	private void assertCarrierAdvise(@NonNull final DataTableRow row)
+	{
+		final String target = row.getAsString("target");
+		final boolean expectedAvailable = row.getAsBoolean("available");
+		final boolean expectedReadOnly = row.getAsBoolean("readOnly");
+		final Optional<String> expectedCaption = row.getAsOptionalString("carrierProductCaption");
+
+		// Flags are always at line level; `target` just names the pick-to shape being asserted. When a scenario
+		// has several lines with divergent per-line carriers, select the line by M_Product_ID; otherwise (single
+		// line) assert the only line.
+		final JsonPickingJobLine line = row.getAsOptionalIdentifier("M_Product_ID")
+				.map(productsTable::getId)
+				.map(context::getPickingJobLineByProductId)
+				.orElseGet(() -> CollectionUtils.singleElement(context.getPickingJobLines()));
+
+		assertThat(line.isCarrierAdviseAvailable()).as("carrierAdviseAvailable for target %s", target).isEqualTo(expectedAvailable);
+		assertThat(line.isCarrierAdviseReadOnly()).as("carrierAdviseReadOnly for target %s", target).isEqualTo(expectedReadOnly);
+		expectedCaption.ifPresent(caption -> assertThat(line.getCarrierProductCaption())
+				.as("carrierProductCaption for target %s", target).isEqualTo(caption));
+	}
+
+	/**
+	 * Asserts the CURRENT picking job HEADER carrier-advise DISPLAY flags — the job-level flags the mobile UI
+	 * reads for the header-view advise button (populated from {@code PackedHUCarrierAdviseService.resolveInfo}).
+	 * Re-fetches the process freshly (as the mobile UI does) in a SINGLE shot — it does NOT poll. Assumes a
+	 * preceding {@code expect current picking job:} / {@code expect current picking job lines:} step has
+	 * already polled the async pick state to settle; do not use it as the first assertion after an async
+	 * mutation, or it may race.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>available</b> — (required) expected header carrierAdviseAvailable<br>
+	 *   <b>readOnly</b> — (required) expected header carrierAdviseReadOnly<br>
+	 *   <b>carrierProductCaption</b> — (optional) expected header carrier product caption<br>
+	 * @cucumber.example
+	 * <pre>
+	 * Then expect current picking job header carrier advise
+	 *   | available | readOnly |
+	 *   | true      | false    |
+	 * </pre>
+	 */
+	@Then("expect current picking job header carrier advise")
+	public void expectHeaderCarrierAdvise(@NonNull final DataTable dataTable)
+	{
+		context.setWfProcess(mobileUIPickingClient.getWFProcessById(context.getWfProcessIdNotNull()));
+		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
+		final JsonPickingJob pickingJob = context.getPickingJob();
+
+		assertThat(pickingJob.isCarrierAdviseAvailable())
+				.as("carrierAdviseAvailable (job header)").isEqualTo(row.getAsBoolean("available"));
+		assertThat(pickingJob.isCarrierAdviseReadOnly())
+				.as("carrierAdviseReadOnly (job header)").isEqualTo(row.getAsBoolean("readOnly"));
+		row.getAsOptionalString("carrierProductCaption").ifPresent(caption -> assertThat(pickingJob.getCarrierProductCaption())
+				.as("carrierProductCaption (job header)").isEqualTo(caption));
+	}
+
+	/**
+	 * Asserts the CURRENT picking job HEADER on the loaded {@link PickingJob} POJO — the exact input
+	 * {@code PackedHUCarrierAdviseService.resolveInfo} and the JSON converter consume, not the raw model.
+	 * Polls until the expected state settles, so an async pick commit cannot race the assertion; if the
+	 * state never materialises the poll times out red (it does not mask the failure).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>HasLuTarget</b> — (optional) expected presence of the header LU pick target<br>
+	 *   <b>HasTuTarget</b> — (optional) expected presence of the header TU pick target<br>
+	 *   <b>Carrier_Product_ID</b> — (optional, identifier-ref, null-allowed) expected header carrier product<br>
+	 *   <b>IsCarrierAdviseReadOnly</b> — (optional) expected header carrier-advise read-only flag<br>
+	 * @cucumber.depends Carrier_Product_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then expect current picking job:
+	 *   | HasLuTarget | Carrier_Product_ID | IsCarrierAdviseReadOnly |
+	 *   | Y           |                    | N                       |
+	 * </pre>
+	 */
+	@Then("expect current picking job:")
+	public void expectCurrentPickingJob(@NonNull final DataTable dataTable) throws InterruptedException
+	{
+		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
+		final PickingJob[] settled = new PickingJob[1];
+		StepDefUtil.tryAndWait(30, 500, () -> {
+			settled[0] = loadCurrentPickingJob();
+			return catchThrowable(() -> assertPickingJobHeader(settled[0], row)) == null;
+		});
+		assertPickingJobHeader(settled[0], row);
+	}
+
+	private void assertPickingJobHeader(@NonNull final PickingJob pickingJob, @NonNull final DataTableRow row)
+	{
+		if (row.getAsOptionalString("HasLuTarget").isPresent())
+		{
+			assertThat(pickingJob.getLuPickingTarget(null).isPresent())
+					.as("header hasLuTarget").isEqualTo(row.getAsBoolean("HasLuTarget"));
+		}
+		if (row.getAsOptionalString("HasTuTarget").isPresent())
+		{
+			assertThat(pickingJob.getTuPickingTarget(null).isPresent())
+					.as("header hasTuTarget").isEqualTo(row.getAsBoolean("HasTuTarget"));
+		}
+		row.getAsOptionalIdentifier("Carrier_Product_ID").ifPresent(identifier -> assertThat(pickingJob.getCarrierProductId())
+				.as("header carrierProductId").isEqualTo(resolveCarrierProductIdOrNull(identifier)));
+		if (row.getAsOptionalString("IsCarrierAdviseReadOnly").isPresent())
+		{
+			assertThat(pickingJob.isCarrierAdviseReadOnly())
+					.as("header isCarrierAdviseReadOnly").isEqualTo(row.getAsBoolean("IsCarrierAdviseReadOnly"));
+		}
+	}
+
+	/**
+	 * Asserts the CURRENT picking job LINES on the loaded {@link PickingJob} POJO (matched by product) —
+	 * the persisted per-line carrier state {@code resolveInfo} aggregates, not the raw model. Polls until
+	 * the expected state settles (same barrier rationale as {@code expect current picking job:}).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) the line's product<br>
+	 *   <b>Carrier_Product_ID</b> — (optional, identifier-ref, null-allowed) expected line carrier product<br>
+	 *   <b>IsCarrierAdviseManual</b> — (optional) expected line manual flag<br>
+	 *   <b>IsCarrierAdviseReadOnly</b> — (optional) expected line carrier-advise read-only flag<br>
+	 * @cucumber.depends M_Product_StepDefData, Carrier_Product_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then expect current picking job lines:
+	 *   | M_Product_ID | Carrier_Product_ID | IsCarrierAdviseManual |
+	 *   | product      | cp1                | N                     |
+	 *   | product_2    | cp2                | N                     |
+	 * </pre>
+	 */
+	@Then("expect current picking job lines:")
+	public void expectCurrentPickingJobLines(@NonNull final DataTable dataTable) throws InterruptedException
+	{
+		final DataTableRows rows = DataTableRows.of(dataTable);
+		final PickingJob[] settled = new PickingJob[1];
+		StepDefUtil.tryAndWait(30, 500, () -> {
+			settled[0] = loadCurrentPickingJob();
+			return catchThrowable(() -> assertPickingJobLines(settled[0], rows)) == null;
+		});
+		assertPickingJobLines(settled[0], rows);
+	}
+
+	private void assertPickingJobLines(@NonNull final PickingJob pickingJob, @NonNull final DataTableRows rows)
+	{
+		rows.forEach(row -> {
+			final ProductId productId = productsTable.getId(row.getAsIdentifier("M_Product_ID"));
+			final ImmutableList<PickingJobLine> matching = pickingJob.getLines().stream()
+					.filter(line -> productId.equals(line.getProductId()))
+					.collect(ImmutableList.toImmutableList());
+			final PickingJobLine line = CollectionUtils.singleElement(matching);
+
+			row.getAsOptionalIdentifier("Carrier_Product_ID").ifPresent(identifier -> assertThat(line.getCarrierProductId())
+					.as("line %s carrierProductId", productId).isEqualTo(resolveCarrierProductIdOrNull(identifier)));
+			if (row.getAsOptionalString("IsCarrierAdviseManual").isPresent())
+			{
+				assertThat(line.isManual())
+						.as("line %s isCarrierAdviseManual", productId).isEqualTo(row.getAsBoolean("IsCarrierAdviseManual"));
+			}
+			if (row.getAsOptionalString("IsCarrierAdviseReadOnly").isPresent())
+			{
+				assertThat(line.isCarrierAdviseReadOnly())
+						.as("line %s isCarrierAdviseReadOnly", productId).isEqualTo(row.getAsBoolean("IsCarrierAdviseReadOnly"));
+			}
+		});
+	}
+
+	@NonNull
+	private PickingJob loadCurrentPickingJob()
+	{
+		final PickingJobId pickingJobId = WFProcessId.ofString(context.getWfProcessIdNotNull()).getRepoId(PickingJobId::ofRepoId);
+		return pickingJobRestService.getPickingJobById(pickingJobId);
+	}
+
+	@Nullable
+	private CarrierProductId resolveCarrierProductIdOrNull(@NonNull final StepDefDataIdentifier identifier)
+	{
+		return identifier.isNullPlaceholder()
+				? null
+				: identifier.lookupNotNullIn(carrierProductsTable).getId();
+	}
+
+	/**
+	 * Triggers the mobile packing re-advise for the current picking job (the "Advise carrier" button →
+	 * {@code POST /job/{wfProcessId}/target/advise}). Re-advises the packed HUs' shipment schedules against
+	 * the actually-packed HU, regardless of their current advising status (Manual schedules are skipped).
+	 *
+	 * @cucumber.stepdef {@code run carrier advise for the current picking job}
+	 * @cucumber.example
+	 * <pre>
+	 * When run carrier advise for the current picking job
+	 * </pre>
+	 */
+	@When("run carrier advise for the current picking job")
+	public void runCarrierAdviseForCurrentPickingJob()
+	{
+		final JsonWFProcess wfProcess = mobileUIPickingClient.advisePackedHU(context.getWfProcessIdNotNull());
+		context.setWfProcess(wfProcess);
 	}
 
 	@When("pick lines")
@@ -416,6 +650,90 @@ public class MobileUI_Picking_StepDef
 	}
 
 	/**
+	 * Attempts to complete the current picking job and asserts that it is rejected with the given AD_Message key.
+	 * The assertion verifies the thrown exception's AD_Message <em>key</em> (not its rendered text), so it is
+	 * robust to both translation and message-text changes.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>AD_Message</b> — (required) the AD_Message key (value) the rejection must carry<br>
+	 * @cucumber.depends StepDefData: context (active WFProcess)
+	 * @cucumber.example
+	 * <pre>
+	 * Then completing the picking job is rejected with AD_Message "de.metas.picking.CarrierAdvise_NonManualDivergentOnHU"
+	 * </pre>
+	 */
+	@Then("completing the picking job is rejected with AD_Message {string}")
+	public void completeExpectingRejection(@NonNull final String adMessageKey) throws InterruptedException
+	{
+		waitUntilPickingJobSchedulesValid();
+		final AdMessageKey expectedMessageKey = AdMessageKey.of(adMessageKey);
+
+		final Throwable thrown = catchThrowable(
+				() -> mobileUIPickingClient.complete(context.getWfProcessIdNotNull()));
+
+		assertThat(thrown)
+				.as("Picking job completion must be rejected")
+				.isInstanceOf(AdempiereException.class);
+
+		// Assert on the AD_Message KEY carried by the exception (robust to text/translation changes),
+		// rather than on the rendered message text.
+		final Optional<AdMessageKey> actualMessageKey = AdempiereException.extractMessageTrl(thrown).getAdMessageKey();
+		assertThat(actualMessageKey)
+				.as("Picking job rejection must carry AD_Message key %s", adMessageKey)
+				.contains(expectedMessageKey);
+	}
+
+	/**
+	 * Attempts to close the current LU or TU pick target and asserts it is rejected with the given AD_Message key.
+	 * Mirrors {@link #completeExpectingRejection}: the close path runs the same carrier-advise consistency guard,
+	 * so a package carrying inconsistent carriers (e.g. two distinct manual carriers on one HU) must be rejected
+	 * at close time too — not silently deferred to shipment generation. Asserts the AD_Message KEY (robust to
+	 * text/translation changes). The target type (LU / TU) is carried in the step text.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then closing the TU picking target is rejected with AD_Message "de.metas.picking.CarrierAdvise_ManualInconsistentOnHU"
+	 * </pre>
+	 */
+	@Then("closing the {word} picking target is rejected with AD_Message {string}")
+	public void closePickingTargetExpectingRejection(@NonNull final String targetType, @NonNull final String adMessageKey) throws InterruptedException
+	{
+		waitUntilPickingJobSchedulesValid();
+		final AdMessageKey expectedMessageKey = AdMessageKey.of(adMessageKey);
+
+		final Throwable thrown = catchThrowable(() -> closePickingTarget(targetType));
+
+		assertThat(thrown)
+				.as("Closing the %s pick target must be rejected", targetType)
+				.isInstanceOf(AdempiereException.class);
+
+		final Optional<AdMessageKey> actualMessageKey = AdempiereException.extractMessageTrl(thrown).getAdMessageKey();
+		assertThat(actualMessageKey)
+				.as("Close-%s rejection must carry AD_Message key %s", targetType, adMessageKey)
+				.contains(expectedMessageKey);
+	}
+
+	private void closePickingTarget(@NonNull final String targetType)
+	{
+		final String wfProcessId = context.getWfProcessIdNotNull();
+		final JsonWFProcess wfProcess;
+		switch (targetType)
+		{
+			case "LU":
+				wfProcess = mobileUIPickingClient.closeLUPickingTarget(wfProcessId);
+				break;
+			case "TU":
+				wfProcess = mobileUIPickingClient.closeTUPickingTarget(wfProcessId);
+				break;
+			default:
+				throw new AdempiereException("Unsupported pick target type `" + targetType + "` (expected LU or TU)");
+		}
+		context.setWfProcess(wfProcess);
+	}
+
+	/**
 	 * Waits until all shipment schedules for the current picking job's sales order
 	 * have no pending recompute entries. This ensures retrieveNotShippedRecords
 	 * (which uses TRXNAME_None) sees a consistent state when shipment generation runs.
@@ -504,6 +822,14 @@ public class MobileUI_Picking_StepDef
 			}
 		}
 
+		public JsonPickingJobLine getPickingJobLineByProductId(@NonNull final ProductId productId)
+		{
+			final ImmutableList<JsonPickingJobLine> eligibleLines = getPickingJobLines().stream()
+					.filter(pickingLine -> isMatching(pickingLine, productId))
+					.collect(ImmutableList.toImmutableList());
+			return CollectionUtils.singleElement(eligibleLines);
+		}
+
 		private static boolean isMatching(final JsonPickingJobLine pickingLine, final ProductId productId)
 		{
 			final String pickingLineProductId = pickingLine.getProductId();
@@ -513,10 +839,15 @@ public class MobileUI_Picking_StepDef
 
 		private List<JsonPickingJobLine> getPickingJobLines()
 		{
+			return getPickingJob().getLines();
+		}
+
+		@NonNull
+		public JsonPickingJob getPickingJob()
+		{
 			final JsonWFProcess wfProcess = getWfProcessNotNull();
 			final JsonWFActivity activity = wfProcess.getActivityById(PickingMobileApplication.ACTIVITY_ID_PickLines.getAsString());
-			final JsonPickingJob pickingJob = (JsonPickingJob)activity.getComponentProps().get(ActualPickingWFActivityHandler.PROP_pickingJob);
-			return pickingJob.getLines();
+			return (JsonPickingJob)activity.getComponentProps().get(ActualPickingWFActivityHandler.PROP_pickingJob);
 		}
 
 	}
