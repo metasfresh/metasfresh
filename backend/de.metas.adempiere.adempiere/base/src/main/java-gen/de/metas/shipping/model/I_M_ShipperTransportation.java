@@ -520,6 +520,31 @@ public interface I_M_ShipperTransportation
 	String COLUMNNAME_ETD = "ETD";
 
 	/**
+	 * Set Has Shipping Packages.
+	 * Indicates whether shipping packages are already assigned to the document.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setHasLines (boolean HasLines);
+
+	/**
+	 * Get Has Shipping Packages.
+	 * Indicates whether shipping packages are already assigned to the document.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	boolean isHasLines();
+
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_HasLines = new ModelColumn<>(I_M_ShipperTransportation.class, "HasLines", null);
+	String COLUMNNAME_HasLines = "HasLines";
+
+	/**
 	 * Set Incoterm Location.
 	 * Anzugebender Ort für Handelsklausel
 	 *
@@ -838,7 +863,8 @@ public interface I_M_ShipperTransportation
 	String COLUMNNAME_PickupTimeFrom = "PickupTimeFrom";
 
 	/**
-	 * Set Abholung Uhrzeit bis.
+	 * Set Pickup Time To.
+	 * Pickup Time To
 	 *
 	 * <br>Type: Time
 	 * <br>Mandatory: false
@@ -847,7 +873,8 @@ public interface I_M_ShipperTransportation
 	void setPickupTimeTo (@Nullable java.sql.Timestamp PickupTimeTo);
 
 	/**
-	 * Get Abholung Uhrzeit bis.
+	 * Get Pickup Time To.
+	 * Pickup Time To
 	 *
 	 * <br>Type: Time
 	 * <br>Mandatory: false
@@ -1045,6 +1072,7 @@ public interface I_M_ShipperTransportation
 
 	/**
 	 * Set Direction.
+	 * Direction of the transport: Incoming, Outgoing or Dropship.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -1054,6 +1082,7 @@ public interface I_M_ShipperTransportation
 
 	/**
 	 * Get Direction.
+	 * Direction of the transport: Incoming, Outgoing or Dropship.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
