@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -229,6 +230,26 @@ public class PPOrderCandidateDAO
 
 	public List<PPOrderCandidateId> listIdsByQuery(@NonNull final PPOrderCandidatesQuery query)
 	{
+		return buildQuery(query)
+				.create()
+				.listIds(PPOrderCandidateId::ofRepoId);
+	}
+
+	@NonNull
+	public Optional<PPOrderCandidateId> getIdByQuery(@NonNull final PPOrderCandidatesQuery query)
+	{
+		// ofRepoIdOrNull, not ofRepoId: firstIdOnlyOptional wraps Optional.ofNullable(idMapper.apply(firstIdOnly())),
+		// so the mapper is handed the not-found sentinel (-1) and must answer null. The strict ofRepoId throws
+		// "PP_Order_Candidate_ID > 0 but it was -1" instead, which made this method unusable for its one purpose —
+		// asking whether a production candidate exists.
+		return buildQuery(query)
+				.create()
+				.firstIdOnlyOptional(PPOrderCandidateId::ofRepoIdOrNull);
+	}
+
+	@NonNull
+	private IQueryBuilder<I_PP_Order_Candidate> buildQuery(@NonNull final PPOrderCandidatesQuery query)
+	{
 		final IQueryBuilder<I_PP_Order_Candidate> builder = queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_M_Product_ID, query.getProductId())
@@ -239,7 +260,6 @@ public class PPOrderCandidateDAO
 		{
 			builder.addNotEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_QtyToProcess, 0);
 		}
-		return builder.create()
-				.listIds(PPOrderCandidateId::ofRepoId);
+		return builder;
 	}
 }
