@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<title>metasfresh test report permalink</title>
+<style>body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;margin:40px}code{background:#f0f0f0;padding:2px 4px;border-radius:3px}</style>
+<script src="permalink.js"></script></head>
+<body>
+<div id="msg">Resolving…</div>
+<script>
+(function () {
+  var p = new URLSearchParams(location.search);
+  var kind = p.has('spec') ? 'spec' : 'feature';
+  var key = p.get(kind);
+  var suite = p.get('suite');
+  var msg = document.getElementById('msg');
+  if (!key) {
+    msg.innerHTML = 'Provide <code>?feature=Fxxxx</code> or <code>?spec=path/to/file.spec.js</code>.';
+    return;
+  }
+  // All user-reflected text is set via textContent / a <code> node — never innerHTML — so the
+  // reflected key cannot inject markup (XSS-safe).
+  function notFound() {
+    msg.textContent = 'No tests found for ' + kind + ' ';
+    var codeEl = document.createElement('code');
+    codeEl.textContent = key;
+    msg.appendChild(codeEl);
+    msg.appendChild(document.createTextNode(' on this branch’s newest build.'));
+  }
+  function chooser(version, entry, suites) {
+    msg.textContent = '';
+    var h = document.createElement('p');
+    h.appendChild(document.createTextNode((kind === 'spec' ? 'Spec ' : 'Feature ')));
+    var codeEl = document.createElement('code');
+    codeEl.textContent = key;
+    h.appendChild(codeEl);
+    h.appendChild(document.createTextNode(' has tests in ' + suites.length + ' suites — pick one:'));
+    msg.appendChild(h);
+    var ul = document.createElement('ul');
+    suites.forEach(function (s, i) {
+      var li = document.createElement('li');
+      var a = document.createElement('a');
+      a.href = Permalink.buildRedirectUrl(version, kind, entry, s.suite);
+      a.textContent = s.suite + ' — ' + s.count + (s.count === 1 ? ' test' : ' tests') + (i === 0 ? ' (most)' : '');
+      li.appendChild(a);
+      ul.appendChild(li);
+    });
+    msg.appendChild(ul);
+  }
+  fetch('permalinks.json', { cache: 'no-store' })
+    .then(function (r) { if (!r.ok) throw new Error('permalinks.json not found for this branch'); return r.json(); })
+    .then(function (data) {
+      var entry = Permalink.lookup(data, kind, key);
+      if (!entry) { notFound(); return; }
+      var suites = Permalink.suitesByCount(entry);
+      // explicit &suite= override, or 0/1 suite -> go straight there (a 0-suite entry can't
+      // happen from the generator, but <=1 keeps it falling to notFound() rather than a 0-item chooser)
+      if (suite || suites.length <= 1) {
+        var url = Permalink.buildRedirectUrl(data.version, kind, entry, suite);
+        if (!url) { notFound(); return; }  // e.g. an &suite= value with no tests for this key, or an empty entry
+        location.replace(url);
+        return;
+      }
+      // multi-suite, no override -> surface the alternatives instead of silently redirecting
+      chooser(data.version, entry, suites);
+    })
+    .catch(function (e) { msg.textContent = 'Could not resolve permalink: ' + e.message; });
+})();
+</script>
+</body></html>
