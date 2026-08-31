@@ -12,6 +12,7 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
+import de.metas.shipping.ShipperId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -62,6 +63,8 @@ public interface IShipmentSchedulePA extends ISingletonService
 	boolean existsSheduledForPickingShipmentScheduleForOrder(@NonNull OrderId orderId);
 
 	Set<ShipmentScheduleId> retrieveUnprocessedIdsByOrderId(OrderId orderId);
+
+	Set<ShipmentScheduleId> retrieveUnprocessedIdsByShipperId(@NonNull final ShipperId shipperId);
 
 	/**
 	 * @return the shipment schedule entries that refer to given record
