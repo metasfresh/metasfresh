@@ -82,7 +82,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -575,14 +574,13 @@ public class ShipmentScheduleRepository
 		return toSqlQuery(query).create().idsAsSet(ShipmentScheduleId::ofRepoId);
 	}
 
-	@NonNull
-	public Optional<ShipmentScheduleId> getIdByQuery(@NonNull final ShipmentScheduleQuery query)
+	/**
+	 * @return {@code true} if at least one shipment schedule matches the given query. Uses {@link IQuery#anyMatch()},
+	 * which does not fail when multiple records match, so it is safe to use as a plain existence probe.
+	 */
+	public boolean existsByQuery(@NonNull final ShipmentScheduleQuery query)
 	{
-		// ofRepoIdOrNull, not ofRepoId: firstIdOnlyOptional wraps Optional.ofNullable(idMapper.apply(firstIdOnly())),
-		// so the mapper is handed the not-found sentinel (-1) and must answer null. The strict ofRepoId throws
-		// "M_ShipmentSchedule_ID > 0 but it was -1" instead, which made this method unusable for its one purpose —
-		// asking whether a shipment schedule exists.
-		return toSqlQuery(query).create().firstIdOnlyOptional(ShipmentScheduleId::ofRepoIdOrNull);
+		return toSqlQuery(query).create().anyMatch();
 	}
 
 	/** Dedup key for {@link #loadByPackageIds} — a (package, schedule) pair with value equality (avoids a string key). */

@@ -18,6 +18,9 @@ import { FRONTEND_BASE_URL } from '../utils/common';
  * Three cockpit rows, one per stream, each built so exactly one of its two candidate streams is
  * empty and the other already covers the over-rejection guard for free:
  *  - `salesOnly`     — a sales order only  -> M_ShipmentSchedule non-empty, M_ReceiptSchedule empty.
+ *                       `soSalesOnly` deliberately carries TWO lines for the same product+warehouse,
+ *                       so this stream's probe matches TWO M_ShipmentSchedule rows, not one — see
+ *                       "Multi-record existence probe" below.
  *  - `purchaseOnly`  — a purchase order only -> M_ReceiptSchedule non-empty, M_ShipmentSchedule AND
  *                       PP_Order_Candidate empty (it is not a manufactured product).
  *  - `manufactured`  — a BOM + PP_Product_Planning(isManufactured) + a sales order big enough to
@@ -25,6 +28,19 @@ import { FRONTEND_BASE_URL } from '../utils/common';
  *
  * Within each step the ENABLED (over-rejection guard) check runs before the DISABLED one, and the
  * disabled checks are soft — see `assertActionDisabled`.
+ *
+ * Multi-record existence probe (`salesOnly`'s two order lines, see above): the jump processes'
+ * "does the target hold any records?" probe filters only by warehouse+org+product+attributesKey —
+ * the same broad filter set `listIdsByQuery`/`getIdsByQuery` use to return a List/Set. A probe built
+ * on `getIdByQuery(...).isPresent()` (which ends in `IQuery#firstIdOnly()`, documented to THROW when
+ * multiple records match) would pass this spec with a single matching record per stream and still be
+ * CRITICALLY broken for any routinely-multi-record product: `ProcessPreconditionChecker` catches the
+ * thrown exception and returns `rejectWithInternalReason`, which hides the action entirely rather
+ * than merely disabling it. `soSalesOnly`'s two lines make the shipment-schedule probe match two
+ * records, so `assertActionEnabledAndOpens(SHIPMENT_ACTION_TESTID, ...)` below would fail (the action
+ * would not even be offered) if the probe ever regresses back onto `firstIdOnly`/`getIdByQuery`
+ * instead of a real existence check (`anyMatch()`/`existsByQuery`). Do not "simplify" this back to a
+ * single line.
  *
  * The production candidate is generated asynchronously by material-dispo (mirrors
  * `productionCandidate.feature`'s "after not more than 60s, PP_Order_Candidates are found"), so its
@@ -306,7 +322,13 @@ nothing happen and cannot tell a real failure from "there is genuinely nothing h
             bpartner: 'bp1',
             warehouse: 'wh',
             datePromised,
-            lines: [{ product: 'salesOnly', qty: ORDER_QTY }],
+            // Two lines for the SAME product+warehouse — deliberately gives the shipment-schedule
+            // jump's existence probe two matching records instead of one. See "Multi-record
+            // existence probe" in the file docstring above; do not collapse this back to one line.
+            lines: [
+              { product: 'salesOnly', qty: ORDER_QTY },
+              { product: 'salesOnly', qty: ORDER_QTY },
+            ],
           },
           soManufactured: {
             bpartner: 'bp1',

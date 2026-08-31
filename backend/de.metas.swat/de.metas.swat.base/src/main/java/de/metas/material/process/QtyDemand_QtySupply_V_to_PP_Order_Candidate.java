@@ -40,7 +40,7 @@ public class QtyDemand_QtySupply_V_to_PP_Order_Candidate extends QtyDemandQtySup
 	@Override
 	protected boolean hasRecordsToOpen(@NonNull final QtyDemandQtySupply row)
 	{
-		return ppOrderCandidateDAO.getIdByQuery(toQuery(row)).isPresent();
+		return ppOrderCandidateDAO.existsByQuery(toQuery(row));
 	}
 
 	@Override

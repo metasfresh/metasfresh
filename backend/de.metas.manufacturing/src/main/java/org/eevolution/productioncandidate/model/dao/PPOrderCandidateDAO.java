@@ -46,7 +46,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -235,16 +234,15 @@ public class PPOrderCandidateDAO
 				.listIds(PPOrderCandidateId::ofRepoId);
 	}
 
-	@NonNull
-	public Optional<PPOrderCandidateId> getIdByQuery(@NonNull final PPOrderCandidatesQuery query)
+	/**
+	 * @return {@code true} if at least one production candidate matches the given query. Uses {@code anyMatch()},
+	 * which does not fail when multiple records match, so it is safe to use as a plain existence probe.
+	 */
+	public boolean existsByQuery(@NonNull final PPOrderCandidatesQuery query)
 	{
-		// ofRepoIdOrNull, not ofRepoId: firstIdOnlyOptional wraps Optional.ofNullable(idMapper.apply(firstIdOnly())),
-		// so the mapper is handed the not-found sentinel (-1) and must answer null. The strict ofRepoId throws
-		// "PP_Order_Candidate_ID > 0 but it was -1" instead, which made this method unusable for its one purpose —
-		// asking whether a production candidate exists.
 		return buildQuery(query)
 				.create()
-				.firstIdOnlyOptional(PPOrderCandidateId::ofRepoIdOrNull);
+				.anyMatch();
 	}
 
 	@NonNull

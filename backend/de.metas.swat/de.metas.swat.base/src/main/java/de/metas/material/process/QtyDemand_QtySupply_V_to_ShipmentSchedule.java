@@ -40,7 +40,7 @@ public class QtyDemand_QtySupply_V_to_ShipmentSchedule extends QtyDemandQtySuppl
 	@Override
 	protected boolean hasRecordsToOpen(@NonNull final QtyDemandQtySupply row)
 	{
-		return shipmentScheduleRepository.getIdByQuery(toQuery(row)).isPresent();
+		return shipmentScheduleRepository.existsByQuery(toQuery(row));
 	}
 
 	@Override

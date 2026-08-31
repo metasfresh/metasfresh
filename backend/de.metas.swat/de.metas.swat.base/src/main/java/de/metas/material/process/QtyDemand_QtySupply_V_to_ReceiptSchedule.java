@@ -40,7 +40,7 @@ public class QtyDemand_QtySupply_V_to_ReceiptSchedule extends QtyDemandQtySupply
 	@Override
 	protected boolean hasRecordsToOpen(@NonNull final QtyDemandQtySupply row)
 	{
-		return receiptScheduleDAO.getIdByQuery(toQuery(row)).isPresent();
+		return receiptScheduleDAO.existsByQuery(toQuery(row));
 	}
 
 	@Override

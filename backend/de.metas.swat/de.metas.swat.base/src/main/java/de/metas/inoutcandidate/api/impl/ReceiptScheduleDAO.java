@@ -384,11 +384,17 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 	public Optional<ReceiptScheduleId> getIdByQuery(@NonNull final ReceiptScheduleQuery query)
 	{
 		// ofRepoIdOrNull, not ofRepoId: firstIdOnlyOptional wraps Optional.ofNullable(idMapper.apply(firstIdOnly())),
-		// so the mapper is handed the not-found sentinel (-1) and must answer null. The strict ofRepoId throws
-		// "M_ReceiptSchedule_ID > 0 but it was -1" instead, which made this method unusable for its one purpose —
-		// asking whether a receipt schedule exists.
+		// so the mapper answers null for the not-found sentinel (-1) instead of the strict ofRepoId throwing
+		// "M_ReceiptSchedule_ID > 0 but it was -1". Callers of this method (e.g. ReceiptService) scope the query
+		// by a genuinely unique key (external id or order line), so firstIdOnly's multiplicity check is correct here.
 		return buildQuery(query)
 				.firstIdOnlyOptional(ReceiptScheduleId::ofRepoIdOrNull);
+	}
+
+	@Override
+	public boolean existsByQuery(@NonNull final ReceiptScheduleQuery query)
+	{
+		return buildQuery(query).anyMatch();
 	}
 
 	@NonNull
