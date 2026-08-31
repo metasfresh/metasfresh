@@ -48,6 +48,17 @@
 UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=175, Updated=TO_TIMESTAMP('2026-08-26 12:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Column_ID=593410
 ;
 
+-- The AD_Field_Trl seeds below hardcode IsTranslated='N' for EVERY language, including the base
+-- one. That is the generated idiom and it is correct here, because the seed only creates a stub:
+-- the update_FieldTranslation_From_AD_Name_Element call two statements after each one overwrites
+-- Name, Description, Help AND IsTranslated from the field's effective AD_Element, so the literal
+-- never survives the script. Verified on the local stack by replaying exactly this sequence in a
+-- rolled-back transaction: seeded 'N' in all four languages, then the sync, and the rows came out
+-- de_DE 'Y' / de_CH 'Y' / en_US 'Y' / fr_CH 'N' - the element's values, not the seed's.
+-- (Do not "fix" the literal: it is not the durable owner of the flag. The durable owner is the
+-- AD_Element_Trl row. Note also that the sync is guarded by `f_trl.updated <> e_trl.updated`, so a
+-- later correction to an element MUST bump the element row's Updated or it silently does nothing.)
+
 -- ============================================================================
 -- 2) AD_Window 540020 / AD_Tab 540096 "Speditionslieferung"
 -- ============================================================================
