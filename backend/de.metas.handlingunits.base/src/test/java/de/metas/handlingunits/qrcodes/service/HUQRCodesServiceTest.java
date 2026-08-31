@@ -44,6 +44,7 @@ import de.metas.handlingunits.qrcodes.special.PickOnTheFlyQRCode;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
@@ -52,6 +53,7 @@ import lombok.Value;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.junit.jupiter.api.BeforeEach;
@@ -297,6 +299,44 @@ class HUQRCodesServiceTest
 			assertThat(huQRCodesService.getQRCodeByHuId(huId))
 					.isEqualTo(qrCode)
 					.isNotSameAs(qrCode);
+		}
+	}
+
+	@Nested
+	class getQRCodeByScannedCode
+	{
+		@Test
+		void globalQRCode()
+		{
+			setGenerateQRCodeIfMissing(true);
+
+			final HuId tuId = createTU();
+			final HUQRCode expectedQrCode = huQRCodesService.getQRCodeByHuId(tuId);
+
+			final HUQRCode resolvedQrCode = huQRCodesService.getQRCodeByScannedCode(ScannedCode.ofString(expectedQrCode.toGlobalQRCodeString()));
+
+			assertThat(resolvedQrCode).isEqualTo(expectedQrCode);
+		}
+
+		@Test
+		void externalBarcode()
+		{
+			setGenerateQRCodeIfMissing(true);
+
+			final HuId tuId = createTU();
+			final HUQRCode expectedQrCode = huQRCodesService.getQRCodeByHuId(tuId);
+
+			final String externalBarcode = "EXT-BARCODE-123";
+			final I_M_HU hu = InterfaceWrapperHelper.load(tuId, I_M_HU.class);
+			final IAttributeStorage huAttributes = helper.createMutableHUContext()
+					.getHUAttributeStorageFactory()
+					.getAttributeStorage(hu);
+			huAttributes.setSaveOnChange(true);
+			huAttributes.setValue(AttributeConstants.ATTR_ExternalBarcode, externalBarcode);
+
+			final HUQRCode resolvedQrCode = huQRCodesService.getQRCodeByScannedCode(ScannedCode.ofString(externalBarcode));
+
+			assertThat(resolvedQrCode).isEqualTo(expectedQrCode);
 		}
 	}
 
