@@ -162,7 +162,7 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	 * <p>
 	 * A planning that is in both is carried ONCE, keyed on its id. That is what makes adding a planning the target
 	 * already holds a no-op rather than a self-mismatch: two copies of the same row would otherwise be two entries
-	 * that {@link #admissibilityMismatches()} compares - and although they agree on every field today, the
+	 * that {@link #aggregationKeyViolations()} compares - and although they agree on every field today, the
 	 * de-duplication is what makes that a property of the list rather than a coincidence of the comparison.
 	 */
 	public DeliveryPlanningList union(@NonNull final DeliveryPlanningList other)
@@ -196,7 +196,7 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	 * The result is ordered by {@link AggregationKeyField} declaration order, so the message reads the same way
 	 * every time.
 	 */
-	public ImmutableSet<AggregationKeyField> admissibilityMismatches()
+	public ImmutableSet<AggregationKeyField> aggregationKeyViolations()
 	{
 		return Arrays.stream(AggregationKeyField.values())
 				.filter(this::isMismatch)

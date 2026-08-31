@@ -113,7 +113,7 @@ public class DeliveryInstructionCreateRequest
 	/**
 	 * Resolved by the caller from the seed delivery planning(s) - never defaulted here or in the repository that
 	 * persists it. For {@link DeliveryPlanningService#combine}, every combined planning shares this value by
-	 * construction: {@link DeliveryPlanningList#admissibilityMismatches()} already refuses a selection whose
+	 * construction: {@link DeliveryPlanningList#aggregationKeyViolations()} already refuses a selection whose
 	 * plannings disagree on direction.
 	 */
 	@NonNull TransportDirection transportDirection;

@@ -965,7 +965,7 @@ public class DeliveryPlanningService
 					toIdList(selectedDeliveryPlannings.allocatedOnes())));
 		}
 
-		final ImmutableSet<AggregationKeyField> mismatches = selectedDeliveryPlannings.admissibilityMismatches();
+		final ImmutableSet<AggregationKeyField> mismatches = selectedDeliveryPlannings.aggregationKeyViolations();
 		if (!mismatches.isEmpty())
 		{
 			return Optional.of(incompatibleMessage(mismatches));
@@ -1254,7 +1254,7 @@ public class DeliveryPlanningService
 				// a planning that is already on the target is in BOTH lists and is counted ONCE, so it is never
 				// compared against itself and reported as differing from itself
 				.union(selectedDeliveryPlannings)
-				.admissibilityMismatches();
+				.aggregationKeyViolations();
 		if (!mismatches.isEmpty())
 		{
 			return Optional.of(incompatibleMessage(mismatches));

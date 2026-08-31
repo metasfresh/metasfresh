@@ -76,8 +76,8 @@ class DeliveryPlanningListTest
 	}
 
 	@Nested
-	@DisplayName("admissibilityMismatches")
-	class AdmissibilityMismatches
+	@DisplayName("aggregationKeyViolations")
+	class AggregationKeyViolations
 	{
 		@Test
 		@DisplayName("all rows shipperless reads as 'all the same', not as a mismatch")
@@ -88,7 +88,7 @@ class DeliveryPlanningListTest
 					withShipper(null),
 					withShipper(null));
 
-			assertThat(list.admissibilityMismatches()).isEmpty();
+			assertThat(list.aggregationKeyViolations()).isEmpty();
 		}
 
 		@Test
@@ -99,7 +99,7 @@ class DeliveryPlanningListTest
 					withIncoterms(null, null),
 					withIncoterms(null, null));
 
-			assertThat(list.admissibilityMismatches()).isEmpty();
+			assertThat(list.aggregationKeyViolations()).isEmpty();
 		}
 
 		@Test
@@ -109,14 +109,14 @@ class DeliveryPlanningListTest
 			final DeliveryPlanningList list = DeliveryPlanningList.of(planning().build());
 
 			assertThat(list.size()).isEqualTo(1);
-			assertThat(list.admissibilityMismatches()).isEmpty();
+			assertThat(list.aggregationKeyViolations()).isEmpty();
 		}
 
 		@Test
 		@DisplayName("an empty selection has nothing to disagree about")
 		void emptySelection()
 		{
-			assertThat(DeliveryPlanningList.EMPTY.admissibilityMismatches()).isEmpty();
+			assertThat(DeliveryPlanningList.EMPTY.aggregationKeyViolations()).isEmpty();
 		}
 
 		@Test
@@ -127,7 +127,7 @@ class DeliveryPlanningListTest
 					withShipper(540001),
 					withShipper(null));
 
-			assertThat(list.admissibilityMismatches()).containsExactly(AggregationKeyField.Forwarder);
+			assertThat(list.aggregationKeyViolations()).containsExactly(AggregationKeyField.Forwarder);
 		}
 
 		@Test
@@ -138,7 +138,7 @@ class DeliveryPlanningListTest
 					withIncoterms(540002, "Hamburg"),
 					withIncoterms(540002, null));
 
-			assertThat(list.admissibilityMismatches()).containsExactly(AggregationKeyField.IncotermLocation);
+			assertThat(list.aggregationKeyViolations()).containsExactly(AggregationKeyField.IncotermLocation);
 		}
 
 		@Test
@@ -169,7 +169,7 @@ class DeliveryPlanningListTest
 					.deliveryLocationId(BPartnerLocationId.ofRepoId(540016, 540017))
 					.build();
 
-			assertThat(DeliveryPlanningList.of(row1, row2).admissibilityMismatches())
+			assertThat(DeliveryPlanningList.of(row1, row2).aggregationKeyViolations())
 					.containsExactlyInAnyOrder(AggregationKeyField.values());
 		}
 	}
@@ -256,7 +256,7 @@ class DeliveryPlanningListTest
 
 			assertThat(union.size()).isEqualTo(2);
 			assertThat(union.getIdsInAllocationOrder()).doesNotHaveDuplicates();
-			assertThat(union.admissibilityMismatches()).isEmpty();
+			assertThat(union.aggregationKeyViolations()).isEmpty();
 		}
 
 		@Test
@@ -267,8 +267,8 @@ class DeliveryPlanningListTest
 
 			final DeliveryPlanningList union = target.union(DeliveryPlanningList.of(withShipper(540002)));
 
-			assertThat(target.admissibilityMismatches()).as("each list on its own is admissible").isEmpty();
-			assertThat(union.admissibilityMismatches()).containsExactly(AggregationKeyField.Forwarder);
+			assertThat(target.aggregationKeyViolations()).as("each list on its own is admissible").isEmpty();
+			assertThat(union.aggregationKeyViolations()).containsExactly(AggregationKeyField.Forwarder);
 		}
 
 		@Test
