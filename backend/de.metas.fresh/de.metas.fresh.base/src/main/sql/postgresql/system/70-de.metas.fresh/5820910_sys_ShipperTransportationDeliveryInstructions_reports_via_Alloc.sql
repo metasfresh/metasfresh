@@ -1,46 +1,50 @@
--- ===========================================================================
--- ATOMIC PORT UNIT: 5820910 + 5821020 + 5821060 + 5821140
--- Port / cherry-pick / propagate ALL FOUR TOGETHER -- NEVER a subset.
--- ===========================================================================
--- These four scripts successively redefine the same two report functions
--- (de_metas_endcustomer_fresh_reports.docs_deliveryinstructions_description and
--- ..._productdetails). Applied whole, the chain ends correct. Applied PARTIALLY, the instance gets
--- a silently WRONG delivery-instruction PDF -- no error, no failed migration, just wrong paper.
--- The intermediate states are genuinely wrong, not merely superseded:
---   * after 5821020 alone -- _productdetails groups by p.m_product_id only, with
---     MIN(uomt.uomsymbol) as the unit: it SUMS QUANTITIES ACROSS DIFFERENT UOMs and prints an
---     arbitrary one (4 Ea + 6 kg of one product print as a single row reading "10 Ea").
---     5821060 repairs it by adding dp.c_uom_id to the GROUP BY.
---   * after 5820910 / 5821020 / 5821060 -- _productdetails INNER JOINs m_warehouse and C_UOM_trl,
---     so a planning without a warehouse, or a product whose UOM has no translation in the report
---     language, VANISHES from the detail band. 5821140 converts both to LEFT JOIN (+ COALESCE onto
---     C_UOM.uomsymbol for the unit).
---   * after 5820910 alone -- _description INNER JOINs C_Order through the first allocation's
---     planning, so a planning with no C_Order_ID BLANKS THE WHOLE HEADER BAND. 5821020 drops that
---     join again.
--- This is not hypothetical here: the DoD propagates this issue's branch up to new_dawn_uat, and any
--- later hotfix cherry-pick faces the same choice. Move the four as one unit
--- (see skill metasfresh-patch-porter, "Propagation flow").
--- ===========================================================================
-
 -- Re-point the 3 de_metas_endcustomer_fresh_reports.docs_deliveryinstructions_* report functions
 -- off M_ShipperTransportation.M_Delivery_Planning_ID (being dropped) and onto M_Delivery_Planning_Alloc.
 -- Grouped in one script because all three are the same atomic re-point of the same FK removal;
 -- all three now have a checked-in DDL source file under
 -- backend/de.metas.fresh/de.metas.fresh.base/src/main/sql/postgresql/ddl/functions/ --
 -- docs_deliveryinstructions_{description,forwarder,productdetails}.sql -- each updated alongside this
--- script. Only _description had one before; the other two lived in migration history alone, so there was
--- nothing to diff a change against.
+-- script and byte-identical to the bodies below. Only _description had one before; the other two lived
+-- in migration history alone, so there was nothing to diff a change against.
 --
--- Every return type stays byte-identical to the pre-change function (verified against the live DB) --
--- CREATE OR REPLACE is safe. docs_deliveryinstructions_description / _forwarder resolve exactly ONE
--- planning per instruction, deterministically: active allocations only, lowest LineNo, tiebreak lowest
--- M_Delivery_Planning_ID -- this preserves today's single-row output for the current 1:1 case.
--- docs_deliveryinstructions_productdetails intentionally returns one row per active allocation
--- (fan-out is the correct reading for that function); no GROUP BY is added here.
+-- An instruction no longer holds exactly one M_Delivery_Planning: several plannings can be aggregated
+-- onto one via M_Delivery_Planning_Alloc, each with its own M_ShippingPackage and possibly its own
+-- C_Order, C_UOM and M_Warehouse. What that means per function:
+--
+-- _description / _forwarder resolve exactly ONE planning per instruction, deterministically: active
+-- allocations only, lowest LineNo, tiebreak lowest M_Delivery_Planning_ID. _description additionally
+-- DROPS orderno/referenceno: those came from the single C_Order behind that arbitrarily-picked "first"
+-- planning, which is not a meaningful header-level concept once several orders can stand behind one
+-- instruction. The order reference moves to the per-article detail band of _productdetails instead.
+-- Dropping the two columns changes the RETURNS TABLE signature, so _description needs DROP FUNCTION
+-- before CREATE -- Postgres refuses a CREATE OR REPLACE that changes a return type. _forwarder's
+-- signature is unchanged, so CREATE OR REPLACE is enough there.
+--
+-- _productdetails returns one row per ARTICLE per UNIT, not one per allocation, and gains orderno /
+-- referenceno -- so it too needs DROP FUNCTION before CREATE. Three things about its aggregation are
+-- deliberate, and each of them is a defect if written the obvious way:
+--   * GROUP BY p.m_product_id, dp.c_uom_id -- NOT by product alone. Two allocations for the same
+--     product on one instruction can carry different C_UOM_ID (two purchase orders for the same
+--     product in different units); the instruction's admissibility check constrains neither
+--     C_UOM_ID nor M_Product_ID. Grouping by product alone SUMS QUANTITIES ACROSS DIFFERENT UNITS
+--     and prints an arbitrary one of them -- 4 Ea + 6 kg would print as a single row reading
+--     "10 Ea". A unit split renders as separate rows instead, each with its own correct sum.
+--   * STRING_AGG over the warehouse name -- NOT MIN(). Allocations for one product can come from
+--     different M_Warehouse_ID (the admissibility check constrains the warehouse's resolved
+--     ADDRESS, not the warehouse itself -- e.g. hub consolidation across two logical warehouses at
+--     one address); MIN() would silently drop a genuine second pickup location. Both new order
+--     columns are STRING_AGG(DISTINCT ..., ', ' ORDER BY ...) for the same reason: deterministic
+--     order, no duplicate when several plannings share one order.
+--   * LEFT JOIN on m_warehouse, C_UOM_trl and C_Order -- NOT inner. This feeds a printed customer
+--     document, where an INNER JOIN drops the whole article line silently, undetectable at the point
+--     of failure. M_Delivery_Planning.M_Warehouse_ID and C_Order_ID are both nullable, and a C_UOM
+--     need not have a C_UOM_trl row in the language the instruction is printed in; none of those may
+--     cost the reader the line. The unit therefore falls back to the untranslated C_UOM.uomsymbol.
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.docs_deliveryinstructions_description(p_m_shippertransportation_id numeric)
- RETURNS TABLE(forwarderaddress text, transportdetails text, deliveryaddress text, deliverycontactname character varying, deliverycontactphone character varying, loadingaddress text, loadingdate timestamp without time zone, loadingtime character varying, deliverydate timestamp without time zone, documentno character varying, creator character varying, creatorphone character varying, creatorfax character varying, creatoremail character varying, orderno character varying, referenceno character varying, incoterms character varying, incotermlocation character varying, meansoftransport text)
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.docs_deliveryinstructions_description(numeric);
+
+CREATE FUNCTION de_metas_endcustomer_fresh_reports.docs_deliveryinstructions_description(p_m_shippertransportation_id numeric)
+ RETURNS TABLE(forwarderaddress text, transportdetails text, deliveryaddress text, deliverycontactname character varying, deliverycontactphone character varying, loadingaddress text, loadingdate timestamp without time zone, loadingtime character varying, deliverydate timestamp without time zone, documentno character varying, creator character varying, creatorphone character varying, creatorfax character varying, creatoremail character varying, incoterms character varying, incotermlocation character varying, meansoftransport text)
  LANGUAGE sql
  STABLE
 AS $function$
@@ -55,8 +59,6 @@ SELECT f.*,
        u.phone       AS CreatorPhone,
        u.fax         AS CreatorFax,
        u.email       AS CreatorEmail,
-       o.documentno  AS orderno,
-       o.poreference AS referenceno,
        ic.name       AS incoterms,
        st.incotermlocation,
        mt.name       AS meansoftransport
@@ -66,16 +68,6 @@ FROM de_metas_endcustomer_fresh_reports.Docs_DeliveryInstructions_LoadingAddress
      de_metas_endcustomer_fresh_reports.Docs_DeliveryInstructions_DeliveryAddress(p_m_shippertransportation_id) AS d,
      M_ShipperTransportation st
          JOIN ad_user u ON st.createdby = u.ad_user_id
-         JOIN LATERAL (
-             SELECT dpa.m_delivery_planning_id
-             FROM m_delivery_planning_alloc dpa
-             WHERE dpa.m_shippertransportation_id = st.m_shippertransportation_id
-               AND dpa.isactive = 'Y'
-             ORDER BY dpa.lineno, dpa.m_delivery_planning_id
-             LIMIT 1
-         ) dpa ON TRUE
-         JOIN m_delivery_planning dp ON dp.m_delivery_planning_id = dpa.m_delivery_planning_id
-         JOIN C_order o ON o.c_order_id = dp.c_order_id
          JOIN c_incoterms ic ON ic.c_incoterms_id = st.c_incoterms_id
          LEFT JOIN m_meansoftransportation mt ON mt.m_meansoftransportation_id = st.m_meansoftransportation_id
 WHERE st.m_shippertransportation_id = p_m_shippertransportation_id
@@ -106,24 +98,30 @@ LIMIT 1
 $function$
 ;
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.docs_deliveryinstructions_productdetails(p_m_shippertransportation_id numeric, p_ad_language character varying)
- RETURNS TABLE(warehousename character varying, plannedloadedquantity numeric, qtyordered numeric, productvalue character varying, productname character varying, uom character varying)
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.docs_deliveryinstructions_productdetails(numeric, character varying);
+
+CREATE FUNCTION de_metas_endcustomer_fresh_reports.docs_deliveryinstructions_productdetails(p_m_shippertransportation_id numeric, p_ad_language character varying)
+ RETURNS TABLE(warehousename character varying, plannedloadedquantity numeric, qtyordered numeric, productvalue character varying, productname character varying, uom character varying, orderno character varying, referenceno character varying)
  LANGUAGE sql
  STABLE
 AS $function$
-SELECT wh.name                                  AS warehouseName,
-       dp.plannedloadedquantity,
-       dp.qtyordered,
-       p.value                                  AS productValue,
-       p.name                                   AS productName,
-       COALESCE(uomt.uomsymbol, uomt.uomsymbol) AS uom
+SELECT STRING_AGG(DISTINCT wh.name, ', ' ORDER BY wh.name)         AS warehouseName,
+       SUM(dp.plannedloadedquantity)                               AS plannedloadedquantity,
+       SUM(dp.qtyordered)                                          AS qtyordered,
+       p.value                                                     AS productValue,
+       p.name                                                      AS productName,
+       COALESCE(MIN(uomt.uomsymbol), MIN(uom.uomsymbol))           AS uom,
+       STRING_AGG(DISTINCT o.documentno, ', ' ORDER BY o.documentno)   AS orderno,
+       STRING_AGG(DISTINCT o.poreference, ', ' ORDER BY o.poreference) AS referenceno
 FROM M_ShipperTransportation st
          JOIN m_delivery_planning_alloc dpa ON dpa.m_shippertransportation_id = st.m_shippertransportation_id AND dpa.isactive = 'Y'
          JOIN m_delivery_planning dp ON dp.m_delivery_planning_id = dpa.m_delivery_planning_id
-         JOIN m_warehouse wh ON dp.m_warehouse_id = wh.m_warehouse_id
+         LEFT JOIN m_warehouse wh ON dp.m_warehouse_id = wh.m_warehouse_id
          JOIN M_product p ON dp.m_product_id = p.m_product_id
          JOIN C_UOM uom ON dp.c_uom_id = uom.c_uom_id
-         JOIN C_UOM_trl uomt ON dp.c_uom_id = uomt.c_uom_id and uomt.ad_language=p_ad_language
+         LEFT JOIN C_UOM_trl uomt ON dp.c_uom_id = uomt.c_uom_id and uomt.ad_language=p_ad_language
+         LEFT JOIN C_Order o ON o.c_order_id = dp.c_order_id
 WHERE st.m_shippertransportation_id = p_m_shippertransportation_id
+GROUP BY p.m_product_id, dp.c_uom_id
 $function$
 ;

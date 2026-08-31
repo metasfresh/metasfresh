@@ -2,10 +2,11 @@
 -- 585383 (TransportDirection, created by 5820600) and rename the physical column to match.
 --
 -- Two AD_Field rows carry this column: 783020 (AD_Window 540020 "Transport Auftrag" -> AD_Tab
--- 540096) and 783021 (AD_Window 541657 "Lieferanweisungen" -> AD_Tab 546732). Both currently
--- override their caption via AD_Name_ID=540579 ("Richtung"/"Direction"), added by 5820440 because
--- the column's own element (581679) was misnamed "Lieferplanung Art"/"Type". Element 585383 already
--- carries that same caption (5820600), so both overrides are removed here.
+-- 540096) and 783021 (AD_Window 541657 "Lieferanweisungen" -> AD_Tab 546732). Neither carries an
+-- AD_Name_ID override, so both render whatever the column's element says -- until now 581679
+-- "Lieferplanung Art"/"Type", the name of the delivery-planning record type rather than of the
+-- direction the column holds. Repointing the column to 585383 ("Richtung"/"Direction") is therefore
+-- the whole caption fix on this side, exactly as 5820610 is on the Delivery Planning side.
 --
 -- Dependency sweep before renaming (case-insensitive, live DB, 2026-08-27): the only hit on
 -- m_delivery_planning_type for THIS table is AD_Val_Rule 540796
@@ -21,8 +22,8 @@
 -- custom window may predate the Overrides_Window_ID column; only a faithful customer DB settles it.
 -- This script still needs no companion of its own: the element repoint and the physical rename sit
 -- on AD_Column 593410, which every window over the table shares, and the only per-window rows it
--- touches are the two AD_Name_ID stop-gaps 5820440 put on the core tabs -- the companion scripts in
--- those repositories own the equivalent for their own tabs.
+-- touches are the two core-tab AD_Field rows 5820440 created -- the companion scripts in those
+-- repositories own the equivalent for their own tabs.
 --
 -- No new AD row is created here, so no ID-server allocation beyond this script's own
 -- AD_MigrationScript 5820620 (idserver.metas.de, 2026-08-27).
@@ -37,14 +38,19 @@ UPDATE AD_Column SET AD_Element_ID=585383, ColumnName='TransportDirection', Upda
 /* DDL */ SELECT public.db_alter_table('M_ShipperTransportation', 'ALTER TABLE M_ShipperTransportation RENAME COLUMN M_Delivery_Planning_Type TO TransportDirection')
 ;
 
--- 3) remove the AD_Field overrides -- the column's element now already says "Richtung"/"Direction"
-UPDATE AD_Field SET AD_Name_ID=NULL, Description=NULL, Help=NULL, Name='Richtung', Updated=TO_TIMESTAMP('2026-08-27 11:00:10','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Field_ID IN (783020, 783021)
+-- 3) restate each field's own base-language caption from the new element, then let the sync function
+--    propagate Name/Description/Help into all four AD_Field_Trl rows (de_CH, de_DE, en_US, fr_CH).
+--    Help is cleared explicitly because update_fieldtranslation_from_ad_name_element writes only
+--    Name and Description onto the AD_Field base row (it does write Help into the _Trl rows).
+--    AD_Name_ID is deliberately NOT written: it is already NULL on both fields, and blanking it
+--    would silently discard a per-field caption override a customer instance may legitimately hold.
+UPDATE AD_Field SET Description=NULL, Help=NULL, Name='Richtung', Updated=TO_TIMESTAMP('2026-08-27 11:00:10','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Field_ID IN (783020, 783021)
 ;
 /* DDL */ select update_fieldtranslation_from_ad_name_element(585383)
 ;
 
--- the links followed AD_Name_ID (540579); they must follow the column's element (585383) now, and
--- the helper recreates them from each field's effective element -- so the DELETE has to come first
+-- the links followed the column's OLD element (581679); they must follow 585383 now, and the helper
+-- recreates them from each field's effective element -- so the DELETE has to come first
 DELETE FROM AD_Element_Link WHERE AD_Field_ID IN (783020, 783021)
 ;
 /* DDL */ select AD_Element_Link_Create_Missing_Field(783020)

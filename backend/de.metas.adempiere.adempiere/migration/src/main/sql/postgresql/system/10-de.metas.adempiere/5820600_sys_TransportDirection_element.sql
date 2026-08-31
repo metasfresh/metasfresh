@@ -6,13 +6,12 @@
 -- planning*, but the column it backs (M_Delivery_Planning.M_Delivery_Planning_Type and, since
 -- this branch's earlier script 5820430, M_ShipperTransportation.M_Delivery_Planning_Type)
 -- describes the *transport direction* -- M_ShipperTransportation also carries it for transport
--- orders, which are not deliveries. The tell was already in the metadata: the two AD_Field rows
--- 5820440 added over M_ShipperTransportation (783020, 783021) had to override 581679 via
--- AD_Name_ID=540579 ("Richtung"/"Direction") to read correctly -- an element whose own name is
--- not good enough for its own fields is misnamed. 540579 itself cannot be reused: it already
--- backs ImpEx_ConnectorType, RabbitMQ_Message_Audit and R_Request, so a fourth unrelated meaning
--- is out, and metasfresh convention requires AD_Element.ColumnName to equal the column's name
--- anyway.
+-- orders, which are not deliveries. An element whose own name reads wrong on every field that
+-- renders it is misnamed. The caption those fields need already exists verbatim on AD_Element
+-- 540579 ("Richtung"/"Direction"), and this script copies it -- but 540579 itself cannot be
+-- reused: it already backs ImpEx_ConnectorType, RabbitMQ_Message_Audit and R_Request, so a fourth
+-- unrelated meaning is out, and metasfresh convention requires AD_Element.ColumnName to equal the
+-- column's name anyway.
 --
 -- Description/Help live on the element rather than as per-field overrides: all three consumers
 -- (AD_Column 585005, AD_Column 593410, the direction process parameter) mean the same concept, so
@@ -27,12 +26,12 @@
 --
 -- This script only creates the element + its translations, copying 540579's caption exactly
 -- (de_DE/de_CH "Richtung", en_US "Direction", fr_CH "Direction" IsTranslated='N'). Once the later
--- scripts (5820610, 5820620, 5820630) repoint AD_Column 585005 / 593410 to this element and delete
--- the two overrides, ONE caption -- "Richtung"/"Direction" -- reaches all three windows a planner
--- works in: unchanged on the two M_ShipperTransportation tabs (783020 / 783021, which already
--- render exactly this via their override), and finally correct on the Delivery Planning window
--- (708076), which until then inherits 581679's "Lieferplanung Art"/"Type" -- a caption that names
--- the *delivery planning* record type, not the transport direction the column actually holds.
+-- scripts (5820610, 5820620, 5820630) repoint AD_Column 585005 / 593410 to this element, ONE
+-- caption -- "Richtung"/"Direction" -- reaches all three windows a planner works in: the two
+-- M_ShipperTransportation tabs (AD_Field 783020 / 783021) and the Delivery Planning window
+-- (708076). None of the three carries an AD_Name_ID override, so all three inherit 581679's
+-- "Lieferplanung Art"/"Type" until then -- a caption that names the *delivery planning* record
+-- type, not the transport direction the column actually holds.
 --
 -- IDs allocated from idserver.metas.de on 2026-08-27:
 --   AD_MigrationScript 5820600 (this file)
@@ -80,8 +79,7 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-27 09:
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585383,'de_CH')
 ;
 
--- 6) fr_CH: override the Name to "Direction" -- matches 540579's fr_CH exactly (and what AD_Fields
---    783020 / 783021 render today), so the caption does not change there either. IsTranslated stays
+-- 6) fr_CH: override the Name to "Direction" -- matches 540579's fr_CH exactly. IsTranslated stays
 --    'N': Description and Help keep the seeded GERMAN text, so the row as a whole is NOT correct
 --    for fr_CH.
 UPDATE AD_Element_Trl SET Name='Direction', PrintName='Direction', Updated=TO_TIMESTAMP('2026-08-27 09:00:18','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=585383 AND AD_Language='fr_CH'

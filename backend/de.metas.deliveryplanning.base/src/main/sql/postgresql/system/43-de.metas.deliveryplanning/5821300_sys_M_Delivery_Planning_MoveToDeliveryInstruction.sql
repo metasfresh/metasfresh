@@ -1,15 +1,16 @@
--- Delivery Planning: the "Move to another Delivery Instruction" action, and the narrowing of "Add to".
+-- Delivery Planning: the "Move to another Delivery Instruction" action.
 --
--- Until now ONE action did both jobs: "Add to Delivery Instruction" accepted a planning that was
--- already on a draft instruction and silently MOVED it - deactivating the source allocation and its
--- shipping package and resetting the planning's dates. Adding and moving are now two actions, because
--- a move changes the SOURCE document as well as the target, and one verb doing both hid that from the
--- planner who only meant to add.
+-- Moving a planning from one draft delivery instruction to another is its own action, separate from
+-- "Add to Delivery Instruction" (5820460): a move changes the SOURCE document as well as the target
+-- - it deactivates the source allocation and its shipping package and resets the planning's dates -
+-- and one verb doing both would hide that from a planner who only meant to add. So Add refuses an
+-- already-allocated planning, and this action is what handles it.
 --
 -- The two are offered EXCLUSIVELY: Add is unavailable as soon as the selection holds an allocated
 -- planning, Move as soon as it holds an unallocated one - so a planner is offered exactly one of them
 -- for any selection and never has to work out which state their rows are in. Each description says
--- which state it applies to and names the other action, so the disabled button is self-explaining.
+-- which state it applies to and names the other action, so the disabled button is self-explaining;
+-- Add's half of that wording is registered with Add itself, in 5820460.
 --
 -- Both are grid actions on the delivery-planning window (AD_Table_Process), not document actions:
 -- they act on a selection of rows, which a single open record is not.
@@ -199,40 +200,4 @@ WHERE AD_Language='en_US' AND AD_Message_ID=545815
 UPDATE AD_Message_Trl
 SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-31 10:04:30', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Language IN ('de_DE', 'de_CH') AND AD_Message_ID=545815
-;
-
--- ---------------------------------------------------------------------------------------------
--- 6) Add to Delivery Instruction (585654) no longer moves - its description has to stop saying so,
---    and has to name Move, which is now what a planner with an allocated selection needs.
---
---    AD_Process owns its Name/Description/Help (no AD_Element behind it), and raw SQL bypasses the
---    interceptor that mirrors the base-language _Trl row onto it - so the base row and the de_DE
---    _Trl row are updated together here.
--- ---------------------------------------------------------------------------------------------
-UPDATE AD_Process
-SET Description='Nur für Lieferplanungen, die auf noch keiner Lieferanweisung sind - für bereits verplante nutzen Sie "Auf andere Lieferanweisung verschieben". Setzt sie auf eine bestehende Lieferanweisung im Entwurf; die Releasenummer wird von der Ziel-Lieferanweisung vergeben. Alles oder nichts: ist eine der ausgewählten Lieferplanungen auf einer fertiggestellten Lieferanweisung, wird die ganze Aktion abgelehnt.',
-    Updated=TO_TIMESTAMP('2026-08-31 10:05:00', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
-WHERE AD_Process_ID=585654
-;
-
-UPDATE AD_Process_Trl
-SET Description=(SELECT p.Description FROM AD_Process p WHERE p.AD_Process_ID=585654),
-    IsTranslated='Y',
-    Updated=TO_TIMESTAMP('2026-08-31 10:05:10', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
-WHERE AD_Process_ID=585654 AND AD_Language IN ('de_DE', 'de_CH')
-;
-
-UPDATE AD_Process_Trl
-SET Description='Only for delivery plannings that are on no delivery instruction yet - for plannings that are already planned, use "Move to another Delivery Instruction". Puts them on an existing draft delivery instruction; the release number is stamped from the target delivery instruction. All or nothing: if any selected planning sits on a completed delivery instruction, the whole action is refused.',
-    IsTranslated='Y',
-    Updated=TO_TIMESTAMP('2026-08-31 10:05:20', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
-WHERE AD_Process_ID=585654 AND AD_Language='en_US'
-;
-
--- the languages that only ever held the German base text as a seed have to follow it, or a session in
--- one of them keeps describing the retired add-and-move behaviour for good
-UPDATE AD_Process_Trl trl
-SET Description=(SELECT p.Description FROM AD_Process p WHERE p.AD_Process_ID=trl.AD_Process_ID),
-    Updated=TO_TIMESTAMP('2026-08-31 10:05:30', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
-WHERE trl.AD_Process_ID=585654 AND trl.IsTranslated='N'
 ;

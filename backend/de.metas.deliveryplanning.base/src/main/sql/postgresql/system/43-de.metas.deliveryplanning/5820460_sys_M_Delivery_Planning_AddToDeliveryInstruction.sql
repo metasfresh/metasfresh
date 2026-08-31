@@ -1,10 +1,17 @@
 -- Delivery Planning: the "Add to Delivery Instruction" action.
 --
--- Puts the selected delivery plannings on an EXISTING draft delivery instruction, taking each off
--- whatever draft instruction it was on before. Where "Combine into one Delivery Instruction"
--- creates a new document, this one joins an existing one, so the whole action is a single move:
--- the source allocation and its shipping package are deleted, new ones are created on the target,
--- and the planning's release number is re-stamped from the target - all in one transaction.
+-- Puts the selected delivery plannings on an EXISTING draft delivery instruction. Where "Combine
+-- into one Delivery Instruction" creates a new document, this one joins an existing one: an
+-- allocation and a shipping package are created on the target and the planning's release number is
+-- stamped from it, all in one transaction.
+--
+-- Add only ADDS. A planning that is already on a draft instruction is refused, not silently
+-- relocated - relocating changes the SOURCE document too, and one verb doing both would hide that
+-- from a planner who only meant to add. Moving is its own action, "Move to another Delivery
+-- Instruction", registered by 5821300; the two are offered exclusively, and this one's description
+-- names the other so a disabled button explains itself. The rejection Add raises for an
+-- already-allocated selection (AD_Message 545815) is registered by 5821300 as well - it exists only
+-- to point at Move, so it cannot predate it.
 --
 -- The dialog has exactly ONE visible field, the target instruction, and its list is narrowed by a
 -- new value rule to the DRAFTED delivery instructions whose direction matches the selection's. The
@@ -17,11 +24,13 @@
 -- service asserts for callers that bypass the picker.
 --
 -- Rejection messages: the two rules a planner can provoke that Combine does not already cover -
--- a selected planning sitting on a COMPLETED instruction (which forbids the move outright, rather
--- than moving the rest), and a target that is no longer a draft. The closed-planning rejection
--- reuses Combine's message 545797, whose wording is generalised here from "cannot be combined" to
--- "cannot be put on a delivery instruction" so that it reads correctly for both actions instead of
--- a second, near-identical message being minted.
+-- a selected planning sitting on a COMPLETED instruction (which refuses the whole action, rather
+-- than adding the rest), and a target that is no longer a draft. The closed-planning rejection
+-- reuses message 545797 as 5820450 registered it - worded action-neutrally there precisely because
+-- it is shared - rather than minting a second, near-identical message. Same for the admissibility
+-- rejection 545796, which this action raises over the selection TOGETHER WITH the plannings the
+-- target instruction already holds: without that, a planner could assemble, one add-to at a time,
+-- an instruction whose header names one forwarder while its cargo belongs to another.
 --
 -- IDs allocated from idserver.metas.de on 2026-08-27:
 --   AD_Process       585654 (M_Delivery_Planning_AddToDeliveryInstruction)
@@ -41,7 +50,8 @@
 --                        duplicate. The two documents sharing one table is what makes the label read
 --                        oddly, and that is not this script's to fix.
 --   AD_Reference 541689  the three-valued direction list (Incoming / Outgoing / Dropship)
---   AD_Message   545797  ClosedPlannings (text generalised below)
+--   AD_Message   545797  ClosedPlannings (reused as-is from 5820450)
+--   AD_Message   545796  IncompatibleSelection (reused as-is from 5820450)
 --
 -- DB lookups (deep_tundra_uat_2, port 21632):
 --   AD_Table_ID of M_Delivery_Planning                          -> 542259
@@ -89,7 +99,7 @@ VALUES (585654 /*From ID Server*/, 0, 0, 'Y',
         TO_TIMESTAMP('2026-08-27 10:01:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
         'M_Delivery_Planning_AddToDeliveryInstruction',
         'Zu Lieferanweisung hinzufügen',
-        'Setzt die ausgewählten Lieferplanungen auf eine bestehende Lieferanweisung im Entwurf und nimmt sie von der Lieferanweisung, auf der sie bisher waren. Die Releasenummer wird von der Ziel-Lieferanweisung neu vergeben.',
+        'Nur für Lieferplanungen, die auf noch keiner Lieferanweisung sind - für bereits verplante nutzen Sie "Auf andere Lieferanweisung verschieben". Setzt sie auf eine bestehende Lieferanweisung im Entwurf; die Releasenummer wird von der Ziel-Lieferanweisung vergeben. Alles oder nichts: ist eine der ausgewählten Lieferplanungen auf einer fertiggestellten Lieferanweisung, wird die ganze Aktion abgelehnt.',
         'de.metas.deliveryplanning.process.M_Delivery_Planning_AddToDeliveryInstruction',
         'Java', 3, 'D',
         'N', 'N', 'N', 'N', 'N',
@@ -109,7 +119,7 @@ WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Process_ID=585654
 
 UPDATE AD_Process_Trl
 SET Name='Add to Delivery Instruction',
-    Description='Puts the selected delivery plannings on an existing draft delivery instruction and takes them off the one they were on before. The release number is re-stamped from the target delivery instruction.',
+    Description='Only for delivery plannings that are on no delivery instruction yet - for plannings that are already planned, use "Move to another Delivery Instruction". Puts them on an existing draft delivery instruction; the release number is stamped from the target delivery instruction. All or nothing: if any selected planning sits on a completed delivery instruction, the whole action is refused.',
     IsTranslated='Y',
     Updated=TO_TIMESTAMP('2026-08-27 10:01:01', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Process_ID=585654 AND AD_Language='en_US'
@@ -209,32 +219,3 @@ UPDATE AD_Message_Trl SET MsgText='The chosen delivery instruction is no longer 
 -- the German rows already carry their final text
 UPDATE AD_Message_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-27 10:07:02', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Language IN ('de_DE', 'de_CH') AND AD_Message_ID IN (545807, 545808);
-
--- ---------------------------------------------------------------------------------------------
--- 7) generalise the closed-planning rejection, now that two actions raise it
--- ---------------------------------------------------------------------------------------------
-UPDATE AD_Message
-SET MsgText='Geschlossene Lieferplanungen können nicht auf eine Lieferanweisung gesetzt werden: {0}.',
-    Updated=TO_TIMESTAMP('2026-08-27 10:08:00', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
-WHERE AD_Message_ID=545797
-;
-
-UPDATE AD_Message_Trl
-SET MsgText='Geschlossene Lieferplanungen können nicht auf eine Lieferanweisung gesetzt werden: {0}.',
-    Updated=TO_TIMESTAMP('2026-08-27 10:08:01', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
-WHERE AD_Message_ID=545797 AND AD_Language IN ('de_DE', 'de_CH')
-;
-
-UPDATE AD_Message_Trl
-SET MsgText='Closed delivery plannings cannot be put on a delivery instruction: {0}.',
-    Updated=TO_TIMESTAMP('2026-08-27 10:08:02', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
-WHERE AD_Message_ID=545797 AND AD_Language='en_US'
-;
-
--- and the languages that only ever held the German base text as a seed: they have to follow it, or a
--- session in one of them keeps rendering the old sentence for good
-UPDATE AD_Message_Trl trl
-SET MsgText=(SELECT m.MsgText FROM AD_Message m WHERE m.AD_Message_ID=trl.AD_Message_ID),
-    Updated=TO_TIMESTAMP('2026-08-27 10:08:03', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
-WHERE trl.AD_Message_ID=545797 AND trl.IsTranslated='N'
-;

@@ -15,6 +15,15 @@
 -- planner back and forth for information the check already had. The eight field labels are
 -- therefore messages of their own, worded as the delivery-planning window words them.
 --
+-- 545796 (IncompatibleSelection) and 545797 (ClosedPlannings) are worded ACTION-NEUTRALLY on
+-- purpose - "cannot be put on one delivery instruction together" / "cannot be put on a delivery
+-- instruction", never "cannot be combined". Both rules end up shared: 5820460 raises the same two
+-- rejections from "Add to Delivery Instruction" (over the selection TOGETHER WITH what the target
+-- already holds), and 5821300 from "Move to another Delivery Instruction". An add-to rejection is
+-- very often about a SINGLE selected planning disagreeing with the target, for which "the SELECTED
+-- delivery plannings ... combined" would read as nonsense. One message per rule, worded for every
+-- caller, beats near-identical per-action copies.
+--
 -- IDs allocated from idserver.metas.de on 2026-08-27:
 --   AD_Process       585653 (M_Delivery_Planning_CombineIntoDeliveryInstruction)
 --   AD_Process_Para  543276 (its IsComplete parameter; reuses the existing AD_Element 2047 'Fertigstellen')
@@ -116,10 +125,10 @@ INSERT INTO AD_Message (AD_Message_ID, AD_Client_ID, AD_Org_ID, IsActive, Create
 VALUES
  (545796 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-08-27 09:03:00', 'YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-08-27 09:03:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
   'de.metas.deliveryplanning.CombineIntoDeliveryInstruction.IncompatibleSelection',
-  'Die ausgewählten Lieferplanungen können nicht zu einer Lieferanweisung zusammengefasst werden. Sie unterscheiden sich in: {0}.', 'E', 'D'),
+  'Diese Lieferplanungen können nicht zusammen auf einer Lieferanweisung stehen. Sie unterscheiden sich in: {0}.', 'E', 'D'),
  (545797 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-08-27 09:03:01', 'YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-08-27 09:03:01', 'YYYY-MM-DD HH24:MI:SS'), 100,
   'de.metas.deliveryplanning.CombineIntoDeliveryInstruction.ClosedPlannings',
-  'Geschlossene Lieferplanungen können nicht zusammengefasst werden: {0}.', 'E', 'D'),
+  'Geschlossene Lieferplanungen können nicht auf eine Lieferanweisung gesetzt werden: {0}.', 'E', 'D'),
  (545798 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-08-27 09:03:02', 'YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-08-27 09:03:02', 'YYYY-MM-DD HH24:MI:SS'), 100,
   'de.metas.deliveryplanning.CombineIntoDeliveryInstruction.AlreadyOnDeliveryInstruction',
   'Diese Lieferplanungen sind bereits auf einer Lieferanweisung: {0}.', 'E', 'D'),
@@ -155,8 +164,8 @@ WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Message_ID BETWEEN 5457
 ;
 
 -- the English texts
-UPDATE AD_Message_Trl SET MsgText='The selected delivery plannings cannot be combined into one delivery instruction. They differ in: {0}.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-27 09:05:00', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545796;
-UPDATE AD_Message_Trl SET MsgText='Closed delivery plannings cannot be combined: {0}.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-27 09:05:01', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545797;
+UPDATE AD_Message_Trl SET MsgText='These delivery plannings cannot be put on one delivery instruction together. They differ in: {0}.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-27 09:05:00', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545796;
+UPDATE AD_Message_Trl SET MsgText='Closed delivery plannings cannot be put on a delivery instruction: {0}.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-27 09:05:01', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545797;
 UPDATE AD_Message_Trl SET MsgText='These delivery plannings are already on a delivery instruction: {0}.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-27 09:05:02', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545798;
 UPDATE AD_Message_Trl SET MsgText='Organisation', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-27 09:05:03', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545799;
 UPDATE AD_Message_Trl SET MsgText='Direction', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-27 09:05:04', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545800;

@@ -17,8 +17,8 @@
 -- Evidence for step 4 (queried live, 2026-08-27, AFTER 5820600/5820610/5820620/this script's own
 -- steps 1-3 have run): AD_Column WHERE AD_Element_ID=581679 -> 0 rows (585005 and 593410 both
 -- repointed to 585383 by 5820610/5820620). AD_Field WHERE AD_Name_ID=581679 -> 0 rows (never was
--- any -- the three fields overrode to 540579, not 581679; that override is removed by
--- 5820610/5820620 instead). AD_Process_Para WHERE AD_Element_ID=581679 -> 0 rows after step 2 below
+-- any: none of the three fields over these two columns carries an AD_Name_ID override at all, so
+-- all three follow the column). AD_Process_Para WHERE AD_Element_ID=581679 -> 0 rows after step 2 below
 -- (543277 was the only one). AD_Window/AD_Tab/AD_Menu/WEBUI_KPI_Field WHERE AD_Element_ID=581679 ->
 -- 0 rows (never referenced). Decision: deactivate (IsActive='N'), not delete -- AD_Element rows are
 -- historical dictionary data (other environments' AD_Element_Link / audit trails may still point at

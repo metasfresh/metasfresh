@@ -19,8 +19,19 @@
 -- right-column "flags" group 555562, after IsActive and before IsBookingConfirmed. Read-only there
 -- guards the invariant that an instruction's direction follows its allocated plannings, which the
 -- combine-time admissibility check already keeps uniform; both copies lock once the document is
--- processed anyway, so neither needs a ReadOnlyLogic. AD_Name_ID=540579 ("Richtung") is a stop-gap
--- caption because the column's own element is still misnamed; 5820620 drops it again.
+-- processed anyway, so neither needs a ReadOnlyLogic. (5821310 later gives 783020/783021 a
+-- ReadOnlyLogic on HasLines and flips 783021 to IsReadOnly='N' so that logic governs both.)
+--
+-- No AD_Name_ID: the caption comes from the column's own AD_Element, which at this point is still
+-- 581679 "Lieferplanung Art"/"Type" -- the name of the delivery-planning record type, not of the
+-- direction the column holds. That is a naming problem of the ELEMENT, and it is fixed at the
+-- element: 5820600 forks 585383 "Richtung"/"Direction" and 5820610/5820620 repoint both columns
+-- onto it, which renames these two fields and AD_Field 708076 on the Delivery Planning window in
+-- one move. ONE column, ONE name, all three windows -- so nothing is overridden per field here.
+-- The AD_Field.Name literals below therefore say "Lieferplanung Art": that is what the element says
+-- at this point, and the sync call after each INSERT would write exactly that anyway. The
+-- AD_UI_Element.Name is a developer-facing label that nothing renders and nothing propagates into,
+-- so it already carries the final "Richtung".
 --
 -- Filter: IsSOTrx carries the direction filter today (SelectionColumnSeqNo=170) and 5820850 drops
 -- it, so the filter moves onto the direction column at SelectionColumnSeqNo=175, a slot free on
@@ -62,11 +73,11 @@ UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=175, Updated=TO
 -- ============================================================================
 -- 2) AD_Window 540020 / AD_Tab 540096 "Speditionslieferung"
 -- ============================================================================
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,Updated,UpdatedBy) VALUES (0,593410,783020 /*From ID Server*/,540579,0,540096,TO_TIMESTAMP('2026-08-26 12:01:00','YYYY-MM-DD HH24:MI:SS'),100,0,'D','Y','Y','Y','N','N','N','N','N','Richtung',0,205,0,TO_TIMESTAMP('2026-08-26 12:01:00','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,Updated,UpdatedBy) VALUES (0,593410,783020 /*From ID Server*/,0,540096,TO_TIMESTAMP('2026-08-26 12:01:00','YYYY-MM-DD HH24:MI:SS'),100,0,'D','Y','Y','Y','N','N','N','N','N','Lieferplanung Art',0,205,0,TO_TIMESTAMP('2026-08-26 12:01:00','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=783020 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
-/* DDL */ select update_FieldTranslation_From_AD_Name_Element(540579)
+/* DDL */ select update_FieldTranslation_From_AD_Name_Element(581679)
 ;
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=783020
 ;
@@ -78,11 +89,11 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 -- ============================================================================
 -- 3) AD_Window 541657 / AD_Tab 546732 "Lieferanweisungen"
 -- ============================================================================
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,Updated,UpdatedBy) VALUES (0,593410,783021 /*From ID Server*/,540579,0,546732,TO_TIMESTAMP('2026-08-26 12:03:00','YYYY-MM-DD HH24:MI:SS'),100,0,'D','Y','Y','Y','N','N','N','Y','N','Richtung',185,200,0,TO_TIMESTAMP('2026-08-26 12:03:00','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,Updated,UpdatedBy) VALUES (0,593410,783021 /*From ID Server*/,0,546732,TO_TIMESTAMP('2026-08-26 12:03:00','YYYY-MM-DD HH24:MI:SS'),100,0,'D','Y','Y','Y','N','N','N','Y','N','Lieferplanung Art',185,200,0,TO_TIMESTAMP('2026-08-26 12:03:00','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=783021 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
-/* DDL */ select update_FieldTranslation_From_AD_Name_Element(540579)
+/* DDL */ select update_FieldTranslation_From_AD_Name_Element(581679)
 ;
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=783021
 ;
