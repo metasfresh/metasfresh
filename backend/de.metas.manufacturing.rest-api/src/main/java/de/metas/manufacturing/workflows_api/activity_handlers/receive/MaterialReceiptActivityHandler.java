@@ -126,7 +126,8 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 
 		// retrieveTUs is pinned to HU_UnitType='TU', so the virtual ('V') packing instruction never comes back from
 		// it; add it here, as WEBUI_ProcessHelper#retrieveHUPIItemProductRecords(includeVirtualItem) does for the
-		// WebUI. It carries a tuPIItemProductId and has no LU parent items, so it belongs to the TU list.
+		// WebUI. It carries a tuPIItemProductId and has no LU parent items, so it belongs to the TU list - hence
+		// switching TU receiving off hides it too.
 		final boolean offerVirtualTUTarget = lineConfig.isAllowReceiveToTU() && lineConfig.isAllowReceiveWithoutPackingItem();
 
 		// A structure excluded by configuration comes out as an empty list WITHOUT an emptyReason: that reason is the
@@ -224,7 +225,8 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 	{
 		if (tuPIItemProducts.isEmpty())
 		{
-			// A target does exist (in the TU list), so the guidance would contradict the screen the operator sees.
+			// The virtual packing instruction has no LU parent items, so it is never an LU target - but a target
+			// does exist (in the TU list), so the guidance would contradict the screen the operator sees.
 			return offerVirtualTUTarget
 					? JsonNewLUTargetsList.emptyWithoutReason()
 					: JsonNewLUTargetsList.emptyBecause(noReceivingGebindeReason(productId, adLanguage));

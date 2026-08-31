@@ -41,6 +41,7 @@ class MaterialReceiptActivityHandlerTest
 		AdempiereTestHelper.get().init();
 
 		// Real collaborators, not mocks: surefire runs on Java 17, where the pinned ByteBuddy cannot subclass.
+		// Harmless here - the target-offering paths reach their own collaborators via Services.get(...) instead.
 		handler = new MaterialReceiptActivityHandler(
 				HUQRCodesService.newInstanceForUnitTesting(),
 				new ProductHazardSymbolService(new ProductHazardSymbolRepository(), new HazardSymbolRepository()),
