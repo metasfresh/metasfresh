@@ -8,7 +8,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 /**
- * Repository Tables: (dynamic - resolved at runtime from the given {@link TableRecordReference}; owns no fixed table)
+ * Repository Tables: dynamic - resolved at runtime from the given {@link TableRecordReference}
  * Repository Cluster: -
  */
 public class ReferencedRecordDAO implements IReferencedRecordDAO

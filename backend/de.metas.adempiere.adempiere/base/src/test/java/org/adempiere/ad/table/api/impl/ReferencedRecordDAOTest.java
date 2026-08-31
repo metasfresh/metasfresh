@@ -36,10 +36,7 @@ public class ReferencedRecordDAOTest
 		assertThat(referencedRecordDAO.exists(TableRecordReference.of(I_C_UOM.Table_Name, 999999))).isFalse();
 	}
 
-	/**
-	 * Deactivating a record does not delete it, so it still exists.
-	 * Guards the deliberate absence of an active-records filter in {@link ReferencedRecordDAO#exists(TableRecordReference)}.
-	 */
+	/** Guards the deliberate absence of an active-records filter in {@link ReferencedRecordDAO#exists(TableRecordReference)}. */
 	@Test
 	void inactiveRecordStillExists()
 	{

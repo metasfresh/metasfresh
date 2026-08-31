@@ -29,13 +29,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-/**
- * Covers the behaviour of {@link PostingService} when an already scheduled posting request is finally executed.
- * <p>
- * A settlement run may create and delete many match documents; the posting requests scheduled for the deleted ones
- * survive and are executed afterwards. Such a request must be skipped silently, because a deleted document has no
- * accounting facts left to post.
- */
 public class PostingServiceTest
 {
 	private static final ClientId CLIENT_ID = ClientId.ofRepoId(1000000);

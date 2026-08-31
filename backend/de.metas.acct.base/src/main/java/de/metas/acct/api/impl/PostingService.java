@@ -105,10 +105,7 @@ public class PostingService implements IPostingService
 		{
 			if (isDocumentDeleted(request.getRecord()))
 			{
-				// The document was deleted after its posting was scheduled - e.g. a settlement which mass-creates
-				// and then deletes match documents. A deleted document has no accounting facts left to post,
-				// so there is nothing to do and this is not an error the user has to know about.
-				// We still log the exception which brought us here, else the only trace of it would be lost.
+				// A deleted document has no accounting facts left to post: not an error to report to the user, but keep the exception in the log.
 				logger.debug("Skip posting {} because the document does not exist anymore", request.getRecord(), ex);
 				return;
 			}
@@ -132,8 +129,7 @@ public class PostingService implements IPostingService
 		}
 		catch (final Exception ex)
 		{
-			// We are called from the catch block of postNow, so an exception thrown here would replace the actual
-			// posting error instead of reporting it. When we cannot tell, assume the document is still there.
+			// Called from a catch block: an exception thrown here would replace the actual posting error.
 			logger.warn("Failed checking if {} still exists. Considering it as still existing.", documentRef, ex);
 			return false;
 		}
