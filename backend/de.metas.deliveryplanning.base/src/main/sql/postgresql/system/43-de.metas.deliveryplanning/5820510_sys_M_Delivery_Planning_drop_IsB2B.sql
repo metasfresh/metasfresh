@@ -41,7 +41,7 @@
 --
 -- Two independent reasons those zeroes say nothing about a production instance:
 --   * An override window over AD_Window 541632 would hold its OWN AD_Field row for this column.
---     Whether one exists is an open, unproven question on this branch (see 5820480 / 5820610):
+--     Whether one exists is an open, unproven question on this branch (see 5820610):
 --     neither a local DB nor a code search can rule an override out.
 --   * AD_UserDef_Field, AD_User_SortPref_Line and AD_Field_ContextMenu rows are written at RUNTIME,
 --     by users personalising or sorting that grid column -- never by a migration. A scrambled dev

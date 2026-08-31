@@ -1,11 +1,23 @@
 -- Repoint M_Delivery_Planning.M_Delivery_Planning_Type to the new AD_Element
 -- 585383 (TransportDirection, created by 5820600) and rename the physical column to match.
 --
--- AD_Field 708076 (AD_Window 541632 "Lieferplanung" -> AD_Tab 546674) currently overrides its
--- caption via AD_Name_ID=540579 ("Richtung"/"Direction") because the column's own element (581679)
--- was misnamed "Lieferplanung Art"/"Type". Element 585383 already carries that same caption
--- (5820600), so the override is no longer needed and is removed here -- the element finally says
--- what it means.
+-- This is also what fixes the caption on the Delivery Planning window. AD_Field 708076 (AD_Window
+-- 541632 "Lieferplanung" -> AD_Tab 546674) has AD_Name_ID NULL, so it renders whatever its column's
+-- element says -- until now 581679 "Lieferplanung Art"/"Type", which names the *delivery planning
+-- record type*, not the transport direction the column holds. Repointing the column to 585383
+-- ("Richtung"/"Direction") is therefore the whole caption fix on this side: no per-field AD_Name_ID
+-- override is needed or added, and 708076 ends up rendering exactly what AD_Fields 783020 / 783021
+-- render on the two M_ShipperTransportation windows. ONE column, ONE name, all three windows.
+--
+-- Why it matters beyond consistency: the Combine-into-ONE-delivery-instruction rejection added by
+-- 5820450 names every field a selection disagrees on, and names this one via AD_Message 545800
+-- ("Richtung" / "Direction"). Combine is launched from AD_Window 541632, so before this script a
+-- planner who selected two plannings differing only in direction was told they differ in a word
+-- that appeared nowhere on the screen in front of them - that screen said "Lieferplanung Art".
+--
+-- The forked element (5820600) rather than a rename of 581679 in place: 581679 is SHARED - besides
+-- AD_Column 585005 it also backs AD_Column 593410 (M_ShipperTransportation) and one
+-- AD_Process_Para. 5820600 explains the fork; this script only consumes it.
 --
 -- Dependency sweep before renaming (case-insensitive, live DB, 2026-08-27): no view, matview,
 -- function, AD_Val_Rule.Code or AD_Column.ColumnSQL references m_delivery_planning_type on
@@ -28,14 +40,17 @@ UPDATE AD_Column SET AD_Element_ID=585383, ColumnName='TransportDirection', Upda
 /* DDL */ SELECT public.db_alter_table('M_Delivery_Planning', 'ALTER TABLE M_Delivery_Planning RENAME COLUMN M_Delivery_Planning_Type TO TransportDirection')
 ;
 
--- 3) remove the AD_Field override -- the column's element now already says "Richtung"/"Direction"
-UPDATE AD_Field SET AD_Name_ID=NULL, Description=NULL, Help=NULL, Name='Richtung', Updated=TO_TIMESTAMP('2026-08-27 10:00:10','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Field_ID=708076
+-- 3) restate the field's own base-language caption from the new element, then let the sync function
+--    propagate Name/Description/Help into all four AD_Field_Trl rows (de_CH, de_DE, en_US, fr_CH).
+--    AD_Name_ID is deliberately NOT written here: it is already NULL on this field, and blanking it
+--    would silently discard a per-field caption override a customer instance may legitimately hold.
+UPDATE AD_Field SET Description=NULL, Help=NULL, Name='Richtung', Updated=TO_TIMESTAMP('2026-08-27 10:00:10','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Field_ID=708076
 ;
 /* DDL */ select update_fieldtranslation_from_ad_name_element(585383)
 ;
 
--- the link followed AD_Name_ID (540579); it must follow the column's element (585383) now, and the
--- helper recreates it from the field's effective element -- so the DELETE has to come first
+-- the link followed the column's OLD element (581679); it must follow 585383 now, and the helper
+-- recreates it from the field's effective element -- so the DELETE has to come first
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=708076
 ;
 /* DDL */ select AD_Element_Link_Create_Missing_Field(708076)
