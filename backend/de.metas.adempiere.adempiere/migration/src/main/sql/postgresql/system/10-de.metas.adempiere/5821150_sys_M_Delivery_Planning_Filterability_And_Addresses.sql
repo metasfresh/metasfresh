@@ -58,6 +58,14 @@
 -- precedent (M_ReceiptSchedule.C_BP_Group_ID: IsSelectionColumn='Y', ColumnSQL virtual, no active
 -- AD_Field, its tabs both Auto).
 --
+-- IsTranslated='Y' on de_DE, de_CH and en_US for the three new elements: the flag says the row's
+-- text is CORRECT for its language, not that a translation step happened. de_DE is the base
+-- language, so its row carries the authored German verbatim and is correct by construction;
+-- de_CH takes the same German (no Swiss variant is wanted for these three terms); en_US carries
+-- real English. fr_CH gets no override and keeps the seeded German, so it stays 'N'.
+-- (setBaseLanguage(), de.metas.business ddl/functions/SetBaseLanguage.sql, materialises the
+-- outgoing base language's rows with 'Y' -- which is only right under this reading.)
+--
 -- IDs allocated from idserver.metas.de on 2026-08-28:
 --   AD_MigrationScript 5821150 (this file)
 --   AD_Element 585384 (IsAllocated), 585385 (ShipFrom_Location_ID), 585386 (ShipTo_Location_ID)
@@ -84,12 +92,12 @@ UPDATE AD_Element_Trl SET Name='Allocated', PrintName='Allocated', Description='
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585384,'en_US')
 ;
 
-UPDATE AD_Element_Trl SET IsTranslated='N', Updated=TO_TIMESTAMP('2026-08-28 09:00:02','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=585384 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-28 09:00:02','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=585384 AND AD_Language='de_DE'
 ;
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585384,'de_DE')
 ;
 
-UPDATE AD_Element_Trl SET IsTranslated='N', Updated=TO_TIMESTAMP('2026-08-28 09:00:03','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=585384 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-28 09:00:03','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=585384 AND AD_Language='de_CH'
 ;
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585384,'de_CH')
 ;
@@ -113,12 +121,12 @@ UPDATE AD_Element_Trl SET Name='Loading Address', PrintName='Loading Address', D
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585385,'en_US')
 ;
 
-UPDATE AD_Element_Trl SET IsTranslated='N', Updated=TO_TIMESTAMP('2026-08-28 09:00:12','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=585385 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-28 09:00:12','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=585385 AND AD_Language='de_DE'
 ;
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585385,'de_DE')
 ;
 
-UPDATE AD_Element_Trl SET IsTranslated='N', Updated=TO_TIMESTAMP('2026-08-28 09:00:13','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=585385 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-28 09:00:13','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=585385 AND AD_Language='de_CH'
 ;
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585385,'de_CH')
 ;
@@ -142,12 +150,12 @@ UPDATE AD_Element_Trl SET Name='Delivery Address', PrintName='Delivery Address',
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585386,'en_US')
 ;
 
-UPDATE AD_Element_Trl SET IsTranslated='N', Updated=TO_TIMESTAMP('2026-08-28 09:00:22','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=585386 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-28 09:00:22','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=585386 AND AD_Language='de_DE'
 ;
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585386,'de_DE')
 ;
 
-UPDATE AD_Element_Trl SET IsTranslated='N', Updated=TO_TIMESTAMP('2026-08-28 09:00:23','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=585386 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-28 09:00:23','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=585386 AND AD_Language='de_CH'
 ;
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585386,'de_CH')
 ;

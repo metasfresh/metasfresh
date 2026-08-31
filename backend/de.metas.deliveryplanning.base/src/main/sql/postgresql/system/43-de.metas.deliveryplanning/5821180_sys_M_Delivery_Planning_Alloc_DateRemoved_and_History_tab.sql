@@ -41,11 +41,11 @@ INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,
 ;
 INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=585387 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
 ;
-UPDATE AD_Element_Trl SET Name='Historie der Lieferplanungen', Description='Lieferplanungen, die dieser Lieferanweisung zugeordnet waren und inzwischen umgebucht wurden', PrintName='Historie der Lieferplanungen', IsTranslated='N',
+UPDATE AD_Element_Trl SET Name='Historie der Lieferplanungen', Description='Lieferplanungen, die dieser Lieferanweisung zugeordnet waren und inzwischen umgebucht wurden', PrintName='Historie der Lieferplanungen', IsTranslated='Y',
        Updated=TO_TIMESTAMP('2026-08-28 10:00:10','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
  WHERE AD_Element_ID=585387 AND AD_Language='de_DE'
 ;
-UPDATE AD_Element_Trl SET Name='Historie der Lieferplanungen', Description='Lieferplanungen, die dieser Lieferanweisung zugeordnet waren und inzwischen umgebucht wurden', PrintName='Historie der Lieferplanungen', IsTranslated='N',
+UPDATE AD_Element_Trl SET Name='Historie der Lieferplanungen', Description='Lieferplanungen, die dieser Lieferanweisung zugeordnet waren und inzwischen umgebucht wurden', PrintName='Historie der Lieferplanungen', IsTranslated='Y',
        Updated=TO_TIMESTAMP('2026-08-28 10:00:10','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
  WHERE AD_Element_ID=585387 AND AD_Language='de_CH'
 ;
@@ -54,8 +54,9 @@ UPDATE AD_Element_Trl SET Name='Delivery Planning History', Description='Deliver
  WHERE AD_Element_ID=585387 AND AD_Language='en_US'
 ;
 -- No French wording exists for this element; fr_CH is pointed at the en_US text and left
--- IsTranslated='N' -- the state the seeding INSERT gives every unhandled language, and what a
--- translator later filters on.
+-- IsTranslated='N' -- the flag says a row's text is correct FOR ITS LANGUAGE, and English text in
+-- an fr_CH row is not. That is also what a translator later filters on. The de_DE / de_CH rows
+-- above are 'Y' by the same rule: their German text IS correct German.
 UPDATE AD_Element_Trl SET Name='Delivery Planning History', Description='Delivery plannings that were allocated to this delivery instruction and have since been re-booked away', PrintName='Delivery Planning History', IsTranslated='N',
        Updated=TO_TIMESTAMP('2026-08-28 10:00:10','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
  WHERE AD_Element_ID=585387 AND AD_Language='fr_CH'
@@ -68,11 +69,11 @@ INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,
 ;
 INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=585388 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
 ;
-UPDATE AD_Element_Trl SET Name='Entfernt am', Description='Zeitpunkt, zu dem die Lieferplanung von der Lieferanweisung entfernt wurde', PrintName='Entfernt am', IsTranslated='N',
+UPDATE AD_Element_Trl SET Name='Entfernt am', Description='Zeitpunkt, zu dem die Lieferplanung von der Lieferanweisung entfernt wurde', PrintName='Entfernt am', IsTranslated='Y',
        Updated=TO_TIMESTAMP('2026-08-28 10:00:10','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
  WHERE AD_Element_ID=585388 AND AD_Language='de_DE'
 ;
-UPDATE AD_Element_Trl SET Name='Entfernt am', Description='Zeitpunkt, zu dem die Lieferplanung von der Lieferanweisung entfernt wurde', PrintName='Entfernt am', IsTranslated='N',
+UPDATE AD_Element_Trl SET Name='Entfernt am', Description='Zeitpunkt, zu dem die Lieferplanung von der Lieferanweisung entfernt wurde', PrintName='Entfernt am', IsTranslated='Y',
        Updated=TO_TIMESTAMP('2026-08-28 10:00:10','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
  WHERE AD_Element_ID=585388 AND AD_Language='de_CH'
 ;

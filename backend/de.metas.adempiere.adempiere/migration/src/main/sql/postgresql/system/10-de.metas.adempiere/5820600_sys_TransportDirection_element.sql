@@ -63,23 +63,27 @@ UPDATE AD_Element_Trl SET Name='Direction', PrintName='Direction',
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585383,'en_US')
 ;
 
--- 4) de_DE: the seeded row already carries the German base text verbatim, so nothing was translated
---    into German -- IsTranslated stays 'N', matching this branch's other new elements
---    (585384..585388) and the AD-wide norm. The DDL call below still propagates the text.
-UPDATE AD_Element_Trl SET IsTranslated='N', Updated=TO_TIMESTAMP('2026-08-27 09:00:14','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=585383 AND AD_Language='de_DE'
+-- 4) de_DE: the seeded row carries the authored German verbatim, i.e. it IS correct for de_DE, so
+--    IsTranslated='Y'. The flag marks "this row's text is right for this language", NOT "somebody
+--    translated it" -- setBaseLanguage() (de.metas.business ddl/functions/SetBaseLanguage.sql)
+--    materialises the outgoing base language's rows with 'Y' for exactly that reason. Base language
+--    is configuration and can change; a flag that flipped with it would be meaningless.
+UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-27 09:00:14','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=585383 AND AD_Language='de_DE'
 ;
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585383,'de_DE')
 ;
 
--- 5) de_CH: same as de_DE -- base text verbatim, IsTranslated stays 'N'.
-UPDATE AD_Element_Trl SET IsTranslated='N', Updated=TO_TIMESTAMP('2026-08-27 09:00:16','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=585383 AND AD_Language='de_CH'
+-- 5) de_CH: the de_DE wording is correct Swiss German here too (no 'ss'/'ss' divergence, no Swiss
+--    term swap), so the row is right for its language -> 'Y'.
+UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-27 09:00:16','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=585383 AND AD_Language='de_CH'
 ;
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585383,'de_CH')
 ;
 
--- 6) fr_CH: override to "Direction", left IsTranslated='N' -- matches 540579's fr_CH exactly (and
---    what AD_Fields 783020 / 783021 render today), so the caption does not change there either.
---    Description/Help keep the seeded German and stay IsTranslated='N', i.e. untranslated.
+-- 6) fr_CH: override the Name to "Direction" -- matches 540579's fr_CH exactly (and what AD_Fields
+--    783020 / 783021 render today), so the caption does not change there either. IsTranslated stays
+--    'N': Description and Help keep the seeded GERMAN text, so the row as a whole is NOT correct
+--    for fr_CH.
 UPDATE AD_Element_Trl SET Name='Direction', PrintName='Direction', Updated=TO_TIMESTAMP('2026-08-27 09:00:18','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=585383 AND AD_Language='fr_CH'
 ;
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585383,'fr_CH')
