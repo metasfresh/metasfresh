@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_Invoice_Candidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1523030592L;
+	private static final long serialVersionUID = -2132507024L;
 
     /** Standard Constructor */
     public X_C_Invoice_Candidate (final Properties ctx, final int C_Invoice_Candidate_ID, @Nullable final String trxName)
@@ -400,6 +400,33 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public int getC_DocType_Invoicing_Pool_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocType_Invoicing_Pool_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_ElementValue getC_ElementValue_Override()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_ElementValue_Override_ID, org.compiere.model.I_C_ElementValue.class);
+	}
+
+	@Override
+	public void setC_ElementValue_Override(final org.compiere.model.I_C_ElementValue C_ElementValue_Override)
+	{
+		set_ValueFromPO(COLUMNNAME_C_ElementValue_Override_ID, org.compiere.model.I_C_ElementValue.class, C_ElementValue_Override);
+	}
+
+	@Override
+	public void setC_ElementValue_Override_ID (final int C_ElementValue_Override_ID)
+	{
+		if (C_ElementValue_Override_ID < 1) 
+			set_Value (COLUMNNAME_C_ElementValue_Override_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_ElementValue_Override_ID, C_ElementValue_Override_ID);
+	}
+
+	@Override
+	public int getC_ElementValue_Override_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_ElementValue_Override_ID);
 	}
 
 	@Override
@@ -2568,6 +2595,23 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return get_ValueAsString(COLUMNNAME_QualityNote_ReceiptSchedule);
 	}
 
+	/** 
+	 * Reason AD_Reference_ID=541968
+	 * Reference name: Reason for without charge
+	 */
+	public static final int REASON_AD_Reference_ID=541968;
+	/** Warranty = W */
+	public static final String REASON_Warranty = "W";
+	/** Goodwill = G */
+	public static final String REASON_Goodwill = "G";
+	/** FullService = F */
+	public static final String REASON_FullService = "F";
+	/** PromotionalCampaign = P */
+	public static final String REASON_PromotionalCampaign = "P";
+	/** InternalUse = I */
+	public static final String REASON_InternalUse = "I";
+	/** Bestandteil Handelsstückliste = B */
+	public static final String REASON_BestandteilHandelsstueckliste = "B";
 	@Override
 	public void setReason (final @Nullable java.lang.String Reason)
 	{

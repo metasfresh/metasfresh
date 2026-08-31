@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1719866973L;
+	private static final long serialVersionUID = -1522866757L;
 
     /** Standard Constructor */
     public X_AD_Process (final Properties ctx, final int AD_Process_ID, @Nullable final String trxName)
@@ -420,6 +420,18 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	public boolean isPdfA3Output() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsPdfA3Output);
+	}
+
+	@Override
+	public void setIsPreventConcurrentExecution (final boolean IsPreventConcurrentExecution)
+	{
+		set_Value (COLUMNNAME_IsPreventConcurrentExecution, IsPreventConcurrentExecution);
+	}
+
+	@Override
+	public boolean isPreventConcurrentExecution() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsPreventConcurrentExecution);
 	}
 
 	@Override

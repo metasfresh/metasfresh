@@ -19,9 +19,6 @@ import de.metas.costing.CurrentCost;
 import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import de.metas.currency.CurrencyPrecision;
-import de.metas.material.planning.IResourceProductService;
-import de.metas.product.ProductId;
-import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.Getter;
@@ -38,15 +35,12 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.springframework.stereotype.Component;
 
-import java.time.Duration;
-
 @Component
 @RequiredArgsConstructor
 public class ManufacturingMovingAverageInvoiceCostingMethodHandler implements CostingMethodHandler
 {
 	// services
 	@NonNull private final IPPCostCollectorBL costCollectorsService = Services.get(IPPCostCollectorBL.class);
-	@NonNull private final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
 	@NonNull private final IPPOrderCostBL ppOrderCostsService = Services.get(IPPOrderCostBL.class);
 	@NonNull private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 	//
@@ -92,13 +86,8 @@ public class ManufacturingMovingAverageInvoiceCostingMethodHandler implements Co
 		}
 		else if (costCollectorType.isActivityControl())
 		{
-			final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
-			final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
-			final Duration totalDuration = costCollectorsService.getTotalDurationReported(cc);
-
-			orderCosts = null;
-			currentCost = null;
-			result = createActivityControl(request.withProductId(actualResourceProductId), totalDuration);
+			// Activity-control costs are not tracked for this costing method -> post zero facts
+			return CostDetailCreateResultsList.EMPTY;
 		}
 		else if (costCollectorType.isUsageVariance()
 				|| costCollectorType.isMethodChangeVariance()
@@ -216,14 +205,6 @@ public class ManufacturingMovingAverageInvoiceCostingMethodHandler implements Co
 				utils.getQuantityUOMConverter());
 
 		return result;
-	}
-
-	private CostDetailCreateResult createActivityControl(
-			final CostDetailCreateRequest ignoredRequest,
-			final Duration ignoredTotalDuration)
-	{
-		// TODO Auto-generated method stub
-		throw new AdempiereException("Computing activity costs is not yet supported");
 	}
 
 	@Override

@@ -147,6 +147,13 @@ public interface IAsyncBatchBL extends ISingletonService
 
 	Optional<AsyncBatchType> getAsyncBatchType(@NonNull I_C_Async_Batch asyncBatch);
 
+	/**
+	 * Convenience overload that loads the {@link I_C_Async_Batch} record for the given id out-of-trx.
+	 * Returns empty if no such record exists (i.e. {@code retrieveAsyncBatchRecordOutOfTrx} returned {@code null}),
+	 * so callers never dereference a {@code null} record.
+	 */
+	Optional<AsyncBatchType> getAsyncBatchType(@NonNull AsyncBatchId asyncBatchId);
+
 	AsyncBatchType getAsyncBatchTypeById(@NonNull AsyncBatchTypeId asyncBatchTypeId);
 
 	Duration getTimeUntilProcessedRecheck(@NonNull I_C_Async_Batch asyncBatch);

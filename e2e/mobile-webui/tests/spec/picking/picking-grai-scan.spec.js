@@ -680,11 +680,13 @@ test('Two distinct GRAIs in debounce window → GRAIMultipleScanned error', asyn
     await navigateToTUTargetScreen(masterdata);
     await PickingGraiScanPanel.expectScannerVisible();
 
-    // Scan two distinct GRAIs back-to-back before the 1500ms debounce fires.
-    // The assertion between scans gives the keyboard hook's interval flush time to process
-    // each code individually so they don't concatenate in the buffer.
+    // Scan two distinct GRAIs back-to-back within the same 1500ms debounce window.
+    // scanGrai appends an Enter terminator, so each instantaneous test-harness scan force-completes
+    // as a distinct code instead of concatenating in the keyboard-hook buffer (see PickingGraiScanPanel.scanGrai).
+    // The assertion between scans is a visible-state gate: the scanner is still shown (no navigation /
+    // no error yet) after the first code, confirming both distinct GRAIs land in the same window → error below.
     await PickingGraiScanPanel.scanGrai({ graiString: graiA });
-    await PickingGraiScanPanel.expectScannerVisible(); // flush gap assertion
+    await PickingGraiScanPanel.expectScannerVisible(); // scanner still live between the two distinct scans
     await PickingGraiScanPanel.scanGrai({ graiString: graiB });
 
     // After the debounce timer fires with 2 distinct GRAIs → error toast

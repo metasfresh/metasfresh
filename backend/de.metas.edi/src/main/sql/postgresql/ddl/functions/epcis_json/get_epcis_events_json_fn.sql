@@ -42,7 +42,7 @@
 --   - Flat CTEs only (no nested LATERALs)
 --   - m_hu ha_vtu join computed once in ha_items_with_vtu, reused for attrs + items
 --   - m_hu_attribute scanned once via hu_attrs pivot (vs 6 separate joins previously)
---   - c_bpartner_product scanned once via bp_prod_lookup (vs N LATERAL calls)
+--   - cuGTIN resolved ASI-aware from m_product_asi_data via LEFT JOIN LATERAL (buyer-or-wildcard + IsASIAttributesKeySubset, lowest SeqNo)
 --   - Scalar variables for buyer_bpartner_id and poreference (vs scalar subqueries per row)
 
 CREATE OR REPLACE FUNCTION "de.metas.edi".get_epcis_events_json_fn(p_m_inout_id NUMERIC)
@@ -74,12 +74,17 @@ BEGIN
     -- Cache the AD_Table_ID for M_InOutLine — used 4× below as the m_hu_assignment.ad_table_id filter
     v_m_inoutline_table_id := get_table_id('M_InOutLine');
 
-    -- Close-gate: a shipment that touches at least one LU via an active m_hu_assignment emits
-    -- nothing (returns '{}') as long as there exists a child TU on any of those touched LUs that
-    -- is NOT yet covered by a CO/CL shipment. "Covered" means an active m_hu_assignment from that
-    -- TU's m_tu_hu_id or vhu_id to an inoutline of a completed/closed (CO/CL) m_inout.
-    -- Only once every TU on every touched LU is covered does this gate pass through, allowing the
-    -- closer (the last CO/CL shipment) to emit the merged SSCC event for all shared orders.
+    -- Close-gate (per-LU): a shipment that touches at least one LU via an active m_hu_assignment
+    -- emits nothing (returns '{}') only when NONE of its touched LUs is fully covered yet — i.e.
+    -- there is nothing at all to emit. "Covered" means an active m_hu_assignment from a child TU's
+    -- m_tu_hu_id or vhu_id to an inoutline of a completed/closed (CO/CL) sales m_inout; a LU is
+    -- "fully covered" when EVERY one of its child TUs is covered this way.
+    -- When this shipment touches MULTIPLE LUs, each LU is gated independently: a LU that is
+    -- already fully covered (e.g. a standalone pallet fully shipped by this very shipment) is
+    -- emitted immediately, even while a sibling LU on the same shipment is still open (shared with
+    -- a not-yet-completed sibling shipment). Only once every TU on a given LU is covered does that
+    -- LU pass through, allowing the closer (the last CO/CL shipment touching it) to emit the
+    -- merged SSCC event for that LU's shared orders.
     -- Shipments that touch no LU via m_hu_assignment (QtyPicked-only fallback) are never gated.
     IF EXISTS (
         -- touches at least one LU via an active m_hu_assignment
@@ -89,40 +94,33 @@ BEGIN
         WHERE ha.ad_table_id = v_m_inoutline_table_id
           AND ha.m_lu_hu_id IS NOT NULL
           AND ha.isactive = 'Y'
-          AND iol.m_inout_id = p_m_inout_id
-    )
-    AND EXISTS (
-        -- Close-gate (AC1): block emission until EVERY physical child TU on every touched LU is
-        -- covered by a CO/CL shipment. This is intentional: we emit one complete merged event only
-        -- once the entire physical pallet is shipped. A TU that belongs to a still-open (IP) or
-        -- not-yet-assigned shipment will keep the gate open. When this shipment touches multiple
-        -- LUs the gate is all-or-nothing across ALL of them — the event is emitted together for
-        -- the complete set of LUs or not at all.
-        SELECT 1
-        FROM m_hu_assignment ha
-                 JOIN m_inoutline iol ON iol.m_inoutline_id = ha.record_id
-                 -- enumerate child TUs of each touched LU via the HU hierarchy
-                 JOIN m_hu lu ON lu.m_hu_id = ha.m_lu_hu_id
-                 JOIN m_hu_item hi ON hi.m_hu_id = lu.m_hu_id
-                                  AND hi.itemtype IN ('HU', 'HA')
-                 JOIN m_hu tu ON tu.m_hu_item_parent_id = hi.m_hu_item_id
-        WHERE ha.ad_table_id = v_m_inoutline_table_id
-          AND ha.m_lu_hu_id IS NOT NULL
-          AND ha.isactive = 'Y'
-          AND iol.m_inout_id = p_m_inout_id
-          -- TU is uncovered: no active m_hu_assignment from this TU to a CO/CL inoutline
-          AND NOT EXISTS (
-              SELECT 1
-              FROM m_hu_assignment ha2
-                       JOIN m_inoutline iol2 ON iol2.m_inoutline_id = ha2.record_id
-                       JOIN m_inout io2 ON io2.m_inout_id = iol2.m_inout_id
-              WHERE ha2.ad_table_id = v_m_inoutline_table_id
-                AND ha2.isactive = 'Y'
-                AND iol2.isactive = 'Y'
-                AND (ha2.m_tu_hu_id = tu.m_hu_id OR ha2.vhu_id = tu.m_hu_id)
-                AND io2.docstatus IN ('CO', 'CL')
-          )
-    )
+          AND iol.m_inout_id = p_m_inout_id)
+        AND NOT EXISTS (
+            -- ...but NO touched LU is fully covered → nothing is emittable yet for this shipment
+            SELECT 1
+            FROM m_hu_assignment ha
+                     JOIN m_inoutline iol ON iol.m_inoutline_id = ha.record_id
+            WHERE ha.ad_table_id = v_m_inoutline_table_id
+              AND ha.m_lu_hu_id IS NOT NULL
+              AND ha.isactive = 'Y'
+              AND iol.m_inout_id = p_m_inout_id
+              -- this LU has an uncovered child TU (so it is NOT fully covered) -- negated below
+              AND NOT EXISTS (SELECT 1
+                              FROM m_hu_item hi
+                                       JOIN m_hu tu ON tu.m_hu_item_parent_id = hi.m_hu_item_id
+                              WHERE hi.m_hu_id = ha.m_lu_hu_id
+                                AND hi.itemtype IN ('HU', 'HA')
+                                AND NOT EXISTS (
+                                  -- TU is uncovered: no active m_hu_assignment from this TU to a CO/CL inoutline
+                                  SELECT 1
+                                  FROM m_hu_assignment ha2
+                                           JOIN m_inoutline iol2 ON iol2.m_inoutline_id = ha2.record_id
+                                           JOIN m_inout io2 ON io2.m_inout_id = iol2.m_inout_id AND io2.issotrx = 'Y' /*only a sales shipment counts as coverage - a purchase-receipt of the same goods from a vendor must not open the close-gate*/
+                                  WHERE ha2.ad_table_id = v_m_inoutline_table_id
+                                    AND ha2.isactive = 'Y'
+                                    AND iol2.isactive = 'Y'
+                                    AND (ha2.m_tu_hu_id = tu.m_hu_id OR ha2.vhu_id = tu.m_hu_id)
+                                    AND io2.docstatus IN ('CO', 'CL'))))
     THEN
         RETURN '{}'::jsonb;
     END IF;
@@ -138,89 +136,115 @@ BEGIN
         WHERE ha.ad_table_id = v_m_inoutline_table_id
           AND ha.m_lu_hu_id IS NOT NULL
           AND ha.isactive = 'Y'
-          AND iol.m_inout_id = p_m_inout_id
-    ),
-    shared_lu_inout AS MATERIALIZED (
-        -- (lu, m_inout) pairs: every CO/CL shipment that has goods physically assigned to an LU
-        -- touched by THIS shipment. Voided/reversed/in-progress shipments are excluded.
-        -- Scoped to the LUs THIS shipment touches (this_inout_lu) so the m_lu_hu_id IN-list
-        -- drives the m_hu_assignment_m_lu_hu_id index (a handful of LUs) instead of a full scan.
-        -- Used to enumerate all sibling CO/CL shipments sharing an LU — feeds DESADV/PO reference
-        -- aggregation (desadv_agg, po_agg, pallet_list) and gives the full set of co-shippers.
-        SELECT DISTINCT ha.m_lu_hu_id AS lu_hu_id, iol.m_inout_id
-        FROM m_hu_assignment ha
-                 JOIN m_inoutline iol ON iol.m_inoutline_id = ha.record_id
-                 JOIN m_inout io ON io.m_inout_id = iol.m_inout_id
-        WHERE ha.ad_table_id = v_m_inoutline_table_id
-          AND ha.m_lu_hu_id IN (SELECT lu_hu_id FROM this_inout_lu)
-          AND ha.isactive = 'Y'
-          AND iol.isactive = 'Y'
-          AND io.docstatus IN ('CO', 'CL')
-    ),
-    inout_context AS (
-        -- Materialize all context data ONCE to avoid correlated subqueries
-        SELECT io.m_inout_id,
-               io.documentno,
-               io.movementdate,
-               io.m_warehouse_id,
-               io.ad_org_id,
-               io.edi_desadv_id,
-               io.c_bpartner_location_id,
-               io.dropship_location_id,
-               io.poreference,
-               io.docstatus,
-               io.isactive,
-               COALESCE(bpl_desadv_drop.c_bpartner_id,
-                        bpl_desadv_buyer.c_bpartner_id,
-                        bpl_ship_drop.c_bpartner_id,
-                        bpl_ship_buyer.c_bpartner_id) AS buyer_bpartner_id,
-               bpl_desadv_buyer.gln                   AS buyer_gln_desadv,
-               bpl_desadv_buyer.gln_gcpLength         AS buyer_gcplength_desadv,
-               bpl_ship_buyer.gln                     AS buyer_gln_ship,
-               bpl_ship_buyer.gln_gcpLength           AS buyer_gcplength_ship,
-               bpl_desadv_drop.gln                    AS drop_gln_desadv,
-               bpl_desadv_drop.gln_gcpLength          AS drop_gcplength_desadv,
-               bpl_ship_drop.gln                      AS drop_gln_ship,
-               bpl_ship_drop.gln_gcpLength            AS drop_gcplength_ship,
-               d.handover_location_id,
-               d.documentno                           AS desadv_documentno,
-               d.poreference                          AS desadv_poreference,
-               -- arrays from junction (all DESADVs linked to this shipment)
-               desadv_agg.desadv_documentnos,
-               desadv_agg.desadv_poreferences,
-               desadv_agg.shipment_documentnos
-        FROM m_inout io
-                 LEFT JOIN edi_desadv d ON d.edi_desadv_id = io.edi_desadv_id
+          AND iol.m_inout_id = p_m_inout_id),
+         shared_lu_inout AS MATERIALIZED (
+             -- (lu, m_inout) pairs: every CO/CL shipment that has goods physically assigned to an EMITTED
+             -- LU touched by THIS shipment. Voided/reversed/in-progress shipments are excluded.
+             -- Scoped to the LUs THIS shipment touches (this_inout_lu) so the m_lu_hu_id IN-list
+             -- drives the m_hu_assignment_m_lu_hu_id index (a handful of LUs) instead of a full scan.
+             -- "Emitted" (mirrors pallet_list's own per-LU filter below, kept in sync intentionally):
+             -- every child TU of the LU is covered by a CO/CL sales shipment, AND the LU's SSCC18 is not
+             -- already recorded in the transmission ledger. Without this, a shipment whose OTHER touched
+             -- LU is still open (or already transmitted) would pull that sibling's DESADV/PO/shipment-doc
+             -- references into the header even though the corresponding pallet is absent from pallets[] —
+             -- the header would over-claim orders/DESADVs the emitted document does not actually carry.
+             -- Used to enumerate all sibling CO/CL shipments sharing an emitted LU — feeds DESADV/PO
+             -- reference aggregation (desadv_agg) and gives the full set of co-shippers for those LUs.
+             SELECT DISTINCT ha.m_lu_hu_id AS lu_hu_id, iol.m_inout_id
+             FROM m_hu_assignment ha
+                      JOIN m_inoutline iol ON iol.m_inoutline_id = ha.record_id
+                      JOIN m_inout io ON io.m_inout_id = iol.m_inout_id AND io.issotrx = 'Y' /*sibling CO/CL shipments only - exclude purchase-receipts of the same goods from a vendor*/
+             WHERE ha.ad_table_id = v_m_inoutline_table_id
+               AND ha.m_lu_hu_id IN (SELECT lu_hu_id FROM this_inout_lu)
+               AND ha.isactive = 'Y'
+               AND iol.isactive = 'Y'
+               AND io.docstatus IN ('CO', 'CL')
+               -- emitted-LU predicate (1/2): every child TU of this LU is covered by a CO/CL sales shipment
+               AND NOT EXISTS (SELECT 1
+                               FROM m_hu_item hi
+                                        JOIN m_hu tu ON tu.m_hu_item_parent_id = hi.m_hu_item_id
+                               WHERE hi.m_hu_id = ha.m_lu_hu_id
+                                 AND hi.itemtype IN ('HU', 'HA')
+                                 AND NOT EXISTS (SELECT 1
+                                                 FROM m_hu_assignment ha2
+                                                          JOIN m_inoutline iol2 ON iol2.m_inoutline_id = ha2.record_id
+                                                          JOIN m_inout io2 ON io2.m_inout_id = iol2.m_inout_id AND io2.issotrx = 'Y'
+                                                 WHERE ha2.ad_table_id = v_m_inoutline_table_id
+                                                   AND ha2.isactive = 'Y'
+                                                   AND iol2.isactive = 'Y'
+                                                   AND (ha2.m_tu_hu_id = tu.m_hu_id OR ha2.vhu_id = tu.m_hu_id)
+                                                   AND io2.docstatus IN ('CO', 'CL')))
+               -- emitted-LU predicate (2/2): not already recorded in the EPCIS transmission ledger
+               AND NOT EXISTS (SELECT 1
+                               FROM edi_epcis_transmitted_sscc t
+                                        JOIN m_hu_attribute sa ON sa.m_hu_id = ha.m_lu_hu_id
+                                   AND sa.m_attribute_id = v_sscc_attribute_id
+                               WHERE t.isactive = 'Y'
+                                 AND t.sscc18 = sa.value)),
+         inout_context AS (
+             -- Materialize all context data ONCE to avoid correlated subqueries
+             SELECT io.m_inout_id,
+                    io.documentno,
+                    io.movementdate,
+                    io.m_warehouse_id,
+                    io.ad_org_id,
+                    io.edi_desadv_id,
+                    io.c_bpartner_location_id,
+                    io.dropship_location_id,
+                    io.poreference,
+                    io.docstatus,
+                    io.isactive,
+                    COALESCE(bpl_desadv_drop.c_bpartner_id,
+                             bpl_desadv_buyer.c_bpartner_id,
+                             bpl_ship_drop.c_bpartner_id,
+                             bpl_ship_buyer.c_bpartner_id) AS buyer_bpartner_id,
+                    bpl_desadv_buyer.gln                   AS buyer_gln_desadv,
+                    bpl_desadv_buyer.gln_gcpLength         AS buyer_gcplength_desadv,
+                    bpl_ship_buyer.gln                     AS buyer_gln_ship,
+                    bpl_ship_buyer.gln_gcpLength           AS buyer_gcplength_ship,
+                    bpl_desadv_drop.gln                    AS drop_gln_desadv,
+                    bpl_desadv_drop.gln_gcpLength          AS drop_gcplength_desadv,
+                    bpl_ship_drop.gln                      AS drop_gln_ship,
+                    bpl_ship_drop.gln_gcpLength            AS drop_gcplength_ship,
+                    d.handover_location_id,
+                    d.documentno                           AS desadv_documentno,
+                    d.poreference                          AS desadv_poreference,
+                    -- arrays from junction (all DESADVs linked to this shipment)
+                    desadv_agg.desadv_documentnos,
+                    desadv_agg.desadv_poreferences,
+                    desadv_agg.shipment_documentnos
+             FROM m_inout io
+                      LEFT JOIN edi_desadv d ON d.edi_desadv_id = io.edi_desadv_id
                  -- aggregate all DESADV references via N:M junction, across all shipments
                  -- sharing owned LUs (so the owner event carries refs from sibling shipments too)
-                 LEFT JOIN LATERAL (
-                     SELECT jsonb_agg(da.documentno ORDER BY da.documentno)   AS desadv_documentnos,
-                            jsonb_agg(da.poreference ORDER BY da.documentno)  AS desadv_poreferences,
-                            -- Delivery-note numbers (M_InOut.DocumentNo) of the DESADV messages on this SSCC.
-                            -- This is the value the receiver's EPCIS desadv bizTransaction must carry
-                            -- ("Lieferschein") — NOT EDI_Desadv.DocumentNo, which is 1:1 per ORDER and not
-                            -- unique across partial deliveries.
-                            -- DISTINCT: two orders on ONE M_InOut collapse to one delivery note; two M_InOuts
-                            -- sharing the SSCC yield two.
-                            jsonb_agg(DISTINCT mio.documentno ORDER BY mio.documentno) AS shipment_documentnos
-                     FROM edi_desadv_m_inout link
-                     JOIN edi_desadv da ON da.edi_desadv_id = link.edi_desadv_id
-                     JOIN m_inout mio ON mio.m_inout_id = link.m_inout_id
-                     WHERE link.isactive = 'Y'
-                       AND link.m_inout_id IN (
-                           -- all shipments sharing a touched LU (includes this shipment and all siblings)
-                           SELECT DISTINCT m_inout_id FROM shared_lu_inout
-                       )
-                 ) desadv_agg ON true
-                 LEFT JOIN c_bpartner_location bpl_desadv_buyer
-                           ON bpl_desadv_buyer.c_bpartner_location_id = d.c_bpartner_location_id
-                 LEFT JOIN c_bpartner_location bpl_ship_buyer
-                           ON bpl_ship_buyer.c_bpartner_location_id = io.c_bpartner_location_id
-                 LEFT JOIN c_bpartner_location bpl_desadv_drop
-                           ON bpl_desadv_drop.c_bpartner_location_id = d.dropship_location_id
-                 LEFT JOIN c_bpartner_location bpl_ship_drop
-                           ON bpl_ship_drop.c_bpartner_location_id = io.dropship_location_id
-        WHERE io.m_inout_id = p_m_inout_id),
+                      LEFT JOIN LATERAL (
+                 SELECT JSONB_AGG(da.documentno ORDER BY da.documentno)            AS desadv_documentnos,
+                        JSONB_AGG(da.poreference ORDER BY da.documentno)           AS desadv_poreferences,
+                        -- Delivery-note numbers (M_InOut.DocumentNo) of the DESADV messages on this SSCC.
+                        -- This is the value the receiver's EPCIS desadv bizTransaction must carry
+                        -- ("Lieferschein") — NOT EDI_Desadv.DocumentNo, which is 1:1 per ORDER and not
+                        -- unique across partial deliveries.
+                        -- DISTINCT: two orders on ONE M_InOut collapse to one delivery note; two M_InOuts
+                        -- sharing the SSCC yield two.
+                        JSONB_AGG(DISTINCT mio.documentno ORDER BY mio.documentno) AS shipment_documentnos
+                 FROM edi_desadv_m_inout link
+                          JOIN edi_desadv da ON da.edi_desadv_id = link.edi_desadv_id
+                          JOIN m_inout mio ON mio.m_inout_id = link.m_inout_id
+                 WHERE link.isactive = 'Y'
+                   AND link.m_inout_id IN (
+                     -- all shipments sharing a touched LU (includes this shipment and all siblings)
+                     SELECT DISTINCT m_inout_id
+                     FROM shared_lu_inout)
+                 ) desadv_agg ON TRUE
+                      LEFT JOIN c_bpartner_location bpl_desadv_buyer
+                                ON bpl_desadv_buyer.c_bpartner_location_id = d.c_bpartner_location_id
+                      LEFT JOIN c_bpartner_location bpl_ship_buyer
+                                ON bpl_ship_buyer.c_bpartner_location_id = io.c_bpartner_location_id
+                      LEFT JOIN c_bpartner_location bpl_desadv_drop
+                                ON bpl_desadv_drop.c_bpartner_location_id = d.dropship_location_id
+                      LEFT JOIN c_bpartner_location bpl_ship_drop
+                                ON bpl_ship_drop.c_bpartner_location_id = io.dropship_location_id
+             WHERE io.m_inout_id = p_m_inout_id),
 
          pallet_list AS MATERIALIZED (
              -- All LU HU IDs for this shipment, enriched with the left-zero-padded POReference of
@@ -233,36 +257,74 @@ BEGIN
              SELECT lwp.lu_hu_id,
                     LPAD(COALESCE(MIN(lwp.poreference), '0'), 10, '0') AS lu_poreference_padded
              FROM (
-                 -- Primary: M_HU_Assignment → InOutLine → OrderLine → Order path
-                 SELECT ha.m_lu_hu_id AS lu_hu_id,
-                        ord.poreference
-                 FROM inout_context ctx
-                          JOIN m_inoutline iol ON iol.m_inout_id = ctx.m_inout_id
-                          JOIN m_hu_assignment ha
-                               ON ha.ad_table_id = v_m_inoutline_table_id
-                                   AND ha.record_id = iol.m_inoutline_id
-                          LEFT JOIN c_orderline ol ON ol.c_orderline_id = iol.c_orderline_id
-                          LEFT JOIN c_order ord ON ord.c_order_id = ol.c_order_id
-                 WHERE ha.m_lu_hu_id IS NOT NULL
-                   AND ha.isactive = 'Y'
+                      -- Primary: M_HU_Assignment → InOutLine → OrderLine → Order path
+                      SELECT ha.m_lu_hu_id AS lu_hu_id,
+                             ord.poreference
+                      FROM inout_context ctx
+                               JOIN m_inoutline iol ON iol.m_inout_id = ctx.m_inout_id
+                               JOIN m_inout io ON io.m_inout_id = iol.m_inout_id AND io.issotrx = 'Y' /*exclude material-receipt-lines - we might have received the goods from another vendor*/
+                               JOIN m_hu_assignment ha
+                                    ON ha.ad_table_id = v_m_inoutline_table_id
+                                        AND ha.record_id = iol.m_inoutline_id
+                               LEFT JOIN c_orderline ol ON ol.c_orderline_id = iol.c_orderline_id
+                               LEFT JOIN c_order ord ON ord.c_order_id = ol.c_order_id AND ord.IsSoTrx = 'Y' /*also exclude purchase-orders*/
+                      WHERE ha.m_lu_hu_id IS NOT NULL
+                        AND ha.isactive = 'Y'
+                        -- Per-LU coverage filter (intentionally PRIMARY-BRANCH-ONLY, see the fallback
+                        -- branch below): keep this LU only if every child TU is covered by a CO/CL
+                        -- sales shipment. Mirrors the top-level close-gate's per-LU coverage check —
+                        -- a LU that is not yet fully covered must not appear in pallet_list at all,
+                        -- even though the gate above let this shipment through (because one of ITS
+                        -- OTHER touched LUs is fully covered).
+                        AND NOT EXISTS (SELECT 1
+                                        FROM m_hu_item hi
+                                                 JOIN m_hu tu ON tu.m_hu_item_parent_id = hi.m_hu_item_id
+                                        WHERE hi.m_hu_id = ha.m_lu_hu_id
+                                          AND hi.itemtype IN ('HU', 'HA')
+                                          AND NOT EXISTS (SELECT 1
+                                                          FROM m_hu_assignment ha2
+                                                                   JOIN m_inoutline iol2 ON iol2.m_inoutline_id = ha2.record_id
+                                                                   JOIN m_inout io2 ON io2.m_inout_id = iol2.m_inout_id AND io2.issotrx = 'Y'
+                                                          WHERE ha2.ad_table_id = v_m_inoutline_table_id
+                                                            AND ha2.isactive = 'Y'
+                                                            AND iol2.isactive = 'Y'
+                                                            AND (ha2.m_tu_hu_id = tu.m_hu_id OR ha2.vhu_id = tu.m_hu_id)
+                                                            AND io2.docstatus IN ('CO', 'CL')))
 
-                 UNION ALL
+                      UNION ALL
 
-                 -- Fallback: M_ShipmentSchedule_QtyPicked path (no per-LU order link available)
-                 SELECT qp.m_lu_hu_id AS lu_hu_id,
-                        NULL::text AS poreference
-                 FROM inout_context ctx
-                          JOIN m_inoutline iol ON iol.m_inout_id = ctx.m_inout_id
-                          JOIN m_shipmentschedule_qtypicked qp ON qp.m_inoutline_id = iol.m_inoutline_id
-                 WHERE qp.m_lu_hu_id IS NOT NULL
-                   AND qp.isactive = 'Y'
-                   AND NOT EXISTS (
-                       SELECT 1 FROM m_hu_assignment ha2
-                       WHERE ha2.m_lu_hu_id = qp.m_lu_hu_id
-                         AND ha2.ad_table_id = v_m_inoutline_table_id
-                         AND ha2.isactive = 'Y'
-                   )
-             ) lwp
+                      -- Fallback: M_ShipmentSchedule_QtyPicked path (no per-LU order link available).
+                      -- Intentionally NOT subject to the per-LU coverage filter above: these LUs are
+                      -- never m_hu_assignment-gated in the first place (see the top-level close-gate's
+                      -- "touches at least one LU" precondition, which this path never satisfies), so
+                      -- they must stay unfiltered here exactly as before.
+                      SELECT qp.m_lu_hu_id AS lu_hu_id,
+                             NULL::text    AS poreference
+                      FROM inout_context ctx
+                               JOIN m_inoutline iol ON iol.m_inout_id = ctx.m_inout_id
+                               JOIN m_shipmentschedule_qtypicked qp ON qp.m_inoutline_id = iol.m_inoutline_id
+                      WHERE qp.m_lu_hu_id IS NOT NULL
+                        AND qp.isactive = 'Y'
+                        AND NOT EXISTS (SELECT 1
+                                        FROM m_hu_assignment ha2
+                                        WHERE ha2.m_lu_hu_id = qp.m_lu_hu_id
+                                          AND ha2.ad_table_id = v_m_inoutline_table_id
+                                          AND ha2.isactive = 'Y')) lwp
+             WHERE NOT EXISTS (
+                 -- Ledger-exclusion: drop any LU whose physical SSCC18 is already recorded in the
+                 -- EPCIS transmission ledger (EDI_EPCIS_Transmitted_SSCC), i.e. already sent to the
+                 -- EPCIS receiver — defense-in-depth against a re-export / duplicate trigger emitting
+                 -- the same physical SSCC twice. A row is only ever written after a successful send, so
+                 -- its mere presence means "already transmitted". Receiver-agnostic on purpose: this
+                 -- function only has p_m_inout_id (no receiver config) and there is a single EPCIS
+                 -- receiver in production, so matching on SSCC18 alone is correct here. (If multiple EPCIS
+                 -- receivers/configs are ever added, this needs the config threaded into the function.)
+                 SELECT 1
+                 FROM edi_epcis_transmitted_sscc t
+                          JOIN m_hu_attribute sa ON sa.m_hu_id = lwp.lu_hu_id
+                     AND sa.m_attribute_id = v_sscc_attribute_id
+                 WHERE t.isactive = 'Y'
+                   AND t.sscc18 = sa.value)
              GROUP BY lwp.lu_hu_id),
 
          individual_tu_ids AS MATERIALIZED (
@@ -283,14 +345,12 @@ BEGIN
                            ON parent_item.m_hu_id = lu_hu.m_hu_id
                                AND parent_item.itemtype = 'HU'
                       JOIN m_hu tu_hu ON tu_hu.m_hu_item_parent_id = parent_item.m_hu_item_id
-             WHERE EXISTS (
-                 SELECT 1
-                 FROM m_hu_assignment ha
-                          JOIN m_inoutline iol ON iol.m_inoutline_id = ha.record_id
-                 WHERE ha.ad_table_id = v_m_inoutline_table_id
-                   AND ha.isactive = 'Y'
-                   AND (ha.m_tu_hu_id = tu_hu.m_hu_id OR ha.vhu_id = tu_hu.m_hu_id)
-             )),
+             WHERE EXISTS (SELECT 1
+                           FROM m_hu_assignment ha
+                                    JOIN m_inoutline iol ON iol.m_inoutline_id = ha.record_id
+                           WHERE ha.ad_table_id = v_m_inoutline_table_id
+                             AND ha.isactive = 'Y'
+                             AND (ha.m_tu_hu_id = tu_hu.m_hu_id OR ha.vhu_id = tu_hu.m_hu_id))),
 
          ha_items_with_vtu AS MATERIALIZED (
              -- CASE B: HA items with their virtual TU resolved — computed ONCE, reused for
@@ -317,53 +377,51 @@ BEGIN
                                AND ha_item.qty IS NOT NULL
                                AND ha_item.qty > 0
                       JOIN m_hu ha_vtu ON ha_vtu.m_hu_item_parent_id = ha_item.m_hu_item_id
-             WHERE EXISTS (
-                 SELECT 1
-                 FROM m_hu_assignment ha
-                          JOIN m_inoutline iol ON iol.m_inoutline_id = ha.record_id
-                 WHERE ha.ad_table_id = v_m_inoutline_table_id
-                   AND ha.isactive = 'Y'
-                   AND ha.vhu_id = ha_vtu.m_hu_id
-             )),
+             WHERE EXISTS (SELECT 1
+                           FROM m_hu_assignment ha
+                                    JOIN m_inoutline iol ON iol.m_inoutline_id = ha.record_id
+                           WHERE ha.ad_table_id = v_m_inoutline_table_id
+                             AND ha.isactive = 'Y'
+                             AND ha.vhu_id = ha_vtu.m_hu_id)),
 
          tu_order_ref AS MATERIALIZED (
              -- Per-crate SOURCE-ORDER reference. A crate (TU) is order-pure: it is assigned to exactly
              -- one shipment line, hence one order. We resolve that order's POReference and the
              -- shipment's delivery-note (M_InOut.DocumentNo) so each PACKING event references only its
-             -- own order (one po + one desadv) instead of the merged pallet-level set. me03 #30279.
+             -- own order (one po + one desadv) instead of the merged pallet-level set.
              -- Keyed by the TU/vTU m_hu_id (individual_tu_ids.tu_hu_id / ha_items_with_vtu.vtu_hu_id),
              -- which is exactly the HU the m_hu_assignment points at (m_tu_hu_id or vhu_id).
              -- Scoped to the already-discovered TUs so the m_hu_assignment scan stays bounded.
              SELECT hu_id, poreference, shipment_documentno
-             FROM (
-                 SELECT asg.hu_id,
-                        ord.poreference,
-                        io.documentno                                                  AS shipment_documentno,
-                        ROW_NUMBER() OVER (PARTITION BY asg.hu_id ORDER BY io.m_inout_id) AS rn
-                 FROM (
-                          SELECT ha.record_id, ha.m_tu_hu_id AS hu_id
-                          FROM m_hu_assignment ha
-                          WHERE ha.ad_table_id = v_m_inoutline_table_id
-                            AND ha.isactive = 'Y'
-                            AND ha.m_tu_hu_id IN (SELECT tu_hu_id FROM individual_tu_ids
-                                                  UNION ALL
-                                                  SELECT vtu_hu_id FROM ha_items_with_vtu)
-                          UNION ALL
-                          SELECT ha.record_id, ha.vhu_id AS hu_id
-                          FROM m_hu_assignment ha
-                          WHERE ha.ad_table_id = v_m_inoutline_table_id
-                            AND ha.isactive = 'Y'
-                            AND ha.vhu_id IN (SELECT tu_hu_id FROM individual_tu_ids
-                                              UNION ALL
-                                              SELECT vtu_hu_id FROM ha_items_with_vtu)
-                      ) asg
-                          JOIN m_inoutline iol ON iol.m_inoutline_id = asg.record_id
-                          JOIN m_inout io ON io.m_inout_id = iol.m_inout_id
-                          LEFT JOIN c_orderline ol ON ol.c_orderline_id = iol.c_orderline_id
-                          LEFT JOIN c_order ord ON ord.c_order_id = ol.c_order_id
-                 WHERE iol.isactive = 'Y'
-                   AND io.docstatus IN ('CO', 'CL')
-             ) ranked
+             FROM (SELECT asg.hu_id,
+                          ord.poreference,
+                          io.documentno                                                     AS shipment_documentno,
+                          ROW_NUMBER() OVER (PARTITION BY asg.hu_id ORDER BY io.m_inout_id) AS rn
+                   FROM (SELECT ha.record_id, ha.m_tu_hu_id AS hu_id
+                         FROM m_hu_assignment ha
+                         WHERE ha.ad_table_id = v_m_inoutline_table_id
+                           AND ha.isactive = 'Y'
+                           AND ha.m_tu_hu_id IN (SELECT tu_hu_id
+                                                 FROM individual_tu_ids
+                                                 UNION ALL
+                                                 SELECT vtu_hu_id
+                                                 FROM ha_items_with_vtu)
+                         UNION ALL
+                         SELECT ha.record_id, ha.vhu_id AS hu_id
+                         FROM m_hu_assignment ha
+                         WHERE ha.ad_table_id = v_m_inoutline_table_id
+                           AND ha.isactive = 'Y'
+                           AND ha.vhu_id IN (SELECT tu_hu_id
+                                             FROM individual_tu_ids
+                                             UNION ALL
+                                             SELECT vtu_hu_id
+                                             FROM ha_items_with_vtu)) asg
+                            JOIN m_inoutline iol ON iol.m_inoutline_id = asg.record_id
+                            JOIN m_inout io ON io.m_inout_id = iol.m_inout_id AND io.issotrx = 'Y' /*exclude material-receipts, as might have received the goods from another vendor*/
+                            LEFT JOIN c_orderline ol ON ol.c_orderline_id = iol.c_orderline_id
+                            LEFT JOIN c_order ord ON ord.c_order_id = ol.c_order_id AND ord.IsSoTrx = 'Y' /*also exclude purchase-orders*/
+                   WHERE iol.isactive = 'Y'
+                     AND io.docstatus IN ('CO', 'CL')) ranked
              WHERE rn = 1),
 
          hu_attrs AS MATERIALIZED (
@@ -381,16 +439,6 @@ BEGIN
                                   FROM ha_items_with_vtu)
                AND ha.m_attribute_id IN (v_grai_attribute_id, v_lot_attribute_id, v_bbd_attribute_id)
              GROUP BY ha.m_hu_id),
-
-         bp_prod_lookup AS MATERIALIZED (
-             -- Buyer-specific product GTINs: ONE scan replaces N LATERAL calls in items CTEs
-             SELECT DISTINCT ON (bp.m_product_id) bp.m_product_id,
-                                                  bp.gtin,
-                                                  bp.ean_cu
-             FROM c_bpartner_product bp
-             WHERE bp.c_bpartner_id = (SELECT buyer_bpartner_id FROM inout_context)
-               AND bp.isactive = 'Y'
-             ORDER BY bp.m_product_id, bp.seqno DESC),
 
          individual_tus AS MATERIALIZED (
              -- CASE A: individual TUs with attributes joined from hu_attrs
@@ -412,8 +460,12 @@ BEGIN
              SELECT it.tu_hu_id,
                     JSONB_AGG(
                             JSONB_BUILD_OBJECT(
-                                    'cuGTIN', COALESCE(bp_prod.gtin, bp_prod.ean_cu, prod.gtin),
-                                    'tuGTIN', COALESCE(pi_prod.gtin, pi_prod.ean_tu),
+                                    'cuGTIN', COALESCE(NULLIF(REGEXP_REPLACE(asi_data.gtin, '\s+$', ''), ''),
+                                                       NULLIF(REGEXP_REPLACE(asi_data.ean_cu, '\s+$', ''), ''),
+                                                       NULLIF(REGEXP_REPLACE(asi_data.ean13_productcode, '\s+$', ''), ''),
+                                                       REGEXP_REPLACE(prod.gtin, '\s+$', '')),
+                                    'tuGTIN', COALESCE(NULLIF(REGEXP_REPLACE(pi_prod.gtin, '\s+$', ''), ''),
+                                                       REGEXP_REPLACE(pi_prod.ean_tu, '\s+$', '')),
                                     'quantity', stor.qty,
                                     'movementqty', stor.qty,
                                     'uom', COALESCE(uom.x12de355, 'KGM'),
@@ -429,7 +481,18 @@ BEGIN
                       LEFT JOIN c_uom uom ON uom.c_uom_id = stor.c_uom_id
                       LEFT JOIN m_hu_pi_item_product pi_prod
                                 ON pi_prod.m_hu_pi_item_product_id = it.tu_pi_item_product_id
-                      LEFT JOIN bp_prod_lookup bp_prod ON bp_prod.m_product_id = prod.m_product_id
+                 -- ASI-aware CU GTIN lookup (M_Product_ASI_Data, content-based ASI subset match), mirroring DESADV get_desadv_packs_json_fn.
+                 -- Buyer scoping uses the inout_context-resolved buyer (DESADV is optional for EPCIS; the DESADV fn uses its own edi_desadv.C_BPartner_ID).
+                      LEFT JOIN LATERAL (
+                 SELECT gtin, ean_cu, ean13_productcode
+                 FROM m_product_asi_data
+                 WHERE isactive = 'Y'
+                   AND m_product_id = prod.m_product_id
+                   AND (c_bpartner_id IS NULL OR c_bpartner_id = (SELECT buyer_bpartner_id FROM inout_context))
+                   AND IsASIAttributesKeySubset(m_attributesetinstance_id, stor.m_attributesetinstance_id)
+                 ORDER BY seqno
+                 LIMIT 1
+                 ) asi_data ON TRUE
              GROUP BY it.tu_hu_id),
 
          aggregated_tu_base AS MATERIALIZED (
@@ -443,7 +506,7 @@ BEGIN
                     COALESCE(
                             NULLIF(STRING_TO_ARRAY(TRIM(ha.grai_value), ','), ARRAY [NULL]::text[]),
                             ARRAY []::text[]
-                    ) AS grai_arr,
+                    )               AS grai_arr,
                     ha.lot_number,
                     ha.best_before_date,
                     tor.poreference AS po_reference,
@@ -457,8 +520,12 @@ BEGIN
              SELECT atb.tu_hu_id,
                     JSONB_AGG(
                             JSONB_BUILD_OBJECT(
-                                    'cuGTIN', COALESCE(bp_prod.gtin, bp_prod.ean_cu, prod.gtin),
-                                    'tuGTIN', COALESCE(pi_prod.gtin, pi_prod.ean_tu),
+                                    'cuGTIN', COALESCE(NULLIF(REGEXP_REPLACE(asi_data.gtin, '\s+$', ''), ''),
+                                                       NULLIF(REGEXP_REPLACE(asi_data.ean_cu, '\s+$', ''), ''),
+                                                       NULLIF(REGEXP_REPLACE(asi_data.ean13_productcode, '\s+$', ''), ''),
+                                                       REGEXP_REPLACE(prod.gtin, '\s+$', '')),
+                                    'tuGTIN', COALESCE(NULLIF(REGEXP_REPLACE(pi_prod.gtin, '\s+$', ''), ''),
+                                                       REGEXP_REPLACE(pi_prod.ean_tu, '\s+$', '')),
                                     'quantity',
                                     CASE
                                         WHEN COALESCE(atb.qty, 1) > 0 THEN stor.qty / atb.qty
@@ -482,7 +549,18 @@ BEGIN
                       LEFT JOIN c_uom uom ON uom.c_uom_id = stor.c_uom_id
                       LEFT JOIN m_hu_pi_item_product pi_prod
                                 ON pi_prod.m_hu_pi_item_product_id = atb.vtu_pi_item_product_id
-                      LEFT JOIN bp_prod_lookup bp_prod ON bp_prod.m_product_id = prod.m_product_id
+                 -- ASI-aware CU GTIN lookup (M_Product_ASI_Data, content-based ASI subset match), mirroring DESADV get_desadv_packs_json_fn.
+                 -- Buyer scoping uses the inout_context-resolved buyer (DESADV is optional for EPCIS; the DESADV fn uses its own edi_desadv.C_BPartner_ID).
+                      LEFT JOIN LATERAL (
+                 SELECT gtin, ean_cu, ean13_productcode
+                 FROM m_product_asi_data
+                 WHERE isactive = 'Y'
+                   AND m_product_id = prod.m_product_id
+                   AND (c_bpartner_id IS NULL OR c_bpartner_id = (SELECT buyer_bpartner_id FROM inout_context))
+                   AND IsASIAttributesKeySubset(m_attributesetinstance_id, stor.m_attributesetinstance_id)
+                 ORDER BY seqno
+                 LIMIT 1
+                 ) asi_data ON TRUE
              GROUP BY atb.tu_hu_id, atb.qty),
 
          all_crates_raw AS (
@@ -539,8 +617,8 @@ BEGIN
                                  LPAD(
                                          (COUNT(*) FILTER (WHERE grai_raw IS NULL)
                                              OVER (PARTITION BY lu_hu_id
-                                                   ORDER BY tu_hu_id, sort_ord
-                                                   ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW))::text,
+                                             ORDER BY tu_hu_id, sort_ord
+                                             ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW))::text,
                                          2, '0')
                     END AS grai,
                     lot_number,
@@ -595,16 +673,20 @@ BEGIN
                -- must carry ("Lieferschein") — NOT desadvReferences (EDI_Desadv.DocumentNo), which is
                -- shared across a partial delivery.
                    'shipmentDocumentNos', COALESCE(ctx.shipment_documentnos,
-                                                   CASE WHEN ctx.documentno IS NOT NULL
-                                                        THEN jsonb_build_array(ctx.documentno)
-                                                        ELSE '[]'::jsonb END),
+                                                   CASE
+                                                       WHEN ctx.documentno IS NOT NULL
+                                                           THEN JSONB_BUILD_ARRAY(ctx.documentno)
+                                                           ELSE '[]'::jsonb
+                                                   END),
                -- PO references: same scalar + array pattern.
                -- Scalar falls back to InOut.POReference for shipments without junction rows.
                    'poReference', COALESCE((ctx.desadv_poreferences ->> 0), ctx.poreference),
                    'poReferences', COALESCE(ctx.desadv_poreferences,
-                                            CASE WHEN ctx.poreference IS NOT NULL
-                                                 THEN jsonb_build_array(ctx.poreference)
-                                                 ELSE '[]'::jsonb END),
+                                            CASE
+                                                WHEN ctx.poreference IS NOT NULL
+                                                    THEN JSONB_BUILD_ARRAY(ctx.poreference)
+                                                    ELSE '[]'::jsonb
+                                            END),
                -- Pallets
                    'pallets', COALESCE(
                            (SELECT JSONB_AGG(
@@ -622,7 +704,7 @@ BEGIN
                                                          'lotNumber', c.lot_number,
                                                          'bestBeforeDate', c.best_before_date,
                                                          'tuHuId', c.tu_hu_id,
-                                                         -- per-crate source-order refs so PACKING events are order-pure (me03 #30279)
+                                                     -- per-crate source-order refs so PACKING events are order-pure
                                                          'poReference', c.po_reference,
                                                          'shipmentDocumentNo', c.shipment_documentno,
                                                          'items', COALESCE(c.items_json, '[]'::jsonb)

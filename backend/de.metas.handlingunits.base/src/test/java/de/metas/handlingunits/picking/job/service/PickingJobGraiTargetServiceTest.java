@@ -6,6 +6,7 @@ import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.grai.DummyGRAITemplate;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -19,7 +20,9 @@ import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
 import de.metas.product.ProductId;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,6 +33,7 @@ import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Unit tests for {@link PickingJobGraiTargetService} — only the paths NOT covered by the Playwright
@@ -133,6 +137,29 @@ class PickingJobGraiTargetServiceTest
 
 		// Assert: the default-for-product PIIP should be preferred
 		assertThat(result).isEqualTo(HUPIItemProductId.ofRepoId(defaultPiip.getM_HU_PI_Item_Product_ID()));
+	}
+
+	// =====================================================================
+	// A scanned Migros returnable-asset GRAI is NOT gated against the order's PO reference
+	// =====================================================================
+
+	private static final String MIGROS_MSG_KEY = "de.metas.handlingunits.picking.GRAIPOReferenceMismatch";
+	private static final String NO_TU_TYPE_MSG_KEY = "de.metas.handlingunits.picking.GRAINoMatchingTUType";
+
+	@Test
+	void migrosGrai_poReferenceMismatch_isAccepted()
+	{
+		// A Migros-structured GRAI (companyPrefix 7613204 / assetType 00307) is not matched against any sales
+		// order's PO reference at scan time — Migros GRAIs are dummy GRAIs generated at shipment, so there is
+		// nothing authoritative to validate against here. Resolution proceeds straight to TU-type resolution and
+		// fails only there (this test's PIs are not GRAI-mapped) — never with a PO-reference-mismatch key.
+		final ScannedCode migrosGrai = DummyGRAITemplate.migros("12345").buildGRAI(1).toScannedCode();
+
+		assertThatThrownBy(() -> service.resolveTuTypeAndCapacity(migrosGrai, null, null))
+				.as("a Migros GRAI must NOT be refused as a PO-reference mismatch")
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining(NO_TU_TYPE_MSG_KEY)
+				.hasMessageNotContaining(MIGROS_MSG_KEY);
 	}
 
 }

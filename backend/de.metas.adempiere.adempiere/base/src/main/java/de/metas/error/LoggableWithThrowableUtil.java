@@ -3,6 +3,7 @@ package de.metas.error;
 import java.util.Arrays;
 import java.util.Optional;
 
+import org.adempiere.util.lang.IAutoCloseable;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -42,6 +43,28 @@ public class LoggableWithThrowableUtil
 
 	private static final Logger logger = LogManager.getLogger(LoggableWithThrowableUtil.class);
 
+	private static final ThreadLocal<Boolean> adIssueCreationSuppressed = ThreadLocal.withInitial(() -> Boolean.FALSE);
+
+	/**
+	 * While the returned {@link IAutoCloseable} is open, a logged {@link Throwable} is only logged on this thread,
+	 * never turned into an AD_Issue. Opened while an AD_Issue is being persisted, so that a failure of that write
+	 * cannot recurse back into creating another AD_Issue.
+	 *
+	 * @see de.metas.logging.MetasfreshIssueAppender#temporaryDisableIssueReporting() the sibling guard, for the
+	 * Logback-ERROR-log path into AD_Issue creation. It does not cover this path, which logs at WARN.
+	 */
+	public IAutoCloseable suppressAdIssueCreation()
+	{
+		final Boolean previous = adIssueCreationSuppressed.get();
+		adIssueCreationSuppressed.set(Boolean.TRUE);
+		return () -> adIssueCreationSuppressed.set(previous);
+	}
+
+	public boolean isAdIssueCreationSuppressed()
+	{
+		return Boolean.TRUE.equals(adIssueCreationSuppressed.get());
+	}
+
 	public FormattedMsgWithAdIssueId extractMsgAndAdIssue(@NonNull final String msg, final Object... msgParameters)
 	{
 		final IErrorManager errorManager = Services.get(IErrorManager.class);
@@ -49,7 +72,13 @@ public class LoggableWithThrowableUtil
 		final Throwable exception = LoggableWithThrowableUtil.extractThrowable(msgParameters);
 		Object[] msgParametersEffective = msgParameters;
 		AdIssueId adIssueId = null;
-		if (exception != null)
+		if (exception != null && isAdIssueCreationSuppressed())
+		{
+			// Already creating an AD_Issue on this thread; another one would recurse into the failing code.
+			logger.warn("Failed while creating an AD_Issue; logging the nested exception instead of creating another AD_Issue.", exception);
+			msgParametersEffective = LoggableWithThrowableUtil.removeLastElement(msgParameters);
+		}
+		else if (exception != null)
 		{
 			try
 			{

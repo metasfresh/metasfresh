@@ -27,14 +27,13 @@ import com.google.common.collect.ImmutableList;
 import de.metas.common.delivery.v1.json.DeliveryMappingConstants;
 import de.metas.common.delivery.v1.json.request.JsonCarrierService;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
-import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestItem;
 import de.metas.common.delivery.v1.json.request.JsonGoodsType;
 import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryAdvisorResponse;
 import de.metas.common.util.Check;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.StringUtils;
 import de.metas.shipper.client.nshift.json.JsonAddressKind;
-import de.metas.shipper.client.nshift.json.JsonLine;
-import de.metas.shipper.client.nshift.json.JsonReference;
 import de.metas.shipper.client.nshift.json.JsonShipmentData;
 import de.metas.shipper.client.nshift.json.JsonShipmentOptions;
 import de.metas.shipper.client.nshift.json.request.JsonShipAdvisorRequest;
@@ -48,8 +47,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.util.Optional;
 import java.util.function.Function;
 
 @Service
@@ -77,7 +74,7 @@ public class NShiftShipAdvisorService
 			logger.error("Got error", throwable);
 			return JsonDeliveryAdvisorResponse.builder()
 					.requestId(deliveryAdvisorRequest.getId())
-					.errorMessage(throwable.toString())
+					.errorMessage(CoalesceUtil.coalesceNotNull(throwable.getMessage(), throwable.toString()))
 					.build();
 		}
 	}
@@ -88,8 +85,11 @@ public class NShiftShipAdvisorService
 		final NShiftMappingConfigs mappingConfigs = NShiftMappingConfigs.ofJson(deliveryAdvisorRequest.getMappingConfigs());
 		final Function<String, String> valueProvider = deliveryAdvisorRequest::getValue;
 
+		final boolean useSelectionRules = StringUtils.toBoolean(deliveryAdvisorRequest.getShipperConfig().getAdditionalProperty(NShiftConstants.SELECTION_RULES), false);
 		final JsonShipmentOptions options = JsonShipmentOptions.builder()
-				.serviceLevel(deliveryAdvisorRequest.getShipperConfig().getAdditionalPropertyNotNull(NShiftConstants.SERVICE_LEVEL))
+				// with selection rules active nShift resolves the product from the rules, so ServiceLevel must not be sent (omitted via NON_NULL)
+				.serviceLevel(useSelectionRules ? null : deliveryAdvisorRequest.getShipperConfig().getAdditionalPropertyNotNull(NShiftConstants.SERVICE_LEVEL))
+				.useShippingRules(useSelectionRules)
 				.build();
 
 		final JsonShipmentData.JsonShipmentDataBuilder dataBuilder = JsonShipmentData.builder()
@@ -111,56 +111,14 @@ public class NShiftShipAdvisorService
 
 		dataBuilder.references(mappingConfigs.getReferences(DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE, valueProvider));
 
-		// incoterms are sent so carrier services can be provided via shipment rules based on it
-		if (deliveryAdvisorRequest.getIncotermsValue() != null)
-		{
-			dataBuilder.reference(JsonReference.builder()
-					.kind(63) // eSrkCustomField1 https://helpcenter.nshift.com/hc/en-us/articles/360003165473-Objects-and-Fields#ReferenceKind
-					.value(deliveryAdvisorRequest.getIncotermsValue())
-					.build());
-		}
-		if (deliveryAdvisorRequest.getExternalSystemValue() != null)
-		{
-			dataBuilder.reference(JsonReference.builder()
-					.kind(64) // eSrkCustomField2 https://helpcenter.nshift.com/hc/en-us/articles/360003165473-Objects-and-Fields#ReferenceKind
-					.value(deliveryAdvisorRequest.getExternalSystemValue())
-					.build());
-		}
+		dataBuilder.line(NShiftUtil.buildAdvisorLine(deliveryAdvisorRequest, mappingConfigs));
 
-		final JsonDeliveryAdvisorRequestItem item = deliveryAdvisorRequest.getItem();
-		final Function<String, Optional<String>> lineValueProvider = NShiftUtil.withFallback(
-				item::getValue,
-				attributeValue -> Optional.ofNullable(deliveryAdvisorRequest.getValue(attributeValue)));
-		final Function<String, String> finalLineValueProvider = attributeValue -> lineValueProvider.apply(attributeValue).orElse(null);
-
-		dataBuilder.line(buildNShiftLine(item, mappingConfigs, finalLineValueProvider));
+		dataBuilder.detailGroups(NShiftUtil.buildAdvisorDetailGroups(deliveryAdvisorRequest, mappingConfigs));
 
 		return JsonShipAdvisorRequest.builder()
 				.options(options)
 				.data(dataBuilder.build())
 				.build();
-	}
-
-	private static JsonLine buildNShiftLine(
-			@NonNull final JsonDeliveryAdvisorRequestItem item,
-			@NonNull final NShiftMappingConfigs mappingConfigs,
-			@NonNull final Function<String, String> lineValueProvider)
-	{
-		final int weightGrams = item.getGrossWeightKg().multiply(BigDecimal.valueOf(1000)).intValue();
-		final JsonLine.JsonLineBuilder lineBuilder = JsonLine.builder()
-				.lineWeight(weightGrams)
-				.references(mappingConfigs.getReferences(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_REFERENCE, lineValueProvider));
-		if (item.getPackageDimensions() != null)
-		{
-			final int lengthMM = item.getPackageDimensions().getLengthInCM() * 10;
-			final int widthMM = item.getPackageDimensions().getWidthInCM() * 10;
-			final int heightMM = item.getPackageDimensions().getHeightInCM() * 10;
-			lineBuilder.number(1); // on advice, it's always 1, as we combine the dimensions via @link de.metas.product.PackageDimensions.ofProductDimensionsAndQty()
-			lineBuilder.length(lengthMM);
-			lineBuilder.width(widthMM);
-			lineBuilder.height(heightMM);
-		}
-		return lineBuilder.build();
 	}
 
 	private static JsonDeliveryAdvisorResponse buildJsonDeliveryAdvisorResponse(@NonNull final JsonShipAdvisorResponse response, @NonNull final String requestId)

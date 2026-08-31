@@ -335,6 +335,129 @@ export class SalesOrderPage {
   }
 
   /**
+   * Open the batch-entry (quick input) form and select a product, then STOP — leaving the form open so
+   * the caller can inspect what the backend defaulted into it.
+   *
+   * {@link addOrderLine} submits and closes the form, so it cannot be used to read a defaulted field.
+   * The two deliberately do NOT share an implementation here: addOrderLine carries a retry/reload loop
+   * that this helper must not inherit, because a reload would discard the very defaulted state the
+   * caller is about to read.
+   *
+   * @param {Object} params
+   * @param {string} params.product - Product code or name
+   * @param {string} params.recordId - Optional record ID (extracted from the URL if not provided)
+   */
+  static async openQuickEntryAndSelectProduct({ product, recordId }) {
+    return await test.step(`SalesOrderPage - Open quick entry and select: ${product}`, async () => {
+      const page = getPage();
+
+      // Get record ID if not provided
+      const effectiveRecordId = recordId || this.getRecordId();
+
+      // Wait for tab to allow creating new records
+      // Tab ID for Sales Order Lines: AD_Tab-187
+      await waitForTabAllowsNew(SALES_ORDER_WINDOW_ID, effectiveRecordId, 'AD_Tab-187', {
+        maxRetries: 15,
+        retryDelayMs: 1000,
+      });
+
+      console.log(`Sales Order Lines tab ready for record ${effectiveRecordId}`);
+
+      // Scroll to batch entry button (may be below the fold in single-section layout)
+      const batchEntryButton = page.getByTestId('batch-entry-toggle');
+      await batchEntryButton.scrollIntoViewIfNeeded();
+      await batchEntryButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+      // Click batch entry toggle
+      await batchEntryButton.click();
+
+      // Wait for batch entry form
+      await page.locator('.quick-input-container').waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+
+      const productInput = page.locator('#lookup_M_Product_ID input.input-field');
+      await productInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await productInput.click();
+
+      // Wait for initial loading spinner to disappear (product list being loaded)
+      await page
+        .locator('#lookup_M_Product_ID .rotating, #lookup_M_Product_ID .spinner')
+        .waitFor({
+          state: 'detached',
+          timeout: SLOW_ACTION_TIMEOUT,
+        })
+        .catch(() => {
+          // Ignore if no spinner exists
+        });
+
+      // Small delay to ensure dropdown is ready
+      await page.waitForTimeout(300);
+
+      // Fill the product code/name
+      await productInput.fill(product);
+
+      // Wait for debounce/input processing
+      await page.waitForTimeout(500);
+
+      // Wait for any search spinner to disappear
+      await page
+        .locator('#lookup_M_Product_ID .rotating, #lookup_M_Product_ID .spinner')
+        .waitFor({
+          state: 'detached',
+          timeout: SLOW_ACTION_TIMEOUT,
+        })
+        .catch(() => {
+          // Ignore if no spinner exists
+        });
+
+      // Wait for dropdown to populate
+      await page.waitForTimeout(300);
+
+      // Click the option by text - finds element containing the product code
+      // This avoids clicking on "Search for more..." or other non-record options
+      await page.locator('.input-dropdown-list-option').getByText(product).first().click();
+
+      // The product callout runs server-side and patches the quick-input document; give it time to
+      // come back before the caller reads any field it may have defaulted.
+      await page.waitForTimeout(1500);
+    });
+  }
+
+  /**
+   * @returns {Promise<string>} the displayed value of the packing-instruction
+   *   (`M_HU_PI_Item_Product_ID`) field in the open quick-entry form — empty string when unset.
+   *   Call after {@link openQuickEntryAndSelectProduct}.
+   */
+  static async getQuickEntryPackingInstruction() {
+    return await test.step('SalesOrderPage - Read quick-entry packing instruction', async () => {
+      const page = getPage();
+
+      const field = page.locator('.quick-input-container #lookup_M_HU_PI_Item_Product_ID input.input-field');
+      await field.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      return (await field.inputValue()).trim();
+    });
+  }
+
+  /**
+   * Submit the order line from the quick-entry form opened by
+   * {@link openQuickEntryAndSelectProduct}, then close the form.
+   */
+  static async submitQuickEntryLine({ quantity }) {
+    return await test.step(`SalesOrderPage - Submit quick-entry line qty ${quantity}`, async () => {
+      const page = getPage();
+
+      await page.getByRole('spinbutton').fill(quantity.toString());
+      await page.keyboard.press('Enter');
+      await page.waitForTimeout(500);
+
+      await page.getByTestId('batch-entry-toggle').click();
+      await page.waitForTimeout(500);
+    });
+  }
+
+  /**
    * Complete the sales order.
    * Retries up to maxAttempts times, using language-independent data-testid selectors
    * to detect whether the Complete (CO) action is still available.

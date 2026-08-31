@@ -95,7 +95,7 @@ public final class CarrierAdviseProcessService
 
 	private void updateEligibleShipmentSchedule(@NonNull final ShipmentSchedule schedule, @NonNull final CarrierAdviseUpdateRequest request)
 	{
-		if (shipmentScheduleService.isNotEligibleForManualCarrierAdvise(schedule, request.isIncludeCarrierAdviseManual()))
+		if (shipmentScheduleService.isNotEligibleForManualCarrierSet(schedule, request.isIncludeCarrierAdviseManual()))
 		{
 			return;
 		}

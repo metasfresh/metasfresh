@@ -198,3 +198,21 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
       | Record_ID            | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr |
       | receiptCostCollector | P_Asset_Acct          | finProd      | 25        | 0         |
       | receiptCostCollector | P_WIP_Acct            | finProd      | 0         | 25        |
+
+  @from:cucumber
+  Scenario: Closing a manufacturing order posts its no-resource ActivityControl cost collectors with zero facts
+    # The routing of this order resolves every activity to the "no resource" placeholder, which carries no
+    # cost product. Closing the order reports the not-yet-started activities and creates one ActivityControl
+    # cost collector per activity for that placeholder resource. Each such cost collector must post gracefully
+    # (Posted='Y') with zero Fact_Acct rows, instead of failing the posting pipeline.
+    And create PP_Order:
+      | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument | OPT.PP_Product_Planning_ID.Identifier |
+      | ppOrder                | MOP         | finProd                 | 1          | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | prodPlan                              |
+    And after not more than 60s, PP_Order_BomLines are found
+      | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
+      | ppOrderBomLine                 | ppOrder                | compProd                | 1            | false           | PCE               | CO            |
+
+    # Closing reports the not-yet-started routing activities, creating the no-resource ActivityControl cost collectors.
+    And the manufacturing order identified by ppOrder is closed
+
+    Then after not more than 60s, all ActivityControl PP_Cost_Collector for PP_Order ppOrder are posted with no Fact_Acct

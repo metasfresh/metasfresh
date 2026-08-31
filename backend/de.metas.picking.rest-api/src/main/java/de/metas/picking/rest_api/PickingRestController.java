@@ -22,6 +22,7 @@
 
 package de.metas.picking.rest_api;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.Profiles;
 import de.metas.common.handlingunits.JsonHU;
 import de.metas.common.handlingunits.JsonHUList;
@@ -29,6 +30,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.job.massprinting.MassPrintingResult;
 import de.metas.handlingunits.picking.job.massprinting.MassPrintingScanRequest;
 import de.metas.handlingunits.picking.job.massprinting.MassPrintingService;
+import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJobLineId;
 import de.metas.handlingunits.picking.job.model.PickingJobQtyAvailable;
@@ -201,6 +203,19 @@ public class PickingRestController
 		return workflowRestController.toJson(wfProcess);
 	}
 
+	@PostMapping("/job/{wfProcessId}/target/advise")
+	public JsonWFProcess advisePackedHU(
+			@PathVariable("wfProcessId") @NonNull final String wfProcessIdStr,
+			@RequestParam(value = "lineId", required = false) @Nullable final String lineIdStr)
+	{
+		assertApplicationAccess();
+
+		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
+		final PickingJobLineId lineId = PickingJobLineId.ofNullableString(lineIdStr);
+		final WFProcess wfProcess = pickingMobileApplication.advisePackedHU(wfProcessId, lineId, getLoggedUserId());
+		return workflowRestController.toJson(wfProcess);
+	}
+
 	@PostMapping("/job/{wfProcessId}/target/tu/close")
 	public JsonWFProcess closeTUPickingTarget(
 			@PathVariable("wfProcessId") @NonNull final String wfProcessIdStr,
@@ -257,12 +272,7 @@ public class PickingRestController
 		assertApplicationAccess();
 
 		final ScannedCode scannedCode = ScannedCode.ofString(request.getScannedCode());
-		final HUQRCode qrCode = toHUQRCode(scannedCode);
-
-		final List<JsonHU> hus = handlingUnitsService.getHUsByQrCode(
-				JsonGetByQRCodeRequest.builder().qrCode(qrCode.toGlobalQRCodeString()).build(),
-				Env.getADLanguageOrBaseLanguage()
-		);
+		final List<JsonHU> hus = getHUsByScannedCode(request, scannedCode);
 
 		if (hus.isEmpty())
 		{
@@ -295,13 +305,46 @@ public class PickingRestController
 						}
 						catch (final NumberFormatException e)
 						{
-							log.warn("Cannot parse HU product qty '{}' for product {}. Overdelivery prompt will not fire.", p.getQty(), productNo, e);
+							log.warn("Cannot parse HU product qty '{}' for product {}. Response omits productQty, so the mobile client rejects the whole-TU scan and nothing is picked.", p.getQty(), productNo, e);
 						}
 						builder.productUom(p.getUom());
 					});
 		}
 
 		return builder.build();
+	}
+
+	/**
+	 * A scanned code is not necessarily an {@code HUQRCode}: a custom weight label parses to a {@code CustomHUQRCode},
+	 * an LMQ label to an {@code LMQRCode}, a GS1 barcode to a {@code GS1HUQRCode} — none of which {@link #toHUQRCode}
+	 * accepts. Those identify their HU only relative to the picking job line, so when the caller supplies the line we
+	 * resolve through the picking job (same resolution as the pick); otherwise we keep the plain-QR-code behaviour.
+	 */
+	private List<JsonHU> getHUsByScannedCode(
+			@NonNull final JsonGetHUInfoByScannedCodeRequest request,
+			@NonNull final ScannedCode scannedCode)
+	{
+		if (request.getWfProcessId() != null && request.getLineId() != null)
+		{
+			final HUInfo huInfo = pickingMobileApplication.resolvePickFromHU(
+					request.getWfProcessId(),
+					request.getLineId(),
+					scannedCode,
+					getLoggedUserId());
+
+			return handlingUnitsService.getByIds(
+					ImmutableSet.of(huInfo.getId()),
+					Env.getADLanguageOrBaseLanguage(),
+					huInfo.getQrCode());
+		}
+		else
+		{
+			final HUQRCode qrCode = toHUQRCode(scannedCode);
+			return handlingUnitsService.getHUsByQrCode(
+					JsonGetByQRCodeRequest.builder().qrCode(qrCode.toGlobalQRCodeString()).build(),
+					Env.getADLanguageOrBaseLanguage()
+			);
+		}
 	}
 
 	private HUQRCode toHUQRCode(final @NotNull ScannedCode scannedCode)

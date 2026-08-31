@@ -83,6 +83,14 @@ const translations = {
       appName: 'Picken',
     },
   },
+  launchers: {
+    operatorContext: {
+      error: {
+        title: 'Arbeitsplatz/Arbeitsstation derzeit nicht verfügbar',
+        retry: 'Erneut versuchen',
+      },
+    },
+  },
   components: {
     BarcodeScannerComponent: {
       scanTextPlaceholder: 'scan...',
@@ -133,6 +141,7 @@ const translations = {
       unPickBtn: 'Entpacken',
       target: 'Soll',
       picked: 'Ist',
+      available: 'Verfügbar',
       switchToManualInput: 'Manuell',
       switchToQrCodeInput: 'Scannen',
       scanSerialNo: 'Seriennummer scannen',
@@ -172,6 +181,8 @@ const translations = {
           'Mehrere GRAIs erkannt. Halten Sie den Leser näher an eine einzelne Kiste und scannen Sie erneut.',
         count: '%(scanned)s / %(total)s GRAIs gescannt',
         countExtra: '(%(extra)s extra)',
+        countSkipped: '(%(count)s übersprungen — bereits auf dieser Ladeeinheit)',
+        skippedNotice: '%(count)s Kiste(n) waren bereits auf dieser Ladeeinheit und wurden übersprungen',
         save: {
           buttonCaption: 'Speichern',
         },
@@ -197,19 +208,24 @@ const translations = {
         skippedProducts: 'Übersprungene Produkte',
       },
       rlzConfirmDeclined: 'Kommissionierung übersprungen — MHD zu kurz',
+      adviseCarrier: 'Lieferweg-Abfrage',
     },
     distribution: {
       DistributionLine: 'Pickenzeile',
       target: 'Soll',
       picked: 'Ist',
       scanHU: 'Scan HU',
-      scanProduct: 'Artikel scannen',
+      scanHUBarcodePlaceholder: 'HU-Barcode scannen',
+      scanProductGtinPlaceholder: 'Artikel (GTIN) scannen',
       scanDropToLocator: 'Ziel-Lagerplatz scannen',
       switchPickFromLocator: 'Lagerort leer',
       invalidLocatorQRCode: 'Lagerplatz QR ungültig',
       invalidQtyToMove: 'Bewegungsmenge ungültig',
+      cannotPickFromSelectedHU:
+        'Aus der gewählten HU kann nicht entnommen werden: %(reason)s. Bitte die HU zum Entnehmen scannen.',
       qrcode: {
         differentProduct: 'Das gescannte QR Produkt stimmt nicht mit dem im Pickauftrag überein',
+        productCodeWhereHUExpected: 'Das ist ein Artikel-Barcode (GTIN), kein HU-Barcode. Bitte zuerst die HU scannen.',
       },
       printMaterialInTransitReport: 'Materialbegleitschein',
     },

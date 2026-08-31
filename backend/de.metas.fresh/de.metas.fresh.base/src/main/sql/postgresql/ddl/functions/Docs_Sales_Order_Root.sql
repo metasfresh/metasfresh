@@ -10,7 +10,8 @@ RETURNS TABLE
 	poreference varchar(60),
 	displayhu text,
 	isoffer character(1),
-	isprepay character(1)
+	isprepay character(1),
+	isFactoringPartner character(1)
 	)
 AS
 $$	
@@ -20,7 +21,7 @@ SELECT
 	o.DocStatus,
 	dt.PrintName,
 	o.C_Currency_ID,
-	poreference,
+	o.poreference,
 	CASE
 		WHEN
 		EXISTS(
@@ -41,11 +42,13 @@ SELECT
 	CASE WHEN dt.docbasetype = 'SOO' AND dt.docsubtype ='PR'
 		THEN 'Y'
 		ELSE 'N'
-	END AS isprepay
+	END AS isprepay,
+	bp.IsFactoring AS isFactoringPartner
 FROM
 	C_Order o
 	INNER JOIN C_DocType dt ON o.C_DocTypeTarget_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
 	LEFT OUTER JOIN C_DocType_Trl dtt ON o.C_DocTypeTarget_ID = dtt.C_DocType_ID AND dtt.AD_Language = $2 AND dtt.isActive = 'Y'
+	LEFT OUTER JOIN C_BPartner bp ON bp.C_BPartner_ID = o.C_BPartner_ID
 WHERE
 	o.C_Order_ID = $1 AND o.isActive = 'Y'
 $$

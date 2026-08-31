@@ -6,6 +6,7 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
       "aggregationType": "sales_order",
       "allowPickingAnyHU": false,
       "anonymousPickHUsOnTheFly": false,
+      "carrierAdviseReadOnly": false,
       "customerName": "bpname-3",
       "deliveryBPLocationId": {
         "bpartnerId": 3,
@@ -31,12 +32,15 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
     "lines": [
       {
         "caption": "productName-6",
+        "carrierAdviseReadOnly": false,
+        "carrierServices": [ ],
         "currentPickingTarget": { },
         "deliveryBPLocationId": {
           "bpartnerId": 3,
           "repoId": 4
         },
         "id": 1000000,
+        "isManual": false,
         "isManuallyClosed": false,
         "orderLineSeqNo": 0,
         "packingInfo": {
