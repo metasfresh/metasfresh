@@ -1,18 +1,10 @@
 -- Source DDL: backend/de.metas.adempiere.adempiere/migration/src/main/sql/postgresql/ddl/public/views/M_Delivery_Planning_Delivery_Instructions_V.sql
 --
--- Same cartesian-product bug as M_ShipperTransportation_Delivery_Instructions_V (which installs the
--- correlated join directly, in 5820920),
--- present in this sibling view since it was introduced: M_ShippingPackage AND M_Delivery_Planning
--- are both joined to M_ShipperTransportation by instruction id only, with no correlation to each
--- other. DeliveryPlanningRepository.createAllocation creates one distinct M_ShippingPackage per
--- allocation, and every planning combined into one instruction shares that instruction's
--- M_ShipperTransportation_ID (DeliveryPlanningRepository.updateDeliveryPlanningFromInstruction).
--- At one active allocation per instruction (N=1) both joins degenerate to a harmless 1x1 pairing;
--- at N active allocations they produce the full N x N cross product -- every planning paired with
--- every package's quantities, and the M_ShippingPackage_ID key repeats N times.
---
--- The view correlates both M_ShippingPackage and M_Delivery_Planning to the same allocation row
--- (M_Delivery_Planning_Alloc) instead of each independently to the instruction.
+-- Correlate both M_ShippingPackage and M_Delivery_Planning to the SAME allocation row
+-- (M_Delivery_Planning_Alloc), not each independently to the instruction. Exactly one package exists
+-- per allocation, so joining each on the instruction id alone degenerates to a harmless 1x1 pairing
+-- at one active allocation but produces the full N x N cross product at N -- every planning paired
+-- with every package's quantities, and M_ShippingPackage_ID (this view's row key) repeating N times.
 
 DROP VIEW IF EXISTS M_Delivery_Planning_Delivery_Instructions_V$new
 ;

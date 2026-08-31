@@ -85,9 +85,8 @@ class DeliveryPlanningCombineRejectionTest
 	}
 
 	/**
-	 * The rejection rendered as text. In unit-test mode {@code IMsgBL} is the plain implementation, which renders
-	 * an AD_Message as its key followed by its parameters - so the rendered text is exactly what lets an assertion
-	 * see WHICH message was chosen AND which parameters it names, without any AD_Message row having to exist.
+	 * The rejection rendered as text. In unit-test mode {@code IMsgBL} renders an AD_Message as its key followed
+	 * by its parameters, so the text shows WHICH message was chosen and which parameters it names.
 	 */
 	private String rejectionTextOf(final DeliveryPlanning... deliveryPlannings)
 	{

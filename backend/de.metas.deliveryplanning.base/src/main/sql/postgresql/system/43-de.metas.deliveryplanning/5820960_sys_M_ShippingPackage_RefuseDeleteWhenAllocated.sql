@@ -1,29 +1,13 @@
 -- Delivery Planning: a delivery instruction is CANCELLED or CLOSED, never deleted - so refuse to delete
--- a shipping package that any M_Delivery_Planning_Alloc points at, active or retired.
+-- a shipping package that any M_Delivery_Planning_Alloc points at, active or retired. A retired
+-- allocation is exactly the history the retirement exists to keep, so "cancel it instead" is the answer
+-- there as much as for a live booking.
 --
--- The acceptance criteria know only close / remove / void / cancel; deleting an instruction or one of its
--- packages is not an operation this feature offers. Two things nevertheless make the delete reachable
--- today: M_ShipperTransportation and M_ShippingPackage both carry IsDeleteable='Y', and a DRAFTED
--- instruction's only guard is MMShipperTransportation.beforeDelete()'s isProcessed() check. Which foreign-key
--- action the allocation carries is not what makes the delete wrong, so the refusal is stated in the
--- application rather than in the schema: a cascade would destroy the rows silently, and NO ACTION would fail
--- with a raw constraint violation naming nothing the operator can act on.
---
--- Guarding the PACKAGE also guards the INSTRUCTION: PO.delete0() runs beforeDelete() before it fires
--- TYPE_BEFORE_DELETE, and MMShipperTransportation.beforeDelete() force-deletes every one of its
--- M_ShippingPackage lines, so deleting an instruction always reaches this guard first. A separate guard on
--- the instruction itself would be unreachable code.
---
--- Retired (IsActive='N') allocations refuse the delete too, deliberately: an instruction that once carried
--- a planning is exactly the document whose history the retirement exists to keep, and "cancel it instead"
--- is the answer there as much as for a live booking. The M_Delivery_Planning leg is the one place a delete
--- is legitimate - a shipment/receipt-schedule delete cascades into its plannings - and it is handled in
--- Java too: interceptor/M_Delivery_Planning.onDelete refuses the live case, then deletes the retired rows
--- itself, so the NO ACTION foreign keys declared in 5820400 never have to guess which kind they are looking
--- at.
---
--- Scoped by construction, not by a filter: only delivery planning creates allocations, so this message is
--- unreachable for the transport-order and handling-units packages that share M_ShippingPackage.
+-- The refusal lives in the application, not in a foreign-key action: a cascade would destroy the rows
+-- silently, and NO ACTION would fail with a raw constraint violation naming nothing the operator can act
+-- on. Guarding the PACKAGE also guards the INSTRUCTION -- deleting an instruction force-deletes its
+-- M_ShippingPackage lines and so always reaches this guard first, which is why the instruction itself
+-- carries no separate guard.
 --
 -- IDs allocated from idserver.metas.de on 2026-08-27:
 --   AD_Message   545814 (M_ShippingPackage.Allocated)

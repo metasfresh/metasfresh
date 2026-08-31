@@ -33,10 +33,7 @@ import java.util.Arrays;
  * Builds the {@link DeliveryPlanningAlloc}s an in-memory {@link DeliveryPlanning} carries, from the only thing the
  * rules under test actually ask about: the delivery instruction the planning sits on.
  * <p>
- * The remaining three ids are synthetic and unique per allocation. Every rule exercised by these tests reads the
- * instruction id (and, for the new list capabilities, the number of allocations) and nothing else - so pinning a
- * real allocation, planning or shipping-package id here would be inventing agreement no assertion checks. The
- * repository-level tests, which DO write allocation rows, use real ids.
+ * The remaining three ids are synthetic and unique per allocation.
  */
 final class DeliveryPlanningAllocTestHelper
 {

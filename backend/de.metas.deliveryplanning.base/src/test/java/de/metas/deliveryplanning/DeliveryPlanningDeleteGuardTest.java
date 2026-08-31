@@ -58,18 +58,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * {@code M_Delivery_Planning_Alloc}'s foreign keys are plain {@code NO ACTION}, so the database refuses to let
  * any allocation's planning be deleted - which is right for a LIVE booking and wrong for retired history, and
  * the database cannot tell the two apart. Both halves of that split therefore live in the interceptor: it
- * refuses the live case with a translatable message instead of a raw constraint violation, then deletes the
- * retired rows itself so the delete the schedule-cleanup path legitimately wants can go through.
- * <p>
- * Exercised through the REAL, registered {@code M_Delivery_Planning} interceptor (same mechanism as
- * {@link DeliveryPlanningClosedInterceptorTest}), deleting directly via {@link InterfaceWrapperHelper#delete} -
- * never through {@link DeliveryPlanningService#validateDeletion}, which is reserved for
- * {@code isUIAction}-triggered deletes and is exactly what a programmatic delete (a receipt/shipment-schedule
- * BEFORE_DELETE interceptor bulk-deleting its plannings) does NOT go through.
+ * refuses the live case with a translatable message, then deletes the retired rows itself.
  */
 class DeliveryPlanningDeleteGuardTest
 {
-	/** A fixed "removed at" stamp: the repository takes it as a parameter, so tests do not depend on wall-clock time. */
 	private static final Instant REMOVED_AT = Instant.parse("2026-08-31T10:00:00Z");
 
 	private static final int PRODUCT_ID = 540010;

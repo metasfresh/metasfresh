@@ -1,31 +1,11 @@
--- Delivery Planning: Generate gains an IsComplete parameter, default 'N'.
+-- Delivery Planning: "Generate Delivery Instruction" (AD_Process 585176) gains an IsComplete
+-- parameter defaulting to 'N', so completing the generated delivery instruction is the planner's
+-- choice rather than automatic -- the same parameter Combine carries. The process is renamed at the
+-- same time to state its cardinality, one delivery instruction per planning, now that Generate and
+-- Combine sit side by side on the same grid.
 --
--- Mirrors the Combine action's parameter (5820450, AD_Process_Para 543276) exactly: same element
--- (2047 'Fertigstellen'), same reference (20 Yes-No), same seq (10), same default 'N' - Generate no
--- longer completes the delivery instruction automatically; completing it stays available as an
--- option, same as Combine.
---
--- Also renames AD_Process 585176. Drops "Lieferinstruktion" (the document is named
--- "Lieferanweisung" everywhere else in the glossary) and adds the cardinality now that Generate
--- and Combine sit side by side on the same grid:
---   de: "Lieferanweisung je Lieferplanung erzeugen"
---   en: "Generate Delivery Instruction per Planning"
---
--- AD_Process is self-owned (no AD_Element_ID, no propagation function) - base row + every
--- AD_Process_Trl row are updated directly here, by explicit language, rather than a blanket
--- "every IsTranslated='N' row gets the base text" pass:
---   de_DE / de_CH: already carried the (old) German text with IsTranslated='Y' -> set to the new
---     German text, IsTranslated stays 'Y'.
---   en_US: carried the OLD English name with IsTranslated='N' (a stale review flag - the text
---     itself was already real English, just never marked reviewed). Set to the NEW English name,
---     IsTranslated='Y'. A blanket IsTranslated='N' fallback would have overwritten this row's
---     correct English text with German, which is wrong for an English-language UI.
---   fr_CH: carried the OLD English name (not French) with IsTranslated='N' - i.e. it was already
---     an untranslated fallback masquerading as content, not a real French translation. Rather than
---     leave the now-retired English name in place, it is reset to the new German base text with
---     IsTranslated='N' - the same fallback shape a freshly seeded translation row gets (see
---     5820450's seed INSERT), so an unmaintained fr_CH tracks the current name. No French
---     translation is introduced here, deliberately: nobody on this branch has provided one.
+-- AD_Process owns its labels directly (no AD_Element_ID, no propagation function), so the base row
+-- and each AD_Process_Trl row are updated here by explicit language.
 --
 -- IDs allocated from idserver.metas.de on 2026-08-27:
 --   AD_Process_Para  543279 (IsComplete, on 585176; reuses the existing AD_Element 2047 'Fertigstellen')
@@ -53,8 +33,8 @@ SET Name='Generate Delivery Instruction per Planning',
 WHERE AD_Process_ID=585176 AND AD_Language='en_US'
 ;
 
--- fr_CH: no French translation exists on this branch; reset the stale (retired) English name to
--- the current German base text - the same fallback shape a freshly seeded translation row gets.
+-- fr_CH has no French translation: fall back to the current German base text with
+-- IsTranslated='N', the shape a freshly seeded translation row gets.
 UPDATE AD_Process_Trl
 SET Name='Lieferanweisung je Lieferplanung erzeugen',
     IsTranslated='N',
@@ -63,7 +43,7 @@ WHERE AD_Process_ID=585176 AND AD_Language='fr_CH'
 ;
 
 -- ---------------------------------------------------------------------------------------------
--- 2) the IsComplete parameter - default 'N', mirrors Combine's 543276 (5820450) exactly
+-- 2) the IsComplete parameter - default 'N', mirroring Combine's 543276
 -- ---------------------------------------------------------------------------------------------
 INSERT INTO AD_Process_Para (AD_Process_Para_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
                              AD_Process_ID, AD_Element_ID, ColumnName, Name, SeqNo,

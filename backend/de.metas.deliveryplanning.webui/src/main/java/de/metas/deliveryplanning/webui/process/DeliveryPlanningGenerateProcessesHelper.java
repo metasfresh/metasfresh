@@ -187,9 +187,7 @@ final class DeliveryPlanningGenerateProcessesHelper
 
 	/**
 	 * Invariant: every caller has already established that this planning HAS a receipt (its direction is
-	 * Incoming or Dropship). A miss is a programmer error, hence {@code Check.assume*} rather than an
-	 * untranslated {@code AdempiereException} literal, which would read like a rejection missing its
-	 * AD_Message.
+	 * Incoming or Dropship), so a miss is a programmer error.
 	 */
 	public DeliveryPlanningReceiptInfo getReceiptInfo(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{

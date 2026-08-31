@@ -35,10 +35,8 @@ import java.sql.Timestamp;
 
 /**
  * One planning's share of a delivery instruction: the allocation to create, plus what goes on the
- * {@code M_ShippingPackage} it gets.
- * <p>
- * Everything the instruction holds once - forwarder, its business partner and location, the shipping date - is
- * read off the instruction itself rather than repeated here, so the two can never disagree.
+ * {@code M_ShippingPackage} it gets. Fields the instruction already holds (forwarder, its business partner and
+ * location, the shipping date) are read off the instruction, not repeated here.
  */
 @Value
 @Builder
@@ -56,19 +54,12 @@ public class DeliveryPlanningAllocCreateRequest
 
 	@Nullable OrderLineId orderLineId;
 
-	/**
-	 * The order behind this planning's allocation, resolved by the caller from {@code M_Delivery_Planning.C_Order_ID}
-	 * - never derived here, so it lands on the created {@code M_ShippingPackage} exactly as the caller resolved it,
-	 * including {@code null} for a planning that genuinely has no order.
-	 */
+	/** Lands on the created {@code M_ShippingPackage}; {@code null} for a planning that has no order. */
 	@Nullable OrderId orderId;
 
 	boolean toBeFetched;
 
-	/**
-	 * The planning's own dates, carried here so the instruction's fill-if-empty defaulting can read them
-	 * without a second load: every caller builds this request from an already-loaded planning record.
-	 */
+	/** The planning's own dates, used for the instruction's fill-if-empty defaulting. */
 	@Nullable Timestamp etd;
 
 	@Nullable Timestamp eta;

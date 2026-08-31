@@ -1,40 +1,14 @@
--- Task E5 -- rebuild the re-booking trail as a HISTORY tab on the Delivery Instruction window.
+-- The re-booking trail as a read-only HISTORY tab on the Delivery Instruction window (541657): its own
+-- table, view and tab. The view selects the retired allocations (dpa.IsActive='N') that both shipped
+-- views filter out, so the inactive allocation row itself is the supersession link -- nothing has to be
+-- inferred by comparing Created timestamps, which an aggregated header (N plannings, no single
+-- M_Delivery_Planning_ID) could not answer anyway.
 --
--- Owner decision 2026-08-28: window 541657 "Lieferanweisungen" ends up in its pre-branch TWO-tab
--- shape -- lines (546736 "Versandpaket", untouched) plus a history tab. AD_Tab 546754 is NOT that
--- history tab: 5820940 parks it, reserved for the future multi-leg / N:N display. So the history
--- capability gets its own table, view and tab here.
+-- The view re-exposes IsActive as a constant 'Y': dpa.IsActive='N' is the SELECTION criterion, not a
+-- property of the returned row, and passing it through would render every history entry as a
+-- deactivated record. IsUpdateable='N' + AD_Tab.IsReadOnly='Y' mean the constant is never written back.
 --
--- WHY a new view rather than re-pointing an existing one. Both shipped views
--- (M_Delivery_Planning_Delivery_Instructions_V, M_ShipperTransportation_Delivery_Instructions_V) join
--- m_delivery_planning_alloc ... AND dpa.isactive='Y', so a retired allocation -- the whole product of
--- the Remove/Move deactivation (task C6) -- appears in NO UI surface at all. This view selects exactly
--- the complement: dpa.IsActive='N', i.e. the plannings that WERE on this instruction and have since
--- been re-booked away. That inactive allocation row is the real supersession link; the tab it replaces
--- decided "earlier" by comparing Created timestamps off the instruction header (Created < @Created@),
--- a proxy that misreports an instruction created early and voided late, and that an aggregated header
--- (N plannings, no single M_Delivery_Planning_ID) cannot answer at all.
---
--- WHY the view re-exposes IsActive as a constant 'Y'. dpa.IsActive='N' is this view's SELECTION
--- criterion, not a property of the row it returns: a history entry is a valid, current record of a
--- past allocation. Passing the underlying 'N' through would render every row as a deactivated record
--- in the WebUI. AD_Column.IsUpdateable='N' plus AD_Tab.IsReadOnly='Y' keep the tab strictly read-only,
--- so the constant can never be written back anywhere.
---
--- Row identity: M_Delivery_Planning_Alloc_ID, the allocation's own PK -- unique per row by
--- construction, so this tab needs none of the composed-key machinery 5820860 had to give the sibling
--- view (whose key column repeats across the N rows of one instruction).
---
--- Parent link: AD_Tab.AD_Column_ID = this view's own M_ShipperTransportation_ID column, matching how
--- BOTH sibling tabs on these two windows bind (546736 -> AD_Column 540458, 546737 -> AD_Column 585522)
--- and the majority pattern in the AD. GridTabVO.buildLinkColumnNames() takes that column's field name
--- verbatim; GridTabVOBasedDocumentEntityDescriptorFactory.extractChildParentLinkColumnNames() then
--- falls back to the parent tab's own key column (M_ShipperTransportation_ID) because Parent_Column_ID
--- is left NULL -- the same resolution path the two sibling tabs already use.
---
--- Naming: deliberately NOT "Lieferanweisungen fuer die Lieferplanung" -- AD_Tab 546737 already carries
--- that caption and a German user cannot tell two tabs apart from an identical caption. This one says
--- history: de_DE/de_CH "Historie der Lieferplanungen", en_US "Delivery Planning History".
+-- Caption is NOT "Lieferanweisungen fuer die Lieferplanung": AD_Tab 546737 already carries that one.
 
 -- AD_Element for the tab caption. /*From ID Server*/ AD_Element_ID=585387
 INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,585387 /*From ID Server*/,0,'M_ShipperTransportation_Delivery_Planning_History_V',TO_TIMESTAMP('2026-08-28 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'Lieferplanungen, die dieser Lieferanweisung zugeordnet waren und inzwischen umgebucht wurden','D','Y','Historie der Lieferplanungen','Historie der Lieferplanungen',TO_TIMESTAMP('2026-08-28 10:00:00','YYYY-MM-DD HH24:MI:SS'),100)
@@ -53,10 +27,8 @@ UPDATE AD_Element_Trl SET Name='Delivery Planning History', Description='Deliver
        Updated=TO_TIMESTAMP('2026-08-28 10:00:10','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
  WHERE AD_Element_ID=585387 AND AD_Language='en_US'
 ;
--- No French wording exists for this element; fr_CH is pointed at the en_US text and left
--- IsTranslated='N' -- the flag says a row's text is correct FOR ITS LANGUAGE, and English text in
--- an fr_CH row is not. That is also what a translator later filters on. The de_DE / de_CH rows
--- above are 'Y' by the same rule: their German text IS correct German.
+-- fr_CH is pointed at the en_US text and left IsTranslated='N': no French wording exists for this
+-- element, and English text in an fr_CH row is not correct text for that language.
 UPDATE AD_Element_Trl SET Name='Delivery Planning History', Description='Delivery plannings that were allocated to this delivery instruction and have since been re-booked away', PrintName='Delivery Planning History', IsTranslated='N',
        Updated=TO_TIMESTAMP('2026-08-28 10:00:10','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
  WHERE AD_Element_ID=585387 AND AD_Language='fr_CH'
@@ -87,24 +59,13 @@ UPDATE AD_Element_Trl SET Name='Removed On', Description='When the delivery plan
 ;
 
 
--- M_Delivery_Planning_Alloc.DateRemoved -- a REAL column, stamped when the allocation is deactivated.
+-- M_Delivery_Planning_Alloc.DateRemoved -- the real column the history view surfaces as its date.
 --
--- The first cut of this tab surfaced dpa.Updated as the removal date. That is a bookkeeping timestamp,
--- not a business event: it is rewritten by ANY later UPDATE on the allocation row, so one unrelated
--- touch silently re-dates the whole history. Not theoretical on this branch -- 5820530 (the alloc
--- backfill), 5820950/5820970 (FK churn) and this script's own backfill all write allocation rows,
--- retired ones included. So the event gets its own column, written exactly once, at the single choke
--- point every retirement path routes through (DeliveryPlanningRepository.deactivateAllocationRecords --
--- remove-from, the source half of a move, close and void alike).
+-- timestamp WITH time zone (AD_Reference 16), matching Created/Updated rather than the ETD/ETA style:
+-- this is an event instant, not a planned calendar date.
 --
--- Type: timestamp WITH time zone, FieldLength 35, AD_Reference 16 -- deliberately matching Created /
--- Updated (the audit stamps this column replaces as the history date), not the ETD/ETA style
--- (timestamp without time zone), because this is an event instant, not a planned calendar date.
---
--- PersonalDataCategory='NP' here and on every AD_Column below: none of these columns holds personal
--- data -- they are ids, event/plan timestamps, quantities and a release number. CreatedBy/UpdatedBy are
--- audit-user references, which this AD classifies 'NP' essentially universally (3227 of 3261 such
--- columns), and which the sibling M_Delivery_Planning_Alloc columns from 5820400 also carry as 'NP'.
+-- PersonalDataCategory='NP' here and on every AD_Column below: these columns hold ids, event/plan
+-- timestamps, quantities and a release number -- no personal data.
 /* DDL */ SELECT public.db_alter_table('M_Delivery_Planning_Alloc','ALTER TABLE public.M_Delivery_Planning_Alloc ADD COLUMN IF NOT EXISTS DateRemoved timestamp with time zone')
 ;
 
@@ -114,11 +75,9 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ;
 SELECT update_Column_Translation_From_AD_Element(585388);
 
--- Backfill. dpa.Updated is the BEST AVAILABLE APPROXIMATION for rows retired before this column
--- existed, and nothing better exists: no other record of the deactivation instant was ever kept. It is
--- exactly as wrong as the column it replaces, but only for these pre-existing rows, and it stops
--- drifting the moment this script runs -- every row retired afterwards carries a stamp written once.
--- Only inactive rows get a value: an ACTIVE allocation has not been removed and must read NULL.
+-- Backfill: for rows retired before this column existed, dpa.Updated is the only record of the
+-- deactivation instant that was ever kept -- an approximation, and only for those rows. Only inactive
+-- rows get a value: an ACTIVE allocation has not been removed and must read NULL.
 SELECT backup_table('m_delivery_planning_alloc', '_dateremoved_backfill');
 
 UPDATE M_Delivery_Planning_Alloc
@@ -152,13 +111,13 @@ WHERE dpa.isactive = 'N'
 ;
 
 -- AD_Table. Flags mirror the sibling view table 542287 (AccessLevel 3, IsView, IsDeleteable='N',
--- IsHighVolume='Y' -- both are view-backed child tabs on this same window). /*From ID Server*/
+-- IsHighVolume='Y' -- both are view-backed child tabs on this window). /*From ID Server*/
 INSERT INTO AD_Table (AccessLevel,ACTriggerLength,AD_Client_ID,AD_Org_ID,AD_Table_ID,AD_Window_ID,CopyColumnsFromTable,Created,CreatedBy,EntityType,ImportTable,IsActive,IsAutocomplete,IsChangeLog,IsDeleteable,IsDLM,IsEnableRemoteCacheInvalidation,IsHighVolume,IsSecurityEnabled,IsView,LoadSeq,Name,PersonalDataCategory,ReplicationType,TableName,TooltipType,Updated,UpdatedBy,WEBUI_View_PageLength) VALUES ('3',0,0,0,542642 /*From ID Server*/,541657,'N',TO_TIMESTAMP('2026-08-28 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'D','N','Y','N','N','N','N','Y','Y','N','Y',0,'Delivery Planning History','NP','L','M_ShipperTransportation_Delivery_Planning_History_V','DTI',TO_TIMESTAMP('2026-08-28 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 INSERT INTO AD_Table_Trl (AD_Language,AD_Table_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Table_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Table t WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Table_ID=542642 AND NOT EXISTS (SELECT 1 FROM AD_Table_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Table_ID=t.AD_Table_ID)
 ;
 
--- Table-ID sequence, as every AD_Table gets one (mirrors 5673710's handling of 542287). /*From ID Server*/
+-- Table-ID sequence, as every AD_Table gets one. /*From ID Server*/
 INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNo,Updated,UpdatedBy) VALUES (0,0,556654 /*From ID Server*/,TO_TIMESTAMP('2026-08-28 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table M_ShipperTransportation_Delivery_Planning_History_V',1,'Y','N','Y','Y','M_ShipperTransportation_Delivery_Planning_History_V',1000000,TO_TIMESTAMP('2026-08-28 10:00:00','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 CREATE SEQUENCE IF NOT EXISTS M_SHIPPERTRANSPORTATION_DELIVERY_PLANNING_HISTORY_V_SEQ INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 START 1000000
@@ -253,11 +212,10 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ;
 SELECT update_Column_Translation_From_AD_Element(608);
 
--- The tab. SeqNo 40 puts it after 546736 "Versandpaket" (20); 546754 (30) is parked by 5820940, so the
--- window renders exactly two child tabs. IsReadOnly='Y' + IsInsertRecord='N': an audit trail is never
--- edited from the UI. AD_Column_ID names THIS view's M_ShipperTransportation_ID column as the child
--- link (see the header note); Parent_Column_ID stays NULL so the framework falls back to the parent
--- tab's own key column, exactly as 546736/546737 do. /*From ID Server*/
+-- The tab. SeqNo 40 puts it after 546736 "Versandpaket" (20). IsReadOnly='Y' + IsInsertRecord='N': an
+-- audit trail is never edited from the UI. AD_Column_ID names THIS view's M_ShipperTransportation_ID
+-- column as the child link; Parent_Column_ID stays NULL so the framework falls back to the parent tab's
+-- own key column, as the sibling tabs 546736/546737 also do. /*From ID Server*/
 INSERT INTO AD_Tab (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Tab_ID,AD_Table_ID,AD_Window_ID,AllowQuickInput,Created,CreatedBy,Description,EntityType,HasTree,ImportFields,InternalName,IsActive,IsAdvancedTab,IsAutodetectDefaultDateFilter,IsCheckParentsChanged,IsGenericZoomTarget,IsGridModeOnly,IsInfoTab,IsInsertRecord,IsQueryOnLoad,IsReadOnly,IsRefreshAllOnActivate,IsRefreshViewOnChangeEvents,IsSearchActive,IsSearchCollapsed,IsSingleRow,IsSortTab,IsTranslationTab,MaxQueryRecords,Name,Processing,SeqNo,TabLevel,Updated,UpdatedBy) VALUES (0,593417,585387,0,549416 /*From ID Server*/,542642,541657,'N',TO_TIMESTAMP('2026-08-28 10:00:20','YYYY-MM-DD HH24:MI:SS'),100,'Lieferplanungen, die dieser Lieferanweisung zugeordnet waren und inzwischen umgebucht wurden','D','N','N','M_ShipperTransportation_Delivery_Planning_History_V','Y','N','Y','Y','N','N','N','N','Y','Y','N','N','Y','Y','N','N','N',0,'Historie der Lieferplanungen','N',40,1,TO_TIMESTAMP('2026-08-28 10:00:20','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 INSERT INTO AD_Tab_Trl (AD_Language,AD_Tab_ID, CommitWarning,Description,Help,Name,QuickInput_CloseButton_Caption,QuickInput_OpenButton_Caption, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Tab_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.QuickInput_CloseButton_Caption,t.QuickInput_OpenButton_Caption, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Tab t WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Tab_ID=549416 AND NOT EXISTS (SELECT 1 FROM AD_Tab_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Tab_ID=t.AD_Tab_ID)
@@ -266,10 +224,9 @@ SELECT update_tab_translation_from_ad_element(585387);
 SELECT AD_Element_Link_Create_Missing_Tab(549416);
 
 -- AD_Fields. The key field (M_Delivery_Planning_Alloc_ID) and the link field
--- (M_ShipperTransportation_ID) MUST exist even though they are not displayed: GridTabVO
--- .getFieldByAD_Column_ID() resolves the link column through AD_Field, and
--- GridTabVOBasedDocumentEntityDescriptorFactory.isTreatFieldAsKey() looks for a key among the tab's
--- FIELDS, not among the table's columns. Every field is IsReadOnly='Y'.
+-- (M_ShipperTransportation_ID) MUST exist even though they are not displayed -- the framework resolves
+-- both the link column and the key through the tab's FIELDS, not through the table's columns. Every
+-- field is IsReadOnly='Y'.
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,Updated,UpdatedBy) VALUES (0,593416,783026 /*From ID Server*/,0,549416,TO_TIMESTAMP('2026-08-28 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,10,'D','Y','N','N','N','N','N','Y','N','Lieferplanung-Zuordnung',0,0,TO_TIMESTAMP('2026-08-28 10:00:00','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=783026 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
@@ -337,9 +294,9 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 SELECT AD_Element_Link_Create_Missing_Field(783038);
 
 -- WebUI layout. A single section/column/element group -- the tab is a flat read-only list.
--- Both AD_UI_Element.IsDisplayedGrid/SeqNoGrid and AD_Field.IsDisplayedGrid/SeqNoGrid are set: the
--- section-backed rendering path reads AD_UI_Element (the defect 5820940 had to repair on 546754),
--- while the plain document path reads AD_Field. Setting both makes the grid correct either way.
+-- IsDisplayedGrid/SeqNoGrid are set on BOTH AD_UI_Element and AD_Field: the section-backed rendering
+-- path reads AD_UI_Element, the plain document path reads AD_Field, so setting both makes the grid
+-- correct either way.
 INSERT INTO AD_UI_Section (AD_Client_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy,Value) VALUES (0,0,549416,547921 /*From ID Server*/,TO_TIMESTAMP('2026-08-28 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'Y',10,TO_TIMESTAMP('2026-08-28 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'history')
 ;
 INSERT INTO AD_UI_Section_Trl (AD_Language,AD_UI_Section_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_UI_Section_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_UI_Section t WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_UI_Section_ID=547921 AND NOT EXISTS (SELECT 1 FROM AD_UI_Section_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_UI_Section_ID=t.AD_UI_Section_ID)

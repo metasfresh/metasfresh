@@ -54,26 +54,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Asserts what the three views over the delivery-planning-to-delivery-instruction allocation return for one
- * delivery instruction.
+ * delivery instruction. They are database VIEWS with no Java model class, so the steps read them with raw SQL:
+ * a join defect in a view exists only in SQL, out of reach of an in-memory test.
  * <p>
- * These are database VIEWS with no Java model class, so the steps read them with raw SQL - and that is the
- * point of this step def existing at all: a join defect in a view exists only in SQL, so no in-memory unit
- * test can reach it. Every step asserts the same three-part row identity an instruction owes its plannings -
- * <b>as many rows as it has allocations and no more</b> (a package joined to the instruction instead of to
- * its allocation row multiplies that into the N x N cross product), <b>each row carrying its OWN planning's
- * product and quantities</b> (a cross product also pairs the right number of rows with the wrong partners),
- * and <b>a row key that is unique across them</b>.
- * <p>
- * The three differ in what they are worth today, which the scenarios calling them state rather than blur:
- * <ul>
- * <li>{@code M_Delivery_Planning_Delivery_Instructions_V} - LIVE, behind tab 546737 of the delivery planning
- * window (541632). A regression here is visible to a planner today.</li>
- * <li>{@code M_ShipperTransportation_Delivery_Planning_History_V} - LIVE, behind the history tab 549416 of
- * the delivery instruction window (541657); one row per RETIRED ({@code IsActive='N'}) allocation.</li>
- * <li>{@code M_ShipperTransportation_Delivery_Instructions_V} - PARKED: its only consumer, tab 546754, is
- * {@code IsActive='N'}, reserved for a future multi-leg display. Guarded anyway, so a cartesian-product
- * regression cannot sit undetected until that display is built.</li>
- * </ul>
+ * Every step asserts the same three-part row identity an instruction owes its plannings - <b>as many rows as it
+ * has allocations and no more</b>, <b>each row carrying its OWN planning's product and quantities</b>, and <b>a
+ * row key that is unique across them</b>. A package joined to the instruction instead of to its allocation row
+ * breaks all three at once: it multiplies the rows into the N x N cross product.
  */
 @RequiredArgsConstructor
 public class Delivery_Instructions_V_StepDef
@@ -118,9 +105,9 @@ public class Delivery_Instructions_V_StepDef
 
 	/**
 	 * The rows {@code M_ShipperTransportation_Delivery_Instructions_V} returns for one delivery instruction: the
-	 * given ones and nothing else. Its row key is the composed one migration {@code 5820860} declared -
-	 * ({@code M_ShipperTransportation_ID}, {@code M_Delivery_Planning_ID}) - because the instruction id alone
-	 * repeats across the rows of an aggregated instruction.
+	 * given ones and nothing else. Its row key is composed - ({@code M_ShipperTransportation_ID},
+	 * {@code M_Delivery_Planning_ID}) - because the instruction id alone repeats across the rows of an
+	 * aggregated instruction.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -145,7 +132,7 @@ public class Delivery_Instructions_V_StepDef
 	{
 		validateView(
 				"M_ShipperTransportation_Delivery_Instructions_V",
-				// no single key column: the composed row key of this view, per migration 5820860
+				// no single key column: the composed row key of this view
 				"M_ShipperTransportation_ID || '-' || M_Delivery_Planning_ID",
 				"PlannedLoadedQuantity",
 				"PlannedDischargeQuantity",
@@ -155,14 +142,10 @@ public class Delivery_Instructions_V_StepDef
 
 	/**
 	 * The rows {@code M_ShipperTransportation_Delivery_Planning_History_V} returns for one delivery instruction:
-	 * one per RETIRED ({@code IsActive='N'}) allocation - what the instruction's history tab shows a planner
-	 * about loads that were once booked on it. Keyed by {@code M_Delivery_Planning_Alloc_ID}.
+	 * one per RETIRED ({@code IsActive='N'}) allocation, keyed by {@code M_Delivery_Planning_Alloc_ID}.
 	 * <p>
 	 * The quantities are the planning's CURRENT ones ({@code M_Delivery_Planning.PlannedLoadedQuantity}), not a
-	 * snapshot from the retired shipping package - this view joins no package at all, which is also why it
-	 * cannot produce the cross product its two siblings did. Asserted here so that stays true: the natural next
-	 * request for this tab is the retired package's quantities, and adding that join by instruction id instead
-	 * of by allocation row is exactly how the sibling views got it wrong.
+	 * snapshot from the retired shipping package - this view joins no package at all.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns

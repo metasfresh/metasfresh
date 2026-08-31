@@ -1,25 +1,10 @@
--- Delivery planning direction: add the third value 'Dropship' to AD_Reference 541689
--- (M_Delivery_Planning_Types) and give all three values their German labels.
---
--- The direction of a delivery planning becomes a single three-valued field:
---   Incoming  / Eingehend         - goods arrive at an own warehouse
---   Outgoing  / Ausgehend         - goods leave an own warehouse
---   Dropship  / Streckengeschaeft - goods travel from the vendor straight to the customer
---
--- German base labels follow the AD_Ref_List base-language convention (German in
--- AD_Ref_List.Name, English as the en_US AD_Ref_List_Trl override). Until now the two
--- existing values carried their untranslated English seed in every language, so a German
--- planner picked from 'Incoming' / 'Outgoing'.
---
--- 'Streckengeschaeft' is the wording metasfresh already ships for this movement in the
--- C_Order.IsDropShip description ("Beim Streckengeschaeft wird die Ware direkt vom
--- Lieferanten zum Kunden geliefert").
+-- Delivery planning direction: adds the third value 'Dropship' to AD_Reference 541689
+-- (M_Delivery_Planning_Types) and gives all three values their German labels --
+-- Incoming / Eingehend, Outgoing / Ausgehend, Dropship / Streckengeschaeft (goods travel from the
+-- vendor straight to the customer, the wording C_Order.IsDropShip already uses).
 --
 -- IDs allocated from idserver.metas.de on 2026-08-26:
 --   AD_Ref_List 544356 (Dropship value on AD_Reference 541689)
---
--- The column M_Delivery_Planning.M_Delivery_Planning_Type (AD_Column 585005) carries no
--- database check constraint, so no constraint has to be widened for the new value.
 
 -- 1) the new Dropship value; German in the base Name column
 INSERT INTO AD_Ref_List (AD_Ref_List_ID, AD_Reference_ID, Value, Name, ValueName, Description, EntityType, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy)

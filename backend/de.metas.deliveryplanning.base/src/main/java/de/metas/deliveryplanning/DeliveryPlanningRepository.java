@@ -94,18 +94,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * PurchaseOrderToShipperTransportationRepository, MPackageRepository (the three transport and packing tables are
  * shared with the transport-order role, which knows nothing of delivery planning)
  * <p>
- * Holds no other bounded context's DAO/BL for reading BUSINESS state: the order, order line, receipt schedule and
- * shipment schedule a planning's dates are recomputed from are read by {@link DeliveryPlanningService}, which hands
- * this class a fully-resolved {@link DeliveryInstructionDates} to write verbatim - see
- * {@link DeliveryPlanningService#resetDatesFromOrderAndSchedule} and
- * {@link DeliveryPlanningService#resolveInstructionDatesForAllocation}.
- * <p>
- * The ONE injected collaborator is {@link DimensionService}, and it is deliberate rather than an exception that
- * slipped in: dimensions (the AD-level {@code Dimension} carried on almost every document row) are a persistence
- * concern, not a delivery-planning decision - the service has no dimension to decide, it is copied from the source
- * row onto the target row at the moment the target row is written. Moving the call up to
- * {@link DeliveryPlanningService} would push a pure persistence detail into business code without removing any
- * coupling.
+ * The one injected collaborator is {@link DimensionService}: a dimension is copied from the source row onto the
+ * target row as that row is written, which is persistence rather than a delivery-planning decision.
  */
 @Repository
 public class DeliveryPlanningRepository
@@ -130,16 +120,10 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * The records of the given delivery plannings, in ONE round trip, in the order the ids were given.
-	 * <p>
-	 * The order is the caller's because it is the order the allocations are numbered in; the encounter order of a
-	 * query is not one. Deliberately unfiltered by {@code IsActive}, exactly like the single-row
-	 * {@link #getById(DeliveryPlanningId)} it replaces: a selection can legitimately name a closed planning, and
-	 * whether that is admissible is a rule of its own, not something a loader may decide by dropping the row.
+	 * The records of the given delivery plannings, in ONE round trip, in the caller's id order - the order the
+	 * allocations are numbered in. Unfiltered by {@code IsActive}: a selection can legitimately name a closed planning.
 	 *
-	 * @throws AdempiereException for an id with no matching row. A resolved id without a record is a DANGLING
-	 * 		reference - which {@code getById} also throws for - and not a planning that may be quietly dropped from
-	 * 		the result, which is what a bare map lookup would silently turn it into.
+	 * @throws AdempiereException for an id with no matching row - a dangling reference, not a row to drop silently.
 	 */
 	protected ImmutableList<I_M_Delivery_Planning> getByIds(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
 	{
@@ -165,8 +149,7 @@ public class DeliveryPlanningRepository
 			@NonNull final Map<DeliveryPlanningId, I_M_Delivery_Planning> recordsById,
 			@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
-		// an invariant: the map was just loaded from a query over these very ids, so a miss means the
-		// caller passed an id the load never saw - a programmer error, not anything a planner can provoke
+		// the map was just loaded from a query over these very ids, so a miss is a programmer error
 		return Check.assumeNotNull(recordsById.get(deliveryPlanningId),
 				"No {} found for {}={}", I_M_Delivery_Planning.Table_Name,
 				I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningId.getRepoId());
@@ -436,9 +419,8 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * Guarded like the canonical closed/open pair ({@code ReceiptScheduleBL.close}): closing an already-closed
-	 * planning throws {@code @Closed@=@Y@} rather than silently doing nothing. All-or-nothing over the
-	 * selection - checked before anything is written, so a mixed selection leaves no row half-closed.
+	 * All-or-nothing over the selection: closing an already-closed planning throws {@code @Closed@=@Y@}, and the
+	 * check runs before anything is written, so a mixed selection leaves no row half-closed.
 	 */
 	public void closeSelectedDeliveryPlannings(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
@@ -464,7 +446,7 @@ public class DeliveryPlanningRepository
 
 	/**
 	 * The counterpart of {@link #closeSelectedDeliveryPlannings}: reopening an already-open planning throws
-	 * {@code @Closed@=@N@} rather than silently doing nothing.
+	 * {@code @Closed@=@N@}.
 	 */
 	public void reOpenSelectedDeliveryPlannings(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
@@ -518,8 +500,6 @@ public class DeliveryPlanningRepository
 
 		deliveryInstructionRecord.setAD_Org_ID(request.getOrgId().getRepoId());
 
-		// derived by the caller from the seed delivery planning(s) - never defaulted here or by the column: see
-		// DeliveryInstructionCreateRequest#transportDirection
 		deliveryInstructionRecord.setTransportDirection(request.getTransportDirection().getCode());
 
 		deliveryInstructionRecord.setShipper_BPartner_ID(request.getShipperBPartnerId().getRepoId());
@@ -552,9 +532,6 @@ public class DeliveryPlanningRepository
 
 		save(deliveryInstructionRecord);
 
-		// the seed request's dates are already fully resolved onto deliveryInstructionRecord above (the caller,
-		// DeliveryPlanningService#createDeliveryInstructionRequest, derives ATD/ATA from ETD/ETA before this is
-		// called) - so there is nothing left to resolve here; null means "leave the header dates exactly as set"
 		createAllocations(deliveryInstructionRecord, ImmutableList.of(toAllocCreateRequest(request)), null);
 
 		return deliveryInstructionRecord;
@@ -580,16 +557,11 @@ public class DeliveryPlanningRepository
 
 	/**
 	 * Allocates the given delivery plannings to the given delivery instruction, each with its own
-	 * {@code M_ShippingPackage}.
-	 * <p>
-	 * The {@code LineNo}s continue in tens after the instruction's highest existing one, following the order of
-	 * {@code requests} - so a caller that wants a particular print order has to hand the requests over already
-	 * sorted; the encounter order of a query is not one.
+	 * {@code M_ShippingPackage}. {@code LineNo}s continue in tens after the instruction's highest existing one, in
+	 * the order of {@code requests} - a caller that wants a particular print order hands them over sorted.
 	 *
-	 * @param resolvedDates the instruction header's date fields, ALREADY resolved by the caller
-	 * 		({@link DeliveryPlanningService#resolveInstructionDatesForAllocation}) - written verbatim, no defaulting
-	 * 		decision made here. {@code null} means "leave the header's current dates untouched" (the caller has
-	 * 		nothing to contribute, or has already resolved and written them itself).
+	 * @param resolvedDates the instruction header's date fields, written verbatim; {@code null} leaves the
+	 * 		header's current dates untouched.
 	 */
 	public ImmutableList<DeliveryPlanningAllocId> createAllocations(
 			@NonNull final ShipperTransportationId deliveryInstructionId,
@@ -600,9 +572,7 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * Convenience for a caller with nothing to say about the instruction's dates - creates the allocations,
-	 * leaves the header's dates exactly as they are. Not a decision-making shortcut: it makes no defaulting
-	 * choice, it simply skips the date write entirely, same as passing {@code resolvedDates=null} above.
+	 * Creates the allocations and leaves the instruction header's dates exactly as they are.
 	 */
 	public ImmutableList<DeliveryPlanningAllocId> createAllocations(
 			@NonNull final ShipperTransportationId deliveryInstructionId,
@@ -612,9 +582,7 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * Package-private rather than private: {@link DeliveryPlanningService} calls this overload directly with an
-	 * ALREADY-loaded instruction record when it had to load one anyway to resolve {@code resolvedDates} - avoiding
-	 * the second load the {@link ShipperTransportationId}-taking overload above would otherwise cost.
+	 * Package-private for the caller that already holds the instruction record, so it is not loaded twice.
 	 */
 	ImmutableList<DeliveryPlanningAllocId> createAllocations(
 			@NonNull final I_M_ShipperTransportation deliveryInstructionRecord,
@@ -661,10 +629,8 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * Writes the given RESOLVED value onto the instruction header, field for field, unconditionally - no
-	 * per-field null-check, no decision: the caller has already decided what each field should end up as. Saved
-	 * only when at least one field actually differs, so a resolution that changes nothing costs no write and
-	 * fires no {@code AFTER_CHANGE} interceptor.
+	 * Writes the given dates onto the instruction header field for field, unconditionally. Saved only when at
+	 * least one field actually differs, so a no-op resolution costs no write and fires no {@code AFTER_CHANGE}.
 	 */
 	private static void applyDates(@NonNull final I_M_ShipperTransportation record, @NonNull final DeliveryInstructionDates dates)
 	{
@@ -689,14 +655,8 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * Writes the given RESOLVED date values onto each of the given ALREADY-LOADED plannings, verbatim - the
-	 * repository-side half of {@link DeliveryPlanningService#resetDatesFromOrderAndSchedule}, which reads the
-	 * order/schedule, derives the values and is the only place that decides what they should be. This method
-	 * makes no decision: handed a record and a resolved value, it writes exactly that.
-	 * <p>
-	 * Deliberately takes the records rather than their ids: the caller already batch-loaded them (via
-	 * {@link #getByIds}) to read the fields the resolution needed - a second {@code getByIds} here would reload
-	 * the exact same rows, the per-operation N+1 {@link DeliveryPlanningBatchLoadingTest} exists to pin.
+	 * Writes the given dates onto each of the given ALREADY-LOADED plannings, verbatim. Takes the records rather
+	 * than their ids because the caller already batch-loaded them; re-loading by id would repeat the round trip.
 	 */
 	public void writePlanningDates(
 			@NonNull final Collection<I_M_Delivery_Planning> deliveryPlanningRecords,
@@ -764,23 +724,11 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * On remove from the instruction, on the source half of a move, and on close: the allocations of the given
-	 * plannings and the shipping packages they point at are deactivated rather than deleted, so the record of what
-	 * was once planned survives - the same reason {@link #deactivateAllocations(ShipperTransportationId)}
-	 * deactivates rather than deletes on void/cancel.
-	 * <p>
-	 * Only active allocations are touched: a deactivated one already records an instruction this planning was
-	 * taken off before (a void or an earlier removal), and that history is not what the caller is undoing here.
-	 * <p>
-	 * "A planning cannot be removed from a completed instruction" is enforced entirely at the service layer, by
-	 * each caller's own rejection-reason check BEFORE this method is ever called -
-	 * {@link DeliveryPlanningService#getRemoveFromRejectionReason} for the remove-from path,
-	 * {@link DeliveryPlanningService#getMoveToRejectionReason} for the source half of a move. The allocation itself
-	 * carries no status to check here: it is not a document.
+	 * Deactivates - rather than deletes - the given plannings' ACTIVE allocations and the shipping packages they
+	 * point at, so the record of what was once planned survives. A deactivated allocation is left alone: it
+	 * records an instruction the planning was taken off earlier, which is not what the caller is undoing.
 	 *
-	 * @return the planning ids ACTUALLY deactivated - a subset of the input when one of them had no active
-	 * 		allocation to begin with. {@link DeliveryPlanningService} resets exactly these plannings' dates from
-	 * 		their order and schedule afterwards - a decision this repository does not make.
+	 * @return the planning ids ACTUALLY deactivated - a subset of the input when one had no active allocation.
 	 */
 	public ImmutableSet<DeliveryPlanningId> deactivateAllocations(
 			@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds,
@@ -796,10 +744,8 @@ public class DeliveryPlanningRepository
 
 	/**
 	 * On void or cancel of the delivery instruction: the allocations and their shipping packages are deactivated
-	 * rather than deleted, so the record of what was once planned survives.
-	 * <p>
-	 * {@code IsActive='N'} is also what releases both partial unique indexes on the allocation, so the plannings
-	 * can be allocated again afterwards.
+	 * rather than deleted. {@code IsActive='N'} also releases both partial unique indexes on the allocation, so
+	 * the plannings can be allocated again afterwards.
 	 */
 	public DeactivatedAllocations deactivateAllocations(
 			@NonNull final ShipperTransportationId deliveryInstructionId,
@@ -809,22 +755,9 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * Shared by both {@code deactivateAllocations} overloads. The package-then-allocation order matches
-	 * {@link #deactivateAllocations(ShipperTransportationId)}'s original order for consistency - unlike a
-	 * delete, no FK constraint forces either write to go first.
-	 * <p>
-	 * This is also the single choke point every path that ends an allocation's active life routes through -
-	 * remove-from, the source half of a move, close and void alike - which is why both overloads report the
-	 * deactivated planning ids from HERE: {@link DeliveryPlanningService} resets each of their dates from the
-	 * order and schedule immediately after calling either overload, so a future fifth retirement path is
-	 * correct by construction as long as it also goes through one of these two.
-	 * <p>
-	 * Being that choke point is also why {@code DateRemoved} is stamped here and nowhere else. The delivery
-	 * instruction's history tab reads it as "when this planning left this instruction", and it must stay put
-	 * afterwards: {@code Updated} cannot serve, because any later write to the row - a data migration, an FK
-	 * change, a backfill - silently re-dates the whole history. Both entry queries select ACTIVE allocations
-	 * only ({@code addOnlyActiveRecordsFilter} / {@code queryActiveAllocationsByInstructionId}), so an
-	 * already-retired allocation never reaches this loop and the stamp is written exactly once per allocation.
+	 * Shared by both {@code deactivateAllocations} overloads, and the single choke point every path that ends an
+	 * allocation's active life routes through - which is why {@code DateRemoved} is stamped here and nowhere
+	 * else. Both entry queries select ACTIVE allocations only, so the stamp is written once per allocation.
 	 */
 	private DeactivatedAllocations deactivateAllocationRecords(
 			@NonNull final List<I_M_Delivery_Planning_Alloc> allocRecords,
@@ -855,8 +788,8 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * The two things {@link #deactivateAllocationRecords} produces for its caller: what it deactivated, and
-	 * which plannings that touched - a repository return value, not a decision.
+	 * What {@link #deactivateAllocationRecords} produces: the allocations it deactivated, and which plannings
+	 * that touched.
 	 */
 	@Value
 	@Builder
@@ -867,10 +800,8 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * The shipping packages the given allocations point at, keyed by id, in one round trip.
-	 * <p>
-	 * Every allocation has one - {@code M_ShippingPackage_ID} is mandatory and foreign-keyed - so a lookup in the
-	 * result never misses.
+	 * The shipping packages the given allocations point at, keyed by id, in one round trip. Every allocation has
+	 * one ({@code M_ShippingPackage_ID} is mandatory and foreign-keyed), so a lookup never misses.
 	 */
 	private ImmutableMap<ShippingPackageId, I_M_ShippingPackage> getShippingPackagesOf(@NonNull final List<I_M_Delivery_Planning_Alloc> allocRecords)
 	{
@@ -893,17 +824,9 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * The ACTIVE allocations of each of the given plannings, grouped by planning. A planning without an active
-	 * allocation is absent from the result (and {@link ImmutableListMultimap#get(Object)} answers it with an empty
-	 * list, never {@code null}).
-	 * <p>
-	 * ACTIVE allocations only, which is what "currently allocated" means: a deactivated allocation is what a voided
-	 * instruction leaves behind, and its planning is no longer cargo of that document.
-	 * <p>
-	 * A multimap and NOT a one-key-per-planning map: multi-leg transport allocates one planning to several
-	 * instructions, one per leg. {@code M_Delivery_Planning_Alloc_Planning_UQ} still permits only one active
-	 * allocation per planning today, so the lists are of size one - but a second one must group here, not throw
-	 * in the loader.
+	 * The ACTIVE allocations of each of the given plannings, grouped by planning - a planning without one is
+	 * absent from the result. A multimap rather than a one-key-per-planning map: a planning may be allocated to
+	 * more than one instruction.
 	 */
 	public ImmutableListMultimap<DeliveryPlanningId, DeliveryPlanningAlloc> getAllocationsByPlanningId(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
 	{
@@ -924,9 +847,6 @@ public class DeliveryPlanningRepository
 	/**
 	 * The ACTIVE allocations the given instruction currently holds, in ONE round trip - the other direction of
 	 * {@link #getAllocationsByPlanningId(Collection)}.
-	 * <p>
-	 * ACTIVE allocations only, which is what "currently holds" means: a deactivated allocation is what a voided
-	 * instruction leaves behind, and its planning is no longer cargo of this document.
 	 */
 	public ImmutableList<DeliveryPlanningAlloc> getAllocationsOfInstruction(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
@@ -938,9 +858,7 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * The delivery instructions ONE planning is currently allocated to, distinct - the id-only reduction of
-	 * {@link #getAllocationsByPlanningId(Collection)} that the two single-planning instruction lookups in this
-	 * class need. Empty for a planning on none, which makes both of them answer "no instruction" rather than fail.
+	 * The delivery instructions ONE planning is currently allocated to, distinct; empty for a planning on none.
 	 */
 	private ImmutableSet<ShipperTransportationId> getAllocatedInstructionIdsOf(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
@@ -962,8 +880,7 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * The delivery plannings the given instruction currently holds - {@link #getAllocationsOfInstruction} reduced
-	 * to the planning ids, for the callers that only need to know WHICH plannings, not which allocation rows.
+	 * The delivery plannings the given instruction currently holds, as ids.
 	 */
 	public ImmutableSet<DeliveryPlanningId> getAllocatedPlanningIds(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
@@ -980,10 +897,8 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * The {@code DocStatus} of each of the given delivery instructions, in one round trip.
-	 * <p>
-	 * The allocation itself carries no {@code DocStatus} - it is not a document - so this is read from the
-	 * instruction directly, the only authority on whether it is still a draft.
+	 * The {@code DocStatus} of each of the given delivery instructions, in one round trip - read from the
+	 * instruction because the allocation carries no {@code DocStatus} of its own.
 	 */
 	public ImmutableMap<ShipperTransportationId, DocStatus> getDeliveryInstructionDocStatuses(@NonNull final Collection<ShipperTransportationId> deliveryInstructionIds)
 	{
@@ -1007,14 +922,9 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * Stamps the given plannings' {@code ReleaseNo}, instruction reference and date fields from the given
-	 * delivery instruction - the same writer both the initial "add conforms to the instruction" moment and a
-	 * later "instruction changed, push it down to every allocated planning" sync use.
-	 * <p>
-	 * Whatever they carried before is overwritten, which is what a move off another instruction requires: the old
-	 * release number names a document the cargo is no longer on, so keeping it would leave two records disagreeing
-	 * about where the cargo is. The dates are overwritten for the same reason, unconditionally rather than only
-	 * while empty - see {@link #updateDeliveryPlanningFromInstruction}.
+	 * Stamps the given plannings' {@code ReleaseNo}, instruction reference and date fields from the given delivery
+	 * instruction, overwriting whatever they carried - a move off another instruction requires it, or two records
+	 * would disagree about where the cargo is.
 	 */
 	public void updateDeliveryPlanningsFromInstruction(
 			@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds,
@@ -1032,10 +942,7 @@ public class DeliveryPlanningRepository
 
 	/**
 	 * Same as {@link #updateDeliveryPlanningsFromInstruction(Collection, ShipperTransportationId)}, for a caller
-	 * that has just created the instruction and therefore already holds its record.
-	 * <p>
-	 * The plannings are loaded in ONE round trip: a whole grid selection is stamped here, and the planner is
-	 * waiting on it.
+	 * that already holds the instruction record. The plannings are loaded in ONE round trip.
 	 */
 	public void updateDeliveryPlanningsFromInstruction(
 			@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds,
@@ -1050,9 +957,6 @@ public class DeliveryPlanningRepository
 	/**
 	 * Clears the given plannings' {@code ReleaseNo} and instruction reference: they are on no delivery instruction
 	 * any more, and are therefore planable onto one again.
-	 * <p>
-	 * The allocation is not touched here - {@link #deactivateAllocations(Collection)} is what deactivates it, and
-	 * this is the planning-side half of the same removal.
 	 */
 	public void clearInstructionReference(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
 	{
@@ -1066,7 +970,7 @@ public class DeliveryPlanningRepository
 
 	private int getMaxAllocationLineNo(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
-		// deliberately not filtered by IsActive: a deactivated allocation's LineNo stays taken, so a later
+		// not filtered by IsActive: a deactivated allocation's LineNo stays taken, so a later
 		// allocation on the same instruction never reuses a number that was already printed
 		return queryBL.createQueryBuilder(I_M_Delivery_Planning_Alloc.class)
 				.addEqualsFilter(I_M_Delivery_Planning_Alloc.COLUMNNAME_M_ShipperTransportation_ID, deliveryInstructionId)
@@ -1082,15 +986,9 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * Whether the given planning is currently on a delivery instruction - asked of the allocation table itself,
-	 * which is the only authority on it.
-	 * <p>
-	 * Deliberately NOT read from {@code M_Delivery_Planning.ReleaseNo}. That column is a denormalised mirror kept
-	 * in step with the allocation by every retirement path, but it is not itself protected: anything that removes
-	 * an allocation row without going through those paths leaves a planning whose {@code ReleaseNo} says
-	 * "allocated" while nothing is. A guard built on the mirror would then refuse forever, and since every code
-	 * path that clears {@code ReleaseNo} works from the allocation row that no longer exists, the planning could
-	 * never be deleted nor planned again.
+	 * Whether the given planning is currently on a delivery instruction - asked of the allocation table, NOT of
+	 * the denormalised {@code M_Delivery_Planning.ReleaseNo} mirror: a mirror left saying "allocated" with no
+	 * allocation row behind it would refuse forever, and the planning could never be deleted nor planned again.
 	 */
 	public boolean hasActiveAllocation(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
@@ -1100,20 +998,10 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * Removes the given planning's allocation rows outright - the cleanup a delete of the planning itself owes,
-	 * done in Java, where the live-versus-retired split it depends on can actually be expressed.
-	 * <p>
-	 * Filters to {@code IsActive='N'} itself rather than trusting the caller to have refused the live case
-	 * first. {@link DeliveryPlanningService#assertNotCurrentlyAllocated} does run immediately before this in
-	 * the one current call site, but an invariant held only by call order is one a second call site - or a
-	 * concurrent transaction inserting a fresh allocation between the two statements - silently breaks. With
-	 * the filter, such a live row is simply left in place and the {@code NO ACTION} foreign key refuses the
-	 * planning's delete loudly, which is the safe direction to fail in.
-	 * <p>
-	 * What is removed is retired history: a retired allocation records what was once planned FOR this planning,
-	 * so once the planning itself is physically gone there is nothing left for it to be a history of. The
-	 * shipping packages are deliberately left alone - they are the instruction's own (retired) lines and belong
-	 * to a document that still exists.
+	 * Removes the given planning's retired allocation rows - the cleanup a delete of the planning itself owes.
+	 * Filters to {@code IsActive='N'} here rather than trusting the caller's prior check, so a concurrently
+	 * inserted live row is left in place and the {@code NO ACTION} foreign key refuses the delete loudly. The
+	 * shipping packages are left alone: they are the instruction's own lines, and it still exists.
 	 */
 	public void deleteAllocationsFor(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
 	{
@@ -1130,17 +1018,9 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * The delivery instruction the given shipping package is allocated to, if any - deliberately NOT filtered
-	 * by {@code IsActive}.
-	 * <p>
-	 * A retired allocation counts here exactly like a live one: an instruction that once carried a planning is
-	 * the very document whose history the retirement exists to keep, and it is cancelled or closed rather than
-	 * deleted either way.
-	 * <p>
-	 * At most one row can match while the allocation is active (the partial unique index on
-	 * {@code M_ShippingPackage_ID}), and a package is created for exactly one allocation, so a package with
-	 * several allocation rows would itself be the defect - hence {@code firstOnlyOptional} rather than a
-	 * silent first-of-many.
+	 * The delivery instruction the given shipping package is allocated to, if any - NOT filtered by
+	 * {@code IsActive}, because a retired allocation names the very instruction whose history the retirement
+	 * exists to keep. {@code firstOnlyOptional}: several allocation rows for one package would be a defect.
 	 */
 	public Optional<ShipperTransportationId> getInstructionIdByShippingPackageId(@NonNull final ShippingPackageId shippingPackageId)
 	{
@@ -1164,22 +1044,12 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * Deliberately takes the already-loaded record and is PRIVATE: the only way in from outside is
+	 * Private and record-taking: the only way in is
 	 * {@link #updateDeliveryPlanningsFromInstruction(Collection, I_M_ShipperTransportation)}, which loads its whole
-	 * argument in ONE round trip. There is no id-taking public counterpart on purpose - the last one was reached
-	 * for from a loop over a collection, which is precisely the per-row load the collection method exists to
-	 * prevent, and a javadoc saying "use the batch version" is what failed to stop it.
+	 * argument in ONE round trip; an id-taking counterpart invites the per-row load it exists to prevent.
 	 * <p>
-	 * Also where the planning's date fields conform to the instruction's: while a planning is allocated, its own
-	 * {@code ETD}/{@code ETA}/{@code ATD}/{@code ATA}/{@code LoadingTime}/{@code DeliveryTime} are the
-	 * instruction's, unconditionally overwritten every time this runs - on the initial stamp exactly as much as
-	 * on a later re-stamp - never filled only when empty the way the OTHER direction (the instruction defaulting
-	 * from the plannings being added) is. The direction is fixed: instruction to planning, never back.
-	 * <p>
-	 * Action-at-a-distance, deliberately: the {@code ATD} write here also drives the pre-existing
-	 * {@code M_Delivery_Planning} {@code AFTER_CHANGE(ATD)} invoice-candidate invalidation, once per row of the
-	 * caller's batch - see {@link DeliveryPlanningService#resetDatesFromOrderAndSchedule} for the full
-	 * reasoning (same interceptor, same per-row cost, same "accepted rather than routed around" verdict).
+	 * Also conforms the planning's own date fields to the instruction's - unconditionally overwritten, and only in
+	 * that direction: instruction to planning, never back.
 	 */
 	private static void updateDeliveryPlanningFromInstruction(@NonNull final I_M_Delivery_Planning deliveryPlanningRecord,
 			@NonNull final I_M_ShipperTransportation deliveryInstruction)
@@ -1208,8 +1078,7 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * The ids of the plannings the given selection matches. A named read so callers do not have to execute this
-	 * repository's own {@link IQueryBuilder} themselves.
+	 * The ids of the plannings the given selection matches.
 	 */
 	@NonNull
 	public ImmutableList<DeliveryPlanningId> getIds(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
@@ -1235,15 +1104,11 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * Unlinks the packages behind the JUST-DEACTIVATED allocations only - never the instruction's whole,
-	 * unfiltered package set. A planning removed from this instruction earlier leaves its own retired, deactivated
-	 * package behind, still carrying this instruction's id; that package is none of this void's business, and
+	 * Unlinks the packages behind the JUST-DEACTIVATED allocations only - never the instruction's whole package
+	 * set: a planning removed earlier left a retired package still carrying this instruction's id, and
 	 * re-querying by instruction id would wipe its {@code C_OrderLine_ID} too.
 	 *
-	 * @return the same {@link DeactivatedAllocations} {@link #deactivateAllocations(ShipperTransportationId)}
-	 * 		produced - the caller resets exactly these planning ids' dates afterwards, the same pattern the other
-	 * 		three retirement paths (close, remove-from, the source half of a move) already follow: deactivate,
-	 * 		then use THIS return value, never a second query for the same ids.
+	 * @return the {@link DeactivatedAllocations} of {@link #deactivateAllocations(ShipperTransportationId, Instant)}.
 	 */
 	public DeactivatedAllocations unlinkDeliveryPlannings(
 			@NonNull final ShipperTransportationId deliveryInstructionId,
@@ -1283,9 +1148,7 @@ public class DeliveryPlanningRepository
 
 	/**
 	 * Cancels ONE delivery planning: closes it, marks it processed, sets its order status to {@code Canceled} and
-	 * zeroes its planned/actual quantities. Takes the already-loaded record rather than a filter - the caller
-	 * ({@link DeliveryPlanningService#cancelDelivery}) decides per row whether a planning is eligible (a
-	 * closed one is skipped, never cancelled here).
+	 * zeroes its planned/actual quantities. The caller decides per row which plannings are eligible.
 	 */
 	public void cancelDeliveryPlanning(@NonNull final I_M_Delivery_Planning deliveryPlanningRecord)
 	{
@@ -1318,8 +1181,7 @@ public class DeliveryPlanningRepository
 
 	/**
 	 * Same applicability gate as {@link #excludeDeliveryPlanningsWithoutInstruction}, but WITHOUT the
-	 * {@code IsClosed} filter: {@link DeliveryPlanningService#cancelDelivery} needs a closed planning in the
-	 * result too, so it can report it per row instead of the row silently never being seen at all.
+	 * {@code IsClosed} filter, so a caller can report a closed planning per row instead of never seeing it.
 	 */
 	public ICompositeQueryFilter<I_M_Delivery_Planning> excludeDeliveryPlanningsWithoutReleaseNo(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{

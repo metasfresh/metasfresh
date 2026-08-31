@@ -35,14 +35,6 @@ import org.springframework.stereotype.Service;
  * {@code M_ShipperTransportation} carries two different documents - a plain transport order and a delivery
  * instruction - distinguished only by {@link DocSubType#DeliveryInstruction}. A number of processes are attached to
  * the table but apply to only ONE of the two documents; this guard is the single place that decides which.
- * <p>
- * Works both ways: {@link #rejectIfDeliveryInstruction} hides a transport-order-only process on a delivery
- * instruction, {@link #rejectIfNotDeliveryInstruction} hides a delivery-instruction-only process on a transport
- * order.
- * <p>
- * {@link IDocTypeDAO#getById(DocTypeId)} is cached at table level (see the implementation comment on that method), so
- * calling this once per selected row is NOT a query-per-row - {@code C_DocType} is loaded once and served from the
- * in-memory table cache for every subsequent call.
  */
 @Service
 public class ShipperTransportationDocSubTypeGuard
@@ -70,8 +62,6 @@ public class ShipperTransportationDocSubTypeGuard
 
 	/**
 	 * Precondition guard for a process that applies only to a transport order (never to a delivery instruction).
-	 * Hides the process (no user-visible message - {@link ProcessPreconditionsResolution#rejectWithInternalReason(String)})
-	 * when the given record IS a delivery instruction.
 	 */
 	@NonNull
 	public ProcessPreconditionsResolution rejectIfDeliveryInstruction(@NonNull final I_M_ShipperTransportation shipperTransportation)
@@ -82,8 +72,7 @@ public class ShipperTransportationDocSubTypeGuard
 	}
 
 	/**
-	 * Mirror of {@link #rejectIfDeliveryInstruction}, for a process that applies only to a delivery instruction
-	 * (never to a plain transport order). Hides the process when the given record is NOT a delivery instruction.
+	 * Precondition guard for a process that applies only to a delivery instruction (never to a plain transport order).
 	 */
 	@NonNull
 	public ProcessPreconditionsResolution rejectIfNotDeliveryInstruction(@NonNull final I_M_ShipperTransportation shipperTransportation)

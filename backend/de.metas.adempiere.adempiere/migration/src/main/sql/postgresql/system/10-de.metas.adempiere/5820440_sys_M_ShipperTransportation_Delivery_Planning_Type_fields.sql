@@ -1,74 +1,20 @@
--- Surface M_ShipperTransportation's three-valued direction (AD_Column 593410, added by 5820430 with
--- no AD_Field and no AD_UI_Element) on both windows over the table, replacing the IsSOTrx flag:
---   AD_Window 540020 "Transport Auftrag"  -> AD_Tab 540096 "Speditionslieferung"
---   AD_Window 541657 "Lieferanweisungen"  -> AD_Tab 546732 "Lieferanweisungen"
+-- Surface M_ShipperTransportation's three-valued transport direction (AD_Column 593410) on both
+-- windows over the table -- AD_Tab 540096 (AD_Window 540020 "Transport Auftrag") and AD_Tab 546732
+-- (AD_Window 541657 "Lieferanweisungen") -- replacing the IsSOTrx flag, and take over IsSOTrx's
+-- filter slot on AD_Column.
 --
--- 540020 IS overridden: a targeted code search for Overrides_Window_ID=540020 returns two customer
--- override windows, each in its own repository, and each gets a companion script there putting the
--- field on its own tab. No override was found for 541657 -- but that is a floor, not a ceiling. The
--- search sees checked-in SQL only; GitHub code search truncates silently (a broad org sweep
--- missed the very files the targeted query had just returned); and a custom window may predate the
--- Overrides_Window_ID column altogether. Only a customer-faithful DB can rule an override out, and
--- this workspace has none -- so 541657 is an open risk, not a cleared one.
+-- IsReadOnly differs by window: 540020 is the only one with IsInsertRecord='Y' and the column is
+-- mandatory without a default, so a read-only field there would leave a required field nobody can
+-- fill; 541657 offers no 'New' action and stays read-only.
 --
--- Editability differs per window because the role does. 540020 is the only one with
--- IsInsertRecord='Y', and the column is mandatory with its default deliberately removed by 5821080,
--- so IsReadOnly='Y' there would leave a required field nobody can fill and a record nobody can save.
--- Hence IsReadOnly='N', first in the left column's UIStyle='primary' group 540667. 541657 offers no
--- 'New' action, so it stays IsReadOnly='Y' and takes the slot IsSOTrx had: second in the
--- right-column "flags" group 555562, after IsActive and before IsBookingConfirmed. Read-only there
--- guards the invariant that an instruction's direction follows its allocated plannings, which the
--- combine-time admissibility check already keeps uniform; both copies lock once the document is
--- processed anyway, so neither needs a ReadOnlyLogic. (5821310 later gives 783020/783021 a
--- ReadOnlyLogic on HasLines and flips 783021 to IsReadOnly='N' so that logic governs both.)
---
--- No AD_Name_ID: the caption comes from the column's own AD_Element, which at this point is still
--- 581679 "Lieferplanung Art"/"Type" -- the name of the delivery-planning record type, not of the
--- direction the column holds. That is a naming problem of the ELEMENT, and it is fixed at the
--- element: 5820600 forks 585383 "Richtung"/"Direction" and 5820610/5820620 repoint both columns
--- onto it, which renames these two fields and AD_Field 708076 on the Delivery Planning window in
--- one move. ONE column, ONE name, all three windows -- so nothing is overridden per field here.
--- The AD_Field.Name literals below therefore say "Lieferplanung Art": that is what the element says
--- at this point, and the sync call after each INSERT would write exactly that anyway. The
--- AD_UI_Element.Name is a developer-facing label that nothing renders and nothing propagates into,
--- so it already carries the final "Richtung".
---
--- Filter: IsSOTrx carries the direction filter today (SelectionColumnSeqNo=170) and 5820850 drops
--- it, so the filter moves onto the direction column at SelectionColumnSeqNo=175, a slot free on
--- M_ShipperTransportation. It is NOT aligned with the Delivery Planning side and does not need to
--- be: AD_Column 585005 (M_Delivery_Planning.TransportDirection) sits at 30, and each table numbers
--- its own filter slots independently.
---
--- IsDisplayedGrid='Y' is a layout choice here, NOT a requirement of the filter mechanism. Under
--- Auto, AD_Column.IsSelectionColumn='Y' becomes a WebUI filter straight off AD_Column, with no
--- AD_Field at all -- 5821150 on this same branch adds four such filter-only columns
--- (593412..593415) that have zero AD_Field rows and filter fine. The direction is grid-visible
--- because it replaces IsSOTrx in the grid, not because the filter requires it.
---
--- SeqNoGrid deliberately differs between the two layers, and only one of them is live.
--- AD_UI_Element gets 35 on both tabs -- that IS the layer the WebUI honours (LayoutFactory switches
--- to the AD_UI_* provider as soon as the tab has any AD_UI_Section, and both tabs do), and 35 slots
--- in after Lieferweg(30) so each tab's C_DocType_ID/DocumentNo/DateDoc block stays contiguous.
--- AD_Field gets 205 (tab 540096) / 200 (tab 546732) -- appended at the end of a layer that is dead
--- metadata for these two tabs; both values are collision-free there, but nothing renders from them.
--- Do NOT "align" the two layers: the AD_Field numbers are inert and changing 35 would move the grid.
+-- An Overrides_Window_ID code search is a floor, not a ceiling: it cannot prove a customer override
+-- window absent, only present. A negative result is an open risk, not a cleared one.
 
 -- ============================================================================
 -- 1) Make the direction filterable, taking over the IsSOTrx filter slot.
 -- ============================================================================
 UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=175, Updated=TO_TIMESTAMP('2026-08-26 12:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Column_ID=593410
 ;
-
--- The AD_Field_Trl seeds below hardcode IsTranslated='N' for EVERY language, including the base
--- one. That is the generated idiom and it is correct here, because the seed only creates a stub:
--- the update_FieldTranslation_From_AD_Name_Element call two statements after each one overwrites
--- Name, Description, Help AND IsTranslated from the field's effective AD_Element, so the literal
--- never survives the script. Verified on the local stack by replaying exactly this sequence in a
--- rolled-back transaction: seeded 'N' in all four languages, then the sync, and the rows came out
--- de_DE 'Y' / de_CH 'Y' / en_US 'Y' / fr_CH 'N' - the element's values, not the seed's.
--- (Do not "fix" the literal: it is not the durable owner of the flag. The durable owner is the
--- AD_Element_Trl row. Note also that the sync is guarded by `f_trl.updated <> e_trl.updated`, so a
--- later correction to an element MUST bump the element row's Updated or it silently does nothing.)
 
 -- ============================================================================
 -- 2) AD_Window 540020 / AD_Tab 540096 "Speditionslieferung"

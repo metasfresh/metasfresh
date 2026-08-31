@@ -58,7 +58,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * The delivery instruction {@code M_ShipperTransportation} record {@code DeliveryPlanningRepository} creates must
  * carry the SAME {@code TransportDirection} as the delivery planning(s) it is generated from - never the column's
- * (now removed) {@code Outgoing} default. An {@code Incoming} planning must produce an {@code Incoming} instruction.
+ * {@code Outgoing} default. An {@code Incoming} planning must produce an {@code Incoming} instruction.
  */
 class DeliveryInstructionTransportDirectionDerivationTest
 {
@@ -101,10 +101,7 @@ class DeliveryInstructionTransportDirectionDerivationTest
 
 	// ------------------------------------------------------------------ helpers
 
-	/**
-	 * An {@code Incoming} planning Generate can build an instruction from: it reads its loading address from the
-	 * receipt schedule and its delivery address from the warehouse, exactly as an {@code Incoming} planning does.
-	 */
+	/** An {@code Incoming} planning Generate can build an instruction from: loading address off the receipt schedule, delivery address off the warehouse. */
 	private I_M_Delivery_Planning incomingDeliveryPlanning()
 	{
 		final I_M_Delivery_Planning record = InterfaceWrapperHelper.newInstance(I_M_Delivery_Planning.class);
@@ -148,7 +145,6 @@ class DeliveryInstructionTransportDirectionDerivationTest
 		return receiptSchedule.getM_ReceiptSchedule_ID();
 	}
 
-	/** The document type the instruction header is created with - resolved by DocBaseType.ShipperTransportation + DocSubType.DeliveryInstruction, so those two have to match. */
 	private void createDeliveryInstructionDocType()
 	{
 		final I_C_DocType docType = InterfaceWrapperHelper.newInstance(I_C_DocType.class);

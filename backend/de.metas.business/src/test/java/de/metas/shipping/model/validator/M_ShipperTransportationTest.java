@@ -38,11 +38,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * A shipping package's {@code C_Order_ID} links the cargo to its order regardless of the underlying planning's
- * direction - a dropship or outgoing planning's package links a sales order just as reliably as an incoming
- * planning's package links a purchase order (it mirrors the always-populated {@code C_OrderLine_ID}). Pushing
- * bill-of-lading/ETA dates onto a SALES order's pay-schedule due dates is wrong though: only a linked PURCHASE
- * order (its {@code C_Order.IsSOTrx='N'}) may receive them; a linked sales order must be left untouched.
+ * A shipping package's {@code C_Order_ID} can link a sales order just as well as a purchase order, but only a
+ * linked PURCHASE order may receive the transport order's bill-of-lading/ETA dates.
  */
 class M_ShipperTransportationTest
 {

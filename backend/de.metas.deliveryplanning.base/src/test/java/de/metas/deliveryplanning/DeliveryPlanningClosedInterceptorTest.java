@@ -63,10 +63,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * The {@code M_Delivery_Planning} AFTER_CHANGE(IsClosed) interceptor: closing a planning allocated
  * to a DRAFT instruction deactivates the allocation and its shipping package; closing one allocated to a COMPLETED
  * instruction is refused, pointing at Re-Activate.
- * <p>
- * Exercised through the REAL, registered {@code M_Delivery_Planning} interceptor (via
- * {@link POJOLookupMap#addModelValidator}, the same mechanism {@link DeliveryPlanningCancelVoidStalenessTest} uses)
- * so {@code closeSelectedDeliveryPlannings}'s save genuinely fires the interceptor - not merely assumed.
  */
 class DeliveryPlanningClosedInterceptorTest
 {
@@ -99,7 +95,7 @@ class DeliveryPlanningClosedInterceptorTest
 		InterfaceWrapperHelper.save(uom);
 	}
 
-	// ------------------------------------------------------------------ helpers (mirrors DeliveryPlanningMoveAndRemovalTest)
+	// ------------------------------------------------------------------ helpers
 
 	private I_M_Delivery_Planning deliveryPlanning()
 	{
@@ -240,9 +236,7 @@ class DeliveryPlanningClosedInterceptorTest
 		allocateTo(completed, planning);
 		final int packageId = shippingPackageIdOf(planning);
 
-		// unit-test mode has no AD_Message loaded to translate against (same as DeliveryPlanningClosedGuardsTest's
-		// "@Closed@" token), so the message KEY is what identifies the rejection - it is the migration's English
-		// translation ("Re-activate the delivery instruction first") that carries the user-facing wording
+		// unit-test mode has no AD_Message to translate against, so the message KEY identifies the rejection
 		assertThatThrownBy(() -> deliveryPlanningService.closeSelectedDeliveryPlannings(selectionOf(planning)))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_CloseOnCompletedInstruction))

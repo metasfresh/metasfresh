@@ -62,27 +62,9 @@ import static org.assertj.core.groups.Tuple.tuple;
 
 /**
  * What {@code moveTo} and {@code removeFrom} leave behind, driven through the SERVICE rather than the repository.
- * <p>
- * Deliberately asserts nothing that {@link DeliveryPlanningBatchLoadingTest} already pins. That one counts round
- * trips and covers the plain add of an unallocated planning; this one covers the things neither it nor the
- * repository-level tests reach through the orchestration:
- * <ol>
- *     <li>the MOVE off a source draft instruction - the whole reason move-to is its own action</li>
- *     <li>its idempotency - a planning already on the target must not be taken off and put back</li>
- *     <li>removal leaving the instruction's OTHER plannings alone, which needs a partial selection</li>
- *     <li>a moved allocation continuing the TARGET's LineNo rather than the source's</li>
- *     <li>a removed planning is immediately re-allocatable, and its retired allocation does not leak into an
- *     	active-filtered lookup</li>
- * </ol>
- * <p>
- * The repository is the real one and the selection is a real query filter over the in-memory store - nothing is
- * stubbed, so {@code getAllocationsByPlanningId} genuinely reads the allocation rows. That matters: it is what
- * populates {@code DeliveryPlanning.allocations}, which is what the already-on-target filter and the
- * completed-instruction rule branch on. A mocked repository would make (1) and (2) partly self-fulfilling.
  */
 class DeliveryPlanningMoveAndRemovalTest
 {
-	/** Only ever read back as a {@code ProductId}: the planning carries its own UOM, so no product record is needed. */
 	private static final int PRODUCT_ID = 540010;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -132,10 +114,7 @@ class DeliveryPlanningMoveAndRemovalTest
 		return ShipperTransportationId.ofRepoId(record.getM_ShipperTransportation_ID());
 	}
 
-	/**
-	 * A REAL selection filter over the given rows - not a stub. Naming a subset is what lets a removal assert that
-	 * the plannings the planner did NOT select came through untouched.
-	 */
+	/** A real selection filter over the given rows; naming a subset is what lets a removal assert the unselected plannings came through untouched. */
 	private IQueryFilter<I_M_Delivery_Planning> selectionOf(final I_M_Delivery_Planning... records)
 	{
 		return queryBL.createCompositeQueryFilter(I_M_Delivery_Planning.class)
@@ -280,13 +259,6 @@ class DeliveryPlanningMoveAndRemovalTest
 	/**
 	 * The general form of the leak: every shipping package belongs to exactly one allocation, so an action that
 	 * deleted an allocation and left its package behind strands a row here.
-	 * <p>
-	 * Worth more than naming a single expected id, because it also catches a leak on a path neither this test nor
-	 * its author anticipated.
-	 * <p>
-	 * Robust across a void as well: a void deactivates the allocation and its shipping package together rather
-	 * than deleting either, and neither count filters on {@code IsActive}, so the two stay in lockstep. None of
-	 * these scenarios voids anything - but the invariant would survive one, so it needs no protecting from it.
 	 */
 	private void assertNoOrphanedShippingPackages()
 	{
@@ -558,7 +530,7 @@ class DeliveryPlanningMoveAndRemovalTest
 		final ShipperTransportationId source = draftDeliveryInstruction("SOURCE-4");
 		final ShipperTransportationId target = draftDeliveryInstruction("TARGET-4");
 
-		// third on the source, so its source LineNo (30) is deliberately HIGHER than the target's next one (20):
+		// third on the source, so its source LineNo (30) is HIGHER than the target's next one (20):
 		// a move that carried the old number over, or continued the source's sequence, would land on 30 or 40
 		final I_M_Delivery_Planning moving = deliveryPlanning();
 		allocateTo(source, deliveryPlanning(), deliveryPlanning(), moving);

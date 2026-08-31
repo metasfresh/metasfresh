@@ -122,28 +122,17 @@ public class DeliveryPlanningService
 	public static final AdMessageKey MSG_M_Delivery_Planning_AllClosed = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.AllClosed");
 	public static final AdMessageKey MSG_M_Delivery_Planning_AllOpen = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.AllOpen");
 
-	/**
-	 * "Closed means finished, nothing touches it": the rejection thrown by a process that acts on a single
-	 * closed planning (the goods-movement generators), and the per-row skip report of {@link #cancelDelivery}.
-	 */
+	/** Rejects acting on a closed planning; also the per-row skip report of {@link #cancelDelivery}. */
 	public static final AdMessageKey MSG_M_Delivery_Planning_Closed = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.Closed");
 
-	/**
-	 * Refuses to CLOSE a planning that is currently allocated to a COMPLETED delivery instruction, naming
-	 * Re-Activate as the way out - the instruction has to go back to a draft before the planning inside it can be
-	 * closed.
-	 */
+	/** Refuses closing a planning allocated to a completed delivery instruction; names Re-Activate as the way out. */
 	public static final AdMessageKey MSG_M_Delivery_Planning_CloseOnCompletedInstruction = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.CloseOnCompletedInstruction");
 
 	public static final AdMessageKey MSG_M_Delivery_Planning_AtLeastOnePerOrderLine = AdMessageKey.of("de.metas.deliveryplanning.M_Delivery_Planning_AtLeastOnePerOrderLine");
 
 	private static final AdMessageKey MSG_M_Delivery_Planning_AlreadyReferenced = AdMessageKey.of("de.metas.deliveryplanning.M_Delivery_Planning_AlreadyReferenced");
 
-	/**
-	 * A delivery instruction is cancelled or closed, never deleted. Raised on the package leg because that is
-	 * where every reachable delete arrives first - see
-	 * {@link #assertShippingPackageNotAllocated(de.metas.shipping.model.I_M_ShippingPackage)}.
-	 */
+	/** A delivery instruction is cancelled or closed, never deleted. Raised on the package leg, where deletes arrive. */
 	private static final AdMessageKey MSG_M_ShippingPackage_Allocated = AdMessageKey.of("de.metas.deliveryplanning.M_ShippingPackage.Allocated");
 
 	public static final AdMessageKey MSG_M_Delivery_Planning_NoForwarder = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.NoForwarder");
@@ -154,52 +143,38 @@ public class DeliveryPlanningService
 	public static final AdMessageKey MSG_M_Delivery_Planning_PurchaseOrderFullyDelivered = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.PurchaseOrderFullyDelivered");
 	public static final String PARAM_AdditionalLines = "AdditionalLines";
 
-	/**
-	 * One message for the whole selection, naming EVERY field the selection disagrees on - never the first one
-	 * found, and never one message per field: a planner who deselects the odd forwarder only to be told about the
-	 * delivery address is being sent back and forth for information we already had.
-	 */
+	/** One message for the whole selection, naming EVERY field it disagrees on - never the first one found. */
 	public static final AdMessageKey MSG_M_Delivery_Planning_IncompatibleSelection = AdMessageKey.of("de.metas.deliveryplanning.CombineIntoDeliveryInstruction.IncompatibleSelection");
 	public static final AdMessageKey MSG_M_Delivery_Planning_ClosedPlannings = AdMessageKey.of("de.metas.deliveryplanning.CombineIntoDeliveryInstruction.ClosedPlannings");
 	public static final AdMessageKey MSG_M_Delivery_Planning_AlreadyOnDeliveryInstruction = AdMessageKey.of("de.metas.deliveryplanning.CombineIntoDeliveryInstruction.AlreadyOnDeliveryInstruction");
 
 	/**
-	 * Named "completed" rather than "not a draft" because that is the only state a planner can meet here: voiding
-	 * an instruction deactivates its allocations, so a planning still carrying an ACTIVE allocation to a non-draft
-	 * instruction is on a completed one.
+	 * Says "completed" rather than "not a draft" because that is the only state reachable here: voiding an
+	 * instruction deactivates its allocations, so an active allocation to a non-draft instruction means a completed one.
 	 */
 	public static final AdMessageKey MSG_M_Delivery_Planning_OnCompletedDeliveryInstruction = AdMessageKey.of("de.metas.deliveryplanning.DeliveryInstruction.OnCompletedInstruction");
 	public static final AdMessageKey MSG_M_Delivery_Planning_TargetInstructionNotDraft = AdMessageKey.of("de.metas.deliveryplanning.AddToDeliveryInstruction.TargetNotDraft");
 
 	/**
-	 * Refuses ADDING a planning that already sits on a delivery instruction, and names Move as the action that
-	 * does apply to it.
-	 * <p>
-	 * Distinct from {@link #MSG_M_Delivery_Planning_AlreadyOnDeliveryInstruction}, which refuses COMBINING such a
-	 * planning into a NEW instruction - there the answer is to take it off first, here it is to move it.
+	 * Refuses ADDING a planning that already sits on an instruction, naming Move as the action that applies.
+	 * Distinct from {@link #MSG_M_Delivery_Planning_AlreadyOnDeliveryInstruction}, which refuses COMBINING it into a
+	 * new instruction.
 	 */
 	public static final AdMessageKey MSG_M_Delivery_Planning_AlreadyOnDeliveryInstruction_UseMove = AdMessageKey.of("de.metas.deliveryplanning.AddToDeliveryInstruction.AlreadyOnDeliveryInstruction");
 
-	/**
-	 * Refuses taking a planning off an instruction it is not on. Shared by Remove from and Move to - the sentence
-	 * is the state, not the action, so a second near-identical message would say the same thing twice.
-	 */
+	/** Refuses taking a planning off an instruction it is not on. Shared by Remove from and Move to. */
 	public static final AdMessageKey MSG_M_Delivery_Planning_NotOnDeliveryInstruction = AdMessageKey.of("de.metas.deliveryplanning.RemoveFromDeliveryInstruction.NotOnDeliveryInstruction");
 
 	/**
-	 * Distinct from {@link #MSG_M_Delivery_Planning_ClosedPlannings}: that one rejects a SELECTION naming a closed
-	 * planning before it is put on an instruction (Combine / Add to); this one rejects COMPLETING an instruction
-	 * that already holds a planning closed AFTER it was allocated - a different moment, a different sentence.
+	 * Rejects COMPLETING an instruction that holds a planning closed after it was allocated. Distinct from
+	 * {@link #MSG_M_Delivery_Planning_ClosedPlannings}, which rejects a selection before it is put on an instruction.
 	 */
 	public static final AdMessageKey MSG_M_Delivery_Planning_ClosedAllocatedPlannings = AdMessageKey.of("de.metas.deliveryplanning.CompleteDeliveryInstruction.ClosedAllocatedPlannings");
 
 	/**
-	 * Before allocations existed, a 1:1 header FK made "zero plannings" unreachable by construction for a delivery
-	 * instruction. {@code M_Delivery_Planning_RemoveFromDeliveryInstruction} can now take the last planning off a
-	 * drafted instruction, making this state reachable for the first time - and the reports resolving through the
-	 * allocation would print a blank document for it. Scoped to an actual delivery instruction (via
-	 * {@link ShipperTransportationDocSubTypeGuard}, never by direction/{@code IsSOTrx}/allocations) so a transport
-	 * order, which legitimately never has allocations, stays unaffected.
+	 * Refuses completing a delivery instruction that holds no planning, which the reports would print as a blank
+	 * document. Scoped to an actual delivery instruction via {@link ShipperTransportationDocSubTypeGuard}, so a
+	 * transport order - which never has allocations - stays unaffected.
 	 */
 	public static final AdMessageKey MSG_M_Delivery_Planning_EmptyDeliveryInstruction = AdMessageKey.of("de.metas.deliveryplanning.CompleteDeliveryInstruction.EmptyDeliveryInstruction");
 
@@ -216,10 +191,7 @@ public class DeliveryPlanningService
 	@NonNull private final DimensionService dimensionService;
 	@NonNull private final MeansOfTransportationService meansOfTransportationService;
 
-	/**
-	 * Tells the two {@code M_ShipperTransportation} document roles apart by {@code C_DocType.DocSubType} - reused
-	 * here rather than inventing a second ad-hoc distinction.
-	 */
+	/** Tells the two {@code M_ShipperTransportation} document roles apart by {@code C_DocType.DocSubType}. */
 	@NonNull private final ShipperTransportationDocSubTypeGuard shipperTransportationDocSubTypeGuard;
 
 	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
@@ -301,13 +273,9 @@ public class DeliveryPlanningService
 	 * {@code ReleaseNo}, which only mirrors it; see
 	 * {@link DeliveryPlanningRepository#hasActiveAllocation(DeliveryPlanningId)}.
 	 * <p>
-	 * The allocation's shipping package is mandatory-FKed to a still-live instruction, so letting the delete
-	 * through would strand that instruction's cargo with no record of it ever having been booked. A RETIRED
-	 * allocation is the opposite case and must NOT be refused - the history it records is only ever consulted
-	 * while its planning exists, so once the planning goes, it goes too. That removal is done explicitly by
-	 * {@link #deleteAllocationsFor(DeliveryPlanningId)}, which the same interceptor calls straight after this
-	 * guard; the FKs themselves are plain {@code NO ACTION} precisely so that nothing but application code ever
-	 * decides which of the two cases a given allocation is.
+	 * The allocation's shipping package is mandatory-FKed to a still-live instruction, so letting the delete through
+	 * would strand that instruction's cargo. A RETIRED allocation is the opposite case and must NOT be refused; it
+	 * is removed explicitly by {@link #deleteAllocationsFor(DeliveryPlanningId)}.
 	 */
 	public void assertNotCurrentlyAllocated(@NonNull final I_M_Delivery_Planning deliveryPlanning)
 	{
@@ -322,9 +290,6 @@ public class DeliveryPlanningService
 	 * <p>
 	 * Called from the planning's {@code TYPE_BEFORE_DELETE} interceptor immediately after
 	 * {@link #assertNotCurrentlyAllocated} has refused the live case, so only retired history is ever removed.
-	 * This is deliberately explicit Java rather than an {@code ON DELETE CASCADE}: a database cascade cannot
-	 * tell {@code IsActive='Y'} from {@code IsActive='N'}, so it would erase a live booking just as readily -
-	 * silently, and with no place to put a check.
 	 */
 	public void deleteAllocationsFor(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
@@ -335,22 +300,13 @@ public class DeliveryPlanningService
 	 * Refuses to delete a shipping package that any {@code M_Delivery_Planning_Alloc} points at - active or
 	 * retired - naming the delivery instruction to cancel or close instead.
 	 * <p>
-	 * Deleting a delivery instruction is not an operation this feature offers: the acceptance criteria know
-	 * only close, remove, void and cancel. It is nevertheless reachable, because {@code M_ShipperTransportation}
-	 * and {@code M_ShippingPackage} both carry {@code IsDeleteable='Y'} and a DRAFTED instruction's only guard
-	 * is {@code MMShipperTransportation.beforeDelete()}'s {@code isProcessed()} check. The allocation's
-	 * foreign keys are plain {@code NO ACTION}, so without this guard that delete does not succeed either -
-	 * it fails with a raw constraint violation naming nothing the operator can act on, which is why the
-	 * refusal is stated here, where it can name the instruction to cancel.
-	 * <p>
-	 * Guarding the package also guards the instruction: {@code PO.delete0()} runs {@code beforeDelete()} BEFORE
-	 * it fires {@code TYPE_BEFORE_DELETE}, and {@code MMShipperTransportation.beforeDelete()} force-deletes all
-	 * of its {@code M_ShippingPackage} lines, so an instruction delete always reaches this guard first. A
+	 * Deleting an instruction is reachable - both tables carry {@code IsDeleteable='Y'} - and without this guard it
+	 * fails on a raw constraint violation naming nothing the operator can act on. Guarding the PACKAGE also guards
+	 * the instruction, because an instruction delete force-deletes its packages and so reaches this guard first; a
 	 * second guard on the instruction itself would be unreachable.
 	 * <p>
 	 * Scoped by construction rather than by a filter: only delivery planning creates allocations, so the
-	 * transport-order and handling-units packages that share {@code M_ShippingPackage} never match and are
-	 * left exactly as deletable as they were.
+	 * transport-order and handling-units packages sharing {@code M_ShippingPackage} never match.
 	 */
 	public void assertShippingPackageNotAllocated(@NonNull final I_M_ShippingPackage shippingPackage)
 	{
@@ -518,18 +474,12 @@ public class DeliveryPlanningService
 	 * allocated to a completed instruction is never discovered reactively, mid-loop, after an earlier row already
 	 * applied.
 	 * <p>
-	 * Reads bare ids off the filter rather than {@link #getBySelection} because the close guard has no use for the
-	 * full {@link DeliveryPlanning} domain object - only its id. This is NOT a production data concern:
-	 * {@code M_Delivery_Planning.TransportDirection} is NOT NULL, and {@code M_Delivery_Planning_Close}'s own
-	 * {@code checkPreconditionsApplicable} already runs {@link #getBySelection} over this same filter before
-	 * {@code doIt()}, so the UI path is forced through that helper anyway. The lighter read exists so unit tests
-	 * can drive this service directly, bypassing the precondition gate, with fixtures that carry no direction.
+	 * Reads bare ids off the filter rather than {@link #getBySelection}: the close guard needs only the id, and the
+	 * lighter read lets unit tests drive this service with fixtures that carry no direction.
 	 * <p>
-	 * The completed-instruction check is deliberately performed twice - here per selected row, and again per row
-	 * inside the write loop via the {@code AFTER_CHANGE(IsClosed)} interceptor. That is not redundancy to remove:
-	 * this pass fails fast before any write, while the interceptor (inside
-	 * {@code trxManager.runInThreadInheritedTrx}) is what still rolls the whole loop back should state change
-	 * between the two passes. Removing either one reopens the partial-application hole.
+	 * The completed-instruction check runs twice - here before any write, and again inside the write loop via the
+	 * {@code AFTER_CHANGE(IsClosed)} interceptor, which still rolls the loop back if state changes between the two.
+	 * Removing either reopens a partial-application hole.
 	 */
 	private void validateNoneAllocatedToCompletedInstruction(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
@@ -578,16 +528,8 @@ public class DeliveryPlanningService
 		deliveryInstructionUserNotificationsProducer
 				.notifyGenerated(deliveryInstruction);
 
-		// No explicit CacheMgt reset here: the saveRecord inside updateDeliveryPlanningsFromInstruction already
-		// invalidates this record's caches, with better TIMING than a manual reset. PO.save0 builds a
-		// CacheInvalidateMultiRequest for every single-key table and hands it to
-		// ModelCacheInvalidationService.invalidate, which resets the model cache AND calls
-		// CacheMgt.resetLocalNowAndBroadcastOnTrxCommit - local reset now, broadcast deferred to commit.
-		// A manual CacheMgt.get().reset(tableName, id) DOES broadcast too (CacheMgt:255-262 picks
-		// LOCAL_AND_BROADCAST outside unit-test mode) - but it broadcasts IMMEDIATELY, mid-transaction, so
-		// another node can invalidate, re-read the still-uncommitted row, cache that stale value, and never
-		// be invalidated again: the invalidation it needed was already spent. Deferring to commit is what
-		// makes the difference, not the presence of a broadcast.
+		// No explicit CacheMgt reset here: the saveRecord below already invalidates this record's caches, and defers
+		// the broadcast to commit, which a manual reset would not.
 		deliveryPlanningRepository.updateDeliveryPlanningsFromInstruction(ImmutableSet.of(deliveryPlanningId), deliveryInstruction);
 	}
 
@@ -1031,14 +973,12 @@ public class DeliveryPlanningService
 	 * <li>none of its currently allocated plannings may be closed. A planning is closed after it was allocated
 	 * to say "stop processing this cargo" - completing the instruction anyway would freight exactly what the
 	 * planner already called off.</li>
-	 * <li>a delivery instruction may not be completed with zero active allocations - completing it anyway would
-	 * freight nothing while printing a document whose report resolves everything through the (missing)
-	 * allocation. Before allocations existed a 1:1 header FK made this unreachable by construction; removing the
-	 * last planning off a drafted instruction now makes it reachable.</li>
+	 * <li>a delivery instruction may not be completed with zero active allocations - it would freight nothing while
+	 * printing a document whose report resolves everything through the missing allocation.</li>
 	 * </ul>
-	 * A transport order, which legitimately never has allocations, stays a no-op for BOTH rules - told apart from
-	 * a delivery instruction via {@link ShipperTransportationDocSubTypeGuard}, never by
-	 * direction, {@code IsSOTrx}, or the presence of allocations.
+	 * A transport order, which never has allocations, is a no-op for BOTH rules; it is told apart from a delivery
+	 * instruction via {@link ShipperTransportationDocSubTypeGuard}, never by direction or by the presence of
+	 * allocations.
 	 */
 	public Optional<ITranslatableString> getCompleteRejectionReason(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
@@ -1110,10 +1050,9 @@ public class DeliveryPlanningService
 	 * All-or-nothing: {@link #getCombineRejectionReason(DeliveryPlanningList)} is evaluated first and throws for
 	 * the whole selection, so no planning is left half-moved and no orphaned package survives.
 	 * <p>
-	 * The instruction's header is seeded from the FIRST planning in allocation order (earliest departure, then
-	 * planning id) rather than from whichever row the query returned first - the plannings agree on every header
-	 * field the admissibility rule covers, but not on the dates, so which one seeds them has to be decided rather
-	 * than inherited from the encounter order.
+	 * The header is seeded from the FIRST planning in allocation order (earliest departure, then planning id): the
+	 * plannings agree on every header field the admissibility rule covers, but not on the dates, so the seed has to
+	 * be decided rather than inherited from a query's encounter order.
 	 *
 	 * @param complete complete the instruction right away instead of leaving it a draft. A draft is the default:
 	 * 		a combined instruction is assembled over days, so the planner says when it is final.
@@ -1169,10 +1108,8 @@ public class DeliveryPlanningService
 	 * The allocation requests for the given delivery plannings, in the order the ids were given - which is the
 	 * order {@code createAllocations} hands out the {@code LineNo}s in.
 	 * <p>
-	 * Takes the whole collection rather than one id at a time deliberately: the records are batch-loaded ONCE, so
-	 * a selection of N plannings costs one round trip instead of N, on a synchronous action the planner waits on.
-	 * There is no single-id counterpart on purpose - offering one is how the per-row load got reintroduced on a
-	 * second and then a third call site after it had already been removed from {@code getBySelection}.
+	 * Takes the whole collection rather than one id at a time so the records are batch-loaded once. There is no
+	 * single-id counterpart, and adding one reintroduces a per-row load.
 	 */
 	private ImmutableList<DeliveryPlanningAllocCreateRequest> createAllocCreateRequests(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
 	{
@@ -1213,13 +1150,11 @@ public class DeliveryPlanningService
 	/**
 	 * Why this selection cannot be ADDED to a delivery instruction, or empty when it can.
 	 * <p>
-	 * Lives here rather than in the process's {@code checkPreconditionsApplicable} for the same two reasons
-	 * {@link #getCombineRejectionReason(DeliveryPlanningList)} does: a cucumber step drives the rule the WebUI
-	 * drives, and the reason on the disabled button is by construction the sentence {@link #addTo} throws.
+	 * Lives here rather than in the process's {@code checkPreconditionsApplicable}, so the reason on the disabled
+	 * button is by construction the sentence {@link #addTo} throws, and a cucumber step drives the same rule.
 	 * <p>
-	 * Add is the action for a planning that is on NO instruction yet. One that already sits on a draft is refused,
-	 * and the rejection names the action that does apply - Move - rather than the planning being moved silently:
-	 * taking a load off another instruction changes THAT document too, and a verb doing both hid it.
+	 * Add is the action for a planning on NO instruction yet. One already on a draft is refused, and the rejection
+	 * names Move instead of relocating it silently - taking a load off another instruction changes that document too.
 	 *
 	 * @param targetDeliveryInstructionId the instruction the planner picked, or {@code null} when the parameter
 	 * 		dialog has not been shown yet - the precondition can only judge the selection, so it passes {@code null}
@@ -1278,13 +1213,12 @@ public class DeliveryPlanningService
 	 * Everything Add to and Move to refuse for the same reason - which is everything except the allocation state
 	 * the two actions are the two halves of.
 	 * <p>
-	 * Row eligibility first, then the target: a planner resolves "this row cannot go at all" before "it cannot go
-	 * THERE". The target-side rules are the last two, and both need the plannings the target already holds to be
-	 * read - which is why they cost nothing on the selection-change path, where there is no target yet.
+	 * Row eligibility first, then the target, so a planner resolves "this row cannot go at all" before "it cannot go
+	 * THERE". The two target-side rules come last, and both read the plannings the target already holds - so they
+	 * cost nothing on the selection-change path, which has no target yet.
 	 * <p>
-	 * The completed-instruction rule is evaluated BEFORE the allocation guard on purpose: a planning on a completed
-	 * instruction is allocated, so the guard would otherwise answer for it and send the planner to a Move that
-	 * refuses it anyway. The dead end is worth naming at the first press.
+	 * The completed-instruction rule is evaluated BEFORE the allocation guard: a planning on a completed instruction
+	 * is allocated, so the guard would otherwise answer for it and send the planner to a Move that refuses it too.
 	 *
 	 * @param allocationStateGuard the one rule the two actions do not share: Add refuses an allocated planning,
 	 * 		Move refuses an unallocated one.
@@ -1386,10 +1320,10 @@ public class DeliveryPlanningService
 	 * The plannings of the given selection that sit on AT LEAST ONE delivery instruction which is no longer a
 	 * draft - which is what forbids both moving them off it and removing them from it.
 	 * <p>
-	 * ANY and not ALL, deliberately: both callers use this to FORBID, and a planning that is on one draft and one
-	 * completed instruction cannot be taken off the completed one at all, so the whole action has to be refused.
-	 * Requiring every instruction to be non-draft would let exactly that planning through and then fail - or
-	 * silently alter - a completed document.
+	 * ANY and not ALL: both callers use this to FORBID, and a planning on one draft plus one completed instruction
+	 * cannot be taken off the completed one at all, so the whole action must be refused. Requiring every
+	 * instruction to be non-draft would let that planning through and then fail - or silently alter - a completed
+	 * document.
 	 */
 	private DeliveryPlanningList onNonDraftInstruction(@NonNull final DeliveryPlanningList selectedDeliveryPlannings)
 	{
@@ -1435,12 +1369,9 @@ public class DeliveryPlanningService
 	 * source allocation and its shipping package are released, the planning's dates return to their order-derived
 	 * origin, and a new allocation is created on the target.
 	 * <p>
-	 * All-or-nothing, exactly as {@link #addTo} is - and for the sharper reason: a move touches TWO documents, so a
-	 * failure part-way would leave a load on neither.
-	 * <p>
-	 * A planning already on the target is left alone rather than refused: there is nothing to move, and its
-	 * {@code ReleaseNo} already names that instruction. A selection the planner dragged over the target's own rows
-	 * therefore still moves the rest instead of failing whole.
+	 * All-or-nothing, as {@link #addTo} is, and for a sharper reason: a move touches TWO documents, so a failure
+	 * part-way would leave a load on neither. A planning already on the target is left alone rather than refused -
+	 * there is nothing to move - so a selection overlapping the target's own rows still moves the rest.
 	 */
 	public void moveTo(
 			@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter,
@@ -1459,14 +1390,11 @@ public class DeliveryPlanningService
 	 * actions differ in exactly two things - the guard they are rejected by, and whether a source allocation is
 	 * released first.
 	 * <p>
-	 * Deactivate, THEN reset, THEN build the allocation requests - in that order, deliberately. A planning still
-	 * allocated to the SOURCE carries the source instruction's dates (the sync-down overwrote its own), so a
-	 * snapshot taken before the reset would still be the source's and would leak it into an empty draft TARGET's
-	 * fill-if-empty defaulting. Resetting first makes the snapshot the planning's own order-derived truth again,
-	 * exactly as if it had never been allocated. The target's OWN sync-down then overwrites the planning's row
-	 * with the target's resolved dates a few lines later regardless - the reset's persisted value on the
-	 * planning is transient, but the REQUEST built from it is what the target's defaulting sees, and that is
-	 * what must be order-derived, not source-contaminated.
+	 * Deactivate, THEN reset, THEN build the allocation requests - the order matters. A planning still allocated to
+	 * the SOURCE carries the source instruction's dates, so a snapshot taken before the reset would leak them into
+	 * an empty draft TARGET's fill-if-empty defaulting. Resetting first makes the snapshot the planning's own
+	 * order-derived dates again. The reset's persisted value is transient - the target's sync-down overwrites the
+	 * row shortly after - but the REQUEST built from it is what the target's defaulting reads.
 	 *
 	 * @param releaseSourceAllocation deactivate the allocation the planning is on today and reset its dates before
 	 * 		creating the new one. True for a move; false for an add, whose guard has already refused every planning
@@ -1602,24 +1530,17 @@ public class DeliveryPlanningService
 	}
 
 	/**
-	 * The delivery instruction's fill-if-empty defaulting (§ D1): each of {@code ETD}/{@code ETA}/
-	 * {@code LoadingTime}/{@code DeliveryTime} is filled from the first request that carries one, ONLY while the
-	 * instruction's own field is still empty - a value the planner entered before the add must survive, which is
-	 * why every field is guarded individually rather than the whole seed being skipped once any one is set. The
-	 * shape is taken from {@code PurchaseOrderToShipperTransportationService.applyDefaultDatesFromFirstOrder},
-	 * which solves the same problem for a transport order on this same table.
+	 * The delivery instruction's fill-if-empty defaulting: each of {@code ETD}/{@code ETA}/{@code LoadingTime}/
+	 * {@code DeliveryTime} is filled from the first request carrying one, but only while the instruction's own
+	 * field is still empty. Every field is guarded individually so a value the planner entered before the add
+	 * survives.
 	 * <p>
-	 * A pure function - reads the instruction's CURRENT fields and the requests, decides the resolved value,
-	 * returns it. It does not write anything: {@link DeliveryPlanningRepository#createAllocations} does, verbatim,
-	 * because a repository may reconstitute and persist but must never decide (architecture.md §8).
+	 * A pure function: it reads and decides, {@link DeliveryPlanningRepository#createAllocations} writes.
+	 * {@code ATD}/{@code ATA} are then derived from the FILLED {@code ETD}/{@code ETA} rather than from the
+	 * planning, so a planner-set departure propagates into the actual. {@code BLDate} belongs to the
+	 * transport-order flow and is not touched.
 	 * <p>
-	 * {@code ATD}/{@code ATA} are derived from the FILLED {@code ETD}/{@code ETA} afterwards, not from the
-	 * planning, so a planner-set departure propagates into the actual - the same
-	 * {@link #deriveActualIfEmpty} rule {@link #createDeliveryInstructionRequest} applies at creation.
-	 * {@code BLDate} is deliberately not touched: it belongs to the transport-order flow.
-	 * <p>
-	 * Known and accepted, same as in the precedent: a date the planner deliberately CLEARED reads as empty and
-	 * is refilled by the next add.
+	 * Accepted limitation: a date the planner CLEARED reads as empty and is refilled by the next add.
 	 */
 	static DeliveryInstructionDates resolveInstructionDatesForAllocation(
 			@NonNull final I_M_ShipperTransportation deliveryInstructionRecord,
@@ -1667,41 +1588,16 @@ public class DeliveryPlanningService
 	}
 
 	/**
-	 * Recomputes the given plannings' date fields from the order and its schedule, exactly as
-	 * {@code GenerateIncomingDeliveryPlanningCommand} / {@code GenerateOutgoingDeliveryPlanningCommand} derive them
-	 * when a planning is FIRST generated - called the moment an allocation becomes inactive (remove-from, the
-	 * source half of a move, close, void), so a planning is never left showing another document's dates once it
-	 * stops being allocated to it.
+	 * Recomputes the given plannings' dates from the order and its schedule, the way the Generate commands derive
+	 * them for a new planning. Called the moment an allocation becomes inactive (remove-from, the source half of a
+	 * move, close, void), so a planning never keeps showing another document's dates.
 	 * <p>
-	 * A RECOMPUTE, not a restore: while allocated, the sync-down overwrites the planning's own dates with the
-	 * instruction's, so there is no "value from before the allocation" left to bring back - only the order's
-	 * CURRENT state, which is also the more useful answer (a live promised arrival beats a stale snapshot).
-	 * Add-then-remove is therefore not a byte-exact round trip.
+	 * A RECOMPUTE, not a restore: while allocated, the sync-down has already overwritten the planning's own dates,
+	 * so there is no pre-allocation value to bring back - add-then-remove is not a byte-exact round trip.
+	 * {@code LoadingTime}/{@code DeliveryTime} have no order-derived source and are therefore cleared.
 	 * <p>
-	 * {@code LoadingTime}/{@code DeliveryTime} have no order-derived source - neither Generate command ever
-	 * populates them - so they are cleared, exactly as a freshly generated planning would leave them.
-	 * <p>
-	 * Lives here, not in the repository: reading {@code C_Order}/{@code C_OrderLine}/{@code M_ReceiptSchedule}/
-	 * {@code M_ShipmentSchedule} is a cross-bounded-context read a {@code @Repository} may never make
-	 * (architecture.md §8) - this service does the reading and the deciding, then hands
-	 * {@link DeliveryPlanningRepository#writePlanningDates} a resolved value per planning to write verbatim.
-	 * <p>
-	 * Batched throughout: the plannings and every collaborator their dates are read from (orders, order lines,
-	 * receipt schedules, shipment schedules) are each loaded in ONE round trip, never per row.
-	 * <p>
-	 * Action-at-a-distance, deliberately: writing {@code ATD} here also drives the PRE-EXISTING
-	 * {@code M_Delivery_Planning} {@code AFTER_CHANGE(ATD)} interceptor
-	 * ({@link #invalidateInvoiceCandidatesFor(I_M_Delivery_Planning)}), once per row - a genuine per-row DB read
-	 * of that row's order line (uncached; the handler-registry lookup underneath it IS cached, so only the
-	 * order-line read repeats). This is not a new N+1 the way a per-row LOAD of the plannings/orders/schedules
-	 * THIS method reads would be: the per-row write {@link DeliveryPlanningRepository#writePlanningDates}
-	 * performs is already unavoidable (each row gets its own recomputed values, and that repository has no
-	 * bulk-update primitive), and the interceptor's extra read rides that same already-O(N) loop rather than
-	 * multiplying it. It also mirrors this class's own accepted shape for "batched" invalidation elsewhere
-	 * ({@link #invalidateInvoiceCandidatesFor(ShipperTransportationId)}: one batch load of the plannings, then
-	 * one invalidation call per row, because no batch invalidate-candidates API exists). A second, redundant
-	 * invalidation on the void path (the deferred after-commit one in {@link #unlinkDeliveryPlannings}) is
-	 * accepted as a harmless idempotent mark-for-recompute, not something this method works around.
+	 * Writing {@code ATD} also drives the pre-existing {@code AFTER_CHANGE(ATD)} interceptor, which reads that
+	 * row's order line once per row. That read rides the already-per-row write loop rather than multiplying it.
 	 */
 	void resetDatesFromOrderAndSchedule(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
 	{
@@ -1799,11 +1695,8 @@ public class DeliveryPlanningService
 
 
 	/**
-	 * {@link DeliveryPlanningRepository#extractTransportDirection} throws for a planning with no
-	 * {@code TransportDirection} at all, which is correct for the callers that need a definite answer - but the
-	 * date reset runs for EVERY deallocated planning regardless, so an unset direction here is read as "not a
-	 * receipt" (the shipment-schedule branch) rather than propagating the throw into a path with no
-	 * admissibility gate of its own.
+	 * An unset {@code TransportDirection} is read as "not a receipt" (the shipment-schedule branch) rather than
+	 * throwing: the date reset runs for EVERY deallocated planning and has no admissibility gate of its own.
 	 */
 	private static boolean hasReceiptOrUnknown(@NonNull final I_M_Delivery_Planning record)
 	{
@@ -1862,10 +1755,9 @@ public class DeliveryPlanningService
 			final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningIterator.next();
 			final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoId(deliveryPlanningRecord.getM_Delivery_Planning_ID());
 
-			// currently unreachable, and deliberately kept: closing a planning deallocates it, and
-			// DeliveryPlanningRepository.clearInstructionReference nulls its ReleaseNo on the way out - so the
-			// excludeDeliveryPlanningsWithoutReleaseNo filter above has already dropped every closed row before
-			// this test sees it. Do not read an empty getSkippedClosedIds() as "cancel ignores Closed".
+			// Currently unreachable: closing a planning deallocates it and nulls its ReleaseNo, so the
+			// excludeDeliveryPlanningsWithoutReleaseNo filter above has already dropped every closed row. An empty
+			// getSkippedClosedIds() therefore does NOT mean cancel ignores Closed.
 			if (deliveryPlanningRecord.isClosed())
 			{
 				skippedClosedIds.add(deliveryPlanningId);
@@ -1985,9 +1877,8 @@ public class DeliveryPlanningService
 
 	/**
 	 * Invalidates the invoice candidates of EVERY planning currently allocated to the given instruction, in ONE
-	 * batch load - not the legacy single {@code M_ShipperTransportation.M_Delivery_Planning_ID}
-	 * header FK the interceptor used to read, which silently skipped every allocation but the first on an
-	 * aggregated instruction, and not a per-planning loop either, which would be an N+1 over the allocations.
+	 * batch load. Resolving through the allocations rather than a single header FK is what covers an aggregated
+	 * instruction's second and later plannings; a per-planning loop would be an N+1 over the allocations.
 	 * <p>
 	 * A transport order, or an instruction with no allocations, is a no-op: {@code getAllocatedPlanningIds} comes
 	 * back empty and the batch load never runs.

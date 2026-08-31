@@ -57,12 +57,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Whether Generate completes the delivery instruction it creates - and whether regenerate still does, unaffected.
- * <p>
- * {@code generateDeliveryInstructions} and {@code regenerateDeliveryInstructions} are exercised through a REAL
- * {@link DeliveryPlanningRepository} on the unit-test in-memory store (the same setup as
- * {@link DeliveryPlanningBatchLoadingTest}) rather than a mocked one: the completion decision is made by
- * {@code docActionBL.processEx} against the actual {@code M_ShipperTransportation} document, so only a real,
- * completable record (with its seed shipping-package line) proves the flag does what it says.
  */
 class DeliveryPlanningGenerateCompletionTest
 {
@@ -85,8 +79,6 @@ class DeliveryPlanningGenerateCompletionTest
 	{
 		AdempiereTestHelper.get().init();
 
-		// generate/regenerate notify the instruction's creator: the recipient is CreatedBy, which is stamped from
-		// the logged user - nothing this test is about
 		Env.setLoggedUserId(Env.getCtx(), UserId.METASFRESH);
 		Services.registerService(INotificationBL.class, Mockito.mock(INotificationBL.class));
 
@@ -107,10 +99,6 @@ class DeliveryPlanningGenerateCompletionTest
 
 	// ------------------------------------------------------------------ helpers
 
-	/**
-	 * A planning Generate can build an instruction from: it names the forwarder the instruction header cannot
-	 * exist without, and the two records an {@code Outgoing} planning reads its loading and delivery address from.
-	 */
 	private I_M_Delivery_Planning generatableDeliveryPlanning()
 	{
 		final I_M_Delivery_Planning record = InterfaceWrapperHelper.newInstance(I_M_Delivery_Planning.class);
@@ -200,10 +188,7 @@ class DeliveryPlanningGenerateCompletionTest
 
 		final I_M_Delivery_Planning stamped = reload(planning);
 		assertThat(stamped.getM_ShipperTransportation_ID()).isPositive();
-		// not asserted as == Drafted: on a real DB, AD_Column.DefaultValue fills DocStatus='DR' on INSERT, but the
-		// unit-test in-memory store applies no AD_Column defaults, so a never-completed record reads null here.
-		// The behavioural contract this test pins is "generate did not complete it" - which "not Completed" states
-		// precisely, independent of that DB-default gap.
+		// the in-memory store applies no AD_Column defaults, so a never-completed record reads null, not 'DR'
 		assertThat(docStatusOf(stamped.getM_ShipperTransportation_ID()))
 				.as("generate without IsComplete must not run the completion action")
 				.isNotEqualTo(DocStatus.Completed.getCode());

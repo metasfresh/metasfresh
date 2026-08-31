@@ -2,22 +2,20 @@
 -- direction the delivery planning already carries, and derive the direction of every
 -- existing transport from its contents.
 --
--- The transport order / delivery instruction so far expressed its direction through the
+-- The transport order / delivery instruction expresses its direction through the
 -- sales/purchase flag IsSOTrx, which is 'Y' on every existing row -- including the
 -- purchase-side delivery instructions. Seeding the new column from that flag would write
 -- that defect into the new column permanently, so the direction is derived from what the
 -- transport actually contains (its delivery plannings, else the orders reachable through
 -- its packages) and the flag is used only where content has no answer at all.
 --
--- IsSOTrx itself is deliberately left untouched here: it is still written by its current
--- writers and still read by its single reader. It is removed in a later step, after that
--- reader has been reworked.
+-- IsSOTrx itself is left untouched here: it is still written by its current writers and
+-- still read by its single reader.
 --
 -- THIS SCRIPT MUST NEVER FAIL. It runs unattended on customer instances, so there is no
 -- assertion, no RAISE and no branch that can abort: the physical column is created with a
 -- DEFAULT so that no row is ever NULL, and every branch of the derivation yields one of
--- the three reference values. The two post-conditions are stated as verification queries
--- at the end of this file and are run by hand -- deliberately not as in-script asserts.
+-- the three reference values.
 --
 -- IDs fetched from the ID server (http://idserver.metas.de):
 --   AD_MigrationScript -> 582043  (x10 = 5820430, this file)
@@ -27,32 +25,6 @@
 -- transport's direction with a planning's is a plain equality):
 --   AD_Element   581679  ColumnName 'M_Delivery_Planning_Type'
 --   AD_Reference 541689  list reference, values 'Incoming' / 'Outgoing' / 'Dropship'
---
--- DB lookups (deep_tundra_uat_2, port 21632):
---   AD_Table_ID of M_ShipperTransportation                      -> 540030
---   EntityType of that table, and of all 59 of its columns      -> METAS_SHIPPING
---   M_Delivery_Planning.M_Delivery_Planning_Type shape           -> VARCHAR(250), NOT NULL,
---                                                                  no DB check constraint
---
--- Written into the backup schema (one table, and it IS a backup):
---   backup.m_shippertransportation_bkp_<ts>_delivery_direction
---                                                      full copy of the table before any change.
---                                                      Named by backup_table's own convention
---                                                      (suffix form), so the timestamp is part of
---                                                      the name and a second application makes a
---                                                      SECOND backup instead of colliding with the
---                                                      first. Discover it via backup.backup_tables,
---                                                      which backup_table registers it in -- do not
---                                                      hardcode the name anywhere.
---
--- Nothing else is written to that schema. The per-transport resolution is computed once
--- into a TEMP table (tmp_direction_resolution) purely for readability of a four-rule multi-CTE
--- derivation, and it disappears with the session.
---
--- The transports whose direction had to be GUESSED are neither stored nor printed -- see
--- section 5 for why (the CLI swallows a script's stdout on a successful apply, so no
--- in-script mechanism reaches a reader). Section 6 (c) recomputes the part that is
--- recoverable. Do not add a SELECT or RAISE NOTICE here expecting it to be seen.
 
 -- ===========================================================================
 -- 1. Back up the whole table BEFORE anything is written
@@ -62,8 +34,8 @@ SELECT backup_table('m_shippertransportation', '_delivery_direction');
 -- ===========================================================================
 -- 2. AD_Column: M_ShipperTransportation.M_Delivery_Planning_Type
 -- ===========================================================================
--- Description / Help are left unset on purpose: they are owned by AD_Element 581679 and
--- would be overwritten by the propagation call below anyway.
+-- Description / Help are left unset: they are owned by AD_Element 581679 and filled in by
+-- the propagation call below.
 -- 2026-08-26T22:00:00.000Z
 INSERT INTO AD_Column
     (AD_Column_ID, AD_Client_ID, AD_Org_ID,
@@ -121,17 +93,11 @@ WHERE l.IsActive='Y'
 -- ===========================================================================
 -- 3. Physical column
 -- ===========================================================================
--- New column, added with a raw ALTER TABLE ADD COLUMN rather than through db_alter_table.
--- That is a deliberate exception to the branch's own convention (5821180 does the same job via
--- db_alter_table) and it is safe here for one specific reason: ADD COLUMN cannot disturb a
--- dependent view, so there is nothing for db_alter_table's drop-and-recreate cycle to protect.
--- t_alter_column is not an option either way -- it only ALTERs a column that already exists.
 -- DEFAULT and NOT NULL are declared together on purpose: ADD COLUMN with a DEFAULT
 -- populates the existing rows, so the NOT NULL is satisfied the moment it is declared and
 -- cannot abort. 'Outgoing' is also the right default going forward -- it preserves today's
 -- behaviour for the creation paths that hardcode a sales transport.
--- Shape follows the sibling column M_Delivery_Planning.M_Delivery_Planning_Type, which has
--- no DB check constraint either; the admissible values are enforced by the list reference.
+-- No DB check constraint: the admissible values are enforced by the list reference.
 ALTER TABLE M_ShipperTransportation
     ADD COLUMN IF NOT EXISTS M_Delivery_Planning_Type VARCHAR(250) NOT NULL DEFAULT 'Outgoing';
 
@@ -151,30 +117,20 @@ ALTER TABLE M_ShipperTransportation
 --
 -- Rule 4 is the safety property: it has no precondition and its expression is total, so
 -- every transport gets a direction and no row can be left out.
--- TEMP, not a stored table: the migration CLI runs this whole file through ONE psql
--- process with --single-transaction, so the UPDATE below sees it and it disappears with the
--- session.
---
--- It is materialised rather than inlined into the UPDATE because the derivation below is a
--- four-rule, multi-CTE computation and reading it as one named step is worth more than
--- saving a temp table. (It once had a second consumer -- a not-clean-cut report -- and the
--- no-drift argument that came with it; that report is gone, see section 5, so this is now
--- the honest reason and the only one.)
+-- TEMP, not a stored table: the whole file runs in one psql session, so the UPDATE below
+-- sees it and it disappears with the session. It is materialised rather than inlined into
+-- that UPDATE because the derivation is a four-rule, multi-CTE computation that reads
+-- better as one named step.
 CREATE TEMP TABLE tmp_direction_resolution AS
 WITH planning AS (
     -- Every delivery planning reachable from a transport, with its direction.
-    -- NOTE the first UNION arm (via M_Delivery_Planning_Alloc) contributes NOTHING at apply time:
-    -- M_Delivery_Planning_Alloc is created empty by 5820400 and only backfilled by 5820530, a
-    -- hundred prefixes later. So on a real run rule 1 below is fed solely by the second arm, the
-    -- direct M_Delivery_Planning.M_ShipperTransportation_ID link. The arm is kept because it makes
-    -- the derivation correct on a re-run against an already-aggregated database, where the direct
-    -- link no longer exists -- but do not read this CTE as evidence that allocations were populated
-    -- at this point in the script order.
+    -- The M_Delivery_Planning_Alloc arm matters only on a database where the direct
+    -- M_Delivery_Planning.M_ShipperTransportation_ID link is already gone; while both exist,
+    -- rule 1 below is fed by the direct link alone.
     -- A planning that is still 'Incoming' plus the B2B flag is a dropship in the old
-    -- two-field model, so its effective direction is 'Dropship' -- the same retyping the
-    -- planning-side migration applies. The flag is read through to_jsonb so that this
-    -- script also runs unchanged on a database where that column has already been
-    -- dropped; a direct reference would abort the whole migration run there.
+    -- two-field model, so its effective direction is 'Dropship'. The flag is read through
+    -- to_jsonb so that this script also runs unchanged on a database where that column has
+    -- already been dropped; a direct reference would abort the whole migration run there.
     SELECT a.M_ShipperTransportation_ID AS m_shippertransportation_id,
            CASE WHEN dp.M_Delivery_Planning_Type = 'Incoming'
                      AND to_jsonb(dp) ->> 'isb2b' = 'Y'
@@ -292,10 +248,9 @@ SELECT c.m_shippertransportation_id,
 FROM classified c
 ;
 
--- Apply it. `direction IS NOT NULL` is not defensive decoration: it is what makes the
--- NOT NULL declared in section 3 unfalsifiable regardless of the expression above --
--- the column starts at 'Outgoing' and this statement can only ever replace it with a
--- non-null value.
+-- `direction IS NOT NULL` is what keeps the NOT NULL declared in section 3 unfalsifiable
+-- regardless of the expression above: the column starts at 'Outgoing' and this statement
+-- can only ever replace it with a non-null value.
 -- 2026-08-26T22:00:05.000Z
 UPDATE M_ShipperTransportation st
 SET M_Delivery_Planning_Type = r.direction,
@@ -307,60 +262,10 @@ WHERE r.m_shippertransportation_id = st.M_ShipperTransportation_ID
 ;
 
 -- ===========================================================================
--- 5. What was NOT clean-cut is deliberately not captured at apply time
+-- 5. Not-clean-cut rows are not captured at apply time
 -- ===========================================================================
 -- Two kinds of row are not clean-cut: the ones rule 2 resolved through its dropship/plain
 -- tie-break, and the ones rule 4 resolved from the flag because content had no answer.
--- Both keep working; a legacy mixed transport is only slightly narrower afterwards,
--- because the direction now fixes what may be added to it.
---
--- This script used to store that listing as a table in the backup schema. It does not any
--- more, and it does not print it either. The print was tried and REMOVED, because it does
--- not work: the migration CLI runs psql through PostgresqlNativeExecutor, which BUFFERS
--- stdout and stderr and emits them only inside a ScriptExecutionException. Measured on a
--- real CI apply log: zero SELECT result rows and zero NOTICE lines appear outside a failure
--- dump. So on a SUCCESSFUL apply -- the normal case, and the only one that matters at
--- rollout -- neither a SELECT nor a RAISE NOTICE reaches any log a human will read.
---
--- What that costs, stated plainly rather than papered over: the deciding rule per transport
--- is NOT recoverable afterwards, because the reasoning also read
--- M_Delivery_Planning.IsB2B and a later script on this branch drops that column. What IS
--- recoverable, at any time and from live data, is the part a human acts on -- which
--- transports carried plannings that did not agree on one direction -- because the
--- per-planning direction survives every later script. Section 6 (c) is that query, and it
--- is the single documented way to get this list.
-
--- ===========================================================================
--- 6. Verification -- run by hand after applying; both must return 0
--- ===========================================================================
--- (a) nothing unset
---     SELECT count(*) FROM M_ShipperTransportation WHERE M_Delivery_Planning_Type IS NULL;
--- (b) every row still accounted for against the backup. Resolve the backup's name first --
---     it carries backup_table's timestamp, so it differs per application:
---       SELECT backup_table_name FROM backup.backup_tables
---        WHERE backup_table_name LIKE 'backup.m_shippertransportation_bkp_%_delivery_direction'
---        ORDER BY backup_table_name DESC LIMIT 1;
---     (the column is backup_table_name, not table_name, and the value is stored WITH the
---      'backup.' schema prefix -- both verified against the live table, and both wrong in an
---      earlier version of this comment)
---     then, substituting that name for <bkp>:
---       SELECT count(*)
---         FROM backup.<bkp> b
---         FULL JOIN M_ShipperTransportation s USING (M_ShipperTransportation_ID)
---        WHERE b.M_ShipperTransportation_ID IS NULL
---           OR s.M_ShipperTransportation_ID IS NULL;
--- (c) the not-clean-cut transports. Nothing surfaces them during the run (section 5), so
---     THIS is the only way to see them, before or after the apply. It reports the
---     ambiguity itself -- a transport whose plannings do not agree on one direction -- which
---     is what a human acts on. It does NOT recover the deciding rule: that reasoning also
---     read M_Delivery_Planning.IsB2B, and a later script on this branch drops that column,
---     so the "why" survives only in THAT script's backup of m_delivery_planning.
---       SELECT st.M_ShipperTransportation_ID, st.DocumentNo, st.M_Delivery_Planning_Type,
---              count(DISTINCT dp.M_Delivery_Planning_Type) AS n_planning_directions
---         FROM M_ShipperTransportation st
---         JOIN M_Delivery_Planning dp
---           ON dp.M_ShipperTransportation_ID = st.M_ShipperTransportation_ID
---          AND dp.IsActive = 'Y'
---        GROUP BY st.M_ShipperTransportation_ID, st.DocumentNo, st.M_Delivery_Planning_Type
---       HAVING count(DISTINCT dp.M_Delivery_Planning_Type) > 1
---        ORDER BY st.DocumentNo;
+-- fallback_reason above names them for a reader of this file; nothing stores or prints it,
+-- because on a successful apply neither a SELECT nor a RAISE NOTICE from a migration script
+-- reaches a log a human reads. Do not add one expecting it to be seen.

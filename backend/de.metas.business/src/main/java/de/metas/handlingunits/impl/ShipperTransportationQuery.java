@@ -54,8 +54,7 @@ public class ShipperTransportationQuery
 	@Nullable Boolean processed;
 
 	/**
-	 * Unset matches any direction - a transport order's direction is not implied by any of this query's
-	 * other fields, so a caller that cares which direction it matches must say so explicitly.
+	 * Unset matches any direction.
 	 */
 	@Nullable TransportDirection transportDirection;
 

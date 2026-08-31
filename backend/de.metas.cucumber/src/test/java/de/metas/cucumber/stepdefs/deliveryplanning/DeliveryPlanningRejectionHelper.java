@@ -44,13 +44,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
 /**
- * Asserts that a delivery-planning action was REJECTED with the message a feature file names, in a language-independent
- * way: an {@code AD_Message} rejection is matched by the {@code AD_Message} itself rather than by its wording, so no
- * text is frozen into a feature file.
- * <p>
- * Shared by {@link M_Delivery_Instruction_StepDef} and {@link M_Delivery_Planning_StepDef} (both get the same instance
- * from PicoContainer): the aggregation actions, the delivery instruction's document actions and the planning's
- * close/reopen all reject the same way, so they assert the same way.
+ * Asserts that a delivery-planning action was REJECTED with the message a feature file names, matching the
+ * {@code AD_Message} itself rather than its wording, so no message text is frozen into a feature file.
  */
 public class DeliveryPlanningRejectionHelper
 {
@@ -70,9 +65,8 @@ public class DeliveryPlanningRejectionHelper
 	 * Runs the given action, and - when the row names any expected rejection - asserts that it was rejected that way
 	 * instead of succeeding. A row naming none just runs the action.
 	 *
-	 * @param otherKnownColumns every column the CALLING step understands, i.e. everything besides the expectation
-	 * 		columns this helper owns. Anything outside the two sets is a typo rather than an ignored cell - see
-	 * 		{@link #assertNoUnknownColumn(DataTableRow, ImmutableSet)}.
+	 * @param otherKnownColumns every column the CALLING step understands, besides the expectation columns this helper
+	 * 		owns; anything outside the two sets is a typo rather than an ignored cell.
 	 */
 	public void runExpectingRejectionIfAny(
 			@NonNull final DataTableRow row,
@@ -122,23 +116,15 @@ public class DeliveryPlanningRejectionHelper
 	}
 
 	/**
-	 * An {@code AD_Message} rejection is identified by its {@code errorCode}, which {@link AdempiereException} derives
-	 * from the {@code AD_Message} the {@code ITranslatableString} was built from (its own {@code ErrorCode} when it has
-	 * one, else the message's value) - exact, and independent of both the wording and the language.
-	 * <p>
-	 * There is deliberately no text comparison to fall back on. An {@link AdempiereException} thrown anywhere under a
-	 * document action keeps its {@code errorCode} all the way out: {@code AbstractDocumentBL.processIt0}'s
-	 * {@code doCatch} re-throws through {@code AdempiereException.wrapIfNeeded}, which hands back the very same
-	 * exception when it already is one - a {@code BEFORE_}-timing interceptor rejection included. A rejection reaching
-	 * here without an {@code errorCode} is therefore NOT the named {@code AD_Message}, and asserting that loudly beats
-	 * matching a message text that the {@code AD_Message} may share with any other message.
+	 * An {@code AD_Message} rejection is identified by its {@code errorCode} - exact, and independent of both the
+	 * wording and the language. There is no text comparison to fall back on: a rejection arriving here without an
+	 * {@code errorCode} is not the named {@code AD_Message}.
 	 */
 	private void assertRejectedWith(
 			@NonNull final AdempiereException thrown,
 			@NonNull final AdMessageKey expectedAdMessage)
 	{
-		// the same coalesce AdempiereException applies: an AD_Message may carry its own ErrorCode, and then
-		// THAT is what the exception ends up with rather than the message's value
+		// an AD_Message may carry its own ErrorCode, and then that - not the message's value - is the errorCode
 		final String expectedErrorCode = CoalesceUtil.coalesceNotNull(
 				msgBL.getErrorCode(expectedAdMessage),
 				expectedAdMessage.toAD_Message());
@@ -149,11 +135,8 @@ public class DeliveryPlanningRejectionHelper
 	}
 
 	/**
-	 * A misspelled column would silently drop the claim it carries - a scenario asserting both an {@code AD_Message}
-	 * and the fields it has to name would stay green having asserted only the message. Every column is therefore
-	 * matched against the KNOWN set (this helper's expectation columns plus the calling step's own), so a typo is an
-	 * error rather than an ignored cell no matter what it looks like: a prefix test would let {@code Eror…} through,
-	 * and would reject an {@code ErrorCode} column that other steps of this domain use legitimately.
+	 * Matches every column against the KNOWN set (this helper's expectation columns plus the calling step's own), so a
+	 * misspelled column is an error rather than an ignored cell that would silently drop the claim it carries.
 	 */
 	private static void assertNoUnknownColumn(
 			@NonNull final DataTableRow row,

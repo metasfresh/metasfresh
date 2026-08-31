@@ -28,19 +28,7 @@ import lombok.NonNull;
 
 /**
  * The selection-shaped precondition guards the delivery planning gridactions repeat verbatim - "is anything
- * selected", "is too much selected", "is more than one row selected". Each is a plain reading of the
- * {@link IProcessPreconditionsContext} against a framework rejection, identical in every process that has it, so it
- * is kept once here and composed via
- * {@link ProcessPreconditionsResolution#firstRejectOrElseAccept(java.util.function.Supplier[])}.
- * <p>
- * What does NOT belong here:
- * <ul>
- *     <li>anything that needs {@link de.metas.deliveryplanning.DeliveryPlanningService} - loading the selection,
- *     querying release numbers, asking whether a partner is blocked;</li>
- *     <li>any business rule, even a one-liner, and even one two processes happen to share today.</li>
- * </ul>
- * Those stay as private methods on the owning process, so the rule sits next to the message it rejects with and a
- * reader of that process can see every reason it can be unavailable without leaving the file.
+ * selected", "is too much selected", "is more than one row selected". Business rules stay on the owning process.
  */
 public final class DeliveryPlanningProcessHelper
 {
@@ -48,9 +36,6 @@ public final class DeliveryPlanningProcessHelper
 	{
 	}
 
-	/**
-	 * Rejects when the planner has selected nothing at all.
-	 */
 	public static ProcessPreconditionsResolution checkAnySelection(@NonNull final IProcessPreconditionsContext context)
 	{
 		if (context.isNoSelection())
@@ -61,9 +46,6 @@ public final class DeliveryPlanningProcessHelper
 		return ProcessPreconditionsResolution.accept();
 	}
 
-	/**
-	 * Rejects when the selection is bigger than the given cap.
-	 */
 	public static ProcessPreconditionsResolution checkAtMostSelected(
 			@NonNull final IProcessPreconditionsContext context,
 			final int maxSelectionSize)
@@ -76,9 +58,6 @@ public final class DeliveryPlanningProcessHelper
 		return ProcessPreconditionsResolution.accept();
 	}
 
-	/**
-	 * Rejects when more than one row is selected, i.e. for the actions that operate on exactly one delivery planning.
-	 */
 	public static ProcessPreconditionsResolution checkSingleSelection(@NonNull final IProcessPreconditionsContext context)
 	{
 		if (context.isMoreThanOneSelected())

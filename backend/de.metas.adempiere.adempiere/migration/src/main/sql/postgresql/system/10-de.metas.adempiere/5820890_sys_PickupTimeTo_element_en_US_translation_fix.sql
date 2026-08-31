@@ -1,9 +1,6 @@
--- AD_Element 577279 (PickupTimeTo), used by 4 AD_Column rows (M_Shipper, M_ShipperTransportation,
--- DPD_StoreOrder, Carrier_ShipmentOrder -- verified via impact query, no other usage). The en_US
--- AD_Element_Trl row carried the German text "Abholung Uhrzeit bis" verbatim while flagged
--- IsTranslated='Y' -- i.e. marked translated without actually being translated. fr_CH carries the
--- same untranslated German text but is correctly flagged IsTranslated='N' (honestly-marked
--- fallback, not a defect) and is left untouched here.
+-- AD_Element 577279 (PickupTimeTo) is used by 4 AD_Column rows. Its en_US AD_Element_Trl row carried
+-- the German text verbatim while flagged IsTranslated='Y'. fr_CH carries the same German text but is
+-- flagged 'N', which is correct for an untranslated fallback, so it is left untouched.
 UPDATE AD_Element_Trl
    SET Name='Pickup Time To', Description='Pickup Time To', IsTranslated='Y',
        Updated=TO_TIMESTAMP('2026-08-27 15:15:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100

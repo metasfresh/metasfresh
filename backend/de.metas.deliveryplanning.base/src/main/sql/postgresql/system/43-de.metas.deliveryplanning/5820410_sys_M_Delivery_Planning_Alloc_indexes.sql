@@ -1,30 +1,6 @@
--- Indexes on M_Delivery_Planning_Alloc (the table itself is created by 5820400).
--- Declared through AD_Index_Table + AD_Index_Column rather than a bare CREATE INDEX, because that is
--- how this codebase manages its indexes: the AD rows are the inventory the AD_Index_Create process
--- rebuilds from, and a unique index declared this way carries a translatable ErrorMsg that is
--- surfaced to the user as HTTP 422 instead of a raw duplicate-key error. The physical index name
--- therefore MUST equal AD_Index_Table.Name -- that is the key the violation is mapped back on.
---
---   M_Delivery_Planning_Alloc_Planning_UQ    unique, WHERE IsActive='Y'
---       one active allocation per delivery planning. The database layer of the double-assignment
---       guard: it is the only layer no future call site can bypass -- two users adding the same
---       planning to two different draft instructions in parallel is caught here and nowhere else.
---       Also serves every planning -> allocation lookup.
---       The clause is IsActive alone, and that is sufficient because EVERY retirement path -- void,
---       remove and move alike -- sets IsActive='N' (DeliveryPlanningRepository.
---       deactivateAllocationRecords, which also stamps DateRemoved for the instruction's history
---       tab). No path leaves a retired allocation active, so the DocStatus mirror is not
---       load-bearing for the guard and a planning can be re-allocated after its instruction was
---       voided or after it was removed from one.
---   M_Delivery_Planning_Alloc_Instruction    not unique, unfiltered
---       all allocations of one instruction: the Plannings tab, unlink, the complete / re-activate /
---       void cascade, and both views. Deliberately unfiltered, because the cascade must also see
---       the rows a previous void deactivated.
---   M_Delivery_Planning_Alloc_Package_UQ     unique, WHERE IsActive='Y'
---       one shipping package per allocation, and the key the views join on. This is a
---       "while it is 1:1" constraint, not a law: once M_Package represents a container holding
---       consignments from several plannings, the relation becomes N allocations -> 1 package and
---       this is the single line that has to be dropped.
+-- Indexes on M_Delivery_Planning_Alloc, declared as AD_Index_Table + AD_Index_Column so a unique
+-- violation surfaces the translated ErrorMsg instead of a raw duplicate-key error. The physical
+-- index name MUST equal AD_Index_Table.Name -- that is the key the violation is mapped back on.
 --
 -- IDs allocated from idserver.metas.de on 2026-08-26:
 --   AD_Index_Table  540869  (M_Delivery_Planning_Alloc_Planning_UQ)

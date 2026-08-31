@@ -99,23 +99,13 @@ public class DeliveryInstructionCreateRequest
 
 	@Nullable OrderLineId orderLineId;
 
-	/**
-	 * The order behind this planning's allocation, resolved by the caller from {@code M_Delivery_Planning.C_Order_ID}
-	 * - never derived here, so it lands on the created {@code M_ShippingPackage} exactly as the caller resolved it,
-	 * including {@code null} for a planning that genuinely has no order.
-	 */
+	/** Lands on the created {@code M_ShippingPackage}; {@code null} for a planning that has no order. */
 	@Nullable OrderId orderId;
 
 	@NonNull DeliveryPlanningId deliveryPlanningId;
 
 	@Nullable Dimension dimension;
 
-	/**
-	 * Resolved by the caller from the seed delivery planning(s) - never defaulted here or in the repository that
-	 * persists it. For {@link DeliveryPlanningService#combine}, every combined planning shares this value by
-	 * construction: {@link DeliveryPlanningList#aggregationKeyViolations()} already refuses a selection whose
-	 * plannings disagree on direction.
-	 */
 	@NonNull TransportDirection transportDirection;
 
 }

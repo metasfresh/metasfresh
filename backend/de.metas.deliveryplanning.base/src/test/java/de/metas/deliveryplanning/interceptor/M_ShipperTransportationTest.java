@@ -42,18 +42,13 @@ import java.lang.reflect.Method;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Which {@code @DocValidate} timings each interceptor method is wired to, and - for the one method a prior
- * review round found reintroducing a fixed hazard - that its BEHAVIOUR matches its annotation.
+ * Which {@code @DocValidate} timings each interceptor method is wired to, and that each method's BEHAVIOUR
+ * matches its annotation.
  * <p>
- * {@code updateBPartnerStatistics} and the instruction's invoice-candidate invalidation used to be coupled: one
- * method did both, registered at {@code TIMING_AFTER_COMPLETE} AND {@code TIMING_AFTER_VOID}. On VOID this
- * silently re-derived "active" allocations from a {@code trxManager.runAfterCommit} closure AFTER
- * {@code unlinkDeliveryPlannings} (same class, same timing) had already deactivated them in the same
- * transaction - the empty-result hazard {@link DeliveryPlanningService#unlinkDeliveryPlannings} was fixed for.
- * VOID's invoice-candidate invalidation is now owned exclusively and correctly by
- * {@code unlinkDeliveryPlannings}, so the two concerns are split into two methods here, and this test pins
- * the split so a future re-coupling (e.g. folding the call back into {@code updateBPartnerStatistics} because
- * it is "already registered at AFTER_VOID") reintroduces the hazard loudly, not silently.
+ * VOID's invoice-candidate invalidation is owned exclusively by {@code unlinkDeliveryPlannings}: re-deriving
+ * "active" allocations from a {@code trxManager.runAfterCommit} closure would see none left, because
+ * {@link DeliveryPlanningService#unlinkDeliveryPlannings} has already deactivated them in the same
+ * transaction. The split into two methods is pinned here so a re-coupling fails loudly.
  */
 class M_ShipperTransportationTest
 {
@@ -122,8 +117,7 @@ class M_ShipperTransportationTest
 
 		interceptor.invalidateInvoiceCandidatesAfterComplete(deliveryInstruction);
 
-		// runAfterCommit runs synchronously here (AutoCommitTrxListenerManager - no active transaction in this
-		// plain-JUnit context), so the deferred call is already observable
+		// runAfterCommit runs synchronously in this plain-JUnit context, so the deferred call is already observable
 		Mockito.verify(deliveryPlanningService).invalidateInvoiceCandidatesFor(
 				ShipperTransportationId.ofRepoId(deliveryInstruction.getM_ShipperTransportation_ID()));
 	}

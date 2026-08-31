@@ -1,70 +1,32 @@
 -- M_Delivery_Planning: filterability for the planner's working-list window (AD_Window 541632).
 --
--- Four new ColumnSQL virtual columns:
+-- Four new ColumnSQL virtual columns. Each duplicates a rule the delivery-planning service also
+-- applies in Java, so the two must be kept in step:
 --   IsAllocated           -- 'Y' iff an ACTIVE M_Delivery_Planning_Alloc row references this
---                             planning. Mirrors DeliveryPlanningRepository.hasActiveAllocation
---                             exactly (queryAllocationsByPlanningIds: addOnlyActiveRecordsFilter +
---                             addInArrayFilter on M_Delivery_Planning_ID). Hits the existing partial
---                             unique index m_delivery_planning_alloc_planning_uq
---                             (m_delivery_planning_id) WHERE isactive='Y' -- an index-only lookup,
---                             not a table scan.
---   IsDelivered           -- 'Y' iff M_InOut_ID is set. Mirrors DeliveryPlanningReceiptInfo#isReceived
---                             / DeliveryPlanningShipmentInfo#isShipped, both `getReceiptId()/
---                             getShipmentId() != null`, both reading the same M_InOut_ID field this
---                             column reads. Reads only the row's own column -- no subquery, no join.
---   ShipFrom_Location_ID  -- mirrors DeliveryPlanningService#extractShipFromLocationIdOrNull:
---                             TransportDirection.hasReceipt() (Incoming or Dropship) -> the receipt
---                             schedule's C_BPartner_Location_ID; else (Outgoing) -> the warehouse's
---                             C_BPartner_Location_ID. Each branch is a single primary-key lookup.
---   ShipTo_Location_ID    -- mirrors DeliveryPlanningService#extractShipToLocationIdOrNull:
---                             DeliveryPlanningRepository.hasOwnShipment() (hasShipment() AND NOT
---                             isDropship() -- true only for Outgoing) -> the shipment schedule's
---                             C_BPartner_Location_ID; else (Incoming or Dropship) -> the warehouse's
---                             C_BPartner_Location_ID. Each branch is a single primary-key lookup.
+--                             planning.
+--   IsDelivered           -- 'Y' iff M_InOut_ID is set. FilterDefaultValue='N', so the working-list
+--                             filter opens pre-set to "not yet delivered".
+--   ShipFrom_Location_ID  -- Incoming or Dropship -> the receipt schedule's C_BPartner_Location_ID;
+--                             Outgoing -> the warehouse's.
+--   ShipTo_Location_ID    -- Outgoing -> the shipment schedule's C_BPartner_Location_ID;
+--                             Incoming or Dropship -> the warehouse's.
+-- Neither location column's name follows the "<TargetTable>_ID" convention, so
+-- AD_Reference_Value_ID must be set explicitly (159 = C_BPartner_Location).
 --
--- Both location columns are Table(18)+C_BPartner_Location(159) references -- the column name does
--- not follow the "<TargetTable>_ID" convention, so AD_Reference_Value_ID must be set explicitly
--- (see the existing HandOver_Location_ID / Beneficiary_Location_ID precedents).
+-- The four new columns get no AD_Field and no AD_UI_Element: AD_Tab 546674 leaves
+-- IncludeFiltersStrategy blank, and under that an AD_Column.IsSelectionColumn='Y' becomes a WebUI
+-- filter straight off AD_Column.
 --
--- Selection (filter) flags also flip to 'Y' on six existing physical columns that a planner needs
--- to filter the working list by but currently cannot: M_Shipper_ID, C_Incoterms_ID,
--- IncotermLocation, M_MeansOfTransportation_ID, AD_Org_ID, IsClosed. All six already have an
--- AD_Field on AD_Tab 546674 (AD_Window 541632), but only three of them were actually visible in
--- the grid: the flag the WebUI reads is AD_UI_Element.IsDisplayedGrid. LayoutFactory.layoutGridView()
--- (de.metas.ui.web.base) filters streamAD_UI_Elements() on isDisplayedGrid unconditionally, and falls
--- back to the single-row layout only when that filter yields NOTHING at all -- which is not the case
--- on AD_Tab 546674. The legacy AD_Field.IsDisplayedGrid='Y' present on all six is therefore never read
--- by the WebUI. M_MeansOfTransportation_ID, IsClosed and AD_Org_ID had
--- AD_UI_Element.IsDisplayedGrid='N' / SeqNoGrid=0 -- filterable but invisible in the result grid --
--- so section 10 flips them on.
+-- Selection flags also flip to 'Y' on six existing physical columns a planner needs to filter the
+-- working list by but currently cannot: M_Shipper_ID, C_Incoterms_ID, IncotermLocation,
+-- M_MeansOfTransportation_ID, AD_Org_ID, IsClosed. Three of those were filterable but invisible in
+-- the result grid; section 10 makes them visible.
 --
--- IsDelivered gets FilterDefaultValue='N' so the working-list filter opens pre-set to "not yet
--- delivered", matching how a planner actually uses this window (open plannings, not history).
---
--- AD_Element reuse check (existing elements queried before allocating new ones): 'IsDelivered'
--- (367, "Zugestellt") already exists with no domain-specific Description/Help and backs unrelated
--- tables (C_Order, DD_Order, AD_UserMail, ...) with the same generic "delivered Y/N" meaning --
--- reused as-is, not modified. 'IsAllocated' (1508, "Zugeordnet") also exists, but its Description
--- ("shows if a PAYMENT has already been allocated") and Help are payment-domain-specific
--- (C_Payment, C_Dunning_Line_v, RV_Payment); reusing it would either mislead this column's tooltip
--- or rewrite text shared by unrelated payment columns, so a fresh element is created instead --
--- named 'M_Delivery_Planning_IsAllocated' (AD_Element.ColumnName is UNIQUE and 'IsAllocated' is
--- already taken by 1508; the AD_Column itself is still named plain 'IsAllocated').
---
--- No AD_Field/AD_UI_Element is added for the four new columns: AD_Tab 546674 has no
--- IncludeFiltersStrategy override (blank -> Auto for a top-level tab), and under Auto every
--- AD_Column.IsSelectionColumn='Y' becomes a WebUI filter directly off AD_Column -- confirmed via
--- ad_field_v.sql (LEFT JOINs AD_Field onto every AD_Column of the tab's table) and a live-DB
--- precedent (M_ReceiptSchedule.C_BP_Group_ID: IsSelectionColumn='Y', ColumnSQL virtual, no active
--- AD_Field, its tabs both Auto).
---
--- IsTranslated='Y' on de_DE, de_CH and en_US for the three new elements: the flag says the row's
--- text is CORRECT for its language, not that a translation step happened. de_DE is the base
--- language, so its row carries the authored German verbatim and is correct by construction;
--- de_CH takes the same German (no Swiss variant is wanted for these three terms); en_US carries
--- real English. fr_CH gets no override and keeps the seeded German, so it stays 'N'.
--- (setBaseLanguage(), de.metas.business ddl/functions/SetBaseLanguage.sql, materialises the
--- outgoing base language's rows with 'Y' -- which is only right under this reading.)
+-- IsAllocated gets a fresh AD_Element: the existing 'IsAllocated' element (1508) carries
+-- payment-domain Description/Help shared with unrelated columns, so reusing it would either mislead
+-- this column's tooltip or rewrite text those columns depend on. AD_Element.ColumnName is UNIQUE and
+-- 1508 already holds 'IsAllocated', hence 'M_Delivery_Planning_IsAllocated' on the element while the
+-- AD_Column itself stays plain 'IsAllocated'. IsDelivered reuses the generic element 367 as-is.
 --
 -- IDs allocated from idserver.metas.de on 2026-08-28:
 --   AD_MigrationScript 5821150 (this file)
@@ -74,7 +36,7 @@
 --   AD_SQLColumn_SourceTableColumn 540225..540229
 
 -- ============================================================================
--- 1) AD_Element: IsAllocated (new -- see reuse-check note above)
+-- 1) AD_Element: IsAllocated (new)
 -- ============================================================================
 INSERT INTO AD_Element (AD_Client_ID, AD_Element_ID, AD_Org_ID, ColumnName, Created, CreatedBy, Description, EntityType, Help, IsActive, Name, PrintName, Updated, UpdatedBy)
 VALUES (0, 585384 /*From ID Server*/, 0, 'M_Delivery_Planning_IsAllocated', TO_TIMESTAMP('2026-08-28 09:00:00','YYYY-MM-DD HH24:MI:SS'), 100, 'Zeigt an, ob die Lieferplanung bereits einer Auslieferungsanweisung zugeordnet ist.', 'D', 'Zeigt an, ob die Lieferplanung bereits einer Auslieferungsanweisung zugeordnet ist.', 'Y', 'Zugeordnet', 'Zugeordnet', TO_TIMESTAMP('2026-08-28 09:00:00','YYYY-MM-DD HH24:MI:SS'), 100)
@@ -247,14 +209,12 @@ WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.
 -- 8) AD_SQLColumn_SourceTableColumn -- cache-invalidation dependencies
 -- ============================================================================
 
--- IsAllocated depends on M_Delivery_Planning_Alloc; link column is the allocation's own FK
--- (M_Delivery_Planning_ID, AD_Column 593397) which names the target's own PK directly.
+-- IsAllocated depends on M_Delivery_Planning_Alloc; the link column is the allocation's own FK.
 INSERT INTO AD_SQLColumn_SourceTableColumn (AD_Client_ID, AD_SQLColumn_SourceTableColumn_ID, AD_Org_ID, AD_Table_ID, AD_Column_ID, Created, CreatedBy, FetchTargetRecordsMethod, IsActive, link_column_id, source_table_id, Updated, UpdatedBy)
 VALUES (0, 540225 /*From ID Server*/, 0, 542259, 593412, TO_TIMESTAMP('2026-08-28 09:02:00','YYYY-MM-DD HH24:MI:SS'), 100, 'L', 'Y', 593397, 542641, TO_TIMESTAMP('2026-08-28 09:02:00','YYYY-MM-DD HH24:MI:SS'), 100)
 ;
 
--- ShipFrom_Location_ID depends on M_ReceiptSchedule and M_Warehouse; each source's own PK
--- column shares its name with the matching FK column on M_Delivery_Planning.
+-- ShipFrom_Location_ID depends on M_ReceiptSchedule and M_Warehouse.
 INSERT INTO AD_SQLColumn_SourceTableColumn (AD_Client_ID, AD_SQLColumn_SourceTableColumn_ID, AD_Org_ID, AD_Table_ID, AD_Column_ID, Created, CreatedBy, FetchTargetRecordsMethod, IsActive, link_column_id, source_table_id, Updated, UpdatedBy)
 VALUES (0, 540226 /*From ID Server*/, 0, 542259, 593414, TO_TIMESTAMP('2026-08-28 09:02:01','YYYY-MM-DD HH24:MI:SS'), 100, 'L', 'Y', 549487, 540524, TO_TIMESTAMP('2026-08-28 09:02:01','YYYY-MM-DD HH24:MI:SS'), 100)
 ;
@@ -262,7 +222,7 @@ INSERT INTO AD_SQLColumn_SourceTableColumn (AD_Client_ID, AD_SQLColumn_SourceTab
 VALUES (0, 540227 /*From ID Server*/, 0, 542259, 593414, TO_TIMESTAMP('2026-08-28 09:02:02','YYYY-MM-DD HH24:MI:SS'), 100, 'L', 'Y', 1151, 190, TO_TIMESTAMP('2026-08-28 09:02:02','YYYY-MM-DD HH24:MI:SS'), 100)
 ;
 
--- ShipTo_Location_ID depends on M_ShipmentSchedule and M_Warehouse, same pattern.
+-- ShipTo_Location_ID depends on M_ShipmentSchedule and M_Warehouse.
 INSERT INTO AD_SQLColumn_SourceTableColumn (AD_Client_ID, AD_SQLColumn_SourceTableColumn_ID, AD_Org_ID, AD_Table_ID, AD_Column_ID, Created, CreatedBy, FetchTargetRecordsMethod, IsActive, link_column_id, source_table_id, Updated, UpdatedBy)
 VALUES (0, 540228 /*From ID Server*/, 0, 542259, 593415, TO_TIMESTAMP('2026-08-28 09:02:03','YYYY-MM-DD HH24:MI:SS'), 100, 'L', 'Y', 500232, 500221, TO_TIMESTAMP('2026-08-28 09:02:03','YYYY-MM-DD HH24:MI:SS'), 100)
 ;
@@ -287,18 +247,10 @@ UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=210, Updated=TO
 ;
 
 -- ============================================================================
--- 10) Grid visibility for the three filterable columns that were filter-only
---     (AD_Tab 546674, AD_Window 541632). SeqNoGrid values were checked against every
---     sibling AD_UI_Element.SeqNoGrid AND every sibling AD_Field.SeqNoGrid on this tab --
---     both layers are collision-free:
---       - M_MeansOfTransportation_ID -> 40  (right after TransportDirection/30, its natural
---                                            neighbour -- transport-mode fields together,
---                                            ahead of Incoterms/60)
---       - IsClosed                   -> 50  (grouped with the transport-mode/status fields
---                                            just before Incoterms/60)
---       - AD_Org_ID                  -> 390 (appended after the current highest, Processed/380 --
---                                            Organisation must be the last grid column per the
---                                            window design rules)
+-- 10) Grid visibility for the three filterable columns that were filter-only (AD_Tab 546674).
+--     SeqNoGrid: M_MeansOfTransportation_ID/40 and IsClosed/50 sit next to TransportDirection/30
+--     and ahead of Incoterms/60; AD_Org_ID/390 goes last, as the window design rules require for
+--     Organisation.
 -- ============================================================================
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=40, Updated=TO_TIMESTAMP('2026-08-28 09:04:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_UI_Element_ID=613935 /* M_MeansOfTransportation_ID */
 ;

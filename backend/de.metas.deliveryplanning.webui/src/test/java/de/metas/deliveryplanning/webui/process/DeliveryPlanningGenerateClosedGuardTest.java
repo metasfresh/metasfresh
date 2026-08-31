@@ -51,8 +51,7 @@ import static org.mockito.Mockito.when;
  * same guard {@code GenerateShortageOverage} carries (proven in {@code de.metas.deliveryplanning.base}).
  * <p>
  * The guard is checked BEFORE either process reads a receipt/shipment schedule, so a closed selection needs no
- * further fixture - it is refused on the first check, before anything else in the (otherwise heavy) generate flow
- * runs.
+ * further fixture.
  */
 class DeliveryPlanningGenerateClosedGuardTest
 {
@@ -87,8 +86,6 @@ class DeliveryPlanningGenerateClosedGuardTest
 	private static IProcessPreconditionsContext contextSelecting(final int deliveryPlanningId)
 	{
 		final IProcessPreconditionsContext context = mock(IProcessPreconditionsContext.class);
-		// isSingleSelection() is a DEFAULT method (delegates to getSelectionSize()) - Mockito does not run the
-		// real default body just because getSelectionSize() is stubbed, so it is stubbed directly here
 		when(context.isSingleSelection()).thenReturn(true);
 		when(context.getSingleSelectedRecordId()).thenReturn(deliveryPlanningId);
 		return context;

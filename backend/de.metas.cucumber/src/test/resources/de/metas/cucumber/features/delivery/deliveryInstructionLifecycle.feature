@@ -220,7 +220,7 @@ Feature: The document lifecycle of a delivery instruction and its delivery plann
     Then metasfresh contains exactly 1 M_ShippingPackages for transportation order: transportOrder
 
     # the rules that guard a delivery instruction are told apart by document sub-type, never by the absence of
-    # allocations - so a transport order, which legitimately never has any, completes exactly as it always did
+    # allocations - so a transport order, which legitimately never has any, completes normally
     When the transport order identified by transportOrder is completed
 
     Then validate M_ShipperTransportation:

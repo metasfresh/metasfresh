@@ -1,36 +1,20 @@
 -- Delivery Planning: the "Add to Delivery Instruction" action.
 --
--- Puts the selected delivery plannings on an EXISTING draft delivery instruction. Where "Combine
--- into one Delivery Instruction" creates a new document, this one joins an existing one: an
--- allocation and a shipping package are created on the target and the planning's release number is
--- stamped from it, all in one transaction.
+-- Puts the selected delivery plannings on an EXISTING draft delivery instruction: an allocation and
+-- a shipping package are created on the target and the planning's release number is stamped from
+-- it, all in one transaction. Add only ADDS -- a planning already on a draft instruction is refused
+-- rather than relocated, because relocating changes the source document too; that is the separate
+-- "Move to another Delivery Instruction" action.
 --
--- Add only ADDS. A planning that is already on a draft instruction is refused, not silently
--- relocated - relocating changes the SOURCE document too, and one verb doing both would hide that
--- from a planner who only meant to add. Moving is its own action, "Move to another Delivery
--- Instruction", registered by 5821300; the two are offered exclusively, and this one's description
--- names the other so a disabled button explains itself. The rejection Add raises for an
--- already-allocated selection (AD_Message 545815) is registered by 5821300 as well - it exists only
--- to point at Move, so it cannot predate it.
+-- The dialog shows exactly ONE field, the target instruction, narrowed by a value rule to the
+-- DRAFTED instructions whose direction matches the selection's. The direction is a property of the
+-- selection, not a planner's choice, so it rides in on a second parameter kept out of the dialog by
+-- an always-false DisplayLogic ('1=0') and filled by the process's
+-- IProcessDefaultParametersProvider.
 --
--- The dialog has exactly ONE visible field, the target instruction, and its list is narrowed by a
--- new value rule to the DRAFTED delivery instructions whose direction matches the selection's. The
--- direction is not something the planner chooses - it is a property of the selection - so it is
--- carried in by a second parameter that is kept out of the dialog with an always-false DisplayLogic
--- (the established form on this table: AD_Process_Para 542571 and 541949 both use "1=0") and filled
--- by the process's IProcessDefaultParametersProvider from the selected rows. Same layering the
--- picking four-eyes review already uses with M_ShipperTransportation_Open_ForShipper: the value
--- rule makes a wrong target unofferable, the precondition explains a wrong selection, and the
--- service asserts for callers that bypass the picker.
---
--- Rejection messages: the two rules a planner can provoke that Combine does not already cover -
--- a selected planning sitting on a COMPLETED instruction (which refuses the whole action, rather
--- than adding the rest), and a target that is no longer a draft. The closed-planning rejection
--- reuses message 545797 as 5820450 registered it - worded action-neutrally there precisely because
--- it is shared - rather than minting a second, near-identical message. Same for the admissibility
--- rejection 545796, which this action raises over the selection TOGETHER WITH the plannings the
--- target instruction already holds: without that, a planner could assemble, one add-to at a time,
--- an instruction whose header names one forwarder while its cargo belongs to another.
+-- Admissibility (545796) is checked over the selection TOGETHER WITH the plannings the target
+-- already holds, so a planner cannot assemble, one add-to at a time, an instruction whose header
+-- names one forwarder while its cargo belongs to another.
 --
 -- IDs allocated from idserver.metas.de on 2026-08-27:
 --   AD_Process       585654 (M_Delivery_Planning_AddToDeliveryInstruction)
@@ -42,30 +26,20 @@
 --   AD_Message       545808 (TargetNotDraft)
 --
 -- Reused, NOT newly created:
---   AD_Element   581679  M_Delivery_Planning_Type - the direction, same element the planning and the
---                        instruction both carry, so the comparison is a plain equality
---   AD_Element   540089  M_ShipperTransportation_ID - the label reads "Transport Auftrag" rather than
---                        "Lieferanweisung"; reused anyway, because AD_Process_Para has no per-parameter
---                        AD_Name_ID override and a second element for the same ColumnName would be a
---                        duplicate. The two documents sharing one table is what makes the label read
---                        oddly, and that is not this script's to fix.
+--   AD_Element   581679  M_Delivery_Planning_Type - the direction, the same element the planning and
+--                        the instruction both carry, so the comparison is a plain equality
+--   AD_Element   540089  M_ShipperTransportation_ID - its label reads "Transport Auftrag" rather
+--                        than "Lieferanweisung"; reused anyway, because AD_Process_Para has no
+--                        per-parameter AD_Name_ID override
 --   AD_Reference 541689  the three-valued direction list (Incoming / Outgoing / Dropship)
---   AD_Message   545797  ClosedPlannings (reused as-is from 5820450)
---   AD_Message   545796  IncompatibleSelection (reused as-is from 5820450)
---
--- DB lookups (deep_tundra_uat_2, port 21632):
---   AD_Table_ID of M_Delivery_Planning                          -> 542259
---   AD_Window_ID of the Delivery Planning window                -> 541632
---   C_DocType of the delivery instruction: 541085, DocSubType 'DI', DocBaseType 'MST'
---   M_ShipperTransportation.DocStatus                           -> NOT NULL, DEFAULT 'DR'
+--   AD_Message   545797  ClosedPlannings
+--   AD_Message   545796  IncompatibleSelection
 
 -- ---------------------------------------------------------------------------------------------
--- 1) the value rule: drafted delivery instructions of ONE direction
---
---    DocStatus='DR' rather than Processed='N': what may be added to is a DRAFT, and 'DR' says that
---    precisely, where Processed='N' would also admit an in-progress document.
---    The DocSubType condition is what keeps transport orders - the other document on this table -
---    out of a delivery-planning picker.
+-- 1) the value rule: drafted delivery instructions of ONE direction.
+--    DocStatus='DR', not Processed='N': only a DRAFT may be added to, where Processed='N' would
+--    also admit an in-progress document. The DocSubType condition keeps transport orders -- the
+--    other document on this table -- out of a delivery-planning picker.
 -- ---------------------------------------------------------------------------------------------
 INSERT INTO AD_Val_Rule (AD_Val_Rule_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
                          Name, Description, Type, Code, EntityType)

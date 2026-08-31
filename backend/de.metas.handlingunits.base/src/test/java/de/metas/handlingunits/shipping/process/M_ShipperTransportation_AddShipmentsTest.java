@@ -58,8 +58,7 @@ class M_ShipperTransportation_AddShipmentsTest
 	{
 		AdempiereTestHelper.get().init();
 
-		// spy the real (table-cached) DocTypeDAO *before* the guard is constructed, so the guard's own
-		// captured DAO reference is the spy and the C_DocType lookup count stays observable
+		// spy the real (table-cached) DocTypeDAO BEFORE the guard is constructed, so the guard captures the spy
 		docTypeDAO = Mockito.spy(Services.get(IDocTypeDAO.class));
 		Services.registerService(IDocTypeDAO.class, docTypeDAO);
 
@@ -97,7 +96,7 @@ class M_ShipperTransportation_AddShipmentsTest
 		final ProcessPreconditionsResolution resolution = process.checkPreconditionsApplicable(contextSelecting(transportOrder));
 
 		assertThat(resolution.isAccepted()).isTrue();
-		// the no-op proof: exactly one C_DocType lookup for the single selected row, no repeated/hidden work
+		// exactly one C_DocType lookup for the single selected row
 		Mockito.verify(docTypeDAO, Mockito.times(1)).getById(Mockito.any(DocTypeId.class));
 	}
 
@@ -114,7 +113,7 @@ class M_ShipperTransportation_AddShipmentsTest
 	@Test
 	void processedTransportOrder_stillRejectedForProcessedReason_notDocSubType()
 	{
-		// existing behaviour preserved: a processed transport order is still hidden, for the pre-existing reason
+		// a processed transport order is hidden regardless of the DocSubType guard
 		final I_M_ShipperTransportation processedTransportOrder = shipperTransportation(null, true);
 
 		final ProcessPreconditionsResolution resolution = process.checkPreconditionsApplicable(contextSelecting(processedTransportOrder));

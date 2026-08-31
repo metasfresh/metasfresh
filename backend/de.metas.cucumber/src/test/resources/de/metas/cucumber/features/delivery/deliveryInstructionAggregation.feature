@@ -518,8 +518,7 @@ Feature: Several delivery plannings on one delivery instruction
       | deliveryInstructionCombDraft          | shipper_DHL             | customer                       | customerLocation               | DR            |
       | deliveryInstructionCombDone           | shipper_DHL             | customer                       | customerLocation               | CO            |
 
-    # and a draft is what a planner who ticks nothing gets: the completion flag both processes offer is a
-    # dictionary default, so the code honouring the flag it is handed says nothing about it on its own
+    # and a draft is what a planner who ticks nothing gets
     And validate AD_Process_Para:
       | Classname                                                                            | ColumnName | DefaultValue |
       | de.metas.deliveryplanning.process.M_Delivery_Planning_GenerateDeliveryInstruction    | IsComplete | N            |
@@ -571,15 +570,13 @@ Feature: Several delivery plannings on one delivery instruction
       | planningView_2         | 20     | 3             |
 
     # two plannings, two consignment rows - not the 2 x 2 an uncorrelated package join returns,
-    # and each row carries its OWN planning's article and quantities.
-    # This one a planner sees today: it backs tab 546737 of the delivery planning window (541632).
+    # and each row carries its OWN planning's article and quantities
     And the M_ShipperTransportation identified by deliveryInstructionView has exactly the following rows in M_Delivery_Planning_Delivery_Instructions_V:
       | M_Delivery_Planning_ID | M_Product_ID | ActualLoadQty | ActualDischargeQuantity |
       | planningView_1         | product      | 7             | 0                       |
       | planningView_2         | product2     | 3             | 0                       |
 
-    # The sibling view renders nowhere today - its only tab (546754) is IsActive='N', parked for a future
-    # multi-leg display. Guarded so the same cartesian product cannot sit undetected until that is built.
+    # the sibling view over the same allocations owes the same one-row-per-planning identity
     And the M_ShipperTransportation identified by deliveryInstructionView has exactly the following rows in M_ShipperTransportation_Delivery_Instructions_V:
       | M_Delivery_Planning_ID | M_Product_ID | PlannedLoadedQuantity | PlannedDischargeQuantity |
       | planningView_1         | product      | 7                     | 0                        |
@@ -588,8 +585,8 @@ Feature: Several delivery plannings on one delivery instruction
   @Id:S31608_TC20
   Scenario: The delivery instruction history returns one row per retired delivery planning
 
-    # what a planner sees on the instruction's history tab (549416) after taking loads off it - live today,
-    # over the same allocation records, so it owes the same one-row-per-planning identity
+    # what the instruction's history shows after taking loads off it - over the same allocation records,
+    # so it owes the same one-row-per-planning identity
 
     Given metasfresh contains M_Products:
       | Identifier |

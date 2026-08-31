@@ -300,9 +300,7 @@ class OrderBLTest
 		}
 	}
 
-	// syncDatesFromTransportOrder - each of BLDate/ETA is copied from the transport order INDEPENDENTLY: a field
-	// the transport order genuinely has no value for must not wipe an already-set value on the order. The two
-	// dates travelling together on one call is convenient, not a reason to treat them as one all-or-nothing write.
+	// syncDatesFromTransportOrder - BLDate and ETA are copied independently
 	////////////////////////////////
 
 	@Nested

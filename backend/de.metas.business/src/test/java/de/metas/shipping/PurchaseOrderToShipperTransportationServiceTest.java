@@ -671,7 +671,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 	}
 
 	/**
-	 * Regression-safety: the auto-defaulting must NOT run for a sales (Outgoing direction) transport order, so the existing sales flow is untouched.
+	 * The auto-defaulting must NOT run for a sales (Outgoing direction) transport order.
 	 */
 	@Test
 	public void defaultDates_notAppliedForSalesTransportOrder()
@@ -834,8 +834,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 		save(order2Record);
 
 		// order3: HIGHEST C_Order_ID and the LATEST DatePromised, but the EARLIEST PreparationDate => it must seed the dates.
-		// The three dates are deliberately crossed: sorting by DatePromised would pick order2, so this fixture fails unless the
-		// comparator sorts on PreparationDate - the same field the seeded ETD is read from.
+		// Sorting by DatePromised would pick order2, so this fixture fails unless the comparator sorts on PreparationDate.
 		final OrderId order3 = createOrder(bpartnerAndLocation);
 		createOrderLine(order3, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), Money.of(10, chf));
 		final I_C_Order order3Record = load(order3, I_C_Order.class);
@@ -857,10 +856,8 @@ public class PurchaseOrderToShipperTransportationServiceTest
 	}
 
 	/**
-	 * With NO order carrying a {@code PreparationDate}, the departure key cannot decide and every order lands in the nulls-last
-	 * bucket - so {@code DatePromised} decides, not {@code C_Order_ID}. It still decides a real value: ETD stays unset (no order
-	 * has a ready date), but ETA is seeded from the winning order's {@code DatePromised}, and picking that by insertion order
-	 * would be arbitrary while the promised dates are right there.
+	 * With NO order carrying a {@code PreparationDate} every order lands in the nulls-last bucket, so {@code DatePromised}
+	 * decides the seeding order and not {@code C_Order_ID}: ETD stays unset, ETA is still seeded.
 	 */
 	@Test
 	public void defaultDates_allPreparationDatesNull_earliestDatePromisedWinsOverOrderId()
@@ -932,9 +929,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 		order2Record.setPreparationDate(TimeUtil.asTimestamp(LocalDate.of(2019, 2, 2), orgDAO.getTimeZone(OrgId.ofRepoId(order2Record.getAD_Org_ID()))));
 		save(order2Record);
 
-		// order3: HIGHEST C_Order_ID and the LATEST DatePromised, but the EARLIEST PreparationDate => it must seed the dates.
-		// The three dates are deliberately crossed: sorting by DatePromised would pick order2, so this fixture fails unless the
-		// comparator sorts on PreparationDate - the same field the seeded ETD is read from.
+		// order3: HIGHEST C_Order_ID and the LATEST DatePromised, but the EARLIEST PreparationDate => it must seed the dates
 		final OrderId order3 = createOrder(bpartnerAndLocation);
 		final I_C_OrderLine line3 = createOrderLine(order3, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), Money.of(10, chf));
 		final I_C_Order order3Record = load(order3, I_C_Order.class);

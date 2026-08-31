@@ -39,8 +39,6 @@ import static org.mockito.Mockito.verify;
 
 /**
  * A packaging-material order line must not produce a delivery planning.
- * <p>
- * {@code isAutoCreateEnabled} is the observable seam: the interceptor calls it right after the packaging check.
  */
 class M_ReceiptScheduleTest
 {

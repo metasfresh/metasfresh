@@ -42,10 +42,8 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * {@link ShipperTransportationDocSubTypeGuard} works both ways (a delivery instruction is hidden from a
- * transport-order-only process AND vice versa), and a plain transport order is a complete no-op through it -
- * proven with interaction counts on {@link IDocTypeDAO}, not just the outcome, per the "prove the no-op" rule for
- * this process family (this precondition runs on every grid selection change).
+ * {@link ShipperTransportationDocSubTypeGuard} works both ways: a delivery instruction is hidden from a
+ * transport-order-only process and vice versa, and a plain transport order passes through untouched.
  */
 class ShipperTransportationDocSubTypeGuardTest
 {
@@ -57,8 +55,7 @@ class ShipperTransportationDocSubTypeGuardTest
 	{
 		AdempiereTestHelper.get().init();
 
-		// spy the real (table-cached) DocTypeDAO, so the lookup actually happens against the in-memory
-		// C_DocType record while the call count stays observable
+		// spy the real (table-cached) DocTypeDAO so the call count stays observable
 		docTypeDAO = Mockito.spy(Services.get(IDocTypeDAO.class));
 		Services.registerService(IDocTypeDAO.class, docTypeDAO);
 
@@ -106,7 +103,7 @@ class ShipperTransportationDocSubTypeGuardTest
 		final ProcessPreconditionsResolution resolution = guard.rejectIfDeliveryInstruction(transportOrder);
 
 		assertThat(resolution.isAccepted()).isTrue();
-		// the no-op proof: exactly one cached lookup, no repeated/hidden work
+		// exactly one cached lookup, no repeated work
 		Mockito.verify(docTypeDAO, Mockito.times(1)).getById(Mockito.any(DocTypeId.class));
 	}
 

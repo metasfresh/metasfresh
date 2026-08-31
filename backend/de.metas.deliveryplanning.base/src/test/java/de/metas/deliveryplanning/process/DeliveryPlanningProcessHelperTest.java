@@ -38,18 +38,12 @@ import static org.mockito.Mockito.mock;
 
 /**
  * Pins the selection guards the delivery planning gridactions share.
- * <p>
- * The context is a {@code CALLS_REAL_METHODS} mock over a REAL {@link SelectionSize}, so the guards are exercised
- * through the framework's own {@code isNoSelection()} / {@code isSingleSelection()} / {@code isMoreThanOneSelected()}
- * default methods rather than against a re-stated version of them - which is the point of
- * {@link #singleSelectionGuardMatchesIsSingleSelection()} below.
  */
 class DeliveryPlanningProcessHelperTest
 {
 	@BeforeEach
 	void setUp()
 	{
-		// the reject* factories resolve their message via Services.get(IMsgBL.class)
 		AdempiereTestHelper.get().init();
 	}
 
@@ -133,11 +127,8 @@ class DeliveryPlanningProcessHelperTest
 		}
 
 		/**
-		 * {@code ReGenerateDeliveryInstruction} used to spell this guard {@code !context.isSingleSelection()} and now
-		 * composes {@link DeliveryPlanningProcessHelper#checkSingleSelection}, which asks
-		 * {@code context.isMoreThanOneSelected()}. The two are only interchangeable AFTER
-		 * {@link DeliveryPlanningProcessHelper#checkAnySelection} has already rejected the empty selection - which is
-		 * exactly how both are composed - so that equivalence is pinned here rather than left to the reader.
+		 * {@code checkSingleSelection} asks {@code context.isMoreThanOneSelected()}, which is equivalent to
+		 * {@code !context.isSingleSelection()} only AFTER {@code checkAnySelection} has rejected the empty selection.
 		 */
 		@Test
 		@DisplayName("past the any-selection guard, rejecting is equivalent to !isSingleSelection()")

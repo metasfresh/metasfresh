@@ -50,21 +50,11 @@ import static org.mockito.Mockito.when;
 
 /**
  * {@code GenerateShortageOverage} refuses a closed planning in its precondition, the same guard
- * {@code GenerateReceipt}/{@code GenerateShipment} carry (proven in {@code de.metas.deliveryplanning.webui}'s
- * {@code DeliveryPlanningGenerateClosedGuardTest}).
+ * {@code GenerateReceipt}/{@code GenerateShipment} carry.
  * <p>
- * {@code M_Delivery_Planning_GenerateShortageOverage} eagerly resolves a {@link InventoryRepository} field
- * initializer via {@code SpringContextHolder}, so a bean must be registered for the field initializer to succeed.
- * {@link InventoryRepository} is a {@code final} class, and this module pins Mockito {@code 2.7.22}, whose default
- * (subclass) mock maker cannot mock final classes - {@code Mockito.mock(InventoryRepository.class)} would throw
- * {@code MockitoException}. This module therefore opts into {@code mock-maker-inline}
- * ({@code src/test/resources/mockito-extensions/org.mockito.plugins.MockMaker}, mirroring
- * {@code de.metas.picking.rest-api}'s only precedent for that opt-in), which lets a real Mockito mock stand in here,
- * exactly like {@code DeliveryPlanningGenerateClosedGuardTest} does for {@code ShipmentService} and
- * {@code PurchaseOrderToShipperTransportationRepository}.
- * <p>
- * The guard's {@code isClosed(...)} check fires BEFORE {@link InventoryRepository} is ever exercised, so the mock
- * needs no stubbing - it only has to exist so the process's field initializer does not blow up.
+ * {@code M_Delivery_Planning_GenerateShortageOverage} eagerly resolves an {@link InventoryRepository} field
+ * initializer via {@code SpringContextHolder}, so a bean must be registered for it to succeed; the closed
+ * guard fires before that repository is ever exercised, so the mock needs no stubbing.
  */
 class M_Delivery_Planning_GenerateShortageOverageClosedGuardTest
 {
@@ -100,8 +90,6 @@ class M_Delivery_Planning_GenerateShortageOverageClosedGuardTest
 	private static IProcessPreconditionsContext contextSelecting(final int deliveryPlanningId)
 	{
 		final IProcessPreconditionsContext context = mock(IProcessPreconditionsContext.class);
-		// isSingleSelection() is a DEFAULT method (delegates to getSelectionSize()) - Mockito does not run the
-		// real default body just because getSelectionSize() is stubbed, so it is stubbed directly here
 		when(context.isSingleSelection()).thenReturn(true);
 		when(context.getSingleSelectedRecordId()).thenReturn(deliveryPlanningId);
 		return context;

@@ -54,11 +54,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Generates / regenerates the delivery instruction ({@code M_ShipperTransportation}) for a delivery planning, puts
  * plannings on one, moves them between two and takes them off one, and drives its Complete / Re-Activate / Void
  * document actions.
- * <p>
- * Loading and validating the resulting {@code M_ShipperTransportation} is handled by
- * {@code de.metas.cucumber.stepdefs.shipment.M_ShipperTransportation_StepDef}; the two step-defs share the same
- * {@link M_ShipperTransportation_StepDefData} instance (injected by PicoContainer), so a delivery instruction stored
- * here is visible to the validating/loading steps.
  */
 @RequiredArgsConstructor
 public class M_Delivery_Instruction_StepDef
@@ -67,10 +62,8 @@ public class M_Delivery_Instruction_StepDef
 	private static final ImmutableSet<String> COMBINE_COLUMNS = ImmutableSet.of(
 			I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, I_M_Delivery_Planning.COLUMNNAME_M_ShipperTransportation_ID, "IsComplete");
 	/**
-	 * Every column the two target-instruction steps -
-	 * {@link #add_M_Delivery_Planning_to_M_ShipperTransportation(DataTable)} and
-	 * {@link #move_M_Delivery_Planning_to_M_ShipperTransportation(DataTable)} - understand besides the rejection
-	 * expectations. One constant, because the two take the same table: a selection and a target.
+	 * Every column the two target-instruction steps (add / move) understand besides the rejection expectations -
+	 * one constant, because the two take the same table: a selection and a target.
 	 */
 	private static final ImmutableSet<String> TARGET_INSTRUCTION_COLUMNS = ImmutableSet.of(
 			I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, I_M_Delivery_Planning.COLUMNNAME_M_ShipperTransportation_ID);
@@ -162,8 +155,7 @@ public class M_Delivery_Instruction_StepDef
 	/**
 	 * Combines the given delivery plannings into ONE delivery instruction, via
 	 * {@link DeliveryPlanningService#combine(IQueryFilter, boolean)} - the same code path the
-	 * {@code M_Delivery_Planning_CombineIntoDeliveryInstruction} process drives, that process being a thin
-	 * adapter that only forwards the grid selection and the completion flag.
+	 * {@code M_Delivery_Planning_CombineIntoDeliveryInstruction} process drives.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -352,7 +344,7 @@ public class M_Delivery_Instruction_StepDef
 				documentBL.processEx(deliveryInstruction, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 				break;
 			case reactivated:
-				// a re-activated document lands In Progress, not back in Drafted - DocumentEngine#reActivateIt
+				// a re-activated document lands In Progress, not back in Drafted
 				documentBL.processEx(deliveryInstruction, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
 				break;
 			case voided:

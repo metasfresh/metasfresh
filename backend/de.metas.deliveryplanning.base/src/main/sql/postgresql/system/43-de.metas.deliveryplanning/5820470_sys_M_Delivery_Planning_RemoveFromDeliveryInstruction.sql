@@ -2,19 +2,15 @@
 --
 -- Takes the selected delivery plannings off the draft delivery instruction they are on: the
 -- allocation and its shipping package are deleted, and the planning loses its release number and
--- its instruction reference, so it can be planned again. The instruction itself and its other
--- plannings are untouched - which is exactly why removal is not void-and-regenerate: a regenerated
--- instruction is a NEW document, so it would re-stamp the release number of every planning that did
--- not move, and hand the forwarder a new document number for a booking they already hold.
+-- its instruction reference, so it can be planned again. The instruction and its other plannings
+-- are untouched -- which is why removal is not void-and-regenerate: a regenerated instruction is a
+-- NEW document, so it would re-stamp the release number of every planning that did not move, and
+-- hand the forwarder a new document number for a booking they already hold.
 --
 -- No parameters: which instruction a planning leaves is not a choice, it is the one it is on.
---
--- Two rules, and the second one is the interesting one:
---   * refused when the instruction is COMPLETED - reusing message 545807 from the add-to script,
---     because it is the same rule seen from the other side and the same sentence;
---   * ALLOWED for a CLOSED planning. Closing a planning says "stop processing this", which is
---     precisely the situation in which taking it off the truck is the right correction, so the
---     closed-planning rejection that guards Combine and Add-to deliberately does not apply here.
+-- Refused when the instruction is COMPLETED (message 545807), but ALLOWED for a CLOSED planning:
+-- closing a planning says "stop processing this", which is exactly the situation in which taking it
+-- off the truck is the right correction.
 --
 -- IDs allocated from idserver.metas.de on 2026-08-27:
 --   AD_Process       585655 (M_Delivery_Planning_RemoveFromDeliveryInstruction)
@@ -22,11 +18,7 @@
 --   AD_Message       545809 (NotOnDeliveryInstruction)
 --
 -- Reused, NOT newly created:
---   AD_Message   545807  OnCompletedInstruction (created by 5820460, the add-to script)
---
--- DB lookups (deep_tundra_uat_2, port 21632):
---   AD_Table_ID of M_Delivery_Planning             -> 542259
---   AD_Window_ID of the Delivery Planning window   -> 541632
+--   AD_Message   545807  OnCompletedInstruction
 
 -- ---------------------------------------------------------------------------------------------
 -- 1) the process
@@ -76,21 +68,10 @@ WHERE AD_Process_ID=585655 AND AD_Language IN ('de_DE', 'de_CH')
 
 -- ---------------------------------------------------------------------------------------------
 -- 2) placement: an action on the Delivery Planning grid.
---
---    The planning window (541632) is the ONLY placement, and that is the settled end state - not a
---    stage on the way to a second one. An earlier draft of this script promised a companion
---    AD_Table_Process over M_Delivery_Planning_Alloc on the delivery instruction's own Plannings
---    tab. That tab is not being built: 5820940 parks AD_Tab 546754 (IsActive='N') for a possible
---    future multi-leg display, and 5821180 adds AD_Tab 549416, which is a READ-ONLY history tab
---    over the retired allocations - neither is an editable Plannings tab, and no second
---    AD_Table_Process row is added anywhere on this branch. Do not go looking for one.
---
---    WebUI_ViewQuickAction='N' is DELIBERATE, and the one place this differs from its two siblings:
---    Combine (585653) and Add to (585654) both carry 'Y'. Removing a planning from an instruction is
---    the only destructive one of the three - it deletes the allocation and its shipping package and
---    drops a release number the forwarder may already hold - while the other two only add. So it
---    stays off the one-click quick-action toolbar and is reached through the actions menu, where it
---    costs the planner one deliberate extra click. Do not "make it consistent" with the other two.
+--    WebUI_ViewQuickAction='N', unlike Combine (585653) and Add to (585654): removal is the only
+--    destructive one of the three -- it deletes the allocation and its shipping package and drops a
+--    release number the forwarder may already hold -- so it stays off the one-click quick-action
+--    toolbar and is reached through the actions menu instead.
 -- ---------------------------------------------------------------------------------------------
 INSERT INTO AD_Table_Process (AD_Table_Process_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
                               AD_Table_ID, AD_Process_ID, AD_Window_ID, EntityType,

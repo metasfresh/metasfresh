@@ -46,8 +46,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * The transport order {@code M_Tour_Instance_CreateFromSelectedDeliveryDays} creates for a selected
- * {@code M_DeliveryDay} must carry the direction the delivery day's {@code IsToBeFetched} flag implies -
- * fetched from a vendor is {@code Incoming}, delivered to a customer is {@code Outgoing} - never a default.
+ * {@code M_DeliveryDay} must carry the direction the delivery day's {@code IsToBeFetched} flag implies:
+ * fetched from a vendor is {@code Incoming}, delivered to a customer is {@code Outgoing}.
  */
 class M_Tour_Instance_CreateFromSelectedDeliveryDaysTest extends TourPlanningTestBase
 {

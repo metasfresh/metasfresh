@@ -41,13 +41,8 @@ import org.mockito.Mockito;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Completing a delivery instruction evicts the HUs of its shipping packages from their picking slots.
- * <p>
- * Since delivery-planning allocations are RETIRED rather than deleted, an instruction now keeps the
- * shipping packages of plannings that were removed from it earlier, as {@code IsActive='N'} lines. Those
- * packages are history: their cargo was never loaded onto this truck, and their HU may well be sitting in
- * an ACTIVE picking-slot queue for something else entirely. Evicting it is operator-visible - a picker
- * finds the slot emptied under them - so the eviction must look only at the instruction's live packages.
+ * Completing a delivery instruction evicts the HUs of its shipping packages from their picking slots - only its
+ * ACTIVE packages: an {@code IsActive='N'} package's HU may be queued in a picking slot for something else.
  */
 class ShipperTransportationPickingSlotEvictionTest
 {

@@ -47,16 +47,11 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * How a planning is resolved to the delivery instruction(s) it is on, now that the link is the
- * {@code M_Delivery_Planning_Alloc} rows rather than a header FK on {@code M_ShipperTransportation}.
- * <p>
- * The point of the change under test: a single instruction may carry several plannings, which the old
- * header FK could not express (an instruction has exactly one {@code M_Delivery_Planning_ID}). The
- * aggregation case below is what proves the allocation-based resolution actually supports that.
+ * How a planning is resolved to the delivery instruction(s) it is on, via its {@code M_Delivery_Planning_Alloc}
+ * rows: one instruction may carry several plannings, which the aggregation case below pins.
  */
 class DeliveryPlanningInstructionLookupTest
 {
-	/** A fixed "removed at" stamp: the repository takes it as a parameter, so tests do not depend on wall-clock time. */
 	private static final Instant REMOVED_AT = Instant.parse("2026-08-31T10:00:00Z");
 
 	private static final int SHIPPER_BPARTNER_ID = 540001;

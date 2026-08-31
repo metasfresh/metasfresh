@@ -78,9 +78,7 @@ public class M_ShipperTransportation
 
 	/**
 	 * Push the transport order's BL/ETA dates onto every linked PURCHASE order's pay-schedule due dates (no-op when
-	 * neither date is set). A shipping package's {@code C_Order_ID} may just as well link a sales order (the same
-	 * cargo-to-order link is populated regardless of the underlying planning's direction), but bill-of-lading/ETA
-	 * dates must never be pushed onto a sales order - only orders with {@code IsSOTrx='N'} are updated.
+	 * neither date is set). Sales orders can be linked to the same transport order but must never receive these dates.
 	 */
 	private void propagateDatesToOrders(@NonNull final I_M_ShipperTransportation transportOrder)
 	{

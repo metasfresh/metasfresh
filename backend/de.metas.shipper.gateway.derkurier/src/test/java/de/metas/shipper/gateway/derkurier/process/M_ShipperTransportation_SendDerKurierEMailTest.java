@@ -76,9 +76,7 @@ class M_ShipperTransportation_SendDerKurierEMailTest
 		SpringContextHolder.registerJUnitBean(ShipperTransportationDocSubTypeGuard.class, new ShipperTransportationDocSubTypeGuard());
 		SpringContextHolder.registerJUnitBean(DerKurierDeliveryOrderEmailer.class, mock(DerKurierDeliveryOrderEmailer.class));
 
-		// DerKurierShipperConfig's constructor builds a real ParcelNumberGenerator even when unused by
-		// this test, which needs these two document-numbering services - stub them so building the
-		// config below does not need Spring DI (getNextParcelNumber() is never called here)
+		// DerKurierShipperConfig's constructor builds a ParcelNumberGenerator, which needs these two services
 		final IDocumentNoBuilder documentNoBuilder = mock(IDocumentNoBuilder.class, Mockito.RETURNS_SELF);
 		final IDocumentNoBuilderFactory documentNoBuilderFactory = mock(IDocumentNoBuilderFactory.class);
 		when(documentNoBuilderFactory.createDocumentNoBuilder()).thenReturn(documentNoBuilder);
@@ -88,8 +86,7 @@ class M_ShipperTransportation_SendDerKurierEMailTest
 				.thenReturn(DocumentSequenceInfo.builder().adSequenceId(ParcelNumberGenerator.NO_AD_SEQUENCE_ID_FOR_TESTING).name("test").build());
 		Services.registerService(IDocumentSequenceDAO.class, documentSequenceDAO);
 
-		// every selected transport order has a Der Kurier config with a recipient - the eligibility this
-		// process checks for, kept constant so only DocSubType varies between the two scenarios below
+		// every selected transport order is eligible (config + recipient), so only DocSubType varies below
 		configRepository = mock(DerKurierShipperConfigRepository.class);
 		final DerKurierShipperConfig config = DerKurierShipperConfig.builder()
 				.restApiBaseUrl("https://derkurier.example.com")
@@ -105,9 +102,7 @@ class M_ShipperTransportation_SendDerKurierEMailTest
 		when(configRepository.retrieveConfigForShipperIdOrNull(anyInt())).thenReturn(config);
 		SpringContextHolder.registerJUnitBean(DerKurierShipperConfigRepository.class, configRepository);
 
-		// bypass the real IDocumentBL (its default-discovered impl needs Spring-DI collaborators this
-		// bare test does not boot) - every selected record here is stamped DocStatus='CO' anyway, so
-		// "completed" is what the real impl would answer too
+		// stub IDocumentBL: every record here is stamped DocStatus='CO', which is what the real impl answers
 		final IDocumentBL documentBL = mock(IDocumentBL.class);
 		when(documentBL.isDocumentCompleted(any())).thenReturn(true);
 		Services.registerService(IDocumentBL.class, documentBL);
@@ -123,8 +118,7 @@ class M_ShipperTransportation_SendDerKurierEMailTest
 		docType.setDocSubType(docSubType);
 		InterfaceWrapperHelper.save(docType);
 
-		// kept purely in-memory (not saved): the guard and isCompleted() only read getters off this
-		// instance, and saving a DocStatus='CO' record here would need the document-numbering machinery
+		// kept in-memory (not saved): the guard and isCompleted() only read getters off this instance
 		final I_M_ShipperTransportation record = InterfaceWrapperHelper.newInstance(I_M_ShipperTransportation.class);
 		record.setC_DocType_ID(docType.getC_DocType_ID());
 		record.setDocStatus(IDocument.STATUS_Completed);
@@ -159,8 +153,7 @@ class M_ShipperTransportation_SendDerKurierEMailTest
 		final ProcessPreconditionsResolution resolution = process.checkPreconditionsApplicable(contextSelecting(deliveryInstruction));
 
 		assertThat(resolution.isAccepted()).isFalse();
-		// belt-and-braces: the config lookup (the more expensive check) must never run for a delivery
-		// instruction, because the cheap DocSubType filter runs first and short-circuits the stream
+		// the config lookup must never run for a delivery instruction: the DocSubType filter short-circuits first
 		Mockito.verify(configRepository, Mockito.never()).retrieveConfigForShipperIdOrNull(Mockito.anyInt());
 	}
 }

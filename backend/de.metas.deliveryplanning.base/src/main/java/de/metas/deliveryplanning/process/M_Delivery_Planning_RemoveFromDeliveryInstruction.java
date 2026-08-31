@@ -40,9 +40,6 @@ import static de.metas.deliveryplanning.process.M_Delivery_Planning_CombineIntoD
  * Takes the selected delivery plannings off the draft delivery instruction they are on, leaving the instruction and
  * its other plannings as they were.
  * <p>
- * A thin adapter: every rule lives in {@link DeliveryPlanningService}, so a cucumber step drives the same code
- * path the WebUI drives instead of re-implementing the flow.
- * <p>
  * No parameters: which instruction a planning leaves is not a choice, it is the one it is on.
  */
 public class M_Delivery_Planning_RemoveFromDeliveryInstruction extends JavaProcess implements IProcessPrecondition

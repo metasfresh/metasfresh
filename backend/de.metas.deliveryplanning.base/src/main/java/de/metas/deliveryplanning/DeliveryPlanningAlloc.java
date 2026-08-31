@@ -29,17 +29,8 @@ import lombok.NonNull;
 import lombok.Value;
 
 /**
- * One ACTIVE allocation of a delivery planning to a delivery instruction - IDS ONLY.
- * <p>
- * Deliberately nothing but the four ids: this is what {@link DeliveryPlanning} carries so that "how many
- * instructions is this planning on" and "which ones" can be answered from an already-loaded list, and every
- * field beyond an id would turn that into a second load. Quantities, dates and the instruction's own
- * {@code DocStatus} are read from the instruction or the shipping package, which own them.
- * <p>
- * A planning carries a LIST of these rather than a single instruction id because multi-leg transport allocates
- * one planning to several instructions - one per leg. The single-active-allocation partial unique index
- * {@code M_Delivery_Planning_Alloc_Planning_UQ} still enforces one leg today; the domain simply stops
- * asserting it.
+ * One ACTIVE allocation of a delivery planning to a delivery instruction - ids only. Quantities, dates and the
+ * instruction's own {@code DocStatus} are read from the instruction or the shipping package, which own them.
  */
 @Value
 @Builder

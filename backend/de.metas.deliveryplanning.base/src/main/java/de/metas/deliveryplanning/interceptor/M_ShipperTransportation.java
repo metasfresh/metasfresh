@@ -52,14 +52,9 @@ public class M_ShipperTransportation
 	}
 
 	/**
-	 * COMPLETE only, deliberately not VOID: on void, invoice-candidate invalidation for the instruction's
-	 * allocations is owned exclusively by {@link #unlinkDeliveryPlannings(I_M_ShipperTransportation)}, which
-	 * captures the affected planning ids BEFORE deactivating the allocations. This method's
-	 * {@code getAllocatedPlanningIds}-based re-derivation would, on VOID, run inside a
-	 * {@code trxManager.runAfterCommit} closure AFTER {@code unlinkDeliveryPlannings} (same class, same
-	 * timing) had already deactivated those very allocations in the same transaction - always finding an
-	 * empty set and silently invalidating nothing. Keeping this handler COMPLETE-only removes that hazard by
-	 * construction instead of leaving a redundant, always-empty call in place.
+	 * COMPLETE only, not VOID: on void the invalidation is owned by
+	 * {@link #unlinkDeliveryPlannings(I_M_ShipperTransportation)}, which captures the affected planning ids before
+	 * deactivating the allocations.
 	 */
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void invalidateInvoiceCandidatesAfterComplete(@NonNull final I_M_ShipperTransportation shipperTransportation)
@@ -69,12 +64,8 @@ public class M_ShipperTransportation
 	}
 
 	/**
-	 * Refuses to complete the instruction while any of its currently allocated plannings is closed, naming it -
-	 * and refuses to complete a delivery instruction that has zero active allocations at all.
-	 * <p>
-	 * A transport order is a no-op either way:
-	 * {@link DeliveryPlanningService#getCompleteRejectionReason(ShipperTransportationId)} comes back empty and
-	 * nothing is read beyond the one allocation lookup plus the document-type check.
+	 * Refuses to complete a delivery instruction while any of its allocated plannings is closed, or while it has no
+	 * active allocation at all. A plain transport order is never rejected here.
 	 */
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
 	public void rejectCompleteWithClosedAllocatedPlannings(@NonNull final I_M_ShipperTransportation shipperTransportation)
@@ -84,9 +75,7 @@ public class M_ShipperTransportation
 	}
 
 	/**
-	 * The instruction's dates are read-only on the plannings while they are allocated - this is what keeps them
-	 * in step: a planner's edit of any of these fields on the instruction reaches every currently allocated
-	 * planning, one-way, instruction to planning.
+	 * The instruction's dates are read-only on an allocated planning; this one-way sync is what keeps them in step.
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = {
 			I_M_ShipperTransportation.COLUMNNAME_ETD,

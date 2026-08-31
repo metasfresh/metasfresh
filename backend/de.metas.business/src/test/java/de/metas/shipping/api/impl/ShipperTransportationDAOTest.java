@@ -53,9 +53,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * {@link ShipperTransportationDAO#create(CreateShipperTransportationRequest)} must persist the
- * {@code TransportDirection} its caller stated - never hardcode {@code Outgoing}, and never collapse the
- * three-valued domain to a sales/purchase boolean - because the DAO is reached from receipt, shipment and
- * dropship paths alike.
+ * {@code TransportDirection} its caller stated: the DAO is reached from receipt, shipment and dropship paths alike.
  */
 class ShipperTransportationDAOTest
 {

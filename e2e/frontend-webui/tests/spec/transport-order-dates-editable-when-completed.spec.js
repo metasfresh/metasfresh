@@ -242,10 +242,7 @@ attribute on the underlying \`<input>\`. So "editable" = input not disabled + th
       transportOrderId = (await patchDocument(TRANSPORT_ORDER_WINDOW_ID, 'NEW', [])).id;
 
       const drafted = await patchDocument(TRANSPORT_ORDER_WINDOW_ID, transportOrderId, [
-        // TransportDirection is mandatory and has no default: creating a transport order by hand is
-        // exactly the case where the direction must be chosen rather than assumed, so 'New' leaves the
-        // field empty and the document invalid until it is set. This scenario books a PURCHASE order
-        // onto the transport order, i.e. goods coming in — Incoming.
+        // a PURCHASE order is booked onto this transport order, i.e. goods coming in
         { op: 'replace', path: 'TransportDirection', value: 'Incoming' },
         { op: 'replace', path: 'Shipper_BPartner_ID', value: Number(carrierBPartnerId) },
         { op: 'replace', path: 'Shipper_Location_ID', value: Number(carrierLocationId) },

@@ -55,13 +55,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * The direction of the sync is fixed: instruction to planning, never the other way. Once a planning is allocated,
  * its own date fields are read-only from the planner's perspective - a change on the INSTRUCTION is what reaches
- * them, unconditionally, exactly like {@link DeliveryPlanningRepository#updateDeliveryPlanningsFromInstruction}
- * already overwrites {@code ReleaseNo} on every move.
- * <p>
- * This is the counterpart of {@link DeliveryInstructionDateDefaultsTest}, which covers the OTHER moment (an add
- * fills the instruction's still-empty fields from the planning being added). Once the instruction carries a value -
- * whether seeded by that defaulting or entered by the planner directly - THIS is the direction that keeps every
- * allocated planning in step with it.
+ * them, unconditionally.
  */
 class DeliveryInstructionDateSyncDownTest
 {
@@ -85,8 +79,7 @@ class DeliveryInstructionDateSyncDownTest
 				Mockito.mock(MeansOfTransportationService.class),
 				new ShipperTransportationDocSubTypeGuard());
 
-		// the REAL interceptor, so a planner's edit of the instruction genuinely fires the sync - not merely assumed,
-		// the same technique DeliveryPlanningCancelVoidStalenessTest uses for the void cascade
+		// the REAL interceptor, so a planner's edit of the instruction genuinely fires the sync
 		POJOLookupMap.get().addModelValidator(new M_ShipperTransportation(deliveryPlanningService, Mockito.mock(IEventBusFactory.class)));
 
 		uom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
@@ -109,7 +102,7 @@ class DeliveryInstructionDateSyncDownTest
 		record.setC_UOM_ID(uom.getC_UOM_ID());
 		record.setPlannedLoadedQuantity(BigDecimal.TEN);
 		record.setPlannedDischargeQuantity(BigDecimal.ONE);
-		// the planning's OWN dates, deliberately different from what the instruction will carry - proving the
+		// the planning's OWN dates, different from what the instruction will carry - proving the
 		// sync overwrites rather than fills-if-empty
 		record.setETD(etd);
 		record.setETA(eta);
@@ -168,8 +161,7 @@ class DeliveryInstructionDateSyncDownTest
 		changedInstruction.setDeliveryTime("11:00");
 		InterfaceWrapperHelper.save(changedInstruction);
 
-		// the save above is the whole trigger: the registered M_ShipperTransportation interceptor reacts to the
-		// date columns changing and pushes them onto every currently allocated planning - nothing further to call
+		// the save above is the whole trigger: the registered interceptor pushes the dates onto every allocated planning
 
 		for (final DeliveryPlanningId planningId : ImmutableList.of(planningId1, planningId2))
 		{

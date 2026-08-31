@@ -233,12 +233,8 @@ public class M_ShipperTransportation_StepDef
 
 	/**
 	 * Creates one {@code M_ShipperTransportation} (transport order / delivery instruction) record per row and
-	 * stores it under its identifier.
-	 * <p>
-	 * {@code TransportDirection} is <b>required</b>, deliberately: the column is mandatory and carries no
-	 * default at either layer since migration {@code 5821080}, so a scenario has to say which direction it
-	 * means, exactly as a user creating a transport order by hand has to. A fallback here would be the removed
-	 * default under another name and would let a scenario assert against a direction it never chose.
+	 * stores it under its identifier. {@code TransportDirection} is <b>required</b>: the column is mandatory and
+	 * has no default, so a scenario has to say which direction it means.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -276,10 +272,6 @@ public class M_ShipperTransportation_StepDef
 	{
 		final I_M_ShipperTransportation shipperTransportationRecord = newInstance(I_M_ShipperTransportation.class);
 
-		// TransportDirection is mandatory and deliberately has no default - neither on the column nor here.
-		// The scenario has to say which direction it means, exactly as a user creating a transport order by
-		// hand has to. A fallback in this step def would be the removed default under another name, and it
-		// would let a scenario silently assert against a direction it never chose.
 		shipperTransportationRecord.setTransportDirection(row.getAsString(I_M_ShipperTransportation.COLUMNNAME_TransportDirection));
 
 		row.getAsOptionalIdentifier(I_M_ShipperTransportation.COLUMNNAME_M_Shipper_ID)
@@ -395,9 +387,7 @@ public class M_ShipperTransportation_StepDef
 	 * That gate is covered by the Playwright spec
 	 * {@code e2e/frontend-webui/tests/spec/transport-order-dates-editable-when-completed.spec.js}.
 	 * <p>
-	 * On a DELIVERY instruction the same model-layer write is what drives the second date interceptor,
-	 * {@code de.metas.deliveryplanning.interceptor.M_ShipperTransportation#syncDatesToAllocatedPlannings},
-	 * which pushes the changed date down onto every currently allocated delivery planning.
+	 * On a DELIVERY instruction the same write also syncs the changed dates down onto every allocated planning.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns

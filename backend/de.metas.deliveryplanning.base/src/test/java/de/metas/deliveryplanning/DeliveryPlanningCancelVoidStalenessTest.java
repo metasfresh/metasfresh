@@ -62,11 +62,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * ({@link M_ShipperTransportation#unlinkDeliveryPlannings}) clears {@code ReleaseNo}/{@code M_ShipperTransportation_ID}
  * on the SAME planning row the cancel loop is holding pre-void. Without a re-read after the void,
  * {@code cancelDeliveryPlanning} would save the stale pre-void copy and silently undo that clearing.
- * <p>
- * Exercised through a REAL, registered {@code M_ShipperTransportation} interceptor (via
- * {@link POJOLookupMap#addModelValidator}, the same mechanism {@code C_Payment_AutoAllocateGuardTest} uses) so the
- * void's after-effects genuinely run - not merely assumed - the same way {@link DeliveryPlanningGenerateCompletionTest}
- * drives {@code docActionBL.processEx} against a real document.
  */
 class DeliveryPlanningCancelVoidStalenessTest
 {
@@ -89,8 +84,6 @@ class DeliveryPlanningCancelVoidStalenessTest
 	{
 		AdempiereTestHelper.get().init();
 
-		// generate notifies the instruction's creator: the recipient is CreatedBy, which is stamped from the
-		// logged user - nothing this test is about
 		Env.setLoggedUserId(Env.getCtx(), UserId.METASFRESH);
 		Services.registerService(INotificationBL.class, Mockito.mock(INotificationBL.class));
 		Services.registerService(IBPartnerStatisticsUpdater.class, Mockito.mock(IBPartnerStatisticsUpdater.class));
@@ -113,7 +106,7 @@ class DeliveryPlanningCancelVoidStalenessTest
 		createDeliveryInstructionDocType();
 	}
 
-	// ------------------------------------------------------------------ helpers (mirrors DeliveryPlanningGenerateCompletionTest)
+	// ------------------------------------------------------------------ helpers
 
 	private I_M_Delivery_Planning generatableDeliveryPlanning()
 	{
@@ -158,7 +151,6 @@ class DeliveryPlanningCancelVoidStalenessTest
 		return deliveryShipmentSchedule.getM_ShipmentSchedule_ID();
 	}
 
-	/** The document type the instruction header is created with - resolved by DocBaseType.ShipperTransportation + DocSubType.DeliveryInstruction, so those two have to match. */
 	private void createDeliveryInstructionDocType()
 	{
 		final I_C_DocType docType = InterfaceWrapperHelper.newInstance(I_C_DocType.class);

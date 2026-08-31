@@ -50,24 +50,14 @@ import static de.metas.deliveryplanning.process.M_Delivery_Planning_CombineIntoD
  * {@link M_Delivery_Planning_CombineIntoDeliveryInstruction}, which creates a new one, and to
  * {@link M_Delivery_Planning_MoveToDeliveryInstruction}, which re-books a planning that is already on one.
  * <p>
- * Add and Move are offered EXCLUSIVELY: this one is unavailable as soon as the selection holds an allocated
- * planning, that one as soon as it holds an unallocated one, so a planner looking at a selection is offered
- * exactly one of the two and never has to work out which state their rows are in.
- * <p>
- * A thin adapter: every rule lives in {@link DeliveryPlanningService}, so a cucumber step drives the same code
- * path the WebUI drives instead of re-implementing the flow.
- * <p>
- * The dialog has exactly one visible field, the target instruction. Its list is narrowed by the value rule to the
- * drafted delivery instructions of the selection's own direction, which is carried into the rule by the hidden
- * {@link #PARAM_TransportDirection} parameter below - so the commonest wrong pick is unofferable rather than
- * rejected afterwards.
+ * Unavailable as soon as the selection holds an allocated planning; Move is the action for those.
  */
 public class M_Delivery_Planning_AddToDeliveryInstruction extends JavaProcess
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	/**
-	 * The direction the target instruction has to match. Not shown to the planner - it is not a choice but a
-	 * property of the selection, and the value rule of the target parameter is its only reader.
+	 * The direction the target instruction has to match; not shown to the planner, read only by the target
+	 * parameter's value rule to narrow the offered instructions to the selection's own direction.
 	 */
 	private static final String PARAM_TransportDirection = I_M_Delivery_Planning.COLUMNNAME_TransportDirection;
 
@@ -86,11 +76,8 @@ public class M_Delivery_Planning_AddToDeliveryInstruction extends JavaProcess
 	}
 
 	/**
-	 * Shown-and-disabled with its reason, NOT hidden - deliberately the opposite of
-	 * {@link M_Delivery_Planning_CombineIntoDeliveryInstruction}'s single-row case, which uses
-	 * {@code rejectWithInternalReason} because at one row Combine and Generate do the same thing and there is
-	 * nothing for the planner to learn. Here there IS: the reason names Move, which is the action that applies to
-	 * the selection the planner has made. A hidden button would leave them looking for the one they need.
+	 * Shown-and-disabled with its reason, not hidden: the reason names Move, the action that does apply to the
+	 * selection the planner has made.
 	 */
 	private ProcessPreconditionsResolution checkSelectionCanBeAddedTo(@NonNull final IProcessPreconditionsContext context)
 	{

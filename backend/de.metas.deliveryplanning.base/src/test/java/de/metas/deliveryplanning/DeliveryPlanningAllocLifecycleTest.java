@@ -59,10 +59,6 @@ import static org.assertj.core.groups.Tuple.tuple;
 /**
  * The allocation's write lifecycle: what {@code createAllocations} and the two {@code deactivateAllocations}
  * overloads (by instruction, and by planning ids) leave behind.
- * <p>
- * The two partial unique indexes that make deactivation-versus-still-active matter are a DB guarantee and
- * are therefore not exercised here; what is pinned here is that the repository writes the state those
- * indexes key on - {@code IsActive} - the way each event requires.
  */
 class DeliveryPlanningAllocLifecycleTest
 {
@@ -199,7 +195,7 @@ class DeliveryPlanningAllocLifecycleTest
 		final DeliveryPlanningId second = createDeliveryPlanning();
 		final DeliveryPlanningId third = createDeliveryPlanning();
 
-		// deliberately not in id order, so the assertion shows the given order wins over the encounter order
+		// not in id order, so the assertion shows the given order wins over the encounter order
 		deliveryPlanningRepository.createAllocations(deliveryInstructionId, ImmutableList.of(
 				allocRequestFor(third), allocRequestFor(first), allocRequestFor(second)));
 
@@ -440,10 +436,9 @@ class DeliveryPlanningAllocLifecycleTest
 				.as("an allocation that is still on the instruction has not been removed from it")
 				.isNull();
 
-		// DateRemoved itself is now passed in, not read from the clock. The clock is still pinned and later
-		// ADVANCED on purpose for the SECOND half of this test: the unrelated write below moves Updated from the
-		// ambient clock, and against a real clock a re-stamp landing in the same millisecond would satisfy the
-		// "did not move" assertion while the bug was fully present.
+		// the clock is pinned and later ADVANCED on purpose for the SECOND half of this test: the unrelated
+		// write below moves Updated from the ambient clock, and against a real clock a re-stamp landing in the
+		// same millisecond would satisfy the "did not move" assertion while the bug was fully present.
 		SystemTime.setFixedTimeSource(REMOVED_AT);
 		deliveryPlanningRepository.deactivateAllocations(ImmutableList.of(deliveryPlanningId), REMOVED_AT.toInstant());
 

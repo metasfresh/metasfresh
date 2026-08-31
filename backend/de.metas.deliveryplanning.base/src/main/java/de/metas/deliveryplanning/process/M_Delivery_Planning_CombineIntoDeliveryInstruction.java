@@ -39,23 +39,14 @@ import org.compiere.model.I_M_Delivery_Planning;
  * Combines the selected delivery plannings into ONE delivery instruction - as opposed to
  * {@link M_Delivery_Planning_GenerateDeliveryInstruction}, which creates one instruction per planning.
  * <p>
- * A thin adapter: every rule lives in {@link DeliveryPlanningService}, so a cucumber step drives the same code
- * path the WebUI drives instead of re-implementing the flow.
- * <p>
- * Deliberately does NOT navigate to the instruction it created ({@code setRecordToOpen}). The action requires two
- * or more rows, so it is always launched from a grid the planner is working through; jumping away would cost the
- * grid's filter and scroll position on every consolidation. The generated notification already links to the new
- * document for the planner who does want to go there.
+ * Does not navigate to the instruction it creates: the action always runs from a grid the planner keeps working
+ * through, and the notification links the new document.
  */
 public class M_Delivery_Planning_CombineIntoDeliveryInstruction extends JavaProcess implements IProcessPrecondition
 {
 	/**
-	 * Same cap as the order-to-transport-order precedent {@code AddOrderLinesToShipperTransportation}: the
-	 * precondition loads the selection, and no real consolidation puts hundreds of plannings on one truck.
-	 * <p>
-	 * Shared by the other two aggregation actions, which load the selection the same way - kept on one of them
-	 * and statically imported, exactly as {@code AddOrderLinesToShipperTransportation.MAX_SELECTION_SIZE} is by
-	 * its own siblings, rather than repeated per process or reached for across a module boundary.
+	 * Shared by the three aggregation actions, whose preconditions all load the selection; same cap as the
+	 * order-to-transport-order precedent {@code AddOrderLinesToShipperTransportation}.
 	 */
 	public static final int MAX_SELECTION_SIZE = 100;
 

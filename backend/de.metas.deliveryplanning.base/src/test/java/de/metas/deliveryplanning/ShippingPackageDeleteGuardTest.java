@@ -57,24 +57,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * The {@code M_ShippingPackage} BEFORE_DELETE guard against deleting a package that an ACTIVE
  * {@code M_Delivery_Planning_Alloc} still points at.
  * <p>
- * A delivery instruction is cancelled or closed, never deleted - the acceptance criteria know only close,
- * remove, void and cancel. The delete is nevertheless reachable ({@code IsDeleteable='Y'} on both
- * {@code M_ShipperTransportation} and {@code M_ShippingPackage}), so the refusal is stated here, where it can
- * name the instruction to cancel instead of leaving the operator a raw foreign-key violation.
+ * A delivery instruction is cancelled or closed, never deleted. The delete is nevertheless reachable
+ * ({@code IsDeleteable='Y'} on both {@code M_ShipperTransportation} and {@code M_ShippingPackage}), so the
+ * refusal is stated here, where it can name the instruction to cancel instead of a raw foreign-key violation.
  * <p>
- * <b>This one guard also covers the delivery-instruction leg</b>, and that is deliberate rather than an
- * oversight. {@code PO.delete0()} calls {@code beforeDelete()} BEFORE it fires {@code TYPE_BEFORE_DELETE}
- * (PO.java:3785 vs :3802), and {@code MMShipperTransportation.beforeDelete()} force-deletes every one of its
- * {@code M_ShippingPackage} lines through {@code InterfaceWrapperHelper::delete}. Since
- * {@code M_Delivery_Planning_Alloc.M_ShippingPackage_ID} is {@code NOT NULL} and
- * {@code DeliveryPlanningRepository.createShippingPackage} always stamps the instruction onto that package,
- * every active allocation of an instruction has a package among those lines - so deleting the instruction
- * always reaches this guard first, and a separate BEFORE_DELETE guard on the instruction itself would be
- * unreachable code.
+ * Deleting the instruction reaches this same guard: {@code MMShipperTransportation.beforeDelete()} force-deletes
+ * its {@code M_ShippingPackage} lines first, so a separate guard on the instruction would be unreachable code.
  */
 class ShippingPackageDeleteGuardTest
 {
-	/** A fixed "removed at" stamp: the repository takes it as a parameter, so tests do not depend on wall-clock time. */
 	private static final Instant REMOVED_AT = Instant.parse("2026-08-31T10:00:00Z");
 
 	private static final int PRODUCT_ID = 540010;

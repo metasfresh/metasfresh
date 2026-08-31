@@ -1,15 +1,10 @@
--- Delivery Planning: refuse to COMPLETE a delivery instruction that has zero active allocations.
---
--- Before allocations existed, a 1:1 header FK made "zero plannings" unreachable by construction for a
--- delivery instruction. M_Delivery_Planning_RemoveFromDeliveryInstruction can now take the last planning
--- off a drafted instruction, making this state reachable for the first time - and the reports resolving
--- through the allocation (docs_deliveryinstructions_description / _forwarder / _productdetails) print a
--- blank document for it. A transport order, which legitimately never has allocations, is unaffected -
--- distinguished from a delivery instruction via C_DocType.DocSubType, the same mechanism used to
--- separate the two document roles that share M_ShipperTransportation.
---
--- No AD_Process / AD_Table_Process: this is a @DocValidate(TIMING_BEFORE_COMPLETE) guard fired by the
--- document engine itself on M_ShipperTransportation.completeIt(), not a WebUI action with its own menu entry.
+-- Delivery Planning: refuse to COMPLETE a delivery instruction that has zero active allocations --
+-- the reports that resolve through the allocation (docs_deliveryinstructions_description /
+-- _forwarder / _productdetails) would print a blank document for it. A transport order legitimately
+-- never has allocations and is unaffected: the two document roles sharing M_ShipperTransportation
+-- are told apart by C_DocType.DocSubType.
+-- No AD_Process / AD_Table_Process: this is a @DocValidate(TIMING_BEFORE_COMPLETE) guard on
+-- M_ShipperTransportation.completeIt(), not a WebUI action with its own menu entry.
 --
 -- IDs allocated from idserver.metas.de on 2026-08-27:
 --   AD_Message   545811 (EmptyDeliveryInstruction)

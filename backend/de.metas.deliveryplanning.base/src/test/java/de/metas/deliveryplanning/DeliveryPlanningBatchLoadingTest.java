@@ -69,19 +69,11 @@ import static org.assertj.core.groups.Tuple.tuple;
  * planner is waiting on, and all three read the same delivery-planning records twice over - once to build the
  * allocation requests, once to stamp the {@code ReleaseNo}. Every one of those reads has to be ONE batch load, so
  * each test here asserts {@code times(n)} on the batch method AND pins the per-row one to the fixed number of
- * calls the action may legitimately make - none, except the single seed-header load of {@code combine}: a test
- * that only checked the outcome would stay green with the per-row load put back, which is exactly how this defect
- * reached a second and a third call site after it had already been removed from {@code getBySelection}.
- * <p>
- * The repository is a spy over the REAL one, on the unit-test in-memory store, so the loads actually happen while
- * the call pattern stays countable.
+ * calls the action may legitimately make - none, except the single seed-header load of {@code combine}.
  */
 class DeliveryPlanningBatchLoadingTest
 {
-	/**
-	 * Only ever read back as a {@code ProductId}: the planning carries its own UOM, so the stock UOM - the one
-	 * lookup that would need a product record - is never consulted.
-	 */
+	/** Only ever read back as a {@code ProductId}: the planning carries its own UOM, so no product record is needed. */
 	private static final int PRODUCT_ID = 540010;
 
 	/** Only ever written to the instruction header and read back as a {@code ShipperId} - no {@code M_Shipper} record is loaded. */
@@ -95,10 +87,6 @@ class DeliveryPlanningBatchLoadingTest
 	private DeliveryPlanningService deliveryPlanningService;
 	private I_C_UOM uom;
 
-	/**
-	 * Created on first use and shared by the whole selection: the plannings have to agree on the addresses read
-	 * from these two, or the selection is inadmissible for a reason these tests are not about.
-	 */
 	private I_M_Warehouse loadingWarehouse;
 	private I_M_ShipmentSchedule deliveryShipmentSchedule;
 
@@ -107,8 +95,7 @@ class DeliveryPlanningBatchLoadingTest
 	{
 		AdempiereTestHelper.get().init();
 
-		// combine notifies the instruction's creator: the recipient is CreatedBy, which is stamped from the logged
-		// user, and the notification itself has nothing to do with what these actions cost in round trips
+		// combine notifies the instruction's creator (CreatedBy, stamped from the logged user)
 		Env.setLoggedUserId(Env.getCtx(), UserId.METASFRESH);
 		Services.registerService(INotificationBL.class, Mockito.mock(INotificationBL.class));
 
@@ -139,11 +126,7 @@ class DeliveryPlanningBatchLoadingTest
 		return record;
 	}
 
-	/**
-	 * A planning a whole selection can be combined from: it names the forwarder the instruction header cannot exist
-	 * without, and the two records an {@code Outgoing} planning reads its loading and delivery address from. Every
-	 * planning of a selection shares them, so the selection agrees on every admissibility field.
-	 */
+	/** A planning a whole selection can be combined from: it names the forwarder, and the two records an {@code Outgoing} planning reads its loading and delivery address from. */
 	private I_M_Delivery_Planning combinableDeliveryPlanning()
 	{
 		final I_M_Delivery_Planning record = deliveryPlanning();
@@ -182,10 +165,6 @@ class DeliveryPlanningBatchLoadingTest
 		return deliveryShipmentSchedule.getM_ShipmentSchedule_ID();
 	}
 
-	/**
-	 * The document type the instruction header is created with. A real record rather than a stubbed DAO: resolving
-	 * it is one of the things {@code combine} does on the way to the loads counted here.
-	 */
 	private void createDeliveryInstructionDocType()
 	{
 		final I_C_DocType docType = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
@@ -204,10 +183,7 @@ class DeliveryPlanningBatchLoadingTest
 		return record;
 	}
 
-	/**
-	 * The selection the process would hand over. {@code extractDeliveryPlannings} is the one seam stubbed here -
-	 * the selection itself is a WebUI-side artefact, and a fresh iterator per call is what a re-query would give.
-	 */
+	/** The selection the process would hand over; {@code extractDeliveryPlannings} is the one seam stubbed here. */
 	private IQueryFilter<I_M_Delivery_Planning> selectionOf(@NonNull final List<I_M_Delivery_Planning> records)
 	{
 		@SuppressWarnings("unchecked") final IQueryFilter<I_M_Delivery_Planning> filter = Mockito.mock(IQueryFilter.class);
@@ -244,9 +220,7 @@ class DeliveryPlanningBatchLoadingTest
 
 	/**
 	 * As above, for an action that also makes a fixed number of single-row loads: {@code combine} builds the
-	 * instruction header from ONE seed planning, and that load neither can be nor needs to be batched. Pinned to an
-	 * exact count rather than waved through - nothing the planner triggers may load once PER ROW, and only an exact
-	 * count tells a constant apart from a per-row one.
+	 * instruction header from ONE seed planning, and that load neither can be nor needs to be batched.
 	 */
 	private void assertBatchLoadedExactly(final int batchLoads, final int singleRowLoads)
 	{
@@ -269,8 +243,7 @@ class DeliveryPlanningBatchLoadingTest
 		final ShipperTransportationId deliveryInstructionId = deliveryPlanningService.combine(selection, false);
 
 		// one batch for the allocation requests of the plannings behind the seed, one for the ReleaseNo stamping -
-		// plus the single-row load of the ONE seed planning the header is built from, which does not grow with the
-		// selection the way the per-row load this pins out would
+		// plus the single-row load of the ONE seed planning the header is built from
 		assertBatchLoadedExactly(2, 1);
 
 		// the batch did not cost the outcome: all three are on the one instruction and carry their own ReleaseNo
@@ -393,11 +366,6 @@ class DeliveryPlanningBatchLoadingTest
 	 * The half of add-to's all-or-nothing guarantee that a unit test can prove: the rejection is decided for the
 	 * WHOLE selection before the first write, so an inadmissible row leaves the admissible ones untouched rather
 	 * than half-moved.
-	 * <p>
-	 * The other half - the transaction rolling the writes back when one fails PART-WAY - is not assertable here:
-	 * the unit-test store has no rollback (its {@code PlainTrx.rollbackNative} only flips a status flag), so a
-	 * failure-injection test would go red against correct code. That half belongs to a cucumber scenario, where the
-	 * transaction is real.
 	 */
 	@Test
 	@DisplayName("an inadmissible row in the selection leaves the admissible ones untouched")

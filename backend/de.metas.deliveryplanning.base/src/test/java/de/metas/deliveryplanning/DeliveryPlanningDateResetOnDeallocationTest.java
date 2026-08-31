@@ -68,14 +68,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  * exactly as {@link GenerateOutgoingDeliveryPlanningCommand} / {@link GenerateIncomingDeliveryPlanningCommand}
  * derive them when a planning is first generated.
  * <p>
- * A RECOMPUTE, not a restore: every scenario here first allocates the planning to an instruction carrying
- * DIFFERENT dates and syncs them down (contaminating the planning, exactly what a real allocation does), so the
- * assertion after deallocation proves the ORDER's current state was re-derived - not that some earlier value
- * survived untouched.
+ * A RECOMPUTE, not a restore: every scenario first allocates the planning to an instruction carrying DIFFERENT
+ * dates and syncs them down, so the assertion after deallocation proves the ORDER's current state was re-derived.
  * <p>
- * Both {@code deactivateAllocations} overloads are exercised - {@code removeFrom} for the collection-of-ids one,
- * {@code unlinkDeliveryPlannings} (the void cascade) for the by-instruction one - because both route through the
- * single choke point ({@code deactivateAllocationRecords}) the reset is keyed on.
+ * Both {@code deactivateAllocations} overloads are exercised, because both route through the single choke
+ * point ({@code deactivateAllocationRecords}) the reset is keyed on.
  */
 class DeliveryPlanningDateResetOnDeallocationTest
 {
@@ -97,8 +94,6 @@ class DeliveryPlanningDateResetOnDeallocationTest
 	{
 		AdempiereTestHelper.get().init();
 
-		// spy the real services, so the loads actually happen against the in-memory records while the call
-		// pattern stays countable - the same technique DeliveryPlanningAddressLoadingTest uses
 		orderDAO = Mockito.spy(Services.get(IOrderDAO.class));
 		Services.registerService(IOrderDAO.class, orderDAO);
 		receiptScheduleDAO = Mockito.spy(Services.get(IReceiptScheduleDAO.class));

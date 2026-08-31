@@ -51,20 +51,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  * The delivery instruction's dates are DEFAULTS seeded from the plannings allocated to it: each field is
  * filled only while it is still empty, on creation and on every later add.
  * <p>
- * This mirrors {@code PurchaseOrderToShipperTransportationService.applyDefaultDatesFromFirstOrder}, which
- * solves the same problem for a transport order on this very table and guards every field with a null check
- * for the reason stated in its own comment: these are defaults, so a value the planner entered before the
- * first allocation must survive.
- * <p>
  * Running on every add rather than only at creation is what makes the feature usable on real data: a
  * planning whose upstream date chain produced nothing leaves the instruction empty, and only a later add can
  * supply the dates. The null guard is what makes running every time safe - it can only fill blanks.
- * <p>
- * Exercises {@link DeliveryPlanningService#resolveInstructionDatesForAllocation} directly, as a pure function:
- * the DECISION lives there (architecture.md §8 - a repository may never make it), so this is where it is
- * tested. {@link DeliveryPlanningRepository#createAllocations} only ever writes what this resolves, verbatim -
- * the last two tests below drive that real write path end to end, through a persisted instruction and a DB
- * reload, so the resolution above is never verified in isolation from what actually lands on the record.
  */
 class DeliveryInstructionDateDefaultsTest
 {
@@ -103,7 +92,6 @@ class DeliveryInstructionDateDefaultsTest
 		return record;
 	}
 
-	/** Exactly the mapping {@code DeliveryPlanningService#createAllocCreateRequest} performs off a loaded planning. */
 	private static DeliveryPlanningAllocCreateRequest allocRequest(
 			@Nullable final Timestamp etd,
 			@Nullable final Timestamp eta,

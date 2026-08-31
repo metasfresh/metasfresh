@@ -269,13 +269,7 @@ Feature: A closed delivery planning is finished and nothing processes it any fur
     And the M_ShipperTransportation identified by deliveryInstructionCancel is reactivated
     And M_Delivery_Planning identified by planningCancel_2 is closed
 
-    # both are selected; only the open one is cancelled. Two independent guards keep the closed one out, and
-    # only the FIRST of them actually fires here: cancel applies the release-number filter before it ever
-    # looks at IsClosed, and closing already cleared the release number (closing deallocated it). The
-    # IsClosed skip is the latent second guard - it catches the row only if the release-number filter is
-    # removed. So breaking either one alone leaves this scenario green; breaking both cancels the closed
-    # planning and the quantity below goes to 0. Do not read this scenario as proof that the IsClosed skip
-    # runs, and do not assert an empty skippedClosedIds here - that would bake the ordering in.
+    # both are selected; only the open one is cancelled
     When M_Delivery_Planning identified by planningCancel_1,planningCancel_2 is canceled
 
     Then validate M_Delivery_Planning:

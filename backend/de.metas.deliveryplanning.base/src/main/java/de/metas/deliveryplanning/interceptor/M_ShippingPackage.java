@@ -41,14 +41,6 @@ public class M_ShippingPackage
 	/**
 	 * A delivery instruction is cancelled or closed, never deleted - so a shipping package that carries a
 	 * delivery-planning allocation refuses the delete and names the instruction to cancel instead.
-	 * <p>
-	 * Registered here, in {@code de.metas.deliveryplanning.base}, rather than beside the two existing
-	 * {@code M_ShippingPackage} interceptors in {@code de.metas.business} / {@code de.metas.handlingunits.base}:
-	 * the allocation and its repository live in this module, which is DOWNSTREAM of both, so the check cannot
-	 * be pushed up into either without inverting the dependency. Both existing handlers are side-effect only
-	 * (closing the {@code M_Package}, destroying the HU package) and neither refuses anything, so there is no
-	 * competing verdict to order against - and whichever runs first, this guard's exception rolls the whole
-	 * transaction back.
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void onDelete(@NonNull final I_M_ShippingPackage shippingPackage)

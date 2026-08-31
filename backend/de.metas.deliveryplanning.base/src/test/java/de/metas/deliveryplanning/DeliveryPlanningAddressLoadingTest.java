@@ -57,9 +57,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * How {@link DeliveryPlanningService#getBySelection(IQueryFilter)} resolves the loading and delivery
  * addresses of a whole selection.
  * <p>
- * Two things are pinned here: which source record each transport direction reads its addresses from, and
- * that the whole selection costs one load per collaborator - the precondition behind this method runs on
- * every grid selection change, so a per-row load would put the round trips back that it exists to remove.
+ * Also pinned: the whole selection costs one load per collaborator - this runs on every grid selection
+ * change, so a per-row load would put the round trips back that it exists to remove.
  */
 class DeliveryPlanningAddressLoadingTest
 {
@@ -153,9 +152,7 @@ class DeliveryPlanningAddressLoadingTest
 	}
 
 	/**
-	 * @param allocatedInstructionIds the instruction each planning sits on, spelled as a map because every case
-	 * 		here has at most one - the repository hands the service the allocations themselves, which this turns it
-	 * 		into.
+	 * @param allocatedInstructionIds the instruction each planning sits on - at most one in every case here
 	 */
 	private DeliveryPlanningList getBySelection(
 			@NonNull final List<I_M_Delivery_Planning> records,

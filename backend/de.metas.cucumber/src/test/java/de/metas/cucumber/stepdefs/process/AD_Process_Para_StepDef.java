@@ -19,9 +19,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Step definitions for creating {@link I_AD_Process_Para} records in tests, and for validating the
  * {@code DefaultValue} an existing one carries in the Application Dictionary.
  *
- * <p>The column lists below belong to the CREATE step; the validating step documents its own columns on
- * {@link #validate_AD_Process_Para(DataTable)}.
- *
  * <p>Required columns:
  * <ul>
  *   <li>{@code AD_Process_ID} — identifier referencing the parent {@link I_AD_Process} (from {@link AD_Process_Create_StepDef})</li>
@@ -68,8 +65,7 @@ public class AD_Process_Para_StepDef
 
 	/**
 	 * Asserts the {@code DefaultValue} an {@code AD_Process_Para} carries in the Application Dictionary - the value the
-	 * parameter dialog shows a user who ticks nothing. A process's Java default is NOT this: a scenario that only ever
-	 * hands the flag over explicitly proves the code honours what it is given, never what the user is offered.
+	 * parameter dialog offers a user who ticks nothing, which is not the same as a process's Java default.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns

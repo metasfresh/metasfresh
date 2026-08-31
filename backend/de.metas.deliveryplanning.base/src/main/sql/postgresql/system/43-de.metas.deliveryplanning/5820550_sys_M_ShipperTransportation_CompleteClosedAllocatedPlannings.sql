@@ -1,15 +1,9 @@
 -- Delivery Planning: refuse to COMPLETE a delivery instruction while any of its currently allocated
--- plannings is closed.
---
--- Distinct from message 545797 (ClosedPlannings, generalised by 5820460): that one rejects a SELECTION
--- naming a closed planning before it is put on an instruction (Combine / Add to) - a pre-write check over
--- plannings that are NOT yet allocated. This one rejects COMPLETING an instruction that already holds a
--- planning closed AFTER it was allocated - the planner closed it later, while the instruction was still a
--- draft - which is a different moment and a different sentence, so it is a new message rather than reusing
--- 545797.
---
--- No AD_Process / AD_Table_Process: this is a @DocValidate(TIMING_BEFORE_COMPLETE) guard fired by the
--- document engine itself on M_ShipperTransportation.completeIt(), not a WebUI action with its own menu entry.
+-- plannings is closed. Its own message, not the pre-write ClosedPlannings rejection (545797): that
+-- one guards putting an already-closed planning ON an instruction, this one a planning closed AFTER
+-- it was allocated -- a different moment and a different sentence.
+-- No AD_Process / AD_Table_Process: this is a @DocValidate(TIMING_BEFORE_COMPLETE) guard on
+-- M_ShipperTransportation.completeIt(), not a WebUI action with its own menu entry.
 --
 -- IDs allocated from idserver.metas.de on 2026-08-27:
 --   AD_Message   545810 (ClosedAllocatedPlannings)

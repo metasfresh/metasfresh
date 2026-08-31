@@ -112,23 +112,6 @@ Feature: The delivery instruction owns the dates of the delivery plannings booke
       | M_ShipperTransportation_ID | M_Delivery_Planning_ID |
       | deliveryInstructionAdopt   | planningLate           |
 
-    # ---------------------------------------------------------------------------------------------
-    # CONTESTED - do not read the assertion below as a settled specification.
-    # It pins first-writer-wins ("fill only while still empty"): the instruction keeps ETA 2023-03-10,
-    # the arrival of the EARLIEST-departing planning. REQUIREMENTS.md AC7 (ai-work/31608) instead says
-    # the header takes the LATEST arrival, which for this scenario's own data would be 2023-04-20.
-    # Two further facts, both verified, belong with that open question:
-    #   * the ETD half matches AC7 only by accident of the sort order - on the addTo path an EARLIER-
-    #     departing planning added later cannot pull ETD back either, so "earliest departure" is
-    #     violated too. No scenario covers that path.
-    #   * AC7's own wording is internally inconsistent: "earliest departure, latest arrival" is an
-    #     aggregate, while the implemented "only while still empty" is first-writer-wins. Both cannot
-    #     hold once two plannings carry dates - so resolving this means fixing the AC text as well as
-    #     possibly the code.
-    # The decision sits with the issue owner (logged in ai-work/31608/pending-questions.md). If it
-    # goes to AC7, this scenario AND DeliveryInstructionDateDefaultsTest.java:161-176 both go red -
-    # a two-file change, not one.
-    # ---------------------------------------------------------------------------------------------
     # the instruction keeps the arrival it already had - the later load does not push it out
     Then validate M_ShipperTransportation:
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DocStatus | OPT.ETA    |

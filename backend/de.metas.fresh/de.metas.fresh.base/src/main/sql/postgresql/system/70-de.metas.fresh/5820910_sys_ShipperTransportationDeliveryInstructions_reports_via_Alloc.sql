@@ -1,45 +1,35 @@
--- Re-point the 3 de_metas_endcustomer_fresh_reports.docs_deliveryinstructions_* report functions
--- off M_ShipperTransportation.M_Delivery_Planning_ID (being dropped) and onto M_Delivery_Planning_Alloc.
--- Grouped in one script because all three are the same atomic re-point of the same FK removal;
--- all three now have a checked-in DDL source file under
--- backend/de.metas.fresh/de.metas.fresh.base/src/main/sql/postgresql/ddl/functions/ --
--- docs_deliveryinstructions_{description,forwarder,productdetails}.sql -- each updated alongside this
--- script and byte-identical to the bodies below. Only _description had one before; the other two lived
--- in migration history alone, so there was nothing to diff a change against.
+-- Source DDL: backend/de.metas.fresh/de.metas.fresh.base/src/main/sql/postgresql/ddl/functions/
+--             docs_deliveryinstructions_{description,forwarder,productdetails}.sql
 --
--- An instruction no longer holds exactly one M_Delivery_Planning: several plannings can be aggregated
--- onto one via M_Delivery_Planning_Alloc, each with its own M_ShippingPackage and possibly its own
--- C_Order, C_UOM and M_Warehouse. What that means per function:
+-- Re-point the three de_metas_endcustomer_fresh_reports.docs_deliveryinstructions_* report
+-- functions off M_ShipperTransportation.M_Delivery_Planning_ID and onto M_Delivery_Planning_Alloc:
+-- an instruction can aggregate several M_Delivery_Planning rows, each with its own
+-- M_ShippingPackage and possibly its own C_Order, C_UOM and M_Warehouse.
 --
--- _description / _forwarder resolve exactly ONE planning per instruction, deterministically: active
--- allocations only, lowest LineNo, tiebreak lowest M_Delivery_Planning_ID. _description additionally
--- DROPS orderno/referenceno: those came from the single C_Order behind that arbitrarily-picked "first"
--- planning, which is not a meaningful header-level concept once several orders can stand behind one
--- instruction. The order reference moves to the per-article detail band of _productdetails instead.
--- Dropping the two columns changes the RETURNS TABLE signature, so _description needs DROP FUNCTION
--- before CREATE -- Postgres refuses a CREATE OR REPLACE that changes a return type. _forwarder's
--- signature is unchanged, so CREATE OR REPLACE is enough there.
+-- _description and _forwarder resolve exactly ONE planning per instruction, deterministically:
+-- active allocations only, lowest LineNo, tiebreak lowest M_Delivery_Planning_ID. _description
+-- drops orderno/referenceno: they came from the single C_Order behind that arbitrarily-picked
+-- planning, which is not a meaningful header-level concept once several orders can stand behind
+-- one instruction. The order reference lives in _productdetails' per-article detail band instead.
 --
--- _productdetails returns one row per ARTICLE per UNIT, not one per allocation, and gains orderno /
--- referenceno -- so it too needs DROP FUNCTION before CREATE. Three things about its aggregation are
--- deliberate, and each of them is a defect if written the obvious way:
---   * GROUP BY p.m_product_id, dp.c_uom_id -- NOT by product alone. Two allocations for the same
+-- _productdetails returns one row per ARTICLE per UNIT, not one per allocation, and carries
+-- orderno / referenceno:
+--   * GROUP BY p.m_product_id, dp.c_uom_id, NOT by product alone. Two allocations for the same
 --     product on one instruction can carry different C_UOM_ID (two purchase orders for the same
 --     product in different units); the instruction's admissibility check constrains neither
 --     C_UOM_ID nor M_Product_ID. Grouping by product alone SUMS QUANTITIES ACROSS DIFFERENT UNITS
 --     and prints an arbitrary one of them -- 4 Ea + 6 kg would print as a single row reading
 --     "10 Ea". A unit split renders as separate rows instead, each with its own correct sum.
---   * STRING_AGG over the warehouse name -- NOT MIN(). Allocations for one product can come from
+--   * STRING_AGG over the warehouse name, NOT MIN(). Allocations for one product can come from
 --     different M_Warehouse_ID (the admissibility check constrains the warehouse's resolved
 --     ADDRESS, not the warehouse itself -- e.g. hub consolidation across two logical warehouses at
---     one address); MIN() would silently drop a genuine second pickup location. Both new order
---     columns are STRING_AGG(DISTINCT ..., ', ' ORDER BY ...) for the same reason: deterministic
---     order, no duplicate when several plannings share one order.
---   * LEFT JOIN on m_warehouse, C_UOM_trl and C_Order -- NOT inner. This feeds a printed customer
---     document, where an INNER JOIN drops the whole article line silently, undetectable at the point
---     of failure. M_Delivery_Planning.M_Warehouse_ID and C_Order_ID are both nullable, and a C_UOM
---     need not have a C_UOM_trl row in the language the instruction is printed in; none of those may
---     cost the reader the line. The unit therefore falls back to the untranslated C_UOM.uomsymbol.
+--     one address); MIN() would silently drop a genuine second pickup location. Both order columns
+--     are STRING_AGG(DISTINCT ..., ', ' ORDER BY ...) for the same reason.
+--   * LEFT JOIN on m_warehouse, C_UOM_trl and C_Order, NOT inner. M_Delivery_Planning's
+--     M_Warehouse_ID and C_Order_ID are both nullable, and a C_UOM need not have a C_UOM_trl row
+--     in the language the instruction is printed in; an INNER JOIN would silently drop the whole
+--     article line of a printed customer document. The unit falls back to the untranslated
+--     C_UOM.uomsymbol.
 
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.docs_deliveryinstructions_description(numeric);
 

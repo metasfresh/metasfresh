@@ -1,35 +1,12 @@
--- The transport-order role and the delivery-instruction role share
--- M_ShipperTransportation, distinguished only by C_DocType.DocSubType ('DI' = delivery instruction,
--- else = transport order). Two of the AD_Val_Rule-driven "add to transport order" pickers still
--- offer a delivery instruction as a valid target. This script closes that leak by excluding
--- DocSubType='DI' rows from both rules.
+-- M_ShipperTransportation carries both the transport-order and the delivery-instruction role,
+-- distinguished only by C_DocType.DocSubType ('DI' = delivery instruction, else = transport order).
+-- Two AD_Val_Rule-driven "add to transport order" pickers still offer a delivery instruction as a
+-- valid target; this script excludes DocSubType='DI' rows from both rules.
 --
--- Usage audit performed before touching either rule (AD_Val_Rule modification requires an audit -
--- metasfresh-application-dictionary skill):
---   540248 M_ShipperTransportation_Open            -> 8 AD_Process_Para rows, all M_ShipperTransportation_ID,
---          all on processes that ADD something (a shipment, HUs, a purchase order/line, a receipt
---          schedule, a tour instance) TO a transport order - never legitimately a delivery instruction.
---   540468 M_ShipperTransportation_Open_ ForShipper -> 1 AD_Process_Para row (ProductsToPick_4EyesReview_ProcessAll),
---          same shape, plus a per-shipper filter.
--- Every one of the 9 callsites is a transport-order-only "add to" action, so excluding DocSubType='DI'
--- is correct for the rule's FULL consumer set, not just this iteration's path. Both rules are
--- therefore corrected in place rather than forked into a new AD_Val_Rule: forking here would leave
--- the same defect on the other processes and create two near-duplicate rules, which is exactly the
--- outcome the fork-instead-of-broaden guidance exists to avoid when a rule's scope genuinely IS
--- meant to change for every consumer.
---
--- NOT included here (deliberately out of scope for this script): a "direction correlation" clause
--- that would additionally require: an empty transport stays open; a non-empty one must match
--- M_ShipperTransportation.TransportDirection. That clause needs a NEW hidden direction parameter,
--- populated via getParameterDefaultValue, on each of the 9 processes above - a separate, larger
--- change than this script's 5 process classes across 3 modules. It is also independent of
--- document-TYPE separation: excluding DocSubType='DI' alone is sufficient so a delivery instruction
--- is never offered as an add-to target. Left for the task that owns TransportDirection consumer
--- wiring.
---
--- Cosmetic, in-diff: 540468's Name carries a stray space ("M_ShipperTransportation_Open_ ForShipper")
--- - fixed to "M_ShipperTransportation_Open_ForShipper" while the row is touched anyway. Verified no
--- active AD_Val_Rule already holds that name.
+-- Both rules are corrected in place rather than forked: every consumer of either rule is a
+-- transport-order-only "add to" action, so the narrower scope is right for the rule's full consumer
+-- set. Forking would leave the same defect on the other consumers and create two near-duplicate
+-- rules.
 
 UPDATE AD_Val_Rule
 SET Code = 'M_ShipperTransportation.Processed=''N''' || E'\n'
@@ -50,20 +27,13 @@ SET Name = 'M_ShipperTransportation_Open_ForShipper',
     UpdatedBy = 100
 WHERE AD_Val_Rule_ID = 540468 /* M_ShipperTransportation_Open_ ForShipper */;
 
--- BillLadingReport (540011, classname JasperReportStarter - a class shared by every Jasper report,
--- so it cannot carry a per-process precondition without affecting unrelated reports) is
--- window-scoped to the transport-order window instead of guarded in Java: the process prints a
--- handling-unit loading list (de/metas/docs/sales/billoflading/report.jrxml), and the
--- delivery-planning flow never links a handling unit to its M_Package, so on a delivery instruction
--- the report has nothing to print. Narrowing the binding is not free, though: AD_Table_Process
--- 540789 is table-global until this statement, so today it reaches every window over the table --
--- including any override window over 540020, and a targeted code search for
--- Overrides_Window_ID=540020 returns two such. Pinning it to 540020 therefore drops it from those
--- copies, because a copied window cannot see a window-pinned binding; companion scripts in those
--- repositories restore it there. PrintAllShipmentDocuments (541228, AD_Table_Process 540765+541325)
--- is untouched - it is deliberately offered on both windows already.
+-- BillLadingReport prints a handling-unit loading list, and the delivery-planning flow never links a
+-- handling unit to its M_Package, so on a delivery instruction it has nothing to print. It is scoped
+-- to the transport-order window rather than guarded in Java because its process class
+-- (JasperReportStarter) is shared by every Jasper report. Narrowing a table-global binding also drops
+-- it from any override window over 540020; companion scripts in those repositories restore it there.
 UPDATE AD_Table_Process
 SET AD_Window_ID = 540020 /* Transport Auftrag */,
     Updated = TO_TIMESTAMP('2026-08-27 09:00:02', 'YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy = 100
-WHERE AD_Table_Process_ID = 540789 /* BillLadingReport on M_ShipperTransportation, previously unscoped (both windows) */;
+WHERE AD_Table_Process_ID = 540789 /* BillLadingReport on M_ShipperTransportation */;

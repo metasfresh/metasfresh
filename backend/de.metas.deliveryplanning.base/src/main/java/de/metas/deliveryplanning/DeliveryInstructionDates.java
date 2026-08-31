@@ -29,10 +29,7 @@ import javax.annotation.Nullable;
 import java.sql.Timestamp;
 
 /**
- * The six date/time fields shared by the delivery instruction and an allocated planning, resolved to their
- * FINAL value by the caller (the service layer, which alone may read the order/schedule or apply a
- * fill-if-empty rule) and written verbatim by the repository - a repository decides nothing about these values,
- * it only persists what it is handed.
+ * The six date/time fields shared by the delivery instruction and an allocated planning.
  */
 @Value
 @Builder

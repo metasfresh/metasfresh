@@ -389,8 +389,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 				.shipDate(TimeUtil.asLocalDate(shipment.getMovementDate()))
 				.pickupTimeFrom(TimeUtil.asLocalTime(shipper.getPickupTimeFrom()))
 				.pickupTimeTo(TimeUtil.asLocalTime(shipper.getPickupTimeTo()))
-				// this path serves both shipments and receipts, and an M_InOut is one or the other -
-				// never a dropship - so the two-valued mapping is the whole truth here
+				// an M_InOut is a shipment or a receipt, never a dropship, so the two-valued mapping is complete here
 				.transportDirection(TransportDirection.ofSOTrx(SOTrx.ofBooleanNotNull(shipment.isSOTrx())))
 				.build();
 

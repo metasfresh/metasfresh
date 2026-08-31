@@ -1,28 +1,13 @@
--- Delivery Planning: the "Combine into one Delivery Instruction" action.
---
--- Registers the process on the Delivery Planning window (541632) beside the existing
--- "Generate Delivery Instruction" (585176). The two differ in cardinality, and the labels say so:
--- Generate creates one delivery instruction PER selected planning, Combine creates exactly ONE for
--- the whole selection - each planning keeping its own allocation, shipping package and release number.
---
--- The action carries one parameter, IsComplete, defaulting to 'N': a combined instruction is
--- assembled over days, so it stays a draft until the planner says it is final. Completing it right
--- away stays available as an option.
---
--- Also registers the messages the action rejects with. The admissibility rejection is ONE message
--- naming EVERY field the selection disagrees on - {0} is the list of field labels, joined by the
--- service. That is the point of the design: reporting one differing field at a time sends the
--- planner back and forth for information the check already had. The eight field labels are
--- therefore messages of their own, worded as the delivery-planning window words them.
---
--- 545796 (IncompatibleSelection) and 545797 (ClosedPlannings) are worded ACTION-NEUTRALLY on
--- purpose - "cannot be put on one delivery instruction together" / "cannot be put on a delivery
--- instruction", never "cannot be combined". Both rules end up shared: 5820460 raises the same two
--- rejections from "Add to Delivery Instruction" (over the selection TOGETHER WITH what the target
--- already holds), and 5821300 from "Move to another Delivery Instruction". An add-to rejection is
--- very often about a SINGLE selected planning disagreeing with the target, for which "the SELECTED
--- delivery plannings ... combined" would read as nonsense. One message per rule, worded for every
--- caller, beats near-identical per-action copies.
+-- Delivery Planning: the "Combine into one Delivery Instruction" action, on the Delivery Planning
+-- window (541632). Where "Generate Delivery Instruction" (585176) creates one delivery instruction
+-- PER selected planning, Combine creates exactly ONE for the whole selection, each planning keeping
+-- its own allocation, shipping package and release number. Its IsComplete parameter defaults to 'N':
+-- a combined instruction is assembled over days, so it stays a draft until the planner says it is
+-- final.
+-- The admissibility rejection is ONE message naming EVERY field the selection disagrees on ({0} is
+-- the joined list of field labels), so the planner is not sent back for one field at a time. 545796
+-- and 545797 are worded action-neutrally because the other delivery-instruction actions raise them
+-- too -- do not reword them to mention combining.
 --
 -- IDs allocated from idserver.metas.de on 2026-08-27:
 --   AD_Process       585653 (M_Delivery_Planning_CombineIntoDeliveryInstruction)

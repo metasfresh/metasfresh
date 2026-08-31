@@ -44,8 +44,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Pure in-memory combinatorics of the aggregation admissibility rule.
  * <p>
- * Deliberately does NOT re-assert the happy path (combine/add/remove end-to-end is covered by cucumber):
- * this test only pins the edges a feature file is bad at, above all the NULL-vs-distinct distinction —
+ * Pins the edges a feature file is bad at, above all the NULL-vs-distinct distinction —
  * {@code count(DISTINCT col)} ignores NULLs, so a naive distinct-count cannot tell "all rows share the
  * same value" from "some rows have no value at all".
  */
@@ -424,8 +423,6 @@ class DeliveryPlanningListTest
 	@DisplayName("allocations")
 	class Allocations
 	{
-		// instance fields, not static: a Java 8 inner class may only hold static fields that are compile-time
-		// constants, which an id value object is not
 		private final ShipperTransportationId firstLeg = ShipperTransportationId.ofRepoId(540021);
 		private final ShipperTransportationId secondLeg = ShipperTransportationId.ofRepoId(540022);
 

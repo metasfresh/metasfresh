@@ -1,20 +1,14 @@
 -- Source DDL: backend/de.metas.adempiere.adempiere/migration/src/main/sql/postgresql/ddl/public/views/M_ShipperTransportation_Delivery_Instructions_V.sql
 --
--- Re-point M_ShipperTransportation_Delivery_Instructions_V off M_ShipperTransportation.M_Delivery_Planning_ID
--- (being dropped) and onto M_Delivery_Planning_Alloc. The view still exposes m_delivery_planning_id --
--- under aggregation it now legitimately returns one row per (instruction, planning) pair instead of
--- one row per instruction. (AD_Tab 546754, which used to filter on this column, is re-parented onto
--- the instruction itself -- an aggregated header has N plannings and no single M_Delivery_Planning_ID
--- to filter on.)
+-- The view is defined over M_Delivery_Planning_Alloc rather than over
+-- M_ShipperTransportation.M_Delivery_Planning_ID, so it returns one row per (instruction, planning)
+-- pair: an aggregated instruction carries N plannings and no single M_Delivery_Planning_ID.
 --
--- M_ShippingPackage is correlated to its own allocation row (M_Delivery_Planning_Alloc), not re-joined
--- to the instruction independently of M_Delivery_Planning: DeliveryPlanningRepository.createAllocation
--- creates one distinct M_ShippingPackage per allocation, so an instruction with N active allocations has
--- N packages sharing that instruction id. Joining M_ShippingPackage to the instruction id alone would
--- degenerate to a harmless 1x1 pairing at N=1 but produce the full N x N cross product at N>1 -- every
--- planning paired with every package's quantities, making plannedloadedquantity/planneddischargequantity
--- wrong on most rows. Correlating both to the same M_Delivery_Planning_Alloc row keeps the join 1:1 per
--- allocation regardless of N.
+-- M_ShippingPackage is correlated to its own allocation row, not re-joined to the instruction
+-- independently of M_Delivery_Planning. Exactly one package exists per allocation, so joining on the
+-- instruction id alone degenerates to a harmless 1x1 pairing at one active allocation but produces the
+-- full N x N cross product at N -- every planning paired with every package's quantities, making
+-- plannedloadedquantity/planneddischargequantity wrong on most rows.
 
 DROP VIEW IF EXISTS M_ShipperTransportation_Delivery_Instructions_V$new;
 

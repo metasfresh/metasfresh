@@ -1,131 +1,31 @@
--- Delivery Planning aggregation: backfill M_Delivery_Planning_Alloc from the legacy 1:1
--- header link M_ShipperTransportation.M_Delivery_Planning_ID, BEFORE that column is dropped
--- (dropping it is a later, separate task -- this script does not touch the column, any view,
--- or any Java).
+-- Backfill M_Delivery_Planning_Alloc from the legacy 1:1 header link
+-- M_ShipperTransportation.M_Delivery_Planning_ID, before that column is dropped. This script
+-- touches no column, view or Java.
 --
--- Scope: AGGREGATION-PROPOSAL.md §3b.3 steps 2 (pre-check) and 3 (backfill) only. Step 1
--- (create M_Delivery_Planning_Alloc) already shipped in 5820400/5820410. Steps 4-6 (recreate
--- the two views + docs_deliveryinstructions_description, drop the AD field then the column)
--- are the next task.
+-- M_Delivery_Planning.M_ShipperTransportation_ID is the authoritative side: unlinkDeliveryPlannings()
+-- maintains it on void, so it reflects the current link, while the header column is write-once at
+-- instruction generation and never cleaned up. The backfill therefore reads the planning-side FK and
+-- uses the header column only as a cross-check -- a NON-VOIDED instruction whose header link has no
+-- matching planning FK aborts the script; a voided one with a stale header link is expected.
 --
--- ===========================================================================================
--- Pre-migration counts (measured live, deep_tundra_uat_2, port 21632, 2026-08-27)
--- ===========================================================================================
---   DI instructions (C_DocType.DocSubType='DI')                          8
---   header link set (st.M_Delivery_Planning_ID > 0)                     8
---   planning FK set (dp.M_ShipperTransportation_ID > 0, on a DI)        8
---   existing M_Delivery_Planning_Alloc rows                              0
---   non-voided header link with no planning backref                     0
---   max M_ShippingPackage rows per DI instruction                       1
---   max M_Delivery_Planning rows per DI instruction (planning side)     1
--- So this script inserts exactly 8 allocations here and has nothing to reconcile. The
--- pre-check below is what makes the script correct on the customer instance too, where the
--- two sources may disagree and a second package per instruction is structurally possible.
+-- The allocation's package is resolved through the planning's order line AND the planning's own
+-- instruction (sp.C_OrderLine_ID = dp.C_OrderLine_ID AND sp.M_ShipperTransportation_ID =
+-- st.M_ShipperTransportation_ID). Joining the package to the instruction alone is unsafe: it is
+-- well-defined only while every instruction carries exactly one package, which no index guarantees.
+-- The order-line correlation is the general form (every planning has an order line, and
+-- createShippingPackage() stamps the same order line onto the package); the instruction conjunct makes
+-- the pairing correct by construction, so a planning whose only order-line match sits on another
+-- instruction aborts on the first guard instead of being mis-paired.
 --
--- ===========================================================================================
--- Which side is authoritative -- §3b.2
--- ===========================================================================================
--- M_Delivery_Planning.M_ShipperTransportation_ID is authoritative: it is the FK that
--- unlinkDeliveryPlannings() (DeliveryPlanningRepository, @DocValidate(TIMING_AFTER_VOID))
--- actively maintains on void, so it reflects the *current* link. The header column
--- M_ShipperTransportation.M_Delivery_Planning_ID is write-once at instruction generation and
--- is never cleaned up by that void path -- a voided instruction is expected to keep a stale
--- header link with no planning pointing back. So the backfill reads the planning-side FK, and
--- the header column is used only as a cross-check: a NON-VOIDED instruction whose header link
--- has no matching planning FK is a genuine anomaly (the two sources disagree in a way the
--- backfill would silently lose) and aborts the script. A voided instruction with a stale
--- header link is expected and does not abort.
+-- AD_Org_ID and AD_Client_ID are the INSTRUCTION's, not the planning's, mirroring
+-- createAllocation(); the third pre-check aborts if any pair disagrees on client. LineNo mirrors
+-- getMaxAllocationLineNo() + ALLOCATION_LINE_NO_STEP, so a single-member instruction gets 10.
 --
--- ===========================================================================================
--- The package-join decision -- the trap in the design doc's (stale) draft insert
--- ===========================================================================================
--- The allocation's M_ShippingPackage_ID is mandatory AND uniquely indexed while IsActive='Y'
--- (M_Delivery_Planning_Alloc_Package_UQ, 5820410). An earlier draft of this backfill joined
--- the package to the *instruction* (LEFT JOIN M_ShippingPackage sp ON sp.M_ShipperTransportation_ID
--- = st.M_ShipperTransportation_ID), which is safe only while each instruction has exactly one
--- package -- true here (max 1, measured above) but not guaranteed on the customer instance,
--- where a second package on the same instruction would either multiply allocation rows or
--- collide on Package_UQ.
---
--- DECISION: join the package to the planning through the order line instead
--- (sp.C_OrderLine_ID = dp.C_OrderLine_ID), which is the correct, general form -- every
--- planning has an order line (DeliveryPlanningRepository:337) and createShippingPackage()
--- stamps the same order line onto the package it creates (:616), so this join reproduces the
--- planning<->package pairing regardless of how many packages the instruction carries. The
--- pre-check below proves this join is well-defined (exactly one active package per planning's
--- order line) BEFORE the insert runs, rather than assuming it.
---
--- AMENDED: the join carries a SECOND conjunct, sp.M_ShipperTransportation_ID =
--- st.M_ShipperTransportation_ID, added ON TOP of the order-line correlation (not instead of it
--- -- the instruction alone is the unsafe form rejected above). Both pre-checks carry it too, so
--- a planning whose only order-line match belongs to another instruction trips the first guard
--- (zero packages) and aborts rather than being silently mis-paired.
---
--- WHY, stated honestly, because an earlier version of this comment got it wrong. The claim was
--- that voiding leaves the package active and claimable, so a planning on a live instruction
--- could adopt it. That is NOT what the code does, and the correction is worth recording so the
--- next reader does not re-derive the wrong reason:
---
---   * On VOID, the interceptor's unlinkDeliveryPlannings -> deactivateAllocations sets the
---     allocation AND its M_ShippingPackage to IsActive='N'. Both pre-checks and the INSERT
---     filter sp.IsActive='Y', so a voided instruction's package is already excluded.
---   * On REMOVE / MOVE, deactivateAllocations sets the allocation AND its M_ShippingPackage to
---     IsActive='N' -- the same mechanism as the VOID bullet above, not a delete. The row survives,
---     but stays inactive, so it is still excluded by the IsActive='Y' filter both pre-checks and
---     the INSERT apply.
---   * unlinkDeliveryPlannings additionally clears C_OrderLine_ID on exactly the packages behind the
---     allocations it just deactivated -- so even an active leftover would stop matching any
---     planning's order line.
---
--- So NO supported code path is known to produce an active, order-line-bearing package whose
--- instruction has no planning pointing at it. Measured on this stack: 0 such rows (against 8
--- active DI packages that do carry an order line).
---
--- The conjunct is kept anyway, and this is the concrete scenario it is for -- not a
--- hypothetical. This script runs ONCE against data whose whole history predates the allocation
--- table: every package on the customer instance was created by the old 1:1 flow, under code
--- that has since changed, including a void path that did not deactivate allocations because
--- there were none. This local dataset (8 instructions, all consistent) cannot speak for that
--- history. The conjunct makes the pairing correct by construction instead of resting on an
--- argument about paths that no longer exist, and it costs one AND per join.
---
--- ===========================================================================================
--- Field-by-field semantics -- mirrored from DeliveryPlanningRepository.createAllocation(), the
--- one writer of these rows outside this script. Described by behaviour rather than pinned to a
--- file:line, because a migration script is immutable once merged and a line reference rots.
--- ===========================================================================================
---   M_ShippingPackage_ID  the instruction's existing package, resolved via the order-line AND
---                         instruction join above (not created fresh -- this is a backfill of an
---                         existing link, not a new allocation)
---   LineNo                getMaxAllocationLineNo(instruction) + 10 per planning (:828,:96
---                         ALLOCATION_LINE_NO_STEP=10); reproduced here as
---                         COALESCE(MAX existing LineNo on the instruction, 0)
---                         + ROW_NUMBER() OVER (PARTITION BY instruction ORDER BY planning id) * 10
---                         -- so a single-member instruction gets 10, matching the Java. The
---                         window function is safe against a partial re-run here because the
---                         whole backfill is one INSERT statement (atomic) applied at most once
---                         (tracked by AD_MigrationScript); it cannot leave some sibling rows of
---                         one instruction inserted and others not.
---   AD_Org_ID              the INSTRUCTION's org, not the planning's (createAllocation() sets
---                         it from deliveryInstructionRecord, not the planning)
---   AD_Client_ID           mirrored from the instruction for the same reason. Proven, not just
---                         spot-checked: the pre-check aborts if any planning/instruction pair
---                         disagrees on client (third guard, below), the same treatment as the
---                         header-backref and package-join assumptions.
---
--- ===========================================================================================
--- Idempotence
--- ===========================================================================================
--- The migration tool runs this script at most once per DB (AD_MigrationScript). The
--- NOT EXISTS guard on the INSERT is defense-in-depth only, in case of a manual re-run
--- (e.g. after a restore that predates this script's AD_MigrationScript row): it re-checks
--- against an ACTIVE allocation for the same M_Delivery_Planning_ID, matching the
--- Planning_UQ partial index (IsActive='Y'), so a second execution inserts nothing.
---
--- No column drop, no view change, no Java change in this script -- that is the next task.
+-- The migration tool applies this once per DB; the NOT EXISTS guard on the INSERT is defence in depth
+-- against a manual re-run and matches the Planning_UQ partial index (IsActive='Y').
 
 -- ===========================================================================================
--- Step 2 (§3b.3): pre-check, abort on anomaly -- BEFORE any write, so no branch can abort
+-- Pre-check, abort on anomaly -- BEFORE any write, so no branch can abort
 -- halfway through a mutation.
 -- ===========================================================================================
 DO $$
@@ -135,10 +35,8 @@ DECLARE
     v_package_shared_by_plannings      integer;
     v_planning_client_mismatch         integer;
 BEGIN
-    -- Cross-check (§3b.2): a NON-VOIDED DI instruction whose header link has no matching
-    -- planning-side FK is a genuine anomaly -- the two sources disagree in a way the backfill
-    -- (which reads the planning side) would silently lose. A voided instruction keeping a
-    -- stale header link is expected and must NOT abort.
+    -- A NON-VOIDED instruction whose header link has no matching planning-side FK is an anomaly the
+    -- backfill would silently lose. A voided one keeping a stale header link is expected.
     SELECT count(*)
     INTO v_header_without_planning_backref
     FROM M_ShipperTransportation st
@@ -160,15 +58,9 @@ BEGIN
             v_header_without_planning_backref;
     END IF;
 
-    -- Proves the join is well-defined before the insert relies on it: every planning reachable
-    -- via the planning-side FK on a non-voided DI instruction must resolve to EXACTLY ONE
-    -- active M_ShippingPackage through its order line AND on that planning's own instruction
-    -- (see the amended decision in the header for why the instruction conjunct is load-bearing
-    -- rather than redundant). Zero means the join
-    -- would drop the row (and the header cross-check above would then also fail, since no
-    -- allocation ever gets created for it -- caught independently here for a precise message).
-    -- More than one means the 1:1 assumption the whole join rests on does not hold and the
-    -- backfill cannot pick a package unambiguously.
+    -- Every planning reachable via the planning-side FK must resolve to EXACTLY ONE active package.
+    -- Zero means the join would drop the row; more than one means the 1:1 assumption the join rests on
+    -- does not hold and no package can be picked unambiguously.
     SELECT count(*)
     INTO v_planning_bad_package_join
     FROM (
@@ -199,22 +91,9 @@ BEGIN
             v_planning_bad_package_join;
     END IF;
 
-    -- Proves the REVERSE direction of the same assumption: the check above only proves each
-    -- planning resolves to exactly one package, not that no two DIFFERENT plannings resolve to
-    -- the SAME package. Two plannings can legitimately share one C_OrderLine_ID (partial
-    -- shipments of one order line across separate instructions -- DeliveryPlanningService
-    -- guards against deleting the LAST such planning, which only makes sense if more than one
-    -- can exist), so without this check two plannings could both pass the guard above (each
-    -- resolving to exactly one package) while both resolving to the SAME package -- failing the
-    -- INSERT on the raw M_Delivery_Planning_Alloc_Package_UQ index instead of on this script's
-    -- own message.
-    --
-    -- NARROWED by the instruction conjunct, and kept deliberately. The cross-instruction case
-    -- this check was originally written for is now structurally impossible: a package can only
-    -- resolve to a planning on its OWN instruction. What remains reachable is two plannings on
-    -- the SAME instruction sharing one order line and therefore one package -- a real shape
-    -- (partial shipments), and exactly what Package_UQ forbids. So this stays as the check that
-    -- reports it in this script's language instead of as an index violation.
+    -- The reverse direction: two plannings on the same instruction may share one C_OrderLine_ID
+    -- (partial shipments) and so resolve to the SAME package, which Package_UQ forbids. Reported here
+    -- in this script's language instead of as a raw index violation.
     SELECT count(*)
     INTO v_package_shared_by_plannings
     FROM (
@@ -242,11 +121,8 @@ BEGIN
             v_package_shared_by_plannings;
     END IF;
 
-    -- Proves the AD_Client_ID mirror is safe before the insert relies on it: the allocation
-    -- stamps the INSTRUCTION's client (st.AD_Client_ID), same reasoning as AD_Org_ID. metasfresh's
-    -- multi-tenant FK model makes a planning and the instruction it is linked to disagreeing on
-    -- client very unlikely, but "unlikely" is not "proven" -- so this is checked the same way as
-    -- the two assumptions above, rather than trusted from a one-instance manual spot-check.
+    -- The allocation stamps the INSTRUCTION's client, so a planning and its instruction disagreeing on
+    -- client must abort rather than be mirrored wrongly.
     SELECT count(*)
     INTO v_planning_client_mismatch
     FROM M_Delivery_Planning dp
@@ -275,24 +151,17 @@ SELECT backup_table('m_delivery_planning_alloc', '_alloc_backfill');
 -- ===========================================================================================
 -- Make sure the table's native PK sequence exists before nextval() is called on it.
 --
--- 5820400 creates M_Delivery_Planning_Alloc with a raw INSERT INTO AD_Table, which never goes
--- through MTable.afterSave() -- the Java hook that would otherwise create the sequence. The
--- only other creator is dba_seq_check_native(), and after_migration() calls it AFTER the whole
--- batch, i.e. after this script. So on any fresh apply where 5820400 and this script run in one
--- batch (CI, deep_tundra_release, a customer instance) the sequence does not exist yet and the
--- INSERT below fails with 'relation "m_delivery_planning_alloc_seq" does not exist' -- observed
--- on https://github.com/metasfresh/metasfresh/actions/runs/33040774597. A dev stack hides this,
--- because an app-server boot created the sequence at some point after 5820400 landed.
---
--- Calling it explicitly for this one table is the established pattern (e.g. 5801580 for
--- M_Product_ASI_Data). It is a check-and-create, so it is a no-op where the sequence exists.
+-- M_Delivery_Planning_Alloc was created by a raw INSERT INTO AD_Table, which never runs
+-- MTable.afterSave(); the only other creator, dba_seq_check_native(), is called by after_migration()
+-- AFTER the whole batch. So on a fresh apply the sequence does not exist yet and the INSERT below
+-- fails with 'relation "m_delivery_planning_alloc_seq" does not exist'. Calling it explicitly for one
+-- table is the established pattern; it is a check-and-create, so a no-op where the sequence exists.
 -- ===========================================================================================
 SELECT public.dba_seq_check_native('M_Delivery_Planning_Alloc');
 
 -- ===========================================================================================
--- Step 3 (§3b.3): backfill one allocation per planning-side link, reusing the instruction's
--- existing M_ShippingPackage (resolved via the order line AND the instruction, see the amended
--- decision above).
+-- Backfill one allocation per planning-side link, reusing the instruction's
+-- existing M_ShippingPackage.
 -- ===========================================================================================
 INSERT INTO M_Delivery_Planning_Alloc (
     M_Delivery_Planning_Alloc_ID,
@@ -328,40 +197,3 @@ WHERE dp.M_ShipperTransportation_ID > 0
         AND existing.IsActive = 'Y'
   )
 ;
-
--- ===========================================================================================
--- Step 7 (§3b.3): verification -- run by hand after applying.
--- ===========================================================================================
--- (a) allocation count equals the pre-migration planning-side link count (expect 8):
---     SELECT count(*) FROM M_Delivery_Planning_Alloc;
--- (b) no M_Delivery_Planning with a non-zero M_ShipperTransportation_ID lacks an active
---     allocation (on a non-voided instruction; expect 0):
---     SELECT count(*)
---       FROM M_Delivery_Planning dp
---       JOIN M_ShipperTransportation st ON st.M_ShipperTransportation_ID = dp.M_ShipperTransportation_ID
---      WHERE dp.M_ShipperTransportation_ID > 0
---        AND st.DocStatus <> 'VO'
---        AND NOT EXISTS (SELECT 1 FROM M_Delivery_Planning_Alloc a
---                          WHERE a.M_Delivery_Planning_ID = dp.M_Delivery_Planning_ID AND a.IsActive='Y');
--- (c) no duplicate active M_Delivery_Planning_ID / M_ShippingPackage_ID among allocations
---     (both partial unique indexes satisfied by construction; expect 0 rows each):
---     SELECT M_Delivery_Planning_ID, count(*) FROM M_Delivery_Planning_Alloc WHERE IsActive='Y'
---       GROUP BY M_Delivery_Planning_ID HAVING count(*) > 1;
---     SELECT M_ShippingPackage_ID, count(*) FROM M_Delivery_Planning_Alloc WHERE IsActive='Y'
---       GROUP BY M_ShippingPackage_ID HAVING count(*) > 1;
--- (d) every allocation's AD_Org_ID/AD_Client_ID equals its instruction's (expect 0):
---     SELECT count(*) FROM M_Delivery_Planning_Alloc a
---       JOIN M_ShipperTransportation st ON st.M_ShipperTransportation_ID = a.M_ShipperTransportation_ID
---      WHERE a.AD_Org_ID <> st.AD_Org_ID OR a.AD_Client_ID <> st.AD_Client_ID;
--- (e) LineNo is non-zero and matches the Java's numbering for a single-member instruction
---     (expect 8, all =10, and 0 for the "<>10" count):
---     SELECT count(*), count(*) FILTER (WHERE LineNo = 0) FROM M_Delivery_Planning_Alloc;
---     SELECT count(*) FROM M_Delivery_Planning_Alloc WHERE LineNo <> 10;
--- (f) every allocation's package belongs to the SAME instruction as the allocation itself.
---     This is the property that was silently violated before the instruction conjunct was
---     added, and it is now guaranteed by construction -- which is exactly why it is verified
---     here rather than assumed. Expect 0:
---
---     SELECT count(*) FROM M_Delivery_Planning_Alloc a
---       JOIN M_ShippingPackage sp ON sp.M_ShippingPackage_ID = a.M_ShippingPackage_ID
---      WHERE sp.M_ShipperTransportation_ID <> a.M_ShipperTransportation_ID;

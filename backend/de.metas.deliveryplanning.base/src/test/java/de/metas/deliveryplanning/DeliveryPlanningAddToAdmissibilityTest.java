@@ -63,20 +63,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * That "Add to Delivery Instruction" cannot build, one selection at a time, an instruction that
  * "Combine into one Delivery Instruction" would have refused outright.
  * <p>
- * The two actions write the SAME document, so they have to answer to the same rule: the delivery-instruction
- * header holds ONE forwarder, ONE incoterm, ONE incoterm location, ONE means of transportation and ONE loading
- * and delivery address, and every planning under it has to be the cargo those describe. Combine judges the
- * selection because that is all it puts on the new document; add-to has to judge the selection TOGETHER WITH what
- * the target already holds, because that is what the document ends up holding.
- * <p>
- * Everything here runs through the real service and the real repository over the unit-test in-memory store, and
- * the target instruction is built by {@code combine} rather than assembled by hand - the defect these tests pin
- * is reachable exactly because {@code combine} leaves a draft behind and extending that draft is what add-to is
- * for.
+ * The two actions write the SAME document, so they answer to the same rule: the header holds ONE forwarder,
+ * ONE incoterm, ONE incoterm location, ONE means of transportation and ONE loading and delivery address, so
+ * add-to must judge the selection TOGETHER WITH what the target already holds.
  */
 class DeliveryPlanningAddToAdmissibilityTest
 {
-	/** Only ever read back as a {@code ProductId}: the planning carries its own UOM, so no product record is needed. */
 	private static final int PRODUCT_ID = 540010;
 
 	/** Two forwarders, so a selection can differ from the target in the forwarder and in nothing else. */
@@ -100,8 +92,6 @@ class DeliveryPlanningAddToAdmissibilityTest
 	{
 		AdempiereTestHelper.get().init();
 
-		// combine notifies the user who created the instruction: without a logged user the producer cannot name a
-		// recipient, and the real INotificationBL cannot be built here at all (its repository is a Spring bean)
 		Env.setLoggedUserId(Env.getCtx(), UserId.METASFRESH);
 		Services.registerService(INotificationBL.class, Mockito.mock(INotificationBL.class));
 
@@ -122,11 +112,7 @@ class DeliveryPlanningAddToAdmissibilityTest
 
 	// ------------------------------------------------------------------ helpers
 
-	/**
-	 * A planning a delivery instruction can be built from: it names the forwarder the header cannot exist without,
-	 * and the two records an {@code Outgoing} planning reads its loading and delivery address from. Every planning
-	 * of these tests shares all of them except the forwarder, which is the parameter.
-	 */
+	/** A planning a delivery instruction can be built from; every planning here shares all its fields except the forwarder, which is the parameter. */
 	private I_M_Delivery_Planning deliveryPlanning(final int shipperId)
 	{
 		final I_M_Delivery_Planning record = InterfaceWrapperHelper.newInstance(I_M_Delivery_Planning.class);
@@ -179,10 +165,6 @@ class DeliveryPlanningAddToAdmissibilityTest
 		InterfaceWrapperHelper.save(docType);
 	}
 
-	/**
-	 * The selection the process would hand over. {@code extractDeliveryPlannings} is the one seam stubbed here -
-	 * the selection itself is a WebUI-side artefact, and a fresh iterator per call is what a re-query would give.
-	 */
 	private IQueryFilter<I_M_Delivery_Planning> selectionOf(@NonNull final List<I_M_Delivery_Planning> records)
 	{
 		@SuppressWarnings("unchecked") final IQueryFilter<I_M_Delivery_Planning> filter = Mockito.mock(IQueryFilter.class);
@@ -194,10 +176,8 @@ class DeliveryPlanningAddToAdmissibilityTest
 	/**
 	 * Combines the given plannings into ONE draft delivery instruction, and returns it.
 	 * <p>
-	 * The {@code DocStatus} is stamped here because the in-memory store applies no DB column defaults, and
-	 * {@code M_ShipperTransportation.DocStatus} is {@code NOT NULL DEFAULT 'DR'} - so on a real database the
-	 * instruction {@code combine} creates IS a draft, and without this the target-side rule would refuse every
-	 * add-to here for a reason these tests are not about.
+	 * The {@code DocStatus} is stamped explicitly: the in-memory store applies no column defaults, and a
+	 * non-draft target would be refused for a reason these tests are not about.
 	 */
 	private ShipperTransportationId combineIntoDraftInstruction(@NonNull final List<I_M_Delivery_Planning> records)
 	{
@@ -220,11 +200,6 @@ class DeliveryPlanningAddToAdmissibilityTest
 		return InterfaceWrapperHelper.load(idOf(record), I_M_Delivery_Planning.class);
 	}
 
-	/**
-	 * The rejection add-to gives for this selection and target, rendered as text. In unit-test mode {@code IMsgBL}
-	 * renders an AD_Message as its key followed by its parameters, so the text shows WHICH message was chosen and
-	 * which fields it names, without any AD_Message row having to exist.
-	 */
 	private String addToRejectionTextOf(
 			@NonNull final IQueryFilter<I_M_Delivery_Planning> selection,
 			@NonNull final ShipperTransportationId target)
@@ -305,11 +280,6 @@ class DeliveryPlanningAddToAdmissibilityTest
 				.isEqualTo(target.getRepoId());
 	}
 
-	/**
-	 * Moved off add-to when the two verbs were split: a planning the target already holds IS allocated, so add-to
-	 * now refuses it outright and only move-to can be handed such a selection. The rule being pinned - that the
-	 * planning is counted ONCE and so never reported as differing from itself - is unchanged.
-	 */
 	@Test
 	@DisplayName("move to of a planning the target already holds is a no-op, not a mismatch with itself")
 	void moveTo_alreadyOnTheTargetIsIdempotent()

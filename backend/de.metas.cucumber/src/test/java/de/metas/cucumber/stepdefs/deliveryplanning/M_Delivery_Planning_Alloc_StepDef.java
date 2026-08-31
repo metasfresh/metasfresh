@@ -48,10 +48,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Asserts the {@code M_Delivery_Planning_Alloc} rows that link a delivery planning to the delivery instruction
  * it is booked on - the record aggregation is actually made of, as opposed to the denormalised
  * {@code M_Delivery_Planning.M_ShipperTransportation_ID} mirror that
- * {@link M_Delivery_Planning_StepDef} validates.
- * <p>
- * Two questions, two steps: what an instruction holds NOW (active rows, in {@code LineNo} order), and what one
- * named planning/instruction pair looks like - including a RETIRED ({@code IsActive='N'}) row, which is how the
+ * {@link M_Delivery_Planning_StepDef} validates. A row can be RETIRED ({@code IsActive='N'}), which is how the
  * re-booking trail survives a move, a removal or a void.
  */
 @RequiredArgsConstructor
@@ -66,9 +63,8 @@ public class M_Delivery_Planning_Alloc_StepDef
 
 	/**
 	 * Asserts the COMPLETE set of active allocations of one delivery instruction, in {@code LineNo} order: the
-	 * given rows and nothing else. Together with the per-row assertions this is what tells an aggregation of N
-	 * plannings apart from N separate instructions - a row count, a distinct {@code LineNo} and its OWN shipping
-	 * package per planning, all under one instruction.
+	 * given rows and nothing else - a row count, a distinct {@code LineNo} and its OWN shipping package per
+	 * planning, all under one instruction.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -125,8 +121,7 @@ public class M_Delivery_Planning_Alloc_StepDef
 					.as("%s of the shipping package of allocation #%s", I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID, allocationIndex)
 					.isEqualTo(deliveryInstruction.getM_ShipperTransportation_ID());
 
-			// the package carries THIS planning's load, which is what tells a correct pairing apart from one that
-			// puts the right number of packages under the instruction against the wrong plannings
+			// the package carries THIS planning's load, not another planning's
 			row.getAsOptionalBigDecimal(I_M_ShippingPackage.COLUMNNAME_ActualLoadQty)
 					.ifPresent(actualLoadQty -> softly.assertThat(shippingPackage.getActualLoadQty())
 							.as("%s of the shipping package of allocation #%s", I_M_ShippingPackage.COLUMNNAME_ActualLoadQty, allocationIndex)
@@ -140,8 +135,7 @@ public class M_Delivery_Planning_Alloc_StepDef
 
 		softly.assertAll();
 
-		// no two plannings share one package - the defect that makes an aggregated instruction print one
-		// planning's quantities against another planning's line
+		// no two plannings share one package
 		assertThat(allocRecords.stream().map(I_M_Delivery_Planning_Alloc::getM_ShippingPackage_ID).distinct().count())
 				.as("distinct %s across the allocations of M_ShipperTransportation %s", I_M_Delivery_Planning_Alloc.COLUMNNAME_M_ShippingPackage_ID, deliveryInstructionIdentifier)
 				.isEqualTo(allocRecords.size());

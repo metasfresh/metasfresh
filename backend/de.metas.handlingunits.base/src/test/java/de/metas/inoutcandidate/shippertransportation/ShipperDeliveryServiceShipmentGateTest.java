@@ -145,9 +145,8 @@ class ShipperDeliveryServiceShipmentGateTest
 	// ---- helpers ----
 
 	/**
-	 * Sets up a minimal {@link I_M_InOut} with the given SOTrx/movement-type combination and stubs
-	 * all necessary DAO calls, including a shipper set on the document (so the shipper-presence gate
-	 * always passes and only the shipment-gate under test decides the outcome).
+	 * Sets up a minimal {@link I_M_InOut} with the given SOTrx/movement-type combination and stubs the DAO calls,
+	 * with a shipper set on the document so that only the shipment gate under test decides the outcome.
 	 */
 	private void setupShipment(final boolean isSOTrx, final String movementType, final boolean isReturn)
 	{

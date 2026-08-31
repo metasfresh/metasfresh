@@ -57,15 +57,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * What completing a delivery instruction costs, and what it refuses.
  * <p>
- * Both rules read the instruction's allocated plannings, so both are exercised here against a REAL
- * {@link DeliveryPlanningRepository} SPIED on the unit-test in-memory store, the same setup as
- * {@link DeliveryPlanningBatchLoadingTest} - so the batch-versus-per-row call pattern stays countable
- * while the loads actually happen.
- * <p>
- * A transport order shares {@code M_ShipperTransportation} with a delivery instruction and must be
- * unaffected by both rules, so it is exercised here the same way any delivery instruction with zero
- * allocations is: the repository never even reaches for the batch load, which
- * {@code Mockito.verify(..., never())} proves rather than merely assumes.
+ * A transport order shares {@code M_ShipperTransportation} with a delivery instruction and must be unaffected
+ * by both rules; it behaves here exactly like a delivery instruction with zero allocations.
  */
 class DeliveryPlanningCompletionCascadeTest
 {
@@ -114,9 +107,8 @@ class DeliveryPlanningCompletionCascadeTest
 	}
 
 	/**
-	 * Same table, distinguished only by the {@code C_DocType.DocSubType} - the {@code DocSubType} mechanism
-	 * ({@link de.metas.shipping.ShipperTransportationDocSubTypeGuard}) and reused here, per the fix for this
-	 * finding: never re-derive "is this a delivery instruction" from direction, {@code IsSOTrx}, or allocations.
+	 * Same table, distinguished only by the {@code C_DocType.DocSubType}: never re-derive "is this a delivery
+	 * instruction" from direction, {@code IsSOTrx} or allocations.
 	 */
 	private ShipperTransportationId createInstructionWithDocSubType(@Nullable final String docSubType)
 	{
@@ -272,10 +264,7 @@ class DeliveryPlanningCompletionCascadeTest
 
 		deliveryPlanningService.invalidateInvoiceCandidatesFor(deliveryInstructionId);
 
-		// exactly ONE batch load for all three allocated plannings - not a per-planning loop, which is the
-		// defect this test pins: updateDeliveryPlanning used to read only the legacy single M_Delivery_Planning_ID
-		// header FK, so on an aggregated instruction every other allocated planning's invoice candidates were
-		// silently never invalidated
+		// exactly ONE batch load for all three allocated plannings - not a per-planning loop
 		Mockito.verify(deliveryPlanningRepository, Mockito.times(1)).getByIds(Mockito.any());
 		Mockito.verify(deliveryPlanningRepository, Mockito.never()).getById(Mockito.any());
 	}
@@ -309,9 +298,8 @@ class DeliveryPlanningCompletionCascadeTest
 		// invoice-candidate side effect defers to after-commit; a re-query of "active" allocations at that
 		// later point would see none left and silently invalidate nothing, so the ids must be resolved
 		// BEFORE the deactivation and carried into the deferred batch load, not re-derived after it.
-		// TWO calls over the same 2 ids are genuinely expected here: the deactivation itself resets those
-		// plannings' dates (one batch load), and the deferred invalidation reads them again afterwards (a
-		// second, unrelated batch load) - both are single round trips for the whole set, never one per row
+		// TWO calls over the same 2 ids are expected: the deactivation resets those plannings' dates (one batch
+		// load), and the deferred invalidation reads them again afterwards (a second, unrelated batch load)
 		Mockito.verify(deliveryPlanningRepository, Mockito.times(2))
 				.getByIds(Mockito.argThat(ids -> ((java.util.Collection<?>) ids).size() == 2));
 	}

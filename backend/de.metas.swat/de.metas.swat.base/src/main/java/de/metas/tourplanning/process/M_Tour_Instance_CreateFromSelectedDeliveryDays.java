@@ -233,9 +233,8 @@ public class M_Tour_Instance_CreateFromSelectedDeliveryDays extends JavaProcess
 
 		final I_M_ShipperTransportation shipperTransportation = InterfaceWrapperHelper.newInstance(I_M_ShipperTransportation.class, this);
 		shipperTransportation.setDateDoc(tourInstance.getDeliveryDate());
-		// derived from the delivery day that seeds this tour instance: IsToBeFetched=Y means the material is
-		// fetched from a vendor (Incoming), IsToBeFetched=N means it is delivered to a customer (Outgoing) - see
-		// IDeliveryDayAllocable#isToBeFetched(). Never defaulted here or by the column.
+		// derived from the delivery day: IsToBeFetched=Y means the material is fetched from a vendor (Incoming),
+		// IsToBeFetched=N means it is delivered to a customer (Outgoing)
 		shipperTransportation.setTransportDirection((deliveryDay.isToBeFetched()
 				? TransportDirection.Incoming
 				: TransportDirection.Outgoing).getCode());

@@ -36,15 +36,8 @@ import javax.annotation.Nullable;
  * {@code M_ShipperTransportation.TransportDirection} (this module) and
  * {@code M_Delivery_Planning.TransportDirection} ({@code de.metas.deliveryplanning.base}).
  * <p>
- * It lives in {@code de.metas.business} because that is the lowest module both owners can reach:
- * {@code de.metas.deliveryplanning.base} -> {@code de.metas.handlingunits.base} -> {@code de.metas.business}.
- * Keeping it here is what lets both sides pass the direction as a type instead of a raw
- * {@code X_*.TRANSPORTDIRECTION_*} string or - worse - an {@code isSOTrx} boolean, which cannot express
- * {@link #Dropship} at all.
- * <p>
- * Both columns are backed by the SAME {@code AD_Reference_Value_ID = 541689}, so the codes below are
- * valid for either table; {@code X_M_ShipperTransportation} is referenced simply because that is this
- * module's own generated model.
+ * Both columns are backed by the same {@code AD_Reference_Value_ID}, so the codes taken from
+ * {@code X_M_ShipperTransportation} below are valid for either table.
  */
 public enum TransportDirection implements ReferenceListAwareEnum
 {
@@ -68,13 +61,9 @@ public enum TransportDirection implements ReferenceListAwareEnum
 	}
 
 	/**
-	 * The direction of a transport that exists to move ONE document whose sales-vs-purchase nature is
-	 * already settled: a sales transaction ships {@link #Outgoing}, a purchase transaction is
-	 * {@link #Incoming}.
-	 * <p>
-	 * Deliberately NOT the general way to obtain a direction: {@link SOTrx} has two values and this type
-	 * has three, so {@link #Dropship} is unreachable through here. A caller whose document CAN be a
-	 * dropship must decide the direction itself and pass it, rather than reach for this method.
+	 * The direction of a transport moving ONE document whose sales-vs-purchase nature is already settled: a sales
+	 * transaction ships {@link #Outgoing}, a purchase transaction is {@link #Incoming}. Cannot yield
+	 * {@link #Dropship}; a caller whose document can be a dropship must decide the direction itself.
 	 */
 	public static TransportDirection ofSOTrx(@NonNull final SOTrx soTrx)
 	{
@@ -116,9 +105,8 @@ public enum TransportDirection implements ReferenceListAwareEnum
 	}
 
 	/**
-	 * STRICTLY {@link #Outgoing} - deliberately NOT the same partition as {@link #hasShipment()}, which is also
-	 * true for {@link #Dropship}. Callers that must treat a dropship as a purchase-side transport (its goods never
-	 * leave our own warehouse, because they never enter it) need this one.
+	 * STRICTLY {@link #Outgoing}: unlike {@link #hasShipment()}, false for {@link #Dropship}, whose goods never
+	 * leave our own warehouse because they never enter it.
 	 */
 	public boolean isOutgoing()
 	{

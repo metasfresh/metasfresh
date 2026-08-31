@@ -48,23 +48,15 @@ import java.util.stream.Collector;
 import java.util.stream.Stream;
 
 /**
- * An immutable selection of delivery plannings, loaded ONCE per invocation, with every selection predicate
- * the aggregation processes ask about answered against that in-memory list instead of its own query.
- * <p>
- * The predicates return WHICH rows are the odd ones out, not just how many - that is what the rejection
- * message, the grid highlight and the {@code doIt} assertion all need.
+ * An immutable selection of delivery plannings, loaded once per invocation, with every selection predicate the
+ * aggregation processes ask about answered against that in-memory list rather than its own query. The predicates
+ * return WHICH rows are the odd ones out, not just how many.
  */
 @EqualsAndHashCode
 @ToString
 public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 {
-	/**
-	 * Earliest planned departure first, the delivery planning id as the tie-break.
-	 * <p>
-	 * A planning without an ETD sorts last: it has no place in a departure order, and parking it behind the
-	 * dated ones keeps the result reproducible rather than dependent on the query's encounter order - which is
-	 * the whole point of sorting here.
-	 */
+	/** Earliest planned departure first, planning id as tie-break; a planning without an ETD sorts last. */
 	private static final Comparator<DeliveryPlanning> ALLOCATION_ORDER = Comparator
 			.comparing(DeliveryPlanning::getEtd, Comparator.nullsLast(Comparator.<Instant>naturalOrder()))
 			.thenComparingInt(deliveryPlanning -> deliveryPlanning.getId().getRepoId());
@@ -106,11 +98,8 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	public @NonNull Iterator<DeliveryPlanning> iterator() {return list.iterator();}
 
 	/**
-	 * The ids in the order the plannings of one delivery instruction have to be allocated - and therefore
-	 * numbered - in: earliest ETD, then planning id. The same selection always yields the same {@code LineNo}
-	 * per planning, which the encounter order of a query would not.
-	 *
-	 * @see DeliveryPlanningRepository#createAllocations(de.metas.shipping.model.ShipperTransportationId, java.util.List)
+	 * The ids in the order the plannings of one delivery instruction are allocated - and therefore numbered - in,
+	 * so the same selection always yields the same {@code LineNo} per planning.
 	 */
 	public ImmutableList<DeliveryPlanningId> getIdsInAllocationOrder()
 	{
@@ -118,12 +107,9 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	}
 
 	/**
-	 * The one transport direction the whole selection shares, or empty when it spans more than one (and for an
-	 * empty selection).
-	 * <p>
-	 * The same fact as the {@link AggregationKeyField#Direction} mismatch, but as a value rather than a flag:
-	 * the add-to target picker correlates its list on the direction, so it needs the value itself, and the
-	 * rejection needs to know when there is none to correlate on.
+	 * The one transport direction the whole selection shares, or empty when it spans more than one or is empty -
+	 * the {@link AggregationKeyField#Direction} mismatch as a value rather than a flag, for callers that have to
+	 * correlate on the direction itself.
 	 */
 	public Optional<TransportDirection> getSingleType()
 	{
@@ -150,8 +136,8 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	public DeliveryPlanningList allocatedOnes() {return filter(DeliveryPlanning::isAllocated);}
 
 	/**
-	 * The complement of {@link #allocatedOnes()} - what Move to a delivery instruction refuses, exactly as Add to
-	 * refuses the allocated ones, so the two actions' preconditions partition every selection between them.
+	 * The complement of {@link #allocatedOnes()}: what Move refuses, as Add refuses the allocated ones, so the two
+	 * actions' preconditions partition every selection between them.
 	 */
 	public DeliveryPlanningList unallocatedOnes() {return filter(deliveryPlanning -> !deliveryPlanning.isAllocated());}
 
@@ -163,13 +149,10 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	}
 
 	/**
-	 * This list and the given one as ONE list, so a rule that asks what a delivery instruction would hold after a
-	 * move can be answered against what it holds now TOGETHER WITH what is being put on it.
-	 * <p>
-	 * A planning that is in both is carried ONCE, keyed on its id. That is what makes adding a planning the target
-	 * already holds a no-op rather than a self-mismatch: two copies of the same row would otherwise be two entries
-	 * that {@link #aggregationKeyViolations()} compares - and although they agree on every field today, the
-	 * de-duplication is what makes that a property of the list rather than a coincidence of the comparison.
+	 * This list and the given one as ONE list, so a rule about what a delivery instruction would hold after a move
+	 * can be answered against what it holds now together with what is being put on it. A planning in both is
+	 * carried once, keyed on its id, which is what makes re-adding a planning the target already holds a no-op
+	 * rather than a self-mismatch in {@link #aggregationKeyViolations()}.
 	 */
 	public DeliveryPlanningList union(@NonNull final DeliveryPlanningList other)
 	{
@@ -196,11 +179,8 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	}
 
 	/**
-	 * Every field on which this selection disagrees, so one message can name them all at once instead of
-	 * reporting one field at a time. Empty means the selection can share a single delivery instruction.
-	 * <p>
-	 * The result is ordered by {@link AggregationKeyField} declaration order, so the message reads the same way
-	 * every time.
+	 * Every field on which this selection disagrees, so one message can name them all at once. Empty means the
+	 * selection can share a single delivery instruction. Ordered by {@link AggregationKeyField} declaration order.
 	 */
 	public ImmutableSet<AggregationKeyField> aggregationKeyViolations()
 	{
@@ -227,9 +207,8 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	}
 
 	/**
-	 * Everything the delivery-instruction header can hold only one of, and which therefore has to match across
-	 * the whole selection. Derived from the header columns the generation writes, so a column the header holds
-	 * once joins the rule by construction.
+	 * Everything the delivery-instruction header can hold only one of, and which therefore has to match across the
+	 * whole selection.
 	 */
 	public enum AggregationKeyField
 	{
@@ -247,12 +226,9 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 		private final Function<DeliveryPlanning, Object> valueExtractor;
 
 		/**
-		 * How this field is named in the message that rejects an inadmissible selection. Carried on the enum
-		 * constant rather than in a lookup table beside it, so a field can never be added without a label and
-		 * then silently drop out of a message whose whole job is to name every field at once.
-		 * <p>
-		 * The suffix is spelled out instead of taken from {@link #name()} on purpose: the key is an
-		 * {@code AD_Message.Value} living in the database, so renaming a constant here must not move it.
+		 * How this field is named in the rejection message. Carried on the enum constant so a field cannot be added
+		 * without a label. The suffix is spelled out rather than taken from {@link #name()} because the key is an
+		 * {@code AD_Message.Value} in the database, so renaming a constant must not move it.
 		 */
 		private final AdMessageKey label;
 

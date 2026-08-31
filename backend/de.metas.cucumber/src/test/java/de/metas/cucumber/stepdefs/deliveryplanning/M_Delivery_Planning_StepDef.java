@@ -77,10 +77,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Loads, deletes, updates and validates {@code M_Delivery_Planning} records, and drives the
  * close/reopen/cancel document actions.
- * <p>
- * Generating / regenerating the delivery instruction ({@code M_ShipperTransportation}) for a
- * planning is handled by {@link M_Delivery_Instruction_StepDef}, which shares the same
- * {@link M_Delivery_Planning_StepDefData} instance (injected by PicoContainer).
  */
 @RequiredArgsConstructor
 public class M_Delivery_Planning_StepDef
@@ -171,16 +167,9 @@ public class M_Delivery_Planning_StepDef
 	}
 
 	/**
-	 * Deletes the given delivery planning for real, via {@link InterfaceWrapperHelper#delete(Object)}, so the
-	 * whole registered interceptor chain runs exactly as it does in production - rather than calling one
-	 * validation method and calling that a delete.
-	 * <p>
-	 * Deletes as a MANUAL USER ACTION by default, because that is the delete an operator performs from the
-	 * Delivery Planning window and the one these scenarios were written against.
-	 * {@code M_Delivery_Planning.onDelete} runs the "at least one planning per order line" rule only for a UI
-	 * action - a schedule-driven cleanup of every planning on a schedule must not have to obey it - so a
-	 * programmatic delete here would silently skip that rule and make any scenario asserting it unreachable.
-	 * Pass {@code OPT.IsUIAction=false} to exercise the programmatic path instead.
+	 * Deletes the given delivery planning via {@link InterfaceWrapperHelper#delete(Object)}, so the whole
+	 * registered interceptor chain runs as it does in production. Deletes as a MANUAL USER ACTION by default,
+	 * because only a UI action triggers the "at least one planning per order line" rule.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -375,8 +364,8 @@ public class M_Delivery_Planning_StepDef
 
 	/**
 	 * Drives the close / re-open / cancel processes over the given selection, which - like the WebUI grid they are
-	 * launched from - may name SEVERAL plannings, comma-separated. That is what the processes act on: ONE selection,
-	 * evaluated per row, so a rejected or skipped planning does not decide the fate of the others.
+	 * launched from - may name SEVERAL plannings, comma-separated. The selection is evaluated per row, so a
+	 * rejected or skipped planning does not decide the fate of the others.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.depends StepDefData: M_Delivery_Planning_StepDefData
@@ -476,13 +465,9 @@ public class M_Delivery_Planning_StepDef
 
 	/**
 	 * Asserts that each of the given plannings carries its OWN release number, stamped from the delivery
-	 * instruction it now sits on - the third thing an aggregation owes each planning, next to its own allocation
-	 * and its own shipping package.
-	 * <p>
-	 * The value itself is not asserted verbatim: it is built from the instruction's {@code DocumentNo}, the
-	 * planning's id and the instruction's creation MINUTE, so a literal expectation in a feature file would be a
-	 * clock-dependent assertion. What is asserted is what the requirement is about - present, naming that
-	 * instruction, and different for every planning.
+	 * instruction it now sits on. The value is built from the instruction's {@code DocumentNo}, the planning's id
+	 * and the instruction's creation MINUTE, so it is asserted by relationship - present, naming that instruction,
+	 * different for every planning - rather than by literal.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -552,14 +537,10 @@ public class M_Delivery_Planning_StepDef
 	}
 
 	/**
-	 * Asserts that each of the given plannings carries the delivery instruction's OWN date fields - which is what
-	 * "the instruction owns the dates while the planning is allocated to it" means in the data: on the initial
-	 * stamp and on every later change of the instruction alike, one-way, instruction to planning.
-	 * <p>
-	 * A relationship rather than literals, deliberately: the instruction's departure date is derived from the
-	 * seeding order's {@code PreparationDate}, so pinning it as a literal in a feature file would assert the
-	 * derivation instead of the sync. Where a date IS literal-knowable (an arrival date taken from the order
-	 * line's {@code DatePromised}), the scenario pins it with {@code validate M_Delivery_Planning:} as well.
+	 * Asserts that each of the given plannings carries the delivery instruction's OWN date fields: the instruction
+	 * owns the dates while the planning is allocated to it, one-way, on the initial stamp and on every later change
+	 * alike. Asserted as a relationship, not as literals - the instruction's departure date is derived from the
+	 * seeding order's {@code PreparationDate}, so a literal would assert the derivation instead of the sync.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns

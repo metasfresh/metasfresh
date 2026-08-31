@@ -48,9 +48,8 @@ class TransportDirectionTest
 	}
 
 	/**
-	 * One enum now serves both tables, so the two generated constant sets must stay identical. They are
-	 * generated from the same {@code AD_Reference_Value_ID=541689}; this pins that, so a future migration
-	 * that changes only one of them fails here instead of silently splitting the domain in two.
+	 * One enum serves both tables, so the two generated constant sets must stay identical: a migration that
+	 * changes only one of them must fail here rather than split the domain in two.
 	 */
 	@Test
 	void bothGeneratedModelsCarryTheSameCodes()

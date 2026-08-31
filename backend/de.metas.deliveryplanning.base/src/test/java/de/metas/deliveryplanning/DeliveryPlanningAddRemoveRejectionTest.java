@@ -52,15 +52,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Whether a selection may be added to / moved to / removed from a delivery instruction, and - when it may not -
  * WHICH single reason the planner is given.
- * <p>
- * Four of these are the acceptance criteria themselves rather than incidental cases: a planning on a COMPLETED
- * instruction is refused outright by all three actions, a CLOSED planning is refused by add-to and move-to but
- * explicitly ALLOWED by remove-from, a selection spanning two directions is refused because the target picker
- * correlates on exactly one, and add-to and move-to refuse each other's selections - the allocated rows and the
- * unallocated ones - so the planner is offered exactly one of the two.
- * <p>
- * The repository is real, over the unit-test in-memory store, because the completed-instruction rule is decided by
- * the instruction's own {@code DocStatus} - mocking that away would test the wiring and not the rule.
  */
 class DeliveryPlanningAddRemoveRejectionTest
 {
@@ -102,11 +93,6 @@ class DeliveryPlanningAddRemoveRejectionTest
 		return ShipperTransportationId.ofRepoId(record.getM_ShipperTransportation_ID());
 	}
 
-	/**
-	 * The rejection rendered as text. In unit-test mode {@code IMsgBL} renders an AD_Message as its key followed
-	 * by its parameters, so the rendered text is exactly what lets an assertion see WHICH message was chosen AND
-	 * which items it names, without any AD_Message row having to exist.
-	 */
 	private static String textOf(@NonNull final Optional<ITranslatableString> reason)
 	{
 		assertThat(reason).as("a rejection reason").isPresent();
@@ -274,9 +260,8 @@ class DeliveryPlanningAddRemoveRejectionTest
 	}
 
 	/**
-	 * The case the DB still forbids and the list shape exists for: a planning on several legs, one of them already
-	 * completed. ANY non-draft instruction refuses - the completed leg cannot be altered, so the action cannot be
-	 * performed for this planning at all, and partially performing it is exactly what these rules refuse.
+	 * A planning on several legs, one of them already completed: ANY non-draft instruction refuses - the completed
+	 * leg cannot be altered, and partially performing the action is exactly what these rules refuse.
 	 */
 	@Test
 	@DisplayName("remove from: a planning on a draft AND a completed instruction is refused - ANY non-draft leg forbids")

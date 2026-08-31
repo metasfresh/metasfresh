@@ -42,14 +42,7 @@ public class M_Delivery_Planning
 	private final DeliveryPlanningService deliveryPlanningService;
 
 	/**
-	 * The currently-allocated guard runs for EVERY delete, UI-triggered or not, and the retired-history cleanup
-	 * that follows it is the reason {@code M_Delivery_Planning_Alloc}'s FKs can stay plain {@code NO ACTION}:
-	 * splitting live bookings from retired history is a decision only application code can make - a database
-	 * cascade sees one undifferentiated set of child rows and would erase an ACTIVE allocation exactly as
-	 * readily as a retired one, with nowhere to put the check. So the refusal and the cleanup live here,
-	 * together, in that order. The rest of {@code validateDeletion}
-	 * (the "at least one planning per order line" rule) stays UI-only - it is a single-record safeguard against an
-	 * operator error, not a rule a schedule-driven cleanup of every planning on that schedule should have to obey.
+	 * Refuses the delete while a live allocation still points here, then removes the retired allocation history.
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void onDelete(@NonNull final I_M_Delivery_Planning deliveryPlanning)
@@ -72,9 +65,7 @@ public class M_Delivery_Planning
 	}
 
 	/**
-	 * Fires only on the transition TO closed (no process, this one included, acts on a planning that is
-	 * already closed) - {@link DeliveryPlanningService#onDeliveryPlanningClosed} either refuses the close outright
-	 * or deactivates the now-closed planning's allocation.
+	 * Fires only on the transition TO closed; an already-closed planning is never acted on again.
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_M_Delivery_Planning.COLUMNNAME_IsClosed)
 	public void onClosedChanged(@NonNull final I_M_Delivery_Planning deliveryPlanning)

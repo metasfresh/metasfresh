@@ -64,13 +64,6 @@ public class CreateShipperTransportationRequest
 	/**
 	 * The direction the created {@code M_ShipperTransportation} gets. Stated by the caller, never derived here:
 	 * only the caller knows whether its document is a receipt, a shipment or a dropship.
-	 * <p>
-	 * Mandatory on purpose, and a three-valued type on purpose. {@code M_ShipperTransportation.TransportDirection}
-	 * has no database default, so no direction is ever invented; a caller that omits this fails loudly in
-	 * {@code build()} rather than being handed one. It used to be an {@code isSOTrx} flag, which made
-	 * {@link TransportDirection#Dropship} unreachable through this request no matter what the caller knew - a
-	 * boolean cannot carry a three-valued domain. Callers whose document genuinely is two-valued map it with
-	 * {@link TransportDirection#ofSOTrx(de.metas.lang.SOTrx)}.
 	 */
 	@NonNull TransportDirection transportDirection;
 }
