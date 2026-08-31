@@ -1,5 +1,6 @@
 package org.adempiere.ad.table.api.impl;
 
+import de.metas.util.Services;
 import org.adempiere.ad.table.api.IReferencedRecordDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -18,7 +19,7 @@ public class ReferencedRecordDAOTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		referencedRecordDAO = new ReferencedRecordDAO();
+		referencedRecordDAO = Services.get(IReferencedRecordDAO.class);
 	}
 
 	@Test
