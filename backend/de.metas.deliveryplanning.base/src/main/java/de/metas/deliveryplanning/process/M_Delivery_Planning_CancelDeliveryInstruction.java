@@ -40,29 +40,43 @@ public class M_Delivery_Planning_CancelDeliveryInstruction extends JavaProcess i
 {
 	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
 
+	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
-		if (context.isNoSelection())
-		{
-			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
-		}
+		return ProcessPreconditionsResolution.firstRejectOrElseAccept(
+				() -> DeliveryPlanningProcessHelper.checkAnySelection(context),
+				() -> checkAnyOpen(context),
+				() -> checkAnyWithReleaseNo(context),
+				() -> checkNoBlockedPartner(context));
+	}
 
-		final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter = context.getQueryFilter(I_M_Delivery_Planning.class);
-
-		final DeliveryPlanningList selectedDeliveryPlannings = deliveryPlanningService.getBySelection(selectedDeliveryPlanningsFilter);
+	private ProcessPreconditionsResolution checkAnyOpen(@NonNull final IProcessPreconditionsContext context)
+	{
+		final DeliveryPlanningList selectedDeliveryPlannings = deliveryPlanningService.getBySelection(context.getQueryFilter(I_M_Delivery_Planning.class));
 
 		if (!selectedDeliveryPlannings.anyOpen())
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(DeliveryPlanningService.MSG_M_Delivery_Planning_AllClosed));
 		}
 
-		final boolean isExistDeliveryPlanningsWithoutReleaseNo = deliveryPlanningService.isExistDeliveryPlanningsWithReleaseNo(selectedDeliveryPlanningsFilter);
-		if (!isExistDeliveryPlanningsWithoutReleaseNo)
+		return ProcessPreconditionsResolution.accept();
+	}
+
+	private ProcessPreconditionsResolution checkAnyWithReleaseNo(@NonNull final IProcessPreconditionsContext context)
+	{
+		final boolean isExistDeliveryPlanningsWithReleaseNo = deliveryPlanningService.isExistDeliveryPlanningsWithReleaseNo(context.getQueryFilter(I_M_Delivery_Planning.class));
+
+		if (!isExistDeliveryPlanningsWithReleaseNo)
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(DeliveryPlanningService.MSG_M_Delivery_Planning_WhithOutReleaseNo));
 		}
 
-		final boolean existsBlockedPartnerDeliveryPlannings = deliveryPlanningService.isExistsBlockedPartnerDeliveryPlannings(selectedDeliveryPlanningsFilter);
+		return ProcessPreconditionsResolution.accept();
+	}
+
+	private ProcessPreconditionsResolution checkNoBlockedPartner(@NonNull final IProcessPreconditionsContext context)
+	{
+		final boolean existsBlockedPartnerDeliveryPlannings = deliveryPlanningService.isExistsBlockedPartnerDeliveryPlannings(context.getQueryFilter(I_M_Delivery_Planning.class));
 
 		if (existsBlockedPartnerDeliveryPlannings)
 		{

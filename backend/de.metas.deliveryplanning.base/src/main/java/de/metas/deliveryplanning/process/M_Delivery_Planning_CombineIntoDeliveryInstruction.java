@@ -67,11 +67,15 @@ public class M_Delivery_Planning_CombineIntoDeliveryInstruction extends JavaProc
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
-		if (context.isNoSelection())
-		{
-			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
-		}
+		return ProcessPreconditionsResolution.firstRejectOrElseAccept(
+				() -> DeliveryPlanningProcessHelper.checkAnySelection(context),
+				() -> checkAtLeastTwoSelected(context),
+				() -> DeliveryPlanningProcessHelper.checkAtMostSelected(context, MAX_SELECTION_SIZE),
+				() -> checkSelectionCanBeCombined(context));
+	}
 
+	private static ProcessPreconditionsResolution checkAtLeastTwoSelected(@NonNull final IProcessPreconditionsContext context)
+	{
 		if (!context.isMoreThanOneSelected())
 		{
 			// hidden rather than shown-and-disabled: at a single row Combine and Generate produce the same
@@ -79,11 +83,11 @@ public class M_Delivery_Planning_CombineIntoDeliveryInstruction extends JavaProc
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Combining needs at least two delivery plannings");
 		}
 
-		if (context.isMoreThanAllowedSelected(MAX_SELECTION_SIZE))
-		{
-			return ProcessPreconditionsResolution.rejectBecauseTooManyRecordsSelected(MAX_SELECTION_SIZE);
-		}
+		return ProcessPreconditionsResolution.accept();
+	}
 
+	private ProcessPreconditionsResolution checkSelectionCanBeCombined(@NonNull final IProcessPreconditionsContext context)
+	{
 		final DeliveryPlanningList selectedDeliveryPlannings = deliveryPlanningService.getBySelection(context.getQueryFilter(I_M_Delivery_Planning.class));
 
 		return deliveryPlanningService.getCombineRejectionReason(selectedDeliveryPlannings)

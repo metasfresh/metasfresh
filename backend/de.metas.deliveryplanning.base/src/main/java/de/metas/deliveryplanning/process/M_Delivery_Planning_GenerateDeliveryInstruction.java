@@ -42,41 +42,62 @@ public class M_Delivery_Planning_GenerateDeliveryInstruction extends JavaProcess
 	@Param(parameterName = "IsComplete")
 	private boolean p_IsComplete;
 
+	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
-		if (context.isNoSelection())
-		{
-			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
-		}
+		return ProcessPreconditionsResolution.firstRejectOrElseAccept(
+				() -> DeliveryPlanningProcessHelper.checkAnySelection(context),
+				() -> checkAllHaveShipper(context),
+				() -> checkAnyOpen(context),
+				() -> checkAnyWithoutReleaseNo(context),
+				() -> checkNoBlockedPartner(context));
+	}
 
-		final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter = context.getQueryFilter(I_M_Delivery_Planning.class);
-
-		final boolean isExistsNoShipperDeliveryPlannings = deliveryPlanningService.isExistsNoShipperDeliveryPlannings(selectedDeliveryPlanningsFilter);
+	private ProcessPreconditionsResolution checkAllHaveShipper(@NonNull final IProcessPreconditionsContext context)
+	{
+		final boolean isExistsNoShipperDeliveryPlannings = deliveryPlanningService.isExistsNoShipperDeliveryPlannings(context.getQueryFilter(I_M_Delivery_Planning.class));
 
 		if (isExistsNoShipperDeliveryPlannings)
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(DeliveryPlanningService.MSG_M_Delivery_Planning_NoForwarder));
 		}
-		final DeliveryPlanningList selectedDeliveryPlannings = deliveryPlanningService.getBySelection(selectedDeliveryPlanningsFilter);
+
+		return ProcessPreconditionsResolution.accept();
+	}
+
+	private ProcessPreconditionsResolution checkAnyOpen(@NonNull final IProcessPreconditionsContext context)
+	{
+		final DeliveryPlanningList selectedDeliveryPlannings = deliveryPlanningService.getBySelection(context.getQueryFilter(I_M_Delivery_Planning.class));
 
 		if (!selectedDeliveryPlannings.anyOpen())
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(DeliveryPlanningService.MSG_M_Delivery_Planning_AllClosed));
 		}
-		final boolean isExistDeliveryPlanningsWithoutReleaseNo = deliveryPlanningService.isExistDeliveryPlanningsWithoutReleaseNo(selectedDeliveryPlanningsFilter);
+
+		return ProcessPreconditionsResolution.accept();
+	}
+
+	private ProcessPreconditionsResolution checkAnyWithoutReleaseNo(@NonNull final IProcessPreconditionsContext context)
+	{
+		final boolean isExistDeliveryPlanningsWithoutReleaseNo = deliveryPlanningService.isExistDeliveryPlanningsWithoutReleaseNo(context.getQueryFilter(I_M_Delivery_Planning.class));
 
 		if (!isExistDeliveryPlanningsWithoutReleaseNo)
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(DeliveryPlanningService.MSG_M_Delivery_Planning_AllHaveReleaseNo));
 		}
 
-		final boolean existsBlockedPartnerDeliveryPlannings = deliveryPlanningService.isExistsBlockedPartnerDeliveryPlannings(selectedDeliveryPlanningsFilter);
+		return ProcessPreconditionsResolution.accept();
+	}
+
+	private ProcessPreconditionsResolution checkNoBlockedPartner(@NonNull final IProcessPreconditionsContext context)
+	{
+		final boolean existsBlockedPartnerDeliveryPlannings = deliveryPlanningService.isExistsBlockedPartnerDeliveryPlannings(context.getQueryFilter(I_M_Delivery_Planning.class));
 
 		if (existsBlockedPartnerDeliveryPlannings)
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(DeliveryPlanningService.MSG_M_Delivery_Planning_BlockedPartner));
 		}
-		
+
 		return ProcessPreconditionsResolution.accept();
 	}
 

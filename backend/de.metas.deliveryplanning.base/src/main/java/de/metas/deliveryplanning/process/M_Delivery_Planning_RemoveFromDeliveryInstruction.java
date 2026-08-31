@@ -52,16 +52,14 @@ public class M_Delivery_Planning_RemoveFromDeliveryInstruction extends JavaProce
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
-		if (context.isNoSelection())
-		{
-			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
-		}
+		return ProcessPreconditionsResolution.firstRejectOrElseAccept(
+				() -> DeliveryPlanningProcessHelper.checkAnySelection(context),
+				() -> DeliveryPlanningProcessHelper.checkAtMostSelected(context, MAX_SELECTION_SIZE),
+				() -> checkSelectionCanBeRemovedFrom(context));
+	}
 
-		if (context.isMoreThanAllowedSelected(MAX_SELECTION_SIZE))
-		{
-			return ProcessPreconditionsResolution.rejectBecauseTooManyRecordsSelected(MAX_SELECTION_SIZE);
-		}
-
+	private ProcessPreconditionsResolution checkSelectionCanBeRemovedFrom(@NonNull final IProcessPreconditionsContext context)
+	{
 		final DeliveryPlanningList selectedDeliveryPlannings = deliveryPlanningService.getBySelection(context.getQueryFilter(I_M_Delivery_Planning.class));
 
 		return deliveryPlanningService.getRemoveFromRejectionReason(selectedDeliveryPlannings)

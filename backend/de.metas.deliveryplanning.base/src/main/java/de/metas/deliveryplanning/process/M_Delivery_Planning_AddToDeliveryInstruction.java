@@ -75,16 +75,14 @@ public class M_Delivery_Planning_AddToDeliveryInstruction extends JavaProcess
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
-		if (context.isNoSelection())
-		{
-			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
-		}
+		return ProcessPreconditionsResolution.firstRejectOrElseAccept(
+				() -> DeliveryPlanningProcessHelper.checkAnySelection(context),
+				() -> DeliveryPlanningProcessHelper.checkAtMostSelected(context, MAX_SELECTION_SIZE),
+				() -> checkSelectionCanBeAddedTo(context));
+	}
 
-		if (context.isMoreThanAllowedSelected(MAX_SELECTION_SIZE))
-		{
-			return ProcessPreconditionsResolution.rejectBecauseTooManyRecordsSelected(MAX_SELECTION_SIZE);
-		}
-
+	private ProcessPreconditionsResolution checkSelectionCanBeAddedTo(@NonNull final IProcessPreconditionsContext context)
+	{
 		final DeliveryPlanningList selectedDeliveryPlannings = deliveryPlanningService.getBySelection(context.getQueryFilter(I_M_Delivery_Planning.class));
 
 		// null target: the parameter dialog has not been shown yet, so only the selection can be judged here
