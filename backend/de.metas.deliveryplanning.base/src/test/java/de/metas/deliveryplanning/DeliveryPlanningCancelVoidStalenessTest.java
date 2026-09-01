@@ -36,6 +36,7 @@ import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -70,7 +71,7 @@ class DeliveryPlanningCancelVoidStalenessTest
 	private static final int BPARTNER_ID = 540020;
 	private static final int BPARTNER_LOCATION_ID = 540021;
 
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private DeliveryPlanningRepository deliveryPlanningRepository;
 	private DeliveryPlanningService deliveryPlanningService;

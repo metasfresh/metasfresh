@@ -14,6 +14,7 @@ import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 
 import java.util.List;
@@ -22,7 +23,7 @@ public class M_ShipperTransportation_AddShipments extends JavaProcess implements
 {
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
-	private final ShipperTransportationDocSubTypeGuard docSubTypeGuard = SpringContextHolder.instance.getBean(ShipperTransportationDocSubTypeGuard.class);
+	@NonNull private final ShipperTransportationDocSubTypeGuard docSubTypeGuard = SpringContextHolder.instance.getBean(ShipperTransportationDocSubTypeGuard.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)

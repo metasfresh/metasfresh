@@ -68,7 +68,7 @@ class DeliveryPlanningClosedInterceptorTest
 {
 	private static final int PRODUCT_ID = 540010;
 
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private DeliveryPlanningRepository deliveryPlanningRepository;
 	private DeliveryPlanningService deliveryPlanningService;

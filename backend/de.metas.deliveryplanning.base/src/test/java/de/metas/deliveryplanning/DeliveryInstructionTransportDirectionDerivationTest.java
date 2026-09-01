@@ -67,7 +67,7 @@ class DeliveryInstructionTransportDirectionDerivationTest
 	private static final int BPARTNER_ID = 540020;
 	private static final int BPARTNER_LOCATION_ID = 540021;
 
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private DeliveryPlanningRepository deliveryPlanningRepository;
 	private DeliveryPlanningService deliveryPlanningService;

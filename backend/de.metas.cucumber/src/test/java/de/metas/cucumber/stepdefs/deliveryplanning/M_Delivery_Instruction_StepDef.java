@@ -78,7 +78,7 @@ public class M_Delivery_Instruction_StepDef
 	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
 	/**
 	 * Generates one delivery instruction ({@code M_ShipperTransportation}) for the given delivery planning, via

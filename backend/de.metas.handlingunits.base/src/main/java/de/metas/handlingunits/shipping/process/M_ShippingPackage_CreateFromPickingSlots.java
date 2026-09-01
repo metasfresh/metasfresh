@@ -80,7 +80,7 @@ public class M_ShippingPackage_CreateFromPickingSlots extends JavaProcess implem
 	private final IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
 	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final ShipperTransportationDocSubTypeGuard docSubTypeGuard = SpringContextHolder.instance.getBean(ShipperTransportationDocSubTypeGuard.class);
+	@NonNull private final ShipperTransportationDocSubTypeGuard docSubTypeGuard = SpringContextHolder.instance.getBean(ShipperTransportationDocSubTypeGuard.class);
 
 	private int p_M_ShipperTransportation_ID = -1;
 

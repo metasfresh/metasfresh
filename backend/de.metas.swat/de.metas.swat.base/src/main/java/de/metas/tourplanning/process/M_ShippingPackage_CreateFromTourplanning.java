@@ -41,6 +41,7 @@ import de.metas.tourplanning.model.I_M_Tour;
 import de.metas.tourplanning.model.TourId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Location;
@@ -60,7 +61,7 @@ public class M_ShippingPackage_CreateFromTourplanning extends JavaProcess implem
 	private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
 
 	private final PurchaseOrderToShipperTransportationService orderToShipperTransportationService = SpringContextHolder.instance.getBean(PurchaseOrderToShipperTransportationService.class);
-	private final ShipperTransportationDocSubTypeGuard docSubTypeGuard = SpringContextHolder.instance.getBean(ShipperTransportationDocSubTypeGuard.class);
+	@NonNull private final ShipperTransportationDocSubTypeGuard docSubTypeGuard = SpringContextHolder.instance.getBean(ShipperTransportationDocSubTypeGuard.class);
 
 	@Param(parameterName = I_M_Tour.COLUMNNAME_M_Tour_ID)
 	private TourId p_M_Tour_ID;

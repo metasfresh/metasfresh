@@ -230,7 +230,7 @@ class DeliveryPlanningDateResetOnDeallocationTest
 		return InterfaceWrapperHelper.load(deliveryPlanningId, I_M_Delivery_Planning.class);
 	}
 
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private IQueryFilter<I_M_Delivery_Planning> selectionOf(@NonNull final DeliveryPlanningId... deliveryPlanningIds)
 	{

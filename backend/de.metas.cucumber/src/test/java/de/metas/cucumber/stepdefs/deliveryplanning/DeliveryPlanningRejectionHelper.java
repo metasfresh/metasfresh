@@ -59,7 +59,7 @@ public class DeliveryPlanningRejectionHelper
 	private static final ImmutableSet<String> EXPECTATION_COLUMNS = ImmutableSet.of(
 			COLUMNNAME_ErrorAdMessage, COLUMNNAME_ErrorMessage, COLUMNNAME_ErrorFields);
 
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	/**
 	 * Runs the given action, and - when the row names any expected rejection - asserts that it was rejected that way

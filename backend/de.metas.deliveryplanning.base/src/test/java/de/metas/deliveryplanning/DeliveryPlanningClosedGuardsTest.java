@@ -27,6 +27,7 @@ import de.metas.document.dimension.DimensionService;
 import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
@@ -52,7 +53,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 class DeliveryPlanningClosedGuardsTest
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private DeliveryPlanningRepository deliveryPlanningRepository;
 	private DeliveryPlanningService deliveryPlanningService;

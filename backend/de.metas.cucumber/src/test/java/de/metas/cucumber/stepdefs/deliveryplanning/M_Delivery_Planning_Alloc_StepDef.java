@@ -59,7 +59,7 @@ public class M_Delivery_Planning_Alloc_StepDef
 	@NonNull private final M_ShipperTransportation_StepDefData deliveryInstructionTable;
 	@NonNull private final M_ShippingPackage_StepDefData shippingPackageTable;
 
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	/**
 	 * Asserts the COMPLETE set of active allocations of one delivery instruction, in {@code LineNo} order: the

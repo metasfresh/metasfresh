@@ -39,7 +39,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ShipperTransportationDocSubTypeGuard
 {
-	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 	/**
 	 * @return the {@link DocSubType} of the given {@code shipperTransportation}'s document type, or {@link DocSubType#NONE} when it has none set.

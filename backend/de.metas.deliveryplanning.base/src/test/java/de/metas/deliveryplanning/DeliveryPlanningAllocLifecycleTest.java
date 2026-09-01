@@ -67,7 +67,7 @@ class DeliveryPlanningAllocLifecycleTest
 	private static final int SHIPPER_ID = 540003;
 	private static final ZonedDateTime REMOVED_AT = ZonedDateTime.parse("2026-08-27T10:15:30+02:00[Europe/Berlin]");
 
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private DeliveryPlanningRepository deliveryPlanningRepository;
 	private I_C_UOM uom;

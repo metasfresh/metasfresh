@@ -71,7 +71,7 @@ class DeliveryPlanningCompletionCascadeTest
 	private static final int SHIPPER_LOCATION_ID = 540002;
 	private static final int SHIPPER_ID = 540003;
 
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private DeliveryPlanningRepository deliveryPlanningRepository;
 	private DeliveryPlanningService deliveryPlanningService;
