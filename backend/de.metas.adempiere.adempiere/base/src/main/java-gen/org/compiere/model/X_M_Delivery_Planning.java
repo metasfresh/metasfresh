@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_Delivery_Planning, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1573269252L;
+	private static final long serialVersionUID = -734225450L;
 
     /** Standard Constructor */
     public X_M_Delivery_Planning (final Properties ctx, final int M_Delivery_Planning_ID, @Nullable final String trxName)
@@ -292,6 +292,17 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	}
 
 	@Override
+	public void setIsAllocated (final boolean IsAllocated)
+	{
+		throw new IllegalArgumentException ("IsAllocated is virtual column");	}
+
+	@Override
+	public boolean isAllocated() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllocated);
+	}
+
+	@Override
 	public void setIsClosed (final boolean IsClosed)
 	{
 		set_Value (COLUMNNAME_IsClosed, IsClosed);
@@ -301,6 +312,17 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	public boolean isClosed() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsClosed);
+	}
+
+	@Override
+	public void setIsDelivered (final boolean IsDelivered)
+	{
+		throw new IllegalArgumentException ("IsDelivered is virtual column");	}
+
+	@Override
+	public boolean isDelivered() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsDelivered);
 	}
 
 	@Override
@@ -602,6 +624,28 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	public java.lang.String getReleaseNo() 
 	{
 		return get_ValueAsString(COLUMNNAME_ReleaseNo);
+	}
+
+	@Override
+	public void setShipFrom_Location_ID (final int ShipFrom_Location_ID)
+	{
+		throw new IllegalArgumentException ("ShipFrom_Location_ID is virtual column");	}
+
+	@Override
+	public int getShipFrom_Location_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ShipFrom_Location_ID);
+	}
+
+	@Override
+	public void setShipTo_Location_ID (final int ShipTo_Location_ID)
+	{
+		throw new IllegalArgumentException ("ShipTo_Location_ID is virtual column");	}
+
+	@Override
+	public int getShipTo_Location_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ShipTo_Location_ID);
 	}
 
 	@Override

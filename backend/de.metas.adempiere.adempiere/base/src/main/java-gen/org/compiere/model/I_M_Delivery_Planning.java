@@ -189,7 +189,7 @@ public interface I_M_Delivery_Planning
 	 * Set Business Partner.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setC_BPartner_ID (int C_BPartner_ID);
@@ -198,7 +198,7 @@ public interface I_M_Delivery_Planning
 	 * Get Business Partner.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getC_BPartner_ID();
@@ -207,7 +207,6 @@ public interface I_M_Delivery_Planning
 
 	/**
 	 * Set Location.
-	 * Identifies the address of the business partner
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -217,7 +216,6 @@ public interface I_M_Delivery_Planning
 
 	/**
 	 * Get Location.
-	 * Identifies the address of the business partner
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -516,6 +514,33 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Allocated.
+	 * Indicates whether the delivery planning is already allocated to a delivery instruction.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setIsAllocated (boolean IsAllocated);
+
+	/**
+	 * Get Allocated.
+	 * Indicates whether the delivery planning is already allocated to a delivery instruction.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	boolean isAllocated();
+
+	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_IsAllocated = new ModelColumn<>(I_M_Delivery_Planning.class, "IsAllocated", null);
+	String COLUMNNAME_IsAllocated = "IsAllocated";
+
+	/**
 	 * Set Closed.
 	 *
 	 * <br>Type: YesNo
@@ -535,6 +560,29 @@ public interface I_M_Delivery_Planning
 
 	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_IsClosed = new ModelColumn<>(I_M_Delivery_Planning.class, "IsClosed", null);
 	String COLUMNNAME_IsClosed = "IsClosed";
+
+	/**
+	 * Set Is Delivered.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setIsDelivered (boolean IsDelivered);
+
+	/**
+	 * Get Is Delivered.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	boolean isDelivered();
+
+	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_IsDelivered = new ModelColumn<>(I_M_Delivery_Planning.class, "IsDelivered", null);
+	String COLUMNNAME_IsDelivered = "IsDelivered";
 
 	/**
 	 * Set Load Time.
@@ -712,7 +760,7 @@ public interface I_M_Delivery_Planning
 	/**
 	 * Set Transportation Order.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -721,7 +769,7 @@ public interface I_M_Delivery_Planning
 	/**
 	 * Get Transportation Order.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -801,7 +849,7 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_OrderStatus = "OrderStatus";
 
 	/**
-	 * Set Origin Country.
+	 * Set Country Of Origin.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -812,7 +860,7 @@ public interface I_M_Delivery_Planning
 	void setOriginCountry (@Nullable java.lang.String OriginCountry);
 
 	/**
-	 * Get Origin Country.
+	 * Get Country Of Origin.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1039,6 +1087,58 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_ReleaseNo = "ReleaseNo";
 
 	/**
+	 * Set Loading Address.
+	 * The address where goods are loaded for this delivery planning.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setShipFrom_Location_ID (int ShipFrom_Location_ID);
+
+	/**
+	 * Get Loading Address.
+	 * The address where goods are loaded for this delivery planning.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	int getShipFrom_Location_ID();
+
+	String COLUMNNAME_ShipFrom_Location_ID = "ShipFrom_Location_ID";
+
+	/**
+	 * Set Delivery Address.
+	 * The address goods are delivered to for this delivery planning.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setShipTo_Location_ID (int ShipTo_Location_ID);
+
+	/**
+	 * Get Delivery Address.
+	 * The address goods are delivered to for this delivery planning.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	int getShipTo_Location_ID();
+
+	String COLUMNNAME_ShipTo_Location_ID = "ShipTo_Location_ID";
+
+	/**
 	 * Set Ship-to location.
 	 *
 	 * <br>Type: String
@@ -1086,6 +1186,7 @@ public interface I_M_Delivery_Planning
 
 	/**
 	 * Set Direction.
+	 * Direction of the transport: Incoming, Outgoing or Dropship.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -1095,6 +1196,7 @@ public interface I_M_Delivery_Planning
 
 	/**
 	 * Get Direction.
+	 * Direction of the transport: Incoming, Outgoing or Dropship.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
