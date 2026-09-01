@@ -450,4 +450,45 @@ class DeliveryPlanningListTest
 		}
 
 	}
+
+	@Nested
+	class ToProcessParameterValue
+	{
+		@Test
+		@DisplayName("a typed id arrives as its repo id")
+		void repoIdAwareIsUnwrapped()
+		{
+			assertThat(AggregationKeyField.toProcessParameterValue(ShipperId.ofRepoId(1234567))).isEqualTo(1234567);
+		}
+
+		/**
+		 * The value is spliced into AD_Val_Rule 540797's Code as plain text, with no escaping anywhere on the
+		 * path - CtxName.getValueAsString hands the value back verbatim, and the QuotedIfNotDefault modifier
+		 * wraps without escaping. So an incoterm place that carries an apostrophe, which is entirely ordinary
+		 * in Europe, would end the SQL string early and make the target picker's query a syntax error: the
+		 * planner opens Add to / Move to and gets a server error instead of a target list.
+		 */
+		@Test
+		@DisplayName("an apostrophe is doubled, so the value survives being spliced into the value rule's SQL")
+		void apostropheIsDoubledForTheValRuleSplice()
+		{
+			assertThat(AggregationKeyField.toProcessParameterValue("L'Aquila")).isEqualTo("L''Aquila");
+			assertThat(AggregationKeyField.toProcessParameterValue("Sant'Angelo in Vado")).isEqualTo("Sant''Angelo in Vado");
+		}
+
+		@Test
+		@DisplayName("a string with nothing to escape is handed back unchanged")
+		void ordinaryStringIsUntouched()
+		{
+			assertThat(AggregationKeyField.toProcessParameterValue("Hamburg")).isEqualTo("Hamburg");
+			assertThat(AggregationKeyField.toProcessParameterValue("")).isEqualTo("");
+		}
+
+		@Test
+		@DisplayName("null stays null - the caller maps it to Null.NULL, which is a value here, not an absence")
+		void nullStaysNull()
+		{
+			assertThat(AggregationKeyField.toProcessParameterValue(null)).isNull();
+		}
+	}
 }

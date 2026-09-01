@@ -274,14 +274,30 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 
 		/**
 		 * A value read off this enum in the shape a process parameter carries it: a typed id as its repo id,
-		 * anything else unchanged.
+		 * a String with its apostrophes doubled, anything else unchanged.
+		 * <p>
+		 * The doubling is not cosmetic. These parameters exist only to be read by the target picker's
+		 * {@code AD_Val_Rule}, which reaches them through {@code @Param@} substitution -- plain textual
+		 * splicing into the rule's SQL, with no escaping anywhere on the path: {@code CtxName.getValueAsString}
+		 * hands the value back verbatim, and the one available modifier ({@code QuotedIfNotDefault}) wraps in
+		 * quotes without escaping. So an incoterm place that carries an apostrophe -- L'Aquila, O'Hare,
+		 * Sant'Angelo, all ordinary in Europe -- would close the SQL string early and turn the picker's query
+		 * into a syntax error: the planner opens Add to / Move to and gets a server error instead of a target
+		 * list. Doubling is also what the statement converter expects, since it markers {@code ''} out before
+		 * it tokenises quoted strings.
 		 */
 		@Nullable
 		public static Object toProcessParameterValue(@Nullable final Object keyValue)
 		{
-			return keyValue instanceof RepoIdAware
-					? ((RepoIdAware)keyValue).getRepoId()
-					: keyValue;
+			if (keyValue instanceof RepoIdAware)
+			{
+				return ((RepoIdAware)keyValue).getRepoId();
+			}
+			if (keyValue instanceof String)
+			{
+				return ((String)keyValue).replace("'", "''");
+			}
+			return keyValue;
 		}
 	}
 }
