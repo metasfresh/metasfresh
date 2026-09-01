@@ -164,7 +164,7 @@ public class PPOrderCostDifferenceDistributor
 			return CostDetailCreateResultsList.EMPTY;
 		}
 
-		final CurrentCost currentCost = utils.getCurrentCost(request);
+		final CurrentCost currentCost = utils.getCurrentCostForUpdate(request);
 		final CostAmountDetailed split = computeSplit(residual, mainProductCost, currentCost);
 
 		final CostDetailCreateResult mainResult = utils.createCostDetailRecordNoCostsChanged(
@@ -207,7 +207,7 @@ public class PPOrderCostDifferenceDistributor
 			@NonNull final CostDetailCreateRequest request,
 			@NonNull final PPOrderId orderId)
 	{
-		final CurrentCost currentCost = utils.getCurrentCost(request);
+		final CurrentCost currentCost = utils.getCurrentCostForUpdate(request);
 
 		if (CostAmountType.ADJUSTMENT.equals(request.getAmtType()))
 		{
