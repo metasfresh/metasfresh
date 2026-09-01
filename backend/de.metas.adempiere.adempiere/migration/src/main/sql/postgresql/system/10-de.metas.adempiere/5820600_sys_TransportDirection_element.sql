@@ -53,9 +53,13 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-27 09:
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585383,'de_CH')
 ;
 
--- 6) fr_CH: Name overridden to "Direction"; IsTranslated stays 'N' because Description and Help
---    keep the seeded German, so the row as a whole is not correct for fr_CH.
-UPDATE AD_Element_Trl SET Name='Direction', PrintName='Direction', Updated=TO_TIMESTAMP('2026-08-27 09:00:18','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=585383 AND AD_Language='fr_CH'
+-- 6) fr_CH per the convention stated once in
+--    5820520_sys_M_Delivery_Planning_GenerateDeliveryInstruction_IsComplete.sql: the en_US text,
+--    IsTranslated='N'.
+UPDATE AD_Element_Trl SET Name='Direction', PrintName='Direction',
+       Description='Direction of the transport: Incoming, Outgoing or Dropship.',
+       Help='Incoming: the goods arrive from the vendor at your own warehouse. Outgoing: the goods leave your own warehouse for the customer. Dropship: the vendor delivers directly to the customer, so the goods never touch your own warehouse.',
+       IsTranslated='N', Updated=TO_TIMESTAMP('2026-08-27 09:00:18','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=585383 AND AD_Language='fr_CH'
 ;
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585383,'fr_CH')
 ;

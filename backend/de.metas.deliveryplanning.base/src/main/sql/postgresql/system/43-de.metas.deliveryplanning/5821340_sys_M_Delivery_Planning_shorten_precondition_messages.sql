@@ -22,8 +22,7 @@ UPDATE AD_Message SET MsgText='Lieferanweisung zuerst reaktivieren: {0}.',      
 UPDATE AD_Message SET MsgText='Bereits zugeordnet, bitte verschieben: {0}.',      Updated=TO_TIMESTAMP('2026-08-31 20:00:09','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Message_ID=545815;
 
 -- ===========================================================================================
--- 2) German translation rows. fr_CH carries the German copy on this branch (IsTranslated='N'),
---    so it moves with de_DE / de_CH rather than being left on the old long text.
+-- 2) German translation rows.
 -- ===========================================================================================
 UPDATE AD_Message_Trl trl
    SET MsgText   = m.MsgText,
@@ -31,7 +30,7 @@ UPDATE AD_Message_Trl trl
        UpdatedBy = 100
   FROM AD_Message m
  WHERE m.AD_Message_ID = trl.AD_Message_ID
-   AND trl.AD_Language IN ('de_DE', 'de_CH', 'fr_CH')
+   AND trl.AD_Language IN ('de_DE', 'de_CH')
    AND trl.AD_Message_ID IN (545796, 545797, 545798, 545807, 545808, 545809, 545810, 545811, 545813, 545815)
 ;
 
@@ -48,3 +47,20 @@ UPDATE AD_Message_Trl SET MsgText='Closed delivery planning allocated: {0}.',   
 UPDATE AD_Message_Trl SET MsgText='No delivery planning allocated.',              Updated=TO_TIMESTAMP('2026-08-31 20:00:18','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545811;
 UPDATE AD_Message_Trl SET MsgText='Re-activate the delivery instruction first: {0}.', Updated=TO_TIMESTAMP('2026-08-31 20:00:19','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545813;
 UPDATE AD_Message_Trl SET MsgText='Already allocated, please move: {0}.',         Updated=TO_TIMESTAMP('2026-08-31 20:00:20','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545815;
+
+-- ===========================================================================================
+-- 4) fr_CH per the convention stated once in
+--    5820520_sys_M_Delivery_Planning_GenerateDeliveryInstruction_IsComplete.sql: the en_US text,
+--    IsTranslated='N'. Runs after section 3, so it copies the shortened English text.
+-- ===========================================================================================
+UPDATE AD_Message_Trl trl
+   SET MsgText      = en.MsgText,
+       IsTranslated = 'N',
+       Updated      = TO_TIMESTAMP('2026-08-31 20:00:21','YYYY-MM-DD HH24:MI:SS'),
+       UpdatedBy    = 100
+  FROM AD_Message_Trl en
+ WHERE en.AD_Message_ID = trl.AD_Message_ID
+   AND en.AD_Language = 'en_US'
+   AND trl.AD_Language = 'fr_CH'
+   AND trl.AD_Message_ID IN (545796, 545797, 545798, 545807, 545808, 545809, 545810, 545811, 545813, 545815)
+;

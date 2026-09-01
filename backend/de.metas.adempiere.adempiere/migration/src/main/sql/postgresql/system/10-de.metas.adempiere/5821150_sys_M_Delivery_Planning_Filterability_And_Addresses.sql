@@ -64,9 +64,9 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-28 09:
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585384,'de_CH')
 ;
 
--- fr_CH is pointed at the en_US text and left IsTranslated='N': no French wording exists for these
--- elements, and English text in an fr_CH row is not correct text for that language - but it is at
--- least readable there, which the seeded German copy is not.
+-- fr_CH per the convention stated once in
+-- 5820520_sys_M_Delivery_Planning_GenerateDeliveryInstruction_IsComplete.sql: the en_US text,
+-- IsTranslated='N'.
 UPDATE AD_Element_Trl SET Name='Allocated', PrintName='Allocated', Description='Indicates whether the delivery planning is already allocated to a delivery instruction.', Help='Indicates whether the delivery planning is already allocated to a delivery instruction.', IsTranslated='N', Updated=TO_TIMESTAMP('2026-08-28 09:00:04','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=585384 AND AD_Language='fr_CH'
 ;
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585384,'fr_CH')

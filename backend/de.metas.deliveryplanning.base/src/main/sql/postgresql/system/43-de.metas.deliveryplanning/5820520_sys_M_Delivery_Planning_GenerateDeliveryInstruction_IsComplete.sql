@@ -33,10 +33,21 @@ SET Name='Generate Delivery Instruction per Planning',
 WHERE AD_Process_ID=585176 AND AD_Language='en_US'
 ;
 
--- fr_CH has no French translation: fall back to the current German base text with
--- IsTranslated='N', the shape a freshly seeded translation row gets.
+-- ---------------------------------------------------------------------------------------------
+-- fr_CH CONVENTION for this whole delivery-planning change set. Stated here once; every later
+-- script that writes an fr_CH row points back at this block instead of restating its own reason.
+--
+-- No French wording exists for any element, process or message this change set touches, and none is
+-- being commissioned. An fr_CH row therefore carries the en_US text with IsTranslated='N':
+--   * en_US, because English is at least readable to a French-speaking user while the seeded German
+--     copy is not -- German in an fr_CH row is unusable, not merely untranslated;
+--   * IsTranslated='N', because English is still not correct text FOR fr_CH. That flag is what a
+--     translator filters on, so setting 'Y' would hide the row from the people meant to fix it.
+-- Only where no English text exists at all does the row keep the German base text - which does not
+-- occur in this change set.
+-- ---------------------------------------------------------------------------------------------
 UPDATE AD_Process_Trl
-SET Name='Lieferanweisung je Lieferplanung erzeugen',
+SET Name='Generate Delivery Instruction per Planning',
     IsTranslated='N',
     Updated=TO_TIMESTAMP('2026-08-27 10:00:03', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Process_ID=585176 AND AD_Language='fr_CH'

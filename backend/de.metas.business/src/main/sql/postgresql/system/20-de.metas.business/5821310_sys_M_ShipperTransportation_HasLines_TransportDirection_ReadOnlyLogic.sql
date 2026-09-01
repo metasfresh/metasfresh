@@ -47,9 +47,9 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-31 12:
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585392,'de_CH')
 ;
 
--- fr_CH is pointed at the en_US text and left IsTranslated='N': no French wording exists for this
--- element, and English text in an fr_CH row is not correct text for that language - but it is at
--- least readable there, which the seeded German copy is not.
+-- fr_CH per the convention stated once in
+-- 5820520_sys_M_Delivery_Planning_GenerateDeliveryInstruction_IsComplete.sql: the en_US text,
+-- IsTranslated='N'.
 UPDATE AD_Element_Trl SET Name='Has Shipping Packages', PrintName='Has Shipping Packages', Description='Indicates whether shipping packages are already assigned to the document.', Help='Indicates whether shipping packages are already assigned to the document. While the document is still empty, the direction can be changed.', IsTranslated='N', Updated=TO_TIMESTAMP('2026-08-31 12:00:04','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=585392 AND AD_Language='fr_CH'
 ;
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585392,'fr_CH')

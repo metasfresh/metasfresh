@@ -1587,7 +1587,7 @@ public class DeliveryPlanningService
 	/** An unset actual (planner never confirmed one) defaults to the matching estimate; a real actual is kept. */
 	private static Timestamp deriveActualIfEmpty(@Nullable final Timestamp actual, @Nullable final Timestamp estimated)
 	{
-		return actual != null ? actual : estimated;
+		return CoalesceUtil.coalesce(actual, estimated);
 	}
 
 	/**

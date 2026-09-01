@@ -105,7 +105,7 @@ public class DeliveryPlanningRepository
 	 */
 	private static final int ALLOCATION_LINE_NO_STEP = 10;
 
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final DimensionService dimensionService;
 
@@ -970,8 +970,9 @@ public class DeliveryPlanningRepository
 
 	private int getMaxAllocationLineNo(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
-		// not filtered by IsActive: a deactivated allocation's LineNo stays taken, so a later
-		// allocation on the same instruction never reuses a number that was already printed
+		// not filtered by IsActive: a retired allocation's LineNo stays reserved, so a planning removed and
+		// re-added gets a new number rather than its old one back. The number is never printed; only its
+		// ordering reaches the document, picking whose transport details the delivery instruction shows.
 		return queryBL.createQueryBuilder(I_M_Delivery_Planning_Alloc.class)
 				.addEqualsFilter(I_M_Delivery_Planning_Alloc.COLUMNNAME_M_ShipperTransportation_ID, deliveryInstructionId)
 				.create()

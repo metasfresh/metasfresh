@@ -37,7 +37,7 @@ import org.compiere.model.I_M_Delivery_Planning;
 
 public class M_Delivery_Planning_GenerateDeliveryInstruction extends JavaProcess implements IProcessPrecondition
 {
-	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
+	@NonNull private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
 
 	@Param(parameterName = "IsComplete")
 	private boolean p_IsComplete;

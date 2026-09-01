@@ -27,8 +27,9 @@ UPDATE AD_Element_Trl SET Name='Delivery Planning History', Description='Deliver
        Updated=TO_TIMESTAMP('2026-08-28 10:00:10','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
  WHERE AD_Element_ID=585387 AND AD_Language='en_US'
 ;
--- fr_CH is pointed at the en_US text and left IsTranslated='N': no French wording exists for this
--- element, and English text in an fr_CH row is not correct text for that language.
+-- fr_CH per the convention stated once in
+-- 5820520_sys_M_Delivery_Planning_GenerateDeliveryInstruction_IsComplete.sql: the en_US text,
+-- IsTranslated='N'.
 UPDATE AD_Element_Trl SET Name='Delivery Planning History', Description='Delivery plannings that were allocated to this delivery instruction and have since been re-booked away', PrintName='Delivery Planning History', IsTranslated='N',
        Updated=TO_TIMESTAMP('2026-08-28 10:00:10','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
  WHERE AD_Element_ID=585387 AND AD_Language='fr_CH'

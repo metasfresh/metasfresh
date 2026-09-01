@@ -40,6 +40,8 @@ import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_M_Delivery_Planning;
 import org.compiere.model.I_M_Delivery_Planning_Alloc;
 
+import javax.annotation.Nullable;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -66,7 +68,7 @@ public class M_Delivery_Planning_Alloc_StepDef
 
 	/**
 	 * Asserts the COMPLETE set of active allocations of one delivery instruction: the given rows and nothing
-	 * else - a row count, a distinct {@code LineNo} and its OWN shipping package per planning, all under one
+	 * else - a row count, the given {@code LineNo} and its OWN shipping package per planning, all under one
 	 * instruction.
 	 * <p>
 	 * Each expected row is paired to the record carrying THAT row's {@code M_Delivery_Planning_ID}, never to
@@ -122,9 +124,10 @@ public class M_Delivery_Planning_Alloc_StepDef
 
 	/**
 	 * Asserts one expected row against the allocation of ITS OWN {@code M_Delivery_Planning_ID}, skipping any
-	 * allocation an earlier row already claimed - so one record can never satisfy two rows. Every assertion is
-	 * soft, the row-to-record match included, so a row that finds no match of its own does not hide the
-	 * mismatches of the rows after it.
+	 * allocation an earlier row already claimed - so one record can never satisfy two rows. Every assertion
+	 * about the RECORDS is soft, the row-to-record match included, so one row's failure does not hide the
+	 * mismatches of the rows after it. A malformed DataTable cell still aborts the step: that is a fault of
+	 * the feature file, not of the records under test, and it hits every row identically.
 	 */
 	private void assertAllocationOfExpectedRow(
 			@NonNull final DataTableRow row,
@@ -135,7 +138,15 @@ public class M_Delivery_Planning_Alloc_StepDef
 			@NonNull final SoftAssertions softly)
 	{
 		final StepDefDataIdentifier planningIdentifier = row.getAsIdentifier(I_M_Delivery_Planning_Alloc.COLUMNNAME_M_Delivery_Planning_ID);
-		final I_M_Delivery_Planning deliveryPlanning = planningIdentifier.lookupNotNullIn(deliveryPlanningTable);
+		final I_M_Delivery_Planning deliveryPlanning = deliveryPlanningTable.getOptional(planningIdentifier).orElse(null);
+
+		softly.assertThat(deliveryPlanning)
+				.as("M_Delivery_Planning registered under the identifier %s the row is matched on", planningIdentifier)
+				.isNotNull();
+		if (deliveryPlanning == null)
+		{
+			return;
+		}
 
 		final List<I_M_Delivery_Planning_Alloc> matching = allocRecords.stream()
 				.filter(alloc -> alloc.getM_Delivery_Planning_ID() == deliveryPlanning.getM_Delivery_Planning_ID())
@@ -159,7 +170,12 @@ public class M_Delivery_Planning_Alloc_StepDef
 				.isEqualTo(row.getAsInt(I_M_Delivery_Planning_Alloc.COLUMNNAME_LineNo));
 
 		// each planning gets its OWN shipping package, and that package hangs off the same instruction
-		final I_M_ShippingPackage shippingPackage = loadShippingPackageOf(allocRecord);
+		final I_M_ShippingPackage shippingPackage = loadShippingPackageOf(allocRecord, softly);
+		if (shippingPackage == null)
+		{
+			return;
+		}
+
 		softly.assertThat(shippingPackage.getM_ShipperTransportation_ID())
 				.as("%s of the shipping package of the allocation of M_Delivery_Planning %s", I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID, planningIdentifier)
 				.isEqualTo(deliveryInstruction.getM_ShipperTransportation_ID());
@@ -242,9 +258,15 @@ public class M_Delivery_Planning_Alloc_StepDef
 			row.getAsOptionalInt(I_M_Delivery_Planning_Alloc.COLUMNNAME_LineNo)
 					.ifPresent(lineNo -> softly.assertThat(allocRecord.getLineNo()).as(I_M_Delivery_Planning_Alloc.COLUMNNAME_LineNo).isEqualTo(lineNo.intValue()));
 			row.getAsOptionalBoolean("IsShippingPackageActive")
-					.ifPresent(expected -> softly.assertThat(loadShippingPackageOf(allocRecord).isActive())
-							.as("IsActive of the M_ShippingPackage of M_Delivery_Planning_Alloc %s", allocRecord.getM_Delivery_Planning_Alloc_ID())
-							.isEqualTo(expected));
+					.ifPresent(expected -> {
+						final I_M_ShippingPackage shippingPackage = loadShippingPackageOf(allocRecord, softly);
+						if (shippingPackage != null)
+						{
+							softly.assertThat(shippingPackage.isActive())
+									.as("IsActive of the M_ShippingPackage of M_Delivery_Planning_Alloc %s", allocRecord.getM_Delivery_Planning_Alloc_ID())
+									.isEqualTo(expected);
+						}
+					});
 			softly.assertAll();
 		});
 	}
@@ -260,13 +282,20 @@ public class M_Delivery_Planning_Alloc_StepDef
 				.list();
 	}
 
-	@NonNull
-	private I_M_ShippingPackage loadShippingPackageOf(@NonNull final I_M_Delivery_Planning_Alloc allocRecord)
+	/**
+	 * @return null when the allocation carries no package - the miss is recorded on the given
+	 * {@link SoftAssertions}, so the failures the caller already collected still get reported.
+	 */
+	@Nullable
+	private I_M_ShippingPackage loadShippingPackageOf(
+			@NonNull final I_M_Delivery_Planning_Alloc allocRecord,
+			@NonNull final SoftAssertions softly)
 	{
-		assertThat(allocRecord.getM_ShippingPackage_ID())
+		final int shippingPackageId = allocRecord.getM_ShippingPackage_ID();
+		softly.assertThat(shippingPackageId)
 				.as("%s of M_Delivery_Planning_Alloc %s", I_M_Delivery_Planning_Alloc.COLUMNNAME_M_ShippingPackage_ID, allocRecord.getM_Delivery_Planning_Alloc_ID())
 				.isNotZero();
 
-		return load(allocRecord.getM_ShippingPackage_ID(), I_M_ShippingPackage.class);
+		return shippingPackageId > 0 ? load(shippingPackageId, I_M_ShippingPackage.class) : null;
 	}
 }

@@ -7,9 +7,9 @@
 -- 593415) is a reference-159 lookup on C_BPartner_Location whose AD_Display is that same Name.
 -- The stored FK is written once at planning generation from exactly the source ShipTo_Location_ID
 -- reads live -- M_ShipmentSchedule.C_BPartner_Location_ID for Outgoing, M_Warehouse.
--- C_BPartner_Location_ID for Incoming and Dropship -- and nothing rewrites it afterwards. On all
--- 1392 active plannings, across all three transport directions, the two resolve to the identical
--- location id AND render the identical text: 1392 of 1392 equal, zero divergences. The older
+-- C_BPartner_Location_ID for Incoming and Dropship -- and nothing rewrites it afterwards. Measured
+-- on 2026-09-01 over EVERY active planning, across all three transport directions: the two resolve
+-- to the identical location id AND render the identical text, zero divergences. The older
 -- column is the weaker of the two, because the reference lookup also zooms to the location record
 -- and the plain string does not.
 --

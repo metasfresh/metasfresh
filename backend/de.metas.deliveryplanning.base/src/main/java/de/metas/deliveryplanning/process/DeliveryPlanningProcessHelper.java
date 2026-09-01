@@ -33,6 +33,7 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.shipping.TransportDirection;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 import org.compiere.model.I_M_Delivery_Planning;
 import org.compiere.model.Null;
 
@@ -45,6 +46,7 @@ import java.util.function.Supplier;
  * selected", "is too much selected", "is more than one row selected" - and the parameter defaults their dialogs
  * read off that selection. Business rules stay on the owning process.
  */
+@UtilityClass
 public final class DeliveryPlanningProcessHelper
 {
 	/**
@@ -63,10 +65,6 @@ public final class DeliveryPlanningProcessHelper
 			.put(I_M_ShipperTransportation.COLUMNNAME_C_BPartner_Location_Loading_ID, AggregationKeyField.LoadingAddress)
 			.put(I_M_ShipperTransportation.COLUMNNAME_C_BPartner_Location_Delivery_ID, AggregationKeyField.DeliveryAddress)
 			.build();
-
-	private DeliveryPlanningProcessHelper()
-	{
-	}
 
 	public static ProcessPreconditionsResolution checkAnySelection(@NonNull final IProcessPreconditionsContext context)
 	{

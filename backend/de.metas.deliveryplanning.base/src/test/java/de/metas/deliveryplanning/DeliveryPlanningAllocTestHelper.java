@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.model.ShippingPackageId;
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 import java.util.Arrays;
 
@@ -35,6 +36,7 @@ import java.util.Arrays;
  * <p>
  * The remaining three ids are synthetic and unique per allocation.
  */
+@UtilityClass
 final class DeliveryPlanningAllocTestHelper
 {
 	private static int nextRepoId = 1_000_000;
@@ -57,9 +59,5 @@ final class DeliveryPlanningAllocTestHelper
 				.deliveryInstructionId(deliveryInstructionId)
 				.shippingPackageId(ShippingPackageId.ofRepoId(repoId))
 				.build();
-	}
-
-	private DeliveryPlanningAllocTestHelper()
-	{
 	}
 }
