@@ -143,9 +143,9 @@ public class M_HU_Trace_Report_StepDef
 	 *       the two. The receipt document's total quantity across both VHUs must be reported once,
 	 *       not once per VHU.</li>
 	 *   <li>{@code INELIGIBLE_RECEIPT_DOC} — a shipment that descends from a receipt document this
-	 *       section may not report (a customer return, {@code IsSOTrx='Y'}), plus a genuine purchase
-	 *       receipt of the same lot with no VHU link. The graph link must not silence the lot-level
-	 *       candidate that the customer sees today.</li>
+	 *       section may not report (an {@code MMR} whose doctype is {@code IsSOTrx='Y'}), plus a
+	 *       purchase receipt of the same lot with no VHU link. The graph link must not silence the
+	 *       lot-level candidate that the customer sees today.</li>
 	 * </ul>
 	 */
 	@When("M_HU_Trace_Report test data is set up for scenario {string}:")
@@ -709,9 +709,14 @@ public class M_HU_Trace_Report_StepDef
 
 	/**
 	 * A shipment whose VHU descends from a receipt document that the DIRECT_SALE_DETAIL section is
-	 * not allowed to report — a customer return ({@code DocBaseType='MMR'}, {@code IsSOTrx='Y'}),
-	 * where the section only reports purchase receipts ({@code IsSOTrx='N'}) — plus a genuine
-	 * purchase receipt of the same product and lot that has no VHU link to anything.
+	 * not allowed to report, plus a purchase receipt of the same product and lot that has no VHU
+	 * link to anything.
+	 *
+	 * <p>What makes the first document ineligible is exactly one thing: its doctype is
+	 * {@code IsSOTrx='Y'}, while the section reports only {@code IsSOTrx='N'} receipts. It is
+	 * loaded as the first active {@code DocBaseType='MMR'} doctype with {@code IsSOTrx='Y'} by
+	 * {@code C_DocType_ID} — which document that is depends on the seed data (a customer return, a
+	 * balance correction, an empties return …), and the scenario does not depend on which.
 	 *
 	 * <p>The graph therefore says something about this shipment, but nothing the section may print.
 	 * The lot-level candidate resting on the purchase receipt is what the customer sees today and
@@ -723,17 +728,17 @@ public class M_HU_Trace_Report_StepDef
 	{
 		scenarioProductIds.put(scenarioName, productId);
 		final I_C_DocType purchaseReceiptDocType = loadDocType("MMR", false);
-		final I_C_DocType customerReturnDocType = loadDocType("MMR", true);
+		final I_C_DocType outboundReceiptDocType = loadDocType("MMR", true);
 		final I_C_DocType shipmentDocType = loadDocType("MMS", true);
 
 		// the receipt document this section may not report, and the shipment that descends from it
-		final I_M_HU returnVhu = createVhu();
-		final I_M_InOut returnInOut = createMinimalInOut(customerReturnDocType, "CO");
-		createHuTraceWithSource(returnVhu, null, productId, HUTraceType.MATERIAL_RECEIPT,
-				"LOT-INELIGIBLE", returnInOut, new BigDecimal("100"));
+		final I_M_HU ineligibleVhu = createVhu();
+		final I_M_InOut ineligibleInOut = createMinimalInOut(outboundReceiptDocType, "CO");
+		createHuTraceWithSource(ineligibleVhu, null, productId, HUTraceType.MATERIAL_RECEIPT,
+				"LOT-INELIGIBLE", ineligibleInOut, new BigDecimal("100"));
 
 		final I_M_HU shippedVhu = createVhu();
-		createHuTraceWithSource(shippedVhu, returnVhu, productId, HUTraceType.TRANSFORM_LOAD,
+		createHuTraceWithSource(shippedVhu, ineligibleVhu, productId, HUTraceType.TRANSFORM_LOAD,
 				"LOT-INELIGIBLE", null, new BigDecimal("24"));
 		final I_M_InOut shipmentInOut = createMinimalInOut(shipmentDocType, "CO");
 		createHuTraceWithSource(shippedVhu, null, productId, HUTraceType.MATERIAL_SHIPMENT,
@@ -746,7 +751,7 @@ public class M_HU_Trace_Report_StepDef
 				"LOT-INELIGIBLE", purchaseInOut, new BigDecimal("80"));
 
 		scenarioDocNos.put(scenarioName + ".receipt1", purchaseInOut.getDocumentNo());
-		scenarioDocNos.put(scenarioName + ".returnReceipt", returnInOut.getDocumentNo());
+		scenarioDocNos.put(scenarioName + ".ineligibleReceipt", ineligibleInOut.getDocumentNo());
 		scenarioDocNos.put(scenarioName + ".shipment", shipmentInOut.getDocumentNo());
 	}
 

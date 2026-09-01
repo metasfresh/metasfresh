@@ -103,9 +103,10 @@ receipt_reach (M_HU_Trace_ID, VHU_ID, depth) AS (
     FROM receipt_reach rr
     JOIN vhu_edge e ON e.src = rr.VHU_ID
     -- Termination guard against a runaway or cyclic transformation chain: UNION alone cannot stop
-    -- a cycle here because the depth column makes every revisit a distinct row. The longest chain
-    -- measured on a production dataset (25 816 trace rows, 12 908 transformation edges) was 2 hops,
-    -- so 15 is far above anything real while still bounding a corrupt graph.
+    -- a cycle here because the depth column makes every revisit a distinct row. On a production
+    -- dataset of 25 816 trace rows, of which 12 908 carry a source VHU (the distinct edge count is
+    -- at most that, since vhu_edge de-duplicates and drops self-edges), the longest chain measured
+    -- was 2 hops -- so 15 is far above anything real while still bounding a corrupt graph.
     WHERE rr.depth < 15
 ),
 -- The MATERIAL_SHIPMENT rows this run is about, narrowed to rows whose document qualifies as a
@@ -142,7 +143,14 @@ traced_pair AS (
            -- UOMs would print the sum under only one of them.
            min(st.C_UOM_ID)      AS shipment_uom_id,
            min(r.C_UOM_ID)       AS receipt_uom_id,
-           -- client/org of the receipt TRACE ROW, the source the pre-rewrite prod_stock used
+           -- client/org of the receipt TRACE ROW, the source the pre-rewrite prod_stock used.
+           -- Reducing them with min() is safe because the rows of one group agree: the writer of a
+           -- MATERIAL_RECEIPT trace takes its org from the document's own M_HU_Assignment rows
+           -- (HUTraceEventsService.createAndAddEvents), and never sets the client at all, so the
+           -- row carries the installation's default. Were that ever violated, min() would pick the
+           -- numerically smallest -- org '*' = 0 being the likely one -- and all three of product,
+           -- client and org are equality filters inside getcurrentstoragestock, so prod_stock
+           -- would silently read 0 instead of the real stock.
            min(r.AD_Client_ID)   AS receipt_client_id,
            min(r.AD_Org_ID)      AS receipt_org_id
     FROM receipt_trace r

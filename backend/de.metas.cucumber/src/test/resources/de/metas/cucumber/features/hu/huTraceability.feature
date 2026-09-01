@@ -135,10 +135,10 @@ Feature: HU Traceability Report — SQL correctness tests
 
   @Id:S0000.1_HUTrace_IneligibleReceiptDoc
   Scenario: A graph link to a receipt document this section may not report does not silence the lot candidate
-    # The shipment descends from a customer-return receipt (IsSOTrx='Y'), which the DIRECT_SALE_DETAIL
-    # section only reports for purchase receipts (IsSOTrx='N'). Deciding "this group is traced, so drop
-    # its candidates" before the receipt document's eligibility has been checked would leave the group
-    # with no row at all — deleting the lot-level candidate the customer sees today.
+    # The shipment descends from a receipt document whose doctype is IsSOTrx='Y', which this section
+    # may not report — it reports only IsSOTrx='N' purchase receipts. Deciding "this group is traced,
+    # so drop its candidates" before the receipt document's eligibility has been checked would leave
+    # the group with no row at all — deleting the lot-level candidate the customer sees today.
     Given metasfresh contains M_Products:
       | Identifier                 | Value                          | Name                            |
       | traceProduct_ineligibleDoc | traceProductVal_ineligibleDoc  | Trace Product Ineligible Doc    |
