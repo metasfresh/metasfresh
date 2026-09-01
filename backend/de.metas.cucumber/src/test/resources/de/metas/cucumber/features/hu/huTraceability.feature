@@ -97,3 +97,46 @@ Feature: HU Traceability Report — SQL correctness tests
     Then M_HU_Trace_Report detail rows for scenario "two_step_transform" are:
       | ReceiptDocNo | ShipmentDocNo | LinkBasis | Menge | Liefermenge |
       | receipt1     | shipment      | TRACED    | 100   | 24          |
+
+  @Id:S0000.1_HUTrace_TC4
+  Scenario: Candidate suppression applies per shipment, not globally across the lot
+    Given metasfresh contains M_Products:
+      | Identifier          | Value                  | Name                 |
+      | traceProduct_mixed  | traceProductVal_mixed  | Trace Product Mixed  |
+    When M_HU_Trace_Report test data is set up for scenario "mixed_traced_and_candidate":
+      | TestType                    | M_Product_ID.Identifier |
+      | MIXED_TRACED_AND_CANDIDATE  | traceProduct_mixed      |
+    And M_HU_Trace_Report is invoked for scenario "mixed_traced_and_candidate"
+    Then M_HU_Trace_Report detail rows for scenario "mixed_traced_and_candidate" are:
+      | ReceiptDocNo | ShipmentDocNo | LinkBasis     | Menge | Liefermenge |
+      | receipt1     | shipmentA     | LOT_CANDIDATE | 100   | 30          |
+      | receipt2     | shipmentA     | LOT_CANDIDATE | 50    | 30          |
+      | receipt1     | shipmentB     | LOT_CANDIDATE | 100   | 20          |
+      | receipt2     | shipmentB     | LOT_CANDIDATE | 50    | 20          |
+      | receipt1     | shipment3     | TRACED        | 100   | 24          |
+
+  @Id:S0000.1_HUTrace_TC5
+  Scenario: A receipt and shipment with neither a lot number nor a VHU link are a product-level candidate
+    Given metasfresh contains M_Products:
+      | Identifier              | Value                       | Name                       |
+      | traceProduct_noLotLink  | traceProductVal_noLotLink   | Trace Product No Lot Link  |
+    When M_HU_Trace_Report test data is set up for scenario "no_lot_no_link":
+      | TestType        | M_Product_ID.Identifier |
+      | NO_LOT_NO_LINK  | traceProduct_noLotLink  |
+    And M_HU_Trace_Report is invoked for scenario "no_lot_no_link"
+    Then M_HU_Trace_Report detail rows for scenario "no_lot_no_link" are:
+      | ReceiptDocNo | ShipmentDocNo | LinkBasis          | Menge | Liefermenge |
+      | receipt1     | shipment      | PRODUCT_CANDIDATE  | 100   | 24          |
+
+  @Id:S0000.1_HUTrace_TC6
+  Scenario: A receipt document's quantity across several VHUs is reported once, not once per VHU
+    Given metasfresh contains M_Products:
+      | Identifier             | Value                      | Name                     |
+      | traceProduct_qtyDedup  | traceProductVal_qtyDedup   | Trace Product Qty Dedup  |
+    When M_HU_Trace_Report test data is set up for scenario "receipt_qty_and_dedup":
+      | TestType               | M_Product_ID.Identifier |
+      | RECEIPT_QTY_AND_DEDUP  | traceProduct_qtyDedup   |
+    And M_HU_Trace_Report is invoked for scenario "receipt_qty_and_dedup"
+    Then M_HU_Trace_Report detail rows for scenario "receipt_qty_and_dedup" are:
+      | ReceiptDocNo | ShipmentDocNo | LinkBasis | Menge | Liefermenge |
+      | receipt1     | shipment      | TRACED    | 100   | 24          |

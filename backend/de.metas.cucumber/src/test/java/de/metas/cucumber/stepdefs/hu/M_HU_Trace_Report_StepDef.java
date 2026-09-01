@@ -129,6 +129,18 @@ public class M_HU_Trace_Report_StepDef
 	 *   <li>{@code TWO_STEP_TRANSFORM} — a receipt's VHU transforms into an intermediate VHU,
 	 *       which transforms again into the shipped VHU (two TRANSFORM_LOAD edges). The receipt
 	 *       document must still resolve to the original receipt, not the intermediate step.</li>
+	 *   <li>{@code MIXED_TRACED_AND_CANDIDATE} — two receipts and two shipments of one lot with no
+	 *       VHU link anywhere, plus a third shipment descending from the first receipt. Shows that
+	 *       candidate suppression is per (shipment, product, lot), not global across the lot: the
+	 *       graph-traced shipment is TRACED and never also a candidate, while the two unlinked
+	 *       shipments remain candidates for every receipt of the lot.</li>
+	 *   <li>{@code NO_LOT_NO_LINK} — a receipt and a shipment of one product, both with
+	 *       {@code lotnumber=NULL} and no VHU link. Labelled PRODUCT_CANDIDATE, distinct from
+	 *       {@code MIXED_TRACED_AND_CANDIDATE}'s LOT_CANDIDATE — there is no lot to agree on.</li>
+	 *   <li>{@code RECEIPT_QTY_AND_DEDUP} — one receipt document carrying two MATERIAL_RECEIPT
+	 *       traces of the same lot on different VHUs, with a shipment descending from the first of
+	 *       the two. The receipt document's total quantity across both VHUs must be reported once,
+	 *       not once per VHU.</li>
 	 * </ul>
 	 */
 	@When("M_HU_Trace_Report test data is set up for scenario {string}:")
@@ -162,6 +174,15 @@ public class M_HU_Trace_Report_StepDef
 				break;
 			case "TWO_STEP_TRANSFORM":
 				setupTwoStepTransform(scenarioName, productId);
+				break;
+			case "MIXED_TRACED_AND_CANDIDATE":
+				setupMixedTracedAndCandidate(scenarioName, productId);
+				break;
+			case "NO_LOT_NO_LINK":
+				setupNoLotNoLink(scenarioName, productId);
+				break;
+			case "RECEIPT_QTY_AND_DEDUP":
+				setupReceiptQtyAndDedup(scenarioName, productId);
 				break;
 			default:
 				throw new AdempiereException("Unknown TestType: " + testType);
@@ -562,6 +583,113 @@ public class M_HU_Trace_Report_StepDef
 		final I_M_InOut shipmentInOut = createMinimalInOut(shipmentDocType, "CO");
 		createHuTraceWithSource(shippedVhu, null, productId, HUTraceType.MATERIAL_SHIPMENT,
 				"LOT-TWO-STEP", shipmentInOut, new BigDecimal("-24"));
+
+		scenarioDocNos.put(scenarioName + ".receipt1", receiptInOut.getDocumentNo());
+		scenarioDocNos.put(scenarioName + ".shipment", shipmentInOut.getDocumentNo());
+	}
+
+	/**
+	 * Two receipts and two shipments of one lot with no VHU link anywhere, plus a third shipment
+	 * descending from the first receipt (one TRANSFORM_LOAD edge). Shows that candidate suppression
+	 * is per (shipment, product, lot), not global across the lot: the third shipment is graph-traced
+	 * to receipt1 and must never also appear as a candidate, while the two unlinked shipments remain
+	 * candidates for BOTH receipts of the lot.
+	 */
+	private void setupMixedTracedAndCandidate(@NonNull final String scenarioName, @NonNull final ProductId productId)
+	{
+		scenarioProductIds.put(scenarioName, productId);
+		final I_C_DocType receiptDocType = loadDocType("MMR", false);
+		final I_C_DocType shipmentDocType = loadDocType("MMS", true);
+
+		final I_M_HU receiptVhu1 = createVhu();
+		final I_M_InOut receiptInOut1 = createMinimalInOut(receiptDocType, "CO");
+		createHuTraceWithSource(receiptVhu1, null, productId, HUTraceType.MATERIAL_RECEIPT,
+				"LOT-MIXED", receiptInOut1, new BigDecimal("100"));
+
+		final I_M_HU receiptVhu2 = createVhu();
+		final I_M_InOut receiptInOut2 = createMinimalInOut(receiptDocType, "CO");
+		createHuTraceWithSource(receiptVhu2, null, productId, HUTraceType.MATERIAL_RECEIPT,
+				"LOT-MIXED", receiptInOut2, new BigDecimal("50"));
+
+		// shipmentA: no VHU link anywhere — a candidate for BOTH receipts of this lot
+		final I_M_HU shipmentVhuA = createVhu();
+		final I_M_InOut shipmentInOutA = createMinimalInOut(shipmentDocType, "CO");
+		createHuTraceWithSource(shipmentVhuA, null, productId, HUTraceType.MATERIAL_SHIPMENT,
+				"LOT-MIXED", shipmentInOutA, new BigDecimal("-30"));
+
+		// shipmentB: same shape — also a candidate for BOTH receipts
+		final I_M_HU shipmentVhuB = createVhu();
+		final I_M_InOut shipmentInOutB = createMinimalInOut(shipmentDocType, "CO");
+		createHuTraceWithSource(shipmentVhuB, null, productId, HUTraceType.MATERIAL_SHIPMENT,
+				"LOT-MIXED", shipmentInOutB, new BigDecimal("-20"));
+
+		// shipment3: graph-traced to receipt1 — must be TRACED, and must never also show up as a candidate
+		final I_M_HU shippedVhu3 = createVhu();
+		createHuTraceWithSource(shippedVhu3, receiptVhu1, productId, HUTraceType.TRANSFORM_LOAD,
+				"LOT-MIXED", null, new BigDecimal("24"));
+		final I_M_InOut shipmentInOut3 = createMinimalInOut(shipmentDocType, "CO");
+		createHuTraceWithSource(shippedVhu3, null, productId, HUTraceType.MATERIAL_SHIPMENT,
+				"LOT-MIXED", shipmentInOut3, new BigDecimal("-24"));
+
+		scenarioDocNos.put(scenarioName + ".receipt1", receiptInOut1.getDocumentNo());
+		scenarioDocNos.put(scenarioName + ".receipt2", receiptInOut2.getDocumentNo());
+		scenarioDocNos.put(scenarioName + ".shipmentA", shipmentInOutA.getDocumentNo());
+		scenarioDocNos.put(scenarioName + ".shipmentB", shipmentInOutB.getDocumentNo());
+		scenarioDocNos.put(scenarioName + ".shipment3", shipmentInOut3.getDocumentNo());
+	}
+
+	/**
+	 * A receipt and a shipment of one product, both with {@code lotnumber=NULL} and no VHU link.
+	 * Labelled PRODUCT_CANDIDATE — distinct from the lot-sharing candidates of
+	 * {@link #setupMixedTracedAndCandidate} — because there is no lot for the two to agree on, only
+	 * the product. These are the semantics {@code @Id:S0000.1_HUTrace_BugB} depends on.
+	 */
+	private void setupNoLotNoLink(@NonNull final String scenarioName, @NonNull final ProductId productId)
+	{
+		scenarioProductIds.put(scenarioName, productId);
+		final I_C_DocType receiptDocType = loadDocType("MMR", false);
+		final I_C_DocType shipmentDocType = loadDocType("MMS", true);
+
+		final I_M_HU receiptVhu = createVhu();
+		final I_M_InOut receiptInOut = createMinimalInOut(receiptDocType, "CO");
+		createHuTraceWithSource(receiptVhu, null, productId, HUTraceType.MATERIAL_RECEIPT,
+				null /*lotNumber*/, receiptInOut, new BigDecimal("100"));
+
+		final I_M_HU shipmentVhu = createVhu();
+		final I_M_InOut shipmentInOut = createMinimalInOut(shipmentDocType, "CO");
+		createHuTraceWithSource(shipmentVhu, null, productId, HUTraceType.MATERIAL_SHIPMENT,
+				null /*lotNumber*/, shipmentInOut, new BigDecimal("-24"));
+
+		scenarioDocNos.put(scenarioName + ".receipt1", receiptInOut.getDocumentNo());
+		scenarioDocNos.put(scenarioName + ".shipment", shipmentInOut.getDocumentNo());
+	}
+
+	/**
+	 * One receipt document carrying two MATERIAL_RECEIPT traces of the same lot on different VHUs
+	 * (e.g. two TUs unloaded together), with a shipment descending from the first of the two VHUs.
+	 * The receipt document's total quantity across both VHUs must be reported once, not once per VHU.
+	 */
+	private void setupReceiptQtyAndDedup(@NonNull final String scenarioName, @NonNull final ProductId productId)
+	{
+		scenarioProductIds.put(scenarioName, productId);
+		final I_C_DocType receiptDocType = loadDocType("MMR", false);
+		final I_C_DocType shipmentDocType = loadDocType("MMS", true);
+
+		final I_M_InOut receiptInOut = createMinimalInOut(receiptDocType, "CO");
+		final I_M_HU receiptVhuA = createVhu();
+		createHuTraceWithSource(receiptVhuA, null, productId, HUTraceType.MATERIAL_RECEIPT,
+				"LOT-DEDUP", receiptInOut, new BigDecimal("60"));
+		final I_M_HU receiptVhuB = createVhu();
+		createHuTraceWithSource(receiptVhuB, null, productId, HUTraceType.MATERIAL_RECEIPT,
+				"LOT-DEDUP", receiptInOut, new BigDecimal("40"));
+
+		// the shipment descends from the FIRST of the two receipt VHUs
+		final I_M_HU shippedVhu = createVhu();
+		createHuTraceWithSource(shippedVhu, receiptVhuA, productId, HUTraceType.TRANSFORM_LOAD,
+				"LOT-DEDUP", null, new BigDecimal("24"));
+		final I_M_InOut shipmentInOut = createMinimalInOut(shipmentDocType, "CO");
+		createHuTraceWithSource(shippedVhu, null, productId, HUTraceType.MATERIAL_SHIPMENT,
+				"LOT-DEDUP", shipmentInOut, new BigDecimal("-24"));
 
 		scenarioDocNos.put(scenarioName + ".receipt1", receiptInOut.getDocumentNo());
 		scenarioDocNos.put(scenarioName + ".shipment", shipmentInOut.getDocumentNo());
