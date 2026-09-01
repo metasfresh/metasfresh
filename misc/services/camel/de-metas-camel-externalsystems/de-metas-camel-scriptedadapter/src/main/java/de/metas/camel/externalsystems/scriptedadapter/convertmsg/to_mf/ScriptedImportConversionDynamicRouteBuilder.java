@@ -22,64 +22,54 @@
 
 package de.metas.camel.externalsystems.scriptedadapter.convertmsg.to_mf;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.annotations.VisibleForTesting;
 import de.metas.camel.externalsystems.common.CamelRoutesGroup;
-import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.scriptedadapter.JavaScriptExecutorService;
 import de.metas.camel.externalsystems.scriptedadapter.JavaScriptRepo;
-import de.metas.camel.externalsystems.scriptedadapter.convertmsg.to_mf.model.CamelServiceRouteIdWithRequestType;
-import de.metas.camel.externalsystems.scriptedadapter.convertmsg.to_mf.model.ScriptedImportedConversionToMfRequest;
 import de.metas.camel.externalsystems.scriptedadapter.convertmsg.to_mf.processor.ScriptedImportConversionProcessor;
-import de.metas.common.util.Check;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import org.apache.camel.AggregationStrategy;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.RuntimeCamelException;
-import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.http.base.HttpOperationFailedException;
 
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
-import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.EXCEPTION_PREFIX;
-import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.FIELD_ERROR_MESSAGE;
+import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.PROPERTY_SCRIPTED_IMPORT_ORIGINAL_PAYLOAD;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
-@RequiredArgsConstructor
-public class ScriptedImportConversionDynamicRouteBuilder extends RouteBuilder
+public class ScriptedImportConversionDynamicRouteBuilder extends AbstractScriptedImportConversionArchivingRouteBuilder
 {
-	private static final Logger logger = Logger.getLogger(ScriptedImportConversionDynamicRouteBuilder.class.getName());
+	private static final DateTimeFormatter ARCHIVE_FILE_TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmmssSSS");
 
 	public static final String SCRIPTED_IMPORT_CONVERSION_PROCESSOR_ID = "ScriptedImportConversionProcessorId";
 
-	@NonNull private final String endpointName;
-	@NonNull private final String scriptIdentifier;
-	@NonNull private final JavaScriptRepo javaScriptRepo;
-	@NonNull private final JavaScriptExecutorService javaScriptExecutorService;
-	@NonNull private final ProducerTemplate producerTemplate;
+	public ScriptedImportConversionDynamicRouteBuilder(
+			@NonNull final String endpointName,
+			@NonNull final String scriptIdentifier,
+			@NonNull final JavaScriptRepo javaScriptRepo,
+			@NonNull final JavaScriptExecutorService javaScriptExecutorService,
+			@NonNull final ProducerTemplate producerTemplate,
+			@NonNull final String processedDir,
+			@NonNull final String errorDir)
+	{
+		super(endpointName, scriptIdentifier, javaScriptRepo, javaScriptExecutorService, producerTemplate, processedDir, errorDir);
+	}
 
 	@Override
 	public void configure()
 	{
 		errorHandler(defaultErrorHandler());
 		onException(Exception.class)
+				.process(this::archiveLocallyOnError)
 				.to(direct(MF_ERROR_ROUTE_ID));
 
 		//@formatter:off
 		from("direct:" + getRouteId())
 				.routeId(getRouteId())
 				.group(CamelRoutesGroup.START_ON_DEMAND.getCode())
+				.convertBodyTo(String.class)
+				.setProperty(PROPERTY_SCRIPTED_IMPORT_ORIGINAL_PAYLOAD, body())
 				.process(new ScriptedImportConversionProcessor(javaScriptExecutorService, scriptIdentifier, javaScriptRepo)).id(SCRIPTED_IMPORT_CONVERSION_PROCESSOR_ID)
 				.choice()
 					.when(body().isNull())
@@ -90,116 +80,20 @@ public class ScriptedImportConversionDynamicRouteBuilder extends RouteBuilder
 							.process(this::handleItemInList)
 						.end()
 					.endChoice()
-				.end();
+				.end()
+				.process(this::archiveLocallyOnSuccess);
 		//@formatter:on
 	}
 
-	private void handleItemInList(@NonNull final Exchange exchange)
+	@Override
+	protected String archiveFileName(@NonNull final Exchange exchange)
 	{
-		final ScriptedImportedConversionToMfRequest request = exchange.getIn().getBody(ScriptedImportedConversionToMfRequest.class);
-
-		try
-		{
-			final CamelServiceRouteIdWithRequestType camelRouteIdWithRequestType = CamelServiceRouteIdWithRequestType.ofRouteId(request.getCamelServiceRouteID());
-			final Object payload = JsonObjectMapperHolder.sharedJsonObjectMapper()
-					.readValue(request.getRequestBody(), camelRouteIdWithRequestType.getRequestType());
-
-			final String response = producerTemplate.requestBody(resolveCamelEndpointUri(camelRouteIdWithRequestType), payload, String.class);
-			exchange.getMessage().setBody(response);
-		}
-		catch (final Exception e)
-		{
-			logger.log(Level.WARNING, "Exception caught when handling request: " + request, e);
-			exchange.getMessage().setBody(getErrorMessage(e));
-		}
-	}
-
-	@NonNull
-	private String getErrorMessage(@NonNull final Exception e)
-	{
-		return Optional.ofNullable(e.getCause())
-				.map(root -> {
-					if (root instanceof HttpOperationFailedException httpOperationFailedException)
-					{
-						return httpOperationFailedException.getResponseBody();
-					}
-					return EXCEPTION_PREFIX + root.getMessage();
-				})
-				.orElse(EXCEPTION_PREFIX + e.getMessage());
-	}
-	
-	@NonNull
-	private String resolveCamelEndpointUri(@NonNull final CamelServiceRouteIdWithRequestType camelRouteIdWithRequestType)
-	{
-		if (camelRouteIdWithRequestType.isProperty())
-		{
-			return Optional.ofNullable(getCamelContext().resolvePropertyPlaceholders("{{" + camelRouteIdWithRequestType.getRouteId() + "}}"))
-					.orElseThrow(() -> new RuntimeCamelException("Missing property: " + camelRouteIdWithRequestType.getRouteId()));
-		}
-		else
-		{
-			return "direct:" + camelRouteIdWithRequestType.getRouteId();
-		}
+		return ARCHIVE_FILE_TIMESTAMP_FORMATTER.format(ZonedDateTime.now()) + "_" + endpointName + ".json";
 	}
 
 	@NonNull
 	private String getRouteId()
 	{
 		return endpointName;
-	}
-
-	/**
-	 * Aggregates each split item’s response into a single List<Object>.
-	 */
-	@VisibleForTesting
-	public static class ResponseAggregationStrategy implements AggregationStrategy
-	{
-		private final ObjectMapper mapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
-
-		@Override
-		@NonNull
-		public Exchange aggregate(@Nullable final Exchange oldExchange,
-								  @NonNull final Exchange newExchange)
-		{
-			if (oldExchange == null)
-			{
-				final List<Object> list = new ArrayList<>();
-				getJsonObject(newExchange).ifPresent(list::add);
-				newExchange.getMessage().setBody(list);
-				return newExchange;
-			}
-			else
-			{
-				@SuppressWarnings("unchecked") final List<Object> list = oldExchange.getIn().getBody(List.class);
-				getJsonObject(newExchange).ifPresent(list::add);
-				oldExchange.getMessage().setBody(list);
-				return oldExchange;
-			}
-		}
-
-		@NonNull
-		private Optional<Object> getJsonObject(@NonNull final Exchange newExchange)
-		{
-			final String responseStr = newExchange.getIn().getBody(String.class);
-
-			if (Check.isEmpty(responseStr))
-			{
-				return Optional.empty();
-			}
-
-			if (responseStr.startsWith(EXCEPTION_PREFIX))
-			{
-				return Optional.of(responseStr);
-			}
-
-			try
-			{
-				return Optional.of(mapper.readValue(responseStr, Object.class));
-			}
-			catch (final JsonProcessingException e)
-			{
-				return Optional.of(Map.of(FIELD_ERROR_MESSAGE, e.getMessage()));
-			}
-		}
 	}
 }

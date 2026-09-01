@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.EmptyUtil;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.accounting.C_ElementValue_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -107,6 +108,7 @@ import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -156,7 +158,7 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Q
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyWithIssues_Effective;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class C_Invoice_Candidate_StepDef
 {
@@ -181,6 +183,7 @@ public class C_Invoice_Candidate_StepDef
 	private final M_InOut_StepDefData shipmentTable;
 	private final C_Project_StepDefData projectTable;
 	private final C_PromotionCode_StepDefData promotionCodeTable;
+	private final C_ElementValue_StepDefData elementValueTable;
 
 	public C_Invoice_Candidate_StepDef(
 			@NonNull final C_Invoice_Candidate_StepDefData invoiceCandTable,
@@ -194,7 +197,8 @@ public class C_Invoice_Candidate_StepDef
 			@NonNull final M_InOutLine_StepDefData inoutLineTable,
 			@NonNull final M_InOut_StepDefData shipmentTable,
 			@NonNull final C_Project_StepDefData projectTable,
-			@NonNull final C_PromotionCode_StepDefData promotionCodeTable)
+			@NonNull final C_PromotionCode_StepDefData promotionCodeTable,
+			@NonNull final C_ElementValue_StepDefData elementValueTable)
 	{
 		this.invoiceCandTable = invoiceCandTable;
 		this.invoiceTable = invoiceTable;
@@ -208,6 +212,7 @@ public class C_Invoice_Candidate_StepDef
 		this.shipmentTable = shipmentTable;
 		this.projectTable = projectTable;
 		this.promotionCodeTable = promotionCodeTable;
+		this.elementValueTable = elementValueTable;
 	}
 
 	@And("^locate invoice candidates for invoice: (.*)$")
@@ -269,10 +274,25 @@ public class C_Invoice_Candidate_StepDef
 		return invoiceCandidateHolder.getValueNotNull();
 	}
 
+	/**
+	 * Polls (up to {@code timeoutSec}) for the invoice candidate(s) of a vendor/customer return inout and
+	 * stores each under its identifier. Each DataTable row is delegated to {@link #loadCreditMemoCandidate(DataTableRow)}.
+	 *
+	 * <p>Required columns per row:
+	 * <ul>
+	 *   <li>{@code M_InOut_ID.Identifier} – the return inout</li>
+	 *   <li>{@code C_Invoice_Candidate_ID.Identifier} – identifier under which to store the found IC</li>
+	 * </ul>
+	 * <p>Optional columns per row:
+	 * <ul>
+	 *   <li>{@code OPT.M_Product_ID.Identifier} – filters the lookup to this product; required when the return
+	 *       generates several ICs (e.g. HU packing-material lines alongside the product line)</li>
+	 * </ul>
+	 */
 	@And("^after not more than (.*)s, credit memo candidates are found:$")
 	public void find_credit_memo_candidates(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
+		for (final DataTableRow row : DataTableRows.of(dataTable).toList())
 		{
 			StepDefUtil.tryAndWait(timeoutSec, 500, () -> loadCreditMemoCandidate(row));
 		}
@@ -299,6 +319,22 @@ public class C_Invoice_Candidate_StepDef
 		}
 	}
 
+	/**
+	 * Updates existing purchase/sales invoice candidates identified by alias.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_Invoice_Candidate_ID</b> — (required, identifier-ref) the candidate to update<br>
+	 *   <b>QtyToInvoice_Override</b> — (optional) sets the manual qty-to-invoice override<br>
+	 *   <b>C_ElementValue_Override_ID</b> — (optional, identifier-ref) per-line GL account override; propagated to the generated invoice line on processing<br>
+	 * @cucumber.depends StepDefData: C_Invoice_Candidate_StepDefData, C_ElementValue_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update C_Invoice_Candidate:
+	 *   | C_Invoice_Candidate_ID | C_ElementValue_Override_ID |
+	 *   | invoiceCand            | overrideAccount            |
+	 * </pre>
+	 */
 	@And("update C_Invoice_Candidate:")
 	public void update_C_Invoice_Candidate(@NonNull final DataTable dataTable)
 	{
@@ -310,6 +346,11 @@ public class C_Invoice_Candidate_StepDef
 
 					row.getAsOptionalBigDecimal(I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override)
 							.ifPresent(invoiceCandidate::setQtyToInvoice_Override);
+
+					// Per-line GL account override (purchase): propagated to the invoice line on processing.
+					row.getAsOptionalIdentifier(I_C_Invoice_Candidate.COLUMNNAME_C_ElementValue_Override_ID)
+							.map(elementValueTable::getId)
+							.ifPresent(elementValueId -> invoiceCandidate.setC_ElementValue_Override_ID(elementValueId.getRepoId()));
 
 					InterfaceWrapperHelper.saveRecord(invoiceCandidate);
 					invoiceCandTable.putOrReplace(invoiceCandIdentifier, invoiceCandidate);
@@ -510,6 +551,39 @@ public class C_Invoice_Candidate_StepDef
 				});
 	}
 
+	/**
+	 * Validates fields on existing {@link I_C_Invoice_Candidate} records.
+	 *
+	 * <p>DataTable columns:
+	 * <ul>
+	 *   <li>{@code C_Invoice_Candidate_ID.Identifier} (required) — identifier registered via "after not more than Xs, C_Invoice_Candidate are found:" or similar</li>
+	 *   <li>{@code QtyToInvoice} (optional)</li>
+	 *   <li>{@code QtyOrdered} (optional)</li>
+	 *   <li>{@code QtyDelivered} (optional)</li>
+	 *   <li>{@code QtyEntered} (optional)</li>
+	 *   <li>{@code QtyInvoiced} (optional)</li>
+	 *   <li>{@code NetAmtToInvoice} (optional)</li>
+	 *   <li>{@code C_Order_ID} (optional)</li>
+	 *   <li>{@code C_OrderLine_ID} (optional)</li>
+	 *   <li>{@code PaymentRule} (optional)</li>
+	 *   <li>{@code M_Product_ID} (optional)</li>
+	 *   <li>{@code Processed} (optional)</li>
+	 *   <li>{@code IsWithoutCharge} (optional)</li>
+	 *   <li>{@code Reason} (optional)</li>
+	 *   <li>{@code IsAutoInvoice} (optional) — expected auto-invoice flag</li>
+	 *   <li>{@code InvoiceRule} (optional) — expected invoice-rule code (e.g. {@code D} = AfterDelivery, {@code I} = Immediate)</li>
+	 *   <li>{@code InvoiceRule_Override} (optional, null-allowed) — expected invoice-rule override; pass {@code null} to assert that no override is set</li>
+	 *   <li>{@code IsFreightCost} (optional) — expected freight-cost flag, derived from the product's ProductType</li>
+	 *   <li>{@code DeliveryDate} (optional) — expected delivery date</li>
+	 * </ul>
+	 *
+	 * <p>Example:
+	 * <pre>{@code
+	 * And validate C_Invoice_Candidate:
+	 *   | C_Invoice_Candidate_ID.Identifier | InvoiceRule | IsAutoInvoice |
+	 *   | invoiceCandidate                  | D           | true          |
+	 * }</pre>
+	 */
 	@And("validate C_Invoice_Candidate:")
 	public void validate_C_Invoice_Candidate(@NonNull final DataTable dataTable)
 	{
@@ -631,6 +705,32 @@ public class C_Invoice_Candidate_StepDef
 						row.getAsOptionalString(I_C_Invoice_Candidate.COLUMNNAME_Reason)
 								.ifPresent(reason -> softly.assertThat(finalInvoiceCandidate.getReason()).as("Reason").isEqualTo(DataTableUtil.nullToken2Null(reason)));
 
+						row.getAsOptionalBoolean(I_C_Invoice_Candidate.COLUMNNAME_IsAutoInvoice)
+								.ifPresent(isAutoInvoice -> softly.assertThat(finalInvoiceCandidate.isAutoInvoice()).as("IsAutoInvoice").isEqualTo(isAutoInvoice));
+
+						row.getAsOptionalString(I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule)
+								.ifPresent(invoiceRule -> softly.assertThat(finalInvoiceCandidate.getInvoiceRule()).as("InvoiceRule").isEqualTo(invoiceRule));
+
+						row.getAsOptionalBoolean(I_C_Invoice_Candidate.COLUMNNAME_IsError)
+								.ifPresent(expected -> softly.assertThat(finalInvoiceCandidate.isError()).as("IsError").isEqualTo(expected));
+
+						row.getAsOptionalString(I_C_Invoice_Candidate.COLUMNNAME_ErrorMsg)
+								.ifPresent(expected -> softly.assertThat(finalInvoiceCandidate.getErrorMsg()).as("ErrorMsg").contains(expected));
+
+						row.getAsOptionalBigDecimal(I_C_Invoice_Candidate.COLUMNNAME_PriceActual)
+								.ifPresent(expected -> softly.assertThat(finalInvoiceCandidate.getPriceActual()).as("PriceActual").isEqualByComparingTo(expected));
+
+						row.getAsOptionalString(I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override)
+								.ifPresent(invoiceRuleOverride -> softly.assertThat(finalInvoiceCandidate.getInvoiceRule_Override())
+										.as("InvoiceRule_Override")
+										.isEqualTo(DataTableUtil.nullToken2Null(invoiceRuleOverride)));
+
+						row.getAsOptionalBoolean(I_C_Invoice_Candidate.COLUMNNAME_IsFreightCost)
+								.ifPresent(isFreightCost -> softly.assertThat(finalInvoiceCandidate.isFreightCost()).as("IsFreightCost").isEqualTo(isFreightCost));
+
+						row.getAsOptionalLocalDate(I_C_Invoice_Candidate.COLUMNNAME_DeliveryDate)
+								.ifPresent(deliveryDate -> softly.assertThat(TimeUtil.asLocalDate(finalInvoiceCandidate.getDeliveryDate())).as("DeliveryDate").isEqualTo(deliveryDate));
+
 						softly.assertAll();
 					}
 					catch (final Throwable e)
@@ -725,13 +825,94 @@ public class C_Invoice_Candidate_StepDef
 
 	}
 
-	private boolean loadCreditMemoCandidate(@NonNull final Map<String, String> row)
+	/**
+	 * Asserts the {@code LineAggregationKey} relationship across the listed invoice candidates.
+	 * The line aggregation key is the value the invoicing engine groups invoice lines by: two ICs
+	 * with the same key merge into one invoice line, two with different keys split into separate lines.
+	 * This is the deterministic mechanism behind F01010.4's per-line GL account override — with the
+	 * override added to the line-key aggregation (C_Aggregation 540003), ICs that differ only by
+	 * {@code C_ElementValue_Override_ID} get different keys (→ split), while equal overrides keep an
+	 * equal key (→ merge). Requires the partner to use aggregation 540003 as its line aggregation.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_Invoice_Candidate_ID</b> — (required, identifier-ref) the invoice candidates to compare<br>
+	 * @cucumber.example
+	 * <pre>
+	 * Then C_Invoice_Candidate LineAggregationKeys are different:
+	 *   | C_Invoice_Candidate_ID |
+	 *   | invoiceCand_a          |
+	 *   | invoiceCand_b          |
+	 * </pre>
+	 */
+	@And("^C_Invoice_Candidate LineAggregationKeys are (equal|different):$")
+	public void assertLineAggregationKeys(@NonNull final String relation, @NonNull final DataTable dataTable)
 	{
-		final String customerReturnIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final int customerReturnId = shipmentTable.get(customerReturnIdentifier).getM_InOut_ID();
+		// Collect the candidates and wait until the (async) recompute triggered by the override change
+		// has cleared, so LineAggregationKey reflects the current C_ElementValue_Override_ID.
+		final List<I_C_Invoice_Candidate> invoiceCandidates = new ArrayList<>();
+		final ImmutableSet.Builder<InvoiceCandidateId> idsBuilder = ImmutableSet.builder();
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_C_Invoice_Candidate invoiceCandidate = row.getAsIdentifier(COLUMNNAME_C_Invoice_Candidate_ID).lookupNotNullIn(invoiceCandTable);
+			invoiceCandidates.add(invoiceCandidate);
+			idsBuilder.add(InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID()));
+		});
+		waitUntilValid(idsBuilder.build(), 120);
 
-		final Optional<I_C_Invoice_Candidate> invoiceCandidate = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_M_InOut_ID, customerReturnId)
+		final List<String> keys = new ArrayList<>();
+		for (final I_C_Invoice_Candidate invoiceCandidate : invoiceCandidates)
+		{
+			InterfaceWrapperHelper.refresh(invoiceCandidate);
+			final String key = invoiceCandidate.getLineAggregationKey();
+			assertThat(key)
+					.as("LineAggregationKey must be computed for C_Invoice_Candidate_ID=%s", invoiceCandidate.getC_Invoice_Candidate_ID())
+					.isNotBlank();
+			keys.add(key);
+		}
+
+		final int distinct = new LinkedHashSet<>(keys).size();
+		if ("equal".equals(relation))
+		{
+			assertThat(distinct).as("all LineAggregationKeys must be EQUAL, but were: %s", keys).isEqualTo(1);
+		}
+		else
+		{
+			assertThat(distinct).as("all LineAggregationKeys must be DIFFERENT, but were: %s", keys).isEqualTo(keys.size());
+		}
+	}
+
+	/**
+	 * Loads the invoice candidate for the given return inout, optionally filtered by product.
+	 *
+	 * <p>Required columns:
+	 * <ul>
+	 *   <li>{@code M_InOut_ID.Identifier} – identifier of the vendor/customer return inout</li>
+	 *   <li>{@code C_Invoice_Candidate_ID.Identifier} – identifier under which to store the found IC</li>
+	 * </ul>
+	 *
+	 * <p>Optional columns:
+	 * <ul>
+	 *   <li>{@code OPT.M_Product_ID.Identifier} – when present, filters ICs by this product; required when
+	 *       the return generates multiple ICs (e.g. packing-material lines alongside the product line)</li>
+	 * </ul>
+	 *
+	 * @return {@code true} if exactly one matching IC was found and stored; {@code false} if none found yet
+	 */
+	private boolean loadCreditMemoCandidate(@NonNull final DataTableRow row)
+	{
+		final int returnInOutId = row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID).lookupNotNullIn(shipmentTable).getM_InOut_ID();
+
+		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_M_InOut_ID, returnInOutId);
+
+		// Optional product filter — required when the return generates multiple ICs (packing-material lines alongside the product IC)
+		row.getAsOptionalIdentifier(COLUMNNAME_M_Product_ID)
+				.map(productIdentifier -> productIdentifier.lookupNotNullIn(productTable))
+				.ifPresent(product -> queryBuilder.addEqualsFilter(COLUMNNAME_M_Product_ID, product.getM_Product_ID()));
+
+		// firstOnlyOptional throws when >1 IC matches: pass OPT.M_Product_ID.Identifier to narrow the lookup
+		// whenever the return generates several ICs (e.g. HU packing-material lines alongside the product line).
+		final Optional<I_C_Invoice_Candidate> invoiceCandidate = queryBuilder
 				.create()
 				.firstOnlyOptional(I_C_Invoice_Candidate.class);
 
@@ -740,8 +921,7 @@ public class C_Invoice_Candidate_StepDef
 			return false;
 		}
 
-		final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
-		invoiceCandTable.putOrReplace(invoiceCandIdentifier, invoiceCandidate.get());
+		invoiceCandTable.putOrReplace(row.getAsIdentifier(COLUMNNAME_C_Invoice_Candidate_ID), invoiceCandidate.get());
 
 		return true;
 	}

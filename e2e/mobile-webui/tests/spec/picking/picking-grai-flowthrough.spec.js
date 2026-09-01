@@ -123,9 +123,13 @@ const buildDistinctGrais = (baseGrai, count) => {
  * Postcondition: the inline GRAI capture panel is showing and reports the picked crate count as the
  * required number of GRAIs (count label 0 / TU_COUNT).
  *
+ * @param {{ closeTarget?: boolean }} [options]
+ * @param {boolean} [options.closeTarget=false]  when true, confirms the pick quantity with the
+ *   "OK und LU schließen" button instead of plain "OK" — asserts the GRAI capture is demanded on
+ *   both completion paths (the close-LU path must not bypass it).
  * @returns {Promise<{ masterdata: any, grais: string[], pickingJobId: any }>}
  */
-const pickAllTUsAndOpenGraiScreen = async () => {
+const pickAllTUsAndOpenGraiScreen = async ({ closeTarget = false } = {}) => {
     const masterdata = await createMasterdataForGraiFlowThrough();
     const grais = buildDistinctGrais(masterdata.packingInstructions.PI_MAIN.grai, TU_COUNT);
 
@@ -143,10 +147,12 @@ const pickAllTUsAndOpenGraiScreen = async () => {
     await PickingJobLineScreen.waitForScreen();
 
     // Pick all TU_COUNT crates from the line scan screen (one source HU, qty = TU_COUNT TUs).
+    // closeTarget=true finishes with the "OK und LU schließen" button instead of plain "OK"; the GRAI
+    // capture must be demanded for BOTH buttons (the close-LU path must not bypass it).
     await PickingJobLineScreen.clickScanButton();
     await PickLineScanScreen.waitForScreen();
     await PickLineScanScreen.typeQRCode(masterdata.handlingUnits.HU_SOURCE.qrCode);
-    await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: String(TU_COUNT) });
+    await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: String(TU_COUNT), closeTarget });
 
     // Confirming the quantity auto-invokes the inline GRAI capture (GRAIRequired=Y); the pick is NOT
     // sent yet. The panel shows the picked crate count as the required GRAI count: 0 / TU_COUNT.
@@ -201,7 +207,8 @@ test('Flow Through: capture one GRAI per picked crate (manual + scanned) then co
             },
         },
         hus: {
-            vhu1: { attributes: { GRAI: grais.join(',') } },
+            // Picked-target VHU also carries the consignee (BP1's single default ship-to → BP1_singleBPLocationI).
+            vhu1: { attributes: { GRAI: grais.join(',') }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         },
     });
 
@@ -241,4 +248,60 @@ test('Flow Through: capturing fewer GRAIs than crates keeps save disabled and bl
     // (the completion guard is the backend enforcement of the same invariant).
     await PickGraiScreen.expectCount({ scanned: TU_COUNT - 1, total: TU_COUNT });
     await PickGraiScreen.expectSaveDisabled();
+});
+
+// --- Close-LU must NOT bypass GRAI — finish with "OK und LU schließen" ---------------------------
+//
+// Regression: the GRAI capture was demanded after the plain "OK" button but skipped after
+// "OK und LU schließen", so a picker could ship returnable crates for a GRAI-required customer
+// without recording any GRAI. The close-LU path must demand exactly the same inline GRAI capture, then
+// stamp the captured GRAIs onto the picked crates and close the LU in one atomic pick.
+
+// noinspection JSUnusedLocalSymbols
+test('Flow Through: "OK und LU schließen" still demands one GRAI per picked crate, then completes', async ({ page }) => {
+    await allure.epic('E0105: Picking');
+    await allure.feature('F00230: MobileUI Picking');
+    await allure.story('GRAI Flow Through — closing the LU does not bypass the GRAI capture');
+    await allure.severity('critical');
+
+    // Finish the pick with the "OK und LU schließen" button. The inline GRAI capture must still appear
+    // (this is the bug: before the fix the close-LU button skipped it and completed the pick directly).
+    const { grais, pickingJobId } = await pickAllTUsAndOpenGraiScreen({ closeTarget: true });
+
+    // Capture exactly one GRAI per picked crate, then save: the pick (qty + GRAIs + close-LU) goes out
+    // as one atomic event — the GRAIs are stamped and the LU is closed in the same transaction.
+    await PickGraiScreen.expectSaveDisabled();
+    await PickGraiScreen.scanGraiBatch({ graiStrings: grais });
+    await PickGraiScreen.expectGraiChipCount({ expectedCount: TU_COUNT });
+    await PickGraiScreen.expectCount({ scanned: TU_COUNT, total: TU_COUNT });
+    await PickGraiScreen.expectSaveEnabled();
+    await PickGraiScreen.clickSave();
+    await PickingJobLineScreen.waitForScreen();
+
+    // The picked (and now closed) LU must carry exactly the 10 captured GRAIs — proves the close-LU
+    // path stamps GRAIs just like the plain-OK path.
+    await Backend.expect({
+        title: 'After close-LU pick: the LU carries all 10 captured GRAIs',
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: { qtyPicked: [{ vhu: 'vhu1', tu: 'tu1', lu: 'lu1' }] },
+                },
+            },
+        },
+        hus: {
+            // Picked-target VHU also carries the consignee (BP1's single default ship-to → BP1_singleBPLocationI).
+            vhu1: { attributes: { GRAI: grais.join(',') }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+        },
+    });
+
+    // Complete the job: succeeds because every picked crate has a GRAI -> shipment created.
+    await PickingJobLineScreen.goBack();
+    await PickingJobScreen.waitForScreen();
+    await PickingJobScreen.complete();
+
+    await Backend.expect({
+        title: 'Close-LU Flow Through: order picked & shipped (every crate has a GRAI)',
+        salesOrders: { SO1: { status: 'Completed' } },
+    });
 });

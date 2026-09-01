@@ -60,8 +60,8 @@ Feature: Intrastat view M_InOut_V computes weight per commodity group
 
     # --- Customer in a foreign country (FR) — must differ from org country (AT or DE) for cross-border filter ---
     And metasfresh contains C_BPartners:
-      | Identifier     | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule | OPT.VATaxID      |
-      | bp_intra       | Intrastat Test Partner | N            | Y              | ps_intra                      | D               | FR123456789       |
+      | Identifier     | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule | OPT.VATaxID   |
+      | bp_intra       | Intrastat Test Partner | N            | Y              | ps_intra                      | D               | FR40303265045 |
     And metasfresh contains C_BPartner_Locations:
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault | C_Country_ID |
       | bpl_intra  | 9012345678901 | bp_intra                 | Y                   | Y                   | FR           |

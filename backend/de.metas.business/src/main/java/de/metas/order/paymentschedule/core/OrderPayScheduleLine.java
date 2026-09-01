@@ -124,6 +124,38 @@ public class OrderPayScheduleLine
 
 	public boolean isLetterOfCreditDate() {return referenceDateType.isLetterOfCreditDate();}
 
+	public boolean isMaterialReceiptDate() {return referenceDateType.isMaterialReceiptDate();}
+
+	/**
+	 * True for a prepaid step — one settled up front via a proforma, before delivery: a Letter-of-Credit
+	 * or an order-date (advance) break. An invoice-date break is a regular post-invoice term (not prepaid);
+	 * a material-receipt (BL/ETA) break is delivery-driven (not prepaid).
+	 */
+	public boolean isPrepaidLine() {return isLetterOfCreditDate() || referenceDateType.isOrderDate();}
+
+	/**
+	 * True if this line is linked to a committed downstream document — a goods receipt ({@code inoutId})
+	 * or a matched invoice ({@code invoiceId}). Such a link reflects real activity that a reactivate
+	 * (drop-and-rebuild) would orphan; a line that is merely {@code Awaiting_Pay}/{@code Paid} because its
+	 * reference date was known at completion carries no such link.
+	 */
+	public boolean isLinkedToDownstreamDocument() {return inoutId != null || invoiceId != null;}
+
+	/**
+	 * True for a material-receipt (BL/ETA) line the generic recompute may still refresh on a later
+	 * reference-date correction: {@code Awaiting_Pay} (a Transport Order completed it, so no longer
+	 * {@code Pending}), not yet paid, and not linked to a committed downstream document. LC/OD lines are
+	 * out via {@code isMaterialReceiptDate()} (an LC line is refreshed only by the LC step service);
+	 * {@code !isPaid()} guards a legacy row whose status and {@code isPaid} column have drifted apart.
+	 */
+	public boolean isUnsettledAwaitingPayMaterialReceipt()
+	{
+		return isMaterialReceiptDate()
+				&& status == OrderPayScheduleStatus.Awaiting_Pay
+				&& !isPaid()
+				&& !isLinkedToDownstreamDocument();
+	}
+
 	public void applyAndProcess(@NonNull final OrderPayScheduleLineContext context)
 	{
 		final OrderPayScheduleStatus nextStatus = context.getStatus();

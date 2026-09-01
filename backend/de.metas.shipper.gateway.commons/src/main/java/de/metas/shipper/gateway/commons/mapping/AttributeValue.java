@@ -22,6 +22,7 @@
 
 package de.metas.shipper.gateway.commons.mapping;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
@@ -49,8 +50,16 @@ public enum AttributeValue implements ReferenceListAwareEnum
 	SHIPPER_EORI(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ShipperEORI),
 	RECEIVER_BPARTNER_ATTENTION(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ReceiverBPartnerAttention),
 	SENDER_BPARTNER_ATTENTION(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_SenderBPartnerAttention),
+	IS_PRE_ADVICE_REQUIRED(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_IsPreAdviceRequired),
+	INCOTERMS_VALUE(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_IncotermsValue),
+	EXTERNAL_SYSTEM_VALUE(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ExternalSystemValue),
+	// Generic values read from Carrier_Config additional properties
+	CUSTOM_VALUE_STRING_1(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_CustomValueString1),
+	CUSTOM_VALUE_STRING_2(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_CustomValueString2),
+	CUSTOM_VALUE_STRING_3(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_CustomValueString3),
 
 	// From parcel
+	TOP_LEVEL_TYPE(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_TopLevelType),
 	PARCEL_ID(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ParcelId),
 
 	// From content
@@ -88,4 +97,7 @@ public enum AttributeValue implements ReferenceListAwareEnum
 	{
 		return index.ofCode(code);
 	}
+
+	@JsonValue
+	public String toJson() {return getCode();}
 }

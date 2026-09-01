@@ -2,52 +2,52 @@ import { parseLocalDate, parseNumber } from '../../../utils/qrCode/parseCustomQR
 
 describe('parseNumber', () => {
   test('should return the number as is if decimalPoint is 0', () => {
-    const result = parseNumber({ string: '123456', decimalPoint: 0 });
+    const result = parseNumber({ string: '123456', decimalPointPosition: 0 });
     expect(result).toBe(123456);
   });
 
   test('should apply the decimal point starting from the right', () => {
-    const result = parseNumber({ string: '123456', decimalPoint: 2 });
+    const result = parseNumber({ string: '123456', decimalPointPosition: 2 });
     expect(result).toBe(1234.56);
   });
 
   test('should handle a decimalPoint equal to the string length', () => {
-    const result = parseNumber({ string: '123456', decimalPoint: 6 });
+    const result = parseNumber({ string: '123456', decimalPointPosition: 6 });
     expect(result).toBe(0.123456);
   });
 
   test('should handle a decimalPoint greater than the string length', () => {
-    const result = parseNumber({ string: '123456', decimalPoint: 8 });
+    const result = parseNumber({ string: '123456', decimalPointPosition: 8 });
     expect(result).toBe(0.00123456);
   });
 
   test('should handle input with leading zeros', () => {
-    const result = parseNumber({ string: '00123456', decimalPoint: 3 });
+    const result = parseNumber({ string: '00123456', decimalPointPosition: 3 });
     expect(result).toBe(123.456);
   });
 
   test('should throw an error for invalid string input', () => {
-    expect(() => parseNumber({ string: 'abc', decimalPoint: 2 })).toThrow('Invalid number format: "abc"');
+    expect(() => parseNumber({ string: 'abc', decimalPointPosition: 2 })).toThrow('Invalid number format: "abc"');
   });
 
   test('should throw an error for invalid decimalPoint', () => {
-    expect(() => parseNumber({ string: '123456', decimalPoint: -1 })).toThrow('Invalid decimalPoint: "-1"');
-    expect(() => parseNumber({ string: '123456', decimalPoint: 1.5 })).toThrow('Invalid decimalPoint: "1.5"');
-    expect(() => parseNumber({ string: '123456', decimalPoint: '2' })).toThrow('Invalid decimalPoint: "2"');
+    expect(() => parseNumber({ string: '123456', decimalPointPosition: -1 })).toThrow('Invalid decimalPoint: "-1"');
+    expect(() => parseNumber({ string: '123456', decimalPointPosition: 1.5 })).toThrow('Invalid decimalPoint: "1.5"');
+    expect(() => parseNumber({ string: '123456', decimalPointPosition: '2' })).toThrow('Invalid decimalPoint: "2"');
   });
 
   test('should handle large numbers correctly', () => {
-    const result = parseNumber({ string: '12345678901234567890', decimalPoint: 10 });
+    const result = parseNumber({ string: '12345678901234567890', decimalPointPosition: 10 });
     expect(result).toBe(1234567890.123456789);
   });
 
   test('should return 0 if the input is "0"', () => {
-    const result = parseNumber({ string: '0', decimalPoint: 5 });
+    const result = parseNumber({ string: '0', decimalPointPosition: 5 });
     expect(result).toBe(0);
   });
 
   test('should return a valid output for input with decimalPoint less than string length', () => {
-    const result = parseNumber({ string: '123', decimalPoint: 1 });
+    const result = parseNumber({ string: '123', decimalPointPosition: 1 });
     expect(result).toBe(12.3);
   });
 });

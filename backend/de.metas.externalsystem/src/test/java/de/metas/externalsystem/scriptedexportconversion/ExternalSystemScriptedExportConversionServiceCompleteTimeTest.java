@@ -23,6 +23,7 @@
 package de.metas.externalsystem.scriptedexportconversion;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemExportStatus;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.endpoint.ExternalSystemEndpointId;
@@ -77,7 +78,7 @@ public class ExternalSystemScriptedExportConversionServiceCompleteTimeTest
 				Mockito.mock(ExternalSystemScriptedExportConversionRepository.class),
 				Mockito.mock(de.metas.externalsystem.endpoint.ExternalSystemEndpointRepository.class),
 				Mockito.mock(de.metas.externalsystem.audit.ExternalSystemExportAuditRepo.class),
-				Mockito.mock(de.metas.externalsystem.ExternalSystemConfigRepo.class));
+				Mockito.mock(ExternalSystemConfigRepository.class));
 	}
 
 	// -----------------------------------------------------------------------
@@ -286,7 +287,7 @@ public class ExternalSystemScriptedExportConversionServiceCompleteTimeTest
 				Mockito.mock(ExternalSystemScriptedExportConversionRepository.class),
 				Mockito.mock(de.metas.externalsystem.endpoint.ExternalSystemEndpointRepository.class),
 				Mockito.mock(de.metas.externalsystem.audit.ExternalSystemExportAuditRepo.class),
-				Mockito.mock(de.metas.externalsystem.ExternalSystemConfigRepo.class));
+				Mockito.mock(ExternalSystemConfigRepository.class));
 
 		// Must not throw even though the first config causes a status-write failure
 		serviceWithSpy.recordCompleteTimeEligibilityStatusesOnly(

@@ -32,6 +32,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class WorkplaceRepositoryTest
 {
@@ -79,7 +82,7 @@ public class WorkplaceRepositoryTest
 	}
 
 	@Test
-	public void getPackingPlacePickFromLocatorIds_returnsOnlyPackingPlacesWithLocator()
+	public void getAllPackingPlacePickFromLocatorIds_returnsAllPackingPlacesWithLocator()
 	{
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(1);
 		final WarehouseId otherWarehouseId = WarehouseId.ofRepoId(2);
@@ -96,12 +99,13 @@ public class WorkplaceRepositoryTest
 		saveWorkplace("WP-C", warehouseId, false, L3.getRepoId());
 		// WP-D: isPackingPlace=Y but NO locator — contributes nothing
 		saveWorkplace("WP-D", warehouseId, true, 0);
-		// WP-E: isPackingPlace=Y, locator L4 but in ANOTHER warehouse — must NOT appear when querying warehouseId
+		// WP-E: isPackingPlace=Y, locator L4 in ANOTHER warehouse — MUST appear (the set is warehouse-agnostic,
+		// so a non-packing workplace excludes bring-to-packing orders regardless of which warehouse hosts the packing place)
 		saveWorkplace("WP-E", otherWarehouseId, true, L4.getRepoId());
 
-		final ImmutableSet<LocatorId> result = WorkplaceRepository.newInstanceForUnitTesting().getPackingPlacePickFromLocatorIds(warehouseId);
+		final ImmutableSet<LocatorId> result = WorkplaceRepository.newInstanceForUnitTesting().getAllPackingPlacePickFromLocatorIds();
 
-		assertThat(result).containsExactlyInAnyOrder(L1, L2);
+		assertThat(result).containsExactlyInAnyOrder(L1, L2, L4);
 	}
 
 	private static void saveWorkplace(
@@ -117,4 +121,25 @@ public class WorkplaceRepositoryTest
 		record.setPickFrom_Locator_ID(pickFromLocatorRepoId);
 		InterfaceWrapperHelper.saveRecord(record);
 	}
+
+	@Test
+	public void isWarnShelfLifeUndercut_roundTrip()
+	{
+		final WorkplaceRepository repo = WorkplaceRepository.newInstanceForUnitTesting();
+
+		final Workplace withFlagTrue = repo.create(WorkplaceCreateRequest.builder()
+				.name("WarnTrue")
+				.warehouseId(WarehouseId.ofRepoId(1))
+				.warnShelfLifeUndercut(true)
+				.build());
+		assertTrue(withFlagTrue.isWarnShelfLifeUndercut(), "Workplace created with warnShelfLifeUndercut=true must load back as true");
+
+		final Workplace withFlagFalse = repo.create(WorkplaceCreateRequest.builder()
+				.name("WarnFalse")
+				.warehouseId(WarehouseId.ofRepoId(1))
+				.warnShelfLifeUndercut(false)
+				.build());
+		assertFalse(withFlagFalse.isWarnShelfLifeUndercut(), "Workplace created with warnShelfLifeUndercut=false must load back as false");
+	}
+
 }

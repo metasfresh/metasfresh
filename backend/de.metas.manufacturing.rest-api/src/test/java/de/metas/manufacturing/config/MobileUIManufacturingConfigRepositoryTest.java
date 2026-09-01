@@ -1,5 +1,6 @@
 package de.metas.manufacturing.config;
 
+import de.metas.handlingunits.picking.config.mobileui.PickAttribute;
 import de.metas.user.UserId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -30,15 +31,34 @@ class MobileUIManufacturingConfigRepositoryTest
 
 	private void createGlobalConfig(final ReceiveUnitType receiveUnitType)
 	{
+		createGlobalConfig(receiveUnitType, true, true);
+	}
+
+	private void createGlobalConfig(
+			final ReceiveUnitType receiveUnitType,
+			final boolean isBestBeforeDateEditable,
+			final boolean isLotNumberEditable)
+	{
 		final I_MobileUI_MFG_Config record = InterfaceWrapperHelper.newInstance(I_MobileUI_MFG_Config.class);
 		record.setIsActive(true);
 		record.setIsScanResourceRequired(false);
 		record.setIsAllowIssuingAnyHU(false);
 		record.setReceiveUnitType(receiveUnitType != null ? receiveUnitType.getCode() : null);
+		record.setIsBestBeforeDateEditable(isBestBeforeDateEditable);
+		record.setIsLotNumberEditable(isLotNumberEditable);
 		InterfaceWrapperHelper.save(record);
 	}
 
 	private void createUserConfig(final UserId userId, final ReceiveUnitType receiveUnitType)
+	{
+		createUserConfig(userId, receiveUnitType, null, null);
+	}
+
+	private void createUserConfig(
+			final UserId userId,
+			final ReceiveUnitType receiveUnitType,
+			final String isBestBeforeDateEditable,
+			final String isLotNumberEditable)
 	{
 		final I_MobileUI_UserProfile_MFG record = InterfaceWrapperHelper.newInstance(I_MobileUI_UserProfile_MFG.class);
 		record.setAD_User_ID(userId.getRepoId());
@@ -46,6 +66,8 @@ class MobileUIManufacturingConfigRepositoryTest
 		record.setIsScanResourceRequired(null);
 		record.setIsAllowIssuingAnyHU(null);
 		record.setReceiveUnitType(receiveUnitType != null ? receiveUnitType.getCode() : null);
+		record.setIsBestBeforeDateEditable(isBestBeforeDateEditable);
+		record.setIsLotNumberEditable(isLotNumberEditable);
 		InterfaceWrapperHelper.save(record);
 	}
 
@@ -121,6 +143,52 @@ class MobileUIManufacturingConfigRepositoryTest
 
 			final MobileUIManufacturingConfig config = repo.getConfig(null, clientId);
 			assertThat(config.getReceiveUnitTypeEffective()).isEqualTo(ReceiveUnitType.TU);
+		}
+	}
+
+	@Nested
+	class getEditableAttributes
+	{
+		@Test
+		void noConfigAtAll_bothEditableByDefault()
+		{
+			final MobileUIManufacturingConfig config = repo.getConfig(USER_ID, clientId);
+			assertThat(config.getEditableAttributes())
+					.containsExactlyInAnyOrder(PickAttribute.BestBeforeDate, PickAttribute.LotNo);
+		}
+
+		@Test
+		void globalConfigBothEditable_bothEditable()
+		{
+			createGlobalConfig(ReceiveUnitType.CU, true, true);
+
+			final MobileUIManufacturingConfig config = repo.getConfig(USER_ID, clientId);
+			assertThat(config.getEditableAttributes())
+					.containsExactlyInAnyOrder(PickAttribute.BestBeforeDate, PickAttribute.LotNo);
+		}
+
+		@Test
+		void userOverridesLotNumberNotEditable_overGlobalBothEditable()
+		{
+			createGlobalConfig(ReceiveUnitType.CU, true, true);
+			createUserConfig(USER_ID, null, null, "N");
+
+			final MobileUIManufacturingConfig config = repo.getConfig(USER_ID, clientId);
+			assertThat(config.getEditableAttributes())
+					.containsExactly(PickAttribute.BestBeforeDate)
+					.doesNotContain(PickAttribute.LotNo);
+		}
+
+		@Test
+		void userNullEditable_inheritsGlobal()
+		{
+			createGlobalConfig(ReceiveUnitType.CU, true, false);
+			createUserConfig(USER_ID, null, null, null);
+
+			final MobileUIManufacturingConfig config = repo.getConfig(USER_ID, clientId);
+			assertThat(config.getEditableAttributes())
+					.containsExactly(PickAttribute.BestBeforeDate)
+					.doesNotContain(PickAttribute.LotNo);
 		}
 	}
 }

@@ -15,6 +15,10 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Nullable;
 import java.util.Optional;
 
+/**
+ * Repository Tables: MobileUI_MFG_Config, MobileUI_UserProfile_MFG
+ * Repository Cluster: MobileUIManufacturingConfigRepository
+ */
 @Repository
 public class MobileUIManufacturingConfigRepository
 {
@@ -24,6 +28,13 @@ public class MobileUIManufacturingConfigRepository
 			.isScanResourceRequired(OptionalBoolean.FALSE)
 			.isAllowIssuingAnyHU(OptionalBoolean.FALSE)
 			.receiveUnitType(ReceiveUnitType.CU)
+			.isBestBeforeDateEditable(OptionalBoolean.TRUE)
+			.isLotNumberEditable(OptionalBoolean.TRUE)
+			.isAllowFinishedGoodsReceiveToLU(OptionalBoolean.TRUE)
+			.isAllowFinishedGoodsReceiveToTU(OptionalBoolean.TRUE)
+			.isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.FALSE)
+			.isCaptureCatchWeightAtReceipt(OptionalBoolean.TRUE)
+			.isAllowReceiveWithoutPackingItem(OptionalBoolean.FALSE)
 			.build();
 
 	private final CCache<UserId, Optional<MobileUIManufacturingConfig>> userConfigsCache = CCache.<UserId, Optional<MobileUIManufacturingConfig>>builder()
@@ -66,8 +77,11 @@ public class MobileUIManufacturingConfigRepository
 
 	private Optional<I_MobileUI_UserProfile_MFG> retrieveUserConfigRecord(final @NonNull UserId userId)
 	{
+		// No active-records filter on purpose: this method is shared by the read path
+		// (retrieveUserConfig filters IsActive='N' out in Java, treating it as "no config")
+		// and the save path (saveUserConfig reactivates an existing inactive row instead of
+		// inserting a duplicate). Filtering here would break that save-path reactivation.
 		return queryBL.createQueryBuilder(I_MobileUI_UserProfile_MFG.class)
-				//.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MobileUI_UserProfile_MFG.COLUMNNAME_AD_User_ID, userId)
 				.create()
 				.firstOnlyOptional(I_MobileUI_UserProfile_MFG.class);
@@ -79,6 +93,13 @@ public class MobileUIManufacturingConfigRepository
 				.isScanResourceRequired(OptionalBoolean.ofNullableString(record.getIsScanResourceRequired()))
 				.isAllowIssuingAnyHU(OptionalBoolean.ofNullableString(record.getIsAllowIssuingAnyHU()))
 				.receiveUnitType(ReceiveUnitType.ofNullableCode(record.getReceiveUnitType()))
+				.isBestBeforeDateEditable(OptionalBoolean.ofNullableString(record.getIsBestBeforeDateEditable()))
+				.isLotNumberEditable(OptionalBoolean.ofNullableString(record.getIsLotNumberEditable()))
+				.isAllowFinishedGoodsReceiveToLU(OptionalBoolean.ofNullableString(record.getIsAllowFinishedGoodsReceiveToLU()))
+				.isAllowFinishedGoodsReceiveToTU(OptionalBoolean.ofNullableString(record.getIsAllowFinishedGoodsReceiveToTU()))
+				.isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.ofNullableString(record.getIsSkipFinishedGoodsReceiveTargetStep()))
+				.isCaptureCatchWeightAtReceipt(OptionalBoolean.ofNullableString(record.getIsCaptureCatchWeightAtReceipt()))
+				.isAllowReceiveWithoutPackingItem(OptionalBoolean.ofNullableString(record.getIsAllowReceiveWithoutPackingItem()))
 				.build();
 	}
 
@@ -87,6 +108,13 @@ public class MobileUIManufacturingConfigRepository
 		record.setIsScanResourceRequired(from.getIsScanResourceRequired().toBooleanString());
 		record.setIsAllowIssuingAnyHU(from.getIsAllowIssuingAnyHU().toBooleanString());
 		record.setReceiveUnitType(from.getReceiveUnitType() != null ? from.getReceiveUnitType().getCode() : null);
+		record.setIsBestBeforeDateEditable(from.getIsBestBeforeDateEditable().toBooleanString());
+		record.setIsLotNumberEditable(from.getIsLotNumberEditable().toBooleanString());
+		record.setIsAllowFinishedGoodsReceiveToLU(from.getIsAllowFinishedGoodsReceiveToLU().toBooleanString());
+		record.setIsAllowFinishedGoodsReceiveToTU(from.getIsAllowFinishedGoodsReceiveToTU().toBooleanString());
+		record.setIsSkipFinishedGoodsReceiveTargetStep(from.getIsSkipFinishedGoodsReceiveTargetStep().toBooleanString());
+		record.setIsCaptureCatchWeightAtReceipt(from.getIsCaptureCatchWeightAtReceipt().toBooleanString());
+		record.setIsAllowReceiveWithoutPackingItem(from.getIsAllowReceiveWithoutPackingItem().toBooleanString());
 	}
 
 	private Optional<MobileUIManufacturingConfig> retrieveGlobalConfig(@NonNull final ClientId clientId)
@@ -105,6 +133,13 @@ public class MobileUIManufacturingConfigRepository
 				.isScanResourceRequired(OptionalBoolean.ofBoolean(record.isScanResourceRequired()))
 				.isAllowIssuingAnyHU(OptionalBoolean.ofBoolean(record.isAllowIssuingAnyHU()))
 				.receiveUnitType(ReceiveUnitType.ofNullableCode(record.getReceiveUnitType()))
+				.isBestBeforeDateEditable(OptionalBoolean.ofBoolean(record.isBestBeforeDateEditable()))
+				.isLotNumberEditable(OptionalBoolean.ofBoolean(record.isLotNumberEditable()))
+				.isAllowFinishedGoodsReceiveToLU(OptionalBoolean.ofBoolean(record.isAllowFinishedGoodsReceiveToLU()))
+				.isAllowFinishedGoodsReceiveToTU(OptionalBoolean.ofBoolean(record.isAllowFinishedGoodsReceiveToTU()))
+				.isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.ofBoolean(record.isSkipFinishedGoodsReceiveTargetStep()))
+				.isCaptureCatchWeightAtReceipt(OptionalBoolean.ofBoolean(record.isCaptureCatchWeightAtReceipt()))
+				.isAllowReceiveWithoutPackingItem(OptionalBoolean.ofBoolean(record.isAllowReceiveWithoutPackingItem()))
 				.build();
 	}
 

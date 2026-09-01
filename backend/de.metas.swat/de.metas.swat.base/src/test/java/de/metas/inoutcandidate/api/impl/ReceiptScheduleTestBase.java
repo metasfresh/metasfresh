@@ -38,6 +38,9 @@ import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
 import de.metas.inoutcandidate.filter.GenerateReceiptScheduleForModelAggregateFilter;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.inout.InOutLineId;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
+import de.metas.order.OrderLineId;
 import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
 import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
 import de.metas.interfaces.I_C_DocType;
@@ -397,6 +400,39 @@ public abstract class ReceiptScheduleTestBase
 		// Save & return
 		saveRecord(orderLine);
 		return orderLine;
+	}
+
+	protected I_M_ReceiptSchedule createReceiptScheduleForOrderLine(
+			final BPartnerLocationId bpartnerLocationId,
+			final I_M_Warehouse warehouse,
+			final Timestamp date,
+			final I_M_Product product,
+			final int qty,
+			final OrderLineId orderLineId)
+	{
+		final I_M_ReceiptSchedule rs = createReceiptSchedule(bpartnerLocationId, warehouse, date, product, qty);
+		rs.setC_OrderLine_ID(orderLineId.getRepoId());
+		saveRecord(rs);
+		return rs;
+	}
+
+	/**
+	 * Creates an {@link I_M_ReceiptSchedule_Alloc} for the given receipt schedule.
+	 *
+	 * @param inOutLineId non-null to simulate a received alloc (goods were received); null means not yet received
+	 */
+	protected I_M_ReceiptSchedule_Alloc createReceiptScheduleAlloc(
+			final I_M_ReceiptSchedule receiptSchedule,
+			@Nullable final InOutLineId inOutLineId)
+	{
+		final I_M_ReceiptSchedule_Alloc alloc = InterfaceWrapperHelper.newInstance(I_M_ReceiptSchedule_Alloc.class);
+		alloc.setM_ReceiptSchedule_ID(receiptSchedule.getM_ReceiptSchedule_ID());
+		if (inOutLineId != null)
+		{
+			alloc.setM_InOutLine_ID(inOutLineId.getRepoId());
+		}
+		saveRecord(alloc);
+		return alloc;
 	}
 
 	public I_M_Attribute createM_Attribute(final String name,

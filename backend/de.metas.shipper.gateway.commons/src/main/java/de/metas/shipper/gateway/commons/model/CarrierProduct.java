@@ -23,6 +23,7 @@
 package de.metas.shipper.gateway.commons.model;
 
 import de.metas.shipping.CarrierProductId;
+import de.metas.shipping.ShipperId;
 import de.metas.shipper.gateway.spi.model.ShipperProduct;
 import lombok.Builder;
 import lombok.Getter;
@@ -31,7 +32,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
-import javax.annotation.Nullable;
 
 @Value
 @Builder
@@ -41,6 +41,7 @@ import javax.annotation.Nullable;
 public class CarrierProduct implements ShipperProduct
 {
 	@NonNull CarrierProductId id;
+	@NonNull ShipperId shipperId;
 	@NonNull String code;
 	@NonNull String name;
 }

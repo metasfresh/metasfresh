@@ -1,6 +1,8 @@
 package de.metas.frontend_testing.masterdata;
 
+import de.metas.frontend_testing.masterdata.adprocess.JsonSetAdProcessFlagsRequest;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerRequest;
+import de.metas.frontend_testing.masterdata.orgseller.JsonOrgSellerRequest;
 import de.metas.frontend_testing.masterdata.compensation_group.JsonCompensationGroupSchemaRequest;
 import de.metas.frontend_testing.masterdata.custom_qrcode_format.JsonCustomQRCodeFormatRequest;
 import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderRequest;
@@ -8,6 +10,7 @@ import de.metas.frontend_testing.masterdata.hu.JsonCreateHURequest;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsRequest;
 import de.metas.frontend_testing.masterdata.huQRCodes.JsonGenerateHUQRCodeRequest;
 import de.metas.frontend_testing.masterdata.inventory.JsonInventoryRequest;
+import de.metas.frontend_testing.masterdata.mailbox.JsonMailboxRequest;
 import de.metas.frontend_testing.masterdata.mobile_configuration.JsonMobileConfigRequest;
 import de.metas.frontend_testing.masterdata.picking_slot.JsonPickingSlotCreateRequest;
 import de.metas.frontend_testing.masterdata.pp_order.JsonPPOrderRequest;
@@ -41,14 +44,41 @@ public class JsonCreateMasterdataRequest
 
 	@Nullable Map<String, String> sysconfigs;
 
+	/**
+	 * Sets flag columns on {@code AD_Process} records matched by a {@code JasperReport} substring.
+	 * Used to enable {@code IsPdfA3Output=Y} on the sales-invoice report process so that the mock
+	 * report service returns a valid PDF/A-3 and ZUGFeRD assembly can embed the CII XML into it.
+	 * Applied in execution order before bpartner/product creation.
+	 */
+	@Nullable List<JsonSetAdProcessFlagsRequest> adProcessFlags;
+
+	/**
+	 * Configures an org's seller identity for ZUGFeRD / EN16931: sets
+	 * {@code AD_OrgInfo.Org_BPartner_ID} + {@code OrgBP_Location_ID} to the specified
+	 * BR-DE-conformant BPartner. Must appear after {@code bpartners} in execution order.
+	 */
+	@Nullable JsonOrgSellerRequest orgSeller;
+
 	@Nullable JsonMobileConfigRequest mobileConfig;
 	@Nullable Map<String, JsonLoginUserRequest> login;
+	@Nullable Map<String, JsonMailboxRequest> mailboxes;
 	@Nullable Map<String, JsonCreateBPartnerRequest> bpartners;
 	@Nullable Map<String, JsonWorkplaceRequest> workplaces;
 	@Nullable Map<String, JsonWarehouseRequest> warehouses;
 	@Nullable Map<String, JsonUOMRequest> uoms;
+	@Nullable Map<String, de.metas.frontend_testing.masterdata.vatid.JsonVATaxIDCheckLogRequest> vatIdChecks;
 	@Nullable Map<String, JsonCompensationGroupSchemaRequest> compensationGroupSchemas;
 	@Nullable Map<String, JsonCreateProductRequest> products;
+
+	/**
+	 * Updates {@code M_Product.ProductLifeCycleStatus} (BBS-Status) on already-created products:
+	 * product identifier → status code ({@code O}/{@code A}/{@code G}/{@code N}). Applied late
+	 * (after order creation) so a product can be flipped to a blocking status only once its
+	 * order/picking-job setup exists — mirroring the real-life temporal block. See
+	 * {@link de.metas.frontend_testing.masterdata.product.SetProductLifeCycleStatusCommand}.
+	 */
+	@Nullable Map<String, String> productLifeCycleStatuses;
+
 	@Nullable Map<String, JsonCreateResourceRequest> resources;
 	@Nullable Map<String, JsonCreateProductPlanningRequest> productPlannings;
 	@Nullable Map<String, JsonPickingSlotCreateRequest> pickingSlots;

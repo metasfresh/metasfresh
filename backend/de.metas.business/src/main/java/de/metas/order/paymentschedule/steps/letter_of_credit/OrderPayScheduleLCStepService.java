@@ -92,6 +92,27 @@ public class OrderPayScheduleLCStepService
 		recomputeLCStep(orderId);
 	}
 
+	/**
+	 * Re-derives the LC/advance step after the order was completed — including a
+	 * reactivate -> re-complete round trip, which drops every {@code C_OrderPaySchedule} row and
+	 * rebuilds it from the payment-term breaks alone, losing the proforma-derived state.
+	 * <p>
+	 * Only an order that actually HAS a proforma allocation has anything to re-derive. Without one
+	 * {@link #recomputeLCStep(OrderId)} would take its {@code proforma == null} branch and reset the
+	 * just-built line to {@code Pending} / {@code 9999-12-01} — which is the wanted behaviour for
+	 * {@code ProformaOrderAllocService.deallocate()}, but would discard the correct schedule on
+	 * every completion of an ordinary order whose payment term has an {@code OD} advance break.
+	 */
+	public void recomputeLCStepAfterOrderCompleted(@NonNull final OrderId orderId)
+	{
+		if (!proformaService.getIdByOrderId(orderId).isPresent())
+		{
+			return;
+		}
+
+		recomputeLCStep(orderId);
+	}
+
 	public void recomputeLCStep(@NonNull OrderId orderId)
 	{
 		recomputeLCStep(orderId, null);
@@ -109,8 +130,8 @@ public class OrderPayScheduleLCStepService
 		final OrderPaySchedule schedule = orderPayScheduleService.getByOrderId(orderId).orElse(null);
 		if (schedule == null) {return;} // no pay-schedule at all — no-op
 
-		final OrderPayScheduleLine lcStep = schedule.getSingleLCLine().orElse(null);
-		if (lcStep == null) {return;} // no LC break in payment term — no-op
+		final OrderPayScheduleLine target = schedule.getSingleLCLine().orElseGet(() -> schedule.getSinglePrepaidLine().orElse(null));
+		if (target == null) {return;} // no LC break and no single prepaid line in payment term — no-op
 
 		//
 		// Proforma invoice
@@ -127,9 +148,12 @@ public class OrderPayScheduleLCStepService
 		if (proforma == null)
 		{
 			// No proforma allocation — reset to Pending
-			schedule.markAsPending(lcStep.getIdNotNull());
+			schedule.markAsPending(target.getIdNotNull());
 			orderPayScheduleService.save(schedule);
-			clearLCDateOnOrder(orderId);
+			if (target.isLetterOfCreditDate())
+			{
+				clearLCDateOnOrder(orderId);
+			}
 			return;
 		}
 
@@ -149,7 +173,7 @@ public class OrderPayScheduleLCStepService
 		{
 			// Payment completed → Paid
 			schedule.applyAndProcess(
-					lcStep.getIdNotNull(),
+					target.getIdNotNull(),
 					OrderPayScheduleLineContext.paid()
 							.referenceDate(proforma.getDateInvoiced())
 							.dueDate(proforma.getDueDate())
@@ -161,7 +185,7 @@ public class OrderPayScheduleLCStepService
 		{
 			// Payment absent, drafted, or reversed → Awaiting_Pay
 			schedule.applyAndProcess(
-					lcStep.getIdNotNull(),
+					target.getIdNotNull(),
 					OrderPayScheduleLineContext.awaitingPayment()
 							.referenceDate(proforma.getDateInvoiced())
 							.dueDate(proforma.getDueDate())
@@ -171,7 +195,10 @@ public class OrderPayScheduleLCStepService
 		}
 
 		orderPayScheduleService.save(schedule);
-		stampLCDateOnOrder(orderId, proforma);
+		if (target.isLetterOfCreditDate())
+		{
+			stampLCDateOnOrder(orderId, proforma);
+		}
 	}
 
 	private void clearLCDateOnOrder(@NonNull final OrderId orderId)

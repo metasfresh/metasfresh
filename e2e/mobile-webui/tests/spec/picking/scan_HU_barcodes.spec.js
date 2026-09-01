@@ -85,7 +85,7 @@ test('Pick by scanning HU QR Code', async ({ page }) => {
         },
         hus: {
             [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '68 PCE' } },
-            lu1: { huStatus: 'S', storages: { P1: '12 PCE' } },
+            lu1: { huStatus: 'S', storages: { P1: '12 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 
@@ -130,7 +130,7 @@ test('Pick by scanning M_HU_ID', async ({ page }) => {
         },
         hus: {
             [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '68 PCE' } },
-            lu1: { huStatus: 'S', storages: { P1: '12 PCE' } },
+            lu1: { huStatus: 'S', storages: { P1: '12 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 
@@ -176,7 +176,7 @@ test('Pick by scanning ExternalBarcode', async ({ page }) => {
         },
         hus: {
             [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '68 PCE' } },
-            lu1: { huStatus: 'S', storages: { P1: '12 PCE' } },
+            lu1: { huStatus: 'S', storages: { P1: '12 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 

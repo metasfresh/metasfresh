@@ -22,6 +22,7 @@
 package de.metas.shipper.client.nshift.json;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -47,5 +48,8 @@ public enum JsonAddressKind
 				.findFirst()
 				.orElse(UNKNOWN);
 	}
+
+	@JsonIgnore
+	public boolean isSender() {return this == SENDER;}
 
 }

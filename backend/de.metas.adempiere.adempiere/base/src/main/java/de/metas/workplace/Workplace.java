@@ -54,6 +54,7 @@ public class Workplace
 	@Nullable OrderPickingType orderPickingType;
 	int maxPickingJobs;
 	boolean isPackingPlace;
+	boolean warnShelfLifeUndercut;
 
 	@NonNull ImmutableSet<ProductId> productIds;
 	@NonNull ImmutableSet<ProductCategoryId> productCategoryIds;
@@ -74,6 +75,7 @@ public class Workplace
 			@Nullable final OrderPickingType orderPickingType,
 			final int maxPickingJobs,
 			final boolean isPackingPlace,
+			final boolean warnShelfLifeUndercut,
 			@Nullable final ImmutableSet<ProductId> productIds,
 			@Nullable final ImmutableSet<ProductCategoryId> productCategoryIds,
 			@Nullable final ImmutableSet<CarrierProductId> carrierProductIds,
@@ -96,6 +98,7 @@ public class Workplace
 		this.orderPickingType = orderPickingType;
 		this.maxPickingJobs = maxPickingJobs;
 		this.isPackingPlace = isPackingPlace;
+		this.warnShelfLifeUndercut = warnShelfLifeUndercut;
 
 		this.productIds = productIds != null ? productIds : ImmutableSet.of();
 		this.productCategoryIds = productCategoryIds != null ? productCategoryIds : ImmutableSet.of();

@@ -407,6 +407,7 @@ import java.util.Optional;
 				lotNumber = lotNumberBL.getAndIncrementLotNo(LotNoContext.builder()
 						.sequenceId(sequenceId)
 						.clientId(ClientId.ofRepoId(ppOrderBom.getAD_Client_ID()))
+						.ppOrderId(ppOrderId)
 						.build());
 
 			}

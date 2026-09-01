@@ -16,6 +16,8 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Warehouse;
 
+import javax.annotation.Nullable;
+
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /**
@@ -111,6 +113,13 @@ public class WarehouseAdvisor implements IWarehouseAdvisor
 			return null;
 		}
 
+		return evaluateCustomerPickingWarehouse(bpartnerId);
+	}
+
+	@Override
+	@Nullable
+	public WarehouseId evaluateCustomerPickingWarehouse(@NonNull final BPartnerId bpartnerId)
+	{
 		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 		final I_C_BPartner bp = bpartnersRepo.getById(bpartnerId);
 		if (!bp.isCustomer())
@@ -124,7 +133,6 @@ public class WarehouseAdvisor implements IWarehouseAdvisor
 			return customerWarehouseId;
 		}
 
-		// if order is a purchase order, return null
 		return null;
 	}
 

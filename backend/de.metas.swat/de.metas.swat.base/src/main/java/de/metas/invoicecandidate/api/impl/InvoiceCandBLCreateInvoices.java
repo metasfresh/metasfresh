@@ -744,6 +744,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoiceLine.setIsWithoutCharge(cand.isWithoutCharge());
 				invoiceLine.setReason(cand.isWithoutCharge() ? cand.getReason() : null);
 
+				// F01010.4 — propagate override account from IC to invoice line
+				invoiceLine.setC_ElementValue_Override_ID(cand.getC_ElementValue_Override_ID());
+
 				final Dimension invoiceCandidateDimension = dimensionService.getFromRecord(cand);
 				dimensionService.updateRecord(invoiceLine, invoiceCandidateDimension);
 

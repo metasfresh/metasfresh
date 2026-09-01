@@ -34,6 +34,7 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
+import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
@@ -46,6 +47,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.IntFunction;
 import java.util.Set;
 
 /**
@@ -369,6 +371,37 @@ public class SysConfigBL implements ISysConfigBL
 					catch (final Exception ex)
 					{
 						logger.warn("Failed converting `{}` to enum {}. Ignoring it.", name, enumType, ex);
+						return null;
+					}
+				})
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+	public <T extends RepoIdAware> ImmutableSet<T> getCommaSeparatedRepoIdAwares(
+			@NonNull final String sysconfigName,
+			@NonNull final IntFunction<T> mapper)
+	{
+		final String string = StringUtils.trimBlankToNull(sysConfigDAO.getValue(sysconfigName, ClientAndOrgId.SYSTEM).orElse(null));
+		if (string == null || string.equals("-"))
+		{
+			return ImmutableSet.of();
+		}
+
+		return Splitter.on(",")
+				.trimResults()
+				.omitEmptyStrings()
+				.splitToList(string)
+				.stream()
+				.map(token -> {
+					try
+					{
+						return mapper.apply(Integer.parseInt(token));
+					}
+					catch (final Exception ex)
+					{
+						logger.warn("Failed converting `{}` to a repo-id from SysConfig `{}`. Ignoring it.", token, sysconfigName, ex);
 						return null;
 					}
 				})

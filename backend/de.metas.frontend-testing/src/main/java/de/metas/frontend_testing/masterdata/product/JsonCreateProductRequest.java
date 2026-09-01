@@ -43,11 +43,31 @@ public class JsonCreateProductRequest
 	@Nullable Boolean isStocked;
 
 	/**
+	 * Explicit {@code M_Product.IsSold} override. When {@code null} the column defaults to
+	 * {@code true}. Set to {@code false} to create a product that is not offered for sale.
+	 */
+	@Nullable Boolean isSold;
+
+	/**
+	 * Explicit {@code M_Product.IsPurchased} override. When {@code null} the column defaults to
+	 * {@code true}. Set to {@code false} to create a product that is not procured via purchase.
+	 */
+	@Nullable Boolean isPurchased;
+
+	/**
 	 * Explicit {@code M_Product.IsSelfPacked} override. When {@code null} the column keeps its
 	 * default ({@code false}). Set to {@code true} to mark the product as self-packed — required by
 	 * the mobileUI mass-printing flow, which only packs self-packed products and skips the rest.
 	 */
 	@Nullable Boolean isSelfPacked;
+
+	/**
+	 * Explicit {@code M_Product.IsSerialNoPicked} override. When {@code true}, the mobile picking flow
+	 * prompts the operator to scan a serial number for this product and writes it to the picked HU's
+	 * {@code SerialNo} attribute. Requires the product's attribute set to support the {@code SerialNo}
+	 * attribute — set {@link #attributeSetName} to a set that includes it (e.g. {@code "Serial"} / {@code "LotSerial"}).
+	 */
+	@Nullable Boolean isSerialNoPicked;
 
 	@Nullable String valuePrefix;
 	@Nullable RandomValueSpec randomValue;
@@ -60,6 +80,9 @@ public class JsonCreateProductRequest
 	@Nullable List<Price> prices;
 
 	@Nullable List<BPartner> bpartners;
+
+	/** M_Product.GuaranteeDaysMin — minimum guaranteed shelf-life days for this product */
+	@Nullable Integer guaranteeDaysMin;
 
 	@Nullable BOM bom;
 
@@ -121,6 +144,8 @@ public class JsonCreateProductRequest
 	{
 		@NonNull Identifier bpartner;
 		@Nullable EAN13 ean13;
+		/** C_BPartner_Product.ShelfLifeMinDays — guaranteed shelf-life days required by this customer for this product */
+		@Nullable Integer shelfLifeMinDays;
 	}
 
 	@Value

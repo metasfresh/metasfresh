@@ -18,6 +18,11 @@ import { ConfirmActivityErrorPanel } from '../../components/ConfirmActivityError
 const NAME = 'PickingJobScreen';
 /** @returns {import('@playwright/test').Locator} */
 const containerElement = () => page.locator('#WFProcessScreen');
+
+// Bounded operator-mirroring recovery for the complete -> jobs-list seam (see settleCompleteToJobsList):
+// the initial confirmation plus ONE retry — enough to ride out a single transient timeout, while a
+// second consecutive failure stays a hard, loud failure. Kept well within Playwright's 120s global cap.
+const COMPLETE_CONFIRM_ATTEMPTS = 2;
 const ACTIVITY_ID_ScanPickFromHU = 'scanPickFromHU'; // keep in sync with PickingMobileApplication.ACTIVITY_ID_ScanPickFromHU
 const ACTIVITY_ID_ScanPickingSlot = 'scanPickingSlot'; // keep in sync with PickingMobileApplication.ACTIVITY_ID_ScanPickingSlot
 
@@ -25,6 +30,32 @@ export const PickingJobScreen = {
     waitForScreen: async () => await step(`${NAME} - Wait for screen`, async () => {
         await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
         await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    // The job header and the line header are rendered by the same page-global markup, so this
+    // delegates rather than duplicating the locator — mirroring how DistributionJobScreen defers
+    // to DistributionUtils. Gives job-header assertions a call site on the screen they belong to.
+    expectHeaderProperty: async ({ caption, value }) => await step(`${NAME} - Check header property '${caption}'='${value}'`, async () => {
+        await PickingJobLineScreen.expectHeaderProperty({ caption, value });
+    }),
+
+    expectVisible: async ({ timeout = SLOW_ACTION_TIMEOUT } = {}) => await step(`${NAME} - Expect to be displayed`, async () => {
+        await expect(containerElement()).toBeVisible({ timeout });
+    }),
+
+    // Assert the WF-process (job) screen is NOT displayed — used to prove a redirect away from the job
+    // (e.g. the redirect-home guard sending a dead deep-link back to the menu).
+    expectNotDisplayed: async () => await step(`${NAME} - Expect NOT to be displayed`, async () => {
+        await expect(containerElement()).toHaveCount(0);
+    }),
+
+    // Assert the job screen is STILL displayed after a settle window — used to prove the operator was
+    // NOT bounced away by a delayed/asynchronous event (e.g. a stale launchers refresh landing after
+    // the job started). There is no natural "visible" event to await for a non-event, so this settles
+    // for `settleTimeout` before asserting.
+    expectRemainsDisplayed: async ({ settleTimeout = FAST_ACTION_TIMEOUT } = {}) => await step(`${NAME} - Expect to remain displayed after ${settleTimeout}ms`, async () => {
+        await page.waitForTimeout(settleTimeout);
+        await expect(containerElement()).toBeVisible();
     }),
 
     getPickingJobId: async () => {
@@ -140,15 +171,37 @@ export const PickingJobScreen = {
         }
     }),
 
+    clickAdviseCarrier: async () => await step(`${NAME} - Click advise carrier button`, async () => {
+        const button = page.getByTestId('advise-carrier-button');
+        await button.waitFor({ timeout: SLOW_ACTION_TIMEOUT });
+        await expect(button).toBeEnabled();
+        await button.tap();
+        await PickingJobScreen.waitForScreen();
+    }),
+
+    expectAdviseCarrierButtonVisible: async () => await step(`${NAME} - Expect advise carrier button visible`, async () => {
+        await page.getByTestId('advise-carrier-button').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    expectCarrierProductCaption: async ({ caption }) => await step(`${NAME} - Expect carrier product caption contains '${caption}'`, async () => {
+        // The current carrier product now renders as a detail line inside the advise-carrier button.
+        const detail = page.getByTestId('carrier-product-caption');
+        await detail.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+        await expect(detail).toContainText(caption);
+    }),
+
     pickHU: async ({
                        qrCode,
                        isScanDirectly,
+                       gapAtIndex, gapMs, // optional: inject ONE real mid-scan inter-keystroke gap (chunked QR arrival); only used when isScanDirectly
+                       terminator, // optional: end-of-scan key ('Enter'/'Tab') appended after the code (device suffix); only used when isScanDirectly
                        expectedPickDirectly,
                        expectNextScreen,
-                       switchToManualInput, qtyEntered, expectQtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason
+                       switchToManualInput, qtyEntered, expectQtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason,
+                       expectedError
                    }) => await step(`${NAME} - Scan HU and Pick`, async () => {
         if (isScanDirectly) {
-            await BarcodeScannerComponent.type(qrCode);
+            await BarcodeScannerComponent.type({ scannedCode: qrCode, gapAtIndex, gapMs, terminator });
         } else {
             await page.locator('#scanQRCode-button').tap(); // click the Scan QR Code button
             await PickingJobScanHUScreen.waitForScreen();
@@ -156,7 +209,18 @@ export const PickingJobScreen = {
         }
 
         if (!expectedPickDirectly) {
-            await GetQuantityDialog.fillAndPressDone({ switchToManualInput, expectQtyEntered, qtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason });
+            // expectedError: the qty-dialog Done press fires the picking/event POST which the backend
+            // rejects (e.g. a life-cycle-blocked product) — asserted as an error toast.
+            await GetQuantityDialog.fillAndPressDone({ switchToManualInput, expectQtyEntered, qtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason, expectedError });
+        }
+
+        if (expectedError) {
+            // A REJECTED pick leaves the operator exactly where they were — the qty dialog stays open so
+            // the quantity can be corrected or the pick cancelled. Verified from the trace: after the 422
+            // on POST /picking/event the app renders the toast and issues no further request, and
+            // #WFProcessScreen is not in the DOM. So there is no next screen to wait for here; waiting
+            // for one would time out.
+            return;
         }
 
         if (!expectNextScreen || expectNextScreen === 'PickingJobScreen') {
@@ -213,6 +277,21 @@ export const PickingJobScreen = {
         }
     }),
 
+    // per-line available-qty display, gated by the picking profile's IsShowQtyAvailableForLines flag.
+    // `qtyAvailable` is the full expected text, e.g. 'Verfügbar: 10 Stk' / 'Verfügbar: 0 Stk'.
+    expectLineQtyAvailable: async ({ index, qtyAvailable }) => await step(`${NAME} - Expect line ${index} qty available '${qtyAvailable}'`, async () => {
+        const lineButton = locateLineButton({ index });
+        const qtyAvailableElement = lineButton.getByTestId('picking-line-qty-available');
+        await qtyAvailableElement.waitFor({ state: 'visible', timeout: FAST_ACTION_TIMEOUT });
+        await expect(qtyAvailableElement).toHaveText(qtyAvailable);
+    }),
+
+    // when the flag is off, no qty-available element must be rendered on the line at all.
+    expectLineQtyAvailableNotVisible: async ({ index }) => await step(`${NAME} - Expect line ${index} qty available not shown`, async () => {
+        const lineButton = locateLineButton({ index });
+        await lineButton.getByTestId('picking-line-qty-available').waitFor({ state: 'detached', timeout: FAST_ACTION_TIMEOUT });
+    }),
+
     clickPickAllButton: async () => await step(`${NAME} - Click Pick All button`, async () => {
         const button = pickAllButton();
         await button.tap();
@@ -236,7 +315,7 @@ export const PickingJobScreen = {
         await page.locator('#last-confirm-button').tap();
         await YesNoDialog.waitForDialog();
         await YesNoDialog.clickYesButton();
-        await PickingJobsListScreen.waitForScreen({ timeout: VERY_SLOW_ACTION_TIMEOUT });
+        await settleCompleteToJobsList();
     }),
 
     completeExpectingNetworkError: async () => await step(`${NAME} - Complete, expect network-error retry panel`, async () => {
@@ -251,7 +330,139 @@ export const PickingJobScreen = {
         await page.locator(ID_BACK_BUTTON).tap();
         await PickingJobsListScreen.waitForScreen();
     }),
+
+    clickUnpickItem: async () => await step(`${NAME} - Click "Unpack item"`, async () => {
+        await page.getByTestId('unpick-item-button').tap();
+        // The unpick panel replaces the job screen; wait for the job-screen scan button to be gone so
+        // its scanner is unmounted before we scan into the unpick scanner (otherwise the product scan
+        // can land in the still-mounted job scanner).
+        await page.getByTestId('unpick-item-button').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+        await BarcodeScannerComponent.expectAttached({ testId: 'unpick-product-scanner', timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    // Scans the product GTIN; the backend resolves it (job-scoped) to the packed product and the qty
+    // dialog opens with default = packed qty. Re-scans if the scan landed in the mount-race window
+    // before the freshly-mounted scanner armed its keydown listener — a real operator simply scans
+    // again when nothing registers.
+    scanProductToUnpick: async ({ scannedCode }) => await step(`${NAME} - Scan product GTIN '${scannedCode}'`, async () => {
+        const qtyDialog = page.locator('.get-qty-dialog');
+        const maxScanAttempts = 3;
+        for (let attempt = 1; attempt <= maxScanAttempts; attempt++) {
+            await BarcodeScannerComponent.type({ scannedCode, testId: 'unpick-product-scanner' });
+            try {
+                await qtyDialog.waitFor({ state: 'visible', timeout: FAST_ACTION_TIMEOUT });
+                return;
+            } catch (e) {
+                if (attempt === maxScanAttempts) {
+                    throw e;
+                }
+                await BarcodeScannerComponent.expectAttached({ testId: 'unpick-product-scanner', timeout: SLOW_ACTION_TIMEOUT });
+            }
+        }
+    }),
+
+    expectDefaultQtyToUnpick: async ({ qty }) => await step(`${NAME} - Expect default qty to unpick '${qty}'`, async () => {
+        await GetQuantityDialog.expectQtyEntered(qty);
+    }),
+
+    enterQtyToUnpick: async ({ qty }) => await step(`${NAME} - Enter qty to unpick '${qty}'`, async () => {
+        await GetQuantityDialog.typeQtyEntered(qty);
+        await GetQuantityDialog.clickDone({});
+        await BarcodeScannerComponent.expectAttached({ testId: 'unpick-target-hu-scanner', timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    scanTargetHUAndCommit: async ({ qrCode }) => await step(`${NAME} - Scan target HU and commit`, async () => {
+        await BarcodeScannerComponent.type({ scannedCode: qrCode, testId: 'unpick-target-hu-scanner' });
+        await PickingJobScreen.waitForScreen();
+    }),
+
+    skipTargetHUAndCommit: async () => await step(`${NAME} - Skip target HU (to floor) and commit`, async () => {
+        await page.getByTestId('unpick-skip-to-floor').tap();
+        await PickingJobScreen.waitForScreen();
+    }),
+
+    unpickItem: async ({ scannedCode, qty, targetHUQRCode, expectDefaultQty }) => await step(`${NAME} - Unpack ${qty} of '${scannedCode}' into target HU`, async () => {
+        await PickingJobScreen.clickUnpickItem();
+        await PickingJobScreen.scanProductToUnpick({ scannedCode });
+        if (expectDefaultQty != null) {
+            await PickingJobScreen.expectDefaultQtyToUnpick({ qty: expectDefaultQty });
+        }
+        await PickingJobScreen.enterQtyToUnpick({ qty });
+        await PickingJobScreen.scanTargetHUAndCommit({ qrCode: targetHUQRCode });
+    }),
+
+    unpickItemToFloor: async ({ scannedCode, qty, expectDefaultQty }) => await step(`${NAME} - Unpack ${qty} of '${scannedCode}' to the floor (skip target HU)`, async () => {
+        await PickingJobScreen.clickUnpickItem();
+        await PickingJobScreen.scanProductToUnpick({ scannedCode });
+        if (expectDefaultQty != null) {
+            await PickingJobScreen.expectDefaultQtyToUnpick({ qty: expectDefaultQty });
+        }
+        await PickingJobScreen.enterQtyToUnpick({ qty });
+        await PickingJobScreen.skipTargetHUAndCommit();
+    }),
+
+    // Drives the unpick panel up to (but not through) the target-HU scan: open the panel, scan the
+    // product GTIN, enter the qty -> the panel is now on the SCAN_TARGET stage (the target-HU scanner
+    // is armed). Stops here so the caller can drive the target-HU submit itself (e.g. under a network
+    // fault) and assert on the in-between state.
+    unpickAdvanceToTargetStage: async ({ scannedCode, qty, expectDefaultQty }) => await step(`${NAME} - Unpack ${qty} of '${scannedCode}', advance to target-HU scan stage`, async () => {
+        await PickingJobScreen.clickUnpickItem();
+        await PickingJobScreen.scanProductToUnpick({ scannedCode });
+        if (expectDefaultQty != null) {
+            await PickingJobScreen.expectDefaultQtyToUnpick({ qty: expectDefaultQty });
+        }
+        await PickingJobScreen.enterQtyToUnpick({ qty });
+    }),
+
+    // Scans a code at the target-HU stage when the submit (the picking/event POST) is expected to FAIL:
+    // either a transient network failure (no HTTP response) or a server rejection (4xx/5xx, e.g. the
+    // operator mis-scans the product GTIN they are holding instead of a target HU). The scan fires and is
+    // submitted, but the unpick does NOT commit and the panel must NOT close. Only commits the scan — the
+    // caller asserts the error toast and the still-open panel via expectOnTargetScanStage(); the caller's
+    // test.step / expectErrorToast label carries which failure mode is under test.
+    scanCodeAtTargetStageNoCommit: async ({ scannedCode }) => await step(`${NAME} - Scan '${scannedCode}' at target-HU stage (submit failure expected, no commit)`, async () => {
+        await BarcodeScannerComponent.type({ scannedCode, testId: 'unpick-target-hu-scanner' });
+    }),
+
+    // Asserts the unpick panel is still on the SCAN_TARGET stage: the target-HU scanner is still armed
+    // (the panel did not close back to the job screen). This is the submit-failure invariant — a failed
+    // submit (transient network OR a server rejection) keeps the panel open so the operator can simply
+    // scan again.
+    expectOnTargetScanStage: async () => await step(`${NAME} - Expect still on target-HU scan stage`, async () => {
+        await BarcodeScannerComponent.expectAttached({ testId: 'unpick-target-hu-scanner', timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    // Negative path: scans a code that does not resolve to a product packed in this job. The single
+    // error surface is the scanner's toast; wrap the call site in expectErrorToast(...) to assert it.
+    scanProductCodeToUnpick: async ({ scannedCode }) => await step(`${NAME} - Scan product code '${scannedCode}' (no advance expected)`, async () => {
+        await BarcodeScannerComponent.type({ scannedCode, testId: 'unpick-product-scanner' });
+    }),
+
+    expectOnProductScanStage: async () => await step(`${NAME} - Expect still on product-scan stage`, async () => {
+        await BarcodeScannerComponent.expectAttached({ testId: 'unpick-product-scanner', timeout: SLOW_ACTION_TIMEOUT });
+        await expect(page.locator('.get-qty-dialog')).toHaveCount(0, { timeout: FAST_ACTION_TIMEOUT });
+    }),
+
+    closeUnpickItem: async () => await step(`${NAME} - Close "Unpack item"`, async () => {
+        await page.getByTestId('unpick-close-button').tap();
+        await PickingJobScreen.waitForScreen();
+    }),
+
+    // Simulates a transient network failure on the unpick submit by aborting the picking/event POST at
+    // the network layer (no HTTP response). With no axiosError.response, the unpick panel treats this as
+    // a recoverable failure -> toasts the error and stays on the SCAN_TARGET stage. Pair with
+    // unblockUnpickSubmit() to release the fault before the retry.
+    blockUnpickSubmit: async () => await step(`${NAME} - Block picking/event (simulate network fault on unpick submit)`, async () => {
+        await page.route(UNPICK_SUBMIT_ROUTE, route => route.abort('failed'));
+    }),
+
+    unblockUnpickSubmit: async () => await step(`${NAME} - Unblock picking/event (release network fault)`, async () => {
+        await page.unroute(UNPICK_SUBMIT_ROUTE);
+    }),
 };
+
+// The picking/event POST that the unpick submit (postStepPartiallyUnPicked) fires.
+const UNPICK_SUBMIT_ROUTE = '**/picking/event';
 
 //
 //
@@ -271,3 +482,48 @@ const expectLineButtonAttribute = async ({ lineButton, attribute, value }) => aw
 });
 
 const pickAllButton = () => page.getByTestId('pickAll-button');
+
+const launchersScreenLocator = () => page.locator('#WFLaunchersScreen');
+
+// Settle the complete -> jobs-list transition, recovering like a real operator from a slow or lost
+// confirmation response.
+//
+// After the final activity is confirmed, ConfirmActivity POSTs the completion (an async commit) and only
+// navigates to the jobs list once that POST's response returns (its `.then`). The POST carries an
+// explicit client timeout — AD_SysConfig `mobileui.frontend.api.completeConfirmation.timeoutMillis`,
+// default 20s — so on flaky wifi or under heavy load the response can arrive late (or not at all) even
+// though the completion already committed server-side; axios then rejects and the app shows the inline
+// retry panel instead of navigating. The old wait (a single PickingJobsListScreen.waitForScreen) then
+// timed out on `#WFLaunchersScreen` that never appears — the observed complete->jobs-list flake.
+//
+// A real operator simply taps Retry, which re-posts the confirmation; the backend handles it idempotently
+// (PickingJobCompleteCommand returns the job unchanged when it is already Completed) and the app navigates.
+// Mirror that: wait for EITHER the jobs list (success) or the retry panel (timed-out response); on the
+// panel, tap Retry and re-wait — one retry, since the real fault is a single transient timeout and a
+// second consecutive one is a genuine backend problem that SHOULD fail. This retries ONLY the completion
+// navigation — it asserts nothing about the feature under test, and the trailing full-settle waitForScreen
+// still fails loud if the jobs list never arrives. A genuine server-side completion REJECTION never shows
+// the retry panel (ConfirmActivity toasts it — isNetworkFailure=false), so it is not masked here. No fixed
+// sleeps: every wait keys off a real DOM signal (jobs-list container, retry panel, its dismissal on tap).
+const settleCompleteToJobsList = async () => await step(`${NAME} - Settle complete to jobs list`, async () => {
+    for (let attempt = 1; attempt <= COMPLETE_CONFIRM_ATTEMPTS; attempt++) {
+        // Whichever appears first wins: the jobs-list container (navigated) or the confirmation retry panel.
+        await launchersScreenLocator().or(ConfirmActivityErrorPanel.locator())
+            .first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+
+        if (await launchersScreenLocator().isVisible()) {
+            break;
+        }
+
+        // Retry panel: the completion committed but its response was slow/lost. Re-post like an operator.
+        if (attempt < COMPLETE_CONFIRM_ATTEMPTS) {
+            await ConfirmActivityErrorPanel.clickRetry();
+            // Retry clears the error synchronously (setErrorMessage(null) unmounts the panel); wait for that
+            // so the next iteration does not observe the stale panel before the re-post resolves.
+            await ConfirmActivityErrorPanel.waitForPanelDetached();
+        }
+    }
+
+    // Final settle assertion (unchanged): jobs-list container present + launchers loading spinner gone.
+    await PickingJobsListScreen.waitForScreen({ timeout: VERY_SLOW_ACTION_TIMEOUT });
+});

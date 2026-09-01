@@ -1,6 +1,7 @@
 package de.metas.cucumber.stepdefs.accounting;
 
 import de.metas.acct.AccountConceptualName;
+import de.metas.acct.api.impl.ElementValueId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.context.ContextAwareDescription;
@@ -42,6 +43,8 @@ public class FactAcctLineMatcher
 	@Nullable private final Optional<BPartnerId> bpartnerId;
 	@Nullable private final Optional<ProductId> productId;
 	@Nullable private final Optional<InvoiceId> invoiceId;
+	/** Expected {@code Fact_Acct.Account_ID} (the GL account posted to); {@code null} = skip check. */
+	@Nullable private final Optional<ElementValueId> accountId;
 
 	@Override
 	public String toString() {return row.toTabularString();}
@@ -199,6 +202,12 @@ public class FactAcctLineMatcher
 			softly.assertThat(actualInvoiceId)
 					.as(description.newWithMessage("C_Invoice_ID"))
 					.isEqualTo(invoiceId.orElse(null));
+		}
+		if (accountId != null)
+		{
+			softly.assertThat(ElementValueId.ofRepoIdOrNull(record.getAccount_ID()))
+					.as(description.newWithMessage("Account_ID"))
+					.isEqualTo(accountId.orElse(null));
 		}
 	}
 }

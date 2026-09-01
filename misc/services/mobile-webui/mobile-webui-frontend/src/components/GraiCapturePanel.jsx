@@ -27,9 +27,11 @@ const GraiCapturePanel = ({
   extraGrais,
   graiCodes,
   expectedCount,
+  skippedCount = 0,
   loading,
   countKey,
   countExtraKey,
+  countSkippedKey,
   clearAllButtonKey,
   clearAllConfirmKey,
   onAddGrais,
@@ -76,6 +78,12 @@ const GraiCapturePanel = ({
             {trl(countExtraKey, { extra: extraGrais.length })}
           </span>
         )}
+        {skippedCount > 0 && countSkippedKey && (
+          <span className="grai-count-skipped" data-testid="grai-count-skipped">
+            {' '}
+            {trl(countSkippedKey, { count: skippedCount })}
+          </span>
+        )}
       </div>
 
       <div className="pt-3 section">
@@ -116,9 +124,11 @@ GraiCapturePanel.propTypes = {
   extraGrais: PropTypes.arrayOf(PropTypes.string).isRequired,
   graiCodes: PropTypes.arrayOf(PropTypes.string).isRequired,
   expectedCount: PropTypes.number,
+  skippedCount: PropTypes.number,
   loading: PropTypes.bool,
   countKey: PropTypes.string.isRequired,
   countExtraKey: PropTypes.string.isRequired,
+  countSkippedKey: PropTypes.string,
   clearAllButtonKey: PropTypes.string.isRequired,
   clearAllConfirmKey: PropTypes.string.isRequired,
   onAddGrais: PropTypes.func.isRequired,

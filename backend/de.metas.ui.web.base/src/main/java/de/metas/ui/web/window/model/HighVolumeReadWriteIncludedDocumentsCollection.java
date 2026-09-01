@@ -142,6 +142,12 @@ public class HighVolumeReadWriteIncludedDocumentsCollection implements IIncluded
 		return _documentsWithChanges.values();
 	}
 
+	@Override
+	public boolean hasNewDocumentsWithChanges()
+	{
+		return getChangedDocuments().stream().anyMatch(doc -> doc.isNew() && doc.hasChangesRecursivelly());
+	}
+
 	private final Document getChangedDocumentOrNull(final DocumentId documentId)
 	{
 		return _documentsWithChanges.get(documentId);

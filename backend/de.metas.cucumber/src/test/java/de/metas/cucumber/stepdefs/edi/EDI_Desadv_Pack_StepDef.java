@@ -102,6 +102,21 @@ public class EDI_Desadv_Pack_StepDef
 				.forEach(row -> packIsFound(row, timeoutSec));
 	}
 
+	/**
+	 * Updates fields of EDI_Desadv_Pack records previously registered under an identifier.
+	 *
+	 * <p>Required column:
+	 * <ul>
+	 *   <li>{@code EDI_Desadv_Pack_ID} – identifier of the pack to update</li>
+	 * </ul>
+	 * Optional field columns:
+	 * <ul>
+	 *   <li>{@code OPT.IPA_SSCC18} – new SSCC18 code</li>
+	 *   <li>{@code OPT.IsActive} – new IsActive flag (Y/N). Real-world trigger: a user deactivates the
+	 *       pack in the WebUI because the delivery was emptied; the underlying line must then surface
+	 *       in the no-pack export section (it is no longer covered by an active pack).</li>
+	 * </ul>
+	 */
 	@Then("EDI_Desadv_Pack records are updated")
 	public void update_EDI_Desadv_Pack(@NonNull final DataTable table)
 	{
@@ -134,6 +149,12 @@ public class EDI_Desadv_Pack_StepDef
 		if (ipaSSCC18 != null)
 		{
 			packRecord.setIPA_SSCC18(ipaSSCC18.trim());
+		}
+
+		final Boolean isActive = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_EDI_Desadv_Pack.COLUMNNAME_IsActive, null);
+		if (isActive != null)
+		{
+			packRecord.setIsActive(isActive);
 		}
 
 		saveRecord(packRecord);

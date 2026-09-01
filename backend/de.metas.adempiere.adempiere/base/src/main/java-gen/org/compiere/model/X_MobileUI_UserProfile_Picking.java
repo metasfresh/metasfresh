@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implements I_MobileUI_UserProfile_Picking, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2103408359L;
+	private static final long serialVersionUID = -1470502703L;
 
     /** Standard Constructor */
     public X_MobileUI_UserProfile_Picking (final Properties ctx, final int MobileUI_UserProfile_Picking_ID, @Nullable final String trxName)
@@ -294,7 +294,7 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	}
 
 	@Override
-	public boolean isMassPrinting() 
+	public boolean isMassPrinting()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsMassPrinting);
 	}
@@ -306,7 +306,7 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	}
 
 	@Override
-	public boolean isPickingSlotRequired() 
+	public boolean isPickingSlotRequired()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsPickingSlotRequired);
 	}
@@ -345,6 +345,30 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	public boolean isShowLastPickedBestBeforeDateForLines() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsShowLastPickedBestBeforeDateForLines);
+	}
+
+	@Override
+	public void setIsWarnShelfLifeUndercut (final boolean IsWarnShelfLifeUndercut)
+	{
+		set_Value (COLUMNNAME_IsWarnShelfLifeUndercut, IsWarnShelfLifeUndercut);
+	}
+
+	@Override
+	public boolean isWarnShelfLifeUndercut()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsWarnShelfLifeUndercut);
+	}
+
+	@Override
+	public void setIsShowQtyAvailableForLines (final boolean IsShowQtyAvailableForLines)
+	{
+		set_Value (COLUMNNAME_IsShowQtyAvailableForLines, IsShowQtyAvailableForLines);
+	}
+
+	@Override
+	public boolean isShowQtyAvailableForLines()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsShowQtyAvailableForLines);
 	}
 
 	@Override

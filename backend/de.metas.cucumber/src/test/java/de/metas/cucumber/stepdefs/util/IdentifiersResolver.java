@@ -26,18 +26,24 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.allocation.api.PaymentAllocationId;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.allocation.C_AllocationHdr_StepDefData;
+import de.metas.cucumber.stepdefs.costing.M_CostRevaluation_StepDefData;
 import de.metas.cucumber.stepdefs.dunning.C_DunningDoc_StepDefData;
+import de.metas.cucumber.stepdefs.inventory.M_Inventory_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.match_inv.M_MatchInv_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
+import de.metas.cucumber.stepdefs.pporder.PP_Cost_Collector_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
+import de.metas.cucumber.stepdefs.shipment.M_ShipperTransportation_StepDefData;
 import de.metas.dunning.DunningDocId;
 import de.metas.inout.InOutId;
+import de.metas.inventory.InventoryId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.matchinv.MatchInvId;
 import de.metas.order.OrderId;
 import de.metas.payment.PaymentId;
+import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -47,8 +53,11 @@ import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
+import org.compiere.model.I_M_CostRevaluation;
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_MatchInv;
+import org.eevolution.model.I_PP_Cost_Collector;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -64,8 +73,12 @@ public class IdentifiersResolver
 	@NonNull private final C_AllocationHdr_StepDefData allocationTable;
 	@NonNull private final M_MatchInv_StepDefData matchInvTable;
 	@NonNull private final M_InOut_StepDefData inOutTable;
+	@NonNull private final M_Inventory_StepDefData inventoryTable;
 	@NonNull private final C_Order_StepDefData orderTable;
 	@NonNull private final C_DunningDoc_StepDefData dunningDocTable;
+	@NonNull private final PP_Cost_Collector_StepDefData ppCostCollectorTable;
+	@NonNull private final M_CostRevaluation_StepDefData costRevaluationTable;
+	@NonNull private final M_ShipperTransportation_StepDefData shipperTransportationTable;
 
 	@NonNull
 	public ImmutableSet<TableRecordReference> getTableRecordReferencesOfCommaSeparatedIdentifiers(@Nullable final String commaSeparatedIdentifiers)
@@ -106,11 +119,23 @@ public class IdentifiersResolver
 		inOutTable.getIdOptional(identifier)
 				.map(InOutId::toRecordRef)
 				.ifPresent(result::add);
+		inventoryTable.getIdOptional(identifier)
+				.map(id -> TableRecordReference.of(I_M_Inventory.Table_Name, id))
+				.ifPresent(result::add);
 		orderTable.getIdOptional(identifier)
 				.map(OrderId::toRecordRef)
 				.ifPresent(result::add);
 		dunningDocTable.getIdOptional(identifier)
 				.map(DunningDocId::toRecordRef)
+				.ifPresent(result::add);
+		ppCostCollectorTable.getOptional(identifier)
+				.map(cc -> TableRecordReference.of(I_PP_Cost_Collector.Table_Name, cc.getPP_Cost_Collector_ID()))
+				.ifPresent(result::add);
+		costRevaluationTable.getIdOptional(identifier)
+				.map(id -> TableRecordReference.of(I_M_CostRevaluation.Table_Name, id))
+				.ifPresent(result::add);
+		shipperTransportationTable.getIdOptional(identifier)
+				.map(id -> TableRecordReference.of(I_M_ShipperTransportation.Table_Name, id))
 				.ifPresent(result::add);
 
 		if (result.isEmpty())
@@ -144,6 +169,8 @@ public class IdentifiersResolver
 				return matchInvTable.getFirstIdentifierById(MatchInvId.ofRepoId(recordId));
 			case I_M_InOut.Table_Name:
 				return inOutTable.getFirstIdentifierById(InOutId.ofRepoId(recordId));
+			case I_M_Inventory.Table_Name:
+				return inventoryTable.getFirstIdentifierById(InventoryId.ofRepoId(recordId));
 			default:
 				return Optional.empty();
 		}

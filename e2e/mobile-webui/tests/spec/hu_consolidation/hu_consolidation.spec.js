@@ -180,6 +180,8 @@ test('Simple HU consolidate HUs one by one test', async ({ page }) => {
         await HUConsolidationJobsListScreen.startJob({ customerLocationId: masterdata.bpartners.BP1.bpartnerLocationId })
         await HUConsolidationJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI_P1.luName });
         await HUConsolidationJobScreen.clickPickingSlot({ pickingSlotId: masterdata.pickingSlots.slot1.id });
+        // This customer does not require GRAI, so the GRAI scan affordance is NOT shown (only tap-to-consolidate).
+        await PickingSlotScreen.expectScannerNotVisible();
         await PickingSlotScreen.clickConsolidateHUButton({ huId: context.tu11 });
         await PickingSlotScreen.clickConsolidateHUButton({ huId: context.tu12 });
         await PickingSlotScreen.clickConsolidateHUButton({ huId: context.tu13 });

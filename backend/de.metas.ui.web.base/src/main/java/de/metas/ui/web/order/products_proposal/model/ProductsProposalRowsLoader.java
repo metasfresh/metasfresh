@@ -202,12 +202,24 @@ public final class ProductsProposalRowsLoader
 		final ZoneId zoneId = orgDAO.getTimeZone(Env.getOrgId());
 		final LocalDate currentDate = LocalDate.now(zoneId);
 
+		// When the purchase/sales enforcement gate is on, a not-sellable product (sales order) /
+		// not-purchasable product (purchase order) must not even be offered in the proposal.
+		// Inert when the gate is off (default) — mirrors the order mass-entry product picker.
+		final boolean enforcePurchaseSalesFlags = productBL.isPurchaseSalesEnforcementEnabled(Env.getClientId(), Env.getOrgId());
+
 		return priceListVersionIds.stream()
 				.flatMap(this::loadAndStreamRowsForPriceListVersionId)
 				.sorted(Comparator.comparing(ProductsProposalRow::getSeqNo)
 								.thenComparing(ProductsProposalRow::getProductName))
 				.filter(p -> !productBL.isDiscontinuedAt(productsRepo.getById(p.getProductId()), currentDate))
+				.filter(p -> !enforcePurchaseSalesFlags || isPurchasableOrSellable(p.getProductId()))
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	private boolean isPurchasableOrSellable(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = productsRepo.getById(productId);
+		return soTrx.isSales() ? product.isSold() : product.isPurchased();
 	}
 
 	private Stream<ProductsProposalRow> loadAndStreamRowsForPriceListVersionId(final PriceListVersionId priceListVersionId)

@@ -60,7 +60,8 @@ public class C_Proforma_Order_Alloc_StepDef
 	 * <p>Preconditions (enforced by the service):
 	 * <ul>
 	 *   <li>The invoice must be a completed Purchase Proforma (APF).</li>
-	 *   <li>The order must have exactly one LC break in its payment term.</li>
+	 *   <li>The order's payment term must have at most one LC break; a no-LC term is allowed as long as
+	 *       it has at most one advance (non-material-receipt) break.</li>
 	 *   <li>Currency and vendor must match between invoice and order.</li>
 	 * </ul>
 	 *

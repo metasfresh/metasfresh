@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.BPartnerProductQuery;
 import de.metas.bpartner_product.CreateBPartnerProductRequest;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -139,9 +140,18 @@ public class CreateProductCommand
 		{
 			productRecord.setIsSelfPacked(isSelfPacked);
 		}
+		final Boolean isSerialNoPicked = request.getIsSerialNoPicked();
+		if (isSerialNoPicked != null)
+		{
+			productRecord.setIsSerialNoPicked(isSerialNoPicked);
+		}
 		productRecord.setM_Product_Category_ID(productCategoryId.getRepoId());
-		productRecord.setIsSold(true);
-		productRecord.setIsPurchased(true);
+		productRecord.setIsSold(CoalesceUtil.coalesceNotNull(request.getIsSold(), true));
+		productRecord.setIsPurchased(CoalesceUtil.coalesceNotNull(request.getIsPurchased(), true));
+		if (request.getGuaranteeDaysMin() != null)
+		{
+			productRecord.setGuaranteeDaysMin(request.getGuaranteeDaysMin());
+		}
 
 		// Set M_AttributeSet_ID if attributeSetName is provided
 		final String attributeSetName = StringUtils.trimBlankToNull(request.getAttributeSetName());
@@ -162,6 +172,10 @@ public class CreateProductCommand
 			logger.info("Set M_AttributeSet_ID={} (name={}) for product {}", attributeSet.getM_AttributeSet_ID(), attributeSetName, productRecord.getValue());
 		}
 
+		if (request.getGuaranteeDaysMin() != null)
+		{
+			productRecord.setGuaranteeDaysMin(request.getGuaranteeDaysMin());
+		}
 		InterfaceWrapperHelper.saveRecord(productRecord);
 
 		final ProductId productId = ProductId.ofRepoId(productRecord.getM_Product_ID());
@@ -331,6 +345,7 @@ public class CreateProductCommand
 				.bPartnerId(bpartnerId)
 				.usedForCustomer(true)
 				.cuEAN(ean13 != null ? ean13.getAsString() : null)
+				.shelfLifeMinDays(bpartner.getShelfLifeMinDays())
 				.build());
 	}
 

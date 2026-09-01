@@ -209,7 +209,12 @@ public class HUPricing extends AttributePricing
 
 		//
 		// Make sure the default product price attribute is matching our pricing context packing material,
-		// or it has no packing material set.
+		// or the pricing CONTEXT has no packing material set.
+		//
+		// Note the exemption is on the context side only: once the context carries a packing material, a
+		// default price without one does NOT qualify, because its M_HU_PI_Item_Product_ID reads as "None"
+		// and therefore compares unequal. So a packing instruction that no product price references cannot
+		// be rescued by a packing-material-less default price here.
 		if (!isProductPriceMatchingContextPackingMaterial(defaultPrice, pricingCtx))
 		{
 			return null;
@@ -239,6 +244,17 @@ public class HUPricing extends AttributePricing
 	@Nullable
 	private HUPIItemProductId getPackingMaterialId(final IPricingContext pricingCtx)
 	{
+		// If an explicit Packvorschrift was set on the pricing context (e.g. for return lines
+		// whose origin M_HU_PI_Item_Product_ID is null), prefer it over the referenced-object extraction.
+		// Only regular IDs are honored here — VIRTUAL_HU and TEMPLATE_HU sentinels mean "no packing
+		// instruction"; in that case we fall through to the referenced-object path so callers that set
+		// a non-regular explicit ID get the same behavior as if they had not set one.
+		final HUPIItemProductId explicitId = pricingCtx.getExplicitM_HU_PI_Item_Product_ID();
+		if (HUPIItemProductId.isRegular(explicitId))
+		{
+			return explicitId;
+		}
+
 		final Object referencedObj = pricingCtx.getReferencedObject();
 		if (referencedObj == null)
 		{
