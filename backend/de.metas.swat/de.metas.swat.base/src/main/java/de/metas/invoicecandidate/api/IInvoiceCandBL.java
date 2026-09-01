@@ -87,6 +87,9 @@ public interface IInvoiceCandBL extends ISingletonService
 
 		void addNotifications(List<I_AD_Note> notifications);
 
+		/** Implementations which are able to notify a user shall do so from here. */
+		void addFailedCandidates(List<I_C_Invoice_Candidate> failedCandidates, Throwable error);
+
 		/**
 		 * @param ctx context (for translation)
 		 * @return result summary (using context language)
@@ -367,6 +370,9 @@ public interface IInvoiceCandBL extends ISingletonService
 	CurrencyPrecision extractPricePrecision(I_C_Invoice_Candidate ic);
 
 	void closeInvoiceCandidatesByOrderLineId(OrderLineId orderLineId);
+
+	/** Undo of {@link #closeInvoiceCandidatesByOrderLineId(OrderLineId)}: clears {@code Processed_Override} and invalidates the candidates. */
+	void openInvoiceCandidatesByOrderLineId(OrderLineId orderLineId);
 
 	/**
 	 * Close the given invoice candidate.

@@ -2259,6 +2259,27 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
+	public void openInvoiceCandidatesByOrderLineId(@NonNull final OrderLineId orderLineId)
+	{
+		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(orderLineId);
+		invoiceCandidates.forEach(this::openInvoiceCandidate);
+	}
+
+	/** Counterpart of {@link #closeInvoiceCandidate(I_C_Invoice_Candidate)}; QtyToInvoice is not restored, the invalidation recomputes it. */
+	private void openInvoiceCandidate(@NonNull final I_C_Invoice_Candidate candidate)
+	{
+		candidate.setProcessed_Override(null);
+
+		if (!InterfaceWrapperHelper.hasChanges(candidate))
+		{
+			return;
+		}
+
+		invoiceCandDAO.invalidateCand(candidate);
+		InterfaceWrapperHelper.save(candidate);
+	}
+
+	@Override
 	public void closeDeliveryInvoiceCandidatesByOrderLineId(@NonNull final OrderLineId orderLineId)
 	{
 		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(orderLineId);
