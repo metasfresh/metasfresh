@@ -9,6 +9,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -31,11 +32,13 @@ public class MobileUIManufacturingConfigRepository
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
+	// Lot number + Best-before date are editable BY DEFAULT, so a tenant with no MobileUI_MFG_Config
+	// row still gets both editable.
 	private static final MobileUIManufacturingConfig DEFAULT_CONFIG = MobileUIManufacturingConfig.builder()
 			.isScanResourceRequired(OptionalBoolean.FALSE)
 			.isAllowIssuingAnyHU(OptionalBoolean.FALSE)
 			.receiveUnitType(ReceiveUnitType.CU)
-			.editableAttributeCodesInOrder(ImmutableList.of())
+			.editableAttributeCodesInOrder(ImmutableList.of(AttributeConstants.ATTR_LotNumber, AttributeCode.ofString(AttributeConstants.ATTR_BestBeforeDate_String)))
 			.isAllowFinishedGoodsReceiveToLU(OptionalBoolean.TRUE)
 			.isAllowFinishedGoodsReceiveToTU(OptionalBoolean.TRUE)
 			.isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.FALSE)

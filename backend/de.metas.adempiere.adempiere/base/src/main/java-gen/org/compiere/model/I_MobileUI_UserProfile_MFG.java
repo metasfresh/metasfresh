@@ -213,29 +213,6 @@ public interface I_MobileUI_UserProfile_MFG
 	String COLUMNNAME_IsAllowReceiveWithoutPackingItem = "IsAllowReceiveWithoutPackingItem";
 
 	/**
-	 * Set Best Before Date editable.
-	 * Allows editing the Best-Before-Date (MHD) when receiving finished goods in mobile manufacturing.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setIsBestBeforeDateEditable (@Nullable java.lang.String IsBestBeforeDateEditable);
-
-	/**
-	 * Get Best Before Date editable.
-	 * Allows editing the Best-Before-Date (MHD) when receiving finished goods in mobile manufacturing.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getIsBestBeforeDateEditable();
-
-	ModelColumn<I_MobileUI_UserProfile_MFG, Object> COLUMN_IsBestBeforeDateEditable = new ModelColumn<>(I_MobileUI_UserProfile_MFG.class, "IsBestBeforeDateEditable", null);
-	String COLUMNNAME_IsBestBeforeDateEditable = "IsBestBeforeDateEditable";
-
-	/**
 	 * Set Capture catch weight.
 	 * Capture the catch weight of a catch-weight product at production receipt.
 	 *
@@ -257,29 +234,6 @@ public interface I_MobileUI_UserProfile_MFG
 
 	ModelColumn<I_MobileUI_UserProfile_MFG, Object> COLUMN_IsCaptureCatchWeightAtReceipt = new ModelColumn<>(I_MobileUI_UserProfile_MFG.class, "IsCaptureCatchWeightAtReceipt", null);
 	String COLUMNNAME_IsCaptureCatchWeightAtReceipt = "IsCaptureCatchWeightAtReceipt";
-
-	/**
-	 * Set Lot Number editable.
-	 * Allows editing the Lot Number when receiving finished goods in mobile manufacturing.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setIsLotNumberEditable (@Nullable java.lang.String IsLotNumberEditable);
-
-	/**
-	 * Get Lot Number editable.
-	 * Allows editing the Lot Number when receiving finished goods in mobile manufacturing.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getIsLotNumberEditable();
-
-	ModelColumn<I_MobileUI_UserProfile_MFG, Object> COLUMN_IsLotNumberEditable = new ModelColumn<>(I_MobileUI_UserProfile_MFG.class, "IsLotNumberEditable", null);
-	String COLUMNNAME_IsLotNumberEditable = "IsLotNumberEditable";
 
 	/**
 	 * Set Workstation Scan Required.

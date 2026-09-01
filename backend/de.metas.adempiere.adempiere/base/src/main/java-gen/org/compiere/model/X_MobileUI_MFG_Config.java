@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_MFG_Config extends org.compiere.model.PO implements I_MobileUI_MFG_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 725042776L;
+	private static final long serialVersionUID = 847845912L;
 
     /** Standard Constructor */
     public X_MobileUI_MFG_Config (final Properties ctx, final int MobileUI_MFG_Config_ID, @Nullable final String trxName)
@@ -83,18 +83,6 @@ public class X_MobileUI_MFG_Config extends org.compiere.model.PO implements I_Mo
 	}
 
 	@Override
-	public void setIsBestBeforeDateEditable (final boolean IsBestBeforeDateEditable)
-	{
-		set_Value (COLUMNNAME_IsBestBeforeDateEditable, IsBestBeforeDateEditable);
-	}
-
-	@Override
-	public boolean isBestBeforeDateEditable() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsBestBeforeDateEditable);
-	}
-
-	@Override
 	public void setIsCaptureCatchWeightAtReceipt (final boolean IsCaptureCatchWeightAtReceipt)
 	{
 		set_Value (COLUMNNAME_IsCaptureCatchWeightAtReceipt, IsCaptureCatchWeightAtReceipt);
@@ -104,18 +92,6 @@ public class X_MobileUI_MFG_Config extends org.compiere.model.PO implements I_Mo
 	public boolean isCaptureCatchWeightAtReceipt() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsCaptureCatchWeightAtReceipt);
-	}
-
-	@Override
-	public void setIsLotNumberEditable (final boolean IsLotNumberEditable)
-	{
-		set_Value (COLUMNNAME_IsLotNumberEditable, IsLotNumberEditable);
-	}
-
-	@Override
-	public boolean isLotNumberEditable() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsLotNumberEditable);
 	}
 
 	@Override

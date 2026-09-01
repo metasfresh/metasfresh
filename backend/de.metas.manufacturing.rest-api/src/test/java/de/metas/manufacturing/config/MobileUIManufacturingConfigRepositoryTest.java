@@ -4,6 +4,7 @@ import de.metas.user.UserId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeValueType;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_MobileUI_MFG_Config;
@@ -157,19 +158,21 @@ class MobileUIManufacturingConfigRepositoryTest
 	class getEditableAttributeCodesInOrder
 	{
 		@Test
-		void noConfigAtAll_emptyList()
+		void noConfigAtAll_defaultsToLotNumberAndBestBeforeDate()
 		{
 			final MobileUIManufacturingConfig config = repo.getConfig(USER_ID, clientId);
-			assertThat(config.getEditableAttributeCodesInOrder()).isEmpty();
+			assertThat(config.getEditableAttributeCodesInOrder())
+					.containsExactly(AttributeConstants.ATTR_LotNumber, AttributeCode.ofString(AttributeConstants.ATTR_BestBeforeDate_String));
 		}
 
 		@Test
-		void noActiveChildRows_emptyList()
+		void noActiveChildRows_fallsBackToDefault_lotNumberAndBestBeforeDate()
 		{
 			createGlobalConfig(ReceiveUnitType.CU);
 
 			final MobileUIManufacturingConfig config = repo.getConfig(USER_ID, clientId);
-			assertThat(config.getEditableAttributeCodesInOrder()).isEmpty();
+			assertThat(config.getEditableAttributeCodesInOrder())
+					.containsExactly(AttributeConstants.ATTR_LotNumber, AttributeCode.ofString(AttributeConstants.ATTR_BestBeforeDate_String));
 		}
 
 		@Test
