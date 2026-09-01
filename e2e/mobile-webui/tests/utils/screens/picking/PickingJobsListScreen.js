@@ -6,6 +6,12 @@ import { PickingJobsListScanScreen } from './PickingJobsListScanScreen';
 import { expect } from '@playwright/test';
 import { ApplicationsListScreen } from '../ApplicationsListScreen';
 import { expectClasses } from '../../expectations';
+// Bounded tap-and-recover for the launcher-start navigation (see tapLauncherUntilJobScreen), shared
+// with the distribution job-start helper. Small attempt count with explicit per-step timeouts so the
+// retry cost stays modest: only the first attempt pays the full slow-action settle budget; retries
+// re-settle an already-populated list on a short budget, so a few attempts do not multiply the full
+// 20s screen wait.
+import { JOB_START_ARRIVAL_TIMEOUT, JOB_START_TAP_ATTEMPTS, recoverToLauncherList } from '../jobStartRecovery';
 
 const NAME = 'PickingJobsListScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -14,15 +20,6 @@ const containerElement = () => page.locator('#WFLaunchersScreen');
 // containerElement in PickingJobScreen.js — keep the two in sync if the workflow-process screen id changes.
 /** @returns {import('@playwright/test').Locator} */
 const jobScreenElement = () => page.locator('#WFProcessScreen');
-
-// Bounded tap-and-recover for the launcher-start navigation (see tapLauncherUntilJobScreen).
-// Small attempt count with explicit per-step timeouts so the retry cost stays modest: only the first
-// attempt pays the full slow-action settle budget; retries re-settle an already-populated list on a
-// short budget, so a few attempts do not multiply the full 20s screen wait.
-const JOB_START_TAP_ATTEMPTS = 3;
-// Short per-attempt wait for the job screen to appear after a tap. On the happy path the first
-// attempt succeeds immediately; only a slow/lost workflow-start round-trip pays this.
-const JOB_START_ARRIVAL_TIMEOUT = 8000; // 8sec
 
 export const PickingJobsListScreen = {
     waitForScreen: async ({ timeout = SLOW_ACTION_TIMEOUT } = {}) => await test.step(`${NAME} - Wait for screen`, async () => {
@@ -97,7 +94,18 @@ export const PickingJobsListScreen = {
     startJob: async ({ index, documentNo, qtyToDeliver, customerLocationId }) => {
         if (documentNo != null) {
             return await test.step(`${NAME} - Start job by documentNo ${documentNo}`, async () => {
-                await locateJobButtons({ documentNo }).tap();
+                for (let attempt = 1; attempt <= JOB_START_TAP_ATTEMPTS; attempt++) {
+                    await locateJobButtons({ documentNo }).tap();
+                    const arrived = await jobScreenElement()
+                        .waitFor({ state: 'attached', timeout: JOB_START_ARRIVAL_TIMEOUT })
+                        .then(() => true, () => false);
+                    if (arrived || attempt === JOB_START_TAP_ATTEMPTS) {
+                        break;
+                    }
+                    if ((await recoverToLauncherList({ applicationId: 'picking' })) === 'unknown') {
+                        break;
+                    }
+                }
                 await PickingJobScreen.waitForScreen();
                 return {
                     pickingJobId: await PickingJobScreen.getPickingJobId(),
@@ -200,15 +208,10 @@ const tapLauncherUntilJobScreen = async ({ index, qtyToDeliver, customerLocation
             break;
         }
 
-        // Not on the job screen yet, and attempts remain. Only loop to re-tap if we are back on the
-        // launcher list — the launcher and job screens are mutually-exclusive routes, so its presence
-        // (attached) means we truly returned, not a mid-transition overlap. Otherwise a navigation may
-        // still be in flight — give it a bounded moment to land rather than blindly re-tapping (which
-        // could double-start the workflow), then let the final settle below settle-or-fail.
-        const backOnLauncherList = await containerElement()
-            .waitFor({ state: 'attached', timeout: FAST_ACTION_TIMEOUT })
-            .then(() => true, () => false);
-        if (!backOnLauncherList) {
+        // Not on the job screen yet, and attempts remain. recoverToLauncherList also handles the case the
+        // old code could not: the app landed on the applications menu, where neither screen is attached,
+        // so breaking out here burned the remaining attempts on the 20s wait.
+        if ((await recoverToLauncherList({ applicationId: 'picking' })) === 'unknown') {
             break;
         }
     }
