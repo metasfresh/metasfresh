@@ -24,10 +24,14 @@ package de.metas.ui.web.material.cockpit.v2.jump;
 
 import de.metas.inoutcandidate.ShipmentScheduleQuery;
 import de.metas.inoutcandidate.ShipmentScheduleRepository;
+import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
+import de.metas.inoutcandidate.api.ReceiptScheduleQuery;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.cockpit.QtyDemandQtySupply;
 import de.metas.material.cockpit.QtyDemandQtySupplyId;
 import de.metas.material.cockpit.QtyDemandSupplyRepository;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -42,8 +46,8 @@ import java.util.stream.Collectors;
 /**
  * Backs the {@link QtyDemandQtySupplyJumpProcess} "jump to ..." actions on {@code QtyDemand_QtySupply_V}: the
  * single Spring collaborator through which those {@code JavaProcess} subclasses reach the repositories/DAOs of
- * the target streams (shipment schedules, production order candidates), so no process holds a {@code @Repository}
- * field directly.
+ * the target streams (shipment schedules, production order candidates, receipt schedules), so no process holds a
+ * {@code @Repository} field directly.
  * <p>
  * Each stream exposes one {@code hasXxxToOpen}/{@code findXxxToOpen} pair, both built from the same
  * query-builder method, so the precondition probe and the actual jump can never disagree about what "empty" means.
@@ -55,6 +59,8 @@ public class QtyDemandQtySupplyJumpService
 	@NonNull private final QtyDemandSupplyRepository qtyDemandSupplyRepository;
 	@NonNull private final ShipmentScheduleRepository shipmentScheduleRepository;
 	@NonNull private final PPOrderCandidateDAO ppOrderCandidateDAO;
+
+	@NonNull private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
 
 	public QtyDemandQtySupply getRow(@NonNull final QtyDemandQtySupplyId id)
 	{
@@ -101,6 +107,30 @@ public class QtyDemandQtySupplyJumpService
 	private static PPOrderCandidatesQuery toPPOrderCandidatesQuery(@NonNull final QtyDemandQtySupply row)
 	{
 		return PPOrderCandidatesQuery.builder()
+				.warehouseId(row.getWarehouseId())
+				.orgId(row.getOrgId())
+				.productId(row.getProductId())
+				.attributesKey(row.getAttributesKey())
+				.onlyNonZeroQty(true)
+				.build();
+	}
+
+	public boolean hasReceiptSchedulesToOpen(@NonNull final QtyDemandQtySupply row)
+	{
+		return receiptScheduleDAO.existsByQuery(toReceiptScheduleQuery(row));
+	}
+
+	public List<TableRecordReference> findReceiptSchedulesToOpen(@NonNull final QtyDemandQtySupply row)
+	{
+		return receiptScheduleDAO.listIdsByQuery(toReceiptScheduleQuery(row))
+				.stream()
+				.map(id -> TableRecordReference.of(I_M_ReceiptSchedule.Table_Name, id))
+				.collect(Collectors.toList());
+	}
+
+	private static ReceiptScheduleQuery toReceiptScheduleQuery(@NonNull final QtyDemandQtySupply row)
+	{
+		return ReceiptScheduleQuery.builder()
 				.warehouseId(row.getWarehouseId())
 				.orgId(row.getOrgId())
 				.productId(row.getProductId())

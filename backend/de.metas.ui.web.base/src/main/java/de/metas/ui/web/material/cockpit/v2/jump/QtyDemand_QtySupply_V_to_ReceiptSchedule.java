@@ -22,44 +22,23 @@
 
 package de.metas.ui.web.material.cockpit.v2.jump;
 
-import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
-import de.metas.inoutcandidate.api.ReceiptScheduleQuery;
-import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.material.cockpit.QtyDemandQtySupply;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class QtyDemand_QtySupply_V_to_ReceiptSchedule extends QtyDemandQtySupplyJumpProcess
 {
-	@NonNull private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
-
 	@Override
 	protected boolean hasRecordsToOpen(@NonNull final QtyDemandQtySupply row)
 	{
-		return receiptScheduleDAO.existsByQuery(toQuery(row));
+		return jumpService.hasReceiptSchedulesToOpen(row);
 	}
 
 	@Override
 	protected List<TableRecordReference> findRecordsToOpen(@NonNull final QtyDemandQtySupply row)
 	{
-		return receiptScheduleDAO.listIdsByQuery(toQuery(row))
-				.stream()
-				.map(id -> TableRecordReference.of(I_M_ReceiptSchedule.Table_Name, id))
-				.collect(Collectors.toList());
-	}
-
-	private static ReceiptScheduleQuery toQuery(@NonNull final QtyDemandQtySupply row)
-	{
-		return ReceiptScheduleQuery.builder()
-				.warehouseId(row.getWarehouseId())
-				.orgId(row.getOrgId())
-				.productId(row.getProductId())
-				.attributesKey(row.getAttributesKey())
-				.onlyNonZeroQty(true)
-				.build();
+		return jumpService.findReceiptSchedulesToOpen(row);
 	}
 }
