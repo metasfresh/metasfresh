@@ -476,12 +476,14 @@ public class HUQRCodesService
 			return (HUQRCode)huQRCode;
 		}
 
-		// Both values matter when diagnosing this: the raw code the operator scanned, and the concrete
-		// IHUQRCode implementation parse() recognized it as - the latter is what tells you WHY it was
-		// rejected (e.g. a GS1 or pick-on-the-fly code, which identifies no existing unit).
+		// huQRCodeType is the load-bearing parameter: it names WHY the code was rejected (a GS1,
+		// EAN13, LM, custom-format or pick-on-the-fly code identifies no existing unit). The instance
+		// alone would not convey that - every IHUQRCode reachable here renders via getAsString(),
+		// which echoes back the scanned string, so it would just duplicate scannedCode.
 		throw new AdempiereException("Invalid HU QR code")
 				.appendParametersToMessage()
 				.setParameter("scannedCode", scannedCode)
+				.setParameter("huQRCodeType", huQRCode.getClass().getSimpleName())
 				.setParameter("huQRCode", huQRCode);
 	}
 }
