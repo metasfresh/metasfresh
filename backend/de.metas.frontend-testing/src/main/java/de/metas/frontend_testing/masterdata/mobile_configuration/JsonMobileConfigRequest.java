@@ -87,6 +87,7 @@ public class JsonMobileConfigRequest
 			@Nullable Boolean isShowInSummary;
 			@Nullable Boolean isShowInDetailed;
 			@Nullable String pattern;
+			@Nullable Boolean isBlockLayout;
 		}
 	}
 
