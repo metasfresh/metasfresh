@@ -476,6 +476,12 @@ public class HUQRCodesService
 			return (HUQRCode)huQRCode;
 		}
 
-		throw new AdempiereException("Invalid HU QR code: " + scannedCode);
+		// Both values matter when diagnosing this: the raw code the operator scanned, and the concrete
+		// IHUQRCode implementation parse() recognized it as - the latter is what tells you WHY it was
+		// rejected (e.g. a GS1 or pick-on-the-fly code, which identifies no existing unit).
+		throw new AdempiereException("Invalid HU QR code")
+				.appendParametersToMessage()
+				.setParameter("scannedCode", scannedCode)
+				.setParameter("huQRCode", huQRCode);
 	}
 }
