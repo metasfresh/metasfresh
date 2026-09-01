@@ -84,7 +84,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  *       evaluated to false for NULL lot numbers. Fixed by {@code IS NOT DISTINCT FROM}.</li>
  *   <li>DIRECT_SALE_DETAIL pairing (Section 6): still matches a shipment to a receipt on
  *       lot+product alone, producing a cartesian when several receipts share a lot — not yet
- *       fixed. Test cases exercising this are added incrementally.</li>
+ *       fixed. Test cases exercising this are added incrementally, exercising the desired
+ *       graph-tracing rule: reachability along the {@code M_HU_Trace} graph (same VHU, or a
+ *       chain of {@code VHU_Source_ID} edges), guarded by lot agreement between the two ends.</li>
  * </ul>
  */
 @RequiredArgsConstructor
@@ -117,6 +119,16 @@ public class M_HU_Trace_Report_StepDef
 	 *       product/lot, with the shipped VHU descending from only the first receipt's VHU
 	 *       (a TRANSFORM_LOAD edge). Exposes the DIRECT_SALE_DETAIL cartesian: today's section 6
 	 *       pairs the shipment with BOTH receipts because it matches on lot+product alone.</li>
+	 *   <li>{@code LOT_DISAGREEMENT} — a receipt's VHU transforms (one TRANSFORM_LOAD edge) into
+	 *       the shipped VHU, but the shipment's own MATERIAL_SHIPMENT trace carries a different
+	 *       lot number than the receipt. Guards the lot-agreement half of the graph-tracing rule:
+	 *       a graph link alone must not be enough to call the pair traced.</li>
+	 *   <li>{@code SAME_VHU_NO_TRANSFORM} — one VHU carries both the MATERIAL_RECEIPT and the
+	 *       MATERIAL_SHIPMENT trace directly, with no TRANSFORM_LOAD edge at all (received and
+	 *       shipped without repacking). The depth-0 case a rule that only walks edges would miss.</li>
+	 *   <li>{@code TWO_STEP_TRANSFORM} — a receipt's VHU transforms into an intermediate VHU,
+	 *       which transforms again into the shipped VHU (two TRANSFORM_LOAD edges). The receipt
+	 *       document must still resolve to the original receipt, not the intermediate step.</li>
 	 * </ul>
 	 */
 	@When("M_HU_Trace_Report test data is set up for scenario {string}:")
@@ -141,6 +153,15 @@ public class M_HU_Trace_Report_StepDef
 				break;
 			case "TRACED_ONE_OF_TWO_RECEIPTS":
 				setupTracedOneOfTwoReceipts(scenarioName, productId);
+				break;
+			case "LOT_DISAGREEMENT":
+				setupLotDisagreement(scenarioName, productId);
+				break;
+			case "SAME_VHU_NO_TRANSFORM":
+				setupSameVhuNoTransform(scenarioName, productId);
+				break;
+			case "TWO_STEP_TRANSFORM":
+				setupTwoStepTransform(scenarioName, productId);
 				break;
 			default:
 				throw new AdempiereException("Unknown TestType: " + testType);
@@ -458,6 +479,91 @@ public class M_HU_Trace_Report_StepDef
 
 		scenarioDocNos.put(scenarioName + ".receipt1", receiptInOut1.getDocumentNo());
 		scenarioDocNos.put(scenarioName + ".receipt2", receiptInOut2.getDocumentNo());
+		scenarioDocNos.put(scenarioName + ".shipment", shipmentInOut.getDocumentNo());
+	}
+
+	/**
+	 * A receipt's VHU transforms (one TRANSFORM_LOAD edge) into the shipped VHU, but the
+	 * shipment's own MATERIAL_SHIPMENT trace carries a different lot number than the receipt.
+	 * Guards the lot-agreement half of the graph-tracing rule: a graph link alone must not be
+	 * enough to call the pair traced when the two ends disagree on lot.
+	 */
+	private void setupLotDisagreement(@NonNull final String scenarioName, @NonNull final ProductId productId)
+	{
+		scenarioProductIds.put(scenarioName, productId);
+		final I_C_DocType receiptDocType = loadDocType("MMR", false);
+		final I_C_DocType shipmentDocType = loadDocType("MMS", true);
+
+		final I_M_HU receiptVhu = createVhu();
+		final I_M_InOut receiptInOut = createMinimalInOut(receiptDocType, "CO");
+		createHuTraceWithSource(receiptVhu, null, productId, HUTraceType.MATERIAL_RECEIPT,
+				"LOT-A", receiptInOut, new BigDecimal("100"));
+
+		// the shipped VHU genuinely descends from the receipt's VHU ...
+		final I_M_HU shippedVhu = createVhu();
+		createHuTraceWithSource(shippedVhu, receiptVhu, productId, HUTraceType.TRANSFORM_LOAD,
+				"LOT-A", null, new BigDecimal("24"));
+		// ... but its own MATERIAL_SHIPMENT trace was recorded under a different lot
+		final I_M_InOut shipmentInOut = createMinimalInOut(shipmentDocType, "CO");
+		createHuTraceWithSource(shippedVhu, null, productId, HUTraceType.MATERIAL_SHIPMENT,
+				"LOT-B", shipmentInOut, new BigDecimal("-24"));
+
+		scenarioDocNos.put(scenarioName + ".receipt1", receiptInOut.getDocumentNo());
+		scenarioDocNos.put(scenarioName + ".shipment", shipmentInOut.getDocumentNo());
+	}
+
+	/**
+	 * One VHU carries both the MATERIAL_RECEIPT and the MATERIAL_SHIPMENT trace directly, with
+	 * no TRANSFORM_LOAD edge at all — received and shipped without repacking. The depth-0 case a
+	 * rule that only walks {@code VHU_Source_ID} edges would forget.
+	 */
+	private void setupSameVhuNoTransform(@NonNull final String scenarioName, @NonNull final ProductId productId)
+	{
+		scenarioProductIds.put(scenarioName, productId);
+		final I_C_DocType receiptDocType = loadDocType("MMR", false);
+		final I_C_DocType shipmentDocType = loadDocType("MMS", true);
+
+		final I_M_HU vhu = createVhu();
+		final I_M_InOut receiptInOut = createMinimalInOut(receiptDocType, "CO");
+		createHuTraceWithSource(vhu, null, productId, HUTraceType.MATERIAL_RECEIPT,
+				"LOT-SAME-VHU", receiptInOut, new BigDecimal("100"));
+
+		final I_M_InOut shipmentInOut = createMinimalInOut(shipmentDocType, "CO");
+		createHuTraceWithSource(vhu, null, productId, HUTraceType.MATERIAL_SHIPMENT,
+				"LOT-SAME-VHU", shipmentInOut, new BigDecimal("-24"));
+
+		scenarioDocNos.put(scenarioName + ".receipt1", receiptInOut.getDocumentNo());
+		scenarioDocNos.put(scenarioName + ".shipment", shipmentInOut.getDocumentNo());
+	}
+
+	/**
+	 * A receipt's VHU transforms into an intermediate VHU, which transforms again into the
+	 * shipped VHU — a two-edge TRANSFORM_LOAD chain. The receipt document must still resolve to
+	 * the original receipt, not the intermediate step.
+	 */
+	private void setupTwoStepTransform(@NonNull final String scenarioName, @NonNull final ProductId productId)
+	{
+		scenarioProductIds.put(scenarioName, productId);
+		final I_C_DocType receiptDocType = loadDocType("MMR", false);
+		final I_C_DocType shipmentDocType = loadDocType("MMS", true);
+
+		final I_M_HU receiptVhu = createVhu();
+		final I_M_InOut receiptInOut = createMinimalInOut(receiptDocType, "CO");
+		createHuTraceWithSource(receiptVhu, null, productId, HUTraceType.MATERIAL_RECEIPT,
+				"LOT-TWO-STEP", receiptInOut, new BigDecimal("100"));
+
+		final I_M_HU intermediateVhu = createVhu();
+		createHuTraceWithSource(intermediateVhu, receiptVhu, productId, HUTraceType.TRANSFORM_LOAD,
+				"LOT-TWO-STEP", null, new BigDecimal("24"));
+
+		final I_M_HU shippedVhu = createVhu();
+		createHuTraceWithSource(shippedVhu, intermediateVhu, productId, HUTraceType.TRANSFORM_LOAD,
+				"LOT-TWO-STEP", null, new BigDecimal("24"));
+		final I_M_InOut shipmentInOut = createMinimalInOut(shipmentDocType, "CO");
+		createHuTraceWithSource(shippedVhu, null, productId, HUTraceType.MATERIAL_SHIPMENT,
+				"LOT-TWO-STEP", shipmentInOut, new BigDecimal("-24"));
+
+		scenarioDocNos.put(scenarioName + ".receipt1", receiptInOut.getDocumentNo());
 		scenarioDocNos.put(scenarioName + ".shipment", shipmentInOut.getDocumentNo());
 	}
 

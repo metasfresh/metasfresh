@@ -10,7 +10,9 @@ Feature: HU Traceability Report — SQL correctness tests
   - Bug A (Section 5): PRODUCTION_RECEIPT_DETAL appears even when the PRODUCTION_ISSUE HU has no MHD attribute
   - Bug B (Section 6): DIRECT_SALE_DETAIL appears for products with NULL lot number
   - DIRECT_SALE_DETAIL pairing (Section 6): a shipment must be paired with the receipt(s) it is
-    actually traceable to, not with every receipt that merely shares the same lot and product
+    actually traceable to, not with every receipt that merely shares the same lot and product.
+    Tracing follows the M_HU_Trace graph — same VHU, or a chain of VHU_Source_ID edges — and is
+    guarded by lot agreement between the receipt and the shipment.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -55,5 +57,43 @@ Feature: HU Traceability Report — SQL correctness tests
       | TRACED_ONE_OF_TWO_RECEIPTS | traceProduct_1          |
     And M_HU_Trace_Report is invoked for scenario "traced_one_of_two"
     Then M_HU_Trace_Report detail rows for scenario "traced_one_of_two" are:
+      | ReceiptDocNo | ShipmentDocNo | LinkBasis | Menge | Liefermenge |
+      | receipt1     | shipment      | TRACED    | 100   | 24          |
+
+  @Id:S0000.1_HUTrace_TC0
+  Scenario: A graph-traced receipt whose lot disagrees with the shipment's is not reported as traced
+    Given metasfresh contains M_Products:
+      | Identifier                | Value                        | Name                         |
+      | traceProduct_lotMismatch  | traceProductVal_lotMismatch  | Trace Product Lot Mismatch   |
+    When M_HU_Trace_Report test data is set up for scenario "lot_disagreement":
+      | TestType         | M_Product_ID.Identifier  |
+      | LOT_DISAGREEMENT | traceProduct_lotMismatch |
+    And M_HU_Trace_Report is invoked for scenario "lot_disagreement"
+    Then M_HU_Trace_Report detail rows for scenario "lot_disagreement" are:
+      | ReceiptDocNo | ShipmentDocNo | LinkBasis | Menge | Liefermenge |
+
+  @Id:S0000.1_HUTrace_TC2
+  Scenario: A receipt and shipment sharing the same VHU are traced without any transform edge
+    Given metasfresh contains M_Products:
+      | Identifier            | Value                    | Name                     |
+      | traceProduct_sameVhu  | traceProductVal_sameVhu  | Trace Product Same VHU   |
+    When M_HU_Trace_Report test data is set up for scenario "same_vhu_no_transform":
+      | TestType               | M_Product_ID.Identifier |
+      | SAME_VHU_NO_TRANSFORM  | traceProduct_sameVhu    |
+    And M_HU_Trace_Report is invoked for scenario "same_vhu_no_transform"
+    Then M_HU_Trace_Report detail rows for scenario "same_vhu_no_transform" are:
+      | ReceiptDocNo | ShipmentDocNo | LinkBasis | Menge | Liefermenge |
+      | receipt1     | shipment      | TRACED    | 100   | 24          |
+
+  @Id:S0000.1_HUTrace_TC3
+  Scenario: A multi-step VHU transformation chain still traces to the original receipt
+    Given metasfresh contains M_Products:
+      | Identifier                | Value                     | Name                          |
+      | traceProduct_twoStepChain | traceProductVal_twoStep   | Trace Product Two Step Chain  |
+    When M_HU_Trace_Report test data is set up for scenario "two_step_transform":
+      | TestType            | M_Product_ID.Identifier   |
+      | TWO_STEP_TRANSFORM  | traceProduct_twoStepChain |
+    And M_HU_Trace_Report is invoked for scenario "two_step_transform"
+    Then M_HU_Trace_Report detail rows for scenario "two_step_transform" are:
       | ReceiptDocNo | ShipmentDocNo | LinkBasis | Menge | Liefermenge |
       | receipt1     | shipment      | TRACED    | 100   | 24          |
