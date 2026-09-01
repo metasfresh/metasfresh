@@ -100,6 +100,9 @@
 					 row.getAsOptionalString(I_M_Attribute.COLUMNNAME_DefaultValueSQL)
 							 .ifPresent(attributeRecord::setDefaultValueSQL);
 
+					 row.getAsOptionalBoolean(I_M_Attribute.COLUMNNAME_IsMandatory)
+							 .ifPresent(attributeRecord::setIsMandatory);
+
 					 InterfaceWrapperHelper.saveRecord(attributeRecord);
 					 final Attribute attribute = AttributeDAO.fromRecord(attributeRecord);
 

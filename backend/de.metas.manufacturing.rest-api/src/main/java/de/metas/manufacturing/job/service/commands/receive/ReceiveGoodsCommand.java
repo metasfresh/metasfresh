@@ -45,6 +45,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.warehouse.LocatorId;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
@@ -57,7 +58,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class ReceiveGoodsCommand
@@ -88,6 +92,13 @@ public class ReceiveGoodsCommand
 	@Nullable private final LocalDate productionDate;
 	@Nullable private final String lotNo;
 	@Nullable private final Quantity catchWeight;
+	/**
+	 * Generic editable-attribute values submitted with the receive event, EXCLUDING Lot/Best-before/Production
+	 * date (those keep using their own dedicated fields above, routed to the {@link IPPOrderReceiptHUProducer}
+	 * setters so the auto-lot gate stays untouched). Applied post-creation onto every produced HU's attribute
+	 * storage, guarded by {@code hasAttribute} (see {@link #setSubmittedAttributesForReceivedHUs()}).
+	 */
+	@NonNull private final Map<AttributeCode, String> attributes;
 	@Nullable private final ScannedCode barcode;
 	/** Unit type for receiving goods (CU or TU). Determines how quantities are interpreted and displayed. */
 	@NonNull private final ReceiveUnitType receiveUnitType;
@@ -123,6 +134,7 @@ public class ReceiveGoodsCommand
 			@Nullable final LocalDate productionDate,
 			@Nullable final String lotNo,
 			@Nullable final Quantity catchWeight,
+			@Nullable final Map<AttributeCode, String> attributes,
 			@Nullable final ScannedCode barcode,
 			@Nullable final ReceiveUnitType receiveUnitType,
 			@Nullable final HUPIItemProductId tuPIItemProductIdForTUMode)
@@ -144,6 +156,10 @@ public class ReceiveGoodsCommand
 		this.productionDate = productionDate;
 		this.lotNo = StringUtils.trimBlankToNull(lotNo);
 		this.catchWeight = catchWeight;
+		// plain HashMap copy - NOT ImmutableMap.copyOf: a submitted-but-empty attribute value is a null map
+		// value (see JsonManufacturingOrderEvent.ReceiveFrom#getAttributesAsMap), and ImmutableMap forbids
+		// null values.
+		this.attributes = attributes != null ? new HashMap<>(attributes) : Collections.emptyMap();
 		this.barcode = barcode;
 		this.receiveUnitType = receiveUnitType != null ? receiveUnitType : ReceiveUnitType.CU;
 		this.tuPIItemProductIdForTUMode = tuPIItemProductIdForTUMode;
@@ -192,6 +208,7 @@ public class ReceiveGoodsCommand
 
 		saveReceivingTargetForLaterUse(receivingTarget);
 		setCatchWeightForReceivedHUs();
+		setSubmittedAttributesForReceivedHUs();
 
 		return line.withQtyReceived(getTotalQtyReceived())
 				.withReceivingTarget(receivingTarget);
@@ -530,6 +547,44 @@ public class ReceiveGoodsCommand
 				catchWeight);
 
 		weightUpdater.updatePackToHUs(receivedHUs);
+	}
+
+	/**
+	 * Applies the submitted generic editable-attribute values (Lot/Best-before/Production date excluded - those
+	 * go through {@link #createHUProducer()}'s setters) onto every produced HU's attribute storage, the same
+	 * seam {@link #setQRCodeAttribute(I_M_HU)} uses. A blank/empty value is skipped (v1 does not set anything for
+	 * an empty entry, and nothing is enforced as mandatory). An attribute not present on a given HU's storage
+	 * (not part of the product's {@code M_AttributeSet}) is silently skipped too.
+	 */
+	private void setSubmittedAttributesForReceivedHUs()
+	{
+		if (attributes.isEmpty())
+		{
+			return;
+		}
+
+		for (final I_M_HU hu : receivedHUs)
+		{
+			final IAttributeStorage huAttributes = handlingUnitsBL.getAttributeStorage(hu);
+
+			for (final Map.Entry<AttributeCode, String> attributeToSet : attributes.entrySet())
+			{
+				final String value = StringUtils.trimBlankToNull(attributeToSet.getValue());
+				if (value == null)
+				{
+					continue;
+				}
+
+				final AttributeCode attributeCode = attributeToSet.getKey();
+				if (!huAttributes.hasAttribute(attributeCode))
+				{
+					continue;
+				}
+
+				huAttributes.setSaveOnChange(true);
+				huAttributes.setValue(attributeCode, value);
+			}
+		}
 	}
 
 	@NonNull

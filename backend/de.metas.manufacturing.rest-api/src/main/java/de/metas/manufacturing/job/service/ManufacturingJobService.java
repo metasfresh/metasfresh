@@ -532,6 +532,7 @@ public class ManufacturingJobService
 				.productionDate(TimeUtil.asLocalDate(StringUtils.trimBlankToNull(receiveFrom.getProductionDate())))
 				.lotNo(receiveFrom.getLotNo())
 				.catchWeight(extractTargetCatchWeight(receiveFrom).orElse(null))
+				.attributes(receiveFrom.getAttributesAsMap())
 				.barcode(receiveFrom.getBarcode())
 				.receiveUnitType(receiveUnitType)
 				.tuPIItemProductIdForTUMode(receiveLine.getTuPIItemProductId())

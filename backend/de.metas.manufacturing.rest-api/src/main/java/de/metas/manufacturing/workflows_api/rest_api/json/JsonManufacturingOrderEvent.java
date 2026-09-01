@@ -1,6 +1,7 @@
 package de.metas.manufacturing.workflows_api.rest_api.json;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.ImmutableMap;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLineId;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonLUReceivingTarget;
@@ -11,9 +12,13 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Value
 public class JsonManufacturingOrderEvent
@@ -54,8 +59,43 @@ public class JsonManufacturingOrderEvent
 		@Nullable JsonLUReceivingTarget aggregateToLU;
 		@Nullable JsonTUReceivingTarget aggregateToTU;
 
+		/**
+		 * Generic, per-attribute-code editable-attribute values entered by the operator at receipt (the
+		 * config's {@code editableAttributes} list, see {@code MaterialReceiptActivityHandler}), EXCLUDING
+		 * Lot/Best-before/Production date which keep using their own dedicated fields above so the
+		 * auto-lot (F8041) gate stays untouched. Applied by {@code ReceiveGoodsCommand} onto the produced
+		 * HU(s) via the HU attribute storage, next to the catch-weight apply.
+		 */
+		@Nullable List<Attribute> attributes;
+
 		@JsonIgnore
 		public FinishedGoodsReceiveLineId getFinishedGoodsReceiveLineId() {return FinishedGoodsReceiveLineId.ofString(lineId);}
+
+		@JsonIgnore
+		@NonNull
+		public Map<AttributeCode, String> getAttributesAsMap()
+		{
+			if (attributes == null || attributes.isEmpty())
+			{
+				return ImmutableMap.of();
+			}
+
+			final HashMap<AttributeCode, String> result = new HashMap<>();
+			for (final Attribute attribute : attributes)
+			{
+				result.put(attribute.getCode(), attribute.getValue());
+			}
+			return result;
+		}
+	}
+
+	@Value
+	@Builder
+	@Jacksonized
+	public static class Attribute
+	{
+		@NonNull AttributeCode code;
+		@Nullable String value;
 	}
 
 	@Nullable ReceiveFrom receiveFrom;

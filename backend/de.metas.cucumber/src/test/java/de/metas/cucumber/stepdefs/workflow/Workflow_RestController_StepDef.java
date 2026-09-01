@@ -29,6 +29,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.handlingunits.JsonHUQRCode;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.attribute.M_Attribute_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
@@ -41,6 +42,8 @@ import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.manufacturing.workflows_api.ManufacturingMobileApplication;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonLUReceivingTarget;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonNewLUTarget;
+import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonNewTUTarget;
+import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonTUReceivingTarget;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
 import de.metas.order.OrderId;
 import de.metas.picking.workflow.PickingWFProcessStartParams;
@@ -63,8 +66,11 @@ import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_C_Order;
 import org.eevolution.model.I_PP_Order;
 
+import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -87,6 +93,7 @@ public class Workflow_RestController_StepDef
 	private final JsonWFHQRCode_StepDefData qrCodeTable;
 	private final JsonWFLineManufacturingMaterialReceipt_StepDefData materialReceiptLineTable;
 	private final JsonWFManufacturingReceivingTargetValues_StepDefData receivingTargetValuesTable;
+	private final M_Attribute_StepDefData attributeTable;
 	private final TestContext testContext;
 
 	@And("update duration for AD_Workflow nodes")
@@ -228,28 +235,66 @@ public class Workflow_RestController_StepDef
 			final Quantity catchWeight = row.getAsOptionalQuantity("CatchWeight", uomDAO::getByX12DE355)
 					.orElse(null);
 
+			// ReceiveTo=TU receives straight into (possibly several) top-level TUs, without an LU wrapper -
+			// used to prove a generic attribute value lands on EVERY produced HU of the line (AC10).
+			final boolean receiveToTUOnly = row.getAsOptionalString("ReceiveTo").map("TU"::equalsIgnoreCase).orElse(false);
+
+			final JsonManufacturingOrderEvent.ReceiveFrom.ReceiveFromBuilder receiveFromBuilder = JsonManufacturingOrderEvent.ReceiveFrom.builder()
+					.lineId(workflowLine.getId())
+					.qtyReceived(workflowLine.getQtyToReceive())
+					.bestBeforeDate(row.getAsOptionalString("BestBeforeDate").orElse(null))
+					.catchWeight(catchWeight != null ? catchWeight.toBigDecimal() : null)
+					.catchWeightUomSymbol(catchWeight != null ? catchWeight.getUOMSymbol() : null)
+					.lotNo(row.getAsOptionalString("LotNo").orElse(null))
+					.attributes(extractGenericAttributes(row));
+
+			if (receiveToTUOnly)
+			{
+				receiveFromBuilder.aggregateToTU(JsonTUReceivingTarget.builder()
+						.newTU(JsonNewTUTarget.builder()
+									   .caption(receivingTargetValues.getTuCaption())
+									   .tuPIItemProductId(HUPIItemProductId.ofRepoId(receivingTargetValues.getTuPIItemProductId()))
+									   .build())
+						.build());
+			}
+			else
+			{
+				receiveFromBuilder.aggregateToLU(JsonLUReceivingTarget.builder()
+						.newLU(JsonNewLUTarget.builder()
+									   .luCaption(receivingTargetValues.getLuCaption())
+									   .tuCaption(receivingTargetValues.getTuCaption())
+									   .luPIItemId(HuPackingInstructionsItemId.ofRepoId(receivingTargetValues.getLuPIItemId()))
+									   .tuPIItemProductId(HUPIItemProductId.ofRepoId(receivingTargetValues.getTuPIItemProductId()))
+									   .build())
+						.build());
+			}
+
 			manufacturingOrderEventBuilder
 					.wfProcessId(workflowProcess.getAsString())
 					.wfActivityId(workflowActivity.getAsString())
-					.receiveFrom(JsonManufacturingOrderEvent.ReceiveFrom.builder()
-										 .lineId(workflowLine.getId())
-										 .qtyReceived(workflowLine.getQtyToReceive())
-										 .aggregateToLU(JsonLUReceivingTarget.builder()
-																.newLU(JsonNewLUTarget.builder()
-																			   .luCaption(receivingTargetValues.getLuCaption())
-																			   .tuCaption(receivingTargetValues.getTuCaption())
-																			   .luPIItemId(HuPackingInstructionsItemId.ofRepoId(receivingTargetValues.getLuPIItemId()))
-																			   .tuPIItemProductId(HUPIItemProductId.ofRepoId(receivingTargetValues.getTuPIItemProductId()))
-																			   .build())
-																.build())
-										 .bestBeforeDate(row.getAsOptionalString("BestBeforeDate").orElse(null))
-										 .catchWeight(catchWeight != null ? catchWeight.toBigDecimal() : null)
-										 .catchWeightUomSymbol(catchWeight != null ? catchWeight.getUOMSymbol() : null)
-										 .lotNo(row.getAsOptionalString("LotNo").orElse(null))
-										 .build());
+					.receiveFrom(receiveFromBuilder.build());
 		}
 
 		testContext.setRequestPayload(manufacturingOrderEventBuilder.build());
+	}
+
+	/**
+	 * Builds the generic editable-attribute value list from the optional {@code Attribute} (identifier, resolved
+	 * via {@link M_Attribute_StepDefData}) + {@code AttributeValue} columns. A blank/absent {@code AttributeValue}
+	 * still produces a list entry with a {@code null} value - this is how scenarios prove that an empty submitted
+	 * value is not stamped (AC4), as opposed to no attribute being submitted at all.
+	 */
+	@Nullable
+	private List<JsonManufacturingOrderEvent.Attribute> extractGenericAttributes(@NonNull final DataTableRow row)
+	{
+		return row.getAsOptionalIdentifier("Attribute")
+				.map(identifier -> identifier.lookupNotNullIn(attributeTable))
+				.map(attribute -> Collections.singletonList(
+						JsonManufacturingOrderEvent.Attribute.builder()
+								.code(attribute.getAttributeCode())
+								.value(row.getAsOptionalString("AttributeValue").orElse(null))
+								.build()))
+				.orElse(null);
 	}
 
 	private void updateADWorkflowNodes(@NonNull final DataTableRow row)
