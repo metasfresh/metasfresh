@@ -277,15 +277,26 @@ public class M_ShipmentSchedule
 			return;
 		}
 
+		final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID());
+
 		if (shipmentSchedule.isClosed())
 		{
 			orderBL.closeLine(orderLine);
-			invoiceCandBL.closeDeliveryInvoiceCandidatesByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
+			invoiceCandBL.closeDeliveryInvoiceCandidatesByOrderLineId(orderLineId);
+
+			// see OrderLineReceiptScheduleListener.onAfterClose - same reasoning, sales side
+			if (orderLine.getQtyDelivered().signum() == 0)
+			{
+				invoiceCandBL.closeInvoiceCandidatesByOrderLineId(orderLineId);
+			}
 		}
 		else
 		{
 			orderBL.reopenLine(orderLine);
-			invoiceCandBL.openDeliveryInvoiceCandidatesByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
+			invoiceCandBL.openDeliveryInvoiceCandidatesByOrderLineId(orderLineId);
+
+			// see OrderLineReceiptScheduleListener.onAfterReopen - same reasoning, sales side
+			invoiceCandBL.openInvoiceCandidatesByOrderLineId(orderLineId);
 		}
 	}
 
