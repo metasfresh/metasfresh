@@ -229,7 +229,7 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 		final TransportDirection transportDirection = query.getTransportDirection();
 		if (transportDirection != null)
 		{
-			builder.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_TransportDirection, transportDirection.getCode());
+			builder.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_TransportDirection, transportDirection);
 		}
 
 		return builder.create();
