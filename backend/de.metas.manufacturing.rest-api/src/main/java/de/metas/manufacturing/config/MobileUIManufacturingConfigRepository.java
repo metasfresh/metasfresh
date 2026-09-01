@@ -40,6 +40,7 @@ public class MobileUIManufacturingConfigRepository
 			.isAllowFinishedGoodsReceiveToTU(OptionalBoolean.TRUE)
 			.isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.FALSE)
 			.isCaptureCatchWeightAtReceipt(OptionalBoolean.TRUE)
+			.isAllowReceiveWithoutPackingItem(OptionalBoolean.FALSE)
 			.build();
 
 	private final CCache<UserId, Optional<MobileUIManufacturingConfig>> userConfigsCache = CCache.<UserId, Optional<MobileUIManufacturingConfig>>builder()
@@ -106,6 +107,7 @@ public class MobileUIManufacturingConfigRepository
 				.isAllowFinishedGoodsReceiveToTU(OptionalBoolean.ofNullableString(record.getIsAllowFinishedGoodsReceiveToTU()))
 				.isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.ofNullableString(record.getIsSkipFinishedGoodsReceiveTargetStep()))
 				.isCaptureCatchWeightAtReceipt(OptionalBoolean.ofNullableString(record.getIsCaptureCatchWeightAtReceipt()))
+				.isAllowReceiveWithoutPackingItem(OptionalBoolean.ofNullableString(record.getIsAllowReceiveWithoutPackingItem()))
 				.build();
 	}
 
@@ -118,6 +120,7 @@ public class MobileUIManufacturingConfigRepository
 		record.setIsAllowFinishedGoodsReceiveToTU(from.getIsAllowFinishedGoodsReceiveToTU().toBooleanString());
 		record.setIsSkipFinishedGoodsReceiveTargetStep(from.getIsSkipFinishedGoodsReceiveTargetStep().toBooleanString());
 		record.setIsCaptureCatchWeightAtReceipt(from.getIsCaptureCatchWeightAtReceipt().toBooleanString());
+		record.setIsAllowReceiveWithoutPackingItem(from.getIsAllowReceiveWithoutPackingItem().toBooleanString());
 	}
 
 	private Optional<MobileUIManufacturingConfig> retrieveGlobalConfig(@NonNull final ClientId clientId)
@@ -141,6 +144,7 @@ public class MobileUIManufacturingConfigRepository
 				.isAllowFinishedGoodsReceiveToTU(OptionalBoolean.ofBoolean(record.isAllowFinishedGoodsReceiveToTU()))
 				.isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.ofBoolean(record.isSkipFinishedGoodsReceiveTargetStep()))
 				.isCaptureCatchWeightAtReceipt(OptionalBoolean.ofBoolean(record.isCaptureCatchWeightAtReceipt()))
+				.isAllowReceiveWithoutPackingItem(OptionalBoolean.ofBoolean(record.isAllowReceiveWithoutPackingItem()))
 				.build();
 	}
 
