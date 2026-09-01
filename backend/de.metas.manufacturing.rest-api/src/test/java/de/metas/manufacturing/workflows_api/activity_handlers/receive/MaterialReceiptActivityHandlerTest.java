@@ -22,6 +22,7 @@ import de.metas.product.hazard_symbol.ProductHazardSymbolService;
 import de.metas.scannable_code.format.service.ScannableCodeFormatService;
 import de.metas.util.OptionalBoolean;
 import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeSetMandatoryType;
 import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -145,7 +146,11 @@ class MaterialReceiptActivityHandlerTest
 		}
 	}
 
-	/** Covers AC3, AC8, AC9, AC10, AC11 — the per-line {@code editableAttributes} build (issue #31771 Task 6). */
+	/**
+	 * The per-line {@code editableAttributes} build: restriction to the product's {@code M_AttributeSet}, to
+	 * instance-level attributes only, ordering by the config's {@code SeqNo}, and independence per line
+	 * (including co-product lines with a different product).
+	 */
 	@Nested
 	class buildEditableAttributes
 	{
@@ -169,7 +174,7 @@ class MaterialReceiptActivityHandlerTest
 		{
 			final I_M_AttributeSet attributeSet = InterfaceWrapperHelper.newInstance(I_M_AttributeSet.class);
 			attributeSet.setName("AttributeSet");
-			attributeSet.setMandatoryType(org.adempiere.mm.attributes.AttributeSetMandatoryType.NotMandatory.getCode());
+			attributeSet.setMandatoryType(AttributeSetMandatoryType.NotMandatory.getCode());
 			InterfaceWrapperHelper.save(attributeSet);
 
 			for (final I_M_Attribute attribute : attributes)
@@ -236,11 +241,11 @@ class MaterialReceiptActivityHandlerTest
 			assertThat(result).extracting(JsonAttribute::getCode).containsExactly(AttributeCode.ofString("Color"));
 			assertThat(result.get(0).getCaption()).isEqualTo("Color");
 			assertThat(result.get(0).getValueType()).isEqualTo(JsonAttributeValueType.STRING);
-			assertThat(result.get(0).getValue()).isNull(); // AC4: no value has been entered yet at this stage
+			assertThat(result.get(0).getValue()).isNull(); // no value has been entered yet at this stage
 		}
 
 		@Test
-		void configuredAttributeNotInProductAttributeSet_isExcluded() // AC8
+		void configuredAttributeNotInProductAttributeSet_isExcluded()
 		{
 			final I_M_Attribute inSet = createAttribute("Color2", AttributeValueType.STRING.getCode(), true);
 			final I_M_AttributeSet attributeSet = createAttributeSet(inSet);
@@ -255,7 +260,7 @@ class MaterialReceiptActivityHandlerTest
 		}
 
 		@Test
-		void configuredAttributeNotInstanceLevel_isExcluded() // AC10
+		void configuredAttributeNotInstanceLevel_isExcluded()
 		{
 			final I_M_Attribute instanceAttr = createAttribute("Color3", AttributeValueType.STRING.getCode(), true);
 			final I_M_Attribute productLevelAttr = createAttribute("Weight3", AttributeValueType.NUMBER.getCode(), false);
@@ -271,7 +276,7 @@ class MaterialReceiptActivityHandlerTest
 		}
 
 		@Test
-		void orderedByConfigSeqNoOrder_notByAttributeSetInsertionOrder() // AC11
+		void orderedByConfigSeqNoOrder_notByAttributeSetInsertionOrder()
 		{
 			final I_M_Attribute attr1 = createAttribute("Attr1x", AttributeValueType.STRING.getCode(), true);
 			final I_M_Attribute attr2 = createAttribute("Attr2x", AttributeValueType.STRING.getCode(), true);
@@ -289,7 +294,7 @@ class MaterialReceiptActivityHandlerTest
 		}
 
 		@Test
-		void coProductLine_differentProduct_alsoGetsOwnEditableAttributes() // AC9
+		void coProductLine_differentProduct_alsoGetsOwnEditableAttributes()
 		{
 			final I_M_Attribute colorAttr = createAttribute("Color4", AttributeValueType.STRING.getCode(), true);
 

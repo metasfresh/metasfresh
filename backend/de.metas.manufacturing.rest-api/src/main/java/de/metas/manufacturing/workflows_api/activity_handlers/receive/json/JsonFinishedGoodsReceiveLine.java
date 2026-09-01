@@ -36,9 +36,9 @@ public class JsonFinishedGoodsReceiveLine
 	@NonNull JsonNewTUTargetList availableReceivingTUTargets;
 
 	/**
-	 * The generic, per-line editable-attribute list (issue #31771 Task 6): the mobile-UI Manufacturing
-	 * Configuration's editable-attribute list, restricted to this line's product {@code M_AttributeSet} and to
-	 * instance-level attributes, in the config's {@code SeqNo} order.
+	 * The generic, per-line editable-attribute list: the mobile-UI Manufacturing Configuration's
+	 * editable-attribute list, restricted to this line's product {@code M_AttributeSet} and to instance-level
+	 * attributes, in the config's {@code SeqNo} order.
 	 */
 	@NonNull List<JsonAttribute> editableAttributes;
 }

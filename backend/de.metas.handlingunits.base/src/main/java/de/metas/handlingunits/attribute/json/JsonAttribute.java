@@ -13,7 +13,7 @@ import java.util.List;
  * Generic mobile-UI JSON view of one attribute (code, caption, value type, current value and - for a
  * {@link JsonAttributeValueType#LIST} attribute - its allowed values).
  * <p>
- * Lifted (issue #31771 Task 6) from {@code de.metas.inventory.mobileui.rest_api.json.JsonAttribute} into this
+ * Lifted from {@code de.metas.inventory.mobileui.rest_api.json.JsonAttribute} into this
  * shared module so it can be reused across mobile-UI apps (Inventory, Manufacturing, ...) that already depend on
  * {@code de.metas.handlingunits.base}, instead of creating a dependency between sibling app modules. The former
  * {@code of(Attribute, ...)}/{@code ofList(...)} factories were inventory-app-specific (they took the inventory

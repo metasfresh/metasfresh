@@ -55,7 +55,6 @@ import de.metas.workflow.rest_api.service.WFActivityHandler;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -210,11 +209,11 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 	}
 
 	/**
-	 * Builds the generic, per-line editable-attribute list (issue #31771 Task 6): the config's editable-attribute
-	 * codes, restricted to this product's {@code M_AttributeSet} (AC8) and to instance-level attributes only
-	 * (AC10), in the config's {@code SeqNo} order (AC11; {@link MobileUIManufacturingConfig#getEditableAttributeCodesInOrder()}
-	 * is already ordered). Applies uniformly to every line, main finished good or co-/by-product alike (AC9). No
-	 * value is carried yet (AC4: nothing has been entered by the operator at this stage).
+	 * Builds the generic, per-line editable-attribute list: the config's editable-attribute codes, restricted to
+	 * this product's {@code M_AttributeSet} and to instance-level attributes only, in the config's {@code SeqNo}
+	 * order ({@link MobileUIManufacturingConfig#getEditableAttributeCodesInOrder()} is already ordered). Applies
+	 * uniformly to every line, main finished good or co-/by-product alike. No value is carried yet — nothing has
+	 * been entered by the operator at this stage.
 	 */
 	@NonNull
 	@VisibleForTesting
@@ -273,7 +272,6 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 	{
 		return attributeDAO.retrieveAttributeValues(attribute)
 				.stream()
-				.filter(AttributeListValue::isActive)
 				.map(listValue -> JsonAttributeListValue.builder()
 						.value(listValue.getValue())
 						.caption(listValue.getNameTrl().translate(adLanguage))

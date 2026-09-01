@@ -11,8 +11,8 @@ import java.util.List;
 
 /**
  * Adapts this module's own {@link Attribute}/{@link Attributes} domain wrapper to the shared
- * {@code de.metas.handlingunits.attribute.json.JsonAttribute} DTO (moved out of this module in issue #31771
- * Task 6 so it can be reused by other mobile-UI apps without an app-to-app module dependency).
+ * {@code de.metas.handlingunits.attribute.json.JsonAttribute} DTO (moved out of this module so it can be
+ * reused by other mobile-UI apps without an app-to-app module dependency).
  */
 public class JsonAttributeConverter
 {
