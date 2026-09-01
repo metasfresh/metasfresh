@@ -6,8 +6,9 @@ Feature: The document lifecycle of a delivery instruction and its delivery plann
 
   A planner finalises, re-opens and cancels a truck.
   Completing and re-activating leave the loads on the instruction; voiding releases every one of them and keeps
-  the record of what was once planned. An instruction with nothing on it cannot be finalised at all, while a
-  plain transport order - which never carries plannings - is unaffected by any of it.
+  the record of what was once planned. An instruction with nothing on it cannot be finalised at all, nor can one
+  carrying a load the planner has called off, while a plain transport order - which never carries plannings - is
+  unaffected by any of it.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -190,6 +191,64 @@ Feature: The document lifecycle of a delivery instruction and its delivery plann
     Then validate M_ShipperTransportation:
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DocStatus |
       | deliveryInstructionEmpty              | shipper_DHL             | customer                       | customerLocation               | DR            |
+
+  @Id:S31608_TC23
+  Scenario: A delivery instruction carrying a closed delivery planning cannot be completed
+
+    Given metasfresh contains C_Orders:
+      | Identifier  | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier |
+      | orderCalled | true    | customer                 | 2023-02-03  | 2023-02-20T00:00:00Z | customerLocation                      |
+    And metasfresh contains C_OrderLines:
+      | Identifier      | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineCalled | orderCalled           | product                 | 8          | shipper_DHL                 |
+
+    When the order identified by orderCalled is completed
+
+    Then after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier             | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentScheduleCalled | orderLineCalled           | N             |
+    And after not more than 60s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID | C_OrderLine_ID  |
+      | planningCalled_1       | orderLineCalled |
+
+    # two loads of one order line: 4 + 4 of the 8 ordered
+    When generate 1 additional M_Delivery_Planning records for: planningCalled_1
+
+    Then after not more than 60s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID            | C_OrderLine_ID  |
+      | planningCalled_1,planningCalled_2 | orderLineCalled |
+
+    When combine M_Delivery_Planning into one M_ShipperTransportation:
+      | M_ShipperTransportation_ID | M_Delivery_Planning_ID            |
+      | deliveryInstructionCalled  | planningCalled_1,planningCalled_2 |
+    # the planner calls one load off AFTER it was loaded onto the truck; it stays on it, closed
+    And M_Delivery_Planning identified by planningCalled_2 is closed
+
+    Then the M_ShipperTransportation identified by deliveryInstructionCalled holds exactly the following active M_Delivery_Planning_Alloc:
+      | M_Delivery_Planning_ID |
+      | planningCalled_1       |
+      | planningCalled_2       |
+
+    # finalising the truck would freight exactly what the planner already called off
+    When completing the M_ShipperTransportation identified by deliveryInstructionCalled is refused:
+      | ErrorAdMessage                                                                 |
+      | de.metas.deliveryplanning.CompleteDeliveryInstruction.ClosedAllocatedPlannings |
+
+    Then validate M_ShipperTransportation:
+      | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DocStatus |
+      | deliveryInstructionCalled             | shipper_DHL             | customer                       | customerLocation               | DR            |
+
+    # re-opening the load is what unblocks the truck; it then completes with both loads on board
+    When M_Delivery_Planning identified by planningCalled_2 is opened
+    And the M_ShipperTransportation identified by deliveryInstructionCalled is completed
+
+    Then validate M_ShipperTransportation:
+      | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DocStatus |
+      | deliveryInstructionCalled             | shipper_DHL             | customer                       | customerLocation               | CO            |
+    And the M_ShipperTransportation identified by deliveryInstructionCalled holds exactly the following active M_Delivery_Planning_Alloc:
+      | M_Delivery_Planning_ID |
+      | planningCalled_1       |
+      | planningCalled_2       |
 
   @Id:S31608_TC9
   Scenario: A transport order carries no delivery plannings and completes unchanged

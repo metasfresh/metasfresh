@@ -63,16 +63,4 @@ public class M_Delivery_Planning
 	{
 		deliveryPlanningService.invalidateInvoiceCandidatesFor(deliveryPlanning);
 	}
-
-	/**
-	 * Fires only on the transition TO closed; an already-closed planning is never acted on again.
-	 */
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_M_Delivery_Planning.COLUMNNAME_IsClosed)
-	public void onClosedChanged(@NonNull final I_M_Delivery_Planning deliveryPlanning)
-	{
-		if (deliveryPlanning.isClosed())
-		{
-			deliveryPlanningService.onDeliveryPlanningClosed(DeliveryPlanningId.ofRepoId(deliveryPlanning.getM_Delivery_Planning_ID()));
-		}
-	}
 }

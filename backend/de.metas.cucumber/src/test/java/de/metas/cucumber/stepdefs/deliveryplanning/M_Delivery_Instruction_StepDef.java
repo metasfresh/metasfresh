@@ -319,12 +319,12 @@ public class M_Delivery_Instruction_StepDef
 	}
 
 	/**
-	 * Presses {@code Complete} on the delivery instruction expecting it to be REFUSED, and asserts which rejection
-	 * came back.
+	 * Presses {@code Complete} or {@code Re-Activate} on the delivery instruction expecting it to be REFUSED, and
+	 * asserts which rejection came back. Both actions are guarded, so both need the refusal form.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
-	 *   <b>ErrorAdMessage</b> — (optional) the {@code AD_Message} the completion is expected to be rejected with<br>
+	 *   <b>ErrorAdMessage</b> — (optional) the {@code AD_Message} the document action is expected to be rejected with<br>
 	 *   <b>ErrorMessage</b> — (optional) the raw rejection text, {@code @token@}s included<br>
 	 * @cucumber.depends StepDefData: M_ShipperTransportation_StepDefData
 	 * @cucumber.example
@@ -334,15 +334,19 @@ public class M_Delivery_Instruction_StepDef
 	 *   | de.metas.deliveryplanning.CompleteDeliveryInstruction.EmptyDeliveryInstruction |
 	 * </pre>
 	 */
-	@When("^completing the M_ShipperTransportation identified by (.*) is refused:$")
-	public void completing_deliveryInstruction_is_refused(@NonNull final String deliveryInstructionIdentifier, @NonNull final DataTable dataTable)
+	@When("^(completing|reactivating) the M_ShipperTransportation identified by (.*) is refused:$")
+	public void deliveryInstruction_docAction_is_refused(
+			@NonNull final String action,
+			@NonNull final String deliveryInstructionIdentifier,
+			@NonNull final DataTable dataTable)
 	{
 		final I_M_ShipperTransportation deliveryInstruction = deliveryInstructionTable.get(deliveryInstructionIdentifier);
+		final StepDefDocAction docAction = "completing".equals(action) ? StepDefDocAction.completed : StepDefDocAction.reactivated;
 
 		rejectionHelper.runExpectingRejectionIfAny(
 				DataTableRows.of(dataTable).singleRow(),
 				ImmutableSet.of(),
-				() -> processDeliveryInstruction(deliveryInstruction, StepDefDocAction.completed));
+				() -> processDeliveryInstruction(deliveryInstruction, docAction));
 
 		InterfaceWrapperHelper.refresh(deliveryInstruction);
 	}

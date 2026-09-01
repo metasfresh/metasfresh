@@ -485,17 +485,18 @@ Feature: Several delivery plannings on one delivery instruction
       | M_Delivery_Planning_ID |
       | planningRemove_2       |
 
-    # closing a planning takes it off the draft instruction on its own
+    # closing a planning leaves it on the draft instruction - closed is an indicator, not a removal
     When M_Delivery_Planning identified by planningRemove_3 is closed
 
     Then the M_ShipperTransportation identified by deliveryInstructionRemove holds exactly the following active M_Delivery_Planning_Alloc:
       | M_Delivery_Planning_ID |
       | planningRemove_1       |
+      | planningRemove_3       |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | IsClosed | M_ShipperTransportation_ID |
-      | planningRemove_3       | 9          | 9            | Outgoing           | true     | null                       |
+      | planningRemove_3       | 9          | 9            | Outgoing           | true     | deliveryInstructionRemove  |
 
-    # a closed planning in the selection does not make Remove refuse: the still-allocated one comes off
+    # a closed planning in the selection does not make Remove refuse: BOTH come off, the closed one included
     When remove M_Delivery_Planning from M_ShipperTransportation:
       | M_Delivery_Planning_ID            |
       | planningRemove_3,planningRemove_1 |

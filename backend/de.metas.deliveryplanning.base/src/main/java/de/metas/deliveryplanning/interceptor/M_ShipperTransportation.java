@@ -77,6 +77,19 @@ public class M_ShipperTransportation
 	}
 
 	/**
+	 * Refuses to re-activate a delivery instruction while any of its allocated plannings is closed. The sibling of
+	 * {@link #rejectCompleteWithClosedAllocatedPlannings(I_M_ShipperTransportation)}: closed says "leave this cargo
+	 * alone", so the document carrying it is neither finalised nor re-opened for editing. A plain transport order,
+	 * which never has allocations, is never rejected here.
+	 */
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)
+	public void rejectReActivateWithClosedAllocatedPlannings(@NonNull final I_M_ShipperTransportation shipperTransportation)
+	{
+		deliveryPlanningService.getReActivateRejectionReason(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()))
+				.ifPresent(reason -> {throw new AdempiereException(reason);});
+	}
+
+	/**
 	 * The instruction's dates are read-only on an allocated planning; this one-way sync is what keeps them in step.
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = {

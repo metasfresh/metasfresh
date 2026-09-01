@@ -57,7 +57,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * What completing a delivery instruction costs, and what it refuses.
+ * What completing - and re-activating - a delivery instruction costs, and what each refuses.
  * <p>
  * A transport order shares {@code M_ShipperTransportation} with a delivery instruction and must be unaffected
  * by both rules; it behaves here exactly like a delivery instruction with zero allocations.
@@ -237,6 +237,53 @@ class DeliveryPlanningCompletionCascadeTest
 		final ShipperTransportationId transportOrderId = createTransportOrder();
 
 		assertThat(deliveryPlanningService.getCompleteRejectionReason(transportOrderId)).isEmpty();
+	}
+
+	// ------------------------------------------------------------------ getReActivateRejectionReason
+
+	@Test
+	@DisplayName("re-activate is accepted when none of the allocated plannings are closed")
+	void reActivateIsAcceptedWhenNoneClosed()
+	{
+		final ShipperTransportationId deliveryInstructionId = createDeliveryInstruction();
+		allocate(deliveryInstructionId, createDeliveryPlanning(false));
+		allocate(deliveryInstructionId, createDeliveryPlanning(false));
+
+		assertThat(deliveryPlanningService.getReActivateRejectionReason(deliveryInstructionId)).isEmpty();
+	}
+
+	@Test
+	@DisplayName("re-activate is refused and names every closed allocated planning, not just the first one")
+	void reActivateIsRefusedAndNamesTheClosedOnes()
+	{
+		final ShipperTransportationId deliveryInstructionId = createDeliveryInstruction();
+		final DeliveryPlanningId open = createDeliveryPlanning(false);
+		final DeliveryPlanningId closedOne = createDeliveryPlanning(true);
+		final DeliveryPlanningId closedTwo = createDeliveryPlanning(true);
+		allocate(deliveryInstructionId, open);
+		allocate(deliveryInstructionId, closedOne);
+		allocate(deliveryInstructionId, closedTwo);
+
+		final Optional<ITranslatableString> reason = deliveryPlanningService.getReActivateRejectionReason(deliveryInstructionId);
+
+		assertThat(reason).as("a rejection reason").isPresent();
+		final String text = reason.get().translate("en_US");
+		assertThat(text).contains(DeliveryPlanningService.MSG_M_Delivery_Planning_ReActivateClosedAllocatedPlannings.toAD_Message());
+		assertThat(text).contains(String.valueOf(closedOne.getRepoId()));
+		assertThat(text).contains(String.valueOf(closedTwo.getRepoId()));
+		assertThat(text).doesNotContain(String.valueOf(open.getRepoId()));
+	}
+
+	@Test
+	@DisplayName("re-activate is accepted for a delivery instruction with zero active allocations - the empty rule is COMPLETE-only")
+	void reActivateIsAcceptedForEmptyDeliveryInstruction()
+	{
+		final ShipperTransportationId deliveryInstructionId = createDeliveryInstructionWithDocType();
+
+		assertThat(deliveryPlanningService.getCompleteRejectionReason(deliveryInstructionId))
+				.as("sanity: completing the very same instruction IS refused")
+				.isPresent();
+		assertThat(deliveryPlanningService.getReActivateRejectionReason(deliveryInstructionId)).isEmpty();
 	}
 
 	// ------------------------------------------------------------------ invalidateInvoiceCandidatesFor(instruction)

@@ -112,6 +112,31 @@ class M_ShipperTransportationTest
 	}
 
 	@Test
+	@DisplayName("the closed-planning guard is wired to BOTH complete and re-activate - one condition, two document actions")
+	void closedAllocatedPlanningsGuardCoversCompleteAndReActivate()
+	{
+		final DocValidate onComplete = methodNamed("rejectCompleteWithClosedAllocatedPlannings").getAnnotation(DocValidate.class);
+		final DocValidate onReActivate = methodNamed("rejectReActivateWithClosedAllocatedPlannings").getAnnotation(DocValidate.class);
+
+		assertThat(onComplete).as("the complete guard must be a @DocValidate handler").isNotNull();
+		assertThat(onComplete.timings()).containsExactly(ModelValidator.TIMING_BEFORE_COMPLETE);
+		assertThat(onReActivate).as("the re-activate guard must be a @DocValidate handler").isNotNull();
+		assertThat(onReActivate.timings()).containsExactly(ModelValidator.TIMING_BEFORE_REACTIVATE);
+	}
+
+	@Test
+	@DisplayName("the re-activate guard asks the service for its rejection reason, for this very instruction")
+	void reActivateGuardConsultsTheService()
+	{
+		final I_M_ShipperTransportation deliveryInstruction = deliveryInstruction();
+
+		interceptor.rejectReActivateWithClosedAllocatedPlannings(deliveryInstruction);
+
+		Mockito.verify(deliveryPlanningService).getReActivateRejectionReason(
+				ShipperTransportationId.ofRepoId(deliveryInstruction.getM_ShipperTransportation_ID()));
+	}
+
+	@Test
 	@DisplayName("invalidateInvoiceCandidatesAfterComplete does invoke the service for the instruction")
 	void invalidateInvoiceCandidatesAfterCompleteInvokesTheService()
 	{

@@ -1055,17 +1055,6 @@ public class DeliveryPlanningRepository
 				.iterate(I_M_Delivery_Planning.class);
 	}
 
-	/**
-	 * The ids of the plannings the given selection matches.
-	 */
-	@NonNull
-	public ImmutableList<DeliveryPlanningId> getIds(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
-	{
-		return getDeliveryPlanningQueryBuilder(selectedDeliveryPlanningsFilter)
-				.create()
-				.listIds(DeliveryPlanningId::ofRepoId);
-	}
-
 	@NonNull
 	private IQueryBuilder<I_M_Delivery_Planning> getDeliveryPlanningQueryBuilder(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{

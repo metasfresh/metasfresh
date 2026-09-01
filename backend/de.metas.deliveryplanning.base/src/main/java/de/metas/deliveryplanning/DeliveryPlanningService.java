@@ -125,9 +125,6 @@ public class DeliveryPlanningService
 	/** Rejects acting on a closed planning; also the per-row skip report of {@link #cancelDelivery}. */
 	public static final AdMessageKey MSG_M_Delivery_Planning_Closed = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.Closed");
 
-	/** Refuses closing a planning allocated to a completed delivery instruction; names Re-Activate as the way out. */
-	public static final AdMessageKey MSG_M_Delivery_Planning_CloseOnCompletedInstruction = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.CloseOnCompletedInstruction");
-
 	public static final AdMessageKey MSG_M_Delivery_Planning_AtLeastOnePerOrderLine = AdMessageKey.of("de.metas.deliveryplanning.M_Delivery_Planning_AtLeastOnePerOrderLine");
 
 	public static final AdMessageKey MSG_M_Delivery_Planning_AlreadyReferenced = AdMessageKey.of("de.metas.deliveryplanning.M_Delivery_Planning_AlreadyReferenced");
@@ -170,6 +167,13 @@ public class DeliveryPlanningService
 	 * {@link #MSG_M_Delivery_Planning_ClosedPlannings}, which rejects a selection before it is put on an instruction.
 	 */
 	public static final AdMessageKey MSG_M_Delivery_Planning_ClosedAllocatedPlannings = AdMessageKey.of("de.metas.deliveryplanning.CompleteDeliveryInstruction.ClosedAllocatedPlannings");
+
+	/**
+	 * Rejects RE-ACTIVATING an instruction that holds a planning closed after it was allocated - the sibling of
+	 * {@link #MSG_M_Delivery_Planning_ClosedAllocatedPlannings}, on the other document action. Closed says "I am
+	 * done with this cargo, leave it alone", so re-opening the document it rides on for editing is refused too.
+	 */
+	public static final AdMessageKey MSG_M_Delivery_Planning_ReActivateClosedAllocatedPlannings = AdMessageKey.of("de.metas.deliveryplanning.ReActivateDeliveryInstruction.ClosedAllocatedPlannings");
 
 	/**
 	 * Refuses completing a delivery instruction that holds no planning, which the reports would print as a blank
@@ -459,37 +463,12 @@ public class DeliveryPlanningService
 	public void closeSelectedDeliveryPlannings(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
 		validateDeliveryPlannings(selectedDeliveryPlanningsFilter);
-		validateNoneAllocatedToCompletedInstruction(selectedDeliveryPlanningsFilter);
 
 		// thread-inherited, not a new isolated trx: closeSelectedDeliveryPlannings runs @RunOutOfTrx (no ambient
 		// trx exists here), so this BINDS one for the whole write loop rather than letting each row's save()
-		// commit on its own - defence in depth should the upfront validation above ever develop a gap.
+		// commit on its own - the repository refuses an already-closed row over the WHOLE selection before it
+		// writes any of them, and that all-or-nothing needs one transaction to roll back into.
 		trxManager.runInThreadInheritedTrx(() -> deliveryPlanningRepository.closeSelectedDeliveryPlannings(selectedDeliveryPlanningsFilter));
-	}
-
-	/**
-	 * All-or-nothing over the WHOLE selection, mirroring the already-closed check
-	 * {@link DeliveryPlanningRepository#closeSelectedDeliveryPlannings} runs upfront: every planning in the
-	 * selection is checked against {@link #getCloseRejectionReason} BEFORE any row is written, so a planning
-	 * allocated to a completed instruction is never discovered reactively, mid-loop, after an earlier row already
-	 * applied.
-	 * <p>
-	 * Reads bare ids off the filter rather than {@link #getBySelection}: the close guard needs only the id, and the
-	 * lighter read lets unit tests drive this service with fixtures that carry no direction.
-	 * <p>
-	 * The completed-instruction check runs twice - here before any write, and again inside the write loop via the
-	 * {@code AFTER_CHANGE(IsClosed)} interceptor, which still rolls the loop back if state changes between the two.
-	 * Removing either reopens a partial-application hole.
-	 */
-	private void validateNoneAllocatedToCompletedInstruction(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
-	{
-		final ImmutableList<DeliveryPlanningId> deliveryPlanningIds = deliveryPlanningRepository.getIds(selectedDeliveryPlanningsFilter);
-
-		for (final DeliveryPlanningId deliveryPlanningId : deliveryPlanningIds)
-		{
-			getCloseRejectionReason(deliveryPlanningId)
-					.ifPresent(reason -> {throw new AdempiereException(reason);});
-		}
 	}
 
 	public void reOpenSelectedDeliveryPlannings(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
@@ -993,6 +972,43 @@ public class DeliveryPlanningService
 			return Optional.empty();
 		}
 
+		return closedAllocatedPlanningsRejection(allocatedPlanningIds, MSG_M_Delivery_Planning_ClosedAllocatedPlannings);
+	}
+
+	/**
+	 * Why the given delivery instruction cannot be RE-ACTIVATED, or empty when it can.
+	 * <p>
+	 * One rule, the sibling of the closed half of {@link #getCompleteRejectionReason}: none of its currently
+	 * allocated plannings may be closed. Closed is a terminal indicator - "I am done, do not touch this any more" -
+	 * so re-opening the document that carries the cargo for editing is refused just as completing it is.
+	 * <p>
+	 * The empty-instruction rule is deliberately NOT repeated here: it exists so a completed instruction never
+	 * prints a blank document, and re-activating one prints nothing. A transport order, which never has
+	 * allocations, is a no-op for the same reason it is on the complete leg - it has no allocated plannings to be
+	 * closed.
+	 */
+	public Optional<ITranslatableString> getReActivateRejectionReason(@NonNull final ShipperTransportationId deliveryInstructionId)
+	{
+		return closedAllocatedPlanningsRejection(
+				deliveryPlanningRepository.getAllocatedPlanningIds(deliveryInstructionId),
+				MSG_M_Delivery_Planning_ReActivateClosedAllocatedPlannings);
+	}
+
+	/**
+	 * The one rule Complete and Re-Activate share: the rejection names EVERY closed planning among the given
+	 * allocated ones, never just the first, so the planner re-opens them all in one pass.
+	 *
+	 * @param adMessageKey the action-specific sentence; the condition behind it is the same for both.
+	 */
+	private Optional<ITranslatableString> closedAllocatedPlanningsRejection(
+			@NonNull final ImmutableSet<DeliveryPlanningId> allocatedPlanningIds,
+			@NonNull final AdMessageKey adMessageKey)
+	{
+		if (allocatedPlanningIds.isEmpty())
+		{
+			return Optional.empty();
+		}
+
 		final ImmutableList<DeliveryPlanningId> closedPlanningIds = deliveryPlanningRepository.getByIds(allocatedPlanningIds).stream()
 				.filter(I_M_Delivery_Planning::isClosed)
 				.map(record -> DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID()))
@@ -1002,45 +1018,7 @@ public class DeliveryPlanningService
 			return Optional.empty();
 		}
 
-		return Optional.of(TranslatableStrings.adMessage(MSG_M_Delivery_Planning_ClosedAllocatedPlannings, toIdList(closedPlanningIds)));
-	}
-
-	/**
-	 * Why the given planning's {@code IsClosed} change to CLOSED must be refused, or empty when it may proceed.
-	 * <p>
-	 * Refused only when the planning is currently allocated to a COMPLETED delivery instruction - told apart from a
-	 * draft one via the instruction's {@code DocStatus} directly, the same as {@link #getCompleteRejectionReason}.
-	 */
-	public Optional<ITranslatableString> getCloseRejectionReason(@NonNull final DeliveryPlanningId deliveryPlanningId)
-	{
-		if (deliveryPlanningRepository.hasCompleteDeliveryInstruction(deliveryPlanningId))
-		{
-			return Optional.of(TranslatableStrings.adMessage(MSG_M_Delivery_Planning_CloseOnCompletedInstruction, deliveryPlanningId.getRepoId()));
-		}
-		return Optional.empty();
-	}
-
-	/**
-	 * Reacts to a planning's {@code IsClosed} flipping to {@code true} (the {@code M_Delivery_Planning}
-	 * AFTER_CHANGE(IsClosed) interceptor): refused outright via {@link #getCloseRejectionReason} when the planning
-	 * is on a completed instruction; otherwise its allocation and shipping package are deactivated via the SAME
-	 * primitive {@link #removeFrom} uses - closing says "stop processing this cargo", and remaining allocated to a
-	 * draft instruction contradicts that. A planning on no instruction is left alone.
-	 */
-	public void onDeliveryPlanningClosed(@NonNull final DeliveryPlanningId deliveryPlanningId)
-	{
-		getCloseRejectionReason(deliveryPlanningId)
-				.ifPresent(reason -> {throw new AdempiereException(reason);});
-
-		final ImmutableSet<DeliveryPlanningId> allocatedIds = deliveryPlanningRepository.getAllocationsByPlanningId(ImmutableList.of(deliveryPlanningId)).keySet();
-		if (allocatedIds.isEmpty())
-		{
-			return;
-		}
-
-		final ImmutableSet<DeliveryPlanningId> deactivatedIds = deliveryPlanningRepository.deactivateAllocations(allocatedIds, SystemTime.asInstant());
-		resetDatesFromOrderAndSchedule(deactivatedIds);
-		deliveryPlanningRepository.clearInstructionReference(allocatedIds);
+		return Optional.of(TranslatableStrings.adMessage(adMessageKey, toIdList(closedPlanningIds)));
 	}
 
 	/**
@@ -1491,7 +1469,7 @@ public class DeliveryPlanningService
 	 * dates and invalidates their invoice candidates - the same batch load
 	 * {@link #invalidateInvoiceCandidatesFor(ShipperTransportationId)} uses, but reading the affected ids from
 	 * {@link DeliveryPlanningRepository#unlinkDeliveryPlannings}'s OWN return value rather than a second, separate
-	 * query: the same pattern the other three retirement paths (close, remove-from, the source half of a move)
+	 * query: the same pattern the other two retirement paths (remove-from and the source half of a move)
 	 * already follow - deactivate once, use what it reports it deactivated. Re-deriving the ids from
 	 * {@link DeliveryPlanningRepository#getAllocatedPlanningIds(ShipperTransportationId)} AFTER the deactivation
 	 * would come back empty, which is exactly why the invalidation below is deferred to after-commit against the
@@ -1593,7 +1571,7 @@ public class DeliveryPlanningService
 	/**
 	 * Recomputes the given plannings' dates from the order and its schedule, the way the Generate commands derive
 	 * them for a new planning. Called the moment an allocation becomes inactive (remove-from, the source half of a
-	 * move, close, void), so a planning never keeps showing another document's dates.
+	 * move, void), so a planning never keeps showing another document's dates.
 	 * <p>
 	 * A RECOMPUTE, not a restore: while allocated, the sync-down has already overwritten the planning's own dates,
 	 * so there is no pre-allocation value to bring back - add-then-remove is not a byte-exact round trip.
@@ -1759,9 +1737,9 @@ public class DeliveryPlanningService
 			final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningIterator.next();
 			final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoId(deliveryPlanningRecord.getM_Delivery_Planning_ID());
 
-			// Currently unreachable: closing a planning deallocates it and nulls its ReleaseNo, so the
-			// excludeDeliveryPlanningsWithoutReleaseNo filter above has already dropped every closed row. An empty
-			// getSkippedClosedIds() therefore does NOT mean cancel ignores Closed.
+			// Reached by a planning closed WHILE allocated: closing sets the flag and nothing else, so such a row
+			// keeps its ReleaseNo and survives the excludeDeliveryPlanningsWithoutReleaseNo filter above. A
+			// planning that was never allocated has no ReleaseNo and is dropped by that filter instead.
 			if (deliveryPlanningRecord.isClosed())
 			{
 				skippedClosedIds.add(deliveryPlanningId);

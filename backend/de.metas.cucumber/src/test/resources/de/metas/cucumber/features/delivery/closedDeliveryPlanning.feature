@@ -4,10 +4,12 @@
 @ghActions:run_on_executor5
 Feature: A closed delivery planning is finished and nothing processes it any further
 
-  Closing a load means "stop processing this cargo".
-  It can no longer be put on a delivery instruction, cancelling passes it by, and closing or re-opening it a
-  second time is an error rather than a silent no-op. A load that already sits on a finalised instruction cannot
-  be called off behind the instruction's back - the planner re-activates the instruction first.
+  Closing a load means "I am done with this cargo, leave it alone".
+  It is a terminal indicator, not an action: closing changes the flag and nothing else, so a load already on a
+  truck stays on it, with its allocation, its shipping package and its release number. What closing does is
+  BLOCK: the load can no longer be put on a delivery instruction, cancelling passes it by, the truck it rides on
+  can be neither completed nor re-activated, and closing or re-opening it a second time is an error rather than
+  a silent no-op.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -132,7 +134,7 @@ Feature: A closed delivery planning is finished and nothing processes it any fur
       | planningAdded_3        |
 
   @Id:S31608_TC12
-  Scenario: A delivery planning on a finalised instruction is closed only after the instruction is re-activated
+  Scenario: Closing a delivery planning leaves it on its delivery instruction and blocks the instruction's Re-Activate
 
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier |
@@ -161,10 +163,8 @@ Feature: A closed delivery planning is finished and nothing processes it any fur
       | M_ShipperTransportation_ID | M_Delivery_Planning_ID          | IsComplete |
       | deliveryInstructionFinal   | planningFinal_1,planningFinal_2 | true       |
 
-    # calling the cargo off behind the finalised instruction's back is refused
-    When closing M_Delivery_Planning identified by planningFinal_2 is refused:
-      | ErrorAdMessage                                                                |
-      | de.metas.deliveryplanning.DeliveryPlanningService.CloseOnCompletedInstruction |
+    # closing is allowed on a finalised instruction, because it takes nothing off it
+    When M_Delivery_Planning identified by planningFinal_2 is closed
 
     Then the M_ShipperTransportation identified by deliveryInstructionFinal holds exactly the following active M_Delivery_Planning_Alloc:
       | M_Delivery_Planning_ID | M_ShippingPackage_ID   |
@@ -174,29 +174,39 @@ Feature: A closed delivery planning is finished and nothing processes it any fur
       | M_ShippingPackage_ID   | ActualLoadQty |
       | shippingPackageFinal_1 | 5             |
       | shippingPackageFinal_2 | 5             |
+    # the flag moved; the allocation, the instruction reference and the release number did not
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | IsClosed | M_ShipperTransportation_ID |
+      | planningFinal_1        | 10         | 10           | Outgoing           | false    | deliveryInstructionFinal   |
+      | planningFinal_2        | 10         | 10           | Outgoing           | true     | deliveryInstructionFinal   |
+    And each M_Delivery_Planning has its own ReleaseNo stamped from M_ShipperTransportation deliveryInstructionFinal:
+      | M_Delivery_Planning_ID |
+      | planningFinal_1        |
+      | planningFinal_2        |
+
+    # what closing DOES do is block: the truck carrying a called-off load is not re-opened for editing
+    When reactivating the M_ShipperTransportation identified by deliveryInstructionFinal is refused:
+      | ErrorAdMessage                                                                   |
+      | de.metas.deliveryplanning.ReActivateDeliveryInstruction.ClosedAllocatedPlannings |
+
+    Then validate M_ShipperTransportation:
+      | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DocStatus |
+      | deliveryInstructionFinal              | shipper_DHL             | customer                       | customerLocation               | CO            |
+    And the M_ShipperTransportation identified by deliveryInstructionFinal holds exactly the following active M_Delivery_Planning_Alloc:
+      | M_Delivery_Planning_ID | M_ShippingPackage_ID   |
+      | planningFinal_1        | shippingPackageFinal_1 |
+      | planningFinal_2        | shippingPackageFinal_2 |
+
+    # re-opening the load is what unblocks the instruction
+    When M_Delivery_Planning identified by planningFinal_2 is opened
+    And the M_ShipperTransportation identified by deliveryInstructionFinal is reactivated
+
+    Then validate M_ShipperTransportation:
+      | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DocStatus |
+      | deliveryInstructionFinal              | shipper_DHL             | customer                       | customerLocation               | IP            |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | IsClosed | M_ShipperTransportation_ID |
       | planningFinal_2        | 10         | 10           | Outgoing           | false    | deliveryInstructionFinal   |
-
-    # re-activating the instruction is the way out, and then closing takes the load off it
-    When the M_ShipperTransportation identified by deliveryInstructionFinal is reactivated
-    And M_Delivery_Planning identified by planningFinal_2 is closed
-
-    Then the M_ShipperTransportation identified by deliveryInstructionFinal holds exactly the following active M_Delivery_Planning_Alloc:
-      | M_Delivery_Planning_ID | M_ShippingPackage_ID   |
-      | planningFinal_1        | shippingPackageFinal_1 |
-    And validate M_Shipping_Package:
-      | M_ShippingPackage_ID   | ActualLoadQty |
-      | shippingPackageFinal_1 | 5             |
-    And validate M_Delivery_Planning_Alloc:
-      | M_Delivery_Planning_ID | M_ShipperTransportation_ID | IsActive |
-      | planningFinal_2        | deliveryInstructionFinal   | false    |
-    And validate M_Delivery_Planning:
-      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | IsClosed | M_ShipperTransportation_ID |
-      | planningFinal_2        | 10         | 10           | Outgoing           | true     | null                       |
-    And the following M_Delivery_Planning have no ReleaseNo:
-      | M_Delivery_Planning_ID |
-      | planningFinal_2        |
 
   @Id:S31608_TC13
   Scenario: Closing an already closed delivery planning and re-opening an open one are both errors
@@ -279,9 +289,9 @@ Feature: A closed delivery planning is finished and nothing processes it any fur
     And the M_ShipperTransportation identified by deliveryInstructionCancel is reactivated
     And M_Delivery_Planning identified by planningCancel_2 is closed
 
-    # Two guards could refuse a closed planning here (the release-number filter and the IsClosed skip) but
-    # only the first is provably exercised by this scenario. Do NOT add an assertion on an empty
-    # skippedClosedIds - that would bake in an ordering this scenario does not actually prove.
+    # the closed load keeps its release number, so cancel's release-number filter does NOT drop it - it is
+    # cancel's own IsClosed skip that passes it by. The truck is voided by cancelling the OPEN load, and
+    # that void is what releases both allocations.
     # both are selected; only the open one is cancelled
     When M_Delivery_Planning identified by planningCancel_1,planningCancel_2 is canceled
 
