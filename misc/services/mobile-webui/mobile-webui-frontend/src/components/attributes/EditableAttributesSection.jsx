@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import DateInput from '../DateInput';
 import { trl } from '../../utils/translations';
@@ -13,29 +13,53 @@ import { trl } from '../../utils/translations';
  *
  * Inputs always start empty (no pre-fill from `attribute.value`) — attributes are optional, so an
  * untouched/cleared field is simply absent from the emitted map.
+ *
+ * DATE fields: the legacy `DateInput` fires on every keystroke, so while the typed text isn't yet
+ * a valid date it reports the raw display text with `isValid: false`. That raw/partial text is
+ * kept as the field's displayed value (so the operator can keep typing), but is withheld from the
+ * emitted map until it becomes a valid ISO date — mirroring the `isBestBeforeDateValid` idiom in
+ * `GetQuantityDialog` / `ChangeHUQtyDialog` / `InventoryCountComponent`.
+ *
+ * If the `attributes` prop changes to a different set of attribute codes while mounted (e.g. the
+ * consumer re-renders this section for a different receive line), all collected values are reset
+ * — a stale value from the previous attribute set must never leak into the new one.
  */
 const EditableAttributesSection = ({ attributes, disabled, onFieldChange }) => {
   const [valuesByCode, setValuesByCode] = useState({});
+  const [invalidCodes, setInvalidCodes] = useState({});
+
+  const attributeCodesKey = (attributes ?? []).map(({ code }) => code).join('|');
+  useEffect(() => {
+    setValuesByCode({});
+    setInvalidCodes({});
+  }, [attributeCodesKey]);
 
   if (!attributes || attributes.length === 0) {
     return null;
   }
 
-  const handleFieldChange = (code, value) => {
-    setValuesByCode((prevValuesByCode) => {
-      const nextValuesByCode = { ...prevValuesByCode };
-      if (value === '' || value === null || value === undefined) {
-        delete nextValuesByCode[code];
-      } else {
-        nextValuesByCode[code] = value;
-      }
+  const handleFieldChange = (code, value, isValid = true) => {
+    const nextValuesByCode = { ...valuesByCode };
+    if (value === '' || value === null || value === undefined) {
+      delete nextValuesByCode[code];
+    } else {
+      nextValuesByCode[code] = value;
+    }
+    setValuesByCode(nextValuesByCode);
 
-      if (onFieldChange) {
-        onFieldChange(nextValuesByCode);
-      }
+    const nextInvalidCodes = { ...invalidCodes };
+    if (isValid) {
+      delete nextInvalidCodes[code];
+    } else {
+      nextInvalidCodes[code] = true;
+    }
+    setInvalidCodes(nextInvalidCodes);
 
-      return nextValuesByCode;
-    });
+    if (onFieldChange) {
+      const emittedValuesByCode = { ...nextValuesByCode };
+      Object.keys(nextInvalidCodes).forEach((invalidCode) => delete emittedValuesByCode[invalidCode]);
+      onFieldChange(emittedValuesByCode);
+    }
   };
 
   return (
@@ -51,7 +75,7 @@ const EditableAttributesSection = ({ attributes, disabled, onFieldChange }) => {
                 value={valuesByCode[code]}
                 listValues={listValues}
                 disabled={disabled}
-                onChange={(value) => handleFieldChange(code, value)}
+                onChange={(value, isValid) => handleFieldChange(code, value, isValid)}
               />
             </td>
           </tr>
@@ -115,7 +139,12 @@ const EditableAttributeField = ({ code, valueType, value, listValues, disabled, 
       );
     case 'DATE':
       return (
-        <DateInput testId={testId} value={value ?? ''} readOnly={disabled} onChange={({ date }) => onChange(date)} />
+        <DateInput
+          testId={testId}
+          value={value ?? ''}
+          readOnly={disabled}
+          onChange={({ date, isValid }) => onChange(date, isValid)}
+        />
       );
     case 'LIST':
       return (
