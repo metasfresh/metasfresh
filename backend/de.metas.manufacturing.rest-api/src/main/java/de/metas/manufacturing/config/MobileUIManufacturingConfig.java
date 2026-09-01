@@ -1,11 +1,14 @@
 package de.metas.manufacturing.config;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.picking.config.mobileui.PickAttribute;
 import de.metas.util.OptionalBoolean;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -18,8 +21,14 @@ public class MobileUIManufacturingConfig
 	@NonNull OptionalBoolean isScanResourceRequired;
 	@NonNull OptionalBoolean isAllowIssuingAnyHU;
 	@Nullable ReceiveUnitType receiveUnitType;
-	@NonNull OptionalBoolean isBestBeforeDateEditable;
-	@NonNull OptionalBoolean isLotNumberEditable;
+
+	/**
+	 * The editable-attribute list (global-only, v1 - {@code MobileUI_MFG_Config_Attribute} active rows in
+	 * {@code SeqNo} order), replacing the retired per-attribute boolean flags. Empty when no config row exists
+	 * or none of its child rows are active.
+	 */
+	@NonNull ImmutableList<AttributeCode> editableAttributeCodesInOrder;
+
 	@NonNull OptionalBoolean isAllowFinishedGoodsReceiveToLU;
 	@NonNull OptionalBoolean isAllowFinishedGoodsReceiveToTU;
 	@NonNull OptionalBoolean isSkipFinishedGoodsReceiveTargetStep;
@@ -78,21 +87,27 @@ public class MobileUIManufacturingConfig
 	}
 
 	/**
-	 * @return the set of attributes that shall be editable on the manufacturing finished-goods receipt.
-	 * An attribute is editable when its config flag resolves to {@code TRUE}.
-	 * Reuses picking's {@link PickAttribute} so the mobile JSON contract is identical to picking's {@code readAttributes}.
+	 * @return the legacy {@link PickAttribute} view of {@link #editableAttributeCodesInOrder}, derived from the
+	 * two well-known special attributes (Lot number, Best-before date) only.
+	 * @deprecated temporary shim for {@code MaterialReceiptActivityHandler}'s "readAttributes" JSON emit, kept
+	 * ONLY until that call site is migrated to the generic {@link #editableAttributeCodesInOrder} contract
+	 * (issue #31771 Task 6). Any other configured attribute is NOT represented here.
 	 */
+	@Deprecated
 	@NonNull
 	public Set<PickAttribute> getEditableAttributes()
 	{
 		final ImmutableSet.Builder<PickAttribute> result = ImmutableSet.builder();
-		if (isBestBeforeDateEditable.isTrue())
+		for (final AttributeCode code : editableAttributeCodesInOrder)
 		{
-			result.add(PickAttribute.BestBeforeDate);
-		}
-		if (isLotNumberEditable.isTrue())
-		{
-			result.add(PickAttribute.LotNo);
+			if (AttributeConstants.ATTR_LotNumber.equals(code))
+			{
+				result.add(PickAttribute.LotNo);
+			}
+			else if (AttributeConstants.ATTR_BestBeforeDate.equals(code))
+			{
+				result.add(PickAttribute.BestBeforeDate);
+			}
 		}
 		return result.build();
 	}
@@ -103,8 +118,7 @@ public class MobileUIManufacturingConfig
 				.isScanResourceRequired(this.isScanResourceRequired.ifUnknown(other.isScanResourceRequired))
 				.isAllowIssuingAnyHU(this.isAllowIssuingAnyHU.ifUnknown(other.isAllowIssuingAnyHU))
 				.receiveUnitType(this.receiveUnitType != null ? this.receiveUnitType : other.receiveUnitType)
-				.isBestBeforeDateEditable(this.isBestBeforeDateEditable.ifUnknown(other.isBestBeforeDateEditable))
-				.isLotNumberEditable(this.isLotNumberEditable.ifUnknown(other.isLotNumberEditable))
+				.editableAttributeCodesInOrder(!this.editableAttributeCodesInOrder.isEmpty() ? this.editableAttributeCodesInOrder : other.editableAttributeCodesInOrder)
 				.isAllowFinishedGoodsReceiveToLU(this.isAllowFinishedGoodsReceiveToLU.ifUnknown(other.isAllowFinishedGoodsReceiveToLU))
 				.isAllowFinishedGoodsReceiveToTU(this.isAllowFinishedGoodsReceiveToTU.ifUnknown(other.isAllowFinishedGoodsReceiveToTU))
 				.isSkipFinishedGoodsReceiveTargetStep(this.isSkipFinishedGoodsReceiveTargetStep.ifUnknown(other.isSkipFinishedGoodsReceiveTargetStep))

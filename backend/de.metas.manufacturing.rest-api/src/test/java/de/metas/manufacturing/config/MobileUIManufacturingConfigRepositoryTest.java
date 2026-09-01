@@ -1,12 +1,15 @@
 package de.metas.manufacturing.config;
 
-import de.metas.handlingunits.picking.config.mobileui.PickAttribute;
 import de.metas.user.UserId;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_MobileUI_MFG_Config;
+import org.compiere.model.I_MobileUI_MFG_Config_Attribute;
 import org.compiere.model.I_MobileUI_UserProfile_MFG;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -29,36 +32,18 @@ class MobileUIManufacturingConfigRepositoryTest
 		clientId = ClientId.ofRepoId(Env.getAD_Client_ID(Env.getCtx()));
 	}
 
-	private void createGlobalConfig(final ReceiveUnitType receiveUnitType)
-	{
-		createGlobalConfig(receiveUnitType, true, true);
-	}
-
-	private void createGlobalConfig(
-			final ReceiveUnitType receiveUnitType,
-			final boolean isBestBeforeDateEditable,
-			final boolean isLotNumberEditable)
+	private I_MobileUI_MFG_Config createGlobalConfig(final ReceiveUnitType receiveUnitType)
 	{
 		final I_MobileUI_MFG_Config record = InterfaceWrapperHelper.newInstance(I_MobileUI_MFG_Config.class);
 		record.setIsActive(true);
 		record.setIsScanResourceRequired(false);
 		record.setIsAllowIssuingAnyHU(false);
 		record.setReceiveUnitType(receiveUnitType != null ? receiveUnitType.getCode() : null);
-		record.setIsBestBeforeDateEditable(isBestBeforeDateEditable);
-		record.setIsLotNumberEditable(isLotNumberEditable);
 		InterfaceWrapperHelper.save(record);
+		return record;
 	}
 
 	private void createUserConfig(final UserId userId, final ReceiveUnitType receiveUnitType)
-	{
-		createUserConfig(userId, receiveUnitType, null, null);
-	}
-
-	private void createUserConfig(
-			final UserId userId,
-			final ReceiveUnitType receiveUnitType,
-			final String isBestBeforeDateEditable,
-			final String isLotNumberEditable)
 	{
 		final I_MobileUI_UserProfile_MFG record = InterfaceWrapperHelper.newInstance(I_MobileUI_UserProfile_MFG.class);
 		record.setAD_User_ID(userId.getRepoId());
@@ -66,9 +51,31 @@ class MobileUIManufacturingConfigRepositoryTest
 		record.setIsScanResourceRequired(null);
 		record.setIsAllowIssuingAnyHU(null);
 		record.setReceiveUnitType(receiveUnitType != null ? receiveUnitType.getCode() : null);
-		record.setIsBestBeforeDateEditable(isBestBeforeDateEditable);
-		record.setIsLotNumberEditable(isLotNumberEditable);
 		InterfaceWrapperHelper.save(record);
+	}
+
+	private I_M_Attribute createAttribute(final String code)
+	{
+		final I_M_Attribute record = InterfaceWrapperHelper.newInstance(I_M_Attribute.class);
+		record.setValue(code);
+		record.setName(code);
+		record.setAttributeValueType(AttributeValueType.STRING.getCode());
+		InterfaceWrapperHelper.saveRecord(record);
+		return record;
+	}
+
+	private void createConfigAttribute(
+			final I_MobileUI_MFG_Config config,
+			final I_M_Attribute attribute,
+			final int seqNo,
+			final boolean isActive)
+	{
+		final I_MobileUI_MFG_Config_Attribute record = InterfaceWrapperHelper.newInstance(I_MobileUI_MFG_Config_Attribute.class);
+		record.setMobileUI_MFG_Config_ID(config.getMobileUI_MFG_Config_ID());
+		record.setM_Attribute_ID(attribute.getM_Attribute_ID());
+		record.setSeqNo(seqNo);
+		record.setIsActive(isActive);
+		InterfaceWrapperHelper.saveRecord(record);
 	}
 
 	@Nested
@@ -147,48 +154,53 @@ class MobileUIManufacturingConfigRepositoryTest
 	}
 
 	@Nested
-	class getEditableAttributes
+	class getEditableAttributeCodesInOrder
 	{
 		@Test
-		void noConfigAtAll_bothEditableByDefault()
+		void noConfigAtAll_emptyList()
 		{
 			final MobileUIManufacturingConfig config = repo.getConfig(USER_ID, clientId);
-			assertThat(config.getEditableAttributes())
-					.containsExactlyInAnyOrder(PickAttribute.BestBeforeDate, PickAttribute.LotNo);
+			assertThat(config.getEditableAttributeCodesInOrder()).isEmpty();
 		}
 
 		@Test
-		void globalConfigBothEditable_bothEditable()
+		void noActiveChildRows_emptyList()
 		{
-			createGlobalConfig(ReceiveUnitType.CU, true, true);
+			createGlobalConfig(ReceiveUnitType.CU);
 
 			final MobileUIManufacturingConfig config = repo.getConfig(USER_ID, clientId);
-			assertThat(config.getEditableAttributes())
-					.containsExactlyInAnyOrder(PickAttribute.BestBeforeDate, PickAttribute.LotNo);
+			assertThat(config.getEditableAttributeCodesInOrder()).isEmpty();
 		}
 
 		@Test
-		void userOverridesLotNumberNotEditable_overGlobalBothEditable()
+		void activeRowsOrderedBySeqNo_evenWhenInsertedOutOfOrder()
 		{
-			createGlobalConfig(ReceiveUnitType.CU, true, true);
-			createUserConfig(USER_ID, null, null, "N");
+			final I_MobileUI_MFG_Config globalConfig = createGlobalConfig(ReceiveUnitType.CU);
+			final I_M_Attribute attr1 = createAttribute("Attr1");
+			final I_M_Attribute attr2 = createAttribute("Attr2");
+
+			// insert out of SeqNo order on purpose - the effective list must still come back ordered
+			createConfigAttribute(globalConfig, attr2, 20, true);
+			createConfigAttribute(globalConfig, attr1, 10, true);
 
 			final MobileUIManufacturingConfig config = repo.getConfig(USER_ID, clientId);
-			assertThat(config.getEditableAttributes())
-					.containsExactly(PickAttribute.BestBeforeDate)
-					.doesNotContain(PickAttribute.LotNo);
+			assertThat(config.getEditableAttributeCodesInOrder())
+					.containsExactly(AttributeCode.ofString("Attr1"), AttributeCode.ofString("Attr2"));
 		}
 
 		@Test
-		void userNullEditable_inheritsGlobal()
+		void inactiveChildRow_excludedFromEffectiveList()
 		{
-			createGlobalConfig(ReceiveUnitType.CU, true, false);
-			createUserConfig(USER_ID, null, null, null);
+			final I_MobileUI_MFG_Config globalConfig = createGlobalConfig(ReceiveUnitType.CU);
+			final I_M_Attribute attr1 = createAttribute("Attr1");
+			final I_M_Attribute attr2 = createAttribute("Attr2");
+
+			createConfigAttribute(globalConfig, attr1, 10, true);
+			createConfigAttribute(globalConfig, attr2, 20, false);
 
 			final MobileUIManufacturingConfig config = repo.getConfig(USER_ID, clientId);
-			assertThat(config.getEditableAttributes())
-					.containsExactly(PickAttribute.BestBeforeDate)
-					.doesNotContain(PickAttribute.LotNo);
+			assertThat(config.getEditableAttributeCodesInOrder())
+					.containsExactly(AttributeCode.ofString("Attr1"));
 		}
 	}
 }
