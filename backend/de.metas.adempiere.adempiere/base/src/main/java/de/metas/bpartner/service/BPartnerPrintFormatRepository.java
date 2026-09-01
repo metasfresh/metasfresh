@@ -9,6 +9,7 @@ import de.metas.document.DocTypeId;
 import de.metas.report.PrintCopies;
 import de.metas.report.PrintFormatId;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -59,6 +60,31 @@ public class BPartnerPrintFormatRepository
 	@Nullable
 	public BPPrintFormat getByQuery(@NonNull final BPPrintFormatQuery bpPrintFormatQuery)
 	{
+		final IQueryBuilder<I_C_BP_PrintFormat> query = createMatchingQuery(bpPrintFormatQuery);
+
+		if(bpPrintFormatQuery.isOnlyCopiesGreaterZero())
+		{
+			query.addCompareFilter(I_C_BP_PrintFormat.COLUMNNAME_DocumentCopies_Override, CompareQueryFilter.Operator.GREATER, 0);
+		}
+		final I_C_BP_PrintFormat bpPrintFormatRecord = query.create().first(I_C_BP_PrintFormat.class);
+
+		return bpPrintFormatRecord == null ? null : toBPPrintFormat(bpPrintFormatRecord);
+	}
+
+	/**
+	 * Same match criteria as {@link #getByQuery(BPPrintFormatQuery)}, but without the
+	 * {@code onlyCopiesGreaterZero} filter -- used to resolve the auto-print/drop-ship settings of the
+	 * matching {@code C_BP_PrintFormat} row itself (e.g. {@code IsAutoPrint}), which are independent of
+	 * whether that row also carries a copies override.
+	 */
+	@Nullable
+	public I_C_BP_PrintFormat getRecordByQuery(@NonNull final BPPrintFormatQuery bpPrintFormatQuery)
+	{
+		return createMatchingQuery(bpPrintFormatQuery).create().first(I_C_BP_PrintFormat.class);
+	}
+
+	private IQueryBuilder<I_C_BP_PrintFormat> createMatchingQuery(@NonNull final BPPrintFormatQuery bpPrintFormatQuery)
+	{
 		final IQueryBuilder<I_C_BP_PrintFormat> query = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BP_PrintFormat.class)
 				.addOnlyActiveRecordsFilter()
@@ -78,15 +104,16 @@ public class BPartnerPrintFormatRepository
 			query.addInArrayFilter(I_C_BP_PrintFormat.COLUMNNAME_C_BPartner_Location_ID, bpPrintFormatQuery.getBPartnerLocationId(), null);
 		}
 
-		if(bpPrintFormatQuery.isOnlyCopiesGreaterZero())
+		// guard: only constrain by IsDropShip when the caller actually supplied a value -- most callers
+		// (the ~6 non-shipment print-format lookups) don't know about drop-ship and must be unaffected.
+		if (bpPrintFormatQuery.getIsDropShip() != null)
 		{
-			query.addCompareFilter(I_C_BP_PrintFormat.COLUMNNAME_DocumentCopies_Override, CompareQueryFilter.Operator.GREATER, 0);
+			query.addInArrayFilter(I_C_BP_PrintFormat.COLUMNNAME_IsDropShip, StringUtils.ofBoolean(bpPrintFormatQuery.getIsDropShip()), null);
 		}
-		query.orderBy().addColumn(I_C_BP_PrintFormat.COLUMNNAME_C_BPartner_Location_ID, IQueryOrderBy.Direction.Descending, IQueryOrderBy.Nulls.Last);
-        query.orderBy(I_C_BP_PrintFormat.COLUMNNAME_SeqNo);
-		final I_C_BP_PrintFormat bpPrintFormatRecord = query.create().first(I_C_BP_PrintFormat.class);
 
-		return bpPrintFormatRecord == null ? null : toBPPrintFormat(bpPrintFormatRecord);
+		query.orderBy().addColumn(I_C_BP_PrintFormat.COLUMNNAME_C_BPartner_Location_ID, IQueryOrderBy.Direction.Descending, IQueryOrderBy.Nulls.Last);
+		query.orderBy(I_C_BP_PrintFormat.COLUMNNAME_SeqNo);
+		return query;
 	}
 
 	public BPPrintFormat toBPPrintFormat(@NonNull final I_C_BP_PrintFormat bpPrinfFormatDataRecord)

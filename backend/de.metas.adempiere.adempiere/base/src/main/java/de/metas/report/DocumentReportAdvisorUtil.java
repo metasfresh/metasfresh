@@ -35,11 +35,14 @@ import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.Language;
 import de.metas.process.AdProcessId;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BP_PrintFormat;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -141,5 +144,59 @@ public class DocumentReportAdvisorUtil
 		return docType != null && !InterfaceWrapperHelper.isNull(docType, I_C_DocType.COLUMNNAME_DocumentCopies)
 				? PrintCopies.ofInt(docType.getDocumentCopies())
 				: PrintCopies.ONE;
+	}
+
+	/**
+	 * Pure computation (no DB access): is the given sales order a drop-shipment, i.e. does the goods
+	 * recipient deviate from the order's own sold-to?
+	 * <p>
+	 * NOTE -- this is a <b>different</b> rule from the sales-order ultimate-consignee (UC) resolution
+	 * documented in the {@code de.metas.business} module CLAUDE.md ("IsDropShip is irrelevant for UC
+	 * resolution -- the presence of DropShip_* alone decides"). That rule answers "who is the goods
+	 * recipient". This method answers a different question -- "should auto-print be suppressed for this
+	 * shipment" -- and the approved design for that concern deliberately gates on {@code IsDropShip='Y'}
+	 * in addition to the DropShip_* deviation. Do not "fix" this to match the UC rule.
+	 */
+	public boolean isDropShip(@Nullable final I_C_Order order)
+	{
+		if (order == null)
+		{
+			// manual shipment, no order to inspect -> not a drop-ship
+			return false;
+		}
+		if (!order.isDropShip())
+		{
+			return false;
+		}
+
+		final boolean bPartnerDeviates = order.getDropShip_BPartner_ID() > 0
+				&& order.getDropShip_BPartner_ID() != order.getC_BPartner_ID();
+		final boolean locationDeviates = order.getDropShip_Location_ID() > 0
+				&& order.getDropShip_Location_ID() != order.getC_BPartner_Location_ID();
+
+		return bPartnerDeviates || locationDeviates;
+	}
+
+	/**
+	 * Resolves whether auto-print shall be suppressed for the given query, based on the matching
+	 * {@code C_BP_PrintFormat} row's {@code IsAutoPrint} flag (read null-aware: only an explicit "N"
+	 * suppresses; "Y", {@code null}, or no matching row at all does not).
+	 * <p>
+	 * This is a separate lookup from {@link #getDocumentCopies(I_C_DocType, BPPrintFormatQuery)} --
+	 * it does not apply the {@code onlyCopiesGreaterZero} filter, since a row without a copies override
+	 * can still carry a meaningful {@code IsAutoPrint} setting.
+	 */
+	public boolean resolveSuppressAutoPrint(@NonNull final BPPrintFormatQuery bpPrintFormatQuery)
+	{
+		final I_C_BP_PrintFormat bpPrintFormatRecord = bPartnerPrintFormatRepository.getRecordByQuery(bpPrintFormatQuery);
+		if (bpPrintFormatRecord == null)
+		{
+			return false;
+		}
+
+		final String isAutoPrintValue = InterfaceWrapperHelper.getValueOrNull(bpPrintFormatRecord, I_C_BP_PrintFormat.COLUMNNAME_IsAutoPrint);
+		final Boolean isAutoPrint = StringUtils.toBoolean(isAutoPrintValue, null);
+
+		return Boolean.FALSE.equals(isAutoPrint);
 	}
 }
