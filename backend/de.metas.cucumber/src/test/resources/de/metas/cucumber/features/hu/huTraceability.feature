@@ -46,7 +46,7 @@ Feature: HU Traceability Report — SQL correctness tests
     Then M_HU_Trace_Report result for scenario "production_receipt_no_mhd" contains detail_type row "PRODUCTION_RECEIPT_DETAL"
 
   @Id:S0000.1_HUTrace_TC1
-  Scenario: A graph-traced receipt suppresses the other receipts of the same lot (TC1)
+  Scenario: A graph-traced receipt suppresses the other receipts of the same lot
     Given metasfresh contains M_Products:
       | Identifier     | Value             | Name            |
       | traceProduct_1 | traceProductVal_1 | Trace Product 1 |

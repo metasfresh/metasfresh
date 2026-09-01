@@ -85,7 +85,7 @@ SELECT distinct
     null::numeric AS prod_stock,
     null::numeric AS traceid,
     to_char(now(), 'DD.MM.YYYY HH24:MM') as reportdate,
-    null as link_basis
+    null::varchar as link_basis
 FROM M_HU_Trace t
 JOIN M_Product p ON t.m_product_id = p.m_product_id
 JOIN C_UOM u ON t.C_UOM_ID = u.c_uom_id
@@ -139,7 +139,7 @@ SELECT DISTINCT ON (t.m_inout_ID)
     null::numeric AS prod_stock,
     null::numeric AS traceid,
     to_char(now(), 'DD.MM.YYYY HH24:MM') as reportdate,
-    null as link_basis
+    null::varchar as link_basis
 FROM M_HU_Trace t
 JOIN M_Product p ON t.m_product_id = p.m_product_id
 JOIN C_UOM u ON t.C_UOM_ID = u.c_uom_id
@@ -185,7 +185,7 @@ SELECT
     null::numeric AS prod_stock,
     null::numeric AS traceid,
     to_char(now(), 'DD.MM.YYYY HH24:MM') as reportdate,
-    null as link_basis
+    null::varchar as link_basis
 FROM M_HU_Trace t
 JOIN M_Product p ON t.m_product_id = p.m_product_id
 JOIN C_UOM u ON t.C_UOM_ID = u.c_uom_id
@@ -228,7 +228,7 @@ SELECT DISTINCT ON (t.pp_cost_collector_id)
     null::numeric AS prod_stock,
     null::numeric AS traceid,
     to_char(now(), 'DD.MM.YYYY HH24:MM') as reportdate,
-    null as link_basis
+    null::varchar as link_basis
 FROM M_HU_Trace t
 JOIN M_Product p ON t.m_product_id = p.m_product_id
 JOIN C_UOM u ON t.C_UOM_ID = u.c_uom_id
@@ -274,7 +274,7 @@ SELECT DISTINCT
     getcurrentstoragestock(t.m_product_id, t.c_uom_id, 1000017, prod_trace.lotnumber, t.ad_client_id, t.ad_org_id) AS prod_stock,
     prod_trace.m_hu_trace_id,
     to_char(now(), 'DD.MM.YYYY HH24:MM') as reportdate,
-    null as link_basis
+    null::varchar as link_basis
 FROM M_HU_Trace t
 JOIN M_Product p ON t.m_product_id = p.m_product_id
 JOIN C_UOM u ON t.C_UOM_ID = u.c_uom_id
@@ -329,7 +329,7 @@ SELECT DISTINCT
     getcurrentstoragestock(t.m_product_id, t.c_uom_id, 1000017, shipment_trace.lotnumber, t.ad_client_id, t.ad_org_id) AS prod_stock,
     shipment_trace.m_hu_trace_id,
     to_char(now(), 'DD.MM.YYYY HH24:MM') as reportdate,
-    null as link_basis
+    null::varchar as link_basis
 FROM M_HU_Trace t
 JOIN M_Product p ON t.m_product_id = p.m_product_id
 JOIN C_UOM u ON t.C_UOM_ID = u.c_uom_id
@@ -401,7 +401,7 @@ SELECT
     null::numeric AS prod_stock,
     null::numeric AS traceid,
     to_char(now(), 'DD.MM.YYYY HH24:MM') as reportdate,
-    null as link_basis
+    null::varchar as link_basis
 FROM M_HU_Trace t
 JOIN M_Product p ON t.m_product_id = p.m_product_id
 JOIN C_UOM u ON t.C_UOM_ID = u.c_uom_id

@@ -160,7 +160,7 @@ public class M_HU_Trace_Report_StepDef
 	 * {@code containsExactlyInAnyOrderElementsOf} (deliberately exhaustive — it is what catches
 	 * a wrongly-emitted extra row, see its javadoc) would keep failing with leftover rows whose
 	 * {@code DocumentNo}s can never match the current run's freshly generated ones, independent
-	 * of whether the section 6 pairing fix (Task 4) is correct. Deleting the row instead of
+	 * of whether the still-open section 6 pairing rewrite is correct. Deleting the row instead of
 	 * deleting-and-recreating the product itself avoids the FK from {@code M_HU_Trace.M_Product_ID}
 	 * (constraint {@code mproduct_mhutrace}, {@code ON DELETE NO ACTION}) blocking product deletion
 	 * while old trace rows still reference it.
@@ -425,11 +425,11 @@ public class M_HU_Trace_Report_StepDef
 	}
 
 	/**
-	 * TC1 test setup: two receipts of the same product and lot; the shipment's VHU descends from
-	 * the FIRST receipt's VHU through one TRANSFORM_LOAD edge. The second receipt is connected to
-	 * nothing — today's DIRECT_SALE_DETAIL section pairs it with the shipment anyway (lot+product
-	 * match alone), producing a two-row cartesian where exactly one row (linked to receipt1) is
-	 * correct.
+	 * Two receipts of the same product and lot, one of them graph-traced to the shipment: the
+	 * shipment's VHU descends from the FIRST receipt's VHU through one TRANSFORM_LOAD edge. The
+	 * second receipt is connected to nothing — today's DIRECT_SALE_DETAIL section pairs it with
+	 * the shipment anyway (lot+product match alone), producing a two-row cartesian where exactly
+	 * one row (linked to receipt1) is correct.
 	 */
 	private void setupTracedOneOfTwoReceipts(@NonNull final String scenarioName, @NonNull final ProductId productId)
 	{
@@ -649,7 +649,7 @@ public class M_HU_Trace_Report_StepDef
 	 * @param inOut     the linked M_InOut (may be null)
 	 * @param ppOrder   the linked PP_Order (may be null)
 	 */
-	private void createHuTrace(
+	private I_M_HU_Trace createHuTrace(
 			@NonNull final I_M_HU vhu,
 			@NonNull final ProductId productId,
 			@NonNull final HUTraceType traceType,
@@ -657,12 +657,47 @@ public class M_HU_Trace_Report_StepDef
 			final I_M_InOut inOut,
 			final I_PP_Order ppOrder)
 	{
+		return buildAndSaveHuTrace(vhu, null, productId, traceType, lotNumber, inOut, ppOrder, BigDecimal.ONE);
+	}
+
+	/** Creates an M_HU_Trace row that also records where its VHU came from (a TRANSFORM_LOAD edge). */
+	private I_M_HU_Trace createHuTraceWithSource(
+			@NonNull final I_M_HU vhu,
+			@Nullable final I_M_HU sourceVhu,
+			@NonNull final ProductId productId,
+			@NonNull final HUTraceType type,
+			@Nullable final String lotNumber,
+			@Nullable final I_M_InOut inOut,
+			@NonNull final BigDecimal qty)
+	{
+		return buildAndSaveHuTrace(vhu, sourceVhu, productId, type, lotNumber, inOut, null, qty);
+	}
+
+	/**
+	 * Shared M_HU_Trace record builder behind {@link #createHuTrace} and
+	 * {@link #createHuTraceWithSource} — the two differ only in whether a source VHU / PP_Order
+	 * is set and in the qty, so both delegate here instead of duplicating the field-setting.
+	 */
+	private I_M_HU_Trace buildAndSaveHuTrace(
+			@NonNull final I_M_HU vhu,
+			@Nullable final I_M_HU sourceVhu,
+			@NonNull final ProductId productId,
+			@NonNull final HUTraceType traceType,
+			final String lotNumber,
+			final I_M_InOut inOut,
+			final I_PP_Order ppOrder,
+			@NonNull final BigDecimal qty)
+	{
 		final I_M_HU_Trace trace = newInstance(I_M_HU_Trace.class);
 		trace.setVHU_ID(vhu.getM_HU_ID());
 		trace.setM_HU_ID(vhu.getM_HU_ID());
+		if (sourceVhu != null)
+		{
+			trace.setVHU_Source_ID(sourceVhu.getM_HU_ID());
+		}
 		trace.setM_Product_ID(productId.getRepoId());
 		trace.setC_UOM_ID(StepDefConstants.PCE_UOM_ID.getRepoId());
-		trace.setQty(BigDecimal.ONE);
+		trace.setQty(qty);
 		trace.setHUTraceType(traceType.getCode());
 		trace.setEventTime(Timestamp.from(Instant.now()));
 		trace.setVHUStatus("A");
@@ -677,37 +712,6 @@ public class M_HU_Trace_Report_StepDef
 		if (ppOrder != null)
 		{
 			trace.setPP_Order_ID(ppOrder.getPP_Order_ID());
-		}
-		saveRecord(trace);
-	}
-
-	/** Creates an M_HU_Trace row that also records where its VHU came from (a TRANSFORM_LOAD edge). */
-	private I_M_HU_Trace createHuTraceWithSource(
-			@NonNull final I_M_HU vhu,
-			@Nullable final I_M_HU sourceVhu,
-			@NonNull final ProductId productId,
-			@NonNull final HUTraceType type,
-			@Nullable final String lotNumber,
-			@Nullable final I_M_InOut inOut,
-			@NonNull final BigDecimal qty)
-	{
-		final I_M_HU_Trace trace = newInstance(I_M_HU_Trace.class);
-		trace.setVHU_ID(vhu.getM_HU_ID());
-		trace.setM_HU_ID(vhu.getM_HU_ID());
-		if (sourceVhu != null)
-		{
-			trace.setVHU_Source_ID(sourceVhu.getM_HU_ID());
-		}
-		trace.setM_Product_ID(productId.getRepoId());
-		trace.setHUTraceType(type.getCode());
-		trace.setLotNumber(lotNumber);
-		trace.setQty(qty);
-		trace.setC_UOM_ID(StepDefConstants.PCE_UOM_ID.getRepoId());
-		trace.setEventTime(Timestamp.from(Instant.now()));
-		trace.setVHUStatus("A");
-		if (inOut != null)
-		{
-			trace.setM_InOut_ID(inOut.getM_InOut_ID());
 		}
 		saveRecord(trace);
 		return trace;
