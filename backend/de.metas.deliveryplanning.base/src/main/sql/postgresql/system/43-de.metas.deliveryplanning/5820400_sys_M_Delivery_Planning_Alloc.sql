@@ -22,6 +22,32 @@
 --   SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585382,'de_DE');
 --   SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585382,'de_CH');
 --
+-- Any stack that applied this script BEFORE the thirteen _Trl seeds covered a base language that
+-- is not flagged as a system language needs this once as well -- the runner will not re-run an
+-- applied file. A no-op wherever the base language is also flagged a system language, which is the
+-- usual setup. The add_missing_translations() call at the end of this script does not stand in for
+-- it: its base-language clause fires for AD_Element alone, so it closes the element row below and
+-- none of the twelve AD_Column_Trl ones:
+--   INSERT INTO AD_Element_Trl (AD_Language, AD_Element_ID, IsTranslated, Name, PrintName, Description, Help, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy)
+--   SELECT l.AD_Language, 585382, 'N', e.Name, e.PrintName, e.Description, e.Help, 0, 0, 'Y',
+--          TO_TIMESTAMP('2026-08-26 10:00:11', 'YYYY-MM-DD HH24:MI:SS'), 100,
+--          TO_TIMESTAMP('2026-08-26 10:00:11', 'YYYY-MM-DD HH24:MI:SS'), 100
+--     FROM AD_Language l, AD_Element e
+--    WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND e.AD_Element_ID=585382
+--      AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=585382);
+--   INSERT INTO AD_Column_Trl (AD_Language, AD_Column_ID, IsTranslated, Name, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy)
+--   SELECT l.AD_Language, v.id, 'N', t.Name, 0, 0, 'Y',
+--          TO_TIMESTAMP(v.ts, 'YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP(v.ts, 'YYYY-MM-DD HH24:MI:SS'), 100
+--     FROM AD_Language l,
+--          (VALUES (593396,'2026-08-26 10:01:01'), (593397,'2026-08-26 10:01:11'), (593398,'2026-08-26 10:01:21'),
+--                  (593399,'2026-08-26 10:01:31'), (593400,'2026-08-26 10:01:41'), (593403,'2026-08-26 10:02:11'),
+--                  (593404,'2026-08-26 10:02:21'), (593405,'2026-08-26 10:02:31'), (593406,'2026-08-26 10:02:41'),
+--                  (593407,'2026-08-26 10:02:51'), (593408,'2026-08-26 10:03:01'), (593409,'2026-08-26 10:03:11')
+--          ) AS v(id, ts), AD_Column t
+--    WHERE t.AD_Column_ID=v.id AND l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y')
+--      AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=v.id);
+--   SELECT update_TRL_Tables_On_AD_Element_TRL_Update(e) FROM unnest(ARRAY[585382,581677,540089,540097,2945]) e;
+--
 -- IDs allocated from idserver.metas.de on 2026-08-26:
 --   AD_Table   542641  (M_Delivery_Planning_Alloc)
 --   AD_Element 585382  (M_Delivery_Planning_Alloc_ID -- PK element, new)
@@ -110,7 +136,7 @@ SELECT l.AD_Language, 585382 /*From ID Server*/, 'N',
        TO_TIMESTAMP('2026-08-26 10:00:11', 'YYYY-MM-DD HH24:MI:SS'), 100,
        TO_TIMESTAMP('2026-08-26 10:00:11', 'YYYY-MM-DD HH24:MI:SS'), 100
 FROM AD_Language l, AD_Element e
-WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y'
+WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y')
   AND e.AD_Element_ID = 585382
   AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt
                   WHERE tt.AD_Language = l.AD_Language AND tt.AD_Element_ID = 585382);
@@ -170,7 +196,7 @@ SELECT l.AD_Language, 593396 /*From ID Server*/, 'N', t.Name,
        TO_TIMESTAMP('2026-08-26 10:01:01', 'YYYY-MM-DD HH24:MI:SS'), 100,
        TO_TIMESTAMP('2026-08-26 10:01:01', 'YYYY-MM-DD HH24:MI:SS'), 100
 FROM AD_Language l, AD_Column t
-WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND t.AD_Column_ID = 593396
+WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') AND t.AD_Column_ID = 593396
   AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt
                   WHERE tt.AD_Language = l.AD_Language AND tt.AD_Column_ID = 593396);
 
@@ -208,7 +234,7 @@ SELECT l.AD_Language, 593397 /*From ID Server*/, 'N', t.Name,
        TO_TIMESTAMP('2026-08-26 10:01:11', 'YYYY-MM-DD HH24:MI:SS'), 100,
        TO_TIMESTAMP('2026-08-26 10:01:11', 'YYYY-MM-DD HH24:MI:SS'), 100
 FROM AD_Language l, AD_Column t
-WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND t.AD_Column_ID = 593397
+WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') AND t.AD_Column_ID = 593397
   AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt
                   WHERE tt.AD_Language = l.AD_Language AND tt.AD_Column_ID = 593397);
 
@@ -245,7 +271,7 @@ SELECT l.AD_Language, 593398 /*From ID Server*/, 'N', t.Name,
        TO_TIMESTAMP('2026-08-26 10:01:21', 'YYYY-MM-DD HH24:MI:SS'), 100,
        TO_TIMESTAMP('2026-08-26 10:01:21', 'YYYY-MM-DD HH24:MI:SS'), 100
 FROM AD_Language l, AD_Column t
-WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND t.AD_Column_ID = 593398
+WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') AND t.AD_Column_ID = 593398
   AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt
                   WHERE tt.AD_Language = l.AD_Language AND tt.AD_Column_ID = 593398);
 
@@ -283,7 +309,7 @@ SELECT l.AD_Language, 593399 /*From ID Server*/, 'N', t.Name,
        TO_TIMESTAMP('2026-08-26 10:01:31', 'YYYY-MM-DD HH24:MI:SS'), 100,
        TO_TIMESTAMP('2026-08-26 10:01:31', 'YYYY-MM-DD HH24:MI:SS'), 100
 FROM AD_Language l, AD_Column t
-WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND t.AD_Column_ID = 593399
+WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') AND t.AD_Column_ID = 593399
   AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt
                   WHERE tt.AD_Language = l.AD_Language AND tt.AD_Column_ID = 593399);
 
@@ -322,7 +348,7 @@ SELECT l.AD_Language, 593400 /*From ID Server*/, 'N', t.Name,
        TO_TIMESTAMP('2026-08-26 10:01:41', 'YYYY-MM-DD HH24:MI:SS'), 100,
        TO_TIMESTAMP('2026-08-26 10:01:41', 'YYYY-MM-DD HH24:MI:SS'), 100
 FROM AD_Language l, AD_Column t
-WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND t.AD_Column_ID = 593400
+WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') AND t.AD_Column_ID = 593400
   AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt
                   WHERE tt.AD_Language = l.AD_Language AND tt.AD_Column_ID = 593400);
 
@@ -358,7 +384,7 @@ SELECT l.AD_Language, 593403 /*From ID Server*/, 'N', t.Name,
        TO_TIMESTAMP('2026-08-26 10:02:11', 'YYYY-MM-DD HH24:MI:SS'), 100,
        TO_TIMESTAMP('2026-08-26 10:02:11', 'YYYY-MM-DD HH24:MI:SS'), 100
 FROM AD_Language l, AD_Column t
-WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND t.AD_Column_ID = 593403
+WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') AND t.AD_Column_ID = 593403
   AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt
                   WHERE tt.AD_Language = l.AD_Language AND tt.AD_Column_ID = 593403);
 
@@ -392,7 +418,7 @@ SELECT l.AD_Language, 593404 /*From ID Server*/, 'N', t.Name,
        TO_TIMESTAMP('2026-08-26 10:02:21', 'YYYY-MM-DD HH24:MI:SS'), 100,
        TO_TIMESTAMP('2026-08-26 10:02:21', 'YYYY-MM-DD HH24:MI:SS'), 100
 FROM AD_Language l, AD_Column t
-WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND t.AD_Column_ID = 593404
+WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') AND t.AD_Column_ID = 593404
   AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt
                   WHERE tt.AD_Language = l.AD_Language AND tt.AD_Column_ID = 593404);
 
@@ -426,7 +452,7 @@ SELECT l.AD_Language, 593405 /*From ID Server*/, 'N', t.Name,
        TO_TIMESTAMP('2026-08-26 10:02:31', 'YYYY-MM-DD HH24:MI:SS'), 100,
        TO_TIMESTAMP('2026-08-26 10:02:31', 'YYYY-MM-DD HH24:MI:SS'), 100
 FROM AD_Language l, AD_Column t
-WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND t.AD_Column_ID = 593405
+WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') AND t.AD_Column_ID = 593405
   AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt
                   WHERE tt.AD_Language = l.AD_Language AND tt.AD_Column_ID = 593405);
 
@@ -460,7 +486,7 @@ SELECT l.AD_Language, 593406 /*From ID Server*/, 'N', t.Name,
        TO_TIMESTAMP('2026-08-26 10:02:41', 'YYYY-MM-DD HH24:MI:SS'), 100,
        TO_TIMESTAMP('2026-08-26 10:02:41', 'YYYY-MM-DD HH24:MI:SS'), 100
 FROM AD_Language l, AD_Column t
-WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND t.AD_Column_ID = 593406
+WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') AND t.AD_Column_ID = 593406
   AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt
                   WHERE tt.AD_Language = l.AD_Language AND tt.AD_Column_ID = 593406);
 
@@ -494,7 +520,7 @@ SELECT l.AD_Language, 593407 /*From ID Server*/, 'N', t.Name,
        TO_TIMESTAMP('2026-08-26 10:02:51', 'YYYY-MM-DD HH24:MI:SS'), 100,
        TO_TIMESTAMP('2026-08-26 10:02:51', 'YYYY-MM-DD HH24:MI:SS'), 100
 FROM AD_Language l, AD_Column t
-WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND t.AD_Column_ID = 593407
+WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') AND t.AD_Column_ID = 593407
   AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt
                   WHERE tt.AD_Language = l.AD_Language AND tt.AD_Column_ID = 593407);
 
@@ -528,7 +554,7 @@ SELECT l.AD_Language, 593408 /*From ID Server*/, 'N', t.Name,
        TO_TIMESTAMP('2026-08-26 10:03:01', 'YYYY-MM-DD HH24:MI:SS'), 100,
        TO_TIMESTAMP('2026-08-26 10:03:01', 'YYYY-MM-DD HH24:MI:SS'), 100
 FROM AD_Language l, AD_Column t
-WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND t.AD_Column_ID = 593408
+WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') AND t.AD_Column_ID = 593408
   AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt
                   WHERE tt.AD_Language = l.AD_Language AND tt.AD_Column_ID = 593408);
 
@@ -562,7 +588,7 @@ SELECT l.AD_Language, 593409 /*From ID Server*/, 'N', t.Name,
        TO_TIMESTAMP('2026-08-26 10:03:11', 'YYYY-MM-DD HH24:MI:SS'), 100,
        TO_TIMESTAMP('2026-08-26 10:03:11', 'YYYY-MM-DD HH24:MI:SS'), 100
 FROM AD_Language l, AD_Column t
-WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND t.AD_Column_ID = 593409
+WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') AND t.AD_Column_ID = 593409
   AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt
                   WHERE tt.AD_Language = l.AD_Language AND tt.AD_Column_ID = 593409);
 

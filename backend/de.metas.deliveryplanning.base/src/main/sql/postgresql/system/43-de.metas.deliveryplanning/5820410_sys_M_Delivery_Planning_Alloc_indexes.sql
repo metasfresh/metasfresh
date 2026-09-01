@@ -10,6 +10,20 @@
 --   AD_Index_Column 541539  (Instruction    -> AD_Column 593398 M_ShipperTransportation_ID)
 --   AD_Index_Column 541540  (Package_UQ     -> AD_Column 593399 M_ShippingPackage_ID)
 -- Referenced existing IDs: AD_Table 542641 (M_Delivery_Planning_Alloc).
+--
+-- Any stack that applied this script BEFORE the three _Trl seeds covered a base language that is not
+-- flagged as a system language needs this once -- the runner will not re-run an applied file.
+-- A no-op wherever the base language is also flagged a system language, which is the usual setup
+-- (the add_missing_translations() call at the end of this script does not stand in for it: its
+-- base-language clause fires for AD_Element alone):
+--   INSERT INTO AD_Index_Table_Trl (AD_Language, AD_Index_Table_ID, IsTranslated, ErrorMsg, Description, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy)
+--   SELECT l.AD_Language, t.AD_Index_Table_ID, 'N', t.ErrorMsg, t.Description, t.AD_Client_ID, t.AD_Org_ID, 'Y',
+--          TO_TIMESTAMP(v.ts, 'YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP(v.ts, 'YYYY-MM-DD HH24:MI:SS'), 100
+--     FROM AD_Language l,
+--          (VALUES (540869,'2026-08-26 11:00:01'), (540870,'2026-08-26 11:00:11'), (540871,'2026-08-26 11:00:21')
+--          ) AS v(id, ts), AD_Index_Table t
+--    WHERE t.AD_Index_Table_ID=v.id AND l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y')
+--      AND NOT EXISTS (SELECT 1 FROM AD_Index_Table_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Index_Table_ID=v.id);
 
 -- ===========================================================================
 -- 1. M_Delivery_Planning_Alloc_Planning_UQ -- one active allocation per planning
@@ -37,7 +51,7 @@ SELECT l.AD_Language, t.AD_Index_Table_ID, 'N', t.ErrorMsg, t.Description,
        TO_TIMESTAMP('2026-08-26 11:00:01', 'YYYY-MM-DD HH24:MI:SS'), 100,
        TO_TIMESTAMP('2026-08-26 11:00:01', 'YYYY-MM-DD HH24:MI:SS'), 100
 FROM AD_Language l, AD_Index_Table t
-WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND t.AD_Index_Table_ID = 540869
+WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') AND t.AD_Index_Table_ID = 540869
   AND NOT EXISTS (SELECT 1 FROM AD_Index_Table_Trl tt
                   WHERE tt.AD_Language = l.AD_Language AND tt.AD_Index_Table_ID = t.AD_Index_Table_ID);
 
@@ -95,7 +109,7 @@ SELECT l.AD_Language, t.AD_Index_Table_ID, 'N', t.ErrorMsg, t.Description,
        TO_TIMESTAMP('2026-08-26 11:00:11', 'YYYY-MM-DD HH24:MI:SS'), 100,
        TO_TIMESTAMP('2026-08-26 11:00:11', 'YYYY-MM-DD HH24:MI:SS'), 100
 FROM AD_Language l, AD_Index_Table t
-WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND t.AD_Index_Table_ID = 540870
+WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') AND t.AD_Index_Table_ID = 540870
   AND NOT EXISTS (SELECT 1 FROM AD_Index_Table_Trl tt
                   WHERE tt.AD_Language = l.AD_Language AND tt.AD_Index_Table_ID = t.AD_Index_Table_ID);
 
@@ -138,7 +152,7 @@ SELECT l.AD_Language, t.AD_Index_Table_ID, 'N', t.ErrorMsg, t.Description,
        TO_TIMESTAMP('2026-08-26 11:00:21', 'YYYY-MM-DD HH24:MI:SS'), 100,
        TO_TIMESTAMP('2026-08-26 11:00:21', 'YYYY-MM-DD HH24:MI:SS'), 100
 FROM AD_Language l, AD_Index_Table t
-WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND t.AD_Index_Table_ID = 540871
+WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') AND t.AD_Index_Table_ID = 540871
   AND NOT EXISTS (SELECT 1 FROM AD_Index_Table_Trl tt
                   WHERE tt.AD_Language = l.AD_Language AND tt.AD_Index_Table_ID = t.AD_Index_Table_ID);
 

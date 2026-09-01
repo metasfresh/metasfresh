@@ -5,6 +5,17 @@
 --
 -- IDs allocated from idserver.metas.de on 2026-08-26:
 --   AD_Ref_List 544356 (Dropship value on AD_Reference 541689)
+--
+-- Any stack that applied this script BEFORE the _Trl seed at 2 covered a base language that is not
+-- flagged as a system language needs this once -- the runner will not re-run an applied file.
+-- A no-op wherever the base language is also flagged a system language, which is the usual setup
+-- (the add_missing_translations() call at the end of this script does not stand in for it: its
+-- base-language clause fires for AD_Element alone):
+--   INSERT INTO AD_Ref_List_Trl (AD_Language, AD_Ref_List_ID, Name, Description, IsTranslated, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy)
+--   SELECT l.AD_Language, t.AD_Ref_List_ID, t.Name, t.Description, 'N', t.AD_Client_ID, t.AD_Org_ID, 'Y', t.Created, t.CreatedBy, t.Updated, t.UpdatedBy
+--     FROM AD_Language l, AD_Ref_List t
+--    WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Ref_List_ID=544356
+--      AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID);
 
 -- 1) the new Dropship value; German in the base Name column
 INSERT INTO AD_Ref_List (AD_Ref_List_ID, AD_Reference_ID, Value, Name, ValueName, Description, EntityType, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy)
@@ -15,11 +26,11 @@ VALUES (544356 /*From ID Server*/, 541689, 'Dropship', 'Streckengeschäft', 'Dro
         TO_TIMESTAMP('2026-08-26 09:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100)
 ;
 
--- 2) seed AD_Ref_List_Trl for every active system language, copying the German base text
+-- 2) seed AD_Ref_List_Trl for every active system or base language, copying the German base text
 INSERT INTO AD_Ref_List_Trl (AD_Language, AD_Ref_List_ID, Name, Description, IsTranslated, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy)
 SELECT l.AD_Language, t.AD_Ref_List_ID, t.Name, t.Description, 'N', t.AD_Client_ID, t.AD_Org_ID, 'Y', t.Created, t.CreatedBy, t.Updated, t.UpdatedBy
 FROM AD_Language l, AD_Ref_List t
-WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Ref_List_ID=544356
+WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Ref_List_ID=544356
   AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
 ;
 
