@@ -17,6 +17,11 @@ const translations = {
   errorScreen: {
     retryButton: 'Erneut versuchen',
   },
+  attributes: {
+    list: {
+      pleaseSelect: 'Bitte auswählen...',
+    },
+  },
   general: {
     Yes: 'Ja',
     No: 'Nein',
