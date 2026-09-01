@@ -82,5 +82,23 @@ SELECT backup_table('mobileui_userprofile_mfg', '_31771_editableAttrFlags');
 
 SELECT db_alter_table('MobileUI_MFG_Config', 'ALTER TABLE public.MobileUI_MFG_Config DROP COLUMN IsLotNumberEditable, DROP COLUMN IsBestBeforeDateEditable')
 ;
+
+-- MobileUI_UserProfile_MFG's flags are NULLABLE (NULL = no per-user override). Unlike the global
+-- MobileUI_MFG_Config table above (NOT NULL DEFAULT 'Y', already migrated to child rows by
+-- 5821590), a per-user row can genuinely hold a real override that was never migrated anywhere -
+-- abort rather than silently discard it.
+DO $$
+DECLARE
+	v_count INTEGER;
+BEGIN
+	SELECT COUNT(*) INTO v_count
+	FROM MobileUI_UserProfile_MFG
+	WHERE IsLotNumberEditable IS NOT NULL OR IsBestBeforeDateEditable IS NOT NULL;
+
+	IF v_count > 0 THEN
+		RAISE EXCEPTION 'Aborting drop of MobileUI_UserProfile_MFG.IsLotNumberEditable/IsBestBeforeDateEditable: % row(s) in MobileUI_UserProfile_MFG have a non-NULL per-user override flag set - migration refused to avoid data loss', v_count;
+	END IF;
+END $$;
+
 SELECT db_alter_table('MobileUI_UserProfile_MFG', 'ALTER TABLE public.MobileUI_UserProfile_MFG DROP COLUMN IsLotNumberEditable, DROP COLUMN IsBestBeforeDateEditable')
 ;
