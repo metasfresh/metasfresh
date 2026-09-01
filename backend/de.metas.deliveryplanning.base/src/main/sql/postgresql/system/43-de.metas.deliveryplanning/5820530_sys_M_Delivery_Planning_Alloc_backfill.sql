@@ -18,8 +18,7 @@
 -- instruction aborts on the first guard instead of being mis-paired.
 --
 -- AD_Org_ID and AD_Client_ID are the INSTRUCTION's, not the planning's, mirroring
--- createAllocation(); the third pre-check aborts if any pair disagrees on client. LineNo mirrors
--- getMaxAllocationLineNo() + ALLOCATION_LINE_NO_STEP, so a single-member instruction gets 10.
+-- createAllocation(); the third pre-check aborts if any pair disagrees on client.
 --
 -- The migration tool applies this once per DB; the NOT EXISTS guard on the INSERT is defence in depth
 -- against a manual re-run and matches the Planning_UQ partial index (IsActive='Y').
@@ -166,14 +165,10 @@ SELECT public.dba_seq_check_native('M_Delivery_Planning_Alloc');
 INSERT INTO M_Delivery_Planning_Alloc (
     M_Delivery_Planning_Alloc_ID,
     M_Delivery_Planning_ID, M_ShipperTransportation_ID, M_ShippingPackage_ID,
-    LineNo,
     AD_Client_ID, AD_Org_ID, IsActive,
     Created, CreatedBy, Updated, UpdatedBy)
 SELECT nextval('m_delivery_planning_alloc_seq'),
        dp.M_Delivery_Planning_ID, st.M_ShipperTransportation_ID, sp.M_ShippingPackage_ID,
-       COALESCE(existing_max.max_lineno, 0)
-           + (ROW_NUMBER() OVER (PARTITION BY st.M_ShipperTransportation_ID
-                                  ORDER BY dp.M_Delivery_Planning_ID) * 10),
        st.AD_Client_ID, st.AD_Org_ID, 'Y',
        TO_TIMESTAMP('2026-08-27 09:00:00', 'YYYY-MM-DD HH24:MI:SS'), 99,
        TO_TIMESTAMP('2026-08-27 09:00:00', 'YYYY-MM-DD HH24:MI:SS'), 99
@@ -184,11 +179,6 @@ JOIN M_ShippingPackage sp
   ON sp.C_OrderLine_ID = dp.C_OrderLine_ID
  AND sp.IsActive = 'Y'
  AND sp.M_ShipperTransportation_ID = st.M_ShipperTransportation_ID
-LEFT JOIN LATERAL (
-    SELECT max(existing.LineNo) AS max_lineno
-    FROM M_Delivery_Planning_Alloc existing
-    WHERE existing.M_ShipperTransportation_ID = st.M_ShipperTransportation_ID
-) existing_max ON TRUE
 WHERE dp.M_ShipperTransportation_ID > 0
   AND st.DocStatus <> 'VO'
   AND NOT EXISTS (

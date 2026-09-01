@@ -69,7 +69,7 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	private DeliveryPlanningList(@NonNull final Collection<DeliveryPlanning> list)
 	{
 		this.list = list.stream()
-				// so every derived message, allocation LineNo and printed line is reproducible
+				// so every derived message, allocation order and printed line is reproducible
 				.sorted(ALLOCATION_ORDER)
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -99,8 +99,8 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	public @NonNull Iterator<DeliveryPlanning> iterator() {return list.iterator();}
 
 	/**
-	 * The ids in the order the plannings of one delivery instruction are allocated - and therefore numbered - in,
-	 * so the same selection always yields the same {@code LineNo} per planning.
+	 * The ids in the order the plannings of one delivery instruction are allocated in, so the same selection
+	 * always yields the same allocation order.
 	 */
 	public ImmutableList<DeliveryPlanningId> getIdsInAllocationOrder()
 	{

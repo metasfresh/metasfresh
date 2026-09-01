@@ -122,29 +122,6 @@ public interface I_M_Delivery_Planning_Alloc
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Line.
-	 * Line No
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setLineNo (int LineNo);
-
-	/**
-	 * Get Line.
-	 * Line No
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getLineNo();
-
-	ModelColumn<I_M_Delivery_Planning_Alloc, Object> COLUMN_LineNo = new ModelColumn<>(I_M_Delivery_Planning_Alloc.class, "LineNo", null);
-	String COLUMNNAME_LineNo = "LineNo";
-
-	/**
 	 * Set Delivery Planning Allocation.
 	 * Allocation of a delivery planning to a delivery instruction.
 	 *

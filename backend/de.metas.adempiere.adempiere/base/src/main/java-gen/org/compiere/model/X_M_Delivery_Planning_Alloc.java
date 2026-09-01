@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_Delivery_Planning_Alloc extends org.compiere.model.PO implements I_M_Delivery_Planning_Alloc, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 938334227L;
+	private static final long serialVersionUID = 1828816540L;
 
     /** Standard Constructor */
     public X_M_Delivery_Planning_Alloc (final Properties ctx, final int M_Delivery_Planning_Alloc_ID, @Nullable final String trxName)
@@ -44,18 +44,6 @@ public class X_M_Delivery_Planning_Alloc extends org.compiere.model.PO implement
 	public java.sql.Timestamp getDateRemoved() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DateRemoved);
-	}
-
-	@Override
-	public void setLineNo (final int LineNo)
-	{
-		set_Value (COLUMNNAME_LineNo, LineNo);
-	}
-
-	@Override
-	public int getLineNo() 
-	{
-		return get_ValueAsInt(COLUMNNAME_LineNo);
 	}
 
 	@Override

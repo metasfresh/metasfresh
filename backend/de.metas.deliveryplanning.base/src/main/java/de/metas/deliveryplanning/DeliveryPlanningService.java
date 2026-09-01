@@ -1074,7 +1074,7 @@ public class DeliveryPlanningService
 
 		final ImmutableList<DeliveryPlanningId> deliveryPlanningIds = selectedDeliveryPlannings.getIdsInAllocationOrder();
 
-		// the header, plus the seed planning's allocation and shipping package (LineNo 10)
+		// the header, plus the seed planning's allocation and shipping package
 		final I_M_ShipperTransportation deliveryInstruction = deliveryPlanningRepository.generateDeliveryInstruction(
 				createDeliveryInstructionRequest(deliveryPlanningIds.get(0)));
 		final ShipperTransportationId deliveryInstructionId = ShipperTransportationId.ofRepoId(deliveryInstruction.getM_ShipperTransportation_ID());
@@ -1106,7 +1106,7 @@ public class DeliveryPlanningService
 
 	/**
 	 * The allocation requests for the given delivery plannings, in the order the ids were given - which is the
-	 * order {@code createAllocations} hands out the {@code LineNo}s in.
+	 * order {@code createAllocations} creates the allocations in.
 	 * <p>
 	 * Takes the whole collection rather than one id at a time so the records are batch-loaded once. There is no
 	 * single-id counterpart, and adding one reintroduces a per-row load.
@@ -1416,7 +1416,7 @@ public class DeliveryPlanningService
 		rejectionReason.apply(selectedDeliveryPlannings, targetDeliveryInstructionId)
 				.ifPresent(reason -> {throw new AdempiereException(reason);});
 
-		// in allocation order, so the LineNos the target hands out continue in a decided order rather than the
+		// in allocation order, so the target's allocations are created in a decided order rather than the
 		// query's encounter order
 		final ImmutableList<DeliveryPlanningId> deliveryPlanningIds = selectedDeliveryPlannings.stream()
 				// already on the target = nothing to do; with several legs that means NONE of its allocations

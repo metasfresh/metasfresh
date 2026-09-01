@@ -80,10 +80,10 @@ Feature: Several delivery plannings on one delivery instruction
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DocStatus |
       | deliveryInstructionCombine            | shipper_DHL             | customer                       | customerLocation               | DR            |
     And the M_ShipperTransportation identified by deliveryInstructionCombine holds exactly the following active M_Delivery_Planning_Alloc:
-      | M_Delivery_Planning_ID | LineNo | ActualLoadQty |
-      | planningCombine_1      | 10     | 4             |
-      | planningCombine_2      | 20     | 3             |
-      | planningCombine_3      | 30     | 3             |
+      | M_Delivery_Planning_ID | ActualLoadQty |
+      | planningCombine_1      | 4             |
+      | planningCombine_2      | 3             |
+      | planningCombine_3      | 3             |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | M_ShipperTransportation_ID |
       | planningCombine_1      | 10         | 10           | Outgoing           | deliveryInstructionCombine |
@@ -187,9 +187,9 @@ Feature: Several delivery plannings on one delivery instruction
       | deliveryInstructionAdd_A   | planningAdd_3,planningAdd_4 | de.metas.deliveryplanning.AddToDeliveryInstruction.AlreadyOnDeliveryInstruction |
 
     Then the M_ShipperTransportation identified by deliveryInstructionAdd_A holds exactly the following active M_Delivery_Planning_Alloc:
-      | M_Delivery_Planning_ID | LineNo | ActualLoadQty |
-      | planningAdd_1          | 10     | 4             |
-      | planningAdd_2          | 20     | 2             |
+      | M_Delivery_Planning_ID | ActualLoadQty |
+      | planningAdd_1          | 4             |
+      | planningAdd_2          | 2             |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | M_ShipperTransportation_ID |
       | planningAdd_3          | 10         | 10           | Outgoing           | null                       |
@@ -201,10 +201,10 @@ Feature: Several delivery plannings on one delivery instruction
       | deliveryInstructionAdd_A   | planningAdd_3          |
 
     Then the M_ShipperTransportation identified by deliveryInstructionAdd_A holds exactly the following active M_Delivery_Planning_Alloc:
-      | M_Delivery_Planning_ID | LineNo | ActualLoadQty |
-      | planningAdd_1          | 10     | 4             |
-      | planningAdd_2          | 20     | 2             |
-      | planningAdd_3          | 30     | 2             |
+      | M_Delivery_Planning_ID | ActualLoadQty |
+      | planningAdd_1          | 4             |
+      | planningAdd_2          | 2             |
+      | planningAdd_3          | 2             |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | M_ShipperTransportation_ID |
       | planningAdd_3          | 10         | 10           | Outgoing           | deliveryInstructionAdd_A   |
@@ -215,13 +215,13 @@ Feature: Several delivery plannings on one delivery instruction
       | deliveryInstructionAdd_B   | planningAdd_3          | de.metas.deliveryplanning.AddToDeliveryInstruction.AlreadyOnDeliveryInstruction |
 
     Then the M_ShipperTransportation identified by deliveryInstructionAdd_A holds exactly the following active M_Delivery_Planning_Alloc:
-      | M_Delivery_Planning_ID | LineNo | ActualLoadQty |
-      | planningAdd_1          | 10     | 4             |
-      | planningAdd_2          | 20     | 2             |
-      | planningAdd_3          | 30     | 2             |
+      | M_Delivery_Planning_ID | ActualLoadQty |
+      | planningAdd_1          | 4             |
+      | planningAdd_2          | 2             |
+      | planningAdd_3          | 2             |
     And the M_ShipperTransportation identified by deliveryInstructionAdd_B holds exactly the following active M_Delivery_Planning_Alloc:
-      | M_Delivery_Planning_ID | LineNo | ActualLoadQty |
-      | planningAdd_4          | 10     | 2             |
+      | M_Delivery_Planning_ID | ActualLoadQty |
+      | planningAdd_4          | 2             |
 
   @Id:S31608_TC4
   Scenario: Neither Add, Move nor Remove touches a delivery planning on a completed delivery instruction
@@ -277,12 +277,12 @@ Feature: Several delivery plannings on one delivery instruction
       | deliveryInstructionDraft   | planningDone_3,planningDone_2 | de.metas.deliveryplanning.DeliveryInstruction.OnCompletedInstruction |
 
     Then the M_ShipperTransportation identified by deliveryInstructionDone holds exactly the following active M_Delivery_Planning_Alloc:
-      | M_Delivery_Planning_ID | LineNo |
-      | planningDone_1         | 10     |
-      | planningDone_2         | 20     |
+      | M_Delivery_Planning_ID |
+      | planningDone_1         |
+      | planningDone_2         |
     And the M_ShipperTransportation identified by deliveryInstructionDraft holds exactly the following active M_Delivery_Planning_Alloc:
-      | M_Delivery_Planning_ID | LineNo |
-      | planningDone_3         | 10     |
+      | M_Delivery_Planning_ID |
+      | planningDone_3         |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | M_ShipperTransportation_ID |
       | planningDone_2         | 9          | 9            | Outgoing           | deliveryInstructionDone    |
@@ -293,9 +293,9 @@ Feature: Several delivery plannings on one delivery instruction
       | planningDone_2         | de.metas.deliveryplanning.DeliveryInstruction.OnCompletedInstruction |
 
     Then the M_ShipperTransportation identified by deliveryInstructionDone holds exactly the following active M_Delivery_Planning_Alloc:
-      | M_Delivery_Planning_ID | LineNo |
-      | planningDone_1         | 10     |
-      | planningDone_2         | 20     |
+      | M_Delivery_Planning_ID |
+      | planningDone_1         |
+      | planningDone_2         |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | M_ShipperTransportation_ID |
       | planningDone_2         | 9          | 9            | Outgoing           | deliveryInstructionDone    |
@@ -357,22 +357,22 @@ Feature: Several delivery plannings on one delivery instruction
       | deliveryInstructionMove_B  | planningMove_2,planningMove_3 |
 
     Then the M_ShipperTransportation identified by deliveryInstructionMove_A holds exactly the following active M_Delivery_Planning_Alloc:
-      | M_Delivery_Planning_ID | LineNo | ActualLoadQty |
-      | planningMove_1         | 10     | 5             |
+      | M_Delivery_Planning_ID | ActualLoadQty |
+      | planningMove_1         | 5             |
     And the M_ShipperTransportation identified by deliveryInstructionMove_B holds exactly the following active M_Delivery_Planning_Alloc:
-      | M_Delivery_Planning_ID | LineNo | ActualLoadQty |
-      | planningMove_3         | 10     | 6             |
-      | planningMove_2         | 20     | 5             |
+      | M_Delivery_Planning_ID | ActualLoadQty |
+      | planningMove_3         | 6             |
+      | planningMove_2         | 5             |
 
     # the source allocation and its shipping package are RELEASED - deactivated, not erased
     And validate M_Delivery_Planning_Alloc:
-      | M_Delivery_Planning_ID | M_ShipperTransportation_ID | IsActive | LineNo | IsShippingPackageActive |
-      | planningMove_2         | deliveryInstructionMove_A  | false    | 20     | false                   |
-      | planningMove_2         | deliveryInstructionMove_B  | true     | 20     | true                    |
+      | M_Delivery_Planning_ID | M_ShipperTransportation_ID | IsActive | IsShippingPackageActive |
+      | planningMove_2         | deliveryInstructionMove_A  | false    | false                   |
+      | planningMove_2         | deliveryInstructionMove_B  | true     | true                    |
     # exactly ONE allocation row for the skipped planning: no second one was created for it
     And validate M_Delivery_Planning_Alloc:
-      | M_Delivery_Planning_ID | M_ShipperTransportation_ID | IsActive | LineNo | IsShippingPackageActive |
-      | planningMove_3         | deliveryInstructionMove_B  | true     | 10     | true                    |
+      | M_Delivery_Planning_ID | M_ShipperTransportation_ID | IsActive | IsShippingPackageActive |
+      | planningMove_3         | deliveryInstructionMove_B  | true     | true                    |
 
     # nothing of the source survives on the moved load: it is on the TARGET's dates, and the load that
     # stayed behind still has the source truck's
@@ -429,12 +429,12 @@ Feature: Several delivery plannings on one delivery instruction
       | planningRemove_2       |
 
     Then the M_ShipperTransportation identified by deliveryInstructionRemove holds exactly the following active M_Delivery_Planning_Alloc:
-      | M_Delivery_Planning_ID | LineNo |
-      | planningRemove_1       | 10     |
-      | planningRemove_3       | 30     |
+      | M_Delivery_Planning_ID |
+      | planningRemove_1       |
+      | planningRemove_3       |
     And validate M_Delivery_Planning_Alloc:
-      | M_Delivery_Planning_ID | M_ShipperTransportation_ID | IsActive | LineNo |
-      | planningRemove_2       | deliveryInstructionRemove  | false    | 20     |
+      | M_Delivery_Planning_ID | M_ShipperTransportation_ID | IsActive |
+      | planningRemove_2       | deliveryInstructionRemove  | false    |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | M_ShipperTransportation_ID |
       | planningRemove_2       | 9          | 9            | Outgoing           | null                       |
@@ -460,8 +460,8 @@ Feature: Several delivery plannings on one delivery instruction
     When M_Delivery_Planning identified by planningRemove_3 is closed
 
     Then the M_ShipperTransportation identified by deliveryInstructionRemove holds exactly the following active M_Delivery_Planning_Alloc:
-      | M_Delivery_Planning_ID | LineNo |
-      | planningRemove_1       | 10     |
+      | M_Delivery_Planning_ID |
+      | planningRemove_1       |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | IsClosed | M_ShipperTransportation_ID |
       | planningRemove_3       | 9          | 9            | Outgoing           | true     | null                       |
@@ -583,9 +583,9 @@ Feature: Several delivery plannings on one delivery instruction
       | deliveryInstructionView    | planningView_1,planningView_2 |
 
     Then the M_ShipperTransportation identified by deliveryInstructionView holds exactly the following active M_Delivery_Planning_Alloc:
-      | M_Delivery_Planning_ID | LineNo | ActualLoadQty |
-      | planningView_1         | 10     | 7             |
-      | planningView_2         | 20     | 3             |
+      | M_Delivery_Planning_ID | ActualLoadQty |
+      | planningView_1         | 7             |
+      | planningView_2         | 3             |
 
     # two plannings, two consignment rows - not the 2 x 2 an uncorrelated package join returns,
     # and each row carries its OWN planning's article and quantities

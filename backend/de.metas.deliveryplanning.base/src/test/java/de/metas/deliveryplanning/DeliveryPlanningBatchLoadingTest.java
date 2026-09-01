@@ -60,7 +60,6 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.groups.Tuple.tuple;
 
 /**
  * What a whole-selection action costs in round trips.
@@ -202,10 +201,14 @@ class DeliveryPlanningBatchLoadingTest
 		return InterfaceWrapperHelper.load(idOf(record), I_M_Delivery_Planning.class);
 	}
 
-	private List<I_M_Delivery_Planning_Alloc> allocationsInLineNoOrder()
+	/**
+	 * In CREATION order: the allocations are saved one after the other, so their ids follow the order they were
+	 * created in - which is what the order assertions read.
+	 */
+	private List<I_M_Delivery_Planning_Alloc> allocationsInCreationOrder()
 	{
 		return queryBL.createQueryBuilder(I_M_Delivery_Planning_Alloc.class)
-				.orderBy().addColumnAscending(I_M_Delivery_Planning_Alloc.COLUMNNAME_LineNo).endOrderBy()
+				.orderBy().addColumnAscending(I_M_Delivery_Planning_Alloc.COLUMNNAME_M_Delivery_Planning_Alloc_ID).endOrderBy()
 				.create()
 				.list();
 	}
@@ -257,14 +260,17 @@ class DeliveryPlanningBatchLoadingTest
 			assertThat(stamped.getReleaseNo()).startsWith(deliveryInstruction.getDocumentNo() + "-" + record.getM_Delivery_Planning_ID() + "-");
 		}
 
-		// nor the ORDER: the seed is allocated by generateDeliveryInstruction and the rest follow it in allocation
-		// order, so the LineNos follow the selection rather than the encounter order of the batch query
-		assertThat(allocationsInLineNoOrder())
-				.extracting(I_M_Delivery_Planning_Alloc::getM_Delivery_Planning_ID, I_M_Delivery_Planning_Alloc::getLineNo)
+		// nor the ORDER: the seed is allocated by generateDeliveryInstruction and the rest follow it in the
+		// selection's allocation order (DeliveryPlanningList's, not the batch query's encounter order). That the
+		// GIVEN order beats the encounter order is pinned by DeliveryPlanningAllocLifecycleTest, which hands
+		// createAllocations a request list deliberately out of id order; here the two coincide, so this only
+		// shows the pipeline carries that order end to end
+		assertThat(allocationsInCreationOrder())
+				.extracting(I_M_Delivery_Planning_Alloc::getM_Delivery_Planning_ID)
 				.containsExactly(
-						tuple(records.get(0).getM_Delivery_Planning_ID(), 10),
-						tuple(records.get(1).getM_Delivery_Planning_ID(), 20),
-						tuple(records.get(2).getM_Delivery_Planning_ID(), 30));
+						records.get(0).getM_Delivery_Planning_ID(),
+						records.get(1).getM_Delivery_Planning_ID(),
+						records.get(2).getM_Delivery_Planning_ID());
 	}
 
 	@Test
@@ -288,14 +294,14 @@ class DeliveryPlanningBatchLoadingTest
 			assertThat(stamped.getReleaseNo()).startsWith("TARGET-1-" + record.getM_Delivery_Planning_ID() + "-");
 		}
 
-		// nor the ORDER: the requests reach createAllocations in the order the ids were given, so the LineNos
-		// follow the selection rather than the encounter order of the batch query
-		assertThat(allocationsInLineNoOrder())
-				.extracting(I_M_Delivery_Planning_Alloc::getM_Delivery_Planning_ID, I_M_Delivery_Planning_Alloc::getLineNo)
+		// nor the ORDER: the requests reach createAllocations in the selection's allocation order - see
+		// combineBatchLoadsTheSelection on what this assertion does and does not show
+		assertThat(allocationsInCreationOrder())
+				.extracting(I_M_Delivery_Planning_Alloc::getM_Delivery_Planning_ID)
 				.containsExactly(
-						tuple(records.get(0).getM_Delivery_Planning_ID(), 10),
-						tuple(records.get(1).getM_Delivery_Planning_ID(), 20),
-						tuple(records.get(2).getM_Delivery_Planning_ID(), 30));
+						records.get(0).getM_Delivery_Planning_ID(),
+						records.get(1).getM_Delivery_Planning_ID(),
+						records.get(2).getM_Delivery_Planning_ID());
 	}
 
 	@Test
@@ -386,13 +392,13 @@ class DeliveryPlanningBatchLoadingTest
 						.qtyLoaded(Quantity.of(BigDecimal.TEN, uom))
 						.qtyDischarged(Quantity.of(BigDecimal.ONE, uom))
 						.build()));
-		final int allocationsBefore = allocationsInLineNoOrder().size();
+		final int allocationsBefore = allocationsInCreationOrder().size();
 
 		final I_M_ShipperTransportation target = draftDeliveryInstruction("TARGET-5");
 		assertThatThrownBy(() -> deliveryPlanningService.addTo(selection, ShipperTransportationId.ofRepoId(target.getM_ShipperTransportation_ID())))
 				.isInstanceOf(AdempiereException.class);
 
-		assertThat(allocationsInLineNoOrder())
+		assertThat(allocationsInCreationOrder())
 				.as("nothing was allocated to the target, and nothing was taken off the completed instruction")
 				.hasSize(allocationsBefore);
 		for (final I_M_Delivery_Planning record : records)

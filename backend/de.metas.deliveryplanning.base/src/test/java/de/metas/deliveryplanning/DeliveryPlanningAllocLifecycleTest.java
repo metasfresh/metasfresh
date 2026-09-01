@@ -120,10 +120,14 @@ class DeliveryPlanningAllocLifecycleTest
 				.build();
 	}
 
+	/**
+	 * In CREATION order: the allocations of one call are saved one after the other, so their ids follow the
+	 * order the requests were handed over in - which is what the order assertions read.
+	 */
 	private List<I_M_Delivery_Planning_Alloc> allAllocations()
 	{
 		return queryBL.createQueryBuilder(I_M_Delivery_Planning_Alloc.class)
-				.orderBy().addColumnAscending(I_M_Delivery_Planning_Alloc.COLUMNNAME_LineNo).endOrderBy()
+				.orderBy().addColumnAscending(I_M_Delivery_Planning_Alloc.COLUMNNAME_M_Delivery_Planning_Alloc_ID).endOrderBy()
 				.create()
 				.list();
 	}
@@ -187,8 +191,8 @@ class DeliveryPlanningAllocLifecycleTest
 	}
 
 	@Test
-	@DisplayName("LineNo is assigned in tens in the order the requests are handed over, starting at 10")
-	void lineNoIsAssignedInTensInTheGivenOrder()
+	@DisplayName("the allocations are created in the order the requests are handed over")
+	void allocationsAreCreatedInTheGivenOrder()
 	{
 		final ShipperTransportationId deliveryInstructionId = createDeliveryInstruction(DocStatus.Drafted, false);
 		final DeliveryPlanningId first = createDeliveryPlanning();
@@ -200,23 +204,8 @@ class DeliveryPlanningAllocLifecycleTest
 				allocRequestFor(third), allocRequestFor(first), allocRequestFor(second)));
 
 		assertThat(allAllocations())
-				.extracting(I_M_Delivery_Planning_Alloc::getLineNo, I_M_Delivery_Planning_Alloc::getM_Delivery_Planning_ID)
-				.containsExactly(
-						tuple(10, third.getRepoId()),
-						tuple(20, first.getRepoId()),
-						tuple(30, second.getRepoId()));
-	}
-
-	@Test
-	@DisplayName("a later allocation continues after the instruction's highest LineNo instead of restarting at 10")
-	void lineNoContinuesOnASecondCall()
-	{
-		final ShipperTransportationId deliveryInstructionId = createDeliveryInstruction(DocStatus.Drafted, false);
-		deliveryPlanningRepository.createAllocations(deliveryInstructionId, ImmutableList.of(allocRequestFor(createDeliveryPlanning())));
-
-		deliveryPlanningRepository.createAllocations(deliveryInstructionId, ImmutableList.of(allocRequestFor(createDeliveryPlanning())));
-
-		assertThat(allAllocations()).extracting(I_M_Delivery_Planning_Alloc::getLineNo).containsExactly(10, 20);
+				.extracting(I_M_Delivery_Planning_Alloc::getM_Delivery_Planning_ID)
+				.containsExactly(third.getRepoId(), first.getRepoId(), second.getRepoId());
 	}
 
 	@Test
@@ -389,13 +378,13 @@ class DeliveryPlanningAllocLifecycleTest
 		// the whole point of the column: any later touch of the row moves Updated, and must NOT move DateRemoved
 		SystemTime.setFixedTimeSource(REMOVED_AT.plusDays(1));
 		final I_M_Delivery_Planning_Alloc retired = reload(alloc);
-		retired.setLineNo(retired.getLineNo() + 1);
+		retired.setAD_Org_ID(retired.getAD_Org_ID() + 1);
 		InterfaceWrapperHelper.save(retired);
 
 		final I_M_Delivery_Planning_Alloc afterUnrelatedWrite = reload(alloc);
-		assertThat(afterUnrelatedWrite.getLineNo())
+		assertThat(afterUnrelatedWrite.getAD_Org_ID())
 				.as("guard on the guard: the unrelated write must really have hit the row")
-				.isEqualTo(retired.getLineNo());
+				.isEqualTo(retired.getAD_Org_ID());
 		assertThat(afterUnrelatedWrite.getDateRemoved())
 				.as("an unrelated write a day later must not re-date the removal")
 				.isEqualTo(stampedAt);

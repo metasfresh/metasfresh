@@ -5,7 +5,6 @@
 -- M_Package carries a planning reference.
 -- Removal retires the row (IsActive='N' plus a one-time DateRemoved stamp, never re-dated) instead
 -- of deleting it: the retired row is what the instruction's read-only history tab renders.
--- LineNo orders the allocations of one instruction, assigned in tens (10/20/30 ...).
 --
 -- IDs allocated from idserver.metas.de on 2026-08-26:
 --   AD_Table   542641  (M_Delivery_Planning_Alloc)
@@ -14,7 +13,6 @@
 --   AD_Column  593397  (M_Delivery_Planning_Alloc.M_Delivery_Planning_ID      -- reuses element 581677)
 --   AD_Column  593398  (M_Delivery_Planning_Alloc.M_ShipperTransportation_ID  -- reuses element 540089)
 --   AD_Column  593399  (M_Delivery_Planning_Alloc.M_ShippingPackage_ID        -- reuses element 540097)
---   AD_Column  593400  (M_Delivery_Planning_Alloc.LineNo                      -- reuses element 2945)
 --   AD_Column  593403  (M_Delivery_Planning_Alloc.AD_Client_ID                -- reuses element 102)
 --   AD_Column  593404  (M_Delivery_Planning_Alloc.AD_Org_ID                   -- reuses element 113)
 --   AD_Column  593405  (M_Delivery_Planning_Alloc.IsActive                    -- reuses element 348)
@@ -32,7 +30,6 @@ CREATE TABLE IF NOT EXISTS M_Delivery_Planning_Alloc
     M_Delivery_Planning_ID       NUMERIC(10)              NOT NULL,
     M_ShipperTransportation_ID   NUMERIC(10)              NOT NULL,
     M_ShippingPackage_ID         NUMERIC(10)              NOT NULL,
-    LineNo                       NUMERIC(10)              NOT NULL,
     AD_Client_ID                 NUMERIC(10)              NOT NULL,
     AD_Org_ID                    NUMERIC(10)              NOT NULL,
     IsActive                     CHAR(1)                  NOT NULL DEFAULT 'Y',
@@ -275,46 +272,7 @@ WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') 
 SELECT update_TRL_Tables_On_AD_Element_TRL_Update(540097 /*M_ShippingPackage_ID element*/);
 
 -- ===========================================================================
--- 8. AD_Column -- LineNo (AD_Reference_ID=11 = Integer)
---    Reuses existing AD_Element 2945 (LineNo / Position). Assigned in tens per instruction,
---    mirroring the C_Customs_Invoice_Line.LineNo default.
--- ===========================================================================
-INSERT INTO AD_Column
-    (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive,
-     Created, CreatedBy, Updated, UpdatedBy,
-     Name, AD_Table_ID, ColumnName, FieldLength,
-     AD_Reference_ID, IsKey, IsParent, IsMandatory, DefaultValue,
-     IsTranslated, IsIdentifier, IsEncrypted, IsUpdateable, IsAlwaysUpdateable,
-     IsSelectionColumn, IsSyncDatabase,
-     EntityType, AD_Element_ID, Version, PersonalDataCategory)
-VALUES
-    (593400 /*From ID Server*/, 0, 0, 'Y',
-     TO_TIMESTAMP('2026-08-26 10:01:40', 'YYYY-MM-DD HH24:MI:SS'), 100,
-     TO_TIMESTAMP('2026-08-26 10:01:40', 'YYYY-MM-DD HH24:MI:SS'), 100,
-     'Position',
-     542641 /*From ID Server*/, 'LineNo', 14,
-     11, 'N', 'N', 'Y',
-     '@SQL=SELECT COALESCE(MAX(LineNo),0)+10 AS DefaultValue FROM M_Delivery_Planning_Alloc WHERE M_ShipperTransportation_ID=@M_ShipperTransportation_ID@',
-     'N', 'N', 'N', 'Y', 'N',
-     'N', 'N',
-     'D', 2945 /*existing: LineNo element*/, 0, 'NP');
-
-INSERT INTO AD_Column_Trl
-    (AD_Language, AD_Column_ID, IsTranslated, Name,
-     AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy)
-SELECT l.AD_Language, 593400 /*From ID Server*/, 'N', t.Name,
-       0, 0, 'Y',
-       TO_TIMESTAMP('2026-08-26 10:01:41', 'YYYY-MM-DD HH24:MI:SS'), 100,
-       TO_TIMESTAMP('2026-08-26 10:01:41', 'YYYY-MM-DD HH24:MI:SS'), 100
-FROM AD_Language l, AD_Column t
-WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') AND t.AD_Column_ID = 593400
-  AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt
-                  WHERE tt.AD_Language = l.AD_Language AND tt.AD_Column_ID = 593400);
-
-SELECT update_TRL_Tables_On_AD_Element_TRL_Update(2945 /*LineNo element*/);
-
--- ===========================================================================
--- 9. AD_Column -- AD_Client_ID (reuses element 102, AD_Reference_ID=19 = TableDir)
+-- 8. AD_Column -- AD_Client_ID (reuses element 102, AD_Reference_ID=19 = TableDir)
 -- ===========================================================================
 INSERT INTO AD_Column
     (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive,
@@ -348,7 +306,7 @@ WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') 
                   WHERE tt.AD_Language = l.AD_Language AND tt.AD_Column_ID = 593403);
 
 -- ===========================================================================
--- 10. AD_Column -- AD_Org_ID (reuses element 113, AD_Reference_ID=30 = Search)
+-- 9. AD_Column -- AD_Org_ID (reuses element 113, AD_Reference_ID=30 = Search)
 -- ===========================================================================
 INSERT INTO AD_Column
     (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive,
@@ -382,7 +340,7 @@ WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') 
                   WHERE tt.AD_Language = l.AD_Language AND tt.AD_Column_ID = 593404);
 
 -- ===========================================================================
--- 11. AD_Column -- IsActive (reuses element 348, AD_Reference_ID=20 = YesNo)
+-- 10. AD_Column -- IsActive (reuses element 348, AD_Reference_ID=20 = YesNo)
 -- ===========================================================================
 INSERT INTO AD_Column
     (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive,
@@ -416,7 +374,7 @@ WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') 
                   WHERE tt.AD_Language = l.AD_Language AND tt.AD_Column_ID = 593405);
 
 -- ===========================================================================
--- 12. AD_Column -- Created (reuses element 245, AD_Reference_ID=16 = DateTime)
+-- 11. AD_Column -- Created (reuses element 245, AD_Reference_ID=16 = DateTime)
 -- ===========================================================================
 INSERT INTO AD_Column
     (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive,
@@ -450,7 +408,7 @@ WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') 
                   WHERE tt.AD_Language = l.AD_Language AND tt.AD_Column_ID = 593406);
 
 -- ===========================================================================
--- 13. AD_Column -- CreatedBy (reuses element 246, AD_Reference_ID=18, ref_value=110)
+-- 12. AD_Column -- CreatedBy (reuses element 246, AD_Reference_ID=18, ref_value=110)
 -- ===========================================================================
 INSERT INTO AD_Column
     (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive,
@@ -484,7 +442,7 @@ WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') 
                   WHERE tt.AD_Language = l.AD_Language AND tt.AD_Column_ID = 593407);
 
 -- ===========================================================================
--- 14. AD_Column -- Updated (reuses element 607, AD_Reference_ID=16 = DateTime)
+-- 13. AD_Column -- Updated (reuses element 607, AD_Reference_ID=16 = DateTime)
 -- ===========================================================================
 INSERT INTO AD_Column
     (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive,
@@ -518,7 +476,7 @@ WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') 
                   WHERE tt.AD_Language = l.AD_Language AND tt.AD_Column_ID = 593408);
 
 -- ===========================================================================
--- 15. AD_Column -- UpdatedBy (reuses element 608, AD_Reference_ID=18, ref_value=110)
+-- 14. AD_Column -- UpdatedBy (reuses element 608, AD_Reference_ID=18, ref_value=110)
 -- ===========================================================================
 INSERT INTO AD_Column
     (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive,
@@ -552,6 +510,6 @@ WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') 
                   WHERE tt.AD_Language = l.AD_Language AND tt.AD_Column_ID = 593409);
 
 -- ===========================================================================
--- 16. Backfill any missing translations for the new table rows
+-- 15. Backfill any missing translations for the new table rows
 -- ===========================================================================
 SELECT add_missing_translations();

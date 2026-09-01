@@ -229,10 +229,10 @@ class DeliveryPlanningMoveAndRemovalTest
 		return InterfaceWrapperHelper.load(idOf(record), I_M_Delivery_Planning.class);
 	}
 
-	private List<I_M_Delivery_Planning_Alloc> allocationsInLineNoOrder()
+	private List<I_M_Delivery_Planning_Alloc> allAllocations()
 	{
 		return queryBL.createQueryBuilder(I_M_Delivery_Planning_Alloc.class)
-				.orderBy().addColumnAscending(I_M_Delivery_Planning_Alloc.COLUMNNAME_LineNo).endOrderBy()
+				.orderBy().addColumnAscending(I_M_Delivery_Planning_Alloc.COLUMNNAME_M_Delivery_Planning_Alloc_ID).endOrderBy()
 				.create()
 				.list();
 	}
@@ -244,7 +244,7 @@ class DeliveryPlanningMoveAndRemovalTest
 	 */
 	private I_M_Delivery_Planning_Alloc allocationOf(@NonNull final I_M_Delivery_Planning record)
 	{
-		return allocationsInLineNoOrder().stream()
+		return allAllocations().stream()
 				.filter(alloc -> alloc.getM_Delivery_Planning_ID() == record.getM_Delivery_Planning_ID())
 				.filter(I_M_Delivery_Planning_Alloc::isActive)
 				.findFirst()
@@ -264,7 +264,7 @@ class DeliveryPlanningMoveAndRemovalTest
 	{
 		assertThat(queryBL.createQueryBuilder(I_M_ShippingPackage.class).create().list())
 				.as("one shipping package per allocation - a stranded package means a delete took only half the pair")
-				.hasSameSizeAs(allocationsInLineNoOrder());
+				.hasSameSizeAs(allAllocations());
 	}
 
 	// ------------------------------------------------------------------ tests
@@ -287,7 +287,7 @@ class DeliveryPlanningMoveAndRemovalTest
 
 		deliveryPlanningService.moveTo(selectionOf(moving), target);
 
-		assertThat(allocationsInLineNoOrder())
+		assertThat(allAllocations())
 				.as("the source row survives DEACTIVATED, and a fresh ACTIVE row sits on the target - nothing was left standing active")
 				.extracting(I_M_Delivery_Planning_Alloc::getM_Delivery_Planning_ID, I_M_Delivery_Planning_Alloc::getM_ShipperTransportation_ID, I_M_Delivery_Planning_Alloc::isActive)
 				.containsExactlyInAnyOrder(
@@ -409,21 +409,17 @@ class DeliveryPlanningMoveAndRemovalTest
 		final I_M_Delivery_Planning_Alloc before = allocationOf(alreadyThere);
 		final int allocationId = before.getM_Delivery_Planning_Alloc_ID();
 		final int shippingPackageId = before.getM_ShippingPackage_ID();
-		final int lineNo = before.getLineNo();
 
 		deliveryPlanningService.moveTo(selectionOf(alreadyThere), target);
 
 		final I_M_Delivery_Planning_Alloc after = allocationOf(alreadyThere);
-		assertThat(allocationsInLineNoOrder()).hasSize(1);
+		assertThat(allAllocations()).hasSize(1);
 		assertThat(after.getM_Delivery_Planning_Alloc_ID())
 				.as("the same allocation row - re-adding must not delete and re-create it")
 				.isEqualTo(allocationId);
 		assertThat(after.getM_ShippingPackage_ID())
 				.as("and therefore the same shipping package, not a second one")
 				.isEqualTo(shippingPackageId);
-		assertThat(after.getLineNo())
-				.as("the printed line order is unchanged - a re-create would push it to the end")
-				.isEqualTo(lineNo);
 		assertNoOrphanedShippingPackages();
 	}
 
@@ -438,7 +434,6 @@ class DeliveryPlanningMoveAndRemovalTest
 
 		final I_M_Delivery_Planning_Alloc stayingAllocBefore = allocationOf(staying);
 		final int stayingAllocationId = stayingAllocBefore.getM_Delivery_Planning_Alloc_ID();
-		final int stayingLineNo = stayingAllocBefore.getLineNo();
 		final String stayingReleaseNo = reload(staying).getReleaseNo();
 		final I_M_Delivery_Planning_Alloc leavingAllocBefore = allocationOf(leaving);
 		final int leavingAllocationId = leavingAllocBefore.getM_Delivery_Planning_Alloc_ID();
@@ -460,14 +455,13 @@ class DeliveryPlanningMoveAndRemovalTest
 				.as("the retired allocation must not leak into an active-filtered lookup")
 				.isTrue();
 
-		assertThat(allocationsInLineNoOrder())
+		assertThat(allAllocations())
 				.as("both rows survive - the removed one deactivated, the staying one still active")
 				.hasSize(2);
 		final I_M_Delivery_Planning_Alloc stayingAllocAfter = allocationOf(staying);
-		assertThat(stayingAllocAfter.getM_Delivery_Planning_Alloc_ID()).isEqualTo(stayingAllocationId);
-		assertThat(stayingAllocAfter.getLineNo())
-				.as("gaps are tolerated - the surviving lines are NOT renumbered, which would change a printed document")
-				.isEqualTo(stayingLineNo);
+		assertThat(stayingAllocAfter.getM_Delivery_Planning_Alloc_ID())
+				.as("untouched - the surviving allocation is NOT re-created, which would change a printed document")
+				.isEqualTo(stayingAllocationId);
 		assertThat(reload(staying).getReleaseNo())
 				.as("the forwarder already holds this number for the rest of the consignment")
 				.isEqualTo(stayingReleaseNo);
@@ -519,31 +513,7 @@ class DeliveryPlanningMoveAndRemovalTest
 		assertThat(InterfaceWrapperHelper.load(allocationId, I_M_Delivery_Planning_Alloc.class).isActive())
 				.as("the allocation row survives, deactivated")
 				.isFalse();
-		assertThat(allocationsInLineNoOrder()).hasSize(1);
-		assertNoOrphanedShippingPackages();
-	}
-
-	@Test
-	@DisplayName("a moved allocation continues the TARGET's LineNo, not the one it had on the source")
-	void aMovedAllocationContinuesTheTargetsLineNo()
-	{
-		final ShipperTransportationId source = draftDeliveryInstruction("SOURCE-4");
-		final ShipperTransportationId target = draftDeliveryInstruction("TARGET-4");
-
-		// third on the source, so its source LineNo (30) is HIGHER than the target's next one (20):
-		// a move that carried the old number over, or continued the source's sequence, would land on 30 or 40
-		final I_M_Delivery_Planning moving = deliveryPlanning();
-		allocateTo(source, deliveryPlanning(), deliveryPlanning(), moving);
-		assertThat(allocationOf(moving).getLineNo()).isEqualTo(30);
-
-		allocateTo(target, deliveryPlanning());
-
-		deliveryPlanningService.moveTo(selectionOf(moving), target);
-
-		assertThat(allocationOf(moving).getLineNo())
-				.as("the target had one line at 10, so the moved planning takes 20")
-				.isEqualTo(20);
-		assertThat(allocationOf(moving).getM_ShipperTransportation_ID()).isEqualTo(target.getRepoId());
+		assertThat(allAllocations()).hasSize(1);
 		assertNoOrphanedShippingPackages();
 	}
 

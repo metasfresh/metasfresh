@@ -100,11 +100,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Repository
 public class DeliveryPlanningRepository
 {
-	/**
-	 * The step between two consecutive allocation {@code LineNo}s, following the house convention for document lines.
-	 */
-	private static final int ALLOCATION_LINE_NO_STEP = 10;
-
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final DimensionService dimensionService;
@@ -557,8 +552,8 @@ public class DeliveryPlanningRepository
 
 	/**
 	 * Allocates the given delivery plannings to the given delivery instruction, each with its own
-	 * {@code M_ShippingPackage}. {@code LineNo}s continue in tens after the instruction's highest existing one, in
-	 * the order of {@code requests} - a caller that wants a particular print order hands them over sorted.
+	 * {@code M_ShippingPackage}. The allocations are created in the order of {@code requests}, so their ids
+	 * follow that order - a caller that wants a particular order hands them over sorted.
 	 *
 	 * @param resolvedDates the instruction header's date fields, written verbatim; {@code null} leaves the
 	 * 		header's current dates untouched.
@@ -589,8 +584,6 @@ public class DeliveryPlanningRepository
 			@NonNull final List<DeliveryPlanningAllocCreateRequest> requests,
 			@Nullable final DeliveryInstructionDates resolvedDates)
 	{
-		final ShipperTransportationId deliveryInstructionId = ShipperTransportationId.ofRepoId(deliveryInstructionRecord.getM_ShipperTransportation_ID());
-
 		// BEFORE the packages are built: createShippingPackage seeds M_Package.ShipDate from the instruction's
 		// ETA, so a date written now reaches this add's packages instead of only the next one's.
 		if (resolvedDates != null)
@@ -598,21 +591,17 @@ public class DeliveryPlanningRepository
 			applyDates(deliveryInstructionRecord, resolvedDates);
 		}
 
-		int lineNo = getMaxAllocationLineNo(deliveryInstructionId);
-
 		final ImmutableList.Builder<DeliveryPlanningAllocId> allocIds = ImmutableList.builder();
 		for (final DeliveryPlanningAllocCreateRequest request : requests)
 		{
-			lineNo += ALLOCATION_LINE_NO_STEP;
-			allocIds.add(createAllocation(deliveryInstructionRecord, request, lineNo));
+			allocIds.add(createAllocation(deliveryInstructionRecord, request));
 		}
 		return allocIds.build();
 	}
 
 	private DeliveryPlanningAllocId createAllocation(
 			@NonNull final I_M_ShipperTransportation deliveryInstructionRecord,
-			@NonNull final DeliveryPlanningAllocCreateRequest request,
-			final int lineNo)
+			@NonNull final DeliveryPlanningAllocCreateRequest request)
 	{
 		// M_ShippingPackage_ID is mandatory on the allocation and uniquely indexed, so the package exists first
 		final I_M_ShippingPackage shippingPackageRecord = createShippingPackage(deliveryInstructionRecord, request);
@@ -622,7 +611,6 @@ public class DeliveryPlanningRepository
 		allocRecord.setM_Delivery_Planning_ID(request.getDeliveryPlanningId().getRepoId());
 		allocRecord.setM_ShipperTransportation_ID(deliveryInstructionRecord.getM_ShipperTransportation_ID());
 		allocRecord.setM_ShippingPackage_ID(shippingPackageRecord.getM_ShippingPackage_ID());
-		allocRecord.setLineNo(lineNo);
 		saveRecord(allocRecord);
 
 		return DeliveryPlanningAllocId.ofRepoId(allocRecord.getM_Delivery_Planning_Alloc_ID());
@@ -966,17 +954,6 @@ public class DeliveryPlanningRepository
 			deliveryPlanningRecord.setM_ShipperTransportation_ID(-1);
 			saveRecord(deliveryPlanningRecord);
 		}
-	}
-
-	private int getMaxAllocationLineNo(@NonNull final ShipperTransportationId deliveryInstructionId)
-	{
-		// not filtered by IsActive: a retired allocation's LineNo stays reserved, so a planning removed and
-		// re-added gets a new number rather than its old one back. The number is never printed; only its
-		// ordering reaches the document, picking whose transport details the delivery instruction shows.
-		return queryBL.createQueryBuilder(I_M_Delivery_Planning_Alloc.class)
-				.addEqualsFilter(I_M_Delivery_Planning_Alloc.COLUMNNAME_M_ShipperTransportation_ID, deliveryInstructionId)
-				.create()
-				.maxInt(I_M_Delivery_Planning_Alloc.COLUMNNAME_LineNo);
 	}
 
 	private IQueryBuilder<I_M_Delivery_Planning_Alloc> queryAllocationsByPlanningIds(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)

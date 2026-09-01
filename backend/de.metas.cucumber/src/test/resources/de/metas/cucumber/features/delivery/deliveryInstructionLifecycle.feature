@@ -77,10 +77,10 @@ Feature: The document lifecycle of a delivery instruction and its delivery plann
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DocStatus |
       | deliveryInstructionLife               | shipper_DHL             | customer                       | customerLocation               | CO            |
     And the M_ShipperTransportation identified by deliveryInstructionLife holds exactly the following active M_Delivery_Planning_Alloc:
-      | M_Delivery_Planning_ID | LineNo | ActualLoadQty |
-      | planningLife_1         | 10     | 4             |
-      | planningLife_2         | 20     | 3             |
-      | planningLife_3         | 30     | 3             |
+      | M_Delivery_Planning_ID | ActualLoadQty |
+      | planningLife_1         | 4             |
+      | planningLife_2         | 3             |
+      | planningLife_3         | 3             |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | M_ShipperTransportation_ID |
       | planningLife_1         | 10         | 10           | Outgoing           | deliveryInstructionLife    |
@@ -99,10 +99,10 @@ Feature: The document lifecycle of a delivery instruction and its delivery plann
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DocStatus |
       | deliveryInstructionLife               | shipper_DHL             | customer                       | customerLocation               | IP            |
     And the M_ShipperTransportation identified by deliveryInstructionLife holds exactly the following active M_Delivery_Planning_Alloc:
-      | M_Delivery_Planning_ID | LineNo | ActualLoadQty |
-      | planningLife_1         | 10     | 4             |
-      | planningLife_2         | 20     | 3             |
-      | planningLife_3         | 30     | 3             |
+      | M_Delivery_Planning_ID | ActualLoadQty |
+      | planningLife_1         | 4             |
+      | planningLife_2         | 3             |
+      | planningLife_3         | 3             |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | M_ShipperTransportation_ID |
       | planningLife_1         | 10         | 10           | Outgoing           | deliveryInstructionLife    |
@@ -122,10 +122,10 @@ Feature: The document lifecycle of a delivery instruction and its delivery plann
       | deliveryInstructionLife               | shipper_DHL             | customer                       | customerLocation               | VO            |
     And the M_ShipperTransportation identified by deliveryInstructionLife holds no active M_Delivery_Planning_Alloc
     And validate M_Delivery_Planning_Alloc:
-      | M_Delivery_Planning_ID | M_ShipperTransportation_ID | IsActive | LineNo |
-      | planningLife_1         | deliveryInstructionLife    | false    | 10     |
-      | planningLife_2         | deliveryInstructionLife    | false    | 20     |
-      | planningLife_3         | deliveryInstructionLife    | false    | 30     |
+      | M_Delivery_Planning_ID | M_ShipperTransportation_ID | IsActive |
+      | planningLife_1         | deliveryInstructionLife    | false    |
+      | planningLife_2         | deliveryInstructionLife    | false    |
+      | planningLife_3         | deliveryInstructionLife    | false    |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | M_ShipperTransportation_ID |
       | planningLife_1         | 10         | 10           | Outgoing           | null                       |

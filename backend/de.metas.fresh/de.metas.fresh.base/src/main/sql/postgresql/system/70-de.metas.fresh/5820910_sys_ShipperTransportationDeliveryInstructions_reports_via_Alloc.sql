@@ -7,10 +7,10 @@
 -- M_ShippingPackage and possibly its own C_Order, C_UOM and M_Warehouse.
 --
 -- _description and _forwarder resolve exactly ONE planning per instruction, deterministically:
--- active allocations only, lowest LineNo, tiebreak lowest M_Delivery_Planning_ID. _description
--- drops orderno/referenceno: they came from the single C_Order behind that arbitrarily-picked
--- planning, which is not a meaningful header-level concept once several orders can stand behind
--- one instruction. The order reference lives in _productdetails' per-article detail band instead.
+-- active allocations only, lowest M_Delivery_Planning_ID. _description drops orderno/referenceno:
+-- they came from the single C_Order behind that arbitrarily-picked planning, which is not a
+-- meaningful header-level concept once several orders can stand behind one instruction. The order
+-- reference lives in _productdetails' per-article detail band instead.
 --
 -- _productdetails returns one row per ARTICLE per UNIT, not one per allocation, and carries
 -- orderno / referenceno:
@@ -79,7 +79,7 @@ FROM M_ShipperTransportation st
              FROM m_delivery_planning_alloc dpa
              WHERE dpa.m_shippertransportation_id = st.m_shippertransportation_id
                AND dpa.isactive = 'Y'
-             ORDER BY dpa.lineno, dpa.m_delivery_planning_id
+             ORDER BY dpa.m_delivery_planning_id
              LIMIT 1
          ) dpa ON TRUE
          LEFT JOIN m_delivery_planning dp ON dp.m_delivery_planning_id = dpa.m_delivery_planning_id

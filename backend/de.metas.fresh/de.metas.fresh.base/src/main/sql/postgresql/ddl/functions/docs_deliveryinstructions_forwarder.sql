@@ -13,7 +13,7 @@ FROM M_ShipperTransportation st
              FROM m_delivery_planning_alloc dpa
              WHERE dpa.m_shippertransportation_id = st.m_shippertransportation_id
                AND dpa.isactive = 'Y'
-             ORDER BY dpa.lineno, dpa.m_delivery_planning_id
+             ORDER BY dpa.m_delivery_planning_id
              LIMIT 1
          ) dpa ON TRUE
          LEFT JOIN m_delivery_planning dp ON dp.m_delivery_planning_id = dpa.m_delivery_planning_id

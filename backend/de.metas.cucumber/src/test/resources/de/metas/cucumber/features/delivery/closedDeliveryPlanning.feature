@@ -117,8 +117,8 @@ Feature: A closed delivery planning is finished and nothing processes it any fur
 
     # refused for the whole selection: the open one of the two does not join the truck either
     Then the M_ShipperTransportation identified by deliveryInstructionAdded holds exactly the following active M_Delivery_Planning_Alloc:
-      | M_Delivery_Planning_ID | LineNo | ActualLoadQty |
-      | planningAdded_1        | 10     | 4             |
+      | M_Delivery_Planning_ID | ActualLoadQty |
+      | planningAdded_1        | 4             |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | IsClosed | M_ShipperTransportation_ID |
       | planningAdded_2        | 12         | 12           | Outgoing           | false    | null                       |
@@ -164,9 +164,9 @@ Feature: A closed delivery planning is finished and nothing processes it any fur
       | de.metas.deliveryplanning.DeliveryPlanningService.CloseOnCompletedInstruction |
 
     Then the M_ShipperTransportation identified by deliveryInstructionFinal holds exactly the following active M_Delivery_Planning_Alloc:
-      | M_Delivery_Planning_ID | LineNo | ActualLoadQty |
-      | planningFinal_1        | 10     | 5             |
-      | planningFinal_2        | 20     | 5             |
+      | M_Delivery_Planning_ID | ActualLoadQty |
+      | planningFinal_1        | 5             |
+      | planningFinal_2        | 5             |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | IsClosed | M_ShipperTransportation_ID |
       | planningFinal_2        | 10         | 10           | Outgoing           | false    | deliveryInstructionFinal   |
@@ -176,11 +176,11 @@ Feature: A closed delivery planning is finished and nothing processes it any fur
     And M_Delivery_Planning identified by planningFinal_2 is closed
 
     Then the M_ShipperTransportation identified by deliveryInstructionFinal holds exactly the following active M_Delivery_Planning_Alloc:
-      | M_Delivery_Planning_ID | LineNo | ActualLoadQty |
-      | planningFinal_1        | 10     | 5             |
+      | M_Delivery_Planning_ID | ActualLoadQty |
+      | planningFinal_1        | 5             |
     And validate M_Delivery_Planning_Alloc:
-      | M_Delivery_Planning_ID | M_ShipperTransportation_ID | IsActive | LineNo |
-      | planningFinal_2        | deliveryInstructionFinal   | false    | 20     |
+      | M_Delivery_Planning_ID | M_ShipperTransportation_ID | IsActive |
+      | planningFinal_2        | deliveryInstructionFinal   | false    |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | IsClosed | M_ShipperTransportation_ID |
       | planningFinal_2        | 10         | 10           | Outgoing           | true     | null                       |

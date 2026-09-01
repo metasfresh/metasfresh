@@ -68,8 +68,7 @@ public class M_Delivery_Planning_Alloc_StepDef
 
 	/**
 	 * Asserts the COMPLETE set of active allocations of one delivery instruction: the given rows and nothing
-	 * else - a row count, the given {@code LineNo} and its OWN shipping package per planning, all under one
-	 * instruction.
+	 * else - a row count and its OWN shipping package per planning, all under one instruction.
 	 * <p>
 	 * Each expected row is paired to the record carrying THAT row's {@code M_Delivery_Planning_ID}, never to
 	 * the record at the same position, so the order the rows are written in carries no meaning. A record
@@ -79,7 +78,6 @@ public class M_Delivery_Planning_Alloc_StepDef
 	 * @cucumber.columns
 	 *   <b>M_Delivery_Planning_ID</b> — (required, identifier-ref) the planning this allocation belongs to;
 	 *   this is what the row is matched on<br>
-	 *   <b>LineNo</b> — (required) expected {@code LineNo}<br>
 	 *   <b>M_Delivery_Planning_Alloc_ID</b> — (optional, identifier-ref) alias to store the allocation under<br>
 	 *   <b>M_ShippingPackage_ID</b> — (optional, identifier-ref) alias to store the allocation's shipping
 	 *   package under, for later {@code validate M_Shipping_Package} steps<br>
@@ -89,9 +87,9 @@ public class M_Delivery_Planning_Alloc_StepDef
 	 * @cucumber.example
 	 * <pre>
 	 * Then the M_ShipperTransportation identified by deliveryInstruction holds exactly the following active M_Delivery_Planning_Alloc:
-	 *   | M_Delivery_Planning_ID | LineNo | M_ShippingPackage_ID |
-	 *   | deliveryPlanning_1     | 10     | shippingPackage_1    |
-	 *   | deliveryPlanning_2     | 20     | shippingPackage_2    |
+	 *   | M_Delivery_Planning_ID | M_ShippingPackage_ID |
+	 *   | deliveryPlanning_1     | shippingPackage_1    |
+	 *   | deliveryPlanning_2     | shippingPackage_2    |
 	 * </pre>
 	 */
 	@Then("^the M_ShipperTransportation identified by (.*) holds exactly the following active M_Delivery_Planning_Alloc:$")
@@ -165,10 +163,6 @@ public class M_Delivery_Planning_Alloc_StepDef
 		final I_M_Delivery_Planning_Alloc allocRecord = matching.get(0);
 		allocIdsClaimedByAnEarlierRow.add(allocRecord.getM_Delivery_Planning_Alloc_ID());
 
-		softly.assertThat(allocRecord.getLineNo())
-				.as("%s of the allocation of M_Delivery_Planning %s", I_M_Delivery_Planning_Alloc.COLUMNNAME_LineNo, planningIdentifier)
-				.isEqualTo(row.getAsInt(I_M_Delivery_Planning_Alloc.COLUMNNAME_LineNo));
-
 		// each planning gets its OWN shipping package, and that package hangs off the same instruction
 		final I_M_ShippingPackage shippingPackage = loadShippingPackageOf(allocRecord, softly);
 		if (shippingPackage == null)
@@ -219,7 +213,6 @@ public class M_Delivery_Planning_Alloc_StepDef
 	 *   <b>M_Delivery_Planning_ID</b> — (required, identifier-ref) the allocated planning<br>
 	 *   <b>M_ShipperTransportation_ID</b> — (required, identifier-ref) the delivery instruction<br>
 	 *   <b>IsActive</b> — (required) expected {@code IsActive}: {@code false} for a retired allocation<br>
-	 *   <b>LineNo</b> — (optional) expected {@code LineNo}<br>
 	 *   <b>IsShippingPackageActive</b> — (optional) expected {@code IsActive} of the allocation's OWN shipping
 	 *   package - the pair is retired together, so a retired allocation whose package is still active is a
 	 *   half-performed release<br>
@@ -255,8 +248,6 @@ public class M_Delivery_Planning_Alloc_StepDef
 			softly.assertThat(allocRecord.isActive())
 					.as(I_M_Delivery_Planning_Alloc.COLUMNNAME_IsActive)
 					.isEqualTo(row.getAsBoolean(I_M_Delivery_Planning_Alloc.COLUMNNAME_IsActive));
-			row.getAsOptionalInt(I_M_Delivery_Planning_Alloc.COLUMNNAME_LineNo)
-					.ifPresent(lineNo -> softly.assertThat(allocRecord.getLineNo()).as(I_M_Delivery_Planning_Alloc.COLUMNNAME_LineNo).isEqualTo(lineNo.intValue()));
 			row.getAsOptionalBoolean("IsShippingPackageActive")
 					.ifPresent(expected -> {
 						final I_M_ShippingPackage shippingPackage = loadShippingPackageOf(allocRecord, softly);
