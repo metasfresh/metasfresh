@@ -450,14 +450,16 @@ public class HUQRCodesService
 	}
 
 	/**
-	 * Resolves any scanned code that identifies an existing handling unit to that unit's {@link HUQRCode}.
+	 * Returns the {@link HUQRCode} of the handling unit that the scanned code refers to.
 	 * <p>
-	 * {@link #parse(ScannedCode)} already covers every supported label kind — a metasfresh global QR code,
-	 * a configured scannable code format, and a plain {@code M_HU.Value} / {@code ExternalBarcode} attribute —
-	 * so this method only narrows its result. A code that parses to something other than an assigned HU QR code
-	 * (a pick-on-the-fly, LM, GS1 or EAN13 code) does NOT identify an existing HU and is rejected rather than
-	 * resolved by a second lookup: silently mapping such a code onto whichever HU happens to share its value
-	 * would pick from the wrong unit.
+	 * Every label kind that can appear on a unit is accepted: a metasfresh global QR code, a configured
+	 * scannable code format, or the plain {@code M_HU.Value} / {@code ExternalBarcode} printed on it.
+	 * {@link #parse(ScannedCode)} already resolves all of them, so this method only narrows its result.
+	 * <p>
+	 * Some codes are recognized by {@code parse} but do not refer to an existing unit — a pick-on-the-fly,
+	 * LM, GS1 or EAN13 code. Those are rejected. They are deliberately not retried as an
+	 * {@code M_HU.Value} / {@code ExternalBarcode} lookup, because such a code could coincidentally equal
+	 * some unit's value; picking from the wrong unit would be worse than a clear rejection.
 	 */
 	@NonNull
 	public HUQRCode getQRCodeByScannedCode(@NonNull final ScannedCode scannedCode)
