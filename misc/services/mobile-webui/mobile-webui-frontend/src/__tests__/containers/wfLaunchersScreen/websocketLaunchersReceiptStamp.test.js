@@ -20,7 +20,7 @@ import { updateWFProcess } from '../../../actions/WorkflowActions';
 // collector deletes it. The fix gives pushed snapshots their own action type that the wfProcesses reducer
 // does not handle, so a push structurally cannot prune.
 //
-// NOT the fix: comparing the payload's server-side `computedTime`. REQUIREMENTS.md section 7 rejects it --
+// NOT the fix: comparing the payload's server-side `computedTime`. it is unusable:
 // the same DTO serialises `computedTime` as an ISO-8601 string on the websocket and as an epoch-seconds
 // float on REST, and on a real handheld that instant is a SERVER clock being compared against a BROWSER
 // `Date.now()`. Do not reintroduce a computedTime-based comparison.

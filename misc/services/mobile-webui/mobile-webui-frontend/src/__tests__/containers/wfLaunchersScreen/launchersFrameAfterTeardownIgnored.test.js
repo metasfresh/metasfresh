@@ -3,7 +3,7 @@ import { render } from '@testing-library/react';
 
 import { useLaunchersWebsocket } from '../../../api/launchers';
 
-// AC5: ws.disconnectClient is asynchronous, so a launchers frame can still be delivered AFTER the
+// ws.disconnectClient is asynchronous, so a launchers frame can still be delivered AFTER the
 // subscription's effect cleanup ran and the screen unmounted -- in the captured failure the STOMP
 // DISCONNECT was logged BEFORE the deleting MESSAGE. An unmounted subscription must not write to the
 // store at all, so the inner frame handler has to drop anything that arrives after teardown.

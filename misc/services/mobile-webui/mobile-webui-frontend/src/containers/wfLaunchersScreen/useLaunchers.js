@@ -54,11 +54,8 @@ export const useLaunchers = ({ applicationId, showFilterByQRCode, facets, filter
     filters,
     facets,
     onWebsocketMessage: ({ applicationId, applicationLaunchers }) => {
-      // A pushed snapshot refreshes the visible list but must never be able to remove a workflow process:
-      // it carries no request-issued time, so nothing about it can prove a job is gone. Hence its OWN
-      // action type, which reducers/wfProcesses/workflow.js deliberately does not handle. Do not route
-      // this through populateLaunchersComplete (or stamp it with a receipt time) again -- that is the
-      // defect this replaced.
+      // Refreshes the visible list only. Must not go through populateLaunchersComplete, whose action type
+      // carries the power to prune workflow processes.
       dispatch(populateLaunchersPushed({ applicationId, applicationLaunchers }));
     },
   });

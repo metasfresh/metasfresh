@@ -4,7 +4,7 @@ import { isWfProcessLoaded } from '../../../reducers/wfProcesses';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { populateLaunchersPushed } from '../../../actions/LauncherActions';
 
-// AC1, the primary regression criterion, stated as an INVARIANT: a launchers snapshot that arrives by
+// The primary invariant: a launchers snapshot that arrives by
 // websocket PUSH never removes a workflow process from the store -- for ANY timestamp values, including
 // ones that would satisfy today's `requestTimestamp >= updatedAt` guard, and including the harshest
 // payload of all (an empty launchers list, which on the old path deleted every process in the store).
@@ -19,11 +19,11 @@ import { populateLaunchersPushed } from '../../../actions/LauncherActions';
 // action creator does not exist, so every test below fails with "populateLaunchersPushed is not a
 // function" -- the RED.
 //
-// NOT the fix: comparing the payload's server-side `computedTime`. REQUIREMENTS.md section 7 rejects it
+// NOT the fix: comparing the payload's server-side `computedTime`. it is unusable:
 // (two wire formats -- ISO-8601 on the websocket, epoch-seconds float on REST -- and a server instant
 // compared against a browser Date.now() on a real handheld). Do not reintroduce that comparison.
 //
-// AC3 (a REQUESTED snapshot must still garbage-collect) is NOT retested here: it is already covered by
+// That a REQUESTED snapshot must still garbage-collect is NOT retested here: it is already covered by
 // staleLaunchersDeletesStartedProcess.test.js, which must stay green after the fix.
 describe('wfProcesses: a PUSHED launchers snapshot never deletes, for ANY timestamps', () => {
   const WF_PROCESS_ID = 'picking-1000004';

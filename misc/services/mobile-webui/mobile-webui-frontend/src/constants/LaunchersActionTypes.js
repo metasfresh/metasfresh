@@ -6,13 +6,12 @@ export const POPULATE_LAUNCHERS_START = 'launchers/loadStart';
 export const POPULATE_LAUNCHERS_COMPLETE = 'launchers/loadComplete';
 
 /**
- * A launchers snapshot PUSHED over the websocket. Deliberately a DIFFERENT type from
- * POPULATE_LAUNCHERS_COMPLETE: a push carries no request-issued time, so it can never prove a workflow
- * process is gone, and reducers/wfProcesses/workflow.js must not handle it. See the comment there.
+ * A launchers snapshot the server pushed over the websocket, as opposed to one this client requested.
+ * A separate type from POPULATE_LAUNCHERS_COMPLETE so that no reducer can prune on it.
  * @constant
  * @type {string}
  */
-export const POPULATE_LAUNCHERS_PUSHED = 'launchers/loadPushed';
+export const POPULATE_LAUNCHERS_PUSHED = 'launchers/pushedByServer';
 
 export const CLEAR_LAUNCHERS = 'launchers/clear';
 export const SET_ACTIVE_FILTERS = 'launchers/activeFilters/set';

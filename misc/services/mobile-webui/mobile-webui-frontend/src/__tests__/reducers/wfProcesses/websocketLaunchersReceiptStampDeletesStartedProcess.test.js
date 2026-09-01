@@ -3,7 +3,7 @@ import { isWfProcessLoaded } from '../../../reducers/wfProcesses';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { populateLaunchersComplete, populateLaunchersPushed } from '../../../actions/LauncherActions';
 
-// The captured failure, replayed at the reducer level (AC2).
+// The captured failure, replayed at the reducer level.
 //
 // A launchers snapshot that arrives by websocket PUSH may refresh the visible job list, but must never
 // remove a workflow process from the store: a push carries no request-issued time, so nothing about it can
@@ -15,7 +15,7 @@ import { populateLaunchersComplete, populateLaunchersPushed } from '../../../act
 // does NOT handle. Before the fix that action creator does not exist, so the second test below fails with
 // "populateLaunchersPushed is not a function" -- the RED.
 //
-// NOT the fix: comparing the payload's server-side `computedTime`. REQUIREMENTS.md section 7 rejects it
+// NOT the fix: comparing the payload's server-side `computedTime`. it is unusable:
 // (two wire formats -- ISO-8601 on the websocket, epoch-seconds float on REST -- and a server instant
 // compared against a browser Date.now() on a real handheld). Do not reintroduce that comparison.
 //

@@ -4,12 +4,10 @@ import { setCurrentPage } from '../utils/common';
 import { recoverToLauncherList } from '../utils/screens/jobStartRecovery';
 
 /**
- * AC6 — the recovery DECISION, driven against a scripted fake page, with no browser.
+ * The recovery DECISION, driven against a scripted fake page, with no browser.
  *
- * Why this harness test exists: once the production fix lands, the app no longer lands on the
- * applications menu during a job start, so the repeated real E2E runs never execute the recovery
- * branch at all. `node --check` only proves the file parses. This is the only test that actually RUNS
- * the recovery logic across all of its outcomes.
+ * A job start does not normally land on the applications menu, so a real E2E run never exercises the
+ * recovery branch. This is the only test that runs the recovery decision across all of its outcomes.
  *
  * How it can be browserless: tests/utils/common.js exports setCurrentPage(currentPage), which assigns
  * the module-level `page` every screen helper reads. A test that does NOT destructure the `page`

@@ -8,16 +8,16 @@ import { ApplicationLayout } from '../../../containers/applicationRoot/Applicati
 import wfProcesses from '../../../reducers/wfProcesses/index';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 
-// Self-contained AC4 guard for soft_panda_hotfix / soft_panda_release / deep_tundra_release.
+// Self-contained guard: a dead deep-link still redirects home.
 //
 // The upstream sibling suite ApplicationLayout.bounceHome.test.js CANNOT LOAD on these branches: it
 // jest.mocks apps/picking/ShelfLifeConfirmDialogHost, a module that only exists further upstream, so the
-// whole suite dies with "Cannot find module" and reports `Tests: 0 total` -- AC4 cannot be met by citing
+// whole suite dies with "Cannot find module" and reports `Tests: 0 total`, so it cannot be met by citing
 // it. This file therefore pins the same two behaviours here, and must stay loadable on these branches:
 // do NOT add an import or a jest.mock for anything outside containers/applicationRoot/,
 // reducers/wfProcesses/ and actions/WorkflowActions.
 //
-// Both halves of AC4 live below:
+// Both halves of the guarantee live below:
 //
 // On a workflow-launcher tap, WFLauncherButton dispatches updateWFProcess and then navigates to the
 // job route in the same start-request `.then`. On React 17 / connected-react-router 6.9 /
@@ -79,7 +79,7 @@ jest.mock('../../../utils/ui_trace', () => ({
 jest.mock('../../../containers/ViewHeader', () => ({ ViewHeader: () => null }));
 jest.mock('../../../components/ScreenToaster', () => () => null);
 
-describe('ApplicationLayout: a dead deep-link still redirects home, a just-started job does not (AC4)', () => {
+describe('ApplicationLayout: a dead deep-link still redirects home, a just-started job does not', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers();
