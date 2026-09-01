@@ -47,7 +47,8 @@ create function m_hu_trace_report(p_ad_pinstance_id numeric)
         shipment_date              character varying,
         prod_stock                 numeric,
         traceid                    numeric,
-        reportdate                 character varying
+        reportdate                 character varying,
+        link_basis                 character varying
     )
     stable
     language sql
@@ -83,7 +84,8 @@ SELECT distinct
     null::varchar as shipment_date,
     null::numeric AS prod_stock,
     null::numeric AS traceid,
-    to_char(now(), 'DD.MM.YYYY HH24:MM') as reportdate
+    to_char(now(), 'DD.MM.YYYY HH24:MM') as reportdate,
+    null as link_basis
 FROM M_HU_Trace t
 JOIN M_Product p ON t.m_product_id = p.m_product_id
 JOIN C_UOM u ON t.C_UOM_ID = u.c_uom_id
@@ -136,7 +138,8 @@ SELECT DISTINCT ON (t.m_inout_ID)
     null::varchar as shipment_date,
     null::numeric AS prod_stock,
     null::numeric AS traceid,
-    to_char(now(), 'DD.MM.YYYY HH24:MM') as reportdate
+    to_char(now(), 'DD.MM.YYYY HH24:MM') as reportdate,
+    null as link_basis
 FROM M_HU_Trace t
 JOIN M_Product p ON t.m_product_id = p.m_product_id
 JOIN C_UOM u ON t.C_UOM_ID = u.c_uom_id
@@ -181,7 +184,8 @@ SELECT
     null::varchar as shipment_date,
     null::numeric AS prod_stock,
     null::numeric AS traceid,
-    to_char(now(), 'DD.MM.YYYY HH24:MM') as reportdate
+    to_char(now(), 'DD.MM.YYYY HH24:MM') as reportdate,
+    null as link_basis
 FROM M_HU_Trace t
 JOIN M_Product p ON t.m_product_id = p.m_product_id
 JOIN C_UOM u ON t.C_UOM_ID = u.c_uom_id
@@ -223,7 +227,8 @@ SELECT DISTINCT ON (t.pp_cost_collector_id)
     null::varchar as shipment_date,
     null::numeric AS prod_stock,
     null::numeric AS traceid,
-    to_char(now(), 'DD.MM.YYYY HH24:MM') as reportdate
+    to_char(now(), 'DD.MM.YYYY HH24:MM') as reportdate,
+    null as link_basis
 FROM M_HU_Trace t
 JOIN M_Product p ON t.m_product_id = p.m_product_id
 JOIN C_UOM u ON t.C_UOM_ID = u.c_uom_id
@@ -268,7 +273,8 @@ SELECT DISTINCT
     (select to_char(inout.movementdate, 'DD.MM.YYYY') from M_HU_Trace as trc left join m_inout inout on trc.m_inout_id = inout.m_inout_id where trc.lotnumber=prod_trace.lotnumber and trc.hutracetype='MATERIAL_RECEIPT' limit 1) as shipment_date,
     getcurrentstoragestock(t.m_product_id, t.c_uom_id, 1000017, prod_trace.lotnumber, t.ad_client_id, t.ad_org_id) AS prod_stock,
     prod_trace.m_hu_trace_id,
-    to_char(now(), 'DD.MM.YYYY HH24:MM') as reportdate
+    to_char(now(), 'DD.MM.YYYY HH24:MM') as reportdate,
+    null as link_basis
 FROM M_HU_Trace t
 JOIN M_Product p ON t.m_product_id = p.m_product_id
 JOIN C_UOM u ON t.C_UOM_ID = u.c_uom_id
@@ -322,7 +328,8 @@ SELECT DISTINCT
     to_char(shipment_io.movementdate, 'DD.MM.YYYY') as shipment_date,
     getcurrentstoragestock(t.m_product_id, t.c_uom_id, 1000017, shipment_trace.lotnumber, t.ad_client_id, t.ad_org_id) AS prod_stock,
     shipment_trace.m_hu_trace_id,
-    to_char(now(), 'DD.MM.YYYY HH24:MM') as reportdate
+    to_char(now(), 'DD.MM.YYYY HH24:MM') as reportdate,
+    null as link_basis
 FROM M_HU_Trace t
 JOIN M_Product p ON t.m_product_id = p.m_product_id
 JOIN C_UOM u ON t.C_UOM_ID = u.c_uom_id
@@ -393,7 +400,8 @@ SELECT
     null::varchar as shipment_date,
     null::numeric AS prod_stock,
     null::numeric AS traceid,
-    to_char(now(), 'DD.MM.YYYY HH24:MM') as reportdate
+    to_char(now(), 'DD.MM.YYYY HH24:MM') as reportdate,
+    null as link_basis
 FROM M_HU_Trace t
 JOIN M_Product p ON t.m_product_id = p.m_product_id
 JOIN C_UOM u ON t.C_UOM_ID = u.c_uom_id
