@@ -345,6 +345,27 @@ public class DocumentReportAdvisorUtilTest
 		}
 
 		@Test
+		public void doesNotSuppressWhenAutoPrintIsYes()
+		{
+			final DocumentReportAdvisorUtil util = createUtil();
+
+			final I_C_DocType docType = createDocType(DOCBASETYPE_MaterialDelivery);
+			final BPartnerLocationId bPartnerLocationId = createBPartnerLocation();
+			final BPPrintFormatQuery dropShipQuery = createDropShipQuery(docType, bPartnerLocationId, true);
+
+			final I_C_BP_PrintFormat printFormat = newInstance(I_C_BP_PrintFormat.class);
+			printFormat.setC_BPartner_ID(bPartnerLocationId.getBpartnerId().getRepoId());
+			printFormat.setC_BPartner_Location_ID(bPartnerLocationId.getRepoId());
+			printFormat.setAD_Table_ID(IN_OUT_TABLE_ID.getRepoId());
+			printFormat.setC_DocType_ID(docType.getC_DocType_ID());
+			printFormat.setIsDropShip("Y");
+			printFormat.setIsAutoPrint("Y");
+			save(printFormat);
+
+			Assertions.assertThat(util.resolveSuppressAutoPrint(dropShipQuery)).isFalse();
+		}
+
+		@Test
 		public void doesNotSuppressWhenAutoPrintIsNullReadNullAware()
 		{
 			final DocumentReportAdvisorUtil util = createUtil();

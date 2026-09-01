@@ -169,10 +169,17 @@ public class DocumentReportAdvisorUtil
 			return false;
 		}
 
-		final boolean bPartnerDeviates = order.getDropShip_BPartner_ID() > 0
-				&& order.getDropShip_BPartner_ID() != order.getC_BPartner_ID();
-		final boolean locationDeviates = order.getDropShip_Location_ID() > 0
-				&& order.getDropShip_Location_ID() != order.getC_BPartner_Location_ID();
+		final BPartnerId orderBPartnerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
+		final BPartnerId dropShipBPartnerId = BPartnerId.ofRepoIdOrNull(order.getDropShip_BPartner_ID());
+		final boolean bPartnerDeviates = dropShipBPartnerId != null && !dropShipBPartnerId.equals(orderBPartnerId);
+
+		// Both location ids are anchored on the order's own C_BPartner_ID. BPartnerLocationId always carries
+		// a bpartnerId component, but here we only care whether the location repoId itself differs (matching
+		// the semantics this replaces) -- anchoring both sides on the same bpartner id makes .equals() reduce
+		// to comparing the location repoId alone.
+		final BPartnerLocationId orderLocationId = BPartnerLocationId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID());
+		final BPartnerLocationId dropShipLocationId = BPartnerLocationId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getDropShip_Location_ID());
+		final boolean locationDeviates = dropShipLocationId != null && !dropShipLocationId.equals(orderLocationId);
 
 		return bPartnerDeviates || locationDeviates;
 	}
