@@ -162,7 +162,7 @@ class MobileUIManufacturingConfigRepositoryTest
 		{
 			final MobileUIManufacturingConfig config = repo.getConfig(USER_ID, clientId);
 			assertThat(config.getEditableAttributeCodesInOrder())
-					.containsExactly(AttributeConstants.ATTR_LotNumber, AttributeCode.ofString(AttributeConstants.ATTR_BestBeforeDate_String));
+					.containsExactly(AttributeConstants.ATTR_LotNumber, AttributeConstants.ATTR_BestBeforeDate);
 		}
 
 		@Test
@@ -172,7 +172,7 @@ class MobileUIManufacturingConfigRepositoryTest
 
 			final MobileUIManufacturingConfig config = repo.getConfig(USER_ID, clientId);
 			assertThat(config.getEditableAttributeCodesInOrder())
-					.containsExactly(AttributeConstants.ATTR_LotNumber, AttributeCode.ofString(AttributeConstants.ATTR_BestBeforeDate_String));
+					.containsExactly(AttributeConstants.ATTR_LotNumber, AttributeConstants.ATTR_BestBeforeDate);
 		}
 
 		@Test

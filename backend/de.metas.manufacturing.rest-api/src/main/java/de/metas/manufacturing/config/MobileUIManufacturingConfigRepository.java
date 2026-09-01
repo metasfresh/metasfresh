@@ -38,7 +38,7 @@ public class MobileUIManufacturingConfigRepository
 			.isScanResourceRequired(OptionalBoolean.FALSE)
 			.isAllowIssuingAnyHU(OptionalBoolean.FALSE)
 			.receiveUnitType(ReceiveUnitType.CU)
-			.editableAttributeCodesInOrder(ImmutableList.of(AttributeConstants.ATTR_LotNumber, AttributeCode.ofString(AttributeConstants.ATTR_BestBeforeDate_String)))
+			.editableAttributeCodesInOrder(ImmutableList.of(AttributeConstants.ATTR_LotNumber, AttributeConstants.ATTR_BestBeforeDate))
 			.isAllowFinishedGoodsReceiveToLU(OptionalBoolean.TRUE)
 			.isAllowFinishedGoodsReceiveToTU(OptionalBoolean.TRUE)
 			.isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.FALSE)
