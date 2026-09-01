@@ -47,6 +47,7 @@ import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackRequest;
 import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackResponse;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.serialno.SerialNoSet;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
@@ -127,6 +128,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	@NonNull private final PickingWorkflowLaunchersProvider wfLaunchersProvider;
 	@NonNull private final DisplayValueProviderService displayValueProviderService;
 	@NonNull private final PackedHUCarrierAdviseService packedHUCarrierAdviseService;
+	@NonNull private final HUQRCodesService huQRCodesService;
 
 	@Override
 	public MobileApplicationId getApplicationId() {return APPLICATION_ID;}
@@ -449,7 +451,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 		return pickingJobRestService.processStepEvents(pickingJob, events);
 	}
 
-	private static PickingJobStepEvent fromJson(
+	private PickingJobStepEvent fromJson(
 			@NonNull final JsonPickingStepEvent json,
 			@NonNull final PickingJob pickingJob,
 			@NonNull final PickingJobOptions pickingJobOptions)
@@ -479,8 +481,14 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.serialNos(json.getSerialNos() != null ? SerialNoSet.parseStrings(json.getSerialNos()) : null)
 				.isCloseTarget(json.isCloseTarget())
 				//
+				// Any supported HU label may identify the unpack target - a metasfresh global QR code, a
+				// configured scannable code format, or the plain M_HU.Value / ExternalBarcode printed on the
+				// unit. Resolving through the shared bridge keeps this in step with the pick-from side, which
+				// has always accepted all of them. A skipped target scan stays legal (unpick to the floor),
+				// so the blank-tolerant Optional chain is preserved.
 				.unpickToTargetQRCode(StringUtils.trimBlankToOptional(json.getUnpickToTargetQRCode())
-						.map(HUQRCode::fromGlobalQRCodeJsonString)
+						.map(ScannedCode::ofString)
+						.map(huQRCodesService::getQRCodeByScannedCode)
 						.orElse(null))
 				.unpickProductId(ProductId.ofNullableString(json.getUnpickProductId()))
 				.qtyToUnpick(json.getUnpickQty())
