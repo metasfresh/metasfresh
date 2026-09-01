@@ -71,7 +71,7 @@ class DeliveryPlanningProcessHelperTest
 
 			assertThat(resolution.isAccepted()).isFalse();
 			assertThat(resolution.getRejectReason().translate("en_US"))
-					.contains(ProcessPreconditionsResolution.MSG_NO_ROWS_SELECTED.toAD_Message());
+					.isEqualTo(ProcessPreconditionsResolution.MSG_NO_ROWS_SELECTED.toAD_Message());
 		}
 
 		@Test
@@ -99,11 +99,15 @@ class DeliveryPlanningProcessHelperTest
 		@DisplayName("rejects a selection above the cap, naming the cap")
 		void rejectsAboveTheCap()
 		{
+			final int cap = 3;
+
 			final ProcessPreconditionsResolution resolution =
-					DeliveryPlanningProcessHelper.checkAtMostSelected(contextWith(SelectionSize.ofSize(4)), 3);
+					DeliveryPlanningProcessHelper.checkAtMostSelected(contextWith(SelectionSize.ofSize(4)), cap);
 
 			assertThat(resolution.isAccepted()).isFalse();
-			assertThat(resolution.getRejectReason().translate("en_US")).contains("3");
+			// the full sentence, not contains("3"): the number named has to be the CAP, not the selection size
+			assertThat(resolution.getRejectReason().translate("en_US"))
+					.isEqualTo(ProcessPreconditionsResolution.MSG_TOO_MANY_RECORDS_SELECTED.toAD_Message() + " - " + cap);
 		}
 	}
 
@@ -126,7 +130,7 @@ class DeliveryPlanningProcessHelperTest
 
 			assertThat(twoRows.isAccepted()).isFalse();
 			assertThat(twoRows.getRejectReason().translate("en_US"))
-					.contains(ProcessPreconditionsResolution.MSG_ONLY_ONE_SELECTED_ROW_ALLOWED.toAD_Message());
+					.isEqualTo(ProcessPreconditionsResolution.MSG_ONLY_ONE_SELECTED_ROW_ALLOWED.toAD_Message());
 
 			assertThat(DeliveryPlanningProcessHelper.checkSingleSelection(contextWith(SelectionSize.ofAll())).isAccepted()).isFalse();
 		}

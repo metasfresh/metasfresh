@@ -271,8 +271,8 @@ class DeliveryPlanningAddToAdmissibilityTest
 			final IQueryFilter<I_M_Delivery_Planning> selection = selectionOf(ImmutableList.of(p2));
 
 			assertThat(addToRejectionTextOf(selection, target))
-					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_IncompatibleSelection))
-					.contains(keyOf(AggregationKeyField.Forwarder.getLabel()));
+					.isEqualTo(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_IncompatibleSelection)
+							+ " - " + keyOf(AggregationKeyField.Forwarder.getLabel()));
 
 			assertThatThrownBy(() -> deliveryPlanningService.addTo(selection, target))
 					.isInstanceOf(AdempiereException.class);
@@ -315,8 +315,8 @@ class DeliveryPlanningAddToAdmissibilityTest
 			assertThat(addToRejectionTextOfWithoutTarget(selection))
 					.as("two forwarders cannot share one instruction, so no target the picker could offer would "
 							+ "accept this selection - the action has to be refused while the grid is still showing")
-					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_IncompatibleSelection))
-					.contains(keyOf(AggregationKeyField.Forwarder.getLabel()));
+					.isEqualTo(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_IncompatibleSelection)
+							+ " - " + keyOf(AggregationKeyField.Forwarder.getLabel()));
 		}
 	}
 
@@ -362,8 +362,8 @@ class DeliveryPlanningAddToAdmissibilityTest
 			final IQueryFilter<I_M_Delivery_Planning> selection = selectionOf(ImmutableList.of(moving));
 
 			assertThat(moveToRejectionTextOf(selection, target))
-					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_IncompatibleSelection))
-					.contains(keyOf(AggregationKeyField.Forwarder.getLabel()));
+					.isEqualTo(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_IncompatibleSelection)
+							+ " - " + keyOf(AggregationKeyField.Forwarder.getLabel()));
 
 			assertThatThrownBy(() -> deliveryPlanningService.moveTo(selection, target))
 					.isInstanceOf(AdempiereException.class);
@@ -389,8 +389,8 @@ class DeliveryPlanningAddToAdmissibilityTest
 
 			assertThat(moveToRejectionTextOfWithoutTarget(selectionOf(ImmutableList.of(onA, onB))))
 					.as("the same rule as add to: the two actions share this chain")
-					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_IncompatibleSelection))
-					.contains(keyOf(AggregationKeyField.Forwarder.getLabel()));
+					.isEqualTo(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_IncompatibleSelection)
+							+ " - " + keyOf(AggregationKeyField.Forwarder.getLabel()));
 		}
 	}
 }

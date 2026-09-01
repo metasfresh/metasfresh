@@ -115,10 +115,10 @@ class DeliveryPlanningCombineRejectionTest
 	{
 		final DeliveryPlanning allocated = combinable().allocations(allocatedTo(ShipperTransportationId.ofRepoId(540021))).build();
 
+		// and it names the planning that is in the way, which a constraint violation would not
 		assertThat(rejectionTextOf(combinable().build(), allocated))
-				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_AlreadyOnDeliveryInstruction))
-				// and it names the planning that is in the way, which a constraint violation would not
-				.contains(String.valueOf(allocated.getId().getRepoId()));
+				.isEqualTo(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_AlreadyOnDeliveryInstruction)
+						+ " - " + allocated.getId().getRepoId());
 	}
 
 	@Test
@@ -128,8 +128,8 @@ class DeliveryPlanningCombineRejectionTest
 		final DeliveryPlanning closed = combinable().closed(true).build();
 
 		assertThat(rejectionTextOf(combinable().build(), closed))
-				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_ClosedPlannings))
-				.contains(String.valueOf(closed.getId().getRepoId()));
+				.isEqualTo(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_ClosedPlannings)
+						+ " - " + closed.getId().getRepoId());
 	}
 
 	@Test
@@ -137,7 +137,7 @@ class DeliveryPlanningCombineRejectionTest
 	void withoutForwarderIsRejected()
 	{
 		assertThat(rejectionTextOf(combinable().build(), combinable().shipperId(null).build()))
-				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_NoForwarder));
+				.isEqualTo(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_NoForwarder));
 	}
 
 	@Test
@@ -148,20 +148,22 @@ class DeliveryPlanningCombineRejectionTest
 				combinable().incotermsId(IncotermsId.ofRepoId(540002)).build(),
 				combinable().shipperId(ShipperId.ofRepoId(540099)).incotermsId(IncotermsId.ofRepoId(540003)).build());
 
+		// the full sentence, not three contains(): the separator and the order are the point of naming them all
 		assertThat(rejectionText)
-				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_IncompatibleSelection))
-				.contains(keyOf(AggregationKeyField.Forwarder.getLabel()))
-				.contains(keyOf(AggregationKeyField.Incoterms.getLabel()));
+				.isEqualTo(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_IncompatibleSelection)
+						+ " - " + keyOf(AggregationKeyField.Forwarder.getLabel())
+						+ ", " + keyOf(AggregationKeyField.Incoterms.getLabel()));
 	}
 
 	@Test
 	@DisplayName("row eligibility outranks cross-row compatibility: a closed row is named before the fields that differ")
 	void eligibilityIsReportedBeforeCompatibility()
 	{
-		assertThat(rejectionTextOf(
-				combinable().build(),
-				combinable().closed(true).shipperId(ShipperId.ofRepoId(540099)).build()))
-				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_ClosedPlannings));
+		final DeliveryPlanning closedAndDiffering = combinable().closed(true).shipperId(ShipperId.ofRepoId(540099)).build();
+
+		assertThat(rejectionTextOf(combinable().build(), closedAndDiffering))
+				.isEqualTo(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_ClosedPlannings)
+						+ " - " + closedAndDiffering.getId().getRepoId());
 	}
 
 	@Test

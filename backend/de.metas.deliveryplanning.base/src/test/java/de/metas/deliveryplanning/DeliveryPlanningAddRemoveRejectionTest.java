@@ -138,8 +138,8 @@ class DeliveryPlanningAddRemoveRejectionTest
 					.build();
 
 			assertThat(addToRejectionTextOf(deliveryInstruction(DocStatus.Drafted), onAnotherDraft))
-					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_AlreadyOnDeliveryInstruction_UseMove))
-					.contains(String.valueOf(onAnotherDraft.getId().getRepoId()));
+					.isEqualTo(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_AlreadyOnDeliveryInstruction_UseMove)
+							+ " - " + onAnotherDraft.getId().getRepoId());
 		}
 
 		@Test
@@ -151,8 +151,8 @@ class DeliveryPlanningAddRemoveRejectionTest
 					.build();
 
 			assertThat(addToRejectionTextOf(deliveryInstruction(DocStatus.Drafted), deliveryPlanning().build(), allocated))
-					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_AlreadyOnDeliveryInstruction_UseMove))
-					.contains(String.valueOf(allocated.getId().getRepoId()));
+					.isEqualTo(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_AlreadyOnDeliveryInstruction_UseMove)
+							+ " - " + allocated.getId().getRepoId());
 		}
 
 		@Test
@@ -164,8 +164,8 @@ class DeliveryPlanningAddRemoveRejectionTest
 					.build();
 
 			assertThat(addToRejectionTextOf(deliveryInstruction(DocStatus.Drafted), deliveryPlanning().build(), onCompleted))
-					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_OnCompletedDeliveryInstruction))
-					.contains(String.valueOf(onCompleted.getId().getRepoId()));
+					.isEqualTo(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_OnCompletedDeliveryInstruction)
+							+ " - " + onCompleted.getId().getRepoId());
 		}
 
 		@Test
@@ -175,8 +175,8 @@ class DeliveryPlanningAddRemoveRejectionTest
 			final DeliveryPlanning closed = deliveryPlanning().closed(true).build();
 
 			assertThat(addToRejectionTextOf(deliveryInstruction(DocStatus.Drafted), deliveryPlanning().build(), closed))
-					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_ClosedPlannings))
-					.contains(String.valueOf(closed.getId().getRepoId()));
+					.isEqualTo(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_ClosedPlannings)
+							+ " - " + closed.getId().getRepoId());
 		}
 
 		@Test
@@ -187,8 +187,8 @@ class DeliveryPlanningAddRemoveRejectionTest
 					deliveryInstruction(DocStatus.Drafted),
 					deliveryPlanning().transportDirection(TransportDirection.Outgoing).build(),
 					deliveryPlanning().transportDirection(TransportDirection.Incoming).build()))
-					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_IncompatibleSelection))
-					.contains(keyOf(AggregationKeyField.Direction.getLabel()));
+					.isEqualTo(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_IncompatibleSelection)
+							+ " - " + keyOf(AggregationKeyField.Direction.getLabel()));
 		}
 
 		@Test
@@ -196,7 +196,7 @@ class DeliveryPlanningAddRemoveRejectionTest
 		void completedTargetIsRefused()
 		{
 			assertThat(addToRejectionTextOf(deliveryInstruction(DocStatus.Completed), deliveryPlanning().build()))
-					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_TargetInstructionNotDraft));
+					.isEqualTo(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_TargetInstructionNotDraft));
 		}
 
 		@Test
@@ -209,8 +209,11 @@ class DeliveryPlanningAddRemoveRejectionTest
 					null))
 					.isEmpty();
 
-			assertThat(addToRejectionTextOf(null, deliveryPlanning().closed(true).build()))
-					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_ClosedPlannings));
+			final DeliveryPlanning closed = deliveryPlanning().closed(true).build();
+
+			assertThat(addToRejectionTextOf(null, closed))
+					.isEqualTo(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_ClosedPlannings)
+							+ " - " + closed.getId().getRepoId());
 		}
 
 		@Test
@@ -222,8 +225,8 @@ class DeliveryPlanningAddRemoveRejectionTest
 					.build();
 
 			assertThat(addToRejectionTextOf(deliveryInstruction(DocStatus.Drafted), onBoth))
-					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_OnCompletedDeliveryInstruction))
-					.contains(String.valueOf(onBoth.getId().getRepoId()));
+					.isEqualTo(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_OnCompletedDeliveryInstruction)
+							+ " - " + onBoth.getId().getRepoId());
 		}
 	}
 
@@ -257,8 +260,8 @@ class DeliveryPlanningAddRemoveRejectionTest
 					.build();
 
 			assertThat(textOf(deliveryPlanningService.getRemoveFromRejectionReason(DeliveryPlanningList.of(closedAndAllocated))))
-					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_ClosedPlannings))
-					.contains(String.valueOf(closedAndAllocated.getId().getRepoId()));
+					.isEqualTo(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_ClosedPlannings)
+							+ " - " + closedAndAllocated.getId().getRepoId());
 		}
 
 		@Test
@@ -274,8 +277,8 @@ class DeliveryPlanningAddRemoveRejectionTest
 					.build();
 
 			assertThat(textOf(deliveryPlanningService.getRemoveFromRejectionReason(DeliveryPlanningList.of(open, closed))))
-					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_ClosedPlannings))
-					.contains(String.valueOf(closed.getId().getRepoId()))
+					.isEqualTo(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_ClosedPlannings)
+							+ " - " + closed.getId().getRepoId())
 					.doesNotContain(String.valueOf(open.getId().getRepoId()));
 		}
 
@@ -304,8 +307,8 @@ class DeliveryPlanningAddRemoveRejectionTest
 					.build();
 
 			assertThat(textOf(deliveryPlanningService.getRemoveFromRejectionReason(DeliveryPlanningList.of(onCompleted))))
-					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_OnCompletedDeliveryInstruction))
-					.contains(String.valueOf(onCompleted.getId().getRepoId()));
+					.isEqualTo(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_OnCompletedDeliveryInstruction)
+							+ " - " + onCompleted.getId().getRepoId());
 		}
 
 		@Test
@@ -315,8 +318,8 @@ class DeliveryPlanningAddRemoveRejectionTest
 			final DeliveryPlanning notAllocated = deliveryPlanning().build();
 
 			assertThat(textOf(deliveryPlanningService.getRemoveFromRejectionReason(DeliveryPlanningList.of(notAllocated))))
-					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_NotOnDeliveryInstruction))
-					.contains(String.valueOf(notAllocated.getId().getRepoId()));
+					.isEqualTo(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_NotOnDeliveryInstruction)
+							+ " - " + notAllocated.getId().getRepoId());
 		}
 
 		/**
@@ -332,8 +335,8 @@ class DeliveryPlanningAddRemoveRejectionTest
 					.build();
 
 			assertThat(textOf(deliveryPlanningService.getRemoveFromRejectionReason(DeliveryPlanningList.of(onBoth))))
-					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_OnCompletedDeliveryInstruction))
-					.contains(String.valueOf(onBoth.getId().getRepoId()));
+					.isEqualTo(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_OnCompletedDeliveryInstruction)
+							+ " - " + onBoth.getId().getRepoId());
 		}
 
 		@Test
@@ -381,7 +384,8 @@ class DeliveryPlanningAddRemoveRejectionTest
 
 			// null target = the parameter dialog has not been shown yet, which is when the button's state is decided
 			assertThat(moveToRejectionTextOf(null, closedAndAllocated))
-					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_ClosedPlannings));
+					.isEqualTo(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_ClosedPlannings)
+							+ " - " + closedAndAllocated.getId().getRepoId());
 		}
 
 		@Test
@@ -409,8 +413,8 @@ class DeliveryPlanningAddRemoveRejectionTest
 			final DeliveryPlanning notAllocated = deliveryPlanning().build();
 
 			assertThat(moveToRejectionTextOf(deliveryInstruction(DocStatus.Drafted), notAllocated))
-					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_NotOnDeliveryInstruction))
-					.contains(String.valueOf(notAllocated.getId().getRepoId()));
+					.isEqualTo(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_NotOnDeliveryInstruction)
+							+ " - " + notAllocated.getId().getRepoId());
 		}
 
 		@Test
@@ -423,8 +427,8 @@ class DeliveryPlanningAddRemoveRejectionTest
 			final DeliveryPlanning notAllocated = deliveryPlanning().build();
 
 			assertThat(moveToRejectionTextOf(deliveryInstruction(DocStatus.Drafted), allocated, notAllocated))
-					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_NotOnDeliveryInstruction))
-					.contains(String.valueOf(notAllocated.getId().getRepoId()));
+					.isEqualTo(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_NotOnDeliveryInstruction)
+							+ " - " + notAllocated.getId().getRepoId());
 		}
 
 		@Test
@@ -439,8 +443,8 @@ class DeliveryPlanningAddRemoveRejectionTest
 					.build();
 
 			assertThat(moveToRejectionTextOf(deliveryInstruction(DocStatus.Drafted), onDraft, onCompleted))
-					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_OnCompletedDeliveryInstruction))
-					.contains(String.valueOf(onCompleted.getId().getRepoId()));
+					.isEqualTo(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_OnCompletedDeliveryInstruction)
+							+ " - " + onCompleted.getId().getRepoId());
 		}
 
 		@Test
@@ -453,8 +457,8 @@ class DeliveryPlanningAddRemoveRejectionTest
 					.build();
 
 			assertThat(moveToRejectionTextOf(deliveryInstruction(DocStatus.Drafted), closed))
-					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_ClosedPlannings))
-					.contains(String.valueOf(closed.getId().getRepoId()));
+					.isEqualTo(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_ClosedPlannings)
+							+ " - " + closed.getId().getRepoId());
 		}
 
 		@Test
@@ -466,7 +470,7 @@ class DeliveryPlanningAddRemoveRejectionTest
 					.build();
 
 			assertThat(moveToRejectionTextOf(deliveryInstruction(DocStatus.Completed), onDraft))
-					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_TargetInstructionNotDraft));
+					.isEqualTo(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_TargetInstructionNotDraft));
 		}
 
 		@Test
@@ -480,8 +484,11 @@ class DeliveryPlanningAddRemoveRejectionTest
 			// null target = the parameter dialog has not been shown yet
 			assertThat(deliveryPlanningService.getMoveToRejectionReason(DeliveryPlanningList.of(onDraft), null)).isEmpty();
 
-			assertThat(moveToRejectionTextOf(null, deliveryPlanning().build()))
-					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_NotOnDeliveryInstruction));
+			final DeliveryPlanning notAllocated = deliveryPlanning().build();
+
+			assertThat(moveToRejectionTextOf(null, notAllocated))
+					.isEqualTo(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_NotOnDeliveryInstruction)
+							+ " - " + notAllocated.getId().getRepoId());
 		}
 	}
 }
