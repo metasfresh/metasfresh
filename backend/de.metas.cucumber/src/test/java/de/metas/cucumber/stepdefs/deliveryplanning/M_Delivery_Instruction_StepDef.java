@@ -24,12 +24,17 @@ package de.metas.cucumber.stepdefs.deliveryplanning;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
+import de.metas.cucumber.stepdefs.process.AD_Process_Para_StepDef;
 import de.metas.cucumber.stepdefs.shipment.M_ShipperTransportation_StepDefData;
 import de.metas.deliveryplanning.DeliveryPlanningList.AggregationKeyField;
 import de.metas.deliveryplanning.DeliveryPlanningService;
+import de.metas.deliveryplanning.process.DeliveryPlanningProcessHelper;
+import de.metas.deliveryplanning.process.M_Delivery_Planning_AddToDeliveryInstruction;
+import de.metas.deliveryplanning.process.M_Delivery_Planning_MoveToDeliveryInstruction;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.shipping.model.I_M_ShipperTransportation;
@@ -37,6 +42,7 @@ import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.RequiredArgsConstructor;
 import lombok.NonNull;
@@ -44,7 +50,11 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Process_Para;
+import org.compiere.model.I_AD_Val_Rule;
+import org.compiere.model.I_AD_Val_Rule_Included;
 import org.compiere.model.I_M_Delivery_Planning;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -334,6 +344,102 @@ public class M_Delivery_Instruction_StepDef
 				() -> processDeliveryInstruction(deliveryInstruction, StepDefDocAction.completed));
 
 		InterfaceWrapperHelper.refresh(deliveryInstruction);
+	}
+
+	/**
+	 * Asserts the Application-Dictionary half of the lockstep {@link AggregationKeyField} declares: on BOTH the Add-to
+	 * and the Move-to process, every key field is carried by a process parameter AND compared by the target
+	 * parameter's value rule. A field added to the enum but not here leaves the picker offering targets the selection
+	 * then refuses - the defect that filtering was introduced to remove.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then the Add-to and Move-to target pickers filter on every aggregation key field
+	 * </pre>
+	 */
+	@Then("the Add-to and Move-to target pickers filter on every aggregation key field")
+	public void validate_target_pickers_filter_on_every_aggregation_key_field()
+	{
+		final SoftAssertions softly = new SoftAssertions();
+
+		for (final Class<?> processClass : ImmutableList.of(M_Delivery_Planning_AddToDeliveryInstruction.class, M_Delivery_Planning_MoveToDeliveryInstruction.class))
+		{
+			final String classname = processClass.getName();
+			final String valRuleCode = getTargetParameterValRuleCode(classname);
+
+			for (final AggregationKeyField field : AggregationKeyField.values())
+			{
+				final String columnName = getParameterColumnName(field);
+
+				softly.assertThat(AD_Process_Para_StepDef.getProcessParaOrNull(classname, columnName))
+						.as("%s carries a parameter for the %s aggregation key field", classname, field)
+						.isNotNull();
+
+				softly.assertThat(valRuleCode)
+						.as("the target picker of %s compares the delivery instruction's %s - the %s aggregation key field", classname, columnName, field)
+						.contains(I_M_ShipperTransportation.Table_Name + "." + columnName);
+
+				softly.assertThat(valRuleCode)
+						.as("the target picker of %s reads the %s parameter - the %s aggregation key field", classname, columnName, field)
+						.contains("@" + columnName + "/");
+			}
+		}
+
+		softly.assertAll();
+	}
+
+	/**
+	 * The parameter a key field's value arrives in. Every field has one of its own, except
+	 * {@link AggregationKeyField#Direction}, which is fed by the TransportDirection parameter both processes already
+	 * had before the key fields were added.
+	 */
+	@NonNull
+	private static String getParameterColumnName(@NonNull final AggregationKeyField field)
+	{
+		if (field == AggregationKeyField.Direction)
+		{
+			return I_M_Delivery_Planning.COLUMNNAME_TransportDirection;
+		}
+
+		final String columnName = DeliveryPlanningProcessHelper.aggregationKeyParameterColumnNameByField().get(field);
+		assertThat(columnName)
+				.as("the %s aggregation key field is carried by a hidden process parameter", field)
+				.isNotNull();
+		return columnName;
+	}
+
+	/**
+	 * The value rule narrowing the given process's target-instruction parameter, flattened: a composite carries no
+	 * {@code Code} of its own, only the rules it includes.
+	 */
+	@NonNull
+	private String getTargetParameterValRuleCode(@NonNull final String classname)
+	{
+		final I_AD_Process_Para targetParameter = AD_Process_Para_StepDef.getProcessParaOrNull(classname, I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID);
+		assertThat(targetParameter)
+				.as("the target-instruction parameter of %s", classname)
+				.isNotNull();
+		assertThat(targetParameter.getAD_Val_Rule_ID())
+				.as("the target-instruction parameter of %s is narrowed by a value rule", classname)
+				.isNotZero();
+
+		return getValRuleCodeIncludingIncluded(targetParameter.getAD_Val_Rule_ID());
+	}
+
+	@NonNull
+	private String getValRuleCodeIncludingIncluded(final int adValRuleId)
+	{
+		final StringBuilder code = new StringBuilder(CoalesceUtil.coalesceNotNull(load(adValRuleId, I_AD_Val_Rule.class).getCode(), ""));
+
+		queryBL.createQueryBuilder(I_AD_Val_Rule_Included.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Val_Rule_Included.COLUMNNAME_AD_Val_Rule_ID, adValRuleId)
+				.create()
+				.stream()
+				.forEach(included -> code.append("\n").append(getValRuleCodeIncludingIncluded(included.getIncluded_Val_Rule_ID())));
+
+		return code.toString();
 	}
 
 	private void processDeliveryInstruction(@NonNull final I_M_ShipperTransportation deliveryInstruction, @NonNull final StepDefDocAction action)

@@ -22,9 +22,8 @@
 
 package de.metas.deliveryplanning.process;
 
-import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import de.metas.deliveryplanning.DeliveryPlanningList;
 import de.metas.deliveryplanning.DeliveryPlanningList.AggregationKeyField;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -53,7 +52,7 @@ public final class DeliveryPlanningProcessHelper
 	 */
 	private static final String PARAM_TransportDirection = I_M_Delivery_Planning.COLUMNNAME_TransportDirection;
 
-	private static final ImmutableMap<String, AggregationKeyField> AGGREGATION_KEY_PARAMETERS = ImmutableMap
+	private static final ImmutableBiMap<String, AggregationKeyField> AGGREGATION_KEY_PARAMETERS = ImmutableBiMap
 			.<String, AggregationKeyField>builder()
 			.put(I_M_ShipperTransportation.COLUMNNAME_AD_Org_ID, AggregationKeyField.Organisation)
 			.put(I_M_ShipperTransportation.COLUMNNAME_M_Shipper_ID, AggregationKeyField.Forwarder)
@@ -91,13 +90,13 @@ public final class DeliveryPlanningProcessHelper
 	}
 
 	/**
-	 * The key fields carried by a hidden process parameter of their own: every {@link AggregationKeyField} except
-	 * {@link AggregationKeyField#Direction}, which is fed by the pre-existing TransportDirection parameter.
+	 * The hidden process parameter each key field's value arrives in, by field - the same column names the target
+	 * picker's value rule compares. {@link AggregationKeyField#Direction} is absent: the pre-existing
+	 * TransportDirection parameter feeds it.
 	 */
-	@VisibleForTesting
-	static ImmutableSet<AggregationKeyField> aggregationKeyParameterFields()
+	public static ImmutableMap<AggregationKeyField, String> aggregationKeyParameterColumnNameByField()
 	{
-		return ImmutableSet.copyOf(AGGREGATION_KEY_PARAMETERS.values());
+		return AGGREGATION_KEY_PARAMETERS.inverse();
 	}
 
 	/**

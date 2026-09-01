@@ -147,7 +147,7 @@ class DeliveryPlanningProcessHelperTest
 		void everyFieldIsCoveredByAParameterOrIsTheKnownExemption()
 		{
 			assertThat(Sets.union(
-					DeliveryPlanningProcessHelper.aggregationKeyParameterFields(),
+					DeliveryPlanningProcessHelper.aggregationKeyParameterColumnNameByField().keySet(),
 					ImmutableSet.of(AggregationKeyField.Direction)))
 					.containsExactlyInAnyOrderElementsOf(EnumSet.allOf(AggregationKeyField.class));
 		}
@@ -156,7 +156,7 @@ class DeliveryPlanningProcessHelperTest
 		@DisplayName("Direction is NOT a hidden key parameter")
 		void directionIsNotAKeyParameter()
 		{
-			assertThat(DeliveryPlanningProcessHelper.aggregationKeyParameterFields())
+			assertThat(DeliveryPlanningProcessHelper.aggregationKeyParameterColumnNameByField().keySet())
 					.doesNotContain(AggregationKeyField.Direction);
 		}
 	}

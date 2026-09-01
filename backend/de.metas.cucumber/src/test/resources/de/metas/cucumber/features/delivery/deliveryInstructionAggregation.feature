@@ -534,6 +534,14 @@ Feature: Several delivery plannings on one delivery instruction
       | de.metas.deliveryplanning.process.M_Delivery_Planning_GenerateDeliveryInstruction    | IsComplete | N            |
       | de.metas.deliveryplanning.process.M_Delivery_Planning_CombineIntoDeliveryInstruction | IsComplete | N            |
 
+  @Id:S31608_TC22
+  Scenario: Every aggregation key field reaches the target picker
+
+    # The java half of this lockstep is pinned by DeliveryPlanningProcessHelperTest.
+    # This is the Application Dictionary half it names: the hidden parameter each key field arrives in,
+    # and the comparison the picker's value rule makes on it.
+    Then the Add-to and Move-to target pickers filter on every aggregation key field
+
   @Id:S31608_TC15
   Scenario: The delivery instruction consignment views return one row per delivery planning
 

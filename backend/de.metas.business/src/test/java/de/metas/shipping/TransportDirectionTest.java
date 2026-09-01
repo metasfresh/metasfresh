@@ -23,6 +23,7 @@
 package de.metas.shipping;
 
 import de.metas.lang.SOTrx;
+import de.metas.shipping.model.X_M_ShipperTransportation;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -64,6 +65,26 @@ class TransportDirectionTest
 				.as("a dropship has a shipment but is NOT Outgoing - that is the whole difference to hasShipment()")
 				.isFalse();
 		assertThat(TransportDirection.Incoming.isOutgoing()).isFalse();
+	}
+
+	/**
+	 * {@code M_Delivery_Planning.TransportDirection} and {@code M_ShipperTransportation.TransportDirection} are both
+	 * NOT NULL, so an unset direction reaches java as the empty string rather than as null - blank has to resolve the
+	 * same way null does, or every caller that reads an unset direction throws.
+	 */
+	@Test
+	void ofNullableCode_resolvesBlankTheSameWayAsNull()
+	{
+		assertThat(TransportDirection.ofNullableCode(null)).isNull();
+		assertThat(TransportDirection.ofNullableCode("")).isNull();
+		assertThat(TransportDirection.ofNullableCode(" ")).isNull();
+		assertThat(TransportDirection.ofNullableCode(X_M_ShipperTransportation.TRANSPORTDIRECTION_Incoming))
+				.isEqualTo(TransportDirection.Incoming);
+
+		assertThat(TransportDirection.ofNullableCode(null, TransportDirection.Outgoing)).isEqualTo(TransportDirection.Outgoing);
+		assertThat(TransportDirection.ofNullableCode("", TransportDirection.Outgoing)).isEqualTo(TransportDirection.Outgoing);
+		assertThat(TransportDirection.ofNullableCode(X_M_ShipperTransportation.TRANSPORTDIRECTION_Incoming, TransportDirection.Outgoing))
+				.isEqualTo(TransportDirection.Incoming);
 	}
 
 	@Test

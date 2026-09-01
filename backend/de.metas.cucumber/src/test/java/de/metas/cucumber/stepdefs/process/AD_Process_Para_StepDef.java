@@ -13,6 +13,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
 
+import javax.annotation.Nullable;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -49,9 +51,30 @@ public class AD_Process_Para_StepDef
 	@NonNull private final AD_Process_StepDefData processTable;
 	@NonNull private final AD_Process_Para_StepDefData processParaTable;
 
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 	private int nextSeqNo = 10;
+
+	/**
+	 * The parameter the given process carries for the given column, or {@code null} when it carries none. The process
+	 * itself must exist - a classname that matches nothing is a broken expectation, not a missing parameter.
+	 */
+	@Nullable
+	public static I_AD_Process_Para getProcessParaOrNull(@NonNull final String classname, @NonNull final String columnName)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final I_AD_Process process = queryBL.createQueryBuilder(I_AD_Process.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Process.COLUMNNAME_Classname, classname)
+				.create()
+				.firstOnlyNotNull(I_AD_Process.class);
+
+		return queryBL.createQueryBuilder(I_AD_Process_Para.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Process_Para.COLUMNNAME_AD_Process_ID, process.getAD_Process_ID())
+				.addEqualsFilter(I_AD_Process_Para.COLUMNNAME_ColumnName, columnName)
+				.create()
+				.firstOnly(I_AD_Process_Para.class);
+	}
 
 	/**
 	 * Creates one or more {@link I_AD_Process_Para} records from the given data table.
@@ -86,18 +109,10 @@ public class AD_Process_Para_StepDef
 			final String classname = row.getAsString(I_AD_Process.COLUMNNAME_Classname);
 			final String columnName = row.getAsString(I_AD_Process_Para.COLUMNNAME_ColumnName);
 
-			final I_AD_Process process = queryBL.createQueryBuilder(I_AD_Process.class)
-					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_AD_Process.COLUMNNAME_Classname, classname)
-					.create()
-					.firstOnlyNotNull(I_AD_Process.class);
-
-			final I_AD_Process_Para para = queryBL.createQueryBuilder(I_AD_Process_Para.class)
-					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_AD_Process_Para.COLUMNNAME_AD_Process_ID, process.getAD_Process_ID())
-					.addEqualsFilter(I_AD_Process_Para.COLUMNNAME_ColumnName, columnName)
-					.create()
-					.firstOnlyNotNull(I_AD_Process_Para.class);
+			final I_AD_Process_Para para = getProcessParaOrNull(classname, columnName);
+			assertThat(para)
+					.as("the %s parameter of %s", columnName, classname)
+					.isNotNull();
 
 			assertThat(para.getDefaultValue())
 					.as("%s of the %s parameter of %s", I_AD_Process_Para.COLUMNNAME_DefaultValue, columnName, classname)

@@ -1698,8 +1698,9 @@ public class DeliveryPlanningService
 
 
 	/**
-	 * An unset {@code TransportDirection} is read as "not a receipt" (the shipment-schedule branch) rather than
-	 * throwing: the date reset runs for EVERY deallocated planning and has no admissibility gate of its own.
+	 * A blank {@code TransportDirection} - the shape an unset one takes, the column being NOT NULL - is read as "not a
+	 * receipt" (the shipment-schedule branch) rather than throwing: the date reset runs for EVERY deallocated planning
+	 * and has no admissibility gate of its own.
 	 */
 	private static boolean hasReceiptOrUnknown(@NonNull final I_M_Delivery_Planning record)
 	{

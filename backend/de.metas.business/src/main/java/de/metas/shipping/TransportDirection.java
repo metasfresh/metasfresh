@@ -73,13 +73,15 @@ public enum TransportDirection implements ReferenceListAwareEnum
 	@Nullable
 	public static TransportDirection ofNullableCode(@Nullable final String code)
 	{
-		return ofNullableCode(code, null);
+		return typesByCode.ofNullableCode(code);
 	}
 
+	/** @param fallbackValue what a null OR BLANK code resolves to - blank included, because both backing columns are NOT NULL, so an unset direction arrives as the empty string. */
 	@Nullable
 	public static TransportDirection ofNullableCode(@Nullable final String code, @Nullable final TransportDirection fallbackValue)
 	{
-		return code != null ? ofCode(code) : fallbackValue;
+		final TransportDirection transportDirection = typesByCode.ofNullableCode(code);
+		return transportDirection != null ? transportDirection : fallbackValue;
 	}
 
 	@Nullable
