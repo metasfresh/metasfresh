@@ -1872,20 +1872,10 @@ jobs:
           mfregistry: metasfresh
           dbqualifier: preloaded
         run: |
-          docker compose --profile mobile logs --timestamps db rabbitmq search app wiremock mobile > infra.log 2>&1 || true
+          timeout 120 docker compose --profile mobile logs --timestamps db rabbitmq search app wiremock mobile > infra.log 2>&1 || true
       - name: commit post-test db image
         run: |
           docker commit e2e-tests-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest
-      # `if: always()` so a cancelled job still frees the runner's containers.
-      - name: stop stack
-        if: always()
-        working-directory: docker-builds/e2e-tests/
-        env:
-          mfversion: ${{ needs.init.outputs.tag-fixed }}
-          mfregistry: metasfresh
-          dbqualifier: preloaded
-        run: |
-          docker compose --profile mobile down
       # ===== ALLURE REPORT GENERATION =====
       - name: Generate Allure Report for Mobile
         uses: ./.github/actions/generate-allure-report
@@ -1951,6 +1941,19 @@ jobs:
           path: docker-builds/e2e-tests/playwright-report-mobile/junit/results.xml
           if-no-files-found: ignore
           retention-days: 30
+      # Deliberately the LAST step of the job. `if: always()` so a cancelled job still frees
+      # the runner's containers - but on a cancelled job every `always()` step shares one
+      # 5-minute cancellation window, and an unresponsive container is exactly what makes
+      # teardown slow, so the evidence uploads must get that window first.
+      - name: stop stack
+        if: always()
+        working-directory: docker-builds/e2e-tests/
+        env:
+          mfversion: ${{ needs.init.outputs.tag-fixed }}
+          mfregistry: metasfresh
+          dbqualifier: preloaded
+        run: |
+          docker compose --profile mobile down
       # Allure reports uploaded by publish-test-reports job
 
   frontend_webui_test:
@@ -2009,20 +2012,10 @@ jobs:
           mfregistry: metasfresh
           dbqualifier: preloaded
         run: |
-          docker compose --profile frontend logs --timestamps db rabbitmq search app wiremock webapi webui > infra.log 2>&1 || true
+          timeout 120 docker compose --profile frontend logs --timestamps db rabbitmq search app wiremock webapi webui > infra.log 2>&1 || true
       - name: commit post-test db image
         run: |
           docker commit e2e-tests-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest-${{ matrix.shard_label }}
-      # `if: always()` so a cancelled job still frees the runner's containers.
-      - name: stop stack
-        if: always()
-        working-directory: docker-builds/e2e-tests/
-        env:
-          mfversion: ${{ needs.init.outputs.tag-fixed }}
-          mfregistry: metasfresh
-          dbqualifier: preloaded
-        run: |
-          docker compose --profile frontend down
       - name: Upload Allure results
         uses: actions/upload-artifact@v6
         if: always()
@@ -2071,6 +2064,19 @@ jobs:
           path: docker-builds/e2e-tests/playwright-report-frontend/junit/results.xml
           if-no-files-found: ignore
           retention-days: 30
+      # Deliberately the LAST step of the job. `if: always()` so a cancelled job still frees
+      # the runner's containers - but on a cancelled job every `always()` step shares one
+      # 5-minute cancellation window, and an unresponsive container is exactly what makes
+      # teardown slow, so the evidence uploads must get that window first.
+      - name: stop stack
+        if: always()
+        working-directory: docker-builds/e2e-tests/
+        env:
+          mfversion: ${{ needs.init.outputs.tag-fixed }}
+          mfregistry: metasfresh
+          dbqualifier: preloaded
+        run: |
+          docker compose --profile frontend down
 
   # =============================================================================
   # Merge Frontend Playwright Allure Results from Sharded Runners
