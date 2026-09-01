@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 
 public class QtyDemand_QtySupply_V_to_ReceiptSchedule extends QtyDemandQtySupplyJumpProcess
 {
-	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
+	@NonNull private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
 
 	@Override
 	protected boolean hasRecordsToOpen(@NonNull final QtyDemandQtySupply row)

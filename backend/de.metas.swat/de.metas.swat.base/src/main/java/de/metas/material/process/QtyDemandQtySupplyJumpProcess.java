@@ -48,7 +48,7 @@ public abstract class QtyDemandQtySupplyJumpProcess extends JavaProcess implemen
 	// way), so the key is declared here rather than imported. Same AD_Message row (545635).
 	protected static final AdMessageKey MSG_NO_RELATED_DOCS_FOUND = AdMessageKey.of("NO_RELATED_DOCS_FOUND");
 
-	protected final QtyDemandQtySupplyJumpService jumpService = SpringContextHolder.instance.getBean(QtyDemandQtySupplyJumpService.class);
+	@NonNull protected final QtyDemandQtySupplyJumpService jumpService = SpringContextHolder.instance.getBean(QtyDemandQtySupplyJumpService.class);
 
 	@Override
 	public final ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
