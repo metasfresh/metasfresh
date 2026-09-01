@@ -27,31 +27,29 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
+import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
-import de.metas.printing.process.C_Doc_Outbound_Log_PrintSelected;
-import de.metas.process.AdProcessId;
-import de.metas.process.IADProcessDAO;
-import de.metas.process.ProcessExecutionResult;
-import de.metas.process.ProcessInfo;
-import de.metas.security.RoleId;
-import de.metas.user.UserId;
+import de.metas.printing.PrintOutputFacade;
+import de.metas.printing.api.IPrintingQueueBL;
+import de.metas.printing.api.impl.PrintArchiveParameters;
+import de.metas.printing.model.I_AD_Archive;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.archive.ArchiveId;
+import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_AD_Role;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
-import org.compiere.util.Env;
 
 import java.util.Map;
 
@@ -66,7 +64,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class C_Doc_Outbound_Log_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+	private final IDocOutboundDAO docOutboundDAO = Services.get(IDocOutboundDAO.class);
+	private final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
+	private final IPrintingQueueBL printingQueueBL = Services.get(IPrintingQueueBL.class);
+	private final PrintOutputFacade printOutputFacade = SpringContextHolder.instance.getBean(PrintOutputFacade.class);
 
 	private final C_Doc_Outbound_Log_StepDefData docOutboundLogTable;
 	private final C_Doc_Outbound_Log_Line_StepDefData docOutboundLogLineTable;
@@ -200,52 +201,46 @@ public class C_Doc_Outbound_Log_StepDef
 	}
 
 	/**
-	 * Mirrors the "Print" button a user presses on a {@code C_Doc_Outbound_Log} record (e.g. from the Outgoing
-	 * Documents window) -- invokes the {@link C_Doc_Outbound_Log_PrintSelected} process, which (re-)enqueues the
-	 * underlying {@code AD_Archive} for printing regardless of any auto-print suppression that applied when the
-	 * archive was first created.
+	 * Mirrors a manual "reprint" action on a {@code C_Doc_Outbound_Log} record (e.g. from the Outgoing Documents
+	 * window) at the level of the printing-queue gate: it (re-)asks {@link IPrintingQueueBL#printArchive} whether a
+	 * {@code C_Printing_Queue} item should be created for the underlying {@code AD_Archive}, using the same
+	 * enqueue-only parameters the {@code AD_Archive} model validator's automatic auto-print trigger uses (see
+	 * {@code de.metas.printing.model.validator.AD_Archive#printArchive}). The archive is loaded fresh from the DB
+	 * -- as any manual reprint action would -- so it never carries the transient suppress-auto-print attribute
+	 * that only lives on the in-memory instance that originally created the archive: this is what proves a
+	 * (re-)enqueue attempt is never permanently suppressed, drop-ship or not.
+	 * <p>
+	 * dev-note: deliberately does NOT invoke the real {@code C_Doc_Outbound_Log_PrintSelected} process (the actual
+	 * "Print" button), because that process also forces the downstream physical-print job to run synchronously --
+	 * a different, unrelated concern (print-dispatch / printer-hardware routing) that needs its own test setup and
+	 * is out of scope for a printing-queue-gate check.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
 	 * <pre>
-	 * And the doc outbound log identified by shipmentOutboundLog is printed
+	 * And the doc outbound log identified by shipmentOutboundLog is reprinted
 	 * </pre>
 	 */
-	@And("the doc outbound log identified by {string} is printed")
-	public void the_doc_outbound_log_is_printed(@NonNull final String docOutboundLogIdentifier)
+	@And("the doc outbound log identified by {string} is reprinted")
+	public void the_doc_outbound_log_is_reprinted(@NonNull final String docOutboundLogIdentifier)
 	{
 		final I_C_Doc_Outbound_Log docOutboundLog = docOutboundLogTable.get(docOutboundLogIdentifier);
 		assertThat(docOutboundLog).isNotNull();
 
-		final ClientId clientId = ClientId.ofRepoId(docOutboundLog.getAD_Client_ID());
+		final I_C_Doc_Outbound_Log_Line logLine = docOutboundDAO.retrieveCurrentPDFArchiveLogLineOrNull(docOutboundLog);
+		assertThat(logLine).isNotNull();
+		assertThat(logLine.getAD_Archive_ID()).isGreaterThan(0);
 
-		// dev-note: the ambient cucumber ctx carries the System-client/System-Administrator role, which would
-		// silently filter out this client-1000000 record from the process' role-restricted query filter -- so an
-		// explicit client + role matching the record itself is required here (see metasfresh-cucumber-stepdefs
-		// skill, "Invoking an AD_Process from a StepDef -- context pattern").
-		final I_AD_Role webUiRole = queryBL.createQueryBuilder(I_AD_Role.class)
-				.addEqualsFilter(I_AD_Role.COLUMNNAME_AD_Client_ID, clientId)
-				.addEqualsFilter(I_AD_Role.COLUMNNAME_Name, "WebUI")
-				.create()
-				.firstOnlyNotNull(I_AD_Role.class);
+		final I_AD_Archive archive = archiveDAO.retrieveArchive(ArchiveId.ofRepoId(logLine.getAD_Archive_ID()), I_AD_Archive.class);
+		assertThat(archive).isNotNull();
 
-		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(C_Doc_Outbound_Log_PrintSelected.class);
+		final PrintArchiveParameters printArchiveParameters = PrintArchiveParameters.builder()
+				.archive(archive)
+				.printOutputFacade(printOutputFacade)
+				.enforceEnqueueToPrintQueue(false)
+				.build();
 
-		final ProcessExecutionResult result = ProcessInfo.builder()
-				.setCtx(Env.getCtx())
-				.setCreateTemporaryCtx()
-				.setClientId(clientId)
-				.setUserId(UserId.SYSTEM)
-				.setRoleId(RoleId.ofRepoId(webUiRole.getAD_Role_ID()))
-				.setAD_Process_ID(processId)
-				.setTableName(I_C_Doc_Outbound_Log.Table_Name)
-				.setWhereClause(I_C_Doc_Outbound_Log.COLUMNNAME_C_Doc_Outbound_Log_ID + "=" + docOutboundLog.getC_Doc_Outbound_Log_ID())
-				.buildAndPrepareExecution()
-				.switchContextWhenRunning()
-				.executeSync()
-				.getResult();
-
-		result.propagateErrorIfAny();
+		printingQueueBL.printArchive(printArchiveParameters);
 	}
 
 	private boolean retrieveDocOutboundLog(@NonNull final Map<String, String> row)

@@ -77,7 +77,7 @@ Feature: Shipment auto-print suppression for drop-ship deliveries
     Then an AD_Archive exists for the record identified by "dropShipShipment"
     And C_Printing_Queue contains 0 items for the record identified by "dropShipShipment"
 
-    When the doc outbound log identified by "dropShipOutboundLog" is printed
+    When the doc outbound log identified by "dropShipOutboundLog" is reprinted
     Then C_Printing_Queue contains 1 items for the record identified by "dropShipShipment"
 
   @Id:S0280_020

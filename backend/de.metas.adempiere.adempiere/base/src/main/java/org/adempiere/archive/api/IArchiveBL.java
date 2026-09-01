@@ -52,6 +52,14 @@ public interface IArchiveBL extends ISingletonService
 	 */
 	ModelDynAttributeAccessor<I_AD_Archive, PrintCopies> COPIES_PER_ARCHIVE = new ModelDynAttributeAccessor<>(PrintCopies.class);
 
+	/**
+	 * Transient flag telling the printing module to skip printing-queue-item creation for this archive, even if it would
+	 * otherwise qualify (e.g. direct-enqueue / direct-process-queue-item config). Storing it inside the AD_Archive record
+	 * (i.e. DB) makes no sense for the same reason as {@link #COPIES_PER_ARCHIVE}: one AD_Archive can be printed multiple
+	 * times, and this decision is specific to the printing-queue-item created right after this archive.
+	 */
+	ModelDynAttributeAccessor<I_AD_Archive, Boolean> SUPPRESS_AUTO_PRINT = new ModelDynAttributeAccessor<>(Boolean.class);
+
 	@NonNull
 	ArchiveResult archive(@NonNull ArchiveRequest request);
 
