@@ -7,6 +7,7 @@ import { trl } from '../../utils/translations';
 import QtyInputField from '../QtyInputField';
 import QtyReasonsRadioGroup from '../QtyReasonsRadioGroup';
 import DateInput from '../DateInput';
+import EditableAttributesSection from '../attributes/EditableAttributesSection';
 import * as ws from '../../utils/websocket';
 import { qtyInfos } from '../../utils/qtyInfos';
 import { formatQtyToHumanReadableStr } from '../../utils/qtys';
@@ -49,6 +50,7 @@ const GetQuantityDialog = ({
   bestBeforeDate: bestBeforeDateParam = '',
   lotNo: lotNoParam = '',
   serialNos: serialNosParam = [],
+  editableAttributes = [],
   isShowCloseTargetButton = false,
   //
   validateQtyEntered,
@@ -99,6 +101,11 @@ const GetQuantityDialog = ({
     //console.log('onLotNoEntered', { lotNoNew, e });
     setLotNo(lotNoNew);
   };
+
+  // Generic, per-attribute-code editable-attribute values (e.g. mfg receive) — collected as a
+  // `{ [code]: value }` map, already excluding empty/invalid entries (EditableAttributesSection's
+  // own contract). Not shown/used unless a caller passes `editableAttributes`.
+  const [attributeValues, setAttributeValues] = useState({});
 
   // Serial numbers: one per picked unit (required count = entered qty). Captured via a live
   // multi-scan screen (chips + "X of N"), mirroring the GRAI scan UX. Manual entry is the
@@ -179,6 +186,7 @@ const GetQuantityDialog = ({
         bestBeforeDate: isShowBestBeforeDate ? bestBeforeDate : null,
         lotNo: isShowLotNo ? lotNo : null,
         serialNos: isShowSerialNo ? serialNos : null,
+        attributeValues: editableAttributes.length > 0 ? attributeValues : null,
         isCloseTarget: !!isCloseTarget,
       };
       uiTrace.putContext(onQtyChangePayload);
@@ -578,6 +586,11 @@ const GetQuantityDialog = ({
                 </tbody>
               </table>
             </div>
+            <EditableAttributesSection
+              attributes={editableAttributes}
+              disabled={readOnly}
+              onFieldChange={setAttributeValues}
+            />
             <div className="buttons is-centered">
               {isShowCloseTargetButton && (
                 <>
@@ -696,6 +709,7 @@ GetQuantityDialog.propTypes = {
   bestBeforeDate: PropTypes.string,
   lotNo: PropTypes.string,
   serialNos: PropTypes.arrayOf(PropTypes.string),
+  editableAttributes: PropTypes.array,
   isShowCloseTargetButton: PropTypes.bool,
   customQRCodeFormats: PropTypes.array,
 

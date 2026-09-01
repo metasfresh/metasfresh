@@ -13,7 +13,7 @@ const PickQuantityButton = ({
   caption,
   isDisabled,
   customQRCodeFormats,
-  readAttributes,
+  editableAttributes,
   onClick,
 }) => {
   const [isDialogOpen, setDialogOpen] = React.useState(false);
@@ -36,6 +36,7 @@ const PickQuantityButton = ({
     bestBeforeDate,
     productionDate,
     lotNo,
+    attributeValues,
     barcodeType,
     barcode, // i.e. the catch weight QR code
     isDone = true,
@@ -50,6 +51,7 @@ const PickQuantityButton = ({
       bestBeforeDate,
       productionDate,
       lotNo,
+      attributeValues,
       barcode,
       barcodeType,
       isDone,
@@ -65,7 +67,7 @@ const PickQuantityButton = ({
           uom={uom}
           catchWeightUom={catchWeightUom}
           customQRCodeFormats={customQRCodeFormats}
-          readAttributes={readAttributes}
+          editableAttributes={editableAttributes}
           validateQtyEntered={validateQtyEntered}
           onQtyChange={onQtyPickedChanged}
           onCloseDialog={() => setDialogOpen(false)}
@@ -84,7 +86,7 @@ PickQuantityButton.propTypes = {
   isDisabled: PropTypes.bool,
   onClick: PropTypes.func.isRequired,
   customQRCodeFormats: PropTypes.array,
-  readAttributes: PropTypes.array,
+  editableAttributes: PropTypes.array,
 };
 
 export default PickQuantityButton;
