@@ -452,14 +452,20 @@ public class HUQRCodesService
 	/**
 	 * Returns the {@link HUQRCode} of the handling unit that the scanned code refers to.
 	 * <p>
-	 * Every label kind that can appear on a unit is accepted: a metasfresh global QR code, a configured
-	 * scannable code format, or the plain {@code M_HU.Value} / {@code ExternalBarcode} printed on it.
-	 * {@link #parse(ScannedCode)} already resolves all of them, so this method only narrows its result.
+	 * Accepted are the two code kinds that identify one specific unit: a metasfresh global QR code, and
+	 * the plain {@code M_HU.Value} / {@code ExternalBarcode} printed on the unit (which
+	 * {@link #parse(ScannedCode)} resolves by looking the unit up and returning <em>its</em> QR code).
 	 * <p>
-	 * Some codes are recognized by {@code parse} but do not refer to an existing unit — a pick-on-the-fly,
-	 * LM, GS1 or EAN13 code. Those are rejected. They are deliberately not retried as an
-	 * {@code M_HU.Value} / {@code ExternalBarcode} lookup, because such a code could coincidentally equal
-	 * some unit's value; picking from the wrong unit would be worse than a clear rejection.
+	 * Every other {@link IHUQRCode} that {@code parse} can return describes goods or an intent rather
+	 * than a unit — {@code PickOnTheFlyQRCode}, {@code LMQRCode}, {@code CustomHUQRCode} (a configured
+	 * scannable code format), {@code GS1HUQRCode}, {@code EAN13HUQRCode} — and is rejected here. Such a
+	 * code is deliberately not retried as an {@code M_HU.Value} / {@code ExternalBarcode} lookup: it
+	 * could coincidentally equal some unit's value, and picking from the wrong unit would be worse than
+	 * a clear rejection.
+	 * <p>
+	 * Note that resolving a product-scoped code to a unit is possible where a product context exists —
+	 * {@code PickFromHUQRCodeResolveCommand} does it for the pick-from side — but that needs a
+	 * {@code ProductId}, which a caller identifying a bare target unit does not have.
 	 */
 	@NonNull
 	public HUQRCode getQRCodeByScannedCode(@NonNull final ScannedCode scannedCode)
