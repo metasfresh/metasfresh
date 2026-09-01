@@ -152,6 +152,7 @@ public class DisplayValueProvider
 		final ImmutableList.Builder<String> fieldsInOrder = ImmutableList.builder();
 		@NonNull ImmutableMap.Builder<String, ITranslatableString> fieldValues = ImmutableMap.builder();
 		@NonNull ImmutableMap.Builder<String, Comparable<?>> comparableKeys = ImmutableMap.builder();
+		final ImmutableSet.Builder<String> blockLayoutFields = ImmutableSet.builder();
 
 		for (final PickingJobField field : profile.getLauncherFieldsInOrder())
 		{
@@ -165,12 +166,17 @@ public class DisplayValueProvider
 			{
 				comparableKeys.put(fieldType, comparableKey);
 			}
+			if (field.isBlockLayout())
+			{
+				blockLayoutFields.add(fieldType);
+			}
 		}
 
 		return WorkflowLauncherCaption.builder()
 				.fieldsInOrder(fieldsInOrder.build())
 				.fieldValues(fieldValues.build())
 				.comparingKeys(comparableKeys.build())
+				.blockLayoutFields(blockLayoutFields.build())
 				.build();
 	}
 
@@ -185,7 +191,7 @@ public class DisplayValueProvider
 				.handoverLocationId(pickingJobCandidate.getHandoverLocationId())
 				.productValueAndName(pickingJobCandidate.getProductValueAndName())
 				.qtyToDeliver(pickingJobCandidate.getQtyToDeliver())
-				.productNames(pickingJobCandidate.getProducts().getProductNamesJoined())
+				.productNameParts(pickingJobCandidate.getProducts().getProductNameParts())
 				.build();
 	}
 
@@ -200,7 +206,7 @@ public class DisplayValueProvider
 				.handoverLocationId(pickingJobReference.getHandoverLocationId())
 				.productValueAndName(pickingJobReference.getProductValueAndName())
 				.qtyToDeliver(pickingJobReference.getQtyToDeliver())
-				.productNames(pickingJobReference.getProducts().getProductNamesJoined())
+				.productNameParts(pickingJobReference.getProducts().getProductNameParts())
 				.build();
 	}
 
@@ -215,7 +221,8 @@ public class DisplayValueProvider
 				.handoverLocationId(pickingJob.getHandoverLocationId())
 				.productValueAndName(pickingJob.getSingleProductValueAndName())
 				.qtyToDeliver(pickingJob.getSingleQtyToPickOrNull())
-				.productNames(pickingJob.getProductNamesJoined())
+				// job-detail header: always ", ", regardless of any field's block-layout flag (AC8)
+				.productNames(pickingJob.getProductNamesJoined(", "))
 				.build();
 	}
 
@@ -291,6 +298,15 @@ public class DisplayValueProvider
 			}
 			case PRODUCT_NAMES:
 			{
+				final ImmutableList<ITranslatableString> productNameParts = context.getProductNameParts();
+				if (productNameParts != null)
+				{
+					// job-list context: the separator is decided HERE, per requesting field, never at toContext()-time
+					final String separator = field.isBlockLayout() ? "\n" : ", ";
+					return productNameParts.stream().collect(TranslatableStrings.joining(separator));
+				}
+
+				// job-detail context: already joined with ", " at toContext()-time, unconditionally (AC8)
 				final ITranslatableString productNames = context.getProductNames();
 				return productNames != null ? productNames : TranslatableStrings.empty();
 			}
@@ -391,7 +407,18 @@ public class DisplayValueProvider
 		@Nullable BPartnerLocationId handoverLocationId;
 		@Nullable ProductValueAndName productValueAndName;
 		@Nullable Quantity qtyToDeliver;
+		/**
+		 * Job-detail contexts (job header, job line) join their product name(s) eagerly with {@code ", "} here — the
+		 * detail surfaces render {@code ", "} whatever a field's block-layout flag is set to (AC8), so there is
+		 * nothing left to decide at {@link #getDisplayValue} time.
+		 */
 		@Nullable ITranslatableString productNames;
+		/**
+		 * Un-joined product names, populated ONLY by the job-list contexts (candidate/reference). Their join is
+		 * deferred to {@link #getDisplayValue}, which alone knows the requesting field's {@code isBlockLayout()}
+		 * and therefore the separator to join with.
+		 */
+		@Nullable ImmutableList<ITranslatableString> productNameParts;
 
 		@Nullable
 		public BPartnerLocationId getHandoverLocationIdWithFallback()

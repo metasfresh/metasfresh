@@ -592,15 +592,25 @@ public final class PickingJob implements PickingJobHeaderOrLine
 		return productValueAndName;
 	}
 
+	/**
+	 * Un-joined product names, in encounter order. The caller decides the separator — see
+	 * {@link #getProductNamesJoined(String)}.
+	 */
 	@NonNull
-	public ITranslatableString getProductNamesJoined()
+	public ImmutableList<ITranslatableString> getProductNameParts()
 	{
 		// distinct by ProductId (never by displayed text, so two distinct products sharing a name both appear);
 		// filter preserves encounter order, so the names read in line order.
 		return lines.stream()
 				.filter(StreamUtils.distinctByKey(PickingJobLine::getProductId))
 				.map(line -> line.getProductValueAndName().getName())
-				.collect(TranslatableStrings.joining(", "));
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public ITranslatableString getProductNamesJoined(@NonNull final String separator)
+	{
+		return getProductNameParts().stream().collect(TranslatableStrings.joining(separator));
 	}
 
 	@Nullable
