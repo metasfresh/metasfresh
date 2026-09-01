@@ -16,11 +16,6 @@
 --   AD_Message       545796 (IncompatibleSelection), 545797 (ClosedPlannings), 545798 (AlreadyOnDeliveryInstruction)
 --   AD_Message       545799..545806 (the eight admissibility field labels, in enum declaration order)
 --
--- EDITED AFTER FIRST APPLY (WebUI_ViewQuickAction_Default 'N' -> 'Y' on AD_Table_Process 541665).
--- The runner keys applied-ness on the file NAME with no checksum, so a stack that already ran the
--- earlier version silently keeps the old value. Reconcile such a stack with:
---   UPDATE AD_Table_Process SET WebUI_ViewQuickAction_Default='Y' WHERE AD_Table_Process_ID=541665;
-
 
 -- ---------------------------------------------------------------------------------------------
 -- 1) the process
