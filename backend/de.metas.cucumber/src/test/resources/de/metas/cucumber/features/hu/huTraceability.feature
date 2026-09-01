@@ -4,10 +4,13 @@
 @F5000
 @ghActions:run_on_executor5
 Feature: HU Traceability Report — SQL correctness tests
-  Verifies that the M_HU_Trace_Report SQL function returns the correct rows
-  for the two bug fixes:
+  Verifies that the M_HU_Trace_Report SQL function returns the correct rows,
+  covering two previously-fixed SQL bugs plus the receipt-to-shipment pairing
+  behaviour of the DIRECT_SALE_DETAIL section:
   - Bug A (Section 5): PRODUCTION_RECEIPT_DETAL appears even when the PRODUCTION_ISSUE HU has no MHD attribute
   - Bug B (Section 6): DIRECT_SALE_DETAIL appears for products with NULL lot number
+  - DIRECT_SALE_DETAIL pairing (Section 6): a shipment must be paired with the receipt(s) it is
+    actually traceable to, not with every receipt that merely shares the same lot and product
 
   Background:
     Given infrastructure and metasfresh are running

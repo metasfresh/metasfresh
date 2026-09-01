@@ -75,12 +75,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Step definitions for testing the M_HU_Trace_Report SQL function.
  *
- * <p>Tests two specific SQL bugs that were fixed:
+ * <p>Covers two previously-fixed SQL bugs plus the receipt→shipment pairing behaviour of the
+ * DIRECT_SALE_DETAIL section:
  * <ul>
  *   <li>Bug A (Section 5 — PRODUCTION_RECEIPT_DETAL): INNER JOIN to m_hu_attribute mhd
  *       excluded products without best-before date. Fixed by LEFT JOIN.</li>
  *   <li>Bug B (Section 6 — DIRECT_SALE_DETAIL): {@code shipment_trace.lotnumber = t.lotnumber}
  *       evaluated to false for NULL lot numbers. Fixed by {@code IS NOT DISTINCT FROM}.</li>
+ *   <li>DIRECT_SALE_DETAIL pairing (Section 6): still matches a shipment to a receipt on
+ *       lot+product alone, producing a cartesian when several receipts share a lot — not yet
+ *       fixed. Test cases exercising this are added incrementally.</li>
  * </ul>
  */
 @RequiredArgsConstructor
