@@ -133,6 +133,23 @@ Feature: HU Traceability Report — SQL correctness tests
       | ReceiptDocNo | ShipmentDocNo | LinkBasis          | Menge | Liefermenge |
       | receipt1     | shipment      | PRODUCT_CANDIDATE  | 100   | 24          |
 
+  @Id:S0000.1_HUTrace_IneligibleReceiptDoc
+  Scenario: A graph link to a receipt document this section may not report does not silence the lot candidate
+    # The shipment descends from a customer-return receipt (IsSOTrx='Y'), which the DIRECT_SALE_DETAIL
+    # section only reports for purchase receipts (IsSOTrx='N'). Deciding "this group is traced, so drop
+    # its candidates" before the receipt document's eligibility has been checked would leave the group
+    # with no row at all — deleting the lot-level candidate the customer sees today.
+    Given metasfresh contains M_Products:
+      | Identifier                 | Value                          | Name                            |
+      | traceProduct_ineligibleDoc | traceProductVal_ineligibleDoc  | Trace Product Ineligible Doc    |
+    When M_HU_Trace_Report test data is set up for scenario "ineligible_receipt_doc":
+      | TestType               | M_Product_ID.Identifier    |
+      | INELIGIBLE_RECEIPT_DOC | traceProduct_ineligibleDoc |
+    And M_HU_Trace_Report is invoked for scenario "ineligible_receipt_doc"
+    Then M_HU_Trace_Report detail rows for scenario "ineligible_receipt_doc" are:
+      | ReceiptDocNo | ShipmentDocNo | LinkBasis     | Menge | Liefermenge |
+      | receipt1     | shipment      | LOT_CANDIDATE | 80    | 24          |
+
   @Id:S0000.1_HUTrace_TC6
   Scenario: A receipt document's quantity across several VHUs is reported once, not once per VHU
     Given metasfresh contains M_Products:

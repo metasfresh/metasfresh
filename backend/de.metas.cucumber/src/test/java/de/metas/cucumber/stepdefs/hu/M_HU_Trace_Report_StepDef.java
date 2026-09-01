@@ -142,6 +142,10 @@ public class M_HU_Trace_Report_StepDef
 	 *       traces of the same lot on different VHUs, with a shipment descending from the first of
 	 *       the two. The receipt document's total quantity across both VHUs must be reported once,
 	 *       not once per VHU.</li>
+	 *   <li>{@code INELIGIBLE_RECEIPT_DOC} — a shipment that descends from a receipt document this
+	 *       section may not report (a customer return, {@code IsSOTrx='Y'}), plus a genuine purchase
+	 *       receipt of the same lot with no VHU link. The graph link must not silence the lot-level
+	 *       candidate that the customer sees today.</li>
 	 * </ul>
 	 */
 	@When("M_HU_Trace_Report test data is set up for scenario {string}:")
@@ -184,6 +188,9 @@ public class M_HU_Trace_Report_StepDef
 				break;
 			case "RECEIPT_QTY_AND_DEDUP":
 				setupReceiptQtyAndDedup(scenarioName, productId);
+				break;
+			case "INELIGIBLE_RECEIPT_DOC":
+				setupIneligibleReceiptDoc(scenarioName, productId);
 				break;
 			default:
 				throw new AdempiereException("Unknown TestType: " + testType);
@@ -697,6 +704,49 @@ public class M_HU_Trace_Report_StepDef
 				"LOT-DEDUP", shipmentInOut, new BigDecimal("-24"));
 
 		scenarioDocNos.put(scenarioName + ".receipt1", receiptInOut.getDocumentNo());
+		scenarioDocNos.put(scenarioName + ".shipment", shipmentInOut.getDocumentNo());
+	}
+
+	/**
+	 * A shipment whose VHU descends from a receipt document that the DIRECT_SALE_DETAIL section is
+	 * not allowed to report — a customer return ({@code DocBaseType='MMR'}, {@code IsSOTrx='Y'}),
+	 * where the section only reports purchase receipts ({@code IsSOTrx='N'}) — plus a genuine
+	 * purchase receipt of the same product and lot that has no VHU link to anything.
+	 *
+	 * <p>The graph therefore says something about this shipment, but nothing the section may print.
+	 * The lot-level candidate resting on the purchase receipt is what the customer sees today and
+	 * must keep seeing: deciding "this group has a traced receipt, so drop its candidates" before
+	 * the receipt document has been checked for eligibility would leave the group with no row at
+	 * all, silently deleting information.
+	 */
+	private void setupIneligibleReceiptDoc(@NonNull final String scenarioName, @NonNull final ProductId productId)
+	{
+		scenarioProductIds.put(scenarioName, productId);
+		final I_C_DocType purchaseReceiptDocType = loadDocType("MMR", false);
+		final I_C_DocType customerReturnDocType = loadDocType("MMR", true);
+		final I_C_DocType shipmentDocType = loadDocType("MMS", true);
+
+		// the receipt document this section may not report, and the shipment that descends from it
+		final I_M_HU returnVhu = createVhu();
+		final I_M_InOut returnInOut = createMinimalInOut(customerReturnDocType, "CO");
+		createHuTraceWithSource(returnVhu, null, productId, HUTraceType.MATERIAL_RECEIPT,
+				"LOT-INELIGIBLE", returnInOut, new BigDecimal("100"));
+
+		final I_M_HU shippedVhu = createVhu();
+		createHuTraceWithSource(shippedVhu, returnVhu, productId, HUTraceType.TRANSFORM_LOAD,
+				"LOT-INELIGIBLE", null, new BigDecimal("24"));
+		final I_M_InOut shipmentInOut = createMinimalInOut(shipmentDocType, "CO");
+		createHuTraceWithSource(shippedVhu, null, productId, HUTraceType.MATERIAL_SHIPMENT,
+				"LOT-INELIGIBLE", shipmentInOut, new BigDecimal("-24"));
+
+		// a reportable purchase receipt of the same lot, linked to nothing — the lot-level candidate
+		final I_M_HU purchaseVhu = createVhu();
+		final I_M_InOut purchaseInOut = createMinimalInOut(purchaseReceiptDocType, "CO");
+		createHuTraceWithSource(purchaseVhu, null, productId, HUTraceType.MATERIAL_RECEIPT,
+				"LOT-INELIGIBLE", purchaseInOut, new BigDecimal("80"));
+
+		scenarioDocNos.put(scenarioName + ".receipt1", purchaseInOut.getDocumentNo());
+		scenarioDocNos.put(scenarioName + ".returnReceipt", returnInOut.getDocumentNo());
 		scenarioDocNos.put(scenarioName + ".shipment", shipmentInOut.getDocumentNo());
 	}
 

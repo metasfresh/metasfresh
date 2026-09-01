@@ -74,7 +74,6 @@ vhu_edge AS (
     SELECT DISTINCT t.VHU_Source_ID AS src, t.VHU_ID AS dst
     FROM M_HU_Trace t
     WHERE t.VHU_Source_ID IS NOT NULL
-      AND t.VHU_ID IS NOT NULL
       AND t.VHU_Source_ID <> t.VHU_ID
 ),
 -- The MATERIAL_RECEIPT rows this report run is about, already narrowed to rows whose document
@@ -82,12 +81,12 @@ vhu_edge AS (
 -- traced and the candidate branch working off exactly the same set of eligible receipts, so a
 -- pair that the final projection would discard can never suppress the candidates of its group.
 receipt_trace AS (
-    SELECT t.M_HU_Trace_ID, t.VHU_ID, t.M_HU_ID, t.M_Product_ID, t.LotNumber, t.M_InOut_ID, t.C_UOM_ID
+    SELECT t.M_HU_Trace_ID, t.VHU_ID, t.M_HU_ID, t.M_Product_ID, t.LotNumber, t.M_InOut_ID, t.C_UOM_ID,
+           t.AD_Client_ID, t.AD_Org_ID
     FROM M_HU_Trace t
     JOIN M_InOut receipt_io ON receipt_io.M_InOut_ID = t.M_InOut_ID
     JOIN C_DocType receipt_dt ON receipt_dt.C_DocType_ID = receipt_io.C_DocType_ID
     WHERE t.HUTraceType = 'MATERIAL_RECEIPT'
-      AND t.VHU_ID IS NOT NULL
       AND receipt_dt.IsSOTrx = 'N'
       AND receipt_io.DocStatus IN ('CO', 'CL')
       AND EXISTS (SELECT 1 FROM T_Selection s
@@ -104,9 +103,9 @@ receipt_reach (M_HU_Trace_ID, VHU_ID, depth) AS (
     FROM receipt_reach rr
     JOIN vhu_edge e ON e.src = rr.VHU_ID
     -- Termination guard against a runaway or cyclic transformation chain: UNION alone cannot stop
-    -- a cycle here because the depth column makes every revisit a distinct row. Measured on the
-    -- customer instance the chains are one hop long (see round2-results.md), so 15 is far above
-    -- anything real while still bounding a corrupt graph.
+    -- a cycle here because the depth column makes every revisit a distinct row. The longest chain
+    -- measured on a production dataset (25 816 trace rows, 12 908 transformation edges) was 2 hops,
+    -- so 15 is far above anything real while still bounding a corrupt graph.
     WHERE rr.depth < 15
 ),
 -- The MATERIAL_SHIPMENT rows this run is about, narrowed to rows whose document qualifies as a
@@ -118,7 +117,6 @@ shipment_trace_sel AS (
     JOIN M_InOut shipment_io ON shipment_io.M_InOut_ID = t.M_InOut_ID
     JOIN C_DocType shipment_dt ON shipment_dt.C_DocType_ID = shipment_io.C_DocType_ID
     WHERE t.HUTraceType = 'MATERIAL_SHIPMENT'
-      AND t.VHU_ID IS NOT NULL
       AND shipment_dt.IsSOTrx = 'Y'
       AND shipment_io.DocStatus IN ('CO', 'CL')
       AND EXISTS (SELECT 1 FROM T_Selection s
@@ -138,8 +136,15 @@ traced_pair AS (
            min(st.M_HU_Trace_ID) AS shipment_trace_id,
            min(r.M_HU_ID)        AS receipt_hu_id,
            min(st.M_HU_ID)       AS shipment_hu_id,
+           -- assumes every trace row of one document/product/lot shares a UOM, which is how the
+           -- pre-rewrite body could take qty and UOM from one and the same trace row. The
+           -- quantities beside these are document-level sums, so a document that genuinely mixed
+           -- UOMs would print the sum under only one of them.
            min(st.C_UOM_ID)      AS shipment_uom_id,
-           min(r.C_UOM_ID)       AS receipt_uom_id
+           min(r.C_UOM_ID)       AS receipt_uom_id,
+           -- client/org of the receipt TRACE ROW, the source the pre-rewrite prod_stock used
+           min(r.AD_Client_ID)   AS receipt_client_id,
+           min(r.AD_Org_ID)      AS receipt_org_id
     FROM receipt_trace r
     JOIN receipt_reach rr ON rr.M_HU_Trace_ID = r.M_HU_Trace_ID
     JOIN shipment_trace_sel st
@@ -164,8 +169,11 @@ candidate_pair AS (
            min(st.M_HU_Trace_ID) AS shipment_trace_id,
            min(r.M_HU_ID)        AS receipt_hu_id,
            min(st.M_HU_ID)       AS shipment_hu_id,
+           -- same UOM and client/org assumptions as traced_pair above
            min(st.C_UOM_ID)      AS shipment_uom_id,
-           min(r.C_UOM_ID)       AS receipt_uom_id
+           min(r.C_UOM_ID)       AS receipt_uom_id,
+           min(r.AD_Client_ID)   AS receipt_client_id,
+           min(r.AD_Org_ID)      AS receipt_org_id
     FROM receipt_trace r
     JOIN shipment_trace_sel st
            ON st.M_Product_ID = r.M_Product_ID
@@ -191,20 +199,25 @@ detail_pair AS (
 -- lots in one group, which is what the IS NOT DISTINCT FROM join below matches; a combination
 -- with no rows produces no join partner and therefore a NULL quantity, exactly as a correlated
 -- SUM over no rows would.
+-- The IN restricts the set of DOCUMENTS grouped here, never the rows summed for one of them, so
+-- the quantity stays the document's full total. It is not a filter but a bound: the only document
+-- ids this CTE is ever probed with come from receipt_trace, and without it every invocation of the
+-- function would aggregate the whole of M_HU_Trace even when this section emits nothing.
 receipt_doc_qty AS (
     SELECT rt.M_InOut_ID, rt.M_Product_ID, rt.LotNumber, SUM(rt.Qty) AS qty_sum
     FROM M_HU_Trace rt
     WHERE rt.HUTraceType = 'MATERIAL_RECEIPT'
-      AND rt.M_InOut_ID IS NOT NULL
+      AND rt.M_InOut_ID IN (SELECT M_InOut_ID FROM receipt_trace)
     GROUP BY rt.M_InOut_ID, rt.M_Product_ID, rt.LotNumber
 ),
 -- Document-level shipped quantity per (shipment document, product, lot). finished_product_qty
 -- and shipmentqty are the same figure under two column names, so both read this one CTE.
+-- Bounded to the shipment documents in scope for the same reason as receipt_doc_qty above.
 shipment_doc_qty AS (
     SELECT stq.M_InOut_ID, stq.M_Product_ID, stq.LotNumber, SUM(stq.Qty) AS qty_sum
     FROM M_HU_Trace stq
     WHERE stq.HUTraceType = 'MATERIAL_SHIPMENT'
-      AND stq.M_InOut_ID IS NOT NULL
+      AND stq.M_InOut_ID IN (SELECT M_InOut_ID FROM shipment_trace_sel)
     GROUP BY stq.M_InOut_ID, stq.M_Product_ID, stq.LotNumber
 )
 -- =====================================================================================
@@ -480,7 +493,8 @@ SELECT
     ABS(ROUND(sq.qty_sum, COALESCE(su.stdprecision, 0))) as finished_product_qty,
     su.uomsymbol as finished_product_uom,
     dp.LotNumber as finished_product_lot,
-    -- 1000029: the vendor-lot M_HU_Attribute, carried over verbatim from the previous body
+    -- 1000029: M_Attribute (vendor lot) -- the FK m_hu_attribute.m_attribute_id, not the
+    -- m_hu_attribute PK. Carried over verbatim from the previous body.
     (select value from m_hu_attribute vendorlot
       where vendorlot.m_hu_id = dp.receipt_hu_id and vendorlot.m_attribute_id = 1000029::numeric) as vendorlot,
     -- 540020: M_Attribute HU_BestBeforeDate (Mindesthaltbarkeit), carried over verbatim
@@ -494,10 +508,11 @@ SELECT
     ABS(ROUND(sq.qty_sum, COALESCE(su.stdprecision, 0))) as shipmentqty,
     shipment_io.documentno as shipment_note,
     to_char(shipment_io.movementdate, 'DD.MM.YYYY') as shipment_date,
-    -- 1000017: M_Attribute Lot-Nummer. UOM and client/org are taken from the receipt side, which
-    -- is what the pre-rewrite expression used (t.c_uom_id / t.ad_client_id / t.ad_org_id).
+    -- 1000017: M_Attribute Lot-Nummer. UOM and client/org come from the receipt TRACE ROW, the
+    -- same source the pre-rewrite expression used (t.c_uom_id / t.ad_client_id / t.ad_org_id).
+    -- All three are equality filters inside getcurrentstoragestock, so the source matters.
     getcurrentstoragestock(dp.M_Product_ID, dp.receipt_uom_id, 1000017, dp.LotNumber,
-                           receipt_io.ad_client_id, receipt_io.ad_org_id) AS prod_stock,
+                           dp.receipt_client_id, dp.receipt_org_id) AS prod_stock,
     dp.shipment_trace_id AS traceid,
     to_char(now(), 'DD.MM.YYYY HH24:MM') as reportdate,
     dp.link_basis
