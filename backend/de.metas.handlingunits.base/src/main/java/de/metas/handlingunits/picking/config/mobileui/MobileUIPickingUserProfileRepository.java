@@ -316,6 +316,7 @@ public class MobileUIPickingUserProfileRepository
 		record.setSeqNo(from.getSeqNo());
 		record.setIsDisplayInSummary(from.isShowInSummary());
 		record.setIsDisplayInDetailed(from.isShowInDetailed());
+		record.setIsBlockLayout(from.isBlockLayout());
 		record.setFormatPattern(from.getPattern());
 	}
 
@@ -427,6 +428,7 @@ public class MobileUIPickingUserProfileRepository
 				.seqNo(record.getSeqNo())
 				.isShowInDetailed(record.isDisplayInDetailed())
 				.isShowInSummary(record.isDisplayInSummary())
+				.isBlockLayout(record.isBlockLayout())
 				.pattern(record.getFormatPattern())
 				.build();
 	}
