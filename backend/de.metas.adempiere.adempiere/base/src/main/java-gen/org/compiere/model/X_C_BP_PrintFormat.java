@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_BP_PrintFormat extends org.compiere.model.PO implements I_C_BP_PrintFormat, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -670894029L;
+	private static final long serialVersionUID = -1393554895L;
 
     /** Standard Constructor */
     public X_C_BP_PrintFormat (final Properties ctx, final int C_BP_PrintFormat_ID, @Nullable final String trxName)
@@ -29,7 +29,6 @@ public class X_C_BP_PrintFormat extends org.compiere.model.PO implements I_C_BP_
 
 	/** Load Meta Data */
 	@Override
-	@Nullable
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
@@ -174,6 +173,48 @@ public class X_C_BP_PrintFormat extends org.compiere.model.PO implements I_C_BP_
 	public int getDocumentCopies_Override() 
 	{
 		return get_ValueAsInt(COLUMNNAME_DocumentCopies_Override);
+	}
+
+	/** 
+	 * IsAutoPrint AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISAUTOPRINT_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISAUTOPRINT_Yes = "Y";
+	/** No = N */
+	public static final String ISAUTOPRINT_No = "N";
+	@Override
+	public void setIsAutoPrint (final @Nullable java.lang.String IsAutoPrint)
+	{
+		set_Value (COLUMNNAME_IsAutoPrint, IsAutoPrint);
+	}
+
+	@Override
+	public java.lang.String getIsAutoPrint() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsAutoPrint);
+	}
+
+	/** 
+	 * IsDropShip AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISDROPSHIP_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISDROPSHIP_Yes = "Y";
+	/** No = N */
+	public static final String ISDROPSHIP_No = "N";
+	@Override
+	public void setIsDropShip (final @Nullable java.lang.String IsDropShip)
+	{
+		set_Value (COLUMNNAME_IsDropShip, IsDropShip);
+	}
+
+	@Override
+	public java.lang.String getIsDropShip() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsDropShip);
 	}
 
 	@Override
