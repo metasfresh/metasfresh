@@ -59,7 +59,10 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.ProcessInfo;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
@@ -69,6 +72,7 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -96,6 +100,7 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_OrderCandidate_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Order_Candidate;
+import org.eevolution.process.PP_Order_PostCalculation;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -110,6 +115,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RequiredArgsConstructor
 public class PP_Order_StepDef
 {
 	private static final AdMessageKey MISSING_PRODUCT_PLU_CONFIG = AdMessageKey.of("de.metas.externalsystem.leichmehl.ExportPPOrderToLeichMehlService.MissingPLUConfigForProduct");
@@ -120,58 +126,27 @@ public class PP_Order_StepDef
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 	private final IADPInstanceDAO pinstanceDAO = Services.get(IADPInstanceDAO.class);
+	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	private final ExportPPOrderToExternalSystem exportPPOrderToExternalSystem = SpringContextHolder.instance.getBean(ExportPPOrderToExternalSystem.class);
 
-	private final M_Product_StepDefData productTable;
-	private final PP_Product_BOM_StepDefData productBOMTable;
-	private final PP_Product_Planning_StepDefData productPlanningTable;
-	private final C_BPartner_StepDefData bPartnerTable;
-	private final PP_Order_StepDefData ppOrderTable;
-	private final S_Resource_StepDefData resourceTable;
-	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
-	private final PP_Order_BOMLine_StepDefData ppOrderBomLineTable;
-	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
-	private final PP_Order_Candidate_StepDefData ppOrderCandidateTable;
-	private final M_HU_StepDefData huTable;
-	private final ExternalSystem_Config_LeichMehl_StepDefData leichMehlConfigTable;
-	private final M_Warehouse_StepDefData warehouseTable;
-	private final RabbitMQ_StepDef rabbitMQStepDef;
-
-	public PP_Order_StepDef(
-			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final PP_Product_BOM_StepDefData productBOMTable,
-			@NonNull final PP_Product_Planning_StepDefData productPlanningTable,
-			@NonNull final C_BPartner_StepDefData bPartnerTable,
-			@NonNull final PP_Order_StepDefData ppOrderTable,
-			@NonNull final S_Resource_StepDefData resourceTable,
-			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
-			@NonNull final PP_Order_BOMLine_StepDefData ppOrderBomLineTable,
-			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable,
-			@NonNull final PP_Order_Candidate_StepDefData ppOrderCandidateTable,
-			@NonNull final M_HU_StepDefData huTable,
-			@NonNull final ExternalSystem_Config_LeichMehl_StepDefData leichMehlConfigTable,
-			@NonNull final M_Warehouse_StepDefData warehouseTable,
-			@NonNull final RabbitMQ_StepDef rabbitMQStepDef)
-	{
-		this.rabbitMQStepDef = rabbitMQStepDef;
-		this.productTable = productTable;
-		this.productBOMTable = productBOMTable;
-		this.productPlanningTable = productPlanningTable;
-		this.bPartnerTable = bPartnerTable;
-		this.ppOrderTable = ppOrderTable;
-		this.resourceTable = resourceTable;
-		this.attributeSetInstanceTable = attributeSetInstanceTable;
-		this.ppOrderBomLineTable = ppOrderBomLineTable;
-		this.huPiItemProductTable = huPiItemProductTable;
-		this.ppOrderCandidateTable = ppOrderCandidateTable;
-		this.huTable = huTable;
-		this.leichMehlConfigTable = leichMehlConfigTable;
-		this.warehouseTable = warehouseTable;
-	}
+	@NonNull private final M_Product_StepDefData productTable;
+	@NonNull private final PP_Product_BOM_StepDefData productBOMTable;
+	@NonNull private final PP_Product_Planning_StepDefData productPlanningTable;
+	@NonNull private final C_BPartner_StepDefData bPartnerTable;
+	@NonNull private final PP_Order_StepDefData ppOrderTable;
+	@NonNull private final S_Resource_StepDefData resourceTable;
+	@NonNull private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
+	@NonNull private final PP_Order_BOMLine_StepDefData ppOrderBomLineTable;
+	@NonNull private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
+	@NonNull private final PP_Order_Candidate_StepDefData ppOrderCandidateTable;
+	@NonNull private final M_HU_StepDefData huTable;
+	@NonNull private final ExternalSystem_Config_LeichMehl_StepDefData leichMehlConfigTable;
+	@NonNull private final M_Warehouse_StepDefData warehouseTable;
+	@NonNull private final RabbitMQ_StepDef rabbitMQStepDef;
 
 	/**
 	 * Waits (up to {@code timeoutSec}) for the committed {@code PP_Order} record(s) matching the DataTable.
@@ -180,6 +155,30 @@ public class PP_Order_StepDef
 	 * then async-batch) so the async candidate-to-order generation chain has fully settled before the poll asserts.
 	 * This keeps the technical drain out of the feature file — see module CLAUDE.md rule 7 ("drain inside the
 	 * consuming step def, as late as possible, never as a bare step in the .feature file").
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (optional) alias of an already-created PP_Order; looked up directly instead of by the criteria columns below<br>
+	 *   <b>M_Product_ID</b> — (optional, identifier-ref) main product<br>
+	 *   <b>PP_Product_BOM_ID</b> — (optional, identifier-ref) BOM used by the order<br>
+	 *   <b>PP_Product_Planning_ID</b> — (optional, identifier-ref) product planning record<br>
+	 *   <b>S_Resource_ID</b> — (optional, identifier-ref or raw ID) plant resource<br>
+	 *   <b>QtyEntered</b> — (optional) expected entered quantity with UOM<br>
+	 *   <b>QtyOrdered</b> — (optional) expected ordered quantity<br>
+	 *   <b>DatePromised</b> — (optional) expected/lookup promised date<br>
+	 *   <b>C_BPartner_ID</b> — (optional, identifier-ref) BPartner<br>
+	 *   <b>M_AttributeSetInstance_ID</b> — (optional, identifier-ref) expected ASI, compared by attributes-key<br>
+	 *   <b>M_HU_PI_Item_Product_ID</b> — (optional, identifier-ref) expected packing item-product<br>
+	 *   <b>DocStatus</b> — (optional) expected document status<br>
+	 *   <b>CostDifference</b> — (optional) expected received (MR/CO/BY) minus issued (MI) over the order's PP_Order_Cost rows<br>
+	 * @cucumber.depends StepDefData: PP_Order_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And after not more than 60s, PP_Orders are found
+	 *   | Identifier | CostDifference |
+	 *   | ppOrder    | 15             |
+	 * </pre>
+	 * @see de.metas.cucumber.stepdefs.costing.PP_Order_Cost_StepDef for the individual rows CostDifference aggregates
 	 */
 	@And("^after not more than (.*)s, PP_Orders are found$")
 	public void validatePP_Order(
@@ -466,6 +465,25 @@ public class PP_Order_StepDef
 		StepDefUtil.assertRefusedWithErrorCode(errorCode, () -> order_action(orderIdentifier, StepDefDocAction.completed.name()));
 	}
 
+	/**
+	 * Runs {@link PP_Order_PostCalculation} on the given order. It is a plain {@code AD_Process}, not a document
+	 * action - but it closes the order as part of discharging the residual, so {@code DocStatus} ends up {@code CL}.
+	 */
+	@And("^the manufacturing order identified by (.*) is distributed$")
+	public void distributeOrder(@NonNull final String orderIdentifier)
+	{
+		final I_PP_Order orderRecord = ppOrderTable.get(orderIdentifier);
+
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(PP_Order_PostCalculation.class);
+
+		ProcessInfo.builder()
+				.setCtx(Env.getCtx())
+				.setAD_Process_ID(processId)
+				.setRecord(TableRecordReference.of(orderRecord))
+				.buildAndPrepareExecution()
+				.executeSync();
+	}
+
 	private void validatePP_Order_BomLine(final int timeoutSec, @NonNull final DataTableRow row) throws InterruptedException
 	{
 		final I_PP_Order_BOMLine ppOrderBOMLine = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, toPPOrderBOMLineQuery(row));
@@ -609,6 +627,9 @@ public class PP_Order_StepDef
 
 		row.getAsOptionalEnum(I_PP_Order.COLUMNNAME_DocStatus, DocStatus.class)
 				.ifPresent(docStatus -> softly.assertThat(actual.getDocStatus()).as("DocStatus").isEqualTo(docStatus.getCode()));
+
+		row.getAsOptionalBigDecimal(I_PP_Order.COLUMNNAME_CostDifference)
+				.ifPresent(costDifference -> softly.assertThat(actual.getCostDifference()).as("CostDifference").isEqualByComparingTo(costDifference));
 
 		softly.assertAll();
 	}

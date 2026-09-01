@@ -78,6 +78,22 @@ public class M_Warehouse_StepDef
 	@NonNull private final DD_NetworkDistribution_StepDefData ddNetworkTable;
 	@NonNull private final TestContext restTestContext;
 
+	/**
+	 * Loads existing warehouses by their {@code Value}, optionally also registering each warehouse's default locator.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_Warehouse_ID</b> — (required) identifier the loaded warehouse is stored under<br>
+	 *   <b>Value</b> — (required) the existing warehouse's Value<br>
+	 *   <b>M_Locator_ID</b> — (optional) identifier to store the warehouse's default locator under<br>
+	 * @cucumber.depends StepDefData: M_Warehouse_StepDefData, M_Locator_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And load M_Warehouse:
+	 *   | M_Warehouse_ID | Value        | M_Locator_ID |
+	 *   | warehouseStd   | StdWarehouse | locatorStd   |
+	 * </pre>
+	 */
 	@And("load M_Warehouse:")
 	public void load_M_Warehouse(@NonNull final DataTable dataTable)
 	{
@@ -90,6 +106,13 @@ public class M_Warehouse_StepDef
 							.addEqualsFilter(COLUMNNAME_Value, value)
 							.create()
 							.firstOnlyNotNull(I_M_Warehouse.class);
+
+					// Resolve the locator only when the caller asked for it: this step LOADS existing master data, and
+					// getOrCreateDefaultLocator() may create a locator / flip IsDefault flags.
+					row.getAsOptionalIdentifier(I_M_Locator.COLUMNNAME_M_Locator_ID)
+							.ifPresent(locatorIdentifier -> locatorTable.put(
+									locatorIdentifier,
+									warehouseBL.getOrCreateDefaultLocator(WarehouseId.ofRepoId(warehouseRecord.getM_Warehouse_ID()))));
 
 					row.getAsIdentifier().put(warehouseTable, warehouseRecord);
 

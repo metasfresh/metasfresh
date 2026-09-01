@@ -1,5 +1,6 @@
 package org.eevolution.api;
 
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
@@ -132,6 +133,11 @@ public class PPOrderCost
 		return getCostSegmentAndElement().getCostElementId();
 	}
 
+	public AcctSchemaId getAcctSchemaId()
+	{
+		return getCostSegmentAndElement().getAcctSchemaId();
+	}
+
 	public boolean isInboundCost()
 	{
 		return !getTrxType().isOutboundCost();
@@ -152,6 +158,11 @@ public class PPOrderCost
 		return getTrxType() == PPOrderCostTrxType.ByProduct;
 	}
 
+	/**
+	 * Accumulated amount and accumulated qty move independently and need NOT share a sign: a component issue keeps
+	 * the stock-movement direction in the qty (negative) while accumulating a positive cost, and discharging the
+	 * WIP residual accumulates an amount of either sign against no qty at all.
+	 */
 	@NonNull
 	public PPOrderCost addingAccumulatedAmountAndQty(
 			@NonNull final CostAmount amt,
@@ -161,14 +172,6 @@ public class PPOrderCost
 		if (amt.isZero() && qty.isZero())
 		{
 			return this;
-		}
-
-		final boolean amtIsPositiveOrZero = amt.signum() >= 0;
-		final boolean amtIsNotZero = amt.signum() != 0;
-		final boolean qtyIsPositiveOrZero = qty.signum() >= 0;
-		if (amtIsNotZero && amtIsPositiveOrZero != qtyIsPositiveOrZero )
-		{
-			throw new AdempiereException("Amount and Quantity shall have the same sign: " + amt + ", " + qty);
 		}
 
 		final Quantity accumulatedQty = getAccumulatedQty();
@@ -196,6 +199,15 @@ public class PPOrderCost
 		}
 
 		return toBuilder().price(newPrice).build();
+	}
+
+	/**
+	 * @return the part of this line's post-calculation amount not yet reflected in what the line accumulated.
+	 * On the main-product line that is the order's WIP residual: positive when more was issued than received.
+	 */
+	public CostAmount getResidualCost()
+	{
+		return getPostCalculationAmount().subtract(getAccumulatedAmount());
 	}
 
 	/* package */void setPostCalculationAmount(@NonNull final CostAmount postCalculationAmount)

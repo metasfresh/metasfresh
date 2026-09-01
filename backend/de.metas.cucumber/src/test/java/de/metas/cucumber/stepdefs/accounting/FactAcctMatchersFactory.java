@@ -11,6 +11,7 @@ import de.metas.cucumber.stepdefs.tax.C_Tax_StepDefData;
 import de.metas.cucumber.stepdefs.tax.C_VAT_Code_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
@@ -26,6 +27,7 @@ import io.cucumber.datatable.DataTable;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_Fact_Acct;
 
 import javax.annotation.Nullable;
@@ -44,6 +46,7 @@ public class FactAcctMatchersFactory
 	@NonNull private final C_Tax_StepDefData taxTable;
 	@NonNull private final C_VAT_Code_StepDefData vatCodeTable;
 	@NonNull private final M_Product_StepDefData productTable;
+	@NonNull private final M_Locator_StepDefData locatorTable;
 	@NonNull private final C_Invoice_StepDefData invoiceTable;
 	@NonNull private final C_ElementValue_StepDefData elementValueTable;
 
@@ -94,6 +97,7 @@ public class FactAcctMatchersFactory
 				.productId(extractProductId(row))
 				.invoiceId(extractInvoiceId(row))
 				.accountId(extractAccountId(row))
+				.locatorId(extractLocatorId(row))
 				.build();
 	}
 
@@ -219,6 +223,14 @@ public class FactAcctMatchersFactory
 	{
 		final StepDefDataIdentifier identifier = row.getAsOptionalIdentifier(I_Fact_Acct.COLUMNNAME_Account_ID).orElse(null);
 		return identifier == null ? null : Optional.ofNullable(identifier.lookupIdIn(elementValueTable));
+	}
+
+	@SuppressWarnings("OptionalAssignedToNull")
+	@Nullable
+	private Optional<LocatorId> extractLocatorId(final @NonNull DataTableRow row)
+	{
+		final StepDefDataIdentifier identifier = row.getAsOptionalIdentifier(I_Fact_Acct.COLUMNNAME_M_Locator_ID).orElse(null);
+		return identifier == null ? null : Optional.ofNullable(identifier.lookupIdIn(locatorTable));
 	}
 
 }

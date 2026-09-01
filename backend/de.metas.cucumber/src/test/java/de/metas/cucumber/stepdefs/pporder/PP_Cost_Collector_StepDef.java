@@ -33,11 +33,13 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_Product;
+import org.eevolution.api.CostCollectorType;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -50,31 +52,22 @@ import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.*;
+import static org.eevolution.model.I_PP_Cost_Collector.COLUMNNAME_CostCollectorType;
 import static org.eevolution.model.I_PP_Cost_Collector.COLUMNNAME_DocStatus;
 import static org.eevolution.model.I_PP_Cost_Collector.COLUMNNAME_M_Product_ID;
 import static org.eevolution.model.I_PP_Cost_Collector.COLUMNNAME_MovementQty;
 import static org.eevolution.model.I_PP_Cost_Collector.COLUMNNAME_PP_Cost_Collector_ID;
 
+@RequiredArgsConstructor
 public class PP_Cost_Collector_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final PP_Order_StepDefData ppOrderTable;
-	private final PP_Cost_Collector_StepDefData ppCostCollectorTable;
-	private final M_Product_StepDefData productTable;
-	private final PP_Order_BOMLine_StepDefData bomLineTable;
+	@NonNull private final PP_Order_StepDefData ppOrderTable;
+	@NonNull private final PP_Cost_Collector_StepDefData ppCostCollectorTable;
+	@NonNull private final M_Product_StepDefData productTable;
+	@NonNull private final PP_Order_BOMLine_StepDefData bomLineTable;
 
-	public PP_Cost_Collector_StepDef(
-			@NonNull final PP_Order_StepDefData ppOrderTable,
-			@NonNull final PP_Cost_Collector_StepDefData ppCostCollectorTable,
-			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final PP_Order_BOMLine_StepDefData bomLineTable)
-	{
-		this.ppOrderTable = ppOrderTable;
-		this.ppCostCollectorTable = ppCostCollectorTable;
-		this.productTable = productTable;
-		this.bomLineTable = bomLineTable;
-	}
 
 	/**
 	 * Loads PP_Cost_Collector records from the database by matching the given DataTable rows,
@@ -97,6 +90,8 @@ public class PP_Cost_Collector_StepDef
 	 *   <li>{@code M_Product_ID.Identifier} — identifier of the product; used to disambiguate when a single PP_Order
 	 *   has multiple cost collectors with the same DocStatus (e.g., one for component issue and one for finished-good
 	 *   receipt). If omitted, only PP_Order_ID and DocStatus are used to match the record.</li>
+	 *   <li>{@code CostCollectorType} — (optional) {@link CostCollectorType} enum name; narrows the match when one
+	 *   PP_Order has several completed cost collectors for the same product.</li>
 	 * </ul>
 	 *
 	 * <p>Example:
@@ -135,6 +130,12 @@ public class PP_Cost_Collector_StepDef
 
 			assertThat(ppCostCollector.getMovementQty()).isEqualTo(movementQty);
 			assertThat(ppCostCollector.getDocStatus()).isEqualTo(status);
+
+			final String costCollectorTypeName = DataTableUtil.extractStringOrNullForColumnName(tableRow, COLUMNNAME_CostCollectorType);
+			if (costCollectorTypeName != null)
+			{
+				assertThat(ppCostCollector.getCostCollectorType()).isEqualTo(CostCollectorType.valueOf(costCollectorTypeName).getCode());
+			}
 		}
 	}
 
@@ -167,6 +168,12 @@ public class PP_Cost_Collector_StepDef
 		if (productIdentifier != null)
 		{
 			queryBuilder.addEqualsFilter(COLUMNNAME_M_Product_ID, productTable.get(productIdentifier).getM_Product_ID());
+		}
+
+		final String costCollectorTypeName = DataTableUtil.extractStringOrNullForColumnName(tableRow, COLUMNNAME_CostCollectorType);
+		if (costCollectorTypeName != null)
+		{
+			queryBuilder.addEqualsFilter(COLUMNNAME_CostCollectorType, CostCollectorType.valueOf(costCollectorTypeName).getCode());
 		}
 
 		final Optional<I_PP_Cost_Collector> ppCostCollector = queryBuilder
