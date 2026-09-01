@@ -223,16 +223,57 @@ class DeliveryPlanningAddRemoveRejectionTest
 		assertThat(deliveryPlanningService.getRemoveFromRejectionReason(DeliveryPlanningList.of(allocated))).isEmpty();
 	}
 
+	/**
+	 * Reversed contract: removal used to be the one action a closed planning was still allowed. It is not - removal
+	 * deactivates the allocation, drops the release number and resets the dates, which is exactly the mutation
+	 * closing forbids. Re-open first, then remove.
+	 */
 	@Test
-	@DisplayName("remove from: a CLOSED planning is allowed - closing it is why it is coming off the truck")
-	void removeFrom_closedPlanningIsAllowed()
+	@DisplayName("remove from: a CLOSED planning is REFUSED, naming it - re-open it first")
+	void removeFrom_closedPlanningIsRefused()
 	{
 		final DeliveryPlanning closedAndAllocated = deliveryPlanning()
 				.closed(true)
 				.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted)))
 				.build();
 
-		assertThat(deliveryPlanningService.getRemoveFromRejectionReason(DeliveryPlanningList.of(closedAndAllocated))).isEmpty();
+		assertThat(textOf(deliveryPlanningService.getRemoveFromRejectionReason(DeliveryPlanningList.of(closedAndAllocated))))
+				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_ClosedPlannings))
+				.contains(String.valueOf(closedAndAllocated.getId().getRepoId()));
+	}
+
+	@Test
+	@DisplayName("remove from: ONE closed row refuses the whole selection - the action is all-or-nothing")
+	void removeFrom_oneClosedRowRefusesTheWholeSelection()
+	{
+		final DeliveryPlanning open = deliveryPlanning()
+				.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted)))
+				.build();
+		final DeliveryPlanning closed = deliveryPlanning()
+				.closed(true)
+				.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted)))
+				.build();
+
+		assertThat(textOf(deliveryPlanningService.getRemoveFromRejectionReason(DeliveryPlanningList.of(open, closed))))
+				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_ClosedPlannings))
+				.contains(String.valueOf(closed.getId().getRepoId()))
+				.doesNotContain(String.valueOf(open.getId().getRepoId()));
+	}
+
+	/**
+	 * Reachable only through a re-opened planning: a closed one is refused by the rule above, so the sequence the
+	 * planner is pointed at - re-open, then remove - is the one that has to work.
+	 */
+	@Test
+	@DisplayName("remove from: a RE-OPENED planning is accepted again")
+	void removeFrom_reOpenedPlanningIsAccepted()
+	{
+		final DeliveryPlanning reOpened = deliveryPlanning()
+				.closed(false)
+				.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted)))
+				.build();
+
+		assertThat(deliveryPlanningService.getRemoveFromRejectionReason(DeliveryPlanningList.of(reOpened))).isEmpty();
 	}
 
 	@Test
@@ -314,6 +355,25 @@ class DeliveryPlanningAddRemoveRejectionTest
 	}
 
 	// ------------------------------------------------------------------ move to
+
+	/**
+	 * The precondition half of the closed refusal {@code moveTo_closedPlanningIsRefused} below already covers with a
+	 * target: with NO target the button's state is decided, and that is the moment the closed row has to make Move
+	 * unavailable rather than only failing once the planner has picked a destination.
+	 */
+	@Test
+	@DisplayName("move to: the precondition, which has no target yet, already refuses a closed planning")
+	void moveTo_closedPlanningIsRefusedByThePreconditionWithoutTarget()
+	{
+		final DeliveryPlanning closedAndAllocated = deliveryPlanning()
+				.closed(true)
+				.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted)))
+				.build();
+
+		// null target = the parameter dialog has not been shown yet, which is when the button's state is decided
+		assertThat(moveToRejectionTextOf(null, closedAndAllocated))
+				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_ClosedPlannings));
+	}
 
 	@Test
 	@DisplayName("move to: a planning on ANOTHER draft instruction is accepted onto a draft target")

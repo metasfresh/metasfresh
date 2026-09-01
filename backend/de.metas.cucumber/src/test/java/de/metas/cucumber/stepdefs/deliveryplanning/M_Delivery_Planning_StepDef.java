@@ -40,6 +40,11 @@ import de.metas.cucumber.stepdefs.shipment.M_ShipperTransportation_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.deliveryplanning.DeliveryPlanningService;
+import de.metas.deliveryplanning.process.M_Delivery_Planning_Close;
+import de.metas.deliveryplanning.process.M_Delivery_Planning_ReOpen;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.cucumber.stepdefs.InterfaceWrapperHelperUtils;
 import de.metas.util.Check;
@@ -56,6 +61,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
+import org.compiere.util.Env;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
@@ -399,9 +405,10 @@ public class M_Delivery_Planning_StepDef
 	}
 
 	/**
-	 * Presses {@code Close} / {@code Re-Open} on the delivery planning expecting it to be REFUSED, and asserts which
-	 * rejection came back - the same {@link DeliveryPlanningService} entry points the
-	 * {@code M_Delivery_Planning_Close} / {@code M_Delivery_Planning_ReOpen} processes drive.
+	 * Presses {@code Close} / {@code Re-Open} / {@code Cancel} on the delivery planning expecting it to be REFUSED,
+	 * and asserts which rejection came back - the same {@link DeliveryPlanningService} entry points the
+	 * {@code M_Delivery_Planning_Close} / {@code M_Delivery_Planning_ReOpen} /
+	 * {@code M_Delivery_Planning_CancelDeliveryInstruction} processes drive.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -415,7 +422,7 @@ public class M_Delivery_Planning_StepDef
 	 *   | @Closed@=@Y@  |
 	 * </pre>
 	 */
-	@When("^(closing|reopening) M_Delivery_Planning identified by (.*) is refused:$")
+	@When("^(closing|reopening|cancelling) M_Delivery_Planning identified by (.*) is refused:$")
 	public void delivery_Planning_action_refused(
 			@NonNull final String action,
 			@NonNull final String deliveryPlanningIdentifier,
@@ -423,11 +430,113 @@ public class M_Delivery_Planning_StepDef
 	{
 		final IQueryFilter<I_M_Delivery_Planning> selectionFilter = getQueryFilterFor(deliveryPlanningIdentifier);
 
-		final Runnable deliveryPlanningAction = "closing".equals(action)
-				? () -> deliveryPlanningService.closeSelectedDeliveryPlannings(selectionFilter)
-				: () -> deliveryPlanningService.reOpenSelectedDeliveryPlannings(selectionFilter);
+		final Runnable deliveryPlanningAction;
+		switch (action)
+		{
+			case "closing":
+				deliveryPlanningAction = () -> deliveryPlanningService.closeSelectedDeliveryPlannings(selectionFilter);
+				break;
+			case "reopening":
+				deliveryPlanningAction = () -> deliveryPlanningService.reOpenSelectedDeliveryPlannings(selectionFilter);
+				break;
+			case "cancelling":
+				deliveryPlanningAction = () -> deliveryPlanningService.cancelDelivery(selectionFilter);
+				break;
+			default:
+				throw new AdempiereException("Unsupported action for M_Delivery_Planning: " + action);
+		}
 
 		rejectionHelper.runExpectingRejectionIfAny(DataTableRows.of(dataTable).singleRow(), ImmutableSet.of(), deliveryPlanningAction);
+	}
+
+	/**
+	 * Presses {@code Close} / {@code Re-Open} the way a planner does: the action's
+	 * {@code checkPreconditionsApplicable} decides whether the button is available at all, and only then does the
+	 * action run.
+	 * <p>
+	 * The difference from {@link #delivery_Planning_action(String, String)} matters. That step calls the service the
+	 * process delegates to, which is the runtime backstop; this one goes through the gate the WebUI applies BEFORE
+	 * the button is even clickable. A rule that lives only in the precondition is invisible to the service-level
+	 * step, so a scenario driving the service alone can be green on a path the product refuses outright.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: M_Delivery_Planning_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When the planner presses Close on M_Delivery_Planning identified by deliveryPlanning_1
+	 * </pre>
+	 */
+	@When("^the planner presses (Close|Re-Open) on M_Delivery_Planning identified by (.*)$")
+	public void planner_presses_action(@NonNull final String action, @NonNull final String deliveryPlanningIdentifiers)
+	{
+		final ProcessPreconditionsResolution resolution = checkPreconditionsFor(action, deliveryPlanningIdentifiers);
+
+		assertThat(resolution.isRejected())
+				.as("the %s action must be OFFERED for %s, but it was refused with: %s",
+						action, deliveryPlanningIdentifiers, resolution.getRejectReason().translate(Env.getAD_Language()))
+				.isFalse();
+
+		runAction(action, getQueryFilterFor(deliveryPlanningIdentifiers));
+	}
+
+	/**
+	 * Asserts that {@code Close} / {@code Re-Open} is NOT offered for the given selection, and with which reason -
+	 * i.e. the button a planner sees disabled, and the tooltip explaining why.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>ErrorAdMessage</b> — (optional) the {@code AD_Message} the action is expected to be refused with<br>
+	 *   <b>ErrorMessage</b> — (optional) the raw refusal text, {@code @token@}s included<br>
+	 * @cucumber.depends StepDefData: M_Delivery_Planning_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When pressing Close on M_Delivery_Planning identified by deliveryPlanning_1 is unavailable:
+	 *   | ErrorAdMessage                                                    |
+	 *   | de.metas.deliveryplanning.DeliveryPlanningService.AllClosed        |
+	 * </pre>
+	 */
+	@When("^pressing (Close|Re-Open) on M_Delivery_Planning identified by (.*) is unavailable:$")
+	public void pressing_action_is_unavailable(
+			@NonNull final String action,
+			@NonNull final String deliveryPlanningIdentifiers,
+			@NonNull final DataTable dataTable)
+	{
+		rejectionHelper.runExpectingRejectionIfAny(
+				DataTableRows.of(dataTable).singleRow(),
+				ImmutableSet.of(),
+				() -> checkPreconditionsFor(action, deliveryPlanningIdentifiers).throwExceptionIfRejected());
+	}
+
+	/**
+	 * The precondition of the process behind the pressed button, evaluated over the given selection - the same
+	 * instance and the same entry point the WebUI asks when it decides whether to offer the action.
+	 */
+	@NonNull
+	private ProcessPreconditionsResolution checkPreconditionsFor(
+			@NonNull final String action,
+			@NonNull final String deliveryPlanningIdentifiers)
+	{
+		final IProcessPrecondition process = "Close".equals(action)
+				? new M_Delivery_Planning_Close()
+				: new M_Delivery_Planning_ReOpen();
+
+		final IProcessPreconditionsContext context = new DeliveryPlanningSelectionPreconditionsContext(
+				selectedDeliveryPlanningIds(deliveryPlanningIdentifiers));
+
+		return process.checkPreconditionsApplicable(context);
+	}
+
+	/** What the pressed action's {@code doIt} does, verbatim. */
+	private void runAction(@NonNull final String action, @NonNull final IQueryFilter<I_M_Delivery_Planning> selectionFilter)
+	{
+		if ("Close".equals(action))
+		{
+			deliveryPlanningService.closeSelectedDeliveryPlannings(selectionFilter);
+		}
+		else
+		{
+			deliveryPlanningService.reOpenSelectedDeliveryPlannings(selectionFilter);
+		}
 	}
 
 	/**
@@ -593,6 +702,16 @@ public class M_Delivery_Planning_StepDef
 	@NonNull
 	private IQueryFilter<I_M_Delivery_Planning> getQueryFilterFor(@NonNull final String deliveryPlanningIdentifiers)
 	{
+		return queryBL.createCompositeQueryFilter(I_M_Delivery_Planning.class)
+				.addInArrayFilter(
+						I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID,
+						selectedDeliveryPlanningIds(deliveryPlanningIdentifiers));
+	}
+
+	/** The ids behind a comma-separated identifier list, in the order the feature file names them. */
+	@NonNull
+	private ImmutableList<Integer> selectedDeliveryPlanningIds(@NonNull final String deliveryPlanningIdentifiers)
+	{
 		final ImmutableList<Integer> deliveryPlanningIds = Splitter.on(",").trimResults().omitEmptyStrings().splitToList(deliveryPlanningIdentifiers)
 				.stream()
 				.map(deliveryPlanningTable::get)
@@ -600,7 +719,6 @@ public class M_Delivery_Planning_StepDef
 				.collect(ImmutableList.toImmutableList());
 		assertThat(deliveryPlanningIds).as("M_Delivery_Planning identified by %s", deliveryPlanningIdentifiers).isNotEmpty();
 
-		return queryBL.createCompositeQueryFilter(I_M_Delivery_Planning.class)
-				.addInArrayFilter(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningIds);
+		return deliveryPlanningIds;
 	}
 }

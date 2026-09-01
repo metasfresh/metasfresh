@@ -37,6 +37,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -490,9 +491,14 @@ class DeliveryPlanningMoveAndRemovalTest
 		assertNoOrphanedShippingPackages();
 	}
 
+	/**
+	 * Reversed contract: this used to drive {@code removeFrom} to SUCCESS on a closed planning and assert the
+	 * allocation had been retired - which is the very mutation "closed means frozen" forbids. Removal now refuses,
+	 * and the assertions are what did NOT happen.
+	 */
 	@Test
-	@DisplayName("remove-from succeeds for a CLOSED planning - the one deliberate exception to the closed guard")
-	void removeFromSucceedsForAClosedPlanning()
+	@DisplayName("remove-from REFUSES a CLOSED planning and changes nothing - allocation, package and release number all survive")
+	void removeFromRefusesAClosedPlanning()
 	{
 		final ShipperTransportationId deliveryInstructionId = draftDeliveryInstruction("SHARED-5");
 		final I_M_Delivery_Planning closedAndAllocated = deliveryPlanning();
@@ -503,17 +509,42 @@ class DeliveryPlanningMoveAndRemovalTest
 		final int allocationId = allocBefore.getM_Delivery_Planning_Alloc_ID();
 		final int packageId = allocBefore.getM_ShippingPackage_ID();
 
-		deliveryPlanningService.removeFrom(selectionOf(closedAndAllocated));
+		assertThatThrownBy(() -> deliveryPlanningService.removeFrom(selectionOf(closedAndAllocated)))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining(DeliveryPlanningService.MSG_M_Delivery_Planning_ClosedPlannings.toAD_Message());
 
-		final I_M_Delivery_Planning removed = reload(closedAndAllocated);
-		assertThat(removed.isClosed()).as("removing does not reopen it - closing is a separate decision").isTrue();
+		final I_M_Delivery_Planning untouched = reload(closedAndAllocated);
+		assertThat(untouched.isClosed()).isTrue();
+		assertThat(untouched.getM_ShipperTransportation_ID())
+				.as("still on its instruction - the refusal changed nothing")
+				.isEqualTo(deliveryInstructionId.getRepoId());
+		assertThat(shippingPackageIsActive(packageId)).as("its shipping package is still live").isTrue();
+		assertThat(InterfaceWrapperHelper.load(allocationId, I_M_Delivery_Planning_Alloc.class).isActive())
+				.as("its allocation is still active")
+				.isTrue();
+	}
+
+	@Test
+	@DisplayName("remove-from succeeds again once the planning is RE-OPENED - the sequence the refusal points at")
+	void removeFromSucceedsAfterReOpeningTheClosedPlanning()
+	{
+		final ShipperTransportationId deliveryInstructionId = draftDeliveryInstruction("SHARED-6");
+		final I_M_Delivery_Planning planning = deliveryPlanning();
+		planning.setIsClosed(true);
+		InterfaceWrapperHelper.save(planning);
+		allocateTo(deliveryInstructionId, planning);
+		final int packageId = allocationOf(planning).getM_ShippingPackage_ID();
+
+		// re-opening is always allowed, whatever the allocation and whatever the instruction's status
+		planning.setIsClosed(false);
+		InterfaceWrapperHelper.save(planning);
+
+		deliveryPlanningService.removeFrom(selectionOf(planning));
+
+		final I_M_Delivery_Planning removed = reload(planning);
 		assertThat(removed.getReleaseNo()).isNull();
 		assertThat(removed.getM_ShipperTransportation_ID()).isLessThanOrEqualTo(0);
 		assertThat(shippingPackageIsActive(packageId)).as("deactivated, not deleted").isFalse();
-		assertThat(InterfaceWrapperHelper.load(allocationId, I_M_Delivery_Planning_Alloc.class).isActive())
-				.as("the allocation row survives, deactivated")
-				.isFalse();
-		assertThat(allAllocations()).hasSize(1);
 		assertNoOrphanedShippingPackages();
 	}
 

@@ -424,7 +424,7 @@ Feature: Several delivery plannings on one delivery instruction
       | planningMove_1         |
 
   @Id:S31608_TC5
-  Scenario: Remove delivery plannings from a draft delivery instruction, a closed one included
+  Scenario: Remove delivery plannings from a draft delivery instruction; a closed one has to be re-opened first
 
     Given metasfresh contains C_Orders:
       | Identifier  | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier |
@@ -486,7 +486,7 @@ Feature: Several delivery plannings on one delivery instruction
       | planningRemove_2       |
 
     # closing a planning leaves it on the draft instruction - closed is an indicator, not a removal
-    When M_Delivery_Planning identified by planningRemove_3 is closed
+    When the planner presses Close on M_Delivery_Planning identified by planningRemove_3
 
     Then the M_ShipperTransportation identified by deliveryInstructionRemove holds exactly the following active M_Delivery_Planning_Alloc:
       | M_Delivery_Planning_ID |
@@ -496,8 +496,25 @@ Feature: Several delivery plannings on one delivery instruction
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | IsClosed | M_ShipperTransportation_ID |
       | planningRemove_3       | 9          | 9            | Outgoing           | true     | deliveryInstructionRemove  |
 
-    # a closed planning in the selection does not make Remove refuse: BOTH come off, the closed one included
+    # ONE closed planning in the selection refuses the WHOLE Remove: taking a load off deactivates its
+    # allocation, drops its release number and resets its dates - exactly what closing forbids. The open one
+    # in the same selection does not come off either.
     When remove M_Delivery_Planning from M_ShipperTransportation:
+      | M_Delivery_Planning_ID            | ErrorAdMessage                                                           |
+      | planningRemove_3,planningRemove_1 | de.metas.deliveryplanning.CombineIntoDeliveryInstruction.ClosedPlannings |
+
+    Then the M_ShipperTransportation identified by deliveryInstructionRemove holds exactly the following active M_Delivery_Planning_Alloc:
+      | M_Delivery_Planning_ID |
+      | planningRemove_1       |
+      | planningRemove_3       |
+    And each M_Delivery_Planning has its own ReleaseNo stamped from M_ShipperTransportation deliveryInstructionRemove:
+      | M_Delivery_Planning_ID |
+      | planningRemove_1       |
+      | planningRemove_3       |
+
+    # re-opening it first is the sequence the refusal points at; both then come off
+    When the planner presses Re-Open on M_Delivery_Planning identified by planningRemove_3
+    And remove M_Delivery_Planning from M_ShipperTransportation:
       | M_Delivery_Planning_ID            |
       | planningRemove_3,planningRemove_1 |
 
@@ -505,6 +522,7 @@ Feature: Several delivery plannings on one delivery instruction
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | M_ShipperTransportation_ID |
       | planningRemove_1       | 9          | 9            | Outgoing           | null                       |
+      | planningRemove_3       | 9          | 9            | Outgoing           | null                       |
     And the following M_Delivery_Planning have no ReleaseNo:
       | M_Delivery_Planning_ID |
       | planningRemove_1       |

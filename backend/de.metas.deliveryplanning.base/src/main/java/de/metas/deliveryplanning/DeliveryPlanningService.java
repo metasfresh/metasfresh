@@ -176,6 +176,14 @@ public class DeliveryPlanningService
 	public static final AdMessageKey MSG_M_Delivery_Planning_ReActivateClosedAllocatedPlannings = AdMessageKey.of("de.metas.deliveryplanning.ReActivateDeliveryInstruction.ClosedAllocatedPlannings");
 
 	/**
+	 * Rejects VOIDING an instruction that holds a planning closed after it was allocated - the third sibling of
+	 * {@link #MSG_M_Delivery_Planning_ClosedAllocatedPlannings}, and the one with the sharpest reason: voiding
+	 * RELEASES every allocation, so it would deactivate the closed planning's allocation, drop its release number
+	 * and reset its dates - a change to the very record that said "leave me alone".
+	 */
+	public static final AdMessageKey MSG_M_Delivery_Planning_VoidClosedAllocatedPlannings = AdMessageKey.of("de.metas.deliveryplanning.VoidDeliveryInstruction.ClosedAllocatedPlannings");
+
+	/**
 	 * Refuses completing a delivery instruction that holds no planning, which the reports would print as a blank
 	 * document. Scoped to an actual delivery instruction via {@link ShipperTransportationDocSubTypeGuard}, so a
 	 * transport order - which never has allocations - stays unaffected.
@@ -995,6 +1003,26 @@ public class DeliveryPlanningService
 	}
 
 	/**
+	 * Why the given delivery instruction cannot be VOIDED, or empty when it can.
+	 * <p>
+	 * The same one rule as {@link #getReActivateRejectionReason}, on the action that has the most to change: voiding
+	 * runs {@link #unlinkDeliveryPlannings}, which deactivates every allocation, clears every release number and
+	 * resets every planning's dates. On a closed planning that is exactly the mutation closing forbids, so the void
+	 * is refused until the planner re-opens it.
+	 * <p>
+	 * Reached by all three paths a void arrives on - the planner's Void button on the completed instruction,
+	 * {@link #regenerateDeliveryInstructions} and {@link #cancelDelivery} - because each goes through the document
+	 * engine's {@code ACTION_Void}, and the guard hangs off {@code TIMING_BEFORE_VOID} rather than off any one
+	 * caller. A transport order, which never has allocations, is a no-op here as it is on the other two actions.
+	 */
+	public Optional<ITranslatableString> getVoidRejectionReason(@NonNull final ShipperTransportationId deliveryInstructionId)
+	{
+		return closedAllocatedPlanningsRejection(
+				deliveryPlanningRepository.getAllocatedPlanningIds(deliveryInstructionId),
+				MSG_M_Delivery_Planning_VoidClosedAllocatedPlannings);
+	}
+
+	/**
 	 * The one rule Complete and Re-Activate share: the rejection names EVERY closed planning among the given
 	 * allocated ones, never just the first, so the planner re-opens them all in one pass.
 	 *
@@ -1273,11 +1301,22 @@ public class DeliveryPlanningService
 	/**
 	 * Why nothing can be removed from a delivery instruction for this selection, or empty when it can.
 	 * <p>
-	 * Deliberately does NOT reject a closed planning: closing a planning says "stop processing this", which is
-	 * exactly the situation in which taking it off the truck is the right correction.
+	 * A closed planning is refused, like everywhere else: removal deactivates its allocation, drops its release
+	 * number and resets its dates, which is precisely the mutation closing forbids. The planner re-opens it first
+	 * and removes it then - two deliberate steps rather than one that quietly undoes the other.
+	 * <p>
+	 * Row eligibility first - closed, then not-allocated, then on-a-completed-instruction - so a planner resolves
+	 * "this row cannot go at all" before "it cannot come off THAT instruction".
 	 */
 	public Optional<ITranslatableString> getRemoveFromRejectionReason(@NonNull final DeliveryPlanningList selectedDeliveryPlannings)
 	{
+		if (selectedDeliveryPlannings.anyClosed())
+		{
+			return Optional.of(TranslatableStrings.adMessage(
+					MSG_M_Delivery_Planning_ClosedPlannings,
+					toIdList(selectedDeliveryPlannings.closedOnes())));
+		}
+
 		final DeliveryPlanningList allocated = selectedDeliveryPlannings.allocatedOnes();
 		if (allocated.isEmpty())
 		{

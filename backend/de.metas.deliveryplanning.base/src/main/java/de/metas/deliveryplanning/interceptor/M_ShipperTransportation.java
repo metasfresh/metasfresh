@@ -90,6 +90,24 @@ public class M_ShipperTransportation
 	}
 
 	/**
+	 * Refuses to VOID a delivery instruction while any of its allocated plannings is closed. The third sibling of
+	 * {@link #rejectCompleteWithClosedAllocatedPlannings(I_M_ShipperTransportation)}, and the one that guards the
+	 * most: voiding runs {@link #unlinkDeliveryPlannings(I_M_ShipperTransportation)}, which would deactivate the
+	 * closed planning's allocation, drop its release number and reset its dates.
+	 * <p>
+	 * BEFORE_VOID, so it fires before that unlink - and on the document engine's action rather than on any one
+	 * caller, which is what makes all three void paths reach it: the planner's Void button on the completed
+	 * instruction, Re-Generate Delivery Instruction, and Cancel. A plain transport order, which never has
+	 * allocations, is never rejected here.
+	 */
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_VOID)
+	public void rejectVoidWithClosedAllocatedPlannings(@NonNull final I_M_ShipperTransportation shipperTransportation)
+	{
+		deliveryPlanningService.getVoidRejectionReason(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()))
+				.ifPresent(reason -> {throw new AdempiereException(reason);});
+	}
+
+	/**
 	 * The instruction's dates are read-only on an allocated planning; this one-way sync is what keeps them in step.
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = {

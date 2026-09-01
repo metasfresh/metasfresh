@@ -57,10 +57,10 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * What completing - and re-activating - a delivery instruction costs, and what each refuses.
+ * What completing - and re-activating, and voiding - a delivery instruction costs, and what each refuses.
  * <p>
  * A transport order shares {@code M_ShipperTransportation} with a delivery instruction and must be unaffected
- * by both rules; it behaves here exactly like a delivery instruction with zero allocations.
+ * by any of these rules; it behaves here exactly like a delivery instruction with zero allocations.
  */
 class DeliveryPlanningCompletionCascadeTest
 {
@@ -284,6 +284,53 @@ class DeliveryPlanningCompletionCascadeTest
 				.as("sanity: completing the very same instruction IS refused")
 				.isPresent();
 		assertThat(deliveryPlanningService.getReActivateRejectionReason(deliveryInstructionId)).isEmpty();
+	}
+
+	// ------------------------------------------------------------------ getVoidRejectionReason
+
+	@Test
+	@DisplayName("void is accepted when none of the allocated plannings are closed")
+	void voidIsAcceptedWhenNoneClosed()
+	{
+		final ShipperTransportationId deliveryInstructionId = createDeliveryInstruction();
+		allocate(deliveryInstructionId, createDeliveryPlanning(false));
+		allocate(deliveryInstructionId, createDeliveryPlanning(false));
+
+		assertThat(deliveryPlanningService.getVoidRejectionReason(deliveryInstructionId)).isEmpty();
+	}
+
+	@Test
+	@DisplayName("void is refused and names every closed allocated planning, not just the first one")
+	void voidIsRefusedAndNamesTheClosedOnes()
+	{
+		final ShipperTransportationId deliveryInstructionId = createDeliveryInstruction();
+		final DeliveryPlanningId open = createDeliveryPlanning(false);
+		final DeliveryPlanningId closedOne = createDeliveryPlanning(true);
+		final DeliveryPlanningId closedTwo = createDeliveryPlanning(true);
+		allocate(deliveryInstructionId, open);
+		allocate(deliveryInstructionId, closedOne);
+		allocate(deliveryInstructionId, closedTwo);
+
+		final Optional<ITranslatableString> reason = deliveryPlanningService.getVoidRejectionReason(deliveryInstructionId);
+
+		assertThat(reason).as("a rejection reason").isPresent();
+		final String text = reason.get().translate("en_US");
+		assertThat(text).contains(DeliveryPlanningService.MSG_M_Delivery_Planning_VoidClosedAllocatedPlannings.toAD_Message());
+		assertThat(text).contains(String.valueOf(closedOne.getRepoId()));
+		assertThat(text).contains(String.valueOf(closedTwo.getRepoId()));
+		assertThat(text).doesNotContain(String.valueOf(open.getRepoId()));
+	}
+
+	@Test
+	@DisplayName("void is accepted for a delivery instruction with zero active allocations - the empty rule is COMPLETE-only")
+	void voidIsAcceptedForEmptyDeliveryInstruction()
+	{
+		final ShipperTransportationId deliveryInstructionId = createDeliveryInstructionWithDocType();
+
+		assertThat(deliveryPlanningService.getCompleteRejectionReason(deliveryInstructionId))
+				.as("sanity: completing the very same instruction IS refused")
+				.isPresent();
+		assertThat(deliveryPlanningService.getVoidRejectionReason(deliveryInstructionId)).isEmpty();
 	}
 
 	// ------------------------------------------------------------------ invalidateInvoiceCandidatesFor(instruction)

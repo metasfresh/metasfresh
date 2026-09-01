@@ -319,8 +319,8 @@ public class M_Delivery_Instruction_StepDef
 	}
 
 	/**
-	 * Presses {@code Complete} or {@code Re-Activate} on the delivery instruction expecting it to be REFUSED, and
-	 * asserts which rejection came back. Both actions are guarded, so both need the refusal form.
+	 * Presses {@code Complete}, {@code Re-Activate} or {@code Void} on the delivery instruction expecting it to be
+	 * REFUSED, and asserts which rejection came back. All three are guarded, so all three need the refusal form.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -334,14 +334,14 @@ public class M_Delivery_Instruction_StepDef
 	 *   | de.metas.deliveryplanning.CompleteDeliveryInstruction.EmptyDeliveryInstruction |
 	 * </pre>
 	 */
-	@When("^(completing|reactivating) the M_ShipperTransportation identified by (.*) is refused:$")
+	@When("^(completing|reactivating|voiding) the M_ShipperTransportation identified by (.*) is refused:$")
 	public void deliveryInstruction_docAction_is_refused(
 			@NonNull final String action,
 			@NonNull final String deliveryInstructionIdentifier,
 			@NonNull final DataTable dataTable)
 	{
 		final I_M_ShipperTransportation deliveryInstruction = deliveryInstructionTable.get(deliveryInstructionIdentifier);
-		final StepDefDocAction docAction = "completing".equals(action) ? StepDefDocAction.completed : StepDefDocAction.reactivated;
+		final StepDefDocAction docAction = docActionOf(action);
 
 		rejectionHelper.runExpectingRejectionIfAny(
 				DataTableRows.of(dataTable).singleRow(),
@@ -447,6 +447,23 @@ public class M_Delivery_Instruction_StepDef
 				.forEach(included -> code.append("\n").append(getValRuleCodeIncludingIncluded(included.getIncluded_Val_Rule_ID())));
 
 		return code.toString();
+	}
+
+	/** The document action behind the gerund the refusal step is written with. */
+	@NonNull
+	private static StepDefDocAction docActionOf(@NonNull final String action)
+	{
+		switch (action)
+		{
+			case "completing":
+				return StepDefDocAction.completed;
+			case "reactivating":
+				return StepDefDocAction.reactivated;
+			case "voiding":
+				return StepDefDocAction.voided;
+			default:
+				throw new AdempiereException("Unsupported action for M_ShipperTransportation: " + action);
+		}
 	}
 
 	private void processDeliveryInstruction(@NonNull final I_M_ShipperTransportation deliveryInstruction, @NonNull final StepDefDocAction action)

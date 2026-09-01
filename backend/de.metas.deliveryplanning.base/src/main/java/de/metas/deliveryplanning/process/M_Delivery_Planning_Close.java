@@ -35,6 +35,14 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Delivery_Planning;
 
+/**
+ * Closes the selected delivery plannings: "I am done with this cargo, leave it alone".
+ * <p>
+ * Deliberately says nothing about the {@code ReleaseNo}: an ALLOCATED planning is exactly the one a planner needs
+ * to call off, so a release number - which every allocated planning carries - must not make the action
+ * unavailable. The only condition is the one {@link #checkAnyOpen} states: at least one selected planning is
+ * still open.
+ */
 public class M_Delivery_Planning_Close extends JavaProcess implements IProcessPrecondition
 {
 	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
@@ -45,7 +53,6 @@ public class M_Delivery_Planning_Close extends JavaProcess implements IProcessPr
 		return ProcessPreconditionsResolution.firstRejectOrElseAccept(
 				() -> DeliveryPlanningProcessHelper.checkAnySelection(context),
 				() -> checkAnyOpen(context),
-				() -> checkAnyWithoutReleaseNo(context),
 				() -> checkNoBlockedPartner(context));
 	}
 
@@ -56,18 +63,6 @@ public class M_Delivery_Planning_Close extends JavaProcess implements IProcessPr
 		if (!selectedDeliveryPlannings.anyOpen())
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(DeliveryPlanningService.MSG_M_Delivery_Planning_AllClosed));
-		}
-
-		return ProcessPreconditionsResolution.accept();
-	}
-
-	private ProcessPreconditionsResolution checkAnyWithoutReleaseNo(@NonNull final IProcessPreconditionsContext context)
-	{
-		final boolean isExistDeliveryPlanningsWithoutReleaseNo = deliveryPlanningService.isExistDeliveryPlanningsWithoutReleaseNo(context.getQueryFilter(I_M_Delivery_Planning.class));
-
-		if (!isExistDeliveryPlanningsWithoutReleaseNo)
-		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(DeliveryPlanningService.MSG_M_Delivery_Planning_AllHaveReleaseNo));
 		}
 
 		return ProcessPreconditionsResolution.accept();

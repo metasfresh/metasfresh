@@ -112,16 +112,47 @@ class M_ShipperTransportationTest
 	}
 
 	@Test
-	@DisplayName("the closed-planning guard is wired to BOTH complete and re-activate - one condition, two document actions")
-	void closedAllocatedPlanningsGuardCoversCompleteAndReActivate()
+	@DisplayName("the closed-planning guard is wired to complete, re-activate AND void - one condition, three document actions")
+	void closedAllocatedPlanningsGuardCoversCompleteReActivateAndVoid()
 	{
 		final DocValidate onComplete = methodNamed("rejectCompleteWithClosedAllocatedPlannings").getAnnotation(DocValidate.class);
 		final DocValidate onReActivate = methodNamed("rejectReActivateWithClosedAllocatedPlannings").getAnnotation(DocValidate.class);
+		final DocValidate onVoid = methodNamed("rejectVoidWithClosedAllocatedPlannings").getAnnotation(DocValidate.class);
 
 		assertThat(onComplete).as("the complete guard must be a @DocValidate handler").isNotNull();
 		assertThat(onComplete.timings()).containsExactly(ModelValidator.TIMING_BEFORE_COMPLETE);
 		assertThat(onReActivate).as("the re-activate guard must be a @DocValidate handler").isNotNull();
 		assertThat(onReActivate.timings()).containsExactly(ModelValidator.TIMING_BEFORE_REACTIVATE);
+		assertThat(onVoid).as("the void guard must be a @DocValidate handler").isNotNull();
+		assertThat(onVoid.timings()).containsExactly(ModelValidator.TIMING_BEFORE_VOID);
+	}
+
+	/**
+	 * BEFORE, not AFTER: the sibling {@code unlinkDeliveryPlannings} runs on TIMING_AFTER_VOID and deactivates every
+	 * allocation, so a guard placed after it would find no closed allocated planning left to object to and would
+	 * pass on exactly the case it exists to refuse.
+	 */
+	@Test
+	@DisplayName("the void guard fires BEFORE the unlink that would erase the very state it inspects")
+	void voidGuardFiresBeforeTheUnlink()
+	{
+		final DocValidate onVoid = methodNamed("rejectVoidWithClosedAllocatedPlannings").getAnnotation(DocValidate.class);
+		final DocValidate onUnlink = methodNamed("unlinkDeliveryPlannings").getAnnotation(DocValidate.class);
+
+		assertThat(onVoid.timings()).containsExactly(ModelValidator.TIMING_BEFORE_VOID);
+		assertThat(onUnlink.timings()).containsExactly(ModelValidator.TIMING_AFTER_VOID);
+	}
+
+	@Test
+	@DisplayName("the void guard asks the service for its rejection reason, for this very instruction")
+	void voidGuardConsultsTheService()
+	{
+		final I_M_ShipperTransportation deliveryInstruction = deliveryInstruction();
+
+		interceptor.rejectVoidWithClosedAllocatedPlannings(deliveryInstruction);
+
+		Mockito.verify(deliveryPlanningService).getVoidRejectionReason(
+				ShipperTransportationId.ofRepoId(deliveryInstruction.getM_ShipperTransportation_ID()));
 	}
 
 	@Test

@@ -29,3 +29,19 @@ UPDATE AD_Message_Trl SET MsgText='The delivery instruction cannot be re-activat
 
 UPDATE AD_Message_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-09-01 09:00:03', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Language IN ('de_DE', 'de_CH') AND AD_Message_ID=545817;
+
+-- fr_CH per the convention stated once in
+-- 5820520_sys_M_Delivery_Planning_GenerateDeliveryInstruction_IsComplete.sql: the en_US text,
+-- IsTranslated='N'. Runs after the en_US override above, so it copies the English text -- without this the
+-- seeded row keeps the German base text, which is unusable rather than merely untranslated for an fr_CH user.
+UPDATE AD_Message_Trl trl
+   SET MsgText      = en.MsgText,
+       IsTranslated = 'N',
+       Updated      = TO_TIMESTAMP('2026-09-01 09:00:04', 'YYYY-MM-DD HH24:MI:SS'),
+       UpdatedBy    = 100
+  FROM AD_Message_Trl en
+ WHERE en.AD_Message_ID = trl.AD_Message_ID
+   AND en.AD_Language = 'en_US'
+   AND trl.AD_Language = 'fr_CH'
+   AND trl.AD_Message_ID = 545817
+;
