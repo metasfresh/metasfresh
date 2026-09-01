@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.ReferenceListAwareEnum;
@@ -98,10 +99,11 @@ public class WorkflowLauncherCaption
 
 		if (nonBlankFields.isEmpty())
 		{
-			return TranslatableStrings.join(" | ", ImmutableList.of());
+			return TranslatableStrings.empty();
 		}
 
-		ITranslatableString result = fieldValues.get(nonBlankFields.get(0));
+		final TranslatableStringBuilder builder = TranslatableStrings.builder()
+				.append(fieldValues.get(nonBlankFields.get(0)));
 		for (int i = 1; i < nonBlankFields.size(); i++)
 		{
 			final String previousField = nonBlankFields.get(i - 1);
@@ -113,9 +115,9 @@ public class WorkflowLauncherCaption
 					? "\n"
 					: " | ";
 
-			result = TranslatableStrings.join(separator, result, fieldValues.get(field));
+			builder.append(separator).append(fieldValues.get(field));
 		}
-		return result;
+		return builder.build();
 	}
 
 	public String translate(@NonNull final String adLanguage)
