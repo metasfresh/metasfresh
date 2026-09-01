@@ -570,3 +570,86 @@ Feature: Purchase order
     Then validate C_OrderLine:
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyEntered | C_Project_ID         |
       | orderLine_PO_receipt      | order_PO_receipt      | product_PO_17062022     | 10         | 10           | 0           | 10    | 0        | EUR          | true      | 10             | project_PO_receipt_1 |
+
+  @from:cucumber
+  @allure.label.epic:E0140_Purchasing
+  @allure.label.feature:F00600_Purchase_Order
+  @F00600
+  @Id:S0156_720
+  Scenario: Receiving a fully matched purchase order line that has no ASI stamps the receipt line's ASI onto it
+  # Reproduces the production defect through the real carrier. No test-only flag, no synthetic write
+  # of the column under test - the receipt itself is what triggers it.
+  #
+  # MMatchPO.afterSave writes five order-line columns. QtyDelivered, DateDelivered, QtyInvoiced and
+  # DateInvoiced are all in assertChangeAllowed's ignoreColumnsChanged, so they cannot fire the
+  # interceptor. M_AttributeSetInstance_ID is NOT in that list, and afterSave stamps it from the
+  # receipt line when the order line has no ASI yet and the receipt fully matches
+  # (M_InOutLine.MovementQty == C_OrderLine.QtyOrdered). That stamp is the only write here that
+  # reaches the guard - and the guard's QtyDelivered==0 early return does not save it, because
+  # afterSave increments QtyDelivered on the in-memory model BEFORE saving.
+  #
+  # Three fixture conditions, all of them real production states:
+  #   1. the product has an attribute set, so the received HU - and hence the receipt line - carries
+  #      a non-zero ASI. Deliberately NOT QualityDiscountPercent: it splits the receipt into two
+  #      lines and destroys the full match the stamp depends on.
+  #   2. the ORDER LINE has no ASI. This is the condition the local stack never produces on its own
+  #      (every local order line gets an empty ASI record) while 37% of the customer's purchase order
+  #      lines have none - 573246 of 1560109 measured 2026-09-01. Cleared explicitly below; the order
+  #      line is still undelivered at that point, so the guard early-returns and the clear is safe.
+  #   3. the receipt fully matches QtyOrdered.
+  #
+  # "create material receipt" both creates and completes the receipt, so it raises the guard itself.
+  # Before the fix this scenario fails there with ORDER_RECEIPT_EXISTS.
+    Given load M_Attribute:
+      | M_Attribute_ID.Identifier | Value     |
+      | attr_ageOffset_PO         | AgeOffset |
+    And add M_AttributeSet:
+      | M_AttributeSet_ID.Identifier | Name                | MandatoryType |
+      | attributeSet_PO_asi          | attributeSet_PO_asi | N             |
+    And add M_AttributeUse:
+      | M_AttributeUse_ID.Identifier | M_AttributeSet_ID.Identifier | M_Attribute_ID.Identifier | SeqNo |
+      | attributeUse_PO_asi          | attributeSet_PO_asi          | attr_ageOffset_PO         | 10    |
+
+    And metasfresh contains M_Products:
+      | Identifier     | Value          | Name           | OPT.M_AttributeSet_ID.Identifier |
+      | product_PO_asi | product_PO_asi | product_PO_asi | attributeSet_PO_asi              |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
+      | huPiItemProduct_PO_asi             | huPiItem_IFCO              | product_PO_asi          | 10  | 2022-03-01 |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_PO_asi  | plv_PO                            | product_PO_asi          | 10.0     | PCE               | Normal                        |
+
+    And metasfresh contains C_Orders:
+      | Identifier   | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.M_PricingSystem_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.DeliveryRule | OPT.DeliveryViaRule |
+      | order_PO_asi | N       | supplier_PO              | 2022-06-10  | POO             | ps_PO                             | supplierLocation_PO                   | F                | S                   |
+    And metasfresh contains C_OrderLines:
+      | Identifier       | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | orderLine_PO_asi | order_PO_asi          | product_PO_asi          | 10         |
+
+    And the order identified by order_PO_asi is completed
+
+    # fixture condition 2: an ASI-less purchase order line. Safe here - nothing is delivered yet, so
+    # assertChangeAllowed early-returns on QtyDelivered == 0.
+    And update C_OrderLine:
+      | C_OrderLine_ID.Identifier | OPT.M_AttributeSetInstance_ID.Identifier |
+      | orderLine_PO_asi          | null                                     |
+
+    And after not more than 30s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
+      | receiptSchedule_PO_asi          | order_PO_asi          | orderLine_PO_asi          | supplier_PO              | supplierLocation_PO               | product_PO_asi          | 10         | warehouseStd              |
+    And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig_PO_asi                   | hu_PO_asi          | receiptSchedule_PO_asi          | N               | 1     | N               | 1     | N               | 10          | huPiItemProduct_PO_asi             | huPackingTauschpalette       |
+    And update M_HU_Attribute recursive:
+      | M_HU_ID.Identifier | M_Attribute_ID.Identifier | OPT.ValueNumber |
+      | hu_PO_asi          | attr_ageOffset_PO         | 3               |
+
+    # the whole point: this must NOT raise ORDER_RECEIPT_EXISTS
+    When create material receipt
+      | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | hu_PO_asi          | receiptSchedule_PO_asi          | inOut_PO_asi          |
+
+    Then validate C_OrderLine:
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyEntered |
+      | orderLine_PO_asi          | order_PO_asi          | product_PO_asi          | 10         | 10           | 0           | 10    | 0        | EUR          | true      | 10             |
