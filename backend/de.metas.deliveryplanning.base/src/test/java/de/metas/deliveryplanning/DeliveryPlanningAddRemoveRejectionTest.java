@@ -278,8 +278,7 @@ class DeliveryPlanningAddRemoveRejectionTest
 
 			assertThat(textOf(deliveryPlanningService.getRemoveFromRejectionReason(DeliveryPlanningList.of(open, closed))))
 					.isEqualTo(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_ClosedPlannings)
-							+ " - " + closed.getId().getRepoId())
-					.doesNotContain(String.valueOf(open.getId().getRepoId()));
+							+ " - " + closed.getId().getRepoId());
 		}
 
 		/**

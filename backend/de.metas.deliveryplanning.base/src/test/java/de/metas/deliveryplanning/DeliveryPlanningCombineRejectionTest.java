@@ -42,6 +42,7 @@ import org.mockito.Mockito;
 
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static de.metas.deliveryplanning.DeliveryPlanningAllocTestHelper.allocatedTo;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -196,8 +197,12 @@ class DeliveryPlanningCombineRejectionTest
 
 		final String rejectionText = rejectionTextOf(row1, row2);
 
-		assertThat(rejectionText).contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_IncompatibleSelection));
-		assertThat(Arrays.stream(AggregationKeyField.values()).map(field -> keyOf(field.getLabel())))
-				.allSatisfy(fieldLabel -> assertThat(rejectionText).contains(fieldLabel));
+		// the full sentence, derived from the SAME enum the loop used to walk - so it still auto-tracks a new
+		// AggregationKeyField, but now also pins that EVERY field is named, exactly once, in declaration order
+		assertThat(rejectionText)
+				.isEqualTo(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_IncompatibleSelection)
+						+ " - " + Arrays.stream(AggregationKeyField.values())
+						.map(field -> keyOf(field.getLabel()))
+						.collect(Collectors.joining(", ")));
 	}
 }

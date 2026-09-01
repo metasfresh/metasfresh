@@ -1025,11 +1025,20 @@ public class DeliveryPlanningRepository
 				.map(allocRecord -> ShipperTransportationId.ofRepoId(allocRecord.getM_ShipperTransportation_ID()));
 	}
 
+	/**
+	 * Ordered by allocation id ASCENDING, which IS the allocation order: {@link #createAllocation} saves one
+	 * record per request in the given order, so an earlier allocation always carries the lower id. Without the
+	 * ORDER BY, Postgres is free to return an unordered filtered scan in any row order it likes - and both
+	 * consumers promise the caller an order: {@link #getAllocationsOfInstruction} feeds
+	 * {@code DeliveryPlanningList.getIdsInAllocationOrder()}, and {@link #getAllocatedPlanningIds} feeds
+	 * {@link #getByIds}, whose contract is "the caller's id order - the order the allocations are numbered in".
+	 */
 	private IQueryBuilder<I_M_Delivery_Planning_Alloc> queryActiveAllocationsByInstructionId(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
 		return queryBL.createQueryBuilder(I_M_Delivery_Planning_Alloc.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Delivery_Planning_Alloc.COLUMNNAME_M_ShipperTransportation_ID, deliveryInstructionId);
+				.addEqualsFilter(I_M_Delivery_Planning_Alloc.COLUMNNAME_M_ShipperTransportation_ID, deliveryInstructionId)
+				.orderBy().addColumnAscending(I_M_Delivery_Planning_Alloc.COLUMNNAME_M_Delivery_Planning_Alloc_ID).endOrderBy();
 	}
 
 	private static DocStatus extractDocStatus(@NonNull final I_M_ShipperTransportation deliveryInstructionRecord)
