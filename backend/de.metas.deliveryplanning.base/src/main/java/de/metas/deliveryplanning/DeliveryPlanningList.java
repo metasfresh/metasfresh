@@ -129,12 +129,9 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	 */
 	public Optional<Object> getSingleAggregationKeyValue(@NonNull final AggregationKeyField field)
 	{
-		return list.stream()
-				.map(field::extractValue)
-				.distinct()
-				.count() == 1
-				? Optional.ofNullable(field.extractValue(list.get(0)))
-				: Optional.empty();
+		return list.isEmpty() || isMismatch(field)
+				? Optional.empty()
+				: Optional.ofNullable(field.extractValue(list.get(0)));
 	}
 
 	public boolean anyClosed() {return list.stream().anyMatch(DeliveryPlanning::isClosed);}

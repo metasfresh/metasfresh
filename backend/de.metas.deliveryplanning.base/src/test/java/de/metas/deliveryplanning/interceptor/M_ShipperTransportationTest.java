@@ -38,6 +38,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -67,7 +68,7 @@ class M_ShipperTransportationTest
 
 	private static Method methodNamed(final String name)
 	{
-		return java.util.Arrays.stream(M_ShipperTransportation.class.getDeclaredMethods())
+		return Arrays.stream(M_ShipperTransportation.class.getDeclaredMethods())
 				.filter(method -> method.getName().equals(name))
 				.findFirst()
 				.orElseThrow(() -> new AssertionError("No method named " + name));
@@ -97,6 +98,7 @@ class M_ShipperTransportationTest
 	{
 		final DocValidate annotation = methodNamed("updateBPartnerStatistics").getAnnotation(DocValidate.class);
 
+		assertThat(annotation).as("the method must be a @DocValidate handler").isNotNull();
 		assertThat(annotation.timings()).containsExactlyInAnyOrder(ModelValidator.TIMING_AFTER_COMPLETE, ModelValidator.TIMING_AFTER_VOID);
 	}
 

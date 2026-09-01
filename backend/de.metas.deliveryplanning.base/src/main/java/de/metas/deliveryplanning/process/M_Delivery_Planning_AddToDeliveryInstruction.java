@@ -22,7 +22,6 @@
 
 package de.metas.deliveryplanning.process;
 
-import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import de.metas.deliveryplanning.DeliveryPlanningList;
 import de.metas.deliveryplanning.DeliveryPlanningService;
@@ -33,7 +32,6 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.shipping.TransportDirection;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
 import lombok.NonNull;
@@ -41,9 +39,10 @@ import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Delivery_Planning;
-import org.compiere.model.Null;
 
 import javax.annotation.Nullable;
+
+import java.util.function.Supplier;
 
 import static de.metas.deliveryplanning.process.M_Delivery_Planning_CombineIntoDeliveryInstruction.MAX_SELECTION_SIZE;
 
@@ -57,12 +56,6 @@ import static de.metas.deliveryplanning.process.M_Delivery_Planning_CombineIntoD
 public class M_Delivery_Planning_AddToDeliveryInstruction extends JavaProcess
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
-	/**
-	 * The direction the target instruction has to match; not shown to the planner, read only by the target
-	 * parameter's value rule to narrow the offered instructions to the selection's own direction.
-	 */
-	private static final String PARAM_TransportDirection = I_M_Delivery_Planning.COLUMNNAME_TransportDirection;
-
 	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
 
 	/**
@@ -102,25 +95,9 @@ public class M_Delivery_Planning_AddToDeliveryInstruction extends JavaProcess
 	@Override
 	public Object getParameterDefaultValue(@NonNull final IProcessDefaultParameter parameter)
 	{
-		final String columnName = parameter.getColumnName();
-		if (PARAM_TransportDirection.equals(columnName))
-		{
-			// single by the precondition, which rejects a selection spanning two directions
-			return selectedDeliveryPlanningsForDefaults.get()
-					.getSingleTransportDirection()
-					.map(TransportDirection::getCode)
-					.map(Object.class::cast)
-					.orElse(Null.NULL);
-		}
-
-		if (!DeliveryPlanningProcessHelper.isAggregationKeyParameter(columnName))
-		{
-			return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
-		}
-
-		return DeliveryPlanningProcessHelper.getAggregationKeyParameterDefault(
-				selectedDeliveryPlanningsForDefaults.get(),
-				columnName);
+		return DeliveryPlanningProcessHelper.getParameterDefaultValue(
+				selectedDeliveryPlanningsForDefaults,
+				parameter.getColumnName());
 	}
 
 	@Override
