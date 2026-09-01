@@ -38,6 +38,7 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_BPartner;
@@ -49,7 +50,7 @@ import org.compiere.model.I_M_Product;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Asserts the {@code M_ShippingPackage} rows - the consignment a delivery instruction is loaded with. This is
@@ -60,35 +61,18 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
  * @see de.metas.cucumber.stepdefs.shipment.pickingterminal.M_ShippingPackage_StepDefData
  * @see de.metas.cucumber.stepdefs.deliveryplanning.M_Delivery_Planning_Alloc_StepDef
  */
+@RequiredArgsConstructor
 public class M_ShippingPackage_StepDef
 {
-	private final M_ShippingPackage_StepDefData shippingPackageTable;
-	private final M_ShipperTransportation_StepDefData shipperTransportationTable;
-	private final M_Package_StepDefData packageTable;
-	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
-	private final C_BPartner_StepDefData bPartnerTable;
-	private final C_OrderLine_StepDefData orderLineTable;
-	private final M_Product_StepDefData productTable;
+	@NonNull private final M_ShippingPackage_StepDefData shippingPackageTable;
+	@NonNull private final M_ShipperTransportation_StepDefData shipperTransportationTable;
+	@NonNull private final M_Package_StepDefData packageTable;
+	@NonNull private final C_BPartner_Location_StepDefData bPartnerLocationTable;
+	@NonNull private final C_BPartner_StepDefData bPartnerTable;
+	@NonNull private final C_OrderLine_StepDefData orderLineTable;
+	@NonNull private final M_Product_StepDefData productTable;
 
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-	public M_ShippingPackage_StepDef(
-			@NonNull final M_ShippingPackage_StepDefData shippingPackageTable,
-			@NonNull final M_ShipperTransportation_StepDefData shipperTransportationTable,
-			@NonNull final M_Package_StepDefData packageTable,
-			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
-			@NonNull final C_BPartner_StepDefData bPartnerTable,
-			@NonNull final C_OrderLine_StepDefData orderLineTable,
-			@NonNull final M_Product_StepDefData productTable)
-	{
-		this.shippingPackageTable = shippingPackageTable;
-		this.shipperTransportationTable = shipperTransportationTable;
-		this.packageTable = packageTable;
-		this.bPartnerLocationTable = bPartnerLocationTable;
-		this.bPartnerTable = bPartnerTable;
-		this.orderLineTable = orderLineTable;
-		this.productTable = productTable;
-	}
 
 	/**
 	 * Finds the shipping package of one package on one delivery instruction and registers it under an

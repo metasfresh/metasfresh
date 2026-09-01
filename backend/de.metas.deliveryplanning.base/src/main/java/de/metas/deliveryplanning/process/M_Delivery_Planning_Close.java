@@ -40,8 +40,8 @@ import org.compiere.model.I_M_Delivery_Planning;
  * <p>
  * Deliberately says nothing about the {@code ReleaseNo}: an ALLOCATED planning is exactly the one a planner needs
  * to call off, so a release number - which every allocated planning carries - must not make the action
- * unavailable. The only condition is the one {@link #checkAnyOpen} states: at least one selected planning is
- * still open.
+ * unavailable. The only condition is the one {@link #checkNoneClosed} states: not one selected planning is
+ * already closed.
  */
 public class M_Delivery_Planning_Close extends JavaProcess implements IProcessPrecondition
 {
@@ -52,20 +52,22 @@ public class M_Delivery_Planning_Close extends JavaProcess implements IProcessPr
 	{
 		return ProcessPreconditionsResolution.firstRejectOrElseAccept(
 				() -> DeliveryPlanningProcessHelper.checkAnySelection(context),
-				() -> checkAnyOpen(context),
+				() -> checkNoneClosed(context),
 				() -> checkNoBlockedPartner(context));
 	}
 
-	private ProcessPreconditionsResolution checkAnyOpen(@NonNull final IProcessPreconditionsContext context)
+	/**
+	 * Refuses the button as soon as ONE selected planning is already closed, which is the same thing
+	 * {@code doIt} does - see {@link DeliveryPlanningService#getCloseRejectionReason(DeliveryPlanningList)} for
+	 * why the two have to say it alike.
+	 */
+	private ProcessPreconditionsResolution checkNoneClosed(@NonNull final IProcessPreconditionsContext context)
 	{
 		final DeliveryPlanningList selectedDeliveryPlannings = deliveryPlanningService.getBySelection(context.getQueryFilter(I_M_Delivery_Planning.class));
 
-		if (!selectedDeliveryPlannings.anyOpen())
-		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(DeliveryPlanningService.MSG_M_Delivery_Planning_AllClosed));
-		}
-
-		return ProcessPreconditionsResolution.accept();
+		return deliveryPlanningService.getCloseRejectionReason(selectedDeliveryPlannings)
+				.map(ProcessPreconditionsResolution::reject)
+				.orElseGet(ProcessPreconditionsResolution::accept);
 	}
 
 	private ProcessPreconditionsResolution checkNoBlockedPartner(@NonNull final IProcessPreconditionsContext context)

@@ -953,6 +953,28 @@ public class DeliveryPlanningService
 	}
 
 	/**
+	 * Why the given selection cannot be CLOSED, or empty when it can.
+	 * <p>
+	 * ALL-or-nothing, and deliberately so: {@link #closeSelectedDeliveryPlannings} refuses the whole selection as
+	 * soon as one of its rows is already closed, and every sibling action that acts on a selection - Combine, Add,
+	 * Move, Remove - does the same. This is the half that used to disagree: the precondition asked whether ANY row
+	 * was still open, so a selection of one closed and one open row offered the button and then aborted the batch,
+	 * leaving the open row unclosed and reporting a developer-shaped error. The rejection names the closed rows, so
+	 * the planner can deselect exactly those.
+	 */
+	public Optional<ITranslatableString> getCloseRejectionReason(@NonNull final DeliveryPlanningList selectedDeliveryPlannings)
+	{
+		if (selectedDeliveryPlannings.anyClosed())
+		{
+			return Optional.of(TranslatableStrings.adMessage(
+					MSG_M_Delivery_Planning_Closed,
+					toIdList(selectedDeliveryPlannings.closedOnes())));
+		}
+
+		return Optional.empty();
+	}
+
+	/**
 	 * Why the given delivery instruction cannot be completed, or empty when it can.
 	 * <p>
 	 * Two rules:

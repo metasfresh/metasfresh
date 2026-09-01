@@ -12,7 +12,7 @@ VALUES (545817 /*From ID Server*/, 0, 0, 'Y',
         TO_TIMESTAMP('2026-09-01 09:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
         TO_TIMESTAMP('2026-09-01 09:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
         'de.metas.deliveryplanning.ReActivateDeliveryInstruction.ClosedAllocatedPlannings',
-        'Die Lieferanweisung kann nicht reaktiviert werden, solange geschlossene Lieferplanungen zugeordnet sind: {0}.', 'E', 'D')
+        'Geschlossene Lieferplanung zugeordnet, Reaktivierung nicht möglich: {0}.', 'E', 'D')
 ;
 
 UPDATE AD_Message SET ErrorCode='DP_REACTIVATE_CLOSED_PLANNING', Updated=TO_TIMESTAMP('2026-09-01 09:00:01', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Message_ID=545817;
@@ -25,7 +25,7 @@ WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.
   AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
 ;
 
-UPDATE AD_Message_Trl SET MsgText='The delivery instruction cannot be re-activated while closed delivery plannings are allocated to it: {0}.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-09-01 09:00:02', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545817;
+UPDATE AD_Message_Trl SET MsgText='Closed delivery planning allocated, cannot be re-activated: {0}.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-09-01 09:00:02', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545817;
 
 UPDATE AD_Message_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-09-01 09:00:03', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Language IN ('de_DE', 'de_CH') AND AD_Message_ID=545817;

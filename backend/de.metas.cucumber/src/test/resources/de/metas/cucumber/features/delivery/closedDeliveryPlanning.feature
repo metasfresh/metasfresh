@@ -239,11 +239,18 @@ Feature: A closed delivery planning is finished and nothing processes it any fur
 
     When M_Delivery_Planning identified by planningToggle_1 is closed
 
-    # On the grid the button is not even offered: every selected load is already in the state the action would
-    # put it in. This is the precondition - what the planner sees disabled, with the reason in the tooltip.
-    Then pressing Close on M_Delivery_Planning identified by planningToggle_1 is unavailable:
-      | ErrorAdMessage                                             |
-      | de.metas.deliveryplanning.DeliveryPlanningService.AllClosed |
+    # A MIXED selection - one closed, one open - is refused before the button is offered, naming the closed one.
+    # Close is all-or-nothing, so a precondition that only asked "is any of them still open?" would offer the
+    # button and let doIt abort the whole batch, closing nothing.
+    Then pressing Close on M_Delivery_Planning identified by planningToggle_1,planningToggle_2 is unavailable:
+      | ErrorAdMessage                                           |
+      | de.metas.deliveryplanning.DeliveryPlanningService.Closed |
+
+    # and on the grid the button is not offered for the closed load on its own either: it is already in the
+    # state the action would put it in. This is what the planner sees disabled, with the reason in the tooltip.
+    And pressing Close on M_Delivery_Planning identified by planningToggle_1 is unavailable:
+      | ErrorAdMessage                                           |
+      | de.metas.deliveryplanning.DeliveryPlanningService.Closed |
     And pressing Re-Open on M_Delivery_Planning identified by planningToggle_2 is unavailable:
       | ErrorAdMessage                                           |
       | de.metas.deliveryplanning.DeliveryPlanningService.AllOpen |

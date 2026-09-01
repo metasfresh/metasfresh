@@ -67,7 +67,11 @@ public class M_DeliveryPlanning_CreateAdditionalLines extends JavaProcess implem
 
 		if (deliveryPlanningService.isClosed(deliveryPlanningId))
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason(msgBL.getTranslatableMsgText(DeliveryPlanningService.MSG_M_Delivery_Planning_AllClosed));
+			// names the one planning it is about: the condition is singular (a single-selection action), so the
+			// plural "all records are closed" this used to report described a different situation entirely
+			return ProcessPreconditionsResolution.rejectWithInternalReason(
+					DeliveryPlanningService.MSG_M_Delivery_Planning_Closed,
+					deliveryPlanningId.getRepoId());
 		}
 
 		return ProcessPreconditionsResolution.accept();

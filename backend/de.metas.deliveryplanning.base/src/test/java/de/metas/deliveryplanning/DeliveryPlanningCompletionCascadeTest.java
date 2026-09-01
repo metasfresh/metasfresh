@@ -187,11 +187,10 @@ class DeliveryPlanningCompletionCascadeTest
 		final Optional<ITranslatableString> reason = deliveryPlanningService.getCompleteRejectionReason(deliveryInstructionId);
 
 		assertThat(reason).as("a rejection reason").isPresent();
-		final String text = reason.get().translate("en_US");
-		assertThat(text).contains(DeliveryPlanningService.MSG_M_Delivery_Planning_ClosedAllocatedPlannings.toAD_Message());
-		assertThat(text).contains(String.valueOf(closedOne.getRepoId()));
-		assertThat(text).contains(String.valueOf(closedTwo.getRepoId()));
-		assertThat(text).doesNotContain(String.valueOf(open.getRepoId()));
+		// the full sentence, not three contains(): the separator and the order are the point of naming them all
+		assertThat(reason.get().translate("en_US"))
+				.isEqualTo(DeliveryPlanningService.MSG_M_Delivery_Planning_ClosedAllocatedPlannings.toAD_Message()
+						+ " - " + closedOne.getRepoId() + ", " + closedTwo.getRepoId());
 	}
 
 	@Test
@@ -267,11 +266,10 @@ class DeliveryPlanningCompletionCascadeTest
 		final Optional<ITranslatableString> reason = deliveryPlanningService.getReActivateRejectionReason(deliveryInstructionId);
 
 		assertThat(reason).as("a rejection reason").isPresent();
-		final String text = reason.get().translate("en_US");
-		assertThat(text).contains(DeliveryPlanningService.MSG_M_Delivery_Planning_ReActivateClosedAllocatedPlannings.toAD_Message());
-		assertThat(text).contains(String.valueOf(closedOne.getRepoId()));
-		assertThat(text).contains(String.valueOf(closedTwo.getRepoId()));
-		assertThat(text).doesNotContain(String.valueOf(open.getRepoId()));
+		// the full sentence, not three contains(): the separator and the order are the point of naming them all
+		assertThat(reason.get().translate("en_US"))
+				.isEqualTo(DeliveryPlanningService.MSG_M_Delivery_Planning_ReActivateClosedAllocatedPlannings.toAD_Message()
+						+ " - " + closedOne.getRepoId() + ", " + closedTwo.getRepoId());
 	}
 
 	@Test

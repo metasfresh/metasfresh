@@ -51,7 +51,6 @@ import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
-import de.metas.order.OrderLineId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;

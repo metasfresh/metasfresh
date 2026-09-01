@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.deliveryplanning.interceptor.M_Delivery_Planning;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
-import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ITranslatableString;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperRepository;
@@ -39,7 +39,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
@@ -55,9 +54,9 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Closing a delivery planning sets the flag and NOTHING else: the allocation, its shipping package, the
@@ -141,11 +140,6 @@ class DeliveryPlanningCloseSemanticsTest
 		return DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID());
 	}
 
-	private static String keyOf(@NonNull final AdMessageKey adMessageKey)
-	{
-		return adMessageKey.toAD_Message();
-	}
-
 	private static I_M_Delivery_Planning reload(@NonNull final I_M_Delivery_Planning record)
 	{
 		return InterfaceWrapperHelper.load(idOf(record), I_M_Delivery_Planning.class);
@@ -197,7 +191,7 @@ class DeliveryPlanningCloseSemanticsTest
 
 	@Test
 	@DisplayName("close: a planning allocated to a DRAFT instruction keeps its allocation, package, ReleaseNo and dates")
-	void close_allocatedToDraftInstruction_changesNothingButTheFlag()
+	void allocatedToDraftInstruction_changesNothingButTheFlag()
 	{
 		final ShipperTransportationId draft = deliveryInstruction("DRAFT-1", DocStatus.Drafted.getCode());
 		// gives the instruction a date the allocation syncs down, so "the close changed nothing else" has
@@ -229,7 +223,7 @@ class DeliveryPlanningCloseSemanticsTest
 
 	@Test
 	@DisplayName("close: a planning allocated to a COMPLETED instruction is closed too - the state the complete and re-activate guards then refuse")
-	void close_allocatedToCompletedInstruction_isAllowed()
+	void allocatedToCompletedInstruction_isAllowed()
 	{
 		final ShipperTransportationId completed = deliveryInstruction("COMPLETED-1", DocStatus.Completed.getCode());
 		final I_M_Delivery_Planning planning = deliveryPlanning();
@@ -249,7 +243,7 @@ class DeliveryPlanningCloseSemanticsTest
 
 	@Test
 	@DisplayName("close: a selection of two closes both and leaves both allocations alone")
-	void close_selectionOfTwo_closesBothAndTouchesNoAllocation()
+	void selectionOfTwo_closesBothAndTouchesNoAllocation()
 	{
 		final ShipperTransportationId draft = deliveryInstruction("DRAFT-2", DocStatus.Drafted.getCode());
 		final I_M_Delivery_Planning first = deliveryPlanning();
@@ -263,5 +257,36 @@ class DeliveryPlanningCloseSemanticsTest
 		assertThat(reload(first).isClosed()).isTrue();
 		assertThat(reload(second).isClosed()).isTrue();
 		assertThat(allActiveAllocations()).as("both allocations survive").hasSize(2);
+	}
+
+	@Test
+	@DisplayName("close precondition: a MIXED selection is refused before the button is offered, and names the closed one")
+	void mixedSelectionIsRefusedBeforeTheButtonIsOffered()
+	{
+		final I_M_Delivery_Planning open = deliveryPlanning();
+		final I_M_Delivery_Planning alreadyClosed = deliveryPlanning();
+		deliveryPlanningService.closeSelectedDeliveryPlannings(selectionOf(alreadyClosed));
+
+		final Optional<ITranslatableString> rejection = deliveryPlanningService.getCloseRejectionReason(
+				deliveryPlanningService.getBySelection(selectionOf(open, alreadyClosed)));
+
+		// closing is all-or-nothing, so the precondition has to refuse the whole selection here: a precondition
+		// that only asked "is any of them still open?" would offer the button and let doIt abort the batch
+		assertThat(rejection).as("a rejection reason").isPresent();
+		assertThat(rejection.get().translate("en_US"))
+				.isEqualTo(DeliveryPlanningService.MSG_M_Delivery_Planning_Closed.toAD_Message()
+						+ " - " + idOf(alreadyClosed).getRepoId());
+	}
+
+	@Test
+	@DisplayName("close precondition: a selection in which every planning is still open is accepted")
+	void selectionOfOnlyOpenPlanningsIsOffered()
+	{
+		final I_M_Delivery_Planning first = deliveryPlanning();
+		final I_M_Delivery_Planning second = deliveryPlanning();
+
+		assertThat(deliveryPlanningService.getCloseRejectionReason(
+				deliveryPlanningService.getBySelection(selectionOf(first, second))))
+				.isEmpty();
 	}
 }

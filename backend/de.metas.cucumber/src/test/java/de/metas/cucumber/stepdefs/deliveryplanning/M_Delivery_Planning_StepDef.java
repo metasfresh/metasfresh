@@ -491,8 +491,8 @@ public class M_Delivery_Planning_StepDef
 	 * @cucumber.example
 	 * <pre>
 	 * When pressing Close on M_Delivery_Planning identified by deliveryPlanning_1 is unavailable:
-	 *   | ErrorAdMessage                                                    |
-	 *   | de.metas.deliveryplanning.DeliveryPlanningService.AllClosed        |
+	 *   | ErrorAdMessage                                           |
+	 *   | de.metas.deliveryplanning.DeliveryPlanningService.Closed |
 	 * </pre>
 	 */
 	@When("^pressing (Close|Re-Open) on M_Delivery_Planning identified by (.*) is unavailable:$")
