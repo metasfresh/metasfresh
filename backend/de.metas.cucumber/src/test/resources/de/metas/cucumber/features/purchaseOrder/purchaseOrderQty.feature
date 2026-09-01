@@ -556,9 +556,9 @@ Feature: Purchase order
       | orderLine_PO_receipt      | order_PO_receipt      | product_PO_17062022     | 10         | 10           | 0           | 10    | 0        | EUR          | true      | 10             | project_PO_receipt_1 |
 
     # the very same change, made by a user, stays blocked
-    When update C_OrderLine as UI action expecting error:
-      | C_OrderLine_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.ErrorCode        |
-      | orderLine_PO_receipt      | project_PO_receipt_2        | ORDER_RECEIPT_EXISTS |
+    When update C_OrderLine expecting error:
+      | C_OrderLine_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.AsUIAction | OPT.ErrorCode        |
+      | orderLine_PO_receipt      | project_PO_receipt_2        | Y              | ORDER_RECEIPT_EXISTS |
     Then validate C_OrderLine:
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyEntered | C_Project_ID         |
       | orderLine_PO_receipt      | order_PO_receipt      | product_PO_17062022     | 10         | 10           | 0           | 10    | 0        | EUR          | true      | 10             | project_PO_receipt_1 |

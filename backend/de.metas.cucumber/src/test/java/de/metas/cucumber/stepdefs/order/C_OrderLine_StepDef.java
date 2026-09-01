@@ -413,35 +413,71 @@ public class C_OrderLine_StepDef
 		}
 	}
 
+	/**
+	 * Updates previously registered order lines, applying every value column that is present.
+	 *
+	 * <p>The save runs as a background write, i.e. the way an automatic writer such as the invoicing
+	 * run saves a line. Use {@code update C_OrderLine expecting error:} with {@code AsUIAction} to save
+	 * as a user edit instead.</p>
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <ul>
+	 *     <li>{@code C_OrderLine_ID} — required, identifier of the line to update</li>
+	 *     <li>{@code C_Flatrate_Term_ID}, {@code QtyEntered}, {@code M_HU_PI_Item_Product_ID},
+	 *         {@code M_AttributeSetInstance_ID}, {@code QtyOrdered}, {@code C_Project_ID} — optional,
+	 *         each is applied only when the column is present</li>
+	 *   </ul>
+	 * @cucumber.example
+	 * <pre>
+	 * And update C_OrderLine:
+	 *   | C_OrderLine_ID.Identifier | OPT.QtyEntered |
+	 *   | ol_1                      | 50             |
+	 * </pre>
+	 */
 	@And("update C_OrderLine:")
 	public void update_C_OrderLine(@NonNull final DataTable dataTable)
 	{
 		dataTable.asMaps().forEach(row -> updateOrderLine(row, false));
 	}
 
+	/**
+	 * Same as {@code update C_OrderLine:}, but the save is expected to be rejected.
+	 *
+	 * <p>With {@code AsUIAction} the record is flagged as a manual user action before it is saved, the
+	 * way the WebUI's save handler does it — that is what makes a model interceptor apply a policy it
+	 * enforces for user edits only.</p>
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <ul>
+	 *     <li>{@code C_OrderLine_ID} — required, identifier of the line to update</li>
+	 *     <li>the value columns of {@code update C_OrderLine:} — optional</li>
+	 *     <li>{@code ErrorCode} — optional, the expected error code of the thrown exception</li>
+	 *     <li>{@code ErrorMessage} — optional, an expected substring of the exception message;
+	 *         at least one of {@code ErrorCode} / {@code ErrorMessage} has to be given</li>
+	 *     <li>{@code AsUIAction} — optional, defaults to {@code N}</li>
+	 *   </ul>
+	 * @cucumber.example
+	 * <pre>
+	 * And update C_OrderLine expecting error:
+	 *   | C_OrderLine_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.AsUIAction | OPT.ErrorCode        |
+	 *   | ol_1                      | project_2                   | Y              | ORDER_RECEIPT_EXISTS |
+	 * </pre>
+	 */
 	@And("update C_OrderLine expecting error:")
 	public void update_C_OrderLine_expectingError(@NonNull final DataTable dataTable)
 	{
-		updateOrderLineExpectingError(dataTable, false);
-	}
-
-	@And("update C_OrderLine as UI action expecting error:")
-	public void update_C_OrderLine_asUIAction_expectingError(@NonNull final DataTable dataTable)
-	{
-		updateOrderLineExpectingError(dataTable, true);
-	}
-
-	private void updateOrderLineExpectingError(@NonNull final DataTable dataTable, final boolean asUIAction)
-	{
-		final List<Map<String, String>> rows = dataTable.asMaps();
-		if (rows.size() > 1)
+		final List<Map<String, String>> rowMaps = dataTable.asMaps();
+		if (rowMaps.size() > 1)
 		{
 			throw new IllegalArgumentException("Multiple rows are not supported!");
 		}
-		final Map<String, String> row = rows.get(0);
+		final Map<String, String> rowMap = rowMaps.get(0);
+		final DataTableRow row = DataTableRow.singleRow(rowMap);
 
-		final String expectedErrorCode = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.ErrorCode");
-		final String expectedMessagePart = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.ErrorMessage");
+		final String expectedErrorCode = row.getAsOptionalString("ErrorCode").orElse(null);
+		final String expectedMessagePart = row.getAsOptionalString("ErrorMessage").orElse(null);
 		if (Check.isBlank(expectedErrorCode) && Check.isBlank(expectedMessagePart))
 		{
 			throw new IllegalArgumentException("Either ErrorCode or ErrorMessage has to be given!");
@@ -449,7 +485,7 @@ public class C_OrderLine_StepDef
 
 		try
 		{
-			updateOrderLine(row, asUIAction);
+			updateOrderLine(rowMap, row.getAsOptionalBoolean("AsUIAction").orElseFalse());
 
 			Assertions.fail("An Exception should have been thrown !");
 		}
@@ -466,10 +502,6 @@ public class C_OrderLine_StepDef
 		}
 	}
 
-	/**
-	 * @param asUIAction if true, the record is flagged as a manual user action before it is saved, the way
-	 * the WebUI's save handler does it. Model interceptors that only guard *user* edits fire just in that case.
-	 */
 	private void updateOrderLine(@NonNull final Map<String, String> row, final boolean asUIAction)
 	{
 		final String olIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
