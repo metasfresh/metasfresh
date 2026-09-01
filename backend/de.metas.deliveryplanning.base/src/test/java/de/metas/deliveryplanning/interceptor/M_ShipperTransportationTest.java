@@ -92,6 +92,24 @@ class M_ShipperTransportationTest
 	}
 
 	@Test
+	@DisplayName("bpartner statistics still update on both complete and void, unaffected by the split")
+	void bpartnerStatisticsTimingsUnchanged()
+	{
+		final DocValidate annotation = methodNamed("updateBPartnerStatistics").getAnnotation(DocValidate.class);
+
+		assertThat(annotation.timings()).containsExactlyInAnyOrder(ModelValidator.TIMING_AFTER_COMPLETE, ModelValidator.TIMING_AFTER_VOID);
+	}
+
+	@Test
+	@DisplayName("updateBPartnerStatistics no longer triggers invoice-candidate invalidation - that is a separate handler now")
+	void updateBPartnerStatisticsDoesNotInvalidateInvoiceCandidates()
+	{
+		interceptor.updateBPartnerStatistics(deliveryInstruction());
+
+		Mockito.verify(deliveryPlanningService, Mockito.never()).invalidateInvoiceCandidatesFor(Mockito.any(ShipperTransportationId.class));
+	}
+
+	@Test
 	@DisplayName("invalidateInvoiceCandidatesAfterComplete does invoke the service for the instruction")
 	void invalidateInvoiceCandidatesAfterCompleteInvokesTheService()
 	{
