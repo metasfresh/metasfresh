@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.deliveryplanning;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.shipment.M_ShipperTransportation_StepDefData;
@@ -103,40 +104,13 @@ public class M_Delivery_Planning_Alloc_StepDef
 
 		assertThat(allocRecords)
 				.as("active M_Delivery_Planning_Alloc records of M_ShipperTransportation %s", deliveryInstructionIdentifier)
-				.hasSize(expectedRows.toList().size());
+				.hasSize(expectedRows.size());
 
 		final SoftAssertions softly = new SoftAssertions();
 		final Set<Integer> allocIdsClaimedByAnEarlierRow = new HashSet<>();
 
-		expectedRows.forEach(row -> {
-			final StepDefDataIdentifier planningIdentifier = row.getAsIdentifier(I_M_Delivery_Planning_Alloc.COLUMNNAME_M_Delivery_Planning_ID);
-			final I_M_Delivery_Planning deliveryPlanning = planningIdentifier.lookupNotNullIn(deliveryPlanningTable);
-
-			final I_M_Delivery_Planning_Alloc allocRecord = findAllocationOf(
-					allocRecords, deliveryPlanning, allocIdsClaimedByAnEarlierRow, planningIdentifier, deliveryInstructionIdentifier);
-			allocIdsClaimedByAnEarlierRow.add(allocRecord.getM_Delivery_Planning_Alloc_ID());
-
-			softly.assertThat(allocRecord.getLineNo())
-					.as("%s of the allocation of M_Delivery_Planning %s", I_M_Delivery_Planning_Alloc.COLUMNNAME_LineNo, planningIdentifier)
-					.isEqualTo(row.getAsInt(I_M_Delivery_Planning_Alloc.COLUMNNAME_LineNo));
-
-			// each planning gets its OWN shipping package, and that package hangs off the same instruction
-			final I_M_ShippingPackage shippingPackage = loadShippingPackageOf(allocRecord);
-			softly.assertThat(shippingPackage.getM_ShipperTransportation_ID())
-					.as("%s of the shipping package of the allocation of M_Delivery_Planning %s", I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID, planningIdentifier)
-					.isEqualTo(deliveryInstruction.getM_ShipperTransportation_ID());
-
-			// the package carries THIS planning's load, not another planning's
-			row.getAsOptionalBigDecimal(I_M_ShippingPackage.COLUMNNAME_ActualLoadQty)
-					.ifPresent(actualLoadQty -> softly.assertThat(shippingPackage.getActualLoadQty())
-							.as("%s of the shipping package of the allocation of M_Delivery_Planning %s", I_M_ShippingPackage.COLUMNNAME_ActualLoadQty, planningIdentifier)
-							.isEqualByComparingTo(actualLoadQty));
-
-			row.getAsOptionalIdentifier(I_M_Delivery_Planning_Alloc.COLUMNNAME_M_Delivery_Planning_Alloc_ID)
-					.ifPresent(identifier -> identifier.putOrReplace(deliveryPlanningAllocTable, allocRecord));
-			row.getAsOptionalIdentifier(I_M_Delivery_Planning_Alloc.COLUMNNAME_M_ShippingPackage_ID)
-					.ifPresent(identifier -> identifier.putOrReplace(shippingPackageTable, shippingPackage));
-		});
+		expectedRows.forEach(row -> assertAllocationOfExpectedRow(
+				row, allocRecords, allocIdsClaimedByAnEarlierRow, deliveryInstruction, deliveryInstructionIdentifier, softly));
 
 		softly.assertAll();
 
@@ -147,28 +121,59 @@ public class M_Delivery_Planning_Alloc_StepDef
 	}
 
 	/**
-	 * The allocation of the given planning among the instruction's active ones, skipping any that an earlier
-	 * expected row already claimed - so one record can never satisfy two rows.
+	 * Asserts one expected row against the allocation of ITS OWN {@code M_Delivery_Planning_ID}, skipping any
+	 * allocation an earlier row already claimed - so one record can never satisfy two rows. Every assertion is
+	 * soft, the row-to-record match included, so a row that finds no match of its own does not hide the
+	 * mismatches of the rows after it.
 	 */
-	@NonNull
-	private I_M_Delivery_Planning_Alloc findAllocationOf(
+	private void assertAllocationOfExpectedRow(
+			@NonNull final DataTableRow row,
 			@NonNull final List<I_M_Delivery_Planning_Alloc> allocRecords,
-			@NonNull final I_M_Delivery_Planning deliveryPlanning,
 			@NonNull final Set<Integer> allocIdsClaimedByAnEarlierRow,
-			@NonNull final StepDefDataIdentifier planningIdentifier,
-			@NonNull final String deliveryInstructionIdentifier)
+			@NonNull final I_M_ShipperTransportation deliveryInstruction,
+			@NonNull final String deliveryInstructionIdentifier,
+			@NonNull final SoftAssertions softly)
 	{
+		final StepDefDataIdentifier planningIdentifier = row.getAsIdentifier(I_M_Delivery_Planning_Alloc.COLUMNNAME_M_Delivery_Planning_ID);
+		final I_M_Delivery_Planning deliveryPlanning = planningIdentifier.lookupNotNullIn(deliveryPlanningTable);
+
 		final List<I_M_Delivery_Planning_Alloc> matching = allocRecords.stream()
 				.filter(alloc -> alloc.getM_Delivery_Planning_ID() == deliveryPlanning.getM_Delivery_Planning_ID())
 				.filter(alloc -> !allocIdsClaimedByAnEarlierRow.contains(alloc.getM_Delivery_Planning_Alloc_ID()))
 				.collect(ImmutableList.toImmutableList());
 
-		assertThat(matching)
+		softly.assertThat(matching)
 				.as("unclaimed active M_Delivery_Planning_Alloc of M_Delivery_Planning %s on M_ShipperTransportation %s",
 						planningIdentifier, deliveryInstructionIdentifier)
 				.hasSize(1);
+		if (matching.size() != 1)
+		{
+			return;
+		}
 
-		return matching.get(0);
+		final I_M_Delivery_Planning_Alloc allocRecord = matching.get(0);
+		allocIdsClaimedByAnEarlierRow.add(allocRecord.getM_Delivery_Planning_Alloc_ID());
+
+		softly.assertThat(allocRecord.getLineNo())
+				.as("%s of the allocation of M_Delivery_Planning %s", I_M_Delivery_Planning_Alloc.COLUMNNAME_LineNo, planningIdentifier)
+				.isEqualTo(row.getAsInt(I_M_Delivery_Planning_Alloc.COLUMNNAME_LineNo));
+
+		// each planning gets its OWN shipping package, and that package hangs off the same instruction
+		final I_M_ShippingPackage shippingPackage = loadShippingPackageOf(allocRecord);
+		softly.assertThat(shippingPackage.getM_ShipperTransportation_ID())
+				.as("%s of the shipping package of the allocation of M_Delivery_Planning %s", I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID, planningIdentifier)
+				.isEqualTo(deliveryInstruction.getM_ShipperTransportation_ID());
+
+		// the package carries THIS planning's load, not another planning's
+		row.getAsOptionalBigDecimal(I_M_ShippingPackage.COLUMNNAME_ActualLoadQty)
+				.ifPresent(actualLoadQty -> softly.assertThat(shippingPackage.getActualLoadQty())
+						.as("%s of the shipping package of the allocation of M_Delivery_Planning %s", I_M_ShippingPackage.COLUMNNAME_ActualLoadQty, planningIdentifier)
+						.isEqualByComparingTo(actualLoadQty));
+
+		row.getAsOptionalIdentifier(I_M_Delivery_Planning_Alloc.COLUMNNAME_M_Delivery_Planning_Alloc_ID)
+				.ifPresent(identifier -> identifier.putOrReplace(deliveryPlanningAllocTable, allocRecord));
+		row.getAsOptionalIdentifier(I_M_Delivery_Planning_Alloc.COLUMNNAME_M_ShippingPackage_ID)
+				.ifPresent(identifier -> identifier.putOrReplace(shippingPackageTable, shippingPackage));
 	}
 
 	/**
