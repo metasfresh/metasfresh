@@ -26,8 +26,16 @@ import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
+import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
+import de.metas.printing.process.C_Doc_Outbound_Log_PrintSelected;
+import de.metas.process.AdProcessId;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessInfo;
+import de.metas.security.RoleId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -35,11 +43,15 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_M_InOut;
+import org.compiere.util.Env;
 
 import java.util.Map;
 
@@ -54,22 +66,26 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class C_Doc_Outbound_Log_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
 	private final C_Doc_Outbound_Log_StepDefData docOutboundLogTable;
 	private final C_Doc_Outbound_Log_Line_StepDefData docOutboundLogLineTable;
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_Order_StepDefData orderTable;
+	private final M_InOut_StepDefData inOutTable;
 
 	public C_Doc_Outbound_Log_StepDef(
 			@NonNull final C_Doc_Outbound_Log_StepDefData docOutboundLogTable,
 			@NonNull final C_Doc_Outbound_Log_Line_StepDefData docOutboundLogLineTable,
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
-			@NonNull final C_Order_StepDefData orderTable)
+			@NonNull final C_Order_StepDefData orderTable,
+			@NonNull final M_InOut_StepDefData inOutTable)
 	{
 		this.docOutboundLogTable = docOutboundLogTable;
 		this.docOutboundLogLineTable = docOutboundLogLineTable;
 		this.bpartnerTable = bpartnerTable;
 		this.orderTable = orderTable;
+		this.inOutTable = inOutTable;
 	}
 
 	@And("^after not more than (.*)s validate C_Doc_Outbound_Log:$")
@@ -168,12 +184,68 @@ public class C_Doc_Outbound_Log_StepDef
 
 			return TableRecordReference.of(order);
 		}
+		else if (I_M_InOut.Table_Name.equals(tableName))
+		{
+			final I_M_InOut inout = inOutTable.get(recordIdentifier);
+			assertThat(inout).isNotNull();
+
+			return TableRecordReference.of(inout);
+		}
 		else
 		{
 			throw new AdempiereException("Unhandled tableName")
 					.appendParametersToMessage()
 					.setParameter("TableName", tableName);
 		}
+	}
+
+	/**
+	 * Mirrors the "Print" button a user presses on a {@code C_Doc_Outbound_Log} record (e.g. from the Outgoing
+	 * Documents window) -- invokes the {@link C_Doc_Outbound_Log_PrintSelected} process, which (re-)enqueues the
+	 * underlying {@code AD_Archive} for printing regardless of any auto-print suppression that applied when the
+	 * archive was first created.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And the doc outbound log identified by shipmentOutboundLog is printed
+	 * </pre>
+	 */
+	@And("the doc outbound log identified by {string} is printed")
+	public void the_doc_outbound_log_is_printed(@NonNull final String docOutboundLogIdentifier)
+	{
+		final I_C_Doc_Outbound_Log docOutboundLog = docOutboundLogTable.get(docOutboundLogIdentifier);
+		assertThat(docOutboundLog).isNotNull();
+
+		final ClientId clientId = ClientId.ofRepoId(docOutboundLog.getAD_Client_ID());
+
+		// dev-note: the ambient cucumber ctx carries the System-client/System-Administrator role, which would
+		// silently filter out this client-1000000 record from the process' role-restricted query filter -- so an
+		// explicit client + role matching the record itself is required here (see metasfresh-cucumber-stepdefs
+		// skill, "Invoking an AD_Process from a StepDef -- context pattern").
+		final I_AD_Role webUiRole = queryBL.createQueryBuilder(I_AD_Role.class)
+				.addEqualsFilter(I_AD_Role.COLUMNNAME_AD_Client_ID, clientId)
+				.addEqualsFilter(I_AD_Role.COLUMNNAME_Name, "WebUI")
+				.create()
+				.firstOnlyNotNull(I_AD_Role.class);
+
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(C_Doc_Outbound_Log_PrintSelected.class);
+
+		final ProcessExecutionResult result = ProcessInfo.builder()
+				.setCtx(Env.getCtx())
+				.setCreateTemporaryCtx()
+				.setClientId(clientId)
+				.setUserId(UserId.SYSTEM)
+				.setRoleId(RoleId.ofRepoId(webUiRole.getAD_Role_ID()))
+				.setAD_Process_ID(processId)
+				.setTableName(I_C_Doc_Outbound_Log.Table_Name)
+				.setWhereClause(I_C_Doc_Outbound_Log.COLUMNNAME_C_Doc_Outbound_Log_ID + "=" + docOutboundLog.getC_Doc_Outbound_Log_ID())
+				.buildAndPrepareExecution()
+				.switchContextWhenRunning()
+				.executeSync()
+				.getResult();
+
+		result.propagateErrorIfAny();
 	}
 
 	private boolean retrieveDocOutboundLog(@NonNull final Map<String, String> row)
