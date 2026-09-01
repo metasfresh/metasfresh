@@ -22,12 +22,13 @@
 
 package de.metas.cucumber.stepdefs.shipper;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.inout.InOutId;
-import org.adempiere.model.InterfaceWrapperHelper;
+import de.metas.shipping.CarrierProductId;
 import de.metas.shipper.gateway.commons.model.ShipmentOrderRepository;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.model.Address;
@@ -35,20 +36,24 @@ import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderItem;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderParcel;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_Carrier_ShipmentOrder;
 import org.compiere.model.I_Carrier_ShipmentOrder_Item;
 import org.compiere.model.I_Carrier_ShipmentOrder_Parcel;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -66,11 +71,29 @@ public class Carrier_ShipmentOrder_StepDef
 
 	@NonNull private final M_InOut_StepDefData inOutTable;
 	@NonNull private final Carrier_ShipmentOrder_StepDefData carrierShipmentOrderTable;
+	@NonNull private final Carrier_Product_StepDefData carrierProductTable;
 
 	/**
 	 * Polls until the shipment's delivery order has been created and at least one parcel has its AWB set.
 	 * Implicitly waits for {@code CreatePackagesForShipmentWorkpackageProcessor} →
 	 * {@code DeliveryOrderWorkpackageProcessor} (the AWB is the last thing the chain writes).
+	 *
+	 * <p>When the gateway splits one shipment's packages into several delivery orders (one per carrier),
+	 * the optional {@code Carrier_Product_ID} column selects the one delivery order whose carrier product
+	 * matches — otherwise the first found delivery order for the shipment is used.</p>
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b>          — (required) alias to store the found delivery order under<br>
+	 *   <b>M_InOut_ID</b>          — (required, identifier-ref) shipment whose delivery order(s) to poll for<br>
+	 *   <b>Carrier_Product_ID</b>  — (optional, identifier-ref) disambiguator when the shipment was split into several delivery orders
+	 * @cucumber.example
+	 * <pre>
+	 * And after not more than 60s, Carrier_ShipmentOrder is found:
+	 *   | Identifier | M_InOut_ID  | Carrier_Product_ID |
+	 *   | cso_cp1    | inout_split | cp1                |
+	 *   | cso_cp2    | inout_split | cp2                |
+	 * </pre>
 	 */
 	@And("^after not more than (.*)s, Carrier_ShipmentOrder is found:$")
 	public void findCarrierShipmentOrder(final int timeoutSec, @NonNull final DataTable dataTable)
@@ -92,41 +115,129 @@ public class Carrier_ShipmentOrder_StepDef
 	{
 		final InOutId inOutId = inOutTable.getId(row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID));
 
+		final CarrierProductId expectedCarrierProductId = row.getAsOptionalIdentifier(I_Carrier_ShipmentOrder.COLUMNNAME_Carrier_Product_ID)
+				.map(identifier -> identifier.lookupNotNullIdIn(carrierProductTable))
+				.orElse(null);
+
 		final DeliveryOrder[] resultHolder = new DeliveryOrder[1];
 
 		final Supplier<Boolean> foundWithAwb = () -> {
-			final List<I_Carrier_ShipmentOrder_Parcel> parcels = queryBL
-					.createQueryBuilder(I_M_Package.class)
-					.addEqualsFilter(I_M_Package.COLUMNNAME_M_InOut_ID, inOutId)
-					.andCollectChildren(I_Carrier_ShipmentOrder_Parcel.COLUMNNAME_M_Package_ID, I_Carrier_ShipmentOrder_Parcel.class)
-					.create()
-					.list();
+			final List<I_Carrier_ShipmentOrder_Parcel> parcels = queryParcelsOfShipment(inOutId).list();
 
 			if (parcels.isEmpty())
 			{
 				return false;
 			}
 
-			final boolean anyHasAwb = parcels.stream()
-					.anyMatch(p -> p.getawb() != null && !p.getawb().isEmpty());
+			final ImmutableSet<DeliveryOrderId> deliveryOrderIds = parcels.stream()
+					.filter(parcel -> Check.isNotBlank(parcel.getawb()))
+					.map(parcel -> DeliveryOrderId.ofRepoId(parcel.getCarrier_ShipmentOrder_ID()))
+					.collect(ImmutableSet.toImmutableSet());
 
-			if (!anyHasAwb)
+			if (deliveryOrderIds.isEmpty())
 			{
 				return false;
 			}
 
-			final DeliveryOrderId deliveryOrderId = DeliveryOrderId.ofRepoId(parcels.get(0).getCarrier_ShipmentOrder_ID());
-			resultHolder[0] = shipmentOrderRepository.getById(deliveryOrderId);
+			final DeliveryOrder match = deliveryOrderIds.stream()
+					.map(shipmentOrderRepository::getById)
+					.filter(order -> expectedCarrierProductId == null
+							|| CarrierProductId.equals(expectedCarrierProductId, order.getCarrierProductId()))
+					.findFirst()
+					.orElse(null);
+
+			if (match == null)
+			{
+				return false;
+			}
+
+			resultHolder[0] = match;
 			return true;
 		};
 
 		StepDefUtil.tryAndWait(timeoutSec, 500, foundWithAwb);
 
 		assertThat(resultHolder[0])
-				.as("Carrier_ShipmentOrder with AWB for M_InOut_ID=%s was not found within %ss", inOutId, timeoutSec)
+				.as("Carrier_ShipmentOrder with AWB for M_InOut_ID=%s%s was not found within %ss",
+						inOutId,
+						expectedCarrierProductId != null ? " and Carrier_Product_ID=" + expectedCarrierProductId : "",
+						timeoutSec)
 				.isNotNull();
 
 		carrierShipmentOrderTable.put(row.getAsIdentifier(), resultHolder[0]);
+	}
+
+	/** All {@link I_Carrier_ShipmentOrder_Parcel}s reachable from the given shipment's {@link I_M_Package}s. */
+	private IQuery<I_Carrier_ShipmentOrder_Parcel> queryParcelsOfShipment(@NonNull final InOutId inOutId)
+	{
+		return queryBL
+				.createQueryBuilder(I_M_Package.class)
+				.addEqualsFilter(I_M_Package.COLUMNNAME_M_InOut_ID, inOutId)
+				.andCollectChildren(I_Carrier_ShipmentOrder_Parcel.COLUMNNAME_M_Package_ID, I_Carrier_ShipmentOrder_Parcel.class)
+				.create();
+	}
+
+	/**
+	 * Exact-set ("has only") assertion scoped by shipment: the delivery orders created for the given shipment carry
+	 * EXACTLY the listed carrier products — no more, no fewer — read fresh from the DB. One row per delivery order:
+	 * under selection rules the gateway creates one {@code Carrier_ShipmentOrder} per {@link I_M_Package}, so a
+	 * shipment of N self-packed loose CUs has N one-parcel orders; the table lists them 1-to-1. Because the assertion
+	 * re-reads the DB each poll, it also proves negatives over time — e.g. that a frozen shipment's orders keep their
+	 * carrier product after a later re-advise mutates only the schedule. Polls until the async delivery-order chain
+	 * has settled. Replaces the former single-order "validate ... product for shipment:" step.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Carrier_Product_ID</b> — (required, identifier-ref) expected carrier product of one delivery order
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData, Carrier_Product_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And after not more than 60s, Carrier_ShipmentOrders for M_InOut_ID inout_partial have exactly:
+	 *   | Carrier_Product_ID |
+	 *   | cp1                |
+	 *   | cp1                |
+	 * </pre>
+	 */
+	@And("^after not more than (.*)s, Carrier_ShipmentOrders for M_InOut_ID (.*) have exactly:$")
+	public void carrierShipmentOrdersForShipmentHaveExactly(
+			final int timeoutSec,
+			@NonNull final String inOutIdentifier,
+			@NonNull final DataTable dataTable) throws InterruptedException
+	{
+		final InOutId inOutId = inOutTable.getId(inOutIdentifier);
+
+		// One expected carrier product per delivery order the shipment should have; sorted so the comparison is a
+		// multiset match (row order irrelevant).
+		final List<CarrierProductId> expectedCarrierProductIds = DataTableRows.of(dataTable).stream()
+				.map(row -> row.getAsIdentifier(I_Carrier_ShipmentOrder.COLUMNNAME_Carrier_Product_ID).lookupNotNullIdIn(carrierProductTable))
+				.sorted(Comparator.nullsFirst(Comparator.comparingInt(CarrierProductId::getRepoId)))
+				.collect(Collectors.toList());
+
+		@SuppressWarnings("unchecked") final List<CarrierProductId>[] actualHolder = new List[1];
+
+		// Poll until the async delivery-order chain has produced EXACTLY the expected carrier-product multiset,
+		// re-read fresh from the DB on every try.
+		final Supplier<Boolean> hasExactly = () -> {
+			final ImmutableSet<DeliveryOrderId> orderIds = queryParcelsOfShipment(inOutId).list().stream()
+					.map(parcel -> DeliveryOrderId.ofRepoId(parcel.getCarrier_ShipmentOrder_ID()))
+					.collect(ImmutableSet.toImmutableSet());
+
+			final List<CarrierProductId> actual = orderIds.stream()
+					.map(shipmentOrderRepository::getById)
+					.map(DeliveryOrder::getCarrierProductId)
+					.sorted(Comparator.nullsFirst(Comparator.comparingInt(CarrierProductId::getRepoId)))
+					.collect(Collectors.toList());
+
+			actualHolder[0] = actual;
+			return actual.equals(expectedCarrierProductIds);
+		};
+
+		StepDefUtil.tryAndWait(timeoutSec, 500, hasExactly);
+
+		assertThat(actualHolder[0])
+				.as("Carrier_ShipmentOrders for M_InOut_ID=%s: the shipment's delivery-order carrier products (fresh from DB, one per order) must be EXACTLY the expected set",
+						inOutId)
+				.isEqualTo(expectedCarrierProductIds);
 	}
 
 	/**
@@ -180,6 +291,26 @@ public class Carrier_ShipmentOrder_StepDef
 		});
 	}
 
+	/**
+	 * Validates the persisted {@link I_Carrier_ShipmentOrder} record (loaded as a {@link DeliveryOrder}
+	 * via {@code shipmentOrderRepository.getById}) against the expected column values.
+	 *
+	 * @cucumber.stepdef Validate a captured/persisted Carrier_ShipmentOrder.
+	 * @cucumber.columns
+	 *   <b>Carrier_ShipmentOrder_ID</b> — (required, identifier-ref) the shipment order to validate<br>
+	 *   <b>Shipper_Name1</b>, <b>Shipper_CountryISO2Code</b> — (optional) pickup address<br>
+	 *   <b>Receiver_Name1</b>, <b>Receiver_Name2</b>, <b>Receiver_StreetName1</b>, <b>Receiver_StreetName2</b>,
+	 *   <b>Receiver_StreetNumber</b>, <b>Receiver_ZipCode</b>, <b>Receiver_City</b>, <b>Receiver_CountryISO2Code</b> — (optional) delivery address<br>
+	 *   <b>Receiver_ContactName</b>, <b>Receiver_Phone</b>, <b>Receiver_Email</b> — (optional) delivery contact<br>
+	 *   <b>CustomerReference</b> — (optional)<br>
+	 *   <b>IsPreAdviceRequired</b> — (optional) expected persisted pre-advice flag as "Y"/"N"<br>
+	 * @cucumber.example
+	 * And validate Carrier_ShipmentOrder:
+	 *   | Carrier_ShipmentOrder_ID | Receiver_City | IsPreAdviceRequired |
+	 *   | cso_do                   | city          | Y                   |
+	 * @see #validateCarrierShipmentOrderParcels(DataTable)
+	 * @see #validateCarrierShipmentOrderItems(DataTable)
+	 */
 	@And("validate Carrier_ShipmentOrder:")
 	public void validateCarrierShipmentOrder(@NonNull final DataTable dataTable)
 	{
@@ -238,6 +369,10 @@ public class Carrier_ShipmentOrder_StepDef
 
 			row.getAsOptionalString(I_Carrier_ShipmentOrder.COLUMNNAME_CustomerReference).ifPresent(expected -> softly
 					.assertThat(order.getCustomerReference()).as("customerReference").isEqualTo(expected));
+
+			// Asserts the PERSISTED pre-advice flag (loaded from the shipment-order record), not the emitted request.
+			row.getAsOptionalString(I_Carrier_ShipmentOrder.COLUMNNAME_IsPreAdviceRequired).ifPresent(expected -> softly
+					.assertThat(order.getPreAdviceRequired()).as("preAdviceRequired").isEqualTo(expected));
 
 			softly.assertAll();
 		});
@@ -360,4 +495,5 @@ public class Carrier_ShipmentOrder_StepDef
 			}
 		});
 	}
+
 }

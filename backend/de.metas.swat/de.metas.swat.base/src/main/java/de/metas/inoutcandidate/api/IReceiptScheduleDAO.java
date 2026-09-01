@@ -28,6 +28,7 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -102,4 +103,21 @@ public interface IReceiptScheduleDAO extends ISingletonService
 
 	@NonNull
 	Optional<ReceiptScheduleId> getIdByQuery(@NonNull ReceiptScheduleQuery query);
+
+	/**
+	 * Delete all {@link I_M_ReceiptSchedule} records linked to the given order line,
+	 * including any {@code IsActive=false} schedules (to avoid orphaned rows after order line deletion).
+	 * HU destruction and alloc cleanup are delegated to the {@code M_ReceiptSchedule TYPE_BEFORE_DELETE}
+	 * interceptor in {@code de.metas.handlingunits.base}.
+	 * <p>
+	 * Callers must therefore be in a module that (transitively) depends on both {@code de.metas.swat.base}
+	 * and {@code de.metas.handlingunits.base} for the HU lifecycle to fire correctly.
+	 * The canonical call site is {@code de.metas.handlingunits.reservation.interceptor.C_OrderLine},
+	 * placed there due to the Maven dependency constraints described in that class.
+	 *
+	 * @throws org.adempiere.exceptions.AdempiereException if any linked schedule has an active
+	 *                                                      {@link I_M_ReceiptSchedule_Alloc} with {@code M_InOutLine_ID} set,
+	 *                                                      indicating that goods have already been received and deletion would corrupt receipt history.
+	 */
+	void deleteByOrderLineId(@NonNull OrderLineId orderLineId);
 }

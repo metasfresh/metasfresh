@@ -29,7 +29,6 @@ import de.metas.invoice.service.IInvoiceBL;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.order.paymentschedule.steps.letter_of_credit.OrderPayScheduleLCStepService;
-import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.payment.paymentterm.PaymentTermBreak;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.PaymentTermService;
@@ -42,16 +41,17 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Builder
 class ProformaOrderAllocateCommand
 {
-	private static final AdMessageKey MSG_NoLCBreakInOrder            = AdMessageKey.of("de.metas.invoice.proforma.NoLCBreakInOrder");
-	private static final AdMessageKey MSG_MultipleLCBreaksUnsupported = AdMessageKey.of("de.metas.invoice.proforma.MultipleLCBreaksUnsupported");
-	private static final AdMessageKey MSG_CurrencyMismatch            = AdMessageKey.of("de.metas.invoice.proforma.CurrencyMismatch");
-	private static final AdMessageKey MSG_VendorMismatch              = AdMessageKey.of("de.metas.invoice.proforma.VendorMismatch");
+	private static final AdMessageKey MSG_MultipleLCBreaksUnsupported      = AdMessageKey.of("de.metas.invoice.proforma.MultipleLCBreaksUnsupported");
+	private static final AdMessageKey MSG_MultipleAdvanceBreaksUnsupported = AdMessageKey.of("de.metas.invoice.proforma.MultipleAdvanceBreaksUnsupported");
+	private static final AdMessageKey MSG_CurrencyMismatch                 = AdMessageKey.of("de.metas.invoice.proforma.CurrencyMismatch");
+	private static final AdMessageKey MSG_VendorMismatch                   = AdMessageKey.of("de.metas.invoice.proforma.VendorMismatch");
 
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
@@ -100,9 +100,16 @@ class ProformaOrderAllocateCommand
 	 * <ol>
 	 *   <li>Currency match: proforma and order must share the same currency.</li>
 	 *   <li>Vendor (BPartner) match: proforma and order must have the same bill-to partner.</li>
-	 *   <li>No LC break: order payment term must have at least one Letter-of-Credit break.</li>
-	 *   <li>Multiple LC breaks: order payment term must have exactly one LC break (iter 2 limitation).</li>
+	 *   <li>Multiple LC breaks: order payment term must have at most one LC break (only one LC break per term is currently supported).</li>
+	 *   <li>Multiple advance breaks: a payment term with no LC break must have at most one advance
+	 *       (non-material-receipt) break.</li>
 	 * </ol>
+	 * <p>
+	 * Note on the prepaid target: the step a proforma payment settles is the Letter-of-Credit or the
+	 * order-date (advance) break (see {@link de.metas.order.paymentschedule.core.OrderPayScheduleLine#isPrepaidLine()}).
+	 * A term whose only non-material-receipt break is an invoice-date break has no prepaid step: allocation
+	 * still records the proforma↔order link, but the proforma payment marks no pay-schedule line paid, since
+	 * an invoice-date break is a regular post-invoice term rather than an up-front advance.
 	 *
 	 * @throws AdempiereException with a translated user-facing message on any violation
 	 */
@@ -128,29 +135,35 @@ class ProformaOrderAllocateCommand
 					.markAsUserValidationError();
 		}
 
-		// LC-break count — 0 breaks → reject; >1 break → reject (iter 2 limitation)
+		// LC-break count — >1 LC break → reject (only one LC break per term is currently supported); a term
+		// with no LC break is allowed, as long as it does not have more than one advance (non-material-receipt) break.
 		final PaymentTermId paymentTermId = PaymentTermId.ofRepoIdOrNull(order.getC_PaymentTerm_ID());
-		if (paymentTermId == null)
-		{
-			throw new AdempiereException(MSG_NoLCBreakInOrder, order.getDocumentNo())
-					.markAsUserValidationError();
-		}
+		final List<PaymentTermBreak> breaks = paymentTermId != null
+				? paymentTermService.getById(paymentTermId).getSortedBreaks()
+				: Collections.emptyList();
 
-		final PaymentTerm paymentTerm = paymentTermService.getById(paymentTermId);
-		final List<PaymentTermBreak> lcBreaks = paymentTerm.getSortedBreaks()
+		final List<PaymentTermBreak> lcBreaks = breaks
 				.stream()
 				.filter(PaymentTermBreak::isLetterOfCredit)
 				.collect(Collectors.toList());
 
-		if (lcBreaks.isEmpty())
-		{
-			throw new AdempiereException(MSG_NoLCBreakInOrder, order.getDocumentNo())
-					.markAsUserValidationError();
-		}
 		if (lcBreaks.size() > 1)
 		{
 			throw new AdempiereException(MSG_MultipleLCBreaksUnsupported, order.getDocumentNo())
 					.markAsUserValidationError();
+		}
+		else if (lcBreaks.isEmpty())
+		{
+			final List<PaymentTermBreak> advanceBreaks = breaks
+					.stream()
+					.filter(paymentTermBreak -> !paymentTermBreak.getReferenceDateType().isMaterialReceiptDate())
+					.collect(Collectors.toList());
+
+			if (advanceBreaks.size() > 1)
+			{
+				throw new AdempiereException(MSG_MultipleAdvanceBreaksUnsupported, order.getDocumentNo())
+						.markAsUserValidationError();
+			}
 		}
 	}
 }

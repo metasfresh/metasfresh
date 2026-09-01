@@ -1,4 +1,6 @@
 ARG REFNAME=local
+# Two image sources: the metas-mvn-backend BUILD image is pinned to GHCR (below),
+# while REGISTRY (empty = Docker Hub) serves the metas-app DEPLOYABLE image further down.
 ARG REGISTRY=
 FROM ghcr.io/metasfresh/metas-mvn-backend:$REFNAME AS backend
 

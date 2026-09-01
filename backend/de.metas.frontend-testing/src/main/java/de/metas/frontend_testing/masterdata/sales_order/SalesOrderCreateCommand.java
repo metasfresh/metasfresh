@@ -94,7 +94,8 @@ public class SalesOrderCreateCommand
 		this.salesOrderFactory = OrderFactory.newSalesOrder()
 				.shipBPartner(shipBPartnerId, shipBPartnerLocationId, null)
 				.warehouseId(context.getId(request.getWarehouse(), WarehouseId.class))
-				.datePromised(request.getDatePromised());
+				.datePromised(request.getDatePromised())
+				.poReference(request.getPoReference());
 
 		if (request.getShipper() != null)
 		{

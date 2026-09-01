@@ -688,14 +688,18 @@ export class RawLookup extends Component {
       });
     }
 
-    typeaheadRequest.then((response) => {
-      if (
-        this.typeaheadQuery &&
-        this.typeaheadQuery === typeaheadParams.query
-      ) {
-        this.populateTypeaheadData(response.data);
-      }
-    });
+    typeaheadRequest
+      .then((response) => {
+        if (
+          this.typeaheadQuery &&
+          this.typeaheadQuery === typeaheadParams.query
+        ) {
+          this.populateTypeaheadData(response.data);
+        }
+      })
+      .catch(() => {
+        this.setState({ loading: false });
+      });
   };
 
   populateTypeaheadData = (responseData) => {

@@ -10,6 +10,7 @@ import { ShipmentSchedulePage } from '../utils/pages/ShipmentSchedulePage';
 import { ShipmentPage } from '../utils/pages/ShipmentPage';
 import { InvoiceCandidatePage } from '../utils/pages/InvoiceCandidatePage';
 import { InvoicePage } from '../utils/pages/InvoicePage';
+import { PdfValidator } from '../utils/PdfValidator';
 import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
 
@@ -364,7 +365,7 @@ Ensures the complete order-to-cash flow works correctly across UI languages.
             // We successfully created a sales order, validated the shipment schedule,
             // created the shipment, validated the shipment PDF,
             // created the invoice, and validated the invoice PDF
-            
+
             // Attach validation summary
             const validationHtml = `<table border="1">
                 <tr><th>Check</th><th>Status</th><th>Value</th></tr>

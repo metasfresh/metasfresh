@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -77,7 +77,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.QueryLimit;
@@ -526,6 +525,15 @@ public class BPartnerDAO implements IBPartnerDAO
 				.filter(bpLocation -> bpLocation.getC_BPartner_Location_ID() == bpartnerLocationId.getRepoId())
 				.findFirst()
 				.orElse(null);
+	}
+
+	@Override
+	@NonNull
+	public I_C_BPartner_Location getBPartnerLocationByIdEvenInactiveNotNull(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		return Check.assumeNotNull(
+				getBPartnerLocationByIdEvenInactive(bpartnerLocationId),
+				"BPartner location not found: {}", bpartnerLocationId);
 	}
 
 	@Override
@@ -1041,42 +1049,15 @@ public class BPartnerDAO implements IBPartnerDAO
 
 	@Nullable
 	@Override
-	public I_C_BP_Relation retrieveBillBPartnerRelationFirstEncountered(final Object contextProvider, final I_C_BPartner partner, final I_C_BPartner_Location location)
+	public I_C_BP_Relation retrieveBillToBPartnerRelationOrNull(@NonNull final BPartnerId bPartnerId)
 	{
-		Check.assumeNotNull(partner, "partner not null");
-
-		final IQueryBuilder<I_C_BP_Relation> queryBuilder = queryBL.createQueryBuilder(I_C_BP_Relation.class, contextProvider);
-
-		//
-		// Filter by partner
-		queryBuilder.addEqualsFilter(org.compiere.model.I_C_BP_Relation.COLUMNNAME_C_BPartner_ID, partner.getC_BPartner_ID());
-
-		//
-		// Filter by location or null (accept bill relations with no location)
-		final Integer partnerLocationId;
-		if (location != null)
-		{
-			partnerLocationId = location.getC_BPartner_Location_ID();
-		}
-		else
-		{
-			partnerLocationId = null;
-		}
-		queryBuilder.addInArrayOrAllFilter(I_C_BP_Relation.COLUMNNAME_C_BPartner_Location_ID, partnerLocationId, null);
-		queryBuilder.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_IsBillTo, true);
-
-		final IQuery<I_C_BP_Relation> query = queryBuilder
+		return queryBL
+				.createQueryBuilder(I_C_BP_Relation.class)
+				.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_C_BPartner_ID, bPartnerId)
+				.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_IsBillTo, true)
 				.addOnlyActiveRecordsFilter()
-				.create();
-
-		//
-		// Order by BillTo DESC
-		final IQueryOrderBy orderBy = queryBL.createQueryOrderByBuilder(I_C_BPartner_Location.class)
-				.addColumnDescending(I_C_BPartner_Location.COLUMNNAME_IsBillTo)
-				.createQueryOrderBy();
-		query.setOrderBy(orderBy);
-
-		return query.first(I_C_BP_Relation.class);
+				.create()
+				.firstOnly(I_C_BP_Relation.class);
 	}
 
 	private final CCache<ImmutablePair<BPartnerId, Boolean>, I_C_BPartner_Location> billToLocationCache = CCache.<ImmutablePair<BPartnerId, Boolean>, I_C_BPartner_Location>builder()
@@ -1129,18 +1110,7 @@ public class BPartnerDAO implements IBPartnerDAO
 			return ownBillToLocation;
 		}
 
-		final IQueryBuilder<I_C_BP_Relation> bpRelationQueryBuilder = queryBL
-				.createQueryBuilder(I_C_BP_Relation.class)
-				.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_C_BPartner_ID, bPartnerId)
-				.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_IsBillTo, true)
-				.addOnlyActiveRecordsFilter();
-
-		queryBuilder.orderBy()
-				.addColumn(I_C_BP_Relation.COLUMNNAME_C_BP_Relation_ID);
-
-		final I_C_BP_Relation billtoRelation = bpRelationQueryBuilder
-				.create()
-				.firstOnly(I_C_BP_Relation.class); // just added an UC
+		final I_C_BP_Relation billtoRelation = retrieveBillToBPartnerRelationOrNull(bPartnerId);
 		if (billtoRelation != null)
 		{
 			final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(billtoRelation.getC_BPartnerRelation_ID(), billtoRelation.getC_BPartnerRelation_Location_ID());
@@ -2105,5 +2075,20 @@ public class BPartnerDAO implements IBPartnerDAO
 		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
 		if (bpLocation == null) {return null;}
 		return ShipperId.ofRepoIdOrNull(bpLocation.getM_Shipper_ID());
+	}
+
+	@Override
+	@NonNull
+	public List<I_C_BPartner> retrieveFactorerBPartnersForOrg(@NonNull final OrgId orgId)
+	{
+		// No IsActive filter — the DB partial unique index only enforces uniqueness among active rows,
+		// so a deactivated old factorer left alongside a new one yields two matches; we want to report
+		// that as ambiguity, not misdiagnose it as "no factorer configured" (mirrors CiiMapper.resolveFactorerIban).
+		return queryBL
+				.createQueryBuilder(I_C_BPartner.class)
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsFactorer, true)
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_AD_Org_ID, orgId)
+				.create()
+				.list(I_C_BPartner.class);
 	}
 }

@@ -26,6 +26,7 @@ import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.material.planning.event.MaterialPlanningContextHelper;
 import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
+import de.metas.material.planning.pporder.PPOrderCandidateRepository;
 import de.metas.organization.ClientAndOrgId;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
@@ -114,7 +115,7 @@ public class DemandCandidateHandlerTest
 				stockCandidateService,
 				supplyCandidateHandler,
 				Mockito.mock(MaterialPlanningContextHelper.class),
-				new PPOrderCandidateDemandMatcher());
+				new PPOrderCandidateDemandMatcher(), new PPOrderCandidateRepository());
 	}
 
 	@Test

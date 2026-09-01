@@ -34,7 +34,7 @@ Feature: create or update BPartner v2
                "language":"de",
                "url":null,
                "group":"test-group",
-                "vatId": "vatId_BPartner001",
+                "vatId": "DE136695976",
                "discountPrinted":true
             },
             "locations":{
@@ -65,7 +65,7 @@ Feature: create or update BPartner v2
                         "city":"test_city",
                         "countryCode":"DE",
                         "postal":null,
-                        "vatId": "vatId_Location_l22"
+                        "vatId": "ATU13585627"
                      }
                   }
                ]
@@ -104,12 +104,12 @@ Feature: create or update BPartner v2
 }
 """
     Then verify that bPartner was created for externalIdentifier
-      | C_BPartner_ID.Identifier | externalIdentifier | code       | name      | companyName  | parentId | phone | language | url  | group      | vatId             | glnLookupLabel | discountPrinted |
-      | created_bpartner         | ext-ALBERTA-001    | test_code1 | test_name | test_company | null     | null  | de       | null | test-group | vatId_BPartner001 | DIVISION_A     | Y               |
+      | C_BPartner_ID.Identifier | externalIdentifier | code       | name      | companyName  | parentId | phone | language | url  | group      | vatId       | glnLookupLabel | discountPrinted |
+      | created_bpartner         | ext-ALBERTA-001    | test_code1 | test_name | test_company | null     | null  | de       | null | test-group | DE136695976 | DIVISION_A     | Y               |
     And verify that location was created for bpartner
-      | bpartnerIdentifier | locationIdentifier | address1      | address2      | poBox      | district | region      | city      | countryCode | gln | postal | vatId              | attention   |
-      | ext-ALBERTA-001    | gln-l11            | test_address1 | test_address2 | null       | null     | null        | null      | DE          | l11 | null   | null               | Attention Test |
-      | ext-ALBERTA-001    | gln-l22            | null          | test_address2 | test_poBox | null     | test_region | test_city | DE          | l22 | null   | vatId_Location_l22 | null        |
+      | bpartnerIdentifier | locationIdentifier | address1      | address2      | poBox      | district | region      | city      | countryCode | gln | postal | vatId       | attention   |
+      | ext-ALBERTA-001    | gln-l11            | test_address1 | test_address2 | null       | null     | null        | null      | DE          | l11 | null   | null        | Attention Test |
+      | ext-ALBERTA-001    | gln-l22            | null          | test_address2 | test_poBox | null     | test_region | test_city | DE          | l22 | null   | ATU13585627 | null        |
     # FIXME: code (AD_User.Value) assertion disabled — no unique constraint on AD_User.Value yet (see BPartnerCompositeSaver)
     And verify that contact was created for bpartner
       | bpartnerIdentifier | contactIdentifier | name          | email      | fax      | invoiceEmailEnabled |
@@ -540,7 +540,7 @@ Feature: create or update BPartner v2
                "language":"de",
                "url":null,
                "group":"test-group",
-                "vatId": "vatId_BPartner001_test_system"
+                "vatId": null
             },
             "locations":{
                "requestItems":[
@@ -571,7 +571,7 @@ Feature: create or update BPartner v2
                         "countryCode":"DE",
                         "gln":null,
                         "postal":null,
-                        "vatId": "vatId_Location_test_system"
+                        "vatId": null
                      }
                   }
                ]

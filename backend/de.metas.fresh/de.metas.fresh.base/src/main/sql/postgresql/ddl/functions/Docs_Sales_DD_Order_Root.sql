@@ -16,7 +16,8 @@ CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_Sales_DD_Order_Root
     AD_Language            Text,
     email                  Character Varying(50),
     displayhu              text,
-    issourcesupplycert     character(1)
+    issourcesupplycert     character(1),
+    isFactoringPartner     character(1)
 )
 ;
 
@@ -52,7 +53,8 @@ SELECT ddo.ad_user_id,
                THEN 'Y'
                ELSE 'N'
        END                                                              AS displayhu,
-       bp.issourcesupplycert
+       bp.issourcesupplycert,
+       bp.IsFactoring                                                   AS isFactoringPartner
 FROM DD_Order ddo
          JOIN C_BPartner bp ON ddo.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
          INNER JOIN C_DocType dt ON ddo.C_DocType_ID = dt.C_DocType_ID AND dt.isActive = 'Y'

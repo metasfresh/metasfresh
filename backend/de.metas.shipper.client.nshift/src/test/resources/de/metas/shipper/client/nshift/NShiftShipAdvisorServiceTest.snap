@@ -30,7 +30,43 @@ de.metas.shipper.client.nshift.NShiftShipAdvisorServiceTest.build_request_test=[
         }
       ],
       "DangerousGoods": [ ],
-      "DetailGroups": [ ],
+      "DetailGroups": [
+        {
+          "GroupID": "2",
+          "Rows": [
+            {
+              "Details": [
+                {
+                  "KindID": 182,
+                  "Value": "RO"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "GroupID": "1",
+          "Rows": [
+            {
+              "Details": [
+                {
+                  "KindID": 4,
+                  "Value": "DE RO"
+                },
+                {
+                  "KindID": 7,
+                  "Value": "Test Product"
+                },
+                {
+                  "KindID": 193,
+                  "Value": "1"
+                }
+              ],
+              "LineNo": 1
+            }
+          ]
+        }
+      ],
       "Lines": [
         {
           "Height": 150,
@@ -85,12 +121,17 @@ de.metas.shipper.client.nshift.NShiftShipAdvisorServiceTest.build_request_test=[
         {
           "Kind": 64,
           "Value": "Other"
+        },
+        {
+          "Kind": 65,
+          "Value": "Y"
         }
       ],
       "Services": [ ]
     },
     "options": {
-      "ServiceLevel": "Test"
+      "ServiceLevel": "Test",
+      "UseShippingRules": 0
     }
   }
 ]

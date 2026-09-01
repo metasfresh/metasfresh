@@ -71,7 +71,6 @@ import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
-import de.metas.order.BPartnerOrderParamsRepository;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.ordercandidate.api.OLCandSPIRegistry;
@@ -108,6 +107,7 @@ import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.ad.persistence.custom_columns.CustomColumnService;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJONextIdSuppliers;
@@ -199,7 +199,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 		SpringContextHolder.registerJUnitBean(new ADReferenceService(new AdRefListRepositoryMocked(), new AdRefTableRepositoryMocked()));
 
-		olCandBL = new OLCandBL(bpartnerBL, BPartnerOrderParamsRepository.newInstanceForUnitTesting());
+		olCandBL = OLCandBL.newInstanceForUnitTesting();
 		Services.registerService(IOLCandBL.class, olCandBL);
 
 		final I_AD_Org defaultOrgRecord;
@@ -269,7 +269,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 		orderCandidatesRestControllerImpl = new OrderCandidatesRestController(
 				jsonConverters,
-				new OLCandRepository(ExternalSystemRepository.newInstanceForUnitTesting()),
+				new OLCandRepository(ExternalSystemRepository.newInstanceForUnitTesting(), Mockito.mock(CustomColumnService.class)),
 				bpartnerRestController,
 				NoopPerformanceMonitoringService.INSTANCE);
 

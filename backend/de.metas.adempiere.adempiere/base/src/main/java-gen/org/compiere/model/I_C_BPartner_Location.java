@@ -684,6 +684,27 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_IsPayFrom = "IsPayFrom";
 
 	/**
+	 * Set Pre-Advice Required.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false (lazy loading)
+	 */
+	void setIsPreAdviceRequired (@Nullable java.lang.String IsPreAdviceRequired);
+
+	/**
+	 * Get Pre-Advice Required.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false (lazy loading)
+	 */
+	@Nullable java.lang.String getIsPreAdviceRequired();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_IsPreAdviceRequired = new ModelColumn<>(I_C_BPartner_Location.class, "IsPreAdviceRequired", null);
+	String COLUMNNAME_IsPreAdviceRequired = "IsPreAdviceRequired";
+
+	/**
 	 * Set Remit-To Address.
 	 * Business Partner payment address
 	 *
@@ -1066,6 +1087,102 @@ public interface I_C_BPartner_Location
 
 	ModelColumn<I_C_BPartner_Location, Object> COLUMN_VATaxID = new ModelColumn<>(I_C_BPartner_Location.class, "VATaxID", null);
 	String COLUMNNAME_VATaxID = "VATaxID";
+
+	/**
+	 * Set VAT-ID Last Checked On.
+	 * Point in time of the most recent VAT-ID check (request or response).
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setVATaxIDCheckedAt (@Nullable java.sql.Timestamp VATaxIDCheckedAt);
+
+	/**
+	 * Get VAT-ID Last Checked On.
+	 * Point in time of the most recent VAT-ID check (request or response).
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getVATaxIDCheckedAt();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_VATaxIDCheckedAt = new ModelColumn<>(I_C_BPartner_Location.class, "VATaxIDCheckedAt", null);
+	String COLUMNNAME_VATaxIDCheckedAt = "VATaxIDCheckedAt";
+
+	/**
+	 * Set VAT-ID Check Log.
+	 * Log of individual VAT-ID online check attempts against VIES.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setVATaxID_CheckLog_ID (int VATaxID_CheckLog_ID);
+
+	/**
+	 * Get VAT-ID Check Log.
+	 * Log of individual VAT-ID online check attempts against VIES.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getVATaxID_CheckLog_ID();
+
+	@Nullable org.compiere.model.I_VATaxID_CheckLog getVATaxID_CheckLog();
+
+	void setVATaxID_CheckLog(@Nullable org.compiere.model.I_VATaxID_CheckLog VATaxID_CheckLog);
+
+	ModelColumn<I_C_BPartner_Location, org.compiere.model.I_VATaxID_CheckLog> COLUMN_VATaxID_CheckLog_ID = new ModelColumn<>(I_C_BPartner_Location.class, "VATaxID_CheckLog_ID", org.compiere.model.I_VATaxID_CheckLog.class);
+	String COLUMNNAME_VATaxID_CheckLog_ID = "VATaxID_CheckLog_ID";
+
+	/**
+	 * Set VAT-ID Last Attempted On.
+	 * Point in time of the most recent VAT-ID check attempt, regardless of outcome (internal scheduling only).
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setVATaxIDLastAttemptedAt (@Nullable java.sql.Timestamp VATaxIDLastAttemptedAt);
+
+	/**
+	 * Get VAT-ID Last Attempted On.
+	 * Point in time of the most recent VAT-ID check attempt, regardless of outcome (internal scheduling only).
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getVATaxIDLastAttemptedAt();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_VATaxIDLastAttemptedAt = new ModelColumn<>(I_C_BPartner_Location.class, "VATaxIDLastAttemptedAt", null);
+	String COLUMNNAME_VATaxIDLastAttemptedAt = "VATaxIDLastAttemptedAt";
+
+	/**
+	 * Set VAT-ID Check Status.
+	 * Result of the VAT-ID check.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setVATaxIDStatus (java.lang.String VATaxIDStatus);
+
+	/**
+	 * Get VAT-ID Check Status.
+	 * Result of the VAT-ID check.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getVATaxIDStatus();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_VATaxIDStatus = new ModelColumn<>(I_C_BPartner_Location.class, "VATaxIDStatus", null);
+	String COLUMNNAME_VATaxIDStatus = "VATaxIDStatus";
 
 	/**
 	 * Set Visitors Address.

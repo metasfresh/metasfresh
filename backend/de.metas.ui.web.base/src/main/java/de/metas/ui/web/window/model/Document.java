@@ -1669,6 +1669,11 @@ public final class Document
 		return includedDocuments.values();
 	}
 
+	public boolean hasUnsavedNewIncludedDocuments()
+	{
+		return getIncludedDocumentsCollections().stream().anyMatch(IIncludedDocumentsCollection::hasNewDocumentsWithChanges);
+	}
+
 	/* package */ Document createIncludedDocument(final DetailId detailId)
 	{
 		final IIncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);

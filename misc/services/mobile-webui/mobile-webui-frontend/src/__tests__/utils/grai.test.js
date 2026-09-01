@@ -15,43 +15,102 @@ describe('grai list helpers', () => {
   describe('mergeGraiArrays', () => {
     it('appends new GRAIs not already in the list', () => {
       const prev = ['A', 'B'];
-      const result = mergeGraiArrays(prev, ['C', 'D']);
-      expect(result).toEqual(['A', 'B', 'C', 'D']);
+      const { merged, skipped } = mergeGraiArrays(prev, ['C', 'D']);
+      expect(merged).toEqual(['A', 'B', 'C', 'D']);
+      expect(skipped).toEqual([]);
     });
 
-    it('deduplicates GRAIs already present', () => {
+    it('deduplicates GRAIs already present (same-buffer re-read — silent, not "skipped")', () => {
       const prev = ['A', 'B'];
-      const result = mergeGraiArrays(prev, ['B', 'C']);
-      expect(result).toEqual(['A', 'B', 'C']);
+      const { merged, skipped } = mergeGraiArrays(prev, ['B', 'C']);
+      expect(merged).toEqual(['A', 'B', 'C']);
+      expect(skipped).toEqual([]);
     });
 
     it('returns the SAME array reference when nothing new is added (no re-render)', () => {
       const prev = ['A', 'B'];
-      const result = mergeGraiArrays(prev, ['A', 'B']);
-      expect(result).toBe(prev);
+      const { merged } = mergeGraiArrays(prev, ['A', 'B']);
+      expect(merged).toBe(prev);
     });
 
     it('handles empty prev', () => {
-      expect(mergeGraiArrays([], ['X'])).toEqual(['X']);
+      expect(mergeGraiArrays([], ['X']).merged).toEqual(['X']);
     });
 
     it('handles empty newGrais', () => {
       const prev = ['A'];
-      const result = mergeGraiArrays(prev, []);
-      expect(result).toBe(prev);
+      const { merged } = mergeGraiArrays(prev, []);
+      expect(merged).toBe(prev);
     });
 
     it('handles both arrays empty', () => {
       const prev = [];
-      const result = mergeGraiArrays(prev, []);
-      expect(result).toBe(prev);
+      const { merged } = mergeGraiArrays(prev, []);
+      expect(merged).toBe(prev);
     });
 
     it('deduplicates duplicates WITHIN newGrais (RFID re-read of the same crate in one burst)', () => {
       // A GRAI uniquely identifies one returnable asset, so a code repeated within a single scan
       // burst is the same crate read twice — it must collapse to a single entry.
-      expect(mergeGraiArrays([], ['X', 'X'])).toEqual(['X']);
-      expect(mergeGraiArrays(['A'], ['B', 'A', 'B', 'C'])).toEqual(['A', 'B', 'C']);
+      expect(mergeGraiArrays([], ['X', 'X']).merged).toEqual(['X']);
+      expect(mergeGraiArrays(['A'], ['B', 'A', 'B', 'C']).merged).toEqual(['A', 'B', 'C']);
+    });
+
+    describe('existingCodes (LU-wide dedupe mirror)', () => {
+      it('drops a code already present in existingCodes and reports it as skipped', () => {
+        const { merged, skipped } = mergeGraiArrays([], ['G'], ['G']);
+        expect(merged).toEqual([]);
+        expect(skipped).toEqual(['G']);
+      });
+
+      it('mixes fresh and already-on-LU codes in one batch', () => {
+        const { merged, skipped } = mergeGraiArrays([], ['G', 'FRESH1', 'FRESH2'], ['G']);
+        expect(merged).toEqual(['FRESH1', 'FRESH2']);
+        expect(skipped).toEqual(['G']);
+      });
+
+      it('does not double-report a repeat of the same already-on-LU code within one batch', () => {
+        const { merged, skipped } = mergeGraiArrays([], ['G', 'G'], ['G']);
+        expect(merged).toEqual([]);
+        expect(skipped).toEqual(['G']);
+      });
+
+      it('a same-crate re-read (already in prev) is NEVER reported as skipped, even if also in existingCodes', () => {
+        // re-scanning the identical GRAI for the SAME crate stays a silent no-op.
+        const prev = ['G'];
+        const { merged, skipped } = mergeGraiArrays(prev, ['G'], ['G']);
+        expect(merged).toBe(prev); // same reference — nothing added, no re-render
+        expect(skipped).toEqual([]);
+      });
+
+      it('defaults to no exclusion when existingCodes is omitted', () => {
+        const { merged, skipped } = mergeGraiArrays(['A'], ['B']);
+        expect(merged).toEqual(['A', 'B']);
+        expect(skipped).toEqual([]);
+      });
+    });
+
+    describe('alreadySkipped (idempotent re-report — dual-reader race)', () => {
+      it('does NOT re-report a code that was already reported in a prior call', () => {
+        // Two readers deliver the same physical already-on-LU scan across two calls; the second must
+        // be a silent no-op so the "N skipped" count/toast fire at most once per crate.
+        const { merged, skipped } = mergeGraiArrays([], ['G'], ['G'], ['G']);
+        expect(merged).toEqual([]);
+        expect(skipped).toEqual([]);
+      });
+
+      it('still reports a genuinely-new skip while ignoring the already-reported one', () => {
+        const { merged, skipped } = mergeGraiArrays([], ['G', 'H'], ['G', 'H'], ['G']);
+        expect(merged).toEqual([]);
+        expect(skipped).toEqual(['H']);
+      });
+
+      it('a redelivered fresh code (already in prev) stays silent regardless of alreadySkipped', () => {
+        const prev = ['FRESH'];
+        const { merged, skipped } = mergeGraiArrays(prev, ['FRESH'], ['G'], ['G']);
+        expect(merged).toBe(prev);
+        expect(skipped).toEqual([]);
+      });
     });
   });
 

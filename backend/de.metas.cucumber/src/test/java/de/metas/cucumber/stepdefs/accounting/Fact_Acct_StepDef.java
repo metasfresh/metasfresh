@@ -32,7 +32,8 @@ public class Fact_Acct_StepDef
 			@NonNull final C_Tax_StepDefData taxTable,
 			@NonNull final C_VAT_Code_StepDefData vatCodeTable,
 			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final C_Invoice_StepDefData invoiceTable
+			@NonNull final C_Invoice_StepDefData invoiceTable,
+			@NonNull final C_ElementValue_StepDefData elementValueTable
 	)
 	{
 		this.identifiersResolver = identifiersResolver;
@@ -50,6 +51,7 @@ public class Fact_Acct_StepDef
 				.vatCodeTable(vatCodeTable)
 				.productTable(productTable)
 				.invoiceTable(invoiceTable)
+				.elementValueTable(elementValueTable)
 				.build();
 		this.factAcctTabularStringConverter = FactAcctToTabularStringConverter.builder()
 				.uomDAO(uomDAO)

@@ -1030,6 +1030,29 @@ public interface I_PP_Order
 	String COLUMNNAME_IsSOTrx = "IsSOTrx";
 
 	/**
+	 * Set Cost difference.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setKostendifferenz (@Nullable BigDecimal Kostendifferenz);
+
+	/**
+	 * Get Cost difference.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	BigDecimal getKostendifferenz();
+
+	ModelColumn<I_PP_Order, Object> COLUMN_Kostendifferenz = new ModelColumn<>(I_PP_Order.class, "Kostendifferenz", null);
+	String COLUMNNAME_Kostendifferenz = "Kostendifferenz";
+
+	/**
 	 * Set SeqNo..
 	 *
 	 * <br>Type: Integer

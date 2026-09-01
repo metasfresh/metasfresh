@@ -56,16 +56,20 @@ import de.metas.material.planning.ResourceType;
 import de.metas.material.planning.ResourceTypeId;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.RawMaterialsIssueStrategy;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.lang.SeqNo;
 import de.metas.util.InSetPredicate;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.workflow.rest_api.service.Constants;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -111,6 +115,7 @@ public class ManufacturingJobService
 	@NonNull private final IHUPPOrderQtyBL huPPOrderQtyBL = Services.get(IHUPPOrderQtyBL.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IHUPPOrderBL ppOrderBL = Services.get(IHUPPOrderBL.class);
 	@NonNull private final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 	@NonNull private final PPOrderIssueScheduleService ppOrderIssueScheduleService;
@@ -523,8 +528,8 @@ public class ManufacturingJobService
 						.build())
 				.qtyToReceiveBD(receiveFrom.getQtyReceived())
 				.date(date)
-				.bestBeforeDate(TimeUtil.asLocalDate(receiveFrom.getBestBeforeDate()))
-				.productionDate(TimeUtil.asLocalDate(receiveFrom.getProductionDate()))
+				.bestBeforeDate(TimeUtil.asLocalDate(StringUtils.trimBlankToNull(receiveFrom.getBestBeforeDate())))
+				.productionDate(TimeUtil.asLocalDate(StringUtils.trimBlankToNull(receiveFrom.getProductionDate())))
 				.lotNo(receiveFrom.getLotNo())
 				.catchWeight(extractTargetCatchWeight(receiveFrom).orElse(null))
 				.barcode(receiveFrom.getBarcode())
@@ -753,7 +758,7 @@ public class ManufacturingJobService
 		// Find a BOM line that matches one of the HU's products
 		final List<I_PP_Order_BOMLine> bomLines = ppOrderBOMBL.getOrderBOMLines(ppOrderId);
 		IHUProductStorage matchingStorage = null;
-		PPOrderBOMLineId matchingBomLineId = null;
+		I_PP_Order_BOMLine matchingBomLine = null;
 		ProductId matchingProductId = null;
 
 		for (final I_PP_Order_BOMLine bomLine : bomLines)
@@ -765,7 +770,7 @@ public class ManufacturingJobService
 					.orElse(null);
 			if (matchingStorage != null)
 			{
-				matchingBomLineId = PPOrderBOMLineId.ofRepoId(bomLine.getPP_Order_BOMLine_ID());
+				matchingBomLine = bomLine;
 				matchingProductId = bomLineProductId;
 				break;
 			}
@@ -779,8 +784,22 @@ public class ManufacturingJobService
 					.markAsUserValidationError();
 		}
 
+		final PPOrderBOMLineId matchingBomLineId = PPOrderBOMLineId.ofRepoId(matchingBomLine.getPP_Order_BOMLine_ID());
+
+		// Determine how much to issue: whole stocking units, rounded up to cover the BOM line's remaining
+		// demand, capped at what the scanned HU actually holds. This avoids both mislabeling the UOM and
+		// over-issuing the HU's full qty when the product is stocked in whole units (e.g. pieces)
+		// but the BOM demands a fractional-unit UOM (e.g. kg).
+		final UomId stockingUomId = productBL.getStockUOMId(matchingProductId);
+		final Quantity remainingDemand = ppOrderBOMBL.getQuantities(matchingBomLine).getRemainingQtyToIssue();
+		final Quantity demandInStockingUOM = uomConversionBL.convertQuantityTo(
+				remainingDemand,
+				UOMConversionContext.of(matchingProductId),
+				stockingUomId);
+		final Quantity qtyAvailableInStockingUOM = matchingStorage.getQtyInStockingUOM();
+		final Quantity qtyToIssue = demandInStockingUOM.min(qtyAvailableInStockingUOM);
+
 		// Validate qty
-		final Quantity qtyToIssue = matchingStorage.getQty();
 		if (qtyToIssue.isZero())
 		{
 			throw new AdempiereException("HU has zero quantity for the matching product")

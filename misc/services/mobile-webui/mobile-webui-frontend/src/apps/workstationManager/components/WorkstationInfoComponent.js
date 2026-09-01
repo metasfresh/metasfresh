@@ -12,6 +12,8 @@ export const WorkstationInfoComponent = ({ workstationInfo }) => {
           <td>{workstationInfo.name}</td>
         </tr>
         {workstationInfo.workplaceName && (
+          // Scan-and-go assigns the workstation AND its linked workplace, and this screen is only ever
+          // reached via a scan — so on every reachable view this workplace IS the operator's active one.
           <tr>
             <th>{trl('general.workplace')}</th>
             <td>{workstationInfo.workplaceName}</td>

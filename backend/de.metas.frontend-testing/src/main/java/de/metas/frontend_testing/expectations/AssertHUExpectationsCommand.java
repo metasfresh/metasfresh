@@ -2,6 +2,8 @@ package de.metas.frontend_testing.expectations;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.frontend_testing.expectations.request.JsonHUExpectation;
 import de.metas.frontend_testing.expectations.request.QtyAndUOMString;
@@ -113,10 +115,45 @@ class AssertHUExpectationsCommand
 			}
 		}
 
+		if (expectation.getBpartner() != null)
+		{
+			final I_M_HU hu = getHUById(huId);
+			final BPartnerId expectedBPartnerId = expectation.getBpartner().isNullPlaceholder()
+					? null
+					: context.getId(expectation.getBpartner(), BPartnerId.class);
+			assertThat(BPartnerId.ofRepoIdOrNull(hu.getC_BPartner_ID()))
+					.as("C_BPartner_ID")
+					.isEqualTo(expectedBPartnerId);
+		}
+
+		if (expectation.getBpartnerLocation() != null)
+		{
+			final I_M_HU hu = getHUById(huId);
+			final BPartnerLocationId expectedBPLocationId = expectation.getBpartnerLocation().isNullPlaceholder()
+					? null
+					: context.getBPartnerLocationId(expectation.getBpartnerLocation());
+			assertThat(BPartnerLocationId.ofRepoIdOrNull(hu.getC_BPartner_ID(), hu.getC_BPartner_Location_ID()))
+					.as("C_BPartner_Location_ID")
+					.isEqualTo(expectedBPLocationId);
+		}
+
 		if (expectation.getHuStatus() != null)
 		{
 			final I_M_HU hu = getHUById(huId);
 			assertThat(hu.getHUStatus()).as("HUStatus").isEqualTo(expectation.getHuStatus());
+		}
+
+		if (expectation.getBpartner() != null)
+		{
+			final I_M_HU hu = getHUById(huId);
+			final BPartnerId expectedBPartnerId = context.getId(expectation.getBpartner(), BPartnerId.class);
+			assertThat(BPartnerId.ofRepoIdOrNull(hu.getC_BPartner_ID())).as("HU consignee C_BPartner_ID").isEqualTo(expectedBPartnerId);
+		}
+
+		if (Boolean.TRUE.equals(expectation.getConsigneeCleared()))
+		{
+			final I_M_HU hu = getHUById(huId);
+			assertThat(hu.getC_BPartner_ID() <= 0).as("HU consignee cleared (C_BPartner_ID <= 0)").isEqualTo(true);
 		}
 
 		if (expectation.getHuType() != null)

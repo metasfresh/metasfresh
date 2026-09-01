@@ -39,6 +39,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
 @Repository
@@ -70,12 +71,26 @@ public class CostRevaluationRepository
 				.evaluationStartDate(record.getEvaluationStartDate().toInstant())
 				.dateAcct(InstantAndOrgId.ofTimestamp(record.getDateAcct(), orgId))
 				.docStatus(DocStatus.ofCode(record.getDocStatus()))
+				.revaluationSource(RevaluationSource.ofCode(record.getRevaluationSource()))
+				.copyFromCostElementId(CostElementId.ofRepoIdOrNull(record.getCopyFrom_M_CostElement_ID()))
 				.build();
 	}
 
 	public void createLinesForCurrentCosts(
 			@NonNull final CostRevaluationId costRevaluationId,
 			@NonNull final List<CurrentCost> currentCosts)
+	{
+		createLines(costRevaluationId, currentCosts, CostRevaluationRepository::updateRecordFrom);
+	}
+
+	/**
+	 * Upserts one {@code M_CostRevaluationLine} per given {@link CurrentCost} (skipping already-revaluated lines, deleting
+	 * unmatched ones); {@code updateRecord} does the per-record field copy that differs between the two revaluation sources.
+	 */
+	private void createLines(
+			@NonNull final CostRevaluationId costRevaluationId,
+			@NonNull final List<CurrentCost> currentCosts,
+			@NonNull final BiConsumer<I_M_CostRevaluationLine, CurrentCost> updateRecord)
 	{
 		final HashMap<CostRevaluationLineKey, I_M_CostRevaluationLine> existingRecords = streamAllLineRecordsByCostRevaluationId(costRevaluationId)
 				.collect(GuavaCollectors.toHashMapByKey(CostRevaluationRepository::extractCostRevaluationLineKey));
@@ -98,7 +113,7 @@ public class CostRevaluationRepository
 				continue;
 			}
 
-			updateRecordFrom(existingRecord, currentCost);
+			updateRecord.accept(existingRecord, currentCost);
 			InterfaceWrapperHelper.save(existingRecord);
 		}
 
@@ -112,6 +127,43 @@ public class CostRevaluationRepository
 			deleteDetailsByLineIds(lineIds);
 			InterfaceWrapperHelper.deleteAll(linesToDelete);
 		}
+	}
+
+	/**
+	 * {@code CopyFromCostElement} sibling of {@link #createLinesForCurrentCosts(CostRevaluationId, List)}: one line per
+	 * source-element {@code CurrentCost} (incl. zero-on-hand), with the line's {@code M_CostElement_ID} set to the target element.
+	 */
+	public void createLinesForCopyFromCostElement(
+			@NonNull final CostRevaluationId costRevaluationId,
+			@NonNull final CostElementId targetCostElementId,
+			@NonNull final List<CurrentCost> sourceCurrentCosts)
+	{
+		createLines(costRevaluationId, sourceCurrentCosts,
+				(record, sourceCurrentCost) -> updateRecordFromCopySource(record, targetCostElementId, sourceCurrentCost));
+	}
+
+	private static void updateRecordFromCopySource(
+			@NonNull final I_M_CostRevaluationLine record,
+			@NonNull final CostElementId targetCostElementId,
+			@NonNull final CurrentCost sourceCurrentCost)
+	{
+		record.setIsActive(true);
+
+		updateRecordFrom(record, sourceCurrentCost.getCostSegment());
+		// The line belongs to the document's own (target) cost element, NOT the source it was copied from.
+		record.setM_CostElement_ID(targetCostElementId.getRepoId());
+
+		final CostPrice costPrice = sourceCurrentCost.getCostPrice();
+		// Only the own price is copied here; the lower-level (components) cost is deliberately NOT persisted at line
+		// level (M_CostRevaluationLine has no LL column, as in the Calculated path) — it is re-read at complete time
+		// (see CostRevaluationService.createDetailsForCopyFromCostElement).
+		record.setCurrentCostPrice(costPrice.getOwnCostPrice().toBigDecimal());
+		// Always mirror the source's own price (value-neutral copy, not a user-adjustable revaluation).
+		record.setNewCostPrice(costPrice.getOwnCostPrice().toBigDecimal());
+		record.setC_Currency_ID(costPrice.getCurrencyId().getRepoId());
+
+		record.setC_UOM_ID(costPrice.getUomId().getRepoId());
+		record.setCurrentQty(sourceCurrentCost.getCurrentQty().toBigDecimal());
 	}
 
 	@NonNull
@@ -311,6 +363,14 @@ public class CostRevaluationRepository
 				.addInArrayFilter(I_M_CostRevaluation_Detail.COLUMNNAME_M_CostRevaluationLine_ID, lineIds)
 				.create()
 				.delete();
+	}
+
+	/** Deactivates a line (used to make a re-run switch self-contained by dropping already-seeded, skipped products). */
+	public void deactivateLine(@NonNull final CostRevaluationLineId lineId)
+	{
+		final I_M_CostRevaluationLine record = InterfaceWrapperHelper.load(lineId, I_M_CostRevaluationLine.class);
+		record.setIsActive(false);
+		InterfaceWrapperHelper.save(record);
 	}
 
 	public void save(@NonNull final CostRevaluationLine line)

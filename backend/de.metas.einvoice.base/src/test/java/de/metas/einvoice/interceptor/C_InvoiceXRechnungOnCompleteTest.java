@@ -94,7 +94,7 @@ public class C_InvoiceXRechnungOnCompleteTest
 		final EInvoiceConfigService configService = new EInvoiceConfigService();
 		final C_Invoice interceptor = new C_Invoice(
 				configService,
-				new EInvoiceCiiService(configService),
+				new EInvoiceCiiService(configService, null, null),
 				attachmentEntryService);
 		POJOLookupMap.get().addModelValidator(interceptor);
 	}
@@ -183,7 +183,7 @@ public class C_InvoiceXRechnungOnCompleteTest
 
 		final I_C_BPartner sellerBP = newInstance(I_C_BPartner.class);
 		sellerBP.setName("Muster GmbH");
-		sellerBP.setTaxID("DE123456789");
+		sellerBP.setVATaxID("DE123456789"); // USt-IdNr -> BT-31 (VAT identifier); required by BR-CO-26
 		sellerBP.setEMail("invoice@muster.de");
 		sellerBP.setAD_OrgBP_ID(org.getAD_Org_ID());
 		saveRecord(sellerBP);
@@ -210,6 +210,7 @@ public class C_InvoiceXRechnungOnCompleteTest
 		// === Currency + bank ===
 		final I_C_Currency currency = newInstance(I_C_Currency.class);
 		currency.setISO_Code("EUR");
+		currency.setDescription("EUR");
 		saveRecord(currency);
 
 		final I_C_BP_BankAccount sellerBank = newInstance(I_C_BP_BankAccount.class);

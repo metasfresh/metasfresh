@@ -99,15 +99,16 @@ public class DistributionWorkflowLaunchersProvider
 		final DDOrderReferenceQueryBuilder builder = DDOrderReferenceQuery.builder()
 				.sorting(config.getSorting())
 				.responsibleId(userId)
-				.warehouseToId(workplace != null ? workplace.getWarehouseId() : null);
+				.workplaceWarehouseId(workplace != null ? workplace.getWarehouseId() : null)
+				.workplacePickFromLocatorId(workplace != null ? workplace.getPickFromLocatorId() : null);
 
 		if (workplace != null && !workplace.isPackingPlace())
 		{
-			builder.excludeLocatorToIds(warehouseService.getPackingPlacePickFromLocatorIds(workplace.getWarehouseId()));
+			builder.excludeLocatorToIds(warehouseService.getAllPackingPlacePickFromLocatorIds());
 		}
 		else
 		{
-			builder.locatorToId(workplace != null ? workplace.getPickFromLocatorId() : null);
+			builder.workplacePickFromLocatorId(workplace != null ? workplace.getPickFromLocatorId() : null);
 		}
 
 		return builder;

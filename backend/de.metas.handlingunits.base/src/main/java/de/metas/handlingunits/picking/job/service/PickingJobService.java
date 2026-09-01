@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.ad_reference.ADRefList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.dao.ValueRestriction;
@@ -12,8 +13,10 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
+import de.metas.handlingunits.grai.DummyGRAITemplate;
 import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.grai.GRAIRequired;
+import de.metas.handlingunits.grai.GRAISet;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.picking.PickingCandidateService;
@@ -32,6 +35,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
+import de.metas.handlingunits.picking.job.model.PickingJobUnpickResolveResult;
 import de.metas.handlingunits.picking.job.model.PickingSlotSuggestions;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.picking.job.repository.PickingJobLoaderSupportingServices;
@@ -43,7 +47,7 @@ import de.metas.handlingunits.picking.job.service.commands.PickingJobCompleteCom
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobReopenCommand;
-import de.metas.handlingunits.picking.job.service.commands.PickingJobUnPickCommand;
+import de.metas.handlingunits.picking.job.service.commands.unpick.PickingJobUnPickCommand;
 import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackCommand;
 import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackRequest;
 import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackResponse;
@@ -52,14 +56,18 @@ import de.metas.handlingunits.picking.job.service.commands.pick.PickingJobPickCo
 import de.metas.handlingunits.picking.job.service.commands.pick_all.PickingJobPickAllCommand;
 import de.metas.handlingunits.picking.job.service.commands.retrieve.PickingJobCandidateRetrieveCommand;
 import de.metas.handlingunits.picking.job.service.external.bpartner.PickingJobBPartnerService;
+import de.metas.handlingunits.picking.job.service.external.carrieradvise.PickingJobCarrierAdviseConsistencyService;
 import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.handlingunits.picking.job.service.external.product.PickingJobProductService;
 import de.metas.handlingunits.picking.job.service.external.shipmentschedule.PickingJobShipmentScheduleService;
+import de.metas.handlingunits.picking.job.service.external.shipmentschedule.ShipmentScheduleInfo;
 import de.metas.handlingunits.picking.job.service.external.warehouse.PickingJobWarehouseService;
+import de.metas.handlingunits.picking.job.service.shelflife.PickingShelfLifeCheck;
 import de.metas.handlingunits.picking.job.shipment.PickingShipmentService;
 import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
 import de.metas.handlingunits.picking.requests.ReleasePickingSlotRequest;
 import de.metas.handlingunits.picking.slot.PickingSlotListener;
+import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.logging.LogManager;
@@ -72,6 +80,7 @@ import de.metas.product.ProductId;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -82,6 +91,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -112,7 +122,10 @@ public class PickingJobService implements PickingSlotListener
 	@NonNull private final MobileUIPickingUserProfileService configService;
 	@NonNull private final PickingJobScheduleService pickingJobScheduleService;
 	@NonNull private final PickingJobHUService huService;
+	@NonNull private final PickingJobCarrierAdviseConsistencyService carrierAdviseConsistencyService;
 	@NonNull private final PickingJobGraiTargetService graiTargetService;
+	@NonNull private final PickingJobUnpickProductResolver unpickProductResolver;
+	@NonNull private final PickingShelfLifeCheck shelfLifeCheck;
 
 	@NonNull
 	public PickingJob getById(final PickingJobId pickingJobId)
@@ -418,9 +431,12 @@ public class PickingJobService implements PickingSlotListener
 						.bestBeforeDate(event.getBestBeforeDate())
 						.isSetLotNo(event.isSetLotNo())
 						.lotNo(event.getLotNo())
+						.isSetSerialNos(event.isSetSerialNos())
+						.serialNos(event.getSerialNos())
 						.isCloseTarget(event.isCloseTarget())
 						.isSetGrais(event.isSetGrais())
 						.graiCodes(event.getGraiCodes())
+						.isShelfLifeConfirmed(event.isShelfLifeConfirmed())
 						//
 						.build()
 						.execute();
@@ -438,6 +454,8 @@ public class PickingJobService implements PickingSlotListener
 						.onlyPickingJobStepId(event.getPickingStepId())
 						.onlyPickFromKey(event.getPickFromKey())
 						.unpickToHU(event.getUnpickToTargetQRCode())
+						.productId(event.getUnpickProductId())
+						.qtyToUnpick(event.getQtyToUnpick())
 						//
 						.build().execute();
 			}
@@ -459,7 +477,8 @@ public class PickingJobService implements PickingSlotListener
 				.pickingJobService(this)
 				.pickingJobRepository(pickingJobRepository)
 				.pickingSlotService(pickingSlotService)
-				.huService(huService);
+				.huService(huService)
+				.shelfLifeCheck(shelfLifeCheck);
 	}
 
 	public void unassignAllByUserId(@NonNull final UserId userId)
@@ -669,10 +688,17 @@ public class PickingJobService implements PickingSlotListener
 			@Nullable final PickingJobLineId lineId,
 			@Nullable final LUPickingTarget target)
 	{
-		final PickingJob pickingJobChanged = pickingJob.withLuPickingTarget(lineId, target);
+		PickingJob pickingJobChanged = pickingJob.withLuPickingTarget(lineId, target);
 		if (Util.equals(pickingJob, pickingJobChanged))
 		{
 			return pickingJob;
+		}
+
+		// Selecting an LU starts a NEW top-level parcel → re-init the header carrier from the unprocessed lines
+		// (the batch that will land on it). Only on a genuine new-*parcel* select (a real LU), not when clearing it.
+		if (target != null && target.isNewLU())
+		{
+			pickingJobChanged = pickingJobChanged.withHeaderCarrierFromUnprocessedLines();
 		}
 
 		pickingJobRepository.save(pickingJobChanged);
@@ -684,10 +710,18 @@ public class PickingJobService implements PickingSlotListener
 			@Nullable final PickingJobLineId lineId,
 			@Nullable final TUPickingTarget target)
 	{
-		final PickingJob pickingJobChanged = pickingJob.withTuPickingTarget(lineId, target);
+		PickingJob pickingJobChanged = pickingJob.withTuPickingTarget(lineId, target);
 		if (Util.equals(pickingJob, pickingJobChanged))
 		{
 			return pickingJob;
+		}
+
+		// A TU is a new top-level parcel ONLY when it is NOT nested under an existing LU pick target. A TU nested
+		// under an LU keeps the LU's header carrier state untouched (the LU is the parcel). Re-init only on a real
+		// new-*parcel* select (a new TU), not when clearing the target.
+		if (target != null && target.isNewTU() && !pickingJobChanged.getLuPickingTargetEffective(lineId).isPresent())
+		{
+			pickingJobChanged = pickingJobChanged.withHeaderCarrierFromUnprocessedLines();
 		}
 
 		pickingJobRepository.save(pickingJobChanged);
@@ -756,6 +790,61 @@ public class PickingJobService implements PickingSlotListener
 		return bpartnerService.getGRAIRequired(customerId);
 	}
 
+	/**
+	 * @return the GRAIs already assigned to the line's effective loading unit (from prior picks on this LU), so the
+	 * mobile capture panel can mirror the server-side LU-wide dedupe. Resolves the effective LU the same way
+	 * {@link de.metas.handlingunits.picking.job.service.commands.pick.PickingJobPickCommand#stampGraisIfRequired}
+	 * does. Empty when no LU is resolved yet for the line (nothing to stamp against yet).
+	 */
+	@NonNull
+	public List<GRAI> getExistingLuGrais(@NonNull final PickingJob pickingJob, @Nullable final PickingJobLineId lineId)
+	{
+		// Resolve the EXISTING LU across line-then-header scopes. For a header-level (SALES_ORDER) job the
+		// line carries its own not-yet-materialised LU target, which would shadow the shared, already-picked
+		// header LU if we used getLuPickingTargetEffective (first-present) + filter — so a later line's capture
+		// would see an empty existing-GRAI set and fail to mirror the LU-wide dedupe. getExistingLuPickingTargetEffective
+		// skips the non-existing scope and finds the shared LU (and, for PRODUCT aggregation, this line's own LU).
+		final HuId pickedLuId = pickingJob.getExistingLuPickingTargetEffective(lineId)
+				.map(LUPickingTarget::getLuIdNotNull)
+				.orElse(null);
+
+		if (pickedLuId == null)
+		{
+			return ImmutableList.of();
+		}
+
+		final GRAISet existingGrais = huService.getGrais(pickedLuId);
+		return ImmutableList.copyOf(existingGrais);
+	}
+
+	/**
+	 * Validates the dummy-GRAI prerequisites for a sales order whose customer is in
+	 * {@link GRAIRequired#YesWithDummyGRAIs} mode: the order's PO reference must be able to form a valid
+	 * dummy-GRAI serial prefix (present after trim, max 10 characters). Throws the translated, operator-facing
+	 * message otherwise. No-op for any other GRAI mode.
+	 * <p>
+	 * The GRAI mode is resolved from the order's customer — the same source the picking-completion backstop
+	 * uses — so this early validation predicts (and stays consistent with) the completion-time check.
+	 */
+	public void assertDummyGRAIPrerequisitesForSalesOrder(
+			@NonNull final OrderId salesOrderId,
+			@Nullable final BPartnerId customerId,
+			@Nullable final String poReference)
+	{
+		if (getGRAIRequired(customerId) != GRAIRequired.YesWithDummyGRAIs)
+		{
+			return;
+		}
+
+		final String serialPrefix = StringUtils.trimBlankToNull(poReference);
+		if (serialPrefix == null)
+		{
+			throw new AdempiereException(DummyGRAITemplate.MSG_DUMMY_GRAI_POREFERENCE_MISSING, salesOrderId);
+		}
+
+		DummyGRAITemplate.assertValidSerialPrefix(serialPrefix);
+	}
+
 	public PickingJob closeLUAndTUPickingTargets(@NonNull final PickingJob pickingJob)
 	{
 		return closeLUAndTUPickingTargets(pickingJob, true, true, null, false);
@@ -784,7 +873,14 @@ public class PickingJobService implements PickingSlotListener
 			final boolean isShipClosedHUs)
 	{
 		final LUIdsAndTopLevelTUIdsCollector closedHUIdsCollector = new LUIdsAndTopLevelTUIdsCollector();
-		final PickingJob pickingJobChanged = pickingJob.withClosedLUAndTUPickingTargets(isCloseOnHeader, isCloseOnLines, onlyLineId, closedHUIdsCollector);
+		PickingJob pickingJobChanged = pickingJob.withClosedLUAndTUPickingTargets(isCloseOnHeader, isCloseOnLines, onlyLineId, closedHUIdsCollector);
+
+		// Closing a TOP-LEVEL parcel (header scope) frees the header for the next batch → re-init its carrier
+		// state from the still-unprocessed lines. A per-line close (isCloseOnHeader=false) leaves the header alone.
+		if (isCloseOnHeader)
+		{
+			pickingJobChanged = pickingJobChanged.withHeaderCarrierFromUnprocessedLines();
+		}
 
 		if (!Util.equals(pickingJob, pickingJobChanged))
 		{
@@ -793,10 +889,20 @@ public class PickingJobService implements PickingSlotListener
 
 		if (!closedHUIdsCollector.isEmpty())
 		{
+			// Enforce per-parcel carrier-advise consistency at target-close: a closed LU may ship right here (isShipClosedHUs),
+			// so complete-time is too late. Throwing here aborts the close (and thus the pick/complete).
+			carrierAdviseConsistencyService.assertConsistentForClosedHUs(closedHUIdsCollector.getAllTopLevelHUIds());
+
 			pickingJobChanged.getPickingSlotIdEffective(onlyLineId)
 					.ifPresent(pickingSlotId -> pickingSlotService.addToPickingSlotQueue(pickingSlotId, closedHUIdsCollector.getAllTopLevelHUIds()));
 
 			final ImmutableSet<HuId> closedLUIds = closedHUIdsCollector.getLUIds();
+
+			// me03 #30763: persist the picking consignee (BPartner + delivery location) on the just-closed LUs when
+			// they carry no partner, so the per-BPartner M_HU_Label_Config matches and the SSCC label auto-prints.
+			// Must run BEFORE printLULabels so the label lookup (keyed on the LU's own bpartner) selects the config.
+			stampConsigneeOnClosedLUs(pickingJob, closedLUIds);
+
 			huService.printLULabels(closedLUIds);
 			huService.printTULabels(closedHUIdsCollector.getTopLevelTUIds());
 
@@ -819,6 +925,51 @@ public class PickingJobService implements PickingSlotListener
 		return pickingJobChanged;
 	}
 
+	/**
+	 * me03 #30763 — persists the picking consignee on each just-closed LU that carries no BPartner yet, so the
+	 * per-BPartner {@code M_HU_Label_Config} matches and the SSCC label auto-prints (both at close and on later re-print).
+	 * <p>
+	 * The consignee is resolved <b>per LU</b> from the pre-close picking job: header-level pick targets
+	 * (SALES_ORDER / DELIVERY_LOCATION aggregation) carry the job's delivery location; line-level pick targets
+	 * (PRODUCT aggregation) carry their own line's delivery location. A job may span multiple consignees, so this
+	 * never applies a blanket customer id. Only LUs actually closed by this operation (in {@code closedLUIds}) are stamped.
+	 */
+	private void stampConsigneeOnClosedLUs(
+			@NonNull final PickingJob pickingJob,
+			@NonNull final ImmutableSet<HuId> closedLUIds)
+	{
+		if (closedLUIds.isEmpty())
+		{
+			return;
+		}
+
+		final Map<HuId, BPartnerLocationId> luId2consignee = new HashMap<>();
+
+		// header-level pick target (SALES_ORDER / DELIVERY_LOCATION aggregation) -> job delivery location
+		final BPartnerLocationId headerConsignee = pickingJob.getDeliveryBPLocationId();
+		if (headerConsignee != null)
+		{
+			pickingJob.getLuPickingTarget(null)
+					.filter(LUPickingTarget::isExistingLU)
+					.ifPresent(target -> luId2consignee.put(target.getLuIdNotNull(), headerConsignee));
+		}
+
+		// line-level pick targets (PRODUCT aggregation) -> each line's own delivery location
+		pickingJob.streamLines().forEach(line ->
+				pickingJob.getLuPickingTarget(line.getId())
+						.filter(LUPickingTarget::isExistingLU)
+						.ifPresent(target -> luId2consignee.put(target.getLuIdNotNull(), line.getDeliveryBPLocationId())));
+
+		for (final HuId closedLUId : closedLUIds)
+		{
+			final BPartnerLocationId consignee = luId2consignee.get(closedLUId);
+			if (consignee != null)
+			{
+				huService.setBPartnerAndLocationIfNotSet(closedLUId, consignee);
+			}
+		}
+	}
+
 	@NonNull
 	public PickingJob closeTUPickingTarget(
 			@NonNull final PickingJob pickingJob,
@@ -828,6 +979,19 @@ public class PickingJobService implements PickingSlotListener
 		if (pickingTarget == null)
 		{
 			return pickingJob;
+		}
+
+		// Enforce per-parcel carrier-advise consistency on the closed TU — the same guard the LU-close / complete
+		// path runs (closeLUAndTUPickingTargets). Without it, a TU carrying two distinct manual carriers slips
+		// silently past close and only fails later at shipment generation with a raw ShipperGatewayException.
+		// Guard the TOP-LEVEL HU of the closing TU (the LU when the TU is nested under one, else the TU itself):
+		// the guard's schedule lookup only matches top-level HUs, and a nested TU's picked schedules carry the LU's
+		// M_LU_HU_ID, so guarding the TU directly would miss them. This mirrors the LU-close / complete path, which
+		// already passes top-level HU ids (closedHUIdsCollector.getAllTopLevelHUIds()).
+		if (pickingTarget.isExistingTU())
+		{
+			final HuId topLevelHuId = huService.getTopLevelHuId(pickingTarget.getTuIdNotNull());
+			carrierAdviseConsistencyService.assertConsistentForClosedHUs(ImmutableSet.of(topLevelHuId));
 		}
 
 		return setTUPickingTarget(pickingJob, lineId, null);
@@ -927,5 +1091,63 @@ public class PickingJobService implements PickingSlotListener
 				.shipmentSchedules(shipmentScheduleService.newLoadingCache())
 				.request(request)
 				.build().execute();
+	}
+
+	/**
+	 * Resolves the HU which {@code scannedCode} identifies for the given picking job line, using exactly the same
+	 * resolution the pick itself performs (see {@code PickingJobHUService#resolvePickFromHUQRCode}).
+	 * <p>
+	 * Needed because a scanned code is not necessarily an {@code HUQRCode}: a custom weight label, an LMQ label or a
+	 * GS1 barcode identifies its HU only relative to the line's product / customer / warehouse. A caller that merely
+	 * wants to inspect the scanned HU (the mobile UI's over-delivery check) must therefore see the very HU the pick
+	 * would pick, instead of re-implementing a looser lookup.
+	 * <p>
+	 * One deliberate divergence from the pick: {@code PickOnTheFlyQRCode} is not special-cased here, because handling
+	 * it means creating inventory ({@code PickingJobPickCommand#createPickFromHUOnTheFly}), which an inspection-only
+	 * call must not do. Unreachable in practice - the codes that reach this method are whole-TU labels (custom weight,
+	 * LMQ, GS1), none of which can be a pick-on-the-fly code.
+	 */
+	public HUInfo resolvePickFromHU(
+			@NonNull final PickingJobId pickingJobId,
+			@NonNull final PickingJobLineId lineId,
+			@NonNull final ScannedCode scannedCode,
+			@NonNull final UserId callerId)
+	{
+		final PickingJob pickingJob = getById(pickingJobId);
+		pickingJob.assertCanBeEditedBy(callerId);
+
+		final PickingJobLine line = pickingJob.getLineById(lineId);
+		final IHUQRCode huQRCode = huService.parsePickFromScannedCode(scannedCode);
+
+		// Product / customer / warehouse are taken from the very same places PickingJobPickCommand takes them
+		// (see its computePickFromHUIdAndQRCode); resolving from a different source could yield a different HU
+		// than the pick will actually pick, which would make the qty we hand to the caller wrong.
+		final ShipmentScheduleId shipmentScheduleId = line.getScheduleId().getShipmentScheduleId();
+		final ShipmentScheduleInfo shipmentScheduleInfo = shipmentScheduleService.getById(shipmentScheduleId);
+
+		return huService.resolvePickFromHUQRCode(
+						huQRCode,
+						line.getProductId(),
+						shipmentScheduleInfo.getBpartnerId(),
+						shipmentScheduleInfo.getWarehouseId())
+				.orElseThrow();
+	}
+
+	/**
+	 * Resolves a scanned product barcode against the given picking job and computes
+	 * the total packed qty for the matched product (across all steps), for partial-unpick purposes.
+	 *
+	 * <p>Supports GS1 (GTIN), EAN13, and Custom (product-value) QR code formats.
+	 * For a standard HU QR code the method is not meaningful and throws.
+	 */
+	@NonNull
+	public PickingJobUnpickResolveResult resolveUnpick(
+			@NonNull final PickingJobId pickingJobId,
+			@NonNull final ScannedCode scannedCode,
+			@NonNull final UserId callerId)
+	{
+		final PickingJob pickingJob = getById(pickingJobId);
+		pickingJob.assertCanBeEditedBy(callerId);
+		return unpickProductResolver.resolve(pickingJob, scannedCode);
 	}
 }

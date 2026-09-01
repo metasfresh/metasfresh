@@ -26,6 +26,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.service.AsyncBatchService;
@@ -289,6 +290,9 @@ public class ShipmentService implements IShipmentService
 
 		if (nowInstant != null)
 		{
+			// Per-line "hold each line until its own date" gate. PreparationDate and DatePromised are per line in
+			// M_Packageable_V (DatePromised = the override-inclusive per-line date — see the view); IsFixedPreparationDate
+			// and IsFixedDatePromised are header flags that apply to ALL lines of the order.
 			final IQuery<I_M_Packageable_V> subQueryPackageable = queryBL.createQueryBuilder(I_M_Packageable_V.class)
 					.filter(queryBL.createCompositeQueryFilter(I_M_Packageable_V.class)
 							.setJoinOr()
@@ -471,9 +475,9 @@ public class ShipmentService implements IShipmentService
 			@NonNull final Set<OLCandId> olCandIds,
 			@NonNull final AsyncBatchId asyncBatchId)
 	{
-		final Map<OLCandId, OrderLineId> olCandId2OrderLineId = olCandDAO.retrieveOLCandIdToOrderLineId(olCandIds);
+		final ImmutableSetMultimap<OLCandId, OrderLineId> olCandId2OrderLineId = olCandDAO.retrieveOLCandIdToOrderLineId(olCandIds);
 
-		if (olCandId2OrderLineId == null || olCandId2OrderLineId.isEmpty())
+		if (olCandId2OrderLineId.isEmpty())
 		{
 			return QtyToDeliverMap.EMPTY;
 		}
@@ -482,7 +486,7 @@ public class ShipmentService implements IShipmentService
 
 		final ImmutableMap.Builder<ShipmentScheduleId, StockQtyAndUOMQty> scheduleId2QtyShipped = ImmutableMap.builder();
 
-		for (final Map.Entry<OLCandId, OrderLineId> olCand2OrderLineEntry : olCandId2OrderLineId.entrySet())
+		for (final Map.Entry<OLCandId, OrderLineId> olCand2OrderLineEntry : olCandId2OrderLineId.entries())
 		{
 			final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleBL.getByOrderLineId(olCand2OrderLineEntry.getValue());
 

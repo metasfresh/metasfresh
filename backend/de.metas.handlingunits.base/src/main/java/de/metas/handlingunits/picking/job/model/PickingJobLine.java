@@ -39,8 +39,11 @@ import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.inoutcandidate.CarrierGoodsTypeId;
+import de.metas.inoutcandidate.CarrierServiceId;
 import de.metas.product.ProductValueAndName;
 import de.metas.quantity.Quantity;
+import de.metas.shipping.CarrierProductId;
 import de.metas.uom.UomId;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
@@ -83,6 +86,12 @@ public class PickingJobLine implements PickingJobHeaderOrLine
 	@NonNull ImmutableList<PickingJobStep> steps;
 	boolean isManuallyClosed;
 
+	@Nullable CarrierProductId carrierProductId;
+	boolean carrierAdviseReadOnly;
+	boolean isManual;
+	@Nullable CarrierGoodsTypeId carrierGoodsTypeId;
+	@NonNull ImmutableSet<CarrierServiceId> carrierServices;
+
 	// computed values
 	@NonNull PickingJobProgress progress;
 
@@ -120,7 +129,12 @@ public class PickingJobLine implements PickingJobHeaderOrLine
 			@NonNull final ImmutableList<PickingJobStep> steps,
 			@Nullable final CurrentPickingTarget currentPickingTarget,
 			@NonNull final PickingUnit pickingUnit,
-			final boolean isManuallyClosed)
+			final boolean isManuallyClosed,
+			@Nullable final CarrierProductId carrierProductId,
+			final boolean carrierAdviseReadOnly,
+			final boolean isManual,
+			@Nullable final CarrierGoodsTypeId carrierGoodsTypeId,
+			@Nullable final Set<CarrierServiceId> carrierServices)
 	{
 		this.id = id;
 		this.caption = caption;
@@ -140,6 +154,11 @@ public class PickingJobLine implements PickingJobHeaderOrLine
 		this.pickFromManufacturingOrderId = pickFromManufacturingOrderId;
 		this.steps = steps;
 		this.isManuallyClosed = isManuallyClosed;
+		this.carrierProductId = carrierProductId;
+		this.carrierAdviseReadOnly = carrierAdviseReadOnly;
+		this.isManual = isManual;
+		this.carrierGoodsTypeId = carrierGoodsTypeId;
+		this.carrierServices = carrierServices != null ? ImmutableSet.copyOf(carrierServices) : ImmutableSet.of();
 
 		this.currentPickingTarget = currentPickingTarget != null ? currentPickingTarget : CurrentPickingTarget.EMPTY;
 
@@ -258,6 +277,26 @@ public class PickingJobLine implements PickingJobHeaderOrLine
 		return this.isManuallyClosed != isManuallyClosed
 				? toBuilder().isManuallyClosed(isManuallyClosed).build()
 				: this;
+	}
+
+	public PickingJobLine withCarrierAdvise(
+			@Nullable final CarrierProductId carrierProductId,
+			@Nullable final CarrierGoodsTypeId carrierGoodsTypeId,
+			@NonNull final Set<CarrierServiceId> carrierServices,
+			final boolean carrierAdviseReadOnly)
+	{
+		final ImmutableSet<CarrierServiceId> carrierServicesSet = ImmutableSet.copyOf(carrierServices);
+		return CarrierProductId.equals(this.carrierProductId, carrierProductId)
+				&& CarrierGoodsTypeId.equals(this.carrierGoodsTypeId, carrierGoodsTypeId)
+				&& this.carrierServices.equals(carrierServicesSet)
+				&& this.carrierAdviseReadOnly == carrierAdviseReadOnly
+				? this
+				: toBuilder()
+				.carrierProductId(carrierProductId)
+				.carrierGoodsTypeId(carrierGoodsTypeId)
+				.carrierServices(carrierServicesSet)
+				.carrierAdviseReadOnly(carrierAdviseReadOnly)
+				.build();
 	}
 
 	@NonNull

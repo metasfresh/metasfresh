@@ -50,7 +50,8 @@ class MobileConfigPickingCommand
 					.isActiveWorkplaceRequired(request.getActiveWorkplaceRequired() != null ? request.getActiveWorkplaceRequired() : false)
 					.isConsiderOnlyJobScheduledToWorkplace(request.getConsiderOnlyJobScheduledToWorkplace() != null ? request.getConsiderOnlyJobScheduledToWorkplace() : false)
 					.isAllowQuickPackAll(request.getAllowQuickPackAll() != null ? request.getAllowQuickPackAll() : false)
-					.isMassPrinting(request.getMassPrinting() != null ? request.getMassPrinting() : false);
+					.isMassPrinting(request.getMassPrinting() != null ? request.getMassPrinting() : false)
+					.isShowQtyAvailableForLines(request.getShowQtyAvailableForLines() != null ? request.getShowQtyAvailableForLines() : false);
 
 			if (request.getAllowPickingAnyCustomer() != null)
 			{
@@ -153,6 +154,11 @@ class MobileConfigPickingCommand
 		builder.displayPickingSlotSuggestions(OptionalBoolean.ofNullableBoolean(from.getDisplayPickingSlotSuggestions()));
 
 		builder.isShowConfirmationPromptWhenOverPick(Boolean.TRUE.equals(from.getShowPromptWhenOverPicking()));
+
+		if (from.getWarnShelfLifeUndercut() != null)
+		{
+			builder.isWarnShelfLifeUndercut(from.getWarnShelfLifeUndercut());
+		}
 
 		return builder.build();
 	}

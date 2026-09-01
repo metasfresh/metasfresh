@@ -34,6 +34,8 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
@@ -41,10 +43,12 @@ import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.product.ProductId;
 import de.metas.product.ProductValueAndName;
 import de.metas.quantity.Quantity;
+import de.metas.shipping.CarrierProductId;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Optionals;
+import de.metas.util.StreamUtils;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.Getter;
@@ -165,6 +169,76 @@ public final class PickingJob implements PickingJobHeaderOrLine
 		return UserId.equals(header.getLockedBy(), lockedBy)
 				? this
 				: toBuilder().header(header.toBuilder().lockedBy(lockedBy).build()).build();
+	}
+
+	@Nullable
+	public CarrierProductId getCarrierProductId() {return header.getCarrierProductId();}
+
+	public boolean isCarrierAdviseReadOnly() {return header.isCarrierAdviseReadOnly();}
+
+	public PickingJob withCarrierProductId(@Nullable final CarrierProductId carrierProductId)
+	{
+		return CarrierProductId.equals(header.getCarrierProductId(), carrierProductId)
+				? this
+				: toBuilder().header(header.toBuilder().carrierProductId(carrierProductId).build()).build();
+	}
+
+	public PickingJob withCarrierAdviseReadOnly(final boolean carrierAdviseReadOnly)
+	{
+		return header.isCarrierAdviseReadOnly() == carrierAdviseReadOnly
+				? this
+				: toBuilder().header(header.toBuilder().carrierAdviseReadOnly(carrierAdviseReadOnly).build()).build();
+	}
+
+	/**
+	 * (Re-)initialises the header's carrier state from the lines that are still to be picked — the batch that will
+	 * land on the NEXT top-level parcel. Called when a new top-level parcel starts (LU / top-level TU select) or when
+	 * a top-level parcel is closed. The header then carries the single distinct carrier product of the unprocessed
+	 * lines (all-same → that carrier; divergent or none → {@code null}) and is no longer read-only (advise can run
+	 * again against the fresh parcel). This module has no shipper repository, so the RAW carrier aggregate is stored;
+	 * the read side ({@code PackedHUCarrierAdviseService}) applies the api-advise filter.
+	 */
+	public PickingJob withHeaderCarrierFromUnprocessedLines()
+	{
+		final ImmutableSet<CarrierProductId> unprocessedCarriers = lines.stream()
+				.filter(line -> line.getQtyRemainingToPick().signum() > 0)
+				.map(PickingJobLine::getCarrierProductId)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final CarrierProductId headerCarrier = unprocessedCarriers.size() == 1
+				? unprocessedCarriers.iterator().next()
+				: null;
+
+		return withCarrierProductId(headerCarrier).withCarrierAdviseReadOnly(false);
+	}
+
+	/**
+	 * Folds a just-picked line into the header carrier state (the header tracks the CURRENT top-level parcel).
+	 * <ul>
+	 *     <li><b>non-manual</b> pick → the carrier is set only by advise, so the header carrier + read-only flag are
+	 *         left UNCHANGED;</li>
+	 *     <li><b>manual</b> pick → the picked carrier is a human override the parcel now carries → header becomes
+	 *         read-only, and the header carrier becomes that line's carrier — EXCEPT when the header already holds a
+	 *         DIFFERENT non-null carrier (a divergent manual mix on the parcel), where the single carrier collapses
+	 *         to {@code null}.</li>
+	 * </ul>
+	 */
+	public PickingJob withHeaderCarrierFromPickedLine(@NonNull final PickingJobLine pickedLine)
+	{
+		if (!pickedLine.isManual())
+		{
+			return this;
+		}
+
+		final CarrierProductId lineCarrier = pickedLine.getCarrierProductId();
+		final CarrierProductId currentHeaderCarrier = header.getCarrierProductId();
+		final CarrierProductId newHeaderCarrier = (currentHeaderCarrier != null
+				&& !CarrierProductId.equals(currentHeaderCarrier, lineCarrier))
+				? null // divergent manual carriers on the same parcel → no single carrier
+				: lineCarrier;
+
+		return withCarrierProductId(newHeaderCarrier).withCarrierAdviseReadOnly(true);
 	}
 
 	private PickingJobProgress computeProgress(@NonNull final ImmutableList<PickingJobLine> lines)
@@ -288,6 +362,17 @@ public final class PickingJob implements PickingJobHeaderOrLine
 	public Optional<LUPickingTarget> getLuPickingTargetEffective(@Nullable final PickingJobLineId lineId)
 	{
 		return getCurrentPickingTargetEffectiveValue(lineId, CurrentPickingTarget::getLuPickingTarget);
+	}
+
+	/**
+	 * The first <b>existing</b> LU picking target across line- then header-scope, skipping not-yet-materialised
+	 * ones (unlike {@link #getLuPickingTargetEffective(PickingJobLineId)}, which returns the first present target).
+	 */
+	public Optional<LUPickingTarget> getExistingLuPickingTargetEffective(@Nullable final PickingJobLineId lineId)
+	{
+		return getCurrentPickingTargetEffectiveValue(
+				lineId,
+				currentPickingTarget -> currentPickingTarget.getLuPickingTarget().filter(LUPickingTarget::isExistingLU));
 	}
 
 	@NonNull
@@ -473,6 +558,18 @@ public final class PickingJob implements PickingJobHeaderOrLine
 	}
 
 	@Nullable
+	public Quantity getPackedQty(@NonNull final ProductId productId)
+	{
+		return streamSteps()
+				.filter(step -> ProductId.equals(step.getProductId(), productId))
+				.map(PickingJobStep::getPackedQty)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.reduce(Quantity::add)
+				.orElse(null);
+	}
+
+	@Nullable
 	public ProductValueAndName getSingleProductValueAndName()
 	{
 		ProductId productId = null;
@@ -493,6 +590,17 @@ public final class PickingJob implements PickingJobHeaderOrLine
 		}
 
 		return productValueAndName;
+	}
+
+	@NonNull
+	public ITranslatableString getProductNamesJoined()
+	{
+		// distinct by ProductId (never by displayed text, so two distinct products sharing a name both appear);
+		// filter preserves encounter order, so the names read in line order.
+		return lines.stream()
+				.filter(StreamUtils.distinctByKey(PickingJobLine::getProductId))
+				.map(line -> line.getProductValueAndName().getName())
+				.collect(TranslatableStrings.joining(", "));
 	}
 
 	@Nullable

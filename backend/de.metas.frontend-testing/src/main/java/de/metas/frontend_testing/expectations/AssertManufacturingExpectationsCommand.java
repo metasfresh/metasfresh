@@ -94,6 +94,10 @@ public class AssertManufacturingExpectationsCommand
 			softlyPutContext("expectation", expectation);
 			softlyPutContext("actual", actual);
 
+			if (expectation.getHu() != null)
+			{
+				context.putSameOrMissingId("hu", expectation.getHu(), HuId.ofRepoId(actual.getM_HU_ID()), HuId.class);
+			}
 			if (expectation.getLu() != null)
 			{
 				final HuId luId = getLuId(actual);

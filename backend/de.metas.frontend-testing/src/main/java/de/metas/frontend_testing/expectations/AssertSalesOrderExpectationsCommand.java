@@ -3,12 +3,14 @@ package de.metas.frontend_testing.expectations;
 import com.google.common.base.Stopwatch;
 import de.metas.document.engine.DocStatus;
 import de.metas.frontend_testing.expectations.request.JsonInOutExpectation;
+import de.metas.frontend_testing.expectations.request.JsonInOutLineExpectation;
 import de.metas.frontend_testing.expectations.request.JsonSalesOrderExpectation;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -19,6 +21,7 @@ import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.time.Duration;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -183,7 +186,63 @@ class AssertSalesOrderExpectationsCommand
 						.as("total MovementQty of shipment[" + index + "] M_InOut_ID=" + actual.getM_InOut_ID())
 						.isEqualTo(expectation.getMovementQty().stripTrailingZeros());
 			}
+
+			if (expectation.getLines() != null)
+			{
+				// Exact, ordered line match: actual active lines ordered by Line must correspond 1:1 to the
+				// expected lines (same count → no extra/missing line, e.g. no spurious negative counter-row).
+				final List<I_M_InOutLine> actualLines = services.getInOutLines(actual).stream()
+						.filter(I_M_InOutLine::isActive)
+						.sorted(Comparator.comparingInt(I_M_InOutLine::getLine))
+						.collect(Collectors.toList());
+
+				assertThat(actualLines)
+						.as("lines of shipment[" + index + "] M_InOut_ID=" + actual.getM_InOut_ID())
+						.hasSameSize(expectation.getLines());
+
+				final int lineCount = Math.min(actualLines.size(), expectation.getLines().size());
+				for (int j = 0; j < lineCount; j++)
+				{
+					assertInOutLine(expectation.getLines().get(j), actualLines.get(j), index, j);
+				}
+			}
 		});
+	}
+
+	private void assertInOutLine(
+			@NonNull final JsonInOutLineExpectation expectation,
+			@NonNull final I_M_InOutLine actual,
+			final int shipmentIndex,
+			final int lineIndex)
+	{
+		softly(() -> {
+			softlyPutContext("shipmentIndex", shipmentIndex);
+			softlyPutContext("lineIndex", lineIndex);
+			softlyPutContext("inOutLine", actual);
+
+			if (expectation.getProduct() != null)
+			{
+				final ProductId expectedProductId = resolveProductId(expectation.getProduct());
+				assertThat(ProductId.ofRepoId(actual.getM_Product_ID()))
+						.as("product of shipment[" + shipmentIndex + "].line[" + lineIndex + "] M_InOutLine_ID=" + actual.getM_InOutLine_ID())
+						.isEqualTo(expectedProductId);
+			}
+
+			if (expectation.getMovementQty() != null)
+			{
+				// Strip trailing zeros so BigDecimal.equals is not scale-sensitive (8 == 8.0).
+				assertThat(actual.getMovementQty().stripTrailingZeros())
+						.as("MovementQty of shipment[" + shipmentIndex + "].line[" + lineIndex + "] M_InOutLine_ID=" + actual.getM_InOutLine_ID())
+						.isEqualTo(expectation.getMovementQty().stripTrailingZeros());
+			}
+		});
+	}
+
+	private ProductId resolveProductId(@NonNull final Identifier identifier)
+	{
+		// A line's product is always a masterdata map key (e.g. "P1"), never a raw repo-id, so resolve
+		// strictly from the carried context — mirroring AssertPickingExpectationsCommand's product resolution.
+		return context.getId(identifier, ProductId.class);
 	}
 
 	/**

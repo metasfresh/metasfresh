@@ -44,6 +44,27 @@ describe('computeStepScanPropsFromActivity', () => {
     expect(result.isIssueWholeHU).toEqual(true);
   });
 
+  // Stk-stocked HU issued against a kg BOM line: the Qty ceiling must be the backend-provided
+  // step.qtyToIssueMax (remaining demand converted to the stocking UOM, rounded up = 1 Stk), NOT the
+  // raw kg line max (34.5) — otherwise a manual override could issue 34 Stk against a 34.5 kg demand.
+  it('non-weightable Stk step caps at the converted step.qtyToIssueMax, not the kg line max', () => {
+    const result = call_computeStepScanPropsFromActivity({
+      line: { weightable: false, uom: 'kg', qtyToIssue: 34.5, qtyToIssueMax: 34.5, qtyIssued: 0 },
+      step: { uom: 'Stk', qtyToIssue: 1, qtyToIssueMax: 1, qtyHUCapacity: 40 },
+    });
+    expect(result.qtyToIssueMax).toEqual(1); // 1 Stk — not 34.5
+    expect(result.qtyToIssueTarget).toEqual(1); // capped in Stk; the kg remaining (34.5) must not leak in
+  });
+
+  it('non-weightable step without a backend max falls back to the line remaining (same-UOM)', () => {
+    const result = call_computeStepScanPropsFromActivity({
+      line: { weightable: false, uom: 'kg', qtyToIssue: 10, qtyToIssueMax: 12, qtyIssued: 3 },
+      step: { uom: 'kg', qtyToIssue: 5, qtyHUCapacity: 100 }, // no qtyToIssueMax
+    });
+    expect(result.qtyToIssueMax).toEqual(12 - 3); // fallback: line max (incl. tolerance) minus issued
+    expect(result.qtyToIssueTarget).toEqual(5); // min(stepQtyToIssue, qtyToIssueMax)
+  });
+
   it('line qty < step qty', () => {
     const result = call_computeStepScanPropsFromActivity({
       line: { qtyToIssue: 10, qtyToIssueMax: 15, qtyIssued: 3 },
