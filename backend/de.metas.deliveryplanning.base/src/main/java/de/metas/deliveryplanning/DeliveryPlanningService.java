@@ -1156,8 +1156,7 @@ public class DeliveryPlanningService
 	}
 
 	/**
-	 * The allocation requests for the given delivery plannings, in the order the ids were given - which is the
-	 * order {@code createAllocations} creates the allocations in.
+	 * The allocation requests for the given delivery plannings, in the order the ids were given.
 	 * <p>
 	 * Takes the whole collection rather than one id at a time so the records are batch-loaded once. There is no
 	 * single-id counterpart, and adding one reintroduces a per-row load.
