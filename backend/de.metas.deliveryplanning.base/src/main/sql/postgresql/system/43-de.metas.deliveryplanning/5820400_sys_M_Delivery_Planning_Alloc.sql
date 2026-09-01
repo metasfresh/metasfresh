@@ -7,6 +7,21 @@
 -- of deleting it: the retired row is what the instruction's read-only history tab renders.
 -- LineNo orders the allocations of one instruction, assigned in tens (10/20/30 ...).
 --
+-- Any stack that applied this script BEFORE the de_DE/de_CH IsTranslated fix needs this once --
+-- update_TRL_Tables_On_AD_Element_TRL_Update is guarded by c_trl.updated <> e_trl.updated, which
+-- the first apply already equalised, so the flag alone does not propagate:
+--   UPDATE AD_Element_Trl SET IsTranslated='Y'
+--    WHERE AD_Element_ID=585382 AND AD_Language IN ('de_DE','de_CH');
+--   UPDATE AD_Column_Trl t SET Updated = t.Updated - interval '1 second'
+--     FROM AD_Column c WHERE c.AD_Column_ID=t.AD_Column_ID AND c.AD_Element_ID=585382
+--       AND t.AD_Language IN ('de_DE','de_CH');
+--   UPDATE AD_Field_Trl t SET Updated = t.Updated - interval '1 second'
+--     FROM AD_Field f JOIN AD_Column c ON c.AD_Column_ID=f.AD_Column_ID
+--    WHERE f.AD_Field_ID=t.AD_Field_ID AND c.AD_Element_ID=585382
+--      AND t.AD_Language IN ('de_DE','de_CH');
+--   SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585382,'de_DE');
+--   SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585382,'de_CH');
+--
 -- IDs allocated from idserver.metas.de on 2026-08-26:
 --   AD_Table   542641  (M_Delivery_Planning_Alloc)
 --   AD_Element 585382  (M_Delivery_Planning_Alloc_ID -- PK element, new)
@@ -100,18 +115,21 @@ WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y'
   AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt
                   WHERE tt.AD_Language = l.AD_Language AND tt.AD_Element_ID = 585382);
 
--- de_DE / de_CH carry the German base text verbatim, so IsTranslated stays 'N'.
+-- de_DE / de_CH carry the authored German verbatim, i.e. the row IS correct for that language,
+-- so IsTranslated='Y'. The flag marks "this row's text is right for this language", NOT
+-- "somebody translated it" -- setBaseLanguage() (de.metas.business ddl/functions/SetBaseLanguage.sql)
+-- materialises the outgoing base language's rows with 'Y' for exactly that reason.
 UPDATE AD_Element_Trl
 SET    Name = 'Lieferplanung-Zuordnung', PrintName = 'Lieferplanung-Zuordnung',
        Description = 'Zuordnung einer Lieferplanung zu einer Lieferanweisung.',
-       IsTranslated = 'N',
+       IsTranslated = 'Y',
        Updated = TO_TIMESTAMP('2026-08-26 10:00:12', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
 WHERE  AD_Element_ID = 585382 AND AD_Language = 'de_DE';
 
 UPDATE AD_Element_Trl
 SET    Name = 'Lieferplanung-Zuordnung', PrintName = 'Lieferplanung-Zuordnung',
        Description = 'Zuordnung einer Lieferplanung zu einer Lieferanweisung.',
-       IsTranslated = 'N',
+       IsTranslated = 'Y',
        Updated = TO_TIMESTAMP('2026-08-26 10:00:13', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
 WHERE  AD_Element_ID = 585382 AND AD_Language = 'de_CH';
 
