@@ -698,7 +698,9 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 
 			// Fire the side effects that ReceiptScheduleBL.reopen()'s onAfterReopen listener would have done.
 			// orderBL.reopenLine(orderLine) was already called above.
-			invoiceCandBL.openDeliveryInvoiceCandidatesByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
+			final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID());
+			invoiceCandBL.openDeliveryInvoiceCandidatesByOrderLineId(orderLineId);
+			invoiceCandBL.openInvoiceCandidatesByOrderLineId(orderLineId);
 		}
 	}
 
@@ -723,6 +725,11 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 			// itself must stay open for editing. Undo the closeLine side-effect.
 			InterfaceWrapperHelper.refresh(orderLine);
 			orderBL.reopenLine(orderLine);
+
+			// Undo the close's Processed_Override=Y too, or the reactivated order's candidates can never be invoiced.
+			// openDeliveryInvoiceCandidatesByOrderLineId is deliberately NOT called: IsDeliveryClosed is display-only
+			// and self-heals on the next complete - see reopenReceiptSchedulesForOrder.
+			invoiceCandBL.openInvoiceCandidatesByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
 		}
 	}
 
