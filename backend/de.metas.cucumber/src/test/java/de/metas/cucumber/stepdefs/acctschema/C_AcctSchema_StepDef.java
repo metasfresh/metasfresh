@@ -53,6 +53,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+import static de.metas.acct.interceptor.C_AcctSchema.DISABLE_CHECK_COSTING_METHOD_SEEDED;
 import static de.metas.acct.interceptor.C_AcctSchema.DISABLE_CHECK_CURRENCY;
 
 @RequiredArgsConstructor
@@ -116,6 +117,10 @@ public class C_AcctSchema_StepDef
 		{
 			costingMethodOverrides.add(new CostingMethodOverride(acctSchemaId, acctSchema.getCostingMethod()));
 			acctSchema.setCostingMethod(costingMethod.getCode());
+			// A scenario sets the costing method as SETUP - it declares which method the scenario runs on and
+			// then builds the cost history underneath it. The interceptor guard protects the interactive path
+			// (a user abandoning a method that has cost history for one that has none), which is not this.
+			DISABLE_CHECK_COSTING_METHOD_SEEDED.setValue(acctSchema, Boolean.TRUE);
 		}
 
 		row.getAsOptionalString("C_Currency_ID")
@@ -183,6 +188,7 @@ public class C_AcctSchema_StepDef
 
 		final I_C_AcctSchema acctSchema = InterfaceWrapperHelper.load(override.getAcctSchemaId(), I_C_AcctSchema.class);
 		acctSchema.setCostingMethod(override.getOriginalCostingMethod());
+		DISABLE_CHECK_COSTING_METHOD_SEEDED.setValue(acctSchema, Boolean.TRUE);
 		InterfaceWrapperHelper.saveRecord(acctSchema);
 
 		makeCostingMethodEffective(override.getAcctSchemaId(), CostingMethod.ofNullableCode(override.getOriginalCostingMethod()));
