@@ -30,6 +30,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
+import de.metas.i18n.AdMessageKey;
 import de.metas.incoterms.IncotermsId;
 import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
@@ -418,11 +419,15 @@ public class DeliveryPlanningRepository
 	 * anything is written, so a mixed selection leaves no row half-closed.
 	 * <p>
 	 * The runtime backstop behind {@code M_Delivery_Planning_Close}'s precondition, which refuses the same
-	 * selection before the button is offered. It raises the SAME message the precondition does, so a planner who
-	 * reaches this far - the process can be invoked past its precondition - reads the same sentence rather than a
-	 * developer token carrying a record's {@code toString()}.
+	 * selection before the button is offered. The caller hands in the very message that precondition rejects
+	 * with, so a planner who reaches this far - the process can be invoked past its precondition - reads the same
+	 * sentence rather than a developer token carrying a record's {@code toString()}.
+	 *
+	 * @param alreadyClosedMessage what to raise for an already-closed row; its {@code {0}} is that row's id.
 	 */
-	public void closeSelectedDeliveryPlannings(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	public void closeSelectedDeliveryPlannings(
+			final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter,
+			@NonNull final AdMessageKey alreadyClosedMessage)
 	{
 		final List<I_M_Delivery_Planning> deliveryPlanningRecords = getDeliveryPlanningQueryBuilder(selectedDeliveryPlanningsFilter)
 				.create()
@@ -432,9 +437,7 @@ public class DeliveryPlanningRepository
 		{
 			if (deliveryPlanningRecord.isClosed())
 			{
-				throw new AdempiereException(
-						DeliveryPlanningService.MSG_M_Delivery_Planning_Closed,
-						deliveryPlanningRecord.getM_Delivery_Planning_ID());
+				throw new AdempiereException(alreadyClosedMessage, deliveryPlanningRecord.getM_Delivery_Planning_ID());
 			}
 		}
 
@@ -448,10 +451,15 @@ public class DeliveryPlanningRepository
 
 	/**
 	 * The counterpart of {@link #closeSelectedDeliveryPlannings}, all-or-nothing in the same way: a planning that
-	 * is still open is refused by name, before anything is written, and with the same message
-	 * {@code M_Delivery_Planning_ReOpen}'s precondition uses to keep the button off a mixed selection.
+	 * is still open is refused by name, before anything is written.
+	 *
+	 * @param stillOpenMessage what to raise for a still-open row - the caller passes the message
+	 * 		{@code M_Delivery_Planning_ReOpen}'s precondition uses to keep the button off a mixed selection, so both
+	 * 		say it alike. Its {@code {0}} is that row's id.
 	 */
-	public void reOpenSelectedDeliveryPlannings(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	public void reOpenSelectedDeliveryPlannings(
+			@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter,
+			@NonNull final AdMessageKey stillOpenMessage)
 	{
 		final List<I_M_Delivery_Planning> deliveryPlanningRecords = getDeliveryPlanningQueryBuilder(selectedDeliveryPlanningsFilter)
 				.create()
@@ -461,9 +469,7 @@ public class DeliveryPlanningRepository
 		{
 			if (!deliveryPlanningRecord.isClosed())
 			{
-				throw new AdempiereException(
-						DeliveryPlanningService.MSG_M_Delivery_Planning_Open,
-						deliveryPlanningRecord.getM_Delivery_Planning_ID());
+				throw new AdempiereException(stillOpenMessage, deliveryPlanningRecord.getM_Delivery_Planning_ID());
 			}
 		}
 

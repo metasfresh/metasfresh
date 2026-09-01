@@ -478,13 +478,15 @@ public class DeliveryPlanningService
 		// trx exists here), so this BINDS one for the whole write loop rather than letting each row's save()
 		// commit on its own - the repository refuses an already-closed row over the WHOLE selection before it
 		// writes any of them, and that all-or-nothing needs one transaction to roll back into.
-		trxManager.runInThreadInheritedTrx(() -> deliveryPlanningRepository.closeSelectedDeliveryPlannings(selectedDeliveryPlanningsFilter));
+		trxManager.runInThreadInheritedTrx(() -> deliveryPlanningRepository.closeSelectedDeliveryPlannings(
+				selectedDeliveryPlanningsFilter,
+				MSG_M_Delivery_Planning_Closed));
 	}
 
 	public void reOpenSelectedDeliveryPlannings(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
 		validateDeliveryPlannings(selectedDeliveryPlanningsFilter);
-		deliveryPlanningRepository.reOpenSelectedDeliveryPlannings(selectedDeliveryPlanningsFilter);
+		deliveryPlanningRepository.reOpenSelectedDeliveryPlannings(selectedDeliveryPlanningsFilter, MSG_M_Delivery_Planning_Open);
 	}
 
 	public boolean isExistsNoShipperDeliveryPlannings(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
