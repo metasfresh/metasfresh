@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.material.process;
+package de.metas.ui.web.material.cockpit.v2.jump;
 
 import de.metas.material.cockpit.QtyDemandQtySupply;
 import lombok.NonNull;

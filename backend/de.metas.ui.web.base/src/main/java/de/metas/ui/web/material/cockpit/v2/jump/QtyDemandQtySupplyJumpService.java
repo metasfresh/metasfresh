@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.material.process;
+package de.metas.ui.web.material.cockpit.v2.jump;
 
 import de.metas.inoutcandidate.ShipmentScheduleQuery;
 import de.metas.inoutcandidate.ShipmentScheduleRepository;

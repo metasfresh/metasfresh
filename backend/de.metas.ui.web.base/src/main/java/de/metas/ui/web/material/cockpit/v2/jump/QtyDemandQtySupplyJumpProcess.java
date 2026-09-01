@@ -20,15 +20,15 @@
  * #L%
  */
 
-package de.metas.material.process;
+package de.metas.ui.web.material.cockpit.v2.jump;
 
-import de.metas.i18n.AdMessageKey;
 import de.metas.material.cockpit.QtyDemandQtySupply;
 import de.metas.material.cockpit.QtyDemandQtySupplyId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.ui.web.view.SqlViewFactory;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
@@ -39,15 +39,11 @@ import java.util.List;
  * Common base for the Material Cockpit v2 "jump to ..." actions on {@code QtyDemand_QtySupply_V}.
  * <p>
  * Each subclass's {@link #checkPreconditionsApplicable(IProcessPreconditionsContext)} runs the same query as
- * {@link #doIt()}, as a cheap first-match probe, and rejects with {@link #MSG_NO_RELATED_DOCS_FOUND} when the probe
- * finds nothing, instead of silently opening an empty target grid.
+ * {@link #doIt()}, as a cheap first-match probe, and rejects with {@link SqlViewFactory#MSG_NO_RELATED_DOCS_FOUND}
+ * when the probe finds nothing, instead of silently opening an empty target grid.
  */
 public abstract class QtyDemandQtySupplyJumpProcess extends JavaProcess implements IProcessPrecondition
 {
-	// NOTE: de.metas.swat.base cannot see de.metas.ui.web.view.SqlViewFactory (dependency runs the other
-	// way), so the key is declared here rather than imported. Same AD_Message row (545635).
-	protected static final AdMessageKey MSG_NO_RELATED_DOCS_FOUND = AdMessageKey.of("NO_RELATED_DOCS_FOUND");
-
 	@NonNull protected final QtyDemandQtySupplyJumpService jumpService = SpringContextHolder.instance.getBean(QtyDemandQtySupplyJumpService.class);
 
 	@Override
@@ -59,7 +55,7 @@ public abstract class QtyDemandQtySupplyJumpProcess extends JavaProcess implemen
 		}
 		if (!hasRecordsToOpen(getRow(context.getSingleSelectedRecordId())))
 		{
-			return ProcessPreconditionsResolution.reject(MSG_NO_RELATED_DOCS_FOUND);
+			return ProcessPreconditionsResolution.reject(SqlViewFactory.MSG_NO_RELATED_DOCS_FOUND);
 		}
 		return ProcessPreconditionsResolution.accept();
 	}
