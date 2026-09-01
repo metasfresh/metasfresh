@@ -24,7 +24,7 @@ import de.metas.acct.spi.impl.InvoiceDocumentRepostingSupplier;
 import de.metas.acct.spi.impl.PaymentDocumentRepostingSupplier;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.IModelCacheService;
-import de.metas.costing.ICostDetailRepository;
+import de.metas.costing.ICostDetailService;
 import de.metas.costing.ICostElementRepository;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.currency.ICurrencyDAO;
@@ -88,7 +88,7 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 	private final FAOpenItemsService faOpenItemsService;
 
 	private final ICurrentCostsRepository currentCostsRepository;
-	private final ICostDetailRepository costDetailRepository;
+	private final ICostDetailService costDetailService;
 
 	private static final String CTXNAME_C_ConversionType_ID = "#" + I_C_ConversionType.COLUMNNAME_C_ConversionType_ID;
 
@@ -97,7 +97,7 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 			@NonNull final TreeNodeService treeNodeService,
 			@NonNull final ProductActivityProvider productActivityProvider,
 			@NonNull final ICurrentCostsRepository currentCostsRepository,
-			@NonNull final ICostDetailRepository costDetailRepository,
+			@NonNull final ICostDetailService costDetailService,
 			@NonNull final FAOpenItemsService faOpenItemsService,
 			@NonNull final FactAcctLogService factAcctLogService)
 	{
@@ -105,7 +105,7 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 		this.treeNodeService = treeNodeService;
 		this.productActivityProvider = productActivityProvider;
 		this.currentCostsRepository = currentCostsRepository;
-		this.costDetailRepository = costDetailRepository;
+		this.costDetailService = costDetailService;
 		this.faOpenItemsService = faOpenItemsService;
 		this.factAcctLogService = factAcctLogService;
 	}
@@ -158,7 +158,7 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 	@Override
 	protected void registerInterceptors(final IModelValidationEngine engine)
 	{
-		engine.addModelValidator(new de.metas.acct.interceptor.C_AcctSchema(costElementRepo, currentCostsRepository, costDetailRepository));
+		engine.addModelValidator(new de.metas.acct.interceptor.C_AcctSchema(costElementRepo, currentCostsRepository, costDetailService));
 		engine.addModelValidator(new de.metas.acct.interceptor.C_AcctSchema_GL());
 		engine.addModelValidator(new de.metas.acct.interceptor.C_AcctSchema_Default());
 		engine.addModelValidator(new de.metas.acct.interceptor.C_AcctSchema_Element());

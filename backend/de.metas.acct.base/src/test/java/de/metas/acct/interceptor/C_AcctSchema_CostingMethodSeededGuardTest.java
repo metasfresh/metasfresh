@@ -29,13 +29,16 @@ import de.metas.costing.CostElementId;
 import de.metas.costing.CostElementType;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostDetailRepository;
+import de.metas.costing.ICostDetailService;
 import de.metas.costing.ICostElementRepository;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.impl.CostDetailRepository;
+import de.metas.costing.impl.CostDetailService;
 import de.metas.costing.impl.CostElementRepository;
 import de.metas.costing.impl.CurrentCostsRepository;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_CostDetail;
@@ -67,7 +70,8 @@ public class C_AcctSchema_CostingMethodSeededGuardTest
 		final ICostElementRepository costElementRepo = new CostElementRepository(ADReferenceService.newMocked());
 		final ICurrentCostsRepository currentCostsRepository = new CurrentCostsRepository(costElementRepo);
 		final ICostDetailRepository costDetailRepository = new CostDetailRepository();
-		interceptor = new C_AcctSchema(costElementRepo, currentCostsRepository, costDetailRepository);
+		final ICostDetailService costDetailService = new CostDetailService(costDetailRepository, costElementRepo);
+		interceptor = new C_AcctSchema(costElementRepo, currentCostsRepository, costDetailService);
 
 		acctSchemaId = AcctSchemaTestHelper.newAcctSchema()
 				.costingMethod(CostingMethod.StandardCosting)
@@ -149,6 +153,29 @@ public class C_AcctSchema_CostingMethodSeededGuardTest
 
 		assertThatCode(() -> interceptor.assertTargetCostingMethodIsSeeded(acctSchema))
 				.doesNotThrowAnyException();
+	}
+
+	@Test
+	@DisplayName("wiring: a real save that changes CostingMethod is rejected by the registered interceptor")
+	public void wiring_realSaveIsRejected()
+	{
+		POJOLookupMap.get().addModelValidator(interceptor);
+		createMaterialCostElement(CostingMethod.MovingAverageInvoice);
+
+		acctSchema.setCostingMethod(CostingMethod.MovingAverageInvoice.getCode());
+
+		assertThatThrownBy(() -> saveRecord(acctSchema)).isInstanceOf(AdempiereException.class);
+	}
+
+	@Test
+	@DisplayName("wiring: a real save that does NOT touch CostingMethod passes the interceptor untouched")
+	public void wiring_realSaveWithoutCostingMethodChangeIsAllowed()
+	{
+		POJOLookupMap.get().addModelValidator(interceptor);
+
+		acctSchema.setName("renamed, costing method untouched");
+
+		assertThatCode(() -> saveRecord(acctSchema)).doesNotThrowAnyException();
 	}
 
 	private CostElementId createMaterialCostElement(final CostingMethod costingMethod)
