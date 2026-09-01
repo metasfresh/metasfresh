@@ -25,7 +25,6 @@ package de.metas.material.process;
 import de.metas.i18n.AdMessageKey;
 import de.metas.material.cockpit.QtyDemandQtySupply;
 import de.metas.material.cockpit.QtyDemandQtySupplyId;
-import de.metas.material.cockpit.QtyDemandSupplyRepository;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -49,7 +48,7 @@ public abstract class QtyDemandQtySupplyJumpProcess extends JavaProcess implemen
 	// way), so the key is declared here rather than imported. Same AD_Message row (545635).
 	protected static final AdMessageKey MSG_NO_RELATED_DOCS_FOUND = AdMessageKey.of("NO_RELATED_DOCS_FOUND");
 
-	private final QtyDemandSupplyRepository demandSupplyRepository = SpringContextHolder.instance.getBean(QtyDemandSupplyRepository.class);
+	protected final QtyDemandQtySupplyJumpService jumpService = SpringContextHolder.instance.getBean(QtyDemandQtySupplyJumpService.class);
 
 	@Override
 	public final ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
@@ -74,7 +73,7 @@ public abstract class QtyDemandQtySupplyJumpProcess extends JavaProcess implemen
 
 	protected final QtyDemandQtySupply getRow(final int qtyDemandQtySupplyRepoId)
 	{
-		return demandSupplyRepository.getById(QtyDemandQtySupplyId.ofRepoId(qtyDemandQtySupplyRepoId));
+		return jumpService.getRow(QtyDemandQtySupplyId.ofRepoId(qtyDemandQtySupplyRepoId));
 	}
 
 	/** True when {@link #findRecordsToOpen(QtyDemandQtySupply)} would return at least one record. Must use the SAME query. */

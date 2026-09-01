@@ -22,44 +22,23 @@
 
 package de.metas.material.process;
 
-import de.metas.inoutcandidate.ShipmentScheduleQuery;
-import de.metas.inoutcandidate.ShipmentScheduleRepository;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.cockpit.QtyDemandQtySupply;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class QtyDemand_QtySupply_V_to_ShipmentSchedule extends QtyDemandQtySupplyJumpProcess
 {
-	private final ShipmentScheduleRepository shipmentScheduleRepository = SpringContextHolder.instance.getBean(ShipmentScheduleRepository.class);
-
 	@Override
 	protected boolean hasRecordsToOpen(@NonNull final QtyDemandQtySupply row)
 	{
-		return shipmentScheduleRepository.existsByQuery(toQuery(row));
+		return jumpService.hasShipmentSchedulesToOpen(row);
 	}
 
 	@Override
 	protected List<TableRecordReference> findRecordsToOpen(@NonNull final QtyDemandQtySupply row)
 	{
-		return shipmentScheduleRepository.getIdsByQuery(toQuery(row))
-				.stream()
-				.map(id -> TableRecordReference.of(I_M_ShipmentSchedule.Table_Name, id))
-				.collect(Collectors.toList());
-	}
-
-	private static ShipmentScheduleQuery toQuery(@NonNull final QtyDemandQtySupply row)
-	{
-		return ShipmentScheduleQuery.builder()
-				.warehouseId(row.getWarehouseId())
-				.orgId(row.getOrgId())
-				.productId(row.getProductId())
-				.attributesKey(row.getAttributesKey())
-				.onlyNonZeroReservedQty(true)
-				.build();
+		return jumpService.findShipmentSchedulesToOpen(row);
 	}
 }

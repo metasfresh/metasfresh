@@ -25,41 +25,20 @@ package de.metas.material.process;
 import de.metas.material.cockpit.QtyDemandQtySupply;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
-import org.eevolution.model.I_PP_Order_Candidate;
-import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
-import org.eevolution.productioncandidate.model.dao.PPOrderCandidatesQuery;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class QtyDemand_QtySupply_V_to_PP_Order_Candidate extends QtyDemandQtySupplyJumpProcess
 {
-	private final PPOrderCandidateDAO ppOrderCandidateDAO = SpringContextHolder.instance.getBean(PPOrderCandidateDAO.class);
-
 	@Override
 	protected boolean hasRecordsToOpen(@NonNull final QtyDemandQtySupply row)
 	{
-		return ppOrderCandidateDAO.existsByQuery(toQuery(row));
+		return jumpService.hasPPOrderCandidatesToOpen(row);
 	}
 
 	@Override
 	protected List<TableRecordReference> findRecordsToOpen(@NonNull final QtyDemandQtySupply row)
 	{
-		return ppOrderCandidateDAO.listIdsByQuery(toQuery(row))
-				.stream()
-				.map(id -> TableRecordReference.of(I_PP_Order_Candidate.Table_Name, id))
-				.collect(Collectors.toList());
-	}
-
-	private static PPOrderCandidatesQuery toQuery(@NonNull final QtyDemandQtySupply row)
-	{
-		return PPOrderCandidatesQuery.builder()
-				.warehouseId(row.getWarehouseId())
-				.orgId(row.getOrgId())
-				.productId(row.getProductId())
-				.attributesKey(row.getAttributesKey())
-				.onlyNonZeroQty(true)
-				.build();
+		return jumpService.findPPOrderCandidatesToOpen(row);
 	}
 }
