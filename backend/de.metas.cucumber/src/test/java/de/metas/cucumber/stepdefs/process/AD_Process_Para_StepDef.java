@@ -51,6 +51,8 @@ public class AD_Process_Para_StepDef
 	@NonNull private final AD_Process_StepDefData processTable;
 	@NonNull private final AD_Process_Para_StepDefData processParaTable;
 
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	private int nextSeqNo = 10;
 
 	/**
@@ -58,10 +60,8 @@ public class AD_Process_Para_StepDef
 	 * itself must exist - a classname that matches nothing is a broken expectation, not a missing parameter.
 	 */
 	@Nullable
-	public static I_AD_Process_Para getProcessParaOrNull(@NonNull final String classname, @NonNull final String columnName)
+	public I_AD_Process_Para getProcessParaOrNull(@NonNull final String classname, @NonNull final String columnName)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		final I_AD_Process process = queryBL.createQueryBuilder(I_AD_Process.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Process.COLUMNNAME_Classname, classname)

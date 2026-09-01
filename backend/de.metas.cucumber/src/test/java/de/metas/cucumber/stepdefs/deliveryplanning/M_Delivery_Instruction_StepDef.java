@@ -84,6 +84,7 @@ public class M_Delivery_Instruction_StepDef
 	@NonNull private final M_ShipperTransportation_StepDefData deliveryInstructionTable;
 	@NonNull private final M_Delivery_Planning_StepDefData deliveryPlanningTable;
 	@NonNull private final DeliveryPlanningRejectionHelper rejectionHelper;
+	@NonNull private final AD_Process_Para_StepDef processParaStepDef;
 
 	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
 
@@ -366,23 +367,25 @@ public class M_Delivery_Instruction_StepDef
 		for (final Class<?> processClass : ImmutableList.of(M_Delivery_Planning_AddToDeliveryInstruction.class, M_Delivery_Planning_MoveToDeliveryInstruction.class))
 		{
 			final String classname = processClass.getName();
-			final String valRuleCode = getTargetParameterValRuleCode(classname);
+			// Split on the SQL conjunction, because the column and the parameter have to meet inside ONE
+			// comparison. Finding both anywhere in the whole rule also holds when two of these near-identical
+			// conjuncts have their right-hand sides swapped - and then the picker compares one key field
+			// against another field's value, which is the very mis-match this scenario exists to catch.
+			final ImmutableList<String> valRuleComparisons = ImmutableList.copyOf(getTargetParameterValRuleCode(classname).split("(?i)\\bAND\\b"));
 
 			for (final AggregationKeyField field : AggregationKeyField.values())
 			{
 				final String columnName = getParameterColumnName(field);
 
-				softly.assertThat(AD_Process_Para_StepDef.getProcessParaOrNull(classname, columnName))
+				softly.assertThat(processParaStepDef.getProcessParaOrNull(classname, columnName))
 						.as("%s carries a parameter for the %s aggregation key field", classname, field)
 						.isNotNull();
 
-				softly.assertThat(valRuleCode)
-						.as("the target picker of %s compares the delivery instruction's %s - the %s aggregation key field", classname, columnName, field)
-						.contains(I_M_ShipperTransportation.Table_Name + "." + columnName);
-
-				softly.assertThat(valRuleCode)
-						.as("the target picker of %s reads the %s parameter - the %s aggregation key field", classname, columnName, field)
-						.contains("@" + columnName + "/");
+				softly.assertThat(valRuleComparisons)
+						.as("the target picker of %s compares the delivery instruction's %s against the %s parameter - the %s aggregation key field",
+								classname, columnName, columnName, field)
+						.anyMatch(comparison -> comparison.contains(I_M_ShipperTransportation.Table_Name + "." + columnName)
+								&& comparison.contains("@" + columnName + "/"));
 			}
 		}
 
@@ -416,7 +419,7 @@ public class M_Delivery_Instruction_StepDef
 	@NonNull
 	private String getTargetParameterValRuleCode(@NonNull final String classname)
 	{
-		final I_AD_Process_Para targetParameter = AD_Process_Para_StepDef.getProcessParaOrNull(classname, I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID);
+		final I_AD_Process_Para targetParameter = processParaStepDef.getProcessParaOrNull(classname, I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID);
 		assertThat(targetParameter)
 				.as("the target-instruction parameter of %s", classname)
 				.isNotNull();

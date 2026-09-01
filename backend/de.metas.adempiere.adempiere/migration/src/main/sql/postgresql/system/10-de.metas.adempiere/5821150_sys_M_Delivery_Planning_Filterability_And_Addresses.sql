@@ -64,6 +64,14 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-28 09:
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585384,'de_CH')
 ;
 
+-- fr_CH is pointed at the en_US text and left IsTranslated='N': no French wording exists for these
+-- elements, and English text in an fr_CH row is not correct text for that language - but it is at
+-- least readable there, which the seeded German copy is not.
+UPDATE AD_Element_Trl SET Name='Allocated', PrintName='Allocated', Description='Indicates whether the delivery planning is already allocated to a delivery instruction.', Help='Indicates whether the delivery planning is already allocated to a delivery instruction.', IsTranslated='N', Updated=TO_TIMESTAMP('2026-08-28 09:00:04','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=585384 AND AD_Language='fr_CH'
+;
+/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585384,'fr_CH')
+;
+
 -- ============================================================================
 -- 2) AD_Element: ShipFrom_Location_ID (new)
 -- ============================================================================
@@ -93,6 +101,11 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-28 09:
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585385,'de_CH')
 ;
 
+UPDATE AD_Element_Trl SET Name='Loading Address', PrintName='Loading Address', Description='The address where goods are loaded for this delivery planning.', Help='The address where goods are loaded for this delivery planning.', IsTranslated='N', Updated=TO_TIMESTAMP('2026-08-28 09:00:14','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=585385 AND AD_Language='fr_CH'
+;
+/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585385,'fr_CH')
+;
+
 -- ============================================================================
 -- 3) AD_Element: ShipTo_Location_ID (new)
 -- ============================================================================
@@ -120,6 +133,11 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-28 09:
 UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-08-28 09:00:23','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=585386 AND AD_Language='de_CH'
 ;
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585386,'de_CH')
+;
+
+UPDATE AD_Element_Trl SET Name='Delivery Address', PrintName='Delivery Address', Description='The address goods are delivered to for this delivery planning.', Help='The address goods are delivered to for this delivery planning.', IsTranslated='N', Updated=TO_TIMESTAMP('2026-08-28 09:00:24','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=585386 AND AD_Language='fr_CH'
+;
+/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585386,'fr_CH')
 ;
 
 -- ============================================================================

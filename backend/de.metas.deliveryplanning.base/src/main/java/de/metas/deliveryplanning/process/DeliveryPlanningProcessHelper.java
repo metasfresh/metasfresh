@@ -22,6 +22,7 @@
 
 package de.metas.deliveryplanning.process;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableMap;
 import de.metas.deliveryplanning.DeliveryPlanningList;
@@ -94,6 +95,7 @@ public final class DeliveryPlanningProcessHelper
 	 * picker's value rule compares. {@link AggregationKeyField#Direction} is absent: the pre-existing
 	 * TransportDirection parameter feeds it.
 	 */
+	@VisibleForTesting
 	public static ImmutableMap<AggregationKeyField, String> aggregationKeyParameterColumnNameByField()
 	{
 		return AGGREGATION_KEY_PARAMETERS.inverse();

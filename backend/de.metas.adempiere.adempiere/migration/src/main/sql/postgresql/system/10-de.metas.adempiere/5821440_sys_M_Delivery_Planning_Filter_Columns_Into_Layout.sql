@@ -31,14 +31,8 @@
 -- so the WebUI orders the grid from AD_UI_Element and the AD_Field layer carries no ordering here.
 -- IsReadOnly='Y' on all four -- they are ColumnSQL columns with IsUpdateable='N'.
 --
--- Field captions come from the backing AD_Element via update_FieldTranslation_From_AD_Name_Element,
--- so de_DE, de_CH and en_US all carry the element's own IsTranslated flag. For IsAllocated,
--- ShipFrom_Location_ID and ShipTo_Location_ID that is 'Y' on all three; fr_CH stays 'N'.
--- IsDelivered hangs off the shared core element 367, which is 'N' on de_DE/de_CH system-wide and is
--- also used by C_Order, RV_C_OrderLine_Overview and DD_OrderLine fields, so it is not this window's
--- flag to assert. 5821150 accepted the same inherited 'N' on AD_Column_Trl 593413; the field layer
--- matches the column layer. Overriding it here would not survive anyway: after_migration's
--- sync_translations re-syncs every AD_Field_Trl from its element at the end of the run.
+-- Field captions come from the backing AD_Element. IsDelivered hangs off the shared core element 367,
+-- which is IsTranslated='N' on de_DE/de_CH system-wide, so that flag is not this window's to assert.
 --
 -- IDs allocated from idserver.metas.de on 2026-09-01:
 --   AD_MigrationScript    5821440 (this file)
@@ -50,7 +44,7 @@
 -- ============================================================================
 -- 1) AD_Field: M_Delivery_Planning.IsAllocated (AD_Column 593412, AD_Element 585384)
 -- ============================================================================
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,Updated,UpdatedBy) VALUES (0,593412,783046 /*From ID Server*/,0,546674,TO_TIMESTAMP('2026-09-01 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,10,'D','Y','Y','Y','N','N','N','Y','N','Zugeordnet',0,0,TO_TIMESTAMP('2026-09-01 10:00:00','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,Updated,UpdatedBy) VALUES (0,593412,783046 /*From ID Server*/,0,546674,TO_TIMESTAMP('2026-09-01 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,1,'D','Y','Y','Y','N','N','N','Y','N','Zugeordnet',0,0,TO_TIMESTAMP('2026-09-01 10:00:00','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=783046 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
@@ -59,7 +53,7 @@ SELECT AD_Element_Link_Create_Missing_Field(783046);
 -- ============================================================================
 -- 2) AD_Field: M_Delivery_Planning.IsDelivered (AD_Column 593413, AD_Element 367)
 -- ============================================================================
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,Updated,UpdatedBy) VALUES (0,593413,783047 /*From ID Server*/,0,546674,TO_TIMESTAMP('2026-09-01 10:00:01','YYYY-MM-DD HH24:MI:SS'),100,10,'D','Y','Y','Y','N','N','N','Y','N','Zugestellt',0,0,TO_TIMESTAMP('2026-09-01 10:00:01','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,Updated,UpdatedBy) VALUES (0,593413,783047 /*From ID Server*/,0,546674,TO_TIMESTAMP('2026-09-01 10:00:01','YYYY-MM-DD HH24:MI:SS'),100,1,'D','Y','Y','Y','N','N','N','Y','N','Zugestellt',0,0,TO_TIMESTAMP('2026-09-01 10:00:01','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=783047 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;

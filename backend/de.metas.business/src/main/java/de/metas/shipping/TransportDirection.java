@@ -22,6 +22,7 @@
 
 package de.metas.shipping;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.lang.SOTrx;
 import de.metas.shipping.model.X_M_ShipperTransportation;
 import de.metas.util.lang.ReferenceListAwareEnum;
@@ -80,8 +81,7 @@ public enum TransportDirection implements ReferenceListAwareEnum
 	@Nullable
 	public static TransportDirection ofNullableCode(@Nullable final String code, @Nullable final TransportDirection fallbackValue)
 	{
-		final TransportDirection transportDirection = typesByCode.ofNullableCode(code);
-		return transportDirection != null ? transportDirection : fallbackValue;
+		return CoalesceUtil.coalesce(typesByCode.ofNullableCode(code), fallbackValue);
 	}
 
 	@Nullable
