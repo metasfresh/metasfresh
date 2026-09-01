@@ -1876,6 +1876,19 @@ jobs:
       - name: commit post-test db image
         run: |
           docker commit e2e-tests-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest
+      # `!cancelled()` - i.e. success or failure, but NOT a cancellation. On those paths the
+      # stack is torn down as early as it was before this was a separate step, so the runner
+      # does not hold ~7 idle containers through report generation, the image push and the
+      # artifact uploads (and x3 for the parallel frontend shards).
+      - name: stop stack
+        if: ${{ !cancelled() }}
+        working-directory: docker-builds/e2e-tests/
+        env:
+          mfversion: ${{ needs.init.outputs.tag-fixed }}
+          mfregistry: metasfresh
+          dbqualifier: preloaded
+        run: |
+          docker compose --profile mobile down
       # ===== ALLURE REPORT GENERATION =====
       - name: Generate Allure Report for Mobile
         uses: ./.github/actions/generate-allure-report
@@ -1941,12 +1954,12 @@ jobs:
           path: docker-builds/e2e-tests/playwright-report-mobile/junit/results.xml
           if-no-files-found: ignore
           retention-days: 30
-      # Deliberately the LAST step of the job. `if: always()` so a cancelled job still frees
-      # the runner's containers - but on a cancelled job every `always()` step shares one
-      # 5-minute cancellation window, and an unresponsive container is exactly what makes
-      # teardown slow, so the evidence uploads must get that window first.
-      - name: stop stack
-        if: always()
+      # The cancellation counterpart of `stop stack`, deliberately the LAST step: on a
+      # cancelled job every conditional step shares one 5-minute cancellation window, and an
+      # unresponsive container is exactly what makes `docker compose down` slow, so teardown
+      # must not run ahead of the evidence uploads it exists to protect.
+      - name: stop stack after cancellation
+        if: ${{ cancelled() }}
         working-directory: docker-builds/e2e-tests/
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
@@ -2016,6 +2029,19 @@ jobs:
       - name: commit post-test db image
         run: |
           docker commit e2e-tests-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest-${{ matrix.shard_label }}
+      # `!cancelled()` - i.e. success or failure, but NOT a cancellation. On those paths the
+      # stack is torn down as early as it was before this was a separate step, so the runner
+      # does not hold ~7 idle containers through report generation, the image push and the
+      # artifact uploads (and x3 for the parallel frontend shards).
+      - name: stop stack
+        if: ${{ !cancelled() }}
+        working-directory: docker-builds/e2e-tests/
+        env:
+          mfversion: ${{ needs.init.outputs.tag-fixed }}
+          mfregistry: metasfresh
+          dbqualifier: preloaded
+        run: |
+          docker compose --profile frontend down
       - name: Upload Allure results
         uses: actions/upload-artifact@v6
         if: always()
@@ -2064,12 +2090,12 @@ jobs:
           path: docker-builds/e2e-tests/playwright-report-frontend/junit/results.xml
           if-no-files-found: ignore
           retention-days: 30
-      # Deliberately the LAST step of the job. `if: always()` so a cancelled job still frees
-      # the runner's containers - but on a cancelled job every `always()` step shares one
-      # 5-minute cancellation window, and an unresponsive container is exactly what makes
-      # teardown slow, so the evidence uploads must get that window first.
-      - name: stop stack
-        if: always()
+      # The cancellation counterpart of `stop stack`, deliberately the LAST step: on a
+      # cancelled job every conditional step shares one 5-minute cancellation window, and an
+      # unresponsive container is exactly what makes `docker compose down` slow, so teardown
+      # must not run ahead of the evidence uploads it exists to protect.
+      - name: stop stack after cancellation
+        if: ${{ cancelled() }}
         working-directory: docker-builds/e2e-tests/
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
