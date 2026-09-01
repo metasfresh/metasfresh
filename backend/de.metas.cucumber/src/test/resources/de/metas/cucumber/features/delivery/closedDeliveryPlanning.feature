@@ -246,23 +246,31 @@ Feature: A closed delivery planning is finished and nothing processes it any fur
       | ErrorAdMessage                                           |
       | de.metas.deliveryplanning.DeliveryPlanningService.Closed |
 
+    # Re-Open is the mirror and refuses the same mixed selection, naming the open one: it is all-or-nothing too,
+    # so a precondition that only asked "is any of them closed?" would offer the button and let doIt abort the
+    # whole batch, re-opening nothing.
+    And pressing Re-Open on M_Delivery_Planning identified by planningToggle_1,planningToggle_2 is unavailable:
+      | ErrorAdMessage                                         |
+      | de.metas.deliveryplanning.DeliveryPlanningService.Open |
+
     # and on the grid the button is not offered for the closed load on its own either: it is already in the
     # state the action would put it in. This is what the planner sees disabled, with the reason in the tooltip.
     And pressing Close on M_Delivery_Planning identified by planningToggle_1 is unavailable:
       | ErrorAdMessage                                           |
       | de.metas.deliveryplanning.DeliveryPlanningService.Closed |
     And pressing Re-Open on M_Delivery_Planning identified by planningToggle_2 is unavailable:
-      | ErrorAdMessage                                           |
-      | de.metas.deliveryplanning.DeliveryPlanningService.AllOpen |
+      | ErrorAdMessage                                         |
+      | de.metas.deliveryplanning.DeliveryPlanningService.Open |
 
     # and the runtime backstop behind that button, which the process can be invoked past: closing a closed one,
-    # and re-opening an open one, report an error instead of doing nothing
+    # and re-opening an open one, report the same message the precondition does - never a developer token
+    # carrying a record's toString()
     And closing M_Delivery_Planning identified by planningToggle_1 is refused:
-      | ErrorMessage |
-      | @Closed@=@Y@ |
+      | ErrorAdMessage                                           |
+      | de.metas.deliveryplanning.DeliveryPlanningService.Closed |
     And reopening M_Delivery_Planning identified by planningToggle_2 is refused:
-      | ErrorMessage |
-      | @Closed@=@N@ |
+      | ErrorAdMessage                                         |
+      | de.metas.deliveryplanning.DeliveryPlanningService.Open |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | IsClosed |
       | planningToggle_1       | 8          | 8            | Outgoing           | true     |

@@ -289,4 +289,36 @@ class DeliveryPlanningCloseSemanticsTest
 				deliveryPlanningService.getBySelection(selectionOf(first, second))))
 				.isEmpty();
 	}
+
+	@Test
+	@DisplayName("re-open precondition: a MIXED selection is refused before the button is offered, and names the open one")
+	void reOpenOfMixedSelectionIsRefusedBeforeTheButtonIsOffered()
+	{
+		final I_M_Delivery_Planning open = deliveryPlanning();
+		final I_M_Delivery_Planning alreadyClosed = deliveryPlanning();
+		deliveryPlanningService.closeSelectedDeliveryPlannings(selectionOf(alreadyClosed));
+
+		final Optional<ITranslatableString> rejection = deliveryPlanningService.getReOpenRejectionReason(
+				deliveryPlanningService.getBySelection(selectionOf(open, alreadyClosed)));
+
+		// re-opening is all-or-nothing, so the precondition has to refuse the whole selection here: a precondition
+		// that only asked "is any of them closed?" would offer the button and let doIt abort the batch
+		assertThat(rejection).as("a rejection reason").isPresent();
+		assertThat(rejection.get().translate("en_US"))
+				.isEqualTo(DeliveryPlanningService.MSG_M_Delivery_Planning_Open.toAD_Message()
+						+ " - " + idOf(open).getRepoId());
+	}
+
+	@Test
+	@DisplayName("re-open precondition: a selection in which every planning is already closed is accepted")
+	void selectionOfOnlyClosedPlanningsIsOfferedForReOpen()
+	{
+		final I_M_Delivery_Planning first = deliveryPlanning();
+		final I_M_Delivery_Planning second = deliveryPlanning();
+		deliveryPlanningService.closeSelectedDeliveryPlannings(selectionOf(first, second));
+
+		assertThat(deliveryPlanningService.getReOpenRejectionReason(
+				deliveryPlanningService.getBySelection(selectionOf(first, second))))
+				.isEmpty();
+	}
 }

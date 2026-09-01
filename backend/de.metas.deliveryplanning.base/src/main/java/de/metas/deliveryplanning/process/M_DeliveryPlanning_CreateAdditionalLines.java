@@ -67,9 +67,11 @@ public class M_DeliveryPlanning_CreateAdditionalLines extends JavaProcess implem
 
 		if (deliveryPlanningService.isClosed(deliveryPlanningId))
 		{
-			// names the one planning it is about: the condition is singular (a single-selection action), so the
-			// plural "all records are closed" this used to report described a different situation entirely
-			return ProcessPreconditionsResolution.rejectWithInternalReason(
+			// reject, not rejectWithInternalReason: every sibling closed-guard in this module - Close, Combine,
+			// Add, Move, Remove, GenerateShortageOverage - leaves its button visible and disabled with the reason
+			// in the tooltip, so the planner reads why. The message names the one planning it is about, the
+			// condition being singular here (a single-selection action).
+			return ProcessPreconditionsResolution.reject(
 					DeliveryPlanningService.MSG_M_Delivery_Planning_Closed,
 					deliveryPlanningId.getRepoId());
 		}

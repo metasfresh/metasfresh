@@ -141,6 +141,12 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 
 	public DeliveryPlanningList closedOnes() {return filter(DeliveryPlanning::isClosed);}
 
+	/**
+	 * The complement of {@link #closedOnes()}: what Re-Open refuses, as Close refuses the closed ones, so the two
+	 * actions' preconditions partition every selection between them.
+	 */
+	public DeliveryPlanningList openOnes() {return filter(deliveryPlanning -> !deliveryPlanning.isClosed());}
+
 	public boolean anyAllocated() {return list.stream().anyMatch(DeliveryPlanning::isAllocated);}
 
 	public DeliveryPlanningList allocatedOnes() {return filter(DeliveryPlanning::isAllocated);}

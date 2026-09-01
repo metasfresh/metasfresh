@@ -120,10 +120,12 @@ import java.util.stream.Collectors;
 public class DeliveryPlanningService
 {
 	public static final AdMessageKey MSG_M_Delivery_Planning_AllClosed = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.AllClosed");
-	public static final AdMessageKey MSG_M_Delivery_Planning_AllOpen = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.AllOpen");
 
 	/** Rejects acting on a closed planning; also the per-row skip report of {@link #cancelDelivery}. */
 	public static final AdMessageKey MSG_M_Delivery_Planning_Closed = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.Closed");
+
+	/** The mirror of {@link #MSG_M_Delivery_Planning_Closed}: rejects RE-OPENING a planning that is still open. */
+	public static final AdMessageKey MSG_M_Delivery_Planning_Open = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.Open");
 
 	public static final AdMessageKey MSG_M_Delivery_Planning_AtLeastOnePerOrderLine = AdMessageKey.of("de.metas.deliveryplanning.M_Delivery_Planning_AtLeastOnePerOrderLine");
 
@@ -957,9 +959,8 @@ public class DeliveryPlanningService
 	 * <p>
 	 * ALL-or-nothing, and deliberately so: {@link #closeSelectedDeliveryPlannings} refuses the whole selection as
 	 * soon as one of its rows is already closed, and every sibling action that acts on a selection - Combine, Add,
-	 * Move, Remove - does the same. This is the half that used to disagree: the precondition asked whether ANY row
-	 * was still open, so a selection of one closed and one open row offered the button and then aborted the batch,
-	 * leaving the open row unclosed and reporting a developer-shaped error. The rejection names the closed rows, so
+	 * Move, Remove - does the same. The precondition has to say it the same way, or a mixed selection would offer
+	 * the button and then abort the batch, leaving the open rows unclosed. The rejection names the closed rows, so
 	 * the planner can deselect exactly those.
 	 */
 	public Optional<ITranslatableString> getCloseRejectionReason(@NonNull final DeliveryPlanningList selectedDeliveryPlannings)
@@ -969,6 +970,26 @@ public class DeliveryPlanningService
 			return Optional.of(TranslatableStrings.adMessage(
 					MSG_M_Delivery_Planning_Closed,
 					toIdList(selectedDeliveryPlannings.closedOnes())));
+		}
+
+		return Optional.empty();
+	}
+
+	/**
+	 * Why the given selection cannot be RE-OPENED, or empty when it can. The mirror of
+	 * {@link #getCloseRejectionReason(DeliveryPlanningList)}, for the same reason:
+	 * {@link #reOpenSelectedDeliveryPlannings} refuses the whole selection as soon as one of its rows is still
+	 * open, so a precondition that merely asked whether ANY row was closed would offer the button on a mixed
+	 * selection and then abort the batch, re-opening nothing. The rejection names the open rows, so the planner
+	 * can deselect exactly those.
+	 */
+	public Optional<ITranslatableString> getReOpenRejectionReason(@NonNull final DeliveryPlanningList selectedDeliveryPlannings)
+	{
+		if (selectedDeliveryPlannings.anyOpen())
+		{
+			return Optional.of(TranslatableStrings.adMessage(
+					MSG_M_Delivery_Planning_Open,
+					toIdList(selectedDeliveryPlannings.openOnes())));
 		}
 
 		return Optional.empty();
@@ -1782,6 +1803,13 @@ public class DeliveryPlanningService
 	 * Cancels every selected planning that carries a {@code ReleaseNo}, per row: a closed one is left untouched and
 	 * named in {@link DeliveryPlanningCancelResult#getSkippedClosedIds()} rather than aborting the whole selection
 	 * - the open ones are still voided and cancelled.
+	 * <p>
+	 * That per-row skip holds only while the closed planning sits on an instruction of its own. Cancelling an open
+	 * planning voids the instruction it rides on ({@link #voidLinkedDeliveryInstructions}), and
+	 * {@link #getVoidRejectionReason} refuses to void an instruction that carries a closed allocated planning - so
+	 * when a selected open planning SHARES its instruction with a closed one, the whole cancel aborts and nothing
+	 * is cancelled. That is the normal case under aggregation, and it is deliberate: the closed planning's cargo
+	 * would otherwise be released along with the open one's.
 	 */
 	public DeliveryPlanningCancelResult cancelDelivery(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{

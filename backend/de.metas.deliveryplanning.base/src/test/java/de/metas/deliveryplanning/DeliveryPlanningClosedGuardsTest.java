@@ -126,16 +126,17 @@ class DeliveryPlanningClosedGuardsTest
 	}
 
 	@Test
-	@DisplayName("close: an already-closed planning errors instead of doing nothing")
+	@DisplayName("close: an already-closed planning errors instead of doing nothing, naming the planning")
 	void close_alreadyClosedPlanningErrors()
 	{
 		final I_M_Delivery_Planning alreadyClosed = deliveryPlanning(true);
 
-		// the canonical closed/open guard (ReceiptScheduleBL.close) throws "@Closed@=@Y@"; unit-test mode has no
-		// AD_Element named "Closed" to resolve the token against, so it renders with the @-delimiters stripped
 		assertThatThrownBy(() -> deliveryPlanningService.closeSelectedDeliveryPlannings(selectionOf(alreadyClosed)))
 				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("Closed=Y");
+				// the backstop raises the same AD_Message the precondition rejects with, with the offending
+				// planning as its parameter - never a developer token carrying the record's toString()
+				.hasMessageContaining(DeliveryPlanningService.MSG_M_Delivery_Planning_Closed.toAD_Message())
+				.hasMessageContaining(String.valueOf(idOf(alreadyClosed).getRepoId()));
 	}
 
 	@Test
@@ -167,14 +168,30 @@ class DeliveryPlanningClosedGuardsTest
 	}
 
 	@Test
-	@DisplayName("reopen: an open planning errors instead of doing nothing")
+	@DisplayName("reopen: an open planning errors instead of doing nothing, naming the planning")
 	void reOpen_openPlanningErrors()
 	{
 		final I_M_Delivery_Planning open = deliveryPlanning(false);
 
 		assertThatThrownBy(() -> deliveryPlanningService.reOpenSelectedDeliveryPlannings(selectionOf(open)))
 				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("Closed=N");
+				// the backstop raises the same AD_Message the precondition rejects with, with the offending
+				// planning as its parameter - never a developer token carrying the record's toString()
+				.hasMessageContaining(DeliveryPlanningService.MSG_M_Delivery_Planning_Open.toAD_Message())
+				.hasMessageContaining(String.valueOf(idOf(open).getRepoId()));
+	}
+
+	@Test
+	@DisplayName("reopen: a mixed selection is refused wholesale - nothing is reopened")
+	void reOpen_mixedSelectionIsAllOrNothing()
+	{
+		final I_M_Delivery_Planning open = deliveryPlanning(false);
+		final I_M_Delivery_Planning alreadyClosed = deliveryPlanning(true);
+
+		assertThatThrownBy(() -> deliveryPlanningService.reOpenSelectedDeliveryPlannings(selectionOf(open, alreadyClosed)))
+				.isInstanceOf(AdempiereException.class);
+
+		assertThat(reload(alreadyClosed).isClosed()).as("the closed one must not have been reopened either").isTrue();
 	}
 
 	// ------------------------------------------------------------------ Cancel

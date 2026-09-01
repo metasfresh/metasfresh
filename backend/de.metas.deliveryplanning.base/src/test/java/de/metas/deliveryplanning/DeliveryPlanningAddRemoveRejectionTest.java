@@ -39,6 +39,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -114,364 +115,373 @@ class DeliveryPlanningAddRemoveRejectionTest
 		return adMessageKey.toAD_Message();
 	}
 
-	// ------------------------------------------------------------------ add to
-
-	@Test
-	@DisplayName("add to: an open, unallocated selection of one direction is accepted onto a draft instruction")
-	void addTo_admissibleSelectionIsAccepted()
+	@Nested
+	@DisplayName("add to")
+	class AddTo
 	{
-		assertThat(deliveryPlanningService.getAddToRejectionReason(
-				DeliveryPlanningList.of(deliveryPlanning().build(), deliveryPlanning().build()),
-				deliveryInstruction(DocStatus.Drafted)))
-				.isEmpty();
+		@Test
+		@DisplayName("an open, unallocated selection of one direction is accepted onto a draft instruction")
+		void admissibleSelectionIsAccepted()
+		{
+			assertThat(deliveryPlanningService.getAddToRejectionReason(
+					DeliveryPlanningList.of(deliveryPlanning().build(), deliveryPlanning().build()),
+					deliveryInstruction(DocStatus.Drafted)))
+					.isEmpty();
+		}
+
+		@Test
+		@DisplayName("a planning already on ANOTHER draft instruction is REFUSED, and the reason names Move")
+		void onAnotherDraftInstructionIsRefusedAndPointsAtMove()
+		{
+			final DeliveryPlanning onAnotherDraft = deliveryPlanning()
+					.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted)))
+					.build();
+
+			assertThat(addToRejectionTextOf(deliveryInstruction(DocStatus.Drafted), onAnotherDraft))
+					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_AlreadyOnDeliveryInstruction_UseMove))
+					.contains(String.valueOf(onAnotherDraft.getId().getRepoId()));
+		}
+
+		@Test
+		@DisplayName("ONE allocated row refuses the WHOLE selection - the action is all-or-nothing, not partly performed")
+		void oneAllocatedRowRefusesTheWholeSelection()
+		{
+			final DeliveryPlanning allocated = deliveryPlanning()
+					.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted)))
+					.build();
+
+			assertThat(addToRejectionTextOf(deliveryInstruction(DocStatus.Drafted), deliveryPlanning().build(), allocated))
+					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_AlreadyOnDeliveryInstruction_UseMove))
+					.contains(String.valueOf(allocated.getId().getRepoId()));
+		}
+
+		@Test
+		@DisplayName("a planning on a COMPLETED instruction refuses the whole selection, naming it")
+		void onCompletedInstructionIsRefused()
+		{
+			final DeliveryPlanning onCompleted = deliveryPlanning()
+					.allocations(allocatedTo(deliveryInstruction(DocStatus.Completed)))
+					.build();
+
+			assertThat(addToRejectionTextOf(deliveryInstruction(DocStatus.Drafted), deliveryPlanning().build(), onCompleted))
+					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_OnCompletedDeliveryInstruction))
+					.contains(String.valueOf(onCompleted.getId().getRepoId()));
+		}
+
+		@Test
+		@DisplayName("a closed planning is refused, naming it")
+		void closedPlanningIsRefused()
+		{
+			final DeliveryPlanning closed = deliveryPlanning().closed(true).build();
+
+			assertThat(addToRejectionTextOf(deliveryInstruction(DocStatus.Drafted), deliveryPlanning().build(), closed))
+					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_ClosedPlannings))
+					.contains(String.valueOf(closed.getId().getRepoId()));
+		}
+
+		@Test
+		@DisplayName("a selection spanning two directions is refused, because the picker correlates on one")
+		void twoDirectionsIsRefused()
+		{
+			assertThat(addToRejectionTextOf(
+					deliveryInstruction(DocStatus.Drafted),
+					deliveryPlanning().transportDirection(TransportDirection.Outgoing).build(),
+					deliveryPlanning().transportDirection(TransportDirection.Incoming).build()))
+					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_IncompatibleSelection))
+					.contains(keyOf(AggregationKeyField.Direction.getLabel()));
+		}
+
+		@Test
+		@DisplayName("a target that is no longer a draft is refused")
+		void completedTargetIsRefused()
+		{
+			assertThat(addToRejectionTextOf(deliveryInstruction(DocStatus.Completed), deliveryPlanning().build()))
+					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_TargetInstructionNotDraft));
+		}
+
+		@Test
+		@DisplayName("the precondition, which has no target yet, still judges the selection")
+		void preconditionWithoutTargetStillJudgesTheSelection()
+		{
+			// null target = the parameter dialog has not been shown yet
+			assertThat(deliveryPlanningService.getAddToRejectionReason(
+					DeliveryPlanningList.of(deliveryPlanning().build()),
+					null))
+					.isEmpty();
+
+			assertThat(addToRejectionTextOf(null, deliveryPlanning().closed(true).build()))
+					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_ClosedPlannings));
+		}
+
+		@Test
+		@DisplayName("a planning on a draft AND a completed instruction is refused - ANY non-draft leg forbids")
+		void anyNonDraftInstructionRefuses()
+		{
+			final DeliveryPlanning onBoth = deliveryPlanning()
+					.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted), deliveryInstruction(DocStatus.Completed)))
+					.build();
+
+			assertThat(addToRejectionTextOf(deliveryInstruction(DocStatus.Drafted), onBoth))
+					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_OnCompletedDeliveryInstruction))
+					.contains(String.valueOf(onBoth.getId().getRepoId()));
+		}
 	}
 
-	@Test
-	@DisplayName("add to: a planning already on ANOTHER draft instruction is REFUSED, and the reason names Move")
-	void addTo_onAnotherDraftInstructionIsRefusedAndPointsAtMove()
+	@Nested
+	@DisplayName("remove from")
+	class RemoveFrom
 	{
-		final DeliveryPlanning onAnotherDraft = deliveryPlanning()
-				.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted)))
-				.build();
+		@Test
+		@DisplayName("a planning on a draft instruction is accepted")
+		void onDraftInstructionIsAccepted()
+		{
+			final DeliveryPlanning allocated = deliveryPlanning()
+					.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted)))
+					.build();
 
-		assertThat(addToRejectionTextOf(deliveryInstruction(DocStatus.Drafted), onAnotherDraft))
-				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_AlreadyOnDeliveryInstruction_UseMove))
-				.contains(String.valueOf(onAnotherDraft.getId().getRepoId()));
+			assertThat(deliveryPlanningService.getRemoveFromRejectionReason(DeliveryPlanningList.of(allocated))).isEmpty();
+		}
+
+		/**
+		 * Reversed contract: removal used to be the one action a closed planning was still allowed. It is not - removal
+		 * deactivates the allocation, drops the release number and resets the dates, which is exactly the mutation
+		 * closing forbids. Re-open first, then remove.
+		 */
+		@Test
+		@DisplayName("a CLOSED planning is REFUSED, naming it - re-open it first")
+		void closedPlanningIsRefused()
+		{
+			final DeliveryPlanning closedAndAllocated = deliveryPlanning()
+					.closed(true)
+					.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted)))
+					.build();
+
+			assertThat(textOf(deliveryPlanningService.getRemoveFromRejectionReason(DeliveryPlanningList.of(closedAndAllocated))))
+					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_ClosedPlannings))
+					.contains(String.valueOf(closedAndAllocated.getId().getRepoId()));
+		}
+
+		@Test
+		@DisplayName("ONE closed row refuses the whole selection - the action is all-or-nothing")
+		void oneClosedRowRefusesTheWholeSelection()
+		{
+			final DeliveryPlanning open = deliveryPlanning()
+					.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted)))
+					.build();
+			final DeliveryPlanning closed = deliveryPlanning()
+					.closed(true)
+					.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted)))
+					.build();
+
+			assertThat(textOf(deliveryPlanningService.getRemoveFromRejectionReason(DeliveryPlanningList.of(open, closed))))
+					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_ClosedPlannings))
+					.contains(String.valueOf(closed.getId().getRepoId()))
+					.doesNotContain(String.valueOf(open.getId().getRepoId()));
+		}
+
+		/**
+		 * Reachable only through a re-opened planning: a closed one is refused by the rule above, so the sequence the
+		 * planner is pointed at - re-open, then remove - is the one that has to work.
+		 */
+		@Test
+		@DisplayName("a RE-OPENED planning is accepted again")
+		void reOpenedPlanningIsAccepted()
+		{
+			final DeliveryPlanning reOpened = deliveryPlanning()
+					.closed(false)
+					.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted)))
+					.build();
+
+			assertThat(deliveryPlanningService.getRemoveFromRejectionReason(DeliveryPlanningList.of(reOpened))).isEmpty();
+		}
+
+		@Test
+		@DisplayName("a planning on a COMPLETED instruction is refused, naming it")
+		void onCompletedInstructionIsRefused()
+		{
+			final DeliveryPlanning onCompleted = deliveryPlanning()
+					.allocations(allocatedTo(deliveryInstruction(DocStatus.Completed)))
+					.build();
+
+			assertThat(textOf(deliveryPlanningService.getRemoveFromRejectionReason(DeliveryPlanningList.of(onCompleted))))
+					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_OnCompletedDeliveryInstruction))
+					.contains(String.valueOf(onCompleted.getId().getRepoId()));
+		}
+
+		@Test
+		@DisplayName("a selection on no instruction at all is refused, naming the rows")
+		void nothingAllocatedIsRefused()
+		{
+			final DeliveryPlanning notAllocated = deliveryPlanning().build();
+
+			assertThat(textOf(deliveryPlanningService.getRemoveFromRejectionReason(DeliveryPlanningList.of(notAllocated))))
+					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_NotOnDeliveryInstruction))
+					.contains(String.valueOf(notAllocated.getId().getRepoId()));
+		}
+
+		/**
+		 * A planning on several legs, one of them already completed: ANY non-draft instruction refuses - the completed
+		 * leg cannot be altered, and partially performing the action is exactly what these rules refuse.
+		 */
+		@Test
+		@DisplayName("a planning on a draft AND a completed instruction is refused - ANY non-draft leg forbids")
+		void anyNonDraftInstructionRefuses()
+		{
+			final DeliveryPlanning onBoth = deliveryPlanning()
+					.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted), deliveryInstruction(DocStatus.Completed)))
+					.build();
+
+			assertThat(textOf(deliveryPlanningService.getRemoveFromRejectionReason(DeliveryPlanningList.of(onBoth))))
+					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_OnCompletedDeliveryInstruction))
+					.contains(String.valueOf(onBoth.getId().getRepoId()));
+		}
+
+		@Test
+		@DisplayName("a planning on TWO draft instructions is accepted - every leg is still alterable")
+		void allDraftInstructionsIsAccepted()
+		{
+			final DeliveryPlanning onTwoDrafts = deliveryPlanning()
+					.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted), deliveryInstruction(DocStatus.Drafted)))
+					.build();
+
+			assertThat(deliveryPlanningService.getRemoveFromRejectionReason(DeliveryPlanningList.of(onTwoDrafts))).isEmpty();
+		}
+
+		@Test
+		@DisplayName("an unallocated row alongside an allocated one does not refuse the selection")
+		void unallocatedRowIsSkippedNotRefused()
+		{
+			final DeliveryPlanning allocated = deliveryPlanning()
+					.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted)))
+					.build();
+
+			assertThat(deliveryPlanningService.getRemoveFromRejectionReason(
+					DeliveryPlanningList.of(allocated, deliveryPlanning().build())))
+					.isEmpty();
+		}
 	}
 
-	@Test
-	@DisplayName("add to: ONE allocated row refuses the WHOLE selection - the action is all-or-nothing, not partly performed")
-	void addTo_oneAllocatedRowRefusesTheWholeSelection()
+	@Nested
+	@DisplayName("move to")
+	class MoveTo
 	{
-		final DeliveryPlanning allocated = deliveryPlanning()
-				.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted)))
-				.build();
+		/**
+		 * The precondition half of the closed refusal {@code closedPlanningIsRefused} below already covers with a
+		 * target: with NO target the button's state is decided, and that is the moment the closed row has to make Move
+		 * unavailable rather than only failing once the planner has picked a destination.
+		 */
+		@Test
+		@DisplayName("the precondition, which has no target yet, already refuses a closed planning")
+		void closedPlanningIsRefusedByThePreconditionWithoutTarget()
+		{
+			final DeliveryPlanning closedAndAllocated = deliveryPlanning()
+					.closed(true)
+					.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted)))
+					.build();
 
-		assertThat(addToRejectionTextOf(deliveryInstruction(DocStatus.Drafted), deliveryPlanning().build(), allocated))
-				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_AlreadyOnDeliveryInstruction_UseMove))
-				.contains(String.valueOf(allocated.getId().getRepoId()));
-	}
+			// null target = the parameter dialog has not been shown yet, which is when the button's state is decided
+			assertThat(moveToRejectionTextOf(null, closedAndAllocated))
+					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_ClosedPlannings));
+		}
 
-	@Test
-	@DisplayName("add to: a planning on a COMPLETED instruction refuses the whole selection, naming it")
-	void addTo_onCompletedInstructionIsRefused()
-	{
-		final DeliveryPlanning onCompleted = deliveryPlanning()
-				.allocations(allocatedTo(deliveryInstruction(DocStatus.Completed)))
-				.build();
+		@Test
+		@DisplayName("a planning on ANOTHER draft instruction is accepted onto a draft target")
+		void onAnotherDraftInstructionIsAccepted()
+		{
+			final DeliveryPlanning onAnotherDraft = deliveryPlanning()
+					.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted)))
+					.build();
 
-		assertThat(addToRejectionTextOf(deliveryInstruction(DocStatus.Drafted), deliveryPlanning().build(), onCompleted))
-				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_OnCompletedDeliveryInstruction))
-				.contains(String.valueOf(onCompleted.getId().getRepoId()));
-	}
+			assertThat(deliveryPlanningService.getMoveToRejectionReason(
+					DeliveryPlanningList.of(onAnotherDraft),
+					deliveryInstruction(DocStatus.Drafted)))
+					.isEmpty();
+		}
 
-	@Test
-	@DisplayName("add to: a closed planning is refused, naming it")
-	void addTo_closedPlanningIsRefused()
-	{
-		final DeliveryPlanning closed = deliveryPlanning().closed(true).build();
+		/**
+		 * The other half of the exclusivity: exactly the selection add-to accepts is the one move-to refuses, so a
+		 * planner is never offered both and never offered neither.
+		 */
+		@Test
+		@DisplayName("an UNALLOCATED planning is refused, naming it - that selection belongs to Add")
+		void unallocatedPlanningIsRefused()
+		{
+			final DeliveryPlanning notAllocated = deliveryPlanning().build();
 
-		assertThat(addToRejectionTextOf(deliveryInstruction(DocStatus.Drafted), deliveryPlanning().build(), closed))
-				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_ClosedPlannings))
-				.contains(String.valueOf(closed.getId().getRepoId()));
-	}
+			assertThat(moveToRejectionTextOf(deliveryInstruction(DocStatus.Drafted), notAllocated))
+					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_NotOnDeliveryInstruction))
+					.contains(String.valueOf(notAllocated.getId().getRepoId()));
+		}
 
-	@Test
-	@DisplayName("add to: a selection spanning two directions is refused, because the picker correlates on one")
-	void addTo_twoDirectionsIsRefused()
-	{
-		assertThat(addToRejectionTextOf(
-				deliveryInstruction(DocStatus.Drafted),
-				deliveryPlanning().transportDirection(TransportDirection.Outgoing).build(),
-				deliveryPlanning().transportDirection(TransportDirection.Incoming).build()))
-				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_IncompatibleSelection))
-				.contains(keyOf(AggregationKeyField.Direction.getLabel()));
-	}
+		@Test
+		@DisplayName("ONE unallocated row refuses the WHOLE selection - all-or-nothing, unlike remove-from's skip")
+		void oneUnallocatedRowRefusesTheWholeSelection()
+		{
+			final DeliveryPlanning allocated = deliveryPlanning()
+					.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted)))
+					.build();
+			final DeliveryPlanning notAllocated = deliveryPlanning().build();
 
-	@Test
-	@DisplayName("add to: a target that is no longer a draft is refused")
-	void addTo_completedTargetIsRefused()
-	{
-		assertThat(addToRejectionTextOf(deliveryInstruction(DocStatus.Completed), deliveryPlanning().build()))
-				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_TargetInstructionNotDraft));
-	}
+			assertThat(moveToRejectionTextOf(deliveryInstruction(DocStatus.Drafted), allocated, notAllocated))
+					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_NotOnDeliveryInstruction))
+					.contains(String.valueOf(notAllocated.getId().getRepoId()));
+		}
 
-	@Test
-	@DisplayName("add to: the precondition, which has no target yet, still judges the selection")
-	void addTo_preconditionWithoutTargetStillJudgesTheSelection()
-	{
-		// null target = the parameter dialog has not been shown yet
-		assertThat(deliveryPlanningService.getAddToRejectionReason(
-				DeliveryPlanningList.of(deliveryPlanning().build()),
-				null))
-				.isEmpty();
+		@Test
+		@DisplayName("a planning on a COMPLETED instruction refuses the whole selection, naming it")
+		void onCompletedInstructionIsRefused()
+		{
+			final DeliveryPlanning onCompleted = deliveryPlanning()
+					.allocations(allocatedTo(deliveryInstruction(DocStatus.Completed)))
+					.build();
+			final DeliveryPlanning onDraft = deliveryPlanning()
+					.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted)))
+					.build();
 
-		assertThat(addToRejectionTextOf(null, deliveryPlanning().closed(true).build()))
-				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_ClosedPlannings));
-	}
+			assertThat(moveToRejectionTextOf(deliveryInstruction(DocStatus.Drafted), onDraft, onCompleted))
+					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_OnCompletedDeliveryInstruction))
+					.contains(String.valueOf(onCompleted.getId().getRepoId()));
+		}
 
-	// ------------------------------------------------------------------ remove from
+		@Test
+		@DisplayName("a closed planning is refused, naming it - it is still being put ON an instruction")
+		void closedPlanningIsRefused()
+		{
+			final DeliveryPlanning closed = deliveryPlanning()
+					.closed(true)
+					.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted)))
+					.build();
 
-	@Test
-	@DisplayName("remove from: a planning on a draft instruction is accepted")
-	void removeFrom_onDraftInstructionIsAccepted()
-	{
-		final DeliveryPlanning allocated = deliveryPlanning()
-				.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted)))
-				.build();
+			assertThat(moveToRejectionTextOf(deliveryInstruction(DocStatus.Drafted), closed))
+					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_ClosedPlannings))
+					.contains(String.valueOf(closed.getId().getRepoId()));
+		}
 
-		assertThat(deliveryPlanningService.getRemoveFromRejectionReason(DeliveryPlanningList.of(allocated))).isEmpty();
-	}
+		@Test
+		@DisplayName("a target that is no longer a draft is refused")
+		void completedTargetIsRefused()
+		{
+			final DeliveryPlanning onDraft = deliveryPlanning()
+					.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted)))
+					.build();
 
-	/**
-	 * Reversed contract: removal used to be the one action a closed planning was still allowed. It is not - removal
-	 * deactivates the allocation, drops the release number and resets the dates, which is exactly the mutation
-	 * closing forbids. Re-open first, then remove.
-	 */
-	@Test
-	@DisplayName("remove from: a CLOSED planning is REFUSED, naming it - re-open it first")
-	void removeFrom_closedPlanningIsRefused()
-	{
-		final DeliveryPlanning closedAndAllocated = deliveryPlanning()
-				.closed(true)
-				.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted)))
-				.build();
+			assertThat(moveToRejectionTextOf(deliveryInstruction(DocStatus.Completed), onDraft))
+					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_TargetInstructionNotDraft));
+		}
 
-		assertThat(textOf(deliveryPlanningService.getRemoveFromRejectionReason(DeliveryPlanningList.of(closedAndAllocated))))
-				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_ClosedPlannings))
-				.contains(String.valueOf(closedAndAllocated.getId().getRepoId()));
-	}
+		@Test
+		@DisplayName("the precondition, which has no target yet, still judges the selection")
+		void preconditionWithoutTargetStillJudgesTheSelection()
+		{
+			final DeliveryPlanning onDraft = deliveryPlanning()
+					.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted)))
+					.build();
 
-	@Test
-	@DisplayName("remove from: ONE closed row refuses the whole selection - the action is all-or-nothing")
-	void removeFrom_oneClosedRowRefusesTheWholeSelection()
-	{
-		final DeliveryPlanning open = deliveryPlanning()
-				.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted)))
-				.build();
-		final DeliveryPlanning closed = deliveryPlanning()
-				.closed(true)
-				.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted)))
-				.build();
+			// null target = the parameter dialog has not been shown yet
+			assertThat(deliveryPlanningService.getMoveToRejectionReason(DeliveryPlanningList.of(onDraft), null)).isEmpty();
 
-		assertThat(textOf(deliveryPlanningService.getRemoveFromRejectionReason(DeliveryPlanningList.of(open, closed))))
-				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_ClosedPlannings))
-				.contains(String.valueOf(closed.getId().getRepoId()))
-				.doesNotContain(String.valueOf(open.getId().getRepoId()));
-	}
-
-	/**
-	 * Reachable only through a re-opened planning: a closed one is refused by the rule above, so the sequence the
-	 * planner is pointed at - re-open, then remove - is the one that has to work.
-	 */
-	@Test
-	@DisplayName("remove from: a RE-OPENED planning is accepted again")
-	void removeFrom_reOpenedPlanningIsAccepted()
-	{
-		final DeliveryPlanning reOpened = deliveryPlanning()
-				.closed(false)
-				.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted)))
-				.build();
-
-		assertThat(deliveryPlanningService.getRemoveFromRejectionReason(DeliveryPlanningList.of(reOpened))).isEmpty();
-	}
-
-	@Test
-	@DisplayName("remove from: a planning on a COMPLETED instruction is refused, naming it")
-	void removeFrom_onCompletedInstructionIsRefused()
-	{
-		final DeliveryPlanning onCompleted = deliveryPlanning()
-				.allocations(allocatedTo(deliveryInstruction(DocStatus.Completed)))
-				.build();
-
-		assertThat(textOf(deliveryPlanningService.getRemoveFromRejectionReason(DeliveryPlanningList.of(onCompleted))))
-				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_OnCompletedDeliveryInstruction))
-				.contains(String.valueOf(onCompleted.getId().getRepoId()));
-	}
-
-	@Test
-	@DisplayName("remove from: a selection on no instruction at all is refused, naming the rows")
-	void removeFrom_nothingAllocatedIsRefused()
-	{
-		final DeliveryPlanning notAllocated = deliveryPlanning().build();
-
-		assertThat(textOf(deliveryPlanningService.getRemoveFromRejectionReason(DeliveryPlanningList.of(notAllocated))))
-				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_NotOnDeliveryInstruction))
-				.contains(String.valueOf(notAllocated.getId().getRepoId()));
-	}
-
-	/**
-	 * A planning on several legs, one of them already completed: ANY non-draft instruction refuses - the completed
-	 * leg cannot be altered, and partially performing the action is exactly what these rules refuse.
-	 */
-	@Test
-	@DisplayName("remove from: a planning on a draft AND a completed instruction is refused - ANY non-draft leg forbids")
-	void removeFrom_anyNonDraftInstructionRefuses()
-	{
-		final DeliveryPlanning onBoth = deliveryPlanning()
-				.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted), deliveryInstruction(DocStatus.Completed)))
-				.build();
-
-		assertThat(textOf(deliveryPlanningService.getRemoveFromRejectionReason(DeliveryPlanningList.of(onBoth))))
-				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_OnCompletedDeliveryInstruction))
-				.contains(String.valueOf(onBoth.getId().getRepoId()));
-	}
-
-	@Test
-	@DisplayName("remove from: a planning on TWO draft instructions is accepted - every leg is still alterable")
-	void removeFrom_allDraftInstructionsIsAccepted()
-	{
-		final DeliveryPlanning onTwoDrafts = deliveryPlanning()
-				.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted), deliveryInstruction(DocStatus.Drafted)))
-				.build();
-
-		assertThat(deliveryPlanningService.getRemoveFromRejectionReason(DeliveryPlanningList.of(onTwoDrafts))).isEmpty();
-	}
-
-	@Test
-	@DisplayName("add to: a planning on a draft AND a completed instruction is refused - ANY non-draft leg forbids")
-	void addTo_anyNonDraftInstructionRefuses()
-	{
-		final DeliveryPlanning onBoth = deliveryPlanning()
-				.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted), deliveryInstruction(DocStatus.Completed)))
-				.build();
-
-		assertThat(addToRejectionTextOf(deliveryInstruction(DocStatus.Drafted), onBoth))
-				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_OnCompletedDeliveryInstruction))
-				.contains(String.valueOf(onBoth.getId().getRepoId()));
-	}
-
-	@Test
-	@DisplayName("remove from: an unallocated row alongside an allocated one does not refuse the selection")
-	void removeFrom_unallocatedRowIsSkippedNotRefused()
-	{
-		final DeliveryPlanning allocated = deliveryPlanning()
-				.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted)))
-				.build();
-
-		assertThat(deliveryPlanningService.getRemoveFromRejectionReason(
-				DeliveryPlanningList.of(allocated, deliveryPlanning().build())))
-				.isEmpty();
-	}
-
-	// ------------------------------------------------------------------ move to
-
-	/**
-	 * The precondition half of the closed refusal {@code moveTo_closedPlanningIsRefused} below already covers with a
-	 * target: with NO target the button's state is decided, and that is the moment the closed row has to make Move
-	 * unavailable rather than only failing once the planner has picked a destination.
-	 */
-	@Test
-	@DisplayName("move to: the precondition, which has no target yet, already refuses a closed planning")
-	void moveTo_closedPlanningIsRefusedByThePreconditionWithoutTarget()
-	{
-		final DeliveryPlanning closedAndAllocated = deliveryPlanning()
-				.closed(true)
-				.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted)))
-				.build();
-
-		// null target = the parameter dialog has not been shown yet, which is when the button's state is decided
-		assertThat(moveToRejectionTextOf(null, closedAndAllocated))
-				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_ClosedPlannings));
-	}
-
-	@Test
-	@DisplayName("move to: a planning on ANOTHER draft instruction is accepted onto a draft target")
-	void moveTo_onAnotherDraftInstructionIsAccepted()
-	{
-		final DeliveryPlanning onAnotherDraft = deliveryPlanning()
-				.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted)))
-				.build();
-
-		assertThat(deliveryPlanningService.getMoveToRejectionReason(
-				DeliveryPlanningList.of(onAnotherDraft),
-				deliveryInstruction(DocStatus.Drafted)))
-				.isEmpty();
-	}
-
-	/**
-	 * The other half of the exclusivity: exactly the selection add-to accepts is the one move-to refuses, so a
-	 * planner is never offered both and never offered neither.
-	 */
-	@Test
-	@DisplayName("move to: an UNALLOCATED planning is refused, naming it - that selection belongs to Add")
-	void moveTo_unallocatedPlanningIsRefused()
-	{
-		final DeliveryPlanning notAllocated = deliveryPlanning().build();
-
-		assertThat(moveToRejectionTextOf(deliveryInstruction(DocStatus.Drafted), notAllocated))
-				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_NotOnDeliveryInstruction))
-				.contains(String.valueOf(notAllocated.getId().getRepoId()));
-	}
-
-	@Test
-	@DisplayName("move to: ONE unallocated row refuses the WHOLE selection - all-or-nothing, unlike remove-from's skip")
-	void moveTo_oneUnallocatedRowRefusesTheWholeSelection()
-	{
-		final DeliveryPlanning allocated = deliveryPlanning()
-				.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted)))
-				.build();
-		final DeliveryPlanning notAllocated = deliveryPlanning().build();
-
-		assertThat(moveToRejectionTextOf(deliveryInstruction(DocStatus.Drafted), allocated, notAllocated))
-				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_NotOnDeliveryInstruction))
-				.contains(String.valueOf(notAllocated.getId().getRepoId()));
-	}
-
-	@Test
-	@DisplayName("move to: a planning on a COMPLETED instruction refuses the whole selection, naming it")
-	void moveTo_onCompletedInstructionIsRefused()
-	{
-		final DeliveryPlanning onCompleted = deliveryPlanning()
-				.allocations(allocatedTo(deliveryInstruction(DocStatus.Completed)))
-				.build();
-		final DeliveryPlanning onDraft = deliveryPlanning()
-				.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted)))
-				.build();
-
-		assertThat(moveToRejectionTextOf(deliveryInstruction(DocStatus.Drafted), onDraft, onCompleted))
-				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_OnCompletedDeliveryInstruction))
-				.contains(String.valueOf(onCompleted.getId().getRepoId()));
-	}
-
-	@Test
-	@DisplayName("move to: a closed planning is refused, naming it - it is still being put ON an instruction")
-	void moveTo_closedPlanningIsRefused()
-	{
-		final DeliveryPlanning closed = deliveryPlanning()
-				.closed(true)
-				.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted)))
-				.build();
-
-		assertThat(moveToRejectionTextOf(deliveryInstruction(DocStatus.Drafted), closed))
-				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_ClosedPlannings))
-				.contains(String.valueOf(closed.getId().getRepoId()));
-	}
-
-	@Test
-	@DisplayName("move to: a target that is no longer a draft is refused")
-	void moveTo_completedTargetIsRefused()
-	{
-		final DeliveryPlanning onDraft = deliveryPlanning()
-				.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted)))
-				.build();
-
-		assertThat(moveToRejectionTextOf(deliveryInstruction(DocStatus.Completed), onDraft))
-				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_TargetInstructionNotDraft));
-	}
-
-	@Test
-	@DisplayName("move to: the precondition, which has no target yet, still judges the selection")
-	void moveTo_preconditionWithoutTargetStillJudgesTheSelection()
-	{
-		final DeliveryPlanning onDraft = deliveryPlanning()
-				.allocations(allocatedTo(deliveryInstruction(DocStatus.Drafted)))
-				.build();
-
-		// null target = the parameter dialog has not been shown yet
-		assertThat(deliveryPlanningService.getMoveToRejectionReason(DeliveryPlanningList.of(onDraft), null)).isEmpty();
-
-		assertThat(moveToRejectionTextOf(null, deliveryPlanning().build()))
-				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_NotOnDeliveryInstruction));
+			assertThat(moveToRejectionTextOf(null, deliveryPlanning().build()))
+					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_NotOnDeliveryInstruction));
+		}
 	}
 }

@@ -414,8 +414,13 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * All-or-nothing over the selection: closing an already-closed planning throws {@code @Closed@=@Y@}, and the
-	 * check runs before anything is written, so a mixed selection leaves no row half-closed.
+	 * All-or-nothing over the selection: an already-closed planning is refused by name, and the check runs before
+	 * anything is written, so a mixed selection leaves no row half-closed.
+	 * <p>
+	 * The runtime backstop behind {@code M_Delivery_Planning_Close}'s precondition, which refuses the same
+	 * selection before the button is offered. It raises the SAME message the precondition does, so a planner who
+	 * reaches this far - the process can be invoked past its precondition - reads the same sentence rather than a
+	 * developer token carrying a record's {@code toString()}.
 	 */
 	public void closeSelectedDeliveryPlannings(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
@@ -427,7 +432,9 @@ public class DeliveryPlanningRepository
 		{
 			if (deliveryPlanningRecord.isClosed())
 			{
-				throw new AdempiereException("@Closed@=@Y@ (" + deliveryPlanningRecord + ")");
+				throw new AdempiereException(
+						DeliveryPlanningService.MSG_M_Delivery_Planning_Closed,
+						deliveryPlanningRecord.getM_Delivery_Planning_ID());
 			}
 		}
 
@@ -440,8 +447,9 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * The counterpart of {@link #closeSelectedDeliveryPlannings}: reopening an already-open planning throws
-	 * {@code @Closed@=@N@}.
+	 * The counterpart of {@link #closeSelectedDeliveryPlannings}, all-or-nothing in the same way: a planning that
+	 * is still open is refused by name, before anything is written, and with the same message
+	 * {@code M_Delivery_Planning_ReOpen}'s precondition uses to keep the button off a mixed selection.
 	 */
 	public void reOpenSelectedDeliveryPlannings(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
@@ -453,7 +461,9 @@ public class DeliveryPlanningRepository
 		{
 			if (!deliveryPlanningRecord.isClosed())
 			{
-				throw new AdempiereException("@Closed@=@N@ (" + deliveryPlanningRecord + ")");
+				throw new AdempiereException(
+						DeliveryPlanningService.MSG_M_Delivery_Planning_Open,
+						deliveryPlanningRecord.getM_Delivery_Planning_ID());
 			}
 		}
 

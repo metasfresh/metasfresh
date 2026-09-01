@@ -70,3 +70,21 @@ WHERE rl.AD_Ref_List_ID=trl.AD_Ref_List_ID
 
 -- 9) make sure no language row is missing for any value of this reference
 SELECT add_missing_translations();
+
+-- 10) fr_CH for the new Dropship value, per the convention stated once in
+--     5820520_sys_M_Delivery_Planning_GenerateDeliveryInstruction_IsComplete.sql: the en_US text,
+--     IsTranslated='N'. Runs last, after steps 8 and 9 have mirrored the German base text into every
+--     still-untranslated row -- German is unusable rather than merely untranslated for an fr_CH user.
+--     Scoped to 544356: the two pre-existing values of this reference are not part of this change.
+UPDATE AD_Ref_List_Trl trl
+   SET Name         = en.Name,
+       Description  = en.Description,
+       IsTranslated = 'N',
+       Updated      = TO_TIMESTAMP('2026-08-26 09:01:00', 'YYYY-MM-DD HH24:MI:SS'),
+       UpdatedBy    = 100
+  FROM AD_Ref_List_Trl en
+ WHERE en.AD_Ref_List_ID = trl.AD_Ref_List_ID
+   AND en.AD_Language = 'en_US'
+   AND trl.AD_Language = 'fr_CH'
+   AND trl.AD_Ref_List_ID = 544356
+;
