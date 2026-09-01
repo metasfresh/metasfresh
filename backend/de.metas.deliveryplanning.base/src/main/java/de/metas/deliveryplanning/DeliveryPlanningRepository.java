@@ -884,7 +884,8 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * The delivery plannings the given instruction currently holds, as ids.
+	 * The delivery plannings the given instruction currently holds, as ids in a stable order - a rejection that
+	 * names them has to read the same on two identical runs.
 	 */
 	public ImmutableSet<DeliveryPlanningId> getAllocatedPlanningIds(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
@@ -1026,12 +1027,7 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * Ordered by allocation id ASCENDING, which IS the allocation order: {@link #createAllocation} saves one
-	 * record per request in the given order, so an earlier allocation always carries the lower id. Without the
-	 * ORDER BY, Postgres is free to return an unordered filtered scan in any row order it likes - and both
-	 * consumers promise the caller an order: {@link #getAllocationsOfInstruction} feeds
-	 * {@code DeliveryPlanningList.getIdsInAllocationOrder()}, and {@link #getAllocatedPlanningIds} feeds
-	 * {@link #getByIds}, whose contract is "the caller's id order - the order the allocations are numbered in".
+	 * The instruction's ACTIVE allocations, in a stable allocation-id order.
 	 */
 	private IQueryBuilder<I_M_Delivery_Planning_Alloc> queryActiveAllocationsByInstructionId(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{

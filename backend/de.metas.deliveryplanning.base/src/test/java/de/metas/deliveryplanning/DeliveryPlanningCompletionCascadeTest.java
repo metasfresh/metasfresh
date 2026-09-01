@@ -187,8 +187,8 @@ class DeliveryPlanningCompletionCascadeTest
 		final Optional<ITranslatableString> reason = deliveryPlanningService.getCompleteRejectionReason(deliveryInstructionId);
 
 		assertThat(reason).as("a rejection reason").isPresent();
-		// the full sentence, not three contains(): the ids are named in allocation order, which
-		// queryActiveAllocationsByInstructionId establishes by ordering on the allocation id
+		// the full sentence, not three contains(): queryActiveAllocationsByInstructionId orders on the
+		// allocation id, so the ids are named in that order
 		assertThat(reason.get().translate("en_US"))
 				.isEqualTo(DeliveryPlanningService.MSG_M_Delivery_Planning_ClosedAllocatedPlannings.toAD_Message()
 						+ " - " + closedOne.getRepoId() + ", " + closedTwo.getRepoId());
@@ -267,8 +267,8 @@ class DeliveryPlanningCompletionCascadeTest
 		final Optional<ITranslatableString> reason = deliveryPlanningService.getReActivateRejectionReason(deliveryInstructionId);
 
 		assertThat(reason).as("a rejection reason").isPresent();
-		// the full sentence, not three contains(): the ids are named in allocation order, which
-		// queryActiveAllocationsByInstructionId establishes by ordering on the allocation id
+		// the full sentence, not three contains(): queryActiveAllocationsByInstructionId orders on the
+		// allocation id, so the ids are named in that order
 		assertThat(reason.get().translate("en_US"))
 				.isEqualTo(DeliveryPlanningService.MSG_M_Delivery_Planning_ReActivateClosedAllocatedPlannings.toAD_Message()
 						+ " - " + closedOne.getRepoId() + ", " + closedTwo.getRepoId());
@@ -314,8 +314,8 @@ class DeliveryPlanningCompletionCascadeTest
 		final Optional<ITranslatableString> reason = deliveryPlanningService.getVoidRejectionReason(deliveryInstructionId);
 
 		assertThat(reason).as("a rejection reason").isPresent();
-		// the full sentence, not three contains(): the ids are named in allocation order, which
-		// queryActiveAllocationsByInstructionId establishes by ordering on the allocation id
+		// the full sentence, not three contains(): queryActiveAllocationsByInstructionId orders on the
+		// allocation id, so the ids are named in that order
 		assertThat(reason.get().translate("en_US"))
 				.isEqualTo(DeliveryPlanningService.MSG_M_Delivery_Planning_VoidClosedAllocatedPlannings.toAD_Message()
 						+ " - " + closedOne.getRepoId() + ", " + closedTwo.getRepoId());
