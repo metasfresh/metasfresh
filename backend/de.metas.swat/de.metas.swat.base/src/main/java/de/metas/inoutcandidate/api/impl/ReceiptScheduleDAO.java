@@ -66,7 +66,7 @@ import java.util.Set;
 /**
  * Repository Tables: M_ReceiptSchedule (query owner; also written by {@link de.metas.inoutcandidate.ReceiptScheduleRepository}),
  * M_ReceiptSchedule_Alloc (query owner), M_InOutLine (sub-query filter/navigation only),
- * M_InOut (sub-query filter/navigation only), C_OrderLine (sub-query filter only)
+ * M_InOut (read, {@link #retrieveCompletedReceipts}), C_OrderLine (sub-query filter only)
  * Repository Cluster: ReceiptScheduleDAO, ReceiptScheduleRepository
  */
 public class ReceiptScheduleDAO implements IReceiptScheduleDAO
