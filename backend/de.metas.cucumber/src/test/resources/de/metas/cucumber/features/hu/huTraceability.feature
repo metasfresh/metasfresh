@@ -41,3 +41,16 @@ Feature: HU Traceability Report — SQL correctness tests
       | PRODUCTION_RECEIPT_NO_MHD     | finishedProduct_BugA    | rawMaterial_BugA          |
     And M_HU_Trace_Report is invoked for scenario "production_receipt_no_mhd"
     Then M_HU_Trace_Report result for scenario "production_receipt_no_mhd" contains detail_type row "PRODUCTION_RECEIPT_DETAL"
+
+  @Id:S0000.1_HUTrace_TC1
+  Scenario: A graph-traced receipt suppresses the other receipts of the same lot (TC1)
+    Given metasfresh contains M_Products:
+      | Identifier     | Value             | Name            |
+      | traceProduct_1 | traceProductVal_1 | Trace Product 1 |
+    When M_HU_Trace_Report test data is set up for scenario "traced_one_of_two":
+      | TestType                   | M_Product_ID.Identifier |
+      | TRACED_ONE_OF_TWO_RECEIPTS | traceProduct_1          |
+    And M_HU_Trace_Report is invoked for scenario "traced_one_of_two"
+    Then M_HU_Trace_Report detail rows for scenario "traced_one_of_two" are:
+      | ReceiptDocNo | ShipmentDocNo | LinkBasis | Menge | Liefermenge |
+      | receipt1     | shipment      | TRACED    | 100   | 24          |

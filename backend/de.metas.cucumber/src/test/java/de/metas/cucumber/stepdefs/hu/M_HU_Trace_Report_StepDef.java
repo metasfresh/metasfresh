@@ -43,6 +43,7 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -55,6 +56,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Order;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -91,6 +93,9 @@ public class M_HU_Trace_Report_StepDef
 	/** Maps scenario name → list of HUTraceType (section name) values returned by the report */
 	private final Map<String, List<String>> reportResultsByScenario = new HashMap<>();
 
+	/** Maps scenario name → list of DIRECT_SALE_DETAIL rows returned by the report */
+	private final Map<String, List<DetailRow>> detailRowsByScenario = new HashMap<>();
+
 	// =====================================================================================
 	// Setup steps
 	// =====================================================================================
@@ -104,6 +109,10 @@ public class M_HU_Trace_Report_StepDef
 	 *       with {@code lotnumber=NULL}. Tests Bug B fix (IS NOT DISTINCT FROM).</li>
 	 *   <li>{@code PRODUCTION_RECEIPT_NO_MHD} — creates PRODUCTION_RECEIPT + PRODUCTION_ISSUE traces
 	 *       without MHD (best-before) attribute on the HU. Tests Bug A fix (LEFT JOIN).</li>
+	 *   <li>{@code TRACED_ONE_OF_TWO_RECEIPTS} — creates two MATERIAL_RECEIPT traces of the same
+	 *       product/lot, with the shipped VHU descending from only the first receipt's VHU
+	 *       (a TRANSFORM_LOAD edge). Exposes the DIRECT_SALE_DETAIL cartesian: today's section 6
+	 *       pairs the shipment with BOTH receipts because it matches on lot+product alone.</li>
 	 * </ul>
 	 */
 	@When("M_HU_Trace_Report test data is set up for scenario {string}:")
@@ -121,6 +130,9 @@ public class M_HU_Trace_Report_StepDef
 			case "PRODUCTION_RECEIPT_NO_MHD":
 				final ProductId rawMaterialProductId = productTable.getId(row.getAsIdentifier("RawMaterial_ID"));
 				setupProductionReceiptNoMhd(scenarioName, productId, rawMaterialProductId);
+				break;
+			case "TRACED_ONE_OF_TWO_RECEIPTS":
+				setupTracedOneOfTwoReceipts(scenarioName, productId);
 				break;
 			default:
 				throw new AdempiereException("Unknown TestType: " + testType);
@@ -178,6 +190,34 @@ public class M_HU_Trace_Report_StepDef
 		}
 
 		reportResultsByScenario.put(scenarioName, ImmutableList.copyOf(detailTypes));
+
+		final List<DetailRow> detailRows = new ArrayList<>();
+		final String detailSql = "SELECT \"InOut\" AS receipt_docno, shipment_note AS shipment_docno,"
+				+ " link_basis, qty AS menge, shipmentqty AS liefermenge"
+				+ " FROM M_HU_Trace_Report(?)"
+				+ " WHERE hutracetype = 'DIRECT_SALE_DETAIL'";
+		try (final PreparedStatement pstmt = DB.prepareStatement(detailSql, ITrx.TRXNAME_None))
+		{
+			pstmt.setInt(1, pInstanceId.getRepoId());
+			try (final ResultSet rs = pstmt.executeQuery())
+			{
+				while (rs.next())
+				{
+					detailRows.add(new DetailRow(
+							rs.getString("receipt_docno"),
+							rs.getString("shipment_docno"),
+							rs.getString("link_basis"),
+							rs.getBigDecimal("menge"),
+							rs.getBigDecimal("liefermenge")));
+				}
+			}
+		}
+		catch (final SQLException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
+		}
+
+		detailRowsByScenario.put(scenarioName, ImmutableList.copyOf(detailRows));
 	}
 
 	/**
@@ -194,12 +234,54 @@ public class M_HU_Trace_Report_StepDef
 				.contains(expectedDetailType);
 	}
 
+	/**
+	 * Asserts the exact set of {@code DIRECT_SALE_DETAIL} rows returned for the given scenario —
+	 * row-level, unlike {@link #assertDetailTypePresent}. {@code containsExactlyInAnyOrderElementsOf}
+	 * is deliberate: it fails on a missing row AND on an extra one, which is what catches a cartesian
+	 * (e.g. a shipment paired with more than one receipt of the same lot).
+	 *
+	 * <p>DataTable columns: {@code ReceiptDocNo | ShipmentDocNo | LinkBasis | Menge | Liefermenge}.
+	 * {@code ReceiptDocNo}/{@code ShipmentDocNo} are identifiers (e.g. {@code receipt1}, {@code shipment})
+	 * registered by the scenario's setup step in {@link #scenarioDocNos} — resolved to the DB-generated
+	 * DocumentNo here.
+	 */
+	@Then("M_HU_Trace_Report detail rows for scenario {string} are:")
+	public void assertDetailRows(@NonNull final String scenarioName, @NonNull final DataTable dataTable)
+	{
+		final List<DetailRow> actual = detailRowsByScenario.get(scenarioName);
+		assertThat(actual).as("no report result stored for scenario '%s'", scenarioName).isNotNull();
+
+		final List<DetailRow> expected = DataTableRows.of(dataTable).stream()
+				.map(row -> new DetailRow(
+						resolveDocNo(scenarioName, row.getAsString("ReceiptDocNo")),
+						resolveDocNo(scenarioName, row.getAsString("ShipmentDocNo")),
+						row.getAsString("LinkBasis"),
+						row.getAsBigDecimal("Menge"),
+						row.getAsBigDecimal("Liefermenge")))
+				.collect(ImmutableList.toImmutableList());
+
+		assertThat(actual)
+				.as("DIRECT_SALE_DETAIL rows for scenario '%s'", scenarioName)
+				.containsExactlyInAnyOrderElementsOf(expected);
+	}
+
+	/** Feature files name documents by identifier; the DB generates the numbers. */
+	private String resolveDocNo(@NonNull final String scenarioName, @NonNull final String identifier)
+	{
+		final String docNo = scenarioDocNos.get(scenarioName + "." + identifier);
+		assertThat(docNo).as("unknown document identifier '%s' in scenario '%s'", identifier, scenarioName).isNotNull();
+		return docNo;
+	}
+
 	// =====================================================================================
 	// Private state: scenario → product mapping
 	// =====================================================================================
 
 	/** Maps scenario name → product ID (for invoking the report) */
 	private final Map<String, ProductId> scenarioProductIds = new HashMap<>();
+
+	/** Maps {@code scenarioName + "." + identifier} (e.g. {@code "traced_one_of_two.receipt1"}) → generated DocumentNo */
+	private final Map<String, String> scenarioDocNos = new HashMap<>();
 
 	// =====================================================================================
 	// Private setup helpers
@@ -305,6 +387,43 @@ public class M_HU_Trace_Report_StepDef
 				"LOT-BUG-A",
 				null /*inOut*/,
 				ppOrder);
+	}
+
+	/**
+	 * TC1 test setup: two receipts of the same product and lot; the shipment's VHU descends from
+	 * the FIRST receipt's VHU through one TRANSFORM_LOAD edge. The second receipt is connected to
+	 * nothing — today's DIRECT_SALE_DETAIL section pairs it with the shipment anyway (lot+product
+	 * match alone), producing a two-row cartesian where exactly one row (linked to receipt1) is
+	 * correct.
+	 */
+	private void setupTracedOneOfTwoReceipts(@NonNull final String scenarioName, @NonNull final ProductId productId)
+	{
+		scenarioProductIds.put(scenarioName, productId);
+		final I_C_DocType receiptDocType = loadDocType("MMR", false);
+		final I_C_DocType shipmentDocType = loadDocType("MMS", true);
+
+		final I_M_HU receiptVhu1 = createVhu();
+		final I_M_InOut receiptInOut1 = createMinimalInOut(receiptDocType, "CO");
+		createHuTraceWithSource(receiptVhu1, null, productId, HUTraceType.MATERIAL_RECEIPT,
+				"LOT-TC1", receiptInOut1, new BigDecimal("100"));
+
+		// a second receipt of the SAME lot, connected to nothing — today's function pairs it anyway
+		final I_M_HU receiptVhu2 = createVhu();
+		final I_M_InOut receiptInOut2 = createMinimalInOut(receiptDocType, "CO");
+		createHuTraceWithSource(receiptVhu2, null, productId, HUTraceType.MATERIAL_RECEIPT,
+				"LOT-TC1", receiptInOut2, new BigDecimal("100"));
+
+		// the shipped VHU descends from receipt 1
+		final I_M_HU shippedVhu = createVhu();
+		createHuTraceWithSource(shippedVhu, receiptVhu1, productId, HUTraceType.TRANSFORM_LOAD,
+				"LOT-TC1", null, new BigDecimal("24"));
+		final I_M_InOut shipmentInOut = createMinimalInOut(shipmentDocType, "CO");
+		createHuTraceWithSource(shippedVhu, null, productId, HUTraceType.MATERIAL_SHIPMENT,
+				"LOT-TC1", shipmentInOut, new BigDecimal("-24"));
+
+		scenarioDocNos.put(scenarioName + ".receipt1", receiptInOut1.getDocumentNo());
+		scenarioDocNos.put(scenarioName + ".receipt2", receiptInOut2.getDocumentNo());
+		scenarioDocNos.put(scenarioName + ".shipment", shipmentInOut.getDocumentNo());
 	}
 
 	// =====================================================================================
@@ -525,5 +644,48 @@ public class M_HU_Trace_Report_StepDef
 			trace.setPP_Order_ID(ppOrder.getPP_Order_ID());
 		}
 		saveRecord(trace);
+	}
+
+	/** Creates an M_HU_Trace row that also records where its VHU came from (a TRANSFORM_LOAD edge). */
+	private I_M_HU_Trace createHuTraceWithSource(
+			@NonNull final I_M_HU vhu,
+			@Nullable final I_M_HU sourceVhu,
+			@NonNull final ProductId productId,
+			@NonNull final HUTraceType type,
+			@Nullable final String lotNumber,
+			@Nullable final I_M_InOut inOut,
+			@NonNull final BigDecimal qty)
+	{
+		final I_M_HU_Trace trace = newInstance(I_M_HU_Trace.class);
+		trace.setVHU_ID(vhu.getM_HU_ID());
+		trace.setM_HU_ID(vhu.getM_HU_ID());
+		if (sourceVhu != null)
+		{
+			trace.setVHU_Source_ID(sourceVhu.getM_HU_ID());
+		}
+		trace.setM_Product_ID(productId.getRepoId());
+		trace.setHUTraceType(type.getCode());
+		trace.setLotNumber(lotNumber);
+		trace.setQty(qty);
+		trace.setC_UOM_ID(StepDefConstants.PCE_UOM_ID.getRepoId());
+		trace.setEventTime(Timestamp.from(Instant.now()));
+		trace.setVHUStatus("A");
+		if (inOut != null)
+		{
+			trace.setM_InOut_ID(inOut.getM_InOut_ID());
+		}
+		saveRecord(trace);
+		return trace;
+	}
+
+	/** One DIRECT_SALE_DETAIL row, reduced to the fields the scenarios assert. */
+	@Value
+	private static class DetailRow
+	{
+		String receiptDocNo;
+		String shipmentDocNo;
+		String linkBasis;
+		BigDecimal menge;
+		BigDecimal liefermenge;
 	}
 }
