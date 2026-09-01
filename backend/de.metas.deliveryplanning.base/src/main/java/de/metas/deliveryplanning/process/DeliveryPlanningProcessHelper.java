@@ -23,16 +23,16 @@
 package de.metas.deliveryplanning.process;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.deliveryplanning.DeliveryPlanningList;
 import de.metas.deliveryplanning.DeliveryPlanningList.AggregationKeyField;
 import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.shipping.model.I_M_ShipperTransportation;
-import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import org.compiere.model.Null;
 
 import javax.annotation.Nullable;
-import de.metas.process.ProcessPreconditionsResolution;
-import lombok.NonNull;
 
 /**
  * The selection-shaped precondition guards the delivery planning actions repeat verbatim - "is anything
@@ -77,6 +77,24 @@ public final class DeliveryPlanningProcessHelper
 			.put(I_M_ShipperTransportation.COLUMNNAME_C_BPartner_Location_Delivery_ID, AggregationKeyField.DeliveryAddress)
 			.build();
 
+	/**
+	 * The key fields carried by a hidden process parameter of their own, so a test can pin that set against
+	 * {@link AggregationKeyField} rather than leave the two to drift apart silently.
+	 */
+	public static ImmutableSet<AggregationKeyField> aggregationKeyParameterFields()
+	{
+		return ImmutableSet.copyOf(AGGREGATION_KEY_PARAMETERS.values());
+	}
+
+	/**
+	 * Whether the column is one of the hidden aggregation key parameters - the cheap test a caller answers
+	 * before loading the selection the default value would be read from.
+	 */
+	public static boolean isAggregationKeyParameter(@NonNull final String columnName)
+	{
+		return AGGREGATION_KEY_PARAMETERS.containsKey(columnName);
+	}
+
 	/** @return {@code null} when the column is not a key parameter, so the caller falls through. */
 	@Nullable
 	public static Object getAggregationKeyParameterDefault(
@@ -90,15 +108,8 @@ public final class DeliveryPlanningProcessHelper
 		}
 
 		return selectedDeliveryPlannings.getSingleAggregationKeyValue(field)
-				.map(DeliveryPlanningProcessHelper::toParameterValue)
+				.map(AggregationKeyField::toProcessParameterValue)
 				.orElse(Null.NULL);
-	}
-
-	private static Object toParameterValue(@NonNull final Object keyValue)
-	{
-		return keyValue instanceof RepoIdAware
-				? ((RepoIdAware)keyValue).getRepoId()
-				: keyValue;
 	}
 
 	public static ProcessPreconditionsResolution checkSingleSelection(@NonNull final IProcessPreconditionsContext context)

@@ -22,6 +22,8 @@
 
 package de.metas.deliveryplanning.process;
 
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import de.metas.deliveryplanning.DeliveryPlanningList;
 import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.process.IProcessDefaultParameter;
@@ -65,6 +67,13 @@ public class M_Delivery_Planning_MoveToDeliveryInstruction extends JavaProcess
 
 	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
 
+	/**
+	 * The selection every parameter default is read from, loaded at most once: the framework asks this instance
+	 * for a default once per parameter, and the selection cannot change while the dialog is open.
+	 */
+	private final Supplier<DeliveryPlanningList> selectedDeliveryPlanningsForDefaults = Suppliers.memoize(
+			() -> deliveryPlanningService.getBySelection(getProcessInfo().getQueryFilterOrElseFalse()));
+
 	@Param(parameterName = I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID, mandatory = true)
 	private ShipperTransportationId p_M_ShipperTransportation_ID;
 
@@ -95,25 +104,25 @@ public class M_Delivery_Planning_MoveToDeliveryInstruction extends JavaProcess
 	@Override
 	public Object getParameterDefaultValue(@NonNull final IProcessDefaultParameter parameter)
 	{
-		if (PARAM_TransportDirection.equals(parameter.getColumnName()))
+		final String columnName = parameter.getColumnName();
+		if (PARAM_TransportDirection.equals(columnName))
 		{
 			// single by the precondition, which rejects a selection spanning two directions
-			return deliveryPlanningService.getBySelection(getProcessInfo().getQueryFilterOrElseFalse())
+			return selectedDeliveryPlanningsForDefaults.get()
 					.getSingleTransportDirection()
 					.map(TransportDirection::getCode)
 					.map(Object.class::cast)
 					.orElse(Null.NULL);
 		}
 
-		final Object aggregationKeyDefault = DeliveryPlanningProcessHelper.getAggregationKeyParameterDefault(
-				deliveryPlanningService.getBySelection(getProcessInfo().getQueryFilterOrElseFalse()),
-				parameter.getColumnName());
-		if (aggregationKeyDefault != null)
+		if (!DeliveryPlanningProcessHelper.isAggregationKeyParameter(columnName))
 		{
-			return aggregationKeyDefault;
+			return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 		}
 
-		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
+		return DeliveryPlanningProcessHelper.getAggregationKeyParameterDefault(
+				selectedDeliveryPlanningsForDefaults.get(),
+				columnName);
 	}
 
 	@Override

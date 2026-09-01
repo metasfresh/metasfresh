@@ -22,6 +22,9 @@
 
 package de.metas.deliveryplanning.process;
 
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
+import de.metas.deliveryplanning.DeliveryPlanningList.AggregationKeyField;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.SelectionSize;
@@ -30,6 +33,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+
+import java.util.EnumSet;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
@@ -126,5 +131,33 @@ class DeliveryPlanningProcessHelperTest
 			assertThat(DeliveryPlanningProcessHelper.checkSingleSelection(contextWith(SelectionSize.ofAll())).isAccepted()).isFalse();
 		}
 
+	}
+
+	@Nested
+	class AggregationKeyParameters
+	{
+		/**
+		 * {@link AggregationKeyField#Direction} is fed by the pre-existing TransportDirection parameter, not by one
+		 * of the hidden key parameters, so it is the one deliberate exemption. Every other constant MUST have a
+		 * parameter of its own - the target picker's value rule filters on the same set, so a field added to the
+		 * enum and not to the parameter map leaves the picker offering targets the selection then refuses.
+		 */
+		@Test
+		@DisplayName("every aggregation key field has a hidden process parameter, except Direction")
+		void everyFieldIsCoveredByAParameterOrIsTheKnownExemption()
+		{
+			assertThat(Sets.union(
+					DeliveryPlanningProcessHelper.aggregationKeyParameterFields(),
+					ImmutableSet.of(AggregationKeyField.Direction)))
+					.containsExactlyInAnyOrderElementsOf(EnumSet.allOf(AggregationKeyField.class));
+		}
+
+		@Test
+		@DisplayName("Direction is NOT a hidden key parameter")
+		void directionIsNotAKeyParameter()
+		{
+			assertThat(DeliveryPlanningProcessHelper.aggregationKeyParameterFields())
+					.doesNotContain(AggregationKeyField.Direction);
+		}
 	}
 }

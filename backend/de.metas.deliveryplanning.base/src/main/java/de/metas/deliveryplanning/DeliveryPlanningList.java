@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.AdMessageKey;
 import de.metas.shipping.TransportDirection;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.lang.RepoIdAware;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
@@ -122,15 +123,18 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	}
 
 	/**
-	 * The one value the whole selection carries for the given key field, or empty when the selection is. Safe to
-	 * read off the first planning: a selection that disagreed with itself was refused by
-	 * {@link #aggregationKeyViolations()} before any caller got this far.
+	 * The one value the whole selection carries for the given key field. Empty in all three cases the caller has
+	 * to treat alike - the selection is empty, it disagrees with itself on this field, or the one value it agrees
+	 * on is {@code null} (a field none of the plannings has set).
 	 */
 	public Optional<Object> getSingleAggregationKeyValue(@NonNull final AggregationKeyField field)
 	{
-		return list.isEmpty()
-				? Optional.empty()
-				: Optional.ofNullable(field.extractValue(list.get(0)));
+		return list.stream()
+				.map(field::extractValue)
+				.distinct()
+				.count() == 1
+				? Optional.ofNullable(field.extractValue(list.get(0)))
+				: Optional.empty();
 	}
 
 	public boolean anyClosed() {return list.stream().anyMatch(DeliveryPlanning::isClosed);}
@@ -224,8 +228,9 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	 * <p>
 	 * ADDING A FIELD HERE IS HALF THE CHANGE. The Add-to / Move-to target picker filters on the same set through
 	 * the {@code AD_Val_Rule} "Delivery Instruction aggregation key matching", fed by one hidden process parameter
-	 * per field. A field added here and not there leaves the picker offering targets this class then refuses -- the
-	 * planner picks one and is told no, which is the defect that filtering was introduced to remove.
+	 * per field -- except {@link #Direction}, which is fed by the pre-existing TransportDirection parameter. A
+	 * field added here and not there leaves the picker offering targets this class then refuses -- the planner
+	 * picks one and is told no, which is the defect that filtering was introduced to remove.
 	 */
 	public enum AggregationKeyField
 	{
@@ -265,6 +270,18 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 		Object extractValue(@NonNull final DeliveryPlanning deliveryPlanning)
 		{
 			return valueExtractor.apply(deliveryPlanning);
+		}
+
+		/**
+		 * A value read off this enum in the shape a process parameter carries it: a typed id as its repo id,
+		 * anything else unchanged.
+		 */
+		@Nullable
+		public static Object toProcessParameterValue(@Nullable final Object keyValue)
+		{
+			return keyValue instanceof RepoIdAware
+					? ((RepoIdAware)keyValue).getRepoId()
+					: keyValue;
 		}
 	}
 }
