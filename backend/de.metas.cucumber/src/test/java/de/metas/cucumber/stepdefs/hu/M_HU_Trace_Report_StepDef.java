@@ -126,6 +126,9 @@ public class M_HU_Trace_Report_StepDef
 		final String testType = row.getAsString("TestType");
 		final ProductId productId = productTable.getId(row.getAsIdentifier("M_Product_ID"));
 
+		// see #deleteExistingHuTraceRows javadoc: makes the report selection see only THIS run's data
+		deleteExistingHuTraceRows(productId);
+
 		switch (testType)
 		{
 			case "DIRECT_SALE_NULL_LOT":
@@ -133,6 +136,7 @@ public class M_HU_Trace_Report_StepDef
 				break;
 			case "PRODUCTION_RECEIPT_NO_MHD":
 				final ProductId rawMaterialProductId = productTable.getId(row.getAsIdentifier("RawMaterial_ID"));
+				deleteExistingHuTraceRows(rawMaterialProductId);
 				setupProductionReceiptNoMhd(scenarioName, productId, rawMaterialProductId);
 				break;
 			case "TRACED_ONE_OF_TWO_RECEIPTS":
@@ -141,6 +145,33 @@ public class M_HU_Trace_Report_StepDef
 			default:
 				throw new AdempiereException("Unknown TestType: " + testType);
 		}
+	}
+
+	/**
+	 * Deletes any {@code M_HU_Trace} rows left over from a PREVIOUS run of this feature against
+	 * the same (persistent, not reset-between-runs) local stack.
+	 *
+	 * <p>Test products are upserted by {@code Value} ({@code M_Product_StepDef#createM_Product}
+	 * resolves via {@code retrieveProductByValue} before creating), so a re-run against a
+	 * persistent stack resolves to the SAME {@code M_Product_ID}. {@link #invokeReport} then
+	 * selects via {@code HUTraceEventQuery.builder().productId(productId)...} — scoped by
+	 * product ALONE, no lot/InOut/scenario/time filter — so every prior run's trace rows for
+	 * that product would still be picked up. Left unhandled, {@link #assertDetailRows}'s
+	 * {@code containsExactlyInAnyOrderElementsOf} (deliberately exhaustive — it is what catches
+	 * a wrongly-emitted extra row, see its javadoc) would keep failing with leftover rows whose
+	 * {@code DocumentNo}s can never match the current run's freshly generated ones, independent
+	 * of whether the section 6 pairing fix (Task 4) is correct. Deleting the row instead of
+	 * deleting-and-recreating the product itself avoids the FK from {@code M_HU_Trace.M_Product_ID}
+	 * (constraint {@code mproduct_mhutrace}, {@code ON DELETE NO ACTION}) blocking product deletion
+	 * while old trace rows still reference it.
+	 */
+	private void deleteExistingHuTraceRows(@NonNull final ProductId productId)
+	{
+		Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_HU_Trace.class)
+				.addEqualsFilter(I_M_HU_Trace.COLUMNNAME_M_Product_ID, productId.getRepoId())
+				.create()
+				.delete();
 	}
 
 	// =====================================================================================
