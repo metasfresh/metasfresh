@@ -101,7 +101,7 @@ class PickingJobLoaderAndSaverProductOrderTest
 				.findFirst()
 				.orElseThrow(() -> new AssertionError("no PickingJobReference loaded"));
 
-		assertThat(reference.getProducts().getProductNamesJoined().getDefaultValue())
+		assertThat(reference.getProducts().getProductNamesJoined(", ").getDefaultValue())
 				.isEqualTo("productName-103, productName-101, productName-102");
 	}
 }

@@ -273,6 +273,7 @@ class MobileConfigPickingCommand
 				.isShowInSummary(field.getIsShowInSummary() != null ? field.getIsShowInSummary() : true)
 				.isShowInDetailed(field.getIsShowInDetailed() != null ? field.getIsShowInDetailed() : true)
 				.pattern(StringUtils.trimBlankToNull(field.getPattern()))
+				.isBlockLayout(field.getIsBlockLayout() != null && field.getIsBlockLayout())
 				.build();
 	}
 
