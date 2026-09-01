@@ -1130,7 +1130,7 @@ public class DeliveryPlanningService
 				createDeliveryInstructionRequest(deliveryPlanningIds.get(0)));
 		final ShipperTransportationId deliveryInstructionId = ShipperTransportationId.ofRepoId(deliveryInstruction.getM_ShipperTransportation_ID());
 
-		// the remaining plannings, handed over ALREADY SORTED because createAllocations numbers in the given order
+		// the remaining plannings, handed over ALREADY SORTED because createAllocations saves in the given order
 		final ImmutableList<DeliveryPlanningAllocCreateRequest> furtherAllocations =
 				createAllocCreateRequests(deliveryPlanningIds.subList(1, deliveryPlanningIds.size()));
 		if (!furtherAllocations.isEmpty())

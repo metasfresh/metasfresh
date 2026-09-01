@@ -116,8 +116,8 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * The records of the given delivery plannings, in ONE round trip, in the caller's id order - the order the
-	 * allocations are numbered in. Unfiltered by {@code IsActive}: a selection can legitimately name a closed planning.
+	 * The records of the given delivery plannings, in ONE round trip, in the caller's id order.
+	 * Unfiltered by {@code IsActive}: a selection can legitimately name a closed planning.
 	 *
 	 * @throws AdempiereException for an id with no matching row - a dangling reference, not a row to drop silently.
 	 */
