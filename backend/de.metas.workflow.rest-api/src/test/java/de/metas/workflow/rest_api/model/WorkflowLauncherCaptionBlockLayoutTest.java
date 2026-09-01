@@ -30,6 +30,10 @@ import de.metas.i18n.TranslatableStrings;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
 /**
  * Covers the block-layout rendering of {@link WorkflowLauncherCaption#computeTranslatableString()}: a caption item
  * flagged as block-layout is rendered as its own block of lines, with the {@code " | "} separator suppressed on
@@ -126,5 +130,56 @@ class WorkflowLauncherCaptionBlockLayoutTest
 				.build();
 
 		Assertions.assertThat(translate(caption)).isEqualTo("a | b | c");
+	}
+
+	@Test
+	void tieOnEveryOrderBy_prefixValue_tieBrokenByCompleteCaptionIncludingBlockSeparator()
+	{
+		// Both captions tie on the only configured order-by ("code" == "C1" in both), so the comparator falls
+		// through to WorkflowLauncherCaption's last resort: comparing the complete glued caption strings
+		// (see WorkflowLauncherCaption#orderBy / #toCompleteCaptionComparator).
+		//
+		// "customer" is the differing field, immediately followed by the block-layout field "block", and its
+		// value in one caption ("Acme") is a strict prefix of its value in the other ("Acme GmbH"). With block
+		// layout on, the glued strings are:
+		//   captionPrefix: "C1 | Acme"     + "\n" + "X"  ->  "C1 | Acme\nX"
+		//   captionLonger: "C1 | Acme GmbH" + "\n" + "X" ->  "C1 | Acme GmbH\nX"
+		// They share the common prefix "C1 | Acme"; right after it, captionPrefix has '\n' (0x0A, the start of
+		// its block separator) while captionLonger still has ' ' (0x20, continuing " GmbH"). Since 0x0A < 0x20,
+		// captionPrefix sorts BEFORE captionLonger.
+		//
+		// This is the case AC10 pins: had "block" not been block-layout-flagged, the separator at that same
+		// position would be " | " instead of "\n" - its first char ' ' (0x20) TIES against captionLonger's ' ',
+		// so the comparison would continue into '|' (0x7C) vs 'G' (0x47) and produce the OPPOSITE order. Block
+		// layout's '\n' separator therefore changes which caption sorts first for this tie.
+		final WorkflowLauncherCaption captionPrefix = WorkflowLauncherCaption.builder()
+				.fieldsInOrder(ImmutableList.of("code", "customer", "block"))
+				.fieldValues(ImmutableMap.of(
+						"code", value("C1"),
+						"customer", value("Acme"),
+						"block", value("X")))
+				.blockLayoutFields(ImmutableSet.of("block"))
+				.build();
+
+		final WorkflowLauncherCaption captionLonger = WorkflowLauncherCaption.builder()
+				.fieldsInOrder(ImmutableList.of("code", "customer", "block"))
+				.fieldValues(ImmutableMap.of(
+						"code", value("C1"),
+						"customer", value("Acme GmbH"),
+						"block", value("X")))
+				.blockLayoutFields(ImmutableSet.of("block"))
+				.build();
+
+		Assertions.assertThat(translate(captionPrefix)).isEqualTo("C1 | Acme\nX");
+		Assertions.assertThat(translate(captionLonger)).isEqualTo("C1 | Acme GmbH\nX");
+
+		final Comparator<WorkflowLauncherCaption> comparator = WorkflowLauncherCaption.orderBy(
+				AD_LANGUAGE,
+				ImmutableList.of(WorkflowLauncherCaption.OrderBy.builder().field("code").build()));
+
+		final List<WorkflowLauncherCaption> sorted = new ArrayList<>(ImmutableList.of(captionLonger, captionPrefix));
+		sorted.sort(comparator);
+
+		Assertions.assertThat(sorted).containsExactly(captionPrefix, captionLonger);
 	}
 }
