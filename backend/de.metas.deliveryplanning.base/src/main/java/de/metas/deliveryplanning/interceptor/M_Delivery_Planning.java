@@ -39,7 +39,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.isUIAction;
 @RequiredArgsConstructor
 public class M_Delivery_Planning
 {
-	private final DeliveryPlanningService deliveryPlanningService;
+	@NonNull private final DeliveryPlanningService deliveryPlanningService;
 
 	/**
 	 * Refuses the delete while a live allocation still points here, then removes the retired allocation history.
