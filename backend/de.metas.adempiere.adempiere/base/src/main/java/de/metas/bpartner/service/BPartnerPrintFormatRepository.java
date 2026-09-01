@@ -76,7 +76,6 @@ public class BPartnerPrintFormatRepository
 			query.addInArrayFilter(I_C_BP_PrintFormat.COLUMNNAME_AD_Table_ID, bpPrintFormatQuery.getAdTableId(), null);
 			query.addInArrayFilter(I_C_BP_PrintFormat.COLUMNNAME_C_DocType_ID, bpPrintFormatQuery.getDocTypeId(), null);
 			query.addInArrayFilter(I_C_BP_PrintFormat.COLUMNNAME_C_BPartner_Location_ID, bpPrintFormatQuery.getBPartnerLocationId(), null);
-			query.addInArrayFilter(I_C_BP_PrintFormat.COLUMNNAME_AD_PrintFormat_ID, bpPrintFormatQuery.getPrintFormatId(), null);
 		}
 
 		if(bpPrintFormatQuery.isOnlyCopiesGreaterZero())
