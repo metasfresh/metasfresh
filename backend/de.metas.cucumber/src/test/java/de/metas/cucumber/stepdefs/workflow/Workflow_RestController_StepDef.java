@@ -236,7 +236,7 @@ public class Workflow_RestController_StepDef
 					.orElse(null);
 
 			// ReceiveTo=TU receives straight into (possibly several) top-level TUs, without an LU wrapper -
-			// used to prove a generic attribute value lands on EVERY produced HU of the line (AC10).
+			// used to prove a generic attribute value lands on EVERY produced HU of the line.
 			final boolean receiveToTUOnly = row.getAsOptionalString("ReceiveTo").map("TU"::equalsIgnoreCase).orElse(false);
 
 			final JsonManufacturingOrderEvent.ReceiveFrom.ReceiveFromBuilder receiveFromBuilder = JsonManufacturingOrderEvent.ReceiveFrom.builder()
@@ -282,7 +282,7 @@ public class Workflow_RestController_StepDef
 	 * Builds the generic editable-attribute value list from the optional {@code Attribute} (identifier, resolved
 	 * via {@link M_Attribute_StepDefData}) + {@code AttributeValue} columns. A blank/absent {@code AttributeValue}
 	 * still produces a list entry with a {@code null} value - this is how scenarios prove that an empty submitted
-	 * value is not stamped (AC4), as opposed to no attribute being submitted at all.
+	 * value is not stamped, as opposed to no attribute being submitted at all.
 	 */
 	@Nullable
 	private List<JsonManufacturingOrderEvent.Attribute> extractGenericAttributes(@NonNull final DataTableRow row)

@@ -11,6 +11,8 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
+import de.metas.handlingunits.attribute.HUAttributeUpdateRequest;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.candidate.commands.PackedHUWeightNetUpdater;
@@ -75,6 +77,7 @@ public class ReceiveGoodsCommand
 	@NonNull private final ITrxManager trxManager;
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL;
 	@NonNull private final IHUStatusBL huStatusBL;
+	@NonNull private final IHUAttributesBL huAttributesBL;
 	@NonNull private final IUOMConversionBL uomConversionBL;
 	@NonNull private final IHUPPOrderBL ppOrderBL;
 	@NonNull private final IPPOrderBOMBL ppOrderBOMBL;
@@ -119,6 +122,7 @@ public class ReceiveGoodsCommand
 			@NonNull final ITrxManager trxManager,
 			@NonNull final IHandlingUnitsBL handlingUnitsBL,
 			@NonNull final IHUStatusBL huStatusBL,
+			@NonNull final IHUAttributesBL huAttributesBL,
 			@NonNull final IUOMConversionBL uomConversionBL,
 			@NonNull final IHUPPOrderBL ppOrderBL,
 			@NonNull final IPPOrderBOMBL ppOrderBOMBL,
@@ -142,6 +146,7 @@ public class ReceiveGoodsCommand
 		this.trxManager = trxManager;
 		this.handlingUnitsBL = handlingUnitsBL;
 		this.huStatusBL = huStatusBL;
+		this.huAttributesBL = huAttributesBL;
 		this.uomConversionBL = uomConversionBL;
 		this.ppOrderBL = ppOrderBL;
 		this.ppOrderBOMBL = ppOrderBOMBL;
@@ -551,10 +556,15 @@ public class ReceiveGoodsCommand
 
 	/**
 	 * Applies the submitted generic editable-attribute values (Lot/Best-before/Production date excluded - those
-	 * go through {@link #createHUProducer()}'s setters) onto every produced HU's attribute storage, the same
-	 * seam {@link #setQRCodeAttribute(I_M_HU)} uses. A blank/empty value is skipped (v1 does not set anything for
-	 * an empty entry, and nothing is enforced as mandatory). An attribute not present on a given HU's storage
-	 * (not part of the product's {@code M_AttributeSet}) is silently skipped too.
+	 * go through {@link #createHUProducer()}'s setters) onto every HU of each produced top-level HU's hierarchy
+	 * (LU -&gt; TU -&gt; CU), via {@link IHUAttributesBL#updateHUAttributeRecursive(HuId, HUAttributeUpdateRequest)}
+	 * - the same recursive-walk API {@code AbstractPPOrderReceiptHUProducer#updateReceivedHUs} uses. This matters
+	 * because on the default receive target (aggregate-to-LU), {@link #receivedHUs} holds only the newly-created
+	 * LU wrapper, which carries no product/attribute storage of its own; the recursive walk reaches down to the
+	 * material-carrying TU/CU where the attribute actually lives. A blank/empty value is skipped (v1 does not set
+	 * anything for an empty entry, and nothing is enforced as mandatory). An attribute not present on a given HU's
+	 * storage (not part of that HU's own {@code M_HU_PI_Version}'s {@code M_HU_PI_Attribute} rows) is silently
+	 * skipped too - {@code updateHUAttributeRecursive} applies the same {@code hasAttribute} guard per HU node.
 	 */
 	private void setSubmittedAttributesForReceivedHUs()
 	{
@@ -565,7 +575,7 @@ public class ReceiveGoodsCommand
 
 		for (final I_M_HU hu : receivedHUs)
 		{
-			final IAttributeStorage huAttributes = handlingUnitsBL.getAttributeStorage(hu);
+			final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
 
 			for (final Map.Entry<AttributeCode, String> attributeToSet : attributes.entrySet())
 			{
@@ -575,14 +585,10 @@ public class ReceiveGoodsCommand
 					continue;
 				}
 
-				final AttributeCode attributeCode = attributeToSet.getKey();
-				if (!huAttributes.hasAttribute(attributeCode))
-				{
-					continue;
-				}
-
-				huAttributes.setSaveOnChange(true);
-				huAttributes.setValue(attributeCode, value);
+				huAttributesBL.updateHUAttributeRecursive(huId, HUAttributeUpdateRequest.builder()
+						.attributeCode(attributeToSet.getKey())
+						.attributeValue(value)
+						.build());
 			}
 		}
 	}
