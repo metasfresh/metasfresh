@@ -104,6 +104,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.compiere.util.TimeUtil.asTimestamp;
 
+/**
+ * Repository Tables: M_ShipmentSchedule (query owner), M_ShipmentSchedule_QtyPicked (read, {@link #loadByPackageIds}),
+ * M_ShipmentSchedule_Recompute (sub-query filter only), M_PackageLine (read, {@link #loadByPackageIds}),
+ * M_Locator (sub-query filter only, {@link #streamFromSegment}), C_Order (sub-query filter only)
+ * Repository Cluster: ShipmentScheduleRepository
+ */
 @Repository
 @RequiredArgsConstructor
 public class ShipmentScheduleRepository

@@ -49,6 +49,10 @@ import java.util.Objects;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+/**
+ * Repository Tables: PP_Order_Candidate, PP_OrderLine_Candidate, PP_OrderCandidate_PP_Order
+ * Repository Cluster: PPOrderCandidateDAO
+ */
 @Repository
 public class PPOrderCandidateDAO
 {

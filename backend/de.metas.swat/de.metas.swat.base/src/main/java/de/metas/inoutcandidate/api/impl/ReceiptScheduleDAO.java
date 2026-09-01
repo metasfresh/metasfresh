@@ -63,6 +63,12 @@ import java.util.Set;
  * #L%
  */
 
+/**
+ * Repository Tables: M_ReceiptSchedule (query owner; also written by {@link de.metas.inoutcandidate.ReceiptScheduleRepository}),
+ * M_ReceiptSchedule_Alloc (query owner), M_InOutLine (sub-query filter/navigation only),
+ * M_InOut (sub-query filter/navigation only), C_OrderLine (sub-query filter only)
+ * Repository Cluster: ReceiptScheduleDAO, ReceiptScheduleRepository
+ */
 public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
