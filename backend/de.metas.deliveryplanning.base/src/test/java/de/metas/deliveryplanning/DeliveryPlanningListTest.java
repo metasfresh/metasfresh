@@ -265,6 +265,53 @@ class DeliveryPlanningListTest
 	}
 
 	@Nested
+	@DisplayName("getSingleTransportDirection")
+	class SingleTransportDirection
+	{
+		private DeliveryPlanning withDirection(final TransportDirection transportDirection)
+		{
+			return planning().transportDirection(transportDirection).build();
+		}
+
+		@Test
+		@DisplayName("an empty selection has no single direction")
+		void emptySelection()
+		{
+			assertThat(DeliveryPlanningList.EMPTY.getSingleTransportDirection()).isEmpty();
+		}
+
+		@Test
+		@DisplayName("a one-row selection carries that row's direction")
+		void singleRowSelection()
+		{
+			assertThat(DeliveryPlanningList.of(withDirection(TransportDirection.Incoming)).getSingleTransportDirection())
+					.contains(TransportDirection.Incoming);
+		}
+
+		@Test
+		@DisplayName("rows agreeing on the direction carry it")
+		void agreeingSelection()
+		{
+			final DeliveryPlanningList list = DeliveryPlanningList.of(
+					withDirection(TransportDirection.Outgoing),
+					withDirection(TransportDirection.Outgoing));
+
+			assertThat(list.getSingleTransportDirection()).contains(TransportDirection.Outgoing);
+		}
+
+		@Test
+		@DisplayName("rows disagreeing on the direction carry none")
+		void disagreeingSelection()
+		{
+			final DeliveryPlanningList list = DeliveryPlanningList.of(
+					withDirection(TransportDirection.Outgoing),
+					withDirection(TransportDirection.Incoming));
+
+			assertThat(list.getSingleTransportDirection()).isEmpty();
+		}
+	}
+
+	@Nested
 	@DisplayName("admissibility field labels")
 	class AggregationKeyFieldLabels
 	{

@@ -47,6 +47,23 @@ import java.util.function.Supplier;
  */
 public final class DeliveryPlanningProcessHelper
 {
+	/**
+	 * The direction the target instruction has to match; not shown to the planner, read only by the target
+	 * parameter's value rule to narrow the offered instructions to the selection's own direction.
+	 */
+	private static final String PARAM_TransportDirection = I_M_Delivery_Planning.COLUMNNAME_TransportDirection;
+
+	private static final ImmutableMap<String, AggregationKeyField> AGGREGATION_KEY_PARAMETERS = ImmutableMap
+			.<String, AggregationKeyField>builder()
+			.put(I_M_ShipperTransportation.COLUMNNAME_AD_Org_ID, AggregationKeyField.Organisation)
+			.put(I_M_ShipperTransportation.COLUMNNAME_M_Shipper_ID, AggregationKeyField.Forwarder)
+			.put(I_M_ShipperTransportation.COLUMNNAME_C_Incoterms_ID, AggregationKeyField.Incoterms)
+			.put(I_M_ShipperTransportation.COLUMNNAME_IncotermLocation, AggregationKeyField.IncotermLocation)
+			.put(I_M_ShipperTransportation.COLUMNNAME_M_MeansOfTransportation_ID, AggregationKeyField.MeansOfTransportation)
+			.put(I_M_ShipperTransportation.COLUMNNAME_C_BPartner_Location_Loading_ID, AggregationKeyField.LoadingAddress)
+			.put(I_M_ShipperTransportation.COLUMNNAME_C_BPartner_Location_Delivery_ID, AggregationKeyField.DeliveryAddress)
+			.build();
+
 	private DeliveryPlanningProcessHelper()
 	{
 	}
@@ -72,23 +89,6 @@ public final class DeliveryPlanningProcessHelper
 
 		return ProcessPreconditionsResolution.accept();
 	}
-
-	/**
-	 * The direction the target instruction has to match; not shown to the planner, read only by the target
-	 * parameter's value rule to narrow the offered instructions to the selection's own direction.
-	 */
-	private static final String PARAM_TransportDirection = I_M_Delivery_Planning.COLUMNNAME_TransportDirection;
-
-	private static final ImmutableMap<String, AggregationKeyField> AGGREGATION_KEY_PARAMETERS = ImmutableMap
-			.<String, AggregationKeyField>builder()
-			.put(I_M_ShipperTransportation.COLUMNNAME_AD_Org_ID, AggregationKeyField.Organisation)
-			.put(I_M_ShipperTransportation.COLUMNNAME_M_Shipper_ID, AggregationKeyField.Forwarder)
-			.put(I_M_ShipperTransportation.COLUMNNAME_C_Incoterms_ID, AggregationKeyField.Incoterms)
-			.put(I_M_ShipperTransportation.COLUMNNAME_IncotermLocation, AggregationKeyField.IncotermLocation)
-			.put(I_M_ShipperTransportation.COLUMNNAME_M_MeansOfTransportation_ID, AggregationKeyField.MeansOfTransportation)
-			.put(I_M_ShipperTransportation.COLUMNNAME_C_BPartner_Location_Loading_ID, AggregationKeyField.LoadingAddress)
-			.put(I_M_ShipperTransportation.COLUMNNAME_C_BPartner_Location_Delivery_ID, AggregationKeyField.DeliveryAddress)
-			.build();
 
 	/**
 	 * The key fields carried by a hidden process parameter of their own: every {@link AggregationKeyField} except

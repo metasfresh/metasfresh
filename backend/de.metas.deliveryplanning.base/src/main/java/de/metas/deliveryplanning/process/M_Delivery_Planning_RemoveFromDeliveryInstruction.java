@@ -44,7 +44,7 @@ import static de.metas.deliveryplanning.process.M_Delivery_Planning_CombineIntoD
  */
 public class M_Delivery_Planning_RemoveFromDeliveryInstruction extends JavaProcess implements IProcessPrecondition
 {
-	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
+	@NonNull private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)

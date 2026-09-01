@@ -114,12 +114,9 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	 */
 	public Optional<TransportDirection> getSingleTransportDirection()
 	{
-		return list.stream()
-				.map(DeliveryPlanning::getTransportDirection)
-				.distinct()
-				.count() == 1
-				? Optional.of(list.get(0).getTransportDirection())
-				: Optional.empty();
+		return list.isEmpty() || isMismatch(AggregationKeyField.Direction)
+				? Optional.empty()
+				: Optional.of(list.get(0).getTransportDirection());
 	}
 
 	/**

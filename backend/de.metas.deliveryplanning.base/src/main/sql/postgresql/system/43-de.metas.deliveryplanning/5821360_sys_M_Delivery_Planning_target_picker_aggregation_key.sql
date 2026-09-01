@@ -96,13 +96,13 @@ AND EXISTS (SELECT 1
 --     comparisons splice an unquoted number.
 INSERT INTO AD_Val_Rule (AD_Val_Rule_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
                          Name, Description, Type, Code, EntityType)
-VALUES (540797 /*From ID Server*/, 0, 0, 'Y',
-        TO_TIMESTAMP('2026-08-31 22:00:01', 'YYYY-MM-DD HH24:MI:SS'), 100,
-        TO_TIMESTAMP('2026-08-31 22:00:01', 'YYYY-MM-DD HH24:MI:SS'), 100,
-        'M_ShipperTransportation_AggregationKeyFields',
-        'Matches an instruction header against the selection''s aggregation key, an empty value counting as a value.',
-        'S',
-        'M_ShipperTransportation.TransportDirection = ''@TransportDirection/-@''
+SELECT 540797 /*From ID Server*/, 0, 0, 'Y',
+       TO_TIMESTAMP('2026-08-31 22:00:01', 'YYYY-MM-DD HH24:MI:SS'), 100,
+       TO_TIMESTAMP('2026-08-31 22:00:01', 'YYYY-MM-DD HH24:MI:SS'), 100,
+       'M_ShipperTransportation_AggregationKeyFields',
+       'Matches an instruction header against the selection''s aggregation key, an empty value counting as a value.',
+       'S',
+       'M_ShipperTransportation.TransportDirection = ''@TransportDirection/-@''
 AND COALESCE(M_ShipperTransportation.AD_Org_ID, 0)                       = COALESCE(@AD_Org_ID/0@, 0)
 AND COALESCE(M_ShipperTransportation.M_Shipper_ID, 0)                    = COALESCE(@M_Shipper_ID/0@, 0)
 AND COALESCE(M_ShipperTransportation.C_Incoterms_ID, 0)                  = COALESCE(@C_Incoterms_ID/0@, 0)
@@ -110,31 +110,34 @@ AND COALESCE(M_ShipperTransportation.M_MeansOfTransportation_ID, 0)      = COALE
 AND COALESCE(M_ShipperTransportation.C_BPartner_Location_Loading_ID, 0)  = COALESCE(@C_BPartner_Location_Loading_ID/0@, 0)
 AND COALESCE(M_ShipperTransportation.C_BPartner_Location_Delivery_ID, 0) = COALESCE(@C_BPartner_Location_Delivery_ID/0@, 0)
 AND NULLIF(TRIM(M_ShipperTransportation.IncotermLocation), '''') IS NOT DISTINCT FROM NULLIF(TRIM(''@IncotermLocation/@''), '''')',
-        'D')
+       'D'
+ WHERE NOT EXISTS (SELECT 1 FROM AD_Val_Rule existing WHERE existing.AD_Val_Rule_ID = 540797)
 ;
 
 -- 1c) the composite the picker parameter points at
 INSERT INTO AD_Val_Rule (AD_Val_Rule_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
                          Name, Description, Type, EntityType)
-VALUES (540798 /*From ID Server*/, 0, 0, 'Y',
-        TO_TIMESTAMP('2026-08-31 22:00:02', 'YYYY-MM-DD HH24:MI:SS'), 100,
-        TO_TIMESTAMP('2026-08-31 22:00:02', 'YYYY-MM-DD HH24:MI:SS'), 100,
-        'Delivery Instruction aggregation key matching',
-        'The target list for Add to / Move to: a drafted delivery instruction whose header matches the selection''s aggregation key.',
-        'C',
-        'D')
+SELECT 540798 /*From ID Server*/, 0, 0, 'Y',
+       TO_TIMESTAMP('2026-08-31 22:00:02', 'YYYY-MM-DD HH24:MI:SS'), 100,
+       TO_TIMESTAMP('2026-08-31 22:00:02', 'YYYY-MM-DD HH24:MI:SS'), 100,
+       'Delivery Instruction aggregation key matching',
+       'The target list for Add to / Move to: a drafted delivery instruction whose header matches the selection''s aggregation key.',
+       'C',
+       'D'
+ WHERE NOT EXISTS (SELECT 1 FROM AD_Val_Rule existing WHERE existing.AD_Val_Rule_ID = 540798)
 ;
 
 INSERT INTO AD_Val_Rule_Included (AD_Val_Rule_Included_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
                                   AD_Val_Rule_ID, Included_Val_Rule_ID, SeqNo, EntityType)
-VALUES (540044 /*From ID Server*/, 0, 0, 'Y',
-        TO_TIMESTAMP('2026-08-31 22:00:03', 'YYYY-MM-DD HH24:MI:SS'), 100,
-        TO_TIMESTAMP('2026-08-31 22:00:03', 'YYYY-MM-DD HH24:MI:SS'), 100,
-        540798, 540796, 10, 'D'),
-       (540045 /*From ID Server*/, 0, 0, 'Y',
-        TO_TIMESTAMP('2026-08-31 22:00:03', 'YYYY-MM-DD HH24:MI:SS'), 100,
-        TO_TIMESTAMP('2026-08-31 22:00:03', 'YYYY-MM-DD HH24:MI:SS'), 100,
-        540798, 540797, 20, 'D')
+SELECT r.AD_Val_Rule_Included_ID, 0, 0, 'Y',
+       TO_TIMESTAMP('2026-08-31 22:00:03', 'YYYY-MM-DD HH24:MI:SS'), 100,
+       TO_TIMESTAMP('2026-08-31 22:00:03', 'YYYY-MM-DD HH24:MI:SS'), 100,
+       r.AD_Val_Rule_ID, r.Included_Val_Rule_ID, r.SeqNo, 'D'
+  FROM (VALUES
+        (540044 /*From ID Server*/, 540798, 540796, 10),
+        (540045 /*From ID Server*/, 540798, 540797, 20)
+       ) AS r(AD_Val_Rule_Included_ID, AD_Val_Rule_ID, Included_Val_Rule_ID, SeqNo)
+ WHERE NOT EXISTS (SELECT 1 FROM AD_Val_Rule_Included existing WHERE existing.AD_Val_Rule_Included_ID = r.AD_Val_Rule_Included_ID)
 ;
 
 -- 1d) point both target parameters at the composite

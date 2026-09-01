@@ -50,7 +50,7 @@ public class M_Delivery_Planning_CombineIntoDeliveryInstruction extends JavaProc
 	 */
 	public static final int MAX_SELECTION_SIZE = 100;
 
-	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
+	@NonNull private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
 
 	@Param(parameterName = "IsComplete")
 	private boolean p_IsComplete;

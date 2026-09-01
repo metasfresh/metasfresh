@@ -58,7 +58,7 @@ import static de.metas.deliveryplanning.process.M_Delivery_Planning_CombineIntoD
 public class M_Delivery_Planning_MoveToDeliveryInstruction extends JavaProcess
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
-	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
+	@NonNull private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
 
 	/**
 	 * The selection every parameter default is read from, loaded at most once: the framework asks this instance
