@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useApplicationLaunchers } from '../../reducers/launchers';
 import { useFilterByQRCode } from './useFilterByQRCode';
 import { toQRCodeString } from '../../utils/qrCode/hu';
-import { clearLaunchers, populateLaunchersComplete } from '../../actions/LauncherActions';
+import { clearLaunchers, populateLaunchersComplete, populateLaunchersPushed } from '../../actions/LauncherActions';
 import { getLaunchers, useLaunchersWebsocket } from '../../api/launchers';
 import { getTokenFromState } from '../../reducers/appHandler';
 import { useApplicationInfo } from '../../reducers/applications';
@@ -54,9 +54,12 @@ export const useLaunchers = ({ applicationId, showFilterByQRCode, facets, filter
     filters,
     facets,
     onWebsocketMessage: ({ applicationId, applicationLaunchers }) => {
-      // A websocket push carries no request-issued time; it reflects current server state, so use
-      // receipt time. This preserves the pre-existing GC behaviour for pushed snapshots.
-      onNewLaunchers({ applicationId, applicationLaunchers, requestTimestamp: Date.now() });
+      // A pushed snapshot refreshes the visible list but must never be able to remove a workflow process:
+      // it carries no request-issued time, so nothing about it can prove a job is gone. Hence its OWN
+      // action type, which reducers/wfProcesses/workflow.js deliberately does not handle. Do not route
+      // this through populateLaunchersComplete (or stamp it with a receipt time) again -- that is the
+      // defect this replaced.
+      dispatch(populateLaunchersPushed({ applicationId, applicationLaunchers }));
     },
   });
 

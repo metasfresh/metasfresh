@@ -45,6 +45,20 @@ export const workflowReducer = ({ draftState, action }) => {
       return draftState;
     }
 
+    // Only a REQUESTED launchers snapshot may prune. Pushed snapshots have their own action type
+    // (launcherTypes.POPULATE_LAUNCHERS_PUSHED) which is deliberately NOT handled in this reducer:
+    //  - a push carries no request-issued time, so its stamp cannot bound what it knows about; stamping it
+    //    with the browser's receipt time made a snapshot built BEFORE a job look newer than the job and
+    //    deleted a live job off the operator's screen;
+    //  - the requested route stamps at request-issue time, so a snapshot asked for before a job started is
+    //    provably not authoritative about it and the guard below keeps the job.
+    // Two premises this rests on, stated here because the fix rests on them:
+    //  - requested snapshots are never served from cache: WorkflowRestController leaves maxStaleAccepted
+    //    unset, whose default Duration.ZERO forces a recompute;
+    //  - the requested fetch is dispatched only from the launchers screen the operator has left --
+    //    containers/wfLaunchersScreen/useLaunchers.js is the only non-test dispatcher of this action.
+    // Because the delete power is attached to the ACTION TYPE, a new consumer cannot silently acquire it:
+    // it has to pick this deleting type on purpose.
     case launcherTypes.POPULATE_LAUNCHERS_COMPLETE: {
       const { applicationLaunchers, requestTimestamp } = action.payload;
 
