@@ -28,6 +28,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
@@ -36,6 +37,7 @@ import org.compiere.model.I_AD_Sequence;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Step definitions for {@link I_AD_Sequence} — creates or updates lot-number sequences used in manufacturing.
@@ -111,5 +113,34 @@ public class AD_Sequence_StepDef
 		saveRecord(seqRecord);
 
 		row.getAsIdentifier(I_AD_Sequence.COLUMNNAME_AD_Sequence_ID).putOrReplace(adSequenceTable, seqRecord);
+	}
+
+	/**
+	 * Asserts that an {@link I_AD_Sequence}'s {@code CurrentNext} matches the expected value.
+	 * The record is reloaded before comparing, so the assertion reflects the sequence's actual DB state.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>AD_Sequence_ID</b> — (required, identifier-ref) sequence to check<br>
+	 *   <b>CurrentNext</b> — (required) expected next-issued number<br>
+	 * @cucumber.depends StepDefData: AD_Sequence_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then AD_Sequence is validated
+	 *   | AD_Sequence_ID | CurrentNext |
+	 *   | seq_lotno      | 1000001     |
+	 * </pre>
+	 */
+	@Then("AD_Sequence is validated")
+	public void validate_AD_Sequence(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_AD_Sequence seqRecord = row.getAsIdentifier(I_AD_Sequence.COLUMNNAME_AD_Sequence_ID).lookupNotNullIn(adSequenceTable);
+			final int expectedCurrentNext = row.getAsInt(I_AD_Sequence.COLUMNNAME_CurrentNext);
+
+			assertThat(seqRecord.getCurrentNext())
+					.as("AD_Sequence.CurrentNext for AD_Sequence_ID=%s", seqRecord.getAD_Sequence_ID())
+					.isEqualTo(expectedCurrentNext);
+		});
 	}
 }
