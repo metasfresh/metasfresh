@@ -82,11 +82,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  *       excluded products without best-before date. Fixed by LEFT JOIN.</li>
  *   <li>Bug B (Section 6 — DIRECT_SALE_DETAIL): {@code shipment_trace.lotnumber = t.lotnumber}
  *       evaluated to false for NULL lot numbers. Fixed by {@code IS NOT DISTINCT FROM}.</li>
- *   <li>DIRECT_SALE_DETAIL pairing (Section 6): still matches a shipment to a receipt on
- *       lot+product alone, producing a cartesian when several receipts share a lot — not yet
- *       fixed. Test cases exercising this are added incrementally, exercising the desired
- *       graph-tracing rule: reachability along the {@code M_HU_Trace} graph (same VHU, or a
- *       chain of {@code VHU_Source_ID} edges), guarded by lot agreement between the two ends.</li>
+ *   <li>DIRECT_SALE_DETAIL pairing (Section 6): a shipment is paired with the receipt it is
+ *       traceable to along the {@code M_HU_Trace} graph — the same VHU, or a chain of
+ *       {@code VHU_Source_ID} edges — guarded by lot agreement between the two ends. Where the
+ *       graph is silent for a (shipment document, product, lot) group, lot-level or product-level
+ *       candidates are emitted for that group and labelled as such in {@code link_basis}.</li>
  * </ul>
  */
 @RequiredArgsConstructor
@@ -95,6 +95,8 @@ public class M_HU_Trace_Report_StepDef
 	private final M_Product_StepDefData productTable;
 
 	private final HUTraceRepository huTraceRepository = SpringContextHolder.instance.getBean(HUTraceRepository.class);
+
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	/** Maps scenario name → list of HUTraceType (section name) values returned by the report */
 	private final Map<String, List<String>> reportResultsByScenario = new HashMap<>();
@@ -117,8 +119,8 @@ public class M_HU_Trace_Report_StepDef
 	 *       without MHD (best-before) attribute on the HU. Tests Bug A fix (LEFT JOIN).</li>
 	 *   <li>{@code TRACED_ONE_OF_TWO_RECEIPTS} — creates two MATERIAL_RECEIPT traces of the same
 	 *       product/lot, with the shipped VHU descending from only the first receipt's VHU
-	 *       (a TRANSFORM_LOAD edge). Exposes the DIRECT_SALE_DETAIL cartesian: today's section 6
-	 *       pairs the shipment with BOTH receipts because it matches on lot+product alone.</li>
+	 *       (a TRANSFORM_LOAD edge). Only that receipt is paired with the shipment; the other
+	 *       receipt of the lot is suppressed because the group already has a traced receipt.</li>
 	 *   <li>{@code LOT_DISAGREEMENT} — a receipt's VHU transforms (one TRANSFORM_LOAD edge) into
 	 *       the shipped VHU, but the shipment's own MATERIAL_SHIPMENT trace carries a different
 	 *       lot number than the receipt. Guards the lot-agreement half of the graph-tracing rule:
@@ -210,15 +212,14 @@ public class M_HU_Trace_Report_StepDef
 	 * {@code containsExactlyInAnyOrderElementsOf} (deliberately exhaustive — it is what catches
 	 * a wrongly-emitted extra row, see its javadoc) would keep failing with leftover rows whose
 	 * {@code DocumentNo}s can never match the current run's freshly generated ones, independent
-	 * of whether the still-open section 6 pairing rewrite is correct. Deleting the row instead of
+	 * of whether the section 6 pairing itself is correct. Deleting the row instead of
 	 * deleting-and-recreating the product itself avoids the FK from {@code M_HU_Trace.M_Product_ID}
 	 * (constraint {@code mproduct_mhutrace}, {@code ON DELETE NO ACTION}) blocking product deletion
 	 * while old trace rows still reference it.
 	 */
 	private void deleteExistingHuTraceRows(@NonNull final ProductId productId)
 	{
-		Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_HU_Trace.class)
+		queryBL.createQueryBuilder(I_M_HU_Trace.class)
 				.addEqualsFilter(I_M_HU_Trace.COLUMNNAME_M_Product_ID, productId.getRepoId())
 				.create()
 				.delete();
@@ -477,9 +478,8 @@ public class M_HU_Trace_Report_StepDef
 	/**
 	 * Two receipts of the same product and lot, one of them graph-traced to the shipment: the
 	 * shipment's VHU descends from the FIRST receipt's VHU through one TRANSFORM_LOAD edge. The
-	 * second receipt is connected to nothing — today's DIRECT_SALE_DETAIL section pairs it with
-	 * the shipment anyway (lot+product match alone), producing a two-row cartesian where exactly
-	 * one row (linked to receipt1) is correct.
+	 * second receipt is connected to nothing, and sharing the lot is not enough to be paired once
+	 * the graph has answered — so the shipment yields exactly one row, linked to receipt1.
 	 */
 	private void setupTracedOneOfTwoReceipts(@NonNull final String scenarioName, @NonNull final ProductId productId)
 	{
@@ -490,21 +490,21 @@ public class M_HU_Trace_Report_StepDef
 		final I_M_HU receiptVhu1 = createVhu();
 		final I_M_InOut receiptInOut1 = createMinimalInOut(receiptDocType, "CO");
 		createHuTraceWithSource(receiptVhu1, null, productId, HUTraceType.MATERIAL_RECEIPT,
-				"LOT-TC1", receiptInOut1, new BigDecimal("100"));
+				"LOT-ONE-OF-TWO", receiptInOut1, new BigDecimal("100"));
 
-		// a second receipt of the SAME lot, connected to nothing — today's function pairs it anyway
+		// a second receipt of the SAME lot, connected to nothing — must not be paired with the shipment
 		final I_M_HU receiptVhu2 = createVhu();
 		final I_M_InOut receiptInOut2 = createMinimalInOut(receiptDocType, "CO");
 		createHuTraceWithSource(receiptVhu2, null, productId, HUTraceType.MATERIAL_RECEIPT,
-				"LOT-TC1", receiptInOut2, new BigDecimal("100"));
+				"LOT-ONE-OF-TWO", receiptInOut2, new BigDecimal("100"));
 
 		// the shipped VHU descends from receipt 1
 		final I_M_HU shippedVhu = createVhu();
 		createHuTraceWithSource(shippedVhu, receiptVhu1, productId, HUTraceType.TRANSFORM_LOAD,
-				"LOT-TC1", null, new BigDecimal("24"));
+				"LOT-ONE-OF-TWO", null, new BigDecimal("24"));
 		final I_M_InOut shipmentInOut = createMinimalInOut(shipmentDocType, "CO");
 		createHuTraceWithSource(shippedVhu, null, productId, HUTraceType.MATERIAL_SHIPMENT,
-				"LOT-TC1", shipmentInOut, new BigDecimal("-24"));
+				"LOT-ONE-OF-TWO", shipmentInOut, new BigDecimal("-24"));
 
 		scenarioDocNos.put(scenarioName + ".receipt1", receiptInOut1.getDocumentNo());
 		scenarioDocNos.put(scenarioName + ".receipt2", receiptInOut2.getDocumentNo());
@@ -519,7 +519,7 @@ public class M_HU_Trace_Report_StepDef
 	 *
 	 * <p>The rejected pair is dropped, not demoted: the candidate branch also requires lot
 	 * agreement, so nothing at all is emitted. A product-only fallback would pair every receipt of
-	 * the product with every shipment of it — the cartesian this whole section is being fixed for.
+	 * the product with every shipment of it — a cartesian at product granularity.
 	 */
 	private void setupLotDisagreement(@NonNull final String scenarioName, @NonNull final ProductId productId)
 	{
@@ -762,18 +762,18 @@ public class M_HU_Trace_Report_StepDef
 	/**
 	 * Loads the first active C_DocType with the given DocBaseType and IsSOTrx flag.
 	 *
-	 * <p>Filtering by IsSOTrx is critical because metasfresh has multiple doctypes per
-	 * DocBaseType (e.g. MMR has both standard material receipt with isSOTrx='N' and
-	 * customer return receipt with isSOTrx='Y'). Section 6 of M_HU_Trace_Report
-	 * checks {@code receipt_dt.isSOTrx = 'N'} and {@code shipment_dt.isSOTrx = 'Y'}.
+	 * <p>Filtering by IsSOTrx is critical because metasfresh has several doctypes per
+	 * DocBaseType — MMR alone has both inbound ones ({@code isSOTrx='N'}) and outbound ones
+	 * ({@code isSOTrx='Y'}), and which of the latter this returns depends on the seed data, since
+	 * it takes the lowest {@code C_DocType_ID}. Section 6 of M_HU_Trace_Report checks
+	 * {@code receipt_dt.isSOTrx = 'N'} and {@code shipment_dt.isSOTrx = 'Y'}.
 	 *
 	 * @param docBaseType e.g. "MMR" (Material Receipt) or "MMS" (Material Shipment)
 	 * @param isSOTrx     true for sales transactions, false for purchase transactions
 	 */
 	private I_C_DocType loadDocType(@NonNull final String docBaseType, final boolean isSOTrx)
 	{
-		final I_C_DocType docType = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_DocType.class)
+		final I_C_DocType docType = queryBL.createQueryBuilder(I_C_DocType.class)
 				.addEqualsFilter(I_C_DocType.COLUMNNAME_DocBaseType, docBaseType)
 				.addEqualsFilter(I_C_DocType.COLUMNNAME_IsSOTrx, isSOTrx)
 				.addEqualsFilter(I_C_DocType.COLUMNNAME_IsActive, true)
@@ -794,8 +794,7 @@ public class M_HU_Trace_Report_StepDef
 	private I_M_HU createVhu()
 	{
 		// Load the Virtual PI (M_HU_PI_ID = 101 is the well-known Virtual PI in metasfresh)
-		final I_M_HU_PI_Version virtualPiVersion = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_HU_PI_Version.class)
+		final I_M_HU_PI_Version virtualPiVersion = queryBL.createQueryBuilder(I_M_HU_PI_Version.class)
 				.addEqualsFilter(I_M_HU_PI_Version.COLUMNNAME_M_HU_PI_ID, 101)
 				.addEqualsFilter(I_M_HU_PI_Version.COLUMNNAME_IsCurrent, true)
 				.orderBy(I_M_HU_PI_Version.COLUMNNAME_M_HU_PI_Version_ID)
@@ -947,9 +946,9 @@ public class M_HU_Trace_Report_StepDef
 			@NonNull final I_M_HU vhu,
 			@NonNull final ProductId productId,
 			@NonNull final HUTraceType traceType,
-			final String lotNumber,
-			final I_M_InOut inOut,
-			final I_PP_Order ppOrder)
+			@Nullable final String lotNumber,
+			@Nullable final I_M_InOut inOut,
+			@Nullable final I_PP_Order ppOrder)
 	{
 		return buildAndSaveHuTrace(vhu, null, productId, traceType, lotNumber, inOut, ppOrder, BigDecimal.ONE);
 	}
@@ -977,9 +976,9 @@ public class M_HU_Trace_Report_StepDef
 			@Nullable final I_M_HU sourceVhu,
 			@NonNull final ProductId productId,
 			@NonNull final HUTraceType traceType,
-			final String lotNumber,
-			final I_M_InOut inOut,
-			final I_PP_Order ppOrder,
+			@Nullable final String lotNumber,
+			@Nullable final I_M_InOut inOut,
+			@Nullable final I_PP_Order ppOrder,
 			@NonNull final BigDecimal qty)
 	{
 		final I_M_HU_Trace trace = newInstance(I_M_HU_Trace.class);

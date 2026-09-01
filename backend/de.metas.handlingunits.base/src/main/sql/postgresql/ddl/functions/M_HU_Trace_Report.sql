@@ -59,13 +59,13 @@ $$
 -- SHARED CTE BLOCK
 -- Used by SECTION 6 (DIRECT SALE DETAILS) only; the other sections do not reference it.
 -- It derives the receipt-to-shipment pairing from the M_HU_Trace transformation graph
--- (VHU_Source_ID -> VHU_ID edges) instead of from lot number and product alone, and labels
--- every emitted pair with the basis on which it was paired (link_basis).
+-- (VHU_Source_ID -> VHU_ID edges), and labels every emitted pair with the basis on which it was
+-- paired (link_basis) so a proven link is distinguishable from a guess.
 -- =====================================================================================
 WITH RECURSIVE
--- Every transformation edge: the source VHU became the target VHU. Measured on the customer
--- instance every target VHU has exactly one source, so the graph is a forest and attributing a
--- shipped VHU back to one received VHU is unambiguous. The walk below runs the other way --
+-- Every transformation edge: the source VHU became the target VHU. On a production dataset every
+-- target VHU has exactly one source, so the graph is a forest and attributing a shipped VHU back
+-- to one received VHU is unambiguous. The walk below runs the other way --
 -- forward, from a receipt to everything it became -- and may legitimately fan out, one received
 -- pallet split into many shipped pieces. Deliberately NOT restricted to T_Selection:
 -- TRANSFORM_LOAD is not one of the reported trace types, so the edges never appear in the
@@ -110,8 +110,8 @@ receipt_reach (M_HU_Trace_ID, VHU_ID, depth) AS (
     WHERE rr.depth < 15
 ),
 -- The MATERIAL_SHIPMENT rows this run is about, narrowed to rows whose document qualifies as a
--- customer shipment. Restricting the shipment side to the selection is new: previously only the
--- receipt side was restricted, so a shipment outside the report's scope could still be paired.
+-- customer shipment. Both sides are restricted to the report's selection, so a shipment outside
+-- the run's scope can never be paired.
 shipment_trace_sel AS (
     SELECT t.M_HU_Trace_ID, t.VHU_ID, t.M_HU_ID, t.M_Product_ID, t.LotNumber, t.M_InOut_ID, t.C_UOM_ID
     FROM M_HU_Trace t
@@ -137,13 +137,12 @@ traced_pair AS (
            min(st.M_HU_Trace_ID) AS shipment_trace_id,
            min(r.M_HU_ID)        AS receipt_hu_id,
            min(st.M_HU_ID)       AS shipment_hu_id,
-           -- assumes every trace row of one document/product/lot shares a UOM, which is how the
-           -- pre-rewrite body could take qty and UOM from one and the same trace row. The
-           -- quantities beside these are document-level sums, so a document that genuinely mixed
-           -- UOMs would print the sum under only one of them.
+           -- assumes every trace row of one document/product/lot shares a UOM. The quantities
+           -- beside these are document-level sums, so a document that genuinely mixed UOMs would
+           -- print the sum under only one of them.
            min(st.C_UOM_ID)      AS shipment_uom_id,
            min(r.C_UOM_ID)       AS receipt_uom_id,
-           -- client/org of the receipt TRACE ROW, the source the pre-rewrite prod_stock used.
+           -- client/org of the receipt TRACE ROW, which is what prod_stock below filters on.
            -- Reducing them with min() is safe because the rows of one group agree: the writer of a
            -- MATERIAL_RECEIPT trace takes its org from the document's own M_HU_Assignment rows
            -- (HUTraceEventsService.createAndAddEvents), and never sets the client at all, so the
@@ -491,8 +490,7 @@ SELECT
     NULL AS Inventory,
     receipt_io.movementdate AS DocumentDate,
     -- the receipt document's own quantity for this product and lot, summed over the document's
-    -- VHUs. Was always NULL in this section, which is why the received-versus-shipped proportion
-    -- could not be judged from the row.
+    -- VHUs -- so the received-versus-shipped proportion is readable from the row itself.
     ABS(ROUND(rq.qty_sum, COALESCE(ru.stdprecision, 0))) AS Qty,
     ru.uomsymbol AS UOM,
     'MATERIAL_SHIPMENT' as detail_type,
@@ -502,10 +500,10 @@ SELECT
     su.uomsymbol as finished_product_uom,
     dp.LotNumber as finished_product_lot,
     -- 1000029: M_Attribute (vendor lot) -- the FK m_hu_attribute.m_attribute_id, not the
-    -- m_hu_attribute PK. Carried over verbatim from the previous body.
+    -- m_hu_attribute PK
     (select value from m_hu_attribute vendorlot
       where vendorlot.m_hu_id = dp.receipt_hu_id and vendorlot.m_attribute_id = 1000029::numeric) as vendorlot,
-    -- 540020: M_Attribute HU_BestBeforeDate (Mindesthaltbarkeit), carried over verbatim
+    -- 540020: M_Attribute HU_BestBeforeDate (Mindesthaltbarkeit)
     (select to_char(valuedate, 'DD.MM.YYYY') from m_hu_attribute mhd
       where mhd.m_hu_id = dp.shipment_hu_id and mhd.m_attribute_id = 540020::numeric) as finished_product_mhd,
     shipment_hulu_clearancestatus.name as finished_product_clearance,
@@ -516,9 +514,8 @@ SELECT
     ABS(ROUND(sq.qty_sum, COALESCE(su.stdprecision, 0))) as shipmentqty,
     shipment_io.documentno as shipment_note,
     to_char(shipment_io.movementdate, 'DD.MM.YYYY') as shipment_date,
-    -- 1000017: M_Attribute Lot-Nummer. UOM and client/org come from the receipt TRACE ROW, the
-    -- same source the pre-rewrite expression used (t.c_uom_id / t.ad_client_id / t.ad_org_id).
-    -- All three are equality filters inside getcurrentstoragestock, so the source matters.
+    -- 1000017: M_Attribute Lot-Nummer. UOM and client/org come from the receipt trace row; all
+    -- three are equality filters inside getcurrentstoragestock, so which row they come from matters.
     getcurrentstoragestock(dp.M_Product_ID, dp.receipt_uom_id, 1000017, dp.LotNumber,
                            dp.receipt_client_id, dp.receipt_org_id) AS prod_stock,
     dp.shipment_trace_id AS traceid,
@@ -540,14 +537,14 @@ LEFT JOIN shipment_doc_qty sq
       AND sq.M_Product_ID = dp.M_Product_ID
       AND sq.LotNumber IS NOT DISTINCT FROM dp.LotNumber
 LEFT JOIN m_hu shipment_hu ON shipment_hu.m_hu_id = dp.shipment_hu_id
--- 541540: AD_Reference "Clearance", the HU clearance-status list, carried over verbatim
+-- 541540: AD_Reference "Clearance", the HU clearance-status list
 LEFT JOIN ad_ref_list shipment_hulu_clearancestatus
        ON shipment_hulu_clearancestatus.ad_reference_id = 541540::numeric
       AND shipment_hulu_clearancestatus.value::text = shipment_hu.clearancestatus::text
 -- the receipt document's isSOTrx/docstatus and the shipment document's are already enforced in
 -- receipt_trace / shipment_trace_sel, so that both pairing branches see the same eligible documents
 WHERE NOT EXISTS (
-      -- unchanged: this section is for products that were not manufactured
+      -- this section is for products that were not manufactured
       SELECT 1 FROM M_HU_Trace pt
        WHERE pt.LotNumber IS NOT DISTINCT FROM dp.LotNumber
          AND pt.M_Product_ID = dp.M_Product_ID

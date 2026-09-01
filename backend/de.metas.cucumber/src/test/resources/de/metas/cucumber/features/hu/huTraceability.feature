@@ -65,8 +65,8 @@ Feature: HU Traceability Report — SQL correctness tests
     # Decided semantics: a pair the lot-agreement guard rejects is DROPPED, not demoted to a
     # product-level candidate. PRODUCT_CANDIDATE means "neither side carries a lot number";
     # falling back to product equality whenever two lots disagree would re-open the cartesian at
-    # product granularity, which is the defect being fixed. The empty table below asserts the
-    # outcome exhaustively — no traced row and no candidate row.
+    # product granularity — the very failure these pairing rules exist to prevent. The empty table
+    # below asserts the outcome exhaustively — no traced row and no candidate row.
     Given metasfresh contains M_Products:
       | Identifier                | Value                        | Name                         |
       | traceProduct_lotMismatch  | traceProductVal_lotMismatch  | Trace Product Lot Mismatch   |
@@ -133,7 +133,7 @@ Feature: HU Traceability Report — SQL correctness tests
       | ReceiptDocNo | ShipmentDocNo | LinkBasis          | Menge | Liefermenge |
       | receipt1     | shipment      | PRODUCT_CANDIDATE  | 100   | 24          |
 
-  @Id:S0000.1_HUTrace_IneligibleReceiptDoc
+  @Id:S0000.1_HUTrace_TC7
   Scenario: A graph link to a receipt document this section may not report does not silence the lot candidate
     # The shipment descends from a receipt document whose doctype is IsSOTrx='Y', which this section
     # may not report — it reports only IsSOTrx='N' purchase receipts. Deciding "this group is traced,
