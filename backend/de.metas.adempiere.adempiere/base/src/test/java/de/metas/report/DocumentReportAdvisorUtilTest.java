@@ -117,6 +117,32 @@ public class DocumentReportAdvisorUtilTest
 		}
 
 		@Test
+		public void useCopiesOverrideEvenWhenPrintFormatIsSet()
+		{
+			// bug reproduction: a C_BP_PrintFormat row can carry BOTH an AD_PrintFormat_ID (the print-format
+			// hook) and a DocumentCopies_Override. The advisor's non-exact query (no printFormatId given,
+			// as it queries just by table/docType/bpartner) must still find this row's copies override,
+			// not fall back to the doc-type default.
+			final DocumentReportAdvisorUtil util = createUtil();
+
+			final I_C_DocType docType = createDocType(DOCBASETYPE_MaterialDelivery);
+			final BPartnerLocationId bPartnerLocationId = createBPartnerLocation();
+			final BPPrintFormatQuery bpPrintFormatQuery = createBPrintFormatQuery(docType, bPartnerLocationId);
+
+			final I_C_BP_PrintFormat printFormatWithHookAndOverride = newInstance(I_C_BP_PrintFormat.class);
+			printFormatWithHookAndOverride.setC_BPartner_ID(bPartnerLocationId.getBpartnerId().getRepoId());
+			printFormatWithHookAndOverride.setC_BPartner_Location_ID(bPartnerLocationId.getRepoId());
+			printFormatWithHookAndOverride.setAD_Table_ID(IN_OUT_TABLE_ID.getRepoId());
+			printFormatWithHookAndOverride.setC_DocType_ID(docType.getC_DocType_ID());
+			printFormatWithHookAndOverride.setAD_PrintFormat_ID(540001); // print-format hook set
+			printFormatWithHookAndOverride.setDocumentCopies_Override(3);
+			save(printFormatWithHookAndOverride);
+
+			final PrintCopies printCopies = util.getDocumentCopies(docType, bpPrintFormatQuery);
+			Assertions.assertThat(printCopies.toInt()).isEqualTo(3);
+		}
+
+		@Test
 		public void useMatchingPrintFormatTableIdCopies()
 		{
 			final DocumentReportAdvisorUtil util = createUtil();
