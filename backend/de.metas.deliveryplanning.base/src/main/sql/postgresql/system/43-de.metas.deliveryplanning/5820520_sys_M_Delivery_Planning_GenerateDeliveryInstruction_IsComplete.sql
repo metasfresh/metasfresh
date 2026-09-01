@@ -9,16 +9,6 @@
 --
 -- IDs allocated from idserver.metas.de on 2026-08-27:
 --   AD_Process_Para  543279 (IsComplete, on 585176; reuses the existing AD_Element 2047 'Fertigstellen')
---
--- Any stack that applied this script BEFORE the _Trl seed covered a base language that is not
--- flagged as a system language needs this once -- the runner will not re-run an applied file.
--- A no-op wherever the base language is also flagged a system language, which is the usual setup:
---   INSERT INTO AD_Process_Para_Trl (AD_Language, AD_Process_Para_ID, Name, Description, Help, IsTranslated, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy)
---   SELECT l.AD_Language, t.AD_Process_Para_ID, t.Name, t.Description, t.Help, 'N', t.AD_Client_ID, t.AD_Org_ID, 'Y', t.Created, t.CreatedBy, t.Updated, t.UpdatedBy
---     FROM AD_Language l, AD_Process_Para t
---    WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Process_Para_ID=543279
---      AND NOT EXISTS (SELECT 1 FROM AD_Process_Para_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_Para_ID=t.AD_Process_Para_ID);
---   SELECT update_TRL_Tables_On_AD_Element_TRL_Update(2047);
 
 -- ---------------------------------------------------------------------------------------------
 -- 1) rename AD_Process 585176 + its translations

@@ -1,15 +1,6 @@
 -- AD_Message 545813 (From ID Server): rejection thrown when the M_Delivery_Planning AFTER_CHANGE(IsClosed)
 -- interceptor refuses to close a planning that is currently allocated to a COMPLETED delivery instruction -
 -- naming Re-Activate as the way out.
---
--- Any stack that applied this script BEFORE the _Trl seed covered a base language that is not
--- flagged as a system language needs this once -- the runner will not re-run an applied file.
--- A no-op wherever the base language is also flagged a system language, which is the usual setup:
---   INSERT INTO AD_Message_Trl (AD_Language, AD_Message_ID, MsgText, MsgTip, IsTranslated, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy)
---   SELECT l.AD_Language, t.AD_Message_ID, t.MsgText, t.MsgTip, 'N', t.AD_Client_ID, t.AD_Org_ID, 'Y', t.Created, t.CreatedBy, t.Updated, t.UpdatedBy
---     FROM AD_Language l, AD_Message t
---    WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Message_ID=545813
---      AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID);
 
 INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value)
 VALUES (0,545813 /*From ID Server*/,0,TO_TIMESTAMP('2026-08-27 13:00:00','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',
