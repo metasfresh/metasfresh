@@ -1,7 +1,7 @@
 import reducer from '../../../reducers/wfProcesses/index';
 import { isWfProcessLoaded } from '../../../reducers/wfProcesses';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
-import { populateLaunchersComplete, populateLaunchersPushed } from '../../../actions/LauncherActions';
+import { populateLaunchersComplete, populateLaunchersPushedByServer } from '../../../actions/LauncherActions';
 
 // The captured failure, replayed at the reducer level.
 //
@@ -10,14 +10,12 @@ import { populateLaunchersComplete, populateLaunchersPushed } from '../../../act
 // prove a job is gone. Deleting therefore requires an explicitly REQUESTED snapshot, which stamps at
 // request-issue time and so can never over-state its own freshness.
 //
-// The fix gives pushed snapshots their own action type (POPULATE_LAUNCHERS_PUSHED, dispatched by
-// actions/LauncherActions.populateLaunchersPushed) which reducers/wfProcesses/workflow.js deliberately
-// does NOT handle. Before the fix that action creator does not exist, so the second test below fails with
-// "populateLaunchersPushed is not a function" -- the RED.
+// Pushed snapshots carry their own action type, which reducers/wfProcesses/workflow.js has no case for,
+// so a push cannot reach the pruning path at all.
 //
-// NOT the fix: comparing the payload's server-side `computedTime`. it is unusable:
-// (two wire formats -- ISO-8601 on the websocket, epoch-seconds float on REST -- and a server instant
-// compared against a browser Date.now() on a real handheld). Do not reintroduce that comparison.
+// Comparing the payload's server-side `computedTime` is not a usable alternative: the same DTO serialises
+// it as an ISO-8601 string on the websocket and as an epoch-seconds float on REST, and on a handheld it
+// would compare a SERVER instant against a BROWSER `Date.now()`. Do not introduce that comparison.
 //
 // The numbers are the CAPTURED ones (capture/FAILING-RUN-probe-1788251568209-1.ndjson; INVESTIGATION.md),
 // epoch ms, not round placeholders.
@@ -51,10 +49,9 @@ describe('wfProcesses: a pushed launchers snapshot must not prune a just-started
     return state;
   };
 
-  // CONTROL (passes before and after the fix). The same snapshot on the REQUESTED route, stamped with the
-  // request-issue time: the guard in removeWFProcessesFromState keeps the job. This proves the harness
-  // models the reducer, the action shape and the interleaving correctly, so the failure below is about the
-  // pushed action and nothing else.
+  // Control: the same snapshot on the REQUESTED route, stamped with the request-issue time, where the
+  // guard in removeWFProcessesFromState keeps the job. It proves the harness models the reducer, the
+  // action shape and the interleaving correctly, so a failure below is about the pushed route alone.
   it('keeps the just-started wfProcess when the same pre-start snapshot arrives as a REQUESTED snapshot', () => {
     let state = startTheJob();
 
@@ -70,15 +67,15 @@ describe('wfProcesses: a pushed launchers snapshot must not prune a just-started
     expect(isWfProcessLoaded({ wfProcesses: state }, WF_PROCESS_ID)).toBe(true);
   });
 
-  // THE RED. The websocket route must dispatch a PUSHED snapshot, which this reducer does not handle at
-  // all -- so the just-started process survives no matter when the frame was delivered.
+  // The websocket route dispatches a PUSHED snapshot, which this reducer does not handle at all, so the
+  // just-started process survives no matter when the frame was delivered.
   it('keeps the just-started wfProcess when the pre-start snapshot arrives as a PUSHED snapshot', () => {
     let state = startTheJob();
 
     jest.spyOn(Date, 'now').mockReturnValue(T_FRAME_RECEIVED);
     state = reducer(
       state,
-      populateLaunchersPushed({
+      populateLaunchersPushedByServer({
         applicationId: 'picking',
         applicationLaunchers: snapshotBuiltBeforeTheStart,
       })

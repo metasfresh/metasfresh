@@ -15,15 +15,13 @@ import { updateWFProcess } from '../../../actions/WorkflowActions';
 // (containers/wfLaunchersScreen/useLaunchers.js) and invokes it, so whatever the websocket route
 // dispatches is produced by production code, not mirrored by the test.
 //
-// Today that route dispatches POPULATE_LAUNCHERS_COMPLETE stamped with the browser's RECEIPT time, so a
-// snapshot the server built BEFORE the job existed looks newer than the job and the wfProcesses garbage
-// collector deletes it. The fix gives pushed snapshots their own action type that the wfProcesses reducer
-// does not handle, so a push structurally cannot prune.
+// Stamping a pushed snapshot with the browser's RECEIPT time makes one the server built BEFORE the job
+// existed look newer than the job, so the wfProcesses garbage collector deletes it. Pushed snapshots
+// therefore carry their own action type, which that reducer has no case for.
 //
-// NOT the fix: comparing the payload's server-side `computedTime`. it is unusable:
-// the same DTO serialises `computedTime` as an ISO-8601 string on the websocket and as an epoch-seconds
-// float on REST, and on a real handheld that instant is a SERVER clock being compared against a BROWSER
-// `Date.now()`. Do not reintroduce a computedTime-based comparison.
+// Comparing the payload's server-side `computedTime` is not a usable alternative: the same DTO serialises
+// it as an ISO-8601 string on the websocket and as an epoch-seconds float on REST, and on a handheld it
+// would compare a SERVER instant against a BROWSER `Date.now()`. Do not introduce that comparison.
 //
 // Interleaving: the server computes the snapshot at T1 (job absent from it), the operator's start is stored
 // at T2, the push is received at T3. The just-started wfProcess must survive.

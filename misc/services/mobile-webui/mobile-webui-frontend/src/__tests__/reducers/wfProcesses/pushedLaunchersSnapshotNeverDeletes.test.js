@@ -2,26 +2,23 @@ import reducer from '../../../reducers/wfProcesses/index';
 import launchersReducer from '../../../reducers/launchers';
 import { isWfProcessLoaded } from '../../../reducers/wfProcesses';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
-import { populateLaunchersPushed } from '../../../actions/LauncherActions';
+import { populateLaunchersPushedByServer } from '../../../actions/LauncherActions';
 
 // The primary invariant: a launchers snapshot that arrives by
 // websocket PUSH never removes a workflow process from the store -- for ANY timestamp values, including
-// ones that would satisfy today's `requestTimestamp >= updatedAt` guard, and including the harshest
-// payload of all (an empty launchers list, which on the old path deleted every process in the store).
+// ones that satisfy the `requestTimestamp >= updatedAt` guard, and including the harshest payload of all:
+// an empty launchers list, which on the requested route deletes every process in the store.
 //
 // The two companion suites each pin exactly ONE interleaving (the captured one), so neither proves the
 // invariant; this one parametrises over the timestamp matrix and asserts the wfProcesses state is
 // UNCHANGED, not merely that one id survived.
 //
-// The fix gives pushed snapshots their own action type (POPULATE_LAUNCHERS_PUSHED, dispatched by
-// actions/LauncherActions.populateLaunchersPushed) which reducers/wfProcesses/workflow.js deliberately
-// does NOT handle -- so a push structurally cannot prune, whatever the clocks say. Before the fix that
-// action creator does not exist, so every test below fails with "populateLaunchersPushed is not a
-// function" -- the RED.
+// Pushed snapshots carry their own action type, which reducers/wfProcesses/workflow.js has no case for,
+// so a push cannot prune whatever the clocks say.
 //
-// NOT the fix: comparing the payload's server-side `computedTime`. it is unusable:
-// (two wire formats -- ISO-8601 on the websocket, epoch-seconds float on REST -- and a server instant
-// compared against a browser Date.now() on a real handheld). Do not reintroduce that comparison.
+// Comparing the payload's server-side `computedTime` is not a usable alternative: the same DTO serialises
+// it as an ISO-8601 string on the websocket and as an epoch-seconds float on REST, and on a handheld it
+// would compare a SERVER instant against a BROWSER `Date.now()`. Do not introduce that comparison.
 //
 // That a REQUESTED snapshot must still garbage-collect is NOT retested here: it is already covered by
 // staleLaunchersDeletesStartedProcess.test.js, which must stay green after the fix.
@@ -44,7 +41,7 @@ describe('wfProcesses: a PUSHED launchers snapshot never deletes, for ANY timest
 
   it.each([
     [
-      "frame delivered long after the job (would defeat today's guard)",
+      'frame delivered long after the job (would defeat the requestTimestamp guard)',
       {
         computedTime: COMPUTED_BEFORE_THE_JOB,
         frameDeliveredAt: T_JOB_IN_STORE + 5000,
@@ -97,7 +94,7 @@ describe('wfProcesses: a PUSHED launchers snapshot never deletes, for ANY timest
     const applicationLaunchers = computedTime === undefined ? { launchers } : { computedTime, launchers };
     const stateAfterThePush = reducer(
       stateBeforeThePush,
-      populateLaunchersPushed({ applicationId: 'picking', applicationLaunchers })
+      populateLaunchersPushedByServer({ applicationId: 'picking', applicationLaunchers })
     );
 
     expect(stateAfterThePush).toEqual(snapshotOfStateBeforeThePush);
@@ -109,7 +106,7 @@ describe('wfProcesses: a PUSHED launchers snapshot never deletes, for ANY timest
     const state = {
       launchers: launchersReducer(
         undefined,
-        populateLaunchersPushed({
+        populateLaunchersPushedByServer({
           applicationId: 'picking',
           applicationLaunchers: { computedTime: COMPUTED_BEFORE_THE_JOB, launchers: launchersWithoutTheJob },
         })

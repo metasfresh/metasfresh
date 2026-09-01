@@ -2,7 +2,7 @@ import {
   CLEAR_ACTIVE_FILTERS,
   CLEAR_LAUNCHERS,
   POPULATE_LAUNCHERS_COMPLETE,
-  POPULATE_LAUNCHERS_PUSHED,
+  POPULATE_LAUNCHERS_PUSHED_BY_SERVER,
   POPULATE_LAUNCHERS_START,
   SET_ACTIVE_FILTERS,
 } from '../constants/LaunchersActionTypes';
@@ -24,9 +24,9 @@ export const populateLaunchersComplete = ({ applicationId, applicationLaunchers,
   };
 };
 
-export const populateLaunchersPushed = ({ applicationId, applicationLaunchers }) => {
+export const populateLaunchersPushedByServer = ({ applicationId, applicationLaunchers }) => {
   return {
-    type: POPULATE_LAUNCHERS_PUSHED,
+    type: POPULATE_LAUNCHERS_PUSHED_BY_SERVER,
     // NO requestTimestamp, on purpose: a pushed snapshot carries no request-issued time, so there is no
     // instant that bounds what it can know about. The wfProcesses reducer does not handle this type at
     // all, so a push cannot prune a workflow process.

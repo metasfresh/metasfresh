@@ -22,10 +22,10 @@ import { updateWFProcess } from '../../../actions/WorkflowActions';
 // On a workflow-launcher tap, WFLauncherButton dispatches updateWFProcess and then navigates to the
 // job route in the same start-request `.then`. On React 17 / connected-react-router 6.9 /
 // react-redux 7.2 those updates are not batched, so ApplicationLayout can mount on the job route
-// one render pass BEFORE the store selector observes the just-dispatched process. The redirect-home
-// guard used to call history.goHome() synchronously on that first pass, dropping the operator on the
-// root menu mid-start (the flaky #WFProcessScreen timeout). The guard must tolerate the ordering:
-// only redirect home if the process is STILL not loaded after a tick.
+// one render pass BEFORE the store selector observes the just-dispatched process. Calling
+// history.goHome() synchronously on that first pass drops the operator on the root menu mid-start, so
+// the guard must tolerate the ordering: redirect home only if the process is STILL not loaded after a
+// tick.
 //
 // The second test is the "nothing else broke" half: a genuinely dead deep-link (a reload onto a job
 // route whose process no longer exists) must STILL redirect the operator home, exactly once, and must

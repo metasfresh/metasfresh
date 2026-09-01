@@ -11,7 +11,7 @@ export const POPULATE_LAUNCHERS_COMPLETE = 'launchers/loadComplete';
  * @constant
  * @type {string}
  */
-export const POPULATE_LAUNCHERS_PUSHED = 'launchers/pushedByServer';
+export const POPULATE_LAUNCHERS_PUSHED_BY_SERVER = 'launchers/pushedByServer';
 
 export const CLEAR_LAUNCHERS = 'launchers/clear';
 export const SET_ACTIVE_FILTERS = 'launchers/activeFilters/set';

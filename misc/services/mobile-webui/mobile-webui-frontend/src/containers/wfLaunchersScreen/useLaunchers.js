@@ -3,7 +3,11 @@ import { useEffect, useState } from 'react';
 import { useApplicationLaunchers } from '../../reducers/launchers';
 import { useFilterByQRCode } from './useFilterByQRCode';
 import { toQRCodeString } from '../../utils/qrCode/hu';
-import { clearLaunchers, populateLaunchersComplete, populateLaunchersPushed } from '../../actions/LauncherActions';
+import {
+  clearLaunchers,
+  populateLaunchersComplete,
+  populateLaunchersPushedByServer,
+} from '../../actions/LauncherActions';
 import { getLaunchers, useLaunchersWebsocket } from '../../api/launchers';
 import { getTokenFromState } from '../../reducers/appHandler';
 import { useApplicationInfo } from '../../reducers/applications';
@@ -56,7 +60,7 @@ export const useLaunchers = ({ applicationId, showFilterByQRCode, facets, filter
     onWebsocketMessage: ({ applicationId, applicationLaunchers }) => {
       // Refreshes the visible list only. Must not go through populateLaunchersComplete, whose action type
       // carries the power to prune workflow processes.
-      dispatch(populateLaunchersPushed({ applicationId, applicationLaunchers }));
+      dispatch(populateLaunchersPushedByServer({ applicationId, applicationLaunchers }));
     },
   });
 

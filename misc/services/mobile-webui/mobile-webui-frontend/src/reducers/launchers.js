@@ -74,7 +74,7 @@ export default function launchers(state = initialState, action) {
     // writes `requestTimestamp` -- so this is unchanged behaviour for the REST fetch effect in
     // useLaunchers.js, whose dependency array reads that field.
     case types.POPULATE_LAUNCHERS_COMPLETE:
-    case types.POPULATE_LAUNCHERS_PUSHED: {
+    case types.POPULATE_LAUNCHERS_PUSHED_BY_SERVER: {
       const { applicationId, applicationLaunchers } = payload;
       return copyAndMergeToState(state, applicationId, {
         isLoading: false,
