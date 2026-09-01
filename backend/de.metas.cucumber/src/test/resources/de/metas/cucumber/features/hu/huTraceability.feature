@@ -61,7 +61,12 @@ Feature: HU Traceability Report — SQL correctness tests
       | receipt1     | shipment      | TRACED    | 100   | 24          |
 
   @Id:S0000.1_HUTrace_TC0
-  Scenario: A graph-traced receipt whose lot disagrees with the shipment's is not reported as traced
+  Scenario: A graph-connected pair whose lot numbers disagree yields no detail row at all
+    # Decided semantics: a pair the lot-agreement guard rejects is DROPPED, not demoted to a
+    # product-level candidate. PRODUCT_CANDIDATE means "neither side carries a lot number";
+    # falling back to product equality whenever two lots disagree would re-open the cartesian at
+    # product granularity, which is the defect being fixed. The empty table below asserts the
+    # outcome exhaustively — no traced row and no candidate row.
     Given metasfresh contains M_Products:
       | Identifier                | Value                        | Name                         |
       | traceProduct_lotMismatch  | traceProductVal_lotMismatch  | Trace Product Lot Mismatch   |

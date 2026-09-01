@@ -13,7 +13,8 @@
 -- KEY CHANGES:
 -- - Added new section "DIRECT_SALE_DETAIL" (similar to PRODUCTION_RECEIPT_DETAL)
 -- - This new section traces non-manufactured products from purchase receipt to customer shipment
--- - Links purchase receipts (issotrx=N) to sales shipments (issotrx=Y) via lot numbers
+-- - Links purchase receipts (issotrx=N) to sales shipments (issotrx=Y) along the M_HU_Trace
+--   transformation graph, falling back to labelled lot-level guesses where the graph is silent
 -- - Shows vendor information from purchase and customer information from shipment
 -- - Enhanced Material Receipts and Material Shipments sections to better handle both flows
 -- =====================================================================================
@@ -54,6 +55,158 @@ create function m_hu_trace_report(p_ad_pinstance_id numeric)
     language sql
 as
 $$
+-- =====================================================================================
+-- SHARED CTE BLOCK
+-- Used by SECTION 6 (DIRECT SALE DETAILS) only; the other sections do not reference it.
+-- It derives the receipt-to-shipment pairing from the M_HU_Trace transformation graph
+-- (VHU_Source_ID -> VHU_ID edges) instead of from lot number and product alone, and labels
+-- every emitted pair with the basis on which it was paired (link_basis).
+-- =====================================================================================
+WITH RECURSIVE
+-- Every transformation edge: the source VHU became the target VHU. Measured on the customer
+-- instance every target VHU has exactly one source, so the graph is a forest and attributing a
+-- shipped VHU back to one received VHU is unambiguous. The walk below runs the other way --
+-- forward, from a receipt to everything it became -- and may legitimately fan out, one received
+-- pallet split into many shipped pieces. Deliberately NOT restricted to T_Selection:
+-- TRANSFORM_LOAD is not one of the reported trace types, so the edges never appear in the
+-- selection even though the path between two selected rows runs over them.
+vhu_edge AS (
+    SELECT DISTINCT t.VHU_Source_ID AS src, t.VHU_ID AS dst
+    FROM M_HU_Trace t
+    WHERE t.VHU_Source_ID IS NOT NULL
+      AND t.VHU_ID IS NOT NULL
+      AND t.VHU_Source_ID <> t.VHU_ID
+),
+-- The MATERIAL_RECEIPT rows this report run is about, already narrowed to rows whose document
+-- qualifies as a purchase receipt. Filtering here rather than in the final WHERE keeps the
+-- traced and the candidate branch working off exactly the same set of eligible receipts, so a
+-- pair that the final projection would discard can never suppress the candidates of its group.
+receipt_trace AS (
+    SELECT t.M_HU_Trace_ID, t.VHU_ID, t.M_HU_ID, t.M_Product_ID, t.LotNumber, t.M_InOut_ID, t.C_UOM_ID
+    FROM M_HU_Trace t
+    JOIN M_InOut receipt_io ON receipt_io.M_InOut_ID = t.M_InOut_ID
+    JOIN C_DocType receipt_dt ON receipt_dt.C_DocType_ID = receipt_io.C_DocType_ID
+    WHERE t.HUTraceType = 'MATERIAL_RECEIPT'
+      AND t.VHU_ID IS NOT NULL
+      AND receipt_dt.IsSOTrx = 'N'
+      AND receipt_io.DocStatus IN ('CO', 'CL')
+      AND EXISTS (SELECT 1 FROM T_Selection s
+                   WHERE s.AD_PInstance_ID = p_AD_PInstance_ID
+                     AND s.T_Selection_ID = t.M_HU_Trace_ID)
+),
+-- Forward walk from each receipt VHU. Depth 0 is the receipt's own VHU, which covers the
+-- received-and-shipped-without-repacking case; deeper rows follow the transformation edges.
+receipt_reach (M_HU_Trace_ID, VHU_ID, depth) AS (
+    SELECT r.M_HU_Trace_ID, r.VHU_ID, 0
+    FROM receipt_trace r
+    UNION
+    SELECT rr.M_HU_Trace_ID, e.dst, rr.depth + 1
+    FROM receipt_reach rr
+    JOIN vhu_edge e ON e.src = rr.VHU_ID
+    -- Termination guard against a runaway or cyclic transformation chain: UNION alone cannot stop
+    -- a cycle here because the depth column makes every revisit a distinct row. Measured on the
+    -- customer instance the chains are one hop long (see round2-results.md), so 15 is far above
+    -- anything real while still bounding a corrupt graph.
+    WHERE rr.depth < 15
+),
+-- The MATERIAL_SHIPMENT rows this run is about, narrowed to rows whose document qualifies as a
+-- customer shipment. Restricting the shipment side to the selection is new: previously only the
+-- receipt side was restricted, so a shipment outside the report's scope could still be paired.
+shipment_trace_sel AS (
+    SELECT t.M_HU_Trace_ID, t.VHU_ID, t.M_HU_ID, t.M_Product_ID, t.LotNumber, t.M_InOut_ID, t.C_UOM_ID
+    FROM M_HU_Trace t
+    JOIN M_InOut shipment_io ON shipment_io.M_InOut_ID = t.M_InOut_ID
+    JOIN C_DocType shipment_dt ON shipment_dt.C_DocType_ID = shipment_io.C_DocType_ID
+    WHERE t.HUTraceType = 'MATERIAL_SHIPMENT'
+      AND t.VHU_ID IS NOT NULL
+      AND shipment_dt.IsSOTrx = 'Y'
+      AND shipment_io.DocStatus IN ('CO', 'CL')
+      AND EXISTS (SELECT 1 FROM T_Selection s
+                   WHERE s.AD_PInstance_ID = p_AD_PInstance_ID
+                     AND s.T_Selection_ID = t.M_HU_Trace_ID)
+),
+-- A pair is TRACED when the shipped VHU is reachable from the receipt VHU AND the two trace rows
+-- agree on lot. Lot agreement is a consistency guard, not the pairing criterion: transformation
+-- edges do connect trace rows carrying different lot numbers, and the report must not assert a
+-- link across a relabelling it cannot explain.
+-- The GROUP BY is the report row's identity: one row per (receipt document, shipment document,
+-- product, lot), however many VHUs and trace rows the two documents carry for that product and
+-- lot. This is de-duplication by construction, not by a DISTINCT over the projected columns.
+traced_pair AS (
+    SELECT r.M_InOut_ID AS receipt_inout_id, r.M_Product_ID, r.LotNumber,
+           st.M_InOut_ID AS shipment_inout_id,
+           min(st.M_HU_Trace_ID) AS shipment_trace_id,
+           min(r.M_HU_ID)        AS receipt_hu_id,
+           min(st.M_HU_ID)       AS shipment_hu_id,
+           min(st.C_UOM_ID)      AS shipment_uom_id,
+           min(r.C_UOM_ID)       AS receipt_uom_id
+    FROM receipt_trace r
+    JOIN receipt_reach rr ON rr.M_HU_Trace_ID = r.M_HU_Trace_ID
+    JOIN shipment_trace_sel st
+           ON st.VHU_ID       = rr.VHU_ID
+          AND st.M_Product_ID = r.M_Product_ID
+          AND st.LotNumber IS NOT DISTINCT FROM r.LotNumber
+    GROUP BY r.M_InOut_ID, r.M_Product_ID, r.LotNumber, st.M_InOut_ID
+),
+-- Lot-level guesses, emitted ONLY for the (shipment document, product, lot) groups the graph
+-- leaves empty. A group with a traced receipt never also shows candidates.
+-- The lot condition below is also what decides the fate of a graph-connected pair that the lot
+-- guard above rejected: such a pair does not match here either, so it is DROPPED rather than
+-- demoted to a candidate. Deliberate. A relabelling the data does not explain is not evidence of
+-- a product-level link, and admitting one would re-open the cartesian at product granularity --
+-- every receipt of the product against every shipment of it -- which is the defect being fixed.
+-- Silence is the honest answer; PRODUCT_CANDIDATE keeps its single meaning of "neither side
+-- carries a lot number".
+-- The GROUP BY carries the same row identity as traced_pair above.
+candidate_pair AS (
+    SELECT r.M_InOut_ID AS receipt_inout_id, r.M_Product_ID, r.LotNumber,
+           st.M_InOut_ID AS shipment_inout_id,
+           min(st.M_HU_Trace_ID) AS shipment_trace_id,
+           min(r.M_HU_ID)        AS receipt_hu_id,
+           min(st.M_HU_ID)       AS shipment_hu_id,
+           min(st.C_UOM_ID)      AS shipment_uom_id,
+           min(r.C_UOM_ID)       AS receipt_uom_id
+    FROM receipt_trace r
+    JOIN shipment_trace_sel st
+           ON st.M_Product_ID = r.M_Product_ID
+          AND st.LotNumber IS NOT DISTINCT FROM r.LotNumber
+    WHERE NOT EXISTS (
+        SELECT 1 FROM traced_pair tp
+         WHERE tp.shipment_inout_id = st.M_InOut_ID
+           AND tp.M_Product_ID      = st.M_Product_ID
+           AND tp.LotNumber IS NOT DISTINCT FROM st.LotNumber
+    )
+    GROUP BY r.M_InOut_ID, r.M_Product_ID, r.LotNumber, st.M_InOut_ID
+),
+detail_pair AS (
+    SELECT tp.*, 'TRACED'::varchar AS link_basis FROM traced_pair tp
+    UNION ALL
+    -- No lot on either side means the pair rests on product equality alone; a shared lot number
+    -- is the stronger of the two guesses and is labelled apart from it.
+    SELECT cp.*,
+           (CASE WHEN cp.LotNumber IS NULL THEN 'PRODUCT_CANDIDATE' ELSE 'LOT_CANDIDATE' END)::varchar
+      FROM candidate_pair cp
+),
+-- Document-level received quantity per (receipt document, product, lot). GROUP BY puts all NULL
+-- lots in one group, which is what the IS NOT DISTINCT FROM join below matches; a combination
+-- with no rows produces no join partner and therefore a NULL quantity, exactly as a correlated
+-- SUM over no rows would.
+receipt_doc_qty AS (
+    SELECT rt.M_InOut_ID, rt.M_Product_ID, rt.LotNumber, SUM(rt.Qty) AS qty_sum
+    FROM M_HU_Trace rt
+    WHERE rt.HUTraceType = 'MATERIAL_RECEIPT'
+      AND rt.M_InOut_ID IS NOT NULL
+    GROUP BY rt.M_InOut_ID, rt.M_Product_ID, rt.LotNumber
+),
+-- Document-level shipped quantity per (shipment document, product, lot). finished_product_qty
+-- and shipmentqty are the same figure under two column names, so both read this one CTE.
+shipment_doc_qty AS (
+    SELECT stq.M_InOut_ID, stq.M_Product_ID, stq.LotNumber, SUM(stq.Qty) AS qty_sum
+    FROM M_HU_Trace stq
+    WHERE stq.HUTraceType = 'MATERIAL_SHIPMENT'
+      AND stq.M_InOut_ID IS NOT NULL
+    GROUP BY stq.M_InOut_ID, stq.M_Product_ID, stq.LotNumber
+)
 -- =====================================================================================
 -- SECTION 1: CURRENT STOCK
 -- Shows current inventory levels for all products (manufactured and non-manufactured)
@@ -297,76 +450,86 @@ WHERE t.hutracetype IN ('PRODUCTION_RECEIPT')
 UNION ALL
 
 -- =====================================================================================
--- SECTION 6: DIRECT SALE DETAILS (NEW - Non-Manufactured Products)
--- This is the NEW section that handles the direct purchase-to-sale flow
--- Links material receipts from vendors (issotrx=N) to material shipments to customers (issotrx=Y)
--- Provides complete traceability for non-manufactured products from purchase to sale
+-- SECTION 6: DIRECT SALE DETAILS (Non-Manufactured Products)
+-- Handles the direct purchase-to-sale flow: material receipts from vendors (issotrx=N) paired
+-- with material shipments to customers (issotrx=Y).
+-- The pairing is derived in the CTE block at the top of this function: a pair is TRACED when the
+-- shipped VHU is reachable from the received VHU along the transformation graph and both ends
+-- agree on lot; where the graph is silent for a (shipment document, product, lot) group, the
+-- lot-level or product-level guesses are emitted for that group instead, and say so in link_basis.
+-- One row per (receipt document, shipment document, product, lot) -- the aggregation that produces
+-- that identity lives in traced_pair / candidate_pair, so no DISTINCT is needed or wanted here:
+-- a duplicate would be a defect in the pairing and must stay visible rather than be swallowed.
 -- =====================================================================================
-SELECT DISTINCT
-    t.LotNumber AS LotNumber,
+SELECT
+    dp.LotNumber AS LotNumber,
     'DIRECT_SALE_DETAIL' AS HUTraceType,
     p.value || '_' || p.name AS Product,
     receipt_io.documentno AS InOut,
     NULL AS PPOrder,
     NULL AS Inventory,
     receipt_io.movementdate AS DocumentDate,
-    null::numeric AS Qty,
-    u.uomsymbol AS UOM,
-    shipment_trace.HUTraceType as detail_type,
-    shipment_product.value as finished_product_no,
-    shipment_product.name as finished_product_name,
-    ABS(ROUND(shipment_trace.qty, shipment_uom.stdprecision)) as finished_product_qty,
-    shipment_uom.uomsymbol as finished_product_uom,
-    shipment_trace.lotnumber as finished_product_lot,
-    (select value from m_hu_attribute vendorlot where m_hu_id = t.m_hu_id and m_attribute_id = 1000029::numeric) as vendorlot,
-    (select to_char(valuedate, 'DD.MM.YYYY') from m_hu_attribute mhd where mhd.m_hu_id = shipment_trace.m_hu_id and mhd.m_attribute_id = 540020::numeric) as finished_product_mhd,
+    -- the receipt document's own quantity for this product and lot, summed over the document's
+    -- VHUs. Was always NULL in this section, which is why the received-versus-shipped proportion
+    -- could not be judged from the row.
+    ABS(ROUND(rq.qty_sum, COALESCE(ru.stdprecision, 0))) AS Qty,
+    ru.uomsymbol AS UOM,
+    'MATERIAL_SHIPMENT' as detail_type,
+    p.value as finished_product_no,
+    p.name as finished_product_name,
+    ABS(ROUND(sq.qty_sum, COALESCE(su.stdprecision, 0))) as finished_product_qty,
+    su.uomsymbol as finished_product_uom,
+    dp.LotNumber as finished_product_lot,
+    -- 1000029: the vendor-lot M_HU_Attribute, carried over verbatim from the previous body
+    (select value from m_hu_attribute vendorlot
+      where vendorlot.m_hu_id = dp.receipt_hu_id and vendorlot.m_attribute_id = 1000029::numeric) as vendorlot,
+    -- 540020: M_Attribute HU_BestBeforeDate (Mindesthaltbarkeit), carried over verbatim
+    (select to_char(valuedate, 'DD.MM.YYYY') from m_hu_attribute mhd
+      where mhd.m_hu_id = dp.shipment_hu_id and mhd.m_attribute_id = 540020::numeric) as finished_product_mhd,
     shipment_hulu_clearancestatus.name as finished_product_clearance,
     shipment_bp.value as customer_no,
     shipment_bp.name as customer,
-    ABS(ROUND(shipment_trace.qty, shipment_uom.stdprecision)) as shipmentqty,
+    -- same figure as finished_product_qty above, under the column name the report prints as
+    -- "2_Liefermenge"; both read the one shipment_doc_qty CTE
+    ABS(ROUND(sq.qty_sum, COALESCE(su.stdprecision, 0))) as shipmentqty,
     shipment_io.documentno as shipment_note,
     to_char(shipment_io.movementdate, 'DD.MM.YYYY') as shipment_date,
-    getcurrentstoragestock(t.m_product_id, t.c_uom_id, 1000017, shipment_trace.lotnumber, t.ad_client_id, t.ad_org_id) AS prod_stock,
-    shipment_trace.m_hu_trace_id,
+    -- 1000017: M_Attribute Lot-Nummer. UOM and client/org are taken from the receipt side, which
+    -- is what the pre-rewrite expression used (t.c_uom_id / t.ad_client_id / t.ad_org_id).
+    getcurrentstoragestock(dp.M_Product_ID, dp.receipt_uom_id, 1000017, dp.LotNumber,
+                           receipt_io.ad_client_id, receipt_io.ad_org_id) AS prod_stock,
+    dp.shipment_trace_id AS traceid,
     to_char(now(), 'DD.MM.YYYY HH24:MM') as reportdate,
-    null::varchar as link_basis
-FROM M_HU_Trace t
-JOIN M_Product p ON t.m_product_id = p.m_product_id
-JOIN C_UOM u ON t.C_UOM_ID = u.c_uom_id
--- Join to the material receipt (purchase from vendor, issotrx=N)
-LEFT JOIN M_InOut receipt_io ON t.m_inout_id = receipt_io.m_inout_id
-LEFT JOIN C_DocType receipt_dt ON receipt_io.c_doctype_id = receipt_dt.c_doctype_id
-LEFT JOIN c_bpartner receipt_bp ON receipt_io.c_bpartner_id = receipt_bp.c_bpartner_id
--- Join to the material shipment (sale to customer, issotrx=Y) via lot number and product
-LEFT JOIN M_HU_Trace as shipment_trace ON
-    shipment_trace.lotnumber IS NOT DISTINCT FROM t.lotnumber
-    AND shipment_trace.m_product_id = t.m_product_id
-    AND shipment_trace.hutracetype = 'MATERIAL_SHIPMENT'
-LEFT JOIN M_InOut shipment_io ON shipment_trace.m_inout_id = shipment_io.m_inout_id
-LEFT JOIN C_DocType shipment_dt ON shipment_io.c_doctype_id = shipment_dt.c_doctype_id
+    dp.link_basis
+FROM detail_pair dp
+JOIN M_Product p         ON p.m_product_id = dp.M_Product_ID
+JOIN M_InOut receipt_io  ON receipt_io.m_inout_id = dp.receipt_inout_id
+JOIN M_InOut shipment_io ON shipment_io.m_inout_id = dp.shipment_inout_id
 LEFT JOIN c_bpartner shipment_bp ON shipment_io.c_bpartner_id = shipment_bp.c_bpartner_id
-JOIN M_Product shipment_product ON shipment_trace.m_product_id = shipment_product.m_product_id
-LEFT JOIN C_UOM shipment_uom on shipment_trace.c_uom_id = shipment_uom.c_uom_id
-LEFT JOIN m_hu shipment_hu ON shipment_trace.m_hu_id = shipment_hu.m_hu_id
-LEFT JOIN ad_ref_list shipment_hulu_clearancestatus ON 
-    shipment_hulu_clearancestatus.ad_reference_id = 541540::numeric 
-    AND shipment_hulu_clearancestatus.value::text = shipment_hu.clearancestatus::text
-WHERE t.hutracetype IN ('MATERIAL_RECEIPT')
-  -- Ensure this is a purchase receipt (from vendor)
-  AND receipt_dt.isSOTrx = 'N'
-  AND receipt_io.docstatus IN ('CO', 'CL')
-  -- Ensure there is a corresponding shipment (to customer)
-  AND shipment_io.m_inout_id IS NOT NULL
-  AND shipment_dt.isSOTrx = 'Y'
-  AND shipment_io.docstatus IN ('CO', 'CL')
-  -- Ensure this product was NOT manufactured (no production order)
-  AND NOT EXISTS (
+LEFT JOIN C_UOM su ON su.c_uom_id = dp.shipment_uom_id
+LEFT JOIN C_UOM ru ON ru.c_uom_id = dp.receipt_uom_id
+LEFT JOIN receipt_doc_qty rq
+       ON rq.M_InOut_ID   = dp.receipt_inout_id
+      AND rq.M_Product_ID = dp.M_Product_ID
+      AND rq.LotNumber IS NOT DISTINCT FROM dp.LotNumber
+LEFT JOIN shipment_doc_qty sq
+       ON sq.M_InOut_ID   = dp.shipment_inout_id
+      AND sq.M_Product_ID = dp.M_Product_ID
+      AND sq.LotNumber IS NOT DISTINCT FROM dp.LotNumber
+LEFT JOIN m_hu shipment_hu ON shipment_hu.m_hu_id = dp.shipment_hu_id
+-- 541540: AD_Reference "Clearance", the HU clearance-status list, carried over verbatim
+LEFT JOIN ad_ref_list shipment_hulu_clearancestatus
+       ON shipment_hulu_clearancestatus.ad_reference_id = 541540::numeric
+      AND shipment_hulu_clearancestatus.value::text = shipment_hu.clearancestatus::text
+-- the receipt document's isSOTrx/docstatus and the shipment document's are already enforced in
+-- receipt_trace / shipment_trace_sel, so that both pairing branches see the same eligible documents
+WHERE NOT EXISTS (
+      -- unchanged: this section is for products that were not manufactured
       SELECT 1 FROM M_HU_Trace pt
-      WHERE pt.lotnumber IS NOT DISTINCT FROM t.lotnumber
-      AND pt.m_product_id = t.m_product_id
-      AND pt.hutracetype IN ('PRODUCTION_ISSUE', 'PRODUCTION_RECEIPT')
+       WHERE pt.LotNumber IS NOT DISTINCT FROM dp.LotNumber
+         AND pt.M_Product_ID = dp.M_Product_ID
+         AND pt.HUTraceType IN ('PRODUCTION_ISSUE', 'PRODUCTION_RECEIPT')
   )
-  AND EXISTS (SELECT 1 FROM T_Selection s WHERE s.AD_PInstance_ID = p_AD_PInstance_ID AND s.T_Selection_ID = t.m_hu_trace_id)
 
 UNION ALL
 

@@ -122,7 +122,8 @@ public class M_HU_Trace_Report_StepDef
 	 *   <li>{@code LOT_DISAGREEMENT} — a receipt's VHU transforms (one TRANSFORM_LOAD edge) into
 	 *       the shipped VHU, but the shipment's own MATERIAL_SHIPMENT trace carries a different
 	 *       lot number than the receipt. Guards the lot-agreement half of the graph-tracing rule:
-	 *       a graph link alone must not be enough to call the pair traced.</li>
+	 *       a graph link alone must not be enough to call the pair traced, and such a pair is
+	 *       dropped outright rather than demoted to a product-level candidate.</li>
 	 *   <li>{@code SAME_VHU_NO_TRANSFORM} — one VHU carries both the MATERIAL_RECEIPT and the
 	 *       MATERIAL_SHIPMENT trace directly, with no TRANSFORM_LOAD edge at all (received and
 	 *       shipped without repacking). The depth-0 case a rule that only walks edges would miss.</li>
@@ -508,6 +509,10 @@ public class M_HU_Trace_Report_StepDef
 	 * shipment's own MATERIAL_SHIPMENT trace carries a different lot number than the receipt.
 	 * Guards the lot-agreement half of the graph-tracing rule: a graph link alone must not be
 	 * enough to call the pair traced when the two ends disagree on lot.
+	 *
+	 * <p>The rejected pair is dropped, not demoted: the candidate branch also requires lot
+	 * agreement, so nothing at all is emitted. A product-only fallback would pair every receipt of
+	 * the product with every shipment of it — the cartesian this whole section is being fixed for.
 	 */
 	private void setupLotDisagreement(@NonNull final String scenarioName, @NonNull final ProductId productId)
 	{
