@@ -12,6 +12,14 @@
 -- added by 5643560_sys_add_FirmenbuchNR_to_Business_Partner_Window.sql) which is reused as-is
 -- for the invoiced body's OWN SIRET and is NOT touched by this script.
 --
+-- On the length gap between the two SIRET-shaped columns: PublicAuthoritySiret is VARCHAR(20)
+-- while CommercialRegisterNumber is VARCHAR(60). That is deliberate, not an oversight.
+-- CommercialRegisterNumber is a GENERIC company-registration field used by every country's
+-- partners (German Firmenbuch numbers, other national registers), so it is sized for the
+-- widest case. PublicAuthoritySiret holds only a French SIRET, which is a fixed 14 digits;
+-- 20 leaves room for the usual grouping separators (e.g. '123 456 789 12345', 18 chars) while
+-- still rejecting input that cannot be a SIRET at all.
+--
 -- Known glossary gap: the metasfresh terminology glossary has no entry for the French statutory
 -- terms behind these two references, so no German neologism is coined here. Each AD_Element's
 -- BASE-language Name/PrintName is the FRENCH STATUTORY TERM exactly as it is printed on the
