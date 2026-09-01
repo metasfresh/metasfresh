@@ -39,6 +39,26 @@
 -- applied-ness on the file NAME with no checksum, so a stack that already ran the earlier version keeps
 -- the old value. Reconcile with:
 --   UPDATE AD_Table_Process SET WebUI_DocumentAction='Y' WHERE AD_Table_Process_ID=541666;
+--
+-- Any stack that applied this script BEFORE the three _Trl seeds covered a base language that is not
+-- flagged as a system language needs this once as well -- the runner will not re-run an applied file. A
+-- no-op wherever the base language is also flagged a system language, which is the usual setup:
+--   INSERT INTO AD_Process_Trl (AD_Language, AD_Process_ID, Name, Description, Help, IsTranslated, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy)
+--   SELECT l.AD_Language, t.AD_Process_ID, t.Name, t.Description, t.Help, 'N', t.AD_Client_ID, t.AD_Org_ID, 'Y', t.Created, t.CreatedBy, t.Updated, t.UpdatedBy
+--     FROM AD_Language l, AD_Process t
+--    WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Process_ID=585654
+--      AND NOT EXISTS (SELECT 1 FROM AD_Process_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_ID=t.AD_Process_ID);
+--   INSERT INTO AD_Process_Para_Trl (AD_Language, AD_Process_Para_ID, Name, Description, Help, IsTranslated, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy)
+--   SELECT l.AD_Language, t.AD_Process_Para_ID, t.Name, t.Description, t.Help, 'N', t.AD_Client_ID, t.AD_Org_ID, 'Y', t.Created, t.CreatedBy, t.Updated, t.UpdatedBy
+--     FROM AD_Language l, AD_Process_Para t
+--    WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Process_Para_ID IN (543277, 543278)
+--      AND NOT EXISTS (SELECT 1 FROM AD_Process_Para_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_Para_ID=t.AD_Process_Para_ID);
+--   SELECT update_TRL_Tables_On_AD_Element_TRL_Update(e) FROM unnest(ARRAY[581679,540089]) e;
+--   INSERT INTO AD_Message_Trl (AD_Language, AD_Message_ID, MsgText, MsgTip, IsTranslated, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy)
+--   SELECT l.AD_Language, t.AD_Message_ID, t.MsgText, t.MsgTip, 'N', t.AD_Client_ID, t.AD_Org_ID, 'Y', t.Created, t.CreatedBy, t.Updated, t.UpdatedBy
+--     FROM AD_Language l, AD_Message t
+--    WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Message_ID IN (545807, 545808)
+--      AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID);
 
 -- ---------------------------------------------------------------------------------------------
 -- 1) the value rule: drafted delivery instructions of ONE direction.
@@ -88,11 +108,11 @@ VALUES (585654 /*From ID Server*/, 0, 0, 'Y',
         'N')
 ;
 
--- seed AD_Process_Trl for every active system language, copying the German base text
+-- seed AD_Process_Trl for every active system or base language, copying the German base text
 INSERT INTO AD_Process_Trl (AD_Language, AD_Process_ID, Name, Description, Help, IsTranslated, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy)
 SELECT l.AD_Language, t.AD_Process_ID, t.Name, t.Description, t.Help, 'N', t.AD_Client_ID, t.AD_Org_ID, 'Y', t.Created, t.CreatedBy, t.Updated, t.UpdatedBy
 FROM AD_Language l, AD_Process t
-WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Process_ID=585654
+WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Process_ID=585654
   AND NOT EXISTS (SELECT 1 FROM AD_Process_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_ID=t.AD_Process_ID)
 ;
 
@@ -143,7 +163,7 @@ VALUES (543278 /*From ID Server*/, 0, 0, 'Y',
 INSERT INTO AD_Process_Para_Trl (AD_Language, AD_Process_Para_ID, Name, Description, Help, IsTranslated, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy)
 SELECT l.AD_Language, t.AD_Process_Para_ID, t.Name, t.Description, t.Help, 'N', t.AD_Client_ID, t.AD_Org_ID, 'Y', t.Created, t.CreatedBy, t.Updated, t.UpdatedBy
 FROM AD_Language l, AD_Process_Para t
-WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Process_Para_ID IN (543277, 543278)
+WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Process_Para_ID IN (543277, 543278)
   AND NOT EXISTS (SELECT 1 FROM AD_Process_Para_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_Para_ID=t.AD_Process_Para_ID)
 ;
 
@@ -185,11 +205,11 @@ VALUES
 UPDATE AD_Message SET ErrorCode='DP_ON_COMPLETED_INSTRUCTION', Updated=TO_TIMESTAMP('2026-08-27 10:06:00', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Message_ID=545807;
 UPDATE AD_Message SET ErrorCode='DP_ADDTO_TARGET_NOT_DRAFT', Updated=TO_TIMESTAMP('2026-08-27 10:06:01', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Message_ID=545808;
 
--- seed AD_Message_Trl for every active system language, copying the German base text
+-- seed AD_Message_Trl for every active system or base language, copying the German base text
 INSERT INTO AD_Message_Trl (AD_Language, AD_Message_ID, MsgText, MsgTip, IsTranslated, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy)
 SELECT l.AD_Language, t.AD_Message_ID, t.MsgText, t.MsgTip, 'N', t.AD_Client_ID, t.AD_Org_ID, 'Y', t.Created, t.CreatedBy, t.Updated, t.UpdatedBy
 FROM AD_Language l, AD_Message t
-WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Message_ID IN (545807, 545808)
+WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Message_ID IN (545807, 545808)
   AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
 ;
 
