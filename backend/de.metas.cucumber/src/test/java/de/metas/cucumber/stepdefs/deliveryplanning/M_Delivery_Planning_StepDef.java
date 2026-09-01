@@ -418,8 +418,8 @@ public class M_Delivery_Planning_StepDef
 	 * @cucumber.example
 	 * <pre>
 	 * When closing M_Delivery_Planning identified by deliveryPlanning is refused:
-	 *   | ErrorMessage  |
-	 *   | @Closed@=@Y@  |
+	 *   | ErrorAdMessage                                           |
+	 *   | de.metas.deliveryplanning.DeliveryPlanningService.Closed |
 	 * </pre>
 	 */
 	@When("^(closing|reopening|cancelling) M_Delivery_Planning identified by (.*) is refused:$")

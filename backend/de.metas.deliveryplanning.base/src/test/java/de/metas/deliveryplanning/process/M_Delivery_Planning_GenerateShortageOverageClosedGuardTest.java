@@ -106,8 +106,7 @@ class M_Delivery_Planning_GenerateShortageOverageClosedGuardTest
 
 		assertThat(resolution.isAccepted()).isFalse();
 		assertThat(resolution.getRejectReason().translate("en_US"))
-				.contains(DeliveryPlanningService.MSG_M_Delivery_Planning_Closed.toAD_Message())
-				.contains(String.valueOf(closedId));
+				.isEqualTo(DeliveryPlanningService.MSG_M_Delivery_Planning_Closed.toAD_Message() + " - " + closedId);
 	}
 
 	@Test

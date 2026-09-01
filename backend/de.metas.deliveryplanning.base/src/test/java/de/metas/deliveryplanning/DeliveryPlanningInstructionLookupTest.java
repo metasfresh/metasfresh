@@ -37,6 +37,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Delivery_Planning;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -112,38 +113,43 @@ class DeliveryPlanningInstructionLookupTest
 
 	// ------------------------------------------------------------------ tests
 
-	@Test
-	@DisplayName("hasCompleteDeliveryInstruction is true when the planning's active allocation points at a completed instruction")
-	void hasCompleteDeliveryInstruction_completedInstruction()
+	@Nested
+	@DisplayName("hasCompleteDeliveryInstruction")
+	class HasCompleteDeliveryInstruction
 	{
-		final ShipperTransportationId instructionId = createDeliveryInstruction(DocStatus.Completed, true);
-		final DeliveryPlanningId planningId = createDeliveryPlanning();
-		deliveryPlanningRepository.createAllocations(instructionId, ImmutableList.of(allocRequestFor(planningId)));
+		@Test
+		@DisplayName("is true when the planning's active allocation points at a completed instruction")
+		void completedInstruction()
+		{
+			final ShipperTransportationId instructionId = createDeliveryInstruction(DocStatus.Completed, true);
+			final DeliveryPlanningId planningId = createDeliveryPlanning();
+			deliveryPlanningRepository.createAllocations(instructionId, ImmutableList.of(allocRequestFor(planningId)));
 
-		assertThat(deliveryPlanningRepository.hasCompleteDeliveryInstruction(planningId)).isTrue();
-	}
+			assertThat(deliveryPlanningRepository.hasCompleteDeliveryInstruction(planningId)).isTrue();
+		}
 
-	@Test
-	@DisplayName("hasCompleteDeliveryInstruction is false when the planning's allocated instruction is only drafted")
-	void hasCompleteDeliveryInstruction_draftedInstructionOnly()
-	{
-		final ShipperTransportationId instructionId = createDeliveryInstruction(DocStatus.Drafted, false);
-		final DeliveryPlanningId planningId = createDeliveryPlanning();
-		deliveryPlanningRepository.createAllocations(instructionId, ImmutableList.of(allocRequestFor(planningId)));
+		@Test
+		@DisplayName("is false when the planning's allocated instruction is only drafted")
+		void draftedInstructionOnly()
+		{
+			final ShipperTransportationId instructionId = createDeliveryInstruction(DocStatus.Drafted, false);
+			final DeliveryPlanningId planningId = createDeliveryPlanning();
+			deliveryPlanningRepository.createAllocations(instructionId, ImmutableList.of(allocRequestFor(planningId)));
 
-		assertThat(deliveryPlanningRepository.hasCompleteDeliveryInstruction(planningId)).isFalse();
-	}
+			assertThat(deliveryPlanningRepository.hasCompleteDeliveryInstruction(planningId)).isFalse();
+		}
 
-	@Test
-	@DisplayName("hasCompleteDeliveryInstruction is false when the only allocation onto the completed instruction is inactive")
-	void hasCompleteDeliveryInstruction_inactiveAllocation()
-	{
-		final ShipperTransportationId instructionId = createDeliveryInstruction(DocStatus.Completed, true);
-		final DeliveryPlanningId planningId = createDeliveryPlanning();
-		deliveryPlanningRepository.createAllocations(instructionId, ImmutableList.of(allocRequestFor(planningId)));
-		deliveryPlanningRepository.deactivateAllocations(instructionId, REMOVED_AT);
+		@Test
+		@DisplayName("is false when the only allocation onto the completed instruction is inactive")
+		void inactiveAllocation()
+		{
+			final ShipperTransportationId instructionId = createDeliveryInstruction(DocStatus.Completed, true);
+			final DeliveryPlanningId planningId = createDeliveryPlanning();
+			deliveryPlanningRepository.createAllocations(instructionId, ImmutableList.of(allocRequestFor(planningId)));
+			deliveryPlanningRepository.deactivateAllocations(instructionId, REMOVED_AT);
 
-		assertThat(deliveryPlanningRepository.hasCompleteDeliveryInstruction(planningId)).isFalse();
+			assertThat(deliveryPlanningRepository.hasCompleteDeliveryInstruction(planningId)).isFalse();
+		}
 	}
 
 	@Test

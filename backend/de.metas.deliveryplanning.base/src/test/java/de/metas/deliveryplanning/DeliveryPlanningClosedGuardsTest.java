@@ -37,6 +37,7 @@ import org.compiere.model.I_M_Delivery_Planning;
 import org.compiere.model.X_M_Delivery_Planning;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -47,9 +48,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * "Closed means finished, nothing touches it": {@code Close} / {@code ReOpen} throw the canonical
- * {@code @Closed@} error instead of silently doing nothing, and {@code Cancel} refuses a closed row per-row rather
- * than aborting the whole selection.
+ * "Closed means finished, nothing touches it": {@code Close} / {@code ReOpen} throw the AD_Message their
+ * precondition rejects with, naming the offending planning, instead of silently doing nothing - and
+ * {@code Cancel} refuses a closed row per-row rather than aborting the whole selection.
  */
 class DeliveryPlanningClosedGuardsTest
 {
@@ -110,126 +111,135 @@ class DeliveryPlanningClosedGuardsTest
 						Arrays.stream(records).map(DeliveryPlanningClosedGuardsTest::idOf).collect(ImmutableList.toImmutableList()));
 	}
 
-	// ------------------------------------------------------------------ Close
-
-	@Test
-	@DisplayName("close: an open planning is closed")
-	void close_openPlanningIsClosed()
+	@Nested
+	@DisplayName("close")
+	class Close
 	{
-		final I_M_Delivery_Planning open = deliveryPlanning(false);
+		@Test
+		@DisplayName("an open planning is closed")
+		void openPlanningIsClosed()
+		{
+			final I_M_Delivery_Planning open = deliveryPlanning(false);
 
-		deliveryPlanningService.closeSelectedDeliveryPlannings(selectionOf(open));
+			deliveryPlanningService.closeSelectedDeliveryPlannings(selectionOf(open));
 
-		final I_M_Delivery_Planning reloaded = reload(open);
-		assertThat(reloaded.isClosed()).isTrue();
-		assertThat(reloaded.isProcessed()).isTrue();
+			final I_M_Delivery_Planning reloaded = reload(open);
+			assertThat(reloaded.isClosed()).isTrue();
+			assertThat(reloaded.isProcessed()).isTrue();
+		}
+
+		@Test
+		@DisplayName("an already-closed planning errors instead of doing nothing, naming the planning")
+		void alreadyClosedPlanningErrors()
+		{
+			final I_M_Delivery_Planning alreadyClosed = deliveryPlanning(true);
+
+			assertThatThrownBy(() -> deliveryPlanningService.closeSelectedDeliveryPlannings(selectionOf(alreadyClosed)))
+					.isInstanceOf(AdempiereException.class)
+					// the backstop raises the same AD_Message the precondition rejects with, with the offending
+					// planning as its parameter - never a developer token carrying the record's toString()
+					.hasMessageContaining(DeliveryPlanningService.MSG_M_Delivery_Planning_Closed.toAD_Message())
+					.hasMessageContaining(String.valueOf(idOf(alreadyClosed).getRepoId()));
+		}
+
+		@Test
+		@DisplayName("a mixed selection is refused wholesale - nothing is closed")
+		void mixedSelectionIsAllOrNothing()
+		{
+			final I_M_Delivery_Planning open = deliveryPlanning(false);
+			final I_M_Delivery_Planning alreadyClosed = deliveryPlanning(true);
+
+			assertThatThrownBy(() -> deliveryPlanningService.closeSelectedDeliveryPlannings(selectionOf(open, alreadyClosed)))
+					.isInstanceOf(AdempiereException.class);
+
+			assertThat(reload(open).isClosed()).as("the open one must not have been closed either").isFalse();
+		}
 	}
 
-	@Test
-	@DisplayName("close: an already-closed planning errors instead of doing nothing, naming the planning")
-	void close_alreadyClosedPlanningErrors()
+	@Nested
+	@DisplayName("reopen")
+	class ReOpen
 	{
-		final I_M_Delivery_Planning alreadyClosed = deliveryPlanning(true);
+		@Test
+		@DisplayName("a closed planning is reopened")
+		void closedPlanningIsReopened()
+		{
+			final I_M_Delivery_Planning closed = deliveryPlanning(true);
 
-		assertThatThrownBy(() -> deliveryPlanningService.closeSelectedDeliveryPlannings(selectionOf(alreadyClosed)))
-				.isInstanceOf(AdempiereException.class)
-				// the backstop raises the same AD_Message the precondition rejects with, with the offending
-				// planning as its parameter - never a developer token carrying the record's toString()
-				.hasMessageContaining(DeliveryPlanningService.MSG_M_Delivery_Planning_Closed.toAD_Message())
-				.hasMessageContaining(String.valueOf(idOf(alreadyClosed).getRepoId()));
+			deliveryPlanningService.reOpenSelectedDeliveryPlannings(selectionOf(closed));
+
+			final I_M_Delivery_Planning reloaded = reload(closed);
+			assertThat(reloaded.isClosed()).isFalse();
+			assertThat(reloaded.isProcessed()).isFalse();
+		}
+
+		@Test
+		@DisplayName("an open planning errors instead of doing nothing, naming the planning")
+		void openPlanningErrors()
+		{
+			final I_M_Delivery_Planning open = deliveryPlanning(false);
+
+			assertThatThrownBy(() -> deliveryPlanningService.reOpenSelectedDeliveryPlannings(selectionOf(open)))
+					.isInstanceOf(AdempiereException.class)
+					// the backstop raises the same AD_Message the precondition rejects with, with the offending
+					// planning as its parameter - never a developer token carrying the record's toString()
+					.hasMessageContaining(DeliveryPlanningService.MSG_M_Delivery_Planning_Open.toAD_Message())
+					.hasMessageContaining(String.valueOf(idOf(open).getRepoId()));
+		}
+
+		@Test
+		@DisplayName("a mixed selection is refused wholesale - nothing is reopened")
+		void mixedSelectionIsAllOrNothing()
+		{
+			final I_M_Delivery_Planning open = deliveryPlanning(false);
+			final I_M_Delivery_Planning alreadyClosed = deliveryPlanning(true);
+
+			assertThatThrownBy(() -> deliveryPlanningService.reOpenSelectedDeliveryPlannings(selectionOf(open, alreadyClosed)))
+					.isInstanceOf(AdempiereException.class);
+
+			assertThat(reload(alreadyClosed).isClosed()).as("the closed one must not have been reopened either").isTrue();
+		}
 	}
 
-	@Test
-	@DisplayName("close: a mixed selection is refused wholesale - nothing is closed")
-	void close_mixedSelectionIsAllOrNothing()
+	@Nested
+	@DisplayName("cancel")
+	class Cancel
 	{
-		final I_M_Delivery_Planning open = deliveryPlanning(false);
-		final I_M_Delivery_Planning alreadyClosed = deliveryPlanning(true);
+		@Test
+		@DisplayName("a mixed selection processes the open one and reports the closed one, rather than aborting")
+		void mixedSelectionProcessesOpenAndReportsClosed()
+		{
+			final I_M_Delivery_Planning open = deliveryPlanningWithReleaseNo(false, "REL-OPEN");
+			final I_M_Delivery_Planning closed = deliveryPlanningWithReleaseNo(true, "REL-CLOSED");
 
-		assertThatThrownBy(() -> deliveryPlanningService.closeSelectedDeliveryPlannings(selectionOf(open, alreadyClosed)))
-				.isInstanceOf(AdempiereException.class);
+			final DeliveryPlanningCancelResult result = deliveryPlanningService.cancelDelivery(selectionOf(open, closed));
 
-		assertThat(reload(open).isClosed()).as("the open one must not have been closed either").isFalse();
-	}
+			assertThat(result.getCancelledIds()).containsExactly(idOf(open));
+			assertThat(result.getSkippedClosedIds()).containsExactly(idOf(closed));
 
-	// ------------------------------------------------------------------ ReOpen
+			final I_M_Delivery_Planning reloadedOpen = reload(open);
+			assertThat(reloadedOpen.isClosed()).as("the open one is now closed - cancelling closes it").isTrue();
+			assertThat(reloadedOpen.getOrderStatus()).isEqualTo(X_M_Delivery_Planning.ORDERSTATUS_Canceled);
+			assertThat(reloadedOpen.getPlannedLoadedQuantity()).isEqualByComparingTo(BigDecimal.ZERO);
 
-	@Test
-	@DisplayName("reopen: a closed planning is reopened")
-	void reOpen_closedPlanningIsReopened()
-	{
-		final I_M_Delivery_Planning closed = deliveryPlanning(true);
+			final I_M_Delivery_Planning reloadedClosed = reload(closed);
+			assertThat(reloadedClosed.getOrderStatus())
+					.as("the closed one was skipped, not cancelled")
+					.isNotEqualTo(X_M_Delivery_Planning.ORDERSTATUS_Canceled);
+			assertThat(reloadedClosed.getReleaseNo()).as("left exactly as it was").isEqualTo("REL-CLOSED");
+		}
 
-		deliveryPlanningService.reOpenSelectedDeliveryPlannings(selectionOf(closed));
+		@Test
+		@DisplayName("a selection of only closed plannings cancels none and reports all of them")
+		void allClosedSelectionCancelsNone()
+		{
+			final I_M_Delivery_Planning closedOne = deliveryPlanningWithReleaseNo(true, "REL-1");
+			final I_M_Delivery_Planning closedTwo = deliveryPlanningWithReleaseNo(true, "REL-2");
 
-		final I_M_Delivery_Planning reloaded = reload(closed);
-		assertThat(reloaded.isClosed()).isFalse();
-		assertThat(reloaded.isProcessed()).isFalse();
-	}
+			final DeliveryPlanningCancelResult result = deliveryPlanningService.cancelDelivery(selectionOf(closedOne, closedTwo));
 
-	@Test
-	@DisplayName("reopen: an open planning errors instead of doing nothing, naming the planning")
-	void reOpen_openPlanningErrors()
-	{
-		final I_M_Delivery_Planning open = deliveryPlanning(false);
-
-		assertThatThrownBy(() -> deliveryPlanningService.reOpenSelectedDeliveryPlannings(selectionOf(open)))
-				.isInstanceOf(AdempiereException.class)
-				// the backstop raises the same AD_Message the precondition rejects with, with the offending
-				// planning as its parameter - never a developer token carrying the record's toString()
-				.hasMessageContaining(DeliveryPlanningService.MSG_M_Delivery_Planning_Open.toAD_Message())
-				.hasMessageContaining(String.valueOf(idOf(open).getRepoId()));
-	}
-
-	@Test
-	@DisplayName("reopen: a mixed selection is refused wholesale - nothing is reopened")
-	void reOpen_mixedSelectionIsAllOrNothing()
-	{
-		final I_M_Delivery_Planning open = deliveryPlanning(false);
-		final I_M_Delivery_Planning alreadyClosed = deliveryPlanning(true);
-
-		assertThatThrownBy(() -> deliveryPlanningService.reOpenSelectedDeliveryPlannings(selectionOf(open, alreadyClosed)))
-				.isInstanceOf(AdempiereException.class);
-
-		assertThat(reload(alreadyClosed).isClosed()).as("the closed one must not have been reopened either").isTrue();
-	}
-
-	// ------------------------------------------------------------------ Cancel
-
-	@Test
-	@DisplayName("cancel: a mixed selection processes the open one and reports the closed one, rather than aborting")
-	void cancel_mixedSelectionProcessesOpenAndReportsClosed()
-	{
-		final I_M_Delivery_Planning open = deliveryPlanningWithReleaseNo(false, "REL-OPEN");
-		final I_M_Delivery_Planning closed = deliveryPlanningWithReleaseNo(true, "REL-CLOSED");
-
-		final DeliveryPlanningCancelResult result = deliveryPlanningService.cancelDelivery(selectionOf(open, closed));
-
-		assertThat(result.getCancelledIds()).containsExactly(idOf(open));
-		assertThat(result.getSkippedClosedIds()).containsExactly(idOf(closed));
-
-		final I_M_Delivery_Planning reloadedOpen = reload(open);
-		assertThat(reloadedOpen.isClosed()).as("the open one is now closed - cancelling closes it").isTrue();
-		assertThat(reloadedOpen.getOrderStatus()).isEqualTo(X_M_Delivery_Planning.ORDERSTATUS_Canceled);
-		assertThat(reloadedOpen.getPlannedLoadedQuantity()).isEqualByComparingTo(BigDecimal.ZERO);
-
-		final I_M_Delivery_Planning reloadedClosed = reload(closed);
-		assertThat(reloadedClosed.getOrderStatus())
-				.as("the closed one was skipped, not cancelled")
-				.isNotEqualTo(X_M_Delivery_Planning.ORDERSTATUS_Canceled);
-		assertThat(reloadedClosed.getReleaseNo()).as("left exactly as it was").isEqualTo("REL-CLOSED");
-	}
-
-	@Test
-	@DisplayName("cancel: a selection of only closed plannings cancels none and reports all of them")
-	void cancel_allClosedSelectionCancelsNone()
-	{
-		final I_M_Delivery_Planning closedOne = deliveryPlanningWithReleaseNo(true, "REL-1");
-		final I_M_Delivery_Planning closedTwo = deliveryPlanningWithReleaseNo(true, "REL-2");
-
-		final DeliveryPlanningCancelResult result = deliveryPlanningService.cancelDelivery(selectionOf(closedOne, closedTwo));
-
-		assertThat(result.getCancelledIds()).isEmpty();
-		assertThat(result.getSkippedClosedIds()).containsExactlyInAnyOrder(idOf(closedOne), idOf(closedTwo));
+			assertThat(result.getCancelledIds()).isEmpty();
+			assertThat(result.getSkippedClosedIds()).containsExactlyInAnyOrder(idOf(closedOne), idOf(closedTwo));
+		}
 	}
 }

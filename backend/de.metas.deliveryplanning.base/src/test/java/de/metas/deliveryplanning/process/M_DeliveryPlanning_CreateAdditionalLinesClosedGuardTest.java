@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.deliveryplanning.webui
+ * de.metas.deliveryplanning.base
  * %%
  * Copyright (C) 2026 metas GmbH
  * %%
@@ -20,17 +20,15 @@
  * #L%
  */
 
-package de.metas.deliveryplanning.webui.process;
+package de.metas.deliveryplanning.process;
 
 import de.metas.deliveryplanning.DeliveryPlanningRepository;
 import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.deliveryplanning.DeliveryStatusColorPaletteService;
 import de.metas.deliveryplanning.MeansOfTransportationService;
 import de.metas.document.dimension.DimensionService;
-import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.shipping.PurchaseOrderToShipperTransportationRepository;
 import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -47,13 +45,15 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * {@code GenerateReceipt} and {@code GenerateShipment} refuse a closed planning in their precondition, the
- * same guard {@code GenerateShortageOverage} carries (proven in {@code de.metas.deliveryplanning.base}).
+ * {@code CreateAdditionalLines} refuses a closed planning in its precondition, the same guard
+ * {@code GenerateShortageOverage} and {@code GenerateReceipt}/{@code GenerateShipment} carry.
  * <p>
- * The guard is checked BEFORE either process reads a receipt/shipment schedule, so a closed selection needs no
- * further fixture.
+ * The refusal is a VISIBLE one: the button stays on screen, disabled, with the reason in its tooltip, so the
+ * planner reads why. That is what {@link ProcessPreconditionsResolution#isInternal()} being {@code false}
+ * pins - a resolution built by {@code rejectWithInternalReason} would hide the button instead, and would carry
+ * the very same message, so asserting the message alone cannot tell the two apart.
  */
-class DeliveryPlanningGenerateClosedGuardTest
+class M_DeliveryPlanning_CreateAdditionalLinesClosedGuardTest
 {
 	@BeforeEach
 	void setUp()
@@ -69,16 +69,12 @@ class DeliveryPlanningGenerateClosedGuardTest
 				new ShipperTransportationDocSubTypeGuard());
 
 		SpringContextHolder.registerJUnitBean(DeliveryPlanningService.class, deliveryPlanningService);
-		SpringContextHolder.registerJUnitBean(ShipmentService.class, Mockito.mock(ShipmentService.class));
-		SpringContextHolder.registerJUnitBean(
-				PurchaseOrderToShipperTransportationRepository.class,
-				Mockito.mock(PurchaseOrderToShipperTransportationRepository.class));
 	}
 
-	private static int closedDeliveryPlanning()
+	private static int deliveryPlanning(final boolean closed)
 	{
 		final I_M_Delivery_Planning record = InterfaceWrapperHelper.newInstance(I_M_Delivery_Planning.class);
-		record.setIsClosed(true);
+		record.setIsClosed(closed);
 		InterfaceWrapperHelper.save(record);
 		return record.getM_Delivery_Planning_ID();
 	}
@@ -86,39 +82,38 @@ class DeliveryPlanningGenerateClosedGuardTest
 	private static IProcessPreconditionsContext contextSelecting(final int deliveryPlanningId)
 	{
 		final IProcessPreconditionsContext context = mock(IProcessPreconditionsContext.class);
-		when(context.isSingleSelection()).thenReturn(true);
 		when(context.getSingleSelectedRecordId()).thenReturn(deliveryPlanningId);
 		return context;
 	}
 
-	private static void assertRefusedAsClosed(final ProcessPreconditionsResolution resolution, final int deliveryPlanningId)
+	@Test
+	@DisplayName("CreateAdditionalLines refuses a closed planning VISIBLY, naming it")
+	void closedPlanningIsRefusedVisibly()
 	{
+		final int closedId = deliveryPlanning(true);
+
+		final ProcessPreconditionsResolution resolution =
+				new M_DeliveryPlanning_CreateAdditionalLines().checkPreconditionsApplicable(contextSelecting(closedId));
+
 		assertThat(resolution.isAccepted()).isFalse();
+		assertThat(resolution.isInternal())
+				.as("the planner must SEE the disabled button and its reason, not lose the button altogether")
+				.isFalse();
 		assertThat(resolution.getRejectReason().translate("en_US"))
-				.isEqualTo(DeliveryPlanningService.MSG_M_Delivery_Planning_Closed.toAD_Message() + " - " + deliveryPlanningId);
+				.isEqualTo(DeliveryPlanningService.MSG_M_Delivery_Planning_Closed.toAD_Message() + " - " + closedId);
 	}
 
 	@Test
-	@DisplayName("GenerateReceipt refuses a closed planning, naming it")
-	void generateReceipt_closedPlanningIsRefused()
+	@DisplayName("CreateAdditionalLines does NOT refuse an open planning as closed")
+	void openPlanningIsNotRefusedAsClosed()
 	{
-		final int closedId = closedDeliveryPlanning();
+		final int openId = deliveryPlanning(false);
 
 		final ProcessPreconditionsResolution resolution =
-				new M_Delivery_Planning_GenerateReceipt().checkPreconditionsApplicable(contextSelecting(closedId));
+				new M_DeliveryPlanning_CreateAdditionalLines().checkPreconditionsApplicable(contextSelecting(openId));
 
-		assertRefusedAsClosed(resolution, closedId);
-	}
-
-	@Test
-	@DisplayName("GenerateShipment refuses a closed planning, naming it")
-	void generateShipment_closedPlanningIsRefused()
-	{
-		final int closedId = closedDeliveryPlanning();
-
-		final ProcessPreconditionsResolution resolution =
-				new M_Delivery_Planning_GenerateShipment().checkPreconditionsApplicable(contextSelecting(closedId));
-
-		assertRefusedAsClosed(resolution, closedId);
+		// nothing else in the chain objects to a single, open, unblocked planning, so the guard being a no-op
+		// for an open one is observable as the whole precondition accepting
+		assertThat(resolution.isAccepted()).isTrue();
 	}
 }

@@ -50,6 +50,7 @@ import org.compiere.model.X_M_Delivery_Planning;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -250,136 +251,146 @@ class DeliveryPlanningAddToAdmissibilityTest
 
 	// ------------------------------------------------------------------ tests
 
-	@Test
-	@DisplayName("add to is refused when the selection differs from what the target already holds, naming the field")
-	void addTo_differingFromTheTargetsOwnPlanningsIsRefused()
+	@Nested
+	@DisplayName("add to")
+	class AddTo
 	{
-		// the target: two plannings of forwarder A, combined into ONE draft instruction whose header therefore
-		// carries A's forwarder, incoterms and addresses
-		final I_M_Delivery_Planning p1 = deliveryPlanning(FORWARDER_A);
-		final I_M_Delivery_Planning p3 = deliveryPlanning(FORWARDER_A);
-		final ShipperTransportationId target = combineIntoDraftInstruction(ImmutableList.of(p1, p3));
+		@Test
+		@DisplayName("refused when the selection differs from what the target already holds, naming the field")
+		void differingFromTheTargetsOwnPlanningsIsRefused()
+		{
+			// the target: two plannings of forwarder A, combined into ONE draft instruction whose header therefore
+			// carries A's forwarder, incoterms and addresses
+			final I_M_Delivery_Planning p1 = deliveryPlanning(FORWARDER_A);
+			final I_M_Delivery_Planning p3 = deliveryPlanning(FORWARDER_A);
+			final ShipperTransportationId target = combineIntoDraftInstruction(ImmutableList.of(p1, p3));
 
-		// a third planning that differs from them in the FORWARDER and in nothing else - combining it with either
-		// of them would be refused, so putting it on the document they already sit on has to be refused too
-		final I_M_Delivery_Planning p2 = deliveryPlanning(FORWARDER_B);
-		final IQueryFilter<I_M_Delivery_Planning> selection = selectionOf(ImmutableList.of(p2));
+			// a third planning that differs from them in the FORWARDER and in nothing else - combining it with either
+			// of them would be refused, so putting it on the document they already sit on has to be refused too
+			final I_M_Delivery_Planning p2 = deliveryPlanning(FORWARDER_B);
+			final IQueryFilter<I_M_Delivery_Planning> selection = selectionOf(ImmutableList.of(p2));
 
-		assertThat(addToRejectionTextOf(selection, target))
-				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_IncompatibleSelection))
-				.contains(keyOf(AggregationKeyField.Forwarder.getLabel()));
+			assertThat(addToRejectionTextOf(selection, target))
+					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_IncompatibleSelection))
+					.contains(keyOf(AggregationKeyField.Forwarder.getLabel()));
 
-		assertThatThrownBy(() -> deliveryPlanningService.addTo(selection, target))
-				.isInstanceOf(AdempiereException.class);
+			assertThatThrownBy(() -> deliveryPlanningService.addTo(selection, target))
+					.isInstanceOf(AdempiereException.class);
 
-		assertThat(deliveryPlanningRepository.getAllocatedPlanningIds(target))
-				.as("the target still holds only its own two plannings")
-				.containsExactlyInAnyOrder(idOf(p1), idOf(p3));
-		assertThat(reload(p2).getM_ShipperTransportation_ID())
-				.as("the refused planning was not stamped onto the target either")
-				.isLessThanOrEqualTo(0);
+			assertThat(deliveryPlanningRepository.getAllocatedPlanningIds(target))
+					.as("the target still holds only its own two plannings")
+					.containsExactlyInAnyOrder(idOf(p1), idOf(p3));
+			assertThat(reload(p2).getM_ShipperTransportation_ID())
+					.as("the refused planning was not stamped onto the target either")
+					.isLessThanOrEqualTo(0);
+		}
+
+		@Test
+		@DisplayName("still accepts a selection that agrees with what the target holds")
+		void agreeingWithTheTargetIsAccepted()
+		{
+			final I_M_Delivery_Planning p1 = deliveryPlanning(FORWARDER_A);
+			final ShipperTransportationId target = combineIntoDraftInstruction(ImmutableList.of(p1));
+
+			final I_M_Delivery_Planning p2 = deliveryPlanning(FORWARDER_A);
+			final IQueryFilter<I_M_Delivery_Planning> selection = selectionOf(ImmutableList.of(p2));
+
+			assertThat(addToRejectionTextOf(selection, target)).isNull();
+
+			deliveryPlanningService.addTo(selection, target);
+
+			assertThat(deliveryPlanningRepository.getAllocatedPlanningIds(target))
+					.containsExactlyInAnyOrder(idOf(p1), idOf(p2));
+			assertThat(reload(p2).getM_ShipperTransportation_ID())
+					.isEqualTo(target.getRepoId());
+		}
+
+		@Test
+		@DisplayName("the action is refused for a self-disagreeing selection BEFORE a target is picked")
+		void selectionThatDisagreesWithItselfIsRefusedWithNoTargetYet()
+		{
+			final IQueryFilter<I_M_Delivery_Planning> selection = selectionOf(ImmutableList.of(
+					deliveryPlanning(FORWARDER_A), deliveryPlanning(FORWARDER_B)));
+
+			assertThat(addToRejectionTextOfWithoutTarget(selection))
+					.as("two forwarders cannot share one instruction, so no target the picker could offer would "
+							+ "accept this selection - the action has to be refused while the grid is still showing")
+					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_IncompatibleSelection))
+					.contains(keyOf(AggregationKeyField.Forwarder.getLabel()));
+		}
 	}
 
-	@Test
-	@DisplayName("add to still accepts a selection that agrees with what the target holds")
-	void addTo_agreeingWithTheTargetIsAccepted()
+	@Nested
+	@DisplayName("move to")
+	class MoveTo
 	{
-		final I_M_Delivery_Planning p1 = deliveryPlanning(FORWARDER_A);
-		final ShipperTransportationId target = combineIntoDraftInstruction(ImmutableList.of(p1));
+		@Test
+		@DisplayName("a planning the target already holds is a no-op, not a mismatch with itself")
+		void alreadyOnTheTargetIsIdempotent()
+		{
+			final I_M_Delivery_Planning p1 = deliveryPlanning(FORWARDER_A);
+			final I_M_Delivery_Planning p3 = deliveryPlanning(FORWARDER_A);
+			final ShipperTransportationId target = combineIntoDraftInstruction(ImmutableList.of(p1, p3));
+			final String releaseNoBefore = reload(p1).getReleaseNo();
 
-		final I_M_Delivery_Planning p2 = deliveryPlanning(FORWARDER_A);
-		final IQueryFilter<I_M_Delivery_Planning> selection = selectionOf(ImmutableList.of(p2));
+			// the same planning is in the selection AND on the target: counted once, so it is never compared against
+			// itself and reported as differing from itself
+			final IQueryFilter<I_M_Delivery_Planning> selection = selectionOf(ImmutableList.of(p1));
+			assertThat(moveToRejectionTextOf(selection, target)).isNull();
 
-		assertThat(addToRejectionTextOf(selection, target)).isNull();
+			deliveryPlanningService.moveTo(selection, target);
 
-		deliveryPlanningService.addTo(selection, target);
+			assertThat(deliveryPlanningRepository.getAllocatedPlanningIds(target))
+					.as("nothing was added and nothing was taken away")
+					.containsExactlyInAnyOrder(idOf(p1), idOf(p3));
+			assertThat(reload(p1).getReleaseNo())
+					.as("the release number already names this instruction, so it is not re-stamped")
+					.isEqualTo(releaseNoBefore);
+		}
 
-		assertThat(deliveryPlanningRepository.getAllocatedPlanningIds(target))
-				.containsExactlyInAnyOrder(idOf(p1), idOf(p2));
-		assertThat(reload(p2).getM_ShipperTransportation_ID())
-				.isEqualTo(target.getRepoId());
-	}
+		@Test
+		@DisplayName("refused when the moved selection differs from what the target already holds, naming the field")
+		void differingFromTheTargetsOwnPlanningsIsRefused()
+		{
+			final I_M_Delivery_Planning p1 = deliveryPlanning(FORWARDER_A);
+			final ShipperTransportationId target = combineIntoDraftInstruction(ImmutableList.of(p1, deliveryPlanning(FORWARDER_A)));
 
-	@Test
-	@DisplayName("move to of a planning the target already holds is a no-op, not a mismatch with itself")
-	void moveTo_alreadyOnTheTargetIsIdempotent()
-	{
-		final I_M_Delivery_Planning p1 = deliveryPlanning(FORWARDER_A);
-		final I_M_Delivery_Planning p3 = deliveryPlanning(FORWARDER_A);
-		final ShipperTransportationId target = combineIntoDraftInstruction(ImmutableList.of(p1, p3));
-		final String releaseNoBefore = reload(p1).getReleaseNo();
+			// on a draft instruction of its own, so move-to's allocation guard passes and the admissibility rule -
+			// the same one add-to applies - is what has to refuse it
+			final I_M_Delivery_Planning moving = deliveryPlanning(FORWARDER_B);
+			final ShipperTransportationId source = combineIntoDraftInstruction(ImmutableList.of(moving, deliveryPlanning(FORWARDER_B)));
+			final IQueryFilter<I_M_Delivery_Planning> selection = selectionOf(ImmutableList.of(moving));
 
-		// the same planning is in the selection AND on the target: counted once, so it is never compared against
-		// itself and reported as differing from itself
-		final IQueryFilter<I_M_Delivery_Planning> selection = selectionOf(ImmutableList.of(p1));
-		assertThat(moveToRejectionTextOf(selection, target)).isNull();
+			assertThat(moveToRejectionTextOf(selection, target))
+					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_IncompatibleSelection))
+					.contains(keyOf(AggregationKeyField.Forwarder.getLabel()));
 
-		deliveryPlanningService.moveTo(selection, target);
+			assertThatThrownBy(() -> deliveryPlanningService.moveTo(selection, target))
+					.isInstanceOf(AdempiereException.class);
 
-		assertThat(deliveryPlanningRepository.getAllocatedPlanningIds(target))
-				.as("nothing was added and nothing was taken away")
-				.containsExactlyInAnyOrder(idOf(p1), idOf(p3));
-		assertThat(reload(p1).getReleaseNo())
-				.as("the release number already names this instruction, so it is not re-stamped")
-				.isEqualTo(releaseNoBefore);
-	}
+			assertThat(deliveryPlanningRepository.getAllocatedPlanningIds(target))
+					.as("the target holds only its own two plannings")
+					.hasSize(2)
+					.doesNotContain(idOf(moving));
+			assertThat(reload(moving).getM_ShipperTransportation_ID())
+					.as("and the refused planning stayed on the source it was on")
+					.isEqualTo(source.getRepoId());
+		}
 
-	@Test
-	@DisplayName("move to is refused when the moved selection differs from what the target already holds, naming the field")
-	void moveTo_differingFromTheTargetsOwnPlanningsIsRefused()
-	{
-		final I_M_Delivery_Planning p1 = deliveryPlanning(FORWARDER_A);
-		final ShipperTransportationId target = combineIntoDraftInstruction(ImmutableList.of(p1, deliveryPlanning(FORWARDER_A)));
+		@Test
+		@DisplayName("refused for a self-disagreeing selection BEFORE a target is picked")
+		void selectionThatDisagreesWithItselfIsRefusedWithNoTargetYet()
+		{
+			// each on its own draft instruction, so both are allocated and move-to's own guard is satisfied
+			final I_M_Delivery_Planning onA = deliveryPlanning(FORWARDER_A);
+			final I_M_Delivery_Planning onB = deliveryPlanning(FORWARDER_B);
+			combineIntoDraftInstruction(ImmutableList.of(onA));
+			combineIntoDraftInstruction(ImmutableList.of(onB));
 
-		// on a draft instruction of its own, so move-to's allocation guard passes and the admissibility rule -
-		// the same one add-to applies - is what has to refuse it
-		final I_M_Delivery_Planning moving = deliveryPlanning(FORWARDER_B);
-		final ShipperTransportationId source = combineIntoDraftInstruction(ImmutableList.of(moving, deliveryPlanning(FORWARDER_B)));
-		final IQueryFilter<I_M_Delivery_Planning> selection = selectionOf(ImmutableList.of(moving));
-
-		assertThat(moveToRejectionTextOf(selection, target))
-				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_IncompatibleSelection))
-				.contains(keyOf(AggregationKeyField.Forwarder.getLabel()));
-
-		assertThatThrownBy(() -> deliveryPlanningService.moveTo(selection, target))
-				.isInstanceOf(AdempiereException.class);
-
-		assertThat(deliveryPlanningRepository.getAllocatedPlanningIds(target))
-				.as("the target holds only its own two plannings")
-				.hasSize(2)
-				.doesNotContain(idOf(moving));
-		assertThat(reload(moving).getM_ShipperTransportation_ID())
-				.as("and the refused planning stayed on the source it was on")
-				.isEqualTo(source.getRepoId());
-	}
-
-	@Test
-	@DisplayName("the action is refused for a self-disagreeing selection BEFORE a target is picked")
-	void addTo_selectionThatDisagreesWithItselfIsRefusedWithNoTargetYet()
-	{
-		final IQueryFilter<I_M_Delivery_Planning> selection = selectionOf(ImmutableList.of(
-				deliveryPlanning(FORWARDER_A), deliveryPlanning(FORWARDER_B)));
-
-		assertThat(addToRejectionTextOfWithoutTarget(selection))
-				.as("two forwarders cannot share one instruction, so no target the picker could offer would "
-						+ "accept this selection - the action has to be refused while the grid is still showing")
-				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_IncompatibleSelection))
-				.contains(keyOf(AggregationKeyField.Forwarder.getLabel()));
-	}
-
-	@Test
-	@DisplayName("move to is refused for a self-disagreeing selection BEFORE a target is picked")
-	void moveTo_selectionThatDisagreesWithItselfIsRefusedWithNoTargetYet()
-	{
-		// each on its own draft instruction, so both are allocated and move-to's own guard is satisfied
-		final I_M_Delivery_Planning onA = deliveryPlanning(FORWARDER_A);
-		final I_M_Delivery_Planning onB = deliveryPlanning(FORWARDER_B);
-		combineIntoDraftInstruction(ImmutableList.of(onA));
-		combineIntoDraftInstruction(ImmutableList.of(onB));
-
-		assertThat(moveToRejectionTextOfWithoutTarget(selectionOf(ImmutableList.of(onA, onB))))
-				.as("the same rule as add to: the two actions share this chain")
-				.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_IncompatibleSelection))
-				.contains(keyOf(AggregationKeyField.Forwarder.getLabel()));
+			assertThat(moveToRejectionTextOfWithoutTarget(selectionOf(ImmutableList.of(onA, onB))))
+					.as("the same rule as add to: the two actions share this chain")
+					.contains(keyOf(DeliveryPlanningService.MSG_M_Delivery_Planning_IncompatibleSelection))
+					.contains(keyOf(AggregationKeyField.Forwarder.getLabel()));
+		}
 	}
 }

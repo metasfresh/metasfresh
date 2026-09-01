@@ -426,7 +426,7 @@ public class DeliveryPlanningRepository
 	 * @param alreadyClosedMessage what to raise for an already-closed row; its {@code {0}} is that row's id.
 	 */
 	public void closeSelectedDeliveryPlannings(
-			final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter,
+			@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter,
 			@NonNull final AdMessageKey alreadyClosedMessage)
 	{
 		final List<I_M_Delivery_Planning> deliveryPlanningRecords = getDeliveryPlanningQueryBuilder(selectedDeliveryPlanningsFilter)

@@ -40,6 +40,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Shipper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -114,45 +115,69 @@ class ShipperTransportationDAOTest
 				.isEqualTo(X_M_ShipperTransportation.TRANSPORTDIRECTION_Incoming);
 	}
 
-	@Test
-	@DisplayName("getOrCreate must adopt an existing transport order whose direction matches the request")
-	void getOrCreateAdoptsExistingOrder_whenDirectionMatches()
+	@Nested
+	@DisplayName("getOrCreate")
+	class GetOrCreate
 	{
-		final CreateShipperTransportationRequest request = requestBuilder()
-				.transportDirection(TransportDirection.Outgoing) // sales shipment
-				.build();
+		@Test
+		@DisplayName("must adopt an existing transport order whose direction matches the request")
+		void adoptsExistingOrder_whenDirectionMatches()
+		{
+			final CreateShipperTransportationRequest request = requestBuilder()
+					.transportDirection(TransportDirection.Outgoing) // sales shipment
+					.build();
 
-		final ShipperTransportationId existingId = shipperTransportationDAO.create(request);
+			final ShipperTransportationId existingId = shipperTransportationDAO.create(request);
 
-		final ShipperTransportationId foundId = shipperTransportationDAO.getOrCreate(request);
+			final ShipperTransportationId foundId = shipperTransportationDAO.getOrCreate(request);
 
-		assertThat(foundId)
-				.as("a same-direction transport order for the same shipper/location/date/org must be reused")
-				.isEqualTo(existingId);
-	}
+			assertThat(foundId)
+					.as("a same-direction transport order for the same shipper/location/date/org must be reused")
+					.isEqualTo(existingId);
+		}
 
-	@Test
-	@DisplayName("getOrCreate must NOT adopt an existing transport order whose direction differs from the request - e.g. an Incoming one created by a receipt path, while the current request is a sales shipment")
-	void getOrCreateCreatesNewOrder_whenExistingDirectionDiffers()
-	{
-		final CreateShipperTransportationRequest incomingRequest = requestBuilder()
-				.transportDirection(TransportDirection.Incoming) // purchase receipt -> Incoming
-				.build();
-		final ShipperTransportationId incomingId = shipperTransportationDAO.create(incomingRequest);
+		@Test
+		@DisplayName("must NOT adopt an existing transport order whose direction differs from the request - e.g. an Incoming one created by a receipt path, while the current request is a sales shipment")
+		void createsNewOrder_whenExistingDirectionDiffers()
+		{
+			final CreateShipperTransportationRequest incomingRequest = requestBuilder()
+					.transportDirection(TransportDirection.Incoming) // purchase receipt -> Incoming
+					.build();
+			final ShipperTransportationId incomingId = shipperTransportationDAO.create(incomingRequest);
 
-		final CreateShipperTransportationRequest outgoingRequest = requestBuilder()
-				.transportDirection(TransportDirection.Outgoing) // sales shipment
-				.build();
+			final CreateShipperTransportationRequest outgoingRequest = requestBuilder()
+					.transportDirection(TransportDirection.Outgoing) // sales shipment
+					.build();
 
-		final ShipperTransportationId foundId = shipperTransportationDAO.getOrCreate(outgoingRequest);
+			final ShipperTransportationId foundId = shipperTransportationDAO.getOrCreate(outgoingRequest);
 
-		assertThat(foundId)
-				.as("an Incoming transport order must never be silently reused for an Outgoing shipment")
-				.isNotEqualTo(incomingId);
+			assertThat(foundId)
+					.as("an Incoming transport order must never be silently reused for an Outgoing shipment")
+					.isNotEqualTo(incomingId);
 
-		final I_M_ShipperTransportation createdOrder = load(foundId, I_M_ShipperTransportation.class);
-		assertThat(createdOrder.getTransportDirection())
-				.isEqualTo(X_M_ShipperTransportation.TRANSPORTDIRECTION_Outgoing);
+			final I_M_ShipperTransportation createdOrder = load(foundId, I_M_ShipperTransportation.class);
+			assertThat(createdOrder.getTransportDirection())
+					.isEqualTo(X_M_ShipperTransportation.TRANSPORTDIRECTION_Outgoing);
+		}
+
+		@Test
+		@DisplayName("must NOT adopt an Outgoing transport order for a Dropship request")
+		void createsNewOrder_whenExistingIsOutgoingAndRequestIsDropship()
+		{
+			final ShipperTransportationId outgoingId = shipperTransportationDAO.create(requestBuilder()
+					.transportDirection(TransportDirection.Outgoing)
+					.build());
+
+			final ShipperTransportationId foundId = shipperTransportationDAO.getOrCreate(requestBuilder()
+					.transportDirection(TransportDirection.Dropship)
+					.build());
+
+			assertThat(foundId)
+					.as("an Outgoing transport order must never be silently reused for a Dropship")
+					.isNotEqualTo(outgoingId);
+			assertThat(load(foundId, I_M_ShipperTransportation.class).getTransportDirection())
+					.isEqualTo(X_M_ShipperTransportation.TRANSPORTDIRECTION_Dropship);
+		}
 	}
 
 	@Test
@@ -189,25 +214,6 @@ class ShipperTransportationDAOTest
 		final I_M_ShipperTransportation transportOrder = load(shipperTransportationId, I_M_ShipperTransportation.class);
 		assertThat(transportOrder.getTransportDirection())
 				.as("a dropship must not be forced into Incoming or Outgoing")
-				.isEqualTo(X_M_ShipperTransportation.TRANSPORTDIRECTION_Dropship);
-	}
-
-	@Test
-	@DisplayName("getOrCreate must NOT adopt an Outgoing transport order for a Dropship request")
-	void getOrCreateCreatesNewOrder_whenExistingIsOutgoingAndRequestIsDropship()
-	{
-		final ShipperTransportationId outgoingId = shipperTransportationDAO.create(requestBuilder()
-				.transportDirection(TransportDirection.Outgoing)
-				.build());
-
-		final ShipperTransportationId foundId = shipperTransportationDAO.getOrCreate(requestBuilder()
-				.transportDirection(TransportDirection.Dropship)
-				.build());
-
-		assertThat(foundId)
-				.as("an Outgoing transport order must never be silently reused for a Dropship")
-				.isNotEqualTo(outgoingId);
-		assertThat(load(foundId, I_M_ShipperTransportation.class).getTransportDirection())
 				.isEqualTo(X_M_ShipperTransportation.TRANSPORTDIRECTION_Dropship);
 	}
 }

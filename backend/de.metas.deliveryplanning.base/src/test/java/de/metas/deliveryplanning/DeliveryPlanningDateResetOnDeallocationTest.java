@@ -51,6 +51,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_M_Delivery_Planning;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -240,108 +241,154 @@ class DeliveryPlanningDateResetOnDeallocationTest
 
 	// ------------------------------------------------------------------ tests
 
-	@Test
-	@DisplayName("remove-from: an Outgoing planning's dates are recomputed from the order's PreparationDate and the shipment schedule")
-	void removeFrom_outgoing_recomputesFromOrderAndShipmentSchedule()
+	@Nested
+	@DisplayName("remove-from")
+	class RemoveFrom
 	{
-		final int orderId = createOrder(day(1));
-		final int orderLineId = createOrderLine(day(9), day(2));
-		final int shipmentScheduleId = createShipmentSchedule(day(3), null);
+		@Test
+		@DisplayName("an Outgoing planning's dates are recomputed from the order's PreparationDate and the shipment schedule")
+		void outgoing_recomputesFromOrderAndShipmentSchedule()
+		{
+			final int orderId = createOrder(day(1));
+			final int orderLineId = createOrderLine(day(9), day(2));
+			final int shipmentScheduleId = createShipmentSchedule(day(3), null);
 
-		final I_M_Delivery_Planning planning = deliveryPlanning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Outgoing);
-		planning.setC_Order_ID(orderId);
-		planning.setC_OrderLine_ID(orderLineId);
-		planning.setM_ShipmentSchedule_ID(shipmentScheduleId);
-		InterfaceWrapperHelper.save(planning);
+			final I_M_Delivery_Planning planning = deliveryPlanning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Outgoing);
+			planning.setC_Order_ID(orderId);
+			planning.setC_OrderLine_ID(orderLineId);
+			planning.setM_ShipmentSchedule_ID(shipmentScheduleId);
+			InterfaceWrapperHelper.save(planning);
 
-		final I_M_ShipperTransportation instruction = draftDeliveryInstruction("RESET-1");
-		final DeliveryPlanningId deliveryPlanningId = allocate(instruction, planning);
-		assertThat(reload(deliveryPlanningId).getETD()).as("sanity: the planning is contaminated by the instruction before removal").isEqualTo(day(20));
+			final I_M_ShipperTransportation instruction = draftDeliveryInstruction("RESET-1");
+			final DeliveryPlanningId deliveryPlanningId = allocate(instruction, planning);
+			assertThat(reload(deliveryPlanningId).getETD()).as("sanity: the planning is contaminated by the instruction before removal").isEqualTo(day(20));
 
-		deliveryPlanningService.removeFrom(selectionOf(deliveryPlanningId));
+			deliveryPlanningService.removeFrom(selectionOf(deliveryPlanningId));
 
-		final I_M_Delivery_Planning reset = reload(deliveryPlanningId);
-		assertThat(reset.getETD()).as("ETD from the order's PreparationDate").isEqualTo(day(1));
-		assertThat(reset.getATD()).as("ATD follows ETD, same as at creation").isEqualTo(day(1));
-		assertThat(reset.getETA()).as("ETA from the shipment schedule's DeliveryDate").isEqualTo(day(3));
-		assertThat(reset.getATA()).as("ATA from the order line's DateDelivered").isEqualTo(day(2));
-		assertThat(reset.getLoadingTime()).as("no order-derived source, cleared like a freshly generated planning").isNull();
-		assertThat(reset.getDeliveryTime()).isNull();
-	}
+			final I_M_Delivery_Planning reset = reload(deliveryPlanningId);
+			assertThat(reset.getETD()).as("ETD from the order's PreparationDate").isEqualTo(day(1));
+			assertThat(reset.getATD()).as("ATD follows ETD, same as at creation").isEqualTo(day(1));
+			assertThat(reset.getETA()).as("ETA from the shipment schedule's DeliveryDate").isEqualTo(day(3));
+			assertThat(reset.getATA()).as("ATA from the order line's DateDelivered").isEqualTo(day(2));
+			assertThat(reset.getLoadingTime()).as("no order-derived source, cleared like a freshly generated planning").isNull();
+			assertThat(reset.getDeliveryTime()).isNull();
+		}
 
-	@Test
-	@DisplayName("remove-from: an Incoming planning's dates are recomputed from the order's PreparationDate and the receipt schedule")
-	void removeFrom_incoming_recomputesFromOrderAndReceiptSchedule()
-	{
-		final int orderId = createOrder(day(5));
-		final int orderLineId = createOrderLine(day(9), day(7));
-		final int receiptScheduleId = createReceiptSchedule(day(6));
+		@Test
+		@DisplayName("an Incoming planning's dates are recomputed from the order's PreparationDate and the receipt schedule")
+		void incoming_recomputesFromOrderAndReceiptSchedule()
+		{
+			final int orderId = createOrder(day(5));
+			final int orderLineId = createOrderLine(day(9), day(7));
+			final int receiptScheduleId = createReceiptSchedule(day(6));
 
-		final I_M_Delivery_Planning planning = deliveryPlanning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Incoming);
-		planning.setC_Order_ID(orderId);
-		planning.setC_OrderLine_ID(orderLineId);
-		planning.setM_ReceiptSchedule_ID(receiptScheduleId);
-		InterfaceWrapperHelper.save(planning);
+			final I_M_Delivery_Planning planning = deliveryPlanning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Incoming);
+			planning.setC_Order_ID(orderId);
+			planning.setC_OrderLine_ID(orderLineId);
+			planning.setM_ReceiptSchedule_ID(receiptScheduleId);
+			InterfaceWrapperHelper.save(planning);
 
-		final I_M_ShipperTransportation instruction = draftDeliveryInstruction("RESET-2");
-		final DeliveryPlanningId deliveryPlanningId = allocate(instruction, planning);
+			final I_M_ShipperTransportation instruction = draftDeliveryInstruction("RESET-2");
+			final DeliveryPlanningId deliveryPlanningId = allocate(instruction, planning);
 
-		deliveryPlanningService.removeFrom(selectionOf(deliveryPlanningId));
+			deliveryPlanningService.removeFrom(selectionOf(deliveryPlanningId));
 
-		final I_M_Delivery_Planning reset = reload(deliveryPlanningId);
-		assertThat(reset.getETD()).isEqualTo(day(5));
-		assertThat(reset.getATD()).isEqualTo(day(5));
-		assertThat(reset.getETA()).as("ETA from the receipt schedule's MovementDate").isEqualTo(day(6));
-		assertThat(reset.getATA()).as("ATA from the order line's DateDelivered").isEqualTo(day(7));
-	}
+			final I_M_Delivery_Planning reset = reload(deliveryPlanningId);
+			assertThat(reset.getETD()).isEqualTo(day(5));
+			assertThat(reset.getATD()).isEqualTo(day(5));
+			assertThat(reset.getETA()).as("ETA from the receipt schedule's MovementDate").isEqualTo(day(6));
+			assertThat(reset.getATA()).as("ATA from the order line's DateDelivered").isEqualTo(day(7));
+		}
 
-	@Test
-	@DisplayName("remove-from: an unset shipment delivery date falls back to the order line's DatePromised, exactly as generation does")
-	void removeFrom_outgoing_unsetShipmentDate_fallsBackToDatePromised()
-	{
-		final int orderId = createOrder(day(1));
-		final int orderLineId = createOrderLine(day(4), null);
-		final int shipmentScheduleId = createShipmentSchedule(null, null);
+		@Test
+		@DisplayName("an unset shipment delivery date falls back to the order line's DatePromised, exactly as generation does")
+		void outgoing_unsetShipmentDate_fallsBackToDatePromised()
+		{
+			final int orderId = createOrder(day(1));
+			final int orderLineId = createOrderLine(day(4), null);
+			final int shipmentScheduleId = createShipmentSchedule(null, null);
 
-		final I_M_Delivery_Planning planning = deliveryPlanning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Outgoing);
-		planning.setC_Order_ID(orderId);
-		planning.setC_OrderLine_ID(orderLineId);
-		planning.setM_ShipmentSchedule_ID(shipmentScheduleId);
-		InterfaceWrapperHelper.save(planning);
+			final I_M_Delivery_Planning planning = deliveryPlanning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Outgoing);
+			planning.setC_Order_ID(orderId);
+			planning.setC_OrderLine_ID(orderLineId);
+			planning.setM_ShipmentSchedule_ID(shipmentScheduleId);
+			InterfaceWrapperHelper.save(planning);
 
-		final I_M_ShipperTransportation instruction = draftDeliveryInstruction("RESET-3");
-		final DeliveryPlanningId deliveryPlanningId = allocate(instruction, planning);
+			final I_M_ShipperTransportation instruction = draftDeliveryInstruction("RESET-3");
+			final DeliveryPlanningId deliveryPlanningId = allocate(instruction, planning);
 
-		deliveryPlanningService.removeFrom(selectionOf(deliveryPlanningId));
+			deliveryPlanningService.removeFrom(selectionOf(deliveryPlanningId));
 
-		final I_M_Delivery_Planning reset = reload(deliveryPlanningId);
-		assertThat(reset.getETA()).as("no shipment delivery date at all, so the order line's promised date is used").isEqualTo(day(4));
-		assertThat(reset.getATA())
-				.as("the generation command's own asymmetry, faithfully mirrored: ATA is coalesced from the RAW "
-						+ "shipment date (null here), never from the DatePromised fallback that only ETA gets")
-				.isNull();
-	}
+			final I_M_Delivery_Planning reset = reload(deliveryPlanningId);
+			assertThat(reset.getETA()).as("no shipment delivery date at all, so the order line's promised date is used").isEqualTo(day(4));
+			assertThat(reset.getATA())
+					.as("the generation command's own asymmetry, faithfully mirrored: ATA is coalesced from the RAW "
+							+ "shipment date (null here), never from the DatePromised fallback that only ETA gets")
+					.isNull();
+		}
 
-	@Test
-	@DisplayName("remove-from: a planning with no order at all resets its order-derived fields to null, not to whatever it carried")
-	void removeFrom_noOrder_resetsToNull()
-	{
-		final int shipmentScheduleId = createShipmentSchedule(day(3), null);
+		@Test
+		@DisplayName("a planning with no order at all resets its order-derived fields to null, not to whatever it carried")
+		void noOrder_resetsToNull()
+		{
+			final int shipmentScheduleId = createShipmentSchedule(day(3), null);
 
-		final I_M_Delivery_Planning planning = deliveryPlanning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Outgoing);
-		planning.setM_ShipmentSchedule_ID(shipmentScheduleId);
-		InterfaceWrapperHelper.save(planning);
+			final I_M_Delivery_Planning planning = deliveryPlanning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Outgoing);
+			planning.setM_ShipmentSchedule_ID(shipmentScheduleId);
+			InterfaceWrapperHelper.save(planning);
 
-		final I_M_ShipperTransportation instruction = draftDeliveryInstruction("RESET-4");
-		final DeliveryPlanningId deliveryPlanningId = allocate(instruction, planning);
+			final I_M_ShipperTransportation instruction = draftDeliveryInstruction("RESET-4");
+			final DeliveryPlanningId deliveryPlanningId = allocate(instruction, planning);
 
-		deliveryPlanningService.removeFrom(selectionOf(deliveryPlanningId));
+			deliveryPlanningService.removeFrom(selectionOf(deliveryPlanningId));
 
-		final I_M_Delivery_Planning reset = reload(deliveryPlanningId);
-		assertThat(reset.getETD()).as("no order, so no PreparationDate to derive ETD from").isNull();
-		assertThat(reset.getATD()).isNull();
-		assertThat(reset.getETA()).as("the shipment schedule alone is enough for ETA, order or not").isEqualTo(day(3));
-		assertThat(reset.getATA()).as("no order LINE, so no DateDelivered - the actual has nothing to derive from").isNull();
+			final I_M_Delivery_Planning reset = reload(deliveryPlanningId);
+			assertThat(reset.getETD()).as("no order, so no PreparationDate to derive ETD from").isNull();
+			assertThat(reset.getATD()).isNull();
+			assertThat(reset.getETA()).as("the shipment schedule alone is enough for ETA, order or not").isEqualTo(day(3));
+			assertThat(reset.getATA()).as("no order LINE, so no DateDelivered - the actual has nothing to derive from").isNull();
+		}
+
+		@Test
+		@DisplayName("a whole selection resets in ONE batch load per collaborator, never one per row")
+		void batchLoadsCollaboratorsOnceForTheWholeSelection()
+		{
+			final int orderIdA = createOrder(day(1));
+			final int shipmentScheduleIdA = createShipmentSchedule(day(3), null);
+			final int orderIdB = createOrder(day(11));
+			final int receiptScheduleIdB = createReceiptSchedule(day(13));
+
+			final I_M_Delivery_Planning planningA = deliveryPlanning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Outgoing);
+			planningA.setC_Order_ID(orderIdA);
+			planningA.setM_ShipmentSchedule_ID(shipmentScheduleIdA);
+			InterfaceWrapperHelper.save(planningA);
+
+			final I_M_Delivery_Planning planningB = deliveryPlanning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Incoming);
+			planningB.setC_Order_ID(orderIdB);
+			planningB.setM_ReceiptSchedule_ID(receiptScheduleIdB);
+			InterfaceWrapperHelper.save(planningB);
+
+			final I_M_ShipperTransportation instruction = draftDeliveryInstruction("RESET-6");
+			final DeliveryPlanningId idA = allocate(instruction, planningA);
+			final DeliveryPlanningId idB = allocate(instruction, planningB);
+
+			Mockito.clearInvocations(orderDAO, receiptScheduleDAO, shipmentScheduleBL);
+
+			deliveryPlanningService.removeFrom(selectionOf(idA, idB));
+
+			assertThat(reload(idA).getETD()).isEqualTo(day(1));
+			assertThat(reload(idB).getETD()).isEqualTo(day(11));
+
+			// orders are read ONLY by the reset; receipt/shipment schedules are read TWICE - once by getBySelection's
+			// own address resolution (unrelated to this feature), once by the reset - but each of those two is itself
+			// ONE batch load for the whole selection, never one per row, which is what this test actually pins
+			Mockito.verify(orderDAO, Mockito.times(1)).getByIds(Mockito.any());
+			Mockito.verify(orderDAO, Mockito.never()).getById(Mockito.any(OrderId.class));
+			Mockito.verify(receiptScheduleDAO, Mockito.times(2)).getByIds(Mockito.any());
+			Mockito.verify(receiptScheduleDAO, Mockito.never()).getById(Mockito.any());
+			Mockito.verify(shipmentScheduleBL, Mockito.times(2)).getByIds(Mockito.any());
+			Mockito.verify(shipmentScheduleBL, Mockito.never()).getById(Mockito.any());
+		}
 	}
 
 	@Test
@@ -367,44 +414,4 @@ class DeliveryPlanningDateResetOnDeallocationTest
 		assertThat(reset.getLoadingTime()).isNull();
 	}
 
-	@Test
-	@DisplayName("remove-from: a whole selection resets in ONE batch load per collaborator, never one per row")
-	void removeFrom_batchLoadsCollaboratorsOnceForTheWholeSelection()
-	{
-		final int orderIdA = createOrder(day(1));
-		final int shipmentScheduleIdA = createShipmentSchedule(day(3), null);
-		final int orderIdB = createOrder(day(11));
-		final int receiptScheduleIdB = createReceiptSchedule(day(13));
-
-		final I_M_Delivery_Planning planningA = deliveryPlanning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Outgoing);
-		planningA.setC_Order_ID(orderIdA);
-		planningA.setM_ShipmentSchedule_ID(shipmentScheduleIdA);
-		InterfaceWrapperHelper.save(planningA);
-
-		final I_M_Delivery_Planning planningB = deliveryPlanning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Incoming);
-		planningB.setC_Order_ID(orderIdB);
-		planningB.setM_ReceiptSchedule_ID(receiptScheduleIdB);
-		InterfaceWrapperHelper.save(planningB);
-
-		final I_M_ShipperTransportation instruction = draftDeliveryInstruction("RESET-6");
-		final DeliveryPlanningId idA = allocate(instruction, planningA);
-		final DeliveryPlanningId idB = allocate(instruction, planningB);
-
-		Mockito.clearInvocations(orderDAO, receiptScheduleDAO, shipmentScheduleBL);
-
-		deliveryPlanningService.removeFrom(selectionOf(idA, idB));
-
-		assertThat(reload(idA).getETD()).isEqualTo(day(1));
-		assertThat(reload(idB).getETD()).isEqualTo(day(11));
-
-		// orders are read ONLY by the reset; receipt/shipment schedules are read TWICE - once by getBySelection's
-		// own address resolution (unrelated to this feature), once by the reset - but each of those two is itself
-		// ONE batch load for the whole selection, never one per row, which is what this test actually pins
-		Mockito.verify(orderDAO, Mockito.times(1)).getByIds(Mockito.any());
-		Mockito.verify(orderDAO, Mockito.never()).getById(Mockito.any(OrderId.class));
-		Mockito.verify(receiptScheduleDAO, Mockito.times(2)).getByIds(Mockito.any());
-		Mockito.verify(receiptScheduleDAO, Mockito.never()).getById(Mockito.any());
-		Mockito.verify(shipmentScheduleBL, Mockito.times(2)).getByIds(Mockito.any());
-		Mockito.verify(shipmentScheduleBL, Mockito.never()).getById(Mockito.any());
-	}
 }

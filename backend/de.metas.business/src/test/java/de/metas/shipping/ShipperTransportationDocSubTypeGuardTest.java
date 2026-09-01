@@ -33,6 +33,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_DocType;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import com.google.common.collect.ImmutableList;
 import org.mockito.ArgumentCaptor;
@@ -80,85 +82,100 @@ class ShipperTransportationDocSubTypeGuardTest
 		return docType.getC_DocType_ID();
 	}
 
-	@Test
-	void isDeliveryInstruction_true_forDeliveryInstructionDocType()
+	@Nested
+	@DisplayName("isDeliveryInstruction")
+	class IsDeliveryInstruction
 	{
-		final I_M_ShipperTransportation deliveryInstruction = shipperTransportation(createDocType(DocSubType.DeliveryInstruction.getCode()));
-
-		assertThat(guard.isDeliveryInstruction(deliveryInstruction)).isTrue();
-	}
-
-	@Test
-	void isDeliveryInstruction_false_forPlainTransportOrder()
-	{
-		final I_M_ShipperTransportation transportOrder = shipperTransportation(createDocType(null));
-
-		assertThat(guard.isDeliveryInstruction(transportOrder)).isFalse();
-	}
-
-	@Test
-	void rejectIfDeliveryInstruction_transportOrder_isANoOp()
-	{
-		final I_M_ShipperTransportation transportOrder = shipperTransportation(createDocType(null));
-
-		final ProcessPreconditionsResolution resolution = guard.rejectIfDeliveryInstruction(transportOrder);
-
-		assertThat(resolution.isAccepted()).isTrue();
-		// exactly one cached lookup, no repeated work
-		Mockito.verify(docTypeDAO, Mockito.times(1)).getById(Mockito.any(DocTypeId.class));
-	}
-
-	@Test
-	void rejectIfDeliveryInstruction_deliveryInstruction_rejectsInternally()
-	{
-		final I_M_ShipperTransportation deliveryInstruction = shipperTransportation(createDocType(DocSubType.DeliveryInstruction.getCode()));
-
-		final ProcessPreconditionsResolution resolution = guard.rejectIfDeliveryInstruction(deliveryInstruction);
-
-		assertThat(resolution.isAccepted()).isFalse();
-	}
-
-	@Test
-	void rejectIfNotDeliveryInstruction_deliveryInstruction_accepts()
-	{
-		final I_M_ShipperTransportation deliveryInstruction = shipperTransportation(createDocType(DocSubType.DeliveryInstruction.getCode()));
-
-		final ProcessPreconditionsResolution resolution = guard.rejectIfNotDeliveryInstruction(deliveryInstruction);
-
-		assertThat(resolution.isAccepted()).isTrue();
-	}
-
-	@Test
-	void rejectIfNotDeliveryInstruction_transportOrder_rejectsInternally()
-	{
-		final I_M_ShipperTransportation transportOrder = shipperTransportation(createDocType(null));
-
-		final ProcessPreconditionsResolution resolution = guard.rejectIfNotDeliveryInstruction(transportOrder);
-
-		assertThat(resolution.isAccepted()).isFalse();
-	}
-
-	@Test
-	void rejectIfDeliveryInstruction_batchOfTransportOrders_oneLookupPerRow_noExtraWork()
-	{
-		final int transportOrderDocTypeId = createDocType(null);
-		final List<I_M_ShipperTransportation> rows = ImmutableList.of(
-				shipperTransportation(transportOrderDocTypeId),
-				shipperTransportation(transportOrderDocTypeId),
-				shipperTransportation(transportOrderDocTypeId));
-
-		for (final I_M_ShipperTransportation row : rows)
+		@Test
+		void trueForDeliveryInstructionDocType()
 		{
-			assertThat(guard.rejectIfDeliveryInstruction(row).isAccepted()).isTrue();
+			final I_M_ShipperTransportation deliveryInstruction = shipperTransportation(createDocType(DocSubType.DeliveryInstruction.getCode()));
+
+			assertThat(guard.isDeliveryInstruction(deliveryInstruction)).isTrue();
 		}
 
-		// linear, not quadratic: one DocType lookup per row, each asking for THAT row's own doc type -
-		// a bare call count would also be satisfied by three lookups of the wrong id
-		final ArgumentCaptor<DocTypeId> lookedUpDocTypeIds = ArgumentCaptor.forClass(DocTypeId.class);
-		Mockito.verify(docTypeDAO, Mockito.times(rows.size())).getById(lookedUpDocTypeIds.capture());
-		assertThat(lookedUpDocTypeIds.getAllValues())
-				.containsExactlyElementsOf(rows.stream()
-						.map(row -> DocTypeId.ofRepoId(row.getC_DocType_ID()))
-						.collect(ImmutableList.toImmutableList()));
+		@Test
+		void falseForPlainTransportOrder()
+		{
+			final I_M_ShipperTransportation transportOrder = shipperTransportation(createDocType(null));
+
+			assertThat(guard.isDeliveryInstruction(transportOrder)).isFalse();
+		}
+	}
+
+	@Nested
+	@DisplayName("rejectIfDeliveryInstruction")
+	class RejectIfDeliveryInstruction
+	{
+		@Test
+		void transportOrder_isANoOp()
+		{
+			final I_M_ShipperTransportation transportOrder = shipperTransportation(createDocType(null));
+
+			final ProcessPreconditionsResolution resolution = guard.rejectIfDeliveryInstruction(transportOrder);
+
+			assertThat(resolution.isAccepted()).isTrue();
+			// exactly one cached lookup, no repeated work
+			Mockito.verify(docTypeDAO, Mockito.times(1)).getById(Mockito.any(DocTypeId.class));
+		}
+
+		@Test
+		void deliveryInstruction_rejectsInternally()
+		{
+			final I_M_ShipperTransportation deliveryInstruction = shipperTransportation(createDocType(DocSubType.DeliveryInstruction.getCode()));
+
+			final ProcessPreconditionsResolution resolution = guard.rejectIfDeliveryInstruction(deliveryInstruction);
+
+			assertThat(resolution.isAccepted()).isFalse();
+		}
+
+		@Test
+		void batchOfTransportOrders_oneLookupPerRow_noExtraWork()
+		{
+			final int transportOrderDocTypeId = createDocType(null);
+			final List<I_M_ShipperTransportation> rows = ImmutableList.of(
+					shipperTransportation(transportOrderDocTypeId),
+					shipperTransportation(transportOrderDocTypeId),
+					shipperTransportation(transportOrderDocTypeId));
+
+			for (final I_M_ShipperTransportation row : rows)
+			{
+				assertThat(guard.rejectIfDeliveryInstruction(row).isAccepted()).isTrue();
+			}
+
+			// linear, not quadratic: one DocType lookup per row, each asking for THAT row's own doc type -
+			// a bare call count would also be satisfied by three lookups of the wrong id
+			final ArgumentCaptor<DocTypeId> lookedUpDocTypeIds = ArgumentCaptor.forClass(DocTypeId.class);
+			Mockito.verify(docTypeDAO, Mockito.times(rows.size())).getById(lookedUpDocTypeIds.capture());
+			assertThat(lookedUpDocTypeIds.getAllValues())
+					.containsExactlyElementsOf(rows.stream()
+							.map(row -> DocTypeId.ofRepoId(row.getC_DocType_ID()))
+							.collect(ImmutableList.toImmutableList()));
+		}
+	}
+
+	@Nested
+	@DisplayName("rejectIfNotDeliveryInstruction")
+	class RejectIfNotDeliveryInstruction
+	{
+		@Test
+		void deliveryInstruction_accepts()
+		{
+			final I_M_ShipperTransportation deliveryInstruction = shipperTransportation(createDocType(DocSubType.DeliveryInstruction.getCode()));
+
+			final ProcessPreconditionsResolution resolution = guard.rejectIfNotDeliveryInstruction(deliveryInstruction);
+
+			assertThat(resolution.isAccepted()).isTrue();
+		}
+
+		@Test
+		void transportOrder_rejectsInternally()
+		{
+			final I_M_ShipperTransportation transportOrder = shipperTransportation(createDocType(null));
+
+			final ProcessPreconditionsResolution resolution = guard.rejectIfNotDeliveryInstruction(transportOrder);
+
+			assertThat(resolution.isAccepted()).isFalse();
+		}
 	}
 }
