@@ -514,3 +514,59 @@ Feature: Purchase order
     And after not more than 30s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier    | C_OrderLine_ID.Identifier    | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.Processed | OPT.IsClosed |
       | rs_PO_close_reopen              | order_PO_rs_close_reopen | orderLine_PO_rs_close_reopen | supplier_PO              | supplierLocation_PO               | product_PO_17062022     | 10         | warehouseStd              | false         | false        |
+
+  @from:cucumber
+  @allure.label.epic:E0140_Purchasing
+  @allure.label.feature:F00600_Purchase_Order
+  @F00600
+  @Id:S0156_710
+  Scenario: Purchase order line with a material receipt: background changes pass, user edits stay blocked, QtyEntered >= QtyDelivered still enforced
+    Given metasfresh contains C_Projects:
+      | Identifier           |
+      | project_PO_receipt_1 |
+      | project_PO_receipt_2 |
+    And metasfresh contains C_Orders:
+      | Identifier       | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.M_PricingSystem_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.DeliveryRule | OPT.DeliveryViaRule |
+      | order_PO_receipt | N       | supplier_PO              | 2022-06-10  | POO             | ps_PO                             | supplierLocation_PO                   | F                | S                   |
+    And metasfresh contains C_OrderLines:
+      | Identifier           | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | orderLine_PO_receipt | order_PO_receipt      | product_PO_17062022     | 10         |
+
+    And the order identified by order_PO_receipt is completed
+
+    And after not more than 30s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
+      | receiptSchedule_PO_receipt      | order_PO_receipt      | orderLine_PO_receipt      | supplier_PO              | supplierLocation_PO               | product_PO_17062022     | 10         | warehouseStd              |
+    And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig_PO_receipt               | hu_PO_receipt      | receiptSchedule_PO_receipt      | N               | 1     | N               | 1     | N               | 10          | huPiItemProduct_17062022           | huPackingTauschpalette       |
+    And create material receipt
+      | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | hu_PO_receipt      | receiptSchedule_PO_receipt      | inOut_PO_receipt      |
+    And validate C_OrderLine:
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
+      | orderLine_PO_receipt      | order_PO_receipt      | product_PO_17062022     | 10         | 10           | 0           | 10    | 0        | EUR          | true      |
+
+    # a background writer - e.g. the invoicing run updating the order line - must not be blocked
+    When update C_OrderLine:
+      | C_OrderLine_ID.Identifier | OPT.C_Project_ID.Identifier |
+      | orderLine_PO_receipt      | project_PO_receipt_1        |
+    Then validate C_OrderLine:
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyEntered | C_Project_ID         |
+      | orderLine_PO_receipt      | order_PO_receipt      | product_PO_17062022     | 10         | 10           | 0           | 10    | 0        | EUR          | true      | 10             | project_PO_receipt_1 |
+
+    # the very same change, made by a user, stays blocked
+    When update C_OrderLine as UI action expecting error:
+      | C_OrderLine_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.ErrorCode        |
+      | orderLine_PO_receipt      | project_PO_receipt_2        | ORDER_RECEIPT_EXISTS |
+    Then validate C_OrderLine:
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyEntered | C_Project_ID         |
+      | orderLine_PO_receipt      | order_PO_receipt      | product_PO_17062022     | 10         | 10           | 0           | 10    | 0        | EUR          | true      | 10             | project_PO_receipt_1 |
+
+    # QtyEntered >= QtyDelivered is a data invariant, so it also applies to background writers
+    When update C_OrderLine expecting error:
+      | C_OrderLine_ID.Identifier | OPT.QtyEntered | OPT.ErrorMessage         |
+      | orderLine_PO_receipt      | 5              | Menge < Gelieferte Menge |
+    Then validate C_OrderLine:
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyEntered | C_Project_ID         |
+      | orderLine_PO_receipt      | order_PO_receipt      | product_PO_17062022     | 10         | 10           | 0           | 10    | 0        | EUR          | true      | 10             | project_PO_receipt_1 |
