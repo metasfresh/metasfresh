@@ -14,3 +14,6 @@
 CREATE INDEX IF NOT EXISTS pp_order_candidate_m_product_id_m_warehouse_id
     ON pp_order_candidate (M_Product_ID, M_Warehouse_ID)
     WHERE IsActive = 'Y' AND QtyToProcess <> 0;
+
+COMMENT ON INDEX pp_order_candidate_m_product_id_m_warehouse_id IS
+    'F19011 - Material Cockpit v2: backs the precondition probe of AD_Process QtyDemand_QtySupply_V_to_PP_Order_Candidate, which asks on every cockpit row selection whether any production candidate matches the row.';

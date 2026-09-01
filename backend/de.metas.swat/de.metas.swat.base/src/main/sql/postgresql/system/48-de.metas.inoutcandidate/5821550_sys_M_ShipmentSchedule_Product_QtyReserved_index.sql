@@ -21,3 +21,6 @@
 CREATE INDEX IF NOT EXISTS m_shipmentschedule_m_product_id
     ON m_shipmentschedule (M_Product_ID)
     WHERE IsActive = 'Y' AND QtyReserved <> 0;
+
+COMMENT ON INDEX m_shipmentschedule_m_product_id IS
+    'F19011 - Material Cockpit v2: backs the precondition probe of AD_Process QtyDemand_QtySupply_V_to_ShipmentSchedule, which asks on every cockpit row selection whether any shipment schedule matches the row.';
