@@ -77,10 +77,15 @@ Feature: The document lifecycle of a delivery instruction and its delivery plann
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DocStatus |
       | deliveryInstructionLife               | shipper_DHL             | customer                       | customerLocation               | CO            |
     And the M_ShipperTransportation identified by deliveryInstructionLife holds exactly the following active M_Delivery_Planning_Alloc:
-      | M_Delivery_Planning_ID | ActualLoadQty |
-      | planningLife_1         | 4             |
-      | planningLife_2         | 3             |
-      | planningLife_3         | 3             |
+      | M_Delivery_Planning_ID | M_ShippingPackage_ID  |
+      | planningLife_1         | shippingPackageLife_1 |
+      | planningLife_2         | shippingPackageLife_2 |
+      | planningLife_3         | shippingPackageLife_3 |
+    And validate M_Shipping_Package:
+      | M_ShippingPackage_ID  | ActualLoadQty |
+      | shippingPackageLife_1 | 4             |
+      | shippingPackageLife_2 | 3             |
+      | shippingPackageLife_3 | 3             |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | M_ShipperTransportation_ID |
       | planningLife_1         | 10         | 10           | Outgoing           | deliveryInstructionLife    |
@@ -99,10 +104,15 @@ Feature: The document lifecycle of a delivery instruction and its delivery plann
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DocStatus |
       | deliveryInstructionLife               | shipper_DHL             | customer                       | customerLocation               | IP            |
     And the M_ShipperTransportation identified by deliveryInstructionLife holds exactly the following active M_Delivery_Planning_Alloc:
-      | M_Delivery_Planning_ID | ActualLoadQty |
-      | planningLife_1         | 4             |
-      | planningLife_2         | 3             |
-      | planningLife_3         | 3             |
+      | M_Delivery_Planning_ID | M_ShippingPackage_ID  |
+      | planningLife_1         | shippingPackageLife_1 |
+      | planningLife_2         | shippingPackageLife_2 |
+      | planningLife_3         | shippingPackageLife_3 |
+    And validate M_Shipping_Package:
+      | M_ShippingPackage_ID  | ActualLoadQty |
+      | shippingPackageLife_1 | 4             |
+      | shippingPackageLife_2 | 3             |
+      | shippingPackageLife_3 | 3             |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | M_ShipperTransportation_ID |
       | planningLife_1         | 10         | 10           | Outgoing           | deliveryInstructionLife    |

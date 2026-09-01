@@ -24,15 +24,16 @@ package de.metas.cucumber.stepdefs.shippingPackage;
 
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Package_StepDefData;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_ShipperTransportation_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.pickingterminal.M_ShippingPackage_StepDefData;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -45,12 +46,20 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.I_M_Product;
 
-import java.math.BigDecimal;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+/**
+ * Asserts the {@code M_ShippingPackage} rows - the consignment a delivery instruction is loaded with. This is
+ * where the article and the quantities live: a delivery planning is put on a delivery instruction by an
+ * {@code M_Delivery_Planning_Alloc} link that holds no quantity of its own, so a scenario names the package
+ * on the allocation step and asserts its load here.
+ *
+ * @see de.metas.cucumber.stepdefs.shipment.pickingterminal.M_ShippingPackage_StepDefData
+ * @see de.metas.cucumber.stepdefs.deliveryplanning.M_Delivery_Planning_Alloc_StepDef
+ */
 public class M_ShippingPackage_StepDef
 {
 	private final M_ShippingPackage_StepDefData shippingPackageTable;
@@ -61,7 +70,7 @@ public class M_ShippingPackage_StepDef
 	private final C_OrderLine_StepDefData orderLineTable;
 	private final M_Product_StepDefData productTable;
 
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public M_ShippingPackage_StepDef(
 			@NonNull final M_ShippingPackage_StepDefData shippingPackageTable,
@@ -81,6 +90,25 @@ public class M_ShippingPackage_StepDef
 		this.productTable = productTable;
 	}
 
+	/**
+	 * Finds the shipping package of one package on one delivery instruction and registers it under an
+	 * identifier, so that {@code validate M_Shipping_Package:} can assert it.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_ShippingPackage_ID.Identifier</b> — (required) alias to store the found package under<br>
+	 *   <b>M_ShipperTransportation_ID.Identifier</b> — (required, identifier-ref) the delivery instruction the
+	 *   package hangs off<br>
+	 *   <b>M_Package_ID.Identifier</b> — (required, identifier-ref) the package<br>
+	 * @cucumber.depends StepDefData: M_ShippingPackage_StepDefData, M_ShipperTransportation_StepDefData,
+	 * M_Package_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And load M_Shipping_Package:
+	 *   | M_ShippingPackage_ID.Identifier | M_Package_ID.Identifier | M_ShipperTransportation_ID.Identifier |
+	 *   | shippingPackage_1               | package_1               | deliveryInstruction_1                 |
+	 * </pre>
+	 */
 	@And("load M_Shipping_Package:")
 	public void load_M_Shipping_Package(@NonNull final DataTable dataTable)
 	{
@@ -105,60 +133,102 @@ public class M_ShippingPackage_StepDef
 		}
 	}
 
+	/**
+	 * Asserts one already-registered shipping package. The package is named by an identifier a previous step
+	 * registered - {@code load M_Shipping_Package:}, or the {@code M_ShippingPackage_ID} column of the step
+	 * that asserts a delivery instruction's active {@code M_Delivery_Planning_Alloc} rows.
+	 * <p>
+	 * Only {@code ActualLoadQty} is mandatory: it is the load, the reason the record exists. Every other
+	 * column asserts a link the package carries, and is skipped when the row leaves it out.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_ShippingPackage_ID</b> — (required, identifier-ref) the package to assert<br>
+	 *   <b>ActualLoadQty</b> — (required) expected loaded quantity<br>
+	 *   <b>M_ShipperTransportation_ID</b> — (optional, identifier-ref) expected delivery instruction<br>
+	 *   <b>M_Package_ID</b> — (optional, identifier-ref) expected package<br>
+	 *   <b>C_BPartner_Location_ID</b> — (optional, identifier-ref) expected delivery address<br>
+	 *   <b>C_BPartner_ID</b> — (optional, identifier-ref) expected business partner<br>
+	 *   <b>M_Product_ID</b> — (optional, identifier-ref) expected article<br>
+	 *   <b>C_OrderLine_ID</b> — (optional, identifier-ref) expected order line<br>
+	 * @cucumber.depends StepDefData: M_ShippingPackage_StepDefData, M_ShipperTransportation_StepDefData,
+	 * M_Package_StepDefData, C_BPartner_Location_StepDefData, C_BPartner_StepDefData, C_OrderLine_StepDefData,
+	 * M_Product_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And validate M_Shipping_Package:
+	 *   | M_ShippingPackage_ID | ActualLoadQty |
+	 *   | shippingPackage_1    | 7             |
+	 * </pre>
+	 */
 	@And("validate M_Shipping_Package:")
 	public void validate_M_Shipping_Package(@NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
+		DataTableRows.of(dataTable).forEach(row -> {
 			final SoftAssertions softly = new SoftAssertions();
 
-			final String shippingPackageIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ShippingPackage.COLUMNNAME_M_ShippingPackage_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_ShippingPackage shippingPackage = shippingPackageTable.get(shippingPackageIdentifier);
-			softly.assertThat(shippingPackage).isNotNull();
+			final StepDefDataIdentifier shippingPackageIdentifier = row.getAsIdentifier(I_M_ShippingPackage.COLUMNNAME_M_ShippingPackage_ID);
+			final I_M_ShippingPackage shippingPackage = shippingPackageIdentifier.lookupNotNullIn(shippingPackageTable);
 
-			final String deliveryInstructionIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_ShipperTransportation deliveryInstruction = shipperTransportationTable.get(deliveryInstructionIdentifier);
-			softly.assertThat(deliveryInstruction).isNotNull();
-			softly.assertThat(shippingPackage.getM_ShipperTransportation_ID()).as(I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID).isEqualTo(deliveryInstruction.getM_ShipperTransportation_ID());
+			softly.assertThat(shippingPackage.getActualLoadQty())
+					.as("%s of M_ShippingPackage %s", I_M_ShippingPackage.COLUMNNAME_ActualLoadQty, shippingPackageIdentifier)
+					.isEqualTo(row.getAsBigDecimal(I_M_ShippingPackage.COLUMNNAME_ActualLoadQty));
 
-			final String packageIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ShippingPackage.COLUMNNAME_M_Package_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_Package packageRecord = packageTable.get(packageIdentifier);
-			softly.assertThat(packageRecord).isNotNull();
-			softly.assertThat(shippingPackage.getM_Package_ID()).as(I_M_ShippingPackage.COLUMNNAME_M_Package_ID).isEqualTo(packageRecord.getM_Package_ID());
+			row.getAsOptionalIdentifier(I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID)
+					.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+					.ifPresent(identifier -> {
+						final I_M_ShipperTransportation deliveryInstruction = identifier.lookupNotNullIn(shipperTransportationTable);
+						softly.assertThat(shippingPackage.getM_ShipperTransportation_ID())
+								.as("%s of M_ShippingPackage %s", I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID, shippingPackageIdentifier)
+								.isEqualTo(deliveryInstruction.getM_ShipperTransportation_ID());
+					});
 
-			final String bpartnerLocIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ShippingPackage.COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_BPartner_Location bPartnerLocation = bPartnerLocationTable.get(bpartnerLocIdentifier);
-			softly.assertThat(bPartnerLocation).isNotNull();
-			softly.assertThat(shippingPackage.getC_BPartner_Location_ID()).as(I_M_ShippingPackage.COLUMNNAME_C_BPartner_Location_ID).isEqualTo(bPartnerLocation.getC_BPartner_Location_ID());
+			row.getAsOptionalIdentifier(I_M_ShippingPackage.COLUMNNAME_M_Package_ID)
+					.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+					.ifPresent(identifier -> {
+						final I_M_Package packageRecord = identifier.lookupNotNullIn(packageTable);
+						softly.assertThat(shippingPackage.getM_Package_ID())
+								.as("%s of M_ShippingPackage %s", I_M_ShippingPackage.COLUMNNAME_M_Package_ID, shippingPackageIdentifier)
+								.isEqualTo(packageRecord.getM_Package_ID());
+					});
 
-			final BigDecimal actualLoadQty = DataTableUtil.extractBigDecimalForColumnName(row, I_M_ShippingPackage.COLUMNNAME_ActualLoadQty);
-			softly.assertThat(shippingPackage.getActualLoadQty()).as(I_M_ShippingPackage.COLUMNNAME_ActualLoadQty).isEqualTo(actualLoadQty);
+			row.getAsOptionalIdentifier(I_M_ShippingPackage.COLUMNNAME_C_BPartner_Location_ID)
+					.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+					.ifPresent(identifier -> {
+						final I_C_BPartner_Location bPartnerLocation = identifier.lookupNotNullIn(bPartnerLocationTable);
+						softly.assertThat(shippingPackage.getC_BPartner_Location_ID())
+								.as("%s of M_ShippingPackage %s", I_M_ShippingPackage.COLUMNNAME_C_BPartner_Location_ID, shippingPackageIdentifier)
+								.isEqualTo(bPartnerLocation.getC_BPartner_Location_ID());
+					});
 
-			final String bpartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_ShippingPackage.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(bpartnerIdentifier))
-			{
-				final I_C_BPartner bPartner = bPartnerTable.get(bpartnerIdentifier);
-				softly.assertThat(bPartner).isNotNull();
-				softly.assertThat(shippingPackage.getC_BPartner_ID()).as(I_M_ShippingPackage.COLUMNNAME_C_BPartner_ID).isEqualTo(bPartner.getC_BPartner_ID());
-			}
+			row.getAsOptionalIdentifier(I_M_ShippingPackage.COLUMNNAME_C_BPartner_ID)
+					.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+					.ifPresent(identifier -> {
+						final I_C_BPartner bPartner = identifier.lookupNotNullIn(bPartnerTable);
+						softly.assertThat(shippingPackage.getC_BPartner_ID())
+								.as("%s of M_ShippingPackage %s", I_M_ShippingPackage.COLUMNNAME_C_BPartner_ID, shippingPackageIdentifier)
+								.isEqualTo(bPartner.getC_BPartner_ID());
+					});
 
-			final String productIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_ShippingPackage.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(productIdentifier))
-			{
-				final I_M_Product product = productTable.get(productIdentifier);
-				softly.assertThat(product).isNotNull();
-				softly.assertThat(shippingPackage.getM_Product_ID()).as(I_M_ShippingPackage.COLUMNNAME_M_Product_ID).isEqualTo(product.getM_Product_ID());
-			}
+			row.getAsOptionalIdentifier(I_M_ShippingPackage.COLUMNNAME_M_Product_ID)
+					.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+					.ifPresent(identifier -> {
+						final I_M_Product product = identifier.lookupNotNullIn(productTable);
+						softly.assertThat(shippingPackage.getM_Product_ID())
+								.as("%s of M_ShippingPackage %s", I_M_ShippingPackage.COLUMNNAME_M_Product_ID, shippingPackageIdentifier)
+								.isEqualTo(product.getM_Product_ID());
+					});
 
-			final String orderLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_ShippingPackage.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(orderLineIdentifier))
-			{
-				final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
-				softly.assertThat(orderLine).isNotNull();
-				softly.assertThat(shippingPackage.getC_OrderLine_ID()).as(I_M_ShippingPackage.COLUMNNAME_C_OrderLine_ID).isEqualTo(orderLine.getC_OrderLine_ID());
-			}
+			row.getAsOptionalIdentifier(I_M_ShippingPackage.COLUMNNAME_C_OrderLine_ID)
+					.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+					.ifPresent(identifier -> {
+						final I_C_OrderLine orderLine = identifier.lookupNotNullIn(orderLineTable);
+						softly.assertThat(shippingPackage.getC_OrderLine_ID())
+								.as("%s of M_ShippingPackage %s", I_M_ShippingPackage.COLUMNNAME_C_OrderLine_ID, shippingPackageIdentifier)
+								.isEqualTo(orderLine.getC_OrderLine_ID());
+					});
 
 			softly.assertAll();
-		}
+		});
 	}
 }

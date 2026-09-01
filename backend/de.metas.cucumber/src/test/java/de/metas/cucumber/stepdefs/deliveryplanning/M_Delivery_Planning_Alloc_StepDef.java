@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.deliveryplanning;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
@@ -67,8 +68,22 @@ public class M_Delivery_Planning_Alloc_StepDef
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	/**
+	 * The only columns {@code validate_active_allocations_of} reads. Everything the shipping package carries -
+	 * product, quantity, UOM - belongs to the {@code validate M_Shipping_Package:} step; see
+	 * {@link #assertOnlyKnownColumns(DataTableRows)}.
+	 */
+	private static final ImmutableSet<String> ALLOCATION_COLUMN_NAMES = ImmutableSet.of(
+			I_M_Delivery_Planning_Alloc.COLUMNNAME_M_Delivery_Planning_ID,
+			I_M_Delivery_Planning_Alloc.COLUMNNAME_M_Delivery_Planning_Alloc_ID,
+			I_M_Delivery_Planning_Alloc.COLUMNNAME_M_ShippingPackage_ID);
+
+	/**
 	 * Asserts the COMPLETE set of active allocations of one delivery instruction: the given rows and nothing
-	 * else - a row count and its OWN shipping package per planning, all under one instruction.
+	 * else - a row count, and its OWN shipping package per planning, all hanging off one instruction.
+	 * <p>
+	 * The allocation is a pure LINK, so this step asserts only the link: WHICH plannings are booked on the
+	 * instruction. The load itself lives on {@code M_ShippingPackage} - name the package here and assert its
+	 * quantities with {@code validate M_Shipping_Package:}.
 	 * <p>
 	 * Each expected row is paired to the record carrying THAT row's {@code M_Delivery_Planning_ID}, never to
 	 * the record at the same position, so the order the rows are written in carries no meaning. A record
@@ -80,8 +95,9 @@ public class M_Delivery_Planning_Alloc_StepDef
 	 *   this is what the row is matched on<br>
 	 *   <b>M_Delivery_Planning_Alloc_ID</b> — (optional, identifier-ref) alias to store the allocation under<br>
 	 *   <b>M_ShippingPackage_ID</b> — (optional, identifier-ref) alias to store the allocation's shipping
-	 *   package under, for later {@code validate M_Shipping_Package} steps<br>
-	 *   <b>ActualLoadQty</b> — (optional) expected {@code ActualLoadQty} on the allocation's shipping package<br>
+	 *   package under, for a later {@code validate M_Shipping_Package:} step<br>
+	 *   Any other column is rejected - a package column here would read as though the allocation carried the
+	 *   quantity<br>
 	 * @cucumber.depends StepDefData: M_Delivery_Planning_StepDefData, M_ShipperTransportation_StepDefData,
 	 * M_Delivery_Planning_Alloc_StepDefData, M_ShippingPackage_StepDefData
 	 * @cucumber.example
@@ -90,6 +106,10 @@ public class M_Delivery_Planning_Alloc_StepDef
 	 *   | M_Delivery_Planning_ID | M_ShippingPackage_ID |
 	 *   | deliveryPlanning_1     | shippingPackage_1    |
 	 *   | deliveryPlanning_2     | shippingPackage_2    |
+	 * And validate M_Shipping_Package:
+	 *   | M_ShippingPackage_ID | ActualLoadQty |
+	 *   | shippingPackage_1    | 7             |
+	 *   | shippingPackage_2    | 3             |
 	 * </pre>
 	 */
 	@Then("^the M_ShipperTransportation identified by (.*) holds exactly the following active M_Delivery_Planning_Alloc:$")
@@ -101,6 +121,8 @@ public class M_Delivery_Planning_Alloc_StepDef
 
 		final List<I_M_Delivery_Planning_Alloc> allocRecords = retrieveActiveAllocations(deliveryInstruction);
 		final DataTableRows expectedRows = DataTableRows.of(dataTable);
+
+		assertOnlyKnownColumns(expectedRows);
 
 		assertThat(allocRecords)
 				.as("active M_Delivery_Planning_Alloc records of M_ShipperTransportation %s", deliveryInstructionIdentifier)
@@ -173,12 +195,6 @@ public class M_Delivery_Planning_Alloc_StepDef
 		softly.assertThat(shippingPackage.getM_ShipperTransportation_ID())
 				.as("%s of the shipping package of the allocation of M_Delivery_Planning %s", I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID, planningIdentifier)
 				.isEqualTo(deliveryInstruction.getM_ShipperTransportation_ID());
-
-		// the package carries THIS planning's load, not another planning's
-		row.getAsOptionalBigDecimal(I_M_ShippingPackage.COLUMNNAME_ActualLoadQty)
-				.ifPresent(actualLoadQty -> softly.assertThat(shippingPackage.getActualLoadQty())
-						.as("%s of the shipping package of the allocation of M_Delivery_Planning %s", I_M_ShippingPackage.COLUMNNAME_ActualLoadQty, planningIdentifier)
-						.isEqualByComparingTo(actualLoadQty));
 
 		row.getAsOptionalIdentifier(I_M_Delivery_Planning_Alloc.COLUMNNAME_M_Delivery_Planning_Alloc_ID)
 				.ifPresent(identifier -> identifier.putOrReplace(deliveryPlanningAllocTable, allocRecord));
@@ -260,6 +276,40 @@ public class M_Delivery_Planning_Alloc_StepDef
 					});
 			softly.assertAll();
 		});
+	}
+
+	/**
+	 * Rejects any column {@code validate_active_allocations_of} does not read, HARD - it is a fault of the
+	 * feature file, not of the records under test. Without it a package column ({@code ActualLoadQty} above
+	 * all) written on the allocation table would be silently dropped: the feature would still read as though
+	 * the quantity were asserted, and as though the allocation carried one.
+	 */
+	private static void assertOnlyKnownColumns(@NonNull final DataTableRows expectedRows)
+	{
+		final List<String> unknownColumnNames = expectedRows.getColumnNames().stream()
+				.filter(columnName -> !ALLOCATION_COLUMN_NAMES.contains(stripDecorations(columnName)))
+				.collect(ImmutableList.toImmutableList());
+
+		assertThat(unknownColumnNames)
+				.as("columns this step does not assert; the M_ShippingPackage ones belong to the `validate M_Shipping_Package:` step")
+				.isEmpty();
+	}
+
+	/** Strips the {@code OPT.} prefix and the {@code .Identifier} suffix {@link DataTableRow} resolves through. */
+	@NonNull
+	private static String stripDecorations(@NonNull final String columnName)
+	{
+		String name = columnName;
+		if (name.startsWith("OPT."))
+		{
+			name = name.substring("OPT.".length());
+		}
+		final String identifierSuffix = "." + StepDefDataIdentifier.SUFFIX;
+		if (name.endsWith(identifierSuffix))
+		{
+			name = name.substring(0, name.length() - identifierSuffix.length());
+		}
+		return name;
 	}
 
 	@NonNull
