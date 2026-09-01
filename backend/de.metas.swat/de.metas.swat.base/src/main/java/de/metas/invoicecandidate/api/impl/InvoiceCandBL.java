@@ -2288,7 +2288,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 
 		invoiceCandDAO.invalidateCand(candidate);
-		InterfaceWrapperHelper.save(candidate);
+		invoiceCandDAO.save(candidate);
 	}
 
 	@Override
