@@ -39,12 +39,9 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_InOut;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-
-import javax.annotation.Nullable;
 
 import static org.adempiere.model.InterfaceWrapperHelper.delete;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -322,20 +319,9 @@ public class DocumentReportAdvisorUtilTest
 			Assertions.assertThat(util.isDropShip(onlyLocationSet)).isFalse();
 		}
 
-		@Test
-		public void manualShipmentWithoutOrderIsNotDropShip()
-		{
-			final DocumentReportAdvisorUtil util = createUtil();
-
-			// a manual shipment has no C_Order_ID at all
-			final I_M_InOut manualShipment = newInstance(I_M_InOut.class);
-			manualShipment.setC_Order_ID(0);
-			save(manualShipment);
-
-			final I_C_Order order = resolveOrderOrNull(manualShipment);
-			Assertions.assertThat(order).isNull();
-			Assertions.assertThat(util.isDropShip(order)).isFalse();
-		}
+		// NOTE: the "manual shipment, no order -> not a drop-ship" case is no longer asserted here.
+		// isDropShip now requires a @NonNull order; guarding the missing-order case is the caller's
+		// responsibility and is covered by InOutDocumentReportAdvisorTest (module de.metas.business).
 	}
 
 	@Nested
@@ -417,13 +403,6 @@ public class DocumentReportAdvisorUtilTest
 			// no C_BP_PrintFormat row created at all for this bpartner
 			Assertions.assertThat(util.resolveSuppressAutoPrint(dropShipQuery)).isFalse();
 		}
-	}
-
-	@Nullable
-	private I_C_Order resolveOrderOrNull(@NonNull final I_M_InOut inout)
-	{
-		final int orderRepoId = inout.getC_Order_ID();
-		return orderRepoId > 0 ? InterfaceWrapperHelper.load(orderRepoId, I_C_Order.class) : null;
 	}
 
 	private I_C_Order createOrder(

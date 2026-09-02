@@ -150,6 +150,10 @@ public class DocumentReportAdvisorUtil
 	 * Pure computation (no DB access): is the given sales order a drop-shipment, i.e. does the goods
 	 * recipient deviate from the order's own sold-to?
 	 * <p>
+	 * The order is required ({@link NonNull}). The "manual shipment, no order to inspect" case (a
+	 * shipment without a {@code C_Order}) is <b>not</b> handled here -- it is the caller's
+	 * responsibility to treat a missing order as not-a-drop-ship and skip this call.
+	 * <p>
 	 * NOTE -- this is a <b>different</b> rule from the sales-order ultimate-consignee (UC) resolution
 	 * documented in the {@code de.metas.business} module CLAUDE.md ("IsDropShip is irrelevant for UC
 	 * resolution -- the presence of DropShip_* alone decides"). That rule answers "who is the goods
@@ -157,13 +161,8 @@ public class DocumentReportAdvisorUtil
 	 * shipment" -- and the approved design for that concern deliberately gates on {@code IsDropShip='Y'}
 	 * in addition to the DropShip_* deviation. Do not "fix" this to match the UC rule.
 	 */
-	public boolean isDropShip(@Nullable final I_C_Order order)
+	public boolean isDropShip(@NonNull final I_C_Order order)
 	{
-		if (order == null)
-		{
-			// manual shipment, no order to inspect -> not a drop-ship
-			return false;
-		}
 		if (!order.isDropShip())
 		{
 			return false;

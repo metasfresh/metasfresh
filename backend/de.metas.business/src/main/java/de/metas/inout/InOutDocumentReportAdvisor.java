@@ -101,7 +101,8 @@ public class InOutDocumentReportAdvisor implements DocumentReportAdvisor
 		final Language language = util.getBPartnerLanguage(bpartner).orElse(null);
 
 		final I_C_Order order = getOrderOrNull(inout);
-		final boolean docIsDropShip = util.isDropShip(order);
+		// a manual shipment has no order to inspect -> treat as NOT a drop-ship (do not suppress auto-print)
+		final boolean docIsDropShip = order != null && util.isDropShip(order);
 
 		final BPPrintFormatQuery bpPrintFormatQuery = BPPrintFormatQuery.builder()
 				.adTableId(recordRef.getAdTableId())
