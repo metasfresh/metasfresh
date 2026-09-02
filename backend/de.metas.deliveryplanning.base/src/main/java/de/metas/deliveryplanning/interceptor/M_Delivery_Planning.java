@@ -22,8 +22,10 @@
 
 package de.metas.deliveryplanning.interceptor;
 
+import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.deliveryplanning.DeliveryPlanningService;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_M_Delivery_Planning;
@@ -34,23 +36,26 @@ import static org.adempiere.model.InterfaceWrapperHelper.isUIAction;
 
 @Interceptor(I_M_Delivery_Planning.class)
 @Component
+@RequiredArgsConstructor
 public class M_Delivery_Planning
 {
-	private final DeliveryPlanningService deliveryPlanningService;
+	@NonNull private final DeliveryPlanningService deliveryPlanningService;
 
-	public M_Delivery_Planning(
-			@NonNull final DeliveryPlanningService deliveryPlanningService)
-	{
-		this.deliveryPlanningService = deliveryPlanningService;
-	}
-
+	/**
+	 * Refuses the delete while a live allocation still points here, then removes the retired allocation history.
+	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void onDelete(@NonNull final I_M_Delivery_Planning deliveryPlanning)
 	{
+		deliveryPlanningService.assertNotCurrentlyAllocated(deliveryPlanning);
+
 		if (isUIAction(deliveryPlanning))
 		{
 			deliveryPlanningService.validateDeletion(deliveryPlanning);
 		}
+
+		// only retired history can still be pointing here, the assert above having refused every live booking
+		deliveryPlanningService.deleteAllocationsFor(DeliveryPlanningId.ofRepoId(deliveryPlanning.getM_Delivery_Planning_ID()));
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_M_Delivery_Planning.COLUMNNAME_ATD)
