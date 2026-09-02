@@ -56,6 +56,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -629,6 +630,10 @@ public class DeliveryPlanningRepository
 		allocRecord.setM_ShippingPackage_ID(shippingPackageRecord.getM_ShippingPackage_ID());
 		saveRecord(allocRecord);
 
+		// stored mirror of "an active alloc row references this planning": this is the write path that creates
+		// one (the partial unique index allows at most one active row per planning, so this one is now allocated)
+		markIsAllocated(ImmutableList.of(request.getDeliveryPlanningId()), true);
+
 		return DeliveryPlanningAllocId.ofRepoId(allocRecord.getM_Delivery_Planning_Alloc_ID());
 	}
 
@@ -785,10 +790,45 @@ public class DeliveryPlanningRepository
 			deallocatedPlanningIds.add(DeliveryPlanningId.ofRepoId(allocRecord.getM_Delivery_Planning_ID()));
 		}
 
+		final ImmutableSet<DeliveryPlanningId> deallocatedPlanningIdsSet = deallocatedPlanningIds.build();
+
+		// stored mirror of "an active alloc row references this planning": this is the choke point every
+		// deactivation path routes through, and every row here just lost its only active allocation (the
+		// partial unique index m_delivery_planning_alloc_planning_uq allows at most one per planning).
+		markIsAllocated(deallocatedPlanningIdsSet, false);
+
 		return DeactivatedAllocations.builder()
 				.shippingPackages(deactivatedShippingPackages.build())
-				.deallocatedPlanningIds(deallocatedPlanningIds.build())
+				.deallocatedPlanningIds(deallocatedPlanningIdsSet)
 				.build();
+	}
+
+	/**
+	 * Sets the stored {@code IsAllocated} mirror for the given plannings via a direct SQL {@code UPDATE} - never
+	 * loading the rows first, so this never shows up as an extra {@link #getById(DeliveryPlanningId)} /
+	 * {@link #getByIds(Collection)} round trip (both are batch-load-discipline-tested elsewhere: see
+	 * {@code DeliveryPlanningBatchLoadingTest}). Safe to call with an id that has no matching row - the
+	 * {@code WHERE} filter then simply matches nothing.
+	 * <p>
+	 * Callers pass a literal {@code allocated} rather than re-deriving it here, because at both call sites the
+	 * partial unique index {@code m_delivery_planning_alloc_planning_uq} (at most one ACTIVE allocation per
+	 * planning) already pins the answer: a row that just gained its (only possible) active allocation is
+	 * allocated, a row that just lost it is not.
+	 */
+	private void markIsAllocated(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds, final boolean allocated)
+	{
+		if (deliveryPlanningIds.isEmpty())
+		{
+			return;
+		}
+
+		final ICompositeQueryUpdater<I_M_Delivery_Planning> updater = queryBL.createCompositeQueryUpdater(I_M_Delivery_Planning.class)
+				.addSetColumnValue(I_M_Delivery_Planning.COLUMNNAME_IsAllocated, allocated);
+
+		queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
+				.addInArrayFilter(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningIds)
+				.create()
+				.updateDirectly(updater);
 	}
 
 	/**

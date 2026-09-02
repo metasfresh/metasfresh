@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_Delivery_Planning, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -734225450L;
+	private static final long serialVersionUID = 926985575L;
 
     /** Standard Constructor */
     public X_M_Delivery_Planning (final Properties ctx, final int M_Delivery_Planning_ID, @Nullable final String trxName)
@@ -294,7 +294,8 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	@Override
 	public void setIsAllocated (final boolean IsAllocated)
 	{
-		throw new IllegalArgumentException ("IsAllocated is virtual column");	}
+		set_ValueNoCheck (COLUMNNAME_IsAllocated, IsAllocated);
+	}
 
 	@Override
 	public boolean isAllocated() 
@@ -611,6 +612,19 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	public BigDecimal getQtyTotalOpen() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyTotalOpen);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyTotalOpenPlanned (final @Nullable BigDecimal QtyTotalOpenPlanned)
+	{
+		set_Value (COLUMNNAME_QtyTotalOpenPlanned, QtyTotalOpenPlanned);
+	}
+
+	@Override
+	public BigDecimal getQtyTotalOpenPlanned() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyTotalOpenPlanned);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 

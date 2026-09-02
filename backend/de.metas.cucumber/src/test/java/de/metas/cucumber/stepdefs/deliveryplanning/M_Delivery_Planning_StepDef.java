@@ -246,6 +246,8 @@ public class M_Delivery_Planning_StepDef
 	 *   <b>ActualDischargeQuantity</b> — (optional) expected {@code ActualDischargeQuantity}<br>
 	 *   <b>IsClosed</b> — (optional) expected {@code IsClosed}<br>
 	 *   <b>Processed</b> — (optional) expected {@code Processed}<br>
+	 *   <b>IsAllocated</b> — (optional) expected {@code IsAllocated}: {@code true} iff an ACTIVE
+	 *   {@code M_Delivery_Planning_Alloc} row currently references this planning<br>
 	 *   <b>OrderStatus</b> — (optional, null-allowed) expected {@code OrderStatus}; {@code null} asserts the planning
 	 *   carries none<br>
 	 *   <b>M_ShipperTransportation_ID</b> — (optional, identifier-ref, null-allowed) expected linked delivery
@@ -357,6 +359,9 @@ public class M_Delivery_Planning_StepDef
 
 			row.getAsOptionalBoolean(I_M_Delivery_Planning.COLUMNNAME_Processed)
 					.ifPresent(isProcessed -> softly.assertThat(deliveryPlanning.isProcessed()).as(I_M_Delivery_Planning.COLUMNNAME_Processed).isEqualTo(isProcessed));
+
+			row.getAsOptionalBoolean(I_M_Delivery_Planning.COLUMNNAME_IsAllocated)
+					.ifPresent(isAllocated -> softly.assertThat(deliveryPlanning.isAllocated()).as(I_M_Delivery_Planning.COLUMNNAME_IsAllocated).isEqualTo(isAllocated));
 
 			row.getAsOptionalString(I_M_Delivery_Planning.COLUMNNAME_OrderStatus)
 					.filter(Check::isNotBlank)

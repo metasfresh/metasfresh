@@ -88,10 +88,10 @@ Feature: The document lifecycle of a delivery instruction and its delivery plann
       | shippingPackageLife_2 | 3             |
       | shippingPackageLife_3 | 3             |
     And validate M_Delivery_Planning:
-      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | M_ShipperTransportation_ID |
-      | planningLife_1         | 10         | 10           | Outgoing           | deliveryInstructionLife    |
-      | planningLife_2         | 10         | 10           | Outgoing           | deliveryInstructionLife    |
-      | planningLife_3         | 10         | 10           | Outgoing           | deliveryInstructionLife    |
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | M_ShipperTransportation_ID | IsAllocated |
+      | planningLife_1         | 10         | 10           | Outgoing           | deliveryInstructionLife    | true        |
+      | planningLife_2         | 10         | 10           | Outgoing           | deliveryInstructionLife    | true        |
+      | planningLife_3         | 10         | 10           | Outgoing           | deliveryInstructionLife    | true        |
     And each M_Delivery_Planning has its own ReleaseNo stamped from M_ShipperTransportation deliveryInstructionLife:
       | M_Delivery_Planning_ID |
       | planningLife_1         |
@@ -115,10 +115,10 @@ Feature: The document lifecycle of a delivery instruction and its delivery plann
       | shippingPackageLife_2 | 3             |
       | shippingPackageLife_3 | 3             |
     And validate M_Delivery_Planning:
-      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | M_ShipperTransportation_ID |
-      | planningLife_1         | 10         | 10           | Outgoing           | deliveryInstructionLife    |
-      | planningLife_2         | 10         | 10           | Outgoing           | deliveryInstructionLife    |
-      | planningLife_3         | 10         | 10           | Outgoing           | deliveryInstructionLife    |
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | M_ShipperTransportation_ID | IsAllocated |
+      | planningLife_1         | 10         | 10           | Outgoing           | deliveryInstructionLife    | true        |
+      | planningLife_2         | 10         | 10           | Outgoing           | deliveryInstructionLife    | true        |
+      | planningLife_3         | 10         | 10           | Outgoing           | deliveryInstructionLife    | true        |
     And each M_Delivery_Planning has its own ReleaseNo stamped from M_ShipperTransportation deliveryInstructionLife:
       | M_Delivery_Planning_ID |
       | planningLife_1         |
@@ -138,10 +138,10 @@ Feature: The document lifecycle of a delivery instruction and its delivery plann
       | planningLife_2         | deliveryInstructionLife    | false    |
       | planningLife_3         | deliveryInstructionLife    | false    |
     And validate M_Delivery_Planning:
-      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | M_ShipperTransportation_ID |
-      | planningLife_1         | 10         | 10           | Outgoing           | null                       |
-      | planningLife_2         | 10         | 10           | Outgoing           | null                       |
-      | planningLife_3         | 10         | 10           | Outgoing           | null                       |
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | M_ShipperTransportation_ID | IsAllocated |
+      | planningLife_1         | 10         | 10           | Outgoing           | null                       | false       |
+      | planningLife_2         | 10         | 10           | Outgoing           | null                       | false       |
+      | planningLife_3         | 10         | 10           | Outgoing           | null                       | false       |
     And the following M_Delivery_Planning have no ReleaseNo:
       | M_Delivery_Planning_ID |
       | planningLife_1         |
@@ -182,6 +182,10 @@ Feature: The document lifecycle of a delivery instruction and its delivery plann
       | planningEmpty_1,planningEmpty_2 |
 
     Then the M_ShipperTransportation identified by deliveryInstructionEmpty holds no active M_Delivery_Planning_Alloc
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | IsAllocated |
+      | planningEmpty_1        | 6          | 6            | Outgoing           | false       |
+      | planningEmpty_2        | 6          | 6            | Outgoing           | false       |
 
     # completing it would freight nothing while printing a document that resolves everything through the allocation
     When completing the M_ShipperTransportation identified by deliveryInstructionEmpty is refused:

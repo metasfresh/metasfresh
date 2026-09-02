@@ -207,6 +207,7 @@ public interface I_M_Delivery_Planning
 
 	/**
 	 * Set Location.
+	 * Identifies the address of the business partner
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -216,6 +217,7 @@ public interface I_M_Delivery_Planning
 
 	/**
 	 * Get Location.
+	 * Identifies the address of the business partner
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -518,11 +520,9 @@ public interface I_M_Delivery_Planning
 	 * Indicates whether the delivery planning is already allocated to a delivery instruction.
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
 	void setIsAllocated (boolean IsAllocated);
 
 	/**
@@ -530,11 +530,9 @@ public interface I_M_Delivery_Planning
 	 * Indicates whether the delivery planning is already allocated to a delivery instruction.
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
 	boolean isAllocated();
 
 	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_IsAllocated = new ModelColumn<>(I_M_Delivery_Planning.class, "IsAllocated", null);
@@ -849,7 +847,7 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_OrderStatus = "OrderStatus";
 
 	/**
-	 * Set Country Of Origin.
+	 * Set Origin Country.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -860,7 +858,7 @@ public interface I_M_Delivery_Planning
 	void setOriginCountry (@Nullable java.lang.String OriginCountry);
 
 	/**
-	 * Get Country Of Origin.
+	 * Get Origin Country.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1043,7 +1041,8 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_QtyOrdered = "QtyOrdered";
 
 	/**
-	 * Set Qty Total Open.
+	 * Set Open Quantity (delivered).
+	 * Quantity of the order line not yet delivered: ordered quantity less the actual quantity — discharge for a receipt, load for a shipment.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -1052,7 +1051,8 @@ public interface I_M_Delivery_Planning
 	void setQtyTotalOpen (BigDecimal QtyTotalOpen);
 
 	/**
-	 * Get Qty Total Open.
+	 * Get Open Quantity (delivered).
+	 * Quantity of the order line not yet delivered: ordered quantity less the actual quantity — discharge for a receipt, load for a shipment.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -1062,6 +1062,29 @@ public interface I_M_Delivery_Planning
 
 	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_QtyTotalOpen = new ModelColumn<>(I_M_Delivery_Planning.class, "QtyTotalOpen", null);
 	String COLUMNNAME_QtyTotalOpen = "QtyTotalOpen";
+
+	/**
+	 * Set Open Quantity (planned).
+	 * Quantity of the order line not yet covered by any delivery planning: ordered quantity less the planned quantities of all plannings for that line.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyTotalOpenPlanned (@Nullable BigDecimal QtyTotalOpenPlanned);
+
+	/**
+	 * Get Open Quantity (planned).
+	 * Quantity of the order line not yet covered by any delivery planning: ordered quantity less the planned quantities of all plannings for that line.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyTotalOpenPlanned();
+
+	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_QtyTotalOpenPlanned = new ModelColumn<>(I_M_Delivery_Planning.class, "QtyTotalOpenPlanned", null);
+	String COLUMNNAME_QtyTotalOpenPlanned = "QtyTotalOpenPlanned";
 
 	/**
 	 * Set Release No.
