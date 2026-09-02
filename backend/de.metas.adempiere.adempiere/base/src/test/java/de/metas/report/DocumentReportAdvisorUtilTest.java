@@ -284,24 +284,33 @@ public class DocumentReportAdvisorUtilTest
 			final DocumentReportAdvisorUtil util = createUtil();
 
 			final BPartnerLocationId soldTo = createBPartnerLocation();
+			final BPartnerLocationId otherRecipient = createBPartnerLocation();
+
+			// realistic drop-ship: DropShip_BPartner_ID + DropShip_Location_ID both set and deviating + IsDropShip=Y -> true
+			final I_C_Order deviatingRecipient = createOrder(soldTo, true, otherRecipient.getBpartnerId().getRepoId(), otherRecipient.getRepoId());
+			Assertions.assertThat(util.isDropShip(deviatingRecipient)).isTrue();
+
+			// the full-key comparison must incorporate the bpartner component, not only the location repoId:
+			// DropShip_BPartner_ID deviates while the DropShip_Location_ID repoId is identical to the sold-to
+			// location -> still a drop-ship (true). (an impl comparing only the location repoId returns false here.)
 			final BPartnerId otherBPartner = createBPartnerLocation().getBpartnerId();
-			final BPartnerLocationId otherLocation = createBPartnerLocation();
+			final I_C_Order deviatingBPartnerSameLocationRepoId = createOrder(soldTo, true, otherBPartner.getRepoId(), soldTo.getRepoId());
+			Assertions.assertThat(util.isDropShip(deviatingBPartnerSameLocationRepoId)).isTrue();
 
-			// deviating DropShip_BPartner_ID + IsDropShip=Y -> true
-			final I_C_Order deviatingBPartner = createOrder(soldTo, true, otherBPartner.getRepoId(), 0);
-			Assertions.assertThat(util.isDropShip(deviatingBPartner)).isTrue();
-
-			// deviating DropShip_Location_ID (BPartner unset) + IsDropShip=Y -> true
-			final I_C_Order deviatingLocation = createOrder(soldTo, true, 0, otherLocation.getRepoId());
-			Assertions.assertThat(util.isDropShip(deviatingLocation)).isTrue();
-
-			// deviating DropShip_BPartner_ID but IsDropShip=N -> false (flag gates it)
-			final I_C_Order flagNotSet = createOrder(soldTo, false, otherBPartner.getRepoId(), 0);
+			// deviating recipient but IsDropShip=N -> false (flag gates it)
+			final I_C_Order flagNotSet = createOrder(soldTo, false, otherRecipient.getBpartnerId().getRepoId(), otherRecipient.getRepoId());
 			Assertions.assertThat(util.isDropShip(flagNotSet)).isFalse();
 
-			// IsDropShip=Y but DropShip_BPartner_ID equals the order's own sold-to (not deviating) -> false
-			final I_C_Order notDeviating = createOrder(soldTo, true, soldTo.getBpartnerId().getRepoId(), 0);
+			// IsDropShip=Y but the drop-ship recipient equals the order's own sold-to (same BP + same location) -> false
+			final I_C_Order notDeviating = createOrder(soldTo, true, soldTo.getBpartnerId().getRepoId(), soldTo.getRepoId());
 			Assertions.assertThat(util.isDropShip(notDeviating)).isFalse();
+
+			// NUANCE: a partial drop-ship state is not a realistic recipient key. With the full natural-key
+			// (bpartner, location) comparison, an order whose DropShip_Location_ID is unset (0) -- even with a
+			// deviating DropShip_BPartner_ID -- yields a null recipient key and is treated as non-deviating (false).
+			// A real drop-ship always sets BOTH DropShip_BPartner_ID and DropShip_Location_ID.
+			final I_C_Order onlyBPartnerSet = createOrder(soldTo, true, otherRecipient.getBpartnerId().getRepoId(), 0);
+			Assertions.assertThat(util.isDropShip(onlyBPartnerSet)).isFalse();
 		}
 
 		@Test

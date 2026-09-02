@@ -169,19 +169,14 @@ public class DocumentReportAdvisorUtil
 			return false;
 		}
 
-		final BPartnerId orderBPartnerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
-		final BPartnerId dropShipBPartnerId = BPartnerId.ofRepoIdOrNull(order.getDropShip_BPartner_ID());
-		final boolean bPartnerDeviates = dropShipBPartnerId != null && !dropShipBPartnerId.equals(orderBPartnerId);
-
-		// Both location ids are anchored on the order's own C_BPartner_ID. BPartnerLocationId always carries
-		// a bpartnerId component, but here we only care whether the location repoId itself differs (matching
-		// the semantics this replaces) -- anchoring both sides on the same bpartner id makes .equals() reduce
-		// to comparing the location repoId alone.
+		// Each side carries its own natural bpartner, so the full (bpartner, location) key comparison captures
+		// BOTH bpartner- and location-deviation in one shot -- BPartnerLocationId.equals() compares both
+		// components, making a separate manual bpartner check redundant. The drop-ship key is null unless BOTH
+		// DropShip_BPartner_ID and DropShip_Location_ID are set (a real drop-ship always sets both).
 		final BPartnerLocationId orderLocationId = BPartnerLocationId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID());
-		final BPartnerLocationId dropShipLocationId = BPartnerLocationId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getDropShip_Location_ID());
-		final boolean locationDeviates = dropShipLocationId != null && !dropShipLocationId.equals(orderLocationId);
+		final BPartnerLocationId dropShipLocationId = BPartnerLocationId.ofRepoIdOrNull(order.getDropShip_BPartner_ID(), order.getDropShip_Location_ID());
 
-		return bPartnerDeviates || locationDeviates;
+		return dropShipLocationId != null && !dropShipLocationId.equals(orderLocationId);
 	}
 
 	/**
