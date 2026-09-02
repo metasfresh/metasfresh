@@ -83,6 +83,10 @@ public class CreateAttributeCommand
 		{
 			record.setIsStorageRelevant(request.getIsStorageRelevant());
 		}
+		if (request.getIsInstanceAttribute() != null)
+		{
+			record.setIsInstanceAttribute(request.getIsInstanceAttribute());
+		}
 
 		InterfaceWrapperHelper.saveRecord(record);
 		return record;

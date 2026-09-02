@@ -37,6 +37,15 @@ public class JsonCreateAttributeRequest
 	@Nullable Boolean isMandatory;
 	@Nullable Boolean isStorageRelevant;
 
+	/**
+	 * {@code M_Attribute.IsInstanceAttribute}. Defaults to {@code N} on a new attribute (the DB column
+	 * default) when omitted. Must be {@code true} for the attribute to be offered by the mobile
+	 * Manufacturing receive's generic editable-attribute list - see
+	 * {@code MaterialReceiptActivityHandler#buildEditableAttributes}, which reads only
+	 * {@code IAttributeDAO#retrieveAttributes(attributeSetId, isInstanceAttribute=true)} (AC10).
+	 */
+	@Nullable Boolean isInstanceAttribute;
+
 	/** Allowed values for a LIST-type attribute; ignored for any other {@link #attributeValueType}. */
 	@Nullable List<ListValue> listValues;
 
