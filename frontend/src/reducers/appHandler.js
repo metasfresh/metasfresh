@@ -5,6 +5,7 @@ import * as types from '../constants/ActionTypes';
 export const initialState = {
   connectionErrorType: '',
   notifications: {},
+  acknowledgeDialog: null,
   me: {},
   isLogged: false,
   enableTutorial: false,
@@ -113,6 +114,21 @@ export default function appHandler(state = initialState, action) {
           }
           return res;
         }, {}),
+      };
+
+    case types.SHOW_ACKNOWLEDGE_DIALOG:
+      return {
+        ...state,
+        acknowledgeDialog: {
+          title: action.title,
+          text: action.text,
+        },
+      };
+
+    case types.HIDE_ACKNOWLEDGE_DIALOG:
+      return {
+        ...state,
+        acknowledgeDialog: null,
       };
 
     case types.CLEAR_NOTIFICATIONS:

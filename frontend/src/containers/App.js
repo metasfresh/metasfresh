@@ -13,6 +13,7 @@ import {
   connectionError,
   setLanguages,
   setProcessSaved,
+  showAcknowledgeDialog,
 } from '../actions/AppActions';
 import { getAvailableLang } from '../api/login';
 // import PluginsRegistry from '../services/PluginsRegistry';
@@ -179,15 +180,22 @@ const App = () => {
             }
 
             if (data.userFriendlyError) {
-              dispatch(
-                addNotification(
-                  'Error: ' + message.split(' ', 4).join(' ') + '...',
-                  data.message,
-                  5000,
-                  'error',
-                  errorTitle
-                )
-              );
+              if (data.userMessagePresentation === 'ACKNOWLEDGE_DIALOG') {
+                // Deliberately not errorTitle: that resolves to 'Server error' for a 500, which is the
+                // framing this presentation mode exists to avoid. The server-sent message is already a
+                // complete, translated sentence, so the dialog carries it without a title.
+                dispatch(showAcknowledgeDialog('', data.message));
+              } else {
+                dispatch(
+                  addNotification(
+                    'Error: ' + message.split(' ', 4).join(' ') + '...',
+                    data.message,
+                    5000,
+                    'error',
+                    errorTitle
+                  )
+                );
+              }
             }
           }
         }
