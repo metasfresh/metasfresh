@@ -182,9 +182,15 @@ const App = () => {
             if (data.userFriendlyError) {
               if (data.userMessagePresentation === 'ACKNOWLEDGE_DIALOG') {
                 // Deliberately not errorTitle: that resolves to 'Server error' for a 500, which is the
-                // framing this presentation mode exists to avoid. The server-sent message is already a
-                // complete, translated sentence, so the dialog carries it without a title.
-                dispatch(showAcknowledgeDialog('', data.message));
+                // framing this presentation mode exists to avoid. The server now sends a translated
+                // userMessageTitle (a shared "Information" caption for this presentation mode) alongside
+                // the message; fall back to '' when it's absent so an old/older backend still renders.
+                dispatch(
+                  showAcknowledgeDialog(
+                    data.userMessageTitle || '',
+                    data.message
+                  )
+                );
               } else {
                 dispatch(
                   addNotification(

@@ -5,6 +5,9 @@ import * as types from '../constants/ActionTypes';
 export const initialState = {
   connectionErrorType: '',
   notifications: {},
+  // Single slot: a second SHOW_ACKNOWLEDGE_DIALOG before the first is dismissed replaces it (see the
+  // reducer case below), so two near-simultaneous errors would silently drop the first for the user.
+  // Harmless while there is only one dispatch call site; revisit (e.g. a queue) once a second one exists.
   acknowledgeDialog: null,
   me: {},
   isLogged: false,
@@ -117,6 +120,8 @@ export default function appHandler(state = initialState, action) {
       };
 
     case types.SHOW_ACKNOWLEDGE_DIALOG:
+      // Single slot — this overwrites any acknowledgeDialog already pending. See the note on
+      // acknowledgeDialog in initialState above.
       return {
         ...state,
         acknowledgeDialog: {

@@ -27,6 +27,15 @@ package org.adempiere.exceptions;
  * Carried on the exception (see {@link AdempiereException#getUserMessagePresentation()}) and emitted
  * next to the {@code userFriendlyError} flag in the WebUI error JSON, so the frontend knows whether to
  * render an auto-dismissing toast or an acknowledgeable OK-dialog.
+ * <p>
+ * {@code ACKNOWLEDGE_DIALOG} also gets a translated {@code userMessageTitle} in the same JSON, emitted by
+ * {@code de.metas.ui.web.config.WebuiExceptionHandler}. That title is currently a single shared
+ * "Information" AD_Message for every {@code ACKNOWLEDGE_DIALOG} throw site — the simpler option, and
+ * correct as long as every such dialog is genuinely informational. If a future throw site needs a
+ * different title (e.g. a warning-flavoured acknowledge dialog), the title resolution would need to move
+ * from presentation-mode-level to per-throw-site (e.g. an optional title {@code de.metas.i18n.AdMessageKey}
+ * carried on the exception itself, mirroring the message) — {@code WebuiExceptionHandler} is the only
+ * place that would need to change.
  *
  * @implNote If you want to add a new presentation mode, e.g. MY_MODE, then you shall
  * <ul>
