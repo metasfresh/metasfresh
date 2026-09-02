@@ -315,7 +315,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 			// so getCreateCosts returns a negative cost. Posting it uncompensated would invert the direction
 			// (DR-WIP negative / CR-Asset negative). Compensate the sign here — mirroring createFacts_Variance —
 			// so a component issue posts DR P_WIP_Acct (positive) / CR P_Asset_Acct (positive): inventory down, WIP up.
-			// alsoAddZeroLine=true: a component issue always books, even a zero-cost/zero-qty line (Teo, PR review)
+			// alsoAddZeroLine=true: a component issue always books, even a zero-cost/zero-qty line
 			final Fact fact = createFactLines(as, element, debit, credit, costs.negate(), qtyIssued.negate(), true);
 			if (fact != null)
 			{
