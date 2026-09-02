@@ -315,7 +315,11 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				.lines(pickingJobLines.get(pickingJobId)
 						.stream()
 						.map(lineRecord -> loadLine(lineRecord, pickingJobHeader.getAggregationType()))
-						.sorted(Comparator.comparing(PickingJobLine::getId)) // make sure we have a predictable order
+						// Order the caption's product names by the sales-order line (C_OrderLine.Line): stable AND matching
+						// the order the picker reads off the sales document. Tie-break by the picking-job-line id so the
+						// order is fully deterministic even when two lines share a sales-order-line SeqNo.
+						.sorted(Comparator.comparingInt(PickingJobLine::getOrderLineSeqNo)
+								.thenComparingInt(line -> line.getId().getRepoId()))
 						.collect(ImmutableList.toImmutableList()))
 				.pickFromAlternatives(pickingJobHUAlternatives.get(pickingJobId)
 						.stream()
@@ -607,6 +611,11 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		return OrderAndLineId.ofRepoIds(extractSalesOrderId(record), record.getC_OrderLine_ID());
 	}
 
+	private int extractOrderLineSeqNo(final @NotNull I_M_Picking_Job_Line record)
+	{
+		return loadingSupportingServices.getSalesOrderLineSeqNo(extractSalesOrderAndLineId(record));
+	}
+
 	@NonNull
 	private static Quantity extractQtyToPick(final @NotNull I_M_Picking_Job_Line record)
 	{
@@ -864,9 +873,12 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		final PickingJobCandidateProductsCollector collector = new PickingJobCandidateProductsCollector();
 		// Sorted for the same reason loadPickingJob sorts its lines: this collection's iteration order becomes the
 		// order of the launcher caption's product names, so an unordered scan would render them differently run to run.
+		// The order is the sales-order line (C_OrderLine.Line), tie-broken by the picking-job-line id — same contract
+		// as loadPickingJob, so the launcher-list caption and the opened job's detail agree.
 		final ImmutableList<I_M_Picking_Job_Line> linesInPredictableOrder = this.pickingJobLines.get(pickingJobId)
 				.stream()
-				.sorted(Comparator.comparingInt(I_M_Picking_Job_Line::getM_Picking_Job_Line_ID))
+				.sorted(Comparator.comparingInt(this::extractOrderLineSeqNo)
+						.thenComparingInt(I_M_Picking_Job_Line::getM_Picking_Job_Line_ID))
 				.collect(ImmutableList.toImmutableList());
 		for (final I_M_Picking_Job_Line line : linesInPredictableOrder)
 		{

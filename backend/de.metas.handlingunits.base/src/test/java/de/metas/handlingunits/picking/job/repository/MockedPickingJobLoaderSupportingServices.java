@@ -39,6 +39,13 @@ public class MockedPickingJobLoaderSupportingServices implements PickingJobLoade
 {
 	public static final ZoneId ZONE_ID = ZoneId.of("Europe/London");
 	private final HashMap<HuId, HUQRCode> qrCodes = new HashMap<>();
+	/** Sales-order-line SeqNo (C_OrderLine.Line) per line, keyed as the loader keys it. Absent -> 0, so tests that don't care are unaffected. */
+	private final HashMap<OrderAndLineId, Integer> salesOrderLineSeqNos = new HashMap<>();
+
+	public void setSalesOrderLineSeqNo(@NonNull final OrderAndLineId orderAndLineId, final int seqNo)
+	{
+		salesOrderLineSeqNos.put(orderAndLineId, seqNo);
+	}
 
 	@Override
 	public PickingJobOptions getPickingJobOptions(@Nullable final BPartnerId customerId) {return MobileUIPickingUserProfile.DEFAULT.getDefaultPickingJobOptions();}
@@ -106,7 +113,7 @@ public class MockedPickingJobLoaderSupportingServices implements PickingJobLoade
 	@Override
 	public int getSalesOrderLineSeqNo(@NonNull final OrderAndLineId orderAndLineId)
 	{
-		return 0;
+		return salesOrderLineSeqNos.getOrDefault(orderAndLineId, 0);
 	}
 
 	@Override
