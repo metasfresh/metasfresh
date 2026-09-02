@@ -149,7 +149,7 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
       | C_AcctSchema_ID | CostingMethod |
       | acctSchema      | M             |
 
-    # finProd carries a zero MovingAverageInvoice cost: never received under this costing method.
+    # finProd carries a zero MovingAverageInvoice cost — it has never been received under this costing method, so no cost has accrued yet.
     And update current costs
       | M_Product_ID | CurrentCostPrice |
       | finProd      | 0 CHF            |

@@ -258,7 +258,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 			// on Moving Average Invoice). The received qty must reach P_Asset — the Lagerwert report sums
 			// Fact_Acct.qty on P_Asset, so dropping a zero-cost receipt line silently loses the received stock.
 			// alsoAddZeroLine=true is belt-and-suspenders here: the leg is already gated on a non-zero qty, so its
-			// line survives regardless; the flag only additionally keeps it should both cost AND qty ever be zero.
+			// line survives regardless (the flag would only matter if this guard were ever relaxed away from a qty check).
 			if (qtyReceived.signum() != 0)
 			{
 				final Account debit = docLine.getAccount(ProductAcctType.P_Asset_Acct, as);
