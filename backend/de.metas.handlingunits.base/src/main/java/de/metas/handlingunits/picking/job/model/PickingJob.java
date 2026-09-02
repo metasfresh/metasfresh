@@ -26,8 +26,6 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
-
-import java.util.Comparator;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
@@ -63,6 +61,7 @@ import org.eevolution.api.PPOrderId;
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -584,8 +583,8 @@ public final class PickingJob implements PickingJobHeaderOrLine
 	}
 
 	/**
-	 * Un-joined product names, in encounter order. The caller decides the separator — see
-	 * {@link #getProductNamesJoined(String)}.
+	 * Un-joined product names, in sales-order line order (see the sort below). The caller decides the
+	 * separator — see {@link #getProductNamesJoined(String)}.
 	 */
 	@NonNull
 	public ImmutableList<ITranslatableString> getProductNameParts()

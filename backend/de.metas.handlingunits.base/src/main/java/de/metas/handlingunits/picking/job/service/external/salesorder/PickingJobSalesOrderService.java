@@ -1,11 +1,11 @@
 package de.metas.handlingunits.picking.job.service.external.salesorder;
 
+import com.google.common.collect.ImmutableMap;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.util.Services;
-import com.google.common.collect.ImmutableMap;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
