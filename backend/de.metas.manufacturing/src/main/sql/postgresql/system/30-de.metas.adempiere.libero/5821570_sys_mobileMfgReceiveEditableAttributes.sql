@@ -134,6 +134,14 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */ CREATE TABLE public.MobileUI_MFG_Config_Attribute (AD_Client_ID NUMERIC(10) NOT NULL, AD_Org_ID NUMERIC(10) NOT NULL, Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, IsActive CHAR(1) CHECK (IsActive IN ('Y','N')) NOT NULL, MobileUI_MFG_Config_Attribute_ID NUMERIC(10) NOT NULL, Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, CONSTRAINT MobileUI_MFG_Config_Attribute_Key PRIMARY KEY (MobileUI_MFG_Config_Attribute_ID))
 ;
 
+-- Native PK sequence for this table. A direct CREATE TABLE does NOT create the <table>_seq
+-- (the app server otherwise creates it lazily at startup, which masks the omission on dev DBs).
+-- A data migration that allocates IDs via nextval('mobileui_mfg_config_attribute_seq') therefore
+-- fails on a fresh DB applied before any app start (e.g. CI db-apply-migrations). Create it
+-- explicitly, per the convention used by other new-table migrations.
+CREATE SEQUENCE MobileUI_MFG_Config_Attribute_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 START 1000000
+;
+
 -- 2026-09-01 10:05:10
 INSERT INTO t_alter_column values('mobileui_mfg_config_attribute','AD_Org_ID','NUMERIC(10)',null,null)
 ;
