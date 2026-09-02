@@ -193,6 +193,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 				.setAccount(debit)
 				.setAmtSource(cost.getCurrencyId(), cost.toBigDecimal(), null)
 				.setQty(qty)
+				.alsoAddZeroLine() // keep the line even at zero cost: the received qty must still reach inventory valuation
 				.additionalDescription(description)
 				.projectId(docLine.getC_Project_ID())
 				.activityId(docLine.getActivityId())
@@ -204,6 +205,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 				.setAccount(credit)
 				.setAmtSource(cost.getCurrencyId(), null, cost.toBigDecimal())
 				.setQty(qty.negate())
+				.alsoAddZeroLine() // keep the symmetric credit leg even at zero cost
 				.additionalDescription(description)
 				.projectId(docLine.getC_Project_ID())
 				.activityId(docLine.getActivityId())
@@ -251,20 +253,10 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 					.roundToPrecisionIfNeeded(as.getStandardPrecision());
 			final CostAmount costsScrapped = costs.subtract(costsReceived);
 
-			if (costsReceived.signum() != 0)
+			for (final MaterialReceiptLeg leg : materialReceiptLegs(qtyReceived, qtyScrapped, costsReceived, costsScrapped))
 			{
-				final Account debit = docLine.getAccount(ProductAcctType.P_Asset_Acct, as);
-				final Fact fact = createFactLines(as, element, debit, credit, costsReceived, qtyReceived);
-				if (fact != null)
-				{
-					facts.add(fact);
-				}
-			}
-
-			if (costsScrapped.signum() != 0)
-			{
-				final Account debit = docLine.getAccount(ProductAcctType.P_Scrap_Acct, as);
-				final Fact fact = createFactLines(as, element, debit, credit, costsScrapped, qtyScrapped);
+				final Account debit = docLine.getAccount(leg.getAcctType(), as);
+				final Fact fact = createFactLines(as, element, debit, credit, leg.getAmt(), leg.getQty());
 				if (fact != null)
 				{
 					facts.add(fact);
@@ -273,6 +265,43 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		}
 
 		return facts;
+	}
+
+	/**
+	 * The receipt legs a material-receipt cost collector posts for one cost element: the received quantity to
+	 * {@link ProductAcctType#P_Asset_Acct} and, when the collector scrapped some, the scrapped quantity to
+	 * {@link ProductAcctType#P_Scrap_Acct}.
+	 * <p>
+	 * Each leg is gated on its QUANTITY, not its amount. A zero-cost receipt (e.g. a manufactured product freshly
+	 * on Moving Average Invoice) therefore still posts the received quantity to inventory valuation — the Lagerwert
+	 * report sums {@code Fact_Acct.qty} on {@code P_Asset}, so a dropped receipt line silently loses the received
+	 * stock. Gating on qty preserves all prior postings: a non-zero cost implies a non-zero qty.
+	 */
+	@VisibleForTesting
+	static ImmutableList<MaterialReceiptLeg> materialReceiptLegs(
+			@NonNull final Quantity qtyReceived,
+			@NonNull final Quantity qtyScrapped,
+			@NonNull final CostAmount costsReceived,
+			@NonNull final CostAmount costsScrapped)
+	{
+		final ImmutableList.Builder<MaterialReceiptLeg> legs = ImmutableList.builder();
+		if (qtyReceived.signum() != 0)
+		{
+			legs.add(new MaterialReceiptLeg(ProductAcctType.P_Asset_Acct, costsReceived, qtyReceived));
+		}
+		if (qtyScrapped.signum() != 0)
+		{
+			legs.add(new MaterialReceiptLeg(ProductAcctType.P_Scrap_Acct, costsScrapped, qtyScrapped));
+		}
+		return legs.build();
+	}
+
+	@Value
+	static class MaterialReceiptLeg
+	{
+		@NonNull ProductAcctType acctType;
+		@NonNull CostAmount amt;
+		@NonNull Quantity qty;
 	}
 
 	/**
