@@ -124,6 +124,13 @@ public class DeliveryPlanningService
 	/** Rejects acting on a closed planning; also the per-row skip report of {@link #cancelDelivery}. */
 	public static final AdMessageKey MSG_M_Delivery_Planning_Closed = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.Closed");
 
+	/**
+	 * The per-row report of {@link #cancelDelivery} for a planning that was still allocated when the cancel ran:
+	 * it IS cancelled (voided, closed, cancelled order status) same as any other row, but its planned figures are
+	 * committed cargo and are named here instead of being silently left as they were.
+	 */
+	public static final AdMessageKey MSG_M_Delivery_Planning_CancelAllocated = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.CancelAllocated");
+
 	/** The mirror of {@link #MSG_M_Delivery_Planning_Closed}: rejects RE-OPENING a planning that is still open. */
 	public static final AdMessageKey MSG_M_Delivery_Planning_Open = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.Open");
 
@@ -1897,20 +1904,45 @@ public class DeliveryPlanningService
 	 * when a selected open planning SHARES its instruction with a closed one, the whole cancel aborts and nothing
 	 * is cancelled. That is the normal case under aggregation, and it is deliberate: the closed planning's cargo
 	 * would otherwise be released along with the open one's.
+	 * <p>
+	 * An open planning still allocated to a delivery instruction when this runs (D8/D19 - the same
+	 * committed-cargo rule the split applies, via {@link DeliveryPlanningRepository#hasActiveAllocation}) is
+	 * fully cancelled the same as any other row - voided, closed, cancelled order status - but its
+	 * {@code PlannedLoadedQuantity}/{@code PlannedDischargeQuantity} are left untouched and it is named in
+	 * {@link DeliveryPlanningCancelResult#getSkippedAllocatedIds()} instead of being silently rewritten.
+	 * <p>
+	 * The allocation state is snapshotted for the WHOLE selection BEFORE any row is voided - not read per row
+	 * right before that row's own void. Two selected plannings sharing one instruction (the aggregation case
+	 * this method's own Javadoc above already describes) both go through {@link #voidLinkedDeliveryInstructions}
+	 * once each is reached in the loop, and voiding the shared instruction deactivates BOTH plannings'
+	 * allocations at once (the AFTER_VOID unlink cascade). A per-row "check right before voiding THIS row" would
+	 * therefore see the second-processed sibling as already unallocated - a side effect of iteration order the
+	 * first-processed row's void introduced - and zero its planned figures despite it being just as committed
+	 * as the first. The batch snapshot fixes what cancel actually found before it touched anything.
 	 */
 	public DeliveryPlanningCancelResult cancelDelivery(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
 		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter = deliveryPlanningRepository
 				.excludeDeliveryPlanningsWithoutReleaseNo(selectedDeliveryPlanningsFilter);
 
+		final ImmutableList<I_M_Delivery_Planning> selectedDeliveryPlannings = ImmutableList.copyOf(
+				deliveryPlanningRepository.extractDeliveryPlannings(dpFilter));
+
+		final ImmutableList<DeliveryPlanningId> selectedDeliveryPlanningIds = selectedDeliveryPlannings.stream()
+				.map(record -> DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID()))
+				.collect(ImmutableList.toImmutableList());
+
+		// snapshot, taken before the loop below voids anything - see the Javadoc above
+		final ImmutableSet<DeliveryPlanningId> allocatedIds = deliveryPlanningRepository
+				.getAllocationsByPlanningId(selectedDeliveryPlanningIds)
+				.keySet();
+
 		final ImmutableList.Builder<DeliveryPlanningId> cancelledIds = ImmutableList.builder();
 		final ImmutableList.Builder<DeliveryPlanningId> skippedClosedIds = ImmutableList.builder();
+		final ImmutableList.Builder<DeliveryPlanningId> skippedAllocatedIds = ImmutableList.builder();
 
-		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = deliveryPlanningRepository.extractDeliveryPlannings(dpFilter);
-
-		while (deliveryPlanningIterator.hasNext())
+		for (final I_M_Delivery_Planning deliveryPlanningRecord : selectedDeliveryPlannings)
 		{
-			final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningIterator.next();
 			final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoId(deliveryPlanningRecord.getM_Delivery_Planning_ID());
 
 			// Reached by a planning closed WHILE allocated: closing sets the flag and nothing else, so such a row
@@ -1922,18 +1954,25 @@ public class DeliveryPlanningService
 				continue;
 			}
 
+			final boolean wasAllocated = allocatedIds.contains(deliveryPlanningId);
+
 			// first void the existent delivery instructions
 			voidLinkedDeliveryInstructions(deliveryPlanningId);
 
 			// re-read: the void's unlink cascade may have cleared ReleaseNo/M_ShipperTransportation_ID on this
 			// same row, and the pre-void record in hand here must not overwrite that with stale values
-			deliveryPlanningRepository.cancelDeliveryPlanning(deliveryPlanningRepository.getById(deliveryPlanningId));
+			deliveryPlanningRepository.cancelDeliveryPlanning(deliveryPlanningRepository.getById(deliveryPlanningId), !wasAllocated);
 			cancelledIds.add(deliveryPlanningId);
+			if (wasAllocated)
+			{
+				skippedAllocatedIds.add(deliveryPlanningId);
+			}
 		}
 
 		return DeliveryPlanningCancelResult.builder()
 				.cancelledIds(cancelledIds.build())
 				.skippedClosedIds(skippedClosedIds.build())
+				.skippedAllocatedIds(skippedAllocatedIds.build())
 				.build();
 	}
 

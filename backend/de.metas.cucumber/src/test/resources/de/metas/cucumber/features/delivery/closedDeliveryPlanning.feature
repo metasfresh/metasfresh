@@ -349,10 +349,12 @@ Feature: A closed delivery planning is finished and nothing processes it any fur
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DocStatus |
       | deliveryInstructionCancel             | shipper_DHL             | customer                       | customerLocation               | VO            |
     And the M_ShipperTransportation identified by deliveryInstructionCancel holds no active M_Delivery_Planning_Alloc
+    # both were still allocated to deliveryInstructionCancel when this cancel ran, so their planned figures
+    # are committed cargo (D8/D19) and are left exactly as the earlier split set them, not zeroed
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | IsClosed | OrderStatus | PlannedLoadedQuantity | M_ShipperTransportation_ID |
-      | planningCancel_1       | 10         | 10           | Outgoing           | true     | Canceled    | 0                     | null                       |
-      | planningCancel_2       | 10         | 10           | Outgoing           | true     | Canceled    | 0                     | null                       |
+      | planningCancel_1       | 10         | 10           | Outgoing           | true     | Canceled    | 5                     | null                       |
+      | planningCancel_2       | 10         | 10           | Outgoing           | true     | Canceled    | 5                     | null                       |
     And the following M_Delivery_Planning have no ReleaseNo:
       | M_Delivery_Planning_ID |
       | planningCancel_1       |

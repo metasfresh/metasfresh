@@ -341,3 +341,38 @@ Feature: Delivery planning quantities
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | ActualDischargeQuantity |
       | deliveryPlanningTC12_1 | 50         | 50           | Incoming            | 40                      |
+
+  @Id:S31789_TC_Q6_CancelAllocated
+  Scenario: Cancelling a delivery planning still allocated to an instruction leaves its planned figures untouched and names it in the result
+
+    Given metasfresh contains C_Orders:
+      | Identifier       | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier |
+      | orderQtyCancel    | true    | customer                 | 2023-02-03  | 2023-02-25T00:00:00Z | customerLocation                      |
+    And metasfresh contains C_OrderLines:
+      | Identifier         | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineQtyCancel | orderQtyCancel         | product                 | 10         | shipper_DHL                 |
+
+    When the order identified by orderQtyCancel is completed
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID | C_OrderLine_ID     |
+      | deliveryPlanningCancel | orderLineQtyCancel |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity | ActualLoadQty | ActualDischargeQuantity |
+      | deliveryPlanningCancel | 10         | 10           | Outgoing            | 10                    | 10                       | 0             | 0                       |
+
+    And generate M_ShipperTransportation for M_Delivery_Planning:
+      | M_ShipperTransportation_ID  | M_Delivery_Planning_ID | IsComplete |
+      | deliveryInstructionCancelQty | deliveryPlanningCancel | false      |
+
+    # deliveryPlanningCancel is still allocated to deliveryInstructionCancelQty when the cancel runs: its
+    # planned figures are committed cargo (D8/D19), so cancel leaves them exactly as they were and names the
+    # planning in the result instead of silently zeroing them - it is still voided, closed and cancelled.
+    When M_Delivery_Planning identified by deliveryPlanningCancel is canceled, retaining planned figures for: deliveryPlanningCancel
+
+    Then validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | IsClosed | Processed | OrderStatus | PlannedLoadedQuantity | PlannedDischargeQuantity | ActualLoadQty | ActualDischargeQuantity |
+      | deliveryPlanningCancel | 10         | 10           | Outgoing            | true     | true      | Canceled    | 10                    | 10                       | 0             | 0                       |
+    And validate M_ShipperTransportation:
+      | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DocStatus |
+      | deliveryInstructionCancelQty           | shipper_DHL              | customer                        | customerLocation                | VO             |

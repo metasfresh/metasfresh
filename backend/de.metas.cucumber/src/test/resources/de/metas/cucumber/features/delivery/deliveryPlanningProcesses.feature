@@ -157,9 +157,12 @@ Feature: Delivery planning processes interaction
 
     When M_Delivery_Planning identified by deliveryPlanning_2 is canceled
 
+    # deliveryPlanning_2 was still allocated to deliveryInstruction when this cancel ran, so its planned
+    # figure is committed cargo (D8/D19) and is left exactly as it was, not zeroed - it is still voided,
+    # closed and cancelled
     Then validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | IsClosed | Processed | PlannedLoadedQuantity | OrderStatus |
-      | deliveryPlanning_2     | 5          | 5            | Outgoing           | true     | true      | 0                     | Canceled    |
+      | deliveryPlanning_2     | 5          | 5            | Outgoing           | true     | true      | 2                     | Canceled    |
     And validate M_ShipperTransportation:
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.ETA | OPT.DocStatus |
       | deliveryInstruction                   | shipper_DHL             | customer                       | customerLocation               | 2023-02-10       | VO            |

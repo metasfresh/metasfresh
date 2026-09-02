@@ -1135,17 +1135,25 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * Cancels ONE delivery planning: closes it, marks it processed, sets its order status to {@code Canceled} and
-	 * zeroes its planned/actual quantities. The caller decides per row which plannings are eligible.
+	 * Cancels ONE delivery planning: closes it, marks it processed and sets its order status to {@code Canceled} -
+	 * unconditionally, on every row the caller passes in. The planned quantities are zeroed only when
+	 * {@code zeroPlannedQuantities} says the planning is NOT currently committed to a delivery instruction
+	 * (D8/D19): a planning still allocated when cancel runs has its {@code PlannedLoadedQuantity}/
+	 * {@code PlannedDischargeQuantity} left exactly as they were, the same committed-cargo rule the split
+	 * applies. The actual quantities ({@code ActualLoadQty}/{@code ActualDischargeQuantity}) are NEVER written
+	 * here, allocated or not: once a receipt or shipment happened, that figure is history, not a plan cancel
+	 * gets to erase.
 	 */
-	public void cancelDeliveryPlanning(@NonNull final I_M_Delivery_Planning deliveryPlanningRecord)
+	public void cancelDeliveryPlanning(@NonNull final I_M_Delivery_Planning deliveryPlanningRecord, final boolean zeroPlannedQuantities)
 	{
 		deliveryPlanningRecord.setIsClosed(true);
 		deliveryPlanningRecord.setProcessed(true);
 		deliveryPlanningRecord.setOrderStatus(X_M_Delivery_Planning.ORDERSTATUS_Canceled);
-		deliveryPlanningRecord.setPlannedLoadedQuantity(BigDecimal.ZERO);
-		deliveryPlanningRecord.setPlannedDischargeQuantity(BigDecimal.ZERO);
-		deliveryPlanningRecord.setActualLoadQty(BigDecimal.ZERO);
+		if (zeroPlannedQuantities)
+		{
+			deliveryPlanningRecord.setPlannedLoadedQuantity(BigDecimal.ZERO);
+			deliveryPlanningRecord.setPlannedDischargeQuantity(BigDecimal.ZERO);
+		}
 		save(deliveryPlanningRecord);
 	}
 

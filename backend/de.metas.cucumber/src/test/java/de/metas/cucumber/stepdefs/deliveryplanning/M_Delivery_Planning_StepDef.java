@@ -38,6 +38,7 @@ import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_ShipperTransportation_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
+import de.metas.deliveryplanning.DeliveryPlanningCancelResult;
 import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.deliveryplanning.process.M_Delivery_Planning_Close;
@@ -410,6 +411,38 @@ public class M_Delivery_Planning_StepDef
 						.appendParametersToMessage()
 						.setParameter(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningIdentifiers);
 		}
+	}
+
+	/**
+	 * Cancels the given selection and asserts exactly which of them the cancel left with their planned
+	 * figures untouched because each was still allocated to a delivery instruction when the cancel ran -
+	 * {@link DeliveryPlanningCancelResult#getSkippedAllocatedIds()}. Every named planning is still fully
+	 * cancelled (voided, closed, cancelled order status) same as any other row; only the quantity zeroing is
+	 * skipped for it.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: M_Delivery_Planning_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When M_Delivery_Planning identified by deliveryPlanningCancel is canceled, retaining planned figures for: deliveryPlanningCancel
+	 * </pre>
+	 */
+	@When("^M_Delivery_Planning identified by (.*) is canceled, retaining planned figures for: (.*)$")
+	public void delivery_Planning_canceled_retaining_planned_figures_for(
+			@NonNull final String deliveryPlanningIdentifiers,
+			@NonNull final String retainedIdentifiers)
+	{
+		final IQueryFilter<I_M_Delivery_Planning> selectionFilter = getQueryFilterFor(deliveryPlanningIdentifiers);
+
+		final DeliveryPlanningCancelResult result = deliveryPlanningService.cancelDelivery(selectionFilter);
+
+		final ImmutableSet<DeliveryPlanningId> expectedRetainedIds = selectedDeliveryPlanningIds(retainedIdentifiers).stream()
+				.map(DeliveryPlanningId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		assertThat(ImmutableSet.copyOf(result.getSkippedAllocatedIds()))
+				.as("planning(s) whose planned figures the cancel left unchanged because they were still allocated, named in the result")
+				.isEqualTo(expectedRetainedIds);
 	}
 
 	/**
