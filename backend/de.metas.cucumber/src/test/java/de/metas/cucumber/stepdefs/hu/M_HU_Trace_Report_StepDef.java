@@ -206,9 +206,12 @@ public class M_HU_Trace_Report_StepDef
 	 * <p>Test products are upserted by {@code Value} ({@code M_Product_StepDef#createM_Product}
 	 * resolves via {@code retrieveProductByValue} before creating), so a re-run against a
 	 * persistent stack resolves to the SAME {@code M_Product_ID}. {@link #invokeReport} then
-	 * selects via {@code HUTraceEventQuery.builder().productId(productId)...} — scoped by
-	 * product ALONE, no lot/InOut/scenario/time filter — so every prior run's trace rows for
-	 * that product would still be picked up. Left unhandled, {@link #assertDetailRows}'s
+	 * selects via {@code HUTraceEventQuery.builder().productId(productId).types(typesToReport())}
+	 * — scoped by product and trace type, with no lot/InOut/scenario/time filter — so every prior
+	 * run's trace rows for that product would still be picked up: the MATERIAL_RECEIPT and
+	 * MATERIAL_SHIPMENT ones directly, being reported types, and their TRANSFORM_LOAD rows through
+	 * the recursion, which rebuilds its queries without the type filter. Both routes lead here, so
+	 * the cleanup is required either way. Left unhandled, {@link #assertDetailRows}'s
 	 * {@code containsExactlyInAnyOrderElementsOf} (deliberately exhaustive — it is what catches
 	 * a wrongly-emitted extra row, see its javadoc) would keep failing with leftover rows whose
 	 * {@code DocumentNo}s can never match the current run's freshly generated ones, independent
