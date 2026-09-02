@@ -183,7 +183,8 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 			@NonNull final Account debit,
 			@NonNull final Account credit,
 			@NonNull final CostAmount cost,
-			@NonNull final Quantity qty)
+			@NonNull final Quantity qty,
+			final boolean alsoAddZeroLine)
 	{
 		final DocLine_CostCollector docLine = getLine();
 		final String description = costElement.getName();
@@ -193,7 +194,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 				.setAccount(debit)
 				.setAmtSource(cost.getCurrencyId(), cost.toBigDecimal(), null)
 				.setQty(qty)
-				.alsoAddZeroLine() // keep the line even at zero cost: the received qty must still reach inventory valuation
+				.alsoAddZeroLineIf(alsoAddZeroLine) // material receipt: keep the line even if BOTH cost and qty are zero
 				.additionalDescription(description)
 				.projectId(docLine.getC_Project_ID())
 				.activityId(docLine.getActivityId())
@@ -205,7 +206,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 				.setAccount(credit)
 				.setAmtSource(cost.getCurrencyId(), null, cost.toBigDecimal())
 				.setQty(qty.negate())
-				.alsoAddZeroLine() // keep the symmetric credit leg even at zero cost
+				.alsoAddZeroLineIf(alsoAddZeroLine) // keep the symmetric credit leg together with its debit
 				.additionalDescription(description)
 				.projectId(docLine.getC_Project_ID())
 				.activityId(docLine.getActivityId())
@@ -256,7 +257,10 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 			for (final MaterialReceiptLeg leg : materialReceiptLegs(qtyReceived, qtyScrapped, costsReceived, costsScrapped))
 			{
 				final Account debit = docLine.getAccount(leg.getAcctType(), as);
-				final Fact fact = createFactLines(as, element, debit, credit, leg.getAmt(), leg.getQty());
+				// alsoAddZeroLine=true: a receipt leg is gated on qty above, so its qty is non-zero and the line
+				// survives anyway; the flag additionally keeps it should both cost AND qty ever be zero. It is set
+				// ONLY here — the other cost-collector types below must keep dropping their zero-amount-and-qty lines.
+				final Fact fact = createFactLines(as, element, debit, credit, leg.getAmt(), leg.getQty(), true);
 				if (fact != null)
 				{
 					facts.add(fact);
@@ -275,7 +279,15 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	 * Each leg is gated on its QUANTITY, not its amount. A zero-cost receipt (e.g. a manufactured product freshly
 	 * on Moving Average Invoice) therefore still posts the received quantity to inventory valuation — the Lagerwert
 	 * report sums {@code Fact_Acct.qty} on {@code P_Asset}, so a dropped receipt line silently loses the received
-	 * stock. Gating on qty preserves all prior postings: a non-zero cost implies a non-zero qty.
+	 * stock.
+	 * <p>
+	 * Gating on qty preserves all prior postings. For the received leg this is exact:
+	 * {@code costsReceived = costs / qtyTotal * qtyReceived}, so {@code qtyReceived == 0} forces
+	 * {@code costsReceived == 0} — every previously-posted (non-zero cost) receipt leg had a non-zero qty and still
+	 * posts. For the scrapped leg it holds in practice ({@code costsScrapped = costs - costsReceived} rounds back to
+	 * zero when nothing was scrapped, since {@code costs} is already at standard precision); the only behavioural
+	 * difference is that a hypothetical sub-precision rounding remainder on a zero scrapped qty is no longer posted
+	 * as a phantom zero-qty {@code P_Scrap} line — a deliberate, harmless improvement.
 	 */
 	@VisibleForTesting
 	static ImmutableList<MaterialReceiptLeg> materialReceiptLegs(
@@ -335,7 +347,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 			// so getCreateCosts returns a negative cost. Posting it uncompensated would invert the direction
 			// (DR-WIP negative / CR-Asset negative). Compensate the sign here — mirroring createFacts_Variance —
 			// so a component issue posts DR P_WIP_Acct (positive) / CR P_Asset_Acct (positive): inventory down, WIP up.
-			final Fact fact = createFactLines(as, element, debit, credit, costs.negate(), qtyIssued.negate());
+			final Fact fact = createFactLines(as, element, debit, credit, costs.negate(), qtyIssued.negate(), false);
 			if (fact != null)
 			{
 				facts.add(fact);
@@ -372,7 +384,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		{
 			final CostAmount costs = costResult.getCostAmountForCostElement(element).getMainAmt();
 			final Account credit = docLine.getAccountForCostElement(as, element);
-			final Fact fact = createFactLines(as, element, debit, credit, costs, qtyMoved);
+			final Fact fact = createFactLines(as, element, debit, credit, costs, qtyMoved, false);
 			if (fact != null)
 			{
 				facts.add(fact);
@@ -415,7 +427,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 			}
 
 			final CostAmount costs = costResult.getCostAmountForCostElement(element).getMainAmt();
-			final Fact fact = createFactLines(as, element, debit, credit, costs.negate(), qty.negate());
+			final Fact fact = createFactLines(as, element, debit, credit, costs.negate(), qty.negate(), false);
 			if (fact != null)
 			{
 				facts.add(fact);

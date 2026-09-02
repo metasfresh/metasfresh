@@ -124,10 +124,44 @@ class Doc_PPCostCollectorMaterialReceiptTest
 	{
 		// gating the scrap leg on qtyScrapped (not amount) must not add a P_Scrap leg when nothing was scrapped
 		final ImmutableList<Doc_PPCostCollector.MaterialReceiptLeg> legs =
-				Doc_PPCostCollector.materialReceiptLegs(qty("5"), qty("0"), cost("100"), cost("0"));
+				Doc_PPCostCollector.materialReceiptLegs(qty("8"), qty("0"), cost("240"), cost("0"));
 
 		assertThat(legs)
 				.extracting(Doc_PPCostCollector.MaterialReceiptLeg::getAcctType)
 				.containsExactly(ProductAcctType.P_Asset_Acct);
+	}
+
+	@Test
+	void zeroReceiptQty_onlyScrap_noAssetLeg()
+	{
+		// symmetric to zeroScrapQty: nothing received, only scrapped -> no P_Asset leg, only P_Scrap
+		final ImmutableList<Doc_PPCostCollector.MaterialReceiptLeg> legs =
+				Doc_PPCostCollector.materialReceiptLegs(qty("0"), qty("3"), cost("0"), cost("60"));
+
+		assertThat(legs)
+				.extracting(Doc_PPCostCollector.MaterialReceiptLeg::getAcctType)
+				.containsExactly(ProductAcctType.P_Scrap_Acct);
+
+		final Doc_PPCostCollector.MaterialReceiptLeg scrap = legByAcctType(legs, ProductAcctType.P_Scrap_Acct);
+		assertThat(scrap.getQty().toBigDecimal()).isEqualByComparingTo("3");
+		assertThat(scrap.getAmt().toBigDecimal()).isEqualByComparingTo("60");
+	}
+
+	@Test
+	void zeroCostScrap_stillPostsScrappedQty()
+	{
+		// the qty-gate applies to the scrap leg too: a zero-cost scrap with a scrapped qty still posts to P_Scrap
+		final ImmutableList<Doc_PPCostCollector.MaterialReceiptLeg> legs =
+				Doc_PPCostCollector.materialReceiptLegs(qty("5"), qty("2"), cost("0"), cost("0"));
+
+		assertThat(legs).hasSize(2);
+
+		final Doc_PPCostCollector.MaterialReceiptLeg asset = legByAcctType(legs, ProductAcctType.P_Asset_Acct);
+		assertThat(asset.getQty().toBigDecimal()).isEqualByComparingTo("5");
+		assertThat(asset.getAmt().signum()).isZero();
+
+		final Doc_PPCostCollector.MaterialReceiptLeg scrap = legByAcctType(legs, ProductAcctType.P_Scrap_Acct);
+		assertThat(scrap.getQty().toBigDecimal()).isEqualByComparingTo("2");
+		assertThat(scrap.getAmt().signum()).isZero();
 	}
 }
