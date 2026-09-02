@@ -630,9 +630,9 @@ public class DeliveryPlanningRepository
 		allocRecord.setM_ShippingPackage_ID(shippingPackageRecord.getM_ShippingPackage_ID());
 		saveRecord(allocRecord);
 
-		// stored mirror of "an active alloc row references this planning": this is the write path that creates
-		// one (the partial unique index allows at most one active row per planning, so this one is now allocated)
-		markIsAllocated(ImmutableList.of(request.getDeliveryPlanningId()), true);
+		// IsAllocated is kept in step by the M_Delivery_Planning_Alloc @ModelChange interceptor (AFTER_NEW),
+		// triggered by the saveRecord above - not by an inline call here, so a future write path that inserts
+		// an alloc row without going through this method still keeps the mirror correct.
 
 		return DeliveryPlanningAllocId.ofRepoId(allocRecord.getM_Delivery_Planning_Alloc_ID());
 	}
@@ -792,10 +792,9 @@ public class DeliveryPlanningRepository
 
 		final ImmutableSet<DeliveryPlanningId> deallocatedPlanningIdsSet = deallocatedPlanningIds.build();
 
-		// stored mirror of "an active alloc row references this planning": this is the choke point every
-		// deactivation path routes through, and every row here just lost its only active allocation (the
-		// partial unique index m_delivery_planning_alloc_planning_uq allows at most one per planning).
-		markIsAllocated(deallocatedPlanningIdsSet, false);
+		// IsAllocated is kept in step by the M_Delivery_Planning_Alloc @ModelChange interceptor (AFTER_CHANGE
+		// on IsActive), triggered by the allocRecord.setIsActive(false) + saveRecord above - not by an inline
+		// call here, so a future deactivation path (a bulk fix, an import routine) still keeps the mirror correct.
 
 		return DeactivatedAllocations.builder()
 				.shippingPackages(deactivatedShippingPackages.build())
@@ -804,16 +803,26 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
+	 * Called by the {@code M_Delivery_Planning_Alloc} {@code @ModelChange} interceptor on every event that can
+	 * change which planning an ACTIVE allocation points at (AFTER_NEW, AFTER_CHANGE of {@code IsActive},
+	 * AFTER_DELETE) - the single place that re-derives and writes the {@code IsAllocated} mirror, so every
+	 * writer of the allocation table keeps it correct automatically, including one that does not exist yet.
+	 * <p>
+	 * Re-derives from {@link #hasActiveAllocation(DeliveryPlanningId)} rather than trusting the caller's event
+	 * type: that query reads {@code M_Delivery_Planning_Alloc} directly (never {@code I_M_Delivery_Planning}),
+	 * so it adds no {@link #getById(DeliveryPlanningId)} / {@link #getByIds(Collection)} round trip - both are
+	 * batch-load-discipline-tested elsewhere (see {@code DeliveryPlanningBatchLoadingTest}).
+	 */
+	public void refreshIsAllocated(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		markIsAllocated(ImmutableList.of(deliveryPlanningId), hasActiveAllocation(deliveryPlanningId));
+	}
+
+	/**
 	 * Sets the stored {@code IsAllocated} mirror for the given plannings via a direct SQL {@code UPDATE} - never
 	 * loading the rows first, so this never shows up as an extra {@link #getById(DeliveryPlanningId)} /
-	 * {@link #getByIds(Collection)} round trip (both are batch-load-discipline-tested elsewhere: see
-	 * {@code DeliveryPlanningBatchLoadingTest}). Safe to call with an id that has no matching row - the
+	 * {@link #getByIds(Collection)} round trip. Safe to call with an id that has no matching row - the
 	 * {@code WHERE} filter then simply matches nothing.
-	 * <p>
-	 * Callers pass a literal {@code allocated} rather than re-deriving it here, because at both call sites the
-	 * partial unique index {@code m_delivery_planning_alloc_planning_uq} (at most one ACTIVE allocation per
-	 * planning) already pins the answer: a row that just gained its (only possible) active allocation is
-	 * allocated, a row that just lost it is not.
 	 */
 	private void markIsAllocated(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds, final boolean allocated)
 	{
