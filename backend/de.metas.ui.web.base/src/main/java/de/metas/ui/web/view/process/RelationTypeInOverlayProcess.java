@@ -80,6 +80,10 @@ import static de.metas.ui.web.view.SqlViewFactory.MSG_NO_RELATED_DOCS_FOUND;
  * (see {@link ProcessOpenTarget}): modal overlay (default — historical behaviour
  * when the column is NULL) or new browser tab.
  * <p>
+ * Whether the jump also applies the target window's own default filters is configured per AD_Process via
+ * {@code AD_Process.IsUseAutoFilters}: {@code 'Y'} (default — historical behaviour) applies them; {@code 'N'}
+ * shows exactly the rows the relation resolved, ignoring the target window's default filters.
+ * <p>
  * This process is automatically assigned when AD_Process.Type='RelationTypeInOverlay'.
  */
 public class RelationTypeInOverlayProcess extends JavaProcess implements IProcessPrecondition
@@ -299,7 +303,7 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 		final CreateViewRequest request = CreateViewRequest.builder(targetWindowId, JSONViewDataType.grid)
 				.setDocumentReferenceId(WebuiDocumentReferenceId.ofRelatedDocumentsId(relatedDocumentsId))
 				.addStickyFilters(unionFilter)
-				.setUseAutoFilters(true)
+				.setUseAutoFilters(getProcessInfo().isUseAutoFilters())
 				.build();
 		return viewsRepo.createView(request);
 	}
@@ -396,7 +400,7 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 		final CreateViewRequest request = CreateViewRequest.builder(targetWindowId, JSONViewDataType.grid)
 				.setReferencingDocumentPaths(ImmutableSet.of(srcDocument))
 				.setDocumentReferenceId(WebuiDocumentReferenceId.ofRelatedDocumentsId(relatedDocumentsId))
-				.setUseAutoFilters(true)
+				.setUseAutoFilters(getProcessInfo().isUseAutoFilters())
 				.build();
 
 		return viewsRepo.createView(request);
