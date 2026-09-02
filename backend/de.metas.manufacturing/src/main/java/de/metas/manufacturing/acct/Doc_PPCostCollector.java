@@ -301,7 +301,9 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		{
 			legs.add(new MaterialReceiptLeg(ProductAcctType.P_Asset_Acct, costsReceived, qtyReceived));
 		}
-		if (qtyScrapped.signum() != 0)
+		// Post the scrap leg on qty OR cost: qty carries the scrapped stock into valuation, and cost still posts a
+		// sub-precision rounding remainder (the pre-fix behaviour) even when nothing was scrapped.
+		if (qtyScrapped.signum() != 0 || costsScrapped.signum() != 0)
 		{
 			legs.add(new MaterialReceiptLeg(ProductAcctType.P_Scrap_Acct, costsScrapped, qtyScrapped));
 		}
@@ -347,7 +349,8 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 			// so getCreateCosts returns a negative cost. Posting it uncompensated would invert the direction
 			// (DR-WIP negative / CR-Asset negative). Compensate the sign here — mirroring createFacts_Variance —
 			// so a component issue posts DR P_WIP_Acct (positive) / CR P_Asset_Acct (positive): inventory down, WIP up.
-			final Fact fact = createFactLines(as, element, debit, credit, costs.negate(), qtyIssued.negate(), false);
+			// alsoAddZeroLine=true: a component issue always books, even a zero-cost/zero-qty line (Teo, PR review)
+			final Fact fact = createFactLines(as, element, debit, credit, costs.negate(), qtyIssued.negate(), true);
 			if (fact != null)
 			{
 				facts.add(fact);

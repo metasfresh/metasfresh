@@ -148,6 +148,21 @@ class Doc_PPCostCollectorMaterialReceiptTest
 	}
 
 	@Test
+	void scrapRoundingRemainder_zeroScrapQtyNonZeroCost_stillPostsScrap()
+	{
+		// nothing scrapped by qty, but a sub-precision cost remainder is left on the scrap leg -> still posted
+		// (preserves the pre-fix behaviour of gating the scrap leg on costsScrapped)
+		final ImmutableList<Doc_PPCostCollector.MaterialReceiptLeg> legs =
+				Doc_PPCostCollector.materialReceiptLegs(qty("5"), qty("0"), cost("100"), cost("0.01"));
+
+		assertThat(legs).hasSize(2);
+
+		final Doc_PPCostCollector.MaterialReceiptLeg scrap = legByAcctType(legs, ProductAcctType.P_Scrap_Acct);
+		assertThat(scrap.getQty().signum()).isZero();
+		assertThat(scrap.getAmt().toBigDecimal()).isEqualByComparingTo("0.01");
+	}
+
+	@Test
 	void zeroCostScrap_stillPostsScrappedQty()
 	{
 		// the qty-gate applies to the scrap leg too: a zero-cost scrap with a scrapped qty still posts to P_Scrap
