@@ -5,6 +5,7 @@ import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { BUSINESS_PARTNER_WINDOW_ID } from '../utils/WindowIds';
+import { getIncludedRecordData } from '../utils/WebAPIValidation';
 
 /**
  * Business Partner window (AD_Window_ID = 123) -> "Print Format" tab
@@ -32,7 +33,6 @@ import { BUSINESS_PARTNER_WINDOW_ID } from '../utils/WindowIds';
  */
 
 const PRINT_FORMAT_TAB = 'AD_Tab-540653'; // C_BP_PrintFormat included tab of window 123
-const WEBAPI_BASE_URL = process.env.WEBAPI_BASE_URL || 'http://localhost:8080/rest/api';
 
 // A List (_YesNo) widget renders its options at document level (tethered) as
 // `.input-dropdown-list-option`. Each option carries data-test-id = `${key}${caption}`
@@ -80,6 +80,15 @@ async function setListFieldToYes(page, columnName) {
       /input-empty/
     );
 
+    // Wait for the document-tethered option list to unmount before returning, so a
+    // back-to-back call opening the next field's dropdown cannot resolve the global
+    // `.input-dropdown-list-option` selector against this (still-detaching) list —
+    // a CI-only race under slow paint. Mirrors cost-revaluation-copyfrom-field.spec.js.
+    await page
+      .locator('.input-dropdown-list')
+      .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
+      .catch(() => {});
+
     return patch.url();
   });
 }
@@ -91,7 +100,6 @@ const testCases = [
 
 test.describe('Business Partner Print Format tab — IsDropShip & IsAutoPrint config fields', () => {
   testCases.forEach(({ language, label }) => {
-    // eslint-disable-next-line no-unused-vars
     test(`IsDropShip & IsAutoPrint render, are editable, and persist (${label})`, async ({ page }) => {
       // === ALLURE METADATA ===
       allure.epic('E0390: Masterdata Partner');
@@ -207,13 +215,12 @@ Language under test: ${language}.
 
         // System of record: read the included row back via the WebAPI. The value key
         // ('Y') is language-invariant, so this is the authoritative persistence proof.
-        const response = await page.request.get(
-          `${WEBAPI_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}/${bpartnerId}/${PRINT_FORMAT_TAB}/${rowId}`,
-          { headers: { 'Content-Type': 'application/json' } }
+        const record = await getIncludedRecordData(
+          BUSINESS_PARTNER_WINDOW_ID,
+          bpartnerId,
+          PRINT_FORMAT_TAB,
+          rowId
         );
-        expect(response.ok(), 'WebAPI GET of the print-format row must succeed').toBeTruthy();
-        const body = await response.json();
-        const record = Array.isArray(body) ? body[0] : body;
         expect(record.fieldsByName.IsAutoPrint.value.key).toBe('Y');
         expect(record.fieldsByName.IsDropShip.value.key).toBe('Y');
       });

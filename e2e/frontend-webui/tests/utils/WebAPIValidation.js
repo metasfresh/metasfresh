@@ -60,6 +60,51 @@ export async function getRecordData(windowId, recordId) {
 }
 
 /**
+ * Get complete record data for an INCLUDED (child-tab) row from the WebAPI.
+ *
+ * The included-row endpoint is /window/{windowId}/{parentId}/{tabId}/{rowId}
+ * (the top-level {@link getRecordData} hits /window/{windowId}/{recordId}). Use this
+ * to read a child-tab row back as the system of record — e.g. asserting a persisted
+ * value key: `(await getIncludedRecordData(...)).fieldsByName.<Col>.value.key`.
+ *
+ * @param {string} windowId - Parent window ID (e.g. '123' for Business Partner)
+ * @param {string} parentId - Parent record ID (e.g. the C_BPartner_ID)
+ * @param {string} tabId - Included tab ID (e.g. 'AD_Tab-540653')
+ * @param {string} rowId - Included row ID
+ * @returns {Promise<Object>} Row data including fieldsByName, validStatus, saveStatus
+ *
+ * @example
+ * const row = await getIncludedRecordData('123', bpartnerId, 'AD_Tab-540653', rowId);
+ * expect(row.fieldsByName.IsAutoPrint.value.key).toBe('Y');
+ */
+export async function getIncludedRecordData(windowId, parentId, tabId, rowId) {
+  try {
+    const page = getPage();
+
+    const response = await page.request.get(
+      `${WEBAPI_BASE_URL}/window/${windowId}/${parentId}/${tabId}/${rowId}`,
+      { headers: { 'Content-Type': 'application/json' } }
+    );
+
+    if (!response.ok()) {
+      throw new Error(`HTTP ${response.status()}: ${response.statusText()}`);
+    }
+
+    const data = await response.json();
+
+    // The included-row endpoint may return the row directly or wrapped in a
+    // single-element array; unwrap defensively.
+    return Array.isArray(data) ? data[0] : data;
+  } catch (error) {
+    console.error(
+      `Failed to fetch included record data for window ${windowId}, parent ${parentId}, tab ${tabId}, row ${rowId}:`,
+      error.message
+    );
+    throw error;
+  }
+}
+
+/**
  * Get validation status for a record.
  *
  * @param {string} windowId - Window ID
