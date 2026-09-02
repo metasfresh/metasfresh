@@ -100,11 +100,11 @@ class TransportDirectionTest
 	 * and {@link TransportDirection#Dropship}.
 	 */
 	@Test
-	void isInbound()
+	void isIncomingOrDropship()
 	{
-		assertThat(TransportDirection.Incoming.isInbound()).isTrue();
-		assertThat(TransportDirection.Outgoing.isInbound()).isFalse();
-		assertThat(TransportDirection.Dropship.isInbound()).isTrue();
+		assertThat(TransportDirection.Incoming.isIncomingOrDropship()).isTrue();
+		assertThat(TransportDirection.Outgoing.isIncomingOrDropship()).isFalse();
+		assertThat(TransportDirection.Dropship.isIncomingOrDropship()).isTrue();
 	}
 
 	/**
@@ -112,10 +112,10 @@ class TransportDirectionTest
 	 * and {@link TransportDirection#Dropship}.
 	 */
 	@Test
-	void isOutbound()
+	void isOutgoingOrDropship()
 	{
-		assertThat(TransportDirection.Incoming.isOutbound()).isFalse();
-		assertThat(TransportDirection.Outgoing.isOutbound()).isTrue();
-		assertThat(TransportDirection.Dropship.isOutbound()).isTrue();
+		assertThat(TransportDirection.Incoming.isOutgoingOrDropship()).isFalse();
+		assertThat(TransportDirection.Outgoing.isOutgoingOrDropship()).isTrue();
+		assertThat(TransportDirection.Dropship.isOutgoingOrDropship()).isTrue();
 	}
 }

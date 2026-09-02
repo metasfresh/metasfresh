@@ -787,7 +787,7 @@ public class DeliveryPlanningService
 		final I_C_UOM uomToUse = getUomOrStockUom(deliveryPlanningRecord, productId);
 
 		final BPartnerLocationId deliveryPlanningLocationId = BPartnerLocationId.ofRepoId(deliveryPlanningRecord.getC_BPartner_ID(), deliveryPlanningRecord.getC_BPartner_Location_ID());
-		final boolean isInbound = transportDirection.isInbound();
+		final boolean isInbound = transportDirection.isIncomingOrDropship();
 		final DeliveryPlanningAddresses addresses = loadAddresses(ImmutableList.of(deliveryPlanningRecord));
 		final BPartnerLocationId shipFrom = extractShipFromLocationId(deliveryPlanningRecord, transportDirection, addresses);
 		final BPartnerLocationId shipTo = extractShipToLocationId(deliveryPlanningRecord, transportDirection, addresses);
@@ -1281,7 +1281,7 @@ public class DeliveryPlanningService
 				.batchNo(deliveryPlanningRecord.getBatch())
 				.orderLineId(OrderLineId.ofRepoIdOrNull(deliveryPlanningRecord.getC_OrderLine_ID()))
 				.orderId(OrderId.ofRepoIdOrNull(deliveryPlanningRecord.getC_Order_ID()))
-				.toBeFetched(DeliveryPlanningRepository.extractTransportDirection(deliveryPlanningRecord).isInbound())
+				.toBeFetched(DeliveryPlanningRepository.extractTransportDirection(deliveryPlanningRecord).isIncomingOrDropship())
 				// the planning's own dates, so the instruction's fill-if-empty defaulting needs no second load
 				.etd(deliveryPlanningRecord.getETD())
 				.eta(deliveryPlanningRecord.getETA())
