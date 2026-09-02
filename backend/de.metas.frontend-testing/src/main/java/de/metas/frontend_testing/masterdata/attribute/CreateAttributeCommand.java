@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
@@ -59,11 +60,7 @@ public class CreateAttributeCommand
 				? StringUtils.trimBlankToNull(request.getValue())
 				: identifier.toUniqueString();
 
-		final I_M_Attribute existing = queryBL.createQueryBuilder(I_M_Attribute.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Attribute.COLUMNNAME_Value, value)
-				.create()
-				.firstOnly(I_M_Attribute.class);
+		final I_M_Attribute existing = attributeDAO.retrieveActiveAttributeByValueOrNull(AttributeCode.ofString(value));
 
 		final I_M_Attribute record = existing != null ? existing : InterfaceWrapperHelper.newInstance(I_M_Attribute.class);
 		record.setValue(value);

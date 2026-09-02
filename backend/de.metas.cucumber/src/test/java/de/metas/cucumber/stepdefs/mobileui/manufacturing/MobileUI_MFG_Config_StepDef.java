@@ -101,7 +101,13 @@ public class MobileUI_MFG_Config_StepDef
 			final StepDefDataIdentifier attributeIdentifier = row.getAsIdentifier(I_MobileUI_MFG_Config_Attribute.COLUMNNAME_M_Attribute_ID);
 			final Attribute attribute = attributeTable.get(attributeIdentifier);
 			final int attributeId = attribute.getAttributeId().getRepoId();
-			keptAttributeIds.add(attributeId);
+			if (!keptAttributeIds.add(attributeId))
+			{
+				// duplicate attribute in the same DataTable - keep the first occurrence's row/SeqNo, don't
+				// create a second active row for the same attribute (existingRows is a fixed pre-loop snapshot
+				// and would not see the row just created/saved for the first occurrence).
+				return;
+			}
 
 			final I_MobileUI_MFG_Config_Attribute record = existingRows.stream()
 					.filter(existingRow -> existingRow.getM_Attribute_ID() == attributeId)

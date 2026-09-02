@@ -41,3 +41,23 @@ Feature: mobileUI Manufacturing - configure the editable-attributes list via tes
     Then mobileUI manufacturing editable attributes are:
       | SeqNo | M_Attribute_ID.Identifier |
       | 10    | colorAttr                 |
+
+# ######################################################################################################################
+# ######################################################################################################################
+  @from:cucumber
+  @Id:S31771_TC11
+  Scenario: A duplicate attribute in one editable-attributes call creates only one active row
+    ## Regression guard: the same attribute listed twice in one call must not create two active
+    ## MobileUI_MFG_Config_Attribute rows for it (mirrors the dedup fix in
+    ## MobileUIManufacturingConfigRepository#saveGlobalEditableAttributeCodesInOrder).
+    And metasfresh contains M_Attributes:
+      | Identifier | Value         | Name       |
+      | sizeAttr   | TestSizeAttr2 | Test Size2 |
+
+    And metasfresh has mobileUI manufacturing editable attributes:
+      | SeqNo | M_Attribute_ID.Identifier |
+      | 10    | sizeAttr                  |
+      | 20    | sizeAttr                  |
+    Then mobileUI manufacturing editable attributes are:
+      | SeqNo | M_Attribute_ID.Identifier |
+      | 10    | sizeAttr                  |

@@ -1,6 +1,8 @@
 package de.metas.manufacturing.config;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.user.UserId;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeValueType;
@@ -15,6 +17,8 @@ import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -201,6 +205,79 @@ class MobileUIManufacturingConfigRepositoryTest
 			createConfigAttribute(globalConfig, attr1, 10, true);
 			createConfigAttribute(globalConfig, attr2, 20, false);
 
+			final MobileUIManufacturingConfig config = repo.getConfig(USER_ID, clientId);
+			assertThat(config.getEditableAttributeCodesInOrder())
+					.containsExactly(AttributeCode.ofString("Attr1"));
+		}
+	}
+
+	@Nested
+	class saveGlobalEditableAttributeCodesInOrder
+	{
+		private final IQueryBL queryBL = de.metas.util.Services.get(IQueryBL.class);
+
+		private List<I_MobileUI_MFG_Config_Attribute> retrieveActiveChildRowsOrdered()
+		{
+			return queryBL.createQueryBuilder(I_MobileUI_MFG_Config_Attribute.class)
+					.addOnlyActiveRecordsFilter()
+					.orderBy(I_MobileUI_MFG_Config_Attribute.COLUMNNAME_SeqNo)
+					.create()
+					.list();
+		}
+
+		@Test
+		void noExistingConfig_createsConfigAndOrderedChildRows()
+		{
+			createAttribute("Attr1");
+			createAttribute("Attr2");
+
+			repo.saveGlobalEditableAttributeCodesInOrder(clientId, ImmutableList.of(AttributeCode.ofString("Attr1"), AttributeCode.ofString("Attr2")));
+
+			final MobileUIManufacturingConfig config = repo.getConfig(USER_ID, clientId);
+			assertThat(config.getEditableAttributeCodesInOrder())
+					.containsExactly(AttributeCode.ofString("Attr1"), AttributeCode.ofString("Attr2"));
+		}
+
+		@Test
+		void reConfigWithDifferentList_replacesIt_deactivatingDroppedAttribute()
+		{
+			createAttribute("Attr1");
+			createAttribute("Attr2");
+
+			repo.saveGlobalEditableAttributeCodesInOrder(clientId, ImmutableList.of(AttributeCode.ofString("Attr1"), AttributeCode.ofString("Attr2")));
+			repo.saveGlobalEditableAttributeCodesInOrder(clientId, ImmutableList.of(AttributeCode.ofString("Attr2")));
+
+			final MobileUIManufacturingConfig config = repo.getConfig(USER_ID, clientId);
+			assertThat(config.getEditableAttributeCodesInOrder())
+					.containsExactly(AttributeCode.ofString("Attr2"));
+		}
+
+		@Test
+		void reConfigReAddingADroppedAttribute_reactivatesTheSameRow_ratherThanCreatingADuplicate()
+		{
+			createAttribute("Attr1");
+			createAttribute("Attr2");
+
+			repo.saveGlobalEditableAttributeCodesInOrder(clientId, ImmutableList.of(AttributeCode.ofString("Attr1")));
+			repo.saveGlobalEditableAttributeCodesInOrder(clientId, ImmutableList.of(AttributeCode.ofString("Attr2")));
+			repo.saveGlobalEditableAttributeCodesInOrder(clientId, ImmutableList.of(AttributeCode.ofString("Attr1"), AttributeCode.ofString("Attr2")));
+
+			assertThat(retrieveActiveChildRowsOrdered()).hasSize(2);
+			final MobileUIManufacturingConfig config = repo.getConfig(USER_ID, clientId);
+			assertThat(config.getEditableAttributeCodesInOrder())
+					.containsExactly(AttributeCode.ofString("Attr1"), AttributeCode.ofString("Attr2"));
+		}
+
+		@Test
+		void duplicateAttributeCodeInOneCall_createsOnlyOneActiveRow()
+		{
+			createAttribute("Attr1");
+
+			repo.saveGlobalEditableAttributeCodesInOrder(
+					clientId,
+					ImmutableList.of(AttributeCode.ofString("Attr1"), AttributeCode.ofString("Attr1")));
+
+			assertThat(retrieveActiveChildRowsOrdered()).hasSize(1);
 			final MobileUIManufacturingConfig config = repo.getConfig(USER_ID, clientId);
 			assertThat(config.getEditableAttributeCodesInOrder())
 					.containsExactly(AttributeCode.ofString("Attr1"));
