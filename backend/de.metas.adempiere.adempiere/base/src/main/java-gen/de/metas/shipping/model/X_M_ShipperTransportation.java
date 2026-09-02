@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_ShipperTransportation extends org.compiere.model.PO implements I_M_ShipperTransportation, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1776272185L;
+	private static final long serialVersionUID = -1685322803L;
 
     /** Standard Constructor */
     public X_M_ShipperTransportation (final Properties ctx, final int M_ShipperTransportation_ID, @Nullable final String trxName)
@@ -364,6 +364,17 @@ public class X_M_ShipperTransportation extends org.compiere.model.PO implements 
 	}
 
 	@Override
+	public void setHasLines (final boolean HasLines)
+	{
+		throw new IllegalArgumentException ("HasLines is virtual column");	}
+
+	@Override
+	public boolean isHasLines() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_HasLines);
+	}
+
+	@Override
 	public void setIncotermLocation (final @Nullable java.lang.String IncotermLocation)
 	{
 		set_Value (COLUMNNAME_IncotermLocation, IncotermLocation);
@@ -412,18 +423,6 @@ public class X_M_ShipperTransportation extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setIsSOTrx (final boolean IsSOTrx)
-	{
-		set_Value (COLUMNNAME_IsSOTrx, IsSOTrx);
-	}
-
-	@Override
-	public boolean isSOTrx() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsSOTrx);
-	}
-
-	@Override
 	public void setIsWENotice (final boolean IsWENotice)
 	{
 		set_Value (COLUMNNAME_IsWENotice, IsWENotice);
@@ -445,33 +444,6 @@ public class X_M_ShipperTransportation extends org.compiere.model.PO implements 
 	public java.lang.String getLoadingTime() 
 	{
 		return get_ValueAsString(COLUMNNAME_LoadingTime);
-	}
-
-	@Override
-	public org.compiere.model.I_M_Delivery_Planning getM_Delivery_Planning()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Delivery_Planning_ID, org.compiere.model.I_M_Delivery_Planning.class);
-	}
-
-	@Override
-	public void setM_Delivery_Planning(final org.compiere.model.I_M_Delivery_Planning M_Delivery_Planning)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Delivery_Planning_ID, org.compiere.model.I_M_Delivery_Planning.class, M_Delivery_Planning);
-	}
-
-	@Override
-	public void setM_Delivery_Planning_ID (final int M_Delivery_Planning_ID)
-	{
-		if (M_Delivery_Planning_ID < 1) 
-			set_Value (COLUMNNAME_M_Delivery_Planning_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_Delivery_Planning_ID, M_Delivery_Planning_ID);
-	}
-
-	@Override
-	public int getM_Delivery_Planning_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_Delivery_Planning_ID);
 	}
 
 	@Override
@@ -741,6 +713,29 @@ public class X_M_ShipperTransportation extends org.compiere.model.PO implements 
 	public java.lang.String getTrackingID() 
 	{
 		return get_ValueAsString(COLUMNNAME_TrackingID);
+	}
+
+	/** 
+	 * TransportDirection AD_Reference_ID=541689
+	 * Reference name: TransportDirection
+	 */
+	public static final int TRANSPORTDIRECTION_AD_Reference_ID=541689;
+	/** Incoming = Incoming */
+	public static final String TRANSPORTDIRECTION_Incoming = "Incoming";
+	/** Outgoing = Outgoing */
+	public static final String TRANSPORTDIRECTION_Outgoing = "Outgoing";
+	/** Dropship = Dropship */
+	public static final String TRANSPORTDIRECTION_Dropship = "Dropship";
+	@Override
+	public void setTransportDirection (final java.lang.String TransportDirection)
+	{
+		set_Value (COLUMNNAME_TransportDirection, TransportDirection);
+	}
+
+	@Override
+	public java.lang.String getTransportDirection() 
+	{
+		return get_ValueAsString(COLUMNNAME_TransportDirection);
 	}
 
 	@Override

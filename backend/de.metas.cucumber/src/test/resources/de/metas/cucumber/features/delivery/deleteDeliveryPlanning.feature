@@ -1,4 +1,6 @@
 @from:cucumber
+@allure.label.epic:E0360_Transport_Extralogistik
+@allure.label.feature:F29050_Delivery_Planning
 @ghActions:run_on_executor5
 Feature: Delete delivery planning
 
@@ -47,29 +49,29 @@ Feature: Delete delivery planning
       | Identifier       | C_OrderLine_ID.Identifier | IsToRecompute |
       | shipmentSchedule | orderLineDelete           | N             |
     And after not more than 30s, load created M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifiers | C_OrderLine_ID.Identifier |
-      | deliveryPlanningDelete_1           | orderLineDelete           |
+      | M_Delivery_Planning_ID   | C_OrderLine_ID  |
+      | deliveryPlanningDelete_1 | orderLineDelete |
     And validate M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | M_Delivery_Planning_Type | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Shipper_ID.Identifier | OPT.ETA | OPT.PlannedLoadedQuantity |
-      | deliveryPlanningDelete_1          | 5          | 5            | Outgoing                 | orderDelete               | orderLineDelete               | customer                     | product                     | customerLocation                      | shipper_DHL                 | 2023-02-25              | 5                         |
+      | M_Delivery_Planning_ID   | QtyOrdered | QtyTotalOpen | TransportDirection | C_Order_ID  | C_OrderLine_ID  | C_BPartner_ID | M_Product_ID | C_BPartner_Location_ID | M_Shipper_ID | ETA        | PlannedLoadedQuantity |
+      | deliveryPlanningDelete_1 | 5          | 5            | Outgoing           | orderDelete | orderLineDelete | customer      | product      | customerLocation       | shipper_DHL  | 2023-02-25 | 5                     |
 
     And delete M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifier | OPT.ErrorCode                                                        |
-      | deliveryPlanningDelete_1          | de.metas.deliveryplanning.M_Delivery_Planning_AtLeastOnePerOrderLine |
+      | M_Delivery_Planning_ID   | ErrorCode                                                            |
+      | deliveryPlanningDelete_1 | de.metas.deliveryplanning.M_Delivery_Planning_AtLeastOnePerOrderLine |
 
     When generate 1 additional M_Delivery_Planning records for: deliveryPlanningDelete_1
 
     Then after not more than 30s, load created M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifiers                | C_OrderLine_ID.Identifier |
-      | deliveryPlanningDelete_1,deliveryPlanningDelete_2 | orderLineDelete           |
+      | M_Delivery_Planning_ID                            | C_OrderLine_ID  |
+      | deliveryPlanningDelete_1,deliveryPlanningDelete_2 | orderLineDelete |
     And validate M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | M_Delivery_Planning_Type | OPT.PlannedLoadedQuantity | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Shipper_ID.Identifier | OPT.ETA |
-      | deliveryPlanningDelete_1          | 5          | 5            | Outgoing                 | 3                         | orderDelete               | orderLineDelete               | customer                     | product                     | customerLocation                      | shipper_DHL                 | 2023-02-25              |
-      | deliveryPlanningDelete_2          | 5          | 5            | Outgoing                 | 2                         | orderDelete               | orderLineDelete               | customer                     | product                     | customerLocation                      | shipper_DHL                 | 2023-02-25              |
+      | M_Delivery_Planning_ID   | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | C_Order_ID  | C_OrderLine_ID  | C_BPartner_ID | M_Product_ID | C_BPartner_Location_ID | M_Shipper_ID | ETA        |
+      | deliveryPlanningDelete_1 | 5          | 5            | Outgoing           | 3                     | orderDelete | orderLineDelete | customer      | product      | customerLocation       | shipper_DHL  | 2023-02-25 |
+      | deliveryPlanningDelete_2 | 5          | 5            | Outgoing           | 2                     | orderDelete | orderLineDelete | customer      | product      | customerLocation       | shipper_DHL  | 2023-02-25 |
 
     When generate M_ShipperTransportation for M_Delivery_Planning:
-      | M_ShipperTransportation_ID.Identifier | M_Delivery_Planning_ID.Identifier |
-      | deliveryInstructionDelete             | deliveryPlanningDelete_1          |
+      | M_ShipperTransportation_ID | M_Delivery_Planning_ID   | IsComplete |
+      | deliveryInstructionDelete  | deliveryPlanningDelete_1 | true       |
 
     Then validate M_ShipperTransportation:
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.ETA |
@@ -87,6 +89,6 @@ Feature: Delete delivery planning
       | M_ShippingPackage_ID.Identifier | M_Package_ID.Identifier | M_ShipperTransportation_ID.Identifier | C_BPartner_Location_ID.Identifier | ActualLoadQty | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_OrderLine_ID.Identifier |
       | shippingPackageDelete           | packageDelete           | deliveryInstructionDelete             | customerLocation                  | 3             | customer                     | product                     | orderLineDelete               |
     And delete M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifier | OPT.ErrorCode                                                   |
-      | deliveryPlanningDelete_1          | de.metas.deliveryplanning.M_Delivery_Planning_AlreadyReferenced |
-      | deliveryPlanningDelete_2          |                                                                 |
+      | M_Delivery_Planning_ID   | ErrorCode                                                       |
+      | deliveryPlanningDelete_1 | de.metas.deliveryplanning.M_Delivery_Planning_AlreadyReferenced |
+      | deliveryPlanningDelete_2 |                                                                 |
