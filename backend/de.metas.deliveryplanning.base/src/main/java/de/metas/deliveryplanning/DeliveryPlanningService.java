@@ -417,6 +417,7 @@ public class DeliveryPlanningService
 		final Quantity openQty = getOpenQty(deliveryPlanningId, targetIsAllocated);
 
 		final Quantity newPlanningLoadedQty;
+		final Quantity newPlanningLoadedQtyRemainder;
 		final Quantity newPlanningDischargeQty;
 
 		if (targetIsAllocated)
@@ -425,6 +426,11 @@ public class DeliveryPlanningService
 			// split whatever remains uncommitted on the order line as a whole, floored at 0 by getOpenQty; "nothing
 			// remains" still creates the requested plannings, carrying 0, rather than refusing or erroring.
 			newPlanningLoadedQty = openQty.divide(BigDecimal.valueOf(additionalLines), 0, RoundingMode.DOWN);
+			// The target is untouchable here (unlike the unallocated branch below, which folds its remainder back
+			// into the target), so the DOWN-rounding remainder would otherwise vanish - e.g. openQty=10 over 3 new
+			// plannings gives 3+3+3=9, one unit silently lost off the order line. Handed to the LAST planning
+			// created by the loop below (fix round 1, Task Q5).
+			newPlanningLoadedQtyRemainder = openQty.subtract(newPlanningLoadedQty.multiply(additionalLines));
 			// There is no order-line-relative pool on the discharge side (see getPlannedDischargeQty) - only the
 			// target's own committed figure exists there, and that figure is the fixed point being preserved, so
 			// nothing is left to hand to the new plannings.
@@ -446,11 +452,21 @@ public class DeliveryPlanningService
 			final Quantity dischargeRemainder = dischargeQty.subtract(dischargeFraction.multiply(additionalLines + 1));
 			deliveryPlanningRepository.setPlannedDischargeQuantity(deliveryPlanningId, dischargeFraction.add(dischargeRemainder));
 			newPlanningDischargeQty = dischargeFraction;
+			// Unallocated: the target itself absorbs the DOWN-rounding remainder above, so every new planning gets
+			// the plain fraction and there is nothing left over to hand to any of them here.
+			newPlanningLoadedQtyRemainder = Quantity.zero(openQty.getUOM());
 		}
 
 		for (int i = 0; i < additionalLines; i++)
 		{
-			final DeliveryPlanningCreateRequest request = createRequest(deliveryPlanningId, newPlanningLoadedQty, newPlanningDischargeQty);
+			// The last planning created carries the allocated branch's remainder (zero on the unallocated branch)
+			// so the new plannings' figures still sum to the distributed pool.
+			final boolean isLastNewPlanning = i == additionalLines - 1;
+			final Quantity loadedQtyForThisPlanning = isLastNewPlanning
+					? newPlanningLoadedQty.add(newPlanningLoadedQtyRemainder)
+					: newPlanningLoadedQty;
+
+			final DeliveryPlanningCreateRequest request = createRequest(deliveryPlanningId, loadedQtyForThisPlanning, newPlanningDischargeQty);
 
 			deliveryPlanningRepository.generateDeliveryPlanning(request);
 		}

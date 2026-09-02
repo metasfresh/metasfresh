@@ -201,6 +201,45 @@ Feature: Delivery planning quantities
       | deliveryPlanningAlloc_1 | 10         | 10           | Outgoing            | 6                     | 10                       |
       | deliveryPlanningAlloc_2 | 10         | 10           | Outgoing            | 4                     | 0                        |
 
+  @Id:S31789_TC_Q5_AllocatedRemainder
+  Scenario: Splitting an allocated delivery planning with an uneven divisor puts the remainder on the last new planning
+
+    Given metasfresh contains C_Orders:
+      | Identifier       | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier |
+      | orderQtyAllocRem | true    | customer                 | 2023-02-03  | 2023-02-25T00:00:00Z | customerLocation                      |
+    And metasfresh contains C_OrderLines:
+      | Identifier           | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineQtyAllocRem | orderQtyAllocRem       | product                 | 13         | shipper_DHL                 |
+
+    When the order identified by orderQtyAllocRem is completed
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID    | C_OrderLine_ID       |
+      | deliveryPlanningAllocRem_1 | orderLineQtyAllocRem |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID     | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity |
+      | deliveryPlanningAllocRem_1 | 13         | 13           | Outgoing            | 13                    | 13                       |
+
+    And update M_Delivery_Planning:
+      | M_Delivery_Planning_ID     | PlannedLoadedQuantity |
+      | deliveryPlanningAllocRem_1 | 3                     |
+
+    And generate M_ShipperTransportation for M_Delivery_Planning:
+      | M_ShipperTransportation_ID  | M_Delivery_Planning_ID     | IsComplete |
+      | deliveryInstructionAllocRem | deliveryPlanningAllocRem_1 | false      |
+
+    When generate 3 additional M_Delivery_Planning records for: deliveryPlanningAllocRem_1
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID                                                                                    | C_OrderLine_ID       |
+      | deliveryPlanningAllocRem_1,deliveryPlanningAllocRem_2,deliveryPlanningAllocRem_3,deliveryPlanningAllocRem_4 | orderLineQtyAllocRem |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID     | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity |
+      | deliveryPlanningAllocRem_1 | 13         | 13           | Outgoing            | 3                     | 13                       |
+      | deliveryPlanningAllocRem_2 | 13         | 13           | Outgoing            | 3                     | 0                        |
+      | deliveryPlanningAllocRem_3 | 13         | 13           | Outgoing            | 3                     | 0                        |
+      | deliveryPlanningAllocRem_4 | 13         | 13           | Outgoing            | 4                     | 0                        |
+
   @Id:S31789_TC_Q5_FullyAllocated
   Scenario: Splitting a fully allocated delivery planning still creates the new planning, carrying 0
 
