@@ -8,9 +8,11 @@
 -- M_Cost rows be created for whatever the correct path skipped.
 --
 -- The process registration also made C_AcctSchema.CostingMethod read-only on every window; that
--- lock is released here (see step 3). It is replaced by a cheap server-side guard in the
--- C_AcctSchema model interceptor, which refuses a costing-method switch while the target method's
--- material cost element has no M_CostDetail rows at all in that accounting schema.
+-- lock is released here (step 3). No server-side guard replaces it: a switch is not checked, by
+-- design. A seeding check was considered and rejected - the only cheap check available is
+-- schema-wide presence of M_CostDetail rows for the target cost element, whereas the defect it
+-- would have to catch is PER-PRODUCT rows that exist but carry amount 0. Those rows do exist in
+-- the incident this script comes from, so such a guard would have permitted that very switch.
 --
 -- The PL/pgSQL function behind the process is dropped by the next migration script.
 
