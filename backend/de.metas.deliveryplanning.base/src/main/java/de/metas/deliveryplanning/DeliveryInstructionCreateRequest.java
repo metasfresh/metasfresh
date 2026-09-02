@@ -27,17 +27,18 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocTypeId;
 import de.metas.document.dimension.Dimension;
 import de.metas.incoterms.IncotermsId;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.TransportDirection;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -96,12 +97,15 @@ public class DeliveryInstructionCreateRequest
 
 	@NonNull Quantity qtyDischarged;
 
-	@NonNull I_C_UOM uom;
-
 	@Nullable OrderLineId orderLineId;
+
+	/** Lands on the created {@code M_ShippingPackage}; {@code null} for a planning that has no order. */
+	@Nullable OrderId orderId;
 
 	@NonNull DeliveryPlanningId deliveryPlanningId;
 
 	@Nullable Dimension dimension;
+
+	@NonNull TransportDirection transportDirection;
 
 }

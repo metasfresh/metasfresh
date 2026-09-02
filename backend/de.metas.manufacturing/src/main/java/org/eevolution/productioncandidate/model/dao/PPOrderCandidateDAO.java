@@ -49,6 +49,10 @@ import java.util.Objects;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+/**
+ * Repository Tables: PP_Order_Candidate, PP_OrderLine_Candidate, PP_OrderCandidate_PP_Order
+ * Repository Cluster: PPOrderCandidateDAO
+ */
 @Repository
 public class PPOrderCandidateDAO
 {
@@ -229,6 +233,25 @@ public class PPOrderCandidateDAO
 
 	public List<PPOrderCandidateId> listIdsByQuery(@NonNull final PPOrderCandidatesQuery query)
 	{
+		return buildQuery(query)
+				.create()
+				.listIds(PPOrderCandidateId::ofRepoId);
+	}
+
+	/**
+	 * @return {@code true} if at least one production candidate matches the given query. Uses {@code anyMatch()},
+	 * which does not fail when multiple records match, so it is safe to use as a plain existence probe.
+	 */
+	public boolean existsByQuery(@NonNull final PPOrderCandidatesQuery query)
+	{
+		return buildQuery(query)
+				.create()
+				.anyMatch();
+	}
+
+	@NonNull
+	private IQueryBuilder<I_PP_Order_Candidate> buildQuery(@NonNull final PPOrderCandidatesQuery query)
+	{
 		final IQueryBuilder<I_PP_Order_Candidate> builder = queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_M_Product_ID, query.getProductId())
@@ -239,7 +262,6 @@ public class PPOrderCandidateDAO
 		{
 			builder.addNotEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_QtyToProcess, 0);
 		}
-		return builder.create()
-				.listIds(PPOrderCandidateId::ofRepoId);
+		return builder;
 	}
 }

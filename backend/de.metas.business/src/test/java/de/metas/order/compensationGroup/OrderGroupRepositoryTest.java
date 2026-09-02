@@ -232,6 +232,7 @@ public class OrderGroupRepositoryTest
 
 		// ─── all remaining abstract methods — throw to surface accidental calls ────────────────
 		@Override public List<de.metas.interfaces.I_C_OrderLine> getByOrderIds(Set<de.metas.order.OrderId> orderIds) { throw new UnsupportedOperationException(); }
+		@Override public List<de.metas.interfaces.I_C_OrderLine> getByIds(Set<OrderLineId> orderLineIds) { throw new UnsupportedOperationException(); }
 		@Override public de.metas.interfaces.I_C_OrderLine getOrderLineById(OrderLineId orderLineId) { throw new UnsupportedOperationException(); }
 		@Override public de.metas.interfaces.I_C_OrderLine getOrderLineById(OrderAndLineId orderLineId) { throw new UnsupportedOperationException(); }
 		@Override public Quantity getQtyEntered(org.compiere.model.I_C_OrderLine orderLine) { throw new UnsupportedOperationException(); }

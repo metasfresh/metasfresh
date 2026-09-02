@@ -213,11 +213,11 @@ Feature: Jasper Report Tests
       | Identifier          | C_OrderLine_ID | IsToRecompute | M_Warehouse_ID |
       | shipmentSchedule_di | so_di_l1       | N             | warehouseStd   |
     And after not more than 30s, load created M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifiers | C_OrderLine_ID.Identifier |
-      | deliveryPlanning_di                | so_di_l1                  |
+      | M_Delivery_Planning_ID | C_OrderLine_ID |
+      | deliveryPlanning_di    | so_di_l1       |
     And generate M_ShipperTransportation for M_Delivery_Planning:
-      | M_ShipperTransportation_ID.Identifier | M_Delivery_Planning_ID.Identifier |
-      | deliveryInstruction_di                | deliveryPlanning_di               |
+      | M_ShipperTransportation_ID | M_Delivery_Planning_ID | IsComplete |
+      | deliveryInstruction_di     | deliveryPlanning_di    | true       |
     And validate M_ShipperTransportation:
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DocStatus |
       | deliveryInstruction_di                | shipper_DHL             | customer                       | customerLocation               | CO            |

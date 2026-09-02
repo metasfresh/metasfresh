@@ -45,6 +45,7 @@ public class PickingJobField
 	int seqNo;
 	boolean isShowInSummary;
 	boolean isShowInDetailed;
+	@Builder.Default boolean isBlockLayout = false;
 	@Nullable String pattern;
 
 	public ITranslatableString getCaption() {return field.getCaption();}
