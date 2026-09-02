@@ -1197,4 +1197,16 @@ public class DeliveryPlanningRepository
 		save(deliveryPlanning);
 	}
 
+	/**
+	 * The discharge-side sibling of {@link #setPlannedLoadedQuantity}: overwrites the planning's own
+	 * {@code PlannedDischargeQuantity} with its remainder share after a split.
+	 */
+	public void setPlannedDischargeQuantity(@NonNull final DeliveryPlanningId deliveryPlanningId, @NonNull final Quantity quantity)
+	{
+		final I_M_Delivery_Planning deliveryPlanning = getById(deliveryPlanningId);
+		deliveryPlanning.setPlannedDischargeQuantity(quantity.toBigDecimal());
+		deliveryPlanning.setC_UOM_ID(quantity.getUomId().getRepoId());
+		save(deliveryPlanning);
+	}
+
 }

@@ -240,6 +240,7 @@ public class M_Delivery_Planning_StepDef
 	 *   <b>ETA</b> — (optional) expected {@code ETA}<br>
 	 *   <b>ETD</b> — (optional) expected {@code ETD}<br>
 	 *   <b>PlannedLoadedQuantity</b> — (optional) expected {@code PlannedLoadedQuantity}<br>
+	 *   <b>PlannedDischargeQuantity</b> — (optional) expected {@code PlannedDischargeQuantity}<br>
 	 *   <b>IsClosed</b> — (optional) expected {@code IsClosed}<br>
 	 *   <b>Processed</b> — (optional) expected {@code Processed}<br>
 	 *   <b>OrderStatus</b> — (optional, null-allowed) expected {@code OrderStatus}; {@code null} asserts the planning
@@ -338,6 +339,9 @@ public class M_Delivery_Planning_StepDef
 
 			row.getAsOptionalBigDecimal(I_M_Delivery_Planning.COLUMNNAME_PlannedLoadedQuantity)
 					.ifPresent(plannedLoadedQty -> softly.assertThat(deliveryPlanning.getPlannedLoadedQuantity()).as(I_M_Delivery_Planning.COLUMNNAME_PlannedLoadedQuantity).isEqualTo(plannedLoadedQty));
+
+			row.getAsOptionalBigDecimal(I_M_Delivery_Planning.COLUMNNAME_PlannedDischargeQuantity)
+					.ifPresent(plannedDischargeQty -> softly.assertThat(deliveryPlanning.getPlannedDischargeQuantity()).as(I_M_Delivery_Planning.COLUMNNAME_PlannedDischargeQuantity).isEqualTo(plannedDischargeQty));
 
 			row.getAsOptionalBoolean(I_M_Delivery_Planning.COLUMNNAME_IsClosed)
 					.ifPresent(isClosed -> softly.assertThat(deliveryPlanning.isClosed()).as(I_M_Delivery_Planning.COLUMNNAME_IsClosed).isEqualTo(isClosed));
@@ -546,6 +550,8 @@ public class M_Delivery_Planning_StepDef
 	 * @cucumber.columns
 	 *   <b>M_Delivery_Planning_ID</b> — (required, identifier-ref) the planning to update<br>
 	 *   <b>M_Shipper_ID</b> — (optional, identifier-ref) new shipper to assign<br>
+	 *   <b>PlannedDischargeQuantity</b> — (optional) new {@code PlannedDischargeQuantity} to seed before a split -
+	 *   generation always writes {@code 0}, so a scenario that needs a non-zero starting figure sets it here<br>
 	 * @cucumber.depends StepDefData: M_Delivery_Planning_StepDefData, M_Shipper_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -567,6 +573,9 @@ public class M_Delivery_Planning_StepDef
 						final I_M_Shipper shipper = id.lookupNotNullIn(shipperTable);
 						deliveryPlanning.setM_Shipper_ID(shipper.getM_Shipper_ID());
 					});
+
+			row.getAsOptionalBigDecimal(I_M_Delivery_Planning.COLUMNNAME_PlannedDischargeQuantity)
+					.ifPresent(deliveryPlanning::setPlannedDischargeQuantity);
 
 			saveRecord(deliveryPlanning);
 		});

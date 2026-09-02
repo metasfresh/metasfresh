@@ -338,7 +338,10 @@ public class DeliveryPlanningService
 				});
 	}
 
-	private DeliveryPlanningCreateRequest createRequest(@NonNull final DeliveryPlanningId deliveryPlanningId, @NonNull final Quantity plannedLoadedQty)
+	private DeliveryPlanningCreateRequest createRequest(
+			@NonNull final DeliveryPlanningId deliveryPlanningId,
+			@NonNull final Quantity plannedLoadedQty,
+			@NonNull final Quantity plannedDischargeQty)
 	{
 		final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningRepository.getById(deliveryPlanningId);
 		final OrgId orgId = OrgId.ofRepoId(deliveryPlanningRecord.getAD_Org_ID());
@@ -369,7 +372,7 @@ public class DeliveryPlanningService
 				.actualLoadedQty(Quantity.of(deliveryPlanningRecord.getActualLoadQty(), uomToUse))
 
 				.plannedLoadedQty(plannedLoadedQty)
-				.plannedDischargeQty(Quantity.of(deliveryPlanningRecord.getPlannedDischargeQuantity(), uomToUse))
+				.plannedDischargeQty(plannedDischargeQty)
 				.actualDischargeQty(Quantity.of(deliveryPlanningRecord.getActualDischargeQuantity(), uomToUse))
 
 				.uom(uomToUse)
@@ -411,12 +414,30 @@ public class DeliveryPlanningService
 		final Quantity remainder = openQty.subtract(fraction.multiply(additionalLines + 1));
 		deliveryPlanningRepository.setPlannedLoadedQuantity(deliveryPlanningId, fraction.add(remainder));
 
+		final Quantity dischargeQty = getPlannedDischargeQty(deliveryPlanningId);
+		final Quantity dischargeFraction = dischargeQty.divide(BigDecimal.valueOf(additionalLines + 1), 0, RoundingMode.DOWN);
+		final Quantity dischargeRemainder = dischargeQty.subtract(dischargeFraction.multiply(additionalLines + 1));
+		deliveryPlanningRepository.setPlannedDischargeQuantity(deliveryPlanningId, dischargeFraction.add(dischargeRemainder));
+
 		for (int i = 0; i < additionalLines; i++)
 		{
-			final DeliveryPlanningCreateRequest request = createRequest(deliveryPlanningId, fraction);
+			final DeliveryPlanningCreateRequest request = createRequest(deliveryPlanningId, fraction, dischargeFraction);
 
 			deliveryPlanningRepository.generateDeliveryPlanning(request);
 		}
+	}
+
+	/**
+	 * The planning's own {@code PlannedDischargeQuantity}, read BEFORE
+	 * {@link #createAdditionalDeliveryPlannings} overwrites it with the remainder share - the discharge-side
+	 * sibling of the {@code plannedLoadedQtySum}/{@code qtyOrdered} read in {@link #getOpenQty}, which only ever
+	 * covers the loaded figure.
+	 */
+	private Quantity getPlannedDischargeQty(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningRepository.getById(deliveryPlanningId);
+		final I_C_UOM uom = uomDAO.getById(deliveryPlanningRecord.getC_UOM_ID());
+		return Quantity.of(deliveryPlanningRecord.getPlannedDischargeQuantity(), uom);
 	}
 
 	private Quantity getOpenQty(final DeliveryPlanningId deliveryPlanningId)
