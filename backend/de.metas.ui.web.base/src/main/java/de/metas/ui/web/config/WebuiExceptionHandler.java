@@ -10,6 +10,7 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.UserMessagePresentation;
 import org.compiere.util.Trace;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
@@ -80,6 +81,7 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 	private static final String ATTR_Stacktrace = "trace";
 	private static final String ATTR_Path = "path";
 	private static final String ATTR_UserFriendlyError = "userFriendlyError";
+	private static final String ATTR_UserMessagePresentation = "userMessagePresentation";
 
 	@Value("${de.metas.ui.web.config.WebuiExceptionHandler.logExceptions:true}")
 	private boolean logExceptions;
@@ -223,6 +225,7 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 
 			errorAttributes.put(ATTR_Message, AdempiereException.extractMessage(rootError));
 			errorAttributes.put(ATTR_UserFriendlyError, AdempiereException.isUserValidationError(rootError));
+			errorAttributes.put(ATTR_UserMessagePresentation, AdempiereException.getUserMessagePresentation(rootError));
 
 			if (errorAttributeOptions.isIncluded(ErrorAttributeOptions.Include.STACK_TRACE) && !isExcludeFromLogging(rootError))
 			{
@@ -239,6 +242,7 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 			{
 				errorAttributes.put(ATTR_Message, message);
 				errorAttributes.put(ATTR_UserFriendlyError, false);
+				errorAttributes.put(ATTR_UserMessagePresentation, UserMessagePresentation.TOAST);
 			}
 		}
 
