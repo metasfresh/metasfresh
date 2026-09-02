@@ -24,6 +24,7 @@ package de.metas.deliveryplanning.interceptor;
 
 import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.deliveryplanning.DeliveryPlanningService;
+import de.metas.shipping.TransportDirection;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -62,5 +63,26 @@ public class M_Delivery_Planning
 	public void onActualLoadingDateChanged(@NonNull final I_M_Delivery_Planning deliveryPlanning)
 	{
 		deliveryPlanningService.invalidateInvoiceCandidatesFor(deliveryPlanning);
+	}
+
+	/**
+	 * Keeps an inbound (or dropship) planning's derived {@code ActualLoadQty} equal to its planned load
+	 * whenever the plan is edited (D22/Task Q7c) - nothing ever reports the vendor's load, so the plan is
+	 * its only source. {@code TYPE_BEFORE_CHANGE} so the mutation rides along in the same UPDATE the caller
+	 * already triggered: no extra query, no extra save.
+	 * <p>
+	 * Never touches {@code ActualDischargeQuantity} - that end is the receipt's once booked (Task Q11), and
+	 * is not watched here at all.
+	 */
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_M_Delivery_Planning.COLUMNNAME_PlannedLoadedQuantity)
+	public void onPlannedLoadedQuantityChanged(@NonNull final I_M_Delivery_Planning deliveryPlanning)
+	{
+		final TransportDirection transportDirection = TransportDirection.ofCode(deliveryPlanning.getTransportDirection());
+		if (!transportDirection.isIncomingOrDropship())
+		{
+			return;
+		}
+
+		deliveryPlanning.setActualLoadQty(deliveryPlanning.getPlannedLoadedQuantity());
 	}
 }

@@ -111,7 +111,10 @@ public class GenerateIncomingDeliveryPlanningCommand
 				.bPartnerLocationId(destinationBPLocationId)
 				.qtyOrdered(qtyOrdered)
 				.qtyTotalOpen(qtyOrdered.subtract(qtyMoved))
-				.actualLoadedQty(Quantity.zero(uom))
+				// D22/Task Q7c: nothing ever reports the vendor's load, so for an inbound (or dropship, per
+				// order.isDropShip() below) planning the actual load starts equal to the planned load - never
+				// zero. The interceptor in interceptor/M_Delivery_Planning.java keeps it in step afterwards.
+				.actualLoadedQty(qtyOrdered)
 				.plannedLoadedQty(qtyOrdered)
 				.plannedDischargeQty(qtyOrdered)
 				.actualDischargeQty(Quantity.zero(uom))

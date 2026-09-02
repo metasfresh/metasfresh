@@ -105,6 +105,115 @@ Feature: Delivery planning quantities
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity |
       | deliveryPlanningQtyPO  | 10         | 10           | Incoming            | 10                    | 10                       |
 
+  @Id:S31789_TC_Q7c_SeedOnCreate
+  Scenario: Creating an incoming delivery planning seeds ActualLoadQty from the planned load, because nothing ever reports the vendor's load
+
+    Given metasfresh contains M_PricingSystems
+      | Identifier             | OPT.IsActive |
+      | pricingSystemQtySeedIn | true         |
+    And metasfresh contains M_PriceLists
+      | Identifier          | M_PricingSystem_ID.Identifier | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
+      | priceList_QtySeedIn | pricingSystemQtySeedIn        | DE                    | EUR                 | false |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier                 | M_PriceList_ID.Identifier |
+      | priceListVersion_QtySeedIn | priceList_QtySeedIn       |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | priceListVersion_QtySeedIn        | product                 | 5.0      | PCE               | Normal                        |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier          | IsVendor | IsCustomer | M_PricingSystem_ID.Identifier |
+      | vendorQtySeedIn     | Y        | N          | pricingSystemQtySeedIn        |
+      | warehouseBPQtySeedIn |         |            |                                |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier               | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipToDefault |
+      | vendorLocationQtySeedIn    | 1234564396493 | vendorQtySeedIn          | true                | true                |
+      | warehouseLocationQtySeedIn | 1203522892493 | warehouseBPQtySeedIn     | true                | true                |
+    And metasfresh contains C_BPartner_Products:
+      | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
+      | vendorQtySeedIn          | product                 |
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID.Identifier   | Value                   | Name                   | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
+      | warehouseQtySeedIn          | warehouseValueQtySeedIn | warehouseNameQtySeedIn | warehouseBPQtySeedIn         | warehouseLocationQtySeedIn             |
+    And metasfresh contains M_Locator:
+      | M_Locator_ID.Identifier | Value                 | M_Warehouse_ID.Identifier |
+      | locatorQtySeedIn        | locatorValueQtySeedIn | warehouseQtySeedIn        |
+    And metasfresh contains C_Orders:
+      | Identifier       | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType |
+      | orderQtySeedIn   | false   | vendorQtySeedIn           | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocationQtySeedIn                | warehouseQtySeedIn             | POO             |
+    And metasfresh contains C_OrderLines:
+      | Identifier         | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineQtySeedIn | orderQtySeedIn         | product                 | 7          | shipper_DHL                 |
+
+    When the order identified by orderQtySeedIn is completed
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID | C_OrderLine_ID     |
+      | deliveryPlanningSeedIn | orderLineQtySeedIn |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | ActualDischargeQuantity |
+      | deliveryPlanningSeedIn | 7          | 7            | Incoming            | 7                     | 7             | 0                       |
+
+  @Id:S31789_TC_Q7c_FollowsPlanEdit
+  Scenario: Editing the planned load of an incoming delivery planning moves its ActualLoadQty along, but never touches the discharge actual a receipt owns
+
+    Given metasfresh contains M_PricingSystems
+      | Identifier              | OPT.IsActive |
+      | pricingSystemQtyFollow | true         |
+    And metasfresh contains M_PriceLists
+      | Identifier           | M_PricingSystem_ID.Identifier | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
+      | priceList_QtyFollow  | pricingSystemQtyFollow        | DE                    | EUR                 | false |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier                  | M_PriceList_ID.Identifier |
+      | priceListVersion_QtyFollow  | priceList_QtyFollow       |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | priceListVersion_QtyFollow        | product                 | 5.0      | PCE               | Normal                        |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier           | IsVendor | IsCustomer | M_PricingSystem_ID.Identifier |
+      | vendorQtyFollow      | Y        | N          | pricingSystemQtyFollow        |
+      | warehouseBPQtyFollow |          |            |                                |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier                | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipToDefault |
+      | vendorLocationQtyFollow    | 1234564396494 | vendorQtyFollow          | true                | true                |
+      | warehouseLocationQtyFollow | 1203522892494 | warehouseBPQtyFollow     | true                | true                |
+    And metasfresh contains C_BPartner_Products:
+      | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
+      | vendorQtyFollow          | product                 |
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID.Identifier  | Value                    | Name                    | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
+      | warehouseQtyFollow         | warehouseValueQtyFollow  | warehouseNameQtyFollow  | warehouseBPQtyFollow         | warehouseLocationQtyFollow             |
+    And metasfresh contains M_Locator:
+      | M_Locator_ID.Identifier | Value                  | M_Warehouse_ID.Identifier |
+      | locatorQtyFollow        | locatorValueQtyFollow  | warehouseQtyFollow        |
+    And metasfresh contains C_Orders:
+      | Identifier        | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType |
+      | orderQtyFollow    | false   | vendorQtyFollow           | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocationQtyFollow                | warehouseQtyFollow             | POO             |
+    And metasfresh contains C_OrderLines:
+      | Identifier          | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineQtyFollow  | orderQtyFollow         | product                 | 9          | shipper_DHL                 |
+
+    When the order identified by orderQtyFollow is completed
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID | C_OrderLine_ID      |
+      | deliveryPlanningFollow | orderLineQtyFollow  |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | ActualDischargeQuantity |
+      | deliveryPlanningFollow | 9          | 9            | Incoming            | 9                     | 9             | 0                       |
+
+    # a receipt already wrote the discharge actual - the interceptor must leave this figure alone
+    And update M_Delivery_Planning:
+      | M_Delivery_Planning_ID | ActualDischargeQuantity |
+      | deliveryPlanningFollow | 4                       |
+
+    And update M_Delivery_Planning:
+      | M_Delivery_Planning_ID | PlannedLoadedQuantity |
+      | deliveryPlanningFollow | 3                     |
+
+    Then validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | ActualDischargeQuantity |
+      | deliveryPlanningFollow | 9          | 9            | Incoming            | 3                     | 3             | 4                       |
+
   @Id:S31789_TC_Q3_Split
   Scenario: Splitting an unallocated delivery planning divides both the loaded and discharge planned quantities
 
@@ -335,16 +444,73 @@ Feature: Delivery planning quantities
       | M_Delivery_Planning_ID                         | C_OrderLine_ID   |
       | deliveryPlanningTC12_1,deliveryPlanningTC12_2 | orderLineQtyTC12 |
     And validate M_Delivery_Planning:
-      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity | ActualLoadQty |
-      | deliveryPlanningTC12_1 | 50         | 50           | Incoming            | 50                    | 50                       | 0             |
-      | deliveryPlanningTC12_2 | 50         | 50           | Incoming            | 0                     | 0                        | 0             |
-    # deliveryPlanningTC12_2's own ActualDischargeQuantity is deliberately NOT asserted here: the split
-    # copies the source planning's CURRENT ActualDischargeQuantity into the new record (verified locally:
-    # it comes back 40, not 0), which contradicts "a split never writes actuals" for a planning that never
-    # received anything itself - flagged as a finding, not encoded as an expectation.
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity | ActualLoadQty | ActualDischargeQuantity |
+      | deliveryPlanningTC12_1 | 50         | 50           | Incoming            | 50                    | 50                       | 50            | 40                      |
+      | deliveryPlanningTC12_2 | 50         | 50           | Incoming            | 0                     | 0                        | 0             | 0                       |
+
+  @Id:S31789_TC_Q7c_SplitSeedsOwnPlannedLoad
+  Scenario: Splitting an incoming delivery planning seeds each new planning's ActualLoadQty from its OWN planned load, never copied from the target
+
+    Given metasfresh contains M_PricingSystems
+      | Identifier               | OPT.IsActive |
+      | pricingSystemQtySplitIn  | true         |
+    And metasfresh contains M_PriceLists
+      | Identifier            | M_PricingSystem_ID.Identifier | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
+      | priceList_QtySplitIn  | pricingSystemQtySplitIn       | DE                    | EUR                 | false |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier                  | M_PriceList_ID.Identifier |
+      | priceListVersion_QtySplitIn | priceList_QtySplitIn      |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | priceListVersion_QtySplitIn       | product                 | 5.0      | PCE               | Normal                        |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier            | IsVendor | IsCustomer | M_PricingSystem_ID.Identifier |
+      | vendorQtySplitIn      | Y        | N          | pricingSystemQtySplitIn       |
+      | warehouseBPQtySplitIn |          |            |                                |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier                  | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipToDefault |
+      | vendorLocationQtySplitIn    | 1234564396496 | vendorQtySplitIn         | true                | true                |
+      | warehouseLocationQtySplitIn | 1203522892496 | warehouseBPQtySplitIn    | true                | true                |
+    And metasfresh contains C_BPartner_Products:
+      | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
+      | vendorQtySplitIn         | product                 |
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID.Identifier | Value                    | Name                    | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
+      | warehouseQtySplitIn       | warehouseValueQtySplitIn | warehouseNameQtySplitIn | warehouseBPQtySplitIn        | warehouseLocationQtySplitIn            |
+    And metasfresh contains M_Locator:
+      | M_Locator_ID.Identifier | Value                  | M_Warehouse_ID.Identifier |
+      | locatorQtySplitIn       | locatorValueQtySplitIn | warehouseQtySplitIn       |
+    And metasfresh contains C_Orders:
+      | Identifier        | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType |
+      | orderQtySplitIn   | false   | vendorQtySplitIn          | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocationQtySplitIn               | warehouseQtySplitIn            | POO             |
+    And metasfresh contains C_OrderLines:
+      | Identifier          | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineQtySplitIn | orderQtySplitIn        | product                 | 10         | shipper_DHL                 |
+
+    When the order identified by orderQtySplitIn is completed
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID    | C_OrderLine_ID      |
+      | deliveryPlanningSplitIn_1 | orderLineQtySplitIn |
     And validate M_Delivery_Planning:
-      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | ActualDischargeQuantity |
-      | deliveryPlanningTC12_1 | 50         | 50           | Incoming            | 40                      |
+      | M_Delivery_Planning_ID    | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty |
+      | deliveryPlanningSplitIn_1 | 10         | 10           | Incoming            | 10                    | 10            |
+
+    # unallocated split with an uneven divisor (10 / 3 additionalLines+1): the target absorbs the DOWN-rounding
+    # remainder via setPlannedLoadedQuantity, which - through the Task Q7c interceptor - also moves the
+    # target's OWN ActualLoadQty to 4. That makes 4 a different, nonzero number from the two new plannings'
+    # own planned load of 3: if createRequest ever again copied the TARGET's actual instead of seeding from
+    # each new planning's OWN planned load, deliveryPlanningSplitIn_2/_3 would come back 4, not 3.
+    When generate 2 additional M_Delivery_Planning records for: deliveryPlanningSplitIn_1
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID                                                        | C_OrderLine_ID      |
+      | deliveryPlanningSplitIn_1,deliveryPlanningSplitIn_2,deliveryPlanningSplitIn_3 | orderLineQtySplitIn |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID    | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | ActualDischargeQuantity |
+      | deliveryPlanningSplitIn_1 | 10         | 10           | Incoming            | 4                     | 4             | 0                       |
+      | deliveryPlanningSplitIn_2 | 10         | 10           | Incoming            | 3                     | 3             | 0                       |
+      | deliveryPlanningSplitIn_3 | 10         | 10           | Incoming            | 3                     | 3             | 0                       |
 
   @Id:S31789_TC_Q6_CancelAllocated
   Scenario: Cancelling a delivery planning still allocated to an instruction leaves its planned figures untouched and names it in the result

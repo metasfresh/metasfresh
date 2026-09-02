@@ -358,6 +358,21 @@ public class DeliveryPlanningService
 
 		final Dimension dimension = dimensionService.getFromRecord(deliveryPlanningRecord);
 
+		final TransportDirection transportDirection = DeliveryPlanningRepository.extractTransportDirection(deliveryPlanningRecord);
+
+		// D22/Task Q7c: a split-created planning is a CREATED planning, not a copy of the target - it is
+		// seeded exactly as GenerateIncomingDeliveryPlanningCommand seeds a fresh one, never by copying the
+		// target's actuals (that fabricated a received/loaded quantity nothing was ever received or loaded
+		// against, and multiplied it across every sibling). Inbound/dropship: ActualLoadQty starts equal to
+		// this NEW planning's own planned load, because nothing ever reports the vendor's load - same rule
+		// as at creation, kept in step afterwards by the interceptor in interceptor/M_Delivery_Planning.java.
+		// Outgoing is unspecified by this task, so it keeps the zero a fresh planning has always started
+		// with. ActualDischargeQuantity always starts empty - the receipt owns it, and the new planning has
+		// received nothing.
+		final Quantity actualLoadedQty = transportDirection.isIncomingOrDropship()
+				? plannedLoadedQty
+				: Quantity.zero(uomToUse);
+
 		return DeliveryPlanningCreateRequest.builder()
 				.orgId(orgId)
 				.clientId(ClientId.ofRepoId(deliveryPlanningRecord.getAD_Client_ID()))
@@ -371,16 +386,16 @@ public class DeliveryPlanningService
 				.incotermsId(IncotermsId.ofRepoIdOrNull(deliveryPlanningRecord.getC_Incoterms_ID()))
 				.incotermLocation(deliveryPlanningRecord.getIncotermLocation())
 				.warehouseId(WarehouseId.ofRepoId(deliveryPlanningRecord.getM_Warehouse_ID()))
-				.transportDirection(DeliveryPlanningRepository.extractTransportDirection(deliveryPlanningRecord))
+				.transportDirection(transportDirection)
 				.orderStatus(OrderStatus.ofNullableCode(deliveryPlanningRecord.getOrderStatus()))
 				.meansOfTransportationId(MeansOfTransportationId.ofRepoIdOrNull(deliveryPlanningRecord.getM_MeansOfTransportation_ID()))
 				.qtyOrdered(Quantity.of(deliveryPlanningRecord.getQtyOrdered(), uomToUse))
 				.qtyTotalOpen(Quantity.of(deliveryPlanningRecord.getQtyTotalOpen(), uomToUse))
-				.actualLoadedQty(Quantity.of(deliveryPlanningRecord.getActualLoadQty(), uomToUse))
+				.actualLoadedQty(actualLoadedQty)
 
 				.plannedLoadedQty(plannedLoadedQty)
 				.plannedDischargeQty(plannedDischargeQty)
-				.actualDischargeQty(Quantity.of(deliveryPlanningRecord.getActualDischargeQuantity(), uomToUse))
+				.actualDischargeQty(Quantity.zero(uomToUse))
 
 				.uom(uomToUse)
 				.plannedLoadingDate(TimeUtil.asInstant(deliveryPlanningRecord.getETD()))
