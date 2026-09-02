@@ -3,6 +3,9 @@ package de.metas.frontend_testing.masterdata;
 import com.google.common.collect.ImmutableMap;
 import de.metas.frontend_testing.masterdata.adprocess.JsonSetAdProcessFlagsRequest;
 import de.metas.frontend_testing.masterdata.adprocess.SetAdProcessFlagsCommand;
+import de.metas.frontend_testing.masterdata.attribute.CreateAttributeCommand;
+import de.metas.frontend_testing.masterdata.attribute.JsonCreateAttributeRequest;
+import de.metas.frontend_testing.masterdata.attribute.JsonCreateAttributeResponse;
 import de.metas.frontend_testing.masterdata.bpartner.CreateBPartnerCommand;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerRequest;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerResponse;
@@ -118,6 +121,7 @@ public class CreateMasterdataCommand
 		final ImmutableMap<String, JsonCreateBPartnerResponse> bpartners = createBPartners();
 		configureOrgSeller();
 		final ImmutableMap<String, JsonVATaxIDCheckLogResponse> vatIdChecks = createVatIdChecks();
+		final ImmutableMap<String, JsonCreateAttributeResponse> attributes = createAttributes();
 		final ImmutableMap<String, JsonCreateProductResponse> products = createProducts();
 		final ImmutableMap<String, JsonCompensationGroupSchemaResponse> compensationGroupSchemas = createCompensationGroupSchemas();
 		// Post-pass: products and schemas must both be built first; this sets M_Product.C_CompensationGroup_Schema_ID
@@ -165,6 +169,7 @@ public class CreateMasterdataCommand
 				.bpartners(bpartners)
 				.vatIdChecks(vatIdChecks.isEmpty() ? null : vatIdChecks)
 				.compensationGroupSchemas(compensationGroupSchemas.isEmpty() ? null : compensationGroupSchemas)
+				.attributes(attributes.isEmpty() ? null : attributes)
 				.products(products)
 				.resources(resources)
 				.productPlannings(productPlannings)
@@ -288,6 +293,21 @@ public class CreateMasterdataCommand
 			productRecord.setC_CompensationGroup_Schema_ID(schemaId.getRepoId());
 			org.adempiere.model.InterfaceWrapperHelper.save(productRecord);
 		});
+	}
+
+	private ImmutableMap<String, JsonCreateAttributeResponse> createAttributes()
+	{
+		return process(request.getAttributes(), this::createAttribute);
+	}
+
+	private JsonCreateAttributeResponse createAttribute(final String identifier, final JsonCreateAttributeRequest request)
+	{
+		return CreateAttributeCommand.builder()
+				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
+				.build()
+				.execute();
 	}
 
 	private ImmutableMap<String, JsonCreateProductResponse> createProducts()

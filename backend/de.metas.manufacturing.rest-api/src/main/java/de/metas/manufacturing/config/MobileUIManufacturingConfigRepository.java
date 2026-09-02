@@ -1,6 +1,7 @@
 package de.metas.manufacturing.config;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.cache.CCache;
 import de.metas.user.UserId;
 import de.metas.util.OptionalBoolean;
@@ -19,8 +20,11 @@ import org.compiere.model.I_MobileUI_UserProfile_MFG;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Repository Tables: MobileUI_MFG_Config, MobileUI_UserProfile_MFG, MobileUI_MFG_Config_Attribute
@@ -179,6 +183,76 @@ public class MobileUIManufacturingConfigRepository
 		record.setAD_User_ID(userId.getRepoId());
 		updateRecord(record, newConfig);
 		InterfaceWrapperHelper.save(record);
+	}
+
+	private Optional<I_MobileUI_MFG_Config> retrieveGlobalConfigRecord(@NonNull final ClientId clientId)
+	{
+		// No active-records filter on purpose - mirrors retrieveUserConfigRecord: this is the save-path lookup,
+		// which must find (and reactivate) an existing-but-inactive row instead of inserting a duplicate.
+		return queryBL.createQueryBuilder(I_MobileUI_MFG_Config.class)
+				.addEqualsFilter(I_MobileUI_MFG_Config.COLUMNNAME_AD_Client_ID, clientId)
+				.create()
+				.firstOnlyOptional(I_MobileUI_MFG_Config.class);
+	}
+
+	/**
+	 * Test/admin-masterdata write path for the global editable-attribute list (v1 is global-only - see
+	 * {@link MobileUIManufacturingConfig#getEditableAttributeCodesInOrder()}). Upserts the {@code MobileUI_MFG_Config}
+	 * row for the given client (creating one with column defaults if none exists yet) and replaces its
+	 * {@code MobileUI_MFG_Config_Attribute} child rows to match the given ordered list: an attribute already
+	 * present is reactivated/reordered in place, a new one is created, and an active row whose attribute is no
+	 * longer in the list is deactivated. Deliberately independent of {@link #saveUserConfig} - that path only
+	 * persists the per-user flags (this list is not one of them, see {@code fromRecord}'s always-empty read).
+	 */
+	public void saveGlobalEditableAttributeCodesInOrder(@NonNull final ClientId clientId, @NonNull final List<AttributeCode> attributeCodesInOrder)
+	{
+		// AD_Client_ID is not exposed via a setter on I_MobileUI_MFG_Config (system column) - a freshly
+		// created record picks up the CURRENT session's client, which callers of this masterdata/test path
+		// always run as clientId anyway.
+		final I_MobileUI_MFG_Config record = retrieveGlobalConfigRecord(clientId)
+				.orElseGet(() -> InterfaceWrapperHelper.newInstance(I_MobileUI_MFG_Config.class));
+		record.setIsActive(true);
+		InterfaceWrapperHelper.save(record);
+
+		saveEditableAttributeChildRows(record.getMobileUI_MFG_Config_ID(), attributeCodesInOrder);
+	}
+
+	private void saveEditableAttributeChildRows(final int mobileUIMFGConfigId, @NonNull final List<AttributeCode> attributeCodesInOrder)
+	{
+		final Map<AttributeId, I_MobileUI_MFG_Config_Attribute> existingByAttributeId = queryBL.createQueryBuilder(I_MobileUI_MFG_Config_Attribute.class)
+				.addEqualsFilter(I_MobileUI_MFG_Config_Attribute.COLUMNNAME_MobileUI_MFG_Config_ID, mobileUIMFGConfigId)
+				.create()
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						record -> AttributeId.ofRepoId(record.getM_Attribute_ID()),
+						record -> record));
+
+		final Set<AttributeId> keptAttributeIds = new HashSet<>();
+		int seqNo = 10;
+		for (final AttributeCode attributeCode : attributeCodesInOrder)
+		{
+			final AttributeId attributeId = attributeDAO.getAttributeIdByCode(attributeCode);
+			keptAttributeIds.add(attributeId);
+
+			final I_MobileUI_MFG_Config_Attribute childRecord = existingByAttributeId.getOrDefault(
+					attributeId,
+					InterfaceWrapperHelper.newInstance(I_MobileUI_MFG_Config_Attribute.class));
+			childRecord.setMobileUI_MFG_Config_ID(mobileUIMFGConfigId);
+			childRecord.setM_Attribute_ID(attributeId.getRepoId());
+			childRecord.setSeqNo(seqNo);
+			childRecord.setIsActive(true);
+			InterfaceWrapperHelper.save(childRecord);
+
+			seqNo += 10;
+		}
+
+		existingByAttributeId.forEach((attributeId, childRecord) -> {
+			if (!keptAttributeIds.contains(attributeId) && childRecord.isActive())
+			{
+				childRecord.setIsActive(false);
+				InterfaceWrapperHelper.save(childRecord);
+			}
+		});
 	}
 
 }

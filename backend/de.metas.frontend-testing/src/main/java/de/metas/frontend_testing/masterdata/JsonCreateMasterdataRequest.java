@@ -1,6 +1,7 @@
 package de.metas.frontend_testing.masterdata;
 
 import de.metas.frontend_testing.masterdata.adprocess.JsonSetAdProcessFlagsRequest;
+import de.metas.frontend_testing.masterdata.attribute.JsonCreateAttributeRequest;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerRequest;
 import de.metas.frontend_testing.masterdata.orgseller.JsonOrgSellerRequest;
 import de.metas.frontend_testing.masterdata.compensation_group.JsonCompensationGroupSchemaRequest;
@@ -68,6 +69,15 @@ public class JsonCreateMasterdataRequest
 	@Nullable Map<String, JsonUOMRequest> uoms;
 	@Nullable Map<String, de.metas.frontend_testing.masterdata.vatid.JsonVATaxIDCheckLogRequest> vatIdChecks;
 	@Nullable Map<String, JsonCompensationGroupSchemaRequest> compensationGroupSchemas;
+
+	/**
+	 * Creates (or upserts, by {@code Value}) an {@code M_Attribute} - a LIST-type one included, with its allowed
+	 * values - and optionally links it into an existing {@code M_AttributeSet} by name. Applied before
+	 * {@code products}, so a product's {@code attributeSetName} can rely on the attribute already being a
+	 * member of that set. See {@link de.metas.frontend_testing.masterdata.attribute.CreateAttributeCommand}.
+	 */
+	@Nullable Map<String, JsonCreateAttributeRequest> attributes;
+
 	@Nullable Map<String, JsonCreateProductRequest> products;
 
 	/**

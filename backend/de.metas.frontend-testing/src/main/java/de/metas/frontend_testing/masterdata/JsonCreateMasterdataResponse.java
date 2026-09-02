@@ -1,6 +1,7 @@
 package de.metas.frontend_testing.masterdata;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import de.metas.frontend_testing.masterdata.attribute.JsonCreateAttributeResponse;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerResponse;
 import de.metas.frontend_testing.masterdata.compensation_group.JsonCompensationGroupSchemaResponse;
 import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderResponse;
@@ -47,6 +48,7 @@ public class JsonCreateMasterdataResponse
 	@NonNull Map<String, JsonCreateBPartnerResponse> bpartners;
 	@Nullable Map<String, JsonCompensationGroupSchemaResponse> compensationGroupSchemas;
 	@Nullable Map<String, de.metas.frontend_testing.masterdata.vatid.JsonVATaxIDCheckLogResponse> vatIdChecks;
+	@Nullable Map<String, JsonCreateAttributeResponse> attributes;
 	@NonNull Map<String, JsonCreateProductResponse> products;
 	@Nullable Map<String, JsonCreateResourceResponse> resources;
 	@NonNull Map<String, JsonCreateProductPlanningResponse> productPlannings;
