@@ -254,13 +254,26 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 					.roundToPrecisionIfNeeded(as.getStandardPrecision());
 			final CostAmount costsScrapped = costs.subtract(costsReceived);
 
-			for (final MaterialReceiptLeg leg : materialReceiptLegs(qtyReceived, qtyScrapped, costsReceived, costsScrapped))
+			// Received leg: always post when something was received, even at zero cost (e.g. a manufactured product
+			// freshly on Moving Average Invoice). The received qty must reach P_Asset — the Lagerwert report sums
+			// Fact_Acct.qty on P_Asset, so dropping a zero-cost receipt line silently loses the received stock.
+			// alsoAddZeroLine=true so the line survives even should both cost AND qty ever be zero.
+			if (qtyReceived.signum() != 0)
 			{
-				final Account debit = docLine.getAccount(leg.getAcctType(), as);
-				// alsoAddZeroLine=true: a receipt leg is gated on qty above, so its qty is non-zero and the line
-				// survives anyway; the flag additionally keeps it should both cost AND qty ever be zero. It is set
-				// ONLY here — the other cost-collector types below must keep dropping their zero-amount-and-qty lines.
-				final Fact fact = createFactLines(as, element, debit, credit, leg.getAmt(), leg.getQty(), true);
+				final Account debit = docLine.getAccount(ProductAcctType.P_Asset_Acct, as);
+				final Fact fact = createFactLines(as, element, debit, credit, costsReceived, qtyReceived, true);
+				if (fact != null)
+				{
+					facts.add(fact);
+				}
+			}
+
+			// Scrap leg: post on qty OR cost — qty carries the scrapped stock into valuation, and cost still posts a
+			// sub-precision rounding remainder (the pre-fix behaviour) even when nothing was scrapped by qty.
+			if (qtyScrapped.signum() != 0 || costsScrapped.signum() != 0)
+			{
+				final Account debit = docLine.getAccount(ProductAcctType.P_Scrap_Acct, as);
+				final Fact fact = createFactLines(as, element, debit, credit, costsScrapped, qtyScrapped, true);
 				if (fact != null)
 				{
 					facts.add(fact);
@@ -269,53 +282,6 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		}
 
 		return facts;
-	}
-
-	/**
-	 * The receipt legs a material-receipt cost collector posts for one cost element: the received quantity to
-	 * {@link ProductAcctType#P_Asset_Acct} and, when the collector scrapped some, the scrapped quantity to
-	 * {@link ProductAcctType#P_Scrap_Acct}.
-	 * <p>
-	 * Each leg is gated on its QUANTITY, not its amount. A zero-cost receipt (e.g. a manufactured product freshly
-	 * on Moving Average Invoice) therefore still posts the received quantity to inventory valuation — the Lagerwert
-	 * report sums {@code Fact_Acct.qty} on {@code P_Asset}, so a dropped receipt line silently loses the received
-	 * stock.
-	 * <p>
-	 * Gating on qty preserves all prior postings. For the received leg this is exact:
-	 * {@code costsReceived = costs / qtyTotal * qtyReceived}, so {@code qtyReceived == 0} forces
-	 * {@code costsReceived == 0} — every previously-posted (non-zero cost) receipt leg had a non-zero qty and still
-	 * posts. For the scrapped leg it holds in practice ({@code costsScrapped = costs - costsReceived} rounds back to
-	 * zero when nothing was scrapped, since {@code costs} is already at standard precision); the only behavioural
-	 * difference is that a hypothetical sub-precision rounding remainder on a zero scrapped qty is no longer posted
-	 * as a phantom zero-qty {@code P_Scrap} line — a deliberate, harmless improvement.
-	 */
-	@VisibleForTesting
-	static ImmutableList<MaterialReceiptLeg> materialReceiptLegs(
-			@NonNull final Quantity qtyReceived,
-			@NonNull final Quantity qtyScrapped,
-			@NonNull final CostAmount costsReceived,
-			@NonNull final CostAmount costsScrapped)
-	{
-		final ImmutableList.Builder<MaterialReceiptLeg> legs = ImmutableList.builder();
-		if (qtyReceived.signum() != 0)
-		{
-			legs.add(new MaterialReceiptLeg(ProductAcctType.P_Asset_Acct, costsReceived, qtyReceived));
-		}
-		// Post the scrap leg on qty OR cost: qty carries the scrapped stock into valuation, and cost still posts a
-		// sub-precision rounding remainder (the pre-fix behaviour) even when nothing was scrapped.
-		if (qtyScrapped.signum() != 0 || costsScrapped.signum() != 0)
-		{
-			legs.add(new MaterialReceiptLeg(ProductAcctType.P_Scrap_Acct, costsScrapped, qtyScrapped));
-		}
-		return legs.build();
-	}
-
-	@Value
-	static class MaterialReceiptLeg
-	{
-		@NonNull ProductAcctType acctType;
-		@NonNull CostAmount amt;
-		@NonNull Quantity qty;
 	}
 
 	/**
