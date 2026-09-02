@@ -25,12 +25,13 @@ import de.metas.handlingunits.shipping.weighting.ShippingWeightCalculator;
 import de.metas.handlingunits.shipping.weighting.ShippingWeightSourceTypes;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.IInOutDAO;
-import de.metas.lang.SOTrx;
 import de.metas.lock.api.LockOwner;
 import de.metas.organization.OrgId;
 import de.metas.product.PackageDimensions;
+import de.metas.lang.SOTrx;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.TransportDirection;
 import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
@@ -388,7 +389,8 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 				.shipDate(TimeUtil.asLocalDate(shipment.getMovementDate()))
 				.pickupTimeFrom(TimeUtil.asLocalTime(shipper.getPickupTimeFrom()))
 				.pickupTimeTo(TimeUtil.asLocalTime(shipper.getPickupTimeTo()))
-				.isSOTrx(SOTrx.SALES)
+				// an M_InOut is a shipment or a receipt, never a dropship, so the two-valued mapping is complete here
+				.transportDirection(TransportDirection.ofSOTrx(SOTrx.ofBooleanNotNull(shipment.isSOTrx())))
 				.build();
 
 		final ShipperTransportationId shipperTransportationId = shipperTransportationDAO.create(createShipperTransportationRequest);

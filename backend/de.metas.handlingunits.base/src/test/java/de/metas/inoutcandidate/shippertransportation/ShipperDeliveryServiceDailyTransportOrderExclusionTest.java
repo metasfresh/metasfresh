@@ -18,6 +18,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Shipper;
+import org.compiere.model.X_M_InOut;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -144,10 +145,13 @@ class ShipperDeliveryServiceDailyTransportOrderExclusionTest
 		when(shipment.getM_Shipper_ID()).thenReturn(shipperId.getRepoId());
 		when(shipment.getM_Warehouse_ID()).thenReturn(1);
 		when(shipment.getAD_Org_ID()).thenReturn(0);
+		when(shipment.isSOTrx()).thenReturn(true);
+		when(shipment.getMovementType()).thenReturn(X_M_InOut.MOVEMENTTYPE_CustomerShipment);
 
 		when(inOutDAO.getById(InOutId.ofRepoId(1))).thenReturn(shipment);
 		when(shipperDAO.getById(shipperId)).thenReturn(shipper);
 		when(inOutBL.retrieveMovementDate(shipment)).thenReturn(LocalDate.now());
+		when(inOutBL.isReturnMovementType(X_M_InOut.MOVEMENTTYPE_CustomerShipment)).thenReturn(false);
 
 		// BPartnerLocationAndCaptureId is final — use real factory method instead of mock
 		final BPartnerLocationAndCaptureId bpLoc = BPartnerLocationAndCaptureId.ofRepoId(1, 1);

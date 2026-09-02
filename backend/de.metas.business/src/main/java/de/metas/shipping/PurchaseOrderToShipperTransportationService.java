@@ -86,11 +86,12 @@ public class PurchaseOrderToShipperTransportationService
 
 	/**
 	 * Order in which assigned purchase orders are processed, so the "first order" that seeds the transport order's default dates is
-	 * deterministic: earliest {@code DatePromised} first (the promised delivery date), ties broken by {@code C_Order_ID}. A missing
-	 * {@code DatePromised} sorts last.
+	 * deterministic: earliest {@code PreparationDate} (the departure date the header's ETD is seeded from) first, ties broken by
+	 * {@code DatePromised} (which seeds ETA) and then by {@code C_Order_ID}; missing dates sort last.
 	 */
 	private static final Comparator<I_C_Order> SEED_ORDER_COMPARATOR = Comparator
-			.comparing(I_C_Order::getDatePromised, Comparator.nullsLast(Comparator.naturalOrder()))
+			.comparing(I_C_Order::getPreparationDate, Comparator.nullsLast(Comparator.naturalOrder()))
+			.thenComparing(I_C_Order::getDatePromised, Comparator.nullsLast(Comparator.naturalOrder()))
 			.thenComparingInt(I_C_Order::getC_Order_ID);
 
 	@NonNull private final PurchaseOrderToShipperTransportationRepository repo;
@@ -294,7 +295,9 @@ public class PurchaseOrderToShipperTransportationService
 	 */
 	private void applyDefaultDatesFromFirstOrder(@NonNull final I_M_ShipperTransportation shipperTransportation, @NonNull final I_C_Order order)
 	{
-		if (shipperTransportation.isSOTrx())
+		// isOutgoing(), NOT hasShipment(): Dropship carries a shipment too, but must fall through to the
+		// purchase-side defaults below.
+		if (TransportDirection.ofCode(shipperTransportation.getTransportDirection()).isOutgoing())
 		{
 			return; // sales behaviour on the transport order must keep working unchanged
 		}
