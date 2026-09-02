@@ -10,12 +10,16 @@ import { updateWFProcess } from '../../../actions/WorkflowActions';
 
 // Self-contained guard: a dead deep-link still redirects home.
 //
-// The upstream sibling suite ApplicationLayout.bounceHome.test.js CANNOT LOAD on these branches: it
+// The sibling suite ApplicationLayout.bounceHome.test.js cannot load on the hotfix/release branches
+// this fix originated on (soft_panda_hotfix, soft_panda_release, deep_tundra_release): it
 // jest.mocks apps/picking/ShelfLifeConfirmDialogHost, a module that only exists further upstream, so the
-// whole suite dies with "Cannot find module" and reports `Tests: 0 total`, so it cannot be met by citing
-// it. This file therefore pins the same two behaviours here, and must stay loadable on these branches:
-// do NOT add an import or a jest.mock for anything outside containers/applicationRoot/,
-// reducers/wfProcesses/ and actions/WorkflowActions.
+// whole suite dies there with "Cannot find module" and reports `Tests: 0 total`, and the criterion could
+// not be met by citing it. This file therefore pins the same two behaviours independently, and must stay
+// loadable on every branch it reaches: do NOT add an import or a jest.mock for anything outside
+// containers/applicationRoot/, reducers/wfProcesses/ and actions/WorkflowActions.
+//
+// On new_dawn_uat that module DOES exist, so the sibling suite loads and passes here — the two suites
+// deliberately overlap while this fix propagates. Do not delete either on the assumption the other is dead.
 //
 // Both halves of the guarantee live below:
 //
