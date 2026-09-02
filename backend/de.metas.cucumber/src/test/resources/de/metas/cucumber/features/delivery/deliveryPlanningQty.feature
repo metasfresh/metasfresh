@@ -69,3 +69,33 @@ Feature: Delivery planning quantities
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity |
       | deliveryPlanningQty_1  | 10         | 10           | Outgoing            | 5                     | 5                        |
       | deliveryPlanningQty_2  | 10         | 10           | Outgoing            | 5                     | 5                        |
+
+  Scenario: Splitting an unallocated delivery planning with an uneven divisor puts the remainder on the original for both quantities
+
+    Given metasfresh contains C_Orders:
+      | Identifier  | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier |
+      | orderQtyRem | true    | customer                 | 2023-02-03  | 2023-02-25T00:00:00Z | customerLocation                      |
+    And metasfresh contains C_OrderLines:
+      | Identifier      | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineQtyRem | orderQtyRem            | product                 | 10         | shipper_DHL                 |
+
+    When the order identified by orderQtyRem is completed
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID | C_OrderLine_ID  |
+      | deliveryPlanningRem_1  | orderLineQtyRem |
+
+    And update M_Delivery_Planning:
+      | M_Delivery_Planning_ID | PlannedDischargeQuantity |
+      | deliveryPlanningRem_1  | 10                       |
+
+    When generate 2 additional M_Delivery_Planning records for: deliveryPlanningRem_1
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID                                            | C_OrderLine_ID  |
+      | deliveryPlanningRem_1,deliveryPlanningRem_2,deliveryPlanningRem_3 | orderLineQtyRem |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity |
+      | deliveryPlanningRem_1  | 10         | 10           | Outgoing            | 4                     | 4                        |
+      | deliveryPlanningRem_2  | 10         | 10           | Outgoing            | 3                     | 3                        |
+      | deliveryPlanningRem_3  | 10         | 10           | Outgoing            | 3                     | 3                        |

@@ -412,6 +412,9 @@ public class DeliveryPlanningService
 		final Quantity fraction = openQty.divide(BigDecimal.valueOf(additionalLines + 1), 0, RoundingMode.DOWN);
 
 		final Quantity remainder = openQty.subtract(fraction.multiply(additionalLines + 1));
+		// Two round-trips (getById+save each): DeliveryPlanningRepository has no single-record "set several
+		// columns at once" method, and adding one just to merge these two writes would widen its API for a
+		// non-hot-path call - left as-is per review (Task Q3, fix round 1).
 		deliveryPlanningRepository.setPlannedLoadedQuantity(deliveryPlanningId, fraction.add(remainder));
 
 		final Quantity dischargeQty = getPlannedDischargeQty(deliveryPlanningId);
@@ -432,6 +435,14 @@ public class DeliveryPlanningService
 	 * {@link #createAdditionalDeliveryPlannings} overwrites it with the remainder share - the discharge-side
 	 * sibling of the {@code plannedLoadedQtySum}/{@code qtyOrdered} read in {@link #getOpenQty}, which only ever
 	 * covers the loaded figure.
+	 * <p>
+	 * Unlike {@link #getOpenQty}, this reads the planning's own column directly - there is no order-line-relative
+	 * pool or residual on the discharge side. That coincides with the load path's result only for a FIRST split of
+	 * a single planning (which is this task's whole scope); a second-generation split, or a hand-edited planned
+	 * figure, would let the two diverge, since {@code getOpenQty} would still net against sibling plannings while
+	 * this method would not. Whichever later task changes the load-side pool (see {@code getOpenQty}'s own
+	 * evolution) must decide explicitly whether the discharge side follows it - that decision is deliberately not
+	 * made here.
 	 */
 	private Quantity getPlannedDischargeQty(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
