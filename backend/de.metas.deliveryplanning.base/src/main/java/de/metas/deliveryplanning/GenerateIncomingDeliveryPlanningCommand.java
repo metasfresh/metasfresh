@@ -113,7 +113,7 @@ public class GenerateIncomingDeliveryPlanningCommand
 				.qtyTotalOpen(qtyOrdered.subtract(qtyMoved))
 				.actualLoadedQty(Quantity.zero(uom))
 				.plannedLoadedQty(qtyOrdered)
-				.plannedDischargeQty(Quantity.zero(uom))
+				.plannedDischargeQty(qtyOrdered)
 				.actualDischargeQty(Quantity.zero(uom))
 				.uom(uom)
 				.plannedDeliveryDate(TimeUtil.asInstant(receiptSchedule.getMovementDate()))

@@ -643,14 +643,14 @@ Feature: Several delivery plannings on one delivery instruction
     # and each row carries its OWN planning's article and quantities
     And the M_ShipperTransportation identified by deliveryInstructionView has exactly the following rows in M_Delivery_Planning_Delivery_Instructions_V:
       | M_Delivery_Planning_ID | M_Product_ID | ActualLoadQty | ActualDischargeQuantity |
-      | planningView_1         | product      | 7             | 0                       |
-      | planningView_2         | product2     | 3             | 0                       |
+      | planningView_1         | product      | 7             | 7                       |
+      | planningView_2         | product2     | 3             | 3                       |
 
     # the sibling view over the same allocations owes the same one-row-per-planning identity
     And the M_ShipperTransportation identified by deliveryInstructionView has exactly the following rows in M_ShipperTransportation_Delivery_Instructions_V:
       | M_Delivery_Planning_ID | M_Product_ID | PlannedLoadedQuantity | PlannedDischargeQuantity |
-      | planningView_1         | product      | 7                     | 0                        |
-      | planningView_2         | product2     | 3                     | 0                        |
+      | planningView_1         | product      | 7                     | 7                        |
+      | planningView_2         | product2     | 3                     | 3                        |
 
   @Id:S31608_TC20
   Scenario: The delivery instruction history returns one row per retired delivery planning
@@ -696,5 +696,5 @@ Feature: Several delivery plannings on one delivery instruction
     Then the M_ShipperTransportation identified by deliveryInstructionHistory holds no active M_Delivery_Planning_Alloc
     And the M_ShipperTransportation identified by deliveryInstructionHistory has exactly the following rows in M_ShipperTransportation_Delivery_Planning_History_V:
       | M_Delivery_Planning_ID | M_Product_ID | PlannedLoadedQuantity | PlannedDischargeQuantity |
-      | planningHistory_1      | product      | 6                     | 0                        |
-      | planningHistory_2      | product2     | 2                     | 0                        |
+      | planningHistory_1      | product      | 6                     | 6                        |
+      | planningHistory_2      | product2     | 2                     | 2                        |
