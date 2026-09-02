@@ -250,7 +250,7 @@ public class M_Tour_Instance_CreateFromSelectedDeliveryDays extends JavaProcess
 		// 07958
 		// also set the tour id
 		shipperTransportation.setM_Tour(tourInstance.getM_Tour());
-		InterfaceWrapperHelper.save(shipperTransportation);
+		shipperTransportationBL.save(shipperTransportation);
 
 		return shipperTransportation;
 	}
