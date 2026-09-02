@@ -245,7 +245,7 @@ public class DefaultModelArchiver
 
 		// stamp the suppress-auto-print decision (e.g. drop-ship shipments) so the printing-queue gate can honor it
 		// without a DB column: one AD_Archive can be printed multiple times, so this must not be persisted.
-		IArchiveBL.SUPPRESS_AUTO_PRINT.setValue(archive, report.isSuppressAutoPrint());
+		archiveBL.setSuppressAutoPrint(archive, report.isSuppressAutoPrint());
 
 		//
 		// forward async batch if there is one

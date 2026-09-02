@@ -89,6 +89,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 	 */
 	private final CompositePrintingQueueHandler printingQueueHandler = new CompositePrintingQueueHandler(C_Printing_Queue_RecipientHandler.INSTANCE);
 	private final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
+	private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 
 	@Nullable
 	@Override
@@ -222,7 +223,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 			// Honor the transient suppress-auto-print flag stamped on the archive (e.g. a drop-ship shipment whose
 			// auto-print must be suppressed): skip printing-queue-item creation entirely, before any other rule below
 			// (including the IsProcessQueueItem short-circuit) could force it back on.
-			if (IArchiveBL.SUPPRESS_AUTO_PRINT.getValue(archive, false))
+			if (archiveBL.isSuppressAutoPrint(archive))
 			{
 				logger.debug("IsCreatePrintingQueueItem - AD_Archive.SUPPRESS_AUTO_PRINT=true; -> return false");
 				return false;
