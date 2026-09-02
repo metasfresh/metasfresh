@@ -67,9 +67,9 @@ WITH RECURSIVE
 -- target VHU has exactly one source, so the graph is a forest and attributing a shipped VHU back
 -- to one received VHU is unambiguous. The walk below runs the other way --
 -- forward, from a receipt to everything it became -- and may legitimately fan out, one received
--- pallet split into many shipped pieces. Deliberately NOT restricted to T_Selection:
--- TRANSFORM_LOAD is not one of the reported trace types, so the edges never appear in the
--- selection even though the path between two selected rows runs over them.
+-- pallet split into many shipped pieces. Deliberately NOT restricted to T_Selection: whether a
+-- TRANSFORM_LOAD edge is in the selection depends on how the caller's recursion happened to reach
+-- it, so the walk must not depend on it.
 vhu_edge AS (
     SELECT DISTINCT t.VHU_Source_ID AS src, t.VHU_ID AS dst
     FROM M_HU_Trace t
