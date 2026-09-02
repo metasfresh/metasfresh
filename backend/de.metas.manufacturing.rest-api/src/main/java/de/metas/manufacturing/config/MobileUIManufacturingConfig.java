@@ -1,18 +1,14 @@
 package de.metas.manufacturing.config;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import de.metas.handlingunits.picking.config.mobileui.PickAttribute;
 import de.metas.util.OptionalBoolean;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.mm.attributes.api.AttributeConstants;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
-import java.util.Set;
 
 @Value
 @Builder(toBuilder = true)
@@ -95,32 +91,6 @@ public class MobileUIManufacturingConfig
 				.skipReceiveTargetStep(isMainFinishedGood && getIsSkipFinishedGoodsReceiveTargetStepEffective())
 				.allowReceiveWithoutPackingItem(getIsAllowReceiveWithoutPackingItemEffective())
 				.build();
-	}
-
-	/**
-	 * @return the legacy {@link PickAttribute} view of {@link #editableAttributeCodesInOrder}, derived from the
-	 * two well-known special attributes (Lot number, Best-before date) only.
-	 * @deprecated temporary shim for {@code MaterialReceiptActivityHandler}'s "readAttributes" JSON emit, kept
-	 * ONLY until that call site is migrated to the generic {@link #editableAttributeCodesInOrder} contract
-	 * (issue #31771 Task 6). Any other configured attribute is NOT represented here.
-	 */
-	@Deprecated
-	@NonNull
-	public Set<PickAttribute> getEditableAttributes()
-	{
-		final ImmutableSet.Builder<PickAttribute> result = ImmutableSet.builder();
-		for (final AttributeCode code : editableAttributeCodesInOrder)
-		{
-			if (AttributeConstants.ATTR_LotNumber.equals(code))
-			{
-				result.add(PickAttribute.LotNo);
-			}
-			else if (AttributeConstants.ATTR_BestBeforeDate.equals(code))
-			{
-				result.add(PickAttribute.BestBeforeDate);
-			}
-		}
-		return result.build();
 	}
 
 	public MobileUIManufacturingConfig fallbackTo(@NonNull final MobileUIManufacturingConfig other)

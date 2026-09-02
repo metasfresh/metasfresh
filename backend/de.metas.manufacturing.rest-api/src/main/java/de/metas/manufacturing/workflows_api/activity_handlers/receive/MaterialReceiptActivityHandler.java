@@ -110,7 +110,6 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 		return UIComponent.builderFrom(COMPONENT_TYPE, wfActivity)
 				.properties(Params.builder()
 						.valueObj("lines", lines)
-						.valueObj("readAttributes", config.getEditableAttributes())
 						.valueObj(PROP_customQRCodeFormats, JsonScannableCodeFormat.ofCollection(scannableCodeFormatService.getAll()))
 						.build())
 				.build();
