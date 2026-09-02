@@ -163,3 +163,142 @@ Feature: Delivery planning quantities
       | deliveryPlanningRem_1  | 10         | 10           | Outgoing            | 4                     | 4                        |
       | deliveryPlanningRem_2  | 10         | 10           | Outgoing            | 3                     | 3                        |
       | deliveryPlanningRem_3  | 10         | 10           | Outgoing            | 3                     | 3                        |
+
+  @Id:S31789_TC_Q5_Allocated
+  Scenario: Splitting a delivery planning allocated to an instruction leaves its planned figures untouched and gives the new planning the remaining uncommitted amount
+
+    Given metasfresh contains C_Orders:
+      | Identifier    | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier |
+      | orderQtyAlloc | true    | customer                 | 2023-02-03  | 2023-02-25T00:00:00Z | customerLocation                      |
+    And metasfresh contains C_OrderLines:
+      | Identifier        | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineQtyAlloc | orderQtyAlloc          | product                 | 10         | shipper_DHL                 |
+
+    When the order identified by orderQtyAlloc is completed
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID | C_OrderLine_ID    |
+      | deliveryPlanningAlloc_1 | orderLineQtyAlloc |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID  | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity |
+      | deliveryPlanningAlloc_1 | 10         | 10           | Outgoing            | 10                    | 10                       |
+
+    And update M_Delivery_Planning:
+      | M_Delivery_Planning_ID  | PlannedLoadedQuantity |
+      | deliveryPlanningAlloc_1 | 6                     |
+
+    And generate M_ShipperTransportation for M_Delivery_Planning:
+      | M_ShipperTransportation_ID | M_Delivery_Planning_ID  | IsComplete |
+      | deliveryInstructionAlloc   | deliveryPlanningAlloc_1 | false      |
+
+    When generate 1 additional M_Delivery_Planning records for: deliveryPlanningAlloc_1
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID                          | C_OrderLine_ID    |
+      | deliveryPlanningAlloc_1,deliveryPlanningAlloc_2 | orderLineQtyAlloc |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID  | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity |
+      | deliveryPlanningAlloc_1 | 10         | 10           | Outgoing            | 6                     | 10                       |
+      | deliveryPlanningAlloc_2 | 10         | 10           | Outgoing            | 4                     | 0                        |
+
+  @Id:S31789_TC_Q5_FullyAllocated
+  Scenario: Splitting a fully allocated delivery planning still creates the new planning, carrying 0
+
+    Given metasfresh contains C_Orders:
+      | Identifier   | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier |
+      | orderQtyFull | true    | customer                 | 2023-02-03  | 2023-02-25T00:00:00Z | customerLocation                      |
+    And metasfresh contains C_OrderLines:
+      | Identifier       | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineQtyFull | orderQtyFull           | product                 | 10         | shipper_DHL                 |
+
+    When the order identified by orderQtyFull is completed
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID | C_OrderLine_ID   |
+      | deliveryPlanningFull_1 | orderLineQtyFull |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity |
+      | deliveryPlanningFull_1 | 10         | 10           | Outgoing            | 10                    | 10                       |
+
+    And generate M_ShipperTransportation for M_Delivery_Planning:
+      | M_ShipperTransportation_ID | M_Delivery_Planning_ID | IsComplete |
+      | deliveryInstructionFull    | deliveryPlanningFull_1 | false      |
+
+    When generate 1 additional M_Delivery_Planning records for: deliveryPlanningFull_1
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID                        | C_OrderLine_ID   |
+      | deliveryPlanningFull_1,deliveryPlanningFull_2 | orderLineQtyFull |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity |
+      | deliveryPlanningFull_1 | 10         | 10           | Outgoing            | 10                    | 10                       |
+      | deliveryPlanningFull_2 | 10         | 10           | Outgoing            | 0                     | 0                        |
+
+  @Id:S31789_TC12
+  Scenario: TC12 - Splitting a planning with both an allocation and a partial receipt leaves the received figure, the allocated portion and the original's planned figure unchanged
+
+    Given metasfresh contains M_PricingSystems
+      | Identifier           | OPT.IsActive |
+      | pricingSystemQtyTC12 | true         |
+    And metasfresh contains M_PriceLists
+      | Identifier        | M_PricingSystem_ID.Identifier | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
+      | priceList_QtyTC12 | pricingSystemQtyTC12          | DE                    | EUR                 | false |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier               | M_PriceList_ID.Identifier |
+      | priceListVersion_QtyTC12 | priceList_QtyTC12         |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | priceListVersion_QtyTC12          | product                 | 5.0      | PCE               | Normal                        |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier         | IsVendor | IsCustomer | M_PricingSystem_ID.Identifier |
+      | vendorQtyTC12      | Y        | N          | pricingSystemQtyTC12          |
+      | warehouseBPQtyTC12 |          |            |                                |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier               | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipToDefault |
+      | vendorLocationQtyTC12    | 1234564396492 | vendorQtyTC12             | true                | true                |
+      | warehouseLocationQtyTC12 | 1203522892492 | warehouseBPQtyTC12        | true                | true                |
+    And metasfresh contains C_BPartner_Products:
+      | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
+      | vendorQtyTC12            | product                 |
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID.Identifier | Value                 | Name                 | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
+      | warehouseQtyTC12          | warehouseValueQtyTC12 | warehouseNameQtyTC12 | warehouseBPQtyTC12           | warehouseLocationQtyTC12               |
+    And metasfresh contains M_Locator:
+      | M_Locator_ID.Identifier | Value               | M_Warehouse_ID.Identifier |
+      | locatorQtyTC12          | locatorValueQtyTC12 | warehouseQtyTC12          |
+    And metasfresh contains C_Orders:
+      | Identifier   | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType |
+      | orderQtyTC12 | false   | vendorQtyTC12             | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocationQtyTC12                 | warehouseQtyTC12               | POO             |
+    And metasfresh contains C_OrderLines:
+      | Identifier       | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineQtyTC12 | orderQtyTC12           | product                 | 50         | shipper_DHL                 |
+
+    When the order identified by orderQtyTC12 is completed
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID | C_OrderLine_ID   |
+      | deliveryPlanningTC12_1 | orderLineQtyTC12 |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity |
+      | deliveryPlanningTC12_1 | 50         | 50           | Incoming            | 50                    | 50                       |
+
+    And update M_Delivery_Planning:
+      | M_Delivery_Planning_ID | ActualDischargeQuantity |
+      | deliveryPlanningTC12_1 | 40                      |
+
+    And generate M_ShipperTransportation for M_Delivery_Planning:
+      | M_ShipperTransportation_ID | M_Delivery_Planning_ID | IsComplete |
+      | deliveryInstructionTC12    | deliveryPlanningTC12_1 | false      |
+
+    When generate 1 additional M_Delivery_Planning records for: deliveryPlanningTC12_1
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID                         | C_OrderLine_ID   |
+      | deliveryPlanningTC12_1,deliveryPlanningTC12_2 | orderLineQtyTC12 |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity |
+      | deliveryPlanningTC12_1 | 50         | 50           | Incoming            | 50                    | 50                       |
+      | deliveryPlanningTC12_2 | 50         | 50           | Incoming            | 0                     | 0                        |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | ActualDischargeQuantity |
+      | deliveryPlanningTC12_1 | 50         | 50           | Incoming            | 40                      |

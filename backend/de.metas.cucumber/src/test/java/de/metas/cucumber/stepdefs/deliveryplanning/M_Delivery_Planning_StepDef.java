@@ -241,6 +241,7 @@ public class M_Delivery_Planning_StepDef
 	 *   <b>ETD</b> — (optional) expected {@code ETD}<br>
 	 *   <b>PlannedLoadedQuantity</b> — (optional) expected {@code PlannedLoadedQuantity}<br>
 	 *   <b>PlannedDischargeQuantity</b> — (optional) expected {@code PlannedDischargeQuantity}<br>
+	 *   <b>ActualDischargeQuantity</b> — (optional) expected {@code ActualDischargeQuantity}<br>
 	 *   <b>IsClosed</b> — (optional) expected {@code IsClosed}<br>
 	 *   <b>Processed</b> — (optional) expected {@code Processed}<br>
 	 *   <b>OrderStatus</b> — (optional, null-allowed) expected {@code OrderStatus}; {@code null} asserts the planning
@@ -342,6 +343,9 @@ public class M_Delivery_Planning_StepDef
 
 			row.getAsOptionalBigDecimal(I_M_Delivery_Planning.COLUMNNAME_PlannedDischargeQuantity)
 					.ifPresent(plannedDischargeQty -> softly.assertThat(deliveryPlanning.getPlannedDischargeQuantity()).as(I_M_Delivery_Planning.COLUMNNAME_PlannedDischargeQuantity).isEqualTo(plannedDischargeQty));
+
+			row.getAsOptionalBigDecimal(I_M_Delivery_Planning.COLUMNNAME_ActualDischargeQuantity)
+					.ifPresent(actualDischargeQty -> softly.assertThat(deliveryPlanning.getActualDischargeQuantity()).as(I_M_Delivery_Planning.COLUMNNAME_ActualDischargeQuantity).isEqualTo(actualDischargeQty));
 
 			row.getAsOptionalBoolean(I_M_Delivery_Planning.COLUMNNAME_IsClosed)
 					.ifPresent(isClosed -> softly.assertThat(deliveryPlanning.isClosed()).as(I_M_Delivery_Planning.COLUMNNAME_IsClosed).isEqualTo(isClosed));
@@ -550,8 +554,12 @@ public class M_Delivery_Planning_StepDef
 	 * @cucumber.columns
 	 *   <b>M_Delivery_Planning_ID</b> — (required, identifier-ref) the planning to update<br>
 	 *   <b>M_Shipper_ID</b> — (optional, identifier-ref) new shipper to assign<br>
+	 *   <b>PlannedLoadedQuantity</b> — (optional) new {@code PlannedLoadedQuantity} to seed before a split -
+	 *   a scenario that needs a starting figure other than {@code QtyOrdered} sets it here<br>
 	 *   <b>PlannedDischargeQuantity</b> — (optional) new {@code PlannedDischargeQuantity} to seed before a split -
 	 *   generation always writes {@code 0}, so a scenario that needs a non-zero starting figure sets it here<br>
+	 *   <b>ActualDischargeQuantity</b> — (optional) new {@code ActualDischargeQuantity} to seed a partial receipt
+	 *   before a split - there is no receipt process driven in these scenarios, so the figure is set directly<br>
 	 * @cucumber.depends StepDefData: M_Delivery_Planning_StepDefData, M_Shipper_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -574,8 +582,14 @@ public class M_Delivery_Planning_StepDef
 						deliveryPlanning.setM_Shipper_ID(shipper.getM_Shipper_ID());
 					});
 
+			row.getAsOptionalBigDecimal(I_M_Delivery_Planning.COLUMNNAME_PlannedLoadedQuantity)
+					.ifPresent(deliveryPlanning::setPlannedLoadedQuantity);
+
 			row.getAsOptionalBigDecimal(I_M_Delivery_Planning.COLUMNNAME_PlannedDischargeQuantity)
 					.ifPresent(deliveryPlanning::setPlannedDischargeQuantity);
+
+			row.getAsOptionalBigDecimal(I_M_Delivery_Planning.COLUMNNAME_ActualDischargeQuantity)
+					.ifPresent(deliveryPlanning::setActualDischargeQuantity);
 
 			saveRecord(deliveryPlanning);
 		});

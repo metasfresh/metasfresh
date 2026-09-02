@@ -407,24 +407,50 @@ public class DeliveryPlanningService
 
 		Check.assumeGreaterThanZero(additionalLines, PARAM_AdditionalLines);
 
-		final Quantity openQty = getOpenQty(deliveryPlanningId);
+		// Quantity allocated to a delivery instruction is committed cargo (D8/AC12/TC12): once the target is
+		// allocated, its own planned figures are a FIXED POINT of the split - never rewritten as a side effect -
+		// and the new plannings share only what the order line still has uncommitted overall. Q3's divide (target
+		// gets a share too, from its own current figure) is the single exception to that rule, reserved for the
+		// unallocated case.
+		final boolean targetIsAllocated = deliveryPlanningRepository.hasActiveAllocation(deliveryPlanningId);
 
-		final Quantity fraction = openQty.divide(BigDecimal.valueOf(additionalLines + 1), 0, RoundingMode.DOWN);
+		final Quantity openQty = getOpenQty(deliveryPlanningId, targetIsAllocated);
 
-		final Quantity remainder = openQty.subtract(fraction.multiply(additionalLines + 1));
-		// Two round-trips (getById+save each): DeliveryPlanningRepository has no single-record "set several
-		// columns at once" method, and adding one just to merge these two writes would widen its API for a
-		// non-hot-path call - left as-is per review (Task Q3, fix round 1).
-		deliveryPlanningRepository.setPlannedLoadedQuantity(deliveryPlanningId, fraction.add(remainder));
+		final Quantity newPlanningLoadedQty;
+		final Quantity newPlanningDischargeQty;
 
-		final Quantity dischargeQty = getPlannedDischargeQty(deliveryPlanningId);
-		final Quantity dischargeFraction = dischargeQty.divide(BigDecimal.valueOf(additionalLines + 1), 0, RoundingMode.DOWN);
-		final Quantity dischargeRemainder = dischargeQty.subtract(dischargeFraction.multiply(additionalLines + 1));
-		deliveryPlanningRepository.setPlannedDischargeQuantity(deliveryPlanningId, dischargeFraction.add(dischargeRemainder));
+		if (targetIsAllocated)
+		{
+			// The target's own planned figures are untouched (D8) - no repository write here. The new plannings
+			// split whatever remains uncommitted on the order line as a whole, floored at 0 by getOpenQty; "nothing
+			// remains" still creates the requested plannings, carrying 0, rather than refusing or erroring.
+			newPlanningLoadedQty = openQty.divide(BigDecimal.valueOf(additionalLines), 0, RoundingMode.DOWN);
+			// There is no order-line-relative pool on the discharge side (see getPlannedDischargeQty) - only the
+			// target's own committed figure exists there, and that figure is the fixed point being preserved, so
+			// nothing is left to hand to the new plannings.
+			newPlanningDischargeQty = Quantity.zero(openQty.getUOM());
+		}
+		else
+		{
+			final Quantity fraction = openQty.divide(BigDecimal.valueOf(additionalLines + 1), 0, RoundingMode.DOWN);
+
+			final Quantity remainder = openQty.subtract(fraction.multiply(additionalLines + 1));
+			// Two round-trips (getById+save each): DeliveryPlanningRepository has no single-record "set several
+			// columns at once" method, and adding one just to merge these two writes would widen its API for a
+			// non-hot-path call - left as-is per review (Task Q3, fix round 1).
+			deliveryPlanningRepository.setPlannedLoadedQuantity(deliveryPlanningId, fraction.add(remainder));
+			newPlanningLoadedQty = fraction;
+
+			final Quantity dischargeQty = getPlannedDischargeQty(deliveryPlanningId);
+			final Quantity dischargeFraction = dischargeQty.divide(BigDecimal.valueOf(additionalLines + 1), 0, RoundingMode.DOWN);
+			final Quantity dischargeRemainder = dischargeQty.subtract(dischargeFraction.multiply(additionalLines + 1));
+			deliveryPlanningRepository.setPlannedDischargeQuantity(deliveryPlanningId, dischargeFraction.add(dischargeRemainder));
+			newPlanningDischargeQty = dischargeFraction;
+		}
 
 		for (int i = 0; i < additionalLines; i++)
 		{
-			final DeliveryPlanningCreateRequest request = createRequest(deliveryPlanningId, fraction, dischargeFraction);
+			final DeliveryPlanningCreateRequest request = createRequest(deliveryPlanningId, newPlanningLoadedQty, newPlanningDischargeQty);
 
 			deliveryPlanningRepository.generateDeliveryPlanning(request);
 		}
@@ -451,7 +477,19 @@ public class DeliveryPlanningService
 		return Quantity.of(deliveryPlanningRecord.getPlannedDischargeQuantity(), uom);
 	}
 
-	private Quantity getOpenQty(final DeliveryPlanningId deliveryPlanningId)
+	/**
+	 * The order line's remaining distributable pool for {@code deliveryPlanningId}'s split (D8/AC12): {@code
+	 * QtyOrdered} minus what every OTHER planning of the line already claims, minus the target's own claim TOO once
+	 * it is allocated - committed cargo is excluded from what a split may hand out, same as any other planning's
+	 * share. Unallocated, the target is excluded from the sum instead, exactly as before Task Q5: its own share is
+	 * still up for redistribution, which is what lets {@link #createAdditionalDeliveryPlannings} give it a slice of
+	 * this same pool.
+	 * <p>
+	 * {@code targetIsAllocated} is handed in rather than queried here so the caller - which already needs the same
+	 * fact to decide whether to rewrite the target's own figure - pays for {@link
+	 * DeliveryPlanningRepository#hasActiveAllocation} once, not twice.
+	 */
+	private Quantity getOpenQty(final DeliveryPlanningId deliveryPlanningId, final boolean targetIsAllocated)
 	{
 		final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningRepository.getById(deliveryPlanningId);
 		final I_C_UOM uom = uomDAO.getById(deliveryPlanningRecord.getC_UOM_ID());
@@ -468,7 +506,7 @@ public class DeliveryPlanningService
 		Quantity openQty = qtyOrdered;
 
 		final Quantity plannedLoadedQtySum = deliveryPlanningRepository.retrieveForOrderLine(orderLineId)
-				.filter(deliveryPlanning -> deliveryPlanningId.getRepoId() != deliveryPlanning.getM_Delivery_Planning_ID())
+				.filter(deliveryPlanning -> targetIsAllocated || deliveryPlanningId.getRepoId() != deliveryPlanning.getM_Delivery_Planning_ID())
 				.map(DeliveryPlanningService::extractPlannedLoadedQuantity)
 				.reduce(Quantity::add)
 				.orElse(null);
