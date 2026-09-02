@@ -61,10 +61,13 @@ public class JsonManufacturingOrderEvent
 
 		/**
 		 * Generic, per-attribute-code editable-attribute values entered by the operator at receipt (the
-		 * config's {@code editableAttributes} list, see {@code MaterialReceiptActivityHandler}), EXCLUDING
-		 * Lot/Best-before/Production date which keep using their own dedicated fields above so the
-		 * auto-lot (F8041) gate stays untouched. Applied by {@code ReceiveGoodsCommand} onto the produced
-		 * HU(s) via the HU attribute storage, next to the catch-weight apply.
+		 * config's {@code editableAttributes} list, see {@code MaterialReceiptActivityHandler}). This INCLUDES
+		 * Lot/Best-before/Production date - the mobile frontend submits them through this generic map, not via
+		 * the dedicated fields above. {@code ReceiveGoodsCommand} extracts those producer-managed codes from
+		 * the map and routes them to the HU-producer setters (preserving the auto-lot gate + creation-time
+		 * timing); every other attribute is applied onto the produced HU(s) via the HU attribute storage, next
+		 * to the catch-weight apply. The dedicated {@code lotNo}/{@code bestBeforeDate}/{@code productionDate}
+		 * fields above remain as a backwards-compatible fallback for non-mobile callers.
 		 */
 		@Nullable List<Attribute> attributes;
 

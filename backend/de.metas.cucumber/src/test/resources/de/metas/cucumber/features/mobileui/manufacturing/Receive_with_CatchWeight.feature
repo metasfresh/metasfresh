@@ -147,11 +147,16 @@ Feature: mobileUI Picking - Pick mixed lines
   @from:cucumber
   @Id:S31771
   Scenario: A typed lot number from the mobile receipt event suppresses the BOM's lot-number sequence
-    ## The BOM has a LotNo_Sequence_ID configured, but the mobile receipt event carries its own typed LotNo.
-    ## AbstractPPOrderReceiptHUProducer stamps the typed value directly and never touches the sequence
-    ## (backend/de.metas.handlingunits.base/.../AbstractPPOrderReceiptHUProducer.java updateReceivedHUs:
-    ## the sequence is only consulted in the `else` branch, when no typed lotNumber was provided).
-    ## Guard: the produced HU carries the typed lot, and the sequence's CurrentNext stays unconsumed.
+    ## The BOM has a LotNo_Sequence_ID configured, but the mobile receipt event carries its own typed Lot.
+    ## The typed Lot arrives through the GENERIC attributes map - exactly how the real mobile frontend now
+    ## submits it (it dropped the dedicated LotNo field in favour of the generic editable-attributes section).
+    ## ReceiveGoodsCommand must route the Lot-Nummer value out of that map to the IPPOrderReceiptHUProducer
+    ## setter, so AbstractPPOrderReceiptHUProducer stamps the typed value directly and never touches the
+    ## sequence (updateReceivedHUs consults the sequence only in the `else` branch, i.e. when no typed
+    ## lotNumber was provided). Guard: the produced HU carries the typed lot, and the sequence's CurrentNext
+    ## stays UNCONSUMED. Before the STEP-1 fix the map value bypassed the producer, so the auto-lot gate fired
+    ## and consumed the sequence (CurrentNext advanced) even though an explicit Lot was typed - a regression
+    ## this scenario pins.
     And metasfresh contains AD_Sequence:
       | AD_Sequence_ID.Identifier | Name                      | OPT.StartNo |
       | typedLotSequence          | TestTypedLotSuppressedSeq | 1000001     |
@@ -190,9 +195,14 @@ Feature: mobileUI Picking - Pick mixed lines
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier  | WorkflowLine.Identifier          | WorkflowReceivingTargetValues.Identifier |
       | manufacturingWorkflow      | workflowManufacturingReceipt | workflowManufacturingReceiptLine | workflowReceivingTargetValues            |
 
+    ## Lot-Nummer is a standard attribute (not created in this feature's Background), so load it into the
+    ## step-def data to reference it by identifier in the generic Attribute column.
+    And load M_Attribute:
+      | M_Attribute_ID.Identifier | Value      |
+      | lotNumberAttr             | Lot-Nummer |
     And create JsonManufacturingOrderEvent and store it in context as request payload:
-      | Event       | CatchWeight | BestBeforeDate | LotNo      | WorkflowProcess.Identifier | WorkflowActivity.Identifier  | WorkflowLine.Identifier          | WorkflowReceivingTargetValues.Identifier |
-      | ReceiveFrom | 0.5 KGM     | 2025-03-03     | TypedLot_1 | manufacturingWorkflow      | workflowManufacturingReceipt | workflowManufacturingReceiptLine | workflowReceivingTargetValues            |
+      | Event       | Attribute     | AttributeValue | WorkflowProcess.Identifier | WorkflowActivity.Identifier  | WorkflowLine.Identifier          | WorkflowReceivingTargetValues.Identifier |
+      | ReceiveFrom | lotNumberAttr | TypedLot_1     | manufacturingWorkflow      | workflowManufacturingReceipt | workflowManufacturingReceiptLine | workflowReceivingTargetValues            |
     And the metasfresh REST-API endpoint path 'api/v2/manufacturing/event' receives a 'POST' request with the payload from context and responds with '200' status code
 
     And validate I_PP_Order_Qty
@@ -210,6 +220,80 @@ Feature: mobileUI Picking - Pick mixed lines
     And AD_Sequence is validated
       | AD_Sequence_ID.Identifier | CurrentNext |
       | typedLotSequence          | 1000001     |
+
+# ######################################################################################################################
+# ######################################################################################################################
+# ######################################################################################################################
+# ######################################################################################################################
+  @from:cucumber
+  @Id:S31771
+  Scenario: A blank lot number at the mobile receipt event lets the BOM's lot-number sequence fire (auto-lot)
+    ## The other half of AC6 (F8041): with a LotNo_Sequence_ID configured and NO Lot submitted at all, the
+    ## producer's auto-lot gate fires - it draws the next value from the sequence, stamps it on the produced
+    ## HU, and advances CurrentNext. A plain AD_Sequence (no CustomSequenceNoProvider) hands out its counter
+    ## verbatim (see pporder/lotNumberSequenceProvider.feature), so StartNo=1000001 -> Lot "1000001" and
+    ## CurrentNext -> 1000002. This regression guard must stay green both before and after the STEP-1 fix:
+    ## the fix only stops a TYPED lot (via the generic map) from bypassing the producer; it must not disturb
+    ## the blank-lot auto-lot path.
+    And metasfresh contains AD_Sequence:
+      | AD_Sequence_ID.Identifier | Name                    | OPT.StartNo |
+      | autoLotSequence           | TestAutoLotFiresSeq     | 1000001     |
+
+    And metasfresh contains PP_Product_BOM
+      | Identifier       | M_Product_ID  | PP_Product_BOMVersions_ID |
+      | manufacturingBOM | catchWeightFP | manufacturingBOMVersion   |
+    And metasfresh contains PP_Product_BOMLines
+      | Identifier           | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | ValidFrom  | QtyBatch |
+      | manufacturingBOMLine | manufacturingBOM             | regularComponentProd    | 2021-01-02 | 2        |
+    And the PP_Product_BOM identified by manufacturingBOM is completed
+    And update PP_Product_BOM:
+      | PP_Product_BOM_ID.Identifier | OPT.LotNo_Sequence_ID.Identifier |
+      | manufacturingBOM             | autoLotSequence                  |
+
+    And load AD_Workflow:
+      | AD_Workflow_ID.Identifier | Name                   |
+      | mobileWorkflow            | mobileUI_workflow_test |
+    And metasfresh contains PP_Product_Plannings
+      | Identifier                   | OPT.AD_Workflow_ID.Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
+      | manufacturingProductPlanning | mobileWorkflow                | catchWeightFP           | manufacturingBOMVersion                  | false        |
+    And create PP_Order:
+      | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument | OPT.PP_Product_Planning_ID.Identifier |
+      | manufacturingOrder     | MOP         | catchWeightFP           | 2          | testResource             | 2022-03-31T23:59:00.00Z | 2022-03-31T23:59:00.00Z | 2022-03-31T23:59:00.00Z | Y                | manufacturingProductPlanning          |
+    And after not more than 60s, PP_Order_BomLines are found
+      | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
+      | manufacturingBOMLine           | manufacturingOrder     | regularComponentProd    | 4            | false           | PCE               | CO            |
+    When complete planning for PP_Order:
+      | PP_Order_ID.Identifier |
+      | manufacturingOrder     |
+    And create JsonWFProcessStartRequest for manufacturing and store it in context as request payload:
+      | PP_Order_ID.Identifier |
+      | manufacturingOrder     |
+    And the metasfresh REST-API endpoint path 'api/v2/userWorkflows/wfProcess/start' receives a 'POST' request with the payload from context and responds with '200' status code
+    And process response and extract manufacturing line and receiving target values:
+      | WorkflowProcess.Identifier | WorkflowActivity.Identifier  | WorkflowLine.Identifier          | WorkflowReceivingTargetValues.Identifier |
+      | manufacturingWorkflow      | workflowManufacturingReceipt | workflowManufacturingReceiptLine | workflowReceivingTargetValues            |
+
+    ## No Lot submitted at all - neither the dedicated LotNo field nor a Lot-Nummer entry in the generic map.
+    And create JsonManufacturingOrderEvent and store it in context as request payload:
+      | Event       | WorkflowProcess.Identifier | WorkflowActivity.Identifier  | WorkflowLine.Identifier          | WorkflowReceivingTargetValues.Identifier |
+      | ReceiveFrom | manufacturingWorkflow      | workflowManufacturingReceipt | workflowManufacturingReceiptLine | workflowReceivingTargetValues            |
+    And the metasfresh REST-API endpoint path 'api/v2/manufacturing/event' receives a 'POST' request with the payload from context and responds with '200' status code
+
+    And validate I_PP_Order_Qty
+      | PP_Order_ID.Identifier | M_Product_ID.Identifier | Qty |
+      | manufacturingOrder     | catchWeightFP           | 2   |
+
+    And load manufactured HU for PP_Order:
+      | PP_Order_ID        | M_HU_ID     |
+      | manufacturingOrder | Produced_LU |
+
+    Then M_HU_Attribute is validated
+      | M_HU_ID     | M_Attribute_ID.Value | Value   |
+      | Produced_LU | Lot-Nummer           | 1000001 |
+
+    And AD_Sequence is validated
+      | AD_Sequence_ID.Identifier | CurrentNext |
+      | autoLotSequence           | 1000002     |
 
 # ######################################################################################################################
 # ######################################################################################################################

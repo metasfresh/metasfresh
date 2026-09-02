@@ -48,11 +48,13 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.warehouse.LocatorId;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
+import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
@@ -60,7 +62,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -96,10 +97,11 @@ public class ReceiveGoodsCommand
 	@Nullable private final String lotNo;
 	@Nullable private final Quantity catchWeight;
 	/**
-	 * Generic editable-attribute values submitted with the receive event, EXCLUDING Lot/Best-before/Production
-	 * date (those keep using their own dedicated fields above, routed to the {@link IPPOrderReceiptHUProducer}
-	 * setters so the auto-lot gate stays untouched). Applied post-creation onto every produced HU's attribute
-	 * storage, guarded by {@code hasAttribute} (see {@link #setSubmittedAttributesForReceivedHUs()}).
+	 * Generic editable-attribute values submitted with the receive event, with Lot/Best-before/Production date
+	 * already REMOVED (in the constructor) - those are producer-managed and routed to the
+	 * {@link IPPOrderReceiptHUProducer} setters via {@link #createHUProducer()} so the auto-lot gate and
+	 * creation-time timing stay untouched. Whatever remains here is applied post-creation onto every produced
+	 * HU's attribute storage, guarded by {@code hasAttribute} (see {@link #setSubmittedAttributesForReceivedHUs()}).
 	 */
 	@NonNull private final Map<AttributeCode, String> attributes;
 	@Nullable private final ScannedCode barcode;
@@ -157,14 +159,28 @@ public class ReceiveGoodsCommand
 		this.receivingTarget = receivingTarget;
 		this.qtyToReceiveBD = qtyToReceiveBD;
 		this.date = date;
-		this.bestBeforeDate = bestBeforeDate;
-		this.productionDate = productionDate;
-		this.lotNo = StringUtils.trimBlankToNull(lotNo);
 		this.catchWeight = catchWeight;
-		// plain HashMap copy - NOT ImmutableMap.copyOf: a submitted-but-empty attribute value is a null map
-		// value (see JsonManufacturingOrderEvent.ReceiveFrom#getAttributesAsMap), and ImmutableMap forbids
-		// null values.
-		this.attributes = attributes != null ? new HashMap<>(attributes) : Collections.emptyMap();
+
+		// Lot / Best-before / Production date are producer-managed: they MUST reach the
+		// IPPOrderReceiptHUProducer setters (see createHUProducer) so the auto-lot gate (blank Lot ->
+		// LotNo_Sequence fires; typed Lot -> sequence suppressed) and the creation-time attribute timing
+		// stay intact. The mobile frontend submits them through the generic `attributes` map, so pull them
+		// OUT of that map here and feed the dedicated fields below; a submitted map value wins over the
+		// deprecated dedicated ReceiveFrom field when both are present. Removing them from the map is the
+		// runtime-enforced exclusion that keeps setSubmittedAttributesForReceivedHUs from re-stamping them
+		// post-creation - a post-creation re-stamp would leave the producer seeing a blank Lot and wrongly
+		// consuming the sequence even though an explicit Lot was typed.
+		// NOTE: plain mutable HashMap - a submitted-but-empty attribute value is a null map value (see
+		// JsonManufacturingOrderEvent.ReceiveFrom#getAttributesAsMap), and ImmutableMap forbids null values.
+		final Map<AttributeCode, String> submittedAttributes = attributes != null ? new HashMap<>(attributes) : new HashMap<>();
+		final String lotNoFromAttributes = StringUtils.trimBlankToNull(submittedAttributes.remove(AttributeConstants.ATTR_LotNumber));
+		final String bestBeforeDateFromAttributes = StringUtils.trimBlankToNull(submittedAttributes.remove(AttributeConstants.ATTR_BestBeforeDate));
+		final String productionDateFromAttributes = StringUtils.trimBlankToNull(submittedAttributes.remove(AttributeConstants.ProductionDate));
+
+		this.lotNo = lotNoFromAttributes != null ? lotNoFromAttributes : StringUtils.trimBlankToNull(lotNo);
+		this.bestBeforeDate = bestBeforeDateFromAttributes != null ? TimeUtil.asLocalDate(bestBeforeDateFromAttributes) : bestBeforeDate;
+		this.productionDate = productionDateFromAttributes != null ? TimeUtil.asLocalDate(productionDateFromAttributes) : productionDate;
+		this.attributes = submittedAttributes;
 		this.barcode = barcode;
 		this.receiveUnitType = receiveUnitType != null ? receiveUnitType : ReceiveUnitType.CU;
 		this.tuPIItemProductIdForTUMode = tuPIItemProductIdForTUMode;
@@ -555,8 +571,8 @@ public class ReceiveGoodsCommand
 	}
 
 	/**
-	 * Applies the submitted generic editable-attribute values (Lot/Best-before/Production date excluded - those
-	 * go through {@link #createHUProducer()}'s setters) onto every HU of each produced top-level HU's hierarchy
+	 * Applies the submitted generic editable-attribute values (Lot/Best-before/Production date already removed
+	 * from the map in the constructor - those go through {@link #createHUProducer()}'s setters) onto every HU of each produced top-level HU's hierarchy
 	 * (LU -&gt; TU -&gt; CU), via {@link IHUAttributesBL#updateHUAttributeRecursive(HuId, HUAttributeUpdateRequest)}
 	 * - the same recursive-walk API {@code AbstractPPOrderReceiptHUProducer#updateReceivedHUs} uses. This matters
 	 * because on the default receive target (aggregate-to-LU), {@link #receivedHUs} holds only the newly-created
