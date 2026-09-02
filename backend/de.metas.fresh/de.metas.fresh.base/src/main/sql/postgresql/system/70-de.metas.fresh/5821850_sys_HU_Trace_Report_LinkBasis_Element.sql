@@ -15,7 +15,7 @@ INSERT INTO AD_Element (
     TO_TIMESTAMP('2026-09-02 10:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
     TO_TIMESTAMP('2026-09-02 10:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
     'Link_Basis', 'de.metas.handlingunits',
-    'Verknüpfung', 'Verknüpfung',
+    'Zuordnung', 'Zuordnung',
     'Gibt an, ob die Zuordnung von Wareneingang zu Warenausgang im Rückverfolgungsbericht nachgewiesen oder nur aus Los- bzw. Produktangaben geschätzt wurde.', NULL
 );
 

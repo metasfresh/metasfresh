@@ -41,7 +41,7 @@ Report 2_ Columns (only filled for Production Issue or Production Receipt):
 
 Additional columns:
 • Menge: The related receipt document''s total quantity for this product and lot.
-• Verknüpfung: States whether the receipt-to-shipment pairing is proven or only estimated. TRACED: proven from the handling units'' packaging/transformation history. LOT_CANDIDATE: not proven, only guessed from a matching lot number. PRODUCT_CANDIDATE: like LOT_CANDIDATE but without a lot number, guessed from the product alone.
+• Link basis: States whether the receipt-to-shipment pairing is proven or only estimated. TRACED: proven from the handling units'' packaging/transformation history. LOT_CANDIDATE: not proven, only guessed from a matching lot number. PRODUCT_CANDIDATE: like LOT_CANDIDATE but without a lot number, guessed from the product alone.
 
 Important note: Menge, 2_Menge and 2_Liefermenge are document totals and repeat on every row assigned to that document. If, for example, one receipt has several rows assigned to it (one per shipment it is paired with), its full quantity appears on each of those rows – so these columns must NOT be summed, or the quantity gets multiplied. To get the actual received or shipped quantity, de-duplicate by document first.',Updated=TO_TIMESTAMP('2026-09-02 12:00:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585253
 ;
@@ -86,7 +86,7 @@ Berichtsspalten (2_, nur ausgefüllt bei Produktionsentnahme oder Produktionswar
 
 Weitere Spalten:
 • Menge: Gesamtmenge des zugehörigen Wareneingangs-Belegs für dieses Produkt und diese Charge.
-• Verknüpfung: Gibt an, ob die Zuordnung von Wareneingang zu Warenausgang nachgewiesen oder nur geschätzt ist. TRACED: über die Verpackungs-/Umwandlungshistorie der Handling Units nachgewiesen. LOT_CANDIDATE: nicht nachgewiesen, sondern anhand einer übereinstimmenden Losnummer vermutet. PRODUCT_CANDIDATE: wie LOT_CANDIDATE, aber ohne Losnummer, nur anhand des Produkts vermutet.
+• Zuordnung: Gibt an, ob die Verbindung zwischen Wareneingang und Warenausgang nachgewiesen oder nur geschätzt ist. TRACED: über die Verpackungs-/Umwandlungshistorie der Handling Units nachgewiesen. LOT_CANDIDATE: nicht nachgewiesen, sondern anhand einer übereinstimmenden Losnummer vermutet. PRODUCT_CANDIDATE: wie LOT_CANDIDATE, aber ohne Losnummer, nur anhand des Produkts vermutet.
 
 Wichtiger Hinweis: Menge, 2_Menge und 2_Liefermenge sind Belegsummen und wiederholen sich auf jeder Zeile, die diesem Beleg zugeordnet ist. Ist z. B. ein Wareneingang mehreren Zeilen zugeordnet (je einer pro Warenausgang, dem er zugeordnet wurde), erscheint seine volle Menge auf jeder dieser Zeilen – die Spalten dürfen daher NICHT aufsummiert werden, sonst wird die Menge vervielfacht. Für die tatsächlich empfangene bzw. gelieferte Menge zuerst je Beleg deduplizieren.',Updated=TO_TIMESTAMP('2026-09-02 12:00:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585253
 ;
@@ -126,7 +126,7 @@ Berichtsspalten (2_, nur ausgefüllt bei Produktionsentnahme oder Produktionswar
 
 Weitere Spalten:
 • Menge: Gesamtmenge des zugehörigen Wareneingangs-Belegs für dieses Produkt und diese Charge.
-• Verknüpfung: Gibt an, ob die Zuordnung von Wareneingang zu Warenausgang nachgewiesen oder nur geschätzt ist. TRACED: über die Verpackungs-/Umwandlungshistorie der Handling Units nachgewiesen. LOT_CANDIDATE: nicht nachgewiesen, sondern anhand einer übereinstimmenden Losnummer vermutet. PRODUCT_CANDIDATE: wie LOT_CANDIDATE, aber ohne Losnummer, nur anhand des Produkts vermutet.
+• Zuordnung: Gibt an, ob die Verbindung zwischen Wareneingang und Warenausgang nachgewiesen oder nur geschätzt ist. TRACED: über die Verpackungs-/Umwandlungshistorie der Handling Units nachgewiesen. LOT_CANDIDATE: nicht nachgewiesen, sondern anhand einer übereinstimmenden Losnummer vermutet. PRODUCT_CANDIDATE: wie LOT_CANDIDATE, aber ohne Losnummer, nur anhand des Produkts vermutet.
 
 Wichtiger Hinweis: Menge, 2_Menge und 2_Liefermenge sind Belegsummen und wiederholen sich auf jeder Zeile, die diesem Beleg zugeordnet ist. Ist z. B. ein Wareneingang mehreren Zeilen zugeordnet (je einer pro Warenausgang, dem er zugeordnet wurde), erscheint seine volle Menge auf jeder dieser Zeilen – die Spalten dürfen daher NICHT aufsummiert werden, sonst wird die Menge vervielfacht. Für die tatsächlich empfangene bzw. gelieferte Menge zuerst je Beleg deduplizieren.',Updated=TO_TIMESTAMP('2026-09-02 12:00:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585253 AND AD_Language='de_DE'
 ;
