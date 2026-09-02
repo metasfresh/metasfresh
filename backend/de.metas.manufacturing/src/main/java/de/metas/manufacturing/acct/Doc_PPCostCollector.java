@@ -194,7 +194,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 				.setAccount(debit)
 				.setAmtSource(cost.getCurrencyId(), cost.toBigDecimal(), null)
 				.setQty(qty)
-				.alsoAddZeroLineIf(alsoAddZeroLine) // material receipt: keep the line even if BOTH cost and qty are zero
+				.alsoAddZeroLineIf(alsoAddZeroLine) // caller controls whether a zero-amount-and-zero-qty line is still posted
 				.additionalDescription(description)
 				.projectId(docLine.getC_Project_ID())
 				.activityId(docLine.getActivityId())
@@ -254,10 +254,11 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 					.roundToPrecisionIfNeeded(as.getStandardPrecision());
 			final CostAmount costsScrapped = costs.subtract(costsReceived);
 
-			// Received leg: always post when something was received, even at zero cost (e.g. a manufactured product
-			// freshly on Moving Average Invoice). The received qty must reach P_Asset — the Lagerwert report sums
+			// Received leg: post when something was received, even at zero cost (e.g. a manufactured product freshly
+			// on Moving Average Invoice). The received qty must reach P_Asset — the Lagerwert report sums
 			// Fact_Acct.qty on P_Asset, so dropping a zero-cost receipt line silently loses the received stock.
-			// alsoAddZeroLine=true so the line survives even should both cost AND qty ever be zero.
+			// alsoAddZeroLine=true is belt-and-suspenders here: the leg is already gated on a non-zero qty, so its
+			// line survives regardless; the flag only additionally keeps it should both cost AND qty ever be zero.
 			if (qtyReceived.signum() != 0)
 			{
 				final Account debit = docLine.getAccount(ProductAcctType.P_Asset_Acct, as);
@@ -270,6 +271,8 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 
 			// Scrap leg: post on qty OR cost — qty carries the scrapped stock into valuation, and cost still posts a
 			// sub-precision rounding remainder (the pre-fix behaviour) even when nothing was scrapped by qty.
+			// alsoAddZeroLine=true is belt-and-suspenders here too: the leg is already gated above, so its line
+			// survives regardless.
 			if (qtyScrapped.signum() != 0 || costsScrapped.signum() != 0)
 			{
 				final Account debit = docLine.getAccount(ProductAcctType.P_Scrap_Acct, as);
