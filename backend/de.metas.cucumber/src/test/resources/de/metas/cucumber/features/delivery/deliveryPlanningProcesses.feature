@@ -79,6 +79,10 @@ Feature: Delivery planning processes interaction
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | C_Order_ID | C_OrderLine_ID | C_BPartner_ID | M_Product_ID | C_BPartner_Location_ID | M_Shipper_ID | ETA        | M_ShipperTransportation_ID | PlannedLoadedQuantity |
       | deliveryPlanningAdd_1  | 5          | 5            | Outgoing           | orderAdd   | orderLineAdd   | customer      | product      | customerLocation       | shipper_DHL  | 2023-02-25 | deliveryInstructionAdd     | 5                     |
 
+    And update M_Delivery_Planning:
+      | M_Delivery_Planning_ID | PlannedLoadedQuantity |
+      | deliveryPlanningAdd_1  | 3                     |
+
     When generate 2 additional M_Delivery_Planning records for: deliveryPlanningAdd_1
 
     Then after not more than 30s, load created M_Delivery_Planning:
