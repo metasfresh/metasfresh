@@ -49,10 +49,10 @@ export const DistributionJobsListScreen = {
         return await test.step(`${NAME} Start job for testId "${launcherTestId}"`, async () => {
             for (let attempt = 1; attempt <= JOB_START_TAP_ATTEMPTS; attempt++) {
                 await page.getByTestId(launcherTestId).tap();
-                const arrived = await jobScreenElement()
+                const hasArrived = await jobScreenElement()
                     .waitFor({ state: 'attached', timeout: JOB_START_ARRIVAL_TIMEOUT })
                     .then(() => true, () => false);
-                if (arrived || attempt === JOB_START_TAP_ATTEMPTS) {
+                if (hasArrived || attempt === JOB_START_TAP_ATTEMPTS) {
                     break;
                 }
                 if ((await recoverToLauncherList({ applicationId: 'distribution' })) === 'unknown') {
