@@ -793,3 +793,130 @@ Feature: mobileUI Picking - Pick mixed lines
     Then M_HU_Attribute is validated
       | M_HU_ID     | M_Attribute_ID.Value | Value       |
       | Produced_LU | Lot-Nummer           | MapLot_wins |
+
+# ######################################################################################################################
+# ######################################################################################################################
+# ######################################################################################################################
+# ######################################################################################################################
+  @from:cucumber
+  @Id:S31771
+  Scenario: A Best-before date submitted in both the dedicated field and the generic map - the generic map value wins
+    ## Same precedence rule as the Lot scenario, for the HU_BestBeforeDate producer-managed code: the generic
+    ## map is the mobile frontend's channel; the dedicated ReceiveFrom.bestBeforeDate field is only a
+    ## backwards-compatible fallback for non-mobile callers. When a caller populates BOTH for the same code,
+    ## ReceiveGoodsCommand's coalesce takes the (non-blank) map value. Characterizes that precedence rule - NOT
+    ## a bug-discriminating test (both the pre- and post-fix paths would land the map value here, because the
+    ## dedicated field carries a non-blank date too); it pins the intended coalesce direction.
+    And metasfresh contains PP_Product_BOM
+      | Identifier       | M_Product_ID  | PP_Product_BOMVersions_ID |
+      | manufacturingBOM | catchWeightFP | manufacturingBOMVersion   |
+    And metasfresh contains PP_Product_BOMLines
+      | Identifier           | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | ValidFrom  | QtyBatch |
+      | manufacturingBOMLine | manufacturingBOM             | regularComponentProd    | 2021-01-02 | 2        |
+    And the PP_Product_BOM identified by manufacturingBOM is completed
+    And load AD_Workflow:
+      | AD_Workflow_ID.Identifier | Name                   |
+      | mobileWorkflow            | mobileUI_workflow_test |
+    And metasfresh contains PP_Product_Plannings
+      | Identifier                   | OPT.AD_Workflow_ID.Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
+      | manufacturingProductPlanning | mobileWorkflow                | catchWeightFP           | manufacturingBOMVersion                  | false        |
+    And create PP_Order:
+      | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument | OPT.PP_Product_Planning_ID.Identifier |
+      | manufacturingOrder     | MOP         | catchWeightFP           | 2          | testResource             | 2022-03-31T23:59:00.00Z | 2022-03-31T23:59:00.00Z | 2022-03-31T23:59:00.00Z | Y                | manufacturingProductPlanning          |
+    And after not more than 60s, PP_Order_BomLines are found
+      | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
+      | manufacturingBOMLine           | manufacturingOrder     | regularComponentProd    | 4            | false           | PCE               | CO            |
+    When complete planning for PP_Order:
+      | PP_Order_ID.Identifier |
+      | manufacturingOrder     |
+    And create JsonWFProcessStartRequest for manufacturing and store it in context as request payload:
+      | PP_Order_ID.Identifier |
+      | manufacturingOrder     |
+    And the metasfresh REST-API endpoint path 'api/v2/userWorkflows/wfProcess/start' receives a 'POST' request with the payload from context and responds with '200' status code
+    And process response and extract manufacturing line and receiving target values:
+      | WorkflowProcess.Identifier | WorkflowActivity.Identifier  | WorkflowLine.Identifier          | WorkflowReceivingTargetValues.Identifier |
+      | manufacturingWorkflow      | workflowManufacturingReceipt | workflowManufacturingReceiptLine | workflowReceivingTargetValues            |
+
+    ## HU_BestBeforeDate is a standard attribute (not created in this feature's Background), so load it into the
+    ## step-def data to reference it by identifier in the generic Attribute column.
+    And load M_Attribute:
+      | M_Attribute_ID.Identifier | Value             |
+      | bestBeforeDateAttr        | HU_BestBeforeDate |
+    ## Both the dedicated BestBeforeDate field (2025-03-03, lost) and a generic HU_BestBeforeDate map entry
+    ## (2025-09-09, wins) are submitted; the map value must be the one stamped on the produced HU.
+    And create JsonManufacturingOrderEvent and store it in context as request payload:
+      | Event       | BestBeforeDate | Attribute          | AttributeValue | WorkflowProcess.Identifier | WorkflowActivity.Identifier  | WorkflowLine.Identifier          | WorkflowReceivingTargetValues.Identifier |
+      | ReceiveFrom | 2025-03-03     | bestBeforeDateAttr | 2025-09-09     | manufacturingWorkflow      | workflowManufacturingReceipt | workflowManufacturingReceiptLine | workflowReceivingTargetValues            |
+    And the metasfresh REST-API endpoint path 'api/v2/manufacturing/event' receives a 'POST' request with the payload from context and responds with '200' status code
+
+    And load manufactured HU for PP_Order:
+      | PP_Order_ID        | M_HU_ID     |
+      | manufacturingOrder | Produced_LU |
+
+    Then M_HU_Attribute is validated
+      | M_HU_ID     | M_Attribute_ID.Value | ValueDate  |
+      | Produced_LU | HU_BestBeforeDate    | 2025-09-09 |
+
+# ######################################################################################################################
+# ######################################################################################################################
+# ######################################################################################################################
+# ######################################################################################################################
+  @from:cucumber
+  @Id:S31771
+  Scenario: A Production date submitted in both the dedicated field and the generic map - the generic map value wins
+    ## Same precedence rule as the Lot scenario, for the ProductionDate producer-managed code: the generic map
+    ## is the mobile frontend's channel; the dedicated ReceiveFrom.productionDate field is only a
+    ## backwards-compatible fallback for non-mobile callers. When a caller populates BOTH for the same code,
+    ## ReceiveGoodsCommand's coalesce takes the (non-blank) map value. Characterizes that precedence rule - NOT
+    ## a bug-discriminating test (both the pre- and post-fix paths would land the map value here, because the
+    ## dedicated field carries a non-blank date too); it pins the intended coalesce direction.
+    And metasfresh contains PP_Product_BOM
+      | Identifier       | M_Product_ID  | PP_Product_BOMVersions_ID |
+      | manufacturingBOM | catchWeightFP | manufacturingBOMVersion   |
+    And metasfresh contains PP_Product_BOMLines
+      | Identifier           | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | ValidFrom  | QtyBatch |
+      | manufacturingBOMLine | manufacturingBOM             | regularComponentProd    | 2021-01-02 | 2        |
+    And the PP_Product_BOM identified by manufacturingBOM is completed
+    And load AD_Workflow:
+      | AD_Workflow_ID.Identifier | Name                   |
+      | mobileWorkflow            | mobileUI_workflow_test |
+    And metasfresh contains PP_Product_Plannings
+      | Identifier                   | OPT.AD_Workflow_ID.Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
+      | manufacturingProductPlanning | mobileWorkflow                | catchWeightFP           | manufacturingBOMVersion                  | false        |
+    And create PP_Order:
+      | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument | OPT.PP_Product_Planning_ID.Identifier |
+      | manufacturingOrder     | MOP         | catchWeightFP           | 2          | testResource             | 2022-03-31T23:59:00.00Z | 2022-03-31T23:59:00.00Z | 2022-03-31T23:59:00.00Z | Y                | manufacturingProductPlanning          |
+    And after not more than 60s, PP_Order_BomLines are found
+      | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
+      | manufacturingBOMLine           | manufacturingOrder     | regularComponentProd    | 4            | false           | PCE               | CO            |
+    When complete planning for PP_Order:
+      | PP_Order_ID.Identifier |
+      | manufacturingOrder     |
+    And create JsonWFProcessStartRequest for manufacturing and store it in context as request payload:
+      | PP_Order_ID.Identifier |
+      | manufacturingOrder     |
+    And the metasfresh REST-API endpoint path 'api/v2/userWorkflows/wfProcess/start' receives a 'POST' request with the payload from context and responds with '200' status code
+    And process response and extract manufacturing line and receiving target values:
+      | WorkflowProcess.Identifier | WorkflowActivity.Identifier  | WorkflowLine.Identifier          | WorkflowReceivingTargetValues.Identifier |
+      | manufacturingWorkflow      | workflowManufacturingReceipt | workflowManufacturingReceiptLine | workflowReceivingTargetValues            |
+
+    ## ProductionDate is a standard attribute (not created in this feature's Background); load it into the
+    ## step-def data so it can be referenced by identifier in the generic Attribute column.
+    And load M_Attribute:
+      | M_Attribute_ID.Identifier | Value          |
+      | productionDateAttr        | ProductionDate |
+    ## ReceiveTo=TU: the TU is the material HU that carries ProductionDate storage (see Background - the LU's PI
+    ## has no ProductionDate). Both the dedicated ProductionDate field (2025-01-10, lost) and a generic
+    ## ProductionDate map entry (2025-11-20, wins) are submitted; the map value must be the one stamped.
+    And create JsonManufacturingOrderEvent and store it in context as request payload:
+      | Event       | ReceiveTo | ProductionDate | Attribute          | AttributeValue | WorkflowProcess.Identifier | WorkflowActivity.Identifier  | WorkflowLine.Identifier          | WorkflowReceivingTargetValues.Identifier |
+      | ReceiveFrom | TU        | 2025-01-10     | productionDateAttr | 2025-11-20     | manufacturingWorkflow      | workflowManufacturingReceipt | workflowManufacturingReceiptLine | workflowReceivingTargetValues            |
+    And the metasfresh REST-API endpoint path 'api/v2/manufacturing/event' receives a 'POST' request with the payload from context and responds with '200' status code
+
+    And load manufactured HU for PP_Order:
+      | PP_Order_ID        | M_HU_ID     |
+      | manufacturingOrder | Produced_TU |
+
+    Then M_HU_Attribute is validated
+      | M_HU_ID     | M_Attribute_ID.Value | ValueDate  |
+      | Produced_TU | ProductionDate       | 2025-11-20 |

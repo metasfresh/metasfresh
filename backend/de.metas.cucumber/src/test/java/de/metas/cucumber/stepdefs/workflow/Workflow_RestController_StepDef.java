@@ -202,6 +202,32 @@ public class Workflow_RestController_StepDef
 		}
 	}
 
+	/**
+	 * Builds a {@link JsonManufacturingOrderEvent} from a single-row DataTable and stores it as the context
+	 * request payload for a subsequent POST to {@code api/v2/manufacturing/event}.
+	 * <p>
+	 * Required columns (all events): {@code Event} ({@code IssueTo} or {@code ReceiveFrom}),
+	 * {@code WorkflowProcess} / {@code WorkflowActivity} (identifiers resolved via the workflow-process /
+	 * -activity tables).
+	 * <p>
+	 * {@code Event=IssueTo} — required: {@code WorkflowStep}, {@code WorkflowStepQRCode} (identifiers).
+	 * <p>
+	 * {@code Event=ReceiveFrom} — required: {@code WorkflowLine}, {@code WorkflowReceivingTargetValues}
+	 * (identifiers). Optional: {@code ReceiveTo} ({@code TU} receives straight into top-level TUs; default
+	 * aggregates to an LU), {@code CatchWeight} (e.g. {@code 0.5 KGM}), {@code BestBeforeDate},
+	 * {@code ProductionDate}, {@code LotNo} (the deprecated dedicated fields — a mobile caller instead submits
+	 * these through the generic map below), and one generic editable-attribute entry via {@code Attribute}
+	 * (identifier resolved via {@link de.metas.cucumber.stepdefs.attribute.M_Attribute_StepDefData}) +
+	 * {@code AttributeValue}. A present {@code Attribute} with an absent/blank {@code AttributeValue} submits a
+	 * null map value (proving an empty submission is not stamped, vs. no attribute submitted at all).
+	 * <p>
+	 * Example:
+	 * <pre>
+	 * And create JsonManufacturingOrderEvent and store it in context as request payload:
+	 *   | Event       | ReceiveTo | Attribute       | AttributeValue | WorkflowProcess.Identifier | WorkflowActivity.Identifier  | WorkflowLine.Identifier          | WorkflowReceivingTargetValues.Identifier |
+	 *   | ReceiveFrom | TU        | genericDateAttr | 2025-04-15     | manufacturingWorkflow      | workflowManufacturingReceipt | workflowManufacturingReceiptLine | workflowReceivingTargetValues            |
+	 * </pre>
+	 */
 	@And("create JsonManufacturingOrderEvent and store it in context as request payload:")
 	public void manufacturing_event_request_payload(@NonNull final DataTable dataTable)
 	{
@@ -243,6 +269,7 @@ public class Workflow_RestController_StepDef
 					.lineId(workflowLine.getId())
 					.qtyReceived(workflowLine.getQtyToReceive())
 					.bestBeforeDate(row.getAsOptionalString("BestBeforeDate").orElse(null))
+					.productionDate(row.getAsOptionalString("ProductionDate").orElse(null))
 					.catchWeight(catchWeight != null ? catchWeight.toBigDecimal() : null)
 					.catchWeightUomSymbol(catchWeight != null ? catchWeight.getUOMSymbol() : null)
 					.lotNo(row.getAsOptionalString("LotNo").orElse(null))
