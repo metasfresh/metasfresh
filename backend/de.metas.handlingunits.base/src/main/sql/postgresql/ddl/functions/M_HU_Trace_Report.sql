@@ -166,7 +166,8 @@ traced_pair AS (
 -- guard above rejected: such a pair does not match here either, so it is DROPPED rather than
 -- demoted to a candidate. Deliberate. A relabelling the data does not explain is not evidence of
 -- a product-level link, and admitting one would re-open the cartesian at product granularity --
--- every receipt of the product against every shipment of it -- which is the defect being fixed.
+-- every receipt of the product against every shipment of it -- the very failure these pairing
+-- rules exist to prevent.
 -- Silence is the honest answer; PRODUCT_CANDIDATE keeps its single meaning of "neither side
 -- carries a lot number".
 -- The GROUP BY carries the same row identity as traced_pair above.
