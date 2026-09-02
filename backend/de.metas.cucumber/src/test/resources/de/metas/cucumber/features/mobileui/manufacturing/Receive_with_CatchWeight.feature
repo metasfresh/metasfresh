@@ -20,12 +20,12 @@ Feature: mobileUI Picking - Pick mixed lines
     ## Map<AttributeCode, value> apply path (wired onto the produced HU's own PI below, see the
     ## M_HU_PI_Attribute note).
     And metasfresh contains M_Attributes:
-      | Identifier        | Value             | Name                 | AttributeValueType | OPT.IsMandatory |
-      | genericAttr       | GenericTestAttr   | Generic Test Attr    | N                   |                 |
-      | mandatoryAttr     | MandatoryTestAttr | Mandatory Test Attr  | N                   | Y               |
-      | genericDateAttr   | GenericDateAttr   | Generic Date Attr    | D                   |                 |
-      | genericListAttr   | GenericListAttr   | Generic List Attr    | L                   |                 |
-      | genericStringAttr | GenericStringAttr | Generic String Attr  | S                   |                 |
+      | Identifier        | Value             | Name                | AttributeValueType | OPT.IsMandatory |
+      | genericAttr       | GenericTestAttr   | Generic Test Attr   | N                  |                 |
+      | mandatoryAttr     | MandatoryTestAttr | Mandatory Test Attr | N                  | Y               |
+      | genericDateAttr   | GenericDateAttr   | Generic Date Attr   | D                  |                 |
+      | genericListAttr   | GenericListAttr   | Generic List Attr   | L                  |                 |
+      | genericStringAttr | GenericStringAttr | Generic String Attr | S                  |                 |
     And metasfresh contains M_AttributeValues:
       | Identifier           | M_Attribute_ID  | Value | Name | IsNullFieldValue |
       | genericListValueBlue | genericListAttr | Blue  | Blue | false            |
