@@ -930,8 +930,8 @@ Feature: mobileUI Picking - Pick mixed lines
   @from:cucumber
   @Id:S31771_TC4
   Scenario: Number, date and string attributes configured as editable are submitted together at receive and persisted
-    ## AC2: the operator's editable-attributes section on the mobile receive dialog is driven by the configured
-    ## list (Task 10's masterdata command), and submits every filled field in ONE receive - not one receive per
+    ## The operator's editable-attributes section on the mobile receive dialog is driven by the configured
+    ## list (the masterdata command), and submits every filled field in ONE receive - not one receive per
     ## field. This scenario drives that real path end to end: configure the list (number + date + string), then
     ## submit all three values through the generic attributes map in a single event (mirroring how the frontend
     ## posts its whole attributes section at once).

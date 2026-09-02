@@ -5,7 +5,7 @@
 @F8030
 Feature: mobileUI Manufacturing - configure the editable-attributes list via test masterdata
 
-  ## F31771 (Task 10): proves the MobileUI_MFG_Config_Attribute child table - which the frontend-testing
+  ## Proves the MobileUI_MFG_Config_Attribute child table - which the frontend-testing
   ## masterdata command (MobileConfigManufacturingCommand, used by Playwright's Backend.createMasterdata)
   ## writes through de.metas.manufacturing.config.MobileUIManufacturingConfigRepository - is also directly
   ## configurable from cucumber, via the equivalent step defs in this file.

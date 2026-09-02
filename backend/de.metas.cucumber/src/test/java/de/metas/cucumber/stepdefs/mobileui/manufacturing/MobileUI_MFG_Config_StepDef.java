@@ -46,7 +46,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Step definitions to configure/assert the global {@code MobileUI_MFG_Config_Attribute} editable-attribute list
- * (F31771 - see {@code de.metas.manufacturing.config.MobileUIManufacturingConfig#getEditableAttributeCodesInOrder()}).
+ * (see {@code de.metas.manufacturing.config.MobileUIManufacturingConfig#getEditableAttributeCodesInOrder()}).
  * <p>
  * {@code de.metas.cucumber} does not depend on {@code de.metas.manufacturing.rest-api}, so this step def writes
  * the {@code MobileUI_MFG_Config} / {@code MobileUI_MFG_Config_Attribute} records directly - the same pattern
@@ -83,11 +83,13 @@ public class MobileUI_MFG_Config_StepDef
 	@And("metasfresh has mobileUI manufacturing editable attributes:")
 	public void setEditableAttributes(@NonNull final DataTable dataTable)
 	{
+		// Mirror the production repository's find-and-reactivate lookup (no active filter, then force IsActive)
+		// so an existing-but-inactive global config row is reactivated rather than duplicated.
 		final I_MobileUI_MFG_Config config = queryBL.createQueryBuilder(I_MobileUI_MFG_Config.class)
-				.addOnlyActiveRecordsFilter()
 				.create()
 				.firstOnlyOptional(I_MobileUI_MFG_Config.class)
 				.orElseGet(() -> InterfaceWrapperHelper.newInstance(I_MobileUI_MFG_Config.class));
+		config.setIsActive(true);
 		InterfaceWrapperHelper.save(config);
 
 		final List<I_MobileUI_MFG_Config_Attribute> existingRows = queryBL.createQueryBuilder(I_MobileUI_MFG_Config_Attribute.class)

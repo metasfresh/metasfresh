@@ -2,6 +2,7 @@ package de.metas.manufacturing.config;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.user.UserId;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.mm.attributes.AttributeCode;
@@ -214,7 +215,7 @@ class MobileUIManufacturingConfigRepositoryTest
 	@Nested
 	class saveGlobalEditableAttributeCodesInOrder
 	{
-		private final IQueryBL queryBL = de.metas.util.Services.get(IQueryBL.class);
+		private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		private List<I_MobileUI_MFG_Config_Attribute> retrieveActiveChildRowsOrdered()
 		{

@@ -42,7 +42,7 @@ public class JsonCreateAttributeRequest
 	 * default) when omitted. Must be {@code true} for the attribute to be offered by the mobile
 	 * Manufacturing receive's generic editable-attribute list - see
 	 * {@code MaterialReceiptActivityHandler#buildEditableAttributes}, which reads only
-	 * {@code IAttributeDAO#retrieveAttributes(attributeSetId, isInstanceAttribute=true)} (AC10).
+	 * {@code IAttributeDAO#retrieveAttributes(attributeSetId, isInstanceAttribute=true)}.
 	 */
 	@Nullable Boolean isInstanceAttribute;
 
