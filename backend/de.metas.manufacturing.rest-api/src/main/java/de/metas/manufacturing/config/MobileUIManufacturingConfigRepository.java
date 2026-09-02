@@ -232,7 +232,13 @@ public class MobileUIManufacturingConfigRepository
 		for (final AttributeCode attributeCode : attributeCodesInOrder)
 		{
 			final AttributeId attributeId = attributeDAO.getAttributeIdByCode(attributeCode);
-			keptAttributeIds.add(attributeId);
+			if (!keptAttributeIds.add(attributeId))
+			{
+				// duplicate attribute code in the same call - keep the first occurrence's row/SeqNo, don't
+				// create a second active row for the same attribute (existingByAttributeId is a fixed snapshot
+				// and would not see the row just created/saved for the first occurrence).
+				continue;
+			}
 
 			final I_MobileUI_MFG_Config_Attribute childRecord = existingByAttributeId.getOrDefault(
 					attributeId,

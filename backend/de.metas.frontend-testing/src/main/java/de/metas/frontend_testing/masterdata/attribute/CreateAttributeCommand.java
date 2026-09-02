@@ -69,7 +69,14 @@ public class CreateAttributeCommand
 		record.setValue(value);
 		final String name = StringUtils.trimBlankToNull(request.getName());
 		record.setName(name != null ? name : value);
-		record.setAttributeValueType(resolveAttributeValueType(request.getAttributeValueType()).getCode());
+		// Only set on a NEW record (defaulting to STRING) or when explicitly requested - upserting an existing
+		// attribute (e.g. a shared fixture referenced by Value across scenarios) with an omitted type must NOT
+		// silently downgrade it back to STRING, matching how the sibling isMandatory/isStorageRelevant fields
+		// below are guarded.
+		if (existing == null || request.getAttributeValueType() != null)
+		{
+			record.setAttributeValueType(resolveAttributeValueType(request.getAttributeValueType()).getCode());
+		}
 
 		if (request.getIsMandatory() != null)
 		{
@@ -141,6 +148,11 @@ public class CreateAttributeCommand
 				.firstOnly(I_M_AttributeUse.class);
 		if (existing != null)
 		{
+			if (!existing.isActive())
+			{
+				existing.setIsActive(true);
+				InterfaceWrapperHelper.saveRecord(existing);
+			}
 			return;
 		}
 
