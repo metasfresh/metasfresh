@@ -30,6 +30,12 @@ let afterTap = {};
 let tapped = [];
 
 const fakePage = {
+    // setCurrentPage attaches a console recorder to whatever page it is given (see
+    // tests/utils/common.js startConsoleRecorder), so a page that cannot register a listener makes
+    // every test in this file throw in beforeEach, before its body runs. Inert is enough: nothing
+    // here asserts on console output.
+    on: () => {},
+    off: () => {},
     locator: (selector) => ({
         waitFor: async () => {
             if (!attached[selector]) {
