@@ -94,7 +94,7 @@ public class M_HU_Trace_Report_StepDef
 {
 	private final M_Product_StepDefData productTable;
 
-	private final HUTraceRepository huTraceRepository = SpringContextHolder.instance.getBean(HUTraceRepository.class);
+	@NonNull private final HUTraceRepository huTraceRepository = SpringContextHolder.instance.getBean(HUTraceRepository.class);
 
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -220,7 +220,7 @@ public class M_HU_Trace_Report_StepDef
 	private void deleteExistingHuTraceRows(@NonNull final ProductId productId)
 	{
 		queryBL.createQueryBuilder(I_M_HU_Trace.class)
-				.addEqualsFilter(I_M_HU_Trace.COLUMNNAME_M_Product_ID, productId.getRepoId())
+				.addEqualsFilter(I_M_HU_Trace.COLUMNNAME_M_Product_ID, productId)
 				.create()
 				.delete();
 	}
@@ -376,16 +376,19 @@ public class M_HU_Trace_Report_StepDef
 	/**
 	 * Bug B test setup: creates MATERIAL_RECEIPT + MATERIAL_SHIPMENT traces with lotnumber=NULL.
 	 *
-	 * <p>The DIRECT_SALE_DETAIL section of M_HU_Trace_Report uses:
+	 * <p>What keeps this pair reportable is the lot condition of the DIRECT_SALE_DETAIL section's
+	 * candidate branch:
 	 * <pre>
-	 * LEFT JOIN M_HU_Trace shipment_trace ON
-	 *     shipment_trace.lotnumber IS NOT DISTINCT FROM t.lotnumber   -- Bug B fix
-	 *     AND shipment_trace.m_product_id = t.m_product_id
-	 *     AND shipment_trace.hutracetype = 'MATERIAL_SHIPMENT'
+	 * FROM receipt_trace r
+	 * JOIN shipment_trace_sel st
+	 *        ON st.M_Product_ID = r.M_Product_ID
+	 *       AND st.LotNumber IS NOT DISTINCT FROM r.LotNumber
 	 * </pre>
-	 * Before the fix ({@code =} instead of {@code IS NOT DISTINCT FROM}), NULL=NULL evaluated
-	 * to false, so the shipment_trace was never found, and the INNER JOIN on M_Product
-	 * eliminated the row entirely.
+	 * {@code IS NOT DISTINCT FROM} makes two NULL lots agree, so the pair reaches
+	 * {@code candidate_pair} and is emitted with {@code link_basis = 'PRODUCT_CANDIDATE'}.
+	 *
+	 * <p>Historically this was a plain {@code =}: NULL=NULL evaluated to false, the shipment side
+	 * was never found, and the INNER JOIN on M_Product eliminated the row entirely.
 	 */
 	private void setupDirectSaleNullLot(@NonNull final String scenarioName, @NonNull final ProductId productId)
 	{
