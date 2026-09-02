@@ -209,7 +209,7 @@ public class DeliveryPlanningRepository
 	 */
 	static boolean hasOwnShipment(@NonNull final TransportDirection transportDirection)
 	{
-		return transportDirection.hasShipment() && !transportDirection.isDropship();
+		return transportDirection.isOutbound() && !transportDirection.isDropship();
 	}
 
 	public Optional<DeliveryPlanningReceiptInfo> getReceiptInfoIfHasReceipt(@NonNull final DeliveryPlanningId deliveryPlanningId)

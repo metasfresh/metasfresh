@@ -94,4 +94,28 @@ class TransportDirectionTest
 		assertThat(TransportDirection.Outgoing.isDropship()).isFalse();
 		assertThat(TransportDirection.Dropship.isDropship()).isTrue();
 	}
+
+	/**
+	 * The direction fact behind {@link TransportDirection#hasReceipt()}: true for {@link TransportDirection#Incoming}
+	 * and {@link TransportDirection#Dropship}.
+	 */
+	@Test
+	void isInbound()
+	{
+		assertThat(TransportDirection.Incoming.isInbound()).isTrue();
+		assertThat(TransportDirection.Outgoing.isInbound()).isFalse();
+		assertThat(TransportDirection.Dropship.isInbound()).isTrue();
+	}
+
+	/**
+	 * The direction fact behind {@link TransportDirection#hasShipment()}: true for {@link TransportDirection#Outgoing}
+	 * and {@link TransportDirection#Dropship}.
+	 */
+	@Test
+	void isOutbound()
+	{
+		assertThat(TransportDirection.Incoming.isOutbound()).isFalse();
+		assertThat(TransportDirection.Outgoing.isOutbound()).isTrue();
+		assertThat(TransportDirection.Dropship.isOutbound()).isTrue();
+	}
 }
