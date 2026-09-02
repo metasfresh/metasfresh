@@ -26,20 +26,30 @@ import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
+import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
+import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
+import de.metas.printing.PrintOutputFacade;
+import de.metas.printing.api.IPrintingQueueBL;
+import de.metas.printing.api.impl.PrintArchiveParameters;
+import de.metas.printing.model.I_AD_Archive;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.archive.ArchiveId;
+import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_M_InOut;
 
 import java.util.Map;
 
@@ -54,22 +64,29 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class C_Doc_Outbound_Log_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IDocOutboundDAO docOutboundDAO = Services.get(IDocOutboundDAO.class);
+	private final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
+	private final IPrintingQueueBL printingQueueBL = Services.get(IPrintingQueueBL.class);
+	private final PrintOutputFacade printOutputFacade = SpringContextHolder.instance.getBean(PrintOutputFacade.class);
 
 	private final C_Doc_Outbound_Log_StepDefData docOutboundLogTable;
 	private final C_Doc_Outbound_Log_Line_StepDefData docOutboundLogLineTable;
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_Order_StepDefData orderTable;
+	private final M_InOut_StepDefData inOutTable;
 
 	public C_Doc_Outbound_Log_StepDef(
 			@NonNull final C_Doc_Outbound_Log_StepDefData docOutboundLogTable,
 			@NonNull final C_Doc_Outbound_Log_Line_StepDefData docOutboundLogLineTable,
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
-			@NonNull final C_Order_StepDefData orderTable)
+			@NonNull final C_Order_StepDefData orderTable,
+			@NonNull final M_InOut_StepDefData inOutTable)
 	{
 		this.docOutboundLogTable = docOutboundLogTable;
 		this.docOutboundLogLineTable = docOutboundLogLineTable;
 		this.bpartnerTable = bpartnerTable;
 		this.orderTable = orderTable;
+		this.inOutTable = inOutTable;
 	}
 
 	@And("^after not more than (.*)s validate C_Doc_Outbound_Log:$")
@@ -168,12 +185,62 @@ public class C_Doc_Outbound_Log_StepDef
 
 			return TableRecordReference.of(order);
 		}
+		else if (I_M_InOut.Table_Name.equals(tableName))
+		{
+			final I_M_InOut inout = inOutTable.get(recordIdentifier);
+			assertThat(inout).isNotNull();
+
+			return TableRecordReference.of(inout);
+		}
 		else
 		{
 			throw new AdempiereException("Unhandled tableName")
 					.appendParametersToMessage()
 					.setParameter("TableName", tableName);
 		}
+	}
+
+	/**
+	 * Mirrors a manual "reprint" action on a {@code C_Doc_Outbound_Log} record (e.g. from the Outgoing Documents
+	 * window) at the level of the printing-queue gate: it (re-)asks {@link IPrintingQueueBL#printArchive} whether a
+	 * {@code C_Printing_Queue} item should be created for the underlying {@code AD_Archive}, using the same
+	 * enqueue-only parameters the {@code AD_Archive} model validator's automatic auto-print trigger uses (see
+	 * {@code de.metas.printing.model.validator.AD_Archive#printArchive}). The archive is loaded fresh from the DB
+	 * -- as any manual reprint action would -- so it never carries the transient suppress-auto-print attribute
+	 * that only lives on the in-memory instance that originally created the archive: this is what proves a
+	 * (re-)enqueue attempt is never permanently suppressed, drop-ship or not.
+	 * <p>
+	 * dev-note: deliberately does NOT invoke the real {@code C_Doc_Outbound_Log_PrintSelected} process (the actual
+	 * "Print" button), because that process also forces the downstream physical-print job to run synchronously --
+	 * a different, unrelated concern (print-dispatch / printer-hardware routing) that needs its own test setup and
+	 * is out of scope for a printing-queue-gate check.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And the doc outbound log identified by shipmentOutboundLog is reprinted
+	 * </pre>
+	 */
+	@And("the doc outbound log identified by {string} is reprinted")
+	public void the_doc_outbound_log_is_reprinted(@NonNull final String docOutboundLogIdentifier)
+	{
+		final I_C_Doc_Outbound_Log docOutboundLog = docOutboundLogTable.get(docOutboundLogIdentifier);
+		assertThat(docOutboundLog).isNotNull();
+
+		final I_C_Doc_Outbound_Log_Line logLine = docOutboundDAO.retrieveCurrentPDFArchiveLogLineOrNull(docOutboundLog);
+		assertThat(logLine).isNotNull();
+		assertThat(logLine.getAD_Archive_ID()).isGreaterThan(0);
+
+		final I_AD_Archive archive = archiveDAO.retrieveArchive(ArchiveId.ofRepoId(logLine.getAD_Archive_ID()), I_AD_Archive.class);
+		assertThat(archive).isNotNull();
+
+		final PrintArchiveParameters printArchiveParameters = PrintArchiveParameters.builder()
+				.archive(archive)
+				.printOutputFacade(printOutputFacade)
+				.enforceEnqueueToPrintQueue(false)
+				.build();
+
+		printingQueueBL.printArchive(printArchiveParameters);
 	}
 
 	private boolean retrieveDocOutboundLog(@NonNull final Map<String, String> row)
