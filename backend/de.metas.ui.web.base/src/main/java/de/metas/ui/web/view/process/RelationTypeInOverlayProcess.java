@@ -34,6 +34,7 @@ import de.metas.document.references.related_documents.RelatedDocumentsCandidateG
 import de.metas.document.references.related_documents.RelatedDocumentsId;
 import de.metas.document.references.related_documents.relation_type.RelationTypeId;
 import de.metas.document.references.related_documents.relation_type.RelationTypeRelatedDocumentsProvidersFactory;
+import de.metas.i18n.IMsgBL;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -52,7 +53,6 @@ import de.metas.ui.web.view.ViewsRepository;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.i18n.IMsgBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -100,6 +100,7 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 	@NonNull private final RelationTypeRelatedDocumentsProvidersFactory relationTypeProvidersFactory;
 	@NonNull private final IViewsRepository viewsRepo;
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	public RelationTypeInOverlayProcess()
 	{
@@ -426,10 +427,10 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 	 * {@code coalesce(msgBL.getErrorCode(key), key.toAD_Message())} — matching only the second branch would silently stop
 	 * recognising the error the day someone sets an {@code ErrorCode} on the AD_Message.
 	 */
-	private static boolean isNoRelatedDocsFoundError(@NonNull final AdempiereException ex)
+	private boolean isNoRelatedDocsFoundError(@NonNull final AdempiereException ex)
 	{
 		final String expectedErrorCode = CoalesceUtil.coalesce(
-				Services.get(IMsgBL.class).getErrorCode(MSG_NO_RELATED_DOCS_FOUND),
+				msgBL.getErrorCode(MSG_NO_RELATED_DOCS_FOUND),
 				MSG_NO_RELATED_DOCS_FOUND.toAD_Message());
 		return expectedErrorCode.equals(ex.getErrorCode());
 	}

@@ -188,7 +188,7 @@ async function createIncludedRecord(page, windowId, recordId, detailId, fields) 
   return rowId;
 }
 
-test.describe('Material Cockpit v2 — Sprung zu Prognose with no matching forecast (TC4)', () => {
+test.describe('Material Cockpit v2 — Sprung zu Prognose with no matching forecast', () => {
   test('no forecast: acknowledge dialog is shown once and is dismissible', async ({ page }) => {
     allure.epic('E0300: Planning');
     allure.tag('F19011: Material Cockpit v2');
@@ -272,8 +272,14 @@ correction happens after the click: an empty result must read as information, no
     });
 
     // No error toast should have accompanied the dialog — the fix's whole point is that this reads
-    // as information, not as a system error.
-    await expect(page.locator('.rrt-error, .notification-error')).toHaveCount(0);
+    // as information, not as a system error. Notification.js renders classnames('notification-item',
+    // { [notifType]: notifType }), so an error toast is two space-separated classes
+    // "notification-item error", nested under NotificationHandler's ".notification-handler" wrapper —
+    // there is no react-redux-toastr (".rrt-error") in this frontend and no single ".notification-error"
+    // class, so the old selector matched nothing and could never fail.
+    await expect(
+      page.locator('.notification-handler .notification-item.error')
+    ).toHaveCount(0);
   });
 
   test('forecast exists: the jump still opens the forecast overlay, no acknowledge dialog', async ({ page }) => {
