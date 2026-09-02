@@ -64,6 +64,33 @@ export const GetQuantityDialog = {
         await expect(page.getByTestId('bestBeforeDate')).not.toBeVisible();
     }),
 
+    // ---------------------------------------------------------------------------------------------
+    // Generic editable-attributes section (EditableAttributesSection). Used by the mfg receive dialog,
+    // where Lot / Best-before / any configured attribute render as attr-<code>-field inside
+    // editable-attributes-section - NOT via the picking-only dedicated lotNo/bestBeforeDate rows above.
+    // <code> is the raw M_Attribute code (e.g. 'Lot-Nummer', 'HU_BestBeforeDate').
+    // ---------------------------------------------------------------------------------------------
+    expectEditableAttributeVisible: async (code) => await test.step(`${NAME} - Expect editable attribute '${code}' visible`, async () => {
+        await expect(page.getByTestId(`attr-${code}-field`)).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    expectEditableAttributeNotVisible: async (code) => await test.step(`${NAME} - Expect editable attribute '${code}' not visible`, async () => {
+        await expect(page.getByTestId(`attr-${code}-field`)).not.toBeVisible();
+    }),
+
+    typeEditableAttribute: async (code, value) => await test.step(`${NAME} - Type editable attribute '${code}' = '${value}'`, async () => {
+        const field = page.getByTestId(`attr-${code}-field`);
+        await clickAndType(field, value);
+    }),
+
+    // Date-type editable attribute (renders the DateInput component). Same DD.MM.YYYY display-format
+    // contract as the dedicated best-before field; fill() sets the whole value in one event.
+    typeEditableAttributeDate: async (code, value) => await test.step(`${NAME} - Type editable date attribute '${code}' = '${value}'`, async () => {
+        const field = page.getByTestId(`attr-${code}-field`);
+        await field.tap();
+        await field.fill(value);
+    }),
+
     expectSerialNoScanButtonVisible: async () => await test.step(`${NAME} - Expect SerialNo scan button visible`, async () => {
         await expect(page.getByTestId('serialNo-scan-button')).toBeVisible();
     }),
