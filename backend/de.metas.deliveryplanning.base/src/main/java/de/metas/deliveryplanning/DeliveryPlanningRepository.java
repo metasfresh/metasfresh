@@ -56,15 +56,16 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.ISqlQueryUpdater;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Delivery_Planning;
 import org.compiere.model.I_M_Delivery_Planning_Alloc;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.X_M_Delivery_Planning;
 import org.compiere.util.TimeUtil;
@@ -79,6 +80,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -767,6 +769,18 @@ public class DeliveryPlanningRepository
 	 * Shared by both {@code deactivateAllocations} overloads, and the single choke point every path that ends an
 	 * allocation's active life routes through - which is why {@code DateRemoved} is stamped here and nowhere
 	 * else. Both entry queries select ACTIVE allocations only, so the stamp is written once per allocation.
+	 * <p>
+	 * Cost note: each row's {@code saveRecord(allocRecord)} below fires the {@code M_Delivery_Planning_Alloc}
+	 * interceptor individually, so deactivating N allocations here costs N {@code IsAllocated} {@code UPDATE}s
+	 * (via {@link #refreshIsAllocated(DeliveryPlanningId)}) - e.g. voiding one delivery instruction that
+	 * carries N plannings. Not batched into one {@code UPDATE ... WHERE id IN (...)} in this round: doing so
+	 * would mean either re-introducing an inline call here (defeating the interceptor's structural guarantee -
+	 * a future write path outside this loop would again need to remember it) or adding a transaction-scoped
+	 * collector that accumulates touched planning ids and flushes one batched statement at commit. The latter
+	 * is a real option if N grows large in practice, but it is a caching-like layer with its own correctness
+	 * questions (multiple accumulate-then-flush cycles per transaction, ordering against other readers of
+	 * {@code IsAllocated} mid-transaction) that deserves its own deliberate decision, not one folded into this
+	 * correctness fix.
 	 */
 	private DeactivatedAllocations deactivateAllocationRecords(
 			@NonNull final List<I_M_Delivery_Planning_Alloc> allocRecords,
@@ -808,36 +822,52 @@ public class DeliveryPlanningRepository
 	 * AFTER_DELETE) - the single place that re-derives and writes the {@code IsAllocated} mirror, so every
 	 * writer of the allocation table keeps it correct automatically, including one that does not exist yet.
 	 * <p>
-	 * Re-derives from {@link #hasActiveAllocation(DeliveryPlanningId)} rather than trusting the caller's event
-	 * type: that query reads {@code M_Delivery_Planning_Alloc} directly (never {@code I_M_Delivery_Planning}),
-	 * so it adds no {@link #getById(DeliveryPlanningId)} / {@link #getByIds(Collection)} round trip - both are
+	 * ONE SQL {@code UPDATE} per call, with the {@code EXISTS} check folded directly into that statement's
+	 * {@code SET} clause (via {@link IsAllocatedFromAllocTableUpdater} below) - deliberately not a separate
+	 * {@link #hasActiveAllocation(DeliveryPlanningId)} {@code SELECT} followed by a second {@code UPDATE}.
+	 * Neither statement loads a {@code I_M_Delivery_Planning} row, so this adds no
+	 * {@link #getById(DeliveryPlanningId)} / {@link #getByIds(Collection)} round trip - both are
 	 * batch-load-discipline-tested elsewhere (see {@code DeliveryPlanningBatchLoadingTest}).
+	 * <p>
+	 * Still ONE statement PER PLANNING ID, not batched across several: {@link #deactivateAllocationRecords}
+	 * calls this once per row inside its loop (one {@code saveRecord} per allocation fires the interceptor
+	 * once), so voiding an instruction that carries N plannings costs N {@code UPDATE}s here - see that
+	 * method's own note on why this round does not turn that into a transaction-scoped batch.
 	 */
 	public void refreshIsAllocated(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
-		markIsAllocated(ImmutableList.of(deliveryPlanningId), hasActiveAllocation(deliveryPlanningId));
+		queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
+				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningId)
+				.create()
+				.updateDirectly(new IsAllocatedFromAllocTableUpdater());
 	}
 
 	/**
-	 * Sets the stored {@code IsAllocated} mirror for the given plannings via a direct SQL {@code UPDATE} - never
-	 * loading the rows first, so this never shows up as an extra {@link #getById(DeliveryPlanningId)} /
-	 * {@link #getByIds(Collection)} round trip. Safe to call with an id that has no matching row - the
-	 * {@code WHERE} filter then simply matches nothing.
+	 * Sets {@code IsAllocated} from the same {@code EXISTS} the column's old {@code ColumnSQL} evaluated
+	 * (5821150), computed in the {@code UPDATE}'s own {@code SET} clause rather than pre-fetched - an
+	 * {@link ISqlQueryUpdater}, so {@link IQuery#updateDirectly} issues one raw SQL {@code UPDATE} and never
+	 * calls {@link #update(I_M_Delivery_Planning)} (the load-and-save fallback for a non-SQL query engine,
+	 * kept correct but never exercised against Postgres).
 	 */
-	private void markIsAllocated(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds, final boolean allocated)
+	private final class IsAllocatedFromAllocTableUpdater implements ISqlQueryUpdater<I_M_Delivery_Planning>
 	{
-		if (deliveryPlanningIds.isEmpty())
+		@Override
+		public String getSql(final Properties ctx, final List<Object> sqlParams)
 		{
-			return;
+			return I_M_Delivery_Planning.COLUMNNAME_IsAllocated
+					+ " = (case when exists (select 1 from " + I_M_Delivery_Planning_Alloc.Table_Name
+					+ " a where a." + I_M_Delivery_Planning_Alloc.COLUMNNAME_M_Delivery_Planning_ID
+					+ " = " + I_M_Delivery_Planning.Table_Name + "." + I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID
+					+ " and a." + I_M_Delivery_Planning_Alloc.COLUMNNAME_IsActive + " = 'Y') then 'Y' else 'N' end)";
 		}
 
-		final ICompositeQueryUpdater<I_M_Delivery_Planning> updater = queryBL.createCompositeQueryUpdater(I_M_Delivery_Planning.class)
-				.addSetColumnValue(I_M_Delivery_Planning.COLUMNNAME_IsAllocated, allocated);
-
-		queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
-				.addInArrayFilter(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningIds)
-				.create()
-				.updateDirectly(updater);
+		@Override
+		public boolean update(final I_M_Delivery_Planning deliveryPlanningRecord)
+		{
+			final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoId(deliveryPlanningRecord.getM_Delivery_Planning_ID());
+			deliveryPlanningRecord.setIsAllocated(hasActiveAllocation(deliveryPlanningId));
+			return true;
+		}
 	}
 
 	/**
