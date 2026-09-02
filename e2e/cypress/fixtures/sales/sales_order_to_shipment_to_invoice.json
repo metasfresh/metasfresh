@@ -1,9 +1,0 @@
-{
-  "customer": "CustomerTest",
-  "productName": "ProductTest",
-  "productCategoryName": "ProductCategoryName",
-  "discountSchemaName": "DiscountSchemaTest",
-  "priceSystemName": "PriceSystem",
-  "priceListName": "PriceList",
-  "priceListVersionName": "PriceListVersion"
-}

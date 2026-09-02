@@ -123,7 +123,12 @@ public class C_Invoice_Candidate
 			return; // nothing to do
 		}
 
-		final TableRecordReference tableRecordReference = TableRecordReference.ofReferenced(invoiceCand);
+		final TableRecordReference tableRecordReference = TableRecordReference.ofReferencedOrNull(invoiceCand);
+		if(tableRecordReference == null)
+		{
+			return;
+		}
+
 		if (I_C_Flatrate_DataEntry.Table_Name.equals(tableRecordReference.getTableName()))
 		{
 			final I_C_Flatrate_DataEntry entryRecord = tableRecordReference.getModel(I_C_Flatrate_DataEntry.class);

@@ -91,7 +91,7 @@ public class MaterialCockpitRowFactory
 		Adempiere.assertUnitTestMode();
 		return new MaterialCockpitRowFactory(
 				rowLookups,
-				ResourceService.newInstanceForJUnitTesting(),
+				ResourceService.newInstanceForUnitTesting(),
 				ProductRepository.newInstanceForUnitTesting(),
 				WarehouseRepository.newInstanceForUnitTesting(),
                 ADReferenceService.get(),

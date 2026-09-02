@@ -38,6 +38,7 @@ import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Properties;
 
@@ -46,7 +47,7 @@ import java.util.Properties;
  */
 public final class POZoomSource implements IZoomSource
 {
-	public static POZoomSource of(final PO po, final AdWindowId adWindowId)
+	public static POZoomSource of(final PO po, @Nullable final AdWindowId adWindowId)
 	{
 		return new POZoomSource(po, adWindowId);
 	}
@@ -64,7 +65,7 @@ public final class POZoomSource implements IZoomSource
 	@Getter
 	private final boolean genericZoomOrigin;
 
-	private POZoomSource(@NonNull final PO po, final AdWindowId adWindowId)
+	private POZoomSource(@NonNull final PO po, @Nullable final AdWindowId adWindowId)
 	{
 		this.po = po;
 		this.adWindowId = adWindowId;
@@ -79,6 +80,7 @@ public final class POZoomSource implements IZoomSource
 	 * @return the name of a key column that is also flagged as GenericZoomOrigin and {@code true},if there is exactly one such column.<br>
 	 * Otherwise it returns {@code null} and {@code false}.
 	 */
+	@Nullable
 	private static IPair<String, Boolean> extractKeyColumnNameOrNull(@NonNull final PO po)
 	{
 		final String[] keyColumnNamesArr = po.get_KeyColumns();
@@ -90,7 +92,7 @@ public final class POZoomSource implements IZoomSource
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
 		final ArrayList<String> eligibleKeyColumnNames = new ArrayList<>();
-		for (String element : keyColumnNamesArr)
+		for (final String element : keyColumnNamesArr)
 		{
 			final MinimalColumnInfo column = adTableDAO.getMinimalColumnInfo(po.get_TableName(), element);
 			if (column.isGenericZoomOrigin())
@@ -149,6 +151,12 @@ public final class POZoomSource implements IZoomSource
 	public int getRecord_ID()
 	{
 		return po.get_ID();
+	}
+
+	@Override
+	public boolean isSingleKeyRecord()
+	{
+		return keyColumnName != null;
 	}
 
 	@Override

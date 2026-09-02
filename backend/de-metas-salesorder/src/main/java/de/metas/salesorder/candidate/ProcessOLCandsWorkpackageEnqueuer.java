@@ -2,7 +2,7 @@
  * #%L
  * de-metas-salesorder
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -46,7 +46,7 @@ public class ProcessOLCandsWorkpackageEnqueuer
 		workPackageQueueFactory.getQueueForEnqueuing(getCtx(), ProcessOLCandsWorkpackageProcessor.class)
 				.newWorkPackage()
 				.bindToThreadInheritedTrx()
-				.setC_Async_Batch_ID(processOLCandsBatchId)
+				.setAsyncBatchId(processOLCandsBatchId)
 				.parameter(WP_PARAM_VALID_OLCANDIDS_SELECTIONID, request.getPInstanceId())
 				.parameter(WP_PARAM_SHIP, request.isShip())
 				.parameter(WP_PARAM_INVOICE, request.isInvoice())

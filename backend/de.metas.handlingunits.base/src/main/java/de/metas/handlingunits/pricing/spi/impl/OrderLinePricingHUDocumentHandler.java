@@ -12,9 +12,9 @@ import de.metas.pricing.service.ProductPrices;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
-import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.asi_aware.factory.IAttributeSetInstanceAwareFactoryService;
+import org.adempiere.mm.attributes.asi_aware.listener.IModelAttributeSetInstanceListener;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList_Version;
@@ -107,13 +107,6 @@ public class OrderLinePricingHUDocumentHandler implements IHUDocumentHandler
 		if (productPrice == null)
 		{
 			// no default Product Price Attribute was found => nothing to do
-			return;
-		}
-
-		final int pricePIItemProductId = productPrice.getM_HU_PI_Item_Product_ID();
-		if (pricePIItemProductId > 0 && orderLine.getM_HU_PI_Item_Product_ID() != pricePIItemProductId)
-		{
-			// "HU PI Item Product" from Product Price Attribute does not match the one from Order Line
 			return;
 		}
 

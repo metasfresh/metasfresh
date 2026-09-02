@@ -98,7 +98,8 @@ public class HUStatusBL implements IHUStatusBL
 			X_M_HU.HUSTATUS_Shipped, // when restoring a snapshot HU for a customer return, the locator is set on a HU with status E..
 			X_M_HU.HUSTATUS_Active);
 
-	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	@NonNull private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 
 	@Override
 	public boolean isQtyOnHand(final String huStatus)
@@ -295,8 +296,7 @@ public class HUStatusBL implements IHUStatusBL
 			return;
 		}
 
-		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-		final boolean isExchangeGebindelagerWhenEmpty = huStatusBL.isMovePackagingToEmptiesWarehouse(huStatus);
+		final boolean isExchangeGebindelagerWhenEmpty = isMovePackagingToEmptiesWarehouse(huStatus);
 
 		//
 		// 08157: If forced packing material fetching is enabled, then make sure to pull packing material from Gebinde warehouse (i.e when bringing a blank LU)
@@ -365,8 +365,6 @@ public class HUStatusBL implements IHUStatusBL
 			return;
 		}
 
-		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
-
 		huTrxBL.process(huContext -> {
 			for (final I_M_HU hu : hus)
 			{
@@ -389,4 +387,5 @@ public class HUStatusBL implements IHUStatusBL
 			}
 		});
 	}
+
 }

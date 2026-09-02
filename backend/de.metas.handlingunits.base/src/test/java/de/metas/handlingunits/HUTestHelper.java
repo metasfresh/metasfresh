@@ -59,11 +59,11 @@ import de.metas.handlingunits.attribute.strategy.impl.LinearDistributionAttribut
 import de.metas.handlingunits.attribute.strategy.impl.NullAggregationStrategy;
 import de.metas.handlingunits.attribute.strategy.impl.NullSplitterStrategy;
 import de.metas.handlingunits.attribute.strategy.impl.RedistributeQtyHUAttributeTransferStrategy;
+import de.metas.handlingunits.attribute.strategy.impl.WeightTareDeltaTransferStrategy;
 import de.metas.handlingunits.attribute.strategy.impl.SumAggregationStrategy;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.impl.HUQtyService;
-import de.metas.handlingunits.impl.ShipperTransportationRepository;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
@@ -120,11 +120,14 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeValueType;
+import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
+import org.adempiere.mm.attributes.AttributesTestHelper;
 import org.adempiere.mm.attributes.spi.impl.WeightGrossAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.impl.WeightNetAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.impl.WeightTareAdjustAttributeValueCallout;
@@ -246,6 +249,7 @@ public class HUTestHelper
 	private static final String NAME_Issue_Warehouse = "IssueWarehouse";
 
 	public IHUTrxBL trxBL;
+	private AttributesTestHelper attributesTestHelper;
 
 	public I_C_UOM uomKg;
 	public UomId uomKgId;
@@ -453,7 +457,6 @@ public class HUTestHelper
 		beforeRegisteringServices();
 
 		SpringContextHolder.registerJUnitBean(new AllocationStrategyFactory(new AllocationStrategySupportingServicesFacade()));
-		SpringContextHolder.registerJUnitBean(new ShipperTransportationRepository());
 		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 		SpringContextHolder.registerJUnitBean(HUQRCodesService.newInstanceForUnitTesting());
 		SpringContextHolder.registerJUnitBean(PurchaseOrderToShipperTransportationRepository.newInstanceForUnitTesting());
@@ -505,6 +508,7 @@ public class HUTestHelper
 		// Common used services
 		trxBL = Services.get(IHUTrxBL.class);
 
+		attributesTestHelper = new AttributesTestHelper();
 		setupMasterData();
 
 		huContext = createInitialHUContext(contextProvider);
@@ -665,8 +669,6 @@ public class HUTestHelper
 		uomEach = createUomEach();
 		uomEachId = UomId.ofRepoId(uomEach.getC_UOM_ID());
 		uomPCE = createUomPCE();
-
-		final AttributesTestHelper attributesTestHelper = new AttributesTestHelper();
 
 		attr_CountryMadeIn = attributesTestHelper.createM_Attribute(HUTestHelper.NAME_CountryMadeIn_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
 		createAttributeListValues(attr_CountryMadeIn,
@@ -855,7 +857,8 @@ public class HUTestHelper
 			final I_M_HU_PI_Attribute piAttr_WeightTare = createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_WeightTare)
 					.setM_HU_PI(huDefNone)
 					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_BottomUp)
-					.setAggregationStrategyClass(SumAggregationStrategy.class));
+					.setAggregationStrategyClass(SumAggregationStrategy.class)
+					.setTransferStrategyClass(WeightTareDeltaTransferStrategy.class));
 			piAttr_WeightTare.setIsReadOnly(true);
 			piAttr_WeightTare.setSeqNo(piAttrSeqNo);
 			piAttr_WeightTare.setUseInASI(false);
@@ -997,6 +1000,19 @@ public class HUTestHelper
 			piAttrSeqNo += 10;
 		}
 
+		{
+			HUPIAttributeBuilder.newInstance(
+							attributesTestHelper.attribute()
+									.attributeCode(AttributeCode.ofString(AttributeConstants.ATTR_ExternalBarcode.getCode()))
+									.valueType(AttributeValueType.ofCode(X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40))
+									.instanceAttribute(true)
+									.build())
+					.setM_HU_PI(HuPackingInstructionsId.TEMPLATE)
+					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation)
+					.setSeqNo(piAttrSeqNo)
+					.create();
+			piAttrSeqNo += 10;
+		}
 	}
 
 	private void setupVirtualPIAttributes()
@@ -1376,6 +1392,16 @@ public class HUTestHelper
 		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 		attributesRepo.createAttributeValue(AttributeListValueCreateRequest.builder()
 				.attributeId(AttributeId.ofRepoId(attribute.getM_Attribute_ID()))
+				.value(value)
+				.name(name)
+				.build());
+	}
+
+	public void createAttributeListValue(final Attribute attribute, final String value, final String name)
+	{
+		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+		attributesRepo.createAttributeValue(AttributeListValueCreateRequest.builder()
+				.attributeId(attribute.getAttributeId())
 				.value(value)
 				.name(name)
 				.build());
@@ -1821,7 +1847,7 @@ public class HUTestHelper
 		final List<I_M_HU_PI_Item> piItemsForChildHU = handlingUnitsDAO.retrievePIItems(currentPIVersion, null).stream()
 				.filter(piItem -> Objects.equals(X_M_HU_PI_Item.ITEMTYPE_HandlingUnit, piItem.getItemType()))
 				.collect(Collectors.toList());
-		
+
 		assertThat(piItemsForChildHU).as("This method only works if the given 'huPI' has exactly one child-HU item").hasSize(1);
 
 		lutuProducer.setLUItemPI(piItemsForChildHU.get(0));

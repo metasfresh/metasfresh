@@ -5,7 +5,8 @@ import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientId;
-import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipientService;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipients;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientProvider;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
 import de.metas.email.MailService;
@@ -52,16 +53,16 @@ import static org.adempiere.model.InterfaceWrapperHelper.getValueOrNull;
 @Component
 public class DefaultDocOutboundLogMailRecipientProvider implements DocOutboundLogMailRecipientProvider
 {
-	private final DocOutBoundRecipientRepository docOutBoundRecipientRepository;
+	private final DocOutBoundRecipientService docOutBoundRecipientService;
 	private final MailService mailService;
 
 	private final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
 
 	public DefaultDocOutboundLogMailRecipientProvider(
-			@NonNull final DocOutBoundRecipientRepository userRepository,
+			@NonNull final DocOutBoundRecipientService userRepository,
 			@NonNull final MailService mailService)
 	{
-		this.docOutBoundRecipientRepository = userRepository;
+		this.docOutBoundRecipientService = userRepository;
 		this.mailService = mailService;
 	}
 
@@ -84,7 +85,7 @@ public class DefaultDocOutboundLogMailRecipientProvider implements DocOutboundLo
 	}
 
 	@Override
-	public Optional<DocOutBoundRecipient> provideMailRecipient(@NonNull final DocOutboundLogMailRecipientRequest request)
+	public Optional<DocOutBoundRecipients> provideMailRecipient(@NonNull final DocOutboundLogMailRecipientRequest request)
 	{
 		if (request.getRecordRef() == null)
 		{
@@ -128,13 +129,13 @@ public class DefaultDocOutboundLogMailRecipientProvider implements DocOutboundLo
 				}
 
 				final DocOutBoundRecipientId docOutBoundRecipientId = DocOutBoundRecipientId.ofRepoId(userRepoId);
-				final DocOutBoundRecipient user = docOutBoundRecipientRepository.getById(docOutBoundRecipientId);
+				final DocOutBoundRecipient user = docOutBoundRecipientService.getById(docOutBoundRecipientId);
 				if (Check.isEmpty(user.getEmailAddress(), true))
 				{
 					Loggables.addLog("provideMailRecipient - user-id {} has no/empty emailAddress => return 'no recipient'; user={}", user.getId(), user);
 					return Optional.empty();
 				}
-				return Optional.of(user);
+				return DocOutBoundRecipients.optionalOfTo(user);
 			}
 		}
 		Loggables.addLog("provideMailRecipient - return 'no recipient'; mailbox={}", mailbox);

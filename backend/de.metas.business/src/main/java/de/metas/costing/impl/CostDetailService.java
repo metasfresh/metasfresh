@@ -1,8 +1,10 @@
 package de.metas.costing.impl;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetail.CostDetailBuilder;
 import de.metas.costing.CostDetailCreateRequest;
@@ -10,6 +12,7 @@ import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailQuery;
+import de.metas.costing.CostElementId;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostSegmentAndElement.CostSegmentAndElementBuilder;
@@ -24,12 +27,14 @@ import de.metas.costing.MoveCostsRequest;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /*
@@ -118,16 +123,56 @@ public class CostDetailService implements ICostDetailService
 	}
 
 	@Override
+	public ImmutableSet<ProductId> retrieveProductIdsWithCostRevaluationSeed(
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final CostElementId costElementId,
+			@NonNull final Set<ProductId> productIds)
+	{
+		return costDetailsRepo.retrieveProductIdsWithCostRevaluationSeed(acctSchemaId, costElementId, productIds);
+	}
+
+	@Override
 	public final List<CostDetail> getExistingCostDetails(@NonNull final CostDetailCreateRequest request)
 	{
+		// NOTE: intentionally NOT filtering by request.getAmtType() (which defaults to MAIN).
+		// This method feeds the repost-recovery path (CostingMethodHandlerTemplate.createOrUpdateCost in
+		// de.metas.business plus all four manufacturing handlers), which must reconstruct the FULL posting:
+		// on a repost we recover ALL persisted legs of the document (MAIN + ADJUSTMENT + ALREADY_SHIPPED) so
+		// the aggregated CostAmountDetailed is leg-complete instead of degenerating to the MAIN leg.
+		// Multi-leg producers this corrects: the MovingAverageInvoice MatchInv (keeps the invoice-vs-PO price
+		// variance on its proper account -- for the on-hand case, on-hand inventory revaluation (P_Asset) via
+		// the ADJUSTMENT leg, with InvoicePriceVariance only as an FX/residual line -- so GR/IR
+		// (NotInvoicedReceipts) still carries only the PO-price receipt amount and nets to zero, instead of
+		// degenerating to the full invoiced amount), and the manufacturing
+		// CostDifferenceDistribution under AveragePO / LastPOPrice / MovingAverageInvoice
+		// (PPOrderCostDifferenceDistributor persists MAIN + ADJUSTMENT + ALREADY_SHIPPED for all three).
+		// A document/method that only ever persists a single MAIN leg is unaffected: recovering all legs is
+		// identical to recovering MAIN.
 		return costDetailsRepo.list(CostDetailQuery.builder()
 				.acctSchemaId(request.getAcctSchemaId())
 				.costElementId(request.getCostElementId()) // assume request's costing element is set
 				.documentRef(request.getDocumentRef())
-				.amtType(request.getAmtType())
+				// .amtType(...) omitted on purpose: recover every leg, see note above
 				// .productId(request.getProductId())
 				// .attributeSetInstanceId(request.getAttributeSetInstanceId())
 				.build());
+	}
+
+	@Override
+	public AggregatedCostAmount toAggregatedCostAmount(final List<CostDetail> costDetails)
+	{
+		return costDetails.stream()
+				.map(this::toAggregatedCostAmount)
+				.reduce(AggregatedCostAmount::add)
+				.orElseThrow(() -> new AdempiereException("No cost details"));
+	}
+
+	private AggregatedCostAmount toAggregatedCostAmount(final CostDetail costDetail)
+	{
+		return AggregatedCostAmount.builder()
+				.costSegment(extractCostSegment(costDetail))
+				.amount(costElementRepo.getById(costDetail.getCostElementId()), costDetail.getAmtAndQtyDetailed().getAmt())
+				.build();
 	}
 
 	@Override
@@ -249,9 +294,23 @@ public class CostDetailService implements ICostDetailService
 	}
 
 	@Override
+	public boolean hasCostDetails(@NonNull final CostDetailQuery query)
+	{
+		return costDetailsRepo.hasCostDetails(query);
+	}
+
+	@Override
 	public Optional<CostDetail> firstOnly(@NonNull final CostDetailQuery query)
 	{
 		return costDetailsRepo.firstOnly(query);
+	}
+
+	@Override
+	public Optional<CostDetail> getFirstChangingCostsDetailAfter(
+			@NonNull final CostSegmentAndElement costSegmentAndElement,
+			@NonNull final Instant asOfDate)
+	{
+		return costDetailsRepo.getFirstChangingCostsDetailAfter(costSegmentAndElement, asOfDate);
 	}
 
 }

@@ -15,7 +15,6 @@
 
 	<properties>
 		<start-class>de.metas.material.dispo.Application</start-class>
-		<migration-sql-basedir>75-material-dispo</migration-sql-basedir>
 		<metasfresh.version>[1,10.0.0]</metasfresh.version>
 	</properties>
 

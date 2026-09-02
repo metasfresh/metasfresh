@@ -24,11 +24,12 @@ package de.metas.material.cockpit.availableforsales;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import org.adempiere.mm.attributes.keys.AttributesKeyMatcher;
-import org.adempiere.mm.attributes.keys.AttributesKeyPatternsUtil;
 import de.metas.material.commons.attributes.clasifiers.ProductClassifier;
+import de.metas.material.commons.attributes.clasifiers.WarehouseClassifier;
 import de.metas.product.ProductId;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.keys.AttributesKeyMatcher;
+import org.adempiere.mm.attributes.keys.AttributesKeyPatternsUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -58,6 +59,7 @@ final class AvailableForSaleResultBuilder
 				final AvailableForSaleResultBucket bucket = AvailableForSaleResultBucket.builder()
 						.product(ProductClassifier.specific(productId.getRepoId()))
 						.storageAttributesKeyMatcher(storageAttributesKeyMatcher)
+						.warehouse(WarehouseClassifier.specificOrAny(query.getWarehouseId()))
 						.build();
 
 				bucket.addDefaultEmptyGroupIfPossible();

@@ -1,5 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0220_Financial
+@allure.label.feature:F01100_Statistik_nach_Mengen_Gesamt
+@F01100
 Feature: import bank statement in camt53 import format
+## F01100: Bank Statement
 
   Background:
     Given infrastructure and metasfresh are running
@@ -35,6 +39,9 @@ Feature: import bank statement in camt53 import format
       | l_1        | 0203111111111 | bpartner_1               | true                | true         |
 
   @from:cucumber
+@allure.label.epic:E0220_Financial
+@allure.label.feature:F01100_Statistik_nach_Mengen_Gesamt
+@F01100
   @Id:S0203_100
   Scenario: Import bank statement, identify org-account by IBAN and link one statement-line to a payment for a sales invoice that is matched via documentNo
     Given set sys config boolean value true for sys config de.metas.payment.esr.Enabled
@@ -202,12 +209,15 @@ Feature: import bank statement in camt53 import format
       | C_Payment_ID.Identifier | C_Payment_ID.IsAllocated | OPT.OpenAmt | OPT.PayAmt | OPT.C_Invoice_ID.Identifier | OPT.DateTrx | OPT.C_BPartner_ID.Identifier | OPT.C_BP_BankAccount_ID.Identifier |
       | p_1                     | true                     | 0.00        | 119        | inv_1                       | 2022-05-10  | bpartner_1                   | bpb_1_S0203                        |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | docStatus | OPT.IsPaid |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | DocStatus | OPT.IsPaid |
       | inv_1                   | bpartner_1               | l_1                               | 30 Tage netto | true      | CO        | true       |
     And set sys config boolean value false for sys config de.metas.payment.esr.Enabled
 
 
   @from:cucumber
+@allure.label.epic:E0220_Financial
+@allure.label.feature:F01100_Statistik_nach_Mengen_Gesamt
+@F01100
   @Id:S0203_200
   Scenario: Import one statement, identify org-account by IBAN and link two invoices one of which is matched via ESR-Reference
     Given set sys config boolean value true for sys config de.metas.payment.esr.Enabled
@@ -383,11 +393,14 @@ Feature: import bank statement in camt53 import format
       | C_Payment_ID.Identifier | C_Payment_ID.IsAllocated | OPT.OpenAmt | OPT.PayAmt | OPT.C_Invoice_ID.Identifier | OPT.DateTrx | OPT.C_BPartner_ID.Identifier | OPT.C_BP_BankAccount_ID.Identifier |
       | p_S0203_1               | true                     | 0.00        | 119        | inv_S0203_1                 | 2022-05-10  | bpartner_1                   | bpb_1_S0203                        |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | docStatus | OPT.IsPaid |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | DocStatus | OPT.IsPaid |
       | inv_S0203_1             | bpartner_1               | l_1                               | 30 Tage netto | true      | CO        | true       |
     And set sys config boolean value false for sys config de.metas.payment.esr.Enabled
 
    @from:cucumber
+@allure.label.epic:E0220_Financial
+@allure.label.feature:F01100_Statistik_nach_Mengen_Gesamt
+@F01100
   Scenario: Import one statement, identify org-account by IBAN and link two invoices, but in 2 different bank statements; so the expectation is to have created 2 bank statements
     Given set sys config boolean value true for sys config de.metas.payment.esr.Enabled
     And load C_DataImport:
@@ -684,7 +697,7 @@ Feature: import bank statement in camt53 import format
       | p_S0203_3               | true                     | 0.00        | 119        | inv_S0203_3                 | 2022-05-10  | bpartner_1                   | bpb_1_S0203                        |
       | p_S0203_4               | true                     | 0.00        | 119        | inv_S0203_4                 | 2022-05-10  | bpartner_1                   | bpb_1_S0203                        |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | docStatus | OPT.IsPaid |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | DocStatus | OPT.IsPaid |
       | inv_S0203_3             | bpartner_1               | l_1                               | 30 Tage netto | true      | CO        | true       |
       | inv_S0203_4             | bpartner_1               | l_1                               | 30 Tage netto | true      | CO        | true       |
     And set sys config boolean value false for sys config de.metas.payment.esr.Enabled

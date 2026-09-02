@@ -50,16 +50,18 @@ public class CreateProjectRequest
 	ProjectCategory projectCategory;
 
 	@NonNull
+	CurrencyId currencyId;
+
+	@Nullable
 	BPartnerLocationId bpartnerAndLocationId;
+
 	@Nullable
 	BPartnerContactId contactId;
 
-	@NonNull
-	CurrencyId currencyId;
-	@NonNull
+	@Nullable
 	PriceListVersionId priceListVersionId;
 
-	@NonNull
+	@Nullable
 	WarehouseId warehouseId;
 
 	@Singular

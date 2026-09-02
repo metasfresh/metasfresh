@@ -24,6 +24,7 @@ package de.metas.camel.externalsystems.core.restapi.auth;
 
 import com.sun.istack.NotNull;
 import de.metas.camel.externalsystems.common.RestServiceRoutes;
+import de.metas.camel.externalsystems.scriptedadapter.convertmsg.to_mf.ScriptedImportConversionDynamicAuthorizationManager;
 import org.apache.camel.ProducerTemplate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,6 +32,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
@@ -60,11 +62,15 @@ public class WebSecurityConfig
 	{
 		//@formatter:off
 		http.authenticationProvider(tokenAuthProvider)
-				//.csrf(AbstractHttpConfigurer::disable) find out why this was needed and find a better solution
+				/**
+				 * CSRF disabled because: clients do not maintain browser sessions, authentication is stateless, we manually handle authentication and authorization
+				 */
+				.csrf(AbstractHttpConfigurer::disable)
 				.authorizeHttpRequests(authorize -> authorize
 						.requestMatchers("/**" + RestServiceRoutes.WOO.getPath()).hasAuthority(RestServiceRoutes.WOO.getStringAuthority())
 						.requestMatchers("/**" + RestServiceRoutes.GRS.getPath()).hasAuthority(RestServiceRoutes.GRS.getStringAuthority())
-						.requestMatchers("/actuator/**/*").hasAuthority(ACTUATOR_AUTHORITY)
+						.requestMatchers("/**" + ScriptedImportConversionDynamicAuthorizationManager.PATTERN).access(ScriptedImportConversionDynamicAuthorizationManager::getAuthorizationDecision)
+						.requestMatchers("/actuator/**").hasAuthority(ACTUATOR_AUTHORITY)
 						.anyRequest()
 						.authenticated()
 				);

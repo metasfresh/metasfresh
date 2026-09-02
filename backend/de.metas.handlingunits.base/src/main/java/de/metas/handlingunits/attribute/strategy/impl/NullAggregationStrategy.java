@@ -29,7 +29,10 @@ import de.metas.handlingunits.attribute.strategy.IAttributeAggregationStrategy;
 
 public final class NullAggregationStrategy implements IAttributeAggregationStrategy
 {
-	public static final transient NullAggregationStrategy instance = new NullAggregationStrategy();
+	public static NullAggregationStrategy newInstance()
+	{
+		return new NullAggregationStrategy();
+	}
 
 	private NullAggregationStrategy()
 	{

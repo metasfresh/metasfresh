@@ -3,6 +3,7 @@ package de.metas.handlingunits.attribute.impl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.attribute.HUAndPIAttributes;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
@@ -12,6 +13,7 @@ import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -19,10 +21,13 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 public final class HUAttributesDAO implements IHUAttributesDAO
 {
 	public static final HUAttributesDAO instance = new HUAttributesDAO();
+	private static final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private HUAttributesDAO()
 	{
@@ -50,12 +55,11 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 	@Override
 	public List<I_M_HU_Attribute> retrieveAllAttributesNoCache(final Collection<HuId> huIds)
 	{
-		if(huIds.isEmpty())
+		if (huIds.isEmpty())
 		{
 			return ImmutableList.of();
 		}
 
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(I_M_HU_Attribute.class)
 				//.addOnlyActiveRecordsFilter() // all, including not active
 				.addInArrayFilter(I_M_HU_Attribute.COLUMNNAME_M_HU_ID, huIds)
@@ -65,13 +69,33 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 	}
 
 	@Override
+	public Optional<String> extractCommonStringAttributeValue(final Collection<HuId> huIds, final AttributeId attributeId)
+	{
+		if (huIds.isEmpty())
+		{
+			return Optional.empty();
+		}
+
+		final ImmutableList<String> distinctValues = queryBL.createQueryBuilder(I_M_HU_Attribute.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_HU_Attribute.COLUMNNAME_M_HU_ID, huIds)
+				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_M_Attribute_ID, attributeId)
+				.create()
+				.listDistinct(I_M_HU_Attribute.COLUMNNAME_Value, String.class);
+		if (distinctValues.size() == 1)
+		{
+			return Optional.of(distinctValues.get(0));
+		}
+		return Optional.empty();
+	}
+
+	@Override
 	public HUAndPIAttributes retrieveAttributesOrdered(final I_M_HU hu)
 	{
 		// NOTE: don't cache on this level. Caching is handled on upper levels
 
 		// there are only some dozen attributes at most, so i think it'S fine to order them after loading
-		final List<I_M_HU_Attribute> huAttributes = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Attribute.class, hu)
-				.addOnlyActiveRecordsFilter()
+		final List<I_M_HU_Attribute> huAttributes = addActiveRecordsFilterUnlessDestroyed(queryBL.createQueryBuilder(I_M_HU_Attribute.class, hu), hu)
 				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_M_HU_ID, hu.getM_HU_ID())
 				.create()
 				.stream()
@@ -99,8 +123,7 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 
 	private List<I_M_HU_Attribute> retrieveAttributes(final I_M_HU hu, @NonNull final AttributeId attributeId)
 	{
-		final List<I_M_HU_Attribute> huAttributes = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Attribute.class, hu)
-				.addOnlyActiveRecordsFilter()
+		final List<I_M_HU_Attribute> huAttributes = addActiveRecordsFilterUnlessDestroyed(queryBL.createQueryBuilder(I_M_HU_Attribute.class, hu), hu)
 				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_M_HU_ID, hu.getM_HU_ID())
 				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_M_Attribute_ID, attributeId)
 				.create()
@@ -113,6 +136,25 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 		}
 
 		return huAttributes;
+	}
+
+	/**
+	 * Restricts the query to active attribute rows, EXCEPT for a destroyed HU.
+	 * <p>
+	 * The HU-attribute archival job sets M_HU_Attribute.IsActive='N' on ALL attributes of a destroyed
+	 * HU. Filtering active-only would then hide every attribute of a destroyed HU (e.g. its
+	 * HU_ReceiptInOutLine_ID link), breaking destroyed-HU attribute consumers such as the
+	 * material-tracking receipt-line lookup. A destroyed HU's attributes are uniformly the archived
+	 * set, so dropping the active filter for it reads exactly that set. Live HUs keep the active-only
+	 * filter (unchanged behaviour).
+	 */
+	private static IQueryBuilder<I_M_HU_Attribute> addActiveRecordsFilterUnlessDestroyed(final IQueryBuilder<I_M_HU_Attribute> queryBuilder, final I_M_HU hu)
+	{
+		if (!huStatusBL.isStatusDestroyed(hu))
+		{
+			queryBuilder.addOnlyActiveRecordsFilter();
+		}
+		return queryBuilder;
 	}
 
 	@Override

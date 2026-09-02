@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00103
 @ghActions:run_on_executor5
 Feature: credit limit
+## F00103: Credit Limit
 
   Background:
     Given infrastructure and metasfresh are running
@@ -9,6 +12,8 @@ Feature: credit limit
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00103
   Scenario: validate the error thrown by the credit limit set on business partner when generating the shipments,
   then remove the credit limit, generate shipments and validate them
     Given metasfresh contains M_Products:
@@ -96,7 +101,7 @@ Feature: credit limit
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier |
       | s_1                   | s_s_1                            |
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-17  | null        | true      | CO        |
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |

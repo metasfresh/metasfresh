@@ -46,8 +46,6 @@ public class PurchaseCandidateAdvisedEvent implements MaterialEvent
 
 	int productPlanningId;
 
-	boolean directlyCreatePurchaseCandidate;
-
 	int vendorId;
 
 	@Builder
@@ -56,14 +54,12 @@ public class PurchaseCandidateAdvisedEvent implements MaterialEvent
 			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
 			@JsonProperty("supplyRequiredDescriptor") @NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@JsonProperty("productPlanningId") final int productPlanningId,
-			@JsonProperty("directlyCreatePurchaseCandidate") final boolean directlyCreatePurchaseCandidate,
 			@JsonProperty("vendorId") final int vendorId)
 	{
 		this.eventDescriptor = eventDescriptor;
 		this.supplyRequiredDescriptor = supplyRequiredDescriptor;
 		this.productPlanningId = Check.assumeGreaterThanZero(productPlanningId, "productPlanningId");
 		this.vendorId = vendorId;
-		this.directlyCreatePurchaseCandidate = directlyCreatePurchaseCandidate;
 	}
 
 	@Override

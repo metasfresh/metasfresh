@@ -8,11 +8,12 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.interfaces.I_C_BP_Relation;
-import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
@@ -20,7 +21,6 @@ import org.adempiere.mm.attributes.api.ISubProducerAttributeDAO;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.CtxName;
 import org.compiere.util.CtxNames;
@@ -59,6 +59,7 @@ import java.util.Properties;
  * #L%
  */
 
+@RequiredArgsConstructor
 class HUSubProducerBPartnerAttributeValuesProvider implements IAttributeValuesProvider
 {
 	static final String ATTRIBUTEVALUETYPE = X_M_Attribute.ATTRIBUTEVALUETYPE_Number;
@@ -67,10 +68,10 @@ class HUSubProducerBPartnerAttributeValuesProvider implements IAttributeValuesPr
 
 	/**
 	 * Cache: C_BPartner_ID to list of sub-producer partners (as KeyNamePair)
-	 *
+	 * <p>
 	 * NOTE: we use a static cache for optimization purposes
 	 */
-	private static final CCache<Integer, List<KeyNamePair>> bpartnerId2subProducers = CCache.<Integer, List<KeyNamePair>> builder()
+	private static final CCache<Integer, List<KeyNamePair>> bpartnerId2subProducers = CCache.<Integer, List<KeyNamePair>>builder()
 			.cacheName(CACHE_PREFIX + "#by#" + I_C_BP_Relation.COLUMNNAME_C_BPartner_ID + "#" + I_C_BP_Relation.COLUMNNAME_Role)
 			.initialCapacity(10)
 			.additionalTableNameToResetFor(I_C_BPartner.Table_Name)
@@ -83,26 +84,20 @@ class HUSubProducerBPartnerAttributeValuesProvider implements IAttributeValuesPr
 
 	//
 	//
-	private final I_M_Attribute attribute;
+	@NonNull private final AttributeCode attributeCode;
 
 	/**
 	 * Cache M_HU_ID/C_BPartner_ID/Current_SubProducer_BPartnerId to list of sub-producer partners (as KeyNamePair).
-	 *
+	 * <p>
 	 * Used for short term purposes.
 	 */
-	private final CCache<ArrayKey, List<KeyNamePair>> hu2subProducers = CCache.<ArrayKey, List<KeyNamePair>> builder()
+	private final CCache<ArrayKey, List<KeyNamePair>> hu2subProducers = CCache.<ArrayKey, List<KeyNamePair>>builder()
 			.cacheName(bpartnerId2subProducers.getCacheName() + "#AndHU")
 			.initialCapacity(100)
 			.expireMinutes(10)
 			.additionalTableNameToResetFor(I_C_BPartner.Table_Name)
 			.additionalTableNameToResetFor(I_C_BP_Relation.Table_Name)
 			.build();
-
-	public HUSubProducerBPartnerAttributeValuesProvider(final I_M_Attribute attribute)
-	{
-		Check.assumeNotNull(attribute, "Parameter attribute is not null");
-		this.attribute = attribute;
-	}
 
 	@Override
 	public String getCachePrefix()
@@ -175,9 +170,9 @@ class HUSubProducerBPartnerAttributeValuesProvider implements IAttributeValuesPr
 		final int huId = hu.getM_HU_ID();
 
 		int currentSubProducerBPartnerId = -1;
-		if (attributeSet.hasAttribute(attribute))
+		if (attributeSet.hasAttribute(attributeCode))
 		{
-			currentSubProducerBPartnerId = attributeSet.getValueAsInt(attribute);
+			currentSubProducerBPartnerId = attributeSet.getValueAsInt(attributeCode);
 		}
 
 		return Evaluatees.mapBuilder()
@@ -258,7 +253,7 @@ class HUSubProducerBPartnerAttributeValuesProvider implements IAttributeValuesPr
 
 	/**
 	 * Retrieve allowed subproducers KeyNamePairs.
-	 *
+	 * <p>
 	 * Mainly it will contain following values:
 	 * <ul>
 	 * <li>{@link #getNullValue()}
@@ -266,7 +261,7 @@ class HUSubProducerBPartnerAttributeValuesProvider implements IAttributeValuesPr
 	 * <li>current HU's SubProducer BPartner if not present in the list above
 	 * </ul>
 	 *
-	 * @param bpartnerId i.e. M_HU.C_BPartner_ID
+	 * @param bpartnerId                   i.e. M_HU.C_BPartner_ID
 	 * @param currentSubProducerBPartnerId current subproducer BPartner ID
 	 * @return available values
 	 */

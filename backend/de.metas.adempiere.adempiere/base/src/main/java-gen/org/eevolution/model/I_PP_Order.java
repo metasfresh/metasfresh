@@ -383,6 +383,29 @@ public interface I_PP_Order
 	String COLUMNNAME_C_OrderLine_MTO_ID = "C_OrderLine_MTO_ID";
 
 	/**
+	 * Set Cost difference.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setCostDifference (@Nullable BigDecimal CostDifference);
+
+	/**
+	 * Get Cost difference.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	BigDecimal getCostDifference();
+
+	ModelColumn<I_PP_Order, Object> COLUMN_CostDifference = new ModelColumn<>(I_PP_Order.class, "CostDifference", null);
+	String COLUMNNAME_CostDifference = "CostDifference";
+
+	/**
 	 * Set Project.
 	 * Financial Project
 	 *
@@ -433,7 +456,7 @@ public interface I_PP_Order
 	 * Set UOM.
 	 * Unit of Measure
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -443,7 +466,7 @@ public interface I_PP_Order
 	 * Get UOM.
 	 * Unit of Measure
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -1101,7 +1124,7 @@ public interface I_PP_Order
 	/**
 	 * Set Packing Instruction.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1110,7 +1133,7 @@ public interface I_PP_Order
 	/**
 	 * Get Packing Instruction.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1976,6 +1999,7 @@ public interface I_PP_Order
 
 	/**
 	 * Set Work Station.
+	 * The Workstation at which this manufacturing order is to be processed. In MobileUI Manufacturing, only orders whose Workstation matches the one scanned by the operator are shown.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1985,6 +2009,7 @@ public interface I_PP_Order
 
 	/**
 	 * Get Work Station.
+	 * The Workstation at which this manufacturing order is to be processed. In MobileUI Manufacturing, only orders whose Workstation matches the one scanned by the operator are shown.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -2021,4 +2046,29 @@ public interface I_PP_Order
 
 	ModelColumn<I_PP_Order, Object> COLUMN_Yield = new ModelColumn<>(I_PP_Order.class, "Yield", null);
 	String COLUMNNAME_Yield = "Yield";
+
+
+	/**
+	 * Set Eff. Prod. Date Set.
+	 * If set, the "Eff. Prod. Datum" field is read-only.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsFixedProductionDate (boolean IsFixedProductionDate);
+
+	/**
+	 * Get Eff. Prod. Date Set.
+	 * If set, the "Eff. Prod. Datum" field is read-only.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isFixedProductionDate();
+
+	ModelColumn<I_PP_Order, Object> COLUMN_IsFixedProductionDate = new ModelColumn<>(I_PP_Order.class, "IsFixedProductionDate", null);
+	String COLUMNNAME_IsFixedProductionDate = "IsFixedProductionDate";
+
 }

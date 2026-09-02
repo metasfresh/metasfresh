@@ -25,16 +25,20 @@ package de.metas.handlingunits.impl;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.organization.OrgId;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.TransportDirection;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Value
 @Builder
 public class CreateShipperTransportationRequest
 {
+	public static final LocalTime DEFAULT_PICKUP_TIME_FROM = LocalTime.of(8, 0);
+	public static final LocalTime DEFAULT_PICKUP_TIME_TO = LocalTime.of(17, 0);
 	@NonNull
 	OrgId orgId;
 
@@ -47,9 +51,19 @@ public class CreateShipperTransportationRequest
 	@NonNull
 	LocalDate shipDate;
 
+	@NonNull @Builder.Default LocalTime pickupTimeFrom = DEFAULT_PICKUP_TIME_FROM;
+
+	@NonNull @Builder.Default LocalTime pickupTimeTo = DEFAULT_PICKUP_TIME_TO;
+
 	/**
 	 * Should be {@code false} if metasfresh on-the-fly-picked HUs, but the user doesn't need to know which ones.
 	 * Should be {@code true} if the user is supposed to physically in the real world find and put into the package exactly those HUs that metasfresh picked on the fly.
 	 */
 	boolean assignAnonymouslyPickedHUs;
+
+	/**
+	 * The direction the created {@code M_ShipperTransportation} gets. Stated by the caller, never derived here:
+	 * only the caller knows whether its document is a receipt, a shipment or a dropship.
+	 */
+	@NonNull TransportDirection transportDirection;
 }

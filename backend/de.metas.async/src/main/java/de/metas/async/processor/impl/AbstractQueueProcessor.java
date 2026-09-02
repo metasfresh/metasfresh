@@ -1,10 +1,8 @@
-package de.metas.async.processor.impl;
-
 /*
  * #%L
  * de.metas.async
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package de.metas.async.processor.impl;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.async.processor.impl;
 
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.api.IWorkpackageLogsRepository;
@@ -176,7 +176,6 @@ public abstract class AbstractQueueProcessor implements IQueueProcessor
 		catch (final Throwable t)
 		{
 			logger.error("*** processLockedWorkPackage failed! Moving forward...", t);
-			success = false;
 			return false;
 		}
 		finally
@@ -217,9 +216,7 @@ public abstract class AbstractQueueProcessor implements IQueueProcessor
 		{
 			if (!success)
 			{
-				logger.info("Submitting for processing next workPackage failed. Trying to unlock {}.", workPackage);
-				queue.unlockNoFail(workPackage);
-
+				logger.info("Submitting for processing next workPackage failed. workPackage={}.", workPackage);
 				getEventDispatcher().unregisterListeners(workPackage.getC_Queue_WorkPackage_ID());
 			}
 		}

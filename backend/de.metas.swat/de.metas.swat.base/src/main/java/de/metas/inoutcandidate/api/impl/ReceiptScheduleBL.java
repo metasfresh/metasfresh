@@ -30,6 +30,8 @@ import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.location.adapter.IDocumentLocationAdapter;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.interfaces.I_C_OrderLine;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.inoutcandidate.api.ApplyReceiptScheduleChangesRequest;
 import de.metas.inoutcandidate.api.IInOutProducer;
@@ -38,6 +40,7 @@ import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.api.IReceiptScheduleQtysBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
+import de.metas.inoutcandidate.api.UpdateReceiptScheduleOverridesRequest;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
@@ -46,7 +49,10 @@ import de.metas.inoutcandidate.spi.IReceiptScheduleListener;
 import de.metas.inoutcandidate.spi.impl.CompositeReceiptScheduleListener;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderBL;
+import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -55,7 +61,9 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.ad.trx.processor.api.LoggableTrxItemExceptionHandler;
 import org.adempiere.exceptions.AdempiereException;
@@ -90,6 +98,8 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.google.common.collect.ImmutableList;
+
 public class ReceiptScheduleBL implements IReceiptScheduleBL
 {
 	public static final String SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS = "de.metas.inoutcandidate.M_ReceiptSchedule.canBeExportedAfterSeconds";
@@ -103,6 +113,9 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 	@Override
 	public void addReceiptScheduleListener(final IReceiptScheduleListener listener)
@@ -286,11 +299,17 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 			@NonNull final IInOutProducer producer,
 			@NonNull final Iterator<I_M_ReceiptSchedule> receiptSchedules)
 	{
+		// Layer 3: API-entry guard — catches programmatic / non-process callers.
+		// Materialise to allow the guard to inspect all schedules before any receipt is created.
+		final ImmutableList<I_M_ReceiptSchedule> schedulesList = ImmutableList.copyOf(receiptSchedules);
+		SpringContextHolder.instance.getBean(ReceiptScheduleDeliveryStopGuard.class)
+				.assertNoneBlocked(schedulesList);
+
 		Services.get(ITrxItemProcessorExecutorService.class).<I_M_ReceiptSchedule, InOutGenerateResult>createExecutor()
 				.setContext(ctx)
 				.setProcessor(producer)
 				.setExceptionHandler(LoggableTrxItemExceptionHandler.instance)
-				.process(receiptSchedules);
+				.process(schedulesList.iterator());
 	}
 
 	@Override
@@ -477,7 +496,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	@Override
 	public void close(@NonNull final I_M_ReceiptSchedule rs)
 	{
-		// Make sure receipt schedule was not already processed
+		// Make sure receipt schedule was not already closed
 		if (isClosed(rs))
 		{
 			throw new AdempiereException("@Closed@=@Y@ (" + rs + ")");
@@ -485,7 +504,8 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 
 		listeners.onBeforeClose(rs);
 
-		// Mark the receipt schedule as closed (i.e. processed)
+		// Mark the receipt schedule as closed
+		rs.setIsClosed(true);
 		rs.setProcessed(true);
 		InterfaceWrapperHelper.save(rs);
 
@@ -493,39 +513,53 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 		// Services.get(IReceiptScheduleQtysBL.class).onReceiptScheduleChanged(receiptSchedule);
 
 		listeners.onAfterClose(rs);
-		InterfaceWrapperHelper.save(rs); // see javadoc on why we same two times
+		InterfaceWrapperHelper.save(rs); // see javadoc on why we save two times
 	}
 
 	@Override
 	public void reopen(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
 		//
-		// Make sure receipt schedule is closed/processed
+		// Make sure receipt schedule is closed
 		if (!isClosed(receiptSchedule))
 		{
 			throw new AdempiereException("@Closed@=@N@ (" + receiptSchedule + ")");
 		}
 
 		listeners.onBeforeReopen(receiptSchedule);
-		InterfaceWrapperHelper.refresh(receiptSchedule); // because
+		InterfaceWrapperHelper.refresh(receiptSchedule); // reload from DB because listeners may have changed the record
 
-		// Mark the receipt schedule as not closed (i.e. not processed)
+		// Mark the receipt schedule as not closed
+		receiptSchedule.setIsClosed(false);
 		receiptSchedule.setProcessed(false);
+
 		InterfaceWrapperHelper.save(receiptSchedule);
 
 		// this is already called by a model validator when the receipt schedule is saved
 		// Services.get(IReceiptScheduleQtysBL.class).onReceiptScheduleChanged(receiptSchedule);
 
 		listeners.onAfterReopen(receiptSchedule);
+
 		InterfaceWrapperHelper.save(receiptSchedule);
 	}
 
 	@Override
 	public boolean isClosed(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
-		return receiptSchedule.isProcessed();
+		return receiptSchedule.isIsClosed();
 	}
 
+	@Override
+	public boolean hasUnProcessedRecords(@NonNull final IQueryFilter<I_M_ReceiptSchedule> receiptScheduleQueryFilter)
+	{
+		return queryBL.createQueryBuilder(I_M_ReceiptSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.filter(receiptScheduleQueryFilter)
+				.create()
+				.anyMatch();
+	}
+
+	@Override
 	public void applyReceiptScheduleChanges(@NonNull final ApplyReceiptScheduleChangesRequest applyReceiptScheduleChangesRequest)
 	{
 		final I_M_ReceiptSchedule receiptSchedule = receiptScheduleDAO.getById(applyReceiptScheduleChangesRequest.getReceiptScheduleId());
@@ -610,9 +644,93 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	}
 
 	@Override
-	public List<ReceiptScheduleId> retainLUQtySchedules(final List<ReceiptScheduleId> receiptSchedules)
+	public List<ReceiptScheduleId> retainLUQtySchedules(@NonNull final List<ReceiptScheduleId> receiptSchedules)
 	{
 		return receiptScheduleDAO.retainLUQtySchedules(receiptSchedules);
+	}
+
+	@Override
+	public void reopenReceiptSchedulesForOrder(@NonNull final I_C_Order order)
+	{
+		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order);
+		for (final I_C_OrderLine orderLine : orderLines)
+		{
+			final I_M_ReceiptSchedule receiptSchedule = receiptScheduleDAO.retrieveForRecord(orderLine);
+
+			if (receiptSchedule == null || !isClosed(receiptSchedule))
+			{
+				continue;
+			}
+
+			// Reopen the order line BEFORE the receipt schedule.
+			// During save, the M_ReceiptSchedule interceptor fires propagateQtysToOrderLine
+			// which loads the order line from DB and triggers C_OrderLine.updateQtyReserved.
+			// IsDeliveryClosed must already be false at that point, otherwise QtyReserved is
+			// temporarily set to 0 and downstream interceptors (C_Order.updateReserved) may
+			// pick up the stale value.
+			orderBL.reopenLine(orderLine);
+
+			// IMPORTANT: We bypass IReceiptScheduleBL.reopen() intentionally to combine reopen +
+			// QtyOrdered + ASI sync into ONE save. This produces exactly one ReceiptScheduleCreatedEvent
+			// with the final (possibly updated) quantities and the correct storageAttributesKey.
+			// Calling reopen() + save() would produce two events: CreatedEvent(old qty) + UpdatedEvent(delta).
+			//
+			// No InterfaceWrapperHelper.refresh() needed: the receipt schedule was just loaded from DB
+			// via receiptScheduleDAO.retrieveForRecord, so it already has the latest state.
+			//
+			// Bypassed listener callbacks:
+			// - onBeforeReopen: currently no-op in all known implementations
+			//   (OrderLineReceiptScheduleListener, HUReceiptScheduleListener use the default adapter)
+			//   WARNING: If a future IReceiptScheduleListener overrides onBeforeReopen with real logic,
+			//   this method MUST be updated to call it explicitly.
+			// - onAfterReopen: manually replicated below (reopenLine + openDeliveryInvoiceCandidates)
+			receiptSchedule.setIsClosed(false);
+			receiptSchedule.setProcessed(false);
+			receiptSchedule.setQtyOrdered(orderLine.getQtyOrdered());
+			attributeSetInstanceBL.cloneOrCreateASI(receiptSchedule, orderLine);
+
+			logger.debug("reopenReceiptSchedulesForOrder: saving M_ReceiptSchedule_ID={} | IsClosed={}, Processed={}, QtyOrdered={}, ASI_ID={}",
+					receiptSchedule.getM_ReceiptSchedule_ID(),
+					receiptSchedule.isIsClosed(), receiptSchedule.isProcessed(), receiptSchedule.getQtyOrdered(),
+					receiptSchedule.getM_AttributeSetInstance_ID());
+
+			InterfaceWrapperHelper.save(receiptSchedule);
+
+			// Fire the side effects that ReceiptScheduleBL.reopen()'s onAfterReopen listener would have done.
+			// orderBL.reopenLine(orderLine) was already called above.
+			final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID());
+			invoiceCandBL.openDeliveryInvoiceCandidatesByOrderLineId(orderLineId);
+			invoiceCandBL.openInvoiceCandidatesByOrderLineId(orderLineId);
+		}
+	}
+
+	@Override
+	public void closeReceiptSchedulesForOrder(@NonNull final I_C_Order order)
+	{
+		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order);
+		for (final I_C_OrderLine orderLine : orderLines)
+		{
+			final I_M_ReceiptSchedule receiptSchedule = receiptScheduleDAO.retrieveForRecord(orderLine);
+
+			if (receiptSchedule == null || isClosed(receiptSchedule))
+			{
+				continue;
+			}
+
+			close(receiptSchedule);
+
+			// close() fires the OrderLineReceiptScheduleListener which calls closeLine(),
+			// setting IsDeliveryClosed=true on the order line (via the receipt schedule's FK-cached PO).
+			// During PO reactivation/void the receipt schedule is only "parked" — the order line
+			// itself must stay open for editing. Undo the closeLine side-effect.
+			InterfaceWrapperHelper.refresh(orderLine);
+			orderBL.reopenLine(orderLine);
+
+			// Undo the close's Processed_Override=Y too, or the reactivated order's candidates can never be invoiced.
+			// openDeliveryInvoiceCandidatesByOrderLineId is deliberately NOT called: IsDeliveryClosed is display-only
+			// and self-heals on the next complete - see reopenReceiptSchedulesForOrder.
+			invoiceCandBL.openInvoiceCandidatesByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
+		}
 	}
 
 	private static class ReceiptScheduleDocumentLocationAdapter implements IDocumentLocationAdapter
@@ -751,5 +869,32 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 		{
 			delegate.setBPartnerAddress_Override(address);
 		}
+	}
+
+	@Override
+	public int updateReceiptScheduleOverrides(@NonNull final UpdateReceiptScheduleOverridesRequest request)
+	{
+		final ICompositeQueryUpdater<I_M_ReceiptSchedule> updater = queryBL
+				.createCompositeQueryUpdater(I_M_ReceiptSchedule.class);
+
+		if (request.getDatePromisedOverride() != null)
+		{
+			updater.addSetColumnValue(I_M_ReceiptSchedule.COLUMNNAME_DatePromised_Override, request.getDatePromisedOverride());
+		}
+
+		if (!Check.isBlank(request.getPoReference()))
+		{
+			updater.addSetColumnValue(I_M_ReceiptSchedule.COLUMNNAME_POReference, request.getPoReference());
+		}
+
+		if (request.getIsConfirmedBySupplier() != null)
+		{
+			updater.addSetColumnValue(I_M_ReceiptSchedule.COLUMNNAME_IsConfirmedBySupplier, request.getIsConfirmedBySupplier());
+		}
+
+		return queryBL.createQueryBuilder(I_M_ReceiptSchedule.class)
+				.setOnlySelection(request.getPinstanceId())
+				.create()
+				.update(updater);
 	}
 }

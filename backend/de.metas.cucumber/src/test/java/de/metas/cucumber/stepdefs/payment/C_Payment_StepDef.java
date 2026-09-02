@@ -24,7 +24,9 @@ package de.metas.cucumber.stepdefs.payment;
 
 import de.metas.banking.BankAccountId;
 import de.metas.banking.api.IBPBankAccountDAO;
+import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.C_BP_BankAccount_StepDefData;
@@ -33,6 +35,7 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.ItemProvider;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.bankStatement.C_BankStatementLine_StepDefData;
@@ -40,6 +43,7 @@ import de.metas.cucumber.stepdefs.bankStatement.C_BankStatement_StepDefData;
 import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.currency.CurrencyRepository;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.invoice.InvoiceId;
@@ -61,13 +65,13 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
-import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -106,6 +110,33 @@ public class C_Payment_StepDef
 	private final C_Invoice_StepDefData invoiceTable;
 	private final C_DocType_StepDefData docTypeTable;
 
+	/**
+	 * Creates one or more {@link I_C_Payment} records in Draft status.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required) alias for cross-step reference<br>
+	 *   <b>C_BPartner_ID</b> — (required, identifier-ref) vendor or customer BPartner<br>
+	 *   <b>PayAmt</b> — (required) amount with currency code, e.g. {@code 5000 EUR}<br>
+	 *   <b>IsReceipt</b> — (required) {@code true} = inbound (AR), {@code false} = outbound (AP)<br>
+	 *   <b>C_BP_BankAccount_ID</b> — (optional, identifier-ref) bank account; defaults to the org's EUR account<br>
+	 *   <b>Proforma_Invoice_ID</b> — (optional, identifier-ref) links the payment to a proforma invoice;
+	 *                                {@link org.compiere.model.MPayment} {@code beforeSave} auto-sets
+	 *                                {@code IsPrepayment=Y} when this is non-null, causing
+	 *                                {@link org.compiere.acct.Doc_Payment} to post to
+	 *                                {@code C_Prepayment_Acct} (AR) or {@code V_Prepayment_Acct} (AP).
+	 *                                {@code PayAmt} must equal the proforma's {@code GrandTotal}.<br>
+	 *   <b>C_Invoice_ID</b> — (optional, identifier-ref) pre-linked invoice<br>
+	 * @cucumber.depends {@link de.metas.cucumber.stepdefs.C_BPartner_StepDefData},
+	 *                   {@link de.metas.cucumber.stepdefs.C_BP_BankAccount_StepDefData},
+	 *                   {@link de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData}
+	 * @cucumber.example
+	 * <pre>
+	 * And metasfresh contains C_Payment
+	 *   | Identifier | C_BPartner_ID | PayAmt   | IsReceipt | C_BP_BankAccount_ID | Proforma_Invoice_ID |
+	 *   | s6_payment | vendor        | 5000 EUR | false     | org_EUR_account     | s6_proforma         |
+	 * </pre>
+	 */
 	@And("metasfresh contains C_Payment")
 	public void createPayments(@NonNull final DataTable dataTable)
 	{
@@ -114,25 +145,74 @@ public class C_Payment_StepDef
 				.forEach(this::createPayment);
 	}
 
+	/**
+	 * Completes or reverses the payment referenced by {@code paymentIdentifier}.
+	 * For {@code reversed}, the reversal is stored under {@code <identifier>^}.
+	 *
+	 * @see #reversePayment(StepDefDataIdentifier, StepDefDataIdentifier)
+	 */
 	@And("^the payment identified by (.*) is (completed|reversed)$")
-	public void payment_action(@NonNull final String paymentIdentifier, @NonNull final String action)
+	public void payment_action(@NonNull final String paymentIdentifier, @NonNull final String action) throws InterruptedException
 	{
-		final I_C_Payment payment = paymentTable.get(paymentIdentifier);
-
 		switch (StepDefDocAction.valueOf(action))
 		{
 			case reversed:
-				payment.setDocAction(IDocument.ACTION_Complete);
-				documentBL.processEx(payment, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+			{
+				reversePayment(StepDefDataIdentifier.ofString(paymentIdentifier), StepDefDataIdentifier.ofString(paymentIdentifier + "^"));
 				break;
+			}
 			case completed:
+			{
+				final I_C_Payment payment = paymentTable.get(paymentIdentifier);
 				payment.setDocAction(IDocument.ACTION_Complete);
 				documentBL.processEx(payment, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 				break;
+			}
 			default:
+			{
 				throw new AdempiereException("Unhandled C_Payment action")
 						.appendParametersToMessage()
 						.setParameter("action:", action);
+			}
+		}
+	}
+
+	/**
+	 * Reverses the payment referenced by {@code paymentIdentifierStr} and, if
+	 * {@code reversalIdentifierStr} is given, stores the created reversal under it.
+	 *
+	 * @see #reversePayment(StepDefDataIdentifier, StepDefDataIdentifier)
+	 */
+	@And("^the payment identified by (.*) is reversed with a reversal identified by (.*)")
+	public void reversePayment(@NonNull final String paymentIdentifierStr, @Nullable final String reversalIdentifierStr) throws InterruptedException
+	{
+		reversePayment(StepDefDataIdentifier.ofString(paymentIdentifierStr), StepDefDataIdentifier.ofNullableString(reversalIdentifierStr));
+	}
+
+	/**
+	 * Fires {@code ACTION_Reverse_Correct} and then asserts {@code DocStatus=Reversed} via a bounded
+	 * refresh poll (tolerant of a transient stale read of the just-committed status; still fails loud
+	 * if the payment stays {@code Completed}).
+	 */
+	private void reversePayment(@NonNull final StepDefDataIdentifier paymentIdentifier, @Nullable final StepDefDataIdentifier reversalIdentifier) throws InterruptedException
+	{
+		final I_C_Payment payment = paymentTable.get(paymentIdentifier);
+		payment.setDocAction(IDocument.ACTION_Reverse_Correct);
+
+		// expectedDocStatus is left unchecked here (2-arg overload); the reversal's committed status is
+		// asserted below via a bounded poll, tolerant of a transient stale read of that status.
+		documentBL.processEx(payment, IDocument.ACTION_Reverse_Correct);
+
+		StepDefUtil.tryAndWait(30, 500, () -> {
+			InterfaceWrapperHelper.refresh(payment);
+			return DocStatus.Reversed.getCode().equals(payment.getDocStatus());
+		});
+
+		if (reversalIdentifier != null)
+		{
+			final PaymentId reversalId = PaymentId.ofRepoId(payment.getReversal_ID());
+			final I_C_Payment reversal = Check.assumeNotNull(paymentBL.getById(reversalId), "reversal not null");
+			paymentTable.put(reversalIdentifier.getAsString(), reversal);
 		}
 	}
 
@@ -152,42 +232,64 @@ public class C_Payment_StepDef
 
 		row.getAsOptionalBoolean(COLUMNNAME_C_Payment_ID + "." + COLUMNNAME_IsAllocated)
 				.ifUnknown(() -> row.getAsOptionalBoolean(COLUMNNAME_IsAllocated))
-				.ifPresent(paymentIsAllocated -> softly.assertThat(payment.isAllocated()).isEqualTo(paymentIsAllocated));
+				.ifPresent(paymentIsAllocated -> softly.assertThat(payment.isAllocated()).as("IsAllocated").isEqualTo(paymentIsAllocated));
 
 		row.getAsOptionalBigDecimal(COLUMNNAME_PayAmt)
-				.ifPresent(payAmt -> softly.assertThat(payment.getPayAmt()).isEqualByComparingTo(payAmt));
+				.ifPresent(payAmt -> softly.assertThat(payment.getPayAmt()).as("PayAmt").isEqualByComparingTo(payAmt));
 		row.getAsOptionalBigDecimal("OpenAmt")
 				.ifPresent(expectedAvailableAmt -> {
 					final BigDecimal paymentAvailableAmt = paymentDAO.getAvailableAmount(PaymentId.ofRepoId(payment.getC_Payment_ID()));
-					softly.assertThat(paymentAvailableAmt).isEqualTo(payment.isReceipt() ? expectedAvailableAmt : expectedAvailableAmt.negate());
+					softly.assertThat(paymentAvailableAmt).as("OpenAmt").isEqualTo(payment.isReceipt() ? expectedAvailableAmt : expectedAvailableAmt.negate());
 				});
 		row.getAsOptionalBigDecimal(COLUMNNAME_DiscountAmt)
-				.ifPresent(discountAmt -> softly.assertThat(payment.getDiscountAmt()).isEqualByComparingTo(discountAmt));
+				.ifPresent(discountAmt -> softly.assertThat(payment.getDiscountAmt()).as("DiscountAmt").isEqualByComparingTo(discountAmt));
 		row.getAsOptionalBigDecimal(COLUMNNAME_WriteOffAmt)
-				.ifPresent(writeOffAmt -> softly.assertThat(payment.getWriteOffAmt()).isEqualByComparingTo(writeOffAmt));
+				.ifPresent(writeOffAmt -> softly.assertThat(payment.getWriteOffAmt()).as("WriteOffAmt").isEqualByComparingTo(writeOffAmt));
 
-		row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_Invoice_ID)
-				.map(invoiceTable::getId)
-				.ifPresent(expectedInvoiceId -> softly.assertThat(payment.getC_Invoice_ID()).isEqualTo(expectedInvoiceId.getRepoId()));
+		row.getAsOptionalString(I_C_Payment.COLUMNNAME_C_Invoice_ID)
+				.ifPresent(rawValue -> {
+					if (DataTableUtil.isNullPlaceholder(rawValue))
+					{
+						softly.assertThat(payment.getC_Invoice_ID()).as("C_Invoice_ID should not be set").isZero();
+					}
+					else
+					{
+						final InvoiceId expectedInvoiceId = invoiceTable.getId(StepDefDataIdentifier.ofString(rawValue));
+						softly.assertThat(payment.getC_Invoice_ID()).as("C_Invoice_ID").isEqualTo(expectedInvoiceId.getRepoId());
+					}
+				});
 
 		row.getAsOptionalLocalDate(I_C_Payment.COLUMNNAME_DateTrx)
 				.ifPresent(dateTrx -> {
 					final OrgId orgId = OrgId.ofRepoId(payment.getAD_Org_ID());
 					final ZoneId zoneId = orgDAO.getTimeZone(orgId);
-					softly.assertThat(TimeUtil.asLocalDate(payment.getDateTrx(), zoneId)).isEqualTo(dateTrx);
+					softly.assertThat(TimeUtil.asLocalDate(payment.getDateTrx(), zoneId)).as("DateTrx").isEqualTo(dateTrx);
 				});
 
 		row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_BPartner_ID)
 				.map(bpartnerTable::getId)
-				.ifPresent(expectedBPartnerId -> softly.assertThat(payment.getC_BPartner_ID()).isEqualTo(expectedBPartnerId.getRepoId()));
+				.ifPresent(expectedBPartnerId -> softly.assertThat(payment.getC_BPartner_ID()).as("C_BPartner_ID").isEqualTo(expectedBPartnerId.getRepoId()));
 
 		row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_BP_BankAccount_ID)
 				.map(bpBankAccountTable::getOrgBankAccountId)
-				.ifPresent(expectedBankAccountId -> softly.assertThat(payment.getC_BP_BankAccount_ID()).isEqualTo(expectedBankAccountId.getRepoId()));
+				.ifPresent(expectedBankAccountId -> softly.assertThat(payment.getC_BP_BankAccount_ID()).as("C_BP_BankAccount_ID").isEqualTo(expectedBankAccountId.getRepoId()));
 
 		row.getAsOptionalIdentifier(COLUMNNAME_C_DocType_ID)
 				.map(docTypeTable::getId)
-				.ifPresent(expectedDocTypeId -> softly.assertThat(payment.getC_DocType_ID()).isEqualTo(expectedDocTypeId.getRepoId()));
+				.ifPresent(expectedDocTypeId -> softly.assertThat(payment.getC_DocType_ID()).as("C_DocType_ID").isEqualTo(expectedDocTypeId.getRepoId()));
+
+		row.getAsOptionalBoolean(I_C_Payment.COLUMNNAME_IsReceipt)
+				.ifPresent(isReceipt -> softly.assertThat(payment.isReceipt()).as("IsReceipt").isEqualTo(isReceipt));
+
+		row.getAsOptionalEnum(I_C_Payment.COLUMNNAME_DocStatus, DocStatus.class)
+				.ifPresent(docStatus -> softly.assertThat(payment.getDocStatus()).as("DocStatus").isEqualTo(docStatus.getCode()));
+
+		row.getAsOptionalBoolean(I_C_Payment.COLUMNNAME_IsPrepayment)
+				.ifPresent(isPrepayment -> softly.assertThat(payment.isPrepayment()).as("IsPrepayment").isEqualTo(isPrepayment));
+
+		row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_Proforma_Invoice_ID)
+				.map(invoiceTable::getId)
+				.ifPresent(expectedProformaInvoiceId -> softly.assertThat(payment.getProforma_Invoice_ID()).as("Proforma_Invoice_ID").isEqualTo(expectedProformaInvoiceId.getRepoId()));
 
 		softly.assertAll();
 	}
@@ -272,6 +374,10 @@ public class C_Payment_StepDef
 				.map(invoiceTable::getId)
 				.orElse(null);
 
+		final InvoiceId proformaInvoiceId = row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_Proforma_Invoice_ID)
+				.map(invoiceTable::getId)
+				.orElse(null);
+
 		final I_C_Payment payment = (isReceipt ? paymentBL.newInboundReceiptBuilder() : paymentBL.newOutboundPaymentBuilder())
 				.adOrgId(orgId)
 				.bpartnerId(bpartnerId)
@@ -282,6 +388,7 @@ public class C_Payment_StepDef
 				.dateTrx(dateTrx)
 				.dateAcct(dateAcct)
 				.invoiceId(invoiceId)
+				.proformaInvoiceId(proformaInvoiceId)
 				.isAutoAllocateAvailableAmt(false)
 				.createDraft();
 
@@ -298,10 +405,10 @@ public class C_Payment_StepDef
 
 		return bankAccountDAO.retrieveBankAccountsForPartnerAndCurrency(orgBPartnerId, currencyId)
 				.stream()
-				.min(Comparator.comparing(I_C_BP_BankAccount::isDefault).reversed()
-						.thenComparing(I_C_BP_BankAccount::getC_BP_BankAccount_ID))
-				.map(bankAccount -> BankAccountId.ofRepoId(bankAccount.getC_BP_BankAccount_ID()))
-				.orElseThrow(() -> new AdempiereException("No C_BP_BankAccount found for " + orgBPartnerId + " and " + currencyId));
+				.min(Comparator.comparing(BPartnerBankAccount::getIdNotNull))
+				.map(bankAccount -> BankAccountId.ofRepoId(BPartnerBankAccountId.toRepoId(bankAccount.getId())))
+				.orElseThrow(() -> new AdempiereException("No BPartnerBankAccount found for " + orgBPartnerId + " and " + currencyId));
+
 	}
 
 }

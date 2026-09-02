@@ -24,7 +24,7 @@ package de.metas.inoutcandidate.modelvalidator;
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
+import org.adempiere.mm.attributes.asi_aware.factory.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.util.agg.key.IAggregationKeyRegistry;
 
 import de.metas.inoutcandidate.agg.key.impl.ReceiptScheduleKeyValueHandler;

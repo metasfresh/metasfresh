@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0130_Payment
+@allure.label.feature:F00982_Payment
+@F00982
 @ghActions:run_on_executor6
 Feature: Validate that PaymentRule is correctly set on C_Order and that it correctly propagates on C_InvoiceCandidates
+## F00982: Payment
   (default payment rule is not propagated on C_InvoiceCandidates in this case, the payment rule set on C_Order is taken into consideration)
 
   Background:
@@ -18,6 +22,9 @@ Feature: Validate that PaymentRule is correctly set on C_Order and that it corre
       | ifco6410   | Y        |
 
   @from:cucumber
+@allure.label.epic:E0130_Payment
+@allure.label.feature:F00982_Payment
+@F00982
   Scenario: Payment rule 'Cash' (set on C_Order) correctly propagates to Invoice Candidate for packing items (making sure, the default payment rule is set to OnCredit)
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.PaymentRule | DateOrdered |
@@ -39,7 +46,7 @@ Feature: Validate that PaymentRule is correctly set on C_Order and that it corre
       | s_s_1      | ol_1                      | N             |
 
     And validate the created order lines
-      | Identifier | C_Order_ID | dateordered | M_Product_ID | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | Identifier | C_Order_ID | DateOrdered | M_Product_ID | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2       | o_1        | 2022-03-23  | 2001343      | 0            | 1          | 0           | 1     | 0        | EUR          | true      |
 
     And update shipment schedules

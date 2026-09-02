@@ -52,10 +52,12 @@ import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
+import org.compiere.model.CreateSelectionResponse;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
+import org.compiere.util.Trace;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
@@ -80,6 +82,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -88,10 +91,11 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 {
 	// services
 	private static final POJOLookupMap instance = new POJOLookupMap("GLOBAL");
-	private static final transient Logger logger = LogManager.getLogger(POJOLookupMap.class);
+	private static final Logger logger = LogManager.getLogger(POJOLookupMap.class);
 	// NOTE: don't add services here, because in testing we are reseting the Services quite offen
 
 	private static final ThreadLocal<POJOLookupMap> threadInstanceRef = new ThreadLocal<>();
+	private static final String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	@NonNull
 	public static POJOLookupMap get()
@@ -189,7 +193,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	/**
 	 * Database name
 	 */
-	private final String databaseName;
+	@Getter private final String databaseName;
 
 	/**
 	 * Map of cached objects (TableName -> Record_ID -> Object)
@@ -229,6 +233,16 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	public static void resetToDefaultNextIdSupplier()
 	{
 		setNextIdSupplier(newNextIdSupplier());
+	}
+
+	public static void setNextIdSupplier_SingleSharedSequence()
+	{
+		POJOLookupMap.setNextIdSupplier(POJONextIdSuppliers.newSingleSharedSequence());
+	}
+
+	public static void setNextIdSupplier_PerTableSequence()
+	{
+		POJOLookupMap.setNextIdSupplier(POJONextIdSuppliers.newPerTableSequence());
 	}
 
 	public static void setNextIdSupplier(@NonNull final POJONextIdSupplier nextIdSupplier)
@@ -418,6 +432,15 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 					}
 				}
 
+				//
+				// DocumentNo
+				if (isNew && wrapper.hasColumnName(COLUMNNAME_DocumentNo) && wrapper.getValue(COLUMNNAME_DocumentNo, String.class) == null)
+				{
+					final String documentNo = "DOCNO_" + id;
+					wrapper.setValue(COLUMNNAME_DocumentNo, documentNo);
+					logger.info("Generated DocumentNo on saving: \n\t documentNo: {} \n\t model: {} \n\t trace: {}", documentNo, wrapper, Trace.toOneLineStackTraceString());
+				}
+
 				// we use LinkedHashMap to preserve the order in which the objects are saved
 				Map<Integer, Object> tableRecords = cachedObjects.computeIfAbsent(tableName, k -> new LinkedHashMap<>());
 
@@ -580,11 +603,11 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	}
 
 	public <T> T getFirstOnly(final String tableName,
-							  final Class<T> clazz,
-							  final IQueryFilter<T> filter,
-							  final Comparator<T> orderByComparator,
-							  final boolean throwExIfMoreThenOneFound,
-							  final String trxName)
+	                          final Class<T> clazz,
+	                          final IQueryFilter<T> filter,
+	                          final Comparator<T> orderByComparator,
+	                          final boolean throwExIfMoreThenOneFound,
+	                          final String trxName)
 	{
 		final List<T> result = getRecords(tableName, clazz, filter, orderByComparator, trxName);
 		if (result.isEmpty())
@@ -708,6 +731,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	{
 		POJOLookupMap.resetToDefaultNextIdSupplier();
 		cachedObjects.clear();
+		selectionId2selection.clear();
 	}
 
 	@Override
@@ -946,11 +970,6 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		tableName2interceptors.clear();
 	}
 
-	public String getDatabaseName()
-	{
-		return databaseName;
-	}
-
 	private ObjectName jmxName = null;
 
 	private void registerJMX()
@@ -1008,6 +1027,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		catch (final MBeanRegistrationException | InstanceNotFoundException e)
 		{
 			// TODO Auto-generated catch block
+			//noinspection CallToPrintStackTrace
 			e.printStackTrace();
 		}
 	}
@@ -1059,7 +1079,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		return appliesToTableName(tableName);
 	}
 
-	public void createSelection(@NonNull final PInstanceId selectionId, final Collection<Integer> selection)
+	public int createSelection(@NonNull final PInstanceId selectionId, final Collection<Integer> selection)
 	{
 		final ImmutableSet<Integer> selectionSet = selection != null ? ImmutableSet.copyOf(selection) : ImmutableSet.of();
 
@@ -1075,6 +1095,8 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 					.addAll(selectionSet).build();
 			this.selectionId2selection.put(selectionId, combinedSelectionSet);
 		}
+
+		return selectionSet.size();
 	}
 
 	private PInstanceId createSelectionPInstanceId()
@@ -1082,11 +1104,16 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		return Services.get(IADPInstanceDAO.class).createSelectionId();
 	}
 
-	public PInstanceId createSelection(final Collection<Integer> selection)
+	public Optional<CreateSelectionResponse> createSelection(final Collection<Integer> selection)
 	{
 		final PInstanceId selectionId = PInstanceId.ofRepoId(nextId(I_AD_PInstance.Table_Name));
-		createSelection(selectionId, selection);
-		return selectionId;
+		final int count = createSelection(selectionId, selection);
+		if (count <= 0)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(CreateSelectionResponse.of(selectionId, count));
 	}
 
 	@SafeVarargs
@@ -1147,7 +1174,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		}
 		sb.append("\n");
 
-		System.out.println(sb.toString());
+		System.out.println(sb);
 	}
 
 	/**

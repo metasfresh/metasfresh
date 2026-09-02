@@ -35,7 +35,7 @@ import de.metas.common.externalsystem.leichundmehl.JsonExternalSystemLeichMehlPl
 import de.metas.common.externalsystem.leichundmehl.JsonReplacementSource;
 import de.metas.common.externalsystem.leichundmehl.JsonTargetFieldType;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemLeichConfigProductMappingQuery;
 import de.metas.externalsystem.ExternalSystemLeichMehlConfigProductMappingRepository;
@@ -73,12 +73,12 @@ public class ExportPPOrderToLeichMehlService extends ExportPPOrderToExternalSyst
 	protected ExportPPOrderToLeichMehlService(
 			final @NonNull DataExportAuditRepository dataExportAuditRepository,
 			final @NonNull DataExportAuditLogRepository dataExportAuditLogRepository,
-			final @NonNull ExternalSystemConfigRepo externalSystemConfigRepo,
+			final @NonNull ExternalSystemConfigRepository externalSystemConfigRepository,
 			final @NonNull ExternalSystemMessageSender externalSystemMessageSender,
 			final @NonNull ExternalSystemConfigService externalSystemConfigService,
 			final @NonNull ExternalSystemLeichMehlConfigProductMappingRepository externalSystemLeichMehlConfigProductMappingRepository)
 	{
-		super(dataExportAuditRepository, dataExportAuditLogRepository, externalSystemConfigRepo, externalSystemMessageSender, externalSystemConfigService);
+		super(dataExportAuditRepository, dataExportAuditLogRepository, externalSystemConfigRepository, externalSystemMessageSender, externalSystemConfigService);
 		this.externalSystemLeichMehlConfigProductMappingRepository = externalSystemLeichMehlConfigProductMappingRepository;
 	}
 

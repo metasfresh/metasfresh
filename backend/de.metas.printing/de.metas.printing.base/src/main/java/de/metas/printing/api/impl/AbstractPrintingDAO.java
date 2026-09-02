@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.printing.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.printing.api.impl;
 
 import de.metas.logging.LogManager;
@@ -29,10 +51,12 @@ import de.metas.printing.model.X_AD_PrinterHW;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.workplace.Workplace;
 import de.metas.workplace.WorkplaceId;
 import de.metas.workplace.WorkplaceService;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
@@ -54,28 +78,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Stream;
-
-/*
- * #%L
- * de.metas.printing.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 public abstract class AbstractPrintingDAO implements IPrintingDAO
 {
@@ -230,9 +232,13 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 
 	@Nullable
 	@Override
-	public final I_AD_Printer_Config retrievePrinterConfig(@Nullable final String hostKey, @Nullable final UserId userToPrintId, @Nullable final WorkplaceId workplaceId)
+	public final I_AD_Printer_Config retrievePrinterConfig(
+			@Nullable final String hostKey,
+			@Nullable final UserId userToPrintId,
+			@Nullable final WorkplaceId workplaceId)
 	{
-		try (final MDC.MDCCloseable ignore = MDC.putCloseable("hostKey", hostKey);
+		final String normalizedHostKey = StringUtils.trimBlankToNull(hostKey);
+		try (final MDC.MDCCloseable ignore = MDC.putCloseable("hostKey", normalizedHostKey);
 				final MDC.MDCCloseable ignore2 = MDC.putCloseable("userToPrintId", Integer.toString(UserId.toRepoId(userToPrintId)));
 				final MDC.MDCCloseable ignore3 = MDC.putCloseable("workplaceId", Integer.toString(WorkplaceId.toRepoId(workplaceId)))
 		)
@@ -240,34 +246,32 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 			final IQueryBuilder<I_AD_Printer_Config> queryBuilder = queryBL
 					.createQueryBuilderOutOfTrx(I_AD_Printer_Config.class)
 					.addOnlyActiveRecordsFilter();
-			if (Check.isNotBlank(hostKey))
-			{
-				logger.debug("retrievePrinterConfig - will filter by ConfigHostKey IN ({}, NULL)", hostKey);
-				queryBuilder.addInArrayFilter(I_AD_Printer_Config.COLUMN_ConfigHostKey, hostKey, null); // allow "less specific" configs without hostkey
-			}
-			else if (workplaceId == null)
-			{
-				Check.errorIf(userToPrintId == null, "If the 'hostKey' param is empty, then the 'userToPrintId has to be > 0");
-			}
-			queryBuilder.orderBy(I_AD_Printer_Config.COLUMNNAME_ConfigHostKey); // prefer records with hostkey set
 
-			if (workplaceId != null)
+			if (workplaceId != null || userToPrintId != null)
 			{
-				queryBuilder.addEqualsFilter(I_AD_Printer_Config.COLUMNNAME_C_Workplace_ID, workplaceId);
+				final ICompositeQueryFilter<I_AD_Printer_Config> workplaceOrUser = queryBL.createCompositeQueryFilter(I_AD_Printer_Config.class).setJoinOr();
+				queryBuilder.filter(workplaceOrUser);
+
+				if (workplaceId != null)
+				{
+					workplaceOrUser.addEqualsFilter(I_AD_Printer_Config.COLUMNNAME_C_Workplace_ID, workplaceId);
+					queryBuilder.orderBy(I_AD_Printer_Config.COLUMNNAME_C_Workplace_ID); // prefer records with workplace set
+				}
+				if (userToPrintId != null)
+				{
+					workplaceOrUser.addEqualsFilter(I_AD_Printer_Config.COLUMNNAME_AD_User_PrinterMatchingConfig_ID, userToPrintId);
+					if (Check.isNotBlank(normalizedHostKey))
+					{
+						logger.debug("retrievePrinterConfig - will filter by ConfigHostKey IN ({}, NULL)", normalizedHostKey);
+						queryBuilder.addInArrayFilter(I_AD_Printer_Config.COLUMN_ConfigHostKey, normalizedHostKey, null); // allow "less specific" configs without hostkey
+						queryBuilder.orderBy(I_AD_Printer_Config.COLUMNNAME_ConfigHostKey); // but prefer records with this hostkey set
+					}
+				}
 			}
 			else
 			{
-				if (userToPrintId != null)
-				{
-					logger.debug("retrievePrinterConfig - will filter by AD_User_PrinterMatchingConfig_ID={}", UserId.toRepoId(userToPrintId));
-					queryBuilder.addEqualsFilter(I_AD_Printer_Config.COLUMNNAME_AD_User_PrinterMatchingConfig_ID, userToPrintId);
-				}
-				else
-				{
-					logger.debug("retrievePrinterConfig - userToPrintId is null -> order by AD_User_PrinterMatchingConfig_ID to prefer records with user set (hostKey={})", hostKey);
-					Check.errorIf(Check.isBlank(hostKey), "If the 'userToPrintId' param is empty, then the 'hostKey has to be not-blank");
-					queryBuilder.orderBy(I_AD_Printer_Config.COLUMNNAME_AD_User_PrinterMatchingConfig_ID); // prefer records with userId set
-				}
+				Check.errorIf(Check.isBlank(normalizedHostKey), "If the 'userToPrintId' and 'workplaceId' params are empty, then the 'hostKey has to be not-blank");
+				queryBuilder.addEqualsFilter(I_AD_Printer_Config.COLUMN_ConfigHostKey, normalizedHostKey);
 			}
 
 			return queryBuilder

@@ -170,7 +170,7 @@ public interface I_PP_Product_BOMLine
 	 * Set UOM.
 	 * Unit of Measure
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -180,7 +180,7 @@ public interface I_PP_Product_BOMLine
 	 * Get UOM.
 	 * Unit of Measure
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -679,6 +679,29 @@ public interface I_PP_Product_BOMLine
 
 	ModelColumn<I_PP_Product_BOMLine, Object> COLUMN_oldScrap = new ModelColumn<>(I_PP_Product_BOMLine.class, "oldScrap", null);
 	String COLUMNNAME_oldScrap = "oldScrap";
+
+	/**
+	 * Set Picking Instruction.
+	 * Instructions for warehouse operators and manufacturing personnel on how to identify, select, and handle this material component
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPickingInstruction (@Nullable java.lang.String PickingInstruction);
+
+	/**
+	 * Get Picking Instruction.
+	 * Instructions for warehouse operators and manufacturing personnel on how to identify, select, and handle this material component
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPickingInstruction();
+
+	ModelColumn<I_PP_Product_BOMLine, Object> COLUMN_PickingInstruction = new ModelColumn<>(I_PP_Product_BOMLine.class, "PickingInstruction", null);
+	String COLUMNNAME_PickingInstruction = "PickingInstruction";
 
 	/**
 	 * Set BOM & Formula Version.

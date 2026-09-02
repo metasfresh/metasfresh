@@ -27,19 +27,22 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.location.RenderedAddressProvider;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobField;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobFieldType;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
+import de.metas.handlingunits.picking.job.model.PickingJobCandidateList;
+import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceList;
-import de.metas.document.location.RenderedAddressProvider;
+import de.metas.handlingunits.picking.job.service.external.bpartner.PickingJobBPartnerService;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.location.AddressDisplaySequence;
 import de.metas.organization.IOrgDAO;
+import de.metas.product.ProductValueAndName;
 import de.metas.quantity.Quantity;
 import de.metas.util.NumberUtils;
 import de.metas.util.StringUtils;
@@ -58,8 +61,8 @@ import java.util.Optional;
 
 public class DisplayValueProvider
 {
-	@NonNull private final IBPartnerDAO partnerDAO;
 	@NonNull private final IOrgDAO orgDAO;
+	@NonNull private final PickingJobBPartnerService bpartnerService;
 	@NonNull private final RenderedAddressProvider renderedAddressProvider;
 
 	@NonNull private final MobileUIPickingUserProfile profile;
@@ -68,15 +71,14 @@ public class DisplayValueProvider
 
 	@Builder
 	private DisplayValueProvider(
-			@NonNull final IBPartnerDAO partnerDAO,
 			@NonNull final IOrgDAO orgDAO,
-			@NonNull final RenderedAddressProvider renderedAddressProvider,
+			@NonNull final PickingJobBPartnerService bpartnerService,
 			//
 			@NonNull final MobileUIPickingUserProfile profile)
 	{
-		this.partnerDAO = partnerDAO;
 		this.orgDAO = orgDAO;
-		this.renderedAddressProvider = renderedAddressProvider;
+		this.bpartnerService = bpartnerService;
+		this.renderedAddressProvider = bpartnerService.newRenderedAddressProvider();
 		this.profile = profile;
 	}
 
@@ -91,7 +93,7 @@ public class DisplayValueProvider
 		cacheWarmUpForContexts(contexts);
 	}
 
-	public void cacheWarmUpForPickingJobCandidates(final ImmutableList<PickingJobCandidate> pickingJobCandidates)
+	public void cacheWarmUpForPickingJobCandidates(final PickingJobCandidateList pickingJobCandidates)
 	{
 		if (pickingJobCandidates.isEmpty())
 		{
@@ -120,7 +122,7 @@ public class DisplayValueProvider
 		final ImmutableSet<BPartnerLocationId> deliveryLocationIds = extractDeliveryLocationIds(contexts);
 
 		final ImmutableMap<BPartnerLocationId, I_C_BPartner_Location> locationsById = Maps.uniqueIndex(
-				partnerDAO.retrieveBPartnerLocationsByIds(deliveryLocationIds),
+				bpartnerService.getBPartnerLocationsByIds(deliveryLocationIds),
 				location -> BPartnerLocationId.ofRepoId(location.getC_BPartner_ID(), location.getC_BPartner_Location_ID())
 		);
 
@@ -130,12 +132,6 @@ public class DisplayValueProvider
 	private static ImmutableSet<BPartnerLocationId> extractDeliveryLocationIds(final @NonNull ImmutableList<Context> contexts)
 	{
 		return contexts.stream().map(Context::getDeliveryLocationId).filter(Objects::nonNull).collect(ImmutableSet.toImmutableSet());
-	}
-
-	@NonNull
-	public WorkflowLauncherCaption computeLauncherCaption(@NonNull final PickingJob pickingJob)
-	{
-		return computeLauncherCaption(toContext(pickingJob));
 	}
 
 	@NonNull
@@ -156,6 +152,7 @@ public class DisplayValueProvider
 		final ImmutableList.Builder<String> fieldsInOrder = ImmutableList.builder();
 		@NonNull ImmutableMap.Builder<String, ITranslatableString> fieldValues = ImmutableMap.builder();
 		@NonNull ImmutableMap.Builder<String, Comparable<?>> comparableKeys = ImmutableMap.builder();
+		final ImmutableSet.Builder<String> blockLayoutFields = ImmutableSet.builder();
 
 		for (final PickingJobField field : profile.getLauncherFieldsInOrder())
 		{
@@ -169,12 +166,17 @@ public class DisplayValueProvider
 			{
 				comparableKeys.put(fieldType, comparableKey);
 			}
+			if (field.isBlockLayout())
+			{
+				blockLayoutFields.add(fieldType);
+			}
 		}
 
 		return WorkflowLauncherCaption.builder()
 				.fieldsInOrder(fieldsInOrder.build())
 				.fieldValues(fieldValues.build())
 				.comparingKeys(comparableKeys.build())
+				.blockLayoutFields(blockLayoutFields.build())
 				.build();
 	}
 
@@ -187,8 +189,9 @@ public class DisplayValueProvider
 				.customerName(pickingJobCandidate.getCustomerName())
 				.preparationDate(pickingJobCandidate.getPreparationDate() != null ? pickingJobCandidate.getPreparationDate().toZonedDateTime(orgDAO::getTimeZone) : null)
 				.handoverLocationId(pickingJobCandidate.getHandoverLocationId())
-				.productName(pickingJobCandidate.getProductName())
+				.productValueAndName(pickingJobCandidate.getProductValueAndName())
 				.qtyToDeliver(pickingJobCandidate.getQtyToDeliver())
+				.productNameParts(pickingJobCandidate.getProducts().getProductNameParts())
 				.build();
 	}
 
@@ -201,8 +204,9 @@ public class DisplayValueProvider
 				.customerName(pickingJobReference.getCustomerName())
 				.preparationDate(pickingJobReference.getPreparationDate())
 				.handoverLocationId(pickingJobReference.getHandoverLocationId())
-				.productName(pickingJobReference.getProductName())
+				.productValueAndName(pickingJobReference.getProductValueAndName())
 				.qtyToDeliver(pickingJobReference.getQtyToDeliver())
+				.productNameParts(pickingJobReference.getProducts().getProductNameParts())
 				.build();
 	}
 
@@ -215,8 +219,25 @@ public class DisplayValueProvider
 				.customerName(pickingJob.getCustomerName())
 				.preparationDate(pickingJob.getPreparationDate())
 				.handoverLocationId(pickingJob.getHandoverLocationId())
-				.productName(pickingJob.getSingleProductNameOrEmpty())
+				.productValueAndName(pickingJob.getSingleProductValueAndName())
 				.qtyToDeliver(pickingJob.getSingleQtyToPickOrNull())
+				// job-detail header: always ", ", regardless of any field's block-layout flag (AC8)
+				.productNames(pickingJob.getProductNamesJoined(", "))
+				.build();
+	}
+
+	@NonNull
+	private static Context toContext(@NonNull final PickingJobLine pickingJobLine)
+	{
+		return Context.builder()
+				.deliveryLocationId(pickingJobLine.getDeliveryBPLocationId())
+				.salesOrderDocumentNo(pickingJobLine.getSalesOrderDocumentNo())
+				// .customerName(pickingJobLine.getCustomerName())
+				// .preparationDate(pickingJobLine.getPreparationDate())
+				// .handoverLocationId(pickingJobLine.getHandoverLocationId())
+				.productValueAndName(pickingJobLine.getProductValueAndName())
+				.qtyToDeliver(pickingJobLine.getQtyToPick())
+				.productNames(pickingJobLine.getProductValueAndName().getName())
 				.build();
 	}
 
@@ -224,6 +245,12 @@ public class DisplayValueProvider
 	public ITranslatableString getDisplayValue(@NonNull final PickingJobField field, @NonNull final PickingJob pickingJob)
 	{
 		return getDisplayValue(field, toContext(pickingJob));
+	}
+
+	@NonNull
+	public ITranslatableString getDisplayValue(@NonNull final PickingJobField field, @NonNull final PickingJobLine pickingJobLine)
+	{
+		return getDisplayValue(field, toContext(pickingJobLine));
 	}
 
 	@NonNull
@@ -259,10 +286,29 @@ public class DisplayValueProvider
 				final AddressDisplaySequence displaySequence = getAddressDisplaySequence(field);
 				return TranslatableStrings.anyLanguage(getHandoverAddress(context, displaySequence));
 			}
-			case PRODUCT:
+			case PRODUCT_NO:
 			{
-				final ITranslatableString productName = context.getProductName();
-				return productName != null ? productName : TranslatableStrings.empty();
+				final ProductValueAndName productValueAndName = context.getProductValueAndName();
+				return TranslatableStrings.anyLanguage(productValueAndName != null ? productValueAndName.getValue() : null);
+			}
+			case PRODUCT_NAME:
+			{
+				final ProductValueAndName productValueAndName = context.getProductValueAndName();
+				return productValueAndName != null ? productValueAndName.getName() : TranslatableStrings.empty();
+			}
+			case PRODUCT_NAMES:
+			{
+				final ImmutableList<ITranslatableString> productNameParts = context.getProductNameParts();
+				if (productNameParts != null)
+				{
+					// job-list context: the separator is decided HERE, per requesting field, never at toContext()-time
+					final String separator = field.isBlockLayout() ? "\n" : ", ";
+					return productNameParts.stream().collect(TranslatableStrings.joining(separator));
+				}
+
+				// job-detail context: already joined with ", " at toContext()-time, unconditionally (AC8)
+				final ITranslatableString productNames = context.getProductNames();
+				return productNames != null ? productNames : TranslatableStrings.empty();
 			}
 			case QTY_TO_DELIVER:
 			{
@@ -288,7 +334,7 @@ public class DisplayValueProvider
 			{
 				return getRuestplatz(pickingJob)
 						.map(value -> NumberUtils.asInteger(value, null)) // we assume Ruestplantz is number so we want to sort it as numbers
-						.orElse(null);
+						.orElse(Integer.MAX_VALUE); // i.e. nulls last
 			}
 			default:
 			{
@@ -322,7 +368,7 @@ public class DisplayValueProvider
 
 	private Optional<String> retrieveRuestplatz(final BPartnerLocationId deliveryLocationId)
 	{
-		return extractRuestplatz(partnerDAO.getBPartnerLocationByIdEvenInactive(deliveryLocationId));
+		return extractRuestplatz(bpartnerService.getBPartnerLocationByIdEvenInactive(deliveryLocationId));
 	}
 
 	private static Optional<String> extractRuestplatz(@Nullable final I_C_BPartner_Location location)
@@ -359,8 +405,20 @@ public class DisplayValueProvider
 		@Nullable ZonedDateTime preparationDate;
 		@Nullable BPartnerLocationId deliveryLocationId;
 		@Nullable BPartnerLocationId handoverLocationId;
-		@Nullable ITranslatableString productName;
+		@Nullable ProductValueAndName productValueAndName;
 		@Nullable Quantity qtyToDeliver;
+		/**
+		 * Job-detail contexts (job header, job line) join their product name(s) eagerly with {@code ", "} here — the
+		 * detail surfaces render {@code ", "} whatever a field's block-layout flag is set to (AC8), so there is
+		 * nothing left to decide at {@link #getDisplayValue} time.
+		 */
+		@Nullable ITranslatableString productNames;
+		/**
+		 * Un-joined product names, populated ONLY by the job-list contexts (candidate/reference). Their join is
+		 * deferred to {@link #getDisplayValue}, which alone knows the requesting field's {@code isBlockLayout()}
+		 * and therefore the separator to join with.
+		 */
+		@Nullable ImmutableList<ITranslatableString> productNameParts;
 
 		@Nullable
 		public BPartnerLocationId getHandoverLocationIdWithFallback()

@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerPrintFormatRepository;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.document.archive.config.DocOutboundConfigService;
 import de.metas.dunning.DunningTestBase;
 import de.metas.dunning.model.I_C_DunningDoc;
 import de.metas.process.AdProcessId;
@@ -41,6 +42,7 @@ import org.adempiere.archive.api.ArchiveResult;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Assertions;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,6 +65,8 @@ public class Dunning_DefaultModelArchiverTest extends DunningTestBase
 		helper = new DefaultModelArchiverTestHelper();
 
 		Env.setClientId(Env.getCtx(), helper.createClient());
+
+		SpringContextHolder.registerJUnitBean(DocOutboundConfigService.newInstanceForUnitTesting());
 	}
 
 	private MockedDocumentReportService createMockedDocumentReportService()

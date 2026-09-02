@@ -1,34 +1,14 @@
 package org.adempiere.mm.attributes.api.impl;
 
+import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-
-/*
- * #%L
- * de.metas.fresh.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.asi_aware.factory.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.api.IBPartnerAware;
@@ -40,16 +20,10 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 
-import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.product.ProductId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-
 /**
  * Creates/Updates model's {@link I_M_AttributeInstance}s based on {@link IBPartnerAware}.
  *
  * @author tsa
- *
  */
 public class BPartnerAwareAttributeUpdater
 {
@@ -57,7 +31,6 @@ public class BPartnerAwareAttributeUpdater
 	private final transient IAttributeSetInstanceAwareFactoryService attributeSetInstanceAwareFactoryService = Services.get(IAttributeSetInstanceAwareFactoryService.class);
 	private final transient IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final transient IAttributesBL attributesBL = Services.get(IAttributesBL.class);
-	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
 	private Object sourceModel;
 	private IBPartnerAwareFactory bpartnerAwareFactory;
@@ -127,7 +100,7 @@ public class BPartnerAwareAttributeUpdater
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
 
 		// Check if the attribute was already set in the ASI
-		final I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asiId, attributeId);
+		final I_M_AttributeInstance ai = attributeSetInstanceBL.getAttributeInstance(asiId, attributeId);
 		if (ai != null)
 		{
 			// In case it was, just leave it as it is
@@ -149,7 +122,7 @@ public class BPartnerAwareAttributeUpdater
 		attributeSetInstanceBL.getCreateAttributeInstance(asiId, attributeValue);
 	}
 
-	private final boolean isApplyForSOTrx(final IBPartnerAware bpartnerAware)
+	private boolean isApplyForSOTrx(final IBPartnerAware bpartnerAware)
 	{
 		final boolean isSOTrx = bpartnerAware.isSOTrx();
 
@@ -189,13 +162,13 @@ public class BPartnerAwareAttributeUpdater
 		return this;
 	}
 
-	private final Object getSourceModel()
+	private Object getSourceModel()
 	{
 		Check.assumeNotNull(sourceModel, "sourceModel not null");
 		return sourceModel;
 	}
 
-	private final String getSourceTableName()
+	private String getSourceTableName()
 	{
 		return InterfaceWrapperHelper.getModelTableName(getSourceModel());
 	}
@@ -206,7 +179,7 @@ public class BPartnerAwareAttributeUpdater
 		return this;
 	}
 
-	private final IBPartnerAwareFactory getBPartnerAwareFactory()
+	private IBPartnerAwareFactory getBPartnerAwareFactory()
 	{
 		Check.assumeNotNull(bpartnerAwareFactory, "bpartnerAwareFactory not null");
 		return bpartnerAwareFactory;
@@ -218,7 +191,7 @@ public class BPartnerAwareAttributeUpdater
 		return this;
 	}
 
-	private final IBPartnerAwareAttributeService getBPartnerAwareAttributeService()
+	private IBPartnerAwareAttributeService getBPartnerAwareAttributeService()
 	{
 		Check.assumeNotNull(bpartnerAwareAttributeService, "bpartnerAwareAttributeService not null");
 		return bpartnerAwareAttributeService;
@@ -226,8 +199,6 @@ public class BPartnerAwareAttributeUpdater
 
 	/**
 	 * Sets if we shall copy the attribute even if it's a sales transaction (i.e. IsSOTrx=true)
-	 *
-	 * @param forceApplyForSOTrx
 	 */
 	public final BPartnerAwareAttributeUpdater setForceApplyForSOTrx(final boolean forceApplyForSOTrx)
 	{

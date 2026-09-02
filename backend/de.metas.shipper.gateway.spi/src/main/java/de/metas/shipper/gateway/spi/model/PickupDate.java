@@ -1,14 +1,15 @@
 package de.metas.shipper.gateway.spi.model;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-
-import javax.annotation.Nullable;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 /*
  * #%L
@@ -33,30 +34,19 @@ import lombok.Value;
  */
 
 @Value
+@Builder
+@Jacksonized
 public class PickupDate
 {
-	LocalDate date;
-	LocalTime timeFrom;
-	LocalTime timeTo;
+	@NonNull LocalDate date;
+	@Nullable LocalTime timeFrom;
+	@Nullable LocalTime timeTo;
 
-	@Builder
-	private PickupDate(
-			@NonNull final LocalDate date,
-			@Nullable final LocalTime timeFrom,
-			@Nullable final LocalTime timeTo)
-	{
-		this.date = date;
-		this.timeFrom = timeFrom;
-		this.timeTo = timeTo;
-	}
+	@Nullable
+	@JsonIgnore
+	public LocalDateTime getDateTimeFrom() {return timeFrom != null ? date.atTime(timeFrom) : null;}
 
-	public LocalDateTime getDateTimeFrom()
-	{
-		return timeFrom != null ? date.atTime(timeFrom) : null;
-	}
-
-	public LocalDateTime getDateTimeTo()
-	{
-		return timeTo != null ? date.atTime(timeTo) : null;
-	}
+	@Nullable
+	@JsonIgnore
+	public LocalDateTime getDateTimeTo() {return timeTo != null ? date.atTime(timeTo) : null;}
 }

@@ -387,6 +387,12 @@ public class ApiAuditService
 		return !contentType.contains(APPLICATION_JSON_VALUE);
 	}
 
+	@NonNull
+	public Optional<ApiResponseAudit> getLatestByRequestId(@NonNull final ApiRequestAuditId apiRequestAuditId)
+	{
+		return apiResponseAuditRepository.getLatestByRequestId(apiRequestAuditId);
+	}
+
 	private boolean shouldProcessRequestAsync(@NonNull final HttpServletRequest request, @NonNull final ApiAuditConfig apiAuditConfig)
 	{
 		final Optional<Boolean> callerWantsToBeProcessedAsync = Optional.ofNullable(request.getHeader(API_ASYNC_HEADER))

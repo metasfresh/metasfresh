@@ -23,9 +23,10 @@
 package de.metas.externalsystem.process;
 
 import de.metas.externalsystem.ExternalSystemConfigQuery;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
+import de.metas.externalsystem.ExternalSystemProcesses;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
@@ -49,7 +50,7 @@ import static de.metas.externalsystem.process.InvokeExternalSystemProcess.MSG_ER
 
 public class DisableSchedulerForExternalSystem extends JavaProcess implements IProcessPrecondition
 {
-	private final ExternalSystemConfigRepo externalSystemConfigRepo = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
+	private final ExternalSystemConfigRepository externalSystemConfigRepository = SpringContextHolder.instance.getBean(ExternalSystemConfigRepository.class);
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
 	@Override
@@ -65,19 +66,19 @@ public class DisableSchedulerForExternalSystem extends JavaProcess implements IP
 		}
 		else
 		{
-			final String externalSystemType = externalSystemConfigRepo.getParentTypeById(ExternalSystemParentConfigId.ofRepoId(context.getSingleSelectedRecordId()));
+			final String externalSystemType = externalSystemConfigRepository.getParentTypeById(ExternalSystemParentConfigId.ofRepoId(context.getSingleSelectedRecordId()));
 
-			final ExternalSystemType type = ExternalSystemType.ofCode(externalSystemType);
+			final ExternalSystemType type = ExternalSystemType.ofValue(externalSystemType);
 
 			final ExternalSystemConfigQuery query = ExternalSystemConfigQuery.builder()
 					.parentConfigId(ExternalSystemParentConfigId.ofRepoId(context.getSingleSelectedRecordId()))
 					.build();
 
-			final Optional<ExternalSystemParentConfig> config = externalSystemConfigRepo.getByQuery(type, query);
+			final Optional<ExternalSystemParentConfig> config = externalSystemConfigRepository.getByQuery(type, query);
 
 			if (!config.isPresent())
 			{
-				return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_ERR_NO_EXTERNAL_SELECTION, type.getName()));
+				return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_ERR_NO_EXTERNAL_SELECTION, type.getValue()));
 			}
 		}
 		return ProcessPreconditionsResolution.accept();
@@ -88,13 +89,13 @@ public class DisableSchedulerForExternalSystem extends JavaProcess implements IP
 	{
 		final SchedulerEventBusService schedulerEventBusService = SpringContextHolder.instance.getBean(SchedulerEventBusService.class);
 
-		final String externalSystemType = externalSystemConfigRepo.getParentTypeById(ExternalSystemParentConfigId.ofRepoId(getRecord_ID()));
+		final String externalSystemType = externalSystemConfigRepository.getParentTypeById(ExternalSystemParentConfigId.ofRepoId(getRecord_ID()));
 
-		final ExternalSystemType type = ExternalSystemType.ofCode(externalSystemType);
+		final ExternalSystemType type = ExternalSystemType.ofValue(externalSystemType);
 
-		final AdProcessId targetProcessId = adProcessDAO.retrieveProcessIdByClassIfUnique(type.getExternalSystemProcessClassName());
+		final AdProcessId targetProcessId = adProcessDAO.retrieveProcessIdByClassIfUnique(ExternalSystemProcesses.getExternalSystemProcessClassName(type));
 
-		Check.assumeNotNull(targetProcessId, "There should always be an AD_Process record for classname:" + type.getExternalSystemProcessClassName());
+		Check.assumeNotNull(targetProcessId, "There should always be an AD_Process record for classname:" + ExternalSystemProcesses.getExternalSystemProcessClassName(type));
 
 		schedulerEventBusService.postRequest(ManageSchedulerRequest.builder()
 													 .schedulerSearchKey(SchedulerSearchKey.of(targetProcessId))

@@ -118,6 +118,7 @@ class Tabs extends PureComponent {
         onKeyDown={(e) => this.handlePillKeyDown(e, item.tabId)}
         style={{ maxWidth }}
         title={item.description || item.caption}
+        data-testid={`tab-${item.tabId || 'unknown'}`}
       >
         <a
           className={classnames('nav-link', {

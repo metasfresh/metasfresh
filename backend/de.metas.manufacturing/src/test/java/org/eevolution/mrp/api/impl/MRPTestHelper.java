@@ -39,7 +39,7 @@ import de.metas.workflow.interceptors.AD_Workflow;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory;
+import org.adempiere.mm.attributes.asi_aware.product.ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
@@ -437,7 +437,6 @@ public class MRPTestHelper
 		product.setName(name);
 		product.setM_Product_Category_ID(productCategoryDefault == null ? -1 : productCategoryDefault.getM_Product_Category_ID());
 		product.setC_UOM_ID(uom.getC_UOM_ID());
-		product.setLowLevel(0);
 		InterfaceWrapperHelper.save(product);
 
 		return product;

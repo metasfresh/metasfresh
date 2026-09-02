@@ -1,6 +1,7 @@
 package org.adempiere.ad.session;
 
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 import javax.annotation.Nullable;
 import java.util.Properties;
@@ -14,6 +15,17 @@ public interface ISessionBL extends ISingletonService
 	 */
 	@Nullable
 	MFSession getCurrentSession(Properties ctx);
+
+	/**
+	 * @return the current session's id, creating a session if there is none (e.g. a batch/import save with
+	 * no logged-in user) — so a caller stamping an audit column always gets a real {@code AD_Session_ID}
+	 * rather than a null it would have to special-case.
+	 */
+	@NonNull
+	default AdSessionId getCurrentOrCreateSessionId(final Properties ctx)
+	{
+		return AdSessionId.ofRepoId(getCurrentOrCreateNewSession(ctx).getAD_Session_ID());
+	}
 
 	/**
 	 * Gets current session if exists. If not, creates a new session

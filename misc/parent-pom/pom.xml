@@ -85,6 +85,7 @@
         <assertj.version>3.27.2</assertj.version>
         <xmlunit-assertj3.version>2.10.0</xmlunit-assertj3.version>
         <xmlunit.version>2.10.0</xmlunit.version>
+        <archunit.version>1.4.2</archunit.version>
 
         <mockito.version>2.7.22</mockito.version>
         <byte-buddy.version>1.12.20</byte-buddy.version>
@@ -163,6 +164,25 @@
                 <scope>test</scope>
             </dependency>
 
+            <!-- ArchUnit — architecture enforcement library. Runs on Java 8.
+                 Core artifact (not archunit-junit5): rules run from plain Jupiter @Test methods, so there is
+                 no archunit JUnit-Platform engine to clash with the junit-platform version pinned here.
+                 slf4j-api is excluded: ArchUnit 1.4.x pulls slf4j-api 2.x transitively, but the backend runs
+                 on slf4j-api 1.7.x — ArchUnit uses only the stable Logger API, so it runs fine on 1.7.x and
+                 this avoids dragging slf4j 2.x onto consuming modules' test classpaths. -->
+            <dependency>
+                <groupId>com.tngtech.archunit</groupId>
+                <artifactId>archunit</artifactId>
+                <version>${archunit.version}</version>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
             <dependency>
                 <groupId>net.sf.jasperreports</groupId>
                 <artifactId>jasperreports</artifactId>
@@ -217,14 +237,20 @@
                 <version>17.0.0</version>
             </dependency>
 
+            <!-- Adobe XMP library required by JasperReports for PDF/A XMP metadata (ZUGFeRD) -->
+            <dependency>
+                <groupId>com.adobe.xmp</groupId>
+                <artifactId>xmpcore</artifactId>
+                <version>6.1.11</version>
+            </dependency>
+
         </dependencies>
 
     </dependencyManagement>
 
     <build>
         <plugins>
-            <!-- This plugin sometimes causes trouble in eclipse. we could move it to the "jenkins-BUILD_NUMBER-set" profile below,
-            but then when running locally against logstash, we would need to have some special configs which we don't have in prod
+            <!-- This plugin sometimes causes trouble in eclipse.
              -->
             <plugin>
                 <groupId>pl.project13.maven</groupId>
@@ -321,6 +347,13 @@
                         <encoding>UTF-8</encoding>
                         <source>${metasfresh.java.version}</source>
                         <target>${metasfresh.java.version}</target>
+                        <useIncrementalCompilation>true</useIncrementalCompilation>
+                        <!-- Force javac to generate .class files for package-info.java even if they only contain Javadoc.
+                             Without this, javac produces no .class file for Javadoc-only package-info.java, causing Maven
+                             to repeatedly mark them as "stale" and trigger full module recompilation (JDK-6960424). -->
+                        <compilerArgs>
+                            <arg>-Xpkginfo:always</arg>
+                        </compilerArgs>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -336,12 +369,12 @@
                     <groupId>org.jvnet.jaxb2.maven2</groupId>
                     <artifactId>maven-jaxb2-plugin</artifactId>
                     <version>0.14.0</version>
-                </plugin>
-
-                <plugin>
-                    <groupId>com.google.cloud.tools</groupId>
-                    <artifactId>jib-maven-plugin</artifactId>
-                    <version>2.8.0</version>
+                    <configuration>
+                        <!-- Suppress timestamp in generated file headers to avoid unnecessary git changes -->
+                        <args>
+                            <arg>-no-header</arg>
+                        </args>
+                    </configuration>
                 </plugin>
 
                 <plugin>
@@ -427,7 +460,7 @@
                              Hence it is important to add those command-line params where @{argLine} holds those params.
                              Note that the @ is not a typo.
                              See https://www.jacoco.org/jacoco/trunk/doc/prepare-agent-mojo.html and https://maven.apache.org/surefire/maven-surefire-plugin/test-mojo.html#argLine -->
-                        <argLine>@{argLine} -Xms256m -Xmx2048m</argLine>
+                        <argLine>@{argLine} -Xms256m -Xmx2048m -Dfile.encoding=UTF-8</argLine>
                         <!-- From http://www.jacoco.org/jacoco/trunk/doc/maven.html :
                              When using the maven-surefire-plugin or maven-failsafe-plugin you must not use a forkCount of 0
                              or set the forkMode to never as this would prevent the execution of the tests with the javaagent set and no coverage would be recorded.
@@ -437,8 +470,8 @@
                         <!-- Required to be false in order to have google Reflections work correctly. See https://github.com/metasfresh/metasfresh/issues/4773. -->
                         <useSystemClassLoader>false</useSystemClassLoader>
 
-                        <!-- 'random' might be a good idea in general, but due to our known problems, prefer determinability
-                             Again, see Spring boot related tests fail on jenkins sometimes https://github.com/metasfresh/metasfresh/issues/2988 -->
+                        <!-- 'random' might be a good idea in general, but due to known test stability issues, prefer determinability
+                             See https://github.com/metasfresh/metasfresh/issues/2988 -->
                         <runOrder>filesystem</runOrder>
                         <!-- runOrder>random</runOrder -->
 
@@ -583,7 +616,7 @@
 Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached in the local repository, resolution will not be reattempted...
   de.metas:de.metas.parent:pom:(1.0.0,3)
 
-                However, when running on jenkins, we resolve the parent version anyways (using the maven-versions-plugin)
+                However, when running in CI, we resolve the parent version anyways (using the maven-versions-plugin)
                 and *then* we can benefit a lot from making sure that the plugin versions are not a moving target
              -->
             <id>enforcer-profile</id>
@@ -670,55 +703,14 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
             </build>
         </profile>
 
-        <profile>
-            <!-- If there is a sql directory, then this profile will activate and
-                zip up the migration SQL files in that directory. Note the property "migration-sql-basedir"
-                needs to be defined in that case -->
-            <id>postgres</id>
-            <activation>
-                <file>
-                    <exists>src/main/sql/postgresql/system</exists>
-                </file>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-assembly-plugin</artifactId>
-                        <dependencies>
-                            <dependency>
-                                <groupId>de.metas</groupId>
-                                <artifactId>metasfresh-assemblies</artifactId>
-                                <!-- version>${metasfresh.assembly.descriptor.version}</version -->
-                                <version>10.0.0</version>
-                            </dependency>
-                        </dependencies>
-                        <executions>
-                            <execution>
-                                <id>make-postgresql-assembly</id> <!-- this is used for inheritance merges -->
-                                <phase>package</phase> <!-- bind to the packaging phase -->
-                                <goals>
-                                    <goal>single</goal>
-                                </goals>
-                                <configuration>
-                                    <descriptorRefs>
-                                        <descriptorRef>migration_postgresql_system</descriptorRef>
-                                    </descriptorRefs>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
         <!--
-            If the environment variable MF_VERSION is not set, it means that
-            we are not building on jenkins, so we substitute the value "LOCAL-NO-RELEASE" instead.
+            Local build defaults profile - activated when BUILD_NUMBER is not set.
+            Provides default values for build properties to enable local development builds.
             Without any value, the spring-boot release-info goal will probably fail since is usually tries to write this value into the build-info.properties file
             See https://github.com/metasfresh/metasfresh/issues/2110 -->
         <!-- Note that until now i don't see a reason to add a pendant for this to /de.metas.adempiere.adempiere.base/src/main/java-legacy/org/compiere/Adempiere.java ..so i don't.. -->
         <profile>
-            <id>jenkins-BUILD_NUMBER-not-set</id>
+            <id>local-build-defaults</id>
             <activation>
                 <property>
                     <name>!env.BUILD_NUMBER</name>
@@ -759,7 +751,7 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
                 </file>
             </activation>
             <properties>
-                <!-- this value needs to be in sync with our createAndPublishDockerImage jenkins pipeline step -->
+                <!-- this value needs to be in sync with our Docker build configuration -->
                 <docker.build.directory>target/docker</docker.build.directory>
             </properties>
             <build>
@@ -805,44 +797,6 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
             </build>
         </profile>
 
-        <!--
-            Add code coverage metrics to our builds https://github.com/metasfresh/metasfresh/issues/2343
-            Also define an additional repository with placeholders. The jenkins build jobs will set the values from outside.
-            Jenkins by default defines a property BUILD_NUMBER which is used to enable the profile.
-        -->
-        <profile>
-            <id>jenkins-BUILD_NUMBER-set</id>
-            <activation>
-                <property>
-                    <name>env.BUILD_NUMBER</name>
-                </property>
-            </activation>
-
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.jacoco</groupId>
-                        <artifactId>jacoco-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <!-- https://www.eclemma.org/jacoco/trunk/doc/prepare-agent-mojo.html -->
-                                <id>jacoco-prepare-agent</id>
-                                <goals>
-                                    <goal>prepare-agent</goal>
-                                </goals>
-                            </execution>
-                            <execution>
-                                <id>jacoco-report</id>
-                                <goals>
-                                    <goal>report</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
         <profile>
             <!-- If there is a jasper sources directory, this profile will activate
                  It will compile those jrxml files and then assemble the jasper files into
@@ -877,6 +831,7 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
                                             <directory>src/main/jasperreports</directory>
                                             <excludes>
                                                 <exclude>**/*.jrxml</exclude>
+                                                <exclude>**/*.md</exclude>
                                             </excludes>
                                         </resource>
                                     </resources>

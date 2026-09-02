@@ -22,6 +22,7 @@
 
 package de.metas.ui.web.view.descriptor;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.impl.AccessSqlStringExpression;
@@ -566,6 +567,26 @@ public final class SqlViewSelectionQueryBuilder
 			@NonNull final DocumentQueryOrderByList orderBys,
 			@NonNull final SqlDocumentFilterConverterContext filterConverterCtx)
 	{
+		return buildSqlCreateSelectionFromSelection(viewEvalCtx, newViewId, fromSelectionId, filters, orderBys, filterConverterCtx, null, ImmutableList.of());
+	}
+
+	/**
+	 * @param sourceRelationSql when non-null, the sort/filter column values are read from this relation
+	 *        (e.g. a set-returning function) instead of the plain view/table {@code getTableName()}. The
+	 *        relation is aliased with {@code getTableName()}, so all field/display/order/key expressions
+	 *        resolve unchanged. Any {@code ?} placeholders it contains are bound from {@code sourceRelationParams},
+	 *        ahead of the filter parameters.
+	 */
+	public SqlAndParams buildSqlCreateSelectionFromSelection(
+			@NonNull final ViewEvaluationCtx viewEvalCtx,
+			@NonNull final ViewId newViewId,
+			@NonNull final String fromSelectionId,
+			@NonNull final DocumentFilterList filters,
+			@NonNull final DocumentQueryOrderByList orderBys,
+			@NonNull final SqlDocumentFilterConverterContext filterConverterCtx,
+			@Nullable final String sourceRelationSql,
+			@NonNull final List<Object> sourceRelationParams)
+	{
 		final String sqlTableAlias = getTableAlias();
 		final SqlViewKeyColumnNamesMap keyColumnNamesMap = getSqlViewKeyColumnNamesMap();
 		final FilterSql filterSql = toFilterSql(
@@ -593,7 +614,7 @@ public final class SqlViewSelectionQueryBuilder
 						continue;
 					}
 
-					if (sqlKeyColumnNames.length() > 0)
+					if (!sqlKeyColumnNames.isEmpty())
 					{
 						sqlKeyColumnNames.append("\n, ");
 					}
@@ -637,7 +658,14 @@ public final class SqlViewSelectionQueryBuilder
 				sqlSourceTableBuilder.append(", ").append(filterSql.getFilterByFTS().buildOrderBy("fts")).append(" AS _fts_line");
 			}
 
-			sqlSourceTableBuilder.append("\n FROM ").append(getTableName());
+			if (sourceRelationSql != null)
+			{
+				sqlSourceTableBuilder.append("\n FROM ").append(sourceRelationSql + " " + getTableName(), sourceRelationParams.toArray());
+			}
+			else
+			{
+				sqlSourceTableBuilder.append("\n FROM ").append(getTableName());
+			}
 
 			if (filterSql.getFilterByFTS() != null)
 			{

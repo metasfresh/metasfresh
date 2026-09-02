@@ -22,9 +22,11 @@ package de.metas.materialtracking;
  * #L%
  */
 
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report;
+import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
+import de.metas.util.ISingletonService;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeValueId;
@@ -33,14 +35,13 @@ import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_Period;
 import org.eevolution.model.I_PP_Order;
 
-import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report;
-import de.metas.materialtracking.model.I_M_Material_Tracking;
-import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
-import de.metas.util.ISingletonService;
+import java.util.List;
+import java.util.Properties;
 
 public interface IMaterialTrackingDAO extends ISingletonService
 {
+
+	I_M_Material_Tracking getById(MaterialTrackingId materialTrackingId);
 
 	IMaterialTrackingQuery createMaterialTrackingQuery();
 

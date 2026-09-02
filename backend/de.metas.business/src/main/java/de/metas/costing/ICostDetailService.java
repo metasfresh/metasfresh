@@ -1,5 +1,6 @@
 package de.metas.costing;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostDetail.CostDetailBuilder;
 import de.metas.product.ProductId;
@@ -9,6 +10,7 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /*
@@ -39,7 +41,25 @@ public interface ICostDetailService
 
 	boolean hasCostDetailsForProductId(ProductId productId);
 
+	ImmutableSet<ProductId> retrieveProductIdsWithCostRevaluationSeed(
+			@NonNull AcctSchemaId acctSchemaId,
+			@NonNull CostElementId costElementId,
+			@NonNull Set<ProductId> productIds);
+
+	/**
+	 * Recovers ALL persisted cost-detail legs of the document identified by the request's
+	 * (acctSchemaId, costElementId, documentRef) — MAIN, ADJUSTMENT and ALREADY_SHIPPED alike.
+	 * <p>
+	 * {@code request.getAmtType()} is intentionally IGNORED (it defaults to MAIN): this feeds the
+	 * repost-recovery path ({@code CostingMethodHandlerTemplate.createOrUpdateCost} plus the manufacturing
+	 * handlers), which must reconstruct the FULL posting. Filtering by amtType here would drop the non-MAIN
+	 * legs of a multi-leg document (MovingAverageInvoice MatchInv, manufacturing CostDifferenceDistribution)
+	 * and degenerate the aggregated {@link de.metas.costing.methods.CostAmountDetailed} to the MAIN leg. To recover a single amtType,
+	 * use the {@link CostDetailQuery} overloads instead.
+	 */
 	List<CostDetail> getExistingCostDetails(CostDetailCreateRequest request);
+
+	AggregatedCostAmount toAggregatedCostAmount(List<CostDetail> costDetails);
 
 	List<CostDetail> getAllForDocument(CostingDocumentRef documentRef);
 
@@ -71,5 +91,13 @@ public interface ICostDetailService
 
 	Stream<CostDetail> stream(@NonNull CostDetailQuery query);
 
+	/** @return true if at least one cost detail matches the query */
+	boolean hasCostDetails(@NonNull CostDetailQuery query);
+
 	Optional<CostDetail> firstOnly(@NonNull CostDetailQuery query);
+
+	/** @see ICostDetailRepository#getFirstChangingCostsDetailAfter(CostSegmentAndElement, Instant) */
+	Optional<CostDetail> getFirstChangingCostsDetailAfter(
+			@NonNull CostSegmentAndElement costSegmentAndElement,
+			@NonNull Instant asOfDate);
 }

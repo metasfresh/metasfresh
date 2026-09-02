@@ -36,37 +36,61 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_D
     LANGUAGE sql
 AS
 $$
-SELECT io.description                                                          AS description,
-       io.documentno                                                           AS documentno,
-       io.movementdate                                                         AS movementdate,
-       io.poreference                                                          AS reference,
-       bp.value                                                                AS bp_value,
-       bp.VATaxID,
-       bp.eori                                                                 AS eori,
-       bp.customernoatvendor                                                   AS customernoatvendor,
+SELECT io.description                        AS description,
+       io.documentno                         AS documentno,
+       io.movementdate                       AS movementdate,
+       io.poreference                        AS reference,
+       bp.value                              AS bp_value,
+       CASE
+           WHEN report.IsHiddenReportElement(io.C_DocType_ID, 'VATaxID') = 'N' THEN
+               bp.VATaxID
+       END                                   AS VATaxID,
+       bp.eori                               AS eori,
+       CASE
+           WHEN report.IsHiddenReportElement(io.C_DocType_ID, 'Customer_No_At_Vendor') = 'N' THEN
+               bp.customernoatvendor
+       END                                   AS customernoatvendor,
        COALESCE(cogr.name, '') ||
        COALESCE(' ' || cont.title, '') ||
        COALESCE(' ' || cont.firstName, '') ||
-       COALESCE(' ' || cont.lastName, '')                                      AS cont_name,
-       cont.phone                                                              AS cont_phone,
-       cont.fax                                                                AS cont_fax,
-       cont.email                                                              AS cont_email,
+       COALESCE(' ' || cont.lastName, '')    AS cont_name,
+       CASE
+           WHEN report.IsHiddenReportElement(io.C_DocType_ID, 'Contact_Phone') = 'N' THEN
+               cont.phone
+       END                                   AS cont_phone,
+       CASE
+           WHEN report.IsHiddenReportElement(io.C_DocType_ID, 'Contact_Fax') = 'N' THEN
+               cont.fax
+       END                                   AS cont_fax,
+       cont.email                            AS cont_email,
        COALESCE(srgr.name, '') ||
        COALESCE(' ' || srep.title, '') ||
        COALESCE(' ' || srep.firstName, '') ||
-       COALESCE(' ' || srep.lastName, '')                                      AS sr_name,
-       srep.phone                                                              AS sr_phone,
-       srep.fax                                                                AS sr_fax,
-       srep.email                                                              AS sr_email,
-       COALESCE(dtt.printname, dt.printname)                                   AS printname,
-       o.docno                                                                 AS order_docno,
-       o.dateordered                                                           AS order_date,
-       o.offer_documentno,
-       o.offer_date,
+       COALESCE(' ' || srep.lastName, '')    AS sr_name,
+       srep.phone                            AS sr_phone,
+       srep.fax                              AS sr_fax,
+       CASE
+           WHEN report.IsHiddenReportElement(io.C_DocType_ID, 'SalesRep_Email') = 'N' THEN
+               srep.email
+       END                                   AS sr_email,
+       COALESCE(dtt.printname, dt.printname) AS printname,
+       o.docno                               AS order_docno,
+       o.dateordered                         AS order_date,
+       CASE
+           WHEN report.IsHiddenReportElement(io.C_DocType_ID, 'Offer_DocumentNo') = 'N' THEN
+               o.offer_documentno
+       END                                   AS offer_documentno,
+       CASE
+           WHEN report.IsHiddenReportElement(io.C_DocType_ID, 'Offer_Date') = 'N' THEN
+               o.offer_date
+       END                                   AS offer_date,
        o.billtoaddress,
        o.PreparationDate,
        io.docstatus,
-       TO_CHAR(io.MovementDate, 'WW') || '.' || TO_CHAR(io.MovementDate, 'YY') AS week_year
+       CASE
+           WHEN report.IsHiddenReportElement(io.C_DocType_ID, 'Delivery_Week_Year') = 'N' THEN
+               TO_CHAR(io.MovementDate, 'WW') || '.' || TO_CHAR(io.MovementDate, 'YY')
+       END                                   AS delivery_week_year
 FROM m_inout io
          INNER JOIN C_DocType dt ON io.C_DocType_ID = dt.C_DocType_ID
          LEFT OUTER JOIN C_DocType_Trl dtt ON dt.C_DocType_ID = dtt.C_DocType_ID AND dtt.AD_Language = p_language

@@ -49,6 +49,7 @@ import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.CreateSelectionResponse;
 import org.compiere.model.IQuery;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -65,6 +66,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
@@ -407,7 +409,8 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 
 		final POJOLookupMap db = POJOLookupMap.get();
 
-		return db.getRecords(modelClass, filters).size();
+		// NOTE: a query created from a plain tableName has a generic modelClass, so the tableName aware overload is required.
+		return db.getRecords(getTableNameToUse(modelClass), modelClass, filters, null).size();
 	}
 
 	@Override
@@ -583,8 +586,8 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 
 	@Override
 	public <AT> AT aggregate(final String columnName,
-							 @NonNull final Aggregate aggregateType,
-							 final Class<AT> returnType) throws DBException
+	                         @NonNull final Aggregate aggregateType,
+	                         final Class<AT> returnType) throws DBException
 	{
 		AT result = null;
 		final BiFunction<Object, Object, AT> aggregateOperator;
@@ -946,7 +949,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public PInstanceId createSelection()
+	public Optional<CreateSelectionResponse> createSelection()
 	{
 		final List<Integer> ids = listIds();
 		return POJOLookupMap.get().createSelection(ids);

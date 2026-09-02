@@ -39,6 +39,8 @@
     <properties>
         <metasfresh.version>10.0.0</metasfresh.version>
         <testcontainers.version>1.21.3</testcontainers.version>
+        <external.libs.path></external.libs.path>
+        <cucumber.filter.tags>not @ignore</cucumber.filter.tags>
     </properties>
 
     <dependencyManagement>
@@ -152,6 +154,12 @@
             <artifactId>junit-platform-engine</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>io.cucumber</groupId>
@@ -172,6 +180,14 @@
         <dependency>
             <groupId>io.cucumber</groupId>
             <artifactId>cucumber-picocontainer</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Allure reporting for Cucumber tests -->
+        <dependency>
+            <groupId>io.qameta.allure</groupId>
+            <artifactId>allure-cucumber7-jvm</artifactId>
+            <version>2.25.0</version>
             <scope>test</scope>
         </dependency>
 
@@ -208,11 +224,17 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Allure reporting for Cucumber tests -->
+        <!-- ZUGFeRD E2E: Mustang validator for asserting factur-x.xml embedding in Mailpit PDFs -->
         <dependency>
-            <groupId>io.qameta.allure</groupId>
-            <artifactId>allure-cucumber7-jvm</artifactId>
-            <version>2.25.0</version>
+            <groupId>org.mustangproject</groupId>
+            <artifactId>validator</artifactId>
+            <version>2.11.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.einvoice</groupId>
+            <artifactId>de.metas.einvoice.base</artifactId>
+            <version>${metasfresh.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -234,10 +256,29 @@
                     <properties>
                         <configurationParameters>
                             cucumber.junit-platform.naming-strategy=surefire
+                            cucumber.filter.tags=${cucumber.filter.tags}
                         </configurationParameters>
                     </properties>
+                    <additionalClasspathElements>
+                        <additionalClasspathElement>${external.libs.path}</additionalClasspathElement>
+                    </additionalClasspathElements>
                 </configuration>
             </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>cli-build</id>
+            <activation>
+                <property>
+                    <name>!idea.version</name>
+                </property>
+            </activation>
+            <properties>
+                <external.libs.path>${project.basedir}/external-lib/*</external.libs.path>
+            </properties>
+        </profile>
+    </profiles>
+
+
 </project>

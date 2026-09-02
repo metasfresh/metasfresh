@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 DROP VIEW IF EXISTS m_packageable_v$new
 ;
 
@@ -15,8 +37,8 @@ FROM (SELECT
 
           --
           -- BPartner location
-          l.C_BPartner_Location_ID,
-          l.Name                                                                  AS BPartnerLocationName,
+          bpl.C_BPartner_Location_ID,
+          bpl.Name                                                                AS BPartnerLocationName,
           (CASE
                WHEN s.BPartnerAddress_Override IS NOT NULL AND s.BPartnerAddress_Override != ''
                    THEN s.BPartnerAddress_Override
@@ -37,7 +59,7 @@ FROM (SELECT
                   (CASE WHEN o.IsUseHandOver_Location = 'Y' THEN o.Handover_Partner_ID ELSE o.C_BPartner_ID END),
                   o.C_BPartner_ID
           )                                                                       AS HandOver_Partner_ID,
-          cast_to_numeric_or_null(l.Setup_Place_No)                               AS Setup_Place_No,
+          cast_to_numeric_or_null(bpl.Setup_Place_No)                             AS Setup_Place_No,
           dt.DocSubType,
           s.DateOrdered,
           s.C_OrderLine_ID                                                        AS C_OrderLineSO_ID,
@@ -60,6 +82,7 @@ FROM (SELECT
           --
           -- Product & ASI
           s.M_Product_ID,
+          prod.Value                                                              AS ProductValue,
           prod.Name                                                               AS ProductName,
           prod.C_UOM_ID                                                           AS C_UOM_ID, -- shipment schedule's UOM (see de.metas.inoutcandidate.api.impl.ShipmentScheduleBL.getC_UOM); IMPORTANT: before changing it, check bellow, we might use this logic to convert some Qtys to shipment schedule's UOM
           s.M_AttributeSetInstance_ID,
@@ -94,6 +117,9 @@ FROM (SELECT
              -- note that when the pc is processed (->status PR or CL), then the QtyToDeliver is decreased accordingly
              AND pc.Status = 'IP'
              AND pc.IsActive = 'Y')                                               AS QtyPickedPlanned,
+          s.qtyonhand                                                             AS QtyOnHand,
+          s.qtyscheduledforpicking                                                AS QtyScheduledForPicking,
+          s.qtyscheduledforpickingofprocessed                                     AS QtyScheduledForPickingOfProcessed,
 
           --
           -- Rules&Quantities
@@ -125,10 +151,18 @@ FROM (SELECT
           (SELECT l.LockedBy_User_ID
            FROM M_ShipmentSchedule_Lock l
            WHERE l.M_ShipmentSchedule_ID = s.M_ShipmentSchedule_ID)               AS LockedBy_User_ID,
-          o.datepromised,
+          -- Per-line promised date = the same override-inclusive value as the DeliveryDate column above
+          -- (COALESCE(DeliveryDate_Override, DeliveryDate)). M_ShipmentSchedule has no DatePromised column of its own;
+          -- "DatePromised" is the order/flag terminology for the same business date the schedule stores as DeliveryDate.
+          -- Exposing it per-line here is what makes the ship-after gate (header flag IsFixedDatePromised, applies to
+          -- ALL lines) hold each line until its OWN date. This is the single place the order(DatePromised)-vs-schedule
+          -- (DeliveryDate) naming is bridged.
+          COALESCE(s.DeliveryDate_Override, s.DeliveryDate)                        AS datepromised,
           o.IsFixedDatePromised,
           o.IsFixedPreparationDate,
-
+          s.carrier_advising_status,
+          s.carrier_product_id,
+          s.carrier_goods_type_id,
           --
           -- Standard columns
           s.AD_Client_ID,
@@ -137,12 +171,15 @@ FROM (SELECT
           s.CreatedBy,
           s.Updated,
           s.UpdatedBy,
-          s.IsActive
+          s.IsActive,
+          l.c_country_id,
+          Product_GrossWeight_KG(s.M_Product_ID) as GrossWeight
       FROM M_ShipmentSchedule s
                JOIN M_Warehouse w ON (w.M_Warehouse_ID = COALESCE(s.M_Warehouse_Override_ID, s.M_Warehouse_ID)) -- s.M_Warehouse_ID is mandatory
                JOIN C_BPartner p ON (p.C_BPartner_ID = COALESCE(s.C_BPartner_Override_ID, s.C_BPartner_ID))
                LEFT JOIN C_BPartner_Stats stats ON (p.C_BPartner_ID = stats.C_BPartner_ID)
-               JOIN C_BPartner_Location l ON (l.C_BPartner_Location_ID = COALESCE(s.C_BP_Location_Override_ID, s.C_BPartner_Location_ID))
+               JOIN C_BPartner_Location bpl ON (bpl.C_BPartner_Location_ID = COALESCE(s.C_BP_Location_Override_ID, s.C_BPartner_Location_ID))
+               JOIN c_location l ON l.c_location_id = COALESCE(s.C_BP_Location_Override_Value_ID, s.C_BPartner_Location_Value_ID)
                JOIN M_Product prod ON (prod.M_Product_ID = s.M_Product_ID)
                LEFT JOIN C_OrderLine ol ON (ol.C_OrderLine_ID = s.C_OrderLine_ID)
                LEFT JOIN M_Shipper sh ON (sh.M_Shipper_ID = COALESCE(s.M_Shipper_ID, ol.M_Shipper_ID))
@@ -151,7 +188,7 @@ FROM (SELECT
       WHERE TRUE
         AND s.Processed = 'N'
         AND s.IsActive = 'Y'
-        AND s.QtyToDeliver > 0
+        AND (s.QtyToDeliver > 0 OR s.qtypicklist > 0)
         AND s.isclosed = 'N'
         AND (stats.SOCreditStatus NOT IN ('S', 'H') OR stats.SOCreditStatus IS NULL)) p
 ;
@@ -161,7 +198,7 @@ SELECT db_alter_view(
                'm_packageable_v',
                (SELECT view_definition
                 FROM information_schema.views
-                WHERE views.table_name = 'm_packageable_v$new')
+                WHERE lower(views.table_name) = lower('m_packageable_v$new'))
        )
 ;
 

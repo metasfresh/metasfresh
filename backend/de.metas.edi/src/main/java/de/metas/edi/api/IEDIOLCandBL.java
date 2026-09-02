@@ -12,9 +12,4 @@ public interface IEDIOLCandBL extends ISingletonService
 	 * @return <code>true</code> as long as we have a capacity in our master data
 	 */
 	boolean isManualQtyItemCapacity(I_C_OLCand olCand);
-
-	/**
-	 * @return true if the input data source is EDI
-	 */
-	boolean isEDIInput(de.metas.ordercandidate.model.I_C_OLCand olCand);
 }

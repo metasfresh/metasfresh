@@ -1,21 +1,8 @@
-package de.metas.order;
-
-import java.util.Optional;
-
-import de.metas.freighcost.FreightCostRule;
-import de.metas.payment.PaymentRule;
-import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.pricing.PricingSystemId;
-import de.metas.shipping.ShipperId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
 /*
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -33,6 +20,21 @@ import lombok.Value;
  * #L%
  */
 
+package de.metas.order;
+
+import de.metas.freighcost.FreightCostRule;
+import de.metas.incoterms.Incoterms;
+import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.pricing.PricingSystemId;
+import de.metas.shipping.ShipperId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Optional;
+
 /**
  * Holds bpartner related parameters that are required for an oder.
  * Note that e.g. the delivery rule might be related to the order's drop ship partner, while the pricing system id might be related to the order's bill partner.
@@ -41,27 +43,15 @@ import lombok.Value;
 @Builder
 public class BPartnerOrderParams
 {
-	@NonNull
-	Optional<DeliveryRule> deliveryRule;
+	@NonNull Optional<DeliveryRule> deliveryRule;
+	@NonNull Optional<DeliveryViaRule> deliveryViaRule;
+	@NonNull Optional<FreightCostRule> freightCostRule;
+	@NonNull InvoiceRule invoiceRule;
+	@NonNull PaymentRule paymentRule;
+	@Nullable PaymentTermId paymentTermId;
+	@Nullable PricingSystemId pricingSystemId;
+	@NonNull Optional<ShipperId> shipperId;
+	@Nullable Incoterms incoterms;
 
-	@NonNull
-	Optional<DeliveryViaRule> deliveryViaRule;
-
-	@NonNull
-	Optional<FreightCostRule> freightCostRule;
-
-	@NonNull
-	Optional<InvoiceRule> invoiceRule;
-
-	@NonNull
-	PaymentRule paymentRule;
-
-	@NonNull
-	Optional<PaymentTermId> paymentTermId;
-
-	@NonNull
-	Optional<PricingSystemId> pricingSystemId;
-
-	@NonNull
-	Optional<ShipperId> shipperId;
+	boolean isAutoInvoice;
 }

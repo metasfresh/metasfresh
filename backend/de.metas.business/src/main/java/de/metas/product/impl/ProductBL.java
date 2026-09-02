@@ -6,26 +6,32 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.IProductCostingBL;
-import de.metas.ean13.EAN13;
-import de.metas.ean13.EAN13Prefix;
-import de.metas.ean13.EAN13ProductCode;
-import de.metas.ean13.EAN13ProductCodes;
+import de.metas.gs1.GS1ProductCodes;
+import de.metas.gs1.GS1ProductCodesCollection;
+import de.metas.gs1.GS1ProductCodesCollection.GS1ProductCodesCollectionBuilder;
 import de.metas.gs1.GTIN;
+import de.metas.gs1.ean13.EAN13;
+import de.metas.gs1.ean13.EAN13ProductCode;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.product.BBSStatus;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.IProductDAO.ProductQuery;
 import de.metas.product.IssuingToleranceSpec;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.product.ProductLifeCycleAction;
 import de.metas.product.ProductType;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -40,22 +46,24 @@ import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetDescriptor;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
-import org.compiere.model.MAttributeSet;
+import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
@@ -65,6 +73,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -79,6 +88,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 public final class ProductBL implements IProductBL
 {
 	private static final Logger logger = LogManager.getLogger(ProductBL.class);
+	private static final AdMessageKey MSG_M_PRODUCT_NOT_PURCHASED = AdMessageKey.of("MSG_M_Product_NotPurchased");
+	private static final AdMessageKey MSG_M_PRODUCT_NOT_SOLD = AdMessageKey.of("MSG_M_Product_NotSold");
+	private static final AdMessageKey MSG_M_PRODUCT_BBSSTATUS_ACTION_BLOCKED = AdMessageKey.of("M_Product_BBSStatus_ActionBlocked");
 
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
@@ -89,6 +101,7 @@ public final class ProductBL implements IProductBL
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
 	private final IUOMConversionDAO uomConversionDAO = Services.get(IUOMConversionDAO.class);
 	private final IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@Override
 	public I_M_Product getById(@NonNull final ProductId productId)
@@ -351,6 +364,13 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
+	public AttributeSetDescriptor getAttributeSet(@NonNull final ProductId productId)
+	{
+		final AttributeSetId attributeSetId = getAttributeSetId(productId);
+		return attributesRepo.getAttributeSetDescriptorById(attributeSetId);
+	}
+
+	@Override
 	public AttributeSetId getAttributeSetId(@NonNull final ProductId productId)
 	{
 		final I_M_Product product = getById(productId);
@@ -359,7 +379,7 @@ public final class ProductBL implements IProductBL
 
 	@Override
 	@Nullable
-	public I_M_AttributeSet getAttributeSetOrNull(@NonNull final ProductId productId)
+	public AttributeSetDescriptor getAttributeSetOrNull(@NonNull final ProductId productId)
 	{
 		final AttributeSetId attributeSetId = getAttributeSetId(productId);
 		if (attributeSetId.isNone())
@@ -367,7 +387,7 @@ public final class ProductBL implements IProductBL
 			return null;
 		}
 
-		return attributesRepo.getAttributeSetById(attributeSetId);
+		return attributesRepo.getAttributeSetDescriptorById(attributeSetId);
 	}
 
 	@Nullable
@@ -406,6 +426,110 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
+	public boolean isPurchased(@NonNull final ProductId productId)
+	{
+		return getById(productId).isPurchased();
+	}
+
+	@Override
+	public boolean isSold(@NonNull final ProductId productId)
+	{
+		return getById(productId).isSold();
+	}
+
+	@Override
+	public void assertPurchasable(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = getById(productId);
+		if (!product.isPurchased())
+		{
+			throw new AdempiereException(MSG_M_PRODUCT_NOT_PURCHASED, product.getValue(), product.getName());
+		}
+	}
+
+	@Override
+	public void assertSellable(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = getById(productId);
+		if (!product.isSold())
+		{
+			throw new AdempiereException(MSG_M_PRODUCT_NOT_SOLD, product.getValue(), product.getName());
+		}
+	}
+
+	@Override
+	public boolean isPurchaseSalesEnforcementEnabled(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
+	{
+		return sysConfigBL.getBooleanValue(SYSCONFIG_ENFORCE_PURCHASE_SALES_FLAGS, false, clientId.getRepoId(), orgId.getRepoId());
+	}
+
+	@Override
+	public boolean isAllowed(@NonNull final ProductId productId, @NonNull final ProductLifeCycleAction action)
+	{
+		return isStatusAllowed(getById(productId).getProductLifeCycleStatus(), action);
+	}
+
+	@Override
+	public void assertAllowed(@NonNull final ProductId productId, @NonNull final ProductLifeCycleAction action)
+	{
+		assertAllowed(getById(productId), action);
+	}
+
+	@Override
+	public void assertAllowed(@NonNull final Set<ProductId> productIds, @NonNull final ProductLifeCycleAction action)
+	{
+		if (productIds.isEmpty())
+		{
+			return;
+		}
+
+		// One query for the whole document. getByIdsInTrxIncludingInactive (not getByIds / getByIdsInTrx):
+		// in-trx because a product may have been created within the current trx, and including inactive
+		// records because a product can be deactivated while documents still reference it — dropping those
+		// would silently skip a check that assertAllowed(ProductId, ...) still performs.
+		final ImmutableMap<ProductId, I_M_Product> productsById = Maps.uniqueIndex(
+				productsRepo.getByIdsInTrxIncludingInactive(ImmutableSet.copyOf(productIds)),
+				product -> ProductId.ofRepoId(product.getM_Product_ID()));
+
+		// Iterate the REQUESTED ids in a stable order: the query result is unordered, so without this a
+		// document carrying several blocked products would name an arbitrary one of them, differing
+		// between runs.
+		for (final ProductId productId : ImmutableList.sortedCopyOf(Comparator.comparingInt(ProductId::getRepoId), productIds))
+		{
+			final I_M_Product product = productsById.get(productId);
+			// A missing id means there is no such product at all: delegate to the single-record load, which
+			// raises the same "@NotFound@ @M_Product_ID@" error the single-product overload raises.
+			assertAllowed(product != null ? product : productsRepo.getByIdInTrx(productId), action);
+		}
+	}
+
+	private static void assertAllowed(@NonNull final I_M_Product product, @NonNull final ProductLifeCycleAction action)
+	{
+		final String code = product.getProductLifeCycleStatus();
+		if (!isStatusAllowed(code, action))
+		{
+			// Show the human-readable, locale-resolved status name (e.g. "Gesperrt" / "Blocked"), not the raw
+			// code. retrieveListNameTranslatableString wraps the lookup lazily (forwardingTo), so it resolves
+			// per the reader's language only when the message is actually rendered.
+			// IMPORTANT: resolve ADReferenceService inline here (request time) — do NOT lift it to a class
+			// field. ServerBoot.main constructs ProductBL before the Spring context is configured, so a
+			// field-initializer ADReferenceService.get() throws "SpringApplicationContext not configured yet"
+			// and crashes app/webapi boot.
+			final ITranslatableString statusName = ADReferenceService.get()
+					.retrieveListNameTranslatableString(X_M_Product.PRODUCTLIFECYCLESTATUS_AD_Reference_ID, code);
+			throw new AdempiereException(MSG_M_PRODUCT_BBSSTATUS_ACTION_BLOCKED, product.getValue(), statusName)
+					.setParameter("product", product.getValue())
+					.setParameter("status", code);
+		}
+	}
+
+	private static boolean isStatusAllowed(@Nullable final String code, @NonNull final ProductLifeCycleAction action)
+	{
+		final BBSStatus status = BBSStatus.ofNullableCode(code);
+		return status == null || status.isAllowed(action);
+	}
+
+	@Override
 	public boolean isASIMandatory(
 			@NonNull final I_M_Product product,
 			final boolean isSOTrx)
@@ -435,22 +559,8 @@ public final class ProductBL implements IProductBL
 		final AttributeSetId attributeSetId = getAttributeSetId(product);
 		if (!attributeSetId.isNone())
 		{
-			final MAttributeSet mas = MAttributeSet.get(attributeSetId);
-			if (mas == null || !mas.isInstanceAttribute())
-			{
-				return false;
-			}
-			// Outgoing transaction
-			else if (isSOTrx)
-			{
-				return mas.isMandatory();
-			}
-			// Incoming transaction
-			else
-			{
-				// isSOTrx == false
-				return mas.isMandatoryAlways();
-			}
+			return attributesRepo.getAttributeSetDescriptorById(attributeSetId)
+					.isASIMandatory(SOTrx.ofBoolean(isSOTrx));
 		}
 		//
 		// Default not mandatory
@@ -467,13 +577,6 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public boolean isInstanceAttribute(@NonNull final ProductId productId)
-	{
-		final I_M_AttributeSet mas = getAttributeSetOrNull(productId);
-		return mas != null && mas.isInstanceAttribute();
-	}
-
-	@Override
 	public boolean isProductInCategory(
 			final ProductId productId,
 			final ProductCategoryId expectedProductCategoryId)
@@ -485,6 +588,16 @@ public final class ProductBL implements IProductBL
 
 		final ProductCategoryId productCategoryId = productsRepo.retrieveProductCategoryByProductId(productId);
 		return Objects.equals(productCategoryId, expectedProductCategoryId);
+	}
+
+	@Override
+	@Nullable
+	public I_M_Product_Category getProductCategoryByProductId(@NonNull final ProductId productId)
+	{
+		final ProductCategoryId productCategoryId = productsRepo.retrieveProductCategoryByProductId(productId);
+		return productCategoryId != null
+				? productsRepo.getProductCategoryById(productCategoryId)
+				: null;
 	}
 
 	@Override
@@ -523,31 +636,55 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public EAN13ProductCodes getEAN13ProductCodes(@NonNull final ProductId productId)
+	public GS1ProductCodesCollection getGS1ProductCodesCollection(@NonNull final ProductId productId)
 	{
 		final I_M_Product product = getById(productId);
-		return getEAN13ProductCodes(product);
+		return getGS1ProductCodesCollection(product);
 	}
 
 	@Override
-	public EAN13ProductCodes getEAN13ProductCodes(@NonNull final I_M_Product product)
+	public GS1ProductCodesCollection getGS1ProductCodesCollection(@NonNull final I_M_Product product)
 	{
-		final EAN13ProductCodes.EAN13ProductCodesBuilder result = EAN13ProductCodes.builder()
+		final GS1ProductCodesCollectionBuilder result = GS1ProductCodesCollection.builder()
 				.productValue(product.getValue())
-				.defaultCode(EAN13ProductCode.ofNullableString(product.getEAN13_ProductCode()));
+				.defaultCodes(extractGS1ProductCodes(product));
 
 		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
-		for (final I_C_BPartner_Product bPartnerProductRecord : partnerProductDAO.retrieveForProductIds(ImmutableSet.of(productId)))
+		for (final I_C_BPartner_Product bpartnerProductRecord : partnerProductDAO.retrieveForProductIds(ImmutableSet.of(productId)))
 		{
-			final EAN13ProductCode partnerEAN13ProductCode = EAN13ProductCode.ofNullableString(bPartnerProductRecord.getEAN13_ProductCode());
-			if (partnerEAN13ProductCode != null)
-			{
-				final BPartnerId bpartnerId = BPartnerId.ofRepoId(bPartnerProductRecord.getC_BPartner_ID());
-				result.code(bpartnerId, partnerEAN13ProductCode);
-			}
+			final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartnerProductRecord.getC_BPartner_ID());
+			result.codes(bpartnerId, extractGS1ProductCodes(bpartnerProductRecord));
 		}
 
 		return result.build();
+	}
+
+	@NonNull
+	private static GS1ProductCodes extractGS1ProductCodes(@NonNull final I_M_Product product)
+	{
+		return GS1ProductCodes.builder()
+				.gtin(GTIN.ofNullableString(product.getGTIN()))
+				.ean13ProductCode(EAN13ProductCode.ofNullableString(product.getEAN13_ProductCode()))
+				.build();
+	}
+
+	@NonNull
+	private static GS1ProductCodes extractGS1ProductCodes(@NonNull final I_C_BPartner_Product bpartnerProduct)
+	{
+		final String ean = StringUtils.trimBlankToNull(bpartnerProduct.getEAN_CU());
+
+		return GS1ProductCodes.builder()
+				.gtin(GTIN.ofNullableString(bpartnerProduct.getGTIN()))
+				.ean13(ean != null ? EAN13.ofString(ean).orElse(null) : null)
+				.ean13ProductCode(EAN13ProductCode.ofNullableString(bpartnerProduct.getEAN13_ProductCode()))
+				.build();
+	}
+
+	@Override
+	public Optional<GTIN> getGTIN(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = getById(productId);
+		return GTIN.optionalOfNullableString(product.getGTIN());
 	}
 
 	@Override
@@ -657,7 +794,7 @@ public final class ProductBL implements IProductBL
 
 	@Nullable
 	@Override
-	public I_M_AttributeSet getProductMasterDataSchemaOrNull(@NonNull final ProductId productId)
+	public AttributeSetDescriptor getProductMasterDataSchemaOrNull(@NonNull final ProductId productId)
 	{
 		final AttributeSetId attributeSetId = getMasterDataSchemaAttributeSetId(productId);
 		if (attributeSetId.isNone())
@@ -665,7 +802,7 @@ public final class ProductBL implements IProductBL
 			return null;
 		}
 
-		return attributesRepo.getAttributeSetById(attributeSetId);
+		return attributesRepo.getAttributeSetDescriptorById(attributeSetId);
 	}
 
 	@NonNull
@@ -705,7 +842,7 @@ public final class ProductBL implements IProductBL
 		final ZoneId zoneId = orgDAO.getTimeZone(OrgId.ofRepoId(productRecord.getAD_Org_ID()));
 
 		return productRecord.getDiscontinuedFrom() == null
-				|| TimeUtil.asLocalDate(productRecord.getDiscontinuedFrom(), zoneId).compareTo(targetDate) <= 0;
+				|| !TimeUtil.asLocalDate(productRecord.getDiscontinuedFrom(), zoneId).isAfter(targetDate);
 	}
 
 	@Override
@@ -728,62 +865,29 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public Optional<ProductId> getProductIdByGTIN(@NonNull final GTIN gtin, @NonNull final ClientId clientId)
+	public Optional<ProductId> getProductIdByGTIN(@NonNull final GTIN gtin)
 	{
-		return productsRepo.getProductIdByGTIN(gtin, clientId);
+		return getProductIdByGTIN(gtin, null, ClientId.METASFRESH);
 	}
 
 	@Override
-	public ProductId getProductIdByGTINNotNull(@NonNull final GTIN gtin, @NonNull final ClientId clientId)
+	public Optional<ProductId> getProductIdByGTIN(@NonNull final GTIN gtin, @Nullable final BPartnerId bpartnerId, @NonNull final ClientId clientId)
 	{
-		return getProductIdByGTIN(gtin, clientId)
-				.orElseThrow(() -> new AdempiereException("@NotFound@ @M_Product_ID@: @GTIN@ " + gtin));
+		final EAN13 ean13 = gtin.toEAN13().orElse(null);
+
+		//noinspection OptionalAssignedToNull
+		return Optionals.firstPresentOfSuppliers(
+				() -> gtin.isFixed() ? getProductIdByGTINStrictly(gtin, bpartnerId, clientId) : null,
+				() -> ean13 != null && ean13.isVariable() ? getProductIdByEAN13ProductCode(ean13.getProductNo(), bpartnerId, clientId) : null,
+				() -> ean13 != null && ean13.isVariableWeight() ? productsRepo.getProductIdByValueStartsWith(ean13.getProductNo().getAsString(), clientId) : null
+		);
 	}
 
-	@Override
-	public Optional<ProductId> getProductIdByValueStartsWith(@NonNull final String valuePrefix, @NonNull final ClientId clientId)
-	{
-		return productsRepo.getProductIdByValueStartsWith(valuePrefix, clientId);
-	}
-
-	@Override
-	public Optional<ProductId> getProductIdByEAN13(@NonNull final EAN13 ean13)
-	{
-		return getProductIdByEAN13(ean13, null, ClientId.METASFRESH);
-	}
-
-	@Override
-	public Optional<ProductId> getProductIdByEAN13(
-			@NonNull final EAN13 ean13,
-			@Nullable final BPartnerId bpartnerId,
-			@NonNull final ClientId clientId)
-	{
-		final EAN13Prefix ean13Prefix = ean13.getPrefix();
-		if (ean13Prefix.isVariableWeight())
-		{
-			return Optionals.firstPresentOfSuppliers(
-					() -> getProductIdByEAN13ProductCode(ean13, bpartnerId, clientId),
-					() -> getProductIdByValueStartsWith(ean13.getProductNo().getAsString(), clientId)
-			);
-		}
-		else if (ean13Prefix.isInternalUseOrVariableMeasure())
-		{
-			return getProductIdByEAN13ProductCode(ean13, bpartnerId, clientId);
-		}
-		else
-		{
-			return getProductIdByEAN13ProductCode(ean13, bpartnerId, clientId);
-		}
-	}
-
-	private Optional<ProductId> getProductIdByEAN13ProductCode(
-			@NonNull final EAN13 ean13,
-			@Nullable final BPartnerId bpartnerId,
-			@NonNull final ClientId clientId)
+	private Optional<ProductId> getProductIdByGTINStrictly(@NonNull final GTIN gtin, @Nullable final BPartnerId bpartnerId, @NonNull final ClientId clientId)
 	{
 		if (bpartnerId != null)
 		{
-			final ImmutableSet<ProductId> productIds = partnerProductDAO.retrieveByEAN13ProductCode(ean13.getProductNo(), bpartnerId)
+			final ImmutableSet<ProductId> productIds = partnerProductDAO.retrieveByGTIN(gtin, bpartnerId)
 					.stream()
 					.map(partnerProduct -> ProductId.ofRepoId(partnerProduct.getM_Product_ID()))
 					.collect(ImmutableSet.toImmutableSet());
@@ -793,13 +897,61 @@ public final class ProductBL implements IProductBL
 			}
 		}
 
-		return productsRepo.getProductIdByEAN13ProductCode(ean13.getProductNo(), clientId);
+		return productsRepo.getProductIdByGTINStrictly(gtin, clientId);
+	}
+
+	@Override
+	public Optional<ProductId> getProductIdByGTINStrictly(@NonNull final GTIN gtin, @NonNull final ClientId clientId)
+	{
+		return productsRepo.getProductIdByGTINStrictly(gtin, clientId);
+	}
+
+	@Override
+	public ProductId getProductIdByGTINStrictlyNotNull(@NonNull final GTIN gtin, @NonNull final ClientId clientId)
+	{
+		return getProductIdByGTINStrictly(gtin, clientId)
+				.orElseThrow(() -> new AdempiereException("@NotFound@ @M_Product_ID@: @GTIN@ " + gtin));
+	}
+
+	@Override
+	public Optional<ProductId> getProductIdByEAN13(@NonNull final EAN13 ean13) {return getProductIdByEAN13(ean13, null, ClientId.METASFRESH);}
+
+	@Override
+	public Optional<ProductId> getProductIdByEAN13(@NonNull final EAN13 ean13, @Nullable final BPartnerId bpartnerId, @NonNull final ClientId clientId)
+	{
+		return getProductIdByGTIN(ean13.toGTIN(), bpartnerId, clientId);
+	}
+
+	private Optional<ProductId> getProductIdByEAN13ProductCode(
+			@NonNull final EAN13ProductCode ean13ProductCode,
+			@Nullable final BPartnerId bpartnerId,
+			@NonNull final ClientId clientId)
+	{
+		if (bpartnerId != null)
+		{
+			final ImmutableSet<ProductId> productIds = partnerProductDAO.retrieveByEAN13ProductCode(ean13ProductCode, bpartnerId)
+					.stream()
+					.map(partnerProduct -> ProductId.ofRepoId(partnerProduct.getM_Product_ID()))
+					.collect(ImmutableSet.toImmutableSet());
+			if (productIds.size() == 1)
+			{
+				return Optional.of(productIds.iterator().next());
+			}
+		}
+
+		return productsRepo.getProductIdByEAN13ProductCode(ean13ProductCode, clientId);
+	}
+
+	@Override
+	public boolean isValidEAN13Product(@NonNull final EAN13 ean13, @NonNull final ProductId expectedProductId)
+	{
+		return getGS1ProductCodesCollection(expectedProductId).isValidProductNo(ean13, null);
 	}
 
 	@Override
 	public boolean isValidEAN13Product(@NonNull final EAN13 ean13, @NonNull final ProductId expectedProductId, @Nullable final BPartnerId bpartnerId)
 	{
-		return getEAN13ProductCodes(expectedProductId).isValidProductNo(ean13, bpartnerId);
+		return getGS1ProductCodesCollection(expectedProductId).isValidProductNo(ean13, bpartnerId);
 	}
 
 	@Override
@@ -822,6 +974,29 @@ public final class ProductBL implements IProductBL
 	public boolean isExistingValue(@NonNull final String value, @NonNull final ClientId clientId)
 	{
 		return productsRepo.isExistingValue(value, clientId);
+	}
+
+	@Override
+	public void setProductCodeFieldsFromGTIN(@NonNull final I_M_Product record, @Nullable final GTIN gtin)
+	{
+		record.setGTIN(gtin != null ? gtin.getAsString() : null);
+		record.setUPC(gtin != null ? gtin.getAsString() : null);
+
+		if (gtin != null)
+		{
+			record.setEAN13_ProductCode(null);
+		}
+	}
+
+	@Override
+	public void setProductCodeFieldsFromEAN13ProductCode(@NonNull final I_M_Product record, @Nullable final EAN13ProductCode ean13ProductCode)
+	{
+		record.setEAN13_ProductCode(ean13ProductCode != null ? ean13ProductCode.getAsString() : null);
+		if (ean13ProductCode != null)
+		{
+			record.setGTIN(null);
+			record.setUPC(null);
+		}
 	}
 
 }

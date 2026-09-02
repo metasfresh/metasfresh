@@ -33,6 +33,7 @@ import de.metas.common.rest_api.v2.CreatePInstanceLogRequest;
 import de.metas.common.rest_api.v2.JsonError;
 import de.metas.common.rest_api.v2.issue.JsonCreateIssueResponse;
 import de.metas.error.AdIssueId;
+import de.metas.externalsystem.ExternalSystem;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.externalservice.common.ExternalStatus;
 import de.metas.externalsystem.externalservice.status.StoreExternalSystemStatusRequest;
@@ -59,6 +60,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nullable;
@@ -89,7 +91,7 @@ public class ExternalSystemRestController
 			@ApiParam("The actual request like `getOrders` of the external system invocation process") @PathVariable final String request,
 			@RequestBody @Nullable final JsonInvokeExternalSystemParams externalSystemParams)
 	{
-		final ExternalSystemType externalSystemType = ExternalSystemType.ofCodeOrNameOrNull(externalSystemConfigType);
+		final ExternalSystemType externalSystemType = externalSystemService.getExternalSystemTypeByCodeOrNameOrNull(externalSystemConfigType);
 		if (externalSystemType == null)
 		{
 			throw new AdempiereException("Unsupported externalSystemConfigType=" + externalSystemConfigType);
@@ -136,10 +138,27 @@ public class ExternalSystemRestController
 	@PostMapping(path = "/externalstatus/{AD_PInstance_ID}/error", consumes = "application/json", produces = "application/json")
 	public ResponseEntity<JsonCreateIssueResponse> handleError(
 			@RequestBody @NonNull final JsonError request,
-			@PathVariable final Integer AD_PInstance_ID)
+			@PathVariable final int AD_PInstance_ID)
 	{
 		final JsonCreateIssueResponse issueResponse = externalSystemService.createIssue(request, PInstanceId.ofRepoId(AD_PInstance_ID));
 		return ResponseEntity.ok(issueResponse);
+	}
+
+	@ApiOperation("Notify metasfresh that an external system invocation completed successfully. "
+			+ "\nThe `AD_PInstance_ID` is the one the external system was invoked with.")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Successfully recorded invocation success"),
+			@ApiResponse(code = 401, message = "You are not authorized to record invocation success"),
+			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
+			@ApiResponse(code = 422, message = "The request could not be processed")
+	})
+	@PostMapping(path = "/externalstatus/{AD_PInstance_ID}/ok")
+	public ResponseEntity<?> handleSuccess(
+			@PathVariable final int AD_PInstance_ID,
+			@RequestParam(required = false, defaultValue = "200") final int httpResponseCode)
+	{
+		externalSystemService.handleExportSuccess(PInstanceId.ofRepoId(AD_PInstance_ID), httpResponseCode);
+		return ResponseEntity.ok().build();
 	}
 
 	@ApiOperation("Upsert external system runtime parameter")
@@ -169,8 +188,7 @@ public class ExternalSystemRestController
 			@ApiParam("Used to identify an IExternalSystemChildConfig together with 'externalSystemConfigType'.") @PathVariable @NonNull final String externalSystemChildConfigValue,
 			@ApiParam("Used to identify an ExternalSystemService. Translates to 'ExternalSystem_Service.Value'.") @PathVariable @NonNull final String serviceValue)
 	{
-		final ExternalSystemType externalSystemType = ExternalSystemType.ofCodeOrNameOrNull(externalSystemConfigType);
-
+		final ExternalSystemType externalSystemType = externalSystemService.getExternalSystemTypeByCodeOrNameOrNull(externalSystemConfigType);
 		if (externalSystemType == null)
 		{
 			throw new AdempiereException("Unsupported externalSystemConfigType=" + externalSystemConfigType);
@@ -195,7 +213,7 @@ public class ExternalSystemRestController
 	@GetMapping(path = "/service/{externalSystemConfigType}/status")
 	public ResponseEntity<?> getExternalSystemStatus(@PathVariable @NonNull final String externalSystemConfigType)
 	{
-		final ExternalSystemType externalSystemType = ExternalSystemType.ofCodeOrNameOrNull(externalSystemConfigType);
+		final ExternalSystemType externalSystemType = externalSystemService.getExternalSystemTypeByCodeOrNameOrNull(externalSystemConfigType);
 		if (externalSystemType == null)
 		{
 			throw new AdempiereException("Unsupported externalSystemConfigType=" + externalSystemConfigType);
@@ -217,7 +235,7 @@ public class ExternalSystemRestController
 			@PathVariable @NonNull final String externalSystemConfigType,
 			@PathVariable @NonNull final String externalSystemChildConfigValue)
 	{
-		final ExternalSystemType externalSystemType = ExternalSystemType.ofCodeOrNameOrNull(externalSystemConfigType);
+		final ExternalSystemType externalSystemType = externalSystemService.getExternalSystemTypeByCodeOrNameOrNull(externalSystemConfigType);
 		if (externalSystemType == null)
 		{
 			throw new AdempiereException("Unsupported externalSystemConfigType=" + externalSystemConfigType);

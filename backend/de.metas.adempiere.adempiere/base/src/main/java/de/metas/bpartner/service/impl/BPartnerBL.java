@@ -1,9 +1,32 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.bpartner.service.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.bpartner.BPGroupId;
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -33,6 +56,7 @@ import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.tax.api.VATIdentifier;
 import de.metas.user.User;
 import de.metas.user.UserId;
@@ -40,6 +64,7 @@ import de.metas.user.UserRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -71,7 +96,6 @@ public class BPartnerBL implements IBPartnerBL
 	/* package */static final String SYSCONFIG_C_BPartner_SOTrx_AllowConsolidateInOut_Override = "C_BPartner.SOTrx_AllowConsolidateInOut_Override";
 	private static final AdMessageKey MSG_SALES_REP_EQUALS_BPARTNER = AdMessageKey.of("SALES_REP_EQUALS_BPARTNER");
 	private static final Logger logger = LogManager.getLogger(IBPartnerBL.class);
-	private final static String SYS_CONFIG_IgnorePartnerVATID = "de.metas.tax.api.impl.TaxDAO.IgnorePartnerVATID";
 
 	private final ILocationDAO locationDAO;
 	private final IBPartnerDAO bpartnersRepo;
@@ -99,6 +123,12 @@ public class BPartnerBL implements IBPartnerBL
 	public I_C_BPartner getById(@NonNull final BPartnerId bpartnerId)
 	{
 		return bpartnersRepo.getById(bpartnerId);
+	}
+
+	@Override
+	public <T extends I_C_BPartner> T getById(@NonNull final BPartnerId bpartnerId, @NonNull final Class<T> type)
+	{
+		return bpartnersRepo.getById(bpartnerId, type);
 	}
 
 	@Override
@@ -155,7 +185,7 @@ public class BPartnerBL implements IBPartnerBL
 		for (final BPartnerId bpartnerId : bpartnerIds)
 		{
 			final I_C_BPartner bpartner = bpartners.get(bpartnerId);
-			String name = bpartner != null ? bpartner.getName() : unknownBPName(bpartnerId);
+			final String name = bpartner != null ? bpartner.getName() : unknownBPName(bpartnerId);
 			result.put(bpartnerId, name);
 		}
 
@@ -174,6 +204,12 @@ public class BPartnerBL implements IBPartnerBL
 				.adLanguage(bpartner.getAD_Language())
 				.build();
 		return addressBuilder.buildBPartnerFullAddressString(bpartner, bpLocation, locationId, bpContact);
+	}
+
+	@Override
+	public User getContactById(final UserId userId)
+	{
+		return userRepository.getByIdInTrx(userId);
 	}
 
 	@Override
@@ -463,6 +499,11 @@ public class BPartnerBL implements IBPartnerBL
 	@Override
 	public Optional<BPartnerId> getBPartnerIdForModel(@Nullable final Object model)
 	{
+		if (model instanceof User)
+		{
+			return Optional.ofNullable(((User)model).getBpartnerId());
+		}
+
 		final IBPartnerAware bpartnerAware = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(model, IBPartnerAware.class);
 		return bpartnerAware != null
 				? BPartnerId.optionalOfRepoId(bpartnerAware.getC_BPartner_ID())
@@ -530,6 +571,26 @@ public class BPartnerBL implements IBPartnerBL
 			if (groupDiscountSchemaId > 0)
 			{
 				return groupDiscountSchemaId; // we are done
+			}
+
+			// didn't get the schema yet; now we try to get the discount schema from the parent C_BP_Group
+			final BPGroupId parentBpGroupId = BPGroupId.ofRepoIdOrNull(bpGroup.getParent_BP_Group_ID());
+			if (parentBpGroupId != null)
+			{
+				final I_C_BP_Group parentBpGroup = bpGroupDAO.getById(parentBpGroupId);
+				final int parentGroupDiscountSchemaId;
+				if (soTrx.isSales())
+				{
+					parentGroupDiscountSchemaId = parentBpGroup.getM_DiscountSchema_ID();
+				}
+				else
+				{
+					parentGroupDiscountSchemaId = parentBpGroup.getPO_DiscountSchema_ID();
+				}
+				if (parentGroupDiscountSchemaId > 0)
+				{
+					return parentGroupDiscountSchemaId; // we are done
+				}
 			}
 		}
 
@@ -670,10 +731,13 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public Optional<PaymentRule> getPaymentRuleForBPartner(@NonNull final BPartnerId bpartnerId)
+	public Optional<PaymentRule> getPaymentRuleForBPartner(@NonNull final BPartnerId bpartnerId, @NonNull final SOTrx soTrx)
 	{
 		final I_C_BPartner bpartner = bpartnersRepo.getById(bpartnerId);
-		final Optional<PaymentRule> bpartnerPaymentRule = PaymentRule.optionalOfCode(bpartner.getPaymentRule());
+
+		final Optional<PaymentRule> bpartnerPaymentRule = PaymentRule.optionalOfCode( soTrx.isSales()
+				? bpartner.getPaymentRule()
+				: bpartner.getPaymentRulePO());
 		if (bpartnerPaymentRule.isPresent())
 		{
 			return bpartnerPaymentRule;
@@ -681,9 +745,10 @@ public class BPartnerBL implements IBPartnerBL
 		//
 		// No payment rule in BP. Fallback to group.
 		final BPGroupId bpGroupId = BPGroupId.ofRepoId(bpartner.getC_BP_Group_ID());
-		final IBPGroupDAO bpGroupDAO = Services.get(IBPGroupDAO.class);
 		final I_C_BP_Group bpGroup = bpGroupDAO.getById(bpGroupId);
-		return PaymentRule.optionalOfCode(bpGroup.getPaymentRule());
+		return PaymentRule.optionalOfCode( soTrx.isSales()
+				? bpGroup.getPaymentRule()
+				: bpGroup.getPaymentRulePO());
 	}
 
 	@Override
@@ -862,10 +927,32 @@ public class BPartnerBL implements IBPartnerBL
 	@Override
 	public Optional<VATIdentifier> getVATTaxId(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{
+		return resolveVATaxIDSource(bpartnerLocationId)
+				.map(source -> VATIdentifier.of(source.getVatTaxID()));
+	}
+
+	@NonNull
+	@Override
+	public Optional<String> getVATaxIDStatusCode(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		return resolveVATaxIDSource(bpartnerLocationId)
+				.map(VATaxIDSource::getVatTaxIDStatus);
+	}
+
+	/**
+	 * The single resolution shared by {@link #getVATTaxId(BPartnerLocationId)} and
+	 * {@link #getVATaxIDStatusCode(BPartnerLocationId)}: which record — the location, or (unless
+	 * AD_SysConfig {@value #SYS_CONFIG_IgnorePartnerVATID} is set to Y) the partner — actually
+	 * supplies the VAT-ID. Both public methods read off the SAME resolved record, so a caller
+	 * combining them never mismatches a VAT-ID from one record with the status of the other.
+	 */
+	@NonNull
+	private Optional<VATaxIDSource> resolveVATaxIDSource(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
 		final I_C_BPartner_Location bpartnerLocation = bpartnersRepo.getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
 		if (bpartnerLocation != null && Check.isNotBlank(bpartnerLocation.getVATaxID()))
 		{
-			return Optional.of(VATIdentifier.of(bpartnerLocation.getVATaxID()));
+			return Optional.of(new VATaxIDSource(bpartnerLocation.getVATaxID(), bpartnerLocation.getVATaxIDStatus()));
 		}
 
 		// if is set on Y, we will not use the vatid from partner
@@ -880,10 +967,83 @@ public class BPartnerBL implements IBPartnerBL
 			final I_C_BPartner bPartner = getById(bpartnerLocationId.getBpartnerId());
 			if (bPartner != null && Check.isNotBlank(bPartner.getVATaxID()))
 			{
-				return Optional.of(VATIdentifier.of(bPartner.getVATaxID()));
+				return Optional.of(new VATaxIDSource(bPartner.getVATaxID(), bPartner.getVATaxIDStatus()));
 			}
 
 		}
 		return Optional.empty();
 	}
+
+	@Value
+	private static class VATaxIDSource
+	{
+		@NonNull String vatTaxID;
+		@Nullable String vatTaxIDStatus;
+	}
+
+	@Override
+	public boolean isInvoiceEmailCcToMember(@NonNull final BPartnerId bpartnerId)
+	{
+		final I_C_BPartner bpartner = getById(bpartnerId);
+		return bpartner.isInvoiceEmailCcToMember();
+	}
+	
+	@Override
+	public I_C_BPartner_Location getBPartnerLocationByIdEvenInactive(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		return bpartnersRepo.getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
+	}
+
+	@Override
+	public List<I_C_BPartner_Location> getBPartnerLocationsByIds(final Set<BPartnerLocationId> bpartnerLocationIds)
+	{
+		return bpartnersRepo.retrieveBPartnerLocationsByIds(bpartnerLocationIds);
+	}
+
+	@Nullable
+	@Override
+	public I_AD_User retrieveContact(
+			final Properties ctx,
+			final int bpartnerId,
+			final boolean isSOTrx,
+			final String trxName)
+	{
+		return bpartnersRepo.retrieveContact(ctx, bpartnerId, isSOTrx, trxName);
+	}
+
+	@Nullable
+	@Override
+	public I_C_BPartner_Location retrieveBPartnerLocation(@NonNull final IBPartnerDAO.BPartnerLocationQuery query)
+	{
+		return bpartnersRepo.retrieveBPartnerLocation(query);
+	}
+
+	@Nullable
+	@Override
+	public I_C_BPartner_Location getBPartnerLocationById(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		return bpartnersRepo.getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
+	}
+
+	@Nullable
+	@Override
+	public I_C_BPartner_Location getBPartnerLocationByIdInTrx(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		return bpartnersRepo.getBPartnerLocationByIdInTrx(bpartnerLocationId);
+	}
+
+	@Nullable
+	@Override
+	public String getContactLocationEmail(@Nullable final BPartnerContactId contactId)
+	{
+		return bpartnersRepo.getContactLocationEmail(contactId);
+	}
+
+	@Nullable
+	@Override
+	public PricingSystemId retrievePricingSystemIdOrNull(@NonNull final BPartnerId bpartnerId, final SOTrx soTrx)
+	{
+		return bpartnersRepo.retrievePricingSystemIdOrNull(bpartnerId, soTrx);
+	}
+
 }

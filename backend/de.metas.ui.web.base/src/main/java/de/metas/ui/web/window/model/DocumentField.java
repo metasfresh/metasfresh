@@ -13,16 +13,18 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.sql.SqlForFetchingLookups;
 import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 import de.metas.ui.web.window.model.Document.CopyMode;
-import de.metas.ui.web.window.model.lookup.zoom_into.DocumentZoomIntoInfo;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
+import de.metas.ui.web.window.model.lookup.zoom_into.DocumentZoomIntoInfo;
 import de.metas.util.NumberUtils;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
 import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -95,7 +97,9 @@ class DocumentField implements IDocumentField
 		_validStatus = DocumentValidStatus.fieldInitiallyInvalid();
 	}
 
-	/** copy constructor */
+	/**
+	 * copy constructor
+	 */
 	protected DocumentField(final DocumentField from, final Document document, final CopyMode copyMode)
 	{
 		descriptor = from.descriptor;
@@ -154,7 +158,8 @@ class DocumentField implements IDocumentField
 		return descriptor;
 	}
 
-	@Nullable private LookupDataSource getLookupDataSourceOrNull()
+	@Nullable
+	private LookupDataSource getLookupDataSourceOrNull()
 	{
 		return _lookupDataSource.orElse(null);
 	}
@@ -415,7 +420,18 @@ class DocumentField implements IDocumentField
 	{
 		final LookupDataSource lookupDataSource = getLookupDataSource();
 		final Evaluatee ctx = getDocument().asEvaluatee();
-		final LookupValuesList values = lookupDataSource.findEntities(ctx).getValues();
+
+		final Evaluatee ctxEffective;
+		if (descriptor.isShowInactiveValues())
+		{
+			ctxEffective = Evaluatees.ofSingleton(SqlForFetchingLookups.SQL_PARAM_ShowInactive.getName(), SqlForFetchingLookups.SQL_PARAM_VALUE_ShowInactive_Yes)
+					.andComposeWith(ctx);
+		}
+		else
+		{
+			ctxEffective = ctx;
+		}
+		final LookupValuesList values = lookupDataSource.findEntities(ctxEffective).getValues();
 		lookupValuesStaled = false;
 		return values;
 	}
@@ -425,7 +441,17 @@ class DocumentField implements IDocumentField
 	{
 		final LookupDataSource lookupDataSource = getLookupDataSource();
 		final Evaluatee ctx = getDocument().asEvaluatee();
-		final LookupValuesPage page = lookupDataSource.findEntities(ctx, query);
+		final Evaluatee ctxEffective;
+		if (descriptor.isShowInactiveValues())
+		{
+			ctxEffective = Evaluatees.ofSingleton(SqlForFetchingLookups.SQL_PARAM_ShowInactive.getName(), SqlForFetchingLookups.SQL_PARAM_VALUE_ShowInactive_Yes)
+					.andComposeWith(ctx);
+		}
+		else
+		{
+			ctxEffective = ctx;
+		}
+		final LookupValuesPage page = lookupDataSource.findEntities(ctxEffective, query);
 		lookupValuesStaled = false;
 		return page;
 	}
@@ -438,7 +464,6 @@ class DocumentField implements IDocumentField
 		lookupValuesStaled = false;
 		return Optional.ofNullable(value);
 	}
-
 
 	@Override
 	public ICalloutField asCalloutField()

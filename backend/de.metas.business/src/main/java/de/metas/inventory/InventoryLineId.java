@@ -2,10 +2,14 @@ package de.metas.inventory;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares;
+import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
 
 /*
  * #%L
@@ -34,7 +38,11 @@ public class InventoryLineId implements RepoIdAware
 {
 	int repoId;
 
-	@JsonCreator
+	private InventoryLineId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "M_InventoryLine_ID");
+	}
+
 	public static InventoryLineId ofRepoId(final int repoId)
 	{
 		return new InventoryLineId(repoId);
@@ -45,10 +53,19 @@ public class InventoryLineId implements RepoIdAware
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
-	private InventoryLineId(final int repoId)
+	@JsonCreator
+	@Nullable
+	public static InventoryLineId ofNullableObject(@Nullable final Object obj)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "M_InventoryLine_ID");
+		return RepoIdAwares.ofObjectOrNull(obj, InventoryLineId.class, InventoryLineId::ofRepoIdOrNull);
 	}
+
+	@NonNull
+	public static InventoryLineId ofObject(@NonNull final Object obj)
+	{
+		return RepoIdAwares.ofObject(obj, InventoryLineId.class, InventoryLineId::ofRepoId);
+	}
+
 
 	@Override
 	@JsonValue
@@ -56,5 +73,7 @@ public class InventoryLineId implements RepoIdAware
 	{
 		return repoId;
 	}
+
+	public static boolean equals(@Nullable final InventoryLineId id1, @Nullable final InventoryLineId id2) {return Objects.equals(id1, id2);}
 
 }

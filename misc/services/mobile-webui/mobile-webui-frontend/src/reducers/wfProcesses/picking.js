@@ -168,7 +168,20 @@ const normalizePickingLines = (lines) => {
 
 const normalizePickingSteps = (steps) => {
   return steps.reduce((accum, step) => {
-    accum[step.pickingStepId] = step;
+    accum[step.pickingStepId] = {
+      ...step,
+      pickFromAlternatives: normalizePickFromAlternatives(step.pickFromAlternatives),
+    };
+    return accum;
+  }, {});
+};
+
+const normalizePickFromAlternatives = (pickFromAlternatives) => {
+  if (!pickFromAlternatives || !Array.isArray(pickFromAlternatives)) {
+    return {};
+  }
+  return pickFromAlternatives.reduce((accum, alt) => {
+    accum[alt.alternativeId] = alt;
     return accum;
   }, {});
 };
@@ -182,11 +195,16 @@ const mergeActivityDataStoredAndAllocateAlternatives = ({ draftActivityDataStore
   draftActivityDataStored.isLineLevelPickTarget = fromPickingJob.lineLevelPickTarget;
   draftActivityDataStored.luPickingTarget = fromPickingJob.luPickingTarget;
   draftActivityDataStored.tuPickingTarget = fromPickingJob.tuPickingTarget;
-  draftActivityDataStored.isPickWithNewLU = fromPickingJob.pickWithNewLU;
-  draftActivityDataStored.isAllowNewTU = fromPickingJob.allowNewTU;
+  draftActivityDataStored.carrierAdviseAvailable = fromPickingJob.carrierAdviseAvailable;
+  draftActivityDataStored.carrierAdviseReadOnly = fromPickingJob.carrierAdviseReadOnly;
+  draftActivityDataStored.carrierProductCaption = fromPickingJob.carrierProductCaption;
+  draftActivityDataStored.carrierAdviseDisabledReason = fromPickingJob.carrierAdviseDisabledReason;
+  draftActivityDataStored.allowedPickToStructures = fromPickingJob.allowedPickToStructures;
+  draftActivityDataStored.readAttributes = fromPickingJob.readAttributes ?? [];
   draftActivityDataStored.isAllowSkippingRejectedReason = fromPickingJob.allowSkippingRejectedReason;
   draftActivityDataStored.isShowPromptWhenOverPicking = fromPickingJob.showPromptWhenOverPicking;
   draftActivityDataStored.isAnonymousPickHUsOnTheFly = fromPickingJob.anonymousPickHUsOnTheFly;
+  draftActivityDataStored.isCompleteJobAutomatically = fromPickingJob.completeJobAutomatically;
   draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.isAlwaysAvailableToUser ?? false;
 
   //

@@ -42,6 +42,7 @@ import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.util.JsonConverters;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -141,15 +142,27 @@ public class BPartnerEndpointService
 		}
 	}
 
-	public Optional<JsonResponseCompositeList> retrieveBPartnersSince(
-			@Nullable final Long epochMilli,
-			@Nullable final String nextPageId)
+	public Optional<JsonResponseCompositeList> retrieveBPartnersSince(@NonNull final RetrieveBPartnerSinceRequest retrieveBPartnerSinceRequest)
 	{
-		final SinceQuery sinceQuery = SinceQuery.anyEntity(
-				extractInstant(epochMilli),
-				getPageSize());
 
-		final NextPageQuery nextPageQuery = NextPageQuery.anyEntityOrNull(nextPageId);
+		final SinceQuery sinceQuery;
+		final OrgId orgId;
+		if (Check.isBlank(retrieveBPartnerSinceRequest.getOrgCode()))
+		{
+			orgId = null;
+		}
+		else
+		{
+			orgId = RestUtils.retrieveOrgIdOrDefault(retrieveBPartnerSinceRequest.getOrgCode());
+		}
+
+		sinceQuery = SinceQuery.anyEntity(
+				extractInstant(retrieveBPartnerSinceRequest.getEpochMilli()),
+				getPageSize(),
+				orgId,
+				retrieveBPartnerSinceRequest.getExtSystem());
+
+		final NextPageQuery nextPageQuery = NextPageQuery.anyEntityOrNull(retrieveBPartnerSinceRequest.getNextPageId());
 
 		final QueryResultPage<JsonResponseComposite> page = jsonRetriever.getJsonBPartnerComposites(nextPageQuery, sinceQuery).orElse(null);
 		if (page == null)

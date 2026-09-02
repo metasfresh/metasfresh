@@ -10,57 +10,57 @@ package de.metas.lock.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableSet;
+import de.metas.process.PInstanceId;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
-
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.process.PInstanceId;
-import lombok.NonNull;
 
 /**
  * Pool of records to be processed (e.g. lock, unlock etc).
- * 
- * @author tsa
  *
+ * @author tsa
  */
 /* package */final class LockRecords
 {
-	private Set<TableRecordReference> _records = null;
+	private HashSet<TableRecordReference> _records = null;
 	//
-	private int _selection_AD_Table_ID = -1;
+	private AdTableId _selection_AD_Table_ID = null;
 	private PInstanceId _selection_pinstanceId;
 
-	private IQueryFilter<?> _selection_filters = null;
+	private ArrayList<LockRecordsByFilter> _filters = null;
 
 	@Override
 	public String toString()
 	{
-		if (_selection_filters != null)
+		if (_filters != null)
 		{
 			return MoreObjects.toStringHelper(this)
 					.add("type", "queryFilter")
-					.add("queryFilter", _selection_filters)
+					.add("filters", _filters)
 					.toString();
 		}
 		else if (_selection_pinstanceId != null)
@@ -126,7 +126,7 @@ import lombok.NonNull;
 	{
 		_records = new HashSet<>(records);
 		// Reset selection
-		_selection_AD_Table_ID = -1;
+		_selection_AD_Table_ID = null;
 		_selection_pinstanceId = null;
 	}
 
@@ -141,30 +141,44 @@ import lombok.NonNull;
 			_records.addAll(records);
 		}
 
-		_selection_AD_Table_ID = -1;
+		_selection_AD_Table_ID = null;
 		_selection_pinstanceId = null;
+		_filters = null;
 	}
 
 	public void setRecordsBySelection(final Class<?> modelClass, @NonNull final PInstanceId pinstanceId)
 	{
-		_selection_AD_Table_ID = InterfaceWrapperHelper.getTableId(modelClass);
+		_selection_AD_Table_ID = InterfaceWrapperHelper.getAdTableId(modelClass);
 		_selection_pinstanceId = pinstanceId;
 
 		_records = null;
+		_filters = null;
 	}
 
-	public <T> void setSetRecordsByFilter(final Class<T> modelClass, final IQueryFilter<T> filters)
+	public <T> void setRecordsByFilter(final Class<T> modelClass, final IQueryFilter<T> filters)
 	{
-		_selection_AD_Table_ID = InterfaceWrapperHelper.getTableId(modelClass);
-		_selection_filters = filters;
+		_filters = null;
+		addRecordsByFilter(modelClass, filters);
 	}
 
-	public IQueryFilter<?> getSelection_Filters()
+	public <T> void addRecordsByFilter(@NonNull final Class<T> modelClass, @NonNull final IQueryFilter<T> filters)
 	{
-		return _selection_filters;
+		_records = null;
+		_selection_AD_Table_ID = null;
+
+		if (_filters == null)
+		{
+			_filters = new ArrayList<>();
+		}
+		_filters.add(LockRecordsByFilter.of(modelClass, filters));
 	}
 
-	public int getSelection_AD_Table_ID()
+	public List<LockRecordsByFilter> getSelection_Filters()
+	{
+		return _filters;
+	}
+
+	public AdTableId getSelection_AD_Table_ID()
 	{
 		return _selection_AD_Table_ID;
 	}

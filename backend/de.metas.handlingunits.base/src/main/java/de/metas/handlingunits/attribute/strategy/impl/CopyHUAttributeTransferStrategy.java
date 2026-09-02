@@ -32,7 +32,10 @@ import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferStrategy;
 
 public final class CopyHUAttributeTransferStrategy implements IHUAttributeTransferStrategy
 {
-	public static final CopyHUAttributeTransferStrategy instance = new CopyHUAttributeTransferStrategy();
+	public static CopyHUAttributeTransferStrategy newInstance()
+	{
+		return new CopyHUAttributeTransferStrategy();
+	}
 
 	private CopyHUAttributeTransferStrategy()
 	{

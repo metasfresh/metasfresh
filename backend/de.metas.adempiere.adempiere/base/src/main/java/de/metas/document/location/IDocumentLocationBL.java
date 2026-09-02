@@ -56,19 +56,19 @@ public interface IDocumentLocationBL
 
 	void updateRenderedAddressAndCapturedLocation(IDocumentLocationAdapter locationAdapter);
 
-	void updateCapturedLocation(IDocumentLocationAdapter locationAdapter);
-
-	void updateCapturedLocation(IDocumentBillLocationAdapter locationAdapter);
+	void updateRenderedAddress(IDocumentLocationAdapter locationAdapter);
 
 	void updateRenderedAddressAndCapturedLocation(IDocumentBillLocationAdapter locationAdapter);
 
+	void updateRenderedAddress(IDocumentBillLocationAdapter locationAdapter);
+
 	void updateRenderedAddressAndCapturedLocation(IDocumentDeliveryLocationAdapter locationAdapter);
 
-	void updateCapturedLocation(IDocumentDeliveryLocationAdapter locationAdapter);
+	void updateRenderedAddress(IDocumentDeliveryLocationAdapter locationAdapter);
 
 	void updateRenderedAddressAndCapturedLocation(IDocumentHandOverLocationAdapter locationAdapter);
 
-	void updateCapturedLocation(IDocumentHandOverLocationAdapter locationAdapter);
+	void updateRenderedAddress(IDocumentHandOverLocationAdapter locationAdapter);
 
 	Set<DocumentLocation> getDocumentLocations(@NonNull Set<BPartnerLocationId> bpartnerLocationIds);
 

@@ -23,6 +23,7 @@ import org.adempiere.ad.model.util.ModelByIdComparator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
+import org.compiere.model.CreateSelectionResponse;
 import org.compiere.model.IQuery;
 import org.compiere.util.TimeUtil;
 
@@ -239,7 +240,9 @@ public class RetrieveDbRecordsUtil
 		{
 			if (selectionId == null)
 			{
-				selectionId = query.createSelection();
+				selectionId = query.createSelection()
+						.map(CreateSelectionResponse::getSelectionId)
+						.orElse(null);
 				//System.out.println("*** Created selection: " + selectionId + "\n\tSQL: " + query);
 			}
 			else

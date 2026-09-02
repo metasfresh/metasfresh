@@ -1,8 +1,7 @@
 package de.metas.async.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Async_Batch_Type
  *  @author metasfresh (generated) 
@@ -119,6 +118,27 @@ public interface I_C_Async_Batch_Type
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDescription (@Nullable java.lang.String Description);
+
+	/**
+	 * Get Description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDescription();
+
+	ModelColumn<I_C_Async_Batch_Type, Object> COLUMN_Description = new ModelColumn<>(I_C_Async_Batch_Type.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
+
+	/**
 	 * Set Internal Name.
 	 * Generally used to give records a name that can be safely referenced from code.
 	 *
@@ -126,7 +146,7 @@ public interface I_C_Async_Batch_Type
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setInternalName (String InternalName);
+	void setInternalName (java.lang.String InternalName);
 
 	/**
 	 * Get Internal Name.
@@ -136,7 +156,7 @@ public interface I_C_Async_Batch_Type
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getInternalName();
+	java.lang.String getInternalName();
 
 	ModelColumn<I_C_Async_Batch_Type, Object> COLUMN_InternalName = new ModelColumn<>(I_C_Async_Batch_Type.class, "InternalName", null);
 	String COLUMNNAME_InternalName = "InternalName";
@@ -165,6 +185,29 @@ public interface I_C_Async_Batch_Type
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Check Processed.
+	 * Controls whether, once all elements of a batch complete, the batch's processed status is checked and set.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsCheckProcessed (boolean IsCheckProcessed);
+
+	/**
+	 * Get Check Processed.
+	 * Controls whether, once all elements of a batch complete, the batch's processed status is checked and set.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isCheckProcessed();
+
+	ModelColumn<I_C_Async_Batch_Type, Object> COLUMN_IsCheckProcessed = new ModelColumn<>(I_C_Async_Batch_Type.class, "IsCheckProcessed", null);
+	String COLUMNNAME_IsCheckProcessed = "IsCheckProcessed";
+
+	/**
 	 * Set Keep Alive Time (Hours).
 	 * If set greater than zero, the batch has to be processed within the given number of hours, or it is flagged with Error=Yes.
 	 *
@@ -172,7 +215,7 @@ public interface I_C_Async_Batch_Type
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setKeepAliveTimeHours (@Nullable String KeepAliveTimeHours);
+	void setKeepAliveTimeHours (@Nullable java.lang.String KeepAliveTimeHours);
 
 	/**
 	 * Get Keep Alive Time (Hours).
@@ -182,30 +225,30 @@ public interface I_C_Async_Batch_Type
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getKeepAliveTimeHours();
+	@Nullable java.lang.String getKeepAliveTimeHours();
 
 	ModelColumn<I_C_Async_Batch_Type, Object> COLUMN_KeepAliveTimeHours = new ModelColumn<>(I_C_Async_Batch_Type.class, "KeepAliveTimeHours", null);
 	String COLUMNNAME_KeepAliveTimeHours = "KeepAliveTimeHours";
 
 	/**
-	 * Set Benachrichtigungs-Art.
-	 * Art der Benachrichtigung
+	 * Set Notification Type.
+	 * Type of Notifications
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setNotificationType (@Nullable String NotificationType);
+	void setNotificationType (@Nullable java.lang.String NotificationType);
 
 	/**
-	 * Get Benachrichtigungs-Art.
-	 * Art der Benachrichtigung
+	 * Get Notification Type.
+	 * Type of Notifications
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getNotificationType();
+	@Nullable java.lang.String getNotificationType();
 
 	ModelColumn<I_C_Async_Batch_Type, Object> COLUMN_NotificationType = new ModelColumn<>(I_C_Async_Batch_Type.class, "NotificationType", null);
 	String COLUMNNAME_NotificationType = "NotificationType";

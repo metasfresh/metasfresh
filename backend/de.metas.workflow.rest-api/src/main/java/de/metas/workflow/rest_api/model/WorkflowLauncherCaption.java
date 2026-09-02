@@ -24,7 +24,9 @@ package de.metas.workflow.rest_api.model;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.ReferenceListAwareEnum;
@@ -38,6 +40,8 @@ import javax.annotation.Nullable;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 @EqualsAndHashCode
@@ -47,19 +51,23 @@ public class WorkflowLauncherCaption
 	@NonNull private final ImmutableList<String> fieldsInOrder;
 	@NonNull private final ImmutableMap<String, ITranslatableString> fieldValues;
 	@NonNull private final ImmutableMap<String, Comparable<?>> comparingKeys;
+	/** Fields (from {@link #fieldsInOrder}) whose value shall be rendered as its own block of lines, with no {@code " | "} adjacent to it. */
+	@NonNull private final ImmutableSet<String> blockLayoutFields;
 
 	@Nullable private ITranslatableString _asTranslatableString = null; // lazy
 	@NonNull private final HashMap<String, String> trlsCache = new HashMap<>();
 
 	@Builder
 	private WorkflowLauncherCaption(
-			@NonNull final ImmutableList<String> fieldsInOrder,
-			@NonNull final ImmutableMap<String, ITranslatableString> fieldValues,
-			@Nullable final ImmutableMap<String, Comparable<?>> comparingKeys)
+			@NonNull final List<String> fieldsInOrder,
+			@NonNull final Map<String, ITranslatableString> fieldValues,
+			@Nullable final Map<String, Comparable<?>> comparingKeys,
+			@Nullable final Set<String> blockLayoutFields)
 	{
-		this.fieldsInOrder = fieldsInOrder;
-		this.fieldValues = fieldValues;
-		this.comparingKeys = comparingKeys != null ? comparingKeys : ImmutableMap.of();
+		this.fieldsInOrder = ImmutableList.copyOf(fieldsInOrder);
+		this.fieldValues = ImmutableMap.copyOf(fieldValues);
+		this.comparingKeys = comparingKeys != null ? ImmutableMap.copyOf(comparingKeys) : ImmutableMap.of();
+		this.blockLayoutFields = blockLayoutFields != null ? ImmutableSet.copyOf(blockLayoutFields) : ImmutableSet.of();
 	}
 
 	public static WorkflowLauncherCaption of(@NonNull final ITranslatableString caption)
@@ -82,13 +90,34 @@ public class WorkflowLauncherCaption
 
 	private ITranslatableString computeTranslatableString()
 	{
-		final ImmutableList<ITranslatableString> parts = fieldsInOrder
+		// Blank-valued fields are dropped first, so block-layout suppression below is always computed
+		// against the nearest NON-BLANK neighbour, never against a blank one.
+		final ImmutableList<String> nonBlankFields = fieldsInOrder
 				.stream()
-				.map(fieldValues::get)
-				.filter(caption -> !TranslatableStrings.isBlank(caption))
+				.filter(field -> !TranslatableStrings.isBlank(fieldValues.get(field)))
 				.collect(ImmutableList.toImmutableList());
 
-		return TranslatableStrings.join(" | ", parts);
+		if (nonBlankFields.isEmpty())
+		{
+			return TranslatableStrings.empty();
+		}
+
+		final TranslatableStringBuilder builder = TranslatableStrings.builder()
+				.append(fieldValues.get(nonBlankFields.get(0)));
+		for (int i = 1; i < nonBlankFields.size(); i++)
+		{
+			final String previousField = nonBlankFields.get(i - 1);
+			final String field = nonBlankFields.get(i);
+
+			// A block-layout item is rendered as its own block of lines: the " | " that would otherwise
+			// land next to either of its line breaks is suppressed on both sides, in favor of a line break.
+			final String separator = blockLayoutFields.contains(previousField) || blockLayoutFields.contains(field)
+					? "\n"
+					: " | ";
+
+			builder.append(separator).append(fieldValues.get(field));
+		}
+		return builder.build();
 	}
 
 	public String translate(@NonNull final String adLanguage)
@@ -147,8 +176,8 @@ public class WorkflowLauncherCaption
 		final String field = orderBy.getField();
 		final Function<WorkflowLauncherCaption, Comparable<?>> keyExtractor = caption -> caption.getFieldComparingKey(field, adLanguage);
 
-		//noinspection unchecked
-		Comparator<Comparable<?>> keyComparator = (Comparator<Comparable<?>>)Comparator.naturalOrder();
+		//noinspection unchecked,rawtypes
+		Comparator<Comparable> keyComparator = Comparator.naturalOrder();
 		if (!orderBy.isAscending())
 		{
 			keyComparator = keyComparator.reversed();

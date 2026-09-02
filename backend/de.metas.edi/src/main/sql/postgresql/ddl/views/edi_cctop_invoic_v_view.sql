@@ -7,6 +7,7 @@ CREATE OR REPLACE VIEW EDI_Cctop_INVOIC_v AS
 SELECT i.C_Invoice_ID                                                                                       AS EDI_Cctop_INVOIC_v_ID
      , i.C_Invoice_ID
      , i.C_Order_ID
+     , i.C_BPartner_ID
      , REGEXP_REPLACE(i.DocumentNo, '\s+$', '')                                                             AS Invoice_DocumentNo
      , i.DateInvoiced
      , i.DateAcct
@@ -41,6 +42,7 @@ SELECT i.C_Invoice_ID                                                           
      , i.TotalLines
      , i.DocStatus
      , i.ExternalId
+     , esystem.value                                                                                        AS ExternalSystemCode
      , (CASE
             WHEN dsource.internalname IS NOT NULL
                 THEN 'int-' || dsource.internalname
@@ -50,7 +52,11 @@ SELECT i.C_Invoice_ID                                                           
      , CASE WHEN dt.DocSubType = 'CS' THEN NULL ELSE COALESCE(shipment.DocumentNo, iodn.documentno) END     AS Shipment_DocumentNo
      , taxAndSurchage.TotalVAT
      , taxAndSurchage.TotalTaxBaseAmt
-     , COALESCE(rbp.EdiInvoicRecipientGLN, rl.GLN)                                                          AS ReceiverGLN
+     -- EdiInvoicRecipientGLN resolved from C_BPartner_EDI_Setting via LATERAL:
+     -- lowest SeqNo (then lowest ID) among active rows matching the doc's partner+location
+     -- (exact-location OR partner-default), mirroring Java EDIBPartnerConfigMap.resolve.
+     -- Falls back to rl.GLN (location-level GLN) when no EDI setting row matches.
+     , COALESCE(edi_setting.EdiInvoicRecipientGLN, rl.GLN)                                                 AS ReceiverGLN
      , rl.C_BPartner_Location_ID
      , (SELECT DISTINCT ON (REGEXP_REPLACE(sl.GLN, '\s+$', '')) REGEXP_REPLACE(sl.GLN, '\s+$', '') AS GLN
         FROM C_BPartner_Location sl
@@ -107,13 +113,24 @@ FROM C_Invoice i
                                AND io.DocStatus IN ('CO', 'CL')
                              ORDER BY inv.c_invoice_id NULLS LAST, io.Created
                              LIMIT 1 ) shipment ON TRUE -- for the case of missing EDI_Desadv, we still get the first M_InOut; DESADV can be switched off for individual C_BPartners
-         LEFT JOIN C_BPartner rbp ON rbp.C_BPartner_ID = i.C_BPartner_ID
+         -- EDI setting: LATERAL picks the single active row with lowest SeqNo (then lowest ID)
+         -- among rows matching partner+location exactly OR partner-default (location IS NULL).
+         LEFT JOIN LATERAL (
+             SELECT s.*
+             FROM c_bpartner_edi_setting s
+             WHERE s.c_bpartner_id = i.C_BPartner_ID
+               AND (s.c_bpartner_location_id = i.C_BPartner_Location_ID OR s.c_bpartner_location_id IS NULL)
+               AND s.isactive = 'Y'
+             ORDER BY s.seqno, s.c_bpartner_edi_setting_id
+             LIMIT 1
+         ) edi_setting ON TRUE
          LEFT JOIN C_BPartner_Location rl ON rl.C_BPartner_Location_ID = i.C_BPartner_Location_ID
          LEFT JOIN C_Location l ON l.C_Location_ID = rl.C_Location_ID
          LEFT JOIN C_Currency c ON c.C_Currency_ID = i.C_Currency_ID
          LEFT JOIN C_Country cc ON cc.C_Country_ID = l.C_Country_ID
          LEFT JOIN C_BPartner sp ON sp.AD_OrgBP_ID = i.AD_Org_ID
          LEFT JOIN AD_InputDataSource dsource ON dsource.AD_InputDataSource_ID = i.AD_InputDataSource_ID
+         LEFT JOIN ExternalSystem esystem ON esystem.externalsystem_id = i.externalsystem_id
          LEFT JOIN LATERAL ( SELECT i.c_invoice_id, MIN(o.dateordered) AS dateordered --only add values if there is only one unique value
                              FROM c_invoice i
                                       INNER JOIN c_invoiceline il ON i.c_invoice_id = il.c_invoice_id

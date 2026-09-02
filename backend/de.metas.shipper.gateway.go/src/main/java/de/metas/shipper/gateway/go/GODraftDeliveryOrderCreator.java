@@ -1,7 +1,6 @@
 package de.metas.shipper.gateway.go;
 
 import de.metas.bpartner.service.IBPartnerOrgBL;
-import de.metas.shipping.mpackage.PackageId;
 import de.metas.organization.OrgId;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.go.schema.GOPaidMode;
@@ -12,11 +11,14 @@ import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.shipping.ShipperGatewayId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -53,13 +55,13 @@ public class GODraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 	private static final BigDecimal DEFAULT_PackageWeightInKg = BigDecimal.ONE;
 
 	@Override
-	public String getShipperGatewayId()
+	public ShipperGatewayId getShipperGatewayId()
 	{
 		return GOConstants.SHIPPER_GATEWAY_ID;
 	}
 
 	@Override
-	public DeliveryOrder createDraftDeliveryOrder(@NonNull final CreateDraftDeliveryOrderRequest request)
+	public @NotNull DeliveryOrder createDraftDeliveryOrder(@NonNull final CreateDraftDeliveryOrderRequest request)
 	{
 		final DeliveryOrderKey deliveryOrderKey = request.getDeliveryOrderKey();
 		final Set<PackageId> mpackageIds = request.getPackageIds();
@@ -91,18 +93,14 @@ public class GODraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				.customDeliveryData(goDeliveryOrderData)
 				//
 				// Pickup
-				.pickupAddress(DeliveryOrderUtil.prepareAddressFromLocation(pickupFromLocation)
-						.companyName1(pickupFromBPartner.getName())
-						.companyName2(pickupFromBPartner.getName2())
+				.pickupAddress(DeliveryOrderUtil.prepareAddressFromLocationBP(pickupFromLocation, pickupFromBPartner)
 						.build())
 				.pickupDate(PickupDate.builder()
 						.date(pickupDate)
 						.build())
 				//
 				// Delivery
-				.deliveryAddress(DeliveryOrderUtil.prepareAddressFromLocation(deliverToLocation)
-						.companyName1(deliverToBPartner.getName())
-						.companyName2(deliverToBPartner.getName2())
+				.deliveryAddress(DeliveryOrderUtil.prepareAddressFromLocationBP(deliverToLocation,deliverToBPartner)
 						.companyDepartment("-") // N/A
 						.bpartnerId(deliverToBPartnerId)
 						.build())

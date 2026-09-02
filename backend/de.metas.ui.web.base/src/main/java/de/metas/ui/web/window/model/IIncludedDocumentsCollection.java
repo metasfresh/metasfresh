@@ -60,10 +60,16 @@ public interface IIncludedDocumentsCollection
 
 	/**
 	 * Check if there are any changes in any of the included documents
-	 * 
+	 *
 	 * @return true if there are some changes
 	 */
 	boolean hasChangesRecursivelly();
+
+	/** @return true if this collection holds at least one unsaved NEW document with pending changes (work that would be lost if the owning root were evicted). */
+	default boolean hasNewDocumentsWithChanges()
+	{
+		return false;
+	}
 
 	void saveIfHasChanges();
 

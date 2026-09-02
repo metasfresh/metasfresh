@@ -45,25 +45,25 @@ public class JavaScriptExecutorService
 {
 	/**
 	 * @param scriptIdentifier just needed for additional context in case of an error.
-	 * @param script           a javascript with a  {@code function transform(messageFromMetasfresh)} that takes one string parameter and returns a string as output.
+	 * @param script           a javascript with a  {@code function transform(body)} that takes one string parameter and returns a string as output.
 	 *                         See `from_metasfresh_template.js` for a template.
 	 * @return the string return-value of the script
 	 */
 	public String executeScript(
 			@NonNull final String scriptIdentifier,
 			@NonNull final String script,
-			@NonNull final String messageFromMetasfresh)
+			@NonNull final String body)
 	{
 		try
 		{
 			return executeScript(
 					script,
-					ImmutableMap.of(PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT, messageFromMetasfresh));
+					ImmutableMap.of(PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT, body));
 		}
 		catch (final PolyglotException | IllegalStateException | IllegalArgumentException e)
 		{
 			throw new JavaScriptExecutorException(
-					scriptIdentifier, script, messageFromMetasfresh,
+					scriptIdentifier, script, body,
 					e.getMessage(), e);
 		}
 	}

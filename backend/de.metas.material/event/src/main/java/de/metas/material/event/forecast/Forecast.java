@@ -1,18 +1,16 @@
 package de.metas.material.event.forecast;
 
-import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
-
-import java.util.List;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.List;
+
+import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
 /*
  * #%L

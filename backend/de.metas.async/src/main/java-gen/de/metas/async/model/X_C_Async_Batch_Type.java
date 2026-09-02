@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.async.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Async_Batch_Type
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_C_Async_Batch_Type extends org.compiere.model.PO implements I_C_Async_Batch_Type, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 851172719L;
+	private static final long serialVersionUID = 1316652081L;
 
     /** Standard Constructor */
     public X_C_Async_Batch_Type (final Properties ctx, final int C_Async_Batch_Type_ID, @Nullable final String trxName)
@@ -65,25 +65,49 @@ public class X_C_Async_Batch_Type extends org.compiere.model.PO implements I_C_A
 	}
 
 	@Override
-	public void setInternalName (final String InternalName)
+	public void setDescription (final @Nullable java.lang.String Description)
+	{
+		set_Value (COLUMNNAME_Description, Description);
+	}
+
+	@Override
+	public java.lang.String getDescription() 
+	{
+		return get_ValueAsString(COLUMNNAME_Description);
+	}
+
+	@Override
+	public void setInternalName (final java.lang.String InternalName)
 	{
 		set_Value (COLUMNNAME_InternalName, InternalName);
 	}
 
 	@Override
-	public String getInternalName()
+	public java.lang.String getInternalName() 
 	{
 		return get_ValueAsString(COLUMNNAME_InternalName);
 	}
 
 	@Override
-	public void setKeepAliveTimeHours (final @Nullable String KeepAliveTimeHours)
+	public void setIsCheckProcessed (final boolean IsCheckProcessed)
+	{
+		set_Value (COLUMNNAME_IsCheckProcessed, IsCheckProcessed);
+	}
+
+	@Override
+	public boolean isCheckProcessed() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCheckProcessed);
+	}
+
+	@Override
+	public void setKeepAliveTimeHours (final @Nullable java.lang.String KeepAliveTimeHours)
 	{
 		set_Value (COLUMNNAME_KeepAliveTimeHours, KeepAliveTimeHours);
 	}
 
 	@Override
-	public String getKeepAliveTimeHours()
+	public java.lang.String getKeepAliveTimeHours() 
 	{
 		return get_ValueAsString(COLUMNNAME_KeepAliveTimeHours);
 	}
@@ -98,13 +122,13 @@ public class X_C_Async_Batch_Type extends org.compiere.model.PO implements I_C_A
 	/** Workpackage Processed = WPP */
 	public static final String NOTIFICATIONTYPE_WorkpackageProcessed = "WPP";
 	@Override
-	public void setNotificationType (final @Nullable String NotificationType)
+	public void setNotificationType (final @Nullable java.lang.String NotificationType)
 	{
 		set_Value (COLUMNNAME_NotificationType, NotificationType);
 	}
 
 	@Override
-	public String getNotificationType()
+	public java.lang.String getNotificationType() 
 	{
 		return get_ValueAsString(COLUMNNAME_NotificationType);
 	}

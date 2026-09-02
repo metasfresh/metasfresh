@@ -13,7 +13,6 @@ const ChangeCurrentLocatorDialog = ({ onOK, onClose }) => {
     <div>
       <Dialog className="screen">
         <BarcodeScannerComponent
-          continuousRunning={true}
           inputPlaceholderText={trl('huManager.locator')}
           onResolvedResult={({ scannedBarcode }) => {
             resolveLocatorQRCode({ scannedBarcode })

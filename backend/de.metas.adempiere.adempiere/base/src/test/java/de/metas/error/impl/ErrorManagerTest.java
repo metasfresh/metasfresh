@@ -23,9 +23,15 @@
 package de.metas.error.impl;
 
 import de.metas.error.AdIssueId;
+import de.metas.error.IssueCreateRequest;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_AD_Issue;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -38,10 +44,141 @@ class ErrorManagerTest
 		AdempiereTestHelper.get().init();
 	}
 
-	@Test
-	void createIssue()
+	private static I_AD_Issue createIssueAndLoad(final IssueCreateRequest request)
 	{
-		final AdIssueId issueId = new ErrorManager().createIssue(new NullPointerException());
-		assertThat(issueId).isNotNull();
+		final AdIssueId issueId = new ErrorManager().createIssue(request);
+		return InterfaceWrapperHelper.load(issueId.getRepoId(), I_AD_Issue.class);
+	}
+
+	/**
+	 * Builds a throwable with a synthetic stacktrace instead of relying on the frames this test actually runs in:
+	 * {@code createIssueInTrx} reports the topmost metasfresh frame, and the frames a JUnit-invoked test method
+	 * produces are not the ones under test.
+	 */
+	private static Throwable throwableWithStackFrame(
+			final String className,
+			final String methodName,
+			final int lineNo)
+	{
+		return throwableWithStackFrames(new StackTraceElement(className, methodName, "SomeSource.java", lineNo));
+	}
+
+	private static Throwable throwableWithStackFrames(final StackTraceElement... frames)
+	{
+		final Throwable throwable = new RuntimeException("boom");
+		throwable.setStackTrace(frames);
+		return throwable;
+	}
+
+	@Nested
+	class CreateIssue
+	{
+		@Test
+		void returnsAnIssueId()
+		{
+			final AdIssueId issueId = new ErrorManager().createIssue(new NullPointerException());
+			assertThat(issueId).isNotNull();
+		}
+
+		/**
+		 * The class name and the method name of the failing frame each have to land in their own column. Writing both
+		 * to {@code SourceClassName} in sequence overwrites the class name with the method name and leaves
+		 * {@code SourceMethodName} empty, which makes both columns useless for triaging AD_Issue.
+		 */
+		@Test
+		void splitsSourceClassNameAndSourceMethodName()
+		{
+			final I_AD_Issue issue = createIssueAndLoad(IssueCreateRequest.builder()
+					.throwable(throwableWithStackFrame("org.adempiere.example.SomeService", "doTheThing", 42))
+					.build());
+
+			assertThat(issue.getSourceClassName()).isEqualTo("org.adempiere.example.SomeService");
+			assertThat(issue.getSourceMethodName()).isEqualTo("doTheThing");
+			assertThat(issue.getLineNo()).isEqualTo(42);
+		}
+
+		/**
+		 * A caller that logged the throwable's own message must not get that message stored twice. Every REST error
+		 * takes this path via {@code RestResponseEntityExceptionHandler}, and the message there carries the whole
+		 * rejected request payload — so the duplication doubles the largest rows in AD_Issue.
+		 */
+		@Test
+		void doesNotDuplicateASummaryThatAlreadyEqualsTheThrowableMessage()
+		{
+			final I_AD_Issue issue = createIssueAndLoad(IssueCreateRequest.builder()
+					.throwable(new RuntimeException("the request payload could not be processed"))
+					.summary("the request payload could not be processed")
+					.build());
+
+			assertThat(issue.getIssueSummary()).isEqualTo("the request payload could not be processed");
+		}
+
+		/**
+		 * The frame that identifies the failing code is normally a {@code de.metas} one — the legacy
+		 * {@code org.adempiere} / {@code org.compiere} packages are mostly framework plumbing now. Selecting frames by
+		 * the substring {@code "adempiere"} therefore skips the application code entirely and reports the first
+		 * framework frame below it, which is identical for every failure routed through that framework.
+		 */
+		@Test
+		void picksTheApplicationFrameRatherThanTheFrameworkOneBelowIt()
+		{
+			final I_AD_Issue issue = createIssueAndLoad(IssueCreateRequest.builder()
+					.throwable(throwableWithStackFrames(
+							new StackTraceElement("de.metas.order.compensationGroup.GroupCompensationAmtType",
+									"ofAD_Ref_List_Value", "GroupCompensationAmtType.java", 48),
+							new StackTraceElement("de.metas.order.compensationGroup.OrderGroupRepository",
+									"toGroupCompensationLine", "OrderGroupRepository.java", 343),
+							new StackTraceElement("org.adempiere.ad.callout.api.impl.CalloutExecutor",
+									"execute", "CalloutExecutor.java", 258)))
+					.build());
+
+			assertThat(issue.getSourceClassName()).isEqualTo("de.metas.order.compensationGroup.GroupCompensationAmtType");
+			assertThat(issue.getSourceMethodName()).isEqualTo("ofAD_Ref_List_Value");
+			assertThat(issue.getLineNo()).isEqualTo(48);
+			assertThat(issue.getErrorTrace())
+					.as("the application frames belong in the trace, not just the framework ones")
+					.contains("GroupCompensationAmtType.ofAD_Ref_List_Value")
+					.contains("OrderGroupRepository.toGroupCompensationLine");
+		}
+
+		/**
+		 * Every package root that holds metasfresh production code has to be selected — the legacy ones just as much
+		 * as {@code de.metas} — while JDK and vendored third-party frames are skipped.
+		 */
+		@ParameterizedTest
+		@ValueSource(strings = {
+				"de.metas.order.compensationGroup.OrderGroupRepository",
+				"de.adempiere.model.ProductQty",
+				"de.schaeffer.compiere.mt940.Parser",
+				"org.adempiere.ad.dao.impl.TypedSqlQuery",
+				"org.compiere.model.MTree",
+				"org.eevolution.api.IPPOrderBL" })
+		void picksAnyMetasfreshFrameAndSkipsThirdPartyOnes(final String metasfreshClassName)
+		{
+			final I_AD_Issue issue = createIssueAndLoad(IssueCreateRequest.builder()
+					.throwable(throwableWithStackFrames(
+							new StackTraceElement("java.util.Optional", "orElseThrow", "Optional.java", 408),
+							new StackTraceElement("it.cnr.imaa.essi.lablib.gui.checkboxtree.CheckboxTree",
+									"setCheckingPaths", "CheckboxTree.java", 120),
+							new StackTraceElement("org.apache.ecs.Doctype", "toString", "Doctype.java", 34),
+							new StackTraceElement(metasfreshClassName, "doTheThing", "SomeSource.java", 99)))
+					.build());
+
+			assertThat(issue.getSourceClassName()).isEqualTo(metasfreshClassName);
+			assertThat(issue.getSourceMethodName()).isEqualTo("doTheThing");
+			assertThat(issue.getLineNo()).isEqualTo(99);
+		}
+
+		/** A summary that genuinely adds information is still appended to the throwable's message. */
+		@Test
+		void keepsASummaryThatAddsInformation()
+		{
+			final I_AD_Issue issue = createIssueAndLoad(IssueCreateRequest.builder()
+					.throwable(new RuntimeException("the throwable message"))
+					.summary("extra context")
+					.build());
+
+			assertThat(issue.getIssueSummary()).isEqualTo("the throwable message extra context");
+		}
 	}
 }

@@ -7,6 +7,7 @@ import de.metas.menu.AdMenuId;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.UserRolePermissionsKey;
+import de.metas.security.permissions.ElementPermission;
 import de.metas.security.permissions.UserMenuInfo;
 import de.metas.ui.web.menu.MenuNode.MenuNodeType;
 import de.metas.ui.web.process.ProcessId;
@@ -228,7 +229,14 @@ final class MenuTreeLoader
 	@Nullable
 	private MenuNode createNewRecordNode(final MenuNode node, final String caption, final String captionBreadcrumb)
 	{
-		if (node.getType() != MenuNodeType.Window)
+		final AdWindowId adWindowId = node.getAdWindowIdOrNull();
+		if (adWindowId == null)
+		{
+			return null;
+		}
+
+		final ElementPermission windowPermission = getUserRolePermissions().checkWindowPermission(adWindowId);
+		if (!windowPermission.hasWriteAccess())
 		{
 			return null;
 		}
@@ -236,7 +244,7 @@ final class MenuTreeLoader
 		//
 		// Caption (in menu)
 		String captionEffective = caption;
-		if (Check.isEmpty(captionEffective, true))
+		if (Check.isBlank(captionEffective))
 		{
 			captionEffective = "New " + node.getCaption();
 		}
@@ -244,7 +252,7 @@ final class MenuTreeLoader
 		//
 		// Caption (breadcrumb)
 		String captionBreadcrumbEffective = captionBreadcrumb;
-		if (Check.isEmpty(captionBreadcrumbEffective, true))
+		if (Check.isBlank(captionBreadcrumbEffective))
 		{
 			captionBreadcrumbEffective = node.getCaptionBreadcrumb();
 		}
@@ -253,7 +261,7 @@ final class MenuTreeLoader
 				.setAD_Menu_ID(node.getAD_Menu_ID())
 				.setCaption(captionEffective)
 				.setCaptionBreadcrumb(captionBreadcrumbEffective)
-				.setType(MenuNodeType.NewRecord, node.getElementId())
+				.setTypeNewRecord(adWindowId)
 				.setMainTableName(node.getMainTableName())
 				.build();
 	}

@@ -23,7 +23,7 @@ const reducer = produce((draftState, action) => {
     case FETCH_ATTRIBUTES_DATA: {
       const { fieldsByName, id } = action.payload;
 
-      draftState.attributes.fields = fieldsByName;
+      draftState.attributes.fields = fieldsByName ?? {};
       draftState.attributes.dataId = id;
 
       break;

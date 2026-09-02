@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableSet;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
+import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAware;
 import de.metas.util.lang.RepoIdAwares;
 import lombok.NonNull;
@@ -93,6 +95,21 @@ public class HuId implements RepoIdAware
 			final AdempiereException metasfreshException = new AdempiereException("Invalid HUValue `" + huValue + "`. It cannot be converted to M_HU_ID.");
 			metasfreshException.addSuppressed(ex);
 			throw metasfreshException;
+		}
+	}
+
+	public static HuId ofHUValueOrNull(@Nullable final String huValue)
+	{
+		final String huValueNorm = StringUtils.trimBlankToNull(huValue);
+		if (huValueNorm == null) {return null;}
+
+		try
+		{
+			return ofRepoIdOrNull(NumberUtils.asIntOrZero(huValueNorm));
+		}
+		catch (final Exception ex)
+		{
+			return null;
 		}
 	}
 

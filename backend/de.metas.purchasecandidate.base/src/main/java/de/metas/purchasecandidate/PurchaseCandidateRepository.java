@@ -6,9 +6,15 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
+import de.metas.externalsystem.ExternalSystemId;
+import de.metas.externalsystem.ExternalSystemIdWithExternalIds;
+import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.user.UserId;
 import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
@@ -18,6 +24,9 @@ import de.metas.money.Money;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
@@ -99,14 +108,17 @@ public class PurchaseCandidateRepository
 	@NonNull private final PurchaseItemRepository purchaseItemRepository;
 	@NonNull private final ReferenceGenerator referenceGenerator;
 	@NonNull private final DimensionService dimensionService;
-	
+	@NonNull private final ExternalSystemRepository externalSystemRepository;
+
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final transient IProductDAO productsRepo = Services.get(IProductDAO.class);
 	private final transient IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 	private final LockOwner lockOwner = LockOwner.newOwner(PurchaseCandidateRepository.class.getSimpleName());
 	private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final transient IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 
+	@Nullable
 	public PurchaseCandidateId getIdByPurchaseOrderLineIdOrNull(
 			@Nullable final OrderLineId purchaseOrderLineId)
 	{
@@ -137,15 +149,10 @@ public class PurchaseCandidateRepository
 	}
 
 	@NonNull
-	public Optional<PurchaseCandidateId> getByExternalHeaderAndLineId(
-			@NonNull final String externalHeaderId,
-			@NonNull final String externalLineId)
+	public Optional<PurchaseCandidateId> getIdByQuery(
+			@NonNull final PurchaseCandidateQuery query)
 	{
-		return queryBL.createQueryBuilder(I_C_PurchaseCandidate.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_ExternalHeaderId, externalHeaderId)
-				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_ExternalLineId, externalLineId)
-				.create()
+		return toSqlQuery(query)
 				.firstIdOnlyOptional(PurchaseCandidateId::ofRepoIdOrNull);
 	}
 
@@ -209,6 +216,56 @@ public class PurchaseCandidateRepository
 				.stream()
 				.map(PurchaseCandidateId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	/**
+	 * Same filter as {@link #retrieveManualPurchaseCandidateIdsBySalesOrderIdFilterQtyToPurchase(OrderId)},
+	 * but groups the candidates by the {@code IsDocComplete} flag of their matching {@code PP_Product_Planning}.
+	 * <p>
+	 * Used by the {@code C_Order} interceptor on sales-order recompletion to enqueue purchase-order generation
+	 * with the correct "auto-complete" flag per candidate — instead of blanket-completing everything regardless
+	 * of product-planning configuration (see <a href="https://github.com/metasfresh/me03/issues/29155">me03#29155</a>).
+	 * <p>
+	 * Candidates whose product planning cannot be resolved fall into the {@code true} bucket, preserving the
+	 * historical "auto-complete" default.
+	 */
+	@NonNull
+	public Map<Boolean, Set<PurchaseCandidateId>> retrieveManualPurchaseCandidateIdsBySalesOrderIdGroupedByIsDocComplete(
+			@NonNull final OrderId salesOrderId)
+	{
+		final List<I_C_PurchaseCandidate> candidateRecords = queryBL.createQueryBuilder(I_C_OrderLine.class)
+				.addEqualsFilter(I_C_OrderLine.COLUMN_C_Order_ID, salesOrderId.getRepoId())
+				.andCollectChildren(I_C_PurchaseCandidate.COLUMN_C_OrderLineSO_ID)
+				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_IsAggregatePO, false) // manual
+				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_Processed, false)
+				.addCompareFilter(I_C_PurchaseCandidate.COLUMN_QtyToPurchase, Operator.GREATER, BigDecimal.ZERO)
+				.create()
+				.list(I_C_PurchaseCandidate.class);
+
+		if (candidateRecords.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		return candidateRecords.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						this::resolveIsDocComplete,
+						candidate -> ImmutableSet.<PurchaseCandidateId>of(PurchaseCandidateId.ofRepoId(candidate.getC_PurchaseCandidate_ID())),
+						(a, b) -> ImmutableSet.<PurchaseCandidateId>builder().addAll(a).addAll(b).build()));
+	}
+
+	private boolean resolveIsDocComplete(@NonNull final I_C_PurchaseCandidate candidate)
+	{
+		final ProductPlanningQuery query = ProductPlanningQuery.builder()
+				.orgId(OrgId.ofRepoIdOrAny(candidate.getAD_Org_ID()))
+				.warehouseId(WarehouseId.ofRepoIdOrNull(candidate.getM_WarehousePO_ID()))
+				.productId(ProductId.ofRepoIdOrNull(candidate.getM_Product_ID()))
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(candidate.getM_AttributeSetInstance_ID()))
+				.build();
+		// If no planning matches, default to isDocComplete=true (matches the pre-fix behavior for defensiveness).
+		return productPlanningDAO.find(query)
+				.map(ProductPlanning::isDocComplete)
+				.orElse(true);
 	}
 
 	public void saveAll(final Collection<PurchaseCandidate> purchaseCandidates)
@@ -355,6 +412,11 @@ public class PurchaseCandidateRepository
 		record.setIsPrepared(purchaseCandidate.isPrepared());
 		record.setIsRequisitionCreated(purchaseCandidate.isReqCreated());
 		record.setProcessed(purchaseCandidate.isProcessed());
+
+		if (purchaseCandidate.getExternalSystemId() != null)
+		{
+			record.setExternalSystem_ID(purchaseCandidate.getExternalSystemId().getRepoId());
+		}
 		if (purchaseCandidate.getExternalHeaderId() != null)
 		{
 			record.setExternalHeaderId(purchaseCandidate.getExternalHeaderId().getValue());
@@ -402,7 +464,17 @@ public class PurchaseCandidateRepository
 			record.setC_Currency_ID(purchaseCandidate.getCurrencyId().getRepoId());
 		}
 		record.setExternalPurchaseOrderURL(purchaseCandidate.getExternalPurchaseOrderUrl());
+
+		record.setIsDropShip(purchaseCandidate.isDropShip());
+		record.setDropShip_BPartner_ID(BPartnerId.toRepoId(purchaseCandidate.getDropShipBPartnerId()));
+		record.setDropShip_Location_ID(BPartnerLocationId.toRepoId(purchaseCandidate.getDropShipLocationId()));
+		record.setDropShip_User_ID(UserId.toRepoId(purchaseCandidate.getDropShipUserId()));
+
+		record.setM_HU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(purchaseCandidate.getHuPIItemProductId()));
+		record.setQtyEnteredTU(purchaseCandidate.getQtyEnteredTU());
+
 		record.setIsSimulated(purchaseCandidate.isSimulated());
+		record.setIsReadyForPOCreation(purchaseCandidate.isReadyForPOCreation());
 
 		if (purchaseCandidate.isSimulated())
 		{
@@ -422,9 +494,8 @@ public class PurchaseCandidateRepository
 		return record;
 	}
 
-
-
-	private static ZonedDateTime calculateReminderDate(final ZonedDateTime purchaseDateOrdered, final PurchaseCandidate candidate)
+	@Nullable
+	private static ZonedDateTime calculateReminderDate(@Nullable final ZonedDateTime purchaseDateOrdered, @NonNull final PurchaseCandidate candidate)
 	{
 		final Duration reminderTime = candidate.getReminderTime();
 		if (reminderTime == null || purchaseDateOrdered == null)
@@ -453,6 +524,7 @@ public class PurchaseCandidateRepository
 		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(record.getAD_Org_ID()));
 
 		final ZonedDateTime purchaseDatePromised = TimeUtil.asZonedDateTime(record.getPurchaseDatePromised(), timeZone);
+		final ZonedDateTime purchaseDateOrdered = TimeUtil.asZonedDateTime(record.getPurchaseDateOrdered(), timeZone);
 		final LocalDateTime dateReminder = TimeUtil.asLocalDateTime(record.getReminderDate());
 		final Duration reminderTime = purchaseDatePromised != null && dateReminder != null ? Duration.between(purchaseDatePromised, dateReminder) : null;
 
@@ -471,6 +543,7 @@ public class PurchaseCandidateRepository
 				.reqCreated(record.isRequisitionCreated())
 				//
 				.purchaseDatePromised(purchaseDatePromised)
+				.purchaseDateOrdered(purchaseDateOrdered)
 				.reminderTime(reminderTime)
 				//
 				.vendorId(BPartnerId.ofRepoId(record.getVendor_ID()))
@@ -483,6 +556,7 @@ public class PurchaseCandidateRepository
 				.vendorProductNo(productsRepo.retrieveProductValueByProductId(ProductId.ofRepoId(record.getM_Product_ID())))
 				.externalLineId(ExternalId.ofOrNull(record.getExternalLineId()))
 				.externalHeaderId(ExternalId.ofOrNull(record.getExternalHeaderId()))
+				.externalSystemId(ExternalSystemId.ofRepoIdOrNull(record.getExternalSystem_ID()))
 				.poReference(record.getPOReference())
 
 				.source(PurchaseCandidateSource.ofCodeOrNull(record.getSource()))
@@ -511,6 +585,16 @@ public class PurchaseCandidateRepository
 				.currencyId(CurrencyId.ofRepoIdOrNull(record.getC_Currency_ID()))
 				.externalPurchaseOrderUrl(record.getExternalPurchaseOrderURL())
 				//
+				.isDropShip(record.isDropShip())
+				.dropShipBPartnerId(BPartnerId.ofRepoIdOrNull(record.getDropShip_BPartner_ID()))
+				.dropShipLocationId(BPartnerLocationId.ofRepoIdOrNull(BPartnerId.ofRepoIdOrNull(record.getDropShip_BPartner_ID()), record.getDropShip_Location_ID() > 0 ? record.getDropShip_Location_ID() : null))
+				.dropShipUserId(UserId.ofRepoIdOrNull(record.getDropShip_User_ID()))
+				//
+				.huPIItemProductId(HUPIItemProductId.ofRepoIdOrNull(record.getM_HU_PI_Item_Product_ID()))
+				.qtyEnteredTU(record.getQtyEnteredTU())
+				//
+				.readyForPOCreation(record.isReadyForPOCreation())
+				//
 				.build();
 
 		purchaseItemRepository.loadPurchaseItems(purchaseCandidate);
@@ -518,6 +602,7 @@ public class PurchaseCandidateRepository
 		return purchaseCandidate;
 	}
 
+	@Nullable
 	private PurchaseProfitInfo toPurchaseProfitInfo(final I_C_PurchaseCandidate purchaseCandidateRecord)
 	{
 		final int currencyRepoId = purchaseCandidateRecord.getC_Currency_ID();
@@ -553,6 +638,20 @@ public class PurchaseCandidateRepository
 			record.setPurchasePriceActual(null);
 			record.setC_Currency_ID(-1);
 		}
+	}
+
+	@NonNull
+	public List<PurchaseCandidate> getReadyForPOCreationBySalesOrderId(@NonNull final OrderId salesOrderId)
+	{
+		return queryBL.createQueryBuilder(I_C_PurchaseCandidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_C_OrderSO_ID, salesOrderId)
+				.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_IsReadyForPOCreation, true)
+				.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_Processed, false)
+				.create()
+				.stream(I_C_PurchaseCandidate.class)
+				.map(this::toPurchaseCandidate)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public void deleteByIds(final Collection<PurchaseCandidateId> purchaseCandidateIds)
@@ -591,6 +690,7 @@ public class PurchaseCandidateRepository
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	@Nullable
 	public static PurchaseCandidateReminder toPurchaseCandidateReminderOrNull(@NonNull final I_C_PurchaseCandidate record)
 	{
 		final BPartnerId vendorBPartnerId = BPartnerId.ofRepoIdOrNull(record.getVendor_ID());
@@ -613,7 +713,7 @@ public class PurchaseCandidateRepository
 				.build();
 	}
 
-	public List<PurchaseCandidate> getByExternal(@NonNull final List<ExternalHeaderIdWithExternalLineIds> ids)
+	public List<PurchaseCandidate> getByExternal(@NonNull final List<ExternalSystemIdWithExternalIds> ids)
 	{
 		return convertToIQuery(ids)
 				.list()
@@ -622,7 +722,7 @@ public class PurchaseCandidateRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public List<PurchaseCandidateId> getIdsByExternal(@NonNull final List<ExternalHeaderIdWithExternalLineIds> ids)
+	public List<PurchaseCandidateId> getIdsByExternal(@NonNull final List<ExternalSystemIdWithExternalIds> ids)
 	{
 		return convertToIQuery(ids)
 				.listIds()
@@ -631,13 +731,14 @@ public class PurchaseCandidateRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private IQuery<I_C_PurchaseCandidate> convertToIQuery(@NonNull final List<ExternalHeaderIdWithExternalLineIds> ids)
+	@NonNull
+	private IQuery<I_C_PurchaseCandidate> convertToIQuery(@NonNull final List<ExternalSystemIdWithExternalIds> ids)
 	{
 		final IQueryBuilder<I_C_PurchaseCandidate> queryBuilder = queryBL
 				.createQueryBuilder(I_C_PurchaseCandidate.class)
 				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions, false) /* exploding ORs to unions works only with simple cases, but e.g. currently not if we want to use IQuery.createSelection() down the line */
 				.setJoinOr();
-		for (final ExternalHeaderIdWithExternalLineIds id : ids)
+		for (final ExternalSystemIdWithExternalIds id : ids)
 		{
 			queryBuilder.filter(toFilter(id));
 		}
@@ -645,11 +746,13 @@ public class PurchaseCandidateRepository
 		return queryBuilder.create();
 	}
 
-	private ICompositeQueryFilter<I_C_PurchaseCandidate> toFilter(@NonNull final ExternalHeaderIdWithExternalLineIds externalIds)
+	@NonNull
+	private ICompositeQueryFilter<I_C_PurchaseCandidate> toFilter(@NonNull final ExternalSystemIdWithExternalIds externalIds)
 	{
-		final String headerIdAsString = externalIds.getExternalHeaderId().getValue();
+		final ExternalHeaderIdWithExternalLineIds externalHeaderIdWithExternalLineIds = externalIds.getExternalHeaderIdWithExternalLineIds();
+		final String headerIdAsString = externalHeaderIdWithExternalLineIds.getExternalHeaderId().getValue();
 
-		final ImmutableList<String> lineIdsAsString = externalIds
+		final ImmutableList<String> lineIdsAsString = externalHeaderIdWithExternalLineIds
 				.getExternalLineIds()
 				.stream()
 				.map(ExternalId::getValue)
@@ -658,6 +761,7 @@ public class PurchaseCandidateRepository
 		return queryBL
 				.createCompositeQueryFilter(I_C_PurchaseCandidate.class)
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_ExternalSystem_ID, externalIds.getExternalSystemId().getRepoId())
 				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_ExternalHeaderId, headerIdAsString)
 				.addInArrayOrAllFilter(I_C_PurchaseCandidate.COLUMN_ExternalLineId, lineIdsAsString);
 	}
@@ -698,6 +802,19 @@ public class PurchaseCandidateRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	@NonNull
+	public List<PurchaseCandidate> getAllByPurchaseOrderLineIds(@NonNull final Collection<OrderAndLineId> purchaseOrderLineIds)
+	{
+		final Set<PurchaseCandidateId> purchaseCandidateIds = queryBL.createQueryBuilder(I_C_PurchaseCandidate_Alloc.class)
+				.addInArrayFilter(I_C_PurchaseCandidate_Alloc.COLUMNNAME_C_OrderLinePO_ID, OrderAndLineId.getOrderLineRepoIds(purchaseOrderLineIds))
+				.create()
+				.stream()
+				.map(I_C_PurchaseCandidate_Alloc::getC_PurchaseCandidate_ID)
+				.map(PurchaseCandidateId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+		return getAllByIds(purchaseCandidateIds);
+	}
+
 	public void deletePurchaseCandidates(@NonNull final DeletePurchaseCandidateQuery deletePurchaseCandidateQuery)
 	{
 		final IQueryBuilder<I_C_PurchaseCandidate> deleteQuery = queryBL.createQueryBuilder(I_C_PurchaseCandidate.class);
@@ -720,5 +837,31 @@ public class PurchaseCandidateRepository
 		deleteQuery
 				.create()
 				.deleteDirectly();
+	}
+
+	@NonNull
+	private IQuery<I_C_PurchaseCandidate> toSqlQuery(@NonNull final PurchaseCandidateQuery query)
+	{
+		final IQueryBuilder<I_C_PurchaseCandidate> queryBuilder = queryBL.createQueryBuilder(I_C_PurchaseCandidate.class)
+				.addOnlyActiveRecordsFilter();
+
+		if (query.getExternalSystemType() != null)
+		{
+			final ExternalSystemId externalSystemId = externalSystemRepository.getIdByType(query.getExternalSystemType());
+			queryBuilder.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_ExternalSystem_ID, externalSystemId);
+		}
+
+		if (query.getExternalHeaderId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_ExternalHeaderId, query.getExternalHeaderId());
+		}
+
+		if (query.getExternalLineId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_ExternalLineId, query.getExternalLineId());
+		}
+
+		return queryBuilder
+				.create();
 	}
 }

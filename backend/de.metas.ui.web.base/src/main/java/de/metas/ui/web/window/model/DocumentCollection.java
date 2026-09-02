@@ -30,14 +30,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.copy_with_details.CopyRecordRequest;
 import de.metas.copy_with_details.CopyRecordService;
-import de.metas.copy_with_details.CopyRecordRequest;
-import de.metas.copy_with_details.CopyRecordService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.letters.model.MADBoilerPlate.SourceDocument;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
@@ -50,6 +49,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
 import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
@@ -87,6 +87,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 
 @Component
@@ -96,6 +97,7 @@ public class DocumentCollection
 	private static final int DEFAULT_CACHE_SIZE = 800;
 
 	private static final Logger logger = LogManager.getLogger(DocumentCollection.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	public static final AdMessageKey MSG_CLONING_NOT_ALLOWED_FOR_CURRENT_WINDOW = AdMessageKey.of("de.metas.ui.web.window.model.DocumentCollection.CloningNotAllowedForCurrentWindow");
 	public static final AdMessageKey MSG_CREATE_NOT_ALLOWED = AdMessageKey.of(("de.metas.ui.web.window.model.DocumentCollection.CreateNotAllowed"));
 
@@ -355,9 +357,7 @@ public class DocumentCollection
 
 	private void assertNewDocumentAllowed(final DocumentEntityDescriptor entityDescriptor)
 	{
-		final ILogicExpression allowExpr = entityDescriptor.getAllowCreateNewLogic();
-		final LogicExpressionResult allow = allowExpr.evaluateToResult(userSession.toEvaluatee(), OnVariableNotFound.ReturnNoResult);
-		if (allow.isFalse())
+		if(!DocumentPermissionsHelper.isNewDocumentAllowed(entityDescriptor, userSession))
 		{
 			throw new AdempiereException(MSG_CREATE_NOT_ALLOWED);
 		}
@@ -376,6 +376,15 @@ public class DocumentCollection
 			throw new InvalidDocumentPathException("documentId cannot be NEW");
 		}
 
+		final DocumentFieldDescriptor singleIdField = entityDescriptor.getSingleIdFieldOrNull();
+		if (!documentIdCanMatchKey(
+				singleIdField != null,
+				singleIdField != null && String.class.equals(singleIdField.getValueClass()),
+				documentKey.getDocumentId().isInt()))
+		{
+			throw new DocumentNotFoundException(documentKey.getDocumentPath());
+		}
+
 		final Document document = DocumentQuery.ofRecordId(entityDescriptor, documentKey.getDocumentId())
 				.setChangesCollector(NullDocumentChangesCollector.instance)
 				.retriveDocumentOrNull();
@@ -385,6 +394,32 @@ public class DocumentCollection
 		}
 
 		return document;
+	}
+
+	/**
+	 * Tells whether a document id can address a record of the entity at all.
+	 * <p>
+	 * A non-numeric id cannot match a single-column integer key, so the record does not exist. Answering that here
+	 * keeps a stale or malformed id — the frontend emits both a {@code notfound} sentinel and, when a route parameter
+	 * is unset, the literal {@code undefined} — from reaching the SQL layer, where it surfaces as a server error
+	 * instead of a 404.
+	 *
+	 * @param hasSingleIdField           the entity is keyed by exactly one column; a composed key is left alone
+	 * @param singleIdFieldIsStringTyped that single key column is string-typed, so a non-numeric id is legitimate
+	 * @param documentIdIsInt            the incoming id is numeric
+	 */
+	static boolean documentIdCanMatchKey(
+			final boolean hasSingleIdField,
+			final boolean singleIdFieldIsStringTyped,
+			final boolean documentIdIsInt)
+	{
+		if (documentIdIsInt)
+		{
+			return true;
+		}
+
+		// Only the single-key path converts the id to an int, so a composed key is unaffected.
+		return !hasSingleIdField || singleIdFieldIsStringTyped;
 	}
 
 	public String cacheReset(final boolean forgetNotSavedDocuments)
@@ -601,6 +636,96 @@ public class DocumentCollection
 		}
 	}
 
+	/**
+	 * Decides whether the cached root document should be evicted when one of its children gets
+	 * invalidated.
+	 *
+	 * <p>Historically this was gated purely on {@link DocumentToInvalidate#isInvalidateDocument()},
+	 * which the dispatcher only sets for whole-table invalidations. For a specific child-record
+	 * invalidation (the common case when a single child row is inserted/updated/deleted
+	 * externally), the gate stays false and the cached parent keeps its in-memory state.
+	 *
+	 * <p>That is fine for a happy-path parent — the child collection is flagged stale and the
+	 * frontend refreshes it on its own. It is NOT fine when the cached parent is in error state,
+	 * because a child-state change is a strong signal that the condition that produced the error
+	 * may now be gone. Without this escape hatch, the sticky error (and its potentially huge
+	 * {@code reason} string) survives until the document is evicted by LRU or by an admin cache
+	 * reset with {@code forgetNotSavedDocuments=true}.
+	 *
+	 * <p><b>Exception — user-validation errors are kept, not self-healed.</b> A user-fixable business
+	 * rejection (e.g. editing a record to a value that violates a unique constraint) sets the root's
+	 * save/valid status to a <i>user-validation</i> error. Unlike a system/technical error, this is not a
+	 * stale-data artifact a fresh reload would clear — reloading merely discards the user's rejected input
+	 * and the explanation. So a user-validation error is NOT treated as an eviction reason here; the root
+	 * is kept and the frontend keeps mirroring the error the standard way (via {@code saveStatus}). It
+	 * still clears naturally on the next successful (writable) save, LRU eviction, or admin cache reset.
+	 * An explicit full-invalidation request, a system save error, or a system invalid state still evicts.
+	 *
+	 * <p>Mostly-boolean signature on purpose so it can be unit-tested without needing to mock
+	 * {@link Document} (which is final and has a non-trivial constructor).
+	 *
+	 * <p>The unsaved-new-included-document guard (evaluated last) takes precedence over
+	 * {@code callerRequestedFullInvalidation}: we never discard in-memory work-in-progress, even on an
+	 * explicit full-invalidation request — so this method can return {@code false} despite
+	 * {@code callerRequestedFullInvalidation == true}.
+	 *
+	 * @param callerRequestedFullInvalidation   the caller explicitly asked to fully invalidate the root (not
+	 *                                          just a child-triggered self-heal); still overridden by the
+	 *                                          unsaved-new-included-document guard (see note above)
+	 * @param rootHasSaveError                  the cached root currently carries a save error at all — the gate
+	 *                                          for the save-error eviction branch
+	 * @param rootSaveErrorIsUserValidation     the root's save error (if any) is a user-fixable business
+	 *                                          rejection, not a system/technical fault — kept, not evicted
+	 * @param rootValidStatusIsValid            the root's valid-status is currently valid; when {@code false}
+	 *                                          the invalid-valid-status eviction branch applies
+	 * @param rootValidStatusInvalidIsUserValidation the root's invalid valid-status (if any) is a user-fixable
+	 *                                          business rejection — kept, not evicted
+	 * @param rootIsNew                         the cached root itself is new (not yet persisted); evicting it
+	 *                                          would lose it entirely
+	 * @param rootHasUnsavedNewIncludedDocument supplies whether the root owns an unsaved, new, in-memory
+	 *                                          included document whose work would be lost on eviction. Evaluated
+	 *                                          lazily — only when the root would otherwise be evicted — because it
+	 *                                          walks the included collections and is wasted on the happy path.
+	 */
+	static boolean shouldInvalidateRootOnChildInvalidation(
+			final boolean callerRequestedFullInvalidation,
+			final boolean rootHasSaveError,
+			final boolean rootSaveErrorIsUserValidation,
+			final boolean rootValidStatusIsValid,
+			final boolean rootValidStatusInvalidIsUserValidation,
+			final boolean rootIsNew,
+			@NonNull final BooleanSupplier rootHasUnsavedNewIncludedDocument)
+	{
+		// Never evict a new (not-yet-persisted) root — we would lose it entirely and the user would
+		// get a 404 with the document vanished from his browser.
+		if (rootIsNew)
+		{
+			return false;
+		}
+
+		// Would we evict at all? (cheap checks)
+		// A user-validation error — a user-fixable business rejection such as a unique-constraint
+		// violation — is NOT, by itself, a reason to evict: keeping the errored root lets the user keep
+		// seeing why their edit was rejected, instead of the error silently self-healing away on the next
+		// child-record invalidation (which, for an already-persisted record, also reverts the rejected
+		// value). Only a system/technical save error, a system invalid state, or an explicit
+		// full-invalidation request forces eviction.
+		final boolean systemSaveErrorForcesEvict = rootHasSaveError && !rootSaveErrorIsUserValidation;
+		final boolean systemInvalidForcesEvict = !rootValidStatusIsValid && !rootValidStatusInvalidIsUserValidation;
+		final boolean wouldInvalidate = callerRequestedFullInvalidation
+				|| systemSaveErrorForcesEvict
+				|| systemInvalidForcesEvict;
+		if (!wouldInvalidate)
+		{
+			return false;
+		}
+
+		// We would evict — but never discard a root that still owns an unsaved, new, in-memory included
+		// document: that work would be lost and the next read-only load would 404. Checked last and
+		// lazily because it walks the included collections.
+		return !rootHasUnsavedNewIncludedDocument.getAsBoolean();
+	}
+
 	private void invalidate(@NonNull final DocumentToInvalidate documentToInvalidate)
 	{
 		final ImmutableList<DocumentEntityDescriptor> entityDescriptors = getCachedWindowIdsForTableName(documentToInvalidate.getTableName())
@@ -651,7 +776,14 @@ public class DocumentCollection
 				// Invalidate the root document
 				// NOTE: avoid invalidating if the document is new (and not saved) because in that case we will lose the document and we will never be able to recover.
 				// As a symptom the user will get 404 or similar in his browser and the document will vanish completely.
-				if (documentToInvalidate.isInvalidateDocument() && !rootDocument.isNew())
+				if (shouldInvalidateRootOnChildInvalidation(
+						documentToInvalidate.isInvalidateDocument(),
+						rootDocument.getSaveStatus().isError(),
+						rootDocument.getSaveStatus().isUserValidationError(),
+						rootDocument.getValidStatus().isValid(),
+						rootDocument.getValidStatus().isUserValidationError(),
+						rootDocument.isNew(),
+						rootDocument::hasUnsavedNewIncludedDocuments))
 				{
 					rootDocuments.invalidate(rootDocumentKey);
 				}
@@ -705,7 +837,7 @@ public class DocumentCollection
 		websocketPublisher.staleRootDocument(documentKey.getWindowId(), documentKey.getDocumentId());
 	}
 
-	public Document duplicateDocument(final DocumentPath fromDocumentPath)
+	public Document duplicateDocument(final DocumentPath fromDocumentPath, final IUserRolePermissions permissions)
 	{
 		// NOTE: assume running out of transaction
 
@@ -713,17 +845,23 @@ public class DocumentCollection
 		// One of the reasons of doing this is because for some documents there are events which are triggered on each change (but on trx commit).
 		// If we would run out of transaction, those events would be triggered 10k times.
 		// e.g. copying the AD_Role. Each time a record like AD_Window_Access is created, the UserRolePermissionsEventBus.fireCacheResetEvent() is called.
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		final DocumentPath toDocumentPath = trxManager.call(ITrx.TRXNAME_ThreadInherited, () -> duplicateDocumentInTrx(fromDocumentPath));
+		final DocumentPath toDocumentPath = trxManager.call(ITrx.TRXNAME_ThreadInherited, () -> duplicateDocumentInTrx(fromDocumentPath, permissions));
 
 		return getDocumentReadonly(toDocumentPath);
 	}
 
-	private DocumentPath duplicateDocumentInTrx(final DocumentPath fromDocumentPath)
+	private DocumentPath duplicateDocumentInTrx(final DocumentPath fromDocumentPath, final IUserRolePermissions permissions)
 	{
-		// NOTE: assume it's already running in transaction
+		trxManager.assertThreadInheritedTrxExists();
 
-		final TableRecordReference fromRecordRef = getTableRecordReference(fromDocumentPath);
+		final Document fromDocument = getDocumentReadonly(fromDocumentPath);
+		if (!DocumentPermissionsHelper.canEdit(fromDocument, permissions))
+		{
+			throw new AdempiereException(MSG_CLONING_NOT_ALLOWED_FOR_CURRENT_WINDOW);
+		}
+
+		final TableRecordReference fromRecordRef = fromDocument.getTableRecordReference()
+				.orElseThrow(() -> new AdempiereException("Cannot determine table/record from " + fromDocument));
 
 		final CopyRecordRequest copyRecordRequest = CopyRecordRequest.builder()
 				.customErrorIfCloneNotAllowed(MSG_CLONING_NOT_ALLOWED_FOR_CURRENT_WINDOW)

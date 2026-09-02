@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5110_Distribution_Order_Candidate
+@F5110
 @ghActions:run_on_executor6
 Feature: sales order interaction with material cockpit - no product planning
+## F5110: Material Cockpit
 
   Background: Initial Data
     Given infrastructure and metasfresh are running
@@ -8,6 +12,9 @@ Feature: sales order interaction with material cockpit - no product planning
 
   @Id:S0189_100
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5110_Distribution_Order_Candidate
+@F5110
   Scenario: SO with qty = 10, no ASI
     Given metasfresh contains M_Products:
       | Identifier | Name                    |
@@ -35,7 +42,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate | OPT.QtyOrdered_SalesOrder_AtDate |
@@ -54,7 +61,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_1                            | s_1                   |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate | OPT.QtyOrdered_SalesOrder_AtDate |
@@ -65,7 +72,7 @@ Feature: sales order interaction with material cockpit - no product planning
 
     And the shipment identified by s_1 is reactivated
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate | OPT.QtyOrdered_SalesOrder_AtDate |
@@ -76,7 +83,7 @@ Feature: sales order interaction with material cockpit - no product planning
 
     And the shipment identified by s_1 is completed
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate | OPT.QtyOrdered_SalesOrder_AtDate |
@@ -88,6 +95,9 @@ Feature: sales order interaction with material cockpit - no product planning
 
   @Id:S0189_200
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5110_Distribution_Order_Candidate
+@F5110
   Scenario: SO with qty = 10, no ASI, reactivated, changed the qty to 12
     Given metasfresh contains M_Products:
       | Identifier | Name                    |
@@ -115,7 +125,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate | OPT.QtyOrdered_SalesOrder_AtDate |
@@ -126,7 +136,7 @@ Feature: sales order interaction with material cockpit - no product planning
 
     When the order identified by o_1 is reactivated
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate | OPT.QtyOrdered_SalesOrder_AtDate |
@@ -141,7 +151,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | ol_1                      | 12             |
     When the order identified by o_1 is completed
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate | OPT.QtyOrdered_SalesOrder_AtDate |
@@ -152,6 +162,9 @@ Feature: sales order interaction with material cockpit - no product planning
 
   @Id:S0189_300
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5110_Distribution_Order_Candidate
+@F5110
   Scenario: 2 SOs, each with qty = 10, no ASI, same product
     Given metasfresh contains M_Products:
       | Identifier | Name                    |
@@ -178,7 +191,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate | OPT.QtyOrdered_SalesOrder_AtDate |
@@ -195,7 +208,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | ol_2       | o_2                   | p_1                     | 10         |
     And the order identified by o_2 is completed
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate | OPT.QtyOrdered_SalesOrder_AtDate |
@@ -208,6 +221,9 @@ Feature: sales order interaction with material cockpit - no product planning
 
   @Id:S0189_400
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5110_Distribution_Order_Candidate
+@F5110
   Scenario: 2 SOs, each with qty = 10, no ASI, different product
     Given metasfresh contains M_Products:
       | Identifier | Name                    |
@@ -237,7 +253,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate | OPT.QtyOrdered_SalesOrder_AtDate |
@@ -254,7 +270,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | ol_2       | o_2                   | p_2                     | 10         |
     When the order identified by o_2 is completed
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate | OPT.QtyOrdered_SalesOrder_AtDate |
@@ -267,6 +283,9 @@ Feature: sales order interaction with material cockpit - no product planning
 
   @Id:S0189_500
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5110_Distribution_Order_Candidate
+@F5110
   Scenario: SO with qty = 10 and ASI
     Given metasfresh contains M_Products:
       | Identifier | Name                    |
@@ -305,7 +324,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | ol_1       | o_1                   | p_1                     | 10         | lineASI                                  |
     When the order identified by o_1 is completed
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate | OPT.QtyOrdered_SalesOrder_AtDate |
@@ -317,6 +336,9 @@ Feature: sales order interaction with material cockpit - no product planning
 
   @Id:S0189_600
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5110_Distribution_Order_Candidate
+@F5110
   Scenario: 2 SOs with qty = 10 and different ASI
     Given metasfresh contains M_Products:
       | Identifier | Name                    |
@@ -355,7 +377,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | ol_1       | o_1                   | p_1                     | 10         | lineASI_1                                |
     When the order identified by o_1 is completed
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate | OPT.QtyOrdered_SalesOrder_AtDate |
@@ -382,7 +404,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | ol_2       | o_2                   | p_1                     | 10         | lineASI_2                                |
     When the order identified by o_2 is completed
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate | OPT.QtyOrdered_SalesOrder_AtDate |
@@ -397,6 +419,9 @@ Feature: sales order interaction with material cockpit - no product planning
   @ignore #QtyStockCurrentAtDate doesn't update correctly on attributes change
   @Id:S0189_700
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5110_Distribution_Order_Candidate
+@F5110
   Scenario: SO with 2 lines (qty=10, same product) and different ASIs, reactivated, changed ASI to the same one
     Given metasfresh contains M_Products:
       | Identifier | Name                    |
@@ -436,7 +461,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | ol_2       | o_1                   | p_1                     | 10         |                                          |
     When the order identified by o_1 is completed
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate | OPT.QtyOrdered_SalesOrder_AtDate |
@@ -449,7 +474,7 @@ Feature: sales order interaction with material cockpit - no product planning
 
     When the order identified by o_1 is reactivated
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate | OPT.QtyOrdered_SalesOrder_AtDate |
@@ -466,7 +491,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | ol_2                      | lineASI_1                                |
     When the order identified by o_1 is completed
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate | OPT.QtyOrdered_SalesOrder_AtDate |
@@ -479,6 +504,9 @@ Feature: sales order interaction with material cockpit - no product planning
 
   @Id:S0189_800
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5110_Distribution_Order_Candidate
+@F5110
   Scenario: 2 SOs with qty = 10 and same ASI
     Given metasfresh contains M_Products:
       | Identifier | Name                    |
@@ -517,7 +545,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | ol_1       | o_1                   | p_1                     | 10         | lineASI_1                                |
     When the order identified by o_1 is completed
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate | OPT.QtyOrdered_SalesOrder_AtDate |
@@ -533,7 +561,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | ol_2       | o_2                   | p_1                     | 10         | lineASI_1                                |
     When the order identified by o_2 is completed
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate | OPT.QtyOrdered_SalesOrder_AtDate |
@@ -546,6 +574,9 @@ Feature: sales order interaction with material cockpit - no product planning
   @ignore #QtyStockCurrentAtDate doesn't update correctly on attributes change
   @Id:S0189_900
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5110_Distribution_Order_Candidate
+@F5110
   Scenario: SO with 1 line (qty=10) and ASI, reactivated, changed ASI and qty=12
     Given metasfresh contains M_Products:
       | Identifier | Name                    |
@@ -584,7 +615,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate | OPT.QtyOrdered_SalesOrder_AtDate |
@@ -598,7 +629,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | ol_1                      | lineASI_1                                |
     When the order identified by o_1 is completed
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate | OPT.QtyOrdered_SalesOrder_AtDate |
@@ -613,7 +644,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | ol_1                      | 12             |
     When the order identified by o_1 is completed
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate | OPT.QtyOrdered_SalesOrder_AtDate |
@@ -626,6 +657,9 @@ Feature: sales order interaction with material cockpit - no product planning
   @ignore
   @Id:S0189_1000
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5110_Distribution_Order_Candidate
+@F5110
   Scenario: SO with 1 line (qty=10), no ASI, reactivated, changed the date promised
     Given metasfresh contains M_Products:
       | Identifier | Name                    |
@@ -653,7 +687,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate | OPT.QtyOrdered_SalesOrder_AtDate |
@@ -667,7 +701,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | o_1                   | 2021-04-17T00:00:00Z |
     When the order identified by o_1 is completed
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate | OPT.QtyOrdered_SalesOrder_AtDate |
@@ -680,6 +714,9 @@ Feature: sales order interaction with material cockpit - no product planning
   @ignore #QtyStockCurrentAtDate doesn't update correctly on attributes change
   @Id:S0189_1100
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5110_Distribution_Order_Candidate
+@F5110
   Scenario: SO with 1 line (qty=10) and ASI, reactivated, changed ASI and qty=8
     Given metasfresh contains M_Products:
       | Identifier | Name                     |
@@ -718,7 +755,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate | OPT.QtyOrdered_SalesOrder_AtDate |
@@ -732,7 +769,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | ol_1                      | lineASI_1                                |
     When the order identified by o_1 is completed
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate | OPT.QtyOrdered_SalesOrder_AtDate |
@@ -747,7 +784,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | ol_1                      | 8              |
     When the order identified by o_1 is completed
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate | OPT.QtyOrdered_SalesOrder_AtDate |

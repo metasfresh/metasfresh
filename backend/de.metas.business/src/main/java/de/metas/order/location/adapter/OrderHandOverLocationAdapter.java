@@ -120,6 +120,12 @@ public class OrderHandOverLocationAdapter
 	}
 
 	@Override
+	public void setRenderedAddress(final @NonNull RenderedAddressAndCapturedLocation from)
+	{
+		IDocumentHandOverLocationAdapter.super.setRenderedAddress(from);
+	}
+
+	@Override
 	public I_C_Order getWrappedRecord()
 	{
 		return delegate;

@@ -12,10 +12,10 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeValueId;
+import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
-import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
@@ -39,8 +39,7 @@ public class DefaultAttributeValuesProvider implements IAttributeValuesProvider
 	private static final CCache<AttributeId, AttributeValuesMap> attributeId2values = CCache.newLRUCache(CACHE_PREFIX + "#AttributeValuesList#by#M_Attribute_ID", 100, 0);
 	@NonNull private final IAttributeDAO attributeDAO;
 
-	@NonNull private final I_M_Attribute attribute;
-	@NonNull @Getter private final AttributeId attributeId;
+	@NonNull private final Attribute attribute;
 	private transient Boolean _highVolume = null; // lazy
 
 	private transient AttributeValuesMap _attributeValuesMap; // lazy
@@ -48,11 +47,10 @@ public class DefaultAttributeValuesProvider implements IAttributeValuesProvider
 
 	public DefaultAttributeValuesProvider(
 			@NonNull final IAttributeDAO attributeDAO,
-			@NonNull final I_M_Attribute attribute)
+			@NonNull final Attribute attribute)
 	{
 		this.attributeDAO = attributeDAO;
 		this.attribute = attribute;
-		this.attributeId = AttributeId.ofRepoId(attribute.getM_Attribute_ID());
 	}
 
 	@Override
@@ -81,17 +79,19 @@ public class DefaultAttributeValuesProvider implements IAttributeValuesProvider
 		return X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40;
 	}
 
+	public AttributeId getAttributeId() {return attribute.getAttributeId();}
+
 	private AttributeValuesMap getAttributeValuesMap()
 	{
 		AttributeValuesMap attributeValuesMap = _attributeValuesMap;
 		if (attributeValuesMap == null)
 		{
-			attributeValuesMap = _attributeValuesMap = attributeId2values.getOrLoad(attributeId, () -> retrieveAttributeValuesList(attribute));
+			attributeValuesMap = _attributeValuesMap = attributeId2values.getOrLoad(attribute.getAttributeId(), () -> retrieveAttributeValuesList(attribute));
 		}
 		return attributeValuesMap;
 	}
 
-	private AttributeValuesMap retrieveAttributeValuesList(final I_M_Attribute attribute)
+	private AttributeValuesMap retrieveAttributeValuesList(final Attribute attribute)
 	{
 		final List<AttributeListValue> attributeValues = attributeDAO.retrieveAttributeValues(attribute);
 		return new AttributeValuesMap(attribute, attributeValues);
@@ -182,7 +182,7 @@ public class DefaultAttributeValuesProvider implements IAttributeValuesProvider
 	{
 		if (_highVolume == null)
 		{
-			_highVolume = attributeDAO.isHighVolumeValuesList(attribute);
+			_highVolume = attribute.isHighVolumeValuesList();
 		}
 		return _highVolume;
 	}
@@ -195,7 +195,7 @@ public class DefaultAttributeValuesProvider implements IAttributeValuesProvider
 		private final ImmutableList<NamePair> valuesList;
 		private final ImmutableMap<String, AttributeValueId> attributeValueIdByKey;
 
-		private AttributeValuesMap(final I_M_Attribute attribute, final Collection<AttributeListValue> attributeValues)
+		private AttributeValuesMap(final Attribute attribute, final Collection<AttributeListValue> attributeValues)
 		{
 			final ImmutableMap.Builder<String, NamePair> valuesByKey = ImmutableMap.builder();
 			final ImmutableMap.Builder<String, AttributeValueId> attributeValueIdByKey = ImmutableMap.builder();
@@ -218,7 +218,7 @@ public class DefaultAttributeValuesProvider implements IAttributeValuesProvider
 				if (av.isNullFieldValue())
 				{
 					Check.assumeNull(nullValue, "Only one null value shall be defined for {}, but we found: {}, {}",
-							attribute.getName(), nullValue, av);
+							attribute.getDisplayName().getDefaultValue(), nullValue, av);
 					nullValue = vnp;
 				}
 			}

@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
 @ghActions:run_on_executor6
 Feature: Product price validation (not attribute dependant S0144_1)
+## F32000: Pricing
 
   Background:
 #  Prerequisite:
@@ -26,9 +30,9 @@ Feature: Product price validation (not attribute dependant S0144_1)
       | M_AttributeSet_ID.Identifier | Name                  | MandatoryType |
       | attributeSet_02062022        | attributeSet_02062022 | N             |
     And add M_AttributeUse:
-      | M_AttributeUse_ID.Identifier | M_AttributeSet_ID.Identifier | M_Attribute_ID.Identifier | SeqNo |
-      | attributeUse_age             | attributeSet_02062022        | attr_age                  | 10    |
-      | attributeUse_Label           | attributeSet_02062022        | attr_Label                | 20    |
+      | M_AttributeSet_ID     | M_Attribute_ID | SeqNo |
+      | attributeSet_02062022 | attr_age       | 10    |
+      | attributeSet_02062022 | attr_Label     | 20    |
 
     And metasfresh contains M_PricingSystems
       | Identifier  | Name        | Value       |
@@ -60,6 +64,9 @@ Feature: Product price validation (not attribute dependant S0144_1)
 
 
   @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
   @Id:S0144.1_100
   Scenario: Validate that Age attribute set on productCategory.ASI has no default value on order line if configured so (M_AttributeValue.IsNullFieldValue=N)
     And metasfresh contains C_Orders:
@@ -76,6 +83,9 @@ Feature: Product price validation (not attribute dependant S0144_1)
 
 
   @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
   @Id:S0144.1_180
   Scenario: Product price is matched
     # add CU-TU allocation for `product_S0144.1_02062022`

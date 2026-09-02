@@ -1,45 +1,75 @@
 package de.metas.frontend_testing.masterdata.sales_order;
 
+import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
+import de.metas.handlingunits.picking.job_schedule.service.commands.CreateOrUpdatePickingJobSchedulesRequest;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.logging.LogManager;
 import de.metas.order.OrderFactory;
+import de.metas.order.OrderLineBuilder;
+import de.metas.order.OrderLineId;
+import de.metas.shipping.ShipperId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.workplace.WorkplaceId;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
+import org.slf4j.Logger;
 
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+@Builder
 public class SalesOrderCreateCommand
 {
+	@NonNull private static final Logger logger = LogManager.getLogger(SalesOrderCreateCommand.class);
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	@NonNull final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+	@NonNull private final IShipmentScheduleInvalidateRepository shipmentScheduleInvalidateRepository = Services.get(IShipmentScheduleInvalidateRepository.class);
+	@NonNull private final PickingJobScheduleService pickingJobScheduleService;
 
 	@NonNull private final JsonSalesOrderCreateRequest request;
 	@NonNull private final MasterdataContext context;
+	@NonNull private final Identifier identifier;
 
-	private OrderFactory salesOrderFactory;
+	//
+	// State
+	private transient OrderFactory salesOrderFactory;
+	private final ArrayList<LineCreateRequestAndBuilder> lineCreateRequestAndBuilders = new ArrayList<>();
 
-	@Builder
-	private SalesOrderCreateCommand(
-			@NonNull final JsonSalesOrderCreateRequest request,
-			@NonNull final MasterdataContext context)
-	{
-		this.request = request;
-		this.context = context;
-	}
+	private static final Duration JOB_SCHEDULE_CREATE_TIMEOUT = Duration.ofSeconds(30);
+	private static final Duration JOB_SCHEDULE_CREATE_SLEEP_BETWEEN = Duration.ofMillis(1000);
 
 	public JsonSalesOrderCreateResponse execute()
 	{
-		return trxManager.callInThreadInheritedTrx(this::execute0);
+		final JsonSalesOrderCreateResponse response = trxManager.callInThreadInheritedTrx(this::execute0);
+		trxManager.runInThreadInheritedTrx(this::createSchedules);
+		waitForShipmentSchedulesToBeValid();
+		return response;
 	}
 
 	private JsonSalesOrderCreateResponse execute0()
@@ -64,11 +94,24 @@ public class SalesOrderCreateCommand
 		this.salesOrderFactory = OrderFactory.newSalesOrder()
 				.shipBPartner(shipBPartnerId, shipBPartnerLocationId, null)
 				.warehouseId(context.getId(request.getWarehouse(), WarehouseId.class))
-				.datePromised(request.getDatePromised());
+				.datePromised(request.getDatePromised())
+				.poReference(request.getPoReference());
 
+		if (request.getShipper() != null)
+		{
+			this.salesOrderFactory.shipperId(context.getId(request.getShipper(), ShipperId.class));
+		}
 		request.getLines().forEach(this::createOrderLine);
 
 		final I_C_Order salesOrderRecord = salesOrderFactory.createAndComplete();
+
+		// Store order line IDs in context so manufacturing orders can reference them
+		for (int i = 0; i < lineCreateRequestAndBuilders.size(); i++)
+		{
+			final LineCreateRequestAndBuilder lineRequestAndBuilder = lineCreateRequestAndBuilders.get(i);
+			final Identifier lineIdentifier = Identifier.ofString(identifier.getAsString() + "_line" + (i + 1));
+			context.putIdentifier(lineIdentifier, lineRequestAndBuilder.getOrderLineId());
+		}
 
 		return JsonSalesOrderCreateResponse.builder()
 				.id(String.valueOf(salesOrderRecord.getC_Order_ID()))
@@ -85,10 +128,174 @@ public class SalesOrderCreateCommand
 				? context.getId(salesOrderLine.getPiItemProduct(), HUPIItemProductId.class)
 				: null;
 
-		salesOrderFactory.newOrderLine()
+		final OrderLineBuilder lineBuilder = salesOrderFactory.newOrderLine()
 				.productId(productId)
 				.addQty(qty)
 				.piItemProductId(piItemProductId);
+
+		this.lineCreateRequestAndBuilders.add(LineCreateRequestAndBuilder.of(salesOrderLine, lineBuilder));
 	}
 
+	private void createSchedules()
+	{
+		final HashMap<OrderLineId, ImmutableList<JsonSalesOrderCreateRequest.Schedule>> jobSchedulesToCreateByOrderLineId = new HashMap<>();
+		this.lineCreateRequestAndBuilders.forEach(lineRequestAndBuilder -> {
+			final List<JsonSalesOrderCreateRequest.Schedule> jobScheduleRequests = lineRequestAndBuilder.getScheduleRequests();
+			if (jobScheduleRequests.isEmpty()) {return;}
+
+			jobSchedulesToCreateByOrderLineId.put(lineRequestAndBuilder.getOrderLineId(), ImmutableList.copyOf(jobScheduleRequests));
+		});
+
+		if (jobSchedulesToCreateByOrderLineId.isEmpty()) {return;}
+
+		final ImmutableSet<OrderLineId> orderLineIds = ImmutableSet.copyOf(jobSchedulesToCreateByOrderLineId.keySet());
+
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+		while (!jobSchedulesToCreateByOrderLineId.isEmpty())
+		{
+			final List<I_M_ShipmentSchedule> shipmentSchedules = shipmentSchedulePA.getByOrderLineIds(orderLineIds);
+			for (final I_M_ShipmentSchedule shipmentSchedule : shipmentSchedules)
+			{
+				final OrderLineId orderLineId = OrderLineId.ofRepoId(shipmentSchedule.getC_OrderLine_ID());
+				final ImmutableList<JsonSalesOrderCreateRequest.Schedule> jobSchedulesToCreate = jobSchedulesToCreateByOrderLineId.remove(orderLineId);
+
+				createSchedules(shipmentSchedule, jobSchedulesToCreate);
+			}
+
+			if (stopwatch.elapsed().compareTo(JOB_SCHEDULE_CREATE_TIMEOUT) > 0)
+			{
+				throw new AdempiereException("Timeout creating the job schedules for shipment schedules. Took " + stopwatch.elapsed());
+			}
+
+			if (!jobSchedulesToCreateByOrderLineId.isEmpty())
+			{
+				logger.info("Still have {} shipment schedules to create job schedules for. Sleeping...", jobSchedulesToCreateByOrderLineId.size());
+				sleep(JOB_SCHEDULE_CREATE_SLEEP_BETWEEN);
+			}
+		}
+		stopwatch.stop();
+
+		logger.info("Created job schedules for all {} order lines. Took {}", orderLineIds.size(), stopwatch);
+	}
+
+	/**
+	 * Waits until ALL shipment schedules for this order's lines are (a) created and (b) no longer flagged
+	 * for recompute (i.e. valid in {@code M_ShipmentSchedule_Recompute}).
+	 *
+	 * <p>Why this is needed: shipment-schedule creation and the subsequent recompute pass are asynchronous
+	 * (driven by background workpackage processors). The old mass-printing E2E flow incidentally triggered
+	 * a global {@code M_ShipmentSchedule_Recompute} pass by opening a picking job, which made freshly-created
+	 * self-packed orders' schedules valid before the test scanned. The new launcher-based flow skips that,
+	 * so without this wait the schedules may still be flagged when {@code MassPrintingService} queries
+	 * {@code M_Packageable_V} and no packageable lines are found (boxesPacked=0).
+	 *
+	 * <p>Reuses the existing {@link #JOB_SCHEDULE_CREATE_TIMEOUT} / {@link #JOB_SCHEDULE_CREATE_SLEEP_BETWEEN}
+	 * constants and {@link #sleep(Duration)} helper to keep the polling budget consistent.
+	 */
+	private void waitForShipmentSchedulesToBeValid()
+	{
+		final ImmutableSet<OrderLineId> allOrderLineIds = lineCreateRequestAndBuilders.stream()
+				.map(LineCreateRequestAndBuilder::getOrderLineId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		if (allOrderLineIds.isEmpty())
+		{
+			return;
+		}
+
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+		while (true)
+		{
+			final List<I_M_ShipmentSchedule> shipmentSchedules = shipmentSchedulePA.getByOrderLineIds(allOrderLineIds);
+
+			if (shipmentSchedules.size() >= allOrderLineIds.size())
+			{
+				final ImmutableSet<ShipmentScheduleId> scheduleIds = shipmentSchedules.stream()
+						.map(ss -> ShipmentScheduleId.ofRepoId(ss.getM_ShipmentSchedule_ID()))
+						.collect(ImmutableSet.toImmutableSet());
+
+				if (shipmentScheduleInvalidateRepository.isAllValid(scheduleIds))
+				{
+					logger.info("All {} shipment schedules are valid. Took {}", scheduleIds.size(), stopwatch);
+					stopwatch.stop();
+					return;
+				}
+			}
+
+			if (stopwatch.elapsed().compareTo(JOB_SCHEDULE_CREATE_TIMEOUT) > 0)
+			{
+				throw new AdempiereException("Timeout waiting for shipment schedules to be created and valid. "
+						+ "Expected " + allOrderLineIds.size() + " schedule(s), found " + shipmentSchedules.size() + ". "
+						+ "Took " + stopwatch.elapsed());
+			}
+
+			logger.info("Waiting for shipment schedules to be created and valid ({}/{} found). Sleeping...",
+					shipmentSchedules.size(), allOrderLineIds.size());
+			sleep(JOB_SCHEDULE_CREATE_SLEEP_BETWEEN);
+		}
+	}
+
+	private static void sleep(@NonNull final Duration duration)
+	{
+		logger.info("Sleeping {}...", duration);
+		try
+		{
+			Thread.sleep(duration.toMillis());
+		}
+		catch (final InterruptedException e)
+		{
+			throw new AdempiereException(e);
+		}
+	}
+
+	private void createSchedules(final I_M_ShipmentSchedule shipmentSchedule, final ImmutableList<JsonSalesOrderCreateRequest.Schedule> jobSchedulesToCreate)
+	{
+		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
+		final ShipmentScheduleAndJobScheduleIdSet shipmentScheduleAndJobScheduleIds = ShipmentScheduleAndJobScheduleIdSet.of(shipmentScheduleId);
+
+		jobSchedulesToCreate.forEach(jobScheduleRequest -> {
+			final WorkplaceId workplaceId = context.getId(jobScheduleRequest.getWorkplace(), WorkplaceId.class);
+			pickingJobScheduleService.createOrUpdate(CreateOrUpdatePickingJobSchedulesRequest.builder()
+					.shipmentScheduleAndJobScheduleIds(shipmentScheduleAndJobScheduleIds)
+					.workplaceId(workplaceId)
+					.qtyToPickBD(jobScheduleRequest.getQty())
+					.build());
+		});
+	}
+
+	//
+	//
+	//
+	//
+	//
+	@Value(staticConstructor = "of")
+	private static class LineCreateRequestAndBuilder
+	{
+		@NonNull JsonSalesOrderCreateRequest.Line request;
+		@NonNull OrderLineBuilder builder;
+
+		public OrderLineId getOrderLineId() {return builder.getCreatedOrderAndLineId().getOrderLineId();}
+
+		public List<JsonSalesOrderCreateRequest.Schedule> getScheduleRequests()
+		{
+			if (request.getSchedules() != null)
+			{
+				Check.assumeNull(request.getWorkplace(), "Workplace and schedules can't be set at the same time: {}", request.getSchedules());
+				return request.getSchedules();
+			}
+			else if (request.getWorkplace() != null)
+			{
+				return ImmutableList.of(
+						JsonSalesOrderCreateRequest.Schedule.builder()
+								.workplace(request.getWorkplace())
+								.qty(request.getQty())
+								.build()
+				);
+			}
+			else
+			{
+				return ImmutableList.of();
+			}
+		}
+	}
 }

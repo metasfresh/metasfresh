@@ -31,12 +31,14 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.time.DurationUtils;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.PPCostCollectorId;
 import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.springframework.stereotype.Component;
 
@@ -70,6 +72,7 @@ import java.util.Set;
  */
 
 @Component
+@RequiredArgsConstructor
 public class ManufacturingStandardCostingMethodHandler implements CostingMethodHandler
 {
 	// services
@@ -78,27 +81,17 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 	private final IProductBL productsService = Services.get(IProductBL.class);
 	private final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
 	//
-	private final ICurrentCostsRepository currentCostsRepo;
-	private final ICostDetailService costDetailsService;
-	private final CostingMethodHandlerUtils utils;
+	@NonNull private final ICurrentCostsRepository currentCostsRepo;
+	@NonNull private final ICostDetailService costDetailsService;
+	@NonNull private final CostingMethodHandlerUtils utils;
+	@NonNull private final PPOrderCostDifferenceDistributor costDifferenceDistributor;
 
-	private final StandardCostingMethodHandler standardCostingMethodHandler;
+	@NonNull private final StandardCostingMethodHandler standardCostingMethodHandler;
 
 	private static final ImmutableSet<String> HANDLED_TABLE_NAMES = ImmutableSet.<String>builder()
 			.add(CostingDocumentRef.TABLE_NAME_PP_Cost_Collector)
 			.build();
 
-	public ManufacturingStandardCostingMethodHandler(
-			@NonNull final ICurrentCostsRepository currentCostsRepo,
-			@NonNull final ICostDetailService costDetailsService,
-			@NonNull final CostingMethodHandlerUtils utils,
-			@NonNull final StandardCostingMethodHandler standardCostingMethodHandler)
-	{
-		this.currentCostsRepo = currentCostsRepo;
-		this.costDetailsService = costDetailsService;
-		this.utils = utils;
-		this.standardCostingMethodHandler = standardCostingMethodHandler;
-	}
 
 	@Override
 	public CostingMethod getCostingMethod()
@@ -144,10 +137,15 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 			final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
 			if (actualResourceId.isNoResource())
 			{
-				return null;
+				return CostDetailCreateResultsList.EMPTY;
 			}
 
-			final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
+			final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId).orElse(null);
+			if (actualResourceProductId == null)
+			{
+				// resource has no cost product -> no activity cost to post (graceful no-op)
+				return CostDetailCreateResultsList.EMPTY;
+			}
 
 			final Duration totalDuration = costCollectorsService.getTotalDurationReported(cc);
 
@@ -164,16 +162,21 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 				final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
 				if (actualResourceId.isNoResource())
 				{
-					return null;
+					return CostDetailCreateResultsList.EMPTY;
 				}
 
-				final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
+				final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId)
+						.orElseThrow(() -> new AdempiereException("No product found for " + actualResourceId));
 
 				final Duration totalDurationReported = costCollectorsService.getTotalDurationReported(cc);
 				final Quantity qty = convertDurationToQuantity(totalDurationReported, actualResourceProductId);
 
 				return CostDetailCreateResultsList.ofNullable(createUsageVariance(request.withProductIdAndQty(actualResourceProductId, qty)));
 			}
+		}
+		else if (costCollectorType.isCostDifferenceDistribution())
+		{
+			return costDifferenceDistributor.createCostDetails(request, PPOrderId.ofRepoId(cc.getPP_Order_ID()));
 		}
 		else
 		{
@@ -187,17 +190,17 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 		throw new UnsupportedOperationException();
 	}
 
-	private CurrentCost getCurrentCost(final CostDetailCreateRequest request)
+	private CurrentCost getCurrentCostForUpdate(final CostDetailCreateRequest request)
 	{
 		final CostSegmentAndElement costSegmentAndElement = utils.extractCostSegmentAndElement(request);
-		return currentCostsRepo.getOrCreate(costSegmentAndElement);
+		return currentCostsRepo.getOrCreateForUpdate(costSegmentAndElement);
 	}
 
 	private CostDetailCreateResult createIssueOrReceipt(final CostDetailCreateRequest request)
 	{
 		final AcctSchema acctSchema = acctSchemasRepo.getById(request.getAcctSchemaId());
 
-		final CurrentCost currentCosts = getCurrentCost(request);
+		final CurrentCost currentCosts = getCurrentCostForUpdate(request);
 		final CostPrice price = currentCosts.getCostPrice();
 		final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), request.getProductId());
 		final CostAmount amt = price.multiply(qty).roundToCostingPrecisionIfNeeded(acctSchema);
@@ -234,7 +237,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 		final Quantity qty = convertDurationToQuantity(duration, request.getProductId(), price.getUomId());
 		final CostAmount amt = price.multiply(qty).roundToCostingPrecisionIfNeeded(acctSchema);
 
-		final CurrentCost currentCosts = getCurrentCost(request);
+		final CurrentCost currentCosts = getCurrentCostForUpdate(request);
 		final CostDetail costDetail = costDetailsService.create(request.toCostDetailBuilder()
 				.amtType(CostAmountType.MAIN)
 				.amt(amt)
@@ -257,7 +260,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 		final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), request.getProductId());
 		final CostAmount amt = price.multiply(qty).roundToCostingPrecisionIfNeeded(acctSchema);
 
-		final CurrentCost currentCosts = getCurrentCost(request);
+		final CurrentCost currentCosts = getCurrentCostForUpdate(request);
 		final CostDetail costDetail = costDetailsService.create(request.toCostDetailBuilder()
 				.amtType(CostAmountType.MAIN)
 				.amt(amt)
@@ -494,7 +497,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 
 	private CostPrice getProductActualCostPrice(@NonNull final CostSegmentAndElement costSegmentAndElement)
 	{
-		return currentCostsRepo.getOrCreate(costSegmentAndElement)
+		return currentCostsRepo.getOrCreateForUpdate(costSegmentAndElement)
 				.getCostPrice();
 	}
 

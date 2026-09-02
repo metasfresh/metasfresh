@@ -22,9 +22,13 @@ package org.adempiere.mm.attributes.spi.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.Properties;
-
+import de.metas.handlingunits.attribute.IHUAttributesBL;
+import de.metas.handlingunits.conversion.ConversionHelper;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.X_M_HU;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.ISubProducerAttributeBL;
 import org.adempiere.mm.attributes.spi.IAttributeValueCalloutAdapter;
@@ -33,13 +37,10 @@ import org.adempiere.mm.attributes.spi.IAttributeValueGeneratorAdapter;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProviderFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.jetbrains.annotations.NotNull;
 
-import de.metas.handlingunits.attribute.IHUAttributesBL;
-import de.metas.handlingunits.conversion.ConversionHelper;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.X_M_HU;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.util.Properties;
 
 /**
  * Retrieve all subproducer BPartners for {@link I_M_HU#getC_BPartner_ID()}.
@@ -57,9 +58,9 @@ public class HUSubProducerBPartnerAttributeHandler
 	}
 
 	@Override
-	public IAttributeValuesProvider createAttributeValuesProvider(final org.compiere.model.I_M_Attribute attribute)
+	public IAttributeValuesProvider createAttributeValuesProvider(final @NotNull Attribute attribute)
 	{
-		return new HUSubProducerBPartnerAttributeValuesProvider(attribute);
+		return new HUSubProducerBPartnerAttributeValuesProvider(attribute.getAttributeCode());
 	}
 
 	/**
@@ -70,10 +71,10 @@ public class HUSubProducerBPartnerAttributeHandler
 	 */
 	@Override
 	public void onValueChanged(final IAttributeValueContext attributeValueContext,
-			final IAttributeSet attributeSet,
-			final org.compiere.model.I_M_Attribute attribute,
-			final Object valueOld,
-			final Object valueNew)
+							   final IAttributeSet attributeSet,
+							   final org.compiere.model.I_M_Attribute attribute,
+							   final Object valueOld,
+							   final Object valueNew)
 	{
 		final BigDecimal valueOldBD = ConversionHelper.toBigDecimal(valueOld);
 		final BigDecimal valueNewBD = ConversionHelper.toBigDecimal(valueNew);

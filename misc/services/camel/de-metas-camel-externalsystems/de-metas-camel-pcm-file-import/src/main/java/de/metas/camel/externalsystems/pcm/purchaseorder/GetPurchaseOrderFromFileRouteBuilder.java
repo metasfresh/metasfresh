@@ -139,7 +139,7 @@ public class GetPurchaseOrderFromFileRouteBuilder extends IdAwareRouteBuilder
 	private void updateContextAfterSuccess(@NonNull final Exchange exchange)
 	{
 		final ImportOrdersRouteContext importOrdersRouteContext = ImportUtil.getOrCreateImportOrdersRouteContext(exchange);
-		
+
 		final PurchaseOrderRow purchaseOrderRow = exchange.getProperty(PROPERTY_CURRENT_CSV_ROW, PurchaseOrderRow.class);
 		final JsonExternalId externalHeaderId = JsonExternalId.of(purchaseOrderRow.getExternalHeaderId());
 		if (!importOrdersRouteContext.getPurchaseCandidatesWithError().contains(externalHeaderId))
@@ -183,7 +183,10 @@ public class GetPurchaseOrderFromFileRouteBuilder extends IdAwareRouteBuilder
 
 		for (final JsonExternalId externalId : importOrdersRouteContext.getPurchaseCandidatesToProcess())
 		{
-			final JsonPurchaseCandidateReference reference = JsonPurchaseCandidateReference.builder().externalHeaderId(externalId).build();
+			final JsonPurchaseCandidateReference reference = JsonPurchaseCandidateReference.builder()
+					.externalSystemCode(importOrdersRouteContext.getExternalSystemCode())
+					.externalHeaderId(externalId)
+					.build();
 			builder.purchaseCandidate(reference);
 		}
 

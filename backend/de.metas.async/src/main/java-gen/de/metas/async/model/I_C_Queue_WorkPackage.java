@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.async
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.async.model;
 
 import org.adempiere.model.ModelColumn;
@@ -47,13 +69,6 @@ public interface I_C_Queue_WorkPackage
 	 */
 	int getAD_Issue_ID();
 
-	org.compiere.model.I_AD_Issue getAD_Issue();
-
-	void setAD_Issue(org.compiere.model.I_AD_Issue AD_Issue);
-
-	/** Column definition for AD_Issue_ID */
-	org.adempiere.model.ModelColumn<I_C_Queue_WorkPackage, org.compiere.model.I_AD_Issue> COLUMN_AD_Issue_ID = new org.adempiere.model.ModelColumn<I_C_Queue_WorkPackage, org.compiere.model.I_AD_Issue>(I_C_Queue_WorkPackage.class, "AD_Issue_ID", org.compiere.model.I_AD_Issue.class);
-	/** Column name AD_Issue_ID */
 	String COLUMNNAME_AD_Issue_ID = "AD_Issue_ID";
 
 	/**
@@ -213,11 +228,11 @@ public interface I_C_Queue_WorkPackage
 	 */
 	int getC_Async_Batch_ID();
 
-	@Nullable I_C_Async_Batch getC_Async_Batch();
+	@Nullable de.metas.async.model.I_C_Async_Batch getC_Async_Batch();
 
-	void setC_Async_Batch(@Nullable I_C_Async_Batch C_Async_Batch);
+	void setC_Async_Batch(@Nullable de.metas.async.model.I_C_Async_Batch C_Async_Batch);
 
-	ModelColumn<I_C_Queue_WorkPackage, I_C_Async_Batch> COLUMN_C_Async_Batch_ID = new ModelColumn<>(I_C_Queue_WorkPackage.class, "C_Async_Batch_ID", I_C_Async_Batch.class);
+	ModelColumn<I_C_Queue_WorkPackage, de.metas.async.model.I_C_Async_Batch> COLUMN_C_Async_Batch_ID = new ModelColumn<>(I_C_Queue_WorkPackage.class, "C_Async_Batch_ID", de.metas.async.model.I_C_Async_Batch.class);
 	String COLUMNNAME_C_Async_Batch_ID = "C_Async_Batch_ID";
 
 	/**
@@ -238,11 +253,11 @@ public interface I_C_Queue_WorkPackage
 	 */
 	int getC_Queue_PackageProcessor_ID();
 
-	I_C_Queue_PackageProcessor getC_Queue_PackageProcessor();
+	de.metas.async.model.I_C_Queue_PackageProcessor getC_Queue_PackageProcessor();
 
-	void setC_Queue_PackageProcessor(I_C_Queue_PackageProcessor C_Queue_PackageProcessor);
+	void setC_Queue_PackageProcessor(de.metas.async.model.I_C_Queue_PackageProcessor C_Queue_PackageProcessor);
 
-	ModelColumn<I_C_Queue_WorkPackage, I_C_Queue_PackageProcessor> COLUMN_C_Queue_PackageProcessor_ID = new ModelColumn<>(I_C_Queue_WorkPackage.class, "C_Queue_PackageProcessor_ID", I_C_Queue_PackageProcessor.class);
+	ModelColumn<I_C_Queue_WorkPackage, de.metas.async.model.I_C_Queue_PackageProcessor> COLUMN_C_Queue_PackageProcessor_ID = new ModelColumn<>(I_C_Queue_WorkPackage.class, "C_Queue_PackageProcessor_ID", de.metas.async.model.I_C_Queue_PackageProcessor.class);
 	String COLUMNNAME_C_Queue_PackageProcessor_ID = "C_Queue_PackageProcessor_ID";
 
 	/**
@@ -298,7 +313,7 @@ public interface I_C_Queue_WorkPackage
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setErrorMsg (@Nullable String ErrorMsg);
+	void setErrorMsg (@Nullable java.lang.String ErrorMsg);
 
 	/**
 	 * Get Error Message.
@@ -307,7 +322,7 @@ public interface I_C_Queue_WorkPackage
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getErrorMsg();
+	@Nullable java.lang.String getErrorMsg();
 
 	ModelColumn<I_C_Queue_WorkPackage, Object> COLUMN_ErrorMsg = new ModelColumn<>(I_C_Queue_WorkPackage.class, "ErrorMsg", null);
 	String COLUMNNAME_ErrorMsg = "ErrorMsg";
@@ -466,29 +481,27 @@ public interface I_C_Queue_WorkPackage
 	String COLUMNNAME_LastStartTime = "LastStartTime";
 
 	/**
-	 * Set Gesperrt.
+	 * Set Locked.
+	 * Time at which the data record was blocked for processing
 	 *
-	 * <br>Type: YesNo
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
-	void setLocked (boolean Locked);
+	void setLockedAt (@Nullable java.sql.Timestamp LockedAt);
 
 	/**
-	 * Get Gesperrt.
+	 * Get Locked.
+	 * Time at which the data record was blocked for processing
 	 *
-	 * <br>Type: YesNo
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
-	boolean isLocked();
+	@Nullable java.sql.Timestamp getLockedAt();
 
-	ModelColumn<I_C_Queue_WorkPackage, Object> COLUMN_Locked = new ModelColumn<>(I_C_Queue_WorkPackage.class, "Locked", null);
-	String COLUMNNAME_Locked = "Locked";
+	ModelColumn<I_C_Queue_WorkPackage, Object> COLUMN_LockedAt = new ModelColumn<>(I_C_Queue_WorkPackage.class, "LockedAt", null);
+	String COLUMNNAME_LockedAt = "LockedAt";
 
 	/**
 	 * Set Priority.
@@ -498,7 +511,7 @@ public interface I_C_Queue_WorkPackage
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setPriority (String Priority);
+	void setPriority (java.lang.String Priority);
 
 	/**
 	 * Get Priority.
@@ -508,7 +521,7 @@ public interface I_C_Queue_WorkPackage
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getPriority();
+	java.lang.String getPriority();
 
 	ModelColumn<I_C_Queue_WorkPackage, Object> COLUMN_Priority = new ModelColumn<>(I_C_Queue_WorkPackage.class, "Priority", null);
 	String COLUMNNAME_Priority = "Priority";
@@ -533,6 +546,27 @@ public interface I_C_Queue_WorkPackage
 
 	ModelColumn<I_C_Queue_WorkPackage, Object> COLUMN_Processed = new ModelColumn<>(I_C_Queue_WorkPackage.class, "Processed", null);
 	String COLUMNNAME_Processed = "Processed";
+
+	/**
+	 * Set Zuletzt Übersprungen um.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSkippedAt (@Nullable java.sql.Timestamp SkippedAt);
+
+	/**
+	 * Get Zuletzt Übersprungen um.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getSkippedAt();
+
+	ModelColumn<I_C_Queue_WorkPackage, Object> COLUMN_SkippedAt = new ModelColumn<>(I_C_Queue_WorkPackage.class, "SkippedAt", null);
+	String COLUMNNAME_SkippedAt = "SkippedAt";
 
 	/**
 	 * Set Skipped Count.
@@ -583,7 +617,7 @@ public interface I_C_Queue_WorkPackage
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setSkipped_Last_Reason (@Nullable String Skipped_Last_Reason);
+	void setSkipped_Last_Reason (@Nullable java.lang.String Skipped_Last_Reason);
 
 	/**
 	 * Get Skipped Last Reason.
@@ -592,31 +626,10 @@ public interface I_C_Queue_WorkPackage
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getSkipped_Last_Reason();
+	@Nullable java.lang.String getSkipped_Last_Reason();
 
 	ModelColumn<I_C_Queue_WorkPackage, Object> COLUMN_Skipped_Last_Reason = new ModelColumn<>(I_C_Queue_WorkPackage.class, "Skipped_Last_Reason", null);
 	String COLUMNNAME_Skipped_Last_Reason = "Skipped_Last_Reason";
-
-	/**
-	 * Set Zuletzt Übersprungen um.
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setSkippedAt (@Nullable java.sql.Timestamp SkippedAt);
-
-	/**
-	 * Get Zuletzt Übersprungen um.
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.sql.Timestamp getSkippedAt();
-
-	ModelColumn<I_C_Queue_WorkPackage, Object> COLUMN_SkippedAt = new ModelColumn<>(I_C_Queue_WorkPackage.class, "SkippedAt", null);
-	String COLUMNNAME_SkippedAt = "SkippedAt";
 
 	/**
 	 * Set Skip Timeout (millis).

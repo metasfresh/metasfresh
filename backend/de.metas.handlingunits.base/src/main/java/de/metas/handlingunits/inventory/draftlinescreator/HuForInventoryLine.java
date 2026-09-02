@@ -40,27 +40,14 @@ import lombok.Value;
 @Value
 public class HuForInventoryLine
 {
-	@NonNull
-	OrgId orgId;
-
+	@NonNull OrgId orgId;
 	@Nullable HuId huId;
 	@Nullable HUQRCode huQRCode;
-
-	@NonNull
-	Quantity quantityBooked;
-
-	@Nullable
-	Quantity quantityCount;
-
-	@NonNull
-	ProductId productId;
-
-	@NonNull
-	AttributesKey storageAttributesKey;
-
-	@NonNull
-	LocatorId locatorId;
-
+	@NonNull Quantity quantityBooked;
+	@Nullable Quantity quantityCount;
+	@NonNull ProductId productId;
+	@NonNull AttributesKey storageAttributesKey;
+	@NonNull LocatorId locatorId;
 	boolean markAsCounted;
 
 	@Builder

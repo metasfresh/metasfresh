@@ -26,6 +26,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.util.HUTopLevel;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_InOut;
@@ -77,7 +78,15 @@ public interface IHUShipmentAssignmentBL extends ISingletonService
 	 */
 	void removeHUAssignments(de.metas.handlingunits.model.I_M_InOutLine shipmentLine);
 
+	void reactivateVendorReturnLine(@NonNull de.metas.inout.model.I_M_InOutLine vendorReturnLine);
+
+	void reactivateCustomerReturnLine(@NonNull de.metas.inout.model.I_M_InOutLine returnLine);
+
 	IQueryFilter<I_M_HU> createHUsNotAssignedToShipmentsFilter(IContextAware contextProvider);
 
 	List<I_M_ShipmentSchedule_QtyPicked> retrieveAssignedQuantities(I_M_InOut shipment);
+
+	boolean hasHUAssignments(final I_M_InOut inout);
+
+	void moveAssignments(@NonNull I_M_InOut source, @NonNull I_M_InOut dest);
 }

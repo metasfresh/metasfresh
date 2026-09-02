@@ -156,7 +156,7 @@ public class PriceListBL implements IPriceListBL
 		final Iterator<I_M_PriceList> pricelists;
 		if(priceListId == null)
 		{
-			pricelists = priceListDAO.retrievePriceLists(pricingSystemId, countryId, soTrx).iterator();	
+			pricelists = priceListDAO.retrievePriceLists(pricingSystemId, countryId, soTrx, null).iterator();
 		}
 		else
 		{

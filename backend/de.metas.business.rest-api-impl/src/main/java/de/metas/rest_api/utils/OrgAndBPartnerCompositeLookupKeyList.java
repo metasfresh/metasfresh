@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business.rest-api-impl
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,7 +25,7 @@ package de.metas.rest_api.utils;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.GLN;
-import de.metas.externalreference.ExternalIdentifier;
+import de.metas.bpartner.GlnWithLabel;
 import de.metas.organization.OrgId;
 import lombok.NonNull;
 import lombok.Value;
@@ -38,7 +38,8 @@ import java.util.Objects;
 public class OrgAndBPartnerCompositeLookupKeyList
 {
 	public static OrgAndBPartnerCompositeLookupKeyList of(
-			@NonNull final OrgId orgId, @NonNull final ImmutableList<BPartnerCompositeLookupKey> compositeLookupKeys)
+			@NonNull final OrgId orgId,
+			@NonNull final ImmutableList<BPartnerCompositeLookupKey> compositeLookupKeys)
 	{
 		return new OrgAndBPartnerCompositeLookupKeyList(orgId, compositeLookupKeys);
 	}
@@ -47,11 +48,10 @@ public class OrgAndBPartnerCompositeLookupKeyList
 	 * @param orgId look for the given org or *
 	 */
 	public static OrgAndBPartnerCompositeLookupKeyList ofIdentifierString(
-			@NonNull final OrgId orgId, @NonNull final IdentifierString identifierString)
+			@NonNull final OrgId orgId,
+			@NonNull final IdentifierString identifierString)
 	{
-		return ofSingleLookupKey(
-				orgId, BPartnerCompositeLookupKey.ofIdentifierString(identifierString)
-		);
+		return ofSingleLookupKey(orgId, BPartnerCompositeLookupKey.ofIdentifierString(identifierString));
 	}
 
 	public static OrgAndBPartnerCompositeLookupKeyList ofMetasfreshId(
@@ -62,20 +62,32 @@ public class OrgAndBPartnerCompositeLookupKeyList
 		);
 	}
 
-	public static OrgAndBPartnerCompositeLookupKeyList ofGLN(
-			@NonNull final OrgId orgId, @NonNull final GLN gln)
+	public static OrgAndBPartnerCompositeLookupKeyList ofValue(
+			@NonNull final OrgId orgId,
+			@NonNull final String value)
 	{
-		return ofSingleLookupKey(
-				orgId, BPartnerCompositeLookupKey.ofGln(gln)
-		);
+		return ofSingleLookupKey(orgId, BPartnerCompositeLookupKey.ofCode(value));
+	}
+
+	public static OrgAndBPartnerCompositeLookupKeyList ofGLN(
+			@NonNull final OrgId orgId,
+			@NonNull final GLN gln)
+	{
+		return ofSingleLookupKey(orgId, BPartnerCompositeLookupKey.ofGln(gln));
+	}
+
+	public static OrgAndBPartnerCompositeLookupKeyList ofGlnWithLabel(
+			@NonNull final OrgId orgId,
+			@NonNull final GlnWithLabel glnWithLabel)
+	{
+		return ofSingleLookupKey(orgId, BPartnerCompositeLookupKey.ofGlnWithLabel(glnWithLabel));
 	}
 
 	public static OrgAndBPartnerCompositeLookupKeyList ofSingleLookupKey(
-			@NonNull final OrgId orgId, @NonNull final BPartnerCompositeLookupKey bpartnerCompositeLookupKey)
+			@NonNull final OrgId orgId,
+			@NonNull final BPartnerCompositeLookupKey bpartnerCompositeLookupKey)
 	{
-		return new OrgAndBPartnerCompositeLookupKeyList(
-				orgId, ImmutableList.of(bpartnerCompositeLookupKey)
-		);
+		return new OrgAndBPartnerCompositeLookupKeyList(orgId, ImmutableList.of(bpartnerCompositeLookupKey));
 	}
 
 	ImmutableSet<BPartnerCompositeLookupKey> compositeLookupKeys;
@@ -83,7 +95,8 @@ public class OrgAndBPartnerCompositeLookupKeyList
 	OrgId orgId;
 
 	private OrgAndBPartnerCompositeLookupKeyList(
-			@NonNull final OrgId orgId, @NonNull final Collection<BPartnerCompositeLookupKey> compositeLookupKeys)
+			@NonNull final OrgId orgId,
+			@NonNull final Collection<BPartnerCompositeLookupKey> compositeLookupKeys)
 	{
 		this.compositeLookupKeys = ImmutableSet.copyOf(compositeLookupKeys);
 		this.orgId = orgId;
@@ -121,8 +134,7 @@ public class OrgAndBPartnerCompositeLookupKeyList
 	}
 
 	/**
-	 * @param other list to add to the union. Its orgId has to be equal to this instance's orgId or has to be {@link OrgId#ANY}.  
-	 * 
+	 * @param other list to add to the union. Its orgId has to be equal to this instance's orgId or has to be {@link OrgId#ANY}.
 	 * @return a list taht contains both this instances's lookup keys and the given {@code other}'s lookup keys.
 	 */
 	public OrgAndBPartnerCompositeLookupKeyList union(@NonNull final OrgAndBPartnerCompositeLookupKeyList other)

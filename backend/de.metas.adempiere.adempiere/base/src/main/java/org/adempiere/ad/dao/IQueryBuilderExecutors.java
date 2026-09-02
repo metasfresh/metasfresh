@@ -28,6 +28,8 @@ public interface IQueryBuilderExecutors<T>
 
 	default boolean anyMatch() {return create().anyMatch();}
 
+	default boolean noneMatch() {return create().noneMatch();}
+
 	default Stream<T> iterateAndStream() {return create().iterateAndStream();}
 
 	default Stream<T> stream() {return create().stream();}

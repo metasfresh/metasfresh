@@ -1,8 +1,8 @@
 package de.metas.cucumber.stepdefs.costing;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.cucumber.stepdefs.C_OrderLine_StepDef;
-import de.metas.cucumber.stepdefs.C_Order_StepDef;
+import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDef;
+import de.metas.cucumber.stepdefs.order.C_Order_StepDef;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;

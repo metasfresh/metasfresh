@@ -6,6 +6,7 @@ import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.lang.SOTrx;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -48,10 +49,10 @@ import java.util.List;
 @Builder
 public class NewManualInvoiceCandidate
 {
-	private OrgId orgId;
+	OrgId orgId;
 
-	private ExternalId externalHeaderId;
-	private ExternalId externalLineId;
+	ExternalId externalHeaderId;
+	ExternalId externalLineId;
 
 	String poReference;
 
@@ -80,6 +81,8 @@ public class NewManualInvoiceCandidate
 
 	DocTypeId invoiceDocTypeId;
 
+	PaymentTermId paymentTermId;
+
 	String lineDescription;
 
 	List<InvoiceDetailItem> invoiceDetailItems;
@@ -103,6 +106,7 @@ public class NewManualInvoiceCandidate
 			@Nullable final ProductPrice priceEnteredOverride,
 			@Nullable final Percent discountOverride,
 			@Nullable final DocTypeId invoiceDocTypeId,
+			@NonNull final PaymentTermId paymentTermId,
 			@Nullable final String lineDescription,
 			@Nullable final List<InvoiceDetailItem> invoiceDetailItems)
 	{
@@ -121,6 +125,7 @@ public class NewManualInvoiceCandidate
 		this.qtyOrdered = qtyOrdered;
 		this.qtyDelivered = qtyDelivered;
 		this.invoicingUomId = invoicingUomId;
+		this.paymentTermId = paymentTermId;
 		this.priceEnteredOverride = priceEnteredOverride;
 		this.discountOverride = discountOverride;
 		this.invoiceDocTypeId = invoiceDocTypeId;

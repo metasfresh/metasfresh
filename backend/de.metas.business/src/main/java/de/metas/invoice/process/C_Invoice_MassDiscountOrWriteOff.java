@@ -27,6 +27,7 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationBL.InvoiceDiscountAndWriteOffRequest;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
@@ -125,7 +126,7 @@ public class C_Invoice_MassDiscountOrWriteOff extends JavaProcess
 		}
 
 		// skip the invoice if there is nothing allocated yet! We only want to complete *partial* allocations
-		final BigDecimal allocatedAmt = allocationDAO.retrieveAllocatedAmt(invoice);
+		final Money allocatedAmt = allocationDAO.retrieveAllocatedAmt(invoice);
 		if (allocatedAmt == null || allocatedAmt.signum() == 0)
 		{
 			addLog("Skip C_Invoice_ID=" + invoice.getC_Invoice_ID() + ": " + "Has allocatedAmt=0.");
@@ -189,7 +190,9 @@ public class C_Invoice_MassDiscountOrWriteOff extends JavaProcess
 				.createQueryBuilder(I_C_Invoice.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_AD_Client_ID, getClientId())
-				.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsPaid, false); // not already fully allocated
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsPaid, false) // not already fully allocated
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsFinancial, true)
+				.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocStatus, DocStatus.completedOrClosedStatuses());
 
 		if (!getProcessInfo().isInvokedByScheduler())
 		{

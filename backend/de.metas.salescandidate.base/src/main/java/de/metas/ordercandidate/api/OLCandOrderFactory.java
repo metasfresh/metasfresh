@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.salescandidate.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ordercandidate.api;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -5,10 +27,14 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.bpartner.effective.BPartnerAddressEffective;
+import de.metas.bpartner.effective.BPartnerAddressEffectiveBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.contracts.ConditionsId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.DocTypeId;
@@ -16,6 +42,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
+import de.metas.externalsystem.ExternalSystemId;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -29,12 +56,17 @@ import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.InvoiceRule;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineGroup;
 import de.metas.order.OrderLineId;
+import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.GroupCompensationAmtType;
 import de.metas.order.compensationGroup.GroupCompensationType;
+import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.GroupRepository;
 import de.metas.order.compensationGroup.GroupTemplate;
+import de.metas.order.compensationGroup.GroupTemplateId;
+import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.ordercandidate.model.I_C_OLCand;
@@ -44,6 +76,7 @@ import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.attributebased.IAttributePricingBL;
+import de.metas.promotioncode.PromotionCodeId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
@@ -62,14 +95,15 @@ import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.persistence.custom_columns.CustomColumnService;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.asi_aware.factory.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -88,6 +122,7 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -106,28 +141,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.deleteAll;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2017 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 class OLCandOrderFactory
 {
@@ -151,14 +164,17 @@ class OLCandOrderFactory
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final BPartnerAddressEffectiveBL bpartnerAddressEffectiveBL = SpringContextHolder.instance.getBean(BPartnerAddressEffectiveBL.class);
 
 	private final OrderGroupRepository orderGroupsRepository = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
+	private final GroupTemplateRepository groupTemplateRepository = SpringContextHolder.instance.getBean(GroupTemplateRepository.class);
 	private final OLCandValidatorService olCandValidatorService = SpringContextHolder.instance.getBean(OLCandValidatorService.class);
+	private final CustomColumnService customColumnService = SpringContextHolder.instance.getBean(CustomColumnService.class);
 
 	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_DESC_1P = AdMessageKey.of("OLCandProcessor.ProcessingError_Desc");
 	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_ORDER_COMPLETION_FAILED_2P = AdMessageKey.of("OLCandProcessor.Order_Completion_Failed");
 	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_OLCAND_GROUPING_ERROR = AdMessageKey.of("OLCandProcessor.OLCandGroupingError");
-	private static final String SYS_CFG_USE_QTY_UOM_ON_MANUAL_PRICE = "de.metas.ordercandidate.api.OLCandOrderFactory.UseQtyUOMOnManualPrice";
+	private static final String SYSCONFIG_USE_QTY_UOM_ON_MANUAL_PRICE = "de.metas.ordercandidate.api.OLCandOrderFactory.UseQtyUOMOnManualPrice";
 
 	//
 	// Parameters
@@ -174,19 +190,30 @@ class OLCandOrderFactory
 	private final Collection<I_C_Order_Line_Alloc> allocations = new HashSet<>();
 	private I_C_OrderLine currentOrderLine = null;
 	private final Map<Integer, I_C_OrderLine> orderLines = new LinkedHashMap<>();
+	// The earliest of the per-line DatePromised values; the header C_Order.DatePromised is set to it in completeOrDelete().
+	private ZonedDateTime earliestLineDatePromised = null;
 	private final List<OLCand> candidates = new ArrayList<>();
+	// Compensation-group headers created via schema explosion (tryExplodeCompensationGroupSchema); rolled back in onCompensationGroupFailure.
+	private final List<GroupId> compensationGroupIds = new ArrayList<>();
 	private final ListMultimap<String, OrderLineId> groupsToOrderLines = ArrayListMultimap.create();
 	private final Map<OrderLineId, OrderLineGroup> primaryOrderLineToGroup = new HashMap<>();
+
+	/**
+	 * If {@code true} and the {@link OLCand} used as parameter in {@link #newOrder(OLCand)} has an asyncBatchId, then propagate it to the C_Order record.
+	 */
+	private final boolean propagateAsyncBatchIdToOrderRecord;
 
 	@Builder
 	private OLCandOrderFactory(
 			@NonNull final OLCandOrderDefaults orderDefaults,
+			final boolean propagateAsyncBatchIdToOrderRecord,
 			final int olCandProcessorId,
 			final UserId userInChargeId,
 			final ILoggable loggable,
 			final IOLCandListener olCandListeners)
 	{
 		this.orderDefaults = orderDefaults;
+		this.propagateAsyncBatchIdToOrderRecord = propagateAsyncBatchIdToOrderRecord;
 		ctx = Env.getCtx();
 		this.userInChargeId = userInChargeId != null ? userInChargeId : UserId.SYSTEM;
 		this.loggable = loggable != null ? loggable : Loggables.nop();
@@ -231,8 +258,11 @@ class OLCandOrderFactory
 		order.setDateAcct(dateOrdered);
 
 		// task 06269 (see KurzBeschreibung)
-		// note that C_Order.DatePromised is propagated to C_OrderLine.DatePromised in MOrder.afterSave() and MOrderLine.setOrder()
-		// also note that for now we set datepromised only in the header, so different DatePromised values result in differnt orders, and all ol have the same datepromised
+		// note that C_Order.DatePromised is propagated to C_OrderLine.DatePromised in MOrder.afterSave() and MOrderLine.setOrder().
+		// We seed the header with the first candidate's DatePromised here so the order can be saved (lines need the FK).
+		// Each line then gets its own olcand DatePromised at creation (see addOLCand0), and the header is set to the
+		// earliest of those line dates in completeOrDelete() via applyEarliestHeaderDatePromised(). The MOrder.afterSave()
+		// header->line broadcast does not overwrite the per-line dates (guarded by isUIAction || lineDateNotSet there).
 		order.setDatePromised(TimeUtil.asTimestamp(candidateOfGroup.getDatePromised()));
 
 		// if the olc has no value set, we are not falling back here!
@@ -274,10 +304,21 @@ class OLCandOrderFactory
 		order.setDeliveryViaRule(DeliveryViaRule.toCodeOrNull(candidateOfGroup.getDeliveryViaRule()));
 		order.setFreightCostRule(FreightCostRule.toCodeOrNull(candidateOfGroup.getFreightCostRule()));
 		order.setInvoiceRule(InvoiceRule.toCodeOrNull(candidateOfGroup.getInvoiceRule()));
+		order.setIsAutoInvoice(candidateOfGroup.isAutoInvoice());
 		order.setPaymentRule(PaymentRule.toCodeOrNull(candidateOfGroup.getPaymentRule()));
 		order.setC_PaymentTerm_ID(PaymentTermId.toRepoId(candidateOfGroup.getPaymentTermId()));
 		order.setM_PricingSystem_ID(PricingSystemId.toRepoId(candidateOfGroup.getPricingSystemId()));
 		order.setM_Shipper_ID(ShipperId.toRepoId(candidateOfGroup.getShipperId()));
+
+		final BPartnerLocationId dropShipLocationId = candidateOfGroup.getDropShipBPartnerInfo()
+				.map(BPartnerInfo::getBpartnerLocationId)
+				.orElse(null);
+		final BPartnerLocationId locationId = candidateOfGroup.getBPartnerInfo().getBpartnerLocationId();
+		if (locationId != null)
+		{
+			final BPartnerAddressEffective addressEffective = bpartnerAddressEffectiveBL.getDeliveryEffective(dropShipLocationId, locationId);
+			order.setIsPreAdviceRequired(addressEffective.isPreAdviceRequired());
+		}
 
 		final DocTypeId orderDocTypeId = candidateOfGroup.getOrderDocTypeId();
 		if (orderDocTypeId != null)
@@ -296,15 +337,15 @@ class OLCandOrderFactory
 			order.setSalesPartnerCode(salesPartner.getSalesPartnerCode());
 		}
 
-		if (candidateOfGroup.getAsyncBatchId() != null)
+		if (candidateOfGroup.getAsyncBatchId() != null && propagateAsyncBatchIdToOrderRecord)
 		{
 			order.setC_Async_Batch_ID(candidateOfGroup.getAsyncBatchId().getRepoId());
 		}
 
 		// Save to SO the external header id, so that on completion it can be linked with its payment
 		order.setExternalId(candidateOfGroup.getExternalHeaderId());
+		order.setExternalSystem_ID(ExternalSystemId.toRepoId(candidateOfGroup.getExternalSystemId()));
 
-		// task 08926: set the data source; this shall trigger IsEdiEnabled to be set to true, if the data source is "EDI"
 		final de.metas.order.model.I_C_Order orderWithDataSource = InterfaceWrapperHelper.create(order, de.metas.order.model.I_C_Order.class);
 		orderWithDataSource.setAD_InputDataSource_ID(candidateOfGroup.getAD_InputDataSource_ID());
 
@@ -313,6 +354,26 @@ class OLCandOrderFactory
 		order.setBPartnerName(candidateOfGroup.getBpartnerName());
 		order.setEMail(candidateOfGroup.getEmail());
 		order.setPhone(candidateOfGroup.getPhone());
+
+		if (candidateOfGroup.getIncotermsId() != null)
+		{
+			order.setC_Incoterms_ID(candidateOfGroup.getIncotermsId().getRepoId());
+			order.setIncotermLocation(candidateOfGroup.getIncotermLocation());
+		}
+
+		// First-class field propagation: promotion codes from OLCand to order header
+		final PromotionCodeId promotionCodeId = candidateOfGroup.getPromotionCodeId();
+		if (promotionCodeId != null)
+		{
+			order.setC_PromotionCode_ID(promotionCodeId.getRepoId());
+		}
+		final PromotionCodeId promotionCode2Id = candidateOfGroup.getPromotionCode2Id();
+		if (promotionCode2Id != null)
+		{
+			order.setC_PromotionCode2_ID(promotionCode2Id.getRepoId());
+		}
+
+		customColumnService.copyCustomColumns(candidateOfGroup.unbox(), I_C_OLCand.Table_Name, I_C_Order.Table_Name, order);
 
 		save(order);
 		return order;
@@ -331,6 +392,8 @@ class OLCandOrderFactory
 		}
 		else
 		{
+			applyEarliestHeaderDatePromised(order);
+
 			try
 			{
 				validateAndCreateCompensationGroups();
@@ -368,10 +431,39 @@ class OLCandOrderFactory
 		}
 	}
 
+	/**
+	 * Sets the header {@code C_Order.DatePromised} to the earliest of the lines' own delivery dates.
+	 * <p>
+	 * Each line already carries its own {@code DatePromised} from creation (see {@link #addOLCand0(OLCand)}); this method
+	 * only sets the header, leaving the per-line dates intact. When no line carried a {@code DatePromised}, the header
+	 * keeps its fallback and nothing is changed here.
+	 */
+	private void applyEarliestHeaderDatePromised(@NonNull final I_C_Order order)
+	{
+		if (earliestLineDatePromised == null)
+		{
+			return;
+		}
+
+		// compare by instant (the header stores the same moment), so the guard skips a no-op save
+		if (!Objects.equals(earliestLineDatePromised.toInstant(), TimeUtil.asInstant(order.getDatePromised())))
+		{
+			order.setDatePromised(TimeUtil.asTimestamp(earliestLineDatePromised));
+			orderDAO.save(order);
+		}
+	}
+
 	private void onCompensationGroupFailure(final AdempiereException ex)
 	{
 		deleteAll(allocations);
 		deleteAll(orderLines.values());
+		// Delete any compensation-group headers created by schema explosion BEFORE delete(order): their order lines are
+		// already gone (above), so each header is the last, FK-orphaned row and its deferred C_Order FK would abort the
+		// transaction at COMMIT otherwise. deleteGroupById is idempotent, so a header already removed elsewhere is fine.
+		for (final GroupId compensationGroupId : compensationGroupIds)
+		{
+			orderGroupsRepository.deleteGroupById(compensationGroupId);
+		}
 		delete(order);
 
 		for (final OLCand candidate : candidates)
@@ -434,9 +526,9 @@ class OLCandOrderFactory
 		orderDAO.save(mainOrderLineInGroup);
 
 		orderGroupsRepository.retrieveOrCreateGroup(GroupRepository.RetrieveOrCreateGroupRequest.builder()
-															.orderLineIds(orderLineIds)
-															.newGroupTemplate(createNewGroupTemplate(productId))
-															.build());
+				.orderLineIds(orderLineIds)
+				.newGroupTemplate(createNewGroupTemplate(productId))
+				.build());
 	}
 
 	@NonNull
@@ -492,11 +584,33 @@ class OLCandOrderFactory
 
 	private void addOLCand0(@NonNull final OLCand candidate)
 	{
+		// If the candidate's product carries a compensation-group schema (trading-BOM),
+		// explode it into the schema's component order lines instead of creating a single un-exploded line
+		// (mirrors what the sales-order window / Quick-Input does).
+		if (tryExplodeCompensationGroupSchema(candidate))
+		{
+			return;
+		}
+
 		final boolean isNewOrderLine;
 		if (currentOrderLine == null)
 		{
 			currentOrderLine = newOrderLine(candidate);
 			isNewOrderLine = true;
+
+			// Carry this candidate's own delivery date onto the new line from creation, so the line owns its
+			// per-line DatePromised. When several candidates aggregate into one line, the line keeps the creating
+			// candidate's date. The header is set to the earliest such date in completeOrDelete() via
+			// applyEarliestHeaderDatePromised().
+			final ZonedDateTime lineDatePromised = candidate.getDatePromised();
+			if (lineDatePromised != null)
+			{
+				currentOrderLine.setDatePromised(TimeUtil.asTimestamp(lineDatePromised));
+				if (earliestLineDatePromised == null || lineDatePromised.isBefore(earliestLineDatePromised))
+				{
+					earliestLineDatePromised = lineDatePromised;
+				}
+			}
 		}
 		else
 		{
@@ -552,7 +666,7 @@ class OLCandOrderFactory
 			if (candidate.isManualPrice())
 			{
 				currentOrderLine.setPriceEntered(candidate.getPriceActual());
-				if(sysConfigBL.getBooleanValue(SYS_CFG_USE_QTY_UOM_ON_MANUAL_PRICE, false))
+				if (sysConfigBL.getBooleanValue(SYSCONFIG_USE_QTY_UOM_ON_MANUAL_PRICE, false))
 				{
 					currentOrderLine.setPrice_UOM_ID(candidate.getQty().getUomId().getRepoId());
 				}
@@ -586,6 +700,15 @@ class OLCandOrderFactory
 			attributePricingBL.setDynAttrProductPriceAttributeAware(orderLineASIAware, candidate);
 		}
 
+		// First-class field propagation: IsWithoutCharge and Reason from OLCand to order line
+		// Done before firing the listeners, so that listeners observe a fully-populated order line.
+		{
+			currentOrderLine.setIsWithoutCharge(candidate.isWithoutCharge());
+			currentOrderLine.setReason(candidate.getReason());
+
+			customColumnService.copyCustomColumns(candidate.unbox(), I_C_OLCand.Table_Name, I_C_OrderLine.Table_Name, currentOrderLine);
+		}
+
 		//
 		// Fire listeners
 		olCandListeners.onOrderLineCreated(candidate, currentOrderLine);
@@ -609,7 +732,119 @@ class OLCandOrderFactory
 
 		//
 		orderLines.put(currentOrderLine.getC_OrderLine_ID(), currentOrderLine);
+
 		candidates.add(candidate);
+	}
+
+	/**
+	 * If the candidate's product has a compensation-group schema (a trading-BOM) and the candidate is
+	 * NOT already part of an explicit OLCand group, explode the ordered qty into the schema's component order
+	 * lines (regular + compensation) using the same business API the sales-order window / Quick-Input uses, and link
+	 * the candidate to each generated regular line via {@code C_Order_Line_Alloc}.
+	 *
+	 * @return {@code true} if the candidate was handled by schema explosion (caller must NOT create a plain order
+	 * line); {@code false} otherwise (caller proceeds with the plain-line flow).
+	 */
+	private boolean tryExplodeCompensationGroupSchema(@NonNull final OLCand candidate)
+	{
+		// Guard (b): leave candidates that already belong to an explicit CompensationGroupKey group to the existing grouping path.
+		final OrderLineGroup orderLineGroup = candidate.getOrderLineGroup();
+		if (orderLineGroup != null && !Check.isBlank(orderLineGroup.getGroupKey()))
+		{
+			return false;
+		}
+
+		// Guard (a): the product must carry a compensation-group schema.
+		final int productRepoId = candidate.getM_Product_ID();
+		if (productRepoId <= 0)
+		{
+			return false;
+		}
+		final ProductId productId = ProductId.ofRepoId(productRepoId);
+		final GroupTemplateId groupTemplateId = productDAO.getGroupTemplateIdByProductId(productId).orElse(null);
+		if (groupTemplateId == null)
+		{
+			return false;
+		}
+
+		// Make sure the order exists (without creating a stray order line).
+		if (order == null)
+		{
+			order = newOrder(candidate);
+		}
+		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
+
+		// The ordered quantity scales the schema's template-line quantities.
+		// M5: orderedQty is passed as the pure group qty-multiplier with NO UOM conversion, matching
+		// OrderLineQuickInputProcessor. This assumes candidate.getQty() is already expressed in the schema
+		// product's own stocking (counting) UOM; a UOM other than that would scale
+		// every exploded component quantity wrongly. Guard the assumption instead of silently trusting the
+		// (REST/EDI) caller: fail loud if the candidate qty UOM differs from the schema product's stocking UOM.
+		final UomId candidateQtyUomId = candidate.getQty().getUomId();
+		final UomId schemaProductStockUomId = productBL.getStockUOMId(productId);
+		if (!UomId.equals(candidateQtyUomId, schemaProductStockUomId))
+		{
+			throw new AdempiereException("OLCand qty UOM does not match the compensation-group-schema product's"
+					+ " stocking UOM; the exploded component quantities would be mis-scaled")
+					.setParameter("productId", productId)
+					.setParameter("candidateQtyUomId", candidateQtyUomId)
+					.setParameter("schemaProductStockUomId", schemaProductStockUomId)
+					.setParameter("C_OLCand_ID", candidate.getId())
+					.appendParametersToMessage();
+		}
+		final BigDecimal orderedQty = candidate.getQty().toBigDecimal();
+
+		// C2: thread the candidate's flatrate/contract conditions into createGroup. This is how the
+		// exploded component lines get their C_Flatrate_Conditions_ID: OrderGroupRepository.createRegularLineFromTemplate
+		// sets it from the request's newContractConditionsId (and the same id also drives which template regular
+		// lines match). This is the Quick-Input mechanism; the OLCand listener path (FlatrateOLCandListener) is
+		// deliberately NOT used for generated lines (see below).
+		final ConditionsId flatrateConditionsId = ConditionsId.ofRepoIdOrNull(candidate.getFlatrateConditionsId());
+
+		final Group group = orderGroupsRepository.prepareNewGroup()
+				.groupTemplate(groupTemplateRepository.getById(groupTemplateId))
+				.qty(orderedQty)
+				.createGroup(orderId, flatrateConditionsId);
+
+		// Track the created compensation-group header so onCompensationGroupFailure can delete it during rollback.
+		// Its C_Order_CompensationGroup->C_Order FK is DEFERRABLE INITIALLY DEFERRED: an orphaned header (left after
+		// the order+lines are deleted) would otherwise abort the whole transaction at COMMIT.
+		compensationGroupIds.add(group.getGroupId());
+
+		// H3: we deliberately do NOT fire olCandListeners.onOrderLineCreated for the generated component lines.
+		// HU packing-instruction (OLCandPIIPListener) is product-specific and must not be copied from the schema-product
+		// candidate onto its differing-product component lines; flatrate conditions are instead threaded via
+		// createGroup's conditions parameter (above).
+		//
+		// C1: createGroup persists real C_OrderLine rows for BOTH the regular AND the compensation lines of the
+		// group. Track every one of them in `orderLines` (and allocate the candidate to each) so that a later
+		// rollback in onCompensationGroupFailure (deleteAll(orderLines) + delete(order)) does not leave an
+		// untracked compensation line still FK-referencing C_Order and make delete(order) fail.
+		final List<OrderLineId> generatedLineIds = new ArrayList<>();
+		group.getRegularLines().forEach(regularLine -> generatedLineIds.add(OrderLineId.ofRepoId(regularLine.getRepoId().getRepoId())));
+		group.getCompensationLines().forEach(compensationLine -> generatedLineIds.add(OrderLineId.ofRepoId(compensationLine.getRepoId().getRepoId())));
+
+		for (final OrderLineId generatedLineId : generatedLineIds)
+		{
+			// Persistence primitives (load/save) go through IOrderDAO, not InterfaceWrapperHelper directly
+			// (docs/coding-rules/service-injection.md §4 — a BL/Factory class must not call the persistence primitives).
+			final I_C_OrderLine componentOrderLine = orderDAO.getOrderLineById(generatedLineId, I_C_OrderLine.class);
+
+			// H4: the generated group lines otherwise inherit warehouse/org from the order header only. Mirror the
+			// plain path (see addOLCand0) and align them with THIS candidate, so a later compensation-group-schema candidate
+			// aggregated into the same order (different warehouse/org) does not silently diverge from its own values.
+			componentOrderLine.setM_Warehouse_ID(WarehouseId.toRepoId(candidate.getWarehouseId()));
+			componentOrderLine.setM_Warehouse_Dest_ID(WarehouseId.toRepoId(candidate.getWarehouseDestId()));
+			componentOrderLine.setAD_Org_ID(candidate.getAD_Org_ID());
+			orderDAO.save(componentOrderLine);
+
+			// Preserve the OLCand -> order traceability and cover the line for rollback.
+			createOla(candidate, componentOrderLine);
+			orderLines.put(componentOrderLine.getC_OrderLine_ID(), componentOrderLine);
+		}
+
+		candidates.add(candidate);
+		return true;
 	}
 
 	private I_C_OrderLine newOrderLine(@NonNull final OLCand candToProcess)

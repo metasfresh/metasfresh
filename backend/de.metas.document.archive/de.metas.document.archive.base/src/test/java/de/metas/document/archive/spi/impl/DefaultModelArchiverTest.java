@@ -26,7 +26,9 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerPrintFormatRepository;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
+import de.metas.document.archive.config.DocOutboundConfigService;
 import de.metas.invoice.service.InvoiceDocumentReportAdvisor;
 import de.metas.report.DefaultPrintFormatsRepository;
 import de.metas.report.DocTypePrintOptionsRepository;
@@ -39,6 +41,7 @@ import org.adempiere.archive.api.ArchiveResult;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Assertions;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Archive;
 import de.metas.invoicecandidate.model.I_C_Invoice;
 import org.compiere.model.I_Test;
@@ -60,6 +63,8 @@ class DefaultModelArchiverTest
 		helper = new DefaultModelArchiverTestHelper();
 
 		Env.setClientId(Env.getCtx(), helper.createClient());
+
+		SpringContextHolder.registerJUnitBean(DocOutboundConfigService.newInstanceForUnitTesting());
 	}
 
 	private MockedDocumentReportService createMockedDocumentReportService()
@@ -94,6 +99,7 @@ class DefaultModelArchiverTest
 				.printFormatId(helper.printFormat()
 						.printProcessId(helper.process().build())
 						.build())
+				.docBaseType(DocBaseType.SalesInvoice)
 				.build();
 
 		final I_C_Invoice invoice = InterfaceWrapperHelper.create(Env.getCtx(), I_C_Invoice.class, ITrx.TRXNAME_None);

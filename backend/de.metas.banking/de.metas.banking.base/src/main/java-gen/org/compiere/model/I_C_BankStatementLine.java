@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_BankStatementLine
  *  @author metasfresh (generated) 
@@ -349,7 +348,7 @@ public interface I_C_BankStatementLine
 	 * Set Accounting Date.
 	 * Accounting Date
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -359,7 +358,7 @@ public interface I_C_BankStatementLine
 	 * Get Accounting Date.
 	 * Accounting Date
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -977,6 +976,48 @@ public interface I_C_BankStatementLine
 	String COLUMNNAME_Processed = "Processed";
 
 	/**
+	 * Set Reconciled by GL Journal.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setReconciledBy_SAP_GLJournal_ID (int ReconciledBy_SAP_GLJournal_ID);
+
+	/**
+	 * Get Reconciled by GL Journal.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getReconciledBy_SAP_GLJournal_ID();
+
+	ModelColumn<I_C_BankStatementLine, Object> COLUMN_ReconciledBy_SAP_GLJournal_ID = new ModelColumn<>(I_C_BankStatementLine.class, "ReconciledBy_SAP_GLJournal_ID", null);
+	String COLUMNNAME_ReconciledBy_SAP_GLJournal_ID = "ReconciledBy_SAP_GLJournal_ID";
+
+	/**
+	 * Set Reconciled by GL Journal Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setReconciledBy_SAP_GLJournalLine_ID (int ReconciledBy_SAP_GLJournalLine_ID);
+
+	/**
+	 * Get Reconciled by GL Journal Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getReconciledBy_SAP_GLJournalLine_ID();
+
+	ModelColumn<I_C_BankStatementLine, Object> COLUMN_ReconciledBy_SAP_GLJournalLine_ID = new ModelColumn<>(I_C_BankStatementLine.class, "ReconciledBy_SAP_GLJournalLine_ID", null);
+	String COLUMNNAME_ReconciledBy_SAP_GLJournalLine_ID = "ReconciledBy_SAP_GLJournalLine_ID";
+
+	/**
 	 * Set Reference No.
 	 * Your customer or vendor number at the Business Partner's site
 	 *
@@ -1002,7 +1043,7 @@ public interface I_C_BankStatementLine
 	/**
 	 * Set Effective date.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -1011,7 +1052,7 @@ public interface I_C_BankStatementLine
 	/**
 	 * Get Effective date.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -1092,7 +1133,7 @@ public interface I_C_BankStatementLine
 	/**
 	 * Set Valuta Date.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -1101,7 +1142,7 @@ public interface I_C_BankStatementLine
 	/**
 	 * Get Valuta Date.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */

@@ -24,6 +24,7 @@ import {
   ATTR_barcodeType,
   ATTR_bestBeforeDate,
   ATTR_displayable,
+  ATTR_HUUnitType,
   ATTR_isTUToBePickedAsWhole,
   ATTR_isUnique,
   ATTR_lotNo,
@@ -33,17 +34,25 @@ import {
   ATTR_weightNetUOM,
   BARCODE_TYPE_HU,
   BARCODE_TYPE_LMQ,
+  parseQRCodeType,
   QRCODE_SEPARATOR,
   toLocalDateString,
 } from './common';
+import { ScanCompleteness } from './scanCompleteness';
 import { trl } from '../translations';
 import { HU_ATTRIBUTE_BestBeforeDate, HU_ATTRIBUTE_LotNo, HU_ATTRIBUTE_WeightNet } from '../../constants/HUAttributes';
 import { parseGS1CodeString } from './gs1';
 import { parseEAN13CodeString } from './ean13';
 import { parseCustomQRCode } from './parseCustomQRCode';
+import { ContextualError } from '../ContextualError';
+import { errorToString } from '../toast';
 
 export const QRCODE_TYPE_HU = 'HU';
 export const QRCODE_TYPE_LEICH_UND_MEHL = 'LMQ';
+
+export const isHUQRCode = (string) => {
+  return parseQRCodeType(string) === QRCODE_TYPE_HU;
+};
 
 export const toQRCodeDisplayableNoFail = (qrCode) => {
   try {
@@ -149,11 +158,13 @@ export const parseQRCodeString = (param1_string, param2_returnFalseOnError) => {
   let string;
   let returnFalseOnError;
   let customQRCodeFormats = [];
+  let checkOnlyPreciseFormats = false;
   if (typeof param1_string === 'object' && param1_string !== null) {
     const obj = param1_string;
     string = obj.string;
     returnFalseOnError = obj.returnFalseOnError ?? false;
     customQRCodeFormats = obj.customQRCodeFormats ?? [];
+    checkOnlyPreciseFormats = obj.checkOnlyPreciseFormats ?? false;
   } else {
     string = param1_string;
     returnFalseOnError = param2_returnFalseOnError;
@@ -163,32 +174,40 @@ export const parseQRCodeString = (param1_string, param2_returnFalseOnError) => {
   const allResults = {};
   let result = { error: 'initial' };
 
-  if (customQRCodeFormats?.length > 0) {
-    for (const format of customQRCodeFormats) {
-      result = parseCustomQRCode({ string, format });
-      allResults['custom - ' + format.name] = result;
-      if (!result?.error) {
-        break;
+  try {
+    if (customQRCodeFormats?.length > 0) {
+      for (const format of customQRCodeFormats) {
+        result = parseCustomQRCode({ string, format });
+        allResults['custom - ' + format.name] = result;
+        if (!result?.error) {
+          break;
+        }
       }
     }
-  }
 
-  if (result?.error) {
-    result = parseGS1CodeString(string);
-    allResults['gs1'] = result;
-  }
+    if (result?.error && !checkOnlyPreciseFormats) {
+      // NOTE: GS1 is considered not a precise format because it might match a simple M_HU_ID/Value code as a LotNo GS1.
+      result = parseGS1CodeString(string);
+      allResults['gs1'] = result;
+    }
 
-  if (result?.error) {
-    result = parseEAN13CodeString(string);
-    allResults['ean13'] = result;
-  }
+    if (result?.error) {
+      result = parseEAN13CodeString(string);
+      allResults['ean13'] = result;
+    }
 
-  if (result?.error) {
-    result = parseQRCodeString_GlobalQRCode(string);
-    allResults['globalQRCode'] = result;
-  }
+    if (result?.error) {
+      result = parseQRCodeString_GlobalQRCode(string);
+      allResults['globalQRCode'] = result;
+    }
 
-  // console.log('allResults: ' + JSON.stringify(allResults, null, 2));
+    // console.log('allResults: ' + JSON.stringify(allResults, null, 2));
+  } catch (error) {
+    console.trace('Got error while parsing QR code string:', string, { error });
+    result.error = trl('error.qrCode.invalid');
+    delete result.errorDetail;
+    result.errorCause = errorToString(error);
+  }
 
   //
   if (result && !result.error) {
@@ -197,8 +216,9 @@ export const parseQRCodeString = (param1_string, param2_returnFalseOnError) => {
     return false;
   } else {
     const errorMsg = result?.error ? result.error : trl('error.qrCode.invalid');
-    console.trace(`parseQRCodeString: ${errorMsg}`, { string, allResults });
-    throw errorMsg;
+    const errorContext = { ...result, string, allResults, errorCause: result?.errorCause };
+    console.trace('parseQRCodeString:', errorMsg, errorContext);
+    throw new ContextualError(errorMsg, errorContext);
   }
 };
 
@@ -274,6 +294,7 @@ const parseQRCodePayload_HU_v1 = (payload) => {
   const result = { displayable };
   result[ATTR_barcodeType] = BARCODE_TYPE_HU;
   result[ATTR_isUnique] = true;
+  result[ATTR_HUUnitType] = payload?.packingInfo?.huUnitType;
 
   if (payload?.product?.id) {
     // IMPORTANT: convert it to string because all over in our code we assume IDs are strings.
@@ -316,8 +337,7 @@ const parseQRCodePayload_LeichMehl_v1 = (payload) => {
     result[ATTR_isTUToBePickedAsWhole] = true; // todo clean up needed!!!
   }
   if (parts.length >= 2) {
-    const [, day, month, year] = LMQ_BEST_BEFORE_DATE_FORMAT.exec(parts[1]);
-    result[ATTR_bestBeforeDate] = toLocalDateString({ year, month, day });
+    result[ATTR_bestBeforeDate] = parseLMQBestBeforeDate(parts[1]);
   }
   if (parts.length >= 3) {
     result[ATTR_lotNo] = parts[2];
@@ -329,7 +349,72 @@ const parseQRCodePayload_LeichMehl_v1 = (payload) => {
   return result;
 };
 
+const parseLMQBestBeforeDate = (string) => {
+  const parts = LMQ_BEST_BEFORE_DATE_FORMAT.exec(string);
+  if (!parts) throw new Error(`Invalid Best Before date: ${string}`);
+
+  const [, day, month, year] = parts;
+  return toLocalDateString({ year, month, day });
+};
+
 export const isKnownQRCodeFormat = (qrCodeString) => {
   const returnFalseOnError = true;
   return !!parseQRCodeString(qrCodeString, returnFalseOnError);
+};
+
+// "TYPE#VERSION#<json>" => the <json> payload, or null while both separators haven't arrived yet.
+const extractGlobalQRCodeJsonPayload = (scannedCode) => {
+  const firstSeparatorIdx = scannedCode.indexOf(QRCODE_SEPARATOR);
+  if (firstSeparatorIdx <= 0) {
+    return null;
+  }
+  const secondSeparatorIdx = scannedCode.indexOf(QRCODE_SEPARATOR, firstSeparatorIdx + 1);
+  if (secondSeparatorIdx < 0) {
+    return null;
+  }
+  return scannedCode.substring(secondSeparatorIdx + 1);
+};
+
+// Classify an in-progress scanned code w.r.t. the HU global QR code format (see ScanCompleteness):
+//   NOT_APPLICABLE - it is not (nor becoming) an HU global QR code
+//   PARTIAL_SCAN   - it looks like an HU QR code but the JSON payload has not fully arrived yet
+//   COMPLETE_SCAN  - it is an HU QR code whose JSON payload is complete (closed) AND terminal
+// Completeness is decided by JSON.parse of the payload after "HU#<version>#": the real JSON parser
+// handles nesting, escaping and literal braces inside string values, and throws while the payload
+// is still arriving. MUST NOT throw (hard requirement) — any error stays PARTIAL_SCAN for an
+// identified HU code (the reader keeps waiting, bounded by its abandon timer).
+//
+// TERMINAL INVARIANT (see ScanCompleteness in ./common): a complete HU#<v>#{json} IS terminal —
+// appending any character makes it invalid JSON, so returning COMPLETE_SCAN (force-complete) is
+// safe here and correctly SEPARATES back-to-back scans (e.g. the "...}]}LMQ#1#..." merges seen in
+// prod when a second code is delivered right after the HU QR) instead of merging them.
+// NOTE for future per-format checks: return COMPLETE_SCAN ONLY for a TERMINAL code. A non-terminal
+// format (e.g. a bare numeric m_hu_id where both "123" and "1234" are valid) must NEVER return
+// COMPLETE_SCAN — use PARTIAL_SCAN / NOT_APPLICABLE and rely on the Enter terminator / idle-flush.
+export const checkPartialHUScannedCode = (scannedCode) => {
+  try {
+    if (!scannedCode || typeof scannedCode !== 'string') {
+      return ScanCompleteness.NOT_APPLICABLE;
+    }
+    // Applicable if it already looks like an HU QR code (HU#...) OR is still receiving the leading
+    // "HU#" prefix itself (e.g. a chunk gap landed at 'H' / 'HU'). Compute the "HU#" prefix HERE,
+    // inside the function — NOT at module top level: common.js and hu.js import each other (a real
+    // cycle), so reading the imported QRCODE_SEPARATOR at hu.js *load* time can observe an undefined
+    // value from a partially-initialised common.js, depending on which module loads first. By the
+    // time this function runs, common.js is fully initialised, so the read is always correct.
+    const huQrCodePrefix = QRCODE_TYPE_HU + QRCODE_SEPARATOR; // "HU#"
+    if (!isHUQRCode(scannedCode) && !huQrCodePrefix.startsWith(scannedCode)) {
+      return ScanCompleteness.NOT_APPLICABLE;
+    }
+    const jsonPayload = extractGlobalQRCodeJsonPayload(scannedCode);
+    if (jsonPayload) {
+      JSON.parse(jsonPayload); // throws while still arriving => caught below => PARTIAL_SCAN
+      return ScanCompleteness.COMPLETE_SCAN;
+    }
+    return ScanCompleteness.PARTIAL_SCAN;
+  } catch (error) {
+    // The normal "payload still arriving" case (JSON.parse throws) plus any unexpected error:
+    // both are safe as PARTIAL_SCAN for an identified HU code.
+    return ScanCompleteness.PARTIAL_SCAN;
+  }
 };

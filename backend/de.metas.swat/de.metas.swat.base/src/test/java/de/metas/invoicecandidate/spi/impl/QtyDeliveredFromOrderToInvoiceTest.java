@@ -43,6 +43,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
@@ -161,8 +162,6 @@ public class QtyDeliveredFromOrderToInvoiceTest
 		Mockito.doReturn(activityId).when(productAcctDAO).retrieveActivityForAcct(clientId, orgId, productId);
 		Mockito.doReturn(docType).when(docTypeBL).getById(docTypeId);
 
-
-		final Properties ctx = Env.getCtx();
 		Mockito
 				.when(taxBL.getTaxNotNull(
 						order,
@@ -214,6 +213,13 @@ public class QtyDeliveredFromOrderToInvoiceTest
 
 	private void initC_Order()
 	{
+		final I_C_PaymentTerm paymentTerm = create(ctx, I_C_PaymentTerm.class, trxName);
+		paymentTerm.setValue("paymentTerm");
+		paymentTerm.setName("paymentTerm");
+		paymentTerm.setNetDays(10);
+		paymentTerm.setAD_Org_ID(0);
+		save(paymentTerm);
+
 		order = create(ctx, I_C_Order.class, trxName);
 		order.setAD_Org_ID(orgId.getRepoId());
 
@@ -229,6 +235,7 @@ public class QtyDeliveredFromOrderToInvoiceTest
 		order.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
 		order.setC_Currency_ID(10);
 		order.setM_PricingSystem_ID(20);
+		order.setC_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
 		save(order);
 	}
 

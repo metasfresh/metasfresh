@@ -25,7 +25,8 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Orde
                 descriptionbottom character varying,
                 deliveryrule      character varying,
                 deliveryviarule   character varying,
-                additionaltext    text
+                additionaltext    text,
+                taxnote           text
             )
 AS
 $$
@@ -59,7 +60,8 @@ SELECT COALESCE(reft.name, ref.name)                                          AS
            WHEN report.IsHiddenReportElement(o.C_DocType_ID, 'Delivery_Via_Rule') = 'N' THEN
                COALESCE(o_dvr_trl.name, o_dvr.name)
        END                                                                              AS deliveryviarule,
-       report.getBPartner_CustomDocumentText(o.C_DocTypeTarget_ID, o.c_bpartner_id)       AS AdditionalText
+       report.getBPartner_CustomDocumentText(o.C_DocTypeTarget_ID, o.c_bpartner_id)       AS AdditionalText,
+       report.TaxNote(p_Order_ID, NULL, p_Language)                                                 AS taxnote
 
 FROM C_Order o
 

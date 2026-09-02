@@ -211,7 +211,7 @@ public class Helper
 		SpringContextHolder.registerJUnitBean(new ExternalSystemsPrintingNotifier(new ArrayList<>()));
 
 		printOutputFacade = new PrintOutputFacade(
-				new PrintingDataFactory(new HardwarePrinterRepository(), new ArchiveFileNameService()),
+				new PrintingDataFactory(new HardwarePrinterRepository(), ArchiveFileNameService.newInstanceForUnitTesting()),
 				new PrintingDataToPDFFileStorer());
 	}
 

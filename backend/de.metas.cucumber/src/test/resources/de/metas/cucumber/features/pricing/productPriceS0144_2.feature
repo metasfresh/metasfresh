@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
 @ghActions:run_on_executor6
 Feature: Product price validation (S0144_2)
+## F32000: Pricing
 
   Background:
 #  Prerequisite:
@@ -21,9 +25,9 @@ Feature: Product price validation (S0144_2)
       | M_AttributeSet_ID.Identifier | Name                  | MandatoryType |
       | attributeSet_03062022        | attributeSet_03062022 | N             |
     And add M_AttributeUse:
-      | M_AttributeUse_ID.Identifier | M_AttributeSet_ID.Identifier | M_Attribute_ID.Identifier | SeqNo |
-      | attributeUse_age             | attributeSet_03062022        | attr_age                  | 10    |
-      | attributeUse_Label           | attributeSet_03062022        | attr_Label                | 20    |
+      | M_AttributeSet_ID     | M_Attribute_ID | SeqNo |
+      | attributeSet_03062022 | attr_age       | 10    |
+      | attributeSet_03062022 | attr_Label     | 20    |
 
     And metasfresh contains M_PricingSystems
       | Identifier  | Name        | Value       |
@@ -54,6 +58,9 @@ Feature: Product price validation (S0144_2)
       | bpartner_03062022 | BPartner03062022 | Y              | Y            | ps_03062022                   |
 
   @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
   @Id:S0144.2_100
   Scenario: Validate that productCategory.ASI is propagated on order line with default value if configured so (M_AttributeValue.IsNullFieldValue=Y)
     # disable all default values for attributes
@@ -91,6 +98,9 @@ Feature: Product price validation (S0144_2)
 
 
   @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
   @Id:S0144.2_110
   Scenario: Validate that productPrice attributes are preserved on order line prior to productCategory attributes
     # disable all default values for attributes
@@ -138,6 +148,9 @@ Feature: Product price validation (S0144_2)
 
 
   @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
   @Id:S0144.2_120
   @Id:S0150_200
   Scenario: Validate that productPrice attributes and packing material are preserved on order line
@@ -146,8 +159,8 @@ Feature: Product price validation (S0144_2)
       | product_S0144.2_120 | product_S0144.2_120 |
     # add CU-TU allocation for the product in question
     And metasfresh contains M_HU_PI_Item_Product:
-      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
-      | huProductTU                        | huPiItemTU                 | product_S0144.2_120     | 8   | 2022-05-10 |
+      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | IsOrderInTuUomWhenMatched |
+      | huProductTU                        | huPiItemTU                 | product_S0144.2_120     | 8   | 2022-05-10 | false                     |
 
     And metasfresh contains M_AttributeSetInstance with identifier "ppASI_S0144.2_120":
   """
@@ -175,6 +188,7 @@ Feature: Product price validation (S0144_2)
     "orgCode": "001",
     "externalLineId": "sdwewwe",
     "externalHeaderId": "89676577",
+    "externalSystemCode": "Shopware6",
     "dataSource": "int-Shopware",
     "bpartner": {
         "bpartnerIdentifier": "gln-03062660333443",
@@ -198,7 +212,7 @@ Feature: Product price validation (S0144_2)
 """
 {
     "externalHeaderId": "89676577",
-    "inputDataSourceName": "int-Shopware",
+    "externalSystemCode": "Shopware6",
     "ship": false,
     "invoice": false,
     "closeOrder": false
@@ -209,13 +223,16 @@ Feature: Product price validation (S0144_2)
       | C_Order_ID.Identifier |
       | order_S0144.2_120     |
     And validate the created orders
-      | C_Order_ID.Identifier | externalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference    | processed | docStatus | OPT.AD_InputDataSource_ID.InternalName |
-      | order_S0144.2_120     | 89676577   | bpartner_03062022        | bpLocation_03062022               | 2022-06-05  | SOO         | EUR          | F            | S               | po_S0144.2_120 | true      | CO        | Shopware                               |
+      | C_Order_ID.Identifier | externalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference    | processed | DocStatus | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value |
+      | order_S0144.2_120     | 89676577   | bpartner_03062022        | bpLocation_03062022               | 2022-06-05  | SOO         | EUR          | F            | S               | po_S0144.2_120 | true      | CO        | Shopware                               | Shopware6            |
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.M_AttributeSetInstance_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier |
       | ol_SO144.2_120            | order_S0144.2_120     | product_S0144.2_120     | 0            | 10         | 0           | 120   | 0        | EUR          | true      | ppASI_S0144.2_120                        | huProductTU                            |
 
   @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
   @Id:S0144.2_140
   Scenario: Validate that Age attribute set on productCategory.ASI has default value on order line if configured so (M_AttributeValue.IsNullFieldValue=Y)
     # disable all default values for attributes
@@ -238,8 +255,8 @@ Feature: Product price validation (S0144_2)
       | product_S0144.2_140 | product_S0144.2_140 | standard_category                    |
     # add CU-TU allocation for the product in question
     And metasfresh contains M_HU_PI_Item_Product:
-      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
-      | huProductTU                        | huPiItemTU                 | product_S0144.2_140     | 8   | 2022-05-10 |
+      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | IsOrderInTuUomWhenMatched |
+      | huProductTU                        | huPiItemTU                 | product_S0144.2_140     | 8   | 2022-05-10 | false                     |
 
     And metasfresh contains M_ProductPrices
       | Identifier     | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName | OPT.IsAttributeDependant | OPT.UseScalePrice | OPT.M_HU_PI_Item_Product_ID.Identifier |
@@ -257,6 +274,9 @@ Feature: Product price validation (S0144_2)
       | ol_SO144.2_140            | order_S0144.2_140     | 2022-06-02      | product_S0144.2_140     | 4          | 0            | 0           | 140   | 0        | EUR          | false     | attr_age:24                                  |
 
   @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
   @Id:S0144.2_150
   Scenario: Validate that Age attribute set on productCategory.ASI doesn't have default value on order line if configured so (M_AttributeValue.IsNullFieldValue=N)
     # disable all default values for attributes
@@ -274,8 +294,8 @@ Feature: Product price validation (S0144_2)
       | product_S0144.2_150 | product_S0144.2_150 | standard_category                    |
     # add CU-TU allocation for the product in question
     And metasfresh contains M_HU_PI_Item_Product:
-      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
-      | huProductTU                        | huPiItemTU                 | product_S0144.2_150     | 8   | 2022-05-10 |
+      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | IsOrderInTuUomWhenMatched |
+      | huProductTU                        | huPiItemTU                 | product_S0144.2_150     | 8   | 2022-05-10 | false                     |
 
     And metasfresh contains M_ProductPrices
       | Identifier     | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName | OPT.IsAttributeDependant | OPT.UseScalePrice | OPT.M_HU_PI_Item_Product_ID.Identifier |

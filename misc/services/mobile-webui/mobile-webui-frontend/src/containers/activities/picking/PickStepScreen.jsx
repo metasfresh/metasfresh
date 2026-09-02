@@ -4,7 +4,7 @@ import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 import { trl } from '../../../utils/translations';
 import { toastError } from '../../../utils/toast';
-import { postStepPicked, postStepUnPicked } from '../../../api/picking';
+import { postStepUnPicked } from '../../../api/picking';
 import { pickingLineScreenLocation, pickingStepScanScreenLocation } from '../../../routes/picking';
 import { getStepById } from '../../../reducers/wfProcesses';
 import { getPickFromForStep, getQtyToPickForStep } from '../../../utils/picking';
@@ -13,9 +13,15 @@ import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator
 import ConfirmButton from '../../../components/buttons/ConfirmButton';
 import { toQRCodeDisplayable, toQRCodeString } from '../../../utils/qrCode/hu';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
-import UnpickDialog from './UnpickDialog';
+import UnpickTargetScanDialog from './unpick/UnpickTargetScanDialog';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { useMobileLocation } from '../../../hooks/useMobileLocation';
+import { postStepPickedThunk } from '../../../apps/picking/redux/postStepPickedThunk';
+
+const STAGE = {
+  NONE: 'NONE',
+  SCAN_TARGET: 'SCAN_TARGET',
+};
 
 const PickStepScreen = () => {
   const { applicationId, wfProcessId, activityId, lineId, stepId, altStepId } = useMobileLocation();
@@ -46,7 +52,7 @@ const PickStepScreen = () => {
 
   const dispatch = useDispatch();
 
-  const [showTargetHUScanner, setShowTargetHUScanner] = useState(false);
+  const [stage, setStage] = useState(STAGE.NONE);
 
   const unpick = ({ unpickToTargetQRCode }) => {
     postStepUnPicked({
@@ -65,18 +71,18 @@ const PickStepScreen = () => {
   };
 
   const handleNotFound = () => {
-    const qtyRejected = qtyToPick;
-
-    postStepPicked({
-      wfProcessId,
-      activityId,
-      lineId,
-      stepId,
-      qtyPicked: 0,
-      qtyRejected,
-      qtyRejectedReasonCode: 'N',
-      huQRCode: toQRCodeString(pickFrom.huQRCode),
-    }).then((wfProcess) => dispatch(updateWFProcess({ wfProcess })));
+    return dispatch(
+      postStepPickedThunk({
+        wfProcessId,
+        activityId,
+        lineId,
+        stepId,
+        qtyPicked: 0,
+        qtyRejected: qtyToPick,
+        qtyRejectedReasonCode: 'N',
+        huQRCode: toQRCodeString(pickFrom.huQRCode),
+      })
+    );
   };
 
   const onScanButtonClick = () =>
@@ -102,7 +108,9 @@ const PickStepScreen = () => {
 
   return (
     <div className="section pt-2">
-      {showTargetHUScanner && <UnpickDialog onSubmit={unpick} onCloseDialog={() => setShowTargetHUScanner(false)} />}
+      {stage === STAGE.SCAN_TARGET && (
+        <UnpickTargetScanDialog onSubmit={unpick} onCloseDialog={() => setStage(STAGE.NONE)} />
+      )}
       <div className="buttons">
         <ButtonWithIndicator
           caption={scanButtonCaption}
@@ -114,7 +122,7 @@ const PickStepScreen = () => {
           id="unpick-button"
           captionKey="activities.picking.unPickBtn"
           disabled={nothingPicked}
-          onClick={() => setShowTargetHUScanner(true)}
+          onClick={() => setStage(STAGE.SCAN_TARGET)}
         />
         {nothingPicked && (
           <ConfirmButton

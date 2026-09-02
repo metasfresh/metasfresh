@@ -15,6 +15,7 @@ public enum HULabelSourceDocType implements ReferenceListAwareEnum
 	Manufacturing(X_M_HU_Label_Config.HU_SOURCEDOCTYPE_Manufacturing),
 	MaterialReceipt(X_M_HU_Label_Config.HU_SOURCEDOCTYPE_MaterialReceipt),
 	Picking(X_M_HU_Label_Config.HU_SOURCEDOCTYPE_Picking),
+	Inventory(X_M_HU_Label_Config.HU_SOURCEDOCTYPE_Inventory),
 	;
 
 	private static final ReferenceListAwareEnums.ValuesIndex<HULabelSourceDocType> index = ReferenceListAwareEnums.index(values());

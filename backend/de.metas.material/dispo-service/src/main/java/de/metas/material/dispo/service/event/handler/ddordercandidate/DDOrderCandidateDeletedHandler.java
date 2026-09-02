@@ -31,6 +31,7 @@ public class DDOrderCandidateDeletedHandler implements MaterialEventHandler<DDOr
 		return ImmutableList.of(DDOrderCandidateDeletedEvent.class);
 	}
 
+	// no MRP_Exclude guard: handler only operates on already-existing candidates loaded by ID; if creation was skipped due to MRP_Exclude, the load returns nothing and this is a no-op.
 	@Override
 	public void handleEvent(@NonNull final DDOrderCandidateDeletedEvent event)
 	{

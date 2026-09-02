@@ -27,7 +27,7 @@ import de.metas.audit.data.repository.DataExportAuditLogRepository;
 import de.metas.audit.data.repository.DataExportAuditRepository;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.document.engine.DocStatus;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemType;
@@ -70,16 +70,16 @@ public class ExportHUToGRSService extends ExportHUToExternalSystemService
 	protected ExportHUToGRSService(
 			@NonNull final DataExportAuditRepository dataExportAuditRepository,
 			@NonNull final DataExportAuditLogRepository dataExportAuditLogRepository,
-			@NonNull final ExternalSystemConfigRepo externalSystemConfigRepo,
+			@NonNull final ExternalSystemConfigRepository externalSystemConfigRepository,
 			@NonNull final ExternalSystemMessageSender externalSystemMessageSender,
 			@NonNull final ExternalSystemConfigService externalSystemConfigService)
 	{
-		super(dataExportAuditRepository, dataExportAuditLogRepository, externalSystemConfigRepo, externalSystemMessageSender, externalSystemConfigService);
+		super(dataExportAuditRepository, dataExportAuditLogRepository, externalSystemConfigRepository, externalSystemMessageSender, externalSystemConfigService);
 	}
 
 	public void exportHUToGRS(final I_M_HU_Trace huTrace)
 	{
-		if (!externalSystemConfigRepo.isAnyConfigActive(ExternalSystemType.GRSSignum))
+		if (!externalSystemConfigRepository.isAnyConfigActive(ExternalSystemType.GRSSignum))
 		{
 			return;
 		}
@@ -157,7 +157,7 @@ public class ExportHUToGRSService extends ExportHUToExternalSystemService
 
 	private void directlyExportToAllMatchingConfigs(@NonNull final I_M_HU_Trace huTrace)
 	{
-		final ImmutableList<ExternalSystemParentConfig> configs = externalSystemConfigRepo.getActiveByType(ExternalSystemType.GRSSignum);
+		final ImmutableList<ExternalSystemParentConfig> configs = externalSystemConfigRepository.getActiveByType(ExternalSystemType.GRSSignum);
 
 		for (final ExternalSystemParentConfig config : configs)
 		{

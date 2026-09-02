@@ -23,6 +23,7 @@
 package de.metas.externalsystem.audit;
 
 import de.metas.dlm.model.I_AD_Table;
+import de.metas.externalsystem.ExternalSystemTestHelper;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.process.PInstanceId;
 import de.metas.security.RoleId;
@@ -45,7 +46,8 @@ public class ExternalSystemExportAuditRepoTests
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		externalSystemExportAuditRepo = new ExternalSystemExportAuditRepo();
+		ExternalSystemTestHelper.createExternalSystemIfNotExists(ExternalSystemType.Shopware6);
+		externalSystemExportAuditRepo = ExternalSystemExportAuditRepo.newInstanceForUnitTesting();
 	}
 
 	@Test

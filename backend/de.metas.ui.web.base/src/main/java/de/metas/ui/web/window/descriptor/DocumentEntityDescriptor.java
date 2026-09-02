@@ -268,7 +268,9 @@ public class DocumentEntityDescriptor
 	 */
 	public WindowId getWindowId()
 	{
-		Check.assume(documentType == DocumentType.Window, "expected document type to be {} but it was {}", DocumentType.Window, documentType);
+		Check.assume(documentType == DocumentType.Window || documentType == DocumentType.QuickInput,
+				"expected document type to be Window or QuickInput but it was {}", documentType
+		);
 		return WindowId.of(documentTypeId);
 	}
 
@@ -389,6 +391,11 @@ public class DocumentEntityDescriptor
 	public AdTabId getAdTabId()
 	{
 		return adTabId.orElseThrow(() -> new IllegalStateException("No TableName defined for " + this));
+	}
+
+	public AdTabId getAdTabIdOrNull()
+	{
+		return adTabId.orElse(null);
 	}
 
 	// legacy
@@ -697,7 +704,8 @@ public class DocumentEntityDescriptor
 			return idFieldBuilders.size() == 1 ? idFieldBuilders.get(0).getFieldName() : null;
 		}
 
-		private List<DocumentFieldDescriptor.Builder> getIdFieldBuilders()
+		@NonNull
+		public List<DocumentFieldDescriptor.Builder> getIdFieldBuilders()
 		{
 			return _fieldBuilders
 					.values()

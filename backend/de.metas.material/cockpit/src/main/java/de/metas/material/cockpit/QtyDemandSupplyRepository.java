@@ -23,10 +23,15 @@
 package de.metas.material.cockpit;
 
 import com.google.common.collect.ImmutableMap;
+import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.DB;
 import org.springframework.stereotype.Repository;
@@ -39,6 +44,8 @@ import java.util.Collection;
 @Repository
 public class QtyDemandSupplyRepository
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@NonNull
 	public ProductWithDemandSupplyCollection getByProductIds(@NonNull final Collection<ProductId> productIds)
 	{
@@ -65,6 +72,32 @@ public class QtyDemandSupplyRepository
 				.uomId(UomId.ofRepoId(rs.getInt("C_UOM_ID")))
 				.qtyReserved(rs.getBigDecimal("QtyReserved"))
 				.qtyToMove(rs.getBigDecimal("QtyToMove"))
+				.build();
+	}
+
+	public QtyDemandQtySupply getById(@NonNull final QtyDemandQtySupplyId id)
+	{
+		final I_QtyDemand_QtySupply_V po = queryBL.createQueryBuilder(I_QtyDemand_QtySupply_V.class)
+				.addEqualsFilter(I_QtyDemand_QtySupply_V.COLUMNNAME_QtyDemand_QtySupply_V_ID, id)
+				.create()
+				.firstOnly(I_QtyDemand_QtySupply_V.class);
+		return fromPO(po);
+	}
+
+	private QtyDemandQtySupply fromPO(@NonNull final I_QtyDemand_QtySupply_V po)
+	{
+		final UomId uomId = UomId.ofRepoId(po.getC_UOM_ID());
+		return QtyDemandQtySupply.builder()
+				.id(QtyDemandQtySupplyId.ofRepoId(po.getQtyDemand_QtySupply_V_ID()))
+				.productId(ProductId.ofRepoId(po.getM_Product_ID()))
+				.warehouseId(WarehouseId.ofRepoId(po.getM_Warehouse_ID()))
+				.attributesKey(AttributesKey.ofString(po.getAttributesKey()))
+				.qtyToMove(Quantitys.of(po.getQtyToMove(), uomId))
+				.qtyReserved(Quantitys.of(po.getQtyReserved(), uomId))
+				.qtyForecasted(Quantitys.of(po.getQtyForecasted(), uomId))
+				.qtyToProduce(Quantitys.of(po.getQtyToProduce(), uomId))
+				.qtyStock(Quantitys.of(po.getQtyStock(), uomId))
+				.orgId(OrgId.ofRepoId(po.getAD_Org_ID()))
 				.build();
 	}
 }

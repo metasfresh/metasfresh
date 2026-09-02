@@ -74,6 +74,7 @@ final class ChangeLogUtil
 			.put(I_C_BPartner.COLUMNNAME_Name, BPartner.NAME)
 			.put(I_C_BPartner.COLUMNNAME_Name2, BPartner.NAME_2)
 			.put(I_C_BPartner.COLUMNNAME_Name3, BPartner.NAME_3)
+			.put(I_C_BPartner.COLUMNNAME_Lookup_Label, BPartner.GLN_LOOKUP_LABEL)
 			.put(I_C_BPartner.COLUMNNAME_BPartner_Parent_ID, BPartner.PARENT_ID)
 			.put(I_C_BPartner.COLUMNNAME_Phone2, BPartner.PHONE)
 			.put(I_C_BPartner.COLUMNNAME_URL, BPartner.URL)
@@ -85,6 +86,7 @@ final class ChangeLogUtil
 			.put(I_C_BPartner.COLUMNNAME_SalesPartnerCode, BPartner.SALES_PARTNER_CODE)
 			.put(I_C_BPartner.COLUMNNAME_C_BPartner_SalesRep_ID, BPartner.C_BPARTNER_SALES_REP_ID)
 			.put(I_C_BPartner.COLUMNNAME_InternalName, BPartner.INTERNAL_NAME)
+			.put(I_C_BPartner.COLUMNNAME_IsDiscountPrinted, BPartner.DISCOUNT_PRINTED)
 			.put(I_C_BPartner.COLUMNNAME_PaymentRule, BPartner.PAYMENT_RULE)
 			.put(I_C_BPartner.COLUMNNAME_IsCompany, BPartner.COMPANY)
 			.put(I_C_BPartner.COLUMNNAME_VATaxID, BPartner.VAT_ID)
@@ -135,6 +137,7 @@ final class ChangeLogUtil
 			.put(I_AD_User.COLUMNNAME_Title, BPartnerContact.TITLE)
 			.put(I_AD_User.COLUMNNAME_Phone2, BPartnerContact.PHONE2)
 			.put(I_AD_User.COLUMNNAME_C_Job_ID, BPartnerContact.JOB_ID)
+			.put(I_AD_User.COLUMNNAME_Department, BPartnerContact.DEPARTMENT)
 			.build();
 
 	@VisibleForTesting
@@ -155,6 +158,7 @@ final class ChangeLogUtil
 			.put(I_C_BPartner_Location.COLUMNNAME_Phone, BPartnerLocation.PHONE)
 			.put(I_C_BPartner_Location.COLUMNNAME_VisitorsAddress, BPartnerLocationType.VISITORS_ADDRESS)
 			.put(I_C_BPartner_Location.COLUMNNAME_VATaxID, BPartnerLocation.VAT_TAX_ID)
+			.put(I_C_BPartner_Location.COLUMNNAME_Attention, BPartnerLocation.ATTENTION)
 
 			// C_Location is immutable and therefore individual C_Location records don't have a change log.
 			// However, when we load the change log records of C_BPartner_Location,

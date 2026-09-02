@@ -24,6 +24,7 @@ package de.metas.manufacturing.generatedcomponents;
 
 import de.metas.document.sequence.DocSequenceId;
 import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -52,6 +53,7 @@ class CopyAttributesFromBOMLineGeneratorTest
 		final I_M_Attribute po = InterfaceWrapperHelper.newInstance(I_M_Attribute.class);
 		po.setName(attributeCode.getCode());
 		po.setValue(attributeCode.getCode());
+		po.setAttributeValueType(AttributeValueType.STRING.getCode());
 		InterfaceWrapperHelper.saveRecord(po);
 	}
 

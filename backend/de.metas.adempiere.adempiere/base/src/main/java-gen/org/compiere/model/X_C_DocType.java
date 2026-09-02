@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 832799830L;
+	private static final long serialVersionUID = -1155616988L;
 
     /** Standard Constructor */
     public X_C_DocType (final Properties ctx, final int C_DocType_ID, @Nullable final String trxName)
@@ -79,14 +79,14 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public void setC_DocTypeDifference_ID (final int C_DocTypeDifference_ID)
 	{
-		if (C_DocTypeDifference_ID < 1)
+		if (C_DocTypeDifference_ID < 1) 
 			set_Value (COLUMNNAME_C_DocTypeDifference_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_C_DocTypeDifference_ID, C_DocTypeDifference_ID);
 	}
 
 	@Override
-	public int getC_DocTypeDifference_ID()
+	public int getC_DocTypeDifference_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocTypeDifference_ID);
 	}
@@ -94,14 +94,14 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public void setC_DocType_ID (final int C_DocType_ID)
 	{
-		if (C_DocType_ID < 0)
+		if (C_DocType_ID < 0) 
 			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, null);
-		else
+		else 
 			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, C_DocType_ID);
 	}
 
 	@Override
-	public int getC_DocType_ID()
+	public int getC_DocType_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocType_ID);
 	}
@@ -136,14 +136,14 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public void setC_DocType_Invoicing_Pool_ID (final int C_DocType_Invoicing_Pool_ID)
 	{
-		if (C_DocType_Invoicing_Pool_ID < 1)
+		if (C_DocType_Invoicing_Pool_ID < 1) 
 			set_Value (COLUMNNAME_C_DocType_Invoicing_Pool_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_C_DocType_Invoicing_Pool_ID, C_DocType_Invoicing_Pool_ID);
 	}
 
 	@Override
-	public int getC_DocType_Invoicing_Pool_ID()
+	public int getC_DocType_Invoicing_Pool_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocType_Invoicing_Pool_ID);
 	}
@@ -178,7 +178,7 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 		return get_ValueAsInt(COLUMNNAME_C_DocTypeShipment_ID);
 	}
 
-	/**
+	/** 
 	 * CopyDescriptionAndDocumentNote AD_Reference_ID=541893
 	 * Reference name: CopyDocumentNote
 	 */
@@ -194,7 +194,7 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	}
 
 	@Override
-	public java.lang.String getCopyDescriptionAndDocumentNote()
+	public java.lang.String getCopyDescriptionAndDocumentNote() 
 	{
 		return get_ValueAsString(COLUMNNAME_CopyDescriptionAndDocumentNote);
 	}
@@ -325,6 +325,10 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCBASETYPE_CostRevaluation = "CRD";
 	/** AnalysisReport = QMA */
 	public static final String DOCBASETYPE_AnalysisReport = "QMA";
+	/** APProFormaInvoice = APF */
+	public static final String DOCBASETYPE_APProFormaInvoice = "APF";
+	/** Tax Declaration = TXD */
+	public static final String DOCBASETYPE_TaxDeclaration = "TXD";
 	@Override
 	public void setDocBaseType (final java.lang.String DocBaseType)
 	{
@@ -469,6 +473,14 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCSUBTYPE_PaymentServiceProviderInvoice = "SI";
 	/** CallOrder = CAO */
 	public static final String DOCSUBTYPE_CallOrder = "CAO";
+	/** Delivery Instruction = DI */
+	public static final String DOCSUBTYPE_DeliveryInstruction = "DI";
+	/** InventoryShortageDocument = ISD */
+	public static final String DOCSUBTYPE_InventoryShortageDocument = "ISD";
+	/** InventoryOverageDocument = IOD */
+	public static final String DOCSUBTYPE_InventoryOverageDocument = "IOD";
+	/** Order on Commission = OOC */
+	public static final String DOCSUBTYPE_OrderOnCommission = "OOC";
 	@Override
 	public void setDocSubType (final @Nullable java.lang.String DocSubType)
 	{
@@ -537,18 +549,16 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public void setGL_Category_ID (final int GL_Category_ID)
 	{
-		set_ValueNoCheck("GL_Category_ID", GL_Category_ID);
+		if (GL_Category_ID < 0) 
+			set_Value (COLUMNNAME_GL_Category_ID, null);
+		else 
+			set_Value (COLUMNNAME_GL_Category_ID, GL_Category_ID);
 	}
 
 	@Override
 	public int getGL_Category_ID() 
 	{
-		final Integer ii = (Integer)get_Value("GL_Category_ID");
-		if (ii == null)
-		{
-			return 0;
-		}
-		return ii;
+		return get_ValueAsInt(COLUMNNAME_GL_Category_ID);
 	}
 
 	@Override
@@ -683,6 +693,27 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 		return get_ValueAsBoolean(COLUMNNAME_IsOverwriteSeqOnComplete);
 	}
 
+	/** 
+	 * IsPartialInvoice AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISPARTIALINVOICE_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISPARTIALINVOICE_Yes = "Y";
+	/** No = N */
+	public static final String ISPARTIALINVOICE_No = "N";
+	@Override
+	public void setIsPartialInvoice (final @Nullable java.lang.String IsPartialInvoice)
+	{
+		set_Value (COLUMNNAME_IsPartialInvoice, IsPartialInvoice);
+	}
+
+	@Override
+	public java.lang.String getIsPartialInvoice() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsPartialInvoice);
+	}
+
 	@Override
 	public void setIsPickQAConfirm (final boolean IsPickQAConfirm)
 	{
@@ -746,14 +777,14 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public void setLotNo_Sequence_ID (final int LotNo_Sequence_ID)
 	{
-		if (LotNo_Sequence_ID < 1)
+		if (LotNo_Sequence_ID < 1) 
 			set_Value (COLUMNNAME_LotNo_Sequence_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_LotNo_Sequence_ID, LotNo_Sequence_ID);
 	}
 
 	@Override
-	public int getLotNo_Sequence_ID()
+	public int getLotNo_Sequence_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_LotNo_Sequence_ID);
 	}

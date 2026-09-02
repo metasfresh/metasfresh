@@ -1,4 +1,5 @@
 import {
+  CLEAR_ACTIVE_FILTERS,
   CLEAR_LAUNCHERS,
   POPULATE_LAUNCHERS_COMPLETE,
   POPULATE_LAUNCHERS_START,
@@ -12,11 +13,13 @@ export const populateLaunchersStart = ({ applicationId, filterByQRCode }) => {
   };
 };
 
-export const populateLaunchersComplete = ({ applicationId, applicationLaunchers }) => {
+export const populateLaunchersComplete = ({ applicationId, applicationLaunchers, requestTimestamp }) => {
   //console.trace('populateLaunchersComplete', { applicationId, applicationLaunchers });
   return {
     type: POPULATE_LAUNCHERS_COMPLETE,
-    payload: { applicationId, applicationLaunchers },
+    // `requestTimestamp` is when this launchers snapshot was fetched (request issued). The
+    // wfProcesses reducer uses it to avoid pruning a process started after the request went out.
+    payload: { applicationId, applicationLaunchers, requestTimestamp },
   };
 };
 
@@ -27,9 +30,15 @@ export const clearLaunchers = ({ applicationId }) => {
   };
 };
 
-export const setActiveFilters = ({ applicationId, facets, filterByDocumentNo }) => {
+export const setActiveFilters = ({ applicationId, facets, filters }) => {
   return {
     type: SET_ACTIVE_FILTERS,
-    payload: { applicationId, facets, filterByDocumentNo },
+    payload: { applicationId, facets, filters },
+  };
+};
+export const clearActiveFilters = ({ applicationId }) => {
+  return {
+    type: CLEAR_ACTIVE_FILTERS,
+    payload: { applicationId },
   };
 };

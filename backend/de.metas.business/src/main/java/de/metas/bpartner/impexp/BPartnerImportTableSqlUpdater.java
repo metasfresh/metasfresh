@@ -108,6 +108,8 @@ public class BPartnerImportTableSqlUpdater
 
 		dbUpdateLocationM_Shippers(selection);
 
+		dbUpdateLocationM_Shipper_Routing_Codes(selection);
+
 		dbUpdateAD_PrintFormats(selection);
 
 		dbUpdateM_PricingSystems(selection);
@@ -156,7 +158,8 @@ public class BPartnerImportTableSqlUpdater
 	{
 		{
 			final String sql = "UPDATE I_BPartner i "
-					+ "SET GroupValue=(SELECT MAX(Value) FROM C_BP_Group g WHERE g.IsDefault='Y' AND g.AD_Client_ID=i.AD_Client_ID AND g.AD_Org_ID=i.AD_Org_ID) "
+					+ "SET GroupValue=(SELECT Value FROM C_BP_Group g WHERE g.IsDefault='Y' AND g.AD_Client_ID=i.AD_Client_ID AND g.AD_Org_ID IN (0, i.AD_Org_ID) "
+					+ " ORDER BY g.AD_Org_ID DESC, g.Value DESC LIMIT 1) "
 					+ " WHERE GroupValue IS NULL AND C_BP_Group_ID IS NULL"
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y' "
 					+ selection.toSqlWhereClause("i");
@@ -168,7 +171,8 @@ public class BPartnerImportTableSqlUpdater
 		{
 			final String sql = "UPDATE I_BPartner i "
 					+ "SET C_BP_Group_ID=(SELECT C_BP_Group_ID FROM C_BP_Group g"
-					+ " WHERE i.GroupValue=g.Value AND g.AD_Client_ID=i.AD_Client_ID AND g.AD_Org_ID=i.AD_Org_ID) "
+					+ " WHERE i.GroupValue=g.Value AND g.AD_Client_ID=i.AD_Client_ID AND g.AD_Org_ID IN (0, i.AD_Org_ID) "
+					+ " ORDER BY g.AD_Org_ID DESC LIMIT 1) "
 					+ "WHERE C_BP_Group_ID IS NULL"
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y' "
 					+ selection.toSqlWhereClause("i");
@@ -274,8 +278,9 @@ public class BPartnerImportTableSqlUpdater
 		{
 			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
 					+ "SET C_Greeting_ID=(SELECT C_Greeting_ID FROM C_Greeting g"
-					+ " WHERE i.BPContactGreeting=g.Name AND g.AD_Client_ID IN (0, i.AD_Client_ID) AND g.AD_Org_ID = i.AD_Org_ID) "
-					+ "WHERE C_Greeting_ID IS NULL AND BPContactGreeting IS NOT NULL"
+					+ " WHERE i.BPContactGreeting=g.Name AND g.AD_Client_ID IN (0, i.AD_Client_ID) AND g.AD_Org_ID IN (0, i.AD_Org_ID) "
+					+ " ORDER BY g.AD_Org_ID DESC LIMIT 1) "
+					+ " WHERE C_Greeting_ID IS NULL AND BPContactGreeting IS NOT NULL"
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 							.append(selection.toSqlWhereClause("i"));
 
@@ -339,21 +344,55 @@ public class BPartnerImportTableSqlUpdater
 
 	private void dbUpdateCbPartnerIdsFromValue(final ImportRecordsSelection selection)
 	{
-
-		final StringBuilder sql = new StringBuilder("UPDATE " + I_I_BPartner.Table_Name + " i " + "SET "
-				+ COLUMNNAME_C_BPartner_ID + " = bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID
+		// Step 1: resolve where exactly one BPartner matches (unambiguous)
+		final StringBuilder sqlUnique = new StringBuilder("UPDATE " + I_I_BPartner.Table_Name + " i " + "SET "
+				+ COLUMNNAME_C_BPartner_ID + " = ("
+				+ "SELECT MAX(bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID + ")"
 				+ " FROM " + I_C_BPartner.Table_Name + " bp"
-				+ " WHERE i." + COLUMNNAME_C_BPartner_ID + " IS NULL "
-				+ " AND i." + I_I_BPartner.COLUMNNAME_BPValue + " IS NOT NULL "
-				+ " AND bp." + I_C_BPartner.COLUMNNAME_Value + " = i." + I_I_BPartner.COLUMNNAME_BPValue
+				+ " WHERE bp." + I_C_BPartner.COLUMNNAME_Value + " = i." + I_I_BPartner.COLUMNNAME_BPValue
 				+ " AND bp." + I_C_BPartner.COLUMNNAME_AD_Client_ID + " = i." + I_I_BPartner.COLUMNNAME_AD_Client_ID
 				+ " AND bp." + I_C_BPartner.COLUMNNAME_AD_Org_ID + " = i." + I_I_BPartner.COLUMNNAME_AD_Org_ID
 				+ " AND bp." + I_C_BPartner.COLUMNNAME_IsActive + " = 'Y'"
+				+ " HAVING count(*)=1"
+				+ ")"
+				+ " WHERE i." + COLUMNNAME_C_BPartner_ID + " IS NULL "
+				+ " AND i." + I_I_BPartner.COLUMNNAME_BPValue + " IS NOT NULL "
 				+ " AND i." + I_I_BPartner.COLUMNNAME_I_IsImported + " <> 'Y'")
-
 						.append(selection.toSqlWhereClause("i"));
+		executeUpdate("Set BPartner by Value (unique)", sqlUnique);
 
-		executeUpdate("Set BPartner by Value", sql);
+		// Step 2: disambiguate using I_BPartner.IsCustomer/IsVendor flags
+		final StringBuilder sqlDisambiguate = new StringBuilder("UPDATE " + I_I_BPartner.Table_Name + " i " + "SET "
+				+ COLUMNNAME_C_BPartner_ID + " = ("
+				+ "SELECT MAX(bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID + ")"
+				+ " FROM " + I_C_BPartner.Table_Name + " bp"
+				+ " WHERE bp." + I_C_BPartner.COLUMNNAME_Value + " = i." + I_I_BPartner.COLUMNNAME_BPValue
+				+ " AND bp." + I_C_BPartner.COLUMNNAME_AD_Client_ID + " = i." + I_I_BPartner.COLUMNNAME_AD_Client_ID
+				+ " AND bp." + I_C_BPartner.COLUMNNAME_AD_Org_ID + " = i." + I_I_BPartner.COLUMNNAME_AD_Org_ID
+				+ " AND bp." + I_C_BPartner.COLUMNNAME_IsActive + " = 'Y'"
+				+ " AND ((i.IsCustomer = 'Y' AND bp.IsCustomer = 'Y') OR (i.IsVendor = 'Y' AND bp.IsVendor = 'Y'))"
+				+ " HAVING count(*)=1"
+				+ ")"
+				+ " WHERE i." + COLUMNNAME_C_BPartner_ID + " IS NULL "
+				+ " AND i." + I_I_BPartner.COLUMNNAME_BPValue + " IS NOT NULL "
+				+ " AND i." + I_I_BPartner.COLUMNNAME_I_IsImported + " <> 'Y'")
+						.append(selection.toSqlWhereClause("i"));
+		executeUpdate("Set BPartner by Value (disambiguated)", sqlDisambiguate);
+
+		// Step 3: mark remaining ambiguous rows as errors
+		final StringBuilder sqlError = new StringBuilder("UPDATE " + I_I_BPartner.Table_Name + " i "
+				+ "SET " + I_I_BPartner.COLUMNNAME_I_IsImported + "='E',"
+				+ " I_ErrorMsg=COALESCE(I_ErrorMsg,'')||'ERR: Multiple BPartners found for Value=\"'||i." + I_I_BPartner.COLUMNNAME_BPValue + "||'\"' "
+				+ " WHERE i." + COLUMNNAME_C_BPartner_ID + " IS NULL "
+				+ " AND i." + I_I_BPartner.COLUMNNAME_BPValue + " IS NOT NULL "
+				+ " AND i." + I_I_BPartner.COLUMNNAME_I_IsImported + " <> 'Y'"
+				+ " AND (SELECT count(*) FROM " + I_C_BPartner.Table_Name + " bp"
+				+ " WHERE bp." + I_C_BPartner.COLUMNNAME_Value + " = i." + I_I_BPartner.COLUMNNAME_BPValue
+				+ " AND bp." + I_C_BPartner.COLUMNNAME_AD_Client_ID + " = i." + I_I_BPartner.COLUMNNAME_AD_Client_ID
+				+ " AND bp." + I_C_BPartner.COLUMNNAME_AD_Org_ID + " = i." + I_I_BPartner.COLUMNNAME_AD_Org_ID
+				+ " AND bp." + I_C_BPartner.COLUMNNAME_IsActive + " = 'Y') > 1")
+						.append(selection.toSqlWhereClause("i"));
+		executeUpdate("Mark ambiguous BPartner Value rows", sqlError);
 	}
 
 	private void dbUpdateCbPartnerIdsFromC_BPartner_ExternalId(final ImportRecordsSelection selection)
@@ -802,6 +841,32 @@ public class BPartnerImportTableSqlUpdater
 					.append(selection.toSqlWhereClause("i"));
 
 			executeUpdate("Flag records with invalid location Shipper or DeliveryViaRule", sql);
+		}
+	}
+
+	private void dbUpdateLocationM_Shipper_Routing_Codes(final ImportRecordsSelection selection)
+	{
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
+					+ "SET M_Shipper_RoutingCode_ID=(SELECT M_Shipper_RoutingCode_ID FROM M_Shipper_RoutingCode s"
+					+ " WHERE i.ShipperRouteCodeName=s.Name AND s.AD_Client_ID IN (0, i.AD_Client_ID) "
+					+ " AND i.Location_M_Shipper_ID = s.M_Shipper_ID) "
+					+ "WHERE M_Shipper_RoutingCode_ID IS NULL AND ShipperRouteCodeName IS NOT NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
+					.append(selection.toSqlWhereClause("i"));
+
+			executeUpdate("Set M_Shipper_RoutingCode_ID", sql);
+		}
+
+		//
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
+					+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid ShipperRouteCodeName for Location Shipper, ' "
+					+ "WHERE M_Shipper_RoutingCode_ID IS NULL AND ShipperRouteCodeName IS NOT NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
+					.append(selection.toSqlWhereClause("i"));
+
+			executeUpdate("Flag records with invalid ShipperRouteCodeName for Location Shipper", sql);
 		}
 	}
 

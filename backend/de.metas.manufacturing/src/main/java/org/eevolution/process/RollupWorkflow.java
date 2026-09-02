@@ -202,7 +202,6 @@ public class RollupWorkflow extends JavaProcess
 		}
 
 		return queryBuilder
-				.orderBy(I_M_Product.COLUMNNAME_LowLevel)
 				.create()
 				.list();
 	}
@@ -293,7 +292,7 @@ public class RollupWorkflow extends JavaProcess
 		final ResourceId stdResourceId = activity.getResourceId();
 		final CostSegmentAndElement resourceCostSegmentAndElement = createCostSegment(costSegmentAndElement, stdResourceId);
 
-		final CostPrice rate = currentCostsRepo.getOrCreate(resourceCostSegmentAndElement)
+		final CostPrice rate = currentCostsRepo.getOrCreateForUpdate(resourceCostSegmentAndElement)
 				.getCostPrice();
 
 		final Duration duration = routingService.getResourceBaseValue(activity);

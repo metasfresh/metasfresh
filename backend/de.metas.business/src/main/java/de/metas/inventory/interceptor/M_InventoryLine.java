@@ -1,24 +1,8 @@
-package de.metas.inventory.interceptor;
-
-import org.adempiere.ad.callout.annotations.Callout;
-import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.modelvalidator.annotations.Init;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.compiere.model.I_M_InventoryLine;
-import org.compiere.model.ModelValidator;
-import org.compiere.model.X_M_InventoryLine;
-import org.springframework.stereotype.Component;
-
-import de.metas.inventory.IInventoryBL;
-import de.metas.util.Services;
-
 /*
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -35,6 +19,24 @@ import de.metas.util.Services;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.inventory.interceptor;
+
+import de.metas.inventory.IInventoryBL;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.annotations.Init;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_M_InventoryLine;
+import org.compiere.model.ModelValidator;
+import org.compiere.model.X_M_InventoryLine;
+import org.springframework.stereotype.Component;
+
 @Interceptor(I_M_InventoryLine.class)
 @Callout(I_M_InventoryLine.class)
 @Component
@@ -73,6 +75,25 @@ public class M_InventoryLine
 		}
 
 		inventoryBL.setDefaultInternalChargeId(inventoryLine);
+	}
+
+	// moved here from org.compiere.model.MInventoryLine.beforeSave
+	@ModelChange(
+			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_M_InventoryLine.COLUMNNAME_QtyCount, I_M_InventoryLine.COLUMNNAME_QtyBook })
+	public void enforceQtyCountNotNegative(@NonNull final I_M_InventoryLine inventoryLineRecord)
+	{
+		// Tolerate negative qtyCount if qtyCount=QtyBooked. We sometimes have this in the area of costing adjustments.
+		if (inventoryLineRecord.getQtyCount().compareTo(inventoryLineRecord.getQtyBook()) == 0)
+		{
+			return;
+		}
+
+		// Enforce QtyCount >= 0 - teo_sarca BF [ 1722982 ]
+		if (inventoryLineRecord.getQtyCount().signum() < 0)
+		{
+			throw new AdempiereException("@Warning@ @" + I_M_InventoryLine.COLUMNNAME_QtyCount + "@ < 0");
+		}
 	}
 
 }

@@ -29,7 +29,7 @@ import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.datatypes.json.JsonWindowsHealthResponse;
+import de.metas.ui.web.window.health.json.JsonWindowsHealthCheckResponse;
 import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 import de.metas.util.Services;
 import de.metas.util.lang.RepoIdAwares;
@@ -59,7 +59,7 @@ public class ViewHealthRestController
 	@NonNull private final IViewsRepository viewsRepo;
 
 	@GetMapping("/health")
-	public JsonWindowsHealthResponse healthCheck(
+	public JsonWindowsHealthCheckResponse healthCheck(
 			@RequestParam(name = "windowIds", required = false) final String windowIdsCommaSeparated
 	)
 	{
@@ -71,8 +71,8 @@ public class ViewHealthRestController
 		final ImmutableSet<AdWindowId> allAdWidowIds = adWindowDAO.retrieveAllActiveAdWindowIds();
 		final ImmutableSet<AdWindowId> adWindowIds = !onlyAdWindowIds.isEmpty() ? onlyAdWindowIds : allAdWidowIds;
 
-		final ArrayList<JsonWindowsHealthResponse.Entry> skipped = new ArrayList<>();
-		final ArrayList<JsonWindowsHealthResponse.Entry> errors = new ArrayList<>();
+		final ArrayList<JsonWindowsHealthCheckResponse.Entry> skipped = new ArrayList<>();
+		final ArrayList<JsonWindowsHealthCheckResponse.Entry> errors = new ArrayList<>();
 		final int countTotal = adWindowIds.size();
 		int countCurrent = 0;
 		final Stopwatch stopwatch = Stopwatch.createStarted();
@@ -84,7 +84,7 @@ public class ViewHealthRestController
 
 			if (skipAdWindowIds.contains(adWindowId))
 			{
-				skipped.add(JsonWindowsHealthResponse.Entry.builder()
+				skipped.add(JsonWindowsHealthCheckResponse.Entry.builder()
 						.windowId(windowId)
 						.errorMessage("Programmatically skipped")
 						.build());
@@ -109,7 +109,7 @@ public class ViewHealthRestController
 				logger.info("healthCheck [{}/{}] View `{}` ({}) is NOK: {}", countCurrent, countTotal, viewName, windowId, ex.getLocalizedMessage());
 
 				final Throwable cause = DocumentLayoutBuildException.extractCause(ex);
-				errors.add(JsonWindowsHealthResponse.Entry.builder()
+				errors.add(JsonWindowsHealthCheckResponse.Entry.builder()
 						.windowId(windowId)
 						.windowName(viewName)
 						.error(de.metas.rest_api.utils.v2.JsonErrors.ofThrowable(cause, adLanguage))
@@ -119,7 +119,7 @@ public class ViewHealthRestController
 
 		stopwatch.stop();
 
-		return JsonWindowsHealthResponse.builder()
+		return JsonWindowsHealthCheckResponse.builder()
 				.took(stopwatch.toString())
 				.countTotal(countTotal)
 				.errors(errors)

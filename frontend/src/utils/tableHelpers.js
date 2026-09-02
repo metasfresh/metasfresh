@@ -572,6 +572,38 @@ export function getTooltipWidget(item, widgetData) {
   return { tooltipData, tooltipWidget };
 }
 
+/**
+ * @method buildTabRowsDataUpdate
+ * @summary Build the `{ changed, removed }` payload that the `updateTabRowsData`
+ *   action / `UPDATE_TAB_ROWS_DATA` reducer (reducers/tables.js) expects, from a
+ *   `getRowsData` response's `result` array and `missingIds`.
+ *   `changed` maps rowId -> row (add/replace); `removed` maps rowId -> true.
+ *   Each key is present only when it has data (so callers can guard on it).
+ *
+ * @param {object} params
+ * @param {array} [params.result] - rows from the getRowsData response
+ * @param {array} [params.missingIds] - ids no longer present server-side (to remove)
+ * @return {object} { changed?: {[rowId]: row}, removed?: {[rowId]: true} }
+ */
+export function buildTabRowsDataUpdate({ result, missingIds } = {}) {
+  const rowsChanged = {};
+
+  if (missingIds && missingIds.length) {
+    rowsChanged.removed = {};
+    missingIds.forEach((id) => {
+      rowsChanged.removed[id] = true;
+    });
+  }
+  if (result && result.length) {
+    rowsChanged.changed = {};
+    result.forEach((row) => {
+      rowsChanged.changed[row.rowId] = { ...row };
+    });
+  }
+
+  return rowsChanged;
+}
+
 export const computeNumberOfPages = (size, pageLength) => {
   if (pageLength > 0) {
     return size ? Math.ceil(size / pageLength) : 0;

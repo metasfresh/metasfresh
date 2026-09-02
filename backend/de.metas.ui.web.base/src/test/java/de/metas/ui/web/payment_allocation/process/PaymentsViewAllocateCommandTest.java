@@ -71,6 +71,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
@@ -164,26 +165,28 @@ public class PaymentsViewAllocateCommandTest
 
 	private void assertInvoiceNotAllocated(@NonNull final InvoiceId invoiceId)
 	{
-		assertThat(allocationDAO.retrieveAllocatedAmtAsMoney(invoiceId))
+		assertThat(allocationDAO.retrieveAllocatedAmt(invoiceBL.getById(invoiceId)))
 				.as("Allocated amount for invoice " + invoiceId)
-				.isEmpty();
+				.isEqualTo(Money.zero(CurrencyId.EUR));
 	}
 
 	private void assertInvoiceAllocatedAmt(@NonNull final InvoiceId invoiceId, @NonNull final String expectedAllocatedAmt)
 	{
-		final Money actualAllocatedAmt = allocationDAO.retrieveAllocatedAmtAsMoney(invoiceId).orElse(null);
+		final Money actualAllocatedAmt = allocationDAO.retrieveAllocatedAmt(invoiceBL.getById(invoiceId));
 		assertThat(actualAllocatedAmt).isNotNull();
 		assertThat(actualAllocatedAmt.toBigDecimal()).isEqualByComparingTo(expectedAllocatedAmt);
 	}
 
-	private void assertInvoicePaymentStatus(final InvoiceId invoiceId, InvoicePaymentStatus expectedPaymentStatus, String expectedOpenAmt)
+	private void assertInvoicePaymentStatus(final InvoiceId invoiceId, final InvoicePaymentStatus expectedPaymentStatus, final String expectedOpenAmt)
 	{
 		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
 		invoiceBL.testAllocation(invoice, true);
 
-		assertThat(invoice.isPaid()).isEqualTo(expectedPaymentStatus.isFullyPaid());
-		assertThat(invoice.isPartiallyPaid()).isEqualTo(expectedPaymentStatus.isPartiallyPaid());
-		assertThat(invoice.getOpenAmt()).isEqualTo(expectedOpenAmt);
+		final SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(invoice.isPaid()).as("IsPaid").isEqualTo(expectedPaymentStatus.isFullyPaid());
+		softly.assertThat(invoice.isPartiallyPaid()).as("IsPartiallyPaid").isEqualTo(expectedPaymentStatus.isPartiallyPaid());
+		softly.assertThat(invoice.getOpenAmt()).as("OpenAmt").isEqualTo(expectedOpenAmt);
+		softly.assertAll();
 	}
 
 	@Builder(builderMethodName = "paymentRow", builderClassName = "$PaymentRowBuilder")
@@ -199,11 +202,13 @@ public class PaymentsViewAllocateCommandTest
 
 		final BPartnerId bpartnerIdEffective = bpartnerId != null ? bpartnerId : this.bpartnerId;
 
+		final LocalDate dateTrxEffective = paymentDateTrx != null ? LocalDate.parse(paymentDateTrx) : this.paymentDateTrx;
 		return PaymentRow.builder()
 				.paymentId(paymentId)
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, orgId))
 				.documentNo("paymentNo_" + paymentId.getRepoId())
-				.dateTrx(paymentDateTrx != null ? LocalDate.parse(paymentDateTrx) : this.paymentDateTrx)
+				.dateTrx(dateTrxEffective)
+				.dateAcct(dateTrxEffective)
 				.bpartner(IntegerLookupValue.of(bpartnerIdEffective.getRepoId(), "BPartner"))
 				.paymentDirection(direction)
 				.paymentAmtMultiplier(PaymentAmtMultiplier.builder().paymentDirection(direction).isOutboundAdjusted(false).build())
@@ -223,7 +228,7 @@ public class PaymentsViewAllocateCommandTest
 		final InvoiceAmtMultiplier invoiceAmtMultiplier = InvoiceAmtMultiplier.builder()
 				.soTrx(docBaseType.getSoTrx())
 				.isCreditMemo(docBaseType.isCreditMemo())
-				.isSOTrxAdjusted(INVOICE_AMT_IsSOTrxAdjusted)
+				.isAPAdjusted(INVOICE_AMT_IsSOTrxAdjusted)
 				.isCreditMemoAdjusted(INVOICE_AMT_IsCreditMemoAdjusted)
 				.build()
 				.intern();
@@ -242,16 +247,19 @@ public class PaymentsViewAllocateCommandTest
 			invoiceRecord.setIsSOTrx(docType.isSOTrx());
 			invoiceRecord.setC_Currency_ID(invoiceGrandTotal.getCurrencyId().getRepoId());
 			invoiceRecord.setGrandTotal(invoiceGrandTotal.toBigDecimal());
+			invoiceRecord.setIsFinancial(docBaseType.isFinancial());
 			saveRecord(invoiceRecord);
 			invoiceId = InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID());
 		}
 
+		final LocalDate dateInvoicedEffective = dateInvoiced != null ? LocalDate.parse(dateInvoiced) : this.dateInvoiced;
 		return InvoiceRow.builder()
 				.invoiceId(invoiceId)
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, orgId))
 				.docTypeName(TranslatableStrings.anyLanguage("invoice doc type"))
 				.documentNo("invoiceNo_" + invoiceId.getRepoId())
-				.dateInvoiced(dateInvoiced != null ? LocalDate.parse(dateInvoiced) : this.dateInvoiced)
+				.dateInvoiced(dateInvoicedEffective)
+				.dateAcct(dateInvoicedEffective)
 				.bpartner(IntegerLookupValue.of(bpartnerId.getRepoId(), "BPartner"))
 				.docBaseType(docBaseType)
 				.invoiceAmtMultiplier(invoiceAmtMultiplier)
@@ -272,7 +280,7 @@ public class PaymentsViewAllocateCommandTest
 		final InvoiceAmtMultiplier multiplierInRealLife = PaymentAllocationRepository.toInvoiceAmtMultiplier(InvoiceDocBaseType.CustomerInvoice);
 
 		//noinspection AssertThatBooleanCondition
-		assertThat(multiplierInRealLife.isSOTrxAdjusted()).isEqualTo(INVOICE_AMT_IsSOTrxAdjusted);
+		assertThat(multiplierInRealLife.isAPAdjusted()).isEqualTo(INVOICE_AMT_IsSOTrxAdjusted);
 
 		//noinspection AssertThatBooleanCondition
 		assertThat(multiplierInRealLife.isCreditMemoAdjusted()).isEqualTo(INVOICE_AMT_IsCreditMemoAdjusted);
@@ -438,6 +446,7 @@ public class PaymentsViewAllocateCommandTest
 										.build())
 								.clientAndOrgId(invoiceRow.getClientAndOrgId())
 								.date(invoiceRow.getDateInvoiced())
+								.dateAcct(invoiceRow.getDateAcct())
 								.currencyConversionTypeId(invoiceRow.getCurrencyConversionTypeId())
 								.build());
 			}
@@ -487,6 +496,7 @@ public class PaymentsViewAllocateCommandTest
 										.build())
 								.clientAndOrgId(invoiceRow.getClientAndOrgId())
 								.date(invoiceRow.getDateInvoiced())
+								.dateAcct(invoiceRow.getDateAcct())
 								.currencyConversionTypeId(invoiceRow.getCurrencyConversionTypeId())
 								.build());
 			}

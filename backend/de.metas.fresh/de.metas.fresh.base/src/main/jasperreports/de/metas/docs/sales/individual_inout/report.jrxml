@@ -34,6 +34,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Root( $P{RECORD_ID}, $
 	<field name="ad_language" class="java.lang.String"/>
 	<field name="ishidepackingmaterialinshipmentprint" class="java.lang.String"/>
 	<field name="email" class="java.lang.String"/>
+	<field name="isfactoringpartner" class="java.lang.String"/>
 	<background>
 		<band height="842" splitType="Stretch">
 			<textField evaluationTime="Auto" isBlankWhenNull="true">
@@ -234,6 +235,12 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Root( $P{RECORD_ID}, $
 				</reportElement>
 				<subreportParameter name="ad_language">
 					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="org_id">
+					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="IsFactoringPartner">
+					<subreportParameterExpression><![CDATA[$F{isfactoringpartner}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_footer.jasper"]]></subreportExpression>

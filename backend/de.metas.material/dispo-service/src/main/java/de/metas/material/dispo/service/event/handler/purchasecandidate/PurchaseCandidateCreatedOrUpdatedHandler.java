@@ -1,5 +1,7 @@
 package de.metas.material.dispo.service.event.handler.purchasecandidate;
 
+import ch.qos.logback.classic.Level;
+import de.metas.logging.LogManager;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
@@ -13,7 +15,12 @@ import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateEvent;
+import de.metas.util.Loggables;
 import lombok.NonNull;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import de.metas.util.Services;
+import org.slf4j.Logger;
 
 /*
  * #%L
@@ -40,7 +47,9 @@ import lombok.NonNull;
 public abstract class PurchaseCandidateCreatedOrUpdatedHandler<T extends PurchaseCandidateEvent>
 		implements MaterialEventHandler<T>
 {
+	private static final Logger logger = LogManager.getLogger(PurchaseCandidateCreatedOrUpdatedHandler.class);
 
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final CandidateChangeService candidateChangeHandler;
 	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
@@ -55,6 +64,16 @@ public abstract class PurchaseCandidateCreatedOrUpdatedHandler<T extends Purchas
 	protected final void handlePurchaseCandidateEvent(@NonNull final PurchaseCandidateEvent event)
 	{
 		final MaterialDescriptor materialDescriptor = event.getPurchaseMaterialDescriptor();
+
+		final WarehouseId warehouseId = materialDescriptor.getWarehouseId();
+		if (warehouseBL.isIgnoreInMaterialDispo(warehouseId))
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog(
+					"Ignoring {} for M_Warehouse_ID={} (warehouse is excluded from material-dispo: MRP_Exclude or IsDropShipWarehouse)",
+					event.getClass().getSimpleName(),
+					WarehouseId.toRepoId(warehouseId));
+			return;
+		}
 
 		final CandidatesQuery query = createCandidatesQuery(event);
 

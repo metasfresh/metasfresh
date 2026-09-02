@@ -45,15 +45,15 @@ public class JsonProductUOMConversion
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	JsonMetasfreshId productId;
 
-	@ApiModelProperty("This is the `C_UOM.UOMSymbol` of the C_UOM_Conversion.C_UOM_ID.")
+	@ApiModelProperty("This is the `C_UOM.X12DE355` of the C_UOM_Conversion.C_UOM_ID.")
 	@NonNull
-	@JsonProperty("uomFrom")
-	String fromUomCode;
+	@JsonProperty("uomX12DE355From")
+	String uomX12DE355From;
 
-	@ApiModelProperty("This is the `C_UOM.UOMSymbol` of the C_UOM_Conversion.C_UOM_To_ID.")
+	@ApiModelProperty("This is the `C_UOM.X12DE355` of the C_UOM_Conversion.C_UOM_To_ID.")
 	@NonNull
-	@JsonProperty("uomTo")
-	String toUomCode;
+	@JsonProperty("uomX12DE355To")
+	String uomX12DE355To;
 
 	@ApiModelProperty("Corresponding to C_UOM_Conversion.MultiplyRate")
 	@NonNull

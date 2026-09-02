@@ -6,7 +6,7 @@ import de.metas.dimension.model.I_DIM_Dimension_Spec_AttributeValue;
 import de.metas.material.event.commons.AttributesKeyPart;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
-import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
+import org.adempiere.mm.attributes.AttributesTestHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;

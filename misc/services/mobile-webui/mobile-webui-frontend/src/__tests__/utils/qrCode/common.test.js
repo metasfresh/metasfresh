@@ -1,6 +1,24 @@
-import { isBarcodeProductNoMatching } from '../../../utils/qrCode/common';
+import { checkPartialScannedCode, isBarcodeProductNoMatching, ScanCompleteness } from '../../../utils/qrCode/common';
 
 describe('common tests', () => {
+  // Dispatcher-level tests only: it delegates to the per-format checkers (HU classification cases
+  // live in hu.test.js) and must never throw.
+  describe('checkPartialScannedCode', () => {
+    it('NOT_APPLICABLE for empty / plain barcodes / non-string (never throws)', () => {
+      expect(checkPartialScannedCode('')).toBe(ScanCompleteness.NOT_APPLICABLE);
+      expect(checkPartialScannedCode(null)).toBe(ScanCompleteness.NOT_APPLICABLE);
+      expect(checkPartialScannedCode(undefined)).toBe(ScanCompleteness.NOT_APPLICABLE);
+      expect(checkPartialScannedCode(12345)).toBe(ScanCompleteness.NOT_APPLICABLE);
+      expect(checkPartialScannedCode({ not: 'a string' })).toBe(ScanCompleteness.NOT_APPLICABLE);
+      expect(checkPartialScannedCode('2100001234567')).toBe(ScanCompleteness.NOT_APPLICABLE);
+    });
+
+    it('delegates HU classification (PARTIAL while arriving, COMPLETE once closed)', () => {
+      expect(checkPartialScannedCode('HU#1#{"id":"x')).toBe(ScanCompleteness.PARTIAL_SCAN);
+      expect(checkPartialScannedCode('HU#1#{"id":"x"}')).toBe(ScanCompleteness.COMPLETE_SCAN);
+    });
+  });
+
   describe('isBarcodeProductNoMatching', () => {
     it('expectedProductNo is null', () => {
       expect(
@@ -46,7 +64,7 @@ describe('common tests', () => {
       expect(
         isBarcodeProductNoMatching({
           expectedProductNo: '00027_20250312T233125110',
-          expectedEAN13ProductCode: '4888',
+          expectedGS1ProductCodes: { ean13ProductCode: '4888' },
           barcodeProductNo: '4888',
           barcodeType: 'EAN13',
         })
@@ -56,7 +74,7 @@ describe('common tests', () => {
       expect(
         isBarcodeProductNoMatching({
           expectedProductNo: '00027_20250312T233125110',
-          expectedEAN13ProductCode: '4888',
+          expectedGS1ProductCodes: { ean13ProductCode: '4888' },
           barcodeProductNo: '48889',
           barcodeType: 'EAN13',
         })

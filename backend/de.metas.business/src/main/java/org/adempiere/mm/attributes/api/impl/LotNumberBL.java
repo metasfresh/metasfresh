@@ -1,19 +1,22 @@
 package org.adempiere.mm.attributes.api.impl;
 
+import de.metas.adempiere.model.IPOReferenceAware;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ILotNumberBL;
 import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
 import org.adempiere.mm.attributes.api.LotNoContext;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.compiere.util.TimeUtil;
+import org.eevolution.api.PPOrderId;
 
 import java.util.Date;
 import java.util.Objects;
@@ -70,10 +73,20 @@ public class LotNumberBL implements ILotNumberBL
 	{
 		final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
 
+		// A CustomSequenceNoProvider (opt-in, configured on the sequence) may need the PP_Order behind this lot number.
+		// Expose it under the standard Record_ID context key. Without a PP_Order the context carries no Record_ID: a
+		// provider such as DBFunctionSequenceNoProvider then reports isApplicable=false, which makes
+		// DocumentNoBuilder.getSequenceNoToUse() throw unconditionally (independent of failOnError) - it does NOT
+		// silently fall back. Sequences with no provider are unaffected (empty context == today's behaviour).
+		final PPOrderId ppOrderId = context.getPpOrderId();
+		final Evaluatee evaluationContext = ppOrderId != null
+				? Evaluatees.ofSingleton(IPOReferenceAware.COLUMNNAME_Record_ID, ppOrderId.getRepoId())
+				: Evaluatees.empty();
+
 		final String lotNo = documentNoFactory.forSequenceId(context.getSequenceId())
 				.setFailOnError(true)
 				.setClientId(context.getClientId())
-				.setEvaluationContext(Evaluatees.empty())
+				.setEvaluationContext(evaluationContext)
 				.build();
 
 		return lotNo != null && !Objects.equals(lotNo, IDocumentNoBuilder.NO_DOCUMENTNO)
@@ -90,10 +103,10 @@ public class LotNumberBL implements ILotNumberBL
 			return null;
 		}
 
-		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+		final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(asi.getM_AttributeSetInstance_ID());
-		final I_M_AttributeInstance lotNumberAI = attributeDAO.retrieveAttributeInstance(asiId, lotNumberAttrId);
+		final I_M_AttributeInstance lotNumberAI = asiBL.getAttributeInstance(asiId, lotNumberAttrId);
 
 		if (lotNumberAI == null)
 		{

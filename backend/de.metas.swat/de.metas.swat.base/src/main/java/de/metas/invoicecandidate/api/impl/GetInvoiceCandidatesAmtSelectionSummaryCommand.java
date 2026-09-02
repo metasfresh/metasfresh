@@ -47,8 +47,10 @@ class GetInvoiceCandidatesAmtSelectionSummaryCommand
 {
 	private static final Logger logger = LogManager.getLogger(GetInvoiceCandidatesAmtSelectionSummaryCommand.class);
 
-	private static final String COLUMNNAME_IsPackingMaterial = "IsPackingMaterial";
-	private static final String COLUMNNAME_Count = "Count";
+	private static final String ALIAS_IsPackingMaterial = "IsPackingMaterial";
+	private static final String ALIAS_Count = "Count";
+	private static final String ALIAS_NetOrderValueNextDay = "NetOrderValueNextDay";
+	private static final String SQL_FN_GET_DATE_PROMISED = "Get_C_Invoice_Candidate_DatePromised";
 
 	private static final String I_M_HU_PackingMaterial_Table_Name = "M_HU_PackingMaterial";
 	private static final String I_M_HU_PackingMaterial_COLUMNNAME_M_Product_ID = "M_Product_ID";
@@ -84,7 +86,7 @@ class GetInvoiceCandidatesAmtSelectionSummaryCommand
 				+ " WHERE "
 				+ "pm." + I_M_HU_PackingMaterial_COLUMNNAME_M_Product_ID + " = " + I_C_Invoice_Candidate.Table_Name + "." + I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID
 				+ ") as "
-				+ COLUMNNAME_IsPackingMaterial);
+				+ ALIAS_IsPackingMaterial);
 		//
 		// ApprovalForInvoicing
 		sql.append(", "
@@ -120,16 +122,28 @@ class GetInvoiceCandidatesAmtSelectionSummaryCommand
 				+ I_C_Invoice_Candidate.Table_Name
 				+ "."
 				+ I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID + ") as "
-				+ COLUMNNAME_Count);
+				+ ALIAS_Count);
+		//
+		// NetOrderValueNextDay: SUM of NetAmtToInvoice for candidates whose DatePromised is tomorrow.
+		sql.append(", COALESCE(SUM("
+						   + I_C_Invoice_Candidate.Table_Name
+						   + "."
+						   + I_C_Invoice_Candidate.COLUMNNAME_NetAmtToInvoice
+						   + ") FILTER (WHERE "
+						   + SQL_FN_GET_DATE_PROMISED + "("
+						   + I_C_Invoice_Candidate.Table_Name + "." + I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID
+						   + ") = (CURRENT_DATE + INTERVAL '1 day')::date), 0) AS "
+						   + ALIAS_NetOrderValueNextDay);
+
 		sql.append(" FROM "
-				+ I_C_Invoice_Candidate.Table_Name);
+						   + I_C_Invoice_Candidate.Table_Name);
 		sql.append(" WHERE ");
-		sql.append("(" + I_C_Invoice_Candidate.COLUMNNAME_Processed + " = 'N')"); // avoid bad perf problems when no filter-whereclause was given
+		sql.append("(" + I_C_Invoice_Candidate.Table_Name + "." + I_C_Invoice_Candidate.COLUMNNAME_Processed + " = 'N')"); // avoid bad perf problems when no filter-whereclause was given
 
 		if (Check.isEmpty(extraWhereClause))
 		{
 			// we might have deactivated candidates on individual DBs after support cases/fixes
-			sql.append(" AND (" + I_C_Invoice_Candidate.COLUMNNAME_IsActive + " = 'Y')");
+			sql.append(" AND (" + I_C_Invoice_Candidate.Table_Name + "." + I_C_Invoice_Candidate.COLUMNNAME_IsActive + " = 'Y')");
 		}
 		else
 		{
@@ -146,15 +160,15 @@ class GetInvoiceCandidatesAmtSelectionSummaryCommand
 		}
 
 		sql.append(" GROUP BY "
-				+ I_C_Invoice_Candidate.COLUMNNAME_ApprovalForInvoicing
+				+ I_C_Invoice_Candidate.Table_Name + "." + I_C_Invoice_Candidate.COLUMNNAME_ApprovalForInvoicing
 				+ ", "
 				+ I_C_Currency.COLUMNNAME_CurSymbol
 				+ ", "
 				+ I_C_Invoice_Candidate.COLUMNNAME_IsToRecompute
 				+ ", "
-				+ I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID
+				+ I_C_Invoice_Candidate.Table_Name + "." + I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID
 				+ ", "
-				+ COLUMNNAME_IsPackingMaterial);
+				+ ALIAS_IsPackingMaterial);
 
 		ResultSet rs = null;
 		PreparedStatement pstmt = null;
@@ -168,15 +182,17 @@ class GetInvoiceCandidatesAmtSelectionSummaryCommand
 			while (rs.next())
 			{
 				final BigDecimal netAmtTotal = rs.getBigDecimal(I_C_Invoice_Candidate.COLUMNNAME_NetAmtToInvoice);
-				final boolean isPackingMaterial = rs.getBoolean(COLUMNNAME_IsPackingMaterial);
+				final boolean isPackingMaterial = rs.getBoolean(ALIAS_IsPackingMaterial);
 				final boolean isApprovedForInvoicing = StringUtils.toBoolean(rs.getString(I_C_Invoice_Candidate.COLUMNNAME_ApprovalForInvoicing));
 				final String curSymbol = rs.getString(I_C_Currency.COLUMNNAME_CurSymbol);
 				final boolean isToRecompute = StringUtils.toBoolean(rs.getString(I_C_Invoice_Candidate.COLUMNNAME_IsToRecompute));
-				final int countToRecompute = rs.getInt(COLUMNNAME_Count);
+				final int countToRecompute = rs.getInt(ALIAS_Count);
+				final BigDecimal netOrderValueNextDay = rs.getBigDecimal(ALIAS_NetOrderValueNextDay);
 
 				summaryBuilder
 						.addTotalNetAmt(netAmtTotal, isApprovedForInvoicing, isPackingMaterial)
-						.addCurrencySymbol(curSymbol);
+						.addCurrencySymbol(curSymbol)
+						.addNetOrderValueNextDay(netOrderValueNextDay);
 				if (isToRecompute)
 				{
 					summaryBuilder.addCountToRecompute(countToRecompute);

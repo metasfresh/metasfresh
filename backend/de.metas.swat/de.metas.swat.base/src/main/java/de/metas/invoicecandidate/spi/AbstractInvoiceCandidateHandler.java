@@ -1,10 +1,8 @@
-package de.metas.invoicecandidate.spi;
-
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package de.metas.invoicecandidate.spi;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.invoicecandidate.spi;
 
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -122,7 +122,7 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 	 * @return true if we deal with a service which will never ever be received
 	 * task http://dewiki908/mediawiki/index.php/08408_Transporte_auf_Rechnungsstellung_sofort_setzen_in_Rechnungsdispo_%28107611160033%29
 	 */
-	protected final boolean isNotReceivebleService(final I_C_Invoice_Candidate ic)
+	protected final boolean isNotReceivableService(final I_C_Invoice_Candidate ic)
 	{
 		final IProductDAO productDAO = Services.get(IProductDAO.class);
 		final IProductBL productBL = Services.get(IProductBL.class);

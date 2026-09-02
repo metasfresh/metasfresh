@@ -30,20 +30,21 @@ import lombok.Value;
 import org.adempiere.util.api.Params;
 
 import javax.annotation.Nullable;
+import java.util.Comparator;
 
 @Value
 @Builder
 public class WorkflowLauncher
 {
+	public static final Comparator<WorkflowLauncher> ORDERBY_AlreadyStartedFirst = Comparator.comparing(WorkflowLauncher::isAlreadyStarted).reversed();
+
 	@NonNull MobileApplicationId applicationId;
-
 	@NonNull WorkflowLauncherCaption caption;
-
 	@Nullable WFProcessId startedWFProcessId;
 	@Nullable JsonTestId testId;
-
-	@Builder.Default
-	@NonNull Params wfParameters = Params.EMPTY;
-
+	@NonNull @Builder.Default Params wfParameters = Params.EMPTY;
+	@Nullable WorkflowLauncherIndicator indicator;
 	boolean partiallyHandledBefore;
+
+	public boolean isAlreadyStarted() {return startedWFProcessId != null;}
 }

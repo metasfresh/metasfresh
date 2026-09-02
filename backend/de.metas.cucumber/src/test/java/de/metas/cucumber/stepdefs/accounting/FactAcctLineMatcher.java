@@ -1,9 +1,11 @@
 package de.metas.cucumber.stepdefs.accounting;
 
 import de.metas.acct.AccountConceptualName;
+import de.metas.acct.api.impl.ElementValueId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.context.ContextAwareDescription;
+import de.metas.invoice.InvoiceId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -15,6 +17,7 @@ import lombok.NonNull;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.impl.TableIdsCache;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.LocatorId;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_Fact_Acct;
 
@@ -37,8 +40,13 @@ public class FactAcctLineMatcher
 	@Nullable private final Quantity qty;
 	@NonNull @Getter private final TableRecordReference documentRef;
 	@Nullable private final Optional<TaxId> taxId;
+	@Nullable private final Optional<String> vatCode;
 	@Nullable private final Optional<BPartnerId> bpartnerId;
 	@Nullable private final Optional<ProductId> productId;
+	@Nullable private final Optional<InvoiceId> invoiceId;
+	/** Expected {@code Fact_Acct.Account_ID} (the GL account posted to); {@code null} = skip check. */
+	@Nullable private final Optional<ElementValueId> accountId;
+	@Nullable private final Optional<LocatorId> locatorId;
 
 	@Override
 	public String toString() {return row.toTabularString();}
@@ -172,6 +180,12 @@ public class FactAcctLineMatcher
 					.as(description.newWithMessage("C_Tax_ID"))
 					.isEqualTo(taxId.orElse(null));
 		}
+		if (vatCode != null)
+		{
+			softly.assertThat(record.getVATCode())
+					.as(description.newWithMessage("C_VAT_Code_ID"))
+					.isEqualTo(vatCode.orElse(null));
+		}
 		if (bpartnerId != null)
 		{
 			softly.assertThat(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
@@ -183,6 +197,27 @@ public class FactAcctLineMatcher
 			softly.assertThat(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
 					.as(description.newWithMessage("M_Product_ID"))
 					.isEqualTo(productId.orElse(null));
+		}
+		if (invoiceId != null)
+		{
+			final InvoiceId actualInvoiceId = FactAcctInvoiceResolver.resolveInvoiceIdOrNull(record);
+			softly.assertThat(actualInvoiceId)
+					.as(description.newWithMessage("C_Invoice_ID"))
+					.isEqualTo(invoiceId.orElse(null));
+		}
+		if (accountId != null)
+		{
+			softly.assertThat(ElementValueId.ofRepoIdOrNull(record.getAccount_ID()))
+					.as(description.newWithMessage("Account_ID"))
+					.isEqualTo(accountId.orElse(null));
+		}
+		if (locatorId != null)
+		{
+			// Fact_Acct.M_Locator_ID is a plain int column, so compare repo-ids and map "not set" to null on both sides.
+			final Integer actualLocatorRepoId = record.getM_Locator_ID() > 0 ? record.getM_Locator_ID() : null;
+			softly.assertThat(actualLocatorRepoId)
+					.as(description.newWithMessage("M_Locator_ID"))
+					.isEqualTo(locatorId.map(LocatorId::getRepoId).orElse(null));
 		}
 	}
 }

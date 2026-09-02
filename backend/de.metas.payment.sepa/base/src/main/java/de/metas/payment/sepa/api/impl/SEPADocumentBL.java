@@ -28,9 +28,10 @@ public class SEPADocumentBL implements ISEPADocumentBL
 	private final BankAccountService bankAccountService = SpringContextHolder.instance.getBean(BankAccountService.class);
 
 	@Override
-	public I_SEPA_Export createSEPAExportFromPaySelection(final I_C_PaySelection from)
+	public I_SEPA_Export createSEPAExportFromPaySelection(final I_C_PaySelection from, final boolean isGroupTransactions)
 	{
-		return new CreateSEPAExportFromPaySelectionCommand(from).run();
+		return new CreateSEPAExportFromPaySelectionCommand(from, isGroupTransactions)
+				.run();
 	}
 
 	@Override

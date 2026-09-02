@@ -22,13 +22,15 @@
 
 package de.metas.externalsystem.interceptor;
 
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
+import de.metas.externalsystem.ExternalSystemId;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.i18n.AdMessageKey;
-import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
@@ -40,26 +42,23 @@ import java.util.Optional;
 
 @Interceptor(I_ExternalSystem_Config.class)
 @Component
+@RequiredArgsConstructor
 public class ExternalSystem_Config
 {
-	public final ExternalSystemConfigRepo externalSystemConfigRepo;
+	public final ExternalSystemConfigRepository externalSystemConfigRepository;
+	public final ExternalSystemRepository externalSystemRepository;
 
 	private final static AdMessageKey MSG_EXTERNAL_SYS_CONFIG_CANNOT_CHANGE_TYPE = AdMessageKey.of("External_System_Config_Cannot_Change_Type");
 
-	public ExternalSystem_Config(@NonNull final ExternalSystemConfigRepo externalSystemConfigRepo)
-	{
-		this.externalSystemConfigRepo = externalSystemConfigRepo;
-	}
-
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_ExternalSystem_Config.COLUMNNAME_Type)
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_ExternalSystem_Config.COLUMNNAME_ExternalSystem_ID)
 	public void check(final I_ExternalSystem_Config config)
 	{
 		final I_ExternalSystem_Config oldParent = InterfaceWrapperHelper.createOld(config, I_ExternalSystem_Config.class);
-		final ExternalSystemType oldParentType = ExternalSystemType.ofCode(oldParent.getType());
+		final ExternalSystemType oldParentType = externalSystemRepository.getById(ExternalSystemId.ofRepoId(oldParent.getExternalSystem_ID())).getType();
 
 		final ExternalSystemParentConfigId parentConfigId = ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID());
 
-		final Optional<IExternalSystemChildConfig> childConfig = externalSystemConfigRepo.getChildByParentIdAndType(parentConfigId, oldParentType);
+		final Optional<IExternalSystemChildConfig> childConfig = externalSystemConfigRepository.getChildByParentIdAndType(parentConfigId, oldParentType);
 
 		childConfig.ifPresent(x -> {
 			throw new AdempiereException(MSG_EXTERNAL_SYS_CONFIG_CANNOT_CHANGE_TYPE).markAsUserValidationError();

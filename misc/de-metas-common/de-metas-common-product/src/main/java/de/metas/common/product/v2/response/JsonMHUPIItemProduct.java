@@ -70,7 +70,7 @@ public class JsonMHUPIItemProduct
 	@JsonProperty("qty")
 	BigDecimal qty;
 
-	@ApiModelProperty("This is the `C_UOM.UOMSymbol` of the M_HU_PI_Item_Product.C_UOM_ID.")
+	@ApiModelProperty("This is the `C_UOM.X12DE355` of the M_HU_PI_Item_Product.C_UOM_ID.")
 	@Nullable
 	@JsonProperty("uom")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)

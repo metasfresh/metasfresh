@@ -39,7 +39,7 @@ import static org.compiere.model.X_AD_Client.AUTOARCHIVE_Documents;
 
 public class AD_Client_StepDef
 {
-	private static final String CUCUMBER_UNIX_ARCHIVE_PATH = "/reports/metasfreshArchives";
+	private static final String CUCUMBER_UNIX_ARCHIVE_PATH = System.getProperty("cucumber.archive.path", "/tmp/metasfreshArchives");
 
 	private final AD_Client_StepDefData adClientTable;
 	private final AD_ReplicationStrategy_StepDefData adReplicationStrategyTable;

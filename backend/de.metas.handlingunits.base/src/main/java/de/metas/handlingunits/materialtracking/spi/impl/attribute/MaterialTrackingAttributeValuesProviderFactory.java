@@ -5,9 +5,9 @@ import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProviderFactory;
-import org.compiere.model.I_M_Attribute;
 
 public class MaterialTrackingAttributeValuesProviderFactory
 		implements IAttributeValuesProviderFactory
@@ -17,7 +17,7 @@ public class MaterialTrackingAttributeValuesProviderFactory
 	@NonNull private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 
 	@Override
-	public IAttributeValuesProvider createAttributeValuesProvider(@NonNull final I_M_Attribute attribute)
+	public IAttributeValuesProvider createAttributeValuesProvider(@NonNull final Attribute attribute)
 	{
 		return MaterialTrackingAttributeValuesProvider.builder()
 				.materialTrackingDAO(materialTrackingDAO)

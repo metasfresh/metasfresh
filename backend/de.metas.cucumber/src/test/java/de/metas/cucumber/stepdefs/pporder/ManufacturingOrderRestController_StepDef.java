@@ -69,15 +69,15 @@ public class ManufacturingOrderRestController_StepDef
 	@And("^store PP_Order endpointPath (.*) in context$")
 	public void store_pp_order_endpointPath_in_context(@NonNull String endpointPath)
 	{
-		final String regex = ".*(:[a-zA-Z]+)/?.*";
+		final String regex = "@[a-zA-Z\\d_-]+@";
 
 		final Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
 		final Matcher matcher = pattern.matcher(endpointPath);
 
 		while (matcher.find())
 		{
-			final String ppOrderIdentifierGroup = matcher.group(1);
-			final String ppOrderIdentifier = ppOrderIdentifierGroup.replace(":", "");
+			final String ppOrderIdentifierGroup = matcher.group();
+			final String ppOrderIdentifier = ppOrderIdentifierGroup.replace("@", "");
 
 			final I_PP_Order ppOrder = ppOrderTable.get(ppOrderIdentifier);
 			assertThat(ppOrder).isNotNull();

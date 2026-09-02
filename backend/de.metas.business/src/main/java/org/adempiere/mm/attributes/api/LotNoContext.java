@@ -27,6 +27,9 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.service.ClientId;
+import org.eevolution.api.PPOrderId;
+
+import javax.annotation.Nullable;
 
 @Value
 @Builder
@@ -37,5 +40,9 @@ public class LotNoContext
 
 	@NonNull
 	ClientId clientId;
+
+	/** The PP_Order this lot number is generated for; exposed to a {@link de.metas.document.sequenceno.CustomSequenceNoProvider} via the eval-context {@code Record_ID}. */
+	@Nullable
+	PPOrderId ppOrderId;
 
 }

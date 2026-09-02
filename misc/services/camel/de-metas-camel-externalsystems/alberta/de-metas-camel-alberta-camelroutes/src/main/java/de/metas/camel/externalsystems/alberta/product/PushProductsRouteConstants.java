@@ -28,8 +28,8 @@ public interface PushProductsRouteConstants
 
 	// FIXME: might be a good idea to expose somehow all those ExternalSystem enums in a common module
 	//keep in sync with de.metas.externalsystem.ExternalSystemType.Alberta
-	String ALBERTA_EXTERNAL_SYSTEM_CONFIG_TYPE = "Alberta";
-	// keep in sync with de.metas.externalreference.AlbertaExternalSystem.ALBERTA
+	String ALBERTA_EXTERNAL_SYSTEM_CONFIG_TYPE = "ALBERTA";
+	// keep in sync with de.metas.externalsystem.ExternalSystemType.Alberta
 	String ALBERTA_EXTERNAL_REFERENCE_SYSTEM = "ALBERTA";
 	//keep in sync with de.metas.externalreference.product.ProductExternalReferenceType.PRODUCT
 	String PRODUCT_EXTERNAL_REFERENCE_TYPE = "Product";

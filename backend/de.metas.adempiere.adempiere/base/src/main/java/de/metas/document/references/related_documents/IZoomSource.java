@@ -68,6 +68,9 @@ public interface IZoomSource
 
 	int getRecord_ID();
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
+	boolean isSingleKeyRecord();
+
 	default boolean isSOTrx()
 	{
 		return Env.isSOTrx(getCtx());

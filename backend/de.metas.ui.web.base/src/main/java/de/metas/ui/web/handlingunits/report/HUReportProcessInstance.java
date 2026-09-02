@@ -2,13 +2,19 @@ package de.metas.ui.web.handlingunits.report;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuUnitType;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.model.I_M_HU;
+import javax.annotation.Nullable;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.report.HUReportExecutor;
 import de.metas.handlingunits.report.HUReportExecutorResult;
 import de.metas.handlingunits.report.HUToReport;
+import de.metas.handlingunits.report.HUToReportWrapper;
 import de.metas.process.AdProcessId;
 import de.metas.report.PrintCopies;
+import de.metas.util.Services;
 import de.metas.ui.web.process.IProcessInstanceController;
 import de.metas.ui.web.process.IProcessInstanceParameter;
 import de.metas.ui.web.process.ProcessExecutionContext;
@@ -74,8 +80,13 @@ final class HUReportProcessInstance implements IProcessInstanceController
 	public static final String PARAM_AD_Process_ID = "AD_Process_ID";
 	public static final String PARAM_IsPrintPreview = "IsPrintPreview";
 
+	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
 	private final DocumentId instanceId;
-	private final ViewRowIdsSelection viewRowIdsSelection;
+	/** Non-null when launched from a grid/HU-editor view. Null when launched from a single-document (detail) view. */
+	@Nullable private final ViewRowIdsSelection viewRowIdsSelection;
+	/** Non-null when launched from a single-document (detail) view. Null when launched from a grid view. */
+	@Nullable private final HuId singleHuId;
 	private final AdProcessId reportAdProcessId;
 	private final Document parameters;
 	@Getter
@@ -88,12 +99,23 @@ final class HUReportProcessInstance implements IProcessInstanceController
 	@Builder
 	private HUReportProcessInstance(
 			@NonNull final DocumentId instanceId,
-			@NonNull final ViewRowIdsSelection viewRowIdsSelection,
+			final ViewRowIdsSelection viewRowIdsSelection,
+			final HuId singleHuId,
 			@NonNull final AdProcessId reportAdProcessId,
 			@NonNull final Document parameters)
 	{
+		if (viewRowIdsSelection == null && singleHuId == null)
+		{
+			throw new AdempiereException("Either viewRowIdsSelection or singleHuId must be non-null");
+		}
+		if (viewRowIdsSelection != null && singleHuId != null)
+		{
+			throw new AdempiereException("viewRowIdsSelection and singleHuId are mutually exclusive; exactly one must be non-null");
+		}
+
 		this.instanceId = instanceId;
 		this.viewRowIdsSelection = viewRowIdsSelection;
+		this.singleHuId = singleHuId;
 		this.reportAdProcessId = reportAdProcessId;
 		this.parameters = parameters;
 		this.startProcessDirectly = parameters.getFieldNames().isEmpty();
@@ -110,6 +132,7 @@ final class HUReportProcessInstance implements IProcessInstanceController
 	{
 		instanceId = from.instanceId;
 		viewRowIdsSelection = from.viewRowIdsSelection;
+		singleHuId = from.singleHuId;
 		reportAdProcessId = from.reportAdProcessId;
 		parameters = from.parameters.copy(copyMode, changesCollector);
 		startProcessDirectly = from.startProcessDirectly;
@@ -161,13 +184,26 @@ final class HUReportProcessInstance implements IProcessInstanceController
 		final IViewsRepository viewsRepo = context.getViewsRepo();
 		final DocumentCollection documentsCollection = context.getDocumentsCollection();
 
-		final ViewId viewId = viewRowIdsSelection.getViewId();
-		final HUReportAwareView view = HUReportAwareViews.cast(viewsRepo.getView(viewId));
+		final ViewId viewId;
+		final List<HUToReport> husToReport;
+		if (viewRowIdsSelection != null)
+		{
+			viewId = viewRowIdsSelection.getViewId();
+			final HUReportAwareView view = HUReportAwareViews.cast(viewsRepo.getView(viewId));
+			husToReport = extractHUsToReportFromView(view);
+		}
+		else
+		{
+			viewId = null;
+			// Constructor invariant: if viewRowIdsSelection == null then singleHuId != null
+			husToReport = extractHUsToReportForSingleHu(Objects.requireNonNull(singleHuId, "singleHuId"));
+		}
+
 		final HUReportExecutorResult reportExecutorResult = HUReportExecutor.newInstance(context.getCtx())
 				.numberOfCopies(numberOfCopies)
 				.adJasperProcessId(getJasperProcess_ID())
 				.printPreview(isPrintPreview())
-				.executeNow(reportAdProcessId, extractHUsToReport(view));
+				.executeNow(reportAdProcessId, husToReport);
 
 		final ADProcessPostProcessService postProcessService = ADProcessPostProcessService.builder()
 				.viewsRepo(viewsRepo)
@@ -183,7 +219,7 @@ final class HUReportProcessInstance implements IProcessInstanceController
 		return lastExecutionResult = result;
 	}
 
-	private List<HUToReport> extractHUsToReport(final HUReportAwareView view)
+	private List<HUToReport> extractHUsToReportFromView(final HUReportAwareView view)
 	{
 		final Set<HUToReport> husToCheck = view.streamByIds(viewRowIdsSelection.getRowIds())
 				.map(HUReportAwareViewRowAsHUToReport::ofOrNull)
@@ -191,6 +227,13 @@ final class HUReportProcessInstance implements IProcessInstanceController
 				.collect(ImmutableSet.toImmutableSet());
 
 		return getHUsToProcess(husToCheck);
+	}
+
+	private List<HUToReport> extractHUsToReportForSingleHu(@NonNull final HuId huId)
+	{
+		final I_M_HU hu = handlingUnitsDAO.getById(huId);
+		final HUToReport huToReport = HUToReportWrapper.of(hu);
+		return getHUsToProcess(ImmutableSet.of(huToReport));
 	}
 
 	private static List<HUToReport> getHUsToProcess(@NonNull final Set<HUToReport> husToCheck)

@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -27,6 +27,8 @@ import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.cache.CCache;
+import de.metas.common.util.StringUtils;
 import de.metas.document.location.DocumentLocation;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.location.CountryId;
@@ -44,7 +46,10 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.CreateOrUpdateLocatorRequest;
+import org.adempiere.warehouse.api.CreateWarehousePickingGroupRequest;
 import org.adempiere.warehouse.api.CreateWarehouseRequest;
+import org.adempiere.warehouse.groups.picking.WarehousePickingGroupId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.api.Warehouse;
@@ -54,8 +59,10 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -67,6 +74,12 @@ public class WarehouseBL implements IWarehouseBL
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
+
+	private final CCache<WarehouseId, Boolean> ignoreInMaterialDispoCache =
+			CCache.<WarehouseId, Boolean>builder()
+					.tableName(I_M_Warehouse.Table_Name)
+					.initialCapacity(64)
+					.build();
 
 	@Override
 	public I_M_Warehouse getById(@NonNull final WarehouseId warehouseId)
@@ -146,6 +159,12 @@ public class WarehouseBL implements IWarehouseBL
 		// No Locator was found: no default one and non which is active
 		// => Create a new Locator and return it
 		return warehouseDAO.createDefaultLocator(warehouseId);
+	}
+
+	@Override
+	public LocatorId createOrUpdateLocator(@NonNull final CreateOrUpdateLocatorRequest request)
+	{
+		return warehouseDAO.createOrUpdateLocator(request);
 	}
 
 	private I_C_Location getC_Location(@NonNull final WarehouseId warehouseId)
@@ -256,6 +275,12 @@ public class WarehouseBL implements IWarehouseBL
 	}
 
 	@Override
+	public ImmutableSet<LocatorId> getLocatorIdsByWarehouseId(@NonNull final WarehouseId warehouseId)
+	{
+		return warehouseDAO.getLocatorIdsByWarehouseIds(ImmutableSet.of(warehouseId));
+	}
+
+	@Override
 	public I_M_Locator getLocatorByRepoId(final int locatorRepoId)
 	{
 		return warehouseDAO.getLocatorByRepoId(locatorRepoId);
@@ -324,6 +349,13 @@ public class WarehouseBL implements IWarehouseBL
 	}
 
 	@Override
+	@NonNull
+	public WarehousePickingGroupId createWarehousePickingGroup(@NonNull final CreateWarehousePickingGroupRequest request)
+	{
+		return warehouseDAO.createWarehousePickingGroup(request);
+	}
+
+	@Override
 	public Optional<LocationId> getLocationIdByLocatorRepoId(final int locatorRepoId)
 	{
 		final WarehouseId warehouseId = getIdByLocatorRepoId(locatorRepoId);
@@ -363,7 +395,7 @@ public class WarehouseBL implements IWarehouseBL
 	@NonNull
 	public ExplainedOptional<LocatorQRCode> getLocatorQRCodeByValue(@NonNull String locatorValue)
 	{
-		final List<I_M_Locator> locators = warehouseDAO.retrieveActiveLocatorsByValue(locatorValue);
+		final List<I_M_Locator> locators = getActiveLocatorsByValue(locatorValue);
 		if (locators.isEmpty())
 		{
 			return ExplainedOptional.emptyBecause(AdempiereException.MSG_NotFound);
@@ -377,5 +409,39 @@ public class WarehouseBL implements IWarehouseBL
 			final I_M_Locator locator = locators.get(0);
 			return ExplainedOptional.of(LocatorQRCode.ofLocator(locator));
 		}
+	}
+
+	@Override
+	public List<I_M_Locator> getActiveLocatorsByValue(final @NotNull String locatorValue)
+	{
+		return warehouseDAO.retrieveActiveLocatorsByValue(locatorValue);
+	}
+
+	@Override
+	public boolean isIgnoreInMaterialDispo(@Nullable final WarehouseId warehouseId)
+	{
+		if (warehouseId == null)
+		{
+			return false;
+		}
+
+		return ignoreInMaterialDispoCache.getOrLoad(warehouseId, this::computeIsIgnoreInMaterialDispo);
+	}
+
+	private boolean computeIsIgnoreInMaterialDispo(@NonNull final WarehouseId warehouseId)
+	{
+		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
+		if (warehouse == null)
+		{
+			return false;
+		}
+
+		if (warehouse.isAutoDistributionOrder())
+		{
+			return true;
+		}
+
+		final Boolean mrpExclude = StringUtils.toBooleanOrNull(warehouse.getMRP_Exclude());
+		return mrpExclude != null ? mrpExclude : warehouse.isDropShipWarehouse();
 	}
 }
