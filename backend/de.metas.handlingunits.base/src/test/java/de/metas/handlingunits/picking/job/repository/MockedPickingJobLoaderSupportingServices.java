@@ -111,6 +111,12 @@ public class MockedPickingJobLoaderSupportingServices implements PickingJobLoade
 	}
 
 	@Override
+	public void warmUpSalesOrderLineSeqNosCache(@NonNull final Set<OrderAndLineId> orderAndLineIds)
+	{
+		// no-op: getSalesOrderLineSeqNo already serves from the in-memory map
+	}
+
+	@Override
 	public int getSalesOrderLineSeqNo(@NonNull final OrderAndLineId orderAndLineId)
 	{
 		return salesOrderLineSeqNos.getOrDefault(orderAndLineId, 0);

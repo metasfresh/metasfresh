@@ -5,6 +5,7 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.util.Services;
+import com.google.common.collect.ImmutableMap;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -32,5 +33,12 @@ public class PickingJobSalesOrderService
 	public int getSalesOrderLineSeqNo(@NonNull final OrderAndLineId orderAndLineId)
 	{
 		return orderDAO.getOrderLineById(orderAndLineId).getLine();
+	}
+
+	public Map<OrderAndLineId, Integer> getSalesOrderLineSeqNos(@NonNull final Collection<OrderAndLineId> orderAndLineIds)
+	{
+		return orderDAO.getOrderLinesByIds(orderAndLineIds)
+				.entrySet().stream()
+				.collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, entry -> entry.getValue().getLine()));
 	}
 }

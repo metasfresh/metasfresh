@@ -221,6 +221,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 
 		loadingSupportingServices.warmUpSalesOrderDocumentNosCache(extractSalesOrderIdsFromCachedObjects());
 		loadingSupportingServices.warmUpBPartnerNamesCache(extractCustomerIdsFromCachedObjects());
+		loadingSupportingServices.warmUpSalesOrderLineSeqNosCache(extractSalesOrderAndLineIdsFromCachedLines(pickingJobIds));
 
 		warmUpCarrierServicesByLineId(pickingJobIds);
 
@@ -315,11 +316,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				.lines(pickingJobLines.get(pickingJobId)
 						.stream()
 						.map(lineRecord -> loadLine(lineRecord, pickingJobHeader.getAggregationType()))
-						// Order the caption's product names by the sales-order line (C_OrderLine.Line): stable AND matching
-						// the order the picker reads off the sales document. Tie-break by the picking-job-line id so the
-						// order is fully deterministic even when two lines share a sales-order-line SeqNo.
-						.sorted(Comparator.comparingInt(PickingJobLine::getOrderLineSeqNo)
-								.thenComparingInt(line -> line.getId().getRepoId()))
+						.sorted(Comparator.comparing(PickingJobLine::getId)) // make sure we have a predictable order
 						.collect(ImmutableList.toImmutableList()))
 				.pickFromAlternatives(pickingJobHUAlternatives.get(pickingJobId)
 						.stream()
@@ -611,9 +608,19 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		return OrderAndLineId.ofRepoIds(extractSalesOrderId(record), record.getC_OrderLine_ID());
 	}
 
+	// Reads the sales-order-line SeqNo (C_OrderLine.Line) from the loader cache warmed by warmUpSalesOrderLineSeqNos
+	// in loadRecordsFromDB — a cache hit, no query, even when called from a comparator.
 	private int extractOrderLineSeqNo(final @NotNull I_M_Picking_Job_Line record)
 	{
 		return loadingSupportingServices.getSalesOrderLineSeqNo(extractSalesOrderAndLineId(record));
+	}
+
+	private ImmutableSet<OrderAndLineId> extractSalesOrderAndLineIdsFromCachedLines(@NonNull final Set<PickingJobId> pickingJobIds)
+	{
+		return pickingJobIds.stream()
+				.flatMap(pickingJobId -> pickingJobLines.get(pickingJobId).stream())
+				.map(PickingJobLoaderAndSaver::extractSalesOrderAndLineId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@NonNull
@@ -871,10 +878,11 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 	private PickingJobCandidateProducts extractProducts(final PickingJobId pickingJobId)
 	{
 		final PickingJobCandidateProductsCollector collector = new PickingJobCandidateProductsCollector();
-		// Sorted for the same reason loadPickingJob sorts its lines: this collection's iteration order becomes the
-		// order of the launcher caption's product names, so an unordered scan would render them differently run to run.
-		// The order is the sales-order line (C_OrderLine.Line), tie-broken by the picking-job-line id — same contract
-		// as loadPickingJob, so the launcher-list caption and the opened job's detail agree.
+		// This collection's iteration order becomes the order of the launcher-list caption's product names, so an
+		// unordered scan would render them differently run to run. Order by the sales-order line (C_OrderLine.Line),
+		// tie-broken by the picking-job-line id — the SAME order PickingJob.getProductNameParts uses for the opened
+		// job, so the launcher-list caption and the opened job's detail agree. The seq numbers are already batch-warmed
+		// into the loader cache by loadRecordsFromDB (see warmUpSalesOrderLineSeqNos), so this sort issues no query.
 		final ImmutableList<I_M_Picking_Job_Line> linesInPredictableOrder = this.pickingJobLines.get(pickingJobId)
 				.stream()
 				.sorted(Comparator.comparingInt(this::extractOrderLineSeqNo)

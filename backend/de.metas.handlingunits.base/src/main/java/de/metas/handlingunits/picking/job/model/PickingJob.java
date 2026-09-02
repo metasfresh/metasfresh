@@ -26,6 +26,8 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
+
+import java.util.Comparator;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
@@ -588,10 +590,15 @@ public final class PickingJob implements PickingJobHeaderOrLine
 	@NonNull
 	public ImmutableList<ITranslatableString> getProductNameParts()
 	{
-		// distinct by ProductId (never by displayed text, so two distinct products sharing a name both appear);
-		// filter preserves encounter order, so the names read in line order.
+		// distinct by ProductId (never by displayed text, so two distinct products sharing a name both appear).
+		// Order by the sales-order line (C_OrderLine.Line, carried on each line as orderLineSeqNo — already loaded,
+		// no query here), tie-broken by the picking-job-line id: a stable, meaningful caption order that matches the
+		// order the picker reads off the sales document. Sorting happens HERE (caption-only) so PickingJob.lines'
+		// own order is left untouched for the workflow logic that iterates it.
 		return lines.stream()
 				.filter(StreamUtils.distinctByKey(PickingJobLine::getProductId))
+				.sorted(Comparator.comparingInt(PickingJobLine::getOrderLineSeqNo)
+						.thenComparingInt(line -> line.getId().getRepoId()))
 				.map(line -> line.getProductValueAndName().getName())
 				.collect(ImmutableList.toImmutableList());
 	}
