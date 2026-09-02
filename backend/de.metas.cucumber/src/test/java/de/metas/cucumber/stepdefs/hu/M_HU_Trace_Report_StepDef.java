@@ -159,16 +159,18 @@ public class M_HU_Trace_Report_StepDef
 
 		// see #deleteExistingHuTraceRows javadoc: makes the report selection see only THIS run's data
 		deleteExistingHuTraceRows(productId);
+		// the product all ten setups below build their traces for; #invokeReport reads it back
+		scenarioProductIds.put(scenarioName, productId);
 
 		switch (testType)
 		{
 			case "DIRECT_SALE_NULL_LOT":
-				setupDirectSaleNullLot(scenarioName, productId);
+				setupDirectSaleNullLot(productId);
 				break;
 			case "PRODUCTION_RECEIPT_NO_MHD":
 				final ProductId rawMaterialProductId = productTable.getId(row.getAsIdentifier("RawMaterial_ID"));
 				deleteExistingHuTraceRows(rawMaterialProductId);
-				setupProductionReceiptNoMhd(scenarioName, productId, rawMaterialProductId);
+				setupProductionReceiptNoMhd(productId, rawMaterialProductId);
 				break;
 			case "TRACED_ONE_OF_TWO_RECEIPTS":
 				setupTracedOneOfTwoReceipts(scenarioName, productId);
@@ -393,10 +395,8 @@ public class M_HU_Trace_Report_StepDef
 	 * <p>Historically this was a plain {@code =}: NULL=NULL evaluated to false, the shipment side
 	 * was never found, and the INNER JOIN on M_Product eliminated the row entirely.
 	 */
-	private void setupDirectSaleNullLot(@NonNull final String scenarioName, @NonNull final ProductId productId)
+	private void setupDirectSaleNullLot(@NonNull final ProductId productId)
 	{
-		scenarioProductIds.put(scenarioName, productId);
-
 		// Load standard C_DocTypes (receipt = isSOTrx='N', shipment = isSOTrx='Y')
 		final I_C_DocType receiptDocType = loadDocType("MMR", false);
 		final I_C_DocType shipmentDocType = loadDocType("MMS", true);
@@ -446,12 +446,9 @@ public class M_HU_Trace_Report_StepDef
 	 * After the fix (LEFT JOIN), they appear with {@code finished_product_mhd=NULL}.
 	 */
 	private void setupProductionReceiptNoMhd(
-			@NonNull final String scenarioName,
 			@NonNull final ProductId finishedProductId,
 			@NonNull final ProductId rawMaterialProductId)
 	{
-		scenarioProductIds.put(scenarioName, finishedProductId);
-
 		// Create a PP_Order (docstatus='CO') — links receipt and issue traces
 		final I_PP_Order ppOrder = createMinimalPpOrder(finishedProductId);
 
@@ -489,7 +486,6 @@ public class M_HU_Trace_Report_StepDef
 	 */
 	private void setupTracedOneOfTwoReceipts(@NonNull final String scenarioName, @NonNull final ProductId productId)
 	{
-		scenarioProductIds.put(scenarioName, productId);
 		final I_C_DocType receiptDocType = loadDocType("MMR", false);
 		final I_C_DocType shipmentDocType = loadDocType("MMS", true);
 
@@ -529,7 +525,6 @@ public class M_HU_Trace_Report_StepDef
 	 */
 	private void setupLotDisagreement(@NonNull final String scenarioName, @NonNull final ProductId productId)
 	{
-		scenarioProductIds.put(scenarioName, productId);
 		final I_C_DocType receiptDocType = loadDocType("MMR", false);
 		final I_C_DocType shipmentDocType = loadDocType("MMS", true);
 
@@ -558,7 +553,6 @@ public class M_HU_Trace_Report_StepDef
 	 */
 	private void setupSameVhuNoTransform(@NonNull final String scenarioName, @NonNull final ProductId productId)
 	{
-		scenarioProductIds.put(scenarioName, productId);
 		final I_C_DocType receiptDocType = loadDocType("MMR", false);
 		final I_C_DocType shipmentDocType = loadDocType("MMS", true);
 
@@ -582,7 +576,6 @@ public class M_HU_Trace_Report_StepDef
 	 */
 	private void setupTwoStepTransform(@NonNull final String scenarioName, @NonNull final ProductId productId)
 	{
-		scenarioProductIds.put(scenarioName, productId);
 		final I_C_DocType receiptDocType = loadDocType("MMR", false);
 		final I_C_DocType shipmentDocType = loadDocType("MMS", true);
 
@@ -615,7 +608,6 @@ public class M_HU_Trace_Report_StepDef
 	 */
 	private void setupMixedTracedAndCandidate(@NonNull final String scenarioName, @NonNull final ProductId productId)
 	{
-		scenarioProductIds.put(scenarioName, productId);
 		final I_C_DocType receiptDocType = loadDocType("MMR", false);
 		final I_C_DocType shipmentDocType = loadDocType("MMS", true);
 
@@ -664,7 +656,6 @@ public class M_HU_Trace_Report_StepDef
 	 */
 	private void setupNoLotNoLink(@NonNull final String scenarioName, @NonNull final ProductId productId)
 	{
-		scenarioProductIds.put(scenarioName, productId);
 		final I_C_DocType receiptDocType = loadDocType("MMR", false);
 		final I_C_DocType shipmentDocType = loadDocType("MMS", true);
 
@@ -689,7 +680,6 @@ public class M_HU_Trace_Report_StepDef
 	 */
 	private void setupReceiptQtyAndDedup(@NonNull final String scenarioName, @NonNull final ProductId productId)
 	{
-		scenarioProductIds.put(scenarioName, productId);
 		final I_C_DocType receiptDocType = loadDocType("MMR", false);
 		final I_C_DocType shipmentDocType = loadDocType("MMS", true);
 
@@ -732,7 +722,6 @@ public class M_HU_Trace_Report_StepDef
 	 */
 	private void setupIneligibleReceiptDoc(@NonNull final String scenarioName, @NonNull final ProductId productId)
 	{
-		scenarioProductIds.put(scenarioName, productId);
 		final I_C_DocType purchaseReceiptDocType = loadDocType("MMR", false);
 		final I_C_DocType outboundReceiptDocType = loadDocType("MMR", true);
 		final I_C_DocType shipmentDocType = loadDocType("MMS", true);
