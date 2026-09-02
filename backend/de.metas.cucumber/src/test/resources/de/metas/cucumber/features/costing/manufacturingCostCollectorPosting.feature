@@ -1,6 +1,7 @@
 @from:cucumber
 @allure.label.epic:E0226_Costing
 @allure.label.feature:F1500_Costing
+@allure.label.feature:F1514_Cost_Type_Moving_Average_Invoice
 @F1500
 @ghActions:run_on_executor6
 Feature: Manufacturing cost collector posting - component issue vs material receipt signs
@@ -136,6 +137,71 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
       | issueCostCollector   | P_Asset_Acct          | compProd     | 0         | 10        |
       | receiptCostCollector | P_Asset_Acct          | finProd      | 10        | 0         |
       | receiptCostCollector | P_WIP_Acct            | finProd      | 0         | 10        |
+
+  @from:cucumber
+  @Id:S26253_TC1
+  Scenario: A zero-cost finished good on MovingAverageInvoice still posts the received quantity to P_Asset
+    # A product freshly switched to Moving Average Invoice has no cost yet, so its material receipt posts a
+    # ZERO amount. The received quantity must still reach P_Asset_Acct: the Lagerwert report sums Fact_Acct.qty
+    # on P_Asset, so dropping the zero-cost receipt line would silently understate the manufactured stock.
+    And cost elements for material costing methods MovingAverageInvoice are active
+    And update C_AcctSchema:
+      | C_AcctSchema_ID | CostingMethod |
+      | acctSchema      | M             |
+
+    # finProd carries a zero MovingAverageInvoice cost — it has never been received under this costing method, so no cost has accrued yet.
+    And update current costs
+      | M_Product_ID | CurrentCostPrice |
+      | finProd      | 0 CHF            |
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice |
+      | acctSchema      | finProd      | MovingAverageInvoice | 0 CHF            |
+
+    And create PP_Order:
+      | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument | OPT.PP_Product_Planning_ID.Identifier |
+      | ppOrder                | MOP         | finProd                 | 10         | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | prodPlan                              |
+    And after not more than 60s, PP_Order_BomLines are found
+      | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
+      | ppOrderBomLine                 | ppOrder                | compProd                | 10           | false           | PCE               | CO            |
+    When complete planning for PP_Order:
+      | PP_Order_ID.Identifier |
+      | ppOrder                |
+
+    And create JsonWFProcessStartRequest for manufacturing and store it in context as request payload:
+      | PP_Order_ID.Identifier |
+      | ppOrder                |
+    And the metasfresh REST-API endpoint path 'api/v2/userWorkflows/wfProcess/start' receives a 'POST' request with the payload from context and responds with '200' status code
+
+    And process response and extract manufacturing step and issueTo HU manufacturing candidate:
+      | WorkflowProcess.Identifier | WorkflowActivity.Identifier | WorkflowStep.Identifier | WorkflowStepQRCode.Identifier |
+      | mfgWorkflow                | issueActivity               | issueStep               | issueQRCode                   |
+    And process response and extract manufacturing line and receiving target values:
+      | WorkflowProcess.Identifier | WorkflowActivity.Identifier | WorkflowLine.Identifier | WorkflowReceivingTargetValues.Identifier |
+      | mfgWorkflow                | receiptActivity             | receiptLine             | receivingTargetValues                    |
+
+    # Issue the component to the production order
+    And create JsonManufacturingOrderEvent and store it in context as request payload:
+      | Event   | WorkflowProcess.Identifier | WorkflowActivity.Identifier | WorkflowStep.Identifier | WorkflowStepQRCode.Identifier |
+      | IssueTo | mfgWorkflow                | issueActivity               | issueStep               | issueQRCode                   |
+    And the metasfresh REST-API endpoint path 'api/v2/manufacturing/event' receives a 'POST' request with the payload from context and responds with '200' status code
+
+    # Receive the finished good
+    And create JsonManufacturingOrderEvent and store it in context as request payload:
+      | Event       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | WorkflowLine.Identifier | WorkflowReceivingTargetValues.Identifier |
+      | ReceiveFrom | mfgWorkflow                | receiptActivity             | receiptLine             | receivingTargetValues                    |
+    And the metasfresh REST-API endpoint path 'api/v2/manufacturing/event' receives a 'POST' request with the payload from context and responds with '200' status code
+
+    And after not more than 60s, PP_Cost_Collector are found:
+      | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType |
+      | receiptCostCollector            | ppOrder                | finProd                 | 10          | CO        | MaterialReceipt   |
+    And Wait until documents receiptCostCollector are posted
+
+    # The zero-cost receipt still books the received quantity: amount 0 on both legs, qty +10 on P_Asset,
+    # qty -10 on WIP. Before the fix the whole fact line (amount AND qty) was dropped, losing the stock.
+    And Fact_Acct records are matching
+      | Record_ID            | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty     |
+      | receiptCostCollector | P_Asset_Acct          | finProd      | 0         | 0         | 10 PCE  |
+      | receiptCostCollector | P_WIP_Acct            | finProd      | 0         | 0         | -10 PCE |
 
   @from:cucumber
   @Id:S30811_TC1
