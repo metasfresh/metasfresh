@@ -25,6 +25,7 @@ package de.metas.shipping.model.validator;
 import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.document.engine.DocStatus;
 import de.metas.order.IOrderBL;
+import de.metas.order.OrderId;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -37,6 +38,8 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.compiere.model.ModelValidator;
+
+import java.util.Collection;
 
 @Validator(I_M_ShipperTransportation.class)
 @RequiredArgsConstructor
@@ -73,7 +76,10 @@ public class M_ShipperTransportation
 		propagateDatesToOrders(transportOrder);
 	}
 
-	/** Push the transport order's BL/ETA dates onto every linked purchase order's pay-schedule due dates (no-op when neither date is set). */
+	/**
+	 * Push the transport order's BL/ETA dates onto every linked PURCHASE order's pay-schedule due dates (no-op when
+	 * neither date is set). Sales orders can be linked to the same transport order but must never receive these dates.
+	 */
 	private void propagateDatesToOrders(@NonNull final I_M_ShipperTransportation transportOrder)
 	{
 		if (transportOrder.getETA() == null && transportOrder.getBLDate() == null)
@@ -81,7 +87,10 @@ public class M_ShipperTransportation
 			return;
 		}
 
-		shipperTransportationDAO.retrieveOrderIds(ShipperTransportationId.ofRepoId(transportOrder.getM_ShipperTransportation_ID()))
-				.forEach(orderId -> orderBL.syncDatesFromTransportOrder(orderId, transportOrder));
+		final Collection<OrderId> orderIds = shipperTransportationDAO.retrieveOrderIds(ShipperTransportationId.ofRepoId(transportOrder.getM_ShipperTransportation_ID()));
+		orderBL.getByIds(orderIds)
+				.stream()
+				.filter(order -> !orderBL.isSalesOrder(order))
+				.forEach(order -> orderBL.syncDatesFromTransportOrder(OrderId.ofRepoId(order.getC_Order_ID()), transportOrder));
 	}
 }

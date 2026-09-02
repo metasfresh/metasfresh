@@ -1492,8 +1492,16 @@ public class OrderBL implements IOrderBL
 	public void syncDatesFromTransportOrder(@NonNull final OrderId orderId, @NonNull final I_M_ShipperTransportation transportOrder)
 	{
 		final I_C_Order order = getById(orderId);
-		order.setBLDate(transportOrder.getBLDate());
-		order.setETA(transportOrder.getETA());
+		// each date is copied independently: a field the transport order genuinely has no value for must not
+		// wipe an already-set value on the order (e.g. only BLDate changed on this edit, ETA untouched)
+		if (transportOrder.getBLDate() != null)
+		{
+			order.setBLDate(transportOrder.getBLDate());
+		}
+		if (transportOrder.getETA() != null)
+		{
+			order.setETA(transportOrder.getETA());
+		}
 		save(order);
 	}
 
