@@ -147,7 +147,7 @@ public class M_HU_Trace_Report_StepDef
 	 *   <li>{@code INELIGIBLE_RECEIPT_DOC} — a shipment that descends from a receipt document this
 	 *       section may not report (an {@code MMR} whose doctype is {@code IsSOTrx='Y'}), plus a
 	 *       purchase receipt of the same lot with no VHU link. The graph link must not silence the
-	 *       lot-level candidate that the customer sees today.</li>
+	 *       lot-level candidate the report emits for such a group.</li>
 	 * </ul>
 	 */
 	@When("M_HU_Trace_Report test data is set up for scenario {string}:")
@@ -211,9 +211,9 @@ public class M_HU_Trace_Report_StepDef
 	 * selects via {@code HUTraceEventQuery.builder().productId(productId).types(typesToReport())}
 	 * — scoped by product and trace type, with no lot/InOut/scenario/time filter — so every prior
 	 * run's trace rows for that product would still be picked up: the MATERIAL_RECEIPT and
-	 * MATERIAL_SHIPMENT ones directly, being reported types, and their TRANSFORM_LOAD rows through
-	 * the recursion, which rebuilds its queries without the type filter. Both routes lead here, so
-	 * the cleanup is required either way. Left unhandled, {@link #assertDetailRows}'s
+	 * MATERIAL_SHIPMENT ones directly, being reported types, and whatever else the recursion
+	 * reaches over their VHU links — of any trace type, since it rebuilds its queries without the
+	 * type filter. Both routes lead here, so the cleanup is required either way. Left unhandled, {@link #assertDetailRows}'s
 	 * {@code containsExactlyInAnyOrderElementsOf} (deliberately exhaustive — it is what catches
 	 * a wrongly-emitted extra row, see its javadoc) would keep failing with leftover rows whose
 	 * {@code DocumentNo}s can never match the current run's freshly generated ones, independent
@@ -715,8 +715,9 @@ public class M_HU_Trace_Report_StepDef
 	 * balance correction, an empties return …), and the scenario does not depend on which.
 	 *
 	 * <p>The graph therefore says something about this shipment, but nothing the section may print.
-	 * The lot-level candidate resting on the purchase receipt is what the customer sees today and
-	 * must keep seeing: deciding "this group has a traced receipt, so drop its candidates" before
+	 * The lot-level candidate resting on the purchase receipt is what the report emits for such a
+	 * group, and must keep emitting: deciding "this group has a traced receipt, so drop its
+	 * candidates" before
 	 * the receipt document has been checked for eligibility would leave the group with no row at
 	 * all, silently deleting information.
 	 */

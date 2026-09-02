@@ -63,13 +63,16 @@ $$
 -- paired (link_basis) so a proven link is distinguishable from a guess.
 -- =====================================================================================
 WITH RECURSIVE
--- Every transformation edge: the source VHU became the target VHU. On a production dataset every
--- target VHU has exactly one source, so the graph is a forest and attributing a shipped VHU back
--- to one received VHU is unambiguous. The walk below runs the other way --
--- forward, from a receipt to everything it became -- and may legitimately fan out, one received
--- pallet split into many shipped pieces. Deliberately NOT restricted to T_Selection: whether a
--- TRANSFORM_LOAD edge is in the selection depends on how the caller's recursion happened to reach
--- it, so the walk must not depend on it.
+-- Every descent edge: any trace row that records a source VHU, whatever its trace type -- the
+-- transformation splits, and customer returns, which record the originally-shipped VHU as the
+-- source and so still run forward along physical descent. The COLUMN defines the edge set, not
+-- the type: adding a trace-type predicate here would silently drop return-chain traceability,
+-- and no test would go red. On a production dataset every target VHU has exactly one source, so
+-- the graph is a forest and attributing a shipped VHU back to one received VHU is unambiguous.
+-- The walk below runs the other way -- forward, from a receipt to everything it became -- and may
+-- legitimately fan out, one received pallet split into many shipped pieces. Deliberately not
+-- restricted by trace type or by T_Selection: whether such a row is in the selection depends on
+-- how the caller's recursion happened to reach it, so the walk must not depend on it.
 vhu_edge AS (
     SELECT DISTINCT t.VHU_Source_ID AS src, t.VHU_ID AS dst
     FROM M_HU_Trace t

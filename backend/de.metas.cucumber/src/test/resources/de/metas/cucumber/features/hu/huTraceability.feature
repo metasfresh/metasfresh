@@ -138,7 +138,7 @@ Feature: HU Traceability Report — SQL correctness tests
     # The shipment descends from a receipt document whose doctype is IsSOTrx='Y', which this section
     # may not report — it reports only IsSOTrx='N' purchase receipts. Deciding "this group is traced,
     # so drop its candidates" before the receipt document's eligibility has been checked would leave
-    # the group with no row at all — deleting the lot-level candidate the customer sees today.
+    # the group with no row at all — deleting the lot-level candidate the report emits for such a group.
     Given metasfresh contains M_Products:
       | Identifier                 | Value                          | Name                            |
       | traceProduct_ineligibleDoc | traceProductVal_ineligibleDoc  | Trace Product Ineligible Doc    |
