@@ -311,6 +311,15 @@ public class DocumentReportAdvisorUtilTest
 			// A real drop-ship always sets BOTH DropShip_BPartner_ID and DropShip_Location_ID.
 			final I_C_Order onlyBPartnerSet = createOrder(soldTo, true, otherRecipient.getBpartnerId().getRepoId(), 0);
 			Assertions.assertThat(util.isDropShip(onlyBPartnerSet)).isFalse();
+
+			// NUANCE (mirror): the other partial state -- DropShip_Location_ID set-and-deviating but
+			// DropShip_BPartner_ID unset (0) -- likewise yields a null recipient key and returns false.
+			// (the previous implementation anchored the drop-ship location on the order's OWN bpartner and
+			// returned true here; the natural-key comparison treats an incomplete recipient as non-deviating.
+			// The legacy ProhibitInconsistentDropshipValues model validator that once enforced the pairing is
+			// deactivated, so this partial state is reachable in real data -- flagged for the author to confirm.)
+			final I_C_Order onlyLocationSet = createOrder(soldTo, true, 0, otherRecipient.getRepoId());
+			Assertions.assertThat(util.isDropShip(onlyLocationSet)).isFalse();
 		}
 
 		@Test
