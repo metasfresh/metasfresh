@@ -50,11 +50,11 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.warehouse.LocatorId;
+import org.compiere.util.TimeUtil;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
-import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
@@ -161,15 +161,13 @@ public class ReceiveGoodsCommand
 		this.date = date;
 		this.catchWeight = catchWeight;
 
-		// Lot / Best-before / Production date are producer-managed: they MUST reach the
-		// IPPOrderReceiptHUProducer setters (see createHUProducer) so the auto-lot gate (blank Lot ->
-		// LotNo_Sequence fires; typed Lot -> sequence suppressed) and the creation-time attribute timing
-		// stay intact. The mobile frontend submits them through the generic `attributes` map, so pull them
-		// OUT of that map here and feed the dedicated fields below; a submitted map value wins over the
-		// deprecated dedicated ReceiveFrom field when both are present. Removing them from the map is the
-		// runtime-enforced exclusion that keeps setSubmittedAttributesForReceivedHUs from re-stamping them
-		// post-creation - a post-creation re-stamp would leave the producer seeing a blank Lot and wrongly
-		// consuming the sequence even though an explicit Lot was typed.
+		// Lot / Best-before / Production date are producer-managed: the mobile frontend submits them through
+		// the generic `attributes` map, but they MUST reach the IPPOrderReceiptHUProducer setters (see
+		// createHUProducer) to keep the auto-lot gate (blank Lot -> sequence fires; typed Lot -> suppressed)
+		// and creation-time timing. So extract them from the map here (a non-blank map value wins over the
+		// deprecated dedicated ReceiveFrom field) and REMOVE them - that removal is the runtime-enforced
+		// exclusion stopping setSubmittedAttributesForReceivedHUs from re-stamping them post-creation, which
+		// would otherwise let the producer see a blank Lot and wrongly consume the sequence.
 		// NOTE: plain mutable HashMap - a submitted-but-empty attribute value is a null map value (see
 		// JsonManufacturingOrderEvent.ReceiveFrom#getAttributesAsMap), and ImmutableMap forbids null values.
 		final Map<AttributeCode, String> submittedAttributes = attributes != null ? new HashMap<>(attributes) : new HashMap<>();
