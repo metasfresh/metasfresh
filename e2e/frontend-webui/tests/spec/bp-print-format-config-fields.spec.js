@@ -26,17 +26,25 @@ import { BUSINESS_PARTNER_WINDOW_ID } from '../utils/WindowIds';
  *      (fieldsByName.IsAutoPrint.value.key === 'Y') after a full page reload.
  *
  * Selectors are language-invariant (data-testid / data-cy / DB ColumnName /
- * structural class); the "Yes" option is matched on its language-invariant
- * AD_Ref_List value-key prefix ("Y_"), so the spec runs unchanged in en_US and de_DE.
+ * structural class); the "Yes" option is picked by its `data-test-id`, which begins with the
+ * language-invariant AD_Ref_List VALUE key ("Y"). The persisted value is verified
+ * language-invariantly via the WebAPI value key ("Y").
  */
 
 const PRINT_FORMAT_TAB = 'AD_Tab-540653'; // C_BP_PrintFormat included tab of window 123
 const WEBAPI_BASE_URL = process.env.WEBAPI_BASE_URL || 'http://localhost:8080/rest/api';
 
 // A List (_YesNo) widget renders its options at document level (tethered) as
-// `.input-dropdown-list-option`; the caption is prefixed by the value key, e.g.
-// "Y_Yes" / "N_No". Matching on the key prefix keeps selection language-invariant.
-const YES_OPTION = /^Y_/;
+// `.input-dropdown-list-option`. Each option carries data-test-id = `${key}${caption}`
+// (SelectionDropdown.renderOption), so it ALWAYS begins with the AD_Ref_List VALUE key
+// ("Y" for Yes, "N" for No) — a truly language-invariant handle. This matters beyond
+// language: the *visible caption* also varies with developer mode — MLookupFactory renders
+// list captions as "Value_Name" (e.g. "Y_Yes") when de.metas.adempiere.debug is on and as
+// the plain translated name (e.g. "Yes" / "Ja") when off (the CI/production default). Only
+// the data-test-id key prefix is stable across BOTH, so selecting by it — mirroring
+// cost-revaluation-copyfrom-field.spec.js — is the correct, config-independent approach.
+const YES_OPTION_BY_KEY =
+  '.input-dropdown-list .input-dropdown-list-option[data-test-id^="Y"]';
 
 /**
  * Open the List dropdown of `.form-field-<column>` inside the currently open row
@@ -60,17 +68,17 @@ async function setListFieldToYes(page, columnName) {
       { timeout: SLOW_ACTION_TIMEOUT }
     );
 
-    await page
-      .locator('.input-dropdown-list .input-dropdown-list-option')
-      .filter({ hasText: YES_OPTION })
-      .first()
-      .click();
+    await page.locator(YES_OPTION_BY_KEY).first().click();
 
     const patch = await patchPromise;
     expect(patch.ok(), `PATCH of ${columnName} must succeed`).toBeTruthy();
 
-    // The widget now shows the picked value (key-prefixed, language-invariant).
-    await expect(wrapper.locator('.input-field').first()).toHaveValue(YES_OPTION);
+    // The widget now holds a value — the container drops its `.input-empty` class once a value
+    // is set (RawList: `'input-empty': !value`). This is language- and developer-mode-invariant
+    // (the displayed caption text differs across both; whether a value is present does not).
+    await expect(wrapper.locator('.input-dropdown-container').first()).not.toHaveClass(
+      /input-empty/
+    );
 
     return patch.url();
   });
@@ -138,8 +146,14 @@ Language under test: ${language}.
 
       // 5. Create a new print-format row (opens the row form in a modal).
       await test.step('Add a new C_BP_PrintFormat row', async () => {
-        // "Add new" is the sole button in the tab's filter-panel toolbar (structural, language-invariant).
-        await page.locator('.filter-panel-buttons button').first().click();
+        // "Add new" is the create button in the tab's filter-panel toolbar. Exclude the
+        // batch-entry-toggle sibling (`.close-batch-entry`) so selection does not depend on
+        // source order. (A dedicated data-testid on the button would be more robust still, but
+        // that lives in the shared TableFilter component, out of scope for this spec change.)
+        await page
+          .locator('.filter-panel-buttons button:not(.close-batch-entry)')
+          .first()
+          .click();
         await page
           .locator('.panel-modal')
           .waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
@@ -171,10 +185,12 @@ Language under test: ${language}.
         await page.locator('.panel-modal').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
       });
 
-      // 9. The saved values show in the grid cells (renders the persisted value).
+      // 9. The saved values show in the grid cells (renders the persisted value). The cell text is
+      //    the List caption, which varies by language and developer mode, so assert the cell is
+      //    populated; the exact value is checked language-invariantly via the WebAPI read-back below.
       await test.step('Assert saved values show in the grid', async () => {
-        await expect(page.locator('[data-cy="cell-IsAutoPrint"]').first()).toHaveText(YES_OPTION);
-        await expect(page.locator('[data-cy="cell-IsDropShip"]').first()).toHaveText(YES_OPTION);
+        await expect(page.locator('[data-cy="cell-IsAutoPrint"]').first()).toHaveText(/\S/);
+        await expect(page.locator('[data-cy="cell-IsDropShip"]').first()).toHaveText(/\S/);
       });
 
       // 10. Persistence — reload the whole window, re-open the tab, and assert the
@@ -186,8 +202,8 @@ Language under test: ${language}.
           .locator('[data-cy="cell-IsAutoPrint"]')
           .first()
           .waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
-        await expect(page.locator('[data-cy="cell-IsAutoPrint"]').first()).toHaveText(YES_OPTION);
-        await expect(page.locator('[data-cy="cell-IsDropShip"]').first()).toHaveText(YES_OPTION);
+        await expect(page.locator('[data-cy="cell-IsAutoPrint"]').first()).toHaveText(/\S/);
+        await expect(page.locator('[data-cy="cell-IsDropShip"]').first()).toHaveText(/\S/);
 
         // System of record: read the included row back via the WebAPI. The value key
         // ('Y') is language-invariant, so this is the authoritative persistence proof.
