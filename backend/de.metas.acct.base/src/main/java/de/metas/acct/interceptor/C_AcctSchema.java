@@ -2,12 +2,8 @@ package de.metas.acct.interceptor;
 
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.TaxCorrectionType;
-import de.metas.costing.CostDetailQuery;
-import de.metas.costing.CostElement;
-import de.metas.costing.CostElementId;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
-import de.metas.costing.ICostDetailService;
 import de.metas.costing.ICostElementRepository;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.i18n.AdMessageKey;
@@ -58,68 +54,17 @@ public class C_AcctSchema
 	
 	private final ICostElementRepository costElementRepo;
 	private final ICurrentCostsRepository currentCostsRepository;
-	private final ICostDetailService costDetailService;
 
 	private final static AdMessageKey MSG_ACCT_SCHEMA_HAS_ASSOCIATED_COSTS = AdMessageKey.of("de.metas.acct.AcctSchema.hasCosts");
-	private final static AdMessageKey MSG_ACCT_SCHEMA_COSTING_METHOD_NOT_SEEDED = AdMessageKey.of("ERR_ACCTSCHEMA_COSTING_METHOD_NOT_SEEDED");
 	
 	public static final ModelDynAttributeAccessor<I_C_AcctSchema, Boolean> DISABLE_CHECK_CURRENCY = new ModelDynAttributeAccessor<>("DISABLE_CHECK_CURRENCY", Boolean.class);
 
-	/**
-	 * Opt-out for {@link #assertTargetCostingMethodIsSeeded(I_C_AcctSchema)}, for callers that set the
-	 * costing method as pure SETUP - i.e. while the schema has no cost history to lose yet, so there is
-	 * nothing the guard could protect. Same shape and purpose as {@link #DISABLE_CHECK_CURRENCY}.
-	 * Never set it on the interactive path: that is the path the guard exists for.
-	 */
-	public static final ModelDynAttributeAccessor<I_C_AcctSchema, Boolean> DISABLE_CHECK_COSTING_METHOD_SEEDED = new ModelDynAttributeAccessor<>("DISABLE_CHECK_COSTING_METHOD_SEEDED", Boolean.class);
-
 	public C_AcctSchema(
 			@NonNull final ICostElementRepository costElementRepo,
-			@NonNull final ICurrentCostsRepository currentCostsRepository,
-			@NonNull final ICostDetailService costDetailService)
+			@NonNull final ICurrentCostsRepository currentCostsRepository)
 	{
 		this.costElementRepo = costElementRepo;
 		this.currentCostsRepository = currentCostsRepository;
-		this.costDetailService = costDetailService;
-	}
-
-	/**
-	 * Refuses a CostingMethod switch while the target method has zero {@code M_CostDetail} rows in this schema;
-	 * {@link #MSG_ACCT_SCHEMA_COSTING_METHOD_NOT_SEEDED} carries the remediation. Does not check per-product coverage.
-	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_AcctSchema.COLUMNNAME_CostingMethod)
-	public void assertTargetCostingMethodIsSeeded(@NonNull final I_C_AcctSchema acctSchema)
-	{
-		if (DISABLE_CHECK_COSTING_METHOD_SEEDED.getValue(acctSchema, Boolean.FALSE))
-		{
-			logger.debug("Skip costing-method seeding check for {} because of dynamic attribute {}", acctSchema, DISABLE_CHECK_COSTING_METHOD_SEEDED);
-			return;
-		}
-
-		final CostingMethod targetCostingMethod = CostingMethod.ofNullableCode(acctSchema.getCostingMethod());
-		if (targetCostingMethod == null)
-		{
-			return;
-		}
-
-		final ClientId clientId = ClientId.ofRepoId(acctSchema.getAD_Client_ID());
-		final CostElementId targetCostElementId = costElementRepo.getActiveMaterialCostingElements(clientId)
-				.stream()
-				.filter(costElement -> costElement.isMaterialCostingMethod(targetCostingMethod))
-				.findFirst()
-				.map(CostElement::getId)
-				.orElse(null);
-
-		final boolean seeded = targetCostElementId != null
-				&& costDetailService.hasCostDetails(CostDetailQuery.builder()
-				.acctSchemaId(AcctSchemaId.ofRepoId(acctSchema.getC_AcctSchema_ID()))
-				.costElementId(targetCostElementId)
-				.build());
-
-		if (!seeded)
-		{
-			throw new AdempiereException(MSG_ACCT_SCHEMA_COSTING_METHOD_NOT_SEEDED, targetCostingMethod.getCode());
-		}
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
