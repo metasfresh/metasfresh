@@ -66,7 +66,16 @@ jest.mock('../../../reducers/headers', () => ({
 }));
 
 // Non-fullscreen layout (the real WF screens render the #WFProcessScreen container the e2e gate waits on).
-jest.mock('../../../apps', () => ({ isApplicationFullScreen: () => false }));
+jest.mock('../../../apps', () => ({
+  isApplicationFullScreen: () => false,
+  // Upstream branches mount apps/picking/ShelfLifeConfirmDialogHost inside ApplicationLayout, and its
+  // selector reads getApplicationState from this module. Stub it here rather than jest.mock-ing the
+  // host itself: the host does not exist on the hotfix/release branches, and mocking a missing module
+  // kills the whole suite with "Cannot find module" (which is exactly what happened to the sibling
+  // ApplicationLayout.bounceHome.test.js). src/apps/index.js exists on every branch, so this stays
+  // loadable everywhere.
+  getApplicationState: () => undefined,
+}));
 
 jest.mock('../../../utils/ui_trace/useUITraceLocationChange', () => ({
   useUITraceLocationChange: jest.fn(),
