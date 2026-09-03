@@ -11,6 +11,8 @@ import { ManufacturingJobScreen } from '../../utils/screens/manufacturing/Manufa
 const NOMINAL_KG_PER_PIECE = 35;
 const HU_PIECES = 2;
 const HU_WEIGHT_NET = 68.4;
+// the attribute is stored with 3 decimals and compared scale-sensitively
+const HU_WEIGHT_NET_ASSERTED = '68.400';
 
 const createMasterdata = async ({ componentAsLU = false } = {}) => {
     return await Backend.createMasterdata({
@@ -83,13 +85,19 @@ test.describe('Manufacturing issue of a whole catch-weight HU across UOMs', () =
         await ManufacturingJobsListScreen.waitForScreen();
         await ManufacturingJobsListScreen.startJob({ documentNo: masterdata.manufacturingOrders.PP1.documentNo });
 
+        await ManufacturingJobScreen.expectIssueButton({ index: 1, qtyToIssue: '100 kg', qtyIssued: '0 kg' });
         await ManufacturingJobScreen.issueRawProduct({ index: 1, qrCode: masterdata.handlingUnits.HU_CW.qrCode });
+
+        // the whole HU holds 2 Stk at a nominal 35 kg, so 70 of the 100 kg are now issued.
+        // Without this the issue can fail server-side and the test would still pass: the failure is
+        // persisted to the issue log and the screen simply shows nothing was issued.
+        await ManufacturingJobScreen.expectIssueButton({ index: 1, qtyIssued: '70 kg' });
 
         await Backend.expect({
             title: 'the whole HU was issued, carrying its captured weight',
             manufacturings: {
                 "PP1": {
-                    issuedHUs: [{ attributes: { 'WeightNet': String(HU_WEIGHT_NET) } }],
+                    issuedHUs: [{ attributes: { 'WeightNet': HU_WEIGHT_NET_ASSERTED } }],
                 },
             },
         });
@@ -116,12 +124,13 @@ test.describe('Manufacturing issue of a whole catch-weight HU across UOMs', () =
         await ManufacturingJobsListScreen.startJob({ documentNo: masterdata.manufacturingOrders.PP1.documentNo });
 
         await ManufacturingJobScreen.issueRawProduct({ index: 1, qrCode: masterdata.handlingUnits.HU_CW.qrCode });
+        await ManufacturingJobScreen.expectIssueButton({ index: 1, qtyIssued: '70 kg' });
 
         await Backend.expect({
             title: 'the pieces issued off the LU carry the captured weight',
             manufacturings: {
                 "PP1": {
-                    issuedHUs: [{ attributes: { 'WeightNet': String(HU_WEIGHT_NET) } }],
+                    issuedHUs: [{ attributes: { 'WeightNet': HU_WEIGHT_NET_ASSERTED } }],
                 },
             },
         });
