@@ -660,21 +660,33 @@ public class ManufacturingJobService
 		Quantity qtyLeftToBeIssued = line.getQtyLeftToIssue().toZeroIfNegative();
 		final ImmutableList.Builder<RawMaterialsIssueStep> updatedStepsListBuilder = ImmutableList.builder();
 
+		final ProductId productId = line.getProductId();
+
 		for (final RawMaterialsIssueStep step : line.getSteps())
 		{
+			// A step consuming a whole HU is denominated in that HU's stocking UOM, which the line's
+			// remaining quantity is not, so neither the comparison nor the capping can use the two as
+			// they come.
+			final Quantity stepQtyToIssue = step.getQtyToIssue();
+			final Quantity stepQtyToIssueInLineUom = uomConversionBL.convertQuantityTo(stepQtyToIssue, productId, qtyLeftToBeIssued.getUomId());
+
 			if (step.isIssued())
 			{
 				updatedStepsListBuilder.add(step);
 			}
-			else if (qtyLeftToBeIssued.isGreaterThan(step.getQtyToIssue()))
+			else if (qtyLeftToBeIssued.isGreaterThan(stepQtyToIssueInLineUom))
 			{
 				updatedStepsListBuilder.add(step);
-				qtyLeftToBeIssued = qtyLeftToBeIssued.subtract(step.getQtyToIssue());
+				qtyLeftToBeIssued = qtyLeftToBeIssued.subtract(stepQtyToIssueInLineUom);
 			}
 			else
 			{
-				ppOrderIssueScheduleService.updateQtyToIssue(step.getId(), qtyLeftToBeIssued);
-				updatedStepsListBuilder.add(step.withQtyToIssue(qtyLeftToBeIssued));
+				// capping the step keeps it in its own UOM, so a whole-HU step is not silently
+				// re-denominated into the line's
+				final Quantity cappedQtyInStepUom = uomConversionBL.convertQuantityTo(qtyLeftToBeIssued, productId, stepQtyToIssue.getUomId());
+
+				ppOrderIssueScheduleService.updateQtyToIssue(step.getId(), cappedQtyInStepUom);
+				updatedStepsListBuilder.add(step.withQtyToIssue(cappedQtyInStepUom));
 				qtyLeftToBeIssued = qtyLeftToBeIssued.toZero();
 			}
 		}
