@@ -227,6 +227,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 {
 	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_TO_CLEAR = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_IsToClear");
 	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_IN_DISPUTE = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_IsInDispute");
+	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_SIMULATION = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_Simulation");
 	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_DATE_TO_INVOICE = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_DateToInvoice");
 	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_MANUAL_RULE = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_ManualRule");
 	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_ERROR = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_Error");
@@ -1049,9 +1050,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		if (ic.isSimulation())
 		{
-			final String msg = "C_Invoice_Candidate_ID=" + ic.getC_Invoice_Candidate_ID() + ": simulation";
-			Loggables.withLogger(logger, Level.DEBUG).addLog(" #isSkipCandidateFromInvoicing: Skipping IC: {},"
-					+ " as it's a simulation and it shouldn't be invoiced!", ic.getC_Invoice_Candidate_ID());
+			// Translated like its five sibling reasons: this string reaches the user in the process summary.
+			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_SIMULATION,
+					new Object[] { ic.getC_Invoice_Candidate_ID() });
+			Loggables.withLogger(logger, Level.DEBUG).addLog(msg);
 			return msg;
 		}
 

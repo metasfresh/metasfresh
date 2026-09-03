@@ -284,3 +284,73 @@ Feature: A failing "Create Invoices" run reports back to the user who started it
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | IsInvoicingError | OPT.Processed |
       | ic_sk_skip                        | false            | false         |
+
+  @Id:S0163_400
+  @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@allure.label.epic:E0225_Accounting
+@allure.label.feature:F01010.3_Match_Invoice
+@F00701
+  Scenario: A "Create Invoices" run whose WHOLE selection is skipped still says why
+    # The other half of the same defect. When nothing at all can be enqueued the enqueuer throws the bare,
+    # parameterless InvoiceGenerate_No_Candidates_Selected ("Es wurden keine fakturierbaren Datensaetze
+    # ausgewaehlt.") -- so the user was told the selection cannot be invoiced but never what is wrong with
+    # it, even though every reason had just been computed. ~3568 candidates sit in this state on the
+    # customer instance, so an all-skipped selection is the COMMON case there, not an edge case.
+    Given metasfresh contains M_Products:
+      | Identifier | Name              |
+      | p_al_1     | salesProduct_al_1 |
+    And metasfresh contains M_PricingSystems
+      | Identifier | Name                   | Value                   | OPT.IsActive |
+      | ps_al_1    | al_pricing_system_name | al_pricing_system_value | true         |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name               | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_al_1    | ps_al_1                       | DE                        | EUR                 | al_price_list_name | null            | true  | false         | 2              | true         |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID.Identifier | Name              | ValidFrom  |
+      | plv_al_1   | pl_al_1                   | al_salesOrder-PLV | 2021-04-01 |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_al_1    | plv_al_1                          | p_al_1                  | 10.0     | PCE               | Normal                        |
+    And metasfresh contains C_BPartners:
+      | Identifier       | Name            | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | customer_al_1    | al_Customer     | N            | Y              | ps_al_1                       |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier | GLN             | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | l_al_1     | al_bPLocation_1 | customer_al_1            | Y                   | Y                   |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | o_al_1     | true    | customer_al_1            | 2021-04-17  |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_al_1    | o_al_1                | p_al_1                  | 10         |
+    And the order identified by o_al_1 is completed
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | ic_al_1                           | ol_al_1                   | 0            |
+
+    And update invoice candidates
+      | C_Invoice_Candidate_ID.Identifier | OPT.InvoiceRule_Override | OPT.DateToInvoice_Override |
+      | ic_al_1                           | I                        | 2021-04-18                 |
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | ic_al_1                           | ol_al_1                   | 10           |
+
+    # The only selected candidate now meets the enqueuer's skip condition, so NOTHING can be enqueued.
+    And update invoice candidates
+      | C_Invoice_Candidate_ID.Identifier | OPT.QtyToInvoice_Override |
+      | ic_al_1                           | 0                         |
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | ic_al_1                           | ol_al_1                   | 0            |
+
+    When run the invoicing process and expect nothing invoiced for invoice candidates:
+      | C_Invoice_Candidate_ID.Identifier |
+      | ic_al_1                           |
+
+    # THE ASSERTION UNDER TEST: the error must carry the reason, not just "nothing selectable".
+    # Pre-fix the message was the bare "Es wurden keine fakturierbaren Datensaetze ausgewaehlt." alone.
+    Then the invoicing run summary contains:
+      | 1 von 1                              |
+      | abzurechnende Menge gleich 0          |

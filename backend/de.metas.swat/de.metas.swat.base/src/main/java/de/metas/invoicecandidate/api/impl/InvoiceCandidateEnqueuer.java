@@ -23,6 +23,7 @@
 package de.metas.invoicecandidate.api.impl;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.impl.ConstantWorkpackagePrio;
@@ -44,7 +45,6 @@ import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.logging.TableRecordMDC;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
-import com.google.common.collect.ImmutableList;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -60,6 +60,7 @@ import org.slf4j.MDC.MDCCloseable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import javax.annotation.Nullable;
+
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
@@ -238,11 +239,23 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		// Make sure all workpackages are marked as ready for processing
 		workpackageAggregator.closeAllGroups();
 
+		final ImmutableList<String> skipReasonsCollected = skipReasons.build();
+
 		//
-		// If no workpackages were created, display error message that no selection was made (07666)
+		// If no workpackages were created, display error message that no selection was made (07666).
+		// Report WHY when we know: this branch is reached whenever the whole selection was skipped, which is
+		// the other half of the same defect -- the bare message alone leaves the user with a selection that
+		// "cannot be invoiced" and no way to find out what is wrong with any of it.
 		if (isFailIfNothingEnqueued() && invoiceCandidateSelectionCount <= 0)
 		{
-			throw new AdempiereException("@" + MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P + "@");
+			final String noCandidatesMsg = "@" + MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P + "@";
+			if (skipReasonsCollected.isEmpty())
+			{
+				throw new AdempiereException(noCandidatesMsg);
+			}
+			throw new AdempiereException(noCandidatesMsg + " "
+					+ InvoiceCandidateEnqueueResult.buildSkippedSummary(getCtx(), skipReasonsCollected, skipReasonsCollected.size()))
+					.markAsUserValidationError();
 		}
 
 		//
@@ -252,7 +265,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				workpackageAggregator.getGroupsCount(),
 				workpackageQueueSizeBeforeEnqueueing,
 				totalNetAmtToInvoiceChecksum.getValue(),
-				skipReasons.build(),
+				skipReasonsCollected,
 				icLock);
 	}
 

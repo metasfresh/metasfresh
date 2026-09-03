@@ -101,13 +101,29 @@ import de.metas.util.Services;
 		// The user pressed the button and is looking at THIS string, so the dropped candidates are reported here --
 		// synchronously and independent of any per-user notification configuration.
 		final int selectedCount = getInvoiceCandidateEnqueuedCount() + skippedCount;
-		final String skippedSummary = msgBL.getMsg(ctx, MSG_INVOICE_CANDIDATE_ENQUEUE_SKIPPED,
-				new Object[] { skippedCount, selectedCount, buildSkipReasonsText() });
 
-		return enqueuedSummary + " " + skippedSummary;
+		return enqueuedSummary + " " + buildSkippedSummary(ctx, skipReasons, selectedCount);
 	}
 
-	private String buildSkipReasonsText()
+	/**
+	 * "N of M selected invoice candidate(s) were not invoiced: ...".
+	 * <p>
+	 * Package-visible and static because {@link InvoiceCandidateEnqueuer} needs the SAME sentence on the
+	 * all-skipped path, where it never gets to build a result at all: it throws
+	 * {@code InvoiceGenerate_No_Candidates_Selected} instead, and without this the reasons it collected
+	 * would be dropped on the floor -- leaving that case exactly as silent as before the fix.
+	 */
+	/* package */
+	static String buildSkippedSummary(
+			@NonNull final Properties ctx,
+			@NonNull final ImmutableList<String> skipReasons,
+			final int selectedCount)
+	{
+		return Services.get(IMsgBL.class).getMsg(ctx, MSG_INVOICE_CANDIDATE_ENQUEUE_SKIPPED,
+				new Object[] { skipReasons.size(), selectedCount, buildSkipReasonsText(skipReasons) });
+	}
+
+	private static String buildSkipReasonsText(@NonNull final ImmutableList<String> skipReasons)
 	{
 		final String listed = skipReasons.stream()
 				.limit(MAX_LISTED_SKIP_REASONS)

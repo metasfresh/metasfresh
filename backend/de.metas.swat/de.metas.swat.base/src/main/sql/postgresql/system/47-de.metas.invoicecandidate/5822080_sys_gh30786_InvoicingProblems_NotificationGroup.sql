@@ -13,9 +13,9 @@
 -- admin window's Notification Groups tab, and to AD_NotificationGroup_CC -- so nobody can opt in
 -- or out of it, and no CC recipient can be configured.
 --
--- Name is deliberately "problems" rather than "errors": both the Event_InvoicingError (enqueued
--- then failed) rides this topic; the enqueuer's skip report goes into the process summary instead, so it
--- topic, so that a user needs a single subscription for "my Create Invoices run had a problem".
+-- Name is deliberately "problems" rather than "errors": Event_InvoicingError (enqueued, then failed
+-- during the async invoicing) rides this topic, while the enqueuer's skip report goes into the process
+-- summary instead. One subscription therefore covers "my Create Invoices run had a problem".
 
 -- 2026-09-03T00:10:07
 INSERT INTO AD_NotificationGroup (AD_Client_ID,AD_NotificationGroup_ID,AD_Org_ID,Created,CreatedBy,EntityType,InternalName,IsActive,Name,Updated,UpdatedBy)

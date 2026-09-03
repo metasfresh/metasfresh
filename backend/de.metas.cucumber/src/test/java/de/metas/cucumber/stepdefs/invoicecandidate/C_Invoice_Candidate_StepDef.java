@@ -691,6 +691,18 @@ public class C_Invoice_Candidate_StepDef
 	@When("run the invoicing process for invoice candidates:")
 	public void run_invoicing_process(@NonNull final DataTable dataTable)
 	{
+		final ProcessExecutionResult result = executeInvoicingProcess(dataTable);
+
+		assertThat(result.isError())
+				.as("the invoicing run must not fail; summary=" + result.getSummary())
+				.isFalse();
+
+		lastInvoicingRunSummary = result.getSummary();
+		logger.info("Invoicing run summary: {}", lastInvoicingRunSummary);
+	}
+
+	private ProcessExecutionResult executeInvoicingProcess(@NonNull final DataTable dataTable)
+	{
 		final List<Integer> invoiceCandidateIds = new ArrayList<>();
 		DataTableRows.of(dataTable).forEach(row -> row
 				.getAsIdentifier(COLUMNNAME_C_Invoice_Candidate_ID)
@@ -726,12 +738,27 @@ public class C_Invoice_Candidate_StepDef
 					.getResult();
 		}
 
+		return result;
+	}
+
+	/**
+	 * Same as the step above, but for a selection in which EVERY candidate is expected to be skipped.
+	 * <p>
+	 * That case is an error for the process -- nothing could be enqueued, so it throws
+	 * {@code InvoiceGenerate_No_Candidates_Selected} -- yet the run still has to say WHY, which is why the
+	 * summary is captured from the failed result rather than asserted away.
+	 */
+	@When("run the invoicing process and expect nothing invoiced for invoice candidates:")
+	public void run_invoicing_process_expecting_nothing_invoiced(@NonNull final DataTable dataTable)
+	{
+		final ProcessExecutionResult result = executeInvoicingProcess(dataTable);
+
 		assertThat(result.isError())
-				.as("the invoicing run must not fail; summary=" + result.getSummary())
-				.isFalse();
+				.as("the run must report an error when NOTHING could be invoiced; summary=" + result.getSummary())
+				.isTrue();
 
 		lastInvoicingRunSummary = result.getSummary();
-		logger.info("Invoicing run summary: {}", lastInvoicingRunSummary);
+		logger.info("Invoicing run summary (nothing invoiced): {}", lastInvoicingRunSummary);
 	}
 
 	/**
