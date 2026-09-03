@@ -122,6 +122,25 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	}
 
 	/**
+	 * The one {@link PoolEnd} the whole selection nets, or empty when it spans both ends or is empty.
+	 * <p>
+	 * Deliberately WEAKER than {@link #getSingleTransportDirection()}: {@code Incoming} and {@code Dropship} are
+	 * two directions that {@link PoolEnd#forDirection} maps onto the same DISCHARGE end, so a selection holding
+	 * both has no single direction yet still nets one well-defined end. Callers that only need to know which pair
+	 * of quantity columns to net must ask this, not the direction - asking the direction would reject a mix that
+	 * is perfectly computable.
+	 */
+	public Optional<PoolEnd> getSinglePoolEnd()
+	{
+		final ImmutableSet<PoolEnd> ends = list.stream()
+				.map(DeliveryPlanning::getTransportDirection)
+				.map(PoolEnd::forDirection)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return ends.size() == 1 ? Optional.of(ends.iterator().next()) : Optional.empty();
+	}
+
+	/**
 	 * The one value the whole selection carries for the given key field. Empty in all three cases the caller has
 	 * to treat alike - the selection is empty, it disagrees with itself on this field, or the one value it agrees
 	 * on is {@code null} (a field none of the plannings has set).

@@ -337,6 +337,54 @@ class DeliveryPlanningListTest
 	}
 
 	@Nested
+	@DisplayName("getSinglePoolEnd")
+	class SinglePoolEnd
+	{
+		private DeliveryPlanning withDirection(final TransportDirection transportDirection)
+		{
+			return planning().transportDirection(transportDirection).build();
+		}
+
+		@Test
+		@DisplayName("an empty selection nets no end")
+		void emptySelection()
+		{
+			assertThat(DeliveryPlanningList.EMPTY.getSinglePoolEnd()).isEmpty();
+		}
+
+		@Test
+		@DisplayName("an Outgoing selection nets LOAD")
+		void outgoingSelection()
+		{
+			assertThat(DeliveryPlanningList.of(withDirection(TransportDirection.Outgoing)).getSinglePoolEnd())
+					.contains(DeliveryPlanningList.PoolEnd.LOAD);
+		}
+
+		@Test
+		@DisplayName("Incoming and Dropship are different directions but net the SAME end - the mix is admissible")
+		void incomingAndDropshipMix()
+		{
+			final DeliveryPlanningList list = DeliveryPlanningList.of(
+					withDirection(TransportDirection.Incoming),
+					withDirection(TransportDirection.Dropship));
+
+			assertThat(list.getSingleTransportDirection()).as("the directions themselves disagree").isEmpty();
+			assertThat(list.getSinglePoolEnd()).contains(DeliveryPlanningList.PoolEnd.DISCHARGE);
+		}
+
+		@Test
+		@DisplayName("rows netting different ends carry none")
+		void bothEndsSelection()
+		{
+			final DeliveryPlanningList list = DeliveryPlanningList.of(
+					withDirection(TransportDirection.Outgoing),
+					withDirection(TransportDirection.Incoming));
+
+			assertThat(list.getSinglePoolEnd()).isEmpty();
+		}
+	}
+
+	@Nested
 	@DisplayName("admissibility field labels")
 	class AggregationKeyFieldLabels
 	{
