@@ -5,6 +5,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.util.NumberUtils;
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
@@ -23,10 +24,9 @@ import static de.metas.frontend_testing.expectations.assertions.Assertions.softl
  * Asserts an HU's attributes against a code -> expected-value map,
  * shared by the HU and the manufacturing expectations.
  */
+@UtilityClass
 final class HUAttributeAssertions
 {
-	private HUAttributeAssertions() {}
-
 	public static void assertAttributes(
 			@NonNull final AssertExpectationsCommandServices services,
 			@NonNull final Map<String, String> expectations,
