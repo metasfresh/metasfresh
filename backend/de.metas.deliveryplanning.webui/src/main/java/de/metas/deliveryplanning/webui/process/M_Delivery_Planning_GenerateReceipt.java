@@ -2,7 +2,6 @@ package de.metas.deliveryplanning.webui.process;
 
 import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.deliveryplanning.DeliveryPlanningReceiptInfo;
-import de.metas.deliveryplanning.DeliveryPlanningRepository;
 import de.metas.deliveryplanning.DeliveryPlanningShipmentInfo;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationService;
@@ -106,8 +105,7 @@ public class M_Delivery_Planning_GenerateReceipt extends JavaProcess
 
 		// Write the Qty override back onto the planning: a receipt reads/occupies the discharge end, so the
 		// override becomes the planning's new PlannedDischargeQuantity (spec direction rule, restated by Task Q12).
-		SpringContextHolder.instance.getBean(DeliveryPlanningRepository.class)
-				.setPlannedDischargeQuantity(getDeliveryPlanningId(), receiptResult.getQty());
+		helper.writeBackPlannedDischargeQuantity(getDeliveryPlanningId(), receiptResult.getQty());
 
 		if (p_IsGenerateB2BShipment)
 		{

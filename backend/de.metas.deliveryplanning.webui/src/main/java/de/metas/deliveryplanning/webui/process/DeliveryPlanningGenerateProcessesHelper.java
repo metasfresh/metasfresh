@@ -352,6 +352,22 @@ class DeliveryPlanningGenerateProcessesHelper
 		return ProcessPreconditionsResolution.accept();
 	}
 
+	/**
+	 * Write-back for {@code M_Delivery_Planning_GenerateReceipt#doIt()}: routes the qty override onto the
+	 * planning's {@code PlannedDischargeQuantity} through the service, so the process never reaches for the
+	 * repository directly (one collaborator per aggregate per class - service-injection.md).
+	 */
+	public void writeBackPlannedDischargeQuantity(@NonNull final DeliveryPlanningId deliveryPlanningId, @NonNull final Quantity quantity)
+	{
+		deliveryPlanningService.setPlannedDischargeQuantity(deliveryPlanningId, quantity);
+	}
+
+	/** The load-side sibling of {@link #writeBackPlannedDischargeQuantity}, used by {@code M_Delivery_Planning_GenerateShipment#doIt()}. */
+	public void writeBackPlannedLoadedQuantity(@NonNull final DeliveryPlanningId deliveryPlanningId, @NonNull final Quantity quantity)
+	{
+		deliveryPlanningService.setPlannedLoadedQuantity(deliveryPlanningId, quantity);
+	}
+
 	public void generateShipment(final DeliveryPlanningGenerateShipmentRequest request)
 	{
 		final DeliveryPlanningId deliveryPlanningId = request.getDeliveryPlanningId();

@@ -1,7 +1,6 @@
 package de.metas.deliveryplanning.webui.process;
 
 import de.metas.deliveryplanning.DeliveryPlanningId;
-import de.metas.deliveryplanning.DeliveryPlanningRepository;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -15,7 +14,6 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import lombok.NonNull;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Delivery_Planning;
 
 import javax.annotation.Nullable;
@@ -98,11 +96,11 @@ public class M_Delivery_Planning_GenerateShipment extends JavaProcess
 						.build());
 
 		// Write the Qty override back onto the planning: a shipment reads/occupies the load end, so the
-		// override becomes the planning's new PlannedLoadedQuantity (spec direction rule, restated by Task Q12).
+		// override - the requested qty, not necessarily what was actually shipped - becomes the planning's new
+		// PlannedLoadedQuantity (spec direction rule, restated by Task Q12).
 		final ProductId productId = ProductId.ofRepoId(getRecord(I_M_Delivery_Planning.class).getM_Product_ID());
-		final Quantity qtyShipped = Quantitys.of(qtyToShipBD, productId);
-		SpringContextHolder.instance.getBean(DeliveryPlanningRepository.class)
-				.setPlannedLoadedQuantity(getDeliveryPlanningId(), qtyShipped);
+		final Quantity qtyToShip = Quantitys.of(qtyToShipBD, productId);
+		helper.writeBackPlannedLoadedQuantity(getDeliveryPlanningId(), qtyToShip);
 
 		return MSG_OK;
 	}

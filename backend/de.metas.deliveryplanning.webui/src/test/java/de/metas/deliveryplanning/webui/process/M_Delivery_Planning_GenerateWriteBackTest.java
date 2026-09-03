@@ -159,6 +159,15 @@ class M_Delivery_Planning_GenerateWriteBackTest
 
 		final M_Delivery_Planning_GenerateShipment process = new M_Delivery_Planning_GenerateShipment();
 		final DeliveryPlanningGenerateProcessesHelper mockHelper = mock(DeliveryPlanningGenerateProcessesHelper.class);
+		// The write-back itself (helper.writeBackPlannedLoadedQuantity) is real production logic under test here,
+		// not part of the heavy chain being stubbed - forward it to the real, JUnit-registered repository so the
+		// process's doIt() write-back is genuinely exercised and observable below, exactly as it was before that
+		// write-back moved from an inline SpringContextHolder.getBean(DeliveryPlanningRepository.class) call into
+		// this helper method (Task Q12 fix round: JavaProcess.doIt() must not grab a @Repository directly).
+		Mockito.doAnswer(invocation -> {
+			deliveryPlanningRepository.setPlannedLoadedQuantity(invocation.getArgument(0), invocation.getArgument(1));
+			return null;
+		}).when(mockHelper).writeBackPlannedLoadedQuantity(ArgumentMatchers.any(), ArgumentMatchers.any());
 		process.helper = mockHelper;
 		process.init(processInfoFor(deliveryPlanning));
 
@@ -188,6 +197,12 @@ class M_Delivery_Planning_GenerateWriteBackTest
 
 		final M_Delivery_Planning_GenerateReceipt process = new M_Delivery_Planning_GenerateReceipt();
 		final DeliveryPlanningGenerateProcessesHelper mockHelper = mock(DeliveryPlanningGenerateProcessesHelper.class);
+		// See generateShipment_writesBackPlannedLoadedQuantity's comment: the write-back is real logic under
+		// test, forwarded to the real repository rather than left as a no-op mock stub.
+		Mockito.doAnswer(invocation -> {
+			deliveryPlanningRepository.setPlannedDischargeQuantity(invocation.getArgument(0), invocation.getArgument(1));
+			return null;
+		}).when(mockHelper).writeBackPlannedDischargeQuantity(ArgumentMatchers.any(), ArgumentMatchers.any());
 		process.helper = mockHelper;
 		process.init(processInfoFor(deliveryPlanning));
 

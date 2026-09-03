@@ -594,6 +594,26 @@ public class DeliveryPlanningService
 				DeliveryPlanningId.ofRepoId(deliveryPlanning.getM_Delivery_Planning_ID()));
 	}
 
+	/**
+	 * Write-back for the generate-receipt process: a receipt reads/occupies the discharge end, so the qty the
+	 * operator confirmed at generation time becomes the planning's new {@code PlannedDischargeQuantity} (spec
+	 * direction rule, Task Q12). Kept as a thin passthrough on the service so the generate processes reach this
+	 * repository write through their one existing collaborator, never the repository directly.
+	 */
+	public void setPlannedDischargeQuantity(@NonNull final DeliveryPlanningId deliveryPlanningId, @NonNull final Quantity quantity)
+	{
+		deliveryPlanningRepository.setPlannedDischargeQuantity(deliveryPlanningId, quantity);
+	}
+
+	/**
+	 * Write-back for the generate-shipment process: the load-side sibling of
+	 * {@link #setPlannedDischargeQuantity} - a shipment reads/occupies the load end.
+	 */
+	public void setPlannedLoadedQuantity(@NonNull final DeliveryPlanningId deliveryPlanningId, @NonNull final Quantity quantity)
+	{
+		deliveryPlanningRepository.setPlannedLoadedQuantity(deliveryPlanningId, quantity);
+	}
+
 	public void deleteForReceiptSchedule(@NonNull final ReceiptScheduleId receiptScheduleId)
 	{
 		deliveryPlanningRepository.deleteForReceiptSchedule(receiptScheduleId);
