@@ -14,7 +14,9 @@
 --
 -- IsLazyLoading='Y' on all four: display-only on the instruction line, no production Java reads them
 -- (DeliveryPlanningRepository#createShippingPackage no longer writes them either - see the code change
--- in this task).
+-- in this task). Superseded on this same branch: 5822320 flips all four to IsLazyLoading='N', because
+-- the instruction grid displays them across a whole result set and a lazy ColumnSQL costs one extra
+-- query per row there.
 
 -- ActualLoadQty (585497): was physical, becomes virtual - mirrors the planning's own ActualLoadQty.
 UPDATE AD_Column

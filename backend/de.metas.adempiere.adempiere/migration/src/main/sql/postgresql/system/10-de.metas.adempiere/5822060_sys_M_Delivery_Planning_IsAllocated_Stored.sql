@@ -3,8 +3,9 @@
 -- stored column.
 --
 -- Why: the lazy-loading virtual column was fine for its original read (a single-row detail lookup), but
--- the WebUI grid on window 541632 (Lieferplanung, AD_Field 783046) now displays and filters/sorts on this
--- column across a whole result set - a lazy ColumnSQL forces one extra query per row there. A real column
+-- the WebUI grid on window 541632 (Lieferplanung, AD_Field 783046) now displays this column across a
+-- whole result set - a lazy ColumnSQL forces one extra query per row there. (It is displayed and sorted
+-- on, not filtered: AD_UI_Element 653689 has IsAllowFiltering='N'.) A real column
 -- is read straight off the row: no extra query, no expression, and it is invalidated by its own table's
 -- cache reset rather than needing AD_SQLColumn_SourceTableColumn wiring.
 --

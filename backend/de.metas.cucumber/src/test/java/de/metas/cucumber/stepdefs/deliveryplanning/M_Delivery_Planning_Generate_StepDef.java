@@ -200,8 +200,9 @@ public class M_Delivery_Planning_Generate_StepDef
 					.addOnlyActiveRecordsFilter()
 					.addEqualsFilter(I_M_InOut.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningId)
 					.addEqualsFilter(I_M_InOut.COLUMNNAME_IsSOTrx, isSOTrx)
-					// newest first: at this point - right after generation, before any reversal - the newest
-					// M_InOut carrying this planning id is the one the process just created
+					// newest first: the highest M_InOut_ID carrying this planning id is always the document this
+					// call just created - reversal copies included, since MInOut#reverseCorrectIt copies the FK
+					// onto a reversal whose id is still lower than the next generated document's
 					.orderByDescending(I_M_InOut.COLUMNNAME_M_InOut_ID)
 					.create()
 					.first();

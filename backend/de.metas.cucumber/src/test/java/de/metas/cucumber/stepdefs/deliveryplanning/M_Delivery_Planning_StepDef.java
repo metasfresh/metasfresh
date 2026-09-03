@@ -69,6 +69,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Delivery_Planning;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.model.I_M_Warehouse;
@@ -386,7 +387,7 @@ public class M_Delivery_Planning_StepDef
 						}
 						else
 						{
-							final org.compiere.model.I_M_InOut inout = id.lookupNotNullIn(inOutTable);
+							final I_M_InOut inout = id.lookupNotNullIn(inOutTable);
 							softly.assertThat(deliveryPlanning.getM_InOut_ID()).as(I_M_Delivery_Planning.COLUMNNAME_M_InOut_ID).isEqualTo(inout.getM_InOut_ID());
 						}
 					});

@@ -1345,13 +1345,14 @@ Feature: Delivery planning quantities
   @Id:S31789_TC_Q11_GenerateReceiptProcessOrdering
   Scenario: The production generate-receipt process itself makes completion write the discharge actual - it stamps the planning link on the DRAFT, not on the finished receipt
 
-    # The ONE scenario that drives the real M_Delivery_Planning_GenerateReceipt process instead of
-    # hand-building an M_InOut. That process generates the receipt AND completes it in a single call, so if
-    # M_Delivery_Planning_ID were put on the receipt only AFTER that call returned, the receipt would be
-    # completed with the FK still unset and interceptor/M_InOut#afterComplete - which returns immediately on a
-    # null FK - would never write anything: no ActualDischargeQuantity, no Processed, no receipt back-link on
-    # the planning, no delivered-state recompute. The raw M_InOut.M_Delivery_Planning_ID would still end up
-    # set, so the data looks half-right; only the four assertions below tell the two orderings apart.
+    # The scenario that exists SPECIFICALLY to pin the draft-vs-post-generation ordering (several others now
+    # drive the real generate processes too, but each for its own reason). That process generates the receipt
+    # AND completes it in a single call, so if M_Delivery_Planning_ID were put on the receipt only AFTER that
+    # call returned, the receipt would be completed with the FK still unset and interceptor/M_InOut
+    # #afterComplete - which returns immediately on a null FK - would never write anything: no
+    # ActualDischargeQuantity, no Processed, no receipt back-link on the planning, no delivered-state
+    # recompute. The raw M_InOut.M_Delivery_Planning_ID would still end up set, so the data looks
+    # half-right; only the four assertions below tell the two orderings apart.
     Given metasfresh contains M_PricingSystems
       | Identifier        | OPT.IsActive |
       | pricingSystemQ11P | true         |

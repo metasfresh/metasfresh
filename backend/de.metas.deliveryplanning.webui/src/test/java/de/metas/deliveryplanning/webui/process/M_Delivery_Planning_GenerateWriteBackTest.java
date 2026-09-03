@@ -164,6 +164,12 @@ class M_Delivery_Planning_GenerateWriteBackTest
 		// process's doIt() write-back is genuinely exercised and observable below, exactly as it was before that
 		// write-back moved from an inline SpringContextHolder.getBean(DeliveryPlanningRepository.class) call into
 		// this helper method (Task Q12 fix round: JavaProcess.doIt() must not grab a @Repository directly).
+		// NOTE what this no longer covers: the doAnswer hardcodes the CORRECT repository method, so the
+		// helper -> service -> repository routing is not under test here - swapping writeBackPlannedLoadedQuantity
+		// to call setPlannedDischargeQuantity would keep this test green. That routing is pinned end-to-end by
+		// cucumber, in both directions: @Id:S31789_TC_Q11_OutgoingCompletionWritesBothEnds asserts
+		// PlannedLoadedQuantity and @Id:S31789_TC_Q11_GenerateReceiptProcessOrdering asserts
+		// PlannedDischargeQuantity, each after the real generate process.
 		Mockito.doAnswer(invocation -> {
 			deliveryPlanningRepository.setPlannedLoadedQuantity(invocation.getArgument(0), invocation.getArgument(1));
 			return null;

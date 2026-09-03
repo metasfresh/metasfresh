@@ -108,12 +108,16 @@ public class GenerateIncomingDeliveryPlanningCommand
 				.partnerId(BPartnerId.ofRepoId(receiptSchedule.getC_BPartner_ID()))
 				.bPartnerLocationId(destinationBPLocationId)
 				.qtyOrdered(qtyOrdered)
-				// Placeholder only: M_Delivery_Planning's own AFTER_NEW interceptor (onNew) unconditionally
-				// recomputes QtyTotalOpen (and QtyTotalOpenPlanned) from QtyOrdered minus every planning's own
-				// actual figure right after this row is inserted, so whatever is passed here never survives
-				// past creation. A prior revision subtracted the receipt schedule's QtyMoved here, which - being
-				// dead - never actually accounted for a schedule already partly received before its planning
-				// existed either; qtyOrdered is passed as the honest "nothing subtracted yet" seed.
+				// QtyTotalOpen is DEFINED as QtyOrdered minus the ACTUAL figures of the order line's plannings
+				// (DeliveryPlanningList#qtyTotalOpen), and this planning is created with ActualDischargeQuantity
+				// zero - so qtyOrdered is the value that definition yields, not a placeholder. On the usual path
+				// M_Delivery_Planning's AFTER_NEW interceptor (onNew) recomputes it to exactly that anyway; on a
+				// planning with no C_OrderLine_ID it does NOT (DeliveryPlanningService#recomputeOpenQuantities-
+				// ForOrderLine returns early - there is no line to sum over), so this seed is the final value
+				// there and has to be right on its own. A prior revision subtracted the receipt schedule's
+				// QtyMoved, which would have made that order-line-less path disagree with every order-line-bearing
+				// one for the same data: a receipt booked before the planning existed belongs to no planning, so
+				// it is not part of this figure.
 				.qtyTotalOpen(qtyOrdered)
 				// D22/Task Q7c: nothing ever reports the vendor's load, so for an inbound (or dropship, per
 				// order.isDropShip() below) planning the actual load starts equal to the planned load - never
