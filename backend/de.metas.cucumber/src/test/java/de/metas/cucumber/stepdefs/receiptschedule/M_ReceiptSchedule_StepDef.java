@@ -180,7 +180,7 @@ public class M_ReceiptSchedule_StepDef
 		softly.assertThat(receiptSchedule.isProcessed()).isEqualTo(processed);
 
 		row.getAsOptionalBoolean(I_M_ReceiptSchedule.COLUMNNAME_IsClosed)
-				.ifPresent(isClosed -> softly.assertThat(receiptSchedule.isIsClosed()).as("IsClosed").isEqualTo(isClosed));
+				.ifPresent(isClosed -> softly.assertThat(receiptSchedule.isClosed()).as("IsClosed").isEqualTo(isClosed));
 
 		// Delivery stop flag propagated from M_Shipment_Constraint (gh#28631)
 		row.getAsOptionalBoolean(I_M_ReceiptSchedule.COLUMNNAME_IsDeliveryStop)
