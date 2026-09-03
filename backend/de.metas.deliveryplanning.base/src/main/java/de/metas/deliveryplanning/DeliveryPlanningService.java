@@ -208,7 +208,6 @@ public class DeliveryPlanningService
 	@NonNull private final ShipperRepository shipperRepository;
 	@NonNull private final DeliveryPlanningRepository deliveryPlanningRepository;
 	@NonNull private final DeliveryPlanningAllocRepository deliveryPlanningAllocRepository;
-	@NonNull private final DeliveryInstructionRepository deliveryInstructionRepository;
 	@NonNull private final DeliveryInstructionService deliveryInstructionService;
 	@NonNull private final DeliveryStatusColorPaletteService deliveryStatusColorPaletteService;
 	@NonNull private final DimensionService dimensionService;
@@ -342,7 +341,7 @@ public class DeliveryPlanningService
 
 		deliveryPlanningAllocRepository.getInstructionIdByShippingPackageId(shippingPackageId)
 				.ifPresent(deliveryInstructionId -> {
-					final String documentNo = deliveryInstructionRepository.getById(deliveryInstructionId).getDocumentNo();
+					final String documentNo = deliveryInstructionService.getById(deliveryInstructionId).getDocumentNo();
 					throw new AdempiereException(TranslatableStrings.adMessage(MSG_M_ShippingPackage_Allocated, documentNo));
 				});
 	}
@@ -1181,7 +1180,7 @@ public class DeliveryPlanningService
 		final ImmutableSet<DeliveryPlanningId> allocatedPlanningIds = deliveryPlanningAllocRepository.getAllocatedPlanningIds(deliveryInstructionId);
 		if (allocatedPlanningIds.isEmpty())
 		{
-			final I_M_ShipperTransportation deliveryInstruction = deliveryInstructionRepository.getById(deliveryInstructionId);
+			final I_M_ShipperTransportation deliveryInstruction = deliveryInstructionService.getById(deliveryInstructionId);
 			if (shipperTransportationDocSubTypeGuard.isDeliveryInstruction(deliveryInstruction))
 			{
 				return Optional.of(TranslatableStrings.adMessage(MSG_M_Delivery_Planning_EmptyDeliveryInstruction));
@@ -1484,7 +1483,7 @@ public class DeliveryPlanningService
 			return Optional.empty();
 		}
 
-		if (!deliveryInstructionRepository.getDocStatus(targetDeliveryInstructionId).isDrafted())
+		if (!deliveryInstructionService.getDocStatus(targetDeliveryInstructionId).isDrafted())
 		{
 			return Optional.of(TranslatableStrings.adMessage(MSG_M_Delivery_Planning_TargetInstructionNotDraft));
 		}
@@ -1563,7 +1562,7 @@ public class DeliveryPlanningService
 				.flatMap(Collection::stream)
 				.collect(ImmutableSet.toImmutableSet());
 
-		final ImmutableMap<ShipperTransportationId, DocStatus> docStatuses = deliveryInstructionRepository.getDocStatuses(deliveryInstructionIds);
+		final ImmutableMap<ShipperTransportationId, DocStatus> docStatuses = deliveryInstructionService.getDocStatuses(deliveryInstructionIds);
 
 		return selectedDeliveryPlannings.stream()
 				.filter(DeliveryPlanning::isAllocated)
@@ -1676,7 +1675,7 @@ public class DeliveryPlanningService
 		// instruction's, which the sync-down would still have on these rows before the reset ran
 		final ImmutableList<DeliveryPlanningAllocCreateRequest> allocations = createAllocCreateRequests(deliveryPlanningIds);
 
-		final I_M_ShipperTransportation targetInstruction = deliveryInstructionRepository.getById(targetDeliveryInstructionId);
+		final I_M_ShipperTransportation targetInstruction = deliveryInstructionService.getById(targetDeliveryInstructionId);
 		final DeliveryInstructionDates resolvedDates = resolveInstructionDatesForAllocation(targetInstruction, allocations);
 		deliveryInstructionService.createAllocations(targetInstruction, allocations, resolvedDates);
 

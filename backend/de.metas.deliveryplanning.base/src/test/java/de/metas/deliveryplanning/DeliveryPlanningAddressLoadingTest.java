@@ -103,7 +103,6 @@ class DeliveryPlanningAddressLoadingTest
 				new ShipperRepository(),
 				deliveryPlanningRepository,
 				deliveryPlanningAllocRepository,
-				deliveryInstructionRepository,
 				deliveryInstructionService,
 				Mockito.mock(DeliveryStatusColorPaletteService.class),
 				Mockito.mock(DimensionService.class),

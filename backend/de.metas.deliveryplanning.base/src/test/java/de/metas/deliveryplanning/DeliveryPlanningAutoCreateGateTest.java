@@ -55,7 +55,7 @@ public class DeliveryPlanningAutoCreateGateTest
 		final DimensionService dimensionService = Mockito.mock(DimensionService.class);
 		final MeansOfTransportationService meansOfTransportationService = Mockito.mock(MeansOfTransportationService.class);
 		final ShipperTransportationDocSubTypeGuard shipperTransportationDocSubTypeGuard = new ShipperTransportationDocSubTypeGuard();
-		return new DeliveryPlanningService(shipperRepository, repo, allocRepo, instructionRepo, instructionService, colorPaletteService, dimensionService, meansOfTransportationService, shipperTransportationDocSubTypeGuard);
+		return new DeliveryPlanningService(shipperRepository, repo, allocRepo, instructionService, colorPaletteService, dimensionService, meansOfTransportationService, shipperTransportationDocSubTypeGuard);
 	}
 
 	// ------------------------------------------------------------------ tests

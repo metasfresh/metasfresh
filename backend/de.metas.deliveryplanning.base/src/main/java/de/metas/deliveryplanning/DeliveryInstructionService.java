@@ -23,12 +23,14 @@
 package de.metas.deliveryplanning;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.deliveryplanning.DeliveryPlanningAllocRepository.DeactivatedAllocations;
+import de.metas.document.engine.DocStatus;
 import de.metas.shipping.MPackageCreateRequest;
 import de.metas.shipping.MPackageRepository;
 import de.metas.shipping.ShipperId;
@@ -56,8 +58,12 @@ import java.util.List;
  * happens, over {@link DeliveryInstructionRepository}, {@link DeliveryPlanningAllocRepository},
  * {@link DeliveryPlanningRepository} and {@link MPackageRepository}.
  * <p>
- * Single-aggregate reads and writes are NOT re-exposed here - a caller that only needs the instruction header, or
- * only the allocations, injects that repository itself.
+ * It is also the ONE door to the delivery instruction for everything outside this package: a collaborator holds
+ * either this service or {@link DeliveryInstructionRepository}, never both, so a guard added to a read here
+ * (a permission filter, a {@code DocStatus} check, a cache) reaches every caller instead of half of them
+ * (docs/coding-rules/service-injection.md, "Don't dual-source"). Reads that are pure single-aggregate
+ * pass-throughs - {@link #getById}, {@link #getDocStatus}, {@link #getDocStatuses} - are therefore delegated
+ * rather than withheld.
  */
 @Service
 @RequiredArgsConstructor
@@ -67,6 +73,24 @@ public class DeliveryInstructionService
 	@NonNull private final DeliveryPlanningAllocRepository deliveryPlanningAllocRepository;
 	@NonNull private final DeliveryInstructionRepository deliveryInstructionRepository;
 	@NonNull private final MPackageRepository mPackageRepository;
+
+	/** The delivery instruction header. */
+	public I_M_ShipperTransportation getById(@NonNull final ShipperTransportationId deliveryInstructionId)
+	{
+		return deliveryInstructionRepository.getById(deliveryInstructionId);
+	}
+
+	/** The given delivery instruction's {@code DocStatus}. */
+	public DocStatus getDocStatus(@NonNull final ShipperTransportationId deliveryInstructionId)
+	{
+		return deliveryInstructionRepository.getDocStatus(deliveryInstructionId);
+	}
+
+	/** The given delivery instructions' {@code DocStatus}, in ONE query. */
+	public ImmutableMap<ShipperTransportationId, DocStatus> getDocStatuses(@NonNull final Collection<ShipperTransportationId> deliveryInstructionIds)
+	{
+		return deliveryInstructionRepository.getDocStatuses(deliveryInstructionIds);
+	}
 
 	/**
 	 * Creates ONE delivery instruction from the given request, with the request's own planning already allocated
@@ -309,9 +333,9 @@ public class DeliveryInstructionService
 
 	/**
 	 * Makes every delivery instruction the given planning is ACTIVELY allocated to refresh its
-	 * {@code M_ShippingPackage} line in an already-open WebUI document (Task Q14, TC11) - the four quantity
-	 * figures on that line are a {@code ColumnSQL} read-through of this planning, so a change here changes what
-	 * the line must show.
+	 * {@code M_ShippingPackage} line in an already-open WebUI document: the four quantity figures on that line
+	 * are a {@code ColumnSQL} read-through of this planning, so an operator who has the instruction open while
+	 * the planning's quantities are edited must see the new figures without reopening the document.
 	 * <p>
 	 * The reason a hand-written invalidation is needed at all, and why the request is rooted at the INSTRUCTION
 	 * rather than at the package, is spelled out on {@link DeliveryInstructionLineCacheInvalidation}. Broadcast

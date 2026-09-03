@@ -98,7 +98,6 @@ class M_Delivery_Planning_GenerateWriteBackTest
 				mock(ShipperRepository.class),
 				deliveryPlanningRepository,
 				deliveryPlanningAllocRepository,
-				deliveryInstructionRepository,
 				deliveryInstructionService,
 				mock(DeliveryStatusColorPaletteService.class),
 				mock(DimensionService.class),

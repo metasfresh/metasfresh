@@ -74,7 +74,6 @@ class DeliveryPlanningGenerateClosedGuardTest
 				Mockito.mock(ShipperRepository.class),
 				deliveryPlanningRepository,
 				deliveryPlanningAllocRepository,
-				deliveryInstructionRepository,
 				deliveryInstructionService,
 				Mockito.mock(DeliveryStatusColorPaletteService.class),
 				Mockito.mock(DimensionService.class),

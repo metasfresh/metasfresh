@@ -77,7 +77,6 @@ class M_Delivery_Planning_GenerateShortageOverageClosedGuardTest
 				Mockito.mock(ShipperRepository.class),
 				deliveryPlanningRepository,
 				deliveryPlanningAllocRepository,
-				deliveryInstructionRepository,
 				deliveryInstructionService,
 				Mockito.mock(DeliveryStatusColorPaletteService.class),
 				Mockito.mock(DimensionService.class),
