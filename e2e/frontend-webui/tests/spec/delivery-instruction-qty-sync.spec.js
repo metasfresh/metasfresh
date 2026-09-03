@@ -45,13 +45,13 @@ const GENERATE_DELIVERY_INSTRUCTION_PROCESS_ID = 'ADP_585176';
  */
 test.describe('Delivery instruction line — quantities follow the planning without a manual reload', () => {
   test('editing the planning updates the Versandpaket row of an open delivery instruction', async ({ page }) => {
-    allure.epic('E0210: Logistics');
-    allure.tag('F02160: Delivery Planning');
-    allure.tag('F02160');
+    allure.epic('E0360: Transport (Extralogistik)');
+    allure.tag('F29050: Delivery Planning');
+    allure.tag('F29050');
     allure.story('A delivery instruction line shows the planning current quantity with no manual reload');
     allure.severity('critical');
     allure.description(`
-## Delivery instruction line — quantity sync without a reload (TC11)
+## Delivery instruction line — quantity sync without a reload
 
 ### Test scenario
 

@@ -241,22 +241,20 @@ public class M_ShippingPackage_StepDef
 
 	/**
 	 * Re-reads the package straight from the database, discarding the in-memory record the identifier table
-	 * hands out. Mandatory since Task Q14: the four quantity figures are no longer physical columns written
-	 * once at generation, they are {@code ColumnSQL} read-throughs of the planning, so any step that changes
-	 * the planning changes what this assertion must see.
+	 * hands out. Originally mandatory since Task Q14: the four quantity figures are no longer physical columns
+	 * written once at generation, they are {@code ColumnSQL} read-throughs of the planning, so any step that
+	 * changes the planning changes what this assertion must see.
 	 * <p>
-	 * {@link de.metas.cucumber.stepdefs.StepDefData#get(StepDefDataIdentifier)} already calls
-	 * {@link org.adempiere.model.InterfaceWrapperHelper#refresh(Object)} on every PO it returns - and for
-	 * these four columns that is NOT enough. They carry {@code AD_Column.IsLazyLoading='Y'}, and
-	 * {@code PO#load(ResultSet)} skips every lazy column (`if (p_info.isLazyLoading(index)) continue;`), so a
-	 * refresh leaves both the previously fetched value in {@code m_oldValues} and its
-	 * {@code m_valueLoaded[index] = true} flag untouched; the next getter returns the stale figure without
-	 * going to the database at all. A record built from a fresh query has that flag clear, so each getter
-	 * loads the current value.
-	 * <p>
-	 * Without this, the natural way to make a scenario pass is to assert the pre-change figure - and the
-	 * assertion then holds against an implementation that never propagates anything, which is the exact class
-	 * of defect Task Q14 exists to remove.
+	 * At the time this method was written, {@link de.metas.cucumber.stepdefs.StepDefData#get(StepDefDataIdentifier)}'s
+	 * own {@link org.adempiere.model.InterfaceWrapperHelper#refresh(Object)} was NOT enough for these four
+	 * columns: they carried {@code AD_Column.IsLazyLoading='Y'}, and {@code PO#load(ResultSet)} skips every
+	 * lazy column (`if (p_info.isLazyLoading(index)) continue;`), so a refresh left both the previously
+	 * fetched value in {@code m_oldValues} and its {@code m_valueLoaded[index] = true} flag untouched - the
+	 * next getter returned the stale figure without going to the database at all. Migration 5822320 (later on
+	 * this branch) flips all four columns to {@code IsLazyLoading='N'} precisely to close that trap, which
+	 * means {@code refresh()} alone is now sufficient and this explicit re-query is redundant - kept anyway as
+	 * a harmless, explicit "read the current DB state" step rather than relying on refresh's now-correct but
+	 * less obvious behaviour.
 	 */
 	@NonNull
 	private I_M_ShippingPackage reloadFromDatabase(@NonNull final I_M_ShippingPackage shippingPackage)
