@@ -1,5 +1,16 @@
 -- Run mode: SWING_CLIENT
 
+-- CORRECTED 2026-09-03: as recorded, this file INSERTed AD_Field / AD_UI_Column /
+-- AD_UI_ElementGroup / AD_UI_Element rows with the recording developer's LOCAL sequence ids
+-- (>= 1000000). Those are the ids an instance's own sequence hands out next, so the rows
+-- squatted on them -- 1000047 and 1000033 were literally max(id)+1 at the time. They are now
+-- central ID-server ids. Instances that already applied the original are corrected by
+-- 5822300_sys_gh31399_Renumber_LocalSequence_Ids_Of_5818170.sql, which renumbers by natural key.
+--
+-- The remaining 1000007-1000012 below are AD_TreeNodeMM MENU-SEED nodes (1000007=Menu,
+-- 1000008=CRM, ...), identical on every instance and shipped in the db seed. They are correct
+-- as they are -- do not 'fix' them.
+
 
 -- Reordering children of `webUI`
 -- Node name: `Product Tag`
