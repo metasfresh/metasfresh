@@ -109,8 +109,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * PurchaseOrderToShipperTransportationRepository, MPackageRepository (the three transport and packing tables are
  * shared with the transport-order role, which knows nothing of delivery planning)
  * <p>
- * The one injected collaborator is {@link DimensionService}: a dimension is copied from the source row onto the
- * target row as that row is written, which is persistence rather than a delivery-planning decision.
+ * Injected collaborators: {@link DimensionService} (a dimension is copied from the source row onto the target row
+ * as that row is written - persistence rather than a delivery-planning decision), plus {@code IInOutBL} and
+ * {@code IUOMConversionBL} (via {@code Services.get}), used to resolve the booked quantity a completed receipt or
+ * shipment writes onto the planning and to branch that write by {@link TransportDirection} / {@code IsClosed}
+ * (Task Q11 - {@code recordActualQtyOnComplete} / {@code clearActualQtyOnReverse}).
  */
 @Repository
 public class DeliveryPlanningRepository
@@ -229,7 +232,7 @@ public class DeliveryPlanningRepository
 	 */
 	static boolean hasOwnShipment(@NonNull final TransportDirection transportDirection)
 	{
-		return transportDirection.isOutgoingOrDropship() && !transportDirection.isDropship();
+		return transportDirection.isOutgoing();
 	}
 
 	public Optional<DeliveryPlanningReceiptInfo> getReceiptInfoIfHasReceipt(@NonNull final DeliveryPlanningId deliveryPlanningId)
@@ -335,10 +338,10 @@ public class DeliveryPlanningRepository
 	 * placeholder for the never-reported vendor load and must never be touched by a receipt's completion,
 	 * for either direction.
 	 * <p>
-	 * The Dropship-shipment branch below is forward-looking and unreachable today: no generate process ever
-	 * creates a Dropship planning's OWN shipment ({@code GenerateOutgoingDeliveryPlanningCommand} hardcodes
-	 * {@link TransportDirection#Outgoing}) - it is kept for the future consolidated shape, not as a live
-	 * symmetric pair with the receipt branch above.
+	 * A shipment on a {@link TransportDirection#Dropship} planning is unreachable today - no generate process
+	 * ever creates a Dropship planning's OWN shipment ({@code GenerateOutgoingDeliveryPlanningCommand} hardcodes
+	 * {@link TransportDirection#Outgoing}) - so the branch below refuses rather than guess which end such a
+	 * shipment would occupy; see its own comment.
 	 *
 	 * @param isReceipt {@code true} for a receipt (a purchase-side {@code M_InOut}), {@code false} for a shipment
 	 */
@@ -360,9 +363,13 @@ public class DeliveryPlanningRepository
 			record.setActualLoadQty(bookedQty);
 			record.setActualDischargeQuantity(bookedQty);
 		}
-		else // Dropship shipment - forward-looking, unreachable today; see the Javadoc above
+		else
 		{
-			record.setActualDischargeQuantity(bookedQty);
+			// Dropship shipment: unreachable today (see the Javadoc above), and not safe to guess at - a receipt
+			// owns this planning's discharge end, so a shipment writing to it here would silently overwrite the
+			// wrong end. Pending the consolidated-planning design that would give a Dropship planning its own
+			// shipment; refuse rather than repeat that bug.
+			throw new AdempiereException("Dropship planning with its own shipment is not supported yet: " + record);
 		}
 
 		if (!record.isProcessed())
@@ -398,9 +405,10 @@ public class DeliveryPlanningRepository
 			record.setActualLoadQty(BigDecimal.ZERO);
 			record.setActualDischargeQuantity(BigDecimal.ZERO);
 		}
-		else // Dropship shipment - forward-looking, unreachable today; see recordActualQtyOnComplete's Javadoc
+		else
 		{
-			record.setActualDischargeQuantity(BigDecimal.ZERO);
+			// Dropship shipment: unreachable today, mirrors recordActualQtyOnComplete's refusal - see its comment.
+			throw new AdempiereException("Dropship planning with its own shipment is not supported yet: " + record);
 		}
 
 		if (!record.isClosed())
