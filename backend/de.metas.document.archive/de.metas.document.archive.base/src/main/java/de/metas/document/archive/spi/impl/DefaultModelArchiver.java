@@ -243,6 +243,10 @@ public class DefaultModelArchiver
 		// but it needs to be available in case the system has to create a printing queue item for this archive
 		IArchiveBL.COPIES_PER_ARCHIVE.setValue(archive, report.getCopies());
 
+		// stamp the suppress-auto-print decision (e.g. drop-ship shipments) so the printing-queue gate can honor it
+		// without a DB column: one AD_Archive can be printed multiple times, so this must not be persisted.
+		archiveBL.setSuppressAutoPrint(archive, report.isSuppressAutoPrint());
+
 		//
 		// forward async batch if there is one
 		final AsyncBatchId asyncBatchId = AsyncHelper.getAsyncBatchId(getRecord());

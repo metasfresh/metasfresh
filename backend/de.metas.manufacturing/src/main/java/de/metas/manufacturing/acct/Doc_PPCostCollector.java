@@ -22,6 +22,7 @@ package de.metas.manufacturing.acct;
  * #L%
  */
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.Account;
 import de.metas.acct.accounts.ProductAcctType;
@@ -31,11 +32,13 @@ import de.metas.acct.doc.AcctDocContext;
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElement;
+import de.metas.costing.methods.CostAmountDetailed;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocBaseType;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.Value;
 import org.compiere.acct.Doc;
 import org.compiere.acct.Fact;
 import org.eevolution.api.CostCollectorType;
@@ -160,6 +163,10 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		{
 			facts.addAll(createFacts_ActivityControl(as));
 		}
+		else if (CostCollectorType.CostDifferenceDistribution.equals(costCollectorType))
+		{
+			facts.addAll(createFacts_CostDifferenceDistribution(as));
+		}
 		else
 		{
 			throw newPostingException().setDetailMessage("Unknown costCollectorType: " + costCollectorType);
@@ -176,7 +183,8 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 			@NonNull final Account debit,
 			@NonNull final Account credit,
 			@NonNull final CostAmount cost,
-			@NonNull final Quantity qty)
+			@NonNull final Quantity qty,
+			final boolean alsoAddZeroLine)
 	{
 		final DocLine_CostCollector docLine = getLine();
 		final String description = costElement.getName();
@@ -186,6 +194,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 				.setAccount(debit)
 				.setAmtSource(cost.getCurrencyId(), cost.toBigDecimal(), null)
 				.setQty(qty)
+				.alsoAddZeroLineIf(alsoAddZeroLine) // caller controls whether a zero-amount-and-zero-qty line is still posted
 				.additionalDescription(description)
 				.projectId(docLine.getC_Project_ID())
 				.activityId(docLine.getActivityId())
@@ -197,6 +206,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 				.setAccount(credit)
 				.setAmtSource(cost.getCurrencyId(), null, cost.toBigDecimal())
 				.setQty(qty.negate())
+				.alsoAddZeroLineIf(alsoAddZeroLine) // keep the symmetric credit leg together with its debit
 				.additionalDescription(description)
 				.projectId(docLine.getC_Project_ID())
 				.activityId(docLine.getActivityId())
@@ -244,20 +254,29 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 					.roundToPrecisionIfNeeded(as.getStandardPrecision());
 			final CostAmount costsScrapped = costs.subtract(costsReceived);
 
-			if (costsReceived.signum() != 0)
+			// Received leg: post when something was received, even at zero cost (e.g. a manufactured product freshly
+			// on Moving Average Invoice). The received qty must reach P_Asset — the Lagerwert report sums
+			// Fact_Acct.qty on P_Asset, so dropping a zero-cost receipt line silently loses the received stock.
+			// alsoAddZeroLine=true is belt-and-suspenders here: the leg is already gated on a non-zero qty, so its
+			// line survives regardless (the flag would only matter if this guard were ever relaxed away from a qty check).
+			if (qtyReceived.signum() != 0)
 			{
 				final Account debit = docLine.getAccount(ProductAcctType.P_Asset_Acct, as);
-				final Fact fact = createFactLines(as, element, debit, credit, costsReceived, qtyReceived);
+				final Fact fact = createFactLines(as, element, debit, credit, costsReceived, qtyReceived, true);
 				if (fact != null)
 				{
 					facts.add(fact);
 				}
 			}
 
-			if (costsScrapped.signum() != 0)
+			// Scrap leg: post on qty OR cost — qty carries the scrapped stock into valuation, and cost still posts a
+			// sub-precision rounding remainder (the pre-fix behaviour) even when nothing was scrapped by qty.
+			// alsoAddZeroLine=true is belt-and-suspenders here too: the leg is already gated above, so its line
+			// survives regardless.
+			if (qtyScrapped.signum() != 0 || costsScrapped.signum() != 0)
 			{
 				final Account debit = docLine.getAccount(ProductAcctType.P_Scrap_Acct, as);
-				final Fact fact = createFactLines(as, element, debit, credit, costsScrapped, qtyScrapped);
+				final Fact fact = createFactLines(as, element, debit, credit, costsScrapped, qtyScrapped, true);
 				if (fact != null)
 				{
 					facts.add(fact);
@@ -299,7 +318,8 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 			// so getCreateCosts returns a negative cost. Posting it uncompensated would invert the direction
 			// (DR-WIP negative / CR-Asset negative). Compensate the sign here — mirroring createFacts_Variance —
 			// so a component issue posts DR P_WIP_Acct (positive) / CR P_Asset_Acct (positive): inventory down, WIP up.
-			final Fact fact = createFactLines(as, element, debit, credit, costs.negate(), qtyIssued.negate());
+			// alsoAddZeroLine=true: a component issue always books, even a zero-cost/zero-qty line
+			final Fact fact = createFactLines(as, element, debit, credit, costs.negate(), qtyIssued.negate(), true);
 			if (fact != null)
 			{
 				facts.add(fact);
@@ -336,7 +356,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		{
 			final CostAmount costs = costResult.getCostAmountForCostElement(element).getMainAmt();
 			final Account credit = docLine.getAccountForCostElement(as, element);
-			final Fact fact = createFactLines(as, element, debit, credit, costs, qtyMoved);
+			final Fact fact = createFactLines(as, element, debit, credit, costs, qtyMoved, false);
 			if (fact != null)
 			{
 				facts.add(fact);
@@ -379,7 +399,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 			}
 
 			final CostAmount costs = costResult.getCostAmountForCostElement(element).getMainAmt();
-			final Fact fact = createFactLines(as, element, debit, credit, costs.negate(), qty.negate());
+			final Fact fact = createFactLines(as, element, debit, credit, costs.negate(), qty.negate(), false);
 			if (fact != null)
 			{
 				facts.add(fact);
@@ -387,5 +407,109 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		}
 
 		return facts;
+	}
+
+	/**
+	 * Posts the WIP residual: DR Product Asset (capitalized) + DR COGS (shipped remainder) / CR WIP, each leg
+	 * flipped when the residual is negative.
+	 */
+	private List<Fact> createFacts_CostDifferenceDistribution(final AcctSchema as)
+	{
+		final DocLine_CostCollector docLine = getLine();
+		final AggregatedCostAmount costResult = docLine.getCreateCosts(as).orElse(null);
+		if (costResult == null)
+		{
+			return ImmutableList.of();
+		}
+
+		final ImmutableList<CostDifferenceDistributionLeg> legs = costDifferenceDistributionLegs(costResult.getTotalAmountToPost(as));
+		if (legs.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final Fact fact = new Fact(this, as, PostingType.Actual);
+		for (final CostDifferenceDistributionLeg leg : legs)
+		{
+			addCostDifferenceFactLine(fact, docLine, leg, as);
+		}
+
+		return ImmutableList.of(fact);
+	}
+
+	/**
+	 * The line carries a ZERO qty: the receipt already accounted for the quantity, so a qty here would be
+	 * counted a second time by the inventory valuation (Lagerwert) report.
+	 */
+	private void addCostDifferenceFactLine(
+			@NonNull final Fact fact,
+			@NonNull final DocLine_CostCollector docLine,
+			@NonNull final CostDifferenceDistributionLeg leg,
+			@NonNull final AcctSchema as)
+	{
+		final Account account = docLine.getAccount(leg.getAcctType(), as);
+		final CostAmount absAmt = leg.getAbsAmt();
+		fact.createLine()
+				.setDocLine(docLine)
+				.setAccount(account)
+				.setAmtSource(absAmt.getCurrencyId(),
+						leg.isDebit() ? absAmt.toBigDecimal() : null,
+						leg.isDebit() ? null : absAmt.toBigDecimal())
+				.setQty(getMovementQty().toZero())
+				.additionalDescription("CostDifferenceDistribution")
+				.projectId(docLine.getC_Project_ID())
+				.activityId(docLine.getActivityId())
+				.campaignId(docLine.getC_Campaign_ID())
+				.locatorId(docLine.getM_Locator_ID())
+				.buildAndAdd();
+	}
+
+	/**
+	 * At most three legs — asset, COGS and the negated residual on WIP — dropping the zero ones. They always
+	 * balance, because {@code capitalized + cogs == residual}.
+	 */
+	@VisibleForTesting
+	static ImmutableList<CostDifferenceDistributionLeg> costDifferenceDistributionLegs(@NonNull final CostAmountDetailed split)
+	{
+		final CostAmount residual = split.getMainAmt();
+		if (residual.isZero())
+		{
+			return ImmutableList.of();
+		}
+
+		final ImmutableList.Builder<CostDifferenceDistributionLeg> legs = ImmutableList.builder();
+		addLegIfNotZero(legs, ProductAcctType.P_Asset_Acct, split.getCostAdjustmentAmt());
+		addLegIfNotZero(legs, ProductAcctType.P_COGS_Acct, split.getAlreadyShippedAmt());
+		addLegIfNotZero(legs, ProductAcctType.P_WIP_Acct, residual.negate());
+		return legs.build();
+	}
+
+	private static void addLegIfNotZero(
+			@NonNull final ImmutableList.Builder<CostDifferenceDistributionLeg> legs,
+			@NonNull final ProductAcctType acctType,
+			@NonNull final CostAmount amt)
+	{
+		if (!amt.isZero())
+		{
+			legs.add(new CostDifferenceDistributionLeg(acctType, amt));
+		}
+	}
+
+	@Value
+	static class CostDifferenceDistributionLeg
+	{
+		@NonNull ProductAcctType acctType;
+		/** positive =&gt; debit; negative =&gt; credit. */
+		@NonNull CostAmount amt;
+
+		boolean isDebit()
+		{
+			return amt.signum() > 0;
+		}
+
+		CostAmount getAbsAmt()
+		{
+			return amt.negateIf(amt.signum() < 0);
+		}
 	}
 }
