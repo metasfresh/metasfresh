@@ -42,12 +42,14 @@ import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.TransportDirection;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.model.ShippingPackageId;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.ColorId;
 import de.metas.util.Services;
@@ -415,6 +417,38 @@ public class DeliveryPlanningRepository
 				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_C_OrderLine_ID, orderLineId)
 				.create()
 				.stream();
+	}
+
+	/**
+	 * Every planning of the given order line, as the in-memory value objects
+	 * {@link de.metas.deliveryplanning.DeliveryPlanningList#openPlanQty} is answered against - unlike
+	 * {@link #retrieveForOrderLine}, which returns records, not value objects.
+	 * <p>
+	 * Carries only the quantity fields the pool needs ({@code id}, {@code qtyOrdered} and the two load/discharge
+	 * pairs) plus the {@code id}/{@code orgId}/{@code transportDirection} the shared {@link DeliveryPlanning}
+	 * value object requires - no addresses, no allocations, unlike {@link DeliveryPlanningService}'s own mapper,
+	 * which this deliberately does not reuse (that one batch-loads addresses this caller never needs).
+	 */
+	public DeliveryPlanningList getByOrderLineId(@NonNull final OrderLineId orderLineId)
+	{
+		return retrieveForOrderLine(orderLineId)
+				.map(DeliveryPlanningRepository::toPoolPlanning)
+				.collect(DeliveryPlanningList.collect());
+	}
+
+	private static DeliveryPlanning toPoolPlanning(@NonNull final I_M_Delivery_Planning record)
+	{
+		final UomId uomId = UomId.ofRepoId(record.getC_UOM_ID());
+		return DeliveryPlanning.builder()
+				.id(DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID()))
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				.transportDirection(extractTransportDirection(record))
+				.qtyOrdered(Quantitys.of(record.getQtyOrdered(), uomId))
+				.plannedLoadedQty(Quantitys.of(record.getPlannedLoadedQuantity(), uomId))
+				.actualLoadedQty(Quantitys.of(record.getActualLoadQty(), uomId))
+				.plannedDischargeQty(Quantitys.of(record.getPlannedDischargeQuantity(), uomId))
+				.actualDischargeQty(Quantitys.of(record.getActualDischargeQuantity(), uomId))
+				.build();
 	}
 
 	/**

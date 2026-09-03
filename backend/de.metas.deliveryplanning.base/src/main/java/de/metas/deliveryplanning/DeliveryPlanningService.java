@@ -65,7 +65,6 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.quantity.Quantitys;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.Shipper;
 import de.metas.shipping.ShipperRepository;
@@ -76,7 +75,6 @@ import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.model.ShippingPackageId;
 import de.metas.uom.IUOMDAO;
-import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.RepoIdAware;
@@ -441,6 +439,7 @@ public class DeliveryPlanningService
 		final Quantity newPlanningLoadedQty;
 		final Quantity newPlanningLoadedQtyRemainder;
 		final Quantity newPlanningDischargeQty;
+		final Quantity newPlanningDischargeQtyRemainder;
 
 		if (targetIsAllocated)
 		{
@@ -453,10 +452,14 @@ public class DeliveryPlanningService
 			// plannings gives 3+3+3=9, one unit silently lost off the order line. Handed to the LAST planning
 			// created by the loop below (fix round 1, Task Q5).
 			newPlanningLoadedQtyRemainder = openQty.subtract(newPlanningLoadedQty.multiply(additionalLines));
-			// There is no order-line-relative pool on the discharge side (see getPlannedDischargeQty) - only the
-			// target's own committed figure exists there, and that figure is the fixed point being preserved, so
-			// nothing is left to hand to the new plannings.
-			newPlanningDischargeQty = Quantity.zero(openQty.getUOM());
+
+			// The discharge pair follows the SAME pool rule as load (Task Q8) - a discharge pool exists exactly
+			// like the load one (Q3's "no order-line-relative pool on the discharge side" is superseded). The
+			// target's own discharge figure is committed cargo and stays untouched, same as its load figure; the
+			// new plannings share what remains, DOWN-rounded with the remainder on the last one, same as load.
+			final Quantity openDischargeQty = getPlannedDischargeQty(deliveryPlanningId, true);
+			newPlanningDischargeQty = openDischargeQty.divide(BigDecimal.valueOf(additionalLines), 0, RoundingMode.DOWN);
+			newPlanningDischargeQtyRemainder = openDischargeQty.subtract(newPlanningDischargeQty.multiply(additionalLines));
 		}
 		else
 		{
@@ -469,7 +472,7 @@ public class DeliveryPlanningService
 			deliveryPlanningRepository.setPlannedLoadedQuantity(deliveryPlanningId, fraction.add(remainder));
 			newPlanningLoadedQty = fraction;
 
-			final Quantity dischargeQty = getPlannedDischargeQty(deliveryPlanningId);
+			final Quantity dischargeQty = getPlannedDischargeQty(deliveryPlanningId, false);
 			final Quantity dischargeFraction = dischargeQty.divide(BigDecimal.valueOf(additionalLines + 1), 0, RoundingMode.DOWN);
 			final Quantity dischargeRemainder = dischargeQty.subtract(dischargeFraction.multiply(additionalLines + 1));
 			deliveryPlanningRepository.setPlannedDischargeQuantity(deliveryPlanningId, dischargeFraction.add(dischargeRemainder));
@@ -477,51 +480,51 @@ public class DeliveryPlanningService
 			// Unallocated: the target itself absorbs the DOWN-rounding remainder above, so every new planning gets
 			// the plain fraction and there is nothing left over to hand to any of them here.
 			newPlanningLoadedQtyRemainder = Quantity.zero(openQty.getUOM());
+			newPlanningDischargeQtyRemainder = Quantity.zero(openQty.getUOM());
 		}
 
 		for (int i = 0; i < additionalLines; i++)
 		{
 			// The last planning created carries the allocated branch's remainder (zero on the unallocated branch)
-			// so the new plannings' figures still sum to the distributed pool.
+			// so the new plannings' figures still sum to the distributed pool - both ends, not just load
+			// (Task Q8): with more than one additional line, a dropped discharge remainder would be exactly as
+			// invisible as the load-side defect fix round 1 caught.
 			final boolean isLastNewPlanning = i == additionalLines - 1;
 			final Quantity loadedQtyForThisPlanning = isLastNewPlanning
 					? newPlanningLoadedQty.add(newPlanningLoadedQtyRemainder)
 					: newPlanningLoadedQty;
+			final Quantity dischargeQtyForThisPlanning = isLastNewPlanning
+					? newPlanningDischargeQty.add(newPlanningDischargeQtyRemainder)
+					: newPlanningDischargeQty;
 
-			final DeliveryPlanningCreateRequest request = createRequest(deliveryPlanningId, loadedQtyForThisPlanning, newPlanningDischargeQty);
+			final DeliveryPlanningCreateRequest request = createRequest(deliveryPlanningId, loadedQtyForThisPlanning, dischargeQtyForThisPlanning);
 
 			deliveryPlanningRepository.generateDeliveryPlanning(request);
 		}
 	}
 
 	/**
-	 * The planning's own {@code PlannedDischargeQuantity}, read BEFORE
-	 * {@link #createAdditionalDeliveryPlannings} overwrites it with the remainder share - the discharge-side
-	 * sibling of the {@code plannedLoadedQtySum}/{@code qtyOrdered} read in {@link #getOpenQty}, which only ever
-	 * covers the loaded figure.
+	 * The discharge-pair sibling of {@link #getOpenQty}: the order line's remaining distributable pool for the
+	 * DISCHARGE pair, following the SAME rule (owner, 2026-09-02, "The distributable pool") - a split
+	 * distributes what is left of the order line, and a sibling consumes its effective quantity: its actual once
+	 * one is recorded, otherwise its planned figure.
 	 * <p>
-	 * Unlike {@link #getOpenQty}, this reads the planning's own column directly - there is no order-line-relative
-	 * pool or residual on the discharge side. That coincides with the load path's result only for a FIRST split of
-	 * a single planning (which is this task's whole scope); a second-generation split, or a hand-edited planned
-	 * figure, would let the two diverge, since {@code getOpenQty} would still net against sibling plannings while
-	 * this method would not. Whichever later task changes the load-side pool (see {@code getOpenQty}'s own
-	 * evolution) must decide explicitly whether the discharge side follows it - that decision is deliberately not
-	 * made here.
+	 * Supersedes Task Q3's comment here claiming "there is no order-line-relative pool on the discharge side" -
+	 * a discharge pool exists, exactly like the load one; that reasoning was correct under Q3's instructions and
+	 * is superseded by this per-end rule (Task Q8).
 	 */
-	private Quantity getPlannedDischargeQty(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	private Quantity getPlannedDischargeQty(final DeliveryPlanningId deliveryPlanningId, final boolean targetIsAllocated)
 	{
-		final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningRepository.getById(deliveryPlanningId);
-		final I_C_UOM uom = uomDAO.getById(deliveryPlanningRecord.getC_UOM_ID());
-		return Quantity.of(deliveryPlanningRecord.getPlannedDischargeQuantity(), uom);
+		return resolveDistributablePool(deliveryPlanningId, targetIsAllocated, DeliveryPlanningList.PoolEnd.DISCHARGE);
 	}
 
 	/**
-	 * The order line's remaining distributable pool for {@code deliveryPlanningId}'s split (D8/AC12): {@code
-	 * QtyOrdered} minus what every OTHER planning of the line already claims, minus the target's own claim TOO once
-	 * it is allocated - committed cargo is excluded from what a split may hand out, same as any other planning's
-	 * share. Unallocated, the target is excluded from the sum instead, exactly as before Task Q5: its own share is
-	 * still up for redistribution, which is what lets {@link #createAdditionalDeliveryPlannings} give it a slice of
-	 * this same pool.
+	 * The order line's remaining distributable pool for {@code deliveryPlanningId}'s split (D8/AC12), for the
+	 * LOAD pair: {@code QtyOrdered} minus what every OTHER planning of the line already claims, minus the
+	 * target's own claim TOO once it is allocated - committed cargo is excluded from what a split may hand out,
+	 * same as any other planning's share. Unallocated, the target is excluded from the sum instead, exactly as
+	 * before Task Q5: its own share is still up for redistribution, which is what lets
+	 * {@link #createAdditionalDeliveryPlannings} give it a slice of this same pool.
 	 * <p>
 	 * {@code targetIsAllocated} is handed in rather than queried here so the caller - which already needs the same
 	 * fact to decide whether to rewrite the target's own figure - pays for {@link
@@ -529,37 +532,37 @@ public class DeliveryPlanningService
 	 */
 	private Quantity getOpenQty(final DeliveryPlanningId deliveryPlanningId, final boolean targetIsAllocated)
 	{
+		return resolveDistributablePool(deliveryPlanningId, targetIsAllocated, DeliveryPlanningList.PoolEnd.LOAD);
+	}
+
+	/**
+	 * The ONE pool rule (owner, 2026-09-02, "The distributable pool"), shared by {@link #getOpenQty} (load) and
+	 * {@link #getPlannedDischargeQty} (discharge): the arithmetic itself lives in
+	 * {@link DeliveryPlanningList#openPlanQty}, loaded once per call via
+	 * {@link DeliveryPlanningRepository#getByOrderLineId} - unit-tested there without a database. Floored at 0
+	 * HERE, not in the shared calculation: a negative pool is not distributable (D16), so the clamp belongs to
+	 * this split-facing use of the figure, never to a display column that may legitimately show a negative
+	 * (over-planned/over-delivered signals the line's state, per D16).
+	 */
+	private Quantity resolveDistributablePool(
+			final DeliveryPlanningId deliveryPlanningId,
+			final boolean targetIsAllocated,
+			final DeliveryPlanningList.PoolEnd end)
+	{
 		final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningRepository.getById(deliveryPlanningId);
 		final I_C_UOM uom = uomDAO.getById(deliveryPlanningRecord.getC_UOM_ID());
-
-		final Quantity qtyOrdered = Quantity.of(deliveryPlanningRecord.getQtyOrdered(), uom);
 
 		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(deliveryPlanningRecord.getC_OrderLine_ID());
 		if (orderLineId == null)
 		{
-			// the delivery planning has no order line => remaining open qty is 0
+			// the delivery planning has no order line => nothing to distribute
 			return Quantity.zero(uom);
 		}
 
-		Quantity openQty = qtyOrdered;
+		final DeliveryPlanningList orderLinePlannings = deliveryPlanningRepository.getByOrderLineId(orderLineId);
+		final DeliveryPlanningId excludePlanningId = targetIsAllocated ? null : deliveryPlanningId;
 
-		final Quantity plannedLoadedQtySum = deliveryPlanningRepository.retrieveForOrderLine(orderLineId)
-				.filter(deliveryPlanning -> targetIsAllocated || deliveryPlanningId.getRepoId() != deliveryPlanning.getM_Delivery_Planning_ID())
-				.map(DeliveryPlanningService::extractPlannedLoadedQuantity)
-				.reduce(Quantity::add)
-				.orElse(null);
-		if (plannedLoadedQtySum != null && !plannedLoadedQtySum.isZero())
-		{
-			openQty = openQty.subtract(plannedLoadedQtySum);
-		}
-
-		return openQty.toZeroIfNegative();
-	}
-
-	private static Quantity extractPlannedLoadedQuantity(final I_M_Delivery_Planning deliveryPlanning)
-	{
-		final UomId uomId = UomId.ofRepoId(deliveryPlanning.getC_UOM_ID());
-		return Quantitys.of(deliveryPlanning.getPlannedLoadedQuantity(), uomId);
+		return orderLinePlannings.openPlanQty(excludePlanningId, end).toZeroIfNegative();
 	}
 
 	public void deleteForReceiptSchedule(@NonNull final ReceiptScheduleId receiptScheduleId)

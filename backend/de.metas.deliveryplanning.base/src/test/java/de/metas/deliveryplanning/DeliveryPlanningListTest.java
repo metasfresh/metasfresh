@@ -24,17 +24,24 @@ package de.metas.deliveryplanning;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.deliveryplanning.DeliveryPlanningList.AggregationKeyField;
+import de.metas.deliveryplanning.DeliveryPlanningList.PoolEnd;
 import de.metas.incoterms.IncotermsId;
 import de.metas.organization.OrgId;
+import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.TransportDirection;
 import de.metas.shipping.model.ShipperTransportationId;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_UOM;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Arrays;
 
@@ -51,6 +58,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 class DeliveryPlanningListTest
 {
 	private static int nextId = 1;
+
+	private static I_C_UOM uom;
+
+	@BeforeAll
+	static void init()
+	{
+		// no database: AdempiereTestHelper wires only the in-memory POJO/model-instance framework Quantity's
+		// constructor needs to hold an I_C_UOM - nothing here touches a real (Postgres) connection.
+		AdempiereTestHelper.get().init();
+		uom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
+		InterfaceWrapperHelper.save(uom);
+	}
+
+	private static Quantity qty(final int value)
+	{
+		return Quantity.of(BigDecimal.valueOf(value), uom);
+	}
 
 	private static DeliveryPlanning.DeliveryPlanningBuilder planning()
 	{
@@ -536,6 +560,115 @@ class DeliveryPlanningListTest
 		void nullStaysNull()
 		{
 			assertThat(AggregationKeyField.toProcessParameterValue(null)).isNull();
+		}
+	}
+
+	/**
+	 * Pure in-memory arithmetic of the one distributable-pool rule (owner, 2026-09-02, "The distributable
+	 * pool") - the whole reason it lives on {@link DeliveryPlanningList} rather than inline in
+	 * {@code DeliveryPlanningService}, per Task Q8.
+	 */
+	@Nested
+	@DisplayName("openPlanQty")
+	class OpenPlanQty
+	{
+		private DeliveryPlanning poolPlanning(
+				final int idRepoId,
+				final int qtyOrdered,
+				final int plannedLoad,
+				final int actualLoad,
+				final int plannedDischarge,
+				final int actualDischarge)
+		{
+			return DeliveryPlanning.builder()
+					.id(DeliveryPlanningId.ofRepoId(idRepoId))
+					.orgId(OrgId.ofRepoId(1000000))
+					.transportDirection(TransportDirection.Outgoing)
+					.qtyOrdered(qty(qtyOrdered))
+					.plannedLoadedQty(qty(plannedLoad))
+					.actualLoadedQty(qty(actualLoad))
+					.plannedDischargeQty(qty(plannedDischarge))
+					.actualDischargeQty(qty(actualDischarge))
+					.build();
+		}
+
+		@Test
+		@DisplayName("a single planning, excluded from its own pool, leaves nothing claimed: the pool is the full QtyOrdered")
+		void singlePlanningExcludedIsTheFirstSplit()
+		{
+			final DeliveryPlanningId target = DeliveryPlanningId.ofRepoId(701);
+			final DeliveryPlanningList list = DeliveryPlanningList.of(
+					poolPlanning(701, 10, 10, 0, 10, 0));
+
+			assertThat(list.openPlanQty(target, PoolEnd.LOAD)).isEqualTo(qty(10));
+		}
+
+		@Test
+		@DisplayName("nullif: a sibling whose actual is 0 (nothing recorded yet) is claimed at its PLANNED figure, not zero")
+		void siblingActualZeroFallsBackToPlanned()
+		{
+			final DeliveryPlanningId target = DeliveryPlanningId.ofRepoId(702);
+			final DeliveryPlanning sibling = poolPlanning(703, 20, 10, 0, 10, 0);
+			final DeliveryPlanningList list = DeliveryPlanningList.of(
+					poolPlanning(702, 20, 10, 0, 10, 0),
+					sibling);
+
+			// a planned-only-ignoring-nullif bug would read the sibling's actual (0) as a real zero and answer
+			// 20 here instead of 10 - exactly the inflation the nullif rule exists to prevent.
+			assertThat(list.openPlanQty(target, PoolEnd.LOAD)).isEqualTo(qty(10));
+		}
+
+		@Test
+		@DisplayName("coalesce: a sibling with a recorded nonzero actual is claimed at its ACTUAL, not its planned figure")
+		void siblingWithActualIsClaimedAtItsActual()
+		{
+			final DeliveryPlanningId target = DeliveryPlanningId.ofRepoId(704);
+			final DeliveryPlanning sibling = poolPlanning(705, 20, 10, 6, 10, 6);
+			final DeliveryPlanningList list = DeliveryPlanningList.of(
+					poolPlanning(704, 20, 10, 0, 10, 0),
+					sibling);
+
+			// a planned-only implementation would read the sibling's claim as its planned 10 and answer 10 here;
+			// the sibling actually delivered less (6) than planned, so more of the line is still open: 14.
+			assertThat(list.openPlanQty(target, PoolEnd.LOAD)).isEqualTo(qty(14));
+		}
+
+		@Test
+		@DisplayName("excludePlanningId null (allocated target): every planning's claim counts, the target's own included")
+		void nullExcludeIncludesTheTargetItself()
+		{
+			final DeliveryPlanning allocatedTarget = poolPlanning(706, 10, 10, 0, 10, 0);
+			final DeliveryPlanningList list = DeliveryPlanningList.of(allocatedTarget);
+
+			assertThat(list.openPlanQty(null, PoolEnd.LOAD)).isEqualTo(qty(0));
+		}
+
+		@Test
+		@DisplayName("load and discharge are independent pairs - each end nets only its own columns")
+		void loadAndDischargeAreIndependent()
+		{
+			final DeliveryPlanningId target = DeliveryPlanningId.ofRepoId(707);
+			final DeliveryPlanning sibling = poolPlanning(708, 20, 12, 0, 3, 0);
+			final DeliveryPlanningList list = DeliveryPlanningList.of(
+					poolPlanning(707, 20, 0, 0, 0, 0),
+					sibling);
+
+			assertThat(list.openPlanQty(target, PoolEnd.LOAD)).isEqualTo(qty(8));
+			assertThat(list.openPlanQty(target, PoolEnd.DISCHARGE)).isEqualTo(qty(17));
+		}
+
+		@Test
+		@DisplayName("the pool is NOT floored at zero here - an over-planned line answers negative, the split's own caller clamps")
+		void notClampedHere()
+		{
+			final DeliveryPlanningId target = DeliveryPlanningId.ofRepoId(709);
+			final DeliveryPlanning sibling = poolPlanning(710, 10, 15, 0, 10, 0);
+			final DeliveryPlanningList list = DeliveryPlanningList.of(
+					poolPlanning(709, 10, 0, 0, 0, 0),
+					sibling);
+
+			assertThat(list.openPlanQty(target, PoolEnd.LOAD).toBigDecimal())
+					.isEqualByComparingTo(BigDecimal.valueOf(-5));
 		}
 	}
 }

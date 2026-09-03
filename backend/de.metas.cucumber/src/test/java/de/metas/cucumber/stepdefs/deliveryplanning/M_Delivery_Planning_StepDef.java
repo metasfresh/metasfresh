@@ -600,6 +600,8 @@ public class M_Delivery_Planning_StepDef
 	 *   a scenario that needs a starting figure other than {@code QtyOrdered} sets it here<br>
 	 *   <b>PlannedDischargeQuantity</b> — (optional) new {@code PlannedDischargeQuantity} to seed before a split -
 	 *   generation always writes {@code 0}, so a scenario that needs a non-zero starting figure sets it here<br>
+	 *   <b>ActualLoadQty</b> — (optional) new {@code ActualLoadQty} to seed a partial shipment before a split -
+	 *   there is no shipment process driven in these scenarios, so the figure is set directly<br>
 	 *   <b>ActualDischargeQuantity</b> — (optional) new {@code ActualDischargeQuantity} to seed a partial receipt
 	 *   before a split - there is no receipt process driven in these scenarios, so the figure is set directly<br>
 	 * @cucumber.depends StepDefData: M_Delivery_Planning_StepDefData, M_Shipper_StepDefData
@@ -629,6 +631,9 @@ public class M_Delivery_Planning_StepDef
 
 			row.getAsOptionalBigDecimal(I_M_Delivery_Planning.COLUMNNAME_PlannedDischargeQuantity)
 					.ifPresent(deliveryPlanning::setPlannedDischargeQuantity);
+
+			row.getAsOptionalBigDecimal(I_M_Delivery_Planning.COLUMNNAME_ActualLoadQty)
+					.ifPresent(deliveryPlanning::setActualLoadQty);
 
 			row.getAsOptionalBigDecimal(I_M_Delivery_Planning.COLUMNNAME_ActualDischargeQuantity)
 					.ifPresent(deliveryPlanning::setActualDischargeQuantity);

@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.incoterms.IncotermsId;
 import de.metas.organization.OrgId;
+import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.TransportDirection;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -76,6 +77,25 @@ public class DeliveryPlanning
 	@Nullable Instant etd;
 
 	boolean closed;
+
+	/**
+	 * The order line's ordered quantity, replicated onto every planning of that line - {@code null} for a
+	 * planning loaded by a caller that never asks {@link DeliveryPlanningList#openPlanQty} about it (e.g. the
+	 * aggregation preconditions), which is why this is not {@code @NonNull}.
+	 */
+	@Nullable Quantity qtyOrdered;
+
+	/** This planning's own planned LOAD figure - the load half of {@link DeliveryPlanningList#openPlanQty}'s pool. */
+	@Nullable Quantity plannedLoadedQty;
+
+	/** This planning's own ACTUAL load figure - {@code null}/zero until something is recorded against it. */
+	@Nullable Quantity actualLoadedQty;
+
+	/** This planning's own planned DISCHARGE figure - the discharge half of the pool. */
+	@Nullable Quantity plannedDischargeQty;
+
+	/** This planning's own ACTUAL discharge figure - a receipt's, once booked. */
+	@Nullable Quantity actualDischargeQty;
 
 	/**
 	 * This planning's ACTIVE allocations, one per delivery instruction it sits on. A list rather than a single id

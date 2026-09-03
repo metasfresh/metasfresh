@@ -25,7 +25,9 @@ package de.metas.deliveryplanning;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.AdMessageKey;
+import de.metas.quantity.Quantity;
 import de.metas.shipping.TransportDirection;
+import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.lang.RepoIdAware;
 import lombok.EqualsAndHashCode;
@@ -162,6 +164,77 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	private DeliveryPlanningList filter(@NonNull final Predicate<DeliveryPlanning> predicate)
 	{
 		return list.stream().filter(predicate).collect(collect());
+	}
+
+	/**
+	 * The ONE distributable-pool rule (owner, 2026-09-02, "The distributable pool" - see the plan's Global
+	 * Constraints), applied to whichever {@code end} the caller asks about: {@code QtyOrdered} minus what every
+	 * OTHER planning of this order line claims - {@code coalesce(nullif(actual, 0), planned)} - so a zero actual
+	 * (nothing recorded yet) falls back to the sibling's planned share instead of being read as a real zero that
+	 * would inflate the pool by that sibling's whole planned amount.
+	 * <p>
+	 * {@code excludePlanningId} is the split's own target: {@code null} to include every planning in the sum
+	 * (the target's own claim counts too, once it is allocated and therefore committed cargo), or that
+	 * planning's id to leave its own claim out (unallocated: its share is still up for redistribution).
+	 * <p>
+	 * NOT floored at zero here - see {@link DeliveryPlanning} class javadoc and the caller: the clamp belongs to
+	 * the SPLIT's use of this figure (a negative pool is not distributable), not to this shared calculation,
+	 * which a display column may also read unclamped (an over-planned line legitimately shows a negative).
+	 * <p>
+	 * Pure in-memory arithmetic over already-loaded {@link DeliveryPlanning} rows - unit-tested without a
+	 * database, which is the whole reason this pool lives here rather than inline in the service.
+	 */
+	public Quantity openPlanQty(@Nullable final DeliveryPlanningId excludePlanningId, @NonNull final PoolEnd end)
+	{
+		Check.assumeNotEmpty(list, "Cannot compute the distributable pool of an empty DeliveryPlanningList");
+
+		final Quantity qtyOrdered = list.get(0).getQtyOrdered();
+
+		Quantity claimed = null;
+		for (final DeliveryPlanning deliveryPlanning : list)
+		{
+			if (excludePlanningId != null && excludePlanningId.equals(deliveryPlanning.getId()))
+			{
+				continue;
+			}
+
+			final Quantity effectiveQty = end.effectiveQty(deliveryPlanning);
+			claimed = claimed == null ? effectiveQty : claimed.add(effectiveQty);
+		}
+
+		return claimed == null ? qtyOrdered : qtyOrdered.subtract(claimed);
+	}
+
+	/**
+	 * Which pair of quantity columns {@link #openPlanQty} nets - the load pair or the discharge pair (see the
+	 * plan's Global Constraints, "The distributable pool", "Applied per end").
+	 */
+	public enum PoolEnd
+	{
+		LOAD(DeliveryPlanning::getPlannedLoadedQty, DeliveryPlanning::getActualLoadedQty),
+		DISCHARGE(DeliveryPlanning::getPlannedDischargeQty, DeliveryPlanning::getActualDischargeQty);
+
+		private final Function<DeliveryPlanning, Quantity> plannedExtractor;
+		private final Function<DeliveryPlanning, Quantity> actualExtractor;
+
+		PoolEnd(
+				@NonNull final Function<DeliveryPlanning, Quantity> plannedExtractor,
+				@NonNull final Function<DeliveryPlanning, Quantity> actualExtractor)
+		{
+			this.plannedExtractor = plannedExtractor;
+			this.actualExtractor = actualExtractor;
+		}
+
+		/**
+		 * A sibling's effective claim on the pool: its actual once one is recorded ({@code nullif(actual, 0)}),
+		 * otherwise its planned figure.
+		 */
+		private Quantity effectiveQty(@NonNull final DeliveryPlanning deliveryPlanning)
+		{
+			final Quantity actual = actualExtractor.apply(deliveryPlanning);
+			final Quantity planned = plannedExtractor.apply(deliveryPlanning);
+			return actual != null && !actual.isZero() ? actual : planned;
+		}
 	}
 
 	/**

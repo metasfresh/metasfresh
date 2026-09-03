@@ -443,10 +443,149 @@ Feature: Delivery planning quantities
     Then after not more than 30s, load created M_Delivery_Planning:
       | M_Delivery_Planning_ID                         | C_OrderLine_ID   |
       | deliveryPlanningTC12_1,deliveryPlanningTC12_2 | orderLineQtyTC12 |
+    # Task Q8: the discharge pool now nets coalesce(nullif(actual, 0), planned) instead of copying the
+    # target's own committed 50 as zero. The target is allocated, so its OWN claim counts too: the pool is
+    # QtyOrdered(50) - its actual(40, nonzero so it wins over its planned 50) = 10, all of which the single
+    # new planning receives (additionalLines=1) - not the 0 a planned-only/pre-Q8 reading gave.
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity | ActualLoadQty | ActualDischargeQuantity |
       | deliveryPlanningTC12_1 | 50         | 50           | Incoming            | 50                    | 50                       | 50            | 40                      |
-      | deliveryPlanningTC12_2 | 50         | 50           | Incoming            | 0                     | 0                        | 0             | 0                       |
+      | deliveryPlanningTC12_2 | 50         | 50           | Incoming            | 0                     | 10                       | 0             | 0                       |
+
+  @Id:S31789_TC_Q8_NullifFallback
+  Scenario: Splitting again treats a sibling's zero actual as "nothing recorded yet", not a real zero - the pool falls back to its planned figure
+
+    Given metasfresh contains C_Orders:
+      | Identifier      | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier |
+      | orderQtyNullif  | true    | customer                 | 2023-02-03  | 2023-02-25T00:00:00Z | customerLocation                      |
+    And metasfresh contains C_OrderLines:
+      | Identifier         | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineQtyNullif | orderQtyNullif         | product                 | 20         | shipper_DHL                 |
+
+    When the order identified by orderQtyNullif is completed
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID   | C_OrderLine_ID     |
+      | deliveryPlanningNullif_1 | orderLineQtyNullif |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID   | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity |
+      | deliveryPlanningNullif_1 | 20         | 20           | Outgoing            | 20                    | 20                       |
+
+    When generate 1 additional M_Delivery_Planning records for: deliveryPlanningNullif_1
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID                            | C_OrderLine_ID     |
+      | deliveryPlanningNullif_1,deliveryPlanningNullif_2 | orderLineQtyNullif |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID   | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity | ActualLoadQty |
+      | deliveryPlanningNullif_1 | 20         | 20           | Outgoing            | 10                    | 10                       | 0             |
+      | deliveryPlanningNullif_2 | 20         | 20           | Outgoing            | 10                    | 10                       | 0             |
+
+    # deliveryPlanningNullif_2's ActualLoadQty is still 0 - nothing has been delivered against it. Splitting
+    # deliveryPlanningNullif_1 again must still claim deliveryPlanningNullif_2's full PLANNED share (10) for
+    # the pool, not read the zero actual as "nothing left to claim" - a bug reading raw actual (no nullif)
+    # would answer a pool of 20 here instead of 10, giving 10/10 instead of the correct 5/5 below.
+    When generate 1 additional M_Delivery_Planning records for: deliveryPlanningNullif_1
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID                                                     | C_OrderLine_ID     |
+      | deliveryPlanningNullif_1,deliveryPlanningNullif_2,deliveryPlanningNullif_3 | orderLineQtyNullif |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID   | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity | ActualLoadQty |
+      | deliveryPlanningNullif_1 | 20         | 20           | Outgoing            | 5                     | 5                        | 0             |
+      | deliveryPlanningNullif_2 | 20         | 20           | Outgoing            | 10                    | 10                       | 0             |
+      | deliveryPlanningNullif_3 | 20         | 20           | Outgoing            | 5                     | 5                        | 0             |
+
+  @Id:S31789_TC_Q8_PartialDeliveryPool
+  Scenario: Splitting again after a partial delivery on one of two plannings frees up exactly what was not delivered, not the sibling's whole plan
+
+    Given metasfresh contains C_Orders:
+      | Identifier      | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier |
+      | orderQtyPartial | true    | customer                 | 2023-02-03  | 2023-02-25T00:00:00Z | customerLocation                      |
+    And metasfresh contains C_OrderLines:
+      | Identifier          | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineQtyPartial | orderQtyPartial        | product                 | 20         | shipper_DHL                 |
+
+    When the order identified by orderQtyPartial is completed
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID    | C_OrderLine_ID      |
+      | deliveryPlanningPartial_1 | orderLineQtyPartial |
+
+    When generate 1 additional M_Delivery_Planning records for: deliveryPlanningPartial_1
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID                              | C_OrderLine_ID      |
+      | deliveryPlanningPartial_1,deliveryPlanningPartial_2 | orderLineQtyPartial |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID    | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty |
+      | deliveryPlanningPartial_1 | 20         | 20           | Outgoing            | 10                    | 0             |
+      | deliveryPlanningPartial_2 | 20         | 20           | Outgoing            | 10                    | 0             |
+
+    # A partial delivery (6 of the 10 planned) on deliveryPlanningPartial_2 - a split must never write an
+    # actual, so this is done directly, standing in for whatever future task books the real shipment.
+    And update M_Delivery_Planning:
+      | M_Delivery_Planning_ID    | ActualLoadQty |
+      | deliveryPlanningPartial_2 | 6             |
+
+    # The pool for deliveryPlanningPartial_1's split nets deliveryPlanningPartial_2's ACTUAL (6, nonzero) -
+    # QtyOrdered(20) - 6 = 14 - not its still-fully-claimed PLANNED figure (10), which would answer a pool of
+    # 10 and give 5/5 instead of the correct 7/7: under-delivering relative to plan frees up the difference.
+    When generate 1 additional M_Delivery_Planning records for: deliveryPlanningPartial_1
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID                                                        | C_OrderLine_ID      |
+      | deliveryPlanningPartial_1,deliveryPlanningPartial_2,deliveryPlanningPartial_3 | orderLineQtyPartial |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID    | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty |
+      | deliveryPlanningPartial_1 | 20         | 20           | Outgoing            | 7                     | 0             |
+      | deliveryPlanningPartial_2 | 20         | 20           | Outgoing            | 10                    | 6             |
+      | deliveryPlanningPartial_3 | 20         | 20           | Outgoing            | 7                     | 0             |
+
+  @Id:S31789_TC_Q8_AllocatedDischargeRemainder
+  Scenario: Splitting an allocated planning with an uneven discharge pool and more than one additional line puts the remainder on the LAST new planning, not the target
+
+    Given metasfresh contains C_Orders:
+      | Identifier       | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier |
+      | orderQtyDischRem | true    | customer                 | 2023-02-03  | 2023-02-25T00:00:00Z | customerLocation                      |
+    And metasfresh contains C_OrderLines:
+      | Identifier           | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineQtyDischRem | orderQtyDischRem       | product                 | 13         | shipper_DHL                 |
+
+    When the order identified by orderQtyDischRem is completed
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID     | C_OrderLine_ID       |
+      | deliveryPlanningDischRem_1 | orderLineQtyDischRem |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID     | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedDischargeQuantity |
+      | deliveryPlanningDischRem_1 | 13         | 13           | Outgoing            | 13                       |
+
+    # A partial consumption (2 of the 13 planned) recorded directly on the target's own discharge, before it
+    # is allocated - standing in for whatever future task books the real receipt against this figure.
+    And update M_Delivery_Planning:
+      | M_Delivery_Planning_ID     | ActualDischargeQuantity |
+      | deliveryPlanningDischRem_1 | 2                        |
+
+    And generate M_ShipperTransportation for M_Delivery_Planning:
+      | M_ShipperTransportation_ID  | M_Delivery_Planning_ID     | IsComplete |
+      | deliveryInstructionDischRem | deliveryPlanningDischRem_1 | false      |
+
+    # Allocated: the target's own discharge (13) is committed cargo and stays untouched (D8). The pool is
+    # QtyOrdered(13) - its own actual(2, nonzero so it wins over its planned 13) = 11, DOWN-divided over 2
+    # additional lines (additionalLines=2, a non-dividing quantity): 11/2 = 5 remainder 1 - the remainder
+    # goes to the LAST new planning, same rule the load figure already followed (fix round 1, Task Q5),
+    # applied here to discharge for the first time (Task Q8).
+    When generate 2 additional M_Delivery_Planning records for: deliveryPlanningDischRem_1
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID                                                           | C_OrderLine_ID       |
+      | deliveryPlanningDischRem_1,deliveryPlanningDischRem_2,deliveryPlanningDischRem_3 | orderLineQtyDischRem |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID     | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedDischargeQuantity | ActualDischargeQuantity |
+      | deliveryPlanningDischRem_1 | 13         | 13           | Outgoing            | 13                       | 2                       |
+      | deliveryPlanningDischRem_2 | 13         | 13           | Outgoing            | 5                        | 0                       |
+      | deliveryPlanningDischRem_3 | 13         | 13           | Outgoing            | 6                        | 0                       |
 
   @Id:S31789_TC_Q7c_SplitSeedsOwnPlannedLoad
   Scenario: Splitting an incoming delivery planning seeds each new planning's ActualLoadQty from its OWN planned load, never copied from the target
