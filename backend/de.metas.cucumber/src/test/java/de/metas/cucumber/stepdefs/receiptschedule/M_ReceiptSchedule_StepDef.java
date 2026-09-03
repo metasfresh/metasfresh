@@ -213,6 +213,35 @@ public class M_ReceiptSchedule_StepDef
 		assertThat(purchaseOrderReceiptSchedules).isNull();
 	}
 
+	/**
+	 * Applies the operator's own overrides to an existing receipt schedule.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_ReceiptSchedule_ID</b> — (required, identifier-ref) the receipt schedule to update<br>
+	 *   <b>OPT.DatePromised_Override</b> — (optional) the date the operator promises instead of the one the
+	 *   order carries; it is what {@code DatePromised_Effective} resolves to from then on<br>
+	 * @cucumber.depends StepDefData: M_ReceiptSchedule_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update M_ReceiptSchedule:
+	 *   | M_ReceiptSchedule_ID | OPT.DatePromised_Override |
+	 *   | receiptSchedule      | 2023-03-15                |
+	 * </pre>
+	 */
+	@And("update M_ReceiptSchedule:")
+	public void update_M_ReceiptSchedule(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_M_ReceiptSchedule receiptSchedule = row.getAsIdentifier(COLUMNNAME_M_ReceiptSchedule_ID).lookupNotNullIn(receiptScheduleTable);
+
+			row.getAsOptionalLocalDateTimestamp(I_M_ReceiptSchedule.COLUMNNAME_DatePromised_Override)
+					.ifPresent(receiptSchedule::setDatePromised_Override);
+
+			saveRecord(receiptSchedule);
+		});
+	}
+
 	@And("^trigger (EMPTIES RECEIVE|EMPTIES RETURN) process:$")
 	public void trigger_empties_process(@NonNull final String type, @NonNull final DataTable dataTable)
 	{
