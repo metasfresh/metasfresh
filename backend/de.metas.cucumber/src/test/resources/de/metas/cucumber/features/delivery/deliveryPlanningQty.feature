@@ -206,13 +206,21 @@ Feature: Delivery planning quantities
       | M_Delivery_Planning_ID | ActualDischargeQuantity |
       | deliveryPlanningFollow | 4                       |
 
+    # Task Q8: QtyTotalOpen is now LIVE - Incoming nets discharge, so the actual write above moves it
+    # immediately from 9 (QtyOrdered - 0) to 5 (QtyOrdered - 4), rather than staying frozen at creation.
+    Then validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | ActualDischargeQuantity |
+      | deliveryPlanningFollow | 9          | 5            | Incoming            | 4                       |
+
     And update M_Delivery_Planning:
       | M_Delivery_Planning_ID | PlannedLoadedQuantity |
       | deliveryPlanningFollow | 3                     |
 
+    # PlannedLoadedQuantity does not feed QtyTotalOpen for Incoming (it nets discharge), so it stays at 5 -
+    # only the discharge actual moves it, never the load side.
     Then validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | ActualDischargeQuantity |
-      | deliveryPlanningFollow | 9          | 9            | Incoming            | 3                     | 3             | 4                       |
+      | deliveryPlanningFollow | 9          | 5            | Incoming            | 3                     | 3             | 4                       |
 
   @Id:S31789_TC_Q3_Split
   Scenario: Splitting an unallocated delivery planning divides both the loaded and discharge planned quantities
@@ -434,6 +442,12 @@ Feature: Delivery planning quantities
       | M_Delivery_Planning_ID | ActualDischargeQuantity |
       | deliveryPlanningTC12_1 | 40                      |
 
+    # Task Q8: the write moves QtyTotalOpen immediately - QtyOrdered(50) - actual(40) = 10 - the moment the
+    # receipt is recorded, before any instruction or split exists.
+    Then validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | ActualDischargeQuantity |
+      | deliveryPlanningTC12_1 | 50         | 10           | Incoming            | 40                      |
+
     And generate M_ShipperTransportation for M_Delivery_Planning:
       | M_ShipperTransportation_ID | M_Delivery_Planning_ID | IsComplete |
       | deliveryInstructionTC12    | deliveryPlanningTC12_1 | false      |
@@ -447,10 +461,15 @@ Feature: Delivery planning quantities
     # target's own committed 50 as zero. The target is allocated, so its OWN claim counts too: the pool is
     # QtyOrdered(50) - its actual(40, nonzero so it wins over its planned 50) = 10, all of which the single
     # new planning receives (additionalLines=1) - not the 0 a planned-only/pre-Q8 reading gave.
+    #
+    # QtyTotalOpen is also live now (Task Q8) and is an ORDER-LINE total, redundantly shown on both rows:
+    # Incoming nets discharge, so it is QtyOrdered(50) - the actual discharge summed across BOTH plannings
+    # (40 + 0) = 10, not the frozen 50 either row started with. The split touches no actual, so this figure
+    # is unchanged by the split itself - it was already 10 the moment the receipt above was recorded.
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity | ActualLoadQty | ActualDischargeQuantity |
-      | deliveryPlanningTC12_1 | 50         | 50           | Incoming            | 50                    | 50                       | 50            | 40                      |
-      | deliveryPlanningTC12_2 | 50         | 50           | Incoming            | 0                     | 10                       | 0             | 0                       |
+      | deliveryPlanningTC12_1 | 50         | 10           | Incoming            | 50                    | 50                       | 50            | 40                      |
+      | deliveryPlanningTC12_2 | 50         | 10           | Incoming            | 0                     | 10                       | 0             | 0                       |
 
   @Id:S31789_TC_Q8_NullifFallback
   Scenario: Splitting again treats a sibling's zero actual as "nothing recorded yet", not a real zero - the pool falls back to its planned figure
@@ -528,6 +547,14 @@ Feature: Delivery planning quantities
       | M_Delivery_Planning_ID    | ActualLoadQty |
       | deliveryPlanningPartial_2 | 6             |
 
+    # Task Q8: QtyTotalOpen is a live ORDER-LINE total (not a per-row figure) - Outgoing nets load, so the
+    # write above moves BOTH rows at once from 20 (QtyOrdered - actual 0) to 14 (QtyOrdered - actual 6),
+    # before any second split exists. QtyTotalOpenPlanned is untouched (0): nothing PLANNED changed here.
+    Then validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID    | QtyOrdered | QtyTotalOpen | TransportDirection | ActualLoadQty | QtyTotalOpenPlanned |
+      | deliveryPlanningPartial_1 | 20         | 14           | Outgoing            | 0             | 0                    |
+      | deliveryPlanningPartial_2 | 20         | 14           | Outgoing            | 6             | 0                    |
+
     # The pool for deliveryPlanningPartial_1's split nets deliveryPlanningPartial_2's ACTUAL (6, nonzero) -
     # QtyOrdered(20) - 6 = 14 - not its still-fully-claimed PLANNED figure (10), which would answer a pool of
     # 10 and give 5/5 instead of the correct 7/7: under-delivering relative to plan frees up the difference.
@@ -536,11 +563,15 @@ Feature: Delivery planning quantities
     Then after not more than 30s, load created M_Delivery_Planning:
       | M_Delivery_Planning_ID                                                        | C_OrderLine_ID      |
       | deliveryPlanningPartial_1,deliveryPlanningPartial_2,deliveryPlanningPartial_3 | orderLineQtyPartial |
+    # QtyTotalOpen stays 14 - the split touches no actual. QtyTotalOpenPlanned, however, now goes NEGATIVE
+    # (-4): the three planned loads sum to 24 (7+10+7), more than QtyOrdered(20) - the split legitimately grew
+    # the order line's total planned figure by distributing against the ACTUAL-aware pool (D16's signal for
+    # "over-planned", not an arithmetic error - see the plan's Global Constraints, "Two consequences").
     And validate M_Delivery_Planning:
-      | M_Delivery_Planning_ID    | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty |
-      | deliveryPlanningPartial_1 | 20         | 20           | Outgoing            | 7                     | 0             |
-      | deliveryPlanningPartial_2 | 20         | 20           | Outgoing            | 10                    | 6             |
-      | deliveryPlanningPartial_3 | 20         | 20           | Outgoing            | 7                     | 0             |
+      | M_Delivery_Planning_ID    | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | QtyTotalOpenPlanned |
+      | deliveryPlanningPartial_1 | 20         | 14           | Outgoing            | 7                     | 0             | -4                   |
+      | deliveryPlanningPartial_2 | 20         | 14           | Outgoing            | 10                    | 6             | -4                   |
+      | deliveryPlanningPartial_3 | 20         | 14           | Outgoing            | 7                     | 0             | -4                   |
 
   @Id:S31789_TC_Q8_AllocatedDischargeRemainder
   Scenario: Splitting an allocated planning with an uneven discharge pool and more than one additional line puts the remainder on the LAST new planning, not the target

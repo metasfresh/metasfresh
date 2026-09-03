@@ -452,6 +452,39 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
+	 * The write-point every path that changes a planning's planned/actual figures, or adds a planning to an
+	 * order line, owes (Task Q8): recomputes {@code QtyTotalOpen} ({@code QtyOrdered - actual}, summed over every
+	 * planning of the line) and {@code QtyTotalOpenPlanned} ({@code QtyOrdered - planned}, summed the same way)
+	 * and writes both onto EVERY planning of the line - they are order-line totals redundantly displayed on each
+	 * row, not a per-row figure, so a planning created or edited elsewhere on the line must move every sibling's
+	 * copy too, not just its own.
+	 * <p>
+	 * Not floored at zero (unlike {@link #getByOrderLineId}'s pool use in the split): these are DISPLAY columns,
+	 * and a negative one is the over-planned/over-delivered signal D16 calls for, not an error to hide.
+	 */
+	public void recomputeOpenQuantitiesForOrderLine(@NonNull final OrderLineId orderLineId)
+	{
+		final ImmutableList<I_M_Delivery_Planning> records = retrieveForOrderLine(orderLineId).collect(ImmutableList.toImmutableList());
+		if (records.isEmpty())
+		{
+			return;
+		}
+
+		final DeliveryPlanningList plannings = records.stream().map(DeliveryPlanningRepository::toPoolPlanning).collect(DeliveryPlanningList.collect());
+		final DeliveryPlanningList.PoolEnd end = DeliveryPlanningList.PoolEnd.forDirection(extractTransportDirection(records.get(0)));
+
+		final BigDecimal qtyTotalOpen = plannings.qtyTotalOpen(end).toBigDecimal();
+		final BigDecimal qtyTotalOpenPlanned = plannings.qtyTotalOpenPlanned(end).toBigDecimal();
+
+		for (final I_M_Delivery_Planning record : records)
+		{
+			record.setQtyTotalOpen(qtyTotalOpen);
+			record.setQtyTotalOpenPlanned(qtyTotalOpenPlanned);
+			saveRecord(record);
+		}
+	}
+
+	/**
 	 * All-or-nothing over the selection: an already-closed planning is refused by name, and the check runs before
 	 * anything is written, so a mixed selection leaves no row half-closed.
 	 * <p>

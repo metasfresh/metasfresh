@@ -671,4 +671,76 @@ class DeliveryPlanningListTest
 					.isEqualByComparingTo(BigDecimal.valueOf(-5));
 		}
 	}
+
+	/**
+	 * The two live open-quantity figures (Task Q8, owner 2026-09-02, "the open quantity is a PAIR of fields"):
+	 * order-line TOTALS, summed straight across every planning of the line - no nullif/coalesce fallback and no
+	 * target exclusion, unlike {@link OpenPlanQty}'s split-facing pool.
+	 */
+	@Nested
+	@DisplayName("qtyTotalOpen / qtyTotalOpenPlanned")
+	class OpenQuantities
+	{
+		private DeliveryPlanning poolPlanning(
+				final int idRepoId,
+				final int qtyOrdered,
+				final int plannedLoad,
+				final int actualLoad,
+				final int plannedDischarge,
+				final int actualDischarge)
+		{
+			return DeliveryPlanning.builder()
+					.id(DeliveryPlanningId.ofRepoId(idRepoId))
+					.orgId(OrgId.ofRepoId(1000000))
+					.transportDirection(TransportDirection.Outgoing)
+					.qtyOrdered(qty(qtyOrdered))
+					.plannedLoadedQty(qty(plannedLoad))
+					.actualLoadedQty(qty(actualLoad))
+					.plannedDischargeQty(qty(plannedDischarge))
+					.actualDischargeQty(qty(actualDischarge))
+					.build();
+		}
+
+		@Test
+		@DisplayName("QtyTotalOpen sums every sibling's ACTUAL, not just this row's own")
+		void qtyTotalOpenSumsAcrossSiblings()
+		{
+			final DeliveryPlanningList list = DeliveryPlanningList.of(
+					poolPlanning(801, 20, 10, 3, 0, 0),
+					poolPlanning(802, 20, 10, 2, 0, 0));
+
+			assertThat(list.qtyTotalOpen(PoolEnd.LOAD)).isEqualTo(qty(15));
+		}
+
+		@Test
+		@DisplayName("QtyTotalOpen is NOT floored at zero - an over-delivered line answers negative")
+		void qtyTotalOpenNotClamped()
+		{
+			final DeliveryPlanningList list = DeliveryPlanningList.of(
+					poolPlanning(803, 10, 0, 7, 0, 0),
+					poolPlanning(804, 10, 0, 6, 0, 0));
+
+			assertThat(list.qtyTotalOpen(PoolEnd.LOAD).toBigDecimal()).isEqualByComparingTo(BigDecimal.valueOf(-3));
+		}
+
+		@Test
+		@DisplayName("QtyTotalOpenPlanned sums every sibling's PLANNED, never falling back to actual")
+		void qtyTotalOpenPlannedSumsAcrossSiblings()
+		{
+			final DeliveryPlanningList list = DeliveryPlanningList.of(
+					poolPlanning(805, 20, 6, 0, 0, 0),
+					poolPlanning(806, 20, 6, 0, 0, 0));
+
+			assertThat(list.qtyTotalOpenPlanned(PoolEnd.LOAD)).isEqualTo(qty(8));
+		}
+
+		@Test
+		@DisplayName("PoolEnd.forDirection: a receipt (incoming or dropship) nets discharge, a shipment nets load")
+		void forDirection()
+		{
+			assertThat(PoolEnd.forDirection(TransportDirection.Incoming)).isEqualTo(PoolEnd.DISCHARGE);
+			assertThat(PoolEnd.forDirection(TransportDirection.Dropship)).isEqualTo(PoolEnd.DISCHARGE);
+			assertThat(PoolEnd.forDirection(TransportDirection.Outgoing)).isEqualTo(PoolEnd.LOAD);
+		}
+	}
 }

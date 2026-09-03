@@ -242,6 +242,7 @@ public class M_Delivery_Planning_StepDef
 	 *   <b>ETD</b> — (optional) expected {@code ETD}<br>
 	 *   <b>PlannedLoadedQuantity</b> — (optional) expected {@code PlannedLoadedQuantity}<br>
 	 *   <b>PlannedDischargeQuantity</b> — (optional) expected {@code PlannedDischargeQuantity}<br>
+	 *   <b>QtyTotalOpenPlanned</b> — (optional) expected {@code QtyTotalOpenPlanned}<br>
 	 *   <b>ActualLoadQty</b> — (optional) expected {@code ActualLoadQty}<br>
 	 *   <b>ActualDischargeQuantity</b> — (optional) expected {@code ActualDischargeQuantity}<br>
 	 *   <b>IsClosed</b> — (optional) expected {@code IsClosed}<br>
@@ -347,6 +348,9 @@ public class M_Delivery_Planning_StepDef
 
 			row.getAsOptionalBigDecimal(I_M_Delivery_Planning.COLUMNNAME_PlannedDischargeQuantity)
 					.ifPresent(plannedDischargeQty -> softly.assertThat(deliveryPlanning.getPlannedDischargeQuantity()).as(I_M_Delivery_Planning.COLUMNNAME_PlannedDischargeQuantity).isEqualTo(plannedDischargeQty));
+
+			row.getAsOptionalBigDecimal(I_M_Delivery_Planning.COLUMNNAME_QtyTotalOpenPlanned)
+					.ifPresent(qtyTotalOpenPlanned -> softly.assertThat(deliveryPlanning.getQtyTotalOpenPlanned()).as(I_M_Delivery_Planning.COLUMNNAME_QtyTotalOpenPlanned).isEqualTo(qtyTotalOpenPlanned));
 
 			row.getAsOptionalBigDecimal(I_M_Delivery_Planning.COLUMNNAME_ActualLoadQty)
 					.ifPresent(actualLoadQty -> softly.assertThat(deliveryPlanning.getActualLoadQty()).as(I_M_Delivery_Planning.COLUMNNAME_ActualLoadQty).isEqualTo(actualLoadQty));

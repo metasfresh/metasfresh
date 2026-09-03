@@ -85,4 +85,39 @@ public class M_Delivery_Planning
 
 		deliveryPlanning.setActualLoadQty(deliveryPlanning.getPlannedLoadedQuantity());
 	}
+
+	/**
+	 * Keeps {@code QtyTotalOpen} and {@code QtyTotalOpenPlanned} live (Task Q8) whenever a NEW planning joins an
+	 * order line - a split's new plannings, or a schedule's first-generated one. {@code AFTER_NEW} rather than
+	 * {@code BEFORE}: the recompute reads every planning of the line back out via a fresh query, which needs this
+	 * row's own insert already flushed to be counted.
+	 */
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
+	public void onNew(@NonNull final I_M_Delivery_Planning deliveryPlanning)
+	{
+		deliveryPlanningService.recomputeOpenQuantitiesForOrderLine(deliveryPlanning);
+	}
+
+	/**
+	 * Keeps {@code QtyTotalOpen} and {@code QtyTotalOpenPlanned} live (Task Q8) whenever any of the four figures
+	 * they are computed from changes on ANY planning of the line - the split's rewrite of the target's own
+	 * planned figure (unallocated branch), a direct planned/actual edit, or the {@code ActualLoadQty} an incoming
+	 * planning's own {@link #onPlannedLoadedQuantityChanged} above moves in lockstep with its plan.
+	 * <p>
+	 * {@code AFTER_CHANGE}, not {@code BEFORE}: the recompute's own query must see this row's new value already
+	 * committed within the transaction, same reason as {@link #onNew}. Both figures are order-line TOTALS
+	 * redundantly displayed on every sibling row (see {@link
+	 * DeliveryPlanningRepository#recomputeOpenQuantitiesForOrderLine}), so recomputing writes every sibling, not
+	 * just this row - which is safe to re-enter from here because neither of the two columns it writes
+	 * ({@code QtyTotalOpen}, {@code QtyTotalOpenPlanned}) is itself watched by this handler.
+	 */
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = {
+			I_M_Delivery_Planning.COLUMNNAME_PlannedLoadedQuantity,
+			I_M_Delivery_Planning.COLUMNNAME_PlannedDischargeQuantity,
+			I_M_Delivery_Planning.COLUMNNAME_ActualLoadQty,
+			I_M_Delivery_Planning.COLUMNNAME_ActualDischargeQuantity })
+	public void onQuantityChanged(@NonNull final I_M_Delivery_Planning deliveryPlanning)
+	{
+		deliveryPlanningService.recomputeOpenQuantitiesForOrderLine(deliveryPlanning);
+	}
 }

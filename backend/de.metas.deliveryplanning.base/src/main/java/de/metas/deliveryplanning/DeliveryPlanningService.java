@@ -565,6 +565,23 @@ public class DeliveryPlanningService
 		return orderLinePlannings.openPlanQty(excludePlanningId, end).toZeroIfNegative();
 	}
 
+	/**
+	 * Keeps {@code QtyTotalOpen}/{@code QtyTotalOpenPlanned} live (Task Q8) for the order line the given planning
+	 * sits on - called from the {@code M_Delivery_Planning} interceptor on every write path that changes a
+	 * planned/actual figure or adds a planning to the line, so every such path recomputes through this ONE
+	 * choke point rather than each caller repeating the arithmetic.
+	 */
+	public void recomputeOpenQuantitiesForOrderLine(@NonNull final I_M_Delivery_Planning deliveryPlanning)
+	{
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(deliveryPlanning.getC_OrderLine_ID());
+		if (orderLineId == null)
+		{
+			// not based on any order line -> QtyTotalOpen/QtyTotalOpenPlanned have nothing to be computed from
+			return;
+		}
+		deliveryPlanningRepository.recomputeOpenQuantitiesForOrderLine(orderLineId);
+	}
+
 	public void deleteForReceiptSchedule(@NonNull final ReceiptScheduleId receiptScheduleId)
 	{
 		deliveryPlanningRepository.deleteForReceiptSchedule(receiptScheduleId);

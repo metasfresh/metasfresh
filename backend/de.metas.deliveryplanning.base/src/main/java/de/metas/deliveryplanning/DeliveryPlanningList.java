@@ -206,6 +206,50 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	}
 
 	/**
+	 * {@code QtyTotalOpen} (owner, 2026-09-02, "the open quantity is a PAIR of fields"): {@code QtyOrdered} minus
+	 * what has ACTUALLY been delivered so far on this order line, summed straight - unlike {@link #openPlanQty}
+	 * there is no nullif/coalesce fallback here, because a zero actual for this figure means exactly what it
+	 * says: nothing delivered yet. NOT floored at zero: an over-delivered line legitimately shows negative
+	 * (D16) - the caller displays it, never clamps it.
+	 */
+	public Quantity qtyTotalOpen(@NonNull final PoolEnd end)
+	{
+		Check.assumeNotEmpty(list, "Cannot compute QtyTotalOpen of an empty DeliveryPlanningList");
+
+		final Quantity qtyOrdered = list.get(0).getQtyOrdered();
+
+		Quantity actualSum = null;
+		for (final DeliveryPlanning deliveryPlanning : list)
+		{
+			final Quantity actual = end.actual(deliveryPlanning);
+			actualSum = actualSum == null ? actual : actualSum.add(actual);
+		}
+
+		return qtyOrdered.subtract(actualSum);
+	}
+
+	/**
+	 * {@code QtyTotalOpen}'s sibling figure: {@code QtyOrdered} minus the PLANNED quantities of every planning of
+	 * this order line, summed straight - "how much of the order line nobody has planned yet". Not floored at
+	 * zero for the same reason as {@link #qtyTotalOpen}: an over-planned line legitimately shows negative (D16).
+	 */
+	public Quantity qtyTotalOpenPlanned(@NonNull final PoolEnd end)
+	{
+		Check.assumeNotEmpty(list, "Cannot compute QtyTotalOpenPlanned of an empty DeliveryPlanningList");
+
+		final Quantity qtyOrdered = list.get(0).getQtyOrdered();
+
+		Quantity plannedSum = null;
+		for (final DeliveryPlanning deliveryPlanning : list)
+		{
+			final Quantity planned = end.planned(deliveryPlanning);
+			plannedSum = plannedSum == null ? planned : plannedSum.add(planned);
+		}
+
+		return qtyOrdered.subtract(plannedSum);
+	}
+
+	/**
 	 * Which pair of quantity columns {@link #openPlanQty} nets - the load pair or the discharge pair (see the
 	 * plan's Global Constraints, "The distributable pool", "Applied per end").
 	 */
@@ -234,6 +278,28 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 			final Quantity actual = actualExtractor.apply(deliveryPlanning);
 			final Quantity planned = plannedExtractor.apply(deliveryPlanning);
 			return actual != null && !actual.isZero() ? actual : planned;
+		}
+
+		/** This planning's own actual figure for this end - raw, no nullif fallback. */
+		public Quantity actual(@NonNull final DeliveryPlanning deliveryPlanning)
+		{
+			return actualExtractor.apply(deliveryPlanning);
+		}
+
+		/** This planning's own planned figure for this end. */
+		public Quantity planned(@NonNull final DeliveryPlanning deliveryPlanning)
+		{
+			return plannedExtractor.apply(deliveryPlanning);
+		}
+
+		/**
+		 * Which end a planning's own {@code QtyTotalOpen}/{@code QtyTotalOpenPlanned} follow, decided by
+		 * DIRECTION (owner, 2026-09-02, "receipt based unload, ship based load"): a receipt (incoming or
+		 * dropship - the dropship purchase leg's own receipt) nets discharge, a shipment nets load.
+		 */
+		public static PoolEnd forDirection(@NonNull final TransportDirection transportDirection)
+		{
+			return transportDirection.isIncomingOrDropship() ? DISCHARGE : LOAD;
 		}
 	}
 
