@@ -286,15 +286,15 @@ public class PurchaseOrderToShipperTransportationService
 	}
 
 	/**
-	 * A purchase order/line is a RECEIPT-side document: it may only join a transport order whose direction has a
-	 * receipt leg, i.e. {@link TransportDirection#hasReceipt()} (Incoming or Dropship). Blocks the state where an
+	 * A purchase order/line is a RECEIPT-side document: it may only join a transport order whose direction is
+	 * {@link TransportDirection#isIncomingOrDropship()} (Incoming or Dropship). Blocks the state where an
 	 * Outgoing-only (pure sales/shipment) transport order silently ends up carrying purchase shipping packages
 	 * with no receipt ever able to link to it.
 	 */
 	private void assertTransportOrderAcceptsPurchaseDocument(@NonNull final I_M_ShipperTransportation shipperTransportation, @NonNull final I_C_Order order)
 	{
 		final TransportDirection direction = TransportDirection.ofCode(shipperTransportation.getTransportDirection());
-		if (!direction.hasReceipt())
+		if (!direction.isIncomingOrDropship())
 		{
 			throw new AdempiereException(MSG_WrongTransportDirectionForPurchaseOrder, order.getDocumentNo(), shipperTransportation.getDocumentNo())
 					.markAsUserValidationError();
