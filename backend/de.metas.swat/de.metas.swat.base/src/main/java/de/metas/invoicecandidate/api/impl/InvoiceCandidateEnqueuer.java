@@ -44,6 +44,7 @@ import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.logging.TableRecordMDC;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
+import com.google.common.collect.ImmutableList;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -58,6 +59,7 @@ import org.slf4j.MDC.MDCCloseable;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
@@ -170,6 +172,10 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 
 		final int workpackageQueueSizeBeforeEnqueueing = workpackageAggregator.getQueueSize();
 		int invoiceCandidateSelectionCount = 0; // how many eligible items were in given selection
+		// Collected so the run can REPORT what it dropped. Until now every skip reason went to Loggables
+		// (the process log) only, and the result carried just the enqueued count -- so in a mixed selection the
+		// good candidates were invoiced and the dropped ones were never mentioned anywhere the user looks.
+		final ImmutableList.Builder<String> skipReasons = ImmutableList.builder();
 		final ICNetAmtToInvoiceChecker totalNetAmtToInvoiceChecksum = new ICNetAmtToInvoiceChecker();
 
 		//
@@ -190,8 +196,10 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				}
 
 				// Check if invoice candidate is eligible for enqueueing
-				if (!isEligibleForEnqueueing(icRecord))
+				final String skipReason = getSkipReasonOrNull(icRecord);
+				if (skipReason != null)
 				{
+					skipReasons.add(skipReason);
 					continue;
 				}
 
@@ -244,13 +252,15 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				workpackageAggregator.getGroupsCount(),
 				workpackageQueueSizeBeforeEnqueueing,
 				totalNetAmtToInvoiceChecksum.getValue(),
+				skipReasons.build(),
 				icLock);
 	}
 
 	/**
-	 * @return true if invoice candidate is eligible for enqueueing
+	 * @return the translated reason this invoice candidate is NOT enqueued, or {@code null} if it is eligible.
 	 */
-	private boolean isEligibleForEnqueueing(final I_C_Invoice_Candidate ic)
+	@Nullable
+	private String getSkipReasonOrNull(final I_C_Invoice_Candidate ic)
 	{
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 
@@ -260,16 +270,17 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		{
 			final String msg = msgBL.getMsg(getCtx(), MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_APPROVAL, new Object[] { ic.getC_Invoice_Candidate_ID() });
 			Loggables.addLog(msg);
-			return false;
+			return msg;
 		}
 
 		//
 		// Check other reasons no to enqueue this ic: Processed, IsError, DateToInvoice.
 		// NOTE: having this line in the middle because we will display only one skip reason and SKIPPED_QTY_TO_INVOICE is usually less informative if the IC was already processed
-		if (invoiceCandBL.isSkipCandidateFromInvoicing(ic, getInvoicingParams().isIgnoreInvoiceSchedule(), getInvoicingParams().isInvoiceManualRule()))
+		final String skipReason = invoiceCandBL.getInvoicingSkipReasonOrNull(ic, getInvoicingParams().isIgnoreInvoiceSchedule(), getInvoicingParams().isInvoiceManualRule());
+		if (skipReason != null)
 		{
-			// NOTE: we are not logging any reason because the method already logged the reason if any.
-			return false;
+			// NOTE: not logging here -- the method above already logged the reason.
+			return skipReason;
 		}
 
 		//
@@ -279,10 +290,10 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		{
 			final String msg = msgBL.getMsg(getCtx(), MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_QTY_TO_INVOICE, new Object[] { ic.getC_Invoice_Candidate_ID() });
 			Loggables.addLog(msg);
-			return false;
+			return msg;
 		}
 
-		return true;
+		return null; // eligible
 	}
 
 	private void updateSelectionBeforeEnqueueing(@NonNull final PInstanceId selectionId)

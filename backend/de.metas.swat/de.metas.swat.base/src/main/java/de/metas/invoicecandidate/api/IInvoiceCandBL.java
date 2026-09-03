@@ -142,6 +142,17 @@ public interface IInvoiceCandBL extends ISingletonService
 	 */
 	boolean isSkipCandidateFromInvoicing(I_C_Invoice_Candidate ic, boolean ignoreInvoiceSchedule, boolean isInvoiceManualRule);
 
+	/**
+	 * Same check as {@link #isSkipCandidateFromInvoicing(I_C_Invoice_Candidate, boolean, boolean)}, but yields the
+	 * translated REASON instead of a bare flag, so a caller can report back to the user WHY a candidate was dropped.
+	 * <p>
+	 * Every reason was already being computed for the process log; this overload is what makes it reportable.
+	 *
+	 * @return the translated skip reason, or {@code null} if the candidate is NOT skipped.
+	 */
+	@Nullable
+	String getInvoicingSkipReasonOrNull(I_C_Invoice_Candidate ic, boolean ignoreInvoiceSchedule, boolean isInvoiceManualRule);
+
 	IInvoiceGenerateResult generateInvoicesFromQueue(Properties ctx);
 
 	void setPaymentTermIfMissing(@NonNull I_C_Invoice_Candidate icRecord);
