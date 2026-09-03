@@ -106,6 +106,19 @@ test.describe('Manufacturing issue of whole catch-weight HUs across UOMs', () =>
         });
 
         // Issuing a whole HU consumes its content and destroys the HU, so its end status is Destroyed
+        // Receiving finished goods auto-issues the received-only component and, on the way, recomputes the
+        // steps of every line - including this one, whose steps are denominated in pieces. That recompute
+        // used to throw on the mismatched units before the operator could issue anything else.
+        await test.step('A receipt recomputes the steps while they are still denominated in pieces', async () => {
+            await ManufacturingJobScreen.clickReceiveButton({ index: 1 });
+            await MaterialReceiptLineScreen.selectNewLUTarget({ luPIItemTestId: masterdata.packingInstructions.PI.luPIItemTestId });
+            await MaterialReceiptLineScreen.receiveQty({ qtyEntered: '1' });
+
+            // nothing has been issued on this line yet, so the recompute walked its unissued
+            // piece-denominated steps - which is the comparison that used to throw
+            await ManufacturingJobScreen.expectIssueButton({ index: 1, qtyIssued: '0 kg' });
+        });
+
         await test.step('In progress: the first HU is consumed, the second is untouched', async () => {
             await ManufacturingJobScreen.issueRawProduct({ index: 1, qrCode: masterdata.handlingUnits.HU_A.qrCode });
             await ManufacturingJobScreen.expectIssueButton({ index: 1, qtyIssued: `${HU_A_PIECES * NOMINAL_KG_PER_PIECE} kg` });
@@ -117,7 +130,8 @@ test.describe('Manufacturing issue of whole catch-weight HUs across UOMs', () =>
                     'HU_B': { huStatus: 'A', storages: { 'COMP_CW': `${HU_B_PIECES} PCE` }, attributes: { 'WeightNet': HU_B_WEIGHT } },
                 },
                 manufacturings: {
-                    'PP1': { issuedHUs: [{ attributes: { 'WeightNet': HU_A_WEIGHT } }] },
+                    // the received-only component was auto-issued by the receipt, so its row is here too
+                    'PP1': { issuedHUs: [{ attributes: { 'WeightNet': HU_A_WEIGHT } }, {}] },
                 },
             });
         });
@@ -136,28 +150,6 @@ test.describe('Manufacturing issue of whole catch-weight HUs across UOMs', () =>
                     'HU_B': { huStatus: 'D', attributes: { 'WeightNet': HU_B_WEIGHT } },
                     'HU_C': { huStatus: 'A', storages: { 'COMP_CW': `${HU_C_PIECES} PCE` }, attributes: { 'WeightNet': HU_C_WEIGHT } },
                 },
-                manufacturings: {
-                    'PP1': {
-                        issuedHUs: [
-                            { attributes: { 'WeightNet': HU_A_WEIGHT } },
-                            { attributes: { 'WeightNet': HU_B_WEIGHT } },
-                        ],
-                    },
-                },
-            });
-        });
-
-        // Receiving finished goods auto-issues the received-only component and, on the way, recomputes the
-        // steps of every line - including this one, whose steps are denominated in pieces. That recompute
-        // used to throw on the mismatched units before the operator could issue anything else.
-        await test.step('A receipt recomputes the steps of a line denominated in pieces', async () => {
-            await ManufacturingJobScreen.clickReceiveButton({ index: 1 });
-            await MaterialReceiptLineScreen.selectNewLUTarget({ luPIItemTestId: masterdata.packingInstructions.PI.luPIItemTestId });
-            await MaterialReceiptLineScreen.receiveQty({ qtyEntered: '1' });
-
-            await ManufacturingJobScreen.expectIssueButton({
-                index: 1,
-                qtyIssued: `${(HU_A_PIECES + HU_B_PIECES) * NOMINAL_KG_PER_PIECE} kg`,
             });
         });
 
