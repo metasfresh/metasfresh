@@ -33,6 +33,7 @@ import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Delivery_Planning;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -99,7 +100,7 @@ class DeliveryInstructionDateDefaultsTest
 	 */
 	private static DeliveryPlanningId createDeliveryPlanning()
 	{
-		final org.compiere.model.I_M_Delivery_Planning record = InterfaceWrapperHelper.newInstance(org.compiere.model.I_M_Delivery_Planning.class);
+		final I_M_Delivery_Planning record = InterfaceWrapperHelper.newInstance(I_M_Delivery_Planning.class);
 		InterfaceWrapperHelper.save(record);
 		return DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID());
 	}
