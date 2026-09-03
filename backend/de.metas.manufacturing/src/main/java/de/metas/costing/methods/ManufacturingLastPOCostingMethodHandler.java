@@ -22,6 +22,7 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
@@ -59,6 +60,7 @@ import java.util.Set;
  */
 
 @Component
+@RequiredArgsConstructor
 public class ManufacturingLastPOCostingMethodHandler implements CostingMethodHandler
 {
 	private static final ImmutableSet<String> HANDLED_TABLE_NAMES = ImmutableSet.<String>builder()
@@ -69,13 +71,9 @@ public class ManufacturingLastPOCostingMethodHandler implements CostingMethodHan
 	private final IPPOrderCostBL ppOrderCostsService = Services.get(IPPOrderCostBL.class);
 	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 	//
-	private final CostingMethodHandlerUtils utils;
+	@NonNull private final CostingMethodHandlerUtils utils;
+	@NonNull private final PPOrderCostDifferenceDistributor costDifferenceDistributor;
 
-	public ManufacturingLastPOCostingMethodHandler(
-			@NonNull final CostingMethodHandlerUtils utils)
-	{
-		this.utils = utils;
-	}
 
 	@Override
 	public CostingMethod getCostingMethod()
@@ -136,6 +134,10 @@ public class ManufacturingLastPOCostingMethodHandler implements CostingMethodHan
 			orderCosts = null;
 			currentCost = null;
 			result = null;
+		}
+		else if (costCollectorType.isCostDifferenceDistribution())
+		{
+			return costDifferenceDistributor.createCostDetails(request, orderId);
 		}
 		else
 		{
@@ -218,28 +220,33 @@ public class ManufacturingLastPOCostingMethodHandler implements CostingMethodHan
 	{
 		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
 
+		final CostDetailCreateRequest requestEffective;
 		final CostDetailCreateResult result;
 		if (request.isReversal())
 		{
-			result = utils.createCostDetailRecordWithChangedCosts(request, previousCosts);
-			currentCosts.addWeightedAverage(request.getAmt(), request.getQty(), utils.getQuantityUOMConverter());
+			requestEffective = request;
+			result = utils.createCostDetailRecordWithChangedCosts(requestEffective, previousCosts);
+			currentCosts.addWeightedAverage(requestEffective.getAmt(), requestEffective.getQty(), utils.getQuantityUOMConverter());
 		}
 		else
 		{
+			// Value the issue at the component's CURRENT M_Cost; the request itself carries no amount.
 			final CostPrice price = currentCosts.getCostPrice();
 			final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), request.getProductId());
 			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
-			final CostDetailCreateRequest requestEffective = request.withAmountAndQty(amt, qty);
+			requestEffective = request.withAmountAndQty(amt, qty);
 			result = utils.createCostDetailRecordWithChangedCosts(requestEffective, previousCosts);
 
 			currentCosts.addToCurrentQtyAndCumulate(requestEffective.getQty(), requestEffective.getAmt());
 		}
 
 		// Accumulate to order costs
+		// NOTE: PP_Order_Cost keeps the stock-movement direction in the qty, but accumulates the cost that went
+		// INTO the order with the opposite sign - hence the negate() on the amount only.
 		orderCosts.accumulateInboundCostAmount(
 				utils.extractCostSegmentAndElement(request),
-				request.getAmt(),
-				request.getQty(),
+				requestEffective.getAmt().negate(),
+				requestEffective.getQty(),
 				utils.getQuantityUOMConverter());
 
 		return result;

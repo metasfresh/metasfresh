@@ -383,6 +383,29 @@ public interface I_PP_Order
 	String COLUMNNAME_C_OrderLine_MTO_ID = "C_OrderLine_MTO_ID";
 
 	/**
+	 * Set Cost difference.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setCostDifference (@Nullable BigDecimal CostDifference);
+
+	/**
+	 * Get Cost difference.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	BigDecimal getCostDifference();
+
+	ModelColumn<I_PP_Order, Object> COLUMN_CostDifference = new ModelColumn<>(I_PP_Order.class, "CostDifference", null);
+	String COLUMNNAME_CostDifference = "CostDifference";
+
+	/**
 	 * Set Project.
 	 * Financial Project
 	 *
@@ -433,7 +456,7 @@ public interface I_PP_Order
 	 * Set UOM.
 	 * Unit of Measure
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -443,7 +466,7 @@ public interface I_PP_Order
 	 * Get UOM.
 	 * Unit of Measure
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -1030,29 +1053,6 @@ public interface I_PP_Order
 	String COLUMNNAME_IsSOTrx = "IsSOTrx";
 
 	/**
-	 * Set Cost difference.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	void setKostendifferenz (@Nullable BigDecimal Kostendifferenz);
-
-	/**
-	 * Get Cost difference.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	BigDecimal getKostendifferenz();
-
-	ModelColumn<I_PP_Order, Object> COLUMN_Kostendifferenz = new ModelColumn<>(I_PP_Order.class, "Kostendifferenz", null);
-	String COLUMNNAME_Kostendifferenz = "Kostendifferenz";
-
-	/**
 	 * Set SeqNo..
 	 *
 	 * <br>Type: Integer
@@ -1124,7 +1124,7 @@ public interface I_PP_Order
 	/**
 	 * Set Packing Instruction.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1133,7 +1133,7 @@ public interface I_PP_Order
 	/**
 	 * Get Packing Instruction.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1999,6 +1999,7 @@ public interface I_PP_Order
 
 	/**
 	 * Set Work Station.
+	 * The Workstation at which this manufacturing order is to be processed. In MobileUI Manufacturing, only orders whose Workstation matches the one scanned by the operator are shown.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -2008,6 +2009,7 @@ public interface I_PP_Order
 
 	/**
 	 * Get Work Station.
+	 * The Workstation at which this manufacturing order is to be processed. In MobileUI Manufacturing, only orders whose Workstation matches the one scanned by the operator are shown.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false

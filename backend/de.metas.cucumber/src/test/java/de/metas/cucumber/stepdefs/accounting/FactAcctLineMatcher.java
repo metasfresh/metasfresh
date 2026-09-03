@@ -16,6 +16,7 @@ import lombok.NonNull;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.impl.TableIdsCache;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.LocatorId;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_Fact_Acct;
 
@@ -41,6 +42,7 @@ public class FactAcctLineMatcher
 	@Nullable private final Optional<BPartnerId> bpartnerId;
 	@Nullable private final Optional<ProductId> productId;
 	@Nullable private final Optional<InvoiceId> invoiceId;
+	@Nullable private final Optional<LocatorId> locatorId;
 
 	@Override
 	public String toString() {return row.toTabularString();}
@@ -192,6 +194,14 @@ public class FactAcctLineMatcher
 			softly.assertThat(actualInvoiceId)
 					.as(description.newWithMessage("C_Invoice_ID"))
 					.isEqualTo(invoiceId.orElse(null));
+		}
+		if (locatorId != null)
+		{
+			// Fact_Acct.M_Locator_ID is a plain int column, so compare repo-ids and map "not set" to null on both sides.
+			final Integer actualLocatorRepoId = record.getM_Locator_ID() > 0 ? record.getM_Locator_ID() : null;
+			softly.assertThat(actualLocatorRepoId)
+					.as(description.newWithMessage("M_Locator_ID"))
+					.isEqualTo(locatorId.map(LocatorId::getRepoId).orElse(null));
 		}
 	}
 }
