@@ -111,43 +111,19 @@ public class M_HU_Trace_Report_StepDef
 	/**
 	 * Sets up all DB records required for a specific trace report test scenario.
 	 *
-	 * <p>Supported TestType values:
+	 * <p>Supported TestType values (see each {@code setupXxx} method's Javadoc for the full
+	 * behaviour):
 	 * <ul>
-	 *   <li>{@code DIRECT_SALE_NULL_LOT} — creates MATERIAL_RECEIPT + MATERIAL_SHIPMENT traces
-	 *       with {@code lotnumber=NULL}. Tests Bug B fix (IS NOT DISTINCT FROM).</li>
-	 *   <li>{@code PRODUCTION_RECEIPT_NO_MHD} — creates PRODUCTION_RECEIPT + PRODUCTION_ISSUE traces
-	 *       without MHD (best-before) attribute on the HU. Tests Bug A fix (LEFT JOIN).</li>
-	 *   <li>{@code TRACED_ONE_OF_TWO_RECEIPTS} — creates two MATERIAL_RECEIPT traces of the same
-	 *       product/lot, with the shipped VHU descending from only the first receipt's VHU
-	 *       (a TRANSFORM_LOAD edge). Only that receipt is paired with the shipment; the other
-	 *       receipt of the lot is suppressed because the group already has a traced receipt.</li>
-	 *   <li>{@code LOT_DISAGREEMENT} — a receipt's VHU transforms (one TRANSFORM_LOAD edge) into
-	 *       the shipped VHU, but the shipment's own MATERIAL_SHIPMENT trace carries a different
-	 *       lot number than the receipt. Guards the lot-agreement half of the graph-tracing rule:
-	 *       a graph link alone must not be enough to call the pair traced, and such a pair is
-	 *       dropped outright rather than demoted to a product-level candidate.</li>
-	 *   <li>{@code SAME_VHU_NO_TRANSFORM} — one VHU carries both the MATERIAL_RECEIPT and the
-	 *       MATERIAL_SHIPMENT trace directly, with no TRANSFORM_LOAD edge at all (received and
-	 *       shipped without repacking). The depth-0 case a rule that only walks edges would miss.</li>
-	 *   <li>{@code TWO_STEP_TRANSFORM} — a receipt's VHU transforms into an intermediate VHU,
-	 *       which transforms again into the shipped VHU (two TRANSFORM_LOAD edges). The receipt
-	 *       document must still resolve to the original receipt, not the intermediate step.</li>
-	 *   <li>{@code MIXED_TRACED_AND_CANDIDATE} — two receipts and two shipments of one lot with no
-	 *       VHU link anywhere, plus a third shipment descending from the first receipt. Shows that
-	 *       candidate suppression is per (shipment, product, lot), not global across the lot: the
-	 *       graph-traced shipment is TRACED and never also a candidate, while the two unlinked
-	 *       shipments remain candidates for every receipt of the lot.</li>
-	 *   <li>{@code NO_LOT_NO_LINK} — a receipt and a shipment of one product, both with
-	 *       {@code lotnumber=NULL} and no VHU link. Labelled PRODUCT_CANDIDATE, distinct from
-	 *       {@code MIXED_TRACED_AND_CANDIDATE}'s LOT_CANDIDATE — there is no lot to agree on.</li>
-	 *   <li>{@code RECEIPT_QTY_AND_DEDUP} — one receipt document carrying two MATERIAL_RECEIPT
-	 *       traces of the same lot on different VHUs, with a shipment descending from the first of
-	 *       the two. The receipt document's total quantity across both VHUs must be reported once,
-	 *       not once per VHU.</li>
-	 *   <li>{@code INELIGIBLE_RECEIPT_DOC} — a shipment that descends from a receipt document this
-	 *       section may not report (an {@code MMR} whose doctype is {@code IsSOTrx='Y'}), plus a
-	 *       purchase receipt of the same lot with no VHU link. The graph link must not silence the
-	 *       lot-level candidate the report emits for such a group.</li>
+	 *   <li>{@code DIRECT_SALE_NULL_LOT} — NULL lots on both sides; Bug B fix (IS NOT DISTINCT FROM).</li>
+	 *   <li>{@code PRODUCTION_RECEIPT_NO_MHD} — no best-before attribute; Bug A fix (LEFT JOIN).</li>
+	 *   <li>{@code TRACED_ONE_OF_TWO_RECEIPTS} — one of two same-lot receipts is graph-traced.</li>
+	 *   <li>{@code LOT_DISAGREEMENT} — a graph-linked pair whose lots disagree; must be dropped.</li>
+	 *   <li>{@code SAME_VHU_NO_TRANSFORM} — receipt and shipment on the same VHU (depth 0).</li>
+	 *   <li>{@code TWO_STEP_TRANSFORM} — a two-edge TRANSFORM_LOAD chain.</li>
+	 *   <li>{@code MIXED_TRACED_AND_CANDIDATE} — candidate suppression is per group, not per lot.</li>
+	 *   <li>{@code NO_LOT_NO_LINK} — PRODUCT_CANDIDATE when neither side has a lot.</li>
+	 *   <li>{@code RECEIPT_QTY_AND_DEDUP} — one receipt document, two VHUs, reported once.</li>
+	 *   <li>{@code INELIGIBLE_RECEIPT_DOC} — graph-traced but an unreportable receipt doctype.</li>
 	 * </ul>
 	 */
 	@When("M_HU_Trace_Report test data is set up for scenario {string}:")
@@ -205,22 +181,12 @@ public class M_HU_Trace_Report_StepDef
 	 * Deletes any {@code M_HU_Trace} rows left over from a PREVIOUS run of this feature against
 	 * the same (persistent, not reset-between-runs) local stack.
 	 *
-	 * <p>Test products are upserted by {@code Value} ({@code M_Product_StepDef#createM_Product}
-	 * resolves via {@code retrieveProductByValue} before creating), so a re-run against a
-	 * persistent stack resolves to the SAME {@code M_Product_ID}. {@link #invokeReport} then
-	 * selects via {@code HUTraceEventQuery.builder().productId(productId).types(typesToReport())}
-	 * — scoped by product and trace type, with no lot/InOut/scenario/time filter — so every prior
-	 * run's trace rows for that product would still be picked up: the MATERIAL_RECEIPT and
-	 * MATERIAL_SHIPMENT ones directly, being reported types, and whatever else the recursion
-	 * reaches over their VHU links — of any trace type, since it rebuilds its queries without the
-	 * type filter. Both routes lead here, so the cleanup is required either way. Left unhandled, {@link #assertDetailRows}'s
-	 * {@code containsExactlyInAnyOrderElementsOf} (deliberately exhaustive — it is what catches
-	 * a wrongly-emitted extra row, see its javadoc) would keep failing with leftover rows whose
-	 * {@code DocumentNo}s can never match the current run's freshly generated ones, independent
-	 * of whether the section 6 pairing itself is correct. Deleting the row instead of
-	 * deleting-and-recreating the product itself avoids the FK from {@code M_HU_Trace.M_Product_ID}
-	 * (constraint {@code mproduct_mhutrace}, {@code ON DELETE NO ACTION}) blocking product deletion
-	 * while old trace rows still reference it.
+	 * <p>Products are upserted by {@code Value}, so a re-run resolves to the SAME
+	 * {@code M_Product_ID}, and {@link #invokeReport}'s query is scoped by product and trace type
+	 * only (no lot/InOut/scenario/time filter) — so leftover rows from a prior run would still be
+	 * picked up and break {@link #assertDetailRows}'s exhaustive comparison against freshly
+	 * generated {@code DocumentNo}s. Deletes the trace rows rather than the product itself because
+	 * {@code M_HU_Trace.M_Product_ID} has an {@code ON DELETE NO ACTION} FK that would block it.
 	 */
 	private void deleteExistingHuTraceRows(@NonNull final ProductId productId)
 	{
@@ -236,12 +202,10 @@ public class M_HU_Trace_Report_StepDef
 
 	/**
 	 * Invokes the {@code M_HU_Trace_Report(?)} SQL function for the product associated with the given
-	 * scenario and stores the returned {@code HUTraceType} section names (e.g. {@code PRODUCTION_RECEIPT_DETAL},
-	 * {@code DIRECT_SALE_DETAIL}) for later assertion.
+	 * scenario and stores the returned {@code HUTraceType} section names for later assertion.
 	 *
-	 * <p>Note: the SQL function has two different columns — {@code HUTraceType} (the section name)
-	 * and {@code detail_type} (the sub-record's trace type). We read {@code HUTraceType} because
-	 * the feature file assertions reference section names.
+	 * <p>Reads {@code HUTraceType} (the section name), not {@code detail_type} (the sub-record's
+	 * trace type) — the feature file assertions reference section names.
 	 */
 	@And("M_HU_Trace_Report is invoked for scenario {string}")
 	public void invokeReport(@NonNull final String scenarioName)
@@ -514,14 +478,13 @@ public class M_HU_Trace_Report_StepDef
 	}
 
 	/**
-	 * A receipt's VHU transforms (one TRANSFORM_LOAD edge) into the shipped VHU, but the
-	 * shipment's own MATERIAL_SHIPMENT trace carries a different lot number than the receipt.
-	 * Guards the lot-agreement half of the graph-tracing rule: a graph link alone must not be
-	 * enough to call the pair traced when the two ends disagree on lot.
+	 * A receipt's VHU transforms (one TRANSFORM_LOAD edge) into the shipped VHU, but the shipment's
+	 * own trace carries a different lot number. Guards the lot-agreement half of the graph-tracing
+	 * rule: a graph link alone must not be enough to call the pair traced when the ends disagree.
 	 *
-	 * <p>The rejected pair is dropped, not demoted: the candidate branch also requires lot
-	 * agreement, so nothing at all is emitted. A product-only fallback would pair every receipt of
-	 * the product with every shipment of it — a cartesian at product granularity.
+	 * <p>The rejected pair is dropped, not demoted — the candidate branch also requires lot
+	 * agreement, so nothing is emitted. A product-only fallback would cartesian every receipt of
+	 * the product against every shipment of it.
 	 */
 	private void setupLotDisagreement(@NonNull final String scenarioName, @NonNull final ProductId productId)
 	{
@@ -704,22 +667,17 @@ public class M_HU_Trace_Report_StepDef
 	}
 
 	/**
-	 * A shipment whose VHU descends from a receipt document that the DIRECT_SALE_DETAIL section is
-	 * not allowed to report, plus a purchase receipt of the same product and lot that has no VHU
-	 * link to anything.
+	 * A shipment whose VHU descends from a receipt document the DIRECT_SALE_DETAIL section may not
+	 * report, plus a purchase receipt of the same product and lot with no VHU link to anything.
 	 *
-	 * <p>What makes the first document ineligible is exactly one thing: its doctype is
-	 * {@code IsSOTrx='Y'}, while the section reports only {@code IsSOTrx='N'} receipts. It is
-	 * loaded as the first active {@code DocBaseType='MMR'} doctype with {@code IsSOTrx='Y'} by
-	 * {@code C_DocType_ID} — which document that is depends on the seed data (a customer return, a
-	 * balance correction, an empties return …), and the scenario does not depend on which.
+	 * <p>The first document is ineligible only because its doctype is {@code IsSOTrx='Y'} (the
+	 * section reports only {@code IsSOTrx='N'}); it is loaded as the first active
+	 * {@code DocBaseType='MMR'}/{@code IsSOTrx='Y'} doctype by {@code C_DocType_ID} — which one
+	 * that is depends on seed data, and the scenario doesn't depend on which.
 	 *
-	 * <p>The graph therefore says something about this shipment, but nothing the section may print.
-	 * The lot-level candidate resting on the purchase receipt is what the report emits for such a
-	 * group, and must keep emitting: deciding "this group has a traced receipt, so drop its
-	 * candidates" before
-	 * the receipt document has been checked for eligibility would leave the group with no row at
-	 * all, silently deleting information.
+	 * <p>The graph links the shipment to this ineligible receipt, but the section may not print it.
+	 * The lot-level candidate on the purchase receipt must still be emitted: checking "group already
+	 * has a traced receipt" before the receipt's eligibility would silently drop the group entirely.
 	 */
 	private void setupIneligibleReceiptDoc(@NonNull final String scenarioName, @NonNull final ProductId productId)
 	{
@@ -758,11 +716,9 @@ public class M_HU_Trace_Report_StepDef
 	/**
 	 * Loads the first active C_DocType with the given DocBaseType and IsSOTrx flag.
 	 *
-	 * <p>Filtering by IsSOTrx is critical because metasfresh has several doctypes per
-	 * DocBaseType — MMR alone has both inbound ones ({@code isSOTrx='N'}) and outbound ones
-	 * ({@code isSOTrx='Y'}), and which of the latter this returns depends on the seed data, since
-	 * it takes the lowest {@code C_DocType_ID}. Section 6 of M_HU_Trace_Report checks
-	 * {@code receipt_dt.isSOTrx = 'N'} and {@code shipment_dt.isSOTrx = 'Y'}.
+	 * <p>IsSOTrx filtering matters because metasfresh has several doctypes per DocBaseType — MMR
+	 * has both inbound ({@code isSOTrx='N'}) and outbound ({@code isSOTrx='Y'}) ones — and section 6
+	 * of M_HU_Trace_Report checks {@code receipt_dt.isSOTrx = 'N'} / {@code shipment_dt.isSOTrx = 'Y'}.
 	 *
 	 * @param docBaseType e.g. "MMR" (Material Receipt) or "MMS" (Material Shipment)
 	 * @param isSOTrx     true for sales transactions, false for purchase transactions
@@ -825,13 +781,8 @@ public class M_HU_Trace_Report_StepDef
 	/**
 	 * Creates a minimal M_InOut record with the given doctype and docstatus.
 	 *
-	 * <p>Only the fields required by the M_HU_Trace_Report SQL function are set.
-	 * Non-critical FK columns (C_BPartner_ID, etc.) use test defaults where possible.
-	 *
-	 * <p>Uses direct SQL to force DocStatus after saving because M_InOut model interceptors
-	 * enforce the DocAction workflow — setting DocStatus='CO' on the model object gets
-	 * overridden during save. Our test only needs the M_InOut as a FK reference for the
-	 * SQL function's JOIN conditions.
+	 * <p>Forces DocStatus via direct SQL after saving because M_InOut model interceptors enforce
+	 * the DocAction workflow and override a plain {@code DocStatus='CO'} set on the model during save.
 	 */
 	private I_M_InOut createMinimalInOut(
 			@NonNull final I_C_DocType docType,
@@ -849,10 +800,8 @@ public class M_HU_Trace_Report_StepDef
 		inOut.setMovementType(docType.isSOTrx() ? "C-" : "V+");
 		saveRecord(inOut);
 
-		// Force DocStatus, Processed, and C_DocType_ID via SQL — model validators enforce
-		// the DocAction workflow and may reset DocStatus and C_DocType_ID during save.
-		// Section 6 of M_HU_Trace_Report JOINs C_DocType and checks isSOTrx, so
-		// C_DocType_ID must match the intended document type.
+		// Model validators may reset DocStatus/C_DocType_ID during save; force them (and Processed)
+		// via SQL. Section 6 checks isSOTrx, so C_DocType_ID must match the intended doctype.
 		DB.executeUpdateAndThrowExceptionOnFail(
 				"UPDATE M_InOut SET DocStatus = ?, Processed = 'Y', C_DocType_ID = ? WHERE M_InOut_ID = ?",
 				new Object[] { docStatus, docType.getC_DocType_ID(), inOut.getM_InOut_ID() },
@@ -862,16 +811,12 @@ public class M_HU_Trace_Report_StepDef
 	}
 
 	/**
-	 * Creates a minimal PP_Order record in docstatus='CO' for use in PRODUCTION_RECEIPT traces.
+	 * Creates a minimal PP_Order record in docstatus='CO' for use in PRODUCTION_RECEIPT traces
+	 * (M_HU_Trace_Report requires {@code po.docstatus IN ('CO', 'CL')}).
 	 *
-	 * <p>The M_HU_Trace_Report SQL function requires:
-	 * <ul>
-	 *   <li>{@code po.docstatus IN ('CO', 'CL')}</li>
-	 * </ul>
-	 *
-	 * <p>Uses direct SQL because the PP_Order model validator requires PP_Product_BOM_ID &gt; 0,
-	 * but the SQL report function only needs PP_Order_ID for its JOIN condition.
-	 * Creating a full BOM hierarchy would be disproportionate to the test's purpose.
+	 * <p>Uses direct SQL because the PP_Order model validator requires {@code PP_Product_BOM_ID > 0},
+	 * while the report function only needs {@code PP_Order_ID} for its JOIN — a full BOM hierarchy
+	 * would be disproportionate to the test's purpose.
 	 */
 	private I_PP_Order createMinimalPpOrder(@NonNull final ProductId productId)
 	{
@@ -931,12 +876,7 @@ public class M_HU_Trace_Report_StepDef
 	/**
 	 * Creates a single M_HU_Trace record.
 	 *
-	 * @param vhu       the Virtual HU being traced (used for both VHU_ID and M_HU_ID)
-	 * @param productId the product
-	 * @param traceType the trace event type
-	 * @param lotNumber the lot number (may be null)
-	 * @param inOut     the linked M_InOut (may be null)
-	 * @param ppOrder   the linked PP_Order (may be null)
+	 * @param vhu the Virtual HU being traced (used for both VHU_ID and M_HU_ID)
 	 */
 	private I_M_HU_Trace createHuTrace(
 			@NonNull final I_M_HU vhu,

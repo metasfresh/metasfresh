@@ -57,32 +57,25 @@ as
 $$
 -- =====================================================================================
 -- SHARED CTE BLOCK
--- Used by SECTION 6 (DIRECT SALE DETAILS) only; the other sections do not reference it.
--- It derives the receipt-to-shipment pairing from the M_HU_Trace transformation graph
--- (VHU_Source_ID -> VHU_ID edges), and labels every emitted pair with the basis on which it was
--- paired (link_basis) so a proven link is distinguishable from a guess.
+-- Used by SECTION 6 (DIRECT SALE DETAILS) only. Derives the receipt-to-shipment pairing from the
+-- M_HU_Trace transformation graph (VHU_Source_ID -> VHU_ID edges) and labels each pair with the
+-- basis it was paired on (link_basis), so a proven link is distinguishable from a guess.
 -- =====================================================================================
 WITH RECURSIVE
--- Every descent edge: any trace row that records a source VHU, whatever its trace type -- the
--- transformation splits, and customer returns, which record the originally-shipped VHU as the
--- source and so still run forward along physical descent. The COLUMN defines the edge set, not
--- the type: adding a trace-type predicate here would silently drop return-chain traceability,
--- and no test would go red. On a production dataset every target VHU has exactly one source, so
--- the graph is a forest and attributing a shipped VHU back to one received VHU is unambiguous.
--- The walk below runs the other way -- forward, from a receipt to everything it became -- and may
--- legitimately fan out, one received pallet split into many shipped pieces. Deliberately not
--- restricted by trace type or by T_Selection: whether such a row is in the selection depends on
--- how the caller's recursion happened to reach it, so the walk must not depend on it.
+-- Every descent edge: any trace row with a source VHU, whatever its trace type -- transformation
+-- splits AND customer returns (which record the originally-shipped VHU as source) both belong
+-- here. The COLUMN defines the edge set, not the type: adding a trace-type predicate here would
+-- silently drop return-chain traceability, and no test would go red. Not restricted by
+-- T_Selection: the walk must not depend on how the caller's recursion reached a row.
 vhu_edge AS (
     SELECT DISTINCT t.VHU_Source_ID AS src, t.VHU_ID AS dst
     FROM M_HU_Trace t
     WHERE t.VHU_Source_ID IS NOT NULL
       AND t.VHU_Source_ID <> t.VHU_ID
 ),
--- The MATERIAL_RECEIPT rows this report run is about, already narrowed to rows whose document
--- qualifies as a purchase receipt. Filtering here rather than in the final WHERE keeps the
--- traced and the candidate branch working off exactly the same set of eligible receipts, so a
--- pair that the final projection would discard can never suppress the candidates of its group.
+-- The MATERIAL_RECEIPT rows this run is about, narrowed to purchase-receipt documents. Filtered
+-- here rather than in the final WHERE so the traced and candidate branches share exactly the same
+-- eligible-receipts set -- a pair the final projection discards can't suppress its group's candidates.
 receipt_trace AS (
     SELECT t.M_HU_Trace_ID, t.VHU_ID, t.M_HU_ID, t.M_Product_ID, t.LotNumber, t.M_InOut_ID, t.C_UOM_ID,
            t.AD_Client_ID, t.AD_Org_ID
@@ -105,16 +98,13 @@ receipt_reach (M_HU_Trace_ID, VHU_ID, depth) AS (
     SELECT rr.M_HU_Trace_ID, e.dst, rr.depth + 1
     FROM receipt_reach rr
     JOIN vhu_edge e ON e.src = rr.VHU_ID
-    -- Termination guard against a runaway or cyclic transformation chain: UNION alone cannot stop
-    -- a cycle here because the depth column makes every revisit a distinct row. On a production
-    -- dataset of 25 816 trace rows, of which 12 908 carry a source VHU (the distinct edge count is
-    -- at most that, since vhu_edge de-duplicates and drops self-edges), the longest chain measured
-    -- was 2 hops -- so 15 is far above anything real while still bounding a corrupt graph.
+    -- Termination guard against a runaway or cyclic chain (UNION alone can't stop a cycle since
+    -- depth makes every revisit distinct). On production data (25 816 trace rows, longest chain
+    -- measured 2 hops) 15 is far above anything real while still bounding a corrupt graph.
     WHERE rr.depth < 15
 ),
--- The MATERIAL_SHIPMENT rows this run is about, narrowed to rows whose document qualifies as a
--- customer shipment. Both sides are restricted to the report's selection, so a shipment outside
--- the run's scope can never be paired.
+-- The MATERIAL_SHIPMENT rows this run is about, narrowed to customer-shipment documents. Both
+-- sides are restricted to the report's selection, so a shipment outside scope can never be paired.
 shipment_trace_sel AS (
     SELECT t.M_HU_Trace_ID, t.VHU_ID, t.M_HU_ID, t.M_Product_ID, t.LotNumber, t.M_InOut_ID, t.C_UOM_ID
     FROM M_HU_Trace t
@@ -128,31 +118,26 @@ shipment_trace_sel AS (
                      AND s.T_Selection_ID = t.M_HU_Trace_ID)
 ),
 -- A pair is TRACED when the shipped VHU is reachable from the receipt VHU AND the two trace rows
--- agree on lot. Lot agreement is a consistency guard, not the pairing criterion: transformation
--- edges do connect trace rows carrying different lot numbers, and the report must not assert a
--- link across a relabelling it cannot explain.
--- The GROUP BY is the report row's identity: one row per (receipt document, shipment document,
--- product, lot), however many VHUs and trace rows the two documents carry for that product and
--- lot. This is de-duplication by construction, not by a DISTINCT over the projected columns.
+-- agree on lot -- lot agreement is a consistency guard, not the pairing criterion: transformation
+-- edges do connect rows with different lot numbers, and a relabelling must not be asserted as a link.
+-- The GROUP BY is the row's identity (receipt doc, shipment doc, product, lot); this is
+-- de-duplication by construction, not a DISTINCT over the projected columns.
 traced_pair AS (
     SELECT r.M_InOut_ID AS receipt_inout_id, r.M_Product_ID, r.LotNumber,
            st.M_InOut_ID AS shipment_inout_id,
            min(st.M_HU_Trace_ID) AS shipment_trace_id,
            min(r.M_HU_ID)        AS receipt_hu_id,
            min(st.M_HU_ID)       AS shipment_hu_id,
-           -- assumes every trace row of one document/product/lot shares a UOM. The quantities
-           -- beside these are document-level sums, so a document that genuinely mixed UOMs would
-           -- print the sum under only one of them.
+           -- assumes one document/product/lot shares a UOM; a document that genuinely mixed UOMs
+           -- would print the document-level sum under only one of them.
            min(st.C_UOM_ID)      AS shipment_uom_id,
            min(r.C_UOM_ID)       AS receipt_uom_id,
-           -- client/org of the receipt TRACE ROW, which is what prod_stock below filters on.
-           -- Reducing them with min() is safe because the rows of one group agree: the writer of a
-           -- MATERIAL_RECEIPT trace takes its org from the document's own M_HU_Assignment rows
-           -- (HUTraceEventsService.createAndAddEvents), and never sets the client at all, so the
-           -- row carries the installation's default. Were that ever violated, min() would pick the
-           -- numerically smallest -- org '*' = 0 being the likely one -- and all three of product,
-           -- client and org are equality filters inside getcurrentstoragestock, so prod_stock
-           -- would silently read 0 instead of the real stock.
+           -- client/org of the receipt TRACE ROW, which is what prod_stock below filters on. Reducing
+           -- with min() is safe because the group's rows agree: MATERIAL_RECEIPT traces take their org
+           -- from the document's own M_HU_Assignment rows (HUTraceEventsService.createAndAddEvents)
+           -- and never set the client, so every row carries the installation default. Were that ever
+           -- violated, min() would pick org '*' = 0, and prod_stock (which equality-filters on all
+           -- three) would silently read 0.
            min(r.AD_Client_ID)   AS receipt_client_id,
            min(r.AD_Org_ID)      AS receipt_org_id
     FROM receipt_trace r
@@ -164,15 +149,10 @@ traced_pair AS (
     GROUP BY r.M_InOut_ID, r.M_Product_ID, r.LotNumber, st.M_InOut_ID
 ),
 -- Lot-level guesses, emitted ONLY for the (shipment document, product, lot) groups the graph
--- leaves empty. A group with a traced receipt never also shows candidates.
--- The lot condition below is also what decides the fate of a graph-connected pair that the lot
--- guard above rejected: such a pair does not match here either, so it is DROPPED rather than
--- demoted to a candidate. Deliberate. A relabelling the data does not explain is not evidence of
--- a product-level link, and admitting one would re-open the cartesian at product granularity --
--- every receipt of the product against every shipment of it -- the very failure these pairing
--- rules exist to prevent.
--- Silence is the honest answer; PRODUCT_CANDIDATE keeps its single meaning of "neither side
--- carries a lot number".
+-- leaves empty; a group with a traced receipt never also shows candidates. A graph-connected pair
+-- that the lot guard rejected is DROPPED here too, not demoted to a candidate -- a relabelling the
+-- data doesn't explain is not evidence of a product-level link, and admitting one would reopen the
+-- product-level cartesian these pairing rules exist to prevent.
 -- The GROUP BY carries the same row identity as traced_pair above.
 candidate_pair AS (
     SELECT r.M_InOut_ID AS receipt_inout_id, r.M_Product_ID, r.LotNumber,
@@ -206,14 +186,12 @@ detail_pair AS (
            (CASE WHEN cp.LotNumber IS NULL THEN 'PRODUCT_CANDIDATE' ELSE 'LOT_CANDIDATE' END)::varchar
       FROM candidate_pair cp
 ),
--- Document-level received quantity per (receipt document, product, lot). GROUP BY puts all NULL
--- lots in one group, which is what the IS NOT DISTINCT FROM join below matches; a combination
--- with no rows produces no join partner and therefore a NULL quantity, exactly as a correlated
--- SUM over no rows would.
--- The IN restricts the set of DOCUMENTS grouped here, never the rows summed for one of them, so
--- the quantity stays the document's full total. It is not a filter but a bound: the only document
--- ids this CTE is ever probed with come from receipt_trace, and without it every invocation of the
--- function would aggregate the whole of M_HU_Trace even when this section emits nothing.
+-- Document-level received quantity per (receipt document, product, lot); GROUP BY puts all NULL
+-- lots in one group, matching the IS NOT DISTINCT FROM join below (a combination with no rows
+-- yields no join partner, hence NULL, as a correlated SUM over no rows would).
+-- The IN is a bound, not a filter: it restricts which DOCUMENTS are grouped, never the rows summed
+-- for one of them, so the total stays the document's full sum -- it only keeps this CTE from
+-- aggregating the whole of M_HU_Trace on every invocation, even when section 6 emits nothing.
 receipt_doc_qty AS (
     SELECT rt.M_InOut_ID, rt.M_Product_ID, rt.LotNumber, SUM(rt.Qty) AS qty_sum
     FROM M_HU_Trace rt
@@ -475,15 +453,10 @@ UNION ALL
 
 -- =====================================================================================
 -- SECTION 6: DIRECT SALE DETAILS (Non-Manufactured Products)
--- Handles the direct purchase-to-sale flow: material receipts from vendors (issotrx=N) paired
--- with material shipments to customers (issotrx=Y).
--- The pairing is derived in the CTE block at the top of this function: a pair is TRACED when the
--- shipped VHU is reachable from the received VHU along the transformation graph and both ends
--- agree on lot; where the graph is silent for a (shipment document, product, lot) group, the
--- lot-level or product-level guesses are emitted for that group instead, and say so in link_basis.
--- One row per (receipt document, shipment document, product, lot) -- the aggregation that produces
--- that identity lives in traced_pair / candidate_pair, so no DISTINCT is needed or wanted here:
--- a duplicate would be a defect in the pairing and must stay visible rather than be swallowed.
+-- The purchase-to-sale flow for non-manufactured products: material receipts (issotrx=N) paired
+-- with material shipments (issotrx=Y) via the pairing CTEs above. One row per (receipt document,
+-- shipment document, product, lot) -- already deduplicated by traced_pair / candidate_pair, so no
+-- DISTINCT is needed here; a duplicate would be a pairing defect that must stay visible.
 -- =====================================================================================
 SELECT
     dp.LotNumber AS LotNumber,
@@ -493,8 +466,7 @@ SELECT
     NULL AS PPOrder,
     NULL AS Inventory,
     receipt_io.movementdate AS DocumentDate,
-    -- the receipt document's own quantity for this product and lot, summed over the document's
-    -- VHUs -- so the received-versus-shipped proportion is readable from the row itself.
+    -- document-level received quantity for this product/lot, so received-vs-shipped is readable from the row.
     ABS(ROUND(rq.qty_sum, COALESCE(ru.stdprecision, 0))) AS Qty,
     ru.uomsymbol AS UOM,
     'MATERIAL_SHIPMENT' as detail_type,
@@ -513,8 +485,7 @@ SELECT
     shipment_hulu_clearancestatus.name as finished_product_clearance,
     shipment_bp.value as customer_no,
     shipment_bp.name as customer,
-    -- same figure as finished_product_qty above, under the column name the report prints as
-    -- "2_Liefermenge"; both read the one shipment_doc_qty CTE
+    -- same figure as finished_product_qty above (prints as "2_Liefermenge"); both read shipment_doc_qty
     ABS(ROUND(sq.qty_sum, COALESCE(su.stdprecision, 0))) as shipmentqty,
     shipment_io.documentno as shipment_note,
     to_char(shipment_io.movementdate, 'DD.MM.YYYY') as shipment_date,
@@ -545,8 +516,7 @@ LEFT JOIN m_hu shipment_hu ON shipment_hu.m_hu_id = dp.shipment_hu_id
 LEFT JOIN ad_ref_list shipment_hulu_clearancestatus
        ON shipment_hulu_clearancestatus.ad_reference_id = 541540::numeric
       AND shipment_hulu_clearancestatus.value::text = shipment_hu.clearancestatus::text
--- the receipt document's isSOTrx/docstatus and the shipment document's are already enforced in
--- receipt_trace / shipment_trace_sel, so that both pairing branches see the same eligible documents
+-- isSOTrx/docstatus for both documents are already enforced in receipt_trace / shipment_trace_sel
 WHERE NOT EXISTS (
       -- this section is for products that were not manufactured
       SELECT 1 FROM M_HU_Trace pt
