@@ -69,6 +69,15 @@
 -- DatePromised_Effective to timestamptz and ATA (both sides naked) to timestamp. Both kinds already
 -- coexist in delivery-planning windows today and round-trip identically under one session timezone.
 --
+-- CALENDAR WEEK. CalendarWeek = EXTRACT(week from <the same expression that computes ETA on that
+-- branch>) -- not from either bare source column (M_ReceiptSchedule.CalendarWeek does that already,
+-- on window 541954, and stays untouched), because ETA itself is a COALESCE and reading a source column
+-- directly would let the week disagree with the ETA shown right next to it. EXTRACT(week from ...) is
+-- the ISO week (1-53), so a date whose ISO week crosses a year end reports the week of the ISO year
+-- it actually belongs to, not the calendar year -- e.g. 2023-01-01 (a Sunday) is week 52 of ISO year
+-- 2022, not week 1 of 2023. No separate ISO-year column is added: the grid sorts by ETA (see below),
+-- it does not group by week, so a bare week number is unambiguous here.
+--
 -- DROPSHIP AND OUTGOING are out of scope for this view: branch one is strictly Incoming. Note the
 -- consequence, so it is not read as a bug: branch two excludes a schedule that has ANY active
 -- planning, so a schedule whose only active planning is a Dropship one appears on NEITHER branch.
@@ -88,6 +97,9 @@ SELECT dp.m_delivery_planning_id                                             AS 
        rs.m_warehouse_id,
        rs.c_order_id,
        COALESCE(dp.eta, COALESCE(rs.datepromised_override, rs.movementdate)) AS eta,
+       EXTRACT(week from
+               COALESCE(dp.eta, COALESCE(rs.datepromised_override, rs.movementdate)))
+                                                                              AS calendarweek,
        COALESCE(dp.etd, o.preparationdate)                                   AS etd,
        dp.atd,
        dp.ata,
@@ -125,6 +137,8 @@ SELECT 1000000000 + rs.m_receiptschedule_id                AS RV_ReceiptLogistic
        rs.m_warehouse_id,
        rs.c_order_id,
        COALESCE(rs.datepromised_override, rs.movementdate) AS eta,
+       EXTRACT(week from COALESCE(rs.datepromised_override, rs.movementdate))
+                                                            AS calendarweek,
        o.preparationdate                                   AS etd,
        o.preparationdate                                   AS atd,
        (SELECT min(io.movementdate)

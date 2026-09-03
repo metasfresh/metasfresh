@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_RV_ReceiptLogistics extends org.compiere.model.PO implements I_RV_ReceiptLogistics, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1092813033L;
+	private static final long serialVersionUID = -1547066162L;
 
     /** Standard Constructor */
     public X_RV_ReceiptLogistics (final Properties ctx, final int RV_ReceiptLogistics_ID, @Nullable final String trxName)
@@ -57,6 +57,19 @@ public class X_RV_ReceiptLogistics extends org.compiere.model.PO implements I_RV
 	public java.sql.Timestamp getATD() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_ATD);
+	}
+
+	@Override
+	public void setCalendarWeek (final @Nullable BigDecimal CalendarWeek)
+	{
+		set_ValueNoCheck (COLUMNNAME_CalendarWeek, CalendarWeek);
+	}
+
+	@Override
+	public BigDecimal getCalendarWeek() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CalendarWeek);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override

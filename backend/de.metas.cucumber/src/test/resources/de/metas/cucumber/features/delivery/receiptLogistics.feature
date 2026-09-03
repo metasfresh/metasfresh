@@ -202,3 +202,36 @@ Feature: The receipt-logistics window lists what is arriving, planned or not
     And after not more than 60s, the C_Order identified by orderEtaUnplanned_RL has exactly the following rows in RV_ReceiptLogistics:
       | RV_ReceiptLogistics_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID    | OPT.ETA    | OPT.DatePromised_Effective |
       | rowEtaUnplanned_RL     | null                   | scheduleEtaUnplanned_RL | 2023-03-15 | 2023-03-15                 |
+
+  @Id:S31789_TC5
+  Scenario: Calendar week matches the row's own ETA across a year boundary
+
+    Given metasfresh contains C_Orders:
+      | Identifier            | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType |
+      | orderWeekPlanned_RL   | false   | vendor_RL                | 2022-12-20  | 2023-01-01T00:00:00Z | vendorLocation_RL                     | warehouse_RL                  | POO             |
+      | orderWeekUnplanned_RL | false   | vendor_RL                | 2022-12-20  | 2023-01-01T00:00:00Z | vendorLocation_RL                     | warehouse_RL                  | POO             |
+    And metasfresh contains C_OrderLines:
+      | Identifier                | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineWeekPlanned_RL   | orderWeekPlanned_RL    | product_RL              | 5          | shipperPlanning_RL          |
+      | orderLineWeekUnplanned_RL | orderWeekUnplanned_RL  | product_RL              | 5          | shipperPlain_RL             |
+
+    When the order identified by orderWeekPlanned_RL is completed
+    And the order identified by orderWeekUnplanned_RL is completed
+
+    Then after not more than 60s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier  | C_OrderLine_ID.Identifier  | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
+      | scheduleWeekPlanned_RL          | orderWeekPlanned_RL    | orderLineWeekPlanned_RL    | vendor_RL                | vendorLocation_RL                 | product_RL              | 5          | warehouse_RL              |
+      | scheduleWeekUnplanned_RL        | orderWeekUnplanned_RL  | orderLineWeekUnplanned_RL  | vendor_RL                | vendorLocation_RL                 | product_RL              | 5          | warehouse_RL              |
+    And after not more than 60s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID | C_OrderLine_ID          |
+      | planningWeekPlanned_RL | orderLineWeekPlanned_RL |
+
+    # 2023-01-01 is a Sunday: the calendar year has turned but the ISO week has not - it is still week 52
+    # of ISO year 2022, not week 1 of 2023. Both row types must report 52, which only holds if the
+    # derivation is the ISO week (postgres EXTRACT(week from ...)), not a naive "week of the new year".
+    Then after not more than 60s, the C_Order identified by orderWeekPlanned_RL has exactly the following rows in RV_ReceiptLogistics:
+      | RV_ReceiptLogistics_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID   | OPT.ETA    | OPT.CalendarWeek |
+      | rowWeekPlanned_RL      | planningWeekPlanned_RL | scheduleWeekPlanned_RL | 2023-01-01 | 52               |
+    And after not more than 60s, the C_Order identified by orderWeekUnplanned_RL has exactly the following rows in RV_ReceiptLogistics:
+      | RV_ReceiptLogistics_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID     | OPT.ETA    | OPT.CalendarWeek |
+      | rowWeekUnplanned_RL    | null                   | scheduleWeekUnplanned_RL | 2023-01-01 | 52               |

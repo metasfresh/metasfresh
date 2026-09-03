@@ -98,6 +98,7 @@ public class RV_ReceiptLogistics_StepDef
 	 *   <b>OPT.ETA</b> — (optional) expected {@code ETA}, as a date<br>
 	 *   <b>OPT.DatePromised_Effective</b> — (optional) expected {@code DatePromised_Effective}, as a date<br>
 	 *   <b>OPT.QtyOrdered</b> — (optional) expected {@code QtyOrdered}<br>
+	 *   <b>OPT.CalendarWeek</b> — (optional) expected ISO {@code CalendarWeek}, derived from {@code ETA}<br>
 	 *   <b>OPT.C_BPartner_ID</b> — (optional, identifier-ref) expected business partner<br>
 	 *   <b>OPT.M_Product_ID</b> — (optional, identifier-ref) expected product<br>
 	 *   <b>OPT.M_Warehouse_ID</b> — (optional, identifier-ref) expected warehouse<br>
@@ -218,6 +219,11 @@ public class RV_ReceiptLogistics_StepDef
 				.ifPresent(qty -> softly.assertThat(actual.getQtyOrdered())
 						.as(I_RV_ReceiptLogistics.COLUMNNAME_QtyOrdered)
 						.isEqualByComparingTo(qty));
+
+		expected.getAsOptionalBigDecimal(I_RV_ReceiptLogistics.COLUMNNAME_CalendarWeek)
+				.ifPresent(calendarWeek -> softly.assertThat(actual.getCalendarWeek())
+						.as(I_RV_ReceiptLogistics.COLUMNNAME_CalendarWeek)
+						.isEqualByComparingTo(calendarWeek));
 
 		expected.getAsOptionalString(I_RV_ReceiptLogistics.COLUMNNAME_POReference)
 				.ifPresent(poReference -> softly.assertThat(actual.getPOReference())

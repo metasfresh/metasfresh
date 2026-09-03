@@ -98,6 +98,27 @@ public interface I_RV_ReceiptLogistics
 	String COLUMNNAME_ATD = "ATD";
 
 	/**
+	 * Set KW.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCalendarWeek (@Nullable BigDecimal CalendarWeek);
+
+	/**
+	 * Get KW.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getCalendarWeek();
+
+	ModelColumn<I_RV_ReceiptLogistics, Object> COLUMN_CalendarWeek = new ModelColumn<>(I_RV_ReceiptLogistics.class, "CalendarWeek", null);
+	String COLUMNNAME_CalendarWeek = "CalendarWeek";
+
+	/**
 	 * Set Business Partner.
 	 *
 	 * <br>Type: Search
