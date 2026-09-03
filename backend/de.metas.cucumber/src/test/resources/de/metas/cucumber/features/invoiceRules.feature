@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00703_Invoice_Rule
 @ghActions:run_on_executor5
 Feature: invoice rules
+## F00703: Invoice Rule
 
   Background:
     Given infrastructure and metasfresh are running
@@ -8,7 +11,6 @@ Feature: invoice rules
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
 
-  @from:cucumber
   Scenario: we can invoice a sales order with invoice rule after delivery
     Given metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And metasfresh contains M_Products:
@@ -33,8 +35,8 @@ Feature: invoice rules
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | l_1        | 0123456789011 | endcustomer_1            | Y                   | Y                   |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.C_PaymentTerm_ID |
-      | o_1        | true    | endcustomer_1            | 2021-04-17  | po_ref_mock     | 1000012              |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
+      | o_1        | true    | endcustomer_1            | 2021-04-17  | po_ref_mock     |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
@@ -58,13 +60,12 @@ Feature: invoice rules
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | ic_1                              | invoice_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus |
-      | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock     | 1000002     | true      | CO        |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | processed | DocStatus |
+      | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock     | true      | CO        |
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLine_1               | invoice_1               | p_1                     | 10          | true      |
 
-  @from:cucumber
   Scenario: we can invoice a sales order with invoice rule after pick
     Given metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And metasfresh contains M_Products:
@@ -92,8 +93,8 @@ Feature: invoice rules
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | l_2        | 0123456789012 | endcustomer_2            | Y                   | Y                   |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.C_PaymentTerm_ID |
-      | o_2        | true    | endcustomer_2            | 2021-04-15  | po_ref_mock     | 1000012              |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
+      | o_2        | true    | endcustomer_2            | 2021-04-15  | po_ref_mock     |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_2       | o_2                   | p_2                     | 12         |
@@ -117,13 +118,12 @@ Feature: invoice rules
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | ic_2                              | invoice_2               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus |
-      | invoice_2               | endcustomer_2            | l_2                               | po_ref_mock     | 1000002     | true      | CO        |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | processed | DocStatus |
+      | invoice_2               | endcustomer_2            | l_2                               | po_ref_mock     | true      | CO        |
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLine_2               | invoice_2               | p_2                     | 6           | true      |
 
-  @from:cucumber
   Scenario: we can invoice a sales order with invoice rule after pick and over-picked quantity
     Given metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And metasfresh contains M_Products:
@@ -151,8 +151,8 @@ Feature: invoice rules
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | l_3        | 0123456789012 | endcustomer_3            | Y                   | Y                   |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.C_PaymentTerm_ID |
-      | o_3        | true    | endcustomer_3            | 2021-04-15  | po_ref_mock     | 1000012              |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
+      | o_3        | true    | endcustomer_3            | 2021-04-15  | po_ref_mock     |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_3       | o_3                   | p_3                     | 10         |
@@ -176,8 +176,8 @@ Feature: invoice rules
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | ic_3                              | invoice_3               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus |
-      | invoice_3               | endcustomer_3            | l_3                               | po_ref_mock     | 1000002     | true      | CO        |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | processed | DocStatus |
+      | invoice_3               | endcustomer_3            | l_3                               | po_ref_mock     | true      | CO        |
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLine_3_1             | invoice_3               | p_3                     | 12          | true      |
@@ -185,14 +185,13 @@ Feature: invoice rules
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
       | shipment              | s_s_3                            | P                 | Y                  |
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus |
       | shipment              | endcustomer_3            | l_3                               | 2021-04-15  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
       | shipmentLine1_1           | shipment              | p_3                     | 12          | true      |
 
 
-  @from:cucumber
   Scenario: we can double-invoice a sales order with invoice rule after pick, if we pick some quantity and then override the qty to deliver to be equal to qty ordered
     Given metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And metasfresh contains M_Products:
@@ -217,8 +216,8 @@ Feature: invoice rules
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | l_3        | 0123456789012 | endcustomer_3            | Y                   | Y                   |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_PaymentTerm_ID | OPT.POReference |
-      | o_3        | true    | endcustomer_3            | 2021-04-15  | 1000012              | po_ref_mock     |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
+      | o_3        | true    | endcustomer_3            | 2021-04-15  | po_ref_mock     |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_3       | o_3                   | p_3                     | 10         |
@@ -248,8 +247,8 @@ Feature: invoice rules
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_3               | invoice_candidate_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus |
-      | invoice_3               | endcustomer_3            | l_3                               | po_ref_mock     | 1000002     | true      | CO        |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | processed | DocStatus |
+      | invoice_3               | endcustomer_3            | l_3                               | po_ref_mock     | true      | CO        |
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceline_3_1             | invoice_3               | p_3                     | 5           | true      |
@@ -263,7 +262,7 @@ Feature: invoice rules
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
       | shipment_1            | s_s_3                            | D                 | Y                  |
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus |
       | shipment_1            | endcustomer_3            | l_3                               | 2021-04-15  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
@@ -281,7 +280,7 @@ Feature: invoice rules
       | M_InOut_ID.Identifier  | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
       | shipment_1, shipment_2 | s_s_3                            | P                 | Y                  |
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus |
       | shipment_2            | endcustomer_3            | l_3                               | 2021-04-15  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
@@ -308,8 +307,138 @@ Feature: invoice rules
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_3, invoice_4    | invoice_candidate_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus |
-      | invoice_4               | endcustomer_3            | l_3                               | po_ref_mock     | 1000002     | true      | CO        |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | processed | DocStatus |
+      | invoice_4               | endcustomer_3            | l_3                               | po_ref_mock     | true      | CO        |
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLine_4_1             | invoice_4               | p_3                     | 10          | true      |
+
+  @Id:S30448_TC1
+  Scenario: MOrder.setBPartner inherits InvoiceRule and IsAutoInvoice from BP group when BP has no direct value
+    # Verifies that MOrder.setBPartner (called from beforeSave when no location is set) resolves
+    # InvoiceRule and IsAutoInvoice via BPartnerEffectiveBL (group chain), not raw bp.getInvoiceRule().
+    Given metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
+    And metasfresh contains M_Products:
+      | Identifier | Name                           |
+      | product    | d_invRuleGroupInheritance_prod |
+    And metasfresh contains M_PricingSystems
+      | Identifier     | Name                           | Value                           | OPT.IsActive |
+      | pricingSystem  | d_invRuleGroupInheritance_ps   | d_invRuleGroupInheritance_psv   | true         |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                            | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | priceList  | pricingSystem                 | DE                        | EUR                 | d_invRuleGroupInheritance_pl    | null            | true  | false         | 2              | true         |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier       | M_PriceList_ID.Identifier | Name                             | ValidFrom  |
+      | priceListVersion | priceList                 | d_invRuleGroupInheritance_plv    | 2021-04-01 |
+    And metasfresh contains M_ProductPrices
+      | Identifier   | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | productPrice | priceListVersion                  | product                 | 10.0     | PCE               | Normal                        |
+    And metasfresh contains C_BP_Groups:
+      | Identifier | OPT.InvoiceRule | OPT.IsAutoInvoice |
+      | bpGroup    | D               | Y                 |
+    And metasfresh contains C_BPartners:
+      | Identifier | Name                             | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | C_BP_Group_ID.Identifier |
+      | customer   | d_invRuleGroupInheritance_cust   | N            | Y              | pricingSystem                 | bpGroup                  |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier       | GLN                   | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | customerLocation | 0123456789013         | customer                 | Y                   | Y                   |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | order      | true    | customer                 | 2021-04-17  |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | orderLine  | order                 | product                 | 10         |
+    When the order identified by order is completed
+    Then validate the created orders
+      | C_Order_ID.Identifier | InvoiceRule | IsAutoInvoice |
+      | order                 | D           | true          |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier        | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule  | orderLine                 | N             |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | shipmentSchedule                  | D            | true                | false       |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | shipmentSchedule                  | shipment              |
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | invoiceCandidate                  | orderLine                 | 10           |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | InvoiceRule | IsAutoInvoice |
+      | invoiceCandidate                  | D           | true          |
+
+  @Id:S30448_TC2
+  Scenario: OLCand explicit invoiceRule and isAutoInvoice win over BP-group defaults
+    # Guard scenario: when an OLCand request explicitly sets invoiceRule=I (Immediate) and isAutoInvoice=false,
+    # those values must be preserved on the resulting order even though the BP's group has InvoiceRule=D/IsAutoInvoice=Y.
+    # The OLCand path sets the location before save, so MOrder.beforeSave skips setBPartner → no group override.
+    Given metasfresh contains M_PricingSystems
+      | Identifier        | Name                              | Value                             | OPT.IsActive |
+      | psOLCandGuard     | d_olcandGuard_pricingSystem       | d_olcandGuard_pricingSystemValue  | true         |
+    And metasfresh contains M_PriceLists
+      | Identifier      | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                     | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | plOLCandGuard   | psOLCandGuard                 | DE                        | EUR                 | d_olcandGuard_priceList  | null            | true  | false         | 2              | true         |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier       | M_PriceList_ID.Identifier | Name                           | ValidFrom  |
+      | plvOLCandGuard   | plOLCandGuard             | d_olcandGuard_priceListVersion | 2021-04-01 |
+    And metasfresh contains M_Products:
+      | Identifier       | Name                    |
+      | productOLCand    | d_olcandGuard_product   |
+    And metasfresh contains M_ProductPrices
+      | Identifier       | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | ppOLCandGuard    | plvOLCandGuard                    | productOLCand           | 10.0     | PCE               | Normal                        |
+    And metasfresh contains C_BP_Groups:
+      | Identifier       | OPT.InvoiceRule | OPT.IsAutoInvoice |
+      | bpGroupOLCand    | D               | Y                 |
+    And metasfresh contains C_BPartners:
+      | Identifier       | Name                     | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | C_BP_Group_ID.Identifier |
+      | custOLCandGuard  | d_olcandGuard_customer   | N            | Y              | psOLCandGuard                 | bpGroupOLCand            |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier            | GLN              | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | locOLCandGuard        | 0123456789014    | custOLCandGuard          | Y                   | Y                   |
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
+  """
+{
+    "requests": [
+        {
+            "orgCode": "001",
+            "externalHeaderId": "olcandGuard30448",
+            "externalLineId": "olcandGuard30448_0",
+            "externalSystemCode": "Other",
+            "bpartner": {
+                "bpartnerIdentifier": "val-d_olcandGuard_customer",
+                "bpartnerLocationIdentifier": "gln-0123456789014"
+            },
+            "dateRequired": "2021-04-16",
+            "dateOrdered": "2021-04-16",
+            "orderDocType": "SalesOrder",
+            "paymentTerm": "val-1000002",
+            "productIdentifier": "val-d_olcandGuard_product",
+            "qty": 1,
+            "currencyCode": "EUR",
+            "discount": 0,
+            "poReference": "olcandGuard30448",
+            "deliveryViaRule": "S",
+            "isAutoInvoice": false,
+            "invoiceRule": "I"
+        }
+    ]
+}
+"""
+    And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
+"""
+{
+    "externalHeaderId": "olcandGuard30448",
+    "externalSystemCode": "Other",
+    "ship": false,
+    "invoice": false,
+    "closeOrder": false
+}
+"""
+    Then process metasfresh response
+      | C_Order_ID.Identifier |
+      | orderOLCandGuard      |
+    And validate the created orders
+      | C_Order_ID.Identifier | InvoiceRule | IsAutoInvoice |
+      | orderOLCandGuard      | I           | false         |

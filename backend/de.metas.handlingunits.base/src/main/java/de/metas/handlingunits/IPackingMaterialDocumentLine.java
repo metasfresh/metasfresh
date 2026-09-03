@@ -23,7 +23,9 @@ package de.metas.handlingunits;
  */
 
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Set;
 
@@ -50,7 +52,6 @@ public interface IPackingMaterialDocumentLine
 
 	/**
 	 * Add a source document line.
-	 *
 	 * The given quantity will be used to increase this line's qty.
 	 */
 	void addSourceOrderLine(IPackingMaterialDocumentLineSource source, BigDecimal qtyToAdd);
@@ -60,5 +61,8 @@ public interface IPackingMaterialDocumentLine
 	 * @return all source lines which are linked to this packing material line
 	 */
 	Set<IPackingMaterialDocumentLineSource> getSources();
+
+	@Nullable
+	ProjectId getProjectIdOrNull();
 
 }

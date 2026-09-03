@@ -1,9 +1,8 @@
 package de.metas.ordercandidate.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_OLCand
  *  @author metasfresh (generated) 
@@ -54,19 +53,19 @@ public interface I_C_OLCand
 	String COLUMNNAME_AD_DataDestination_ID = "AD_DataDestination_ID";
 
 	/**
-	 * Set Inputsource.
+	 * Set Input Source.
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setAD_InputDataSource_ID (int AD_InputDataSource_ID);
 
 	/**
-	 * Get Inputsource.
+	 * Get Input Source.
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getAD_InputDataSource_ID();
@@ -676,6 +675,31 @@ public interface I_C_OLCand
 	String COLUMNNAME_C_Flatrate_Conditions_ID = "C_Flatrate_Conditions_ID";
 
 	/**
+	 * Set Incoterms.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Incoterms_ID (int C_Incoterms_ID);
+
+	/**
+	 * Get Incoterms.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Incoterms_ID();
+
+	@Nullable org.compiere.model.I_C_Incoterms getC_Incoterms();
+
+	void setC_Incoterms(@Nullable org.compiere.model.I_C_Incoterms C_Incoterms);
+
+	ModelColumn<I_C_OLCand, org.compiere.model.I_C_Incoterms> COLUMN_C_Incoterms_ID = new ModelColumn<>(I_C_OLCand.class, "C_Incoterms_ID", org.compiere.model.I_C_Incoterms.class);
+	String COLUMNNAME_C_Incoterms_ID = "C_Incoterms_ID";
+
+	/**
 	 * Set Orderline Candidate.
 	 *
 	 * <br>Type: ID
@@ -740,6 +764,56 @@ public interface I_C_OLCand
 	String COLUMNNAME_C_PaymentTerm_ID = "C_PaymentTerm_ID";
 
 	/**
+	 * Set Promotion Code 2.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_PromotionCode2_ID (int C_PromotionCode2_ID);
+
+	/**
+	 * Get Promotion Code 2.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_PromotionCode2_ID();
+
+	@Nullable org.compiere.model.I_C_PromotionCode getC_PromotionCode2();
+
+	void setC_PromotionCode2(@Nullable org.compiere.model.I_C_PromotionCode C_PromotionCode2);
+
+	ModelColumn<I_C_OLCand, org.compiere.model.I_C_PromotionCode> COLUMN_C_PromotionCode2_ID = new ModelColumn<>(I_C_OLCand.class, "C_PromotionCode2_ID", org.compiere.model.I_C_PromotionCode.class);
+	String COLUMNNAME_C_PromotionCode2_ID = "C_PromotionCode2_ID";
+
+	/**
+	 * Set Promotion Code.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_PromotionCode_ID (int C_PromotionCode_ID);
+
+	/**
+	 * Get Promotion Code.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_PromotionCode_ID();
+
+	@Nullable org.compiere.model.I_C_PromotionCode getC_PromotionCode();
+
+	void setC_PromotionCode(@Nullable org.compiere.model.I_C_PromotionCode C_PromotionCode);
+
+	ModelColumn<I_C_OLCand, org.compiere.model.I_C_PromotionCode> COLUMN_C_PromotionCode_ID = new ModelColumn<>(I_C_OLCand.class, "C_PromotionCode_ID", org.compiere.model.I_C_PromotionCode.class);
+	String COLUMNNAME_C_PromotionCode_ID = "C_PromotionCode_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -790,7 +864,7 @@ public interface I_C_OLCand
 	 * Set UOM.
 	 * Unit of Measure
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -800,7 +874,7 @@ public interface I_C_OLCand
 	 * Get UOM.
 	 * Unit of Measure
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1314,6 +1388,48 @@ public interface I_C_OLCand
 	String COLUMNNAME_ErrorMsg = "ErrorMsg";
 
 	/**
+	 * Set Error Message JSON.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setErrorMsgJSON (@Nullable java.lang.String ErrorMsgJSON);
+
+	/**
+	 * Get Error Message JSON.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getErrorMsgJSON();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_ErrorMsgJSON = new ModelColumn<>(I_C_OLCand.class, "ErrorMsgJSON", null);
+	String COLUMNNAME_ErrorMsgJSON = "ErrorMsgJSON";
+
+	/**
+	 * Set Replication Transaction.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setEXP_ReplicationTrx_ID (int EXP_ReplicationTrx_ID);
+
+	/**
+	 * Get Replication Transaction.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getEXP_ReplicationTrx_ID();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_EXP_ReplicationTrx_ID = new ModelColumn<>(I_C_OLCand.class, "EXP_ReplicationTrx_ID", null);
+	String COLUMNNAME_EXP_ReplicationTrx_ID = "EXP_ReplicationTrx_ID";
+
+	/**
 	 * Set External Header ID.
 	 *
 	 * <br>Type: String
@@ -1354,6 +1470,27 @@ public interface I_C_OLCand
 
 	ModelColumn<I_C_OLCand, Object> COLUMN_ExternalLineId = new ModelColumn<>(I_C_OLCand.class, "ExternalLineId", null);
 	String COLUMNNAME_ExternalLineId = "ExternalLineId";
+
+	/**
+	 * Set External System.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSystem_ID (int ExternalSystem_ID);
+
+	/**
+	 * Get External System.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getExternalSystem_ID();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_ExternalSystem_ID = new ModelColumn<>(I_C_OLCand.class, "ExternalSystem_ID", null);
+	String COLUMNNAME_ExternalSystem_ID = "ExternalSystem_ID";
 
 	/**
 	 * Set Group compensation discount percentage.
@@ -1640,6 +1777,29 @@ public interface I_C_OLCand
 	String COLUMNNAME_ImportWarningMessage = "ImportWarningMessage";
 
 	/**
+	 * Set Incoterm Location.
+	 * Anzugebender Ort für Handelsklausel
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIncotermLocation (@Nullable java.lang.String IncotermLocation);
+
+	/**
+	 * Get Incoterm Location.
+	 * Anzugebender Ort für Handelsklausel
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIncotermLocation();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_IncotermLocation = new ModelColumn<>(I_C_OLCand.class, "IncotermLocation", null);
+	String COLUMNNAME_IncotermLocation = "IncotermLocation";
+
+	/**
 	 * Set Invoicable Quantity per.
 	 *
 	 * <br>Type: List
@@ -1705,6 +1865,27 @@ public interface I_C_OLCand
 
 	ModelColumn<I_C_OLCand, Object> COLUMN_IsActive = new ModelColumn<>(I_C_OLCand.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Auto Invoice.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAutoInvoice (boolean IsAutoInvoice);
+
+	/**
+	 * Get Auto Invoice.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAutoInvoice();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_IsAutoInvoice = new ModelColumn<>(I_C_OLCand.class, "IsAutoInvoice", null);
+	String COLUMNNAME_IsAutoInvoice = "IsAutoInvoice";
 
 	/**
 	 * Set Error.
@@ -1836,7 +2017,7 @@ public interface I_C_OLCand
 
 	/**
 	 * Set Manual packaging capacity.
-	 * If "no", then the internal packaging capacity is applied
+	 * If "no", then the internal packaging capactity is applied
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -1856,6 +2037,73 @@ public interface I_C_OLCand
 
 	ModelColumn<I_C_OLCand, Object> COLUMN_IsManualQtyItemCapacity = new ModelColumn<>(I_C_OLCand.class, "IsManualQtyItemCapacity", null);
 	String COLUMNNAME_IsManualQtyItemCapacity = "IsManualQtyItemCapacity";
+
+	/**
+	 * Set EDI Import Error.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setIsReplicationTrxError (boolean IsReplicationTrxError);
+
+	/**
+	 * Get EDI Import Error.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	boolean isReplicationTrxError();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_IsReplicationTrxError = new ModelColumn<>(I_C_OLCand.class, "IsReplicationTrxError", null);
+	String COLUMNNAME_IsReplicationTrxError = "IsReplicationTrxError";
+
+	/**
+	 * Set EDI Import Finished.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setIsReplicationTrxFinished (boolean IsReplicationTrxFinished);
+
+	/**
+	 * Get EDI Import Finished.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	boolean isReplicationTrxFinished();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_IsReplicationTrxFinished = new ModelColumn<>(I_C_OLCand.class, "IsReplicationTrxFinished", null);
+	String COLUMNNAME_IsReplicationTrxFinished = "IsReplicationTrxFinished";
+
+	/**
+	 * Set Without Charge.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsWithoutCharge (boolean IsWithoutCharge);
+
+	/**
+	 * Get Without Charge.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isWithoutCharge();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_IsWithoutCharge = new ModelColumn<>(I_C_OLCand.class, "IsWithoutCharge", null);
+	String COLUMNNAME_IsWithoutCharge = "IsWithoutCharge";
 
 	/**
 	 * Set SeqNo..
@@ -2635,6 +2883,27 @@ public interface I_C_OLCand
 	String COLUMNNAME_QtyShipped_CatchWeight_UOM_ID = "QtyShipped_CatchWeight_UOM_ID";
 
 	/**
+	 * Set Reason.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setReason (@Nullable java.lang.String Reason);
+
+	/**
+	 * Get Reason.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getReason();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_Reason = new ModelColumn<>(I_C_OLCand.class, "Reason", null);
+	String COLUMNNAME_Reason = "Reason";
+
+	/**
 	 * Set Record ID.
 	 * Direct internal record ID
 	 *
@@ -2656,6 +2925,29 @@ public interface I_C_OLCand
 
 	ModelColumn<I_C_OLCand, Object> COLUMN_Record_ID = new ModelColumn<>(I_C_OLCand.class, "Record_ID", null);
 	String COLUMNNAME_Record_ID = "Record_ID";
+
+	/**
+	 * Set EDI Import Error Message.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setReplicationTrxErrorMsg (@Nullable java.lang.String ReplicationTrxErrorMsg);
+
+	/**
+	 * Get EDI Import Error Message.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	@Nullable java.lang.String getReplicationTrxErrorMsg();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_ReplicationTrxErrorMsg = new ModelColumn<>(I_C_OLCand.class, "ReplicationTrxErrorMsg", null);
+	String COLUMNNAME_ReplicationTrxErrorMsg = "ReplicationTrxErrorMsg";
 
 	/**
 	 * Get Updated.

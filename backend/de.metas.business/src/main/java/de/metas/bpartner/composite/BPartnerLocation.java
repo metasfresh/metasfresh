@@ -72,6 +72,7 @@ public class BPartnerLocation
 	public static final String EPHEMERAL = "ephemeral";
 	public static final String PHONE = "phone";
 	public static final String EMAIL = "email";
+	public static final String ATTENTION = "attention";
 	public static final String VISITORS_ADDRESS = "visitorsAddress";
 	public static final String HANDOVER_LOCATION = "handoverLocation";
 	public static final String REMIT_TO = "remitTo";
@@ -128,6 +129,8 @@ public class BPartnerLocation
 	private String phone;
 	@Nullable
 	private String email;
+	@Nullable
+	private String attention;
 
 	@Nullable
 	private BPartnerLocationType locationType;
@@ -153,7 +156,6 @@ public class BPartnerLocation
 	final private boolean remitTo;
 	final private boolean handOverLocation;
 	final private boolean replicationLookupDefault;
-	final private boolean visitorsAddress;
 
 	/**
 	 * Can be set in order to identify this label independently of its "real" properties. Won't be saved by the repo.
@@ -187,6 +189,7 @@ public class BPartnerLocation
 			@Nullable final String countryCode,
 			@Nullable final String phone,
 			@Nullable final String email,
+			@Nullable final String attention,
 			@Nullable final BPartnerLocationType locationType,
 			@Nullable final RecordChangeLog changeLog,
 			@Nullable final OrgMappingId orgMappingId,
@@ -197,8 +200,7 @@ public class BPartnerLocation
 			@Nullable final VATIdentifier vatTaxId,
 			@Nullable final Boolean remitTo,
 			@Nullable final Boolean handOverLocation,
-			@Nullable final Boolean replicationLookupDefault,
-			@Nullable final Boolean visitorsAddress)
+			@Nullable final Boolean replicationLookupDefault)
 	{
 		this.id = id;
 		this.gln = gln;
@@ -231,6 +233,8 @@ public class BPartnerLocation
 
 		this.phone = phone;
 
+		this.attention = attention;
+
 		this.mobile = mobile;
 
 		this.fax = fax;
@@ -245,8 +249,6 @@ public class BPartnerLocation
 		this.replicationLookupDefault = replicationLookupDefault != null ? replicationLookupDefault : false;
 
 		this.remitTo = remitTo != null ? remitTo : false;
-
-		this.visitorsAddress = visitorsAddress != null ? visitorsAddress : false;
 	}
 
 	public BPartnerLocation deepCopy()
@@ -335,6 +337,12 @@ public class BPartnerLocation
 		setPostal(address.getPostal());
 		setRegion(address.getRegion());
 		setDistrict(address.getDistrict());
+	}
+
+	@Nullable
+	public LocationId getExistingLocationIdNotNull()
+	{
+		return Check.assumeNotNull(getExistingLocationId(), "existingLocationId not null: {}", this);
 	}
 
 	/**

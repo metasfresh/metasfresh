@@ -44,7 +44,7 @@ import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -144,7 +144,7 @@ import java.util.Set;
 
 		//
 		// Retrieve Plant of current warehouse (where our Quantitites currently are)
-		final I_M_Warehouse warehouse = locator.getM_Warehouse();
+		final I_M_Warehouse warehouse = warehouseDAO.getById(WarehouseId.ofRepoId(locator.getM_Warehouse_ID()));
 		final ResourceId warehousePlantId = productPlanningDAO.findPlantId(warehouse.getAD_Org_ID(),
 				warehouse,
 				attributeSetInstanceAware.getM_Product_ID(),

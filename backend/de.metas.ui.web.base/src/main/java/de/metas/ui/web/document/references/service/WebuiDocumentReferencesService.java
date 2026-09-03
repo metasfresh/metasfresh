@@ -78,12 +78,6 @@ public class WebuiDocumentReferencesService
 			@NonNull final DocumentPath documentPath,
 			@NonNull final RelatedDocumentsPermissions permissions)
 	{
-		// Document with composed keys does not support references
-		if (documentPath.isComposedKey())
-		{
-			return ImmutableList.of();
-		}
-
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		final ImmutableList<WebuiDocumentReferenceCandidate> documentReferences = documentCollection.forDocumentReadonly(
 				documentPath,
@@ -223,7 +217,7 @@ public class WebuiDocumentReferencesService
 			tableName = entityDescriptor.getTableName();
 
 			adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
-			recordId = document.getDocumentId().toInt();
+			recordId = document.getDocumentId().toIntOr(-1);
 			keyColumnName = extractSingleKeyColumnNameOrNull(entityDescriptor);
 
 			genericZoomOrigin = extractGenericZoomOrigin(tableName, keyColumnName);
@@ -303,6 +297,12 @@ public class WebuiDocumentReferencesService
 		public int getRecord_ID()
 		{
 			return recordId;
+		}
+
+		@Override
+		public boolean isSingleKeyRecord()
+		{
+			return keyColumnName != null;
 		}
 
 		@Override

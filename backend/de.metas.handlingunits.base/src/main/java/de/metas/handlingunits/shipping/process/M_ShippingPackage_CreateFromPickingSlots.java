@@ -22,7 +22,6 @@ package de.metas.handlingunits.shipping.process;
  * #L%
  */
 
-import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.IHUPackageDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -43,6 +42,7 @@ import de.metas.process.ProcessInfoParameter;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
@@ -53,6 +53,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Package;
 import org.slf4j.Logger;
 
@@ -79,6 +80,7 @@ public class M_ShippingPackage_CreateFromPickingSlots extends JavaProcess implem
 	private final IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
 	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final ShipperTransportationDocSubTypeGuard docSubTypeGuard = SpringContextHolder.instance.getBean(ShipperTransportationDocSubTypeGuard.class);
 
 	private int p_M_ShipperTransportation_ID = -1;
 
@@ -95,7 +97,13 @@ public class M_ShippingPackage_CreateFromPickingSlots extends JavaProcess implem
 	{
 		// task 06058: if the document is processed, we are not allowed to run this process
 		final I_M_ShipperTransportation shipperTransportation = context.getSelectedModel(I_M_ShipperTransportation.class);
-		return ProcessPreconditionsResolution.acceptIf(shipperTransportation != null && !shipperTransportation.isProcessed());
+		if (shipperTransportation == null)
+		{
+			return ProcessPreconditionsResolution.reject();
+		}
+		return ProcessPreconditionsResolution.firstRejectOrElseAccept(
+				() -> ProcessPreconditionsResolution.acceptIf(!shipperTransportation.isProcessed()),
+				() -> docSubTypeGuard.rejectIfDeliveryInstruction(shipperTransportation));
 	}
 
 	@Override
@@ -139,8 +147,7 @@ public class M_ShippingPackage_CreateFromPickingSlots extends JavaProcess implem
 			throw new AdempiereException(msgBL.getMsg(getCtx(), AdMessageKey.of(CreateFromPickingSlots_MSG_DOC_PROCESSED)));
 		}
 
-		final BPartnerId shipperPartnerId = BPartnerId.ofRepoId(shipperTransportation.getShipper_BPartner_ID());
-		shipperId = shipperDAO.getShipperIdByShipperPartnerId(shipperPartnerId);
+		shipperId = ShipperId.ofRepoId(shipperTransportation.getM_Shipper_ID());
 
 		// ts: not brilliant, but note there aren't that many picking slots to i guess it's OK to iterate them all
 		final List<I_M_PickingSlot> pickingSlots = InterfaceWrapperHelper.createList(

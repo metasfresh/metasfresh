@@ -25,9 +25,16 @@ package de.metas.async.api.impl;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
+import de.metas.async.QueueWorkPackageId;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.exceptions.PackageItemNotAvailableException;
-import de.metas.async.model.*;
+import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.model.I_C_Queue_Element;
+import de.metas.async.model.I_C_Queue_PackageProcessor;
+import de.metas.async.model.I_C_Queue_Processor;
+import de.metas.async.model.I_C_Queue_Processor_Assign;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
 import de.metas.async.processor.QueuePackageProcessorId;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.cache.CCache;
@@ -35,26 +42,38 @@ import de.metas.lock.api.ILockManager;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.*;
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 public abstract class AbstractQueueDAO implements IQueueDAO
 {
 	protected final Logger logger = LogManager.getLogger(getClass());
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	/**
 	 * Filter used to skip all elements which are pointing to records (AD_Table_ID/Record_ID) which were already enqueued, even if in another working package
@@ -180,6 +199,7 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 			return packageProcessorNew;
 		}
 
+		//noinspection DataFlowIssue
 		Check.errorIf(true, "Missing C_Queue_PackageProcessor for classname {}", packageProcessorClassname);
 		return null; // won't be reached
 	}
@@ -194,12 +214,7 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 	 */
 	private boolean isAutocreateWorkpackageProcessorRecordForClassname()
 	{
-		if (Adempiere.isUnitTestMode())
-		{
-			return true;
-		}
-
-		return false;
+		return Adempiere.isUnitTestMode();
 	}
 
 	@Override
@@ -246,17 +261,25 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 	 * @param trxName                   transaction name
 	 * @return query builder already configured
 	 */
-	protected final IQueryBuilder<I_C_Queue_Element> createQueueElementsQueryBuilder(
+	private IQueryBuilder<I_C_Queue_Element> createQueueElementsQueryBuilder(
 			@NonNull final I_C_Queue_WorkPackage workPackage,
 			final boolean skipAlreadyScheduledItems,
 			@Nullable final String trxName)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(workPackage);
-		final IQueryBuilder<I_C_Queue_Element> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Queue_Element.class, ctx, trxName);
+		final QueueWorkPackageId workPackageId = QueueWorkPackageId.ofRepoId(workPackage.getC_Queue_WorkPackage_ID());
+		return createQueueElementsQueryBuilder(ctx, workPackageId, skipAlreadyScheduledItems, trxName);
+	}
 
-		// All Queue elements for given work-package
-		queryBuilder.addEqualsFilter(I_C_Queue_Element.COLUMNNAME_C_Queue_WorkPackage_ID, workPackage.getC_Queue_WorkPackage_ID());
+	private IQueryBuilder<I_C_Queue_Element> createQueueElementsQueryBuilder(
+			@NonNull final Properties ctx,
+			@NonNull final QueueWorkPackageId workPackageId,
+			final boolean skipAlreadyScheduledItems,
+			@Nullable final String trxName)
+	{
+		final IQueryBuilder<I_C_Queue_Element> queryBuilder = queryBL.createQueryBuilder(I_C_Queue_Element.class, ctx, trxName)
+				.orderBy(I_C_Queue_Element.COLUMNNAME_C_Queue_Element_ID)
+				.addEqualsFilter(I_C_Queue_Element.COLUMNNAME_C_Queue_WorkPackage_ID, workPackageId);
 
 		// Skip already enqueued, but not processed items
 		if (skipAlreadyScheduledItems)
@@ -264,9 +287,6 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 			Check.assumeNotNull(filter_C_Queue_Element_SkipAlreadyScheduledItems, "member filter_C_Queue_Element_SkipAlreadyScheduledItems was set in the constructor");
 			queryBuilder.filter(filter_C_Queue_Element_SkipAlreadyScheduledItems);
 		}
-
-		queryBuilder.orderBy()
-				.addColumn(I_C_Queue_Element.COLUMNNAME_C_Queue_Element_ID);
 
 		return queryBuilder;
 	}
@@ -280,18 +300,32 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 	}
 
 	@Override
+	public final TableRecordReferenceSet retrieveQueueElementRecordRefs(final QueueWorkPackageId workPackageId, final boolean skipAlreadyScheduledItems)
+	{
+		return createQueueElementsQueryBuilder(Env.getCtx(), workPackageId, skipAlreadyScheduledItems, ITrx.TRXNAME_ThreadInherited)
+				.create()
+				.listDistinct(I_C_Queue_Element.COLUMNNAME_AD_Table_ID, I_C_Queue_Element.COLUMNNAME_Record_ID)
+				.stream()
+				.map(row -> {
+					final int adTableId = NumberUtils.asInt(row.get(I_C_Queue_Element.COLUMNNAME_AD_Table_ID));
+					final int recordId = NumberUtils.asInt(row.get(I_C_Queue_Element.COLUMNNAME_Record_ID));
+					return TableRecordReference.of(adTableId, recordId);
+				})
+				.collect(TableRecordReferenceSet.collect());
+	}
+
+	@Override
 	public final <T> IQueryBuilder<T> createElementsQueryBuilder(final I_C_Queue_WorkPackage workPackage, final Class<T> clazz, final boolean skipAlreadyScheduledItems, final String trxName)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(workPackage);
 		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(clazz);
 		final int adTableId = InterfaceWrapperHelper.getTableId(clazz);
 
-		final IQueryBuilder<I_C_Queue_Element> elementsQueryBuilder = createQueueElementsQueryBuilder(workPackage, skipAlreadyScheduledItems, trxName);
-		elementsQueryBuilder.addEqualsFilter(I_C_Queue_Element.COLUMNNAME_AD_Table_ID, adTableId);
-		final IQuery<I_C_Queue_Element> elementsQuery = elementsQueryBuilder.create();
+		final IQuery<I_C_Queue_Element> elementsQuery = createQueueElementsQueryBuilder(workPackage, skipAlreadyScheduledItems, trxName)
+				.addEqualsFilter(I_C_Queue_Element.COLUMNNAME_AD_Table_ID, adTableId)
+				.create();
 
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(clazz, ctx, trxName)
+		return queryBL.createQueryBuilder(clazz, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
 				.addInSubQueryFilter(keyColumnName, I_C_Queue_Element.COLUMNNAME_Record_ID, elementsQuery);
 	}
@@ -392,8 +426,6 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 			@NonNull final Class<? extends IWorkpackageProcessor> packageProcessorClass,
 			@NonNull final TableRecordReference recordRef)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		final int workpackageProcessorId = retrievePackageProcessorIdByClass(packageProcessorClass);
 
 		return queryBL.createQueryBuilder(I_C_Queue_Element.class)
@@ -411,7 +443,6 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 			@NonNull final Set<QueuePackageProcessorId> queuePackageProcessorIds,
 			@NonNull final AsyncBatchId asyncBatchId)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final ILockManager lockManager = Services.get(ILockManager.class);
 
 		final ICompositeQueryUpdater<I_C_Queue_WorkPackage> updater = queryBL.createCompositeQueryUpdater(I_C_Queue_WorkPackage.class)
@@ -439,14 +470,12 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 	@Override
 	public QueuePackageProcessorId retrieveQueuePackageProcessorIdFor(@NonNull final String classname)
 	{
-		return classname2QueuePackageProcessorId.getOrLoad(classname, AbstractQueueDAO::retrieveQueuePackageProcessorIdFor0);
+		return classname2QueuePackageProcessorId.getOrLoad(classname, this::retrieveQueuePackageProcessorIdFor0);
 	}
 
 	@Nullable
-	private static QueuePackageProcessorId retrieveQueuePackageProcessorIdFor0(@NonNull final String classname)
+	private QueuePackageProcessorId retrieveQueuePackageProcessorIdFor0(@NonNull final String classname)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		return queryBL.createQueryBuilder(I_C_Queue_PackageProcessor.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Queue_PackageProcessor.COLUMNNAME_Classname, classname)

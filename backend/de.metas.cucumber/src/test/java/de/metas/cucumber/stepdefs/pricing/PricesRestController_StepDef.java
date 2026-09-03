@@ -29,18 +29,18 @@ import de.metas.common.pricing.v2.productprice.JsonPriceListResponse;
 import de.metas.common.pricing.v2.productprice.JsonPriceListVersionResponse;
 import de.metas.common.pricing.v2.productprice.JsonResponsePrice;
 import de.metas.common.pricing.v2.productprice.JsonResponseProductPriceQuery;
+import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
-import de.metas.tax.api.ITaxBL;
+import de.metas.cucumber.stepdefs.tax.C_TaxCategory_StepDef;
 import de.metas.tax.api.TaxCategoryId;
-import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
@@ -50,33 +50,20 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+@RequiredArgsConstructor
 public class PricesRestController_StepDef
 {
-	private final ITaxBL taxBL = Services.get(ITaxBL.class);
-	private final ObjectMapper mapper = JsonObjectMapperHolder.newJsonObjectMapper();
+	@NonNull private final ObjectMapper mapper = JsonObjectMapperHolder.newJsonObjectMapper();
 
-	private final M_Product_StepDefData productTable;
-	private final M_PriceList_Version_StepDefData priceListVersionTable;
-	private final M_PriceList_StepDefData priceListTable;
-
-	private final TestContext testContext;
-
-	public PricesRestController_StepDef(
-			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final M_PriceList_Version_StepDefData priceListVersionTable,
-			@NonNull final M_PriceList_StepDefData priceListTable,
-			@NonNull final TestContext testContext)
-	{
-		this.productTable = productTable;
-		this.priceListVersionTable = priceListVersionTable;
-		this.priceListTable = priceListTable;
-		this.testContext = testContext;
-	}
+	@NonNull private final M_Product_StepDefData productTable;
+	@NonNull private final M_PriceList_Version_StepDefData priceListVersionTable;
+	@NonNull private final M_PriceList_StepDefData priceListTable;
+	@NonNull private final C_TaxCategory_StepDef taxCategoryStepDef;
+	@NonNull private final TestContext testContext;
 
 	@And("validate JsonResponseProductPriceQuery.JsonPriceListResponse")
 	public void validate_JsonResponseProductPriceQuery(@NonNull final DataTable dataTable) throws JsonProcessingException
@@ -220,13 +207,12 @@ public class PricesRestController_StepDef
 		final String productCode = DataTableUtil.extractStringForColumnName(row, JsonResponsePrice.class.getSimpleName() + "." + I_M_Product.COLUMNNAME_Value);
 		final BigDecimal priceStd = DataTableUtil.extractBigDecimalForColumnName(row, JsonResponsePrice.class.getSimpleName() + "." + I_M_ProductPrice.COLUMNNAME_PriceStd);
 
-		final String taxCategoryInternalName = DataTableUtil.extractStringForColumnName(row, I_M_ProductPrice.COLUMNNAME_C_TaxCategory_ID + "." + I_C_TaxCategory.COLUMNNAME_InternalName);
-		final Optional<TaxCategoryId> taxCategoryId = taxBL.getTaxCategoryIdByInternalName(taxCategoryInternalName);
-		assertThat(taxCategoryId).as("Missing taxCategory for internalName=%s", taxCategoryInternalName).isPresent();
+		final TaxCategoryId taxCategoryId = taxCategoryStepDef.extractTaxCategoryId(DataTableRow.singleRow(row))
+				.orElseThrow(() -> new AdempiereException("Missing tax category"));
 
 		assertThat(jsonResponsePrice.getProductId().getValue()).isEqualTo(product.getM_Product_ID());
 		assertThat(jsonResponsePrice.getProductCode()).isEqualTo(productCode);
 		assertThat(jsonResponsePrice.getPrice()).isEqualTo(priceStd);
-		assertThat(jsonResponsePrice.getTaxCategoryId().getValue()).isEqualTo(taxCategoryId.get().getRepoId());
+		assertThat(jsonResponsePrice.getTaxCategoryId().getValue()).isEqualTo(taxCategoryId.getRepoId());
 	}
 }

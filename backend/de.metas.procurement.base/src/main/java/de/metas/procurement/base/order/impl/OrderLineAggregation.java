@@ -1,21 +1,20 @@
 package de.metas.procurement.base.order.impl;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-
+import de.metas.order.IOrderLineBL;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
+import de.metas.procurement.base.order.model.I_C_OrderLine;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_AttributeSetInstance;
 
-import de.metas.order.IOrderLineBL;
-import de.metas.procurement.base.order.model.I_C_OrderLine;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * #%L
@@ -135,14 +134,15 @@ public class OrderLineAggregation
 
 		//
 		// ASI
+		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 		final AttributeSetInstanceId attributeSetInstanceId = candidate.getAttributeSetInstanceId();
 		final I_M_AttributeSetInstance contractASI = attributeSetInstanceId.isRegular()
-				? Services.get(IAttributeDAO.class).getAttributeSetInstanceById(attributeSetInstanceId)
+				? attributeSetInstanceBL.getById(attributeSetInstanceId)
 				: null;
 		final I_M_AttributeSetInstance asi;
 		if (contractASI != null)
 		{
-			asi = Services.get(IAttributeDAO.class).copy(contractASI);
+			asi = attributeSetInstanceBL.copy(contractASI);
 		}
 		else
 		{

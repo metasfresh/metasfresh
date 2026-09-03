@@ -29,6 +29,5 @@ import lombok.Value;
 @Value(staticConstructor = "ofIssueStrategy")
 public class IssueOnlyWhatWasReceivedConfig
 {
-	@NonNull
-	RawMaterialsIssueStrategy issueStrategy;
+	@NonNull RawMaterialsIssueStrategy issueStrategy;
 }

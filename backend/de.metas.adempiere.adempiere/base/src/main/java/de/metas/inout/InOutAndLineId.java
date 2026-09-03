@@ -4,10 +4,12 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableSet;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 
 /*
  * #%L
@@ -53,21 +55,38 @@ public class InOutAndLineId
 	@Nullable
 	public static InOutAndLineId ofRepoIdOrNull(final int inOutRepoId, final int inOutLineRepoId)
 	{
-		final InOutId inoutId = InOutId.ofRepoIdOrNull(inOutRepoId);
-		if(inoutId == null)
-		{
-			return null;
-		}
-
-		final InOutLineId inoutLineId = InOutLineId.ofRepoIdOrNull(inOutLineRepoId);
-		if(inoutLineId == null)
-		{
-			return null;
-		}
-
-		return new InOutAndLineId(inoutId, inoutLineId);
+		return ofRepoIdOrNull(InOutId.ofRepoIdOrNull(inOutRepoId), InOutLineId.ofRepoIdOrNull(inOutLineRepoId));
 	}
 
+	@Nullable
+	public static InOutAndLineId ofRepoIdOrNull(@Nullable final InOutId inOutId, final int inOutLineRepoId)
+	{
+		return ofRepoIdOrNull(inOutId, InOutLineId.ofRepoIdOrNull(inOutLineRepoId));
+	}
+
+	@Nullable
+	public static InOutAndLineId ofRepoIdOrNull(@Nullable final InOutId inOutId, @Nullable final InOutLineId inOutLinId)
+	{
+		if(inOutId == null)
+		{
+			return null;
+		}
+
+		if(inOutLinId == null)
+		{
+			return null;
+		}
+
+		return new InOutAndLineId(inOutId, inOutLinId);
+	}
+
+
+	public static ImmutableSet<InOutLineId> toInOutLineIds(@NonNull final Collection<InOutAndLineId> ids)
+	{
+		return ids.stream()
+				.map(InOutAndLineId::getInOutLineId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
 
 	@JsonProperty("inOutId")
 	InOutId inOutId;

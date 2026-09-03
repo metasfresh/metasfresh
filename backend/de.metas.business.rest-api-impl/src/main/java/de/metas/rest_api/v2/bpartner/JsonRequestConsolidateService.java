@@ -31,14 +31,16 @@ import de.metas.common.bpartner.v2.request.JsonRequestLocation;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsertItem;
 import de.metas.externalreference.ExternalIdentifier;
+import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 /**
- * If a request-item is coming with an identifier such as {@code ext-1234}, then this service makes sure that the item itself has the respective property such as {@code "externalId" : "1234"} set.
+ * If a request-item is coming with an identifier such as {@code ext-1234}, then this service makes sure that the item itself has the respective property such as {@code "externalId" : "1234"} set - <b>unless</b> the caller already set the respective property to the request-item "explicitly".
  */
 @Service
 public class JsonRequestConsolidateService
@@ -63,7 +65,8 @@ public class JsonRequestConsolidateService
 
 	public void consolidateWithIdentifier(@NonNull final JsonRequestContactUpsert contacts)
 	{
-		for (final JsonRequestContactUpsertItem contactRequestItem : contacts.getRequestItems())
+		final List<JsonRequestContactUpsertItem> requestItems = Check.assumeNotNull(contacts.getRequestItems(), "JsonRequestContactUpsert={} must have requestItems.", contacts);
+		for (final JsonRequestContactUpsertItem contactRequestItem : requestItems)
 		{
 			consolidateWithIdentifier(contactRequestItem);
 		}
@@ -71,15 +74,13 @@ public class JsonRequestConsolidateService
 
 	public void consolidateWithIdentifier(@NonNull final JsonRequestLocationUpsert locations)
 	{
-		for (final JsonRequestLocationUpsertItem locationRequestItem : locations.getRequestItems())
+		final List<JsonRequestLocationUpsertItem> requestItems = Check.assumeNotNull(locations.getRequestItems(), "JsonRequestLocationUpsert={} must have requestItems.", locations);
+		for (final JsonRequestLocationUpsertItem locationRequestItem : requestItems)
 		{
 			consolidateWithIdentifier(locationRequestItem);
 		}
 	}
 
-	/**
-	 * @return the identifier string which the given {@code jsonBPartner} will have *after* if was synched and persistes in metasfresh.
-	 */
 	private void consolidateBPartnerWithIdentifier(
 			@NonNull final ExternalIdentifier identifierString,
 			@Nullable final JsonRequestBPartner jsonBPartner)
@@ -100,6 +101,12 @@ public class JsonRequestConsolidateService
 			case GLN:
 				// GLN-identifierString is valid for bPartner-lookup, but we can't consolidate the given jsonBPartner with it
 				break;
+			case GLN_WITH_LABEL:
+				if (!jsonBPartner.isLookupLabelSet())
+				{
+					final String lookupLabel = identifierString.asGlnWithLabel().getLabel();
+					jsonBPartner.setLookupLabel(lookupLabel);
+				}
 			default:
 				throw new AdempiereException("Unexpected IdentifierString.Type=" + identifierString.getType())
 						.appendParametersToMessage()
@@ -122,7 +129,7 @@ public class JsonRequestConsolidateService
 				// nothing to do
 				break;
 			case GLN:
-				if (jsonLocation.isGlnSet())
+				if (!jsonLocation.isGlnSet())
 				{
 					jsonLocation.setGln(externalIdentifier.asGLN().getCode());
 				}

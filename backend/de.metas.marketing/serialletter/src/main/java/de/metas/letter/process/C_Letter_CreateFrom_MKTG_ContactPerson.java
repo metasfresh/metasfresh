@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * marketing-serialletter
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.letter.process;
 
 import de.metas.async.AsyncBatchId;
@@ -17,28 +39,6 @@ import javax.annotation.Nullable;
 import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
-
-/*
- * #%L
- * de.metas.marketing.serialletter
- * %%
- * Copyright (C) 2018 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 public class C_Letter_CreateFrom_MKTG_ContactPerson extends JavaProcess
 {
@@ -99,7 +99,7 @@ public class C_Letter_CreateFrom_MKTG_ContactPerson extends JavaProcess
 		final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(getCtx(), C_Letter_CreateFromMKTG_ContactPerson_Async.class);
 		queue.newWorkPackage()
-				.setC_Async_Batch_ID(asyncbatchId) // set the async batch in workpackage in order to track it
+				.setAsyncBatchId(asyncbatchId) // set the async batch in workpackage in order to track it
 				.addElement(campaignContactPerson)
 				.setUserInChargeId(getUserId())
 				.buildAndEnqueue();

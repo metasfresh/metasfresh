@@ -10,14 +10,9 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<version>10.0.0</version> <!-- needed by versions:set during the jenkins build -->
 	<groupId>de.metas.datev</groupId>
 	<artifactId>metasfresh-datev</artifactId>
 	<packaging>jar</packaging>
-
-	<properties>
-		<migration-sql-basedir>45-de.metas.datev</migration-sql-basedir>
-	</properties>
 
 	<dependencies>
 		<dependency>

@@ -22,7 +22,7 @@
 
 package de.metas.cucumber.stepdefs.pricing;
 
-import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.order.IOrderLineBL;

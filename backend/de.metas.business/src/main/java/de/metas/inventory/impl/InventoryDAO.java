@@ -4,11 +4,13 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.InventoryLineId;
+import de.metas.inventory.InventoryQuery;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Product;
@@ -18,6 +20,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -145,8 +148,39 @@ public class InventoryDAO implements IInventoryDAO
 	}
 
 	@Override
+	public void save(I_M_Inventory inventory)
+	{
+		saveRecord(inventory);
+	}
+
+	@Override
 	public void save(I_M_InventoryLine inventoryLine)
 	{
 		saveRecord(inventoryLine);
+	}
+
+	@Override
+	public List<I_M_Inventory> list(@NonNull InventoryQuery query)
+	{
+		return toSqlQuery(query).list();
+	}
+
+	@Override
+	public Stream<I_M_Inventory> stream(@NonNull InventoryQuery query)
+	{
+		return toSqlQuery(query).stream();
+	}
+
+	private IQuery<I_M_Inventory> toSqlQuery(@NonNull InventoryQuery query)
+	{
+		return queryBL.createQueryBuilder(I_M_Inventory.class)
+				.orderBy(I_M_Inventory.COLUMN_MovementDate)
+				.orderBy(I_M_Inventory.COLUMN_M_Inventory_ID)
+				.setLimit(query.getLimit())
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_Inventory.COLUMNNAME_AD_User_Responsible_ID, query.getOnlyResponsibleIds())
+				.addInArrayFilter(I_M_Inventory.COLUMNNAME_M_Warehouse_ID, query.getOnlyWarehouseIds())
+				.addInArrayFilter(I_M_Inventory.COLUMNNAME_DocStatus, query.getOnlyDocStatuses())
+				.create();
 	}
 }

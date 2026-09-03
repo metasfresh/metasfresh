@@ -24,10 +24,10 @@ package de.metas.edi.process.export.json;
 
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.common.util.Check;
+import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_EDI_Document_Extension;
 import de.metas.postgrest.process.PostgRESTProcessExecutor;
-import de.metas.process.ProcessCalledFrom;
 import de.metas.report.ReportResultData;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -46,23 +46,35 @@ public abstract class EDI_Export_JSON extends PostgRESTProcessExecutor
 	 * Sets invoice's EDI_ExportStatus and tell metasfresh to store the result to disk, unless we are called via API.
 	 */
 	@Override
-	protected final CustomPostgRESTParameters beforePostgRESTCall()
+	protected CustomPostgRESTParameters beforePostgRESTCall()
 	{
 		final I_EDI_Document_Extension record = loadRecordOutOfTrx();
-		record.setEDI_ExportStatus(I_EDI_Document.EDI_EXPORTSTATUS_SendingStarted);
+		record.setEDI_ExportStatus(EDIExportStatus.SendingStarted.getCode());
 		saveRecord(record);
 
 		final boolean calledViaAPI = isCalledViaAPI();
 
 		return CustomPostgRESTParameters.builder()
 				.storeJsonFile(!calledViaAPI)
-				.expectSingleResult(true) // because we export exactly one record, we don't want the JSON to be an array
+				.expectSingleResult(shouldExpectSingleResult())
 				.build();
 	}
 
-	private boolean isCalledViaAPI()
+	/**
+	 * Hook for subclasses to opt out of {@code expectSingleResult=true}.
+	 * <p>
+	 * Default {@code true}: the PostgREST call must return exactly one JSON object — the natural
+	 * single-record export path used by {@link C_Invoice_EDI_Export_JSON} and the single-DESADV-per-shipment
+	 * configurations of {@link M_InOut_EDI_Export_JSON}.
+	 * <p>
+	 * Subclasses override to {@code false} when the underlying view legitimately returns a JSON array
+	 * — e.g. when one {@code M_InOut} maps to N source DESADVs via the {@code EDI_Desadv_M_InOut}
+	 * junction and the view emits one row per junction entry.
+	 * The downstream Camel route then iterates over the array and dispatches one EDIFACT message per element.
+	 */
+	protected boolean shouldExpectSingleResult()
 	{
-		return ProcessCalledFrom.API.equals(getProcessInfo().getProcessCalledFrom());
+		return true;
 	}
 
 	@Override
@@ -85,7 +97,7 @@ public abstract class EDI_Export_JSON extends PostgRESTProcessExecutor
 				reportData.getReportDataByteArray());
 
 		// note that a possible C_Doc_Outbound_Log's status is updated via modelinterceptor
-		record.setEDI_ExportStatus(I_EDI_Document.EDI_EXPORTSTATUS_Sent);
+		record.setEDI_ExportStatus(EDIExportStatus.Sent.getCode());
 		saveRecord(record);
 
 		return MSG_OK;

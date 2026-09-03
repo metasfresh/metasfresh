@@ -54,10 +54,12 @@ export function completeAttributesEditing(
 ) {
   const requestBody = { events: [] };
   if (fieldsByName) {
-    Object.keys(fieldsByName).forEach((fieldName) => {
-      const value = fieldsByName[fieldName].value;
-      requestBody.events.push(toSingleFieldPatchRequest(fieldName, value));
-    });
+    Object.keys(fieldsByName)
+      .filter((fieldName) => !fieldsByName[fieldName].readonly) // don't send readonly fields
+      .forEach((fieldName) => {
+        const value = fieldsByName[fieldName].value;
+        requestBody.events.push(toSingleFieldPatchRequest(fieldName, value));
+      });
   }
 
   return post(

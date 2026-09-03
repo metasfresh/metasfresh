@@ -24,6 +24,9 @@ public class JsonManufacturingExpectation
 	@Jacksonized
 	public static class ReceivedHU
 	{
+		/** The received HU itself — the only handle for a bare VHU/CU, which has neither an LU nor a TU parent. */
+		@Nullable Identifier hu;
+		@Nullable Identifier lu;
 		@Nullable Identifier tu;
 		@Nullable QtyAndUOMString qty;
 	}

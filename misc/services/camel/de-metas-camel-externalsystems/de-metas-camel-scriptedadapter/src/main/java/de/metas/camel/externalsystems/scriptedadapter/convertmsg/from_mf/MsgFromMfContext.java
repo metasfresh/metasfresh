@@ -22,22 +22,42 @@
 
 package de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import de.metas.common.externalsystem.endpoint.JsonExternalSystemEndpoint;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 @Data
 @Builder
 public class MsgFromMfContext
 {
+	@NonNull private final String orgCode;
 	@NonNull private final String scriptingRequestBody;
 	@NonNull private final String scriptIdentifier;
 
 	private String script;
 	private String scriptReturnValue;
 
-	// These three shall soon be replaced with a config- or request-object for de-metas-camel-outbound-endpoints  
-	@NonNull private final String outboundHttpEP;
-	@NonNull private final String outboundHttpToken;
-	@NonNull private final String outboundHttpMethod;
+	@NonNull private final JsonExternalSystemEndpoint endpointParameters;
+
+	@NonNull private final String outboundRecordTableName;
+	@NonNull private final String outboundRecordId;
+
+	/** DocumentNo of the outbound record (e.g., shipment or invoice number). May be null if the table has no DocumentNo column. */
+	@Nullable private final String outboundDocumentNo;
+
+	/**
+	 * Array-mode fan-out: when the JS transform returns a JSON array AND the endpoint has
+	 * {@link JsonExternalSystemEndpoint#getArrayFanOut()} == TRUE, this holds the parsed array
+	 * and one downstream HTTP/SFTP call is dispatched per element.
+	 * <p>
+	 * When null, the route falls through to single-request behaviour.
+	 */
+	@Nullable private JsonNode fanOutArray;
+
+	/** Total number of elements in {@link #fanOutArray}; null when fan-out is not active. */
+	@Nullable private Integer fanOutTotal;
 }

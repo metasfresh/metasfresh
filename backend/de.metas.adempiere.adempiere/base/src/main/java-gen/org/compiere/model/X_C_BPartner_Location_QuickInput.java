@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_C_BPartner_Location_QuickInput extends org.compiere.model.PO implements I_C_BPartner_Location_QuickInput, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2057545653L;
+	private static final long serialVersionUID = -394460262L;
 
     /** Standard Constructor */
     public X_C_BPartner_Location_QuickInput (final Properties ctx, final int C_BPartner_Location_QuickInput_ID, @Nullable final String trxName)
@@ -44,6 +44,21 @@ public class X_C_BPartner_Location_QuickInput extends org.compiere.model.PO impl
 	public java.lang.String getBPartnerName() 
 	{
 		return get_ValueAsString(COLUMNNAME_BPartnerName);
+	}
+
+	@Override
+	public void setC_BPartner_ID (final int C_BPartner_ID)
+	{
+		if (C_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
+	}
+
+	@Override
+	public int getC_BPartner_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
 	}
 
 	@Override
@@ -188,6 +203,18 @@ public class X_C_BPartner_Location_QuickInput extends org.compiere.model.PO impl
 	}
 
 	@Override
+	public void setIsOneTime (final boolean IsOneTime)
+	{
+		set_Value (COLUMNNAME_IsOneTime, IsOneTime);
+	}
+
+	@Override
+	public boolean isOneTime() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsOneTime);
+	}
+
+	@Override
 	public void setIsRemitTo (final boolean IsRemitTo)
 	{
 		set_Value (COLUMNNAME_IsRemitTo, IsRemitTo);
@@ -236,7 +263,7 @@ public class X_C_BPartner_Location_QuickInput extends org.compiere.model.PO impl
 	}
 
 	@Override
-	public void setName (final @Nullable java.lang.String Name)
+	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}

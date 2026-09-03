@@ -2,7 +2,7 @@
  * #%L
  * de.metas.printing.base
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -113,7 +113,7 @@ class ConcatenatePDFsCommand
 		workPackageQueueFactory
 				.getQueueForEnqueuing(ctx, PrintingQueuePDFConcatenateWorkpackageProcessor.class)
 				.newWorkPackage()
-				.setC_Async_Batch_ID(asyncBatchId)
+				.setAsyncBatchId(asyncBatchId)
 				.addElements(printingQueues)
 				.buildAndEnqueue();
 	}

@@ -127,6 +127,13 @@ public final class DocumentFilterParam
 		return builder().setFieldName(fieldName).setOperator(operator).setValue(value).build();
 	}
 
+	public static DocumentFilterParam equals(
+			@NonNull final String fieldName,
+			@Nullable final Object value)
+	{
+		return builder().setFieldName(fieldName).setOperator(Operator.EQUAL).setValue(value).build();
+	}
+
 	private DocumentFilterParam(final Builder builder)
 	{
 		joinAnd = builder.joinAnd;

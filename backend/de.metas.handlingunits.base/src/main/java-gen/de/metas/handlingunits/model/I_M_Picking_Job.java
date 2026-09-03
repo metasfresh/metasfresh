@@ -51,6 +51,27 @@ public interface I_M_Picking_Job
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Carrier Product.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCarrier_Product_ID (int Carrier_Product_ID);
+
+	/**
+	 * Get Carrier Product.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCarrier_Product_ID();
+
+	ModelColumn<I_M_Picking_Job, org.compiere.model.I_Carrier_Product> COLUMN_Carrier_Product_ID = new ModelColumn<>(I_M_Picking_Job.class, "Carrier_Product_ID", org.compiere.model.I_Carrier_Product.class);
+	String COLUMNNAME_Carrier_Product_ID = "Carrier_Product_ID";
+
+	/**
 	 * Set Business Partner.
 	 *
 	 * <br>Type: Search
@@ -110,10 +131,6 @@ public interface I_M_Picking_Job
 	 */
 	int getC_Order_ID();
 
-	@Nullable org.compiere.model.I_C_Order getC_Order();
-
-	void setC_Order(@Nullable org.compiere.model.I_C_Order C_Order);
-
 	ModelColumn<I_M_Picking_Job, org.compiere.model.I_C_Order> COLUMN_C_Order_ID = new ModelColumn<>(I_M_Picking_Job.class, "C_Order_ID", org.compiere.model.I_C_Order.class);
 	String COLUMNNAME_C_Order_ID = "C_Order_ID";
 
@@ -143,7 +160,28 @@ public interface I_M_Picking_Job
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Shipmentdate.
+	 * Set Current Pick To TU GRAI.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCurrent_PickTo_TU_GRAI (@Nullable java.lang.String Current_PickTo_TU_GRAI);
+
+	/**
+	 * Get Current Pick To TU GRAI.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCurrent_PickTo_TU_GRAI();
+
+	ModelColumn<I_M_Picking_Job, Object> COLUMN_Current_PickTo_TU_GRAI = new ModelColumn<>(I_M_Picking_Job.class, "Current_PickTo_TU_GRAI", null);
+	String COLUMNNAME_Current_PickTo_TU_GRAI = "Current_PickTo_TU_GRAI";
+
+	/**
+	 * Set Delivery Date.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -152,7 +190,7 @@ public interface I_M_Picking_Job
 	void setDeliveryDate (@Nullable java.sql.Timestamp DeliveryDate);
 
 	/**
-	 * Get Shipmentdate.
+	 * Get Delivery Date.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -290,6 +328,27 @@ public interface I_M_Picking_Job
 	String COLUMNNAME_IsAllowPickingAnyHU = "IsAllowPickingAnyHU";
 
 	/**
+	 * Set Carrier Advise Read-Only.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsCarrierAdviseReadOnly (boolean IsCarrierAdviseReadOnly);
+
+	/**
+	 * Get Carrier Advise Read-Only.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isCarrierAdviseReadOnly();
+
+	ModelColumn<I_M_Picking_Job, Object> COLUMN_IsCarrierAdviseReadOnly = new ModelColumn<>(I_M_Picking_Job.class, "IsCarrierAdviseReadOnly", null);
+	String COLUMNNAME_IsCarrierAdviseReadOnly = "IsCarrierAdviseReadOnly";
+
+	/**
 	 * Set LU.
 	 * Loading Unit
 	 *
@@ -308,10 +367,6 @@ public interface I_M_Picking_Job
 	 * <br>Virtual Column: false
 	 */
 	int getM_LU_HU_ID();
-
-	@Nullable de.metas.handlingunits.model.I_M_HU getM_LU_HU();
-
-	void setM_LU_HU(@Nullable de.metas.handlingunits.model.I_M_HU M_LU_HU);
 
 	ModelColumn<I_M_Picking_Job, de.metas.handlingunits.model.I_M_HU> COLUMN_M_LU_HU_ID = new ModelColumn<>(I_M_Picking_Job.class, "M_LU_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
 	String COLUMNNAME_M_LU_HU_ID = "M_LU_HU_ID";
@@ -333,10 +388,6 @@ public interface I_M_Picking_Job
 	 * <br>Virtual Column: false
 	 */
 	int getM_LU_HU_PI_ID();
-
-	@Nullable de.metas.handlingunits.model.I_M_HU_PI getM_LU_HU_PI();
-
-	void setM_LU_HU_PI(@Nullable de.metas.handlingunits.model.I_M_HU_PI M_LU_HU_PI);
 
 	ModelColumn<I_M_Picking_Job, de.metas.handlingunits.model.I_M_HU_PI> COLUMN_M_LU_HU_PI_ID = new ModelColumn<>(I_M_Picking_Job.class, "M_LU_HU_PI_ID", de.metas.handlingunits.model.I_M_HU_PI.class);
 	String COLUMNNAME_M_LU_HU_PI_ID = "M_LU_HU_PI_ID";
@@ -384,6 +435,29 @@ public interface I_M_Picking_Job
 	String COLUMNNAME_M_PickingSlot_ID = "M_PickingSlot_ID";
 
 	/**
+	 * Set TU.
+	 * Trading Unit
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_TU_HU_ID (int M_TU_HU_ID);
+
+	/**
+	 * Get TU.
+	 * Trading Unit
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_TU_HU_ID();
+
+	ModelColumn<I_M_Picking_Job, de.metas.handlingunits.model.I_M_HU> COLUMN_M_TU_HU_ID = new ModelColumn<>(I_M_Picking_Job.class, "M_TU_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
+	String COLUMNNAME_M_TU_HU_ID = "M_TU_HU_ID";
+
+	/**
 	 * Set Packing Instruction (TU).
 	 *
 	 * <br>Type: Table
@@ -400,10 +474,6 @@ public interface I_M_Picking_Job
 	 * <br>Virtual Column: false
 	 */
 	int getM_TU_HU_PI_ID();
-
-	@Nullable de.metas.handlingunits.model.I_M_HU_PI getM_TU_HU_PI();
-
-	void setM_TU_HU_PI(@Nullable de.metas.handlingunits.model.I_M_HU_PI M_TU_HU_PI);
 
 	ModelColumn<I_M_Picking_Job, de.metas.handlingunits.model.I_M_HU_PI> COLUMN_M_TU_HU_PI_ID = new ModelColumn<>(I_M_Picking_Job.class, "M_TU_HU_PI_ID", de.metas.handlingunits.model.I_M_HU_PI.class);
 	String COLUMNNAME_M_TU_HU_PI_ID = "M_TU_HU_PI_ID";
@@ -425,10 +495,6 @@ public interface I_M_Picking_Job
 	 * <br>Virtual Column: false
 	 */
 	int getPickFrom_HU_ID();
-
-	@Nullable de.metas.handlingunits.model.I_M_HU getPickFrom_HU();
-
-	void setPickFrom_HU(@Nullable de.metas.handlingunits.model.I_M_HU PickFrom_HU);
 
 	ModelColumn<I_M_Picking_Job, de.metas.handlingunits.model.I_M_HU> COLUMN_PickFrom_HU_ID = new ModelColumn<>(I_M_Picking_Job.class, "PickFrom_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
 	String COLUMNNAME_PickFrom_HU_ID = "PickFrom_HU_ID";

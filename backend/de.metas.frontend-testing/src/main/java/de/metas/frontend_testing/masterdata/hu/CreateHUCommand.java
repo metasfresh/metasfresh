@@ -1,6 +1,8 @@
 package de.metas.frontend_testing.masterdata.hu;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
@@ -11,6 +13,7 @@ import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
+import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.weightable.IWeightable;
@@ -21,11 +24,12 @@ import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
-import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -36,6 +40,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.service.ClientId;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 
@@ -51,6 +56,7 @@ public class CreateHUCommand
 	@NonNull private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final HUQRCodesService huQRCodesService;
+	@NonNull private final SourceHUsService sourceHUsService;
 
 	@NonNull private final MasterdataContext context;
 	@NonNull private final JsonCreateHURequest request;
@@ -63,12 +69,15 @@ public class CreateHUCommand
 	private CreateHUCommand(
 			@NonNull final InventoryService inventoryService,
 			@NonNull final HUQRCodesService huQRCodesService,
+			@NonNull final SourceHUsService sourceHUsService,
 			@NonNull final MasterdataContext context,
 			@NonNull final JsonCreateHURequest request,
 			@Nullable final String identifier)
 	{
 		this.inventoryService = inventoryService;
 		this.huQRCodesService = huQRCodesService;
+		this.sourceHUsService = sourceHUsService;
+		
 		this.context = context;
 		this.request = request;
 
@@ -81,17 +90,107 @@ public class CreateHUCommand
 
 		final HuId cuId = createCU();
 		final HuId huId = transformCU(cuId);
-		updateAttributes(huId);
+		final IAttributeStorage huAttributes = updateAttributes(huId);
 
 		context.putIdentifier(identifier, huId);
-		final HUQRCode huQRCode = huQRCodesService.getQRCodeByHuId(huId);
+
+		if (request.isGenerateHUQRCodesForAllTUs())
+		{
+			generateQRCodesForAllTUs(huId);
+		}
+
+		if (request.getSplitOutTUsCountAfterQRCodes() > 0)
+		{
+			splitOutTUsLeavingQRCodesBehind(huId, request.getSplitOutTUsCountAfterQRCodes());
+		}
+
+		final String huQRCodeStr;
+		if (request.isGenerateHUQRCode())
+		{
+			huQRCodeStr = huQRCodesService.getQRCodeByHuId(huId).toGlobalQRCodeString();
+		}
+		else
+		{
+			huQRCodeStr = null;
+		}
+
+		if (request.isSourceHU())
+		{
+			sourceHUsService.addSourceHuMarker(huId);
+		}
 
 		return JsonCreateHUResponse.builder()
 				.huId(String.valueOf(huId.getRepoId()))
-				.qrCode(huQRCode.toGlobalQRCodeString())
+				.qrCode(huQRCodeStr)
 				.productId(getProductId())
 				.warehouseId(getWarehouseId())
+				.externalBarcode(huAttributes != null && huAttributes.hasAttribute(AttributeConstants.ATTR_ExternalBarcode) ? huAttributes.getValueAsString(AttributeConstants.ATTR_ExternalBarcode) : null)
 				.build();
+	}
+
+	/**
+	 * Generate one active {@code M_HU_QRCode_Assignment} per TU for the given HU <b>and every HU included under it</b>,
+	 * mirroring the desktop "Print Labels" / {@code M_HU_Report_QRCode} process (which runs
+	 * {@code huQRCodesService.generateForExistingHUs(selectedHuIds)}). The HU keeps its current status — no picking, no
+	 * split — so the codes stay at the current (full) TU count. Combined with {@code splitOutTUsCountAfterQRCodes}
+	 * (a non-picking repack that lowers the TU count without trimming these codes), this yields the QR-code
+	 * "surplus" state: more active assignments than the current TU count.
+	 */
+	private void generateQRCodesForAllTUs(@NonNull final HuId huId)
+	{
+		trxManager.runInThreadInheritedTrx(() -> {
+			final ImmutableSet.Builder<HuId> huIds = ImmutableSet.builder();
+			collectHuAndIncludedHuIds(handlingUnitsBL.getById(huId), huIds);
+			huQRCodesService.generateForExistingHUs(huIds.build());
+		});
+	}
+
+	private void collectHuAndIncludedHuIds(@NonNull final I_M_HU hu, @NonNull final ImmutableSet.Builder<HuId> collector)
+	{
+		collector.add(HuId.ofRepoId(hu.getM_HU_ID()));
+		for (final I_M_HU includedHU : handlingUnitsBL.retrieveIncludedHUs(hu))
+		{
+			collectHuAndIncludedHuIds(includedHU, collector);
+		}
+	}
+
+	/**
+	 * Split {@code count} whole TUs out of the aggregate reachable from the given HU via
+	 * {@link HUTransformService#tuToNewTUs(I_M_HU, QtyTU)} — the non-picking-repack half of the surplus setup (see
+	 * {@link #generateQRCodesForAllTUs}): it lowers the TU count without trimming the QR-code assignments.
+	 */
+	private void splitOutTUsLeavingQRCodesBehind(@NonNull final HuId huId, final int count)
+	{
+		huTrxBL.process(huContext -> {
+			final I_M_HU aggregateTU = findAggregateTU(handlingUnitsBL.getById(huId));
+			if (aggregateTU == null)
+			{
+				throw new AdempiereException("No aggregate TU found under HU " + huId + " to split TUs out of");
+			}
+			HUTransformService.newInstance(huContext).tuToNewTUs(aggregateTU, QtyTU.ofInt(count));
+		});
+	}
+
+	/**
+	 * Find the aggregate TU in the HU hierarchy rooted at {@code hu} (the HU itself if it is the aggregate, else the
+	 * first aggregate among its included HUs, recursively).
+	 */
+	@Nullable
+	private I_M_HU findAggregateTU(@NonNull final I_M_HU hu)
+	{
+		if (handlingUnitsBL.isAggregateHU(hu))
+		{
+			return hu;
+		}
+		for (final I_M_HU includedHU : handlingUnitsBL.retrieveIncludedHUs(hu))
+		{
+			final I_M_HU found = findAggregateTU(includedHU);
+			if (found != null)
+			{
+				return found;
+			}
+		}
+		return null;
 	}
 
 	private @NonNull HuId createCU()
@@ -106,13 +205,23 @@ public class CreateHUCommand
 								.clientId(ClientId.METASFRESH)
 								.orgId(MasterdataContext.ORG_ID)
 								.warehouseId(warehouseId)
+								.locatorId(getLocatorIdOrNull())
 								.productId(productId)
-								.qty(Quantity.of(computeQtyCUs(), uom))
+								.qty(Quantity.of(getTotalQtyCUs(), uom))
 								.movementDate(SystemTime.asZonedDateTime())
 								.attributeSetInstanceId(AttributeSetInstanceId.NONE)
 								.build()
 				)
 		);
+	}
+
+	@Nullable
+	private LocatorId getLocatorIdOrNull()
+	{
+		final Identifier locatorIdentifier = request.getLocator();
+		return locatorIdentifier != null
+				? context.getId(locatorIdentifier, LocatorId.class)
+				: null;
 	}
 
 	@NonNull
@@ -143,16 +252,23 @@ public class CreateHUCommand
 		return warehouseId;
 	}
 
-	private BigDecimal computeQtyCUs()
+	private BigDecimal getTotalQtyCUs()
 	{
 		if (request.getPackingInstructions() != null)
 		{
-			if (request.getQty() != null)
-			{
-				throw new AdempiereException("qty shall not be set when packingInstructions are set");
-			}
 			final PackingInstructions packingInstructions = context.getObjectNotNull(request.getPackingInstructions());
-			return packingInstructions.getQtyCUs();
+			if (packingInstructions.isInfiniteCapacity())
+			{
+				return Check.assumeNotNull(request.getQty(), "qty shall be set when packingInstructions has infinite capacity");
+			}
+			else
+			{
+				if (request.getQty() != null)
+				{
+					throw new AdempiereException("qty shall not be set when packingInstructions are set");
+				}
+				return packingInstructions.getQtyCUs();
+			}
 		}
 		else
 		{
@@ -198,9 +314,16 @@ public class CreateHUCommand
 		}
 
 		final I_M_HU_PI tuPI = packingInstructions.getTuPI();
-		final BigDecimal qtyCUsPerTU = packingInstructions.getQtyCUsPerTU();
 		producer.setTUPI(tuPI);
-		producer.addCUPerTU(productId, qtyCUsPerTU, uom);
+		if (packingInstructions.isInfiniteCapacity())
+		{
+			producer.addCUPerTU(Capacity.createInfiniteCapacity(productId, uom));
+		}
+		else
+		{
+			final BigDecimal qtyCUsPerTU = packingInstructions.getQtyCUsPerTUNotNull();
+			producer.addCUPerTU(productId, qtyCUsPerTU, uom);
+		}
 
 		final I_M_HU_PI_Item luPIItem = packingInstructions.getLuPIItem();
 		if (luPIItem != null)
@@ -223,7 +346,7 @@ public class CreateHUCommand
 				.load(AllocationUtils.builder()
 						.setHUContext(huContext)
 						.setProduct(productId)
-						.setQuantity(Quantity.of(packingInstructions.getQtyCUs(), uom))
+						.setQuantity(Quantity.of(getTotalQtyCUs(), uom))
 						.setDateAsToday()
 						.setForceQtyAllocation(true)
 						.create());
@@ -232,16 +355,18 @@ public class CreateHUCommand
 		return HuId.ofRepoId(newLU.getM_HU_ID());
 	}
 
-	private void updateAttributes(final HuId huId)
+	private IAttributeStorage updateAttributes(final HuId huId)
 	{
 		final BigDecimal weightNet = request.getWeightNet();
-		@Nullable final String lotNo = request.getLotNo();
+		final String lotNo = request.getLotNo();
 		final LocalDate bestBeforeDate = request.getBestBeforeDate() != null
 				? LocalDate.parse(request.getBestBeforeDate())
 				: null;
-		if (weightNet == null && lotNo == null && bestBeforeDate == null)
+		final String externalBarcode = request.getExternalBarcode();
+
+		if (CoalesceUtil.countNotNulls(weightNet, lotNo, bestBeforeDate, externalBarcode) <= 0)
 		{
-			return;
+			return null;
 		}
 
 		final IAttributeStorage huAttributes = handlingUnitsBL.getAttributeStorage(huId);
@@ -262,6 +387,13 @@ public class CreateHUCommand
 		{
 			huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, bestBeforeDate);
 		}
+
+		if (externalBarcode != null)
+		{
+			huAttributes.setValue(AttributeConstants.ATTR_ExternalBarcode, externalBarcode);
+		}
+
+		return huAttributes;
 	}
 
 }

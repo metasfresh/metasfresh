@@ -1,11 +1,16 @@
 package de.metas.handlingunits.shipmentschedule.api.impl;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.ShipmentScheduleHUPackingAware;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -23,6 +28,8 @@ import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.LUTUCUPair;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.allocation.impl.TULoader;
+import de.metas.handlingunits.attribute.IAttributeValue;
+import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU;
@@ -34,12 +41,17 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.shipmentschedule.api.AddQtyPickedRequest;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
 import de.metas.handlingunits.shipmentschedule.api.IInOutProducerFromShipmentScheduleWithHU;
+import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUComparator;
 import de.metas.handlingunits.shipmentschedule.spi.impl.InOutProducerFromShipmentScheduleWithHU;
 import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
+import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOut;
@@ -47,17 +59,28 @@ import de.metas.inoutcandidate.api.IInOutCandidateBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
+import de.metas.inoutcandidate.api.ShipmentScheduleLoadingCache;
 import de.metas.inoutcandidate.api.impl.HUShipmentScheduleHeaderAggregationKeyBuilder;
+import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
+import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.logging.LogManager;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.AttributesKeyPart;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
+import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -66,7 +89,11 @@ import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeValueType;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.lang.IContextAware;
@@ -79,14 +106,20 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 import static java.math.BigDecimal.ONE;
@@ -94,8 +127,7 @@ import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 /*
  * #%L
@@ -141,6 +173,8 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
 	private final IHUCapacityBL huCapacityBL = Services.get(IHUCapacityBL.class);
+	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final IShipmentScheduleHandlerBL shipmentScheduleHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
 
 	private static final String SYSCONFIG_ShipmentConsolidationPeriod = "de.metas.handlingunits.shipmentschedule.api.impl.HUShipmentScheduleBL.ShipmentConsolidationPeriod";
 	private static final String DEFAULT_ShipmentConsolidationPeriod = null;
@@ -172,42 +206,211 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	}
 
 	@Override
-	public ShipmentScheduleWithHU addQtyPickedAndUpdateHU(
-			@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule sched,
-			@NonNull final StockQtyAndUOMQty stockQtyAndCatchQty,
-			@NonNull final I_M_HU tuOrVHU,
-			@NonNull final IHUContext huContext,
-			final boolean anonymousHuPickedOnTheFly)
+	public ShipmentScheduleWithHU addQtyPickedAndUpdateHU(final AddQtyPickedRequest request)
 	{
+		@NonNull final IHUContext huContext = request.getHuContext();
+
+		final ShipmentScheduleAndJobScheduleId scheduleId = request.getScheduleId();
+		final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule = getShipmentSchedule(request);
+
 		// Retrieve VHU, TU and LU
-		Check.assume(handlingUnitsBL.isTransportUnitOrVirtual(tuOrVHU), "{} shall be a TU or a VirtualHU", tuOrVHU);
-		final LUTUCUPair husPair = handlingUnitsBL.getTopLevelParentAsLUTUCUPair(tuOrVHU);
+		final LUTUCUPair husPair;
+		{
+			@NonNull final I_M_HU tuOrVHU = request.getHu();
+			husPair = handlingUnitsBL.getTopLevelParentAsLUTUCUPair(tuOrVHU);
+		}
 
 		// Create ShipmentSchedule Qty Picked record
-		final de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked //
-				schedQtyPicked = shipmentScheduleAllocBL.createNewQtyPickedRecord(sched, stockQtyAndCatchQty);
-
-		// mark this as an 'anonymousOnTheFly` pick
-		schedQtyPicked.setIsAnonymousHuPickedOnTheFly(anonymousHuPickedOnTheFly);
-
-		// Set HU specific stuff
-		final I_M_ShipmentSchedule_QtyPicked schedQtyPickedHU = create(schedQtyPicked, I_M_ShipmentSchedule_QtyPicked.class);
-		setHUs(schedQtyPickedHU, husPair);
-
-		ShipmentScheduleWithHU
-				.ofShipmentScheduleQtyPicked(schedQtyPickedHU, huContext)
-				.updateQtyTUAndQtyLU();
-		saveRecord(schedQtyPickedHU);
+		final I_M_ShipmentSchedule_QtyPicked qtyPickedRecord = shipmentScheduleAllocBL.createNewQtyPickedRecordNoSave(shipmentSchedule, request.getQtyPicked(), I_M_ShipmentSchedule_QtyPicked.class);
+		if (scheduleId.getJobScheduleId() != null)
+		{
+			qtyPickedRecord.setM_Picking_Job_Schedule_ID(scheduleId.getJobScheduleId().getRepoId());
+		}
+		qtyPickedRecord.setIsAnonymousHuPickedOnTheFly(request.isAnonymousHuPickedOnTheFly()); // mark this as an 'anonymousOnTheFly` pick
+		setHUs(qtyPickedRecord, husPair); // Set HU specific stuff
+		createCandidatesForQtyPicked(qtyPickedRecord, huContext, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER).forEach(ShipmentScheduleWithHU::updateQtyTUAndQtyLU);
+		huShipmentScheduleDAO.saveQtyPicked(qtyPickedRecord);
 
 		//
 		// Update LU/TU/VHU
 		final I_M_HU topLevelHU = husPair.getTopLevelHU();
 		setHUStatusToPicked(topLevelHU);
-		setHUPartnerAndLocationFromSched(topLevelHU, sched);
+		setHUPartnerAndLocationFromSched(topLevelHU, shipmentSchedule);
 		handlingUnitsDAO.saveHU(topLevelHU);
 		huContext.flush();
 
-		return ShipmentScheduleWithHU.ofShipmentScheduleQtyPicked(schedQtyPickedHU, huContext);
+		return ShipmentScheduleWithHU.ofShipmentScheduleQtyPickedWithHuContext(qtyPickedRecord, huContext);
+	}
+
+	@Override
+	public boolean tryMergeQtyPickedIntoExistingForVHU(@NonNull final AddQtyPickedRequest request)
+	{
+		// Eligibility — only HU-trx-listener-shaped picks may be merged.
+		// Order: cheapest request-shape guards first; HU lookup last.
+		final ShipmentScheduleAndJobScheduleId scheduleId = request.getScheduleId();
+		if (scheduleId.getJobScheduleId() != null)
+		{
+			return false;
+		}
+		if (request.isAnonymousHuPickedOnTheFly())
+		{
+			return false;
+		}
+
+		// Catch-weight merging is not supported here — fall through to create-new so each
+		// catch reading keeps its own row.
+		final StockQtyAndUOMQty qtyToAdd = request.getQtyPicked();
+		if (qtyToAdd.isUOMQtySet())
+		{
+			return false;
+		}
+
+		// Only merge strictly positive allocations. Negative qty represents an un-allocation
+		// (see ShipmentScheduleHUTrxListener#trxLineProcessed Javadoc) and must remain its own
+		// audit row so the netting is visible — silently subtracting from a sibling can drive
+		// a row to zero/negative and mask a stock discrepancy.
+		if (qtyToAdd.getStockQty().signum() <= 0)
+		{
+			return false;
+		}
+
+		final I_M_HU vhu = request.getHu();
+		if (!handlingUnitsBL.isVirtual(vhu))
+		{
+			return false;
+		}
+
+		final HuId vhuId = HuId.ofRepoId(vhu.getM_HU_ID());
+		final List<I_M_ShipmentSchedule_QtyPicked> candidates = huShipmentScheduleDAO.retrieveMergeableListenerQtyPickedForVHU(
+				scheduleId.getShipmentScheduleId(),
+				vhuId);
+
+		if (candidates.isEmpty())
+		{
+			return false;
+		}
+		if (candidates.size() > 1)
+		{
+			// Pre-existing duplicates — not our job to silently collapse them. Log and fall through;
+			// the new-row path will leave the duplicates intact for human inspection.
+			Loggables.withLogger(logger, Level.WARN).addLog(
+					"tryMergeQtyPickedIntoExistingForVHU: found {} pre-existing un-shipped QtyPicked rows for shipmentScheduleId={} vhuId={} — falling through to create-new",
+					candidates.size(), scheduleId.getShipmentScheduleId(), vhuId);
+			return false;
+		}
+
+		final I_M_ShipmentSchedule_QtyPicked existing = candidates.get(0);
+		// Defensive: even though the request carries no catch UOM (guard above), reject merging
+		// into a row that was previously written with one. Could only happen if a different code
+		// path bypassed the request-side guard; better to fall through than risk arithmetic that
+		// loses the catch reading.
+		final BigDecimal existingCatchQty = existing.getQtyDeliveredCatch();
+		if (existing.getCatch_UOM_ID() > 0 || (existingCatchQty != null && existingCatchQty.signum() != 0))
+		{
+			return false;
+		}
+
+		existing.setQtyPicked(existing.getQtyPicked().add(qtyToAdd.getStockQty().toBigDecimal()));
+		final IHUContext huContext = request.getHuContext();
+		ShipmentScheduleWithHU.ofShipmentScheduleQtyPicked(existing, huContext)
+				.forEach(ShipmentScheduleWithHU::updateQtyTUAndQtyLU);
+		huShipmentScheduleDAO.saveQtyPicked(existing);
+
+		// Drive the same HU side-effects as the create-new path. On the well-formed reversal
+		// flow the topLevelHU is already Picked with the right partner/location (the FIRST
+		// trx-line in the same transaction went through addQtyPickedAndUpdateHU), so each call
+		// is a verified no-op:
+		//   - HUStatusBL.setHUStatus returns early when status is unchanged
+		//   - PO setters with equal values do not produce an UPDATE
+		// Re-running them here is a safety net for edge cases where the first row's flow
+		// didn't reach this point (e.g. a row pre-existed from a prior session).
+		final LUTUCUPair husPair = handlingUnitsBL.getTopLevelParentAsLUTUCUPair(vhu);
+		final I_M_HU topLevelHU = husPair.getTopLevelHU();
+		setHUStatusToPicked(topLevelHU);
+		setHUPartnerAndLocationFromSched(topLevelHU, getShipmentSchedule(request));
+		handlingUnitsDAO.saveHU(topLevelHU);
+		huContext.flush();
+
+		Loggables.withLogger(logger, Level.DEBUG).addLog(
+				"tryMergeQtyPickedIntoExistingForVHU: merged qty={} into M_ShipmentSchedule_QtyPicked_ID={} (shipmentScheduleId={} vhuId={})",
+				qtyToAdd.getStockQty(), existing.getM_ShipmentSchedule_QtyPicked_ID(), scheduleId.getShipmentScheduleId(), vhuId);
+		return true;
+	}
+
+	@Override
+	public void restoreUnshippedQtyPickedIfMissing(@NonNull final Collection<I_M_ShipmentSchedule_QtyPicked> reversedAllocations)
+	{
+		final Set<String> processedKeys = new HashSet<>();
+		for (final I_M_ShipmentSchedule_QtyPicked alloc : reversedAllocations)
+		{
+			final int vhuRepoId = alloc.getVHU_ID();
+			if (vhuRepoId <= 0)
+			{
+				continue; // only VHU-backed picked rows can be restored this way
+			}
+			final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(alloc.getM_ShipmentSchedule_ID());
+			final HuId vhuId = HuId.ofRepoId(vhuRepoId);
+			if (!processedKeys.add(scheduleId.getRepoId() + "|" + vhuId.getRepoId()))
+			{
+				continue; // already handled this (schedule, VHU) — allocations are consolidated to one row per VHU
+			}
+
+			// If the picking-job reopen (a Completed job) already restored an active un-shipped row, leave it.
+			if (huShipmentScheduleDAO.existsActiveUnshippedQtyPickedForVHU(scheduleId, vhuId))
+			{
+				continue;
+			}
+
+			// Nothing was restored (e.g. the shipment was recreated via "Generate Shipments", leaving the
+			// picking job Drafted, so its reopen was a no-op). Re-create an active copy of the consolidated
+			// reversed allocation so the picked qty survives this reverse. Direct copy — no step-replay, no
+			// tryMerge — so the qty is not inflated and exactly one active row per tuple is preserved.
+			// M_Picking_Job_Schedule_ID is intentionally NOT copied: the restored row is a plain picked row,
+			// matching the shape a Completed-job reopen produces.
+			final I_M_ShipmentSchedule_QtyPicked restored = newInstance(I_M_ShipmentSchedule_QtyPicked.class, alloc);
+			restored.setAD_Org_ID(alloc.getAD_Org_ID());
+			restored.setM_ShipmentSchedule_ID(alloc.getM_ShipmentSchedule_ID());
+			restored.setVHU_ID(alloc.getVHU_ID());
+			restored.setM_TU_HU_ID(alloc.getM_TU_HU_ID());
+			restored.setM_LU_HU_ID(alloc.getM_LU_HU_ID());
+			restored.setQtyPicked(alloc.getQtyPicked());
+			restored.setQtyTU(alloc.getQtyTU());
+			restored.setQtyLU(alloc.getQtyLU());
+			restored.setIsAnonymousHuPickedOnTheFly(alloc.isAnonymousHuPickedOnTheFly());
+			restored.setCatch_UOM_ID(alloc.getCatch_UOM_ID());
+			restored.setQtyDeliveredCatch(alloc.getQtyDeliveredCatch());
+			// M_InOutLine_ID stays null (un-shipped); IsActive defaults Y; Processed defaults N.
+			huShipmentScheduleDAO.saveQtyPicked(restored);
+
+			// The reverse reactivated the HU to Active; a picked row needs the HU to be Picked
+			// (retrieveNotShippedRecords keeps only Picked/Shipped HUs). Also re-stamp BPartner/Location
+			// from the schedule, exactly like addQtyPickedAndUpdateHU / tryMergeQtyPickedIntoExistingForVHU —
+			// every pick-creation path must leave the top-level HU with the delivery partner/location set.
+			final I_M_HU vhu = handlingUnitsDAO.getById(vhuId);
+			final LUTUCUPair husPair = handlingUnitsBL.getTopLevelParentAsLUTUCUPair(vhu);
+			final I_M_HU topLevelHU = husPair.getTopLevelHU();
+			setHUStatusToPicked(topLevelHU);
+			setHUPartnerAndLocationFromSched(topLevelHU, shipmentScheduleBL.getById(scheduleId));
+			handlingUnitsDAO.saveHU(topLevelHU);
+
+			Loggables.withLogger(logger, Level.INFO).addLog(
+					"restoreUnshippedQtyPickedIfMissing: re-created active QtyPicked_ID={} for shipmentScheduleId={} vhuId={} (reverse left no completed-job reopen to restore it)",
+					restored.getM_ShipmentSchedule_QtyPicked_ID(), scheduleId, vhuId);
+		}
+	}
+
+	private de.metas.inoutcandidate.model.I_M_ShipmentSchedule getShipmentSchedule(final AddQtyPickedRequest request)
+	{
+		final ShipmentScheduleAndJobScheduleId scheduleId = request.getScheduleId();
+		final de.metas.inoutcandidate.model.I_M_ShipmentSchedule cachedShipmentSchedules = request.getCachedShipmentSchedule();
+
+		if (cachedShipmentSchedules != null
+				&& ShipmentScheduleId.equals(ShipmentScheduleId.ofRepoId(cachedShipmentSchedules.getM_ShipmentSchedule_ID()), scheduleId.getShipmentScheduleId()))
+		{
+			return cachedShipmentSchedules;
+		}
+
+		return shipmentScheduleBL.getById(scheduleId.getShipmentScheduleId());
 	}
 
 	private static void setHUs(final I_M_ShipmentSchedule_QtyPicked qtyPickedRecord, final LUTUCUPair husPair)
@@ -269,11 +472,9 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 
 			// Update LU
 			ssQtyPicked.setM_LU_HU(luHU);
-			ShipmentScheduleWithHU
-					.ofShipmentScheduleQtyPicked(ssQtyPicked, huContext)
-					.updateQtyTUAndQtyLU();
+			createCandidatesForQtyPicked(ssQtyPicked, huContext, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER).forEach(ShipmentScheduleWithHU::updateQtyTUAndQtyLU);
 
-			save(ssQtyPicked);
+			huShipmentScheduleDAO.saveQtyPicked(ssQtyPicked);
 		}
 	}
 
@@ -301,9 +502,9 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			// Update LU
 			ssQtyPicked.setM_TU_HU(tuHU);
 			ssQtyPicked.setM_LU_HU(luHU);
-			ShipmentScheduleWithHU.ofShipmentScheduleQtyPicked(ssQtyPicked, huContext).updateQtyTUAndQtyLU();
+			createCandidatesForQtyPicked(ssQtyPicked, huContext, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER).forEach(ShipmentScheduleWithHU::updateQtyTUAndQtyLU);
 
-			save(ssQtyPicked);
+			huShipmentScheduleDAO.saveQtyPicked(ssQtyPicked);
 		}
 	}
 
@@ -349,13 +550,11 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			}
 
 			qtyPicked.setIsActive(false);
-			save(qtyPicked);
+			huShipmentScheduleDAO.saveQtyPicked(qtyPicked);
 		}
 
-		// also reset the HUs partner and location
-		tuHU.setC_BPartner_ID(0);
-		tuHU.setC_BPartner_Location_ID(0);
-		save(tuHU);
+		// also reset the HU's partner and location, unless another schedule still holds an active picked row on it
+		resetConsigneeIfNoActivePickedRows(tuHU);
 	}
 
 	@Override
@@ -525,66 +724,6 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		}
 
 		return huPIItemProductDAO.getRecordById(packingMaterialId);
-	}
-
-	@Override
-	public I_M_ShipmentSchedule getShipmentScheduleOrNull(@NonNull final I_M_HU hu)
-	{
-		//
-		// Retrieve QtyPicked records for given HU
-		final List<I_M_ShipmentSchedule_QtyPicked> ssQtyPickedList = huShipmentScheduleDAO.retrieveSchedsQtyPickedForHU(hu);
-		if (ssQtyPickedList.isEmpty())
-		{
-			return null;
-		}
-
-		//
-		// Iterate QtyPicked records and try to find Shipment Schedule (it shall be only one)
-		int shipmentScheduleId = -1;
-		I_M_ShipmentSchedule shipmentSchedule = null;
-		for (final I_M_ShipmentSchedule_QtyPicked ssQtyPicked : ssQtyPickedList)
-		{
-			// skip inactive lines
-			if (!ssQtyPicked.isActive())
-			{
-				continue;
-			}
-
-			// skip already delivered lines
-			if (shipmentScheduleAllocBL.isDelivered(ssQtyPicked))
-			{
-				continue;
-			}
-
-			//
-			// Case: first QtyPicked line
-			if (shipmentScheduleId <= 0)
-			{
-				shipmentSchedule = create(ssQtyPicked.getM_ShipmentSchedule(), I_M_ShipmentSchedule.class);
-				shipmentScheduleId = shipmentSchedule.getM_ShipmentSchedule_ID();
-			}
-			//
-			// Case: not first QtyPicked line, but the line is pointing to same Shipment Schedule => do nothing, skip, it's ok
-			else if (shipmentScheduleId == ssQtyPicked.getM_ShipmentSchedule_ID())
-			{
-				// do nothing
-			}
-			//
-			// Case: given HU is assigned to more than on Shipment Schedule line
-			else
-			{
-				// TODO: i think this is a common case when in Kommissionierung Terminal more than one shipment schedule lines are aggregated
-				// I think we shall just pick the first one.... not sure, because of the Qtys
-				// see de.metas.customer.picking.service.impl.PackingService.addProductQtyToHU(Properties, I_M_HU, Map<I_M_ShipmentSchedule, BigDecimal>)
-				final AdempiereException ex = new AdempiereException("More than one " + de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked.Table_Name + " record was found for: " + hu
-						+ ". Return null.");
-				logger.warn(ex.getLocalizedMessage(), ex);
-
-				return null;
-			}
-		}
-
-		return shipmentSchedule;
 	}
 
 	@Override
@@ -771,11 +910,11 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		// task:10876 : calculate Qty Ordered LU  based on the Packing Material Max. Load Weight
 		final I_M_HU_PI_Item m_lu_hu_pi_item = lutuConfiguration.getM_LU_HU_PI_Item();
 		final HuPackingInstructionsVersionId versionId = Objects.nonNull(m_lu_hu_pi_item) ?
-				                                         HuPackingInstructionsVersionId.ofRepoId(m_lu_hu_pi_item.getM_HU_PI_Version_ID())  :
-				                                         null;
+				HuPackingInstructionsVersionId.ofRepoId(m_lu_hu_pi_item.getM_HU_PI_Version_ID()) :
+				null;
 		final I_M_HU_PackingMaterial packingMaterial = Objects.nonNull(versionId) ?
-				                                       handlingUnitsDAO.retrievePackingMaterialByPIVersionID(versionId, BPartnerId.ofRepoId(shipmentSchedule.getC_BPartner_ID())):
-				                                       null;
+				handlingUnitsDAO.retrievePackingMaterialByPIVersionID(versionId, BPartnerId.ofRepoId(shipmentSchedule.getC_BPartner_ID())) :
+				null;
 
 		if (Objects.nonNull(packingMaterial)
 				&& packingMaterial.isQtyLUByMaxLoadWeight())
@@ -844,7 +983,130 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = huShipmentScheduleDAO.retrieveByTopLevelHUAndShipmentScheduleId(topLevelHU, shipmentScheduleId);
 			assertNotAlreadyShipped(qtyPickedRecords, HuId.ofRepoId(topLevelHU.getM_HU_ID()));
 			shipmentScheduleAllocBL.deleteRecords(qtyPickedRecords);
+
+			// also reset the HU's partner and location, unless another schedule still holds an active picked row on it
+			resetConsigneeIfNoActivePickedRows(topLevelHU);
 		}
+	}
+
+	@Override
+	public void reduceQtyPickedForPickToTU(
+			@NonNull final ShipmentScheduleId shipmentScheduleId,
+			@NonNull final HuId pickToTuId,
+			@NonNull final Quantity qtyToReduce)
+	{
+		if (qtyToReduce.isZeroOrNegative())
+		{
+			return;
+		}
+
+		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = huShipmentScheduleDAO.retrieveSchedsQtyPickedForTU(
+				shipmentScheduleId.getRepoId(), pickToTuId.getRepoId(), ITrx.TRXNAME_ThreadInherited);
+		if (qtyPickedRecords.isEmpty())
+		{
+			return;
+		}
+
+		assertNotAlreadyShipped(qtyPickedRecords, pickToTuId);
+
+		// Newest-first (highest M_ShipmentSchedule_QtyPicked_ID = newest pick), mirroring the HU-side
+		// LIFO order the unpick command already used to select which picked HUs to unpick.
+		final List<I_M_ShipmentSchedule_QtyPicked> newestFirst = qtyPickedRecords.stream()
+				.sorted(Comparator.comparingInt(I_M_ShipmentSchedule_QtyPicked::getM_ShipmentSchedule_QtyPicked_ID).reversed())
+				.collect(Collectors.toList());
+
+		final I_M_HU tuHU = handlingUnitsBL.getById(pickToTuId);
+		final IHUContext huContext = huContextFactory.createMutableHUContext(getContextAware(tuHU));
+
+		final List<I_M_ShipmentSchedule_QtyPicked> fullyConsumedRecords = new ArrayList<>();
+		BigDecimal remaining = qtyToReduce.getAsBigDecimal();
+
+		for (final I_M_ShipmentSchedule_QtyPicked qtyPickedRecord : newestFirst)
+		{
+			if (remaining.signum() <= 0)
+			{
+				break;
+			}
+
+			final BigDecimal rowQtyPicked = qtyPickedRecord.getQtyPicked();
+			if (rowQtyPicked.compareTo(remaining) <= 0)
+			{
+				// Row fully consumed by the unpick qty -> delete it entirely.
+				fullyConsumedRecords.add(qtyPickedRecord);
+				remaining = remaining.subtract(rowQtyPicked);
+			}
+			else
+			{
+				// Row only partially consumed -> reduce QtyPicked (+ QtyTU/QtyLU, QtyDeliveredCatch) and stop.
+				final BigDecimal newQtyPicked = rowQtyPicked.subtract(remaining);
+				reduceCatchWeightProportionally(qtyPickedRecord, rowQtyPicked, newQtyPicked);
+				qtyPickedRecord.setQtyPicked(newQtyPicked);
+				createCandidatesForQtyPicked(qtyPickedRecord, huContext, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
+						.forEach(ShipmentScheduleWithHU::updateQtyTUAndQtyLU);
+				huShipmentScheduleDAO.saveQtyPicked(qtyPickedRecord);
+				remaining = BigDecimal.ZERO;
+			}
+		}
+
+		Check.assume(remaining.signum() <= 0,
+				"qtyToReduce={} must not exceed the total active QtyPicked for shipmentScheduleId={} and pickToTuId={}",
+				qtyToReduce, shipmentScheduleId, pickToTuId);
+
+		if (!fullyConsumedRecords.isEmpty())
+		{
+			shipmentScheduleAllocBL.deleteRecords(fullyConsumedRecords);
+		}
+
+		// also reset the HU's partner and location, unless another schedule (or this one's partial
+		// remainder) still holds an active picked row on it. A bare TU can be shared across schedules,
+		// so we must not strip the consignee while another line still holds picked qty on it.
+		resetConsigneeIfNoActivePickedRows(tuHU);
+	}
+
+	/**
+	 * Resets the top-level HU's consignee (C_BPartner_ID / C_BPartner_Location_ID) back to none, UNLESS another
+	 * active {@link I_M_ShipmentSchedule_QtyPicked} row (this schedule's partial remainder, or another schedule
+	 * sharing the HU) still holds picked qty on it. Callers MUST delete/inactivate their own now-obsolete rows
+	 * BEFORE calling this, so the unscoped {@code topLevelHU} query below reflects the post-delete state.
+	 */
+	private void resetConsigneeIfNoActivePickedRows(@NonNull final I_M_HU topLevelHU)
+	{
+		if (huShipmentScheduleDAO.hasActiveQtyPickedForTopLevelHU(topLevelHU))
+		{
+			return; // another schedule (or this one's partial remainder) still holds picked qty on this HU
+		}
+
+		topLevelHU.setC_BPartner_ID(0);
+		topLevelHU.setC_BPartner_Location_ID(0);
+		handlingUnitsDAO.save(topLevelHU);
+	}
+
+	/**
+	 * Scales {@code QtyDeliveredCatch} by the stock-qty ratio {@code newQtyPicked / oldQtyPicked}, mirroring how
+	 * the pick side spreads catch weight across CUs ({@code PickingJobPickCommand#getCatchWeight().spreadEqually}).
+	 * No-op when the row does not track a catch qty (guard: an unset {@code Catch_UOM_ID} must never reach
+	 * {@code UomId.ofRepoId(...)}, which asserts a positive id).
+	 */
+	private static void reduceCatchWeightProportionally(
+			@NonNull final I_M_ShipmentSchedule_QtyPicked qtyPickedRecord,
+			@NonNull final BigDecimal oldQtyPicked,
+			@NonNull final BigDecimal newQtyPicked)
+	{
+		if (qtyPickedRecord.getCatch_UOM_ID() <= 0)
+		{
+			return;
+		}
+
+		final BigDecimal oldQtyDeliveredCatch = qtyPickedRecord.getQtyDeliveredCatch();
+		if (oldQtyDeliveredCatch == null || oldQtyPicked.signum() == 0)
+		{
+			return;
+		}
+
+		final BigDecimal newQtyDeliveredCatch = oldQtyDeliveredCatch
+				.multiply(newQtyPicked)
+				.divide(oldQtyPicked, Math.max(oldQtyDeliveredCatch.scale(), 2), RoundingMode.HALF_UP);
+		qtyPickedRecord.setQtyDeliveredCatch(newQtyDeliveredCatch);
 	}
 
 	private static void assertNotAlreadyShipped(final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords, @NonNull final HuId huIdInScope)
@@ -878,4 +1140,286 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		return shipmentScheduleEffectiveBL.getBPartnerId(schedule);
 	}
 
+	@Override
+	public Quantity getQtyToDeliver(final de.metas.inoutcandidate.model.I_M_ShipmentSchedule schedule)
+	{
+		return shipmentScheduleBL.getQtyToDeliver(schedule);
+	}
+
+	@Override
+	public Quantity getQtyScheduledForPicking(@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentScheduleRecord)
+	{
+		return shipmentScheduleBL.getQtyScheduledForPicking(shipmentScheduleRecord);
+	}
+
+	@Override
+	public Quantity getQtyRemainingToScheduleForPicking(@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentScheduleRecord)
+	{
+		return shipmentScheduleBL.getQtyRemainingToScheduleForPicking(shipmentScheduleRecord);
+	}
+
+	@Override
+	public void flagForRecompute(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		if (shipmentScheduleIds.isEmpty()) {return;}
+
+		final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
+		invalidSchedulesService.flagForRecompute(shipmentScheduleIds);
+	}
+
+	@Override
+	public ShipmentScheduleLoadingCache<I_M_ShipmentSchedule> newLoadingCache()
+	{
+		return shipmentScheduleBL.newLoadingCache(I_M_ShipmentSchedule.class);
+	}
+
+	@Nullable
+	@Override
+	public ProjectId extractSingleProjectIdOrNull(@NonNull final List<ShipmentScheduleWithHU> candidates)
+	{
+		final Set<ProjectId> projectIdsFromShipmentSchedules = candidates.stream()
+				.map(ShipmentScheduleWithHU::getProjectId)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toSet());
+		if (projectIdsFromShipmentSchedules.size() == 1)
+		{
+			return projectIdsFromShipmentSchedules.iterator().next();
+		}
+		return null;
+	}
+
+	@Override
+	public List<ShipmentScheduleWithHU> createCandidatesForQtyPicked(
+			@NonNull final I_M_ShipmentSchedule_QtyPicked qtyPicked,
+			@NonNull final IHUContext huContext,
+			@NonNull final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
+	{
+		// Picking via PickingJobPickCommand records only M_TU_HU_ID (VHU_ID stays NULL).
+		final HuId vhuId = HuId.ofRepoIdOrNull(qtyPicked.getVHU_ID());
+		final HuId tuHuId = HuId.ofRepoIdOrNull(qtyPicked.getM_TU_HU_ID());
+		final HuId luHuId = HuId.ofRepoIdOrNull(qtyPicked.getM_LU_HU_ID());
+		final HuId huToInspectId = CoalesceUtil.coalesce(vhuId, tuHuId, luHuId);
+		if (huToInspectId == null)
+		{
+			return ShipmentScheduleWithHU.ofShipmentScheduleQtyPicked(qtyPicked, huContext, qtyTypeToUse);
+		}
+
+		final I_M_HU huToInspect = handlingUnitsBL.getById(huToInspectId);
+		if (handlingUnitsBL.isVirtual(huToInspect))
+		{
+			return ShipmentScheduleWithHU.ofShipmentScheduleQtyPicked(qtyPicked, huContext, qtyTypeToUse);
+		}
+
+		final ProductId productId = ProductId.ofRepoId(qtyPicked.getM_ShipmentSchedule().getM_Product_ID());
+		final IHUStorageFactory storageFactory = huContext.getHUStorageFactory();
+		final IAttributeStorageFactory attrFactory = huContext.getHUAttributeStorageFactory();
+
+		// Split only by attributes whitelisted in M_ShipmentSchedule_AttributeConfig — the same criterion
+		// the M_InOutLine aggregation uses (ShipmentScheduleWithHU#computeAttributeValues).
+		final Predicate<AttributeId> attributeSplitsShipmentLine = attributeSplitsShipmentLinePredicate(qtyPicked);
+
+		// One pass: for each child VHU compute its UseInASI fingerprint once, then emit one
+		// (fingerprint, productStorage) entry per non-empty product storage of that VHU.
+		// Filter by product so VHUs carrying a different product in the same TU are excluded.
+		// UOM consistency is guaranteed: qtyPicked links to one M_ShipmentSchedule which has one
+		// M_Product_ID and therefore one stocking UOM; all filtered storages carry that same product
+		// and are in the same UOM — no conversion needed.
+		final ImmutableListMultimap<AttributesKey, IHUProductStorage> storagesByFingerprint =
+				handlingUnitsDAO.retrieveIncludedHUs(huToInspect)
+						.stream()
+						.filter(handlingUnitsBL::isVirtual)
+						.flatMap(vhu -> groupProductStoragesByFingerprint(vhu, productId, storageFactory, attrFactory, attributeSplitsShipmentLine))
+						.collect(ImmutableListMultimap.toImmutableListMultimap(Map.Entry::getKey, Map.Entry::getValue));
+
+		if (storagesByFingerprint.isEmpty())
+		{
+			// No VHUs found for this product — nothing to expand, use default candidate.
+			return ShipmentScheduleWithHU.ofShipmentScheduleQtyPicked(qtyPicked, huContext, qtyTypeToUse);
+		}
+
+		// Case 1: find the VHU whose qty exactly matches QtyPicked — one candidate using that VHU.
+		// Using the specific VHU as override ensures its UseInASI attributes are read from the VHU
+		// itself rather than from the destination TU, which may carry mixed/null attribute values.
+		// UOM is consistent (same product → same stocking UOM), so BigDecimal comparison is safe.
+		final BigDecimal pickedQtyBD = qtyPicked.getQtyPicked();
+		final IHUProductStorage exactMatchStorage = storagesByFingerprint.values().stream()
+				.filter(s -> s.getQty().getAsBigDecimal().compareTo(pickedQtyBD) == 0)
+				.findFirst()
+				.orElse(null);
+		if (exactMatchStorage != null)
+		{
+			return ImmutableList.of(ShipmentScheduleWithHU.ofShipmentScheduleQtyPickedForVHU(
+					qtyPicked, huContext, exactMatchStorage.getM_HU(), exactMatchStorage.getQty(), qtyTypeToUse));
+		}
+
+		// Case 2: whole-TU-pick — the QtyPicked covers the entire TU content (one pick for all VHUs).
+		// Guard: if the picked qty does not equal the total qty across all VHU storages, this QtyPicked covers
+		// only part of the TU and another QtyPicked record covers the rest — fall back to a single
+		// default candidate so each QtyPicked is not independently inflated by the full group sums.
+		final boolean totalVHUQtyEqualsPickedQty = storagesByFingerprint.values().stream()
+				.map(IHUProductStorage::getQty)
+				.reduce(Quantity::add)
+				.filter(total -> total.qtyAndUomCompareToEquals(Quantity.of(pickedQtyBD, total.getUOM())))
+				.isPresent();
+		if (!totalVHUQtyEqualsPickedQty)
+		{
+			return ShipmentScheduleWithHU.ofShipmentScheduleQtyPicked(qtyPicked, huContext, qtyTypeToUse);
+		}
+
+		// Split the single whole-TU pick into one M_ShipmentSchedule_QtyPicked row per attribute-fingerprint group,
+		// so every resulting M_InOutLine (one per distinct UseInASI attribute set) binds its OWN allocation — exactly
+		// as the multi-pick path already does. Sharing one row across groups would leave all but one line with no
+		// QtyPicked, breaking qty-sync (M_InOutLine.onMovementQtyChange) and HU-based package/content resolution.
+		// Reuse the original row for the first group; split off a copy (same TU/LU) for each further group.
+		final ImmutableList.Builder<ShipmentScheduleWithHU> result = ImmutableList.builder();
+		boolean firstGroup = true;
+		for (final AttributesKey fingerprint : storagesByFingerprint.keySet())
+		{
+			final List<IHUProductStorage> group = storagesByFingerprint.get(fingerprint);
+			// Any VHU of the group supplies the group's (shared) attribute set — the candidate/line reads its
+			// attributes from it. All members carry the same fingerprint, so the choice is arbitrary.
+			final IHUProductStorage attributeSourceStorage = group.get(0);
+			final I_M_HU attributeSourceVHU = attributeSourceStorage.getM_HU();
+			final Quantity groupStorageQty = group.stream()
+					.map(IHUProductStorage::getQty)
+					.reduce(attributeSourceStorage.getQty().toZero(), Quantity::add);
+
+			final I_M_ShipmentSchedule_QtyPicked groupQtyPicked;
+			if (firstGroup)
+			{
+				groupQtyPicked = qtyPicked;
+				firstGroup = false;
+			}
+			else
+			{
+				groupQtyPicked = shipmentScheduleAllocBL.createNewQtyPickedRecordNoSave(
+						qtyPicked.getM_ShipmentSchedule(),
+						StockQtyAndUOMQtys.ofQtyInStockUOM(groupStorageQty, productId),
+						I_M_ShipmentSchedule_QtyPicked.class);
+				groupQtyPicked.setM_TU_HU_ID(qtyPicked.getM_TU_HU_ID());
+				groupQtyPicked.setM_LU_HU_ID(qtyPicked.getM_LU_HU_ID());
+			}
+			// Reference the VHU on the row only when the group is a single VHU — then the row's qty equals that
+			// VHU's qty exactly, so it is accurate and each VHU is referenced by at most one row. For a multi-VHU
+			// group keep VHU_ID null: the group's summed qty must not be attributed to one child VHU (that would
+			// over-state it and mis-restore it on reversal). Either way the representative VHU is the candidate's
+			// attribute source (in-memory override) so the line's attributes are read from it.
+			if (group.size() == 1)
+			{
+				groupQtyPicked.setVHU_ID(attributeSourceVHU.getM_HU_ID());
+			}
+			groupQtyPicked.setQtyPicked(groupStorageQty.toBigDecimal());
+			huShipmentScheduleDAO.saveQtyPicked(groupQtyPicked);
+
+			result.add(ShipmentScheduleWithHU.ofShipmentScheduleQtyPickedForVHU(
+					groupQtyPicked, huContext, attributeSourceVHU, groupStorageQty, qtyTypeToUse));
+		}
+		return result.build();
+	}
+
+	@Override
+	public List<ShipmentScheduleWithHU> retrieveShipmentSchedulesWithHUsFromHUs(@NonNull final List<I_M_HU> hus)
+	{
+		final IMutableHUContext huContext = huContextFactory.createMutableHUContext();
+		final ArrayList<ShipmentScheduleWithHU> result = new ArrayList<>();
+		for (final I_M_HU hu : hus)
+		{
+			if (!handlingUnitsBL.isTopLevel(hu))
+			{
+				throw new HUException("HU " + hu + " shall be top level");
+			}
+			final List<ShipmentScheduleWithHU> candidatesForHU = new ArrayList<>();
+			for (final I_M_ShipmentSchedule_QtyPicked qtyPicked : huShipmentScheduleDAO.retrieveQtyPickedNotDeliveredForTopLevelHU(hu))
+			{
+				if (!qtyPicked.isActive())
+				{
+					continue;
+				}
+				candidatesForHU.addAll(createCandidatesForQtyPicked(qtyPicked, huContext, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER));
+			}
+			result.addAll(candidatesForHU);
+			if (candidatesForHU.isEmpty())
+			{
+				Loggables.addLog("No eligible {} records found for hu {}",
+						I_M_ShipmentSchedule_QtyPicked.Table_Name,
+						handlingUnitsBL.getDisplayName(hu));
+			}
+		}
+		result.sort(new ShipmentScheduleWithHUComparator());
+		return result;
+	}
+
+	private static Stream<Map.Entry<AttributesKey, IHUProductStorage>> groupProductStoragesByFingerprint(
+			@NonNull final I_M_HU vhu,
+			@NonNull final ProductId productId,
+			@NonNull final IHUStorageFactory storageFactory,
+			@NonNull final IAttributeStorageFactory attrFactory,
+			@NonNull final Predicate<AttributeId> attributeSplitsShipmentLine)
+	{
+		final IHUProductStorage productStorage = storageFactory.getStorage(vhu).getProductStorageOrNull(productId);
+		if (productStorage == null || productStorage.isEmpty())
+		{
+			return Stream.empty();
+		}
+		final AttributesKey fingerprint = computeUseInASIFingerprint(vhu, attrFactory, attributeSplitsShipmentLine);
+		return Stream.of(Maps.immutableEntry(fingerprint, productStorage));
+	}
+
+	private static AttributesKey computeUseInASIFingerprint(
+			@NonNull final I_M_HU vhu,
+			@NonNull final IAttributeStorageFactory factory,
+			@NonNull final Predicate<AttributeId> attributeSplitsShipmentLine)
+	{
+		// IAttributeStorage does not implement getAttributeValueIdOrNull, so we cannot use
+		// AttributesKeys.createAttributesKeyFromAttributeSet here — list-type attributes
+		// would be silently dropped. Instead, we build the key directly from IAttributeValue,
+		// using the value string for all attribute types (consistent for grouping purposes).
+		final ImmutableSet<AttributesKeyPart> parts = factory.getAttributeStorage(vhu)
+				.getAttributeValues()
+				.stream()
+				.filter(av -> av.isUseInASI() && !av.isEmpty())
+				.filter(av -> attributeSplitsShipmentLine.test(av.getAttributeId()))
+				.map(HUShipmentScheduleBL::toAttributesKeyPart)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+		return parts.isEmpty() ? AttributesKey.NONE : AttributesKey.ofParts(parts);
+	}
+
+	/**
+	 * Predicate deciding whether an attribute splits the shipment line, i.e. whether it is whitelisted in
+	 * {@code M_ShipmentSchedule_AttributeConfig} for the schedule's handler — the same rule the M_InOutLine
+	 * aggregation applies. Resolved via {@code getHandlerForOrNull}: handlers are registered once at server
+	 * startup ({@code InOutCandidateValidator#onInit}), so during real picking the handler is present and the
+	 * whitelist restricts the split. It is null only in narrow init/test contexts that bypass that
+	 * registration; there we fall back to "no restriction" rather than fail.
+	 */
+	private Predicate<AttributeId> attributeSplitsShipmentLinePredicate(@NonNull final I_M_ShipmentSchedule_QtyPicked qtyPicked)
+	{
+		final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule = qtyPicked.getM_ShipmentSchedule();
+		final ShipmentScheduleHandler handler = shipmentScheduleHandlerBL.getHandlerForOrNull(shipmentSchedule);
+		if (handler == null)
+		{
+			return attributeId -> true;
+		}
+		return attributeId -> handler.attributeShallBePartOfShipmentLine(shipmentSchedule, attributeDAO.getAttributeRecordById(attributeId));
+	}
+
+	@Nullable
+	private static AttributesKeyPart toAttributesKeyPart(@NonNull final IAttributeValue av)
+	{
+		final AttributeId attributeId = AttributeId.ofRepoId(av.getM_Attribute().getM_Attribute_ID());
+		if (AttributeValueType.ofCode(av.getAttributeValueType()).isNumber())
+		{
+			// Use BigDecimal-specific part so scale-differences like 3.0 vs 3.00 are normalized
+			final BigDecimal value = av.getValueAsBigDecimal();
+			return value != null && value.signum() != 0
+					? AttributesKeyPart.ofNumberAttribute(attributeId, value)
+					: null;
+		}
+		// String, List and Date attributes all carry their value via getValueAsString()
+		final String valueStr = av.getValueAsString();
+		return Check.isNotBlank(valueStr)
+				? AttributesKeyPart.ofStringAttribute(attributeId, valueStr)
+				: null;
+	}
 }

@@ -27,12 +27,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.handlingunits.JsonHUQRCode;
-import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
-import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
-import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
 import de.metas.cucumber.stepdefs.workflow.dto.JsonWFLineManufacturingMaterialReceipt;
 import de.metas.cucumber.stepdefs.workflow.dto.JsonWFManufacturingReceivingTargetValues;
@@ -69,7 +67,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RequiredArgsConstructor
 public class Workflow_RestController_StepDef
@@ -82,8 +80,6 @@ public class Workflow_RestController_StepDef
 	private final static String MANUFACTURING_RECEIVE_FROM_ACTIVITY_COMPONENT_TYPE = "manufacturing/materialReceipt";
 
 	private final C_Order_StepDefData orderTable;
-	private final C_BPartner_StepDefData bPartnerTable;
-	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
 	private final PP_Order_StepDefData ppOrderTable;
 	private final JsonWFProcess_StepDefData workflowProcessTable;
 	private final JsonWFActivity_StepDefData workflowActivityTable;
@@ -100,7 +96,7 @@ public class Workflow_RestController_StepDef
 	}
 
 	@And("create JsonWFProcessStartRequest for picking and store it in context as request payload:")
-	public void wf_picking_process_start_set_request_payload_in_context(@NonNull final DataTable dataTable) throws JsonProcessingException
+	public void wf_picking_process_start_set_request_payload_in_context(@NonNull final DataTable dataTable)
 	{
 		final DataTableRow row = DataTableRow.singleRow(dataTable);
 		final I_C_Order salesOrder = row.getAsIdentifier(I_C_Order.COLUMNNAME_C_Order_ID).lookupIn(orderTable);
@@ -120,10 +116,10 @@ public class Workflow_RestController_StepDef
 	}
 
 	@And("create JsonWFProcessStartRequest for manufacturing and store it in context as request payload:")
-	public void wf_manufacturing_process_start_set_request_payload_in_context(@NonNull final DataTable dataTable) throws JsonProcessingException
+	public void wf_manufacturing_process_start_set_request_payload_in_context(@NonNull final DataTable dataTable)
 	{
 		final DataTableRow row = DataTableRow.singleRow(dataTable);
-		final I_PP_Order ppOrder = row.getAsIdentifier(I_PP_Order.COLUMNNAME_PP_Order_ID).lookupIn(ppOrderTable);
+		final I_PP_Order ppOrder = row.getAsIdentifier(I_PP_Order.COLUMNNAME_PP_Order_ID).lookupNotNullIn(ppOrderTable);
 
 		final Map<String, Object> wfParams = new HashMap<>();
 		wfParams.put("applicationId", ManufacturingMobileApplication.APPLICATION_ID.getAsString());
@@ -205,15 +201,15 @@ public class Workflow_RestController_StepDef
 		final DataTableRow row = DataTableRow.singleRow(dataTable);
 
 		final String event = row.getAsString("Event");
-		final WFProcessId workflowProcess = row.getAsIdentifier("WorkflowProcess").lookupIn(workflowProcessTable);
-		final WFActivityId workflowActivity = row.getAsIdentifier("WorkflowActivity").lookupIn(workflowActivityTable);
+		final WFProcessId workflowProcess = row.getAsIdentifier("WorkflowProcess").lookupNotNullIn(workflowProcessTable);
+		final WFActivityId workflowActivity = row.getAsIdentifier("WorkflowActivity").lookupNotNullIn(workflowActivityTable);
 
 		final JsonManufacturingOrderEvent.JsonManufacturingOrderEventBuilder manufacturingOrderEventBuilder = JsonManufacturingOrderEvent.builder();
 
 		if (event.equals("IssueTo"))
 		{
-			final JsonWFManufacturingStep workflowStep = row.getAsIdentifier("WorkflowStep").lookupIn(workflowManufacturingStepTable);
-			final JsonHUQRCode qrCode = row.getAsIdentifier("WorkflowStepQRCode").lookupIn(qrCodeTable);
+			final JsonWFManufacturingStep workflowStep = row.getAsIdentifier("WorkflowStep").lookupNotNullIn(workflowManufacturingStepTable);
+			final JsonHUQRCode qrCode = row.getAsIdentifier("WorkflowStepQRCode").lookupNotNullIn(qrCodeTable);
 
 			manufacturingOrderEventBuilder
 					.wfProcessId(workflowProcess.getAsString())
@@ -226,8 +222,8 @@ public class Workflow_RestController_StepDef
 		}
 		else if (event.equals("ReceiveFrom"))
 		{
-			final JsonWFLineManufacturingMaterialReceipt workflowLine = row.getAsIdentifier("WorkflowLine").lookupIn(materialReceiptLineTable);
-			final JsonWFManufacturingReceivingTargetValues receivingTargetValues = row.getAsIdentifier("WorkflowReceivingTargetValues").lookupIn(receivingTargetValuesTable);
+			final JsonWFLineManufacturingMaterialReceipt workflowLine = row.getAsIdentifier("WorkflowLine").lookupNotNullIn(materialReceiptLineTable);
+			final JsonWFManufacturingReceivingTargetValues receivingTargetValues = row.getAsIdentifier("WorkflowReceivingTargetValues").lookupNotNullIn(receivingTargetValuesTable);
 
 			final Quantity catchWeight = row.getAsOptionalQuantity("CatchWeight", uomDAO::getByX12DE355)
 					.orElse(null);

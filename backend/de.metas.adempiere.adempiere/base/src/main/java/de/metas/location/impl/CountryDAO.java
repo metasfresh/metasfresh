@@ -10,6 +10,7 @@ import de.metas.i18n.ILanguageDAO;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.location.AddressDisplaySequence;
+import de.metas.location.CountryCode;
 import de.metas.location.CountryCustomInfo;
 import de.metas.location.CountryId;
 import de.metas.location.CountrySequences;
@@ -265,6 +266,12 @@ public class CountryDAO implements ICountryDAO
 		return getIndexedCountries().getIdByCountryCode(countryCode);
 	}
 
+	@Override
+	public CountryId getCountryIdByCountryCode(@NonNull final CountryCode countryCode)
+	{
+		return getIndexedCountries().getIdByCountryCode(countryCode);
+	}
+
 	@Nullable
 	@Override
 	public CountryId getCountryIdByCountryCodeOrNull(@Nullable final String countryCode)
@@ -320,13 +327,19 @@ public class CountryDAO implements ICountryDAO
 
 	private static final class IndexedCountries
 	{
-		/** contains also inactive countries */
+		/**
+		 * contains also inactive countries
+		 */
 		private final ImmutableList<I_C_Country> countries;
-		
-		/** contains also inactive countries */
+
+		/**
+		 * contains also inactive countries
+		 */
 		private final ImmutableMap<CountryId, I_C_Country> countriesById;
-		
-		/** contains only active countries */
+
+		/**
+		 * contains only active countries
+		 */
 		private final ImmutableMap<String, I_C_Country> countriesByCountryCode;
 
 		private IndexedCountries(final List<I_C_Country> countries)
@@ -394,6 +407,12 @@ public class CountryDAO implements ICountryDAO
 		{
 			final I_C_Country country = getByCountryCode(countryCode);
 			return CountryId.ofRepoId(country.getC_Country_ID());
+		}
+
+		@NonNull
+		public CountryId getIdByCountryCode(@NonNull final CountryCode countryCode)
+		{
+			return getIdByCountryCode(countryCode.getAlpha2());
 		}
 
 		@Nullable

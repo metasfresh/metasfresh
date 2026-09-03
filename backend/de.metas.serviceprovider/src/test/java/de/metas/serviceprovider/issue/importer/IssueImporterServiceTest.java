@@ -28,11 +28,12 @@ import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.externalreference.ExternalId;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
-import de.metas.externalreference.ExternalSystems;
+import de.metas.externalsystem.ExternalSystem;
+import de.metas.externalsystem.ExternalSystemTestHelper;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
 import de.metas.serviceprovider.ImportQueue;
-import de.metas.serviceprovider.external.ExternalSystem;
 import de.metas.serviceprovider.external.label.IssueLabelRepository;
 import de.metas.serviceprovider.external.project.ExternalProjectReferenceId;
 import de.metas.serviceprovider.external.project.ExternalProjectType;
@@ -71,10 +72,14 @@ class IssueImporterServiceTest
 	private IssueImporterService issueImporterService;
 	private IssueRepository issueRepository;
 
+	private ExternalSystem MOCK_EXTERNAL_SYSTEM_GITHUB = null;
+
 	@BeforeEach
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+
+		MOCK_EXTERNAL_SYSTEM_GITHUB = ExternalSystemTestHelper.createExternalSystemIfNotExists(ExternalSystemType.Github);
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -82,13 +87,10 @@ class IssueImporterServiceTest
 
 		issueRepository = new IssueRepository(queryBL, ModelCacheInvalidationService.newInstanceForUnitTesting());
 
-		final ExternalSystems externalSystems = new ExternalSystems();
-		externalSystems.registerExternalSystem(ExternalSystem.GITHUB);
-
 		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
 		externalReferenceTypes.registerType(ExternalServiceReferenceType.ISSUE_ID);
 
-		final ExternalReferenceRepository externalReferenceRepository = new ExternalReferenceRepository(queryBL, externalSystems, externalReferenceTypes);
+		final ExternalReferenceRepository externalReferenceRepository = ExternalReferenceRepository.newInstanceForUnitTesting(externalReferenceTypes);
 
 		issueImporterService = new IssueImporterService(
 				new ImportQueue<>(100, "logPrefix"),
@@ -121,7 +123,7 @@ class IssueImporterServiceTest
 					.externalProjectType(ExternalProjectType.BUDGET)
 					.effortUomId(UomId.ofRepoId(mockUOMRecord.getC_UOM_ID()))
 					.name("test issue")
-					.externalIssueId(ExternalId.of(ExternalSystem.GITHUB, "1"))
+					.externalIssueId(ExternalId.of(MOCK_EXTERNAL_SYSTEM_GITHUB, "1"))
 					.issueLabels(ImmutableList.of())
 					.build();
 
@@ -166,9 +168,9 @@ class IssueImporterServiceTest
 			{
 				final List<IssueId> importedIdsCollector = new ArrayList<>();
 				issueImporterService.importIssue(initialImportIssueInfo.toBuilder()
-														 .budget(BigDecimal.TEN)
-														 .build(),
-												 importedIdsCollector);
+								.budget(BigDecimal.TEN)
+								.build(),
+						importedIdsCollector);
 
 				issueId = CollectionUtils.singleElement(importedIdsCollector);
 
@@ -189,10 +191,10 @@ class IssueImporterServiceTest
 				Assertions.assertThat(issueRepository.getById(issueId))
 						.usingRecursiveComparison()
 						.isEqualTo(expectedIssue.toBuilder()
-										   .issueId(issueId)
-										   .roughEstimation(BigDecimal.valueOf(123))
-										   .budgetedEffort(BigDecimal.valueOf(8))
-										   .build());
+								.issueId(issueId)
+								.roughEstimation(BigDecimal.valueOf(123))
+								.budgetedEffort(BigDecimal.valueOf(8))
+								.build());
 			}
 		}
 
@@ -227,9 +229,9 @@ class IssueImporterServiceTest
 				Assertions.assertThat(issueRepository.getById(issueId))
 						.usingRecursiveComparison()
 						.isEqualTo(expectedIssue.toBuilder()
-										   .issueId(issueId)
-										   .processed(true)
-										   .build());
+								.issueId(issueId)
+								.processed(true)
+								.build());
 			}
 		}
 	}

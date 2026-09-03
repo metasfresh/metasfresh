@@ -86,6 +86,7 @@ const NewEmail = ({ windowId, docId, handleCloseEmail }) => {
                   list={availableTemplates}
                   onSelect={onTemplateChanged}
                   selected={appliedTemplate}
+                  keepFocused
                 />
               </div>
             )}

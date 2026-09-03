@@ -2,6 +2,7 @@ package org.eevolution.api;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
@@ -20,6 +21,8 @@ import lombok.Singular;
 import lombok.ToString;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -142,6 +145,24 @@ public final class PPOrderCosts
 		changeExistingCost(costSegmentAndElement, cost -> cost.addingAccumulatedAmountAndQty(amt, qty, uomConverter));
 	}
 
+	/**
+	 * Discharges {@code amt} onto the main-product line: the accumulated amount moves by {@code +amt} while
+	 * the accumulated qty is left untouched, so the line records value leaving the order without recording a
+	 * further movement of goods.
+	 */
+	public void dischargeOntoMainProduct(
+			@NonNull final PPOrderCost mainProductCost,
+			@NonNull final CostAmount amt,
+			@NonNull final QuantityUOMConverter uomConverter)
+	{
+		// accumulateOutboundCostAmount negates again, so passing -amt moves the accumulated amount by +amt.
+		accumulateOutboundCostAmount(
+				mainProductCost.getCostSegmentAndElement(),
+				amt.negate(),
+				mainProductCost.getAccumulatedQty().toZero(),
+				uomConverter);
+	}
+
 	public void accumulateOutboundCostAmount(
 			@NonNull final CostSegmentAndElement costSegmentAndElement,
 			@NonNull final CostAmount amt,
@@ -149,6 +170,23 @@ public final class PPOrderCosts
 			@NonNull final QuantityUOMConverter uomConverter)
 	{
 		changeExistingCost(costSegmentAndElement, cost -> cost.subtractingAccumulatedAmountAndQty(amt, qty, uomConverter));
+	}
+
+	/**
+	 * Sets the current-cost price snapshot on the existing cost row for the given segment.
+	 * Callers must ensure {@code newPrice}'s UOM matches the existing row's {@code accumulatedQty} UOM; this
+	 * is currently true because they derive from the product's stocking UOM at every current call site
+	 * ({@code ManufacturingAveragePOCostingMethodHandler}, {@code ManufacturingMovingAverageInvoiceCostingMethodHandler}
+	 * and {@code ManufacturingLastPOCostingMethodHandler}),
+	 * but it is NOT structurally enforced by
+	 * {@link CostSegmentAndElement}. The underlying {@code withPrice} rebuild throws {@code AdempiereException}
+	 * if {@code newPrice}'s UOM diverges from the row's {@code accumulatedQty} UOM.
+	 */
+	public void updatePriceForCostSegmentAndElement(
+			@NonNull final CostSegmentAndElement costSegmentAndElement,
+			@NonNull final CostPrice newPrice)
+	{
+		changeExistingCost(costSegmentAndElement, cost -> cost.withPrice(newPrice));
 	}
 
 	private void changeExistingCost(
@@ -238,6 +276,49 @@ public final class PPOrderCosts
 		costs.stream()
 				.filter(PPOrderCost::isByProduct)
 				.forEach(PPOrderCost::setPostCalculationAmountAsZero);
+	}
+
+	/**
+	 * The order's not-yet-discharged WIP cost for the given accounting schema and cost element.
+	 * Positive =&gt; more was issued into the order than was received out of it.
+	 *
+	 * @return {@code null} if there is no main-product cost row for that schema and cost element - the costing
+	 * engine explodes the client's cost elements against the schema being posted, so a handler can be asked for
+	 * a costing method this order has no rows for.
+	 */
+	@Nullable
+	public CostAmount getResidualCost(
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final CostElementId costElementId)
+	{
+		final PPOrderCost mainProductCost = getMainProductCostOrNull(acctSchemaId, costElementId);
+		if (mainProductCost == null)
+		{
+			return null;
+		}
+
+		return mainProductCost.getResidualCost();
+	}
+
+	/** @return the single main-product cost row for the given schema and cost element, or {@code null}. */
+	@Nullable
+	public PPOrderCost getMainProductCostOrNull(
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final CostElementId costElementId)
+	{
+		final List<PPOrderCost> mainProductCosts = costs.values().stream()
+				.filter(cost -> acctSchemaId.equals(cost.getAcctSchemaId()))
+				.filter(cost -> costElementId.equals(cost.getCostElementId()))
+				.filter(PPOrderCost::isMainProduct)
+				.collect(ImmutableList.toImmutableList());
+
+		if (mainProductCosts.size() > 1)
+		{
+			throw new AdempiereException("Expected at most one main-product PP_Order_Cost row for acctSchema=" + acctSchemaId
+					+ ", costElement=" + costElementId + " in " + this);
+		}
+
+		return mainProductCosts.isEmpty() ? null : mainProductCosts.get(0);
 	}
 
 	private Set<CostElementId> getCostElementIds()

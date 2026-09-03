@@ -60,11 +60,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
 import static de.metas.util.Check.assumeNotEmpty;
 import static de.metas.util.Check.isBlank;
 import static de.metas.util.Check.isNotBlank;
-import static java.math.BigDecimal.ZERO;
 
 @Repository
 public class SalesInvoicePaymentStatusRepository
@@ -155,7 +153,7 @@ public class SalesInvoicePaymentStatusRepository
 				continue;
 			}
 
-			final BigDecimal allocatedAmt = coalesce(allocationDAO.retrieveAllocatedAmt(invoiceRecord), ZERO);
+			final BigDecimal allocatedAmt = allocationDAO.retrieveAllocatedAmt(invoiceRecord).toBigDecimal();
 
 			final BigDecimal openAmt = invoiceRecord.getGrandTotal().subtract(allocatedAmt);
 

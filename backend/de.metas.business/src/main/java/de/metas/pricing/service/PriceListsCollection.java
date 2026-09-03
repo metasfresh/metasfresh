@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
+import de.metas.money.CurrencyId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.util.Check;
@@ -33,12 +34,12 @@ import java.util.stream.Stream;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -94,7 +95,7 @@ public class PriceListsCollection
 				.findFirst();
 	}
 
-	public ImmutableList<I_M_PriceList> filterAndList(@NonNull final CountryId countryId, @Nullable final SOTrx soTrx)
+	public ImmutableList<I_M_PriceList> filterAndList(@NonNull final CountryId countryId, @Nullable final SOTrx soTrx, @Nullable final CurrencyId currencyId)
 	{
 		return getPriceLists()
 				.stream()
@@ -102,6 +103,7 @@ public class PriceListsCollection
 						.countryIds(ImmutableSet.of(countryId))
 						.acceptNoCountry(true)
 						.soTrx(soTrx)
+						.currencyId(currencyId)
 						.build())
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -143,12 +145,27 @@ public class PriceListsCollection
 		ImmutableSet<CountryId> countryIds;
 		boolean acceptNoCountry;
 		SOTrx soTrx;
+		CurrencyId currencyId;
 
 		@Override
 		public boolean test(final I_M_PriceList priceList)
 		{
 			return isCountryMatching(priceList)
-					&& isSOTrxMatching(priceList);
+					&& isSOTrxMatching(priceList)
+					&& isCurrencyMatching(priceList)
+					;
+		}
+
+		private boolean isCurrencyMatching(final I_M_PriceList priceList)
+		{
+			if (currencyId == null)
+			{
+				return true;
+			}
+			else
+			{
+				return currencyId.equals(CurrencyId.ofRepoId(priceList.getC_Currency_ID()));
+			}
 		}
 
 		private boolean isCountryMatching(final I_M_PriceList priceList)

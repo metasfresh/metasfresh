@@ -24,7 +24,6 @@ package de.metas.ui.web.pporder.process;
 
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
-import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_PP_Order;
@@ -38,6 +37,7 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.product.IProductDAO;
+import de.metas.quantity.Quantity;
 import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.ui.web.pporder.PPOrderLineType;
 import de.metas.ui.web.pporder.PPOrderLinesView;
@@ -47,6 +47,8 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
@@ -65,6 +67,10 @@ public class WEBUI_PP_Order_Receipt
 	private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IHUAttributesBL attributesBL = Services.get(IHUAttributesBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+	private static final String SYSCONFIG_OverrideCaptionWithPackingInfo =
+			"de.metas.ui.web.pporder.process.WEBUI_PP_Order_Receipt.OverrideCaptionWithPackingInfo";
 
 	// parameters
 	@Param(parameterName = PackingInfoProcessParams.PARAM_M_HU_PI_Item_Product_ID, mandatory = true)
@@ -82,6 +88,13 @@ public class WEBUI_PP_Order_Receipt
 	@Param(parameterName = PackingInfoProcessParams.PARAM_QtyLU)
 	private BigDecimal p_QtyLU;
 
+	private final static String PARAM_NumberOfCUs = "NumberOfCUs";
+	@Param(parameterName = PARAM_NumberOfCUs)
+	private int p_NumberOfCUs;
+
+	@Param(parameterName = PackingInfoProcessParams.PARAM_IsReceiveIndividualCUs)
+	private boolean isReceiveIndividualCUs;
+
 	private transient PackingInfoProcessParams _packingInfoParams;
 
 	/**
@@ -94,6 +107,7 @@ public class WEBUI_PP_Order_Receipt
 			_packingInfoParams = PackingInfoProcessParams.builder()
 					.defaultLUTUConfigManager(createDefaultLUTUConfigManager(getSingleSelectedRow()))
 					.enforcePhysicalTU(false) // allow to to produce just the CU, without a TU etc..maybe later we'll add a sysconfig for this
+					.selectedRow(getSingleSelectedRow())
 					.build();
 		}
 
@@ -169,9 +183,10 @@ public class WEBUI_PP_Order_Receipt
 		}
 
 		//
-		// OK, Override caption with current packing info, if any
+		// OK, Override caption with current packing info, if any — unless disabled via sysconfig
 		final String packingInfo = getSingleSelectedRow().getPackingInfo();
-		if (!Check.isEmpty(packingInfo, true))
+		if (!Check.isEmpty(packingInfo, true)
+				&& sysConfigBL.getBooleanValue(SYSCONFIG_OverrideCaptionWithPackingInfo, true))
 		{
 			return ProcessPreconditionsResolution.accept()
 					.deriveWithCaptionOverride(packingInfo);
@@ -211,15 +226,21 @@ public class WEBUI_PP_Order_Receipt
 
 	@Override
 	@RunOutOfTrx
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
-		// Calculate and set the LU/TU config from packing info params and defaults
-		final I_M_HU_LUTU_Configuration lutuConfig = getPackingInfoParams().createAndSaveNewLUTUConfig();
+		final IPPOrderReceiptHUProducer producer = newReceiptCandidatesProducer()
+				.bestBeforeDate(computeBestBeforeDate());
 
-		newReceiptCandidatesProducer()
-				.packUsingLUTUConfiguration(lutuConfig)
-				.bestBeforeDate(computeBestBeforeDate())
-				.createDraftReceiptCandidatesAndPlanningHUs();
+		if (isReceiveIndividualCUs)
+		{
+			producer.withPPOrderLocatorId()
+					.receiveIndividualPlanningCUs(getIndividualCUsCount());
+		}
+		else
+		{
+			producer.packUsingLUTUConfiguration(getPackingInfoParams().createAndSaveNewLUTUConfig())
+					.createDraftReceiptCandidatesAndPlanningHUs();
+		}
 
 		return MSG_OK;
 	}
@@ -277,5 +298,16 @@ public class WEBUI_PP_Order_Receipt
 		{
 			throw new AdempiereException("Receiving is not allowed");
 		}
+	}
+
+	@NonNull
+	private Quantity getIndividualCUsCount()
+	{
+		if (p_NumberOfCUs <= 0)
+		{
+			throw new FillMandatoryException(PARAM_NumberOfCUs);
+		}
+
+		return Quantity.of(p_NumberOfCUs, getSingleSelectedRow().getUomNotNull());
 	}
 }

@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package org.adempiere.service;
 
 import com.google.common.collect.ImmutableSet;
@@ -5,12 +27,15 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.IntFunction;
 
 public interface ISysConfigBL extends ISingletonService
 {
@@ -55,6 +80,9 @@ public interface ISysConfigBL extends ISingletonService
 
 	int getIntValue(String name, int defaultValue, int AD_Client_ID);
 
+	@NonNull
+	BigDecimal getBigDecimalValue(@NonNull String name, @NonNull BigDecimal defaultValue);
+
 	boolean getBooleanValue(String name, boolean defaultValue, int AD_Client_ID);
 
 	String getValue(String name, @Nullable String defaultValue, int AD_Client_ID, int AD_Org_ID);
@@ -79,6 +107,9 @@ public interface ISysConfigBL extends ISingletonService
 
 	void setValue(String name, String value, ClientId clientId, OrgId orgId);
 
+	/** Writes the sysconfig at the (client,org) matching its declared ConfigurationLevel (System→0/0, Client→METASFRESH/ANY, else METASFRESH/MAIN), so the AD_SysConfig interceptor does not reject it. */
+	void setValueAtConfigLevel(@NonNull String name, @NonNull String value);
+
 	/**
 	 * Returns a mapping (name -> value) that includes all AD_SysConfig records whose <code>Name</code> has the given <code>prefix</code>.
 	 */
@@ -95,4 +126,13 @@ public interface ISysConfigBL extends ISingletonService
 	Map<String, String> getValuesForPrefix(String prefix, boolean removePrefix, ClientAndOrgId clientAndOrgId);
 
 	<T extends Enum<T>> ImmutableSet<T> getCommaSeparatedEnums(@NonNull String sysconfigName, @NonNull Class<T> enumType);
+
+	/**
+	 * Reads a system-level SysConfig holding a comma-separated list of repo-ids and maps each token to a {@link RepoIdAware}.
+	 * Empty/unset (or the {@code "-"} sentinel) yields an empty set. Consistent with {@link #getCommaSeparatedEnums(String, Class)},
+	 * an unparseable token is logged and skipped rather than aborting the caller.
+	 *
+	 * @param mapper turns a parsed repo-id into the value object, e.g. {@code DocTypeId::ofRepoIdOrNull} (may return {@code null} to skip)
+	 */
+	<T extends RepoIdAware> ImmutableSet<T> getCommaSeparatedRepoIdAwares(@NonNull String sysconfigName, @NonNull IntFunction<T> mapper);
 }

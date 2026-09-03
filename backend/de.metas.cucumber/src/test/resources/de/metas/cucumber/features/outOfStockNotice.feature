@@ -1,8 +1,13 @@
 @ghActions:run_on_executor6
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00108
 Feature: warehouse out of stock notice
+## F00108: Out of Stock Notice
+## F00108: Out of Stock Notice
 
   Background:
     Given infrastructure and metasfresh are running
+    And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 	And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
 

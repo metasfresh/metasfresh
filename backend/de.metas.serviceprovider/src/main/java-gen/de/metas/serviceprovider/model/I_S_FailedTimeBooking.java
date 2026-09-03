@@ -97,27 +97,25 @@ public interface I_S_FailedTimeBooking
 	String COLUMNNAME_ExternalId = "ExternalId";
 
 	/**
-	 * Set External system.
-	 * Name of an external system (e.g. Github )
+	 * Set External System.
 	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Type: Search
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setExternalSystem (@Nullable java.lang.String ExternalSystem);
+	void setExternalSystem_ID (int ExternalSystem_ID);
 
 	/**
-	 * Get External system.
-	 * Name of an external system (e.g. Github )
+	 * Get External System.
 	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Type: Search
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getExternalSystem();
+	int getExternalSystem_ID();
 
-	ModelColumn<I_S_FailedTimeBooking, Object> COLUMN_ExternalSystem = new ModelColumn<>(I_S_FailedTimeBooking.class, "ExternalSystem", null);
-	String COLUMNNAME_ExternalSystem = "ExternalSystem";
+	ModelColumn<I_S_FailedTimeBooking, Object> COLUMN_ExternalSystem_ID = new ModelColumn<>(I_S_FailedTimeBooking.class, "ExternalSystem_ID", null);
+	String COLUMNNAME_ExternalSystem_ID = "ExternalSystem_ID";
 
 	/**
 	 * Set Error Message.

@@ -217,6 +217,10 @@ public class SqlAndParams
 		return Check.isBlank(sql) && !hasParams();
 	}
 
+	@Override
+	@Deprecated
+	public String toString() {return toSqlStringInlineParams();}
+
 	public String toSqlStringInlineParams()
 	{
 		return sqlParamsInliner.inline(sql, sqlParams);

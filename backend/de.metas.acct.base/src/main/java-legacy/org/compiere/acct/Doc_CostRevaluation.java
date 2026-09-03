@@ -32,6 +32,12 @@ public class Doc_CostRevaluation extends Doc<DocLine_CostRevaluation>
 		this.costRevaluation = CostRevaluationRepository.fromRecord(costRevaluationRecord);
 	}
 
+	/** {@code true} when this is a value-neutral {@code CopyFromCostElement} switch (vs. a {@code Calculated} revaluation). */
+	public boolean isCopyFromCostElementSource()
+	{
+		return costRevaluation.getRevaluationSource().isCopyFromCostElement();
+	}
+
 	@Override
 	protected void loadDocumentDetails()
 	{

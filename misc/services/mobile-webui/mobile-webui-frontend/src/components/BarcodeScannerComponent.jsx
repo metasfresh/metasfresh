@@ -1,135 +1,42 @@
 import PropTypes from 'prop-types';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { BarcodeFormat, BrowserMultiFormatReader } from '@zxing/browser';
-import DecodeHintType from '@zxing/library/cjs/core/DecodeHintType';
+import React, { useCallback, useRef, useState } from 'react';
 import { toastError, toastErrorFromObj } from '../utils/toast';
-import { trl } from '../utils/translations';
-import { useBooleanSetting, useNumber, usePositiveNumberSetting } from '../reducers/settings';
-import { debounce } from 'lodash';
+import { useIsSettingsLoaded, useNumber, usePositiveNumberSetting } from '../reducers/settings';
 import { beep } from '../utils/audio';
 import * as uiTrace from '../utils/ui_trace';
 import Spinner from './Spinner';
-import { useKeyboardBarcodeReader } from '../hooks/useKeyboardBarcodeReader';
-import { isMobileOrTablet } from '../utils/browser';
+import { MODE, useBarcodeScannerModes } from './BarcodeScanner/useBarcodeScannerModes';
+import ManualModePanel from './BarcodeScanner/ManualModePanel';
+import CameraModePanel from './BarcodeScanner/CameraModePanel';
+import HardwareModePanel from './BarcodeScanner/HardwareModePanel';
+import BarcodeScannerFooter from './BarcodeScanner/BarcodeScannerFooter';
 
-const READER_HINTS = new Map().set(DecodeHintType.POSSIBLE_FORMATS, [
-  BarcodeFormat.QR_CODE,
-  BarcodeFormat.CODE_128,
-  BarcodeFormat.ITF,
-]);
-
-const READER_OPTIONS = {
-  delayBetweenScanSuccess: 2000,
-  delayBetweenScanAttempts: 600,
-};
-
-const useConfigParams = () => {
-  return {
-    okBeepParams: {
-      name: 'OK',
-      beepFrequency: useNumber('barcodeScanner.onSuccess.beep.frequency', 1000),
-      beepVolume: useNumber('barcodeScanner.onSuccess.beep.volume', 0.1),
-      beepDurationMillis: useNumber('barcodeScanner.onSuccess.beep.durationMillis', 100),
-      vibrateMillis: useNumber('barcodeScanner.onSuccess.vibrate.durationMillis', 100),
-    },
-    errorBeepParams: {
-      name: 'error',
-      beepFrequency: useNumber('barcodeScanner.onError.beep.frequency', 100),
-      beepVolume: useNumber('barcodeScanner.onError.beep.volume', 0.1),
-      beepDurationMillis: useNumber('barcodeScanner.onError.beep.durationMillis', 100),
-      vibrateMillis: useNumber('barcodeScanner.onError.vibrate.durationMillis', 100),
-    },
-    isShowInputText: useBooleanSetting('barcodeScanner.showInputText'),
-    isInputTextReadonly: useBooleanSetting('barcodeScanner.isInputTextReadonly', isMobileOrTablet),
-    triggerOnChangeIfLengthGreaterThan: usePositiveNumberSetting(
-      'barcodeScanner.inputText.triggerOnChangeIfLengthGreaterThan',
-      0
-    ),
-    textChangedDebounceMillis: usePositiveNumberSetting('barcodeScanner.inputText.debounceMillis', 300),
-    scanDuplicatesIntervalMillis: usePositiveNumberSetting('barcodeScanner.scanDuplicatesIntervalMillis', 0),
-  };
-};
+const TOAST_ID = 'BarcodeScannerComponentError';
 
 const BarcodeScannerComponent = ({
+  testId,
   resolveScannedBarcode,
   onResolvedResult,
   inputPlaceholderText,
-  continuousRunning,
+  invisible,
 }) => {
-  const {
-    isShowInputText,
-    isInputTextReadonly,
-    triggerOnChangeIfLengthGreaterThan,
-    textChangedDebounceMillis,
-    scanDuplicatesIntervalMillis,
-    okBeepParams,
-    errorBeepParams,
-  } = useConfigParams();
-  // console.log('BarcodeScannerComponent', {
-  //   isShowInputText,
-  //   isInputTextReadonly,
-  //   triggerOnChangeIfLengthGreaterThan,
-  //   textChangedDebounceMillis,
-  //   scanDuplicatesIntervalMillis,
-  // });
+  const { enabledModes, defaultMode, okBeepParams, errorBeepParams, scanDuplicatesIntervalMillis } = useConfigParams({
+    invisible,
+  });
 
-  const mountedRef = useRef(true);
-  const videoRef = useRef();
-  const inputTextRef = useRef();
-  const scanningStatusRef = useRef({ running: false, done: false });
   const [isProcessing, setProcessing] = useState(false);
+  const { activeMode, setActiveMode, selectMode } = useSettingsDefaultModeAdoption({ defaultMode, isProcessing });
+
+  const scanningStatusRef = useRef({ running: false, done: false });
   const { trackDuplicateScan } = useDuplicateScansGuard({ scanDuplicatesIntervalMillis });
 
-  useEffect(() => {
-    mountedRef.current = true;
+  const validateScannedBarcodeAndForward0 = async ({ scannedBarcode, onStart, onSuccess, onError, onFinally }) => {
+    if (!scannedBarcode?.trim()) {
+      uiTrace.traceLogWarn('Ignoring blank barcode', { scannedBarcode });
+      return;
+    }
 
-    const codeReader = new BrowserMultiFormatReader(READER_HINTS, READER_OPTIONS);
-    codeReader.decodeFromVideoDevice(undefined, videoRef.current, (result, error, controls) => {
-      if (mountedRef.current === false) {
-        controls.stop();
-      } else if (typeof result !== 'undefined') {
-        validateScannedBarcodeAndForward({ scannedBarcode: result.text, controls });
-      }
-    });
-
-    return () => {
-      mountedRef.current = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    return () => handleInputTextChangedDebounced.cancel();
-  });
-
-  useEffect(
-    () => {
-      videoRef?.current?.scrollIntoView({ behaviour: 'smooth', block: 'center', inline: 'end' });
-      if (!isInputTextReadonly) {
-        inputTextRef?.current?.focus();
-      }
-    } /* no deps, call it on each render */
-  );
-
-  useKeyboardBarcodeReader({
-    onReadDone: (barcode) => {
-      console.log('onReadDone', barcode);
-      validateScannedBarcodeAndForward({ scannedBarcode: barcode });
-      if (inputTextRef?.current) {
-        inputTextRef.current.value = '';
-      }
-    },
-    onReadInProgress: (barcode) => {
-      if (inputTextRef?.current) {
-        inputTextRef.current.value = barcode;
-      }
-    },
-    rateMs: textChangedDebounceMillis,
-    minLength: triggerOnChangeIfLengthGreaterThan,
-    disabled: !isInputTextReadonly || isProcessing,
-  });
-
-  const validateScannedBarcodeAndForward0 = async ({ scannedBarcode, controls = null }) => {
-    inputTextRef?.current?.select();
+    onStart?.();
 
     const scanningStatus = scanningStatusRef.current;
     if (scanningStatus.running || scanningStatus.done) {
@@ -162,119 +69,182 @@ const BarcodeScannerComponent = ({
       } else {
         resolvedResult = { scannedBarcode, error: null };
       }
-      console.log('Got resolvedResult', resolvedResult);
+      console.debug('Got resolvedResult', resolvedResult);
 
       if (resolvedResult.error) {
-        toastError({ plainMessage: resolvedResult.error });
+        toastError({ plainMessage: resolvedResult.error, toastId: TOAST_ID });
         beep(errorBeepParams);
         scanningStatus.done = false; // not done yet
+        onError?.();
       } else {
         await onResolvedResult(resolvedResult);
-
-        if (!continuousRunning) {
-          scanningStatus.done = true;
-          controls?.stop();
-        }
-
         beep(okBeepParams);
+        onSuccess?.();
       }
     } catch (error) {
       beep(errorBeepParams);
-      toastErrorFromObj(error);
+      toastErrorFromObj(error, TOAST_ID);
+      onError?.();
     } finally {
       scanningStatus.running = false;
       setProcessing(false);
 
-      if (inputTextRef?.current) {
-        inputTextRef.current.value = '';
-      }
+      onFinally?.();
     }
   };
   const validateScannedBarcodeAndForward = uiTrace.traceFunction(
     validateScannedBarcodeAndForward0,
-    ({ scannedBarcode }) => ({
+    ({ scannedBarcode, traceParams }) => ({
+      ...traceParams,
       eventName: 'barcodeScanned',
       scannedBarcode,
-      isShowInputText,
-      isInputTextReadonly,
-      triggerOnChangeIfLengthGreaterThan,
-      textChangedDebounceMillis,
+      activeMode,
       scanDuplicatesIntervalMillis,
     })
   );
 
-  const handleInputTextChanged = (e) => {
-    if (isInputTextReadonly) return;
-
-    const scannedBarcode = e.target.value;
-
-    if (
-      scannedBarcode &&
-      triggerOnChangeIfLengthGreaterThan &&
-      triggerOnChangeIfLengthGreaterThan > 0 &&
-      scannedBarcode.length >= triggerOnChangeIfLengthGreaterThan
-    ) {
-      validateScannedBarcodeAndForward({ scannedBarcode });
-    }
-  };
-  const handleInputTextChangedDebounced = useMemo(() => {
-    return debounce(handleInputTextChanged, textChangedDebounceMillis);
-  }, [textChangedDebounceMillis]);
-
-  const handleInputTextKeyPress = (e) => {
-    if (isInputTextReadonly) return;
-
-    if (e.key === 'Enter') {
-      const scannedBarcode = e.target.value;
-
-      validateScannedBarcodeAndForward({ scannedBarcode });
-    }
-  };
-
-  const handleInputTextFocus = () => {
-    inputTextRef?.current?.select();
-  };
-
-  const handleInputTextBlur = () => {
-    setTimeout(() => {
-      inputTextRef?.current?.focus();
-    }, 2000);
-  };
-
   return (
     <div className="barcode-scanner">
-      {isProcessing && <Spinner />}
-      <video key="video" ref={videoRef} width="100%" height="100%" />
-      {isShowInputText && !isProcessing && (
-        <input
-          id="input-text"
-          key="input-text"
-          ref={inputTextRef}
-          className="input-text"
-          type="text"
-          placeholder={inputPlaceholderText || trl('components.BarcodeScannerComponent.scanTextPlaceholder')}
-          readOnly={isInputTextReadonly}
-          onFocus={handleInputTextFocus}
-          onBlur={handleInputTextBlur}
-          onChange={handleInputTextChangedDebounced}
-          onKeyUp={handleInputTextKeyPress}
-          data-testid="qrCode-input"
+      {!invisible && isProcessing && <Spinner />}
+      {/* HardwareModePanel is rendered in EVERY visible mode:
+            HARDWARE → full scan-prompt UI + off-screen <input>
+            MANUAL / CAMERA → invisible mode: off-screen <input> only, no visible chrome
+          Two reasons:
+            (1) keeps `#input-text` mounted across mode switches so DataWedge IME
+                InputConnection survives — matches the E2E contract
+                (barcode_scanner_modes.spec.js — `expectAttached({})` in MANUAL mode).
+            (2) keeps the window-level useKeyboardBarcodeReader hook attached during
+                CAMERA mode (workplaces with a plugged scanner can still scan into the
+                camera view). The hook is `disabled` in MANUAL mode so keystrokes go
+                straight to the visible manual input. */}
+      <HardwareModePanel
+        inputPlaceholderText={inputPlaceholderText}
+        invisible={invisible || activeMode !== MODE.HARDWARE}
+        isProcessing={isProcessing}
+        disabled={isProcessing || activeMode === MODE.MANUAL}
+        onBarcodeScanned={validateScannedBarcodeAndForward}
+        testId={testId}
+      />
+      {!invisible && activeMode === MODE.MANUAL && (
+        <ManualModePanel
+          isProcessing={isProcessing}
+          enabledModes={enabledModes}
+          onModeSelected={selectMode}
+          onBarcodeScanned={({ scannedBarcode, onSuccess, onError }) =>
+            validateScannedBarcodeAndForward({
+              scannedBarcode,
+              onSuccess: () => {
+                onSuccess?.();
+                setActiveMode(defaultMode);
+              },
+              onError,
+            })
+          }
         />
+      )}
+      {!invisible && activeMode === MODE.CAMERA && (
+        <CameraModePanel
+          isProcessing={isProcessing}
+          onBarcodeScanned={validateScannedBarcodeAndForward}
+          onCancel={() => setActiveMode(defaultMode)}
+        />
+      )}
+      {!invisible && (
+        <BarcodeScannerFooter activeMode={activeMode} enabledModes={enabledModes} onModeSelected={selectMode} />
       )}
     </div>
   );
 };
 
 BarcodeScannerComponent.propTypes = {
-  //
-  // Props:
+  testId: PropTypes.string,
   resolveScannedBarcode: PropTypes.func,
-  onResolvedResult: PropTypes.func.isRequired,
   inputPlaceholderText: PropTypes.string,
-  continuousRunning: PropTypes.bool,
+  onResolvedResult: PropTypes.func.isRequired,
+  invisible: PropTypes.bool,
+};
+
+BarcodeScannerComponent.defaultProps = {
+  invisible: false,
 };
 
 export default BarcodeScannerComponent;
+
+//
+//
+//
+//
+//
+
+// Owns activeMode and adopts the configured default mode when settings arrive late.
+//
+// Why: settings load async after login. If the scanner mounts first, defaultMode resolves to the
+// hook default (HARDWARE) and activeMode freezes there — so a manual-default workplace would stay
+// stuck on hardware with no visible input until the screen is left and re-entered.
+//
+// Fix: when settings first arrive, adopt their default once. Three guards:
+//   - once only, on the not-loaded → loaded transition (didAdoptSettingsDefault);
+//   - not while a scan is processing — flipping mid-scan flickers the panel, so we skip and let a
+//     later, calm render (isProcessing=false) do it;
+//   - not if the operator already picked a mode (hasOperatorSelectedModeRef) — their choice wins
+//     over a late settings arrival; internal auto-returns to default (post-scan, camera cancel)
+//     go through setActiveMode directly and do NOT count as an operator choice.
+//
+// Adopting during render (React's "adjust state on prop change" pattern) lands the switch before
+// paint, avoiding a one-frame flash of the wrong panel.
+//
+// Returns: activeMode + setActiveMode (raw, for internal auto-returns) + selectMode (operator
+// picks, which set the guard).
+const useSettingsDefaultModeAdoption = ({ defaultMode, isProcessing }) => {
+  const [activeMode, setActiveMode] = useState(defaultMode);
+
+  const hasOperatorSelectedModeRef = useRef(false);
+  const selectMode = useCallback((mode) => {
+    hasOperatorSelectedModeRef.current = true;
+    setActiveMode(mode);
+  }, []);
+
+  const isSettingsLoaded = useIsSettingsLoaded();
+  const [didAdoptSettingsDefault, setDidAdoptSettingsDefault] = useState(false);
+  if (isSettingsLoaded && !isProcessing && !didAdoptSettingsDefault) {
+    setDidAdoptSettingsDefault(true);
+    if (!hasOperatorSelectedModeRef.current && activeMode !== defaultMode) {
+      setActiveMode(defaultMode);
+    }
+  }
+
+  return { activeMode, setActiveMode, selectMode };
+};
+
+//
+//
+//
+//
+//
+
+const useConfigParams = ({ invisible }) => {
+  const { enabledModes, defaultMode } = useBarcodeScannerModes({ invisible });
+
+  return {
+    enabledModes,
+    defaultMode,
+    okBeepParams: {
+      name: 'OK',
+      beepFrequency: useNumber('barcodeScanner.onSuccess.beep.frequency', 1000),
+      beepVolume: useNumber('barcodeScanner.onSuccess.beep.volume', 0.1),
+      beepDurationMillis: useNumber('barcodeScanner.onSuccess.beep.durationMillis', 100),
+      vibrateMillis: useNumber('barcodeScanner.onSuccess.vibrate.durationMillis', 100),
+    },
+    errorBeepParams: {
+      name: 'error',
+      beepFrequency: useNumber('barcodeScanner.onError.beep.frequency', 100),
+      beepVolume: useNumber('barcodeScanner.onError.beep.volume', 0.1),
+      beepDurationMillis: useNumber('barcodeScanner.onError.beep.durationMillis', 100),
+      vibrateMillis: useNumber('barcodeScanner.onError.vibrate.durationMillis', 100),
+    },
+    scanDuplicatesIntervalMillis: usePositiveNumberSetting('barcodeScanner.scanDuplicatesIntervalMillis', 0),
+  };
+};
 
 //
 //

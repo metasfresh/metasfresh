@@ -24,6 +24,7 @@ package de.metas.common.rest_api.v2;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
@@ -37,9 +38,11 @@ import java.time.ZonedDateTime;
 public class JsonPurchaseOrder
 {
 	@JsonProperty("dateOrdered")
+	@JsonFormat(shape = JsonFormat.Shape.STRING)
 	ZonedDateTime dateOrdered;
 
 	@JsonProperty("datePromised")
+	@JsonFormat(shape = JsonFormat.Shape.STRING)
 	ZonedDateTime datePromised;
 
 	@JsonProperty("docStatus")

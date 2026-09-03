@@ -8,7 +8,8 @@ import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientId;
-import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipientService;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipients;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientProvider;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
 import de.metas.dunning.DunningDocId;
@@ -58,14 +59,14 @@ public class DunningDocOutboundLogMailRecipientProvider
 		implements DocOutboundLogMailRecipientProvider
 {
 
-	private final DocOutBoundRecipientRepository recipientRepository;
+	private final DocOutBoundRecipientService recipientRepository;
 	private final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository;
 	private final IBPartnerBL bpartnerBL;
 	private final IUserBL userBL = Services.get(IUserBL.class);
 	private final DunningService dunningService;
 
 	public DunningDocOutboundLogMailRecipientProvider(
-			@NonNull final DocOutBoundRecipientRepository recipientRepository,
+			@NonNull final DocOutBoundRecipientService recipientRepository,
 			@NonNull final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository,
 			@NonNull final IBPartnerBL bpartnerBL,
 			@NonNull final DunningService dunningService)
@@ -94,7 +95,7 @@ public class DunningDocOutboundLogMailRecipientProvider
 	 * Note that we don't have a dunning-contact field in {@code C_DunningDoc}.
 	 */
 	@Override
-	public Optional<DocOutBoundRecipient> provideMailRecipient(@NonNull final DocOutboundLogMailRecipientRequest request)
+	public Optional<DocOutBoundRecipients> provideMailRecipient(@NonNull final DocOutboundLogMailRecipientRequest request)
 	{
 		final I_C_DunningDoc dunningRecord = request.getRecordRef()
 				.getModel(I_C_DunningDoc.class);
@@ -123,25 +124,25 @@ public class DunningDocOutboundLogMailRecipientProvider
 			if (Check.isNotBlank(dunningEmail))
 			{
 				Loggables.addLog("The dunned invoices all have dunning user ={} and the dunning contact has the email {} so we take that user as the dunning mail's participant, with this email address", dunningRecipient, dunningEmail);
-				return Optional.of(dunningRecipient.withEmailAddress(dunningEmail));
+				return DocOutBoundRecipients.optionalOfTo(dunningRecipient.withEmailAddress(dunningEmail));
 			}
 
 			if (Check.isNotBlank(invoiceEmail))
 			{
 				Loggables.addLog("The dunned invoices all have invoiceUser={} and the invoice has the email {} so we take that user as the dunning mail's participant, with this email address", dunningRecipient, invoiceEmail);
-				return Optional.of(dunningRecipient.withEmailAddress(invoiceEmail));
+				return DocOutBoundRecipients.optionalOfTo(dunningRecipient.withEmailAddress(invoiceEmail));
 			}
 
 			if (Check.isNotBlank(dunningRecipient.getEmailAddress()))
 			{
 				Loggables.addLog("The dunned invoices all have invoiceUser={}, so we take that user as the dunning mail's participant", dunningRecipient);
-				return Optional.of(dunningRecipient);
+				return DocOutBoundRecipients.optionalOfTo(dunningRecipient);
 			}
 
 			if (Check.isNotBlank(locationEmail))
 			{
 				Loggables.addLog("The dunned invoices all have invoiceUser={} and the location has the email {} so we take that user as the dunning mail's participant, with this email address", dunningRecipient, locationEmail);
-				return Optional.of(dunningRecipient.withEmailAddress(locationEmail));
+				return DocOutBoundRecipients.optionalOfTo(dunningRecipient.withEmailAddress(locationEmail));
 			}
 
 			Loggables.addLog("The dunned invoices' common dunning user={} has not mail address", dunningRecipient);
@@ -156,19 +157,19 @@ public class DunningDocOutboundLogMailRecipientProvider
 			if (Check.isNotBlank(invoiceEmail))
 			{
 				Loggables.addLog("The dunned invoices all have invoiceUser={} and the invoice has the email {} so we take that user as the dunning mail's participant, with this email address", invoiceUser, invoiceEmail);
-				return Optional.of(invoiceUser.withEmailAddress(invoiceEmail));
+				return DocOutBoundRecipients.optionalOfTo(invoiceUser.withEmailAddress(invoiceEmail));
 			}
 
 			if (Check.isNotBlank(invoiceUser.getEmailAddress()))
 			{
 				Loggables.addLog("The dunned invoices all have invoiceUser={}, so we take that user as the dunning mail's participant", invoiceUser);
-				return Optional.of(invoiceUser);
+				return DocOutBoundRecipients.optionalOfTo(invoiceUser);
 			}
 
 			if (Check.isNotBlank(locationEmail))
 			{
 				Loggables.addLog("The dunned invoices all have invoiceUser={} and the location has the email {} so we take that user as the dunning mail's participant, with this email address", invoiceUser, locationEmail);
-				return Optional.of(invoiceUser.withEmailAddress(locationEmail));
+				return DocOutBoundRecipients.optionalOfTo(invoiceUser.withEmailAddress(locationEmail));
 			}
 
 			Loggables.addLog("The dunned invoices' common invoiceUser={} has not mail address", invoiceUser);
@@ -195,18 +196,18 @@ public class DunningDocOutboundLogMailRecipientProvider
 			if (Check.isNotBlank(invoiceEmail))
 			{
 				Loggables.addLog("Use billContact={} as recipient and the invoice email {} as address}", billContact, invoiceEmail);
-				return Optional.of(docOutBoundRecipient.withEmailAddress(invoiceEmail));
+				return DocOutBoundRecipients.optionalOfTo(docOutBoundRecipient.withEmailAddress(invoiceEmail));
 			}
 
 			if (Check.isNotBlank(locationEmail))
 			{
 				Loggables.addLog("Use billContact={} as recipient and the location email {} as address}", billContact, locationEmail);
-				return Optional.of(docOutBoundRecipient.withEmailAddress(locationEmail));
+				return DocOutBoundRecipients.optionalOfTo(docOutBoundRecipient.withEmailAddress(locationEmail));
 			}
 
 			if (Check.isNotBlank(docOutBoundRecipient.getEmailAddress()))
 			{
-				return Optional.of(docOutBoundRecipient);
+				return DocOutBoundRecipients.optionalOfTo(docOutBoundRecipient);
 			}
 		}
 

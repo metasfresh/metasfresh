@@ -25,6 +25,7 @@ package de.metas.ui.web.edi_desadv;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.edi.api.EDIDocOutBoundLogService;
 import de.metas.edi.api.EDIExportStatus;
+import de.metas.edi.api.impl.EDIDocumentBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,6 +40,7 @@ class ChangeEDI_ExportStatusHelperTest
 	{
 		AdempiereTestHelper.get().init();
 		SpringContextHolder.registerJUnitBean(new EDIDocOutBoundLogService());
+		SpringContextHolder.registerJUnitBean(EDIDocumentBL.newInstanceForUnitTesting());
 		SpringContextHolder.registerJUnitBean(ADReferenceService.newMocked());
 		
 	}

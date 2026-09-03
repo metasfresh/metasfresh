@@ -129,7 +129,7 @@ public class BottomUpHUAttributePropagator extends AbstractHUAttributePropagator
 
 		//
 		// We don't have an aggregation strategy and we're in a reverse propagation
-		if (NullAggregationStrategy.instance.equals(aggregationStrategy)
+		if (aggregationStrategy instanceof NullAggregationStrategy
 				&& parentAttributeSet.getPropagationType(attribute).equals(parentPropagator.getReversalPropagationType()))
 		{
 			//
@@ -154,21 +154,13 @@ public class BottomUpHUAttributePropagator extends AbstractHUAttributePropagator
 
 	/**
 	 * Aggregates new parent value recursively among children (i.e if a child doesn't have an attribute, look deeper in that child's children).
-	 *
-	 * @param aggregationStrategy
-	 * @param parentAttributeSet
-	 * @param parentValueInitial
-	 * @param attributeSet
-	 * @param value
-	 * @param attribute
-	 * @return
 	 */
-	private final Object aggregateNewParentValue(final IAttributeAggregationStrategy aggregationStrategy,
-			final IAttributeStorage parentAttributeSet,
-			final Object parentValueInitial,
-			final IAttributeStorage attributeSet,
-			final Object value,
-			final I_M_Attribute attribute)
+	private Object aggregateNewParentValue(final IAttributeAggregationStrategy aggregationStrategy,
+										   final IAttributeStorage parentAttributeSet,
+										   final Object parentValueInitial,
+										   final IAttributeStorage attributeSet,
+										   final Object value,
+										   final I_M_Attribute attribute)
 	{
 		Object parentValueNew = parentValueInitial;
 

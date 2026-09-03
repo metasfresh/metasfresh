@@ -1,0 +1,587 @@
+/*
+ * #%L
+ * de.metas.deliveryplanning.base
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.deliveryplanning;
+
+import com.google.common.collect.ImmutableList;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.engine.DocStatus;
+import de.metas.order.OrderLineId;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.shipping.ShipperRepository;
+import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
+import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.shipping.model.I_M_ShippingPackage;
+import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestHelper;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Delivery_Planning;
+import org.compiere.model.I_M_Delivery_Planning_Alloc;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_M_Delivery_Planning;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.groups.Tuple.tuple;
+
+/**
+ * What {@code moveTo} and {@code removeFrom} leave behind, driven through the SERVICE rather than the repository.
+ */
+class DeliveryPlanningMoveAndRemovalTest
+{
+	private static final int PRODUCT_ID = 540010;
+
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	private DeliveryPlanningRepository deliveryPlanningRepository;
+	private DeliveryPlanningService deliveryPlanningService;
+	private I_C_UOM uom;
+
+	@BeforeEach
+	void setUp()
+	{
+		AdempiereTestHelper.get().init();
+
+		deliveryPlanningRepository = new DeliveryPlanningRepository(Mockito.mock(DimensionService.class));
+		deliveryPlanningService = new DeliveryPlanningService(
+				Mockito.mock(ShipperRepository.class),
+				deliveryPlanningRepository,
+				Mockito.mock(DeliveryStatusColorPaletteService.class),
+				Mockito.mock(DimensionService.class),
+				Mockito.mock(MeansOfTransportationService.class),
+				new ShipperTransportationDocSubTypeGuard());
+
+		uom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
+		InterfaceWrapperHelper.save(uom);
+	}
+
+	// ------------------------------------------------------------------ helpers
+
+	private I_M_Delivery_Planning deliveryPlanning()
+	{
+		final I_M_Delivery_Planning record = InterfaceWrapperHelper.newInstance(I_M_Delivery_Planning.class);
+		record.setTransportDirection(X_M_Delivery_Planning.TRANSPORTDIRECTION_Outgoing);
+		record.setM_Product_ID(PRODUCT_ID);
+		record.setC_UOM_ID(uom.getC_UOM_ID());
+		record.setPlannedLoadedQuantity(BigDecimal.TEN);
+		record.setPlannedDischargeQuantity(BigDecimal.ONE);
+		InterfaceWrapperHelper.save(record);
+		return record;
+	}
+
+	private ShipperTransportationId draftDeliveryInstruction(@NonNull final String documentNo)
+	{
+		final I_M_ShipperTransportation record = InterfaceWrapperHelper.newInstance(I_M_ShipperTransportation.class);
+		record.setDocumentNo(documentNo);
+		record.setDocStatus(DocStatus.Drafted.getCode());
+		InterfaceWrapperHelper.save(record);
+		return ShipperTransportationId.ofRepoId(record.getM_ShipperTransportation_ID());
+	}
+
+	/** A real selection filter over the given rows; naming a subset is what lets a removal assert the unselected plannings came through untouched. */
+	private IQueryFilter<I_M_Delivery_Planning> selectionOf(final I_M_Delivery_Planning... records)
+	{
+		return queryBL.createCompositeQueryFilter(I_M_Delivery_Planning.class)
+				.addInArrayFilter(
+						I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID,
+						Arrays.stream(records)
+								.map(DeliveryPlanningMoveAndRemovalTest::idOf)
+								.collect(ImmutableList.toImmutableList()));
+	}
+
+	/** Puts the given plannings on the given instruction the way a previous action would have left them. */
+	private void allocateTo(@NonNull final ShipperTransportationId deliveryInstructionId, final I_M_Delivery_Planning... records)
+	{
+		final ImmutableList<DeliveryPlanningId> ids = Arrays.stream(records)
+				.map(DeliveryPlanningMoveAndRemovalTest::idOf)
+				.collect(ImmutableList.toImmutableList());
+
+		deliveryPlanningRepository.createAllocations(
+				deliveryInstructionId,
+				ids.stream()
+						.map(id -> DeliveryPlanningAllocCreateRequest.builder()
+								.deliveryPlanningId(id)
+								.productId(ProductId.ofRepoId(PRODUCT_ID))
+								.qtyLoaded(Quantity.of(BigDecimal.TEN, uom))
+								.qtyDischarged(Quantity.of(BigDecimal.ONE, uom))
+								.build())
+						.collect(ImmutableList.toImmutableList()));
+
+		deliveryPlanningRepository.updateDeliveryPlanningsFromInstruction(ids, deliveryInstructionId);
+	}
+
+	/** Like {@link #allocateTo}, but stamps the given order line onto the planning's shipping package. */
+	private void allocateToWithOrderLine(
+			@NonNull final ShipperTransportationId deliveryInstructionId,
+			@NonNull final OrderLineId orderLineId,
+			@NonNull final I_M_Delivery_Planning record)
+	{
+		final DeliveryPlanningId id = idOf(record);
+
+		deliveryPlanningRepository.createAllocations(
+				deliveryInstructionId,
+				ImmutableList.of(DeliveryPlanningAllocCreateRequest.builder()
+						.deliveryPlanningId(id)
+						.productId(ProductId.ofRepoId(PRODUCT_ID))
+						.qtyLoaded(Quantity.of(BigDecimal.TEN, uom))
+						.qtyDischarged(Quantity.of(BigDecimal.ONE, uom))
+						.orderLineId(orderLineId)
+						.build()));
+
+		deliveryPlanningRepository.updateDeliveryPlanningsFromInstruction(ImmutableList.of(id), deliveryInstructionId);
+	}
+
+	private static void setETD(@NonNull final ShipperTransportationId deliveryInstructionId, @NonNull final Timestamp etd)
+	{
+		final I_M_ShipperTransportation record = InterfaceWrapperHelper.load(deliveryInstructionId, I_M_ShipperTransportation.class);
+		record.setETD(etd);
+		InterfaceWrapperHelper.save(record);
+	}
+
+	// ------------------------------------------------------------------ helpers (source-contamination regression)
+
+	private static final int BPARTNER_ID = 540020;
+	private static final int BPARTNER_LOCATION_ID = 540021;
+	private I_M_Warehouse warehouse;
+
+	private int warehouseId()
+	{
+		if (warehouse == null)
+		{
+			warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
+			warehouse.setValue("WH");
+			warehouse.setName("WH");
+			warehouse.setC_BPartner_ID(BPARTNER_ID);
+			warehouse.setC_BPartner_Location_ID(BPARTNER_LOCATION_ID);
+			InterfaceWrapperHelper.save(warehouse);
+		}
+		return warehouse.getM_Warehouse_ID();
+	}
+
+	/** A planning with an ORDER and a shipment schedule, so it has an order-derived ETD independent of any instruction. */
+	private I_M_Delivery_Planning deliveryPlanningWithOrderDerivedDates(@NonNull final Timestamp orderPreparationDate)
+	{
+		final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
+		order.setPreparationDate(orderPreparationDate);
+		InterfaceWrapperHelper.save(order);
+
+		final I_M_ShipmentSchedule shipmentSchedule = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule.class);
+		shipmentSchedule.setC_BPartner_ID(BPARTNER_ID);
+		shipmentSchedule.setC_BPartner_Location_ID(BPARTNER_LOCATION_ID);
+		InterfaceWrapperHelper.save(shipmentSchedule);
+
+		final I_M_Delivery_Planning record = InterfaceWrapperHelper.newInstance(I_M_Delivery_Planning.class);
+		record.setTransportDirection(X_M_Delivery_Planning.TRANSPORTDIRECTION_Outgoing);
+		record.setM_Product_ID(PRODUCT_ID);
+		record.setC_UOM_ID(uom.getC_UOM_ID());
+		record.setPlannedLoadedQuantity(BigDecimal.TEN);
+		record.setPlannedDischargeQuantity(BigDecimal.ONE);
+		record.setM_Warehouse_ID(warehouseId());
+		record.setC_Order_ID(order.getC_Order_ID());
+		record.setM_ShipmentSchedule_ID(shipmentSchedule.getM_ShipmentSchedule_ID());
+		InterfaceWrapperHelper.save(record);
+		return record;
+	}
+
+	private static DeliveryPlanningId idOf(@NonNull final I_M_Delivery_Planning record)
+	{
+		return DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID());
+	}
+
+	private static I_M_Delivery_Planning reload(@NonNull final I_M_Delivery_Planning record)
+	{
+		return InterfaceWrapperHelper.load(idOf(record), I_M_Delivery_Planning.class);
+	}
+
+	private List<I_M_Delivery_Planning_Alloc> allAllocations()
+	{
+		return queryBL.createQueryBuilder(I_M_Delivery_Planning_Alloc.class)
+				.orderBy().addColumnAscending(I_M_Delivery_Planning_Alloc.COLUMNNAME_M_Delivery_Planning_Alloc_ID).endOrderBy()
+				.create()
+				.list();
+	}
+
+	/**
+	 * The planning's CURRENT (active) allocation - filtered on {@code IsActive}, because after a move the
+	 * planning's retired source-side row also matches on {@code M_Delivery_Planning_ID} and would otherwise
+	 * make this lookup ambiguous.
+	 */
+	private I_M_Delivery_Planning_Alloc allocationOf(@NonNull final I_M_Delivery_Planning record)
+	{
+		return allAllocations().stream()
+				.filter(alloc -> alloc.getM_Delivery_Planning_ID() == record.getM_Delivery_Planning_ID())
+				.filter(I_M_Delivery_Planning_Alloc::isActive)
+				.findFirst()
+				.orElseThrow(() -> new AssertionError("no ACTIVE allocation for delivery planning " + record.getM_Delivery_Planning_ID()));
+	}
+
+	private boolean shippingPackageIsActive(final int shippingPackageId)
+	{
+		return InterfaceWrapperHelper.load(shippingPackageId, I_M_ShippingPackage.class).isActive();
+	}
+
+	/**
+	 * The general form of the leak: every shipping package belongs to exactly one allocation, so an action that
+	 * deleted an allocation and left its package behind strands a row here.
+	 */
+	private void assertNoOrphanedShippingPackages()
+	{
+		assertThat(queryBL.createQueryBuilder(I_M_ShippingPackage.class).create().list())
+				.as("one shipping package per allocation - a stranded package means a delete took only half the pair")
+				.hasSameSizeAs(allAllocations());
+	}
+
+	// ------------------------------------------------------------------ tests
+
+	@Test
+	@DisplayName("move-to takes a planning off the draft instruction it was on, deactivating its source allocation and shipping package")
+	void moveToTakesThePlanningOffItsSourceInstruction()
+	{
+		final ShipperTransportationId source = draftDeliveryInstruction("SOURCE-1");
+		final ShipperTransportationId target = draftDeliveryInstruction("TARGET-1");
+		// distinct dates on source and target: the move deactivates the source allocation (which resets the
+		// planning's dates from its order/schedule) and then immediately re-syncs it from the target, so what
+		// survives must be the TARGET's date, never the source's - proving the intermediate reset does not leak
+		setETD(target, Timestamp.valueOf("2026-03-25 00:00:00"));
+		final I_M_Delivery_Planning moving = deliveryPlanning();
+		allocateTo(source, moving);
+
+		final int sourcePackageId = allocationOf(moving).getM_ShippingPackage_ID();
+		assertThat(reload(moving).getReleaseNo()).startsWith("SOURCE-1-");
+
+		deliveryPlanningService.moveTo(selectionOf(moving), target);
+
+		assertThat(allAllocations())
+				.as("the source row survives DEACTIVATED, and a fresh ACTIVE row sits on the target - nothing was left standing active")
+				.extracting(I_M_Delivery_Planning_Alloc::getM_Delivery_Planning_ID, I_M_Delivery_Planning_Alloc::getM_ShipperTransportation_ID, I_M_Delivery_Planning_Alloc::isActive)
+				.containsExactlyInAnyOrder(
+						tuple(moving.getM_Delivery_Planning_ID(), source.getRepoId(), false),
+						tuple(moving.getM_Delivery_Planning_ID(), target.getRepoId(), true));
+
+		assertThat(shippingPackageIsActive(sourcePackageId))
+				.as("the source allocation's shipping package went with it, deactivated rather than deleted")
+				.isFalse();
+		assertNoOrphanedShippingPackages();
+
+		final I_M_Delivery_Planning moved = reload(moving);
+		assertThat(moved.getReleaseNo())
+				.as("re-stamped from the target, with nothing of the source surviving in it")
+				.startsWith("TARGET-1-")
+				.doesNotContain("SOURCE-1");
+		assertThat(moved.getM_ShipperTransportation_ID()).isEqualTo(target.getRepoId());
+		assertThat(moved.getETD())
+				.as("the source-side reset is only ever transient here: the target's own sync-down has the final word")
+				.isEqualTo(Timestamp.valueOf("2026-03-25 00:00:00"));
+	}
+
+	/**
+	 * The bug the sync-down and the fill-if-empty defaulting can produce together if the allocation-request
+	 * snapshot is built from a STILL-source-dated row: a planning allocated to a dated source instruction A
+	 * carries A's dates (the sync-down overwrote its own), not its order-derived truth. Moving it onto an EMPTY
+	 * draft target B must never let A's dates leak into B's fill-if-empty defaulting - B must end up with the
+	 * planning's OWN order-derived dates, exactly as if the planning had never been allocated to A at all.
+	 */
+	@Test
+	@DisplayName("move-to never leaks the SOURCE instruction's dates into an empty TARGET - the moved planning's order-derived truth wins")
+	void moveToDoesNotLeakSourceDatesIntoAnEmptyTarget()
+	{
+		final ShipperTransportationId source = draftDeliveryInstruction("SOURCE-6");
+		setETD(source, Timestamp.valueOf("2026-03-20 00:00:00"));
+		final ShipperTransportationId target = draftDeliveryInstruction("TARGET-6");
+
+		final I_M_Delivery_Planning moving = deliveryPlanningWithOrderDerivedDates(Timestamp.valueOf("2026-03-01 00:00:00"));
+		allocateTo(source, moving);
+		assertThat(reload(moving).getETD())
+				.as("sanity: the sync-down contaminated the planning with SOURCE's date before the move")
+				.isEqualTo(Timestamp.valueOf("2026-03-20 00:00:00"));
+
+		deliveryPlanningService.moveTo(selectionOf(moving), target);
+
+		final I_M_Delivery_Planning moved = reload(moving);
+		assertThat(moved.getETD())
+				.as("the planning's OWN order-derived ETD, not the source instruction's - the target had nothing "
+						+ "of its own to default from, so a stale snapshot would have leaked SOURCE's date straight through")
+				.isEqualTo(Timestamp.valueOf("2026-03-01 00:00:00"));
+		assertThat(InterfaceWrapperHelper.load(target, I_M_ShipperTransportation.class).getETD())
+				.as("the target itself must show the same order-derived date, not SOURCE's")
+				.isEqualTo(Timestamp.valueOf("2026-03-01 00:00:00"));
+	}
+
+	@Test
+	@DisplayName("add-to stamps the added planning's C_Order_ID onto the new shipping package it creates on the target")
+	void addToStampsThePlanningsOrderIdOntoTheNewShippingPackage()
+	{
+		final ShipperTransportationId target = draftDeliveryInstruction("TARGET-8");
+		// on NO instruction yet, which is the selection add-to is the action for
+		final I_M_Delivery_Planning joining = deliveryPlanningWithOrderDerivedDates(Timestamp.valueOf("2026-03-01 00:00:00"));
+		final int orderId = joining.getC_Order_ID();
+
+		deliveryPlanningService.addTo(selectionOf(joining), target);
+
+		final int shippingPackageId = allocationOf(joining).getM_ShippingPackage_ID();
+		assertThat(InterfaceWrapperHelper.load(shippingPackageId, I_M_ShippingPackage.class).getC_Order_ID())
+				.as("the planning's own C_Order_ID must land on the package add-to creates for it")
+				.isEqualTo(orderId);
+	}
+
+	@Test
+	@DisplayName("move-to is refused for an UNALLOCATED planning - and refuses the WHOLE selection, moving nothing")
+	void moveToRefusesAnUnallocatedPlanningAndMovesNothing()
+	{
+		final ShipperTransportationId source = draftDeliveryInstruction("SOURCE-8");
+		final ShipperTransportationId target = draftDeliveryInstruction("TARGET-8B");
+		final I_M_Delivery_Planning allocated = deliveryPlanning();
+		allocateTo(source, allocated);
+		final I_M_Delivery_Planning notAllocated = deliveryPlanning();
+
+		assertThatThrownBy(() -> deliveryPlanningService.moveTo(selectionOf(allocated, notAllocated), target))
+				.hasMessageContaining(DeliveryPlanningService.MSG_M_Delivery_Planning_NotOnDeliveryInstruction.toAD_Message());
+
+		assertThat(allocationOf(allocated).getM_ShipperTransportation_ID())
+				.as("all-or-nothing: the allocated row stayed on its source rather than being half-moved")
+				.isEqualTo(source.getRepoId());
+		assertNoOrphanedShippingPackages();
+	}
+
+	@Test
+	@DisplayName("add-to is refused for an ALLOCATED planning - and refuses the WHOLE selection, adding nothing")
+	void addToRefusesAnAllocatedPlanningAndAddsNothing()
+	{
+		final ShipperTransportationId source = draftDeliveryInstruction("SOURCE-8C");
+		final ShipperTransportationId target = draftDeliveryInstruction("TARGET-8C");
+		final I_M_Delivery_Planning allocated = deliveryPlanning();
+		allocateTo(source, allocated);
+		final I_M_Delivery_Planning notAllocated = deliveryPlanning();
+
+		assertThatThrownBy(() -> deliveryPlanningService.addTo(selectionOf(allocated, notAllocated), target))
+				.hasMessageContaining(DeliveryPlanningService.MSG_M_Delivery_Planning_AlreadyOnDeliveryInstruction_UseMove.toAD_Message());
+
+		assertThat(deliveryPlanningRepository.getAllocationsByPlanningId(ImmutableList.of(idOf(notAllocated))).isEmpty())
+				.as("all-or-nothing: the unallocated row was not put on the target either")
+				.isTrue();
+		assertNoOrphanedShippingPackages();
+	}
+
+	@Test
+	@DisplayName("move-to is a no-op for a planning already on the target - skipped, not a delete and re-create")
+	void moveToLeavesAPlanningAlreadyOnTheTargetAlone()
+	{
+		final ShipperTransportationId target = draftDeliveryInstruction("TARGET-2");
+		final I_M_Delivery_Planning alreadyThere = deliveryPlanning();
+		allocateTo(target, alreadyThere);
+
+		final I_M_Delivery_Planning_Alloc before = allocationOf(alreadyThere);
+		final int allocationId = before.getM_Delivery_Planning_Alloc_ID();
+		final int shippingPackageId = before.getM_ShippingPackage_ID();
+
+		deliveryPlanningService.moveTo(selectionOf(alreadyThere), target);
+
+		final I_M_Delivery_Planning_Alloc after = allocationOf(alreadyThere);
+		assertThat(allAllocations()).hasSize(1);
+		assertThat(after.getM_Delivery_Planning_Alloc_ID())
+				.as("the same allocation row - re-adding must not delete and re-create it")
+				.isEqualTo(allocationId);
+		assertThat(after.getM_ShippingPackage_ID())
+				.as("and therefore the same shipping package, not a second one")
+				.isEqualTo(shippingPackageId);
+		assertNoOrphanedShippingPackages();
+	}
+
+	@Test
+	@DisplayName("remove-from takes only the SELECTED planning off, leaving the instruction's others untouched")
+	void removeFromLeavesTheInstructionsOtherPlanningsAlone()
+	{
+		final ShipperTransportationId deliveryInstructionId = draftDeliveryInstruction("SHARED-3");
+		final I_M_Delivery_Planning leaving = deliveryPlanning();
+		final I_M_Delivery_Planning staying = deliveryPlanning();
+		allocateTo(deliveryInstructionId, leaving, staying);
+
+		final I_M_Delivery_Planning_Alloc stayingAllocBefore = allocationOf(staying);
+		final int stayingAllocationId = stayingAllocBefore.getM_Delivery_Planning_Alloc_ID();
+		final String stayingReleaseNo = reload(staying).getReleaseNo();
+		final I_M_Delivery_Planning_Alloc leavingAllocBefore = allocationOf(leaving);
+		final int leavingAllocationId = leavingAllocBefore.getM_Delivery_Planning_Alloc_ID();
+		final int leavingPackageId = leavingAllocBefore.getM_ShippingPackage_ID();
+
+		// only one of the two is selected - which is the whole point of the assertion below
+		deliveryPlanningService.removeFrom(selectionOf(leaving));
+
+		final I_M_Delivery_Planning removed = reload(leaving);
+		assertThat(removed.getReleaseNo()).isNull();
+		assertThat(removed.getM_ShipperTransportation_ID()).isLessThanOrEqualTo(0);
+		assertThat(shippingPackageIsActive(leavingPackageId))
+				.as("removed - deactivated, not deleted")
+				.isFalse();
+		assertThat(InterfaceWrapperHelper.load(leavingAllocationId, I_M_Delivery_Planning_Alloc.class).isActive())
+				.as("the removed planning's own allocation row survives, deactivated")
+				.isFalse();
+		assertThat(deliveryPlanningRepository.getAllocationsByPlanningId(ImmutableList.of(idOf(leaving))).isEmpty())
+				.as("the retired allocation must not leak into an active-filtered lookup")
+				.isTrue();
+
+		assertThat(allAllocations())
+				.as("both rows survive - the removed one deactivated, the staying one still active")
+				.hasSize(2);
+		final I_M_Delivery_Planning_Alloc stayingAllocAfter = allocationOf(staying);
+		assertThat(stayingAllocAfter.getM_Delivery_Planning_Alloc_ID())
+				.as("untouched - the surviving allocation is NOT re-created, which would change a printed document")
+				.isEqualTo(stayingAllocationId);
+		assertThat(reload(staying).getReleaseNo())
+				.as("the forwarder already holds this number for the rest of the consignment")
+				.isEqualTo(stayingReleaseNo);
+		assertThat(reload(staying).getM_ShipperTransportation_ID()).isEqualTo(deliveryInstructionId.getRepoId());
+		assertNoOrphanedShippingPackages();
+	}
+
+	@Test
+	@DisplayName("remove-from releases the planning for IMMEDIATE re-allocation - proving the partial unique indexes only key on IsActive='Y'")
+	void removeFromThenAddToSucceedsImmediately()
+	{
+		final ShipperTransportationId source = draftDeliveryInstruction("SOURCE-7");
+		final I_M_Delivery_Planning planning = deliveryPlanning();
+		allocateTo(source, planning);
+
+		deliveryPlanningService.removeFrom(selectionOf(planning));
+
+		final ShipperTransportationId target = draftDeliveryInstruction("TARGET-7");
+		deliveryPlanningService.addTo(selectionOf(reload(planning)), target);
+
+		final I_M_Delivery_Planning reAllocated = reload(planning);
+		assertThat(reAllocated.getM_ShipperTransportation_ID())
+				.as("the same planning is allocated again, right away, with no leftover row blocking it")
+				.isEqualTo(target.getRepoId());
+		assertThat(allocationOf(planning).getM_ShipperTransportation_ID()).isEqualTo(target.getRepoId());
+		assertNoOrphanedShippingPackages();
+	}
+
+	/**
+	 * Reversed contract: this used to drive {@code removeFrom} to SUCCESS on a closed planning and assert the
+	 * allocation had been retired - which is the very mutation "closed means frozen" forbids. Removal now refuses,
+	 * and the assertions are what did NOT happen.
+	 */
+	@Test
+	@DisplayName("remove-from REFUSES a CLOSED planning and changes nothing - allocation, package and release number all survive")
+	void removeFromRefusesAClosedPlanning()
+	{
+		final ShipperTransportationId deliveryInstructionId = draftDeliveryInstruction("SHARED-5");
+		final I_M_Delivery_Planning closedAndAllocated = deliveryPlanning();
+		closedAndAllocated.setIsClosed(true);
+		InterfaceWrapperHelper.save(closedAndAllocated);
+		allocateTo(deliveryInstructionId, closedAndAllocated);
+		final I_M_Delivery_Planning_Alloc allocBefore = allocationOf(closedAndAllocated);
+		final int allocationId = allocBefore.getM_Delivery_Planning_Alloc_ID();
+		final int packageId = allocBefore.getM_ShippingPackage_ID();
+
+		assertThatThrownBy(() -> deliveryPlanningService.removeFrom(selectionOf(closedAndAllocated)))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining(DeliveryPlanningService.MSG_M_Delivery_Planning_ClosedPlannings.toAD_Message());
+
+		final I_M_Delivery_Planning untouched = reload(closedAndAllocated);
+		assertThat(untouched.isClosed()).isTrue();
+		assertThat(untouched.getM_ShipperTransportation_ID())
+				.as("still on its instruction - the refusal changed nothing")
+				.isEqualTo(deliveryInstructionId.getRepoId());
+		assertThat(shippingPackageIsActive(packageId)).as("its shipping package is still live").isTrue();
+		assertThat(InterfaceWrapperHelper.load(allocationId, I_M_Delivery_Planning_Alloc.class).isActive())
+				.as("its allocation is still active")
+				.isTrue();
+	}
+
+	@Test
+	@DisplayName("remove-from succeeds again once the planning is RE-OPENED - the sequence the refusal points at")
+	void removeFromSucceedsAfterReOpeningTheClosedPlanning()
+	{
+		final ShipperTransportationId deliveryInstructionId = draftDeliveryInstruction("SHARED-6");
+		final I_M_Delivery_Planning planning = deliveryPlanning();
+		planning.setIsClosed(true);
+		InterfaceWrapperHelper.save(planning);
+		allocateTo(deliveryInstructionId, planning);
+		final int packageId = allocationOf(planning).getM_ShippingPackage_ID();
+
+		// re-opening is always allowed, whatever the allocation and whatever the instruction's status
+		planning.setIsClosed(false);
+		InterfaceWrapperHelper.save(planning);
+
+		deliveryPlanningService.removeFrom(selectionOf(planning));
+
+		final I_M_Delivery_Planning removed = reload(planning);
+		assertThat(removed.getReleaseNo()).isNull();
+		assertThat(removed.getM_ShipperTransportation_ID()).isLessThanOrEqualTo(0);
+		assertThat(shippingPackageIsActive(packageId)).as("deactivated, not deleted").isFalse();
+		assertNoOrphanedShippingPackages();
+	}
+
+	@Test
+	@DisplayName("void unlinks only the just-deactivated allocation's own package - an earlier removal's retired package keeps its order-line link")
+	void voidDoesNotWipeAnEarlierRemovedPlanningsOrderLineLink()
+	{
+		final ShipperTransportationId deliveryInstructionId = draftDeliveryInstruction("SHARED-9");
+
+		// P1: allocated, then removed from the still-DRAFT instruction. Removal deactivates rather than deletes, so
+		// the retired package survives, still carrying this instruction's id AND its order-line link
+		final I_M_Delivery_Planning removedEarlier = deliveryPlanning();
+		final OrderLineId removedEarlierOrderLineId = OrderLineId.ofRepoId(540100);
+		allocateToWithOrderLine(deliveryInstructionId, removedEarlierOrderLineId, removedEarlier);
+		final int removedEarlierPackageId = allocationOf(removedEarlier).getM_ShippingPackage_ID();
+
+		deliveryPlanningService.removeFrom(selectionOf(removedEarlier));
+		assertThat(shippingPackageIsActive(removedEarlierPackageId)).isFalse();
+		assertThat(InterfaceWrapperHelper.load(removedEarlierPackageId, I_M_ShippingPackage.class).getC_OrderLine_ID())
+				.as("removal deactivates the package - it must not touch the order-line link")
+				.isEqualTo(removedEarlierOrderLineId.getRepoId());
+
+		// P2: allocated to the SAME instruction afterwards
+		final I_M_Delivery_Planning laterAllocated = deliveryPlanning();
+		final OrderLineId laterOrderLineId = OrderLineId.ofRepoId(540101);
+		allocateToWithOrderLine(deliveryInstructionId, laterOrderLineId, laterAllocated);
+		final int laterPackageId = allocationOf(laterAllocated).getM_ShippingPackage_ID();
+
+		// the instruction is voided - unlinkDeliveryPlannings runs, exactly what the TIMING_AFTER_VOID
+		// interceptor triggers
+		deliveryPlanningService.unlinkDeliveryPlannings(deliveryInstructionId);
+
+		assertThat(InterfaceWrapperHelper.load(laterPackageId, I_M_ShippingPackage.class).getC_OrderLine_ID())
+				.as("the voided instruction's own, just-deactivated package loses its order-line link")
+				.isLessThanOrEqualTo(0);
+		assertThat(InterfaceWrapperHelper.load(removedEarlierPackageId, I_M_ShippingPackage.class).getC_OrderLine_ID())
+				.as("P1 has nothing to do with this void - its retired package's order-line link must survive")
+				.isEqualTo(removedEarlierOrderLineId.getRepoId());
+	}
+}

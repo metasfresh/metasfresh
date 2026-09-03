@@ -22,25 +22,23 @@ package de.metas.handlingunits.attribute.spi.impl;
  * #L%
  */
 
-import java.util.Properties;
-
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_AttributeInstance;
-import org.compiere.model.I_M_AttributeSetInstance;
-
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.attribute.spi.IHUTrxAttributeProcessor;
 import de.metas.handlingunits.model.I_M_HU_Trx_Attribute;
 import de.metas.util.Services;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_AttributeInstance;
+import org.compiere.model.I_M_AttributeSetInstance;
+
+import java.util.Properties;
 
 /**
  * Process an {@link I_M_HU_Trx_Attribute} for an {@link I_M_AttributeSetInstance}.
  *
  * @author tsa
- *
  */
 public class HUTrxAttributeProcessor_ASI implements IHUTrxAttributeProcessor
 {
@@ -48,8 +46,7 @@ public class HUTrxAttributeProcessor_ASI implements IHUTrxAttributeProcessor
 	@Override
 	public void processSave(final IHUContext huContext, final I_M_HU_Trx_Attribute huTrxAttribute, final Object referencedModel)
 	{
-		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-
+		final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 
 		final I_M_AttributeSetInstance asi = InterfaceWrapperHelper.create(referencedModel, I_M_AttributeSetInstance.class); // not 100% sure that referencedModel and thus asi aren't null
 
@@ -57,7 +54,7 @@ public class HUTrxAttributeProcessor_ASI implements IHUTrxAttributeProcessor
 		final AttributeId attributeId = AttributeId.ofRepoId(huTrxAttribute.getM_Attribute_ID());
 
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(asi == null ? -1 : asi.getM_AttributeSetInstance_ID());
-		I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asiId, attributeId);
+		I_M_AttributeInstance ai = asiBL.getAttributeInstance(asiId, attributeId);
 		if (ai == null)
 		{
 			// throw new AdempiereException("No attribute instance was found."
@@ -65,7 +62,7 @@ public class HUTrxAttributeProcessor_ASI implements IHUTrxAttributeProcessor
 			// + "\n Attribute=" + huTrxAttribute.getM_Attribute());
 
 			final Properties ctx = InterfaceWrapperHelper.getCtx(asi);
-			ai = attributeDAO.createNewAttributeInstance(ctx, asi, attributeId, trxName);
+			ai = asiBL.createNewAttributeInstance(ctx, asi, attributeId, trxName);
 		}
 
 		ai.setValueNumber(huTrxAttribute.getValueNumber());

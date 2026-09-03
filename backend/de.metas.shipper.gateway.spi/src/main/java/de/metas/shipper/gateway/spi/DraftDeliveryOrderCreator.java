@@ -2,13 +2,20 @@ package de.metas.shipper.gateway.spi;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
-import de.metas.shipping.mpackage.PackageId;
+import de.metas.inoutcandidate.CarrierGoodsTypeId;
+import de.metas.shipping.CarrierProductId;
+import de.metas.inoutcandidate.CarrierServiceId;
+import de.metas.product.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.shipping.mpackage.PackageId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -45,8 +52,9 @@ import java.util.stream.Collectors;
 
 public interface DraftDeliveryOrderCreator
 {
-	String getShipperGatewayId();
+	ShipperGatewayId getShipperGatewayId();
 
+	@NonNull
 	DeliveryOrder createDraftDeliveryOrder(CreateDraftDeliveryOrderRequest request);
 
 	@Value
@@ -58,14 +66,15 @@ public interface DraftDeliveryOrderCreator
 
 		public Set<PackageId> getPackageIds() {return packageInfos.stream().map(PackageInfo::getPackageId).collect(ImmutableSet.toImmutableSet());}
 
-		public BigDecimal getAllPackagesGrossWeightInKg(@NonNull final BigDecimal minWeightKg)
+		public BigDecimal getAllPackagesGrossWeightInKg(@NonNull final BigDecimal defaultWeightKg)
 		{
 			final BigDecimal weightInKg = packageInfos.stream()
 					.map(PackageInfo::getWeightInKg)
 					.filter(weight -> weight != null && weight.signum() > 0)
 					.reduce(BigDecimal.ZERO, BigDecimal::add);
 
-			return weightInKg.max(minWeightKg);
+			// Coalesce, never a floor: the real summed weight when any package has one, the default ONLY when none do.
+			return weightInKg.signum() > 0 ? weightInKg : defaultWeightKg;
 		}
 
 		@NonNull
@@ -87,38 +96,54 @@ public interface DraftDeliveryOrderCreator
 			@Nullable String poReference;
 			@Nullable String description;
 			@Nullable BigDecimal weightInKg;
+			@NonNull PackageDimensions packageDimension;
 
-			public BigDecimal getWeightInKgOr(BigDecimal minValue) {return weightInKg != null ? weightInKg.max(minValue) : minValue;}
+			// Coalesce, never a floor: the real weight when present, the default ONLY when it is absent (0/absent weights are stripped upstream, so null here means genuinely no weight).
+			public BigDecimal getWeightInKgOr(final BigDecimal defaultValue) {return weightInKg != null ? weightInKg : defaultValue;}
 		}
 	}
 
 	@Value
+	@EqualsAndHashCode(exclude = "carrierServices")
 	class DeliveryOrderKey
 	{
-		ShipperId shipperId;
-		ShipperTransportationId shipperTransportationId;
+		@NonNull ShipperId shipperId;
+		@NonNull ShipperTransportationId shipperTransportationId;
 		int fromOrgId;
 		int deliverToBPartnerId;
 		int deliverToBPartnerLocationId;
-		LocalDate pickupDate;
-		LocalTime timeFrom;
-		LocalTime timeTo;
+		@Nullable UserId deliverContactId;
+		@NonNull LocalDate pickupDate;
+		@NonNull LocalTime timeFrom;
+		@NonNull LocalTime timeTo;
+		@Nullable CarrierProductId carrierProductId;
+		@Nullable CarrierGoodsTypeId carrierGoodsTypeId;
+		@Nullable Set<CarrierServiceId> carrierServices;
 		AsyncBatchId asyncBatchId;
+		/**
+		 * When set, this key is unique per package, i.e. one delivery order per package. Used when the carrier is
+		 * resolved by nShift at ship time (selection rules ON, non-manual): the final per-package carrier is not known
+		 * at grouping time, so packages must not be grouped under a preliminary carrier.
+		 */
+		@Nullable PackageId packageId;
 
 		@Builder
 		public DeliveryOrderKey(
-				final ShipperId shipperId,
-				final ShipperTransportationId shipperTransportationId,
+				@NonNull final ShipperId shipperId,
+				@NonNull final ShipperTransportationId shipperTransportationId,
 				final int fromOrgId,
 				final int deliverToBPartnerId,
 				final int deliverToBPartnerLocationId,
+				@Nullable final UserId deliverToContactId,
 				@NonNull final LocalDate pickupDate,
 				@NonNull final LocalTime timeFrom,
 				@NonNull final LocalTime timeTo,
-				@Nullable final AsyncBatchId asyncBatchId)
+				@Nullable final CarrierProductId carrierProductId,
+				@Nullable final CarrierGoodsTypeId carrierGoodsTypeId,
+				@Nullable final Set<CarrierServiceId> carrierServices,
+				@Nullable final AsyncBatchId asyncBatchId,
+				@Nullable final PackageId packageId)
 		{
-			Check.assume(shipperId != null, "shipperId != null");
-			Check.assume(shipperTransportationId != null, "shipperTransportationId != null");
 			Check.assume(fromOrgId > 0, "fromOrgId > 0");
 			Check.assume(deliverToBPartnerId > 0, "deliverToBPartnerId > 0");
 			Check.assume(deliverToBPartnerLocationId > 0, "deliverToBPartnerLocationId > 0");
@@ -128,11 +153,16 @@ public interface DraftDeliveryOrderCreator
 			this.fromOrgId = fromOrgId;
 			this.deliverToBPartnerId = deliverToBPartnerId;
 			this.deliverToBPartnerLocationId = deliverToBPartnerLocationId;
+			this.deliverContactId = deliverToContactId;
 			this.pickupDate = pickupDate;
 			this.timeFrom = timeFrom;
 			this.timeTo = timeTo;
+			this.carrierProductId = carrierProductId;
+			this.carrierGoodsTypeId = carrierGoodsTypeId;
+			this.carrierServices = carrierServices;
 
 			this.asyncBatchId = asyncBatchId;
+			this.packageId = packageId;
 		}
 	}
 }

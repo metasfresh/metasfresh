@@ -1,26 +1,258 @@
+// Single stylesheet for the whole BarcodeScannerComponent subtree:
+//   - Root container (.barcode-scanner)
+//   - Per-mode panels (.hardware-mode-panel, .camera-mode-panel, .manual-mode-panel)
+//   - Footer (.barcode-scanner-footer)
+//   - Shared button class (.barcode-scanner-btn) used by footer buttons AND manual submit
+//   - Shared input bases (.input-text, .input-text-offscreen)
+// Imported globally via assets/index.scss; no local scss imports in the panel JSX files.
+
+// ---- Pixel-perfect layout constants ----
+// Two panel heights — sized to each mode's content so each panel is visually tight, not
+// padded out for inter-mode symmetry. Mode-switch jumps the bottom of the component up/down
+// by the height delta — acceptable; the buttons themselves never move within a given mode.
+//   - HARDWARE / CAMERA: just-fits the pulsing barcode icon + the one-line caption.
+//   - MANUAL: taller, with empty space at the bottom for the mobile virtual keyboard
+//             (input + Submit + back-to-scanner anchor at the TOP, not the bottom).
+$panel-height-scanner: 12rem;   // HARDWARE + CAMERA
+$panel-height-manual:  16rem;   // MANUAL — bottom area reserved for the soft keyboard
+$panel-padding-x: 1rem;   // horizontal margins for all panel content (manual input, submit)
+$btn-gap: 0.5rem;         // vertical gap between stacked buttons (footer + manual submit↔footer)
+// EXACT button height in rem so all panel/footer arithmetic stays single-unit (Sass refuses
+// to add px + rem). 3rem = 48px at the default 16px base — meets the touch-target floor for
+// gloved-hand warehouse use and guarantees pixel-identical buttons across panels.
+$btn-height: 3rem;
+
+// Maximum buttons the footer can show in HARDWARE/CAMERA (toggle + enter-manually). In
+// MANUAL the footer renders null entirely (the back-to-scanner button lives inside
+// ManualModePanel — see BarcodeScannerFooter.jsx). We still reserve the max-slot height in
+// HARDWARE/CAMERA so toggling between those two modes (1 button each ↔ 2 buttons depending
+// on which other mode is enabled) does not jump the footer.
+$footer-button-slots: 2;
+$footer-padding-y-top: $btn-gap;
+$footer-padding-y-bottom: 1rem;
+$footer-height: $btn-height * $footer-button-slots + $btn-gap * ($footer-button-slots - 1) +
+                $footer-padding-y-top + $footer-padding-y-bottom;
+
 .barcode-scanner {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 
-  video {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    z-index: 0;
+  // Shared button class — applied to every clickable in the scanner (footer toggle,
+  // footer back-to-scanner, footer enter-manually, manual Submit). All use ButtonWithIndicator
+  // (is-fullwidth + is-outlined + complete-btn) so they already share font/colour/border;
+  // this class adds the touch-target floor. Containers around them (.barcode-scanner-footer
+  // and .manual-mode-panel) both apply the same horizontal padding so the buttons sit at
+  // identical x-positions across all modes — visually one continuous button cluster.
+  // EXACT height (not min-height) — overrides Bulma's `.button { height: 2.5em }` and the
+  // ButtonWithIndicator inner `.full-size-btn { height: 2.5em }` so every button rendered
+  // in the scanner is pixel-identical (Submit ≡ footer back-to-scanner ≡ footer toggle).
+  .barcode-scanner-btn,
+  .barcode-scanner-btn .full-size-btn {
+    height: $btn-height;
+    min-height: $btn-height;
   }
 
+  // Base style for any text input inside the scanner subtree (manual + offscreen).
+  // Specific panels override font-size / text-align via their own modifier classes.
   .input-text {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    right: 10px;
+    margin: 10px;
+    padding: 8px 12px;
     font-size: 2em;
-    z-index: 1;
-    opacity: 0.8;
     text-align: center;
+    border: 2px solid $grey-lighter;
+    border-radius: 4px;
+    width: calc(100% - 20px);
+
+    &:focus {
+      border-color: $base-mf-green;
+      outline: none;
+    }
   }
 
-  .loading {
+  // Visually hidden but focusable input for background barcode scanning. Used by both:
+  //   - HardwareModePanel (visible mode): captures DataWedge IME / keystroke-wedge input
+  //   - HardwareModePanel rendered with invisible=true in MANUAL/CAMERA modes: stays mounted
+  //     so DataWedge's Android InputConnection survives the mode switch (re-handshake on
+  //     every remount can drop the first scan after switching back to HARDWARE)
+  // Must NOT use type="hidden" or display:none — those break Android InputConnection. (me03#28834)
+  .input-text-offscreen {
     position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    overflow: hidden;
+    pointer-events: none;
+    margin: 0;
+    padding: 0;
+    border: none;
+  }
+
+  // ---- Panel heights: per-mode, sized to each mode's content ----
+  // Hardware panel uses min-height so the caption stays visible when font-rendering / line-height
+  // (mobile Android, custom font-scale) makes the icon's box taller than expected. Camera and
+  // manual panels stay fixed-height because their content has a defined slot (video, input+buttons).
+  .hardware-mode-panel.scan-prompt {
+    min-height: $panel-height-scanner;
+  }
+  .camera-mode-panel {
+    height: $panel-height-scanner;
+    overflow: hidden;
+  }
+  .manual-mode-panel {
+    height: $panel-height-manual;
+    overflow: hidden;
+  }
+
+  // === HardwareModePanel — visible mode ===
+  // Large pulsing barcode icon + caption. The off-screen <input> is also a child but
+  // contributes no visible layout (position: absolute).
+  .hardware-mode-panel.scan-prompt {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: $grey;
+
+    .scan-prompt-icon {
+      font-size: 6rem;
+      margin-bottom: 1rem;
+      color: $base-mf-green;
+
+      // Slow opacity pulse — signals "ready / waiting for scan" without competing with the
+      // hardware scanner input. Opacity-only (not scale/rotation) so the icon doesn't read
+      // as a loading spinner. Respects the user's reduced-motion preference (accessibility).
+      @media (prefers-reduced-motion: no-preference) {
+        animation: scan-prompt-pulse 1.4s ease-in-out infinite alternate;
+      }
+    }
+
+    .scan-prompt-text {
+      font-size: 1.5em;
+      text-align: center;
+      line-height: 1.3;
+      // One-line caption — never wrap. Wrapping would inflate panel height and push the
+      // footer down on long translations. text-overflow: ellipsis is the graceful-degrade
+      // fallback for an unexpectedly long string on a narrow viewport; current EN/DE
+      // translations ("Scan barcode" / "Barcode scannen") sit well within the 360px width.
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+
+      // Caption swap: .scan-prompt-text-idle shown by default; .scan-prompt-text-progress
+      // takes its place while the input has content (see :has() rule below). Same DOM slot,
+      // no layout shift on the transition.
+      .scan-prompt-text-progress {
+        display: none;
+      }
+    }
+  }
+
+  // In-progress scan signal — when the off-screen hardware input has content (i.e. the
+  // useKeyboardBarcodeReader hook is mid-burst, chars accumulating), switch the icon to a
+  // yellow "scanning" hue and double the pulse rate. CSS-only — :placeholder-shown evaluates
+  // against the input's current `value`, including imperative `inputTextRef.current.value`
+  // writes from the hook's onReadInProgress. When the buffer is cleared on scan completion
+  // the input falls back to placeholder-shown ⇒ icon returns to the idle green/slow pulse.
+  .hardware-mode-panel.scan-prompt:has(.input-text:not(:placeholder-shown)) {
+    .scan-prompt-icon {
+      // Darker amber — $indicator-yellow (#ffd500) on white is 1.42:1, fails WCAG AA and
+      // is effectively invisible on a white scanner background. #c8900a is ~4.1:1, passes
+      // large-text AA. Global $indicator-yellow is kept for other components that use it
+      // against darker backgrounds (buttons.scss).
+      color: #c8900a;
+
+      @media (prefers-reduced-motion: no-preference) {
+        // Floored at 0.3s — at smaller durations the alternate-pulse crest rate approaches
+        // the WCAG 2.3.1 3Hz photosensitivity threshold (~0.17s duration). Smooth ease-in-out
+        // keeps the transition non-abrupt, but stay conservative.
+        animation-duration: 0.3s;
+      }
+    }
+
+    .scan-prompt-text-idle {
+      display: none;
+    }
+    .scan-prompt-text-progress {
+      display: inline;
+    }
+  }
+
+  // === CameraModePanel ===
+  // <video> fills the fixed-height slot. overflow: hidden on the shared rule above caps the
+  // intrinsic-aspect-ratio video to the panel box.
+  .camera-mode-panel {
+    video {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      z-index: 0;
+      object-fit: cover;     // crop, don't letterbox — the scanner only needs the centre
+    }
+  }
+
+  // === ManualModePanel ===
+  // Visible editable text field stacked above the submit button. Both are ANCHORED AT THE
+  // TOP of the fixed-height panel so the mobile virtual keyboard, which slides up from the
+  // bottom edge of the viewport, does not overlap them. Empty space sits BELOW the submit
+  // button — that empty area is where the keyboard appears on focus. Horizontal padding
+  // matches .barcode-scanner-footer's so the submit and the back-to-scanner button still
+  // line up exactly on the x-axis. (Footer is below the empty space and may be covered by
+  // the keyboard while typing — acceptable: the user is committed to a manual submit at
+  // that moment; mode-switching is a less common action that requires dismissing the
+  // keyboard first.)
+  .manual-mode-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding: $panel-padding-x $panel-padding-x 0;
+    gap: $btn-gap;
+
+    .manual-input {
+      // Override .input-text's font-size for the manual context — comfortable typing size,
+      // not the oversized scan-display size used by the offscreen hardware input.
+      font-size: 1.25em;
+      text-align: left;
+      // Override .input-text's outer margin (which assumed the input was a top-level child
+      // of .barcode-scanner). Here the panel owns the horizontal padding instead.
+      margin: 0;
+      width: 100%;
+    }
+  }
+
+  // === BarcodeScannerFooter ===
+  // Vertical button stack, rendered ONLY in HARDWARE / CAMERA (in MANUAL the footer returns
+  // null — see BarcodeScannerFooter.jsx). Same horizontal padding as .manual-mode-panel so
+  // a future inter-mode visual continuity check (HARDWARE footer ↔ MANUAL panel buttons)
+  // keeps button x-positions consistent.
+  //
+  // FIXED height — reserves space for $footer-button-slots buttons regardless of how many
+  // are actually shown in the current scanner mode. Without it, e.g. HARDWARE with one mode
+  // enabled (toggle hidden, only enter-manually) vs HARDWARE with both enabled (toggle +
+  // enter-manually) would change footer height and jump the bottom of the component.
+  // `justify-content: flex-start` stacks the visible buttons at the top of the reserved
+  // area; modes with fewer buttons leave empty space below them.
+  .barcode-scanner-footer {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: $btn-gap;
+    padding: $footer-padding-y-top $panel-padding-x $footer-padding-y-bottom;
+    height: $footer-height;
+  }
+
+  // === Spinner overlay ===
+  // Center on the VIEWPORT (position: fixed — same as the global .loading rule in
+  // spinner.scss), not within .barcode-scanner. When isProcessing=true the visible parts
+  // shrink so .barcode-scanner is a short container; if the spinner were absolute-positioned
+  // to that short container its centre would land in the upper portion of the screen,
+  // partially behind the top green bar.
+  .loading {
+    position: fixed;
     z-index: 999;
     top: 0;
     left: 0;
@@ -41,5 +273,14 @@
     .input-text {
       font-size: 1em;
     }
+  }
+}
+
+@keyframes scan-prompt-pulse {
+  from {
+    opacity: 0.25;
+  }
+  to {
+    opacity: 1;
   }
 }

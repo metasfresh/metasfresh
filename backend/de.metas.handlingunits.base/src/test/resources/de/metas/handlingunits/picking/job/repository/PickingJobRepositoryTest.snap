@@ -6,6 +6,7 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
       "aggregationType": "sales_order",
       "allowPickingAnyHU": false,
       "anonymousPickHUsOnTheFly": false,
+      "carrierAdviseReadOnly": false,
       "customerName": "bpname-3",
       "deliveryBPLocationId": {
         "bpartnerId": 3,
@@ -21,7 +22,9 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
       "isAllowPickingAnyHU": false,
       "isAnonymousPickHUsOnTheFly": false,
       "isDisplayPickingSlotSuggestions": false,
+      "isPickingSlotRequired": true,
       "lockedBy": 5,
+      "pickingSlotRequired": true,
       "preparationDate": "2021-11-02T07:39:16Z",
       "salesOrderDocumentNo": "docno-2"
     },
@@ -29,12 +32,15 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
     "lines": [
       {
         "caption": "productName-6",
+        "carrierAdviseReadOnly": false,
+        "carrierServices": [ ],
         "currentPickingTarget": { },
         "deliveryBPLocationId": {
           "bpartnerId": 3,
           "repoId": 4
         },
         "id": 1000000,
+        "isManual": false,
         "isManuallyClosed": false,
         "orderLineSeqNo": 0,
         "packingInfo": {
@@ -49,19 +55,19 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
         "pickingUnit": "CU",
         "productCategoryId": 1,
         "productId": 6,
-        "productName": "productName-6",
         "productNo": "productNo-6",
+        "productValueAndName": {
+          "name": "productName-6",
+          "value": "productValue-6"
+        },
         "progress": "NOT_STARTED",
         "qtyPicked": "0 Ea",
         "qtyRejected": "0 Ea",
         "qtyRemainingToPick": "100 Ea",
         "qtyToPick": "100 Ea",
-        "salesOrderAndLineId": {
-          "orderId": 2,
-          "orderLineId": 8
-        },
+        "salesOrderAndLineId": "2_8",
         "salesOrderDocumentNo": "docno-2",
-        "shipmentScheduleId": 7,
+        "scheduleId": "7",
         "steps": [
           {
             "id": 1000000,
@@ -123,14 +129,14 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
               "progress": "NOT_STARTED"
             },
             "productId": 6,
-            "productName": "productName-6",
+            "productValueAndName": {
+              "name": "productName-6",
+              "value": "productValue-6"
+            },
             "progress": "NOT_STARTED",
             "qtyToPick": "100 Ea",
-            "salesOrderAndLineId": {
-              "orderId": 2,
-              "orderLineId": 8
-            },
-            "shipmentScheduleId": 7
+            "salesOrderAndLineId": "2_8",
+            "scheduleId": "7"
           }
         ]
       }

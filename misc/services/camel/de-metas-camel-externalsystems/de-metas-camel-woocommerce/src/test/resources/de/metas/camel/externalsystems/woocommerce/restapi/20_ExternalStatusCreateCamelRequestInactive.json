@@ -1,5 +1,5 @@
 {
-  "externalSystemConfigType": "WOO",
+  "externalSystemConfigType": "WooCommerce",
   "externalSystemChildConfigValue": "childValue",
   "serviceValue": "defaultRestAPIWOO",
   "jsonStatusRequest": {

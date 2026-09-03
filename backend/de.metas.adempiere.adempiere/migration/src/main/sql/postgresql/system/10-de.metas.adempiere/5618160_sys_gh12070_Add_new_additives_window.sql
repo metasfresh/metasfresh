@@ -99,6 +99,9 @@ DELETE FROM AD_Element_Link WHERE AD_Window_ID=541358
 DELETE FROM  AD_Window_Trl WHERE AD_Window_ID=541358
 ;
 
+--- avoid
+delete from ad_window_access WHERE AD_Window_ID=541358;
+
 -- 2021-12-09T14:35:44.140Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Window WHERE AD_Window_ID=541358

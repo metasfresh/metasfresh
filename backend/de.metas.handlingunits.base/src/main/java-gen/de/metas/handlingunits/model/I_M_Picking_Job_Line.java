@@ -52,6 +52,48 @@ public interface I_M_Picking_Job_Line
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Carrier Material Assignment.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCarrier_Goods_Type_ID (int Carrier_Goods_Type_ID);
+
+	/**
+	 * Get Carrier Material Assignment.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCarrier_Goods_Type_ID();
+
+	ModelColumn<I_M_Picking_Job_Line, org.compiere.model.I_Carrier_Goods_Type> COLUMN_Carrier_Goods_Type_ID = new ModelColumn<>(I_M_Picking_Job_Line.class, "Carrier_Goods_Type_ID", org.compiere.model.I_Carrier_Goods_Type.class);
+	String COLUMNNAME_Carrier_Goods_Type_ID = "Carrier_Goods_Type_ID";
+
+	/**
+	 * Set Carrier Product.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCarrier_Product_ID (int Carrier_Product_ID);
+
+	/**
+	 * Get Carrier Product.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCarrier_Product_ID();
+
+	ModelColumn<I_M_Picking_Job_Line, org.compiere.model.I_Carrier_Product> COLUMN_Carrier_Product_ID = new ModelColumn<>(I_M_Picking_Job_Line.class, "Carrier_Product_ID", org.compiere.model.I_Carrier_Product.class);
+	String COLUMNNAME_Carrier_Product_ID = "Carrier_Product_ID";
+
+	/**
 	 * Set Catch UOM.
 	 * Catch weight UOM as taken from the product master data.
 	 *
@@ -135,10 +177,6 @@ public interface I_M_Picking_Job_Line
 	 */
 	int getC_Order_ID();
 
-	org.compiere.model.I_C_Order getC_Order();
-
-	void setC_Order(org.compiere.model.I_C_Order C_Order);
-
 	ModelColumn<I_M_Picking_Job_Line, org.compiere.model.I_C_Order> COLUMN_C_Order_ID = new ModelColumn<>(I_M_Picking_Job_Line.class, "C_Order_ID", org.compiere.model.I_C_Order.class);
 	String COLUMNNAME_C_Order_ID = "C_Order_ID";
 
@@ -159,10 +197,6 @@ public interface I_M_Picking_Job_Line
 	 * <br>Virtual Column: false
 	 */
 	int getC_OrderLine_ID();
-
-	org.compiere.model.I_C_OrderLine getC_OrderLine();
-
-	void setC_OrderLine(org.compiere.model.I_C_OrderLine C_OrderLine);
 
 	ModelColumn<I_M_Picking_Job_Line, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_ID = new ModelColumn<>(I_M_Picking_Job_Line.class, "C_OrderLine_ID", org.compiere.model.I_C_OrderLine.class);
 	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
@@ -232,10 +266,6 @@ public interface I_M_Picking_Job_Line
 	 */
 	int getCurrent_PickTo_LU_ID();
 
-	@Nullable de.metas.handlingunits.model.I_M_HU getCurrent_PickTo_LU();
-
-	void setCurrent_PickTo_LU(@Nullable de.metas.handlingunits.model.I_M_HU Current_PickTo_LU);
-
 	ModelColumn<I_M_Picking_Job_Line, de.metas.handlingunits.model.I_M_HU> COLUMN_Current_PickTo_LU_ID = new ModelColumn<>(I_M_Picking_Job_Line.class, "Current_PickTo_LU_ID", de.metas.handlingunits.model.I_M_HU.class);
 	String COLUMNNAME_Current_PickTo_LU_ID = "Current_PickTo_LU_ID";
 
@@ -256,10 +286,6 @@ public interface I_M_Picking_Job_Line
 	 * <br>Virtual Column: false
 	 */
 	int getCurrent_PickTo_LU_PI_ID();
-
-	@Nullable de.metas.handlingunits.model.I_M_HU_PI getCurrent_PickTo_LU_PI();
-
-	void setCurrent_PickTo_LU_PI(@Nullable de.metas.handlingunits.model.I_M_HU_PI Current_PickTo_LU_PI);
 
 	ModelColumn<I_M_Picking_Job_Line, de.metas.handlingunits.model.I_M_HU_PI> COLUMN_Current_PickTo_LU_PI_ID = new ModelColumn<>(I_M_Picking_Job_Line.class, "Current_PickTo_LU_PI_ID", de.metas.handlingunits.model.I_M_HU_PI.class);
 	String COLUMNNAME_Current_PickTo_LU_PI_ID = "Current_PickTo_LU_PI_ID";
@@ -286,6 +312,48 @@ public interface I_M_Picking_Job_Line
 	String COLUMNNAME_Current_PickTo_LU_QRCode = "Current_PickTo_LU_QRCode";
 
 	/**
+	 * Set Current Pick To TU GRAI.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCurrent_PickTo_TU_GRAI (@Nullable java.lang.String Current_PickTo_TU_GRAI);
+
+	/**
+	 * Get Current Pick To TU GRAI.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCurrent_PickTo_TU_GRAI();
+
+	ModelColumn<I_M_Picking_Job_Line, Object> COLUMN_Current_PickTo_TU_GRAI = new ModelColumn<>(I_M_Picking_Job_Line.class, "Current_PickTo_TU_GRAI", null);
+	String COLUMNNAME_Current_PickTo_TU_GRAI = "Current_PickTo_TU_GRAI";
+
+	/**
+	 * Set Current Pick To TU.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCurrent_PickTo_TU_ID (int Current_PickTo_TU_ID);
+
+	/**
+	 * Get Current Pick To TU.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCurrent_PickTo_TU_ID();
+
+	ModelColumn<I_M_Picking_Job_Line, de.metas.handlingunits.model.I_M_HU> COLUMN_Current_PickTo_TU_ID = new ModelColumn<>(I_M_Picking_Job_Line.class, "Current_PickTo_TU_ID", de.metas.handlingunits.model.I_M_HU.class);
+	String COLUMNNAME_Current_PickTo_TU_ID = "Current_PickTo_TU_ID";
+
+	/**
 	 * Set Current Pick To TU PI.
 	 *
 	 * <br>Type: Search
@@ -303,12 +371,29 @@ public interface I_M_Picking_Job_Line
 	 */
 	int getCurrent_PickTo_TU_PI_ID();
 
-	@Nullable de.metas.handlingunits.model.I_M_HU_PI getCurrent_PickTo_TU_PI();
-
-	void setCurrent_PickTo_TU_PI(@Nullable de.metas.handlingunits.model.I_M_HU_PI Current_PickTo_TU_PI);
-
 	ModelColumn<I_M_Picking_Job_Line, de.metas.handlingunits.model.I_M_HU_PI> COLUMN_Current_PickTo_TU_PI_ID = new ModelColumn<>(I_M_Picking_Job_Line.class, "Current_PickTo_TU_PI_ID", de.metas.handlingunits.model.I_M_HU_PI.class);
 	String COLUMNNAME_Current_PickTo_TU_PI_ID = "Current_PickTo_TU_PI_ID";
+
+	/**
+	 * Set Current Pick To TU QR Code.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCurrent_PickTo_TU_QRCode (@Nullable java.lang.String Current_PickTo_TU_QRCode);
+
+	/**
+	 * Get Current Pick To TU QR Code.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCurrent_PickTo_TU_QRCode();
+
+	ModelColumn<I_M_Picking_Job_Line, Object> COLUMN_Current_PickTo_TU_QRCode = new ModelColumn<>(I_M_Picking_Job_Line.class, "Current_PickTo_TU_QRCode", null);
+	String COLUMNNAME_Current_PickTo_TU_QRCode = "Current_PickTo_TU_QRCode";
 
 	/**
 	 * Set Active.
@@ -332,6 +417,48 @@ public interface I_M_Picking_Job_Line
 
 	ModelColumn<I_M_Picking_Job_Line, Object> COLUMN_IsActive = new ModelColumn<>(I_M_Picking_Job_Line.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Carrier Advise Manual.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsCarrierAdviseManual (boolean IsCarrierAdviseManual);
+
+	/**
+	 * Get Carrier Advise Manual.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isCarrierAdviseManual();
+
+	ModelColumn<I_M_Picking_Job_Line, Object> COLUMN_IsCarrierAdviseManual = new ModelColumn<>(I_M_Picking_Job_Line.class, "IsCarrierAdviseManual", null);
+	String COLUMNNAME_IsCarrierAdviseManual = "IsCarrierAdviseManual";
+
+	/**
+	 * Set Carrier Advise Read-Only.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsCarrierAdviseReadOnly (boolean IsCarrierAdviseReadOnly);
+
+	/**
+	 * Get Carrier Advise Read-Only.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isCarrierAdviseReadOnly();
+
+	ModelColumn<I_M_Picking_Job_Line, Object> COLUMN_IsCarrierAdviseReadOnly = new ModelColumn<>(I_M_Picking_Job_Line.class, "IsCarrierAdviseReadOnly", null);
+	String COLUMNNAME_IsCarrierAdviseReadOnly = "IsCarrierAdviseReadOnly";
 
 	/**
 	 * Set Manually closed.
@@ -392,10 +519,6 @@ public interface I_M_Picking_Job_Line
 	 */
 	int getM_Picking_Job_ID();
 
-	de.metas.handlingunits.model.I_M_Picking_Job getM_Picking_Job();
-
-	void setM_Picking_Job(de.metas.handlingunits.model.I_M_Picking_Job M_Picking_Job);
-
 	ModelColumn<I_M_Picking_Job_Line, de.metas.handlingunits.model.I_M_Picking_Job> COLUMN_M_Picking_Job_ID = new ModelColumn<>(I_M_Picking_Job_Line.class, "M_Picking_Job_ID", de.metas.handlingunits.model.I_M_Picking_Job.class);
 	String COLUMNNAME_M_Picking_Job_ID = "M_Picking_Job_ID";
 
@@ -419,6 +542,27 @@ public interface I_M_Picking_Job_Line
 
 	ModelColumn<I_M_Picking_Job_Line, Object> COLUMN_M_Picking_Job_Line_ID = new ModelColumn<>(I_M_Picking_Job_Line.class, "M_Picking_Job_Line_ID", null);
 	String COLUMNNAME_M_Picking_Job_Line_ID = "M_Picking_Job_Line_ID";
+
+	/**
+	 * Set Picking Job Schedule.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Picking_Job_Schedule_ID (int M_Picking_Job_Schedule_ID);
+
+	/**
+	 * Get Picking Job Schedule.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Picking_Job_Schedule_ID();
+
+	ModelColumn<I_M_Picking_Job_Line, Object> COLUMN_M_Picking_Job_Schedule_ID = new ModelColumn<>(I_M_Picking_Job_Line.class, "M_Picking_Job_Schedule_ID", null);
+	String COLUMNNAME_M_Picking_Job_Schedule_ID = "M_Picking_Job_Schedule_ID";
 
 	/**
 	 * Set Picking Slot.
@@ -503,10 +647,6 @@ public interface I_M_Picking_Job_Line
 	 * <br>Virtual Column: false
 	 */
 	int getPP_Order_ID();
-
-	@Nullable org.eevolution.model.I_PP_Order getPP_Order();
-
-	void setPP_Order(@Nullable org.eevolution.model.I_PP_Order PP_Order);
 
 	ModelColumn<I_M_Picking_Job_Line, org.eevolution.model.I_PP_Order> COLUMN_PP_Order_ID = new ModelColumn<>(I_M_Picking_Job_Line.class, "PP_Order_ID", org.eevolution.model.I_PP_Order.class);
 	String COLUMNNAME_PP_Order_ID = "PP_Order_ID";

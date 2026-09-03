@@ -69,10 +69,6 @@ public interface I_Mobile_Application_Access
 	 */
 	int getAD_Role_ID();
 
-	org.compiere.model.I_AD_Role getAD_Role();
-
-	void setAD_Role(org.compiere.model.I_AD_Role AD_Role);
-
 	ModelColumn<I_Mobile_Application_Access, org.compiere.model.I_AD_Role> COLUMN_AD_Role_ID = new ModelColumn<>(I_Mobile_Application_Access.class, "AD_Role_ID", org.compiere.model.I_AD_Role.class);
 	String COLUMNNAME_AD_Role_ID = "AD_Role_ID";
 
@@ -125,6 +121,27 @@ public interface I_Mobile_Application_Access
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Allow all Actions.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowAllActions (boolean IsAllowAllActions);
+
+	/**
+	 * Get Allow all Actions.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowAllActions();
+
+	ModelColumn<I_Mobile_Application_Access, Object> COLUMN_IsAllowAllActions = new ModelColumn<>(I_Mobile_Application_Access.class, "IsAllowAllActions", null);
+	String COLUMNNAME_IsAllowAllActions = "IsAllowAllActions";
+
+	/**
 	 * Set Mobile Application Role Access.
 	 *
 	 * <br>Type: ID
@@ -162,10 +179,6 @@ public interface I_Mobile_Application_Access
 	 * <br>Virtual Column: false
 	 */
 	int getMobile_Application_ID();
-
-	org.compiere.model.I_Mobile_Application getMobile_Application();
-
-	void setMobile_Application(org.compiere.model.I_Mobile_Application Mobile_Application);
 
 	ModelColumn<I_Mobile_Application_Access, org.compiere.model.I_Mobile_Application> COLUMN_Mobile_Application_ID = new ModelColumn<>(I_Mobile_Application_Access.class, "Mobile_Application_ID", org.compiere.model.I_Mobile_Application.class);
 	String COLUMNNAME_Mobile_Application_ID = "Mobile_Application_ID";

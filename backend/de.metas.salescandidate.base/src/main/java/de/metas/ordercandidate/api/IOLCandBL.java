@@ -1,10 +1,8 @@
-package de.metas.ordercandidate.api;
-
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.salescandidate.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package de.metas.ordercandidate.api;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.ordercandidate.api;
 
 import de.metas.async.AsyncBatchId;
 import de.metas.attachments.AttachmentEntry;
@@ -41,7 +41,10 @@ import de.metas.process.PInstanceId;
 import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.PO;
 
 import javax.annotation.Nullable;
@@ -55,10 +58,20 @@ public interface IOLCandBL extends ISingletonService
 {
 	String MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_0P = "OLCandProcessor.ProcessingError";
 
+	@Value
+	@Builder
+	class OLCandProcessRequest
+	{
+		@NonNull OLCandProcessorDescriptor processor;
+		@NonNull PInstanceId selectionId;
+		@Nullable AsyncBatchId asyncBatchId;
+		boolean propagateAsyncBatchIdToOrderRecord;
+	}
+	
 	/**
-	 * Creates and updates orders.
+	 * Creates orders from OLCands.
 	 */
-	void process(OLCandProcessorDescriptor processor, @NonNull PInstanceId selectionId, @Nullable AsyncBatchId asyncBatchId);
+	void process(@NonNull OLCandProcessRequest request);
 
 	I_C_OLCand invokeOLCandCreator(PO po, IOLCandCreator olCandCreator);
 
@@ -107,6 +120,17 @@ public interface IOLCandBL extends ISingletonService
 	ShipperId getShipperId(@Nullable BPartnerOrderParams bPartnerOrderParams, @Nullable OLCandOrderDefaults orderDefaults, @Nullable I_C_OLCand olCandRecord);
 
 	BPartnerOrderParams getBPartnerOrderParams(I_C_OLCand olCandRecord);
+
+	/**
+	 * Returns the warehouse to use for the given {@code olCand}, following this precedence:
+	 * <ol>
+	 * <li>OLCand's own {@code M_Warehouse_ID} if set</li>
+	 * <li>Buyer BP's customer picking warehouse (via {@link org.adempiere.warehouse.spi.IWarehouseAdvisor#evaluateCustomerPickingWarehouse})</li>
+	 * <li>Processor default ({@code orderDefaults.warehouseId})</li>
+	 * </ol>
+	 */
+	@Nullable
+	WarehouseId getWarehouseId(@NonNull I_C_OLCand olCand, @Nullable OLCandOrderDefaults orderDefaults);
 
 	DocTypeId getOrderDocTypeId(@Nullable OLCandOrderDefaults orderDefaults, @Nullable I_C_OLCand orderCandidateRecord);
 

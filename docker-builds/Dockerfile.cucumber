@@ -23,14 +23,14 @@ COPY backend/de.metas.cucumber/ .
 RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml \
     for attempt in 1 2 3; do \
       echo "go-offline attempt $attempt/3"; \
-      timeout -k 30 900 mvn --batch-mode de.qaware.maven:go-offline-maven-plugin:resolve-dependencies -DfailOnErrors=true \
+      timeout -k 30 900 mvn --batch-mode --no-transfer-progress de.qaware.maven:go-offline-maven-plugin:resolve-dependencies -DfailOnErrors=true \
         -Dmaven.wagon.http.connectionTimeout=30000 -Dmaven.wagon.http.readTimeout=60000 -Dmaven.wagon.http.retryHandler.count=3 \
       && break; \
       if [ "$attempt" = 3 ]; then echo "go-offline failed after 3 attempts"; exit 1; fi; \
       echo "go-offline attempt $attempt failed/timed out; retrying in 15s"; \
       sleep 15; \
     done
-RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn --batch-mode -T1C clean test-compile --offline
+RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn --batch-mode --no-transfer-progress -T1C clean test-compile --offline
 
 COPY docker-builds/mvn/settings.xml /root/.m2/
 COPY docker-builds/cucumber/compose.yml /compose.yml

@@ -27,6 +27,7 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
+import de.metas.cucumber.stepdefs.sequence.AD_Sequence_StepDefData;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.product.ProductId;
@@ -55,11 +56,11 @@ import org.eevolution.model.X_PP_Product_BOM;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.DEFAULT_ValidFrom;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.eevolution.model.I_PP_Product_BOMLine.COLUMNNAME_M_AttributeSetInstance_ID;
@@ -70,13 +71,13 @@ public class PP_Product_Bom_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private static final int DEFAULT_C_DOCTYPE_ID = 541027;
-	private static final LocalDate DEFAULT_ValidFrom = LocalDate.parse("2000-01-01");
 
 	private final M_Product_StepDefData productTable;
 	private final PP_Product_BOM_StepDefData productBOMTable;
 	private final PP_Product_BOMVersions_StepDefData productBomVersionsTable;
 	private final PP_Product_BOMLine_StepDefData productBOMLineTable;
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
+	private final AD_Sequence_StepDefData adSequenceTable;
 
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
@@ -85,7 +86,8 @@ public class PP_Product_Bom_StepDef
 			@NonNull final PP_Product_BOM_StepDefData productBOMTable,
 			@NonNull final PP_Product_BOMVersions_StepDefData productBomVersionsTable,
 			@NonNull final PP_Product_BOMLine_StepDefData productBOMLineTable,
-			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable
+			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
+			@NonNull final AD_Sequence_StepDefData adSequenceTable
 	)
 	{
 		this.productTable = productTable;
@@ -93,6 +95,7 @@ public class PP_Product_Bom_StepDef
 		this.productBomVersionsTable = productBomVersionsTable;
 		this.productBOMLineTable = productBOMLineTable;
 		this.attributeSetInstanceTable = attributeSetInstanceTable;
+		this.adSequenceTable = adSequenceTable;
 	}
 
 	@Given("metasfresh contains PP_Product_BOM")
@@ -115,6 +118,38 @@ public class PP_Product_Bom_StepDef
 		final I_PP_Product_BOM productBOM = productBOMTable.get(productBOMIdentifier);
 		productBOM.setDocAction(IDocument.ACTION_Complete);
 		documentBL.processEx(productBOM, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+	}
+
+	/**
+	 * Updates attributes of an existing PP_Product_BOM record (identified by its identifier alias).
+	 * Currently supports setting the lot-number sequence ({@code LotNo_Sequence_ID}).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>PP_Product_BOM_ID</b> — (required, identifier-ref) BOM to update<br>
+	 *   <b>OPT.LotNo_Sequence_ID</b> — (optional, identifier-ref) AD_Sequence to use for lot-number generation<br>
+	 * @cucumber.depends StepDefData: PP_Product_BOM_StepDefData, AD_Sequence_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update PP_Product_BOM:
+	 *   | PP_Product_BOM_ID | OPT.LotNo_Sequence_ID |
+	 *   | bom               | seq_provider          |
+	 * </pre>
+	 */
+	@And("update PP_Product_BOM:")
+	public void update_PP_Product_BOM(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_PP_Product_BOM bom = row.getAsIdentifier(I_PP_Product_BOM.COLUMNNAME_PP_Product_BOM_ID).lookupNotNullIn(productBOMTable);
+
+			// only persist when a supported column is actually present, to avoid a no-op UPDATE on the (just-completed) document
+			row.getAsOptionalIdentifier(I_PP_Product_BOM.COLUMNNAME_LotNo_Sequence_ID)
+					.map(id -> id.lookupNotNullIn(adSequenceTable))
+					.ifPresent(seq -> {
+						bom.setLotNo_Sequence_ID(seq.getAD_Sequence_ID());
+						saveRecord(bom);
+					});
+		});
 	}
 
 	private void createPP_Product_BOMLine(@NonNull final DataTableRow row)

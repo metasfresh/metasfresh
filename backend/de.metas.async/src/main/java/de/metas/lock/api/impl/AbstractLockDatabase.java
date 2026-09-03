@@ -1,10 +1,8 @@
-package de.metas.lock.api.impl;
-
 /*
  * #%L
  * de.metas.async
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package de.metas.lock.api.impl;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.lock.api.impl;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.lock.api.ILock;
@@ -170,11 +170,13 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 			}
 
 			//
-			// If lock could not be acquired/changed and we were asked to fail, do so
+			// If lock could not be acquired/changed, and we were asked to fail, do so
 			if (failIfAlreadyLocked && !locked)
 			{
 				// NOTE: we are checking this just to me sure, but basically, the "lockRecord" method is already throwing an exception in this case
-				throw new LockFailedException("Record was already locked: " + record)
+				throw new LockFailedException(changeLock
+						? "Record " + record + " was not locked by parent lock so we could not transfer the lock"
+						: "Record was already locked: " + record)
 						.setLockCommand(lockCommand)
 						.setRecordToLock(record);
 			}
@@ -342,14 +344,15 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 			return ImmutableList.of();
 		}
 
-		models.forEach(model -> {
+		for (final T model : models)
+		{
 			final TableRecordReference record = TableRecordReference.of(model);
 
 			if (lockRecord(lockCommand, record))
 			{
 				lockedModelsCollector.add(model);
 			}
-		});
+		}
 
 		final ImmutableList<T> lockedModels = lockedModelsCollector.build();
 

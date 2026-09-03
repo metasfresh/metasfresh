@@ -17,8 +17,9 @@ import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { postDistributionUnpickEvent } from '../../../api/distribution';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { toastError } from '../../../utils/toast';
-import UnpickDialog from '../picking/UnpickDialog';
+import UnpickTargetScanDialog from '../picking/unpick/UnpickTargetScanDialog';
 import { useMobileLocation } from '../../../hooks/useMobileLocation';
+import { useDistributionLineHeaders } from './DistributionLineScreen';
 
 const HIDE_UNDO_BUTTONS = true; // hide them because they are not working
 
@@ -40,28 +41,36 @@ const DistributionStepScreen = () => {
     droppedToLocator: isDroppedToLocator,
   } = useSelector((state) => getStepById(state, wfProcessId, activityId, lineId, stepId));
 
+  const lineHeaders = useDistributionLineHeaders({ wfProcessId, activityId, lineId });
+
   const dispatch = useDispatch();
   const { history } = useScreenDefinition({
     screenId: 'DistributionStepScreen',
     back: distributionLineScreenLocation,
     values: [
+      ...lineHeaders,
       {
-        caption: trl('general.Locator'),
+        id: 'LocatorFrom', // shall match the de.metas.distribution.mobileui.config.DistributionJobCaptionField#getCode
+        caption: trl('general.LocatorFrom'),
         value: pickFromLocator.caption,
       },
       {
+        id: 'LocatorTo',
         caption: trl('general.DropToLocator'),
         value: dropToLocator.caption,
       },
       {
+        id: 'Qty', // shall match the de.metas.distribution.mobileui.config.DistributionJobCaptionField#getCode
         caption: trl('general.QtyToMove'),
         value: qtyToMove + ' ' + uom,
       },
       {
+        id: 'QtyPicked',
         caption: trl('general.QtyPicked'),
         value: qtyPicked + ' ' + uom,
       },
       {
+        id: 'PickFromHU',
         caption: trl('activities.distribution.scanHU'),
         value: toQRCodeDisplayable(pickFromHU.qrCode),
       },
@@ -95,10 +104,12 @@ const DistributionStepScreen = () => {
         location,
         values: [
           {
+            id: 'LocatorTo',
             caption: trl('general.DropToLocator'),
             value: dropToLocator.caption + ' (' + dropToLocator.qrCode + ')',
           },
           {
+            id: 'Qty', // shall match the de.metas.distribution.mobileui.config.DistributionJobCaptionField#getCode
             caption: trl('general.QtyToMove'),
             value: qtyToMove,
           },
@@ -127,12 +138,16 @@ const DistributionStepScreen = () => {
     : trl('activities.distribution.scanHU');
   const pickFromHUStatus = isPickedFrom ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
 
-  const dropToLocatorCaption = isDroppedToLocator ? dropToLocator.caption : trl('activities.distribution.scanLocator');
+  const dropToLocatorCaption = isDroppedToLocator
+    ? dropToLocator.caption
+    : trl('activities.distribution.scanDropToLocator');
   const dropToLocatorStatus = isDroppedToLocator ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
 
   return (
     <div className="section pt-3">
-      {showTargetHUScanner && <UnpickDialog onSubmit={onUnpick} onCloseDialog={() => setShowTargetHUScanner(false)} />}
+      {showTargetHUScanner && (
+        <UnpickTargetScanDialog onSubmit={onUnpick} onCloseDialog={() => setShowTargetHUScanner(false)} />
+      )}
       <ButtonWithIndicator
         caption={pickFromHUCaption}
         completeStatus={pickFromHUStatus}

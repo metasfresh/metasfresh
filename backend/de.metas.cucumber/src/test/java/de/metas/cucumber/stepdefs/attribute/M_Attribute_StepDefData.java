@@ -23,15 +23,23 @@
 package de.metas.cucumber.stepdefs.attribute;
 
 import de.metas.cucumber.stepdefs.StepDefData;
-import org.compiere.model.I_M_Attribute;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.Attribute;
 
 /**
  * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
  */
-public class M_Attribute_StepDefData extends StepDefData<I_M_Attribute>
+public class M_Attribute_StepDefData extends StepDefData<Attribute> implements StepDefDataGetIdAware<AttributeId, Attribute>
 {
 	public M_Attribute_StepDefData()
 	{
-		super(I_M_Attribute.class);
+		super(Attribute.class);
+	}
+
+	@Override
+	public AttributeId extractIdFromRecord(final Attribute attribute)
+	{
+		return attribute.getAttributeId();
 	}
 }

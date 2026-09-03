@@ -389,6 +389,48 @@ public interface I_I_BPartner
 	String COLUMNNAME_Birthday = "Birthday";
 
 	/**
+	 * Set Partner Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBPartnerName (@Nullable java.lang.String BPartnerName);
+
+	/**
+	 * Get Partner Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getBPartnerName();
+
+	ModelColumn<I_I_BPartner, Object> COLUMN_BPartnerName = new ModelColumn<>(I_I_BPartner.class, "BPartnerName", null);
+	String COLUMNNAME_BPartnerName = "BPartnerName";
+
+	/**
+	 * Set Name of BPartner 2.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBPartnerName2 (@Nullable java.lang.String BPartnerName2);
+
+	/**
+	 * Get Name of BPartner 2.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getBPartnerName2();
+
+	ModelColumn<I_I_BPartner, Object> COLUMN_BPartnerName2 = new ModelColumn<>(I_I_BPartner.class, "BPartnerName2", null);
+	String COLUMNNAME_BPartnerName2 = "BPartnerName2";
+
+	/**
 	 * Set BP Contact Greeting.
 	 * Greeting for Business Partner Contact
 	 *
@@ -2053,6 +2095,31 @@ public interface I_I_BPartner
 	String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
 
 	/**
+	 * Set Routingcode.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Shipper_RoutingCode_ID (int M_Shipper_RoutingCode_ID);
+
+	/**
+	 * Get Routingcode.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Shipper_RoutingCode_ID();
+
+	@Nullable org.compiere.model.I_M_Shipper_RoutingCode getM_Shipper_RoutingCode();
+
+	void setM_Shipper_RoutingCode(@Nullable org.compiere.model.I_M_Shipper_RoutingCode M_Shipper_RoutingCode);
+
+	ModelColumn<I_I_BPartner, org.compiere.model.I_M_Shipper_RoutingCode> COLUMN_M_Shipper_RoutingCode_ID = new ModelColumn<>(I_I_BPartner.class, "M_Shipper_RoutingCode_ID", org.compiere.model.I_M_Shipper_RoutingCode.class);
+	String COLUMNNAME_M_Shipper_RoutingCode_ID = "M_Shipper_RoutingCode_ID";
+
+	/**
 	 * Set NAICS/SIC.
 	 * Standard Industry Code or its successor NAIC - http://www.osha.gov/oshstats/sicser.html
 	 *
@@ -2753,6 +2820,27 @@ public interface I_I_BPartner
 
 	ModelColumn<I_I_BPartner, Object> COLUMN_ShipperName = new ModelColumn<>(I_I_BPartner.class, "ShipperName", null);
 	String COLUMNNAME_ShipperName = "ShipperName";
+
+	/**
+	 * Set Shipper - Routingcode.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setShipperRouteCodeName (@Nullable java.lang.String ShipperRouteCodeName);
+
+	/**
+	 * Get Shipper - Routingcode.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getShipperRouteCodeName();
+
+	ModelColumn<I_I_BPartner, Object> COLUMN_ShipperRouteCodeName = new ModelColumn<>(I_I_BPartner.class, "ShipperRouteCodeName", null);
+	String COLUMNNAME_ShipperRouteCodeName = "ShipperRouteCodeName";
 
 	/**
 	 * Set Short Description.

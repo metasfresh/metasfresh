@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00800
 @ghActions:run_on_executor3
 Feature: API Audit PUT http method
+## F00800: REST API
 
   Background:
     Given infrastructure and metasfresh are running
@@ -8,6 +11,9 @@ Feature: API Audit PUT http method
     And all the API audit data is reset
 
   @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00800
+  @Id:S0478_120
   Scenario: Testcase 100, normal PUT and caller waits for result
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -33,7 +39,21 @@ Feature: API Audit PUT http method
       | HttpCode | Body                                           |
       | 200      | {"messageBody":"\"test-endpoint was called\""} |
 
+    And get the API_Request_Audit_ID which was returned from the preceding API-call, insert it into the endpointPath /api/v2/audit/requests/@apiRequest@/response and store that path in context
+
+    And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
+
+    Then the metasfresh REST-API responds with
+    """
+   {
+	"messageBody": "\"test-endpoint was called\""
+  }
+"""
+    
   @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00800
+  @Id:S0478_130
   Scenario: Testcase 110, normal PUT and caller does not wait for result
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -63,7 +83,21 @@ Feature: API Audit PUT http method
       | HttpCode | Body                                           |
       | 200      | {"messageBody":"\"test-endpoint was called\""} |
 
+    And get the API_Request_Audit_ID which was returned from the preceding API-call, insert it into the endpointPath /api/v2/audit/requests/@apiRequest@/response and store that path in context
+
+    And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
+
+    Then the metasfresh REST-API responds with
+    """
+   {
+	"messageBody": "\"test-endpoint was called\""
+  }
+"""
+    
   @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00800
+  @Id:S0490_070
   Scenario: Testcase 120, failing PUT and caller waits for result
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -89,7 +123,21 @@ Feature: API Audit PUT http method
       | HttpCode | Body                                           |
       | 404      | {"messageBody":"\"test-endpoint was called\""} |
 
+    And get the API_Request_Audit_ID which was returned from the preceding API-call, insert it into the endpointPath /api/v2/audit/requests/@apiRequest@/response and store that path in context
+
+    And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '404' status code
+
+    Then the metasfresh REST-API responds with
+    """
+   {
+	"messageBody": "\"test-endpoint was called\""
+  }
+"""
+    
   @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00800
+  @Id:S0490_080
   Scenario: Testcase 130, failing PUT and caller does not wait for result
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -120,7 +168,21 @@ Feature: API Audit PUT http method
       | HttpCode | Body                                           |
       | 404      | {"messageBody":"\"test-endpoint was called\""} |
 
+    And get the API_Request_Audit_ID which was returned from the preceding API-call, insert it into the endpointPath /api/v2/audit/requests/@apiRequest@/response and store that path in context
+
+    And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '404' status code
+
+    Then the metasfresh REST-API responds with
+    """
+   {
+	"messageBody": "\"test-endpoint was called\""
+  }
+"""
+    
   @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00800
+  @Id:S0478_140
   Scenario: Testcase 140, failing PUT and replay
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -156,7 +218,20 @@ Feature: API Audit PUT http method
       | 404      | {"messageBody":"\"test-endpoint was called\""} |
       | 200      | {"messageBody":"\"test-endpoint was called\""} |
 
+    And get the API_Request_Audit_ID which was returned from the preceding API-call, insert it into the endpointPath /api/v2/audit/requests/@apiRequest@/response and store that path in context
+
+    And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
+
+    Then the metasfresh REST-API responds with
+    """
+   {
+	"messageBody": "\"test-endpoint was called\""
+  }
+"""
+    
   @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00800
   Scenario: Testcase 200, reset to initial default data
     And all the API audit data is reset
     And the following API_Audit_Config records are created:

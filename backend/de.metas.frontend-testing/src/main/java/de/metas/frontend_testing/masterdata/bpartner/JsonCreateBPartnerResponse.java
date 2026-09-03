@@ -23,6 +23,8 @@ public class JsonCreateBPartnerResponse
 
 	@Nullable Map<String, Location> locations;
 
+	@Nullable Map<String, Contact> contacts;
+
 	@Value
 	@Builder
 	@Jacksonized
@@ -30,5 +32,16 @@ public class JsonCreateBPartnerResponse
 	{
 		int id;
 		@Nullable GLN gln;
+	}
+
+	@Value
+	@Builder
+	@Jacksonized
+	public static class Contact
+	{
+		int id;
+		@Nullable String firstName;
+		@Nullable String lastName;
+		@Nullable String email;
 	}
 }

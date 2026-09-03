@@ -24,6 +24,9 @@ import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.scannable_code.ScannedCode;
+import de.metas.inoutcandidate.CarrierAdviseStatus;
+import de.metas.inoutcandidate.CarrierGoodsTypeId;
+import de.metas.shipping.CarrierProductId;
 import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
@@ -206,6 +209,66 @@ class PickingJob_Scenarios_Test
 			assertThat(pickingJob.getStepById(stepId).getPickFrom(PickingJobStepPickFromKey.MAIN).getPickFromHU()).isEqualTo(vhu1);
 			assertThat(pickingJob.getStepById(stepId).getPickFrom(PickingJobStepPickFromKey.MAIN).getPickedTo()).isNull();
 		}
+	}
+
+	@Test
+	void createPickingJob_seedsLineCarrierProductFromShipmentSchedule_withPickingPlan()
+	{
+		// isAllowPickingAnyHU=false routes through createLineRequest_WithPickingPlan
+		assertSeedsLineCarrierProductFromShipmentSchedule(false);
+	}
+
+	@Test
+	void createPickingJob_seedsLineCarrierProductFromShipmentSchedule_noPickingPlan()
+	{
+		// isAllowPickingAnyHU=true routes through createLineRequest_NoPickingPlan
+		assertSeedsLineCarrierProductFromShipmentSchedule(true);
+	}
+
+	private void assertSeedsLineCarrierProductFromShipmentSchedule(final boolean isAllowPickingAnyHU)
+	{
+		final ProductId productId = BusinessTestHelper.createProductId("P1", helper.uomEach);
+		final CarrierProductId carrierProductId = CarrierProductId.ofRepoId(4711); // fake test id
+		final CarrierGoodsTypeId carrierGoodsTypeId = CarrierGoodsTypeId.ofRepoId(4712); // fake test id
+		final com.google.common.collect.ImmutableSet<de.metas.inoutcandidate.CarrierServiceId> carrierServices =
+				com.google.common.collect.ImmutableSet.of(
+						de.metas.inoutcandidate.CarrierServiceId.ofRepoId(4713),
+						de.metas.inoutcandidate.CarrierServiceId.ofRepoId(4714)); // fake test ids
+
+		helper.createVHUInfo(productId, "100", "QR-VHU1");
+
+		final OrderAndLineId orderAndLineId = helper.createOrderAndLineId("salesOrderCarrier");
+		helper.packageable()
+				.orderAndLineId(orderAndLineId)
+				.productId(productId)
+				.qtyToDeliver("100")
+				.carrierProductId(carrierProductId)
+				.carrierGoodsTypeId(carrierGoodsTypeId)
+				.carrierServices(carrierServices)
+				.carrierAdvisingStatus(CarrierAdviseStatus.Manual.getCode())
+				.build();
+
+		final PickingJob pickingJob = helper.pickingJobService.createPickingJob(
+				PickingJobCreateRequest.builder()
+						.aggregationType(PickingJobAggregationType.SALES_ORDER)
+						.pickerId(UserId.ofRepoId(1234))
+						.salesOrderId(orderAndLineId.getOrderId())
+						.deliveryBPLocationId(helper.shipToBPLocationId)
+						.isAllowPickingAnyHU(isAllowPickingAnyHU)
+						.build());
+
+		final PickingJobLine line = CollectionUtils.singleElement(pickingJob.getLines());
+		assertThat(line.getCarrierProductId()).isEqualTo(carrierProductId);
+		assertThat(line.getCarrierGoodsTypeId()).isEqualTo(carrierGoodsTypeId);
+		assertThat(line.getCarrierServices()).isEqualTo(carrierServices);
+		assertThat(line.isManual()).isTrue();
+		assertThat(line.isCarrierAdviseReadOnly()).isFalse();
+
+		// The header carrier is initialised at job creation from the (all-unprocessed) lines, so the
+		// carrier-advise caption renders at the initial job opening — before any parcel (LU/TU) event.
+		// A single line → its carrier becomes the header carrier; the header is not read-only.
+		assertThat(pickingJob.getCarrierProductId()).isEqualTo(carrierProductId);
+		assertThat(pickingJob.isCarrierAdviseReadOnly()).isFalse();
 	}
 
 	@Nested

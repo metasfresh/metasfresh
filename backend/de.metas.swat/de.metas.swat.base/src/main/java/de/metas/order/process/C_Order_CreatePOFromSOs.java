@@ -22,6 +22,8 @@
 
 package de.metas.order.process;
 
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.i18n.AdMessageKey;
@@ -40,6 +42,8 @@ import de.metas.order.createFrom.po_from_so.impl.CreatePOFromSOsAggregator;
 import de.metas.order.model.I_C_Order;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantitys;
@@ -48,14 +52,16 @@ import de.metas.ui.web.order.OrderLineCandidate;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.Mutable;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.PO;
 import org.compiere.model.X_C_OrderLine;
 import org.compiere.util.Env;
@@ -63,8 +69,12 @@ import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMDAO;
 
 import java.sql.Timestamp;
+import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Creates purchase order(s) from sales order(s).
@@ -107,9 +117,11 @@ public class C_Order_CreatePOFromSOs
 
 	private final IC_Order_CreatePOFromSOsBL orderCreatePOFromSOsBL = Services.get(IC_Order_CreatePOFromSOsBL.class);
 
-	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final OrderGroupRepository orderGroupsRepo = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 	private final IProductBOMDAO bomDAO = Services.get(IProductBOMDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	/**
 	 * Task http://dewiki908/mediawiki/index.php/07228_Create_bestellung_from_auftrag_more_than_once_%28100300573628%29
@@ -119,11 +131,12 @@ public class C_Order_CreatePOFromSOs
 	private final INotificationBL userNotifications = Services.get(INotificationBL.class);
 
 	private static final AdMessageKey MSG_SKIPPED_C_ORDERLINE_IDS = AdMessageKey.of("SkippedOrderLines");
+	private static final AdMessageKey MSG_CREATE_PO_FROM_SOS_PRODUCTS_NOT_PURCHASED = AdMessageKey.of("MSG_CreatePOFromSOs_ProductsNotPurchased");
 
 	@Override
 	protected String doIt() throws Exception
 	{
-		final Mutable<Integer> purchaseOrderLineCount = new Mutable<>(0);
+		final String purchaseQtySource = orderCreatePOFromSOsBL.getConfigPurchaseQtySource();
 
 		final Iterator<I_C_Order> it = orderCreatePOFromSOsDAO.createSalesOrderIterator(
 				this,
@@ -136,20 +149,32 @@ public class C_Order_CreatePOFromSOs
 				p_DatePromised_To,
 				p_IsVendorInOrderLinesRequired);
 
-		final String purchaseQtySource = orderCreatePOFromSOsBL.getConfigPurchaseQtySource();
-		final CreatePOFromSOsAggregator workpackageAggregator = new CreatePOFromSOsAggregator(this,
-				purchaseQtySource,
-				p_TypeOfPurchase);
-
-		workpackageAggregator.setItemAggregationKeyBuilder(new CreatePOFromSOsAggregationKeyBuilder(p_Vendor_ID, this, p_IsVendorInOrderLinesRequired));
-		workpackageAggregator.setGroupsBufferSize(100);
-
+		// Pass 1 — buffer all (order, lines) pairs.
+		// The iterator is a one-shot DB cursor, so we must buffer before touching the aggregator.
+		final List<Map.Entry<I_C_Order, List<I_C_OrderLine>>> buffered = new ArrayList<>();
 		for (final I_C_Order salesOrder : IteratorUtils.asIterable(it))
 		{
 			final List<I_C_OrderLine> salesOrderLines = orderCreatePOFromSOsDAO.retrieveOrderLines(salesOrder,
 					p_allowMultiplePOOrders,
 					purchaseQtySource);
-			for (final I_C_OrderLine salesOrderLine : salesOrderLines)
+			buffered.add(new AbstractMap.SimpleImmutableEntry<>(salesOrder, salesOrderLines));
+		}
+
+		// Abort before the aggregator writes a single line if the purchase/sales gate is on and
+		// any buffered line references a not-purchased product (prevents partial POs). No-op when off.
+		assertAllProductsPurchasable(buffered);
+
+		// Pass 2 — all lines are purchasable; aggregate normally.
+		final Mutable<Integer> purchaseOrderLineCount = new Mutable<>(0);
+		final CreatePOFromSOsAggregator workpackageAggregator = new CreatePOFromSOsAggregator(this,
+				purchaseQtySource,
+				p_TypeOfPurchase);
+		workpackageAggregator.setItemAggregationKeyBuilder(new CreatePOFromSOsAggregationKeyBuilder(p_Vendor_ID, this, p_IsVendorInOrderLinesRequired));
+		workpackageAggregator.setGroupsBufferSize(100);
+
+		for (final Map.Entry<I_C_Order, List<I_C_OrderLine>> entry : buffered)
+		{
+			for (final I_C_OrderLine salesOrderLine : entry.getValue())
 			{
 				if (p_isPurchaseBOMComponents)
 				{
@@ -165,10 +190,7 @@ public class C_Order_CreatePOFromSOs
 								.map(orderLine -> this.fromOrderLineCandidate(orderLine, salesOrderLine))
 								.forEach(orderLine -> addLineToAggregator(purchaseOrderLineCount, workpackageAggregator, orderLine));
 					}
-					else
-					{
-						// not a BOM, don't add it to the aggregator
-					}
+					// else: not a BOM — skip
 				}
 				else
 				{
@@ -176,6 +198,7 @@ public class C_Order_CreatePOFromSOs
 				}
 			}
 		}
+
 		workpackageAggregator.closeAllGroups();
 
 		workpackageAggregator.getSkippedLinesMessage()
@@ -189,7 +212,87 @@ public class C_Order_CreatePOFromSOs
 				});
 
 		return MSG_OK;
+	}
 
+	/**
+	 * Enforcement gate for the purchase/sales flags. Fast-returns (no-op) when the gate is off; when on,
+	 * aborts — before the aggregator writes any PO line — if any buffered sales-order line references a
+	 * not-purchased product, with one message listing every offender (so no partial PO is created).
+	 */
+	private void assertAllProductsPurchasable(@NonNull final List<Map.Entry<I_C_Order, List<I_C_OrderLine>>> buffered)
+	{
+		if (!productBL.isPurchaseSalesEnforcementEnabled(getClientId(), getOrgId()))
+		{
+			return;
+		}
+
+		final LinkedHashMap<ProductId, String> notPurchasedProducts = new LinkedHashMap<>();
+		for (final Map.Entry<I_C_Order, List<I_C_OrderLine>> entry : buffered)
+		{
+			collectNotPurchasedProducts(productDAO, bomDAO, p_isPurchaseBOMComponents, entry.getValue())
+					.forEach(notPurchasedProducts::putIfAbsent);
+		}
+
+		if (!notPurchasedProducts.isEmpty())
+		{
+			throw new AdempiereException(
+					MSG_CREATE_PO_FROM_SOS_PRODUCTS_NOT_PURCHASED,
+					String.join(", ", notPurchasedProducts.values()));
+		}
+	}
+
+	/**
+	 * Collects, in encounter order, the not-purchased products ({@code IsPurchased=N}) among the given lines,
+	 * keyed by {@link ProductId} (dedup) with value {@code "<Value> (<Name>)"}. Lines without a product are skipped.
+	 * <p>
+	 * When {@code purchaseBOMComponents} is {@code true} <em>and</em> a line's product has BOMs, Pass 2 will
+	 * BOM-explode that line — the parent itself never becomes a PO line. Such lines are therefore excluded from
+	 * the not-purchased check, mirroring the exact branch condition used in Pass 2:
+	 * {@code purchaseBOMComponents && bomDAO.hasBOMs(productId)}.
+	 * <p>
+	 * {@link IProductDAO} and {@link IProductBOMDAO} are parameters so this helper is unit-testable without
+	 * instantiating the {@link JavaProcess}.
+	 */
+	static LinkedHashMap<ProductId, String> collectNotPurchasedProducts(
+			@NonNull final IProductDAO productDAO,
+			@NonNull final IProductBOMDAO bomDAO,
+			final boolean purchaseBOMComponents,
+			@NonNull final List<I_C_OrderLine> orderLines)
+	{
+		final ImmutableSet<ProductId> productIds = orderLines.stream()
+				.map(I_C_OrderLine::getM_Product_ID)
+				.filter(id -> id > 0)
+				.map(ProductId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final Map<ProductId, I_M_Product> productsById = Maps.uniqueIndex(
+				productDAO.getByIds(productIds),
+				product -> ProductId.ofRepoId(product.getM_Product_ID()));
+
+		final LinkedHashMap<ProductId, String> result = new LinkedHashMap<>();
+		for (final I_C_OrderLine orderLine : orderLines)
+		{
+			final int productRepoId = orderLine.getM_Product_ID();
+			if (productRepoId <= 0)
+			{
+				continue;
+			}
+			final ProductId productId = ProductId.ofRepoId(productRepoId);
+			if (result.containsKey(productId))
+			{
+				continue; // already recorded (dedup)
+			}
+			if (purchaseBOMComponents && bomDAO.hasBOMs(productId))
+			{
+				continue;
+			}
+			final I_M_Product product = productsById.get(productId);
+			if (product != null && !product.isPurchased())
+			{
+				result.put(productId, product.getValue() + " (" + product.getName() + ")");
+			}
+		}
+		return result;
 	}
 
 	private void addLineToAggregator(final Mutable<Integer> purchaseOrderLineCount, final CreatePOFromSOsAggregator workpackageAggregator, final I_C_OrderLine salesOrderLine)
@@ -200,7 +303,7 @@ public class C_Order_CreatePOFromSOs
 
 	private OrderLineCandidate toOrderLineCandidate(final I_C_OrderLine ol)
 	{
-		final ImmutableAttributeSet attributeSet = attributeDAO.getImmutableAttributeSetById(AttributeSetInstanceId.ofRepoId(ol.getM_AttributeSetInstance_ID()));
+		final ImmutableAttributeSet attributeSet = asiBL.getImmutableAttributeSetById(AttributeSetInstanceId.ofRepoId(ol.getM_AttributeSetInstance_ID()));
 
 		return OrderLineCandidate.builder()
 				.orderId(OrderId.ofRepoId(ol.getC_Order_ID()))

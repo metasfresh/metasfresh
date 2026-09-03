@@ -29,7 +29,7 @@ import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
-import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipients;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRegistry;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
 import de.metas.document.archive.spi.impl.DefaultModelArchiver;
@@ -156,7 +156,7 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 								.orgId(InterfaceWrapperHelper.getOrgId(record).orElseThrow(() -> new AdempiereException("Cannot get AD_Org_ID from " + record)))
 								.docTypeId(documentBL.getDocTypeId(record).orElse(null))
 								.build())
-				.map(DocOutBoundRecipient::isInvoiceAsEmail)
+				.map(DocOutBoundRecipients::isInvoiceAsEmail)
 				.orElse(false);
 	}
 }

@@ -16,8 +16,13 @@ import lombok.NonNull;
 import lombok.Setter;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.AttributeValueId;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.impl.WarehouseBL;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_Warehouse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -59,6 +64,39 @@ public class AttributesChangedEventHandlerTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		SpringContextHolder.registerJUnitBean(IWarehouseBL.class, new WarehouseBL());
+
+		// Pre-create warehouse with id=1 so WarehouseBL.isIgnoreInMaterialDispo can load it.
+		{
+			final I_M_Warehouse warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
+			InterfaceWrapperHelper.setValue(warehouse, I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, 1);
+			InterfaceWrapperHelper.saveRecord(warehouse);
+		}
+	}
+
+	@Test
+	public void handleEvent_excludedWarehouse_shortCircuits()
+	{
+		final I_M_Warehouse warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
+		warehouse.setMRP_Exclude("Y");
+		InterfaceWrapperHelper.saveRecord(warehouse);
+		final WarehouseId excludedWarehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
+
+		final MockedCandidateHandler mockedCandidateHandler = new MockedCandidateHandler();
+		final AttributesChangedEventHandler handler = createAttributesChangedEventHandler(mockedCandidateHandler);
+
+		handler.handleEvent(AttributesChangedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(10, 20))
+				.warehouseId(excludedWarehouseId)
+				.date(Instant.parse("2019-10-03T10:15:30.00Z"))
+				.productId(2)
+				.qty(new BigDecimal("13"))
+				.oldStorageAttributes(attributesKeyWithASI(1000))
+				.newStorageAttributes(attributesKeyWithASI(2000))
+				.huId(333)
+				.build());
+
+		assertThat(mockedCandidateHandler.getSavedCandidates()).isEmpty();
 	}
 
 	private AttributesChangedEventHandler createAttributesChangedEventHandler(final MockedCandidateHandler mockedCandidateHandler)

@@ -1,6 +1,6 @@
 package de.metas.handlingunits.qrcodes.ean13;
 
-import de.metas.ean13.EAN13;
+import de.metas.gs1.ean13.EAN13;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.scannable_code.ScannedCode;
@@ -38,7 +38,7 @@ public class EAN13HUQRCode implements IHUQRCode
 
 	public static ExplainedOptional<EAN13HUQRCode> fromString(@NonNull final String barcode)
 	{
-		return EAN13.fromString(barcode).map(EAN13HUQRCode::ofEAN13);
+		return EAN13.ofString(barcode).map(EAN13HUQRCode::ofEAN13);
 	}
 
 	@Override

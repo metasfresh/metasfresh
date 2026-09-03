@@ -22,7 +22,7 @@
 
 package de.metas.cucumber.stepdefs.material.cockpit;
 
-import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.StepDefUtil;
@@ -160,7 +160,7 @@ public class MD_Cockpit_DocumentDetail_StepDef
 													identifier, qtyReserved, cockpitDocumentDetailRecord.getQtyReserved()));
 		}
 
-		if (errorCollector.size() > 0)
+		if (!errorCollector.isEmpty())
 		{
 			final String errorMessages = String.join(" && \n", errorCollector);
 			return ItemProvider.ProviderResult.resultWasNotFound(errorMessages);

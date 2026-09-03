@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2024 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -29,6 +29,7 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
+import org.jetbrains.annotations.Contract;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
@@ -167,6 +168,7 @@ public final class SpringContextHolder
 	/**
 	 * can be used if a service might be retrieved before the spring application context is up
 	 */
+	@Contract("_, !null -> !null")
 	@Nullable
 	public <T> T getBeanOr(@NonNull final Class<T> requiredType, @Nullable final T defaultImplementation)
 	{

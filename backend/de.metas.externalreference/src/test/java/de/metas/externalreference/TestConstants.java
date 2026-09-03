@@ -35,8 +35,6 @@ public interface TestConstants
 	String MOCK_EXTERNAL_REFERENCE_VERSION = "externalReferenceVersion";
 	IExternalReferenceType MOCK_EXTERNAL_REFERENCE_TYPE = new PlainExternalReferenceType("code", "tableName");
 
-	IExternalSystem MOCK_EXTERNAL_SYSTEM = new PlainExternalSystem("Github");
-	IExternalSystem MOCK_EXTERNAL_SYSTEM_1 = new PlainExternalSystem("Everhour");
 	// ExternalProjectType MOCK_EXTERNAL_PROJECT_TYPE = ExternalProjectType.EFFORT;
 	String MOCK_EXTERNAL_ID = "externalId";
 	String MOCK_EXTERNAL_URL = "externalURL";
@@ -48,7 +46,7 @@ public interface TestConstants
 	String MOCK_SEARCH_KEY = "searchKey";
 	String MOCK_DESCRIPTION = "description";
 	String MOCK_PARENT_ISSUE_URL = "https://github.com/" + MOCK_EXTERNAL_PROJECT_OWNER + "/" + MOCK_EXTERNAL_REFERENCE + "/issues/" + MOCK_PARENT_ISSUE_NO;
-	String MOCK_ISSUE_URL =  "https://github.com/" + MOCK_EXTERNAL_PROJECT_OWNER + "/" + MOCK_EXTERNAL_REFERENCE + "/issues/" + MOCK_EXTERNAL_ISSUE_NO;
+	String MOCK_ISSUE_URL = "https://github.com/" + MOCK_EXTERNAL_PROJECT_OWNER + "/" + MOCK_EXTERNAL_REFERENCE + "/issues/" + MOCK_EXTERNAL_ISSUE_NO;
 	String MOCK_DATE_ISO = "2020-03-16";
 	Instant MOCK_INSTANT_FROM_DATE = LocalDate.parse(MOCK_DATE_ISO).atStartOfDay(ZoneOffset.UTC).toInstant();
 	String MOCK_DATE_AND_TIME_ISO_8601 = "2020-03-16T14:37:53Z";
@@ -63,7 +61,7 @@ public interface TestConstants
 	String MOCK_JSON_VALUE = "mockedJSONValue";
 	LocalDate MOCK_DATE_2020_03_01 = LocalDate.of(2020, 3, 1);
 	LocalDate MOCK_DATE_2020_03_07 = LocalDate.of(2020, 3, 7);
-	LocalDate MOCK_DATE_2020_03_08 = LocalDate.of(2020,3,8);
+	LocalDate MOCK_DATE_2020_03_08 = LocalDate.of(2020, 3, 8);
 	LocalDate MOCK_DATE_2020_03_12 = LocalDate.of(2020, 3, 12);
 	String MOCK_EFFORT_1_30 = "1:30";
 	String MOCK_EFFORT_1_00 = "1:00";

@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8031_Manufacturing_Workflows
+@F8031
 @ghActions:run_on_executor6
 Feature: Maturing scenarios
+## F8031: Maturing
 
   Background:
     Given infrastructure and metasfresh are running
@@ -39,8 +43,10 @@ Feature: Maturing scenarios
       | prodPlanning | maturedGood  | false        | maturingWarehouse | true      | maturingConfig              | maturingConfigLine               | bomVersions_1             |
 
   @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8031_Manufacturing_Workflows
+@F8031
   @Id:S0382_100
-  @flaky
   Scenario: Happy flow, raw good product HU created via inventory, maturing candidate created and processed
     When metasfresh contains M_Inventories:
       | M_Inventory_ID | MovementDate | DocumentNo   | M_Warehouse_ID    |
@@ -70,14 +76,21 @@ Feature: Maturing scenarios
       | M_HU_Storage_ID | M_HU_ID       | M_Product_ID | Qty |
       | maturing_hus_10 | rawgood_hu_10 | rawGood      | 10  |
 
-    And AD_Scheduler for classname 'org.eevolution.productioncandidate.process.PP_Order_Candidate_CreateMaturingCandidates' is ran once
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
+
+    And the AD_Process with value 'PP_Order_Candidate_CreateMaturingCandidates' is run
 
     Then after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed | IsMaturing | M_Maturing_Configuration_ID | M_Maturing_Configuration_Line_ID | Issue_HU_ID   |
       | oc_1       | false     | maturedGood  | bom_1             | prodPlanning           | 540006        | 10 PCE     | 10 PCE       | 0 PCE        | 2023-05-31T22:00:00Z | 2023-05-31T22:00:00Z | false    | true       | maturingConfig              | maturingConfigLine               | rawgood_hu_10 |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
+    # Intentionally NOT converted to the generic "AD_Process ... is run" step (unlike
+    # CreateMaturingCandidates above):
+    # - A synchronous run only enqueues its selection.
+    # - Its close chain needs the scheduler's own async RUN_ONCE dispatch to flip IsClosed.
+    # - Run synchronously, the candidate stays unclosed. Do not convert this line.
     And AD_Scheduler for classname 'org.eevolution.productioncandidate.process.PP_Order_Candidate_AlreadyMaturedForOrdering' is ran once
 
     And after not more than 60s, PP_Order_Candidates are found
@@ -108,8 +121,10 @@ Feature: Maturing scenarios
 
 
   @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8031_Manufacturing_Workflows
+@F8031
   @Id:S0382_200
-  @flaky
   Scenario: Maturing candidate created, then HU qty is adjusted. Maturing candidate is updated
     When metasfresh contains M_Inventories:
       | M_Inventory_ID.Identifier | MovementDate | DocumentNo   | M_Warehouse_ID    |
@@ -139,7 +154,9 @@ Feature: Maturing scenarios
       | M_HU_Storage_ID.Identifier | M_HU_ID.Identifier | M_Product_ID.Identifier | Qty |
       | rawgood_hus_20             | rawgood_hu_20      | rawGood                 | 20  |
 
-    And AD_Scheduler for classname 'org.eevolution.productioncandidate.process.PP_Order_Candidate_CreateMaturingCandidates' is ran once
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
+
+    And the AD_Process with value 'PP_Order_Candidate_CreateMaturingCandidates' is run
 
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed | IsMaturing | M_Maturing_Configuration_ID | M_Maturing_Configuration_Line_ID | Issue_HU_ID   |
@@ -149,7 +166,9 @@ Feature: Maturing scenarios
       | M_HU_Storage_ID | Qty |
       | rawgood_hus_20  | 15  |
 
-    And AD_Scheduler for classname 'org.eevolution.productioncandidate.process.PP_Order_Candidate_CreateMaturingCandidates' is ran once
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
+
+    And the AD_Process with value 'PP_Order_Candidate_CreateMaturingCandidates' is run
 
     Then after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed | IsMaturing | M_Maturing_Configuration_ID | M_Maturing_Configuration_Line_ID | Issue_HU_ID   |
@@ -157,6 +176,9 @@ Feature: Maturing scenarios
 
 
   @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8031_Manufacturing_Workflows
+@F8031
   @Id:S0382_300
   Scenario: Maturing candidate created, then HU is disposed. Maturing candidate is deleted.
     When metasfresh contains M_Inventories:
@@ -187,7 +209,9 @@ Feature: Maturing scenarios
       | M_HU_Storage_ID | M_HU_ID       | M_Product_ID | Qty |
       | rawgood_hus_30  | rawgood_hu_30 | rawGood      | 30  |
 
-    And AD_Scheduler for classname 'org.eevolution.productioncandidate.process.PP_Order_Candidate_CreateMaturingCandidates' is ran once
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
+
+    And the AD_Process with value 'PP_Order_Candidate_CreateMaturingCandidates' is run
 
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed | IsMaturing | M_Maturing_Configuration_ID | M_Maturing_Configuration_Line_ID | Issue_HU_ID   |
@@ -197,6 +221,8 @@ Feature: Maturing scenarios
       | M_HU_ID       | MovementDate         |
       | rawgood_hu_30 | 2024-01-01T21:00:00Z |
 
-    And AD_Scheduler for classname 'org.eevolution.productioncandidate.process.PP_Order_Candidate_CreateMaturingCandidates' is ran once
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
+
+    And the AD_Process with value 'PP_Order_Candidate_CreateMaturingCandidates' is run
 
     Then after not more than 60s, no PP_Order_Candidates are found for Issue_HU_ID: 'rawgood_hu_30'

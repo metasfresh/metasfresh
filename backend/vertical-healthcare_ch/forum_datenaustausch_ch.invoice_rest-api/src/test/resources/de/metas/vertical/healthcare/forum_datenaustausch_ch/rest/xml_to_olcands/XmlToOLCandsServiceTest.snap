@@ -67,6 +67,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_1",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -253,6 +254,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_2",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -439,6 +441,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_3",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -625,6 +628,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_4",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -811,6 +815,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_5",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -997,6 +1002,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_6",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -1183,6 +1189,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_7",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -1369,6 +1376,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_8",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -1555,6 +1563,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_9",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -1741,6 +1750,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_10",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -1927,6 +1937,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_11",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -2113,6 +2124,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_12",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -2299,6 +2311,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_13",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -2485,6 +2498,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_14",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -2671,6 +2685,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_15",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -2857,6 +2872,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_16",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -3043,6 +3059,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_17",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -3229,6 +3246,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_18",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -3415,6 +3433,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_19",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -3601,6 +3620,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_20",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -3787,6 +3807,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_21",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -3981,6 +4002,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_1",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -4167,6 +4189,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_2",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -4353,6 +4376,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_3",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -4539,6 +4563,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_4",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -4725,6 +4750,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_5",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -4911,6 +4937,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_6",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -5097,6 +5124,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_7",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -5283,6 +5311,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_8",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -5469,6 +5498,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_9",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -5655,6 +5685,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_10",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -5841,6 +5872,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_11",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -6027,6 +6059,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_12",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -6213,6 +6246,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_13",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -6399,6 +6433,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_14",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -6585,6 +6620,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_15",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -6771,6 +6807,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_16",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -6957,6 +6994,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_17",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -7143,6 +7181,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_18",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -7329,6 +7368,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_19",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -7515,6 +7555,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_20",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",
@@ -7701,6 +7742,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
         "discount": 0,
         "externalHeaderId": "2009_01:001_EAN-2011234567890_EAN-7634567890000",
         "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_21",
+        "externalSystemCode": "Other",
         "flatrateConditionsId": 0,
         "invoiceDocType": {
           "docBaseType": "ARI",

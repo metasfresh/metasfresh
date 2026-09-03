@@ -22,19 +22,19 @@ package de.metas.handlingunits.shipmentschedule.api;
  * #L%
  */
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import org.adempiere.mm.attributes.AttributeId;
+import de.metas.organization.OrgId;
+import java.util.function.Predicate;
 import com.google.common.collect.ImmutableMap;
-import com.jgoodies.common.base.Objects;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUPIItemProductDAO;
-import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.ASIAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -46,6 +46,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU_Item;
+import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -56,11 +57,14 @@ import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.shipping.ShipperId;
+import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -77,13 +81,19 @@ import org.compiere.model.Null;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.storage.IHUStorageFactory;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.math.BigDecimal.ONE;
@@ -98,35 +108,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  */
 public class ShipmentScheduleWithHU
 {
-	public static ShipmentScheduleWithHU ofShipmentScheduleQtyPicked(
-			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked,
-			@Nullable final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
-	{
-		final IMutableHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
-		return ofShipmentScheduleQtyPickedWithHuContext(shipmentScheduleQtyPicked, huContext, qtyTypeToUse);
-	}
-
-	public static ShipmentScheduleWithHU ofShipmentScheduleQtyPicked(
-			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked,
-			@NonNull final IHUContext huContext)
-	{
-		return ofShipmentScheduleQtyPickedWithHuContext(
-				shipmentScheduleQtyPicked,
-				huContext,
-				M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER/* just because that's how it was an we don't have great test coverage */);
-	}
-
-	public static ShipmentScheduleWithHU ofShipmentScheduleQtyPickedWithHuContext(
-			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked,
-			@NonNull final IHUContext huContext,
-			@NonNull final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
-	{
-		return new ShipmentScheduleWithHU(
-				huContext,
-				shipmentScheduleQtyPicked,
-				qtyTypeToUse);
-	}
-
 	public static ShipmentScheduleWithHU ofShipmentScheduleQtyPickedWithHuContext(
 			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked,
 			@NonNull final IHUContext huContext)
@@ -211,6 +192,55 @@ public class ShipmentScheduleWithHU
 	}
 
 	/**
+	 * Creates an expanded candidate from a QtyPicked record with an overridden VHU and qty.
+	 * Used when a non-virtual TU with mixed-Country-of-Origin VHUs is expanded into per-VHU candidates.
+	 */
+	private ShipmentScheduleWithHU(
+			@NonNull final IHUContext huContext,
+			@NonNull final I_M_ShipmentSchedule_QtyPicked allocRecord,
+			@NonNull final I_M_HU overrideVHU,
+			@NonNull final Quantity overrideQty,
+			@NonNull final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
+	{
+		this.huContext = huContext;
+		this.shipmentScheduleQtyPicked = allocRecord;
+		this.shipmentSchedule = create(allocRecord.getM_ShipmentSchedule(), I_M_ShipmentSchedule.class);
+		this.pickedQty = overrideQty;
+		this.catchQty = Optional.empty();
+		this.vhu = overrideVHU;
+		this.tuHU = allocRecord.getM_TU_HU_ID() > 0 ? allocRecord.getM_TU_HU() : null;
+		this.luHU = allocRecord.getM_LU_HU_ID() > 0 ? allocRecord.getM_LU_HU() : null;
+		this.adviseManualPackingMaterial = false;
+		this.qtyTypeToUse = qtyTypeToUse;
+	}
+
+	public static List<ShipmentScheduleWithHU> ofShipmentScheduleQtyPicked(
+			@NonNull final I_M_ShipmentSchedule_QtyPicked qtyPicked,
+			@NonNull final IHUContext huContext)
+	{
+		return ImmutableList.of(new ShipmentScheduleWithHU(huContext, qtyPicked, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER));
+	}
+
+	public static List<ShipmentScheduleWithHU> ofShipmentScheduleQtyPicked(
+			@NonNull final I_M_ShipmentSchedule_QtyPicked qtyPicked,
+			@NonNull final IHUContext huContext,
+			@NonNull final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
+	{
+		return ImmutableList.of(new ShipmentScheduleWithHU(huContext, qtyPicked, qtyTypeToUse));
+	}
+
+	/** Creates a single candidate with an explicit VHU and qty override. Used by the expansion logic in {@link IHUShipmentScheduleBL}. */
+	public static ShipmentScheduleWithHU ofShipmentScheduleQtyPickedForVHU(
+			@NonNull final I_M_ShipmentSchedule_QtyPicked qtyPicked,
+			@NonNull final IHUContext huContext,
+			@NonNull final I_M_HU vhu,
+			@NonNull final Quantity qty,
+			@NonNull final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
+	{
+		return new ShipmentScheduleWithHU(huContext, qtyPicked, vhu, qty, qtyTypeToUse);
+	}
+
+	/**
 	 * Creates a HU-"empty" instance that just references the given shipment schedule.
 	 */
 	private ShipmentScheduleWithHU(
@@ -287,8 +317,9 @@ public class ShipmentScheduleWithHU
 
 	private List<IAttributeValue> computeAttributeValues()
 	{
-		final TreeSet<IAttributeValue> allAttributeValues = //
-				new TreeSet<>(Comparator.comparing(av -> av.getM_Attribute().getM_Attribute_ID()));
+		//
+		// 1. Collect HU attributes (filtered by handler whitelist)
+		final TreeSet<IAttributeValue> huAttributeValues = new TreeSet<>(Comparator.comparing(IAttributeValue::getAttributeId));
 
 		final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
 		streamHUHierarchyBottomUp().forEach(hu -> {
@@ -297,30 +328,114 @@ public class ShipmentScheduleWithHU
 					.stream()
 					.filter(attributeValue -> !attributeValue.isEmpty())
 					.collect(ImmutableList.toImmutableList());
-			allAttributeValues.addAll(nonEmptyAttributeValues);
+			huAttributeValues.addAll(nonEmptyAttributeValues);
 		});
-
-		if (getM_AttributeSetInstance_ID() > 0)
-		{
-			/// add all values from the ASI
-			final I_M_AttributeSetInstance attributeSetInstance = load(getM_AttributeSetInstance_ID(), I_M_AttributeSetInstance.class);
-			final IAttributeStorage asiAttributeStorage = ASIAttributeStorage.createNew(attributeStorageFactory, attributeSetInstance);
-			allAttributeValues.addAll(asiAttributeStorage.getAttributeValues());
-
-			// additionally add whatever the attributeStorageFactory's storage implementation has to offer.
-			final IAttributeStorage huAsiAttributeStorage = attributeStorageFactory.getAttributeStorage(attributeSetInstance);
-			allAttributeValues.addAll(huAsiAttributeStorage.getAttributeValues());
-		}
 
 		final ShipmentScheduleHandler handler = Services.get(IShipmentScheduleHandlerBL.class).getHandlerFor(shipmentSchedule);
 
-		final ImmutableList<IAttributeValue> result = allAttributeValues.stream()
+		final ImmutableList<IAttributeValue> filteredHUAttributes = huAttributeValues.stream()
 				.filter(IAttributeValue::isUseInASI)
-				.filter(attributeValue -> !Objects.equals(attributeValue.getValue(), attributeValue.getEmptyValue())) // when comparing different shipmentScheduleWithHU instances, we want no attributes to be equal to attributes with null values
+				.filter(attributeValue -> !Objects.equals(attributeValue.getValue(), attributeValue.getEmptyValue()))
 				.filter(attributeValue -> handler.attributeShallBePartOfShipmentLine(shipmentSchedule, attributeValue.getM_Attribute()))
 				.collect(ImmutableList.toImmutableList());
-		return result;
+
+		//
+		// 2. Collect schedule ASI attributes (NO handler whitelist filter — always pass through)
+		final TreeSet<IAttributeValue> schedAsiAttributeValues = new TreeSet<>(Comparator.comparing(IAttributeValue::getAttributeId));
+
+		if (getM_AttributeSetInstance_ID() > 0)
+		{
+			final I_M_AttributeSetInstance attributeSetInstance = load(getM_AttributeSetInstance_ID(), I_M_AttributeSetInstance.class);
+
+			// Load attributes through TWO storage implementations:
+			// 1. ASIAttributeStorage reads M_AttributeInstance records directly (the raw ASI values)
+			// 2. HU factory's storage may add template-derived attributes from the product's attribute set
+			// The TreeSet deduplicates by M_Attribute_ID, keeping the first-inserted value.
+			final IAttributeStorage asiAttributeStorage = ASIAttributeStorage.createNew(attributeStorageFactory, attributeSetInstance);
+			schedAsiAttributeValues.addAll(asiAttributeStorage.getAttributeValues());
+
+			final IAttributeStorage huAsiAttributeStorage = attributeStorageFactory.getAttributeStorage(attributeSetInstance);
+			schedAsiAttributeValues.addAll(huAsiAttributeStorage.getAttributeValues());
+		}
+
+		// NOTE: intentionally NOT filtering empty values here — the merge method
+		// evaluates emptiness per attribute to decide whether to fall back to the HU value.
+		// This is asymmetric with filteredHUAttributes (which pre-filters empties) because
+		// HU empties are never useful, but schedule ASI empties signal "no customer preference,
+		// let the HU value through".
+		final ImmutableList<IAttributeValue> filteredSchedAsiAttributes = schedAsiAttributeValues.stream()
+				.filter(IAttributeValue::isUseInASI)
+				.collect(ImmutableList.toImmutableList());
+
+		//
+		// 3. Merge: HU attributes first, then overlay schedule ASI attributes.
+		// For each attribute, the handler's IsHUAttributeOverridesASI flag decides precedence:
+		// - Y (default): HU value wins (existing behavior for LotNumber, BestBefore, etc.)
+		// - N: schedule ASI value wins (for customer-intent attributes like Herkunft)
+		final OrgId orgId = OrgId.ofRepoId(shipmentSchedule.getAD_Org_ID());
+		return mergeAttributeValues(filteredHUAttributes, filteredSchedAsiAttributes,
+				attrId -> handler.isHUAttributeOverridesASI(orgId, attrId));
 	}
+
+	/**
+	 * Merges HU attribute values with schedule ASI attribute values.
+	 * <p>
+	 * For each attribute that exists in both sources, the {@code isHUOverridesASI} predicate decides:
+	 * <ul>
+	 *   <li>{@code true} (default) — HU value wins. Schedule ASI fills gaps only where HU has no value.</li>
+	 *   <li>{@code false} — Schedule ASI value wins when non-empty. HU fills gaps for empty schedule values.</li>
+	 * </ul>
+	 * Schedule ASI attributes not in the HU set are always added (if non-empty).
+	 * HU attributes not in the schedule ASI are always kept.
+	 *
+	 * @param filteredHUAttributes HU attributes already filtered by handler whitelist
+	 * @param schedAsiAttributes   schedule ASI attributes already filtered by isUseInASI
+	 * @param isHUOverridesASI     per-attribute predicate (by AttributeId): true = HU wins, false = schedule ASI wins
+	 */
+	@VisibleForTesting
+	public static ImmutableList<IAttributeValue> mergeAttributeValues(
+			@NonNull final List<IAttributeValue> filteredHUAttributes,
+			@NonNull final List<IAttributeValue> schedAsiAttributes,
+			@NonNull final Predicate<AttributeId> isHUOverridesASI)
+	{
+		final Map<AttributeId, IAttributeValue> merged = new LinkedHashMap<>();
+
+		// Start with HU attributes
+		for (final IAttributeValue huAttr : filteredHUAttributes)
+		{
+			merged.put(huAttr.getAttributeId(), huAttr);
+		}
+
+		// Overlay schedule ASI attributes
+		for (final IAttributeValue schedAttr : schedAsiAttributes)
+		{
+			final AttributeId attributeId = schedAttr.getAttributeId();
+			final boolean schedValueIsEmpty = Objects.equals(schedAttr.getValue(), schedAttr.getEmptyValue());
+
+			if (schedValueIsEmpty)
+			{
+				continue;
+			}
+
+			final boolean huHasValue = merged.containsKey(attributeId);
+			if (!huHasValue)
+			{
+				merged.put(attributeId, schedAttr);
+			}
+			else if (!isHUOverridesASI.test(attributeId))
+			{
+				merged.put(attributeId, schedAttr);
+			}
+		}
+
+		return ImmutableList.copyOf(merged.values());
+	}
+
+	/** Predicate constant: HU attribute always wins over schedule ASI (backward-compatible default). */
+	public static final Predicate<AttributeId> HU_ALWAYS_WINS = attrId -> true;
+
+	/** Predicate constant: Schedule ASI always wins over HU attribute. */
+	public static final Predicate<AttributeId> SCHEDULE_ASI_ALWAYS_WINS = attrId -> false;
 
 	@Nullable
 	public OrderId getOrderId()
@@ -337,6 +452,11 @@ public class ShipmentScheduleWithHU
 	public ShipmentScheduleId getShipmentScheduleId()
 	{
 		return ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
+	}
+
+	public ShipmentScheduleAndJobScheduleId getScheduleId()
+	{
+		return ShipmentScheduleAndJobScheduleId.ofShipmentScheduleId(getShipmentScheduleId());
 	}
 
 	public I_M_ShipmentSchedule getM_ShipmentSchedule()
@@ -533,11 +653,11 @@ public class ShipmentScheduleWithHU
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
-		final I_M_HU_PI_Item materialPIItem;
+		final List<I_M_HU_PI_Item> materialPIItems;
 		if (handlingUnitsBL.isAggregateHU(tuOrVhu))
 		{
 			final I_M_HU_PI_Version tuPIVersion = handlingUnitsBL.getEffectivePIVersion(tuOrVhu);
-			materialPIItem = handlingUnitsDAO.retrievePIItemMaterial(tuPIVersion);
+			materialPIItems = ImmutableList.of(handlingUnitsDAO.retrievePIItemMaterial(tuPIVersion));
 		}
 		else
 		{
@@ -549,23 +669,25 @@ public class ShipmentScheduleWithHU
 				return retrievePiipForReferencedRecord();
 			}
 
-			Check.assume(huMaterialItems.size() == 1, "Each hu has just one M_HU_Item with type={}; hu={}; huMaterialItems={}", X_M_HU_Item.ITEMTYPE_Material, tuOrVhu, huMaterialItems);
-			final I_M_HU_Item huMaterialItem = huMaterialItems.get(0);
-			materialPIItem = handlingUnitsBL.getPIItem(huMaterialItem);
+			materialPIItems = handlingUnitsBL.getPIItems(huMaterialItems);
 		}
 
 		final IHUPIItemProductDAO piItemProductDAO = Services.get(IHUPIItemProductDAO.class);
-		if (materialPIItem != null)
+		if (!materialPIItems.isEmpty())
 		{
 			final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-			
+
 			final BPartnerId bpartnerId = shipmentScheduleEffectiveBL.getBPartnerId(shipmentSchedule);
 			final ZonedDateTime preparationDate = shipmentScheduleEffectiveBL.getPreparationDate(shipmentSchedule);
-			final I_M_HU_PI_Item_Product matchingPiip = piItemProductDAO.retrievePIMaterialItemProduct(
-					materialPIItem,
-					bpartnerId,
-					getProductId(),
-					preparationDate);
+			final I_M_HU_PI_Item_Product matchingPiip = materialPIItems.stream()
+					.map(materialPIItem -> piItemProductDAO.retrievePIMaterialItemProduct(
+							materialPIItem,
+							bpartnerId,
+							getProductId(),
+							preparationDate))
+					.filter(Objects::nonNull)
+					.findFirst()
+					.orElse(null);
 			if (matchingPiip != null)
 			{
 				return matchingPiip;
@@ -594,5 +716,11 @@ public class ShipmentScheduleWithHU
 	public ShipperId getShipperId()
 	{
 		return ShipperId.ofRepoIdOrNull(shipmentSchedule.getM_Shipper_ID());
+	}
+
+	@Nullable
+	public ProjectId getProjectId()
+	{
+		return ProjectId.ofRepoIdOrNull(shipmentSchedule.getC_Project_ID());
 	}
 }

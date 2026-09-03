@@ -30,11 +30,11 @@ import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_ShipperTransportation_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
 import de.metas.inout.InOutId;
-import de.metas.shipping.mpackage.PackageId;
 import de.metas.product.ProductId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -131,7 +131,7 @@ public class M_Package_StepDef
 	}
 
 	@And("^validate M_Packages for shipment (.*)$")
-	public void validateMPackages(@NonNull String shipmentIdentifierStr, @NonNull final DataTable dataTable)
+	public void validateMPackages(@NonNull final String shipmentIdentifierStr, @NonNull final DataTable dataTable)
 	{
 		final InOutId shipmentId = shipmentTable.getId(shipmentIdentifierStr);
 		final List<I_M_Package> packageRecords = retrievePackagesByShipmentId(shipmentId)
@@ -145,7 +145,7 @@ public class M_Package_StepDef
 				.forEach((expectation, index) -> validateMPackage(packageRecords.get(index), expectation));
 	}
 
-	public void validateMPackage(@NonNull I_M_Package packageRecord, @NonNull final DataTableRow row)
+	public void validateMPackage(@NonNull final I_M_Package packageRecord, @NonNull final DataTableRow row)
 	{
 		final SoftAssertions softly = new SoftAssertions();
 
@@ -168,6 +168,18 @@ public class M_Package_StepDef
 				.ifPresent(packageWeight -> softly.assertThat(packageRecord.getPackageWeight())
 						.as("PackageWeight")
 						.isEqualByComparingTo(packageWeight));
+		row.getAsOptionalInt(I_M_Package.COLUMNNAME_LengthInCm)
+				.ifPresent(lengthInCM -> softly.assertThat(packageRecord.getLengthInCm())
+						.as("LengthInCm")
+						.isEqualByComparingTo(lengthInCM));
+		row.getAsOptionalInt(I_M_Package.COLUMNNAME_HeightInCm)
+				.ifPresent(heightInCM -> softly.assertThat(packageRecord.getHeightInCm())
+						.as("HeightInCm")
+						.isEqualByComparingTo(heightInCM));
+		row.getAsOptionalInt(I_M_Package.COLUMNNAME_WidthInCm)
+				.ifPresent(widthInCM -> softly.assertThat(packageRecord.getWidthInCm())
+						.as("WidthInCm")
+						.isEqualByComparingTo(widthInCM));
 
 		softly.assertAll();
 

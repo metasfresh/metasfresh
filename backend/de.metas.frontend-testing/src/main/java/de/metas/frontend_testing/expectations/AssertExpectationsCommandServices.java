@@ -2,6 +2,9 @@ package de.metas.frontend_testing.expectations;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.generichumodel.HUType;
+import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
@@ -15,11 +18,16 @@ import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.inout.IInOutDAO;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -27,12 +35,15 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
 import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -41,8 +52,13 @@ public class AssertExpectationsCommandServices
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	@NonNull private final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
 	@NonNull private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
+	@NonNull private final IShipmentScheduleInvalidateRepository invalidationRepository = Services.get(IShipmentScheduleInvalidateRepository.class);
 	@NonNull public final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
+	@NonNull private final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
+	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final HUQRCodesService huQRCodeService;
 	@NonNull private final PickingSlotService pickingSlotService;
@@ -57,9 +73,9 @@ public class AssertExpectationsCommandServices
 		return shipmentScheduleBL.getByIds(shipmentScheduleIds).values();
 	}
 
-	public List<I_M_ShipmentSchedule_QtyPicked> getShipmentScheduleQtyPickedRecords(final I_M_ShipmentSchedule shipmentSchedule)
+	public List<I_M_ShipmentSchedule_QtyPicked> getShipmentScheduleQtyPickedRecords(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
 	{
-		return shipmentScheduleAllocDAO.retrieveAllQtyPickedRecords(shipmentSchedule, I_M_ShipmentSchedule_QtyPicked.class);
+		return shipmentScheduleAllocDAO.retrieveAllQtyPickedRecords(shipmentScheduleIds, I_M_ShipmentSchedule_QtyPicked.class);
 	}
 
 	public StockQtyAndUOMQty extractQtyPicked(@NonNull final I_M_ShipmentSchedule_QtyPicked alloc, @NonNull final ProductId productId)
@@ -75,6 +91,11 @@ public class AssertExpectationsCommandServices
 	public HuId getHuIdByQRCode(@NonNull final HUQRCode qrCode)
 	{
 		return huQRCodeService.getHuIdByQRCode(qrCode);
+	}
+
+	public HUType getHUUnitType(@NonNull final I_M_HU hu)
+	{
+		return handlingUnitsBL.getHUUnitType(hu);
 	}
 
 	public IHUStorage getHUStorage(@NonNull final HuId huId)
@@ -102,5 +123,43 @@ public class AssertExpectationsCommandServices
 		return huPPOrderQtyDAO.retrieveOrderQtyForFinishedGoodsReceive(ppOrderId);
 	}
 
+	public List<I_M_HU> getIncludedHUs(@NonNull final HuId huId)
+	{
+		return handlingUnitsDAO.retrieveIncludedHUs(huId);
+	}
+
 	public List<I_M_HU> getCUs(final HuId huId) {return handlingUnitsBL.getVHUs(huId);}
+
+	public List<de.metas.handlingunits.model.I_M_InOutLine> getInOutLinesForHU(@NonNull final I_M_HU hu)
+	{
+		return huInOutDAO.retrieveInOutLinesForHU(hu);
+	}
+
+	public boolean isAllValid(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		return invalidationRepository.isAllValid(shipmentScheduleIds);
+	}
+
+	public List<I_M_InOut> getInOutsByOrderId(@NonNull final OrderId orderId)
+	{
+		return inOutDAO.retrieveInOutsByOrderId(orderId);
+	}
+
+	public List<I_M_InOutLine> getInOutLines(@NonNull final I_M_InOut inOut)
+	{
+		return inOutDAO.retrieveLines(inOut);
+	}
+
+	public Set<OrderLineId> getOrderLineIdsByOrderId(@NonNull final OrderId orderId)
+	{
+		return orderDAO.retrieveOrderLines(orderId)
+				.stream()
+				.map(line -> OrderLineId.ofRepoId(line.getC_OrderLine_ID()))
+				.collect(Collectors.toSet());
+	}
+
+	public List<I_M_InOutLine> getProcessedShipmentLinesByOrderLineIds(@NonNull final Set<OrderLineId> orderLineIds)
+	{
+		return inOutDAO.retrieveProcessedLinesForOrderLineIds(orderLineIds);
+	}
 }

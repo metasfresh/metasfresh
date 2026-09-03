@@ -1,12 +1,14 @@
+@import './variables.scss';
+
 .login-view {
 
-  .login-error {
-    min-height: 3em;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  .section {
+    padding-top: 0;
+    padding-bottom: 0;
   }
 
   .button {
+    width: 100%;
     background-color: $base-mf-green;
     color: white;
 
@@ -18,18 +20,20 @@
   }
 
   .alternative-button {
+    width: 100%;
     background-color: white;
     color: $base-mf-green;
     border-color: $base-mf-green;
     font-size: 1.25rem;
+    margin-top: 0.5rem;
   }
 
   .qr-code-auth {
-    .barcode-scanner {
+    padding-top: 0;
+    padding-bottom: 0;
+
+    .barcode-scanner video {
       max-height: 50vh;
-      video {
-        max-height: 50vh;
-      }
     }
   }
 }

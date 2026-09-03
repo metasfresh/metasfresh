@@ -1,12 +1,17 @@
 package de.metas.manufacturing.job.service.commands.create_job;
 
 import com.google.common.collect.ArrayListMultimap;
+import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleCreateRequest;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
 import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
 import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.manufacturing.config.MobileUIManufacturingConfig;
+import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
 import de.metas.manufacturing.issue.plan.PPOrderIssuePlan;
 import de.metas.manufacturing.issue.plan.PPOrderIssuePlanCreateCommand;
 import de.metas.manufacturing.issue.plan.PPOrderIssuePlanStep;
@@ -18,27 +23,30 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.lang.SeqNoProvider;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
-import org.eevolution.model.I_PP_Order;
-
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
 
+@Slf4j
 public class ManufacturingJobCreateCommand
 {
-	private final ITrxManager trxManager;
-	private final IHUPPOrderBL ppOrderBL;
-	private final HUReservationService huReservationService;
-	private final PPOrderSourceHUService ppOrderSourceHUService;
-	private final PPOrderIssueScheduleService ppOrderIssueScheduleService;
-	private final ManufacturingJobLoaderAndSaverSupportingServices loadingSupportServices;
+	@NonNull private final ITrxManager trxManager;
+	@NonNull private final IHUPPOrderBL ppOrderBL;
+	@NonNull private final HUReservationService huReservationService;
+	@NonNull private final PPOrderSourceHUService ppOrderSourceHUService;
+	@NonNull private final PPOrderIssueScheduleService ppOrderIssueScheduleService;
+	@NonNull private final ManufacturingJobLoaderAndSaverSupportingServices loadingSupportServices;
+	@NonNull private final MobileUIManufacturingConfigRepository mobileUIManufacturingConfigRepository;
 
 	// Params
-	private final PPOrderId ppOrderId;
-	private final UserId responsibleId;
+	@NonNull private final PPOrderId ppOrderId;
+	@NonNull private final UserId responsibleId;
 
 	// State
 	private ManufacturingJobLoaderAndSaver loader;
@@ -52,6 +60,7 @@ public class ManufacturingJobCreateCommand
 			@NonNull final PPOrderSourceHUService ppOrderSourceHUService,
 			@NonNull final PPOrderIssueScheduleService ppOrderIssueScheduleService,
 			@NonNull final ManufacturingJobLoaderAndSaverSupportingServices loadingSupportServices,
+			@NonNull final MobileUIManufacturingConfigRepository mobileUIManufacturingConfigRepository,
 			//
 			@NonNull final PPOrderId ppOrderId,
 			@NonNull final UserId responsibleId)
@@ -62,6 +71,7 @@ public class ManufacturingJobCreateCommand
 		this.ppOrderSourceHUService = ppOrderSourceHUService;
 		this.ppOrderIssueScheduleService = ppOrderIssueScheduleService;
 		this.loadingSupportServices = loadingSupportServices;
+		this.mobileUIManufacturingConfigRepository = mobileUIManufacturingConfigRepository;
 
 		this.ppOrderId = ppOrderId;
 		this.responsibleId = responsibleId;
@@ -81,10 +91,52 @@ public class ManufacturingJobCreateCommand
 
 		setResponsible();
 
-		final PPOrderIssuePlan plan = createIssuePlan();
-		createIssueSchedules(plan);
+		final ClientId clientId = ClientId.ofRepoId(ppOrder.getAD_Client_ID());
+		final MobileUIManufacturingConfig config = mobileUIManufacturingConfigRepository.getConfig(responsibleId, clientId);
+		final boolean isCreatePlan = !config.getIsAllowIssuingAnyHU().isTrue();
+		if (isCreatePlan)
+		{
+			final PPOrderIssuePlan plan = createIssuePlan();
+			createIssueSchedules(plan);
+		}
+
+		if (config.getReceiveUnitTypeEffective().isTU())
+		{
+			setReceivingTUPIItemProduct();
+		}
 
 		return loader.load(ppOrderId);
+	}
+
+	private void setReceivingTUPIItemProduct()
+	{
+		// Already set (e.g., from a previous job creation)
+		if (ppOrder.getCurrent_Receiving_TU_PI_Item_Product_ID() > 0)
+		{
+			return;
+		}
+
+		final HUPIItemProductId tuPIItemProductId = suggestReceivingTUPIItemProductId();
+
+		if (tuPIItemProductId != null)
+		{
+			ppOrder.setCurrent_Receiving_TU_PI_Item_Product_ID(tuPIItemProductId.getRepoId());
+			ppOrderBL.save(ppOrder);
+		}
+		else
+		{
+			log.warn("Cannot determine TU PI Item Product for PP_Order_ID={}. TU receiving mode will not work properly.", ppOrderId);
+		}
+	}
+
+	@Nullable
+	private HUPIItemProductId suggestReceivingTUPIItemProductId()
+	{
+		final I_M_HU_PI_Item_Product pip = ppOrderBL.createReceiptLUTUConfigurationManager(ppOrder)
+				.getM_HU_PI_Item_Product();
+
+		final HUPIItemProductId id = HUPIItemProductId.ofRepoId(pip.getM_HU_PI_Item_Product_ID());
+		return id.isVirtualHU() ? null : id;
 	}
 
 	private void setResponsible()
@@ -122,7 +174,6 @@ public class ManufacturingJobCreateCommand
 				.stream()
 				.collect(GuavaCollectors.toArrayListMultimapByKey(PPOrderIssueSchedule::getPpOrderBOMLineId));
 
-
 		final ArrayList<PPOrderIssueSchedule> schedules = new ArrayList<>();
 
 		final SeqNoProvider seqNoProvider = SeqNoProvider.ofInt(10);
@@ -132,9 +183,9 @@ public class ManufacturingJobCreateCommand
 			final ArrayList<PPOrderIssueSchedule> bomLineExistingSchedules = new ArrayList<>(allExistingSchedules.removeAll(orderBOMLineId));
 			bomLineExistingSchedules.sort(Comparator.comparing(PPOrderIssueSchedule::getSeqNo));
 
-			for(final PPOrderIssueSchedule existingSchedule : bomLineExistingSchedules)
+			for (final PPOrderIssueSchedule existingSchedule : bomLineExistingSchedules)
 			{
-				if(existingSchedule.isIssued())
+				if (existingSchedule.isIssued())
 				{
 					final PPOrderIssueSchedule existingScheduleChanged = ppOrderIssueScheduleService.changeSeqNo(existingSchedule, seqNoProvider.getAndIncrement());
 					schedules.add(existingScheduleChanged);

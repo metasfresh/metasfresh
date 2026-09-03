@@ -1,15 +1,14 @@
 package de.metas.invoicecandidate.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-
 /** Generated Interface for C_Invoice_Candidate
- *  @author metasfresh (generated)
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_C_Invoice_Candidate
+public interface I_C_Invoice_Candidate 
 {
 
 	String Table_Name = "C_Invoice_Candidate";
@@ -31,7 +30,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Inputsource.
+	 * Set Input Source.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -40,7 +39,7 @@ public interface I_C_Invoice_Candidate
 	void setAD_InputDataSource_ID (int AD_InputDataSource_ID);
 
 	/**
-	 * Get Inputsource.
+	 * Get Input Source.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -540,6 +539,33 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_C_DocType_Invoicing_Pool_ID = "C_DocType_Invoicing_Pool_ID";
 
 	/**
+	 * Set Account (Override).
+	 * The GL account to which this invoice or invoice line is posted.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_ElementValue_Override_ID (int C_ElementValue_Override_ID);
+
+	/**
+	 * Get Account (Override).
+	 * The GL account to which this invoice or invoice line is posted.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_ElementValue_Override_ID();
+
+	@Nullable org.compiere.model.I_C_ElementValue getC_ElementValue_Override();
+
+	void setC_ElementValue_Override(@Nullable org.compiere.model.I_C_ElementValue C_ElementValue_Override);
+
+	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_ElementValue> COLUMN_C_ElementValue_Override_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_ElementValue_Override_ID", org.compiere.model.I_C_ElementValue.class);
+	String COLUMNNAME_C_ElementValue_Override_ID = "C_ElementValue_Override_ID";
+
+	/**
 	 * Set Flatrate Term.
 	 *
 	 * <br>Type: TableDir
@@ -863,7 +889,6 @@ public interface I_C_Invoice_Candidate
 	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_OrderLine_ID", org.compiere.model.I_C_OrderLine.class);
 	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
 
-
 	/**
 	 * Set Sales Order.
 	 *
@@ -888,6 +913,7 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_Order> COLUMN_C_OrderSO_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_OrderSO_ID", org.compiere.model.I_C_Order.class);
 	String COLUMNNAME_C_OrderSO_ID = "C_OrderSO_ID";
+
 	/**
 	 * Set Zahlungsbedingung eff..
 	 *
@@ -975,6 +1001,56 @@ public interface I_C_Invoice_Candidate
 	int getC_Project_ID();
 
 	String COLUMNNAME_C_Project_ID = "C_Project_ID";
+
+	/**
+	 * Set Promotion Code 2.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_PromotionCode2_ID (int C_PromotionCode2_ID);
+
+	/**
+	 * Get Promotion Code 2.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_PromotionCode2_ID();
+
+	@Nullable org.compiere.model.I_C_PromotionCode getC_PromotionCode2();
+
+	void setC_PromotionCode2(@Nullable org.compiere.model.I_C_PromotionCode C_PromotionCode2);
+
+	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_PromotionCode> COLUMN_C_PromotionCode2_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_PromotionCode2_ID", org.compiere.model.I_C_PromotionCode.class);
+	String COLUMNNAME_C_PromotionCode2_ID = "C_PromotionCode2_ID";
+
+	/**
+	 * Set Promotion Code.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_PromotionCode_ID (int C_PromotionCode_ID);
+
+	/**
+	 * Get Promotion Code.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_PromotionCode_ID();
+
+	@Nullable org.compiere.model.I_C_PromotionCode getC_PromotionCode();
+
+	void setC_PromotionCode(@Nullable org.compiere.model.I_C_PromotionCode C_PromotionCode);
+
+	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_PromotionCode> COLUMN_C_PromotionCode_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_PromotionCode_ID", org.compiere.model.I_C_PromotionCode.class);
+	String COLUMNNAME_C_PromotionCode_ID = "C_PromotionCode_ID";
 
 	/**
 	 * Get Created.
@@ -1068,6 +1144,7 @@ public interface I_C_Invoice_Candidate
 
 	/**
 	 * Set Tax override.
+	 * Overrides the automatically determined tax rate for invoicing.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1077,6 +1154,7 @@ public interface I_C_Invoice_Candidate
 
 	/**
 	 * Get Tax override.
+	 * Overrides the automatically determined tax rate for invoicing.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1090,7 +1168,7 @@ public interface I_C_Invoice_Candidate
 	 * Set UOM.
 	 * Unit of Measure
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1100,7 +1178,7 @@ public interface I_C_Invoice_Candidate
 	 * Get UOM.
 	 * Unit of Measure
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1270,7 +1348,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_DateToInvoice_Override = "DateToInvoice_Override";
 
 	/**
-	 * Set Shipmentdate.
+	 * Set Delivery Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1279,7 +1357,7 @@ public interface I_C_Invoice_Candidate
 	void setDeliveryDate (@Nullable java.sql.Timestamp DeliveryDate);
 
 	/**
-	 * Get Shipmentdate.
+	 * Get Delivery Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1289,6 +1367,31 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_DeliveryDate = new ModelColumn<>(I_C_Invoice_Candidate.class, "DeliveryDate", null);
 	String COLUMNNAME_DeliveryDate = "DeliveryDate";
+
+	/**
+	 * Set Delivery Status.
+	 * Red : No items have been delivered. Yellow: Partial delivery has been made. Green: The full order has been delivered. Blue: More items than ordered have been delivered.
+	 *
+	 * <br>Type: Color
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setDeliveryStatusColor_ID (int DeliveryStatusColor_ID);
+
+	/**
+	 * Get Delivery Status.
+	 * Red : No items have been delivered. Yellow: Partial delivery has been made. Green: The full order has been delivered. Blue: More items than ordered have been delivered.
+	 *
+	 * <br>Type: Color
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	int getDeliveryStatusColor_ID();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_DeliveryStatusColor_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "DeliveryStatusColor_ID", null);
+	String COLUMNNAME_DeliveryStatusColor_ID = "DeliveryStatusColor_ID";
 
 	/**
 	 * Set Description.
@@ -1482,6 +1585,27 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_ExternalLineId = "ExternalLineId";
 
 	/**
+	 * Set External System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSystem_ID (int ExternalSystem_ID);
+
+	/**
+	 * Get External System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getExternalSystem_ID();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_ExternalSystem_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "ExternalSystem_ID", null);
+	String COLUMNNAME_ExternalSystem_ID = "ExternalSystem_ID";
+
+	/**
 	 * Set Ship Location.
 	 * BParter location of primary shipment/receipt
 	 *
@@ -1502,6 +1626,31 @@ public interface I_C_Invoice_Candidate
 	int getFirst_Ship_BPLocation_ID();
 
 	String COLUMNNAME_First_Ship_BPLocation_ID = "First_Ship_BPLocation_ID";
+
+	/**
+	 * Set Grand Total.
+	 * Total amount of document
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setGrandTotal (@Nullable BigDecimal GrandTotal);
+
+	/**
+	 * Get Grand Total.
+	 * Total amount of document
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	BigDecimal getGrandTotal();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_GrandTotal = new ModelColumn<>(I_C_Invoice_Candidate.class, "GrandTotal", null);
+	String COLUMNNAME_GrandTotal = "GrandTotal";
 
 	/**
 	 * Set Compensation Amount Type.
@@ -1808,6 +1957,33 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_InvoicingErrorMsg = "InvoicingErrorMsg";
 
 	/**
+	 * Set Rechnungsstatus.
+	 * Red: No items have been invoiced. Yellow: Partial invoicing quantity has been done. Green: The full quantity has been invoiced. Blue: More than the expected quantity has been invoiced.
+	 *
+	 * <br>Type: Color
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setInvoicingStatusColor_ID (int InvoicingStatusColor_ID);
+
+	/**
+	 * Get Rechnungsstatus.
+	 * Red: No items have been invoiced. Yellow: Partial invoicing quantity has been done. Green: The full quantity has been invoiced. Blue: More than the expected quantity has been invoiced.
+	 *
+	 * <br>Type: Color
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	int getInvoicingStatusColor_ID();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_InvoicingStatusColor_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "InvoicingStatusColor_ID", null);
+	String COLUMNNAME_InvoicingStatusColor_ID = "InvoicingStatusColor_ID";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -1852,6 +2028,27 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_IsAllowSeparateInvoicing = "IsAllowSeparateInvoicing";
 
 	/**
+	 * Set Auto Invoice.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAutoInvoice (boolean IsAutoInvoice);
+
+	/**
+	 * Get Auto Invoice.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAutoInvoice();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsAutoInvoice = new ModelColumn<>(I_C_Invoice_Candidate.class, "IsAutoInvoice", null);
+	String COLUMNNAME_IsAutoInvoice = "IsAutoInvoice";
+
+	/**
 	 * Set Delivery Closed.
 	 *
 	 * <br>Type: YesNo
@@ -1873,42 +2070,25 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_IsDeliveryClosed = "IsDeliveryClosed";
 
 	/**
-	 * Set Document to be sent via EDI.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsEdiEnabled (boolean IsEdiEnabled);
-
-	/**
-	 * Get Document to be sent via EDI.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isEdiEnabled();
-
-	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsEdiEnabled = new ModelColumn<>(I_C_Invoice_Candidate.class, "IsEdiEnabled", null);
-	String COLUMNNAME_IsEdiEnabled = "IsEdiEnabled";
-
-	/**
 	 * Set EDI INVOIC Receipient.
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	void setIsEdiInvoicRecipient (boolean IsEdiInvoicRecipient);
 
 	/**
 	 * Get EDI INVOIC Receipient.
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	boolean isEdiInvoicRecipient();
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsEdiInvoicRecipient = new ModelColumn<>(I_C_Invoice_Candidate.class, "IsEdiInvoicRecipient", null);
@@ -2269,6 +2449,27 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsToRecompute = new ModelColumn<>(I_C_Invoice_Candidate.class, "IsToRecompute", null);
 	String COLUMNNAME_IsToRecompute = "IsToRecompute";
+
+	/**
+	 * Set Without Charge.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsWithoutCharge (boolean IsWithoutCharge);
+
+	/**
+	 * Get Without Charge.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isWithoutCharge();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsWithoutCharge = new ModelColumn<>(I_C_Invoice_Candidate.class, "IsWithoutCharge", null);
+	String COLUMNNAME_IsWithoutCharge = "IsWithoutCharge";
 
 	/**
 	 * Set SeqNo..
@@ -3045,6 +3246,27 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_QtyEntered = "QtyEntered";
 
 	/**
+	 * Set Quantity TU.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyEnteredTU (@Nullable BigDecimal QtyEnteredTU);
+
+	/**
+	 * Get Quantity TU.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyEnteredTU();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyEnteredTU = new ModelColumn<>(I_C_Invoice_Candidate.class, "QtyEnteredTU", null);
+	String COLUMNNAME_QtyEnteredTU = "QtyEnteredTU";
+
+	/**
 	 * Set Quantity Invoiced.
 	 * Invoiced quantity in the product's UOM.
 	 *
@@ -3450,6 +3672,31 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_QualityDiscountPercent_Override = "QualityDiscountPercent_Override";
 
 	/**
+	 * Set Quality Discount %.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setQualityDiscountPercent_ReceiptSchedule (@Nullable BigDecimal QualityDiscountPercent_ReceiptSchedule);
+
+	/**
+	 * Get Quality Discount %.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	BigDecimal getQualityDiscountPercent_ReceiptSchedule();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QualityDiscountPercent_ReceiptSchedule = new ModelColumn<>(I_C_Invoice_Candidate.class, "QualityDiscountPercent_ReceiptSchedule", null);
+	String COLUMNNAME_QualityDiscountPercent_ReceiptSchedule = "QualityDiscountPercent_ReceiptSchedule";
+
+	/**
 	 * Set Rechnungspositionsart.
 	 *
 	 * <br>Type: List
@@ -3469,6 +3716,52 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QualityInvoiceLineGroupType = new ModelColumn<>(I_C_Invoice_Candidate.class, "QualityInvoiceLineGroupType", null);
 	String COLUMNNAME_QualityInvoiceLineGroupType = "QualityInvoiceLineGroupType";
+
+	/**
+	 * Set Quality Note.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setQualityNote_ReceiptSchedule (@Nullable java.lang.String QualityNote_ReceiptSchedule);
+
+	/**
+	 * Get Quality Note.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	@Nullable java.lang.String getQualityNote_ReceiptSchedule();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QualityNote_ReceiptSchedule = new ModelColumn<>(I_C_Invoice_Candidate.class, "QualityNote_ReceiptSchedule", null);
+	String COLUMNNAME_QualityNote_ReceiptSchedule = "QualityNote_ReceiptSchedule";
+
+	/**
+	 * Set Reason.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setReason (@Nullable java.lang.String Reason);
+
+	/**
+	 * Get Reason.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getReason();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_Reason = new ModelColumn<>(I_C_Invoice_Candidate.class, "Reason", null);
+	String COLUMNNAME_Reason = "Reason";
 
 	/**
 	 * Set Quality Discount Reason.
@@ -3513,6 +3806,32 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_Record_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "Record_ID", null);
 	String COLUMNNAME_Record_ID = "Record_ID";
+
+	/**
+	 * Set Account manager.
+	 * Sales Representative or Company Agent
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setSalesRep_ID (int SalesRep_ID);
+
+	/**
+	 * Get Account manager.
+	 * Sales Representative or Company Agent
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	int getSalesRep_ID();
+
+	String COLUMNNAME_SalesRep_ID = "SalesRep_ID";
 
 	/**
 	 * Set Update Status.

@@ -23,8 +23,14 @@
 package de.metas.workflow.rest_api.service;
 
 import de.metas.i18n.AdMessageKey;
+import lombok.experimental.UtilityClass;
+import org.adempiere.ad.dao.QueryLimit;
 
-public interface Constants
+@UtilityClass
+public class Constants
 {
-	AdMessageKey ARE_YOU_SURE = AdMessageKey.of("de.metas.workflow.rest_api.service.ARE_YOU_SURE");
+	public static final AdMessageKey ARE_YOU_SURE = AdMessageKey.of("de.metas.workflow.rest_api.service.ARE_YOU_SURE");
+
+	public static final String SYSCONFIG_LaunchersLimit = "WorkflowRestAPIService.LaunchersLimit";
+	public static final QueryLimit DEFAULT_LaunchersLimit = QueryLimit.ofInt(20);
 }

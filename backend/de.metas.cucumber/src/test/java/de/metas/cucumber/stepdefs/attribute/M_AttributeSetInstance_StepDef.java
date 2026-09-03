@@ -37,8 +37,9 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_AttributeSetInstance;
 
@@ -52,7 +53,7 @@ import static org.compiere.model.I_M_AttributeSetInstance.COLUMNNAME_M_Attribute
 public class M_AttributeSetInstance_StepDef
 {
 	private final JsonAttributeService jsonAttributeService = SpringContextHolder.instance.getBean(JsonAttributeService.class);
-	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 
@@ -103,7 +104,7 @@ public class M_AttributeSetInstance_StepDef
 
 		final AttributeSetInstanceId asiId = getAttributeSetInstanceId(row);
 		SharedTestContext.put("asiId", asiId);
-		final ImmutableAttributeSet asi = attributeDAO.getImmutableAttributeSetById(asiId);
+		final ImmutableAttributeSet asi = asiBL.getImmutableAttributeSetById(asiId);
 		SharedTestContext.put("asi", asi);
 
 		final String expectedValue = row.getAsOptionalString("Value").orElse(null);
@@ -116,7 +117,7 @@ public class M_AttributeSetInstance_StepDef
 	{
 		final AttributeSetInstanceId asiId = getAttributeSetInstanceId(row);
 		SharedTestContext.put("asiId", asiId);
-		final ImmutableAttributeSet asi = attributeDAO.getImmutableAttributeSetById(asiId);
+		final ImmutableAttributeSet asi = asiBL.getImmutableAttributeSetById(asiId);
 		SharedTestContext.put("asi", asi);
 
 		final List<String> expectedValues = row.getAsCommaSeparatedString("Value");
@@ -137,5 +138,30 @@ public class M_AttributeSetInstance_StepDef
 	private AttributeSetInstanceId getAttributeSetInstanceId(final DataTableRow row)
 	{
 		return attributeSetInstanceTable.getId(row.getAsIdentifier(COLUMNNAME_M_AttributeSetInstance_ID));
+	}
+
+	/**
+	 * @cucumber.stepdef Asserts column values of an M_AttributeSetInstance (currently its Description).
+	 * @cucumber.columns
+	 *   <b>M_AttributeSetInstance_ID</b> &mdash; (required, identifier-ref) the ASI to validate.<br>
+	 *   <b>Description</b> &mdash; (optional) expected M_AttributeSetInstance.Description.<br>
+	 * @cucumber.depends StepDefData: M_AttributeSetInstance_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then validate M_AttributeSetInstance:
+	 *   | M_AttributeSetInstance_ID | Description |
+	 *   | asi_1                     | M_5         |
+	 * </pre>
+	 */
+	@And("validate M_AttributeSetInstance:")
+	public void validate_M_AttributeSetInstance(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach((row) -> {
+			final I_M_AttributeSetInstance asi = attributeSetInstanceTable.get(row.getAsIdentifier(COLUMNNAME_M_AttributeSetInstance_ID));
+			InterfaceWrapperHelper.refresh(asi);
+
+			row.getAsOptionalString(I_M_AttributeSetInstance.COLUMNNAME_Description)
+					.ifPresent(expectedDescription -> assertThat(asi.getDescription()).as("M_AttributeSetInstance Description").isEqualTo(expectedDescription));
+		});
 	}
 }

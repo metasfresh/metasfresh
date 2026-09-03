@@ -34,6 +34,5 @@ import java.util.List;
 @Jacksonized
 public class JsonHUList
 {
-	@NonNull
-	List<JsonHU> hus;
+	@NonNull List<JsonHU> hus;
 }

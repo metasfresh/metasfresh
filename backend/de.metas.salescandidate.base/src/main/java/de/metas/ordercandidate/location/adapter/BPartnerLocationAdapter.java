@@ -113,6 +113,12 @@ public class BPartnerLocationAdapter
 	}
 
 	@Override
+	public void setRenderedAddress(final @NonNull RenderedAddressAndCapturedLocation from)
+	{
+		IDocumentLocationAdapter.super.setRenderedAddress(from);
+	}
+
+	@Override
 	public Optional<DocumentLocation> toPlainDocumentLocation(final IDocumentLocationBL documentLocationBL)
 	{
 		return documentLocationBL.toPlainDocumentLocation(this);

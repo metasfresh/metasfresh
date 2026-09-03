@@ -211,9 +211,20 @@ export function rowActionsRequest({ windowId, documentId, tabId, rowId }) {
   );
 }
 
-export function processNewRecord(entity, docType, docId) {
-  return axios.get(
-    `${config.API_URL}/${entity}/${docType}/${docId}/processNewRecord`
+export function processNewRecord({
+  windowId,
+  documentId,
+  triggeringWindowId,
+  triggeringDocumentId,
+  triggeringField,
+}) {
+  return axios.post(
+    `${config.API_URL}/window/${windowId}/${documentId}/processNewRecord`,
+    {
+      triggeringWindowId,
+      triggeringDocumentId,
+      triggeringField,
+    }
   );
 }
 

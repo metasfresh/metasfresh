@@ -1,0 +1,2 @@
+# Ships inside this module test-jar, so any module depending on that test-jar inherits the inline mock maker for all of its own tests.
+mock-maker-inline

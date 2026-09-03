@@ -27,18 +27,15 @@ import de.metas.JsonObjectMapperHolder;
 import de.metas.audit.data.repository.DataExportAuditLogRepository;
 import de.metas.audit.data.repository.DataExportAuditRepository;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemConfigService;
-import de.metas.externalsystem.ExternalSystemTestUtil;
+import de.metas.externalsystem.ExternalSystemConfigTestUtil;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
-import de.metas.externalsystem.model.X_ExternalSystem_Config;
-import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
 import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.organization.OrgId;
-import de.metas.pricing.tax.TaxCategoryDAO;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Org;
@@ -53,9 +50,10 @@ import java.io.InputStream;
 import java.util.Optional;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_MF_TO_ES;
+import static de.metas.externalsystem.ExternalSystemType.GRSSignum;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ExportHUToGRSServiceTest
 {
@@ -76,7 +74,7 @@ public class ExportHUToGRSServiceTest
 
 		exportHUToGRSService = new ExportHUToGRSService(new DataExportAuditRepository(),
 														new DataExportAuditLogRepository(),
-														new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository(), new TaxCategoryDAO()),
+														ExternalSystemConfigRepository.newInstanceForUnitTesting(),
 														new ExternalSystemMessageSender(new RabbitTemplate(), new Queue(QUEUE_NAME_MF_TO_ES)),
 														externalSystemConfigServiceMock);
 		createPrerequisites();
@@ -90,12 +88,12 @@ public class ExportHUToGRSServiceTest
 	public void givenGRSConfig_syncHUsOnMaterialReceipt_whenGetExportExternalSystemRequest_thenReturnExternalSystemRequest()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
+		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
 				.customParentConfigId(1)
-				.type(X_ExternalSystem_Config.TYPE_GRSSignum)
+				.type(GRSSignum.getValue())
 				.build();
 
-		final I_ExternalSystem_Config_GRSSignum externalSystemConfigGrsSignum = ExternalSystemTestUtil.createGrsConfigBuilder()
+		final I_ExternalSystem_Config_GRSSignum externalSystemConfigGrsSignum = ExternalSystemConfigTestUtil.createGrsConfigBuilder()
 				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
 				.value("grsValue")
 				.syncHUsOnMaterialReceipt(true)
@@ -116,12 +114,12 @@ public class ExportHUToGRSServiceTest
 	public void givenGRSConfig_syncHUsOneEnabled_whenGetExportExternalSystemRequest_thenReturnExternalSystemRequest()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
+		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
 				.customParentConfigId(1)
-				.type(X_ExternalSystem_Config.TYPE_GRSSignum)
+				.type(GRSSignum.getValue())
 				.build();
 
-		final I_ExternalSystem_Config_GRSSignum externalSystemConfigGrsSignum = ExternalSystemTestUtil.createGrsConfigBuilder()
+		final I_ExternalSystem_Config_GRSSignum externalSystemConfigGrsSignum = ExternalSystemConfigTestUtil.createGrsConfigBuilder()
 				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
 				.value("grsValue")
 				.syncHUsOnMaterialReceipt(true)
@@ -142,12 +140,12 @@ public class ExportHUToGRSServiceTest
 	public void givenGRSConfig_syncHUsBothDisabled_whenGetExportExternalSystemRequest_thenReturnNoExternalSystemRequest()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
+		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
 				.customParentConfigId(1)
-				.type(X_ExternalSystem_Config.TYPE_GRSSignum)
+				.type(GRSSignum.getValue())
 				.build();
 
-		final I_ExternalSystem_Config_GRSSignum externalSystemConfigGrsSignum = ExternalSystemTestUtil.createGrsConfigBuilder()
+		final I_ExternalSystem_Config_GRSSignum externalSystemConfigGrsSignum = ExternalSystemConfigTestUtil.createGrsConfigBuilder()
 				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
 				.value("grsValue")
 				.build();

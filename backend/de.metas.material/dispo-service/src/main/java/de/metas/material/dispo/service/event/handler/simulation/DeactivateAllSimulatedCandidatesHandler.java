@@ -54,6 +54,7 @@ public class DeactivateAllSimulatedCandidatesHandler implements MaterialEventHan
 	@Override
 	public void handleEvent(@NonNull final DeactivateAllSimulatedCandidatesEvent event)
 	{
+		// no MRP_Exclude guard: warehouse not on the event
 		simulatedCandidateService.deactivateAllSimulatedCandidates();
 	}
 }

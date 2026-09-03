@@ -19,12 +19,10 @@ import de.metas.costing.CurrentCost;
 import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import de.metas.currency.CurrencyPrecision;
-import de.metas.material.planning.IResourceProductService;
-import de.metas.product.ProductId;
-import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
@@ -36,7 +34,6 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.springframework.stereotype.Component;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.Set;
 
@@ -63,6 +60,7 @@ import java.util.Set;
  */
 
 @Component
+@RequiredArgsConstructor
 public class ManufacturingLastPOCostingMethodHandler implements CostingMethodHandler
 {
 	private static final ImmutableSet<String> HANDLED_TABLE_NAMES = ImmutableSet.<String>builder()
@@ -70,17 +68,12 @@ public class ManufacturingLastPOCostingMethodHandler implements CostingMethodHan
 			.build();
 	// services
 	private final IPPCostCollectorBL costCollectorsService = Services.get(IPPCostCollectorBL.class);
-	private final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
 	private final IPPOrderCostBL ppOrderCostsService = Services.get(IPPOrderCostBL.class);
 	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 	//
-	private final CostingMethodHandlerUtils utils;
+	@NonNull private final CostingMethodHandlerUtils utils;
+	@NonNull private final PPOrderCostDifferenceDistributor costDifferenceDistributor;
 
-	public ManufacturingLastPOCostingMethodHandler(
-			@NonNull final CostingMethodHandlerUtils utils)
-	{
-		this.utils = utils;
-	}
 
 	@Override
 	public CostingMethod getCostingMethod()
@@ -118,29 +111,19 @@ public class ManufacturingLastPOCostingMethodHandler implements CostingMethodHan
 		if (costCollectorType.isMaterialReceiptOrCoProduct())
 		{
 			orderCosts = ppOrderCostsService.getByOrderId(orderId);
-			currentCost = utils.getCurrentCost(request);
+			currentCost = utils.getCurrentCostForUpdate(request);
 			result = createMainProductOrCoProductReceipt(request, currentCost, orderCosts);
 		}
 		else if (costCollectorType.isAnyComponentIssue(orderBOMLineId))
 		{
 			orderCosts = ppOrderCostsService.getByOrderId(orderId);
-			currentCost = utils.getCurrentCost(request);
+			currentCost = utils.getCurrentCostForUpdate(request);
 			result = createComponentIssue(request, currentCost, orderCosts);
 		}
 		else if (costCollectorType.isActivityControl())
 		{
-			final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
-			if (actualResourceId.isNoResource())
-			{
-				return CostDetailCreateResultsList.EMPTY;
-			}
-
-			final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
-			final Duration totalDuration = costCollectorsService.getTotalDurationReported(cc);
-
-			orderCosts = null;
-			currentCost = null;
-			result = createActivityControl(request.withProductId(actualResourceProductId), totalDuration);
+			// Activity-control costs are not tracked for this costing method -> post zero facts
+			return CostDetailCreateResultsList.EMPTY;
 		}
 		else if (costCollectorType.isUsageVariance()
 				|| costCollectorType.isMethodChangeVariance()
@@ -151,6 +134,10 @@ public class ManufacturingLastPOCostingMethodHandler implements CostingMethodHan
 			orderCosts = null;
 			currentCost = null;
 			result = null;
+		}
+		else if (costCollectorType.isCostDifferenceDistribution())
+		{
+			return costDifferenceDistributor.createCostDetails(request, orderId);
 		}
 		else
 		{
@@ -193,12 +180,18 @@ public class ManufacturingLastPOCostingMethodHandler implements CostingMethodHan
 		final CostDetailCreateRequest requestEffective;
 		if (!request.isReversal())
 		{
-			final CostPrice price = orderCosts.getPriceByCostSegmentAndElement(costSegmentAndElement)
-					.orElseThrow(() -> new AdempiereException("No cost price found for " + costSegmentAndElement + " in " + orderCosts));
-
+			// Value the receipt at the product's CURRENT M_Cost, not the frozen BOM-rollup price.
+			// Any make-vs-average delta is intentionally left in WIP (not forced to zero).
+			final CostPrice price = currentCost.getCostPrice();
 			final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), costSegmentAndElement.getProductId());
 			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCost.getPrecision());
 			requestEffective = request.withAmountAndQty(amt, qty);
+			// Persisted only on this non-reversal path. A reversal leaves the persisted price unchanged,
+			// which is harmless: nothing reads PP_Order_Cost.price between a reversal and the next receipt
+			// (updatePostCalculationAmountsForCostElement reads only accumulatedAmount/postCalculationAmount,
+			// and Doc_PPCostCollector posts from M_CostDetail, never from PP_Order_Cost.price); the next
+			// non-reversal receipt overwrites it.
+			orderCosts.updatePriceForCostSegmentAndElement(costSegmentAndElement, price);
 		}
 		else
 		{
@@ -227,39 +220,36 @@ public class ManufacturingLastPOCostingMethodHandler implements CostingMethodHan
 	{
 		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
 
+		final CostDetailCreateRequest requestEffective;
 		final CostDetailCreateResult result;
 		if (request.isReversal())
 		{
-			result = utils.createCostDetailRecordWithChangedCosts(request, previousCosts);
-			currentCosts.addWeightedAverage(request.getAmt(), request.getQty(), utils.getQuantityUOMConverter());
+			requestEffective = request;
+			result = utils.createCostDetailRecordWithChangedCosts(requestEffective, previousCosts);
+			currentCosts.addWeightedAverage(requestEffective.getAmt(), requestEffective.getQty(), utils.getQuantityUOMConverter());
 		}
 		else
 		{
+			// Value the issue at the component's CURRENT M_Cost; the request itself carries no amount.
 			final CostPrice price = currentCosts.getCostPrice();
 			final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), request.getProductId());
 			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
-			final CostDetailCreateRequest requestEffective = request.withAmountAndQty(amt, qty);
+			requestEffective = request.withAmountAndQty(amt, qty);
 			result = utils.createCostDetailRecordWithChangedCosts(requestEffective, previousCosts);
 
 			currentCosts.addToCurrentQtyAndCumulate(requestEffective.getQty(), requestEffective.getAmt());
 		}
 
 		// Accumulate to order costs
+		// NOTE: PP_Order_Cost keeps the stock-movement direction in the qty, but accumulates the cost that went
+		// INTO the order with the opposite sign - hence the negate() on the amount only.
 		orderCosts.accumulateInboundCostAmount(
 				utils.extractCostSegmentAndElement(request),
-				request.getAmt(),
-				request.getQty(),
+				requestEffective.getAmt().negate(),
+				requestEffective.getQty(),
 				utils.getQuantityUOMConverter());
 
 		return result;
-	}
-
-	private CostDetailCreateResult createActivityControl(
-			final CostDetailCreateRequest request,
-			final Duration totalDuration)
-	{
-		// TODO Auto-generated method stub
-		throw new AdempiereException("Computing activity costs is not yet supported");
 	}
 
 	@Override

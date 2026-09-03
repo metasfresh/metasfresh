@@ -10,6 +10,7 @@ import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.warehouse.WarehouseId;
@@ -52,7 +53,8 @@ import java.util.List;
 @Immutable
 public class C_Order_CounterDocHandler extends CounterDocumentHandlerAdapter
 {
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
 	private static final transient Logger logger = LogManager.getLogger(C_Order_CounterDocHandler.class);
 
@@ -145,7 +147,7 @@ public class C_Order_CounterDocHandler extends CounterDocumentHandlerAdapter
 		{
 			Services.get(IOrderLineBL.class).setOrder(counterLine, counterOrderPO); // copies header values (BP, etc.)
 			counterLine.setPrice();
-			counterLine.setTax();
+			orderLineBL.setTax(counterLine);
 			InterfaceWrapperHelper.save(counterLine);
 		}
 		logger.debug(counterOrder.toString());

@@ -2,7 +2,7 @@
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,6 +23,7 @@
 package de.metas.invoicecandidate.api;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -43,6 +44,7 @@ import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductPrice;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.Tax;
 import de.metas.util.ISingletonService;
@@ -56,6 +58,7 @@ import org.compiere.model.I_C_InvoiceSchedule;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -84,6 +87,9 @@ public interface IInvoiceCandBL extends ISingletonService
 
 		void addNotifications(List<I_AD_Note> notifications);
 
+		/** Implementations which are able to notify a user shall do so from here. */
+		void addFailedCandidates(List<I_C_Invoice_Candidate> failedCandidates, Throwable error);
+
 		/**
 		 * @param ctx context (for translation)
 		 * @return result summary (using context language)
@@ -104,11 +110,24 @@ public interface IInvoiceCandBL extends ISingletonService
 	IInvoiceGenerator generateInvoices();
 
 	/**
+	 * Creates invoices from the given selection, with optional partial-invoice routing.
+	 * <p>
+	 * <b>IMPORTANT:</b> Candidates with {@link I_C_Invoice_Candidate#isError()} are ignored, even if they are part of the selection!
+	 *
+	 * @param isPartialInvoice {@code true} to generate partial invoices, {@code false} for final invoices,
+	 *                         or {@code null} to use the default behaviour.
+	 */
+	IInvoiceGenerateResult generateInvoicesFromSelection(Properties ctx, PInstanceId AD_PInstance_ID, boolean ignoreInvoiceSchedule, @Nullable Boolean isPartialInvoice, String trxName);
+
+	/**
 	 * Creates invoices from the given selection.
 	 * <p>
 	 * <b>IMPORTANT:</b> Candidates with {@link I_C_Invoice_Candidate#isError()} are ignored, even if they are part of the selection!
 	 */
-	IInvoiceGenerateResult generateInvoicesFromSelection(Properties ctx, PInstanceId AD_PInstance_ID, boolean ignoreInvoiceSchedule, String trxName);
+	default IInvoiceGenerateResult generateInvoicesFromSelection(Properties ctx, PInstanceId AD_PInstance_ID, boolean ignoreInvoiceSchedule, String trxName)
+	{
+		return generateInvoicesFromSelection(ctx, AD_PInstance_ID, ignoreInvoiceSchedule, null, trxName);
+	}
 
 	/**
 	 * Creates <code>de.metas.async</code> work packages from for those invoice candidates that are selected via <code>T_Selection</code> with the given <code>AD_PInstance_ID</code>.
@@ -125,6 +144,16 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * @return true if the invoice candidate is NOT eligible and shall be skipped.
 	 */
 	boolean isSkipCandidateFromInvoicing(I_C_Invoice_Candidate ic, boolean ignoreInvoiceSchedule);
+
+	/**
+	 * Same as {@link #isSkipCandidateFromInvoicing(I_C_Invoice_Candidate, boolean)} but also accepts the
+	 * dedicated flag that controls whether {@link de.metas.order.InvoiceRule#Manual} candidates are included.
+	 *
+	 * @param isInvoiceManualRule when {@code true}, candidates whose effective rule is {@code Manual} are NOT skipped
+	 *                            (otherwise Manual candidates carry {@code DateToInvoice=NULL} and are always skipped
+	 *                            by the schedule gate, regardless of {@code ignoreInvoiceSchedule}).
+	 */
+	boolean isSkipCandidateFromInvoicing(I_C_Invoice_Candidate ic, boolean ignoreInvoiceSchedule, boolean isInvoiceManualRule);
 
 	IInvoiceGenerateResult generateInvoicesFromQueue(Properties ctx);
 
@@ -355,6 +384,9 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	void closeInvoiceCandidatesByOrderLineId(OrderLineId orderLineId);
 
+	/** Undo of {@link #closeInvoiceCandidatesByOrderLineId(OrderLineId)}: clears {@code Processed_Override} and invalidates the candidates. */
+	void openInvoiceCandidatesByOrderLineId(OrderLineId orderLineId);
+
 	/**
 	 * Close the given invoice candidate.
 	 * Closing an invoice candidate means setting its Processed_Override to Y and invalidating the invoice candidate.
@@ -411,6 +443,8 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	int createSelectionForInvoiceCandidates(@NonNull InvoiceCandidateMultiQuery multiQuery, PInstanceId pInstanceId);
 
+	ImmutableSet<InvoiceCandidateId> getIdsByQuery(@NonNull InvoiceCandidateQuery query);
+
 	List<I_C_Queue_WorkPackage> getUnprocessedWorkPackagesForInvoiceCandidate(InvoiceCandidateId invoiceCandidateId);
 
 	/**
@@ -437,4 +471,17 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * @param useDefaultBillLocationAndContactIfNotOverride if true and not override-location&contact is given, then take the *current* masterdata values instead of the ic's values. This is actually an invoicing-feature.
 	 */
 	BPartnerLocationAndCaptureId getBillLocationId(@NonNull I_C_Invoice_Candidate ic, boolean useDefaultBillLocationAndContactIfNotOverride);
+
+	/**
+	 * Extracts a common projectId from the given invoice candidates. Null projectIds are not considered distinct values. So that:
+	 * (G1, null) => G1
+	 * (G1, G2) => null
+	 * (null, null) => null
+	 */
+	Optional<ProjectId> extractCommonProjectId(Collection<I_C_Invoice_Candidate> invoiceCandidates);
+
+	/**
+	 * Updates C_Project_ID on all unprocessed invoice candidates for the given order line.
+	 */
+	void updateProjectId(@NonNull OrderLineId orderLineId, @Nullable ProjectId projectId);
 }

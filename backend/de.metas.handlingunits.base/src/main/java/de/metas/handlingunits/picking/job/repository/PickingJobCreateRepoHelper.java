@@ -16,6 +16,8 @@ import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobLineId;
 import de.metas.handlingunits.picking.job.model.PickingJobPickFromAlternativeId;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
+import de.metas.picking.api.PickingJobScheduleId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderAndLineId;
@@ -23,6 +25,8 @@ import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.inoutcandidate.CarrierGoodsTypeId;
+import de.metas.shipping.CarrierProductId;
 import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -31,6 +35,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.eevolution.api.PPOrderId;
+
+import javax.annotation.Nullable;
 
 class PickingJobCreateRepoHelper
 {
@@ -111,14 +117,24 @@ class PickingJobCreateRepoHelper
 		record.setC_OrderLine_ID(OrderAndLineId.toOrderLineRepoId(line.getSalesOrderAndLineId()));
 		record.setC_BPartner_ID(line.getDeliveryBPLocationId().getBpartnerId().getRepoId());
 		record.setC_BPartner_Location_ID(line.getDeliveryBPLocationId().getRepoId());
-		record.setM_ShipmentSchedule_ID(ShipmentScheduleId.toRepoId(line.getShipmentScheduleId()));
+		updateRecord(record, line.getScheduleId());
+		record.setCarrier_Product_ID(CarrierProductId.toRepoId(line.getCarrierProductId()));
+		record.setCarrier_Goods_Type_ID(CarrierGoodsTypeId.toRepoId(line.getCarrierGoodsTypeId()));
+		record.setIsCarrierAdviseManual(line.isManual());
 		record.setCatch_UOM_ID(UomId.toRepoId(line.getCatchWeightUomId()));
 		record.setPP_Order_ID(PPOrderId.toRepoId(line.getPickFromManufacturingOrderId()));
 		InterfaceWrapperHelper.save(record);
 		loader.addAlreadyLoadedFromDB(record);
 
 		final PickingJobLineId pickingJobLineId = PickingJobLineId.ofRepoId(record.getM_Picking_Job_Line_ID());
+		loader.assignCarrierServicesToLine(pickingJobLineId, line.getCarrierServices());
 		line.getSteps().forEach(step -> createStepRecord(step, pickingJobId, pickingJobLineId, orgId));
+	}
+
+	private static void updateRecord(@NonNull final I_M_Picking_Job_Line record, @Nullable final ShipmentScheduleAndJobScheduleId from)
+	{
+		record.setM_ShipmentSchedule_ID(ShipmentScheduleId.toRepoId(from != null ? from.getShipmentScheduleId() : null));
+		record.setM_Picking_Job_Schedule_ID(PickingJobScheduleId.toRepoId(from != null ? from.getJobScheduleId() : null));
 	}
 
 	private void createStepRecord(
@@ -132,7 +148,7 @@ class PickingJobCreateRepoHelper
 		record.setM_Picking_Job_ID(pickingJobId.getRepoId());
 		record.setM_Picking_Job_Line_ID(pickingJobLineId.getRepoId());
 		record.setAD_Org_ID(orgId.getRepoId());
-		record.setM_ShipmentSchedule_ID(step.getShipmentScheduleId().getRepoId());
+		PickingJobSaver.updateRecord(record, step.getScheduleId());
 		record.setC_Order_ID(step.getSalesOrderLineId().getOrderRepoId());
 		record.setC_OrderLine_ID(step.getSalesOrderLineId().getOrderLineRepoId());
 

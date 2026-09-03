@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package org.adempiere.service.impl;
 
 import com.google.common.base.Splitter;
@@ -12,16 +34,20 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
+import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.ISysConfigDAO;
+import org.compiere.model.X_AD_SysConfig;
 import org.jetbrains.annotations.Contract;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.IntFunction;
 import java.util.Set;
 
 /**
@@ -94,6 +120,15 @@ public class SysConfigBL implements ISysConfigBL
 	{
 		return sysConfigDAO.getValue(name, ClientAndOrgId.ofClientId(AD_Client_ID))
 				.map(valueStr -> NumberUtils.asInt(valueStr, defaultValue))
+				.orElse(defaultValue);
+	}
+
+	@NonNull
+	@Override
+	public BigDecimal getBigDecimalValue(@NonNull final String name, @NonNull final BigDecimal defaultValue)
+	{
+		return sysConfigDAO.getValue(name, ClientAndOrgId.SYSTEM)
+				.map(valueStr -> StringUtils.toBigDecimal(valueStr, defaultValue))
 				.orElse(defaultValue);
 	}
 
@@ -186,6 +221,29 @@ public class SysConfigBL implements ISysConfigBL
 			@NonNull final OrgId orgId)
 	{
 		sysConfigDAO.setValue(name, value, ClientAndOrgId.ofClientAndOrg(clientId, orgId));
+	}
+
+	@Override
+	public void setValueAtConfigLevel(@NonNull final String name, @NonNull final String value)
+	{
+		sysConfigDAO.setValue(name, value, computeConfigLevelTarget(name));
+	}
+
+	private ClientAndOrgId computeConfigLevelTarget(@NonNull final String name)
+	{
+		final String level = sysConfigDAO.getConfigurationLevel(name).orElse(null);
+		if (X_AD_SysConfig.CONFIGURATIONLEVEL_System.equals(level))
+		{
+			return ClientAndOrgId.SYSTEM;
+		}
+		else if (X_AD_SysConfig.CONFIGURATIONLEVEL_Client.equals(level))
+		{
+			return ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, OrgId.ANY);
+		}
+		else
+		{
+			return ClientAndOrgId.MAIN;
+		}
 	}
 
 	private Set<String> getNamesForPrefix(final String prefix, final ClientAndOrgId clientAndOrgId)
@@ -313,6 +371,37 @@ public class SysConfigBL implements ISysConfigBL
 					catch (final Exception ex)
 					{
 						logger.warn("Failed converting `{}` to enum {}. Ignoring it.", name, enumType, ex);
+						return null;
+					}
+				})
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+	public <T extends RepoIdAware> ImmutableSet<T> getCommaSeparatedRepoIdAwares(
+			@NonNull final String sysconfigName,
+			@NonNull final IntFunction<T> mapper)
+	{
+		final String string = StringUtils.trimBlankToNull(sysConfigDAO.getValue(sysconfigName, ClientAndOrgId.SYSTEM).orElse(null));
+		if (string == null || string.equals("-"))
+		{
+			return ImmutableSet.of();
+		}
+
+		return Splitter.on(",")
+				.trimResults()
+				.omitEmptyStrings()
+				.splitToList(string)
+				.stream()
+				.map(token -> {
+					try
+					{
+						return mapper.apply(Integer.parseInt(token));
+					}
+					catch (final Exception ex)
+					{
+						logger.warn("Failed converting `{}` to a repo-id from SysConfig `{}`. Ignoring it.", token, sysconfigName, ex);
 						return null;
 					}
 				})

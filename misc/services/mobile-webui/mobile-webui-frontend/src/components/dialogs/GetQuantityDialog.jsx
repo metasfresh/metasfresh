@@ -20,6 +20,9 @@ import DialogButton from './DialogButton';
 import Dialog from './Dialog';
 import * as uiTrace from './../../utils/ui_trace';
 import Spinner from '../Spinner';
+import { QTY_REJECTED_REASON_TO_IGNORE_KEY } from '../../reducers/wfProcesses';
+import { PickAttribute } from '../../reducers/wfProcesses/picking/PickAttribute';
+import { useSerialNos } from '../../hooks/useSerialNos';
 
 const GetQuantityDialog = ({
   readOnly: readOnlyParam = false,
@@ -31,6 +34,7 @@ const GetQuantityDialog = ({
   totalQty,
   qtyAlreadyOnScale,
   qtyCaption,
+  qtyInitial,
   packingItemName,
   uom,
   qtyRejectedReasons,
@@ -41,10 +45,10 @@ const GetQuantityDialog = ({
   catchWeightUom,
   customQRCodeFormats,
   //
-  isShowBestBeforeDate = false,
+  readAttributes = [],
   bestBeforeDate: bestBeforeDateParam = '',
-  isShowLotNo = false,
   lotNo: lotNoParam = '',
+  serialNos: serialNosParam = [],
   isShowCloseTargetButton = false,
   //
   validateQtyEntered,
@@ -52,6 +56,10 @@ const GetQuantityDialog = ({
   onQtyChange,
   onCloseDialog,
 }) => {
+  const isShowBestBeforeDate = readAttributes.includes(PickAttribute.BestBeforeDate);
+  const isShowLotNo = readAttributes.includes(PickAttribute.LotNo);
+  const isShowSerialNo = readAttributes.includes(PickAttribute.SerialNo);
+
   const [isProcessing, setProcessing] = useState(false);
   const [confirmationDialogProps, setConfirmationDialogProps] = useState({
     promptQuestion: '',
@@ -62,8 +70,10 @@ const GetQuantityDialog = ({
   const doNotValidateQty = useBooleanSetting('qtyInput.DoNotValidate');
   const useZeroAsInitialValue = useBooleanSetting('qtyInput.useZeroAsInitialValue');
 
-  const [qtyInfo, setQtyInfo] = useState(qtyInfos.invalidOfNumber(useZeroAsInitialValue ? 0 : qtyTarget));
-  const [rejectedReason, setRejectedReason] = useState(null);
+  const [qtyInfo, setQtyInfo] = useState(
+    qtyInfos.invalidOfNumber((useZeroAsInitialValue ? 0 : null) ?? qtyInitial ?? qtyTarget)
+  );
+  const [rejectedReason, setRejectedReason] = useState(computeDefaultQtyRejectedReason(qtyRejectedReasons));
   const [useScaleDevice, setUseScaleDevice] = useState(!!scaleDevice);
 
   const useCatchWeight = !scaleDevice && catchWeightUom;
@@ -90,6 +100,27 @@ const GetQuantityDialog = ({
     setLotNo(lotNoNew);
   };
 
+  // Serial numbers: one per picked unit (required count = entered qty). Captured via a live
+  // multi-scan screen (chips + "X of N"), mirroring the GRAI scan UX. Manual entry is the
+  // BarcodeScannerComponent fallback; duplicate scans are silently deduped.
+  const serialNoRequiredCount = computeSerialNoRequiredCount(qtyInfo);
+  const {
+    serialNos,
+    assignedSerialNos,
+    extraSerialNos,
+    isComplete: isSerialNosComplete,
+    addSerialNos,
+    removeSerialNo,
+  } = useSerialNos({ requiredCount: serialNoRequiredCount, initialSerialNos: serialNosParam });
+  const [showSerialNoScanner, setShowSerialNoScanner] = useState(false);
+  const onSerialNoScanned = (result) => {
+    const scanned = result?.scannedBarcode ?? '';
+    if (scanned) {
+      addSerialNos([scanned]);
+    }
+    // stay in the scan view to keep accumulating (live multi-scan); operator taps Done to return
+  };
+
   const isQtyRejectedRequired = Array.isArray(qtyRejectedReasons) && qtyRejectedReasons.length > 0;
   const qtyRejected =
     isQtyRejectedRequired && qtyInfos.isValid(qtyInfo)
@@ -101,7 +132,10 @@ const GetQuantityDialog = ({
     (qtyInfo?.isQtyValid &&
       (qtyRejected === 0 || rejectedReason != null) &&
       (!useCatchWeight || catchWeight?.isQtyValid));
-  const allValid = (readOnlyParam || (isQtyValid && (!isShowBestBeforeDate || isBestBeforeDateValid))) && !isProcessing;
+  const allValid =
+    (readOnlyParam ||
+      (isQtyValid && (!isShowBestBeforeDate || isBestBeforeDateValid) && (!isShowSerialNo || isSerialNosComplete))) &&
+    !isProcessing;
   const readOnly = readOnlyParam || isProcessing;
 
   const getConfirmationPrompt = useCallback(
@@ -144,6 +178,7 @@ const GetQuantityDialog = ({
         catchWeightUom: useCatchWeight ? catchWeightUom : null,
         bestBeforeDate: isShowBestBeforeDate ? bestBeforeDate : null,
         lotNo: isShowLotNo ? lotNo : null,
+        serialNos: isShowSerialNo ? serialNos : null,
         isCloseTarget: !!isCloseTarget,
       };
       uiTrace.putContext(onQtyChangePayload);
@@ -242,12 +277,14 @@ const GetQuantityDialog = ({
   }, [scaleDevice, useScaleDevice]);
 
   const isCustomView = () => {
-    return showCatchWeightQRCodeReader;
+    return showCatchWeightQRCodeReader || showSerialNoScanner;
   };
 
   const getCustomView = () => {
     if (showCatchWeightQRCodeReader) {
       return getQRCodeCatchWeightView();
+    } else if (showSerialNoScanner) {
+      return getSerialNoScanView();
     } else {
       return <></>;
     }
@@ -270,13 +307,12 @@ const GetQuantityDialog = ({
               userInfo.map((item) => (
                 <tr key={computeKeyFromUserInfoItem(item)}>
                   <th>{computeCaptionFromUserInfoItem(item)}</th>
-                  <td>{item.value}</td>
+                  <td data-testid={computeKeyFromUserInfoItem(item)}>{item.value}</td>
                 </tr>
               ))}
             <tr>
               <td colSpan="2">
                 <BarcodeScannerComponent
-                  continuousRunning={true}
                   customQRCodeFormats={customQRCodeFormats}
                   onResolvedResult={readQtyFromQrCode}
                 />
@@ -295,6 +331,57 @@ const GetQuantityDialog = ({
             className="is-danger"
             onClick={onCloseDialog}
             testId="done-button"
+          />
+        </div>
+      </>
+    );
+  };
+
+  const renderSerialNoCount = () => (
+    <div className="serialNo-count" data-testid="serialNo-count">
+      {trl('activities.picking.serialNoCount', {
+        scanned: assignedSerialNos.length,
+        total: serialNoRequiredCount,
+      })}
+      {extraSerialNos.length > 0 && (
+        <span className="serialNo-count-extra" data-testid="serialNo-count-extra">
+          {' '}
+          {trl('activities.picking.serialNoCountExtra', { extra: extraSerialNos.length })}
+        </span>
+      )}
+    </div>
+  );
+
+  const renderSerialNoChips = () => (
+    <div className="serialNo-chip-list" data-testid="serialNo-chip-list">
+      {assignedSerialNos.map((sn) => (
+        <SerialNoChip key={sn} value={sn} onRemove={() => removeSerialNo(sn)} disabled={readOnly} />
+      ))}
+      {extraSerialNos.map((sn) => (
+        <SerialNoChip key={sn} value={sn} extra onRemove={() => removeSerialNo(sn)} disabled={readOnly} />
+      ))}
+    </div>
+  );
+
+  const getSerialNoScanView = () => {
+    return (
+      <>
+        {/* Live multi-scan: the scanner stays open; each scan adds a chip and "X of N" advances.
+            Mirrors the GRAI scan UX. The operator taps Done to return to the qty dialog. */}
+        <div className="serialNo-scan-view">
+          <BarcodeScannerComponent
+            onResolvedResult={onSerialNoScanned}
+            inputPlaceholderText={trl('activities.picking.scanSerialNo')}
+          />
+        </div>
+        {renderSerialNoCount()}
+        {renderSerialNoChips()}
+        <div className="buttons is-centered">
+          <DialogButton
+            captionKey="activities.picking.serialNoScanDone"
+            className="is-success"
+            onClick={() => setShowSerialNoScanner(false)}
+            testId="serialNo-scan-done-button"
           />
         </div>
       </>
@@ -320,7 +407,7 @@ const GetQuantityDialog = ({
       <Dialog className="get-qty-dialog">
         {isCustomView() && getCustomView()}
         {!isCustomView() && (
-          <>
+          <form onSubmit={() => onDialogYes({ isCloseTarget: false })}>
             <div className="table-container">
               <table className="table">
                 <tbody>
@@ -336,7 +423,7 @@ const GetQuantityDialog = ({
                     userInfo.map((item) => (
                       <tr key={computeKeyFromUserInfoItem(item)}>
                         <th>{computeCaptionFromUserInfoItem(item)}</th>
-                        <td>{item.value}</td>
+                        <td data-testid={computeKeyFromUserInfoItem(item)}>{item.value}</td>
                       </tr>
                     ))}
                   {!hideQtyInput && (
@@ -424,6 +511,31 @@ const GetQuantityDialog = ({
                       </td>
                     </tr>
                   )}
+                  {isShowSerialNo && (
+                    <tr>
+                      <th>{trl('general.SerialNo')}</th>
+                      <td>
+                        <div className="serialNo-scanned">
+                          {/* "X of N" count + the scanned serials as removable chips, then a
+                              full-width button into the live multi-scan view. Mirrors the GRAI
+                              multi-scan feel; one serial per picked unit. */}
+                          {renderSerialNoCount()}
+                          {serialNos.length > 0 && renderSerialNoChips()}
+                          <DialogButton
+                            captionKey={
+                              serialNos.length > 0
+                                ? 'activities.picking.scanSerialNoAgain'
+                                : 'activities.picking.scanSerialNo'
+                            }
+                            className="is-fullwidth"
+                            onClick={() => setShowSerialNoScanner(true)}
+                            testId={serialNos.length > 0 ? 'serialNo-scan-again-button' : 'serialNo-scan-button'}
+                            disabled={readOnly}
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  )}
                   {useCatchWeight && (
                     <tr>
                       <th>{trl('general.CatchWeight')}</th>
@@ -493,7 +605,7 @@ const GetQuantityDialog = ({
                 testId="cancel-button"
               />
             </div>
-          </>
+          </form>
         )}
       </Dialog>
     </div>
@@ -515,6 +627,53 @@ const computeCaptionFromUserInfoItem = ({ caption = null, captionKey = null }) =
   }
 };
 
+// Required serial count = the entered pick quantity (one serial per unit). 0 when qty not yet a
+// positive number (the qty gate keeps the dialog from confirming until a valid qty is entered).
+const computeSerialNoRequiredCount = (qtyInfo) => {
+  // toNumberOrString may yield a number or a numeric string depending on validation state — coerce both.
+  const n = Number(qtyInfos.toNumberOrString(qtyInfo));
+  return Number.isFinite(n) && n > 0 ? Math.round(n) : 0;
+};
+
+// A scanned-serial chip: middle-truncated value (leading + last 4, like "SN-0001…6789") + a remove
+// button. `extra` styles serials scanned beyond the required count (they block confirm).
+const SerialNoChip = ({ value, extra = false, disabled = false, onRemove }) => (
+  <div className={cx('serialNo-chip', { 'serialNo-chip--extra': extra })} data-testid="serialNo-chip">
+    {/* Middle-truncate on overflow: keep the leading chars + the always-visible last 4 (e.g.
+        "SN-0001…6789"); split spans keep the full value as textContent. */}
+    <span className="serialNo-chip-text" title={value}>
+      <span className="serialNo-chip-text-head">{value.slice(0, -4)}</span>
+      <span className="serialNo-chip-text-tail">{value.slice(-4)}</span>
+    </span>
+    {!disabled && (
+      <button
+        type="button"
+        className="serialNo-chip-remove"
+        data-testid="serialNo-chip-remove"
+        onClick={onRemove}
+        aria-label="remove"
+      >
+        ✕
+      </button>
+    )}
+  </div>
+);
+SerialNoChip.propTypes = {
+  value: PropTypes.string.isRequired,
+  extra: PropTypes.bool,
+  disabled: PropTypes.bool,
+  onRemove: PropTypes.func.isRequired,
+};
+
+const computeDefaultQtyRejectedReason = (qtyRejectedReasons) => {
+  if (!Array.isArray(qtyRejectedReasons) || qtyRejectedReasons.length <= 0) {
+    return null;
+  }
+
+  const defaultReason = qtyRejectedReasons.find((reason) => reason.key === QTY_REJECTED_REASON_TO_IGNORE_KEY);
+  return defaultReason?.key ?? null;
+};
+
 GetQuantityDialog.propTypes = {
   // Properties
   hideQtyInput: PropTypes.bool,
@@ -525,6 +684,7 @@ GetQuantityDialog.propTypes = {
   totalQty: PropTypes.number,
   qtyAlreadyOnScale: PropTypes.number,
   qtyCaption: PropTypes.string,
+  qtyInitial: PropTypes.number,
   packingItemName: PropTypes.string,
   uom: PropTypes.string.isRequired,
   qtyRejectedReasons: PropTypes.arrayOf(PropTypes.object),
@@ -532,10 +692,10 @@ GetQuantityDialog.propTypes = {
   scaleTolerance: PropTypes.object,
   catchWeight: PropTypes.number,
   catchWeightUom: PropTypes.string,
-  isShowBestBeforeDate: PropTypes.bool,
+  readAttributes: PropTypes.array,
   bestBeforeDate: PropTypes.string,
-  isShowLotNo: PropTypes.bool,
   lotNo: PropTypes.string,
+  serialNos: PropTypes.arrayOf(PropTypes.string),
   isShowCloseTargetButton: PropTypes.bool,
   customQRCodeFormats: PropTypes.array,
 

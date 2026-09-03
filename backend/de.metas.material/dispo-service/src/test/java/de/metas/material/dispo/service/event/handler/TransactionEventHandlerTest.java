@@ -1,39 +1,8 @@
-package de.metas.material.dispo.service.event.handler;
-
-import com.google.common.collect.ImmutableList;
-import de.metas.document.dimension.DimensionService;
-import de.metas.material.dispo.commons.candidate.Candidate;
-import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
-import de.metas.material.dispo.commons.candidate.CandidateId;
-import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.candidate.TransactionDetail;
-import de.metas.material.dispo.commons.candidate.businesscase.Flag;
-import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailRepo;
-import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
-import de.metas.material.event.PostMaterialEventService;
-import de.metas.material.event.commons.AttributesKey;
-import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.transactions.TransactionCreatedEvent;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import static de.metas.material.event.EventTestHelper.AFTER_NOW;
-import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
-import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
-import static de.metas.material.event.EventTestHelper.createProductDescriptor;
-import static java.math.BigDecimal.ZERO;
-import static org.assertj.core.api.Assertions.*;
-
 /*
  * #%L
  * metasfresh-material-dispo-service
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -51,9 +20,60 @@ import static org.assertj.core.api.Assertions.*;
  * #L%
  */
 
+package de.metas.material.dispo.service.event.handler;
+
+import com.google.common.collect.ImmutableList;
+import de.metas.document.dimension.DimensionService;
+import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
+import de.metas.material.dispo.commons.candidate.CandidateId;
+import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.candidate.TransactionDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.Flag;
+import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailRepo;
+import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
+import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.transactions.TransactionCreatedEvent;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.impl.WarehouseBL;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_Warehouse;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.List;
+
+import static de.metas.material.event.EventTestHelper.AFTER_NOW;
+import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
+import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
+import static de.metas.material.event.EventTestHelper.NOW;
+import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
+import static de.metas.material.event.EventTestHelper.createProductDescriptor;
+import static de.metas.material.event.EventTestHelper.newMaterialDescriptor;
+import static java.math.BigDecimal.ZERO;
+import static org.assertj.core.api.Assertions.assertThat;
+
 public class TransactionEventHandlerTest
 {
 	private DimensionService dimensionService = Mockito.mock(DimensionService.class);
+
+	@BeforeEach
+	public void beforeEach()
+	{
+		AdempiereTestHelper.get().init();
+		SpringContextHolder.registerJUnitBean(IWarehouseBL.class, new WarehouseBL());
+	}
 
 	@Test
 	public void createOneOrTwoCandidatesWithChangedTransactionDetailAndQuantity()
@@ -112,5 +132,47 @@ public class TransactionEventHandlerTest
 		assertThat(result.get(0).getId()).isEqualTo(CandidateId.NULL);
 		assertThat(result.get(0).getParentId()).isEqualTo(CandidateId.NULL);
 		assertThat(result.get(0).getQuantity()).isEqualByComparingTo("23");
+	}
+
+	@Test
+	public void handleEvent_isIgnoreInMaterialDispo_shortCircuits()
+	{
+		final CandidateChangeService candidateChangeHandler = Mockito.mock(CandidateChangeService.class);
+		final CandidateRepositoryRetrieval candidateRepository = Mockito.mock(CandidateRepositoryRetrieval.class);
+
+		final TransactionEventHandler transactionEventHandler = new TransactionEventHandler(
+				candidateChangeHandler,
+				candidateRepository,
+				Mockito.mock(PostMaterialEventService.class));
+
+		final WarehouseId excludedWarehouseId = createWarehouse("Y");
+
+		final MaterialDescriptor descriptor = MaterialDescriptor.builder()
+				.productDescriptor(createProductDescriptor())
+				.warehouseId(excludedWarehouseId)
+				.customerId(BPARTNER_ID)
+				.quantity(BigDecimal.TEN)
+				.date(NOW)
+				.build();
+
+		final TransactionCreatedEvent event = TransactionCreatedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(10, 20))
+				.materialDescriptor(descriptor)
+				.transactionId(1)
+				.build();
+
+		transactionEventHandler.handleEvent(event);
+
+		// Warehouse is excluded from material-disposition (MRP_Exclude=Y) — no candidates of any type are created.
+		Mockito.verifyZeroInteractions(candidateChangeHandler);
+		Mockito.verifyZeroInteractions(candidateRepository);
+	}
+
+	private static WarehouseId createWarehouse(@Nullable final String mrpExclude)
+	{
+		final I_M_Warehouse warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
+		warehouse.setMRP_Exclude(mrpExclude);
+		InterfaceWrapperHelper.saveRecord(warehouse);
+		return WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
 	}
 }

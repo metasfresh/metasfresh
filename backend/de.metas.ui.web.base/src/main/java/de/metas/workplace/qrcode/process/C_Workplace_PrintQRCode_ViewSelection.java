@@ -27,31 +27,56 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.global_qrcodes.PrintableQRCode;
 import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.global_qrcodes.service.QRCodePDFResource;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.process.IProcessDefaultParameter;
+import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.workplace.Workplace;
 import de.metas.workplace.WorkplaceId;
 import de.metas.workplace.WorkplaceService;
 import de.metas.workplace.qrcode.WorkplaceQRCode;
 import org.compiere.SpringContextHolder;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 
-public class C_Workplace_PrintQRCode_ViewSelection extends ViewBasedProcessTemplate implements IProcessPrecondition
+public class C_Workplace_PrintQRCode_ViewSelection extends ViewBasedProcessTemplate implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	private final WorkplaceService workplaceService = SpringContextHolder.instance.getBean(WorkplaceService.class);
 	private final GlobalQRCodeService globalQRCodeService = SpringContextHolder.instance.getBean(GlobalQRCodeService.class);
 
+	private static final String PARAM_RenderedQRCode = "RenderedQRCode";
+
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		if (getSelectedRowIds().isEmpty())
+		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
+		if (selectedRowIds.isEmpty())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection().toInternal();
 		}
 
-		return ProcessPreconditionsResolution.accept();
+		return ProcessPreconditionsResolution.accept()
+				.withCaptionMapper(caption -> TranslatableStrings.builder()
+						.append(caption).append(" (").append(selectedRowIds.getSizeAsTranslatableString()).append(")")
+						.build());
+	}
+
+	@Override
+	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
+	{
+		if (parameter.getColumnName().equals(PARAM_RenderedQRCode))
+		{
+			final Workplace workplace = getSingleWorkplaceOrNull();
+			return workplace != null
+					? toPrintableQRCode(workplace).toGlobalQRCodeJsonString()
+					: null;
+		}
+
+		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 	}
 
 	@Override
@@ -75,12 +100,26 @@ public class C_Workplace_PrintQRCode_ViewSelection extends ViewBasedProcessTempl
 		return workplaceService.getByIds(workplaceIds);
 	}
 
+	@Nullable
+	private Workplace getSingleWorkplaceOrNull()
+	{
+		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
+		if (!selectedRowIds.isSingleDocumentId()) {return null;}
+
+		final WorkplaceId workplaceId = selectedRowIds.getSingleDocumentId().toId(WorkplaceId::ofRepoId);
+		return workplaceService.getById(workplaceId);
+	}
+
 	private static ImmutableList<PrintableQRCode> toPrintableQRCodes(final Collection<Workplace> workplaces)
 	{
 		return workplaces.stream()
-				.map(WorkplaceQRCode::ofWorkplace)
-				.map(WorkplaceQRCode::toPrintableQRCode)
+				.map(C_Workplace_PrintQRCode_ViewSelection::toPrintableQRCode)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	private static PrintableQRCode toPrintableQRCode(Workplace workplace)
+	{
+		return WorkplaceQRCode.ofWorkplace(workplace).toPrintableQRCode();
 	}
 
 }

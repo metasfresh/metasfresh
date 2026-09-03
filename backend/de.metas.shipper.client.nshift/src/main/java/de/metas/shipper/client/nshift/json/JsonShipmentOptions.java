@@ -1,0 +1,94 @@
+/*
+ * #%L
+ * de.metas.shipper.client.nshift
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+package de.metas.shipper.client.nshift.json;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import lombok.Builder;
+import lombok.Value;
+
+import java.util.UUID;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@Value
+@Builder
+public class JsonShipmentOptions
+{
+
+	@JsonProperty("Labels")
+	JsonLabelType labelType;
+
+	@JsonProperty("TrackingURL")
+	@JsonSerialize(converter = BooleanToIntConverter.class)
+	Boolean trackingURL;
+
+	@JsonProperty("TicketUserName")
+	String ticketUserName;
+
+	@JsonProperty("WorkstationID")
+	UUID workstationID;
+
+	@JsonProperty("DropZoneLabelPrinterKey")
+	String dropZoneLabelPrinterKey;
+
+	@JsonProperty("DropZoneDocPrinterKey")
+	String dropZoneDocPrinterKey;
+
+	@JsonProperty("UseShippingRules")
+	@JsonSerialize(converter = BooleanToIntConverter.class)
+	Boolean useShippingRules;
+
+	@JsonProperty("ServiceLevel")
+	String serviceLevel;
+
+	/** Order-advise only: {@code false} (serialized as {@code 0}) = advise without booking the shipment. */
+	@JsonProperty("Submit")
+	@JsonSerialize(converter = BooleanToIntConverter.class)
+	Boolean submit;
+
+	/** Order-advise only: {@code "extended"} to get the full advised result. */
+	@JsonProperty("Visibility")
+	String visibility;
+
+	@JsonProperty("RerunCSROnError")
+	@JsonSerialize(converter = BooleanToIntConverter.class)
+	Boolean rerunCSROnError;
+
+	@JsonProperty("Token")
+	String token;
+
+	@JsonProperty("ReturnShipment")
+	@JsonSerialize(converter = BooleanToIntConverter.class)
+	Boolean returnShipment;
+
+	@JsonProperty("PriceCalculation")
+	@JsonSerialize(converter = BooleanToIntConverter.class)
+	Boolean priceCalculation;
+
+	@JsonProperty("UseErrorLabels")
+	@JsonSerialize(converter = BooleanToIntConverter.class)
+	Boolean useErrorLabels;
+
+	@JsonProperty("SaveShipmentOnError")
+	String saveShipmentOnError;
+}

@@ -1,12 +1,17 @@
 @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00182
 @ghActions:run_on_executor4
 Feature: Validate Events are correctly sent to RabbitMQ when enqueued via EventBus
+## F00182: RabbitMQ Events
 
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
   @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00182
   Scenario: Distributed event is sent to all bound queues
     Given topic is created
       | Identifier | Topic.Name        | Topic.Type  |
@@ -64,6 +69,8 @@ Feature: Validate Events are correctly sent to RabbitMQ when enqueued via EventB
       | t_1              |
 
   @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00182
   Scenario: Local event is sent only to local queues
     Given topic is created
       | Identifier | Topic.Name        | Topic.Type |

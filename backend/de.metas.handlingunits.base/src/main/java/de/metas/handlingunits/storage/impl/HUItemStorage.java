@@ -46,11 +46,14 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMPrecision;
 import de.metas.uom.UomId;
+import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.model.I_C_UOM;
+import ch.qos.logback.classic.Level;
+import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
@@ -62,6 +65,8 @@ import java.util.Optional;
 
 public class HUItemStorage implements IHUItemStorage
 {
+	private static final Logger logger = LogManager.getLogger(HUItemStorage.class);
+
 	// services
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IHUCapacityBL capacityBL = Services.get(IHUCapacityBL.class);
@@ -84,9 +89,6 @@ public class HUItemStorage implements IHUItemStorage
 
 	/**
 	 * Creates a new instance. Actual {@link I_M_HU_Item_Storage} records will be loaded and saved only when needed.
-	 *
-	 * @param storageFactory
-	 * @param item
 	 */
 	public HUItemStorage(
 			@NonNull final IHUStorageFactory storageFactory,
@@ -143,8 +145,7 @@ public class HUItemStorage implements IHUItemStorage
 	public IHUStorage getParentStorage()
 	{
 		final I_M_HU hu = item.getM_HU();
-		final IHUStorage parentStorage = storageFactory.getStorage(hu);
-		return parentStorage;
+		return storageFactory.getStorage(hu);
 	}
 
 	@Override
@@ -174,23 +175,42 @@ public class HUItemStorage implements IHUItemStorage
 
 		if (qtyNew.signum() < 0 && !qtyOld.equals(qtyOnParent))
 		{
-			Loggables.addLog("Warning! M_HU_Item_Storage.Qty out of sync with M_HU_Storage! "
-									 + "M_HU_Item_Id: {}, M_HU_Item_Storage.Qty: {}, M_HU_Item_Storage.Product: {}, M_HU_Item_Storage.UOM: {}"
-									 + "M_HU_ID: {}, M_HU_Storage.Qty: {}, qtyToAdd: {} same UOM",
-							 storageLine.getM_HU_Item_ID(), storageLine.getQty(), storageLine.getM_Product_ID(), storageLine.getC_UOM_ID(),
-							 item.getM_HU_ID(), qtyOnParent, qtyConv);
+			Loggables.withLogger(logger, Level.ERROR)
+					.addLog("M_HU_Item_Storage.Qty out of sync with M_HU_Storage! "
+									+ "M_HU_Item_Id: {}, M_HU_Item_Storage.Qty: {}, M_HU_Item_Storage.Product: {}, M_HU_Item_Storage.UOM: {}, "
+									+ "M_HU_ID: {}, M_HU_Storage.Qty: {}, qtyToAdd: {} same UOM",
+							storageLine.getM_HU_Item_ID(), storageLine.getQty(), storageLine.getM_Product_ID(), storageLine.getC_UOM_ID(),
+							item.getM_HU_ID(), qtyOnParent, qtyConv);
 
 			qtyNew = qtyOnParent.add(qtyConv);
 		}
 
-		Check.errorIf(qtyNew.signum() < 0, "Attempt to set negative qty on storageLine; qtyOld={}; qtyToAdd={}; qtyNew={}; this={}; storageLine={}", qtyOld, qtyToAdd, qtyNew, this, storageLine);
+		// Clamp to zero if still negative after sync correction.
+		// This handles the case where the parent HU storage hierarchy is inconsistent
+		// (e.g. VHU has qty but all parent-level storages are zero).
+		// Without this, rollupRevert during HU reparenting would fail
+		// when detaching a VHU whose parent item storage was never properly rolled up.
+		if (qtyNew.signum() < 0)
+		{
+			Loggables.withLogger(logger, Level.ERROR)
+					.addLog("Clamping negative qty to zero on storageLine. "
+									+ "M_HU_Item_Id: {}, qtyOld: {}, qtyToAdd: {}, qtyNew (before clamp): {}, qtyOnParent: {}, "
+									+ "M_HU_Item_Storage_ID: {}, M_Product_ID: {}",
+							storageLine.getM_HU_Item_ID(), qtyOld, qtyConv, qtyNew, qtyOnParent,
+							storageLine.getM_HU_Item_Storage_ID(), storageLine.getM_Product_ID());
+			qtyNew = BigDecimal.ZERO;
+		}
 
 		storageLine.setQty(qtyNew);
 		dao.save(storageLine);
 
 		//
-		// Roll-up
-		rollupIncremental(productId, qtyConv, uomStorage);
+		// Roll-up: propagate the actual delta applied to this storage line, not the requested qtyConv.
+		// Normally actualDelta == qtyConv (no correction happened).
+		// But if the sync correction (qtyOnParent) or the negative-qty clamp changed qtyNew,
+		// actualDelta reflects what really happened — propagating qtyConv would make the parent out of sync.
+		final BigDecimal actualDelta = qtyNew.subtract(qtyOld);
+		rollupIncremental(productId, actualDelta, uomStorage);
 	}
 
 	private void rollupIncremental(final ProductId productId, final BigDecimal qtyDelta, final I_C_UOM uom)

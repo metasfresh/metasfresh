@@ -36,15 +36,19 @@ import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.product.ProductId;
+import de.metas.product.ProductValueAndName;
 import de.metas.quantity.Quantity;
+import de.metas.shipping.CarrierProductId;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Optionals;
+import de.metas.util.StreamUtils;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.Getter;
@@ -60,7 +64,6 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
@@ -158,6 +161,7 @@ public final class PickingJob implements PickingJobHeaderOrLine
 	@JsonIgnore
 	public boolean isAnonymousPickHUsOnTheFly() {return header.isAnonymousPickHUsOnTheFly();}
 
+	@Nullable
 	public UserId getLockedBy() {return header.getLockedBy();}
 
 	public PickingJob withLockedBy(@Nullable final UserId lockedBy)
@@ -165,6 +169,76 @@ public final class PickingJob implements PickingJobHeaderOrLine
 		return UserId.equals(header.getLockedBy(), lockedBy)
 				? this
 				: toBuilder().header(header.toBuilder().lockedBy(lockedBy).build()).build();
+	}
+
+	@Nullable
+	public CarrierProductId getCarrierProductId() {return header.getCarrierProductId();}
+
+	public boolean isCarrierAdviseReadOnly() {return header.isCarrierAdviseReadOnly();}
+
+	public PickingJob withCarrierProductId(@Nullable final CarrierProductId carrierProductId)
+	{
+		return CarrierProductId.equals(header.getCarrierProductId(), carrierProductId)
+				? this
+				: toBuilder().header(header.toBuilder().carrierProductId(carrierProductId).build()).build();
+	}
+
+	public PickingJob withCarrierAdviseReadOnly(final boolean carrierAdviseReadOnly)
+	{
+		return header.isCarrierAdviseReadOnly() == carrierAdviseReadOnly
+				? this
+				: toBuilder().header(header.toBuilder().carrierAdviseReadOnly(carrierAdviseReadOnly).build()).build();
+	}
+
+	/**
+	 * (Re-)initialises the header's carrier state from the lines that are still to be picked — the batch that will
+	 * land on the NEXT top-level parcel. Called when a new top-level parcel starts (LU / top-level TU select) or when
+	 * a top-level parcel is closed. The header then carries the single distinct carrier product of the unprocessed
+	 * lines (all-same → that carrier; divergent or none → {@code null}) and is no longer read-only (advise can run
+	 * again against the fresh parcel). This module has no shipper repository, so the RAW carrier aggregate is stored;
+	 * the read side ({@code PackedHUCarrierAdviseService}) applies the api-advise filter.
+	 */
+	public PickingJob withHeaderCarrierFromUnprocessedLines()
+	{
+		final ImmutableSet<CarrierProductId> unprocessedCarriers = lines.stream()
+				.filter(line -> line.getQtyRemainingToPick().signum() > 0)
+				.map(PickingJobLine::getCarrierProductId)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final CarrierProductId headerCarrier = unprocessedCarriers.size() == 1
+				? unprocessedCarriers.iterator().next()
+				: null;
+
+		return withCarrierProductId(headerCarrier).withCarrierAdviseReadOnly(false);
+	}
+
+	/**
+	 * Folds a just-picked line into the header carrier state (the header tracks the CURRENT top-level parcel).
+	 * <ul>
+	 *     <li><b>non-manual</b> pick → the carrier is set only by advise, so the header carrier + read-only flag are
+	 *         left UNCHANGED;</li>
+	 *     <li><b>manual</b> pick → the picked carrier is a human override the parcel now carries → header becomes
+	 *         read-only, and the header carrier becomes that line's carrier — EXCEPT when the header already holds a
+	 *         DIFFERENT non-null carrier (a divergent manual mix on the parcel), where the single carrier collapses
+	 *         to {@code null}.</li>
+	 * </ul>
+	 */
+	public PickingJob withHeaderCarrierFromPickedLine(@NonNull final PickingJobLine pickedLine)
+	{
+		if (!pickedLine.isManual())
+		{
+			return this;
+		}
+
+		final CarrierProductId lineCarrier = pickedLine.getCarrierProductId();
+		final CarrierProductId currentHeaderCarrier = header.getCarrierProductId();
+		final CarrierProductId newHeaderCarrier = (currentHeaderCarrier != null
+				&& !CarrierProductId.equals(currentHeaderCarrier, lineCarrier))
+				? null // divergent manual carriers on the same parcel → no single carrier
+				: lineCarrier;
+
+		return withCarrierProductId(newHeaderCarrier).withCarrierAdviseReadOnly(true);
 	}
 
 	private PickingJobProgress computeProgress(@NonNull final ImmutableList<PickingJobLine> lines)
@@ -181,6 +255,15 @@ public final class PickingJob implements PickingJobHeaderOrLine
 		}
 	}
 
+	public void assertCanBeEditedBy(final UserId userId)
+	{
+		assertNotProcessed();
+		if (!Objects.equals(userId, getLockedBy()))
+		{
+			throw new AdempiereException("Can be edited only by the user who locked the job");
+		}
+	}
+
 	public void assertPickingSlotScanned() {currentPickingTarget.assertPickingSlotScanned();}
 
 	@NonNull
@@ -190,6 +273,8 @@ public final class PickingJob implements PickingJobHeaderOrLine
 	{
 		return getCurrentPickingTargetEffectiveValue(lineId, CurrentPickingTarget::getPickingSlotId);
 	}
+
+	public boolean isPickingSlotRequired() {return header.isPickingSlotRequired();}
 
 	public boolean isDisplayPickingSlotSuggestions() {return header.isDisplayPickingSlotSuggestions();}
 
@@ -279,6 +364,17 @@ public final class PickingJob implements PickingJobHeaderOrLine
 		return getCurrentPickingTargetEffectiveValue(lineId, CurrentPickingTarget::getLuPickingTarget);
 	}
 
+	/**
+	 * The first <b>existing</b> LU picking target across line- then header-scope, skipping not-yet-materialised
+	 * ones (unlike {@link #getLuPickingTargetEffective(PickingJobLineId)}, which returns the first present target).
+	 */
+	public Optional<LUPickingTarget> getExistingLuPickingTargetEffective(@Nullable final PickingJobLineId lineId)
+	{
+		return getCurrentPickingTargetEffectiveValue(
+				lineId,
+				currentPickingTarget -> currentPickingTarget.getLuPickingTarget().filter(LUPickingTarget::isExistingLU));
+	}
+
 	@NonNull
 	public PickingJob withLuPickingTarget(
 			@Nullable final PickingJobLineId lineId,
@@ -295,18 +391,18 @@ public final class PickingJob implements PickingJobHeaderOrLine
 		return withCurrentPickingTarget(lineId, currentPickingTarget -> currentPickingTarget.withLuPickingTarget(luPickingTargetMapper));
 	}
 
-	public PickingJob withClosedLuPickingTargets(
+	public PickingJob withClosedLUAndTUPickingTargets(
 			boolean isCloseOnHeader,
 			boolean isCloseOnLines,
 			@Nullable PickingJobLineId onlyLineId,
-			@Nullable final Consumer<HuId> closedLuIdCollector)
+			@Nullable final LUIdsAndTopLevelTUIdsCollector closedHuIdCollector)
 	{
 		final PickingJobBuilder builder = toBuilder();
 		boolean hasChanges = false;
 
 		if (isCloseOnHeader)
 		{
-			final CurrentPickingTarget changedCurrentPickingTarget = currentPickingTarget.withClosedLuPickingTarget(closedLuIdCollector);
+			final CurrentPickingTarget changedCurrentPickingTarget = currentPickingTarget.withClosedLUAndTUPickingTarget(closedHuIdCollector);
 			builder.currentPickingTarget(changedCurrentPickingTarget);
 			if (!CurrentPickingTarget.equals(changedCurrentPickingTarget, currentPickingTarget))
 			{
@@ -318,7 +414,7 @@ public final class PickingJob implements PickingJobHeaderOrLine
 			final ImmutableList<PickingJobLine> changedLines = CollectionUtils.map(this.lines, line -> {
 				if (onlyLineId == null || PickingJobLineId.equals(line.getId(), onlyLineId))
 				{
-					return line.withCurrentPickingTarget(currentPickingTarget -> currentPickingTarget.withClosedLuPickingTarget(closedLuIdCollector));
+					return line.withCurrentPickingTarget(currentPickingTarget -> currentPickingTarget.withClosedLUAndTUPickingTarget(closedHuIdCollector));
 				}
 				else
 				{
@@ -361,14 +457,14 @@ public final class PickingJob implements PickingJobHeaderOrLine
 				: toBuilder().pickFromHU(Optional.ofNullable(pickFromHU)).build();
 	}
 
-	public ImmutableSet<ShipmentScheduleId> getShipmentScheduleIds()
+	public ShipmentScheduleAndJobScheduleIdSet getScheduleIds()
 	{
-		return streamShipmentScheduleIds().collect(ImmutableSet.toImmutableSet());
+		return streamScheduleIds().collect(ShipmentScheduleAndJobScheduleIdSet.collect());
 	}
 
-	public Stream<ShipmentScheduleId> streamShipmentScheduleIds()
+	public Stream<ShipmentScheduleAndJobScheduleId> streamScheduleIds()
 	{
-		return streamLines().flatMap(PickingJobLine::streamShipmentScheduleId);
+		return streamLines().flatMap(PickingJobLine::streamScheduleIds);
 	}
 
 	private PickingJobHeaderOrLine getHeaderOrLine(@Nullable final PickingJobLineId lineId) {return lineId != null ? getLineById(lineId) : this;}
@@ -461,11 +557,23 @@ public final class PickingJob implements PickingJobHeaderOrLine
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	@NonNull
-	public ITranslatableString getSingleProductNameOrEmpty()
+	@Nullable
+	public Quantity getPackedQty(@NonNull final ProductId productId)
+	{
+		return streamSteps()
+				.filter(step -> ProductId.equals(step.getProductId(), productId))
+				.map(PickingJobStep::getPackedQty)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.reduce(Quantity::add)
+				.orElse(null);
+	}
+
+	@Nullable
+	public ProductValueAndName getSingleProductValueAndName()
 	{
 		ProductId productId = null;
-		ITranslatableString productName = TranslatableStrings.empty();
+		ProductValueAndName productValueAndName = null;
 		for (final PickingJobLine line : lines)
 		{
 			if (productId == null)
@@ -475,13 +583,34 @@ public final class PickingJob implements PickingJobHeaderOrLine
 			else if (!ProductId.equals(productId, line.getProductId()))
 			{
 				// found different products
-				return TranslatableStrings.empty();
+				return null;
 			}
 
-			productName = line.getProductName();
+			productValueAndName = line.getProductValueAndName();
 		}
 
-		return productName;
+		return productValueAndName;
+	}
+
+	/**
+	 * Un-joined product names, in encounter order. The caller decides the separator — see
+	 * {@link #getProductNamesJoined(String)}.
+	 */
+	@NonNull
+	public ImmutableList<ITranslatableString> getProductNameParts()
+	{
+		// distinct by ProductId (never by displayed text, so two distinct products sharing a name both appear);
+		// filter preserves encounter order, so the names read in line order.
+		return lines.stream()
+				.filter(StreamUtils.distinctByKey(PickingJobLine::getProductId))
+				.map(line -> line.getProductValueAndName().getName())
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public ITranslatableString getProductNamesJoined(@NonNull final String separator)
+	{
+		return getProductNameParts().stream().collect(TranslatableStrings.joining(separator));
 	}
 
 	@Nullable
@@ -491,7 +620,7 @@ public final class PickingJob implements PickingJobHeaderOrLine
 	}
 
 	@Nullable
-	public static <T> Quantity extractQtyToPickOrNull(
+	private static <T> Quantity extractQtyToPickOrNull(
 			@NonNull final Collection<T> lines,
 			@NonNull final Function<T, ProductId> extractProductId,
 			@NonNull final Function<T, Quantity> extractQtyToPick)
@@ -554,5 +683,4 @@ public final class PickingJob implements PickingJobHeaderOrLine
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 	}
-
 }

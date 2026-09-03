@@ -2,7 +2,7 @@ package de.metas.pricing.attributebased;
 
 import de.metas.pricing.IPricingAttribute;
 import de.metas.util.ISingletonService;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_ProductPrice;

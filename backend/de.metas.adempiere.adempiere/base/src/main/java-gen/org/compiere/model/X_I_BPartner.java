@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 189776201L;
+	private static final long serialVersionUID = 1251131265L;
 
     /** Standard Constructor */
     public X_I_BPartner (final Properties ctx, final int I_BPartner_ID, @Nullable final String trxName)
@@ -234,6 +234,30 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.sql.Timestamp getBirthday() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_Birthday);
+	}
+
+	@Override
+	public void setBPartnerName (final @Nullable java.lang.String BPartnerName)
+	{
+		set_Value (COLUMNNAME_BPartnerName, BPartnerName);
+	}
+
+	@Override
+	public java.lang.String getBPartnerName() 
+	{
+		return get_ValueAsString(COLUMNNAME_BPartnerName);
+	}
+
+	@Override
+	public void setBPartnerName2 (final @Nullable java.lang.String BPartnerName2)
+	{
+		set_Value (COLUMNNAME_BPartnerName2, BPartnerName2);
+	}
+
+	@Override
+	public java.lang.String getBPartnerName2() 
+	{
+		return get_ValueAsString(COLUMNNAME_BPartnerName2);
 	}
 
 	@Override
@@ -1301,6 +1325,33 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	}
 
 	@Override
+	public org.compiere.model.I_M_Shipper_RoutingCode getM_Shipper_RoutingCode()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Shipper_RoutingCode_ID, org.compiere.model.I_M_Shipper_RoutingCode.class);
+	}
+
+	@Override
+	public void setM_Shipper_RoutingCode(final org.compiere.model.I_M_Shipper_RoutingCode M_Shipper_RoutingCode)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Shipper_RoutingCode_ID, org.compiere.model.I_M_Shipper_RoutingCode.class, M_Shipper_RoutingCode);
+	}
+
+	@Override
+	public void setM_Shipper_RoutingCode_ID (final int M_Shipper_RoutingCode_ID)
+	{
+		if (M_Shipper_RoutingCode_ID < 1) 
+			set_Value (COLUMNNAME_M_Shipper_RoutingCode_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Shipper_RoutingCode_ID, M_Shipper_RoutingCode_ID);
+	}
+
+	@Override
+	public int getM_Shipper_RoutingCode_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Shipper_RoutingCode_ID);
+	}
+
+	@Override
 	public void setNAICS (final @Nullable java.lang.String NAICS)
 	{
 		set_Value (COLUMNNAME_NAICS, NAICS);
@@ -1399,10 +1450,10 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public static final String PAYMENTRULE_KreditkarteExtern = "U";
 	/** Sofortüberweisung = R */
 	public static final String PAYMENTRULE_Sofortueberweisung = "R";
-	/** Rückerstattung = E */
-	public static final String PAYMENTRULE_Rueckerstattung = "E";
-	/** Verrechnung = F */
-	public static final String PAYMENTRULE_Verrechnung = "F";
+	/** Reimbursement = E */
+	public static final String PAYMENTRULE_Reimbursement = "E";
+	/** Settlement = F */
+	public static final String PAYMENTRULE_Settlement = "F";
 	@Override
 	public void setPaymentRule (final @Nullable java.lang.String PaymentRule)
 	{
@@ -1454,10 +1505,10 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public static final String PAYMENTRULEPO_KreditkarteExtern = "U";
 	/** Sofortüberweisung = R */
 	public static final String PAYMENTRULEPO_Sofortueberweisung = "R";
-	/** Rückerstattung = E */
-	public static final String PAYMENTRULEPO_Rueckerstattung = "E";
-	/** Verrechnung = F */
-	public static final String PAYMENTRULEPO_Verrechnung = "F";
+	/** Reimbursement = E */
+	public static final String PAYMENTRULEPO_Reimbursement = "E";
+	/** Settlement = F */
+	public static final String PAYMENTRULEPO_Settlement = "F";
 	@Override
 	public void setPaymentRulePO (final @Nullable java.lang.String PaymentRulePO)
 	{
@@ -1852,6 +1903,18 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getShipperName() 
 	{
 		return get_ValueAsString(COLUMNNAME_ShipperName);
+	}
+
+	@Override
+	public void setShipperRouteCodeName (final @Nullable java.lang.String ShipperRouteCodeName)
+	{
+		set_Value (COLUMNNAME_ShipperRouteCodeName, ShipperRouteCodeName);
+	}
+
+	@Override
+	public java.lang.String getShipperRouteCodeName() 
+	{
+		return get_ValueAsString(COLUMNNAME_ShipperRouteCodeName);
 	}
 
 	@Override

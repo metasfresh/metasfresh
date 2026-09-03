@@ -24,12 +24,12 @@ package de.metas.inoutcandidate;
 
 import de.metas.business.BusinessTestHelper;
 import de.metas.cache.model.ModelCacheInvalidationService;
-import de.metas.inoutcandidate.ShipmentScheduleRepository.ShipmentScheduleQuery;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Recompute;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
@@ -130,8 +130,8 @@ class ShipmentScheduleRepositoryTest
 		final ShipmentScheduleQuery query = ShipmentScheduleQuery.builder()
 				.exportStatus(APIExportStatus.Pending)
 				.canBeExportedFrom(canBeExportedFrom.toInstant())
+				.includeInvalid(false)
 				.build();
-		assertThat(query.isIncludeInvalid()).isFalse(); // guard
 		final List<ShipmentSchedule> result = shipmentScheduleRepository.getBy(query);
 
 		// then
@@ -150,6 +150,7 @@ class ShipmentScheduleRepositoryTest
 
 		// when
 		final ShipmentScheduleQuery query = ShipmentScheduleQuery.builder()
+				.includeInvalid(false)
 				.exportStatus(APIExportStatus.Pending)
 				.canBeExportedFrom(canBeExportedFrom.toInstant())
 				.build();
@@ -175,6 +176,8 @@ class ShipmentScheduleRepositoryTest
 		record.setC_BP_Location_Override_ID(bPartnerLocationOverride.getC_BPartner_Location_ID());
 		record.setM_Product_ID(product.getM_Product_ID());
 		record.setQtyToDeliver(BigDecimal.ONE);
+		record.setCarrier_Advising_Status(CarrierAdviseStatus.NotRequested.getCode());
+		record.setM_Warehouse_ID(WarehouseId.MAIN.getRepoId());
 		saveRecord(record);
 
 		return record;

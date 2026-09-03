@@ -573,6 +573,27 @@ public interface I_AD_User
 	String COLUMNNAME_DelDate = "DelDate";
 
 	/**
+	 * Set Department.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDepartment (@Nullable java.lang.String Department);
+
+	/**
+	 * Get Department.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDepartment();
+
+	ModelColumn<I_AD_User, Object> COLUMN_Department = new ModelColumn<>(I_AD_User.class, "Department", null);
+	String COLUMNNAME_Department = "Department";
+
+	/**
 	 * Set Description.
 	 *
 	 * <br>Type: String
@@ -1547,6 +1568,27 @@ public interface I_AD_User
 
 	ModelColumn<I_AD_User, Object> COLUMN_Password = new ModelColumn<>(I_AD_User.class, "Password", null);
 	String COLUMNNAME_Password = "Password";
+
+	/**
+	 * Set Password Change Date.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPasswordChangeDate (@Nullable java.sql.Timestamp PasswordChangeDate);
+
+	/**
+	 * Get Password Change Date.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getPasswordChangeDate();
+
+	ModelColumn<I_AD_User, Object> COLUMN_PasswordChangeDate = new ModelColumn<>(I_AD_User.class, "PasswordChangeDate", null);
+	String COLUMNNAME_PasswordChangeDate = "PasswordChangeDate";
 
 	/**
 	 * Set Portalpasswort.

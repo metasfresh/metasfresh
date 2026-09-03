@@ -895,7 +895,7 @@ public interface I_DD_Order
 
 	/**
 	 * Set In Transit.
-	 * Movement is in transit
+	 * If Yes, this is a transit warehouse (for inventory between two physical warehouses). Distinct from "Dropship Warehouse" (IsDropShipWarehouse): an in-transit warehouse holds own goods moving between sites, whereas a dropship warehouse routes goods directly from supplier to end customer.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -905,7 +905,7 @@ public interface I_DD_Order
 
 	/**
 	 * Get In Transit.
-	 * Movement is in transit
+	 * If Yes, this is a transit warehouse (for inventory between two physical warehouses). Distinct from "Dropship Warehouse" (IsDropShipWarehouse): an in-transit warehouse holds own goods moving between sites, whereas a dropship warehouse routes goods directly from supplier to end customer.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -915,6 +915,27 @@ public interface I_DD_Order
 
 	ModelColumn<I_DD_Order, Object> COLUMN_IsInTransit = new ModelColumn<>(I_DD_Order.class, "IsInTransit", null);
 	String COLUMNNAME_IsInTransit = "IsInTransit";
+
+	/**
+	 * Set Is Picking Disconnected.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPickingDisconnected (boolean IsPickingDisconnected);
+
+	/**
+	 * Get Is Picking Disconnected.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPickingDisconnected();
+
+	ModelColumn<I_DD_Order, Object> COLUMN_IsPickingDisconnected = new ModelColumn<>(I_DD_Order.class, "IsPickingDisconnected", null);
+	String COLUMNNAME_IsPickingDisconnected = "IsPickingDisconnected";
 
 	/**
 	 * Set Printed.
@@ -1003,6 +1024,31 @@ public interface I_DD_Order
 
 	ModelColumn<I_DD_Order, Object> COLUMN_IsSOTrx = new ModelColumn<>(I_DD_Order.class, "IsSOTrx", null);
 	String COLUMNNAME_IsSOTrx = "IsSOTrx";
+
+	/**
+	 * Set Locator Priority.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setLocatorPriorityNo (int LocatorPriorityNo);
+
+	/**
+	 * Get Locator Priority.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	int getLocatorPriorityNo();
+
+	ModelColumn<I_DD_Order, Object> COLUMN_LocatorPriorityNo = new ModelColumn<>(I_DD_Order.class, "LocatorPriorityNo", null);
+	String COLUMNNAME_LocatorPriorityNo = "LocatorPriorityNo";
 
 	/**
 	 * Set MRP Allow Cleanup.
@@ -1124,7 +1170,7 @@ public interface I_DD_Order
 	 * Set Warehouse.
 	 * Storage Warehouse and Service Point
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -1134,7 +1180,7 @@ public interface I_DD_Order
 	 * Get Warehouse.
 	 * Storage Warehouse and Service Point
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -1436,6 +1482,31 @@ public interface I_DD_Order
 	String COLUMNNAME_SendEMail = "SendEMail";
 
 	/**
+	 * Set SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSeqNo (int SeqNo);
+
+	/**
+	 * Get SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getSeqNo();
+
+	ModelColumn<I_DD_Order, Object> COLUMN_SeqNo = new ModelColumn<>(I_DD_Order.class, "SeqNo", null);
+	String COLUMNNAME_SeqNo = "SeqNo";
+
+	/**
 	 * Get Updated.
 	 * Date this record was updated
 	 *
@@ -1536,7 +1607,7 @@ public interface I_DD_Order
 	String COLUMNNAME_Volume = "Volume";
 
 	/**
-	 * Set Weight.
+	 * Set Net Weight.
 	 * Weight of a product
 	 *
 	 * <br>Type: Number
@@ -1546,7 +1617,7 @@ public interface I_DD_Order
 	void setWeight (@Nullable BigDecimal Weight);
 
 	/**
-	 * Get Weight.
+	 * Get Net Weight.
 	 * Weight of a product
 	 *
 	 * <br>Type: Number

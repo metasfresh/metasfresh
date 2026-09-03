@@ -1,26 +1,23 @@
 package org.adempiere.mm.attributes.api.impl;
 
-import java.math.BigDecimal;
-import java.util.Date;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.ImmutableSet;
+import de.metas.i18n.ITranslatableString;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
+import de.metas.util.NumberUtils;
+import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeValueId;
+import org.adempiere.mm.attributes.AttributeValueType;
+import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Evaluatee2;
 import org.compiere.util.TimeUtil;
 
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.i18n.ITranslatableString;
-import de.metas.uom.IUOMDAO;
-import de.metas.util.NumberUtils;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Date;
 
 /*
  * #%L
@@ -32,12 +29,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -49,16 +46,15 @@ final class AttributeDescriptionPatternEvalCtx implements Evaluatee2
 	private static final String VAR_Label = "Label";
 	private static final String VAR_Value = "Value";
 	private static final String VAR_UOM = "UOM";
-	private static final ImmutableSet<String> VARS = ImmutableSet.<String> of(
+	private static final ImmutableSet<String> VARS = ImmutableSet.of(
 			VAR_Label,
 			VAR_Value,
 			VAR_UOM);
 
-	private final IAttributesBL attributesBL;
 	private final IAttributeDAO attributesRepo;
 	private final IUOMDAO uomsRepo;
 
-	private final I_M_Attribute attribute;
+	private final Attribute attribute;
 	private final Object attributeValue;
 	private final AttributeValueId attributeValueId;
 	private final String adLanguage;
@@ -67,17 +63,15 @@ final class AttributeDescriptionPatternEvalCtx implements Evaluatee2
 	@lombok.Builder
 	private AttributeDescriptionPatternEvalCtx(
 			@NonNull final IAttributeDAO attributesRepo,
-			@NonNull final IAttributesBL attributesBL,
 			@NonNull final IUOMDAO uomsRepo,
 			//
-			@NonNull final I_M_Attribute attribute,
+			@NonNull final Attribute attribute,
 			@Nullable final Object attributeValue,
 			@Nullable final AttributeValueId attributeValueId,
 			@NonNull final String adLanguage,
 			final boolean verboseDescription)
 	{
 		this.attributesRepo = attributesRepo;
-		this.attributesBL = attributesBL;
 		this.uomsRepo = uomsRepo;
 		//
 		this.attribute = attribute;
@@ -123,13 +117,13 @@ final class AttributeDescriptionPatternEvalCtx implements Evaluatee2
 
 	private String getAttributeLabel()
 	{
-		return attribute.getName();
+		return attribute.getDisplayName().getDefaultValue();
 	}
 
 	private String getAttributeUOM()
 	{
-		final int uomId = attribute.getC_UOM_ID();
-		if (uomId <= 0)
+		final UomId uomId = attribute.getUomId();
+		if (uomId == null)
 		{
 			return null;
 		}
@@ -145,13 +139,13 @@ final class AttributeDescriptionPatternEvalCtx implements Evaluatee2
 
 	private ITranslatableString getAttributeValueAsDisplayString()
 	{
-		final String attributeValueType = attribute.getAttributeValueType();
-		if (X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(attributeValueType))
+		final AttributeValueType valueType = attribute.getValueType();
+		if (AttributeValueType.STRING.equals(valueType))
 		{
 			final String valueStr = attributeValue != null ? attributeValue.toString() : null;
 			return ASIDescriptionBuilderCommand.formatStringValue(valueStr);
 		}
-		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
+		else if (AttributeValueType.NUMBER.equals(valueType))
 		{
 			final BigDecimal valueBD = attributeValue != null ? NumberUtils.asBigDecimal(attributeValue, null) : null;
 			if (valueBD == null && !verboseDescription)
@@ -160,11 +154,10 @@ final class AttributeDescriptionPatternEvalCtx implements Evaluatee2
 			}
 			else
 			{
-				final int displayType = attributesBL.getNumberDisplayType(attribute);
-				return ASIDescriptionBuilderCommand.formatNumber(valueBD, displayType);
+				return ASIDescriptionBuilderCommand.formatNumber(valueBD, attribute.getNumberDisplayType());
 			}
 		}
-		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
+		else if (AttributeValueType.DATE.equals(valueType))
 		{
 			final Date valueDate = attributeValue != null ? TimeUtil.asDate(attributeValue) : null;
 			if (valueDate == null && !verboseDescription)
@@ -176,7 +169,7 @@ final class AttributeDescriptionPatternEvalCtx implements Evaluatee2
 				return ASIDescriptionBuilderCommand.formatDateValue(valueDate);
 			}
 		}
-		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attributeValueType))
+		else if (AttributeValueType.LIST.equals(valueType))
 		{
 			final AttributeListValue attributeValue = attributeValueId != null ? attributesRepo.retrieveAttributeValueOrNull(attribute, attributeValueId) : null;
 			if (attributeValue != null)
@@ -185,8 +178,7 @@ final class AttributeDescriptionPatternEvalCtx implements Evaluatee2
 			}
 			else
 			{
-				final String valueStr = attributeValue != null ? attributeValue.toString() : null;
-				return ASIDescriptionBuilderCommand.formatStringValue(valueStr);
+				return ASIDescriptionBuilderCommand.formatStringValue(null);
 			}
 		}
 		else

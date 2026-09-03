@@ -106,7 +106,8 @@ public class ImportIssueInfo
 	ExternalId externalParentIssueId;
 
 	@NonNull
-	ImmutableList<IssueLabel> issueLabels;
+	@Builder.Default
+	ImmutableList<IssueLabel> issueLabels = ImmutableList.of();
 
 	@Nullable
 	LocalDate deliveredDate;

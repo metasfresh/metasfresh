@@ -32,7 +32,7 @@ import java.util.List;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
-import org.adempiere.mm.attributes.api.impl.AttributeInstanceExpectation;
+import org.adempiere.mm.attributes.AttributeInstanceExpectation;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.test.AbstractExpectation;

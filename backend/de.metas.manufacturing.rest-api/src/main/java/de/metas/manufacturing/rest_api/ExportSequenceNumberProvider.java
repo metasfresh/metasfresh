@@ -23,8 +23,8 @@
 package de.metas.manufacturing.rest_api;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.compiere.model.MSequence;
-import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -34,7 +34,7 @@ public class ExportSequenceNumberProvider
 
 	public int provideNextExportSequenceNumber()
 	{
-		final int exportSequenceNumber = MSequence.getNextID(Env.CTXVALUE_AD_Client_ID_System, MANUFACTURING_ORDER_EXPORT_SEQ_NO);
+		final int exportSequenceNumber = MSequence.getNextID(ClientId.SYSTEM.getRepoId(), MANUFACTURING_ORDER_EXPORT_SEQ_NO);
 		if (exportSequenceNumber <= 0)
 		{
 			throw new AdempiereException("Could not retrieve nextID for sequence " + MANUFACTURING_ORDER_EXPORT_SEQ_NO);

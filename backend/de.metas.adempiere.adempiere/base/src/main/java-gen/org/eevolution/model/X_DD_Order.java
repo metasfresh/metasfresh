@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 2133224776L;
+	private static final long serialVersionUID = 2142738420L;
 
     /** Standard Constructor */
     public X_DD_Order (final Properties ctx, final int DD_Order_ID, @Nullable final String trxName)
@@ -688,6 +688,18 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 	}
 
 	@Override
+	public void setIsPickingDisconnected (final boolean IsPickingDisconnected)
+	{
+		set_Value (COLUMNNAME_IsPickingDisconnected, IsPickingDisconnected);
+	}
+
+	@Override
+	public boolean isPickingDisconnected() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsPickingDisconnected);
+	}
+
+	@Override
 	public void setIsPrinted (final boolean IsPrinted)
 	{
 		set_Value (COLUMNNAME_IsPrinted, IsPrinted);
@@ -733,6 +745,17 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 	public boolean isSOTrx() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsSOTrx);
+	}
+
+	@Override
+	public void setLocatorPriorityNo (final int LocatorPriorityNo)
+	{
+		throw new IllegalArgumentException ("LocatorPriorityNo is virtual column");	}
+
+	@Override
+	public int getLocatorPriorityNo() 
+	{
+		return get_ValueAsInt(COLUMNNAME_LocatorPriorityNo);
 	}
 
 	@Override
@@ -1039,6 +1062,18 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 	public boolean isSendEMail() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_SendEMail);
+	}
+
+	@Override
+	public void setSeqNo (final int SeqNo)
+	{
+		set_Value (COLUMNNAME_SeqNo, SeqNo);
+	}
+
+	@Override
+	public int getSeqNo() 
+	{
+		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
 
 	@Override

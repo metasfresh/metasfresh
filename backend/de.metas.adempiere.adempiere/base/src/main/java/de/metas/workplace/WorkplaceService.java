@@ -22,10 +22,14 @@
 
 package de.metas.workplace;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.user.UserId;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -36,10 +40,11 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class WorkplaceService
 {
-	@NonNull
-	private final WorkplaceRepository workplaceRepository;
-	@NonNull
-	private final WorkplaceUserAssignRepository workplaceUserAssignRepository;
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	@NonNull private final WorkplaceRepository workplaceRepository;
+	@NonNull private final WorkplaceUserAssignRepository workplaceUserAssignRepository;
+
+	public Workplace create(@NonNull final WorkplaceCreateRequest request) {return workplaceRepository.create(request);}
 
 	@NonNull
 	public Workplace getById(@NonNull final WorkplaceId id)
@@ -86,5 +91,41 @@ public class WorkplaceService
 	public boolean isAnyWorkplaceActive()
 	{
 		return workplaceRepository.isAnyWorkplaceActive();
+	}
+
+	public ImmutableSet<LocatorId> getAllPackingPlacePickFromLocatorIds()
+	{
+		return workplaceRepository.getAllPackingPlacePickFromLocatorIds();
+	}
+
+	/**
+	 * The single target locator to deliver to for this workplace: the configured {@code PickFrom_Locator_ID} if set,
+	 * otherwise the workplace warehouse's default locator (always resolvable via
+	 * {@link IWarehouseBL#getOrCreateDefaultLocatorId(WarehouseId)}). Use this when exactly one delivery locator is
+	 * required (e.g. the DD_Order picking-replenishment target).
+	 */
+	@NonNull
+	public LocatorId getPickFromLocatorIdOrWarehouseDefault(@NonNull final Workplace workplace)
+	{
+		final LocatorId pickFromLocatorId = workplace.getPickFromLocatorId();
+		return pickFromLocatorId != null
+				? pickFromLocatorId
+				: warehouseBL.getOrCreateDefaultLocatorId(workplace.getWarehouseId());
+	}
+
+	/**
+	 * Filters to the locator's own warehouse only — safe because a configured pick-from locator is asserted to belong to its workplace's warehouse, so no other warehouse's workplace can resolve to this locator.
+	 */
+	@NonNull
+	public ImmutableSet<WorkplaceId> getWorkplaceIdsByEffectivePickFromLocatorId(@NonNull final LocatorId locatorId)
+	{
+		final WarehouseId warehouseId = locatorId.getWarehouseId();
+
+		return workplaceRepository.getAllActive()
+				.stream()
+				.filter(workplace -> WarehouseId.equals(workplace.getWarehouseId(), warehouseId))
+				.filter(workplace -> LocatorId.equals(getPickFromLocatorIdOrWarehouseDefault(workplace), locatorId))
+				.map(Workplace::getId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }

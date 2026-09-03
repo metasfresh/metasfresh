@@ -1,7 +1,7 @@
 package de.metas.vertical.pharma.securpharm.service;
 
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.inventory.InventoryRepository;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.user.UserId;
 import de.metas.vertical.pharma.securpharm.actions.DecommissionResponse;
 import de.metas.vertical.pharma.securpharm.actions.SecurPharmaActionRepository;
@@ -66,9 +66,9 @@ public class SecurPharmServiceManualTest
 				.productsRepo(new SecurPharmProductRepository())
 				.actionsRepo(new SecurPharmaActionRepository())
 				.logsRepo(new SecurPharmLogRepository())
-				.actionRequestDispatcher(new DirectSecurPharmActionsDispatcher())
+				.actionRequestDispatcher(NOPSecurPharmActionsDispatcher.instance)
 				.userNotifications(new LoggingSecurPharmUserNotifications())
-				.inventoryRepo(new InventoryRepository())
+				.inventoryService(InventoryService.newInstanceForUnitTesting())
 				.build();
 	}
 

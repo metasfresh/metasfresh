@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00800
 @ghActions:run_on_executor3
 Feature: API Audit POST http method
+## F00800: REST API
 
   Background:
     Given infrastructure and metasfresh are running
@@ -8,6 +11,9 @@ Feature: API Audit POST http method
     And all the API audit data is reset
 
   @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00800
+  @Id:S0478_070
   Scenario: Testcase 100, normal POST and caller waits for result
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -33,7 +39,21 @@ Feature: API Audit POST http method
       | HttpCode | Body                                           |
       | 200      | {"messageBody":"\"test-endpoint was called\""} |
 
+    And get the API_Request_Audit_ID which was returned from the preceding API-call, insert it into the endpointPath /api/v2/audit/requests/@apiRequest@/response and store that path in context
+
+    And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
+
+    Then the metasfresh REST-API responds with
+    """
+   {
+	"messageBody": "\"test-endpoint was called\""
+  }
+"""
+    
   @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00800
+  @Id:S0478_080
   Scenario: Testcase 110, normal POST and caller does not wait for result
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -63,7 +83,21 @@ Feature: API Audit POST http method
       | HttpCode | Body                                           |
       | 200      | {"messageBody":"\"test-endpoint was called\""} |
 
+    And get the API_Request_Audit_ID which was returned from the preceding API-call, insert it into the endpointPath /api/v2/audit/requests/@apiRequest@/response and store that path in context
+
+    And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
+
+    Then the metasfresh REST-API responds with
+    """
+   {
+	"messageBody": "\"test-endpoint was called\""
+  }
+"""
+    
   @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00800
+  @Id:S0490_050
   Scenario: Testcase 120, failing POST and caller waits for result
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -89,7 +123,21 @@ Feature: API Audit POST http method
       | HttpCode | Body                                           |
       | 404      | {"messageBody":"\"test-endpoint was called\""} |
 
+    And get the API_Request_Audit_ID which was returned from the preceding API-call, insert it into the endpointPath /api/v2/audit/requests/@apiRequest@/response and store that path in context
+
+    And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '404' status code
+
+    Then the metasfresh REST-API responds with
+    """
+   {
+	"messageBody": "\"test-endpoint was called\""
+  }
+"""
+    
   @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00800
+  @Id:S0490_060
   Scenario: Testcase 130, failing POST and caller does not wait for result
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -120,7 +168,21 @@ Feature: API Audit POST http method
       | HttpCode | Body                                           |
       | 404      | {"messageBody":"\"test-endpoint was called\""} |
 
+    And get the API_Request_Audit_ID which was returned from the preceding API-call, insert it into the endpointPath /api/v2/audit/requests/@apiRequest@/response and store that path in context
+
+    And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '404' status code
+
+    Then the metasfresh REST-API responds with
+    """
+   {
+	"messageBody": "\"test-endpoint was called\""
+  }
+"""
+    
   @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00800
+  @Id:S0478_090
   Scenario: Testcase 140, failing POST and replay
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -156,7 +218,20 @@ Feature: API Audit POST http method
       | 404      | {"messageBody":"\"test-endpoint was called\""} |
       | 200      | {"messageBody":"\"test-endpoint was called\""} |
 
+    And get the API_Request_Audit_ID which was returned from the preceding API-call, insert it into the endpointPath /api/v2/audit/requests/@apiRequest@/response and store that path in context
+
+    And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
+
+    Then the metasfresh REST-API responds with
+    """
+   {
+	"messageBody": "\"test-endpoint was called\""
+  }
+"""
+    
   @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00800
   Scenario: Testcase 150, normal POST with IsForceProcessedAsync = Y, IsSynchronousAuditLoggingEnabled = Y and IsWrapApiResponse = N
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -180,6 +255,9 @@ Feature: API Audit POST http method
 
 
   @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00800
+  @Id:S0478_100
   Scenario: Testcase 160, normal POST, caller waits for result, IsSynchronousAuditLoggingEnabled is true and IsWrapApiResponse is false
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -205,7 +283,21 @@ Feature: API Audit POST http method
       | HttpCode | Body                                           |
       | 200      | {"messageBody":"\"test-endpoint was called\""} |
 
+    And get the API_Request_Audit_ID which was returned from the preceding API-call, insert it into the endpointPath /api/v2/audit/requests/@apiRequest@/response and store that path in context
+
+    And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
+
+    Then the metasfresh REST-API responds with
+    """
+   {
+	"messageBody": "\"test-endpoint was called\""
+  }
+"""
+    
   @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00800
+  @Id:S0478_110
   Scenario: Testcase 170, normal POST, caller waits for result, IsSynchronousAuditLoggingEnabled is true, IsWrapApiResponse is false and X-Api-Async header is true
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -231,7 +323,20 @@ Feature: API Audit POST http method
       | HttpCode | Body                                           |
       | 200      | {"messageBody":"\"test-endpoint was called\""} |
 
+    And get the API_Request_Audit_ID which was returned from the preceding API-call, insert it into the endpointPath /api/v2/audit/requests/@apiRequest@/response and store that path in context
+
+    And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
+
+    Then the metasfresh REST-API responds with
+    """
+   {
+	"messageBody": "\"test-endpoint was called\""
+  }
+"""
+    
   @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00800
   Scenario: Testcase 175, normal POST with IsSynchronousAuditLoggingEnabled is false, IsWrapApiResponse is false and response body is missing
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -256,6 +361,8 @@ Feature: API Audit POST http method
       | 200      |      |
 
   @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00800
   Scenario: Testcase 180, normal POST, caller waits for result, IsSynchronousAuditLoggingEnabled is true, IsWrapApiResponse is false and response body is missing
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -278,6 +385,8 @@ Feature: API Audit POST http method
       | 200      |      |
 
   @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00800
   Scenario: Testcase 185, failing POST, caller waits for result, IsSynchronousAuditLoggingEnabled is true, IsWrapApiResponse is false and exception thrown in metasfresh api
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -298,6 +407,8 @@ Feature: API Audit POST http method
       | 422      | Exception thrown |
 
   @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00800
   Scenario: Testcase 190, failing POST with IsSynchronousAuditLoggingEnabled is false, IsWrapApiResponse is false and exception thrown in metasfresh api
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -320,6 +431,8 @@ Feature: API Audit POST http method
       | 422      | Exception thrown |
 
   @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00800
   Scenario: Testcase 195, normal POST, caller waits for result, IsSynchronousAuditLoggingEnabled is true and IsWrapApiResponse is false and response cannot be deserialized
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -338,6 +451,8 @@ Feature: API Audit POST http method
     And there are no records in API_Response_Audit for the API_Request_Audit from context
 
   @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00800
   Scenario: Testcase 200, normal POST with IsSynchronousAuditLoggingEnabled is false and IsWrapApiResponse is false and response cannot be deserialized
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -355,6 +470,8 @@ test-endpoint was called
     And there are no records in API_Response_Audit
 
   @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00800
   Scenario: Testcase 210, reset to initial default data
     And all the API audit data is reset
     And the following API_Audit_Config records are created:

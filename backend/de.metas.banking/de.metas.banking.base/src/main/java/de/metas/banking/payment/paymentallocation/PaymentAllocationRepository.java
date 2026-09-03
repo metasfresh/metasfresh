@@ -230,7 +230,7 @@ public class PaymentAllocationRepository
 		return InvoiceAmtMultiplier.builder()
 				.soTrx(docBaseType.getSoTrx())
 				.isCreditMemo(docBaseType.isCreditMemo())
-				.isSOTrxAdjusted(false)
+				.isAPAdjusted(false)
 				.isCreditMemoAdjusted(true) // because the function is based on C_Invoice_v view which returns CreditMemo adjusted amounts
 				.build()
 				.intern();

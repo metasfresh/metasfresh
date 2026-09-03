@@ -112,6 +112,12 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	}
 
 	@Override
+	public BPartnerLocationId getDropShipLocationEffectiveId(final I_C_OLCand olCand)
+	{
+		return getDropShipLocationAndCaptureEffectiveId(olCand).getBpartnerLocationId();
+	}
+
+	@Override
 	public I_C_BPartner_Location getDropShip_Location_Effective(final I_C_OLCand olCand)
 	{
 		final BPartnerLocationId dropShipLocationEffectiveId = getDropShipLocationAndCaptureEffectiveId(olCand).getBpartnerLocationId();

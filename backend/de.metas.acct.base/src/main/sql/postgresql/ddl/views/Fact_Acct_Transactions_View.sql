@@ -14,6 +14,8 @@ SELECT fact.fact_acct_id,
        fact.c_acctschema_id,
        fact.account_id,
        fact.accountconceptualname,
+       fact.C_CostClassification_ID,
+       fact.C_CostClassification_Category_ID,
        fact.datetrx,
        fact.dateacct,
        fact.c_period_id,
@@ -72,7 +74,6 @@ SELECT fact.fact_acct_id,
        --NEW_DAWN_MERGE_ARTIFACT
        -- fact.userElementDate1,
        -- fact.userElementDate2,
-       -- fact.m_sectioncode_id,
        fact.C_OrderSO_ID,
        acctbalance(fact.account_id, fact.amtacctdr, fact.amtacctcr) AS balance,
        fact.m_costelement_id,
@@ -82,11 +83,17 @@ SELECT fact.fact_acct_id,
        fact.OI_TrxType,
        fact.IsOpenItemsReconciled,
        fact.OI_OpenAmount,
-       fact.OI_OpenAmountSource
---NEW_DAWN_MERGE_ARTIFACT
--- ,fact.c_harvesting_calendar_id,
--- fact.harvesting_year_id
+       fact.OI_OpenAmountSource,
+       CASE WHEN EXISTS (
+           SELECT 1
+           FROM C_Invoice_Acct ia
+           WHERE ia.IsActive = 'Y'
+             AND ia.C_AcctSchema_ID = fact.C_AcctSchema_ID
+             AND ia.C_Invoice_ID = fact.Record_ID
+             AND fact.AD_Table_ID = 318
+             AND (ia.C_InvoiceLine_ID = fact.Line_ID OR ia.C_InvoiceLine_ID IS NULL)
+             AND ia.C_ElementValue_ID = fact.Account_ID
+       ) THEN 'Y' ELSE 'N' END AS IsAccountOverridden
 FROM fact_acct fact
 ;
-
 

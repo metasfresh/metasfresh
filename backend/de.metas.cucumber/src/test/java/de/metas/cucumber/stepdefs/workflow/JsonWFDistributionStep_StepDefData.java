@@ -23,7 +23,7 @@
 package de.metas.cucumber.stepdefs.workflow;
 
 import de.metas.cucumber.stepdefs.StepDefData;
-import de.metas.distribution.workflows_api.json.JsonDistributionJobStep;
+import de.metas.distribution.mobileui.rest_api.json.JsonDistributionJobStep;
 
 public class JsonWFDistributionStep_StepDefData extends StepDefData<JsonDistributionJobStep>
 {

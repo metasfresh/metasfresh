@@ -56,7 +56,7 @@ public final class InvoiceLineAttribute implements IInvoiceLineAttribute
 		// Build aggregation key
 		{
 			final int attributeId = attributeInstance.getM_Attribute_ID();
-			final I_M_Attribute attribute = Services.get(IAttributeDAO.class).getAttributeById(attributeId);
+			final I_M_Attribute attribute = Services.get(IAttributeDAO.class).getAttributeRecordById(attributeId);
 			final StringBuilder aggregationKey = new StringBuilder();
 			aggregationKey.append(attribute.getName());
 			aggregationKey.append("=");

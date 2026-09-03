@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { apiBasePath } from '../constants';
-import { unboxAxiosResponse } from '../utils';
+import { toUrl, unboxAxiosResponse } from '../utils';
 import { useQuery } from '../hooks/useQuery';
 
 export const getMobileConfiguration = () => {
@@ -14,4 +14,10 @@ export const useMobileConfiguration = ({ onSuccess } = {}) => {
   });
 
   return { isConfigLoading: isPending, config: data };
+};
+
+export const getMessages = ({ lang } = {}) => {
+  return axios
+    .get(toUrl(`${apiBasePath}/public/mobile/messages`, { lang }))
+    .then((response) => unboxAxiosResponse(response));
 };

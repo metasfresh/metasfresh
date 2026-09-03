@@ -16,8 +16,8 @@ import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_Package_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.product.PackageDimensions;
 import de.metas.product.ProductId;
-import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
@@ -89,7 +89,18 @@ public class HUPackingMaterialDAO implements IHUPackingMaterialDAO
 				.andCollectChildren(I_M_HU_Item.COLUMN_M_HU_ID)
 				.andCollect(I_M_HU_PackingMaterial.COLUMN_M_HU_PackingMaterial_ID, I_M_HU_PackingMaterial.class)
 				.create()
-				// first only used here because we wanna see (read: blow up) if there are cases with 2 packing materials for a single package. I don't think this could happen, but wht if it does?
+				// first only used here because we wanna see (read: blow up) if there are cases with 2 packing materials for a single package. I don't think this could happen, but what if it does?
+				.firstOnly(I_M_HU_PackingMaterial.class);
+	}
+
+	@Nullable
+	@Override
+	public I_M_HU_PackingMaterial getById(@NonNull final HuPackingMaterialId packingMaterialId)
+	{
+		return queryBL
+				.createQueryBuilder(I_M_HU_PackingMaterial.class)
+				.addEqualsFilter(I_M_HU_PackingMaterial.COLUMNNAME_M_HU_PackingMaterial_ID, packingMaterialId)
+				.create()
 				.firstOnly(I_M_HU_PackingMaterial.class);
 	}
 
@@ -105,7 +116,13 @@ public class HUPackingMaterialDAO implements IHUPackingMaterialDAO
 	@Override
 	public PackageDimensions retrievePackageDimensions(@NonNull final I_M_HU_PackingMaterial packingMaterial, @NonNull final UomId toUomId)
 	{
-		final UomId fromUomId = UomId.ofRepoId(packingMaterial.getC_UOM_Dimension_ID());
+		final UomId fromUomId = UomId.ofRepoIdOrNull(packingMaterial.getC_UOM_Dimension_ID());
+		if (fromUomId == null)
+		{
+			// A packing material with no dimension UOM has unknown (optional) dimensions;
+			// return UNSPECIFIED rather than letting UomId.ofRepoId(0) abort package creation.
+			return PackageDimensions.UNSPECIFIED;
+		}
 
 		final IUOMConversionBL iuomConversionBL = Services.get(IUOMConversionBL.class);
 		return PackageDimensions.builder()

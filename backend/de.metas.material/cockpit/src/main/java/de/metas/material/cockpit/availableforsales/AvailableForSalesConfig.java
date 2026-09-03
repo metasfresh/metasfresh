@@ -1,13 +1,13 @@
 package de.metas.material.cockpit.availableforsales;
 
-import static de.metas.util.Check.assumeGreaterOrEqualToZero;
-
-import javax.annotation.Nullable;
-
 import de.metas.util.Check;
 import de.metas.util.ColorId;
 import lombok.Builder;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+
+import static de.metas.util.Check.assumeGreaterOrEqualToZero;
 
 /*
  * #%L
@@ -46,6 +46,8 @@ public class AvailableForSalesConfig
 
 	int asyncTimeoutMillis;
 
+	boolean qtyPerWarehouse;
+
 	@Builder
 	private AvailableForSalesConfig(
 			@Nullable final ColorId insufficientQtyAvailableForSalesColorId,
@@ -53,13 +55,15 @@ public class AvailableForSalesConfig
 			final int salesOrderLookBehindHours,
 			final boolean featureEnabled,
 			final boolean runAsync,
-			final int asyncTimeoutMillis)
+			final int asyncTimeoutMillis,
+			final boolean qtyPerWarehouse)
 	{
 		this.featureEnabled = featureEnabled;
 		this.insufficientQtyAvailableForSalesColorId = insufficientQtyAvailableForSalesColorId;
 		this.shipmentDateLookAheadHours = shipmentDateLookAheadHours;
 		this.salesOrderLookBehindHours = salesOrderLookBehindHours;
 		this.runAsync = runAsync;
+		this.qtyPerWarehouse = qtyPerWarehouse;
 
 		// we allow zero so people can check the async-error-handling
 		this.asyncTimeoutMillis = assumeGreaterOrEqualToZero(asyncTimeoutMillis, "asyncTimeoutMillis");

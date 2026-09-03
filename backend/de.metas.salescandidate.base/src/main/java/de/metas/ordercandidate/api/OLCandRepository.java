@@ -1,55 +1,8 @@
-package de.metas.ordercandidate.api;
-
-import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.BPartnerContactId;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.BPartnerInfo;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.common.util.CoalesceUtil;
-import de.metas.common.util.time.SystemTime;
-import de.metas.document.DocTypeId;
-import de.metas.impex.InputDataSourceId;
-import de.metas.impex.api.IInputDataSourceDAO;
-import de.metas.location.LocationId;
-import de.metas.order.InvoiceRule;
-import de.metas.order.OrderId;
-import de.metas.order.OrderLineGroup;
-import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.payment.PaymentRule;
-import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.shipping.ShipperId;
-import de.metas.user.UserId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.lang.Percent;
-import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Repository;
-
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.salescandidate.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -67,12 +20,70 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * #L%
  */
 
+package de.metas.ordercandidate.api;
+
+import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
+import de.metas.document.DocTypeId;
+import de.metas.externalsystem.ExternalSystemId;
+import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.impex.api.IInputDataSourceDAO;
+import de.metas.impexp.InputDataSourceId;
+import de.metas.location.LocationId;
+import de.metas.order.InvoiceRule;
+import de.metas.order.OrderId;
+import de.metas.order.OrderLineGroup;
+import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.promotioncode.PromotionCodeId;
+import de.metas.shipping.ShipperId;
+import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.lang.Percent;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.persistence.custom_columns.CustomColumnService;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Repository;
+
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 @Repository
+@RequiredArgsConstructor
 public class OLCandRepository
 {
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
+    private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
+
+	@NonNull private final ExternalSystemRepository externalSystemRepository;
+	@NonNull private final CustomColumnService customColumnService;
 
 	public List<OLCand> create(@NonNull final List<OLCandCreateRequest> requests)
 	{
@@ -84,7 +95,7 @@ public class OLCandRepository
 		return trxManager.callInThreadInheritedTrx(
 				() -> {
 					final ImmutableList.Builder<OLCand> result = ImmutableList.builder();
-					for(final OLCandCreateRequest request: requests)
+					for (final OLCandCreateRequest request : requests)
 					{ // using for-loop because if one request fails, it's very hard to debug
 						final I_C_OLCand olCandRecord = createAndSaveOLCandRecord(request);
 						final OLCand olCand = olCandFactory.toOLCand(olCandRecord);
@@ -96,8 +107,6 @@ public class OLCandRepository
 
 	public OLCand create(@NonNull final OLCandCreateRequest request)
 	{
-		Check.assumeNotNull(request, "request is not null");
-
 		final OLCandFactory olCandFactory = new OLCandFactory();
 
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -250,12 +259,13 @@ public class OLCandRepository
 
 		olCandPO.setAD_User_EnteredBy_ID(Env.getLoggedUserIdIfExists().orElse(UserId.SYSTEM).getRepoId());
 
-		olCandPO.setAD_InputDataSource_ID(request.getDataSourceId().getRepoId());
+		olCandPO.setAD_InputDataSource_ID(InputDataSourceId.toRepoId(request.getDataSourceId()));
 
 		olCandPO.setAD_DataDestination_ID(request.getDataDestId().getRepoId());
 
 		olCandPO.setExternalLineId(request.getExternalLineId());
 		olCandPO.setExternalHeaderId(request.getExternalHeaderId());
+		olCandPO.setExternalSystem_ID(request.getExternalSystemId().getRepoId());
 
 		final ShipperId shipperId = request.getShipperId();
 		if (shipperId != null)
@@ -274,6 +284,8 @@ public class OLCandRepository
 		{
 			olCandPO.setInvoiceRule(invoiceRule.getCode());
 		}
+
+		olCandPO.setIsAutoInvoice(request.isAutoInvoice());
 
 		final PaymentRule paymentRule = request.getPaymentRule();
 		if (paymentRule != null)
@@ -300,6 +312,12 @@ public class OLCandRepository
 		olCandPO.setDescription(request.getDescription());
 		olCandPO.setDeliveryRule(request.getDeliveryRule());
 		olCandPO.setDeliveryViaRule(request.getDeliveryViaRule());
+		if (request.getIncotermsId() != null)
+		{
+            olCandPO.setC_Incoterms_ID(request.getIncotermsId().getRepoId());
+			olCandPO.setIncotermLocation(request.getIncotermsLocation());
+		}
+
 		olCandPO.setImportWarningMessage(request.getImportWarningMessage());
 		if (request.getPrice() == null)
 		{
@@ -335,6 +353,30 @@ public class OLCandRepository
 			olCandWithIssuesInterface.setQtyItemCapacity(request.getQtyItemCapacity());
 		}
 
+		// first-class promo code / charge fields — set before the initial saveRecord so there is only one write
+		if (request.getPromotionCodeId() != null)
+		{
+			olCandPO.setC_PromotionCode_ID(request.getPromotionCodeId().getRepoId());
+		}
+		if (request.getPromotionCode2Id() != null)
+		{
+			olCandPO.setC_PromotionCode2_ID(request.getPromotionCode2Id().getRepoId());
+		}
+		olCandPO.setIsWithoutCharge(request.isWithoutCharge());
+		if (request.getReason() != null)
+		{
+			olCandPO.setReason(request.getReason());
+		}
+
+		// wire extendedProps: set custom REST API columns on the C_OLCand record before the single save below
+		if (!request.getExtendedProps().isEmpty()
+				&& !POJOWrapper.isHandled(olCandWithIssuesInterface))
+		{
+			customColumnService.setCustomColumns(
+					InterfaceWrapperHelper.getPO(olCandWithIssuesInterface),
+					request.getExtendedProps());
+		}
+
 		saveRecord(olCandWithIssuesInterface);
 
 		return olCandWithIssuesInterface;
@@ -361,9 +403,14 @@ public class OLCandRepository
 		{
 			queryBuilder.addEqualsFilter(I_C_OLCand.COLUMN_ExternalHeaderId, olCandQuery.getExternalHeaderId());
 		}
-		if (olCandQuery.getInputDataSourceName() != null)
+		if (olCandQuery.getExternalSystemType() != null)
 		{
-			final InputDataSourceId inputDataSourceId = Services.get(IInputDataSourceDAO.class).retrieveInputDataSourceIdByInternalName(olCandQuery.getInputDataSourceName());
+			final ExternalSystemId externalSystemId = externalSystemRepository.getIdByType(olCandQuery.getExternalSystemType());
+			queryBuilder.addEqualsFilter(I_C_OLCand.COLUMNNAME_ExternalSystem_ID, externalSystemId);
+		}
+		if (Check.isNotBlank(olCandQuery.getInputDataSourceName()))
+		{
+			final InputDataSourceId inputDataSourceId = inputDataSourceDAO.retrieveInputDataSourceIdByInternalName(olCandQuery.getInputDataSourceName());
 			queryBuilder.addEqualsFilter(I_C_OLCand.COLUMN_AD_InputDataSource_ID, inputDataSourceId);
 		}
 		if (olCandQuery.getExternalLineId() != null)

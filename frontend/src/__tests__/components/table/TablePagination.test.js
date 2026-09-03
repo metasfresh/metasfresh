@@ -1,19 +1,22 @@
 import React from 'react';
 import { mount } from 'enzyme';
 import { initialState as appHandlerState } from '../../../reducers/appHandler';
-import { initialState as windowHandlerState } from '../../../reducers/windowHandler';
+import {
+  initialState as windowHandlerState
+} from '../../../reducers/windowHandler';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import { merge } from 'merge-anything';
-import tablePaginationProps from '../../../../test_setup/fixtures/table/table_pagination.json';
-import hotkeys from '../../../../test_setup/fixtures/hotkeys.json';
-import keymap from '../../../../test_setup/fixtures/keymap.json';
+import tablePaginationProps
+  from '../../../../test_setup/fixtures/table/table_pagination.json';
 import TablePagination from '../../../components/table/TablePagination';
-import { ShortcutProvider } from '../../../components/keyshortcuts/ShortcutProvider';
+import {
+  ShortcutProvider
+} from '../../../components/keyshortcuts/ShortcutProvider';
 
 const mockStore = configureStore([]);
 const createStore = function(state = {}) {
-  const res = merge(
+  return merge(
     {
       appHandler: {
         ...appHandlerState,
@@ -23,8 +26,6 @@ const createStore = function(state = {}) {
     },
     state
   );
-
-  return res;
 };
 const initialState = createStore({
   windowHandler: {
@@ -41,7 +42,7 @@ describe('TablePagination', () => {
   it('renders without errors with the given props', () => {
     const wrapperTableCMenu = mount(
       <Provider store={store}>
-        <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+        <ShortcutProvider>
           <TablePagination {...tablePaginationProps} />
         </ShortcutProvider>
       </Provider>
@@ -60,7 +61,7 @@ describe('TablePagination', () => {
     tablePaginationProps.page = 2;
     const wrapperTableCMenu = mount(
       <Provider store={store}>
-        <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+        <ShortcutProvider>
           <TablePagination {...tablePaginationProps} />
         </ShortcutProvider>
       </Provider>
@@ -83,7 +84,7 @@ describe('TablePagination', () => {
     tablePaginationProps.compressed = true;
     const wrapperTableCMenu = mount(
       <Provider store={store}>
-        <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+        <ShortcutProvider>
           <TablePagination {...tablePaginationProps} />
         </ShortcutProvider>
       </Provider>
@@ -97,7 +98,7 @@ describe('TablePagination', () => {
     tablePaginationProps.compressed = false;
     const wrapperTableCMenu = mount(
       <Provider store={store}>
-        <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+        <ShortcutProvider>
           <TablePagination {...tablePaginationProps} />
         </ShortcutProvider>
       </Provider>

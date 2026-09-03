@@ -28,4 +28,6 @@ import lombok.NonNull;
 public interface IDocumentLocationAdapterTemplate
 {
 	void setRenderedAddressAndCapturedLocation(@NonNull final RenderedAddressAndCapturedLocation from);
+
+	void setRenderedAddress(@NonNull final RenderedAddressAndCapturedLocation from);
 }

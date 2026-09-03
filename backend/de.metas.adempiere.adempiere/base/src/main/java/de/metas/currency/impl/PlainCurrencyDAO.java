@@ -60,7 +60,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * Plain {@link ICurrencyDAO} implementation, exclusively to be used for testing.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class PlainCurrencyDAO extends CurrencyDAO
 {
@@ -213,6 +212,7 @@ public class PlainCurrencyDAO extends CurrencyDAO
 
 		record.setISO_Code(currencyCode.toThreeLetterCode());
 		record.setCurSymbol(currencyCode.toThreeLetterCode());
+		record.setDescription(currencyCode.toThreeLetterCode());
 		record.setIsEuro(currencyCode.isEuro());
 
 		record.setStdPrecision(precisionToUse.toInt());
@@ -221,6 +221,10 @@ public class PlainCurrencyDAO extends CurrencyDAO
 		if (currencyId != null)
 		{
 			record.setC_Currency_ID(currencyId.getRepoId());
+		}
+		else if (CurrencyCode.EUR.equals(currencyCode))
+		{
+			record.setC_Currency_ID(CurrencyId.EUR.getRepoId());
 		}
 
 		saveRecord(record);

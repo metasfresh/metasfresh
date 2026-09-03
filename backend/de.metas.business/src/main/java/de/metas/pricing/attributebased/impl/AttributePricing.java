@@ -17,7 +17,6 @@ import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.pricing.attributebased.IProductPriceAware;
 import de.metas.pricing.attributebased.ProductPriceAware;
 import de.metas.pricing.rules.IPricingRule;
-import de.metas.pricing.rules.price_list_version.PriceListVersionConfiguration;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.ProductPriceQuery.IProductPriceQueryMatcher;
 import de.metas.pricing.service.ProductPrices;
@@ -31,8 +30,8 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -324,6 +323,6 @@ public class AttributePricing implements IPricingRule
 			return null;
 		}
 
-		return Services.get(IAttributeDAO.class).getAttributeSetInstanceById(attributeSetInstanceId);
+		return Services.get(IAttributeSetInstanceBL.class).getById(attributeSetInstanceId);
 	}
 }

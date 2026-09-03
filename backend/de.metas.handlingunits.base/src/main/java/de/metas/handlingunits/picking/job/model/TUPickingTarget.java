@@ -22,10 +22,15 @@
 
 package de.metas.handlingunits.picking.job.model;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.grai.GRAI;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -35,19 +40,52 @@ public class TUPickingTarget
 {
 	@NonNull String id;
 	@NonNull String caption;
-	@NonNull HuPackingInstructionsId tuPIId;
+
+	//
+	// New TU
+	@Nullable HuPackingInstructionsId tuPIId;
 	boolean isDefaultPacking;
+	/** Meaningful only for the new-TU form (when {@link #tuPIId} is set). Always {@code null} for existing-TU targets. */
+	@Nullable GRAI grai;
+
+	//
+	// Existing TU
+	@Nullable HuId tuId;
+	@Nullable HUQRCode tuQRCode;
 
 	@Builder(toBuilder = true)
 	private TUPickingTarget(
 			@NonNull final String caption,
-			@NonNull final HuPackingInstructionsId tuPIId,
-			final boolean isDefaultPacking)
+			@Nullable final HuPackingInstructionsId tuPIId,
+			final boolean isDefaultPacking,
+			@Nullable final GRAI grai,
+			@Nullable HuId tuId,
+			@Nullable HUQRCode tuQRCode)
 	{
 		this.caption = caption;
-		this.tuPIId = tuPIId;
-		this.id = "new-" + tuPIId.getRepoId();
-		this.isDefaultPacking = isDefaultPacking;
+
+		if (tuId != null)
+		{
+			this.tuPIId = null;
+			this.isDefaultPacking = false;
+			this.grai = null;
+			this.tuId = tuId;
+			this.tuQRCode = tuQRCode;
+			this.id = "existing-" + tuId.getRepoId();
+		}
+		else if (tuPIId != null)
+		{
+			this.tuPIId = tuPIId;
+			this.isDefaultPacking = isDefaultPacking;
+			this.grai = grai;
+			this.tuId = null;
+			this.tuQRCode = null;
+			this.id = "new-" + tuPIId.getRepoId();
+		}
+		else
+		{
+			throw new AdempiereException("Invalid picking target");
+		}
 	}
 
 	public static boolean equals(@Nullable final TUPickingTarget o1, @Nullable final TUPickingTarget o2)
@@ -58,6 +96,38 @@ public class TUPickingTarget
 	@NonNull
 	public static TUPickingTarget ofPackingInstructions(@NonNull final HuPackingInstructionsId tuPIId, @NonNull final String caption)
 	{
-		return builder().tuPIId(tuPIId).caption(caption).build();
+		return ofPackingInstructions(tuPIId, caption, null);
 	}
+
+	@NonNull
+	public static TUPickingTarget ofPackingInstructions(@NonNull final HuPackingInstructionsId tuPIId, @NonNull final String caption, @Nullable final GRAI grai)
+	{
+		return builder().tuPIId(tuPIId).caption(caption).grai(grai).build();
+	}
+
+	public static TUPickingTarget ofExistingHU(@NonNull final HuId luId, @NonNull final HUQRCode qrCode)
+	{
+		return builder().tuId(luId).tuQRCode(qrCode).caption(qrCode.toDisplayableQRCode()).build();
+	}
+
+	public boolean isExistingTU()
+	{
+		return tuId != null;
+	}
+
+	public boolean isNewTU()
+	{
+		return tuId == null && tuPIId != null;
+	}
+
+	public HuPackingInstructionsId getTuPIIdNotNull()
+	{
+		return Check.assumeNotNull(tuPIId, "TU PI shall be set for {}", this);
+	}
+
+	public HuId getTuIdNotNull()
+	{
+		return Check.assumeNotNull(tuId, "TU shall be set for {}", this);
+	}
+
 }

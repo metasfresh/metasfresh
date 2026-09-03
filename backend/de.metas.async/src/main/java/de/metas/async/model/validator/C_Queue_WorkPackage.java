@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.async
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.async.model.validator;
 
 import de.metas.async.AsyncBatchId;
@@ -33,6 +55,7 @@ public class C_Queue_WorkPackage
 	private final AsyncBatchService asyncBatchService;
 
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IWorkpackageParamDAO workpackageParamDAO = Services.get(IWorkpackageParamDAO.class);
 
 	public C_Queue_WorkPackage(@NonNull final AsyncBatchService asyncBatchService)
 	{
@@ -53,7 +76,7 @@ public class C_Queue_WorkPackage
 	public void deleteParams(@NonNull final I_C_Queue_WorkPackage wp)
 	{
 		final QueueWorkPackageId workpackageId = QueueWorkPackageId.ofRepoId(wp.getC_Queue_WorkPackage_ID());
-		Services.get(IWorkpackageParamDAO.class).deleteWorkpackageParams(workpackageId);
+		workpackageParamDAO.deleteWorkpackageParams(workpackageId);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)

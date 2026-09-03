@@ -24,21 +24,21 @@
 
 set -e
 
+# Source common utility functions
+SCRIPT_DIR=$(dirname "$0")
+. "${SCRIPT_DIR}/00_common.sh"
+
 # We assume that the stuff was started with 10_reset_db_to_seed_dump.sh
 # We assume that in the folder misc/dev-support/docker/infrastructure/env-files/ there exists an env file named ${BRANCH_NAME}.env
-if ! [ -z "$1" ]; then
-    BRANCH_NAME=$1
-else
-    echo "!! The first parameter needs do correspond to an env-File !!"
-    echo "!! E.g. to use the env-file env-files/release.env, run 20_convert_db_to_template.sh release !!"
-    exit
-fi
+BRANCH_NAME=$(resolve_branch_name "$1")
 
 set -u
 
-# the winpty is needed to avoid an error when running the script in git bash on windows
+# Detect if winpty is needed (only in interactive TTY on Windows)
+WINPTY=$(get_winpty)
+DOCKER_EXEC_FLAGS=$(get_docker_exec_flags)
 
-winpty docker exec -it ${BRANCH_NAME}_db  psql -U postgres -c "UPDATE pg_database SET datistemplate='false' WHERE datname='metasfresh_template_${BRANCH_NAME}';"
-winpty docker exec -it ${BRANCH_NAME}_db  psql -U postgres -c "drop database if exists metasfresh_template_${BRANCH_NAME};"
+$WINPTY docker exec $DOCKER_EXEC_FLAGS ${BRANCH_NAME}_db  psql -U postgres -c "UPDATE pg_database SET datistemplate='false' WHERE datname='metasfresh_template_${BRANCH_NAME}';"
+$WINPTY docker exec $DOCKER_EXEC_FLAGS ${BRANCH_NAME}_db  psql -U postgres -c "drop database if exists metasfresh_template_${BRANCH_NAME};"
 
 echo "The template-DB metasfresh_template_${BRANCH_NAME} was dropped and can be recreated with 20_convert_db_to_template.sh"

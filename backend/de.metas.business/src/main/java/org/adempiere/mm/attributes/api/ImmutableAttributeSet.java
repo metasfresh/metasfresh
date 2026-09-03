@@ -58,7 +58,7 @@ import java.util.function.Supplier;
  * Immutable {@link IAttributeSet} implementation.
  * <p>
  * To get your instance for an {@link AttributeSetInstanceId},
- * you can use {@link IAttributeDAO#getImmutableAttributeSetById(AttributeSetInstanceId)}.
+ * you can use {@link IAttributeSetInstanceBL#getImmutableAttributeSetById(AttributeSetInstanceId)}.
  */
 public final class ImmutableAttributeSet implements IAttributeSet
 {
@@ -247,6 +247,12 @@ public final class ImmutableAttributeSet implements IAttributeSet
 			throw new AdempiereException("Attribute does not exist: " + attributeCode);
 		}
 		return attribute;
+	}
+
+	public String getAttributeNameByCode(@NonNull final AttributeCode attributeCode)
+	{
+		final I_M_Attribute attribute = getAttributeByCode(attributeCode);
+		return attribute.getName();
 	}
 
 	@Override
@@ -570,6 +576,7 @@ public final class ImmutableAttributeSet implements IAttributeSet
 
 		public Builder(@NonNull final Builder other)
 		{
+			this._attributesRepo = other._attributesRepo;
 			this.attributesById = new LinkedHashMap<>(other.attributesById);
 			this.attributesByCode = new LinkedHashMap<>(other.attributesByCode);
 			this.valuesByAttributeCode = new LinkedHashMap<>(other.valuesByAttributeCode);
@@ -610,7 +617,7 @@ public final class ImmutableAttributeSet implements IAttributeSet
 				final Object attributeValue,
 				@Nullable final AttributeValueId attributeValueId)
 		{
-			final I_M_Attribute attribute = attributesRepo().getAttributeById(attributeId);
+			final I_M_Attribute attribute = attributesRepo().getAttributeRecordById(attributeId);
 			attributeValue(attribute, attributeValue, attributeValueId);
 			return this;
 		}
@@ -625,7 +632,7 @@ public final class ImmutableAttributeSet implements IAttributeSet
 
 		public Builder attributeValue(@NonNull final AttributeListValue attributeValue)
 		{
-			final I_M_Attribute attribute = attributesRepo().getAttributeById(attributeValue.getAttributeId());
+			final I_M_Attribute attribute = attributesRepo().getAttributeRecordById(attributeValue.getAttributeId());
 			final String value = attributeValue.getValue();
 			final AttributeValueId attributeValueId = attributeValue.getId();
 

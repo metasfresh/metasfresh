@@ -47,6 +47,7 @@ echo "==================="
 echo " running cucumber tests ..."
 echo "==================="
 
+# i ran this with `-Duser.timezone=UTC`, which causes the ysstem to act as expected in some case, but broke a numer of others
 mvn --offline surefire:test --fail-never "$@"
 
 echo "==================="

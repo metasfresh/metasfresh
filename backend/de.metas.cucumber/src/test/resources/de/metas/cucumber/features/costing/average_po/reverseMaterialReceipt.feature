@@ -1,16 +1,22 @@
 @from:cucumber
+@allure.label.epic:E0226_Costing
+@allure.label.feature:F1500_Costing
+@F1500
 @ghActions:run_on_executor6
 Feature: Average PO - Check costing when reversing a material receipt
+## F1500: Costing
 
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And AD_Scheduler for classname 'de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs' is disabled
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
     And metasfresh has date and time 2021-04-14T13:30:13+01:00[Europe/Berlin]
+    # Pinned: this feature asserts AveragePO amounts, so it must not inherit a costing method from a sibling.
     And load and update C_AcctSchema:
-      | C_AcctSchema_ID | Name                  |
-      | acctSchema      | metas fresh UN/34 CHF |
+      | C_AcctSchema_ID | Name                  | CostingMethod |
+      | acctSchema      | metas fresh UN/34 CHF | A             |
     And cost elements for material costing methods AveragePO are active
     And load M_Warehouse:
       | M_Warehouse_ID | Value        |
@@ -68,6 +74,9 @@ Feature: Average PO - Check costing when reversing a material receipt
 # ######################################################################################################################
 # ######################################################################################################################
   @from:cucumber
+@allure.label.epic:E0226_Costing
+@allure.label.feature:F1500_Costing
+@F1500
   Scenario: No initial stock
     #
     # Create material receipt 
@@ -86,10 +95,14 @@ Feature: Average PO - Check costing when reversing a material receipt
       | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
       | huLuTuConfig                          | hu1                | rs1                             | N               | 1     | N               | 1     | N               | 10          | 101                                | 1000006                      |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | hu1                | rs1                             | receipt1              |
+    # Validate HU state after receipt -- HU should be Active
+    And M_HU are validated:
+      | M_HU_ID.Identifier | HUStatus | IsActive |
+      | hu1                | A        | Y        |
     And validate the created material receipt lines
       | M_InOutLine_ID | M_InOut_ID | M_Product_ID | C_OrderLine_ID |
       | receipt1_line1 | receipt1   | product      | po1_l1         |
@@ -105,12 +118,19 @@ Feature: Average PO - Check costing when reversing a material receipt
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty |
       | acctSchema      | product      | AveragePO        | 1000000 CHF      | 10 PCE     |
-    
-    
+    And after not more than 30 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | product                 | 10        |
+
+
     #
-    # Reverse the material receipt 
+    # Reverse the material receipt
     #
     And the material receipt identified by receipt1 is reversed as reversal1
+    # Validate HU state after reversal -- HU should be Destroyed
+    And M_HU are validated:
+      | M_HU_ID.Identifier | HUStatus | IsActive |
+      | hu1                | D        | N        |
     And validate the created material receipt lines
       | M_InOutLine_ID  | M_InOut_ID | M_Product_ID |
       | reversal1_line1 | reversal1  | product      |
@@ -122,6 +142,9 @@ Feature: Average PO - Check costing when reversing a material receipt
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty |
       | acctSchema      | product      | AveragePO        | 0 CHF            | 0 PCE      |
+    And after not more than 30 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | product                 | 0         |
 
 
 
@@ -152,6 +175,9 @@ Feature: Average PO - Check costing when reversing a material receipt
 # ######################################################################################################################
 # ######################################################################################################################
   @from:cucumber
+@allure.label.epic:E0226_Costing
+@allure.label.feature:F1500_Costing
+@F1500
   Scenario: With initial stock
     #
     # Create the initial inventory 
@@ -165,9 +191,12 @@ Feature: Average PO - Check costing when reversing a material receipt
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty |
       | acctSchema      | product      | AveragePO        | 10 CHF           | 100 PCE    |
+    And after not more than 30 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | product                 | 100       |
 
     #
-    # Create material receipt 
+    # Create material receipt
     #
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | C_PaymentTerm_ID | DocBaseType | M_PricingSystem_ID | DatePromised        | M_Warehouse_ID |
@@ -185,6 +214,10 @@ Feature: Average PO - Check costing when reversing a material receipt
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | hu1                | rs1                             | receipt1              |
+    # Validate HU state after receipt -- HU should be Active
+    And M_HU are validated:
+      | M_HU_ID.Identifier | HUStatus | IsActive |
+      | hu1                | A        | Y        |
     And validate the created material receipt lines
       | M_InOutLine_ID | M_InOut_ID | M_Product_ID | C_OrderLine_ID |
       | receipt1_line1 | receipt1   | product      | po1_l1         |
@@ -201,12 +234,19 @@ Feature: Average PO - Check costing when reversing a material receipt
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty | Comment                     |
       | acctSchema      | product      | AveragePO        | 90918.1818 CHF   | 110 PCE    | (1_000+10_000_000)/(100+10) |
-    
-    
+    And after not more than 30 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | product                 | 110       |
+
+
     #
-    # Reverse the material receipt 
+    # Reverse the material receipt
     #
     And the material receipt identified by receipt1 is reversed as reversal1
+    # Validate HU state after reversal -- HU should be Destroyed
+    And M_HU are validated:
+      | M_HU_ID.Identifier | HUStatus | IsActive |
+      | hu1                | D        | N        |
     And validate the created material receipt lines
       | M_InOutLine_ID  | M_InOut_ID | M_Product_ID |
       | reversal1_line1 | reversal1  | product      |
@@ -219,3 +259,6 @@ Feature: Average PO - Check costing when reversing a material receipt
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty |
       | acctSchema      | product      | AveragePO        | 10 CHF           | 100 PCE    |
+    And after not more than 30 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | product                 | 100       |

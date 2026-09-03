@@ -1,19 +1,8 @@
-package de.metas.pricing;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-import de.metas.util.Check;
-import de.metas.util.lang.RepoIdAware;
-import lombok.Value;
-
-import javax.annotation.Nullable;
-import java.util.Objects;
-
 /*
  * #%L
- * de.metas.business
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -30,6 +19,17 @@ import java.util.Objects;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.pricing;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
 
 @Value
 public class PricingSystemId implements RepoIdAware
@@ -77,7 +77,7 @@ public class PricingSystemId implements RepoIdAware
 		return id != null ? id.getRepoId() : -1;
 	}
 
-	public static boolean equals(final PricingSystemId o1, final PricingSystemId o2)
+	public static boolean equals(@Nullable final PricingSystemId o1, @Nullable final PricingSystemId o2)
 	{
 		return Objects.equals(o1, o2);
 	}

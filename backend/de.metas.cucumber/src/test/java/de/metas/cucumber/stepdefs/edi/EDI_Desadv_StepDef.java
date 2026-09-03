@@ -26,19 +26,23 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.StringUtils;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
-import de.metas.cucumber.stepdefs.C_Order_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.edi.api.EDIDesadvQuery;
 import de.metas.edi.api.IDesadvDAO;
+import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.process.export.enqueue.DesadvEnqueuer;
 import de.metas.edi.process.export.enqueue.EnqueueDesadvRequest;
 import de.metas.edi.process.export.enqueue.EnqueueDesadvResult;
 import de.metas.esb.edi.model.I_EDI_Desadv;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -82,6 +86,7 @@ public class EDI_Desadv_StepDef
 	private static final String QTY_TU_TAGNAME = "QtyTU";
 
 	private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final DesadvEnqueuer desadvEnqueuer = SpringContextHolder.instance.getBean(DesadvEnqueuer.class);
@@ -90,6 +95,7 @@ public class EDI_Desadv_StepDef
 	private final @NonNull C_BPartner_StepDefData bpartnerTable;
 	private final @NonNull C_Order_StepDefData orderTable;
 	private final @NonNull EDI_Exp_Desadv_StepDefData ediExpDesadvTable;
+	private final @NonNull M_InOut_StepDefData inoutTable;
 	private final @NonNull TestContext restTestContext;
 
 	@Given("metasfresh is configured for One-DESADV-Per-ORDERS")
@@ -130,6 +136,26 @@ public class EDI_Desadv_StepDef
 		}
 	}
 
+	/**
+	 * Resolves the {@code EDI_Desadv} that the given order's shipment(s) were consolidated into
+	 * (found only via its order: {@code C_Order.POReference} + {@code C_Order.C_BPartner_ID}).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_BPartner_ID.Identifier</b> — (required) expected {@code EDI_Desadv.C_BPartner_ID}<br>
+	 *   <b>C_Order_ID.Identifier</b> — (required) the order whose {@code POReference} + {@code C_BPartner_ID} resolve the DESADV<br>
+	 *   <b>EDI_Desadv_ID.Identifier</b> — (required) identifier under which the found record is stored for later steps<br>
+	 *   <b>OPT.Processed</b> — (optional) expected {@code EDI_Desadv.isProcessed()}<br>
+	 *   <b>OPT.FulfillmentPercent</b> — (optional) expected {@code EDI_Desadv.getFulfillmentPercent()}, compared with {@code isEqualByComparingTo}<br>
+	 *   <b>OPT.SumDeliveredInStockingUOM</b> — (optional) expected {@code EDI_Desadv.getSumDeliveredInStockingUOM()}, compared with {@code isEqualByComparingTo}<br>
+	 *   <b>OPT.EDIErrorMsg</b> — (optional) expected {@code EDI_Desadv.getEDIErrorMsg()}; the {@code null} token asserts the column IS null<br>
+	 * @cucumber.example
+	 * <pre>
+	 * Then EDI_Desadv is found:
+	 *   | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_Desadv_ID.Identifier | OPT.Processed | OPT.FulfillmentPercent | OPT.EDIErrorMsg |
+	 *   | bpartner                 | order_1               | desadv_1                 | false         | 100                    | null            |
+	 * </pre>
+	 */
 	@Then("EDI_Desadv is found:")
 	public void find_desadv(@NonNull final DataTable table)
 	{
@@ -137,6 +163,54 @@ public class EDI_Desadv_StepDef
 		for (final Map<String, String> row : dataTable)
 		{
 			findDesadv(row);
+		}
+	}
+
+	/**
+	 * Asserts that neither the given {@code C_Order} nor any of its {@code C_OrderLine}s is wired to a
+	 * DESADV, i.e. {@code C_Order.EDI_Desadv_ID} and every {@code C_OrderLine.EDI_DesadvLine_ID} are unset.
+	 * <p>
+	 * This is the premise of the "POReference filled in after the order was completed" flow: the
+	 * before-complete interceptor on {@code C_Order} skips DESADV creation while {@code POReference} is
+	 * blank, so a DESADV created later — at shipment completion — has to derive the delivered
+	 * quantities on its own. Asserting the absence up front is what makes that later assertion mean
+	 * something.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_Order_ID</b> — (required, identifier-ref) the order that must not be linked to a DESADV<br>
+	 * @cucumber.depends StepDefData: C_Order_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then C_Order and its C_OrderLines are not linked to any EDI_Desadv:
+	 *   | C_Order_ID |
+	 *   | o_1        |
+	 * </pre>
+	 */
+	@Then("C_Order and its C_OrderLines are not linked to any EDI_Desadv:")
+	public void assert_order_not_linked_to_desadv(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::assertOrderNotLinkedToDesadv);
+	}
+
+	private void assertOrderNotLinkedToDesadv(@NonNull final DataTableRow row)
+	{
+		final I_C_Order order = row.getAsIdentifier(I_C_Order.COLUMNNAME_C_Order_ID).lookupNotNullIn(orderTable);
+		InterfaceWrapperHelper.refresh(order);
+
+		final de.metas.edi.model.I_C_Order ediOrder = InterfaceWrapperHelper.create(order, de.metas.edi.model.I_C_Order.class);
+		assertThat(ediOrder.getEDI_Desadv_ID()).as(de.metas.edi.model.I_C_Order.COLUMNNAME_EDI_Desadv_ID).isZero();
+
+		final List<de.metas.edi.model.I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(
+				OrderId.ofRepoId(order.getC_Order_ID()),
+				de.metas.edi.model.I_C_OrderLine.class);
+
+		assertThat(orderLines).as("C_OrderLines of the order").isNotEmpty();
+		for (final de.metas.edi.model.I_C_OrderLine orderLine : orderLines)
+		{
+			assertThat(orderLine.getEDI_DesadvLine_ID())
+					.as("%s of C_OrderLine with Line=%s", de.metas.edi.model.I_C_OrderLine.COLUMNNAME_EDI_DesadvLine_ID, orderLine.getLine())
+					.isZero();
 		}
 	}
 
@@ -160,10 +234,109 @@ public class EDI_Desadv_StepDef
 		}
 	}
 
+	/**
+	 * Asserts that a replication-interface-exported DESADV XML (captured earlier via
+	 * "RabbitMQ receives a EDI_Exp_Desadv") still carries an expected set of business-critical
+	 * elements — a superset check that catches a whole class of regressions where an export
+	 * {@code EXP_FormatLine} is silently lost (e.g. cascade-deleted by a {@code DROP COLUMN}),
+	 * not just a single field. Tolerant of newly-added elements.
+	 * <p>
+	 * DataTable columns:
+	 * <ul>
+	 *   <li>{@code EDI_Exp_Desadv_ID.Identifier} (required) — the captured DESADV document.</li>
+	 *   <li>{@code TagName} (required) — XML element that MUST be present.</li>
+	 *   <li>{@code OPT.UnderTag} (optional) — restrict the search to the first occurrence of this
+	 *       ancestor element (e.g. {@code C_BPartner_ID}); empty = search the whole document.</li>
+	 *   <li>{@code OPT.Value} (optional) — when set, the element's text content must equal it.</li>
+	 * </ul>
+	 * Example:
+	 * <pre>
+	 * Then the following EDI_Exp_Desadv XML carries the expected elements:
+	 *   | EDI_Exp_Desadv_ID.Identifier | OPT.UnderTag  | TagName         | OPT.Value     |
+	 *   | e_d_1                        | C_BPartner_ID | EdiRecipientGLN | 1234567890123 |
+	 *   | e_d_1                        |               | MovementDate    |               |
+	 * </pre>
+	 */
+	@Then("the following EDI_Exp_Desadv XML carries the expected elements:")
+	public void validate_EDI_Exp_Desadv_elements(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::validateEDIExpDesadvElement);
+	}
+
+	/**
+	 * Polls the given {@code EDI_Desadv} records (already resolved via {@code EDI_Desadv is found:}
+	 * or {@code EDI_Desadv is enqueued for export}) until each reaches the expected
+	 * {@code EDI_ExportStatus}, then optionally asserts {@code Processed} / {@code FulfillmentPercent} /
+	 * {@code EDIErrorMsg}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>EDI_Desadv_ID</b> — (required, identifier-ref) alias from {@code EDI_Desadv_StepDefData}<br>
+	 *   <b>EDI_ExportStatus</b> — (required) the export status to poll for<br>
+	 *   <b>OPT.EDIErrorMsg</b> — (optional) expected {@code EDI_Desadv.getEDIErrorMsg()}; the {@code null} token asserts the column IS null<br>
+	 *   <b>OPT.Processed</b> — (optional) expected {@code EDI_Desadv.isProcessed()}, asserted once the export status matches<br>
+	 *   <b>OPT.FulfillmentPercent</b> — (optional) expected {@code EDI_Desadv.getFulfillmentPercent()}, compared with {@code isEqualByComparingTo}<br>
+	 *   <b>OPT.SumDeliveredInStockingUOM</b> — (optional) expected {@code EDI_Desadv.getSumDeliveredInStockingUOM()}, compared with {@code isEqualByComparingTo}<br>
+	 * @cucumber.depends StepDefData: EDI_Desadv_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then after not more than 60s, EDI_Desadv records have the following export status
+	 *   | EDI_Desadv_ID | EDI_ExportStatus | OPT.EDIErrorMsg | OPT.Processed | OPT.FulfillmentPercent |
+	 *   | desadv_1      | Exported         | null            | true          | 100                    |
+	 * </pre>
+	 */
 	@Then("^after not more than (.*)s, EDI_Desadv records have the following export status$")
 	public void validate_export_status(final int timeoutSec, @NonNull final DataTable table) throws InterruptedException
 	{
 		DataTableRows.of(table).forEach(row -> validateExportStatus(timeoutSec, row));
+	}
+
+	/**
+	 * Asserts that all given M_InOut records point to the same {@code EDI_Desadv_ID}.
+	 * This is used to verify the test precondition that multiple shipments share
+	 * a single DESADV (e.g. because they originate from orders with the same POReference + BPartner).
+	 * <p>
+	 * Each record must have a non-zero {@code EDI_Desadv_ID}, and all must match.
+	 * <p>
+	 * DataTable columns:
+	 * <ul>
+	 *     <li>{@code M_InOut_ID} (required) — identifier of an M_InOut record from {@link M_InOut_StepDefData}</li>
+	 * </ul>
+	 * <p>
+	 * Example usage:
+	 * <pre>
+	 * Then M_InOut records share the same EDI_Desadv:
+	 *   | M_InOut_ID |
+	 *   | s_1        |
+	 *   | s_2        |
+	 * </pre>
+	 */
+	@Then("M_InOut records share the same EDI_Desadv:")
+	public void assertShipmentsShareSameDesadv(@NonNull final DataTable dataTable)
+	{
+		final List<DataTableRow> rows = DataTableRows.of(dataTable).toList();
+		assertThat(rows).as("Need at least 2 M_InOut records to compare").hasSizeGreaterThanOrEqualTo(2);
+
+		int firstDesadvId = -1;
+		for (final DataTableRow row : rows)
+		{
+			final org.compiere.model.I_M_InOut inoutRecord = row.getAsIdentifier(org.compiere.model.I_M_InOut.COLUMNNAME_M_InOut_ID).lookupNotNullIn(inoutTable);
+			final I_M_InOut ediInout = InterfaceWrapperHelper.create(inoutRecord, I_M_InOut.class);
+			InterfaceWrapperHelper.refresh(ediInout);
+			final int desadvId = ediInout.getEDI_Desadv_ID();
+			assertThat(desadvId).as("M_InOut %s should have EDI_Desadv_ID set", row.getAsIdentifier(org.compiere.model.I_M_InOut.COLUMNNAME_M_InOut_ID)).isGreaterThan(0);
+
+			if (firstDesadvId < 0)
+			{
+				firstDesadvId = desadvId;
+			}
+			else
+			{
+				assertThat(desadvId)
+						.as("All M_InOut records should share the same EDI_Desadv_ID")
+						.isEqualTo(firstDesadvId);
+			}
+		}
 	}
 
 	private void validateEdiDesadv(@NonNull final Map<String, String> tableRow)
@@ -195,40 +368,68 @@ public class EDI_Desadv_StepDef
 		assertThat(ediExpDesadv).isNotNull();
 
 		final Element desadvPackElement = getElement(ediExpDesadv, EDI_EXP_DESADV_PACK_TAGNAME);
-
-		assertThat(desadvPackElement).isNotNull();
+		assertThat(desadvPackElement).as(EDI_EXP_DESADV_PACK_TAGNAME).isNotNull();
 
 		final Element sscc18Element = getElement(desadvPackElement, IPA_SSCC18_TAGNAME);
-		assertThat(sscc18Element).isNotNull();
+		assertThat(sscc18Element).as(IPA_SSCC18_TAGNAME).isNotNull();
 
 		final Element desadvPackItem = getElement(desadvPackElement, EDI_EXP_DESADV_PACK_ITEM_TAGNAME);
-		assertThat(desadvPackItem).isNotNull();
+		assertThat(desadvPackItem).as(EDI_EXP_DESADV_PACK_ITEM_TAGNAME).isNotNull();
 
 		final String qtyCuExpected = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT.EDI_Exp_Desadv_Pack_Item.QtyCUsPerTU");
 		if (Check.isNotBlank(qtyCuExpected))
 		{
 			final Element qtyCu = getElement(desadvPackElement, QTY_CU_TAGNAME);
-			assertThat(qtyCu).isNotNull();
-
-			assertThat(qtyCu.getTextContent()).isEqualTo(qtyCuExpected);
+			assertThat(qtyCu).as(QTY_CU_TAGNAME).isNotNull();
+			assertThat(qtyCu.getTextContent()).as(QTY_CU_TAGNAME).isEqualTo(qtyCuExpected);
 		}
 
 		final String qtyCusPerLuExpected = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT.EDI_Exp_Desadv_Pack_Item.QtyCUsPerLU");
 		if (Check.isNotBlank(qtyCusPerLuExpected))
 		{
 			final Element qtyCusPerLu = getElement(desadvPackElement, QTY_CUS_PER_LU_TAGNAME);
-			assertThat(qtyCusPerLu).isNotNull();
-
-			assertThat(qtyCusPerLu.getTextContent()).isEqualTo(qtyCusPerLuExpected);
+			assertThat(qtyCusPerLu).as(QTY_CUS_PER_LU_TAGNAME).isNotNull();
+			assertThat(qtyCusPerLu.getTextContent()).as(QTY_CUS_PER_LU_TAGNAME).isEqualTo(qtyCusPerLuExpected);
 		}
 
 		final String qtyTuExpected = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT.EDI_Exp_Desadv_Pack_Item.QtyTU");
 		if (Check.isNotBlank(qtyTuExpected))
 		{
 			final Element qtyTu = getElement(desadvPackElement, QTY_TU_TAGNAME);
-			assertThat(qtyTu).isNotNull();
+			assertThat(qtyTu).as(QTY_TU_TAGNAME).isNotNull();
+			assertThat(qtyTu.getTextContent()).as(QTY_TU_TAGNAME).isEqualTo(qtyTuExpected);
+		}
+	}
 
-			assertThat(qtyTu.getTextContent()).isEqualTo(qtyTuExpected);
+	private void validateEDIExpDesadvElement(@NonNull final DataTableRow row)
+	{
+		final Document ediExpDesadv = row.getAsIdentifier("EDI_Exp_Desadv_ID").lookupNotNullIn(ediExpDesadvTable);
+
+		final String tagName = row.getAsString("TagName");
+		final String underTag = row.getAsOptionalString("UnderTag").orElse(null);
+		final String expectedValue = row.getAsOptionalString("Value").orElse(null);
+
+		final Node scope;
+		if (Check.isNotBlank(underTag))
+		{
+			final Element parent = getElement(ediExpDesadv, underTag);
+			assertThat(parent).as("the exported DESADV XML must contain element <%s>", underTag).isNotNull();
+			scope = parent;
+		}
+		else
+		{
+			scope = ediExpDesadv;
+		}
+
+		final Element element = getElement(scope, tagName);
+		assertThat(element)
+				.as("the exported DESADV XML must carry element <%s>%s",
+						tagName, Check.isNotBlank(underTag) ? " under <" + underTag + ">" : "")
+				.isNotNull();
+
+		if (Check.isNotBlank(expectedValue))
+		{
+			assertThat(element.getTextContent()).as("<%s> value", tagName).isEqualTo(expectedValue);
 		}
 	}
 
@@ -265,6 +466,48 @@ public class EDI_Desadv_StepDef
 			InterfaceWrapperHelper.refresh(desadvRecord);
 			return exportStatus.equals(desadvRecord.getEDI_ExportStatus());
 		});
+
+		assertOptionalDesadvFields(tableRow, desadvRecord);
+	}
+
+	/**
+	 * Asserts the optional {@code OPT.Processed} / {@code OPT.FulfillmentPercent} /
+	 * {@code OPT.SumDeliveredInStockingUOM} / {@code OPT.EDIErrorMsg}
+	 * DataTable columns against the given {@code EDI_Desadv} record, shared by {@code EDI_Desadv is found:}
+	 * and {@code after not more than {}s, EDI_Desadv records have the following export status}.
+	 * A column that is absent from {@code tableRow} is skipped entirely, so callers that never
+	 * supply these columns keep today's exact behaviour.
+	 * <p>
+	 * {@code OPT.EDIErrorMsg} is the only one of the three that can assert a NULL: a cell holding the
+	 * {@code null} token (see {@link DataTableUtil#nullToken2Null(String)}) asserts the column IS null,
+	 * any other value is compared literally.
+	 */
+	private void assertOptionalDesadvFields(@NonNull final DataTableRow tableRow, @NonNull final I_EDI_Desadv desadvRecord)
+	{
+		// The column names are given bare: DataTableRow resolves an "OPT." prefix itself.
+		final Boolean processed = tableRow.getAsOptionalBoolean(I_EDI_Desadv.COLUMNNAME_Processed).toBooleanOrNull();
+		if (processed != null)
+		{
+			assertThat(desadvRecord.isProcessed()).as(I_EDI_Desadv.COLUMNNAME_Processed).isEqualTo(processed);
+		}
+
+		tableRow.getAsOptionalBigDecimal(I_EDI_Desadv.COLUMNNAME_FulfillmentPercent)
+				.ifPresent(expected -> assertThat(desadvRecord.getFulfillmentPercent())
+						.as(I_EDI_Desadv.COLUMNNAME_FulfillmentPercent)
+						.isEqualByComparingTo(expected));
+
+		tableRow.getAsOptionalBigDecimal(I_EDI_Desadv.COLUMNNAME_SumDeliveredInStockingUOM)
+				.ifPresent(expected -> assertThat(desadvRecord.getSumDeliveredInStockingUOM())
+						.as(I_EDI_Desadv.COLUMNNAME_SumDeliveredInStockingUOM)
+						.isEqualByComparingTo(expected));
+
+		// getAsOptionalString is empty only when the COLUMN is missing, so a cell that is present and
+		// holds the null token still reaches us — which is what lets this assert an actual SQL NULL
+		// rather than silently skipping.
+		tableRow.getAsOptionalString(I_EDI_Desadv.COLUMNNAME_EDIErrorMsg)
+				.ifPresent(raw -> assertThat(desadvRecord.getEDIErrorMsg())
+						.as(I_EDI_Desadv.COLUMNNAME_EDIErrorMsg)
+						.isEqualTo(DataTableUtil.nullToken2Null(raw)));
 	}
 
 	private void enqueueDesadvForExport(@NonNull final Map<String, String> tableRow)
@@ -301,6 +544,8 @@ public class EDI_Desadv_StepDef
 
 		assertThat(desadvRecord).isNotNull();
 		assertThat(desadvRecord.getC_BPartner_ID()).isEqualTo(bpartnerID);
+
+		assertOptionalDesadvFields(DataTableRow.singleRow(tableRow), desadvRecord);
 
 		final String identifier = DataTableUtil.extractStringForColumnName(tableRow, I_EDI_Desadv.COLUMNNAME_EDI_Desadv_ID + "." + TABLECOLUMN_IDENTIFIER);
 		desadvTable.putOrReplace(identifier, desadvRecord);

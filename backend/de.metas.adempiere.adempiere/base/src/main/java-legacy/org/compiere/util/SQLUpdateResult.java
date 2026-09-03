@@ -29,11 +29,18 @@ import javax.annotation.Nullable;
 import java.sql.SQLWarning;
 import java.util.List;
 
+/**
+ * Result of a SQL UPDATE/INSERT/DELETE execution, including any {@link SQLWarning} messages.
+ * Warning messages originate from PostgreSQL {@code RAISE NOTICE} statements.
+ *
+ * @see SQLUtil#extractWarningMessages
+ */
 @Builder
 @Value
 public class SQLUpdateResult
 {
 	int returnedValue;
+	/** PostgreSQL RAISE NOTICE messages captured from the JDBC {@link SQLWarning} chain */
 	@Nullable
 	List<String> warningMessages;
 }

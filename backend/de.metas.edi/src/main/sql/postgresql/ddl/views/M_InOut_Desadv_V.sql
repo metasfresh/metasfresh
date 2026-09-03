@@ -23,8 +23,14 @@
 drop view if exists M_InOut_Desadv_V
 ;
 
+-- The view emits one row per (shipment, DESADV) pair enumerated via the EDI_Desadv_M_InOut junction.
+-- For consolidated multi-source-order shipments this yields N rows per shipment (one per DESADV).
+-- The synthetic PK M_InOut_Desadv_ID = m_inout_id * 10000000 + ordinal (0..N-1, deterministic by edi_desadv_id)
+-- keeps the column unique. The PK is opaque to EXP_Format-driven exports (used only as Record_ID).
 create or replace view M_InOut_Desadv_V as
-select shipment.m_inout_id as M_InOut_Desadv_ID,
+select (shipment.m_inout_id::bigint * 10000000
+            + (row_number() OVER (PARTITION BY shipment.m_inout_id ORDER BY desadv.edi_desadv_id) - 1)
+       )::numeric                                                                                                          as M_InOut_Desadv_ID,
        shipment.m_inout_id,
        shipment.documentno as documentNo,
        desadv.EDI_Desadv_ID,
@@ -58,4 +64,8 @@ select shipment.m_inout_id as M_InOut_Desadv_ID,
        desadv.DeliveryViaRule,
        (select CASE WHEN array_length(array_agg(DISTINCT l.invoicableqtybasedon), 1) = 1 THEN (array_agg(DISTINCT l.invoicableqtybasedon))[1] ELSE NULL END from edi_desadvline l where l.edi_desadv_id = desadv.edi_desadv_id) as InvoicableQtyBasedOn
 from m_inout shipment
-         inner join edi_desadv desadv on shipment.edi_desadv_id = desadv.edi_desadv_id;
+         inner join edi_desadv_m_inout link
+                    on link.m_inout_id = shipment.m_inout_id
+                        and link.isactive = 'Y'
+         inner join edi_desadv desadv
+                    on desadv.edi_desadv_id = link.edi_desadv_id;

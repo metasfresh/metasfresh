@@ -34,14 +34,16 @@ import Spinner from '../../../components/Spinner';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 
 const AppScreen = () => {
-  const { history } = useScreenDefinition({ back: '/' });
+  const { history } = useScreenDefinition({
+    screenId: 'WorkstationManagerScreen',
+    back: '/',
+  });
 
   const [loading, setLoading] = useState(true);
   const [workstation, setWorkstation] = useState();
-
   const queryParameters = new URLSearchParams(window.location.search);
   const qrCodeParam = queryParameters.get('qrCode');
-  const parentApplicationId = queryParameters.get('parent');
+  const callerApplicationId = queryParameters.get('callerApplicationId');
   useEffect(() => {
     if (qrCodeParam && !workstation) {
       setLoading(true);
@@ -53,24 +55,21 @@ const AppScreen = () => {
 
   const setWorkstationAndUpdateUrl = (newWorkstation) => {
     setWorkstation(newWorkstation);
-    history.replace(appLocation({ qrCode: newWorkstation?.qrCode, parent: parentApplicationId }));
+    history.replace(appLocation({ qrCode: newWorkstation?.qrCode, callerApplicationId }));
   };
 
   const onBarcodeScanned = ({ scannedBarcode }) => {
+    // Assign on scan (mirror the workplace app): a scan — including a re-scan of an already-assigned
+    // workstation — re-assigns it, switching the operator's active workplace back to the scanned
+    // workstation's workplace. A read-only lookup here would silently fail to re-switch a drifted workplace.
     return api
-      .getWorkstationByQRCode(scannedBarcode)
-      .then((workplaceInfo) => setWorkstationAndUpdateUrl(workplaceInfo));
-  };
-
-  const onAssignClick = () => {
-    api
-      .assignWorkstationById(workstation.id)
-      .then((workstation) => setWorkstation(workstation))
+      .assignWorkstationByQRCode(scannedBarcode)
+      .then((workstationInfo) => setWorkstationAndUpdateUrl(workstationInfo))
       .catch((axiosError) => toastError({ axiosError }));
   };
 
   const onScanAgainClick = () => {
-    if (parentApplicationId === APPLICATION_ID_scanAnything) {
+    if (callerApplicationId === APPLICATION_ID_scanAnything) {
       history.push(scanAnythingRoutes.appLocation());
     } else {
       setWorkstationAndUpdateUrl(null);
@@ -88,15 +87,12 @@ const AppScreen = () => {
       <div className="app-workstantionManager">
         <WorkstationInfoComponent workstationInfo={workstation} />
         <div className="pt-3 section">
-          {!workstation.userAssigned && (
-            <ButtonWithIndicator caption={appTrl('action.assign.buttonCaption')} onClick={onAssignClick} />
-          )}
           <ButtonWithIndicator caption={appTrl('action.scanAgain.buttonCaption')} onClick={onScanAgainClick} />
         </div>
       </div>
     );
   } else {
-    return <BarcodeScannerComponent onResolvedResult={onBarcodeScanned} continuousRunning={true} />;
+    return <BarcodeScannerComponent onResolvedResult={onBarcodeScanned} />;
   }
 };
 

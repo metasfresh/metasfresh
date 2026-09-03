@@ -75,7 +75,7 @@ public class BPartnerRecordsUtil
 	{
 
 		final UserId adUserId = UserId.ofRepoId(AD_USER_ID + idOffSet);
-		final String idOffSetStr = idOffSet == 0 ? "" : "_" + Integer.toString(idOffSet);
+		final String idOffSetStr = idOffSet == 0 ? "" : "_" + idOffSet;
 
 		final I_AD_Org org = InterfaceWrapperHelper.newInstance(I_AD_Org.class);
 		org.setAD_Org_ID(AD_ORG_ID);
@@ -89,7 +89,7 @@ public class BPartnerRecordsUtil
 											 .build());
 
 		setupTimeSource();
-		try (final IAutoCloseable c = Env.temporaryChangeLoggedUserId(adUserId))
+		try (final IAutoCloseable ignored = Env.temporaryChangeLoggedUserId(adUserId))
 		{
 			final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
 			bpartnerRecord.setC_BPartner_ID(C_BPARTNER_ID + idOffSet);
@@ -129,8 +129,10 @@ public class BPartnerRecordsUtil
 
 			final I_C_Postal postalRecord = newInstance(I_C_Postal.class);
 			postalRecord.setC_Country(countryRecord);
-			postalRecord.setPostal("postalRecord.postal" + idOffSetStr);
+			postalRecord.setPostal("locationRecord.postal" + idOffSetStr);
 			postalRecord.setDistrict("postalRecord.district" + idOffSetStr);
+			postalRecord.setCity("locationRecord.city" + idOffSetStr);
+			postalRecord.setRegionName("locationRecord.regionName" + idOffSetStr);
 			saveRecord(postalRecord);
 
 			final I_C_Location locationRecord = newInstance(I_C_Location.class);

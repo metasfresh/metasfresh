@@ -52,6 +52,8 @@ public final class HUAttributeConstants
 	
 	public static final AttributeCode ATTR_QRCode = AttributeCode.ofString("HU_QRCode");
 
+	public static final AttributeCode ATTR_CountryOfOrigin = AttributeConstants.ATTR_CountryOfOrigin;
+
 	public static String sqlBestBeforeDate(final String huIdColumnName)
 	{
 		Check.assumeNotEmpty(huIdColumnName, "huIdColumnName is not empty");

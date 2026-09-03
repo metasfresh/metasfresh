@@ -124,6 +124,12 @@ public class DocumentDeliveryLocationAdapter
 	}
 
 	@Override
+	public void setRenderedAddress(final @NonNull RenderedAddressAndCapturedLocation from)
+	{
+		IDocumentDeliveryLocationAdapter.super.setRenderedAddress(from);
+	}
+	
+	@Override
 	public I_M_InOut getWrappedRecord()
 	{
 		return delegate;

@@ -29,6 +29,7 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product_Category;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.ProductBOMId;
@@ -104,6 +105,15 @@ public class PP_Order extends CalloutEngine
 		if (productId == null)
 		{
 			return;
+		}
+
+		//
+		// Plant (Produktionsstätte) and WorkStation (Arbeitsstation) follow the product's category (gh31188)
+		final I_M_Product_Category productCategory = productBL.getProductCategoryByProductId(productId);
+		if (productCategory != null)
+		{
+			ppOrder.setS_Resource_ID(productCategory.getS_Resource_ID());
+			ppOrder.setWorkStation_ID(productCategory.getWorkStation_ID());
 		}
 
 		final UomId uomId = productBL.getStockUOMId(productId);
@@ -186,7 +196,6 @@ public class PP_Order extends CalloutEngine
 				.warehouseId(WarehouseId.ofRepoIdOrNull(ppOrderWithProductId.getM_Warehouse_ID()))
 				.plantId(ResourceId.ofRepoIdOrNull(ppOrderWithProductId.getS_Resource_ID()))
 				.productId(ProductId.ofRepoId(ppOrderWithProductId.getM_Product_ID()))
-				.includeWithNullProductId(false)
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(ppOrderWithProductId.getM_AttributeSetInstance_ID()))
 				.build();
 		final ProductPlanning productPlanningOrig = productPlanningDAO.find(query).orElse(null);
@@ -196,8 +205,8 @@ public class PP_Order extends CalloutEngine
 		{
 			builder = ProductPlanning.builder()
 					.orgId(OrgId.ofRepoId(ppOrderWithProductId.getAD_Org_ID()))
-					.warehouseId(WarehouseId.ofRepoId(ppOrderWithProductId.getM_Warehouse_ID()))
-					.plantId(ResourceId.ofRepoId(ppOrderWithProductId.getS_Resource_ID()))
+					.warehouseId(WarehouseId.ofRepoIdOrNull(ppOrderWithProductId.getM_Warehouse_ID()))
+					.plantId(ResourceId.ofRepoIdOrNull(ppOrderWithProductId.getS_Resource_ID()))
 					.productId(ProductId.ofRepoId(ppOrderWithProductId.getM_Product_ID()));
 		}
 		else

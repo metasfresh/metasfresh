@@ -22,8 +22,10 @@
 
 package de.metas.material.dispo.service.event.handler.foreacast;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
+import de.metas.logging.LogManager;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
@@ -34,7 +36,12 @@ import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.forecast.Forecast;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.material.event.forecast.ForecastLine;
+import de.metas.util.Loggables;
 import lombok.NonNull;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import de.metas.util.Services;
+import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
@@ -44,6 +51,9 @@ import java.util.Collection;
 @Profile(Profiles.PROFILE_MaterialDispo)
 public class ForecastCreatedHandler implements MaterialEventHandler<ForecastCreatedEvent>
 {
+	private static final Logger logger = LogManager.getLogger(ForecastCreatedHandler.class);
+
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final CandidateChangeService candidateChangeHandler;
 
 	public ForecastCreatedHandler(@NonNull final CandidateChangeService candidateChangeHandler)
@@ -69,6 +79,16 @@ public class ForecastCreatedHandler implements MaterialEventHandler<ForecastCrea
 
 		for (final ForecastLine forecastLine : forecast.getForecastLines())
 		{
+			final WarehouseId lineWarehouseId = forecastLine.getMaterialDescriptor().getWarehouseId();
+			if (warehouseBL.isIgnoreInMaterialDispo(lineWarehouseId))
+			{
+				Loggables.withLogger(logger, Level.DEBUG).addLog(
+						"Ignoring forecast line {} for M_Warehouse_ID={} (warehouse is excluded from material-dispo)",
+						forecastLine.getForecastLineId(),
+						WarehouseId.toRepoId(lineWarehouseId));
+				continue;
+			}
+
 			complementBuilderFromForecastLine(candidateBuilder, forecast, forecastLine);
 
 			final Candidate demandCandidate = candidateBuilder.build();

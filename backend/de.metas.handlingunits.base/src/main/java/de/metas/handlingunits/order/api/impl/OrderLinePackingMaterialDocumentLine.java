@@ -26,6 +26,7 @@ import de.metas.handlingunits.impl.AbstractPackingMaterialDocumentLine;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.order.IOrderLineBL;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMDAO;
@@ -35,6 +36,7 @@ import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 /* package */class OrderLinePackingMaterialDocumentLine extends AbstractPackingMaterialDocumentLine
@@ -73,6 +75,13 @@ import java.math.BigDecimal;
 		return orderLine.getQtyOrdered();
 	}
 
+	@Nullable
+	@Override
+	public ProjectId getProjectIdOrNull()
+	{
+		return ProjectId.ofRepoIdOrNull(orderLine.getC_Project_ID());
+	}
+
 	/**
 	 * Sets both QtyOrdered and QtyEntered of the wrapped order line.
 	 *
@@ -89,4 +98,5 @@ import java.math.BigDecimal;
 		final Quantity qtyEntered = orderLineBL.convertQtyToUOM(qtyInStockUOM, orderLine);
 		orderLine.setQtyEntered(qtyEntered.toBigDecimal());
 	}
+
 }

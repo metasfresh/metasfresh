@@ -350,6 +350,21 @@ const updateIndicatorToState = ({ windowHandler, indicator, isModal }) => {
   });
 };
 
+/**
+ * A "relevant" save error is a server-side rejection of a save that was actually attempted
+ * on a complete, individually-valid document — a business rule / unique-index collision. Those
+ * carry a real save exception flagged userFriendlyError, and their reason must be surfaced.
+ *
+ * It deliberately does NOT fire for a merely incomplete/invalid document (mandatory field not yet
+ * filled, individually-invalid value): those also set saveStatus.error, but as a pure validation
+ * state with NO exception, and are already communicated by the field-level cues. validStatus.valid
+ * is intentionally not consulted — it is non-deterministic across the save round-trip for the
+ * business-rejection case.
+ */
+export const isRelevantSaveError = (saveStatus) =>
+  saveStatus?.error === true &&
+  saveStatus?.exception?.userFriendlyError === true;
+
 export const computeSaveStatusFlags = ({
   state,
   modal: modalParam,
@@ -412,10 +427,23 @@ export const computeSaveStatusFlags = ({
   const isDocumentSaved = saved != null ? saved : false;
   const isDocumentNotSaved = saved != null ? !saved : false;
 
+  // A "window" surface is either the main window (non-modal) or a window modal — NOT a process
+  // modal, whose Start button is disabled on ERROR (see Modal.renderPanel) and must stay enabled.
+  const isWindowContext = !modal?.visible || modal.modalType === 'window';
+
   if (isDocumentNotSaved && presentInDatabase) {
+    indicator = IndicatorState.ERROR;
+  } else if (isWindowContext && isRelevantSaveError(saveStatus)) {
+    // A relevant server-side save rejection (a complete, individually-valid document refused by a
+    // business rule / unique index) on a NOT-yet-persisted (new) record: presentInDatabase is
+    // false, so the gate above stays quiet and the reason would be swallowed. Surface it here so
+    // BOTH the main-window and window-modal paths raise the error. Incomplete/mandatory-missing
+    // input carries error but no userFriendly exception -> isRelevantSaveError is false -> stays
+    // quiet (field-level cues already signal it).
     indicator = IndicatorState.ERROR;
   }
 
+  // noinspection UnnecessaryLocalVariableJS
   const retValue = {
     indicator,
     isDocumentSaved,
@@ -444,6 +472,32 @@ export const useSaveStatusFlags = () => {
   );
 };
 
+export const getMasterDocumentStandardActions = ({
+  state,
+  windowId,
+  documentId,
+}) => {
+  if (!windowId || !documentId) {
+    return [];
+  }
+
+  return state.windowHandler?.master?.standardActions ?? [];
+};
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //
 //

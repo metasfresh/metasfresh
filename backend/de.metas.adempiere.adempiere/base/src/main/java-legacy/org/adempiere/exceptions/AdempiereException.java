@@ -47,6 +47,7 @@ public class AdempiereException extends RuntimeException
 {
 	public static final AdMessageKey MSG_NotFound = AdMessageKey.of("NotFound");
 	public static final AdMessageKey MSG_NoLines = AdMessageKey.of("NoLines");
+	public static final AdMessageKey MSG_NoSelection = AdMessageKey.of("NoSelection");
 
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
@@ -329,7 +330,11 @@ public class AdempiereException extends RuntimeException
 		// so we can consider those user-friendly errors
 		this.userValidationError = true;
 
-		this.errorCode = errorCode;
+		this.errorCode = errorCode != null
+				? errorCode
+				: message.getAdMessageKey()
+						.map(key -> coalesce(msgBL.getErrorCode(key), key.toAD_Message()))
+						.orElse(null);
 	}
 
 	public AdempiereException(@NonNull final AdMessageKey messageKey)
@@ -356,6 +361,20 @@ public class AdempiereException extends RuntimeException
 	public AdempiereException(final AdMessageKey adMessage, final Object... params)
 	{
 		this(Env.getAD_Language(), adMessage, params);
+	}
+
+	/** Like {@link #AdempiereException(AdMessageKey, Object...)} but also keeps the underlying {@code cause}. */
+	public AdempiereException(@Nullable final Throwable cause, @NonNull final AdMessageKey adMessage, final Object... params)
+	{
+		super(cause);
+		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
+		this.messageTrl = TranslatableStrings.adMessage(adMessage, params);
+		this.userValidationError = true;
+		this.mdcContextMap = captureMDCContextMap();
+		this.errorCode = coalesce(msgBL.getErrorCode(adMessage), adMessage.toAD_Message());
+
+		setParameter("AD_Language", this.adLanguage);
+		setParameter("AD_Message", adMessage);
 	}
 
 	public AdempiereException(@Nullable final Throwable cause)
@@ -390,7 +409,11 @@ public class AdempiereException extends RuntimeException
 		this.errorCode = extractErrorCodeOrNull(cause);
 	}
 
+	public static AdempiereException notFound() {return new AdempiereException(MSG_NotFound);}
+
 	public static AdempiereException noLines() {return new AdempiereException(MSG_NoLines);}
+
+	public static AdempiereException noSelection() {return new AdempiereException(MSG_NoSelection);}
 
 	public static AdempiereException newWithTranslatableMessage(@Nullable final String translatableMessage) {return new AdempiereException(TranslatableStrings.parse(translatableMessage));}
 

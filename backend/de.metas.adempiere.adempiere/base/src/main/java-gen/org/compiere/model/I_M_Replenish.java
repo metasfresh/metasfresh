@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_Replenish
  *  @author metasfresh (generated) 
@@ -180,17 +179,17 @@ public interface I_M_Replenish
 	 * Maximum Inventory level for this product
 	 *
 	 * <br>Type: Amount
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setLevel_Max (BigDecimal Level_Max);
+	void setLevel_Max (@Nullable BigDecimal Level_Max);
 
 	/**
 	 * Get Maximum Level.
 	 * Maximum Inventory level for this product
 	 *
 	 * <br>Type: Amount
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	BigDecimal getLevel_Max();

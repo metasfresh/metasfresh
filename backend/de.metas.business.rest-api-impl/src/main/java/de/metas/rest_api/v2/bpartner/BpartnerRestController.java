@@ -69,6 +69,7 @@ import java.util.Optional;
 
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.CONTACT_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.EXTERNAL_SYSTEM_NAME;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.LOCATION_IDENTIFIER_DOC;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.NEXT_DOC;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.SINCE_DOC;
@@ -113,7 +114,6 @@ public class BpartnerRestController
 	{
 		return retrieveBPartner(null, bpartnerIdentifierStr);
 	}
-
 	@GetMapping("{orgCode}/{bpartnerIdentifier}")
 	public ResponseEntity<JsonResponseComposite> retrieveBPartner(
 
@@ -248,7 +248,96 @@ public class BpartnerRestController
 	{
 		try
 		{
-			final Optional<JsonResponseCompositeList> result = bpartnerEndpointService.retrieveBPartnersSince(epochTimestampMillis, next);
+			final RetrieveBPartnerSinceRequest retrieveBPartnerSinceRequest = RetrieveBPartnerSinceRequest.builder()
+					.epochMilli(epochTimestampMillis)
+					.nextPageId(next)
+					.orgCode(null)
+					.extSystem(null)
+					.build();
+			final Optional<JsonResponseCompositeList> result = bpartnerEndpointService.retrieveBPartnersSince(retrieveBPartnerSinceRequest);
+
+			return okOrNotFound(result);
+		}
+		catch (final Exception ex)
+		{
+			final String adLanguage = Env.getADLanguageOrBaseLanguage();
+			return ResponseEntity.status(HttpStatus.NOT_FOUND)
+					.body(JsonResponseCompositeList.error(JsonErrors.ofThrowable(ex, adLanguage)));
+		}
+	}
+
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Successfully retrieved bpartner(s)"),
+			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(code = 404, message = "There is no page for the given 'next' value")
+	})
+	@GetMapping("/byOrg/{orgCode}")
+	public ResponseEntity<JsonResponseCompositeList> retrieveBPartnersSinceForOrg(
+
+			@ApiParam(required = true, value = ORG_CODE_PARAMETER_DOC)
+			@PathVariable("orgCode") //
+			@Nullable final String orgCode, // may be null if called from other metasfresh-code
+
+			@ApiParam(SINCE_DOC) //
+			@RequestParam(name = "since", required = false) //
+			@Nullable final Long epochTimestampMillis,
+
+			@ApiParam(NEXT_DOC) //
+			@RequestParam(name = "next", required = false) //
+			@Nullable final String next)
+	{
+		try
+		{
+			final RetrieveBPartnerSinceRequest retrieveBPartnerSinceRequest = RetrieveBPartnerSinceRequest.builder()
+					.epochMilli(epochTimestampMillis)
+					.nextPageId(next)
+					.orgCode(orgCode)
+					.extSystem(null)
+					.build();
+
+			final Optional<JsonResponseCompositeList> result = bpartnerEndpointService.retrieveBPartnersSince(retrieveBPartnerSinceRequest);
+			return okOrNotFound(result);
+		}
+		catch (final Exception ex)
+		{
+			final String adLanguage = Env.getADLanguageOrBaseLanguage();
+			return ResponseEntity.status(HttpStatus.NOT_FOUND)
+					.body(JsonResponseCompositeList.error(JsonErrors.ofThrowable(ex, adLanguage)));
+		}
+	}
+
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Successfully retrieved bpartner(s)"),
+			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(code = 404, message = "There is no page for the given 'next' value")
+	})
+	@GetMapping("/byExtSystem/{extSystem}")
+	public ResponseEntity<JsonResponseCompositeList> retrieveBPartnersSinceForExtSystem(
+
+			@ApiParam(required = true, value = EXTERNAL_SYSTEM_NAME)
+			@PathVariable("extSystem") //
+			@Nullable final String extSystem,
+
+			@ApiParam(SINCE_DOC) //
+			@RequestParam(name = "since", required = false) //
+			@Nullable final Long epochTimestampMillis,
+
+			@ApiParam(NEXT_DOC) //
+			@RequestParam(name = "next", required = false) //
+			@Nullable final String next)
+	{
+		try
+		{
+			final RetrieveBPartnerSinceRequest retrieveBPartnerSinceRequest = RetrieveBPartnerSinceRequest.builder()
+					.epochMilli(epochTimestampMillis)
+					.nextPageId(next)
+					.orgCode(null)
+					.extSystem(extSystem)
+					.build();
+
+			final Optional<JsonResponseCompositeList> result = bpartnerEndpointService.retrieveBPartnersSince(retrieveBPartnerSinceRequest);
 			return okOrNotFound(result);
 		}
 		catch (final Exception ex)

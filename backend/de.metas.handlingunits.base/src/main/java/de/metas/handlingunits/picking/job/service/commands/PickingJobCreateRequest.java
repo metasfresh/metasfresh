@@ -1,9 +1,8 @@
 package de.metas.handlingunits.picking.job.service.commands;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
-import de.metas.inout.ShipmentScheduleId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.order.OrderId;
 import de.metas.user.UserId;
 import lombok.Builder;
@@ -24,5 +23,5 @@ public class PickingJobCreateRequest
 	@Nullable BPartnerLocationId deliveryBPLocationId;
 	@Nullable WarehouseTypeId warehouseTypeId;
 	boolean isAllowPickingAnyHU;
-	@Nullable ImmutableSet<ShipmentScheduleId> shipmentScheduleIds;
+	@Nullable ShipmentScheduleAndJobScheduleIdSet scheduleIds;
 }
