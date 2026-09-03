@@ -253,9 +253,10 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 			{
 				throw new AdempiereException(noCandidatesMsg);
 			}
+			// No markAsUserValidationError() needed: AdempiereException(String) already sets that flag for any
+			// message containing '@', which the "@...@" prefix always does.
 			throw new AdempiereException(noCandidatesMsg + " "
-					+ InvoiceCandidateEnqueueResult.buildSkippedSummary(getCtx(), skipReasonsCollected, skipReasonsCollected.size()))
-					.markAsUserValidationError();
+					+ InvoiceCandidateEnqueueResult.buildSkippedSummary(getCtx(), skipReasonsCollected, skipReasonsCollected.size()));
 		}
 
 		//
