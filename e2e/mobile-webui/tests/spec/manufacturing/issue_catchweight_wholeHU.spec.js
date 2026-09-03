@@ -6,52 +6,41 @@ import { ApplicationsListScreen } from '../../utils/screens/ApplicationsListScre
 import { ManufacturingJobsListScreen } from '../../utils/screens/manufacturing/ManufacturingJobsListScreen';
 import { ManufacturingJobScreen } from '../../utils/screens/manufacturing/ManufacturingJobScreen';
 
-// The component is stocked in pieces but consumed by weight: the BOM line is in kg while the HU's
-// storage is in Stk. The HU also weighs less than its nominal 2 x 35 kg, as a real cheese pallet does.
+// The component is stocked in pieces but consumed by weight: the recipe line asks for kg while the
+// HUs' storage is in Stk. Both HUs weigh less than their nominal pieces x rate, as real cheese does.
 const NOMINAL_KG_PER_PIECE = 35;
-const HU_PIECES = 2;
-const HU_WEIGHT_NET = 68.4;
-// the attribute is stored with 3 decimals and compared scale-sensitively
-const HU_WEIGHT_NET_ASSERTED = '68.400';
 
-const createMasterdata = async ({ componentAsLU = false } = {}) => {
+const HU_A_PIECES = 2;
+const HU_A_WEIGHT = '68.400'; // three decimals: that is how the attribute is stored and compared
+const HU_B_PIECES = 1;
+const HU_B_WEIGHT = '34.200';
+
+// 105 kg is what all three pieces nominally weigh, so each HU is consumed whole by its own step
+const LINE_DEMAND_KG = (HU_A_PIECES + HU_B_PIECES) * NOMINAL_KG_PER_PIECE;
+
+const createMasterdata = async () => {
     return await Backend.createMasterdata({
         language: "en_US",
         request: {
-            login: {
-                user: { language: "en_US" },
-            },
+            login: { user: { language: "en_US" } },
             mobileConfig: {},
-            warehouses: {
-                "wh": {},
-            },
+            warehouses: { "wh": {} },
             products: {
                 "COMP_CW": {
                     uomConversions: [{ from: 'PCE', to: 'KGM', multiplyRate: NOMINAL_KG_PER_PIECE, isCatchUOMForProduct: true }],
                 },
                 "FG": {
-                    bom: {
-                        // in kg, so the issue plan is denominated in a different UOM than the HU's storage
-                        lines: [{ product: 'COMP_CW', qty: 100, uom: 'KGM' }],
-                    },
+                    bom: { lines: [{ product: 'COMP_CW', qty: LINE_DEMAND_KG, uom: 'KGM' }] },
                 },
             },
             packingInstructions: {
                 "PI": { lu: "LU", qtyTUsPerLU: 20, tu: "TU", product: "FG", qtyCUsPerTU: 4 },
-                // one piece per TU, so an LU of two TUs holds the same two pieces as the flat HU -
-                // but the issue has to walk it one TU at a time
-                "CW_PI": { lu: "LU_CW", qtyTUsPerLU: HU_PIECES, tu: "TU_CW", product: "COMP_CW", qtyCUsPerTU: 1 },
             },
             handlingUnits: {
-                "HU_CW": componentAsLU
-                    ? { product: 'COMP_CW', warehouse: 'wh', packingInstructions: 'CW_PI', weightNet: HU_WEIGHT_NET }
-                    : { product: 'COMP_CW', warehouse: 'wh', qty: HU_PIECES, weightNet: HU_WEIGHT_NET },
-                // the order needs more than this one HU holds, and the job refuses to start unless the
-                // whole demand is covered - so a second HU carries the rest
-                "HU_REST": { product: 'COMP_CW', warehouse: 'wh', qty: 1 },
+                "HU_A": { product: 'COMP_CW', warehouse: 'wh', qty: HU_A_PIECES, weightNet: Number(HU_A_WEIGHT) },
+                "HU_B": { product: 'COMP_CW', warehouse: 'wh', qty: HU_B_PIECES, weightNet: Number(HU_B_WEIGHT) },
             },
             manufacturingOrders: {
-                // demand exceeds what HU_CW holds, so its step consumes it whole
                 "PP1": {
                     warehouse: 'wh',
                     product: 'FG',
@@ -63,18 +52,19 @@ const createMasterdata = async ({ componentAsLU = false } = {}) => {
     });
 }
 
-test.describe('Manufacturing issue of a whole catch-weight HU across UOMs', () => {
+test.describe('Manufacturing issue of whole catch-weight HUs across UOMs', () => {
     // noinspection JSUnusedLocalSymbols
-    test('Issuing a whole HU stocked in Stk to a BOM line in kg consumes it and keeps its weight', async ({ page }) => {
+    test('Issuing whole HUs stocked in Stk to a recipe line in kg keeps each HU weight through the flow', async ({ page }) => {
         allure.epic('E0160: Manufacturing Execution');
         allure.tag('F8030: MobileUI Manufacturing');
         allure.tag('F8030');
-        allure.story('Whole-HU issue when the stocking UOM differs from the BOM line UOM');
+        allure.story('Whole-HU issue when the stocking UOM differs from the recipe line UOM');
         allure.severity('critical');
         allure.description(
-            'The component is stocked in Stk and the BOM line asks for kg. Issuing the whole HU must ' +
-            'succeed rather than fail with "Could not issue the whole quantity required", and the HU ' +
-            'that ends up issued must still carry the weight that was captured on it.'
+            'Two handling units, each consumed whole by its own step, are issued one after the other. The ' +
+            'weights are checked three times - before anything is issued, with one HU issued and one still ' +
+            'on stock, and after both are issued - so a weight that is lost or overwritten at any point in ' +
+            'the flow shows up, not only at the end.'
         );
 
         const masterdata = await createMasterdata();
@@ -85,54 +75,52 @@ test.describe('Manufacturing issue of a whole catch-weight HU across UOMs', () =
         await ManufacturingJobsListScreen.waitForScreen();
         await ManufacturingJobsListScreen.startJob({ documentNo: masterdata.manufacturingOrders.PP1.documentNo });
 
-        await ManufacturingJobScreen.expectIssueButton({ index: 1, qtyToIssue: '100 kg', qtyIssued: '0 kg' });
-        await ManufacturingJobScreen.issueRawProduct({ index: 1, qrCode: masterdata.handlingUnits.HU_CW.qrCode });
-
-        // the whole HU holds 2 Stk at a nominal 35 kg, so 70 of the 100 kg are now issued.
-        // Without this the issue can fail server-side and the test would still pass: the failure is
-        // persisted to the issue log and the screen simply shows nothing was issued.
-        await ManufacturingJobScreen.expectIssueButton({ index: 1, qtyIssued: '70 kg' });
-
-        await Backend.expect({
-            title: 'the whole HU was issued, carrying its captured weight',
-            manufacturings: {
-                "PP1": {
-                    issuedHUs: [{ attributes: { 'WeightNet': HU_WEIGHT_NET_ASSERTED } }],
+        await test.step('Initial: both HUs are on stock with the weight they were captured at', async () => {
+            await ManufacturingJobScreen.expectIssueButton({ index: 1, qtyToIssue: `${LINE_DEMAND_KG} kg`, qtyIssued: '0 kg' });
+            await Backend.expect({
+                title: 'initial weights',
+                hus: {
+                    'HU_A': { huStatus: 'A', storages: { 'COMP_CW': `${HU_A_PIECES} PCE` }, attributes: { 'WeightNet': HU_A_WEIGHT } },
+                    'HU_B': { huStatus: 'A', storages: { 'COMP_CW': `${HU_B_PIECES} PCE` }, attributes: { 'WeightNet': HU_B_WEIGHT } },
                 },
-            },
+            });
         });
-    });
 
-    // noinspection JSUnusedLocalSymbols
-    test('The same issue from an LU of several TUs keeps the weight on every piece it moves', async ({ page }) => {
-        allure.epic('E0160: Manufacturing Execution');
-        allure.tag('F8030: MobileUI Manufacturing');
-        allure.tag('F8030');
-        allure.story('Whole-HU issue when the stocking UOM differs from the BOM line UOM');
-        allure.severity('critical');
-        allure.description(
-            'Same issue as above, but the component arrives as an LU holding several TUs, which the issue ' +
-            'has to walk one TU at a time. Each of those steps must still carry the captured weight.'
-        );
+        await test.step('In progress: the first HU is issued, the second is untouched', async () => {
+            await ManufacturingJobScreen.issueRawProduct({ index: 1, qrCode: masterdata.handlingUnits.HU_A.qrCode });
+            await ManufacturingJobScreen.expectIssueButton({ index: 1, qtyIssued: `${HU_A_PIECES * NOMINAL_KG_PER_PIECE} kg` });
 
-        const masterdata = await createMasterdata({ componentAsLU: true });
-
-        await LoginScreen.login(masterdata.login.user);
-        await ApplicationsListScreen.expectVisible();
-        await ApplicationsListScreen.startApplication('mfg');
-        await ManufacturingJobsListScreen.waitForScreen();
-        await ManufacturingJobsListScreen.startJob({ documentNo: masterdata.manufacturingOrders.PP1.documentNo });
-
-        await ManufacturingJobScreen.issueRawProduct({ index: 1, qrCode: masterdata.handlingUnits.HU_CW.qrCode });
-        await ManufacturingJobScreen.expectIssueButton({ index: 1, qtyIssued: '70 kg' });
-
-        await Backend.expect({
-            title: 'the pieces issued off the LU carry the captured weight',
-            manufacturings: {
-                "PP1": {
-                    issuedHUs: [{ attributes: { 'WeightNet': HU_WEIGHT_NET_ASSERTED } }],
+            await Backend.expect({
+                title: 'weights with one HU issued',
+                hus: {
+                    'HU_A': { huStatus: 'I', attributes: { 'WeightNet': HU_A_WEIGHT } },
+                    'HU_B': { huStatus: 'A', storages: { 'COMP_CW': `${HU_B_PIECES} PCE` }, attributes: { 'WeightNet': HU_B_WEIGHT } },
                 },
-            },
+                manufacturings: {
+                    'PP1': { issuedHUs: [{ attributes: { 'WeightNet': HU_A_WEIGHT } }] },
+                },
+            });
+        });
+
+        await test.step('Final: both HUs are issued and each kept its own weight', async () => {
+            await ManufacturingJobScreen.issueRawProduct({ index: 1, qrCode: masterdata.handlingUnits.HU_B.qrCode });
+            await ManufacturingJobScreen.expectIssueButton({ index: 1, qtyIssued: `${LINE_DEMAND_KG} kg` });
+
+            await Backend.expect({
+                title: 'final weights',
+                hus: {
+                    'HU_A': { huStatus: 'I', attributes: { 'WeightNet': HU_A_WEIGHT } },
+                    'HU_B': { huStatus: 'I', attributes: { 'WeightNet': HU_B_WEIGHT } },
+                },
+                manufacturings: {
+                    'PP1': {
+                        issuedHUs: [
+                            { attributes: { 'WeightNet': HU_A_WEIGHT } },
+                            { attributes: { 'WeightNet': HU_B_WEIGHT } },
+                        ],
+                    },
+                },
+            });
         });
     });
 });
