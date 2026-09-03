@@ -56,6 +56,48 @@ public class AssertManufacturingExpectationsCommand
 			final ArrayList<I_PP_Order_Qty> actuals = new ArrayList<>(services.getPPOrderQtyForFinishedGoodsReceive(ppOrderId));
 			assertReceivedHUs(expectation.getReceivedHUs(), actuals);
 		}
+
+		if (expectation.getIssuedHUs() != null)
+		{
+			final ArrayList<I_PP_Order_Qty> actuals = new ArrayList<>(services.getPPOrderQtyForComponentIssue(ppOrderId));
+			assertIssuedHUs(expectation.getIssuedHUs(), actuals);
+		}
+	}
+
+	private void assertIssuedHUs(final List<JsonManufacturingExpectation.IssuedHU> expectations, final ArrayList<I_PP_Order_Qty> actuals)
+	{
+		assertThat(actuals).hasSameSize(expectations);
+
+		// same ordering workaround as the receive side: the candidate id does not follow the issue order
+		actuals.sort(Comparator.comparing(I_PP_Order_Qty::getM_HU_ID));
+
+		softly(() -> {
+			softlyPutContext("expectations", expectations);
+			softlyPutContext("actuals", actuals);
+			for (int i = 0; i < expectations.size(); i++)
+			{
+				softlyPutContext("index", i);
+				assertIssuedHU(expectations.get(i), actuals.get(i));
+			}
+		});
+	}
+
+	private void assertIssuedHU(final JsonManufacturingExpectation.IssuedHU expectation, final I_PP_Order_Qty actual)
+	{
+		softly(() -> {
+			softlyPutContext("expectation", expectation);
+			softlyPutContext("actual", actual);
+
+			if (expectation.getQty() != null)
+			{
+				assertThat(getQty(actual)).as("qty").isEqualTo(expectation.getQty().toQuantity());
+			}
+
+			if (expectation.getAttributes() != null)
+			{
+				HUAttributeAssertions.assertAttributes(services, expectation.getAttributes(), HuId.ofRepoId(actual.getM_HU_ID()));
+			}
+		});
 	}
 
 	private PPOrderId getPPOrderIdByMatcherString(@NotNull final String matcherStr)
