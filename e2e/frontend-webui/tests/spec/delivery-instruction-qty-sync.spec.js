@@ -78,6 +78,11 @@ Included-tab rows render as \`td[data-cy="cell-<ColumnName>"]\`; the cell text i
 
     const REST = WEBAPI_BASE_URL;
 
+    // Local infra only (PostgREST container next to the local DB) — unavailable in CI. Used purely as
+    // a deterministic setup lookup with a WebAPI-view fallback; see picking-terminal.spec.js's
+    // findShipmentScheduleId for the identical try/fallback shape.
+    const POSTGREST_BASE_URL = process.env.POSTGREST_BASE_URL || 'http://localhost:21001';
+
     const ORDERED_QTY = 10;
     const EDITED_PLANNED_LOAD_QTY = 6;
 
@@ -112,8 +117,23 @@ Included-tab rows render as \`td[data-cy="cell-<ColumnName>"]\`; the cell text i
       return firstDocument(await (await page.request.get(`${REST}/window/${windowId}/${documentId}`)).json());
     };
 
-    /** Numbers only — the grid renders "10", "10.00" or "10,00" depending on the session's format. */
-    const cellNumber = (text) => Number(String(text).replace(/[^\d,.-]/g, '').replace(/\./g, '').replace(',', '.'));
+    /**
+     * Numbers only — the grid renders "10", "10.00" or "10,00" depending on the session's number
+     * format. Whichever of "," or "." appears LAST is the decimal separator (this session renders
+     * the en_US style "10.00", observed live); any earlier separator is a thousands grouping and is
+     * stripped. Locale-agnostic on purpose — hardcoding one convention here previously misread
+     * "10.00" as 1000.
+     */
+    const cellNumber = (text) => {
+      const cleaned = String(text).replace(/[^\d,.-]/g, '');
+      const lastSeparatorIndex = Math.max(cleaned.lastIndexOf(','), cleaned.lastIndexOf('.'));
+      if (lastSeparatorIndex === -1) {
+        return Number(cleaned);
+      }
+      const integerPart = cleaned.slice(0, lastSeparatorIndex).replace(/[,.]/g, '');
+      const decimalPart = cleaned.slice(lastSeparatorIndex + 1);
+      return Number(`${integerPart}.${decimalPart}`);
+    };
 
     // ------------------------------------------------------------------ setup
 
@@ -188,6 +208,7 @@ Included-tab rows render as \`td[data-cy="cell-<ColumnName>"]\`; the cell text i
     });
 
     let salesOrderId;
+    let orderLineId;
     await test.step('Create and complete a sales order line carrying that shipper', async () => {
       salesOrderId = (await patchDocument(SALES_ORDER_WINDOW_ID, 'NEW', [])).id;
       await patchDocument(SALES_ORDER_WINDOW_ID, salesOrderId, [
@@ -199,6 +220,7 @@ Included-tab rows render as \`td[data-cy="cell-<ColumnName>"]\`; the cell text i
         { data: [] }
       );
       const lineRow = firstDocument(await lineResponse.json());
+      orderLineId = lineRow.rowId;
       const line = firstDocument(
         await (
           await page.request.patch(
@@ -223,20 +245,45 @@ Included-tab rows render as \`td[data-cy="cell-<ColumnName>"]\`; the cell text i
     // The planning is created by the async workpackage the order completion enqueues, so it is polled
     // for rather than assumed present. A missing planning here means the auto-create gate did not
     // fire — surfaced now, not later as an empty delivery-instruction view.
+    //
+    // The grid view of this window returns EVERY planning on the stack, sorted ascending by id
+    // (default order), and the window carries no filter fields at all (AD_Field.IsFilterField is 'N'
+    // on every field of this tab, so no "filters" param can narrow it). A freshly generated planning
+    // always has the highest id, so on a long-lived, reused stack with many rows it sorts past any
+    // fixed page (firstRow=0&pageLength=500) and a poll on that page times out even though the row
+    // exists; on a fresh, small database it happens to land on page 1. So the planning is looked up
+    // deterministically by THIS test's own C_OrderLine_ID (a planning is 1:1 with the order line that
+    // generated it) through PostgREST — the local infra container next to the DB, one indexed query,
+    // no paging at all. PostgREST is local-infra only, so the previous page scan is kept as the CI
+    // fallback there; see picking-terminal.spec.js's findShipmentScheduleId for the identical
+    // try/fallback shape.
     let deliveryPlanningId;
     let deliveryPlanningViewId;
     await test.step('Wait for the delivery planning the completion generated', async () => {
-      // The window carries no filter fields (AD_Field.IsFilterField is 'N' on every field of tab
-      // 546674), so the view is created unfiltered and the row is identified by the product this spec
-      // created for itself — unique on the stack, so the match is exact rather than "the newest row".
       await expect
         .poll(
           async () => {
+            try {
+              const response = await page.request.get(
+                `${POSTGREST_BASE_URL}/m_delivery_planning?c_orderline_id=eq.${orderLineId}` +
+                  `&select=m_delivery_planning_id&limit=1`,
+                { timeout: 3000 }
+              );
+              if (response.ok()) {
+                const rows = await response.json();
+                deliveryPlanningId = rows[0]?.m_delivery_planning_id ?? null;
+                return deliveryPlanningId;
+              }
+            } catch {
+              // PostgREST not reachable (CI) — fall through to the WebAPI view scan below.
+            }
+
+            // CI fallback: unfiltered view (no filter fields exist on this tab), matched by the
+            // product this spec created for itself — unique on a fresh CI database.
             const view = await postJson(`${REST}/documentView/${DELIVERY_PLANNING_WINDOW_ID}`, {
               windowId: String(DELIVERY_PLANNING_WINDOW_ID),
               viewType: 'grid',
             });
-            deliveryPlanningViewId = view.viewId;
             const rows = await (
               await page.request.get(
                 `${REST}/documentView/${DELIVERY_PLANNING_WINDOW_ID}/${view.viewId}?firstRow=0&pageLength=500`
@@ -255,6 +302,17 @@ Included-tab rows render as \`td[data-cy="cell-<ColumnName>"]\`; the cell text i
           }
         )
         .not.toBeNull();
+
+      // Scope a view to exactly this row for the generate-instruction process call below
+      // (filterOnlyIds — SqlViewFactory turns it into a plain "id IN (...)" filter, confirmed against
+      // this window), instead of reusing a 500-row page.
+      const scopedView = await postJson(`${REST}/documentView/${DELIVERY_PLANNING_WINDOW_ID}`, {
+        windowId: String(DELIVERY_PLANNING_WINDOW_ID),
+        viewType: 'grid',
+        filterOnlyIds: [String(deliveryPlanningId)],
+      });
+      deliveryPlanningViewId = scopedView.viewId;
+
       console.log(`[SETUP] Delivery planning ${deliveryPlanningId} in view ${deliveryPlanningViewId}`);
     });
 
@@ -320,11 +378,22 @@ Included-tab rows render as \`td[data-cy="cell-<ColumnName>"]\`; the cell text i
 
     await test.step('Change the planning planned load from another session', async () => {
       // A plain REST PATCH on the planning window is exactly what a second browser tab does: it never
-      // touches the page opened above, so anything the page then shows had to be pushed to it.
+      // touches the page opened above, so anything the page then shows had to be pushed to it. Like a
+      // real second tab, it opens the record (a GET) before editing it — the WebUI backend only
+      // reports a field diff (incl. that field's validStatus) for a document already resident in the
+      // session's in-memory DocumentCollection; without the GET first, this PATCH answers with a
+      // save-only acknowledgement carrying no field data at all (confirmed live: no top-level
+      // "validStatus" is ever sent for a delta response — only a changed field's own validStatus is),
+      // so the check below reads the edited field's validStatus, not a document-level one.
+      await getDocument(DELIVERY_PLANNING_WINDOW_ID, deliveryPlanningId);
       const planning = await patchDocument(DELIVERY_PLANNING_WINDOW_ID, deliveryPlanningId, [
         { op: 'replace', path: 'PlannedLoadedQuantity', value: EDITED_PLANNED_LOAD_QTY },
       ]);
-      expect(planning.validStatus && planning.validStatus.valid, 'edited planning is valid').toBe(true);
+      const editedField = planning.fieldsByName && planning.fieldsByName.PlannedLoadedQuantity;
+      expect(
+        editedField && editedField.validStatus && editedField.validStatus.valid,
+        'edited planning is valid'
+      ).toBe(true);
     });
 
     // THE assertion of this spec. No page.reload() above it, deliberately.
