@@ -1326,6 +1326,18 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
+	 * The given plannings, carrying just enough for {@link DeliveryPlanning#isDelivered()} - what
+	 * {@link DeliveryInstructionService#recomputeDeliveredState} derives an instruction's {@code DeliveredState}
+	 * from. ONE round trip, via {@link #getByIds(Collection)}.
+	 */
+	public DeliveryPlanningList getDeliveredStatePlannings(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
+	{
+		return getByIds(deliveryPlanningIds).stream()
+				.map(DeliveryPlanningRepository::toDeliveredStatePlanning)
+				.collect(DeliveryPlanningList.collect());
+	}
+
+	/**
 	 * The minimal {@link DeliveryPlanning} {@link #recomputeDeliveredState} needs: just enough for
 	 * {@link DeliveryPlanning#isDelivered()} - unlike {@link #toPoolPlanning}, which carries the quantity pool's
 	 * fields instead and is used by an unrelated caller.
@@ -1510,6 +1522,22 @@ public class DeliveryPlanningRepository
 	private static DocStatus extractDocStatus(@NonNull final I_M_ShipperTransportation deliveryInstructionRecord)
 	{
 		return DocStatus.ofNullableCodeOrUnknown(deliveryInstructionRecord.getDocStatus());
+	}
+
+	/**
+	 * Clears the {@code ReleaseNo} and instruction reference of every planning currently pointing at the given
+	 * delivery instruction - what a void of that instruction owes the plannings it was carrying.
+	 */
+	public void clearInstructionReferenceOfInstruction(@NonNull final ShipperTransportationId deliveryInstructionId)
+	{
+		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = retrieveForDeliveryInstructionId(deliveryInstructionId);
+		while (deliveryPlanningIterator.hasNext())
+		{
+			final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningIterator.next();
+			deliveryPlanningRecord.setReleaseNo(null);
+			deliveryPlanningRecord.setM_ShipperTransportation_ID(-1);
+			saveRecord(deliveryPlanningRecord);
+		}
 	}
 
 	/**
