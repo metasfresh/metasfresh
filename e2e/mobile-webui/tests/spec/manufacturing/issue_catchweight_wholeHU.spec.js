@@ -5,6 +5,7 @@ import { LoginScreen } from '../../utils/screens/LoginScreen';
 import { ApplicationsListScreen } from '../../utils/screens/ApplicationsListScreen';
 import { ManufacturingJobsListScreen } from '../../utils/screens/manufacturing/ManufacturingJobsListScreen';
 import { ManufacturingJobScreen } from '../../utils/screens/manufacturing/ManufacturingJobScreen';
+import { MaterialReceiptLineScreen } from '../../utils/screens/manufacturing/receipt/MaterialReceiptLineScreen';
 
 // The component is stocked in pieces but consumed by weight: the recipe line asks for kg while the
 // HUs' storage is in Stk. Both HUs weigh less than their nominal pieces x rate, as real cheese does.
@@ -24,7 +25,6 @@ const HU_C_WEIGHT_LEFT = '34.500';
 // The line needs what HU_A and HU_B nominally weigh plus one piece more, so those two are consumed
 // whole while HU_C - which holds two pieces - can only give up part of itself
 const LINE_DEMAND_KG = (HU_A_PIECES + HU_B_PIECES + 1) * NOMINAL_KG_PER_PIECE;
-const REMAINDER_KG = NOMINAL_KG_PER_PIECE;
 
 const createMasterdata = async () => {
     return await Backend.createMasterdata({
@@ -37,8 +37,16 @@ const createMasterdata = async () => {
                 "COMP_CW": {
                     uomConversions: [{ from: 'PCE', to: 'KGM', multiplyRate: NOMINAL_KG_PER_PIECE, isCatchUOMForProduct: true }],
                 },
+                // A second component that is only issued for what was received. Its presence is what makes
+                // a receipt recompute the steps of EVERY line of the job, the catch-weight one included.
+                "COMP_AUTO": {},
                 "FG": {
-                    bom: { lines: [{ product: 'COMP_CW', qty: LINE_DEMAND_KG, uom: 'KGM' }] },
+                    bom: {
+                        lines: [
+                            { product: 'COMP_CW', qty: LINE_DEMAND_KG, uom: 'KGM' },
+                            { product: 'COMP_AUTO', qty: 1, issueMethod: 'IssueOnlyForReceived' },
+                        ],
+                    },
                 },
             },
             packingInstructions: {
@@ -48,6 +56,7 @@ const createMasterdata = async () => {
                 "HU_A": { product: 'COMP_CW', warehouse: 'wh', qty: HU_A_PIECES, weightNet: Number(HU_A_WEIGHT) },
                 "HU_B": { product: 'COMP_CW', warehouse: 'wh', qty: HU_B_PIECES, weightNet: Number(HU_B_WEIGHT) },
                 "HU_C": { product: 'COMP_CW', warehouse: 'wh', qty: HU_C_PIECES, weightNet: Number(HU_C_WEIGHT) },
+                "HU_AUTO": { product: 'COMP_AUTO', warehouse: 'wh', qty: 1000, sourceHU: true },
             },
             manufacturingOrders: {
                 "PP1": {
@@ -135,6 +144,20 @@ test.describe('Manufacturing issue of whole catch-weight HUs across UOMs', () =>
                         ],
                     },
                 },
+            });
+        });
+
+        // Receiving finished goods auto-issues the received-only component and, on the way, recomputes the
+        // steps of every line - including this one, whose steps are denominated in pieces. That recompute
+        // used to throw on the mismatched units before the operator could issue anything else.
+        await test.step('A receipt recomputes the steps of a line denominated in pieces', async () => {
+            await ManufacturingJobScreen.clickReceiveButton({ index: 1 });
+            await MaterialReceiptLineScreen.selectNewLUTarget({ luPIItemTestId: masterdata.packingInstructions.PI.luPIItemTestId });
+            await MaterialReceiptLineScreen.receiveQty({ qtyEntered: '1' });
+
+            await ManufacturingJobScreen.expectIssueButton({
+                index: 1,
+                qtyIssued: `${(HU_A_PIECES + HU_B_PIECES) * NOMINAL_KG_PER_PIECE} kg`,
             });
         });
 
