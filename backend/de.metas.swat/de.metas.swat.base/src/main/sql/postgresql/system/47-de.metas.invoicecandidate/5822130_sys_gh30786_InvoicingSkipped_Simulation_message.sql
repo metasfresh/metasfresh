@@ -2,11 +2,8 @@
 --   AD_MigrationScript 5822130 (this script)
 --   AD_Message         545825 (InvoiceCandBL_Invoicing_Skipped_Simulation)
 --
--- The simulation branch of isSkipCandidateFromInvoicing was the only one of its six that had no
--- AD_Message: it logged a formatted template and built no reusable text. That was harmless while the
--- reason only reached the process log, but the reason is now surfaced in the "Auswahl Fakturieren"
--- summary, so an untranslated Java-built string would put English technical text into a German
--- sentence. Wording mirrors its five siblings (InvoiceCandBL_Invoicing_Skipped_*).
+-- The simulation branch of isSkipCandidateFromInvoicing was the only skip reason with no AD_Message;
+-- the reason now reaches the user in the process summary. Wording mirrors InvoiceCandBL_Invoicing_Skipped_*.
 --   {0} = C_Invoice_Candidate_ID
 
 -- 2026-09-03T07:40:01

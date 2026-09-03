@@ -194,17 +194,8 @@ Feature: A failing "Create Invoices" run reports back to the user who started it
 @allure.label.feature:F01010.3_Match_Invoice
 @F00701
   Scenario: A "Create Invoices" run reports the candidate the enqueuer silently skipped
-    # The defect this covers: the enqueuer drops a candidate with QtyOrdered <> 0 and
-    # QtyToInvoice = 0 (InvoiceCandidateEnqueuer.isEligibleForEnqueueing, "task 04372" branch).
-    # The skip reason goes to Loggables only, InvoiceCandidateEnqueueResult carries just the
-    # enqueued count, and InvoiceGenerate_No_Candidates_Selected fires only when NOTHING is
-    # enqueued -- so in a mixed selection the good candidate is invoiced and the dropped one is
-    # never mentioned anywhere the user looks.
-    #
-    # NOT the credit-stop mechanism of the scenario above: that candidate IS enqueued and then
-    # fails inside InvoiceCandBLCreateInvoices, which is the only place Event_InvoicingError is
-    # raised from. A skipped candidate never reaches that code, which is why the shipped
-    # scenario went green against a different mechanism and left this path uncovered.
+    # The enqueuer's quantity skip (QtyOrdered <> 0 with QtyToInvoice = 0), NOT the credit stop of the
+    # scenario above -- that candidate is enqueued and fails later, in a different code path.
     Given metasfresh contains M_Products:
       | Identifier | Name              |
       | p_sk_1     | salesProduct_sk_1 |
@@ -221,8 +212,7 @@ Feature: A failing "Create Invoices" run reports back to the user who started it
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_sk_1    | plv_sk_1                          | p_sk_1                  | 10.0     | PCE               | Normal                        |
 
-    # Different bill partners on purpose: same partner aggregates into ONE invoice header, so a
-    # single selection could not show "one invoiced, one dropped" side by side.
+    # Different bill partners: the same partner would aggregate into one invoice header.
     And metasfresh contains C_BPartners:
       | Identifier         | Name               | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | customer_sk_good   | sk_GoodCustomer    | N            | Y              | ps_sk_1                       |
@@ -246,9 +236,8 @@ Feature: A failing "Create Invoices" run reports back to the user who started it
       | ic_sk_good                        | ol_sk_good                | 0            |
       | ic_sk_skip                        | ol_sk_skip                | 0            |
 
-    # InvoiceRule=Immediate makes both invoiceable without a delivery, so the run really tries.
-    # DateToInvoice_Override in the past clears the date gate, which isSkipCandidateFromInvoicing
-    # evaluates BEFORE the quantity branch -- without it the date reason would mask the one under test.
+    # Immediate = invoiceable without a delivery; the past DateToInvoice_Override clears the date gate,
+    # which is evaluated BEFORE the quantity branch and would otherwise mask the reason under test.
     And update invoice candidates
       | C_Invoice_Candidate_ID.Identifier | OPT.InvoiceRule_Override | OPT.DateToInvoice_Override |
       | ic_sk_good                        | I                        | 2021-04-18                 |
@@ -258,7 +247,6 @@ Feature: A failing "Create Invoices" run reports back to the user who started it
       | ic_sk_good                        | ol_sk_good                | 10           |
       | ic_sk_skip                        | ol_sk_skip                | 10           |
 
-    # QtyToInvoice_Override = 0 with QtyOrdered still 10 is exactly the enqueuer's skip condition.
     And update invoice candidates
       | C_Invoice_Candidate_ID.Identifier | OPT.QtyToInvoice_Override |
       | ic_sk_skip                        | 0                         |
@@ -266,21 +254,17 @@ Feature: A failing "Create Invoices" run reports back to the user who started it
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | ic_sk_skip                        | ol_sk_skip                | 0            |
 
-    # The REAL process, not the InvoiceService shortcut: InvoiceService discards the enqueue result, so the
-    # summary the user actually reads cannot be observed through it.
+    # The real process: InvoiceService discards the enqueue result, so the summary is not observable there.
     When run the invoicing process for invoice candidates:
       | C_Invoice_Candidate_ID.Identifier |
       | ic_sk_good,ic_sk_skip             |
 
-    # THE ASSERTION UNDER TEST. Before the fix the summary reported only what was enqueued; the dropped
-    # candidate went to Loggables (the process log) and the user was told nothing about it.
-    # "1 von 2" = one of the two selected candidates was not invoiced; the reason names the candidate.
+    # 1 of the 2 selected candidates was not invoiced.
     Then the invoicing run summary contains:
       | 1 von 2 |
 
-    # The skipped candidate stays open and is NOT flagged as an error: being skipped is not a failure.
-    # (That the GOOD candidate still gets invoiced in a mixed selection is covered by the scenario above,
-    #  which drives the async batch; the queue processor is off here, so this scenario asserts the report.)
+    # Skipped is not an error. (The good candidate's invoice is covered by the scenario above; the queue
+    # processor is off here, so this one asserts the report only.)
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | IsInvoicingError | OPT.Processed |
       | ic_sk_skip                        | false            | false         |
@@ -293,11 +277,8 @@ Feature: A failing "Create Invoices" run reports back to the user who started it
 @allure.label.feature:F01010.3_Match_Invoice
 @F00701
   Scenario: A "Create Invoices" run whose WHOLE selection is skipped still says why
-    # The other half of the same defect. When nothing at all can be enqueued the enqueuer throws the bare,
-    # parameterless InvoiceGenerate_No_Candidates_Selected ("Es wurden keine fakturierbaren Datensaetze
-    # ausgewaehlt.") -- so the user was told the selection cannot be invoiced but never what is wrong with
-    # it, even though every reason had just been computed. ~3568 candidates sit in this state on the
-    # customer instance, so an all-skipped selection is the COMMON case there, not an edge case.
+    # Nothing enqueued at all: the enqueuer throws InvoiceGenerate_No_Candidates_Selected, which used to
+    # carry no reason.
     Given metasfresh contains M_Products:
       | Identifier | Name              |
       | p_al_1     | salesProduct_al_1 |
@@ -337,7 +318,6 @@ Feature: A failing "Create Invoices" run reports back to the user who started it
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | ic_al_1                           | ol_al_1                   | 10           |
 
-    # The only selected candidate now meets the enqueuer's skip condition, so NOTHING can be enqueued.
     And update invoice candidates
       | C_Invoice_Candidate_ID.Identifier | OPT.QtyToInvoice_Override |
       | ic_al_1                           | 0                         |
@@ -349,8 +329,7 @@ Feature: A failing "Create Invoices" run reports back to the user who started it
       | C_Invoice_Candidate_ID.Identifier |
       | ic_al_1                           |
 
-    # THE ASSERTION UNDER TEST: the error must carry the reason, not just "nothing selectable".
-    # Pre-fix the message was the bare "Es wurden keine fakturierbaren Datensaetze ausgewaehlt." alone.
+    # The error must carry the reason, not just "nothing selectable".
     Then the invoicing run summary contains:
       | 1 von 1                              |
       | abzurechnende Menge gleich 0          |

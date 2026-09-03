@@ -173,9 +173,6 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 
 		final int workpackageQueueSizeBeforeEnqueueing = workpackageAggregator.getQueueSize();
 		int invoiceCandidateSelectionCount = 0; // how many eligible items were in given selection
-		// Collected so the run can REPORT what it dropped. Until now every skip reason went to Loggables
-		// (the process log) only, and the result carried just the enqueued count -- so in a mixed selection the
-		// good candidates were invoiced and the dropped ones were never mentioned anywhere the user looks.
 		final ImmutableList.Builder<String> skipReasons = ImmutableList.builder();
 		final ICNetAmtToInvoiceChecker totalNetAmtToInvoiceChecksum = new ICNetAmtToInvoiceChecker();
 
@@ -242,10 +239,8 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		final ImmutableList<String> skipReasonsCollected = skipReasons.build();
 
 		//
-		// If no workpackages were created, display error message that no selection was made (07666).
-		// Report WHY when we know: this branch is reached whenever the whole selection was skipped, which is
-		// the other half of the same defect -- the bare message alone leaves the user with a selection that
-		// "cannot be invoiced" and no way to find out what is wrong with any of it.
+		// If no workpackages were created, display error message that no selection was made (07666),
+		// naming the skip reasons when we have them.
 		if (isFailIfNothingEnqueued() && invoiceCandidateSelectionCount <= 0)
 		{
 			final String noCandidatesMsg = "@" + MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P + "@";
@@ -253,8 +248,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 			{
 				throw new AdempiereException(noCandidatesMsg);
 			}
-			// No markAsUserValidationError() needed: AdempiereException(String) already sets that flag for any
-			// message containing '@', which the "@...@" prefix always does.
+			// No markAsUserValidationError() needed: AdempiereException(String) sets it for any '@'-wrapped message.
 			throw new AdempiereException(noCandidatesMsg + " "
 					+ InvoiceCandidateEnqueueResult.buildSkippedSummary(getCtx(), skipReasonsCollected, skipReasonsCollected.size()));
 		}

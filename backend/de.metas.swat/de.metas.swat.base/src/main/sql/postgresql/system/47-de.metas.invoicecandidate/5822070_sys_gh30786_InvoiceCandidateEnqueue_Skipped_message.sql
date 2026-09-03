@@ -2,16 +2,8 @@
 --   AD_MigrationScript 5822070 (this script)
 --   AD_Message         545824 (InvoiceCandidateEnqueue_Skipped)
 --
--- Appended to the "Auswahl Fakturieren" process summary -- the string the user sees the moment the
--- run finishes -- when the ENQUEUER dropped part of the selection before any invoicing was attempted
--- (candidate already processed, in dispute, to-clear, simulation, manual rule, date not yet due, or
--- QtyOrdered <> 0 with QtyToInvoice = 0).
---
--- Reported in the SUMMARY rather than as a user notification on purpose: the summary is synchronous,
--- reaches whoever started the run, and does not depend on that user's AD_User.NotificationType.
---   {0} = how many of the selected candidates were skipped
---   {1} = how many candidates were selected
---   {2} = the skip reasons (first few; the process log has them all)
+-- Appended to the "Auswahl Fakturieren" process summary when the enqueuer skipped part of the selection.
+--   {0} = candidates skipped, {1} = candidates selected, {2} = the reasons (first few; all are in the process log)
 
 -- 2026-09-03T01:05:01
 INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value)

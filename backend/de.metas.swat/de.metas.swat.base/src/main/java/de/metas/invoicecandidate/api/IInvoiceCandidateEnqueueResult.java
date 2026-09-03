@@ -44,13 +44,10 @@ public interface IInvoiceCandidateEnqueueResult extends IEnqueueResult
 	/** @return how many invoice candidates were enqueued */
 	int getInvoiceCandidateEnqueuedCount();
 
-	/** @return how many of the SELECTED invoice candidates were skipped, i.e. never enqueued */
+	/** @return how many of the selected invoice candidates were skipped, i.e. never enqueued */
 	int getInvoiceCandidateSkippedCount();
 
-	/**
-	 * @return one translated reason per skipped invoice candidate, in selection order.
-	 * Empty when nothing was skipped.
-	 */
+	/** @return one translated reason per skipped candidate, in selection order; empty when nothing was skipped */
 	ImmutableList<String> getSkipReasons();
 
 	/** @return how many workpackages were enqueued */

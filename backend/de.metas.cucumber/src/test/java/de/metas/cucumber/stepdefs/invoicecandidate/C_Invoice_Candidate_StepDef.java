@@ -673,20 +673,16 @@ public class C_Invoice_Candidate_StepDef
 				});
 	}
 
-	/** The role the invoicing process runs under; it must be able to read the cucumber client's candidates. */
 	private static final String INVOICING_PROCESS_ROLE_NAME = "WebUI";
 
-	/** Summary string returned by the last "Auswahl Fakturieren" AD_Process run (see the step below). */
+	/** Summary returned by the last invoicing-process run. */
 	private String lastInvoicingRunSummary;
 
 	/**
-	 * Runs the REAL {@code C_Invoice_Candidate_EnqueueSelectionForInvoicing} AD_Process over the given candidates
-	 * and keeps its summary, i.e. exactly the string the WebUI shows the user when the run finishes.
+	 * Runs the {@code C_Invoice_Candidate_EnqueueSelectionForInvoicing} AD_Process and keeps its summary.
 	 * <p>
-	 * Deliberately NOT the {@code process invoice candidates} step: that one goes through
-	 * {@code de.metas.invoice.InvoiceService}, which discards the enqueue result, so the summary cannot be observed
-	 * there at all. The selection is passed as a where clause because the process reads it from
-	 * {@code ProcessInfo.getQueryFilterOrElse(...)} -- the filter the user had in his window.
+	 * NOT the {@code process invoice candidates} step: that goes through {@code InvoiceService}, which discards
+	 * the enqueue result, so the summary is not observable there.
 	 */
 	@When("run the invoicing process for invoice candidates:")
 	public void run_invoicing_process(@NonNull final DataTable dataTable)
@@ -741,13 +737,7 @@ public class C_Invoice_Candidate_StepDef
 		return result;
 	}
 
-	/**
-	 * Same as the step above, but for a selection in which EVERY candidate is expected to be skipped.
-	 * <p>
-	 * That case is an error for the process -- nothing could be enqueued, so it throws
-	 * {@code InvoiceGenerate_No_Candidates_Selected} -- yet the run still has to say WHY, which is why the
-	 * summary is captured from the failed result rather than asserted away.
-	 */
+	/** Variant for a selection in which every candidate is skipped: the process errors, but must still say why. */
 	@When("run the invoicing process and expect nothing invoiced for invoice candidates:")
 	public void run_invoicing_process_expecting_nothing_invoiced(@NonNull final DataTable dataTable)
 	{
@@ -762,14 +752,9 @@ public class C_Invoice_Candidate_StepDef
 	}
 
 	/**
-	 * The invoicing process narrows its selection with {@code addOnlyContextClient()} and
-	 * {@code setRequiredAccess(Access.READ)}, so the context must carry a client, an org, a logged user AND a role
-	 * that may read the cucumber client's records -- with the ambient (role-less) ctx the selection comes back EMPTY
-	 * and the process aborts with "Es wurden keine fakturierbaren Datensaetze ausgewaehlt".
-	 * <p>
-	 * copyCtx (not deriveCtx): the process ctx has to carry the values itself, otherwise the ambient values reach it
-	 * only as Properties-defaults and ContextClientQueryFilter fails. Same construction as
-	 * {@code M_ShipmentSchedule_StepDef#createProcessCtx()}.
+	 * The process selects with {@code addOnlyContextClient()} + {@code Access.READ}, so without a client, org, user
+	 * AND role the selection comes back empty. copyCtx (not deriveCtx): the ctx must carry the values itself.
+	 * Same construction as {@code M_ShipmentSchedule_StepDef#createProcessCtx()}.
 	 */
 	private Properties createInvoicingProcessCtx()
 	{
@@ -785,11 +770,7 @@ public class C_Invoice_Candidate_StepDef
 		return processCtx;
 	}
 
-	/**
-	 * Asserts the last invoicing run's summary mentions each given fragment.
-	 * This is what makes "the run reports what it skipped" a testable property: before the fix the enqueuer
-	 * dropped candidates into Loggables only and the summary said nothing about them.
-	 */
+	/** Asserts the last invoicing run's summary mentions each given fragment. */
 	@Then("the invoicing run summary contains:")
 	public void invoicing_run_summary_contains(@NonNull final DataTable dataTable)
 	{

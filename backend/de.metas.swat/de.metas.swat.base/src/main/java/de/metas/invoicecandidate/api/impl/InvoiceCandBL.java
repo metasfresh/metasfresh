@@ -1050,7 +1050,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		if (ic.isSimulation())
 		{
-			// Translated like its five sibling reasons: this string reaches the user in the process summary.
 			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_SIMULATION,
 					new Object[] { ic.getC_Invoice_Candidate_ID() });
 			Loggables.withLogger(logger, Level.DEBUG).addLog(msg);

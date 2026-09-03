@@ -43,9 +43,8 @@ import de.metas.util.Services;
 /* package */final class InvoiceCandidateEnqueueResult implements IInvoiceCandidateEnqueueResult
 {
 	private static final String MSG_INVOICE_CANDIDATE_ENQUEUE = "InvoiceCandidateEnqueue";
-	/** Appended to the summary when the enqueuer dropped part of the selection. */
 	private static final String MSG_INVOICE_CANDIDATE_ENQUEUE_SKIPPED = "InvoiceCandidateEnqueue_Skipped";
-	/** A selection can hold thousands of candidates; list a few reasons and point at the process log for the rest. */
+	/** A selection can hold thousands of candidates; the process log has every reason. */
 	private static final int MAX_LISTED_SKIP_REASONS = 5;
 
 	private final int invoiceCandidateEnqueuedCount;
@@ -98,8 +97,6 @@ import de.metas.util.Services;
 			return enqueuedSummary;
 		}
 
-		// The user pressed the button and is looking at THIS string, so the dropped candidates are reported here --
-		// synchronously and independent of any per-user notification configuration.
 		final int selectedCount = getInvoiceCandidateEnqueuedCount() + skippedCount;
 
 		return enqueuedSummary + " " + buildSkippedSummary(ctx, skipReasons, selectedCount);
@@ -108,10 +105,8 @@ import de.metas.util.Services;
 	/**
 	 * "N of M selected invoice candidate(s) were not invoiced: ...".
 	 * <p>
-	 * Package-visible and static because {@link InvoiceCandidateEnqueuer} needs the SAME sentence on the
-	 * all-skipped path, where it never gets to build a result at all: it throws
-	 * {@code InvoiceGenerate_No_Candidates_Selected} instead, and without this the reasons it collected
-	 * would be dropped on the floor -- leaving that case exactly as silent as before the fix.
+	 * Static because {@link InvoiceCandidateEnqueuer} needs the same sentence on the all-skipped path,
+	 * where it throws instead of building a result.
 	 */
 	/* package */
 	static String buildSkippedSummary(
