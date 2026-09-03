@@ -213,20 +213,26 @@ public class PPOrderIssuePlanCreateCommand
 					allocatedQty = targetQty; // fully allocated
 				}
 				//
-				// Case 3: current HU has not enough qty to allocate the remaining Qty
+				// Case 3: current HU has not enough qty to allocate the remaining Qty, so this step
+				// consumes it whole. The quantity is taken in the HU's own UOM: the HU engine only
+				// re-parents a fully consumed CU when the requested UOM matches the HU's storage, and
+				// otherwise falls back to a split that cannot express the HU's content exactly.
 				else
 				{
+					final Quantity huQtyAvailableInHuUom = allocableHU.getQtyAvailableToAllocateInHuUom();
+
 					planStep = PPOrderIssuePlanStep.builder()
 							.orderBOMLineId(orderBOMLineId)
 							.productId(productId)
-							.qtyToIssue(huQtyAvailable)
-							//.isPickWholeHU(true)
+							.qtyToIssue(huQtyAvailableInHuUom)
 							.pickFromLocatorId(allocableHU.getLocatorId())
 							.pickFromTopLevelHU(allocableHU.getTopLevelHU())
 							.isAlternative(false)
 							.build();
 
-					allocableHU.addQtyAllocated(huQtyAvailable);
+					// addQtyAllocated converts into the HU's UOM itself, and the running total stays in
+					// the BOM line's UOM, so both are fed the quantity in the unit they expect.
+					allocableHU.addQtyAllocated(huQtyAvailableInHuUom);
 					allocatedQty = allocatedQty.add(huQtyAvailable);
 				}
 				planSteps.add(planStep);

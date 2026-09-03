@@ -7,6 +7,7 @@ import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 
 @Value
 @Builder
@@ -14,6 +15,7 @@ import java.util.List;
 public class JsonManufacturingExpectation
 {
 	@Nullable List<ReceivedHU> receivedHUs;
+	@Nullable List<IssuedHU> issuedHUs;
 
 	//
  	//
@@ -29,6 +31,19 @@ public class JsonManufacturingExpectation
 		@Nullable Identifier lu;
 		@Nullable Identifier tu;
 		@Nullable QtyAndUOMString qty;
+	}
+
+	/**
+	 * An HU issued to one of the order's BOM lines. It is created by the issue itself, so it has no
+	 * masterdata identifier to address it by - the expectations are positional, ordered by HU id.
+	 */
+	@Value
+	@Builder
+	@Jacksonized
+	public static class IssuedHU
+	{
+		@Nullable QtyAndUOMString qty;
+		@Nullable Map<String, String> attributes;
 	}
 }
 

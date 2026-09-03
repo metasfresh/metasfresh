@@ -4,7 +4,6 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.common.util.time.SystemTime;
 import de.metas.frontend_testing.expectations.request.JsonHUExpectation;
 import de.metas.frontend_testing.expectations.request.QtyAndUOMString;
 import de.metas.frontend_testing.masterdata.Identifier;
@@ -20,24 +19,17 @@ import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
 import de.metas.util.GuavaCollectors;
-import de.metas.util.NumberUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.mm.attributes.AttributeValueType;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_InOut;
-import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
-import java.math.BigDecimal;
 import java.time.Duration;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -189,7 +181,7 @@ class AssertHUExpectationsCommand
 
 		if (expectation.getAttributes() != null)
 		{
-			assertAttributes(expectation.getAttributes(), huId);
+			HUAttributeAssertions.assertAttributes(services, expectation.getAttributes(), huId);
 		}
 
 		if (expectation.getTus() != null)
@@ -293,95 +285,6 @@ class AssertHUExpectationsCommand
 		return services.getHuIdByQRCode(HUQRCode.fromGlobalQRCodeJsonString(matcherStr));
 	}
 
-	private void assertAttributes(@NonNull final Map<String, String> expectations, @NonNull final HuId huId)
-	{
-		if (expectations.isEmpty())
-		{
-			return;
-		}
-
-		final I_M_HU hu = services.getHUById(huId);
-		assertAttributes(expectations, hu);
-	}
-
-	private void assertAttributes(@NonNull final Map<String, String> expectations, @NonNull final I_M_HU hu)
-	{
-		if (expectations.isEmpty())
-		{
-			return;
-		}
-
-		final ImmutableAttributeSet actualAttributes = services.getAttributes(hu);
-
-		softly(() -> {
-			softlyPutContext("expectedAttributes", expectations);
-			softlyPutContext("actualAttributes", actualAttributes);
-
-			expectations.forEach((attributeCodeStr, expectedValueStr) -> {
-				final AttributeCode attributeCode = AttributeCode.ofString(attributeCodeStr);
-				softlyPutContext("attributeCode", attributeCode);
-
-				if (actualAttributes.hasAttribute(attributeCode))
-				{
-					final AttributeValueType type = actualAttributes.getAttributeValueType(attributeCode);
-					switch (type)
-					{
-						case STRING:
-						case LIST:
-							assertAttributeValue_String(expectedValueStr, actualAttributes, attributeCode);
-							break;
-						case NUMBER:
-							assertAttributeValue_Number(expectedValueStr, actualAttributes, attributeCode);
-							break;
-						case DATE:
-							assertAttributeValue_Date(expectedValueStr, actualAttributes, attributeCode);
-							break;
-						default:
-							fail("Unknown attribute value type: " + type);
-					}
-				}
-				else if (expectedValueStr != null)
-				{
-					fail("Expected missing attribute " + attributeCode + " to be <" + expectedValueStr + ">");
-				}
-			});
-		});
-	}
-
-	private void assertAttributeValue_String(final String expectedValueStr, final ImmutableAttributeSet actualAttributes, final AttributeCode attributeCode)
-	{
-		final String actualValueStr = actualAttributes.getValueAsString(attributeCode);
-		assertThat(actualValueStr).as("String attribute " + attributeCode).isEqualTo(expectedValueStr);
-	}
-
-	private void assertAttributeValue_Number(final String expectedValueStr, final ImmutableAttributeSet actualAttributes, final AttributeCode attributeCode)
-	{
-		final BigDecimal actualValue = actualAttributes.getValueAsBigDecimal(attributeCode);
-		final BigDecimal expectedValue = NumberUtils.asBigDecimal(expectedValueStr);
-		assertThat(actualValue).as("Number attribute " + attributeCode).isEqualTo(expectedValue);
-	}
-
-	private void assertAttributeValue_Date(final String expectedValueStr, final ImmutableAttributeSet actualAttributes, final AttributeCode attributeCode)
-	{
-		final LocalDate actualValue = actualAttributes.getValueAsLocalDate(attributeCode);
-
-		final LocalDate expectedValue;
-		if (expectedValueStr == null || expectedValueStr.trim().equals("-"))
-		{
-			expectedValue = null;
-		}
-		else if (expectedValueStr.equalsIgnoreCase("today"))
-		{
-			expectedValue = SystemTime.asLocalDate();
-		}
-		else
-		{
-			expectedValue = TimeUtil.asLocalDate(expectedValueStr);
-		}
-
-		assertThat(actualValue).as("Date attribute " + attributeCode).isEqualTo(expectedValue);
-	}
-
 	private void assertTUs(@NonNull final List<JsonHUExpectation> expectations, @NonNull final HuId luId)
 	{
 		final ArrayList<I_M_HU> tus = new ArrayList<>(services.getIncludedHUs(luId));
@@ -448,7 +351,7 @@ class AssertHUExpectationsCommand
 
 		if (expectation.getAttributes() != null)
 		{
-			assertAttributes(expectation.getAttributes(), cu);
+			HUAttributeAssertions.assertAttributes(services, expectation.getAttributes(), cu);
 		}
 	}
 

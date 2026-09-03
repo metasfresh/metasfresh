@@ -660,19 +660,29 @@ public class ManufacturingJobService
 		Quantity qtyLeftToBeIssued = line.getQtyLeftToIssue().toZeroIfNegative();
 		final ImmutableList.Builder<RawMaterialsIssueStep> updatedStepsListBuilder = ImmutableList.builder();
 
+		final ProductId productId = line.getProductId();
+
 		for (final RawMaterialsIssueStep step : line.getSteps())
 		{
+			// A step consuming a whole HU is denominated in that HU's stocking UOM, which the line's
+			// remaining quantity is not, so the comparison below has to convert before it can compare.
+			final Quantity stepQtyToIssue = step.getQtyToIssue();
+			final Quantity stepQtyToIssueInLineUom = uomConversionBL.convertQuantityTo(stepQtyToIssue, productId, qtyLeftToBeIssued.getUomId());
+
 			if (step.isIssued())
 			{
 				updatedStepsListBuilder.add(step);
 			}
-			else if (qtyLeftToBeIssued.isGreaterThan(step.getQtyToIssue()))
+			else if (qtyLeftToBeIssued.isGreaterThan(stepQtyToIssueInLineUom))
 			{
 				updatedStepsListBuilder.add(step);
-				qtyLeftToBeIssued = qtyLeftToBeIssued.subtract(step.getQtyToIssue());
+				qtyLeftToBeIssued = qtyLeftToBeIssued.subtract(stepQtyToIssueInLineUom);
 			}
 			else
 			{
+				// What is left no longer covers this HU, so the step stops being a whole-HU consume and
+				// becomes a partial issue. It therefore takes the line's UOM: a partial issue reduces the
+				// HU's quantity and weight and leaves it standing, where consuming it whole destroys it.
 				ppOrderIssueScheduleService.updateQtyToIssue(step.getId(), qtyLeftToBeIssued);
 				updatedStepsListBuilder.add(step.withQtyToIssue(qtyLeftToBeIssued));
 				qtyLeftToBeIssued = qtyLeftToBeIssued.toZero();
