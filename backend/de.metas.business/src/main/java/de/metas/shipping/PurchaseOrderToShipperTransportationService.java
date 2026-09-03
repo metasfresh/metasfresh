@@ -84,6 +84,9 @@ public class PurchaseOrderToShipperTransportationService
 	@VisibleForTesting
 	static final AdMessageKey MSG_NoLUPackingConfigForOrderLines = AdMessageKey.of("NoLUPackingConfigForOrderLines");
 
+	@VisibleForTesting
+	static final AdMessageKey MSG_WrongTransportDirectionForPurchaseOrder = AdMessageKey.of("WrongTransportDirectionForPurchaseOrder");
+
 	/**
 	 * Order in which assigned purchase orders are processed, so the "first order" that seeds the transport order's default dates is
 	 * deterministic: earliest {@code PreparationDate} (the departure date the header's ETD is seeded from) first, ties broken by
@@ -205,6 +208,8 @@ public class PurchaseOrderToShipperTransportationService
 
 	private void addPurchaseOrderLines(final @NonNull I_M_ShipperTransportation shipperTransportation, final @NonNull I_C_Order order, @NonNull final List<I_C_OrderLine> orderLines)
 	{
+		assertTransportOrderAcceptsPurchaseDocument(shipperTransportation, order);
+
 		final ShipperTransportationId shipperTransportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
 		// Detect BEFORE any package is created whether this is the very first purchase order assigned to the transport order.
 		final boolean isFirstOrderOnTransportation = shipperTransportationDAO.retrieveOrderIds(shipperTransportationId).isEmpty();
@@ -277,6 +282,22 @@ public class PurchaseOrderToShipperTransportationService
 		if (isFirstOrderOnTransportation && addedCount > 0)
 		{
 			applyDefaultDatesFromFirstOrder(shipperTransportation, order);
+		}
+	}
+
+	/**
+	 * A purchase order/line is a RECEIPT-side document: it may only join a transport order whose direction has a
+	 * receipt leg, i.e. {@link TransportDirection#hasReceipt()} (Incoming or Dropship). Blocks the state where an
+	 * Outgoing-only (pure sales/shipment) transport order silently ends up carrying purchase shipping packages
+	 * with no receipt ever able to link to it.
+	 */
+	private void assertTransportOrderAcceptsPurchaseDocument(@NonNull final I_M_ShipperTransportation shipperTransportation, @NonNull final I_C_Order order)
+	{
+		final TransportDirection direction = TransportDirection.ofCode(shipperTransportation.getTransportDirection());
+		if (!direction.hasReceipt())
+		{
+			throw new AdempiereException(MSG_WrongTransportDirectionForPurchaseOrder, order.getDocumentNo(), shipperTransportation.getDocumentNo())
+					.markAsUserValidationError();
 		}
 	}
 

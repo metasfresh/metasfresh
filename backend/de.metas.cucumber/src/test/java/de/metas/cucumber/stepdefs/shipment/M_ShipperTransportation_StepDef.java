@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.shipment;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
@@ -29,6 +30,7 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Package_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.deliveryplanning.DeliveryPlanningRejectionHelper;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.pickingterminal.M_ShippingPackage_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
@@ -99,6 +101,7 @@ public class M_ShipperTransportation_StepDef
 	@NonNull private final IShipperTransportationBL shipperTransportationBL = Services.get(IShipperTransportationBL.class);
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	@NonNull private final PurchaseOrderToShipperTransportationService purchaseOrderToShipperTransportationService = SpringContextHolder.instance.getBean(PurchaseOrderToShipperTransportationService.class);
+	@NonNull private final DeliveryPlanningRejectionHelper rejectionHelper;
 
 
 	@And("validate M_ShipperTransportation:")
@@ -328,6 +331,38 @@ public class M_ShipperTransportation_StepDef
 				.getM_ShipperTransportation_ID());
 
 		purchaseOrderToShipperTransportationService.addPurchaseOrderToShipperTransportation(orderId, shipperTransportationId);
+	}
+
+	/**
+	 * Same call as {@link #addOrderToShipperTransportation(String, String)}, but asserts the add is REFUSED —
+	 * used for the direction guard in {@link PurchaseOrderToShipperTransportationService}: a purchase order is a
+	 * receipt-side document and must not join a transport order whose direction has no receipt leg (Outgoing-only).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>ErrorAdMessage</b> — (optional) the {@code AD_Message} the add is expected to be rejected with<br>
+	 * @cucumber.example
+	 * <pre>
+	 * And C_Order_AddTo_M_ShipperTransportation is invoked for order order_PO and transportation order outgoingTransportOrder, and is refused:
+	 *   | ErrorAdMessage                              |
+	 *   | WrongTransportDirectionForPurchaseOrder      |
+	 * </pre>
+	 */
+	@And("^C_Order_AddTo_M_ShipperTransportation is invoked for order (.*) and transportation order (.*), and is refused:$")
+	public void addOrderToShipperTransportation_refused(
+			@NonNull final String orderIdentifier,
+			@NonNull final String transportationOrderIdentifier,
+			@NonNull final DataTable dataTable)
+	{
+		final OrderId orderId = OrderId.ofRepoId(orderTable.get(orderIdentifier)
+				.getC_Order_ID());
+		final ShipperTransportationId shipperTransportationId = ShipperTransportationId.ofRepoId(deliveryInstructionTable.get(transportationOrderIdentifier)
+				.getM_ShipperTransportation_ID());
+
+		rejectionHelper.runExpectingRejectionIfAny(
+				DataTableRows.of(dataTable).singleRow(),
+				ImmutableSet.of(),
+				() -> purchaseOrderToShipperTransportationService.addPurchaseOrderToShipperTransportation(orderId, shipperTransportationId));
 	}
 
 
