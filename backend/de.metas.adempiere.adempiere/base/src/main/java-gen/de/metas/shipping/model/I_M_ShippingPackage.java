@@ -22,7 +22,7 @@ public interface I_M_ShippingPackage
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
-	 * <br>Virtual Column: true (lazy loading)
+	 * <br>Virtual Column: true
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
@@ -33,10 +33,8 @@ public interface I_M_ShippingPackage
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 * <br>Virtual Column: true
 	 */
-	@Deprecated
 	BigDecimal getActualDischargeQuantity();
 
 	ModelColumn<I_M_ShippingPackage, Object> COLUMN_ActualDischargeQuantity = new ModelColumn<>(I_M_ShippingPackage.class, "ActualDischargeQuantity", null);
@@ -47,7 +45,7 @@ public interface I_M_ShippingPackage
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
-	 * <br>Virtual Column: true (lazy loading)
+	 * <br>Virtual Column: true
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
@@ -58,10 +56,8 @@ public interface I_M_ShippingPackage
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 * <br>Virtual Column: true
 	 */
-	@Deprecated
 	BigDecimal getActualLoadQty();
 
 	ModelColumn<I_M_ShippingPackage, Object> COLUMN_ActualLoadQty = new ModelColumn<>(I_M_ShippingPackage.class, "ActualLoadQty", null);
@@ -521,7 +517,7 @@ public interface I_M_ShippingPackage
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
+	 * <br>Virtual Column: true
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
@@ -532,10 +528,8 @@ public interface I_M_ShippingPackage
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 * <br>Virtual Column: true
 	 */
-	@Deprecated
 	BigDecimal getPlannedDischargeQuantity();
 
 	ModelColumn<I_M_ShippingPackage, Object> COLUMN_PlannedDischargeQuantity = new ModelColumn<>(I_M_ShippingPackage.class, "PlannedDischargeQuantity", null);
@@ -546,7 +540,7 @@ public interface I_M_ShippingPackage
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
+	 * <br>Virtual Column: true
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
@@ -557,10 +551,8 @@ public interface I_M_ShippingPackage
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 * <br>Virtual Column: true
 	 */
-	@Deprecated
 	BigDecimal getPlannedLoadedQuantity();
 
 	ModelColumn<I_M_ShippingPackage, Object> COLUMN_PlannedLoadedQuantity = new ModelColumn<>(I_M_ShippingPackage.class, "PlannedLoadedQuantity", null);
