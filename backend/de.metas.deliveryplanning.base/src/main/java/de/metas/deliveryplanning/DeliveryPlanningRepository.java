@@ -32,6 +32,8 @@ import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import de.metas.incoterms.IncotermsId;
+import de.metas.inout.IInOutBL;
+import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ReceiptScheduleId;
@@ -49,6 +51,8 @@ import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.model.ShippingPackageId;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.ColorId;
@@ -65,8 +69,10 @@ import org.adempiere.ad.dao.ISqlQueryUpdater;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Delivery_Planning;
 import org.compiere.model.I_M_Delivery_Planning_Alloc;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.X_M_Delivery_Planning;
@@ -107,6 +113,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class DeliveryPlanningRepository
 {
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	/** Task Q11: resolving the booked quantity a completed receipt or shipment writes onto the planning. */
+	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	@NonNull private final IInOutBL inOutBL = Services.get(IInOutBL.class);
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	private final DimensionService dimensionService;
 
@@ -301,6 +313,120 @@ public class DeliveryPlanningRepository
 		updater.accept(shipmentInfo);
 		updateRecordFromShipmentInfo(record, shipmentInfo);
 		InterfaceWrapperHelper.save(record);
+	}
+
+	/**
+	 * Task Q11: writes the actual quantity onto the end(s) THIS receipt or shipment occupies (the plan's
+	 * write-by-the-END table), and marks the planning {@code Processed} - it is now delivered.
+	 * <p>
+	 * A shipment is the only document a strictly {@link TransportDirection#Outgoing} planning ever gets, so
+	 * nobody else ever reports the customer's unload: completion books the SAME booked quantity onto BOTH
+	 * ends (the "arrives as shipped unless told otherwise" assumption) - {@link #hasOwnShipment} is exactly
+	 * that condition. A Dropship shipment writes only its own end (discharge): the paired receipt already
+	 * reports the real load. A receipt writes only its own end, which the direction table INVERTS for
+	 * Dropship versus Incoming: an Incoming receipt occupies discharge, a Dropship receipt occupies load -
+	 * "receipt writes discharge, shipment writes load" is wrong for the shared dropship case, which is why
+	 * this branches on the concrete direction rather than on {@code isReceipt} alone.
+	 *
+	 * @param isReceipt {@code true} for a receipt (a purchase-side {@code M_InOut}), {@code false} for a shipment
+	 */
+	public void recordActualQtyOnComplete(
+			@NonNull final DeliveryPlanningId deliveryPlanningId,
+			final boolean isReceipt,
+			@NonNull final I_M_InOut inout)
+	{
+		final I_M_Delivery_Planning record = getById(deliveryPlanningId);
+		final TransportDirection direction = extractTransportDirection(record);
+		final BigDecimal bookedQty = resolveBookedQty(inout, record).toBigDecimal();
+
+		if (isReceipt)
+		{
+			if (direction.isDropship())
+			{
+				record.setActualLoadQty(bookedQty);
+			}
+			else
+			{
+				record.setActualDischargeQuantity(bookedQty);
+			}
+		}
+		else if (hasOwnShipment(direction))
+		{
+			record.setActualLoadQty(bookedQty);
+			record.setActualDischargeQuantity(bookedQty);
+		}
+		else // Dropship shipment
+		{
+			record.setActualDischargeQuantity(bookedQty);
+		}
+
+		if (!record.isProcessed())
+		{
+			record.setProcessed(true);
+		}
+
+		save(record);
+	}
+
+	/**
+	 * The reversal mirror of {@link #recordActualQtyOnComplete}: clears every end completion wrote back to
+	 * empty, and clears {@code Processed} unless the planning is closed - the mirror of ReOpen's rule
+	 * (Task Q10), so the invariant {@code Processed == (IsClosed || IsDelivered)} keeps holding here too.
+	 * Without this, a reversed receipt/shipment would leave the planning permanently {@code Processed} with
+	 * no route back except Close-then-ReOpen.
+	 *
+	 * @param isReceipt {@code true} for a receipt, {@code false} for a shipment - same meaning as {@link
+	 * 		#recordActualQtyOnComplete}
+	 */
+	public void clearActualQtyOnReverse(@NonNull final DeliveryPlanningId deliveryPlanningId, final boolean isReceipt)
+	{
+		final I_M_Delivery_Planning record = getById(deliveryPlanningId);
+		final TransportDirection direction = extractTransportDirection(record);
+
+		if (isReceipt)
+		{
+			if (direction.isDropship())
+			{
+				record.setActualLoadQty(BigDecimal.ZERO);
+			}
+			else
+			{
+				record.setActualDischargeQuantity(BigDecimal.ZERO);
+			}
+		}
+		else if (hasOwnShipment(direction))
+		{
+			record.setActualLoadQty(BigDecimal.ZERO);
+			record.setActualDischargeQuantity(BigDecimal.ZERO);
+		}
+		else // Dropship shipment
+		{
+			record.setActualDischargeQuantity(BigDecimal.ZERO);
+		}
+
+		if (!record.isClosed())
+		{
+			record.setProcessed(false);
+		}
+
+		save(record);
+	}
+
+	/**
+	 * The receipt-or-shipment's own product line(s), summed into the planning's UOM - what {@link
+	 * #recordActualQtyOnComplete} writes onto the end(s) it occupies. {@link IInOutBL#getMovementQty} (not
+	 * the raw column) keeps a return's negated sign.
+	 */
+	private Quantity resolveBookedQty(@NonNull final I_M_InOut inout, @NonNull final I_M_Delivery_Planning planningRecord)
+	{
+		final ProductId productId = ProductId.ofRepoId(planningRecord.getM_Product_ID());
+		final I_C_UOM uom = uomDAO.getById(planningRecord.getC_UOM_ID());
+
+		return inOutDAO.retrieveLines(inout).stream()
+				.filter(line -> line.getM_Product_ID() == productId.getRepoId())
+				.map(inOutBL::getMovementQty)
+				.map(qty -> uomConversionBL.convertQuantityTo(qty, productId, uom))
+				.reduce(Quantity.zero(uom), Quantity::add);
 	}
 
 	public <T> T getShipmentOrReceiptInfo(

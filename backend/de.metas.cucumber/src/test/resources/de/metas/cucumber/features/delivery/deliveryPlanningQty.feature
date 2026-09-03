@@ -883,9 +883,12 @@ Feature: Delivery planning quantities
     # now delivered - close it, which always sets Processed regardless of delivered state
     And M_Delivery_Planning identified by deliveryPlanningQ10Deld is closed
 
+    # QtyTotalOpen is 0, not the pre-Task-Q11 10: completion now writes ActualDischargeQuantity from the
+    # booked quantity (Task Q11), and Task Q8 already nets QtyTotalOpen live against it - fully received,
+    # so nothing is left open.
     Then validate M_Delivery_Planning:
       | M_Delivery_Planning_ID  | QtyOrdered | QtyTotalOpen | TransportDirection | IsClosed | Processed |
-      | deliveryPlanningQ10Deld | 10         | 10           | Incoming            | true     | true      |
+      | deliveryPlanningQ10Deld | 10         | 0            | Incoming            | true     | true      |
 
     When M_Delivery_Planning identified by deliveryPlanningQ10Deld is opened
 
@@ -894,7 +897,7 @@ Feature: Delivery planning quantities
     # unconditionally, which would wrongly unlock a delivered planning.
     Then validate M_Delivery_Planning:
       | M_Delivery_Planning_ID  | QtyOrdered | QtyTotalOpen | TransportDirection | IsClosed | Processed |
-      | deliveryPlanningQ10Deld | 10         | 10           | Incoming            | false    | true      |
+      | deliveryPlanningQ10Deld | 10         | 0            | Incoming            | false    | true      |
 
   @Id:S31789_TC_Q10_UndeliveredClearsProcessed
   Scenario: Reopening a closed, UNDELIVERED planning clears Processed
@@ -925,3 +928,221 @@ Feature: Delivery planning quantities
     Then validate M_Delivery_Planning:
       | M_Delivery_Planning_ID    | QtyOrdered | QtyTotalOpen | TransportDirection | IsClosed | Processed |
       | deliveryPlanningQ10Undeld | 10         | 10           | Outgoing            | false    | false     |
+
+  @Id:S31789_TC_Q11_ReversalUnlocksAndRebooks
+  Scenario: Reversing a receipt clears the discharge actual and unlocks the planning - which can then book again
+
+    Given metasfresh contains M_PricingSystems
+      | Identifier        | OPT.IsActive |
+      | pricingSystemQ11R | true         |
+    And metasfresh contains M_PriceLists
+      | Identifier     | M_PricingSystem_ID.Identifier | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
+      | priceList_Q11R | pricingSystemQ11R              | DE                    | EUR                 | false |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier            | M_PriceList_ID.Identifier |
+      | priceListVersion_Q11R | priceList_Q11R             |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | priceListVersion_Q11R             | product                 | 5.0      | PCE               | Normal                        |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier         | IsVendor | IsCustomer | M_PricingSystem_ID.Identifier |
+      | vendorQ11R          | Y        | N          | pricingSystemQ11R              |
+      | warehouseBPQ11R     |          |            |                                |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier            | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipToDefault |
+      | vendorLocationQ11R    | 1234564396495 | vendorQ11R                | true                | true                |
+      | warehouseLocationQ11R | 1203522892495 | warehouseBPQ11R           | true                | true                |
+    And metasfresh contains C_BPartner_Products:
+      | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
+      | vendorQ11R                | product                 |
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID.Identifier | Value               | Name                | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
+      | warehouseQ11R              | warehouseValueQ11R  | warehouseNameQ11R   | warehouseBPQ11R               | warehouseLocationQ11R                  |
+    And metasfresh contains M_Locator:
+      | M_Locator_ID.Identifier | Value             | M_Warehouse_ID.Identifier |
+      | locatorQ11R              | locatorValueQ11R  | warehouseQ11R              |
+    And metasfresh contains C_Orders:
+      | Identifier    | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType |
+      | orderQ11R      | false   | vendorQ11R                | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocationQ11R                     | warehouseQ11R                  | POO             |
+    And metasfresh contains C_OrderLines:
+      | Identifier    | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineQ11R | orderQ11R              | product                 | 10         | shipper_DHL                 |
+
+    When the order identified by orderQ11R is completed
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID | C_OrderLine_ID |
+      | deliveryPlanningQ11R   | orderLineQ11R  |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | ActualDischargeQuantity | IsClosed | Processed |
+      | deliveryPlanningQ11R   | 10         | 10           | Incoming            | 10                    | 10            | 0                       | false    | false     |
+
+    # First booking - a real receipt, stamped and completed, the shape the production generate-receipt
+    # process creates (same as Task Q10's pattern).
+    And metasfresh contains M_InOut:
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | IsSOTrx | DeliveryRule | DeliveryViaRule | FreightCostRule | M_Warehouse_ID.Identifier | MovementDate | MovementType | PriorityRule | OPT.DocBaseType | OPT.DocSubType |
+      | receiptQ11R_1          | vendorQ11R                | vendorLocationQ11R                  | false   | F            | S               | I               | warehouseQ11R               | 2023-02-05   | V+           | 5            | MMR             | MR             |
+    And update M_InOut:
+      | M_InOut_ID.Identifier | M_Delivery_Planning_ID.Identifier |
+      | receiptQ11R_1          | deliveryPlanningQ11R               |
+    And metasfresh contains M_InOutLine
+      | M_InOut_ID.Identifier | QtyEntered | MovementQty | UomCode | OPT.M_Product_ID.Identifier | OPT.M_Locator_ID.Identifier |
+      | receiptQ11R_1          | 10         | 10          | PCE     | product                      | locatorQ11R                  |
+
+    When the material receipt identified by receiptQ11R_1 is completed
+
+    # Completion: the discharge end is written from the booked quantity, and the planning is now Processed -
+    # the invariant Processed == (IsClosed || IsDelivered) holds via IsDelivered (M_InOut_ID is set).
+    # ActualLoadQty is untouched (still 10, Task Q7c's mirror of the plan) - that end is never ours to write.
+    Then validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | ActualDischargeQuantity | IsClosed | Processed |
+      | deliveryPlanningQ11R   | 10         | 0            | Incoming            | 10                    | 10            | 10                      | false    | true      |
+
+    When the material receipt identified by receiptQ11R_1 is reversed
+
+    # Reversal: the discharge actual clears back to empty and Processed clears too - the planning is
+    # NOT closed, so the mirror of ReOpen's rule unlocks it (Task Q10's invariant, asserted at this site).
+    # Without this, the planning would be permanently stuck Processed with no route back except
+    # Close-then-ReOpen (the defect this task exists to prevent).
+    Then validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | ActualDischargeQuantity | IsClosed | Processed |
+      | deliveryPlanningQ11R   | 10         | 10           | Incoming            | 10                    | 10            | 0                       | false    | false     |
+
+    # Rebooking: the planning was unlocked by the reversal above, so a second receipt against the SAME
+    # planning books again - proving the reversal did not leave it permanently stuck.
+    And metasfresh contains M_InOut:
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | IsSOTrx | DeliveryRule | DeliveryViaRule | FreightCostRule | M_Warehouse_ID.Identifier | MovementDate | MovementType | PriorityRule | OPT.DocBaseType | OPT.DocSubType |
+      | receiptQ11R_2          | vendorQ11R                | vendorLocationQ11R                  | false   | F            | S               | I               | warehouseQ11R               | 2023-02-06   | V+           | 5            | MMR             | MR             |
+    And update M_InOut:
+      | M_InOut_ID.Identifier | M_Delivery_Planning_ID.Identifier |
+      | receiptQ11R_2          | deliveryPlanningQ11R               |
+    And metasfresh contains M_InOutLine
+      | M_InOut_ID.Identifier | QtyEntered | MovementQty | UomCode | OPT.M_Product_ID.Identifier | OPT.M_Locator_ID.Identifier |
+      | receiptQ11R_2          | 6          | 6           | PCE     | product                      | locatorQ11R                  |
+
+    When the material receipt identified by receiptQ11R_2 is completed
+
+    Then validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | ActualDischargeQuantity | IsClosed | Processed |
+      | deliveryPlanningQ11R   | 10         | 4            | Incoming            | 10                    | 10            | 6                       | false    | true      |
+
+  @Id:S31789_TC_Q11_OutgoingCompletionWritesBothEnds
+  Scenario: Completing a shipment writes the booked quantity onto BOTH ends, and reversing it clears both
+
+    Given metasfresh contains C_Orders:
+      | Identifier   | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier |
+      | orderQ11Out  | true    | customer                 | 2023-02-03  | 2023-02-25T00:00:00Z | customerLocation                      |
+    And metasfresh contains C_OrderLines:
+      | Identifier      | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineQ11Out | orderQ11Out            | product                 | 10         | shipper_DHL                 |
+
+    When the order identified by orderQ11Out is completed
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID | C_OrderLine_ID  |
+      | deliveryPlanningQ11Out | orderLineQ11Out |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | ActualDischargeQuantity | IsClosed | Processed |
+      | deliveryPlanningQ11Out | 10         | 10           | Outgoing            | 10                    | 0             | 0                       | false    | false     |
+
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID.Identifier | Value                 | Name                 |
+      | warehouseQ11Out            | warehouseValueQ11Out | warehouseNameQ11Out |
+    And metasfresh contains M_Locator:
+      | M_Locator_ID.Identifier | Value               | M_Warehouse_ID.Identifier |
+      | locatorQ11Out            | locatorValueQ11Out  | warehouseQ11Out            |
+
+    # A shipment is the only document that ever exists for an Outgoing planning, so - unlike a receipt,
+    # which writes only its own end - completion books the SAME quantity onto both ends: nobody but us
+    # ever reports the customer's unload, so the discharge is written as "arrives as shipped unless told
+    # otherwise". A partial booking (7 of the 10 planned) makes it visible that the ACTUAL, not the
+    # planned figure, is what gets written.
+    And metasfresh contains M_InOut:
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | IsSOTrx | DeliveryRule | DeliveryViaRule | FreightCostRule | M_Warehouse_ID.Identifier | MovementDate | MovementType | PriorityRule | OPT.DocBaseType | OPT.DocSubType |
+      | shipmentQ11Out          | customer                  | customerLocation                   | true    | F            | S               | I               | warehouseQ11Out             | 2023-02-05   | C-           | 5            | MMS             | MS              |
+    And update M_InOut:
+      | M_InOut_ID.Identifier | M_Delivery_Planning_ID.Identifier |
+      | shipmentQ11Out          | deliveryPlanningQ11Out             |
+    And metasfresh contains M_InOutLine
+      | M_InOut_ID.Identifier | QtyEntered | MovementQty | UomCode | OPT.M_Product_ID.Identifier | OPT.M_Locator_ID.Identifier |
+      | shipmentQ11Out          | 7          | 7           | PCE     | product                      | locatorQ11Out                |
+
+    When the shipment identified by shipmentQ11Out is completed
+
+    Then validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | ActualDischargeQuantity | IsClosed | Processed |
+      | deliveryPlanningQ11Out | 10         | 3            | Outgoing            | 10                    | 7             | 7                       | false    | true      |
+
+    When the shipment identified by shipmentQ11Out is reversed
+
+    # Reversal is symmetric: both ends the shipment wrote clear back to empty, and Processed clears -
+    # the planning is not closed, so it is unlocked again.
+    Then validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | ActualDischargeQuantity | IsClosed | Processed |
+      | deliveryPlanningQ11Out | 10         | 10           | Outgoing            | 10                    | 0             | 0                       | false    | false     |
+
+  @Id:S31789_TC_Q11_IncomingCompletionWritesDischargeOnly
+  Scenario: Completing a receipt writes only the discharge end - the load end stays the Task Q7c mirror of the plan
+
+    Given metasfresh contains M_PricingSystems
+      | Identifier        | OPT.IsActive |
+      | pricingSystemQ11I | true         |
+    And metasfresh contains M_PriceLists
+      | Identifier     | M_PricingSystem_ID.Identifier | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
+      | priceList_Q11I | pricingSystemQ11I              | DE                    | EUR                 | false |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier            | M_PriceList_ID.Identifier |
+      | priceListVersion_Q11I | priceList_Q11I             |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | priceListVersion_Q11I             | product                 | 5.0      | PCE               | Normal                        |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier         | IsVendor | IsCustomer | M_PricingSystem_ID.Identifier |
+      | vendorQ11I          | Y        | N          | pricingSystemQ11I              |
+      | warehouseBPQ11I     |          |            |                                |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier            | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipToDefault |
+      | vendorLocationQ11I    | 1234564396497 | vendorQ11I                | true                | true                |
+      | warehouseLocationQ11I | 1203522892497 | warehouseBPQ11I           | true                | true                |
+    And metasfresh contains C_BPartner_Products:
+      | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
+      | vendorQ11I                | product                 |
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID.Identifier | Value               | Name                | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
+      | warehouseQ11I              | warehouseValueQ11I  | warehouseNameQ11I   | warehouseBPQ11I               | warehouseLocationQ11I                  |
+    And metasfresh contains M_Locator:
+      | M_Locator_ID.Identifier | Value             | M_Warehouse_ID.Identifier |
+      | locatorQ11I              | locatorValueQ11I  | warehouseQ11I              |
+    And metasfresh contains C_Orders:
+      | Identifier    | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType |
+      | orderQ11I      | false   | vendorQ11I                | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocationQ11I                     | warehouseQ11I                  | POO             |
+    And metasfresh contains C_OrderLines:
+      | Identifier    | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineQ11I | orderQ11I              | product                 | 9          | shipper_DHL                 |
+
+    When the order identified by orderQ11I is completed
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID | C_OrderLine_ID |
+      | deliveryPlanningQ11I   | orderLineQ11I  |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | ActualDischargeQuantity |
+      | deliveryPlanningQ11I   | 9          | 9            | Incoming            | 9                     | 9             | 0                       |
+
+    And metasfresh contains M_InOut:
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | IsSOTrx | DeliveryRule | DeliveryViaRule | FreightCostRule | M_Warehouse_ID.Identifier | MovementDate | MovementType | PriorityRule | OPT.DocBaseType | OPT.DocSubType |
+      | receiptQ11I            | vendorQ11I                | vendorLocationQ11I                  | false   | F            | S               | I               | warehouseQ11I               | 2023-02-05   | V+           | 5            | MMR             | MR             |
+    And update M_InOut:
+      | M_InOut_ID.Identifier | M_Delivery_Planning_ID.Identifier |
+      | receiptQ11I            | deliveryPlanningQ11I               |
+    And metasfresh contains M_InOutLine
+      | M_InOut_ID.Identifier | QtyEntered | MovementQty | UomCode | OPT.M_Product_ID.Identifier | OPT.M_Locator_ID.Identifier |
+      | receiptQ11I            | 5          | 5           | PCE     | product                      | locatorQ11I                  |
+
+    When the material receipt identified by receiptQ11I is completed
+
+    # Only the discharge end moves to the booked 5 - the load end stays 9, Q7c's mirror of the plan,
+    # never touched by a receipt's completion.
+    Then validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | ActualDischargeQuantity | Processed |
+      | deliveryPlanningQ11I   | 9          | 4            | Incoming            | 9                     | 9             | 5                       | true      |
