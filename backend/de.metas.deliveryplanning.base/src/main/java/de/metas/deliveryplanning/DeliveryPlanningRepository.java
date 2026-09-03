@@ -604,7 +604,13 @@ public class DeliveryPlanningRepository
 		}
 
 		final DeliveryPlanningList plannings = records.stream().map(DeliveryPlanningRepository::toPoolPlanning).collect(DeliveryPlanningList.collect());
-		final DeliveryPlanningList.PoolEnd end = DeliveryPlanningList.PoolEnd.forDirection(extractTransportDirection(records.get(0)));
+		// The pool end depends on the whole line sharing one transport direction (today always true: a line's
+		// plannings are all Incoming/Dropship -> DISCHARGE, or all Outgoing -> LOAD). retrieveForOrderLine has no
+		// ORDER BY, so asserting homogeneity here - rather than reading records.get(0) from an unordered query -
+		// is what actually pins the invariant, not a query-ordering fix.
+		final TransportDirection singleDirection = Check.assumePresent(plannings.getSingleTransportDirection(),
+				"Expected every M_Delivery_Planning of orderLineId={} to share one TransportDirection: {}", orderLineId, plannings);
+		final DeliveryPlanningList.PoolEnd end = DeliveryPlanningList.PoolEnd.forDirection(singleDirection);
 
 		final BigDecimal qtyTotalOpen = plannings.qtyTotalOpen(end).toBigDecimal();
 		final BigDecimal qtyTotalOpenPlanned = plannings.qtyTotalOpenPlanned(end).toBigDecimal();
