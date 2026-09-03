@@ -1,0 +1,91 @@
+-- Delivery planning quantities -- one vocabulary across all four quantity figures (load/discharge x
+-- planned/actual), and retire the two field-level label overrides that made the instruction line
+-- (M_ShippingPackage, M_Delivery_Planning_Delivery_Instructions_V) read differently than the planning.
+--
+-- PlannedDischargeQuantity (581795) and ActualDischargeQuantity (581796) said "delivery" while meaning
+-- "discharge", in a model that is sea-freight shaped (POL_ID/POD_ID). All four elements are also
+-- realigned onto one en_US idiom (Qty/Quantity, Plan/Act -> Planned/Actual). PlannedLoadedQuantity's
+-- (581794) German is unchanged; only its en_US was inconsistent with the others.
+--
+-- AD_Element 581927 ("Geladene Menge") and 581928 ("Entladene Menge") were label-only overrides
+-- (AD_Field.AD_Name_ID) on 4 fields across 2 windows -- the only reason those fields showed different
+-- wording than the planning. The underlying columns (ActualLoadQty/ActualDischargeQuantity) already
+-- carry elements 581690/581796. Retiring the overrides and syncing 581690/581796's own wording is what
+-- unifies the vocabulary.
+
+-- 581690 ActualLoadQty: German corrected, en_US corrected
+UPDATE AD_Element_Trl
+   SET Name='Tatsächliche Verlademenge', IsTranslated='Y',
+       Updated=TO_TIMESTAMP('2026-09-03 10:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+ WHERE AD_Element_ID=581690 AND AD_Language IN ('de_DE','de_CH')
+;
+UPDATE AD_Element_Trl
+   SET Name='Actual Load Quantity', IsTranslated='Y',
+       Updated=TO_TIMESTAMP('2026-09-03 10:00:01','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+ WHERE AD_Element_ID=581690 AND AD_Language='en_US'
+;
+
+-- 581794 PlannedLoadedQuantity: German already correct (unchanged) -- only en_US is realigned
+UPDATE AD_Element_Trl
+   SET Name='Planned Load Quantity', IsTranslated='Y',
+       Updated=TO_TIMESTAMP('2026-09-03 10:00:02','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+ WHERE AD_Element_ID=581794 AND AD_Language='en_US'
+;
+
+-- 581795 PlannedDischargeQuantity: German corrected ("Liefermenge" -> "Entlademenge"), en_US corrected
+UPDATE AD_Element_Trl
+   SET Name='Geplante Entlademenge', IsTranslated='Y',
+       Updated=TO_TIMESTAMP('2026-09-03 10:00:03','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+ WHERE AD_Element_ID=581795 AND AD_Language IN ('de_DE','de_CH')
+;
+UPDATE AD_Element_Trl
+   SET Name='Planned Discharge Quantity', IsTranslated='Y',
+       Updated=TO_TIMESTAMP('2026-09-03 10:00:04','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+ WHERE AD_Element_ID=581795 AND AD_Language='en_US'
+;
+
+-- 581796 ActualDischargeQuantity: German corrected ("geliefert" -> "Entlademenge"), en_US corrected
+UPDATE AD_Element_Trl
+   SET Name='Tatsächliche Entlademenge', IsTranslated='Y',
+       Updated=TO_TIMESTAMP('2026-09-03 10:00:05','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+ WHERE AD_Element_ID=581796 AND AD_Language IN ('de_DE','de_CH')
+;
+UPDATE AD_Element_Trl
+   SET Name='Actual Discharge Quantity', IsTranslated='Y',
+       Updated=TO_TIMESTAMP('2026-09-03 10:00:06','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+ WHERE AD_Element_ID=581796 AND AD_Language='en_US'
+;
+
+-- Retire the per-field label overrides on all 4 fields that carried AD_Name_ID 581927/581928
+-- (2 on window "Lieferanweisungen" tab "Versandpaket", 2 on window "Lieferplanung" tab
+-- "Lieferanweisungen für die Lieferplanung"). Once AD_Name_ID is NULL, the field's Name/Description/Help
+-- come from its own column's AD_Element (581690 / 581796) like every other field on these columns.
+UPDATE AD_Field
+   SET AD_Name_ID=NULL,
+       Updated=TO_TIMESTAMP('2026-09-03 10:00:07','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+ WHERE AD_Field_ID IN (710204, 710205, 710219, 710220)
+;
+
+-- Rebuild the AD_Element_Link rows for those 4 fields so the impact-analysis index no longer points
+-- at the retired override elements.
+DELETE FROM AD_Element_Link WHERE AD_Field_ID IN (710204, 710205, 710219, 710220);
+SELECT AD_Element_Link_Create_Missing_Field(710204);
+SELECT AD_Element_Link_Create_Missing_Field(710205);
+SELECT AD_Element_Link_Create_Missing_Field(710219);
+SELECT AD_Element_Link_Create_Missing_Field(710220);
+
+-- Propagate the corrected element text down to AD_Element (base), AD_Column_Trl and AD_Field_Trl.
+-- Runs after the AD_Name_ID cleanup above so the 4 previously-overridden fields now sync via their
+-- column's element (the "via AD_Column" path requires AD_Field.AD_Name_ID IS NULL).
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(581690);
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(581794);
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(581795);
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(581796);
+
+-- Deactivate the two orphaned override elements -- no AD_Column and, after the cleanup above, no
+-- active AD_Field references either one any more.
+UPDATE AD_Element
+   SET IsActive='N',
+       Updated=TO_TIMESTAMP('2026-09-03 10:00:08','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+ WHERE AD_Element_ID IN (581927, 581928)
+;
