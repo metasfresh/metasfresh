@@ -1212,6 +1212,89 @@ Feature: Delivery planning quantities
       | M_Delivery_Planning_ID     | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | ActualDischargeQuantity | IsClosed | Processed | M_InOut_ID |
       | deliveryPlanningQ11C_Other | 12         | 12           | Outgoing            | 12                    | 0             | 0                       | false    | false     | null       |
 
+  @Id:S31789_TC_Q11_SplitSiblingsBookOnlyTheirOwnShare
+  Scenario: Two plannings SPLIT from one order line each book only their own share, never the line's whole quantity
+
+    # resolveBookedQty scopes a completing document's lines by C_OrderLine_ID, and a shipment schedule is 1:1
+    # with its ORDER LINE - not with the planning. Two plannings split from one order line therefore share
+    # both the schedule and the order line, and nothing on a shipment line tells them apart at
+    # TIMING_AFTER_COMPLETE. What keeps the attribution right is that each generate run COMPLETES its own
+    # document before it returns, and consolidation only ever joins a line onto a header that is still
+    # drafted - so a sibling's document is never a consolidation target for the next sibling's.
+    #
+    # This scenario is that assumption's guard. Both siblings ship 5 of the same order line's 10, on the SAME
+    # delivery date and the same customer / location / warehouse - i.e. into the very consolidation window
+    # that would merge them if the first shipment were left open. Each must book 5, never 10.
+    #
+    # DeliveryRule=Force, so what gets shipped is decided by the process quantity rather than by warehouse
+    # availability - the subject here is which LINES a completion books. Their own warehouse keeps these
+    # shipments out of any other scenario's consolidation window.
+    Given metasfresh contains M_Products:
+      | Identifier  | Name        |
+      | productQ11S | ProductQ11S |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | priceListVersion_SO               | productQ11S             | 10.0     | PCE               | Normal                        |
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID.Identifier | Value              | Name              |
+      | warehouseQ11S             | warehouseValueQ11S | warehouseNameQ11S |
+    And metasfresh contains M_Locator:
+      | M_Locator_ID.Identifier | Value            | M_Warehouse_ID.Identifier |
+      | locatorQ11S             | locatorValueQ11S | warehouseQ11S             |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DeliveryRule |
+      | orderQ11S  | true    | customer                 | 2023-02-03  | 2023-02-05T00:00:00Z | customerLocation                      | warehouseQ11S                 | F                |
+    And metasfresh contains C_OrderLines:
+      | Identifier    | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineQ11S | orderQ11S             | productQ11S             | 10         | shipper_DHL                 |
+
+    When the order identified by orderQ11S is completed
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID | C_OrderLine_ID |
+      | deliveryPlanningQ11S_1 | orderLineQ11S  |
+
+    # THE split: one order line, one shipment schedule, two plannings of 5 each.
+    When generate 1 additional M_Delivery_Planning records for: deliveryPlanningQ11S_1
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID                        | C_OrderLine_ID |
+      | deliveryPlanningQ11S_1,deliveryPlanningQ11S_2 | orderLineQ11S  |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | ActualDischargeQuantity | IsClosed | Processed | M_InOut_ID |
+      | deliveryPlanningQ11S_1 | 10         | 10           | Outgoing           | 5                     | 0             | 0                       | false    | false     | null       |
+      | deliveryPlanningQ11S_2 | 10         | 10           | Outgoing           | 5                     | 0             | 0                       | false    | false     | null       |
+
+    When the delivery planning identified by deliveryPlanningQ11S_1 generates a shipment:
+      | DeliveryDate | Qty | OPT.M_InOut_ID |
+      | 2023-02-05   | 5   | shipmentQ11S_1 |
+
+    # The first sibling books its own 5. QtyTotalOpen is the ORDER LINE's figure (QtyOrdered minus the actuals
+    # of every planning on it), so both rows drop to 5 - but only the sibling that shipped carries an actual.
+    Then validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | ActualDischargeQuantity | IsClosed | Processed | M_InOut_ID     |
+      | deliveryPlanningQ11S_1 | 10         | 5            | Outgoing           | 5                     | 5             | 5                       | false    | true      | shipmentQ11S_1 |
+      | deliveryPlanningQ11S_2 | 10         | 5            | Outgoing           | 5                     | 0             | 0                       | false    | false     | null           |
+
+    When the delivery planning identified by deliveryPlanningQ11S_2 generates a shipment:
+      | DeliveryDate | Qty | OPT.M_InOut_ID |
+      | 2023-02-05   | 5   | shipmentQ11S_2 |
+
+    # The premise, asserted rather than assumed: the two shipments are SEPARATE documents, each carrying
+    # exactly one line of the shared order line. Had the first been left drafted, the second run would have
+    # consolidated onto it and this step would find two lines of productQ11S on one document.
+    Then validate the created shipment lines
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | C_OrderLine_ID.Identifier | movementqty | processed |
+      | shipmentLineQ11S_1        | shipmentQ11S_1        | orderLineQ11S             | 5           | true      |
+      | shipmentLineQ11S_2        | shipmentQ11S_2        | orderLineQ11S             | 5           | true      |
+
+    # THE assertion: 5 each (each planning's own share), never 10 (the order line). QtyTotalOpen follows:
+    # 10 - (5 + 5) = 0 on both rows.
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | ActualDischargeQuantity | IsClosed | Processed | M_InOut_ID     |
+      | deliveryPlanningQ11S_1 | 10         | 0            | Outgoing           | 5                     | 5             | 5                       | false    | true      | shipmentQ11S_1 |
+      | deliveryPlanningQ11S_2 | 10         | 0            | Outgoing           | 5                     | 5             | 5                       | false    | true      | shipmentQ11S_2 |
+
   @Id:S31789_TC_Q11_IncomingCompletionWritesDischargeOnly
   Scenario: Completing a receipt writes only the discharge end - the load end stays the Task Q7c mirror of the plan
 

@@ -415,18 +415,34 @@ public class DeliveryPlanningRepository
 	 * org / partner / partner-location / warehouse / consolidation period rather than onto a fresh one - see
 	 * {@code InOutProducerFromShipmentScheduleWithHU#getCreateShipmentHeader}. Summing the whole document would
 	 * then book the OTHER schedules' lines onto this planning as its own actual quantity (and drive
-	 * {@code QtyTotalOpen} negative). So the sum is scoped to the lines this planning's own shipment/receipt
-	 * schedule produced.
+	 * {@code QtyTotalOpen} negative). So the sum is scoped, by the attribution and under the assumption spelled
+	 * out below.
 	 * <p>
 	 * <b>Scoped by {@code C_OrderLine_ID}</b>, because that is the only attribution a line carries at the moment
 	 * this runs. Both producers copy their schedule's order line onto every line they create, before the document
-	 * is completed ({@code ShipmentLineBuilder#createShipmentLine}, {@code InOutProducer#updateReceiptLine}),
-	 * and a schedule is 1:1 with its order line - so "the lines of this planning's schedule" and "the lines of
-	 * this planning's order line" are the same set. The schedule-to-line allocation tables
-	 * ({@code M_ShipmentSchedule_QtyPicked.M_InOutLine_ID}, written by {@code ShipmentScheduleWithHU#setM_InOut})
-	 * are NOT usable here: they are written AFTER {@code processEx(ACTION_Complete)}, i.e. after this
-	 * {@code TIMING_AFTER_COMPLETE} handler has already run, so they would still be empty and every planning
-	 * would book zero.
+	 * is completed ({@code ShipmentLineBuilder#createShipmentLine}, {@code InOutProducer#updateReceiptLine}).
+	 * The schedule-to-line allocation tables ({@code M_ShipmentSchedule_QtyPicked.M_InOutLine_ID}, written by
+	 * {@code ShipmentScheduleWithHU#setM_InOut}) are NOT usable here: they are written AFTER
+	 * {@code processEx(ACTION_Complete)}, i.e. after this {@code TIMING_AFTER_COMPLETE} handler has already run,
+	 * so they would still be empty and every planning would book zero.
+	 * <p>
+	 * <b>The guarantee is therefore "this planning's ORDER LINE", not "this planning"</b> - a schedule is 1:1
+	 * with its ORDER LINE, not with the planning, so two plannings SPLIT from one order line share both. What
+	 * makes the order line nevertheless yield this planning's own share is that <b>a delivery-planning document
+	 * carries exactly one line of that order line</b>: each generate run completes its own document before it
+	 * returns ({@code DeliveryPlanningGenerateProcessesHelper#generateShipment} passes
+	 * {@code isCompleteShipment=TRUE} with {@code waitForShipments=true}; {@code generateReceipt} goes through
+	 * {@code processReceiptSchedules}), and consolidation only ever joins a line onto a header that is still
+	 * {@code DocStatus='DR'} ({@code HUShipmentScheduleBL#getOpenShipmentOrNull}) - receipts never consolidate at
+	 * all ({@code InOutProducer#newChunk} always creates a fresh header). So a split sibling's document is never
+	 * a consolidation target for the next sibling's, and the quantity on the one line found here is the
+	 * caller-supplied {@code Qty} of THIS planning's own generate run. Pinned by the cucumber scenario
+	 * {@code S31789_TC_Q11_SplitSiblingsBookOnlyTheirOwnShare}.
+	 * <p>
+	 * Residual, and deliberately not guessed at: a shipment DRAFTED outside delivery planning on the same order
+	 * line, still open when a planning's generate run consolidates onto it, would be summed in here. Nothing on
+	 * a line distinguishes it at this timing (see the allocation tables above), so there is no attribution that
+	 * would separate it; widening the scope back to the whole document would be strictly worse.
 	 * <p>
 	 * A planning without an order line cannot be scoped this way; it also cannot reach a generate process
 	 * ({@code DeliveryPlanningGenerateProcessesHelper#checkEligibleToCreateReceipt}/{@code ...Shipment} reject a
