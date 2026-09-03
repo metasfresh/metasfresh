@@ -14,13 +14,12 @@ UPDATE AD_Process_Para SET IsMandatory='N', Updated=TO_TIMESTAMP('2026-09-03 10:
 -- because no AD_Process_Para meant no way to ever supply a value. Add it as optional, read-only display -
 -- the same shape as QtyAvailableParam - reusing the M_Delivery_Planning.QtyTotalOpen element (581682, "Offene
 -- Menge (geliefert)") rather than minting a duplicate.
--- AD_Process_Para_ID 543297 /*From ID Server*/
 INSERT INTO AD_Process_Para (
     AD_Process_Para_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
     Name, AD_Process_ID, SeqNo, AD_Reference_ID, ColumnName, IsCentrallyMaintained, FieldLength,
     IsMandatory, IsRange, EntityType, IsEncrypted, ShowInactiveValues, AD_Element_ID, ReadOnlyLogic)
 SELECT
-    543297, 0, 0, 'Y',
+    543297 /*From ID Server*/, 0, 0, 'Y',
     TO_TIMESTAMP('2026-09-03 10:01:00','YYYY-MM-DD HH24:MI:SS'), 100,
     TO_TIMESTAMP('2026-09-03 10:01:00','YYYY-MM-DD HH24:MI:SS'), 100,
     e.Name, p.AD_Process_ID, 21, 29 /*Quantity*/, 'QtyTotalOpen', 'Y', 0,

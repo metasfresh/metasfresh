@@ -2,11 +2,11 @@
 -- 5821150_sys_M_Delivery_Planning_Filterability_And_Addresses.sql) into a real, interceptor-maintained
 -- stored column.
 --
--- Why: the lazy-loading virtual column was the right call while the column was display-only (a WebUI
--- filter), but its usage changed - the working-list precondition now loads a selection as an in-memory
--- list and asks this predicate per row, which turns "lazy loading" into one extra query per row. A real
--- column is read straight off the row: no extra query, no expression, and it is invalidated by its own
--- table's cache reset rather than needing AD_SQLColumn_SourceTableColumn wiring.
+-- Why: the lazy-loading virtual column was fine for its original read (a single-row detail lookup), but
+-- the WebUI grid on window 541632 (Lieferplanung, AD_Field 783046) now displays and filters/sorts on this
+-- column across a whole result set - a lazy ColumnSQL forces one extra query per row there. A real column
+-- is read straight off the row: no extra query, no expression, and it is invalidated by its own table's
+-- cache reset rather than needing AD_SQLColumn_SourceTableColumn wiring.
 --
 -- IDs allocated from idserver.metas.de on 2026-09-03:
 --   AD_MigrationScript 5822060 (this file)

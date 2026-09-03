@@ -8,8 +8,9 @@
 -- Runs AFTER 5822230, which drops the two physical columns this converts to ColumnSQL.
 --
 -- Wording: the planned pair reuses the planning's own AD_Elements (581794 "Geplante Verlademenge",
--- 581795 "Geplante Liefermenge") rather than minting new ones or using an AD_Name_ID override - the same
--- element gives identical wording on both tables by construction.
+-- 581795 "Geplante Entlademenge" as of 5822330, later on this branch) rather than minting new ones or
+-- using an AD_Name_ID override - the same element gives identical wording on both tables by
+-- construction.
 --
 -- IsLazyLoading='Y' on all four: display-only on the instruction line, no production Java reads them
 -- (DeliveryPlanningRepository#createShippingPackage no longer writes them either - see the code change

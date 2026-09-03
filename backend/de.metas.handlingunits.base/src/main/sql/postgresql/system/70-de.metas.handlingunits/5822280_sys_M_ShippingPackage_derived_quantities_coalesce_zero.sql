@@ -11,8 +11,9 @@
 -- Verified on the local deep_tundra_uat stack: exactly five such active packages exist today
 -- (1000105, 1000133, 1000161, 1000364, 1000421 - istobefetched='Y', c_orderline_id set, no active alloc),
 -- and the pre-change backup of that table shows every one of them that pre-dates 5822230 carried
--- actualloadqty=0 / actualdischargequantity=0. They render on Transport Auftrag (540020) as well as on
--- Lieferanweisungen (541657).
+-- actualloadqty=0 / actualdischargequantity=0. All four columns have an AD_Field only on
+-- Lieferanweisungen (541657, tab 546736, fields 710204/710205/784915/784916) - Transport Auftrag
+-- (540020) shows other M_ShippingPackage columns, not these.
 --
 -- So: coalesce to 0. It restores exactly what those rows displayed before this task, which keeps a task
 -- about ADDING two planned figures from silently changing what the other two showed on rows it was never

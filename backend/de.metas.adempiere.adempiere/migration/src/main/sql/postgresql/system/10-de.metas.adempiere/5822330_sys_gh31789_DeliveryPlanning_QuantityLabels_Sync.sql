@@ -32,28 +32,50 @@ UPDATE AD_Element_Trl
  WHERE AD_Element_ID=581794 AND AD_Language='en_US'
 ;
 
--- 581795 PlannedDischargeQuantity: German corrected ("Liefermenge" -> "Entlademenge"), en_US corrected
+-- 581795 PlannedDischargeQuantity: German corrected ("Liefermenge" -> "Entlademenge"), en_US corrected.
+-- PrintName moves WITH Name (established convention for these elements - see #14539/9dc11932bd2: every
+-- prior rename of these same quantity elements set Name and PrintName to the identical value together),
+-- so both columns are set here - otherwise PrintName keeps the retired wording on printed
+-- documents/Jasper labels while the screen label is already fixed.
 UPDATE AD_Element_Trl
-   SET Name='Geplante Entlademenge', IsTranslated='Y',
+   SET Name='Geplante Entlademenge', PrintName='Geplante Entlademenge', IsTranslated='Y',
        Updated=TO_TIMESTAMP('2026-09-03 10:00:03','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
  WHERE AD_Element_ID=581795 AND AD_Language IN ('de_DE','de_CH')
 ;
 UPDATE AD_Element_Trl
-   SET Name='Planned Discharge Quantity', IsTranslated='Y',
+   SET Name='Planned Discharge Quantity', PrintName='Planned Discharge Quantity', IsTranslated='Y',
        Updated=TO_TIMESTAMP('2026-09-03 10:00:04','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
  WHERE AD_Element_ID=581795 AND AD_Language='en_US'
 ;
 
--- 581796 ActualDischargeQuantity: German corrected ("geliefert" -> "Entlademenge"), en_US corrected
+-- 581796 ActualDischargeQuantity: German corrected ("geliefert" -> "Entlademenge"), en_US corrected.
+-- Same PrintName-moves-with-Name convention as 581795 above.
 UPDATE AD_Element_Trl
-   SET Name='Tatsächliche Entlademenge', IsTranslated='Y',
+   SET Name='Tatsächliche Entlademenge', PrintName='Tatsächliche Entlademenge', IsTranslated='Y',
        Updated=TO_TIMESTAMP('2026-09-03 10:00:05','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
  WHERE AD_Element_ID=581796 AND AD_Language IN ('de_DE','de_CH')
 ;
 UPDATE AD_Element_Trl
-   SET Name='Actual Discharge Quantity', IsTranslated='Y',
+   SET Name='Actual Discharge Quantity', PrintName='Actual Discharge Quantity', IsTranslated='Y',
        Updated=TO_TIMESTAMP('2026-09-03 10:00:06','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
  WHERE AD_Element_ID=581796 AND AD_Language='en_US'
+;
+
+-- fr_CH per the fr_CH CONVENTION (stated once in
+-- 5820520_sys_M_Delivery_Planning_GenerateDeliveryInstruction_IsComplete.sql): the en_US text,
+-- IsTranslated='N'. Without this, 581795/581796's fr_CH rows would keep the pre-change en_US idiom
+-- ("Plan/Act Delivered Qty") after every other language already moved to Planned/Actual Discharge.
+UPDATE AD_Element_Trl trl
+   SET Name         = en.Name,
+       PrintName    = en.PrintName,
+       IsTranslated = 'N',
+       Updated      = TO_TIMESTAMP('2026-09-03 10:00:07','YYYY-MM-DD HH24:MI:SS'),
+       UpdatedBy    = 100
+  FROM AD_Element_Trl en
+ WHERE en.AD_Element_ID = trl.AD_Element_ID
+   AND en.AD_Language = 'en_US'
+   AND trl.AD_Language = 'fr_CH'
+   AND trl.AD_Element_ID IN (581795, 581796)
 ;
 
 -- Retire the per-field label overrides on all 4 fields that carried AD_Name_ID 581927/581928
@@ -62,7 +84,7 @@ UPDATE AD_Element_Trl
 -- come from its own column's AD_Element (581690 / 581796) like every other field on these columns.
 UPDATE AD_Field
    SET AD_Name_ID=NULL,
-       Updated=TO_TIMESTAMP('2026-09-03 10:00:07','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+       Updated=TO_TIMESTAMP('2026-09-03 10:00:08','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
  WHERE AD_Field_ID IN (710204, 710205, 710219, 710220)
 ;
 
@@ -86,6 +108,6 @@ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(581796);
 -- active AD_Field references either one any more.
 UPDATE AD_Element
    SET IsActive='N',
-       Updated=TO_TIMESTAMP('2026-09-03 10:00:08','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+       Updated=TO_TIMESTAMP('2026-09-03 10:00:09','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
  WHERE AD_Element_ID IN (581927, 581928)
 ;
